@@ -1,0 +1,11 @@
+
+build
+build_release
+build_urho3d
+build_urho3d_release
+install
+install_release
+install_urho3d
+install_urho3d_release
+
+
