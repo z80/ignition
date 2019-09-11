@@ -23,6 +23,7 @@
 #pragma once
 
 #include "Sample.h"
+#include "item_node.h"
 
 namespace Urho3D
 {
@@ -31,6 +32,8 @@ class Node;
 class Scene;
 
 }
+
+using namespace Ign;
 
 /// Static 3D scene example.
 /// This sample demonstrates:
@@ -61,4 +64,6 @@ private:
     void SubscribeToEvents();
     /// Handle the logic update event.
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
+
+    ItemNode * nodeA, * nodeB, * nodeC, * nodeD;
 };

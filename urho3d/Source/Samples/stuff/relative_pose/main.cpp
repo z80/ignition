@@ -122,6 +122,52 @@ void Main::CreateScene()
 
     // Set an initial position for the camera scene node above the plane
     cameraNode_->SetPosition(Vector3(0.0f, 5.0f, 0.0f));
+
+
+    {
+        nodeA = new ItemNode( context_ );
+        nodeB = new ItemNode( context_ );
+        nodeC = new ItemNode( context_ );
+        nodeD = new ItemNode( context_ );
+
+        nodeB->setParent( nodeA );
+        nodeC->setParent( nodeB );
+        nodeD->setParent( nodeB );
+
+        nodeB->setR( Vector3d(  0.0, 5.0, 0.0 ) );
+        nodeC->setR( Vector3d(  5.0, 0.0, 0.0 ) );
+        nodeC->setR( Vector3d( -5.0, 0.0, 0.0 ) );
+
+        {
+            Node * n = scene_->CreateChild( "nodeA" );
+            n->SetPosition( nodeA->relR().vector3() );
+            auto* o = n->CreateComponent<StaticModel>();
+            o->SetModel(cache->GetResource<Model>("Models/Mushroom.mdl"));
+            o->SetMaterial(cache->GetResource<Material>("Materials/Mushroom.xml"));
+        }
+        {
+            Node * n = scene_->CreateChild( "nodeB" );
+            n->SetPosition( nodeB->relR().vector3() );
+            auto* o = n->CreateComponent<StaticModel>();
+            o->SetModel(cache->GetResource<Model>("Models/Mushroom.mdl"));
+            o->SetMaterial(cache->GetResource<Material>("Materials/Mushroom.xml"));
+        }
+        {
+            Node * n = scene_->CreateChild( "nodeC" );
+            n->SetPosition( nodeC->relR().vector3() );
+            auto* o = n->CreateComponent<StaticModel>();
+            o->SetModel(cache->GetResource<Model>("Models/Mushroom.mdl"));
+            o->SetMaterial(cache->GetResource<Material>("Materials/Mushroom.xml"));
+        }
+        {
+            Node * n = scene_->CreateChild( "nodeD" );
+            n->SetPosition( nodeD->relR().vector3() );
+            auto* o = n->CreateComponent<StaticModel>();
+            o->SetModel(cache->GetResource<Model>("Models/Mushroom.mdl"));
+            o->SetMaterial(cache->GetResource<Material>("Materials/Mushroom.xml"));
+        }
+
+    }
 }
 
 void Main::CreateInstructions()
