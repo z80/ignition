@@ -17,7 +17,16 @@ ItemNode::~ItemNode()
 
 void ItemNode::setParent( ItemNode * itemNode )
 {
+    Vector3d r, v, w;
+    Quaterniond q;
+    relativeAll( itemNode, r, q, v, w );
+
     parent_ = SharedPtr<ItemNode>( itemNode );
+
+    setR( r );
+    setQ( q );
+    setV( v );
+    setW( w );
 }
 
 ItemNode * ItemNode::parent() const

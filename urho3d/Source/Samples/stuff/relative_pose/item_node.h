@@ -11,9 +11,9 @@ using namespace Urho3D;
 namespace Ign
 {
 
-class ItemNode:  public Urho3D::LogicComponent
+class ItemNode:  public Urho3D::Component
 {
-    URHO3D_OBJECT( ItemNode, LogicComponent )
+    URHO3D_OBJECT( ItemNode, Component )
 public:
     typedef signed long long Timestamp;
 
