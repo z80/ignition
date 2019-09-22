@@ -6,7 +6,7 @@ namespace Ign
 {
 
 ItemNode::ItemNode( Context * ctx )
-    : LogicComponent( ctx )
+    : Component( ctx )
 {
 }
 
