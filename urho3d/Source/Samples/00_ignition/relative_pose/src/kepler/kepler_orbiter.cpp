@@ -1,10 +1,8 @@
 
-#include "kepler_mover.h"
-#include "game_data.h"
+#include "kepler_orbiter.h"
+#include "kepler_time_counter.h"
 #include "Eigen/Core"
 #include "Eigen/Dense"
-//#include <cmath>
-//#include <string>
 
 using namespace Eigen;
 
@@ -24,57 +22,58 @@ static void rv2elems( const Float GM, const Eigen::Vector3d & r, const Eigen::Ve
                       Eigen::Vector3d & A,
                       Eigen::Vector3d & B );
 static Float speed( Float GM, Float a, Float r, bool parabolic = false );
-static void velocity( const KeplerMover *km, Float & vx, Float & vy, bool parabolic = false );
+static void velocity( const KeplerOrbiter *km, Float & vx, Float & vy, bool parabolic = false );
 
 // This is a special one assuming (e < 1.0).
-static void ellipticInit( KeplerMover * km, Float GM, Float a, Float e, Float Omega, Float I, Float omega, Float E );
+static void ellipticInit( KeplerOrbiter * km, Float GM, Float a, Float e, Float Omega, Float I, Float omega, Float E );
 
 // A generic one which computes "e".
-static bool genericInit( KeplerMover * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v );
-static void genericProcess( KeplerMover * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v );
+static bool genericInit( KeplerOrbiter * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v );
+static void genericProcess( KeplerOrbiter * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v );
 
-static void ellipticInit( KeplerMover * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v );
-static void ellipticProcess( KeplerMover * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v );
+static void ellipticInit( KeplerOrbiter * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v );
+static void ellipticProcess( KeplerOrbiter * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v );
 static Float ellipticNextE( const Float e, const Float M, Float & E );
 static Float ellipticSolveE( const Float e, const Float M, const Float E );
 
-//static void hyperbolicInit( KeplerMover * km, Float GM, Float a, Float e, Float Omega, Float I, Float omega, Float E );
-static void hyperbolicInit( KeplerMover * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v );
-static void hyperbolicProcess( KeplerMover * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v );
+//static void hyperbolicInit( KeplerOrbiter * km, Float GM, Float a, Float e, Float Omega, Float I, Float omega, Float E );
+static void hyperbolicInit( KeplerOrbiter * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v );
+static void hyperbolicProcess( KeplerOrbiter * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v );
 static Float hyperbolicNextE( const Float e, const Float M, Float & expE );
 static Float hyperbolicSolveE( const Float e, const Float M, const Float E );
 
-static void parabolicInit(KeplerMover * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v );
-static void parabolicProcess( KeplerMover * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v );
+static void parabolicInit(KeplerOrbiter * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v );
+static void parabolicProcess( KeplerOrbiter * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v );
 
 
 
-const Float KeplerMover::TIME_T = 60.0;
-const Float KeplerMover::eps    = 1.0e-6;
-const int   KeplerMover::iters  = 64;
+const Float KeplerOrbiter::TIME_T = 60.0;
+const Float KeplerOrbiter::eps    = 1.0e-6;
+const int   KeplerOrbiter::iters  = 64;
+const Float KeplerOrbiter::minAngularMomentum = 0.1;
 static const Float _2PI = 2.0 * 3.1415926535;
 
-KeplerMover::KeplerMover( Context * ctx )
-    : ItemBase( ctx )
+KeplerOrbiter::KeplerOrbiter( Context * ctx )
+    : KeplerMover( ctx )
 {
     active = false;
     GM = 1.0;
     active = false;
 }
 
-KeplerMover::~KeplerMover()
+KeplerOrbiter::~KeplerOrbiter()
 {
 }
 
-void KeplerMover::Start()
+void KeplerOrbiter::RegisterObject( Context * context )
 {
-    Scene * s = GetScene();
-    gameData = SharedPtr<GameData>( s->GetOrCreateComponent<GameData>() );
-    if ( !gameData )
-        URHO3D_LOGERROR( "Failed to get GameData instance" );
+    context->RegisterFactory<KeplerOrbiter>();
+
+    // Here list all the properties.
+    // ....................
 }
 
-void KeplerMover::Update( float dt )
+void KeplerOrbiter::IntegrateMotion( ItemNode * world, Timestamp dt )
 {
     if ( !active )
       return;
@@ -84,7 +83,7 @@ void KeplerMover::Update( float dt )
 
     // This time depending on time lapse might be mutlipled
     // by something.
-    const Float dt_ = (Float)(gameData->dt) * GameData::_ONE_SECOND;
+    const Float dt_ = (Float)(dt) * KeplerTimeCounter::_ONE_SECOND;
 
     timeLow += dt_;
     if ( timeLow > TIME_T )
@@ -105,13 +104,20 @@ void KeplerMover::Update( float dt )
 
     // Compute current position and velocity.
     // Apply position to it's node.
-    const Vector3 rf( r(0), r(1), r(2) );
-    setR( rf );
-    const Vector3 vf( v(0), v(1), v(2) );
-    setV( vf );
+    const Vector3 r_space( r(0), r(1), r(2) );
+    const Vector3 r_game = TO_GAME * r_space;
+    setR( r_game );
+    const Vector3 v_space( v(0), v(1), v(2) );
+    const Vector3 v_game = TO_GAME * v_space;
+    setV( v_game );
 }
 
-void KeplerMover::launch( Float GM, Float a, Float e, Float Omega, Float I, Float omega, Float E )
+void KeplerOrbiter::ComputeRelativePose( ItemNode * world )
+{
+    ItemNode::relativeAll( world, worldR_, worldQ_, worldV_, worldW_ );
+}
+
+void KeplerOrbiter::launch( Float GM, Float a, Float e, Float Omega, Float I, Float omega, Float E )
 {
     if ( e < (1.0 - eps) )
     {
@@ -121,9 +127,10 @@ void KeplerMover::launch( Float GM, Float a, Float e, Float Omega, Float I, Floa
     }
 }
 
-bool KeplerMover::launch( const Vector3d & v )
+bool KeplerOrbiter::launch( const Vector3d & v_game )
 {
-    const Vector3d r = relR();
+    const Vector3d r = TO_SPACE * relR();
+    const Vector3d v = T_SPACE * v_game;
     const Eigen::Vector3d ev( v.x_, v.y_, v.z_ );
     const Eigen::Vector3d er( r.x_, r.y_, r.z_ );
     Eigen::Vector3d A, B;
@@ -142,40 +149,25 @@ bool KeplerMover::launch( const Vector3d & v )
     return true;
 }
 
-bool KeplerMover::launch( const Vector3d & v, Float GM )
+bool KeplerOrbiter::launch( const Vector3d & v, Float GM )
 {
     this->GM = GM;
     launch( v );
 }
 
-void KeplerMover::stop()
+void KeplerOrbiter::stop()
 {
     active = false;
 }
 
-Vector3d KeplerMover::relR() const
+Vector3d KeplerOrbiter::relR() const
 {
-    return ItemBase::relR();
+    return ItemNode::relR();
 }
 
-Vector3d KeplerMover::relV() const
+Vector3d KeplerOrbiter::relV() const
 {
-    if ( active )
-    {
-        bool parabolic;
-        if ( ( e > (1.0 + KeplerMover::eps) ) || ( e < (1.0 - KeplerMover::eps) ) )
-            parabolic = false;
-        else
-            parabolic = true;
-        Float c_vx, c_vy;
-        velocity( this, c_vx, c_vy, parabolic );
-        const Vector3d vx = ex * c_vx;
-        const Vector3d vy = ey * c_vy;
-        const Vector3d v = vx + vy;
-
-        return v;
-    }
-    return Vector3d::ZERO;
+    return ItemNode::relV();
 }
 
 
@@ -269,12 +261,12 @@ static Float ellipticSolveE( const Float e, const Float M, const Float E )
     Float En = E;
     Float err = ellipticNextE( e, M, En );
     int n = 0;
-    while ( err >= KeplerMover::eps )
+    while ( err >= KeplerOrbiter::eps )
     {
         err = ellipticNextE( e, M, En );
 
         n += 1;
-        if ( n > KeplerMover::iters )
+        if ( n > KeplerOrbiter::iters )
             break;
     }
     if ( En > _2PI )
@@ -295,7 +287,7 @@ static Float speed( Float GM, Float a, Float r, bool parabolic )
     return v;
 }
 
-static void velocity( const KeplerMover * km, Float & vx, Float & vy, bool parabolic )
+static void velocity( const KeplerOrbiter * km, Float & vx, Float & vy, bool parabolic )
 {
     const Float f = km->f;
     const Float siF = std::sin(f);
@@ -315,7 +307,7 @@ static void velocity( const KeplerMover * km, Float & vx, Float & vy, bool parab
     vy = (coF - siF*gamma)*C;
 }
 
-static void ellipticInit( KeplerMover * km, Float GM, Float a, Float e, Float Omega, Float I, Float omega, Float E )
+static void ellipticInit( KeplerOrbiter * km, Float GM, Float a, Float e, Float Omega, Float I, Float omega, Float E )
 {
     km->GM = GM;
     km->a  = a;
@@ -351,7 +343,7 @@ static void ellipticInit( KeplerMover * km, Float GM, Float a, Float e, Float Om
     km->ey.z_ = ey(1);
 }
 
-static bool genericInit( KeplerMover * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v )
+static bool genericInit( KeplerOrbiter * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v )
 {
     const Float GM = km->GM;
 
@@ -370,7 +362,7 @@ static bool genericInit( KeplerMover * km, const Eigen::Vector3d & r, const Eige
         //const Float v_abs = std::sqrt( v.transpose() * v );
         const Float h_abs = std::sqrt( h.transpose() * h );
         const Float h_ = h_abs;
-        if ( h_ < GameData::GameData::MIN_ANGULAR_MOMENTUM )
+        if ( h_ < minAngularMomentum )
             return false;
     }
 
@@ -383,11 +375,13 @@ static bool genericInit( KeplerMover * km, const Eigen::Vector3d & r, const Eige
 
     const Eigen::Vector3d ex = ev / std::sqrt( ev.transpose() * ev );
     const Eigen::Vector3d ee = h.cross( ex );
-    // If angular momentum is close to zero (moving directly towards or away)
-    // second axis direction is ambiguous. Assigning it to zero in this case.
+    // If angular momentum is close to
+    // zero (moving directly towards or away)
+    // second axis direction is ambiguous.
+    // Assigning it to zero in this case.
     const Float eeAbs = std::sqrt( ee.transpose() * ee );
     Eigen::Vector3d ey;
-    if (eeAbs > KeplerMover::eps)
+    if (eeAbs > KeplerOrbiter::eps)
         ey = (ee / eeAbs);
     else
         ey = Eigen::Vector3d::Zero();
@@ -398,9 +392,9 @@ static bool genericInit( KeplerMover * km, const Eigen::Vector3d & r, const Eige
     km->ey.y_ = ey(1);
     km->ey.z_ = ey(2);
 
-    if ( e > (1.0 + KeplerMover::eps) )
+    if ( e > (1.0 + KeplerOrbiter::eps) )
         hyperbolicInit( km, r, v );
-    else if ( e < (1.0 -KeplerMover::eps) )
+    else if ( e < (1.0 -KeplerOrbiter::eps) )
         ellipticInit( km, r, v );
     else
         parabolicInit( km, r, v );
@@ -408,18 +402,18 @@ static bool genericInit( KeplerMover * km, const Eigen::Vector3d & r, const Eige
     return true;
 }
 
-static void genericProcess( KeplerMover * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v )
+static void genericProcess( KeplerOrbiter * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v )
 {
     const Float e = km->e;
-    if ( e > (1.0 + KeplerMover::eps) )
+    if ( e > (1.0 + KeplerOrbiter::eps) )
         hyperbolicProcess( km, t, r, v );
-    else if ( e < (1.0 - KeplerMover::eps) )
+    else if ( e < (1.0 - KeplerOrbiter::eps) )
         ellipticProcess( km, t, r, v );
     else
         parabolicProcess( km, t, r, v );
 }
 
-static void ellipticInit( KeplerMover * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v )
+static void ellipticInit( KeplerOrbiter * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v )
 {
     const Float GM = km->GM;
 
@@ -455,7 +449,7 @@ static void ellipticInit( KeplerMover * km, const Eigen::Vector3d & r, const Eig
     km->timeLow  = 0.0;
 }
 
-static void ellipticProcess( KeplerMover * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v )
+static void ellipticProcess( KeplerOrbiter * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v )
 {
     // Solve for eccentric anomaly "E".
     const Float a = km->a;
@@ -479,7 +473,7 @@ static void ellipticProcess( KeplerMover * km, Float t, Eigen::Vector3d & r, Eig
     r = (ax * Rx) + (ay * Ry);
 }
 
-/*static void hyperbolicInit( KeplerMover * km, Float GM, Float a, Float e, Float Omega, Float I, Float omega, Float E )
+/*static void hyperbolicInit( KeplerOrbiter * km, Float GM, Float a, Float e, Float Omega, Float I, Float omega, Float E )
 {
     km->GM = GM;
     km->a  = a;
@@ -497,7 +491,7 @@ static void ellipticProcess( KeplerMover * km, Float t, Eigen::Vector3d & r, Eig
     km->timeLow  = 0.0;
 }*/
 
-static void hyperbolicInit( KeplerMover * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v )
+static void hyperbolicInit( KeplerOrbiter * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v )
 {
     // https://en.wikipedia.org/wiki/Hyperbolic_trajectory
     const Float GM = km->GM;
@@ -543,7 +537,7 @@ static void hyperbolicInit( KeplerMover * km, const Eigen::Vector3d & r, const E
     km->P = -1.0;
 }
 
-static void hyperbolicProcess( KeplerMover * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v )
+static void hyperbolicProcess( KeplerOrbiter * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v )
 {
     // Solve for eccentric anomaly "E".
     const Float a = km->a;
@@ -572,7 +566,7 @@ static void hyperbolicProcess( KeplerMover * km, Float t, Eigen::Vector3d & r, E
     // Computing real 3d coordinates.
     Eigen::Vector3d ax( km->ex.x_, km->ex.y_, km->ex.z_ );
     Eigen::Vector3d ay( km->ey.x_, km->ey.y_, km->ey.z_ );
-
+eb
     // Position at orbit.
     r = (ax * Rx) + (ay * Ry);
 }
@@ -598,19 +592,19 @@ static Float hyperbolicSolveE( const Float e, const Float M, const Float E )
     Float expE = std::exp(E);
     Float err = hyperbolicNextE( e, M, expE );
     int n = 0;
-    while ( err >= KeplerMover::eps )
+    while ( err >= KeplerOrbiter::eps )
     {
         err = hyperbolicNextE( e, M, expE );
 
         n += 1;
-        if ( n > KeplerMover::iters )
+        if ( n > KeplerOrbiter::iters )
             break;
     }
     const Float En = std::log(expE);
     return En;
 }
 
-static void parabolicInit(KeplerMover * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v )
+static void parabolicInit(KeplerOrbiter * km, const Eigen::Vector3d & r, const Eigen::Vector3d & v )
 {
     // https://en.wikipedia.org/wiki/Parabolic_trajectory
     const Float GM = km->GM;
@@ -646,7 +640,7 @@ static void parabolicInit(KeplerMover * km, const Eigen::Vector3d & r, const Eig
     km->P = -1.0;
 }
 
-static void parabolicProcess( KeplerMover * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v )
+static void parabolicProcess( KeplerOrbiter * km, Float t, Eigen::Vector3d & r, Eigen::Vector3d & v )
 {
     const Float GM = km->GM;
     const Float p = km->l;

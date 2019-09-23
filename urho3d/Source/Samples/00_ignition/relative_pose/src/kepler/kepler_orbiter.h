@@ -1,24 +1,24 @@
 
-#ifndef __KEPLER_MOVER_H_
-#define __KEPLER_MOVER_H_
+#ifndef __KEPLER_ORBITER_H_
+#define __KEPLER_ORBITER_H_
 
 #include <Urho3D/Urho3DAll.h>
-#include "item_node.h"
+#include "kepler_mover.h"
 
 using namespace Urho3D;
 
 namespace Ign
 {
 
-class KeplerMover: public ItemNode
+class KeplerOrbiter: public KeplerMover
 {
-    URHO3D_OBJECT( KeplerMover, ItemNode )
+    URHO3D_OBJECT( KeplerOrbiter, KeplerMover )
 public:
-    KeplerMover( Context * ctx );
-    virtual ~KeplerMover();
+    KeplerOrbiter( Context * ctx );
+    virtual ~KeplerOrbiter();
 
-    virtual void Start() override;
-    virtual void Update( float dt );
+    void IntegrateMotion( ItemNode * world, Timestamp dt ) override;
+    void ComputeRelativePose( ItemNode * world ) override;
 
     void launch( Float GM, Float a, Float e, Float Omega=0.0, Float I=0.0, Float omega=0.0, Float E=0.0 );
     // Computes orbit elements based on position and velocity.
@@ -32,11 +32,10 @@ public:
 
 public:
     static const Float TIME_T;
-    // Small number for
+    // Small number for solving.
     static const Float eps;
     static const int   iters;
-
-    SharedPtr<GameData> gameData;
+    static const Float minAngularMomentum;
 public:
     // Counting time.
     Float timeLow;
