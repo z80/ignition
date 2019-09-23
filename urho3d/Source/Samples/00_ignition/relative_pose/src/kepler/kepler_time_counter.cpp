@@ -55,7 +55,19 @@ void KeplerTimeCounter::Update( float dtf )
 
 void KeplerTimeCounter::UpdateNodes()
 {
-
+    Scene * s = GetScene();
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        const String & typeName = c->GetTypeNameStatic();
+        if ( typeName != "KeplerMover" )
+            continue;
+        // Advance node in time.
+        // .........
+    }
+    // Compute position relative to physics world node.
 }
 
 void KeplerTimeCounter::SetTimeAcceleration( int xN )
