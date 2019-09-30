@@ -78,9 +78,6 @@ void KeplerOrbiter::IntegrateMotion( ItemNode * world, Timestamp dt )
     if ( !active )
       return;
 
-    if ( !gameData )
-        return;
-
     // This time depending on time lapse might be mutlipled
     // by something.
     const Float dt_ = (Float)(dt) * KeplerTimeCounter::_ONE_SECOND;
@@ -104,11 +101,11 @@ void KeplerOrbiter::IntegrateMotion( ItemNode * world, Timestamp dt )
 
     // Compute current position and velocity.
     // Apply position to it's node.
-    const Vector3 r_space( r(0), r(1), r(2) );
-    const Vector3 r_game = TO_GAME * r_space;
+    const Vector3d r_space( r(0), r(1), r(2) );
+    const Vector3d r_game = TO_GAME * r_space;
     setR( r_game );
-    const Vector3 v_space( v(0), v(1), v(2) );
-    const Vector3 v_game = TO_GAME * v_space;
+    const Vector3d v_space( v(0), v(1), v(2) );
+    const Vector3d v_game = TO_GAME * v_space;
     setV( v_game );
 }
 
@@ -130,7 +127,7 @@ void KeplerOrbiter::launch( Float GM, Float a, Float e, Float Omega, Float I, Fl
 bool KeplerOrbiter::launch( const Vector3d & v_game )
 {
     const Vector3d r = TO_SPACE * relR();
-    const Vector3d v = T_SPACE * v_game;
+    const Vector3d v = TO_SPACE * v_game;
     const Eigen::Vector3d ev( v.x_, v.y_, v.z_ );
     const Eigen::Vector3d er( r.x_, r.y_, r.z_ );
     Eigen::Vector3d A, B;
@@ -362,7 +359,7 @@ static bool genericInit( KeplerOrbiter * km, const Eigen::Vector3d & r, const Ei
         //const Float v_abs = std::sqrt( v.transpose() * v );
         const Float h_abs = std::sqrt( h.transpose() * h );
         const Float h_ = h_abs;
-        if ( h_ < minAngularMomentum )
+        if ( h_ < KeplerOrbiter::minAngularMomentum )
             return false;
     }
 
@@ -566,7 +563,7 @@ static void hyperbolicProcess( KeplerOrbiter * km, Float t, Eigen::Vector3d & r,
     // Computing real 3d coordinates.
     Eigen::Vector3d ax( km->ex.x_, km->ex.y_, km->ex.z_ );
     Eigen::Vector3d ay( km->ey.x_, km->ey.y_, km->ey.z_ );
-eb
+
     // Position at orbit.
     r = (ax * Rx) + (ay * Ry);
 }

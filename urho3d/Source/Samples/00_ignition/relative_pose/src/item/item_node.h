@@ -38,6 +38,12 @@ public:
     bool relativeAll( const ItemNode * other, Vector3d & rel_r, Quaterniond & rel_q,
                                               Vector3d & rel_v, Vector3d & rel_w, bool debugLogging=false ) const;
 
+    // "Teleporting" with preserving orientations and velocities of
+    // all children in parent->parent ref. frame.
+    virtual bool teleport( ItemNode * other, const Vector3d & r, const Quaterniond & q,
+                                             const Vector3d & v=Vector3d::ZERO,
+                                             const Vector3d & w=Vector3d::ZERO );
+
 public:
     SharedPtr<ItemNode> parent_;
     /// Relative position.
@@ -48,6 +54,11 @@ public:
     Vector3d    v_;
     /// Relative angular velocity.
     Vector3d    w_;
+
+    /// So far this one is used only when teleporting.
+    /// This one is just to aoid memory allocation/reallocation
+    /// on every teleport.
+    Vector<ItemNode *> children;
 
 //    /// Timestamp to check if need to recompute relative pose.
 //    Timestamp   t_;

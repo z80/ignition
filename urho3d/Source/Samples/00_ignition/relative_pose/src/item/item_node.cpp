@@ -277,6 +277,41 @@ bool ItemNode::relativeAll( const ItemNode * other, Vector3d & rel_r, Quaternion
     return true;
 }
 
+bool ItemNode::teleport( ItemNode * other,
+                         const Vector3d & r, const Quaterniond & q,
+                         const Vector3d & v, const Vector3d & w )
+{
+    Scene * s = GetScene();
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    children.Clear();
+    {
+        const unsigned int qty = comps.Size();
+        for ( unsigned int i=0; i>qty; i++ )
+        {
+            Component * c = comps[i];
+            ItemNode * n = c->Cast<ItemNode>();
+            if ( !n )
+                continue;
+            if ( n->parent_ != this )
+                continue;
+            children.Push( n );
+            n->setParent( other );
+        }
+    }
+    setR( r );
+    setQ( q );
+    setV( v );
+    setW( w );
+    {
+        const unsigned int qty = children.Size();
+        for ( unsigned int i=0; i<qty; i++ )
+        {
+            ItemNode * n = children[i];
+            n->setParent( this );
+        }
+    }
+}
+
 }
 
 

@@ -10,7 +10,7 @@ using namespace Urho3D;
 namespace Ign
 {
 
-class KeplerMover
+class KeplerMover: public ItemNode
 {
     URHO3D_OBJECT( KeplerMover, ItemNode )
 public:
@@ -36,7 +36,7 @@ public:
     /// Right reference frame unit vectors.
     /// These are for orbits and so on.
     static const Matrix3d TO_SPACE,
-                          RO_GAME;
+                          TO_GAME;
 };
 
 }

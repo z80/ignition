@@ -17,6 +17,9 @@ public:
     KeplerOrbiter( Context * ctx );
     virtual ~KeplerOrbiter();
 
+    /// Register object factory.
+    static void RegisterObject( Context * context );
+
     void IntegrateMotion( ItemNode * world, Timestamp dt ) override;
     void ComputeRelativePose( ItemNode * world ) override;
 
