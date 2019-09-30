@@ -111,7 +111,6 @@ void KeplerOrbiter::IntegrateMotion( ItemNode * world, Timestamp dt )
 
 void KeplerOrbiter::ComputeRelativePose( ItemNode * world )
 {
-    ItemNode::relativeAll( world, worldR_, worldQ_, worldV_, worldW_ );
 }
 
 void KeplerOrbiter::launch( Float GM, Float a, Float e, Float Omega, Float I, Float omega, Float E )

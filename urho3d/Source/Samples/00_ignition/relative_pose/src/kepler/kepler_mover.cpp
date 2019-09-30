@@ -53,7 +53,8 @@ void KeplerMover::IntegrateMotion( ItemNode * world, Timestamp dt )
 
 void KeplerMover::ComputeRelativePose( ItemNode * world )
 {
-    // Nothing by default.
+    // Just basic stuff.
+    ItemNode::relativeAll( world, worldR_, worldQ_, worldV_, worldW_ );
 }
 
 }

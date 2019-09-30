@@ -1,5 +1,6 @@
 
 #include "kepler_time_counter.h"
+#include "kepler_mover.h"
 
 namespace Ign
 {
@@ -61,13 +62,25 @@ void KeplerTimeCounter::UpdateNodes()
     for ( unsigned i=0; i<qty; i++ )
     {
         Component * c = comps[i];
-        const String & typeName = c->GetTypeNameStatic();
-        if ( typeName != "KeplerMover" )
+        KeplerMover * m = c->Cast<KeplerMover>();
+        if ( !m )
             continue;
         // Advance node in time.
-        // .........
+        m->IntegrateMotion( 0, dt_ );
     }
+
+    // After all nodes are intergrated can compute relative
+    // poses.
     // Compute position relative to physics world node.
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        KeplerMover * m = c->Cast<KeplerMover>();
+        if ( !m )
+            continue;
+        // Advance node in time.
+        m->ComputeRelativePose( 0 );
+    }
 }
 
 void KeplerTimeCounter::SetTimeAcceleration( int xN )
