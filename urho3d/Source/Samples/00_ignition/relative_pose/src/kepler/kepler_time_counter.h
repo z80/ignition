@@ -5,10 +5,12 @@
 #include <Urho3D/Urho3DAll.h>
 #include "data_types.h"
 
+using namespace Urho3D;
+
 namespace Ign
 {
 
-using namespace Urho3D;
+class ItemNode;
 
 class KeplerTimeCounter: public Urho3D::LogicComponent
 {
@@ -28,6 +30,9 @@ public:
     /// Set time lapse speed gain or attenuation.
     void SetTimeAcceleration( int xN );
 
+    /// Specify physics world node.
+    void SetPhysicsWorldItem( ItemNode * node );
+
 
     Timestamp dt_;
     Timestamp time_;
@@ -36,7 +41,8 @@ public:
     static const Float    _ONE_SECOND;
 
 private:
-    HashMap<String, SharedPtr<Node> > nodes;
+    class PD;
+    PD * pd;
 };
 
 }
