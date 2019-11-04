@@ -11,6 +11,14 @@ using namespace Urho3D;
 namespace Ign
 {
 
+struct State
+{
+    Quaterniond q;
+    Vector3d    r;
+    Vector3d    v;
+    Vector3d    w;
+};
+
 class RefFrame:  public Urho3D::Component
 {
     URHO3D_OBJECT( RefFrame, Component )
@@ -34,9 +42,12 @@ public:
     virtual void setV( const Vector3d & v );
     virtual void setW( const Vector3d & w );
 
-    bool relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging=false );
-    bool relativeAll( const RefFrame * other, Vector3d & rel_r, Quaterniond & rel_q,
-                                              Vector3d & rel_v, Vector3d & rel_w, bool debugLogging=false ) const;
+    bool relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging=false ) const;
+    bool relativeState( const RefFrame * other, State & stateRel, bool debugLogging=false ) const;
+
+    /// Relative state for object in current ref. frame with state "stA" 
+    /// with respect to another object with state "stB" in "other" ref. frame.
+    bool relativeState( const RefFrame * other, const State & stateInOther, const State & state ) const;
 
     // "Teleporting" with preserving orientations and velocities of
     // all children in parent->parent ref. frame.
