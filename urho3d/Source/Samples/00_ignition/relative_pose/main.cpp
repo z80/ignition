@@ -48,7 +48,7 @@ void Main::Start()
     Sample::InitMouseMode(MM_RELATIVE);
 }
 
-void Main::CreateScene()
+void Main::reateScene()
 {
     auto* cache = GetSubsystem<ResourceCache>();
 
@@ -105,10 +105,10 @@ void Main::CreateScene()
 
 
     {
-        nodeA = new ItemNode( context_ );
-        nodeB = new ItemNode( context_ );
-        nodeC = new ItemNode( context_ );
-        nodeD = new ItemNode( context_ );
+        nodeA = new RefFrame( context_ );
+        nodeB = new RefFrame( context_ );
+        nodeC = new RefFrame( context_ );
+        nodeD = new RefFrame( context_ );
 
         nodeB->setParent( nodeA );
         nodeC->setParent( nodeB );

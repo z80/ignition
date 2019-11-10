@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Sample.h"
-#include "item_node.h"
+#include "ref_frame.h"
 
 namespace Urho3D
 {
@@ -45,5 +45,5 @@ private:
     /// Handle the logic update event.
     void HandleUpdate( StringHash eventType, VariantMap & eventData );
 
-    ItemNode * nodeA, * nodeB, * nodeC, * nodeD;
+    RefFrame * nodeA, * nodeB, * nodeC, * nodeD;
 };
