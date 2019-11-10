@@ -47,7 +47,7 @@ public:
 
     /// Relative state for object in current ref. frame with state "stA" 
     /// with respect to another object with state "stB" in "other" ref. frame.
-    bool relativeState( const RefFrame * other, const State & stateInOther, const State & state ) const;
+    bool relativeState( const RefFrame * other, const State & stateInOther, State & state, const bool debugLogging ) const;
 
     // "Teleporting" with preserving orientations and velocities of
     // all children in parent->parent ref. frame.
@@ -60,7 +60,7 @@ public:
     /// So far this one is used only when teleporting.
     /// This one is just to aoid memory allocation/reallocation
     /// on every teleport.
-    Vector<RefFrame *> children_;
+    Vector<SharedPtr<RefFrame> > children_;
 
     // All these are in parent's ref. frame.
     /// Relative position.

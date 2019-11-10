@@ -20,26 +20,25 @@ RefFrame::~RefFrame()
 
 void RefFrame::setParent( RefFrame * newParent )
 {
-    SharedPtr<RefFrame> & curParent = parent;
+    SharedPtr<RefFrame> & curParent = parent_;
     if ( newParent == curParent )
         return;
 
     // Compute relative parameters with respect to the new parent.
-    Vector3d r, v, w;
-    Quaterniond q;
-    relativeAll( newParent, r, q, v, w );
+    State st;
+    relativeState( newParent, st );
 
     // Replace the parent.
     if ( curParent )
-        removeFromList( this, curParent->cildren_ );
+        removeFromList( this, curParent->children_ );
     parent_ = SharedPtr<RefFrame>( newParent );
     if ( newParent )
         addToList( this, newParent->children_ );
 
-    setR( r );
-    setQ( q );
-    setV( v );
-    setW( w );
+    setR( st.r );
+    setQ( st.q );
+    setV( st.v );
+    setW( st.w );
 }
 
 RefFrame * RefFrame::parent() const
@@ -98,7 +97,7 @@ bool RefFrame::relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & r
     // Get all ancestors of current node.
     // Make it static as graphics is in one thread.
     static Vector<const RefFrame *> allAncestorsA;
-    allAncestorsA.clear();
+    allAncestorsA.Clear();
     const RefFrame * nodeA = this;
     do {
         allAncestorsA.Push( nodeA );
@@ -108,7 +107,7 @@ bool RefFrame::relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & r
 
     const RefFrame * nodeB = other;
     static Vector<const RefFrame *> ancestorsB;
-    ancestorsB.clear();
+    ancestorsB.Clear();
     unsigned indA = allQtyA;
     do {
         // Check if nodeB is in allAncestorsA.
@@ -151,7 +150,7 @@ bool RefFrame::relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & r
 
     Vector3d    r_b = Vector3d::ZERO;
     Quaterniond q_b = Quaterniond::IDENTITY;
-    const unsigned indB = ancestorsB.size();
+    const unsigned indB = ancestorsB.Size();
     for ( unsigned i=0; i<indB; i++ )
     {
         const RefFrame * nodeB = ancestorsB[i];
@@ -174,7 +173,7 @@ bool RefFrame::relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & r
     return true;
 }
 
-bool RefFrame::relativeAll( const RefFrame * other, State & stateRel, bool debugLogging ) const
+bool RefFrame::relativeState( const RefFrame * other, State & stateRel, bool debugLogging ) const
 {
     // root->a->b->c->d->e->this
     // root->a->b->f->g->other
@@ -183,17 +182,17 @@ bool RefFrame::relativeAll( const RefFrame * other, State & stateRel, bool debug
     // Get all ancestors of current node.
     // Make it static as graphics is in one thread.
     static Vector<const RefFrame *> allAncestorsA;
-    allAncestorsA.clear();
+    allAncestorsA.Clear();
     const RefFrame * itemA = this;
     do {
         allAncestorsA.Push( itemA );
         itemA = itemA->parent();
     } while ( itemA );
-    const size_t allQtyA = allAncestorsA.size();
+    const size_t allQtyA = allAncestorsA.Size();
 
     const RefFrame * itemB = other;
     static Vector<const RefFrame *> ancestorsB;
-    ancestorsB.clear();
+    ancestorsB.Clear();
     size_t indA = allQtyA;
     do {
         // Check if nodeB is in allAncestorsA.
@@ -234,7 +233,7 @@ bool RefFrame::relativeAll( const RefFrame * other, State & stateRel, bool debug
         const Vector3d    w_n_1 = itemA->relW();
         // Due to ref. frame in Urho3D is left handed not
         // sure if here it should be "+ w.cross(r)" or "- w.cross(r)".
-        v_a = v_n_1 + q_n_1*v_a + w_n_1.Cross( q_n_1  * r_a );
+        v_a = v_n_1 + q_n_1*v_a + w_n_1.CrossProduct( q_n_1  * r_a );
         w_a = w_n_1 + q_n_1*w_a;
 
         r_a = r_n_1 + q_n_1*r_a;
@@ -245,7 +244,7 @@ bool RefFrame::relativeAll( const RefFrame * other, State & stateRel, bool debug
     Quaterniond q_b = Quaterniond::IDENTITY;
     Vector3d    v_b = Vector3d::ZERO;
     Vector3d    w_b = Vector3d::ZERO;
-    const size_t indB = ancestorsB.size();
+    const size_t indB = ancestorsB.Size();
     for ( size_t i=0; i<indB; i++ )
     {
         const RefFrame * itemB = ancestorsB[i];
@@ -253,7 +252,7 @@ bool RefFrame::relativeAll( const RefFrame * other, State & stateRel, bool debug
         const Vector3d    r_n_1 = itemB->relR();
         const Vector3d    v_n_1 = itemB->relV();
         const Vector3d    w_n_1 = itemB->relW();
-        v_b = v_n_1 + q_n_1*v_b + w_n_1.Cross( q_n_1  * r_b );
+        v_b = v_n_1 + q_n_1*v_b + w_n_1.CrossProduct( q_n_1  * r_b );
         w_b = w_n_1 + q_n_1*w_b;
 
         r_b = r_n_1 + q_n_1*r_b;
@@ -272,7 +271,7 @@ bool RefFrame::relativeAll( const RefFrame * other, State & stateRel, bool debug
         const Quaterniond invQ = q_b.Inverse();
         const Vector3d    invR = -(invQ * r_b);
         const Vector3d    invW = -(invQ * w_b);
-        const Vector3d    invV = -(invQ * v_b) - invW.Cross( invR );
+        const Vector3d    invV = -(invQ * v_b) - invW.CrossProduct( invR );
         q_b = invQ;
         r_b = invR;
         v_b = invV;
@@ -281,7 +280,7 @@ bool RefFrame::relativeAll( const RefFrame * other, State & stateRel, bool debug
 
     // Apply once again to get final relative parameters.
     {
-        stateRel.v = v_b + q_b*v_a + w_b.Cross( q_b * r_a );
+        stateRel.v = v_b + q_b*v_a + w_b.CrossProduct( q_b * r_a );
         stateRel.w = w_b + q_b*w_a;
         stateRel.r = r_b + q_b*r_a;
         stateRel.q = q_b * q_a;
@@ -291,7 +290,7 @@ bool RefFrame::relativeAll( const RefFrame * other, State & stateRel, bool debug
 }
 
 
-bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther, State & state ) const
+bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther, State & state, const bool debugLogging ) const
 {
     // root->a->b->c->d->e->this
     // root->a->b->f->g->other
@@ -300,17 +299,17 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
     // Get all ancestors of current node.
     // Make it static as graphics is in one thread.
     static Vector<const RefFrame *> allAncestorsA;
-    allAncestorsA.clear();
+    allAncestorsA.Clear();
     const RefFrame * itemA = this;
     do {
         allAncestorsA.Push( itemA );
         itemA = itemA->parent();
     } while ( itemA );
-    const size_t allQtyA = allAncestorsA.size();
+    const size_t allQtyA = allAncestorsA.Size();
 
     const RefFrame * itemB = other;
     static Vector<const RefFrame *> ancestorsB;
-    ancestorsB.clear();
+    ancestorsB.Clear();
     size_t indA = allQtyA;
     do {
         // Check if nodeB is in allAncestorsA.
@@ -351,7 +350,7 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
         const Vector3d    w_n_1 = itemA->relW();
         // Due to ref. frame in Urho3D is left handed not
         // sure if here it should be "+ w.cross(r)" or "- w.cross(r)".
-        v_a = v_n_1 + q_n_1*v_a + w_n_1.Cross( q_n_1  * r_a );
+        v_a = v_n_1 + q_n_1*v_a + w_n_1.CrossProduct( q_n_1  * r_a );
         w_a = w_n_1 + q_n_1*w_a;
 
         r_a = r_n_1 + q_n_1*r_a;
@@ -362,7 +361,7 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
     Quaterniond q_b = stateInOther.q;
     Vector3d    v_b = stateInOther.v;
     Vector3d    w_b = stateInOther.w;
-    const size_t indB = ancestorsB.size();
+    const size_t indB = ancestorsB.Size();
     for ( size_t i=0; i<indB; i++ )
     {
         const RefFrame * itemB = ancestorsB[i];
@@ -370,7 +369,7 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
         const Vector3d    r_n_1 = itemB->relR();
         const Vector3d    v_n_1 = itemB->relV();
         const Vector3d    w_n_1 = itemB->relW();
-        v_b = v_n_1 + q_n_1*v_b + w_n_1.Cross( q_n_1  * r_b );
+        v_b = v_n_1 + q_n_1*v_b + w_n_1.CrossProduct( q_n_1  * r_b );
         w_b = w_n_1 + q_n_1*w_b;
 
         r_b = r_n_1 + q_n_1*r_b;
@@ -389,7 +388,7 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
         const Quaterniond invQ = q_b.Inverse();
         const Vector3d    invR = -(invQ * r_b);
         const Vector3d    invW = -(invQ * w_b);
-        const Vector3d    invV = -(invQ * v_b) - invW.Cross( invR );
+        const Vector3d    invV = -(invQ * v_b) - invW.CrossProduct( invR );
         q_b = invQ;
         r_b = invR;
         v_b = invV;
@@ -398,7 +397,7 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
 
     // Apply once again to get final relative parameters.
     {
-        state.v = v_b + q_b*v_a + w_b.Cross( q_b * r_a );
+        state.v = v_b + q_b*v_a + w_b.CrossProduct( q_b * r_a );
         state.w = w_b + q_b*w_a;
         state.r = r_b + q_b*r_a;
         state.q = q_b * q_a;
@@ -413,7 +412,7 @@ bool RefFrame::teleport( RefFrame * other,
 {
     Scene * s = GetScene();
     const Vector<SharedPtr<Component> > & comps = s->GetComponents();
-    children.Clear();
+    children_.Clear();
     {
         const unsigned int qty = comps.Size();
         for ( unsigned int i=0; i>qty; i++ )
@@ -424,7 +423,7 @@ bool RefFrame::teleport( RefFrame * other,
                 continue;
             if ( n->parent_ != this )
                 continue;
-            children.Push( n );
+            children_.Push( SharedPtr<RefFrame>(n) );
             n->setParent( other );
         }
     }
@@ -433,10 +432,10 @@ bool RefFrame::teleport( RefFrame * other,
     setV( v );
     setW( w );
     {
-        const unsigned int qty = children.Size();
+        const unsigned int qty = children_.Size();
         for ( unsigned int i=0; i<qty; i++ )
         {
-            RefFrame * n = children[i];
+            RefFrame * n = children_[i];
             n->setParent( this );
         }
     }
@@ -444,7 +443,7 @@ bool RefFrame::teleport( RefFrame * other,
 
 static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children )
 {
-    bool repreat = false;
+    bool repeat = false;
     do {
       const unsigned qty = children.Size();
       for ( unsigned i=0; i<qty; i++ )

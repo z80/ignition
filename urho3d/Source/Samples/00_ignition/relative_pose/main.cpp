@@ -48,7 +48,7 @@ void Main::Start()
     Sample::InitMouseMode(MM_RELATIVE);
 }
 
-void Main::reateScene()
+void Main::CreateScene()
 {
     auto* cache = GetSubsystem<ResourceCache>();
 
@@ -114,9 +114,9 @@ void Main::reateScene()
         nodeC->setParent( nodeB );
         nodeD->setParent( nodeB );
 
-        nodeB->setR( Vector3d(  0.0, 5.0, 0.0 ) );
-        nodeC->setR( Vector3d(  5.0, 0.0, 0.0 ) );
-        nodeC->setR( Vector3d( -5.0, 0.0, 0.0 ) );
+        nodeB->setR( Vector3d(  0.0, 0.0, 5.0 ) );
+        nodeC->setR( Vector3d(  0.0, 0.0, 5.0 ) );
+        nodeC->setR( Vector3d(  0.0, 0.0, 5.0 ) );
 
         {
             Node * n = scene_->CreateChild( "nodeA" );
