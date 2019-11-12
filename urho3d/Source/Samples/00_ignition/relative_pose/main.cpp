@@ -114,6 +114,7 @@ void Main::CreateScene()
         nodeC->setParent( nodeB );
         nodeD->setParent( nodeB );
 
+        nodeA->setR( Vector3d(  0.0, 10.0, 0.0 ) );
         nodeB->setR( Vector3d(  0.0, 0.0, 5.0 ) );
         nodeC->setR( Vector3d(  0.0, 0.0, 5.0 ) );
         nodeD->setR( Vector3d(  0.0, 0.0, 5.0 ) );
@@ -130,6 +131,18 @@ void Main::CreateScene()
             nodeC->relativeState( nodeB, st );
             nodeB->teleport( nodeB, Vector3d( 0.0, 0.0, 1.0 ), Quaterniond::IDENTITY );
             nodeC->relativeState( nodeB, st );
+            URHO3D_LOGINFOF( "Done!" );
+        }
+        {
+            State st;
+
+            nodeB->setV( Vector3d( 0.0, 0.0, 1.0 ) );
+            nodeC->setV( Vector3d( 0.0, 0.0, 1.0 ) );
+
+            nodeC->relativeState( nodeA, st );
+            nodeC->relativeState( nodeD, st );
+            nodeD->relativeState( nodeC, st );
+
             URHO3D_LOGINFOF( "Done!" );
         }
 

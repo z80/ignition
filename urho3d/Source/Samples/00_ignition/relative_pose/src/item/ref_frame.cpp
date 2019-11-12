@@ -128,17 +128,19 @@ bool RefFrame::relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & r
     static Vector<const RefFrame *> allAncestorsA;
     allAncestorsA.Clear();
     const RefFrame * nodeA = this;
-    do {
+    while ( nodeA )
+    {
         allAncestorsA.Push( nodeA );
         nodeA = nodeA->parent();
-    } while ( nodeA );
+    }
     const unsigned allQtyA = allAncestorsA.Size();
 
     const RefFrame * nodeB = other;
     static Vector<const RefFrame *> ancestorsB;
     ancestorsB.Clear();
     unsigned indA = allQtyA;
-    do {
+    while ( nodeB )
+    {
         // Check if nodeB is in allAncestorsA.
         for ( unsigned i=0; i<allQtyA; i++ )
         {
@@ -155,7 +157,7 @@ bool RefFrame::relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & r
         ancestorsB.Push( nodeB );
         // Get parent.
         nodeB = nodeB->parent();
-    } while ( nodeB );
+    }
 
     // If reached the root and didn't meed
     // anything common just break.
@@ -213,17 +215,19 @@ bool RefFrame::relativeState( const RefFrame * other, State & stateRel, bool deb
     static Vector<const RefFrame *> allAncestorsA;
     allAncestorsA.Clear();
     const RefFrame * itemA = this;
-    do {
+    while ( itemA )
+    {
         allAncestorsA.Push( itemA );
         itemA = itemA->parent();
-    } while ( itemA );
+    }
     const unsigned allQtyA = allAncestorsA.Size();
 
     const RefFrame * itemB = other;
     static Vector<const RefFrame *> ancestorsB;
     ancestorsB.Clear();
-    size_t indA = allQtyA;
-    do {
+    unsigned indA = allQtyA;
+    while ( itemB )
+    {
         // Check if nodeB is in allAncestorsA.
         for ( unsigned i=0; i<allQtyA; i++ )
         {
@@ -240,7 +244,7 @@ bool RefFrame::relativeState( const RefFrame * other, State & stateRel, bool deb
         ancestorsB.Push( itemB );
         // Get parent.
         itemB = itemB->parent();
-    } while ( itemB );
+    }
 
     // If reached the root and didn't meed
     // anything common just break.
@@ -330,17 +334,19 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
     static Vector<const RefFrame *> allAncestorsA;
     allAncestorsA.Clear();
     const RefFrame * itemA = this;
-    do {
+    while ( itemA )
+    {
         allAncestorsA.Push( itemA );
         itemA = itemA->parent();
-    } while ( itemA );
-    const size_t allQtyA = allAncestorsA.Size();
+    }
+    const unsigned allQtyA = allAncestorsA.Size();
 
     const RefFrame * itemB = other;
     static Vector<const RefFrame *> ancestorsB;
     ancestorsB.Clear();
-    size_t indA = allQtyA;
-    do {
+    unsigned indA = allQtyA;
+    while ( itemB )
+    {
         // Check if nodeB is in allAncestorsA.
         for ( unsigned i=0; i<allQtyA; i++ )
         {
@@ -357,7 +363,7 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
         ancestorsB.Push( itemB );
         // Get parent.
         itemB = itemB->parent();
-    } while ( itemB );
+    }
 
     // If reached the root and didn't meed
     // anything common just break.
@@ -370,7 +376,7 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
     Quaterniond q_a = Quaterniond::IDENTITY;
     Vector3d    v_a = Vector3d::ZERO;
     Vector3d    w_a = Vector3d::ZERO;
-    for ( size_t i=0; i<indA; i++ )
+    for ( unsigned i=0; i<indA; i++ )
     {
         itemA = allAncestorsA[i];
         const Quaterniond q_n_1 = itemA->relQ();
@@ -391,7 +397,7 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
     Vector3d    v_b = stateInOther.v;
     Vector3d    w_b = stateInOther.w;
     const size_t indB = ancestorsB.Size();
-    for ( size_t i=0; i<indB; i++ )
+    for ( unsigned i=0; i<indB; i++ )
     {
         const RefFrame * itemB = ancestorsB[i];
         const Quaterniond q_n_1 = itemB->relQ();
