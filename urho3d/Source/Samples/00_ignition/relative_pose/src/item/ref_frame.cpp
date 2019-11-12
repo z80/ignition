@@ -188,7 +188,7 @@ bool RefFrame::relativeState( const RefFrame * other, State & stateRel, bool deb
         allAncestorsA.Push( itemA );
         itemA = itemA->parent();
     } while ( itemA );
-    const size_t allQtyA = allAncestorsA.Size();
+    const unsigned allQtyA = allAncestorsA.Size();
 
     const RefFrame * itemB = other;
     static Vector<const RefFrame *> ancestorsB;
@@ -224,7 +224,7 @@ bool RefFrame::relativeState( const RefFrame * other, State & stateRel, bool deb
     Quaterniond q_a = Quaterniond::IDENTITY;
     Vector3d    v_a = Vector3d::ZERO;
     Vector3d    w_a = Vector3d::ZERO;
-    for ( size_t i=0; i<indA; i++ )
+    for ( unsigned i=0; i<indA; i++ )
     {
         itemA = allAncestorsA[i];
         const Quaterniond q_n_1 = itemA->relQ();
@@ -244,8 +244,8 @@ bool RefFrame::relativeState( const RefFrame * other, State & stateRel, bool deb
     Quaterniond q_b = Quaterniond::IDENTITY;
     Vector3d    v_b = Vector3d::ZERO;
     Vector3d    w_b = Vector3d::ZERO;
-    const size_t indB = ancestorsB.Size();
-    for ( size_t i=0; i<indB; i++ )
+    const unsigned indB = ancestorsB.Size();
+    for ( unsigned i=0; i<indB; i++ )
     {
         const RefFrame * itemB = ancestorsB[i];
         const Quaterniond q_n_1 = itemB->relQ();

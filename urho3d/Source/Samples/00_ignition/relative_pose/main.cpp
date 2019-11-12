@@ -116,7 +116,16 @@ void Main::CreateScene()
 
         nodeB->setR( Vector3d(  0.0, 0.0, 5.0 ) );
         nodeC->setR( Vector3d(  0.0, 0.0, 5.0 ) );
-        nodeC->setR( Vector3d(  0.0, 0.0, 5.0 ) );
+        nodeD->setR( Vector3d(  0.0, 0.0, 5.0 ) );
+
+        {
+            State st;
+            nodeC->relativeState( nodeA, st );
+            nodeB->teleport( nodeA, Vector3d( 0.0, 0.0, 6.0 ), Quaterniond::IDENTITY );
+            nodeC->relativeState( nodeA, st );
+            nodeB->teleport( nodeA, Vector3d( 0.0, 0.0, 5.0 ), Quaterniond::IDENTITY );
+            nodeC->relativeState( nodeA, st );
+        }
 
         {
             Node * n = scene_->CreateChild( "nodeA" );
