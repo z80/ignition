@@ -8,8 +8,9 @@ namespace Ign
 static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children );
 static void addToList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children );
 
-RefFrame::RefFrame( Context * ctx )
-    : Component( ctx )
+RefFrame::RefFrame( Context * ctx, const String & name )
+    : Component( ctx ),
+      name_( name )
 {
 }
 
@@ -17,6 +18,16 @@ RefFrame::~RefFrame()
 {
 
 }
+
+void RefFrame::setName( const String & name )
+{
+    name_ = name;
+}
+const String & RefFrame::name() const
+{
+    return name_;
+}
+
 
 void RefFrame::setParent( RefFrame * newParent )
 {
@@ -84,6 +95,24 @@ void RefFrame::setV( const Vector3d & v )
 void RefFrame::setW( const Vector3d & w )
 {
     w_ = w;
+}
+
+void RefFrame::setState( const State & st )
+{
+    setR( st.r );
+    setQ( st.q );
+    setV( st.v );
+    setW( st.w );
+}
+
+const State RefFrame::state() const
+{
+    State st;
+    st.r = relR();
+    st.q = relQ();
+    st.v = relV();
+    st.w = relW();
+    return st;
 }
 
 bool RefFrame::relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging ) const 
@@ -410,35 +439,34 @@ bool RefFrame::teleport( RefFrame * other,
                          const Vector3d & r, const Quaterniond & q,
                          const Vector3d & v, const Vector3d & w )
 {
-    Scene * s = GetScene();
-    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
-    children_.Clear();
+    State stateInOther, st;
+    stateInOther.r = r;
+    stateInOther.q = q;
+    stateInOther.v = v;
+    stateInOther.w = w;
+
+    const unsigned qty = children_.Size();
+    static Vector<State> newStates;
+    newStates.Clear();
+    newStates.Reserve( qty );
+    for ( unsigned i=0; i<qty; i++ )
     {
-        const unsigned int qty = comps.Size();
-        for ( unsigned int i=0; i>qty; i++ )
-        {
-            Component * c = comps[i];
-            RefFrame * n = c->Cast<RefFrame>();
-            if ( !n )
-                continue;
-            if ( n->parent_ != this )
-                continue;
-            children_.Push( SharedPtr<RefFrame>(n) );
-            n->setParent( other );
-        }
+        RefFrame * n = children_[i];
+        n->relativeState( other, stateInOther, st );
+        newStates.Push( st );
     }
-    setR( r );
-    setQ( q );
-    setV( v );
-    setW( w );
+    setState( stateInOther );
     {
         const unsigned int qty = children_.Size();
         for ( unsigned int i=0; i<qty; i++ )
         {
             RefFrame * n = children_[i];
-            n->setParent( this );
+            const State & st = newStates[i];
+            n->setState( st );
         }
     }
+
+    return true;
 }
 
 static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children )

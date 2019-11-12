@@ -105,10 +105,10 @@ void Main::CreateScene()
 
 
     {
-        nodeA = new RefFrame( context_ );
-        nodeB = new RefFrame( context_ );
-        nodeC = new RefFrame( context_ );
-        nodeD = new RefFrame( context_ );
+        nodeA = new RefFrame( context_, "nodeA" );
+        nodeB = new RefFrame( context_, "nodeB" );
+        nodeC = new RefFrame( context_, "nodeC" );
+        nodeD = new RefFrame( context_, "nodeD" );
 
         nodeB->setParent( nodeA );
         nodeC->setParent( nodeB );
@@ -125,6 +125,12 @@ void Main::CreateScene()
             nodeC->relativeState( nodeA, st );
             nodeB->teleport( nodeA, Vector3d( 0.0, 0.0, 5.0 ), Quaterniond::IDENTITY );
             nodeC->relativeState( nodeA, st );
+
+            nodeB->teleport( nodeB, Vector3d( 0.0, 0.0, 1.0 ), Quaterniond::IDENTITY );
+            nodeC->relativeState( nodeB, st );
+            nodeB->teleport( nodeB, Vector3d( 0.0, 0.0, 1.0 ), Quaterniond::IDENTITY );
+            nodeC->relativeState( nodeB, st );
+            URHO3D_LOGINFOF( "Done!" );
         }
 
         {

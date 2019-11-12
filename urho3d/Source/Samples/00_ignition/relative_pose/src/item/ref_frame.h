@@ -25,8 +25,11 @@ class RefFrame:  public Urho3D::Component
 public:
     typedef signed long long Timestamp;
 
-    RefFrame( Context * ctx );
+    RefFrame( Context * ctx, const String & name=String() );
     virtual ~RefFrame();
+
+    void setName( const String & name );
+    const String & name() const;
 
     void setParent( RefFrame * newParent );
     RefFrame * parent() const;
@@ -42,12 +45,15 @@ public:
     virtual void setV( const Vector3d & v );
     virtual void setW( const Vector3d & w );
 
+    void setState( const State & st );
+    const State state() const;
+
     bool relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging=false ) const;
     bool relativeState( const RefFrame * other, State & stateRel, bool debugLogging=false ) const;
 
     /// Relative state for object in current ref. frame with state "stA" 
     /// with respect to another object with state "stB" in "other" ref. frame.
-    bool relativeState( const RefFrame * other, const State & stateInOther, State & state, const bool debugLogging ) const;
+    bool relativeState( const RefFrame * other, const State & stateInOther, State & state, const bool debugLogging=false ) const;
 
     // "Teleporting" with preserving orientations and velocities of
     // all children in parent->parent ref. frame.
@@ -56,6 +62,9 @@ public:
                                              const Vector3d & w=Vector3d::ZERO );
 
 public:
+    /// For debugging it is easier to identify by human readable name.
+    String name_;
+    /// Parent ref. frame or nullptr.
     SharedPtr<RefFrame> parent_;
     /// So far this one is used only when teleporting.
     /// This one is just to aoid memory allocation/reallocation
