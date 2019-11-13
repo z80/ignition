@@ -38,9 +38,13 @@ public:
     virtual void setQ( const Quaterniond & q );
     Vector3d     relR() const;
     Quaterniond  relQ() const;
-
     Vector3d     relV() const;
     Vector3d     relW() const;
+
+    Vector3d     refR() const;
+    Quaterniond  refQ() const;
+    Vector3d     refV() const;
+    Vector3d     refW() const;
 
     virtual void setV( const Vector3d & v );
     virtual void setW( const Vector3d & w );
