@@ -67,6 +67,7 @@ public:
 
     bool computeRefState( const RefFrame * other, Timestamp t, bool recursive=false );
     const State & refState() const;
+    virtual void refStateChanged();
 
 public:
     /// For debugging it is easier to identify by human readable name.
