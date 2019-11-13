@@ -2,6 +2,7 @@
 #ifndef __REF_FRAME_H_
 #define __REF_FRAME_H_
 
+#include "data_types.h"
 #include "vector3d.h"
 #include "quaterniond.h"
 #include <Urho3D/Urho3DAll.h>
@@ -23,7 +24,8 @@ class RefFrame:  public Urho3D::Component
 {
     URHO3D_OBJECT( RefFrame, Component )
 public:
-    typedef signed long long Timestamp;
+    /// Register object factory.
+    static void RegisterObject( Context * context);
 
     RefFrame( Context * ctx, const String & name=String() );
     virtual ~RefFrame();
@@ -68,6 +70,10 @@ public:
     bool computeRefState( const RefFrame * other, Timestamp t, bool recursive=false );
     const State & refState() const;
     virtual void refStateChanged();
+
+    /// Attribute accessors.
+    unsigned getParentId() const;
+    void setParentId( unsigned parentId );
 
 public:
     /// For debugging it is easier to identify by human readable name.

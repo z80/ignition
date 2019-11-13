@@ -8,6 +8,32 @@ namespace Ign
 static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children );
 static void addToList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children );
 
+void RefFrame::RegisterObject( Context * context )
+{
+    context->RegisterFactory<RefFrame>();
+    URHO3D_COPY_BASE_ATTRIBUTES( Component );
+
+    // Need to think on how to assign parent and update over network.
+    URHO3D_ACCESSOR_ATTRIBUTE( "ParentId", unsigned, getParentId, setParentId, st_.r.x_, 0.0, AM_DEFAULT );
+
+    URHO3D_ATTRIBUTE( "R.x_", double, st_.r.x_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "R.y_", double, st_.r.y_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "R.z_", double, st_.r.z_, 0.0, AM_DEFAULT );
+
+    URHO3D_ATTRIBUTE( "Q.w_", double, st_.q.w_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "Q.x_", double, st_.q.x_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "Q.y_", double, st_.q.y_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "Q.z_", double, st_.q.z_, 0.0, AM_DEFAULT );
+
+    URHO3D_ATTRIBUTE( "V.x_", double, st_.v.x_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "V.y_", double, st_.v.y_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "V.z_", double, st_.v.z_, 0.0, AM_DEFAULT );
+
+    URHO3D_ATTRIBUTE( "W.x_", double, st_.w.x_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "W.y_", double, st_.w.y_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "W.z_", double, st_.w.z_, 0.0, AM_DEFAULT );
+}
+
 RefFrame::RefFrame( Context * ctx, const String & name )
     : Component( ctx ),
       name_( name ),
