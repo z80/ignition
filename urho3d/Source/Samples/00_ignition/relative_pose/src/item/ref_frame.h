@@ -61,6 +61,9 @@ public:
                                              const Vector3d & v=Vector3d::ZERO,
                                              const Vector3d & w=Vector3d::ZERO );
 
+    bool computeRefState( const RefFrame * other, Timestamp t, bool recursive=false );
+    const State & refState() const;
+
 public:
     /// For debugging it is easier to identify by human readable name.
     String name_;
@@ -72,15 +75,21 @@ public:
     Vector<SharedPtr<RefFrame> > children_;
 
     // All these are in parent's ref. frame.
+    /// Relative state with respect to direct parent in its ref. frame.
     State st_;
+    /// State with respect to specified ref. frame.
+    State refSt_;
+    /// Moment of time refSt_ has been computed.
+    /// Used to not recompute if called recursively.
+    Timestamp refT_;
     /// Relative position.
-    Vector3d    r_;
+    //Vector3d    r_;
     /// Relative rotation.
-    Quaterniond q_;
+    //Quaterniond q_;
     /// Relative velocity.
-    Vector3d    v_;
+    //Vector3d    v_;
     /// Relative angular velocity.
-    Vector3d    w_;
+    //Vector3d    w_;
 
 //    /// Timestamp to check if need to recompute relative pose.
 //    Timestamp   t_;

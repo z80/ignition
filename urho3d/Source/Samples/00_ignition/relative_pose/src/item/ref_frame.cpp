@@ -10,7 +10,8 @@ static void addToList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children 
 
 RefFrame::RefFrame( Context * ctx, const String & name )
     : Component( ctx ),
-      name_( name )
+      name_( name ),
+      refT_( 0 )
 {
 }
 
@@ -394,6 +395,38 @@ bool RefFrame::teleport( RefFrame * other,
     }
 
     return true;
+}
+
+bool RefFrame::computeRefState( const RefFrame * other, Timestamp t, bool recursive )
+{
+    if ( refT_ != t )
+    {
+        // Compute for itself.
+        const bool res = relativeState( other, refSt_ );
+        if ( !res )
+            return false;
+        refT_ = t;
+
+        // Compute for all children if recursive.
+        if ( recursive )
+        {
+            const unsigned qty = children_.Size();
+            for ( unsigned i=0; i<qty; i++ )
+            {
+                RefFrame * c = children_[i];
+                const bool resC = c->computeRefState( other, t );
+                if ( !resC )
+                    return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+const State & RefFrame::refState() const
+{
+    return refSt_;
 }
 
 static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children )
