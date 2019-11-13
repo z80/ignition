@@ -59,42 +59,42 @@ RefFrame * RefFrame::parent() const
 
 void RefFrame::setR( const Vector3d & r )
 {
-    r_ = r;
+    st_.r = r;
 }
 
 void RefFrame::setQ( const Quaterniond & q )
 {
-    q_ = q;
+    st_.q = q;
 }
 
 Vector3d     RefFrame::relR() const
 {
-    return r_;
+    return st_.r;
 }
 
 Quaterniond  RefFrame::relQ() const
 {
-    return q_;
+    return st_.q;
 }
 
 Vector3d     RefFrame::relV() const
 {
-    return v_;
+    return st_.v;
 }
 
 Vector3d     RefFrame::relW() const
 {
-    return w_;
+    return st_.w;
 }
 
 void RefFrame::setV( const Vector3d & v )
 {
-    v_ = v;
+    st_.v = v;
 }
 
 void RefFrame::setW( const Vector3d & w )
 {
-    w_ = w;
+    st_.w = w;
 }
 
 void RefFrame::setState( const State & st )
@@ -117,91 +117,12 @@ const State RefFrame::state() const
 
 bool RefFrame::relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging ) const 
 {
-    // root->a->b->c->d->e->this
-    // root->a->b->f->g->other
-    // The idea is to accumulate relative position and orientation.
-    Vector3d    r = Vector3::ZERO;
-    Quaterniond q = Quaternion::IDENTITY;
+    State state;
+    const bool res = relativeState( other, state, debugLogging );
+    rel_r = state.r;
+    rel_q = state.q;
 
-    // Get all ancestors of current node.
-    // Make it static as graphics is in one thread.
-    static Vector<const RefFrame *> allAncestorsA;
-    allAncestorsA.Clear();
-    const RefFrame * nodeA = this;
-    while ( nodeA )
-    {
-        allAncestorsA.Push( nodeA );
-        nodeA = nodeA->parent();
-    }
-    const unsigned allQtyA = allAncestorsA.Size();
-
-    const RefFrame * nodeB = other;
-    static Vector<const RefFrame *> ancestorsB;
-    ancestorsB.Clear();
-    unsigned indA = allQtyA;
-    while ( nodeB )
-    {
-        // Check if nodeB is in allAncestorsA.
-        for ( unsigned i=0; i<allQtyA; i++ )
-        {
-            nodeA = allAncestorsA[i];
-            if ( nodeA == nodeB )
-            {
-                indA = i;
-                break;
-            }
-        }
-        if ( indA != allQtyA )
-            break;
-        // Add to the list.
-        ancestorsB.Push( nodeB );
-        // Get parent.
-        nodeB = nodeB->parent();
-    }
-
-    // If reached the root and didn't meed
-    // anything common just break.
-    //if ( indA == allQtyA )
-    //    return false;
-    // Actuallt, if didn't met anything common it means 
-    // the root NULL node is the common node.
-
-    // Here there is a closest common ancestor.
-    // First find pose of nodeA in it's ref. frame.
-    Vector3d    r_a = Vector3d::ZERO;
-    Quaterniond q_a = Quaterniond::IDENTITY;
-    for ( size_t i=0; i<indA; i++ )
-    {
-        nodeA = allAncestorsA[i];
-        const Quaterniond q_n_1 = nodeA->relQ();
-        const Vector3d    r_n_1 = nodeA->relR();
-        r_a = r_n_1 + q_n_1*r_a;
-        q_a = q_n_1 * q_a;
-    }
-
-    Vector3d    r_b = Vector3d::ZERO;
-    Quaterniond q_b = Quaterniond::IDENTITY;
-    const unsigned indB = ancestorsB.Size();
-    for ( unsigned i=0; i<indB; i++ )
-    {
-        const RefFrame * nodeB = ancestorsB[i];
-        const Quaterniond q_n_1 = nodeB->relQ();
-        const Vector3d    r_n_1 = nodeB->relR();
-        r_b = r_n_1 + q_n_1*r_b;
-        q_b = q_n_1 * q_b;
-        if ( debugLogging )
-        {
-            //URHO3D_LOGINFOF( "Node %s", nodeB->GetName().CString() );
-            URHO3D_LOGINFOF( "     r: (%f, %f, %f)", r_n_1.x_, r_n_1.y_, r_n_1.z_ );
-            URHO3D_LOGINFOF( "     q: (%f, %f, %f, %f)", q_n_1.w_, q_n_1.x_, q_n_1.y_, q_n_1.z_ );
-        }
-    }
-
-    rel_r = q_b.Inverse()* (r_a - r_b);
-    // This might be wrong.
-    // I probably don't need quaternion at all.
-    rel_q = q_b.Inverse() * q_a;
-    return true;
+    return res;
 }
 
 bool RefFrame::relativeState( const RefFrame * other, State & stateRel, bool debugLogging ) const

@@ -72,6 +72,7 @@ public:
     Vector<SharedPtr<RefFrame> > children_;
 
     // All these are in parent's ref. frame.
+    State st_;
     /// Relative position.
     Vector3d    r_;
     /// Relative rotation.
