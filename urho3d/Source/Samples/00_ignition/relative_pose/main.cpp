@@ -25,6 +25,7 @@ URHO3D_DEFINE_APPLICATION_MAIN(Main)
 Main::Main(Context* context) :
     Sample(context)
 {
+    RefFrame::RegisterObject( context );
 }
 
 void Main::Start()
@@ -105,10 +106,19 @@ void Main::CreateScene()
 
 
     {
-        nodeA = new RefFrame( context_, "nodeA" );
-        nodeB = new RefFrame( context_, "nodeB" );
-        nodeC = new RefFrame( context_, "nodeC" );
-        nodeD = new RefFrame( context_, "nodeD" );
+        nodeA = scene_->CreateComponent<RefFrame>();
+        nodeA->setName( "nodeA" );
+        nodeB = scene_->CreateComponent<RefFrame>();
+        nodeB->setName( "nodeB" );
+        nodeC = scene_->CreateComponent<RefFrame>();
+        nodeC->setName( "nodeC" );
+        nodeD = scene_->CreateComponent<RefFrame>();
+        nodeD->setName( "nodeD" );
+
+        //nodeA = new RefFrame( context_, "nodeA" );
+        //nodeB = new RefFrame( context_, "nodeB" );
+        //nodeC = new RefFrame( context_, "nodeC" );
+        //nodeD = new RefFrame( context_, "nodeD" );
 
         nodeB->setParent( nodeA );
         nodeC->setParent( nodeB );

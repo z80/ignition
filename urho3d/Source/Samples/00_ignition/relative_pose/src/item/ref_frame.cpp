@@ -14,7 +14,9 @@ void RefFrame::RegisterObject( Context * context )
     URHO3D_COPY_BASE_ATTRIBUTES( Component );
 
     // Need to think on how to assign parent and update over network.
-    URHO3D_ACCESSOR_ATTRIBUTE( "ParentId", unsigned, getParentId, setParentId, st_.r.x_, 0.0, AM_DEFAULT );
+    URHO3D_ACCESSOR_ATTRIBUTE( "ParentId", getParentId, setParentId, unsigned, 0.0, AM_DEFAULT );
+
+    URHO3D_ATTRIBUTE( "Name", String, name_, "", AM_DEFAULT );
 
     URHO3D_ATTRIBUTE( "R.x_", double, st_.r.x_, 0.0, AM_DEFAULT );
     URHO3D_ATTRIBUTE( "R.y_", double, st_.r.y_, 0.0, AM_DEFAULT );
@@ -370,6 +372,32 @@ const State & RefFrame::refState() const
 void RefFrame::refStateChanged()
 {
 
+}
+
+unsigned RefFrame::getParentId() const
+{
+    if ( !parent_ )
+        return 0;
+    const unsigned id = parent_->id_;
+    return id;
+}
+
+void RefFrame::setParentId( unsigned parentId )
+{
+    Scene * s = this->GetScene();
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        const SharedPtr<Component> & c = comps[i];
+        const unsigned compId = c->GetID();
+        if ( compId == parentId )
+        {
+            RefFrame * p = c->Cast<RefFrame>();
+            setParent( p );
+            break;
+        }
+    }
 }
 
 static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children )

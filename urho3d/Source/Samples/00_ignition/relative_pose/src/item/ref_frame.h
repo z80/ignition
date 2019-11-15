@@ -69,6 +69,7 @@ public:
 
     bool computeRefState( const RefFrame * other, Timestamp t, bool recursive=false );
     const State & refState() const;
+    /// Default implementation does nothing.
     virtual void refStateChanged();
 
     /// Attribute accessors.
