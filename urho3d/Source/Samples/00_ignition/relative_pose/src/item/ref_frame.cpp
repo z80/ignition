@@ -51,6 +51,8 @@ RefFrame::~RefFrame()
 void RefFrame::setName( const String & name )
 {
     name_ = name;
+
+    MarkNetworkUpdate();
 }
 const String & RefFrame::name() const
 {
@@ -79,6 +81,8 @@ void RefFrame::setParent( RefFrame * newParent )
     setQ( st.q );
     setV( st.v );
     setW( st.w );
+
+    MarkNetworkUpdate();
 }
 
 RefFrame * RefFrame::parent() const
@@ -89,11 +93,15 @@ RefFrame * RefFrame::parent() const
 void RefFrame::setR( const Vector3d & r )
 {
     st_.r = r;
+
+    MarkNetworkUpdate();
 }
 
 void RefFrame::setQ( const Quaterniond & q )
 {
     st_.q = q;
+
+    MarkNetworkUpdate();
 }
 
 Vector3d     RefFrame::relR() const
@@ -139,11 +147,15 @@ Vector3d     RefFrame::refW() const
 void RefFrame::setV( const Vector3d & v )
 {
     st_.v = v;
+
+    MarkNetworkUpdate();
 }
 
 void RefFrame::setW( const Vector3d & w )
 {
     st_.w = w;
+
+    MarkNetworkUpdate();
 }
 
 void RefFrame::setState( const State & st )
