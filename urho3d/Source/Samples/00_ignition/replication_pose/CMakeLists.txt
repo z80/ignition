@@ -23,10 +23,10 @@
 # Define target name
 set( TARGET_NAME replication_pose )
 
-include_directories( "./src"
-                     "./src/math"
-                     "./src/item"
-                     "./src/kepler"
+include_directories( "../relative_pose/src"
+                     "../relative_pose/src/math"
+                     "../relative_pose/src/item"
+                     "../relative_pose/src/kepler"
                      "./3dparty/eigen-3.3.7" )
 
 file( GLOB_RECURSE src "../relative_pose/src/*.cpp" )

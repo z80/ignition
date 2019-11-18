@@ -72,7 +72,7 @@ URHO3D_DEFINE_APPLICATION_MAIN(SceneReplication)
 SceneReplication::SceneReplication(Context* context) :
     Sample(context)
 {
-    StaticMesh::Register( context );
+    StaticMesh::RegisterObject( context );
 }
 
 void SceneReplication::Start()
