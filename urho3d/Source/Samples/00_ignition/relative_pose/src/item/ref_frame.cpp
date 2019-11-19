@@ -82,7 +82,7 @@ void RefFrame::setParent( RefFrame * newParent )
     setV( st.v );
     setW( st.w );
 
-    MarkNetworkUpdate();
+    //MarkNetworkUpdate();
 }
 
 RefFrame * RefFrame::parent() const
@@ -94,6 +94,7 @@ void RefFrame::setR( const Vector3d & r )
 {
     st_.r = r;
 
+    poseChanged();
     MarkNetworkUpdate();
 }
 
@@ -101,6 +102,7 @@ void RefFrame::setQ( const Quaterniond & q )
 {
     st_.q = q;
 
+    poseChanged();
     MarkNetworkUpdate();
 }
 
@@ -349,7 +351,7 @@ bool RefFrame::teleport( RefFrame * other,
 
 bool RefFrame::computeRefState( const RefFrame * other, Timestamp t, bool recursive )
 {
-    if ( refT_ != t )
+    if ( (refT_ != t) || (t < 0) )
     {
         // Compute for itself.
         const bool res = relativeState( other, refSt_ );
@@ -382,6 +384,11 @@ const State & RefFrame::refState() const
 }
 
 void RefFrame::refStateChanged()
+{
+
+}
+
+void RefFrame::poseChanged()
 {
 
 }

@@ -71,6 +71,8 @@ public:
     const State & refState() const;
     /// Default implementation does nothing.
     virtual void refStateChanged();
+    /// On pose attribute update.
+    virtual void poseChanged();
 
     /// Attribute accessors.
     unsigned getParentId() const;

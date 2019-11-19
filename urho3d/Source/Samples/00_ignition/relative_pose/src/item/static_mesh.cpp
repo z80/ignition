@@ -38,6 +38,9 @@ void StaticMesh::OnSceneSet( Scene * scene )
 {
     URHO3D_LOGINFOF( "StaticMesh::OnSceneSet()" );
 
+    if ( !scene )
+        return;
+
     ResourceCache * cache = GetSubsystem<ResourceCache>();
 
     const String name = name_ + "_node";
