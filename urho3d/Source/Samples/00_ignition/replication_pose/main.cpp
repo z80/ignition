@@ -93,7 +93,8 @@ void SceneReplication::Start()
     SubscribeToEvents();
 
     // Set the mouse mode to use in the sample
-    Sample::InitMouseMode(MM_RELATIVE);
+    //Sample::InitMouseMode(MM_RELATIVE);
+    Sample::InitMouseMode(MM_FREE);
 }
 
 void SceneReplication::CreateScene()
@@ -158,7 +159,7 @@ void SceneReplication::CreateScene()
 
     // Test RefFrame.
     {
-        StaticMesh * staticMesh_= scene_->CreateComponent<StaticMesh>( REPLICATED );
+        staticMesh_= scene_->CreateComponent<StaticMesh>( REPLICATED );
         staticMesh_->setR( Vector3d( 0.0, 5.0, 0.0 ) );
     }
 }
@@ -517,7 +518,7 @@ void SceneReplication::HandleMoveMesh(StringHash eventType, VariantMap& eventDat
     Vector3d r = staticMesh_->relR();
     r.y_ += 1.0;
     staticMesh_->setR( r );
-    staticMesh_->computeRefState( nullptr, staticMesh_->refT_ );
+    staticMesh_->computeRefState( nullptr, staticMesh_->refT_+1 );
 }
 
 
