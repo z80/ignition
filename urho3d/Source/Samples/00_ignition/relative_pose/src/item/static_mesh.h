@@ -19,6 +19,7 @@ public:
     virtual ~StaticMesh();
 
     virtual void refStateChanged() override;
+    virtual void poseChanged() override;
 
 protected:
     virtual void OnNodeSet( Node * node );

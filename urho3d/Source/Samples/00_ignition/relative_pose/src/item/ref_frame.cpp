@@ -18,14 +18,14 @@ void RefFrame::RegisterObject( Context * context )
 
     URHO3D_ATTRIBUTE( "Name", String, name_, "", AM_DEFAULT );
 
-    URHO3D_ATTRIBUTE( "R.x_", double, st_.r.x_, 0.0, AM_DEFAULT );
-    URHO3D_ATTRIBUTE( "R.y_", double, st_.r.y_, 0.0, AM_DEFAULT );
-    URHO3D_ATTRIBUTE( "R.z_", double, st_.r.z_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE_EX( "R.x_", double, st_.r.x_, poseChanged, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE_EX( "R.y_", double, st_.r.y_, poseChanged, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE_EX( "R.z_", double, st_.r.z_, poseChanged, 0.0, AM_DEFAULT );
 
-    URHO3D_ATTRIBUTE( "Q.w_", double, st_.q.w_, 0.0, AM_DEFAULT );
-    URHO3D_ATTRIBUTE( "Q.x_", double, st_.q.x_, 0.0, AM_DEFAULT );
-    URHO3D_ATTRIBUTE( "Q.y_", double, st_.q.y_, 0.0, AM_DEFAULT );
-    URHO3D_ATTRIBUTE( "Q.z_", double, st_.q.z_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE_EX( "Q.w_", double, st_.q.w_, poseChanged, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE_EX( "Q.x_", double, st_.q.x_, poseChanged, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE_EX( "Q.y_", double, st_.q.y_, poseChanged, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE_EX( "Q.z_", double, st_.q.z_, poseChanged, 0.0, AM_DEFAULT );
 
     URHO3D_ATTRIBUTE( "V.x_", double, st_.v.x_, 0.0, AM_DEFAULT );
     URHO3D_ATTRIBUTE( "V.y_", double, st_.v.y_, 0.0, AM_DEFAULT );
@@ -94,7 +94,6 @@ void RefFrame::setR( const Vector3d & r )
 {
     st_.r = r;
 
-    poseChanged();
     MarkNetworkUpdate();
 }
 
@@ -102,7 +101,6 @@ void RefFrame::setQ( const Quaterniond & q )
 {
     st_.q = q;
 
-    poseChanged();
     MarkNetworkUpdate();
 }
 

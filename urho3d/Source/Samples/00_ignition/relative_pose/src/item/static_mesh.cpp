@@ -29,6 +29,11 @@ void StaticMesh::refStateChanged()
     node_->SetTransform( r, q );
 }
 
+void StaticMesh::poseChanged()
+{
+    computeRefState( nullptr, 0 );
+}
+
 void StaticMesh::OnNodeSet( Node * node )
 {
     URHO3D_LOGINFOF( "StaticMesh::OnNodeSet()" );

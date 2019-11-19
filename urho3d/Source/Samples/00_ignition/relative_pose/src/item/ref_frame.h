@@ -72,6 +72,7 @@ public:
     /// Default implementation does nothing.
     virtual void refStateChanged();
     /// On pose attribute update.
+    /// This is called when powe attribute is changed over network.
     virtual void poseChanged();
 
     /// Attribute accessors.
