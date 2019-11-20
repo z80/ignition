@@ -159,7 +159,8 @@ void SceneReplication::CreateScene()
 
     // Test RefFrame.
     {
-        staticMesh_= scene_->CreateComponent<StaticMesh>( REPLICATED );
+        Node * n = scene_->CreateChild( "static mesh node" );
+        staticMesh_= n->CreateComponent<StaticMesh>( REPLICATED );
         staticMesh_->setR( Vector3d( 0.0, 5.0, 0.0 ) );
     }
 }
@@ -486,12 +487,12 @@ void SceneReplication::HandleClientConnected(StringHash eventType, VariantMap& e
     newConnection->SetScene(scene_);
 
     // Then create a controllable object for that client
-    Node* newObject = CreateControllableObject();
-    serverObjects_[newConnection] = newObject;
+    //Node* newObject = CreateControllableObject();
+    //serverObjects_[newConnection] = newObject;
 
     // Finally send the object's node ID using a remote event
     VariantMap remoteEventData;
-    remoteEventData[P_ID] = newObject->GetID();
+    //remoteEventData[P_ID] = newObject->GetID();
     newConnection->SendRemoteEvent(E_CLIENTOBJECTID, true, remoteEventData);
 }
 
