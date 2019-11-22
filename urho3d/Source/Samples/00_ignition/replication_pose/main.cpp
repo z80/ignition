@@ -72,7 +72,8 @@ URHO3D_DEFINE_APPLICATION_MAIN(SceneReplication)
 SceneReplication::SceneReplication(Context* context) :
     Sample(context)
 {
-    StaticMesh::RegisterObject( context );
+    //StaticMesh::RegisterObject( context );
+    RepComp::RegisterObject( context );
 }
 
 void SceneReplication::Start()
@@ -155,14 +156,6 @@ void SceneReplication::CreateScene()
 
     // Set an initial position for the camera scene node above the plane
     cameraNode_->SetPosition(Vector3(0.0f, 5.0f, 0.0f));
-
-
-    // Test RefFrame.
-    {
-        Node * n = scene_->CreateChild( "static mesh node" );
-        staticMesh_= n->CreateComponent<StaticMesh>( REPLICATED );
-        staticMesh_->setR( Vector3d( 0.0, 5.0, 0.0 ) );
-    }
 }
 
 void SceneReplication::CreateUI()
@@ -391,6 +384,23 @@ void SceneReplication::HandlePhysicsPreStep(StringHash eventType, VariantMap& ev
         // In case the server wants to do position-based interest management using the NetworkPriority components, we should also
         // tell it our observer (camera) position. In this sample it is not in use, but eg. the NinjaSnowWar game uses it
         serverConnection->SetPosition(cameraNode_->GetPosition());
+
+        /*if ( !staticMesh_ )
+        {
+            Node * n;
+            StaticMesh * m = scene_->GetComponent<StaticMesh>();
+            if ( m )
+                staticMesh_ = SharedPtr<StaticMesh>( m );
+        }*/
+
+        if ( !repComp_ )
+        {
+            RepComp * r = scene_->GetComponent<RepComp>();
+            if ( r )
+                repComp_ = SharedPtr<RepComp>( r );
+        }
+        if ( repComp_ )
+            URHO3D_LOGINFOF( "Name is: %s", repComp_->Name().CString() );
     }
     // Server: apply controls to client objects
     else if (network->IsServerRunning())
@@ -471,6 +481,16 @@ void SceneReplication::HandleStartServer(StringHash eventType, VariantMap& event
     network->StartServer(SERVER_PORT);
 
     UpdateButtons();
+
+    // Test RefFrame.
+    {
+        //Node * n = scene_->CreateChild( "static mesh node" );
+        //staticMesh_= n->CreateComponent<StaticMesh>( REPLICATED );
+        //staticMesh_->setR( Vector3d( 0.0, 5.0, 0.0 ) );
+        //staticMesh_= scene_->CreateComponent<StaticMesh>( REPLICATED );
+        //staticMesh_->setR( Vector3d( 0.0, 5.0, 0.0 ) );
+        repComp_ = scene_->CreateComponent<RepComp>( REPLICATED );
+    }
 }
 
 void SceneReplication::HandleConnectionStatus(StringHash eventType, VariantMap& eventData)
@@ -516,10 +536,13 @@ void SceneReplication::HandleClientObjectID(StringHash eventType, VariantMap& ev
 
 void SceneReplication::HandleMoveMesh(StringHash eventType, VariantMap& eventData)
 {
-    Vector3d r = staticMesh_->relR();
+    /*Vector3d r = staticMesh_->relR();
     r.y_ += 1.0;
     staticMesh_->setR( r );
-    staticMesh_->computeRefState( nullptr, staticMesh_->refT_+1 );
+    staticMesh_->computeRefState( nullptr, staticMesh_->refT_+1 );*/
+
+    if ( repComp_ )
+        repComp_->SetName( repComp_->Name() + String( " a" ) );
 }
 
 

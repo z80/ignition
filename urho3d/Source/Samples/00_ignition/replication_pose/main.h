@@ -24,6 +24,7 @@
 
 #include "Sample.h"
 #include "static_mesh.h"
+#include "rep_comp.h"
 
 using namespace Ign;
 
@@ -122,5 +123,6 @@ private:
 
     /// Testing RefFrame obsect replication capabilities.
     SharedPtr<StaticMesh> staticMesh_;
+    SharedPtr<RepComp>    repComp_;
     SharedPtr<Button>     moveMeshButton_;
 };
