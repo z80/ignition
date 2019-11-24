@@ -124,6 +124,7 @@ private:
 
     /// Testing RefFrame obsect replication capabilities.
     SharedPtr<StaticMesh> staticMesh_;
+    SharedPtr<RefFrame>   refFrame_;
     SharedPtr<RepComp>    repComp_;
     SharedPtr<Button>     moveMeshButton_;
     SharedPtr<Button>     displayButton_;

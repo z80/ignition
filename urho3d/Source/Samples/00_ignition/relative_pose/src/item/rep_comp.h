@@ -3,7 +3,7 @@
 #define __REP_COMP_H_
 
 #include "Urho3D/Urho3DAll.h"
-
+#include "vector3d.h"
 
 using namespace Urho3D;
 
@@ -22,8 +22,12 @@ public:
     void SetName( const String & name );
     const String & Name() const;
 
+    void SetPos( const Vector3d & p );
+    const Vector3d & Pos() const;
+
 private:
     String name_;
+    Vector3d v_;
 };
 
 }

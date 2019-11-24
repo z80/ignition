@@ -72,7 +72,8 @@ URHO3D_DEFINE_APPLICATION_MAIN(SceneReplication)
 SceneReplication::SceneReplication(Context* context) :
     Sample(context)
 {
-    //StaticMesh::RegisterObject( context );
+    RefFrame::RegisterObject( context );
+    StaticMesh::RegisterObject( context );
     RepComp::RegisterObject( context );
 }
 
@@ -208,7 +209,7 @@ void SceneReplication::CreateUI()
         SubscribeToEvent( moveMeshButton_, E_RELEASED, URHO3D_HANDLER(SceneReplication, ChangeState) );
 
         displayButton_ = CreateButton( "Show", 90 );
-        SubscribeToEvent( moveMeshButton_, E_RELEASED, URHO3D_HANDLER(SceneReplication, ShowState) );
+        SubscribeToEvent( displayButton_, E_RELEASED, URHO3D_HANDLER(SceneReplication, ShowState) );
     }
 }
 
@@ -475,7 +476,9 @@ void SceneReplication::HandleStartServer(StringHash eventType, VariantMap& event
         //staticMesh_->setR( Vector3d( 0.0, 5.0, 0.0 ) );
         //staticMesh_= scene_->CreateComponent<StaticMesh>( REPLICATED );
         //staticMesh_->setR( Vector3d( 0.0, 5.0, 0.0 ) );
-        repComp_ = scene_->CreateComponent<RepComp>( REPLICATED );
+        repComp_    = scene_->CreateComponent<RepComp>( REPLICATED );
+        refFrame_   = scene_->CreateComponent<RefFrame>( REPLICATED );
+        staticMesh_ = scene_->CreateComponent<StaticMesh>( REPLICATED );
     }
 }
 
@@ -528,7 +531,14 @@ void SceneReplication::ChangeState( StringHash eventType, VariantMap & eventData
     staticMesh_->computeRefState( nullptr, staticMesh_->refT_+1 );*/
 
     if ( repComp_ )
-        repComp_->SetName( repComp_->Name() + String( " a" ) );
+    {
+        repComp_->SetName( repComp_->Name() + String( "a" ) );
+        repComp_->SetPos( repComp_->Pos() + Vector3d( 0.0, 0.0, 1.0 ) );
+    }
+    if ( refFrame_ )
+        refFrame_->setR( refFrame_->relR() + Vector3d( 1.0, 0.0, 0.0 ) );
+    if ( staticMesh_ )
+        staticMesh_->setR( staticMesh_->relR() + Vector3d( 1.0, 0.0, 0.0 ) );
 }
 
 void SceneReplication::ShowState( StringHash eventType, VariantMap & eventData )
@@ -539,10 +549,42 @@ void SceneReplication::ShowState( StringHash eventType, VariantMap & eventData )
         if ( r )
             repComp_ = SharedPtr<RepComp>( r );
     }
-    if ( !repComp_ )
-        return;
+    if ( repComp_ )
+    {
+        URHO3D_LOGINFO( "RepComp:" );
+        URHO3D_LOGINFOF( "    Name is: %s", repComp_->Name().CString() );
+        const Vector3d & v = repComp_->Pos();
+        URHO3D_LOGINFOF( "    Pos is: %f, %f, %f", v.x_, v.y_, v.z_ );
+    }
 
-    URHO3D_LOGINFOF( "Name is: %s", repComp_->Name().CString() );
+
+    if ( !refFrame_ )
+    {
+        RefFrame * r = scene_->GetComponent<RefFrame>();
+        if ( r )
+            refFrame_ = SharedPtr<RefFrame>( r );
+    }
+    if ( refFrame_ )
+    {
+        URHO3D_LOGINFO( "RefFrame:" );
+        const Vector3d & r = refFrame_->relR();
+        URHO3D_LOGINFOF( "    Pos is: %f, %f, %f", r.x_, r.y_, r.z_ );
+    }
+
+
+    if ( !staticMesh_ )
+    {
+        StaticMesh * r = scene_->GetComponent<StaticMesh>();
+        if ( r )
+            staticMesh_ = SharedPtr<StaticMesh>( r );
+    }
+    if ( staticMesh_ )
+    {
+        URHO3D_LOGINFO( "StaticMesh:" );
+        const Vector3d & r = staticMesh_->relR();
+        URHO3D_LOGINFOF( "    Pos is: %f, %f, %f", r.x_, r.y_, r.z_ );
+    }
+
 }
 
 

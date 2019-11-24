@@ -25,7 +25,7 @@ class RefFrame:  public Urho3D::Component
     URHO3D_OBJECT( RefFrame, Component )
 public:
     /// Register object factory.
-    static void RegisterObject( Context * context);
+    static void RegisterObject( Context * context );
 
     RefFrame( Context * ctx, const String & name=String() );
     virtual ~RefFrame();
