@@ -7,5 +7,5 @@ install
 install_release
 install_urho3d
 install_urho3d_release
-
+godot/projects
 
