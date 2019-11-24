@@ -102,7 +102,8 @@ private:
     /// Handle remote event from server which tells our controlled object node ID.
     void HandleClientObjectID(StringHash eventType, VariantMap& eventData);
 
-    void HandleMoveMesh(StringHash eventType, VariantMap& eventData);
+    void ChangeState( StringHash eventType, VariantMap & eventData );
+    void ShowState( StringHash eventType, VariantMap & eventData );
 
     /// Mapping from client connections to controllable objects.
     HashMap<Connection*, WeakPtr<Node> > serverObjects_;
@@ -125,4 +126,5 @@ private:
     SharedPtr<StaticMesh> staticMesh_;
     SharedPtr<RepComp>    repComp_;
     SharedPtr<Button>     moveMeshButton_;
+    SharedPtr<Button>     displayButton_;
 };

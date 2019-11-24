@@ -205,7 +205,10 @@ void SceneReplication::CreateUI()
 
     {
         moveMeshButton_ = CreateButton( "Move", 90 );
-        SubscribeToEvent( moveMeshButton_, E_RELEASED, URHO3D_HANDLER(SceneReplication, HandleMoveMesh) );
+        SubscribeToEvent( moveMeshButton_, E_RELEASED, URHO3D_HANDLER(SceneReplication, ChangeState) );
+
+        displayButton_ = CreateButton( "Show", 90 );
+        SubscribeToEvent( moveMeshButton_, E_RELEASED, URHO3D_HANDLER(SceneReplication, ShowState) );
     }
 }
 
@@ -384,23 +387,6 @@ void SceneReplication::HandlePhysicsPreStep(StringHash eventType, VariantMap& ev
         // In case the server wants to do position-based interest management using the NetworkPriority components, we should also
         // tell it our observer (camera) position. In this sample it is not in use, but eg. the NinjaSnowWar game uses it
         serverConnection->SetPosition(cameraNode_->GetPosition());
-
-        /*if ( !staticMesh_ )
-        {
-            Node * n;
-            StaticMesh * m = scene_->GetComponent<StaticMesh>();
-            if ( m )
-                staticMesh_ = SharedPtr<StaticMesh>( m );
-        }*/
-
-        if ( !repComp_ )
-        {
-            RepComp * r = scene_->GetComponent<RepComp>();
-            if ( r )
-                repComp_ = SharedPtr<RepComp>( r );
-        }
-        if ( repComp_ )
-            URHO3D_LOGINFOF( "Name is: %s", repComp_->Name().CString() );
     }
     // Server: apply controls to client objects
     else if (network->IsServerRunning())
@@ -534,7 +520,7 @@ void SceneReplication::HandleClientObjectID(StringHash eventType, VariantMap& ev
     clientObjectID_ = eventData[P_ID].GetUInt();
 }
 
-void SceneReplication::HandleMoveMesh(StringHash eventType, VariantMap& eventData)
+void SceneReplication::ChangeState( StringHash eventType, VariantMap & eventData )
 {
     /*Vector3d r = staticMesh_->relR();
     r.y_ += 1.0;
@@ -543,6 +529,20 @@ void SceneReplication::HandleMoveMesh(StringHash eventType, VariantMap& eventDat
 
     if ( repComp_ )
         repComp_->SetName( repComp_->Name() + String( " a" ) );
+}
+
+void SceneReplication::ShowState( StringHash eventType, VariantMap & eventData )
+{
+    if ( !repComp_ )
+    {
+        RepComp * r = scene_->GetComponent<RepComp>();
+        if ( r )
+            repComp_ = SharedPtr<RepComp>( r );
+    }
+    if ( !repComp_ )
+        return;
+
+    URHO3D_LOGINFOF( "Name is: %s", repComp_->Name().CString() );
 }
 
 
