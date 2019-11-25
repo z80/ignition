@@ -72,17 +72,19 @@ void RefFrame::setParent( RefFrame * newParent )
 
     // Replace the parent.
     if ( curParent )
+    {
+        leftRefFrame( curParent );
         removeFromList( this, curParent->children_ );
+    }
     parent_ = SharedPtr<RefFrame>( newParent );
     if ( newParent )
         addToList( this, newParent->children_ );
 
-    setR( st.r );
-    setQ( st.q );
-    setV( st.v );
-    setW( st.w );
+    setState( st );
+    if ( newParent )
+        enteredRefFrame( newParent );
 
-    //MarkNetworkUpdate();
+    MarkNetworkUpdate();
 }
 
 RefFrame * RefFrame::parent() const
@@ -94,6 +96,7 @@ void RefFrame::setR( const Vector3d & r )
 {
     st_.r = r;
 
+    poseChanged();
     MarkNetworkUpdate();
 }
 
@@ -101,6 +104,7 @@ void RefFrame::setQ( const Quaterniond & q )
 {
     st_.q = q;
 
+    poseChanged();
     MarkNetworkUpdate();
 }
 
@@ -148,6 +152,7 @@ void RefFrame::setV( const Vector3d & v )
 {
     st_.v = v;
 
+    poseChanged();
     MarkNetworkUpdate();
 }
 
@@ -155,6 +160,7 @@ void RefFrame::setW( const Vector3d & w )
 {
     st_.w = w;
 
+    poseChanged();
     MarkNetworkUpdate();
 }
 
@@ -387,6 +393,16 @@ void RefFrame::refStateChanged()
 }
 
 void RefFrame::poseChanged()
+{
+    URHO3D_LOGINFO( "Pose changed" );
+}
+
+void RefFrame::enteredRefFrame( RefFrame * refFrame )
+{
+
+}
+
+void RefFrame::leftRefFrame( RefFrame * refFrame )
 {
 
 }

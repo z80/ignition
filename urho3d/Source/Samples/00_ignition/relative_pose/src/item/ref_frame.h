@@ -67,13 +67,18 @@ public:
                                              const Vector3d & v=Vector3d::ZERO,
                                              const Vector3d & w=Vector3d::ZERO );
 
-    bool computeRefState( const RefFrame * other, Timestamp t, bool recursive=false );
+    bool computeRefState( const RefFrame * other=nullptr, Timestamp t=-1, bool recursive=false );
     const State & refState() const;
     /// Default implementation does nothing.
     virtual void refStateChanged();
     /// On pose attribute update.
-    /// This is called when powe attribute is changed over network.
+    /// This is called when pose attribute is changed over network.
     virtual void poseChanged();
+
+    /// Called when this thing is moved into another ref. frame.
+    virtual void enteredRefFrame( RefFrame * refFrame );
+    /// Called when this thing is moved out of it's current parent.
+    virtual void leftRefFrame( RefFrame * refFrame );
 
     /// Attribute accessors.
     unsigned getParentId() const;
