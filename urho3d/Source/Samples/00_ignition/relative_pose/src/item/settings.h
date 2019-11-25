@@ -14,6 +14,12 @@ public:
     Settings();
     ~Settings();
 
+    static Timestamp ticks( Float secs_dt ) const;
+    static Float     secs( Timestamp ticks_dt ) const;
+    static Float     maxDynamicsTimeStep() const;
+    static Float     absLimitDynamicsTimeStep() const;
+    static Timestamp maxEvolutionTimeStep() const;
+
     /// If less than this, show the object.
     static Float staticObjDistanceHorizontShow();
     /// If smaller than this, hide the object.
