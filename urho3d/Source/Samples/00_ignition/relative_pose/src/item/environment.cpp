@@ -109,11 +109,11 @@ void Environment::UpdateDynamicNodes( float secs )
     if ( !s )
         return;
 
-    const Vector<Component *> & comps = s->GetComponents();
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
     const unsigned qty = comps.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
-        // Try cast to dynamics integrtion node.
+        // Try cast to dynamics integration node.
         // And if converted make time step.
     }
 }
@@ -124,7 +124,7 @@ void Environment::UpdateEvolvingNodes( Timestamp ticks )
     if ( !s )
         return;
 
-    const Vector<Component *> & comps = s->GetComponents();
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
     const unsigned qty = comps.Size();
     for ( unsigned i=0; i<qty; i++ )
     {

@@ -63,7 +63,7 @@ public:
 
     // "Teleporting" with preserving orientations and velocities of
     // all children in parent->parent ref. frame.
-    virtual bool teleport( RefFrame * other, const Vector3d & r, const Quaterniond & q,
+    virtual bool teleport( RefFrame * other, const Vector3d & r, const Quaterniond & q=Quaterniond::IDENTITY,
                                              const Vector3d & v=Vector3d::ZERO,
                                              const Vector3d & w=Vector3d::ZERO );
 
@@ -79,10 +79,32 @@ public:
     virtual void enteredRefFrame( RefFrame * refFrame );
     /// Called when this thing is moved out of it's current parent.
     virtual void leftRefFrame( RefFrame * refFrame );
+    /// Called when new chiled entered.
+    virtual void childEntered( RefFrame * refFrame );
+    /// Called when child lest.
+    virtual void childLeft( RefFrame * refFrame );
+    /// Called when parent teleported.
+    virtual void parentTeleported();
+    /// Called when child teleported.
+    virtual void childTeleported( RefFrame * refFrame );
+
+    /// When user controlled flag changes call this method.
+    /// Called just before changing appropriate field so there
+    /// is a way to know what it was before.
+    virtual void userControlledChanged( bool newUserControlled );
 
     /// Attribute accessors.
     unsigned getParentId() const;
     void setParentId( unsigned parentId );
+
+    bool getUserControlled() const;
+    void setUserControlled( bool userControlled );
+
+    /// Distance to a point. This method is virtual because it needs to
+    /// take into account this object size.
+    virtual Float distance( RefFrame * refFrame ) const;
+    /// The same method computes a distance to a point in the same ref. frame.
+    virtual Float distance( const Vector3 & r=Vector3d::ZERO ) const;
 
 public:
     /// For debugging it is easier to identify by human readable name.
@@ -102,24 +124,8 @@ public:
     /// Moment of time refSt_ has been computed.
     /// Used to not recompute if called recursively.
     Timestamp refT_;
-    /// Relative position.
-    //Vector3d    r_;
-    /// Relative rotation.
-    //Quaterniond q_;
-    /// Relative velocity.
-    //Vector3d    v_;
-    /// Relative angular velocity.
-    //Vector3d    w_;
-
-//    /// Timestamp to check if need to recompute relative pose.
-//    Timestamp   t_;
-//    /// Origin with respect to which values are computed.
-//    ItemNode  * origin_;
-//    /// Position relative to origin.
-//    Vector3d   ro_;
-//    Quaternion qo_;
-//    Vector3d   vo_;
-//    Vector3d   wo_;
+    /// User controlled.
+    bool userControlled_;
 };
 
 

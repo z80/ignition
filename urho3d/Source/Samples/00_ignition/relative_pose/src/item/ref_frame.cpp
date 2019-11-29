@@ -34,12 +34,15 @@ void RefFrame::RegisterObject( Context * context )
     URHO3D_ATTRIBUTE( "Wx", double, st_.w.x_, 0.0, AM_DEFAULT );
     URHO3D_ATTRIBUTE( "Wy", double, st_.w.y_, 0.0, AM_DEFAULT );
     URHO3D_ATTRIBUTE( "Wz", double, st_.w.z_, 0.0, AM_DEFAULT );
+
+    URHO3D_ATTRIBUTE( "Uc", bool, userControlled_, false, AM_DEFAULT );
 }
 
 RefFrame::RefFrame( Context * ctx, const String & name )
     : Component( ctx ),
       name_( name ),
-      refT_( 0 )
+      refT_( 0 ),
+      userControlled_( false )
 {
 }
 
@@ -75,10 +78,14 @@ void RefFrame::setParent( RefFrame * newParent )
     {
         leftRefFrame( curParent );
         removeFromList( this, curParent->children_ );
+        curParent->childLeft( this );
     }
     parent_ = SharedPtr<RefFrame>( newParent );
     if ( newParent )
+    {
         addToList( this, newParent->children_ );
+        newParent->childEntered( this );
+    }
 
     setState( st );
     if ( newParent )
@@ -347,8 +354,11 @@ bool RefFrame::teleport( RefFrame * other,
             RefFrame * n = children_[i];
             const State & st = newStates[i];
             n->setState( st );
+            n->parentTeleported();
         }
     }
+    if ( parent_ )
+        parent_->childTeleported( this );
 
     return true;
 }
@@ -407,6 +417,31 @@ void RefFrame::leftRefFrame( RefFrame * refFrame )
 
 }
 
+void RefFrame::childEntered( RefFrame * refFrame )
+{
+
+}
+
+void RefFrame::childLeft( RefFrame * refFrame )
+{
+
+}
+
+void RefFrame::parentTeleported()
+{
+
+}
+
+void RefFrame::childTeleported( RefFrame * refFrame )
+{
+
+}
+
+void RefFrame::userControlledChanged( bool newUserControlled )
+{
+
+}
+
 unsigned RefFrame::getParentId() const
 {
     if ( !parent_ )
@@ -431,6 +466,33 @@ void RefFrame::setParentId( unsigned parentId )
             break;
         }
     }
+}
+
+bool RefFrame::getUserControlled() const
+{
+    return userControlled_;
+}
+
+void RefFrame::setUserControlled( bool userControlled )
+{
+    userControlledChanged( userControlled );
+    userControlled_ = userControlled;
+}
+
+Float RefFrame::distance( RefFrame * refFrame ) const
+{
+    Vector3d rel_r;
+    Quaterniond rel_q;
+    relativePose( refFrame, rel_r, rel_q );
+    const Float d = rel_r.Length();
+    return d;
+}
+
+Float RefFrame::distance( const Vector3 & r ) const
+{
+    const Vector3d dr = st_.r - r;
+    const Float d = dr.Length();
+    return d;
 }
 
 static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children )

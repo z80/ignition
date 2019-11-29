@@ -14,11 +14,14 @@ public:
     Settings();
     ~Settings();
 
-    static Timestamp ticks( Float secs_dt ) const;
-    static Float     secs( Timestamp ticks_dt ) const;
-    static Float     maxDynamicsTimeStep() const;
-    static Float     absLimitDynamicsTimeStep() const;
-    static Timestamp maxEvolutionTimeStep() const;
+    static Timestamp ticks( Float secs_dt );
+    static Float     secs( Timestamp ticks_dt );
+    static Float     maxDynamicsTimeStep();
+    static Float     absLimitDynamicsTimeStep();
+    static Timestamp maxEvolutionTimeStep();
+
+    /// If bigger than this teleport dynamics world.
+    static Float teleportDistance();
 
     /// If less than this, show the object.
     static Float staticObjDistanceHorizontShow();
