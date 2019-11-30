@@ -48,7 +48,7 @@ RefFrame::RefFrame( Context * ctx, const String & name )
 
 RefFrame::~RefFrame()
 {
-
+    cleanup();
 }
 
 void RefFrame::setName( const String & name )
@@ -488,11 +488,17 @@ Float RefFrame::distance( RefFrame * refFrame ) const
     return d;
 }
 
-Float RefFrame::distance( const Vector3 & r ) const
+Float RefFrame::distance( const Vector3d & r ) const
 {
     const Vector3d dr = st_.r - r;
     const Float d = dr.Length();
     return d;
+}
+
+void RefFrame::cleanup()
+{
+    if ( parent_ )
+        setParent( 0 );
 }
 
 static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children )

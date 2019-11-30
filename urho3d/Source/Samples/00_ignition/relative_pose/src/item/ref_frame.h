@@ -104,7 +104,12 @@ public:
     /// take into account this object size.
     virtual Float distance( RefFrame * refFrame ) const;
     /// The same method computes a distance to a point in the same ref. frame.
-    virtual Float distance( const Vector3 & r=Vector3d::ZERO ) const;
+    virtual Float distance( const Vector3d & r=Vector3d::ZERO ) const;
+
+    /// Cleanup.
+    /// Remove from parent's children list and deallocate any
+    /// nodes, meshes etc.
+    virtual void cleanup();
 
 public:
     /// For debugging it is easier to identify by human readable name.
