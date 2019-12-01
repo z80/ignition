@@ -16,6 +16,9 @@ class PhysicsFrame: public RefFrame
 {
     URHO3D_OBJECT( PhysicsFrame, RefFrame )
 public:
+    /// Register object factory.
+    static void RegisterObject( Context * context );
+
     PhysicsFrame( Context * context );
     ~PhysicsFrame();
 
@@ -33,18 +36,18 @@ protected:
     const Vector<SharedPtr<RefFrame> > & userControlledObjects();
     /// After dynamics step check all user controlled objects and determine
     /// if it is necessary to exclude objects from simulation.
-    void checkInnerObjects( const Vector<SharedPtr<RefFrame> > & userControlled );
+    void checkInnerObjects();
     /// Check external objects if it is necessary to include some into
     /// the simulation.
-    void checkOuterObjects( const Vector<SharedPtr<RefFrame> > & userControlled );
+    void checkOuterObjects();
     /// Check if it's worth to exists.
     /// If there are no user controlled objects left parent all inner objects
     /// to the parent of this node and destroy itself.
-    void checkIfWorthToExist( const Vector<SharedPtr<RefFrame> > & userControlled );
+    bool checkIfWorthToExist();
     /// Check if it's worth to teleport.
-    void checkIfTeleport( const Vector<SharedPtr<RefFrame> > & userControlled  );
+    void checkIfTeleport();
     /// Check if need split into a few physics nodes.
-    void checkIfNeedToSplit( const Vector<SharedPtr<RefFrame> > & userControlled );
+    bool checkIfNeedToSplit();
     /// Check if need to merge with another physics frame.
     void checkIfNeedToMerge();
 public:
@@ -53,7 +56,7 @@ public:
     SharedPtr<PhysicsWorld2> physicsWorld_;
 
     // This is temporary holder.
-    Vector<SharedPtr<RefFrame> > userControlled_;
+    Vector<SharedPtr<RefFrame> > userControlled_, userControlled2_;
 };
 
 
