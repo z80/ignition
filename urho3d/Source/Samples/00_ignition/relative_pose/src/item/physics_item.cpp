@@ -24,22 +24,32 @@ PhysicsItem::~PhysicsItem()
 
 void PhysicsItem::enteredRefFrame( RefFrame * refFrame )
 {
+    // Check if it is a physics ref frame.
+    // And if yes create physics content.
+    if ( !refFrame )
+        return;
+    PhysicsFrame * pf = refFrame->Cast<PhysicsFrame>();
+    if ( !pf )
+        return;
+    Node * parentNode = pf->GetNode();
+    if ( !parentNode )
+        return;
+    const String n = String( this->name() ) + String( " physics node" );
+    physics_node_    = parentNode->CreateChild( n );
+    rigid_body_      = physics_node_->CreateComponent<RigidBody2>();
+    collision_shape_ = physics_node_->CreateComponent<CollisionShape2>();
+    setupPhysicsContent( rigid_body_, collision_shape_ );
 }
 
 void PhysicsItem::leftRefFrame( RefFrame * refFrame )
 {
-}
-
-void PhysicsItem::parentTeleported()
-{
-}
-
-void PhysicsItem::childTeleported( RefFrame * refFrame )
-{
+    // Need to destroy physics content.
+    physics_node_->Remove();
 }
 
 void PhysicsItem::userControlledChanged( bool newUserControlled )
 {
+    Scene * scene = GetScene();
     if ( !scene )
         return;
 
@@ -70,7 +80,28 @@ void PhysicsItem::userControlledChanged( bool newUserControlled )
 
 void PhysicsItem::OnSceneSet( Scene * scene )
 {
+    if ( !scene )
+    {
+        if ( visual_node_ )
+            visual_node_->Remove();
+        return;
+    }
+    
+    // Create visuals to the "visual_node_"
+    const String n = this->name() + " visual node";
+    visual_node_ = scene->CreateChild( n );
+    createVisualContent( visual_node_ );
 }
+
+
+void PhysicsItem::createVisualContent( Node * n )
+{
+}
+
+void PhysicsItem::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
+{
+}
+
 
 }
 

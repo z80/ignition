@@ -51,7 +51,6 @@ protected:
     /// Check if need to merge with another physics frame.
     void checkIfNeedToMerge();
 public:
-    SharedPtr<Environment>   env_;
     SharedPtr<Node>          node_;
     SharedPtr<PhysicsWorld2> physicsWorld_;
 

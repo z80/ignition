@@ -62,11 +62,11 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     if ( !scene )
         return;
 
-    env_ = scene->GetComponent<Environment>();
-    if ( !env_ )
+    Environment * env = scene->GetComponent<Environment>();
+    if ( !env )
         return;
 
-    const bool isServer = env_->IsServer();
+    const bool isServer = env->IsServer();
     if ( !isServer )
         return;
 

@@ -25,24 +25,25 @@ public:
 
 protected:
     /// Called when this thing is moved into another ref. frame.
-    virtual void enteredRefFrame( RefFrame * refFrame );
+    void enteredRefFrame( RefFrame * refFrame ) override;
     /// Called when this thing is moved out of it's current parent.
-    virtual void leftRefFrame( RefFrame * refFrame );
-    /// Called when parent teleported.
-    virtual void parentTeleported();
-    /// Called when child teleported.
-    virtual void childTeleported( RefFrame * refFrame );
+    void leftRefFrame( RefFrame * refFrame ) override;
 
     /// When user controlled flag changes call this method.
     /// Called just before changing appropriate field so there
     /// is a way to know what it was before.
-    virtual void userControlledChanged( bool newUserControlled );
+    void userControlledChanged( bool newUserControlled ) override;
 
 
     /// Handle scene being assigned. This may happen several times
     /// during the component's lifetime. Scene-wide subsystems and events
     /// are subscribed to here.
-    virtual void OnSceneSet( Scene * scene );
+    void OnSceneSet( Scene * scene ) override;
+
+    /// Creation of visual content when scene is set.
+    virtual void createVisualContent( Node * n );
+    /// Set physical content parameters (mass, inertia tensor, collision shape, etc.).
+    virtual void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs );
 
 
     /// On server side it has a 
