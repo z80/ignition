@@ -17,7 +17,7 @@ public:
     Environment( Context * context );
     ~Environment();
 
-    static void RedisterComponent( Context * context );
+    static void RegisterComponent( Context * context );
 
     bool IsClient() const;
     bool IsServer() const;
@@ -29,8 +29,8 @@ public:
 
 private:
     void IncrementTime( float secs_dt );
-    void UpdateDynamicNodes( float secs );
-    void UpdateEvolvingNodes( Timestamp ticks );
+    void UpdateDynamicNodes( Float  secs_dt );
+    void UpdateEvolvingNodes( Timestamp ticks_dt );
 
     /// Global time
     Timestamp T_;

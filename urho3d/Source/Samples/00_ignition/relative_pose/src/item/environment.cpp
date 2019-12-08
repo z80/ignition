@@ -1,5 +1,6 @@
 
 #include "environment.h"
+#include "physics_frame.h"
 #include "settings.h"
 
 namespace Ign
@@ -19,7 +20,7 @@ Environment::~Environment()
 
 }
 
-void Environment::RedisterComponent( Context * context )
+void Environment::RegisterComponent( Context * context )
 {
     context->RegisterFactory<Environment>();
 }
@@ -103,7 +104,7 @@ void Environment::IncrementTime( float secs_dt )
         secsDt_ = 0.0;
 }
 
-void Environment::UpdateDynamicNodes( float secs )
+void Environment::UpdateDynamicNodes( Float secs_dt )
 {
     Scene * s = GetScene();
     if ( !s )
@@ -115,10 +116,15 @@ void Environment::UpdateDynamicNodes( float secs )
     {
         // Try cast to dynamics integration node.
         // And if converted make time step.
+        SharedPtr<Component> c = comps[i];
+        PhysicsFrame * pf = c->Cast<PhysicsFrame>();
+        if ( !pf )
+            continue;
+        pf->physicsStep( secs_dt );
     }
 }
 
-void Environment::UpdateEvolvingNodes( Timestamp ticks )
+void Environment::UpdateEvolvingNodes( Timestamp ticks_dt )
 {
     Scene * s = GetScene();
     if ( !s )
@@ -130,6 +136,7 @@ void Environment::UpdateEvolvingNodes( Timestamp ticks )
     {
         // Try cast to evolving node.
         // And if converted make time step.
+        SharedPtr<Component> c = comps[i];
     }
 }
 
