@@ -28,7 +28,10 @@ include_directories( "./src"
                      "./src/item"
                      "./src/kepler"
                      "./src/physics"
-                     "./3dparty/eigen-3.3.7" )
+                     "./3dparty/eigen-3.3.7" 
+                     "./3dparty/pcg-cpp" 
+                     "./3dparty/pi_random" 
+                     )
 
 file( GLOB_RECURSE src src/*.cpp )
 
