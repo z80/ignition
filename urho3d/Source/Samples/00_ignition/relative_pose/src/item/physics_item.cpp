@@ -22,6 +22,23 @@ PhysicsItem::~PhysicsItem()
 {
 }
 
+void PhysicsItem::updateStateFromRigidBody()
+{
+    if ( !rigid_body_ )
+        return;
+    // Assign state variables from rigid body state.
+    const Vector3    r = rigid_body_->GetPosition();
+    const Quaternion q = rigid_body_->GetRotation();
+    const Vector3    v = rigid_body_->GetLiearVelocity();
+    const Vector3    w = rigid_body_->GetAngularVelocity();
+    st_.r = Vector3d( r.x_, r.y_, r.z_ );
+    st_.q = Quaterniond( q.w_, q.x_, q.y_, q.z_ );
+    st_.v = Vector3d( v.x_, v.y_, v.z_ );
+    st_.w = Vector3d( w.x_, w.y_, w.z_ );
+    
+    MarkNetworkUpdate();
+}
+
 void PhysicsItem::enteredRefFrame( RefFrame * refFrame )
 {
     // Check if it is a physics ref frame.
@@ -31,14 +48,21 @@ void PhysicsItem::enteredRefFrame( RefFrame * refFrame )
     PhysicsFrame * pf = refFrame->Cast<PhysicsFrame>();
     if ( !pf )
         return;
-    Node * parentNode = pf->GetNode();
-    if ( !parentNode )
+    Node * node = pf->physicsNode();
+    if ( !node )
         return;
     const String n = String( this->name() ) + String( " physics node" );
-    physics_node_    = parentNode->CreateChild( n );
-    rigid_body_      = physics_node_->CreateComponent<RigidBody2>();
-    collision_shape_ = physics_node_->CreateComponent<CollisionShape2>();
+    physics_node_    = node->CreateChild( n, LOCAL );
+    rigid_body_      = physics_node_->CreateComponent<RigidBody2>( LOCAL );
+    collision_shape_ = physics_node_->CreateComponent<CollisionShape2>( LOCAL );
+    
     setupPhysicsContent( rigid_body_, collision_shape_ );
+
+    // Assign state to rigid body.
+    ridid_body_->SetPosition( Vector3( st_.r.x_, st_.r.y_, st_.r.z_ ) )
+    ridid_body_->SetRotation( Quaternion( st_.q.w_, st_q.x_, st_.q.y_, st_.q.z_ ) )
+    ridid_body_->SetLinearVelocity( Vector3( st_v.x_, st_.v.y_, st_.v.z_ ) )
+    ridid_body_->SetAngularVelocity( Vector3( st_w.x_, st_.w.y_, st_.w.z_ ) )
 }
 
 void PhysicsItem::leftRefFrame( RefFrame * refFrame )

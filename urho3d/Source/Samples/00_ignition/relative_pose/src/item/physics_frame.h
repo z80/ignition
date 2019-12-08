@@ -23,15 +23,16 @@ public:
     ~PhysicsFrame();
 
     void physicsStep( float sec_dt );
-
-    virtual void childEntered( RefFrame * refFrame );
-    virtual void childLeft( RefFrame * refFrame );
+    Node * physicsNode();
 
 protected:
     /// Handle scene being assigned. This may happen several times
     /// during the component's lifetime. Scene-wide subsystems and events
     /// are subscribed to here.
-    virtual void OnSceneSet( Scene * scene );
+    void OnSceneSet( Scene * scene ) override;
+
+    /// Update all physics item states based on dynamics simulation.
+    void updateChildStates();
 
     const Vector<SharedPtr<RefFrame> > & userControlledObjects();
     /// After dynamics step check all user controlled objects and determine
@@ -55,7 +56,7 @@ public:
     SharedPtr<PhysicsWorld2> physicsWorld_;
 
     // This is temporary holder.
-    Vector<SharedPtr<RefFrame> > userControlled_, userControlled2_;
+    Vector<SharedPtr<RefFrame> > userControlledList_, userControlledList2_;
 };
 
 

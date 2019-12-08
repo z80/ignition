@@ -36,6 +36,8 @@ void PhysicsFrame::physicsStep( float sec_dt )
         return;
     physicsWorld_->Update( sec_dt );
 
+    updateChildStates();
+
     const Vector<SharedPtr<RefFrame> > & obs = userControlledObjects();
     if ( checkIfWorthToExist() )
         return;
@@ -47,14 +49,9 @@ void PhysicsFrame::physicsStep( float sec_dt )
     checkIfNeedToMerge();
 }
 
-void PhysicsFrame::childEntered( RefFrame * refFrame )
+Node * PhysicsFrame::physicsNode();
 {
-
-}
-
-void PhysicsFrame::childLeft( RefFrame * refFrame )
-{
-
+    return node_;
 }
 
 void PhysicsFrame::OnSceneSet( Scene * scene )
@@ -76,29 +73,44 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     physicsWorld_ = n->CreateComponent<PhysicsWorld2>( LOCAL );
 }
 
+void PhysicsFrame::updateChildStates()
+{
+    const unsigned qty = children_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        SharedPtr<RefFrame> o = children_[i];
+        if ( !o )
+            continue;
+        PhysicsItem * pi = o->Cast<PhysicsItem>();
+        if ( !pi )
+            continue;
+        pi->updateStateFromRigidBody();
+    }
+}
+
 const Vector<SharedPtr<RefFrame> > & PhysicsFrame::userControlledObjects()
 {
     // Select user controlled objects.
-    userControlled_.Clear();
+    userControlledList_.Clear();
     const unsigned qty = children_.Size();
     for ( unsigned i=0 ;i<qty; i++ )
     {
         SharedPtr<RefFrame> o = children_[i];
         if ( o->getUserControlled() )
-            userControlled_.Push( o );
+            userControlledList_.Push( o );
     }
-    return userControlled_;
+    return userControlledList_;
 }
 
 void PhysicsFrame::checkInnerObjects()
 {
-    if ( userControlled_.Empty() )
+    if ( userControlledList_.Empty() )
         return;
 
     // For each object compute smallest distance to user controlled object.
     // If smallest distance is bigger than horizont distance exclude object from 
     // this ref. frame.
-    const unsigned userQty = userControlled_.Size();
+    const unsigned userQty = userControlledList_.Size();
     const unsigned qty = children_.Size();
     const Float removeDist = Settings::dynamicsWorldDistanceExclude();
     for ( unsigned i=0; i<qty; i++ )
@@ -110,7 +122,7 @@ void PhysicsFrame::checkInnerObjects()
         Float minDist = -1.0;
         for ( unsigned j=0; j<userQty; j++ )
         {
-            SharedPtr<RefFrame> userObj = userControlled_[j];
+            SharedPtr<RefFrame> userObj = userControlledList_[j];
             const Float dist = o->distance( userObj );
             if ( ( minDist < 0.0 ) || ( dist < minDist ) )
                 minDist = dist;
@@ -158,7 +170,7 @@ void PhysicsFrame::checkOuterObjects()
 bool PhysicsFrame::checkIfWorthToExist()
 {
     // If there are no user objects remove this object.
-    if ( !userControlled_.Empty() )
+    if ( !userControlledList_.Empty() )
         return false;
 
     const unsigned qty = children_.Size();
@@ -176,7 +188,7 @@ bool PhysicsFrame::checkIfWorthToExist()
 
 void PhysicsFrame::checkIfTeleport()
 {
-    SharedPtr<RefFrame> o = userControlled_.At(0);
+    SharedPtr<RefFrame> o = userControlledList_.At(0);
     // Follow the first one.
     const Float teleportDist = Settings::teleportDistance();
     const Float d = o->distance();
@@ -189,11 +201,11 @@ void PhysicsFrame::checkIfTeleport()
 
 bool PhysicsFrame::checkIfNeedToSplit()
 {
-    const unsigned qty = userControlled_.Size();
+    const unsigned qty = userControlledList_.Size();
     if ( qty < 2 )
         return false;
     unsigned splitInd;
-    const Float dist = cluster( splitInd, userControlled_, userControlled2_ );
+    const Float dist = cluster( splitInd, userControlledList_, userControlledList2_ );
     const Float splitDist = Settings::dynamicsWorldDistanceExclude();
     if ( dist < splitDist )
         return false;
@@ -212,7 +224,7 @@ bool PhysicsFrame::checkIfNeedToSplit()
         pf->setState( s );
     }
     {
-        SharedPtr<RefFrame> o = userControlled_[splitInd];
+        SharedPtr<RefFrame> o = userControlledList_[splitInd];
         State relativeSt;
         o->relativeState( p, relativeSt );
         relativeSt.q = relQ();
@@ -224,19 +236,19 @@ bool PhysicsFrame::checkIfNeedToSplit()
     // Move user controlled objects to the new physics frame.
     for ( unsigned i=0; i<qty; i++ )
     {
-        SharedPtr<RefFrame> o = userControlled_[i];
+        SharedPtr<RefFrame> o = userControlledList_[i];
         o->setParent( pf );
     }
 
     // All dynamic objects.
     // Measure distance to both origins and choose the closest one.
     {
-        userControlled_.Clear();
-        userControlled_ = children_;
-        const unsigned qty = userControlled_.Size();
+        userControlledList_.Clear();
+        userControlledList_ = children_;
+        const unsigned qty = userControlledList_.Size();
         for ( unsigned i=0; i<qty; i++ )
         {
-            SharedPtr<RefFrame> o = userControlled_[i];
+            SharedPtr<RefFrame> o = userControlledList_[i];
             const bool userCtrled = o->getUserControlled();
             if ( userCtrled )
                 continue;
@@ -257,11 +269,11 @@ void PhysicsFrame::checkIfNeedToMerge()
         return;
     const Float mergeDist = Settings::dynamicsWorldDistanceInclude();
     const Vector3d r = relR();
-    userControlled_ = p->children_;
-    unsigned qty = userControlled_.Size();
+    userControlledList_ = p->children_;
+    unsigned qty = userControlledList_.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
-        SharedPtr<RefFrame> o = userControlled_[i];
+        SharedPtr<RefFrame> o = userControlledList_[i];
         PhysicsFrame * pf = o->Cast<PhysicsFrame>();
         if ( !pf )
             continue;
@@ -272,11 +284,11 @@ void PhysicsFrame::checkIfNeedToMerge()
             continue;
 
         // Move all objects to a different physics frame.
-        userControlled2_ = pf->children_;
-        const unsigned qty = userControlled2_.Size();
+        userControlledList2_ = pf->children_;
+        const unsigned qty = userControlledList2_.Size();
         for ( unsigned j=0; j<qty; j++ )
         {
-            SharedPtr<RefFrame> o = userControlled2_[j];
+            SharedPtr<RefFrame> o = userControlledList2_[j];
             o->setParent( this );
         }
         pf->Remove();

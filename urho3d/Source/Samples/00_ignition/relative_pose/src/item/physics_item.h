@@ -23,6 +23,8 @@ public:
     PhysicsItem( Context * context );
     virtual ~PhysicsItem();
 
+    /// This one is called by physics frame after physics update step. 
+    void updateStateFromRigidBody();
 protected:
     /// Called when this thing is moved into another ref. frame.
     void enteredRefFrame( RefFrame * refFrame ) override;
