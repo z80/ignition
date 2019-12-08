@@ -4,7 +4,8 @@
 
 #include "Urho3D/Urho3DAll.h"
 #include "ref_frame.h"
-#include "physics_world_2.h"
+#include "rigid_body_2.h"
+#include "collision_shape_2.h"
 #include "environment.h"
 
 using namespace Urho3D;

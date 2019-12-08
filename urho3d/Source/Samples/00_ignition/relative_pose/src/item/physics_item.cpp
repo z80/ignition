@@ -29,7 +29,7 @@ void PhysicsItem::updateStateFromRigidBody()
     // Assign state variables from rigid body state.
     const Vector3    r = rigid_body_->GetPosition();
     const Quaternion q = rigid_body_->GetRotation();
-    const Vector3    v = rigid_body_->GetLiearVelocity();
+    const Vector3    v = rigid_body_->GetLinearVelocity();
     const Vector3    w = rigid_body_->GetAngularVelocity();
     st_.r = Vector3d( r.x_, r.y_, r.z_ );
     st_.q = Quaterniond( q.w_, q.x_, q.y_, q.z_ );
@@ -59,10 +59,10 @@ void PhysicsItem::enteredRefFrame( RefFrame * refFrame )
     setupPhysicsContent( rigid_body_, collision_shape_ );
 
     // Assign state to rigid body.
-    ridid_body_->SetPosition( Vector3( st_.r.x_, st_.r.y_, st_.r.z_ ) )
-    ridid_body_->SetRotation( Quaternion( st_.q.w_, st_q.x_, st_.q.y_, st_.q.z_ ) )
-    ridid_body_->SetLinearVelocity( Vector3( st_v.x_, st_.v.y_, st_.v.z_ ) )
-    ridid_body_->SetAngularVelocity( Vector3( st_w.x_, st_.w.y_, st_.w.z_ ) )
+    rigid_body_->SetPosition( Vector3( st_.r.x_, st_.r.y_, st_.r.z_ ) );
+    rigid_body_->SetRotation( Quaternion( st_.q.w_, st_.q.x_, st_.q.y_, st_.q.z_ ) );
+    rigid_body_->SetLinearVelocity( Vector3( st_.v.x_, st_.v.y_, st_.v.z_ ) );
+    rigid_body_->SetAngularVelocity( Vector3( st_.w.x_, st_.w.y_, st_.v.z_ ) );
 }
 
 void PhysicsItem::leftRefFrame( RefFrame * refFrame )
@@ -77,7 +77,7 @@ void PhysicsItem::userControlledChanged( bool newUserControlled )
     if ( !scene )
         return;
 
-    env_ = scene->GetComponent<Environment>();
+    Environment * env_ = scene->GetComponent<Environment>();
     if ( !env_ )
         return;
 
@@ -88,7 +88,7 @@ void PhysicsItem::userControlledChanged( bool newUserControlled )
     // Check if parent is physics frame.
     if ( parent_ )
     {
-        PhysicsFrame * pf = parent->->Cast<PhysicsFrame>();
+        PhysicsFrame * pf = parent_->Cast<PhysicsFrame>();
         if ( pf )
             return;
     }
@@ -96,7 +96,7 @@ void PhysicsItem::userControlledChanged( bool newUserControlled )
     // For simplicity just create new physics frame and place this object into it.
     // Physics frame will take all the logic load concerning if it needs to merge 
     // with anything, etc.
-    PhysicsFrame * pf = scene_->CreateComponent<PhysicsFrame>();
+    PhysicsFrame * pf = scene->CreateComponent<PhysicsFrame>();
     pf->setParent( this->parent_ );
     pf->setState( this->state() );
     this->setParent( pf );

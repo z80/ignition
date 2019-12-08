@@ -1,5 +1,6 @@
 
 #include "physics_frame.h"
+#include "physics_item.h"
 #include "settings.h"
 
 namespace Ign
@@ -49,7 +50,7 @@ void PhysicsFrame::physicsStep( float sec_dt )
     checkIfNeedToMerge();
 }
 
-Node * PhysicsFrame::physicsNode();
+Node * PhysicsFrame::physicsNode()
 {
     return node_;
 }
