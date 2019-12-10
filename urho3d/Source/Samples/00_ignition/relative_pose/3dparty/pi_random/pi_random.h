@@ -14,7 +14,7 @@
 #include <cmath>
 
 //#include "RefCounted.h"
-#include "fixed.h"
+#include "pi_fixed.h"
 
 //extern "C" {
 //#include "jenkins/lookup3.h"
