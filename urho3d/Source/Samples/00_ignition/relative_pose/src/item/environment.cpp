@@ -6,6 +6,14 @@
 namespace Ign
 {
 
+// UDP port we will use
+static const unsigned short SERVER_PORT = 21345;
+// Identifier for our custom remote event we use to tell the client which object they control
+static const StringHash E_CLIENTOBJECTID("ClientID");
+// Identifier for the node ID parameter in the event data
+static const StringHash P_ID("ID");
+
+
 Environment::Environment( Context * context )
     : LogicComponent( context )
 {
@@ -87,6 +95,34 @@ void Environment::Update( float timeStep )
         }
 
     }
+}
+
+void Environment::StartServer( int port )
+{
+}
+
+void Environment::Connect( const String & addr, int port )
+{
+}
+
+void Environment::Disconnect()
+{
+}
+
+void Environment::SubscribeToEvents()
+{
+    // Subscribe to network events
+    SubscribeToEvent( E_SERVERCONNECTED,    URHO3D_HANDLER(Environment, HandleConnectionStatus));
+    SubscribeToEvent( E_SERVERDISCONNECTED, URHO3D_HANDLER(Environment, HandleConnectionStatus));
+    SubscribeToEvent( E_CONNECTFAILED,      URHO3D_HANDLER(Environment, HandleConnectionStatus));
+    SubscribeToEvent( E_CLIENTCONNECTED,    URHO3D_HANDLER(Environment, HandleClientConnected));
+    SubscribeToEvent( E_CLIENTDISCONNECTED, URHO3D_HANDLER(Environment, HandleClientDisconnected));
+    // This is a custom event, sent from the server to the client. It tells the 
+    // node ID of the object the client should control
+    SubscribeToEvent(E_CLIENTID, URHO3D_HANDLER( Environment, HandleClientID) );
+    // Events sent between client & server (remote events) must be explicitly registered 
+    // or else they are not allowed to be received
+    GetSubsystem<Network>()->RegisterRemoteEvent( E_CLIENTID );
 }
 
 void Environment::IncrementTime( float secs_dt )

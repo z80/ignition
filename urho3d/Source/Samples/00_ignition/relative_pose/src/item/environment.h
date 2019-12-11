@@ -22,10 +22,30 @@ public:
     bool IsClient() const;
     bool IsServer() const;
 
-    void Start() override;
-    void DelayedStart() override;
+    virtual void Start() override;
+    virtual void DelayedStart() override;
     void Stop() override;
     void Update( float timeStep ) override;
+
+    /// Network commands.
+    void StartServer( int port=-1 );
+    void Connect( const String & addr, int port=-1 );
+    void Disconnect();
+
+protected:
+    /// Subscribe to update, UI and network events.
+    virtual void SubscribeToEvents();
+
+    /// Handle pressing the start server button.
+    void HandleStartServer(StringHash eventType, VariantMap& eventData);
+    /// Handle connection status change (just update the buttons that should be shown.)
+    void HandleConnectionStatus(StringHash eventType, VariantMap& eventData);
+    /// Handle a client connecting to the server.
+    void HandleClientConnected(StringHash eventType, VariantMap& eventData);
+    /// Handle a client disconnecting from the server.
+    void HandleClientDisconnected(StringHash eventType, VariantMap& eventData);
+    /// Handle remote event from server which tells our controlled object node ID.
+    void HandleClientObjectID(StringHash eventType, VariantMap& eventData);
 
 private:
     void IncrementTime( float secs_dt );
@@ -37,6 +57,10 @@ private:
     /// Delta times in seconds and in ticks.
     Float     secsDt_;
     Timestamp ticksDt_;
+
+
+    /// Client/Server functionality
+    Vector<Connection*> connections_;
 };
 
 }
