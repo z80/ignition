@@ -9,17 +9,17 @@ void RotatingFrame::RegisterComponent( Context * context )
     context->RegisterFactory<RotatingFrame>();
     URHO3D_COPY_BASE_ATTRIBUTES( EvolvingFrame );
 
-    URHO3D_ATTRIBUTE( "Ow", double, orientation_.w_, poseChanged, 0.0, AM_DEFAULT );
-    URHO3D_ATTRIBUTE( "Ox", double, orientation_.x_, poseChanged, 0.0, AM_DEFAULT );
-    URHO3D_ATTRIBUTE( "Oy", double, orientation_.y_, poseChanged, 0.0, AM_DEFAULT );
-    URHO3D_ATTRIBUTE( "Oz", double, orientation_.z_, poseChanged, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "Ow", double, orientation_.w_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "Ox", double, orientation_.x_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "Oy", double, orientation_.y_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "Oz", double, orientation_.z_, 0.0, AM_DEFAULT );
 
     URHO3D_ATTRIBUTE( "Period", Timestamp, period_, 0, AM_DEFAULT );
     URHO3D_ATTRIBUTE( "Phase",  Timestamp, phase_,  0, AM_DEFAULT );
- 
 }
 
 RotatingFrame::RotatingFrame( Context * context )
+    : EvolvingFrame( context )
 {
 }
 
@@ -31,10 +31,14 @@ void RotatingFrame::evolveStep( Timestamp ticks_dt )
 {
     if ( period_ == 0 )
     {
-        st.q_ = Quaterniond();
+        phase_ = 0;
+        st_.q  = Quaterniond();
     }
     else
     {
+        phase_ += ticks_dt;
+        if ( phase_ >= period_ )
+            phase_ -= period_;
         const Float angle2 = 0.5 * PI2 * static_cast<Float>( phase_ ) / static_cast<Float>( period_ );
         const Quaterniond q( std::cos( angle2 ), 0.0, std::sin( angle2 ), 0.0 );
         st_.q = orientation_ * q;
