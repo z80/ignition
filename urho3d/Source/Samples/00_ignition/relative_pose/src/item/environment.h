@@ -51,6 +51,7 @@ private:
     void IncrementTime( float secs_dt );
     void UpdateDynamicNodes( Float  secs_dt );
     void UpdateEvolvingNodes( Timestamp ticks_dt );
+    int  UniqueId();
 
     /// Global time
     Timestamp T_;
@@ -59,8 +60,12 @@ private:
     Timestamp ticksDt_;
 
 
+    /// In the case of client assign client Id;
+    int clientId_;
+
+
     /// Client/Server functionality
-    Vector<Connection*> connections_;
+    HashMap<Connection*> connections_;
 };
 
 }

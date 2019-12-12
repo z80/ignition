@@ -20,7 +20,7 @@ Environment::Environment( Context * context )
     T_        = 0;
     secsDt_   = 0.0;
     ticksDt_  = 0;
-
+    clientId_ = -1;
 }
 
 Environment::~Environment()
@@ -50,6 +50,7 @@ bool Environment::IsServer() const
 
 void Environment::Start()
 {
+    SubscribeToEvents();
     SetUpdateEventMask( USE_UPDATE );
 }
 
@@ -70,6 +71,7 @@ void Environment::Update( float timeStep )
     {
         IncrementTime( timeStep );
         MarkNetworkUpdate();
+        rk * n = GetSubsystem<Network>();
 
         {
             Float secsDt = secsDt_;
@@ -99,14 +101,44 @@ void Environment::Update( float timeStep )
 
 void Environment::StartServer( int port )
 {
+    Network * n = GetSubsystem<Network>();
+    n->StartServer( port );
 }
 
 void Environment::Connect( const String & addr, int port )
 {
+    Network * network = GetSubsystem<Network>();
+    String address;
+    if ( addr.Empty() )
+        address = "localhost";
+    else
+        address = addr;
+    int p;
+    if ( port > 0 )
+        p = port;
+    else
+        p = SERVER_PORT;
+    clientId_ = -1;
+    network->Connect( address, p );
 }
 
 void Environment::Disconnect()
 {
+    clientId_ = -1;
+
+    Network * network = GetSubsystem<Network>();
+    Connection * serverConnection = network->GetServerConnection(); 
+    if ( serverConnection )
+    {
+        serverConnection->Disconnect();
+        Scene * s = GetScene();
+        s->Clear( true, false );
+        clientId_ = -1;
+    }
+    else if ( network->IsServerRunning() )
+    {
+        network->StopServer();
+    }
 }
 
 void Environment::SubscribeToEvents()
@@ -123,6 +155,39 @@ void Environment::SubscribeToEvents()
     // Events sent between client & server (remote events) must be explicitly registered 
     // or else they are not allowed to be received
     GetSubsystem<Network>()->RegisterRemoteEvent( E_CLIENTID );
+}
+
+void Environment::HandleStartServer( StringHash eventType, VariantMap & eventData )
+{
+}
+
+void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eventData )
+{
+}
+
+void Environment::HandleClientConnected( StringHash eventType, VariantMap & eventData )
+{
+    using namespace ClientConnected;                                                 
+                                                                                 
+    // When a client connects, assign to scene to begin scene replication            
+    Connection * newConnection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
+    Scene * s = GetScene();
+    newConnection->SetScene( s );
+
+
+    // Send client its assigned Id.
+    VariantMap args;
+    args[P_ID] = id;
+    newConnection->SendremoteEvent( E_CLIENTID, true, args ); 
+
+}
+
+void Environment::HandleClientDisconnected( StringHash eventType, VariantMap & eventData )
+{
+}
+
+void Environment::HandleClientObjectID( StringHash eventType, VariantMap & eventData )
+{
 }
 
 void Environment::IncrementTime( float secs_dt )
@@ -175,6 +240,20 @@ void Environment::UpdateEvolvingNodes( Timestamp ticks_dt )
         SharedPtr<Component> c = comps[i];
     }
 }
+
+int Environment::UniqueId()
+{
+    int newId = 0;
+    while ( true )
+    {
+        HashMap<int, Connection *>::Iterator i = connections_.Find( newId );
+        if ( i == connections_.End() )
+            break;
+        newId += 1;
+    }
+    return newId;
+}
+
 
 
 
