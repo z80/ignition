@@ -29,7 +29,7 @@ public:
 
     /// Network commands.
     void StartServer( int port=-1 );
-    void Connect( const String & addr, int port=-1 );
+    void Connect( const String & addr=String(), int port=-1 );
     void Disconnect();
 
 protected:
@@ -62,7 +62,6 @@ private:
 
     /// In the case of client assign client Id;
     int clientId_;
-
 
     /// Client/Server functionality
     HashMap<Connection*, int> connections_;

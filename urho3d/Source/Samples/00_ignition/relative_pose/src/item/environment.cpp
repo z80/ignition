@@ -9,7 +9,7 @@ namespace Ign
 // UDP port we will use
 static const unsigned short SERVER_PORT = 21345;
 // Identifier for our custom remote event we use to tell the client which object they control
-static const StringHash E_CLIENTOBJECTID("ClientID");
+static const StringHash E_CLIENTID("ClientID");
 // Identifier for the node ID parameter in the event data
 static const StringHash P_ID("ID");
 
@@ -70,8 +70,6 @@ void Environment::Update( float timeStep )
     if ( isServer )
     {
         IncrementTime( timeStep );
-        MarkNetworkUpdate();
-        rk * n = GetSubsystem<Network>();
 
         {
             Float secsDt = secsDt_;
@@ -95,7 +93,6 @@ void Environment::Update( float timeStep )
                 ticksDt -= dt;
             }
         }
-
     }
 }
 
@@ -119,7 +116,9 @@ void Environment::Connect( const String & addr, int port )
     else
         p = SERVER_PORT;
     clientId_ = -1;
-    network->Connect( address, p );
+
+    Scene * s = GetScene();
+    network->Connect( address, p, s );
 }
 
 void Environment::Disconnect()
@@ -159,6 +158,25 @@ void Environment::SubscribeToEvents()
 
 void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eventData )
 {
+    Network * network = GetSubsystem<Network>();
+    Connection * serverConnection = network->GetServerConnection();
+    const bool serverRunning = network->IsServerRunning();
+
+    // Show and hide buttons so that eg. Connect and Disconnect are never shown at the same time
+    //connectButton_->SetVisible(!serverConnection && !serverRunning);
+    //disconnectButton_->SetVisible(serverConnection || serverRunning);
+    //startServerButton_->SetVisible(!serverConnection && !serverRunning);
+    //textEdit_->SetVisible(!serverConnection && !serverRunning);
+
+    const bool canConnect     = !serverConnection && !serverRunning;
+    const bool canDisconnect  = serverConnection || serverRunning;
+    const bool canStartServer = !serverConnection && !serverRunning;
+
+    URHO3D_LOGINFOF( "############################\n"
+                     "    Connection status:\n"
+                     "    Server running: %b\n"
+                     "    Connected:      %b\n"
+                     "############################" );
 }
 
 void Environment::HandleClientConnected( StringHash eventType, VariantMap & eventData )
@@ -172,13 +190,17 @@ void Environment::HandleClientConnected( StringHash eventType, VariantMap & even
 
     // Save the connection and assign it unique id.
     const int id = UniqueId();
-    connections_[id] = newConnection;
+    connections_[newConnection] = id;
 
 
     // Send client its assigned Id.
     VariantMap args;
     args[P_ID] = id;
     newConnection->SendRemoteEvent( E_CLIENTID, true, args ); 
+
+    {
+        URHO3D_LOGINFOF( "New client connected, id assigned: %i", id );
+    }
 }
 
 void Environment::HandleClientDisconnected( StringHash eventType, VariantMap & eventData )
@@ -186,15 +208,21 @@ void Environment::HandleClientDisconnected( StringHash eventType, VariantMap & e
     using namespace ClientConnected;
 
     Connection * connection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
-    Hash<int,Connection *>::Iterator i = connections_.Find( connection );
+    HashMap<Connection *, int>::Iterator i = connections_.Find( connection );
     if ( i == connections_.End() )
         return;
 
     connections_.Erase( connection );
+    {
+        const int id = i->second_;
+        URHO3D_LOGINFOF( "Client %i disconnected", id );
+    }
 }
 
 void Environment::HandleAssignClientId( StringHash eventType, VariantMap & eventData )
 {
+    clientId_ = eventData[P_ID].GetUInt();
+    URHO3D_LOGINFOF( "Client id assigned: %i", clientId_ );
 }
 
 void Environment::IncrementTime( float secs_dt )
@@ -253,8 +281,18 @@ int Environment::UniqueId()
     int newId = 0;
     while ( true )
     {
-        HashMap<int, Connection *>::Iterator i = connections_.Find( newId );
-        if ( i == connections_.End() )
+        bool found = false;
+        for ( HashMap<Connection *, int>::Iterator i = connections_.Begin(); 
+              i!=connections_.End(); i++ )
+        {
+            const int existingId = i->second_;
+            if ( existingId == newId )
+            {
+                found = true;
+                break;
+            }
+        }
+        if ( !found )
             break;
         newId += 1;
     }
