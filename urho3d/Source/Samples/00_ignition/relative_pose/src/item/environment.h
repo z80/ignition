@@ -45,7 +45,7 @@ protected:
     /// Handle a client disconnecting from the server.
     void HandleClientDisconnected(StringHash eventType, VariantMap& eventData);
     /// Handle remote event from server which tells our controlled object node ID.
-    void HandleClientObjectID(StringHash eventType, VariantMap& eventData);
+    void HandleAssignClientId(StringHash eventType, VariantMap& eventData);
 
 private:
     void IncrementTime( float secs_dt );
@@ -65,7 +65,7 @@ private:
 
 
     /// Client/Server functionality
-    HashMap<Connection*> connections_;
+    HashMap<Connection*, int> connections_;
 };
 
 }

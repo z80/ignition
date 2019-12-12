@@ -151,14 +151,10 @@ void Environment::SubscribeToEvents()
     SubscribeToEvent( E_CLIENTDISCONNECTED, URHO3D_HANDLER(Environment, HandleClientDisconnected));
     // This is a custom event, sent from the server to the client. It tells the 
     // node ID of the object the client should control
-    SubscribeToEvent(E_CLIENTID, URHO3D_HANDLER( Environment, HandleClientID) );
+    SubscribeToEvent(E_CLIENTID, URHO3D_HANDLER( Environment, HandleAssignClientId) );
     // Events sent between client & server (remote events) must be explicitly registered 
     // or else they are not allowed to be received
     GetSubsystem<Network>()->RegisterRemoteEvent( E_CLIENTID );
-}
-
-void Environment::HandleStartServer( StringHash eventType, VariantMap & eventData )
-{
 }
 
 void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eventData )
@@ -174,19 +170,30 @@ void Environment::HandleClientConnected( StringHash eventType, VariantMap & even
     Scene * s = GetScene();
     newConnection->SetScene( s );
 
+    // Save the connection and assign it unique id.
+    const int id = UniqueId();
+    connections_[id] = newConnection;
+
 
     // Send client its assigned Id.
     VariantMap args;
     args[P_ID] = id;
-    newConnection->SendremoteEvent( E_CLIENTID, true, args ); 
-
+    newConnection->SendRemoteEvent( E_CLIENTID, true, args ); 
 }
 
 void Environment::HandleClientDisconnected( StringHash eventType, VariantMap & eventData )
 {
+    using namespace ClientConnected;
+
+    Connection * connection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
+    Hash<int,Connection *>::Iterator i = connections_.Find( connection );
+    if ( i == connections_.End() )
+        return;
+
+    connections_.Erase( connection );
 }
 
-void Environment::HandleClientObjectID( StringHash eventType, VariantMap & eventData )
+void Environment::HandleAssignClientId( StringHash eventType, VariantMap & eventData )
 {
 }
 
