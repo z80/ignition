@@ -32,6 +32,12 @@ public:
     void Connect( const String & addr=String(), int port=-1 );
     void Disconnect();
 
+    /// Callbacks from event handlers.
+    virtual void ClientConnected( int id );
+    virtual void ClientDisconnected( int id );
+    virtual void ConnectedToServer( bool success );
+    virtual void StartedServer( bool success );
+
 protected:
     /// Subscribe to update, UI and network events.
     virtual void SubscribeToEvents();
@@ -62,6 +68,10 @@ private:
 
     /// In the case of client assign client Id;
     int clientId_;
+
+    /// Network state holders
+    bool startingServer_;
+    bool connectingToServer_;
 
     /// Client/Server functionality
     HashMap<Connection*, int> connections_;

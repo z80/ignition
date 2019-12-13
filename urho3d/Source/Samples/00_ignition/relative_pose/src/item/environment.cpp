@@ -21,6 +21,9 @@ Environment::Environment( Context * context )
     secsDt_   = 0.0;
     ticksDt_  = 0;
     clientId_ = -1;
+
+    startingServer_     = false;
+    connectingToServer_ = false;
 }
 
 Environment::~Environment()
@@ -100,6 +103,7 @@ void Environment::StartServer( int port )
 {
     Network * n = GetSubsystem<Network>();
     n->StartServer( port );
+    startingServer_ = true;
 }
 
 void Environment::Connect( const String & addr, int port )
@@ -119,6 +123,8 @@ void Environment::Connect( const String & addr, int port )
 
     Scene * s = GetScene();
     network->Connect( address, p, s );
+
+    connectingToServer_ = true;
 }
 
 void Environment::Disconnect()
@@ -138,6 +144,22 @@ void Environment::Disconnect()
     {
         network->StopServer();
     }
+}
+
+void Environment::ClientConnected( int id )
+{
+}
+
+void Environment::ClientDisconnected( int id )
+{
+}
+
+void Environment::ConnectedToServer( bool success )
+{
+}
+
+void Environment::StartedServer( bool success )
+{
 }
 
 void Environment::SubscribeToEvents()
@@ -167,6 +189,18 @@ void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eve
     //disconnectButton_->SetVisible(serverConnection || serverRunning);
     //startServerButton_->SetVisible(!serverConnection && !serverRunning);
     //textEdit_->SetVisible(!serverConnection && !serverRunning);
+    
+    if ( startingServer_ )
+    {
+        startingServer_ = false;
+        StartedServer( serverRunning );
+    }
+    else if ( connectingToServer_ )
+    {
+        connectingToServer_ = false;
+        ConnectedToServer( serverConnection != nullptr );
+    }
+
 
     const bool canConnect     = !serverConnection && !serverRunning;
     const bool canDisconnect  = serverConnection || serverRunning;
@@ -198,6 +232,8 @@ void Environment::HandleClientConnected( StringHash eventType, VariantMap & even
     args[P_ID] = id;
     newConnection->SendRemoteEvent( E_CLIENTID, true, args ); 
 
+    ClientConnected( id );
+
     {
         URHO3D_LOGINFOF( "New client connected, id assigned: %i", id );
     }
@@ -213,10 +249,12 @@ void Environment::HandleClientDisconnected( StringHash eventType, VariantMap & e
         return;
 
     connections_.Erase( connection );
+    const int id = i->second_;
     {
-        const int id = i->second_;
         URHO3D_LOGINFOF( "Client %i disconnected", id );
     }
+
+    ClientDisconnected( id );
 }
 
 void Environment::HandleAssignClientId( StringHash eventType, VariantMap & eventData )
