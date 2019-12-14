@@ -10,6 +10,21 @@ using namespace Urho3D;
 namespace Ign
 {
 
+class ClientDesc
+{
+public:
+    ClientDesc();
+    ClientDesc( const ClientDesc & inst );
+    const ClientDesc & operator=( const ClientDesc & inst );
+
+    int id_;
+    String login_;
+    String password_;
+    String firstName_;
+    String lastName_;
+    String suffix_;
+};
+
 class Environment: public LogicComponent
 {
     URHO3D_OBJECT( Environment, LogicComponent )
@@ -29,14 +44,18 @@ public:
 
     /// Network commands.
     void StartServer( int port=-1 );
-    void Connect( const String & addr=String(), int port=-1 );
+    void Connect( const ClientDesc & desc, const String & addr=String(), int port=-1 );
     void Disconnect();
 
+    bool SendChatMessage( const String & message );
+
     /// Callbacks from event handlers.
-    virtual void ClientConnected( int id );
+    virtual bool ClientConnected( int id, const VariantMap & identity, String & errMsg );
     virtual void ClientDisconnected( int id );
     virtual void ConnectedToServer( bool success );
     virtual void StartedServer( bool success );
+    virtual void ConnectionResult( const String & errMsg );
+    virtual void ChatMessage( const String & user, const String & message );
 
 protected:
     /// Subscribe to update, UI and network events.
@@ -52,6 +71,11 @@ protected:
     void HandleClientDisconnected(StringHash eventType, VariantMap& eventData);
     /// Handle remote event from server which tells our controlled object node ID.
     void HandleAssignClientId(StringHash eventType, VariantMap& eventData);
+
+    /// Handle connection status result.
+    void HandleConnectionResult( StringHash eventType, VariantMap & eventData );
+    /// Handle chat messages both on client and server.
+    void HandleChatMessage( StringHash eventType, VariantMap & eventData );
 
 private:
     void IncrementTime( float secs_dt );
@@ -74,7 +98,7 @@ private:
     bool connectingToServer_;
 
     /// Client/Server functionality
-    HashMap<Connection*, int> connections_;
+    HashMap<Connection*, ClientDesc> connections_;
 };
 
 }

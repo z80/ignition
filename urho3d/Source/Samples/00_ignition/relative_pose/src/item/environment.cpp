@@ -9,9 +9,54 @@ namespace Ign
 // UDP port we will use
 static const unsigned short SERVER_PORT = 21345;
 // Identifier for our custom remote event we use to tell the client which object they control
-static const StringHash E_CLIENTID("ClientID");
+static const StringHash E_IGN_CLIENTID("ClientID");
+static const StringHash E_IGN_CONNECTIONRESULT("ConnectionResult");
+static const StringHash E_IGN_CHATMESSAGE("ChatMessage");
 // Identifier for the node ID parameter in the event data
 static const StringHash P_ID("ID");
+// Login
+static const StringHash P_LOGIN("LOGIN");
+static const StringHash P_PASSWORD("PASSWORD");
+static const StringHash P_FIRSTNAME("FIRST_NAME");
+static const StringHash P_LASTNAME("LAST_NAME");
+static const StringHash P_SUFFIX("SUFFIX");
+static const StringHash P_PREFIX("PREFIX");
+// Chat messages
+static const StringHash P_CHATNAME("CHATNAME");
+static const StringHash P_CHATTEXT("CHATTEXT");
+
+
+
+ClientDesc::ClientDesc()
+{
+    id_ = -1;
+}
+
+ClientDesc::ClientDesc( const ClientDesc & inst )
+{
+    *this = inst;
+}
+
+const ClientDesc & ClientDesc::operator=( const ClientDesc & inst )
+{
+    if ( this != &inst )
+    {
+        id_        = inst.id_;
+        login_     = inst.login_;
+        password_  = inst.password_;
+        firstName_ = inst.firstName_;
+        lastName_  = inst.lastName_;
+        suffix_    = inst.suffix_;
+    }
+
+    return *this;
+}
+
+
+
+
+
+
 
 
 Environment::Environment( Context * context )
@@ -106,7 +151,7 @@ void Environment::StartServer( int port )
     startingServer_ = true;
 }
 
-void Environment::Connect( const String & addr, int port )
+void Environment::Connect( const ClientDesc & desc, const String & addr, int port )
 {
     Network * network = GetSubsystem<Network>();
     String address;
@@ -122,6 +167,10 @@ void Environment::Connect( const String & addr, int port )
     clientId_ = -1;
 
     Scene * s = GetScene();
+    VariantMap identity;
+    identity[P_LOGIN]    = desc.login_;
+    identity[P_PASSWORD] = desc.password_;
+
     network->Connect( address, p, s );
 
     connectingToServer_ = true;
@@ -146,20 +195,62 @@ void Environment::Disconnect()
     }
 }
 
-void Environment::ClientConnected( int id )
+bool Environment::SendChatMessage( const String & message )
 {
+    Network * n = GetSubsystem<Network>();
+    Connection * c = n->GetServerConnection();
+    if ( !c )
+    {
+        if ( !n->IsServerRunning() )
+            // If neither client nor server return failure
+            return false;
+
+        // We are server.
+        VariantMap data;
+        data[P_CHATNAME] = "Server";
+        data[P_CHATTEXT] = message;
+        n->BroadcastRemoteEvent( E_IGN_CHATMESSAGE, true, data );
+    }
+    else
+    {
+        // We are client.
+        VariantMap data;
+        data[P_CHATTEXT] = message;
+        c->SendRemoteEvent( E_IGN_CHATMESSAGE, true, data );
+    }
+
+    // Return success
+    return true;
+}
+
+bool Environment::ClientConnected( int id, const VariantMap & identity, String & errMsg )
+{
+    return true;
 }
 
 void Environment::ClientDisconnected( int id )
 {
+    URHO3D_LOGINFOF( "Client disconnected: %i", id );
 }
 
 void Environment::ConnectedToServer( bool success )
 {
+    URHO3D_LOGINFOF( "Connected to server: %b", success );
 }
 
 void Environment::StartedServer( bool success )
 {
+    URHO3D_LOGINFOF( "Started server: %b", success );
+}
+
+void Environment::ConnectionResult( const String & errMsg )
+{
+    URHO3D_LOGINFOF( "Connection refused: %s", errMsg.CString() );
+}
+
+void Environment::ChatMessage( const String & user, const String & message )
+{
+    URHO3D_LOGINFOF( "Chat message: %s: %s", user.CString(), message.CString() );
 }
 
 void Environment::SubscribeToEvents()
@@ -172,10 +263,14 @@ void Environment::SubscribeToEvents()
     SubscribeToEvent( E_CLIENTDISCONNECTED, URHO3D_HANDLER(Environment, HandleClientDisconnected));
     // This is a custom event, sent from the server to the client. It tells the 
     // node ID of the object the client should control
-    SubscribeToEvent(E_CLIENTID, URHO3D_HANDLER( Environment, HandleAssignClientId) );
+    SubscribeToEvent(E_IGN_CLIENTID, URHO3D_HANDLER( Environment, HandleAssignClientId) );
+    SubscribeToEvent(E_IGN_CONNECTIONRESULT, URHO3D_HANDLER( Environment, HandleConnectionResult) );
+    SubscribeToEvent(E_IGN_CHATMESSAGE, URHO3D_HANDLER( Environment, HandleChatMessage) );
     // Events sent between client & server (remote events) must be explicitly registered 
     // or else they are not allowed to be received
-    GetSubsystem<Network>()->RegisterRemoteEvent( E_CLIENTID );
+    GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_CLIENTID );
+    GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_CONNECTIONRESULT );
+    GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_CHATMESSAGE );
 }
 
 void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eventData )
@@ -219,20 +314,46 @@ void Environment::HandleClientConnected( StringHash eventType, VariantMap & even
                                                                                  
     // When a client connects, assign to scene to begin scene replication            
     Connection * newConnection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
+    const int id = UniqueId();
+    const VariantMap & identity = newConnection->GetIdentity();
+
+    // First of all check if it contains needed data.
+    ClientDesc d;
+    VariantMap::ConstIterator it = identity.Find( P_LOGIN );
+    bool hasLogin    = (it != identity.End());
+    if ( hasLogin )
+        d.login_ = it->second_.GetString();
+    it = identity.Find( P_PASSWORD );
+    bool hasPassword = (it != identity.End());
+    if ( hasPassword )
+        d.password_ = it->second_.GetString();
+
+    bool validClient = hasLogin && hasPassword;
+
+    String errMsg;
+    if ( validClient )
+        validClient = ClientConnected( id, identity, errMsg );
+
+    if ( !validClient )
+    {
+        VariantMap data;
+        data[P_CHATTEXT] = errMsg;
+        newConnection->SendRemoteEvent( E_IGN_CONNECTIONRESULT, true, data );
+        newConnection->SendRemoteEvents();
+        newConnection->Disconnect();
+        return;
+    }
+
     Scene * s = GetScene();
     newConnection->SetScene( s );
 
     // Save the connection and assign it unique id.
-    const int id = UniqueId();
-    connections_[newConnection] = id;
-
+    connections_[newConnection] = d;
 
     // Send client its assigned Id.
     VariantMap args;
     args[P_ID] = id;
-    newConnection->SendRemoteEvent( E_CLIENTID, true, args ); 
-
-    ClientConnected( id );
+    newConnection->SendRemoteEvent( E_IGN_CLIENTID, true, args ); 
 
     {
         URHO3D_LOGINFOF( "New client connected, id assigned: %i", id );
@@ -244,12 +365,12 @@ void Environment::HandleClientDisconnected( StringHash eventType, VariantMap & e
     using namespace ClientConnected;
 
     Connection * connection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
-    HashMap<Connection *, int>::Iterator i = connections_.Find( connection );
+    HashMap<Connection *, ClientDesc>::Iterator i = connections_.Find( connection );
     if ( i == connections_.End() )
         return;
 
     connections_.Erase( connection );
-    const int id = i->second_;
+    const int id = i->second_.id_;
     {
         URHO3D_LOGINFOF( "Client %i disconnected", id );
     }
@@ -261,6 +382,41 @@ void Environment::HandleAssignClientId( StringHash eventType, VariantMap & event
 {
     clientId_ = eventData[P_ID].GetUInt();
     URHO3D_LOGINFOF( "Client id assigned: %i", clientId_ );
+}
+
+void Environment::HandleConnectionResult( StringHash eventType, VariantMap & eventData )
+{
+    const String & errMsg = eventData[P_CHATTEXT].GetString();
+    ConnectionResult( errMsg );
+}
+
+void Environment::HandleChatMessage( StringHash eventType, VariantMap & eventData )
+{
+    const bool isServer = IsServer();
+    VariantMap data;
+    if ( isServer )
+    {
+        Network * n = GetSubsystem<Network>();
+
+        using namespace RemoteEventData;
+        Connection* sender = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
+        HashMap<Connection*, ClientDesc>::Iterator it = connections_.Find( sender );
+        if ( it == connections_.End() )
+            return;
+
+        const ClientDesc & c = it->second_;
+
+        data[P_CHATNAME] = c.firstName_ + " " + c.lastName_ + " (" + c.login_ + ")";
+        data[P_CHATTEXT] = eventData[P_CHATTEXT];
+
+        n->BroadcastRemoteEvent( E_IGN_CHATMESSAGE, true, data );
+    }
+    else
+        data = eventData;
+
+    const String user = data[P_CHATNAME].GetString();
+    const String message = data[P_CHATTEXT].GetString();
+    ChatMessage( user, message );
 }
 
 void Environment::IncrementTime( float secs_dt )
@@ -320,10 +476,10 @@ int Environment::UniqueId()
     while ( true )
     {
         bool found = false;
-        for ( HashMap<Connection *, int>::Iterator i = connections_.Begin(); 
+        for ( HashMap<Connection *, ClientDesc>::Iterator i = connections_.Begin(); 
               i!=connections_.End(); i++ )
         {
-            const int existingId = i->second_;
+            const int existingId = i->second_.id_;
             if ( existingId == newId )
             {
                 found = true;
