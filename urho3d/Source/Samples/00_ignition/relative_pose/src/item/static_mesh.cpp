@@ -53,8 +53,11 @@ void StaticMesh::OnSceneSet( Scene * scene )
     node_ = SharedPtr<Node>( scene->CreateChild( name, LOCAL ) );
 
     StaticModel * model = node_->CreateComponent<StaticModel>( LOCAL );
-    model->SetModel( cache->GetResource<Model>("Models/Mushroom.mdl") );
-    model->SetMaterial( cache->GetResource<Material>("Materials/Mushroom.xml") );
+    model->SetModel( cache->GetResource<Model>("Ign/Models/TestCube.mdl") );
+    model->SetMaterial( cache->GetResource<Material>("Ign/Materials/TestCubeM.xml") );
+
+    // To be able to retrieve RefFrame.
+    assignRefFrame( node_ );
 
     computeRefState( nullptr, 0 );
 }

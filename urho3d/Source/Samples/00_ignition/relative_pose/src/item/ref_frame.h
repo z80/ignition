@@ -111,6 +111,13 @@ public:
     /// nodes, meshes etc.
     virtual void cleanup();
 
+    /// Assign user variable to a node to be able to retrieve
+    /// RefFrame when node is available.
+    /// This is needed when for example selecting using mouse.
+    void assignRefFrame( Node * node );
+    static RefFrame * refFrame( Node * node );
+    static RefFrame * refFrame( Scene * s, unsigned id );
+
 public:
     /// For debugging it is easier to identify by human readable name.
     String name_;

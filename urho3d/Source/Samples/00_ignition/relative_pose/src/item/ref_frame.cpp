@@ -501,6 +501,52 @@ void RefFrame::cleanup()
         setParent( 0 );
 }
 
+static const StringHash P_PARENT_ID( "ParentId" );
+
+void RefFrame::assignRefFrame( Node * node )
+{
+    node->SetVar( P_PARENT_ID, Variant( this->GetID() ) );
+}
+
+RefFrame * RefFrame::refFrame( Node * node )
+{
+    const VariantMap & vm = node->GetVars();
+    VariantMap::ConstIterator it = vm.Find( P_PARENT_ID );
+    if ( it == vm.End() )
+        return nullptr;
+
+    const Variant v = it->second_;
+    const unsigned id = v.GetUInt();
+
+    Scene * s = node->GetScene();
+
+    RefFrame * rf = refFrame( s, id );
+    return rf;
+}
+
+RefFrame * RefFrame::refFrame( Scene * s, unsigned id )
+{
+    if ( !s )
+        return nullptr;
+
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        const unsigned c_id = c->GetID();
+        if ( id == c_id )
+        {
+            RefFrame * rf = c->Cast<RefFrame>();
+            if ( rf )
+                return rf;
+        }
+    }
+    return nullptr;
+}
+
+
+
 static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children )
 {
     bool repeat = false;

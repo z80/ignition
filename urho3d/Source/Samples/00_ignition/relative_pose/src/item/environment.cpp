@@ -1,5 +1,6 @@
 
 #include "environment.h"
+#include "ref_frame.h"
 #include "physics_frame.h"
 #include "settings.h"
 
@@ -12,6 +13,7 @@ static const unsigned short SERVER_PORT = 21345;
 static const StringHash E_IGN_CLIENTID("ClientID");
 static const StringHash E_IGN_CONNECTIONRESULT("ConnectionResult");
 static const StringHash E_IGN_CHATMESSAGE("ChatMessage");
+static const StringHash E_IGN_SELECTREQUEST("SelectRequest");
 // Identifier for the node ID parameter in the event data
 static const StringHash P_ID("ID");
 // Login
@@ -223,6 +225,43 @@ bool Environment::SendChatMessage( const String & message )
     return true;
 }
 
+void Environment::RequestItemSelect( Node * node )
+{
+    RefFrame * rf = RefFrame::refFrame( node->GetScene() );
+    if ( !rf )
+    {
+        URHO3D_LOGINFO( "Selecting something not having RefFrame" );
+        return;
+    }
+
+    const unsigned id = rf->GetID();
+
+    Network * n = GetSubsystem<Network>();
+    const bool serverRunning = n->IsServerRunning();
+    Connection * c = n->GetServerConnection();
+
+    if ( (!serverRunning) && ( !c ) )
+    {
+        URHO3D_LOGINFO( "Need to be in game to select something!" );
+        return;
+    }
+
+    if ( serverRunning )
+    {
+        // Call callback locally.
+        ClientDesc c;
+        c.login_ = "_SERVER_";
+        SelectRequest( c, rf );
+    }
+    else
+    {
+        VariantMap data;
+
+        data[P_ID] = id;
+        c->SendRemoteEvent( E_IGN_SELECTREQUEST, true, data );
+    }
+}
+
 bool Environment::ClientConnected( int id, const VariantMap & identity, String & errMsg )
 {
     return true;
@@ -253,6 +292,11 @@ void Environment::ChatMessage( const String & user, const String & message )
     URHO3D_LOGINFOF( "Chat message: %s: %s", user.CString(), message.CString() );
 }
 
+void Environment::SelectRequest( const ClientDesc & c, RefFrame * rf )
+{
+    URHO3D_LOGINFOF( "User %s wants to select: %s", c.login_.CString(), rf->name().CString() );
+}
+
 void Environment::SubscribeToEvents()
 {
     // Subscribe to network events
@@ -266,11 +310,14 @@ void Environment::SubscribeToEvents()
     SubscribeToEvent(E_IGN_CLIENTID, URHO3D_HANDLER( Environment, HandleAssignClientId) );
     SubscribeToEvent(E_IGN_CONNECTIONRESULT, URHO3D_HANDLER( Environment, HandleConnectionResult) );
     SubscribeToEvent(E_IGN_CHATMESSAGE, URHO3D_HANDLER( Environment, HandleChatMessage) );
+    SubscribeToEvent(E_IGN_SELECTREQUEST, URHO3D_HANDLER( Environment, HandleSelectRequest) );
+
     // Events sent between client & server (remote events) must be explicitly registered 
     // or else they are not allowed to be received
     GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_CLIENTID );
     GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_CONNECTIONRESULT );
     GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_CHATMESSAGE );
+    GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_SELECTREQUEST );
 }
 
 void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eventData )
@@ -417,6 +464,24 @@ void Environment::HandleChatMessage( StringHash eventType, VariantMap & eventDat
     const String user = data[P_CHATNAME].GetString();
     const String message = data[P_CHATTEXT].GetString();
     ChatMessage( user, message );
+}
+
+void Environment::HandleSelectRequest( StringHash eventType, VariantMap & eventData )
+{
+    const unsigned id = eventData[P_ID].GetUInt();
+
+    using namespace RemoteEventData;
+    Connection* sender = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
+    HashMap<Connection*, ClientDesc>::Iterator it = connections_.Find( sender );
+    if ( it == connections_.End() )
+        return;
+
+    const ClientDesc & c = it->second_;
+
+    Scene * s = GetScene();
+    RefFrame * rf = RefFrame::refFrame( s, id );
+
+    SelectRequest( c, rf );
 }
 
 void Environment::IncrementTime( float secs_dt )

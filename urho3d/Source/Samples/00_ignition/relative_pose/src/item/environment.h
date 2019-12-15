@@ -10,6 +10,8 @@ using namespace Urho3D;
 namespace Ign
 {
 
+class RefFrame;
+
 class ClientDesc
 {
 public:
@@ -48,6 +50,7 @@ public:
     void Disconnect();
 
     bool SendChatMessage( const String & message );
+    void RequestItemSelect( Node * node );
 
     /// Callbacks from event handlers.
     virtual bool ClientConnected( int id, const VariantMap & identity, String & errMsg );
@@ -56,6 +59,7 @@ public:
     virtual void StartedServer( bool success );
     virtual void ConnectionResult( const String & errMsg );
     virtual void ChatMessage( const String & user, const String & message );
+    virtual void SelectRequest( const ClientDesc & c, RefFrame * rf );
 
 protected:
     /// Subscribe to update, UI and network events.
@@ -76,6 +80,8 @@ protected:
     void HandleConnectionResult( StringHash eventType, VariantMap & eventData );
     /// Handle chat messages both on client and server.
     void HandleChatMessage( StringHash eventType, VariantMap & eventData );
+    /// Handle select request.
+    void HandleSelectRequest( StringHash eventType, VariantMap & eventData );
 
 private:
     void IncrementTime( float secs_dt );
