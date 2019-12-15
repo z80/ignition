@@ -20,12 +20,18 @@
 
 #include <Urho3D/DebugNew.h>
 
+
+
+#include "environment.h"
+#include "main_menu.h"
+
+
 URHO3D_DEFINE_APPLICATION_MAIN(Main)
 
 Main::Main(Context* context) :
     Sample(context)
 {
-    RefFrame::RegisterObject( context );
+    Ign::RegisterComponents( context );
 }
 
 void Main::Start()
@@ -47,6 +53,10 @@ void Main::Start()
 
     // Set the mouse mode to use in the sample
     Sample::InitMouseMode(MM_RELATIVE);
+
+
+    CreateEnvironment();
+    CreateMainMenu();
 }
 
 void Main::CreateScene()
@@ -59,23 +69,23 @@ void Main::CreateScene()
     // show up. The default octree volume will be from (-1000, -1000, -1000) to (1000, 1000, 1000) in world coordinates; it
     // is also legal to place objects outside the volume but their visibility can then not be checked in a hierarchically
     // optimizing manner
-    scene_->CreateComponent<Octree>();
+    scene_->CreateComponent<Octree>( LOCAL );
 
     // Create a child scene node (at world origin) and a StaticModel component into it. Set the StaticModel to show a simple
     // plane mesh with a "stone" material. Note that naming the scene nodes is optional. Scale the scene node larger
     // (100 x 100 world units)
-    Node* planeNode = scene_->CreateChild("Plane");
+    Node* planeNode = scene_->CreateChild("Plane", LOCAL );
     planeNode->SetScale(Vector3(100.0f, 1.0f, 100.0f));
-    auto* planeObject = planeNode->CreateComponent<StaticModel>();
+    auto* planeObject = planeNode->CreateComponent<StaticModel>( LOCAL );
     planeObject->SetModel(cache->GetResource<Model>("Models/Plane.mdl"));
     planeObject->SetMaterial(cache->GetResource<Material>("Materials/StoneTiled.xml"));
 
     // Create a directional light to the world so that we can see something. The light scene node's orientation controls the
     // light direction; we will use the SetDirection() function which calculates the orientation from a forward direction vector.
     // The light will use default settings (white light, no shadows)
-    Node* lightNode = scene_->CreateChild("DirectionalLight");
+    Node* lightNode = scene_->CreateChild("DirectionalLight", LOCAL );
     lightNode->SetDirection(Vector3(0.6f, -1.0f, 0.8f)); // The direction vector does not need to be normalized
-    auto* light = lightNode->CreateComponent<Light>();
+    auto* light = lightNode->CreateComponent<Light>( LOCAL );
     light->SetLightType(LIGHT_DIRECTIONAL);
 
     // Create more StaticModel objects to the scene, randomly positioned, rotated and scaled. For rotation, we construct a
@@ -87,24 +97,25 @@ void Main::CreateScene()
     const unsigned NUM_OBJECTS = 200;
     for (unsigned i = 0; i < NUM_OBJECTS; ++i)
     {
-        Node* mushroomNode = scene_->CreateChild("Mushroom");
+        Node* mushroomNode = scene_->CreateChild( "Mushroom", LOCAL );
         mushroomNode->SetPosition(Vector3(Random(90.0f) - 45.0f, 0.0f, Random(90.0f) - 45.0f));
         mushroomNode->SetRotation(Quaternion(0.0f, Random(360.0f), 0.0f));
         mushroomNode->SetScale(0.5f + Random(2.0f));
-        auto* mushroomObject = mushroomNode->CreateComponent<StaticModel>();
+        auto* mushroomObject = mushroomNode->CreateComponent<StaticModel>( LOCAL );
         mushroomObject->SetModel(cache->GetResource<Model>("Models/Mushroom.mdl"));
         mushroomObject->SetMaterial(cache->GetResource<Material>("Materials/Mushroom.xml"));
     }
 
     // Create a scene node for the camera, which we will move around
     // The camera will use default settings (1000 far clip distance, 45 degrees FOV, set aspect ratio automatically)
-    cameraNode_ = scene_->CreateChild("Camera");
-    cameraNode_->CreateComponent<Camera>();
+    cameraNode_ = scene_->CreateChild("Camera", LOCAL );
+    cameraNode_->CreateComponent<Camera>( LOCAL );
 
     // Set an initial position for the camera scene node above the plane
     cameraNode_->SetPosition(Vector3(0.0f, 5.0f, 0.0f));
 
-
+    
+    /*
     {
         nodeA = scene_->CreateComponent<RefFrame>();
         nodeA->setName( "nodeA" );
@@ -185,7 +196,7 @@ void Main::CreateScene()
             o->SetMaterial(cache->GetResource<Material>("Materials/Mushroom.xml"));
         }
 
-    }
+    }*/
 }
 
 void Main::CreateInstructions()
@@ -265,3 +276,28 @@ void Main::HandleUpdate(StringHash eventType, VariantMap& eventData)
     // Move the camera, scale movement with time step
     MoveCamera(timeStep);
 }
+
+
+
+
+void Main::CreateEnvironment()
+{
+    Scene * s = scene_;
+    if ( !s )
+        return;
+
+    s->CreateComponent<Environment>( LOCAL );
+}
+
+void Main::CreateMainMenu()
+{
+    Scene * s = scene_;
+    if ( !s )
+        return;
+
+    MainMenu * mm = s->CreateComponent<MainMenu>( LOCAL );
+}
+
+
+
+

@@ -7,7 +7,7 @@
 namespace Ign
 {
 
-void PhysicsItem::RegisterObject( Context * context )
+void PhysicsItem::RegisterComponent( Context * context )
 {
     context->RegisterFactory<RefFrame>();
     URHO3D_COPY_BASE_ATTRIBUTES( RefFrame );

@@ -13,7 +13,7 @@ class StaticMesh: public RefFrame
 {
     URHO3D_OBJECT( StaticMesh, RefFrame )
 public:
-    static void RegisterObject( Context * context );
+    static void RegisterComponent( Context * context );
 
     StaticMesh( Context * ctx );
     virtual ~StaticMesh();

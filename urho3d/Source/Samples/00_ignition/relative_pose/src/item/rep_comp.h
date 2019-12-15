@@ -14,7 +14,7 @@ class RepComp: public Component
 {
     URHO3D_OBJECT( RepComp, Component )
 public:
-    static void RegisterObject( Context * context );
+    static void RegisterComponent( Context * context );
 
     RepComp( Context * context );
     ~RepComp();

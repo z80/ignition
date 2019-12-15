@@ -5,7 +5,7 @@ namespace Ign
 {
 
 
-void StaticMesh::RegisterObject( Context * context )
+void StaticMesh::RegisterComponent( Context * context )
 {
     context->RegisterFactory<StaticMesh>();
     URHO3D_COPY_BASE_ATTRIBUTES( RefFrame );

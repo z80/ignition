@@ -8,7 +8,7 @@ namespace Ign
 static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children );
 static void addToList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children );
 
-void RefFrame::RegisterObject( Context * context )
+void RefFrame::RegisterComponent( Context * context )
 {
     context->RegisterFactory<RefFrame>();
     //URHO3D_COPY_BASE_ATTRIBUTES( Component );

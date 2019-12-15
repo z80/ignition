@@ -13,7 +13,7 @@ static Float clusterDist( Vector<SharedPtr<RefFrame> > & objs, unsigned splitInd
 static void  clusterSwap( Vector<SharedPtr<RefFrame> > & src, Vector<SharedPtr<RefFrame> > & dest, unsigned & splitInd, unsigned & elementInd );
 
 
-void PhysicsFrame::RegisterObject( Context * context )
+void PhysicsFrame::RegisterComponent( Context * context )
 {
     context->RegisterFactory<RefFrame>();
     URHO3D_COPY_BASE_ATTRIBUTES( RefFrame );

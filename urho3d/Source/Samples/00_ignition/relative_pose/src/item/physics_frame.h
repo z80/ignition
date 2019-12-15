@@ -17,7 +17,7 @@ class PhysicsFrame: public RefFrame
     URHO3D_OBJECT( PhysicsFrame, RefFrame )
 public:
     /// Register object factory.
-    static void RegisterObject( Context * context );
+    static void RegisterComponent( Context * context );
 
     PhysicsFrame( Context * context );
     ~PhysicsFrame();

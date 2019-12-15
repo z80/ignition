@@ -3,6 +3,8 @@
 #pragma once
 
 #include "Sample.h"
+
+#include "ref_frame_register.h"
 #include "ref_frame.h"
 
 namespace Urho3D
@@ -44,6 +46,11 @@ private:
     void SubscribeToEvents();
     /// Handle the logic update event.
     void HandleUpdate( StringHash eventType, VariantMap & eventData );
+
+
+
+    void CreateEnvironment();
+    void CreateMainMenu();
 
     RefFrame * nodeA, * nodeB, * nodeC, * nodeD;
 };

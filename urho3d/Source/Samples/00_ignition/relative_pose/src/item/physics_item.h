@@ -19,7 +19,7 @@ class PhysicsItem: public RefFrame
     URHO3D_OBJECT( PhysicsItem, RefFrame )
 public:
     /// Register object factory.
-    static void RegisterObject( Context * context );
+    static void RegisterComponent( Context * context );
 
     PhysicsItem( Context * context );
     virtual ~PhysicsItem();

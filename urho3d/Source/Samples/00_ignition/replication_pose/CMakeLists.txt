@@ -27,12 +27,13 @@ include_directories( "../relative_pose/src"
                      "../relative_pose/src/math"
                      "../relative_pose/src/item"
                      "../relative_pose/src/physics"
+                     "../relative_pose/src/ui"
                      "../relative_pose/src/kepler"
                      "./3dparty/eigen-3.3.7" )
 
 file( GLOB_RECURSE src "../relative_pose/src/*.cpp" )
 
-message( WARNING "src: ${src}" )
+#message( WARNING "src: ${src}" )
 
 # Define source files
 define_source_files( EXTRA_CPP_FILES ${src}

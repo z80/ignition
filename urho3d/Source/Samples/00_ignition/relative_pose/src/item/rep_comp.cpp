@@ -4,7 +4,7 @@
 namespace Ign
 {
 
-void RepComp::RegisterObject( Context * context )
+void RepComp::RegisterComponent( Context * context )
 {
     context->RegisterFactory<RepComp>();
 
