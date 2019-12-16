@@ -176,7 +176,7 @@ void Environment::Connect( const ClientDesc & desc, const String & addr, int por
     identity[P_LOGIN]    = desc.login_;
     identity[P_PASSWORD] = desc.password_;
 
-    network->Connect( address, p, s );
+    network->Connect( address, p, s, identity );
 
     connectingToServer_ = true;
 }
