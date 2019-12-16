@@ -60,6 +60,7 @@ public:
     virtual void ConnectionResult( const String & errMsg );
     virtual void ChatMessage( const String & user, const String & message );
     virtual void SelectRequest( const ClientDesc & c, RefFrame * rf );
+    virtual void HandleConsoleCommand( const String & cmd, const String & id=String() );
 
 protected:
     /// Subscribe to update, UI and network events.
@@ -83,7 +84,12 @@ protected:
     /// Handle select request.
     void HandleSelectRequest( StringHash eventType, VariantMap & eventData );
 
+
+    void HandleKeyDown( StringHash eventType, VariantMap & eventData );
+    void HandleConsoleCommand( StringHash eventType, VariantMap & eventData );
+
 private:
+    void SetupConsole();
     void IncrementTime( float secs_dt );
     void UpdateDynamicNodes( Float  secs_dt );
     void UpdateEvolvingNodes( Timestamp ticks_dt );

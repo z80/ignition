@@ -2,6 +2,7 @@
 #include "environment.h"
 #include "ref_frame.h"
 #include "physics_frame.h"
+#include "evolving_frame.h"
 #include "settings.h"
 
 namespace Ign
@@ -100,6 +101,7 @@ bool Environment::IsServer() const
 
 void Environment::Start()
 {
+    SetupConsole();
     SubscribeToEvents();
     SetUpdateEventMask( USE_UPDATE );
 }
@@ -136,7 +138,7 @@ void Environment::Update( float timeStep )
             Timestamp ticksDt = ticksDt_;
             const Timestamp maxTicksDt = Settings::maxEvolutionTimeStep();
 
-            while ( maxTicksDt > 0 )
+            while ( ticksDt > 0 )
             {
                 const Timestamp dt = ( ticksDt > maxTicksDt ) ? maxTicksDt : ticksDt;
                 UpdateEvolvingNodes( dt );
@@ -149,7 +151,8 @@ void Environment::Update( float timeStep )
 void Environment::StartServer( int port )
 {
     Network * n = GetSubsystem<Network>();
-    n->StartServer( port );
+    const int p = (port > 0) ? port : SERVER_PORT;
+    n->StartServer( p );
     startingServer_ = true;
 }
 
@@ -297,6 +300,17 @@ void Environment::SelectRequest( const ClientDesc & c, RefFrame * rf )
     URHO3D_LOGINFOF( "User %s wants to select: %s", c.login_.CString(), rf->name().CString() );
 }
 
+void Environment::HandleConsoleCommand( const String & cmd, const String & id )
+{
+    const String c = cmd.ToLower().Trimmed();
+    if ( (c == "exit") || (c == "quit") )
+    {
+        Engine * e = GetSubsystem<Engine>();
+        e->Exit();
+    }
+    //else if ( cmd == "connect" )
+}
+
 void Environment::SubscribeToEvents()
 {
     // Subscribe to network events
@@ -318,6 +332,12 @@ void Environment::SubscribeToEvents()
     GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_CONNECTIONRESULT );
     GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_CHATMESSAGE );
     GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_SELECTREQUEST );
+
+
+    // Key events.
+    SubscribeToEvent( E_KEYDOWN, URHO3D_HANDLER( Environment, HandleKeyDown ) );
+    // Console commands.
+    SubscribeToEvent( E_CONSOLECOMMAND, URHO3D_HANDLER( Environment, HandleConsoleCommand ) );
 }
 
 void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eventData )
@@ -484,6 +504,51 @@ void Environment::HandleSelectRequest( StringHash eventType, VariantMap & eventD
     SelectRequest( c, rf );
 }
 
+void Environment::HandleKeyDown( StringHash eventType, VariantMap & eventData )
+{
+    const int key = eventData[KeyDown::P_KEY].GetInt();
+    if ( key == SDL_SCANCODE_KP_8 )
+    {
+        Console * c = GetSubsystem<Console>();
+        if (!c)
+            return;
+        c->SetVisible( true );
+    }
+    else if ( key == KEY_ESCAPE )
+    {
+        Console * c = GetSubsystem<Console>();
+        if (!c)
+            return;
+        c->SetVisible( false );
+    }
+}
+
+void Environment::HandleConsoleCommand( StringHash eventType, VariantMap & eventData )
+{
+    using namespace ConsoleCommand;
+    const String cmd = eventData[P_COMMAND].GetString();
+    if ( eventData.Contains( P_ID ) )
+    {
+        const String id = eventData[P_ID].GetString();
+        HandleConsoleCommand( cmd, id );
+    }
+    else
+        HandleConsoleCommand( cmd );
+}
+
+void Environment::SetupConsole()
+{
+    auto * console = GetSubsystem<Console>();
+    console->SetNumRows(GetSubsystem<Graphics>()->GetHeight() / 16);
+    console->SetNumBufferedRows(2 * console->GetNumRows());
+    console->SetCommandInterpreter(GetTypeName());
+    console->SetVisible( false );
+    console->GetCloseButton()->SetVisible( false );
+
+    console->AddAutoComplete("quit");
+    console->AddAutoComplete("help");
+}
+
 void Environment::IncrementTime( float secs_dt )
 {
     const Timestamp ticks = Settings::ticks( secs_dt );
@@ -532,6 +597,10 @@ void Environment::UpdateEvolvingNodes( Timestamp ticks_dt )
         // Try cast to evolving node.
         // And if converted make time step.
         SharedPtr<Component> c = comps[i];
+        EvolvingFrame * ef = c->Cast<EvolvingFrame>();
+        if ( !ef )
+            continue;
+        ef->evolveStep( ticks_dt );
     }
 }
 
