@@ -11,6 +11,8 @@ class MainMenu: public LogicComponent
 {
     URHO3D_OBJECT( MainMenu, LogicComponent )
 public:
+    static void RegisterComponent( Context * context );
+
     MainMenu( Context * context );
     ~MainMenu();
 

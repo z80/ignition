@@ -9,6 +9,8 @@
 #include "orbiting_frame.h"
 #include "environment.h"
 
+#include "main_menu.h"
+
 #include "rep_comp.h"
 #include "static_mesh.h"
 
@@ -25,6 +27,8 @@ void RegisterComponents( Context * context )
     RotatingFrame::RegisterComponent( context );
     //OrbitingFrame::RegisterComponent( context );
     Environment::RegisterComponent( context );
+
+    MainMenu::RegisterComponent( context );
 }
 
 

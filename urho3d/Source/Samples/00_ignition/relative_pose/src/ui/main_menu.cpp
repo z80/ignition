@@ -5,6 +5,11 @@
 namespace Ign
 {
 
+void MainMenu::RegisterComponent( Context * context )
+{
+    context->RegisterFactory<MainMenu>();
+}
+
 MainMenu::MainMenu( Context * context )
   : LogicComponent( context )
 {
@@ -94,7 +99,8 @@ void MainMenu::HandleSettings( StringHash event, VariantMap & args )
 
 void MainMenu::HandleExit( StringHash event, VariantMap & args )
 {
-    //engine_->Exit();
+    Engine * e = GetSubsystem<Engine>();
+    e->Exit();
 }
 
 

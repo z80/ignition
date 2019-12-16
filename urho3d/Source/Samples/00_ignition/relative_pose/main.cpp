@@ -286,7 +286,9 @@ void Main::CreateEnvironment()
     if ( !s )
         return;
 
-    s->CreateComponent<Environment>( LOCAL );
+    Environment * e = s->CreateComponent<Environment>( LOCAL );
+    if ( !e )
+        URHO3D_LOGINFO( "Failed to create environment" );
 }
 
 void Main::CreateMainMenu()
@@ -296,6 +298,8 @@ void Main::CreateMainMenu()
         return;
 
     MainMenu * mm = s->CreateComponent<MainMenu>( LOCAL );
+    if ( !mm )
+        URHO3D_LOGINFO( "Failed to create MainMenu" );
 }
 
 
