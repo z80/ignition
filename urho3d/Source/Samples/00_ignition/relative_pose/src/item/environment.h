@@ -66,12 +66,12 @@ protected:
     /// Subscribe to update, UI and network events.
     virtual void SubscribeToEvents();
 
-    /// Handle pressing the start server button.
-    void HandleStartServer(StringHash eventType, VariantMap& eventData);
     /// Handle connection status change (just update the buttons that should be shown.)
     void HandleConnectionStatus(StringHash eventType, VariantMap& eventData);
     /// Handle a client connecting to the server.
     void HandleClientConnected(StringHash eventType, VariantMap& eventData);
+    /// Handle client identity.
+    void HandleClientIdentity(StringHash eventType, VariantMap& eventData);
     /// Handle a client disconnecting from the server.
     void HandleClientDisconnected(StringHash eventType, VariantMap& eventData);
     /// Handle remote event from server which tells our controlled object node ID.

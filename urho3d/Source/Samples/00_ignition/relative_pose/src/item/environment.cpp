@@ -333,6 +333,7 @@ void Environment::SubscribeToEvents()
     SubscribeToEvent( E_SERVERDISCONNECTED, URHO3D_HANDLER(Environment, HandleConnectionStatus));
     SubscribeToEvent( E_CONNECTFAILED,      URHO3D_HANDLER(Environment, HandleConnectionStatus));
     SubscribeToEvent( E_CLIENTCONNECTED,    URHO3D_HANDLER(Environment, HandleClientConnected));
+    SubscribeToEvent( E_CLIENTIDENTITY,     URHO3D_HANDLER(Environment, HandleClientIdentity));
     SubscribeToEvent( E_CLIENTDISCONNECTED, URHO3D_HANDLER(Environment, HandleClientDisconnected));
     // This is a custom event, sent from the server to the client. It tells the 
     // node ID of the object the client should control
@@ -392,9 +393,8 @@ void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eve
 
 void Environment::HandleClientConnected( StringHash eventType, VariantMap & eventData )
 {
-    using namespace ClientConnected;                                                 
+    /*using namespace ClientConnected;
                                                                                  
-    // When a client connects, assign to scene to begin scene replication            
     Connection * newConnection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
     const int id = UniqueId();
     const VariantMap & identity = newConnection->GetIdentity();
@@ -406,9 +406,14 @@ void Environment::HandleClientConnected( StringHash eventType, VariantMap & even
         for ( VariantMap::ConstIterator it=identity.Begin();
               it!=identity.End(); it++ )
         {
-            URHO3D_LOGINFOF( "id: %h, value: %s", it->first_, it->second_.GetString().CString() );
+            const StringHash sh = it->first_;
+            const String id = sh.ToString();
+            const String stri = it->second_.GetString();
+            const String v = "id: " + id + ", value: " + stri;
+            URHO3D_LOGINFO( v );
         }
     }
+
 
     ClientDesc d;
     VariantMap::ConstIterator it = identity.Find( P_LOGIN );
@@ -438,6 +443,7 @@ void Environment::HandleClientConnected( StringHash eventType, VariantMap & even
         return;
     }
 
+    // When a client connects, assign to scene to begin scene replication
     Scene * s = GetScene();
     newConnection->SetScene( s );
 
@@ -447,7 +453,76 @@ void Environment::HandleClientConnected( StringHash eventType, VariantMap & even
     // Send client its assigned Id.
     VariantMap args;
     args[P_ID] = id;
-    newConnection->SendRemoteEvent( E_IGN_CLIENTID, true, args ); 
+    newConnection->SendRemoteEvent( E_IGN_CLIENTID, true, args );*/
+
+    {
+        URHO3D_LOGINFO( "New client connected" );
+    }
+}
+
+void Environment::HandleClientIdentity( StringHash eventType, VariantMap & eventData )
+{
+    using namespace ClientIdentity;
+
+    Connection * newConnection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
+    const int id = UniqueId();
+    const VariantMap & identity = newConnection->GetIdentity();
+
+    // First of all check if it contains needed data.
+    {
+        const unsigned qty = identity.Size();
+        URHO3D_LOGINFOF( "Identity entries qty: %i", qty );
+        for ( VariantMap::ConstIterator it=identity.Begin();
+              it!=identity.End(); it++ )
+        {
+            const StringHash sh = it->first_;
+            const String id = sh.ToString();
+            const String stri = it->second_.GetString();
+            const String v = "id: " + id + ", value: " + stri;
+            URHO3D_LOGINFO( v );
+        }
+    }
+
+
+    ClientDesc d;
+    VariantMap::ConstIterator it = identity.Find( P_LOGIN );
+    bool hasLogin    = (it != identity.End());
+    if ( hasLogin )
+        d.login_ = it->second_.GetString();
+    it = identity.Find( P_PASSWORD );
+    bool hasPassword = (it != identity.End());
+    if ( hasPassword )
+        d.password_ = it->second_.GetString();
+
+    bool validClient = hasLogin && hasPassword;
+
+    String errMsg;
+    if ( validClient )
+        validClient = ClientConnected( id, identity, errMsg );
+    else
+        errMsg = "Client information provided doesn\'t contain either \'login\', \'password\' or both";
+
+    if ( !validClient )
+    {
+        VariantMap data;
+        data[P_CHATTEXT] = errMsg;
+        newConnection->SendRemoteEvent( E_IGN_CONNECTIONRESULT, true, data );
+        newConnection->SendRemoteEvents();
+        newConnection->Disconnect();
+        return;
+    }
+
+    // When a client connects, assign to scene to begin scene replication
+    Scene * s = GetScene();
+    newConnection->SetScene( s );
+
+    // Save the connection and assign it unique id.
+    connections_[newConnection] = d;
+
+    // Send client its assigned Id.
+    VariantMap args;
+    args[P_ID] = id;
+    newConnection->SendRemoteEvent( E_IGN_CLIENTID, true, args );
 
     {
         URHO3D_LOGINFOF( "New client connected, id assigned: %i", id );
@@ -539,14 +614,15 @@ void Environment::HandleKeyDown( StringHash eventType, VariantMap & eventData )
         Console * c = GetSubsystem<Console>();
         if (!c)
             return;
-        c->SetVisible( true );
+        const bool isVisible = c->IsVisible();
+        c->SetVisible( !isVisible );
     }
     else if ( key == KEY_ESCAPE )
     {
         Console * c = GetSubsystem<Console>();
         if (!c)
             return;
-        c->SetVisible( false );
+        //c->SetVisible( false );
     }
 }
 
