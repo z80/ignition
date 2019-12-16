@@ -154,6 +154,7 @@ void Environment::StartServer( int port )
     const int p = (port > 0) ? port : SERVER_PORT;
     n->StartServer( p );
     startingServer_ = true;
+    clientId_ = 0;
 }
 
 void Environment::Connect( const ClientDesc & desc, const String & addr, int port )
@@ -175,6 +176,20 @@ void Environment::Connect( const ClientDesc & desc, const String & addr, int por
     VariantMap identity;
     identity[P_LOGIN]    = desc.login_;
     identity[P_PASSWORD] = desc.password_;
+
+    {
+        const unsigned qty = identity.Size();
+        URHO3D_LOGINFOF( "Identity entries qty: %i", qty );
+        for ( VariantMap::ConstIterator it=identity.Begin();
+              it!=identity.End(); it++ )
+        {
+            const StringHash sh = it->first_;
+            const String id = sh.ToString();
+            const String stri = it->second_.GetString();
+            const String v = "id: " + id + ", value: " + stri;
+            URHO3D_LOGINFO( v );
+        }
+    }
 
     network->Connect( address, p, s, identity );
 
@@ -368,10 +383,10 @@ void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eve
     const bool canDisconnect  = serverConnection || serverRunning;
     const bool canStartServer = !serverConnection && !serverRunning;
 
-    URHO3D_LOGINFOF( "############################\n"
-                     "    Connection status:\n"
-                     "    Server running: %b\n"
-                     "    Connected:      %b\n"
+    URHO3D_LOGINFO( String( "\n############################\n" ) +
+                    String( "    Connection status:\n" ) +
+                    String( "    Server running: " ) + String( serverRunning ? "true" : "false" ) + String( "\n" ) +
+                     "    Connected:      " + String( (serverConnection) ? "true" : "false" ) + String( "\n" ) +
                      "############################" );
 }
 
@@ -385,6 +400,16 @@ void Environment::HandleClientConnected( StringHash eventType, VariantMap & even
     const VariantMap & identity = newConnection->GetIdentity();
 
     // First of all check if it contains needed data.
+    {
+        const unsigned qty = identity.Size();
+        URHO3D_LOGINFOF( "Identity entries qty: %i", qty );
+        for ( VariantMap::ConstIterator it=identity.Begin();
+              it!=identity.End(); it++ )
+        {
+            URHO3D_LOGINFOF( "id: %h, value: %s", it->first_, it->second_.GetString().CString() );
+        }
+    }
+
     ClientDesc d;
     VariantMap::ConstIterator it = identity.Find( P_LOGIN );
     bool hasLogin    = (it != identity.End());
@@ -400,6 +425,8 @@ void Environment::HandleClientConnected( StringHash eventType, VariantMap & even
     String errMsg;
     if ( validClient )
         validClient = ClientConnected( id, identity, errMsg );
+    else
+        errMsg = "Client information provided doesn\'t contain either \'login\', \'password\' or both";
 
     if ( !validClient )
     {
@@ -606,7 +633,9 @@ void Environment::UpdateEvolvingNodes( Timestamp ticks_dt )
 
 int Environment::UniqueId()
 {
-    int newId = 0;
+    // Start with 1.
+    // 0 is reserved for server.
+    int newId = 1;
     while ( true )
     {
         bool found = false;
