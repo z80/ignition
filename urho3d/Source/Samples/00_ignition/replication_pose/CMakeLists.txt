@@ -26,6 +26,7 @@ set( TARGET_NAME replication_pose )
 include_directories( "../relative_pose/src"
                      "../relative_pose/src/math"
                      "../relative_pose/src/item"
+                     "../relative_pose/src/objects"
                      "../relative_pose/src/physics"
                      "../relative_pose/src/ui"
                      "../relative_pose/src/kepler"
