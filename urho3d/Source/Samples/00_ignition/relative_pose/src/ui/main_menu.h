@@ -17,6 +17,7 @@ public:
     ~MainMenu();
 
     void Start() override;
+    void SetVisible( bool en );
 
 protected:
     void SubscribeToEvents();

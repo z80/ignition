@@ -24,6 +24,11 @@ void MainMenu::Start()
     SubscribeToEvents();
 }
 
+void MainMenu::SetVisible( bool en )
+{
+    mainWnd_->SetVisible( en );
+}
+
 void MainMenu::SubscribeToEvents()
 {
     auto * cache = GetSubsystem<ResourceCache>();
@@ -75,6 +80,8 @@ void MainMenu::HandleNewGame( StringHash event, VariantMap & args )
         return;
 
     e->StartServer();
+
+    SetVisible( false );
 }
 
 void MainMenu::HandleConnect( StringHash event, VariantMap & args )
@@ -91,10 +98,13 @@ void MainMenu::HandleConnect( StringHash event, VariantMap & args )
     c.login_ = "login";
     c.password_ = "password";
     e->Connect( c );
+
+    SetVisible( false );
 }
 
 void MainMenu::HandleSettings( StringHash event, VariantMap & args )
 {
+    SetVisible( false );
 }
 
 void MainMenu::HandleExit( StringHash event, VariantMap & args )
