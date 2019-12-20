@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Sample.h"
+#include "base_app.h"
 
 #include "ref_frame_register.h"
 #include "ref_frame.h"
@@ -22,9 +22,9 @@ using namespace Ign;
 ///     - Creating a 3D scene with static content
 ///     - Displaying the scene using the Renderer subsystem
 ///     - Handling keyboard and mouse input to move a freelook camera
-class Main : public Sample
+class Main : public BaseApp
 {
-    URHO3D_OBJECT(Main, Sample);
+    URHO3D_OBJECT(Main, BaseApp)
 
 public:
     /// Construct.

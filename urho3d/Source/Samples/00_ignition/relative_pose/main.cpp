@@ -29,7 +29,7 @@
 URHO3D_DEFINE_APPLICATION_MAIN(Main)
 
 Main::Main(Context* context) :
-    Sample(context)
+    BaseApp(context)
 {
     Ign::RegisterComponents( context );
 }
@@ -37,7 +37,7 @@ Main::Main(Context* context) :
 void Main::Start()
 {
     // Execute base class startup
-    Sample::Start();
+    BaseApp::Start();
 
     // Create the scene content
     CreateScene();
@@ -52,9 +52,9 @@ void Main::Start()
     SubscribeToEvents();
 
     // Set the mouse mode to use in the sample
-    //Sample::InitMouseMode(MM_RELATIVE);
+    //BaseApp::InitMouseMode(MM_RELATIVE);
 
-    Sample::InitMouseMode( MM_FREE );
+    BaseApp::InitMouseMode( MM_FREE );
 
 
     CreateEnvironment();
