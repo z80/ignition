@@ -32,6 +32,7 @@ Main::Main(Context* context) :
     BaseApp(context)
 {
     Ign::RegisterComponents( context );
+    Ign::Register3dparty( context );
 }
 
 void Main::Start()

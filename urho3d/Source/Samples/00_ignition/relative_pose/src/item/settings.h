@@ -5,13 +5,20 @@
 #include <Urho3D/Urho3DAll.h>
 #include "data_types.h"
 
+using namespace Urho3D;
+
+class ConfigManager;
+
 namespace Ign
 {
 
-class Settings
+class Settings: public Object
 {
+    URHO3D_OBJECT( Settings, Object )
 public:
-    Settings();
+    void RegisterObject( Context * context );
+
+    Settings( Context * context );
     ~Settings();
 
     static Timestamp ticks( Float secs_dt );
@@ -32,6 +39,15 @@ public:
     static Float dynamicsWorldDistanceInclude();
     /// If further away, exclude from dynamics world.
     static Float dynamicsWorldDistanceExclude();
+
+private:
+    void LoadConfig();
+    void SaveConfig();
+
+    ConfigManager * configManager();
+
+    VariantMap settings_;
+    static const String configFileName_;
 };
 
 }

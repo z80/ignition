@@ -1,10 +1,19 @@
 
 #include "settings.h"
+#include "ConfigManager.h"
 
 namespace Ign
 {
 
-Settings::Settings()
+const String Settings::configFileName_ = "config.json";
+
+void Settings::RegisterObject( Context * context )
+{
+    context->RegisterFactory<Settings>();
+}
+
+Settings::Settings( Context * context )
+    : Object( context )
 {}
 
 Settings::~Settings()
@@ -63,6 +72,28 @@ Float Settings::dynamicsWorldDistanceExclude()
 {
     return 500.0;
 }
+
+void Settings::LoadConfig()
+{
+    ConfigManager * m = configManager();
+    const bool res = m->Load( configFileName_, true );
+}
+
+void Settings::SaveConfig()
+{
+    ConfigManager * m = configManager();
+    const bool res = m->Save( configFileName_, true );
+}
+
+ConfigManager * Settings::configManager()
+{
+    Context * c = GetContext();
+    ConfigManager * mgr = c->GetSubsystem<ConfigManager>();
+    if ( !mgr )
+        mgr = c->RegisterSubsystem<ConfigManager>();
+    return mgr;
+}
+
 
 
 }

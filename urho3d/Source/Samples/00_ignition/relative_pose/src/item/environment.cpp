@@ -5,6 +5,8 @@
 #include "evolving_frame.h"
 #include "settings.h"
 
+#include "Notifications.h"
+
 namespace Ign
 {
 
@@ -179,7 +181,11 @@ void Environment::Connect( const ClientDesc & desc, const String & addr, int por
 
     {
         const unsigned qty = identity.Size();
-        URHO3D_LOGINFOF( "Identity entries qty: %i", qty );
+        {
+            //URHO3D_LOGINFOF( "Identity entries qty: %i", qty );
+            const String stri = "Identity entries qty: " + String( qty );
+            Notifications::AddNotification( GetContext(), stri );
+        }
         for ( VariantMap::ConstIterator it=identity.Begin();
               it!=identity.End(); it++ )
         {
@@ -187,7 +193,8 @@ void Environment::Connect( const ClientDesc & desc, const String & addr, int por
             const String id = sh.ToString();
             const String stri = it->second_.GetString();
             const String v = "id: " + id + ", value: " + stri;
-            URHO3D_LOGINFO( v );
+            //URHO3D_LOGINFO( v );
+            Notifications::AddNotification( GetContext(), v );
         }
     }
 
@@ -248,7 +255,7 @@ void Environment::RequestItemSelect( Node * node )
     RefFrame * rf = RefFrame::refFrame( node->GetScene() );
     if ( !rf )
     {
-        URHO3D_LOGINFO( "Selecting something not having RefFrame" );
+        //URHO3D_LOGINFO( "Selecting something not having RefFrame" );
         return;
     }
 
@@ -260,7 +267,8 @@ void Environment::RequestItemSelect( Node * node )
 
     if ( (!serverRunning) && ( !c ) )
     {
-        URHO3D_LOGINFO( "Need to be in game to select something!" );
+        //URHO3D_LOGINFO( "Need to be in game to select something!" );
+        Notifications::AddNotification( GetContext(), "Need to be in game to select something!" );
         return;
     }
 
@@ -287,32 +295,44 @@ bool Environment::ClientConnected( int id, const VariantMap & identity, String &
 
 void Environment::ClientDisconnected( int id )
 {
-    URHO3D_LOGINFOF( "Client disconnected: %i", id );
+    //URHO3D_LOGINFOF( "Client disconnected: %i", id );
+    const String stri = "Client disconnected: " + String( id );
+    Notifications::AddNotification( GetContext(), stri );
 }
 
 void Environment::ConnectedToServer( bool success )
 {
-    URHO3D_LOGINFOF( "Connected to server: %b", success );
+    //URHO3D_LOGINFOF( "Connected to server: %b", success );
+    const String stri = "Connected to server: " + String( success );
+    Notifications::AddNotification( GetContext(), stri );
 }
 
 void Environment::StartedServer( bool success )
 {
-    URHO3D_LOGINFOF( "Started server: %b", success );
+    //URHO3D_LOGINFOF( "Started server: %b", success );
+    const String stri = "Started server: " + String( success );
+    Notifications::AddNotification( GetContext(), stri );
 }
 
 void Environment::ConnectionResult( const String & errMsg )
 {
-    URHO3D_LOGINFOF( "Connection refused: %s", errMsg.CString() );
+    //URHO3D_LOGINFOF( "Connection refused: %s", errMsg.CString() );
+    const String stri = "Connection refused: " + errMsg;
+    Notifications::AddNotification( GetContext(), stri );
 }
 
 void Environment::ChatMessage( const String & user, const String & message )
 {
-    URHO3D_LOGINFOF( "Chat message: %s: %s", user.CString(), message.CString() );
+    //URHO3D_LOGINFOF( "Chat message: %s: %s", user.CString(), message.CString() );
+    const String stri = "Char message: " + user + " " + message;
+    Notifications::AddNotification( GetContext(), stri );
 }
 
 void Environment::SelectRequest( const ClientDesc & c, RefFrame * rf )
 {
-    URHO3D_LOGINFOF( "User %s wants to select: %s", c.login_.CString(), rf->name().CString() );
+    //URHO3D_LOGINFOF( "User %s wants to select: %s", c.login_.CString(), rf->name().CString() );
+    const String stri = "User " + c.login_ + " wants to select " + rf->name();
+    Notifications::AddNotification( GetContext(), stri );
 }
 
 void Environment::HandleConsoleCommand( const String & cmd, const String & id )
@@ -384,11 +404,13 @@ void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eve
     const bool canDisconnect  = serverConnection || serverRunning;
     const bool canStartServer = !serverConnection && !serverRunning;
 
-    URHO3D_LOGINFO( String( "\n############################\n" ) +
+    const String stri =
+                    String( "\n############################\n" ) +
                     String( "    Connection status:\n" ) +
                     String( "    Server running: " ) + String( serverRunning ? "true" : "false" ) + String( "\n" ) +
                      "    Connected:      " + String( (serverConnection) ? "true" : "false" ) + String( "\n" ) +
-                     "############################" );
+                     "############################";
+    Notifications::AddNotification( GetContext(), stri );
 }
 
 void Environment::HandleClientConnected( StringHash eventType, VariantMap & eventData )
@@ -456,7 +478,9 @@ void Environment::HandleClientConnected( StringHash eventType, VariantMap & even
     newConnection->SendRemoteEvent( E_IGN_CLIENTID, true, args );*/
 
     {
-        URHO3D_LOGINFO( "New client connected" );
+        //URHO3D_LOGINFO( "New client connected" );
+        const String stri = "New client connected";
+        Notifications::AddNotification( GetContext(), stri );
     }
 }
 
@@ -471,7 +495,11 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
     // First of all check if it contains needed data.
     {
         const unsigned qty = identity.Size();
-        URHO3D_LOGINFOF( "Identity entries qty: %i", qty );
+        {
+            URHO3D_LOGINFOF( "Identity entries qty: %i", qty );
+            const String stri = "Identity entries qty: " + String( qty );
+            Notifications::AddNotification( GetContext(), stri );
+        }
         for ( VariantMap::ConstIterator it=identity.Begin();
               it!=identity.End(); it++ )
         {
@@ -479,7 +507,10 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
             const String id = sh.ToString();
             const String stri = it->second_.GetString();
             const String v = "id: " + id + ", value: " + stri;
-            URHO3D_LOGINFO( v );
+            {
+                //URHO3D_LOGINFO( v );
+                Notifications::AddNotification( GetContext(), v );
+            }
         }
     }
 
@@ -525,7 +556,9 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
     newConnection->SendRemoteEvent( E_IGN_CLIENTID, true, args );
 
     {
-        URHO3D_LOGINFOF( "New client connected, id assigned: %i", id );
+        //URHO3D_LOGINFOF( "New client connected, id assigned: %i", id );
+        const String stri = "New client connected, id assigned: " + String( id );
+        Notifications::AddNotification( GetContext(), stri );
     }
 }
 
@@ -541,7 +574,9 @@ void Environment::HandleClientDisconnected( StringHash eventType, VariantMap & e
     connections_.Erase( connection );
     const int id = i->second_.id_;
     {
-        URHO3D_LOGINFOF( "Client %i disconnected", id );
+        //URHO3D_LOGINFOF( "Client %i disconnected", id );
+        const String stri = "Client " + String(id) + " disconnected";
+        Notifications::AddNotification( GetContext(), stri );
     }
 
     ClientDisconnected( id );
@@ -550,7 +585,11 @@ void Environment::HandleClientDisconnected( StringHash eventType, VariantMap & e
 void Environment::HandleAssignClientId( StringHash eventType, VariantMap & eventData )
 {
     clientId_ = eventData[P_ID].GetUInt();
-    URHO3D_LOGINFOF( "Client id assigned: %i", clientId_ );
+    //URHO3D_LOGINFOF( "Client id assigned: %i", clientId_ );
+    {
+        const String stri = "Client id assigned: " + String( clientId_ );
+        Notifications::AddNotification( GetContext(), stri );
+    }
 }
 
 void Environment::HandleConnectionResult( StringHash eventType, VariantMap & eventData )

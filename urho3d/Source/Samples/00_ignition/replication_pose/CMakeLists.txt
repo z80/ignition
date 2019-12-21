@@ -30,6 +30,9 @@ include_directories( "../relative_pose/src"
                      "../relative_pose/src/physics"
                      "../relative_pose/src/ui"
                      "../relative_pose/src/kepler"
+                     "../relative_pose/src/3dparty"
+                     "../relative_pose/src/3dparty/Config"
+                     "../relative_pose/src/3dparty/Messages"
                      "./3dparty/eigen-3.3.7" )
 
 file( GLOB_RECURSE src "../relative_pose/src/*.cpp" )
