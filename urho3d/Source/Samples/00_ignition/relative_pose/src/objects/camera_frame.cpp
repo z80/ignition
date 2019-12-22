@@ -73,31 +73,37 @@ void CameraFrame::refStateChanged()
     const Vector3 r( s.r.x_, s.r.y_, s.r.z_ );
     const Quaternion q( s.q.w_, s.q.x_, s.q.y_, s.q.z_ );
 
-    node->SetPosition( r );
-    node->SetRotation( q );
+    node_->SetPosition( r );
+    node_->SetRotation( q );
 }
 
 
 void CameraFrame::assignCameraNode()
 {
     if ( userId_ < 0 )
-      return;
+    {
+        node_.Reset();
+        return;
+    }
 
     Scene * s = GetScene();
     if ( !s )
-      return;
+    {
+        node_.Reset();
+        return;
+    }
 
     Environment * e = s->GetComponent<Environment>();
     if ( !e )
-      return;
+        return;
 
     // Check if userId matches environment userId and query node only in this
     // case.
-    if ( (!e->IsServer()) && (!e->IsCLient()) )
-      return;
+    if ( (!e->IsServer()) && (!e->IsClient()) )
+        return;
 
-    if (e->userId_ != userId_)
-      return;
+    if (e->clientDesc().id_ != userId_)
+        return;
 
     Camera * c = s->GetComponent<Camera>( true );
     Node * n = c->GetNode();

@@ -25,6 +25,7 @@ public:
     String firstName_;
     String lastName_;
     String suffix_;
+    int    cameraFrameId_; // CameraId_ ID to find it easier.
 };
 
 class Environment: public LogicComponent
@@ -51,6 +52,8 @@ public:
 
     bool SendChatMessage( const String & message );
     void RequestItemSelect( Node * node );
+
+    ClientDesc & clientDesc();
 
     /// Callbacks from event handlers.
     virtual bool ClientConnected( int id, const VariantMap & identity, String & errMsg );
@@ -103,7 +106,7 @@ private:
 
 
     /// In the case of client assign client Id;
-    int clientId_;
+    ClientDesc clientDesc_;
 
     /// Network state holders
     bool startingServer_;

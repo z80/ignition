@@ -3,6 +3,7 @@
 #include "ref_frame.h"
 #include "physics_frame.h"
 #include "evolving_frame.h"
+#include "camera_frame.h"
 #include "settings.h"
 
 #include "Notifications.h"
@@ -18,7 +19,8 @@ static const StringHash E_IGN_CONNECTIONRESULT("ConnectionResult");
 static const StringHash E_IGN_CHATMESSAGE("ChatMessage");
 static const StringHash E_IGN_SELECTREQUEST("SelectRequest");
 // Identifier for the node ID parameter in the event data
-static const StringHash P_ID("ID");
+static const StringHash P_ID("Id");
+static const StringHash P_CAMERAID("CameraId");
 // Login
 static const StringHash P_LOGIN("LOGIN");
 static const StringHash P_PASSWORD("PASSWORD");
@@ -70,7 +72,7 @@ Environment::Environment( Context * context )
     T_        = 0;
     secsDt_   = 0.0;
     ticksDt_  = 0;
-    clientId_ = -1;
+    clientDesc_.id_ = -1;
 
     startingServer_     = false;
     connectingToServer_ = false;
@@ -148,6 +150,9 @@ void Environment::Update( float timeStep )
             }
         }
     }
+
+    // Update all RefFrame objects based on current user id.
+
 }
 
 void Environment::StartServer( int port )
@@ -156,7 +161,7 @@ void Environment::StartServer( int port )
     const int p = (port > 0) ? port : SERVER_PORT;
     n->StartServer( p );
     startingServer_ = true;
-    clientId_ = 0;
+    clientDesc_.id_ = 0;
 }
 
 void Environment::Connect( const ClientDesc & desc, const String & addr, int port )
@@ -172,7 +177,7 @@ void Environment::Connect( const ClientDesc & desc, const String & addr, int por
         p = port;
     else
         p = SERVER_PORT;
-    clientId_ = -1;
+    clientDesc_.id_ = -1;
 
     Scene * s = GetScene();
     VariantMap identity;
@@ -205,7 +210,7 @@ void Environment::Connect( const ClientDesc & desc, const String & addr, int por
 
 void Environment::Disconnect()
 {
-    clientId_ = -1;
+    clientDesc_.id_ = -1;
 
     Network * network = GetSubsystem<Network>();
     Connection * serverConnection = network->GetServerConnection(); 
@@ -214,7 +219,7 @@ void Environment::Disconnect()
         serverConnection->Disconnect();
         Scene * s = GetScene();
         s->Clear( true, false );
-        clientId_ = -1;
+        clientDesc_.id_ = -1;
     }
     else if ( network->IsServerRunning() )
     {
@@ -286,6 +291,11 @@ void Environment::RequestItemSelect( Node * node )
         data[P_ID] = id;
         c->SendRemoteEvent( E_IGN_SELECTREQUEST, true, data );
     }
+}
+
+ClientDesc & Environment::clientDesc()
+{
+    return clientDesc_;
 }
 
 bool Environment::ClientConnected( int id, const VariantMap & identity, String & errMsg )
@@ -415,68 +425,6 @@ void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eve
 
 void Environment::HandleClientConnected( StringHash eventType, VariantMap & eventData )
 {
-    /*using namespace ClientConnected;
-                                                                                 
-    Connection * newConnection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
-    const int id = UniqueId();
-    const VariantMap & identity = newConnection->GetIdentity();
-
-    // First of all check if it contains needed data.
-    {
-        const unsigned qty = identity.Size();
-        URHO3D_LOGINFOF( "Identity entries qty: %i", qty );
-        for ( VariantMap::ConstIterator it=identity.Begin();
-              it!=identity.End(); it++ )
-        {
-            const StringHash sh = it->first_;
-            const String id = sh.ToString();
-            const String stri = it->second_.GetString();
-            const String v = "id: " + id + ", value: " + stri;
-            URHO3D_LOGINFO( v );
-        }
-    }
-
-
-    ClientDesc d;
-    VariantMap::ConstIterator it = identity.Find( P_LOGIN );
-    bool hasLogin    = (it != identity.End());
-    if ( hasLogin )
-        d.login_ = it->second_.GetString();
-    it = identity.Find( P_PASSWORD );
-    bool hasPassword = (it != identity.End());
-    if ( hasPassword )
-        d.password_ = it->second_.GetString();
-
-    bool validClient = hasLogin && hasPassword;
-
-    String errMsg;
-    if ( validClient )
-        validClient = ClientConnected( id, identity, errMsg );
-    else
-        errMsg = "Client information provided doesn\'t contain either \'login\', \'password\' or both";
-
-    if ( !validClient )
-    {
-        VariantMap data;
-        data[P_CHATTEXT] = errMsg;
-        newConnection->SendRemoteEvent( E_IGN_CONNECTIONRESULT, true, data );
-        newConnection->SendRemoteEvents();
-        newConnection->Disconnect();
-        return;
-    }
-
-    // When a client connects, assign to scene to begin scene replication
-    Scene * s = GetScene();
-    newConnection->SetScene( s );
-
-    // Save the connection and assign it unique id.
-    connections_[newConnection] = d;
-
-    // Send client its assigned Id.
-    VariantMap args;
-    args[P_ID] = id;
-    newConnection->SendRemoteEvent( E_IGN_CLIENTID, true, args );*/
-
     {
         //URHO3D_LOGINFO( "New client connected" );
         const String stri = "New client connected";
@@ -543,8 +491,14 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
         return;
     }
 
-    // When a client connects, assign to scene to begin scene replication
+
     Scene * s = GetScene();
+
+    // Create camera frame for newly connected client.
+    CameraFrame * cf = s->CreateComponent<CameraFrame>();
+    d.cameraFrameId_ = cf->GetID();
+
+    // When a client connects, assign to scene to begin scene replication
     newConnection->SetScene( s );
 
     // Save the connection and assign it unique id.
@@ -552,7 +506,8 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
 
     // Send client its assigned Id.
     VariantMap args;
-    args[P_ID] = id;
+    args[P_ID]       = id;
+    args[P_CAMERAID] = cf->GetID();
     newConnection->SendRemoteEvent( E_IGN_CLIENTID, true, args );
 
     {
@@ -584,10 +539,15 @@ void Environment::HandleClientDisconnected( StringHash eventType, VariantMap & e
 
 void Environment::HandleAssignClientId( StringHash eventType, VariantMap & eventData )
 {
-    clientId_ = eventData[P_ID].GetUInt();
-    //URHO3D_LOGINFOF( "Client id assigned: %i", clientId_ );
+    clientDesc_.id_            = eventData[P_ID].GetUInt();
+    clientDesc_.cameraFrameId_ = eventData[P_CAMERAID].GetUInt();
+    //URHO3D_LOGINFOF( "Client id assigned: %i", clientDesc_.id_ );
     {
-        const String stri = "Client id assigned: " + String( clientId_ );
+        const String stri = "Client id assigned: " + String( clientDesc_.id_ );
+        Notifications::AddNotification( GetContext(), stri );
+    }
+    {
+        const String stri = "Camera frame id assigned: " + String( clientDesc_.cameraFrameId_ );
         Notifications::AddNotification( GetContext(), stri );
     }
 }
