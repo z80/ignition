@@ -22,6 +22,7 @@ protected:
     void OnSceneSet( Scene * scene ) override;
 
 public:
+    void assignCameraNode();
     // It should modify real Node only if userId specified matches the one
     //
     int userId_;
