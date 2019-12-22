@@ -17,11 +17,13 @@ public:
     ~CameraFrame();
 
     void SetUserId( unsigned id );
+    void UpdatePose( Float sec_dt );
 
 protected:
     void OnSceneSet( Scene * scene ) override;
 
 public:
+    void refStateChanged() override;
     void assignCameraNode();
     // It should modify real Node only if userId specified matches the one
     //
