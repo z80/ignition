@@ -5,7 +5,7 @@
 
 #include "Global3dparty.h"
 
-static const int NOTIFICATION_OVERLAP_TIME = 500;
+static const int NOTIFICATION_OVERLAP_TIME = 2000;
 
 void Notifications::AddNotification( Context * context, const String & msg, const Color & color )
 {

@@ -33,6 +33,14 @@ include_directories( "../relative_pose/src"
                      "../relative_pose/src/3dparty"
                      "../relative_pose/src/3dparty/Config"
                      "../relative_pose/src/3dparty/Messages"
+                     "../relative_pose/src/3dparty/Audio"
+                     "../relative_pose/src/3dparty/Input"
+                     "../relative_pose/src/3dparty/Console"
+                     "../relative_pose/src/3dparty/Ui"
+                     "../relative_pose/src/3dparty/Ui/Pause"
+                     "../relative_pose/src/3dparty/Ui/PopupMessage"
+                     "../relative_pose/src/3dparty/Ui/QuitConfirmation"
+                     "../relative_pose/src/3dparty/Ui/Settings"
                      "./3dparty/eigen-3.3.7" )
 
 file( GLOB_RECURSE src "../relative_pose/src/*.cpp" )
