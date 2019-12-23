@@ -408,6 +408,11 @@ void Environment::CreateReplicatedContentServer( CameraFrame * camera )
 
 }
 
+void Environment::CreateReplicatedContentClient( CameraFrame * camera )
+{
+
+}
+
 void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eventData )
 {
     Network * network = GetSubsystem<Network>();
