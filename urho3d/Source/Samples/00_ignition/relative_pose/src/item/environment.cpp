@@ -177,6 +177,8 @@ void Environment::StartServer( int port )
     Scene * s = GetScene();
     CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
     clientDesc_.cameraFrameId_ = cf->GetID();
+
+    CreateReplicatedContentServer( cf );
 }
 
 void Environment::Connect( const ClientDesc & desc, const String & addr, int port )
@@ -401,6 +403,11 @@ void Environment::SubscribeToEvents()
     SubscribeToEvent( E_CONSOLECOMMAND, URHO3D_HANDLER( Environment, HandleConsoleCommand ) );
 }
 
+void Environment::CreateReplicatedContentServer( CameraFrame * camera )
+{
+
+}
+
 void Environment::HandleConnectionStatus( StringHash eventType, VariantMap & eventData )
 {
     Network * network = GetSubsystem<Network>();
@@ -512,6 +519,8 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
     // Create camera frame for newly connected client.
     CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
     d.cameraFrameId_ = cf->GetID();
+
+    CreateReplicatedContentClient( cf );
 
     // When a client connects, assign to scene to begin scene replication
     newConnection->SetScene( s );

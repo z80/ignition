@@ -69,6 +69,8 @@ public:
 protected:
     /// Subscribe to update, UI and network events.
     virtual void SubscribeToEvents();
+    virtual void CreateReplicatedContentServer( CameraFrame * camera );
+    virtual void CreateReplicatedContentClient( CameraFrame * camera );
 
     /// Handle connection status change (just update the buttons that should be shown.)
     void HandleConnectionStatus(StringHash eventType, VariantMap& eventData);
