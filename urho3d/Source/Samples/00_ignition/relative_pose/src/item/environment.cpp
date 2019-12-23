@@ -177,8 +177,10 @@ void Environment::StartServer( int port )
     Scene * s = GetScene();
     CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
     clientDesc_.cameraFrameId_ = cf->GetID();
+    cf->userId_ = clientDesc_.id_;
 
-    CreateReplicatedContentServer( cf );
+    CreateReplicatedContentServer();
+    CreateReplicatedContentClient( cf );
 }
 
 void Environment::Connect( const ClientDesc & desc, const String & addr, int port )
@@ -362,7 +364,7 @@ void Environment::SelectRequest( const ClientDesc & c, RefFrame * rf )
     Notifications::AddNotification( GetContext(), stri );
 }
 
-void Environment::HandleConsoleCommand( const String & cmd, const String & id )
+void Environment::ConsoleCommand( const String & cmd, const String & id )
 {
     const String c = cmd.ToLower().Trimmed();
     if ( (c == "exit") || (c == "quit") )
@@ -403,7 +405,7 @@ void Environment::SubscribeToEvents()
     SubscribeToEvent( E_CONSOLECOMMAND, URHO3D_HANDLER( Environment, HandleConsoleCommand ) );
 }
 
-void Environment::CreateReplicatedContentServer( CameraFrame * camera )
+void Environment::CreateReplicatedContentServer()
 {
 
 }
@@ -524,6 +526,7 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
     // Create camera frame for newly connected client.
     CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
     d.cameraFrameId_ = cf->GetID();
+    cf->userId_ = id;
 
     CreateReplicatedContentClient( cf );
 
@@ -661,10 +664,10 @@ void Environment::HandleConsoleCommand( StringHash eventType, VariantMap & event
     if ( eventData.Contains( P_ID ) )
     {
         const String id = eventData[P_ID].GetString();
-        HandleConsoleCommand( cmd, id );
+        ConsoleCommand( cmd, id );
     }
     else
-        HandleConsoleCommand( cmd );
+        ConsoleCommand( cmd );
 }
 
 void Environment::SetupConsole()

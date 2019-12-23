@@ -64,12 +64,12 @@ public:
     virtual void ConnectionResult( const String & errMsg );
     virtual void ChatMessage( const String & user, const String & message );
     virtual void SelectRequest( const ClientDesc & c, RefFrame * rf );
-    virtual void HandleConsoleCommand( const String & cmd, const String & id=String() );
+    virtual void ConsoleCommand( const String & cmd, const String & id=String() );
 
 protected:
     /// Subscribe to update, UI and network events.
     virtual void SubscribeToEvents();
-    virtual void CreateReplicatedContentServer( CameraFrame * camera );
+    virtual void CreateReplicatedContentServer();
     virtual void CreateReplicatedContentClient( CameraFrame * camera );
 
     /// Handle connection status change (just update the buttons that should be shown.)

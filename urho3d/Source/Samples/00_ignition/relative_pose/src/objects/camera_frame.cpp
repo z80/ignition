@@ -68,7 +68,11 @@ RefFrame *CameraFrame::UpdatePose( Float sec_dt )
 void CameraFrame::refStateChanged()
 {
     if ( !node_ )
-        return;
+    {
+        assignCameraNode();
+        if ( !node_ )
+            return;
+    }
     const State s = refState();
 
     const Vector3 r( s.r.x_, s.r.y_, s.r.z_ );
