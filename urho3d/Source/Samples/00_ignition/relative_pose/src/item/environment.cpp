@@ -7,6 +7,7 @@
 #include "settings.h"
 
 #include "Notifications.h"
+#include "ConfigManager.h"
 
 namespace Ign
 {
@@ -105,6 +106,7 @@ bool Environment::IsServer() const
 
 void Environment::Start()
 {
+    LoadTranslations();
     SetupConsole();
     SubscribeToEvents();
     SetUpdateEventMask( USE_UPDATE );
@@ -816,6 +818,43 @@ int Environment::UniqueId()
         newId += 1;
     }
     return newId;
+}
+
+void Environment::LoadTranslations()
+{
+    Vector<String> result;
+    Localization * localization = GetSubsystem<Localization>();
+    ResourceCache * cache = GetSubsystem<ResourceCache>();
+
+    // Get all translation files in the Data/Translations folder
+    FileSystem * fs = GetSubsystem<FileSystem>();
+    fs->ScanDir( result, GetSubsystem<FileSystem>()->GetProgramDir() + String("Data/Ign/Translations"), String("*.json"), SCAN_FILES, true );
+
+#ifdef __ANDROID__
+    result.Push("EN.json");
+    result.Push("LV.json");
+#endif
+
+    for (auto it = result.Begin(); it != result.End(); ++it) {
+        String file = (*it);
+
+        String filepath = "Translations/" + file;
+        // Filename is handled as a language
+        file.Replace(".json", "", false);
+
+        auto jsonFile = cache->GetResource<JSONFile>(filepath);
+        if (jsonFile)
+        {
+            // Load the actual file in the system
+            localization->LoadSingleLanguageJSON(jsonFile->GetRoot(), file);
+            URHO3D_LOGINFO("Loading translation file '" + filepath + "' to '" + file + "' language");
+        } else {
+            URHO3D_LOGERROR("Translation file '" + filepath + "' not found!");
+        }
+    }
+
+    // Finally set the application language
+    localization->SetLanguage( GetSubsystem<ConfigManager>()->GetString("engine", "Language", "EN" ) );
 }
 
 

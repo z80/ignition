@@ -102,6 +102,7 @@ private:
     CameraFrame * FindCameraFrame();
     void ProcessLocalVisuals( Float secs_dt );
     int  UniqueId();
+    void LoadTranslations();
 
     /// Global time
     Timestamp T_;
