@@ -11,6 +11,7 @@ namespace Ign
 {
 
 class RefFrame;
+class CameraFrame;
 
 class ClientDesc
 {
@@ -96,6 +97,8 @@ private:
     void IncrementTime( float secs_dt );
     void UpdateDynamicNodes( Float  secs_dt );
     void UpdateEvolvingNodes( Timestamp ticks_dt );
+    CameraFrame * FindCameraFrame();
+    void ProcessLocalVisuals( Float secs_dt );
     int  UniqueId();
 
     /// Global time

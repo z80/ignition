@@ -151,8 +151,18 @@ void Environment::Update( float timeStep )
         }
     }
 
+    // This runs locally.
     // Update all RefFrame objects based on current user id.
-
+    {
+        Float secsDt = secsDt_;
+        const Float maxSecsDt = Settings::maxDynamicsTimeStep();
+        while ( secsDt > 0.0001 )
+        {
+            const Float dt = ( secsDt >= maxSecsDt ) ? maxSecsDt : secsDt;
+            ProcessLocalVisuals( secsDt );
+            secsDt -= dt;
+        }
+    }
 }
 
 void Environment::StartServer( int port )
@@ -162,6 +172,11 @@ void Environment::StartServer( int port )
     n->StartServer( p );
     startingServer_ = true;
     clientDesc_.id_ = 0;
+
+    // Create camera frame for newly connected client.
+    Scene * s = GetScene();
+    CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
+    clientDesc_.cameraFrameId_ = cf->GetID();
 }
 
 void Environment::Connect( const ClientDesc & desc, const String & addr, int port )
@@ -495,7 +510,7 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
     Scene * s = GetScene();
 
     // Create camera frame for newly connected client.
-    CameraFrame * cf = s->CreateComponent<CameraFrame>();
+    CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
     d.cameraFrameId_ = cf->GetID();
 
     // When a client connects, assign to scene to begin scene replication
@@ -703,6 +718,61 @@ void Environment::UpdateEvolvingNodes( Timestamp ticks_dt )
         if ( !ef )
             continue;
         ef->evolveStep( ticks_dt );
+    }
+}
+
+CameraFrame * Environment::FindCameraFrame()
+{
+    const int frameId = clientDesc_.cameraFrameId_;
+    if ( frameId < 0 )
+        return nullptr;
+
+    Scene * s = GetScene();
+    if ( !s )
+        return nullptr;
+
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        if ( !c )
+            continue;
+        CameraFrame * cf = c->Cast<CameraFrame>();
+        if ( !cf )
+            continue;
+        if ( cf->userId_ == clientDesc_.id_ )
+            return cf;
+    }
+
+    return nullptr;
+}
+
+void Environment::ProcessLocalVisuals( Float secs_dt )
+{
+    CameraFrame * cam = FindCameraFrame();
+    if ( !cam )
+        return;
+
+    RefFrame * originParent = cam->UpdatePose( secs_dt );
+
+    Scene * s = GetScene();
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        if ( !c )
+            continue;
+        RefFrame * rf = c->Cast<RefFrame>();
+        if ( !rf )
+            continue;
+        // Do not process camera frames.
+        CameraFrame * cf = c->Cast<CameraFrame>();
+        if ( cf )
+            continue;
+
+        rf->computeRefState( originParent );
     }
 }
 

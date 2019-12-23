@@ -369,7 +369,7 @@ bool RefFrame::computeRefState( const RefFrame * other, Timestamp t, bool recurs
     {
         // Compute for itself.
         const bool res = relativeState( other, refSt_ );
-        // Call overridable method with needed subclass functionality.
+        // Call overrideable method with needed subclass functionality.
         refStateChanged();
         if ( !res )
             return false;

@@ -36,7 +36,7 @@ void CameraFrame::SetUserId( unsigned id )
     MarkNetworkUpdate();
 }
 
-void CameraFrame::UpdatePose( Float sec_dt )
+RefFrame *CameraFrame::UpdatePose( Float sec_dt )
 {
     // If parent is physics item take another parent to get to physics frame.
     // If it is not physics item use it as an origin for ref state.
@@ -44,24 +44,25 @@ void CameraFrame::UpdatePose( Float sec_dt )
     if ( !p )
     {
         computeRefState();
-        return;
+        return nullptr;
     }
     // Try convert to physicsBody
     PhysicsItem * pi = p->Cast<PhysicsItem>();
     if ( !pi )
     {
-        computeRefState();
-        return;
+        computeRefState( pi );
+        return pi;
     }
     RefFrame * p2 = pi->parent();
     PhysicsFrame * pf = p2->Cast<PhysicsFrame>();
     if ( pf )
     {
         computeRefState( pf );
-        return;
+        return pf;
     }
 
     computeRefState( p );
+    return p;
 }
 
 void CameraFrame::refStateChanged()

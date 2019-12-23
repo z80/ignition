@@ -17,7 +17,7 @@ public:
     ~CameraFrame();
 
     void SetUserId( unsigned id );
-    void UpdatePose( Float sec_dt );
+    RefFrame * UpdatePose( Float sec_dt );
 
 protected:
     void OnSceneSet( Scene * scene ) override;
