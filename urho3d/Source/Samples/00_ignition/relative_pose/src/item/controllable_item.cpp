@@ -42,6 +42,14 @@ int ControllableItem::CreatedBy() const
     return createdByUserId_;
 }
 
+bool ControllableItem::CanBeControlledBy( int userId ) const
+{
+    const bool res = ( ( userId ==  createdByUserId_) && ( userId >= 0 ) );
+    return res;
+}
+
+
+
 }
 
 

@@ -2,6 +2,7 @@
 #ifndef __REF_FRAME_H_
 #define __REF_FRAME_H_
 
+#include "controllable_item.h"
 #include "data_types.h"
 #include "vector3d.h"
 #include "quaterniond.h"
@@ -20,9 +21,9 @@ struct State
     Vector3d    w;
 };
 
-class RefFrame:  public Urho3D::Component
+class RefFrame:  public ControllableItem
 {
-    URHO3D_OBJECT( RefFrame, Component )
+    URHO3D_OBJECT( RefFrame, ControllableItem )
 public:
     /// Register object factory.
     static void RegisterComponent( Context * context );

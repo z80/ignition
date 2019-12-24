@@ -11,7 +11,7 @@ static void addToList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children 
 void RefFrame::RegisterComponent( Context * context )
 {
     context->RegisterFactory<RefFrame>();
-    //URHO3D_COPY_BASE_ATTRIBUTES( Component );
+    URHO3D_COPY_BASE_ATTRIBUTES( ControllableItem );
 
     // Need to think on how to assign parent and update over network.
     URHO3D_ACCESSOR_ATTRIBUTE( "ParentId", getParentId, setParentId, unsigned, 0.0, AM_DEFAULT );
@@ -39,7 +39,7 @@ void RefFrame::RegisterComponent( Context * context )
 }
 
 RefFrame::RefFrame( Context * ctx, const String & name )
-    : Component( ctx ),
+    : ControllableItem( ctx ),
       name_( name ),
       refT_( 0 ),
       userControlled_( false )

@@ -185,6 +185,7 @@ void Environment::StartServer( int port )
     CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
     clientDesc_.cameraFrameId_ = cf->GetID();
     cf->userId_ = clientDesc_.id_;
+    cf->SetCreatedBy( clientDesc_.id_ );
 
     CreateReplicatedContentServer();
     CreateReplicatedContentClient( cf );
@@ -538,6 +539,7 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
     CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
     d.cameraFrameId_ = cf->GetID();
     cf->userId_ = id;
+    cf->SetCreatedBy( clientDesc_.id_ );
 
     CreateReplicatedContentClient( cf );
 
