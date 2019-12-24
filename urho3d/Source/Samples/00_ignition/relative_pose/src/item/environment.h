@@ -45,6 +45,7 @@ public:
     virtual void DelayedStart() override;
     void Stop() override;
     void Update( float timeStep ) override;
+    //void FixedUpdate( float timeStep ) override; // Here controlls are appied.
 
     /// Network commands.
     void StartServer( int port=-1 );
@@ -92,6 +93,9 @@ protected:
 
 
     void HandleKeyDown( StringHash eventType, VariantMap & eventData );
+    void HandleMouseDown( StringHash eventType, VariantMap & eventData );
+    void HandleMouseUp( StringHash eventType, VariantMap & eventData );
+    void HandleMouseWheel( StringHash eventType, VariantMap & eventData );
     void HandleConsoleCommand( StringHash eventType, VariantMap & eventData );
 
 private:

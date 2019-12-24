@@ -167,6 +167,11 @@ void Environment::Update( float timeStep )
     }
 }
 
+//void Environment::FixedUpdate( float timeStep )
+//{
+
+//}
+
 void Environment::StartServer( int port )
 {
     Network * n = GetSubsystem<Network>();
@@ -403,6 +408,10 @@ void Environment::SubscribeToEvents()
 
     // Key events.
     SubscribeToEvent( E_KEYDOWN, URHO3D_HANDLER( Environment, HandleKeyDown ) );
+    // Mouse buttons and wheel.
+    SubscribeToEvent( E_MOUSEBUTTONDOWN, URHO3D_HANDLER( Environment, HandleMouseDown ) );
+    SubscribeToEvent( E_MOUSEBUTTONUP,   URHO3D_HANDLER( Environment, HandleMouseUp ) );
+    SubscribeToEvent( E_MOUSEWHEEL,      URHO3D_HANDLER( Environment, HandleMouseWheel ) );
     // Console commands.
     SubscribeToEvent( E_CONSOLECOMMAND, URHO3D_HANDLER( Environment, HandleConsoleCommand ) );
 }
@@ -657,6 +666,21 @@ void Environment::HandleKeyDown( StringHash eventType, VariantMap & eventData )
             return;
         //c->SetVisible( false );
     }
+}
+
+void Environment::HandleMouseDown( StringHash eventType, VariantMap & eventData )
+{
+
+}
+
+void Environment::HandleMouseUp( StringHash eventType, VariantMap & eventData )
+{
+
+}
+
+void Environment::HandleMouseWheel( StringHash eventType, VariantMap & eventData )
+{
+
 }
 
 void Environment::HandleConsoleCommand( StringHash eventType, VariantMap & eventData )

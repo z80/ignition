@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Urho3D/Core/Object.h>
-#include "../../Config/ConfigFile.h"
+#include "Urho3D/Urho3DAll.h"
+#include "ConfigFile.h"
 
 using namespace Urho3D;
 
