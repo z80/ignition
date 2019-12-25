@@ -886,6 +886,7 @@ Button* SettingsWindow::CreateTabButton(const String& text)
     button->SetAlignment(HA_LEFT, VA_TOP);
 
     auto* buttonText = button->CreateChild<Text>();
+    buttonText->SetStyleAuto();
     buttonText->SetFont(font, 12);
     buttonText->SetAlignment(HA_CENTER, VA_CENTER);
     buttonText->SetText(text);
@@ -907,6 +908,7 @@ Button* SettingsWindow::CreateButton(const String& text)
     button->SetHeight(30);
 
     auto* buttonText = button->CreateChild<Text>("Label");
+    buttonText->SetStyleAuto();
     buttonText->SetFont(font, 12);
     buttonText->SetAlignment(HA_CENTER, VA_CENTER);
     buttonText->SetText(text);
@@ -925,6 +927,7 @@ CheckBox* SettingsWindow::CreateCheckbox(const String& label)
     auto* font = cache->GetResource<Font>(Ign::APPLICATION_FONT);
 
     SharedPtr<Text> text(new Text(context_));
+    text->SetStyleAuto();
     _activeLine->AddChild(text);
     text->SetText(label);
     text->SetStyleAuto();
