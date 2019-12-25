@@ -7,6 +7,7 @@
 #include "PauseWindow.h"
 #include "QuitConfirmationWindow.h"
 #include "PopupMessageWindow.h"
+#include "main_menu.h"
 
 /// Construct.
 WindowManager::WindowManager(Context* context) :
@@ -33,6 +34,7 @@ void WindowManager::RegisterAllFactories()
     //context_->RegisterFactory<AchievementsWindow>();
     context_->RegisterFactory<PauseWindow>();
     context_->RegisterFactory<PopupMessageWindow>();
+    Ign::MainMenu::RegisterObject( context_ );
 }
 
 void WindowManager::SubscribeToEvents()
@@ -100,7 +102,7 @@ void WindowManager::HandleCloseAllWindows(StringHash eventType, VariantMap& even
     _openedWindows.Clear();
 }
 
-bool WindowManager::IsWindowOpen(String windowName)
+bool WindowManager::IsWindowOpen( const String & windowName )
 {
     for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
         if ((*it)->GetType() == StringHash(windowName)) {
@@ -116,7 +118,28 @@ bool WindowManager::IsWindowOpen(String windowName)
     return false;
 }
 
-void WindowManager::CloseWindow(String windowName)
+void WindowManager::OpenWindow( const String & windowName, bool closePrev )
+{
+    using namespace IgnEvents::OpenWindow;
+    VariantMap & m = GetEventDataMap();
+    m[P_NAME]           = windowName;
+    m[P_CLOSE_PREVIOUS] = closePrev;
+    SendEvent( IgnEvents::E_OPEN_WINDOW, m );
+}
+
+void WindowManager::OpenWindow( Context * ctx, const String & windowName, bool closePrev )
+{
+    WindowManager * wm = ctx->GetSubsystem<WindowManager>();
+    wm->OpenWindow( windowName, closePrev );
+}
+
+void WindowManager::CloseWindow( Context * ctx, const String & windowName )
+{
+    WindowManager * wm = ctx->GetSubsystem<WindowManager>();
+    wm->CloseWindow( windowName );
+}
+
+void WindowManager::CloseWindow( const String & windowName )
 {
     using namespace IgnEvents::CloseWindow;
     URHO3D_LOGINFO("Closing window: " + windowName);

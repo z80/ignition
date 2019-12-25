@@ -17,7 +17,7 @@ namespace Ign
         context->RegisterSubsystem<Notifications>();
         context->RegisterSubsystem<AudioManager>();
         context->RegisterSubsystem<WindowManager>();
-        context->RegisterSubsystem<ConsoleHandler>();
+        //context->RegisterSubsystem<ConsoleHandler>();
         context->RegisterSubsystem<ControllerInput>();
     }
 }

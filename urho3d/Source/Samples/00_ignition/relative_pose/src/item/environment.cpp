@@ -77,6 +77,10 @@ Environment::Environment( Context * context )
 
     startingServer_     = false;
     connectingToServer_ = false;
+
+    Variant a;
+    a = this;
+    SetGlobalVar( StringHash( "Environment" ), a );
 }
 
 Environment::~Environment()
@@ -864,7 +868,8 @@ void Environment::LoadTranslations()
     for (auto it = result.Begin(); it != result.End(); ++it) {
         String file = (*it);
 
-        String filepath = "Translations/" + file;
+        //String filepath = "Translations/" + file;
+        String filepath = GetSubsystem<FileSystem>()->GetProgramDir() + String("Data/Ign/Translations/") + file;
         // Filename is handled as a language
         file.Replace(".json", "", false);
 

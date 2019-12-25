@@ -6,7 +6,7 @@ using namespace Urho3D;
 
 class BaseWindow : public Object
 {
-    URHO3D_OBJECT(BaseWindow, Object);
+    URHO3D_OBJECT(BaseWindow, Object)
 public:
     BaseWindow(Context* context);
 

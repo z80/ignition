@@ -46,7 +46,7 @@ void ControllerInput::Init()
 
     // there must be at least one controller available at start
 	_controls[0] = Controls();
-	GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
+    //GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
 }
 
 void ControllerInput::LoadConfig()

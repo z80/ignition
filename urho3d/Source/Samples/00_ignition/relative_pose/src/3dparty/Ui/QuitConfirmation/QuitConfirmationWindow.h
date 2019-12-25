@@ -1,11 +1,11 @@
+
 #pragma once
-#include <Urho3D/UI/Button.h>
-#include <Urho3D/UI/Window.h>
-#include "../BaseWindow.h"
+#include "Urho3D/Urho3DAll.h"
+#include "BaseWindow.h"
 
 class QuitConfirmationWindow : public BaseWindow
 {
-    URHO3D_OBJECT(QuitConfirmationWindow, BaseWindow);
+    URHO3D_OBJECT(QuitConfirmationWindow, BaseWindow)
 
 public:
     /// Construct.
@@ -29,3 +29,5 @@ private:
 
     Button* CreateButton(const String& text, int width, IntVector2 position);
 };
+
+

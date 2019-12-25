@@ -10,6 +10,7 @@
 
 #include "environment.h"
 #include "main_menu.h"
+#include "WindowManager.h"
 
 
 URHO3D_DEFINE_APPLICATION_MAIN(Main)
@@ -286,9 +287,7 @@ void Main::CreateMainMenu()
     if ( !s )
         return;
 
-    MainMenu * mm = s->CreateComponent<MainMenu>( LOCAL );
-    if ( !mm )
-        URHO3D_LOGINFO( "Failed to create MainMenu" );
+    WindowManager::OpenWindow( context_, "MainMenu" );
 }
 
 

@@ -30,7 +30,7 @@ void RegisterComponents( Context * context )
     CameraFrame::RegisterComponent( context );
     Environment::RegisterComponent( context );
 
-    MainMenu::RegisterComponent( context );
+    MainMenu::RegisterObject( context );
 }
 
 

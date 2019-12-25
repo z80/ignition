@@ -95,7 +95,7 @@ void JoystickInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 		auto* controllerInput = GetSubsystem<ControllerInput>();
 		controllerInput->SetActionState(_mappedKeyToControl[key], false, joystick);
 	}
-	GetSubsystem<DebugHud>()->SetAppStats("JoyKey " + String(key), false);
+    GetSubsystem<DebugHud>()->SetAppStats("JoyKey " + String(key), Variant(false) );
 }
 
 void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)

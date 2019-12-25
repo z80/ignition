@@ -1,17 +1,18 @@
 
 #include "main_menu.h"
 #include "environment.h"
+#include "WindowManager.h"
 
 namespace Ign
 {
 
-void MainMenu::RegisterComponent( Context * context )
+void MainMenu::RegisterObject( Context * context )
 {
     context->RegisterFactory<MainMenu>();
 }
 
 MainMenu::MainMenu( Context * context )
-  : LogicComponent( context )
+  : BaseWindow( context )
 {
 }
 
@@ -19,10 +20,23 @@ MainMenu::~MainMenu()
 {
 }
 
-void MainMenu::Start()
+void MainMenu::Init()
 {
+    Create();
     SubscribeToEvents();
 }
+
+void MainMenu::Create()
+{
+
+}
+
+void MainMenu::Dispose()
+{
+    if ( mainWnd_ )
+        mainWnd_.Reset();
+}
+
 
 void MainMenu::SetVisible( bool en )
 {
@@ -71,11 +85,9 @@ void MainMenu::SubscribeToEvents()
 
 void MainMenu::HandleNewGame( StringHash event, VariantMap & args )
 {
-    Scene * s = GetScene();
-    if ( !s )
-        return;
+    RefCounted * rc = GetGlobalVar( StringHash( "Environment" ) ).GetPtr();
+    Environment * e = dynamic_cast<Environment *>( rc );
 
-    auto * e = s->GetComponent<Environment>();
     if ( !e )
         return;
 
@@ -86,11 +98,8 @@ void MainMenu::HandleNewGame( StringHash event, VariantMap & args )
 
 void MainMenu::HandleConnect( StringHash event, VariantMap & args )
 {
-    Scene * s = GetScene();
-    if ( !s )
-        return;
-
-    auto * e = s->GetComponent<Environment>();
+    RefCounted * rc = GetGlobalVar( StringHash( "Environment" ) ).GetPtr();
+    Environment * e = dynamic_cast<Environment *>( rc );
     if ( !e )
         return;
 
@@ -99,12 +108,14 @@ void MainMenu::HandleConnect( StringHash event, VariantMap & args )
     c.password_ = "password";
     e->Connect( c );
 
-    SetVisible( false );
+    //SetVisible( false );
+    WindowManager::CloseWindow( context_, "MainMenu" );
 }
 
 void MainMenu::HandleSettings( StringHash event, VariantMap & args )
 {
-    SetVisible( false );
+    WindowManager::OpenWindow( context_, "SettingsWindow", true );
+    //SetVisible( false );
 }
 
 void MainMenu::HandleExit( StringHash event, VariantMap & args )

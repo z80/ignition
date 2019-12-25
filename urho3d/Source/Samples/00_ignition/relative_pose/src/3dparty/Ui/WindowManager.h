@@ -17,7 +17,11 @@ public:
     /**
      * Is specific window is already opened
      */
-    bool IsWindowOpen(String windowName);
+    bool IsWindowOpen( const String & windowName );
+
+    void OpenWindow( const String & windowName, bool closePrev=true );
+    static void OpenWindow( Context * ctx, const String & windowName, bool closePrev=true );
+    static void CloseWindow( Context * ctx, const String & windowName );
 
 private:
 
@@ -49,7 +53,7 @@ private:
     /**
      * Destroy specific window
      */
-    void CloseWindow(String windowName);
+    void CloseWindow( const String & windowName );
 
     /**
      * List of all active windows objects
