@@ -53,7 +53,8 @@ void SettingsWindow::Create()
     // Create the Window title Text
     auto* windowTitle = new Text(context_);
     windowTitle->SetName("WindowTitle");
-    windowTitle->SetText(localization->Get("SETTINGS"));
+    const String wndTitle = localization->Get("SETTINGS");
+    windowTitle->SetText( wndTitle );
     windowTitle->SetFont(font, 14);
 
 
@@ -950,6 +951,7 @@ Text* SettingsWindow::CreateLabel(const String& text)
 
     // Create log element to view latest logs from the system
     auto *label = _activeLine->CreateChild<Text>();
+    label->SetStyleAuto();
     label->SetFont(font, 12);
     label->SetPosition(10, 30 + _tabElementCount * 30);
     label->SetText(text);
@@ -970,6 +972,7 @@ Slider* SettingsWindow::CreateSlider(const String& text)
 
     // Create text and slider below it
     auto* sliderText = _activeLine->CreateChild<Text>();
+    sliderText->SetStyleAuto();
     sliderText->SetPosition(0, 0);
     sliderText->SetWidth(50);
     sliderText->SetFont(font, 12);
@@ -1026,6 +1029,7 @@ DropDownList* SettingsWindow::CreateMenu(const String& label, Vector<String>& it
 UIElement* SettingsWindow::CreateSingleLine()
 {
     SharedPtr<UIElement> container(new UIElement(context_));
+    container->SetStyleAuto();
     container->SetAlignment(HA_LEFT, VA_TOP);
     container->SetLayout(LM_HORIZONTAL, 20, IntRect(4, 4, 4, 4));
     container->SetFixedWidth(_listView->GetWidth() - 20);
