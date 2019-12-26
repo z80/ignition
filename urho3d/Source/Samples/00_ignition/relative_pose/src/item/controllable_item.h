@@ -19,15 +19,25 @@ public:
     virtual ~ControllableItem();
 
     virtual void ApplyControls( const Controls & ctrl );
-    virtual bool AcceptsControls() const;
+    virtual bool AcceptsControls( int userId ) const;
+    virtual bool IsSelectable() const;
+
     void SetCreatedBy( int userId );
     int  CreatedBy() const;
-    bool CanBeControlledBy( int userId ) const;
+
+    virtual bool Select( int userId );
+    void Unselect( int userId );
+    bool SelectedBy( int userId ) const;
 
     // Need to add more sophisticated functionality to this later...
 
+    void SelectedStringUpdated();
 protected:
-    int createdByUserId_;
+    void UpdateSelectedString();
+    int         createdByUserId_;
+    Vector<int> selectedByUserIds_;
+    String      selectedIndsString_;
+    Vector<String> selectedIndStrings_;
 
     //int parentControllableItem_;
     //bool enabled_;

@@ -103,6 +103,8 @@ private:
     void IncrementTime( float secs_dt );
     void UpdateDynamicNodes( Float  secs_dt );
     void UpdateEvolvingNodes( Timestamp ticks_dt );
+    void CaptureControls();
+    void ProcessControls();
     CameraFrame * FindCameraFrame();
     void ProcessLocalVisuals( Float secs_dt );
     int  UniqueId();
@@ -117,6 +119,7 @@ private:
 
     /// In the case of client assign client Id;
     ClientDesc clientDesc_;
+    Controls   controls_;
 
     /// Network state holders
     bool startingServer_;
@@ -124,6 +127,7 @@ private:
 
     /// Client/Server functionality
     HashMap<Connection*, ClientDesc> connections_;
+    HashMap<int, Connection *>       clientIds_;
 };
 
 }

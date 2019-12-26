@@ -8,6 +8,7 @@
 
 #include "Notifications.h"
 #include "ConfigManager.h"
+#include "ControllerInput.h"
 
 namespace Ign
 {
@@ -767,6 +768,56 @@ void Environment::UpdateEvolvingNodes( Timestamp ticks_dt )
         if ( !ef )
             continue;
         ef->evolveStep( ticks_dt );
+    }
+}
+
+void Environment::CaptureControls()
+{
+    ControllerInput * ci = GetSubsystem<ControllerInput>();
+    controls_ = ci->GetControls();
+    if ( IsClient() )
+    {
+        Network * n = GetSubsystem<Network>();
+        Connection * serverConnection = n->GetServerConnection();
+        serverConnection->SetControls( controls_ );
+    }
+}
+
+void Environment::ProcessControls()
+{
+    if ( !IsServer() )
+        return;
+
+    // Compose id to Connection hash map.
+    clientIds_.Clear();
+    {
+        for ( HashMap<Connection *, ClientDesc>::ConstIterator it=connections_.Begin();
+              it!=connections_.End(); it++ )
+        {
+            Connection * c = it->first_;
+            const int id   = it->second_.id_;
+            clientIds_.Insert( Pair<int, Connection *>( id, c ) );
+        }
+    }
+
+    // Process own controlsand all client controls.
+    Scene * s = GetScene();
+    if ( !s )
+        return;
+
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        if ( !c )
+            continue;
+
+        RefFrame * rf = c->Cast<RefFrame>();
+        if ( !rf )
+            continue;
+
+        //rf->is
     }
 }
 
