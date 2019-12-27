@@ -13,9 +13,6 @@ void CameraFrame::RegisterComponent( Context * context )
 {
     context->RegisterFactory<CameraFrame>();
     URHO3D_COPY_BASE_ATTRIBUTES( RefFrame );
-
-    URHO3D_ATTRIBUTE( "UserId", int, userId_, -1, AM_DEFAULT );
-
 }
 
 CameraFrame::CameraFrame( Context * context )
@@ -27,13 +24,6 @@ CameraFrame::CameraFrame( Context * context )
 CameraFrame::~CameraFrame()
 {
 
-}
-
-void CameraFrame::SetUserId( unsigned id )
-{
-    userId_ = id;
-    
-    MarkNetworkUpdate();
 }
 
 RefFrame *CameraFrame::UpdatePose( Float sec_dt )
@@ -85,7 +75,9 @@ void CameraFrame::refStateChanged()
 
 void CameraFrame::assignCameraNode()
 {
-    if ( userId_ < 0 )
+    const int id = CreatedBy();
+
+    if ( id < 0 )
     {
         node_.Reset();
         return;
@@ -107,7 +99,7 @@ void CameraFrame::assignCameraNode()
     if ( (!e->IsServer()) && (!e->IsClient()) )
         return;
 
-    if (e->clientDesc().id_ != userId_)
+    if ( e->clientDesc().id_ != id )
         return;
 
     Camera * c = s->GetComponent<Camera>( true );
@@ -116,7 +108,7 @@ void CameraFrame::assignCameraNode()
     node_ = SharedPtr<Node>( n );
 
     {
-        const String stri = "Assigned CameraFrame userId " + String( userId_ );
+        const String stri = "Assigned CameraFrame userId " + String( id );
         Notifications::AddNotification( GetContext(), stri ); 
     }
 }

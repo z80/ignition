@@ -30,7 +30,7 @@ void ControllableItem::ApplyControls( const Controls & ctrl )
 
 bool ControllableItem::AcceptsControls( int userId ) const
 {
-    Vector<int>::Iterator it = selectedByUserIds_.Find( userId );
+    Vector<int>::ConstIterator it = selectedByUserIds_.Find( userId );
     const bool resOk = (it != selectedByUserIds_.End());
     return resOk;
 }
@@ -43,6 +43,8 @@ bool ControllableItem::IsSelectable() const
 void ControllableItem::SetCreatedBy( int userId )
 {
     createdByUserId_ = userId;
+
+    MarkNetworkUpdate();
 }
 
 int ControllableItem::CreatedBy() const

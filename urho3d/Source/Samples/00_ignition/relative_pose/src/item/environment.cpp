@@ -158,6 +158,11 @@ void Environment::Update( float timeStep )
         }
     }
 
+    // Capture controls.
+    CaptureControls();
+    // Applying controls runs only on server.
+    ApplyControls();
+
     // This runs locally.
     // Update all RefFrame objects based on current user id.
     {
@@ -189,7 +194,6 @@ void Environment::StartServer( int port )
     Scene * s = GetScene();
     CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
     clientDesc_.cameraFrameId_ = cf->GetID();
-    cf->userId_ = clientDesc_.id_;
     cf->SetCreatedBy( clientDesc_.id_ );
 
     CreateReplicatedContentServer();
@@ -543,7 +547,6 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
     // Create camera frame for newly connected client.
     CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
     d.cameraFrameId_ = cf->GetID();
-    cf->userId_ = id;
     cf->SetCreatedBy( clientDesc_.id_ );
 
     CreateReplicatedContentClient( cf );
@@ -783,7 +786,7 @@ void Environment::CaptureControls()
     }
 }
 
-void Environment::ProcessControls()
+void Environment::ApplyControls()
 {
     if ( !IsServer() )
         return;
@@ -834,12 +837,12 @@ void Environment::ProcessControls()
                 {
                     Connection * conn = it->second_;
                     const Controls ctrls = conn->GetControls();
-                    cf->ApplyControls( ctrls );
+                    rf->ApplyControls( ctrls );
                 }
             }
         }
 
-        // If camera always apply controls.
+        // If camera always apply controls and only from a user it was created for.
         CameraFrame * cf = rf->Cast<CameraFrame>();
         if ( cf )
         {
@@ -880,7 +883,8 @@ CameraFrame * Environment::FindCameraFrame()
         CameraFrame * cf = c->Cast<CameraFrame>();
         if ( !cf )
             continue;
-        if ( cf->userId_ == clientDesc_.id_ )
+        const int id = cf->CreatedBy();
+        if ( id == clientDesc_.id_ )
             return cf;
     }
 

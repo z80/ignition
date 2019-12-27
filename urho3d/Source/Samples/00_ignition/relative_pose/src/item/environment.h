@@ -104,7 +104,7 @@ private:
     void UpdateDynamicNodes( Float  secs_dt );
     void UpdateEvolvingNodes( Timestamp ticks_dt );
     void CaptureControls();
-    void ProcessControls();
+    void ApplyControls();
     CameraFrame * FindCameraFrame();
     void ProcessLocalVisuals( Float secs_dt );
     int  UniqueId();

@@ -16,6 +16,8 @@ public:
     CameraFrame( Context * context );
     ~CameraFrame();
 
+    void ApplyControls( const Controls & ctrl ) override;
+
     void SetUserId( unsigned id );
     RefFrame * UpdatePose( Float sec_dt );
 
@@ -25,9 +27,6 @@ protected:
 public:
     void refStateChanged() override;
     void assignCameraNode();
-    // It should modify real Node only if userId specified matches the one
-    //
-    int userId_;
     /// Camera node.
     SharedPtr<Node> node_;
 };
