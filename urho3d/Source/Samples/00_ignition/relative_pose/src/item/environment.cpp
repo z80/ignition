@@ -817,7 +817,46 @@ void Environment::ProcessControls()
         if ( !rf )
             continue;
 
-        //rf->is
+        // Check all clients this rf is selected by.
+        const bool isSelectable = rf->IsSelectable();
+        if ( isSelectable )
+        {
+            const Vector<int> selectedBy = rf->SelectedBy();
+            const unsigned selQty = selectedBy.Size();
+            for ( unsigned j=0; j<selQty; j++ )
+            {
+                const int userId = selectedBy[j];
+                const bool acceptsUserCtrls = rf->AcceptsControls( userId );
+                if ( !acceptsUserCtrls )
+                    continue;
+                HashMap<int, Connection *>::ConstIterator it = clientIds_.Find( userId );
+                if ( it != clientIds_.End() )
+                {
+                    Connection * conn = it->second_;
+                    const Controls ctrls = conn->GetControls();
+                    cf->ApplyControls( ctrls );
+                }
+            }
+        }
+
+        // If camera always apply controls.
+        CameraFrame * cf = rf->Cast<CameraFrame>();
+        if ( cf )
+        {
+            const int userId = cf->CreatedBy();
+            if ( userId == 0 )
+                cf->ApplyControls( controls_ );
+            else
+            {
+                HashMap<int, Connection *>::ConstIterator it = clientIds_.Find( userId );
+                if ( it != clientIds_.End() )
+                {
+                    Connection * conn = it->second_;
+                    const Controls ctrls = conn->GetControls();
+                    cf->ApplyControls( ctrls );
+                }
+            }
+        }
     }
 }
 

@@ -27,7 +27,7 @@ public:
 
     virtual bool Select( int userId );
     void Unselect( int userId );
-    bool SelectedBy( int userId ) const;
+    const Vector<int> & SelectedBy() const;
 
     // Need to add more sophisticated functionality to this later...
 

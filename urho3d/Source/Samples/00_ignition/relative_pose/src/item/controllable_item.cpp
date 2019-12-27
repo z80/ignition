@@ -30,8 +30,9 @@ void ControllableItem::ApplyControls( const Controls & ctrl )
 
 bool ControllableItem::AcceptsControls( int userId ) const
 {
-    const bool res = ( ( userId ==  createdByUserId_) && ( userId >= 0 ) );
-    return res;
+    Vector<int>::Iterator it = selectedByUserIds_.Find( userId );
+    const bool resOk = (it != selectedByUserIds_.End());
+    return resOk;
 }
 
 bool ControllableItem::IsSelectable() const
@@ -68,6 +69,11 @@ void ControllableItem::Unselect( int userId )
     selectedByUserIds_.RemoveSwap( userId );
 
     UpdateSelectedString();
+}
+
+const Vector<int> & ControllableItem::SelectedBy() const
+{
+    return selectedByUserIds_;
 }
 
 void ControllableItem::SelectedStringUpdated()
