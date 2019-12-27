@@ -9,7 +9,8 @@ void ControllableItem::RegisterComponent( Context * context )
     context->RegisterFactory<ControllableItem>();
 
     URHO3D_ATTRIBUTE(    "CreatedByUserId",       int,    createdByUserId_,    -1,     AM_DEFAULT );
-    //URHO3D_ATTRIBUTE_EX( "SelectedIndsString", String, selectedIndsString_, SelectedStringUpdated, String, AM_DEFAULT );
+    // name, typeName, variable, postSetCallback, defaultValue, mode
+    URHO3D_ATTRIBUTE_EX( "SelectedIndsString", String, selectedIndsString_, SelectedStringUpdated, String(""), AM_DEFAULT );
 }
 
 ControllableItem::ControllableItem( Context * context )
