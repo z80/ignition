@@ -105,7 +105,7 @@ void ControllableItem::UpdateSelectedString()
             const String stri( id );
             selectedIndStrings_ += stri;
             if ( i != lastInd )
-                selectedIndStrings_ += ',';
+                selectedIndStrings_ += ",";
         }
     }
 

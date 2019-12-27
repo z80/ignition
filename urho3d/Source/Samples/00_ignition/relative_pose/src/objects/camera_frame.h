@@ -18,8 +18,7 @@ public:
 
     void ApplyControls( const Controls & ctrl ) override;
 
-    void SetUserId( unsigned id );
-    RefFrame * UpdatePose( Float sec_dt );
+    RefFrame * CameraOrigin();
 
 protected:
     void OnSceneSet( Scene * scene ) override;

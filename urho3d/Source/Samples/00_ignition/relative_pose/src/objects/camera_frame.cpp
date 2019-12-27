@@ -26,7 +26,12 @@ CameraFrame::~CameraFrame()
 
 }
 
-RefFrame *CameraFrame::UpdatePose( Float sec_dt )
+void CameraFrame::ApplyControls( const Controls & ctrl )
+{
+
+}
+
+RefFrame * CameraFrame::CameraOrigin()
 {
     // If parent is physics item take another parent to get to physics frame.
     // If it is not physics item use it as an origin for ref state.

@@ -158,29 +158,17 @@ void Environment::Update( float timeStep )
         }
     }
 
-    // Capture controls.
+    // On client side capture local and controls and
+    // send those to the server.
     CaptureControls();
-    // Applying controls runs only on server.
+    // On server applying controls runs only on server.
+    // This runs on server only
     ApplyControls();
 
     // This runs locally.
     // Update all RefFrame objects based on current user id.
-    {
-        Float secsDt = secsDt_;
-        const Float maxSecsDt = Settings::maxDynamicsTimeStep();
-        while ( secsDt > 0.0001 )
-        {
-            const Float dt = ( secsDt >= maxSecsDt ) ? maxSecsDt : secsDt;
-            ProcessLocalVisuals( secsDt );
-            secsDt -= dt;
-        }
-    }
+    ProcessLocalVisuals();
 }
-
-//void Environment::FixedUpdate( float timeStep )
-//{
-
-//}
 
 void Environment::StartServer( int port )
 {
@@ -891,13 +879,13 @@ CameraFrame * Environment::FindCameraFrame()
     return nullptr;
 }
 
-void Environment::ProcessLocalVisuals( Float secs_dt )
+void Environment::ProcessLocalVisuals()
 {
     CameraFrame * cam = FindCameraFrame();
     if ( !cam )
         return;
 
-    RefFrame * originParent = cam->UpdatePose( secs_dt );
+    RefFrame * originParent = cam->CameraOrigin();
 
     Scene * s = GetScene();
     const Vector<SharedPtr<Component> > & comps = s->GetComponents();

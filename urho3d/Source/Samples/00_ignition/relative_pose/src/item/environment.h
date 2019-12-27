@@ -106,7 +106,7 @@ private:
     void CaptureControls();
     void ApplyControls();
     CameraFrame * FindCameraFrame();
-    void ProcessLocalVisuals( Float secs_dt );
+    void ProcessLocalVisuals();
     int  UniqueId();
     void LoadTranslations();
 
