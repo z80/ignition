@@ -11,7 +11,7 @@ using namespace Urho3D;
 /// Construct.
 ControllerInput::ControllerInput(Context* context) :
     Object(context),
-	_multipleControllerSupport(true),
+    _multipleControllerSupport( false ),
 	_activeAction(-1)
 {
 
@@ -30,8 +30,10 @@ ControllerInput::ControllerInput(Context* context) :
     _controlMapNames[Ign::CTRL_RIGHT]    = "Strafe right";
     _controlMapNames[Ign::CTRL_JUMP]     = "Jump";
     _controlMapNames[Ign::CTRL_ACTION]   = "Primary action";
-    _controlMapNames[Ign::CTRL_SPRINT]   = "Sprint";
+    _controlMapNames[Ign::CTRL_SPRINT]   = "Sprint/Mode";
     _controlMapNames[Ign::CTRL_UP]       = "Move up";
+    _controlMapNames[Ign::CTRL_ZOOM_IN]  = "Zoom in";
+    _controlMapNames[Ign::CTRL_ZOOM_OUT] = "Zoom out";
 	Init();
 }
 
