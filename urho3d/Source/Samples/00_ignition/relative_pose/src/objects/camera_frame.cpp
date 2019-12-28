@@ -3,11 +3,15 @@
 #include "environment.h"
 #include "physics_frame.h"
 #include "physics_item.h"
+#include "settings.h"
 
 #include "Notifications.h"
+#include "Global3dparty.h"
 
 namespace Ign
 {
+
+const Float CameraFrame::alpha_ = 1.2;
 
 void CameraFrame::RegisterComponent( Context * context )
 {
@@ -18,7 +22,9 @@ void CameraFrame::RegisterComponent( Context * context )
 CameraFrame::CameraFrame( Context * context )
     : RefFrame( context )
 {
-
+    yaw_   = 30.0 / 180.0 * 3.14;
+    pitch_ = 45.0 / 180.0 * 3.14;
+    dist_  = 8.0;
 }
 
 CameraFrame::~CameraFrame()
@@ -28,7 +34,38 @@ CameraFrame::~CameraFrame()
 
 void CameraFrame::ApplyControls( const Controls & ctrl )
 {
+    yaw_   = ctrl.yaw_;
+    pitch_ = ctrl.pitch_;
+    if ( ctrl.buttons_ & CTRL_ZOOM_OUT )
+    {
+        dist_ *= alpha_;
+        if ( dist_ > Settings::cameraMaxDistance() )
+            dist_ = Settings::cameraMaxDistance();
+    }
+    if ( ctrl.buttons_ & CTRL_ZOOM_IN )
+    {
+        dist_ /= alpha_;
+        if ( dist_ < Settings::cameraMinDistance() )
+            dist_ = Settings::cameraMinDistance();
+    }
 
+    RefFrame * directParent = parent();
+    RefFrame * originParent = ( directParent ) ? directParent->parent() : nullptr;
+    Quaterniond q;
+    q.FromEulerAngles( pitch_, yaw_, 0.0 );
+    if ( directParent && originParent )
+    {
+        Vector3d    rel_r;
+        Quaterniond rel_q;
+        originParent->relativePose( directParent, rel_r, rel_q );
+        q = rel_q * q;
+    }
+    Vector3d r( 0.0, 0.0, 1.0 );
+    r = q * r;
+    r *= dist_;
+
+    setR( r );
+    setQ( q );
 }
 
 RefFrame * CameraFrame::CameraOrigin()

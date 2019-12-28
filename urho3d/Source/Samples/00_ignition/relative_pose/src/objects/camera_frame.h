@@ -28,6 +28,11 @@ public:
     void assignCameraNode();
     /// Camera node.
     SharedPtr<Node> node_;
+
+    /// Camera parameters.
+    Float yaw_, pitch_;
+    Float dist_;
+    static const Float alpha_;
 };
 
 

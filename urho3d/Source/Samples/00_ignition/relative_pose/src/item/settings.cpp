@@ -73,6 +73,16 @@ Float Settings::dynamicsWorldDistanceExclude()
     return 500.0;
 }
 
+Float Settings::cameraMaxDistance()
+{
+    return 100.0;
+}
+
+Float Settings::cameraMinDistance()
+{
+    return 1.0;
+}
+
 void Settings::LoadConfig()
 {
     ConfigManager * m = configManager();

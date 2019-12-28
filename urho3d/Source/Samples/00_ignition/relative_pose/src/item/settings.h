@@ -40,6 +40,9 @@ public:
     /// If further away, exclude from dynamics world.
     static Float dynamicsWorldDistanceExclude();
 
+    static Float cameraMaxDistance();
+    static Float cameraMinDistance();
+
 private:
     void LoadConfig();
     void SaveConfig();
