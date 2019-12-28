@@ -264,7 +264,7 @@ void Main::HandleUpdate(StringHash eventType, VariantMap& eventData)
     float timeStep = eventData[P_TIMESTEP].GetFloat();
 
     // Move the camera, scale movement with time step
-    MoveCamera(timeStep);
+    //MoveCamera(timeStep);
 }
 
 
