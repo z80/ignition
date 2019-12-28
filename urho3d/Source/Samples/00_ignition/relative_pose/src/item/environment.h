@@ -34,7 +34,7 @@ class Environment: public LogicComponent
     URHO3D_OBJECT( Environment, LogicComponent )
 public:
     Environment( Context * context );
-    ~Environment();
+    virtual ~Environment();
 
     static void RegisterComponent( Context * context );
 
