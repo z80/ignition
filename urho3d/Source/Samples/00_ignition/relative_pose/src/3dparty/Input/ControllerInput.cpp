@@ -5,6 +5,7 @@
 #include "KeyboardInput.h"
 #include "MouseInput.h"
 #include "JoystickInput.h"
+#include "Global3dparty.h"
 
 using namespace Urho3D;
 
@@ -258,6 +259,22 @@ void ControllerInput::UpdatePitch(float pitch, int index)
 	const float MOUSE_SENSITIVITY = 0.1f;
 	_controls[index].pitch_ += MOUSE_SENSITIVITY * pitch;
 	_controls[index].pitch_ = Clamp(_controls[index].pitch_, -90.0f, 90.0f);
+}
+
+void ControllerInput::UpdateZoom( int d, int index )
+{
+    if (!_multipleControllerSupport) {
+        index = 0;
+    }
+    Controls & c = _controls[index];
+    VariantMap::ConstIterator it = c.extraData_.Find( Ign::IGN_ZOOM_VALUE );
+    int v = ( it != c.extraData_.End() ) ? it->second_.GetInt() : 5;
+    v += d;
+    if ( v < 0 )
+        v = 0;
+    else if (v > 20)
+        v = 20;
+    c.extraData_[Ign::IGN_ZOOM_VALUE] = v;
 }
 
 void ControllerInput::CreateController(int controllerIndex)

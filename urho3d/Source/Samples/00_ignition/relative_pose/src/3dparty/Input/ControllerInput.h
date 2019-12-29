@@ -64,6 +64,8 @@ public:
      */
 	void UpdatePitch(float pitch, int index = 0);
 
+    void UpdateZoom( int d, int index = 0);
+
 	/**
 	 * Create new controls for specific controller
 	 * This allows multiple `Controls` objects to be created for each controller

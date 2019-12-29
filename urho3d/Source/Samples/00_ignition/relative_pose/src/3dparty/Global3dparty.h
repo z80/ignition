@@ -31,6 +31,8 @@ static const float GAMMA_MAX_VALUE = 2.0f;
 
 static const String DOCUMENTS_DIR = "Ignition";
 
+static const StringHash IGN_ZOOM_VALUE( "IgnZoomValue" );
+
 }
 
 #endif

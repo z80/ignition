@@ -28,5 +28,6 @@ private:
 	void HandleKeyDown(StringHash eventType, VariantMap& eventData);
 	void HandleKeyUp(StringHash eventType, VariantMap& eventData);
 	void HandleMouseMove(StringHash eventType, VariantMap& eventData);
+    void HandleMouseWheel(StringHash eventType, VariantMap& eventData);
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);
 };

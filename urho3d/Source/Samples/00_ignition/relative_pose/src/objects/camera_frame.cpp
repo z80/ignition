@@ -36,18 +36,9 @@ void CameraFrame::ApplyControls( const Controls & ctrl )
 {
     yaw_   = ctrl.yaw_ * 180.0 / 3.14;
     pitch_ = ctrl.pitch_ * 180.0 / 3.14;
-    if ( ctrl.buttons_ & CTRL_ZOOM_OUT )
-    {
-        dist_ *= alpha_;
-        if ( dist_ > Settings::cameraMaxDistance() )
-            dist_ = Settings::cameraMaxDistance();
-    }
-    if ( ctrl.buttons_ & CTRL_ZOOM_IN )
-    {
-        dist_ /= alpha_;
-        if ( dist_ < Settings::cameraMinDistance() )
-            dist_ = Settings::cameraMinDistance();
-    }
+    VariantMap::ConstIterator it = ctrl.extraData_.Find( IGN_ZOOM_VALUE );
+    const int z = (it != ctrl.extraData_.End()) ? it->second_.GetInt() : 5;
+    dist_ = static_cast<Float>( z ) * alpha_;
 
     RefFrame * directParent = parent();
     RefFrame * originParent = ( directParent ) ? directParent->parent() : nullptr;
@@ -60,7 +51,7 @@ void CameraFrame::ApplyControls( const Controls & ctrl )
         originParent->relativePose( directParent, rel_r, rel_q );
         q = rel_q * q;
     }
-    Vector3d r( 0.0, 0.0, 1.0 );
+    Vector3d r( 0.0, 0.0, -1.0 );
     r = q * r;
     r *= dist_;
 

@@ -28,6 +28,7 @@ void MouseInput::SubscribeToEvents()
 	SubscribeToEvent(E_MOUSEBUTTONDOWN, URHO3D_HANDLER(MouseInput, HandleKeyDown));
 	SubscribeToEvent(E_MOUSEBUTTONUP, URHO3D_HANDLER(MouseInput, HandleKeyUp));
 	SubscribeToEvent(E_MOUSEMOVE, URHO3D_HANDLER(MouseInput, HandleMouseMove));
+    SubscribeToEvent(E_MOUSEWHEEL, URHO3D_HANDLER(MouseInput, HandleMouseWheel));
 	SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(MouseInput, HandleUpdate));
 //    GetSubsystem<Input>()->SetTouchEmulation(true);
 }
@@ -44,6 +45,10 @@ void MouseInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 		return;
 	}
 
+    // Do not move if the UI has a focused element (the console)
+    if ( GetSubsystem<UI>()->GetFocusElement() )
+        return;
+
 	if (_mappedKeyToControl.Contains(key)) {
 		auto* controllerInput = GetSubsystem<ControllerInput>();
 		controllerInput->SetActionState(_mappedKeyToControl[key], true);
@@ -59,6 +64,10 @@ void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 		return;
 	}
 
+    // Do not move if the UI has a focused element (the console)
+    if ( GetSubsystem<UI>()->GetFocusElement() )
+        return;
+
 	if (_mappedKeyToControl.Contains(key)) {
 		auto* controllerInput = GetSubsystem<ControllerInput>();
 		controllerInput->SetActionState(_mappedKeyToControl[key], false);
@@ -67,7 +76,11 @@ void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 
 void MouseInput::HandleMouseMove(StringHash eventType, VariantMap& eventData)
 {
-	using namespace MouseMove;
+    // Do not move if the UI has a focused element (the console)
+    if (GetSubsystem<UI>()->GetFocusElement())
+        return;
+
+    using namespace MouseMove;
 	float dx = eventData[P_DX].GetInt() * _sensitivityX;
 	float dy = eventData[P_DY].GetInt() * _sensitivityY;
     if (_invertX) {
@@ -79,6 +92,22 @@ void MouseInput::HandleMouseMove(StringHash eventType, VariantMap& eventData)
 	ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
 	controllerInput->UpdateYaw(dx);
 	controllerInput->UpdatePitch(dy);
+}
+
+void MouseInput::HandleMouseWheel( StringHash eventType, VariantMap & eventData )
+{
+    // Do not move if the UI has a focused element (the console)
+    if (GetSubsystem<UI>()->GetFocusElement())
+        return;
+
+    using namespace MouseWheel;
+
+    const int dx    = eventData[P_WHEEL].GetInt();
+    const int btns  = eventData[P_BUTTONS].GetInt();
+    const int quals = eventData[P_QUALIFIERS].GetInt();
+
+    ControllerInput * controllerInput = GetSubsystem<ControllerInput>();
+    controllerInput->UpdateZoom( -dx );
 }
 
 String MouseInput::GetActionKeyName(int action)
