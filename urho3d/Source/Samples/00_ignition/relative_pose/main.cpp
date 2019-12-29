@@ -8,7 +8,7 @@
 
 
 
-#include "environment.h"
+#include "test_environment.h"
 #include "main_menu.h"
 #include "WindowManager.h"
 
@@ -103,90 +103,6 @@ void Main::CreateScene()
 
     // Set an initial position for the camera scene node above the plane
     cameraNode_->SetPosition(Vector3(0.0f, 5.0f, 0.0f));
-
-    
-    /*
-    {
-        nodeA = scene_->CreateComponent<RefFrame>();
-        nodeA->setName( "nodeA" );
-        nodeB = scene_->CreateComponent<RefFrame>();
-        nodeB->setName( "nodeB" );
-        nodeC = scene_->CreateComponent<RefFrame>();
-        nodeC->setName( "nodeC" );
-        nodeD = scene_->CreateComponent<RefFrame>();
-        nodeD->setName( "nodeD" );
-
-        //nodeA = new RefFrame( context_, "nodeA" );
-        //nodeB = new RefFrame( context_, "nodeB" );
-        //nodeC = new RefFrame( context_, "nodeC" );
-        //nodeD = new RefFrame( context_, "nodeD" );
-
-        nodeB->setParent( nodeA );
-        nodeC->setParent( nodeB );
-        nodeD->setParent( nodeB );
-
-        nodeA->setR( Vector3d(  0.0, 10.0, 0.0 ) );
-        nodeB->setR( Vector3d(  0.0, 0.0, 5.0 ) );
-        nodeC->setR( Vector3d(  0.0, 0.0, 5.0 ) );
-        nodeD->setR( Vector3d(  0.0, 0.0, 5.0 ) );
-
-        {
-            State st;
-            nodeC->relativeState( nodeA, st );
-            nodeB->teleport( nodeA, Vector3d( 0.0, 0.0, 6.0 ), Quaterniond::IDENTITY );
-            nodeC->relativeState( nodeA, st );
-            nodeB->teleport( nodeA, Vector3d( 0.0, 0.0, 5.0 ), Quaterniond::IDENTITY );
-            nodeC->relativeState( nodeA, st );
-
-            nodeB->teleport( nodeB, Vector3d( 0.0, 0.0, 1.0 ), Quaterniond::IDENTITY );
-            nodeC->relativeState( nodeB, st );
-            nodeB->teleport( nodeB, Vector3d( 0.0, 0.0, 1.0 ), Quaterniond::IDENTITY );
-            nodeC->relativeState( nodeB, st );
-            URHO3D_LOGINFOF( "Done!" );
-        }
-        {
-            State st;
-
-            nodeB->setV( Vector3d( 0.0, 0.0, 1.0 ) );
-            nodeC->setV( Vector3d( 0.0, 0.0, 1.0 ) );
-
-            nodeC->relativeState( nodeA, st );
-            nodeC->relativeState( nodeD, st );
-            nodeD->relativeState( nodeC, st );
-
-            URHO3D_LOGINFOF( "Done!" );
-        }
-
-        {
-            Node * n = scene_->CreateChild( "nodeA" );
-            n->SetPosition( nodeA->relR().vector3() );
-            auto* o = n->CreateComponent<StaticModel>();
-            o->SetModel(cache->GetResource<Model>("Models/Mushroom.mdl"));
-            o->SetMaterial(cache->GetResource<Material>("Materials/Mushroom.xml"));
-        }
-        {
-            Node * n = scene_->CreateChild( "nodeB" );
-            n->SetPosition( nodeB->relR().vector3() );
-            auto* o = n->CreateComponent<StaticModel>();
-            o->SetModel(cache->GetResource<Model>("Models/Mushroom.mdl"));
-            o->SetMaterial(cache->GetResource<Material>("Materials/Mushroom.xml"));
-        }
-        {
-            Node * n = scene_->CreateChild( "nodeC" );
-            n->SetPosition( nodeC->relR().vector3() );
-            auto* o = n->CreateComponent<StaticModel>();
-            o->SetModel(cache->GetResource<Model>("Models/Mushroom.mdl"));
-            o->SetMaterial(cache->GetResource<Material>("Materials/Mushroom.xml"));
-        }
-        {
-            Node * n = scene_->CreateChild( "nodeD" );
-            n->SetPosition( nodeD->relR().vector3() );
-            auto* o = n->CreateComponent<StaticModel>();
-            o->SetModel(cache->GetResource<Model>("Models/Mushroom.mdl"));
-            o->SetMaterial(cache->GetResource<Material>("Materials/Mushroom.xml"));
-        }
-
-    }*/
 }
 
 void Main::CreateInstructions()
@@ -276,9 +192,9 @@ void Main::CreateEnvironment()
     if ( !s )
         return;
 
-    Environment * e = s->CreateComponent<Environment>( LOCAL );
+    Environment * e = s->CreateComponent<TestEnvironment>( LOCAL );
     if ( !e )
-        URHO3D_LOGINFO( "Failed to create environment" );
+        URHO3D_LOGINFO( "Failed to create test environment" );
 }
 
 void Main::CreateMainMenu()

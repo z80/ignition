@@ -404,7 +404,7 @@ void RefFrame::refStateChanged()
 
 void RefFrame::poseChanged()
 {
-    URHO3D_LOGINFO( "Pose changed" );
+    //URHO3D_LOGINFO( "Pose changed" );
 }
 
 void RefFrame::enteredRefFrame( RefFrame * refFrame )

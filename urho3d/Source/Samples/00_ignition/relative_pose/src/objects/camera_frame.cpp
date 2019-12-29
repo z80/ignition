@@ -34,8 +34,8 @@ CameraFrame::~CameraFrame()
 
 void CameraFrame::ApplyControls( const Controls & ctrl )
 {
-    yaw_   = ctrl.yaw_;
-    pitch_ = ctrl.pitch_;
+    yaw_   = ctrl.yaw_ * 180.0 / 3.14;
+    pitch_ = ctrl.pitch_ * 180.0 / 3.14;
     if ( ctrl.buttons_ & CTRL_ZOOM_OUT )
     {
         dist_ *= alpha_;

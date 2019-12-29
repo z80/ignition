@@ -14,6 +14,7 @@
 
 #include "rep_comp.h"
 #include "static_mesh.h"
+#include "test_environment.h"
 
 namespace Ign
 {
@@ -31,6 +32,10 @@ void RegisterComponents( Context * context )
     Environment::RegisterComponent( context );
 
     MainMenu::RegisterObject( context );
+
+    RepComp::RegisterComponent( context );
+    StaticMesh::RegisterComponent( context );
+    TestEnvironment::RegisterComponent( context );
 }
 
 

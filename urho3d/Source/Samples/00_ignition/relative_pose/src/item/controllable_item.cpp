@@ -93,6 +93,24 @@ void ControllableItem::SelectedStringUpdated()
     }
 }
 
+Environment * ControllableItem::env()
+{
+    Scene * s = GetScene();
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        if ( !c )
+            continue;
+        Environment * e = c->Cast<Environment>();
+        if ( e )
+            return e;
+    }
+
+    return nullptr;
+}
+
 void ControllableItem::UpdateSelectedString()
 {
     const unsigned qty = selectedByUserIds_.Size();

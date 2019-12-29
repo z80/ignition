@@ -236,8 +236,8 @@ void BaseApp::HandleKeyUp(StringHash /*eventType*/, VariantMap& eventData)
                 if (useMouseMode_ != MM_ABSOLUTE)
                     GetSubsystem<Input>()->SetMouseMode(MM_FREE);
             }
-            else
-                engine_->Exit();
+            //else
+            //    engine_->Exit();
         }
     }
 }

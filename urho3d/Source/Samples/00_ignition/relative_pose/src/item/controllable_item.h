@@ -9,6 +9,8 @@ using namespace Urho3D;
 namespace Ign
 {
 
+class Environment;
+
 class ControllableItem: public Urho3D::Component
 {
     URHO3D_OBJECT( ControllableItem, Component )
@@ -32,6 +34,8 @@ public:
     // Need to add more sophisticated functionality to this later...
 
     void SelectedStringUpdated();
+
+    Environment * env();
 protected:
     void UpdateSelectedString();
     int         createdByUserId_;
