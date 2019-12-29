@@ -77,7 +77,7 @@ void PhysicsItem::userControlledChanged( bool newUserControlled )
     if ( !scene )
         return;
 
-    Environment * env_ = scene->GetComponent<Environment>();
+    Environment * env_ = this->env();
     if ( !env_ )
         return;
 

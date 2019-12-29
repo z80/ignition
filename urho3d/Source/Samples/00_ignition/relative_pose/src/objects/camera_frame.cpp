@@ -132,7 +132,7 @@ void CameraFrame::assignCameraNode()
         return;
     }
 
-    Environment * e = s->GetComponent<Environment>();
+    Environment * e = this->env();
     if ( !e )
         return;
 

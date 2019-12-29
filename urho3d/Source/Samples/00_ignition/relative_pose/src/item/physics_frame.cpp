@@ -60,7 +60,7 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     if ( !scene )
         return;
 
-    Environment * env = scene->GetComponent<Environment>();
+    Environment * env = this->env();
     if ( !env )
         return;
 
