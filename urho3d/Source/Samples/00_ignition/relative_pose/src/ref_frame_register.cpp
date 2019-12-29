@@ -14,6 +14,7 @@
 
 #include "rep_comp.h"
 #include "static_mesh.h"
+#include "infinite_plane.h"
 #include "test_environment.h"
 
 namespace Ign
@@ -35,6 +36,7 @@ void RegisterComponents( Context * context )
 
     RepComp::RegisterComponent( context );
     StaticMesh::RegisterComponent( context );
+    InfinitePlane::RegisterComponent( context );
     TestEnvironment::RegisterComponent( context );
 }
 

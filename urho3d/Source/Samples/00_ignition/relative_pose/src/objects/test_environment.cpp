@@ -1,7 +1,7 @@
 
 #include "test_environment.h"
 #include "static_mesh.h"
-#include "infinite_plain.h"
+#include "infinite_plane.h"
 
 namespace Ign
 {
