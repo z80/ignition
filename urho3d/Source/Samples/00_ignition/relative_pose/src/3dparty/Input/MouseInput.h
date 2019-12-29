@@ -14,6 +14,12 @@ public:
     virtual ~MouseInput();
 	virtual String GetActionKeyName(int action);
 
+    bool GetMouseContained() const;
+    void SetMouseContained( bool en );
+
+    bool GetMouseVisible() const;
+    void SetMouseVisible( bool en );
+
 	/**
 	 * Load mouse config from config.cfg file [mouse] block
 	 */
@@ -30,4 +36,6 @@ private:
 	void HandleMouseMove(StringHash eventType, VariantMap& eventData);
     void HandleMouseWheel(StringHash eventType, VariantMap& eventData);
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);
+
+    bool visible_;
 };

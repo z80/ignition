@@ -9,6 +9,7 @@
 MouseInput::MouseInput(Context* context) :
     BaseInput(context)
 {
+    visible_ = true;
     SetMinSensitivity(0.1f);
     Init();
 }
@@ -64,6 +65,16 @@ void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 		return;
 	}
 
+    // Check if wheel is pressed.
+    const int btns = eventData[P_BUTTONS].GetInt();
+    const bool visible = GetMouseVisible();
+    if ( !visible_ )
+    {
+        const bool pressed = btns & MOUSEB_MIDDLE;
+        if ( !pressed )
+            SetMouseVisible( true );
+    }
+
     // Do not move if the UI has a focused element (the console)
     if ( GetSubsystem<UI>()->GetFocusElement() )
         return;
@@ -81,6 +92,19 @@ void MouseInput::HandleMouseMove(StringHash eventType, VariantMap& eventData)
         return;
 
     using namespace MouseMove;
+
+    // Check if wheel is pressed.
+    const int btns = eventData[P_BUTTONS].GetInt();
+    const bool pressed = btns & MOUSEB_MIDDLE;
+    if ( pressed )
+    {
+        const bool visible = GetMouseVisible();
+        if ( visible )
+            SetMouseVisible( false );
+    }
+    else
+        return;
+
 	float dx = eventData[P_DX].GetInt() * _sensitivityX;
 	float dy = eventData[P_DY].GetInt() * _sensitivityY;
     if (_invertX) {
@@ -108,6 +132,32 @@ void MouseInput::HandleMouseWheel( StringHash eventType, VariantMap & eventData 
 
     ControllerInput * controllerInput = GetSubsystem<ControllerInput>();
     controllerInput->UpdateZoom( -dx );
+}
+
+bool MouseInput::GetMouseContained() const
+{
+    Input * input = GetSubsystem<Input>();
+    const MouseMode m = input->GetMouseMode();
+    const bool contained = (m != MM_ABSOLUTE);
+    return contained;
+}
+
+void MouseInput::SetMouseContained( bool en )
+{
+    Input * input = GetSubsystem<Input>();
+    input->SetMouseMode( en ? MM_RELATIVE : MM_ABSOLUTE );
+}
+
+bool MouseInput::GetMouseVisible() const
+{
+    return visible_;
+}
+
+void MouseInput::SetMouseVisible( bool en )
+{
+    Input * input = GetSubsystem<Input>();
+    input->SetMouseVisible( en );
+    visible_ = en;
 }
 
 String MouseInput::GetActionKeyName(int action)
