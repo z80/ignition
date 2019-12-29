@@ -25,6 +25,11 @@ TestEnvironment::~TestEnvironment()
 void TestEnvironment::DelayedStart()
 {
     Scene * s = GetScene();
+
+    InfinitePlane * p = s->CreateComponent<InfinitePlane>();
+    p->setR( Vector3d::ZERO );
+    p->setQ( Quaterniond::IDENTITY );
+
     StaticMesh * m = s->CreateComponent<StaticMesh>();
     m->setR( Vector3d( 10.0, 0.0, 0.0 ) );
 

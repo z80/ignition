@@ -62,6 +62,7 @@ void InfinitePlane::OnSceneSet( Scene * scene )
             const Vector3 at( x, -1.0, z );
             const String stri = String( "Sub element #" ) + String(i) + String(",") + String(j);
             Node * n = node_->CreateChild( stri );
+            n->SetPosition( at );
             StaticModel * m = n->CreateComponent<StaticModel>( LOCAL );
 
             m->SetModel( cache->GetResource<Model>("Ign/Models/TestCube.mdl") );
