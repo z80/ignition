@@ -89,17 +89,11 @@ public:
     /// Called when child teleported.
     virtual void childTeleported( RefFrame * refFrame );
 
-    /// When user controlled flag changes call this method.
-    /// Called just before changing appropriate field so there
-    /// is a way to know what it was before.
-    virtual void userControlledChanged( bool newUserControlled );
-
     /// Attribute accessors.
     unsigned getParentId() const;
     void setParentId( unsigned parentId );
 
     bool getUserControlled() const;
-    void setUserControlled( bool userControlled );
 
     /// Distance to a point. This method is virtual because it needs to
     /// take into account this object size.
@@ -137,8 +131,6 @@ public:
     /// Moment of time refSt_ has been computed.
     /// Used to not recompute if called recursively.
     Timestamp refT_;
-    /// User controlled.
-    bool userControlled_;
 };
 
 

@@ -1,5 +1,6 @@
 
 #include "controllable_item.h"
+#include "environment.h"
 
 namespace Ign
 {

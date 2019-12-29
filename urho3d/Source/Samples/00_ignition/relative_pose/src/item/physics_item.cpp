@@ -71,10 +71,14 @@ void PhysicsItem::leftRefFrame( RefFrame * refFrame )
     physics_node_->Remove();
 }
 
-void PhysicsItem::userControlledChanged( bool newUserControlled )
+void PhysicsItem::childEntered( RefFrame * refFrame )
 {
     Scene * scene = GetScene();
     if ( !scene )
+        return;
+
+    const bool controlledByUser = getUserControlled();
+    if ( !controlledByUser )
         return;
 
     Environment * env_ = this->env();
@@ -94,12 +98,17 @@ void PhysicsItem::userControlledChanged( bool newUserControlled )
     }
 
     // For simplicity just create new physics frame and place this object into it.
-    // Physics frame will take all the logic load concerning if it needs to merge 
+    // Physics frame will take all the logic load concerning if it needs to merge
     // with anything, etc.
     PhysicsFrame * pf = scene->CreateComponent<PhysicsFrame>();
     pf->setParent( this->parent_ );
     pf->setState( this->state() );
     this->setParent( pf );
+}
+
+void PhysicsItem::childLeft( RefFrame * refFrame )
+{
+
 }
 
 void PhysicsItem::OnSceneSet( Scene * scene )

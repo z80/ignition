@@ -33,12 +33,11 @@ protected:
     /// Called when this thing is moved out of it's current parent.
     void leftRefFrame( RefFrame * refFrame ) override;
 
-    /// When user controlled flag changes call this method.
-    /// Called just before changing appropriate field so there
-    /// is a way to know what it was before.
-    void userControlledChanged( bool newUserControlled ) override;
+    void childEntered( RefFrame * refFrame ) override;
+    void childLeft( RefFrame * refFrame ) override;
 
 
+protected:
     /// Handle scene being assigned. This may happen several times
     /// during the component's lifetime. Scene-wide subsystems and events
     /// are subscribed to here.

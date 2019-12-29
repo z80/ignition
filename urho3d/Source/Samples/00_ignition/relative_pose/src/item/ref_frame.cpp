@@ -1,6 +1,6 @@
 
 #include "ref_frame.h"
-
+#include "camera_frame.h"
 
 namespace Ign
 {
@@ -34,15 +34,12 @@ void RefFrame::RegisterComponent( Context * context )
     URHO3D_ATTRIBUTE( "Wx", double, st_.w.x_, 0.0, AM_DEFAULT );
     URHO3D_ATTRIBUTE( "Wy", double, st_.w.y_, 0.0, AM_DEFAULT );
     URHO3D_ATTRIBUTE( "Wz", double, st_.w.z_, 0.0, AM_DEFAULT );
-
-    URHO3D_ATTRIBUTE( "Uc", bool, userControlled_, false, AM_DEFAULT );
 }
 
 RefFrame::RefFrame( Context * ctx, const String & name )
     : ControllableItem( ctx ),
       name_( name ),
-      refT_( 0 ),
-      userControlled_( false )
+      refT_( 0 )
 {
 }
 
@@ -437,11 +434,6 @@ void RefFrame::childTeleported( RefFrame * refFrame )
 
 }
 
-void RefFrame::userControlledChanged( bool newUserControlled )
-{
-
-}
-
 unsigned RefFrame::getParentId() const
 {
     if ( !parent_ )
@@ -470,13 +462,17 @@ void RefFrame::setParentId( unsigned parentId )
 
 bool RefFrame::getUserControlled() const
 {
-    return userControlled_;
-}
-
-void RefFrame::setUserControlled( bool userControlled )
-{
-    userControlledChanged( userControlled );
-    userControlled_ = userControlled;
+    const unsigned qty = children_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        RefFrame * rf = children_[i];
+        if ( !rf )
+            continue;
+        CameraFrame * cf = rf->Cast<CameraFrame>();
+        if ( cf )
+            return true;
+    }
+    return false;
 }
 
 Float RefFrame::distance( RefFrame * refFrame ) const
