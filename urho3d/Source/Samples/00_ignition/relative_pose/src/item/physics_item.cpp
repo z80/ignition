@@ -9,7 +9,7 @@ namespace Ign
 
 void PhysicsItem::RegisterComponent( Context * context )
 {
-    context->RegisterFactory<RefFrame>();
+    context->RegisterFactory<PhysicsItem>();
     URHO3D_COPY_BASE_ATTRIBUTES( RefFrame );
 }
 
@@ -123,6 +123,7 @@ void PhysicsItem::OnSceneSet( Scene * scene )
     // Create visuals to the "visual_node_"
     const String n = this->name() + " visual node";
     visual_node_ = scene->CreateChild( n );
+    assignRefFrame( visual_node_ );
     createVisualContent( visual_node_ );
 }
 
