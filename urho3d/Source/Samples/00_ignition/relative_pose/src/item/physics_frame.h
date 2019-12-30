@@ -22,6 +22,8 @@ public:
     PhysicsFrame( Context * context );
     ~PhysicsFrame();
 
+    virtual void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) override;
+
     void physicsStep( float sec_dt );
     Node * physicsNode();
 

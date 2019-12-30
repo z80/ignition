@@ -31,6 +31,13 @@ PhysicsFrame::~PhysicsFrame()
 
 }
 
+void PhysicsFrame::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
+{
+    RefFrame::DrawDebugGeometry( debug, depthTest );
+    if ( physicsWorld_ )
+        physicsWorld_->DrawDebugGeometry( debug, depthTest );
+}
+
 void PhysicsFrame::physicsStep( float sec_dt )
 {
     if ( !physicsWorld_ )

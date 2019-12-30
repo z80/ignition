@@ -24,6 +24,8 @@ public:
     PhysicsItem( Context * context );
     virtual ~PhysicsItem();
 
+    virtual void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) override;
+
     /// This one is called by PhysicsFrame instance this item is in 
     /// after physics update step. 
     void updateStateFromRigidBody();

@@ -22,6 +22,15 @@ PhysicsItem::~PhysicsItem()
 {
 }
 
+void PhysicsItem::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
+{
+    RefFrame::DrawDebugGeometry( debug, depthTest );
+    if ( rigid_body_ )
+        rigid_body_->DrawDebugGeometry( debug, depthTest );
+    if ( collision_shape_ )
+        collision_shape_->DrawDebugGeometry( debug, depthTest );
+}
+
 void PhysicsItem::updateStateFromRigidBody()
 {
     if ( !rigid_body_ )
