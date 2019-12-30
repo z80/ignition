@@ -6,7 +6,6 @@ void IcoPlanet::RegisterComponent( Context * context )
 {
     context->RegisterFactory<IcoPlanet>();
     URHO3D_COPY_BASE_ATTRIBUTES( PhysicsItem );
-
 }
 
 IcoPlanet::IcoPlanet( Context * context )
@@ -28,7 +27,7 @@ void IcoPlanet::refStateChanged()
     const Vector3d    r0 = refR();
     const Quaterniond q = refQ();
 
-    Float scale  = 1.0;
+    Float scale  = 10.0;
     Float dScale = 0.7;
     const Float maxDist = Settings::staticObjDistanceHorizontShow();
     Vector3d r = r0;
@@ -38,9 +37,9 @@ void IcoPlanet::refStateChanged()
         r = r0 * scale;
     }
 
-    node_->SetPosition( Vector3( r.x_, r.y_, r.z_ ) );
-    node_->SetRotation( Quaternion( q.w_, q.x_, q.y_, q.z_ ) );
-    node_->SetScale( scale );
+    visual_node_->SetPosition( Vector3( r.x_, r.y_, r.z_ ) );
+    visual_node_->SetRotation( Quaternion( q.w_, q.x_, q.y_, q.z_ ) );
+    visual_node_->SetScale( scale );
 }
 
 void IcoPlanet::createVisualContent( Node * n )
@@ -55,7 +54,6 @@ void IcoPlanet::createVisualContent( Node * n )
     StaticModel * model = n->CreateComponent<StaticModel>( LOCAL );
     model->SetModel( cache->GetResource<Model>("Ign/Models/IcoPlanet.mdl") );
     model->SetMaterial( cache->GetResource<Material>("Ign/Materials/IcoPlanetM.xml") );
-
 }
 
 void IcoPlanet::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )

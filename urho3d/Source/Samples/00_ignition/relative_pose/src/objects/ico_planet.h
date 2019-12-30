@@ -21,9 +21,6 @@ public:
 protected:
     void createVisualContent( Node * n ) override;
     void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs ) override;
-
-private:
-    SharedPtr<Node> node_;
 };
 
 }
