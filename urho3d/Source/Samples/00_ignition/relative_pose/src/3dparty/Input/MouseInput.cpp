@@ -10,6 +10,7 @@ MouseInput::MouseInput(Context* context) :
     BaseInput(context)
 {
     visible_ = true;
+    select_  = false;
     SetMinSensitivity(0.1f);
     Init();
 }
@@ -37,7 +38,7 @@ void MouseInput::SubscribeToEvents()
 void MouseInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 {
 	using namespace MouseButtonDown;
-	int key = eventData[P_BUTTON].GetInt();
+	const int key = eventData[P_BUTTON].GetInt();
 
 	if (_activeAction > 0 && _timer.GetMSec(false) > 100) {
 		auto* controllerInput = GetSubsystem<ControllerInput>();
@@ -50,6 +51,9 @@ void MouseInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
     if ( GetSubsystem<UI>()->GetFocusElement() )
         return;
 
+        if ( key == MOUSEB_LEFT )
+            select_ = true;
+
 	if (_mappedKeyToControl.Contains(key)) {
 		auto* controllerInput = GetSubsystem<ControllerInput>();
 		controllerInput->SetActionState(_mappedKeyToControl[key], true);
@@ -59,7 +63,7 @@ void MouseInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 {
 	using namespace MouseButtonUp;
-	int key = eventData[P_BUTTON].GetInt();
+	const int key = eventData[P_BUTTON].GetInt();
 
 	if (_activeAction > 0) {
 		return;
@@ -74,6 +78,19 @@ void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
         if ( !pressed )
             SetMouseVisible( true );
     }
+
+    if ( (key == MOUSEB_LEFT) && select_ )
+    {
+        using namespace IgnEvents::SelectRequest;
+        VariantMap & data = GetEventDataMap();
+
+        UI * ui = GetSubsystem<UI>();
+        const IntVector2 pos = ui->GetCursorPosition();
+        data[P_X] = pos.x_;
+        data[P_Y] = pos.y_;
+        SendEvent( E_SELECT_REQUEST, data );
+    }
+    select_ = false;
 
     // Do not move if the UI has a focused element (the console)
     if ( GetSubsystem<UI>()->GetFocusElement() )
@@ -101,21 +118,22 @@ void MouseInput::HandleMouseMove(StringHash eventType, VariantMap& eventData)
         const bool visible = GetMouseVisible();
         if ( visible )
             SetMouseVisible( false );
+        select_ = false;
     }
     else
         return;
 
-	float dx = eventData[P_DX].GetInt() * _sensitivityX;
-	float dy = eventData[P_DY].GetInt() * _sensitivityY;
+    float dx = eventData[P_DX].GetInt() * _sensitivityX;
+    float dy = eventData[P_DY].GetInt() * _sensitivityY;
     if (_invertX) {
         dx *= -1.0f;
     }
     if (_invertY) {
         dy *= -1.0f;
     }
-	ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
-	controllerInput->UpdateYaw(dx);
-	controllerInput->UpdatePitch(dy);
+    ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
+    controllerInput->UpdateYaw(dx);
+    controllerInput->UpdatePitch(dy);
 }
 
 void MouseInput::HandleMouseWheel( StringHash eventType, VariantMap & eventData )

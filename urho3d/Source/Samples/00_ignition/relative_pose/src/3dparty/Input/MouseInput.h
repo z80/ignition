@@ -1,11 +1,11 @@
 #pragma once
 
 #include "BaseInput.h"
-#include "../../Config/ConfigFile.h"
+#include "ConfigFile.h"
 
 class MouseInput : public BaseInput
 {
-    URHO3D_OBJECT(MouseInput, BaseInput);
+    URHO3D_OBJECT(MouseInput, BaseInput)
 
 public:
     /// Construct.
@@ -38,4 +38,5 @@ private:
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
     bool visible_;
+    bool select_;
 };

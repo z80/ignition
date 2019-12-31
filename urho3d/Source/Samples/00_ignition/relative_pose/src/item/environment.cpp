@@ -20,6 +20,7 @@ static const StringHash E_IGN_CLIENTID("ClientID");
 static const StringHash E_IGN_CONNECTIONRESULT("ConnectionResult");
 static const StringHash E_IGN_CHATMESSAGE("ChatMessage");
 static const StringHash E_IGN_SELECTREQUEST("SelectRequest");
+static const StringHash E_IGN_CENTERREQUEST("CenterRequest");
 // Identifier for the node ID parameter in the event data
 static const StringHash P_ID("Id");
 static const StringHash P_CAMERAID("CameraId");

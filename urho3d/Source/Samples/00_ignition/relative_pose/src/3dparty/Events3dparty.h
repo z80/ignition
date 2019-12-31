@@ -208,4 +208,10 @@ namespace IgnEvents
         URHO3D_PARAM(P_STATUS, Status);   // int
         URHO3D_PARAM(P_MESSAGE, Message); // String
     }
+
+    URHO3D_EVENT( E_SELECT_REQUEST, SelectRequest )
+    {
+        URHO3D_PARAM( P_X, x ); // int
+        URHO3D_PARAM( P_Y, y ); // int
+    }
 }
