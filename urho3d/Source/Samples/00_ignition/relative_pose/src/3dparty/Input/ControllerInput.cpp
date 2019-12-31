@@ -36,6 +36,7 @@ ControllerInput::ControllerInput(Context* context) :
     _controlMapNames[Ign::CTRL_ZOOM_IN]  = "Zoom in";
     _controlMapNames[Ign::CTRL_ZOOM_OUT] = "Zoom out";
     _controlMapNames[Ign::CTRL_CENTER]   = "Center camera";
+    _controlMapNames[Ign::CTRL_TRIGGER]   = "Trigger";
 	Init();
 }
 
