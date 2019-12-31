@@ -30,6 +30,7 @@ public:
     virtual bool Select( int userId );
     void Unselect( int userId );
     const Vector<int> & SelectedBy() const;
+    const bool SelectedBy( int userId ) const;
 
     // Need to add more sophisticated functionality to this later...
 

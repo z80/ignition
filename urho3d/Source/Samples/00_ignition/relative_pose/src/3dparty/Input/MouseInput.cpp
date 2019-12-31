@@ -88,7 +88,7 @@ void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
         const IntVector2 pos = ui->GetCursorPosition();
         data[P_X] = pos.x_;
         data[P_Y] = pos.y_;
-        SendEvent( E_SELECT_REQUEST, data );
+        SendEvent( IgnEvents::E_SELECT_REQUEST, data );
     }
     select_ = false;
 

@@ -58,9 +58,28 @@ void KeyboardInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 		return;
 	}
 
-	if (_mappedKeyToControl.Contains(key)) {
-		auto* controllerInput = GetSubsystem<ControllerInput>();
-		controllerInput->SetActionState(_mappedKeyToControl[key], true);
+    if ( _mappedKeyToControl.Contains(key) )
+    {
+        const unsigned cmd = _mappedKeyToControl[key];
+        if ( cmd == Ign::CTRL_CENTER )
+        {
+            using namespace IgnEvents::CenterRequest;
+            VariantMap & data = GetEventDataMap();
+
+            SendEvent( IgnEvents::E_CENTER_REQUEST, data );
+        }
+        else if ( cmd == Ign::CTRL_TRIGGER )
+        {
+            using namespace IgnEvents::TriggerRequest;
+            VariantMap & data = GetEventDataMap();
+
+            SendEvent( IgnEvents::E_TRIGGER_REQUEST, data );
+        }
+        else
+        {
+            auto* controllerInput = GetSubsystem<ControllerInput>();
+            controllerInput->SetActionState(_mappedKeyToControl[key], true);
+        }
 	}
 }
 

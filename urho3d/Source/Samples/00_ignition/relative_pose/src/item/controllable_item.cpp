@@ -80,6 +80,13 @@ const Vector<int> & ControllableItem::SelectedBy() const
     return selectedByUserIds_;
 }
 
+const bool ControllableItem::SelectedBy( int userId ) const
+{
+    Vector<int>::ConstIterator it = selectedByUserIds_.Find( userId );
+    const bool ok = ( it != selectedByUserIds_.End() );
+    return ok;
+}
+
 void ControllableItem::SelectedStringUpdated()
 {
     selectedIndStrings_ = selectedIndsString_.Split( ',' );

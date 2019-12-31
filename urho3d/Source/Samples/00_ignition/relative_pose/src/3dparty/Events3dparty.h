@@ -209,9 +209,26 @@ namespace IgnEvents
         URHO3D_PARAM(P_MESSAGE, Message); // String
     }
 
+    // Select by mouse
+    // When sent locally it is from input manager to
+    // Environment.
+    // When sent remotely it is sent with object id.
     URHO3D_EVENT( E_SELECT_REQUEST, SelectRequest )
     {
+        URHO3D_PARAM( P_ID, Id );
         URHO3D_PARAM( P_X, x ); // int
         URHO3D_PARAM( P_Y, y ); // int
+    }
+
+    // Center object. Camera controller is perented to
+    // the currently selected object.
+    URHO3D_EVENT( E_CENTER_REQUEST, CenterRequest )
+    {
+        URHO3D_PARAM( P_ID, Id ); // int
+    }
+
+    // Trigger request. It is called when button is pressed.
+    URHO3D_EVENT( E_TRIGGER_REQUEST, TriggerRequest )
+    {
     }
 }

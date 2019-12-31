@@ -53,7 +53,11 @@ public:
     void Disconnect();
 
     bool SendChatMessage( const String & message );
-    void RequestItemSelect( Node * node );
+    void SendRequestItemSelect( Node * node );
+    void SendRequestCenter( RefFrame * rf );
+    /// This one is virtual as client may transfer additional information
+    /// besides of the event itself.
+    virtual void SendRequestTrigger( RefFrame * rf, VariantMap & data );
 
     ClientDesc & clientDesc();
 
@@ -65,6 +69,8 @@ public:
     virtual void ConnectionResult( const String & errMsg );
     virtual void ChatMessage( const String & user, const String & message );
     virtual void SelectRequest( const ClientDesc & c, RefFrame * rf );
+    virtual void CenterRequest( const ClientDesc & c, RefFrame * rf );
+    virtual void TriggerRequest( const ClientDesc & c, RefFrame * rf, const VariantMap & data );
     virtual void ConsoleCommand( const String & cmd, const String & id=String() );
 
 protected:
@@ -82,14 +88,18 @@ protected:
     /// Handle a client disconnecting from the server.
     void HandleClientDisconnected(StringHash eventType, VariantMap& eventData);
     /// Handle remote event from server which tells our controlled object node ID.
-    void HandleAssignClientId(StringHash eventType, VariantMap& eventData);
+    void HandleAssignClientId_Remote(StringHash eventType, VariantMap& eventData);
 
     /// Handle connection status result.
-    void HandleConnectionResult( StringHash eventType, VariantMap & eventData );
+    void HandleConnectionResult_Remote( StringHash eventType, VariantMap & eventData );
     /// Handle chat messages both on client and server.
-    void HandleChatMessage( StringHash eventType, VariantMap & eventData );
+    void HandleChatMessage_Remote( StringHash eventType, VariantMap & eventData );
     /// Handle select request.
-    void HandleSelectRequest( StringHash eventType, VariantMap & eventData );
+    void HandleSelectRequest_Remote( StringHash eventType, VariantMap & eventData );
+    /// Handler center request. Camera should be parented to to object selected.
+    void HandleCenterRequest_Remote( StringHash eventType, VariantMap & eventData );
+    /// Trigger request.
+    void HandleTriggerRequest_Remote( StringHash eventType, VariantMap & eventData );
 
 
     void HandleKeyDown( StringHash eventType, VariantMap & eventData );
@@ -97,6 +107,9 @@ protected:
     void HandleMouseUp( StringHash eventType, VariantMap & eventData );
     void HandleMouseWheel( StringHash eventType, VariantMap & eventData );
     void HandleConsoleCommand( StringHash eventType, VariantMap & eventData );
+    void HandleSelectRequest( StringHash eventType, VariantMap & eventData );
+    void HandleCenterRequest( StringHash eventType, VariantMap & eventData );
+    void HandleTriggerRequest( StringHash eventType, VariantMap & eventData );
 
 private:
     void SetupConsole();
@@ -105,7 +118,10 @@ private:
     void UpdateEvolvingNodes( Timestamp ticks_dt );
     void CaptureControls();
     void ApplyControls();
+    CameraFrame * FindCameraFrame( const ClientDesc & cd );
     CameraFrame * FindCameraFrame();
+    RefFrame    * FindSelectedFrame( const ClientDesc & cd );
+    RefFrame    * FindSelectedFrame();
     void ProcessLocalVisuals();
     int  UniqueId();
     void LoadTranslations();

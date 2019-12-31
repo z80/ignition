@@ -9,6 +9,7 @@
 #include "Notifications.h"
 #include "ConfigManager.h"
 #include "ControllerInput.h"
+#include "Events3dparty.h"
 
 namespace Ign
 {
@@ -21,6 +22,7 @@ static const StringHash E_IGN_CONNECTIONRESULT("ConnectionResult");
 static const StringHash E_IGN_CHATMESSAGE("ChatMessage");
 static const StringHash E_IGN_SELECTREQUEST("SelectRequest");
 static const StringHash E_IGN_CENTERREQUEST("CenterRequest");
+static const StringHash E_IGN_TRIGGERREQUEST("TriggerRequest");
 // Identifier for the node ID parameter in the event data
 static const StringHash P_ID("Id");
 static const StringHash P_CAMERAID("CameraId");
@@ -280,7 +282,7 @@ bool Environment::SendChatMessage( const String & message )
     return true;
 }
 
-void Environment::RequestItemSelect( Node * node )
+void Environment::SendRequestItemSelect( Node * node )
 {
     RefFrame * rf = RefFrame::refFrame( node->GetScene() );
     if ( !rf )
@@ -305,16 +307,82 @@ void Environment::RequestItemSelect( Node * node )
     if ( serverRunning )
     {
         // Call callback locally.
-        ClientDesc c;
-        c.login_ = "_SERVER_";
-        SelectRequest( c, rf );
+        SelectRequest( clientDesc_, rf );
     }
     else
     {
-        VariantMap data;
+        VariantMap & data = GetEventDataMap();
 
         data[P_ID] = id;
         c->SendRemoteEvent( E_IGN_SELECTREQUEST, true, data );
+    }
+}
+
+void Environment::SendRequestCenter( RefFrame * rf )
+{
+    if ( !rf )
+    {
+        //URHO3D_LOGINFO( "Selecting something not having RefFrame" );
+        return;
+    }
+
+    const unsigned id = rf->GetID();
+
+    Network * n = GetSubsystem<Network>();
+    const bool serverRunning = n->IsServerRunning();
+    Connection * c = n->GetServerConnection();
+
+    if ( (!serverRunning) && ( !c ) )
+    {
+        //URHO3D_LOGINFO( "Need to be in game to select something!" );
+        Notifications::AddNotification( GetContext(), "Need to be in game to select something!" );
+        return;
+    }
+
+    if ( serverRunning )
+    {
+        // Call callback locally.
+        SelectRequest( clientDesc_, rf );
+    }
+    else
+    {
+        VariantMap & data = GetEventDataMap();
+
+        data[P_ID] = id;
+        c->SendRemoteEvent( E_IGN_CENTERREQUEST, true, data );
+    }
+}
+
+void Environment::SendRequestTrigger( RefFrame * rf, VariantMap & data )
+{
+    if ( !rf )
+    {
+        //URHO3D_LOGINFO( "Selecting something not having RefFrame" );
+        return;
+    }
+
+    const unsigned id = rf->GetID();
+
+    Network * n = GetSubsystem<Network>();
+    const bool serverRunning = n->IsServerRunning();
+    Connection * c = n->GetServerConnection();
+
+    if ( (!serverRunning) && ( !c ) )
+    {
+        //URHO3D_LOGINFO( "Need to be in game to select something!" );
+        Notifications::AddNotification( GetContext(), "Need to be in game to trigger something!" );
+        return;
+    }
+
+    if ( serverRunning )
+    {
+        // Call callback locally.
+        TriggerRequest( clientDesc_, rf, data );
+    }
+    else
+    {
+        data[P_ID] = id;
+        c->SendRemoteEvent( E_IGN_CENTERREQUEST, true, data );
     }
 }
 
@@ -368,6 +436,33 @@ void Environment::SelectRequest( const ClientDesc & c, RefFrame * rf )
     //URHO3D_LOGINFOF( "User %s wants to select: %s", c.login_.CString(), rf->name().CString() );
     const String stri = "User " + c.login_ + " wants to select " + rf->name();
     Notifications::AddNotification( GetContext(), stri );
+
+    const bool selectable = rf->IsSelectable();
+    if ( !selectable )
+        return;
+    rf->Select( c.id_ );
+}
+
+void Environment::CenterRequest( const ClientDesc & c, RefFrame * rf )
+{
+    const String stri = "User " + c.login_ + " wants to center " + rf->name();
+    Notifications::AddNotification( GetContext(), stri );
+
+    const bool selectable = rf->IsSelectable();
+    if ( !selectable )
+        return;
+
+    CameraFrame * cam = FindCameraFrame( c );
+    if ( !cam )
+        return;
+    cam->setParent( rf );
+}
+
+void Environment::TriggerRequest( const ClientDesc & c, RefFrame * rf, const VariantMap & data )
+{
+    const String stri = "User " + c.login_ + " wants to trigger " + rf->name();
+    Notifications::AddNotification( GetContext(), stri );
+
 }
 
 void Environment::ConsoleCommand( const String & cmd, const String & id )
@@ -392,10 +487,12 @@ void Environment::SubscribeToEvents()
     SubscribeToEvent( E_CLIENTDISCONNECTED, URHO3D_HANDLER(Environment, HandleClientDisconnected));
     // This is a custom event, sent from the server to the client. It tells the 
     // node ID of the object the client should control
-    SubscribeToEvent(E_IGN_CLIENTID, URHO3D_HANDLER( Environment, HandleAssignClientId) );
-    SubscribeToEvent(E_IGN_CONNECTIONRESULT, URHO3D_HANDLER( Environment, HandleConnectionResult) );
-    SubscribeToEvent(E_IGN_CHATMESSAGE, URHO3D_HANDLER( Environment, HandleChatMessage) );
-    SubscribeToEvent(E_IGN_SELECTREQUEST, URHO3D_HANDLER( Environment, HandleSelectRequest) );
+    SubscribeToEvent(E_IGN_CLIENTID, URHO3D_HANDLER( Environment, HandleAssignClientId_Remote) );
+    SubscribeToEvent(E_IGN_CONNECTIONRESULT, URHO3D_HANDLER( Environment, HandleConnectionResult_Remote) );
+    SubscribeToEvent(E_IGN_CHATMESSAGE, URHO3D_HANDLER( Environment, HandleChatMessage_Remote) );
+    SubscribeToEvent(E_IGN_SELECTREQUEST, URHO3D_HANDLER( Environment, HandleSelectRequest_Remote) );
+    SubscribeToEvent(E_IGN_CENTERREQUEST, URHO3D_HANDLER( Environment, HandleCenterRequest_Remote) );
+    SubscribeToEvent(E_IGN_TRIGGERREQUEST, URHO3D_HANDLER( Environment, HandleTriggerRequest_Remote) );
 
     // Events sent between client & server (remote events) must be explicitly registered 
     // or else they are not allowed to be received
@@ -403,6 +500,8 @@ void Environment::SubscribeToEvents()
     GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_CONNECTIONRESULT );
     GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_CHATMESSAGE );
     GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_SELECTREQUEST );
+    GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_CENTERREQUEST );
+    GetSubsystem<Network>()->RegisterRemoteEvent( E_IGN_TRIGGERREQUEST );
 
 
     // Key events.
@@ -579,7 +678,7 @@ void Environment::HandleClientDisconnected( StringHash eventType, VariantMap & e
     ClientDisconnected( id );
 }
 
-void Environment::HandleAssignClientId( StringHash eventType, VariantMap & eventData )
+void Environment::HandleAssignClientId_Remote( StringHash eventType, VariantMap & eventData )
 {
     clientDesc_.id_            = eventData[P_ID].GetUInt();
     clientDesc_.cameraFrameId_ = eventData[P_CAMERAID].GetUInt();
@@ -594,13 +693,13 @@ void Environment::HandleAssignClientId( StringHash eventType, VariantMap & event
     }
 }
 
-void Environment::HandleConnectionResult( StringHash eventType, VariantMap & eventData )
+void Environment::HandleConnectionResult_Remote( StringHash eventType, VariantMap & eventData )
 {
     const String & errMsg = eventData[P_CHATTEXT].GetString();
     ConnectionResult( errMsg );
 }
 
-void Environment::HandleChatMessage( StringHash eventType, VariantMap & eventData )
+void Environment::HandleChatMessage_Remote( StringHash eventType, VariantMap & eventData )
 {
     const bool isServer = IsServer();
     VariantMap data;
@@ -629,7 +728,7 @@ void Environment::HandleChatMessage( StringHash eventType, VariantMap & eventDat
     ChatMessage( user, message );
 }
 
-void Environment::HandleSelectRequest( StringHash eventType, VariantMap & eventData )
+void Environment::HandleSelectRequest_Remote( StringHash eventType, VariantMap & eventData )
 {
     const unsigned id = eventData[P_ID].GetUInt();
 
@@ -645,6 +744,42 @@ void Environment::HandleSelectRequest( StringHash eventType, VariantMap & eventD
     RefFrame * rf = RefFrame::refFrame( s, id );
 
     SelectRequest( c, rf );
+}
+
+void Environment::HandleCenterRequest_Remote( StringHash eventType, VariantMap & eventData )
+{
+    const unsigned id = eventData[P_ID].GetUInt();
+
+    using namespace RemoteEventData;
+    Connection* sender = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
+    HashMap<Connection*, ClientDesc>::Iterator it = connections_.Find( sender );
+    if ( it == connections_.End() )
+        return;
+
+    const ClientDesc & c = it->second_;
+
+    Scene * s = GetScene();
+    RefFrame * rf = RefFrame::refFrame( s, id );
+
+    CenterRequest( c, rf );
+}
+
+void Environment::HandleTriggerRequest_Remote( StringHash eventType, VariantMap & eventData )
+{
+    const unsigned id = eventData[P_ID].GetUInt();
+
+    using namespace RemoteEventData;
+    Connection* sender = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
+    HashMap<Connection*, ClientDesc>::Iterator it = connections_.Find( sender );
+    if ( it == connections_.End() )
+        return;
+
+    const ClientDesc & c = it->second_;
+
+    Scene * s = GetScene();
+    RefFrame * rf = RefFrame::refFrame( s, id );
+
+    TriggerRequest( c, rf, eventData );
 }
 
 void Environment::HandleKeyDown( StringHash eventType, VariantMap & eventData )
@@ -694,6 +829,65 @@ void Environment::HandleConsoleCommand( StringHash eventType, VariantMap & event
     else
         ConsoleCommand( cmd );
 }
+
+void Environment::HandleSelectRequest( StringHash eventType, VariantMap & eventData )
+{
+    using namespace IgnEvents::SelectRequest;
+    const int x = eventData[P_X].GetInt();
+    const int y = eventData[P_Y].GetInt();
+
+    CameraFrame * cf = FindCameraFrame();
+    if ( (!cf) || (!cf->node_) )
+        return;
+    Camera * camera = cf->node_->GetComponent<Camera>();
+    if ( !camera )
+        return;
+
+    Graphics * graphics = GetSubsystem<Graphics>();
+    Ray cameraRay = camera->GetScreenRay((float)x / graphics->GetWidth(), (float)y / graphics->GetHeight());
+
+    // Pick only geometry objects, not eg. zones or lights, only get the first (closest) hit
+    PODVector<RayQueryResult> results;
+    const float maxDistance = Settings::staticObjDistanceHorizontHide();
+    RayOctreeQuery query(results, cameraRay, RAY_TRIANGLE, maxDistance, DRAWABLE_GEOMETRY );
+
+    Scene * s = GetScene();
+    if ( !s )
+        return;
+    s->GetComponent<Octree>()->RaycastSingle( query );
+    const size_t qty = results.Size();
+    if ( !qty )
+        return;
+
+    RayQueryResult & result = results[0];
+    Node * n = result.node_;
+    {
+        const String stri = String("node name: ") + n->GetName();
+        Notifications::AddNotification( GetContext(), stri );
+    }
+
+    SendRequestItemSelect( n );
+}
+
+void Environment::HandleCenterRequest( StringHash eventType, VariantMap & eventData )
+{
+    RefFrame * rf = FindSelectedFrame();
+
+    SendRequestCenter( rf );
+}
+
+void Environment::HandleTriggerRequest( StringHash eventType, VariantMap & eventData )
+{
+    CameraFrame * cf = FindCameraFrame();
+    if ( !cf )
+        return;
+    RefFrame * rf = cf->parent();
+    if ( !rf )
+        return;
+
+    SendRequestTrigger( rf, eventData );
+}
+
 
 void Environment::SetupConsole()
 {
@@ -852,9 +1046,9 @@ void Environment::ApplyControls()
     }
 }
 
-CameraFrame * Environment::FindCameraFrame()
+CameraFrame * Environment::FindCameraFrame( const ClientDesc & cd )
 {
-    const int frameId = clientDesc_.cameraFrameId_;
+    const int frameId = cd.cameraFrameId_;
     if ( frameId < 0 )
         return nullptr;
 
@@ -873,11 +1067,47 @@ CameraFrame * Environment::FindCameraFrame()
         if ( !cf )
             continue;
         const int id = cf->CreatedBy();
-        if ( id == clientDesc_.id_ )
+        if ( id == cd.id_ )
             return cf;
     }
 
     return nullptr;
+}
+
+CameraFrame * Environment::FindCameraFrame()
+{
+    CameraFrame * cf = FindCameraFrame( clientDesc_ );
+    return cf;
+}
+
+RefFrame * Environment::FindSelectedFrame( const ClientDesc & cd )
+{
+    Scene * s = GetScene();
+    if ( !s )
+        return nullptr;
+
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        if ( !c )
+            continue;
+        RefFrame * rf = c->Cast<RefFrame>();
+        if ( !rf )
+            continue;
+        const bool selected = rf->SelectedBy( cd.id_ );
+        if ( selected )
+            return rf;
+    }
+
+    return nullptr;
+}
+
+RefFrame * Environment::FindSelectedFrame()
+{
+    RefFrame * rf = FindSelectedFrame( clientDesc_ );
+    return rf;
 }
 
 void Environment::ProcessLocalVisuals()
