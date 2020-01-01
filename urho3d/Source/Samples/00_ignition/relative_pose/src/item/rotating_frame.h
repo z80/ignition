@@ -25,6 +25,14 @@ public:
     void SetPhase( Timestamp phase );
     Timestamp GetPhase() const;
 
+    // Implementation of ForceSourceFrame to 
+    // produce Coriolis and Centrifugal forces.
+    bool Recursive() const override;
+    bool ProducesForces() const override;
+    void ComputeForces( PhysicsItem * receiver, const State & st, Vector3d & F, Vector3d & P ) const override;
+
+
+
 public:
     Timestamp   period_;
     Timestamp   phase_;

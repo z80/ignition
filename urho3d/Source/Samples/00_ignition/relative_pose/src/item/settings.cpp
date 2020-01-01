@@ -5,6 +5,8 @@
 namespace Ign
 {
 
+static const Timestamp TICKS_PER_SEC = 1000;
+
 const String Settings::configFileName_ = "config.json";
 
 void Settings::RegisterObject( Context * context )
@@ -19,16 +21,21 @@ Settings::Settings( Context * context )
 Settings::~Settings()
 {}
 
+Timestamp Settings::ticksPerSec() const
+{
+    return TICKS_PER_SEC;
+}
+
 Timestamp Settings::ticks( Float secs_dt )
 {
-    const Float t = secs_dt * static_cast<Float>( 1000 );
+    const Float t = secs_dt * static_cast<Float>( TICKS_PER_SEC );
     const Timestamp dt = static_cast<Timestamp>( t );
     return dt;
 }
 
 Float Settings::secs( Timestamp ticks_dt )
 {
-    const Float dt = static_cast<Float>( ticks_dt ) / static_cast<Float>( 1000 );
+    const Float dt = static_cast<Float>( ticks_dt ) / static_cast<Float>( TICKS_PER_SEC );
     return dt;
 }
 
