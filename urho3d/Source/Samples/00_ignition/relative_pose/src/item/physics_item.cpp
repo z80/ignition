@@ -48,6 +48,11 @@ void PhysicsItem::updateStateFromRigidBody()
     MarkNetworkUpdate();
 }
 
+RigidBody2* PhysicsItem::rigidBody() const
+{
+    return rigid_body_;
+}
+
 void PhysicsItem::enteredRefFrame( RefFrame * refFrame )
 {
     // Check if it is a physics ref frame.

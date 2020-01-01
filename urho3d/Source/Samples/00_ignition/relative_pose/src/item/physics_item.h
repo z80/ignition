@@ -29,6 +29,9 @@ public:
     /// This one is called by PhysicsFrame instance this item is in 
     /// after physics update step. 
     void updateStateFromRigidBody();
+
+    /// Returns the rigid body in order to apply forces.
+    RigidBody2 * rigidBody() const;
 protected:
     /// Called when this thing is moved into another ref. frame.
     void enteredRefFrame( RefFrame * refFrame ) override;
