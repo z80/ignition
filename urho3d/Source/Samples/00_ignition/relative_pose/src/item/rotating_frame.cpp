@@ -1,5 +1,7 @@
 
 #include "rotating_frame.h"
+#include "physics_item.h"
+#include "settings.h"
 
 namespace Ign
 {

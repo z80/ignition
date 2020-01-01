@@ -21,7 +21,7 @@ Settings::Settings( Context * context )
 Settings::~Settings()
 {}
 
-Timestamp Settings::ticksPerSec() const
+Timestamp Settings::ticksPerSec()
 {
     return TICKS_PER_SEC;
 }
