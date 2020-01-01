@@ -17,7 +17,7 @@ public:
     RotatingFrame( Context * context );
     virtual ~RotatingFrame();
 
-    void evolveStep( Timestamp ticks_dt );
+    void evolveStep( Timestamp ticks_dt ) override;
 
     void SetPeriod( Timestamp period );
     Timestamp GetPeriod() const;
