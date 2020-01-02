@@ -9,6 +9,23 @@ using namespace Urho3D;
 namespace Ign
 {
 
+struct OrbitDesc
+{
+    Float    gm;
+    Float    eccentricity;
+    Float    semimajorAxis;
+    Vector3d ex, 
+             ey;
+
+    // For hyperbolic and elliptic.
+    Float     eccentricAnomaly;
+    // For parabolic.
+    Float     semiLatusRectum;
+    // These two are for information only.
+    Timestamp periapsisTime;
+    Timestamp orbitalPeriod;
+};
+
 class OrbitingFrame: public EvolvingFrame
 {
     URHO3D_OBJECT( OrbitingFrame, EvolvingFrame )
@@ -37,9 +54,7 @@ public:
 public:
     Float GM_;
     Float R_;
-
-
-
+    OrbitDesc orbitDesc;
 };
 
 
