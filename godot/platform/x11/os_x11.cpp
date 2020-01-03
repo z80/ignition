@@ -1015,12 +1015,12 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 		XFree(xsh);
 	}
 
-	if (!p_enabled && !get_borderless_window()) {
-		// put decorations back if the window wasn't suppoesed to be borderless
+	if (!p_enabled) {
+		// put back or remove decorations according to the last set borderless state
 		Hints hints;
 		Atom property;
 		hints.flags = 2;
-		hints.decorations = 1;
+		hints.decorations = current_videomode.borderless_window ? 0 : 1;
 		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
 	}
@@ -1165,7 +1165,7 @@ int OS_X11::get_screen_dpi(int p_screen) const {
 	int height_mm = DisplayHeightMM(x11_display, p_screen);
 	double xdpi = (width_mm ? sc.width / (double)width_mm * 25.4 : 0);
 	double ydpi = (height_mm ? sc.height / (double)height_mm * 25.4 : 0);
-	if (xdpi || xdpi)
+	if (xdpi || ydpi)
 		return (xdpi + ydpi) / (xdpi && ydpi ? 2 : 1);
 
 	//could not get dpi
@@ -1382,9 +1382,12 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
-	if (is_window_maximize_allowed()) {
-		while (p_enabled && !is_window_maximized()) {
-			// Wait for effective resizing (so the GLX context is too).
+	if (p_enabled && is_window_maximize_allowed()) {
+		// Wait for effective resizing (so the GLX context is too).
+		// Give up after 0.5s, it's not going to happen on this WM.
+		// https://github.com/godotengine/godot/issues/19978
+		for (int attempt = 0; !is_window_maximized() && attempt < 50; attempt++) {
+			usleep(10000);
 		}
 	}
 
@@ -1506,7 +1509,7 @@ bool OS_X11::is_window_always_on_top() const {
 
 void OS_X11::set_borderless_window(bool p_borderless) {
 
-	if (current_videomode.borderless_window == p_borderless)
+	if (get_borderless_window() == p_borderless)
 		return;
 
 	if (!p_borderless && layered_window)
@@ -1526,7 +1529,24 @@ void OS_X11::set_borderless_window(bool p_borderless) {
 }
 
 bool OS_X11::get_borderless_window() {
-	return current_videomode.borderless_window;
+
+	bool borderless = current_videomode.borderless_window;
+	Atom prop = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+	if (prop != None) {
+
+		Atom type;
+		int format;
+		unsigned long len;
+		unsigned long remaining;
+		unsigned char *data = NULL;
+		if (XGetWindowProperty(x11_display, x11_window, prop, 0, sizeof(Hints), False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
+			if (data && (format == 32) && (len >= 5)) {
+				borderless = !((Hints *)data)->decorations;
+			}
+			XFree(data);
+		}
+	}
+	return borderless;
 }
 
 void OS_X11::request_attention() {
@@ -1662,6 +1682,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 				input->accumulate_input_event(k);
 			}
+			memfree(utf8string);
 			return;
 		}
 		memfree(utf8string);
@@ -2041,15 +2062,11 @@ void OS_X11::process_xevents() {
 			case LeaveNotify: {
 				if (main_loop && !mouse_mode_grab)
 					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
-				if (input)
-					input->set_mouse_in_window(false);
 
 			} break;
 			case EnterNotify: {
 				if (main_loop && !mouse_mode_grab)
 					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
-				if (input)
-					input->set_mouse_in_window(true);
 			} break;
 			case FocusIn:
 				minimized = false;
@@ -2720,6 +2737,11 @@ void OS_X11::set_cursor_shape(CursorShape p_shape) {
 	}
 
 	current_cursor = p_shape;
+}
+
+OS::CursorShape OS_X11::get_cursor_shape() const {
+
+	return current_cursor;
 }
 
 void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {

@@ -1824,7 +1824,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				if (!sp)
 					continue;
 
-				emit_signal("transform_key_request", sp, "", sp->get_transform());
+				spatial_editor->emit_signal("transform_key_request", sp, "", sp->get_transform());
 			}
 
 			set_message(TTR("Animation Key Inserted."));
@@ -5323,6 +5323,7 @@ void SpatialEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<VehicleWheelSpatialGizmoPlugin>(memnew(VehicleWheelSpatialGizmoPlugin)));
 	add_gizmo_plugin(Ref<VisibilityNotifierGizmoPlugin>(memnew(VisibilityNotifierGizmoPlugin)));
 	add_gizmo_plugin(Ref<ParticlesGizmoPlugin>(memnew(ParticlesGizmoPlugin)));
+	add_gizmo_plugin(Ref<CPUParticlesGizmoPlugin>(memnew(CPUParticlesGizmoPlugin)));
 	add_gizmo_plugin(Ref<ReflectionProbeGizmoPlugin>(memnew(ReflectionProbeGizmoPlugin)));
 	add_gizmo_plugin(Ref<GIProbeGizmoPlugin>(memnew(GIProbeGizmoPlugin)));
 	add_gizmo_plugin(Ref<BakedIndirectLightGizmoPlugin>(memnew(BakedIndirectLightGizmoPlugin)));
@@ -5811,7 +5812,7 @@ SpatialEditorPlugin::SpatialEditorPlugin(EditorNode *p_node) {
 	editor->get_viewport()->add_child(spatial_editor);
 
 	spatial_editor->hide();
-	spatial_editor->connect("transform_key_request", editor, "_transform_keyed");
+	spatial_editor->connect("transform_key_request", editor->get_inspector_dock(), "_transform_keyed");
 }
 
 SpatialEditorPlugin::~SpatialEditorPlugin() {

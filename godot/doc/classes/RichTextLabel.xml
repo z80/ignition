@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextLabel" inherits="Control" category="Core" version="3.1.1">
+<class name="RichTextLabel" inherits="Control" category="Core" version="3.1.2">
 	<brief_description>
 		Label that displays rich text.
 	</brief_description>
@@ -8,7 +8,7 @@
 		Note that assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link>https://docs.godotengine.org/en/3.1/tutorials/gui/bbcode_in_richtextlabel.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_image">
@@ -35,7 +35,7 @@
 			<argument index="0" name="bbcode" type="String">
 			</argument>
 			<description>
-				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [code]OK[/code] if successful.
+				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [constant @GlobalScope.OK] if successful.
 			</description>
 		</method>
 		<method name="clear">
@@ -93,7 +93,7 @@
 			<argument index="0" name="bbcode" type="String">
 			</argument>
 			<description>
-				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [code]OK[/code] if parses [code]bbcode[/code] successfully.
+				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [constant @GlobalScope.OK] if parses [code]bbcode[/code] successfully.
 			</description>
 		</method>
 		<method name="pop">

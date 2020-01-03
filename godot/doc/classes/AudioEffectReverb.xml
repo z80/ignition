@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectReverb" inherits="AudioEffect" category="Core" version="3.1.1">
+<class name="AudioEffectReverb" inherits="AudioEffect" category="Core" version="3.1.2">
 	<brief_description>
 		Adds a Reverb audio effect to an Audio bus.
 		Simulates the sound of acoustic environments such as rooms, concert halls, caverns, or an open spaces.
@@ -21,7 +21,7 @@
 		<member name="hipass" type="float" setter="set_hpf" getter="get_hpf">
 			High-pass filter passes signals with a frequency higher than a certain cutoff frequency and attenuates signals with frequencies lower than the cutoff frequency. Value can range from 0 to 1. Default value: [code]0[/code].
 		</member>
-		<member name="predelay_feedback" type="float" setter="set_predelay_msec" getter="get_predelay_msec">
+		<member name="predelay_feedback" type="float" setter="set_predelay_feedback" getter="get_predelay_feedback">
 			Output percent of predelay. Value can range from 0 to 1. Default value: [code]1[/code].
 		</member>
 		<member name="predelay_msec" type="float" setter="set_predelay_msec" getter="get_predelay_msec">

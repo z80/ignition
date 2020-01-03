@@ -631,6 +631,7 @@ void ProjectExportDialog::_delete_preset_confirm() {
 
 	int idx = presets->get_current();
 	_edit_preset(-1);
+	export_button->set_disabled(true);
 	EditorExport::get_singleton()->remove_export_preset(idx);
 	_update_presets();
 }
@@ -1112,6 +1113,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	name->connect("text_changed", this, "_name_changed");
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTR("Runnable"));
+	runnable->set_tooltip(TTR("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
 	runnable->connect("pressed", this, "_runnable_pressed");
 	settings_vb->add_child(runnable);
 

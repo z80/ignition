@@ -32,6 +32,7 @@ package org.godotengine.godot;
 
 //import android.R;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -58,6 +59,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Messenger;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.provider.Settings.Secure;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -104,6 +107,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	static final int MAX_SINGLETONS = 64;
 	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
 	static final int REQUEST_CAMERA_PERMISSION = 2;
+	static final int REQUEST_VIBRATE_PERMISSION = 3;
 	private IStub mDownloaderClientStub;
 	private IDownloaderService mRemoteService;
 	private TextView mStatusText;
@@ -326,6 +330,21 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				}
 			}
 		});
+	}
+
+	@SuppressLint("MissingPermission")
+	public void vibrate(int p_duration_ms) {
+		if (requestPermission("VIBRATE")) {
+			Vibrator v = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+			if (v != null) {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					v.vibrate(VibrationEffect.createOneShot(p_duration_ms, VibrationEffect.DEFAULT_AMPLITUDE));
+				} else {
+					//deprecated in API 26
+					v.vibrate(p_duration_ms);
+				}
+			}
+		}
 	}
 
 	public void restart() {
@@ -608,6 +627,10 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			singletons[i].onMainDestroy();
 		}
 		super.onDestroy();
+
+		// TODO: This is a temp solution. The proper fix will involve tracking down and properly shutting down each
+		// native Godot components that is started in Godot#onVideoInit.
+		forceQuit();
 	}
 
 	@Override
@@ -961,6 +984,13 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		if (p_name.equals("CAMERA")) {
 			if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
 				requestPermissions(new String[] { Manifest.permission.CAMERA }, REQUEST_CAMERA_PERMISSION);
+				return false;
+			}
+		}
+
+		if (p_name.equals("VIBRATE")) {
+			if (ContextCompat.checkSelfPermission(this, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) {
+				requestPermissions(new String[] { Manifest.permission.VIBRATE }, REQUEST_VIBRATE_PERMISSION);
 				return false;
 			}
 		}

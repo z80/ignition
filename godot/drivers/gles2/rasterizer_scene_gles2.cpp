@@ -120,7 +120,7 @@ void RasterizerSceneGLES2::shadow_atlas_set_size(RID p_atlas, int p_size) {
 
 			//maximum compatibility, renderbuffer and RGBA shadow
 			glGenRenderbuffers(1, &shadow_atlas->depth);
-			glBindRenderbuffer(GL_RENDERBUFFER, directional_shadow.depth);
+			glBindRenderbuffer(GL_RENDERBUFFER, shadow_atlas->depth);
 			glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_internalformat, shadow_atlas->size, shadow_atlas->size);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, shadow_atlas->depth);
 
@@ -480,7 +480,6 @@ RID RasterizerSceneGLES2::reflection_probe_instance_create(RID p_probe) {
 	rpi->current_resolution = 0;
 	rpi->dirty = true;
 
-	rpi->last_pass = 0;
 	rpi->index = 0;
 
 	for (int i = 0; i < 6; i++) {
@@ -1002,7 +1001,7 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 		has_alpha = false;
 	}
 
-	RenderList::Element *e = has_alpha ? render_list.add_alpha_element() : render_list.add_element();
+	RenderList::Element *e = (has_alpha || p_material->shader->spatial.no_depth_test) ? render_list.add_alpha_element() : render_list.add_element();
 
 	if (!e) {
 		return;
@@ -1111,8 +1110,8 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 
 				LightInstance *li = light_instance_owner.getornull(e->instance->light_instances[i]);
 
-				if (li->light_index >= render_light_instance_count) {
-					continue; // too many
+				if (li->light_index >= render_light_instance_count || render_light_instances[li->light_index] != li) {
+					continue; // too many or light_index did not correspond to the light instances to be rendered
 				}
 
 				if (copy) {
@@ -1848,14 +1847,14 @@ void RasterizerSceneGLES2::_setup_light_type(LightInstance *p_light, ShadowAtlas
 	}
 }
 
-void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shadow_atlas, const Transform &p_view_transform) {
+void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shadow_atlas, const Transform &p_view_transform, bool accum_pass) {
 
 	RasterizerStorageGLES2::Light *light_ptr = light->light_ptr;
 
 	//common parameters
 	float energy = light_ptr->param[VS::LIGHT_PARAM_ENERGY];
 	float specular = light_ptr->param[VS::LIGHT_PARAM_SPECULAR];
-	float sign = light_ptr->negative ? -1 : 1;
+	float sign = (light_ptr->negative && !accum_pass) ? -1 : 1; //inverse color for base pass lights only
 
 	state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_SPECULAR, specular);
 	Color color = light_ptr->color * sign * energy * Math_PI;
@@ -2259,6 +2258,11 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 			if (accum_pass) { //accum pass force pass
 				blend_mode = RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_ADD;
+				if (rebind_light && light && light->light_ptr->negative) {
+					glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+					blend_mode = RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_SUB;
+				}
 			}
 
 			if (prev_blend_mode != blend_mode) {
@@ -2485,7 +2489,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		}
 
 		if (rebind_light && light) {
-			_setup_light(light, shadow_atlas, p_view_transform);
+			_setup_light(light, shadow_atlas, p_view_transform, accum_pass);
 		}
 
 		if (rebind_reflection && (refprobe_1 || refprobe_2)) {
@@ -2811,13 +2815,6 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		}
 	}
 
-	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT])) {
-
-		if (sky && sky->panorama.is_valid()) {
-			_draw_sky(sky, p_cam_projection, cam_transform, false, env->sky_custom_fov, env->bg_energy, env->sky_orientation);
-		}
-	}
-
 	if (probe_interior) {
 		env_radiance_tex = 0; //do not use radiance texture on interiors
 		state.default_ambient = Color(0, 0, 0, 1); //black as default ambient for interior
@@ -2826,6 +2823,14 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	// render opaque things first
 	render_list.sort_by_key(false);
 	_render_render_list(render_list.elements, render_list.element_count, cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, reverse_cull, false, false);
+
+	// then draw the sky after
+	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT])) {
+
+		if (sky && sky->panorama.is_valid()) {
+			_draw_sky(sky, p_cam_projection, cam_transform, false, env->sky_custom_fov, env->bg_energy, env->sky_orientation);
+		}
+	}
 
 	if (storage->frame.current_rt && state.used_screen_texture) {
 		//copy screen texture
@@ -2836,7 +2841,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-	render_list.sort_by_depth(true);
+	render_list.sort_by_reverse_depth_and_priority(true);
 
 	_render_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, reverse_cull, true, false);
 
@@ -3093,6 +3098,10 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	glEnable(GL_SCISSOR_TEST);
 	glClearDepth(1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT);
+	if (storage->config.use_rgba_3d_shadows) {
+		glClearColor(1.0, 1.0, 1.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
 	glDisable(GL_SCISSOR_TEST);
 
 	if (light->reverse_cull) {

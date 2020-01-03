@@ -774,10 +774,7 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 
 	for (int i = 0; i < texture->mipmaps; i++) {
 
-		int ofs = 0;
-		if (i > 0) {
-			ofs = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, real_format, i - 1);
-		}
+		int ofs = Image::get_image_mipmap_offset(texture->alloc_width, texture->alloc_height, real_format, i);
 
 		if (texture->compressed) {
 			glPixelStorei(GL_PACK_ALIGNMENT, 4);
@@ -1542,7 +1539,7 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 
 				if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
 					pi.hint = PROPERTY_HINT_RANGE;
-					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]);
+					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]) + "," + rtos(u.hint_range[2]);
 				}
 			} break;
 
@@ -2399,6 +2396,18 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	}
 	surface->data = array;
 	surface->index_data = p_index_array;
+#else
+	// Even on non-tools builds, a copy of the surface->data is needed in certain circumstances.
+	// Rigged meshes using the USE_SKELETON_SOFTWARE path need to read bone data
+	// from surface->data.
+
+	// if USE_SKELETON_SOFTWARE is active
+	if (!config.float_texture_supported) {
+		// if this geometry is used specifically for skinning
+		if (p_format & (VS::ARRAY_FORMAT_BONES | VS::ARRAY_FORMAT_WEIGHTS))
+			surface->data = array;
+	}
+	// An alternative is to always make a copy of surface->data.
 #endif
 
 	surface->total_data_size += surface->array_byte_size + surface->index_array_byte_size;
@@ -3457,6 +3466,8 @@ RID RasterizerStorageGLES2::skeleton_create() {
 
 	Skeleton *skeleton = memnew(Skeleton);
 
+	glGenTextures(1, &skeleton->tex_id);
+
 	return skeleton_owner.make_rid(skeleton);
 }
 
@@ -3474,7 +3485,6 @@ void RasterizerStorageGLES2::skeleton_allocate(RID p_skeleton, int p_bones, bool
 	skeleton->use_2d = p_2d_skeleton;
 
 	if (config.float_texture_supported) {
-		glGenTextures(1, &skeleton->tex_id);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, skeleton->tex_id);
@@ -5323,7 +5333,7 @@ void RasterizerStorageGLES2::initialize() {
 	config.support_depth_cubemaps = true;
 #else
 	config.use_rgba_2d_shadows = !(config.float_texture_supported && config.extensions.has("GL_EXT_texture_rg"));
-	config.support_depth_texture = config.extensions.has("GL_OES_depth_texture");
+	config.support_depth_texture = config.extensions.has("GL_OES_depth_texture") || config.extensions.has("WEBGL_depth_texture");
 	config.use_rgba_3d_shadows = !config.support_depth_texture;
 	config.support_depth_cubemaps = config.extensions.has("GL_OES_depth_texture_cube_map");
 #endif

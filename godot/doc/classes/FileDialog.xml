@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FileDialog" inherits="ConfirmationDialog" category="Core" version="3.1.1">
+<class name="FileDialog" inherits="ConfirmationDialog" category="Core" version="3.1.2">
 	<brief_description>
 		Dialog for selecting files or directories in the filesystem.
 	</brief_description>
@@ -43,7 +43,7 @@
 			<return type="VBoxContainer">
 			</return>
 			<description>
-				Return the vertical box container of the dialog, custom controls can be added to it.
+				Returns the vertical box container of the dialog, custom controls can be added to it.
 			</description>
 		</method>
 		<method name="invalidate">
@@ -74,7 +74,7 @@
 			Set dialog to open or save mode, changes selection behavior. See enum [code]Mode[/code] constants.
 		</member>
 		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title">
-			If [code]true[/code], changing the [code]Mode[/code] property will set the window title accordingly (e.g. setting mode to [code]MODE_OPEN_FILE[/code] will change the window title to "Open a File").
+			If [code]true[/code], changing the [code]Mode[/code] property will set the window title accordingly (e.g. setting mode to [constant MODE_OPEN_FILE] will change the window title to "Open a File").
 		</member>
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
 			If [code]true[/code], the dialog will show hidden files.

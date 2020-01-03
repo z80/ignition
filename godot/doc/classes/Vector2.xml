@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector2" category="Built-In Types" version="3.1.1">
+<class name="Vector2" category="Built-In Types" version="3.1.2">
 	<brief_description>
 		Vector used for 2D math.
 	</brief_description>
 	<description>
-		2-element structure that can be used to represent positions in 2d space or any other pair of numeric values.
+		2-element structure that can be used to represent positions in 2D space or any other pair of numeric values.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link>https://docs.godotengine.org/en/3.1/tutorials/math/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="Vector2">
@@ -216,7 +216,7 @@
 			<argument index="0" name="phi" type="float">
 			</argument>
 			<description>
-				Returns the vector rotated by [code]phi[/code] radians.
+				Returns the vector rotated by [code]phi[/code] radians. See also [method @GDScript.deg2rad].
 			</description>
 		</method>
 		<method name="round">

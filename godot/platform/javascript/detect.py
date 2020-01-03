@@ -77,10 +77,7 @@ def configure(env):
     env['CXX'] = 'em++'
     env['LINK'] = 'emcc'
 
-    # Emscripten's ar has issues with duplicate file names, so use cc.
-    env['AR'] = 'emcc'
-    env['ARFLAGS'] = '-o'
-    # emranlib is a noop, so it's safe to use with AR=emcc.
+    env['AR'] = 'emar'
     env['RANLIB'] = 'emranlib'
 
     # Use TempFileMunge since some AR invocations are too long for cmd.exe.
@@ -110,18 +107,30 @@ def configure(env):
     # once feasible also consider memory buffer size issues.
     env.Append(CPPDEFINES=['NO_THREADS'])
 
-    # These flags help keep the file size down.
-    env.Append(CCFLAGS=['-fno-exceptions', '-fno-rtti'])
-    # Don't use dynamic_cast, necessary with no-rtti.
-    env.Append(CPPDEFINES=['NO_SAFE_CAST'])
+    # Disable exceptions and rtti on non-tools (template) builds
+    if not env['tools']:
+        # These flags help keep the file size down.
+        env.Append(CCFLAGS=['-fno-exceptions', '-fno-rtti'])
+        # Don't use dynamic_cast, necessary with no-rtti.
+        env.Append(CPPDEFINES=['NO_SAFE_CAST'])
 
     if env['javascript_eval']:
         env.Append(CPPDEFINES=['JAVASCRIPT_EVAL_ENABLED'])
 
     ## Link flags
 
+    # We use IDBFS in javascript_main.cpp. Since Emscripten 1.39.1 it needs to
+    # be linked explicitly.
+    env.Append(LIBS=['idbfs.js'])
+
     env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
-    env.Append(LINKFLAGS=['-s', 'BINARYEN_TRAP_MODE=\'clamp\''])
+
+    # This needs to be defined for Emscripten using 'fastcomp' (default pre-1.39.0)
+    # and undefined if using 'upstream'. And to make things simple, earlier
+    # Emscripten versions didn't include 'fastcomp' in their path, so we check
+    # against the presence of 'upstream' to conditionally add the flag.
+    if not "upstream" in em_config['EMSCRIPTEN_ROOT']:
+        env.Append(LINKFLAGS=['-s', 'BINARYEN_TRAP_MODE=\'clamp\''])
 
     # Allow increasing memory buffer size during runtime. This is efficient
     # when using WebAssembly (in comparison to asm.js) and works well for
@@ -135,3 +144,6 @@ def configure(env):
 
     # TODO: Reevaluate usage of this setting now that engine.js manages engine runtime.
     env.Append(LINKFLAGS=['-s', 'NO_EXIT_RUNTIME=1'])
+
+    #adding flag due to issue with emscripten 1.38.41 callMain method https://github.com/emscripten-core/emscripten/blob/incoming/ChangeLog.md#v13841-08072019
+    env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=["callMain"]'])

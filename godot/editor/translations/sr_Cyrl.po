@@ -165,13 +165,18 @@ msgstr "Заустави анимацију. (S)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Додај нову траку"
+msgid "Animation length (frames)"
+msgstr "Дужина анимације (у секундама)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "Дужина анимације (у секундама)."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Додај нову траку"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -10442,7 +10447,7 @@ msgstr ""
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 

@@ -164,12 +164,18 @@ msgid "Animation Playback Track"
 msgstr "Stopa přehrávání animace"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Přidat stopu"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Délka animace (v sekundách)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Délka animace (v sekundách)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Přidat stopu"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -10201,7 +10207,7 @@ msgstr "Přidat aktuální barvu jako předvolbu"
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 

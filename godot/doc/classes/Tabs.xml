@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tabs" inherits="Control" category="Core" version="3.1.1">
+<class name="Tabs" inherits="Control" category="Core" version="3.1.2">
 	<brief_description>
 		Tabs Control.
 	</brief_description>
@@ -135,7 +135,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				If [code]disabled[/code] is false, hides the tab at index [code]tab_idx[/code]. Note that its title text will remain, unless also removed with [method set_tab_title].
+				If [code]disabled[/code] is [code]false[/code], hides the tab at index [code]tab_idx[/code]. Note that its title text will remain, unless also removed with [method set_tab_title].
 			</description>
 		</method>
 		<method name="set_tab_icon">
@@ -234,6 +234,7 @@
 			Align the tabs to the right.
 		</constant>
 		<constant name="ALIGN_MAX" value="3" enum="TabAlign">
+			Represents the size of the [enum TabAlign] enum.
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0" enum="CloseButtonDisplayPolicy">
 		</constant>
@@ -242,6 +243,7 @@
 		<constant name="CLOSE_BUTTON_SHOW_ALWAYS" value="2" enum="CloseButtonDisplayPolicy">
 		</constant>
 		<constant name="CLOSE_BUTTON_MAX" value="3" enum="CloseButtonDisplayPolicy">
+			Represents the size of the [enum CloseButtonDisplayPolicy] enum.
 		</constant>
 	</constants>
 	<theme_items>

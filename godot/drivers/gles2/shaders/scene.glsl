@@ -424,9 +424,12 @@ void main() {
 
 #endif
 
+	mat4 local_projection_matrix = projection_matrix;
+
 	mat4 modelview = camera_inverse_matrix * world_matrix;
 	float roughness = 1.0;
 
+#define projection_matrix local_projection_matrix
 #define world_transform world_matrix
 
 	{
@@ -1545,6 +1548,11 @@ FRAGMENT_SHADER_CODE
 
 #ifdef BASE_PASS
 	//none
+
+#ifdef AMBIENT_LIGHT_DISABLED
+	ambient_light = vec3(0.0, 0.0, 0.0);
+#else
+
 #ifdef USE_RADIANCE_MAP
 
 	vec3 ref_vec = reflect(-eye_position, N);
@@ -1567,6 +1575,7 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
+#endif // AMBIENT_LIGHT_DISABLED
 	ambient_light *= ambient_energy;
 
 #if defined(USE_REFLECTION_PROBE1) || defined(USE_REFLECTION_PROBE2)
@@ -1693,6 +1702,8 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
+#if !defined(SHADOWS_DISABLED)
+
 #ifdef USE_SHADOW
 	{
 		highp vec4 splane = shadow_coord;
@@ -1723,6 +1734,8 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
+#endif //SHADOWS_DISABLED
+
 #endif //type omni
 
 #ifdef LIGHT_MODE_DIRECTIONAL
@@ -1732,6 +1745,8 @@ FRAGMENT_SHADER_CODE
 	L = normalize(light_vec);
 #endif
 	float depth_z = -vertex.z;
+
+#if !defined(SHADOWS_DISABLED)
 
 #ifdef USE_SHADOW
 
@@ -1951,6 +1966,8 @@ FRAGMENT_SHADER_CODE
 
 #endif //use shadow
 
+#endif // SHADOWS_DISABLED
+
 #endif
 
 #ifdef LIGHT_MODE_SPOT
@@ -1987,6 +2004,8 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
+#if !defined(SHADOWS_DISABLED)
+
 #ifdef USE_SHADOW
 	{
 		highp vec4 splane = shadow_coord;
@@ -1995,6 +2014,8 @@ FRAGMENT_SHADER_CODE
 		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
 	}
 #endif
+
+#endif // SHADOWS_DISABLED
 
 #endif // LIGHT_MODE_SPOT
 
@@ -2081,8 +2102,6 @@ FRAGMENT_SHADER_CODE
 #endif
 	// gl_FragColor = vec4(normal, 1.0);
 
-#endif //unshaded
-
 //apply fog
 #if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
@@ -2136,6 +2155,8 @@ FRAGMENT_SHADER_CODE
 #endif //use vertex lit
 
 #endif // defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
+
+#endif //unshaded
 
 #else // not RENDER_DEPTH
 //depth render

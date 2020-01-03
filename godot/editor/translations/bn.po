@@ -172,13 +172,18 @@ msgstr "অ্যানিমেশনের চালনা বন্ধ কর
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "অ্যানিমেশন (Anim) ট্র্যাক যোগ করুন"
+msgid "Animation length (frames)"
+msgstr "অ্যানিমেশনের (Animation) দৈর্ঘ্য (সময় সেকেন্ডে)।"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "অ্যানিমেশনের (Animation) দৈর্ঘ্য (সময় সেকেন্ডে)।"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "অ্যানিমেশন (Anim) ট্র্যাক যোগ করুন"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -10854,7 +10859,7 @@ msgstr ""
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 

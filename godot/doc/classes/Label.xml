@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Label" inherits="Control" category="Core" version="3.1.1">
+<class name="Label" inherits="Control" category="Core" version="3.1.2">
 	<brief_description>
 		Displays plain text in a line or wrapped inside a rectangle. For formatted text, use [RichTextLabel].
 	</brief_description>
@@ -44,7 +44,7 @@
 			Controls the text's horizontal align. Supports left, center, right, and fill, or justify. Set it to one of the [code]ALIGN_*[/code] constants.
 		</member>
 		<member name="autowrap" type="bool" setter="set_autowrap" getter="has_autowrap">
-			If [code]true[/code], wraps the text inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text. Default: false.
+			If [code]true[/code], wraps the text inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text. Default: [code]false[/code].
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text">
 			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle. It also lets you scale the node down freely.

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSpatialGizmo" inherits="SpatialGizmo" category="Core" version="3.1.1">
+<class name="EditorSpatialGizmo" inherits="SpatialGizmo" category="Core" version="3.1.2">
 	<brief_description>
 		Custom gizmo for editing Spatial objects.
 	</brief_description>
@@ -97,7 +97,7 @@
 			</argument>
 			<description>
 				Commit a handle being edited (handles must have been previously added by [method add_handles]).
-				If the cancel parameter is true, an option to restore the edited value to the original is provided.
+				If the cancel parameter is [code]true[/code], an option to restore the edited value to the original is provided.
 			</description>
 		</method>
 		<method name="get_handle_name" qualifiers="virtual">
@@ -123,7 +123,7 @@
 			<return type="EditorSpatialGizmoPlugin">
 			</return>
 			<description>
-				Return the [EditorSpatialGizmoPlugin] that owns this gizmo. It's useful to retrieve materials using [method EditorSpatialGizmoPlugin.get_material].
+				Returns the [EditorSpatialGizmoPlugin] that owns this gizmo. It's useful to retrieve materials using [method EditorSpatialGizmoPlugin.get_material].
 			</description>
 		</method>
 		<method name="get_spatial_node" qualifiers="const">

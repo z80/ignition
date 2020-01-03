@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GIProbe" inherits="VisualInstance" category="Core" version="3.1.1">
+<class name="GIProbe" inherits="VisualInstance" category="Core" version="3.1.2">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/gi_probes.html</link>
+		<link>https://docs.godotengine.org/en/3.1/tutorials/3d/gi_probes.html</link>
 	</tutorials>
 	<methods>
 		<method name="bake">
@@ -57,6 +57,7 @@
 		<constant name="SUBDIV_512" value="3" enum="Subdiv">
 		</constant>
 		<constant name="SUBDIV_MAX" value="4" enum="Subdiv">
+			Represents the size of the [enum Subdiv] enum.
 		</constant>
 	</constants>
 </class>

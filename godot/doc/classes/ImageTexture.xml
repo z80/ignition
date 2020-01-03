@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImageTexture" inherits="Texture" category="Core" version="3.1.1">
+<class name="ImageTexture" inherits="Texture" category="Core" version="3.1.2">
 	<brief_description>
 		A [Texture] based on an [Image].
 	</brief_description>
@@ -40,7 +40,7 @@
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Return the format of the [code]ImageTexture[/code], one of [enum Image.Format].
+				Returns the format of the [code]ImageTexture[/code], one of [enum Image.Format].
 			</description>
 		</method>
 		<method name="load">
@@ -73,7 +73,7 @@
 	</methods>
 	<members>
 		<member name="lossy_quality" type="float" setter="set_lossy_storage_quality" getter="get_lossy_storage_quality">
-			The storage quality for [code]STORAGE_COMPRESS_LOSSY[/code].
+			The storage quality for [constant STORAGE_COMPRESS_LOSSY].
 		</member>
 		<member name="storage" type="int" setter="set_storage" getter="get_storage" enum="ImageTexture.Storage">
 			The storage type (raw, lossy, or compressed).

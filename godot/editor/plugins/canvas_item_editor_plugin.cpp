@@ -1858,7 +1858,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		}
 
 		// Confirm the move (only if it was moved)
-		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == BUTTON_LEFT && (drag_type == DRAG_MOVE)) {
+		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == BUTTON_LEFT) {
 			if (transform.affine_inverse().xform(b->get_position()) != drag_from) {
 				_commit_canvas_item_state(drag_selection, TTR("Move CanvasItem"), true);
 			}
@@ -2275,6 +2275,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			break;
 		case DRAG_PAN:
 			c = CURSOR_DRAG;
+			break;
 		default:
 			break;
 	}
@@ -2611,6 +2612,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			case DRAG_TOP_LEFT:
 			case DRAG_BOTTOM_LEFT:
 				_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), MARGIN_BOTTOM);
+				FALLTHROUGH;
 			case DRAG_MOVE:
 				start = Vector2(node_pos_in_parent[0], Math::lerp(node_pos_in_parent[1], node_pos_in_parent[3], ratio));
 				end = start - Vector2(control->get_margin(MARGIN_LEFT), 0);
@@ -2625,6 +2627,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			case DRAG_TOP_RIGHT:
 			case DRAG_BOTTOM_RIGHT:
 				_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), MARGIN_BOTTOM);
+				FALLTHROUGH;
 			case DRAG_MOVE:
 				start = Vector2(node_pos_in_parent[2], Math::lerp(node_pos_in_parent[3], node_pos_in_parent[1], ratio));
 				end = start - Vector2(control->get_margin(MARGIN_RIGHT), 0);
@@ -2639,6 +2642,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			case DRAG_TOP_LEFT:
 			case DRAG_TOP_RIGHT:
 				_draw_margin_at_position(control->get_size().height, parent_transform.xform(Vector2(node_pos_in_parent[2], (node_pos_in_parent[1] + node_pos_in_parent[3]) / 2)) + Vector2(5, 0), MARGIN_RIGHT);
+				FALLTHROUGH;
 			case DRAG_MOVE:
 				start = Vector2(Math::lerp(node_pos_in_parent[0], node_pos_in_parent[2], ratio), node_pos_in_parent[1]);
 				end = start - Vector2(0, control->get_margin(MARGIN_TOP));
@@ -2653,6 +2657,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			case DRAG_BOTTOM_LEFT:
 			case DRAG_BOTTOM_RIGHT:
 				_draw_margin_at_position(control->get_size().height, parent_transform.xform(Vector2(node_pos_in_parent[2], (node_pos_in_parent[1] + node_pos_in_parent[3]) / 2) + Vector2(5, 0)), MARGIN_RIGHT);
+				FALLTHROUGH;
 			case DRAG_MOVE:
 				start = Vector2(Math::lerp(node_pos_in_parent[2], node_pos_in_parent[0], ratio), node_pos_in_parent[3]);
 				end = start - Vector2(0, control->get_margin(MARGIN_BOTTOM));
@@ -3542,18 +3547,19 @@ void CanvasItemEditor::_update_scrollbars() {
 	// Constraints the view offset and updates the scrollbars
 	Point2 begin = canvas_item_rect.position;
 	Point2 end = canvas_item_rect.position + canvas_item_rect.size - local_rect.size / zoom;
+	bool constrain_editor_view = bool(EditorSettings::get_singleton()->get("editors/2d/constrain_editor_view"));
 
 	if (canvas_item_rect.size.height <= (local_rect.size.y / zoom)) {
-		if (ABS(begin.y - previous_update_view_offset.y) < ABS(begin.y - view_offset.y)) {
+		if (constrain_editor_view && ABS(begin.y - previous_update_view_offset.y) < ABS(begin.y - view_offset.y)) {
 			view_offset.y = previous_update_view_offset.y;
 		}
 
 		v_scroll->hide();
 	} else {
-		if (view_offset.y > end.y && view_offset.y > previous_update_view_offset.y) {
+		if (constrain_editor_view && view_offset.y > end.y && view_offset.y > previous_update_view_offset.y) {
 			view_offset.y = MAX(end.y, previous_update_view_offset.y);
 		}
-		if (view_offset.y < begin.y && view_offset.y < previous_update_view_offset.y) {
+		if (constrain_editor_view && view_offset.y < begin.y && view_offset.y < previous_update_view_offset.y) {
 			view_offset.y = MIN(begin.y, previous_update_view_offset.y);
 		}
 
@@ -3564,16 +3570,16 @@ void CanvasItemEditor::_update_scrollbars() {
 	}
 
 	if (canvas_item_rect.size.width <= (local_rect.size.x / zoom)) {
-		if (ABS(begin.x - previous_update_view_offset.x) < ABS(begin.x - view_offset.x)) {
+		if (constrain_editor_view && ABS(begin.x - previous_update_view_offset.x) < ABS(begin.x - view_offset.x)) {
 			view_offset.x = previous_update_view_offset.x;
 		}
 
 		h_scroll->hide();
 	} else {
-		if (view_offset.x > end.x && view_offset.x > previous_update_view_offset.x) {
+		if (constrain_editor_view && view_offset.x > end.x && view_offset.x > previous_update_view_offset.x) {
 			view_offset.x = MAX(end.x, previous_update_view_offset.x);
 		}
-		if (view_offset.x < begin.x && view_offset.x < previous_update_view_offset.x) {
+		if (constrain_editor_view && view_offset.x < begin.x && view_offset.x < previous_update_view_offset.x) {
 			view_offset.x = MIN(begin.x, previous_update_view_offset.x);
 		}
 
@@ -3700,7 +3706,7 @@ void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 }
 
 void CanvasItemEditor::_button_zoom_minus() {
-	_zoom_on_position(zoom / 1.5, viewport_scrollable->get_size() / 2.0);
+	_zoom_on_position(zoom / Math_SQRT2, viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_button_zoom_reset() {
@@ -3708,7 +3714,7 @@ void CanvasItemEditor::_button_zoom_reset() {
 }
 
 void CanvasItemEditor::_button_zoom_plus() {
-	_zoom_on_position(zoom * 1.5, viewport_scrollable->get_size() / 2.0);
+	_zoom_on_position(zoom * Math_SQRT2, viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_button_toggle_snap(bool p_status) {
@@ -3898,6 +3904,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			show_rulers = !show_rulers;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_RULERS);
 			view_menu->get_popup()->set_item_checked(idx, show_rulers);
+			_update_scrollbars();
 			viewport->update();
 		} break;
 		case SHOW_GUIDES: {
@@ -4366,6 +4373,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["show_rulers"] = show_rulers;
 	state["show_guides"] = show_guides;
 	state["show_helpers"] = show_helpers;
+	state["show_zoom_control"] = zoom_hb->is_visible();
 	state["show_edit_locks"] = show_edit_locks;
 	state["snap_rotation"] = snap_rotation;
 	state["snap_relative"] = snap_relative;
@@ -4376,6 +4384,7 @@ Dictionary CanvasItemEditor::get_state() const {
 
 void CanvasItemEditor::set_state(const Dictionary &p_state) {
 
+	bool update_scrollbars = false;
 	Dictionary state = p_state;
 	if (state.has("zoom")) {
 		zoom = p_state["zoom"];
@@ -4384,7 +4393,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	if (state.has("ofs")) {
 		view_offset = p_state["ofs"];
 		previous_update_view_offset = view_offset;
-		_update_scrollbars();
+		update_scrollbars = true;
 	}
 
 	if (state.has("grid_offset")) {
@@ -4472,6 +4481,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		show_rulers = state["show_rulers"];
 		int idx = view_menu->get_popup()->get_item_index(SHOW_RULERS);
 		view_menu->get_popup()->set_item_checked(idx, show_rulers);
+		update_scrollbars = true;
 	}
 
 	if (state.has("show_guides")) {
@@ -4490,6 +4500,11 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		show_edit_locks = state["show_edit_locks"];
 		int idx = view_menu->get_popup()->get_item_index(SHOW_EDIT_LOCKS);
 		view_menu->get_popup()->set_item_checked(idx, show_edit_locks);
+	}
+
+	if (state.has("show_zoom_control")) {
+		// This one is not user-controllable, but instrumentable
+		zoom_hb->set_visible(state["show_zoom_control"]);
 	}
 
 	if (state.has("snap_rotation")) {
@@ -4516,6 +4531,9 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		skeleton_menu->get_popup()->set_item_checked(idx, skeleton_show_bones);
 	}
 
+	if (update_scrollbars) {
+		_update_scrollbars();
+	}
 	viewport->update();
 }
 

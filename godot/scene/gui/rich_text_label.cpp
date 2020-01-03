@@ -592,7 +592,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					//assign actual widths
 					for (int i = 0; i < table->columns.size(); i++) {
 						table->columns.write[i].width = table->columns[i].min_width;
-						if (table->columns[i].expand)
+						if (table->columns[i].expand && total_ratio > 0)
 							table->columns.write[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
 						table->total_width += table->columns[i].width + hseparation;
 					}
@@ -801,11 +801,7 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 
-			if (is_inside_tree() && use_bbcode) {
-				parse_bbcode(bbcode);
-				//first_invalid_line=0; //invalidate ALL
-				//update();
-			}
+			update();
 
 		} break;
 		case NOTIFICATION_DRAW: {
@@ -2004,7 +2000,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 	Item *it = main;
 	int charidx = 0;
 
-	if (p_from_selection && selection.active && selection.enabled) {
+	if (p_from_selection && selection.active) {
 		it = selection.to;
 		charidx = selection.to_char + 1;
 	}

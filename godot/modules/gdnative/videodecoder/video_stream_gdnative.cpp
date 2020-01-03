@@ -61,8 +61,8 @@ int64_t GDAPI godot_videodecoder_file_seek(void *ptr, int64_t pos, int whence) {
 	// file
 	FileAccess *file = reinterpret_cast<FileAccess *>(ptr);
 
-	size_t len = file->get_len();
 	if (file) {
+		size_t len = file->get_len();
 		switch (whence) {
 			case SEEK_SET: {
 				// Just for explicitness
@@ -146,23 +146,25 @@ void VideoStreamPlaybackGDNative::update(float p_delta) {
 	ERR_FAIL_COND(interface == NULL);
 	interface->update(data_struct, p_delta);
 
-	if (pcm_write_idx >= 0) {
-		// Previous remains
-		int mixed = mix_callback(mix_udata, pcm, samples_decoded);
-		if (mixed == samples_decoded) {
-			pcm_write_idx = -1;
-		} else {
-			samples_decoded -= mixed;
-			pcm_write_idx += mixed;
+	if (mix_callback) {
+		if (pcm_write_idx >= 0) {
+			// Previous remains
+			int mixed = mix_callback(mix_udata, pcm, samples_decoded);
+			if (mixed == samples_decoded) {
+				pcm_write_idx = -1;
+			} else {
+				samples_decoded -= mixed;
+				pcm_write_idx += mixed;
+			}
 		}
-	}
-	if (pcm_write_idx < 0) {
-		samples_decoded = interface->get_audioframe(data_struct, pcm, AUX_BUFFER_SIZE);
-		pcm_write_idx = mix_callback(mix_udata, pcm, samples_decoded);
-		if (pcm_write_idx == samples_decoded) {
-			pcm_write_idx = -1;
-		} else {
-			samples_decoded -= pcm_write_idx;
+		if (pcm_write_idx < 0) {
+			samples_decoded = interface->get_audioframe(data_struct, pcm, AUX_BUFFER_SIZE);
+			pcm_write_idx = mix_callback(mix_udata, pcm, samples_decoded);
+			if (pcm_write_idx == samples_decoded) {
+				pcm_write_idx = -1;
+			} else {
+				samples_decoded -= pcm_write_idx;
+			}
 		}
 	}
 

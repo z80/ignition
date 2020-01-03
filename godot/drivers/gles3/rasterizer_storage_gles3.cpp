@@ -1209,10 +1209,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 
 	for (int i = 0; i < texture->mipmaps; i++) {
 
-		int ofs = 0;
-		if (i > 0) {
-			ofs = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, real_format, i - 1);
-		}
+		int ofs = Image::get_image_mipmap_offset(texture->alloc_width, texture->alloc_height, real_format, i);
 
 		if (texture->compressed) {
 
@@ -2236,7 +2233,7 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 				pi.type = Variant::INT;
 				if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
 					pi.hint = PROPERTY_HINT_RANGE;
-					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]);
+					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]) + "," + rtos(u.hint_range[2]);
 				}
 
 			} break;
@@ -2942,7 +2939,9 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 		case ShaderLanguage::TYPE_BVEC3:
 		case ShaderLanguage::TYPE_IVEC3:
 		case ShaderLanguage::TYPE_UVEC3:
-		case ShaderLanguage::TYPE_VEC3:
+		case ShaderLanguage::TYPE_VEC3: {
+			zeromem(data, 12);
+		} break;
 		case ShaderLanguage::TYPE_BVEC4:
 		case ShaderLanguage::TYPE_IVEC4:
 		case ShaderLanguage::TYPE_UVEC4:
@@ -3500,7 +3499,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 				if (p_vertex_count < (1 << 16)) {
 					//read 16 bit indices
 					const uint16_t *src_idx = (const uint16_t *)ir.ptr();
-					for (int i = 0; i < index_count; i += 6) {
+					for (int i = 0; i + 5 < index_count; i += 6) {
 
 						wr[i + 0] = src_idx[i / 2];
 						wr[i + 1] = src_idx[i / 2 + 1];
@@ -3514,7 +3513,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 					//read 16 bit indices
 					const uint32_t *src_idx = (const uint32_t *)ir.ptr();
-					for (int i = 0; i < index_count; i += 6) {
+					for (int i = 0; i + 5 < index_count; i += 6) {
 
 						wr[i + 0] = src_idx[i / 2];
 						wr[i + 1] = src_idx[i / 2 + 1];
@@ -3530,7 +3529,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 				index_count = p_vertex_count * 2;
 				wf_indices.resize(index_count);
 				PoolVector<uint32_t>::Write wr = wf_indices.write();
-				for (int i = 0; i < index_count; i += 6) {
+				for (int i = 0; i + 5 < index_count; i += 6) {
 
 					wr[i + 0] = i / 2;
 					wr[i + 1] = i / 2 + 1;
@@ -3771,28 +3770,30 @@ PoolVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_index_array(RID p_m
 
 	Surface *surface = mesh->surfaces[p_surface];
 
-	ERR_FAIL_COND_V(surface->index_array_len == 0, PoolVector<uint8_t>());
-
 	PoolVector<uint8_t> ret;
 	ret.resize(surface->index_array_byte_size);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_id);
+
+	if (surface->index_array_byte_size > 0) {
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_id);
 
 #if defined(GLES_OVER_GL) || defined(__EMSCRIPTEN__)
-	{
-		PoolVector<uint8_t>::Write w = ret.write();
-		glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, surface->index_array_byte_size, w.ptr());
-	}
+		{
+			PoolVector<uint8_t>::Write w = ret.write();
+			glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, surface->index_array_byte_size, w.ptr());
+		}
 #else
-	void *data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, surface->index_array_byte_size, GL_MAP_READ_BIT);
-	ERR_FAIL_NULL_V(data, PoolVector<uint8_t>());
-	{
-		PoolVector<uint8_t>::Write w = ret.write();
-		copymem(w.ptr(), data, surface->index_array_byte_size);
-	}
-	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+		void *data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, surface->index_array_byte_size, GL_MAP_READ_BIT);
+		ERR_FAIL_NULL_V(data, PoolVector<uint8_t>());
+		{
+			PoolVector<uint8_t>::Write w = ret.write();
+			copymem(w.ptr(), data, surface->index_array_byte_size);
+		}
+		glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 #endif
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+
 	return ret;
 }
 

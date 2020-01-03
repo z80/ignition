@@ -284,6 +284,8 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	CGFloat oldBackingScaleFactor = [[[notification userInfo] objectForKey:@"NSBackingPropertyOldScaleFactorKey"] doubleValue];
 	if (OS_OSX::singleton->is_hidpi_allowed()) {
 		[OS_OSX::singleton->window_view setWantsBestResolutionOpenGLSurface:YES];
+	} else {
+		[OS_OSX::singleton->window_view setWantsBestResolutionOpenGLSurface:NO];
 	}
 
 	if (newBackingScaleFactor != oldBackingScaleFactor) {
@@ -712,8 +714,6 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 
 	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != OS::MOUSE_MODE_CAPTURED)
 		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
-	if (OS_OSX::singleton->input)
-		OS_OSX::singleton->input->set_mouse_in_window(false);
 }
 
 - (void)mouseEntered:(NSEvent *)event {
@@ -721,8 +721,6 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 		return;
 	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != OS::MOUSE_MODE_CAPTURED)
 		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
-	if (OS_OSX::singleton->input)
-		OS_OSX::singleton->input->set_mouse_in_window(true);
 
 	OS::CursorShape p_shape = OS_OSX::singleton->cursor_shape;
 	OS_OSX::singleton->cursor_shape = OS::CURSOR_MAX;
@@ -969,10 +967,10 @@ static const _KeyCodeMap _keycodes[55] = {
 	{ 'i', KEY_I },
 	{ 'o', KEY_O },
 	{ 'p', KEY_P },
-	{ '[', KEY_BRACERIGHT },
-	{ ']', KEY_BRACELEFT },
-	{ '{', KEY_BRACERIGHT },
-	{ '}', KEY_BRACELEFT },
+	{ '[', KEY_BRACELEFT },
+	{ ']', KEY_BRACERIGHT },
+	{ '{', KEY_BRACELEFT },
+	{ '}', KEY_BRACERIGHT },
 	{ 'a', KEY_A },
 	{ 's', KEY_S },
 	{ 'd', KEY_D },
@@ -1342,6 +1340,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		[window_view setWantsBestResolutionOpenGLSurface:YES];
 		//if (current_videomode.resizable)
 		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+	} else {
+		[window_view setWantsBestResolutionOpenGLSurface:NO];
 	}
 
 	//[window_object setTitle:[NSString stringWithUTF8String:"GodotEnginies"]];
@@ -1696,6 +1696,11 @@ void OS_OSX::set_cursor_shape(CursorShape p_shape) {
 	cursor_shape = p_shape;
 }
 
+OS::CursorShape OS_OSX::get_cursor_shape() const {
+
+	return cursor_shape;
+}
+
 void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (p_cursor.is_valid()) {
 		Ref<Texture> texture = p_cursor;
@@ -2032,7 +2037,7 @@ Error OS_OSX::shell_open(String p_uri) {
 }
 
 String OS_OSX::get_locale() const {
-	NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
+	NSString *locale_code = [[NSLocale preferredLanguages] objectAtIndex:0];
 	return [locale_code UTF8String];
 }
 

@@ -263,6 +263,7 @@ public:
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false) = 0;
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
+	virtual void vibrate_handheld(int p_duration_ms = 500);
 
 	virtual Error shell_open(String p_uri);
 	virtual Error set_cwd(const String &p_cwd);
@@ -377,8 +378,9 @@ public:
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
 	virtual int get_virtual_keyboard_height() const;
 
-	virtual void set_cursor_shape(CursorShape p_shape) = 0;
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) = 0;
+	virtual void set_cursor_shape(CursorShape p_shape);
+	virtual CursorShape get_cursor_shape() const;
+	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
 	virtual bool get_swap_ok_cancel() { return false; }
 	virtual void dump_memory_to_file(const char *p_file);

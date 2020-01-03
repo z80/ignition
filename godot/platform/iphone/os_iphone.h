@@ -167,9 +167,6 @@ public:
 	virtual void hide_virtual_keyboard();
 	virtual int get_virtual_keyboard_height() const;
 
-	virtual void set_cursor_shape(CursorShape p_shape);
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
-
 	virtual Size2 get_window_size() const;
 	virtual Rect2 get_window_safe_area() const;
 
@@ -195,6 +192,7 @@ public:
 	virtual void native_video_unpause();
 	virtual void native_video_focus_out();
 	virtual void native_video_stop();
+	virtual void vibrate_handheld(int p_duration_ms = 500);
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 	OSIPhone(int width, int height, String p_data_dir);
