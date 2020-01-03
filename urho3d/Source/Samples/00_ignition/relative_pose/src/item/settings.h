@@ -21,6 +21,7 @@ public:
     Settings( Context * context );
     ~Settings();
 
+    static Timestamp ticksPerSec();
     static Timestamp ticks( Float secs_dt );
     static Float     secs( Timestamp ticks_dt );
     static Float     maxDynamicsTimeStep();

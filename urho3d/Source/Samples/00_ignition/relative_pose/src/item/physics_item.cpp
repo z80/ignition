@@ -48,8 +48,22 @@ void PhysicsItem::updateStateFromRigidBody()
     MarkNetworkUpdate();
 }
 
+RigidBody2* PhysicsItem::rigidBody() const
+{
+    return rigid_body_;
+}
+
 void PhysicsItem::enteredRefFrame( RefFrame * refFrame )
 {
+    Environment * env_ = this->env();
+    if ( !env_ )
+        return;
+
+    const bool isServer = env_->IsServer();
+    if ( !isServer )
+        return;
+
+
     // Check if it is a physics ref frame.
     // And if yes create physics content.
     if ( !refFrame )
@@ -77,7 +91,8 @@ void PhysicsItem::enteredRefFrame( RefFrame * refFrame )
 void PhysicsItem::leftRefFrame( RefFrame * refFrame )
 {
     // Need to destroy physics content.
-    physics_node_->Remove();
+    if ( physics_node_ )
+        physics_node_->Remove();
 }
 
 void PhysicsItem::childEntered( RefFrame * refFrame )

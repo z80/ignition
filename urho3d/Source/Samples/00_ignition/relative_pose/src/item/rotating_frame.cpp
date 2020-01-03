@@ -1,5 +1,7 @@
 
 #include "rotating_frame.h"
+#include "physics_item.h"
+#include "settings.h"
 
 namespace Ign
 {
@@ -70,6 +72,36 @@ Timestamp RotatingFrame::GetPhase() const
 {
     return phase_;
 }
+
+bool RotatingFrame::Recursive() const
+{
+    return true;
+}
+
+bool RotatingFrame::ProducesForces() const
+{
+    return true;
+}
+
+void RotatingFrame::ComputeForces( PhysicsItem * receiver, const State & st, Vector3d & F, Vector3d & P ) const
+{
+    RigidBody2 * rb = receiver->rigidBody();
+    Float m = rb->GetMass();
+    // Angular velocity.
+    const Float periodSecs = Settings::secs( period_ );
+    const Vector3d W( 0.0, PI2/periodSecs, 0.0 );
+    // Coriolis forse is "-2.0*m*(W x V)".
+    const Vector3d F_coriolis = -2.0*m*( W.CrossProduct( st.v ) );
+    // Centrifugal force is "-m*W x (W x R)"
+    const Vector3d F_centrifugal = -m*( W.CrossProduct( W.CrossProduct( st.r ) ) );
+    F = F_coriolis + F_centrifugal;
+}
+
+
+
+
+
+
 
 
 }

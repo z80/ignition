@@ -3,14 +3,14 @@
 #define __EVOLVING_FRAME_H_
 
 #include "Urho3D/Urho3DAll.h"
-#include "ref_frame.h"
+#include "force_source_frame.h"
 
 namespace Ign
 {
 
-class EvolvingFrame: public RefFrame
+class EvolvingFrame: public ForceSourceFrame
 {
-    URHO3D_OBJECT( EvolvingFrame, RefFrame )
+    URHO3D_OBJECT( EvolvingFrame, ForceSourceFrame )
 public:
     static void RegisterComponent( Context * context );
 

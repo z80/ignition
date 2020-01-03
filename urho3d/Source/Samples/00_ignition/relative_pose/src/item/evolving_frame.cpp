@@ -7,12 +7,12 @@ namespace Ign
 
 void EvolvingFrame::RegisterComponent( Context * context )
 {
-    context->RegisterFactory<RefFrame>();
-    URHO3D_COPY_BASE_ATTRIBUTES( RefFrame );
+    context->RegisterFactory<ForceSourceFrame>();
+    URHO3D_COPY_BASE_ATTRIBUTES( ForceSourceFrame );
 }
 
 EvolvingFrame::EvolvingFrame( Context * context )
-    : RefFrame( context )
+    : ForceSourceFrame( context )
 {
 }
 
