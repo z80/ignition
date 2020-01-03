@@ -1,4 +1,14 @@
 
+/*
+eq: coshE = ( cosF + e ) / (1 + e*cosF);
+s: solve( [eq], [cosF] );
+cosF: rhs( s[1] );
+r: slr/(1+e*cosF);
+v: sqrt( gm(2/r - 1/a) );
+ */
+
+
+
 #include "orbiting_frame.h"
 
 namespace Ign
