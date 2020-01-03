@@ -15,7 +15,7 @@ static void  clusterSwap( Vector<SharedPtr<RefFrame> > & src, Vector<SharedPtr<R
 
 void PhysicsFrame::RegisterComponent( Context * context )
 {
-    context->RegisterFactory<RefFrame>();
+    context->RegisterFactory<PhysicsFrame>();
     URHO3D_COPY_BASE_ATTRIBUTES( RefFrame );
 }
 

@@ -10,6 +10,7 @@ v: sqrt( gm(2/r - 1/a) );
 
 
 #include "orbiting_frame.h"
+#include "settings.h"
 
 namespace Ign
 {
@@ -27,19 +28,43 @@ static void initParabolic( OrbitingFrame * of, const Vector3d & r, const Vector3
 static void initElliptic( OrbitingFrame * of, const Vector3d & r, const Vector3d & v );
 
 static void processGeneric( OrbitingFrame * of, Timestamp t );
-static void processHyperbolic( OrbitingFrame * of, Timestamp t );
-static void processParabolic( OrbitingFrame * of, Timestamp t );
-static void processElliptic( OrbitingFrame * of, Timestamp t );
+static void processHyperbolic( OrbitingFrame * of, Timestamp t, Vector3d & r, Vector3d & v );
+static void processParabolic( OrbitingFrame * of, Timestamp t, Vector3d & r, Vector3d & v );
+static void processElliptic( OrbitingFrame * of, Timestamp t, Vector3d & r, Vector3d & v );
 
-static Float hyperbolicNextE( const Float e, const Float M, Float & expE )
-static Float hyperbolicSolveE( const Float e, const Float M, const Float E )
+static Float hyperbolicNextE( const Float e, const Float M, Float & expE );
+static Float hyperbolicSolveE( const Float e, const Float M, const Float E );
 
 static Float ellipticNextE( const Float e, const Float M, Float & E );
 static Float ellipticSolveE( const Float e, const Float M, const Float E );
+
+static void velocity( OrbitingFrame * of, const Float f, Vector3d & v );
+
     
 
 void OrbitingFrame::RegisterObject( Context * context )
 {
+    context->RegisterFactory<OrbitingFrame>();
+    URHO3D_COPY_BASE_ATTRIBUTES( EvolvingFrame );
+
+    URHO3D_ATTRIBUTE( "GravityGM",     double, GM_, 1.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "GravityRadius", double, R_,  1.0, AM_DEFAULT );
+
+    URHO3D_ATTRIBUTE( "Exx", double, orbitDesc.ex.x_, 1.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "Exy", double, orbitDesc.ex.y_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "Exz", double, orbitDesc.ex.z_, 0.0, AM_DEFAULT );
+
+    URHO3D_ATTRIBUTE( "Eyx", double, orbitDesc.ey.x_, 1.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "Eyy", double, orbitDesc.ey.y_, 0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "Eyz", double, orbitDesc.ey.z_, 0.0, AM_DEFAULT );
+
+    URHO3D_ATTRIBUTE( "OrbitGm",         double,    orbitDesc.gm,               0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "Eccentricity",    double,    orbitDesc.eccentricity,     0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "OrbitalPeriod",   Timestamp, orbitDesc.orbitalPeriod,      0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "PeriapsisTime",   Timestamp, orbitDesc.periapsisTime,      0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "SemimajorAxis",   double,    orbitDesc.semimajorAxis,    0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "SemiLatusRectum", double,    orbitDesc.semiLatusRectum,  0.0, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "SemiLatusRectum", double,    orbitDesc.eccentricAnomaly, 0.0, AM_DEFAULT );
 }
 
 OrbitingFrame::OrbitingFrame( Context * context )
@@ -59,18 +84,21 @@ void OrbitingFrame::evolveStep( Timestamp ticks_dt )
 
 bool OrbitingFrame::Recursive() const
 {
+    // Do not process this ref. frame's parents to
+    // get another sources of force.
     return false;
 }
 
 bool OrbitingFrame::ProducesForces() const
 {
+    // This ref. frame does produce forces.
     return true;
 }
 
 void OrbitingFrame::ComputeForces( PhysicsItem * receiver, const State & st, Vector3d & F, Vector3d & P ) const
 {
     const Float r_abs = st.r.Length();
-    F = (-GM/(r_abs*r_abs*r_abs))*st.r;
+    F = (-GM_/(r_abs*r_abs*r_abs))*st.r;
     P = Vector3d::ZERO;
 }
 
@@ -123,7 +151,7 @@ static Float parentGM( RefFrame * rf )
 
 static bool initGeneric( OrbitingFrame * of, const Vector3d & r, const Vector3d & v )
 {
-    const Float gm = parentGM( this );
+    const Float gm = parentGM( of );
     if ( gm <= 0.0 )
         return false;
 
@@ -159,7 +187,7 @@ static bool initGeneric( OrbitingFrame * of, const Vector3d & r, const Vector3d 
 
     // Vector eccentricity direction vector.
     const Vector3d ex = ecc / ecc_abs;
-    const Vector3d ee = h.cross( ex );
+    const Vector3d ee = h.CrossProduct( ex );
     // If angular momentum is close to zero (moving directly towards or away)
     // second axis direction is ambiguous. Assigning it to zero 
     // in this case.
@@ -188,20 +216,24 @@ static bool initGeneric( OrbitingFrame * of, const Vector3d & r, const Vector3d 
  * 3) gm
  */
 
-static void initHyperbolic( OrbitingFrame * of, Float gm, const Vector3d & r, const Vector3d & v )
+static void initHyperbolic( OrbitingFrame * of, const Vector3d & r, const Vector3d & v )
 {
     // https://en.wikipedia.org/wiki/Hyperbolic_trajectory
     const Float gm = of->orbitDesc.gm;
+    const Float a = of->orbitDesc.semimajorAxis;
 
     // Specific angular momentum.
     const Vector3d h = r.CrossProduct( v );
     // Semi-latus rectum.
-    const Float p = h.DotProduct( h ) / gm;
+    const Float p = h.LengthSquared() / gm;
+    of->orbitDesc.semiLatusRectum = p;
 
     // True anomaly.
     // r = l/(1 + e*cos(f));
     // Solve for "f" and define the sign using dot product of (r, v).
     const Float ecc = of->orbitDesc.eccentricity;
+    const Float r_abs = r.Length();
+
     Float f = std::acos( (p/r_abs - 1.0)/ecc );
     const Float rv = r.DotProduct( v );
     const bool positive = (rv >= 0.0);
@@ -210,17 +242,17 @@ static void initHyperbolic( OrbitingFrame * of, Float gm, const Vector3d & r, co
     // Eccentric anomaly.
     // cosh(E) = ( cos(f) + e ) / ( 1 + e * cos(f) );
     const Float coF = std::cos(f);
-    Float E = std::acosh( (coF + e)/(1.0 + e*coF) );
+    Float E = std::acosh( (coF + ecc)/(1.0 + ecc*coF) );
     E = positive ? E : (-E);
     of->orbitDesc.eccentricAnomaly = E;
 
     // Periapsis crossing time.
     const Float n = std::sqrt( -(a*a*a)/gm );
-    const Float t = (e*std::sinh(E) - E) * n;
+    const Float t = (ecc*std::sinh(E) - E) * n;
     of->orbitDesc.periapsisTime = static_cast<Timestamp>( t * static_cast<Float>( Settings::ticksPerSec() ) );
 }
 
-static void initParabolic( OrbitingFrame * of, Float gm, const Vector3d & r, const Vector3d & v )
+static void initParabolic( OrbitingFrame * of, const Vector3d & r, const Vector3d & v )
 {
     // https://en.wikipedia.org/wiki/Parabolic_trajectory
     const Float gm = of->orbitDesc.gm;
@@ -232,27 +264,28 @@ static void initParabolic( OrbitingFrame * of, Float gm, const Vector3d & r, con
     of->orbitDesc.semiLatusRectum = p;
 }
 
-static void initElliptic( OrbitingFrame * of, Float gm, const Vector3d & r, const Vector3d & v )
+static void initElliptic( OrbitingFrame * of, const Vector3d & r, const Vector3d & v )
 {
     const Float gm = of->orbitDesc.gm;
     const Float a  = of->orbitDesc.semimajorAxis;
-    const Float ecc_abs = of->orbitDesc.eccentricity;
+    const Float ecc = of->orbitDesc.eccentricity;
     const Float r_abs = r.Length();
+    of->orbitDesc.semiLatusRectum = a*(1.0 - ecc*ecc);
 
     // Eccentric anomaly
     const Float cosE = (1.0 - r_abs/a);
-    Float sinE = r.DotPRoduct( v );
-    sinE = sinE / ( ecc_abs * std::sqrt( gm * a ) );
+    Float sinE = r.DotProduct( v );
+    sinE = sinE / ( ecc * std::sqrt( gm * a ) );
     const Float E = std::atan2( sinE, cosE );
     of->orbitDesc.eccentricAnomaly = E;
 
     // Orbital period
     const Float n = std::sqrt( a*a*a/gm );
     const Float T = PI2*n;
-    of->orbitDesc.period = static_cast<Timestamp>( T * static_cast<Float>( Settings::ticksPerSec() ) );
+    of->orbitDesc.orbitalPeriod = static_cast<Timestamp>( T * static_cast<Float>( Settings::ticksPerSec() ) );
 
     // Periapsis crossing time.
-    const Float t = -( E - e*std::sin(E) ) * n;
+    const Float t = -( E - ecc*std::sin(E) ) * n;
     of->orbitDesc.periapsisTime = static_cast<Timestamp>( t * static_cast<Float>( Settings::ticksPerSec() ) );
 }
  
@@ -294,14 +327,14 @@ static void processHyperbolic( OrbitingFrame * of, Timestamp t, Vector3d & r, Ve
     const Float coE = std::cosh(E);
 
     // cosh(E) = (cos(f) + e)/(1 + e*cos(f))
-    Float f = std::acos( (e - coE)/(e*coE - 1.0) );
+    Float f = std::acos( (ecc - coE)/(ecc*coE - 1.0) );
     f = (E >= 0.0) ? f : (-f);
 
     // r = l/(1 + e*cos(f))
     const Float siF = std::sin(f);
     const Float coF = std::cos(f);
     const Float p = of->orbitDesc.semiLatusRectum;
-    const Float r_ = p / ( 1.0 + e*coF );
+    const Float r_ = p / ( 1.0 + ecc*coF );
     const Float Rx = r_ * coF;
     const Float Ry = r_ * siF;
 
@@ -312,12 +345,14 @@ static void processHyperbolic( OrbitingFrame * of, Timestamp t, Vector3d & r, Ve
     // Position at orbit.
     r = (ex * Rx) + (ey * Ry);
 
+    velocity( of, f, v );
+
     // Periapsis time.
-    const Float t = (e*std::sinh(E) - E) * n;
-    of->orbitDesc.periapsisTime = static_cast<Timestamp>( t * static_cast<Float>( Settings::ticksPerSec() ) );
+    //const Float pt = (ecc*std::sinh(E) - E) * n;
+    //of->orbitDesc.periapsisTime = static_cast<Timestamp>( t * static_cast<Float>( Settings::ticksPerSec() ) );
 }
 
-static void processParabolic( OrbitingFrame * of, Timestamp t )
+static void processParabolic( OrbitingFrame * of, Timestamp t, Vector3d & r, Vector3d & v )
 {
     const Float gm = of->orbitDesc.gm;
     const Float p  = of->orbitDesc.semiLatusRectum;
@@ -340,15 +375,17 @@ static void processParabolic( OrbitingFrame * of, Timestamp t )
     // Position at orbit.
     r = (ex * Rx) + (ey * Ry);
 
+    velocity( of, f, v );
+
     // Need to check this "nn" and declared before "n". Those are supposed to be 
     // the same thing ???
-    const Float nn = std::sqrt( (p*p*p)/GM );
-    const Float D = std::tan(0.5*f);
-    const Float t = 0.5*nn*( D + D*D*D/3.0 );
-    of->orbitDesc.periapsisTime = static_cast<Timestamp>( t * static_cast<Float>( Settings::ticksPerSec() ) );
+    //const Float nn = std::sqrt( (p*p*p)/gm );
+    //const Float D = std::tan(0.5*f);
+    //const Float t = 0.5*nn*( D + D*D*D/3.0 );
+    //of->orbitDesc.periapsisTime = static_cast<Timestamp>( t * static_cast<Float>( Settings::ticksPerSec() ) );
 }
 
-static void processElliptic( OrbitingFrame * of, Timestamp t )
+static void processElliptic( OrbitingFrame * of, Timestamp t, Vector3d & r, Vector3d & v )
 {
     // Solve for eccentric anomaly "E".
     const Float a  = of->orbitDesc.semimajorAxis;
@@ -357,13 +394,13 @@ static void processElliptic( OrbitingFrame * of, Timestamp t )
     const Float M = t/n;
     Float & E = of->orbitDesc.eccentricAnomaly;
 
-    const Float e = km->e;
-    E = ellipticSolveE( e, M, E );
+    const Float ecc = of->orbitDesc.eccentricity;
+    E = ellipticSolveE( ecc, M, E );
     // Convert "E" to "f", "r" and "V".
     const Float coE = std::cos(E);
     const Float siE = std::sin(E);
-    const Float Rx = a*(coE - e);
-    const Float b = a * std::sqrt( 1.0 - e*e );
+    const Float Rx = a*(coE - ecc);
+    const Float b = a * std::sqrt( 1.0 - ecc*ecc );
     const Float Ry = b*siE;
 
     const Vector3d & ex = of->orbitDesc.ex;
@@ -372,9 +409,17 @@ static void processElliptic( OrbitingFrame * of, Timestamp t )
     // Position at orbit.
     r = (ex * Rx) + (ey * Ry);
 
+    // This one is for speed calculation.
+    Float f = std::acos( (ecc - coE)/(ecc*coE - 1.0) );
+    f = (E >= 0.0) ? f : (-f);
+
+    velocity( of, f, v );
+
     // Periapsis crossing time.
-    const Float t = -( E - e*std::sin(E) ) * n;
-    of->orbitDesc.periapsisTime = static_cast<Timestamp>( t * static_cast<Float>( Settings::ticksPerSec() ) );
+    //const Float t = -( E - ecc*std::sin(E) ) * n;
+    //of->orbitDesc.periapsisTime = static_cast<Timestamp>( t * static_cast<Float>( Settings::ticksPerSec() ) );
+    if ( of->orbitDesc.periapsisTime > of->orbitDesc.orbitalPeriod )
+        of->orbitDesc.periapsisTime -= of->orbitDesc.orbitalPeriod;
 } 
 
 
@@ -442,7 +487,7 @@ static Float ellipticSolveE( const Float e, const Float M, const Float E )
     return En;
 }
 
-static Float speed( const Float gm, const Float a, const Float r, bool parabolic )
+/*static Float speed( const Float gm, const Float a, const Float r, bool parabolic )
 {
     if ( !parabolic )
     {
@@ -451,39 +496,25 @@ static Float speed( const Float gm, const Float a, const Float r, bool parabolic
     }
     const Float v = std::sqrt( 2.0*gm/r );
     return v;
-}
+}*/
 
-static void velocity( OrbitingFrame * of, Float & vx, Float & vy, bool parabolic )
+static void velocity( OrbitingFrame * of, const Float f, Vector3d & v )
 {
-    /*
-    // Hyperbolic
-    {
-        const Float E = of->orbitDesc.eccentricAnomaly;
-        const Float coE = std::cosh(E);
-        Float f = std::acos( (e - coE)/(e*coE - 1.0) );
-        f = (E >= 0.0) ? f : (-f);
-    }
-    // Elliptic
-    {
-
-    }
+    const Float p   = of->orbitDesc.semiLatusRectum;
+    const Float ecc = of->orbitDesc.eccentricity;
 
     const Float siF = std::sin(f);
     const Float coF = std::cos(f);
 
-    const Float GM = km->GM;
-    const Float a  = km->a;
-    const Float l = km->l;
-    const Float e = km->e;
-    const Float den = 1.0 + e*coF;
-    const Float r  = l/den;
-    const Float dr_dTheta = l*e*siF/(den*den);
-    const Float v = speed( GM, a, r, parabolic );
-    const Float gamma = r / dr_dTheta;
-    const Float C = v / std::sqrt( 1 + gamma*gamma );
-    vx = (siF + coF*gamma)*C;
-    vy = (coF - siF*gamma)*C;
-    */
+    const Float den = 1.0 + ecc*coF;
+
+    const Float vx = p*siF*( ecc*coF/den - 1.0 )/den;
+    const Float vy = p*( ecc*siF*siF/den + coF )/den;
+
+    const Vector3d & ex = of->orbitDesc.ex;
+    const Vector3d & ey = of->orbitDesc.ey;
+
+    v = ex*vx + ey*vy;
 }
 
 
