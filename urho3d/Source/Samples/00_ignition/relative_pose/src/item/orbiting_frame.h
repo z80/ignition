@@ -46,6 +46,7 @@ public:
     void SetGM( Float GM );
     Float GM() const;
 
+    /// Body radius.
     void SetR( Float R );
     Float R() const;
 
