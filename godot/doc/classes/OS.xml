@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" category="Core" version="3.1.1">
+<class name="OS" inherits="Object" category="Core" version="3.1.2">
 	<brief_description>
 		Operating System functions.
 	</brief_description>
 	<description>
-		Operating System functions. OS Wraps the most common functionality to communicate with the host Operating System, such as: mouse grabbing, mouse cursors, clipboard, video mode, date and time, timers, environment variables, execution of binaries, command line, etc.
+		Operating System functions. OS Wraps the most common functionality to communicate with the host Operating System, such as: clipboard, video mode, date and time, timers, environment variables, execution of binaries, command line, etc.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -100,7 +100,7 @@
 			<description>
 				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
 				The arguments are used in the given order and separated by a space, so [code]OS.execute('ping', ['-w', '3', 'godotengine.org'], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
-				This method has slightly different behaviour based on whether the [code]blocking[/code] mode is enabled.
+				This method has slightly different behavior based on whether the [code]blocking[/code] mode is enabled.
 				When [code]blocking[/code] is enabled, the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
 				When [code]blocking[/code] is disabled, the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
 				The return value also depends on the blocking mode. When blocking, the method will return -2 (no process ID information is available in blocking mode). When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return -1.
@@ -219,14 +219,16 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns IME selection range.
+				Returns IME cursor position (currently edited portion of the string) relative to the characters in the composition string.
+				[constant MainLoop.NOTIFICATION_OS_IME_UPDATE] is sent to the application to notify it of changes to the IME cursor position.
 			</description>
 		</method>
 		<method name="get_ime_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns IME intermediate text.
+				Returns IME intermediate composition string.
+				[constant MainLoop.NOTIFICATION_OS_IME_UPDATE] is sent to the application to notify it of changes to the IME composition string.
 			</description>
 		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
@@ -276,7 +278,7 @@
 			<return type="int" enum="OS.PowerState">
 			</return>
 			<description>
-				Returns the current state of the device regarding battery and power. See [code]POWERSTATE_*[/code] constants.
+				Returns the current state of the device regarding battery and power. See [enum PowerState] constants.
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
@@ -354,6 +356,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the amount of time in milliseconds it took for the boot logo to appear.
 			</description>
 		</method>
 		<method name="get_static_memory_peak_usage" qualifiers="const">
@@ -456,7 +459,7 @@
 				Returns the absolute directory path where user data is written ([code]user://[/code]).
 				On Linux, this is [code]~/.local/share/godot/app_userdata/[project_name][/code], or [code]~/.local/share/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
 				On macOS, this is [code]~/Library/Application Support/Godot/app_userdata/[project_name][/code], or [code]~/Library/Application Support/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
-				On Windows, this is [code]%APPDATA%/Godot/app_userdata/[project_name][/code], or [code]%APPDATA%/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
+				On Windows, this is [code]%APPDATA%\Godot\app_userdata\[project_name][/code], or [code]%APPDATA%\[custom_name][/code] if [code]use_custom_user_dir[/code] is set. [code]%APPDATA%[/code] expands to [code]%USERPROFILE%\AppData\Roaming[/code].
 				If the project name is empty, [code]user://[/code] falls back to [code]res://[/code].
 			</description>
 		</method>
@@ -487,6 +490,7 @@
 			<return type="Rect2">
 			</return>
 			<description>
+				Returns unobscured area of the window where interactive controls should be rendered.
 			</description>
 		</method>
 		<method name="has_environment" qualifiers="const">
@@ -504,7 +508,8 @@
 			<argument index="0" name="tag_name" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. See feature tags documentation.
+				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=https://docs.godotengine.org/en/latest/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
+				Note that tag names are case-sensitive.
 			</description>
 		</method>
 		<method name="has_touchscreen_ui_hint" qualifiers="const">

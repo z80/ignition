@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XMLParser" inherits="Reference" category="Core" version="3.1.1">
+<class name="XMLParser" inherits="Reference" category="Core" version="3.1.2">
 	<brief_description>
 		Low-level class for creating parsers for XML files.
 	</brief_description>
@@ -70,7 +70,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Get the name of the current element node. This will raise an error if the current node type is not [code]NODE_ELEMENT[/code] nor [code]NODE_ELEMENT_END[/code]
+				Get the name of the current element node. This will raise an error if the current node type is not [constant NODE_ELEMENT] nor [constant NODE_ELEMENT_END]
 			</description>
 		</method>
 		<method name="get_node_offset" qualifiers="const">

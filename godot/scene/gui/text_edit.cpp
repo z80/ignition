@@ -50,7 +50,7 @@ inline bool _is_symbol(CharType c) {
 
 static bool _is_text_char(CharType c) {
 
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+	return !is_symbol(c);
 }
 
 static bool _is_whitespace(CharType c) {
@@ -1009,10 +1009,7 @@ void TextEdit::_notification(int p_what) {
 						}
 
 						if ((char_ofs + char_margin + char_w) >= xmargin_end) {
-							if (syntax_coloring)
-								continue;
-							else
-								break;
+							break;
 						}
 
 						bool in_search_result = false;
@@ -1098,7 +1095,7 @@ void TextEdit::_notification(int p_what) {
 
 								if (brace_open_mismatch)
 									color = cache.brace_mismatch_color;
-								drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
+								drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_color_selected : color);
 							}
 
 							if ((brace_close_match_line == line && brace_close_match_column == last_wrap_column + j) ||
@@ -1106,7 +1103,7 @@ void TextEdit::_notification(int p_what) {
 
 								if (brace_close_mismatch)
 									color = cache.brace_mismatch_color;
-								drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
+								drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_color_selected : color);
 							}
 						}
 
@@ -1178,18 +1175,18 @@ void TextEdit::_notification(int p_what) {
 
 						if (str[j] >= 32) {
 							int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
-							int w = drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), str[j], str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
+							int w = drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), str[j], str[j + 1], in_selection && override_selected_font_color ? cache.font_color_selected : color);
 							if (underlined) {
 								float line_width = 1.0;
 #ifdef TOOLS_ENABLED
 								line_width *= EDSCALE;
 #endif
 
-								draw_rect(Rect2(char_ofs + char_margin + ofs_x, yofs + ascent + 2, w, line_width), in_selection && override_selected_font_color ? cache.font_selected_color : color);
+								draw_rect(Rect2(char_ofs + char_margin + ofs_x, yofs + ascent + 2, w, line_width), in_selection && override_selected_font_color ? cache.font_color_selected : color);
 							}
 						} else if (draw_tabs && str[j] == '\t') {
 							int yofs = (get_row_height() - cache.tab_icon->get_height()) / 2;
-							cache.tab_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + yofs), in_selection && override_selected_font_color ? cache.font_selected_color : color);
+							cache.tab_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + yofs), in_selection && override_selected_font_color ? cache.font_color_selected : color);
 						}
 
 						char_ofs += char_w;
@@ -2517,7 +2514,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					scancode_handled = false;
 					break;
 				}
-				// numlock disabled. fallthrough to key_left
+				FALLTHROUGH;
 			}
 			case KEY_LEFT: {
 
@@ -2580,7 +2577,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					scancode_handled = false;
 					break;
 				}
-				// numlock disabled. fallthrough to key_right
+				FALLTHROUGH;
 			}
 			case KEY_RIGHT: {
 
@@ -2641,7 +2638,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					scancode_handled = false;
 					break;
 				}
-				// numlock disabled. fallthrough to key_up
+				FALLTHROUGH;
 			}
 			case KEY_UP: {
 
@@ -2694,7 +2691,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					scancode_handled = false;
 					break;
 				}
-				// numlock disabled. fallthrough to key_down
+				FALLTHROUGH;
 			}
 			case KEY_DOWN: {
 
@@ -2817,11 +2814,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					scancode_handled = false;
 					break;
 				}
-				// numlock disabled. fallthrough to key_home
+				FALLTHROUGH;
 			}
-#ifdef APPLE_STYLE_KEYS
 			case KEY_HOME: {
-
+#ifdef APPLE_STYLE_KEYS
 				if (k->get_shift())
 					_pre_shift_selection();
 
@@ -2831,11 +2827,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					_post_shift_selection();
 				else if (k->get_command() || k->get_control())
 					deselect();
-
-			} break;
 #else
-			case KEY_HOME: {
-
 				if (k->get_shift())
 					_pre_shift_selection();
 
@@ -2876,19 +2868,17 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					deselect();
 				_cancel_completion();
 				completion_hint = "";
-
-			} break;
 #endif
+			} break;
 			case KEY_KP_1: {
 				if (k->get_unicode() != 0) {
 					scancode_handled = false;
 					break;
 				}
-				// numlock disabled. fallthrough to key_end
+				FALLTHROUGH;
 			}
-#ifdef APPLE_STYLE_KEYS
 			case KEY_END: {
-
+#ifdef APPLE_STYLE_KEYS
 				if (k->get_shift())
 					_pre_shift_selection();
 
@@ -2898,11 +2888,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					_post_shift_selection();
 				else if (k->get_command() || k->get_control())
 					deselect();
-
-			} break;
 #else
-			case KEY_END: {
-
 				if (k->get_shift())
 					_pre_shift_selection();
 
@@ -2929,15 +2915,14 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				_cancel_completion();
 				completion_hint = "";
-
-			} break;
 #endif
+			} break;
 			case KEY_KP_9: {
 				if (k->get_unicode() != 0) {
 					scancode_handled = false;
 					break;
 				}
-				// numlock disabled. fallthrough to key_pageup
+				FALLTHROUGH;
 			}
 			case KEY_PAGEUP: {
 
@@ -2960,7 +2945,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					scancode_handled = false;
 					break;
 				}
-				// numlock disabled. fallthrough to key_pagedown
+				FALLTHROUGH;
 			}
 			case KEY_PAGEDOWN: {
 
@@ -3139,21 +3124,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		if (scancode_handled)
 			accept_event();
-		/*
-	if (!scancode_handled && !k->get_command() && !k->get_alt()) {
 
-	if (k->get_unicode()>=32) {
-
-		if (readonly)
-		break;
-
-		accept_event();
-	} else {
-
-		break;
-	}
-	}
-*/
 		if (k->get_scancode() == KEY_INSERT) {
 			set_insert_mode(!insert_mode);
 			accept_event();
@@ -3196,7 +3167,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					end_complex_operation();
 				}
 				accept_event();
-			} else {
 			}
 		}
 
@@ -3921,7 +3891,7 @@ void TextEdit::cursor_set_line(int p_row, bool p_adjust_viewport, bool p_can_be_
 	cursor.line = p_row;
 
 	int n_col = get_char_pos_for_line(cursor.last_fit_x, p_row, p_wrap_index);
-	if (is_wrap_enabled() && p_wrap_index < times_line_wraps(p_row)) {
+	if (n_col != 0 && is_wrap_enabled() && p_wrap_index < times_line_wraps(p_row)) {
 		Vector<String> rows = get_wrap_rows_text(p_row);
 		int row_end_col = 0;
 		for (int i = 0; i < p_wrap_index + 1; i++) {
@@ -4363,7 +4333,7 @@ void TextEdit::_update_caches() {
 	cache.line_number_color = get_color("line_number_color");
 	cache.safe_line_number_color = get_color("safe_line_number_color");
 	cache.font_color = get_color("font_color");
-	cache.font_selected_color = get_color("font_selected_color");
+	cache.font_color_selected = get_color("font_color_selected");
 	cache.keyword_color = get_color("keyword_color");
 	cache.function_color = get_color("function_color");
 	cache.member_variable_color = get_color("member_variable_color");
@@ -4487,6 +4457,8 @@ bool TextEdit::has_keyword_color(String p_keyword) const {
 }
 
 Color TextEdit::get_keyword_color(String p_keyword) const {
+
+	ERR_FAIL_COND_V(!keywords.has(p_keyword), Color())
 	return keywords[p_keyword];
 }
 

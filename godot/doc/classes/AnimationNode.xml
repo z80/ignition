@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNode" inherits="Resource" category="Core" version="3.1.1">
+<class name="AnimationNode" inherits="Resource" category="Core" version="3.1.2">
 	<brief_description>
 		Base resource for [AnimationTree] nodes.
 	</brief_description>
@@ -52,7 +52,7 @@
 			<argument index="5" name="optimize" type="bool" default="true">
 			</argument>
 			<description>
-				Blend an input. This is only useful for nodes created for an [AnimationNodeBlendTree]. Time is a delta, unless "seek" is true, in which case it is absolute. A filter mode may be optionally passed.
+				Blend an input. This is only useful for nodes created for an [AnimationNodeBlendTree]. Time is a delta, unless "seek" is [code]true[/code], in which case it is absolute. A filter mode may be optionally passed.
 			</description>
 		</method>
 		<method name="blend_node">
@@ -144,7 +144,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Return true whether you want the blend tree editor to display filter editing on this node.
+				Returns [code]true[/code] whether you want the blend tree editor to display filter editing on this node.
 			</description>
 		</method>
 		<method name="is_path_filtered" qualifiers="const">
@@ -153,7 +153,7 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
-				Return true wether a given path is filtered.
+				Returns [code]true[/code] whether a given path is filtered.
 			</description>
 		</method>
 		<method name="process" qualifiers="virtual">
@@ -164,7 +164,7 @@
 			<argument index="1" name="seek" type="bool">
 			</argument>
 			<description>
-				Called when a custom node is processed. The argument "time" is relative, unless "seek" is true (in which case it is absolute).
+				Called when a custom node is processed. The argument "time" is relative, unless "seek" is [code]true[/code] (in which case it is absolute).
 			Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions.
 			You can also use [method get_parameter] and [method set_parameter] to modify local memory.
 			This function returns the time left for the current animation to finish (if unsure, just pass  the value from the main blend being called).
@@ -204,7 +204,7 @@
 	</methods>
 	<members>
 		<member name="filter_enabled" type="bool" setter="set_filter_enabled" getter="is_filter_enabled">
-			Return whether filtering is enabled.
+			Returns whether filtering is enabled.
 		</member>
 	</members>
 	<signals>
@@ -215,6 +215,7 @@
 		</signal>
 		<signal name="tree_changed">
 			<description>
+				Emitted by nodes that inherit from this class and that have an internal tree when one of their nodes changes. The nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], and [AnimationNodeBlendTree].
 			</description>
 		</signal>
 	</signals>

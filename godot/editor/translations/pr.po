@@ -168,11 +168,16 @@ msgid "Animation Playback Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Yer unique name be evil."
+
+#: editor/animation_track_editor.cpp
+msgid "Animation length (seconds)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+msgid "Add Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
@@ -10125,7 +10130,7 @@ msgstr ""
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 

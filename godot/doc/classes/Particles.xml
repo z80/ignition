@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Particles" inherits="GeometryInstance" category="Core" version="3.1.1">
+<class name="Particles" inherits="GeometryInstance" category="Core" version="3.1.2">
 	<brief_description>
 		3D particle emitter.
 	</brief_description>
@@ -8,20 +8,21 @@
 		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
+		<link>http://docs.godotengine.org/en/3.1/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
 	</tutorials>
 	<methods>
 		<method name="capture_aabb" qualifiers="const">
 			<return type="AABB">
 			</return>
 			<description>
+				Returns the bounding box that contains all the particles that are active in the current frame.
 			</description>
 		</method>
 		<method name="restart">
 			<return type="void">
 			</return>
 			<description>
-				Restarts the particle emmission, clearing existing particles.
+				Restarts the particle emission, clearing existing particles.
 			</description>
 		</method>
 	</methods>
@@ -30,7 +31,7 @@
 			Number of particles to emit.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="Particles.DrawOrder">
-			Particle draw order. Uses [code]DRAW_ORDER_*[/code] values. Default value: [code]DRAW_ORDER_INDEX[/code].
+			Particle draw order. Uses [code]DRAW_ORDER_*[/code] values. Default value: [constant DRAW_ORDER_INDEX].
 		</member>
 		<member name="draw_pass_1" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
 			[Mesh] that is drawn for the first draw pass.
@@ -54,8 +55,10 @@
 			Time ratio between each emission. If [code]0[/code] particles are emitted continuously. If [code]1[/code] all particles are emitted simultaneously. Default value: [code]0[/code].
 		</member>
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps">
+			The particle system's frame rate is fixed to a value. For instance, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the simulation of the particle system itself.
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta">
+			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect. Default value: [code]true[/code].
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime">
 			Amount of time each particle will exist. Default value: [code]1[/code].

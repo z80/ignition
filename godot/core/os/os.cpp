@@ -157,6 +157,11 @@ int OS::get_process_id() const {
 	return -1;
 };
 
+void OS::vibrate_handheld(int p_duration_ms) {
+
+	WARN_PRINTS("vibrate_handheld() only works with Android and iOS");
+}
+
 bool OS::is_stdout_verbose() const {
 
 	return _verbose_stdout;
@@ -218,6 +223,16 @@ void OS::hide_virtual_keyboard() {
 
 int OS::get_virtual_keyboard_height() const {
 	return 0;
+}
+
+void OS::set_cursor_shape(CursorShape p_shape) {
+}
+
+OS::CursorShape OS::get_cursor_shape() const {
+	return CURSOR_ARROW;
+}
+
+void OS::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 }
 
 void OS::print_all_resources(String p_to_file) {

@@ -166,12 +166,18 @@ msgstr "שקופיות ההנפשה"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "הוספת רצועות חדשות."
+msgid "Animation length (frames)"
+msgstr "משך ההנפשה (בשניות)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "משך ההנפשה (בשניות)"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "הוספת רצועות חדשות."
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -10219,7 +10225,7 @@ msgstr "הוספת הצבע הנוכחי כערכה"
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 

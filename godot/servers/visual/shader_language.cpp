@@ -932,6 +932,7 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<String
 			if (r_type) {
 				*r_type = IDENTIFIER_FUNCTION;
 			}
+			return true;
 		}
 	}
 
@@ -2846,6 +2847,16 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				int carg = -1;
 
 				bool ok = _parse_function_arguments(p_block, p_builtin_types, func, &carg);
+
+				// Check if block has a variable with the same name as function to prevent shader crash.
+				ShaderLanguage::BlockNode *bnode = p_block;
+				while (bnode) {
+					if (bnode->variables.has(name)) {
+						_set_error("Expected function name");
+						return NULL;
+					}
+					bnode = bnode->parent_block;
+				}
 
 				//test if function was parsed first
 				for (int i = 0; i < shader->functions.size(); i++) {

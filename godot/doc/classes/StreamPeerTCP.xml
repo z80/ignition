@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeerTCP" inherits="StreamPeer" category="Core" version="3.1.1">
+<class name="StreamPeerTCP" inherits="StreamPeer" category="Core" version="3.1.2">
 	<brief_description>
 		TCP Stream peer.
 	</brief_description>
@@ -17,7 +17,7 @@
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
-				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [code]OK[/code] on success or [code]FAILED[/code] on failure.
+				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [constant @GlobalScope.OK] on success or [constant @GlobalScope.FAILED] on failure.
 			</description>
 		</method>
 		<method name="disconnect_from_host">
@@ -31,21 +31,21 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the IP of this peer.
+				Returns the IP of this peer.
 			</description>
 		</method>
 		<method name="get_connected_port" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the port of this peer.
+				Returns the port of this peer.
 			</description>
 		</method>
 		<method name="get_status">
 			<return type="int" enum="StreamPeerTCP.Status">
 			</return>
 			<description>
-				Return the status of the connection, see [enum StreamPeerTCP.Status].
+				Returns the status of the connection, see [enum StreamPeerTCP.Status].
 			</description>
 		</method>
 		<method name="is_connected_to_host" qualifiers="const">

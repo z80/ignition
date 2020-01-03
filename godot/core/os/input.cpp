@@ -76,6 +76,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joy_axis_index_from_string", "axis"), &Input::get_joy_axis_index_from_string);
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
+	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms"), &Input::vibrate_handheld, DEFVAL(500));
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
@@ -89,6 +90,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("action_press", "action", "strength"), &Input::action_press, DEFVAL(1.f));
 	ClassDB::bind_method(D_METHOD("action_release", "action"), &Input::action_release);
 	ClassDB::bind_method(D_METHOD("set_default_cursor_shape", "shape"), &Input::set_default_cursor_shape, DEFVAL(CURSOR_ARROW));
+	ClassDB::bind_method(D_METHOD("get_current_cursor_shape"), &Input::get_current_cursor_shape);
 	ClassDB::bind_method(D_METHOD("set_custom_mouse_cursor", "image", "shape", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(CURSOR_ARROW), DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("parse_input_event", "event"), &Input::parse_input_event);
 	ClassDB::bind_method(D_METHOD("set_use_accumulated_input", "enable"), &Input::set_use_accumulated_input);

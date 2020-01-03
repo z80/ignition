@@ -472,6 +472,10 @@ void InputDefault::stop_joy_vibration(int p_device) {
 	joy_vibration[p_device] = vibration;
 }
 
+void InputDefault::vibrate_handheld(int p_duration_ms) {
+	OS::get_singleton()->vibrate_handheld(p_duration_ms);
+}
+
 void InputDefault::set_gravity(const Vector3 &p_gravity) {
 
 	_THREAD_SAFE_METHOD_
@@ -623,11 +627,16 @@ bool InputDefault::is_emulating_mouse_from_touch() const {
 	return emulate_mouse_from_touch;
 }
 
-Input::CursorShape InputDefault::get_default_cursor_shape() {
+Input::CursorShape InputDefault::get_default_cursor_shape() const {
+
 	return default_shape;
 }
 
 void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
+
+	if (default_shape == p_shape)
+		return;
+
 	default_shape = p_shape;
 	// The default shape is set in Viewport::_gui_input_event. To instantly
 	// see the shape in the viewport we need to trigger a mouse motion event.
@@ -638,26 +647,16 @@ void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
 	parse_input_event(mm);
 }
 
+Input::CursorShape InputDefault::get_current_cursor_shape() const {
+
+	return (Input::CursorShape)OS::get_singleton()->get_cursor_shape();
+}
+
 void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (Engine::get_singleton()->is_editor_hint())
 		return;
 
 	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape)p_shape, p_hotspot);
-}
-
-void InputDefault::set_mouse_in_window(bool p_in_window) {
-	/* no longer supported, leaving this for reference to anyone who might want to implement hardware cursors
-	if (custom_cursor.is_valid()) {
-
-		if (p_in_window) {
-			set_mouse_mode(MOUSE_MODE_HIDDEN);
-			VisualServer::get_singleton()->cursor_set_visible(true);
-		} else {
-			set_mouse_mode(MOUSE_MODE_VISIBLE);
-			VisualServer::get_singleton()->cursor_set_visible(false);
-		}
-	}
-	*/
 }
 
 void InputDefault::accumulate_input_event(const Ref<InputEvent> &p_event) {

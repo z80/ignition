@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeStateMachineTransition" inherits="Resource" category="Core" version="3.1.1">
+<class name="AnimationNodeStateMachineTransition" inherits="Resource" category="Core" version="3.1.2">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -10,10 +10,13 @@
 	</methods>
 	<members>
 		<member name="advance_condition" type="String" setter="set_advance_condition" getter="get_advance_condition">
-			Turn on auto advance when this condition is set. This is a custom text field that can be filled with a variable name. The variable can be modified from code.
+			Turn on auto advance when this condition is set. The provided name will become a boolean parameter on the [AnimationTree] that can be controlled from code (see [url=https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html#controlling-from-code][/url]). For example, if [member AnimationTree.tree_root] is an [AnimationNodeStateMachine] and [member advance_condition] is set to "idle":
+			[codeblock]
+			$animation_tree["parameters/conditions/idle"] = is_on_floor and linear_velocity.x == 0
+			[/codeblock]
 		</member>
 		<member name="auto_advance" type="bool" setter="set_auto_advance" getter="has_auto_advance">
-			Turn on the transition automatically when this state is reached. This works best with [code]SWITCH_MODE_AT_END[/code].
+			Turn on the transition automatically when this state is reached. This works best with [constant SWITCH_MODE_AT_END].
 		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
 			Don't use this transition during [method AnimationNodeStateMachinePlayback.travel] or [member auto_advance].

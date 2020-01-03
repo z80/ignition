@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "tree.h"
-#include <limits.h>
 
 #include "core/math/math_funcs.h"
 #include "core/os/input.h"
@@ -42,6 +41,8 @@
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
 #endif
+
+#include <limits.h>
 
 void TreeItem::move_to_top() {
 
@@ -940,6 +941,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 				int check_icon_h = cache.checked->get_height();
 				if (height < check_icon_h)
 					height = check_icon_h;
+				FALLTHROUGH;
 			}
 			case TreeItem::CELL_MODE_STRING:
 			case TreeItem::CELL_MODE_CUSTOM:
@@ -2150,8 +2152,9 @@ void Tree::_go_down() {
 	TreeItem *next = NULL;
 	if (!selected_item) {
 
-		next = hide_root ? root->get_next_visible() : root;
-		selected_item = 0;
+		if (root) {
+			next = hide_root ? root->get_next_visible() : root;
+		}
 	} else {
 
 		next = selected_item->get_next_visible();
@@ -3930,7 +3933,6 @@ Tree::Tree() {
 	cache.click_item = NULL;
 	cache.click_column = 0;
 	cache.hover_cell = -1;
-	cache.hover_index = -1;
 	last_keypress = 0;
 	focus_in_id = 0;
 

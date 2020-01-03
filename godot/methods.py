@@ -24,10 +24,16 @@ def disable_warnings(self):
         # We have to remove existing warning level defines before appending /w,
         # otherwise we get: "warning D9025 : overriding '/W3' with '/w'"
         warn_flags = ['/Wall', '/W4', '/W3', '/W2', '/W1', '/WX']
-        self['CCFLAGS'] = [x for x in self['CCFLAGS'] if not x in warn_flags]
         self.Append(CCFLAGS=['/w'])
+        self.Append(CFLAGS=['/w'])
+        self.Append(CPPFLAGS=['/w'])
+        self['CCFLAGS'] = [x for x in self['CCFLAGS'] if not x in warn_flags]
+        self['CFLAGS'] = [x for x in self['CFLAGS'] if not x in warn_flags]
+        self['CPPFLAGS'] = [x for x in self['CPPFLAGS'] if not x in warn_flags]
     else:
         self.Append(CCFLAGS=['-w'])
+        self.Append(CFLAGS=['-w'])
+        self.Append(CPPFLAGS=['-w'])
 
 
 def add_module_version_string(self,s):
@@ -55,6 +61,7 @@ def update_version(module_version_string=""):
     f.write("#define VERSION_BUILD \"" + str(build_name) + "\"\n")
     f.write("#define VERSION_MODULE_CONFIG \"" + str(version.module_config) + module_version_string + "\"\n")
     f.write("#define VERSION_YEAR " + str(version.year) + "\n")
+    f.write("#define VERSION_WEBSITE \"" + str(version.website) + "\"\n")
     f.close()
 
     # NOTE: It is safe to generate this file here, since this is still executed serially

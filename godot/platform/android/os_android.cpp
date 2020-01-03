@@ -287,14 +287,6 @@ bool OS_Android::can_draw() const {
 	return true; //always?
 }
 
-void OS_Android::set_cursor_shape(CursorShape p_shape) {
-
-	//android really really really has no mouse.. how amazing..
-}
-
-void OS_Android::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-}
-
 void OS_Android::main_loop_begin() {
 
 	if (main_loop)
@@ -698,6 +690,11 @@ String OS_Android::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
+void OS_Android::vibrate_handheld(int p_duration_ms) {
+	if (vibrate_func)
+		vibrate_func(p_duration_ms);
+}
+
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "mobile") {
 		//TODO support etc2 only if GLES3 driver is selected
@@ -719,7 +716,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	return false;
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, GetGLVersionCodeFunc p_get_gl_version_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, SetClipboardFunc p_set_clipboard_func, GetClipboardFunc p_get_clipboard_func, RequestPermissionFunc p_request_permission, bool p_use_apk_expansion) {
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, GetGLVersionCodeFunc p_get_gl_version_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, SetClipboardFunc p_set_clipboard_func, GetClipboardFunc p_get_clipboard_func, RequestPermissionFunc p_request_permission, VibrateFunc p_vibrate_func, bool p_use_apk_expansion) {
 
 	use_apk_expansion = p_use_apk_expansion;
 	default_videomode.width = 800;
@@ -759,6 +756,7 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 	set_keep_screen_on_func = p_set_keep_screen_on_func;
 	alert_func = p_alert_func;
 	request_permission_func = p_request_permission;
+	vibrate_func = p_vibrate_func;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(AndroidLogger));

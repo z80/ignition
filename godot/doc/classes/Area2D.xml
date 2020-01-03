@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Area2D" inherits="CollisionObject2D" category="Core" version="3.1.1">
+<class name="Area2D" inherits="CollisionObject2D" category="Core" version="3.1.2">
 	<brief_description>
 		2D area for detection and 2D physics influence.
 	</brief_description>
@@ -15,7 +15,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
-				Return an individual bit on the layer mask. Describes whether other areas will collide with this one on the given layer.
+				Returns an individual bit on the layer mask. Describes whether other areas will collide with this one on the given layer.
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
@@ -24,7 +24,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
-				Return an individual bit on the collision mask. Describes whether this area will collide with others on the given layer.
+				Returns an individual bit on the collision mask. Describes whether this area will collide with others on the given layer.
 			</description>
 		</method>
 		<method name="get_overlapping_areas" qualifiers="const">

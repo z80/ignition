@@ -154,12 +154,18 @@ msgid "Animation Playback Track"
 msgstr "Binari i Rishikimit të Animacionit"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Shto Binarë"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Kohëzgjatja e Animacionit (sekonda)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Kohëzgjatja e Animacionit (sekonda)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Shto Binarë"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -10002,7 +10008,7 @@ msgstr ""
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 

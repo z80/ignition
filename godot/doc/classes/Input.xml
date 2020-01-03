@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Input" inherits="Object" category="Core" version="3.1.1">
+<class name="Input" inherits="Object" category="Core" version="3.1.2">
 	<brief_description>
 		A Singleton that deals with inputs.
 	</brief_description>
@@ -7,7 +7,7 @@
 		A Singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions. Actions and their events can be set in the Project Settings / Input Map tab. Or be set with [InputMap].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/index.html</link>
+		<link>https://docs.godotengine.org/en/3.1/tutorials/inputs/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="action_press">
@@ -20,6 +20,7 @@
 			<description>
 				This will simulate pressing the specified action.
 				The strength can be used for non-boolean actions, it's ranged between 0 and 1 representing the intensity of the given action.
+				[b]Note:[/b] This method will not cause any [method Node._input] calls. It is intended to be used with [method is_action_pressed] and [method is_action_just_pressed]. If you want to simulate [code]_input[/code], use [method parse_input_event] instead.
 			</description>
 		</method>
 		<method name="action_release">
@@ -64,6 +65,12 @@
 			</return>
 			<description>
 				Returns an [Array] containing the device IDs of all currently connected joypads.
+			</description>
+		</method>
+		<method name="get_current_cursor_shape" qualifiers="const">
+			<return type="int" enum="Input.CursorShape">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_gravity" qualifiers="const">
@@ -188,7 +195,7 @@
 			<return type="int" enum="Input.MouseMode">
 			</return>
 			<description>
-				Return the mouse mode. See the constants for more information.
+				Returns the mouse mode. See the constants for more information.
 			</description>
 		</method>
 		<method name="is_action_just_pressed" qualifiers="const">
@@ -197,7 +204,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] when the user starts pressing the action event, meaning it's true only on the frame that the user pressed down the button.
+				Returns [code]true[/code] when the user starts pressing the action event, meaning it's [code]true[/code] only on the frame that the user pressed down the button.
 				This is useful for code that needs to run only once when an action is pressed, instead of every frame while it's pressed.
 			</description>
 		</method>
@@ -207,7 +214,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] when the user stops pressing the action event, meaning it's true only on the frame that the user released the button.
+				Returns [code]true[/code] when the user stops pressing the action event, meaning it's [code]true[/code] only on the frame that the user released the button.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
@@ -216,7 +223,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if you are pressing the action event.
+				Returns [code]true[/code] if you are pressing the action event. Note that if an action has multiple buttons asigned and more than one of them is pressed, releasing one button will release the action, even if some other button assigned to this action is still pressed.
 			</description>
 		</method>
 		<method name="is_joy_button_pressed" qualifiers="const">
@@ -277,7 +284,14 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code.
+				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code. Also generates [method Node._input] calls.
+				Example:
+				[codeblock]
+				var a = InputEventAction.new()
+				a.action = "ui_cancel"
+				a.pressed = true
+				Input.parse_input_event(a)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="remove_joy_mapping">
@@ -310,8 +324,9 @@
 			<argument index="0" name="shape" type="int" enum="Input.CursorShape" default="0">
 			</argument>
 			<description>
-				Sets the default cursor shape to be used in the viewport instead of [code]CURSOR_ARROW[/code].
-				Note that if you want to change the default cursor shape for [Control]'s nodes, use [member Control.mouse_default_cursor_shape] instead.
+				Sets the default cursor shape to be used in the viewport instead of [constant CURSOR_ARROW].
+				[b]Note:[/b] If you want to change the default cursor shape for [Control]'s nodes, use [member Control.mouse_default_cursor_shape] instead.
+				[b]Note:[/b] This method generates an [InputEventMouseMotion] to update cursor immediately.
 			</description>
 		</method>
 		<method name="set_mouse_mode">
@@ -357,6 +372,16 @@
 				Stops the vibration of the joypad.
 			</description>
 		</method>
+		<method name="vibrate_handheld">
+			<return type="void">
+			</return>
+			<argument index="0" name="duration_ms" type="int" default="500">
+			</argument>
+			<description>
+				Vibrate Android and iOS devices.
+				[b]Note:[/b] It needs VIBRATE permission for Android at export settings. iOS does not support duration.
+			</description>
+		</method>
 		<method name="warp_mouse_position">
 			<return type="void">
 			</return>
@@ -386,7 +411,7 @@
 			Makes the mouse cursor hidden if it is visible.
 		</constant>
 		<constant name="MOUSE_MODE_CAPTURED" value="2" enum="MouseMode">
-			Captures the mouse. The mouse will be hidden and unable to leave the game window. But it will still register movement and mouse button presses.
+			Captures the mouse. The mouse will be hidden and unable to leave the game window, but it will still register movement and mouse button presses. On Windows and Linux, the mouse will use raw input mode, which means the reported movement will be unaffected by the OS' mouse acceleration settings.
 		</constant>
 		<constant name="MOUSE_MODE_CONFINED" value="3" enum="MouseMode">
 			Makes the mouse cursor visible but confines it to the game window.
@@ -407,7 +432,7 @@
 			Wait cursor. Indicates that the application is busy performing an operation.
 		</constant>
 		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
-			Busy cursor. See [code]CURSOR_WAIT[/code].
+			Busy cursor. See [constant CURSOR_WAIT].
 		</constant>
 		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
 			Drag cursor. Usually displayed when dragging something.
@@ -428,16 +453,16 @@
 			Window resize mouse cursor. The cursor is a double headed arrow that goes from the bottom left to the top right. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
 		<constant name="CURSOR_FDIAGSIZE" value="12" enum="CursorShape">
-			Window resize mouse cursor. The cursor is a double headed arrow that goes from the top left to the bottom right, the opposite of [code]CURSOR_BDIAGSIZE[/code]. It tells the user they can resize the window or the panel both horizontally and vertically.
+			Window resize mouse cursor. The cursor is a double headed arrow that goes from the top left to the bottom right, the opposite of [constant CURSOR_BDIAGSIZE]. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
 		<constant name="CURSOR_MOVE" value="13" enum="CursorShape">
 			Move cursor. Indicates that something can be moved.
 		</constant>
 		<constant name="CURSOR_VSPLIT" value="14" enum="CursorShape">
-			Vertical split mouse cursor. On Windows, it's the same as [code]CURSOR_VSIZE[/code].
+			Vertical split mouse cursor. On Windows, it's the same as [constant CURSOR_VSIZE].
 		</constant>
 		<constant name="CURSOR_HSPLIT" value="15" enum="CursorShape">
-			Horizontal split mouse cursor. On Windows, it's the same as [code]CURSOR_HSIZE[/code].
+			Horizontal split mouse cursor. On Windows, it's the same as [constant CURSOR_HSIZE].
 		</constant>
 		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
 			Help cursor. Usually a question mark.

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ResourcePreloader" inherits="Node" category="Core" version="3.1.1">
+<class name="ResourcePreloader" inherits="Node" category="Core" version="3.1.2">
 	<brief_description>
 		Resource Preloader Node.
 	</brief_description>
 	<description>
 		This node is used to preload sub-resources inside a scene, so when the scene is loaded, all the resources are ready to use and can be retrieved from the preloader.
+		GDScript has a simplified [method @GDScript.preload] built-in method which can be used in most situations, leaving the use of [ResourcePreloader] for more advanced scenarios.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -42,7 +43,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Returns true if the preloader contains a resource associated to [code]name[/code].
+				Returns [code]true[/code] if the preloader contains a resource associated to [code]name[/code].
 			</description>
 		</method>
 		<method name="remove_resource">

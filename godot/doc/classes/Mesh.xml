@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Mesh" inherits="Resource" category="Core" version="3.1.1">
+<class name="Mesh" inherits="Resource" category="Core" version="3.1.2">
 	<brief_description>
 		A [Resource] that contains vertex-array based geometry.
 	</brief_description>
@@ -50,7 +50,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of surfaces that the [code]Mesh[/code] holds.
+				Returns the amount of surfaces that the [code]Mesh[/code] holds.
 			</description>
 		</method>
 		<method name="surface_get_arrays" qualifiers="const">
@@ -77,7 +77,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
-				Return a [Material] in a given surface. Surface is rendered using this material.
+				Returns a [Material] in a given surface. Surface is rendered using this material.
 			</description>
 		</method>
 	</methods>
@@ -183,6 +183,7 @@
 			Array of indices.
 		</constant>
 		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
+			Represents the size of the [enum ArrayType] enum.
 		</constant>
 	</constants>
 </class>

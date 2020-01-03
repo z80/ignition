@@ -161,13 +161,18 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Anim Lägg till spår"
+msgid "Animation length (frames)"
+msgstr "Animation längd (i sekunder)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "Animation längd (i sekunder)."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Anim Lägg till spår"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -10831,7 +10836,7 @@ msgstr "Lägg till nuvarande färg som en förinställning"
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 

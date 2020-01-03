@@ -471,7 +471,7 @@ void RigidBodyBullet::assert_no_constraints() {
 
 void RigidBodyBullet::set_activation_state(bool p_active) {
 	if (p_active) {
-		btBody->setActivationState(ACTIVE_TAG);
+		btBody->activate();
 	} else {
 		btBody->setActivationState(WANTS_DEACTIVATION);
 	}
@@ -597,6 +597,8 @@ void RigidBodyBullet::set_state(PhysicsServer::BodyState p_state, const Variant 
 			if (!can_sleep) {
 				// Can't sleep
 				btBody->forceActivationState(DISABLE_DEACTIVATION);
+			} else {
+				btBody->forceActivationState(ACTIVE_TAG);
 			}
 			break;
 	}

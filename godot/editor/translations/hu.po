@@ -170,13 +170,18 @@ msgstr "Animáció lejátszásának leállítása. (S)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Animáció nyomvonal hozzáadás"
+msgid "Animation length (frames)"
+msgstr "Animáció hossza (másodpercben)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "Animáció hossza (másodpercben)."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Animáció nyomvonal hozzáadás"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -10381,7 +10386,7 @@ msgstr ""
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 

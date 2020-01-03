@@ -143,6 +143,11 @@ void TabContainer::_notification(int p_what) {
 
 	switch (p_what) {
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+
+			minimum_size_changed();
+			update();
+		} break;
 		case NOTIFICATION_RESIZED: {
 
 			Vector<Control *> tabs = _get_tabs();
@@ -178,7 +183,6 @@ void TabContainer::_notification(int p_what) {
 				first_tab_cache--;
 			}
 		} break;
-
 		case NOTIFICATION_DRAW: {
 
 			RID canvas = get_canvas_item();
@@ -719,6 +723,7 @@ void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_name", p_title);
+	update();
 }
 
 String TabContainer::get_tab_title(int p_tab) const {
@@ -736,6 +741,7 @@ void TabContainer::set_tab_icon(int p_tab, const Ref<Texture> &p_icon) {
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_icon", p_icon);
+	update();
 }
 Ref<Texture> TabContainer::get_tab_icon(int p_tab) const {
 
