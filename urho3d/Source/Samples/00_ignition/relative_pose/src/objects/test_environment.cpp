@@ -27,6 +27,17 @@ TestEnvironment::~TestEnvironment()
 
 void TestEnvironment::DelayedStart()
 {
+
+}
+
+bool TestEnvironment::ClientConnected( int id, const VariantMap & identity, String & errMsg )
+{
+
+    return true;
+}
+
+void TestEnvironment::CreateReplicatedContentServer()
+{
     Scene * s = GetScene();
 
     InfinitePlane * p = s->CreateComponent<InfinitePlane>();
@@ -46,17 +57,6 @@ void TestEnvironment::DelayedStart()
 
     IcoPlanet * ip = s->CreateComponent<IcoPlanet>();
     ip->setR( Vector3d( 0.0, 0.0, 20.0 ) );
-}
-
-bool TestEnvironment::ClientConnected( int id, const VariantMap & identity, String & errMsg )
-{
-
-    return true;
-}
-
-void TestEnvironment::CreateReplicatedContentServer()
-{
-
 }
 
 void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )

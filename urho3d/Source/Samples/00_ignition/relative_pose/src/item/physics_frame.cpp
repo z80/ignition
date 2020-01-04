@@ -79,6 +79,9 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     Node * n = scene->CreateChild( name, LOCAL );
     node_         = SharedPtr<Node>( n );
     physicsWorld_ = n->CreateComponent<PhysicsWorld2>( LOCAL );
+
+    // Make smaller gravity for debugging.
+    physicsWorld_->SetGravity( Vector3( 0.0, -1.0, 0.0 ) );
 }
 
 void PhysicsFrame::updateChildStates()
@@ -202,8 +205,9 @@ void PhysicsFrame::checkIfTeleport()
     const Float d = o->distance();
     if ( d > teleportDist )
     {
-        const Vector3d & r = o->relR();
-        teleport( parent_, r );
+        State st;
+        o->relativeState( parent_, st );
+        teleport( parent_, st );
     }
 }
 

@@ -64,9 +64,7 @@ public:
 
     // "Teleporting" with preserving orientations and velocities of
     // all children in parent->parent ref. frame.
-    virtual bool teleport( RefFrame * other, const Vector3d & r, const Quaterniond & q=Quaterniond::IDENTITY,
-                                             const Vector3d & v=Vector3d::ZERO,
-                                             const Vector3d & w=Vector3d::ZERO );
+    virtual bool teleport( RefFrame * other, const State & stateInOther );
 
     bool computeRefState( const RefFrame * other=nullptr, Timestamp t=-1, bool recursive=false );
     const State & refState() const;

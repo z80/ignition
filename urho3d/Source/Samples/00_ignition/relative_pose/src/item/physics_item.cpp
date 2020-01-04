@@ -73,6 +73,9 @@ void PhysicsItem::updateStateFromRigidBody()
     st_.q = Quaterniond( q.w_, q.x_, q.y_, q.z_ );
     st_.v = Vector3d( v.x_, v.y_, v.z_ );
     st_.w = Vector3d( w.x_, w.y_, w.z_ );
+
+    if ( visual_node_ )
+        visual_node_->SetTransform( r, q );
     
     MarkNetworkUpdate();
 }

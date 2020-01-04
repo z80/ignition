@@ -323,15 +323,9 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
     return true;
 }
 
-bool RefFrame::teleport( RefFrame * other,
-                         const Vector3d & r, const Quaterniond & q,
-                         const Vector3d & v, const Vector3d & w )
+bool RefFrame::teleport( RefFrame * other, const State & stateInOther )
 {
-    State stateInOther, st;
-    stateInOther.r = r;
-    stateInOther.q = q;
-    stateInOther.v = v;
-    stateInOther.w = w;
+    State st;
 
     const unsigned qty = children_.Size();
     static Vector<State> newStates;
