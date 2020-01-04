@@ -2,6 +2,7 @@
 #include "physics_frame.h"
 #include "physics_item.h"
 #include "settings.h"
+#include "Notifications.h"
 
 namespace Ign
 {
@@ -187,16 +188,19 @@ void PhysicsFrame::checkOuterObjects()
             Component * c = comps[i];
             if ( !c )
                 continue;
-            RefFrame * rf = c->Cast<RefFrame>();
-            if ( !rf )
-                continue;
-            PhysicsFrame * pf = c->Cast<PhysicsFrame>();
-            if ( pf )
+            PhysicsItem * pi = c->Cast<PhysicsItem>();
+            if ( !pi )
                 continue;
 
-            const Float dist = rf->distance( this );
+            // Only consider objects with no parent
+            // and ignore others.
+            RefFrame * currentParent = pi->parent();
+            if ( currentParent )
+                continue;
+
+            const Float dist = pi->distance( this );
             if ( dist <= includeDist )
-                rf->setParent( this );
+                pi->setParent( this );
 
         }
     }
@@ -231,6 +235,13 @@ void PhysicsFrame::checkIfTeleport()
     {
         State st;
         o->relativeState( parent_, st );
+        {
+            const String stri = String( "Teleporting to: (" ) +
+                                String( st.r.x_ ) + String( ", " ) +
+                                String( st.r.y_ ) + String( ", " ) +
+                                String( st.r.z_ ) + String( ")" );
+            Notifications::AddNotification( GetContext(), stri );
+        }
         teleport( parent_, st );
     }
 }

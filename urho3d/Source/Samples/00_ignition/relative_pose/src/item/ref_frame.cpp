@@ -227,7 +227,7 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
     static Vector<const RefFrame *> ancestorsB;
     ancestorsB.Clear();
     unsigned indA = allQtyA;
-    while ( itemB )
+    while ( true )
     {
         // Check if nodeB is in allAncestorsA.
         for ( unsigned i=0; i<allQtyA; i++ )
@@ -245,6 +245,8 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
         ancestorsB.Push( itemB );
         // Get parent.
         itemB = itemB->parent();
+        if ( !itemB )
+            break;
     }
 
     // If reached the root and didn't meed

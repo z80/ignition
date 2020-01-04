@@ -41,6 +41,7 @@ void TestEnvironment::CreateReplicatedContentServer()
     Scene * s = GetScene();
 
     InfinitePlane * p = s->CreateComponent<InfinitePlane>();
+    p->setName( "Infinite plane object" );
     p->setR( Vector3d::ZERO );
     p->setQ( Quaterniond::IDENTITY );
 
@@ -66,6 +67,7 @@ void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )
         return;
 
     DynamicCube * d = s->CreateComponent<DynamicCube>();
+    d->setName( String( "DynamicCube object" ) );
     d->setR( Vector3d( 0.0, 5.0, 0.0 ) );
     camera->setParent( d );
 }

@@ -460,8 +460,8 @@ void Environment::CenterRequest( const ClientDesc & c, RefFrame * rf )
 
 void Environment::TriggerRequest( const ClientDesc & c, RefFrame * rf, const VariantMap & data )
 {
-    const String stri = "User " + c.login_ + " wants to trigger " + rf->name();
-    Notifications::AddNotification( GetContext(), stri );
+    //const String stri = "User " + c.login_ + " wants to trigger " + rf->name();
+    //Notifications::AddNotification( GetContext(), stri );
     rf->Trigger( data );
 }
 
