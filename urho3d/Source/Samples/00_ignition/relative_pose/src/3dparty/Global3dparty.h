@@ -21,7 +21,7 @@ static const unsigned CTRL_UP       = 1 << 8;   //128
 static const unsigned CTRL_ZOOM_IN  = 1 << 9;  //
 static const unsigned CTRL_ZOOM_OUT = 1 << 10;
 static const unsigned CTRL_CENTER   = 1 << 11;
-static const unsigned CTRL_TRIGGER  = 1 << 11;
+static const unsigned CTRL_TRIGGER  = 1 << 12;
 
 static const unsigned COLLISION_MASK_PLAYER = 1 << 0; //1
 static const unsigned COLLISION_MASK_CHECKPOINT = 1 << 1; //2 

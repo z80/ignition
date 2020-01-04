@@ -33,8 +33,8 @@ ControllerInput::ControllerInput(Context* context) :
     _controlMapNames[Ign::CTRL_ACTION]   = "Primary action";
     _controlMapNames[Ign::CTRL_SPRINT]   = "Sprint/Mode";
     _controlMapNames[Ign::CTRL_UP]       = "Move up";
-    _controlMapNames[Ign::CTRL_ZOOM_IN]  = "Zoom in";
-    _controlMapNames[Ign::CTRL_ZOOM_OUT] = "Zoom out";
+    //_controlMapNames[Ign::CTRL_ZOOM_IN]  = "Zoom in";
+    //_controlMapNames[Ign::CTRL_ZOOM_OUT] = "Zoom out";
     _controlMapNames[Ign::CTRL_CENTER]   = "Center camera";
     _controlMapNames[Ign::CTRL_TRIGGER]   = "Trigger";
 	Init();
