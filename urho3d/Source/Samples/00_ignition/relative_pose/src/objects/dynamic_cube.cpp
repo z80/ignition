@@ -1,6 +1,7 @@
 
 #include "dynamic_cube.h"
 #include "Global3dparty.h"
+#include "Notifications.h"
 
 namespace Ign
 {
@@ -31,7 +32,7 @@ void DynamicCube::ApplyControls( const Controls & ctrl )
         return;
 
     const float TORQUE = 0.1;
-    const float THRUST = 1.2 * 10.0;
+    const float THRUST = 2.2 * 10.0;
     const unsigned acts = ctrl.buttons_;
     if ( acts & CTRL_FORWARD )
         rb->ApplyTorque( Vector3::LEFT * TORQUE );
@@ -54,6 +55,10 @@ void DynamicCube::Trigger( const VariantMap & data )
 {
     (void)data;
     thrustEnabled_ = !thrustEnabled_;
+    if ( thrustEnabled_ )
+        Notifications::AddNotification( GetContext(), "Thrust enabled" );
+    else
+        Notifications::AddNotification( GetContext(), "Thrust disabled" );
 }
 
 void DynamicCube::createVisualContent( Node * n )
