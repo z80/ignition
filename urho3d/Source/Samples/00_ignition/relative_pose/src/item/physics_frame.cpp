@@ -155,27 +155,51 @@ void PhysicsFrame::checkOuterObjects()
     // Right now just check all parent's children and check if need to include
     // either one.
     SharedPtr<RefFrame> p = parent_;
-    if ( !p )
-        return;
-    const Vector<SharedPtr<RefFrame> > & objs = p->children_;
-    unsigned qty = objs.Size();
-    const Float includeDist = Settings::dynamicsWorldDistanceInclude();
-
-    for ( unsigned i=0; i<qty; i++ )
+    if ( p )
     {
-        SharedPtr<RefFrame> o = objs[i];
-        // Skip this node itself and any other physics frames.
-        if ( o == this )
-            continue;
-        PhysicsFrame * pf = o->Cast<PhysicsFrame>();
-        if ( pf )
-            continue;
+        const Vector<SharedPtr<RefFrame> > & objs = p->children_;
+        unsigned qty = objs.Size();
+        const Float includeDist = Settings::dynamicsWorldDistanceInclude();
 
-        const Float dist = o->distance( this );
-        if ( dist <= includeDist )
-            o->setParent( this );
+        for ( unsigned i=0; i<qty; i++ )
+        {
+            SharedPtr<RefFrame> o = objs[i];
+            // Skip this node itself and any other physics frames.
+            if ( o == this )
+                continue;
+            PhysicsFrame * pf = o->Cast<PhysicsFrame>();
+            if ( pf )
+                continue;
+
+            const Float dist = o->distance( this );
+            if ( dist <= includeDist )
+                o->setParent( this );
+        }
     }
+    else
+    {
+        Scene * s = GetScene();
+        const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+        const Float includeDist = Settings::dynamicsWorldDistanceInclude();
+        const unsigned compsQty = comps.Size();
+        for ( unsigned i=0; i<compsQty; i++ )
+        {
+            Component * c = comps[i];
+            if ( !c )
+                continue;
+            RefFrame * rf = c->Cast<RefFrame>();
+            if ( !rf )
+                continue;
+            PhysicsFrame * pf = c->Cast<PhysicsFrame>();
+            if ( pf )
+                continue;
 
+            const Float dist = rf->distance( this );
+            if ( dist <= includeDist )
+                rf->setParent( this );
+
+        }
+    }
 }
 
 bool PhysicsFrame::checkIfWorthToExist()
@@ -187,7 +211,7 @@ bool PhysicsFrame::checkIfWorthToExist()
     const unsigned qty = children_.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
-        SharedPtr<RefFrame> o = children_[i];
+        SharedPtr<RefFrame> o = children_[0];
         o->setParent( parent_ );
     }
 

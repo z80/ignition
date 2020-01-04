@@ -539,24 +539,8 @@ RefFrame * RefFrame::refFrame( Scene * s, unsigned id )
 
 static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children )
 {
-    bool repeat = false;
-    do {
-      const unsigned qty = children.Size();
-      for ( unsigned i=0; i<qty; i++ )
-      {
-          SharedPtr<RefFrame> & c = children[i];
-          if ( ( !c ) || ( c == item ) )
-          {
-              unsigned lastInd = qty-1;
-              for ( unsigned j=i; j<lastInd; j++ )
-              {
-                  children[j] = children[j+1];
-              }
-              repeat = true;
-          }
-      }
-
-    } while ( repeat );
+    const SharedPtr<RefFrame> ptr( item );
+    children.Remove( ptr );
 }
 
 
