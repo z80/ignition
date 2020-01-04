@@ -35,16 +35,14 @@ void DynamicCube::ApplyControls( const Controls & ctrl )
     const unsigned acts = ctrl.buttons_;
     if ( acts & CTRL_FORWARD )
         rb->ApplyTorque( Vector3::LEFT * TORQUE );
-    else if ( acts & CTRL_BACK )
+    if ( acts & CTRL_BACK )
         rb->ApplyTorque( -Vector3::LEFT * TORQUE );
-    else if ( acts & CTRL_LEFT )
+    if ( acts & CTRL_LEFT )
         rb->ApplyTorque( Vector3::FORWARD * TORQUE );
-    else if ( acts & CTRL_RIGHT )
+    if ( acts & CTRL_RIGHT )
         rb->ApplyTorque( -Vector3::FORWARD * TORQUE );
     if ( thrustEnabled_ )
-    {
         rb->ApplyForce( Vector3::UP * THRUST );
-    }
 }
 
 bool DynamicCube::IsSelectable() const

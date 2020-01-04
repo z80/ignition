@@ -52,39 +52,44 @@ void ControllerInput::Init()
     // there must be at least one controller available at start
 	_controls[0] = Controls();
     //GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
+
+    LoadConfig();
 }
 
 void ControllerInput::LoadConfig()
 {
-    GetSubsystem<ConfigManager>();
+    ConfigManager * cm = GetSubsystem<ConfigManager>();
 
-	for (auto it = _controlMapNames.Begin(); it != _controlMapNames.End(); ++it) {
+    for (auto it = _controlMapNames.Begin(); it != _controlMapNames.End(); ++it)
+    {
 		String controlName = (*it).second_;
 		controlName.Replace(" ", "_");
 		int controlCode = (*it).first_;
-		if (GetSubsystem<ConfigManager>()->GetInt("keyboard", controlName, -1) != -1) {
-			int key = GetSubsystem<ConfigManager>()->GetInt("keyboard", controlName, 0);
+        if ( cm->GetInt("keyboard", controlName, -1) != -1 )
+        {
+            int key = cm->GetInt("keyboard", controlName, 0);
 			_inputHandlers[ControllerType::KEYBOARD]->SetKeyToAction(key, controlCode);
 		}
-		if (GetSubsystem<ConfigManager>()->GetInt("mouse", controlName, -1) != -1) {
-			int key = GetSubsystem<ConfigManager>()->GetInt("mouse", controlName, 0);
+        if ( cm->GetInt("mouse", controlName, -1) != -1 )
+        {
+            int key = cm->GetInt("mouse", controlName, 0);
 			_inputHandlers[ControllerType::MOUSE]->SetKeyToAction(key, controlCode);
 		}
-		if (GetSubsystem<ConfigManager>()->GetInt("joystick", controlName, -1) != -1) {
-			int key = GetSubsystem<ConfigManager>()->GetInt("joystick", controlName, 0);
+        if ( cm->GetInt("joystick", controlName, -1) != -1 )
+        {
+            int key = cm->GetInt("joystick", controlName, 0);
 			_inputHandlers[ControllerType::JOYSTICK]->SetKeyToAction(key, controlCode);
 		}
 	}
 
-    for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
+    for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it)
         (*it).second_->LoadConfig();
-    }
 
 	// Single player mode, all the input is handled by single Controls object
-	SetMultipleControllerSupport(GetSubsystem<ConfigManager>()->GetBool("joystick", "MultipleControllers", false));
+    SetMultipleControllerSupport( cm->GetBool("joystick", "MultipleControllers", false) );
 	// Keyboard/mouse - 1st player, all the connected joysticks control new players
 	// This will have no effect if `SetMultipleControllerSupport` is set to `false`
-	SetJoystickAsFirstController(GetSubsystem<ConfigManager>()->GetBool("joystick", "JoystickAsFirstController", true));
+    SetJoystickAsFirstController( cm->GetBool("joystick", "JoystickAsFirstController", true) );
 }
 
 void ControllerInput::SaveConfig()

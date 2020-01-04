@@ -462,7 +462,7 @@ void Environment::TriggerRequest( const ClientDesc & c, RefFrame * rf, const Var
 {
     const String stri = "User " + c.login_ + " wants to trigger " + rf->name();
     Notifications::AddNotification( GetContext(), stri );
-
+    rf->Trigger( data );
 }
 
 void Environment::ConsoleCommand( const String & cmd, const String & id )
@@ -512,6 +512,11 @@ void Environment::SubscribeToEvents()
     SubscribeToEvent( E_MOUSEWHEEL,      URHO3D_HANDLER( Environment, HandleMouseWheel ) );
     // Console commands.
     SubscribeToEvent( E_CONSOLECOMMAND, URHO3D_HANDLER( Environment, HandleConsoleCommand ) );
+
+    // Local events (coming from keyboard).
+    SubscribeToEvent( IgnEvents::E_SELECT_REQUEST,  URHO3D_HANDLER( Environment, HandleSelectRequest ) );
+    SubscribeToEvent( IgnEvents::E_TRIGGER_REQUEST, URHO3D_HANDLER( Environment, HandleTriggerRequest ) );
+    SubscribeToEvent( IgnEvents::E_CENTER_REQUEST,  URHO3D_HANDLER( Environment, HandleCenterRequest ) );
 }
 
 void Environment::CreateReplicatedContentServer()
@@ -1005,35 +1010,31 @@ void Environment::ApplyControls()
             continue;
 
         // Check all clients this rf is selected by.
-        const bool isSelectable = rf->IsSelectable();
-        if ( isSelectable )
+        const Vector<SharedPtr<RefFrame> > & children = rf->children_;
+        const unsigned childrenQty = children.Size();
+        for ( unsigned j=0; j<childrenQty; j++ )
         {
-            const Vector<SharedPtr<RefFrame> > & children = rf->children_;
-            const unsigned childrenQty = children.Size();
-            for ( unsigned j=0; j<childrenQty; j++ )
+            RefFrame * child = children[j];
+            if ( !rf )
+                continue;
+            CameraFrame * cameraChild = child->Cast<CameraFrame>();
+            if ( !cameraChild )
+                continue;
+            const int userId = child->CreatedBy();
+            const bool acceptsUserCtrls = rf->AcceptsControls( userId );
+            if ( !acceptsUserCtrls )
+                continue;
+            HashMap<int, Connection *>::ConstIterator it = clientIds_.Find( userId );
+            if ( it != clientIds_.End() )
             {
-                RefFrame * rf = children[i];
-                if ( !rf )
-                    continue;
-                CameraFrame * cf = rf->Cast<CameraFrame>();
-                if ( !cf )
-                    continue;
-                const int userId = cf->CreatedBy();
-                const bool acceptsUserCtrls = rf->AcceptsControls( userId );
-                if ( !acceptsUserCtrls )
-                    continue;
-                HashMap<int, Connection *>::ConstIterator it = clientIds_.Find( userId );
-                if ( it != clientIds_.End() )
+                Connection * conn = it->second_;
+                if ( conn )
                 {
-                    Connection * conn = it->second_;
-                    if ( conn )
-                    {
-                        const Controls & ctrls = conn->GetControls();
-                        rf->ApplyControls( ctrls );
-                    }
-                    else
-                        rf->ApplyControls( controls_ );
+                    const Controls & ctrls = conn->GetControls();
+                    rf->ApplyControls( ctrls );
                 }
+                else
+                    rf->ApplyControls( controls_ );
             }
         }
 
