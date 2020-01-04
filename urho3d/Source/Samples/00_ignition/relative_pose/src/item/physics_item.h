@@ -26,6 +26,12 @@ public:
 
     virtual void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) override;
 
+    void setR( const Vector3d & r )    override;
+    void setQ( const Quaterniond & q ) override;
+    void setV( const Vector3d & v )    override;
+    void setW( const Vector3d & w )    override;
+
+
     /// This one is called by PhysicsFrame instance this item is in 
     /// after physics update step. 
     void updateStateFromRigidBody();

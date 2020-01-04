@@ -31,6 +31,35 @@ void PhysicsItem::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
         collision_shape_->DrawDebugGeometry( debug, depthTest );
 }
 
+void PhysicsItem::setR( const Vector3d & r )
+{
+    RefFrame::setR( r );
+    if ( rigid_body_ )
+        rigid_body_->SetPosition( Vector3( r.x_, r.y_, r.z_ ) );
+}
+
+void PhysicsItem::setQ( const Quaterniond & q )
+{
+    RefFrame::setQ( q );
+    if ( rigid_body_ )
+        rigid_body_->SetRotation( Quaternion( q.w_, q.x_, q.y_, q.z_ ) );
+}
+
+void PhysicsItem::setV( const Vector3d & v )
+{
+    RefFrame::setV( v );
+    if ( rigid_body_ )
+        rigid_body_->SetLinearVelocity( Vector3( v.x_, v.y_, v.z_ ) );
+}
+
+void PhysicsItem::setW( const Vector3d & w )
+{
+    RefFrame::setW( w );
+    if ( rigid_body_ )
+        rigid_body_->SetAngularVelocity( Vector3( w.x_, w.y_, w.z_ ) );
+}
+
+
 void PhysicsItem::updateStateFromRigidBody()
 {
     if ( !rigid_body_ )
@@ -97,6 +126,13 @@ void PhysicsItem::leftRefFrame( RefFrame * refFrame )
 
 void PhysicsItem::childEntered( RefFrame * refFrame )
 {
+    // I commented these code out as I don't remember what logic
+    // I meant when put it here. But from the code I don't quite understand
+    // what's going on.
+
+    // Actually, this code created physics environment when
+    // camera is attached to this physics item.
+
     Scene * scene = GetScene();
     if ( !scene )
         return;

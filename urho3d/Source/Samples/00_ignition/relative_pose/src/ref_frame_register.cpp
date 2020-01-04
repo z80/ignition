@@ -16,7 +16,10 @@
 #include "static_mesh.h"
 #include "infinite_plane.h"
 #include "ico_planet.h"
+#include "dynamic_cube.h"
 #include "test_environment.h"
+
+#include "physics_world_2.h"
 
 namespace Ign
 {
@@ -29,7 +32,7 @@ void RegisterComponents( Context * context )
     PhysicsItem::RegisterComponent( context );
     EvolvingFrame::RegisterComponent( context );
     RotatingFrame::RegisterComponent( context );
-    //OrbitingFrame::RegisterComponent( context );
+    OrbitingFrame::RegisterComponent( context );
     CameraFrame::RegisterComponent( context );
     Environment::RegisterComponent( context );
 
@@ -39,7 +42,10 @@ void RegisterComponents( Context * context )
     StaticMesh::RegisterComponent( context );
     InfinitePlane::RegisterComponent( context );
     IcoPlanet::RegisterComponent( context );
+    DynamicCube::RegisterComponent( context );
     TestEnvironment::RegisterComponent( context );
+
+    RegisterPhysicsLibrary2( context );
 }
 
 

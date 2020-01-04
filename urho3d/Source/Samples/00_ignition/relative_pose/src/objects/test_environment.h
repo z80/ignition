@@ -18,6 +18,10 @@ public:
 
     void DelayedStart() override;
     bool ClientConnected( int id, const VariantMap & identity, String & errMsg ) override;
+
+protected:
+    void CreateReplicatedContentServer() override;
+    void CreateReplicatedContentClient( CameraFrame * camera ) override;
 };
 
 }

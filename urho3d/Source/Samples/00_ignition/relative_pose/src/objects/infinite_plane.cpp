@@ -44,6 +44,12 @@ Float InfinitePlane::distance( const Vector3d & r ) const
     return d;
 }
 
+void InfinitePlane::parentTeleported()
+{
+    if ( collision_shape_ && rigid_body_ )
+        setupPhysicsContent( rigid_body_, collision_shape_ );
+}
+
 void InfinitePlane::refStateChanged()
 {
     if ( !node_ )
@@ -84,8 +90,10 @@ void InfinitePlane::createVisualContent( Node * node )
 
 void InfinitePlane::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
 {
+    const Quaterniond q = relQ();
+    const Vector3d    r = relR();
     rb->SetMass( 0.0 );
-    cs->SetStaticPlane();
+    cs->SetStaticPlane( Vector3( r.x_, r.y_, r.z_ ), Quaternion( q.w_, q.x_, q.y_, q.z_) );
 }
 
 }

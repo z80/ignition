@@ -32,14 +32,17 @@ void ControllableItem::ApplyControls( const Controls & ctrl )
 
 bool ControllableItem::AcceptsControls( int userId ) const
 {
-    Vector<int>::ConstIterator it = selectedByUserIds_.Find( userId );
-    const bool resOk = (it != selectedByUserIds_.End());
-    return resOk;
+    return true;
 }
 
 bool ControllableItem::IsSelectable() const
 {
     return false;
+}
+
+void ControllableItem::Trigger( const VariantMap & data )
+{
+
 }
 
 void ControllableItem::SetCreatedBy( int userId )

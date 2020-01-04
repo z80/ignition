@@ -1,7 +1,9 @@
 
 #include "test_environment.h"
+#include "camera_frame.h"
 #include "static_mesh.h"
 #include "infinite_plane.h"
+#include "dynamic_cube.h"
 #include "ico_planet.h"
 
 namespace Ign
@@ -50,6 +52,22 @@ bool TestEnvironment::ClientConnected( int id, const VariantMap & identity, Stri
 {
 
     return true;
+}
+
+void TestEnvironment::CreateReplicatedContentServer()
+{
+
+}
+
+void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )
+{
+    Scene * s = GetScene();
+    if ( !s )
+        return;
+
+    DynamicCube * d = s->CreateComponent<DynamicCube>();
+    d->setR( Vector3d( 0.0, 5.0, 0.0 ) );
+    camera->setParent( d );
 }
 
 

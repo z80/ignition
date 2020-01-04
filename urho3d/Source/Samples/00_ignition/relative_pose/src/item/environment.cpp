@@ -977,6 +977,7 @@ void Environment::ApplyControls()
     // Compose id to Connection hash map.
     clientIds_.Clear();
     {
+        clientIds_.Insert( Pair<int, Connection *>( clientDesc_.id_, nullptr ) );
         for ( HashMap<Connection *, ClientDesc>::ConstIterator it=connections_.Begin();
               it!=connections_.End(); it++ )
         {
@@ -1007,11 +1008,17 @@ void Environment::ApplyControls()
         const bool isSelectable = rf->IsSelectable();
         if ( isSelectable )
         {
-            const Vector<int> selectedBy = rf->SelectedBy();
-            const unsigned selQty = selectedBy.Size();
-            for ( unsigned j=0; j<selQty; j++ )
+            const Vector<SharedPtr<RefFrame> > & children = rf->children_;
+            const unsigned childrenQty = children.Size();
+            for ( unsigned j=0; j<childrenQty; j++ )
             {
-                const int userId = selectedBy[j];
+                RefFrame * rf = children[i];
+                if ( !rf )
+                    continue;
+                CameraFrame * cf = rf->Cast<CameraFrame>();
+                if ( !cf )
+                    continue;
+                const int userId = cf->CreatedBy();
                 const bool acceptsUserCtrls = rf->AcceptsControls( userId );
                 if ( !acceptsUserCtrls )
                     continue;
@@ -1019,8 +1026,13 @@ void Environment::ApplyControls()
                 if ( it != clientIds_.End() )
                 {
                     Connection * conn = it->second_;
-                    const Controls ctrls = conn->GetControls();
-                    rf->ApplyControls( ctrls );
+                    if ( conn )
+                    {
+                        const Controls & ctrls = conn->GetControls();
+                        rf->ApplyControls( ctrls );
+                    }
+                    else
+                        rf->ApplyControls( controls_ );
                 }
             }
         }

@@ -24,6 +24,9 @@ public:
     virtual bool AcceptsControls( int userId ) const;
     virtual bool IsSelectable() const;
 
+    // Reaction on trigger (user who currently has this item selected hits space).
+    virtual void Trigger( const VariantMap & data );
+
     void SetCreatedBy( int userId );
     int  CreatedBy() const;
 

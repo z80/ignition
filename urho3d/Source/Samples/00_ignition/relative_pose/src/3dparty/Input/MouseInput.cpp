@@ -48,11 +48,14 @@ void MouseInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 	}
 
     // Do not move if the UI has a focused element (the console)
-    if ( GetSubsystem<UI>()->GetFocusElement() )
+    UI * ui = GetSubsystem<UI>();
+    if ( ui->GetFocusElement() )
         return;
 
-        if ( key == MOUSEB_LEFT )
-            select_ = true;
+    if ( key == MOUSEB_LEFT )
+        select_ = true;
+    else if ( key == MOUSEB_MIDDLE )
+        ui->GetCursor()->SetVisible( false );
 
 	if (_mappedKeyToControl.Contains(key)) {
 		auto* controllerInput = GetSubsystem<ControllerInput>();
@@ -79,17 +82,20 @@ void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
             SetMouseVisible( true );
     }
 
+    UI * ui = GetSubsystem<UI>();
     if ( (key == MOUSEB_LEFT) && select_ )
     {
         using namespace IgnEvents::SelectRequest;
         VariantMap & data = GetEventDataMap();
 
-        UI * ui = GetSubsystem<UI>();
         const IntVector2 pos = ui->GetCursorPosition();
         data[P_X] = pos.x_;
         data[P_Y] = pos.y_;
         SendEvent( IgnEvents::E_SELECT_REQUEST, data );
     }
+    else if ( key == MOUSEB_MIDDLE )
+        ui->GetCursor()->SetVisible( true );
+
     select_ = false;
 
     // Do not move if the UI has a focused element (the console)

@@ -73,10 +73,15 @@ RefFrame * CameraFrame::CameraOrigin()
     PhysicsItem * pi = p->Cast<PhysicsItem>();
     if ( !pi )
     {
-        computeRefState( pi );
-        return pi;
+        computeRefState( p );
+        return p;
     }
     RefFrame * p2 = pi->parent();
+    if ( !p2 )
+    {
+        computeRefState( p );
+        return p;
+    }
     PhysicsFrame * pf = p2->Cast<PhysicsFrame>();
     if ( pf )
     {

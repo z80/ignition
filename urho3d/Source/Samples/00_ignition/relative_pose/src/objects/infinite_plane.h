@@ -1,6 +1,6 @@
 
-#ifndef __INFINITE_PLAIN_H_
-#define __INFINITE_PLAIN_H_
+#ifndef __INFINITE_PLANE_H_
+#define __INFINITE_PLANE_H_
 
 #include "Urho3D/Urho3DAll.h"
 #include "physics_item.h"
@@ -20,6 +20,7 @@ public:
     Float distance( RefFrame * refFrame ) const override;
     Float distance( const Vector3d & r=Vector3d::ZERO ) const override;
     void refStateChanged() override;
+    void parentTeleported() override;
 
 protected:
     void createVisualContent( Node * n ) override;
