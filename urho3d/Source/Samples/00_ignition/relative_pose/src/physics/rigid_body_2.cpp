@@ -243,6 +243,31 @@ void RigidBody2::SetPosition(const Vector3& position)
     }
 }
 
+void RigidBody2::SetPositiond(const Vector3d & position)
+{
+    if (body_)
+    {
+        btTransform& worldTrans = body_->getWorldTransform();
+        const Vector3d com( centerOfMass_.x_, centerOfMass_.y_, centerOfMass_.z_ );
+        worldTrans.setOrigin(ToBtVector3d(position + ToQuaterniond(worldTrans.getRotation()) * com));
+
+        // When forcing the physics position, set also interpolated position so that there is no jitter
+        // When not inside the simulation loop, this may lead to erratic movement of parented rigidbodies
+        // so skip in that case. Exception made before first simulation tick so that interpolation position
+        // of e.g. instantiated prefabs will be correct from the start
+        if (!hasSimulated_ || physicsWorld_->IsSimulating())
+        {
+            btTransform interpTrans = body_->getInterpolationWorldTransform();
+            interpTrans.setOrigin(worldTrans.getOrigin());
+            body_->setInterpolationWorldTransform(interpTrans);
+        }
+
+        Activate();
+        MarkNetworkUpdate();
+    }
+}
+
+
 void RigidBody2::SetRotation(const Quaternion& rotation)
 {
     if (body_)
@@ -252,6 +277,35 @@ void RigidBody2::SetRotation(const Quaternion& rotation)
         worldTrans.setRotation(ToBtQuaternion(rotation));
         if (!centerOfMass_.Equals(Vector3::ZERO))
             worldTrans.setOrigin(ToBtVector3(oldPosition + rotation * centerOfMass_));
+
+        if (!hasSimulated_ || physicsWorld_->IsSimulating())
+        {
+            btTransform interpTrans = body_->getInterpolationWorldTransform();
+            interpTrans.setRotation(worldTrans.getRotation());
+            if (!centerOfMass_.Equals(Vector3::ZERO))
+                interpTrans.setOrigin(worldTrans.getOrigin());
+            body_->setInterpolationWorldTransform(interpTrans);
+        }
+
+        body_->updateInertiaTensor();
+
+        Activate();
+        MarkNetworkUpdate();
+    }
+}
+
+void RigidBody2::SetRotationd(const Quaterniond& rotation)
+{
+    if (body_)
+    {
+        Vector3d oldPosition = GetPositiond();
+        btTransform& worldTrans = body_->getWorldTransform();
+        worldTrans.setRotation(ToBtQuaterniond(rotation));
+        if (!centerOfMass_.Equals(Vector3::ZERO))
+        {
+            Vector3d com( centerOfMass_.x_, centerOfMass_.y_, centerOfMass_.z_ );
+            worldTrans.setOrigin(ToBtVector3d(oldPosition + rotation * com));
+        }
 
         if (!hasSimulated_ || physicsWorld_->IsSimulating())
         {
@@ -303,6 +357,17 @@ void RigidBody2::SetLinearVelocity(const Vector3& velocity)
     }
 }
 
+void RigidBody2::SetLinearVelocityd(const Vector3d& velocity)
+{
+    if (body_)
+    {
+        body_->setLinearVelocity(ToBtVector3d(velocity));
+        if (velocity != Vector3d::ZERO)
+            Activate();
+        MarkNetworkUpdate();
+    }
+}
+
 void RigidBody2::SetLinearFactor(const Vector3& factor)
 {
     if (body_)
@@ -340,6 +405,16 @@ void RigidBody2::SetAngularVelocity(const Vector3& velocity)
         MarkNetworkUpdate();
     }
 }
+
+void RigidBody2::SetAngularVelocityd(const Vector3d& velocity)
+{
+    if (body_)
+    {
+        body_->setAngularVelocity(ToBtVector3d(velocity));
+        if (velocity != Vector3d::ZERO)
+            Activate();
+        MarkNetworkUpdate();
+    }}
 
 void RigidBody2::SetAngularFactor(const Vector3& factor)
 {

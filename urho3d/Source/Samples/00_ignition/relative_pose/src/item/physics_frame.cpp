@@ -235,6 +235,9 @@ void PhysicsFrame::checkIfTeleport()
     {
         State st;
         o->relativeState( parent_, st );
+        st.q = Quaterniond::IDENTITY;
+        st.v = Vector3d::ZERO;
+        st.w = Vector3d::ZERO;
         {
             const String stri = String( "Teleporting to: (" ) +
                                 String( st.r.x_ ) + String( ", " ) +
@@ -312,33 +315,70 @@ bool PhysicsFrame::checkIfNeedToSplit()
 void PhysicsFrame::checkIfNeedToMerge()
 {
     SharedPtr<RefFrame> p = parent_;
-    if ( !p )
-        return;
     const Float mergeDist = Settings::dynamicsWorldDistanceInclude();
     const Vector3d r = relR();
-    userControlledList_ = p->children_;
-    unsigned qty = userControlledList_.Size();
-    for ( unsigned i=0; i<qty; i++ )
+    if ( p )
     {
-        SharedPtr<RefFrame> o = userControlledList_[i];
-        PhysicsFrame * pf = o->Cast<PhysicsFrame>();
-        if ( !pf )
-            continue;
-        if ( pf == this )
-            continue;
-        const Float dist = o->distance( r );
-        if ( dist > mergeDist )
-            continue;
-
-        // Move all objects to a different physics frame.
-        userControlledList2_ = pf->children_;
-        const unsigned qty = userControlledList2_.Size();
-        for ( unsigned j=0; j<qty; j++ )
+        userControlledList_ = p->children_;
+        unsigned qty = userControlledList_.Size();
+        for ( unsigned i=0; i<qty; i++ )
         {
-            SharedPtr<RefFrame> o = userControlledList2_[j];
-            o->setParent( this );
+            SharedPtr<RefFrame> o = userControlledList_[i];
+            PhysicsFrame * pf = o->Cast<PhysicsFrame>();
+            if ( !pf )
+                continue;
+            if ( pf == this )
+                continue;
+            const Float dist = pf->distance( r );
+            if ( dist > mergeDist )
+                continue;
+
+            // Move all objects to a different physics frame.
+            userControlledList2_ = pf->children_;
+            const unsigned qty = userControlledList2_.Size();
+            for ( unsigned j=0; j<qty; j++ )
+            {
+                SharedPtr<RefFrame> o = userControlledList2_[j];
+                o->setParent( this );
+            }
+            pf->Remove();
         }
-        pf->Remove();
+    }
+    else
+    {
+        Scene * s = GetScene();
+        if ( !s )
+            return;
+        const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+        const unsigned compsQty = comps.Size();
+        for ( unsigned i=0; i<compsQty; i++ )
+        {
+            Component * c = comps[i];
+            if ( !c )
+                continue;
+            PhysicsFrame * pf = c->Cast<PhysicsFrame>();
+            if ( !pf )
+                continue;
+            if ( pf == this )
+                continue;
+            // In this section check only frames with no parent.
+            if ( pf->parent_ )
+                continue;
+
+            const Float dist = pf->distance( r );
+            if ( dist > mergeDist )
+                continue;
+
+            // Move all objects to a different physics frame.
+            userControlledList2_ = pf->children_;
+            const unsigned qty = userControlledList2_.Size();
+            for ( unsigned j=0; j<qty; j++ )
+            {
+                SharedPtr<RefFrame> o = userControlledList2_[j];
+                o->setParent( this );
+            }
+            pf->Remove();
+        }
     }
 }
 

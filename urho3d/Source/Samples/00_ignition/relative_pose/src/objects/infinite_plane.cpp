@@ -34,7 +34,7 @@ Float InfinitePlane::distance( RefFrame * refFrame ) const
     this->relativePose( refFrame, rel_r, rel_q );
     const Vector3d a = rel_q * Vector3d( 0.0, 1.0, 0.0 );
 
-    const Float d = rel_r.DotProduct( a );
+    const Float d = -rel_r.DotProduct( a );
     return d;
 }
 

@@ -35,48 +35,47 @@ void PhysicsItem::setR( const Vector3d & r )
 {
     RefFrame::setR( r );
     if ( rigid_body_ )
-        rigid_body_->SetPosition( Vector3( r.x_, r.y_, r.z_ ) );
+        rigid_body_->SetPositiond( r );
 }
 
 void PhysicsItem::setQ( const Quaterniond & q )
 {
     RefFrame::setQ( q );
     if ( rigid_body_ )
-        rigid_body_->SetRotation( Quaternion( q.w_, q.x_, q.y_, q.z_ ) );
+        rigid_body_->SetRotationd( q );
 }
 
 void PhysicsItem::setV( const Vector3d & v )
 {
     RefFrame::setV( v );
     if ( rigid_body_ )
-        rigid_body_->SetLinearVelocity( Vector3( v.x_, v.y_, v.z_ ) );
+        rigid_body_->SetLinearVelocityd( v );
 }
 
 void PhysicsItem::setW( const Vector3d & w )
 {
     RefFrame::setW( w );
     if ( rigid_body_ )
-        rigid_body_->SetAngularVelocity( Vector3( w.x_, w.y_, w.z_ ) );
+        rigid_body_->SetAngularVelocityd( w );
 }
 
+void PhysicsItem::refStateChanged()
+{
+    const Vector3    r = refR().vector3();
+    const Quaternion q = refQ().quaternion();
+    visual_node_->SetTransform( r, q );
+}
 
 void PhysicsItem::updateStateFromRigidBody()
 {
     if ( !rigid_body_ )
         return;
     // Assign state variables from rigid body state.
-    const Vector3    r = rigid_body_->GetPosition();
-    const Quaternion q = rigid_body_->GetRotation();
-    const Vector3    v = rigid_body_->GetLinearVelocity();
-    const Vector3    w = rigid_body_->GetAngularVelocity();
-    st_.r = Vector3d( r.x_, r.y_, r.z_ );
-    st_.q = Quaterniond( q.w_, q.x_, q.y_, q.z_ );
-    st_.v = Vector3d( v.x_, v.y_, v.z_ );
-    st_.w = Vector3d( w.x_, w.y_, w.z_ );
+    st_.r = rigid_body_->GetPositiond();
+    st_.q = rigid_body_->GetRotationd();
+    st_.v = rigid_body_->GetLinearVelocityd();
+    st_.w = rigid_body_->GetAngularVelocityd();
 
-    if ( visual_node_ )
-        visual_node_->SetTransform( r, q );
-    
     MarkNetworkUpdate();
 }
 
@@ -114,10 +113,10 @@ void PhysicsItem::enteredRefFrame( RefFrame * refFrame )
     setupPhysicsContent( rigid_body_, collision_shape_ );
 
     // Assign state to rigid body.
-    rigid_body_->SetPosition( Vector3( st_.r.x_, st_.r.y_, st_.r.z_ ) );
-    rigid_body_->SetRotation( Quaternion( st_.q.w_, st_.q.x_, st_.q.y_, st_.q.z_ ) );
-    rigid_body_->SetLinearVelocity( Vector3( st_.v.x_, st_.v.y_, st_.v.z_ ) );
-    rigid_body_->SetAngularVelocity( Vector3( st_.w.x_, st_.w.y_, st_.v.z_ ) );
+    rigid_body_->SetPositiond( Vector3( st_.r.x_, st_.r.y_, st_.r.z_ ) );
+    rigid_body_->SetRotationd( Quaternion( st_.q.w_, st_.q.x_, st_.q.y_, st_.q.z_ ) );
+    rigid_body_->SetLinearVelocityd( Vector3( st_.v.x_, st_.v.y_, st_.v.z_ ) );
+    rigid_body_->SetAngularVelocityd( Vector3( st_.w.x_, st_.w.y_, st_.v.z_ ) );
 }
 
 void PhysicsItem::leftRefFrame( RefFrame * refFrame )

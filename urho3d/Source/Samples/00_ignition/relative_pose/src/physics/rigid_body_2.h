@@ -79,12 +79,15 @@ public:
     void SetMass(float mass);
     /// Set rigid body position in world space.
     void SetPosition(const Vector3& position);
+    void SetPositiond(const Vector3d & position);
     /// Set rigid body rotation in world space.
     void SetRotation(const Quaternion& rotation);
+    void SetRotationd(const Quaterniond& rotation);
     /// Set rigid body position and rotation in world space as an atomic operation.
     void SetTransform(const Vector3& position, const Quaternion& rotation);
     /// Set linear velocity.
     void SetLinearVelocity(const Vector3& velocity);
+    void SetLinearVelocityd(const Vector3d& velocity);
     /// Set linear degrees of freedom. Use 1 to enable an axis or 0 to disable. Default is all axes enabled (1, 1, 1).
     void SetLinearFactor(const Vector3& factor);
     /// Set linear velocity deactivation threshold.
@@ -93,6 +96,7 @@ public:
     void SetLinearDamping(float damping);
     /// Set angular velocity.
     void SetAngularVelocity(const Vector3& velocity);
+    void SetAngularVelocityd(const Vector3d& velocity);
     /// Set angular degrees of freedom. Use 1 to enable an axis or 0 to disable. Default is all axes enabled (1, 1, 1).
     void SetAngularFactor(const Vector3& factor);
     /// Set angular velocity deactivation threshold.

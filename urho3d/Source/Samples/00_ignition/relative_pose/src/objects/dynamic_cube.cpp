@@ -33,17 +33,19 @@ void DynamicCube::ApplyControls( const Controls & ctrl )
 
     const float TORQUE = 0.1;
     const float THRUST = 2.2 * 10.0;
+    const Quaterniond Q = relQ();
+    const Quaternion q( Q.w_, Q.x_, Q.y_, Q.z_ );
     const unsigned acts = ctrl.buttons_;
     if ( acts & CTRL_FORWARD )
-        rb->ApplyTorque( Vector3::LEFT * TORQUE );
+        rb->ApplyTorque( q*(Vector3::LEFT * TORQUE) );
     if ( acts & CTRL_BACK )
-        rb->ApplyTorque( -Vector3::LEFT * TORQUE );
+        rb->ApplyTorque( q*(-Vector3::LEFT * TORQUE) );
     if ( acts & CTRL_LEFT )
-        rb->ApplyTorque( Vector3::FORWARD * TORQUE );
+        rb->ApplyTorque( q*(Vector3::FORWARD * TORQUE) );
     if ( acts & CTRL_RIGHT )
-        rb->ApplyTorque( -Vector3::FORWARD * TORQUE );
+        rb->ApplyTorque( q*(-Vector3::FORWARD * TORQUE) );
     if ( thrustEnabled_ )
-        rb->ApplyForce( Vector3::UP * THRUST );
+        rb->ApplyForce( q*(Vector3::UP * THRUST) );
 }
 
 bool DynamicCube::IsSelectable() const

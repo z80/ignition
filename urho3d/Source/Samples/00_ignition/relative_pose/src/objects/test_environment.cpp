@@ -40,10 +40,10 @@ void TestEnvironment::CreateReplicatedContentServer()
 {
     Scene * s = GetScene();
 
-    InfinitePlane * p = s->CreateComponent<InfinitePlane>();
+    /*InfinitePlane * p = s->CreateComponent<InfinitePlane>();
     p->setName( "Infinite plane object" );
     p->setR( Vector3d::ZERO );
-    p->setQ( Quaterniond::IDENTITY );
+    p->setQ( Quaterniond::IDENTITY );*/
 
     StaticMesh * m = s->CreateComponent<StaticMesh>();
     m->setR( Vector3d( 10.0, 0.0, 0.0 ) );
@@ -56,8 +56,8 @@ void TestEnvironment::CreateReplicatedContentServer()
     m = s->CreateComponent<StaticMesh>();
     m->setR( Vector3d( 0.0, 12.0, 0.0 ) );
 
-    IcoPlanet * ip = s->CreateComponent<IcoPlanet>();
-    ip->setR( Vector3d( 0.0, 0.0, 20.0 ) );
+    /*IcoPlanet * ip = s->CreateComponent<IcoPlanet>();
+    ip->setR( Vector3d( 0.0, 0.0, 20.0 ) );*/
 }
 
 void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )

@@ -31,6 +31,7 @@ public:
     void setV( const Vector3d & v )    override;
     void setW( const Vector3d & w )    override;
 
+    void refStateChanged() override;
 
     /// This one is called by PhysicsFrame instance this item is in 
     /// after physics update step. 
