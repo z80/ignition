@@ -42,7 +42,7 @@ void RotatingFrame::evolveStep( Timestamp ticks_dt )
         if ( phase_ >= period_ )
             phase_ -= period_;
         const Float angle2 = 0.5 * PI2 * static_cast<Float>( phase_ ) / static_cast<Float>( period_ );
-        const Quaterniond q( std::cos( angle2 ), 0.0, std::sin( angle2 ), 0.0 );
+        const Quaterniond q( std::cos( angle2 ), 0.0, -std::sin( angle2 ), 0.0 );
         st_.q = orientation_ * q;
     }
 

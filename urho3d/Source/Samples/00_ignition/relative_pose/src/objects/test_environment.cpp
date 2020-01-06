@@ -5,6 +5,9 @@
 #include "infinite_plane.h"
 #include "dynamic_cube.h"
 #include "ico_planet.h"
+#include "rotating_frame.h"
+#include "orbiting_frame.h"
+#include "settings.h"
 
 namespace Ign
 {
@@ -58,6 +61,16 @@ void TestEnvironment::CreateReplicatedContentServer()
 
     /*IcoPlanet * ip = s->CreateComponent<IcoPlanet>();
     ip->setR( Vector3d( 0.0, 0.0, 20.0 ) );*/
+
+    {
+        RotatingFrame * rf = s->CreateComponent<RotatingFrame>();
+        rf->setR( Vector3d( 0.0, 0.0, 20.0 ) );
+        rf->SetPeriod( 10 * Settings::ticksPerSec() );
+
+        IcoPlanet * ip = s->CreateComponent<IcoPlanet>();
+        ip->setParent( rf );
+        ip->setR( Vector3d::ZERO );
+    }
 }
 
 void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )

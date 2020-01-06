@@ -50,12 +50,13 @@ public:
     void SetR( Float R );
     Float R() const;
 
-    void Launch( const Vector3d & r, const Vector3d & v );
+    bool Launch( const Vector3d & r, const Vector3d & v );
 
 public:
     Float GM_;
     Float R_;
     OrbitDesc orbitDesc;
+    bool active_;
 };
 
 

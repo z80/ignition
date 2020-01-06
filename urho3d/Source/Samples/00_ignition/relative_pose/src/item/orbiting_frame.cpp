@@ -70,6 +70,16 @@ void OrbitingFrame::RegisterObject( Context * context )
 OrbitingFrame::OrbitingFrame( Context * context )
     : EvolvingFrame( context )
 {
+    orbitDesc.gm = 1.0;
+    orbitDesc.eccentricity = 0.0;
+    orbitDesc.semimajorAxis = 1.0;
+
+    orbitDesc.eccentricAnomaly = 0.0;
+    orbitDesc.semiLatusRectum  = 1.0;
+    orbitDesc.periapsisTime    = 0;
+    orbitDesc.orbitalPeriod    = 1;
+
+    active_ = false;
 }
 
 OrbitingFrame::~OrbitingFrame()
@@ -78,6 +88,8 @@ OrbitingFrame::~OrbitingFrame()
 
 void OrbitingFrame::evolveStep( Timestamp ticks_dt )
 {
+    if ( !active_ )
+        return;
     orbitDesc.periapsisTime += ticks_dt;
     processGeneric( this, orbitDesc.periapsisTime );
 }
@@ -122,9 +134,12 @@ Float OrbitingFrame::R() const
     return R_;
 }
 
-void OrbitingFrame::Launch( const Vector3d & r, const Vector3d & v )
+bool OrbitingFrame::Launch( const Vector3d & r, const Vector3d & v )
 {
-    initGeneric( this, r, v );
+    const bool launchedOk = initGeneric( this, r, v );
+    enabled_ = launchedOk;
+
+    return launchedOk;
 }
 
 
