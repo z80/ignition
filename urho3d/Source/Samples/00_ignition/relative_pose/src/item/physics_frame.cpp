@@ -82,7 +82,8 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     physicsWorld_ = n->CreateComponent<PhysicsWorld2>( LOCAL );
 
     // Make smaller gravity for debugging.
-    physicsWorld_->SetGravity( Vector3( 0.0, -1.0, 0.0 ) );
+    //physicsWorld_->SetGravity( Vector3( 0.0, -1.0, 0.0 ) );
+    physicsWorld_->SetGravity( Vector3::ZERO );
 }
 
 void PhysicsFrame::updateChildStates()

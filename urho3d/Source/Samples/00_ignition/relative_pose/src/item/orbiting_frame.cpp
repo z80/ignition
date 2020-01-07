@@ -330,6 +330,8 @@ static void processGeneric( OrbitingFrame * of, Timestamp t )
         processElliptic( of, t, r, v );
     else
         processParabolic( of, t, r, v );
+    of->setR( r );
+    of->setV( v );
 }
 
 static void processHyperbolic( OrbitingFrame * of, Timestamp t, Vector3d & r, Vector3d & v )
@@ -510,7 +512,7 @@ static Float ellipticSolveE( const Float e, const Float M, const Float E )
     return En;
 }
 
-/*static Float speed( const Float gm, const Float a, const Float r, bool parabolic )
+static Float speed( const Float gm, const Float a, const Float r, bool parabolic )
 {
     if ( !parabolic )
     {
@@ -519,7 +521,7 @@ static Float ellipticSolveE( const Float e, const Float M, const Float E )
     }
     const Float v = std::sqrt( 2.0*gm/r );
     return v;
-}*/
+}
 
 static void velocity( OrbitingFrame * of, const Float f, Vector3d & v )
 {
@@ -531,8 +533,18 @@ static void velocity( OrbitingFrame * of, const Float f, Vector3d & v )
 
     const Float den = 1.0 + ecc*coF;
 
-    const Float vx = p*siF*( ecc*coF/den - 1.0 )/den;
-    const Float vy = p*( ecc*siF*siF/den + coF )/den;
+    Float vx = p*siF*( ecc*coF/den - 1.0 )/den;
+    Float vy = p*( ecc*siF*siF/den + coF )/den;
+    const Float d = std::sqrt( vx*vx + vy*vy );
+
+    const Float gm = of->orbitDesc.gm;
+    const Float a  = of->orbitDesc.semimajorAxis;
+    const Float r  = p/(1.0 + ecc*coF);
+    const bool parabolic = (ecc > (1.0-EPS)) && (ecc < (1.0+EPS));
+    const Float v_abs = speed( gm, a, r, parabolic );
+    vx = vx * v_abs / d;
+    vy = vy * v_abs / d;
+
 
     const Vector3d & ex = of->orbitDesc.ex;
     const Vector3d & ey = of->orbitDesc.ey;
