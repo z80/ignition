@@ -9,6 +9,8 @@
 #include "orbiting_frame.h"
 #include "settings.h"
 
+#include "Notifications.h"
+
 namespace Ign
 {
 
@@ -63,13 +65,32 @@ void TestEnvironment::CreateReplicatedContentServer()
     ip->setR( Vector3d( 0.0, 0.0, 20.0 ) );*/
 
     {
+        OrbitingFrame * of = s->CreateComponent<OrbitingFrame>();
+        of->SetGM( 50.0 );
+        of->setR( Vector3d( 0.0, 0.0, 80.0 ) );
+
         RotatingFrame * rf = s->CreateComponent<RotatingFrame>();
-        rf->setR( Vector3d( 0.0, 0.0, 20.0 ) );
+        rf->setParent( of );
+        rf->setR( Vector3d::ZERO );
         rf->SetPeriod( 10 * Settings::ticksPerSec() );
 
         IcoPlanet * ip = s->CreateComponent<IcoPlanet>();
         ip->setParent( rf );
         ip->setR( Vector3d::ZERO );
+
+        // Create orbiting element.
+        {
+            OrbitingFrame * of2 = s->CreateComponent<OrbitingFrame>();
+            of2->setParent( of );
+            of2->setR( Vector3d( 0.0, 20.0, 0.0 ) );
+            const bool launchOk = of2->Launch( Vector3d( 0.0, 20.0, 0.0 ), Vector3d( 1.0, 0.0, 0.0 ) );
+            const String stri = String( "Launch ok: " ) + String( launchOk ? "true" : "false" );
+            Notifications::AddNotification( GetContext(), stri );
+
+            ip = s->CreateComponent<IcoPlanet>();
+            ip->setParent( of2 );
+            ip->setR( Vector3d::ZERO );
+        }
     }
 }
 

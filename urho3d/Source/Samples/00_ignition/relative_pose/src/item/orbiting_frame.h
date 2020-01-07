@@ -30,7 +30,7 @@ class OrbitingFrame: public EvolvingFrame
 {
     URHO3D_OBJECT( OrbitingFrame, EvolvingFrame )
 public:
-    static void RegisterObject( Context * context );
+    static void RegisterComponent( Context * context );
 
     OrbitingFrame( Context * context );
     virtual ~OrbitingFrame();

@@ -42,7 +42,7 @@ static void velocity( OrbitingFrame * of, const Float f, Vector3d & v );
 
     
 
-void OrbitingFrame::RegisterObject( Context * context )
+void OrbitingFrame::RegisterComponent( Context * context )
 {
     context->RegisterFactory<OrbitingFrame>();
     URHO3D_COPY_BASE_ATTRIBUTES( EvolvingFrame );
@@ -70,6 +70,9 @@ void OrbitingFrame::RegisterObject( Context * context )
 OrbitingFrame::OrbitingFrame( Context * context )
     : EvolvingFrame( context )
 {
+    R_  = 1.0;
+    GM_ = 1.0;
+
     orbitDesc.gm = 1.0;
     orbitDesc.eccentricity = 0.0;
     orbitDesc.semimajorAxis = 1.0;
@@ -137,7 +140,7 @@ Float OrbitingFrame::R() const
 bool OrbitingFrame::Launch( const Vector3d & r, const Vector3d & v )
 {
     const bool launchedOk = initGeneric( this, r, v );
-    enabled_ = launchedOk;
+    active_ = launchedOk;
 
     return launchedOk;
 }
@@ -221,6 +224,8 @@ static bool initGeneric( OrbitingFrame * of, const Vector3d & r, const Vector3d 
         initElliptic( of, r, v );
     else
         initParabolic( of, r, v );
+
+    return true;
 }
 
 
@@ -329,11 +334,12 @@ static void processGeneric( OrbitingFrame * of, Timestamp t )
 
 static void processHyperbolic( OrbitingFrame * of, Timestamp t, Vector3d & r, Vector3d & v )
 {
+    const Float t_sec = Settings::secs( t );
     // Solve for eccentric anomaly "E".
     const Float a = of->orbitDesc.semimajorAxis;
     const Float gm = of->orbitDesc.gm;
     const Float n = std::sqrt( -(a*a*a)/gm );
-    const Float M = t/n;
+    const Float M = t_sec/n;
     Float & E = of->orbitDesc.eccentricAnomaly;
 
     const Float ecc = of->orbitDesc.eccentricity;
@@ -369,11 +375,12 @@ static void processHyperbolic( OrbitingFrame * of, Timestamp t, Vector3d & r, Ve
 
 static void processParabolic( OrbitingFrame * of, Timestamp t, Vector3d & r, Vector3d & v )
 {
+    const Float t_sec = Settings::secs( t );
     const Float gm = of->orbitDesc.gm;
     const Float p  = of->orbitDesc.semiLatusRectum;
     const Float rp = 0.5*p;
     const Float n = std::sqrt( gm/(2.0*rp*rp*rp) );
-    const Float A = 3.0/2.0*n*t;
+    const Float A = 3.0/2.0*n*t_sec;
     const Float B = std::pow( A + std::sqrt(A*A + 1.0), 1.0/3.0 );
     const Float f = 2.0 * std::atan( B - 1.0/B );
 
@@ -402,11 +409,12 @@ static void processParabolic( OrbitingFrame * of, Timestamp t, Vector3d & r, Vec
 
 static void processElliptic( OrbitingFrame * of, Timestamp t, Vector3d & r, Vector3d & v )
 {
+    const Float t_sec = Settings::secs(t);
     // Solve for eccentric anomaly "E".
     const Float a  = of->orbitDesc.semimajorAxis;
     const Float gm = of->orbitDesc.gm;
     const Float n = std::sqrt( (a*a*a)/gm );
-    const Float M = t/n;
+    const Float M = t_sec/n;
     Float & E = of->orbitDesc.eccentricAnomaly;
 
     const Float ecc = of->orbitDesc.eccentricity;
