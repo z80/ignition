@@ -59,7 +59,9 @@ protected:
     virtual void createVisualContent( Node * n );
     /// Set physical content parameters (mass, inertia tensor, collision shape, etc.).
     virtual void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs );
-
+    /// Called after physics update and before assigning state from rigid body.
+    /// Here is a chance to adjust rigid body state if needed.
+    virtual void physicsUpdate( RigidBody2 * rb );
 
     /// On server side it has a 
     /// 1) node 

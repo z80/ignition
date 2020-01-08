@@ -70,6 +70,7 @@ void PhysicsItem::updateStateFromRigidBody()
 {
     if ( !rigid_body_ )
         return;
+    physicsUpdate( rigid_body_ );
     // Assign state variables from rigid body state.
     st_.r = rigid_body_->GetPositiond();
     st_.q = rigid_body_->GetRotationd();
@@ -195,6 +196,10 @@ void PhysicsItem::createVisualContent( Node * n )
 }
 
 void PhysicsItem::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
+{
+}
+
+void PhysicsItem::physicsUpdate( RigidBody2 * rb )
 {
 }
 
