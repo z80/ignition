@@ -46,7 +46,7 @@ void PhysicsCharacterItem::setupPhysicsContent( RigidBody2 * rb, CollisionShape2
 
 void PhysicsCharacterItem::physicsUpdate( RigidBody2 * rb )
 {
-
+    orientRigidBody( rb );
 }
 
 void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
