@@ -23,6 +23,7 @@ public:
 protected:
     virtual void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs ) override;
     virtual void physicsUpdate( RigidBody2 * rb ) override;
+    virtual void orientRigidBody(RigidBody2 *rb );
 
     Float azimuth_;
 };
