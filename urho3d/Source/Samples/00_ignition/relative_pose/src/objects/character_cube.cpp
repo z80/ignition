@@ -7,7 +7,8 @@ namespace Ign
 
 void CharacterCube::RegisterComponent( Context * context )
 {
-
+    context->RegisterFactory<CharacterCube>();
+    URHO3D_COPY_BASE_ATTRIBUTES( PhysicsCharacterItem );
 }
 
 CharacterCube::CharacterCube( Context * context )
@@ -19,6 +20,11 @@ CharacterCube::CharacterCube( Context * context )
 CharacterCube::~CharacterCube()
 {
 
+}
+
+void CharacterCube::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
+{
+    PhysicsCharacterItem::DrawDebugGeometry( debug, depthTest );
 }
 
 void CharacterCube::ApplyControls( const Controls & ctrl )

@@ -18,6 +18,8 @@ public:
     CharacterCube( Context * context );
     virtual ~CharacterCube();
 
+    virtual void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) override;
+
     void ApplyControls( const Controls & ctrl ) override;
     bool AcceptsControls( int userId ) const override;
     bool IsSelectable() const override;

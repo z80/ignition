@@ -4,6 +4,7 @@
 #include "static_mesh.h"
 #include "infinite_plane.h"
 #include "dynamic_cube.h"
+#include "character_cube.h"
 #include "ico_planet.h"
 #include "rotating_frame.h"
 #include "orbiting_frame.h"
@@ -100,8 +101,10 @@ void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )
     if ( !s )
         return;
 
-    DynamicCube * d = s->CreateComponent<DynamicCube>();
-    d->setName( String( "DynamicCube object" ) );
+    //DynamicCube * d = s->CreateComponent<DynamicCube>();
+    //d->setName( String( "DynamicCube object" ) );
+    CharacterCube * d = s->CreateComponent<CharacterCube>();
+    d->setName( String( "CharacterCube object" ) );
     d->setR( Vector3d( 0.0, 5.0, 0.0 ) );
     camera->setParent( d );
 }
