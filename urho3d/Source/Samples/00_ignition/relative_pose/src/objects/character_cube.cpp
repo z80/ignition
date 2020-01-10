@@ -41,7 +41,6 @@ void CharacterCube::ApplyControls( const Controls & ctrl )
         rigid_body_->ApplyForce( q * Vector3::LEFT * MOVE_FORCE );
     else if ( ctrl.buttons_ & CTRL_RIGHT )
         rigid_body_->ApplyForce( q * Vector3::RIGHT * MOVE_FORCE );
-
 }
 
 bool CharacterCube::AcceptsControls( int userId ) const

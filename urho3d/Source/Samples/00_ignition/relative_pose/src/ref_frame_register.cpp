@@ -4,6 +4,7 @@
 #include "ref_frame.h"
 #include "physics_frame.h"
 #include "physics_item.h"
+#include "physics_character_item.h"
 #include "evolving_frame.h"
 #include "rotating_frame.h"
 #include "orbiting_frame.h"
@@ -17,6 +18,7 @@
 #include "infinite_plane.h"
 #include "ico_planet.h"
 #include "dynamic_cube.h"
+#include "character_cube.h"
 #include "test_environment.h"
 
 #include "physics_world_2.h"
@@ -29,7 +31,7 @@ void RegisterComponents( Context * context )
     RefFrame::RegisterComponent( context );
     PhysicsFrame::RegisterComponent( context );
     PhysicsItem::RegisterComponent( context );
-    PhysicsItem::RegisterComponent( context );
+    PhysicsCharacterItem::RegisterComponent( context );
     EvolvingFrame::RegisterComponent( context );
     RotatingFrame::RegisterComponent( context );
     OrbitingFrame::RegisterComponent( context );
@@ -43,6 +45,7 @@ void RegisterComponents( Context * context )
     InfinitePlane::RegisterComponent( context );
     IcoPlanet::RegisterComponent( context );
     DynamicCube::RegisterComponent( context );
+    CharacterCube::RegisterComponent( context );
     TestEnvironment::RegisterComponent( context );
 
     RegisterPhysicsLibrary2( context );

@@ -13,7 +13,7 @@ class PhysicsCharacterItem: public PhysicsItem
 {
     URHO3D_OBJECT( PhysicsCharacterItem, PhysicsItem )
 public:
-    void RegisterComponent( Context * context );
+    static void RegisterComponent( Context * context );
 
     PhysicsCharacterItem( Context * context );
     virtual ~PhysicsCharacterItem();
