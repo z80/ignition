@@ -60,6 +60,7 @@ void Main::CreateScene()
     // is also legal to place objects outside the volume but their visibility can then not be checked in a hierarchically
     // optimizing manner
     scene_->CreateComponent<Octree>( LOCAL );
+    scene_->CreateComponent<DebugRenderer>( LOCAL );
 
     // Create a child scene node (at world origin) and a StaticModel component into it. Set the StaticModel to show a simple
     // plane mesh with a "stone" material. Note that naming the scene nodes is optional. Scale the scene node larger

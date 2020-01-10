@@ -182,7 +182,7 @@ void Environment::PostUpdate( float timeStep )
     if ( drawDebugGeometry_ )
     {
         Scene * s = GetScene();
-        DebugRenderer * debug = GetSubsystem<DebugRenderer>();
+        DebugRenderer * debug = s->GetComponent<DebugRenderer>();
         DrawDebugGeometryRefFrames( s, debug, true );
     }
 }
