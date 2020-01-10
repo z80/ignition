@@ -10,6 +10,7 @@ namespace Ign
 {
 
 void DrawDebugGeometry( Node * n, DebugRenderer * debug, bool depthTest, bool recursive );
+void DrawDebugGeometryRefFrames( Scene * s, DebugRenderer * debug, bool depthTest );
 
 }
 

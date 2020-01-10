@@ -45,6 +45,7 @@ public:
     virtual void DelayedStart() override;
     void Stop() override;
     void Update( float timeStep ) override;
+    void PostUpdate( float timeStep ) override;
     //void FixedUpdate( float timeStep ) override; // Here controlls are appied.
 
     /// Network commands.
@@ -144,6 +145,9 @@ private:
     /// Client/Server functionality
     HashMap<Connection*, ClientDesc> connections_;
     HashMap<int, Connection *>       clientIds_;
+
+    /// Draw debug geometry.
+    bool drawDebugGeometry_;
 };
 
 }

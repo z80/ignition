@@ -11,6 +11,8 @@
 #include "ControllerInput.h"
 #include "Events3dparty.h"
 
+#include "debug_geometry.h"
+
 namespace Ign
 {
 
@@ -85,6 +87,8 @@ Environment::Environment( Context * context )
     Variant a;
     a = this;
     SetGlobalVar( StringHash( "Environment" ), a );
+
+    drawDebugGeometry_ = false;
 }
 
 Environment::~Environment()
@@ -117,7 +121,7 @@ void Environment::Start()
     LoadTranslations();
     SetupConsole();
     SubscribeToEvents();
-    SetUpdateEventMask( USE_UPDATE );
+    SetUpdateEventMask( USE_UPDATE | USE_POSTUPDATE );
 }
 
 void Environment::DelayedStart()
@@ -171,6 +175,16 @@ void Environment::Update( float timeStep )
     // This runs locally.
     // Update all RefFrame objects based on current user id.
     ProcessLocalVisuals();
+}
+
+void Environment::PostUpdate( float timeStep )
+{
+    if ( drawDebugGeometry_ )
+    {
+        Scene * s = GetScene();
+        DebugRenderer * debug = GetSubsystem<DebugRenderer>();
+        DrawDebugGeometryRefFrames( s, debug, true );
+    }
 }
 
 void Environment::StartServer( int port )
@@ -804,6 +818,10 @@ void Environment::HandleKeyDown( StringHash eventType, VariantMap & eventData )
         if (!c)
             return;
         //c->SetVisible( false );
+    }
+    else if ( key == KEY_F3 )
+    {
+        drawDebugGeometry_ = !drawDebugGeometry_;
     }
 }
 
