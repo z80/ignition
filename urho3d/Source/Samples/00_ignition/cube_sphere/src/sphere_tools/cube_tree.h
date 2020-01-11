@@ -15,8 +15,8 @@ class CubeTree;
 class Plane
 {
 public:
-    Point3d r;
-    Point3d a;
+    Vector3d r;
+    Vector3d a;
 
     Plane();
     ~Plane();
@@ -33,15 +33,13 @@ public:
     CubeTreeNode( const CubeTreeNode & inst );
     const CubeTreeNode & operator=( const CubeTreeNode & inst );
 
-    CubeTreeNode & parent();
-
     bool inside( const Vector3d & pt ) const;
     bool hasChildren() const;
     bool subdrive();
 
     void vertices( Vector3d * verts ) const;
     void planes( Plane * planes ) const;
-    bool intersectsRay( const Vector3d & start, const Vector3d & end ) const;
+    //bool intersectsRay( const Vector3d & start, const Vector3d & end ) const;
 
     CubeTree * tree;
     int absIndex;
@@ -73,7 +71,6 @@ public:
     //void addNodePts3( const Camera & c, const ONode2 & n, std::vector<int> & ptInds ) const;
 
     bool parent( const CubeTreeNode & node, CubeTreeNode * & parent );
-    void destroyNode( const CubeTreeNode & node );
 
     int  insertNode( CubeTreeNode & node );
     void updateNode( const CubeTreeNode & node );

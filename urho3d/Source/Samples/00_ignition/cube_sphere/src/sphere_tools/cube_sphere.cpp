@@ -132,8 +132,8 @@ bool Face::subdrive(Cubesphere * s, Source * src )
         const int vertIndA = vertexInds[indA];
         const int vertIndB = vertexInds[indB];
         const EdgeHash hashN( vertIndA, vertIndB );
-        std::map<EdgeHash, int>::const_iterator it = s->lookup.find( hashN );
-        if ( it == s->lookup.end() )
+        HashMap<EdgeHash, int>::ConstIterator it = s->lookup.Find( hashN );
+        if ( it == s->lookup.End() )
         {
             const Vertex & va = s->verts[vertIndA];
             const Vertex & vb = s->verts[vertIndB];
@@ -145,12 +145,12 @@ bool Face::subdrive(Cubesphere * s, Source * src )
             v.b = vertIndB;
             const int newInd = (int)s->verts.Size();
             s->verts.Push( v );
-            s->lookup.insert( std::pair<EdgeHash, int>( hashN, newInd ) );
+            s->lookup.Insert( Pair<EdgeHash, int>( hashN, newInd ) );
             newVertInds[i] = newInd;
         }
         else
         {
-            const int vertInd = it->second;
+            const int vertInd = it->second_;
             //Vertex & v = s->verts[vertInd];
             newVertInds[i] = vertInd;
         }
