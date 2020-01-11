@@ -85,7 +85,13 @@ public:
     Face( const Face & inst );
     const Face & operator=( const Face & inst );
     bool subdrive( Cubesphere * s, Source * src );
-    bool inside( Cubesphere * s, const Vector3d & a, bool checkSide=false ) const;
+
+    bool correctSide( const Vector3d & n, const Vector3d & a ) const;
+    // From 3d space to a face of a unit cube.
+    bool centralProjection( const Vector3d & n, const Vector3d & a Vector3d & proj ) const;
+    // Vector "a" should be already projected on appropriate face.
+    // E.i. "correctSide()" and "centralPRojection()" should be already done.
+    bool inside( Cubesphere * s, const Vector3d & a, const Float eps= 0.1 ) const;
 };
 
 class EdgeHash

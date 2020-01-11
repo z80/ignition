@@ -218,59 +218,54 @@ bool Face::subdrive(Cubesphere * s, Source * src )
     return true;
 }
 
-bool Face::inside( Cubesphere * s, const Vector3d & a, bool checkSide ) const
+bool Face::inside( Cubesphere * s, const Vector3d & a, const Float eps ) const
 {
-    if ( checkSide )
+    const Vertex & v0 = s->verts[ vertexInds[0] ];
+    const Vertex & v1 = s->verts[ vertexInds[1] ];
+    const Vertex & v2 = s->verts[ vertexInds[2] ];
+    const Vertex & v3 = s->verts[ vertexInds[3] ];
+    const Vector3d at = (v0.at + v1.at + v2.at + v3.at) * 0.25;
+    const Vector3d a30 = v3.at - v0.at;
+    const Vector3d a10 = v1.at - v0.at;
+    const Vector3d n = a31.CrossProduct( a10 );
+    const Float a30Len2 = a30.LengthSquared();
+    const Float a10Len2 = a10.LengthSquared();
+    const Vector3d d = a - v0.at;
+    const projX = d.DotProduct( a10 ) / a10Len2;
+    if ( ( projX < -eps ) || (projX > (1.0+eps)) )
+        return false;
+    const projY = d.DotProduct( a30 ) / a30Len2;
+    if ( ( projY < -eps ) || (projY > (1.0+eps)) )
+        return false;
 
     return true;
-}
+
 
 bool Face::correctSide( const Vector3d & n, const Vector3d & a ) const
 {
-    const Float MARGIN = 0.5;
-    {
-        const Vector3d X( 1.0, 0.0, 0.0 );
-        const Vector3d t = X.DotProduct( n );
-        if ( t > margin )
-        {
-            const Float x = a.x_;
-            const Float y = (a.y_ > 0.0) ? a.y_ : -a.y_;
-            const Float z = (a.z_ > 0.0) ? a.z_ : -a.z_;
-            if ( ( x > y ) && ( x > z ) )
-                return true;
-        }
-        else if ( t < -margin )
-        {
-            const Float x = -a.x_;
-            const Float y = (a.y_ > 0.0) ? a.y_ : -a.y_;
-            const Float z = (a.z_ > 0.0) ? a.z_ : -a.z_;
-            if ( ( x > y ) && ( x > z ) )
-                return true;
-        }
-    }
-
-    {
-        const Vector3d Y( 0.0, 1.0, 0.0 );
-        const Vector3d t = Y.DotProduct( n );
-        if ( t > margin )
-        {
-            const Float y = a.y_;
-            const Float x = (a.x_ > 0.0) ? a.x_ : -a.x_;
-            const Float z = (a.z_ > 0.0) ? a.z_ : -a.z_;
-            if ( ( y > x ) && ( y > z ) )
-                return true;
-        }
-        else if ( t < -margin )
-        {
-            const Float y = -a.y_;
-            const Float x = (a.x_ > 0.0) ? a.x_ : -a.x_;
-            const Float z = (a.z_ > 0.0) ? a.z_ : -a.z_;
-            if ( ( y > x ) && ( y > z ) )
-                return true;
-        }
-    }
+    const Float    projLen = n.DotProduct( a );
+    const Vector3d proj = n * projLen;
+    const Vector3d norm = a - proj;
+    const Float projLen = proj.Lenght();
+    const Float normLen = norm.Lenght();
+    const bool ok = ( projLen >= normLen );
     
-    return false;
+    return ok;
+}
+
+bool Face::centralProjection( const Vector3d & n, const Vector3d & a, Vector3d & proj ) const
+{
+    // Anything smaller than 0.5 should work. Right?
+    const Float EPS = 0.3;
+    // Project on face plane.
+    // But not perpendicular projection.
+    // It is a projection along "a" in such a way that makes (a, n) = 1.
+    const Float a_n = a.DotProduct( n );
+    if ( a_n < EPS )
+        return false;
+    
+    proj = a / a_n;
+    return true;
 }
 
 EdgeHash::EdgeHash()
