@@ -38,6 +38,7 @@ public:
 
     bool inside( const Vector3d & pt ) const;
     bool hasChildren() const;
+    bool hasPoints() const;
     bool subdrive();
 
     void vertices( Vector3d * verts ) const;
@@ -62,7 +63,7 @@ public:
 class CubeTree
 {
 public:
-    CubeTree( int maxLvl=5 );
+    CubeTree( int maxLvl=5, Float margin = 0.01 );
     ~CubeTree();
 
     void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) const;
@@ -87,7 +88,7 @@ public:
 
     // Maximum subdivision level.
     int maxDepth;
-    int maxPtsPerNode;
+    Float margin;
 };
 
 

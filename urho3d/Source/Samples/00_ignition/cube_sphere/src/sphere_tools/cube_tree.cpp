@@ -71,7 +71,7 @@ void CubeTreeNode::DrawDebugGeometry( const float scale, DebugRenderer * debug, 
 {
     const Color PT_COLOR      = Color::GRAY;
     const Color PT_COLOR_LEAF = Color::CYAN;
-    const bool leafNode = !this->hasChildren();
+    const bool leafNode = this->hasPoints();
     const Color C = leafNode ? PT_COLOR_LEAF : PT_COLOR;
 
     Vector3d vd[8];
@@ -131,19 +131,20 @@ const CubeTreeNode & CubeTreeNode::operator=( const CubeTreeNode & inst )
 
 bool CubeTreeNode::inside( const Vector3d & pt ) const
 {
-    if ( pt.x_ > ( center.x_ + size2 ) )
+    const Float sz = size2 + tree->margin;
+    if ( pt.x_ > ( center.x_ + sz ) )
         return false;
-    if ( pt.x_ < ( center.x_ - size2 ) )
-        return false;
-
-    if ( pt.y_ > ( center.y_ + size2 ) )
-        return false;
-    if ( pt.y_ < ( center.y_ - size2 ) )
+    if ( pt.x_ < ( center.x_ - sz ) )
         return false;
 
-    if ( pt.z_ > ( center.z_ + size2 ) )
+    if ( pt.y_ > ( center.y_ + sz ) )
         return false;
-    if ( pt.z_ < ( center.z_ - size2 ) )
+    if ( pt.y_ < ( center.y_ - sz ) )
+        return false;
+
+    if ( pt.z_ > ( center.z_ + sz ) )
+        return false;
+    if ( pt.z_ < ( center.z_ - sz ) )
         return false;
 
     return true;
@@ -162,6 +163,12 @@ bool CubeTreeNode::hasChildren() const
     }
 
     return false;
+}
+
+bool CubeTreeNode::hasPoints() const
+{
+    const bool res = !ptInds.Empty();
+    return res;
 }
 
 bool CubeTreeNode::subdrive()
@@ -259,7 +266,9 @@ bool CubeTreeNode::subdrive()
             {
                 nn[i].ptInds.Push( ind );
                 qtys[i] += 1;
-                break;
+                // One point can be in multiple nodes
+                // so don't break.
+                //break;
             }
         }
 
@@ -268,7 +277,7 @@ bool CubeTreeNode::subdrive()
 
     for ( int i=0; i<8; i++ )
     {
-        if ( qtys[i] > tree->maxPtsPerNode )
+        if ( qtys[i] > 0 )
             nn[i].subdrive();
         tree->nodes[ nn[i].absIndex ] = nn[i];
     }
@@ -364,10 +373,11 @@ void CubeTreeNode::planes( Plane * planes ) const
 
 
 
-CubeTree::CubeTree( int maxLvl )
+CubeTree::CubeTree( int maxLvl, Float mgn )
 {
     // Initialize counters and parameters.
-    maxDepth      = maxLvl;
+    maxDepth = maxLvl;
+    margin   = mgn;
 }
 
 CubeTree::~CubeTree()
@@ -377,7 +387,7 @@ CubeTree::~CubeTree()
 
 void CubeTree::DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) const
 {
-    const float SCALE = 1.0;
+    const float SCALE = 30.0;
     const float SZ    = 1.0;
     const Color PT_COLOR = Color::RED;
 
