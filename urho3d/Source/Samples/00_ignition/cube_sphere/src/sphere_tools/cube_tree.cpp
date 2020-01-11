@@ -218,10 +218,10 @@ bool CubeTreeNode::subdrive()
     nn[7].center.z_ += chSize2;
 
     // Need to assign center and size
-    for ( Vector<int>::ConstIterator it=ptInds.Begin();
+    for ( Vector<unsigned>::ConstIterator it=ptInds.Begin();
           it!=ptInds.End(); it++ )
     {
-        const int ind = *it;
+        const unsigned ind = *it;
         const Vector3d & pt3 = tree->pts3d[ind];
 
         for ( int i=0; i<8; i++ )
@@ -335,11 +335,10 @@ void CubeTreeNode::planes( Plane * planes ) const
 
 
 
-CubeTree::CubeTree( int maxPtsPerNode, int maxLvl )
+CubeTree::CubeTree(int maxLvl )
 {
     // Initialize counters and parameters.
-    this->maxDepth      = maxLvl;
-    this->maxPtsPerNode = maxPtsPerNode;
+    maxDepth      = maxLvl;
 }
 
 CubeTree::~CubeTree()
@@ -360,8 +359,57 @@ const CubeTree & CubeTree::operator=( const CubeTree & inst )
         nodes         = inst.nodes;
 
         maxDepth      = inst.maxDepth;
-        maxPtsPerNode = inst.maxPtsPerNode;
     }
+    return *this;
+}
+
+const CubeTree & CubeTree::operator=( const Vector<Vector3d> & pts )
+{
+    nodes.Clear();
+    pts3d = pts;
+
+    Vector3d ptMin = Vector3d::ZERO;
+    Vector3d ptMax = Vector3d::ZERO;
+
+    // First compute bounding box for all 3d points.
+    const unsigned qty = pts3d.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        const Vector3d & r = pts3d[i];
+        if ( ptMin.x_ > r.x_ )
+            ptMin.x_ = r.x_;
+        if ( ptMax.x_ < r.x_ )
+            ptMax.x_ = r.x_;
+        if ( ptMin.y_ > r.y_ )
+            ptMin.y_ = r.y_;
+        if ( ptMax.y_ < r.y_ )
+            ptMax.y_ = r.y_;
+        if ( ptMin.z_ > r.z_ )
+            ptMin.z_ = r.z_;
+        if ( ptMax.z_ < r.z_ )
+            ptMax.z_ = r.z_;
+    }
+
+    const Float la = ptMin.Length();
+    const Float lb = ptMax.Length();
+    const Float s_ = ( la > lb ) ? la : lb;
+    const Float s = s_ * 1.1;
+
+    CubeTreeNode r;
+    r.level = 0;
+    r.center = Vector3d::ZERO;
+    r.size2 = s;
+    r.tree  = this;
+    nodes.Push( r );
+
+    CubeTreeNode & n = nodes[0];
+    r.ptInds.Reserve( qty );
+    for ( unsigned i=0; i<qty; i++ )
+        r.ptInds.Push( i );
+
+    r.subdrive();
+    nodes[0] = r;
+
     return *this;
 }
 
@@ -380,10 +428,10 @@ bool CubeTree::parent( const CubeTreeNode & node, CubeTreeNode * & parent )
 int  CubeTree::insertNode( CubeTreeNode & node )
 {
     nodes.Push( node );
-    const int ind = static_cast<int>(nodes.Size()) - 1;
+    const unsigned ind = nodes.Size() - 1;
     nodes[ind].tree     = this;
-    nodes[ind].absIndex = ind;
-    return ind;
+    nodes[ind].absIndex = static_cast<int>( ind );
+    return static_cast<int>( ind );
 }
 
 void CubeTree::updateNode( const CubeTreeNode & node )

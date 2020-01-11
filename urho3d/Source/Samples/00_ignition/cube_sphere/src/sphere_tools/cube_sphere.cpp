@@ -265,6 +265,15 @@ const EdgeHash & EdgeHash::operator=( const EdgeHash & inst )
     return *this;
 }
 
+unsigned EdgeHash::ToHash() const
+{
+    long long a = 0;
+    for ( int i=0; i<EDGE_HASH_SZ; i++ )
+        a = (a << 8) + d[i];
+    const unsigned h = MakeHash( a );
+    return h;
+}
+
 bool operator<( const EdgeHash & a, const EdgeHash & b )
 {
     for ( int i=0; i<EDGE_HASH_SZ; i++ )
@@ -382,7 +391,7 @@ void Cubesphere::clear()
 {
     verts.Clear();
     faces.Clear();
-    lookup.clear();
+    lookup.Clear();
 }
 
 void Cubesphere::applySource( Source * src )

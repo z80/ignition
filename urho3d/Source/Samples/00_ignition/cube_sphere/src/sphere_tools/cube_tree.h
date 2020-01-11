@@ -53,17 +53,18 @@ public:
     Float    size2; // Size over 2.
     Vector3d center;
 
-    Vector<int> ptInds;
+    Vector<unsigned> ptInds;
 };
 
 class CubeTree
 {
 public:
-    CubeTree( int maxPtsPerNode=25, int maxLvl=30 );
+    CubeTree( int maxLvl=5 );
     ~CubeTree();
 
     CubeTree( const CubeTree & inst );
     const CubeTree & operator=( const CubeTree & inst );
+    const CubeTree & operator=( const Vector<Vector3d> & pts );
 
     //void operator=( const Keypoint3d::Map & pts3 );
     //void visiblePts3( const Camera & c, std::vector<int> & ptInds ) const;

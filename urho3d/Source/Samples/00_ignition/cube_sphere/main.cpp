@@ -13,8 +13,8 @@ URHO3D_DEFINE_APPLICATION_MAIN(Main)
 Main::Main(Context* context) :
     BaseApp(context)
 {
-    Ign::RegisterComponents( context );
-    Ign::Register3dparty( context );
+    //Ign::RegisterComponents( context );
+    //Ign::Register3dparty( context );
 }
 
 void Main::Start()

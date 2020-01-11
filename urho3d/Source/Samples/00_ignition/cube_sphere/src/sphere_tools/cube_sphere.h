@@ -79,6 +79,7 @@ public:
     EdgeHash( int a, int b );
     EdgeHash( const EdgeHash & inst );
     const EdgeHash & operator=( const EdgeHash & inst );
+    unsigned ToHash() const;
     friend bool operator<( const EdgeHash & a, const EdgeHash & b );
     friend bool operator==( const EdgeHash & a, const EdgeHash & b );
 };
