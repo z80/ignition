@@ -218,7 +218,7 @@ bool Face::subdrive(Cubesphere * s, Source * src )
     return true;
 }
 
-bool Face::inside( Cubesphere * s, const Vector3d & a, const Float eps ) const
+bool Face::inside( Cubesphere * s, const Vector3d & a, const Float sz ) const
 {
     const Vertex & v0 = s->verts[ vertexInds[0] ];
     const Vertex & v1 = s->verts[ vertexInds[1] ];
@@ -228,14 +228,14 @@ bool Face::inside( Cubesphere * s, const Vector3d & a, const Float eps ) const
     const Vector3d a30 = v3.at - v0.at;
     const Vector3d a10 = v1.at - v0.at;
     const Vector3d n = a31.CrossProduct( a10 );
-    const Float a30Len2 = a30.LengthSquared();
-    const Float a10Len2 = a10.LengthSquared();
     const Vector3d d = a - v0.at;
-    const projX = d.DotProduct( a10 ) / a10Len2;
-    if ( ( projX < -eps ) || (projX > (1.0+eps)) )
+    const Float a10Len = a10.Length();
+    const projX = d.DotProduct( a10 ) / a10Len;
+    if ( ( projX < -sz ) || (projX > (q10Len+sz)) )
         return false;
-    const projY = d.DotProduct( a30 ) / a30Len2;
-    if ( ( projY < -eps ) || (projY > (1.0+eps)) )
+    const Float a30Len = a30.Length();
+    const projY = d.DotProduct( a30 ) / a30Len;
+    if ( ( projY < -sz ) || (projY > (a30Len+sz)) )
         return false;
 
     return true;

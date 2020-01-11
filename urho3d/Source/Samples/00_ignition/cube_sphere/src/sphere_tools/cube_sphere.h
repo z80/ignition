@@ -40,6 +40,10 @@ public:
     SubdriveSource();
     virtual ~SubdriveSource();
 
+    // Based on changed interest points determines if 
+    // need to recomute subdivision. 
+    virtual bool needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts ) = 0;
+    // Determines if a particular face should be subdriven.
     virtual bool needSubdrive( const Cubesphere * s, const Face * f ) const = 0;
 };
 
@@ -91,7 +95,8 @@ public:
     bool centralProjection( const Vector3d & n, const Vector3d & a Vector3d & proj ) const;
     // Vector "a" should be already projected on appropriate face.
     // E.i. "correctSide()" and "centralPRojection()" should be already done.
-    bool inside( Cubesphere * s, const Vector3d & a, const Float eps= 0.1 ) const;
+    // "sz" allows to select all the faces within an area of size "sz".
+    bool inside( Cubesphere * s, const Vector3d & a, const Float sz=0.1 ) const;
 };
 
 class EdgeHash
