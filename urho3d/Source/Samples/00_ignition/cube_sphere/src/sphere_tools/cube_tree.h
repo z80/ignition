@@ -50,7 +50,6 @@ public:
     // Child indices in OTree dictionary.
     int children[8];
 
-    Float    value;
     Float    size2; // Size over 2.
     Vector3d center;
 
