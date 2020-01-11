@@ -6,6 +6,7 @@
 
 #include <Urho3D/DebugNew.h>
 
+#include "cube_tree.h"
 
 
 URHO3D_DEFINE_APPLICATION_MAIN(Main)
@@ -15,6 +16,8 @@ Main::Main(Context* context) :
 {
     //Ign::RegisterComponents( context );
     //Ign::Register3dparty( context );
+
+    Ign::CubeTreeComponent::RegisterComponent( context );
 }
 
 void Main::Start()
@@ -35,9 +38,9 @@ void Main::Start()
     SubscribeToEvents();
 
     // Set the mouse mode to use in the sample
-    //BaseApp::InitMouseMode(MM_RELATIVE);
+    BaseApp::InitMouseMode(MM_RELATIVE);
 
-    BaseApp::InitMouseMode( MM_FREE );
+    //BaseApp::InitMouseMode( MM_FREE );
 
 
     CreateEnvironment();
@@ -165,7 +168,8 @@ void Main::MoveCamera(float timeStep)
 void Main::SubscribeToEvents()
 {
     // Subscribe HandleUpdate() function for processing update events
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Main, HandleUpdate));
+    SubscribeToEvent(E_UPDATE,     URHO3D_HANDLER(Main, HandleUpdate));
+    SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Main, HandlePostUpdate));
 }
 
 void Main::HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -176,7 +180,17 @@ void Main::HandleUpdate(StringHash eventType, VariantMap& eventData)
     float timeStep = eventData[P_TIMESTEP].GetFloat();
 
     // Move the camera, scale movement with time step
-    //MoveCamera(timeStep);
+    MoveCamera(timeStep);
+}
+
+void Main::HandlePostUpdate( StringHash eventType, VariantMap & eventData )
+{
+    DebugRenderer * d = scene_->GetComponent<DebugRenderer>();
+    using namespace Ign;
+    CubeTreeComponent * c = scene_->GetComponent<CubeTreeComponent>();
+    if ( !c )
+        return;
+    c->DrawDebugGeometry( d, true );
 }
 
 
@@ -184,6 +198,14 @@ void Main::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void Main::CreateEnvironment()
 {
+    using namespace Ign;
+    CubeTreeComponent * c = scene_->CreateComponent<CubeTreeComponent>();
+
+    Vector<Vector3d> v;
+    v.Push( Vector3d( 1.0, 0.0, 0.0 ) );
+    c->tree_ = v;
+
+    scene_->CreateComponent<DebugRenderer>();
 }
 
 void Main::CreateMainMenu()

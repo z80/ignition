@@ -3,7 +3,7 @@ set( TARGET_NAME 00_sphere_utils )
 
 include_directories( "./src"
                      "./src/math"
-                     "./src/sphere_utils"
+                     "./src/sphere_tools"
                      )
 
 file( GLOB_RECURSE src src/*.cpp )

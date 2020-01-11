@@ -44,6 +44,8 @@ private:
     /// Handle the logic update event.
     void HandleUpdate( StringHash eventType, VariantMap & eventData );
 
+    void HandlePostUpdate( StringHash eventType, VariantMap & eventData );
+
 
 
     void CreateEnvironment();

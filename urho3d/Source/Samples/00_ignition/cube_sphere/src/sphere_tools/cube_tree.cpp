@@ -67,6 +67,35 @@ CubeTreeNode::~CubeTreeNode()
 
 }
 
+void CubeTreeNode::DrawDebugGeometry( const float scale, DebugRenderer * debug, bool depthTest ) const
+{
+    const Color PT_COLOR      = Color::GRAY;
+    const Color PT_COLOR_LEAF = Color::CYAN;
+    const bool leafNode = !this->hasChildren();
+    const Color C = leafNode ? PT_COLOR_LEAF : PT_COLOR;
+
+    Vector3d vd[8];
+    vertices( vd );
+    Vector3 v[8];
+    for ( int i=0; i<8; i++ )
+        v[i] = Vector3( vd[i].x_, vd[i].y_, vd[i].z_ ) * scale;
+
+    debug->AddLine( v[0], v[1], C, depthTest );
+    debug->AddLine( v[0], v[2], C, depthTest );
+    debug->AddLine( v[1], v[3], C, depthTest );
+    debug->AddLine( v[2], v[3], C, depthTest );
+
+    debug->AddLine( v[4], v[5], C, depthTest );
+    debug->AddLine( v[4], v[6], C, depthTest );
+    debug->AddLine( v[5], v[7], C, depthTest );
+    debug->AddLine( v[6], v[7], C, depthTest );
+
+    debug->AddLine( v[0], v[4], C, depthTest );
+    debug->AddLine( v[1], v[5], C, depthTest );
+    debug->AddLine( v[2], v[6], C, depthTest );
+    debug->AddLine( v[3], v[7], C, depthTest );
+}
+
 CubeTreeNode::CubeTreeNode( const CubeTreeNode & inst )
 {
     *this = inst;
@@ -335,7 +364,7 @@ void CubeTreeNode::planes( Plane * planes ) const
 
 
 
-CubeTree::CubeTree(int maxLvl )
+CubeTree::CubeTree( int maxLvl )
 {
     // Initialize counters and parameters.
     maxDepth      = maxLvl;
@@ -344,6 +373,30 @@ CubeTree::CubeTree(int maxLvl )
 CubeTree::~CubeTree()
 {
 
+}
+
+void CubeTree::DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) const
+{
+    const float SCALE = 1.0;
+    const float SZ    = 1.0;
+    const Color PT_COLOR = Color::RED;
+
+    if ( !debug )
+        return;
+    const unsigned ptsQty = pts3d.Size();
+    for ( unsigned i=0; i<ptsQty; i++ )
+    {
+        const Vector3d & pt3 = pts3d[i];
+        const Vector3 at = Vector3( pt3.x_, pt3.y_, pt3.z_ ) * SCALE;
+        debug->AddCross( at, SZ, PT_COLOR, depthTest );
+    }
+
+    const unsigned nodesQty = nodes.Size();
+    for ( unsigned i=0; i<nodesQty; i++ )
+    {
+        const CubeTreeNode & n = nodes[i];
+        n.DrawDebugGeometry( SCALE, debug, depthTest );
+    }
 }
 
 CubeTree::CubeTree( const CubeTree & inst )
@@ -449,6 +502,29 @@ bool CubeTree::nodeInvisible( const Vector3d & c, const CubeTreeNode & n ) const
 
 
 
+
+
+
+void CubeTreeComponent::RegisterComponent( Context * context )
+{
+    context->RegisterFactory<CubeTreeComponent>();
+}
+
+CubeTreeComponent::CubeTreeComponent( Context * context )
+    : Component( context )
+{
+
+}
+
+CubeTreeComponent::~CubeTreeComponent()
+{
+
+}
+
+void CubeTreeComponent::DrawDebugGeometry( DebugRenderer *debug, bool depthTest )
+{
+    tree_.DrawDebugGeometry( debug, depthTest );
+}
 
 
 

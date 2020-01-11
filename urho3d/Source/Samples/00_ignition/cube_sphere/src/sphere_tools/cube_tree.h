@@ -30,6 +30,9 @@ class CubeTreeNode
 public:
     CubeTreeNode();
     ~CubeTreeNode();
+
+    void DrawDebugGeometry( const float scale, DebugRenderer * debug, bool depthTest ) const;
+
     CubeTreeNode( const CubeTreeNode & inst );
     const CubeTreeNode & operator=( const CubeTreeNode & inst );
 
@@ -62,6 +65,8 @@ public:
     CubeTree( int maxLvl=5 );
     ~CubeTree();
 
+    void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) const;
+
     CubeTree( const CubeTree & inst );
     const CubeTree & operator=( const CubeTree & inst );
     const CubeTree & operator=( const Vector<Vector3d> & pts );
@@ -83,6 +88,22 @@ public:
     // Maximum subdivision level.
     int maxDepth;
     int maxPtsPerNode;
+};
+
+
+class CubeTreeComponent: public Component
+{
+    URHO3D_OBJECT( CubeTreeComponent, Component )
+public:
+    static void RegisterComponent( Context * context );
+
+    CubeTreeComponent( Context * context );
+    ~CubeTreeComponent();
+
+    void DrawDebugGeometry( DebugRenderer *debug, bool depthTest ) override;
+
+public:
+    CubeTree tree_;
 };
 
 }
