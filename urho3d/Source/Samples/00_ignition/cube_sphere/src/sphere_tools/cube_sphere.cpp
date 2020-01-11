@@ -218,6 +218,61 @@ bool Face::subdrive(Cubesphere * s, Source * src )
     return true;
 }
 
+bool Face::inside( Cubesphere * s, const Vector3d & a, bool checkSide ) const
+{
+    if ( checkSide )
+
+    return true;
+}
+
+bool Face::correctSide( const Vector3d & n, const Vector3d & a ) const
+{
+    const Float MARGIN = 0.5;
+    {
+        const Vector3d X( 1.0, 0.0, 0.0 );
+        const Vector3d t = X.DotProduct( n );
+        if ( t > margin )
+        {
+            const Float x = a.x_;
+            const Float y = (a.y_ > 0.0) ? a.y_ : -a.y_;
+            const Float z = (a.z_ > 0.0) ? a.z_ : -a.z_;
+            if ( ( x > y ) && ( x > z ) )
+                return true;
+        }
+        else if ( t < -margin )
+        {
+            const Float x = -a.x_;
+            const Float y = (a.y_ > 0.0) ? a.y_ : -a.y_;
+            const Float z = (a.z_ > 0.0) ? a.z_ : -a.z_;
+            if ( ( x > y ) && ( x > z ) )
+                return true;
+        }
+    }
+
+    {
+        const Vector3d Y( 0.0, 1.0, 0.0 );
+        const Vector3d t = Y.DotProduct( n );
+        if ( t > margin )
+        {
+            const Float y = a.y_;
+            const Float x = (a.x_ > 0.0) ? a.x_ : -a.x_;
+            const Float z = (a.z_ > 0.0) ? a.z_ : -a.z_;
+            if ( ( y > x ) && ( y > z ) )
+                return true;
+        }
+        else if ( t < -margin )
+        {
+            const Float y = -a.y_;
+            const Float x = (a.x_ > 0.0) ? a.x_ : -a.x_;
+            const Float z = (a.z_ > 0.0) ? a.z_ : -a.z_;
+            if ( ( y > x ) && ( y > z ) )
+                return true;
+        }
+    }
+    
+    return false;
+}
+
 EdgeHash::EdgeHash()
 {
     for ( int i=0; i<EDGE_HASH_SZ; i++ )

@@ -34,6 +34,24 @@ public:
     virtual bool needSubdrive( const Cubesphere * s, const Face * f ) const = 0;
 };
 
+class SubdriveSource
+{
+public:
+    SubdriveSource();
+    virtual ~SubdriveSource();
+
+    virtual bool needSubdrive( const Cubesphere * s, const Face * f ) const = 0;
+};
+
+class HeightSource
+{
+public:
+    HeightSource();
+    virtual ~HeightSource();
+
+    virtual Float height( const Vector3d & at ) const = 0;
+}
+
 struct Vertex
 {
 public:
@@ -67,6 +85,7 @@ public:
     Face( const Face & inst );
     const Face & operator=( const Face & inst );
     bool subdrive( Cubesphere * s, Source * src );
+    bool inside( Cubesphere * s, const Vector3d & a, bool checkSide=false ) const;
 };
 
 class EdgeHash
