@@ -59,9 +59,11 @@ public:
     virtual bool needSubdrive( const Cubesphere * s, const Face * f ) const;
 
 public:
+    void flattenPts( const Cubesphere * s );
+
     Float r_;
     Vector<Level> levels_;
-    Vector<Vector3d> pts_, ptsNew_;
+    Vector<Vector3d> pts_, ptsFlat_, ptsNew_;
 };
 
 class HeightSource
@@ -71,12 +73,13 @@ public:
     virtual ~HeightSource();
 
     virtual Float height( const Vector3d & at ) const = 0;
+    virtual Color color( const Vector3d & at ) const = 0;
 };
 
 struct Vertex
 {
 public:
-    Vector3d at, at0;
+    Vector3d at, atFlat;
     Vector3d norm;
 
     int  a, b;
@@ -107,13 +110,15 @@ public:
     const Face & operator=( const Face & inst );
     bool subdrive( Cubesphere * s, SubdriveSource * src );
 
-    bool correctSide( const Vector3d & n, const Vector3d & a ) const;
+    const Vector3d normal() const;
+    const Float size() const;
+    static bool correctSide( const Vector3d & n, const Vector3d & a ) const;
     // From 3d space to a face of a unit cube.
-    bool centralProjection( const Vector3d & n, const Vector3d & a, Vector3d & proj ) const;
+    static bool centralProjection( const Vector3d & n, const Vector3d & a, Vector3d & proj ) const;
     // Vector "a" should be already projected on appropriate face.
     // E.i. "correctSide()" and "centralProjection()" should be already done.
     // "sz" allows to select all the faces within an area of size "sz".
-    bool inside( Cubesphere * s, const Vector3d & a, const Float sz=0.1 ) const;
+    bool inside( Cubesphere * s, const Vector3d & a, const Float dist=0.1 ) const;
 };
 
 class EdgeHash

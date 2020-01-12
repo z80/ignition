@@ -30,6 +30,23 @@ void SubdriveSource::addLevel( Float sz, Float dist )
     lvl.sz   = sz;
     lvl.dist = dist;
     levels_.Push( lvl );
+
+    // Sort levels in distance accending order.
+    const unsigned qty = levels_.Size();
+    for ( unsigned i=0; i<(qty-1); i++ )
+    {
+        Level & a = levels_[i];
+        for ( unsigned j=(i+1); j<qty; j++ )
+        {
+            Level & b = levels_[j];
+            if ( a.dist > b.dist )
+            {
+                const Level c = a;
+                a = b;
+                b = c;
+            }
+        }
+    }
 }
 
 bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts )
@@ -45,6 +62,7 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts 
     if ( levels_.Empty() )
     {
         pts_ = ptsNew_;
+        flattenPts( s );
         return true;
     }
 
@@ -76,14 +94,67 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts 
     }
 
     if ( needSubdrive )
+    {
         pts_ = ptsNew_;
+        flattenPts( s );
+    }
 
     return needSubdrive;
 }
 
 bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
 {
+    const Float sz = f->size();
+    const Vector3d n = f->normal();
+    const unsigned ptsQty = ptsFlat_.Size();
+    const Float levelsQty = levels_.Size();
+    for ( unsigned i=0; i<ptsQty; i++ )
+    {
+        const bool ok = f->correctSide( n, a );
+        if ( !ok )
+            continue;
+        for ( unsigned j=0; j<levelsQty; j++ )
+        {
+            const Level & lvl = levels_[j];
+            const bool inside = f->inside( s, a, lvl.dist );
+            if ( inside )
+            {
+                if ( sz > lvl.sz )
+                    return true;
+            }
+        }
+    }
+    return false;
+}
 
+void SubdriveSource::flattenPts( const Cubesphere * s )
+{
+    // Use first 6 faces in the cubesphere to project
+    // all the points onto appropriate faces.
+    Vector3d norms[6];
+    for ( unsigned i=0; i<6; i++ )
+    {
+        Face & face = s->faces[i];
+        norms[i] = face.normal();
+    }
+
+    ptsFlat_ = pts_;
+    const unsigned ptsQty = ptsFlat_.Size();
+    for ( unsigned i=0; i<ptsQty; i++ )
+    {
+        Vector3d & pt3 = ptsFlat_[i];
+        for ( j=0; j<6; j++ )
+        {
+            const Vector3d & n = norms[j];
+            Vector3d proj;
+            const bool ok = Face::centralProjection( n, pt3, proj );
+            if ( ok )
+            {
+                pt3 = proj;
+                break;
+            }
+        }
+    }
 }
 
 Vertex::Vertex()
@@ -103,7 +174,7 @@ Vertex::Vertex( const Vector3d & at )
     a = b = -1;
     leafFacesQty = 0;
     isMidPoint   = false;
-    this->at0 = at0;
+    this->atFlat = atFlat;
     this->at  = at;
 }
 
@@ -116,7 +187,7 @@ const Vertex & Vertex::operator=( const Vertex & inst )
 {
     if ( this != &inst )
     {
-        at0  = inst.at0;
+        atFlat  = inst.atFlat;
         at   = inst.at;
         norm = inst.norm;
         a    = inst.a;
@@ -245,7 +316,7 @@ bool Face::subdrive( Cubesphere * s, SubdriveSource * src )
     const Vertex & c = s->verts[newVertInds[2]];
     const Vertex & d = s->verts[newVertInds[3]];
 
-    Vector3d at( (a.at + b.at + c.at + d.at)*0.25 );
+    Vector3d at( (a.atFlat + b.atFlat + c.atFlat + d.atFlat)*0.25 );
     Vertex v;
     v.at = at;
     v.a = -1;
@@ -302,28 +373,49 @@ bool Face::subdrive( Cubesphere * s, SubdriveSource * src )
     return true;
 }
 
-bool Face::inside( Cubesphere * s, const Vector3d & a, const Float sz ) const
+const Vector3d Face::normal() const
+{
+    const Vertex & v0 = s->verts[ vertexInds[0] ];
+    const Vertex & v1 = s->verts[ vertexInds[1] ];
+    const Vertex & v3 = s->verts[ vertexInds[3] ];
+    const Vector3d a30 = v3.atFlat - v0.atFlat;
+    const Vector3d a10 = v1.atFlat - v0.atFlat;
+    Vector3d n = a30.CrossProduct( a10 );
+    n.Normalize();
+    return n;
+}
+
+const Float Face::size() const
+{
+    const Vertex & v0 = s->verts[ vertexInds[0] ];
+    const Vertex & v1 = s->verts[ vertexInds[1] ];
+    const Vector3d d = v1.atFlat - v0.atFlat;
+    const Float sz = d.Length();
+    return sz;
+}
+
+bool Face::inside( Cubesphere * s, const Vector3d & a, const Float dist ) const
 {
     const Vertex & v0 = s->verts[ vertexInds[0] ];
     const Vertex & v1 = s->verts[ vertexInds[1] ];
     const Vertex & v2 = s->verts[ vertexInds[2] ];
     const Vertex & v3 = s->verts[ vertexInds[3] ];
-    const Vector3d at = (v0.at + v1.at + v2.at + v3.at) * 0.25;
-    const Vector3d a30 = v3.at - v0.at;
-    const Vector3d a10 = v1.at - v0.at;
-    const Vector3d n = a31.CrossProduct( a10 );
+    const Vector3d at = (v0.atFlat + v1.atFlat + v2.atFlat + v3.atFlat) * 0.25;
+    const Vector3d a30 = v3.atFlat - v0.atFlat;
+    const Vector3d a10 = v1.atFlat - v0.atFlat;
+    const Vector3d n = a30.CrossProduct( a10 );
     const Vector3d d = a - v0.at;
     const Float a10Len = a10.Length();
     const projX = d.DotProduct( a10 ) / a10Len;
-    if ( ( projX < -sz ) || (projX > (q10Len+sz)) )
+    if ( ( projX < -dist ) || (projX > (q10Len+dist)) )
         return false;
     const Float a30Len = a30.Length();
     const projY = d.DotProduct( a30 ) / a30Len;
-    if ( ( projY < -sz ) || (projY > (a30Len+sz)) )
+    if ( ( projY < -dist ) || (projY > (a30Len+dist)) )
         return false;
 
     return true;
-
+}
 
 bool Face::correctSide( const Vector3d & n, const Vector3d & a ) const
 {
@@ -559,28 +651,28 @@ void Cubesphere::applySource( Source * src )
 void Cubesphere::init()
 {
     Vertex v;
-    v.at = Vector3d( -1.0, -1.0, -1.0 );
+    v.atFlat = Vector3d( -1.0, -1.0, -1.0 );
     verts.Push( v );
 
-    v.at = Vector3d( -1.0,  1.0, -1.0 );
+    v.atFlat = Vector3d( -1.0,  1.0, -1.0 );
     verts.Push( v );
 
-    v.at = Vector3d(  1.0,  1.0, -1.0 );
+    v.atFlat = Vector3d(  1.0,  1.0, -1.0 );
     verts.Push( v );
 
-    v.at = Vector3d(  1.0, -1.0, -1.0 );
+    v.atFlat = Vector3d(  1.0, -1.0, -1.0 );
     verts.Push( v );
 
-    v.at = Vector3d( -1.0, -1.0,  1.0 );
+    v.atFlat = Vector3d( -1.0, -1.0,  1.0 );
     verts.Push( v );
 
-    v.at = Vector3d( -1.0,  1.0,  1.0 );
+    v.atFlat = Vector3d( -1.0,  1.0,  1.0 );
     verts.Push( v );
 
-    v.at = Vector3d(  1.0,  1.0,  1.0 );
+    v.atFlat = Vector3d(  1.0,  1.0,  1.0 );
     verts.Push( v );
 
-    v.at = Vector3d(  1.0, -1.0,  1.0 );
+    v.atFlat = Vector3d(  1.0, -1.0,  1.0 );
     verts.Push( v );
 
     Face f;
@@ -685,6 +777,7 @@ void Cubesphere::scaleToSphere()
         Vertex & v = verts[i];
         if ( !v.isMidPoint )
         {
+            v.at = v.atFlat;
             v.at.Normalize();
             v.norm = v.at;
         }
@@ -750,14 +843,14 @@ void Cubesphere::computeNormals()
     }
 }
 
-void Cubesphere::applySource( Source * src, Vertex & v )
+void Cubesphere::applySource( HeightSource * src, Vertex & v )
 {
-    const Float dh = src->dh( v.at );
+    const Float dh = src->height( v.at );
     const Float d  = 1.0 + dh;
     v.at = v.at * d;
 }
 
-void Cubesphere::selectFaces( const Vector<Vector3d> & pts, int faceInd, Vector<int> & faceInds )
+void Cubesphere::selectFaces( const Vector<Vector3d> & pts, const Float sz, int faceInd, Vector<int> & faceInds )
 {
 
 }
