@@ -4,6 +4,88 @@
 namespace Ign
 {
 
+SubdriveSource::SubdriveSource()
+{
+    r_ = 1.0;
+}
+
+SubdriveSource::~SubdriveSource()
+{
+
+}
+
+void SubdriveSource::setR( Float r )
+{
+    r_ = r;
+}
+
+void SubdriveSource::clearLevels()
+{
+    levels_.Clear();
+}
+
+void SubdriveSource::addLevel( Float sz, Float dist )
+{
+    Level lvl;
+    lvl.sz   = sz;
+    lvl.dist = dist;
+    levels_.Push( lvl );
+}
+
+bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts )
+{
+    ptsNew_ = pts;
+    const unsigned ptsNewQty = ptsNew_.Size();
+    for ( unsigned i=0; i<ptsNewQty; i++ )
+    {
+        Vector3d & v = ptsNew_[i];
+        v.Normalize();
+    }
+
+    if ( levels_.Empty() )
+    {
+        pts_ = ptsNew_;
+        return true;
+    }
+
+    const Level lvl = levels_[0];
+    const Float d = lvl.dist / r_ * 0.5;
+
+
+    // Check all distances.
+    const unsigned ptsQty = pts_.Size();
+    bool needSubdrive = false;
+    for ( unsigned i=0; i<ptsNewQty; i++ )
+    {
+        const Vector3d & v = ptsNew_[i];
+        for ( unsigned j=0; j<ptsQty; j++ )
+        {
+            const Vector3d & a = pts_[j];
+            const Float dot = v.DotProduct( a );
+            const Vector3d proj = a*dot;
+            const Vector3d diff = v - proj;
+            const Float dist = diff.Length();
+            if ( dist > d )
+            {
+                needSubdrive = true;
+                break;
+            }
+        }
+        if ( needSubdrive )
+            break;
+    }
+
+    if ( needSubdrive )
+        pts_ = ptsNew_;
+
+    return needSubdrive;
+}
+
+bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
+{
+
+}
+
 Vertex::Vertex()
 {
     a = b = -1;
@@ -21,7 +103,8 @@ Vertex::Vertex( const Vector3d & at )
     a = b = -1;
     leafFacesQty = 0;
     isMidPoint   = false;
-    this->at = at;
+    this->at0 = at0;
+    this->at  = at;
 }
 
 Vertex::Vertex( const Vertex & inst )
@@ -33,6 +116,7 @@ const Vertex & Vertex::operator=( const Vertex & inst )
 {
     if ( this != &inst )
     {
+        at0  = inst.at0;
         at   = inst.at;
         norm = inst.norm;
         a    = inst.a;
@@ -98,7 +182,7 @@ const Face & Face::operator=( const Face & inst )
     return *this;
 }
 
-bool Face::subdrive(Cubesphere * s, Source * src )
+bool Face::subdrive( Cubesphere * s, SubdriveSource * src )
 {
     if ( !leaf )
     {
@@ -671,6 +755,11 @@ void Cubesphere::applySource( Source * src, Vertex & v )
     const Float dh = src->dh( v.at );
     const Float d  = 1.0 + dh;
     v.at = v.at * d;
+}
+
+void Cubesphere::selectFaces( const Vector<Vector3d> & pts, int faceInd, Vector<int> & faceInds )
+{
+
 }
 
 
