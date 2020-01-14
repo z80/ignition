@@ -16,25 +16,6 @@ static const int EDGE_HASH_SZ = sizeof(int)*2;
 class Cubesphere;
 class Face;
 
-//class Source
-//{
-//public:
-//    Vector3d at;
-
-//    Source() {}
-//    virtual ~Source() {}
-
-//    void setCameraAt( const Vector3d & at )
-//    {
-//        this->at = at;
-//    }
-
-//    /// Delta height assuming sphere radius is 1.
-//    virtual Float dh( const Vector3d & at ) const = 0;
-//    virtual bool needSubdrive( const Cubesphere * s, const Face * f ) const = 0;
-//};
-
-
 
 class SubdriveSource
 {
@@ -110,15 +91,16 @@ public:
     const Face & operator=( const Face & inst );
     bool subdrive( Cubesphere * s, SubdriveSource * src );
 
-    const Vector3d normal() const;
-    const Float size() const;
-    static bool correctSide( const Vector3d & n, const Vector3d & a ) const;
+    const Vector3d normal( const Cubesphere * s ) const;
+    const Float size( const Cubesphere * s ) const;
+    static bool correctSide( const Vector3d & n, const Vector3d & a );
     // From 3d space to a face of a unit cube.
-    static bool centralProjection( const Vector3d & n, const Vector3d & a, Vector3d & proj ) const;
+    static bool centralProjection( const Vector3d & n, const Vector3d & a, Vector3d & proj );
     // Vector "a" should be already projected on appropriate face.
     // E.i. "correctSide()" and "centralProjection()" should be already done.
     // "sz" allows to select all the faces within an area of size "sz".
-    bool inside( Cubesphere * s, const Vector3d & a, const Float dist=0.1 ) const;
+    bool inside( const Cubesphere * s, const Vector3d & a, const Float dist=0.1 ) const;
+    bool selectLeafs( const Cubesphere * s, const Vector3d & a, const Float dist, Vector<int> & faceInds ) const;
 };
 
 class EdgeHash
@@ -148,21 +130,22 @@ public:
     Cubesphere( const Cubesphere & inst );
     const Cubesphere & operator=( const Cubesphere & inst );
 
-    bool subdrive( SubdriveSource * src );
+    void subdrive( SubdriveSource * src );
+    void applySource( HeightSource * src );
+
     void triangleList( Vector<Vertex> & tris );
 
     // For selecting collision patches.
     void triangleList( const Vector<Vector3d> & pts, Vector<Vertex> & tris );
 private:
     void clear();
-    void applySource( HeightSource * src );
     void init();
     void labelMidPoints();
     void scaleToSphere();
     void computeNormals();
     void applySource( HeightSource * src, Vertex & v );
 
-    void selectFaces( const Vector<Vector3d> & pts, const Float sz, int faceInd, Vector<int> & faceInds );
+    void selectFaces( const Vector<Vector3d> & pts, const Float dist, Vector<int> & faceInds );
 };
 
 
