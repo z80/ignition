@@ -29,6 +29,8 @@ public:
     SubdriveSource();
     virtual ~SubdriveSource();
 
+    void DrawDebugGeometry( float scale, DebugRenderer * debug, bool depthTest ) const;
+
     void setR( Float r );
     void clearLevels();
     void addLevel( Float sz, Float dist );
@@ -152,6 +154,23 @@ private:
     void applySource( HeightSource * src, Vertex & v );
 
     void selectFaces( const Vector<Vector3d> & pts, const Float dist, Vector<int> & faceInds );
+};
+
+class CubeSphereComponent: public Component
+{
+    URHO3D_OBJECT( CubeSphereComponent, Component )
+public:
+    static void RegisterComponent( Context * context );
+
+    CubeSphereComponent( Context * context );
+    ~CubeSphereComponent();
+
+    void DrawDebugGeometry( DebugRenderer *debug, bool depthTest ) override;
+
+public:
+    Vector<Vector3d> pts_;
+    SubdriveSource subdriveSource_;
+    Cubesphere     cubesphere_;
 };
 
 

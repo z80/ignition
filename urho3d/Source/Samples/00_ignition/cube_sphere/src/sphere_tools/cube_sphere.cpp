@@ -14,6 +14,23 @@ SubdriveSource::~SubdriveSource()
 
 }
 
+void SubdriveSource::DrawDebugGeometry( float scale, DebugRenderer * debug, bool depthTest ) const
+{
+    const Color C( Color::GREEN );
+    const Color CF( Color::RED );
+    const unsigned qty = pts_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        const Vector3d & pt = pts_[i];
+        const Vector3d & ptFlat = ptsFlat_[i];
+        const Vector3 ptf( pt.x_, pt.y_, pt.z_ );
+        const Vector3 ptFlatf( ptFlat.x_, ptFlat.y_, ptFlat.z_ );
+        debug->AddCross( ptf*scale, 1.0, C, depthTest );
+        debug->AddCross( ptFlatf*scale, 1.0, CF, depthTest );
+        debug->AddLine( ptf*scale, ptFlatf*scale, C, depthTest );
+    }
+}
+
 void SubdriveSource::setR( Float r )
 {
     r_ = r;
@@ -934,6 +951,29 @@ void Cubesphere::selectFaces( const Vector<Vector3d> & pts, const Float dist, Ve
         }
     }
 }
+
+void CubeSphereComponent::RegisterComponent( Context * context )
+{
+    context->RegisterFactory<CubeSphereComponent>();
+}
+
+CubeSphereComponent::CubeSphereComponent( Context * context )
+    : Component( context )
+{
+
+}
+
+CubeSphereComponent::~CubeSphereComponent()
+{
+
+}
+
+void CubeSphereComponent::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
+{
+    subdriveSource_.DrawDebugGeometry( 30.0, debug, depthTest );
+    cubesphere_.DrawDebugGeometry( debug, depthTest );
+}
+
 
 
 }

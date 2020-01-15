@@ -7,6 +7,7 @@
 #include <Urho3D/DebugNew.h>
 
 #include "cube_tree.h"
+#include "cube_sphere.h"
 
 
 URHO3D_DEFINE_APPLICATION_MAIN(Main)
@@ -18,6 +19,7 @@ Main::Main(Context* context) :
     //Ign::Register3dparty( context );
 
     Ign::CubeTreeComponent::RegisterComponent( context );
+    Ign::CubeSphereComponent::RegisterComponent( context );
 }
 
 void Main::Start()
@@ -191,6 +193,11 @@ void Main::HandlePostUpdate( StringHash eventType, VariantMap & eventData )
     if ( !c )
         return;
     c->DrawDebugGeometry( d, true );
+
+    CubeSphereComponent * cs = scene_->GetComponent<CubeSphereComponent>();
+    if ( !cs )
+        return;
+    cs->DrawDebugGeometry( d, true );
 }
 
 
@@ -204,6 +211,16 @@ void Main::CreateEnvironment()
     Vector<Vector3d> v;
     v.Push( Vector3d( 1.0, 0.0, 0.0 ) );
     c->tree_ = v;
+
+
+    CubeSphereComponent * cs = scene_->CreateComponent<CubeSphereComponent>();
+    cs->pts_.Push( Vector3d( 1.0, 0.0, 0.0 ) );
+    cs->subdriveSource_.setR( 10.0 );
+    cs->subdriveSource_.addLevel( 1.0, 5.0 );
+
+    const bool needSubdrive = cs->subdriveSource_.needSubdrive( &(cs->cubesphere_), cs->pts_ );
+    if ( needSubdrive )
+        cs->cubesphere_.subdrive( &(cs->subdriveSource_) );
 
     scene_->CreateComponent<DebugRenderer>();
 }
