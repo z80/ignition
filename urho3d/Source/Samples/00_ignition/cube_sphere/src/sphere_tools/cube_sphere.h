@@ -86,6 +86,9 @@ public:
 
     Face();
     ~Face();
+
+    void DrawDebugGeometry( float scale, const Cubesphere * s, DebugRenderer * debug, bool depthTest ) const;
+
     Face( int a, int b, int c, int d );
     Face( const Face & inst );
     const Face & operator=( const Face & inst );
@@ -127,6 +130,9 @@ public:
 
     Cubesphere();
     ~Cubesphere();
+
+    void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) const;
+
     Cubesphere( const Cubesphere & inst );
     const Cubesphere & operator=( const Cubesphere & inst );
 

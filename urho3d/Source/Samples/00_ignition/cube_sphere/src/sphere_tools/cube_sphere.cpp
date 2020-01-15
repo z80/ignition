@@ -217,6 +217,37 @@ Face::~Face()
 {
 }
 
+void Face::DrawDebugGeometry( float scale, const Cubesphere * s, DebugRenderer * debug, bool depthTest ) const
+{
+    const Vertex & va = s->verts[vertexInds[0]];
+    const Vertex & vb = s->verts[vertexInds[1]];
+    const Vertex & vc = s->verts[vertexInds[2]];
+    const Vertex & vd = s->verts[vertexInds[3]];
+
+    Color C( Color::GREEN );
+
+    {
+        const Vector3 a( va.atFlat.x_, va.atFlat.y_, va.atFlat.z_ );
+        const Vector3 b( vb.atFlat.x_, vb.atFlat.y_, vb.atFlat.z_ );
+        debug->AddLine( a*scale, b*scale, C, depthTest );
+    }
+    {
+        const Vector3 a( vb.atFlat.x_, vb.atFlat.y_, vb.atFlat.z_ );
+        const Vector3 b( vc.atFlat.x_, vc.atFlat.y_, vc.atFlat.z_ );
+        debug->AddLine( a*scale, b*scale, C, depthTest );
+    }
+    {
+        const Vector3 a( vc.atFlat.x_, vc.atFlat.y_, vc.atFlat.z_ );
+        const Vector3 b( vd.atFlat.x_, vd.atFlat.y_, vd.atFlat.z_ );
+        debug->AddLine( a*scale, b*scale, C, depthTest );
+    }
+    {
+        const Vector3 a( vd.atFlat.x_, vd.atFlat.y_, vd.atFlat.z_ );
+        const Vector3 b( va.atFlat.x_, va.atFlat.y_, va.atFlat.z_ );
+        debug->AddLine( a*scale, b*scale, C, depthTest );
+    }
+}
+
 Face::Face( int a, int b, int c, int d )
 {
     vertexInds[0] = a;
@@ -565,6 +596,17 @@ Cubesphere::Cubesphere()
 Cubesphere::~Cubesphere()
 {
 
+}
+
+void Cubesphere::DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) const
+{
+    const float SCALE = 30.0;
+    const unsigned faceQty = faces.Size();
+    for ( unsigned i=0; i<faceQty; i++ )
+    {
+        const Face & f = faces[i];
+        f.DrawDebugGeometry( SCALE, this, debug, depthTest );
+    }
 }
 
 Cubesphere::Cubesphere( const Cubesphere & inst )
