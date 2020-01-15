@@ -189,10 +189,10 @@ void Main::HandlePostUpdate( StringHash eventType, VariantMap & eventData )
 {
     DebugRenderer * d = scene_->GetComponent<DebugRenderer>();
     using namespace Ign;
-    CubeTreeComponent * c = scene_->GetComponent<CubeTreeComponent>();
+    /*CubeTreeComponent * c = scene_->GetComponent<CubeTreeComponent>();
     if ( !c )
         return;
-    c->DrawDebugGeometry( d, true );
+    c->DrawDebugGeometry( d, true );*/
 
     CubeSphereComponent * cs = scene_->GetComponent<CubeSphereComponent>();
     if ( !cs )
@@ -206,17 +206,17 @@ void Main::HandlePostUpdate( StringHash eventType, VariantMap & eventData )
 void Main::CreateEnvironment()
 {
     using namespace Ign;
-    CubeTreeComponent * c = scene_->CreateComponent<CubeTreeComponent>();
+    /*CubeTreeComponent * c = scene_->CreateComponent<CubeTreeComponent>();
 
     Vector<Vector3d> v;
     v.Push( Vector3d( 1.0, 0.0, 0.0 ) );
-    c->tree_ = v;
+    c->tree_ = v;*/
 
 
     CubeSphereComponent * cs = scene_->CreateComponent<CubeSphereComponent>();
     cs->pts_.Push( Vector3d( 1.0, 0.0, 0.0 ) );
     cs->subdriveSource_.setR( 10.0 );
-    cs->subdriveSource_.addLevel( 1.0, 5.0 );
+    cs->subdriveSource_.addLevel( 1.5, 5.0 );
 
     const bool needSubdrive = cs->subdriveSource_.needSubdrive( &(cs->cubesphere_), cs->pts_ );
     if ( needSubdrive )

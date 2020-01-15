@@ -16,8 +16,8 @@ SubdriveSource::~SubdriveSource()
 
 void SubdriveSource::DrawDebugGeometry( float scale, DebugRenderer * debug, bool depthTest ) const
 {
-    const Color C( Color::GREEN );
-    const Color CF( Color::RED );
+    const Color C( Color::BLUE );
+    const Color CF( Color::MAGENTA );
     const unsigned qty = pts_.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
@@ -44,8 +44,8 @@ void SubdriveSource::clearLevels()
 void SubdriveSource::addLevel( Float sz, Float dist )
 {
     Level lvl;
-    lvl.sz   = sz;
-    lvl.dist = dist;
+    lvl.sz   = sz / r_;
+    lvl.dist = dist / r_;
     levels_.Push( lvl );
 
     // Sort levels in distance accending order.
@@ -90,24 +90,31 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts 
     // Check all distances.
     const unsigned ptsQty = pts_.Size();
     bool needSubdrive = false;
-    for ( unsigned i=0; i<ptsNewQty; i++ )
+    if ( ptsQty < 1 )
+        needSubdrive = true;
+    else
     {
-        const Vector3d & v = ptsNew_[i];
-        for ( unsigned j=0; j<ptsQty; j++ )
+        // Check distances.
+        for ( unsigned i=0; i<ptsNewQty; i++ )
         {
-            const Vector3d & a = pts_[j];
-            const Float dot = v.DotProduct( a );
-            const Vector3d proj = a*dot;
-            const Vector3d diff = v - proj;
-            const Float dist = diff.Length();
-            if ( dist > d )
+            const Vector3d & v = ptsNew_[i];
+            Float minDist = -1.0;
+            for ( unsigned j=0; j<ptsQty; j++ )
+            {
+                const Vector3d & a = pts_[j];
+                const Float dot = v.DotProduct( a );
+                const Vector3d proj = a*dot;
+                const Vector3d diff = v - proj;
+                const Float dist = diff.Length();
+                if ( (minDist < 0.0) || (dist < minDist) )
+                    minDist = dist;
+            }
+            if ( minDist >= d )
             {
                 needSubdrive = true;
                 break;
             }
         }
-        if ( needSubdrive )
-            break;
     }
 
     if ( needSubdrive )
@@ -608,6 +615,9 @@ Cubesphere::Cubesphere()
 {
     verts.Reserve( 4096 );
     faces.Reserve( 4096 );
+
+    // Initial 8 vertices and 6 faces.
+    init();
 }
 
 Cubesphere::~Cubesphere()
@@ -734,16 +744,16 @@ void Cubesphere::init()
     v.atFlat = Vector3d( -1.0, -1.0, -1.0 );
     verts.Push( v );
 
-    v.atFlat = Vector3d( -1.0,  1.0, -1.0 );
+    v.atFlat = Vector3d( -1.0, -1.0,  1.0 );
     verts.Push( v );
 
-    v.atFlat = Vector3d(  1.0,  1.0, -1.0 );
+    v.atFlat = Vector3d(  1.0, -1.0,  1.0 );
     verts.Push( v );
 
     v.atFlat = Vector3d(  1.0, -1.0, -1.0 );
     verts.Push( v );
 
-    v.atFlat = Vector3d( -1.0, -1.0,  1.0 );
+    v.atFlat = Vector3d( -1.0,  1.0, -1.0 );
     verts.Push( v );
 
     v.atFlat = Vector3d( -1.0,  1.0,  1.0 );
@@ -752,7 +762,7 @@ void Cubesphere::init()
     v.atFlat = Vector3d(  1.0,  1.0,  1.0 );
     verts.Push( v );
 
-    v.atFlat = Vector3d(  1.0, -1.0,  1.0 );
+    v.atFlat = Vector3d(  1.0,  1.0, -1.0 );
     verts.Push( v );
 
     Face f;
