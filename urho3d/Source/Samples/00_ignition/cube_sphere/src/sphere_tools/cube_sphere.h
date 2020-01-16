@@ -47,6 +47,8 @@ public:
     Float r_;
     Vector<Level> levels_;
     Vector<Vector3d> pts_, ptsFlat_, ptsNew_;
+
+    mutable bool done_;
 };
 
 class HeightSource

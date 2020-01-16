@@ -7,6 +7,8 @@ namespace Ign
 SubdriveSource::SubdriveSource()
 {
     r_ = 1.0;
+
+    done_ = false;
 }
 
 SubdriveSource::~SubdriveSource()
@@ -128,7 +130,7 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts 
 
 bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
 {
-    const Float sz = f->size( s );
+    /*const Float sz = f->size( s );
     const Vector3d n = f->normal( s );
     const unsigned ptsQty = ptsFlat_.Size();
     const Float levelsQty = levels_.Size();
@@ -149,6 +151,17 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
             }
         }
     }
+    return false;*/
+
+    if ( done_ )
+        return false;
+
+    if ( ( f->parentInd < 0 ) && ( f->indexInParent == 0 ) )
+    {
+        done_ = true;
+        return true;
+    }
+
     return false;
 }
 
@@ -349,9 +362,9 @@ bool Face::subdrive( Cubesphere * s, SubdriveSource * src )
             const Vertex & va = s->verts[vertIndA];
             const Vertex & vb = s->verts[vertIndB];
             // Create new vertex;
-            Vector3d at( (va.at + vb.at) * 0.5 );
+            const Vector3d atFlat( (va.atFlat + vb.atFlat) * 0.5 );
             Vertex v;
-            v.at = at;
+            v.atFlat = atFlat;
             v.a = vertIndA;
             v.b = vertIndB;
             const int newInd = (int)s->verts.Size();
@@ -372,9 +385,9 @@ bool Face::subdrive( Cubesphere * s, SubdriveSource * src )
     const Vertex & c = s->verts[newVertInds[2]];
     const Vertex & d = s->verts[newVertInds[3]];
 
-    Vector3d at( (a.atFlat + b.atFlat + c.atFlat + d.atFlat)*0.25 );
+    const Vector3d atFlat( (a.atFlat + b.atFlat + c.atFlat + d.atFlat)*0.25 );
     Vertex v;
-    v.at = at;
+    v.atFlat = atFlat;
     v.a = -1;
     v.b = -1;
     const int fifthVertInd = (int)s->verts.Size();
@@ -768,7 +781,8 @@ void Cubesphere::init()
     Face f;
     f.leaf  = true;
     f.level = 0;
-    f.indexInParent = -1;
+    f.parentInd = -1;
+    f.indexInParent = 0;
     f.childInds[0] = -1;
     f.childInds[1] = -1;
     f.childInds[2] = -1;
@@ -780,30 +794,35 @@ void Cubesphere::init()
     f.vertexInds[3] = 3;
     faces.Push( f );
 
+    f.indexInParent = 1;
     f.vertexInds[0] = 4;
     f.vertexInds[1] = 5;
     f.vertexInds[2] = 1;
     f.vertexInds[3] = 0;
     faces.Push( f );
 
+    f.indexInParent = 2;
     f.vertexInds[0] = 7;
     f.vertexInds[1] = 6;
     f.vertexInds[2] = 5;
     f.vertexInds[3] = 4;
     faces.Push( f );
 
+    f.indexInParent = 3;
     f.vertexInds[0] = 3;
     f.vertexInds[1] = 2;
     f.vertexInds[2] = 6;
     f.vertexInds[3] = 7;
     faces.Push( f );
 
+    f.indexInParent = 4;
     f.vertexInds[0] = 1;
     f.vertexInds[1] = 5;
     f.vertexInds[2] = 6;
     f.vertexInds[3] = 2;
     faces.Push( f );
 
+    f.indexInParent = 5;
     f.vertexInds[0] = 4;
     f.vertexInds[1] = 0;
     f.vertexInds[2] = 3;
