@@ -220,9 +220,11 @@ void Main::CreateEnvironment()
     cs->subdriveSource_.addLevel( 0.5, 2.0 );
     cs->subdriveSource_.addLevel( 0.2, 1.0 );
 
-    const bool needSubdrive = cs->subdriveSource_.needSubdrive( &(cs->cubesphere_), cs->pts_ );
+    const bool needSubdrive = cs->subdriveSource_.needSubdrive( &(cs->cubesphereCube_), cs->pts_ );
     if ( needSubdrive )
-        cs->cubesphere_.subdrive( &(cs->subdriveSource_) );
+        cs->cubesphereCube_.subdrive( &(cs->subdriveSource_) );
+    cs->cubesphereSphere_ = cs->cubesphereCube_;
+    cs->cubesphereSphere_.applySource( nullptr );
 
     scene_->CreateComponent<DebugRenderer>();
 }

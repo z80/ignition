@@ -254,34 +254,66 @@ Face::~Face()
 {
 }
 
-void Face::DrawDebugGeometry( float scale, const Cubesphere * s, DebugRenderer * debug, bool depthTest ) const
+void Face::DrawDebugGeometry( float scale, const Cubesphere * s, DebugRenderer * debug, bool depthTest, bool flat ) const
 {
+    if ( !flat )
+    {
+        if ( !leaf )
+            return;
+    }
+
     const Vertex & va = s->verts[vertexInds[0]];
     const Vertex & vb = s->verts[vertexInds[1]];
     const Vertex & vc = s->verts[vertexInds[2]];
     const Vertex & vd = s->verts[vertexInds[3]];
 
-    Color C( Color::GREEN );
+    const Color C = flat ? Color::GREEN : Color::MAGENTA;
 
+    if ( flat )
     {
-        const Vector3 a( va.atFlat.x_, va.atFlat.y_, va.atFlat.z_ );
-        const Vector3 b( vb.atFlat.x_, vb.atFlat.y_, vb.atFlat.z_ );
-        debug->AddLine( a*scale, b*scale, C, depthTest );
+        {
+            const Vector3 a( va.atFlat.x_, va.atFlat.y_, va.atFlat.z_ );
+            const Vector3 b( vb.atFlat.x_, vb.atFlat.y_, vb.atFlat.z_ );
+            debug->AddLine( a*scale, b*scale, C, depthTest );
+        }
+        {
+            const Vector3 a( vb.atFlat.x_, vb.atFlat.y_, vb.atFlat.z_ );
+            const Vector3 b( vc.atFlat.x_, vc.atFlat.y_, vc.atFlat.z_ );
+            debug->AddLine( a*scale, b*scale, C, depthTest );
+        }
+        {
+            const Vector3 a( vc.atFlat.x_, vc.atFlat.y_, vc.atFlat.z_ );
+            const Vector3 b( vd.atFlat.x_, vd.atFlat.y_, vd.atFlat.z_ );
+            debug->AddLine( a*scale, b*scale, C, depthTest );
+        }
+        {
+            const Vector3 a( vd.atFlat.x_, vd.atFlat.y_, vd.atFlat.z_ );
+            const Vector3 b( va.atFlat.x_, va.atFlat.y_, va.atFlat.z_ );
+            debug->AddLine( a*scale, b*scale, C, depthTest );
+        }
     }
+    else
     {
-        const Vector3 a( vb.atFlat.x_, vb.atFlat.y_, vb.atFlat.z_ );
-        const Vector3 b( vc.atFlat.x_, vc.atFlat.y_, vc.atFlat.z_ );
-        debug->AddLine( a*scale, b*scale, C, depthTest );
-    }
-    {
-        const Vector3 a( vc.atFlat.x_, vc.atFlat.y_, vc.atFlat.z_ );
-        const Vector3 b( vd.atFlat.x_, vd.atFlat.y_, vd.atFlat.z_ );
-        debug->AddLine( a*scale, b*scale, C, depthTest );
-    }
-    {
-        const Vector3 a( vd.atFlat.x_, vd.atFlat.y_, vd.atFlat.z_ );
-        const Vector3 b( va.atFlat.x_, va.atFlat.y_, va.atFlat.z_ );
-        debug->AddLine( a*scale, b*scale, C, depthTest );
+        {
+            const Vector3 a( va.at.x_, va.at.y_, va.at.z_ );
+            const Vector3 b( vb.at.x_, vb.at.y_, vb.at.z_ );
+            debug->AddLine( a*scale, b*scale, C, depthTest );
+        }
+        {
+            const Vector3 a( vb.at.x_, vb.at.y_, vb.at.z_ );
+            const Vector3 b( vc.at.x_, vc.at.y_, vc.at.z_ );
+            debug->AddLine( a*scale, b*scale, C, depthTest );
+        }
+        {
+            const Vector3 a( vc.at.x_, vc.at.y_, vc.at.z_ );
+            const Vector3 b( vd.at.x_, vd.at.y_, vd.at.z_ );
+            debug->AddLine( a*scale, b*scale, C, depthTest );
+        }
+        {
+            const Vector3 a( vd.at.x_, vd.at.y_, vd.at.z_ );
+            const Vector3 b( va.at.x_, va.at.y_, va.at.z_ );
+            debug->AddLine( a*scale, b*scale, C, depthTest );
+        }
     }
 }
 
@@ -645,14 +677,14 @@ Cubesphere::~Cubesphere()
 
 }
 
-void Cubesphere::DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) const
+void Cubesphere::DrawDebugGeometry( DebugRenderer * debug, bool depthTest, bool flat ) const
 {
     const float SCALE = 30.0;
     const unsigned faceQty = faces.Size();
     for ( unsigned i=0; i<faceQty; i++ )
     {
         const Face & f = faces[i];
-        f.DrawDebugGeometry( SCALE, this, debug, depthTest );
+        f.DrawDebugGeometry( SCALE, this, debug, depthTest, flat );
     }
 }
 
@@ -701,6 +733,9 @@ void Cubesphere::applySource( HeightSource * src )
 {
     labelMidPoints();
     scaleToSphere();
+
+    if ( !src )
+        return;
 
     const int qty = (int)verts.Size();
     for ( int i=0; i<qty; i++ )
@@ -1007,7 +1042,8 @@ CubeSphereComponent::~CubeSphereComponent()
 void CubeSphereComponent::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
 {
     subdriveSource_.DrawDebugGeometry( 30.0, debug, depthTest );
-    cubesphere_.DrawDebugGeometry( debug, depthTest );
+    cubesphereCube_.DrawDebugGeometry( debug, depthTest );
+    cubesphereSphere_.DrawDebugGeometry( debug, depthTest, false );
 }
 
 

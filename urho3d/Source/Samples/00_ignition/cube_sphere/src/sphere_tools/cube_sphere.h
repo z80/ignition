@@ -91,7 +91,7 @@ public:
     Face();
     ~Face();
 
-    void DrawDebugGeometry( float scale, const Cubesphere * s, DebugRenderer * debug, bool depthTest ) const;
+    void DrawDebugGeometry( float scale, const Cubesphere * s, DebugRenderer * debug, bool depthTest, bool flat=true ) const;
 
     Face( int a, int b, int c, int d );
     Face( const Face & inst );
@@ -135,7 +135,7 @@ public:
     Cubesphere();
     ~Cubesphere();
 
-    void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) const;
+    void DrawDebugGeometry( DebugRenderer * debug, bool depthTest, bool flat=true ) const;
 
     Cubesphere( const Cubesphere & inst );
     const Cubesphere & operator=( const Cubesphere & inst );
@@ -167,12 +167,13 @@ public:
     CubeSphereComponent( Context * context );
     ~CubeSphereComponent();
 
-    void DrawDebugGeometry( DebugRenderer *debug, bool depthTest ) override;
+    void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) override;
 
 public:
     Vector<Vector3d> pts_;
     SubdriveSource subdriveSource_;
-    Cubesphere     cubesphere_;
+    Cubesphere     cubesphereCube_,
+                   cubesphereSphere_;
 };
 
 
