@@ -92,7 +92,7 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts 
     // Check all distances.
     const unsigned ptsQty = pts_.Size();
     bool needSubdrive = false;
-    if ( ptsQty < 1 )
+    if ( ( ptsQty < 1 ) || ( ptsNewQty > ptsQty ) )
         needSubdrive = true;
     else
     {
@@ -467,15 +467,15 @@ bool Face::inside( const Cubesphere * s, const Vector3d & a, const Vector3d & n,
 {
     const Vertex & v0 = s->verts[ vertexInds[0] ];
     const Vertex & v1 = s->verts[ vertexInds[1] ];
-    const Vertex & v2 = s->verts[ vertexInds[2] ];
+    //const Vertex & v2 = s->verts[ vertexInds[2] ];
     const Vertex & v3 = s->verts[ vertexInds[3] ];
     //const Vector3d at = (v0.atFlat + v1.atFlat + v2.atFlat + v3.atFlat) * 0.25;
     const Vector3d a30 = v3.atFlat - v0.atFlat;
     const Vector3d a10 = v1.atFlat - v0.atFlat;
     //Vector3d n = a30.CrossProduct( a10 );
     //n.Normalize();
-    const Vector3d d = a - v0.at;
-    const Float ptToPlaneDist = n.DotProduct( d );
+    const Vector3d d = a - v0.atFlat;
+    const Float ptToPlaneDist = std::abs( n.DotProduct( d ) );
     const Float inPlaneDist = dist - ptToPlaneDist;
     if ( inPlaneDist < 0.0 )
         return false;
