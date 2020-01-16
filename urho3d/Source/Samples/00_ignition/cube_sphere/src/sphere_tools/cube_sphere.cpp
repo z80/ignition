@@ -472,15 +472,20 @@ bool Face::inside( const Cubesphere * s, const Vector3d & a, const Float dist ) 
     const Vector3d at = (v0.atFlat + v1.atFlat + v2.atFlat + v3.atFlat) * 0.25;
     const Vector3d a30 = v3.atFlat - v0.atFlat;
     const Vector3d a10 = v1.atFlat - v0.atFlat;
-    const Vector3d n = a30.CrossProduct( a10 );
+    Vector3d n = a30.CrossProduct( a10 );
+    n.Normalize();
     const Vector3d d = a - v0.at;
+    const Float ptToPlaneDist = n.DotProduct( d );
+    const Float inPlaneDist = dist - ptToPlaneDist;
+    if ( inPlaneDist < 0.0 )
+        return false;
     const Float a10Len = a10.Length();
     const Float projX = d.DotProduct( a10 ) / a10Len;
-    if ( ( projX < -dist ) || (projX > (a10Len+dist)) )
+    if ( ( projX < -inPlaneDist ) || (projX > (a10Len+inPlaneDist)) )
         return false;
     const Float a30Len = a30.Length();
     const Float projY = d.DotProduct( a30 ) / a30Len;
-    if ( ( projY < -dist ) || (projY > (a30Len+dist)) )
+    if ( ( projY < -inPlaneDist ) || (projY > (a30Len+inPlaneDist)) )
         return false;
 
     return true;
