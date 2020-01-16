@@ -216,7 +216,7 @@ void Main::CreateEnvironment()
     CubeSphereComponent * cs = scene_->CreateComponent<CubeSphereComponent>();
     cs->pts_.Push( Vector3d( 1.0, 0.0, 0.0 ) );
     cs->subdriveSource_.setR( 10.0 );
-    cs->subdriveSource_.addLevel( 1.5, 5.0 );
+    cs->subdriveSource_.addLevel( 1.5, 1.0 );
 
     const bool needSubdrive = cs->subdriveSource_.needSubdrive( &(cs->cubesphere_), cs->pts_ );
     if ( needSubdrive )

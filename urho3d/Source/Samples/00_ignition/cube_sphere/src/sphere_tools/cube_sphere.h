@@ -106,7 +106,7 @@ public:
     // Vector "a" should be already projected on appropriate face.
     // E.i. "correctSide()" and "centralProjection()" should be already done.
     // "sz" allows to select all the faces within an area of size "sz".
-    bool inside( const Cubesphere * s, const Vector3d & a, const Float dist=0.1 ) const;
+    bool inside( const Cubesphere * s, const Vector3d & a, const Vector3d & n, const Float dist=0.1 ) const;
     bool selectLeafs( const Cubesphere * s, const Vector3d & a, const Float dist, Vector<int> & faceInds ) const;
 };
 

@@ -130,20 +130,20 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts 
 
 bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
 {
-    /*const Float sz = f->size( s );
+    const Float sz = f->size( s );
     const Vector3d n = f->normal( s );
     const unsigned ptsQty = ptsFlat_.Size();
     const Float levelsQty = levels_.Size();
     for ( unsigned i=0; i<ptsQty; i++ )
     {
         const Vector3d & a = ptsFlat_[i];
-        const bool ok = f->correctSide( n, a );
-        if ( !ok )
-            continue;
+        //const bool ok = f->correctSide( n, a );
+        //if ( !ok )
+        //    continue;
         for ( unsigned j=0; j<levelsQty; j++ )
         {
             const Level & lvl = levels_[j];
-            const bool inside = f->inside( s, a, lvl.dist );
+            const bool inside = f->inside( s, a, n, lvl.dist );
             if ( inside )
             {
                 if ( sz > lvl.sz )
@@ -151,9 +151,9 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
             }
         }
     }
-    return false;*/
+    return false;
 
-    if ( done_ )
+    /*if ( done_ )
         return false;
 
     if ( ( f->parentInd < 0 ) && ( f->indexInParent == 0 ) )
@@ -162,7 +162,7 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
         return true;
     }
 
-    return false;
+    return false;*/
 }
 
 void SubdriveSource::flattenPts( const Cubesphere * s )
@@ -463,17 +463,17 @@ const Float Face::size( const Cubesphere * s ) const
     return sz;
 }
 
-bool Face::inside( const Cubesphere * s, const Vector3d & a, const Float dist ) const
+bool Face::inside( const Cubesphere * s, const Vector3d & a, const Vector3d & n, const Float dist ) const
 {
     const Vertex & v0 = s->verts[ vertexInds[0] ];
     const Vertex & v1 = s->verts[ vertexInds[1] ];
     const Vertex & v2 = s->verts[ vertexInds[2] ];
     const Vertex & v3 = s->verts[ vertexInds[3] ];
-    const Vector3d at = (v0.atFlat + v1.atFlat + v2.atFlat + v3.atFlat) * 0.25;
+    //const Vector3d at = (v0.atFlat + v1.atFlat + v2.atFlat + v3.atFlat) * 0.25;
     const Vector3d a30 = v3.atFlat - v0.atFlat;
     const Vector3d a10 = v1.atFlat - v0.atFlat;
-    Vector3d n = a30.CrossProduct( a10 );
-    n.Normalize();
+    //Vector3d n = a30.CrossProduct( a10 );
+    //n.Normalize();
     const Vector3d d = a - v0.at;
     const Float ptToPlaneDist = n.DotProduct( d );
     const Float inPlaneDist = dist - ptToPlaneDist;
@@ -495,7 +495,8 @@ bool Face::selectLeafs( const Cubesphere * s, const Vector3d & a, const Float di
 {
     if ( leaf )
     {
-        const bool insideOk = inside( s, a, dist );
+        const Vector3d n = normal( s );
+        const bool insideOk = inside( s, a, n, dist );
         return insideOk;
     }
 
@@ -512,12 +513,13 @@ bool Face::selectLeafs( const Cubesphere * s, const Vector3d & a, const Float di
 
 bool Face::correctSide( const Vector3d & n, const Vector3d & a )
 {
-    const Float    projLen = n.DotProduct( a );
+    const Float projLen = n.DotProduct( a );
+    if ( projLen <= 0.0 )
+        return false;
     const Vector3d proj = n * projLen;
     const Vector3d norm = a - proj;
-    const Float projSz = proj.Length();
-    const Float normSz = norm.Length();
-    const bool ok = ( projSz >= normSz );
+    const Float normLen = norm.Length();
+    const bool ok = ( projLen >= normLen );
     
     return ok;
 }
