@@ -147,6 +147,7 @@ public:
 
     // For selecting collision patches.
     void triangleList( const Vector<Vector3d> & pts, Vector<Vertex> & tris );
+    void flattenPts( const Vector<Vector3d> & pts, Vector<Vector3d> & ptsFlat ) const;
 private:
     void clear();
     void init();
@@ -156,6 +157,8 @@ private:
     void applySource( HeightSource * src, Vertex & v );
 
     void selectFaces( const Vector<Vector3d> & pts, const Float dist, Vector<int> & faceInds );
+
+    Vector<Vector3d> ptsFlat_;
 };
 
 class CubeSphereComponent: public Component

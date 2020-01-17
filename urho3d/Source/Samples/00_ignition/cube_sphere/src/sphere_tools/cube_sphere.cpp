@@ -167,32 +167,7 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
 
 void SubdriveSource::flattenPts( const Cubesphere * s )
 {
-    // Use first 6 faces in the cubesphere to project
-    // all the points onto appropriate faces.
-    Vector3d norms[6];
-    for ( unsigned i=0; i<6; i++ )
-    {
-        const Face & face = s->faces[i];
-        norms[i] = face.normal( s );
-    }
-
-    ptsFlat_ = pts_;
-    const unsigned ptsQty = ptsFlat_.Size();
-    for ( unsigned i=0; i<ptsQty; i++ )
-    {
-        Vector3d & pt3 = ptsFlat_[i];
-        for ( int j=0; j<6; j++ )
-        {
-            const Vector3d & n = norms[j];
-            Vector3d proj;
-            const bool ok = Face::centralProjection( n, pt3, proj );
-            if ( ok )
-            {
-                pt3 = proj;
-                break;
-            }
-        }
-    }
+    s->flattenPts( pts_, ptsFlat_ );
 }
 
 Vertex::Vertex()
@@ -786,6 +761,36 @@ void Cubesphere::triangleList( Vector<Vertex> & tris )
     }
 }
 
+void Cubesphere::flattenPts( const Vector<Vector3d> & pts, Vector<Vector3d> & ptsFlat ) const
+{
+    // Use first 6 faces in the cubesphere to project
+    // all the points onto appropriate faces.
+    Vector3d norms[6];
+    for ( unsigned i=0; i<6; i++ )
+    {
+        const Face & face = this->faces[i];
+        norms[i] = face.normal( this );
+    }
+
+    ptsFlat = pts;
+    const unsigned ptsQty = ptsFlat.Size();
+    for ( unsigned i=0; i<ptsQty; i++ )
+    {
+        Vector3d & pt3 = ptsFlat[i];
+        for ( int j=0; j<6; j++ )
+        {
+            const Vector3d & n = norms[j];
+            Vector3d proj;
+            const bool ok = Face::centralProjection( n, pt3, proj );
+            if ( ok )
+            {
+                pt3 = proj;
+                break;
+            }
+        }
+    }
+}
+
 void Cubesphere::clear()
 {
     verts.Clear();
@@ -1003,20 +1008,19 @@ void Cubesphere::applySource( HeightSource * src, Vertex & v )
 
 void Cubesphere::selectFaces( const Vector<Vector3d> & pts, const Float dist, Vector<int> & faceInds )
 {
-    const unsigned ptsQty = pts.Size();
+    faceInds.Clear();
+    flattenPts( pts, ptsFlat_ );
+
+    const unsigned ptsQty = ptsFlat_.Size();
     for ( unsigned ptInd=0; ptInd<ptsQty; ptInd++ )
     {
-        const Vector3d & ptRaw = pts[ptInd];
+        const Vector3d & ptFlat = ptsFlat_[ptInd];
         for ( int i=0; i<6; i++ )
         {
             const Face & f = faces[i];
             const Vector3d n = f.normal( this );
-            const bool correctSide = f.correctSide( n, ptRaw );
-            if ( !correctSide )
-                continue;
-            Vector3d ptFlat;
-            const bool correctProj = f.centralProjection( n, ptRaw, ptFlat );
-            if ( !correctProj )
+            const bool inside = f.inside( this, ptFlat, n, dist );
+            if ( !inside )
                 continue;
             f.selectLeafs( this, ptFlat, dist, faceInds );
         }
