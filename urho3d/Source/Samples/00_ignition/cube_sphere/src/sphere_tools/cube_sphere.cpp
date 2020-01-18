@@ -761,6 +761,31 @@ void Cubesphere::triangleList( Vector<Vertex> & tris )
     }
 }
 
+void Cubesphere::triangleList( const Vector<Vector3d> & pts, Float dist, Vector<Vector3d> & tris )
+{
+    selectFaces( pts, dist, faceInds_ );
+
+    const unsigned qty = faceInds_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        const unsigned ind = faceInds_[i];
+        const Face & f = faces[ind];
+        if ( f.leaf )
+        {
+            const int ind0 = f.vertexInds[0];
+            const int ind1 = f.vertexInds[1];
+            const int ind2 = f.vertexInds[2];
+            const int ind3 = f.vertexInds[3];
+            tris.Push( this->verts[ind0].at );
+            tris.Push( this->verts[ind1].at );
+            tris.Push( this->verts[ind2].at );
+            tris.Push( this->verts[ind0].at );
+            tris.Push( this->verts[ind2].at );
+            tris.Push( this->verts[ind3].at );
+        }
+    }
+}
+
 void Cubesphere::flattenPts( const Vector<Vector3d> & pts, Vector<Vector3d> & ptsFlat ) const
 {
     // Use first 6 faces in the cubesphere to project
@@ -1015,7 +1040,7 @@ void Cubesphere::selectFaces( const Vector<Vector3d> & pts, const Float dist, Ve
     for ( unsigned ptInd=0; ptInd<ptsQty; ptInd++ )
     {
         const Vector3d & ptFlat = ptsFlat_[ptInd];
-        for ( int i=0; i<6; i++ )
+        for ( unsigned i=0; i<6; i++ )
         {
             const Face & f = faces[i];
             const Vector3d n = f.normal( this );
@@ -1048,6 +1073,26 @@ void CubeSphereComponent::DrawDebugGeometry( DebugRenderer * debug, bool depthTe
     subdriveSource_.DrawDebugGeometry( 30.0, debug, depthTest );
     cubesphereCube_.DrawDebugGeometry( debug, depthTest );
     cubesphereSphere_.DrawDebugGeometry( debug, depthTest, false );
+
+    {
+        const Color C( Color::YELLOW );
+
+        unsigned qty = tris_.Size();
+        if ( qty < 1 )
+            return;
+        for ( unsigned i=0; i<qty; i+=3 )
+        {
+            const Vector3d & va = tris_[i];
+            const Vector3d & vb = tris_[i+1];
+            const Vector3d & vc = tris_[i+2];
+            const Vector3 a( va.x_, va.y_, va.z_ );
+            const Vector3 b( vb.x_, vb.y_, vb.z_ );
+            const Vector3 c( vc.x_, vc.y_, vc.z_ );
+            debug->AddLine( a*25.0, b*25.0, C, depthTest );
+            debug->AddLine( b*25.0, c*25.0, C, depthTest );
+            debug->AddLine( c*25.0, a*25.0, C, depthTest );
+        }
+    }
 }
 
 

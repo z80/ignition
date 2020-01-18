@@ -146,7 +146,7 @@ public:
     void triangleList( Vector<Vertex> & tris );
 
     // For selecting collision patches.
-    void triangleList( const Vector<Vector3d> & pts, Vector<Vertex> & tris );
+    void triangleList( const Vector<Vector3d> & pts, Float dist, Vector<Vector3d> & tris );
     void flattenPts( const Vector<Vector3d> & pts, Vector<Vector3d> & ptsFlat ) const;
 private:
     void clear();
@@ -159,6 +159,7 @@ private:
     void selectFaces( const Vector<Vector3d> & pts, const Float dist, Vector<int> & faceInds );
 
     Vector<Vector3d> ptsFlat_;
+    Vector<int>      faceInds_;
 };
 
 class CubeSphereComponent: public Component
@@ -177,6 +178,7 @@ public:
     SubdriveSource subdriveSource_;
     Cubesphere     cubesphereCube_,
                    cubesphereSphere_;
+    Vector<Vector3d> tris_;
 };
 
 

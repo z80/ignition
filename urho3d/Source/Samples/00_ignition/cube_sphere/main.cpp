@@ -227,6 +227,10 @@ void Main::CreateEnvironment()
     cs->cubesphereSphere_ = cs->cubesphereCube_;
     cs->cubesphereSphere_.applySource( nullptr );
 
+    cs->pts_.Clear();
+    cs->pts_.Push( Vector3d( -1.0, 0.0, 0.0 ) );
+    cs->cubesphereSphere_.triangleList( cs->pts_, 2.0/10.0/1000.0, cs->tris_ );
+
     scene_->CreateComponent<DebugRenderer>();
 }
 
