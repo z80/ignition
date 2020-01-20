@@ -510,8 +510,31 @@ bool Face::selectLeafs( const Cubesphere * s, const Vector3d & a, const Float di
     for ( int i=0; i<4; i++ )
     {
         const int childInd = childInds[i];
+        if ( childInd < 0 )
+            continue;
         const Face & f = s->faces[ childInds[i] ];
         const bool insideOk = f.selectLeafs( s, a, dist, faceInds );
+        if ( insideOk )
+            faceInds.Push( childInd );
+    }
+    return false;
+}
+
+bool Face::selectBySize( const Cubesphere * s, const Vector3d & a, const Float sz, const Float dist, Vector<int> & faceInds ) const
+{
+    const Float thisSize = size( s );
+    const Vector3d n = normal( s );
+    const bool insideOk = inside( s, a, n, dist );
+    if ( (thisSize <= sz) && (insideOk) )
+        return true;
+
+    for ( int i=0; i<4; i++ )
+    {
+        const int childInd = childInds[i];
+        if ( childInd < 0 )
+            continue;
+        const Face & f = s->faces[ childInds[i] ];
+        const bool insideOk = f.selectBySize( s, a, sz, dist, faceInds );
         if ( insideOk )
             faceInds.Push( childInd );
     }
@@ -782,6 +805,27 @@ void Cubesphere::triangleList( const Vector<Vector3d> & pts, Float dist, Vector<
             tris.Push( this->verts[ind0].at );
             tris.Push( this->verts[ind2].at );
             tris.Push( this->verts[ind3].at );
+        }
+    }
+}
+
+void Cubesphere::faceList( const Vector<Vector3d> & pts, const Float sz, const Float dist, Vector<int> & faceInds )
+{
+    faceInds.Clear();
+    flattenPts( pts, ptsFlat_ );
+
+    const unsigned ptsQty = ptsFlat_.Size();
+    for ( unsigned ptInd=0; ptInd<ptsQty; ptInd++ )
+    {
+        const Vector3d & ptFlat = ptsFlat_[ptInd];
+        for ( unsigned i=0; i<6; i++ )
+        {
+            const Face & f = faces[i];
+            const Vector3d n = f.normal( this );
+            const bool inside = f.inside( this, ptFlat, n, dist );
+            if ( !inside )
+                continue;
+            f.selectBySize( this, ptFlat, sz, dist, faceInds );
         }
     }
 }

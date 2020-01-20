@@ -108,6 +108,7 @@ public:
     // "sz" allows to select all the faces within an area of size "sz".
     bool inside( const Cubesphere * s, const Vector3d & a, const Vector3d & n, const Float dist=0.1 ) const;
     bool selectLeafs( const Cubesphere * s, const Vector3d & a, const Float dist, Vector<int> & faceInds ) const;
+    bool selectBySize( const Cubesphere * s, const Vector3d & a, const Float sz, const Float dist, Vector<int> & faceInds ) const;
 };
 
 class EdgeHash
@@ -147,6 +148,7 @@ public:
 
     // For selecting collision patches.
     void triangleList( const Vector<Vector3d> & pts, Float dist, Vector<Vector3d> & tris );
+    void faceList( const Vector<Vector3d> & pts, const Float sz, const Float dist, Vector<int> & faceInds );
     void flattenPts( const Vector<Vector3d> & pts, Vector<Vector3d> & ptsFlat ) const;
 private:
     void clear();
