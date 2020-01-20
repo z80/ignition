@@ -26,6 +26,7 @@ set( TARGET_NAME relative_pose )
 include_directories( "./src"
                      "./src/math"
                      "./src/item"
+                     "./src/sphere_tools"
                      "./src/objects"
                      "./src/kepler"
                      "./src/physics"
