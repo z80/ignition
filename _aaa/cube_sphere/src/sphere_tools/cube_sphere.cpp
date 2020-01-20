@@ -168,6 +168,36 @@ void SubdriveSource::sortLevels( const Cubesphere * s )
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+HeightSource::HeightSource()
+{
+}
+
+HeightSource::~HeightSource()
+{
+}
+
+
+
+
+
+
+
+
+
+
 Vertex::Vertex()
 {
     a = b = -1;

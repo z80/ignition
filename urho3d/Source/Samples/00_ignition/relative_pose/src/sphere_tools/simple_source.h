@@ -4,6 +4,7 @@
 
 #include "cube_sphere.h"
 
+using namespace Urho3D;
 
 namespace Ign
 {
@@ -14,8 +15,8 @@ public:
     SimpleSource();
     ~SimpleSource();
 
-    Float height( const Vector3d & at ) const;
-    Color color( const Vector3d & at ) const;
+    Float height( const Vector3d & at ) const override;
+    Color color( const Vector3d & at ) const override;
 };
 
 }

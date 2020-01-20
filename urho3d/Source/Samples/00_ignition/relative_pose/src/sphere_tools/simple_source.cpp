@@ -3,10 +3,11 @@
 #include "simple_source.h"
 
 
-namespace Ing
+namespace Ign
 {
 
 SimpleSource::SimpleSource()
+    : HeightSource()
 {
 }
 
