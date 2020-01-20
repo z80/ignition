@@ -217,7 +217,7 @@ void Main::CreateEnvironment()
     cs->pts_.Push( Vector3d( 1.0, 1.0, 1.0 ) );
     cs->pts_.Push( Vector3d( -1.0, 0.3, 0.0 ) );
     cs->subdriveSource_.setR( 10.0 );
-    cs->subdriveSource_.addLevel( 1.5, 7.0 );
+    cs->subdriveSource_.addLevel( 1.5, 170.0 );
     cs->subdriveSource_.addLevel( 0.5, 2.0 );
     cs->subdriveSource_.addLevel( 0.2, 1.0 );
 
@@ -229,7 +229,8 @@ void Main::CreateEnvironment()
 
     cs->pts_.Clear();
     cs->pts_.Push( Vector3d( -1.0, 0.0, 0.0 ) );
-    cs->cubesphereSphere_.triangleList( cs->pts_, 2.0/10.0/1000.0, cs->tris_ );
+    //cs->cubesphereSphere_.triangleList( cs->pts_, 2.0/10.0/1000.0, cs->tris_ );
+    cs->cubesphereSphere_.triangleList( cs->pts_, 5.0/10.0, cs->tris_ );
 
     scene_->CreateComponent<DebugRenderer>();
 }
