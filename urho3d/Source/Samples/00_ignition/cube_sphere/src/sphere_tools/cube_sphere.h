@@ -31,7 +31,6 @@ public:
 
     void DrawDebugGeometry( float scale, DebugRenderer * debug, bool depthTest ) const;
 
-    void setR( Float r );
     void clearLevels();
     void addLevel( Float sz, Float dist );
 
@@ -43,12 +42,10 @@ public:
 
 public:
     void flattenPts( const Cubesphere * s );
+    void sortLevels( const Cubesphere * s );
 
-    Float r_;
-    Vector<Level> levels_;
+    Vector<Level> levels_, levelsUnit_;
     Vector<Vector3d> pts_, ptsFlat_, ptsNew_;
-
-    mutable bool done_;
 };
 
 class HeightSource
@@ -64,8 +61,9 @@ public:
 struct Vertex
 {
 public:
-    Vector3d at, atFlat;
+    Vector3d at, atFlat, atUnit;
     Vector3d norm;
+    Color    color;
 
     int  a, b;
     bool isMidPoint;
@@ -166,7 +164,8 @@ private:
     void labelMidPoints();
     void scaleToSphere();
     void computeNormals();
-    void applySource( HeightSource * src, Vertex & v );
+    void applySourceHeight( HeightSource * src, Vertex & v );
+    void applySourceColor( HeightSource * src, Vertex & v );
 
     void selectFaces( const Vector<Vector3d> & pts, const Float dist, Vector<int> & faceInds );
 

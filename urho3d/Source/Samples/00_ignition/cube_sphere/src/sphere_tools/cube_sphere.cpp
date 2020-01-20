@@ -6,9 +6,6 @@ namespace Ign
 
 SubdriveSource::SubdriveSource()
 {
-    r_ = 1.0;
-
-    done_ = false;
 }
 
 SubdriveSource::~SubdriveSource()
@@ -33,11 +30,6 @@ void SubdriveSource::DrawDebugGeometry( float scale, DebugRenderer * debug, bool
     }
 }
 
-void SubdriveSource::setR( Float r )
-{
-    r_ = r;
-}
-
 void SubdriveSource::clearLevels()
 {
     levels_.Clear();
@@ -46,26 +38,9 @@ void SubdriveSource::clearLevels()
 void SubdriveSource::addLevel( Float sz, Float dist )
 {
     Level lvl;
-    lvl.sz   = sz / r_;
-    lvl.dist = dist / r_;
+    lvl.sz   = sz;
+    lvl.dist = dist;
     levels_.Push( lvl );
-
-    // Sort levels in distance accending order.
-    const unsigned qty = levels_.Size();
-    for ( unsigned i=0; i<(qty-1); i++ )
-    {
-        Level & a = levels_[i];
-        for ( unsigned j=(i+1); j<qty; j++ )
-        {
-            Level & b = levels_[j];
-            if ( a.dist > b.dist )
-            {
-                const Level c = a;
-                a = b;
-                b = c;
-            }
-        }
-    }
 }
 
 bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts )
@@ -85,11 +60,13 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts 
         return true;
     }
 
+    // Sort and normalize all levels.
+    sortLevels( s );
     const Level lvl = levels_[0];
-    const Float d = lvl.dist / r_ * 0.5;
+    const Float d = lvl.dist * 0.5;
 
 
-    // Check all distances.
+    // Check all distances. And resubdrive if shifter half the finest distance.
     const unsigned ptsQty = pts_.Size();
     bool needSubdrive = false;
     if ( ( ptsQty < 1 ) || ( ptsNewQty > ptsQty ) )
@@ -152,22 +129,43 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
         }
     }
     return false;
-
-    /*if ( done_ )
-        return false;
-
-    if ( ( f->parentInd < 0 ) && ( f->indexInParent == 0 ) )
-    {
-        done_ = true;
-        return true;
-    }
-
-    return false;*/
 }
 
 void SubdriveSource::flattenPts( const Cubesphere * s )
 {
     s->flattenPts( pts_, ptsFlat_ );
+}
+
+void SubdriveSource::sortLevels( const Cubesphere * s )
+{
+    levelsUnit_ = levels_;
+
+    // Normalize all distances.
+    const Float R = s->R();
+    const unsigned qty = levelsUnit_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Level & a = levelsUnit_[i];
+        a.sz   /= R;
+        a.dist /= R;
+    }
+
+    // Sort levels in distance accending order.
+    for ( unsigned i=0; i<(qty-1); i++ )
+    {
+        Level & a = levelsUnit_[i];
+        for ( unsigned j=(i+1); j<qty; j++ )
+        {
+            Level & b = levelsUnit_[j];
+            if ( a.dist > b.dist )
+            {
+                const Level c = a;
+                a = b;
+                b = c;
+            }
+        }
+    }
+
 }
 
 Vertex::Vertex()
@@ -187,8 +185,9 @@ Vertex::Vertex( const Vector3d & at )
     a = b = -1;
     leafFacesQty = 0;
     isMidPoint   = false;
-    this->atFlat = atFlat;
-    this->at  = at;
+    this->atFlat = at;
+    this->atUnit = at;
+    this->at     = at;
 }
 
 Vertex::Vertex( const Vertex & inst )
@@ -201,12 +200,14 @@ const Vertex & Vertex::operator=( const Vertex & inst )
     if ( this != &inst )
     {
         atFlat  = inst.atFlat;
+        atUnit  = inst.atUnit;
         at   = inst.at;
         norm = inst.norm;
         a    = inst.a;
         b    = inst.b;
         leafFacesQty = inst.leafFacesQty;
         isMidPoint   = inst.isMidPoint;
+        color        = inst.color;
     }
     return *this;
 }
@@ -765,7 +766,7 @@ void Cubesphere::applySource( HeightSource * src )
     {
         Vertex & v = verts[i];
         if ( !v.isMidPoint )
-            applySource( src, v );
+            applySourceHeight( src, v );
     }
 
     for ( int i=0; i<qty; i++ )
@@ -782,8 +783,15 @@ void Cubesphere::applySource( HeightSource * src )
             v.norm.Normalize();
         }
     }
-
     computeNormals();
+
+
+    // Apply color information.
+    for ( int i=0; i<qty; i++ )
+    {
+        Vertex & v = verts[i];
+        applySourceColor( src, v );
+    }
 }
 
 void Cubesphere::triangleList( Vector<Vertex> & tris )
@@ -1027,9 +1035,9 @@ void Cubesphere::scaleToSphere()
         Vertex & v = verts[i];
         if ( !v.isMidPoint )
         {
-            v.at = v.atFlat;
-            v.at.Normalize();
-            v.norm = v.at;
+            v.atUnit = v.atFlat;
+            v.atUnit.Normalize();
+            v.norm = v.atUnit;
         }
     }
 
@@ -1042,7 +1050,7 @@ void Cubesphere::scaleToSphere()
             const int vertIndB = v.b;
             const Vertex & va = verts[vertIndA];
             const Vertex & vb = verts[vertIndB];
-            v.at = (va.at + vb.at) * 0.5;
+            v.atUnit = (va.atUnit + vb.atUnit) * 0.5;
             v.norm = va.norm + vb.norm;
             v.norm.Normalize();
         }
@@ -1093,12 +1101,19 @@ void Cubesphere::computeNormals()
     }
 }
 
-void Cubesphere::applySource( HeightSource * src, Vertex & v )
+void Cubesphere::applySourceHeight( HeightSource * src, Vertex & v )
 {
-    const Float dh = src->height( v.at );
+    const Float dh = src->height( v.atUnit );
     const Float d  = R_ + H_*dh;
     v.at = v.at * d;
 }
+
+void Cubesphere::applySourceColor( HeightSource * src, Vertex & v )
+{
+    const Color c = src->color( v.atUnit );
+    v.color = c;
+}
+
 
 void Cubesphere::selectFaces( const Vector<Vector3d> & pts, const Float dist, Vector<int> & faceInds )
 {
