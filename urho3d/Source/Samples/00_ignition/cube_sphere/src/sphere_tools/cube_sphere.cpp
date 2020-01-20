@@ -698,9 +698,34 @@ const Cubesphere & Cubesphere::operator=( const Cubesphere & inst )
         verts  = inst.verts;
         faces  = inst.faces;
         lookup = inst.lookup;
+
+        R_        = inst.R_;
+        H_        = inst.H_;
+        ptsFlat_  = inst.ptsFlat_;
+        faceInds_ = inst.faceInds_;
     }
 
     return *this;
+}
+
+void Cubesphere::setR( const Float newR )
+{
+    R_ = newR;
+}
+
+Float Cubesphere::R() const
+{
+    return R_;
+}
+
+void Cubesphere::setH( const Float newH )
+{
+    H_ = newH;
+}
+
+Float Cubesphere::H() const
+{
+    return H_;
 }
 
 void Cubesphere::subdrive( SubdriveSource * src )
@@ -1071,7 +1096,7 @@ void Cubesphere::computeNormals()
 void Cubesphere::applySource( HeightSource * src, Vertex & v )
 {
     const Float dh = src->height( v.at );
-    const Float d  = 1.0 + dh;
+    const Float d  = R_ + H_*dh;
     v.at = v.at * d;
 }
 

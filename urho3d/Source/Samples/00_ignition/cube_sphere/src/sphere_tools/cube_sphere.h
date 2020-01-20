@@ -141,6 +141,14 @@ public:
     Cubesphere( const Cubesphere & inst );
     const Cubesphere & operator=( const Cubesphere & inst );
 
+    // Radius in physicsl units.
+    void setR( const Float newR );
+    Float R() const;
+    // Height in physicsl units.
+    void setH( const Float newH );
+    Float H() const;
+
+
     void subdrive( SubdriveSource * src );
     void applySource( HeightSource * src );
 
@@ -149,6 +157,8 @@ public:
     // For selecting collision patches.
     void triangleList( const Vector<Vector3d> & pts, Float dist, Vector<Vector3d> & tris );
     void faceList( const Vector<Vector3d> & pts, const Float sz, const Float dist, Vector<int> & faceInds );
+
+    // This is for subdriving. It is used in SubdriveSource.
     void flattenPts( const Vector<Vector3d> & pts, Vector<Vector3d> & ptsFlat ) const;
 private:
     void clear();
@@ -159,6 +169,11 @@ private:
     void applySource( HeightSource * src, Vertex & v );
 
     void selectFaces( const Vector<Vector3d> & pts, const Float dist, Vector<int> & faceInds );
+
+public:
+    // Radius unit sphere is scaled to 
+    // when returned.
+    Float R_, H_;
 
     Vector<Vector3d> ptsFlat_;
     Vector<int>      faceInds_;
