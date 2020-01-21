@@ -25,10 +25,10 @@ public:
 
 
     // Processing physics frame position changes
-    void childEntered( RefFrame * refFrame ) override;
-    void childLeft( RefFrame * refFrame ) override;
-    void parentTeleported() override;
-    void childTeleported( RefFrame * refFrame ) override;
+    //void childEntered( RefFrame * refFrame ) override;
+    //void childLeft( RefFrame * refFrame ) override;
+    //void parentTeleported() override;
+    //void childTeleported( RefFrame * refFrame ) override;
 
 protected:
     /// Handle scene being assigned. This may happen several times
@@ -37,14 +37,19 @@ protected:
     virtual void OnSceneSet( Scene * scene );
 
     /// Check all children and subdivide based on where 
-    /// physics frames are located.
-    void subdivideCollisions();
+    /// physics frames are located. This is done on a server side.
+    void subdivideCollision();
+    /// Subdivides for visualization. This is done on client side.
+    void subdivideVisual();
 public:
-    Cubesphere cubesphere_;
+    Cubesphere     cubesphere_;
+    SubdriveSource subdriveSourceCollision_,
+                   subdriveSourceVisual_;
 
     // These two are for client side.
     SharedPtr<Node> node_;
     SharedPtr<CustomGeometry> geometry_;
+
 };
 
 

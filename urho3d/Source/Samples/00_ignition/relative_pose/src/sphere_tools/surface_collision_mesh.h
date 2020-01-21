@@ -12,12 +12,12 @@ namespace Ign
 
 class SurfaceCollisionMesh: public PhysicsItem
 {
-    URHO3D_OBJECT( SurfaceCollsionMesh, PhysicsItem )
+    URHO3D_OBJECT( SurfaceCollisionMesh, PhysicsItem )
 public:
     static void RegisterComponent( Context * context );
 
-    SurfaceCollsionMesh( Context * context );
-    ~SurfaceCollsionMesh();
+    SurfaceCollisionMesh( Context * context );
+    ~SurfaceCollisionMesh();
 
     bool IsSelectable() const override;
 

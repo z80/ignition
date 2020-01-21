@@ -40,6 +40,9 @@ static const StringHash P_CHATNAME("CHATNAME");
 static const StringHash P_CHATTEXT("CHATTEXT");
 
 
+static const StringHash ENVIRONMENT("Environment");
+
+
 
 ClientDesc::ClientDesc()
 {
@@ -86,7 +89,7 @@ Environment::Environment( Context * context )
 
     Variant a;
     a = this;
-    SetGlobalVar( StringHash( "Environment" ), a );
+    SetGlobalVar( ENVIRONMENT, a );
 
     drawDebugGeometry_ = false;
 }
@@ -94,6 +97,15 @@ Environment::Environment( Context * context )
 Environment::~Environment()
 {
 
+}
+
+Environment * Environment::environment( Context * context )
+{
+    RefCounted * rc = context->GetGlobalVar( ENVIRONMENT ).GetPtr();
+    if ( !rc )
+        return nullptr;
+    Environment * env = reinterpret_cast<Environment *>( rc );
+    return env;
 }
 
 void Environment::RegisterComponent( Context * context )

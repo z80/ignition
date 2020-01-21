@@ -2,28 +2,28 @@
 
 #include "surface_collision_mesh.h"
 
-void SurfaceCollsionMesh::RegisterComponent( Context * context )
+void SurfaceCollisionMesh::RegisterComponent( Context * context )
 {
-    context->RegisterFactory<DynamicCube>();
+    context->RegisterFactory<SurfaceCollisionMesh>();
     URHO3D_COPY_BASE_ATTRIBUTES( PhysicsItem );
 }
 
 
-SurfaceCollsionMesh::SurfaceCollsionMesh( Context * context )
+SurfaceCollisionMesh::SurfaceCollisionMesh( Context * context )
     : PhysicsItem( context )
 {
 }
 
-SurfaceCollsionMesh::~SurfaceCollsionMesh()
+SurfaceCollisionMesh::~SurfaceCollisionMesh()
 {
 }
 
-bool SurfaceCollsionMesh::IsSelectable() const
+bool SurfaceCollisionMesh::IsSelectable() const
 {
     return false;
 }
 
-void SurfaceCollsionMesh::createVisualContent( Node * n )
+void SurfaceCollisionMesh::createVisualContent( Node * n )
 {
     if ( !n )
         return;
@@ -34,9 +34,8 @@ void SurfaceCollsionMesh::createVisualContent( Node * n )
     model->SetModel( cache->GetResource<Model>("Ign/Models/TestCube.mdl") );
     model->SetMaterial( cache->GetResource<Material>("Ign/Materials/TestCubeM.xml") );
 }
-}
 
-void SurfaceCollsionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
+void SurfaceCollisionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
 {
     rb->SetMass( 0.0 );
     // Here need to specify custom geometry based one later.

@@ -36,6 +36,8 @@ public:
     Environment( Context * context );
     virtual ~Environment();
 
+    static Environment * environment( Context * context );
+
     static void RegisterComponent( Context * context );
 
     bool IsClient() const;
