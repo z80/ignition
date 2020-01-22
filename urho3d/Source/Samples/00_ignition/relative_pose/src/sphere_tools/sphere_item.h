@@ -23,6 +23,8 @@ public:
     /// Update visual appearance and collision subdivision.
     virtual void updateData();
 
+    /// Level of detail subdivision initialization.
+    virtual void subdriveLevelsInit();
 
     // Processing physics frame position changes
     //void childEntered( RefFrame * refFrame ) override;
@@ -42,6 +44,7 @@ protected:
     /// Subdivides for visualization. This is done on client side.
     void subdivideVisual();
 public:
+    Vector<VEctor3d> pts_;
     Cubesphere     cubesphere_;
     SubdriveSource subdriveSourceCollision_,
                    subdriveSourceVisual_;
