@@ -47,7 +47,7 @@ protected:
     /// triangles obtained from "cubesphereVisual_".
     void regenerateMesh();
 public:
-    Vector<VEctor3d> pts_;
+    Vector<Vector3d> pts_;
     Cubesphere     cubesphereCollision_, 
                    cubesphereVisual_;
     SubdriveSource subdriveSourceCollision_,

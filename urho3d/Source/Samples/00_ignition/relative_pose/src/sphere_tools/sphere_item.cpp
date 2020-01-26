@@ -1,5 +1,6 @@
 
 #include "sphere_item.h"
+#include "physics_frame.h"
 
 namespace Ign
 {
@@ -35,6 +36,7 @@ void SphereItem::updateData()
 void SphereItem::subdriveLevelsInit()
 {
     cubesphereCollision_.setR( 100.0 );
+    cubesphereVisual_.setR( 100.0 );
 
     subdriveSourceCollision_.addLevel( 1.0, 30.0 );
     subdriveSourceCollision_.addLevel( 5.0, 80.0 );
@@ -62,7 +64,7 @@ void SphereItem::OnSceneSet( Scene * scene )
 void SphereItem::subdivideCollision()
 {
     pts_.Clear();
-    const Vector<SharedPtr<RefFrame> > & chs = children();
+    const Vector<SharedPtr<RefFrame> > & chs = children_;
     const unsigned qty = chs.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
@@ -78,7 +80,7 @@ void SphereItem::subdivideCollision()
 
     const bool need = subdriveSourceCollision_.needSubdrive( &cubesphereCollision_, pts_ );
     if ( need )
-        cubesphereCollision_.subdrive( subdriveSourceCollision_ );
+        cubesphereCollision_.subdrive( &subdriveSourceCollision_ );
 }
 
 void SphereItem::subdivideVisual()
@@ -98,7 +100,7 @@ void SphereItem::subdivideVisual()
     const bool need = subdriveSourceVisual_.needSubdrive( &cubesphereVisual_, pts_ );
     if ( need )
     {
-        cubesphereVisual_.subdrive( subdriveSourceVisual_ );
+        cubesphereVisual_.subdrive( &subdriveSourceVisual_ );
         regenerateMesh();
     }
 }
