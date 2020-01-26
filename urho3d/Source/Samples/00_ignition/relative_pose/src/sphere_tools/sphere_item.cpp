@@ -14,7 +14,7 @@ void SphereItem::RegisterComponent( Context * context )
 SphereItem::SphereItem( Context * context )
     : RefFrame( context )
 {
-
+    subdriveLevelsInit();
 }
 
 SphereItem::~SphereItem()
@@ -34,7 +34,7 @@ void SphereItem::updateData()
 
 void SphereItem::subdriveLevelsInit()
 {
-    cubesphere_.setR( 100.0 );
+    cubesphereCollision_.setR( 100.0 );
 
     subdriveSourceCollision_.addLevel( 1.0, 30.0 );
     subdriveSourceCollision_.addLevel( 5.0, 80.0 );
@@ -76,9 +76,9 @@ void SphereItem::subdivideCollision()
         pts_.Push( r );
     }
 
-    const bool need = subdriveSourceCollision_.needSubdrive( &cubesphere_, pts_ );
+    const bool need = subdriveSourceCollision_.needSubdrive( &cubesphereCollision_, pts_ );
     if ( need )
-        cubesphere_.subdrive( subdriveSourceCollision_ );
+        cubesphereCollision_.subdrive( subdriveSourceCollision_ );
 }
 
 void SphereItem::subdivideVisual()
@@ -88,9 +88,30 @@ void SphereItem::subdivideVisual()
     if ( !env )
         return;
 
-    pts.Clear();
+    pts_.Clear();
+    // Get current client and find its physics environment.
+    CameraFrame * cam = env->FindCameraFrame();
+    State s;
+    cam->relativePose( this, s );
+    pts_.Push( s.r );
+
+    const bool need = subdriveSourceVisual_.needSubdrive( &cubesphereVisual_, pts_ );
+    if ( need )
+    {
+        cubesphereVisual_.subdrive( subdriveSourceVisual_ );
+        regenerateMesh();
+    }
+}
+
+void SphereItem::regenerateMesh()
+{
 
 }
+
+
+
+
+
 
 
 }

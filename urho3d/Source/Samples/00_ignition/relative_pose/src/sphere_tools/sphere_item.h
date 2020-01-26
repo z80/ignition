@@ -43,9 +43,13 @@ protected:
     void subdivideCollision();
     /// Subdivides for visualization. This is done on client side.
     void subdivideVisual();
+    /// Rebuilds CustomGeometry thing based on 
+    /// triangles obtained from "cubesphereVisual_".
+    void regenerateMesh();
 public:
     Vector<VEctor3d> pts_;
-    Cubesphere     cubesphere_;
+    Cubesphere     cubesphereCollision_, 
+                   cubesphereVisual_;
     SubdriveSource subdriveSourceCollision_,
                    subdriveSourceVisual_;
 
