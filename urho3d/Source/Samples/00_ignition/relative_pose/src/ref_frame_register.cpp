@@ -9,6 +9,7 @@
 #include "rotating_frame.h"
 #include "orbiting_frame.h"
 #include "camera_frame.h"
+#include "sphere_item.h"
 #include "environment.h"
 
 #include "main_menu.h"
@@ -36,6 +37,7 @@ void RegisterComponents( Context * context )
     RotatingFrame::RegisterComponent( context );
     OrbitingFrame::RegisterComponent( context );
     CameraFrame::RegisterComponent( context );
+    SphereItem::RegisterComponent( context );
     Environment::RegisterComponent( context );
 
     MainMenu::RegisterObject( context );
