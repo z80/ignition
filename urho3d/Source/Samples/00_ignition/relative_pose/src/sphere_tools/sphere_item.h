@@ -38,6 +38,13 @@ protected:
     /// are subscribed to here.
     virtual void OnSceneSet( Scene * scene );
 
+    /// Apply source to a subdivided sphere.
+    /// Need to override this one in an implementation!!!
+    virtual void applySourceCollision( Cubesphere & cs );
+    /// Apply source to a subdivided sphere.
+    /// /// Need to override this one in an implementation!!!
+    virtual void applySourceVisual( Cubesphere & cs );
+
     /// Check all children and subdivide based on where 
     /// physics frames are located. This is done on a server side.
     void subdivideCollision();
@@ -45,7 +52,7 @@ protected:
     void subdivideVisual();
     /// Rebuilds CustomGeometry thing based on 
     /// triangles obtained from "cubesphereVisual_".
-    void regenerateMesh();
+    void regenerateMeshVisual();
 public:
     Vector<Vector3d> pts_;
     Cubesphere     cubesphereCollision_, 
@@ -56,6 +63,9 @@ public:
     // These two are for client side.
     SharedPtr<Node> node_;
     SharedPtr<CustomGeometry> geometry_;
+
+    // For buffering visual geometry.
+    Vector<Vertex> trianglesVisual_;
 
 };
 

@@ -1,6 +1,7 @@
 
 #include "sphere_item.h"
 #include "physics_frame.h"
+#include "camera_frame.h"
 
 namespace Ign
 {
@@ -52,13 +53,29 @@ void SphereItem::OnSceneSet( Scene * scene )
     if ( !scene )
         return;
 
-    Node * n = scene->CreateChild();
+    Node * n = scene->CreateChild( String( "SphereItem" ), LOCAL );
     node_ = SharedPtr<Node>( n );
 
-    CustomGeometry * cg = n->CreateComponent<CustomGeometry>();
+    CustomGeometry * cg = n->CreateComponent<CustomGeometry>( LOCAL );
     geometry_ = SharedPtr<CustomGeometry>( cg );
 
     // Here also need to assign a material to the geometry componenet.
+    ResourceCache * cache = GetSubsystem<ResourceCache>();
+    Material * m = cache->GetResource<Material>("Materials/VertexColor.xml");
+    //Material * m = cache->GetResource<Material>("Materials/Stone.xml");
+    cg->SetMaterial( m );
+    cg->SetCastShadows( true );
+    cg->SetDynamic( true );
+}
+
+void SphereItem::applySourceCollision( Cubesphere & cs )
+{
+
+}
+
+void SphereItem::applySourceVisual( Cubesphere & cs )
+{
+
 }
 
 void SphereItem::subdivideCollision()
@@ -80,7 +97,10 @@ void SphereItem::subdivideCollision()
 
     const bool need = subdriveSourceCollision_.needSubdrive( &cubesphereCollision_, pts_ );
     if ( need )
+    {
         cubesphereCollision_.subdrive( &subdriveSourceCollision_ );
+        applySourceCollision( cubesphereCollision_ );
+    }
 }
 
 void SphereItem::subdivideVisual()
@@ -101,13 +121,42 @@ void SphereItem::subdivideVisual()
     if ( need )
     {
         cubesphereVisual_.subdrive( &subdriveSourceVisual_ );
-        regenerateMesh();
+        applySourceVisual( cubesphereVisual_ );
+        regenerateMeshVisual();
     }
 }
 
-void SphereItem::regenerateMesh()
+void SphereItem::regenerateMeshVisual()
 {
+    trianglesVisual_.Clear();
+    cubesphereVisual_.triangleList( trianglesVisual_ );
 
+
+    CustomGeometry * cg = geometry_;
+
+    cg->Clear();
+    cg->SetNumGeometries( 1 );
+    cg->BeginGeometry( 0, TRIANGLE_LIST );
+
+    const unsigned qty = trianglesVisual_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        const Vertex & v = trianglesVisual_[i];
+        const Vector3 at( v.at.x_, v.at.y_, v.at.z_ );
+        const Vector3 n( v.norm.x_, v.norm.y_, v.norm.z_ );
+        const Color & c( v.color );
+        cg->DefineVertex( at );
+        cg->DefineColor( c );
+        cg->DefineNormal( n );
+    }
+
+    cg->Commit();
+
+    ResourceCache * cache = GetSubsystem<ResourceCache>();
+    Material * m = cache->GetResource<Material>("Materials/VertexColor.xml");
+    //Material * m = cache->GetResource<Material>("Materials/Stone.xml");
+    cg->SetMaterial( m );
+    cg->SetCastShadows( true );
 }
 
 
