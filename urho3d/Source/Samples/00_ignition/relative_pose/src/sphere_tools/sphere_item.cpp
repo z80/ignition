@@ -114,7 +114,7 @@ void SphereItem::subdivideVisual()
     // Get current client and find its physics environment.
     CameraFrame * cam = env->FindCameraFrame();
     State s;
-    cam->relativePose( this, s );
+    cam->relativeState( this, s );
     pts_.Push( s.r );
 
     const bool need = subdriveSourceVisual_.needSubdrive( &cubesphereVisual_, pts_ );

@@ -121,8 +121,10 @@ private:
     void UpdateEvolvingNodes( Timestamp ticks_dt );
     void CaptureControls();
     void ApplyControls();
+public:
     CameraFrame * FindCameraFrame( const ClientDesc & cd );
     CameraFrame * FindCameraFrame();
+private:
     RefFrame    * FindSelectedFrame( const ClientDesc & cd );
     RefFrame    * FindSelectedFrame();
     void ProcessLocalVisuals();
