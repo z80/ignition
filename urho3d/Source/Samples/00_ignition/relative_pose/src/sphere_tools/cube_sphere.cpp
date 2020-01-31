@@ -63,7 +63,7 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts 
     // Sort and normalize all levels.
     sortLevels( s );
     const Level lvl = levels_[0];
-    const Float d = lvl.dist * 0.5;
+    const Float d = lvl.dist * 0.5 / s->R();
 
 
     // Check all distances. And resubdrive if shifter half the finest distance.
@@ -695,6 +695,9 @@ bool operator==( const EdgeHash & a, const EdgeHash & b )
 
 Cubesphere::Cubesphere()
 {
+    R_ = 10.0;
+    H_ = 1.0;
+
     verts.Reserve( 4096 );
     faces.Reserve( 4096 );
 
@@ -839,11 +842,11 @@ void Cubesphere::triangleList( Vector<Vertex> & tris )
             const int ind2 = f.vertexInds[2];
             const int ind3 = f.vertexInds[3];
             tris.Push( this->verts[ind0] );
+            tris.Push( this->verts[ind2] );
             tris.Push( this->verts[ind1] );
-            tris.Push( this->verts[ind2] );
             tris.Push( this->verts[ind0] );
-            tris.Push( this->verts[ind2] );
             tris.Push( this->verts[ind3] );
+            tris.Push( this->verts[ind2] );
         }
     }
 }
@@ -1136,7 +1139,7 @@ void Cubesphere::applySourceHeight( HeightSource * src, Vertex & v )
 {
     const Float dh = src->height( v.atUnit );
     const Float d  = R_ + H_*dh;
-    v.at = v.at * d;
+    v.at = v.atUnit * d;
 }
 
 void Cubesphere::applySourceColor( HeightSource * src, Vertex & v )

@@ -178,7 +178,7 @@ void Environment::Update( float timeStep )
         }
     }
 
-    const bool isClient = IsClient();
+    const bool isClient = true;
     UpdateDynamicGeometryNodes( isServer, isClient );
 
     // On client side capture local and controls and

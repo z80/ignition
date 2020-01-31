@@ -24,6 +24,9 @@ public:
     void updateCollisionData();
     void updateVisualData();
 
+    void refStateChanged() override;
+    void poseChanged() override;
+
     /// Level of detail subdivision initialization.
     virtual void subdriveLevelsInit();
 

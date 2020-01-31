@@ -34,8 +34,8 @@ CameraFrame::~CameraFrame()
 
 void CameraFrame::ApplyControls( const Controls & ctrl )
 {
-    yaw_   = ctrl.yaw_ * 180.0 / 3.14;
-    pitch_ = ctrl.pitch_ * 180.0 / 3.14;
+    yaw_   = ctrl.yaw_ * 180.0 / 3.14 / 10.0;
+    pitch_ = ctrl.pitch_ * 180.0 / 3.14 / 10.0;
     VariantMap::ConstIterator it = ctrl.extraData_.Find( IGN_ZOOM_VALUE );
     const int z = (it != ctrl.extraData_.End()) ? it->second_.GetInt() : 5;
     dist_ = static_cast<Float>( z ) * alpha_;

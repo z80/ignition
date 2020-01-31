@@ -16,7 +16,7 @@ void SphereItem::RegisterComponent( Context * context )
 SphereItem::SphereItem( Context * context )
     : RefFrame( context )
 {
-    subdriveLevelsInit();
+
 }
 
 SphereItem::~SphereItem()
@@ -39,24 +39,39 @@ void SphereItem::updateVisualData()
     subdivideVisual();
 }
 
+void SphereItem::refStateChanged()
+{
+    const Vector3    r = refR().vector3();
+    const Quaternion q = refQ().quaternion();
+    node_->SetTransform( r, q );
+}
+
+void SphereItem::poseChanged()
+{
+    computeRefState( nullptr );
+    URHO3D_LOGINFOF( "SphereItem::poseChanged()" );
+}
+
 void SphereItem::subdriveLevelsInit()
 {
-    cubesphereCollision_.setR( 100.0 );
-    cubesphereVisual_.setR( 100.0 );
+    cubesphereCollision_.setR( 10.0 );
+    cubesphereVisual_.setR( 10.0 );
 
-    subdriveSourceCollision_.addLevel( 1.0, 30.0 );
-    subdriveSourceCollision_.addLevel( 5.0, 80.0 );
-    subdriveSourceCollision_.addLevel( 15.0, 280.0 );
+    subdriveSourceCollision_.addLevel( 0.5, 3.0 );
+    subdriveSourceCollision_.addLevel( 1.5, 8.0 );
+    subdriveSourceCollision_.addLevel( 5.5, 18.0 );
 
-    subdriveSourceVisual_.addLevel( 0.5, 30.0 );
-    subdriveSourceVisual_.addLevel( 5.0, 80.0 );
-    subdriveSourceVisual_.addLevel( 15.0, 280.0 );
+    subdriveSourceVisual_.addLevel( 0.5, 3.0 );
+    subdriveSourceVisual_.addLevel( 1.5, 8.0 );
+    subdriveSourceVisual_.addLevel( 5.5, 18.0 );
 }
 
 void SphereItem::OnSceneSet( Scene * scene )
 {
     if ( !scene )
         return;
+
+    subdriveLevelsInit();
 
     Node * n = scene->CreateChild( String( "SphereItem" ), LOCAL );
     node_ = SharedPtr<Node>( n );
