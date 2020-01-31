@@ -6,6 +6,7 @@
 #include "dynamic_cube.h"
 #include "character_cube.h"
 #include "ico_planet.h"
+#include "sphere_example.h"
 #include "rotating_frame.h"
 #include "orbiting_frame.h"
 #include "settings.h"
@@ -78,6 +79,10 @@ void TestEnvironment::CreateReplicatedContentServer()
         IcoPlanet * ip = s->CreateComponent<IcoPlanet>();
         ip->setParent( rf );
         ip->setR( Vector3d::ZERO );
+
+        SphereExample * se = s->CreateComponent<SphereExample>();
+        se->setParent( rf );
+        se->setR( Vector3d( 10.0, 0.0, 0.0 ) );
 
         // Create orbiting element.
         {
