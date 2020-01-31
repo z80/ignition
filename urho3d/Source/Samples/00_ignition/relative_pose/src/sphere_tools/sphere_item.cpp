@@ -58,11 +58,11 @@ void SphereItem::subdriveLevelsInit()
     cubesphereVisual_.setR( 10.0 );
 
     subdriveSourceCollision_.addLevel( 0.5, 3.0 );
-    subdriveSourceCollision_.addLevel( 1.5, 8.0 );
+    //subdriveSourceCollision_.addLevel( 1.5, 8.0 );
     subdriveSourceCollision_.addLevel( 5.5, 18.0 );
 
     subdriveSourceVisual_.addLevel( 0.5, 3.0 );
-    subdriveSourceVisual_.addLevel( 1.5, 8.0 );
+    //subdriveSourceVisual_.addLevel( 1.5, 8.0 );
     subdriveSourceVisual_.addLevel( 5.5, 18.0 );
 }
 
