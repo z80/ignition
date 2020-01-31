@@ -29,9 +29,14 @@ void SphereItem::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
 
 }
 
-void SphereItem::updateData()
+void SphereItem::updateCollisionData()
 {
     subdivideCollision();
+}
+
+void SphereItem::updateVisualData()
+{
+    subdivideVisual();
 }
 
 void SphereItem::subdriveLevelsInit()

@@ -21,7 +21,8 @@ public:
     virtual void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) override;
 
     /// Update visual appearance and collision subdivision.
-    virtual void updateData();
+    void updateCollisionData();
+    void updateVisualData();
 
     /// Level of detail subdivision initialization.
     virtual void subdriveLevelsInit();

@@ -3,6 +3,7 @@
 #include "ref_frame.h"
 #include "physics_frame.h"
 #include "evolving_frame.h"
+#include "sphere_item.h"
 #include "camera_frame.h"
 #include "settings.h"
 
@@ -176,6 +177,9 @@ void Environment::Update( float timeStep )
             }
         }
     }
+
+    const bool isClient = IsClient();
+    UpdateDynamicGeometryNodes( isServer, isClient );
 
     // On client side capture local and controls and
     // send those to the server.
@@ -989,6 +993,29 @@ void Environment::UpdateEvolvingNodes( Timestamp ticks_dt )
         if ( !ef )
             continue;
         ef->evolveStep( ticks_dt );
+    }
+}
+
+void Environment::UpdateDynamicGeometryNodes( bool isServer, bool isClient )
+{
+    Scene * s = GetScene();
+    if ( !s )
+        return;
+
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        // Try cast to evolving node.
+        // And if converted make time step.
+        SharedPtr<Component> c = comps[i];
+        SphereItem * se = c->Cast<SphereItem>();
+        if ( !se )
+            continue;
+        if ( isServer )
+            se->updateCollisionData();
+        if ( isClient )
+            se->updateVisualData();
     }
 }
 
