@@ -10,6 +10,8 @@ using namespace Urho3D;
 namespace Ign
 {
 
+class SphereItem;
+
 class SurfaceCollisionMesh: public PhysicsItem
 {
     URHO3D_OBJECT( SurfaceCollisionMesh, PhysicsItem )
@@ -19,6 +21,8 @@ public:
     SurfaceCollisionMesh( Context * context );
     ~SurfaceCollisionMesh();
 
+    void parentTeleported() override;
+
     bool IsSelectable() const override;
 
 protected:
@@ -26,6 +30,9 @@ protected:
     void createVisualContent( Node * n ) override;
     /// Set physical content parameters (mass, inertia tensor, collision shape, etc.).
     void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs ) override;
+
+    /// Go to parent of parent and search for SphereItem within its children.
+    SphereItem * pickSphere();
 };
 
 

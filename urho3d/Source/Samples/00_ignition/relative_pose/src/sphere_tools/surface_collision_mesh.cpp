@@ -18,6 +18,11 @@ SurfaceCollisionMesh::~SurfaceCollisionMesh()
 {
 }
 
+void SurfaceCollisionMesh::parentTeleported()
+{
+    // Recompute dynamic geometry.
+}
+
 bool SurfaceCollisionMesh::IsSelectable() const
 {
     return false;
@@ -39,7 +44,14 @@ void SurfaceCollisionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2
 {
     rb->SetMass( 0.0 );
     // Here need to specify custom geometry based one later.
-    cs->SetBox( Vector3( 1.0, 1.0, 1.0 ) );
+    //cs->SetBox( Vector3( 1.0, 1.0, 1.0 ) );
+    //cs->SetCustomGImpactMesh(  );
+}
+
+SphereItem * SurfaceCollisionMesh::pickSphere()
+{
+
+    return nullptr;
 }
 
 
