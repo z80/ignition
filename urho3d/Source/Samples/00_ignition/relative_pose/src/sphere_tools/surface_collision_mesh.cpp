@@ -15,10 +15,24 @@ SurfaceCollisionMesh::SurfaceCollisionMesh( Context * context )
     : PhysicsItem( context ),
       lastSphereItem_( nullptr )
 {
+    SubscribeToEvent( E_UPDATE, URHO3D_HANDLER(SurfaceCollisionMesh, Update) );
 }
 
 SurfaceCollisionMesh::~SurfaceCollisionMesh()
 {
+}
+
+void SurfaceCollisionMesh::Update( StringHash eventType, VariantMap & eventData )
+{
+    (void)eventType;
+    (void)eventData;
+
+    const unsigned elapsed =  timer_.GetMSec( false );
+    if ( elapsed > 5000 )
+    {
+        timer_.Reset();
+        constructCustomGeometry();
+    }
 }
 
 void SurfaceCollisionMesh::parentTeleported()
@@ -183,7 +197,6 @@ void SurfaceCollisionMesh::constructCustomGeometry()
 
     if ( collision_shape_ )
         collision_shape_->SetCustomGImpactMesh( cg );
-
 }
 
 

@@ -22,6 +22,8 @@ public:
     SurfaceCollisionMesh( Context * context );
     ~SurfaceCollisionMesh();
 
+    void Update( StringHash eventType, VariantMap & eventData );
+
     void parentTeleported() override;
 
     bool IsSelectable() const override;
@@ -45,6 +47,8 @@ protected:
                               visualCustomGeometry_;
     Vector<Vector3d> pts_;
     Vector<Vertex>   tris_;
+
+    Timer timer_;
 };
 
 
