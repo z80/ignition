@@ -851,7 +851,7 @@ void Cubesphere::triangleList( Vector<Vertex> & tris )
     }
 }
 
-void Cubesphere::triangleList( const Vector<Vector3d> & pts, Float dist, Vector<Vector3d> & tris )
+void Cubesphere::triangleList( const Vector<Vector3d> & pts, Float dist, Vector<Vertex> & tris )
 {
     selectFaces( pts, dist, faceInds_ );
 
@@ -866,12 +866,12 @@ void Cubesphere::triangleList( const Vector<Vector3d> & pts, Float dist, Vector<
             const int ind1 = f.vertexInds[1];
             const int ind2 = f.vertexInds[2];
             const int ind3 = f.vertexInds[3];
-            tris.Push( this->verts[ind0].at );
-            tris.Push( this->verts[ind1].at );
-            tris.Push( this->verts[ind2].at );
-            tris.Push( this->verts[ind0].at );
-            tris.Push( this->verts[ind2].at );
-            tris.Push( this->verts[ind3].at );
+            tris.Push( this->verts[ind0] );
+            tris.Push( this->verts[ind2] );
+            tris.Push( this->verts[ind1] );
+            tris.Push( this->verts[ind0] );
+            tris.Push( this->verts[ind3] );
+            tris.Push( this->verts[ind2] );
         }
     }
 }

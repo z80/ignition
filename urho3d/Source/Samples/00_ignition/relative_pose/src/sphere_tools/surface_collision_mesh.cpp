@@ -1,6 +1,8 @@
 
 
 #include "surface_collision_mesh.h"
+#include "sphere_item.h"
+#include "settings.h"
 
 void SurfaceCollisionMesh::RegisterComponent( Context * context )
 {
@@ -10,7 +12,8 @@ void SurfaceCollisionMesh::RegisterComponent( Context * context )
 
 
 SurfaceCollisionMesh::SurfaceCollisionMesh( Context * context )
-    : PhysicsItem( context )
+    : PhysicsItem( context ),
+      lastSphereItem_( nullptr )
 {
 }
 
@@ -26,6 +29,16 @@ void SurfaceCollisionMesh::parentTeleported()
 bool SurfaceCollisionMesh::IsSelectable() const
 {
     return false;
+}
+
+void SurfaceCollisionMesh::OnSceneSet( Scene * scene )
+{
+    PhysicsItem::OnSceneSet( scene );
+    if ( !scene )
+        return;
+
+    CustomGeometry * cg = physics_node_->CreateComponent<CustomGeometry>();
+    customGeometry_ = SharedPtr<CustomGeometry>( cg );
 }
 
 void SurfaceCollisionMesh::createVisualContent( Node * n )
@@ -50,8 +63,102 @@ void SurfaceCollisionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2
 
 SphereItem * SurfaceCollisionMesh::pickSphere()
 {
+    RefFrame * p = parent();
+    if ( !p )
+        return nullptr;
+    RefFrame * candidate = p->parent();
+    if ( !candidate )
+        return nullptr;
 
-    return nullptr;
+    SphereItem * si = candidate->Cast<SphereItem>();
+    if ( !si )
+        return nullptr;
+
+    return si;
+}
+
+bool SurfaceCollisionMesh::needRebuild( SphereItem * & item )
+{
+    SphereItem * si = pickSphere();
+    item = si;
+    if ( lastSphereItem_ != si )
+    {
+        lastSphereItem_ = si;
+        if ( si )
+        {
+            State s;
+            relativeState( si, s );
+            lastState_ = s;
+        }
+        else
+            lastState_.r = Vector3d::ZERO;
+        return true;
+    }
+
+    if ( !si )
+        return false;
+
+    State s;
+    relativeState( si, s );
+    const Vector3d d = s.r - lastState_.r;
+    const Float dist = d.Length();
+
+    const Float maxDist = Settings::dynamicsWorldDistanceInclude() / 3.0;
+    if ( dist > maxDist )
+    {
+        lastState_ = s;
+        return true;
+    }
+
+    return false;
+}
+
+void SurfaceCollisionMesh::constructCustomGeometry()
+{
+    SphereItem * si;
+    const bool needRebuildOk = needRebuild( si );
+    if ( !needRebuildOk )
+        return;
+
+    if ( !customGeometry_ )
+        return;
+
+    const Float dist = Settings::dynamicsWorldDistanceExclude();
+    pts_.Clear();
+    pts_.Push( lastState_.r );
+    tris_.Clear();
+    si->cubesphereCollision_.triangleList( pts_, dist, tris_ );
+
+    // Convert to local reference frame.
+    const Quaterniond invQ = lastState_.q.Inverse();
+    const unsigned qty = tris_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Vertex & v = tris_[i];
+        v.at = invQ * (v.at - lastState_.r);
+        v.norm = invQ * v.norm;
+    }
+
+    CustomGeometry * cg = customGeometry_;
+    cg->Clear();
+    cg->SetNumGeometries( 1 );
+    cg->BeginGeometry( 0, TRIANGLE_LIST );
+
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        const Vertex & v = tris_[i];
+        const Vector3 at( v.at.x_, v.at.y_, v.at.z_ );
+        const Vector3 n( v.norm.x_, v.norm.y_, v.norm.z_ );
+        const Color & c( v.color );
+        cg->DefineVertex( at );
+        cg->DefineColor( c );
+        cg->DefineNormal( n );
+    }
+
+    cg->Commit();
+
+    collision_shape_->SetCustomGImpactMesh( cg );
+
 }
 
 

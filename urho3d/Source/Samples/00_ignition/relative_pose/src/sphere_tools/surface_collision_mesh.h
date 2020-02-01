@@ -4,6 +4,7 @@
 #define __SURFACE_COLLISION_MESH_H_
 
 #include "physics_item.h"
+#include "cube_sphere.h"
 
 using namespace Urho3D;
 
@@ -26,6 +27,7 @@ public:
     bool IsSelectable() const override;
 
 protected:
+    void OnSceneSet( Scene * scene ) override;
     /// Creation of visual content when scene is set.
     void createVisualContent( Node * n ) override;
     /// Set physical content parameters (mass, inertia tensor, collision shape, etc.).
@@ -33,6 +35,15 @@ protected:
 
     /// Go to parent of parent and search for SphereItem within its children.
     SphereItem * pickSphere();
+    bool needRebuild( SphereItem * & item );
+    void constructCustomGeometry();
+
+    State lastState_;
+    SphereItem * lastSphereItem_;
+
+    SharedPtr<CustomGeometry> customGeometry_;
+    Vector<Vector3d> pts_;
+    Vector<Vertex>   tris_;
 };
 
 

@@ -53,7 +53,7 @@ protected:
     /// Handle scene being assigned. This may happen several times
     /// during the component's lifetime. Scene-wide subsystems and events
     /// are subscribed to here.
-    void OnSceneSet( Scene * scene ) override;
+    virtual void OnSceneSet( Scene * scene ) override;
 
     /// Creation of visual content when scene is set.
     virtual void createVisualContent( Node * n );

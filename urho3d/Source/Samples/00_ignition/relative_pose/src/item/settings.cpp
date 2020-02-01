@@ -72,12 +72,12 @@ Float Settings::staticObjDistanceHorizontHide()
 
 Float Settings::dynamicsWorldDistanceInclude()
 {
-    return 400.0;
+    return 4.0;
 }
 
 Float Settings::dynamicsWorldDistanceExclude()
 {
-    return 500.0;
+    return 5.0;
 }
 
 Float Settings::cameraMaxDistance()
