@@ -24,6 +24,8 @@ SurfaceCollisionMesh::~SurfaceCollisionMesh()
 void SurfaceCollisionMesh::parentTeleported()
 {
     // Recompute dynamic geometry.
+
+    constructCustomGeometry();
 }
 
 bool SurfaceCollisionMesh::IsSelectable() const
@@ -39,6 +41,17 @@ void SurfaceCollisionMesh::OnSceneSet( Scene * scene )
 
     CustomGeometry * cg = physics_node_->CreateComponent<CustomGeometry>();
     customGeometry_ = SharedPtr<CustomGeometry>( cg );
+    // Make it invisible.
+    cg->SetEnabled( false );
+
+    CustomGeometry * vcg = visual_node_->CreateComponent<CustomGeometry>();
+    visualCustomGeometry_ = SharedPtr<CustomGeometry>( vcg );
+
+    ResourceCache * cache = GetSubsystem<ResourceCache>();
+    Material * m = cache->GetResource<Material>("Materials/VertexColor.xml");
+    //Material * m = cache->GetResource<Material>("Materials/Stone.xml");
+    vcg->SetMaterial( m );
+    vcg->SetCastShadows( true );
 }
 
 void SurfaceCollisionMesh::createVisualContent( Node * n )
@@ -59,6 +72,8 @@ void SurfaceCollisionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2
     // Here need to specify custom geometry based one later.
     //cs->SetBox( Vector3( 1.0, 1.0, 1.0 ) );
     //cs->SetCustomGImpactMesh(  );
+
+    constructCustomGeometry();
 }
 
 SphereItem * SurfaceCollisionMesh::pickSphere()
@@ -139,10 +154,14 @@ void SurfaceCollisionMesh::constructCustomGeometry()
         v.norm = invQ * v.norm;
     }
 
-    CustomGeometry * cg = customGeometry_;
+    CustomGeometry * cg  = customGeometry_;
+    CustomGeometry * vcg = visualCustomGeometry_;
     cg->Clear();
+    vcg->Clear();
     cg->SetNumGeometries( 1 );
+    vcg->SetNumGeometries( 1 );
     cg->BeginGeometry( 0, TRIANGLE_LIST );
+    vcg->BeginGeometry( 0, LINE_LIST );
 
     for ( unsigned i=0; i<qty; i++ )
     {
@@ -153,11 +172,17 @@ void SurfaceCollisionMesh::constructCustomGeometry()
         cg->DefineVertex( at );
         cg->DefineColor( c );
         cg->DefineNormal( n );
+
+        vcg->DefineVertex( at );
+        vcg->DefineColor( c );
+        vcg->DefineNormal( n );
     }
 
     cg->Commit();
+    vcg->Commit();
 
-    collision_shape_->SetCustomGImpactMesh( cg );
+    if ( collision_shape_ )
+        collision_shape_->SetCustomGImpactMesh( cg );
 
 }
 

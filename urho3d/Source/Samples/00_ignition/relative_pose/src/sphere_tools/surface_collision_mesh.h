@@ -41,7 +41,8 @@ protected:
     State lastState_;
     SphereItem * lastSphereItem_;
 
-    SharedPtr<CustomGeometry> customGeometry_;
+    SharedPtr<CustomGeometry> customGeometry_,
+                              visualCustomGeometry_;
     Vector<Vector3d> pts_;
     Vector<Vertex>   tris_;
 };
