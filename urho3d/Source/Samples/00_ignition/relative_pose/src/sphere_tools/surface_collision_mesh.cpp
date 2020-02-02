@@ -92,18 +92,40 @@ void SurfaceCollisionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2
 
 SphereItem * SurfaceCollisionMesh::pickSphere()
 {
+    // Technically, SphereItem should be one of the children of parent's parent.
+    // But for debugging this SurfaceCollisionMesh might be attached to 
+    // other things. Due to that check more thoroughly.
+
     RefFrame * p = parent();
     if ( !p )
         return nullptr;
+    SphereItem * si = p->Cast<SphereItem>();
+    if ( si )
+        return si;
+
     RefFrame * candidate = p->parent();
     if ( !candidate )
         return nullptr;
+    si = p->Cast<SphereItem>();
+    if ( si )
+        return si;
 
-    SphereItem * si = candidate->Cast<SphereItem>();
+    si = candidate->Cast<SphereItem>();
     if ( !si )
         return nullptr;
 
-    return si;
+    const unsigned qty = candidate->children_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        RefFrame * c = children_[i];
+        if ( !c )
+            continue;
+        si = c->Cast<SphereItem>();
+        if ( si )
+            return si;
+    }
+
+    return nullptr;
 }
 
 bool SurfaceCollisionMesh::needRebuild( SphereItem * & item )
