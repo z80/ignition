@@ -73,11 +73,11 @@ void SurfaceCollisionMesh::createVisualContent( Node * n )
     if ( !n )
         return;
 
-    ResourceCache * cache = GetSubsystem<ResourceCache>();
+    #ResourceCache * cache = GetSubsystem<ResourceCache>();
 
-    StaticModel * model = n->CreateComponent<StaticModel>( LOCAL );
-    model->SetModel( cache->GetResource<Model>("Ign/Models/TestCube.mdl") );
-    model->SetMaterial( cache->GetResource<Material>("Ign/Materials/TestCubeM.xml") );
+    #StaticModel * model = n->CreateComponent<StaticModel>( LOCAL );
+    #model->SetModel( cache->GetResource<Model>("Ign/Models/TestCube.mdl") );
+    #model->SetMaterial( cache->GetResource<Material>("Ign/Materials/TestCubeM.xml") );
 }
 
 void SurfaceCollisionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
@@ -197,6 +197,7 @@ void SurfaceCollisionMesh::constructCustomGeometry()
     cg->SetNumGeometries( 1 );
     vcg->SetNumGeometries( 1 );
     cg->BeginGeometry( 0, TRIANGLE_LIST );
+    //vcg->BeginGeometry( 0, TRIANGLE_LIST );
     vcg->BeginGeometry( 0, LINE_LIST );
 
     for ( unsigned i=0; i<qty; i++ )
