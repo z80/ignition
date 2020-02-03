@@ -5,6 +5,10 @@
 #include "Events3dparty.h"
 #include "Global3dparty.h"
 
+// To be able to work using laptop 
+//#define MOUSE_BTN_ORBIT MOUSEB_MIDDLE
+#define MOUSE_BTN_ORBIT MOUSEB_RIGHT
+
 /// Construct.
 MouseInput::MouseInput(Context* context) :
     BaseInput(context)
@@ -54,7 +58,7 @@ void MouseInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 
     if ( key == MOUSEB_LEFT )
         select_ = true;
-    else if ( key == MOUSEB_MIDDLE )
+    else if ( key == MOUSE_BTN_ORBIT )
         ui->GetCursor()->SetVisible( false );
 
 	if (_mappedKeyToControl.Contains(key)) {
@@ -77,7 +81,7 @@ void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
     const bool visible = GetMouseVisible();
     if ( !visible_ )
     {
-        const bool pressed = btns & MOUSEB_MIDDLE;
+        const bool pressed = btns & MOUSE_BTN_ORBIT;
         if ( !pressed )
             SetMouseVisible( true );
     }
@@ -93,7 +97,7 @@ void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
         data[P_Y] = pos.y_;
         SendEvent( IgnEvents::E_SELECT_REQUEST, data );
     }
-    else if ( key == MOUSEB_MIDDLE )
+    else if ( key == MOUSE_BTN_ORBIT )
         ui->GetCursor()->SetVisible( true );
 
     select_ = false;
@@ -118,7 +122,7 @@ void MouseInput::HandleMouseMove(StringHash eventType, VariantMap& eventData)
 
     // Check if wheel is pressed.
     const int btns = eventData[P_BUTTONS].GetInt();
-    const bool pressed = btns & MOUSEB_MIDDLE;
+    const bool pressed = btns & MOUSE_BTN_ORBIT;
     if ( pressed )
     {
         const bool visible = GetMouseVisible();
