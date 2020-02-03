@@ -69,32 +69,35 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts 
     // Check all distances. And resubdrive if shifter half the finest distance.
     const unsigned ptsQty = pts_.Size();
     bool needSubdrive = false;
-    if ( ( ptsQty < 1 ) || ( ptsNewQty > ptsQty ) )
-        needSubdrive = true;
-    else
-    {
-        // Check distances.
-        for ( unsigned i=0; i<ptsNewQty; i++ )
-        {
-            const Vector3d & v = ptsNew_[i];
-            Float minDist = -1.0;
-            for ( unsigned j=0; j<ptsQty; j++ )
-            {
-                const Vector3d & a = pts_[j];
-                const Float dot = v.DotProduct( a );
-                const Vector3d proj = a*dot;
-                const Vector3d diff = v - proj;
-                const Float dist = diff.Length();
-                if ( (minDist < 0.0) || (dist < minDist) )
-                    minDist = dist;
-            }
-            if ( minDist >= d )
-            {
-                needSubdrive = true;
-                break;
-            }
-        }
-    }
+	if ( ptsNewQty > 0 )
+	{
+		if ((ptsQty < 1) || (ptsNewQty > ptsQty))
+			needSubdrive = true;
+		else
+		{
+			// Check distances.
+			for (unsigned i = 0; i < ptsNewQty; i++)
+			{
+				const Vector3d & v = ptsNew_[i];
+				Float minDist = -1.0;
+				for (unsigned j = 0; j < ptsQty; j++)
+				{
+					const Vector3d & a = pts_[j];
+					const Float dot = v.DotProduct(a);
+					const Vector3d proj = a * dot;
+					const Vector3d diff = v - proj;
+					const Float dist = diff.Length();
+					if ((minDist < 0.0) || (dist < minDist))
+						minDist = dist;
+				}
+				if (minDist >= d)
+				{
+					needSubdrive = true;
+					break;
+				}
+			}
+		}
+	}
 
     if ( needSubdrive )
     {
@@ -110,7 +113,7 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
     const Float sz = f->size( s );
     const Vector3d n = f->normal( s );
     const unsigned ptsQty = ptsFlat_.Size();
-    const Float levelsQty = levels_.Size();
+    const unsigned levelsQty = levels_.Size();
     for ( unsigned i=0; i<ptsQty; i++ )
     {
         const Vector3d & a = ptsFlat_[i];
@@ -588,17 +591,21 @@ bool Face::correctSide( const Vector3d & n, const Vector3d & a )
 
 bool Face::centralProjection( const Vector3d & n, const Vector3d & a, Vector3d & proj )
 {
-    // Anything smaller than 0.5 should work. Right?
-    const Float EPS = 0.3;
+    // Angle should be smaller than 45 deg.
+	// It means that cosing shold be bigger than 1/sqrt(2).
+	// And this number is approximately 0.707.
+    const Float EPS = 0.707;
     // Project on face plane.
     // But not perpendicular projection.
     // It is a projection along "a" in such a way that makes (a, n) = 1.
     const Float a_n = a.DotProduct( n );
-    if ( a_n < EPS )
-        return false;
+	if ( a_n >= EPS )
+	{
+		proj = a / a_n;
+		return true;
+	}
     
-    proj = a / a_n;
-    return true;
+    return false;
 }
 
 EdgeHash::EdgeHash()

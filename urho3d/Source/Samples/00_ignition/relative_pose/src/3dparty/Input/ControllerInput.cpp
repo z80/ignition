@@ -275,12 +275,12 @@ void ControllerInput::UpdateZoom( int d, int index )
     }
     Controls & c = _controls[index];
     VariantMap::ConstIterator it = c.extraData_.Find( Ign::IGN_ZOOM_VALUE );
-    int v = ( it != c.extraData_.End() ) ? it->second_.GetInt() : 5;
+    int v = ( it != c.extraData_.End() ) ? it->second_.GetInt() : 25;
     v += d;
     if ( v < 0 )
         v = 0;
-    else if (v > 20)
-        v = 20;
+    else if (v > 50)
+        v = 50;
     c.extraData_[Ign::IGN_ZOOM_VALUE] = v;
 }
 
