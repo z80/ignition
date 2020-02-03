@@ -23,6 +23,9 @@ void RotatingFrame::RegisterComponent( Context * context )
 RotatingFrame::RotatingFrame( Context * context )
     : EvolvingFrame( context )
 {
+	phase_ = 0;
+	period_ = Settings::ticks(60.0);
+	orientation_ = Quaterniond::IDENTITY;
 }
 
 RotatingFrame::~RotatingFrame()
