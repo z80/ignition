@@ -24,7 +24,7 @@ CameraFrame::CameraFrame( Context * context )
 {
     yaw_   = 30.0 / 180.0 * 3.14;
     pitch_ = 45.0 / 180.0 * 3.14;
-    dist_  = 8.0;
+    dist_  = 28.0;
 }
 
 CameraFrame::~CameraFrame()
@@ -141,6 +141,7 @@ void CameraFrame::assignCameraNode()
         return;
 
     Camera * c = s->GetComponent<Camera>( true );
+	c->SetFillMode( FILL_WIREFRAME );
     Node * n = c->GetNode();
     assignRefFrame( n );
     node_ = SharedPtr<Node>( n );
