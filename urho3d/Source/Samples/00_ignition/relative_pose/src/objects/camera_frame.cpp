@@ -141,7 +141,7 @@ void CameraFrame::assignCameraNode()
         return;
 
     Camera * c = s->GetComponent<Camera>( true );
-	c->SetFillMode( FILL_WIREFRAME );
+    //c->SetFillMode( FILL_WIREFRAME );
     Node * n = c->GetNode();
     assignRefFrame( n );
     node_ = SharedPtr<Node>( n );

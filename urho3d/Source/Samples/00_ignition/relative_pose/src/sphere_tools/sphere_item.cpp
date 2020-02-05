@@ -79,13 +79,17 @@ void SphereItem::OnSceneSet( Scene * scene )
     CustomGeometry * cg = n->CreateComponent<CustomGeometry>( LOCAL );
     geometry_ = SharedPtr<CustomGeometry>( cg );
 
-    // Here also need to assign a material to the geometry componenet.
+    // No, material need to be assigned each time geometry is changed.
+    // Otherwise it is default material for some reason.
+
+    /*// Here also need to assign a material to the geometry componenet.
     ResourceCache * cache = GetSubsystem<ResourceCache>();
-    Material * m = cache->GetResource<Material>("Materials/VertexColor.xml");
+    Material * m = cache->GetResource<Material>("Ign/Materials/VertexColor.xml");
     //Material * m = cache->GetResource<Material>("Materials/Stone.xml");
+    m->SetFillMode( FILL_WIREFRAME );
     cg->SetMaterial( m );
     cg->SetCastShadows( true );
-    cg->SetDynamic( true );
+    cg->SetDynamic( true );*/
 }
 
 void SphereItem::applySourceCollision( Cubesphere & cs )
@@ -167,16 +171,18 @@ void SphereItem::regenerateMeshVisual()
         const Color & c( v.color );
         cg->DefineVertex( at );
         cg->DefineColor( c );
-        cg->DefineNormal( n );
+        cg->DefineNormal( -n );
     }
 
     cg->Commit();
 
     ResourceCache * cache = GetSubsystem<ResourceCache>();
-    Material * m = cache->GetResource<Material>("Materials/VertexColor.xml");
+    Material * m = cache->GetResource<Material>("Ign/Materials/VertexColor.xml");
     //Material * m = cache->GetResource<Material>("Materials/Stone.xml");
+    //m->SetFillMode( FILL_WIREFRAME );
     cg->SetMaterial( m );
     cg->SetCastShadows( true );
+    cg->SetDynamic( true );
 }
 
 
