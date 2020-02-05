@@ -208,11 +208,11 @@ void SurfaceCollisionMesh::constructCustomGeometry()
         const Color & c( v.color );
         cg->DefineVertex( at );
         cg->DefineColor( c );
-        cg->DefineNormal( n );
+        cg->DefineNormal( -n );
 
         vcg->DefineVertex( at );
         vcg->DefineColor( c );
-        vcg->DefineNormal( n );
+        vcg->DefineNormal( -n );
     }
 
     cg->Commit();
