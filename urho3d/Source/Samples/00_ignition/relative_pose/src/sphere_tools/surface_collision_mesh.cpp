@@ -222,6 +222,11 @@ void SurfaceCollisionMesh::constructCustomGeometry()
         collision_shape_->SetCustomGImpactMesh( cg );
 }
 
+void SurfaceCollisionMesh::constructCustomGeometry( CustomGeometry * cg )
+{
+
+}
+
 
 
 

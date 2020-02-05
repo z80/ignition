@@ -10,6 +10,7 @@
 #include "orbiting_frame.h"
 #include "camera_frame.h"
 #include "sphere_item.h"
+#include "surface_collision_mesh.h"
 #include "environment.h"
 
 #include "main_menu.h"
@@ -39,6 +40,7 @@ void RegisterComponents( Context * context )
     OrbitingFrame::RegisterComponent( context );
     CameraFrame::RegisterComponent( context );
     SphereItem::RegisterComponent( context );
+    SurfaceCollisionMesh::RegisterComponent( context );
     Environment::RegisterComponent( context );
 
     MainMenu::RegisterObject( context );

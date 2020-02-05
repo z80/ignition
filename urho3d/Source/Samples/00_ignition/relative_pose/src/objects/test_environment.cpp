@@ -7,6 +7,7 @@
 #include "character_cube.h"
 #include "ico_planet.h"
 #include "sphere_example.h"
+#include "surface_collision_mesh.h"
 #include "rotating_frame.h"
 #include "orbiting_frame.h"
 #include "settings.h"
@@ -84,6 +85,9 @@ void TestEnvironment::CreateReplicatedContentServer()
         //se->setParent( rf );
         se->setR( Vector3d( 10.0, 0.0, 0.0 ) );
 
+        SurfaceCollisionMesh * scm = s->CreateComponent<SurfaceCollisionMesh>();
+        scm->setParent( se );
+
         // Create orbiting element.
         {
             OrbitingFrame * of2 = s->CreateComponent<OrbitingFrame>();
@@ -108,10 +112,28 @@ void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )
 
     //DynamicCube * d = s->CreateComponent<DynamicCube>();
     //d->setName( String( "DynamicCube object" ) );
-    CharacterCube * d = s->CreateComponent<CharacterCube>();
-    d->setName( String( "CharacterCube object" ) );
-    d->setR( Vector3d( 0.0, 5.0, 0.0 ) );
-    camera->setParent( d );
+
+    //CharacterCube * d = s->CreateComponent<CharacterCube>();
+    //d->setName( String( "CharacterCube object" ) );
+    //d->setR( Vector3d( 0.0, 5.0, 0.0 ) );
+    //camera->setParent( d );
+
+    {
+        Scene * s = GetScene();
+        const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+        const unsigned qty = comps.Size();
+        for ( unsigned i=0; i<qty; i++ )
+        {
+            Component * c = comps[i];
+            if ( !c )
+                continue;
+            SphereItem * si = c->Cast<SphereItem>();
+            if ( !si )
+                continue;
+
+            camera->setParent( si );
+        }
+    }
 }
 
 
