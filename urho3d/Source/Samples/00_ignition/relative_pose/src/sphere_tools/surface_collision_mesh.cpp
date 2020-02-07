@@ -122,8 +122,8 @@ SphereItem * SurfaceCollisionMesh::pickSphere()
         return si;
 
     si = candidate->Cast<SphereItem>();
-    if ( !si )
-        return nullptr;
+    if ( si )
+        return si;
 
     const unsigned qty = candidate->children_.Size();
     for ( unsigned i=0; i<qty; i++ )
