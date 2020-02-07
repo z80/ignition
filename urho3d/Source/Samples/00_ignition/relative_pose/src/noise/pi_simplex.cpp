@@ -1,7 +1,7 @@
 // Copyright © 2008-2019 Pioneer Developers. See AUTHORS.txt for details
 // Licensed under the terms of the GPL v3. See licenses/GPL-3.txt
 
-#include "simplex.h"
+#include "pi_simplex.h"
 #include <math.h>
 
 /* Simplex.cpp
@@ -115,7 +115,7 @@ const Float G3 = 1.0 / 6.0; // Very nice and simple unskew factor, too
 const Float G3mul2 = 0.3333333333333333;
 const Float G3mul3 = 0.5;
 // 3D raw Simplex noise
-Float noise( const Vector3d & p )
+Float piSimplex( const Vector3d & p )
 {
 	// Skew the input space to determine which simplex cell we're in
     const Float s = (p.x_ + p.y_ + p.z_) * F3; // Very nice and simple skew factor for 3D
