@@ -52,20 +52,6 @@ void SurfaceCollisionMesh::OnSceneSet( Scene * scene )
     PhysicsItem::OnSceneSet( scene );
     if ( !scene )
         return;
-
-    CustomGeometry * cg = physics_node_->CreateComponent<CustomGeometry>();
-    customGeometry_ = SharedPtr<CustomGeometry>( cg );
-    // Make it invisible.
-    cg->SetEnabled( false );
-
-    CustomGeometry * vcg = visual_node_->CreateComponent<CustomGeometry>();
-    visualCustomGeometry_ = SharedPtr<CustomGeometry>( vcg );
-
-    ResourceCache * cache = GetSubsystem<ResourceCache>();
-    Material * m = cache->GetResource<Material>("Materials/VertexColor.xml");
-    //Material * m = cache->GetResource<Material>("Materials/Stone.xml");
-    vcg->SetMaterial( m );
-    vcg->SetCastShadows( true );
 }
 
 void SurfaceCollisionMesh::createVisualContent( Node * n )
@@ -91,6 +77,24 @@ void SurfaceCollisionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2
     constructCustomGeometry();
 }
 
+static SphereItem * globalSphereItem( Scene * s )
+{
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned compsQty = comps.Size();
+    for ( unsigned i=0; i<compsQty; i++ )
+    {
+        Component * c = comps[i];
+        if ( !c )
+            continue;
+        SphereItem * si = c->Cast<SphereItem>();
+        if ( !si )
+            continue;
+        return si;
+    }
+
+    return nullptr;
+}
+
 SphereItem * SurfaceCollisionMesh::pickSphere()
 {
     // Technically, SphereItem should be one of the children of parent's parent.
@@ -99,7 +103,13 @@ SphereItem * SurfaceCollisionMesh::pickSphere()
 
     RefFrame * p = parent();
     if ( !p )
-        return nullptr;
+    {
+        Scene * s = GetScene();
+        if ( !s )
+            return nullptr;
+
+        return globalSphereItem( s );
+    }
     SphereItem * si = p->Cast<SphereItem>();
     if ( si )
         return si;
@@ -126,7 +136,14 @@ SphereItem * SurfaceCollisionMesh::pickSphere()
             return si;
     }
 
-    return nullptr;
+    // Here desperate to find a sphere.
+    // Search for any sphere within a scene.
+    Scene * s = GetScene();
+    if ( !s )
+        return nullptr;
+
+    si = globalSphereItem( s );
+    return si;
 }
 
 bool SurfaceCollisionMesh::needRebuild( SphereItem * & item )
