@@ -73,19 +73,20 @@ void SurfaceCollisionMesh::createVisualContent( Node * n )
     if ( !n )
         return;
 
-    //ResourceCache * cache = GetSubsystem<ResourceCache>();
+    CustomGeometry * vcg = visual_node_->CreateComponent<CustomGeometry>();
+    visualCustomGeometry_ = SharedPtr<CustomGeometry>( vcg );
 
-    //StaticModel * model = n->CreateComponent<StaticModel>( LOCAL );
-    //model->SetModel( cache->GetResource<Model>("Ign/Models/TestCube.mdl") );
-    //model->SetMaterial( cache->GetResource<Material>("Ign/Materials/TestCubeM.xml") );
+    constructCustomGeometry();
 }
 
 void SurfaceCollisionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
 {
     rb->SetMass( 0.0 );
-    // Here need to specify custom geometry based one later.
-    //cs->SetBox( Vector3( 1.0, 1.0, 1.0 ) );
-    //cs->SetCustomGImpactMesh(  );
+
+    CustomGeometry * cg = physics_node_->CreateComponent<CustomGeometry>();
+    customGeometry_ = SharedPtr<CustomGeometry>( cg );
+    // Make it invisible.
+    cg->SetEnabled( false );
 
     constructCustomGeometry();
 }
@@ -171,7 +172,21 @@ void SurfaceCollisionMesh::constructCustomGeometry()
     if ( !needRebuildOk )
         return;
 
-    if ( !customGeometry_ )
+    if ( customGeometry_ )
+    {
+        if ( collision_shape_ )
+        {
+            constructCustomGeometry( si, customGeometry_ );
+            collision_shape_->SetCustomGImpactMesh( customGeometry_ );
+        }
+    }
+    if ( visualCustomGeometry_ )
+        constructCustomGeometry( si, visualCustomGeometry_ );
+}
+
+void SurfaceCollisionMesh::constructCustomGeometry( SphereItem * si, CustomGeometry * cg )
+{
+    if ( !cg )
         return;
 
     const Float dist = Settings::dynamicsWorldDistanceExclude();
@@ -190,15 +205,9 @@ void SurfaceCollisionMesh::constructCustomGeometry()
         v.norm = invQ * v.norm;
     }
 
-    CustomGeometry * cg  = customGeometry_;
-    CustomGeometry * vcg = visualCustomGeometry_;
     cg->Clear();
-    vcg->Clear();
     cg->SetNumGeometries( 1 );
-    vcg->SetNumGeometries( 1 );
     cg->BeginGeometry( 0, TRIANGLE_LIST );
-    //vcg->BeginGeometry( 0, TRIANGLE_LIST );
-    vcg->BeginGeometry( 0, LINE_LIST );
 
     for ( unsigned i=0; i<qty; i++ )
     {
@@ -209,22 +218,9 @@ void SurfaceCollisionMesh::constructCustomGeometry()
         cg->DefineVertex( at );
         cg->DefineColor( c );
         cg->DefineNormal( -n );
-
-        vcg->DefineVertex( at );
-        vcg->DefineColor( c );
-        vcg->DefineNormal( -n );
     }
 
     cg->Commit();
-    vcg->Commit();
-
-    if ( collision_shape_ )
-        collision_shape_->SetCustomGImpactMesh( cg );
-}
-
-void SurfaceCollisionMesh::constructCustomGeometry( CustomGeometry * cg )
-{
-
 }
 
 

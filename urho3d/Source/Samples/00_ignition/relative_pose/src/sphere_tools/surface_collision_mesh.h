@@ -39,7 +39,7 @@ protected:
     SphereItem * pickSphere();
     bool needRebuild( SphereItem * & item );
     void constructCustomGeometry();
-    void constructCustomGeometry( CustomGeometry * cg );
+    void constructCustomGeometry( SphereItem * si, CustomGeometry * cg );
 
     State lastState_;
     SphereItem * lastSphereItem_;
