@@ -210,7 +210,10 @@ void SurfaceCollisionMesh::constructCustomGeometry( SphereItem * si, CustomGeome
     pts_.Clear();
     pts_.Push( lastState_.r );
     tris_.Clear();
-    si->cubesphereCollision_.triangleList( pts_, dist, tris_ );
+
+    // For debugging pick triangles from visual, not collision sphere.
+    //si->cubesphereCollision_.triangleList( pts_, dist, tris_ );
+    si->cubesphereVisual_.triangleList( pts_, dist, tris_ );
 
     // Convert to local reference frame.
     const Quaterniond invQ = lastState_.q.Inverse();
