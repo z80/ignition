@@ -920,6 +920,8 @@ void Cubesphere::flattenPts( const Vector<Vector3d> & pts, Vector<Vector3d> & pt
     for ( unsigned i=0; i<ptsQty; i++ )
     {
         Vector3d & pt3 = ptsFlat[i];
+        // Point must be normalized.
+        pt3.Normalize();
         for ( int j=0; j<6; j++ )
         {
             const Vector3d & n = norms[j];
@@ -1172,7 +1174,9 @@ void Cubesphere::selectFaces( const Vector<Vector3d> & pts, const Float dist, Ve
             const bool inside = f.inside( this, ptFlat, n, dist );
             if ( !inside )
                 continue;
-            f.selectLeafs( this, ptFlat, dist, faceInds );
+            const bool insideOk = f.selectLeafs( this, ptFlat, dist, faceInds );
+            if ( insideOk )
+                faceInds.Push( i );
         }
     }
 }
