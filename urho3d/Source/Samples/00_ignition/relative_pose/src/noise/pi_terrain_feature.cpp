@@ -1,20 +1,23 @@
 // Copyright © 2008-2019 Pioneer Developers. See AUTHORS.txt for details
 // Licensed under the terms of the GPL v3. See licenses/GPL-3.txt
 
-#include "FracDef.h"
-#include "TerrainFeature.h"
-#include "TerrainNoise.h"
+#include "pi_fract_def.h"
+#include "pi_terrain_feature.h"
+#include "pi_terrain_noise.h"
 
-using namespace TerrainNoise;
+#include "data_types.h"
+#include "vector3d.h"
+using namespace Urho3D;
 
-namespace TerrainFeature {
+namespace Ign
+{
 
 	// Creates small canyons.
-	double canyon_ridged_function(const fracdef_t &def, const vector3d &p)
+    double canyon_ridged_function(const fracdef_t &def, const Vector3d & p )
 	{
 		double h;
 		double n = 0;
-		n = ridged_octavenoise(def.octaves, 0.54, 2.0, def.frequency * p);
+        n = ridged_octavenoise( def.octaves, 0.54, 2.0, def.frequency * p);
 		const double outer = 0.71;
 		const double inner = 0.715;
 		const double inner2 = 0.715;
@@ -34,7 +37,7 @@ namespace TerrainFeature {
 	}
 
 	// Larger canyon.
-	double canyon2_ridged_function(const fracdef_t &def, const vector3d &p)
+    double canyon2_ridged_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double h;
 		double n = 0; //octavenoise(def.octaves, 0.56, 2.0, def.frequency*p);
@@ -58,7 +61,7 @@ namespace TerrainFeature {
 	}
 
 	// Largest and best looking canyon, combine them together for best results.
-	double canyon3_ridged_function(const fracdef_t &def, const vector3d &p)
+    double canyon3_ridged_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double h;
 		double n = 0; //octavenoise(def.octaves, 0.585, 2.0, def.frequency*p);
@@ -81,7 +84,7 @@ namespace TerrainFeature {
 		return h * def.amplitude;
 	}
 
-	double canyon_normal_function(const fracdef_t &def, const vector3d &p)
+    double canyon_normal_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double h;
 		double n = 0;
@@ -104,7 +107,7 @@ namespace TerrainFeature {
 		return h * def.amplitude;
 	}
 
-	double canyon2_normal_function(const fracdef_t &def, const vector3d &p)
+    double canyon2_normal_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double h;
 		double n = 0;
@@ -127,7 +130,7 @@ namespace TerrainFeature {
 		return h * def.amplitude;
 	}
 
-	double canyon3_normal_function(const fracdef_t &def, const vector3d &p)
+    double canyon3_normal_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double h;
 		double n = 0;
@@ -150,7 +153,7 @@ namespace TerrainFeature {
 		return h * def.amplitude;
 	}
 
-	double canyon_voronoi_function(const fracdef_t &def, const vector3d &p)
+    double canyon_voronoi_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double h;
 		double n = 0;
@@ -173,7 +176,7 @@ namespace TerrainFeature {
 		return h * def.amplitude;
 	}
 
-	double canyon2_voronoi_function(const fracdef_t &def, const vector3d &p)
+    double canyon2_voronoi_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double h;
 		double n = 0;
@@ -196,7 +199,7 @@ namespace TerrainFeature {
 		return h * def.amplitude;
 	}
 
-	double canyon3_voronoi_function(const fracdef_t &def, const vector3d &p)
+    double canyon3_voronoi_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double h;
 		double n = 0;
@@ -219,7 +222,7 @@ namespace TerrainFeature {
 		return h * def.amplitude;
 	}
 
-	double canyon_billow_function(const fracdef_t &def, const vector3d &p)
+    double canyon_billow_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double h;
 		double n = 0;
@@ -242,7 +245,7 @@ namespace TerrainFeature {
 		return h * def.amplitude;
 	}
 
-	double canyon2_billow_function(const fracdef_t &def, const vector3d &p)
+    double canyon2_billow_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double h;
 		double n = 0;
@@ -265,7 +268,7 @@ namespace TerrainFeature {
 		return h * def.amplitude;
 	}
 
-	double canyon3_billow_function(const fracdef_t &def, const vector3d &p)
+    double canyon3_billow_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double h;
 		double n = 0;
@@ -288,7 +291,7 @@ namespace TerrainFeature {
 		return h * def.amplitude;
 	}
 
-	/*double rock_function(const fracdef_t &def, const vector3d &p)
+    /*double rock_function(const fracdef_t &def, const Vector3d &p)
 {
 	double h;
 	double n = octavenoise(def.octaves, 0.788, 2.0, def.frequency*p);
@@ -310,9 +313,9 @@ namespace TerrainFeature {
 	return h * def.amplitude;
 }*/
 
-	void crater_function_1pass(const vector3d &p, double &out, const double height)
+    void crater_function_1pass(const Vector3d &p, double &out, const double height)
 	{
-		double n = fabs(noise(p));
+        double n = fabs(piSimplex(p));
 		const double ejecta_outer = 0.6;
 		const double outer = 0.9;
 		const double inner = 0.94;
@@ -335,7 +338,7 @@ namespace TerrainFeature {
 	}
 
 	// makes large and small craters across the entire planet.
-	double crater_function(const fracdef_t &def, const vector3d &p)
+    double crater_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double crater = 0.0;
 		double sz = def.frequency;
@@ -348,9 +351,9 @@ namespace TerrainFeature {
 		return crater;
 	}
 
-	void impact_crater_function_1pass(const vector3d &p, double &out, const double height)
+    void impact_crater_function_1pass(const Vector3d &p, double &out, const double height)
 	{
-		double n = fabs(noise(p));
+        double n = fabs(piSimplex(p));
 		const double ejecta_outer = 0.6;
 		const double outer = 0.9;
 		const double midrim = 0.93;
@@ -370,7 +373,7 @@ namespace TerrainFeature {
 	}
 
 	// makes large and small craters across the entire planet.
-	double impact_crater_function(const fracdef_t &def, const vector3d &p)
+    double impact_crater_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double crater = 0.0;
 		double sz = def.frequency;
@@ -383,9 +386,9 @@ namespace TerrainFeature {
 		return crater;
 	}
 
-	void volcano_function_1pass(const vector3d &p, double &out, const double height)
+    void volcano_function_1pass(const Vector3d &p, double &out, const double height)
 	{
-		double n = fabs(noise(p));
+        double n = fabs(piSimplex(p));
 		const double ejecta_outer = 0.6;
 		const double outer = 0.9;
 		const double inner = 0.975;
@@ -407,7 +410,7 @@ namespace TerrainFeature {
 		}
 	}
 
-	double volcano_function(const fracdef_t &def, const vector3d &p)
+    double volcano_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double crater = 0.0;
 		double sz = def.frequency;
@@ -420,9 +423,9 @@ namespace TerrainFeature {
 		return 3.0 * crater;
 	}
 
-	void megavolcano_function_1pass(const vector3d &p, double &out, const double height)
+    void megavolcano_function_1pass(const Vector3d &p, double &out, const double height)
 	{
-		double n = fabs(noise(p));
+        double n = fabs(piSimplex(p));
 		const double ejecta_outer = 0.6;
 		const double outer = 0.76; //Radius
 		const double inner = 0.98;
@@ -444,7 +447,7 @@ namespace TerrainFeature {
 		}
 	}
 
-	double megavolcano_function(const fracdef_t &def, const vector3d &p)
+    double megavolcano_function(const fracdef_t &def, const Vector3d &p)
 	{
 		double crater = 0.0;
 		double sz = def.frequency;
@@ -457,7 +460,7 @@ namespace TerrainFeature {
 		return 4.0 * crater;
 	}
 
-	double river_function(const fracdef_t &def, const vector3d &p, int style)
+    double river_function(const fracdef_t &def, const Vector3d &p, int style)
 	{
 		assert(style >= 0 && style < 2);
 		double h;
@@ -482,7 +485,7 @@ namespace TerrainFeature {
 
 // Original canyon function, But really it generates cliffs.
 #if 0
-double cliff_function(const fracdef_t &def, const vector3d &p)
+double cliff_function(const fracdef_t &def, const Vector3d &p)
 {
 	double h;
 	double n = octavenoise(def.octaves, 0.54, 2.0, def.frequency*p);
@@ -499,4 +502,4 @@ double cliff_function(const fracdef_t &def, const vector3d &p)
 }
 #endif
 
-} // namespace TerrainFeature
+} // namespace Ign

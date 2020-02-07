@@ -1,51 +1,52 @@
 // Copyright © 2008-2019 Pioneer Developers. See AUTHORS.txt for details
 // Licensed under the terms of the GPL v3. See licenses/GPL-3.txt
 
-#ifndef _TERRAINNOISE_H
-#define _TERRAINNOISE_H
+#ifndef __PI_TERRAINNOISE_H_
+#define __PI_TERRAINNOISE_H_
 
-#include "perlin.h"
-#include "../libs.h"
+#include "pi_simplex.h"
+#include "pi_fract_def.h"
+//#include "../libs.h"
 
-namespace TerrainNoise {
-
+namespace Ign
+{
 	// octavenoise functions return range [0,1] if persistence = 0.5
-	inline double octavenoise(const fracdef_t &def, const double persistence, const vector3d &p)
+        inline Float octavenoise( const fracdef_t & def, const Float persistence, const Vector3d & p )
 	{
 		//assert(persistence <= (1.0 / def.lacunarity));
-		double n = 0;
-		double amplitude = persistence;
-		double frequency = def.frequency;
+                Float n = 0;
+                Float amplitude = persistence;
+                Float frequency = def.frequency;
 		for (int i = 0; i < def.octaves; i++) {
-			n += amplitude * noise(frequency * p);
+                        n += amplitude * piSimplex(frequency * p);
 			amplitude *= persistence;
 			frequency *= def.lacunarity;
 		}
 		return (n + 1.0) * 0.5;
 	}
 
-	inline double river_octavenoise(const fracdef_t &def, const double persistence, const vector3d &p)
+        inline Float river_octavenoise(const fracdef_t &def, const Float persistence, const Vector3d &p)
 	{
 		//assert(persistence <= (1.0 / def.lacunarity));
-		double n = 0;
-		double amplitude = persistence;
-		double frequency = def.frequency;
+                Float n = 0;
+                Float amplitude = persistence;
+                Float frequency = def.frequency;
 		for (int i = 0; i < def.octaves; i++) {
-			n += amplitude * fabs(noise(frequency * p));
+                        n += amplitude * fabs(piSimplex(frequency * p));
 			amplitude *= persistence;
 			frequency *= def.lacunarity;
 		}
 		return fabs(n);
 	}
 
-	inline double ridged_octavenoise(const fracdef_t &def, const double persistence, const vector3d &p)
+        inline Float ridged_octavenoise(const fracdef_t &def, const Float persistence, const Vector3d &p)
 	{
 		//assert(persistence <= (1.0 / def.lacunarity));
-		double n = 0;
-		double amplitude = persistence;
-		double frequency = def.frequency;
+                Float n = 0;
+                Float amplitude = persistence;
+                Float frequency = def.frequency;
 		for (int i = 0; i < def.octaves; i++) {
-			n += amplitude * noise(frequency * p);
+                        n += amplitude * piSimplex(frequency * p);
 			amplitude *= persistence;
 			frequency *= def.lacunarity;
 		}
@@ -54,42 +55,42 @@ namespace TerrainNoise {
 		return n;
 	}
 
-	inline double billow_octavenoise(const fracdef_t &def, const double persistence, const vector3d &p)
+        inline Float billow_octavenoise(const fracdef_t &def, const Float persistence, const Vector3d &p)
 	{
 		//assert(persistence <= (1.0 / def.lacunarity));
-		double n = 0;
-		double amplitude = persistence;
-		double frequency = def.frequency;
+                Float n = 0;
+                Float amplitude = persistence;
+                Float frequency = def.frequency;
 		for (int i = 0; i < def.octaves; i++) {
-			n += amplitude * noise(frequency * p);
+                        n += amplitude * piSimplex(frequency * p);
 			amplitude *= persistence;
 			frequency *= def.lacunarity;
 		}
 		return (2.0 * fabs(n) - 1.0) + 1.0;
 	}
 
-	inline double voronoiscam_octavenoise(const fracdef_t &def, const double persistence, const vector3d &p)
+        inline Float voronoiscam_octavenoise(const fracdef_t &def, const Float persistence, const Vector3d &p)
 	{
 		//assert(persistence <= (1.0 / def.lacunarity));
-		double n = 0;
-		double amplitude = persistence;
-		double frequency = def.frequency;
+                Float n = 0;
+                Float amplitude = persistence;
+                Float frequency = def.frequency;
 		for (int i = 0; i < def.octaves; i++) {
-			n += amplitude * noise(frequency * p);
+                        n += amplitude * piSimplex(frequency * p);
 			amplitude *= persistence;
 			frequency *= def.lacunarity;
 		}
 		return sqrt(10.0 * fabs(n));
 	}
 
-	inline double dunes_octavenoise(const fracdef_t &def, const double persistence, const vector3d &p)
+        inline Float dunes_octavenoise(const fracdef_t &def, const Float persistence, const Vector3d &p)
 	{
 		//assert(persistence <= (1.0 / def.lacunarity));
-		double n = 0;
-		double amplitude = persistence;
-		double frequency = def.frequency;
+                Float n = 0;
+                Float amplitude = persistence;
+                Float frequency = def.frequency;
 		for (int i = 0; i < 3; i++) {
-			n += amplitude * noise(frequency * p);
+                        n += amplitude * piSimplex(frequency * p);
 			amplitude *= persistence;
 			frequency *= def.lacunarity;
 		}
@@ -97,42 +98,42 @@ namespace TerrainNoise {
 	}
 
 	// XXX merge these with their fracdef versions
-	inline double octavenoise(int octaves, const double persistence, const double lacunarity, const vector3d &p)
+        inline Float octavenoise(int octaves, const Float persistence, const Float lacunarity, const Vector3d &p)
 	{
 		//assert(persistence <= (1.0 / lacunarity));
-		double n = 0;
-		double amplitude = persistence;
-		double frequency = 1.0;
+                Float n = 0;
+                Float amplitude = persistence;
+                Float frequency = 1.0;
 		while (octaves--) {
-			n += amplitude * noise(frequency * p);
+                        n += amplitude * piSimplex(frequency * p);
 			amplitude *= persistence;
 			frequency *= lacunarity;
 		}
 		return (n + 1.0) * 0.5;
 	}
 
-	inline double river_octavenoise(int octaves, const double persistence, const double lacunarity, const vector3d &p)
+        inline Float river_octavenoise(int octaves, const Float persistence, const Float lacunarity, const Vector3d &p)
 	{
 		//assert(persistence <= (1.0 / lacunarity));
-		double n = 0;
-		double amplitude = persistence;
-		double frequency = 1.0;
+                Float n = 0;
+                Float amplitude = persistence;
+                Float frequency = 1.0;
 		while (octaves--) {
-			n += amplitude * fabs(noise(frequency * p));
+                        n += amplitude * fabs(piSimplex(frequency * p));
 			amplitude *= persistence;
 			frequency *= lacunarity;
 		}
 		return n;
 	}
 
-	inline double ridged_octavenoise(int octaves, const double persistence, const double lacunarity, const vector3d &p)
+        inline Float ridged_octavenoise(int octaves, const Float persistence, const Float lacunarity, const Vector3d &p)
 	{
 		//assert(persistence <= (1.0 / lacunarity));
-		double n = 0;
-		double amplitude = persistence;
-		double frequency = 1.0;
+                Float n = 0;
+                Float amplitude = persistence;
+                Float frequency = 1.0;
 		while (octaves--) {
-			n += amplitude * noise(frequency * p);
+                        n += amplitude * piSimplex(frequency * p);
 			amplitude *= persistence;
 			frequency *= lacunarity;
 		}
@@ -141,28 +142,28 @@ namespace TerrainNoise {
 		return n;
 	}
 
-	inline double billow_octavenoise(int octaves, const double persistence, const double lacunarity, const vector3d &p)
+        inline Float billow_octavenoise(int octaves, const Float persistence, const Float lacunarity, const Vector3d &p)
 	{
 		//assert(persistence <= (1.0 / lacunarity));
-		double n = 0;
-		double amplitude = persistence;
-		double frequency = 1.0;
+                Float n = 0;
+                Float amplitude = persistence;
+                Float frequency = 1.0;
 		while (octaves--) {
-			n += amplitude * noise(frequency * p);
+                        n += amplitude * piSimplex(frequency * p);
 			amplitude *= persistence;
 			frequency *= lacunarity;
 		}
 		return (2.0 * fabs(n) - 1.0) + 1.0;
 	}
 
-	inline double voronoiscam_octavenoise(int octaves, const double persistence, const double lacunarity, const vector3d &p)
+        inline Float voronoiscam_octavenoise(int octaves, const Float persistence, const Float lacunarity, const Vector3d &p)
 	{
 		//assert(persistence <= (1.0 / lacunarity));
-		double n = 0;
-		double amplitude = persistence;
-		double frequency = 1.0;
+                Float n = 0;
+                Float amplitude = persistence;
+                Float frequency = 1.0;
 		while (octaves--) {
-			n += amplitude * noise(frequency * p);
+                        n += amplitude * piSimplex(frequency * p);
 			amplitude *= persistence;
 			frequency *= lacunarity;
 		}
@@ -170,9 +171,9 @@ namespace TerrainNoise {
 	}
 
 	// not really a noise function but no better place for it
-	inline vector3d interpolate_color(const double n, const vector3d &start, const vector3d &end)
+        inline Vector3d interpolate_color(const Float n, const Vector3d &start, const Vector3d &end)
 	{
-		const double nClamped = Clamp(n, 0.0, 1.0);
+                const Float nClamped = Clamp(n, 0.0, 1.0);
 		return start * (1.0 - nClamped) + end * nClamped;
 	}
 

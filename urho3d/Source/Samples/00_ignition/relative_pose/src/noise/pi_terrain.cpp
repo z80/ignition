@@ -1,14 +1,14 @@
 // Copyright © 2008-2019 Pioneer Developers. See AUTHORS.txt for details
 // Licensed under the terms of the GPL v3. See licenses/GPL-3.txt
 
-#include "Terrain.h"
+#include "pi_terrain.h"
 
-#include "FileSystem.h"
-#include "FloatComparison.h"
-#include "GameConfig.h"
-#include "perlin.h"
-#include "../utils.h"
-#include "../galaxy/SystemBody.h"
+//#include "FileSystem.h"
+//#include "FloatComparison.h"
+//#include "GameConfig.h"
+#include "pi_simplex.h"
+//#include "../utils.h"
+//#include "../galaxy/SystemBody.h"
 
 // static instancer. selects the best height and color classes for the body
 Terrain *Terrain::InstanceTerrain(const SystemBody *body)
