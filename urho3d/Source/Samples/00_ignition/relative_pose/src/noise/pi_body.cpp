@@ -20,7 +20,7 @@ PiBodyDesc::PiBodyDesc()
     metal_        = 10;
 }
 
-PiBodySource::PiBodySource
+PiBodySource::PiBodySource()
     : HeightSource()
 {
 

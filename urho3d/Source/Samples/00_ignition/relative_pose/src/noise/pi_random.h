@@ -21,13 +21,13 @@
 //}
 
 #define PCG_LITTLE_ENDIAN 1
-#include "pcg-cpp/pcg_random.hpp"
+#include "pcg_random.hpp"
 
 #include "data_types.h"
 using namespace Ign;
 
 // A deterministic random number generator
-class Random //: public RefCounted 
+class PiRandom //: public RefCounted 
 {
 	pcg32 mPCG;
 
@@ -41,20 +41,20 @@ public:
 	//
 
 	// Construct a new random generator using the given seed
-	Random(const Uint32 initialSeed = 0xabcd1234)
+	PiRandom(const Uint32 initialSeed = 0xabcd1234)
 	{
 		seed(initialSeed);
 	}
 
 	// Construct a new generator given an array of 32-bit seeds.
-	Random(const Uint32 *const seeds, size_t length)
+	PiRandom(const Uint32 *const seeds, size_t length)
 	{
 		seed(seeds, length);
 	}
 
 	// Construct a new random generator from an array of 64-bit
 	// seeds.
-	Random(const Uint64 *const seeds, size_t length)
+	PiRandom(const Uint64 *const seeds, size_t length)
 	{
 		seed(reinterpret_cast<const Uint32 *const>(seeds), length * 2);
 	}
@@ -66,7 +66,7 @@ public:
 	// Seed the RNG using the hash of the given array of seeds.
 	void seed(const Uint32 *const seeds, size_t length)
 	{
-		const Uint32 hash = lookup3_hashword(seeds, length, 0);
+		const Uint32 hash = 0; //lookup3_hashword(seeds, length, 0);
 		mPCG.seed(hash);
 		cached = false;
 	}
@@ -240,8 +240,8 @@ public:
 	const pcg32 &GetPCG() const { return mPCG; }
 
 private:
-	Random(const Random &); // copy constructor not defined
-	void operator=(const Random &); // assignment operator not defined
+	PiRandom(const PiRandom &); // copy constructor not defined
+	void operator=(const PiRandom &); // assignment operator not defined
 };
 
 #endif // RAND_H

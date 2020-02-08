@@ -6,7 +6,8 @@
 
 #include "data_types.h"
 #include "cube_sphere.h"
-
+#include "pi_fract_def.h"
+#include "pi_random.h"
 
 namespace Ign
 {
@@ -33,7 +34,7 @@ struct PiBodyDesc
 
     PiBodyDesc();
 
-    static const MAX_VALUE;
+    static const int MAX_VALUE;
 };
 
 class PiBodySource: public HeightSource
@@ -42,14 +43,14 @@ public:
     PiBodySource();
     virtual ~PiBodySource();
 
-    PiBodySource( cost PiBodyDesc & desc );
+    PiBodySource( const PiBodyDesc & desc );
     const PiBodySource & operator=( const PiBodyDesc & desc );
 
 
 
 
    int m_seed;
-   Random m_rand;
+   PiRandom m_rand;
 
    Float m_sealevel; // 0 - no water, 1 - 100% coverage
    Float m_icyness; // 0 - 1 (0% to 100% cover)
