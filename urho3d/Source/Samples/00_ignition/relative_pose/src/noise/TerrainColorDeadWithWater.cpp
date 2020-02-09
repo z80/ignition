@@ -10,7 +10,7 @@ template <>
 const char *TerrainColorFractal<TerrainColorDeadWithWater>::GetColorFractalName() const { return "DeadWithWater"; }
 
 template <>
-TerrainColorFractal<TerrainColorDeadWithWater>::TerrainColorFractal(const PiSourceDescs&body) :
+TerrainColorFractal<TerrainColorDeadWithWater>::TerrainColorFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
 	m_surfaceEffects |= Terrain::EFFECT_WATER;

@@ -7,7 +7,7 @@ template <>
 const char *TerrainHeightFractal<TerrainHeightFlat>::GetHeightFractalName() const { return "Flat"; }
 
 template <>
-TerrainHeightFractal<TerrainHeightFlat>::TerrainHeightFractal(const PiSourceDescs&body) :
+TerrainHeightFractal<TerrainHeightFlat>::TerrainHeightFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
 }

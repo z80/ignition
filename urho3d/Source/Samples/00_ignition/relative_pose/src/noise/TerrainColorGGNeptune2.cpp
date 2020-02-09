@@ -10,7 +10,7 @@ template <>
 const char *TerrainColorFractal<TerrainColorGGNeptune2>::GetColorFractalName() const { return "GGNeptune2"; }
 
 template <>
-TerrainColorFractal<TerrainColorGGNeptune2>::TerrainColorFractal(const PiSourceDescs&body) :
+TerrainColorFractal<TerrainColorGGNeptune2>::TerrainColorFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
 	// spots

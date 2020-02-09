@@ -11,7 +11,7 @@ template <>
 const char *TerrainHeightFractal<TerrainHeightMapped2>::GetHeightFractalName() const { return "Mapped2"; }
 
 template <>
-TerrainHeightFractal<TerrainHeightMapped2>::TerrainHeightFractal(const PiSourceDescs&body) :
+TerrainHeightFractal<TerrainHeightMapped2>::TerrainHeightFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
 }

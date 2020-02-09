@@ -10,7 +10,7 @@ template <>
 const char *TerrainColorFractal<TerrainColorStarWhiteDwarf>::GetColorFractalName() const { return "StarWhiteDwarf"; }
 
 template <>
-TerrainColorFractal<TerrainColorStarWhiteDwarf>::TerrainColorFractal(const PiSourceDescs&body) :
+TerrainColorFractal<TerrainColorStarWhiteDwarf>::TerrainColorFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
 	double height = m_maxHeightInMeters * 0.1;

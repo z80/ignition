@@ -8,7 +8,7 @@ template <>
 const char *TerrainHeightFractal<TerrainHeightEllipsoid>::GetHeightFractalName() const { return "Ellipsoid"; }
 
 template <>
-TerrainHeightFractal<TerrainHeightEllipsoid>::TerrainHeightFractal(const PiSourceDescs&body) :
+TerrainHeightFractal<TerrainHeightEllipsoid>::TerrainHeightFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
 	const double rad = m_minBody.m_radius;

@@ -14,7 +14,7 @@ template <>
 const char *TerrainHeightFractal<TerrainHeightAsteroid2>::GetHeightFractalName() const { return "Asteroid2"; }
 
 template <>
-TerrainHeightFractal<TerrainHeightAsteroid2>::TerrainHeightFractal(const PiSourceDescs&body) :
+TerrainHeightFractal<TerrainHeightAsteroid2>::TerrainHeightFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
 	SetFracDef(0, m_maxHeightInMeters * 0.05, 1e6, 10000.0);
