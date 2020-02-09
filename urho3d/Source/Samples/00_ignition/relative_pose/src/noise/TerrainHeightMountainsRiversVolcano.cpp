@@ -5,8 +5,8 @@
 #include "pi_terrain_feature.h"
 #include "pi_terrain_noise.h"
 
-using namespace TerrainNoise;
-using namespace TerrainFeature;
+namespace Ign {
+namespace Ign {
 
 template <>
 const char *TerrainHeightFractal<TerrainHeightMountainsRiversVolcano>::GetHeightFractalName() const { return "MountainsRiversVolcano"; }

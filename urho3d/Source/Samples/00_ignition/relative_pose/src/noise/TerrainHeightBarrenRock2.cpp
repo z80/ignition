@@ -5,8 +5,8 @@
 #include "pi_terrain_feature.h"
 #include "pi_terrain_noise.h"
 
-using namespace TerrainNoise;
-using namespace TerrainFeature;
+namespace Ign {
+namespace Ign {
 
 // Strange world, looks like its been hit by thousands of years of erosion.
 // Could be used as a basis for terrains that should have erosion.

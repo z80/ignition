@@ -5,7 +5,7 @@
 #include "pi_terrain_feature.h"
 #include "pi_terrain_noise.h"
 
-using namespace TerrainNoise;
+namespace Ign {
 
 template <>
 const char *TerrainColorFractal<TerrainColorStarM>::GetColorFractalName() const { return "StarM"; }
@@ -20,7 +20,7 @@ TerrainColorFractal<TerrainColorStarM>::TerrainColorFractal(const PiSourceDescs&
 	SetFracDef(2, height, 6e6, 100.0);
 	SetFracDef(3, height, 5e5, 100.0);
 }
-using namespace TerrainFeature;
+namespace Ign {
 
 template <>
 vector3d TerrainColorFractal<TerrainColorStarM>::GetColor(const vector3d &p, double height, const vector3d &norm) const

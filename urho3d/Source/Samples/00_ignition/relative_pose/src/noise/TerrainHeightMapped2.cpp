@@ -6,7 +6,7 @@
 
 // As far as I can tell this is used for the Moon and ONLY the Moon - AndyC
 
-using namespace TerrainNoise;
+namespace Ign {
 template <>
 const char *TerrainHeightFractal<TerrainHeightMapped2>::GetHeightFractalName() const { return "Mapped2"; }
 
