@@ -34,13 +34,13 @@ TerrainHeightFractal<TerrainHeightEllipsoid>::TerrainHeightFractal(const PiSourc
 //       For the terrain code GetHeight() returns the displacement (along the center to surface line) at each point of a unit sphere the terrain has.
 //          * This geometry is resized by the 'radius' of the body. The radius value used for bodies with flattening is the short Polar radius which fits inside the elipsoid.
 //          * Therefore for ellipsoid bodies the idea is that GetHeight returns the difference at any point between a sphere of size Polar radius and the ellipsoid surface.
-// 4. Pioneer's coordinate system defines a body with the y axis (p.y) as the up direction (perpendicular to the plane of rotation in which the equator lies).
+// 4. Pioneer's coordinate system defines a body with the y axis (p.y_) as the up direction (perpendicular to the plane of rotation in which the equator lies).
 //       * x (p.x_) and z (p.z) axes lie on the plane of the equator
 //       * GetHeight sees coordinates scaled such that the unit sphere is the Polar radius. That is an input vector p = Vector3d(x,y,z) on the unit sphere.
 //       * In GetHeight coordinate system: pr = 1.0 (eqn. 4)
-//           Ellipse coord system:y_ axis = p.y axis
-//                                x_ axis is the axis perpendicular to y_ (p.y) i.e. lies on the p.x_/p.z plane
-//                                x^2 = size x_ axis coord^2 = size(p.x_,p.z)^2 = sqrt(p.x_^2+p.y^2)^2 = (p.x_^2+p.z^2) (eqn. 5)
+//           Ellipse coord system:y_ axis = p.y_ axis
+//                                x_ axis is the axis perpendicular to y_ (p.y_) i.e. lies on the p.x_/p.z plane
+//                                x^2 = size x_ axis coord^2 = size(p.x_,p.z)^2 = sqrt(p.x_^2+p.y_^2)^2 = (p.x_^2+p.z^2) (eqn. 5)
 //			 Polar form equation: R(t) = er*pr/sqrt((pr*cos(t))^2+(er*sin(t))^2) (eqn. 2)
 //                                R(t) = (ar*1.0)*(1.0)/sqrt(((1.0)*cos(t))^2+((ar*1.0)*sin(t))^2) (substituting using eqn. 1 and eqn. 4)
 //                                R(t) = ar/sqrt(cos(t)^2+ar^2*sin(t)^2) (eqn. 6)
@@ -58,8 +58,8 @@ Float TerrainHeightFractal<TerrainHeightEllipsoid>::GetHeight(const Vector3d &p)
 	const Float ar = m_minBody.m_aspectRatio;
 	// x_^2 = (p.z^2+p.x_^2) (eqn. 5)
 	const Float x_squared = (p.x_ * p.x_ + p.z * p.z);
-	// y_ = p.y
-	const Float y_squared = p.y * p.y;
+	// y_ = p.y_
+	const Float y_squared = p.y_ * p.y_;
 	const Float distFromCenter_R = ar / sqrt(x_squared + ar * ar * y_squared); // (eqn. 9)
 	// GetHeight must return the difference in the distance from center between a point in a sphere of
 	// Polar radius (in coords scaled to a unit sphere) and the point on the ellipsoid surface.

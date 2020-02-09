@@ -27,11 +27,11 @@ TerrainColorFractal<TerrainColorGGSaturn>::TerrainColorFractal(const PiSourceDes
 template <>
 Vector3d TerrainColorFractal<TerrainColorGGSaturn>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
-	Float n = 0.4 * ridged_octavenoise(GetFracDef(0), 0.7, Vector3d(3.142 * p.y * p.y));
-	n += 0.4 * octavenoise(GetFracDef(1), 0.6, Vector3d(3.142 * p.y * p.y));
-	n += 0.3 * octavenoise(GetFracDef(2), 0.5, Vector3d(3.142 * p.y * p.y));
-	n += 0.8 * octavenoise(GetFracDef(0), 0.7, Vector3d(p * p.y * p.y));
-	n += 0.5 * ridged_octavenoise(GetFracDef(1), 0.7, Vector3d(p * p.y * p.y));
+	Float n = 0.4 * ridged_octavenoise(GetFracDef(0), 0.7, Vector3d(3.142 * p.y_ * p.y_));
+	n += 0.4 * octavenoise(GetFracDef(1), 0.6, Vector3d(3.142 * p.y_ * p.y_));
+	n += 0.3 * octavenoise(GetFracDef(2), 0.5, Vector3d(3.142 * p.y_ * p.y_));
+	n += 0.8 * octavenoise(GetFracDef(0), 0.7, Vector3d(p * p.y_ * p.y_));
+	n += 0.5 * ridged_octavenoise(GetFracDef(1), 0.7, Vector3d(p * p.y_ * p.y_));
 	n /= 2.0;
 	n *= n * n;
 	n += billow_octavenoise(GetFracDef(0), 0.8, Vector3d(noise(p * 3.142) * p)) *

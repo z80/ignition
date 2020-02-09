@@ -25,7 +25,7 @@ Vector3d TerrainColorFractal<TerrainColorVolcanic>::GetColor(const Vector3d &p, 
 	const Float flatness = pow(p.DotProduct(norm), 6.0);
 	const Vector3d color_cliffs = m_rockColor[2];
 	Float equatorial_desert = (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
-		1.0 * (1.0 - p.y * p.y);
+		1.0 * (1.0 - p.y_ * p.y_);
 
 	Vector3d col;
 

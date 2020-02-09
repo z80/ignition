@@ -24,17 +24,17 @@ Vector3d TerrainColorFractal<TerrainColorTFPoor>::GetColor(const Vector3d &p, Fl
 
 	Float continents = 0;
 	Float equatorial_desert = (2.0 - m_icyness) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
-		1.0 * (2.0 - m_icyness) * (1.0 - p.y * p.y);
+		1.0 * (2.0 - m_icyness) * (1.0 - p.y_ * p.y_);
 	Vector3d color_cliffs = m_darkrockColor[5];
 	Vector3d col, tex1, tex2;
 	// ice on mountains and poles
-	if (fabs(m_icyness * p.y) + m_icyness * n > 1) {
+	if (fabs(m_icyness * p.y_) + m_icyness * n > 1) {
 		col = interpolate_color(terrain_colournoise_rock2, color_cliffs, Vector3d(.9, .9, .9));
 		col = interpolate_color(flatness, col, Vector3d(1, 1, 1));
 		return col;
 	}
 	//we don't want water on the poles if there are ice-caps
-	if (fabs(m_icyness * p.y) > 0.67) {
+	if (fabs(m_icyness * p.y_) > 0.67) {
 		col = interpolate_color(equatorial_desert, m_sandColor[2], m_darksandColor[5]);
 		col = interpolate_color(flatness, col, Vector3d(1, 1, 1));
 		return col;

@@ -24,8 +24,8 @@ Vector3d TerrainColorFractal<TerrainColorIce>::GetColor(const Vector3d &p, Float
 
 	const Float flatness = pow(p.DotProduct(norm), 24.0);
 	Float equatorial_desert = (2.0 - m_icyness) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
-		1.0 * (2.0 - m_icyness) * (1.0 - p.y * p.y);
-	Float equatorial_region_1 = billow_octavenoise(GetFracDef(0), 0.5, p) * p.y * p.y;
+		1.0 * (2.0 - m_icyness) * (1.0 - p.y_ * p.y_);
+	Float equatorial_region_1 = billow_octavenoise(GetFracDef(0), 0.5, p) * p.y_ * p.y_;
 	Float equatorial_region_2 = ridged_octavenoise(GetFracDef(5), 0.5, p) * p.x_ * p.x_;
 	// cliff colours
 	Vector3d color_cliffs;

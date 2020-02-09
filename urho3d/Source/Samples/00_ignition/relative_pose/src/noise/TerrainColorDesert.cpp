@@ -22,11 +22,11 @@ Vector3d TerrainColorFractal<TerrainColorDesert>::GetColor(const Vector3d &p, Fl
 	const Float flatness = pow(p.DotProduct(norm), 6.0);
 	const Vector3d color_cliffs = m_rockColor[1];
 	// Ice has been left as is so the occasional desert world will have polar ice-caps like mars
-	if (fabs(m_icyness * p.y) + m_icyness * n > 1) {
+	if (fabs(m_icyness * p.y_) + m_icyness * n > 1) {
 		return interpolate_color(flatness, color_cliffs, Vector3d(1, 1, 1));
 	}
 	Float equatorial_desert = (2.0 - m_icyness) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
-		1.0 * (2.0 - m_icyness) * (1.0 - p.y * p.y);
+		1.0 * (2.0 - m_icyness) * (1.0 - p.y_ * p.y_);
 	Vector3d col;
 	if (n > .4) {
 		n = n * n;

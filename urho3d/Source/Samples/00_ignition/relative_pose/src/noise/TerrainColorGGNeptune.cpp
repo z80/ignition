@@ -28,9 +28,9 @@ TerrainColorFractal<TerrainColorGGNeptune>::TerrainColorFractal(const PiSourceDe
 template <>
 Vector3d TerrainColorFractal<TerrainColorGGNeptune>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
-	Float n = 0.8 * octavenoise(GetFracDef(2), 0.6, Vector3d(3.142 * p.y * p.y));
-	n += 0.25 * ridged_octavenoise(GetFracDef(3), 0.55, Vector3d(3.142 * p.y * p.y));
-	n += 0.2 * octavenoise(GetFracDef(3), 0.5, Vector3d(3.142 * p.y * p.y));
+	Float n = 0.8 * octavenoise(GetFracDef(2), 0.6, Vector3d(3.142 * p.y_ * p.y_));
+	n += 0.25 * ridged_octavenoise(GetFracDef(3), 0.55, Vector3d(3.142 * p.y_ * p.y_));
+	n += 0.2 * octavenoise(GetFracDef(3), 0.5, Vector3d(3.142 * p.y_ * p.y_));
 	//spot
 	n += 0.8 * billow_octavenoise(GetFracDef(1), 0.8, Vector3d(noise(p * 3.142) * p)) *
 		megavolcano_function(GetFracDef(0), p);

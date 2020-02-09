@@ -22,9 +22,9 @@ TerrainColorFractal<TerrainColorGGUranus>::TerrainColorFractal(const PiSourceDes
 template <>
 Vector3d TerrainColorFractal<TerrainColorGGUranus>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
-	Float n = 0.5 * ridged_octavenoise(GetFracDef(0), 0.7, Vector3d(3.142 * p.y * p.y));
-	n += 0.5 * octavenoise(GetFracDef(1), 0.6, Vector3d(3.142 * p.y * p.y));
-	n += 0.2 * octavenoise(GetFracDef(2), 0.5, Vector3d(3.142 * p.y * p.y));
+	Float n = 0.5 * ridged_octavenoise(GetFracDef(0), 0.7, Vector3d(3.142 * p.y_ * p.y_));
+	n += 0.5 * octavenoise(GetFracDef(1), 0.6, Vector3d(3.142 * p.y_ * p.y_));
+	n += 0.2 * octavenoise(GetFracDef(2), 0.5, Vector3d(3.142 * p.y_ * p.y_));
 	n /= 2.0;
 	n *= n * n;
 	return interpolate_color(n, Vector3d(.4, .5, .55), Vector3d(.85, .95, .96));

@@ -27,9 +27,9 @@ TerrainColorFractal<TerrainColorGGSaturn2>::TerrainColorFractal(const PiSourceDe
 template <>
 Vector3d TerrainColorFractal<TerrainColorGGSaturn2>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
-	Float n = 0.2 * billow_octavenoise(GetFracDef(0), 0.8, p * p.y * p.y);
-	n += 0.5 * ridged_octavenoise(GetFracDef(1), 0.7, p * p.y * p.y);
-	n += 0.25 * octavenoise(GetFracDef(2), 0.7, p * p.y * p.y);
+	Float n = 0.2 * billow_octavenoise(GetFracDef(0), 0.8, p * p.y_ * p.y_);
+	n += 0.5 * ridged_octavenoise(GetFracDef(1), 0.7, p * p.y_ * p.y_);
+	n += 0.25 * octavenoise(GetFracDef(2), 0.7, p * p.y_ * p.y_);
 	//spot
 	n *= n * n * 0.5;
 	n += billow_octavenoise(GetFracDef(0), 0.8, noise(p * 3.142) * p) *

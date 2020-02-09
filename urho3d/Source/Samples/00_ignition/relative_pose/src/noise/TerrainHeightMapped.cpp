@@ -75,7 +75,7 @@ Float TerrainHeightFractal<TerrainHeightMapped>::GetHeight(const Vector3d &p) co
 	//	* Clamp(h*0.0002, 0.1, 0.5);
 	v += h * 0.2 * voronoiscam_octavenoise(GetFracDef(5), Clamp(1.0 - (h * 0.0002), 0.0, 0.6), p) * Clamp(1.0 - (h * 0.0006), 0.0, 1.0);
 	//polar ice caps with cracks
-	if ((m_icyness * 0.5) + (fabs(p.y * p.y * p.y * 0.38)) > 0.6) {
+	if ((m_icyness * 0.5) + (fabs(p.y_ * p.y_ * p.y_ * 0.38)) > 0.6) {
 		h = Clamp(1.0 - (v * 10.0), 0.0, 1.0) * voronoiscam_octavenoise(GetFracDef(5), 0.5, p);
 		h *= h * h * 2.0;
 		h -= 3.0;

@@ -28,20 +28,20 @@ Vector3d TerrainColorFractal<TerrainColorEarthLike>::GetColor(const Vector3d &p,
 
 	Float continents = 0;
 	Float equatorial_desert = (2.0 - m_icyness) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
-		1.0 * (2.0 - m_icyness) * (1.0 - p.y * p.y);
+		1.0 * (2.0 - m_icyness) * (1.0 - p.y_ * p.y_);
 	Vector3d color_cliffs = m_darkrockColor[5];
 	Vector3d col, tex1, tex2;
 
 	// ice on mountains
 	//Output("flatness : %d", flatness);
-	if (flatness > 0.6 / Clamp(n * m_icyness + (m_icyness * 0.5) + (fabs(p.y * p.y * p.y * 0.38)), 0.1, 1.0)) {
+	if (flatness > 0.6 / Clamp(n * m_icyness + (m_icyness * 0.5) + (fabs(p.y_ * p.y_ * p.y_ * 0.38)), 0.1, 1.0)) {
 		col = interpolate_color(terrain_colournoise_rock, color_cliffs, m_rockColor[5]);
 		col = interpolate_color(flatness, col, Vector3d(1, 1, 1));
 		return col;
 	}
 	//polar ice-caps
-	if ((m_icyness * 0.5) + (fabs(p.y * p.y * p.y * 0.38)) > 0.6) {
-		//if (flatness > 0.5/Clamp(fabs(p.y*m_icyness), 0.1, 1.0)) {
+	if ((m_icyness * 0.5) + (fabs(p.y_ * p.y_ * p.y_ * 0.38)) > 0.6) {
+		//if (flatness > 0.5/Clamp(fabs(p.y_*m_icyness), 0.1, 1.0)) {
 		col = interpolate_color(terrain_colournoise_rock, color_cliffs, m_rockColor[5]);
 		col = interpolate_color(flatness, col, Vector3d(1, 1, 1));
 		return col;

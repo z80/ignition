@@ -23,18 +23,18 @@ Vector3d TerrainColorFractal<TerrainColorTFGood>::GetColor(const Vector3d &p, Fl
 	const Float flatness = pow(p.DotProduct(norm), 8.0);
 	Vector3d color_cliffs = m_rockColor[5];
 	// ice on mountains and poles
-	if (fabs(m_icyness * p.y) + m_icyness * n > 1) {
+	if (fabs(m_icyness * p.y_) + m_icyness * n > 1) {
 		return interpolate_color(flatness, color_cliffs, Vector3d(1, 1, 1));
 	}
 
 	Float equatorial_desert = (2.0 - m_icyness) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
-		1.0 * (2.0 - m_icyness) * (1.0 - p.y * p.y);
+		1.0 * (2.0 - m_icyness) * (1.0 - p.y_ * p.y_);
 	// This is for fake ocean depth by the coast.
 	Float continents = octavenoise(GetFracDef(0), 0.7 * ridged_octavenoise(GetFracDef(8), 0.58, p), p) - m_sealevel * 0.6;
 
 	Vector3d col;
 	//we don't want water on the poles if there are ice-caps
-	if (fabs(m_icyness * p.y) > 0.75) {
+	if (fabs(m_icyness * p.y_) > 0.75) {
 		col = interpolate_color(equatorial_desert, Vector3d(0.42, 0.46, 0), Vector3d(0.5, 0.3, 0));
 		col = interpolate_color(flatness, col, Vector3d(1, 1, 1));
 		return col;
