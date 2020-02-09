@@ -2,7 +2,7 @@
 // Licensed under the terms of the GPL v3. See licenses/GPL-3.txt
 
 #include "pi_source.h"
-#include "TerrainFeature.h"
+#include "pi_terrain_feature.h"
 #include "TerrainNoise.h"
 
 using namespace TerrainNoise;
