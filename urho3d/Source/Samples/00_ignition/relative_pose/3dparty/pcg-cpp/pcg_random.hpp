@@ -373,12 +373,12 @@ public:
     // It would be nice to use std::numeric_limits for these, but
     // we can't be sure that it'd be defined for the 128-bit types.
 
-    static constexpr result_type min()
+    static constexpr result_type min_()
     {
         return result_type(0UL);
     }
 
-    static constexpr result_type max()
+    static constexpr result_type max_()
     {
         return ~result_type(0UL);
     }
@@ -416,11 +416,53 @@ public:
     }
 
 protected:
-    static itype advance(itype state, itype delta,
-                         itype cur_mult, itype cur_plus);
+	static itype advance(itype state, itype delta,
+		itype cur_mult, itype cur_plus)
+	{
+		// The method used here is based on Brown, "Random Number Generation
+		// with Arbitrary Stride,", Transactions of the American Nuclear
+		// Society (Nov. 1994).  The algorithm is very similar to fast
+		// exponentiation.
+		//
+		// Even though delta is an unsigned integer, we can pass a
+		// signed integer to go backwards, it just goes "the long way round".
 
-    static itype distance(itype cur_state, itype newstate, itype cur_mult,
-                          itype cur_plus, itype mask = ~itype(0U));
+		constexpr itype ZERO = 0u;  // itype may be a non-trivial types, so
+		constexpr itype ONE = 1u;  // we define some ugly constants.
+		itype acc_mult = 1;
+		itype acc_plus = 0;
+		while (delta > ZERO) {
+			if (delta & ONE) {
+				acc_mult *= cur_mult;
+				acc_plus = acc_plus * cur_mult + cur_plus;
+			}
+			cur_plus = (cur_mult + ONE)*cur_plus;
+			cur_mult *= cur_mult;
+			delta >>= 1;
+		}
+		return acc_mult * state + acc_plus;
+
+	}
+
+	static itype distance(itype cur_state, itype newstate, itype cur_mult,
+		itype cur_plus, itype mask = ~itype(0U))
+	{
+		constexpr itype ONE = 1u;  // itype could be weird, so use constant
+		itype the_bit = stream_mixin::is_mcg ? itype(4u) : itype(1u);
+		itype distance = 0u;
+		while ((cur_state & mask) != (newstate & mask)) {
+			if ((cur_state & the_bit) != (newstate & the_bit)) {
+				cur_state = cur_state * cur_mult + cur_plus;
+				distance |= the_bit;
+			}
+			assert((cur_state & the_bit) == (newstate & the_bit));
+			the_bit <<= 1;
+			cur_plus = (cur_mult + ONE)*cur_plus;
+			cur_mult *= cur_mult;
+		}
+		return stream_mixin::is_mcg ? distance >> 2 : distance;
+
+	}
 
     itype distance(itype newstate, itype mask = ~itype(0U)) const
     {
@@ -607,11 +649,12 @@ operator>>(std::basic_istream<CharT,Traits>& in,
 }
 
 
+/*
 template <typename xtype, typename itype,
           typename output_mixin, bool output_previous,
           typename stream_mixin, typename multiplier_mixin>
 itype engine<xtype,itype,output_mixin,output_previous,stream_mixin,
-             multiplier_mixin>::advance(
+             multiplier_mixin>::advanceStatic(
     itype state, itype delta, itype cur_mult, itype cur_plus)
 {
     // The method used here is based on Brown, "Random Number Generation
@@ -638,6 +681,7 @@ itype engine<xtype,itype,output_mixin,output_previous,stream_mixin,
     return acc_mult * state + acc_plus;
 }
 
+
 template <typename xtype, typename itype,
           typename output_mixin, bool output_previous,
           typename stream_mixin, typename multiplier_mixin>
@@ -660,7 +704,7 @@ itype engine<xtype,itype,output_mixin,output_previous,stream_mixin,
     }
     return stream_mixin::is_mcg ? distance >> 2 : distance;
 }
-
+*/
 template <typename xtype, typename itype,
           typename output_mixin, bool output_previous,
           typename stream_mixin_lhs, typename multiplier_mixin_lhs,
