@@ -46,3 +46,9 @@ Vector3d TerrainColorFractal<TerrainColorAsteroid>::GetColor(const Vector3d &p, 
 		return col;
 	}
 }
+
+
+}
+
+
+

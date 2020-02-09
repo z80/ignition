@@ -33,7 +33,7 @@ Vector3d TerrainColorFractal<TerrainColorStarM>::GetColor(const Vector3d &p, Flo
 	n *= n * n;
 	n += ridged_octavenoise(GetFracDef(2), 0.6, p) * 0.5;
 	n += ridged_octavenoise(GetFracDef(3), 0.6, p) * 0.5;
-	n += 15.0 * billow_octavenoise(GetFracDef(0), 0.8, noise(p * 3.142) * p) *
+	n += 15.0 * billow_octavenoise(GetFracDef(0), 0.8, piSimplex(p * 3.142) * p) *
 		megavolcano_function(GetFracDef(1), p);
 	n *= 0.15;
 	n = 1.0 - n;

@@ -32,10 +32,10 @@ Vector3d TerrainColorFractal<TerrainColorGGSaturn2>::GetColor(const Vector3d &p,
 	n += 0.25 * octavenoise(GetFracDef(2), 0.7, p * p.y_ * p.y_);
 	//spot
 	n *= n * n * 0.5;
-	n += billow_octavenoise(GetFracDef(0), 0.8, noise(p * 3.142) * p) *
+	n += billow_octavenoise(GetFracDef(0), 0.8, piSimplex(p * 3.142) * p) *
 		megavolcano_function(GetFracDef(3), p);
 	Vector3d col;
-	//col = interpolate_color(octavenoise(GetFracDef(2), 0.7, noise(p*3.142)*p), Vector3d(.05, .0, .0), Vector3d(.4,.0,.35));
+	//col = interpolate_color(octavenoise(GetFracDef(2), 0.7, piSimplex(p*3.142)*p), Vector3d(.05, .0, .0), Vector3d(.4,.0,.35));
 	if (n > 1.0) {
 		n -= 1.0; // n *= 5.0;
 		col = interpolate_color(n, Vector3d(.25, .3, .4), Vector3d(.0, .2, .0));

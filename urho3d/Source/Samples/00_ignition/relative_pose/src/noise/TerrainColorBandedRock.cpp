@@ -19,7 +19,9 @@ template <>
 Vector3d TerrainColorFractal<TerrainColorBandedRock>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
 	const Float flatness = pow(p.DotProduct(norm), 6.0);
-	Float n = fabs(noise(Vector3d(height * 10000.0, 0.0, 0.0)));
+	Float n = fabs(piSimplex(Vector3d(height * 10000.0, 0.0, 0.0)));
 	Vector3d col = interpolate_color(n, m_rockColor[0], m_rockColor[1]);
 	return interpolate_color(flatness, col, m_rockColor[2]);
+}
+
 }

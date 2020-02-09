@@ -34,7 +34,7 @@ Vector3d TerrainColorFractal<TerrainColorGGSaturn>::GetColor(const Vector3d &p, 
 	n += 0.5 * ridged_octavenoise(GetFracDef(1), 0.7, Vector3d(p * p.y_ * p.y_));
 	n /= 2.0;
 	n *= n * n;
-	n += billow_octavenoise(GetFracDef(0), 0.8, Vector3d(noise(p * 3.142) * p)) *
+	n += billow_octavenoise(GetFracDef(0), 0.8, Vector3d(piSimplex(p * 3.142) * p)) *
 		megavolcano_function(GetFracDef(3), p);
 	return interpolate_color(n, Vector3d(.69, .53, .43), Vector3d(.99, .76, .62));
 }

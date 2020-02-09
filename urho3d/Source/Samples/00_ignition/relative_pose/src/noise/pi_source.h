@@ -60,6 +60,19 @@ public:
 	virtual const char *GetColorFractalName() const = 0;
 
 
+
+	void SetFracDef(const unsigned int index, const Float featureHeightMeters, const Float featureWidthMeters, const Float smallestOctaveMeters = 20.0);
+	inline const fracdef_t & GetFracDef(const unsigned int index) const
+	{
+		assert(index >= 0 && index < MAX_FRACDEFS);
+		return m_fracdef[index];
+	}
+	Float GetMaxHeight() const { return m_maxHeight; }
+	Uint32 GetSurfaceEffects() const { return m_surfaceEffects; }
+	Float BiCubicInterpolation( const Vector3d & p ) const;
+
+
+
     int      m_seed;
     PiRandom m_rand;
 	PiSourceDesc m_minBody;

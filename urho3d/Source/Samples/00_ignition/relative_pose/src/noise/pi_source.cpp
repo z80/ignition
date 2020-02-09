@@ -243,6 +243,24 @@ Color PiBodySource::color(const Vector3d& at) const
     return col;
 }
 
+void PiBodySource::SetFracDef( const unsigned int index, const Float featureHeightMeters, const Float featureWidthMeters, const Float smallestOctaveMeters )
+{
+	assert(index >= 0 && index < MAX_FRACDEFS);
+	// feature
+	m_fracdef[index].amplitude = featureHeightMeters / (m_maxHeight * m_planetRadius);
+	m_fracdef[index].frequency = m_planetRadius / featureWidthMeters;
+	m_fracdef[index].octaves = std::max(1, int(ceil(log(featureWidthMeters / smallestOctaveMeters) / log(2.0))));
+	m_fracdef[index].lacunarity = 2.0;
+	//Output("%d octaves\n", m_fracdef[index].octaves); //print
+}
+
+Float PiBodySource::BiCubicInterpolation( const Vector3d & p ) const
+{
+	const Float h = height( p );
+	return h;
+}
+
+
 
 
 
