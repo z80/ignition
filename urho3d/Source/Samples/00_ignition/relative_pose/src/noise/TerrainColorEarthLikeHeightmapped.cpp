@@ -10,7 +10,7 @@ template <>
 const char *TerrainColorFractal<TerrainColorEarthLikeHeightmapped>::GetColorFractalName() const { return "EarthLikeHeightmapped"; }
 
 template <>
-TerrainColorFractal<TerrainColorEarthLikeHeightmapped>::TerrainColorFractal(const SystemBody *body) :
+TerrainColorFractal<TerrainColorEarthLikeHeightmapped>::TerrainColorFractal(const PiSourceDescs&body) :
 	Terrain(body)
 {
 	// crappy water

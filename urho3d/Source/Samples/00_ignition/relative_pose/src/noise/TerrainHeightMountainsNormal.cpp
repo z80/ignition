@@ -10,7 +10,7 @@ template <>
 const char *TerrainHeightFractal<TerrainHeightMountainsNormal>::GetHeightFractalName() const { return "MountainsNormal"; }
 
 template <>
-TerrainHeightFractal<TerrainHeightMountainsNormal>::TerrainHeightFractal(const SystemBody *body) :
+TerrainHeightFractal<TerrainHeightMountainsNormal>::TerrainHeightFractal(const PiSourceDescs&body) :
 	Terrain(body)
 {
 	SetFracDef(0, m_maxHeightInMeters, m_rand.Double(1e6, 1e7), 10000);

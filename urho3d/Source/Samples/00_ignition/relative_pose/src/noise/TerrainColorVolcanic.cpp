@@ -10,7 +10,7 @@ template <>
 const char *TerrainColorFractal<TerrainColorVolcanic>::GetColorFractalName() const { return "Volcanic"; }
 
 template <>
-TerrainColorFractal<TerrainColorVolcanic>::TerrainColorFractal(const SystemBody *body) :
+TerrainColorFractal<TerrainColorVolcanic>::TerrainColorFractal(const PiSourceDescs&body) :
 	Terrain(body)
 {
 	// 50 percent chance of there being exposed lava

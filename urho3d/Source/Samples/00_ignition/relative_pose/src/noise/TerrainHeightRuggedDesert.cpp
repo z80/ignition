@@ -48,7 +48,7 @@ double TerrainHeightFractal<TerrainHeightRuggedDesert>::GetHeight(const vector3d
 }
 
 template <>
-TerrainHeightFractal<TerrainHeightRuggedDesert>::TerrainHeightFractal(const SystemBody *body) :
+TerrainHeightFractal<TerrainHeightRuggedDesert>::TerrainHeightFractal(const PiSourceDescs&body) :
 	Terrain(body)
 {
 	SetFracDef(0, 0.1 * m_maxHeightInMeters, 2e6, 180e3);

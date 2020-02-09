@@ -10,7 +10,7 @@ template <>
 const char *TerrainHeightFractal<TerrainHeightHillsDunes>::GetHeightFractalName() const { return "HillsDunes"; }
 
 template <>
-TerrainHeightFractal<TerrainHeightHillsDunes>::TerrainHeightFractal(const SystemBody *body) :
+TerrainHeightFractal<TerrainHeightHillsDunes>::TerrainHeightFractal(const PiSourceDescs&body) :
 	Terrain(body)
 {
 	//textures
