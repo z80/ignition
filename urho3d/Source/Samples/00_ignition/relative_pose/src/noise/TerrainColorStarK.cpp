@@ -13,7 +13,7 @@ template <>
 TerrainColorFractal<TerrainColorStarK>::TerrainColorFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
-	double height = m_maxHeightInMeters * 0.1;
+	Float height = m_maxHeightInMeters * 0.1;
 	SetFracDef(0, height, 2e9, 100.0);
 	SetFracDef(1, height, 7e7, 100.0);
 	SetFracDef(2, height, 1e6, 100.0);
@@ -21,10 +21,10 @@ TerrainColorFractal<TerrainColorStarK>::TerrainColorFractal(const PiSourceDesc&b
 }
 
 template <>
-vector3d TerrainColorFractal<TerrainColorStarK>::GetColor(const vector3d &p, double height, const vector3d &norm) const
+Vector3d TerrainColorFractal<TerrainColorStarK>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
-	double n;
-	vector3d col;
+	Float n;
+	Vector3d col;
 	n = octavenoise(GetFracDef(0), 0.6, p) * 0.5;
 	n += ridged_octavenoise(GetFracDef(1), 0.7, p) * 0.5;
 	n += billow_octavenoise(GetFracDef(0), 0.8, p) * octavenoise(GetFracDef(1), 0.8, p);
@@ -34,21 +34,21 @@ vector3d TerrainColorFractal<TerrainColorStarK>::GetColor(const vector3d &p, dou
 	if (n > 0.666) {
 		n -= 0.666;
 		n *= 3.0;
-		col = interpolate_color(n, vector3d(.95, .7, .25), vector3d(1.0, 1.0, 1.0));
+		col = interpolate_color(n, Vector3d(.95, .7, .25), Vector3d(1.0, 1.0, 1.0));
 		return col;
 	} else if (n > 0.333) {
 		n -= 0.333;
 		n *= 3.0;
-		col = interpolate_color(n, vector3d(.4, .25, .0), vector3d(.95, .7, .25));
+		col = interpolate_color(n, Vector3d(.4, .25, .0), Vector3d(.95, .7, .25));
 		return col;
 	} else if (n > 0.05) {
 		n -= 0.05;
 		n *= 3.533;
-		col = interpolate_color(n, vector3d(.2, .1, 0), vector3d(.4, .25, .0));
+		col = interpolate_color(n, Vector3d(.2, .1, 0), Vector3d(.4, .25, .0));
 		return col;
 	} else {
 		n *= 20.0;
-		col = interpolate_color(n, vector3d(.015, .015, .015), vector3d(.2, .1, .0));
+		col = interpolate_color(n, Vector3d(.015, .015, .015), Vector3d(.2, .1, .0));
 		return col;
 	}
 }

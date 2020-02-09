@@ -16,7 +16,7 @@ TerrainHeightFractal<TerrainHeightWaterSolidCanyons>::TerrainHeightFractal(const
 	PiBodySource(body)
 {
 	SetFracDef(0, m_maxHeightInMeters, m_rand.Double(5e6, 1e8));
-	double height = m_maxHeightInMeters * 0.3;
+	Float height = m_maxHeightInMeters * 0.3;
 	SetFracDef(1, height, m_rand.Double(4.0, 20.0) * height);
 	SetFracDef(2, m_maxHeightInMeters, m_rand.Double(200.0, 1000.0) * m_maxHeightInMeters);
 
@@ -31,14 +31,14 @@ TerrainHeightFractal<TerrainHeightWaterSolidCanyons>::TerrainHeightFractal(const
 }
 
 template <>
-double TerrainHeightFractal<TerrainHeightWaterSolidCanyons>::GetHeight(const vector3d &p) const
+Float TerrainHeightFractal<TerrainHeightWaterSolidCanyons>::GetHeight(const Vector3d &p) const
 {
-	double continents = 0.7 * river_octavenoise(GetFracDef(2), 0.5, p) - m_sealevel;
+	Float continents = 0.7 * river_octavenoise(GetFracDef(2), 0.5, p) - m_sealevel;
 	continents = GetFracDef(0).amplitude * ridged_octavenoise(GetFracDef(0), Clamp(continents, 0.0, 0.6), p);
-	double mountains = ridged_octavenoise(GetFracDef(2), 0.5, p);
-	double hills = octavenoise(GetFracDef(2), 0.5, p) *
+	Float mountains = ridged_octavenoise(GetFracDef(2), 0.5, p);
+	Float hills = octavenoise(GetFracDef(2), 0.5, p) *
 		GetFracDef(1).amplitude * river_octavenoise(GetFracDef(1), 0.5, p);
-	double n = continents - (GetFracDef(0).amplitude * m_sealevel);
+	Float n = continents - (GetFracDef(0).amplitude * m_sealevel);
 	if (n > 0.0) {
 		// smooth in hills at shore edges
 		if (n < 0.05) {

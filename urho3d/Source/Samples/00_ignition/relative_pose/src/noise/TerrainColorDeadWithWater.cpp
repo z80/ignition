@@ -17,11 +17,11 @@ TerrainColorFractal<TerrainColorDeadWithWater>::TerrainColorFractal(const PiSour
 }
 
 template <>
-vector3d TerrainColorFractal<TerrainColorDeadWithWater>::GetColor(const vector3d &p, double height, const vector3d &norm) const
+Vector3d TerrainColorFractal<TerrainColorDeadWithWater>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
-	double n = m_invMaxHeight * height;
+	Float n = m_invMaxHeight * height;
 	if (n <= 0)
-		return vector3d(0.0, 0.0, 0.5);
+		return Vector3d(0.0, 0.0, 0.5);
 	else
-		return interpolate_color(n, vector3d(.2, .2, .2), vector3d(.6, .6, .6));
+		return interpolate_color(n, Vector3d(.2, .2, .2), Vector3d(.6, .6, .6));
 }

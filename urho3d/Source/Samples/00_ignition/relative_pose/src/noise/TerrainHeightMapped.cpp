@@ -27,18 +27,18 @@ TerrainHeightFractal<TerrainHeightMapped>::TerrainHeightFractal(const PiSourceDe
 }
 
 template <>
-double TerrainHeightFractal<TerrainHeightMapped>::GetHeight(const vector3d &p) const
+Float TerrainHeightFractal<TerrainHeightMapped>::GetHeight(const Vector3d &p) const
 {
 	// This is all used for Earth and Earth alone
 
-	double v = BiCubicInterpolation(p);
+	Float v = BiCubicInterpolation(p);
 
 	v = (v < 0 ? 0 : v);
-	double h = v;
+	Float h = v;
 
 	//Here's where we add some noise over the heightmap so it doesnt look so boring, we scale by height so values are greater high up
 	//large mountainous shapes
-	double mountains = h * h * 0.001 * octavenoise(GetFracDef(3), 0.5 * octavenoise(GetFracDef(5), 0.45, p), p) * ridged_octavenoise(GetFracDef(4), 0.475 * octavenoise(GetFracDef(6), 0.4, p), p);
+	Float mountains = h * h * 0.001 * octavenoise(GetFracDef(3), 0.5 * octavenoise(GetFracDef(5), 0.45, p), p) * ridged_octavenoise(GetFracDef(4), 0.475 * octavenoise(GetFracDef(6), 0.4, p), p);
 	v += mountains;
 	//smaller ridged mountains
 	if (v < 50.0) {

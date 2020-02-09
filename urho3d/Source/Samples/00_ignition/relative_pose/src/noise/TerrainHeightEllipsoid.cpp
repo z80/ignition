@@ -11,7 +11,7 @@ template <>
 TerrainHeightFractal<TerrainHeightEllipsoid>::TerrainHeightFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
-	const double rad = m_minBody.m_radius;
+	const Float rad = m_minBody.m_radius;
 	m_maxHeight = m_minBody.m_aspectRatio - 1.0;
 	m_maxHeightInMeters = m_maxHeight * rad;
 	m_invMaxHeight = 1.0 / m_maxHeight;
@@ -36,7 +36,7 @@ TerrainHeightFractal<TerrainHeightEllipsoid>::TerrainHeightFractal(const PiSourc
 //          * Therefore for ellipsoid bodies the idea is that GetHeight returns the difference at any point between a sphere of size Polar radius and the ellipsoid surface.
 // 4. Pioneer's coordinate system defines a body with the y axis (p.y) as the up direction (perpendicular to the plane of rotation in which the equator lies).
 //       * x (p.x) and z (p.z) axes lie on the plane of the equator
-//       * GetHeight sees coordinates scaled such that the unit sphere is the Polar radius. That is an input vector p = vector3d(x,y,z) on the unit sphere.
+//       * GetHeight sees coordinates scaled such that the unit sphere is the Polar radius. That is an input vector p = Vector3d(x,y,z) on the unit sphere.
 //       * In GetHeight coordinate system: pr = 1.0 (eqn. 4)
 //           Ellipse coord system:y_ axis = p.y axis
 //                                x_ axis is the axis perpendicular to y_ (p.y) i.e. lies on the p.x/p.z plane
@@ -53,14 +53,14 @@ TerrainHeightFractal<TerrainHeightEllipsoid>::TerrainHeightFractal(const PiSourc
 //                                R(t) = ar/sqrt(x_^2+ar^2*y_^2) (eqn. 9) (substituting using eqn. 7 and eqn. 8)
 
 template <>
-double TerrainHeightFractal<TerrainHeightEllipsoid>::GetHeight(const vector3d &p) const
+Float TerrainHeightFractal<TerrainHeightEllipsoid>::GetHeight(const Vector3d &p) const
 {
-	const double ar = m_minBody.m_aspectRatio;
+	const Float ar = m_minBody.m_aspectRatio;
 	// x_^2 = (p.z^2+p.x^2) (eqn. 5)
-	const double x_squared = (p.x * p.x + p.z * p.z);
+	const Float x_squared = (p.x * p.x + p.z * p.z);
 	// y_ = p.y
-	const double y_squared = p.y * p.y;
-	const double distFromCenter_R = ar / sqrt(x_squared + ar * ar * y_squared); // (eqn. 9)
+	const Float y_squared = p.y * p.y;
+	const Float distFromCenter_R = ar / sqrt(x_squared + ar * ar * y_squared); // (eqn. 9)
 	// GetHeight must return the difference in the distance from center between a point in a sphere of
 	// Polar radius (in coords scaled to a unit sphere) and the point on the ellipsoid surface.
 	return std::max(distFromCenter_R - 1.0, 0.0);

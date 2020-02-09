@@ -13,7 +13,7 @@ TerrainHeightFractal<TerrainHeightFlat>::TerrainHeightFractal(const PiSourceDesc
 }
 
 template <>
-double TerrainHeightFractal<TerrainHeightFlat>::GetHeight(const vector3d &p) const
+Float TerrainHeightFractal<TerrainHeightFlat>::GetHeight(const Vector3d &p) const
 {
 	return 0.0;
 }

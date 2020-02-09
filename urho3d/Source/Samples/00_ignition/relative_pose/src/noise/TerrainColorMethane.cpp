@@ -16,11 +16,11 @@ TerrainColorFractal<TerrainColorMethane>::TerrainColorFractal(const PiSourceDesc
 }
 
 template <>
-vector3d TerrainColorFractal<TerrainColorMethane>::GetColor(const vector3d &p, double height, const vector3d &norm) const
+Vector3d TerrainColorFractal<TerrainColorMethane>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
-	double n = m_invMaxHeight * height;
+	Float n = m_invMaxHeight * height;
 	if (n <= 0)
-		return vector3d(.3, .0, .0);
+		return Vector3d(.3, .0, .0);
 	else
-		return interpolate_color(n, vector3d(.3, .2, .0), vector3d(.6, .3, .0));
+		return interpolate_color(n, Vector3d(.3, .2, .0), Vector3d(.6, .3, .0));
 }

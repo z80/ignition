@@ -17,26 +17,26 @@ TerrainColorFractal<TerrainColorTFPoor>::TerrainColorFractal(const PiSourceDesc&
 }
 
 template <>
-vector3d TerrainColorFractal<TerrainColorTFPoor>::GetColor(const vector3d &p, double height, const vector3d &norm) const
+Vector3d TerrainColorFractal<TerrainColorTFPoor>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
-	double n = m_invMaxHeight * height;
-	double flatness = pow(p.Dot(norm), 8.0);
+	Float n = m_invMaxHeight * height;
+	Float flatness = pow(p.Dot(norm), 8.0);
 
-	double continents = 0;
-	double equatorial_desert = (2.0 - m_icyness) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
+	Float continents = 0;
+	Float equatorial_desert = (2.0 - m_icyness) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
 		1.0 * (2.0 - m_icyness) * (1.0 - p.y * p.y);
-	vector3d color_cliffs = m_darkrockColor[5];
-	vector3d col, tex1, tex2;
+	Vector3d color_cliffs = m_darkrockColor[5];
+	Vector3d col, tex1, tex2;
 	// ice on mountains and poles
 	if (fabs(m_icyness * p.y) + m_icyness * n > 1) {
-		col = interpolate_color(terrain_colournoise_rock2, color_cliffs, vector3d(.9, .9, .9));
-		col = interpolate_color(flatness, col, vector3d(1, 1, 1));
+		col = interpolate_color(terrain_colournoise_rock2, color_cliffs, Vector3d(.9, .9, .9));
+		col = interpolate_color(flatness, col, Vector3d(1, 1, 1));
 		return col;
 	}
 	//we don't want water on the poles if there are ice-caps
 	if (fabs(m_icyness * p.y) > 0.67) {
 		col = interpolate_color(equatorial_desert, m_sandColor[2], m_darksandColor[5]);
-		col = interpolate_color(flatness, col, vector3d(1, 1, 1));
+		col = interpolate_color(flatness, col, Vector3d(1, 1, 1));
 		return col;
 	}
 	// This is for fake ocean depth by the coast.
@@ -48,7 +48,7 @@ vector3d TerrainColorFractal<TerrainColorTFPoor>::GetColor(const vector3d &p, do
 		n += continents; // - (GetFracDef(3).amplitude*m_sealevel*0.49);
 		n *= n * 10.0;
 		//n = (n>0.3 ? 0.3-(n*n*n-0.027) : n);
-		col = interpolate_color(n, vector3d(0, 0.0, 0.1), vector3d(0, 0.5, 0.5));
+		col = interpolate_color(n, Vector3d(0, 0.0, 0.1), Vector3d(0, 0.5, 0.5));
 		return col;
 	}
 	// More sensitive height detection for application of colours

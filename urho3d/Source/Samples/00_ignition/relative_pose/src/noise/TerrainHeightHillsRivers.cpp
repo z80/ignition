@@ -28,14 +28,14 @@ TerrainHeightFractal<TerrainHeightHillsRivers>::TerrainHeightFractal(const PiSou
 }
 
 template <>
-double TerrainHeightFractal<TerrainHeightHillsRivers>::GetHeight(const vector3d &p) const
+Float TerrainHeightFractal<TerrainHeightHillsRivers>::GetHeight(const Vector3d &p) const
 {
-	double continents = river_octavenoise(GetFracDef(3), 0.65, p) * (1.0 - m_sealevel) - (m_sealevel * 0.1);
+	Float continents = river_octavenoise(GetFracDef(3), 0.65, p) * (1.0 - m_sealevel) - (m_sealevel * 0.1);
 	if (continents < 0) return 0;
-	double n = continents;
-	double distrib = voronoiscam_octavenoise(GetFracDef(4), 0.5 * GetFracDef(5).amplitude, p);
-	double m = 0.1 * GetFracDef(4).amplitude * river_octavenoise(GetFracDef(5), 0.5 * distrib, p);
-	double mountains = ridged_octavenoise(GetFracDef(5), 0.5 * distrib, p) * billow_octavenoise(GetFracDef(5), 0.5, p) *
+	Float n = continents;
+	Float distrib = voronoiscam_octavenoise(GetFracDef(4), 0.5 * GetFracDef(5).amplitude, p);
+	Float m = 0.1 * GetFracDef(4).amplitude * river_octavenoise(GetFracDef(5), 0.5 * distrib, p);
+	Float mountains = ridged_octavenoise(GetFracDef(5), 0.5 * distrib, p) * billow_octavenoise(GetFracDef(5), 0.5, p) *
 		voronoiscam_octavenoise(GetFracDef(4), 0.5 * distrib, p) * distrib;
 	m += mountains;
 	//detail for mountains, stops them looking smooth.

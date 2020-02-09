@@ -16,7 +16,7 @@ TerrainHeightFractal<TerrainHeightRuggedLava>::TerrainHeightFractal(const PiSour
 	PiBodySource(body)
 {
 	SetFracDef(0, m_maxHeightInMeters, m_rand.Double(1e6, 1e7));
-	double height = m_maxHeightInMeters * 1.0;
+	Float height = m_maxHeightInMeters * 1.0;
 	SetFracDef(1, m_maxHeightInMeters, m_rand.Double(50.0, 100.0) * m_maxHeightInMeters);
 	SetFracDef(2, height, m_rand.Double(4.0, 20.0) * height);
 	SetFracDef(3, height, m_rand.Double(12.0, 200.0) * height);
@@ -36,19 +36,19 @@ TerrainHeightFractal<TerrainHeightRuggedLava>::TerrainHeightFractal(const PiSour
 }
 
 template <>
-double TerrainHeightFractal<TerrainHeightRuggedLava>::GetHeight(const vector3d &p) const
+Float TerrainHeightFractal<TerrainHeightRuggedLava>::GetHeight(const Vector3d &p) const
 {
-	double continents = octavenoise(GetFracDef(0), Clamp(0.725 - (m_sealevel / 2), 0.1, 0.725), p) - m_sealevel;
+	Float continents = octavenoise(GetFracDef(0), Clamp(0.725 - (m_sealevel / 2), 0.1, 0.725), p) - m_sealevel;
 	if (continents < 0) return 0;
-	double mountain_distrib = octavenoise(GetFracDef(1), 0.55, p);
-	double mountains = octavenoise(GetFracDef(2), 0.5, p) * ridged_octavenoise(GetFracDef(2), 0.575, p);
-	double mountains2 = octavenoise(GetFracDef(3), 0.5, p);
-	double hill_distrib = octavenoise(GetFracDef(4), 0.5, p);
-	double hills = hill_distrib * GetFracDef(5).amplitude * octavenoise(GetFracDef(5), 0.5, p);
-	double rocks = octavenoise(GetFracDef(9), 0.5, p);
+	Float mountain_distrib = octavenoise(GetFracDef(1), 0.55, p);
+	Float mountains = octavenoise(GetFracDef(2), 0.5, p) * ridged_octavenoise(GetFracDef(2), 0.575, p);
+	Float mountains2 = octavenoise(GetFracDef(3), 0.5, p);
+	Float hill_distrib = octavenoise(GetFracDef(4), 0.5, p);
+	Float hills = hill_distrib * GetFracDef(5).amplitude * octavenoise(GetFracDef(5), 0.5, p);
+	Float rocks = octavenoise(GetFracDef(9), 0.5, p);
 
-	double n = continents - (GetFracDef(0).amplitude * m_sealevel);
-	//double n = (megavolcano_function(p) + volcano_function(p) + smlvolcano_function(p));
+	Float n = continents - (GetFracDef(0).amplitude * m_sealevel);
+	//Float n = (megavolcano_function(p) + volcano_function(p) + smlvolcano_function(p));
 	n += mountains * mountains2 * 5.0 * megavolcano_function(GetFracDef(6), p);
 	n += 2.5 * megavolcano_function(GetFracDef(6), p);
 	n += mountains * mountains2 * 5.0 * volcano_function(GetFracDef(6), p) * volcano_function(GetFracDef(6), p);

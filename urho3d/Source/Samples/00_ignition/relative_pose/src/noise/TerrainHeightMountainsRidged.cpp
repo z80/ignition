@@ -14,7 +14,7 @@ TerrainHeightFractal<TerrainHeightMountainsRidged>::TerrainHeightFractal(const P
 	PiBodySource(body)
 {
 	SetFracDef(0, m_maxHeightInMeters, m_rand.Double(1e6, 1e7));
-	double height = m_maxHeightInMeters * 0.9;
+	Float height = m_maxHeightInMeters * 0.9;
 	SetFracDef(1, m_maxHeightInMeters, m_rand.Double(50.0, 100.0) * m_maxHeightInMeters, 8);
 	SetFracDef(2, height, m_rand.Double(4.0, 200.0) * height, 10);
 	SetFracDef(3, m_maxHeightInMeters, m_rand.Double(120.0, 2000.0) * m_maxHeightInMeters, 1000);
@@ -30,23 +30,23 @@ TerrainHeightFractal<TerrainHeightMountainsRidged>::TerrainHeightFractal(const P
 }
 
 template <>
-double TerrainHeightFractal<TerrainHeightMountainsRidged>::GetHeight(const vector3d &p) const
+Float TerrainHeightFractal<TerrainHeightMountainsRidged>::GetHeight(const Vector3d &p) const
 {
-	double continents = octavenoise(GetFracDef(0), 0.5, p) - m_sealevel;
+	Float continents = octavenoise(GetFracDef(0), 0.5, p) - m_sealevel;
 	if (continents < 0) return 0;
-	// unused variable \\ double mountain_distrib = octavenoise(GetFracDef(1), 0.5, p);
-	double mountains = octavenoise(GetFracDef(2), 0.5, p);
-	double mountains2 = ridged_octavenoise(GetFracDef(3), 0.5, p);
+	// unused variable \\ Float mountain_distrib = octavenoise(GetFracDef(1), 0.5, p);
+	Float mountains = octavenoise(GetFracDef(2), 0.5, p);
+	Float mountains2 = ridged_octavenoise(GetFracDef(3), 0.5, p);
 
-	double hill_distrib = octavenoise(GetFracDef(4), 0.5, p);
-	double hills = hill_distrib * GetFracDef(5).amplitude * ridged_octavenoise(GetFracDef(5), 0.5, p);
-	double hills2 = hill_distrib * GetFracDef(6).amplitude * octavenoise(GetFracDef(6), 0.5, p);
+	Float hill_distrib = octavenoise(GetFracDef(4), 0.5, p);
+	Float hills = hill_distrib * GetFracDef(5).amplitude * ridged_octavenoise(GetFracDef(5), 0.5, p);
+	Float hills2 = hill_distrib * GetFracDef(6).amplitude * octavenoise(GetFracDef(6), 0.5, p);
 
-	double hill2_distrib = octavenoise(GetFracDef(7), 0.5, p);
-	double hills3 = hill2_distrib * GetFracDef(8).amplitude * ridged_octavenoise(GetFracDef(8), 0.5, p);
-	double hills4 = hill2_distrib * GetFracDef(9).amplitude * ridged_octavenoise(GetFracDef(9), 0.5, p);
+	Float hill2_distrib = octavenoise(GetFracDef(7), 0.5, p);
+	Float hills3 = hill2_distrib * GetFracDef(8).amplitude * ridged_octavenoise(GetFracDef(8), 0.5, p);
+	Float hills4 = hill2_distrib * GetFracDef(9).amplitude * ridged_octavenoise(GetFracDef(9), 0.5, p);
 
-	double n = continents - (GetFracDef(0).amplitude * m_sealevel);
+	Float n = continents - (GetFracDef(0).amplitude * m_sealevel);
 
 	if (n > 0.0) {
 		// smooth in hills at shore edges

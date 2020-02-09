@@ -28,14 +28,14 @@ TerrainHeightFractal<TerrainHeightHillsNormal>::TerrainHeightFractal(const PiSou
 }
 
 template <>
-double TerrainHeightFractal<TerrainHeightHillsNormal>::GetHeight(const vector3d &p) const
+Float TerrainHeightFractal<TerrainHeightHillsNormal>::GetHeight(const Vector3d &p) const
 {
-	double continents = octavenoise(GetFracDef(3), 0.65, p) * (1.0 - m_sealevel) - (m_sealevel * 0.1);
+	Float continents = octavenoise(GetFracDef(3), 0.65, p) * (1.0 - m_sealevel) - (m_sealevel * 0.1);
 	if (continents < 0) return 0;
-	double n = continents;
-	double distrib = octavenoise(GetFracDef(4), 0.5, p);
+	Float n = continents;
+	Float distrib = octavenoise(GetFracDef(4), 0.5, p);
 	distrib *= distrib;
-	double m = 0.5 * GetFracDef(3).amplitude * octavenoise(GetFracDef(4), 0.55 * distrib, p) * GetFracDef(5).amplitude;
+	Float m = 0.5 * GetFracDef(3).amplitude * octavenoise(GetFracDef(4), 0.55 * distrib, p) * GetFracDef(5).amplitude;
 	m += 0.25 * billow_octavenoise(GetFracDef(5), 0.55 * distrib, p);
 	//hill footings
 	m -= octavenoise(GetFracDef(2), 0.6 * (1.0 - distrib), p) * Clamp(0.05 - m, 0.0, 0.05) * Clamp(0.05 - m, 0.0, 0.05);

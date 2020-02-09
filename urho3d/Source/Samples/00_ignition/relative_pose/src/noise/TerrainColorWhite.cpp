@@ -3,7 +3,7 @@
 
 #include "pi_source.h"
 
-static const vector3d svWhite(1.0, 1.0, 1.0);
+static const Vector3d svWhite(1.0, 1.0, 1.0);
 
 template <>
 const char *TerrainColorFractal<TerrainColorWhite>::GetColorFractalName() const { return "Solid"; }
@@ -15,7 +15,7 @@ TerrainColorFractal<TerrainColorWhite>::TerrainColorFractal(const PiSourceDesc&b
 }
 
 template <>
-vector3d TerrainColorFractal<TerrainColorWhite>::GetColor(const vector3d &p, double height, const vector3d &norm) const
+Vector3d TerrainColorFractal<TerrainColorWhite>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
 	return svWhite;
 }

@@ -15,7 +15,7 @@ template <>
 TerrainColorFractal<TerrainColorGGSaturn>::TerrainColorFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
-	const double height = m_maxHeightInMeters * 0.1;
+	const Float height = m_maxHeightInMeters * 0.1;
 	//spot + clouds
 	SetFracDef(0, height, 3e7, 10.0);
 	SetFracDef(1, height, 9e7, 1000.0);
@@ -25,16 +25,16 @@ TerrainColorFractal<TerrainColorGGSaturn>::TerrainColorFractal(const PiSourceDes
 }
 
 template <>
-vector3d TerrainColorFractal<TerrainColorGGSaturn>::GetColor(const vector3d &p, double height, const vector3d &norm) const
+Vector3d TerrainColorFractal<TerrainColorGGSaturn>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
-	double n = 0.4 * ridged_octavenoise(GetFracDef(0), 0.7, vector3d(3.142 * p.y * p.y));
-	n += 0.4 * octavenoise(GetFracDef(1), 0.6, vector3d(3.142 * p.y * p.y));
-	n += 0.3 * octavenoise(GetFracDef(2), 0.5, vector3d(3.142 * p.y * p.y));
-	n += 0.8 * octavenoise(GetFracDef(0), 0.7, vector3d(p * p.y * p.y));
-	n += 0.5 * ridged_octavenoise(GetFracDef(1), 0.7, vector3d(p * p.y * p.y));
+	Float n = 0.4 * ridged_octavenoise(GetFracDef(0), 0.7, Vector3d(3.142 * p.y * p.y));
+	n += 0.4 * octavenoise(GetFracDef(1), 0.6, Vector3d(3.142 * p.y * p.y));
+	n += 0.3 * octavenoise(GetFracDef(2), 0.5, Vector3d(3.142 * p.y * p.y));
+	n += 0.8 * octavenoise(GetFracDef(0), 0.7, Vector3d(p * p.y * p.y));
+	n += 0.5 * ridged_octavenoise(GetFracDef(1), 0.7, Vector3d(p * p.y * p.y));
 	n /= 2.0;
 	n *= n * n;
-	n += billow_octavenoise(GetFracDef(0), 0.8, vector3d(noise(p * 3.142) * p)) *
+	n += billow_octavenoise(GetFracDef(0), 0.8, Vector3d(noise(p * 3.142) * p)) *
 		megavolcano_function(GetFracDef(3), p);
-	return interpolate_color(n, vector3d(.69, .53, .43), vector3d(.99, .76, .62));
+	return interpolate_color(n, Vector3d(.69, .53, .43), Vector3d(.99, .76, .62));
 }

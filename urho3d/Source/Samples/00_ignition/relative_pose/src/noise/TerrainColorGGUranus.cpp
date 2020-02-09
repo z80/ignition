@@ -13,19 +13,19 @@ template <>
 TerrainColorFractal<TerrainColorGGUranus>::TerrainColorFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
-	const double height = m_maxHeightInMeters * 0.1;
+	const Float height = m_maxHeightInMeters * 0.1;
 	SetFracDef(0, height, 3e7, 1000.0);
 	SetFracDef(1, height, 9e7, 1000.0);
 	SetFracDef(2, height, 8e7, 1000.0);
 }
 
 template <>
-vector3d TerrainColorFractal<TerrainColorGGUranus>::GetColor(const vector3d &p, double height, const vector3d &norm) const
+Vector3d TerrainColorFractal<TerrainColorGGUranus>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
-	double n = 0.5 * ridged_octavenoise(GetFracDef(0), 0.7, vector3d(3.142 * p.y * p.y));
-	n += 0.5 * octavenoise(GetFracDef(1), 0.6, vector3d(3.142 * p.y * p.y));
-	n += 0.2 * octavenoise(GetFracDef(2), 0.5, vector3d(3.142 * p.y * p.y));
+	Float n = 0.5 * ridged_octavenoise(GetFracDef(0), 0.7, Vector3d(3.142 * p.y * p.y));
+	n += 0.5 * octavenoise(GetFracDef(1), 0.6, Vector3d(3.142 * p.y * p.y));
+	n += 0.2 * octavenoise(GetFracDef(2), 0.5, Vector3d(3.142 * p.y * p.y));
 	n /= 2.0;
 	n *= n * n;
-	return interpolate_color(n, vector3d(.4, .5, .55), vector3d(.85, .95, .96));
+	return interpolate_color(n, Vector3d(.4, .5, .55), Vector3d(.85, .95, .96));
 }

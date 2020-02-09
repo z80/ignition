@@ -14,36 +14,36 @@ TerrainColorFractal<TerrainColorEarthLike>::TerrainColorFractal(const PiSourceDe
 	PiBodySource(body)
 {
 	// crappy water
-	//double height = m_maxHeightInMeters*0.5;
+	//Float height = m_maxHeightInMeters*0.5;
 	//SetFracDef(3, m_maxHeightInMeters, 1e8, 50.0);
 	//SetFracDef(2, m_maxHeightInMeters, 10, 10.0);
 	m_surfaceEffects |= Terrain::EFFECT_WATER;
 }
 
 template <>
-vector3d TerrainColorFractal<TerrainColorEarthLike>::GetColor(const vector3d &p, double height, const vector3d &norm) const
+Vector3d TerrainColorFractal<TerrainColorEarthLike>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
-	double n = m_invMaxHeight * height;
-	double flatness = pow(p.Dot(norm), 8.0);
+	Float n = m_invMaxHeight * height;
+	Float flatness = pow(p.Dot(norm), 8.0);
 
-	double continents = 0;
-	double equatorial_desert = (2.0 - m_icyness) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
+	Float continents = 0;
+	Float equatorial_desert = (2.0 - m_icyness) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
 		1.0 * (2.0 - m_icyness) * (1.0 - p.y * p.y);
-	vector3d color_cliffs = m_darkrockColor[5];
-	vector3d col, tex1, tex2;
+	Vector3d color_cliffs = m_darkrockColor[5];
+	Vector3d col, tex1, tex2;
 
 	// ice on mountains
 	//Output("flatness : %d", flatness);
 	if (flatness > 0.6 / Clamp(n * m_icyness + (m_icyness * 0.5) + (fabs(p.y * p.y * p.y * 0.38)), 0.1, 1.0)) {
 		col = interpolate_color(terrain_colournoise_rock, color_cliffs, m_rockColor[5]);
-		col = interpolate_color(flatness, col, vector3d(1, 1, 1));
+		col = interpolate_color(flatness, col, Vector3d(1, 1, 1));
 		return col;
 	}
 	//polar ice-caps
 	if ((m_icyness * 0.5) + (fabs(p.y * p.y * p.y * 0.38)) > 0.6) {
 		//if (flatness > 0.5/Clamp(fabs(p.y*m_icyness), 0.1, 1.0)) {
 		col = interpolate_color(terrain_colournoise_rock, color_cliffs, m_rockColor[5]);
-		col = interpolate_color(flatness, col, vector3d(1, 1, 1));
+		col = interpolate_color(flatness, col, Vector3d(1, 1, 1));
 		return col;
 	}
 
@@ -56,8 +56,8 @@ vector3d TerrainColorFractal<TerrainColorEarthLike>::GetColor(const vector3d &p,
 		n += continents; // - (GetFracDef(3).amplitude*m_sealevel*0.49);
 		n *= n * 10.0;
 		//n = (n>0.3 ? 0.3-(n*n*n-0.027) : n);
-		col = interpolate_color(equatorial_desert, vector3d(0, 0, 0.15), vector3d(0, 0, 0.25));
-		col = interpolate_color(n, col, vector3d(0, 0.8, 0.6));
+		col = interpolate_color(equatorial_desert, Vector3d(0, 0, 0.15), Vector3d(0, 0, 0.25));
+		col = interpolate_color(n, col, Vector3d(0, 0.8, 0.6));
 		return col;
 	}
 	flatness = pow(p.Dot(norm), 16.0);

@@ -28,18 +28,18 @@ TerrainHeightFractal<TerrainHeightMountainsRivers>::TerrainHeightFractal(const P
 }
 
 template <>
-double TerrainHeightFractal<TerrainHeightMountainsRivers>::GetHeight(const vector3d &p) const
+Float TerrainHeightFractal<TerrainHeightMountainsRivers>::GetHeight(const Vector3d &p) const
 {
-	double continents = octavenoise(GetFracDef(0), 0.7 * ridged_octavenoise(GetFracDef(8), 0.58, p), p) - m_sealevel * 0.65;
+	Float continents = octavenoise(GetFracDef(0), 0.7 * ridged_octavenoise(GetFracDef(8), 0.58, p), p) - m_sealevel * 0.65;
 	if (continents < 0) return 0;
-	double n = (river_function(GetFracDef(9), p) *
+	Float n = (river_function(GetFracDef(9), p) *
 				   river_function(GetFracDef(7), p) *
 				   river_function(GetFracDef(6), p) *
 				   canyon3_normal_function(GetFracDef(1), p) * continents) -
 		(GetFracDef(0).amplitude * m_sealevel * 0.1);
 	n *= 0.5;
 
-	double h = n;
+	Float h = n;
 
 	if (n > 0.0) {
 		// smooth in hills at shore edges

@@ -29,16 +29,16 @@ TerrainHeightFractal<TerrainHeightHillsDunes>::TerrainHeightFractal(const PiSour
 }
 
 template <>
-double TerrainHeightFractal<TerrainHeightHillsDunes>::GetHeight(const vector3d &p) const
+Float TerrainHeightFractal<TerrainHeightHillsDunes>::GetHeight(const Vector3d &p) const
 {
-	double continents = ridged_octavenoise(GetFracDef(3), 0.65, p) * (1.0 - m_sealevel) - (m_sealevel * 0.1);
+	Float continents = ridged_octavenoise(GetFracDef(3), 0.65, p) * (1.0 - m_sealevel) - (m_sealevel * 0.1);
 	if (continents < 0) return 0;
-	double n = continents;
-	double distrib = dunes_octavenoise(GetFracDef(4), 0.4, p);
+	Float n = continents;
+	Float distrib = dunes_octavenoise(GetFracDef(4), 0.4, p);
 	distrib *= distrib * distrib;
-	double m = octavenoise(GetFracDef(7), 0.5, p) * dunes_octavenoise(GetFracDef(7), 0.5, p) * Clamp(0.2 - distrib, 0.0, 0.05);
+	Float m = octavenoise(GetFracDef(7), 0.5, p) * dunes_octavenoise(GetFracDef(7), 0.5, p) * Clamp(0.2 - distrib, 0.0, 0.05);
 	m += octavenoise(GetFracDef(2), 0.5, p) * dunes_octavenoise(GetFracDef(2), 0.5 * octavenoise(GetFracDef(6), 0.5 * distrib, p), p) * Clamp(1.0 - distrib, 0.0, 0.0005);
-	double mountains = ridged_octavenoise(GetFracDef(5), 0.5 * distrib, p) * octavenoise(GetFracDef(4), 0.5 * distrib, p) * octavenoise(GetFracDef(6), 0.5, p) * distrib;
+	Float mountains = ridged_octavenoise(GetFracDef(5), 0.5 * distrib, p) * octavenoise(GetFracDef(4), 0.5 * distrib, p) * octavenoise(GetFracDef(6), 0.5, p) * distrib;
 	mountains *= mountains;
 	m += mountains;
 	//detail for mountains, stops them looking smooth.

@@ -16,7 +16,7 @@ TerrainHeightFractal<TerrainHeightMountainsRiversVolcano>::TerrainHeightFractal(
 	PiBodySource(body)
 {
 	SetFracDef(0, m_maxHeightInMeters, m_rand.Double(1e6, 1e7));
-	double height = m_maxHeightInMeters * 0.6;
+	Float height = m_maxHeightInMeters * 0.6;
 	SetFracDef(1, m_maxHeightInMeters, m_rand.Double(50.0, 100.0) * m_maxHeightInMeters);
 	SetFracDef(2, height, m_rand.Double(4.0, 20.0) * height);
 	SetFracDef(3, m_maxHeightInMeters, m_rand.Double(120.0, 2000.0) * m_maxHeightInMeters, 20);
@@ -35,18 +35,18 @@ TerrainHeightFractal<TerrainHeightMountainsRiversVolcano>::TerrainHeightFractal(
 }
 
 template <>
-double TerrainHeightFractal<TerrainHeightMountainsRiversVolcano>::GetHeight(const vector3d &p) const
+Float TerrainHeightFractal<TerrainHeightMountainsRiversVolcano>::GetHeight(const Vector3d &p) const
 {
-	double continents = octavenoise(GetFracDef(0), 0.5, p) - m_sealevel;
+	Float continents = octavenoise(GetFracDef(0), 0.5, p) - m_sealevel;
 	if (continents < 0) return 0;
-	// unused variable \\ double mountain_distrib = octavenoise(GetFracDef(1), 0.5, p);
-	double mountains = octavenoise(GetFracDef(2), 0.5, p);
-	double mountains2 = octavenoise(GetFracDef(3), 0.5, p);
-	double hill_distrib = octavenoise(GetFracDef(4), 0.5, p);
-	double hills = hill_distrib * GetFracDef(5).amplitude * octavenoise(GetFracDef(5), 0.5, p);
-	double hills2 = hill_distrib * GetFracDef(6).amplitude * octavenoise(GetFracDef(6), 0.5, p);
+	// unused variable \\ Float mountain_distrib = octavenoise(GetFracDef(1), 0.5, p);
+	Float mountains = octavenoise(GetFracDef(2), 0.5, p);
+	Float mountains2 = octavenoise(GetFracDef(3), 0.5, p);
+	Float hill_distrib = octavenoise(GetFracDef(4), 0.5, p);
+	Float hills = hill_distrib * GetFracDef(5).amplitude * octavenoise(GetFracDef(5), 0.5, p);
+	Float hills2 = hill_distrib * GetFracDef(6).amplitude * octavenoise(GetFracDef(6), 0.5, p);
 
-	double n = continents - (GetFracDef(0).amplitude * m_sealevel);
+	Float n = continents - (GetFracDef(0).amplitude * m_sealevel);
 
 	if (n < 0.01)
 		n += megavolcano_function(GetFracDef(7), p) * n * 800.0f;
