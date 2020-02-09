@@ -8,7 +8,9 @@
 #include <cassert>
 
 #include "data_types.h"
-using namespace Ign;
+
+namespace Ign
+{
 
 template <int FRAC_BITS>
 class fixedf {
@@ -117,7 +119,8 @@ public:
 			a0 = (-a.v) & 0xffffffff;
 			a1 = (-a.v) >> 32;
 			isneg = !isneg;
-		} else {
+		}
+		else {
 			a0 = a.v & 0xffffffff;
 			a1 = a.v >> 32;
 		}
@@ -125,7 +128,8 @@ public:
 			b0 = (-b.v) & 0xffffffff;
 			b1 = (-b.v) >> 32;
 			isneg = !isneg;
-		} else {
+		}
+		else {
 			b0 = b.v & 0xffffffff;
 			b1 = b.v >> 32;
 		}
@@ -232,7 +236,7 @@ public:
 	static fixedf CubeRootOf(const fixedf &a)
 	{
 		/* NR method. XXX very bad initial estimate (we get there in
-		 * the end... XXX */
+			* the end... XXX */
 		fixedf x = a;
 		for (int i = 0; i < 48; i++)
 			x = fixedf(1, 3) * ((a / (x * x)) + 2 * x);
@@ -243,5 +247,8 @@ public:
 };
 
 typedef fixedf<32> fixed;
+
+
+}
 
 #endif /* _FIXED_H */

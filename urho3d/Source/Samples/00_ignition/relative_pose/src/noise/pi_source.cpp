@@ -1,5 +1,5 @@
 
-#include "pi_body.h"
+#include "pi_source.h"
 
 namespace Ign
 {
@@ -25,6 +25,17 @@ PiBodySource::PiBodySource()
 {
 
 }
+
+PiBodySource::~PiBodySource()
+{
+
+}
+
+void PiBodySource::operator=(const PiBodyDesc & desc)
+{
+
+}
+
 
 
 }

@@ -14,8 +14,7 @@ namespace Ign
     typedef uint32_t   Uint32;
     typedef int32_t    Sint32;
     typedef uint64_t   Uint64;
-    typedef uint32_t   Sint64;
-
+    typedef int64_t    Sint64;
 }
 
 

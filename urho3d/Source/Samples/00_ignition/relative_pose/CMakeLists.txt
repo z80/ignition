@@ -60,6 +60,8 @@ define_source_files( EXTRA_CPP_FILES ${src}
 # Setup target with resource copying
 setup_main_executable()
 
+#target_compile_features( ${TARGET_NAME} PUBLIC cxx_range_for )
+
 # Setup test cases
 #setup_test()
 

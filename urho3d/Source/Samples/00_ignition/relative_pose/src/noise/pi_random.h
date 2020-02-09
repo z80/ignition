@@ -20,8 +20,10 @@
 //#include "jenkins/lookup3.h"
 //}
 
-#define PCG_LITTLE_ENDIAN 1
-#include "pcg_random.hpp"
+//#define PCG_LITTLE_ENDIAN 1
+//#include "pcg_random.hpp"
+
+#include "grand.h"
 
 #include "data_types.h"
 using namespace Ign;
@@ -29,7 +31,8 @@ using namespace Ign;
 // A deterministic random number generator
 class PiRandom //: public RefCounted 
 {
-	pcg32 mPCG;
+	//pcg32 mPCG;
+	GRand mPCG;
 
 	// For storing second rand from Normal
 	bool cached;
@@ -67,6 +70,7 @@ public:
 	void seed(const Uint32 *const seeds, size_t length)
 	{
 		const Uint32 hash = 0; //lookup3_hashword(seeds, length, 0);
+		//mPCG.seed(hash);
 		mPCG.seed(hash);
 		cached = false;
 	}
@@ -95,7 +99,7 @@ public:
 	// interval [0, 2**32)
 	inline Uint32 Int32()
 	{
-		return mPCG();
+		return mPCG.i( 0x7FFFFFFF );
 	}
 
 	// Pick an integer like you're rolling a "choices" sided die,
@@ -237,7 +241,7 @@ public:
 		return o;
 	}
 
-	const pcg32 &GetPCG() const { return mPCG; }
+	//const pcg32 &GetPCG() const { return mPCG; }
 
 private:
 	PiRandom(const PiRandom &); // copy constructor not defined

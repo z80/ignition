@@ -43,8 +43,7 @@ public:
     PiBodySource();
     virtual ~PiBodySource();
 
-    PiBodySource( const PiBodyDesc & desc );
-    const PiBodySource & operator=( const PiBodyDesc & desc );
+    void operator=( const PiBodyDesc & desc );
 
 
 
