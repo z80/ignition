@@ -20,7 +20,7 @@ template <>
 Vector3d TerrainColorFractal<TerrainColorTFPoor>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
 	Float n = m_invMaxHeight * height;
-	Float flatness = pow(p.Dot(norm), 8.0);
+	Float flatness = pow(p.DotProduct(norm), 8.0);
 
 	Float continents = 0;
 	Float equatorial_desert = (2.0 - m_icyness) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *

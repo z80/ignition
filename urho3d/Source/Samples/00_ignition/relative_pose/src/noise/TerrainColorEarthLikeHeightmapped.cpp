@@ -24,7 +24,7 @@ template <>
 Vector3d TerrainColorFractal<TerrainColorEarthLikeHeightmapped>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
 	Float n = m_invMaxHeight * height;
-	Float flatness = pow(p.Dot(norm), 8.0);
+	Float flatness = pow(p.DotProduct(norm), 8.0);
 
 	Float equatorial_desert = (2.0 - m_icyness) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
 		1.0 * (2.0 - m_icyness) * (1.0 - p.y * p.y);
@@ -56,7 +56,7 @@ Vector3d TerrainColorFractal<TerrainColorEarthLikeHeightmapped>::GetColor(const 
 		col = interpolate_color(n, col, Vector3d(0, 0.8, 0.6));
 		return col;
 	}
-	flatness = pow(p.Dot(norm), 16.0);
+	flatness = pow(p.DotProduct(norm), 16.0);
 	// More sensitive height detection for application of colours
 	if (n > 0.5) {
 		n -= 0.5;

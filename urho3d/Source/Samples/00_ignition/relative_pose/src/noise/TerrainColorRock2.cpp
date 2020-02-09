@@ -20,7 +20,7 @@ Vector3d TerrainColorFractal<TerrainColorRock2>::GetColor(const Vector3d &p, Flo
 {
 	Float n = m_invMaxHeight * height / 2;
 	if (n <= 0) return m_darkrockColor[0];
-	const Float flatness = pow(p.Dot(norm), 6.0);
+	const Float flatness = pow(p.DotProduct(norm), 6.0);
 	const Vector3d color_cliffs = m_rockColor[0];
 	Float equatorial_desert = (2.0 - m_icyness) * (-1.0 + 2.0 * octavenoise(4, 0.05, 2.0, (n * 2.0) * p)) *
 		1.0 * (2.0 - m_icyness) * (1.0 - p.y * p.y);

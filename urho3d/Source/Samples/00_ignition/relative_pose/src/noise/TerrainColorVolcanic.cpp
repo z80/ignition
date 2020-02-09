@@ -22,7 +22,7 @@ template <>
 Vector3d TerrainColorFractal<TerrainColorVolcanic>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
 	Float n = m_invMaxHeight * height;
-	const Float flatness = pow(p.Dot(norm), 6.0);
+	const Float flatness = pow(p.DotProduct(norm), 6.0);
 	const Vector3d color_cliffs = m_rockColor[2];
 	Float equatorial_desert = (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
 		1.0 * (1.0 - p.y * p.y);

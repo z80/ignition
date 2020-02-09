@@ -19,7 +19,7 @@ template <>
 Vector3d TerrainColorFractal<TerrainColorDesert>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
 	Float n = m_invMaxHeight * height / 2;
-	const Float flatness = pow(p.Dot(norm), 6.0);
+	const Float flatness = pow(p.DotProduct(norm), 6.0);
 	const Vector3d color_cliffs = m_rockColor[1];
 	// Ice has been left as is so the occasional desert world will have polar ice-caps like mars
 	if (fabs(m_icyness * p.y) + m_icyness * n > 1) {

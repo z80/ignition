@@ -20,7 +20,7 @@ template <>
 Vector3d TerrainColorFractal<TerrainColorTFGood>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
 {
 	Float n = m_invMaxHeight * height;
-	const Float flatness = pow(p.Dot(norm), 8.0);
+	const Float flatness = pow(p.DotProduct(norm), 8.0);
 	Vector3d color_cliffs = m_rockColor[5];
 	// ice on mountains and poles
 	if (fabs(m_icyness * p.y) + m_icyness * n > 1) {

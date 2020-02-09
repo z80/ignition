@@ -21,7 +21,7 @@ Vector3d TerrainColorFractal<TerrainColorAsteroid>::GetColor(const Vector3d &p, 
 	Float n = m_invMaxHeight * height / 2;
 
 	if (n <= 0.02) {
-		const Float flatness = pow(p.Dot(norm), 6.0);
+		const Float flatness = pow(p.DotProduct(norm), 6.0);
 		const Vector3d color_cliffs = m_rockColor[1];
 
 		Float equatorial_desert = (2.0) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
@@ -33,7 +33,7 @@ Vector3d TerrainColorFractal<TerrainColorAsteroid>::GetColor(const Vector3d &p, 
 		col = interpolate_color(flatness, color_cliffs, col);
 		return col;
 	} else {
-		const Float flatness = pow(p.Dot(norm), 6.0);
+		const Float flatness = pow(p.DotProduct(norm), 6.0);
 		const Vector3d color_cliffs = m_greyrockColor[1];
 
 		Float equatorial_desert = (2.0) * (-1.0 + 2.0 * octavenoise(12, 0.5, 2.0, (n * 2.0) * p)) *
