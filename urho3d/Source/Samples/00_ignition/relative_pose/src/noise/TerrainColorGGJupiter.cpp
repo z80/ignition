@@ -26,10 +26,10 @@ Vector3d TerrainColorFractal<TerrainColorGGJupiter>::GetColor(const Vector3d &p,
 {
 	Float n;
 	const Float h = river_octavenoise(GetFracDef(0), 0.5 * m_entropy[0] + 0.25f,
-						 Vector3d(noise(Vector3d(p.x * 8, p.y * 32, p.z * 8)))) *
+						 Vector3d(noise(Vector3d(p.x_ * 8, p.y * 32, p.z * 8)))) *
 		.125;
-	const Float equatorial_region_1 = billow_octavenoise(GetFracDef(0), 0.7, p) * p.y * p.x;
-	const Float equatorial_region_2 = octavenoise(GetFracDef(1), 0.8, p) * p.x * p.x;
+	const Float equatorial_region_1 = billow_octavenoise(GetFracDef(0), 0.7, p) * p.y * p.x_;
+	const Float equatorial_region_2 = octavenoise(GetFracDef(1), 0.8, p) * p.x_ * p.x_;
 	Vector3d col;
 	col = interpolate_color(equatorial_region_1, m_ggdarkColor[0], m_ggdarkColor[1]);
 	col = interpolate_color(equatorial_region_2, col, Vector3d(.45, .3, .0));
@@ -39,10 +39,10 @@ Vector3d TerrainColorFractal<TerrainColorGGJupiter>::GetColor(const Vector3d &p,
 			Float temp = p.y - i;
 			if (temp < .15 + h && temp > -.15 + h) {
 				n = billow_octavenoise(GetFracDef(2), 0.7 * m_entropy[0],
-					noise(Vector3d(p.x, p.y * m_planetEarthRadii * 0.3, p.z)) * p);
-				n += 0.5 * octavenoise(GetFracDef(1), 0.6 * m_entropy[0], noise(Vector3d(p.x, p.y * m_planetEarthRadii, p.z)) * p);
+					noise(Vector3d(p.x_, p.y * m_planetEarthRadii * 0.3, p.z)) * p);
+				n += 0.5 * octavenoise(GetFracDef(1), 0.6 * m_entropy[0], noise(Vector3d(p.x_, p.y * m_planetEarthRadii, p.z)) * p);
 				n += ridged_octavenoise(GetFracDef(1), 0.6 * m_entropy[0],
-					noise(Vector3d(p.x, p.y * m_planetEarthRadii * 0.3, p.z)) * p);
+					noise(Vector3d(p.x_, p.y * m_planetEarthRadii * 0.3, p.z)) * p);
 				//n += 0.5;
 				n *= n;
 				n = (n < 0.0 ? -n : n);
@@ -79,10 +79,10 @@ Vector3d TerrainColorFractal<TerrainColorGGJupiter>::GetColor(const Vector3d &p,
 			Float temp = p.y - i;
 			if (temp < .15 + h && temp > -.15 + h) {
 				n = billow_octavenoise(GetFracDef(2), 0.6 * m_entropy[0],
-					noise(Vector3d(p.x, p.y * m_planetEarthRadii * 0.3, p.z)) * p);
-				n += 0.5 * octavenoise(GetFracDef(1), 0.7 * m_entropy[0], noise(Vector3d(p.x, p.y * m_planetEarthRadii, p.z)) * p);
+					noise(Vector3d(p.x_, p.y * m_planetEarthRadii * 0.3, p.z)) * p);
+				n += 0.5 * octavenoise(GetFracDef(1), 0.7 * m_entropy[0], noise(Vector3d(p.x_, p.y * m_planetEarthRadii, p.z)) * p);
 				n += ridged_octavenoise(GetFracDef(1), 0.6 * m_entropy[0],
-					noise(Vector3d(p.x, p.y * m_planetEarthRadii * 0.3, p.z)) * p);
+					noise(Vector3d(p.x_, p.y * m_planetEarthRadii * 0.3, p.z)) * p);
 				//n += 0.5;
 				//n *= n;
 				n = (n < 0.0 ? -n : n);
@@ -119,10 +119,10 @@ Vector3d TerrainColorFractal<TerrainColorGGJupiter>::GetColor(const Vector3d &p,
 			Float temp = p.y - i;
 			if (temp < .1 + h && temp > -.0 + h) {
 				n = billow_octavenoise(GetFracDef(2), 0.6 * m_entropy[0],
-					noise(Vector3d(p.x, p.y * m_planetEarthRadii * 0.3, p.z)) * p);
-				n += 0.5 * octavenoise(GetFracDef(1), 0.6 * m_entropy[0], noise(Vector3d(p.x, p.y * m_planetEarthRadii, p.z)) * p);
+					noise(Vector3d(p.x_, p.y * m_planetEarthRadii * 0.3, p.z)) * p);
+				n += 0.5 * octavenoise(GetFracDef(1), 0.6 * m_entropy[0], noise(Vector3d(p.x_, p.y * m_planetEarthRadii, p.z)) * p);
 				n += ridged_octavenoise(GetFracDef(1), 0.7 * m_entropy[0],
-					noise(Vector3d(p.x, p.y * m_planetEarthRadii * 0.3, p.z)) * p);
+					noise(Vector3d(p.x_, p.y * m_planetEarthRadii * 0.3, p.z)) * p);
 				//n += 0.5;
 				//n *= n;
 				n = (n < 0.0 ? -n : n);
@@ -156,7 +156,7 @@ Vector3d TerrainColorFractal<TerrainColorGGJupiter>::GetColor(const Vector3d &p,
 		}
 	}
 	//if is not a stripe.
-	n = octavenoise(GetFracDef(1), 0.6 * m_entropy[0] + 0.25f, noise(Vector3d(p.x, p.y * m_planetEarthRadii * 3, p.z)) * p);
+	n = octavenoise(GetFracDef(1), 0.6 * m_entropy[0] + 0.25f, noise(Vector3d(p.x_, p.y * m_planetEarthRadii * 3, p.z)) * p);
 	n *= n * n;
 	n = (n < 0.0 ? -n : n);
 	n = (n > 1.0 ? 2.0 - n : n);
