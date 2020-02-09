@@ -10,7 +10,7 @@ const char *TerrainColorFractal<TerrainColorBlack>::GetColorFractalName() const 
 
 template <>
 TerrainColorFractal<TerrainColorBlack>::TerrainColorFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 }
 

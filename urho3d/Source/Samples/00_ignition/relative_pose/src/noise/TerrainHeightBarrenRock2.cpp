@@ -16,7 +16,7 @@ const char *TerrainHeightFractal<TerrainHeightBarrenRock2>::GetHeightFractalName
 
 template <>
 TerrainHeightFractal<TerrainHeightBarrenRock2>::TerrainHeightFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 }
 

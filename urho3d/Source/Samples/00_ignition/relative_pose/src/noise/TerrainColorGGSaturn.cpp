@@ -13,7 +13,7 @@ const char *TerrainColorFractal<TerrainColorGGSaturn>::GetColorFractalName() con
 
 template <>
 TerrainColorFractal<TerrainColorGGSaturn>::TerrainColorFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 	const double height = m_maxHeightInMeters * 0.1;
 	//spot + clouds

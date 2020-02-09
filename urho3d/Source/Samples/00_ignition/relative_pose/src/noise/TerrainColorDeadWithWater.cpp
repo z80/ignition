@@ -11,7 +11,7 @@ const char *TerrainColorFractal<TerrainColorDeadWithWater>::GetColorFractalName(
 
 template <>
 TerrainColorFractal<TerrainColorDeadWithWater>::TerrainColorFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 	m_surfaceEffects |= Terrain::EFFECT_WATER;
 }

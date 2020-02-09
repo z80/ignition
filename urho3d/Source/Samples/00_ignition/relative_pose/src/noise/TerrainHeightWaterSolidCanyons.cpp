@@ -13,7 +13,7 @@ const char *TerrainHeightFractal<TerrainHeightWaterSolidCanyons>::GetHeightFract
 
 template <>
 TerrainHeightFractal<TerrainHeightWaterSolidCanyons>::TerrainHeightFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 	SetFracDef(0, m_maxHeightInMeters, m_rand.Double(5e6, 1e8));
 	double height = m_maxHeightInMeters * 0.3;

@@ -11,7 +11,7 @@ const char *TerrainColorFractal<TerrainColorEarthLike>::GetColorFractalName() co
 
 template <>
 TerrainColorFractal<TerrainColorEarthLike>::TerrainColorFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 	// crappy water
 	//double height = m_maxHeightInMeters*0.5;

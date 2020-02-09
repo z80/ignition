@@ -12,7 +12,7 @@ const char *TerrainHeightFractal<TerrainHeightMapped2>::GetHeightFractalName() c
 
 template <>
 TerrainHeightFractal<TerrainHeightMapped2>::TerrainHeightFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 }
 

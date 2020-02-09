@@ -9,7 +9,7 @@ const char *TerrainHeightFractal<TerrainHeightEllipsoid>::GetHeightFractalName()
 
 template <>
 TerrainHeightFractal<TerrainHeightEllipsoid>::TerrainHeightFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 	const double rad = m_minBody.m_radius;
 	m_maxHeight = m_minBody.m_aspectRatio - 1.0;

@@ -11,7 +11,7 @@ const char *TerrainColorFractal<TerrainColorStarWhiteDwarf>::GetColorFractalName
 
 template <>
 TerrainColorFractal<TerrainColorStarWhiteDwarf>::TerrainColorFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 	double height = m_maxHeightInMeters * 0.1;
 	SetFracDef(0, height, 3e9, 100.0); //why on Earth we need a feature size of 3,000,000 KM (2.2x the sun) I don't know, but we do... :)

@@ -11,7 +11,7 @@ const char *TerrainColorFractal<TerrainColorGGJupiter>::GetColorFractalName() co
 
 template <>
 TerrainColorFractal<TerrainColorGGJupiter>::TerrainColorFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 	// spots
 	const double height = m_maxHeightInMeters * 0.1;

@@ -15,7 +15,7 @@ const char *TerrainHeightFractal<TerrainHeightBarrenRock>::GetHeightFractalName(
 
 template <>
 TerrainHeightFractal<TerrainHeightBarrenRock>::TerrainHeightFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 	//SetFracDef(0, m_maxHeightInMeters, m_planetRadius);
 	// craters

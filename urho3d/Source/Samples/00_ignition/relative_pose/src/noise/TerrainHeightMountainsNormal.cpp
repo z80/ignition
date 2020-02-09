@@ -11,7 +11,7 @@ const char *TerrainHeightFractal<TerrainHeightMountainsNormal>::GetHeightFractal
 
 template <>
 TerrainHeightFractal<TerrainHeightMountainsNormal>::TerrainHeightFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 	SetFracDef(0, m_maxHeightInMeters, m_rand.Double(1e6, 1e7), 10000);
 	SetFracDef(1, m_maxHeightInMeters * 0.00000000001, 100.0, 10);

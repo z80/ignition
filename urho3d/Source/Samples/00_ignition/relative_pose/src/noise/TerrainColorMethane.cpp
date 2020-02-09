@@ -11,7 +11,7 @@ const char *TerrainColorFractal<TerrainColorMethane>::GetColorFractalName() cons
 
 template <>
 TerrainColorFractal<TerrainColorMethane>::TerrainColorFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 }
 

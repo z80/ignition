@@ -11,7 +11,7 @@ const char *TerrainColorFractal<TerrainColorVolcanic>::GetColorFractalName() con
 
 template <>
 TerrainColorFractal<TerrainColorVolcanic>::TerrainColorFractal(const PiSourceDescs&body) :
-	Terrain(body)
+	PiBodySource(body)
 {
 	// 50 percent chance of there being exposed lava
 	if (m_rand.Int32(100) > 50)
