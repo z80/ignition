@@ -3,7 +3,7 @@
 
 #include "pi_source.h"
 #include "pi_terrain_feature.h"
-#include "TerrainNoise.h"
+#include "pi_terrain_noise.h"
 
 using namespace TerrainNoise;
 using namespace TerrainFeature;
