@@ -52,3 +52,5 @@ Vector3d TerrainColorFractal<TerrainColorDesert>::GetColor(const Vector3d &p, Fl
 		return col;
 	}
 }
+
+}

@@ -51,3 +51,9 @@ Float TerrainHeightFractal<TerrainHeightHillsRivers>::GetHeight(const Vector3d &
 	n *= m_maxHeight;
 	return (n > 0.0 ? n : 0.0);
 }
+
+
+}
+
+
+

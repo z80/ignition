@@ -6,7 +6,6 @@
 #include "pi_terrain_noise.h"
 
 namespace Ign {
-namespace Ign {
 
 template <>
 const char *TerrainHeightFractal<TerrainHeightWaterSolidCanyons>::GetHeightFractalName() const { return "WaterSolidCanyons"; }
@@ -64,4 +63,6 @@ Float TerrainHeightFractal<TerrainHeightWaterSolidCanyons>::GetHeight(const Vect
 	n = (n < 0.0 ? 0 : n);
 	n = (n > 1.0 ? 2.0 - n : n);
 	return n;
+}
+
 }

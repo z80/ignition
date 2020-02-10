@@ -6,7 +6,6 @@
 #include "pi_terrain_noise.h"
 
 namespace Ign {
-namespace Ign {
 
 template <>
 const char *TerrainHeightFractal<TerrainHeightRuggedDesert>::GetHeightFractalName() const { return "RuggedDesert"; }
@@ -71,3 +70,7 @@ TerrainHeightFractal<TerrainHeightRuggedDesert>::TerrainHeightFractal(const PiSo
 	// adds bumps to the landscape
 	SetFracDef(9, height * 0.0025, m_rand.Double(1, 100), 100.0);
 }
+
+
+}
+

@@ -6,7 +6,6 @@
 #include "pi_terrain_noise.h"
 
 namespace Ign {
-namespace Ign {
 
 template <>
 const char *TerrainHeightFractal<TerrainHeightRuggedLava>::GetHeightFractalName() const { return "RuggedLava"; }
@@ -97,3 +96,8 @@ Float TerrainHeightFractal<TerrainHeightRuggedLava>::GetHeight(const Vector3d &p
 	n = (n < 0.0 ? 0.0 : m_maxHeight * n);
 	return n;
 }
+
+
+}
+
+

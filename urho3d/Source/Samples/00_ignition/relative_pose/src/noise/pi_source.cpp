@@ -36,6 +36,7 @@ PiSourceDesc::PiSourceDesc()
 
     GM_ = 1.0;
 	radius_ = 30.0;
+	aspectRatio_ = 1.0;
 
     life_ = 0.1;
     gas_ = 0.05;
@@ -54,7 +55,7 @@ PiBodySource::PiBodySource( const PiSourceDesc & body )
 	m_minh(0)
 
 {
-	const Float m_heightScaling = 1.0;
+	m_heightScaling = 1.0;
 
 	m_minBody = body;
 

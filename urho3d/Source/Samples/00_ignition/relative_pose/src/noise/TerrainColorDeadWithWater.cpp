@@ -13,7 +13,7 @@ template <>
 TerrainColorFractal<TerrainColorDeadWithWater>::TerrainColorFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
-	m_surfaceEffects |= Terrain::EFFECT_WATER;
+	m_surfaceEffects |= PiBodySource::EFFECT_WATER;
 }
 
 template <>
@@ -24,4 +24,6 @@ Vector3d TerrainColorFractal<TerrainColorDeadWithWater>::GetColor(const Vector3d
 		return Vector3d(0.0, 0.0, 0.5);
 	else
 		return interpolate_color(n, Vector3d(.2, .2, .2), Vector3d(.6, .6, .6));
+}
+
 }

@@ -6,7 +6,6 @@
 #include "pi_terrain_noise.h"
 
 namespace Ign {
-namespace Ign {
 
 // Strange world, looks like its been hit by thousands of years of erosion.
 // Could be used as a basis for terrains that should have erosion.
@@ -28,3 +27,9 @@ Float TerrainHeightFractal<TerrainHeightBarrenRock2>::GetHeight(const Vector3d &
 
 	return (n > 0.0 ? m_maxHeight * n : 0.0);
 }
+
+
+}
+
+
+

@@ -6,7 +6,6 @@
 #include "pi_terrain_noise.h"
 
 namespace Ign {
-namespace Ign {
 
 // Banded/Ridged pattern mountainous terrain, could pass for desert
 
@@ -29,3 +28,10 @@ Float TerrainHeightFractal<TerrainHeightAsteroid>::GetHeight(const Vector3d &p) 
 
 	return (n > 0.0 ? m_maxHeight * n : 0.0);
 }
+
+
+
+}
+
+
+

@@ -94,3 +94,8 @@ Vector3d TerrainColorFractal<TerrainColorRock2>::GetColor(const Vector3d &p, Flo
 		return col;
 	}
 }
+
+}
+
+
+

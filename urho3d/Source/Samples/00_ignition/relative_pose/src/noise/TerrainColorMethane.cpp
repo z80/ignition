@@ -24,3 +24,8 @@ Vector3d TerrainColorFractal<TerrainColorMethane>::GetColor(const Vector3d &p, F
 	else
 		return interpolate_color(n, Vector3d(.3, .2, .0), Vector3d(.6, .3, .0));
 }
+
+}
+
+
+

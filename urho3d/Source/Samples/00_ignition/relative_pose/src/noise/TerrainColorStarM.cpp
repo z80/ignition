@@ -20,7 +20,6 @@ TerrainColorFractal<TerrainColorStarM>::TerrainColorFractal(const PiSourceDesc&b
 	SetFracDef(2, height, 6e6, 100.0);
 	SetFracDef(3, height, 5e5, 100.0);
 }
-namespace Ign {
 
 template <>
 Vector3d TerrainColorFractal<TerrainColorStarM>::GetColor(const Vector3d &p, Float height, const Vector3d &norm) const
@@ -53,3 +52,8 @@ Vector3d TerrainColorFractal<TerrainColorStarM>::GetColor(const Vector3d &p, Flo
 		return col;
 	}
 }
+
+
+}
+
+

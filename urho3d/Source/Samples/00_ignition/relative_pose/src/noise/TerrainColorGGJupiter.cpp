@@ -172,3 +172,7 @@ Vector3d TerrainColorFractal<TerrainColorGGJupiter>::GetColor(const Vector3d &p,
 		return col;
 	}
 }
+
+}
+
+

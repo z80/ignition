@@ -39,3 +39,9 @@ Vector3d TerrainColorFractal<TerrainColorStarBrownDwarf>::GetColor(const Vector3
 		return col;
 	}
 }
+
+
+}
+
+
+

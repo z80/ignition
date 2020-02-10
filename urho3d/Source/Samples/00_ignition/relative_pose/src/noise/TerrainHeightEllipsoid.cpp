@@ -1,8 +1,13 @@
 // Copyright © 2008-2019 Pioneer Developers. See AUTHORS.txt for details
 // Licensed under the terms of the GPL v3. See licenses/GPL-3.txt
 
+#define NOMINMAX
+
 #include "pi_source.h"
 #include <algorithm> // for std::max
+
+namespace Ign
+{
 
 template <>
 const char *TerrainHeightFractal<TerrainHeightEllipsoid>::GetHeightFractalName() const { return "Ellipsoid"; }
@@ -11,8 +16,8 @@ template <>
 TerrainHeightFractal<TerrainHeightEllipsoid>::TerrainHeightFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
-	const Float rad = m_minBody.m_radius;
-	m_maxHeight = m_minBody.m_aspectRatio - 1.0;
+	const Float rad = m_minBody.radius_;
+	m_maxHeight = m_minBody.aspectRatio_ - 1.0;
 	m_maxHeightInMeters = m_maxHeight * rad;
 	m_invMaxHeight = 1.0 / m_maxHeight;
 }
@@ -55,7 +60,7 @@ TerrainHeightFractal<TerrainHeightEllipsoid>::TerrainHeightFractal(const PiSourc
 template <>
 Float TerrainHeightFractal<TerrainHeightEllipsoid>::GetHeight(const Vector3d &p) const
 {
-	const Float ar = m_minBody.m_aspectRatio;
+	const Float ar = m_minBody.aspectRatio_;
 	// x_^2 = (p.z_^2+p.x_^2) (eqn. 5)
 	const Float x_squared = (p.x_ * p.x_ + p.z_ * p.z_);
 	// y_ = p.y_
@@ -64,4 +69,6 @@ Float TerrainHeightFractal<TerrainHeightEllipsoid>::GetHeight(const Vector3d &p)
 	// GetHeight must return the difference in the distance from center between a point in a sphere of
 	// Polar radius (in coords scaled to a unit sphere) and the point on the ellipsoid surface.
 	return std::max(distFromCenter_R - 1.0, 0.0);
+}
+
 }

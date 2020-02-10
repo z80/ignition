@@ -17,7 +17,7 @@ TerrainColorFractal<TerrainColorEarthLikeHeightmapped>::TerrainColorFractal(cons
 	//Float height = m_maxHeightInMeters*0.5;
 	//SetFracDef(3, m_maxHeightInMeters, 1e8, 50.0);
 	//SetFracDef(2, m_maxHeightInMeters, 10, 10.0);
-	m_surfaceEffects |= Terrain::EFFECT_WATER;
+	m_surfaceEffects |= PiBodySource::EFFECT_WATER;
 }
 
 template <>
@@ -118,3 +118,7 @@ Vector3d TerrainColorFractal<TerrainColorEarthLikeHeightmapped>::GetColor(const 
 		return col = interpolate_color(flatness, tex1, tex2);
 	}
 }
+
+}
+
+

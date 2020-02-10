@@ -13,7 +13,7 @@ template <>
 TerrainColorFractal<TerrainColorTFPoor>::TerrainColorFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
-	m_surfaceEffects |= Terrain::EFFECT_WATER;
+	m_surfaceEffects |= PiBodySource::EFFECT_WATER;
 }
 
 template <>
@@ -114,3 +114,8 @@ Vector3d TerrainColorFractal<TerrainColorTFPoor>::GetColor(const Vector3d &p, Fl
 		return col;
 	}
 }
+
+
+}
+
+

@@ -6,7 +6,6 @@
 #include "pi_terrain_noise.h"
 
 namespace Ign {
-namespace Ign {
 
 // Cool terrain for asteroids or small planets
 
@@ -33,3 +32,9 @@ Float TerrainHeightFractal<TerrainHeightAsteroid4>::GetHeight(const Vector3d &p)
 
 	return (n > 0.0 ? m_maxHeight * n : 0.0);
 }
+
+
+}
+
+
+

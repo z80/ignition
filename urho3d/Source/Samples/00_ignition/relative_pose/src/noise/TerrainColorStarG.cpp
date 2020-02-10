@@ -6,7 +6,6 @@
 #include "pi_terrain_noise.h"
 
 namespace Ign {
-namespace Ign {
 
 template <>
 const char *TerrainColorFractal<TerrainColorStarG>::GetColorFractalName() const { return "StarG"; }
@@ -56,3 +55,8 @@ Vector3d TerrainColorFractal<TerrainColorStarG>::GetColor(const Vector3d &p, Flo
 		return col;
 	}
 }
+
+
+}
+
+

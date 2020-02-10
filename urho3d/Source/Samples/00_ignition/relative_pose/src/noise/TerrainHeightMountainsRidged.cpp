@@ -82,3 +82,8 @@ Float TerrainHeightFractal<TerrainHeightMountainsRidged>::GetHeight(const Vector
 	n = m_maxHeight * n;
 	return (n > 0.0 ? n : 0.0);
 }
+
+
+}
+
+

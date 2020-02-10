@@ -3,6 +3,9 @@
 
 #include "pi_source.h"
 
+namespace Ign
+{
+
 static const Vector3d svBlack(0.0, 0.0, 0.0);
 
 template <>
@@ -19,3 +22,7 @@ Vector3d TerrainColorFractal<TerrainColorBlack>::GetColor(const Vector3d &p, Flo
 {
 	return svBlack;
 }
+
+}
+
+

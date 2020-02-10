@@ -29,6 +29,7 @@ struct PiSourceDesc
 	BodyType type_;
     Float GM_;
 	Float radius_;
+	Float aspectRatio_;
     Float life_;
     Float gas_;
     Float average_temp_;
@@ -71,11 +72,19 @@ public:
 	Uint32 GetSurfaceEffects() const { return m_surfaceEffects; }
 	Float BiCubicInterpolation( const Vector3d & p ) const;
 
+	enum SurfaceEffectFlags {
+		EFFECT_LAVA = 1 << 0,
+		EFFECT_WATER = 2
+		// can add other effect flags here (e.g., water, snow, ice)
+	};
+
 
 
     int      m_seed;
     PiRandom m_rand;
 	PiSourceDesc m_minBody;
+
+	Float m_heightScaling;
 
     Float m_sealevel; // 0 - no water, 1 - 100% coverage
     Float m_icyness; // 0 - 1 (0% to 100% cover)

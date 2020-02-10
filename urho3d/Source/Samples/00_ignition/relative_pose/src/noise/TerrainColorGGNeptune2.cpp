@@ -91,3 +91,7 @@ Vector3d TerrainColorFractal<TerrainColorGGNeptune2>::GetColor(const Vector3d &p
 		return col;
 	}
 }
+
+}
+
+

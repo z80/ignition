@@ -3,6 +3,9 @@
 
 #include "pi_source.h"
 
+namespace Ign
+{
+
 template <>
 const char *TerrainHeightFractal<TerrainHeightFlat>::GetHeightFractalName() const { return "Flat"; }
 
@@ -17,3 +20,7 @@ Float TerrainHeightFractal<TerrainHeightFlat>::GetHeight(const Vector3d &p) cons
 {
 	return 0.0;
 }
+
+}
+
+

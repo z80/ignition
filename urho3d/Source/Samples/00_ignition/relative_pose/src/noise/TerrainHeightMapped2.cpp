@@ -7,6 +7,7 @@
 // As far as I can tell this is used for the Moon and ONLY the Moon - AndyC
 
 namespace Ign {
+
 template <>
 const char *TerrainHeightFractal<TerrainHeightMapped2>::GetHeightFractalName() const { return "Mapped2"; }
 
@@ -32,3 +33,7 @@ Float TerrainHeightFractal<TerrainHeightMapped2>::GetHeight(const Vector3d &p) c
 
 	return (h > 0.0 ? h : 0.0);
 }
+
+}
+
+

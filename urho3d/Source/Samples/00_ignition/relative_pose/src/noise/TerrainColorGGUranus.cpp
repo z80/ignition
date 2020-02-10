@@ -29,3 +29,7 @@ Vector3d TerrainColorFractal<TerrainColorGGUranus>::GetColor(const Vector3d &p, 
 	n *= n * n;
 	return interpolate_color(n, Vector3d(.4, .5, .55), Vector3d(.85, .95, .96));
 }
+
+
+}
+

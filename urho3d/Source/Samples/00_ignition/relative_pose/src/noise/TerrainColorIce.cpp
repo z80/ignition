@@ -58,3 +58,8 @@ Vector3d TerrainColorFractal<TerrainColorIce>::GetColor(const Vector3d &p, Float
 		return col;
 	}
 }
+
+}
+
+
+

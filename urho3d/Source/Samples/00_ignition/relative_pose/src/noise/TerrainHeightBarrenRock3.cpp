@@ -6,7 +6,6 @@
 #include "pi_terrain_noise.h"
 
 namespace Ign {
-namespace Ign {
 
 // Craggy/Spikey terrain with massive canyons
 
@@ -27,3 +26,9 @@ Float TerrainHeightFractal<TerrainHeightBarrenRock3>::GetHeight(const Vector3d &
 
 	return (n > 0.0 ? m_maxHeight * n : 0.0);
 }
+
+
+}
+
+
+

@@ -15,7 +15,7 @@ TerrainColorFractal<TerrainColorVolcanic>::TerrainColorFractal(const PiSourceDes
 {
 	// 50 percent chance of there being exposed lava
 	if (m_rand.Int32(100) > 50)
-		m_surfaceEffects |= Terrain::EFFECT_LAVA;
+		m_surfaceEffects |= PiBodySource::EFFECT_LAVA;
 }
 
 template <>
@@ -48,3 +48,9 @@ Vector3d TerrainColorFractal<TerrainColorVolcanic>::GetColor(const Vector3d &p, 
 	}
 	return col;
 }
+
+
+
+}
+
+

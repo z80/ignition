@@ -50,3 +50,9 @@ Float TerrainHeightFractal<TerrainHeightHillsNormal>::GetHeight(const Vector3d &
 	if (n > 0.0) return n * m_maxHeight;
 	return 0.0;
 }
+
+
+}
+
+
+

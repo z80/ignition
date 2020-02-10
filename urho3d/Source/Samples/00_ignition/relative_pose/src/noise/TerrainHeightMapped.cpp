@@ -84,3 +84,8 @@ Float TerrainHeightFractal<TerrainHeightMapped>::GetHeight(const Vector3d &p) co
 
 	return v < 0 ? 0 : (v * m_invPlanetRadius);
 }
+
+
+}
+
+
