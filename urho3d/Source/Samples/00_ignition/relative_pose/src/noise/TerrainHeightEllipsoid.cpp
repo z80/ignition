@@ -16,8 +16,8 @@ template <>
 TerrainHeightFractal<TerrainHeightEllipsoid>::TerrainHeightFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
-	const Float rad = m_minBody.radius_;
-	m_maxHeight = m_minBody.aspectRatio_ - 1.0;
+	const Float rad = m_minBody.radius_.ToDouble();
+	m_maxHeight = m_minBody.aspectRatio_.ToDouble() - 1.0;
 	m_maxHeightInMeters = m_maxHeight * rad;
 	m_invMaxHeight = 1.0 / m_maxHeight;
 }
@@ -60,7 +60,7 @@ TerrainHeightFractal<TerrainHeightEllipsoid>::TerrainHeightFractal(const PiSourc
 template <>
 Float TerrainHeightFractal<TerrainHeightEllipsoid>::GetHeight(const Vector3d &p) const
 {
-	const Float ar = m_minBody.aspectRatio_;
+	const Float ar = m_minBody.aspectRatio_.ToDouble();
 	// x_^2 = (p.z_^2+p.x_^2) (eqn. 5)
 	const Float x_squared = (p.x_ * p.x_ + p.z_ * p.z_);
 	// y_ = p.y_

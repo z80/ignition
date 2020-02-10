@@ -8,6 +8,7 @@
 #include "cube_sphere.h"
 #include "pi_fract_def.h"
 #include "pi_random.h"
+#include "pi_fixed.h"
 
 namespace Ign
 {
@@ -27,16 +28,16 @@ struct PiSourceDesc
 {
     int   seed_;
 	BodyType type_;
-    Float GM_;
-	Float radius_;
-	Float aspectRatio_;
-    Float life_;
-    Float gas_;
-    Float average_temp_;
-    Float liquid_;
-    Float volcanic_;
-    Float ice_;
-    Float metal_;
+	fixed GM_;
+	fixed radius_;
+	fixed aspectRatio_;
+	fixed life_;
+	fixed gas_;
+	fixed average_temp_;
+	fixed liquid_;
+	fixed volcanic_;
+	fixed ice_;
+	fixed metal_;
 
     PiSourceDesc();
 };

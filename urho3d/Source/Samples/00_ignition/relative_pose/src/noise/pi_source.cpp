@@ -4,13 +4,16 @@
 #include "pi_source.h"
 #include <algorithm>
 
-static  Float Clamp( Float v, Float vmin, Float vmax )
+static  fixed Clamp( fixed v, Float vmin, Float vmax )
 {
+	fixed r;
 	if ( v < vmin )
-		return vmin;
-	if ( v > vmax )
-		return vmax;
-	return v;
+		r = vmin;
+	else if ( v > vmax )
+		r = vmax;
+	else
+		r = v;
+	return r;
 }
 
 #define COUNTOF( arr ) (sizeof(arr)/sizeof(arr[0]))
@@ -61,16 +64,16 @@ PiBodySource::PiBodySource( const PiSourceDesc & body )
 
 
 
-	m_sealevel = Clamp(body.liquid_, 0.0, 1.0);
-	m_icyness = Clamp(body.ice_, 0.0, 1.0);
-	m_volcanic = Clamp(body.volcanic_, 0.0, 1.0); // height scales with volcanicity as well
+	m_sealevel = Clamp(body.liquid_.ToDouble(), 0.0, 1.0);
+	m_icyness = Clamp(body.ice_.ToDouble(), 0.0, 1.0);
+	m_volcanic = Clamp(body.volcanic_.ToDouble(), 0.0, 1.0); // height scales with volcanicity as well
 	m_surfaceEffects = 0;
 
-	const double rad = m_minBody.radius_;
+	const double rad = m_minBody.radius_.ToDouble();
 
 	// calculate max height
 	// max mountain height for earth-like planet (same mass, radius)
-	m_maxHeightInMeters = std::max(100.0, (9000.0 * rad * rad * (m_volcanic + 0.5)) / (body.GM_));
+	m_maxHeightInMeters = std::max(100.0, (9000.0 * rad * rad * (m_volcanic + 0.5)) / (body.GM_.ToDouble()));
 	m_maxHeightInMeters = std::min(rad, m_maxHeightInMeters); // small asteroid case
 
 	// and then in sphere normalized jizz
@@ -90,8 +93,8 @@ PiBodySource::PiBodySource( const PiSourceDesc & body )
 		r = m_rand.Double(0.3, 1.0);
 		g = m_rand.Double(0.3, r);
 		b = m_rand.Double(0.3, g);
-		r = std::max(b, r * body.metal_);
-		g = std::max(b, g * body.metal_);
+		r = std::max(b, r * body.metal_.ToDouble());
+		g = std::max(b, g * body.metal_.ToDouble());
 		m_rockColor[i] = Vector3d(r, g, b);
 	}
 
@@ -104,8 +107,8 @@ PiBodySource::PiBodySource( const PiSourceDesc & body )
 		r = m_rand.Double(0.05, 0.3);
 		g = m_rand.Double(0.05, r);
 		b = m_rand.Double(0.05, g);
-		r = std::max(b, r * body.metal_);
-		g = std::max(b, g * body.metal_);
+		r = std::max(b, r * body.metal_.ToDouble());
+		g = std::max(b, g * body.metal_.ToDouble());
 		m_darkrockColor[i] = Vector3d(r, g, b);
 	}
 
@@ -129,8 +132,8 @@ PiBodySource::PiBodySource( const PiSourceDesc & body )
 		g = m_rand.Double(0.3, 1.0);
 		r = m_rand.Double(0.3, g);
 		b = m_rand.Double(0.2, r);
-		g = std::max(r, g * body.life_);
-		b *= (1.0 - body.life_);
+		g = std::max(r, g * body.life_.ToDouble());
+		b *= (1.0 - body.life_.ToDouble());
 		m_plantColor[i] = Vector3d(r, g, b);
 	}
 
@@ -144,8 +147,8 @@ PiBodySource::PiBodySource( const PiSourceDesc & body )
 		g = m_rand.Double(0.05, 0.3);
 		r = m_rand.Double(0.00, g);
 		b = m_rand.Double(0.00, r);
-		g = std::max(r, g * body.life_);
-		b *= (1.0 - body.life_);
+		g = std::max(r, g * body.life_.ToDouble());
+		b *= (1.0 - body.life_.ToDouble());
 		m_darkplantColor[i] = Vector3d(r, g, b);
 	}
 
