@@ -79,6 +79,13 @@ public:
     {
     }
 
+	explicit Vector3d( Float data ) noexcept :
+		x_( data ),
+		y_( data ),
+		z_( data )
+	{
+	}
+
     Vector3 vector3() const
     {
         return Vector3( x_, y_, z_ );
