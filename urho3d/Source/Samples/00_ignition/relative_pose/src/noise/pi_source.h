@@ -15,25 +15,77 @@ namespace Ign
 
 template <typename, typename> class TerrainGenerator;
 
+enum BodySuperType
+{
+    SUPERTYPE_NONE         = 0,
+    SUPERTYPE_STAR         = 1,
+    SUPERTYPE_ROCKY_PLANET = 2,
+    SUPERTYPE_GAS_GIANT    = 3,
+};
 
 enum BodyType
 {
-    GAS_GIANT = 0, 
-    PLANET_ASTEROID, 
-    PLANET_TERRESTRIAL
+    TYPE_GRAVPOINT = 0,
+    TYPE_BROWN_DWARF = 1, //  L+T Class Brown Dwarfs
+    TYPE_WHITE_DWARF = 2,
+    TYPE_STAR_M = 3, //red
+    TYPE_STAR_K = 4, //orange
+    TYPE_STAR_G = 5, //yellow
+    TYPE_STAR_F = 6, //white
+    TYPE_STAR_A = 7, //blue/white
+    TYPE_STAR_B = 8, //blue
+    TYPE_STAR_O = 9, //blue/purple/white
+    TYPE_STAR_M_GIANT = 10,
+    TYPE_STAR_K_GIANT = 11,
+    TYPE_STAR_G_GIANT = 12,
+    TYPE_STAR_F_GIANT = 13,
+    TYPE_STAR_A_GIANT = 14,
+    TYPE_STAR_B_GIANT = 15,
+    TYPE_STAR_O_GIANT = 16,
+    TYPE_STAR_M_SUPER_GIANT = 17,
+    TYPE_STAR_K_SUPER_GIANT = 18,
+    TYPE_STAR_G_SUPER_GIANT = 19,
+    TYPE_STAR_F_SUPER_GIANT = 20,
+    TYPE_STAR_A_SUPER_GIANT = 21,
+    TYPE_STAR_B_SUPER_GIANT = 22,
+    TYPE_STAR_O_SUPER_GIANT = 23,
+    TYPE_STAR_M_HYPER_GIANT = 24,
+    TYPE_STAR_K_HYPER_GIANT = 25,
+    TYPE_STAR_G_HYPER_GIANT = 26,
+    TYPE_STAR_F_HYPER_GIANT = 27,
+    TYPE_STAR_A_HYPER_GIANT = 28,
+    TYPE_STAR_B_HYPER_GIANT = 29,
+    TYPE_STAR_O_HYPER_GIANT = 30, // these various stars do exist = they are transitional states and are rare
+    TYPE_STAR_M_WF = 31, //Wolf-Rayet star
+    TYPE_STAR_B_WF = 32, // while you do not specifically get class M,B or O WF stars,
+    TYPE_STAR_O_WF = 33, //  you do get red = blue and purple from the colour of the gasses = so spectral class is an easy way to define them.
+    TYPE_STAR_S_BH = 34, //stellar blackhole
+    TYPE_STAR_IM_BH = 35, //Intermediate-mass blackhole
+    TYPE_STAR_SM_BH = 36, //Supermassive blackhole
+    TYPE_PLANET_GAS_GIANT = 37,
+    TYPE_PLANET_ASTEROID = 38,
+    TYPE_PLANET_TERRESTRIAL = 39,
+    TYPE_STARPORT_ORBITAL = 40,
+    TYPE_STARPORT_SURFACE = 41,
+    TYPE_MIN = TYPE_BROWN_DWARF, // <enum skip>
+    TYPE_MAX = TYPE_STARPORT_SURFACE, // <enum skip>
+    TYPE_STAR_MIN = TYPE_BROWN_DWARF, // <enum skip>
+    TYPE_STAR_MAX = TYPE_STAR_SM_BH, // <enum skip>
 };
+
 
 
 struct PiSourceDesc
 {
     int   seed_;
-	BodyType type_;
+    BodySuperType super_type_;
+    BodyType type_;
 	fixed GM_;
 	fixed radius_;
 	fixed aspectRatio_;
 	fixed life_;
 	fixed gas_;
-	fixed average_temp_;
+    int   average_temp_;
 	fixed liquid_;
 	fixed volcanic_;
 	fixed ice_;
@@ -46,6 +98,7 @@ class PiBodySource: public HeightSource
 {
 public:
     static PiBodySource * InstanceTerrain( const PiSourceDesc & body );
+    static PiBodySource * InstanceStar( const PiSourceDesc & body );
 
 
     PiBodySource( const PiSourceDesc & body );

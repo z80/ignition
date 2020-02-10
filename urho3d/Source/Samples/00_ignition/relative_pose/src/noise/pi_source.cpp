@@ -35,7 +35,8 @@ PiSourceDesc::PiSourceDesc()
 {
     seed_ = 0;
 
-	type_ = PLANET_TERRESTRIAL;
+    super_type_ = SUPERTYPE_ROCKY_PLANET;
+    type_       = TYPE_PLANET_TERRESTRIAL;
 
     GM_ = 1.0;
 	radius_ = 30.0;
@@ -43,7 +44,7 @@ PiSourceDesc::PiSourceDesc()
 
     life_ = 0.1;
     gas_ = 0.05;
-    average_temp_ = 240.0;
+    average_temp_ = 240;
     liquid_ = 0.5;
     volcanic_ = 0.2;
     ice_ = 0.2;
@@ -314,7 +315,7 @@ PiBodySource * PiBodySource::InstanceTerrain( const PiSourceDesc & body )
 	{
 
 
-	case GAS_GIANT: {
+    case TYPE_PLANET_GAS_GIANT: {
 		const GeneratorInstancer choices[] = {
 			InstanceGenerator<TerrainHeightFlat, TerrainColorGGJupiter>,
 			InstanceGenerator<TerrainHeightFlat, TerrainColorGGSaturn>,
@@ -328,7 +329,7 @@ PiBodySource * PiBodySource::InstanceTerrain( const PiSourceDesc & body )
 		break;
 	}
 
-	case PLANET_ASTEROID: {
+    case TYPE_PLANET_ASTEROID: {
 		const GeneratorInstancer choices[] = {
 			InstanceGenerator<TerrainHeightAsteroid, TerrainColorAsteroid>,
 			InstanceGenerator<TerrainHeightAsteroid2, TerrainColorAsteroid>,
@@ -343,7 +344,7 @@ PiBodySource * PiBodySource::InstanceTerrain( const PiSourceDesc & body )
 		break;
 	}
 
-	case PLANET_TERRESTRIAL: {
+    case TYPE_PLANET_TERRESTRIAL: {
 
 		//Over-ride:
 		//gi = InstanceGenerator<TerrainHeightAsteroid3,TerrainColorRock>;
@@ -565,6 +566,109 @@ PiBodySource * PiBodySource::InstanceTerrain( const PiSourceDesc & body )
 	}
 
 	return gi(body);
+}
+
+static PiBodySource * PiBodySource::InstanceStar( const PiSourceDesc & body )
+{
+    PiRandom rand(body.seed_);
+
+    GeneratorInstancer gi = nullptr;
+
+    switch (body->GetType()) {
+
+    case SystemBody::TYPE_BROWN_DWARF:
+        gi = InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarBrownDwarf>;
+        break;
+
+    case SystemBody::TYPE_WHITE_DWARF:
+        gi = InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarWhiteDwarf>;
+        break;
+
+    case TYPE_STAR_M:
+    case TYPE_STAR_M_GIANT:
+    case TYPE_STAR_M_SUPER_GIANT:
+    case TYPE_STAR_M_HYPER_GIANT: {
+        const GeneratorInstancer choices[] = {
+            InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarM>,
+            InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarM>,
+            InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarK>,
+            InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarG>
+        };
+        gi = choices[rand.Int32(COUNTOF(choices))];
+        break;
+    }
+
+    case TYPE_STAR_K:
+    case TYPE_STAR_K_GIANT:
+    case TYPE_STAR_K_SUPER_GIANT:
+    case TYPE_STAR_K_HYPER_GIANT: {
+        const GeneratorInstancer choices[] = {
+            InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarM>,
+            InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarK>,
+            InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarK>,
+            InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarG>
+        };
+        gi = choices[rand.Int32(COUNTOF(choices))];
+        break;
+    }
+
+    case TYPE_STAR_G:
+    case TYPE_STAR_G_GIANT:
+    case TYPE_STAR_G_SUPER_GIANT:
+    case TYPE_STAR_G_HYPER_GIANT: {
+        const GeneratorInstancer choices[] = {
+            InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarWhiteDwarf>,
+            InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarG>
+        };
+        gi = choices[rand.Int32(COUNTOF(choices))];
+        break;
+    }
+
+    case TYPE_STAR_F:
+    case TYPE_STAR_F_GIANT:
+    case TYPE_STAR_F_HYPER_GIANT:
+    case TYPE_STAR_F_SUPER_GIANT:
+    case TYPE_STAR_A:
+    case TYPE_STAR_A_GIANT:
+    case TYPE_STAR_A_HYPER_GIANT:
+    case TYPE_STAR_A_SUPER_GIANT:
+    case TYPE_STAR_B:
+    case TYPE_STAR_B_GIANT:
+    case TYPE_STAR_B_SUPER_GIANT:
+    case TYPE_STAR_B_WF:
+    case TYPE_STAR_O:
+    case TYPE_STAR_O_GIANT:
+    case TYPE_STAR_O_HYPER_GIANT:
+    case TYPE_STAR_O_SUPER_GIANT:
+    case TYPE_STAR_O_WF:
+        gi = InstanceGenerator<TerrainHeightEllipsoid, TerrainColorWhite>;
+        break;
+
+    case TYPE_STAR_S_BH:
+    case TYPE_STAR_IM_BH:
+    case TYPE_STAR_SM_BH:
+        gi = InstanceGenerator<TerrainHeightEllipsoid, TerrainColorBlack>;
+        break;
+
+    case TYPE_PLANET_GAS_GIANT: {
+        const GeneratorInstancer choices[] = {
+            InstanceGenerator<TerrainHeightFlat, TerrainColorGGJupiter>,
+            InstanceGenerator<TerrainHeightFlat, TerrainColorGGSaturn>,
+            InstanceGenerator<TerrainHeightFlat, TerrainColorGGSaturn2>,
+            InstanceGenerator<TerrainHeightFlat, TerrainColorGGNeptune>,
+            InstanceGenerator<TerrainHeightFlat, TerrainColorGGNeptune2>,
+            InstanceGenerator<TerrainHeightFlat, TerrainColorGGUranus>,
+            InstanceGenerator<TerrainHeightFlat, TerrainColorGGSaturn>
+        };
+        gi = choices[rand.Int32(COUNTOF(choices))];
+        break;
+
+    default:
+        gi = InstanceGenerator<TerrainHeightFlat, TerrainColorWhite>;
+        break;
+    }
+
+    return gi(body);
 }
 
 
