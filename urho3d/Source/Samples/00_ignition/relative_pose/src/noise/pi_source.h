@@ -101,9 +101,9 @@ struct PiSourceDesc
     fixed axial_tilt_;
     fixed semimajor_axis_;
     fixed rotation_period_;
-    fixed inclination_; // Planet rotation axis inclination.
+    fixed inclination_; // Orbit inclination.
     fixed start_eccentric_anomaly_;
-    fixed Y_, X_, Z_; // Orbit plane orientation.
+    fixed Y_, X_; // Orbit plane orientation.
 
     PiSourceDesc();
 };

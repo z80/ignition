@@ -51,6 +51,18 @@ PiSourceDesc::PiSourceDesc()
     metal_ = 0.1;
 
     parent_ = nullptr;
+
+
+    orb_max_ = 0;
+    orb_min_ = 0;
+    eccentricity_ = 0;
+    axial_tilt_ = 0;
+    semimajor_axis_ = 0;
+    rotation_period_ = 60*60*24;
+    inclination_ = 0;
+    start_eccentric_anomaly_ = 0;
+    Y_ = 0;
+    X_ = 0;
 }
 
 PiBodySource::PiBodySource( const PiSourceDesc & body )
