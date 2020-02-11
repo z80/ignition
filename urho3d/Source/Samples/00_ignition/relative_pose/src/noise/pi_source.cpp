@@ -654,7 +654,8 @@ PiBodySource * PiBodySource::InstanceStar( const PiSourceDesc & body )
         gi = InstanceGenerator<TerrainHeightEllipsoid, TerrainColorBlack>;
         break;
 
-    case TYPE_PLANET_GAS_GIANT: {
+    case TYPE_PLANET_GAS_GIANT:
+    {
         const GeneratorInstancer choices[] = {
             InstanceGenerator<TerrainHeightFlat, TerrainColorGGJupiter>,
             InstanceGenerator<TerrainHeightFlat, TerrainColorGGSaturn>,
