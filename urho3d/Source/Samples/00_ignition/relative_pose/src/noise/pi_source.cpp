@@ -536,7 +536,7 @@ PiBodySource * PiBodySource::InstanceTerrain( const PiSourceDesc & body )
 			};
 			gi = choices[rand.Int32(COUNTOF(choices))];
 			break;
-		};
+        }
 
 		if (body.gas_ > fixed(1, 10)) {
 			const GeneratorInstancer choices[] = {
@@ -568,26 +568,28 @@ PiBodySource * PiBodySource::InstanceTerrain( const PiSourceDesc & body )
 	return gi(body);
 }
 
-static PiBodySource * PiBodySource::InstanceStar( const PiSourceDesc & body )
+PiBodySource * PiBodySource::InstanceStar( const PiSourceDesc & body )
 {
     PiRandom rand(body.seed_);
 
     GeneratorInstancer gi = nullptr;
 
-    switch (body->GetType()) {
+    switch (body.type_)
+    {
 
-    case SystemBody::TYPE_BROWN_DWARF:
+    case TYPE_BROWN_DWARF:
         gi = InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarBrownDwarf>;
         break;
 
-    case SystemBody::TYPE_WHITE_DWARF:
+    case TYPE_WHITE_DWARF:
         gi = InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarWhiteDwarf>;
         break;
 
     case TYPE_STAR_M:
     case TYPE_STAR_M_GIANT:
     case TYPE_STAR_M_SUPER_GIANT:
-    case TYPE_STAR_M_HYPER_GIANT: {
+    case TYPE_STAR_M_HYPER_GIANT:
+    {
         const GeneratorInstancer choices[] = {
             InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarM>,
             InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarM>,
@@ -601,7 +603,8 @@ static PiBodySource * PiBodySource::InstanceStar( const PiSourceDesc & body )
     case TYPE_STAR_K:
     case TYPE_STAR_K_GIANT:
     case TYPE_STAR_K_SUPER_GIANT:
-    case TYPE_STAR_K_HYPER_GIANT: {
+    case TYPE_STAR_K_HYPER_GIANT:
+    {
         const GeneratorInstancer choices[] = {
             InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarM>,
             InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarK>,
@@ -615,7 +618,8 @@ static PiBodySource * PiBodySource::InstanceStar( const PiSourceDesc & body )
     case TYPE_STAR_G:
     case TYPE_STAR_G_GIANT:
     case TYPE_STAR_G_SUPER_GIANT:
-    case TYPE_STAR_G_HYPER_GIANT: {
+    case TYPE_STAR_G_HYPER_GIANT:
+    {
         const GeneratorInstancer choices[] = {
             InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarWhiteDwarf>,
             InstanceGenerator<TerrainHeightEllipsoid, TerrainColorStarG>
@@ -662,6 +666,7 @@ static PiBodySource * PiBodySource::InstanceStar( const PiSourceDesc & body )
         };
         gi = choices[rand.Int32(COUNTOF(choices))];
         break;
+    }
 
     default:
         gi = InstanceGenerator<TerrainHeightFlat, TerrainColorWhite>;

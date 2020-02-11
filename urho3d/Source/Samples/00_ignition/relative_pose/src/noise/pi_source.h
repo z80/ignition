@@ -77,7 +77,7 @@ enum BodyType
 
 struct PiSourceDesc
 {
-    int   seed_;
+    Uint32   seed_;
     BodySuperType super_type_;
     BodyType type_;
 	fixed GM_;
