@@ -91,6 +91,20 @@ struct PiSourceDesc
 	fixed ice_;
 	fixed metal_;
 
+    PiSourceDesc * parent_;
+    Vector<PiSourceDesc *> children_;
+
+    // Orbit and rotation parameters.
+    fixed orb_max_,
+          orb_min_;
+    fixed eccentricity_;
+    fixed axial_tilt_;
+    fixed semimajor_axis_;
+    fixed rotation_period_;
+    fixed inclination_; // Planet rotation axis inclination.
+    fixed start_eccentric_anomaly_;
+    fixed Y_, X_, Z_; // Orbit plane orientation.
+
     PiSourceDesc();
 };
 

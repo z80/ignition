@@ -10,7 +10,7 @@
 namespace Ign
 {
 
-class PiSystem
+struct PiSystem
 {
 public:
         PiSystem( int x, int y, int z, Uint32 si )
@@ -20,14 +20,14 @@ public:
               idx(si),
               m_numStars(0),
               m_seed(0),
-              m_population(-1)
+              root_body_(nullptr)
         {}
 
         // Check that we've had our habitation status set
         const String & GetName() const { return m_name; }
         const Vector<String> & GetOtherNames() const { return m_other_names; }
         unsigned GetNumStars() const { return m_numStars; }
-        const PiSourceDesc & GetStarType( unsigned i ) const
+        const BodyType & GetStarType( unsigned i ) const
         {
                 assert( i < m_numStars );
                 return m_starType[i];
@@ -42,9 +42,10 @@ public:
         Vector<String> m_other_names;
         Vector3d m_pos;
         unsigned m_numStars;
-        PiSourceDesc m_starType[4];
+        BodyType m_starType[4];
         Uint32 m_seed;
-        fixed m_population;
+
+        PiSourceDesc * root_body_;
 };
 
 

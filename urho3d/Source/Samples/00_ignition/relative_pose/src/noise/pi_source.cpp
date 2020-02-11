@@ -49,6 +49,8 @@ PiSourceDesc::PiSourceDesc()
     volcanic_ = 0.2;
     ice_ = 0.2;
     metal_ = 0.1;
+
+    parent_ = nullptr;
 }
 
 PiBodySource::PiBodySource( const PiSourceDesc & body )
