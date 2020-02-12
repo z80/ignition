@@ -35,8 +35,8 @@ public:
 
 
 
-        const int sx, sy, sz;
-        const Uint32 idx;
+        int sx, sy, sz;
+        Uint32 idx;
 
         String m_name;
         Vector<String> m_other_names;
@@ -46,6 +46,7 @@ public:
         Uint32 m_seed;
 
         PiSourceDesc * root_body_;
+		Vector<PiSourceDesc *> stars_;
 };
 
 

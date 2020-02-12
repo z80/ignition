@@ -84,6 +84,7 @@ struct PiSourceDesc
 	fixed radius_;
 	fixed aspectRatio_;
 	fixed life_;
+	fixed atm_oxidizing_;
 	fixed gas_;
     int   average_temp_;
 	fixed liquid_;
@@ -103,7 +104,11 @@ struct PiSourceDesc
     fixed rotation_period_;
     fixed inclination_; // Orbit inclination.
     fixed start_eccentric_anomaly_;
-    fixed Y_, X_; // Orbit plane orientation.
+    Float Y_, X_; // Orbit plane orientation.
+
+	// Atmosphere paramters.
+	fixed atmos_density_;
+	Color atmos_color_;
 
     PiSourceDesc();
 };
