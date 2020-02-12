@@ -24,6 +24,10 @@ public:
     void makeStarOfType( PiSourceDesc & sbody, BodyType type, PiRandom & rand );
     void makeStarOfTypeLighterThan( PiSourceDesc & sbody, BodyType type, fixed maxMass, PiRandom & rand );
 
+    void pickPlanetType( PiSourceDesc * sbody, PiRandom & rand );
+    const PiSourceDesc * findStarAndTrueOrbitalRange( const PiSourceDesc * planet, fixed & orbMin_, fixed & orbMax_) const;
+    int calcSurfaceTemp( PiSystem * system, const PiSourceDesc * primary, fixed distToPrimary, fixed albedo, fixed greenhouse );
+
     struct StarTypeInfo {
             int mass[2]; // min,max % sol for stars, unused for planets
             int radius[2]; // min,max % sol radii for stars, % earth radii for planets

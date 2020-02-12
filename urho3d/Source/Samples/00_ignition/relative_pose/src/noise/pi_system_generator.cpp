@@ -1,6 +1,8 @@
 
 #include "pi_system_generator.h"
 #include "pi_source.h"
+#include "pi_utils.h"
+
 #define Square(x) (x*x)
 
 
@@ -172,6 +174,25 @@ const PiSystemGenerator::StarTypeInfo starTypeInfo[] = {
         { 2000000, 5000000 }, { 10000, 20000 },
         10, 24 }
 };
+
+
+
+static fixed mass_from_disk_area( fixed a, fixed b, fixed max );
+static fixed get_disc_density( PiSourceDesc * primary, fixed discMin, fixed discMax, fixed percentOfPrimaryMass );
+static inline bool test_overlap( const fixed & x1, const fixed & x2, const fixed & y1, const fixed & y2 );
+static fixed calcEnergyPerUnitAreaAtDist( fixed star_radius, int star_temp, fixed object_dist );
+
+
+
+
+
+
+
+
+
+
+
+
 
 PiSystemGenerator::PiSystemGenerator()
 {
@@ -570,7 +591,7 @@ void PiSystemGenerator::pickPlanetType( PiSourceDesc * sbody, PiRandom & rand )
     fixed greenhouse;
 
     fixed minDistToStar, maxDistToStar, averageDistToStar;
-    const PiSourceDesc * star = FindStarAndTrueOrbitalRange( sbody, minDistToStar, maxDistToStar );
+    const PiSourceDesc * star = findStarAndTrueOrbitalRange( sbody, minDistToStar, maxDistToStar );
     averageDistToStar = (minDistToStar + maxDistToStar) >> 1;
 
     /* first calculate blackbody temp (no greenhouse effect, zero albedo) */
@@ -745,9 +766,84 @@ void PiSystemGenerator::pickPlanetType( PiSourceDesc * sbody, PiRandom & rand )
     PickRings(sbody);
 }
 
+const PiSourceDesc * PiSystemGenerator::findStarAndTrueOrbitalRange( const PiSourceDesc * planet, fixed & orbMin_, fixed & orbMax_) const
+{
+    const PiSourceDesc *star = planet->parent_;
+
+    assert(star);
+
+    /* while not found star yet.. */
+    while ( star->super_type_ > SUPERTYPE_STAR)
+    {
+        planet = star;
+        star = star->parent_;
+    }
+
+    orbMin_ = planet->orb_min_;
+    orbMax_ = planet->orb_max_;
+    return star;
+}
+
+int PiSystemGenerator::calcSurfaceTemp( PiSystem * system, const PiSourceDesc * primary, fixed distToPrimary, fixed albedo, fixed greenhouse )
+{
+    // accumulator seeded with current primary
+    fixed energy_per_meter2 = calcEnergyPerUnitAreaAtDist( primary->radius_, primary->average_temp_, distToPrimary );
+    fixed dist;
+    // find the other stars which aren't our parent star
+    for (auto s : primary->GetStarSystem()->GetStars())
+    {
+        if (s != primary) {
+            //get branches from body and star to system root
+            std::vector<const SystemBody *> first_to_root;
+            std::vector<const SystemBody *> second_to_root;
+            getPathToRoot(primary, first_to_root);
+            getPathToRoot(&(*s), second_to_root);
+            std::vector<const SystemBody *>::reverse_iterator fit = first_to_root.rbegin();
+            std::vector<const SystemBody *>::reverse_iterator sit = second_to_root.rbegin();
+            while (sit != second_to_root.rend() && fit != first_to_root.rend() && (*sit) == (*fit)) //keep tracing both branches from system's root
+            { //until they diverge
+                ++sit;
+                ++fit;
+            }
+            if (sit == second_to_root.rend()) --sit;
+            if (fit == first_to_root.rend()) --fit; //oops! one of the branches ends at lca, backtrack
+
+            if ((*fit)->IsCoOrbitalWith(*sit)) //planet is around one part of coorbiting pair, star is another.
+            {
+                dist = ((*fit)->GetOrbMaxAsFixed() + (*fit)->GetOrbMinAsFixed()) >> 1; //binaries don't have fully initialized smaxes
+            } else if ((*sit)->IsCoOrbital()) //star is part of binary around which planet is (possibly indirectly) orbiting
+            {
+                bool inverted_ancestry = false;
+                for (const SystemBody *body = (*sit); body; body = body->GetParent())
+                    if (body == (*fit)) {
+                        inverted_ancestry = true; //ugly hack due to function being static taking planet's primary rather than being called from actual planet
+                        break;
+                    }
+                if (inverted_ancestry) //primary is star's ancestor! Don't try to take its orbit (could probably be a gravpoint check at this point, but paranoia)
+                {
+                    dist = distToPrimary;
+                } else {
+                    dist = ((*fit)->GetOrbMaxAsFixed() + (*fit)->GetOrbMinAsFixed()) >> 1; //simplified to planet orbiting stationary star
+                }
+            } else if ((*fit)->IsCoOrbital()) //planet is around one part of coorbiting pair, star isn't coorbiting with it
+            {
+                dist = ((*sit)->GetOrbMaxAsFixed() + (*sit)->GetOrbMinAsFixed()) >> 1; //simplified to star orbiting stationary planet
+            } else //neither is part of any binaries - hooray!
+            {
+                dist = (((*sit)->GetSemiMajorAxisAsFixed() - (*fit)->GetSemiMajorAxisAsFixed()).Abs() //avg of conjunction and opposition dist
+                           + ((*sit)->GetSemiMajorAxisAsFixed() + (*fit)->GetSemiMajorAxisAsFixed())) >>
+                    1;
+            }
+        }
+        energy_per_meter2 += calcEnergyPerUnitAreaAtDist(s->m_radius, s->m_averageTemp, dist);
+    }
+    const fixed surface_temp_pow4 = energy_per_meter2 * (1 - albedo) / (1 - greenhouse);
+    return (279 * int(isqrt(isqrt((surface_temp_pow4.v))))) >> (fixed::FRAC / 4); //multiplied by 279 to convert from Earth's temps to Kelvin
+}
+
+
 static fixed mass_from_disk_area(fixed a, fixed b, fixed max)
 {
-    PROFILE_SCOPED()
     // so, density of the disk with distance from star goes like so: 1 - x/discMax
     //
     // ---
@@ -771,21 +867,39 @@ static fixed mass_from_disk_area(fixed a, fixed b, fixed max)
         (a * a - one_over_3max * a * a * a);
 }
 
-static fixed get_disc_density(SystemBody *primary, fixed discMin, fixed discMax, fixed percentOfPrimaryMass)
+static fixed get_disc_density( PiSourceDesc * primary, fixed discMin, fixed discMax, fixed percentOfPrimaryMass )
 {
-    PROFILE_SCOPED()
-    discMax = std::max(discMax, discMin);
+    discMax = std::max( discMax, discMin );
     fixed total = mass_from_disk_area(discMin, discMax, discMax);
-    return primary->GetMassInEarths() * percentOfPrimaryMass / total;
+    return primary->GM_ * percentOfPrimaryMass / total;
 }
 
-static inline bool test_overlap(const fixed &x1, const fixed &x2, const fixed &y1, const fixed &y2)
+static inline bool test_overlap( const fixed & x1, const fixed & x2, const fixed & y1, const fixed & y2 )
 {
     return (x1 >= y1 && x1 <= y2) ||
         (x2 >= y1 && x2 <= y2) ||
         (y1 >= x1 && y1 <= x2) ||
         (y2 >= x1 && y2 <= x2);
 }
+
+/*
+ * Instead we use these butt-ugly overflow-prone spat of ejaculate:
+ */
+/*
+ * star_radius in sol radii
+ * star_temp in kelvin,
+ * object_dist in AU
+ * return energy per unit area in solar constants (1362 W/m^2 )
+ */
+static fixed calcEnergyPerUnitAreaAtDist( fixed star_radius, int star_temp, fixed object_dist )
+{
+    fixed temp = star_temp * fixed(1, 5778); //normalize to Sun's temperature
+    const fixed total_solar_emission =
+        temp * temp * temp * temp * star_radius * star_radius;
+
+    return total_solar_emission / (object_dist * object_dist); //return value in solar consts (overflow prevention)
+}
+
 
 
 
