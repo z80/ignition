@@ -67,7 +67,7 @@ const fixed PiSystemGenerator::starMetallicities[] = {
     fixed(1, 1) // SM BH	may be mining hotspots. FUN :)
 };
 
-const PiSystemGenerator::StarTypeInfo starTypeInfo[] = {
+const PiSystemGenerator::StarTypeInfo PiSystemGenerator::starTypeInfo[] = {
     { {}, {},
         0, 0 },
     { //Brown Dwarf
@@ -1073,7 +1073,7 @@ void PiSystemGenerator::pickAtmosphere( PiSourceDesc * sbody )
 	default:
 	case TYPE_PLANET_TERRESTRIAL:
 		double r = 0, g = 0, b = 0;
-		double atmo = sbody->atm_oxidizing_.ToDouble;
+		double atmo = sbody->atm_oxidizing_.ToDouble();
 		if ( sbody->gas_ > 0.001)
 		{
 			if (atmo > 0.95)
