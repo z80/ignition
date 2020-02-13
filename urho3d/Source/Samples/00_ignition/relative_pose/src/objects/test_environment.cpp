@@ -14,6 +14,9 @@
 
 #include "Notifications.h"
 
+#include "pi_system.h"
+#include "pi_system_generator.h"
+
 namespace Ign
 {
 
@@ -25,7 +28,12 @@ void TestEnvironment::RegisterComponent( Context * context )
 TestEnvironment::TestEnvironment( Context * context )
     : Environment( context )
 {
-
+    PiRandom rand;
+    rand.seed( 0 );
+    PiSystem system( 10, 10, 3, 0 );
+    PiSystemGenerator generator;
+    generator.generateStars( &system, rand );
+    generator.apply( &system, rand );
 }
 
 TestEnvironment::~TestEnvironment()
