@@ -702,17 +702,66 @@ void PiSystemGenerator::makePlanetsAround( PiSystem * system, PiSourceDesc * pri
 
 void PiSystemGenerator::makeRandomStar( PiSourceDesc * sbody, PiRandom & rand )
 {
-
+	BodyType type = BodyType( rand.Int32( TYPE_STAR_MIN, TYPE_STAR_MAX ) );
+	makeStarOfType( sbody, type, rand );
 }
 
 void PiSystemGenerator::makeStarOfType( PiSourceDesc * sbody, BodyType type, PiRandom & rand )
 {
+	sbody->type_ = type;
+	sbody->seed_ = rand.Int32();
+	sbody->radius_ = fixed( rand.Int32( starTypeInfo[type].radius[0], starTypeInfo[type].radius[1] ), 100 );
 
+	// Assign aspect ratios caused by equatorial bulges due to rotation. See terrain code for details.
+	// XXX to do: determine aspect ratio distributions for dimmer stars. Make aspect ratios consistent with rotation speeds/stability restrictions.
+	switch ( type )
+	{
+		// Assign aspect ratios (roughly) between 1.0 to 1.8 with a bias towards 1 for bright stars F, A, B ,O
+
+		// "A large fraction of hot stars are rapid rotators with surface rotational velocities
+		// of more than 100 km/s (6, 7). ." Imaging the Surface of Altair, John D. Monnier, et. al. 2007
+		// A reasonable amount of lot of stars will be assigned high aspect ratios.
+
+		// Bright stars whose equatorial to polar radius ratio (the aspect ratio) is known
+		// seem to tend to have values between 1.0 and around 1.5 (brief survey).
+		// The limiting factor preventing much higher values seems to be stability as they
+		// are rotating 80-95% of their breakup velocity.
+	case TYPE_STAR_F:
+	case TYPE_STAR_F_GIANT:
+	case TYPE_STAR_F_HYPER_GIANT:
+	case TYPE_STAR_F_SUPER_GIANT:
+	case TYPE_STAR_A:
+	case TYPE_STAR_A_GIANT:
+	case TYPE_STAR_A_HYPER_GIANT:
+	case TYPE_STAR_A_SUPER_GIANT:
+	case TYPE_STAR_B:
+	case TYPE_STAR_B_GIANT:
+	case TYPE_STAR_B_SUPER_GIANT:
+	case TYPE_STAR_B_WF:
+	case TYPE_STAR_O:
+	case TYPE_STAR_O_GIANT:
+	case TYPE_STAR_O_HYPER_GIANT:
+	case TYPE_STAR_O_SUPER_GIANT:
+	case TYPE_STAR_O_WF:
+	{
+		fixed rnd = rand.Fixed();
+		sbody->aspectRatio_ = fixed(1, 1) + fixed(8, 10) * rnd * rnd;
+		break;
+	}
+									 // aspect ratio is initialised to 1.0 for other stars currently
+	default:
+		break;
+	}
+	sbody->GM_ = fixed( rand.Int32( starTypeInfo[type].mass[0], starTypeInfo[type].mass[1] ), 100 );
+	sbody->average_temp_ = rand.Int32( starTypeInfo[type].tempMin, starTypeInfo[type].tempMax );
 }
 
 void PiSystemGenerator::makeStarOfTypeLighterThan( PiSourceDesc * sbody, BodyType type, fixed maxMass, PiRandom & rand )
 {
-
+	int tries = 16;
+	do {
+		makeStarOfType( sbody, type, rand );
+	} while ( ( sbody->GM_ > maxMass ) && (--tries) );
 }
 
 /*
