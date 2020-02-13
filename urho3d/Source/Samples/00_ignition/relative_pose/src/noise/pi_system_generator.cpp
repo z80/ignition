@@ -232,6 +232,7 @@ void PiSystemGenerator::apply( PiSystem * system, PiRandom & rand )
 		makeStarOfType( star[0], type, rand );
 		//system->SetRootBody( star[0] );
 		//system->SetNumStars( 1 );
+		system->root_body_ = star[0];
 	}
 	/*
 	else {
@@ -346,11 +347,6 @@ void PiSystemGenerator::apply( PiSystem * system, PiRandom & rand )
 
 void PiSystemGenerator::generateStars( PiSystem * system, PiRandom & rand )
 {
-	system->sx = 10;
-	system->sy = 10;
-	system->sz = 2;
-	system->idx = 3;
-
     PiSystem & s = *system;
 
 
@@ -631,6 +627,7 @@ void PiSystemGenerator::makePlanetsAround( PiSystem * system, PiSourceDesc * pri
         planet->eccentricity_ = ecc;
         planet->axial_tilt_ = fixed(100, 157) * rand.NFixed(2);
         planet->semimajor_axis_ = semiMajorAxis;
+		planet->super_type_ = SUPERTYPE_ROCKY_PLANET;
         planet->type_ = TYPE_PLANET_TERRESTRIAL;
         planet->seed_ = rand.Int32();
         planet->parent_ = primary;
@@ -708,6 +705,7 @@ void PiSystemGenerator::makeRandomStar( PiSourceDesc * sbody, PiRandom & rand )
 
 void PiSystemGenerator::makeStarOfType( PiSourceDesc * sbody, BodyType type, PiRandom & rand )
 {
+	sbody->super_type_ = SUPERTYPE_STAR;
 	sbody->type_ = type;
 	sbody->seed_ = rand.Int32();
 	sbody->radius_ = fixed( rand.Int32( starTypeInfo[type].radius[0], starTypeInfo[type].radius[1] ), 100 );
