@@ -379,6 +379,10 @@ void PiSystemGenerator::generateStars( PiSystem * system, PiRandom & rand )
     }
 
 
+	// At the moment enforce number of start to be 1.
+	// I didn't port rotation around barycenter yet.
+	s.m_numStars = 1;
+
 
     if (freq > Square(10))
     {

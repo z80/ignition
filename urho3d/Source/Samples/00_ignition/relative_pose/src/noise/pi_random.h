@@ -23,7 +23,9 @@
 //#define PCG_LITTLE_ENDIAN 1
 //#include "pcg_random.hpp"
 
-#include "grand.h"
+//#include "grand.h"
+
+#include "pcg_random.h"
 
 #include "data_types.h"
 using namespace Ign;
@@ -32,7 +34,7 @@ using namespace Ign;
 class PiRandom //: public RefCounted 
 {
 	//pcg32 mPCG;
-	GRand mPCG;
+	PcgRandom mPCG;
 
 	// For storing second rand from Normal
 	bool cached;
@@ -69,22 +71,35 @@ public:
 	// Seed the RNG using the hash of the given array of seeds.
 	void seed(const Uint32 *const seeds, size_t length)
 	{
-		const Uint32 hash = 0; //lookup3_hashword(seeds, length, 0);
+		//const Uint32 hash = 0; //lookup3_hashword(seeds, length, 0);
 		//mPCG.seed(hash);
-		mPCG.seed(hash);
+		//mPCG.seed(hash);
+		uint64_t s = 0;
+		for ( int i=0; i<length; i++ )
+		{
+			const uint64_t sd = static_cast<uint64_t>( seeds[i] );
+			s = (~s << 1) | sd;
+		}
+		mPCG.seed( s );
 		cached = false;
 	}
 
 	// Seed using an array of 64-bit integers
 	void seed(const Uint64 *const seeds, size_t length)
 	{
-		seed(reinterpret_cast<const Uint32 *const>(seeds), length * 2);
+		uint64_t s = 0;
+		for ( int i=0; i<length; i++ )
+		{
+			const uint64_t sd = static_cast<uint64_t>( seeds[i] );
+			s = (~s << 1) | sd;
+		}
+		mPCG.seed( s );
 	}
 
 	// Seed using a single 32-bit integer
 	void seed(const Uint32 value)
 	{
-		seed(&value, 1);
+		mPCG.seed( value );
 	}
 
 	//
@@ -99,7 +114,7 @@ public:
 	// interval [0, 2**32)
 	inline Uint32 Int32()
 	{
-		return mPCG.i( 0x7FFFFFFF );
+		return mPCG.uint( 0x7FFFFFFF );
 	}
 
 	// Pick an integer like you're rolling a "choices" sided die,
@@ -107,7 +122,9 @@ public:
 	// interval [0, choices)
 	inline Uint32 Int32(const int choices)
 	{
-		return Int32() % choices;
+		//return Int32() % choices;
+		const Uint32 res = mPCG.uint( choices );
+		return res;
 	}
 
 	// Pick a number between min and max, inclusive.
@@ -139,7 +156,9 @@ public:
 	// This method consumes two 32-bit numbers from the sequence.
 	inline double Double53()
 	{
-		return (double(Int32() >> 5) * 67108864. + double(Int32() >> 6)) * (1. / 9007199254740992.);
+		const Uint32 v1 = Int32();
+		const Uint32 v2 = Int32();
+		return (double(v1 >> 5) * 67108864. + double(v2 >> 6)) * (1. / 9007199254740992.);
 	}
 
 	// Pick a number in the half-open interval [min, limit)

@@ -29,7 +29,7 @@ TestEnvironment::TestEnvironment( Context * context )
     : Environment( context )
 {
     PiRandom rand;
-    rand.seed( 0 );
+    //rand.seed( 0 );
     PiSystem system( 10, 10, 1, 0 );
     PiSystemGenerator generator;
     generator.generateStars( &system, rand );
