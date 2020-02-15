@@ -18,7 +18,7 @@ public:
 
     void apply( PiSystem * system, PiRandom & rand );
 
-    void generateStars( PiSystem * system, PiRandom & rand );
+    int  generateStars( PiSystem * system, BodyType * starTypes, PiRandom & rand );
     void makePlanetsAround( PiSystem * system, PiSourceDesc * primary, PiRandom & rand );
     void makeRandomStar( PiSourceDesc * sbody, PiRandom & rand );
     void makeStarOfType( PiSourceDesc * sbody, BodyType type, PiRandom & rand );

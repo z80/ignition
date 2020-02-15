@@ -26,13 +26,30 @@ public:
         // Check that we've had our habitation status set
         const String & GetName() const { return m_name; }
         const Vector<String> & GetOtherNames() const { return m_other_names; }
+
+		/*
         unsigned GetNumStars() const { return m_numStars; }
         const BodyType & GetStarType( unsigned i ) const
         {
-                assert( i < m_numStars );
-                return m_starType[i];
+            assert( i < m_numStars );
+            return m_starType[i];
         }
-
+		*/
+		unsigned GetNumStars() const
+		{
+			const unsigned qty = star_inds_.Size();
+			return qty;
+		}
+		const BodyType & GetStarType( unsigned i ) const
+		{
+			//assert( i < m_numStars );
+			//return m_starType[i];
+			unsigned qty = star_inds_.Size();
+			assert( i < qty );
+			const unsigned starInd = star_inds_[i];
+			const PiSourceDesc & s = bodies_[starInd];
+			return s.type_;
+		}
 
 
 		//Uint32 m_seed;
@@ -47,6 +64,11 @@ public:
 
         PiSourceDesc * root_body_;
 		Vector<PiSourceDesc *> stars_;
+
+		// My reimplementation without pointers.
+		Vector<PiSourceDesc> bodies_;
+		int                  root_body_ind_;
+		Vector<int>          star_inds_;
 };
 
 

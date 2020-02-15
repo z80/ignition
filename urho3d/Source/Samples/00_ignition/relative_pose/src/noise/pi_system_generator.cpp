@@ -214,6 +214,9 @@ void PiSystemGenerator::apply( PiSystem * system, PiRandom & rand )
 	//RefCountedPtr<const Sector> sec = galaxy->GetSector(system->GetPath());
 	//const Sector::System &secSys = sec->m_systems[system->GetPath().systemIndex];
 
+	BodyType starTypes[4];
+	generateStars( &system, starTypes, rand );
+
 
 	PiSourceDesc * star[4];
 	PiSourceDesc * centGrav1(0), *centGrav2(0);
@@ -345,7 +348,7 @@ void PiSystemGenerator::apply( PiSystem * system, PiRandom & rand )
 //#endif /* DEBUG_DUMP */
 }
 
-void PiSystemGenerator::generateStars( PiSystem * system, PiRandom & rand )
+int PiSystemGenerator::generateStars( PiSystem * system, BodyType * starTypes, PiRandom & rand )
 {
     PiSystem & s = *system;
 
