@@ -50,8 +50,8 @@ PiSourceDesc::PiSourceDesc()
     ice_ = 0.2;
     metal_ = 0.1;
 
-    parent_ = nullptr;
-
+    //parent_ = nullptr;
+	parent_ind_ = -1;
 
     orb_max_ = 0;
     orb_min_ = 0;

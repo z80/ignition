@@ -20,7 +20,8 @@ public:
               idx(si),
               m_numStars(0),
               //m_seed(0),
-              root_body_(nullptr)
+              //root_body_(nullptr), 
+			  root_body_ind_(-1)
         {}
 
         // Check that we've had our habitation status set
@@ -62,8 +63,8 @@ public:
         unsigned m_numStars;
         BodyType m_starType[4];
 
-        PiSourceDesc * root_body_;
-		Vector<PiSourceDesc *> stars_;
+        //PiSourceDesc * root_body_;
+		//Vector<PiSourceDesc *> stars_;
 
 		// My reimplementation without pointers.
 		Vector<PiSourceDesc> bodies_;
