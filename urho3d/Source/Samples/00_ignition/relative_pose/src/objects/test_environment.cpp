@@ -28,6 +28,29 @@ void TestEnvironment::RegisterComponent( Context * context )
 TestEnvironment::TestEnvironment( Context * context )
     : Environment( context )
 {
+	{
+		URHO3D_LOGINFO( "Seed random numbers" );
+
+		PcgRandom r;
+		const uint64_t st = r.state();
+		for ( int i=0; i<10; i++ )
+		{
+			uint32_t number = r.uint() % 10;
+			URHO3D_LOGINFOF( "Random number: %i", number );
+		}
+
+		URHO3D_LOGINFO( "Seed once again:" );
+
+		r.setState( st );
+		for ( int i=0; i<10; i++ )
+		{
+			uint32_t number = r.uint() % 10;
+			URHO3D_LOGINFOF( "Random number: %i", number );
+		}
+	}
+
+
+
     PiRandom rand;
     //rand.seed( 0 );
     PiSystem system( 10, 10, 1, 0 );
