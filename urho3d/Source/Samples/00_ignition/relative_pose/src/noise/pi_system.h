@@ -19,7 +19,7 @@ public:
               sz(z),
               idx(si),
               m_numStars(0),
-              m_seed(0),
+              //m_seed(0),
               root_body_(nullptr)
         {}
 
@@ -35,7 +35,8 @@ public:
 
 
 
-        int sx, sy, sz;
+		//Uint32 m_seed;
+		int sx, sy, sz;
         Uint32 idx;
 
         String m_name;
@@ -43,7 +44,6 @@ public:
         Vector3d m_pos;
         unsigned m_numStars;
         BodyType m_starType[4];
-        Uint32 m_seed;
 
         PiSourceDesc * root_body_;
 		Vector<PiSourceDesc *> stars_;
