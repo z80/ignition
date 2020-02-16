@@ -21,6 +21,7 @@ public:
     ~SphereDynamic();
 
     void setRadius( Float r );
+    void setHeightSource( HeightSource * src );
 
     void subdriveLevelsInit() override;
 protected:

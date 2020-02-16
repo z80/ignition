@@ -28,6 +28,11 @@ void SphereDynamic::setRadius( Float r )
     R_ = r;
 }
 
+void SphereDynamic::setHeightSource( HeightSource * src )
+{
+    height_source_ = src;
+}
+
 void SphereDynamic::subdriveLevelsInit()
 {
     cubesphereCollision_.setR( R_ );
