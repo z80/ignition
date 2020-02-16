@@ -28,6 +28,9 @@ static const Float G = 6.67428e-11;
 static const Float EARTH_ATMOSPHERE_SURFACE_DENSITY = 1.225;
 static const Float GAS_CONSTANT_R = 8.3144621;
 
+#ifdef M_PI
+	#undef M_PI
+#endif
 static const Float M_PI = 3.1415926535897932384636433832795;
 
 }

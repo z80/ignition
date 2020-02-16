@@ -2,6 +2,7 @@
 #define NOMINMAX
 
 #include "pi_source.h"
+#include "pi_consts.h"
 #include <algorithm>
 
 static  fixed Clamp( fixed v, Float vmin, Float vmax )
@@ -97,7 +98,7 @@ PiBodySource::PiBodySource( const PiSourceDesc & body )
 	m_invMaxHeight = 1.0 / m_maxHeight;
 	m_planetRadius = rad;
 	m_invPlanetRadius = 1.0 / rad;
-	m_planetEarthRadii = rad / 1.0; //EARTH_RADIUS;
+	m_planetEarthRadii = rad / EARTH_RADIUS;
 
 	// Pick some colors, mainly reds and greens
 	for (int i = 0; i < int(COUNTOF(m_entropy)); i++)
