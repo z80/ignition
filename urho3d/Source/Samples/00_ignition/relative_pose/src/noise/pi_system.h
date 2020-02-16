@@ -13,20 +13,20 @@ namespace Ign
 struct PiSystem
 {
 public:
-        PiSystem( int x, int y, int z, Uint32 si )
+        PiSystem( int x, int y, int z )
             : sx(x),
               sy(y),
               sz(z),
-              idx(si),
-              m_numStars(0),
+              //idx(si),
+              //m_numStars(0),
               //m_seed(0),
               //root_body_(nullptr), 
 			  root_body_ind_(-1)
         {}
 
         // Check that we've had our habitation status set
-        const String & GetName() const { return m_name; }
-        const Vector<String> & GetOtherNames() const { return m_other_names; }
+        //const String & GetName() const { return m_name; }
+        //const Vector<String> & GetOtherNames() const { return m_other_names; }
 
 		/*
         unsigned GetNumStars() const { return m_numStars; }
@@ -55,13 +55,13 @@ public:
 
 		//Uint32 m_seed;
 		int sx, sy, sz;
-        Uint32 idx;
+        //Uint32 idx;
 
-        String m_name;
-        Vector<String> m_other_names;
-        Vector3d m_pos;
-        unsigned m_numStars;
-        BodyType m_starType[4];
+        //String m_name;
+        //Vector<String> m_other_names;
+        //Vector3d m_pos;
+        //unsigned m_numStars;
+        //BodyType m_starType[4];
 
         //PiSourceDesc * root_body_;
 		//Vector<PiSourceDesc *> stars_;

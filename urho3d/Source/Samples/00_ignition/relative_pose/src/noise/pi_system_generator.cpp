@@ -493,14 +493,15 @@ int PiSystemGenerator::generateStars( PiSystem * system, BodyType * starTypes, P
     if ( starsQty > 1)
     {
         starTypes[1] = BodyType( rand.Int32( TYPE_STAR_MIN, starTypes[0] ) );
-        if (s.m_numStars > 2)
+        if ( starsQty > 2 )
         {
             starTypes[2] = BodyType( rand.Int32( TYPE_STAR_MIN, starTypes[0] ) );
             starTypes[3] = BodyType( rand.Int32( TYPE_STAR_MIN, starTypes[2] ) );
         }
     }
 
-    if ((starTypes[0] <= TYPE_STAR_A) && (rand.Int32(10) == 0))
+	const Uint32 rand10 = rand.Int32( 10 );
+    if ( ( starTypes[0] <= TYPE_STAR_A ) && ( rand10 == 0 ) )
     {
         // make primary a giant. never more than one giant in a system
         if (freq > Square(10))
