@@ -775,7 +775,7 @@ void PiSystemGenerator::makeStarOfType( PiSourceDesc & sbody, BodyType type, PiR
 	}
 	// aspect ratio is initialised to 1.0 for other stars currently
 	default:
-        .aspectRatio_ = fixed(1, 1);
+        sbody.aspectRatio_ = fixed(1, 1);
 		break;
 	}
 	sbody.GM_ = fixed( rand.Int32( starTypeInfo[type].mass[0], starTypeInfo[type].mass[1] ), 100 );
