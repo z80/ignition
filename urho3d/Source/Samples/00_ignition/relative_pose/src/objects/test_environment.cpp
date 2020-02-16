@@ -57,6 +57,8 @@ TestEnvironment::TestEnvironment( Context * context )
     PiSystemGenerator generator;
     //generator.generateStars( &system, rand );
     generator.apply( &system, rand );
+
+	system.debugDump();
 }
 
 TestEnvironment::~TestEnvironment()

@@ -52,6 +52,9 @@ public:
 			return s.type_;
 		}
 
+		void debugDump();
+		void dumpBody( const String & spacing, const PiSourceDesc & sbody, unsigned bodyInd );
+
 
 		//Uint32 m_seed;
 		int sx, sy, sz;
