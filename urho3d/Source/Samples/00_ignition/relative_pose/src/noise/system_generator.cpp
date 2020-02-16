@@ -1,7 +1,11 @@
 
 #include "system_generator.h"
 #include "pi_system_generator.h"
+#include "pi_source.h"
 #include "pi_consts.h"
+
+
+#include "sphere_dynamic.h"
 
 namespace Ign
 {
@@ -14,17 +18,12 @@ SystemGenerator::~SystemGenerator()
 {
 }
 
-void SystemGenerator::generate( Context * context )
+void SystemGenerator::generate( Scene * scene )
 {
 	PiSystem s( 10, 2, 1 );
 	generateSystem( s );
-	createBodies( context, s );
 
-	const unsigned qty = s.bodies_.Size();
-	for ( unsigned i=0; i<qty; i++ )
-	{
-		createBody( context, s, i );
-	}
+    createBody( scene, nullptr, s, s.root_body_ind_ );
 }
 
 void SystemGenerator::generateSystem( PiSystem & s )
@@ -35,13 +34,35 @@ void SystemGenerator::generateSystem( PiSystem & s )
 	generator.apply( &s, rand );
 }
 
-void SystemGenerator::createBodies( Context * context, PiSystem & s )
+void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s, int bodyIndex )
 {
+    const PiSourceDesc & sbody = s.bodies_[ bodyIndex ];
+    
+    PiBodySource * src = nullptr;
+    if ( sbody.super_type_ == SUPERTYPE_STAR )
+        src = PiBodySource::InstanceStar( sbody );
+    else
+        src = PiBodySource::InstanceTerrain( sbody );
 
-}
+    SphereDynamic * sd = scene->CreateComponent<SphereDynamic>( LOCAL );
+    const Float R = sbody.radius_.ToDouble();
+    sd->setRadius( R );
 
-void SystemGenerator::createBody( Context * context, PiSystem & s, int bodyIndex )
-{
+    static Float at = 0.0;
+    if ( parent )
+    {
+        //sd->setParent( parent );
+    }
+    sd->setR( Vector3d( at, 0.0, 0.0 ) );
+    at += 20.0;
+
+
+    const unsigned qty = sbody.child_inds_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        const int childIndex = sbody.child_inds_[i];
+        createBody( scene, sd, s, childIndex );
+    }
 }
 
 }

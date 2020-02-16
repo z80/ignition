@@ -16,6 +16,7 @@
 
 #include "pi_system.h"
 #include "pi_system_generator.h"
+#include "system_generator.h"
 
 namespace Ign
 {
@@ -28,37 +29,6 @@ void TestEnvironment::RegisterComponent( Context * context )
 TestEnvironment::TestEnvironment( Context * context )
     : Environment( context )
 {
-	{
-		URHO3D_LOGINFO( "Seed random numbers" );
-
-		PcgRandom r;
-		const uint64_t st = r.state();
-		for ( int i=0; i<10; i++ )
-		{
-			uint32_t number = r.uint() % 10;
-			URHO3D_LOGINFOF( "Random number: %i", number );
-		}
-
-		URHO3D_LOGINFO( "Seed once again:" );
-
-		r.setState( st );
-		for ( int i=0; i<10; i++ )
-		{
-			uint32_t number = r.uint() % 10;
-			URHO3D_LOGINFOF( "Random number: %i", number );
-		}
-	}
-
-
-
-    PiRandom rand;
-    //rand.seed( 0 );
-    PiSystem system( 10, 10, 1 );
-    PiSystemGenerator generator;
-    //generator.generateStars( &system, rand );
-    generator.apply( &system, rand );
-
-	system.debugDump();
 }
 
 TestEnvironment::~TestEnvironment()
@@ -130,6 +100,13 @@ void TestEnvironment::CreateReplicatedContentServer()
             ip = s->CreateComponent<IcoPlanet>();
             ip->setParent( of2 );
             ip->setR( Vector3d::ZERO );
+        }
+
+        // Create generated system.
+        {
+            PiRandom rand;
+            SystemGenerator generator;
+            generator.generate( s );
         }
     }
 }

@@ -18,11 +18,10 @@ public:
 	SystemGenerator();
 	~SystemGenerator();
 
-	void generate( Context * context );
+	void generate( Scene * scene );
 
 	void generateSystem( PiSystem & s );
-	void createBodies( Context * context, PiSystem & s );
-	void createBody( Context * context, PiSystem & s, int bodyIndex );
+	void createBody( Scene * scene, RefFrame * parent, PiSystem & s, int bodyIndex );
 };
 
 }
