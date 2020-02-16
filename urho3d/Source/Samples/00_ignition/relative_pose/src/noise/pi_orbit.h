@@ -4,66 +4,70 @@
 #ifndef ORBIT_H
 #define ORBIT_H
 
-#include "libs.h"
-#include "matrix3x3.h"
-#include "vector3.h"
+#include "matrix3d.h"
+#include "Vector3d.h"
+
+namespace Ign
+{
 
 class Orbit {
 public:
 	// utility functions for simple calculations
-	static double OrbitalPeriod(double semiMajorAxis, double centralMass);
-	static double OrbitalPeriodTwoBody(double semiMajorAxis, double totalMass, double bodyMass);
+	static Float OrbitalPeriod(Float semiMajorAxis, Float centralMass);
+	static Float OrbitalPeriodTwoBody(Float semiMajorAxis, Float totalMass, Float bodyMass);
 
 	// note: the resulting Orbit is at the given position at t=0
-	static Orbit FromBodyState(const vector3d &position, const vector3d &velocity, double central_mass);
+	static Orbit FromBodyState(const Vector3d &position, const Vector3d &velocity, Float central_mass);
 
 	Orbit() :
 		m_eccentricity(0.0),
 		m_semiMajorAxis(0.0),
 		m_orbitalPhaseAtStart(0.0),
 		m_velocityAreaPerSecond(0.0),
-		m_orient(matrix3x3d::Identity())
+		m_orient(Matrix3d::IDENTITY)
 	{}
 
-	void SetShapeAroundBarycentre(double semiMajorAxis, double totalMass, double bodyMass, double eccentricity);
-	void SetShapeAroundPrimary(double semiMajorAxis, double totalMass, double eccentricity);
-	void SetPlane(const matrix3x3d &orient)
+	void SetShapeAroundBarycentre(Float semiMajorAxis, Float totalMass, Float bodyMass, Float eccentricity);
+	void SetShapeAroundPrimary(Float semiMajorAxis, Float totalMass, Float eccentricity);
+	void SetPlane(const Matrix3d &orient)
 	{
 		m_orient = orient;
-		assert(!std::isnan(m_orient[0]) && !std::isnan(m_orient[1]) && !std::isnan(m_orient[2]));
-		assert(!std::isnan(m_orient[3]) && !std::isnan(m_orient[4]) && !std::isnan(m_orient[5]));
-		assert(!std::isnan(m_orient[6]) && !std::isnan(m_orient[7]) && !std::isnan(m_orient[8]));
+		assert(!std::isnan(m_orient.m00_) && !std::isnan(m_orient.m01_) && !std::isnan(m_orient.m02_));
+		assert(!std::isnan(m_orient.m10_) && !std::isnan(m_orient.m11_) && !std::isnan(m_orient.m12_));
+		assert(!std::isnan(m_orient.m20_) && !std::isnan(m_orient.m21_) && !std::isnan(m_orient.m22_));
 	}
-	void SetPhase(double orbitalPhaseAtStart) { m_orbitalPhaseAtStart = orbitalPhaseAtStart; }
+	void SetPhase(Float orbitalPhaseAtStart) { m_orbitalPhaseAtStart = orbitalPhaseAtStart; }
 
-	vector3d OrbitalPosAtTime(double t) const;
-	double OrbitalTimeAtPos(const vector3d &pos, double centralMass) const;
-	vector3d OrbitalVelocityAtTime(double totalMass, double t) const;
+	Vector3d OrbitalPosAtTime(Float t) const;
+	Float OrbitalTimeAtPos(const Vector3d &pos, Float centralMass) const;
+	Vector3d OrbitalVelocityAtTime(Float totalMass, Float t) const;
 
 	// 0.0 <= t <= 1.0. Not for finding orbital pos
-	vector3d EvenSpacedPosTrajectory(double t, double timeOffset = 0) const;
+	Vector3d EvenSpacedPosTrajectory(Float t, Float timeOffset = 0) const;
 
-	double Period() const;
-	vector3d Apogeum() const;
-	vector3d Perigeum() const;
+	Float Period() const;
+	Vector3d Apogeum() const;
+	Vector3d Perigeum() const;
 
 	// basic accessors
-	double GetEccentricity() const { return m_eccentricity; }
-	double GetSemiMajorAxis() const { return m_semiMajorAxis; }
-	double GetOrbitalPhaseAtStart() const { return m_orbitalPhaseAtStart; }
-	const matrix3x3d &GetPlane() const { return m_orient; }
+	Float GetEccentricity() const { return m_eccentricity; }
+	Float GetSemiMajorAxis() const { return m_semiMajorAxis; }
+	Float GetOrbitalPhaseAtStart() const { return m_orbitalPhaseAtStart; }
+	const Matrix3d &GetPlane() const { return m_orient; }
 
 private:
-	double TrueAnomalyFromMeanAnomaly(double MeanAnomaly) const;
-	double MeanAnomalyFromTrueAnomaly(double trueAnomaly) const;
-	double MeanAnomalyAtTime(double time) const;
+	Float TrueAnomalyFromMeanAnomaly(Float MeanAnomaly) const;
+	Float MeanAnomalyFromTrueAnomaly(Float trueAnomaly) const;
+	Float MeanAnomalyAtTime(Float time) const;
 
-	double m_eccentricity;
-	double m_semiMajorAxis;
-	double m_orbitalPhaseAtStart; // 0 to 2 pi radians
+	Float m_eccentricity;
+	Float m_semiMajorAxis;
+	Float m_orbitalPhaseAtStart; // 0 to 2 pi radians
 	/* dup " " --------------------------------------- */
-	double m_velocityAreaPerSecond; // seconds
-	matrix3x3d m_orient;
+	Float m_velocityAreaPerSecond; // seconds
+	Matrix3d m_orient;
 };
+
+}
 
 #endif
