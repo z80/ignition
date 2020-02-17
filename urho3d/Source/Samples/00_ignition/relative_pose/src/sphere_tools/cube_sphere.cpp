@@ -114,6 +114,7 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
     const Vector3d n = f->normal( s );
     const unsigned ptsQty = ptsFlat_.Size();
     const unsigned levelsQty = levelsUnit_.Size();
+    const unsigned lastLevelInd = levelsQty-1;
     for ( unsigned i=0; i<ptsQty; i++ )
     {
         const Vector3d & a = ptsFlat_[i];
@@ -123,7 +124,7 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
         for ( unsigned j=0; j<levelsQty; j++ )
         {
             const Level & lvl = levelsUnit_[j];
-            const bool inside = f->inside( s, a, n, lvl.dist );
+            const bool inside = (j == lastLevelInd) || f->inside( s, a, n, lvl.dist );
             if ( inside )
             {
                 if ( sz > lvl.sz )

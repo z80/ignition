@@ -179,7 +179,7 @@ void SphereItem::regenerateMeshVisual()
     ResourceCache * cache = GetSubsystem<ResourceCache>();
     Material * m = cache->GetResource<Material>("Ign/Materials/VertexColor.xml");
     //Material * m = cache->GetResource<Material>("Materials/Stone.xml");
-    m->SetFillMode( FILL_WIREFRAME );
+    //m->SetFillMode( FILL_WIREFRAME );
     cg->SetMaterial( m );
     cg->SetCastShadows( true );
     cg->SetDynamic( true );

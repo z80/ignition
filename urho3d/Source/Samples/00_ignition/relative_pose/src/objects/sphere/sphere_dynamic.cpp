@@ -44,9 +44,8 @@ void SphereDynamic::subdriveLevelsInit()
     subdriveSourceCollision_.addLevel( 5.5, 18.0 );
 
     subdriveSourceVisual_.clearLevels();
-    subdriveSourceVisual_.addLevel( 0.2, 2.0 );
-    //subdriveSourceVisual_.addLevel( 1.5, 8.0 );
-    subdriveSourceVisual_.addLevel( 50.5, 18.0 );
+    subdriveSourceVisual_.addLevel( 0.25, 6.0 );
+    subdriveSourceVisual_.addLevel( 1.5, 18.0 );
 }
 
 void SphereDynamic::applySourceCollision( Cubesphere & cs )
