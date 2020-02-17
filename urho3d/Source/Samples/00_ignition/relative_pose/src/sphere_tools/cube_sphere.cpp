@@ -62,8 +62,8 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts 
 
     // Sort and normalize all levels.
     sortLevels( s );
-    const Level lvl = levels_[0];
-    const Float d = lvl.dist * 0.5 / s->R();
+    const Level lvl = levelsUnit_[0];
+    const Float d = lvl.dist * 0.5;
 
 
     // Check all distances. And resubdrive if shifter half the finest distance.
@@ -113,7 +113,7 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
     const Float sz = f->size( s );
     const Vector3d n = f->normal( s );
     const unsigned ptsQty = ptsFlat_.Size();
-    const unsigned levelsQty = levels_.Size();
+    const unsigned levelsQty = levelsUnit_.Size();
     for ( unsigned i=0; i<ptsQty; i++ )
     {
         const Vector3d & a = ptsFlat_[i];
@@ -122,7 +122,7 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
         //    continue;
         for ( unsigned j=0; j<levelsQty; j++ )
         {
-            const Level & lvl = levels_[j];
+            const Level & lvl = levelsUnit_[j];
             const bool inside = f->inside( s, a, n, lvl.dist );
             if ( inside )
             {
@@ -920,9 +920,14 @@ void Cubesphere::flattenPts( const Vector<Vector3d> & pts, Vector<Vector3d> & pt
     for ( unsigned i=0; i<ptsQty; i++ )
     {
         Vector3d & pt3 = ptsFlat[i];
+        // Next 3 lines protect from zero length points.
+        const Float pt3Len = pt3.Length();
+        if ( pt3Len < 0.1 )
+            pt3.x_ = 1.0;
         // Point must be normalized.
         pt3.Normalize();
-        for ( int j=0; j<6; j++ )
+
+        /*for ( int j=0; j<6; j++ )
         {
             const Vector3d & n = norms[j];
             Vector3d proj;
@@ -932,7 +937,16 @@ void Cubesphere::flattenPts( const Vector<Vector3d> & pts, Vector<Vector3d> & pt
                 pt3 = proj;
                 break;
             }
-        }
+        }*/
+        const Float absX = std::abs( pt3.x_ );
+        const Float absY = std::abs( pt3.y_ );
+        const Float absZ = std::abs( pt3.z_ );
+        if ( ( absX >= absY ) && ( absX >= absZ ) )
+            pt3 = pt3 / absX;
+        else if ( ( absY >= absX ) && ( absY >= absZ ) )
+            pt3 = pt3 / absY;
+        else
+            pt3 = pt3 / absZ;
     }
 }
 
