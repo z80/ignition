@@ -47,7 +47,7 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
     SphereDynamic * sd = scene->CreateComponent<SphereDynamic>( LOCAL );
     sd->setHeightSource( src );
     const Float R = sbody.radius_.ToDouble();
-    sd->setRadius( R );
+    sd->setRadius( R * 10.0 );
     sd->subdriveLevelsInit();
 
     static Float at = 0.0;

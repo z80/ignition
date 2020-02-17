@@ -113,6 +113,8 @@ struct PiSourceDesc
 	Color atmos_color_;
 
     PiSourceDesc();
+    Float mass() const;
+    Float radius() const;
 };
 
 class PiBodySource: public HeightSource

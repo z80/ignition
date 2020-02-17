@@ -212,6 +212,16 @@ PiSystemGenerator::~PiSystemGenerator()
 void PiSystemGenerator::apply( PiSystem * system, PiRandom & rand )
 {
 	BodyType starTypes[4];
+    uint32_t seed = 0;
+    for ( ;; )
+    {
+        rand.seed( seed );
+        generateStars( system, starTypes, rand );
+        if ( starTypes[0] == TYPE_STAR_G )
+            break;
+        seed += 1;
+    }
+    rand.seed( seed );
 	const int numStars = generateStars( system, starTypes, rand );
 
 

@@ -84,9 +84,8 @@ void TestEnvironment::CreateReplicatedContentServer()
         ip->setParent( rf );
         ip->setR( Vector3d::ZERO );
 
-        SphereExample * se = s->CreateComponent<SphereExample>();
-        //se->setParent( rf );
-        se->setR( Vector3d( 10.0, 0.0, 0.0 ) );
+        //SphereExample * se = s->CreateComponent<SphereExample>();
+        //se->setR( Vector3d( 10.0, 0.0, 0.0 ) );
 
         // Create orbiting element.
         {
@@ -139,14 +138,15 @@ void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )
                 continue;
 
             camera->setParent( si );
+            break;
         }
     }
 
     // Parent surfaceCollisionMesh to CameraFrame
     // to be able to change its position on demand.
-    SurfaceCollisionMesh * scm = s->CreateComponent<SurfaceCollisionMesh>();
-    scm->setParent( camera );
-    scm->setR( Vector3d::ZERO );
+    //SurfaceCollisionMesh * scm = s->CreateComponent<SurfaceCollisionMesh>();
+    //scm->setParent( camera );
+    //scm->setR( Vector3d::ZERO );
 
 }
 
