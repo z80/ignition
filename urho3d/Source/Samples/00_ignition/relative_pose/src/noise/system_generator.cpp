@@ -47,7 +47,7 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
     SphereDynamic * sd = scene->CreateComponent<SphereDynamic>( LOCAL );
     sd->setHeightSource( src );
     const Float R = sbody.radius_.ToDouble();
-    sd->setRadius( R * 10.0 );
+    sd->setRadius( 10.0 );
     sd->subdriveLevelsInit();
 
     static Float at = 0.0;
@@ -58,7 +58,8 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
     sd->setR( Vector3d( at, 0.0, 0.0 ) );
     at += 20.0;
 
-    return;
+    if ( at > 100.0 )
+        return;
 
 
     const unsigned qty = sbody.child_inds_.Size();
