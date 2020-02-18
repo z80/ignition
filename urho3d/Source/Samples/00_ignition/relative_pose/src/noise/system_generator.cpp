@@ -28,6 +28,35 @@ void SystemGenerator::generate( Scene * scene )
             v = v + 0;
         }
     }
+    {
+        uint32_t seed = 0;
+        for ( ;; )
+        {
+            PiRandom rand( seed );
+            PiSystem s( 10, 2, 1 );
+            generateSystem( s );
+            bool success = false;
+            if ( s.bodies_[0].type_ == TYPE_STAR_G )
+            {
+                // Check if there is Earth-like planet.
+                const unsigned qty = s.bodies_.Size();
+                for ( unsigned i=1; i<qty; i++ )
+                {
+                    if ( s.bodies_[i].type_ == TYPE_PLANET_TERRESTRIAL )
+                    {
+                        success = true;
+                        break;
+                    }
+                }
+            }
+            if ( success )
+                break;
+            seed += 1;
+        }
+    }
+
+
+
 	PiSystem s( 10, 2, 1 );
 	generateSystem( s );
 
