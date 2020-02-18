@@ -43,6 +43,16 @@ void PcgRandom::seed( uint64_t s )
     state_ = (def_state << 16) ^ s;
 }
 
+void PcgRandom::setState( uint64_t st )
+{
+	state_ = st;
+}
+
+uint64_t PcgRandom::state() const
+{
+	return state_;
+}
+
 uint32_t PcgRandom::uint()
 {
     const uint64_t oldstate = state_;

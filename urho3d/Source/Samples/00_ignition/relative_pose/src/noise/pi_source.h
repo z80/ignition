@@ -92,8 +92,10 @@ struct PiSourceDesc
 	fixed ice_;
 	fixed metal_;
 
-    PiSourceDesc * parent_;
-    Vector<PiSourceDesc *> children_;
+    //PiSourceDesc * parent_;
+    //Vector<PiSourceDesc *> children_;
+	int parent_ind_;
+	Vector<int> child_inds_;
 
     // Orbit and rotation parameters.
     fixed orb_max_,
@@ -111,6 +113,8 @@ struct PiSourceDesc
 	Color atmos_color_;
 
     PiSourceDesc();
+    Float mass() const;
+    Float radius() const;
 };
 
 class PiBodySource: public HeightSource

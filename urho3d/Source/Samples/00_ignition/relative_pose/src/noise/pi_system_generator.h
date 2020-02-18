@@ -18,17 +18,17 @@ public:
 
     void apply( PiSystem * system, PiRandom & rand );
 
-    void generateStars( PiSystem * system, PiRandom & rand );
-    void makePlanetsAround( PiSystem * system, PiSourceDesc * primary, PiRandom & rand );
-    void makeRandomStar( PiSourceDesc * sbody, PiRandom & rand );
-    void makeStarOfType( PiSourceDesc * sbody, BodyType type, PiRandom & rand );
-    void makeStarOfTypeLighterThan( PiSourceDesc * sbody, BodyType type, fixed maxMass, PiRandom & rand );
+    int  generateStars( PiSystem * system, BodyType * starTypes, PiRandom & rand );
+    void makePlanetsAround( PiSystem * system, PiSourceDesc & primary, int primaryInd, PiRandom & rand );
+    void makeRandomStar( PiSourceDesc & sbody, PiRandom & rand );
+    void makeStarOfType( PiSourceDesc & sbody, BodyType type, PiRandom & rand );
+    void makeStarOfTypeLighterThan( PiSourceDesc & sbody, BodyType type, fixed maxMass, PiRandom & rand );
 
-	fixed calcHillRadius( PiSourceDesc * sbody ) const;
-    void pickPlanetType( PiSystem * system, PiSourceDesc * sbody, PiRandom & rand );
-    const PiSourceDesc * findStarAndTrueOrbitalRange( const PiSourceDesc * planet, fixed & orbMin_, fixed & orbMax_) const;
-    int calcSurfaceTemp( PiSystem * system, const PiSourceDesc * primary, fixed distToPrimary, fixed albedo, fixed greenhouse );
-	void pickAtmosphere( PiSourceDesc * sbody );
+	fixed calcHillRadius( PiSystem * system, const PiSourceDesc & sbody ) const;
+    void pickPlanetType( PiSystem * system, PiSourceDesc & sbody, PiRandom & rand );
+    const PiSourceDesc * findStarAndTrueOrbitalRange( PiSystem * system, const PiSourceDesc & planet, fixed & orbMin_, fixed & orbMax_) const;
+    int calcSurfaceTemp( PiSystem * system, const PiSourceDesc & primary, fixed distToPrimary, fixed albedo, fixed greenhouse );
+	void pickAtmosphere( PiSourceDesc & sbody );
 
     struct StarTypeInfo {
             int mass[2]; // min,max % sol for stars, unused for planets

@@ -2,6 +2,7 @@
 #define NOMINMAX
 
 #include "pi_source.h"
+#include "pi_consts.h"
 #include <algorithm>
 
 static  fixed Clamp( fixed v, Float vmin, Float vmax )
@@ -50,8 +51,8 @@ PiSourceDesc::PiSourceDesc()
     ice_ = 0.2;
     metal_ = 0.1;
 
-    parent_ = nullptr;
-
+    //parent_ = nullptr;
+	parent_ind_ = -1;
 
     orb_max_ = 0;
     orb_min_ = 0;
@@ -63,6 +64,28 @@ PiSourceDesc::PiSourceDesc()
     start_eccentric_anomaly_ = 0;
     Y_ = 0;
     X_ = 0;
+}
+
+Float PiSourceDesc::mass() const
+{
+    Float m = GM_.ToDouble() / G;
+    if ( super_type_ == SUPERTYPE_STAR )
+        m *= SOL_MASS;
+    else if ( ( super_type_ == SUPERTYPE_ROCKY_PLANET ) || 
+              ( super_type_ == SUPERTYPE_GAS_GIANT ) )
+        m *= EARTH_MASS;
+    return m;
+}
+
+Float PiSourceDesc::radius() const
+{
+    Float r = radius_.ToDouble();
+    if ( super_type_ == SUPERTYPE_STAR )
+        r *= SOL_RADIUS;
+    else if ( ( super_type_ == SUPERTYPE_ROCKY_PLANET ) || 
+        ( super_type_ == SUPERTYPE_GAS_GIANT ) )
+        r *= EARTH_RADIUS;
+    return r;
 }
 
 PiBodySource::PiBodySource( const PiSourceDesc & body )
@@ -84,11 +107,12 @@ PiBodySource::PiBodySource( const PiSourceDesc & body )
 	m_volcanic = Clamp(body.volcanic_.ToDouble(), 0.0, 1.0); // height scales with volcanicity as well
 	m_surfaceEffects = 0;
 
-	const double rad = m_minBody.radius_.ToDouble();
+	const double rad = m_minBody.radius();
 
 	// calculate max height
 	// max mountain height for earth-like planet (same mass, radius)
-	m_maxHeightInMeters = std::max(100.0, (9000.0 * rad * rad * (m_volcanic + 0.5)) / (body.GM_.ToDouble()));
+    const Float mass = body.mass();
+	m_maxHeightInMeters = std::max(100.0, (9000.0 * rad * rad * (m_volcanic + 0.5)) / ( mass * 6.64e-12 ) );
 	m_maxHeightInMeters = std::min(rad, m_maxHeightInMeters); // small asteroid case
 
 	// and then in sphere normalized jizz
@@ -97,7 +121,7 @@ PiBodySource::PiBodySource( const PiSourceDesc & body )
 	m_invMaxHeight = 1.0 / m_maxHeight;
 	m_planetRadius = rad;
 	m_invPlanetRadius = 1.0 / rad;
-	m_planetEarthRadii = rad / 1.0; //EARTH_RADIUS;
+	m_planetEarthRadii = rad / EARTH_RADIUS;
 
 	// Pick some colors, mainly reds and greens
 	for (int i = 0; i < int(COUNTOF(m_entropy)); i++)

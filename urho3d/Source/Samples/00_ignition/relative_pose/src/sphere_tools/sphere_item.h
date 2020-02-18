@@ -5,6 +5,8 @@
 #include "ref_frame.h"
 #include "cube_sphere.h"
 
+using namespace Urho3D;
+
 namespace Ign
 {
 

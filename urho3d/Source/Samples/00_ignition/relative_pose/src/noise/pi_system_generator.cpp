@@ -183,7 +183,7 @@ const PiSystemGenerator::StarTypeInfo PiSystemGenerator::starTypeInfo[] = {
 
 
 static fixed mass_from_disk_area( fixed a, fixed b, fixed max );
-static fixed get_disc_density( PiSourceDesc * primary, fixed discMin, fixed discMax, fixed percentOfPrimaryMass );
+static fixed get_disc_density( const PiSourceDesc & primary, fixed discMin, fixed discMax, fixed percentOfPrimaryMass );
 static inline bool test_overlap( const fixed & x1, const fixed & x2, const fixed & y1, const fixed & y2 );
 static fixed calcEnergyPerUnitAreaAtDist( fixed star_radius, int star_temp, fixed object_dist );
 
@@ -211,28 +211,40 @@ PiSystemGenerator::~PiSystemGenerator()
 
 void PiSystemGenerator::apply( PiSystem * system, PiRandom & rand )
 {
-	//RefCountedPtr<const Sector> sec = galaxy->GetSector(system->GetPath());
-	//const Sector::System &secSys = sec->m_systems[system->GetPath().systemIndex];
+	BodyType starTypes[4];
+    uint32_t seed = 0;
+    for ( ;; )
+    {
+        rand.seed( seed );
+        generateStars( system, starTypes, rand );
+        if ( starTypes[0] == TYPE_STAR_G )
+            break;
+        seed += 1;
+    }
+    rand.seed( seed );
+	const int numStars = generateStars( system, starTypes, rand );
 
 
-	PiSourceDesc * star[4];
-	PiSourceDesc * centGrav1(0), *centGrav2(0);
+	//PiSourceDesc * star[4];
+	//PiSourceDesc * centGrav1(0), *centGrav2(0);
 
-	const int numStars = system->m_numStars;
 	assert((numStars >= 1) && ( numStars <= 4 ) );
 	if (numStars == 1)
 	{
-		BodyType type = system->GetStarType(0);
-		star[0] = new PiSourceDesc();
-		star[0]->parent_ = 0;
-		//star[0]->m_name = "";
-		star[0]->orb_min_ = fixed();
-		star[0]->orb_max_ = fixed();
+		BodyType type = starTypes[0];;
+        PiSourceDesc star;
+		star.parent_ind_ = -1;
+		star.orb_min_ = fixed();
+		star.orb_max_ = fixed();
 
-		makeStarOfType( star[0], type, rand );
+		makeStarOfType( star, type, rand );
 		//system->SetRootBody( star[0] );
 		//system->SetNumStars( 1 );
-		system->root_body_ = star[0];
+		system->root_body_ind_ = 0;
+
+        // Add the star into the system.
+        system->star_inds_.Push( system->bodies_.Size() );
+        system->bodies_.Push( star );
 	}
 	/*
 	else {
@@ -317,17 +329,21 @@ void PiSystemGenerator::apply( PiSystem * system, PiRandom & rand )
 
 	// used in MakeShortDescription
 	// XXX except this does not reflect the actual mining happening in this system
-	system->root_body_->metal_ = starMetallicities[ system->root_body_->type_ ];
+    PiSourceDesc & rootBody = system->bodies_[ system->root_body_ind_ ];
+	rootBody.metal_ = starMetallicities[ rootBody.type_ ];
 
 	// store all of the stars first ...
-	for (unsigned i = 0; i < system->GetNumStars(); i++ )
-	{
-		system->stars_.Push( star[i] );
-	}
+	//for (unsigned i = 0; i < system->GetNumStars(); i++ )
+	//{
+	//	system->stars_.Push( star[i] );
+	//}
 	// ... because we need them when making planets to calculate surface temperatures
-	for ( auto s : system->stars_ )
+	for ( auto starInd : system->star_inds_ )
 	{
-		makePlanetsAround( system, s, rand );
+        PiSourceDesc primary = system->bodies_[starInd];
+		makePlanetsAround( system, primary, system->root_body_ind_, rand );
+        // Update it in the array;
+        system->bodies_[starInd] = primary;
 	}
 
 	/*if (system->GetNumStars() > 1)
@@ -345,7 +361,7 @@ void PiSystemGenerator::apply( PiSystem * system, PiRandom & rand )
 //#endif /* DEBUG_DUMP */
 }
 
-void PiSystemGenerator::generateStars( PiSystem * system, PiRandom & rand )
+int PiSystemGenerator::generateStars( PiSystem * system, BodyType * starTypes, PiRandom & rand )
 {
     PiSystem & s = *system;
 
@@ -356,173 +372,180 @@ void PiSystemGenerator::generateStars( PiSystem * system, PiRandom & rand )
     const Sint64 dist = (1 + sx * sx + sy * sy + sz * sz);
     const Sint64 freq = (1 + sx * sx + sy * sy);
 
+	int starsQty = 0;
+
 
     const int qty = rand.Int32(15);
     switch ( qty )
     {
     case 0:
-        s.m_numStars = 4;
+	    starsQty = 4;
         break;
     case 1:
     case 2:
-        s.m_numStars = 3;
+	    starsQty = 3;
         break;
     case 3:
     case 4:
     case 5:
     case 6:
-        s.m_numStars = 2;
+	    starsQty = 2;
         break;
     default:
-        s.m_numStars = 1;
+	    starsQty = 1;
         break;
     }
 
 
 	// At the moment enforce number of start to be 1.
 	// I didn't port rotation around barycenter yet.
-	s.m_numStars = 1;
+    starsQty = 1;
 
 
-    if (freq > Square(10))
+    if ( freq > Square(10) )
     {
         const Uint32 weight = rand.Int32(1000000);
         if (weight < 1) {
-            s.m_starType[0] = TYPE_STAR_IM_BH; // These frequencies are made up
+		    starTypes[0] = TYPE_STAR_IM_BH; // These frequencies are made up
         } else if (weight < 3) {
-            s.m_starType[0] = TYPE_STAR_S_BH;
+			starTypes[0] = TYPE_STAR_S_BH;
         } else if (weight < 5) {
-            s.m_starType[0] = TYPE_STAR_O_WF;
+            starTypes[0] = TYPE_STAR_O_WF;
         } else if (weight < 8) {
-            s.m_starType[0] = TYPE_STAR_B_WF;
+            starTypes[0] = TYPE_STAR_B_WF;
         } else if (weight < 12) {
-            s.m_starType[0] = TYPE_STAR_M_WF;
+            starTypes[0] = TYPE_STAR_M_WF;
         } else if (weight < 15) {
-            s.m_starType[0] = TYPE_STAR_K_HYPER_GIANT;
+            starTypes[0] = TYPE_STAR_K_HYPER_GIANT;
         } else if (weight < 18) {
-            s.m_starType[0] = TYPE_STAR_G_HYPER_GIANT;
+            starTypes[0] = TYPE_STAR_G_HYPER_GIANT;
         } else if (weight < 23) {
-            s.m_starType[0] = TYPE_STAR_O_HYPER_GIANT;
+            starTypes[0] = TYPE_STAR_O_HYPER_GIANT;
         } else if (weight < 28) {
-            s.m_starType[0] = TYPE_STAR_A_HYPER_GIANT;
+            starTypes[0] = TYPE_STAR_A_HYPER_GIANT;
         } else if (weight < 33) {
-            s.m_starType[0] = TYPE_STAR_F_HYPER_GIANT;
+            starTypes[0] = TYPE_STAR_F_HYPER_GIANT;
         } else if (weight < 41) {
-            s.m_starType[0] = TYPE_STAR_B_HYPER_GIANT;
+            starTypes[0] = TYPE_STAR_B_HYPER_GIANT;
         } else if (weight < 48) {
-            s.m_starType[0] = TYPE_STAR_M_HYPER_GIANT;
+            starTypes[0] = TYPE_STAR_M_HYPER_GIANT;
         } else if (weight < 58) {
-            s.m_starType[0] = TYPE_STAR_K_SUPER_GIANT;
+            starTypes[0] = TYPE_STAR_K_SUPER_GIANT;
         } else if (weight < 68) {
-            s.m_starType[0] = TYPE_STAR_G_SUPER_GIANT;
+            starTypes[0] = TYPE_STAR_G_SUPER_GIANT;
         } else if (weight < 78) {
-            s.m_starType[0] = TYPE_STAR_O_SUPER_GIANT;
+            starTypes[0] = TYPE_STAR_O_SUPER_GIANT;
         } else if (weight < 88) {
-            s.m_starType[0] = TYPE_STAR_A_SUPER_GIANT;
+            starTypes[0] = TYPE_STAR_A_SUPER_GIANT;
         } else if (weight < 98) {
-            s.m_starType[0] = TYPE_STAR_F_SUPER_GIANT;
+            starTypes[0] = TYPE_STAR_F_SUPER_GIANT;
         } else if (weight < 108) {
-            s.m_starType[0] = TYPE_STAR_B_SUPER_GIANT;
+            starTypes[0] = TYPE_STAR_B_SUPER_GIANT;
         } else if (weight < 158) {
-            s.m_starType[0] = TYPE_STAR_M_SUPER_GIANT;
+            starTypes[0] = TYPE_STAR_M_SUPER_GIANT;
         } else if (weight < 208) {
-            s.m_starType[0] = TYPE_STAR_K_GIANT;
+            starTypes[0] = TYPE_STAR_K_GIANT;
         } else if (weight < 250) {
-            s.m_starType[0] = TYPE_STAR_G_GIANT;
+            starTypes[0] = TYPE_STAR_G_GIANT;
         } else if (weight < 300) {
-            s.m_starType[0] = TYPE_STAR_O_GIANT;
+            starTypes[0] = TYPE_STAR_O_GIANT;
         } else if (weight < 350) {
-            s.m_starType[0] = TYPE_STAR_A_GIANT;
+            starTypes[0] = TYPE_STAR_A_GIANT;
         } else if (weight < 400) {
-            s.m_starType[0] = TYPE_STAR_F_GIANT;
+            starTypes[0] = TYPE_STAR_F_GIANT;
         } else if (weight < 500) {
-            s.m_starType[0] = TYPE_STAR_B_GIANT;
+            starTypes[0] = TYPE_STAR_B_GIANT;
         } else if (weight < 700) {
-            s.m_starType[0] = TYPE_STAR_M_GIANT;
+            starTypes[0] = TYPE_STAR_M_GIANT;
         } else if (weight < 800) {
-            s.m_starType[0] = TYPE_STAR_O; // should be 1 but that is boring
+            starTypes[0] = TYPE_STAR_O; // should be 1 but that is boring
         } else if (weight < 2000) { // weight < 1300 / 20500
-            s.m_starType[0] = TYPE_STAR_B;
+            starTypes[0] = TYPE_STAR_B;
         } else if (weight < 8000) { // weight < 7300
-            s.m_starType[0] = TYPE_STAR_A;
+            starTypes[0] = TYPE_STAR_A;
         } else if (weight < 37300) { // weight < 37300
-            s.m_starType[0] = TYPE_STAR_F;
+            starTypes[0] = TYPE_STAR_F;
         } else if (weight < 113300) { // weight < 113300
-            s.m_starType[0] = TYPE_STAR_G;
+            starTypes[0] = TYPE_STAR_G;
         } else if (weight < 234300) { // weight < 234300
-            s.m_starType[0] = TYPE_STAR_K;
+            starTypes[0] = TYPE_STAR_K;
         } else if (weight < 250000) { // weight < 250000
-            s.m_starType[0] = TYPE_WHITE_DWARF;
+            starTypes[0] = TYPE_WHITE_DWARF;
         } else if (weight < 900000) { //weight < 900000
-            s.m_starType[0] = TYPE_STAR_M;
+            starTypes[0] = TYPE_STAR_M;
         } else {
-            s.m_starType[0] = TYPE_BROWN_DWARF;
+            starTypes[0] = TYPE_BROWN_DWARF;
         }
     } else {
         const Uint32 weight = rand.Int32(1000000);
         if (weight < 100) { // should be 1 but that is boring
-            s.m_starType[0] = TYPE_STAR_O;
+            starTypes[0] = TYPE_STAR_O;
         } else if (weight < 1300) {
-            s.m_starType[0] = TYPE_STAR_B;
+            starTypes[0] = TYPE_STAR_B;
         } else if (weight < 7300) {
-            s.m_starType[0] = TYPE_STAR_A;
+            starTypes[0] = TYPE_STAR_A;
         } else if (weight < 37300) {
-            s.m_starType[0] = TYPE_STAR_F;
+            starTypes[0] = TYPE_STAR_F;
         } else if (weight < 113300) {
-            s.m_starType[0] = TYPE_STAR_G;
+            starTypes[0] = TYPE_STAR_G;
         } else if (weight < 234300) {
-            s.m_starType[0] = TYPE_STAR_K;
+            starTypes[0] = TYPE_STAR_K;
         } else if (weight < 250000) {
-            s.m_starType[0] = TYPE_WHITE_DWARF;
+            starTypes[0] = TYPE_WHITE_DWARF;
         } else if (weight < 900000) {
-            s.m_starType[0] = TYPE_STAR_M;
+            starTypes[0] = TYPE_STAR_M;
         } else {
-            s.m_starType[0] = TYPE_BROWN_DWARF;
+            starTypes[0] = TYPE_BROWN_DWARF;
         }
     }
     //Output("%d: %d%\n", sx, sy);
 
-    if (s.m_numStars > 1) {
-        s.m_starType[1] = BodyType(rand.Int32(TYPE_STAR_MIN, s.m_starType[0]));
-        if (s.m_numStars > 2) {
-            s.m_starType[2] = BodyType(rand.Int32(TYPE_STAR_MIN, s.m_starType[0]));
-            s.m_starType[3] = BodyType(rand.Int32(TYPE_STAR_MIN, s.m_starType[2]));
+    if ( starsQty > 1)
+    {
+        starTypes[1] = BodyType( rand.Int32( TYPE_STAR_MIN, starTypes[0] ) );
+        if ( starsQty > 2 )
+        {
+            starTypes[2] = BodyType( rand.Int32( TYPE_STAR_MIN, starTypes[0] ) );
+            starTypes[3] = BodyType( rand.Int32( TYPE_STAR_MIN, starTypes[2] ) );
         }
     }
 
-    if ((s.m_starType[0] <= TYPE_STAR_A) && (rand.Int32(10) == 0)) {
+	const Uint32 rand10 = rand.Int32( 10 );
+    if ( ( starTypes[0] <= TYPE_STAR_A ) && ( rand10 == 0 ) )
+    {
         // make primary a giant. never more than one giant in a system
-        if (freq > Square(10)) {
+        if (freq > Square(10))
+        {
             const Uint32 weight = rand.Int32(1000);
             if (weight >= 999) {
-                s.m_starType[0] = TYPE_STAR_B_HYPER_GIANT;
+                starTypes[0] = TYPE_STAR_B_HYPER_GIANT;
             } else if (weight >= 998) {
-                s.m_starType[0] = TYPE_STAR_O_HYPER_GIANT;
+                starTypes[0] = TYPE_STAR_O_HYPER_GIANT;
             } else if (weight >= 997) {
-                s.m_starType[0] = TYPE_STAR_K_HYPER_GIANT;
+                starTypes[0] = TYPE_STAR_K_HYPER_GIANT;
             } else if (weight >= 995) {
-                s.m_starType[0] = TYPE_STAR_B_SUPER_GIANT;
+                starTypes[0] = TYPE_STAR_B_SUPER_GIANT;
             } else if (weight >= 993) {
-                s.m_starType[0] = TYPE_STAR_O_SUPER_GIANT;
+                starTypes[0] = TYPE_STAR_O_SUPER_GIANT;
             } else if (weight >= 990) {
-                s.m_starType[0] = TYPE_STAR_K_SUPER_GIANT;
+                starTypes[0] = TYPE_STAR_K_SUPER_GIANT;
             } else if (weight >= 985) {
-                s.m_starType[0] = TYPE_STAR_B_GIANT;
+                starTypes[0] = TYPE_STAR_B_GIANT;
             } else if (weight >= 980) {
-                s.m_starType[0] = TYPE_STAR_O_GIANT;
+                starTypes[0] = TYPE_STAR_O_GIANT;
             } else if (weight >= 975) {
-                s.m_starType[0] = TYPE_STAR_K_GIANT;
+                starTypes[0] = TYPE_STAR_K_GIANT;
             } else if (weight >= 950) {
-                s.m_starType[0] = TYPE_STAR_M_HYPER_GIANT;
+                starTypes[0] = TYPE_STAR_M_HYPER_GIANT;
             } else if (weight >= 875) {
-                s.m_starType[0] = TYPE_STAR_M_SUPER_GIANT;
+                starTypes[0] = TYPE_STAR_M_SUPER_GIANT;
             } else {
-                s.m_starType[0] = TYPE_STAR_M_GIANT;
+                starTypes[0] = TYPE_STAR_M_GIANT;
             }
         } else if (freq > Square(5))
-            s.m_starType[0] = TYPE_STAR_M_GIANT;
+            starTypes[0] = TYPE_STAR_M_GIANT;
         else
-            s.m_starType[0] = TYPE_STAR_M;
+            starTypes[0] = TYPE_STAR_M;
 
         //Output("%d: %d%\n", sx, sy);
     }
@@ -531,76 +554,80 @@ void PiSystemGenerator::generateStars( PiSystem * system, PiRandom & rand )
     //Output("%s: \n", s.m_name.c_str());
 
     //s.m_systems.push_back(s);
+
+	return starsQty;
 }
 
-void PiSystemGenerator::makePlanetsAround( PiSystem * system, PiSourceDesc * primary, PiRandom & rand )
+void PiSystemGenerator::makePlanetsAround( PiSystem * system, PiSourceDesc & primary, int primaryInd, PiRandom & rand )
 {
     fixed discMin = fixed();
     fixed discMax = fixed(5000, 1);
     fixed discDensity;
 
-    BodySuperType parentSuperType = primary->super_type_;
+    BodySuperType parentSuperType = primary.super_type_;
 
     if (parentSuperType <= SUPERTYPE_STAR)
     {
-        if ( primary->type_ == TYPE_GRAVPOINT )
+        if ( primary.type_ == TYPE_GRAVPOINT )
         {
             /* around a binary */
-            discMin = primary->children_[0]->orb_min_ * SAFE_DIST_FROM_BINARY;
+            discMin = system->bodies_[ primary.child_inds_[0] ].orb_min_ * SAFE_DIST_FROM_BINARY;
         } else {
             /* correct thing is roche limit, but lets ignore that because
              * it depends on body densities and gives some strange results */
-            discMin = 4 * primary->radius_ * AU_SOL_RADIUS;
+            discMin = 4 * primary.radius_ * AU_SOL_RADIUS;
         }
-        if (primary->type_ == TYPE_WHITE_DWARF)
+        if (primary.type_ == TYPE_WHITE_DWARF)
         {
             // white dwarfs will have started as stars < 8 solar
             // masses or so, so pick discMax according to that
             // We give it a larger discMin because it used to be a much larger star
-            discMin = 1000 * primary->radius_ * AU_SOL_RADIUS;
+            discMin = 1000 * primary.radius_ * AU_SOL_RADIUS;
             discMax = 100 * rand.NFixed(2); // rand-splitting again
             discMax *= fixed::SqrtOf(fixed(1, 2) + fixed(8, 1) * rand.Fixed());
         }
         else
         {
-            discMax = 100 * rand.NFixed(2) * fixed::SqrtOf(primary->GM_);
+            discMax = 100 * rand.NFixed(2) * fixed::SqrtOf(primary.GM_);
         }
         // having limited discMin by bin-separation/fake roche, and
         // discMax by some relation to star mass, we can now compute
         // disc density
         discDensity = rand.Fixed() * get_disc_density( primary, discMin, discMax, fixed(2, 100) );
 
-        if ( (parentSuperType == SUPERTYPE_STAR) && ( primary->parent_ ) )
+        if ( (parentSuperType == SUPERTYPE_STAR) && ( primary.parent_ind_ >= 0 ) )
         {
             // limit planets out to 10% distance to star's binary companion
-            discMax = std::min( discMax, primary->orb_min_ * fixed(1, 10) );
+            discMax = std::min( discMax, primary.orb_min_ * fixed(1, 10) );
         }
 
         /* in trinary and quaternary systems don't bump into other pair... */
-        if ( system->m_numStars >= 3 )
+        if ( system->GetNumStars() >= 3 )
         {
-            discMax = std::min( discMax, fixed(5, 100) * system->root_body_->children_[0]->orb_min_ );
+            const PiSourceDesc & rootBody = system->bodies_[ system->root_body_ind_ ];
+			const PiSourceDesc & firstChild = system->bodies_[ rootBody.child_inds_[0] ];
+            discMax = std::min( discMax, fixed(5, 100) * firstChild.orb_min_ );
         }
     }
     else
     {
-        fixed primary_rad = primary->radius_ * AU_EARTH_RADIUS;
+        fixed primary_rad = primary.radius_ * AU_EARTH_RADIUS;
         discMin = 4 * primary_rad;
         /* use hill radius to find max size of moon system. for stars botch it.
            And use planets orbit around its primary as a scaler to a moon's orbit*/
-        discMax = std::min( discMax, fixed(1, 20) * calcHillRadius(primary) * primary->orb_min_ * fixed(1, 10) );
+        discMax = std::min( discMax, fixed(1, 20) * calcHillRadius( system, primary ) * primary.orb_min_ * fixed(1, 10) );
 
         discDensity = rand.Fixed() * get_disc_density( primary, discMin, discMax, fixed(1, 500) );
     }
 
     //fixed discDensity = 20*rand.NFixed(4);
 
-    //Output("Around %s: Range %f -> %f AU\n", primary->GetName().c_str(), discMin.ToDouble(), discMax.ToDouble());
+    //Output("Around %s: Range %f -> %f AU\n", primary.GetName().c_str(), discMin.ToDouble(), discMax.ToDouble());
 
     fixed initialJump = rand.NFixed(5);
     fixed pos = (fixed(1, 1) - initialJump) * discMin + (initialJump * discMax);
-    //const RingStyle & ring = primary->GetRings();
-    //const bool hasRings = primary->HasRings();
+    //const RingStyle & ring = primary.GetRings();
+    //const bool hasRings = primary.HasRings();
 
     while (pos < discMax)
     {
@@ -622,51 +649,52 @@ void PiSystemGenerator::makePlanetsAround( PiSystem * system, PiSourceDesc * pri
         if (mass < 0)
         {
             // hack around overflow
-            //Output("WARNING: planetary mass has overflowed! (child of %s)\n", primary->GetName().c_str());
+            //Output("WARNING: planetary mass has overflowed! (child of %s)\n", primary.GetName().c_str());
             mass = fixed(Sint64(0x7fFFffFFffFFffFFull));
         }
         assert(mass >= 0);
 
-        PiSourceDesc * planet = new PiSourceDesc(); //system->NewBody();
-        planet->eccentricity_ = ecc;
-        planet->axial_tilt_ = fixed(100, 157) * rand.NFixed(2);
-        planet->semimajor_axis_ = semiMajorAxis;
-		planet->super_type_ = SUPERTYPE_ROCKY_PLANET;
-        planet->type_ = TYPE_PLANET_TERRESTRIAL;
-        planet->seed_ = rand.Int32();
-        planet->parent_ = primary;
-        planet->GM_ = mass;
-        planet->rotation_period_ = fixed(rand.Int32(1, 200), 24);
+        PiSourceDesc planet;
+        planet.eccentricity_ = ecc;
+        planet.axial_tilt_ = fixed(100, 157) * rand.NFixed(2);
+        planet.semimajor_axis_ = semiMajorAxis;
+		planet.super_type_ = SUPERTYPE_ROCKY_PLANET;
+        planet.type_ = TYPE_PLANET_TERRESTRIAL;
+        planet.seed_ = rand.Int32();
+        planet.parent_ind_ = primaryInd;
+        planet.GM_ = mass;
+        planet.rotation_period_ = fixed( rand.Int32(1, 200), 24 );
 
         const double e = ecc.ToDouble();
 
         //if ( primary.type_ == TYPE_GRAVPOINT )
         //    planet->m_orbit.SetShapeAroundBarycentre( semiMajorAxis.ToDouble() * AU, primary.GM_, planet->GM_, e );
         //else
-        //    planet->m_orbit.SetShapeAroundPrimary(semiMajorAxis.ToDouble() * AU, primary->GetMass(), e);
+        //    planet->m_orbit.SetShapeAroundPrimary(semiMajorAxis.ToDouble() * AU, primary.GetMass(), e);
 
         const double r1 = rand.Double(2 * M_PI); // function parameter evaluation order is implementation-dependent
         const double r2 = rand.NDouble(5); // can't put two rands in the same expression
         //planet->m_orbit.SetPlane(matrix3x3d::RotateY(r1) * matrix3x3d::RotateX(-0.5 * M_PI + r2 * M_PI / 2.0));
         //planet->m_orbit.SetPhase(rand.Double(2 * M_PI));
-        planet->X_ = r1;
-        planet->Y_ = r2;
+        planet.X_ = r1;
+        planet.Y_ = r2;
 
 
-        planet->inclination_ = FIXED_PI;
-        planet->inclination_ *= r2 / 2.0;
-        planet->orb_min_ = periapsis;
-        planet->orb_max_ = apoapsis;
-        primary->children_.Push( planet );
+        planet.inclination_ = FIXED_PI;
+        planet.inclination_ *= r2 / 2.0;
+        planet.orb_min_ = periapsis;
+        planet.orb_max_ = apoapsis;
+        primary.child_inds_.Push( system->bodies_.Size() );
+        system->bodies_.Push( planet );
 
         //if (hasRings &&
         //    parentSuperType == SystemBody::SUPERTYPE_ROCKY_PLANET &&
         //    test_overlap(ring.minRadius, ring.maxRadius, periapsis, apoapsis)) {
         //    //Output("Overlap, eliminating rings from parent SystemBody\n");
         //    //Overlap, eliminating rings from parent SystemBody
-        //    primary->m_rings.minRadius = fixed();
-        //    primary->m_rings.maxRadius = fixed();
-        //    primary->m_rings.baseColor = Color(255, 255, 255, 255);
+        //    primary.m_rings.minRadius = fixed();
+        //    primary.m_rings.maxRadius = fixed();
+        //    primary.m_rings.baseColor = Color(255, 255, 255, 255);
         //}
 
         /* minimum separation between planets of 1.35 */
@@ -676,10 +704,12 @@ void PiSystemGenerator::makePlanetsAround( PiSystem * system, PiSourceDesc * pri
     int idx = 0;
     bool make_moons = parentSuperType <= SUPERTYPE_STAR;
 
-    for ( Vector<PiSourceDesc *>::Iterator i = primary->children_.Begin(); i != primary->children_.End(); ++i)
+    for ( Vector<int>::Iterator i = primary.child_inds_.Begin(); i != primary.child_inds_.End(); ++i)
     {
+        const int childInd = *i;
+        PiSourceDesc child = system->bodies_[ childInd ];
         // planets around a binary pair [gravpoint] -- ignore the stars...
-        if ((*i)->super_type_ == SUPERTYPE_STAR)
+        if ( child.super_type_ == SUPERTYPE_STAR)
             continue;
         // Turn them into something!!!!!!!
         char buf[12];
@@ -693,26 +723,29 @@ void PiSystemGenerator::makePlanetsAround( PiSystem * system, PiSourceDesc * pri
             // moon naming scheme
             snprintf(buf, sizeof(buf), " %d", 1 + idx);
         }
-        //(*i)->m_name = primary->GetName() + buf;
-        pickPlanetType( system, *i, rand );
+        //(*i)->m_name = primary.GetName() + buf;
+        pickPlanetType( system, child, rand );
         if ( make_moons )
-            makePlanetsAround( system, (*i), rand );
+            makePlanetsAround( system, child, childInd, rand );
+
+        // Update current child in the system.
+        system->bodies_[ childInd ] = child;
         idx++;
     }
 }
 
-void PiSystemGenerator::makeRandomStar( PiSourceDesc * sbody, PiRandom & rand )
+void PiSystemGenerator::makeRandomStar( PiSourceDesc & sbody, PiRandom & rand )
 {
 	BodyType type = BodyType( rand.Int32( TYPE_STAR_MIN, TYPE_STAR_MAX ) );
 	makeStarOfType( sbody, type, rand );
 }
 
-void PiSystemGenerator::makeStarOfType( PiSourceDesc * sbody, BodyType type, PiRandom & rand )
+void PiSystemGenerator::makeStarOfType( PiSourceDesc & sbody, BodyType type, PiRandom & rand )
 {
-	sbody->super_type_ = SUPERTYPE_STAR;
-	sbody->type_ = type;
-	sbody->seed_ = rand.Int32();
-	sbody->radius_ = fixed( rand.Int32( starTypeInfo[type].radius[0], starTypeInfo[type].radius[1] ), 100 );
+	sbody.super_type_ = SUPERTYPE_STAR;
+	sbody.type_ = type;
+	sbody.seed_ = rand.Int32();
+	sbody.radius_ = fixed( rand.Int32( starTypeInfo[type].radius[0], starTypeInfo[type].radius[1] ), 100 );
 
 	// Assign aspect ratios caused by equatorial bulges due to rotation. See terrain code for details.
 	// XXX to do: determine aspect ratio distributions for dimmer stars. Make aspect ratios consistent with rotation speeds/stability restrictions.
@@ -747,31 +780,32 @@ void PiSystemGenerator::makeStarOfType( PiSourceDesc * sbody, BodyType type, PiR
 	case TYPE_STAR_O_WF:
 	{
 		fixed rnd = rand.Fixed();
-		sbody->aspectRatio_ = fixed(1, 1) + fixed(8, 10) * rnd * rnd;
+		sbody.aspectRatio_ = fixed(1, 1) + fixed(8, 10) * rnd * rnd;
 		break;
 	}
-									 // aspect ratio is initialised to 1.0 for other stars currently
+	// aspect ratio is initialised to 1.0 for other stars currently
 	default:
+        sbody.aspectRatio_ = fixed(1, 1);
 		break;
 	}
-	sbody->GM_ = fixed( rand.Int32( starTypeInfo[type].mass[0], starTypeInfo[type].mass[1] ), 100 );
-	sbody->average_temp_ = rand.Int32( starTypeInfo[type].tempMin, starTypeInfo[type].tempMax );
+	sbody.GM_ = fixed( rand.Int32( starTypeInfo[type].mass[0], starTypeInfo[type].mass[1] ), 100 );
+	sbody.average_temp_ = rand.Int32( starTypeInfo[type].tempMin, starTypeInfo[type].tempMax );
 }
 
-void PiSystemGenerator::makeStarOfTypeLighterThan( PiSourceDesc * sbody, BodyType type, fixed maxMass, PiRandom & rand )
+void PiSystemGenerator::makeStarOfTypeLighterThan( PiSourceDesc & sbody, BodyType type, fixed maxMass, PiRandom & rand )
 {
 	int tries = 16;
 	do {
 		makeStarOfType( sbody, type, rand );
-	} while ( ( sbody->GM_ > maxMass ) && (--tries) );
+	} while ( ( sbody.GM_ > maxMass ) && (--tries) );
 }
 
 /*
 * http://en.wikipedia.org/wiki/Hill_sphere
 */
-fixed PiSystemGenerator::calcHillRadius( PiSourceDesc * sbody ) const
+fixed PiSystemGenerator::calcHillRadius( PiSystem * system, const PiSourceDesc & sbody ) const
 {
-		if (sbody->super_type_ <= SUPERTYPE_STAR)
+		if (sbody.super_type_ <= SUPERTYPE_STAR)
 		{
 			return fixed();
 		}
@@ -779,14 +813,15 @@ fixed PiSystemGenerator::calcHillRadius( PiSourceDesc * sbody ) const
 		{
 			// playing with precision since these numbers get small
 			// masses in earth masses
-			fixedf<32> mprimary = sbody->parent_->GM_;
+			const PiSourceDesc & parent = system->bodies_[ sbody.parent_ind_ ];
+			fixedf<32> mprimary = parent.GM_;
 
-			fixedf<48> a = sbody->semimajor_axis_;
-			fixedf<48> e = sbody->eccentricity_;
+			fixedf<48> a = sbody.semimajor_axis_;
+			fixedf<48> e = sbody.eccentricity_;
 
 			return fixed(a * (fixedf<48>(1, 1) - e) *
 				fixedf<48>::CubeRootOf(fixedf<48>(
-					sbody->GM_ / (fixedf<32>(3, 1) * mprimary))));
+					sbody.GM_ / (fixedf<32>(3, 1) * mprimary))));
 
 			//fixed hr = semiMajorAxis*(fixed(1,1) - eccentricity) *
 			//  fixedcuberoot(mass / (3*mprimary));
@@ -806,19 +841,19 @@ fixed PiSystemGenerator::calcHillRadius( PiSourceDesc * sbody ) const
 
 
 
-void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc * sbody, PiRandom & rand )
+void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc & sbody, PiRandom & rand )
 {
     fixed albedo;
     fixed greenhouse;
 
     fixed minDistToStar, maxDistToStar, averageDistToStar;
-    const PiSourceDesc * star = findStarAndTrueOrbitalRange( sbody, minDistToStar, maxDistToStar );
+    const PiSourceDesc * star = findStarAndTrueOrbitalRange( system, sbody, minDistToStar, maxDistToStar );
     averageDistToStar = (minDistToStar + maxDistToStar) >> 1;
 
     /* first calculate blackbody temp (no greenhouse effect, zero albedo) */
-    const int bbody_temp = calcSurfaceTemp( system, star, averageDistToStar, albedo, greenhouse );
+    const int bbody_temp = calcSurfaceTemp( system, *star, averageDistToStar, albedo, greenhouse );
 
-    sbody->average_temp_ = bbody_temp;
+    sbody.average_temp_ = bbody_temp;
 
     static const fixed ONEEUMASS = fixed::FromDouble(1);
     static const fixed TWOHUNDREDEUMASSES = fixed::FromDouble(200.0);
@@ -827,76 +862,78 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc * sbody,
     // AndyC - Updated to use the empirically gathered data from this site:
     // http://phl.upr.edu/library/notes/standardmass-radiusrelationforexoplanets
     // but we still limit at the lowest end
-    if (sbody->GM_ <= fixed(1, 1))
+    if (sbody.GM_ <= fixed(1, 1))
 	{
-        sbody->radius_ = fixed( fixedf<48>::CubeRootOf( fixedf<48>( sbody->GM_ ) ) );
+        sbody.radius_ = fixed( fixedf<48>::CubeRootOf( fixedf<48>( sbody.GM_ ) ) );
     }
-	else if ( sbody->GM_ < ONEEUMASS )
+	else if ( sbody.GM_ < ONEEUMASS )
 	{
         // smaller than 1 Earth mass is almost certainly a rocky body
-        sbody->radius_ = fixed::FromDouble( pow( sbody->GM_.ToDouble(), 0.3 ) );
+        sbody.radius_ = fixed::FromDouble( pow( sbody.GM_.ToDouble(), 0.3 ) );
     }
-	else if ( sbody->GM_ < TWOHUNDREDEUMASSES )
+	else if ( sbody.GM_ < TWOHUNDREDEUMASSES )
 	{
         // from 1 EU to 200 they transition from Earth-like rocky bodies, through Ocean worlds and on to Gas Giants
-        sbody->radius_ = fixed::FromDouble( pow( sbody->GM_.ToDouble(), 0.5 ) );
+        sbody.radius_ = fixed::FromDouble( pow( sbody.GM_.ToDouble(), 0.5 ) );
     }
 	else
 	{
         // Anything bigger than 200 EU masses is a Gas Giant or bigger but the density changes to decrease from here on up...
-        sbody->radius_ = fixed::FromDouble( 22.6 * ( 1.0 / pow( sbody->GM_.ToDouble(), double(0.0886) ) ) );
+        sbody.radius_ = fixed::FromDouble( 22.6 * ( 1.0 / pow( sbody.GM_.ToDouble(), double(0.0886) ) ) );
     }
     // enforce minimum size of 10km
-    sbody->radius_ = std::max( sbody->radius_, fixed( 1, 630 ) );
+    sbody.radius_ = std::max( sbody.radius_, fixed( 1, 630 ) );
 
-    if ( sbody->parent_->type_ <= TYPE_STAR_MAX )
+	const PiSourceDesc & parent = system->bodies_[ sbody.parent_ind_ ];
+    if ( parent.type_ <= TYPE_STAR_MAX )
 	{
         // get it from the table now rather than setting it on stars/gravpoints as
         // currently nothing else needs them to have metallicity
-        sbody->metal_ = starMetallicities[ sbody->parent_->type_ ] * rand.Fixed();
+        sbody.metal_ = starMetallicities[ parent.type_ ] * rand.Fixed();
     }
 	else
 	{
         // this assumes the parent's parent is a star/gravpoint, which is currently always true
-        sbody->metal_ = starMetallicities[ sbody->parent_->parent_->type_ ] * rand.Fixed();
+		const PiSourceDesc & parentParent = system->bodies_[ parent.parent_ind_ ];
+        sbody.metal_ = starMetallicities[ parentParent.type_ ] * rand.Fixed();
     }
 
     // harder to be volcanic when you are tiny (you cool down)
-    sbody->volcanic_ = std::min( fixed(1, 1), sbody->GM_ ) * rand.Fixed();
-    sbody->atm_oxidizing_ = rand.Fixed();
-    sbody->life_   = fixed();
-    sbody->gas_    = fixed();
-    sbody->liquid_ = fixed();
-    sbody->ice_    = fixed();
+    sbody.volcanic_ = std::min( fixed(1, 1), sbody.GM_ ) * rand.Fixed();
+    sbody.atm_oxidizing_ = rand.Fixed();
+    sbody.life_   = fixed();
+    sbody.gas_    = fixed();
+    sbody.liquid_ = fixed();
+    sbody.ice_    = fixed();
 
     // pick body type
-    if (sbody->GM_ > 317 * 13)
+    if (sbody.GM_ > 317 * 13)
 	{
         // more than 13 jupiter masses can fuse deuterium - is a brown dwarf
-        sbody->type_ = TYPE_BROWN_DWARF;
-        sbody->average_temp_ = sbody->average_temp_ + rand.Int32( starTypeInfo[ sbody->type_ ].tempMin, starTypeInfo[ sbody->type_ ].tempMax );
+        sbody.type_ = TYPE_BROWN_DWARF;
+        sbody.average_temp_ = sbody.average_temp_ + rand.Int32( starTypeInfo[ sbody.type_ ].tempMin, starTypeInfo[ sbody.type_ ].tempMax );
         // prevent mass exceeding 65 jupiter masses or so, when it becomes a star
         // XXX since TYPE_BROWN_DWARF is supertype star, mass is now in
         // solar masses. what a fucking mess
-        sbody->GM_ = std::min( sbody->GM_, fixed(317 * 65, 1) ) / SUN_MASS_TO_EARTH_MASS;
+        sbody.GM_ = std::min( sbody.GM_, fixed(317 * 65, 1) ) / SUN_MASS_TO_EARTH_MASS;
         //Radius is too high as it now uses the planetary calculations to work out radius (Cube root of mass)
         // So tell it to use the star data instead:
-        sbody->radius_ = fixed( rand.Int32( starTypeInfo[ sbody->type_ ].radius[0], 
-			                                starTypeInfo[ sbody->type_ ].radius[1] ), 100 );
+        sbody.radius_ = fixed( rand.Int32( starTypeInfo[ sbody.type_ ].radius[0], 
+							starTypeInfo[ sbody.type_ ].radius[1] ), 100 );
     }
-	else if ( sbody->GM_ > 6 )
+	else if ( sbody.GM_ > 6 )
 	{
-        sbody->type_ = TYPE_PLANET_GAS_GIANT;
+        sbody.type_ = TYPE_PLANET_GAS_GIANT;
     }
-	else if ( sbody->GM_ > fixed(1, 15000) )
+	else if ( sbody.GM_ > fixed(1, 15000) )
 	{
-        sbody->type_ = TYPE_PLANET_TERRESTRIAL;
+        sbody.type_ = TYPE_PLANET_TERRESTRIAL;
 
         fixed amount_volatiles = fixed(2, 1) * rand.Fixed();
         if ( rand.Int32(3) )
-			amount_volatiles *= sbody->GM_;
+			amount_volatiles *= sbody.GM_;
         // total atmosphere loss
-        if ( rand.Fixed() > sbody->GM_)
+        if ( rand.Fixed() > sbody.GM_)
 			amount_volatiles = fixed();
 
         //Output("Amount volatiles: %f\n", amount_volatiles.ToFloat());
@@ -904,17 +941,17 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc * sbody,
         greenhouse = fixed();
         albedo = fixed();
         // CO2 sublimation
-        if ( sbody->average_temp_ > 195 )
+        if ( sbody.average_temp_ > 195 )
             greenhouse += amount_volatiles * fixed(1, 3);
         else
             albedo += fixed(2, 6);
         // H2O liquid
-        if ( sbody->average_temp_ > 273 )
+        if ( sbody.average_temp_ > 273 )
             greenhouse += amount_volatiles * fixed(1, 5);
         else
             albedo += fixed(3, 6);
         // H2O boils
-        if ( sbody->average_temp_ > 373)
+        if ( sbody.average_temp_ > 373)
 			greenhouse += amount_volatiles * fixed(1, 3);
 
         if ( greenhouse > fixed(7, 10) )
@@ -925,49 +962,51 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc * sbody,
              greenhouse = greenhouse / (greenhouse + fixed(32, 311));
         }
 
-        sbody->average_temp_ = calcSurfaceTemp( system, star, averageDistToStar, albedo, greenhouse );
+        sbody.average_temp_ = calcSurfaceTemp( system, *star, averageDistToStar, albedo, greenhouse );
 
-        const fixed proportion_gas = sbody->average_temp_ / ( fixed(100, 1) + sbody->average_temp_ );
-        sbody->gas_ = proportion_gas * amount_volatiles;
+        const fixed proportion_gas = sbody.average_temp_ / ( fixed(100, 1) + sbody.average_temp_ );
+        sbody.gas_ = proportion_gas * amount_volatiles;
 
-        const fixed proportion_liquid = ( fixed(1, 1) - proportion_gas ) * (sbody->average_temp_ / ( fixed(50, 1) + sbody->average_temp_ ) );
-        sbody->liquid_ = proportion_liquid * amount_volatiles;
+        const fixed proportion_liquid = ( fixed(1, 1) - proportion_gas ) * (sbody.average_temp_ / ( fixed(50, 1) + sbody.average_temp_ ) );
+        sbody.liquid_ = proportion_liquid * amount_volatiles;
 
         const fixed proportion_ices = fixed(1, 1) - (proportion_gas + proportion_liquid);
-        sbody->ice_ = proportion_ices * amount_volatiles;
+        sbody.ice_ = proportion_ices * amount_volatiles;
 
         //Output("temp %dK, gas:liquid:ices %f:%f:%f\n", averageTemp, proportion_gas.ToFloat(),
         //		proportion_liquid.ToFloat(), proportion_ices.ToFloat());
 
-        if ( (sbody->liquid_ > fixed()) &&
-             (sbody->average_temp_ > CELSIUS - 60) &&
-             (sbody->average_temp_ < CELSIUS + 200))
+        if ( (sbody.liquid_ > fixed()) &&
+             (sbody.average_temp_ > CELSIUS - 60) &&
+             (sbody.average_temp_ < CELSIUS + 200))
 		{
             // try for life
-            int minTemp = calcSurfaceTemp( system, star, maxDistToStar, albedo, greenhouse);
-            int maxTemp = calcSurfaceTemp( system, star, minDistToStar, albedo, greenhouse);
+            int minTemp = calcSurfaceTemp( system, *star, maxDistToStar, albedo, greenhouse);
+            int maxTemp = calcSurfaceTemp( system, *star, minDistToStar, albedo, greenhouse);
 
             if ((minTemp > CELSIUS - 10) && (minTemp < CELSIUS + 90) && //removed explicit checks for star type (also BD and WD seem to have slight chance of having life around them)
                 (maxTemp > CELSIUS - 10) && (maxTemp < CELSIUS + 90)) //TODO: ceiling based on actual boiling point on the planet, not in 1atm
             {
                 fixed maxMass, lifeMult, allowedMass(1, 2);
                 allowedMass += 2;
-                for (auto s : system->stars_ )
-				{ //find the most massive star, mass is tied to lifespan
-                    maxMass = maxMass < s->GM_ ? s->GM_ : maxMass; //this automagically eliminates O, B and so on from consideration
+                for ( auto s : system->star_inds_ )
+				{ 
+					const PiSourceDesc & star = system->bodies_[ s ];
+					//find the most massive star, mass is tied to lifespan
+                    maxMass = maxMass < star.GM_ ? star.GM_ : maxMass; //this automagically eliminates O, B and so on from consideration
                 } //handy calculator: http://www.asc-csa.gc.ca/eng/educators/resources/astronomy/module2/calculator.asp
                 if ( maxMass < allowedMass )
 				{
 					//system could have existed long enough for life to form (based on Sol)
                     lifeMult = allowedMass - maxMass;
                 }
-                sbody->life_ = lifeMult * rand.Fixed();
+                sbody.life_ = lifeMult * rand.Fixed();
             }
         }
     }
 	else
 	{
-        sbody->type_ = TYPE_PLANET_ASTEROID;
+        sbody.type_ = TYPE_PLANET_ASTEROID;
     }
 
     // Tidal lock for planets close to their parents:
@@ -980,21 +1019,21 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc * sbody,
     fixed invTidalLockTime = fixed(1, 1);
 
     // fine-tuned not to give overflows, order of evaluation matters!
-    if (sbody->parent_->type_ <= TYPE_STAR_MAX)
+    if ( parent.type_ <= TYPE_STAR_MAX )
 	{
-        invTidalLockTime /= (sbody->semimajor_axis_ * sbody->semimajor_axis_);
-        invTidalLockTime *= sbody->GM_;
-        invTidalLockTime /= (sbody->semimajor_axis_ * sbody->semimajor_axis_);
-        invTidalLockTime *= sbody->parent_->GM_ * sbody->parent_->GM_;
-        invTidalLockTime /= sbody->radius_;
-        invTidalLockTime /= (sbody->semimajor_axis_ * sbody->semimajor_axis_) * MOON_TIDAL_LOCK;
+        invTidalLockTime /= (sbody.semimajor_axis_ * sbody.semimajor_axis_);
+        invTidalLockTime *= sbody.GM_;
+        invTidalLockTime /= (sbody.semimajor_axis_ * sbody.semimajor_axis_);
+        invTidalLockTime *= parent.GM_ * parent.GM_;
+        invTidalLockTime /= sbody.radius_;
+        invTidalLockTime /= (sbody.semimajor_axis_ * sbody.semimajor_axis_) * MOON_TIDAL_LOCK;
     } else {
-        invTidalLockTime /= (sbody->semimajor_axis_ * sbody->semimajor_axis_) * SUN_MASS_TO_EARTH_MASS;
-        invTidalLockTime *= sbody->GM_;
-        invTidalLockTime /= (sbody->semimajor_axis_ * sbody->semimajor_axis_) * SUN_MASS_TO_EARTH_MASS;
-        invTidalLockTime *= sbody->parent_->GM_ * sbody->parent_->GM_;
-        invTidalLockTime /= sbody->radius_;
-        invTidalLockTime /= (sbody->semimajor_axis_ * sbody->semimajor_axis_) * MOON_TIDAL_LOCK;
+        invTidalLockTime /= (sbody.semimajor_axis_ * sbody.semimajor_axis_) * SUN_MASS_TO_EARTH_MASS;
+        invTidalLockTime *= sbody.GM_;
+        invTidalLockTime /= (sbody.semimajor_axis_ * sbody.semimajor_axis_) * SUN_MASS_TO_EARTH_MASS;
+        invTidalLockTime *= parent.GM_ * parent.GM_;
+        invTidalLockTime /= sbody.radius_;
+        invTidalLockTime /= (sbody.semimajor_axis_ * sbody.semimajor_axis_) * MOON_TIDAL_LOCK;
     }
     //Output("tidal lock of %s: %.5f, a %.5f R %.4f mp %.3f ms %.3f\n", name.c_str(),
     //		invTidalLockTime.ToFloat(), semiMajorAxis.ToFloat(), radius.ToFloat(), parent->mass.ToFloat(), mass.ToFloat());
@@ -1002,8 +1041,8 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc * sbody,
 
 	/*
     if (invTidalLockTime > 10) { // 10x faster than Moon, no chance not to be tidal-locked
-        sbody->rotation_period_ = fixed( int( round( sbody->GetOrbit().Period() ) ), 3600 * 24 );
-        sbody->axial_tilt_ = sbody->inclination_;
+        sbody.rotation_period_ = fixed( int( round( sbody.GetOrbit().Period() ) ), 3600 * 24 );
+        sbody.axial_tilt_ = sbody.inclination_;
     } else if ( invTidalLockTime > fixed(1, 100) )
 	{   
 		// rotation speed changed in favour of tidal lock
@@ -1011,8 +1050,8 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc * sbody,
         //		I'm ommiting that now, I do not want to change the Universe by additional rand call.
 
         fixed lambda = invTidalLockTime / (fixed(1, 20) + invTidalLockTime);
-        sbody->rotation_period_ = (1 - lambda) * sbody->rotation_period_ + lambda * sbody->GetOrbit().Period() / 3600 / 24;
-        sbody->axial_tilt_ = (1 - lambda) * sbody->axial_tilt_ + lambda * sbody->inclination_;
+        sbody.rotation_period_ = (1 - lambda) * sbody.rotation_period_ + lambda * sbody.GetOrbit().Period() / 3600 / 24;
+        sbody.axial_tilt_ = (1 - lambda) * sbody.axial_tilt_ + lambda * sbody.inclination_;
     } // else .. nothing happens to the satellite
 	*/
 
@@ -1020,17 +1059,21 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc * sbody,
     //PickRings(sbody);
 }
 
-const PiSourceDesc * PiSystemGenerator::findStarAndTrueOrbitalRange( const PiSourceDesc * planet, fixed & orbMin_, fixed & orbMax_) const
+const PiSourceDesc * PiSystemGenerator::findStarAndTrueOrbitalRange( PiSystem * system, const PiSourceDesc & planetOrigin, fixed & orbMin_, fixed & orbMax_) const
 {
-    const PiSourceDesc *star = planet->parent_;
+    const PiSourceDesc * planet = &planetOrigin;
+    int starInd = planet->parent_ind_;
+    assert( starInd >= 0 );
+    const PiSourceDesc * star = &( system->bodies_[ starInd ] );
 
-    assert(star);
+    //assert(star);
 
     /* while not found star yet.. */
     while ( star->super_type_ > SUPERTYPE_STAR)
     {
         planet = star;
-        star = star->parent_;
+        starInd = star->parent_ind_;
+        star = &( system->bodies_[starInd] );
     }
 
     orbMin_ = planet->orb_min_;
@@ -1038,10 +1081,10 @@ const PiSourceDesc * PiSystemGenerator::findStarAndTrueOrbitalRange( const PiSou
     return star;
 }
 
-int PiSystemGenerator::calcSurfaceTemp( PiSystem * system, const PiSourceDesc * primary, fixed distToPrimary, fixed albedo, fixed greenhouse )
+int PiSystemGenerator::calcSurfaceTemp( PiSystem * system, const PiSourceDesc & primary, fixed distToPrimary, fixed albedo, fixed greenhouse )
 {
     // accumulator seeded with current primary
-    fixed energy_per_meter2 = calcEnergyPerUnitAreaAtDist( primary->radius_, primary->average_temp_, distToPrimary );
+    fixed energy_per_meter2 = calcEnergyPerUnitAreaAtDist( primary.radius_, primary.average_temp_, distToPrimary );
     fixed dist;
     // find the other stars which aren't our parent star
     /*for (auto s : system->stars_ )
@@ -1101,7 +1144,7 @@ int PiSystemGenerator::calcSurfaceTemp( PiSystem * system, const PiSourceDesc * 
     return ( 279 * int( isqrt( isqrt( ( surface_temp_pow4.v) ) ) ) ) >> ( fixed::FRAC / 4 ); //multiplied by 279 to convert from Earth's temps to Kelvin
 }
 
-void PiSystemGenerator::pickAtmosphere( PiSourceDesc * sbody )
+void PiSystemGenerator::pickAtmosphere( PiSourceDesc & sbody )
 {
 	/* Alpha value isn't real alpha. in the shader fog depth is determined
 	* by density*alpha, so that we can have very dense atmospheres
@@ -1110,22 +1153,22 @@ void PiSystemGenerator::pickAtmosphere( PiSourceDesc * sbody )
 	These are our atmosphere colours, for terrestrial planets we use m_atmosOxidizing
 	for some variation to atmosphere colours
 	*/
-	switch ( sbody->type_ )
+	switch ( sbody.type_ )
 	{
 	case TYPE_PLANET_GAS_GIANT:
 
-		sbody->atmos_color_ = Color(255, 255, 255, 3);
-		sbody->atmos_density_ = 14.0;
+		sbody.atmos_color_ = Color(255, 255, 255, 3);
+		sbody.atmos_density_ = 14.0;
 		break;
 	case TYPE_PLANET_ASTEROID:
-		sbody->atmos_color_ = Color::TRANSPARENT_BLACK; //Color::BLANK;
-		sbody->atmos_density_ = 0.0;
+		sbody.atmos_color_ = Color::TRANSPARENT_BLACK; //Color::BLANK;
+		sbody.atmos_density_ = 0.0;
 		break;
 	default:
 	case TYPE_PLANET_TERRESTRIAL:
 		double r = 0, g = 0, b = 0;
-		double atmo = sbody->atm_oxidizing_.ToDouble();
-		if ( sbody->gas_ > 0.001)
+		double atmo = sbody.atm_oxidizing_.ToDouble();
+		if ( sbody.gas_ > 0.001)
 		{
 			if (atmo > 0.95)
 			{
@@ -1190,19 +1233,19 @@ void PiSystemGenerator::pickAtmosphere( PiSourceDesc * sbody )
 				g = 1.0f;
 				b = 1.0f;
 			}
-			sbody->atmos_color_ = Color(r, g, b, 1.0); //Color(r * 255, g * 255, b * 255, 255);
+			sbody.atmos_color_ = Color(r, g, b, 1.0); //Color(r * 255, g * 255, b * 255, 255);
 		}
 		else
 		{
-			sbody->atmos_color_ = Color::TRANSPARENT_BLACK; //Color::BLANK;
+			sbody.atmos_color_ = Color::TRANSPARENT_BLACK; //Color::BLANK;
 		}
-		sbody->atmos_density_ = sbody->gas_;
+		sbody.atmos_density_ = sbody.gas_;
 		//Output("| Atmosphere :\n|      red   : [%f] \n|      green : [%f] \n|      blue  : [%f] \n", r, g, b);
 		//Output("-------------------------------\n");
 		break;
 		/*default:
-		sbody->m_atmosColor = Color(0.6f, 0.6f, 0.6f, 1.0f);
-		sbody->m_atmosDensity = m_body->m_volatileGas.ToDouble();
+		sbody.m_atmosColor = Color(0.6f, 0.6f, 0.6f, 1.0f);
+		sbody.m_atmosDensity = m_body->m_volatileGas.ToDouble();
 		break;*/
 	}
 }
@@ -1233,11 +1276,11 @@ static fixed mass_from_disk_area(fixed a, fixed b, fixed max)
         (a * a - one_over_3max * a * a * a);
 }
 
-static fixed get_disc_density( PiSourceDesc * primary, fixed discMin, fixed discMax, fixed percentOfPrimaryMass )
+static fixed get_disc_density( const PiSourceDesc & primary, fixed discMin, fixed discMax, fixed percentOfPrimaryMass )
 {
     discMax = std::max( discMax, discMin );
     fixed total = mass_from_disk_area(discMin, discMax, discMax);
-    return primary->GM_ * percentOfPrimaryMass / total;
+    return primary.GM_ * percentOfPrimaryMass / total;
 }
 
 static inline bool test_overlap( const fixed & x1, const fixed & x2, const fixed & y1, const fixed & y2 )

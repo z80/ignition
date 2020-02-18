@@ -22,6 +22,7 @@
 #include "dynamic_cube.h"
 #include "character_cube.h"
 #include "sphere_example.h"
+#include "sphere_dynamic.h"
 #include "test_environment.h"
 
 #include "physics_world_2.h"
@@ -52,6 +53,7 @@ void RegisterComponents( Context * context )
     DynamicCube::RegisterComponent( context );
     CharacterCube::RegisterComponent( context );
     SphereExample::RegisterComponent( context );
+    SphereDynamic::RegisterComponent( context );
     TestEnvironment::RegisterComponent( context );
 
     RegisterPhysicsLibrary2( context );

@@ -16,6 +16,7 @@
 
 #include "pi_system.h"
 #include "pi_system_generator.h"
+#include "system_generator.h"
 
 namespace Ign
 {
@@ -28,12 +29,6 @@ void TestEnvironment::RegisterComponent( Context * context )
 TestEnvironment::TestEnvironment( Context * context )
     : Environment( context )
 {
-    PiRandom rand;
-    //rand.seed( 0 );
-    PiSystem system( 10, 10, 1, 0 );
-    PiSystemGenerator generator;
-    generator.generateStars( &system, rand );
-    generator.apply( &system, rand );
 }
 
 TestEnvironment::~TestEnvironment()
@@ -89,9 +84,8 @@ void TestEnvironment::CreateReplicatedContentServer()
         ip->setParent( rf );
         ip->setR( Vector3d::ZERO );
 
-        SphereExample * se = s->CreateComponent<SphereExample>();
-        //se->setParent( rf );
-        se->setR( Vector3d( 10.0, 0.0, 0.0 ) );
+        //SphereExample * se = s->CreateComponent<SphereExample>();
+        //se->setR( Vector3d( 10.0, 0.0, 0.0 ) );
 
         // Create orbiting element.
         {
@@ -105,6 +99,13 @@ void TestEnvironment::CreateReplicatedContentServer()
             ip = s->CreateComponent<IcoPlanet>();
             ip->setParent( of2 );
             ip->setR( Vector3d::ZERO );
+        }
+
+        // Create generated system.
+        {
+            PiRandom rand;
+            SystemGenerator generator;
+            generator.generate( s );
         }
     }
 }
@@ -137,14 +138,15 @@ void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )
                 continue;
 
             camera->setParent( si );
+            break;
         }
     }
 
     // Parent surfaceCollisionMesh to CameraFrame
     // to be able to change its position on demand.
-    SurfaceCollisionMesh * scm = s->CreateComponent<SurfaceCollisionMesh>();
-    scm->setParent( camera );
-    scm->setR( Vector3d::ZERO );
+    //SurfaceCollisionMesh * scm = s->CreateComponent<SurfaceCollisionMesh>();
+    //scm->setParent( camera );
+    //scm->setR( Vector3d::ZERO );
 
 }
 

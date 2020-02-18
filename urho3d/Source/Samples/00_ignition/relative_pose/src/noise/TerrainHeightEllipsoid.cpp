@@ -16,10 +16,10 @@ template <>
 TerrainHeightFractal<TerrainHeightEllipsoid>::TerrainHeightFractal(const PiSourceDesc&body) :
 	PiBodySource(body)
 {
-	const Float rad = m_minBody.radius_.ToDouble();
-	m_maxHeight = m_minBody.aspectRatio_.ToDouble() - 1.0;
-	m_maxHeightInMeters = m_maxHeight * rad;
-	m_invMaxHeight = 1.0 / m_maxHeight;
+	//const Float rad = m_minBody.radius_.ToDouble();
+	//m_maxHeight = m_minBody.aspectRatio_.ToDouble() - 1.0;
+	//m_maxHeightInMeters = m_maxHeight * rad;
+	//m_invMaxHeight = 1.0 / m_maxHeight;
 }
 
 // This returns the height assuming the body is an ellipsoid (oblate spheroid) with an equatorial bulge
