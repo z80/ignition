@@ -381,7 +381,9 @@ PiBodySource * PiBodySource::InstanceTerrain( const PiSourceDesc & body )
 			InstanceGenerator<TerrainHeightAsteroid3, TerrainColorRock>,
 			InstanceGenerator<TerrainHeightAsteroid4, TerrainColorBandedRock>
 		};
-		gi = choices[rand.Int32(COUNTOF(choices))];
+        const uint32_t qty = COUNTOF(choices);
+        const uint32_t ind = rand.Int32( qty );
+		gi = choices[ind];
 		break;
 	}
 
