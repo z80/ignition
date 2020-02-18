@@ -32,6 +32,8 @@ public:
     /// Level of detail subdivision initialization.
     virtual void subdriveLevelsInit();
 
+    void setMaterialName( const String & material );
+
     // Processing physics frame position changes
     //void childEntered( RefFrame * refFrame ) override;
     //void childLeft( RefFrame * refFrame ) override;
@@ -60,6 +62,7 @@ protected:
     /// triangles obtained from "cubesphereVisual_".
     void regenerateMeshVisual();
 public:
+    String           material_;
     Vector<Vector3d> pts_;
     Cubesphere     cubesphereCollision_, 
                    cubesphereVisual_;

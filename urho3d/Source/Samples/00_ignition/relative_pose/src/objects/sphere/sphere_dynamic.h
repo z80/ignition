@@ -22,6 +22,7 @@ public:
 
     void setRadius( Float r, Float h );
     void setHeightSource( HeightSource * src );
+    void setStar( bool isStar );
 
     void subdriveLevelsInit() override;
 protected:

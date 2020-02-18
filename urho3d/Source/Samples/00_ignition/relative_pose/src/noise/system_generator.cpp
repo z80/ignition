@@ -86,7 +86,7 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
     const Float R = src->m_planetRadius;
     const Float H = src->m_maxHeightInMeters;
     sd->setRadius( 10.0, H/R*10.0 );
-    
+    sd->setStar( true );
     sd->subdriveLevelsInit();
 
     static Float at = 0.0;

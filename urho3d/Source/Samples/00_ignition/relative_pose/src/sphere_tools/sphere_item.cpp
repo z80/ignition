@@ -16,7 +16,7 @@ void SphereItem::RegisterComponent( Context * context )
 SphereItem::SphereItem( Context * context )
     : RefFrame( context )
 {
-
+    material_ = "Ign/Materials/VertexColor.xml";
 }
 
 SphereItem::~SphereItem()
@@ -64,6 +64,11 @@ void SphereItem::subdriveLevelsInit()
     subdriveSourceVisual_.addLevel( 0.1, 1.0 );
     //subdriveSourceVisual_.addLevel( 1.5, 8.0 );
     subdriveSourceVisual_.addLevel( 5.5, 18.0 );
+}
+
+void SphereItem::setMaterialName( const String & material )
+{
+    material_ = material;
 }
 
 void SphereItem::OnSceneSet( Scene * scene )

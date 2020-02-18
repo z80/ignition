@@ -35,6 +35,14 @@ void SphereDynamic::setHeightSource( HeightSource * src )
     height_source_ = src;
 }
 
+void SphereDynamic::setStar( bool isStar )
+{
+    if ( isStar )
+        setMaterialName( "Ign/Materials/VertexColorStar.xml" );
+    else
+        setMaterialName( "Ign/Materials/VertexColor.xml" );
+}
+
 void SphereDynamic::subdriveLevelsInit()
 {
     cubesphereCollision_.setR( R_ );
