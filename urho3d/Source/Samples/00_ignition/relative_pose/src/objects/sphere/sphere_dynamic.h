@@ -20,7 +20,7 @@ public:
 	SphereDynamic( Context * context );
     ~SphereDynamic();
 
-    void setRadius( Float r );
+    void setRadius( Float r, Float h );
     void setHeightSource( HeightSource * src );
 
     void subdriveLevelsInit() override;
@@ -28,7 +28,7 @@ protected:
     void applySourceCollision( Cubesphere & cs ) override;
     void applySourceVisual( Cubesphere & cs ) override;
 
-    Float R_;
+    Float R_, H_;
     HeightSource * height_source_;
 };
 

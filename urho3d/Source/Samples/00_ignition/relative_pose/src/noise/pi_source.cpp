@@ -39,7 +39,7 @@ PiSourceDesc::PiSourceDesc()
     super_type_ = SUPERTYPE_ROCKY_PLANET;
     type_       = TYPE_PLANET_TERRESTRIAL;
 
-    GM_ = 1.0;
+    mass_ = 1.0;
 	radius_ = 30.0;
 	aspectRatio_ = 1.0;
 
@@ -68,7 +68,7 @@ PiSourceDesc::PiSourceDesc()
 
 Float PiSourceDesc::mass() const
 {
-    Float m = GM_.ToDouble() / G;
+    Float m = mass_.ToDouble();
     if ( super_type_ == SUPERTYPE_STAR )
         m *= SOL_MASS;
     else if ( ( super_type_ == SUPERTYPE_ROCKY_PLANET ) || 
@@ -107,12 +107,14 @@ PiBodySource::PiBodySource( const PiSourceDesc & body )
 	m_volcanic = Clamp(body.volcanic_.ToDouble(), 0.0, 1.0); // height scales with volcanicity as well
 	m_surfaceEffects = 0;
 
-	const double rad = m_minBody.radius();
-
-	// calculate max height
-	// max mountain height for earth-like planet (same mass, radius)
+    // Radius in meters.
+	const Float rad = m_minBody.radius();
+    // mass in kilograms.
     const Float mass = body.mass();
-	m_maxHeightInMeters = std::max(100.0, (9000.0 * rad * rad * (m_volcanic + 0.5)) / ( mass * 6.64e-12 ) );
+    // calculate max height
+    const Float empiricHeight = (9000.0 * rad * rad * (m_volcanic + 0.5)) / ( mass * 6.64e-12 );
+	// max mountain height for earth-like planet (same mass, radius)
+	m_maxHeightInMeters = std::max(100.0, empiricHeight );
 	m_maxHeightInMeters = std::min(rad, m_maxHeightInMeters); // small asteroid case
 
 	// and then in sphere normalized jizz
@@ -281,7 +283,8 @@ Float PiBodySource::height(const Vector3d& at) const
 
 Color PiBodySource::color(const Vector3d& at) const
 {
-    const Vector3d c = GetColor(at, 0.0, Vector3d::ZERO);
+    const Float h = GetHeight( at );
+    const Vector3d c = GetColor( at, h, at );
     const Color col(c.x_, c.y_, c.z_, 1.0);
     return col;
 }

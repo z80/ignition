@@ -5,7 +5,7 @@
 #define ORBIT_H
 
 #include "matrix3d.h"
-#include "Vector3d.h"
+#include "vector3d.h"
 
 namespace Ign
 {

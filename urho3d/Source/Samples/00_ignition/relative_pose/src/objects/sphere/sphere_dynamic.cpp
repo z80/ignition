@@ -15,6 +15,7 @@ SphereDynamic::SphereDynamic( Context * context )
 {
     height_source_ = nullptr;
     R_ = 10.0;
+    H_ = 1.0;
 }
 
 SphereDynamic::~SphereDynamic()
@@ -23,9 +24,10 @@ SphereDynamic::~SphereDynamic()
         delete height_source_;
 }
 
-void SphereDynamic::setRadius( Float r )
+void SphereDynamic::setRadius( Float r, Float h )
 {
     R_ = r;
+    H_ = h;
 }
 
 void SphereDynamic::setHeightSource( HeightSource * src )
@@ -36,7 +38,9 @@ void SphereDynamic::setHeightSource( HeightSource * src )
 void SphereDynamic::subdriveLevelsInit()
 {
     cubesphereCollision_.setR( R_ );
+    cubesphereCollision_.setH( H_ );
     cubesphereVisual_.setR( R_ );
+    cubesphereVisual_.setH( H_ );
 
     subdriveSourceCollision_.clearLevels();
     subdriveSourceCollision_.addLevel( 1.0, 3.0 );
@@ -44,7 +48,7 @@ void SphereDynamic::subdriveLevelsInit()
     subdriveSourceCollision_.addLevel( 5.5, 18.0 );
 
     subdriveSourceVisual_.clearLevels();
-    subdriveSourceVisual_.addLevel( 0.25, 6.0 );
+    subdriveSourceVisual_.addLevel( 0.5, 6.0 );
     subdriveSourceVisual_.addLevel( 1.5, 18.0 );
 }
 

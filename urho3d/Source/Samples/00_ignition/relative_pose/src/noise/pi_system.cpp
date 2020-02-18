@@ -28,7 +28,7 @@ void PiSystem::dumpBody( const String & spacing, const PiSourceDesc & sbody, uns
 	}
 	URHO3D_LOGINFOF( "type:  %i", sbody.type_ );
 	URHO3D_LOGINFOF( "seed_: %i", sbody.seed_ );
-	URHO3D_LOGINFOF( "GM_:   %i", sbody.GM_.ToInt32() );
+	URHO3D_LOGINFOF( "GM_:   %i", sbody.mass_.ToInt32() );
 	URHO3D_LOGINFOF( "radius_: %i", sbody.radius_.ToInt32() );
 	URHO3D_LOGINFOF( "aspectRatio_: %f", sbody.aspectRatio_.ToDouble() );
 	URHO3D_LOGINFOF( "life_: %f", sbody.life_.ToDouble() );

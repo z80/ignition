@@ -20,6 +20,22 @@ SystemGenerator::~SystemGenerator()
 
 void SystemGenerator::generate( Scene * scene )
 {
+    {
+        Float rad = EARTH_RADIUS;
+        // mass in kilograms.
+        Float mass = EARTH_MASS;
+        const Float m_volcanic = 0.0;
+        // calculate max height
+        Float empiricHeight = (9000.0 * rad * rad * (m_volcanic + 0.5)) / ( mass * 6.64e-12 );
+
+        rad = SOL_RADIUS;
+        mass = SOL_MASS;
+        empiricHeight = (9000.0 * rad * rad * (m_volcanic + 0.5)) / ( mass * 6.64e-12 );
+        empiricHeight += 0.0;
+    }
+
+
+
 	PiSystem s( 10, 2, 1 );
 	generateSystem( s );
 
@@ -46,8 +62,10 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
 
     SphereDynamic * sd = scene->CreateComponent<SphereDynamic>( LOCAL );
     sd->setHeightSource( src );
-    const Float R = sbody.radius_.ToDouble();
-    sd->setRadius( 10.0 );
+    const Float R = src->m_planetRadius;
+    const Float H = src->m_maxHeightInMeters;
+    sd->setRadius( 10.0, H/R*10.0 );
+    
     sd->subdriveLevelsInit();
 
     static Float at = 0.0;
