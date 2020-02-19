@@ -16,6 +16,9 @@ public:
     PiSystemGenerator();
     ~PiSystemGenerator();
 
+    // Create just one planet in the center.
+    void createDumb( PiSystem * system, PiRandom & rand );
+
     void apply( PiSystem * system, PiRandom & rand );
 
     int  generateStars( PiSystem * system, BodyType * starTypes, PiRandom & rand );
