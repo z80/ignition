@@ -105,7 +105,9 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
     for ( unsigned i=0; i<qty; i++ )
     {
         const int childIndex = sbody.child_inds_[i];
-        createBody( scene, sd, s, childIndex );
+        const PiSourceDesc & b = s.bodies_[childIndex];
+        if ( b.type_ != TYPE_PLANET_ASTEROID )
+            createBody( scene, sd, s, childIndex );
     }
 }
 
