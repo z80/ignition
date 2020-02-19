@@ -1,6 +1,7 @@
 
 #include "physics_frame.h"
 #include "physics_item.h"
+#include "surface_collision_mesh.h"
 #include "settings.h"
 #include "Notifications.h"
 
@@ -84,6 +85,10 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     // Make smaller gravity for debugging.
     //physicsWorld_->SetGravity( Vector3( 0.0, -1.0, 0.0 ) );
     physicsWorld_->SetGravity( Vector3::ZERO );
+
+    // Also create a surface collision mesh item.
+    SurfaceCollisionMesh * scm = scene->CreateComponent<SurfaceCollisionMesh>( LOCAL );
+    scm->setParent( this );
 }
 
 void PhysicsFrame::updateChildStates()
