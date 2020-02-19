@@ -24,6 +24,11 @@ public:
     void setHeightSource( HeightSource * src );
     void setStar( bool isStar );
 
+    /// For assets placement returns 3d vector on a surface
+    /// given a unit vector.
+    Vector3d surfacePos( const Vector3d & unitAt );
+
+
     void subdriveLevelsInit() override;
 protected:
     void applySourceCollision( Cubesphere & cs ) override;

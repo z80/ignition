@@ -28,6 +28,7 @@ void SphereDynamic::setRadius( Float r, Float h )
 {
     R_ = r;
     H_ = h;
+    subdriveLevelsInit();
 }
 
 void SphereDynamic::setHeightSource( HeightSource * src )
@@ -41,6 +42,21 @@ void SphereDynamic::setStar( bool isStar )
         setMaterialName( "Ign/Materials/VertexColorStar.xml" );
     else
         setMaterialName( "Ign/Materials/VertexColor.xml" );
+}
+
+Vector3d SphereDynamic::surfacePos( const Vector3d & unitAt )
+{
+    const Float l = unitAt.Length();
+    if ( l < 0.5 )
+        return Vector3d::ZERO;
+    if ( !height_source_ )
+    {
+        const Vector3d at = unitAt * R_ / l;
+        return at;
+    }
+    const Float h = height_source_->height( unitAt );
+    const Vector3d at = unitAt *( (R_ + h*H_) / l );
+    return at;
 }
 
 void SphereDynamic::subdriveLevelsInit()
