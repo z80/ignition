@@ -74,31 +74,35 @@ void SystemGenerator::generateSystem( PiSystem & s )
 void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s, int bodyIndex )
 {
     const PiSourceDesc & sbody = s.bodies_[ bodyIndex ];
-    
-    PiBodySource * src = nullptr;
-    if ( sbody.super_type_ == SUPERTYPE_STAR )
-        src = PiBodySource::InstanceStar( sbody );
-    else
-        src = PiBodySource::InstanceTerrain( sbody );
 
-    SphereDynamic * sd = scene->CreateComponent<SphereDynamic>( LOCAL );
-    sd->setHeightSource( src );
-    const Float R = src->m_planetRadius;
-    const Float H = src->m_maxHeightInMeters;
-    sd->setRadius( 10.0, H/R*10.0 );
-    sd->setStar( true );
-    sd->subdriveLevelsInit();
-
-    static Float at = 0.0;
-    if ( parent )
+    if ( sbody.super_type_ != SUPERTYPE_STAR )
     {
-        //sd->setParent( parent );
-    }
-    sd->setR( Vector3d( at, 0.0, 0.0 ) );
-    at += 20.0;
+        PiBodySource * src = nullptr;
+        if ( sbody.super_type_ == SUPERTYPE_STAR )
+            src = PiBodySource::InstanceStar( sbody );
+        else
+            src = PiBodySource::InstanceTerrain( sbody );
 
-    if ( at > 100.0 )
-        return;
+        SphereDynamic * sd = scene->CreateComponent<SphereDynamic>( LOCAL );
+        sd->setHeightSource( src );
+        const Float R = src->m_planetRadius;
+        const Float H = src->m_maxHeightInMeters;
+        sd->setRadius( 10.0, H/R*10.0 );
+        sd->setStar( true );  // This sets the star material which is supposed to ignore lighing.
+        sd->subdriveLevelsInit();
+
+        static Float at = 0.0;
+        if ( parent )
+        {
+            //sd->setParent( parent );
+        }
+        sd->setR( Vector3d( at, 0.0, 0.0 ) );
+        at += 20.0;
+
+        //if ( at > 100.0 )
+        //    return;
+
+    }
 
 
     const unsigned qty = sbody.child_inds_.Size();
@@ -107,7 +111,8 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
         const int childIndex = sbody.child_inds_[i];
         const PiSourceDesc & b = s.bodies_[childIndex];
         if ( b.type_ != TYPE_PLANET_ASTEROID )
-            createBody( scene, sd, s, childIndex );
+            //createBody( scene, sd, s, childIndex );
+            createBody( scene, nullptr, s, childIndex );
     }
 }
 
