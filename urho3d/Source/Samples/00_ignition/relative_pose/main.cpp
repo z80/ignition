@@ -18,14 +18,16 @@ URHO3D_DEFINE_APPLICATION_MAIN(Main)
 Main::Main(Context* context) :
     BaseApp(context)
 {
-    Ign::RegisterComponents( context );
-    Ign::Register3dparty( context );
 }
 
 void Main::Start()
 {
     // Execute base class startup
     BaseApp::Start();
+
+    // Register components.
+    Ign::RegisterComponents( context_ );
+    Ign::Register3dparty( context_ );
 
     // Create the scene content
     CreateScene();
