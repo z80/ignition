@@ -145,18 +145,23 @@ void SettingsWindow::ChangeTab(SettingTabs tab)
 
 void SettingsWindow::CreateControlsTab()
 {
-    auto controllerInput = GetSubsystem<ControllerInput>();
+    ControllerInput * controllerInput = GetSubsystem<ControllerInput>();
     auto names = controllerInput->GetControlNames();
 
     // Loop trough all of the controls
     for (auto it = names.Begin(); it != names.End(); ++it) {
         CreateSingleLine();
         CreateLabel((*it).second_);
-        Button* button = CreateButton(controllerInput->GetActionKeyName((*it).first_));
-        button->SetVar("Action", (*it).first_);
+        const int actionId = it->first_;
+        const String actionName = it->second_;
+        const String actionKeyName = controllerInput->GetActionKeyName( actionId );
+        Button* button = CreateButton( actionKeyName );
+        button->SetVar( "Action", actionId );
 
         // Detect button press events
-        SubscribeToEvent(button, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        SubscribeToEvent( button, E_RELEASED, 
+            [&](StringHash eventType, VariantMap& eventData)
+            {
             // Start mapping input
             using namespace Released;
             Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
@@ -171,10 +176,9 @@ void SettingsWindow::CreateControlsTab()
             buttonLabel->SetText("...");
 
             Input* input = GetSubsystem<Input>();
-            if (input->IsMouseVisible()) {
-                input->SetMouseVisible(false);
-            }
-        });
+            if (input->IsMouseVisible())
+                input->SetMouseVisible( false );
+            } );
     }
 }
 
