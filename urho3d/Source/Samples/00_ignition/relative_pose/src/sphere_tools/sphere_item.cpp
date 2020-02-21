@@ -2,6 +2,7 @@
 #include "sphere_item.h"
 #include "physics_frame.h"
 #include "camera_frame.h"
+#include "settings.h"
 
 namespace Ign
 {
@@ -42,8 +43,24 @@ void SphereItem::updateVisualData()
 void SphereItem::refStateChanged()
 {
     const Vector3    r = refR().vector3();
-    const Quaternion q = refQ().quaternion();
-    node_->SetTransform( r, q );
+    const Quaternion q = refQ().quaternion();    
+
+    // Check the distance. If it is beyond reasonable visibility range 
+    // specified in Settings make it closer and scale it down.
+    const Float maxDistance = Settings::cameraMaxDistance();
+    Float dist = r.Length();
+    if ( dist > maxDistance )
+    {
+        Float scale = maxDistance / dist;
+        Vector3 scaledR = r * scale;
+        node_->SetScale( scale );
+        node_->SetTransform( scaledR, q );
+    }
+    else
+    {
+        node_->SetScale( 1.0 );
+        node_->SetTransform( r, q );
+    }
 }
 
 void SphereItem::poseChanged()

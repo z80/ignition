@@ -69,8 +69,8 @@ void SystemGenerator::generateSystem( PiSystem & s )
 	PiRandom rand;
 	rand.seed( UNIVERSE_SEED );
 	PiSystemGenerator generator;
-	//generator.apply( &s, rand );
-    generator.createDumb( &s, rand );
+	generator.apply( &s, rand );
+    //generator.createDumb( &s, rand );
 }
 
 void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s, int bodyIndex )
