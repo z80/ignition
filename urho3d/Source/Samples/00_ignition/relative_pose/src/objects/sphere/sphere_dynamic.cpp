@@ -44,14 +44,14 @@ void SphereDynamic::setStar( bool isStar )
         setMaterialName( "Ign/Materials/VertexColor.xml" );
 }
 
-Vector3d SphereDynamic::surfacePos( const Vector3d & unitAt )
+Vector3d SphereDynamic::surfacePos( const Vector3d & unitAt, const Float height )
 {
     const Float l = unitAt.Length();
     if ( l < 0.5 )
         return Vector3d::ZERO;
     if ( !height_source_ )
     {
-        const Vector3d at = unitAt * R_ / l;
+        const Vector3d at = unitAt * (R_ + height) / l;
         return at;
     }
     const Float h = height_source_->height( unitAt );

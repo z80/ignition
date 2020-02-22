@@ -6,6 +6,8 @@
 
 
 #include "sphere_dynamic.h"
+#include "rotating_frame.h"
+#include "orbiting_frame.h"
 
 namespace Ign
 {
@@ -69,8 +71,8 @@ void SystemGenerator::generateSystem( PiSystem & s )
 	PiRandom rand;
 	rand.seed( UNIVERSE_SEED );
 	PiSystemGenerator generator;
-	generator.apply( &s, rand );
-    //generator.createDumb( &s, rand );
+	//generator.apply( &s, rand );
+    generator.createDumb( &s, rand );
 }
 
 void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s, int bodyIndex )
@@ -85,7 +87,15 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
         else
             src = PiBodySource::InstanceTerrain( sbody );
 
-        SphereDynamic * sd = scene->CreateComponent<SphereDynamic>( LOCAL );
+        OrbitingFrame * of = scene->CreateComponent<OrbitingFrame>( REPLICATED );
+        of->SetGM( sbody.mass_.ToDouble() * 10.0 );
+
+        RotatingFrame * rf = scene->CreateComponent<RotatingFrame>( REPLICATED );
+        rf->SetPeriod( sbody.rotation_period_.ToDouble() );
+        rf->setParent( of );
+
+        SphereDynamic * sd = scene->CreateComponent<SphereDynamic>( REPLICATED );
+        sd->setParent( rf );
         sd->setHeightSource( src );
         const Float R = src->m_planetRadius;
         const Float H = src->m_maxHeightInMeters;
@@ -96,7 +106,7 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
         static Float at = 0.0;
         if ( parent )
         {
-            //sd->setParent( parent );
+            //of->setParent( parent );
         }
         sd->setR( Vector3d( at, 0.0, 0.0 ) );
         at += 20.0;

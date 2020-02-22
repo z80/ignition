@@ -26,7 +26,7 @@ public:
 
     /// For assets placement returns 3d vector on a surface
     /// given a unit vector.
-    Vector3d surfacePos( const Vector3d & unitAt );
+    Vector3d surfacePos( const Vector3d & unitAt, const Float height=0.0 );
 
 
     void subdriveLevelsInit() override;

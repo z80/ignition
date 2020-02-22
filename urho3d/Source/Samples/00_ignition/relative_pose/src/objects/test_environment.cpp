@@ -49,6 +49,16 @@ bool TestEnvironment::ClientConnected( int id, const VariantMap & identity, Stri
 
 void TestEnvironment::CreateReplicatedContentServer()
 {
+    contentServerPlanet();
+}
+
+void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )
+{
+    contentClientCharacterCube( camera );
+}
+
+void TestEnvironment::contentServerTestSystem()
+{
     Scene * s = GetScene();
 
     /*InfinitePlane * p = s->CreateComponent<InfinitePlane>();
@@ -110,7 +120,7 @@ void TestEnvironment::CreateReplicatedContentServer()
     }
 }
 
-void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )
+void TestEnvironment::contentClientCameraOnly( CameraFrame * camera )
 {
     Scene * s = GetScene();
     if ( !s )
@@ -147,8 +157,39 @@ void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )
     //SurfaceCollisionMesh * scm = s->CreateComponent<SurfaceCollisionMesh>();
     //scm->setParent( camera );
     //scm->setR( Vector3d::ZERO );
+}
+
+void TestEnvironment::contentServerPlanet()
+{
+    Scene * s = GetScene();
+    if ( !s )
+        return;
+
+    // Create generated system.
+    {
+        PiRandom rand;
+        SystemGenerator generator;
+        generator.generate( s );
+    }
+}
+
+void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
+{
+    Scene * s = GetScene();
+    if ( !s )
+        return;
+
+    DynamicCube * d = s->CreateComponent<DynamicCube>();
+    d->setName( String( "DynamicCube object" ) );
+
+    CharacterCube * cc = s->CreateComponent<CharacterCube>();
+    cc->setName( String( "CharacterCube object" ) );
+    cc->setR( Vector3d( 0.0, 5.0, 0.0 ) );
+    camera->setParent( cc );
 
 }
+
+
 
 
 }
