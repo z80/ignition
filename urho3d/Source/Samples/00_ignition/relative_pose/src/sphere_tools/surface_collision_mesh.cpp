@@ -211,25 +211,31 @@ void SurfaceCollisionMesh::constructCustomGeometry( SphereItem * si, CustomGeome
     pts_.Push( lastState_.r );
     tris_.Clear();
 
-    // For debugging pick triangles from visual, not collision sphere.
-    //si->cubesphereCollision_.triangleList( pts_, dist, tris_ );
-    si->cubesphereVisual_.triangleList( pts_, dist, tris_ );
-
-    // Convert to local reference frame.
-    const Quaterniond invQ = lastState_.q.Inverse();
-    const unsigned qty = tris_.Size();
-    for ( unsigned i=0; i<qty; i++ )
+    unsigned qty = 0;
+    if ( si )
     {
-        Vertex & v = tris_[i];
-        v.at = invQ * (v.at - lastState_.r);
-        v.norm = invQ * v.norm;
+        // For debugging pick triangles from visual, not collision sphere.
+        //si->cubesphereCollision_.triangleList( pts_, dist, tris_ );
+        si->cubesphereVisual_.triangleList( pts_, dist, tris_ );
+
+        // Convert to local reference frame.
+        const Quaterniond invQ = lastState_.q.Inverse();
+        const unsigned trisQty = tris_.Size();
+        qty = trisQty;
+        for ( unsigned i=0; i<trisQty; i++ )
+        {
+            Vertex & v = tris_[i];
+            v.at = invQ * (v.at - lastState_.r);
+            v.norm = invQ * v.norm;
+        }
     }
 
     cg->Clear();
     cg->SetNumGeometries( 1 );
     cg->BeginGeometry( 0, TRIANGLE_LIST );
 
-    for ( unsigned i=0; i<qty; i++ )
+    const unsigned trisQty = qty;
+    for ( unsigned i=0; i<trisQty; i++ )
     {
         const Vertex & v = tris_[i];
         const Vector3 at( v.at.x_, v.at.y_, v.at.z_ );

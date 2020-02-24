@@ -185,8 +185,6 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
 
     CharacterCube * cc = s->CreateComponent<CharacterCube>();
     cc->setName( String( "CharacterCube object" ) );
-    cc->setR( Vector3d( 0.0, 5.0, 0.0 ) );
-    camera->setParent( cc );
 
     // Search for a planet and place everything on a side.
     const Vector<SharedPtr<Component> > & comps = s->GetComponents();
@@ -212,7 +210,7 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
         const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, 0.0 ), 3.5 );
         cc->setR( at );
     }
-
+    camera->setParent( cc );
 }
 
 

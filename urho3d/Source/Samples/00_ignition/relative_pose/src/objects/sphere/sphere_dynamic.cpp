@@ -51,11 +51,11 @@ Vector3d SphereDynamic::surfacePos( const Vector3d & unitAt, const Float height 
         return Vector3d::ZERO;
     if ( !height_source_ )
     {
-        const Vector3d at = unitAt * (R_ + height) / l;
+        const Vector3d at = unitAt * ( (R_ + height) / l );
         return at;
     }
     const Float h = height_source_->height( unitAt );
-    const Vector3d at = unitAt *( (R_ + h*H_) / l );
+    const Vector3d at = unitAt *( (R_ + h*H_ + height) / l );
     return at;
 }
 

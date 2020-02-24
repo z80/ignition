@@ -49,7 +49,8 @@ void PhysicsFrame::physicsStep( float sec_dt )
     updateChildStates();
 
     const Vector<SharedPtr<RefFrame> > & obs = userControlledObjects();
-    if ( checkIfWorthToExist() )
+    const bool worthToExist = checkIfWorthToExist();
+    if ( !worthToExist )
         return;
     checkIfTeleport();
     checkInnerObjects();
@@ -164,60 +165,81 @@ void PhysicsFrame::checkOuterObjects()
     SharedPtr<RefFrame> p = parent_;
     if ( p )
     {
-        const Vector<SharedPtr<RefFrame> > & objs = p->children_;
-        unsigned qty = objs.Size();
         const Float includeDist = Settings::dynamicsWorldDistanceInclude();
-
-        for ( unsigned i=0; i<qty; i++ )
+        while ( true )
         {
-            SharedPtr<RefFrame> o = objs[i];
-            // Skip this node itself and any other physics frames.
-            if ( o == this )
-                continue;
-            PhysicsFrame * pf = o->Cast<PhysicsFrame>();
-            if ( pf )
-                continue;
+            bool loopAgain = false;
+            const Vector<SharedPtr<RefFrame> > & objs = p->children_;
+            unsigned qty = objs.Size();
 
-            const Float dist = o->distance( this );
-            if ( dist <= includeDist )
-                o->setParent( this );
+            for ( unsigned i=0; i<qty; i++ )
+            {
+                SharedPtr<RefFrame> o = objs[i];
+                // Skip this node itself and any other physics frames.
+                if ( o == this )
+                    continue;
+                PhysicsFrame * pf = o->Cast<PhysicsFrame>();
+                if ( pf )
+                    continue;
+
+                const Float dist = o->distance( this );
+                if ( dist <= includeDist )
+                {
+                    o->setParent( this );
+                    loopAgain = true;
+                    break;
+                }
+            }
+            if ( !loopAgain )
+                break;
         }
     }
     else
     {
         Scene * s = GetScene();
-        const Vector<SharedPtr<Component> > & comps = s->GetComponents();
-        const Float includeDist = Settings::dynamicsWorldDistanceInclude();
-        const unsigned compsQty = comps.Size();
-        for ( unsigned i=0; i<compsQty; i++ )
+        while( true )
         {
-            Component * c = comps[i];
-            if ( !c )
-                continue;
-            PhysicsItem * pi = c->Cast<PhysicsItem>();
-            if ( !pi )
-                continue;
+            bool loopAgain = false;
+            const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+            const Float includeDist = Settings::dynamicsWorldDistanceInclude();
+            const unsigned compsQty = comps.Size();
+            for ( unsigned i=0; i<compsQty; i++ )
+            {
+                Component * c = comps[i];
+                if ( !c )
+                    continue;
+                PhysicsItem * pi = c->Cast<PhysicsItem>();
+                if ( !pi )
+                    continue;
 
-            // Only consider objects with no parent
-            // and ignore others.
-            RefFrame * currentParent = pi->parent();
-            if ( currentParent )
-                continue;
+                // Only consider objects with no parent
+                // and ignore others.
+                RefFrame * currentParent = pi->parent();
+                if ( currentParent )
+                    continue;
 
-            const Float dist = pi->distance( this );
-            if ( dist <= includeDist )
-                pi->setParent( this );
-
+                const Float dist = pi->distance( this );
+                if ( dist <= includeDist )
+                {
+                    pi->setParent( this );
+                    loopAgain = true;
+                    break;
+                }
+            }
+            if ( !loopAgain )
+                break;
         }
     }
 }
 
 bool PhysicsFrame::checkIfWorthToExist()
 {
-    // If there are no user objects remove this object.
+    // If there are user controlled objects keep existing.
     if ( !userControlledList_.Empty() )
-        return false;
+        return true;
 
+    // If there are no user objects remove this object.
+    // But first parent all objects inside to the parent.
     const unsigned qty = children_.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
@@ -228,7 +250,7 @@ bool PhysicsFrame::checkIfWorthToExist()
     // Remove this physics ref. frame.
     this->Remove();
 
-    return true;
+    return false;
 }
 
 void PhysicsFrame::checkIfTeleport()
