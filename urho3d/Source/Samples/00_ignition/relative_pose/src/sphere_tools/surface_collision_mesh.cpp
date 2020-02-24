@@ -247,6 +247,11 @@ void SurfaceCollisionMesh::constructCustomGeometry( SphereItem * si, CustomGeome
     }
 
     cg->Commit();
+
+    ResourceCache * cache = GetSubsystem<ResourceCache>();
+    Material * m = cache->GetResource<Material>("Materials/Stone.xml");
+    m->SetFillMode( FILL_WIREFRAME );
+    cg->SetMaterial( m );
 }
 
 
