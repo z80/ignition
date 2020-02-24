@@ -7,6 +7,7 @@
 #include "character_cube.h"
 #include "ico_planet.h"
 #include "sphere_example.h"
+#include "sphere_dynamic.h"
 #include "surface_collision_mesh.h"
 #include "rotating_frame.h"
 #include "orbiting_frame.h"
@@ -186,6 +187,31 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
     cc->setName( String( "CharacterCube object" ) );
     cc->setR( Vector3d( 0.0, 5.0, 0.0 ) );
     camera->setParent( cc );
+
+    // Search for a planet and place everything on a side.
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    SphereDynamic * planet = nullptr;
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        planet = c->Cast<SphereDynamic>();
+        if ( planet )
+            break;
+    }
+    if ( !planet )
+        return;
+
+    d->setParent( planet );
+    cc->setParent( planet );
+    {
+        const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, 0.0 ), 2.0 );
+        d->setR( at );
+    }
+    {
+        const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, 0.0 ), 3.5 );
+        cc->setR( at );
+    }
 
 }
 
