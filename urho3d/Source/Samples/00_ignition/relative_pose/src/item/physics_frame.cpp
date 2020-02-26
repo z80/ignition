@@ -25,7 +25,7 @@ void PhysicsFrame::RegisterComponent( Context * context )
 PhysicsFrame::PhysicsFrame( Context * context )
     : RefFrame( context )
 {
-
+    setName( "PhysicsFrame" );
 }
 
 PhysicsFrame::~PhysicsFrame()

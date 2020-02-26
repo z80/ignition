@@ -18,6 +18,7 @@ DynamicCube::DynamicCube( Context * context )
     : PhysicsItem( context )
 {
     thrustEnabled_ = false;
+    setName( "DynamicCube" );
 }
 
 DynamicCube::~DynamicCube()

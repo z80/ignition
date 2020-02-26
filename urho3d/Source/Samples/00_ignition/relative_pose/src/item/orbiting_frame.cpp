@@ -83,6 +83,7 @@ OrbitingFrame::OrbitingFrame( Context * context )
     orbitDesc.orbitalPeriod    = 1;
 
     active_ = false;
+    setName( "OrbitingFrame" );
 }
 
 OrbitingFrame::~OrbitingFrame()

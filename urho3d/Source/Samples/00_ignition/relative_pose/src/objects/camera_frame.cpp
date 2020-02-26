@@ -25,6 +25,7 @@ CameraFrame::CameraFrame( Context * context )
     yaw_   = 30.0 / 180.0 * 3.14;
     pitch_ = 45.0 / 180.0 * 3.14;
     dist_  = 28.0;
+    setName( "CameraFrame" );
 }
 
 CameraFrame::~CameraFrame()

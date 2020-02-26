@@ -26,6 +26,7 @@ RotatingFrame::RotatingFrame( Context * context )
 	phase_ = 0;
 	period_ = Settings::ticks(60.0);
 	orientation_ = Quaterniond::IDENTITY;
+    setName( "RotatingFrame" );
 }
 
 RotatingFrame::~RotatingFrame()

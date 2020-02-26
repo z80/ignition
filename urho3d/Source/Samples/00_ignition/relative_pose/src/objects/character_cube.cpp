@@ -14,7 +14,7 @@ void CharacterCube::RegisterComponent( Context * context )
 CharacterCube::CharacterCube( Context * context )
     : PhysicsCharacterItem( context )
 {
-
+    setName( "CharacterCube" );
 }
 
 CharacterCube::~CharacterCube()

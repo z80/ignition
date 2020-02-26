@@ -16,6 +16,7 @@ SurfaceCollisionMesh::SurfaceCollisionMesh( Context * context )
       lastSphereItem_( nullptr )
 {
     SubscribeToEvent( E_UPDATE, URHO3D_HANDLER(SurfaceCollisionMesh, Update) );
+    setName( "SurfaceCollisionMesh" );
 }
 
 SurfaceCollisionMesh::~SurfaceCollisionMesh()

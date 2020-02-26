@@ -18,6 +18,7 @@ SphereItem::SphereItem( Context * context )
     : RefFrame( context )
 {
     material_ = "Ign/Materials/VertexColor.xml";
+    setName( "SphereItem" );
 }
 
 SphereItem::~SphereItem()
