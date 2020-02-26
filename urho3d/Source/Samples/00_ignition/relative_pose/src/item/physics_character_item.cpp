@@ -57,10 +57,13 @@ void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
         return;
     State rs;
     of->relativeState( this, rs );
-    const Vector3d wantedG( 0.0, -1.0, 0.0 );
-    const Vector3d actualG = rs.r.Normalized();
+    const Vector3d actualG = rs.q * Vector3d( 0.0, 1.0, 0.0 );
+    //const Vector3d wantedG( 0.0, -1.0, 0.0 );
+    const Vector3d wantedG = rs.r.Normalized();
     const Vector3d cross = wantedG.CrossProduct( actualG );
-    const Float si = cross.Length();
+    Quaterniond q;
+    q.FromRotationTo( actualG, wantedG );
+    /*const Float si = cross.Length();
     static const Float EPS = 0.0001;
     Quaterniond baseQ;
     if ( si < EPS )
@@ -81,7 +84,7 @@ void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
     const Float azSi2 = std::sin( az_2 );
     const Float azCo2 = std::cos( az_2 );
     const Quaterniond azQ( azCo2, 0.0, azSi2, 0.0 );
-    const Quaterniond q = baseQ * azQ;
+    const Quaterniond q = baseQ * azQ;*/
 
     rb->SetRotationd( q );
 }
