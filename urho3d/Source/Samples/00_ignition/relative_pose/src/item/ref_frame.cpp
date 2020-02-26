@@ -272,6 +272,12 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
 
         r_a = r_n_1 + q_n_1*r_a;
         q_a = q_n_1 * q_a;
+        if ( debugLogging )
+        {
+            URHO3D_LOGINFOF( "Node %s", itemB->GetNode()->GetName().CString() );
+            URHO3D_LOGINFOF( "     r: (%f, %f, %f)", r_n_1.x_, r_n_1.y_, r_n_1.z_ );
+            URHO3D_LOGINFOF( "     q: (%f, %f, %f, %f)", q_n_1.w_, q_n_1.x_, q_n_1.y_, q_n_1.z_ );
+        }
     }
 
     Vector3d    r_b = stateInOther.r;
@@ -294,7 +300,7 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
 
         if ( debugLogging )
         {
-            //URHO3D_LOGINFOF( "Node %s", itemB->GetNode()->GetName().CString() );
+            URHO3D_LOGINFOF( "Node %s", itemB->GetNode()->GetName().CString() );
             URHO3D_LOGINFOF( "     r: (%f, %f, %f)", r_n_1.x_, r_n_1.y_, r_n_1.z_ );
             URHO3D_LOGINFOF( "     q: (%f, %f, %f, %f)", q_n_1.w_, q_n_1.x_, q_n_1.y_, q_n_1.z_ );
         }
