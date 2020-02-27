@@ -22,7 +22,7 @@ ForceSourceFrame::~ForceSourceFrame()
 
 bool ForceSourceFrame::Recursive() const
 {
-    return false;
+    return true;
 }
 
 bool ForceSourceFrame::ProducesForces() const

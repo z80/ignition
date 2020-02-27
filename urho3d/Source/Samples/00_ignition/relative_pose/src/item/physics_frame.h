@@ -33,6 +33,9 @@ protected:
     /// are subscribed to here.
     void OnSceneSet( Scene * scene ) override;
 
+    /// Apply forces from parents of this ref. frame.
+    void applyForces();
+
     /// Update all physics item states based on dynamics simulation.
     void updateChildStates();
 
