@@ -9,6 +9,8 @@
 #include "rotating_frame.h"
 #include "orbiting_frame.h"
 
+#include "settings.h"
+
 namespace Ign
 {
 
@@ -91,7 +93,10 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
         of->SetGM( sbody.mass_.ToDouble() * 10.0 );
 
         RotatingFrame * rf = scene->CreateComponent<RotatingFrame>( REPLICATED );
-        rf->SetPeriod( sbody.rotation_period_.ToDouble() );
+        //const Float periodDays = sbody.rotation_period_.ToDouble();
+        //const Float periodSecs = periodDays * 86400.0;
+        //rf->SetPeriod( Settings::ticks( periodSecs ) );
+        rf->SetPeriod( Settings::ticks( 60.0 ) );
         rf->setParent( of );
 
         SphereDynamic * sd = scene->CreateComponent<SphereDynamic>( REPLICATED );
