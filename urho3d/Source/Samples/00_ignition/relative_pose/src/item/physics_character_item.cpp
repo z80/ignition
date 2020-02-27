@@ -51,18 +51,21 @@ void PhysicsCharacterItem::physicsUpdate( RigidBody2 * rb )
 
 void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
 {
-    RefFrame * rf = parent();
+    // It doesn't work yet.
+
+    /*RefFrame * rf = parent();
     OrbitingFrame * of = orbitingFrame( rf );
     if ( !of )
         return;
     State rs;
-    of->relativeState( this, rs );
-    const Vector3d actualG = rs.q * Vector3d( 0.0, 1.0, 0.0 );
+    of->relativeState( this, rs, true );
+    const Vector3d actualG = rs.q.Inverse() * Vector3d( 0.0, 1.0, 0.0 );
     //const Vector3d wantedG( 0.0, -1.0, 0.0 );
-    const Vector3d wantedG = rs.r.Normalized();
-    const Vector3d cross = wantedG.CrossProduct( actualG );
+    const Vector3d wantedG = -rs.r.Normalized();
     Quaterniond q;
-    q.FromRotationTo( actualG, wantedG );
+    q.FromRotationTo( actualG, wantedG );*/
+
+    //const Vector3d cross = wantedG.CrossProduct( actualG );
     /*const Float si = cross.Length();
     static const Float EPS = 0.0001;
     Quaterniond baseQ;
@@ -86,7 +89,8 @@ void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
     const Quaterniond azQ( azCo2, 0.0, azSi2, 0.0 );
     const Quaterniond q = baseQ * azQ;*/
 
-    rb->SetRotationd( q );
+    //rb->SetRotationd( q );
+    //setQ( q );
 }
 
 static OrbitingFrame * orbitingFrame( RefFrame * rf )
