@@ -2,6 +2,7 @@
 #include "physics_frame.h"
 #include "physics_item.h"
 #include "surface_collision_mesh.h"
+#include "force_source_frame.h"
 #include "settings.h"
 #include "Notifications.h"
 
@@ -44,6 +45,9 @@ void PhysicsFrame::physicsStep( float sec_dt )
 {
     if ( !physicsWorld_ )
         return;
+
+    applyForces();
+
     physicsWorld_->Update( sec_dt );
 
     updateChildStates();
@@ -91,6 +95,34 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     SurfaceCollisionMesh * scm = scene->CreateComponent<SurfaceCollisionMesh>( LOCAL );
     scm->setParent( this );
     scm->setR( Vector3d::ZERO );
+}
+
+void PhysicsFrame::applyForces()
+{
+    // Pick parent object and check if it is a source of forces.
+    RefFrame * p = parent();
+    ForceSourceFrame * fsf = nullptr;
+    while ( p )
+    {
+        fsf = p->Cast<ForceSourceFrame>();
+        if ( fsf )
+            break;
+        p = p->parent();
+    }
+    if ( !fsf )
+        return;
+
+    const unsigned qty = children_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        SharedPtr<RefFrame> o = children_[i];
+        if ( !o )
+            continue;
+        PhysicsItem * pi = o->Cast<PhysicsItem>();
+        if ( !pi )
+            continue;
+        fsf->ApplyForces( pi );
+    }
 }
 
 void PhysicsFrame::updateChildStates()

@@ -40,6 +40,12 @@ void ForceSourceFrame::ApplyForces( PhysicsItem * receiver ) const
         RigidBody2 * rb = receiver->rigidBody();
         if ( !rb )
             return;
+        const bool kinematic = rb->IsKinematic();
+        if ( kinematic )
+            return;
+        const Float m = rb->GetMass();
+        if ( m <= 0.0 )
+            return;
 
         State st;
         receiver->relativeState( this, st );
@@ -70,7 +76,7 @@ void ForceSourceFrame::ApplyForces( PhysicsItem * receiver ) const
 
     ForceSourceFrame * fs = p->Cast<ForceSourceFrame>();
     if ( fs )
-        ApplyForces( receiver );
+        fs->ApplyForces( receiver );
 }
 
 void ForceSourceFrame::ComputeForces( PhysicsItem * receiver, const State & st, Vector3d & F, Vector3d & P ) const
