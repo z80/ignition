@@ -121,6 +121,16 @@ void PhysicsFrame::applyForces()
         PhysicsItem * pi = o->Cast<PhysicsItem>();
         if ( !pi )
             continue;
+        RigidBody2 * rb = pi->rigidBody();
+        if ( !rb )
+            continue;
+        const bool kinematic = rb->IsKinematic();
+        if ( kinematic )
+            continue;
+        const Float m = rb->GetMass();
+        if ( m <= 0.0 )
+            continue;
+
         fsf->ApplyForces( pi );
     }
 }

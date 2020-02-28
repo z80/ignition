@@ -35,18 +35,6 @@ void ForceSourceFrame::ApplyForces( PhysicsItem * receiver ) const
     const bool producesForces = ProducesForces();
     if ( producesForces )
     {
-        if ( !receiver )
-            return;
-        RigidBody2 * rb = receiver->rigidBody();
-        if ( !rb )
-            return;
-        const bool kinematic = rb->IsKinematic();
-        if ( kinematic )
-            return;
-        const Float m = rb->GetMass();
-        if ( m <= 0.0 )
-            return;
-
         State st;
         receiver->relativeState( this, st );
         Vector3d F, P;
@@ -62,6 +50,7 @@ void ForceSourceFrame::ApplyForces( PhysicsItem * receiver ) const
         P = q * P;
         // Apply forces to the receiver.
         // .........
+        RigidBody2 * rb = receiver->rigidBody();
         rb->ApplyForce( Vector3( F.x_, F.y_, F.z_ ) );
         rb->ApplyTorque( Vector3( P.x_, P.y_, P.z_ ) );
     }
