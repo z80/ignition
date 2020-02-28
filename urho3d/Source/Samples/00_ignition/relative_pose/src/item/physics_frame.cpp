@@ -90,6 +90,7 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     // Also create a surface collision mesh item.
     SurfaceCollisionMesh * scm = scene->CreateComponent<SurfaceCollisionMesh>( LOCAL );
     scm->setParent( this );
+    scm->setR( Vector3d::ZERO );
 }
 
 void PhysicsFrame::updateChildStates()

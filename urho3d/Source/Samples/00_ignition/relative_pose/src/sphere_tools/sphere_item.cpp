@@ -98,6 +98,8 @@ void SphereItem::OnSceneSet( Scene * scene )
 
     Node * n = scene->CreateChild( String( "SphereItem" ), LOCAL );
     node_ = SharedPtr<Node>( n );
+    // To be able to get RefFrame by Node.
+    assignRefFrame( node_ );
 
     CustomGeometry * cg = n->CreateComponent<CustomGeometry>( LOCAL );
     geometry_ = SharedPtr<CustomGeometry>( cg );

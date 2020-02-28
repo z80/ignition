@@ -39,7 +39,7 @@ void SurfaceCollisionMesh::Update( StringHash eventType, VariantMap & eventData 
 void SurfaceCollisionMesh::parentTeleported()
 {
     // Recompute dynamic geometry.
-
+    setR( Vector3d::ZERO );
     constructCustomGeometry();
 }
 
