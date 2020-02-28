@@ -57,7 +57,7 @@ Timestamp Settings::maxEvolutionTimeStep()
 
 Float Settings::teleportDistance()
 {
-    return 100.0;
+    return 2.0;
 }
 
 Float Settings::staticObjDistanceHorizontShow()

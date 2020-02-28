@@ -172,26 +172,36 @@ void PhysicsFrame::checkInnerObjects()
     // For each object compute smallest distance to user controlled object.
     // If smallest distance is bigger than horizont distance exclude object from 
     // this ref. frame.
-    const unsigned userQty = userControlledList_.Size();
-    const unsigned qty = children_.Size();
-    const Float removeDist = Settings::dynamicsWorldDistanceExclude();
-    for ( unsigned i=0; i<qty; i++ )
+    while ( true )
     {
-        SharedPtr<RefFrame> o = children_[i];
-        const bool isUserControlled = o->getUserControlled();
-        if ( isUserControlled )
-            continue;
-        Float minDist = -1.0;
-        for ( unsigned j=0; j<userQty; j++ )
+        bool doItAgain = false;
+        const unsigned userQty = userControlledList_.Size();
+        const unsigned qty = children_.Size();
+        const Float removeDist = Settings::dynamicsWorldDistanceExclude();
+        for ( unsigned i=0; i<qty; i++ )
         {
-            SharedPtr<RefFrame> userObj = userControlledList_[j];
-            const Float dist = o->distance( userObj );
-            if ( ( minDist < 0.0 ) || ( dist < minDist ) )
-                minDist = dist;
-        }
+            SharedPtr<RefFrame> o = children_[i];
+            const bool isUserControlled = o->getUserControlled();
+            if ( isUserControlled )
+                continue;
+            Float minDist = -1.0;
+            for ( unsigned j=0; j<userQty; j++ )
+            {
+                SharedPtr<RefFrame> userObj = userControlledList_[j];
+                const Float dist = o->distance( userObj );
+                if ( ( minDist < 0.0 ) || ( dist < minDist ) )
+                    minDist = dist;
+            }
 
-        if ( minDist > removeDist )
-            o->setParent( parent_ );
+            if ( minDist > removeDist )
+            {
+                o->setParent( parent_ );
+                doItAgain = true;
+                break;
+            }
+        }
+        if ( !doItAgain )
+            break;
     }
 }
 
