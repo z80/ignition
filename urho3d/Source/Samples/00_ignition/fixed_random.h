@@ -1,10 +1,10 @@
 
-#ifndef __EVA_RANDOM_H_
-#define __EVA_RANDOM_H_
+#ifndef __PI_RANDOM_H_
+#define __PI_RANDOM_H_
 
 #include "pcg_random.h"
 
-class ImuRandom
+class PiRandom
 {
     //pcg32 mPCG;
     PcgRandom mPCG;
@@ -19,7 +19,7 @@ class ImuRandom
     //
 
     // Construct a new random generator using the given seed
-    ImuRandom(const unsigned long initialSeed = 0xabcd1234)
+    PiRandom(const unsigned long initialSeed = 0xabcd1234)
     {
         seed(initialSeed);
     }
