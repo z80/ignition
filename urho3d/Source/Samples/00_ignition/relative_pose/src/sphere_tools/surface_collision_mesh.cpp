@@ -69,6 +69,7 @@ void SurfaceCollisionMesh::createVisualContent( Node * n )
 void SurfaceCollisionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
 {
     rb->SetMass( 0.0 );
+    rb->SetFriction( 5.0 );
 
     CustomGeometry * cg = physics_node_->CreateComponent<CustomGeometry>();
     customGeometry_ = SharedPtr<CustomGeometry>( cg );
