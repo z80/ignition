@@ -180,8 +180,8 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
     if ( !s )
         return;
 
-    DynamicCube * d = s->CreateComponent<DynamicCube>();
-    d->setName( String( "DynamicCube object" ) );
+    //DynamicCube * d = s->CreateComponent<DynamicCube>();
+    //d->setName( String( "DynamicCube object" ) );
 
     CharacterCube * cc = s->CreateComponent<CharacterCube>();
     cc->setName( String( "CharacterCube object" ) );
@@ -200,12 +200,12 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
     if ( !planet )
         return;
 
-    d->setParent( planet );
+    //d->setParent( planet );
     cc->setParent( planet );
-    {
-        const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, 0.0 ), 2.0 );
-        d->setR( at );
-    }
+    //{
+    //    const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, 0.0 ), 2.0 );
+    //    d->setR( at );
+    //}
     {
         const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, 0.0 ), 3.5 );
         cc->setR( at );
