@@ -225,6 +225,7 @@ void PiSystemGenerator::createDumb( PiSystem * system, PiRandom & rand )
     mass += rand.Fixed();
     mass += rand.Fixed();
     mass /= 5;
+    const Float m = mass.ToDouble();
 
 
     PiSourceDesc planet;
