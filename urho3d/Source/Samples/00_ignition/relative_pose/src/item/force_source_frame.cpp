@@ -42,8 +42,9 @@ void ForceSourceFrame::ApplyForces( PhysicsItem * receiver ) const
         // Forces are in local ref. frame.
         // But are needed in receiver's parent ref. frame.
         // 1) Convert to receiver's ref. frame.
-        F = st.q * F;
-        P = st.q * P;
+        const Quaterniond toReceiverQ = st.q.Inverse();
+        F = toReceiverQ * F;
+        P = toReceiverQ * P;
         // 2) Convert to parent ref. frame.
         const Quaterniond & q = receiver->relQ();
         F = q * F;

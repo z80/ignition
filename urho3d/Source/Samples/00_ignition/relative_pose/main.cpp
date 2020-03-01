@@ -83,6 +83,14 @@ void Main::CreateScene()
     auto* light = lightNode->CreateComponent<Light>( LOCAL );
     light->SetLightType(LIGHT_DIRECTIONAL);
 
+    Zone * z = scene_->GetOrCreateComponent<Zone>();
+    if ( z )
+    {
+        z->SetBoundingBox( BoundingBox( -1000000.0, 1000000.0 ) );
+        z->SetAmbientColor( Color( 0.3, 0.3, 0.3 ) );
+    }
+
+
     // Create more StaticModel objects to the scene, randomly positioned, rotated and scaled. For rotation, we construct a
     // quaternion from Euler angles where the Y angle (rotation about the Y axis) is randomized. The mushroom model contains
     // LOD levels, so the StaticModel component will automatically select the LOD level according to the view distance (you'll
