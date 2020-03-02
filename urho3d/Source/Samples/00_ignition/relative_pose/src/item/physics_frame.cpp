@@ -95,6 +95,7 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     SurfaceCollisionMesh * scm = scene->CreateComponent<SurfaceCollisionMesh>( LOCAL );
     scm->setParent( this );
     scm->setR( Vector3d::ZERO );
+    scm->constructCustomGeometry();
 }
 
 void PhysicsFrame::applyForces()

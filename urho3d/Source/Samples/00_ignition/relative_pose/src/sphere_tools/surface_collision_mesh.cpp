@@ -62,20 +62,19 @@ void SurfaceCollisionMesh::createVisualContent( Node * n )
 
     CustomGeometry * vcg = visual_node_->CreateComponent<CustomGeometry>();
     visualCustomGeometry_ = SharedPtr<CustomGeometry>( vcg );
-
-    constructCustomGeometry();
 }
 
 void SurfaceCollisionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
 {
     rb->SetMass( 0.0 );
-    rb->SetFriction( 5.0 );
+    rb->SetFriction( 1.0 );
 
     CustomGeometry * cg = physics_node_->CreateComponent<CustomGeometry>();
     customGeometry_ = SharedPtr<CustomGeometry>( cg );
     // Make it invisible.
     cg->SetEnabled( false );
 
+    setR( Vector3d::ZERO );
     constructCustomGeometry();
 }
 

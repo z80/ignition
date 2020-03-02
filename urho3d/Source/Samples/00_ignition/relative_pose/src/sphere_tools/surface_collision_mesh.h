@@ -35,12 +35,14 @@ protected:
     /// Set physical content parameters (mass, inertia tensor, collision shape, etc.).
     void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs ) override;
 
+public:
     /// Go to parent of parent and search for SphereItem within its children.
     SphereItem * pickSphere();
     bool needRebuild( SphereItem * & item );
     void constructCustomGeometry();
     void constructCustomGeometry( SphereItem * si, CustomGeometry * cg );
 
+protected:
     State lastState_;
     SphereItem * lastSphereItem_;
 
