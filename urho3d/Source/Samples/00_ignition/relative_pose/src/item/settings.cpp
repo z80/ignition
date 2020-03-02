@@ -57,7 +57,7 @@ Timestamp Settings::maxEvolutionTimeStep()
 
 Float Settings::teleportDistance()
 {
-    return 2.0;
+    return 10.0;
 }
 
 Float Settings::staticObjDistanceHorizontShow()
@@ -72,12 +72,12 @@ Float Settings::staticObjDistanceHorizontHide()
 
 Float Settings::dynamicsWorldDistanceInclude()
 {
-    return 4.0;
+    return 400.0;
 }
 
 Float Settings::dynamicsWorldDistanceExclude()
 {
-    return 5.0;
+    return 500.0;
 }
 
 Float Settings::cameraMaxDistance()
