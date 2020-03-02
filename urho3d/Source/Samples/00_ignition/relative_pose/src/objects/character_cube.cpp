@@ -29,7 +29,7 @@ void CharacterCube::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
 
 void CharacterCube::ApplyControls( const Controls & ctrl )
 {
-    const Float MOVE_FORCE = 3.0;
+    const Float MOVE_FORCE = 100.0;
 
     if ( !rigid_body_ )
         return;
@@ -80,7 +80,7 @@ void CharacterCube::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
 {
     PhysicsCharacterItem::setupPhysicsContent( rb, cs );
     rb->SetMass( 1.0f );
-    rb->SetFriction( 5.0f );
+    rb->SetFriction( 1.0f );
     // In addition to friction, use motion damping so that the ball can not accelerate limitlessly
     rb->SetLinearDamping( 0.5f );
 
