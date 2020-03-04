@@ -382,17 +382,18 @@ void ConfigManager::Clear() {
 bool ConfigManager::Load(const String& fileName, bool overwriteExisting) {
     const FileSystem * fileSystem = context_->GetSubsystem<FileSystem>();
 
+    const String fullName = fileSystem->GetProgramDir() + fileName;
+
     ConfigFile configFile(context_);
 
     // Check if file exists.
-    if ( fileSystem->FileExists(fileName) )
+    if ( !fileSystem->FileExists(fullName) )
         return false;
 
     //ResourceCache * cache = context_->GetSubsystem<ResourceCache>();
     //SharedPtr<File> file = cache->GetFile( fileName );
     //if ( (!file) || (!file->IsOpen()) )
     //    return false;
-    const String fullName = fileSystem->GetProgramDir() + fileName;
 
     File file( context_, fullName, FILE_READ );
     configFile.BeginLoad( file );
