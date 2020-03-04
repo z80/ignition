@@ -18,7 +18,7 @@ public:
     AtmosphereSource();
     virtual ~AtmosphereSource();
 
-    bool params( Float height, Float & pressure, Float & density ) const;
+    virtual bool params( Float height, Float & pressure, Float & density ) const;
     bool drag( AirMesh & a, const State & st, Vector3d & F, Vector3d & P ) const;
 
 public:

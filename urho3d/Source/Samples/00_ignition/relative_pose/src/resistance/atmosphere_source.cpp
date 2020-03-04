@@ -44,6 +44,7 @@ bool AtmosphereSource::drag( AirMesh & a, const State & st, Vector3d & F, Vector
 
     // Need to redeclare all these in PhysicsItem.
     Vector<ForceApplied> & friction = a.forces_;
+    friction.Clear();
     // Compute forces in block ref. frame.
     const unsigned qty = a.triangles.Size();
     friction.Reserve( qty );

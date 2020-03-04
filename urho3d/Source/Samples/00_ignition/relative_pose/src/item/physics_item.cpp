@@ -85,7 +85,7 @@ RigidBody2 * PhysicsItem::rigidBody() const
     return rigid_body_;
 }
 
-const AirMesh & PhysicsItem::airMesh() const
+AirMesh & PhysicsItem::airMesh()
 {
     return air_mesh_;
 }

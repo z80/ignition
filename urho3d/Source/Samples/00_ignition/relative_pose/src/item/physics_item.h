@@ -40,7 +40,7 @@ public:
 
     /// Returns the rigid body in order to apply forces.
     RigidBody2 * rigidBody() const;
-    const AirMesh & airMesh() const;
+    AirMesh & airMesh();
 protected:
     /// Called when this thing is moved into another ref. frame.
     void enteredRefFrame( RefFrame * refFrame ) override;
