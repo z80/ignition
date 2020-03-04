@@ -3,9 +3,14 @@
 #define __ATMOSPHERE_SOURCE_H_
 
 #include "data_types.h"
+#include "vector3d.h"
+#include "ref_frame.h"
+#include "air_mesh.h"
 
-namepsace Ign
+namespace Ign
 {
+
+class PhysicsItem;
 
 class AtmosphereSource
 {
@@ -14,10 +19,11 @@ public:
     virtual ~AtmosphereSource();
 
     bool params( Float height, Float & pressure, Float & density ) const;
-    bool drag( PhysicsItem * b, const State & st, Vector3d & F, Vector3d & P );
+    bool drag( AirMesh & a, const State & st, Vector3d & F, Vector3d & P ) const;
 
 public:
-    Float normalCoef_, 
+    Float normalCoefP_,
+          normalCoefN_,
           lateralCoef_;
 };
 

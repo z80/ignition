@@ -7,6 +7,7 @@
 #include "rigid_body_2.h"
 #include "collision_shape_2.h"
 #include "environment.h"
+#include "air_mesh.h"
 
 using namespace Urho3D;
 
@@ -39,6 +40,7 @@ public:
 
     /// Returns the rigid body in order to apply forces.
     RigidBody2 * rigidBody() const;
+    const AirMesh & airMesh() const;
 protected:
     /// Called when this thing is moved into another ref. frame.
     void enteredRefFrame( RefFrame * refFrame ) override;
@@ -76,6 +78,7 @@ protected:
     SharedPtr<Node>            physics_node_;
     SharedPtr<RigidBody2>      rigid_body_;
     SharedPtr<CollisionShape2> collision_shape_;
+    AirMesh                    air_mesh_;
 
     // Client side objects.
     // Content of visual node is supposed to depend on 

@@ -80,9 +80,14 @@ void PhysicsItem::updateStateFromRigidBody()
     MarkNetworkUpdate();
 }
 
-RigidBody2* PhysicsItem::rigidBody() const
+RigidBody2 * PhysicsItem::rigidBody() const
 {
     return rigid_body_;
+}
+
+const AirMesh & PhysicsItem::airMesh() const
+{
+    return air_mesh_;
 }
 
 void PhysicsItem::enteredRefFrame( RefFrame * refFrame )
