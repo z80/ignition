@@ -3,6 +3,7 @@
 #include "ref_frame.h"
 #include "physics_frame.h"
 #include "evolving_frame.h"
+#include "surface_collision_mesh.h"
 #include "sphere_item.h"
 #include "camera_frame.h"
 #include "settings.h"
@@ -1016,6 +1017,17 @@ void Environment::UpdateDynamicGeometryNodes( bool isServer, bool isClient )
             se->updateCollisionData();
         if ( isClient )
             se->updateVisualData();
+    }
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        // Try cast to evolving node.
+        // And if converted make time step.
+        SharedPtr<Component> c = comps[i];
+        SurfaceCollisionMesh * scm = c->Cast<SurfaceCollisionMesh>();
+        if ( !scm )
+            continue;
+        if ( isServer || isClient )
+            scm->constructCustomGeometry();
     }
 }
 

@@ -91,7 +91,7 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
 
         OrbitingFrame * of = scene->CreateComponent<OrbitingFrame>( REPLICATED );
         Float m = sbody.mass() * G;
-        m *= 1.0e-9;
+        m *= 1.0e-9 / 30.0;
         of->SetGM( m );
 
         RotatingFrame * rf = scene->CreateComponent<RotatingFrame>( REPLICATED );

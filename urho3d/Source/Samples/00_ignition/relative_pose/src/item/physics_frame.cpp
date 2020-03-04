@@ -1,7 +1,7 @@
 
 #include "physics_frame.h"
 #include "physics_item.h"
-#include "surface_collision_mesh.h"
+//#include "surface_collision_mesh.h"
 #include "force_source_frame.h"
 #include "settings.h"
 #include "Notifications.h"
@@ -92,10 +92,10 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     physicsWorld_->SetGravity( Vector3::ZERO );
 
     // Also create a surface collision mesh item.
-    SurfaceCollisionMesh * scm = scene->CreateComponent<SurfaceCollisionMesh>( LOCAL );
-    scm->setParent( this );
-    scm->setR( Vector3d::ZERO );
-    scm->constructCustomGeometry();
+    //SurfaceCollisionMesh * scm = scene->CreateComponent<SurfaceCollisionMesh>( LOCAL );
+    //scm->setParent( this );
+    //scm->setR( Vector3d::ZERO );
+    //scm->constructCustomGeometry();
 }
 
 void PhysicsFrame::applyForces()

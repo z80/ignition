@@ -15,7 +15,7 @@ SurfaceCollisionMesh::SurfaceCollisionMesh( Context * context )
     : PhysicsItem( context ),
       lastSphereItem_( nullptr )
 {
-    SubscribeToEvent( E_UPDATE, URHO3D_HANDLER(SurfaceCollisionMesh, Update) );
+    //SubscribeToEvent( E_UPDATE, URHO3D_HANDLER(SurfaceCollisionMesh, Update) );
     setName( "SurfaceCollisionMesh" );
 }
 
@@ -28,19 +28,19 @@ void SurfaceCollisionMesh::Update( StringHash eventType, VariantMap & eventData 
     (void)eventType;
     (void)eventData;
 
-    const unsigned elapsed =  timer_.GetMSec( false );
+    /*const unsigned elapsed =  timer_.GetMSec( false );
     if ( elapsed > 5000 )
     {
         timer_.Reset();
         constructCustomGeometry();
-    }
+    }*/
 }
 
 void SurfaceCollisionMesh::parentTeleported()
 {
     // Recompute dynamic geometry.
     setR( Vector3d::ZERO );
-    constructCustomGeometry();
+    constructCustomGeometry( true );
 }
 
 bool SurfaceCollisionMesh::IsSelectable() const
@@ -75,7 +75,7 @@ void SurfaceCollisionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2
     cg->SetEnabled( false );
 
     setR( Vector3d::ZERO );
-    constructCustomGeometry();
+    //constructCustomGeometry();
 }
 
 static SphereItem * globalSphereItem( Scene * s )
@@ -147,7 +147,7 @@ SphereItem * SurfaceCollisionMesh::pickSphere()
     return si;
 }
 
-bool SurfaceCollisionMesh::needRebuild( SphereItem * & item )
+bool SurfaceCollisionMesh::needRebuild( SphereItem * & item, bool forceRebuild )
 {
     SphereItem * si = pickSphere();
     item = si;
@@ -173,6 +173,12 @@ bool SurfaceCollisionMesh::needRebuild( SphereItem * & item )
     const Vector3d d = s.r - lastState_.r;
     const Float dist = d.Length();
 
+    if ( forceRebuild )
+    {
+        lastState_ = s;
+        return true;
+    }
+
     const Float maxDist = Settings::dynamicsWorldDistanceInclude() / 3.0;
     if ( dist > maxDist )
     {
@@ -183,11 +189,11 @@ bool SurfaceCollisionMesh::needRebuild( SphereItem * & item )
     return false;
 }
 
-void SurfaceCollisionMesh::constructCustomGeometry()
+void SurfaceCollisionMesh::constructCustomGeometry( bool forceRebuild )
 {
     SphereItem * si;
-    const bool needRebuildOk = needRebuild( si );
-    if ( !needRebuildOk )
+    const bool needRebuildOk = needRebuild( si, forceRebuild );
+    if ( (!needRebuildOk) && (!forceRebuild) )
         return;
 
     if ( customGeometry_ )
