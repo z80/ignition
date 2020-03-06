@@ -10,12 +10,11 @@ namespace Ign
 void SphereItem::RegisterComponent( Context * context )
 {
     context->RegisterFactory<SphereItem>();
-    URHO3D_COPY_BASE_ATTRIBUTES( RefFrame );
-
+    URHO3D_COPY_BASE_ATTRIBUTES( ForceSourceFrame );
 }
 
 SphereItem::SphereItem( Context * context )
-    : RefFrame( context )
+    : ForceSourceFrame( context )
 {
     material_ = "Ign/Materials/VertexColor.xml";
     setName( "SphereItem" );

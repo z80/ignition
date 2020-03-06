@@ -2,7 +2,7 @@
 #ifndef __SPHERE_ITEM_H_
 #define __SPHERE_ITEM_H_
 
-#include "ref_frame.h"
+#include "force_source_frame.h"
 #include "cube_sphere.h"
 
 using namespace Urho3D;
@@ -10,9 +10,9 @@ using namespace Urho3D;
 namespace Ign
 {
 
-class SphereItem: public RefFrame
+class SphereItem: public ForceSourceFrame
 {
-    URHO3D_OBJECT( SphereItem, RefFrame )
+    URHO3D_OBJECT( SphereItem, ForceSourceFrame )
 public:
     /// Register object factory.
     static void RegisterComponent( Context * context );

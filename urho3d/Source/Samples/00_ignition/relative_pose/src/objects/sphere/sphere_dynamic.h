@@ -4,6 +4,7 @@
 
 #include "Urho3D/Urho3DAll.h"
 #include "sphere_item.h"
+#include "atmosphere_source.h"
 
 using namespace Urho3D;
 
@@ -19,6 +20,13 @@ public:
 
 	SphereDynamic( Context * context );
     ~SphereDynamic();
+
+    // Implementation of ForceSourceFrame to
+    // produce Coriolis and Centrifugal forces.
+    bool Recursive() const override;
+    bool ProducesForces() const override;
+    void ComputeForces( PhysicsItem * receiver, const State & st, Vector3d & F, Vector3d & P ) const override;
+
 
     void setRadius( Float r, Float h );
     void setHeightSource( HeightSource * src );
@@ -36,6 +44,7 @@ protected:
 
     Float R_, H_;
     HeightSource * height_source_;
+    AtmosphereSource * atmosphere_source_;
 };
 
 }

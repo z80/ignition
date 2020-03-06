@@ -14,11 +14,15 @@ public:
     PiAtmosphereSource();
     PiAtmosphereSource( const PiSourceDesc & desc );
     ~PiAtmosphereSource();
+    void operator=( const PiSourceDesc & desc );
 
     bool params( Float distFromCenter, Float & pressure, Float & density ) const override;
 
 public:
+    void init();
     PiSourceDesc desc_;
+    Float atmosphere_radius_,
+          surface_gravity_;
 };
 
 }

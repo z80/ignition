@@ -1,5 +1,6 @@
 
 #include "sphere_dynamic.h"
+#include "physics_item.h"
 
 namespace Ign
 {
@@ -13,7 +14,8 @@ void SphereDynamic::RegisterComponent( Context * context )
 SphereDynamic::SphereDynamic( Context * context )
     : SphereItem( context )
 {
-    height_source_ = nullptr;
+    height_source_     = nullptr;
+    atmosphere_source_ = nullptr;
     R_ = 10.0;
     H_ = 1.0;
 }
@@ -22,7 +24,30 @@ SphereDynamic::~SphereDynamic()
 {
     if ( height_source_ )
         delete height_source_;
+    if ( atmosphere_source_ )
+        delete atmosphere_source_;
 }
+
+bool SphereDynamic::Recursive() const
+{
+    return true;
+}
+
+bool SphereDynamic::ProducesForces() const
+{
+    const bool ok = ( atmosphere_source_ != nullptr );
+    return ok;
+}
+
+void SphereDynamic::ComputeForces( PhysicsItem * receiver, const State & st, Vector3d & F, Vector3d & P ) const
+{
+    AtmosphereSource * s = atmosphere_source_;
+    if ( !s )
+        return;
+    AirMesh & a = receiver->airMesh();
+    s->drag( a, st, F, P );
+}
+
 
 void SphereDynamic::setRadius( Float r, Float h )
 {
