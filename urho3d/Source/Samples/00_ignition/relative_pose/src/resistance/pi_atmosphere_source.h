@@ -8,6 +8,8 @@
 namespace Ign
 {
 
+/// In order to work properly this class MUST be assigned an 
+/// instance of PiSourceDesc.
 class PiAtmosphereSource: public AtmosphereSource
 {
 public:
@@ -19,7 +21,6 @@ public:
     bool params( Float distFromCenter, Float & pressure, Float & density ) const override;
 
 public:
-    void init();
     PiSourceDesc desc_;
     Float atmosphere_radius_,
           surface_gravity_;

@@ -96,8 +96,8 @@ bool AirMesh::init( StaticModel * m )
 void AirMesh::drawDebugGeometry( Node * n, DebugRenderer * debug )
 {
     const Matrix3x4 m = n->GetWorldTransform();
-    const size_t qty = triangles.Size();
-    for ( size_t i=0; i<qty; i++ )
+    const unsigned qty = triangles.Size();
+    for ( unsigned i=0; i<qty; i++ )
     {
         const Triangle & tri = triangles[i];
         Vector3 a = m*Vector3( tri.v[0].x_, tri.v[0].y_, tri.v[0].z_ );
@@ -111,6 +111,27 @@ void AirMesh::drawDebugGeometry( Node * n, DebugRenderer * debug )
         debug->AddLine( b, c,   Color::RED );
         debug->AddLine( c, a,   Color::RED );
         debug->AddLine( o, o+n, Color::BLUE );
+    }
+
+    // Draw forces applied.
+    const Float FORCE_SCALE = 1.0;
+    const unsigned forcesQty = forces_.Size();
+    for ( unsigned i=0; i<forcesQty; i++ )
+    {
+        ForceApplied fa = forces_[i];
+        const Vector3d at = fa.at;
+        const Vector3d Fn = fa.Fn;
+        const Vector3d Fl = fa.Fl;
+
+        const Vector3 f_at( at.x_, at.y_, at.z_ );
+        const Vector3 f_fn( at.x_ + FORCE_SCALE * Fn.x_, 
+                            at.y_ + FORCE_SCALE * Fn.y_, 
+                            at.z_ + FORCE_SCALE * Fn.z_ );
+        const Vector3 f_fl( at.x_ + FORCE_SCALE * Fl.x_, 
+                            at.y_ + FORCE_SCALE * Fl.y_, 
+                            at.z_ + FORCE_SCALE * Fl.z_ );
+        debug->AddLine( f_at, f_fn, Color::CYAN );
+        debug->AddLine( f_at, f_fl, Color::MAGENTA );
     }
 }
 

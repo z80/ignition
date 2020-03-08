@@ -30,6 +30,7 @@ public:
 
     void setRadius( Float r, Float h );
     void setHeightSource( HeightSource * src );
+    void setAtmosphereSource( AtmosphereSource * src );
     void setStar( bool isStar );
 
     /// For assets placement returns 3d vector on a surface

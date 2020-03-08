@@ -18,7 +18,9 @@ public:
     AtmosphereSource();
     virtual ~AtmosphereSource();
 
+    /// Atmosphere params at this distance from planet center.
     virtual bool params( Float distFromCenter, Float & pressure, Float & density ) const;
+    /// Atmospheric drag force and torque.
     bool drag( AirMesh & a, const State & st, Vector3d & F, Vector3d & P ) const;
 
 public:

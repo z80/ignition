@@ -6,6 +6,7 @@ namespace Ign
 {
 
 PiAtmosphereSource::PiAtmosphereSource()
+    : AtmosphereSource()
 {
 }
 

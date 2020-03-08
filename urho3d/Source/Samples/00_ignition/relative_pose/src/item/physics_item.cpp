@@ -29,6 +29,7 @@ void PhysicsItem::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
         rigid_body_->DrawDebugGeometry( debug, depthTest );
     if ( collision_shape_ )
         collision_shape_->DrawDebugGeometry( debug, depthTest );
+    air_mesh_.drawDebugGeometry( nullptr, debug );
 }
 
 void PhysicsItem::setR( const Vector3d & r )

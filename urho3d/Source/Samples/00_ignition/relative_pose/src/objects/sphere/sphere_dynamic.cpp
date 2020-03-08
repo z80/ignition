@@ -61,6 +61,11 @@ void SphereDynamic::setHeightSource( HeightSource * src )
     height_source_ = src;
 }
 
+void SphereDynamic::setAtmosphereSource( AtmosphereSource * src )
+{
+    atmosphere_source_ = src;
+}
+
 void SphereDynamic::setStar( bool isStar )
 {
     if ( isStar )

@@ -1,6 +1,7 @@
 
 #include "system_generator.h"
 #include "pi_system_generator.h"
+#include "pi_atmosphere_source.h"
 #include "pi_source.h"
 #include "pi_consts.h"
 
@@ -101,9 +102,13 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
         rf->SetPeriod( Settings::ticks( 600.0 ) );
         rf->setParent( of );
 
+        PiAtmosphereSource * atmosphereSource = new PiAtmosphereSource();
+        *atmosphereSource = sbody;
+
         SphereDynamic * sd = scene->CreateComponent<SphereDynamic>( REPLICATED );
         sd->setParent( rf );
         sd->setHeightSource( src );
+        sd->setAtmosphereSource( atmosphereSource );
         const Float R = src->m_planetRadius;
         const Float H = src->m_maxHeightInMeters;
         sd->setRadius( 100.0, H/R*100.0 );
