@@ -73,7 +73,18 @@ void CharacterCube::createVisualContent( Node * n )
 
     StaticModel * model = n->CreateComponent<StaticModel>( LOCAL );
     model->SetModel( cache->GetResource<Model>("Ign/Models/TestCube.mdl") );
-    model->SetMaterial( cache->GetResource<Material>("Ign/Materials/TestCubeM.xml") );
+    Material * material = cache->GetResource<Material>("Ign/Materials/TestCubeM.xml");
+    model->SetMaterial( material );
+
+    // SetRenderOrder() doesn't really work. It must be I use it incorrectly.
+    //SharedPtr<Material> material2 = material->Clone();
+    //material2->SetRenderOrder( 200 ); // higher render order
+    //SharedPtr<Technique> tec = material2->GetTechnique(0)->Clone();
+    //tec->GetPass(0)->SetDepthTestMode( CMP_ALWAYS );	// Always pass depth test
+    //material2->SetTechnique(0, tec);
+    //model->SetMaterial( material2 );
+
+
 }
 
 void CharacterCube::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
