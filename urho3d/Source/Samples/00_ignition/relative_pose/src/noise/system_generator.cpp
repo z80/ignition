@@ -111,7 +111,8 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
         sd->setAtmosphereSource( atmosphereSource );
         const Float R = src->m_planetRadius;
         const Float H = src->m_maxHeightInMeters;
-        sd->setRadius( 100.0, H/R*100.0 );
+        //sd->setRadius( 100.0, H/R*100.0 );
+        sd->setRadius( 100.0, 5000.0 );
         sd->setStar( false );  // This sets the star material which is supposed to ignore lighing.
         sd->subdriveLevelsInit();
 
