@@ -50,6 +50,11 @@ AirMesh::~AirMesh()
 
 }
 
+void AirMesh::operator=( StaticModel * m )
+{
+    init( m );
+}
+
 bool AirMesh::init( StaticModel * m )
 {
     unsigned geometriesQty = m->GetNumGeometries();
@@ -86,9 +91,9 @@ bool AirMesh::init( StaticModel * m )
     bool indexShort = (indexSize == sizeof(unsigned short)) ? sizeof(unsigned short) : sizeof(unsigned long);
 
     if ( indexShort )
-        getTriangles<unsigned short>( numTriangles, triangleIndexBase, vertexBase, vertexStride, triangles );
+        getTriangles<unsigned short>( numTriangles, triangleIndexBase, vertexBase, vertexStride, triangles_ );
     else
-        getTriangles<unsigned long>( numTriangles, triangleIndexBase, vertexBase, vertexStride, triangles );
+        getTriangles<unsigned long>( numTriangles, triangleIndexBase, vertexBase, vertexStride, triangles_ );
 
     return true;
 }
@@ -96,10 +101,10 @@ bool AirMesh::init( StaticModel * m )
 void AirMesh::drawDebugGeometry( Node * n, DebugRenderer * debug )
 {
     const Matrix3x4 m = n->GetWorldTransform();
-    const unsigned qty = triangles.Size();
+    const unsigned qty = triangles_.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
-        const Triangle & tri = triangles[i];
+        const Triangle & tri = triangles_[i];
         Vector3 a = m*Vector3( tri.v[0].x_, tri.v[0].y_, tri.v[0].z_ );
         Vector3 b = m*Vector3( tri.v[1].x_, tri.v[1].y_, tri.v[1].z_ );
         Vector3 c = m*Vector3( tri.v[2].x_, tri.v[2].y_, tri.v[2].z_ );

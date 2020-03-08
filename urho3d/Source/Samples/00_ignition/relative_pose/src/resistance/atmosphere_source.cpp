@@ -46,12 +46,12 @@ bool AtmosphereSource::drag( AirMesh & a, const State & st, Vector3d & F, Vector
     Vector<ForceApplied> & friction = a.forces_;
     friction.Clear();
     // Compute forces in block ref. frame.
-    const unsigned qty = a.triangles.Size();
+    const unsigned qty = a.triangles_.Size();
     friction.Reserve( qty );
 
     for ( unsigned i=0; i<qty; i++ )
     {
-        const Triangle & t = a.triangles[i];
+        const Triangle & t = a.triangles_[i];
         // Velocity at triangle center.
         //const Vector3d V = V0 + W.CrossProduct( t.at );
         const Vector3d V = V0;

@@ -33,11 +33,12 @@ public:
     AirMesh();
     ~AirMesh();
 
+    void operator=( StaticModel * m );
     bool init( StaticModel * m );
     void drawDebugGeometry( Node * n, DebugRenderer * debug );
 
 public:
-    Vector<Triangle> triangles;
+    Vector<Triangle> triangles_;
     Vector<ForceApplied> forces_;
 };
 

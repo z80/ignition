@@ -102,7 +102,7 @@ void SphereDynamic::subdriveLevelsInit()
     subdriveSourceCollision_.addLevel( 20.5, 38.0 );
 
     subdriveSourceVisual_.clearLevels();
-    subdriveSourceVisual_.addLevel( 1.0, 16.0 );
+    subdriveSourceVisual_.addLevel( 1.0, 36.0 );
     subdriveSourceVisual_.addLevel( 3.0, 56.0 );
     subdriveSourceVisual_.addLevel( 30.0, 1800.0 );
 }

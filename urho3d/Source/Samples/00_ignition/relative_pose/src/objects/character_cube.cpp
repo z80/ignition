@@ -85,6 +85,13 @@ void CharacterCube::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
     rb->SetLinearDamping( 0.5f );
 
     cs->SetBox( Vector3( 1.0, 1.0, 1.0 ) );
+
+    Scene * s = GetScene();
+    ResourceCache * cache = GetSubsystem<ResourceCache>();
+    StaticModel * m = s->CreateComponent<StaticModel>( LOCAL );
+    m->SetModel( cache->GetResource<Model>("Ign/Models/TestCube.mdl") );
+    air_mesh_ = m;
+    m->Remove();
 }
 
 }

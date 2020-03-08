@@ -241,7 +241,7 @@ void PiSystemGenerator::createDumb( PiSystem * system, PiRandom & rand )
     planet.radius_ = fixed( 1, 1 );
 
     planet.gas_ = fixed( 50, 100 );
-    planet.atmos_density_ = fixed( 100000, 100 );
+    planet.atmos_density_ = fixed( 100, 100 );
 
     const double e = ecc.ToDouble();
 
