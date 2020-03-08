@@ -63,18 +63,19 @@ bool AtmosphereSource::drag( AirMesh & a, const State & st, Vector3d & F, Vector
         const Float normalCoeff = ( V_n >= 0.0 ) ? normalCoefP_ : normalCoefN_;
         const Float abs_V_n = std::abs( V_n );
         const Float A = t.a;
-        const Vector3d F_normal_local = -(normalCoeff*abs_V_n*absV*absV*density*A) * t.n;
-        const Vector3d F_normal = Q * F_normal_local * 0.0;
+        const Vector3d F_normal_local = (-normalCoeff*V_n*absV*absV*density*A) * t.n;
+        //const Vector3d F_normal_local = (normalCoeff*abs_V_n*absV*density*A) * t.n;
+        const Vector3d F_normal = Q * F_normal_local;
 
         // Viscosity force.
         const Vector3d lateralV = V - t.n*V_n;
-        const Vector3d F_lateral_local = -(A*lateralCoef_*density)*lateralV * 0.0;
+        const Vector3d F_lateral_local = (-A*lateralCoef_*density)*lateralV;
         const Vector3d F_lateral = Q * F_lateral_local;
 
-        fa.Fn  = F_normal;
-        fa.Fl  = F_lateral;
+        fa.Fn  = F_normal_local;
+        fa.Fl  = F_lateral_local;
         const Vector3d m = (t.v[0] + t.v[1] + t.v[2]) * 0.33333;
-        fa.at = Q*m + st.r;
+        fa.at = m;
         friction.Push( fa );
 
         F += F_normal;

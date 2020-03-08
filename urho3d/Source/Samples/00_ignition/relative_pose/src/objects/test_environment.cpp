@@ -207,7 +207,7 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
     //    d->setR( at );
     //}
     {
-        const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, -1.0 ), 3.5 );
+        const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, 0.0 ), 3.5 );
         cc->setR( at );
     }
     camera->setParent( cc );

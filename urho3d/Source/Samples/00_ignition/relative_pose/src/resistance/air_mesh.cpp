@@ -119,7 +119,7 @@ void AirMesh::drawDebugGeometry( Node * n, DebugRenderer * debug )
     }
 
     // Draw forces applied.
-    const Float FORCE_SCALE = 1.0;
+    const Float FORCE_SCALE = 100.0;
     const unsigned forcesQty = forces_.Size();
     for ( unsigned i=0; i<forcesQty; i++ )
     {
@@ -128,13 +128,16 @@ void AirMesh::drawDebugGeometry( Node * n, DebugRenderer * debug )
         const Vector3d Fn = fa.Fn;
         const Vector3d Fl = fa.Fl;
 
-        const Vector3 f_at( at.x_, at.y_, at.z_ );
-        const Vector3 f_fn( at.x_ + FORCE_SCALE * Fn.x_, 
-                            at.y_ + FORCE_SCALE * Fn.y_, 
-                            at.z_ + FORCE_SCALE * Fn.z_ );
-        const Vector3 f_fl( at.x_ + FORCE_SCALE * Fl.x_, 
-                            at.y_ + FORCE_SCALE * Fl.y_, 
-                            at.z_ + FORCE_SCALE * Fl.z_ );
+        Vector3 f_at( at.x_, at.y_, at.z_ );
+        Vector3 f_fn( at.x_ + FORCE_SCALE * Fn.x_, 
+                      at.y_ + FORCE_SCALE * Fn.y_, 
+                      at.z_ + FORCE_SCALE * Fn.z_ );
+        Vector3 f_fl( at.x_ + FORCE_SCALE * Fl.x_, 
+                      at.y_ + FORCE_SCALE * Fl.y_, 
+                      at.z_ + FORCE_SCALE * Fl.z_ );
+        f_at = m * f_at;
+        f_fn = m * f_fn;
+        f_fl = m * f_fl;
         debug->AddLine( f_at, f_fn, Color::CYAN );
         debug->AddLine( f_at, f_fl, Color::MAGENTA );
     }
