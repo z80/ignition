@@ -83,8 +83,6 @@ void CharacterCube::createVisualContent( Node * n )
     //tec->GetPass(0)->SetDepthTestMode( CMP_ALWAYS );	// Always pass depth test
     //material2->SetTechnique(0, tec);
     //model->SetMaterial( material2 );
-
-
 }
 
 void CharacterCube::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
