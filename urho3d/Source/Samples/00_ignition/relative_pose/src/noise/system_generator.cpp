@@ -92,14 +92,14 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
 
         OrbitingFrame * of = scene->CreateComponent<OrbitingFrame>( REPLICATED );
         Float m = sbody.mass() * G;
-        m *= 1.0e-9;// / 30.0;
+        m *= 1.0e-8;// / 30.0;
         of->SetGM( m );
 
         RotatingFrame * rf = scene->CreateComponent<RotatingFrame>( REPLICATED );
         //const Float periodDays = sbody.rotation_period_.ToDouble();
         //const Float periodSecs = periodDays * 86400.0;
         //rf->SetPeriod( Settings::ticks( periodSecs ) );
-        rf->SetPeriod( Settings::ticks( 600.0 ) );
+        rf->SetPeriod( Settings::ticks( 6000.0 ) );
         rf->setParent( of );
 
         PiAtmosphereSource * atmosphereSource = new PiAtmosphereSource();
@@ -112,7 +112,7 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
         const Float R = src->m_planetRadius;
         const Float H = src->m_maxHeightInMeters;
         //sd->setRadius( 100.0, H/R*100.0 );
-        sd->setRadius( 100.0, 5000.0 );
+        sd->setRadius( 1000.0, 50000.0 );
         sd->setStar( false );  // This sets the star material which is supposed to ignore lighing.
         sd->subdriveLevelsInit();
 

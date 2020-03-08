@@ -69,7 +69,7 @@ bool AtmosphereSource::drag( AirMesh & a, const State & st, Vector3d & F, Vector
 
         // Viscosity force.
         const Vector3d lateralV = V - t.n*V_n;
-        const Vector3d F_lateral_local = (-A*lateralCoef_*density)*lateralV;
+        const Vector3d F_lateral_local = (-A*lateralCoef_*absV*density)*lateralV;
         const Vector3d F_lateral = Q * F_lateral_local;
 
         fa.Fn  = F_normal_local;
