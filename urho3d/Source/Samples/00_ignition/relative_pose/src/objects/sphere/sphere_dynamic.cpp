@@ -97,13 +97,14 @@ void SphereDynamic::subdriveLevelsInit()
     cubesphereVisual_.setH( H_ );
 
     subdriveSourceCollision_.clearLevels();
-    subdriveSourceCollision_.addLevel( 5.0, 15.0 );
+    subdriveSourceCollision_.addLevel( 7.0, 35.0 );
     //subdriveSourceCollision_.addLevel( 1.5, 8.0 );
     subdriveSourceCollision_.addLevel( 20.5, 38.0 );
 
     subdriveSourceVisual_.clearLevels();
-    subdriveSourceVisual_.addLevel( 1.0, 36.0 );
-    subdriveSourceVisual_.addLevel( 3.0, 56.0 );
+    //subdriveSourceVisual_.addLevel( 0.3, 26.0 );
+    //subdriveSourceVisual_.addLevel( 2.0, 36.0 );
+    subdriveSourceVisual_.addLevel( 5.0, 96.0 );
     subdriveSourceVisual_.addLevel( 30.0, 1800.0 );
 }
 
