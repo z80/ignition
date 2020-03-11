@@ -373,7 +373,7 @@ void Environment::SendRequestCenter( RefFrame * rf )
     if ( serverRunning )
     {
         // Call callback locally.
-        SelectRequest( clientDesc_, rf );
+        CenterRequest( clientDesc_, rf );
     }
     else
     {
@@ -413,7 +413,7 @@ void Environment::SendRequestTrigger( RefFrame * rf, VariantMap & data )
     else
     {
         data[P_ID] = id;
-        c->SendRemoteEvent( E_IGN_CENTERREQUEST, true, data );
+        c->SendRemoteEvent( E_IGN_TRIGGERREQUEST, true, data );
     }
 }
 
