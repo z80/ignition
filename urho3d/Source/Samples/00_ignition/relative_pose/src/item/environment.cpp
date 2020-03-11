@@ -315,7 +315,7 @@ bool Environment::SendChatMessage( const String & message )
 
 void Environment::SendRequestItemSelect( Node * node )
 {
-    RefFrame * rf = RefFrame::refFrame( node->GetScene() );
+    RefFrame * rf = RefFrame::refFrame( node );
     if ( !rf )
     {
         //URHO3D_LOGINFO( "Selecting something not having RefFrame" );
