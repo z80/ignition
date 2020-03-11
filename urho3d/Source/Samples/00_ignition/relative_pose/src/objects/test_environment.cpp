@@ -200,12 +200,7 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
     if ( !planet )
         return;
 
-    //d->setParent( planet );
     cc->setParent( planet );
-    //{
-    //    const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, 0.0 ), 2.0 );
-    //    d->setR( at );
-    //}
     {
         const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, 0.0 ), 30.5 );
         cc->setR( at );
@@ -215,8 +210,17 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
     RefFrame * p = cc->parent();
     SurfaceCollisionMesh * scm = s->CreateComponent<SurfaceCollisionMesh>();
     scm->setParent( p );
-    //scm->setR( Vector3d::ZERO );
-    //scm->constructCustomGeometry();
+
+
+    // Add another character cube.
+    CharacterCube * cc2 = s->CreateComponent<CharacterCube>();
+    cc2->setName( String( "Another CharacterCube object" ) );
+    cc2->setParent( planet );
+    {
+        const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.1, 0.0 ), 30.5 );
+        cc2->setR( at );
+    }
+
 }
 
 
