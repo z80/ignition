@@ -25,6 +25,7 @@ CameraFrame::CameraFrame( Context * context )
     yaw_   = 30.0 / 180.0 * 3.14;
     pitch_ = 45.0 / 180.0 * 3.14;
     dist_  = 28.0;
+    centerBtnPrev_ = false;
     setName( "CameraFrame" );
 }
 
@@ -58,6 +59,15 @@ void CameraFrame::ApplyControls( const Controls & ctrl )
 
     setR( r );
     setQ( q );
+
+    const bool centerPressed = ctrl.buttons_ & CTRL_CENTER;
+    if ( centerPressed && (!centerBtnPrev_) )
+    {
+        // Search ref.frame and parent camera frame to that item.
+        const int userId = this->CreatedBy();
+        //if ( c. )
+    }
+    centerBtnPrev_ = centerPressed;
 }
 
 RefFrame * CameraFrame::CameraOrigin()

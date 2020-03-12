@@ -27,6 +27,7 @@ public:
     String lastName_;
     String suffix_;
     int    cameraFrameId_; // CameraId_ ID to find it easier.
+    int    selectedItemId_;
 };
 
 class Environment: public LogicComponent
@@ -71,7 +72,7 @@ public:
     virtual void StartedServer( bool success );
     virtual void ConnectionResult( const String & errMsg );
     virtual void ChatMessage( const String & user, const String & message );
-    virtual void SelectRequest( const ClientDesc & c, RefFrame * rf );
+    virtual void SelectRequest( ClientDesc & c, RefFrame * rf );
     virtual void CenterRequest( const ClientDesc & c, RefFrame * rf );
     virtual void TriggerRequest( const ClientDesc & c, RefFrame * rf, const VariantMap & data );
     virtual void ConsoleCommand( const String & cmd, const String & id=String() );
@@ -125,6 +126,7 @@ private:
 public:
     CameraFrame * FindCameraFrame( const ClientDesc & cd );
     CameraFrame * FindCameraFrame();
+    ClientDesc  * FindCreator( RefFrame * rf );
 private:
     RefFrame    * FindSelectedFrame( const ClientDesc & cd );
     RefFrame    * FindSelectedFrame();

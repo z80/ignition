@@ -66,6 +66,8 @@ const ClientDesc & ClientDesc::operator=( const ClientDesc & inst )
         firstName_ = inst.firstName_;
         lastName_  = inst.lastName_;
         suffix_    = inst.suffix_;
+        cameraFrameId_  = inst.cameraFrameId_;
+        selectedItemId_ = inst.selectedItemId_;
     }
 
     return *this;
@@ -462,7 +464,7 @@ void Environment::ChatMessage( const String & user, const String & message )
     Notifications::AddNotification( GetContext(), stri );
 }
 
-void Environment::SelectRequest( const ClientDesc & c, RefFrame * rf )
+void Environment::SelectRequest( ClientDesc & c, RefFrame * rf )
 {
     //URHO3D_LOGINFOF( "User %s wants to select: %s", c.login_.CString(), rf->name().CString() );
     const String stri = "User " + c.login_ + " wants to select " + rf->name();
@@ -471,7 +473,11 @@ void Environment::SelectRequest( const ClientDesc & c, RefFrame * rf )
     const bool selectable = rf->IsSelectable();
     if ( !selectable )
         return;
-    rf->Select( c.id_ );
+    const bool selected = rf->Select( c.id_ );
+    if ( selected )
+        c.selectedItemId_ = static_cast<unsigned>( rf->GetID() );
+    else
+        c.selectedItemId_ = -1;
 }
 
 void Environment::CenterRequest( const ClientDesc & c, RefFrame * rf )
@@ -774,7 +780,7 @@ void Environment::HandleSelectRequest_Remote( StringHash eventType, VariantMap &
     if ( it == connections_.End() )
         return;
 
-    const ClientDesc & c = it->second_;
+    ClientDesc & c = it->second_;
 
     Scene * s = GetScene();
     RefFrame * rf = RefFrame::refFrame( s, id );
@@ -1061,7 +1067,7 @@ void Environment::ApplyControls()
         }
     }
 
-    // Process own controlsand all client controls.
+    // Process own controls and all client controls.
     Scene * s = GetScene();
     if ( !s )
         return;
@@ -1160,6 +1166,26 @@ CameraFrame * Environment::FindCameraFrame()
 {
     CameraFrame * cf = FindCameraFrame( clientDesc_ );
     return cf;
+}
+
+ClientDesc  * Environment::FindCreator( RefFrame * rf )
+{
+    const int clientId = rf->CreatedBy();
+    if ( clientId < 0 )
+        return nullptr;
+    else if ( clientId == 0 )
+    {
+        return &clientDesc_;
+    }
+    HashMap<int, Connection *>::ConstIterator it = clientIds_.Find( clientId );
+    if ( it != clientIds_.End() )
+        return nullptr;
+    Connection * conn = it->second_;
+    HashMap<Connection *, ClientDesc>::Iterator it_conn = connections_.Find( conn );
+    if ( it_conn == connections_.End() )
+        return nullptr;
+    ClientDesc & cd = it_conn->second_;
+    return &cd;
 }
 
 RefFrame * Environment::FindSelectedFrame( const ClientDesc & cd )

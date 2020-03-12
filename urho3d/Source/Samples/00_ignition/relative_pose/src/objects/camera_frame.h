@@ -32,6 +32,7 @@ public:
     /// Camera parameters.
     Float yaw_, pitch_;
     Float dist_;
+    bool  centerBtnPrev_;
     static const Float alpha_;
 };
 
