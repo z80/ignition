@@ -25,7 +25,7 @@ CameraFrame::CameraFrame( Context * context )
     yaw_   = 30.0 / 180.0 * 3.14;
     pitch_ = 45.0 / 180.0 * 3.14;
     dist_  = 28.0;
-    centerBtnPrev_ = false;
+    //centerBtnPrev_ = false;
     setName( "CameraFrame" );
 }
 
@@ -60,14 +60,24 @@ void CameraFrame::ApplyControls( const Controls & ctrl )
     setR( r );
     setQ( q );
 
-    const bool centerPressed = ctrl.buttons_ & CTRL_CENTER;
+    /*const bool centerPressed = ctrl.buttons_ & CTRL_CENTER;
     if ( centerPressed && (!centerBtnPrev_) )
     {
         // Search ref.frame and parent camera frame to that item.
-        const int userId = this->CreatedBy();
-        //if ( c. )
+        Environment * env = Environment::environment( context_ );
+        if ( !env )
+            return;
+        ClientDesc * cd = env->FindCreator( this );
+        if ( !cd )
+            return;
+        const int itemId = cd->selectedItemId_;
+        if ( itemId < 0 )
+            return;
+        Scene * s = GetScene();
+        RefFrame * rf = RefFrame::refFrame( s, itemId );
+        setParent( rf );
     }
-    centerBtnPrev_ = centerPressed;
+    centerBtnPrev_ = centerPressed;*/
 }
 
 RefFrame * CameraFrame::CameraOrigin()

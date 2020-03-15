@@ -470,6 +470,16 @@ void Environment::SelectRequest( ClientDesc & c, RefFrame * rf )
     const String stri = "User " + c.login_ + " wants to select " + rf->name();
     Notifications::AddNotification( GetContext(), stri );
 
+    // First unselect all objects selected by this client.
+    while ( true )
+    {
+        RefFrame * rf = FindSelectedFrame( c );
+        if ( !rf )
+            break;
+        rf->Unselect( c.id_ );
+    }
+
+    // Select the object if it is selectable.
     const bool selectable = rf->IsSelectable();
     if ( !selectable )
         return;
