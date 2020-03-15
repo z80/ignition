@@ -3,6 +3,7 @@
 #include "environment.h"
 #include "physics_frame.h"
 #include "physics_item.h"
+#include "orbiting_frame.h"
 #include "settings.h"
 
 #include "Notifications.h"
@@ -22,6 +23,7 @@ void CameraFrame::RegisterComponent( Context * context )
 CameraFrame::CameraFrame( Context * context )
     : RefFrame( context )
 {
+    useSurfFrame_ = true;
     yaw_   = 30.0 / 180.0 * 3.14;
     pitch_ = 45.0 / 180.0 * 3.14;
     dist_  = 28.0;
@@ -39,45 +41,38 @@ void CameraFrame::ApplyControls( const Controls & ctrl )
     yaw_   = ctrl.yaw_ * 180.0 / 3.14 / 10.0;
     pitch_ = ctrl.pitch_ * 180.0 / 3.14 / 10.0;
     VariantMap::ConstIterator it = ctrl.extraData_.Find( IGN_ZOOM_VALUE );
-    const int z = (it != ctrl.extraData_.End()) ? it->second_.GetInt() : 250;
+    const int z = (it != ctrl.extraData_.End()) ? it->second_.GetInt() : 25000.0;
     dist_ = static_cast<Float>( z ) * alpha_;
 
     RefFrame * directParent = parent();
-    RefFrame * originParent = ( directParent ) ? directParent->parent() : nullptr;
+    RefFrame * originParent = CameraOrigin();
     Quaterniond q;
     q.FromEulerAngles( pitch_, yaw_, 0.0 );
-    if ( directParent && originParent )
+    if ( directParent )
     {
         Vector3d    rel_r;
         Quaterniond rel_q;
         originParent->relativePose( directParent, rel_r, rel_q );
+        rel_q = rel_q.Inverse();
         q = rel_q * q;
+    }
+    if ( useSurfFrame_ )
+    {
+        adjustSurfQuat();
+        q = surfQ_ * q;
     }
     Vector3d r( 0.0, 0.0, -1.0 );
     r = q * r;
     r *= dist_;
 
+
     setR( r );
     setQ( q );
+}
 
-    /*const bool centerPressed = ctrl.buttons_ & CTRL_CENTER;
-    if ( centerPressed && (!centerBtnPrev_) )
-    {
-        // Search ref.frame and parent camera frame to that item.
-        Environment * env = Environment::environment( context_ );
-        if ( !env )
-            return;
-        ClientDesc * cd = env->FindCreator( this );
-        if ( !cd )
-            return;
-        const int itemId = cd->selectedItemId_;
-        if ( itemId < 0 )
-            return;
-        Scene * s = GetScene();
-        RefFrame * rf = RefFrame::refFrame( s, itemId );
-        setParent( rf );
-    }
-    centerBtnPrev_ = centerPressed;*/
+void CameraFrame::setUseSurfFrame( bool en )
+{
+    useSurfFrame_ = en;
 }
 
 RefFrame * CameraFrame::CameraOrigin()
@@ -177,6 +172,39 @@ void CameraFrame::OnSceneSet( Scene * scene )
 {
     assignCameraNode();
 }
+
+void CameraFrame::adjustSurfQuat()
+{
+    RefFrame * rf = parent();
+    if ( !rf )
+        return;
+    RefFrame * of = orbitingFrame( rf );
+    if ( !of )
+        return;
+    State rs;
+    rf->relativeState( of, rs, true );
+    const Quaterniond localQ = rs.q; //rf->relQ();
+    const Vector3d actualG = localQ * Vector3d( 0.0, 1.0, 0.0 );
+    const Vector3d localWantedG = rs.r.Normalized();
+    const Vector3d wantedG = localQ * localWantedG;
+    Quaterniond q;
+    q.FromRotationTo( wantedG, actualG );
+    //surfQ_ = q * localQ;
+    surfQ_ = q;
+}
+
+RefFrame * CameraFrame::orbitingFrame( RefFrame * rf )
+{
+    if ( !rf )
+        return nullptr;
+    RefFrame * of = rf->Cast<OrbitingFrame>();
+    if ( of )
+        return of;
+    RefFrame * p = rf->parent();
+    of = orbitingFrame( p );
+    return of;
+}
+
 
 
 }
