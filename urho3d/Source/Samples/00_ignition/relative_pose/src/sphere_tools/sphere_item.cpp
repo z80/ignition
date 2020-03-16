@@ -44,14 +44,14 @@ void SphereItem::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
 
 void SphereItem::updateCollisionData()
 {
-    subdivideCollision();
-    //startSubdriveCollision();
+    //subdivideCollision();
+    checkIfSubdriveCollisionNeeded();
 }
 
 void SphereItem::updateVisualData()
 {
     //subdivideVisual();
-    checkIsSubdriveVisualNeeded();
+    checkIfSubdriveVisualNeeded();
 }
 
 void SphereItem::refStateChanged()
@@ -261,7 +261,7 @@ void SphereItem::subdivideVisual()
     }
 }
 
-void SphereItem::checkIsSubdriveVisualNeeded()
+void SphereItem::checkIfSubdriveVisualNeeded()
 {
     Context * context = GetContext();
     Environment * env = Environment::environment( context );

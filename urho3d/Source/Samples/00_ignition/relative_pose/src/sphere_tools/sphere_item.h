@@ -67,7 +67,7 @@ protected:
     /// This one is synchonous.
     void subdivideVisual();
 public:
-    void checkIsSubdriveVisualNeeded();
+    void checkIfSubdriveVisualNeeded();
     void startSubdriveVisual();
     void processSubdriveVisual();
     void finishSubdriveVisual();
