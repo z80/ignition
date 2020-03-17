@@ -1116,10 +1116,27 @@ void Environment::ApplyControls()
                 if ( conn )
                 {
                     const Controls & ctrls = conn->GetControls();
-                    rf->ApplyControls( ctrls );
+                    
+                    Float secsDt = secsDt_;
+                    const Float maxSecsDt = Settings::maxDynamicsTimeStep();
+                    while ( secsDt > 0.001 )
+                    {
+                        const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
+                        rf->ApplyControls( ctrls, dt );
+                        secsDt -= maxSecsDt;
+                    }
                 }
                 else
-                    rf->ApplyControls( controls_ );
+                {
+                    Float secsDt = secsDt_;
+                    const Float maxSecsDt = Settings::maxDynamicsTimeStep();
+                    while ( secsDt > 0.001 )
+                    {
+                        const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
+                        rf->ApplyControls( controls_, dt );
+                        secsDt -= maxSecsDt;
+                    }
+                }
             }
         }
 
@@ -1129,7 +1146,17 @@ void Environment::ApplyControls()
         {
             const int userId = cf->CreatedBy();
             if ( userId == 0 )
-                cf->ApplyControls( controls_ );
+            {
+
+                Float secsDt = secsDt_;
+                const Float maxSecsDt = Settings::maxDynamicsTimeStep();
+                while ( secsDt > 0.001 )
+                {
+                    const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
+                    cf->ApplyControls( controls_, dt );
+                    secsDt -= maxSecsDt;
+                }
+            }
             else
             {
                 HashMap<int, Connection *>::ConstIterator it = clientIds_.Find( userId );
@@ -1137,7 +1164,15 @@ void Environment::ApplyControls()
                 {
                     Connection * conn = it->second_;
                     const Controls ctrls = conn->GetControls();
-                    cf->ApplyControls( ctrls );
+                    
+                    Float secsDt = secsDt_;
+                    const Float maxSecsDt = Settings::maxDynamicsTimeStep();
+                    while ( secsDt > 0.001 )
+                    {
+                        const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
+                        cf->ApplyControls( ctrls, dt );
+                        secsDt -= maxSecsDt;
+                    }
                 }
             }
         }

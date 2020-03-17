@@ -27,7 +27,7 @@ PhysicsCharacterItem::~PhysicsCharacterItem()
 {
 }
 
-void PhysicsCharacterItem::SetAzimuth( Float az )
+void PhysicsCharacterItem::setAzimuth( Float az )
 {
     azimuth_ = az;
 }
@@ -52,12 +52,18 @@ void PhysicsCharacterItem::physicsUpdate( RigidBody2 * rb )
 void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
 {
     // It doesn't work yet.
+    const Float az2 = azimuth_ * 0.5;
+    const Float co2 = std::cos( az2 );
+    const Float si2 = std::sin( az2 );
+    Quaterniond azQ( co2, 0.0, si2, 0.0 );
 
     RefFrame * rf = parent();
     OrbitingFrame * of = orbitingFrame( rf );
     if ( !of )
         return;
-    const Quaterniond localQ = relQ();
+
+    setQ( azQ );
+    const Quaterniond localQ = azQ; //relQ();
     const Vector3d actualG = localQ * Vector3d( 0.0, -1.0, 0.0 );
     State rs;
     of->relativeState( this, rs, true );

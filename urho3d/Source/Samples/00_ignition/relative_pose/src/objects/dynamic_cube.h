@@ -18,7 +18,7 @@ public:
     DynamicCube( Context * context );
     ~DynamicCube();
 
-    void ApplyControls( const Controls & ctrl ) override;
+    void ApplyControls( const Controls & ctrl, Float dt ) override;
     bool IsSelectable() const override;
     void Trigger( const VariantMap & data ) override;
 

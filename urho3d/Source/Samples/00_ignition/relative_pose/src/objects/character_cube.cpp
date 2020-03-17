@@ -27,7 +27,7 @@ void CharacterCube::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
     PhysicsCharacterItem::DrawDebugGeometry( debug, depthTest );
 }
 
-void CharacterCube::ApplyControls( const Controls & ctrl )
+void CharacterCube::ApplyControls( const Controls & ctrl, Float dt )
 {
     const Float MOVE_FORCE = 100.0;
 
@@ -40,13 +40,15 @@ void CharacterCube::ApplyControls( const Controls & ctrl )
     // independent from rendering framerate. We could also apply forces (which would enable in-air control),
     // but want to emphasize that it's a ball which should only control its motion by rolling along the ground
     if ( ctrl.buttons_ & CTRL_FORWARD )
-        rigid_body_->ApplyForce( q * Vector3::FORWARD * MOVE_FORCE );
-    else if ( ctrl.buttons_ & CTRL_BACK )
         rigid_body_->ApplyForce( q * Vector3::BACK * MOVE_FORCE );
-    else if ( ctrl.buttons_ & CTRL_LEFT )
+    if ( ctrl.buttons_ & CTRL_BACK )
+        rigid_body_->ApplyForce( q * Vector3::FORWARD * MOVE_FORCE );
+    if ( ctrl.buttons_ & CTRL_LEFT )
         rigid_body_->ApplyForce( q * Vector3::LEFT * MOVE_FORCE );
-    else if ( ctrl.buttons_ & CTRL_RIGHT )
+    if ( ctrl.buttons_ & CTRL_RIGHT )
         rigid_body_->ApplyForce( q * Vector3::RIGHT * MOVE_FORCE );
+    if ( ctrl.buttons_ & CTRL_JUMP )
+        rigid_body_->ApplyForce( q * Vector3::UP * MOVE_FORCE );
 }
 
 bool CharacterCube::AcceptsControls( int userId ) const

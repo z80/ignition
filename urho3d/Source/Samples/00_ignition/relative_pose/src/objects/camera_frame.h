@@ -16,7 +16,7 @@ public:
     CameraFrame( Context * context );
     ~CameraFrame();
 
-    void ApplyControls( const Controls & ctrl ) override;
+    void ApplyControls( const Controls & ctrl, Float dt ) override;
 
     void setUseSurfFrame( bool en );
     RefFrame * CameraOrigin();
