@@ -48,15 +48,15 @@ void CameraFrame::ApplyControls( const Controls & ctrl, Float dt )
     RefFrame * originParent = CameraOrigin();
     Quaterniond q;
     q.FromEulerAngles( pitch_, yaw_, 0.0 );
-    if ( directParent )
+    /*if ( directParent )
     {
         Vector3d    rel_r;
         Quaterniond rel_q;
         originParent->relativePose( directParent, rel_r, rel_q );
         rel_q = rel_q.Inverse();
         q = rel_q * q;
-    }
-    if ( useSurfFrame_ )
+    }*/
+    if ( useSurfFrame_ && false )
     {
         adjustSurfQuat();
         q = surfQ_ * q;
@@ -177,6 +177,9 @@ void CameraFrame::adjustSurfQuat()
 {
     RefFrame * rf = parent();
     if ( !rf )
+        return;
+    RefFrame * phFr = rf->parent();
+    if ( !phFr )
         return;
     RefFrame * of = orbitingFrame( rf );
     if ( !of )
