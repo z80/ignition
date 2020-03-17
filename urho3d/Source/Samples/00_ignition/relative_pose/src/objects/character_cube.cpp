@@ -30,6 +30,7 @@ void CharacterCube::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
 void CharacterCube::ApplyControls( const Controls & ctrl, Float dt )
 {
     const Float MOVE_FORCE = 100.0;
+    const Float W = 0.3;
 
     if ( !rigid_body_ )
         return;
@@ -49,6 +50,10 @@ void CharacterCube::ApplyControls( const Controls & ctrl, Float dt )
         rigid_body_->ApplyForce( q * Vector3::RIGHT * MOVE_FORCE );
     if ( ctrl.buttons_ & CTRL_JUMP )
         rigid_body_->ApplyForce( q * Vector3::UP * MOVE_FORCE );
+    if ( ctrl.buttons_ & CTRL_CW )
+        azimuth_ -= W * dt;
+    if ( ctrl.buttons_ & CTRL_CCW )
+        azimuth_ += W * dt;
 }
 
 bool CharacterCube::AcceptsControls( int userId ) const
