@@ -56,7 +56,7 @@ void CameraFrame::ApplyControls( const Controls & ctrl, Float dt )
         rel_q = rel_q.Inverse();
         q = rel_q * q;
     }*/
-    if ( useSurfFrame_ && false )
+    if ( useSurfFrame_ )
     {
         adjustSurfQuat();
         q = surfQ_ * q;
@@ -178,20 +178,17 @@ void CameraFrame::adjustSurfQuat()
     RefFrame * rf = parent();
     if ( !rf )
         return;
-    RefFrame * phFr = rf->parent();
-    if ( !phFr )
-        return;
     RefFrame * of = orbitingFrame( rf );
     if ( !of )
         return;
     State rs;
     rf->relativeState( of, rs, true );
-    const Quaterniond localQ = rs.q; //rf->relQ();
-    const Vector3d actualG = localQ * Vector3d( 0.0, 1.0, 0.0 );
-    const Vector3d localWantedG = rs.r.Normalized();
-    const Vector3d wantedG = localQ * localWantedG;
+    const Quaterniond toParentQ = rf->relQ().Inverse();
+    const Quaterniond localQ = toParentQ * rs.q; //rf->relQ();
+    const Vector3d actualG = localQ * Vector3d( 0.0, -1.0, 0.0 );
+    const Vector3d wantedG = -(toParentQ * rs.r.Normalized());
     Quaterniond q;
-    q.FromRotationTo( wantedG, actualG );
+    q.FromRotationTo( actualG, wantedG );
     //surfQ_ = q * localQ;
     surfQ_ = q;
 }
