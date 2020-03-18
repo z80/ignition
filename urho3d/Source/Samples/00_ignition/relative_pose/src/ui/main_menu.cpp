@@ -18,6 +18,7 @@ MainMenu::MainMenu( Context * context )
 
 MainMenu::~MainMenu()
 {
+    Dispose();
 }
 
 void MainMenu::Init()
@@ -34,7 +35,7 @@ void MainMenu::Create()
 void MainMenu::Dispose()
 {
     if ( mainWnd_ )
-        mainWnd_.Reset();
+        mainWnd_->Remove();
 }
 
 
