@@ -180,11 +180,14 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
     if ( !s )
         return;
 
+    const unsigned clientId = camera->CreatedBy();
+
     //DynamicCube * d = s->CreateComponent<DynamicCube>();
     //d->setName( String( "DynamicCube object" ) );
 
     CharacterCube * cc = s->CreateComponent<CharacterCube>();
     cc->setName( String( "CharacterCube object" ) );
+    cc->SetCreatedBy( clientId );
 
     // Search for a planet and place everything on a side.
     const Vector<SharedPtr<Component> > & comps = s->GetComponents();
@@ -213,14 +216,14 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
 
 
     // Add another character cube.
-    CharacterCube * cc2 = s->CreateComponent<CharacterCube>();
+    /*CharacterCube * cc2 = s->CreateComponent<CharacterCube>();
     cc2->setName( String( "Another CharacterCube object" ) );
     cc2->setParent( planet );
     {
         const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.1, 0.0 ), 30.5 );
         cc2->setR( at );
     }
-
+    */
 }
 
 

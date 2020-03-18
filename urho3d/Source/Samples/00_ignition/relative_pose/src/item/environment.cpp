@@ -654,6 +654,7 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
 
 
     ClientDesc d;
+    d.id_ = id;
     VariantMap::ConstIterator it = identity.Find( P_LOGIN );
     bool hasLogin    = (it != identity.End());
     if ( hasLogin )
@@ -687,7 +688,7 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
     // Create camera frame for newly connected client.
     CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
     d.cameraFrameId_ = cf->GetID();
-    cf->SetCreatedBy( clientDesc_.id_ );
+    cf->SetCreatedBy( d.id_ );
 
     CreateReplicatedContentClient( cf );
 
