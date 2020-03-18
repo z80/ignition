@@ -506,34 +506,45 @@ static Float cluster( unsigned & splitInd, Vector<SharedPtr<RefFrame> > & src, V
 static Float clusterScore( Vector<SharedPtr<RefFrame> > & objs, unsigned splitInd )
 {
     Float score = 0.0;
-    for ( unsigned i=0; i<splitInd; i++ )
     {
-        SharedPtr<RefFrame> & oi = objs[i];
-        const Vector3d ri = oi->relR();
-        for ( unsigned j=0; j<splitInd; j++ )
+        if ( splitInd > 1 )
         {
-            if ( i == j )
-                continue;
-            SharedPtr<RefFrame> & oj = objs[j];
-            const Float dist = oj->distance( ri );
-            score += dist;
+            const unsigned upperBound = splitInd-1;
+            for ( unsigned i=0; i<(splitInd-1); i++ )
+            {
+                SharedPtr<RefFrame> & oi = objs[i];
+                const Vector3d ri = oi->relR();
+                const unsigned lowerBound = i + 1;
+                for ( unsigned j=lowerBound; j<splitInd; j++ )
+                {
+                    SharedPtr<RefFrame> & oj = objs[j];
+                    const Float dist = oj->distance( ri );
+                    score += dist;
+                }
+            }
         }
     }
 
-    const unsigned qty = objs.Size();
-    for ( unsigned i=splitInd; i<qty; i++ )
     {
-        SharedPtr<RefFrame> & oi = objs[i];
-        const Vector3d ri = oi->relR();
-        for ( unsigned j=splitInd; i<qty; j++ )
+        const unsigned qty = objs.Size();
+        const unsigned upperBound = qty - 1;
+        if ( splitInd < upperBound )
         {
-            if ( i == j )
-                continue;
-            SharedPtr<RefFrame> & oj = objs[j];
-            const Float dist = oj->distance( ri );
-            score += dist;
+            for ( unsigned i=splitInd; i<upperBound; i++ )
+            {
+                SharedPtr<RefFrame> & oi = objs[i];
+                const Vector3d ri = oi->relR();
+                const unsigned lowerBound = i + 1;
+                for ( unsigned j=lowerBound; j<qty; j++ )
+                {
+                    SharedPtr<RefFrame> & oj = objs[j];
+                    const Float dist = oj->distance(ri);
+                    score += dist;
+                }
+            }
         }
     }
+
 
     return score;
 }
@@ -552,7 +563,7 @@ static Float clusterDist( Vector<SharedPtr<RefFrame> > & objs, unsigned splitInd
             SharedPtr<RefFrame> & oj = objs[j];
             const Vector3d rj = oj->relR();
             const Float distA = oj->distance( ri );
-            const Float distB = oj->distance( rj );
+            const Float distB = oi->distance( rj );
             const Float dist = (distA + distB) * 0.5;
             if ( ( minDist < 0.0 ) || ( dist < minDist ) )
                 minDist = dist;
