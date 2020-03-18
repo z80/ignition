@@ -14,7 +14,7 @@ void RefFrame::RegisterComponent( Context * context )
     URHO3D_COPY_BASE_ATTRIBUTES( ControllableItem );
 
     // Need to think on how to assign parent and update over network.
-    URHO3D_ACCESSOR_ATTRIBUTE( "ParentId", getParentId, setParentId, unsigned, 0.0, AM_DEFAULT );
+    URHO3D_ACCESSOR_ATTRIBUTE( "ParentId", getParentId, setParentId, int, -1, AM_DEFAULT );
 
     URHO3D_ATTRIBUTE( "RfName", String, name_, "", AM_DEFAULT );
 
@@ -78,6 +78,7 @@ void RefFrame::setParent( RefFrame * newParent )
         curParent->childLeft( this );
     }
     parent_ = SharedPtr<RefFrame>( newParent );
+    parentId_ = parent_->GetID();
     if ( newParent )
     {
         addToList( this, newParent->children_ );
@@ -91,8 +92,9 @@ void RefFrame::setParent( RefFrame * newParent )
     MarkNetworkUpdate();
 }
 
-RefFrame * RefFrame::parent() const
+RefFrame * RefFrame::parent()
 {
+    validateParentId();
     return parent_;
 }
 
@@ -186,7 +188,7 @@ const State RefFrame::state() const
     return st;
 }
 
-bool RefFrame::relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging ) const 
+bool RefFrame::relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging ) 
 {
     State state;
     const bool res = relativeState( other, state, debugLogging );
@@ -196,7 +198,7 @@ bool RefFrame::relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & r
     return res;
 }
 
-bool RefFrame::relativeState( const RefFrame * other, State & stateRel, bool debugLogging ) const
+bool RefFrame::relativeState( RefFrame * other, State & stateRel, bool debugLogging )
 {
     State stateOther;
     const bool res = relativeState( other, stateOther, stateRel, debugLogging );
@@ -205,17 +207,20 @@ bool RefFrame::relativeState( const RefFrame * other, State & stateRel, bool deb
 }
 
 
-bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther, State & state, const bool debugLogging ) const
+bool RefFrame::relativeState( RefFrame * other, const State & stateInOther, State & state, const bool debugLogging )
 {
+    // First validate parent.
+    validateParentId();
+
     // root->a->b->c->d->e->this
     // root->a->b->f->g->other
     // The idea is to accumulate relative position and orientation.
 
     // Get all ancestors of current node.
     // Make it static as graphics is in one thread.
-    static Vector<const RefFrame *> allAncestorsA;
+    static Vector<RefFrame *> allAncestorsA;
     allAncestorsA.Clear();
-    const RefFrame * itemA = this;
+    RefFrame * itemA = this;
     while ( itemA )
     {
         allAncestorsA.Push( itemA );
@@ -223,8 +228,8 @@ bool RefFrame::relativeState( const RefFrame * other, const State & stateInOther
     }
     const unsigned allQtyA = allAncestorsA.Size();
 
-    const RefFrame * itemB = other;
-    static Vector<const RefFrame *> ancestorsB;
+    RefFrame * itemB = other;
+    static Vector<RefFrame *> ancestorsB;
     ancestorsB.Clear();
     unsigned indA = allQtyA;
     while ( itemB )
@@ -360,7 +365,7 @@ bool RefFrame::teleport( RefFrame * other, const State & stateInOther )
     return true;
 }
 
-bool RefFrame::computeRefState( const RefFrame * other, Timestamp t, bool recursive )
+bool RefFrame::computeRefState( RefFrame * other, Timestamp t, bool recursive )
 {
     if ( (refT_ != t) || (t < 0) )
     {
@@ -434,30 +439,15 @@ void RefFrame::childTeleported( RefFrame * refFrame )
 
 }
 
-unsigned RefFrame::getParentId() const
+int RefFrame::getParentId() const
 {
-    if ( !parent_ )
-        return 0;
-    const unsigned id = parent_->id_;
-    return id;
+    return parentId_;
 }
 
-void RefFrame::setParentId( unsigned parentId )
+void RefFrame::setParentId( int parentId )
 {
-    Scene * s = this->GetScene();
-    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
-    const unsigned qty = comps.Size();
-    for ( unsigned i=0; i<qty; i++ )
-    {
-        const SharedPtr<Component> & c = comps[i];
-        const unsigned compId = c->GetID();
-        if ( compId == parentId )
-        {
-            RefFrame * p = c->Cast<RefFrame>();
-            setParent( p );
-            break;
-        }
-    }
+    parentId_ = parentId;
+    validateParentId();
 }
 
 bool RefFrame::getUserControlled() const
@@ -475,7 +465,7 @@ bool RefFrame::getUserControlled() const
     return false;
 }
 
-Float RefFrame::distance( RefFrame * refFrame ) const
+Float RefFrame::distance( RefFrame * refFrame )
 {
     Vector3d rel_r;
     Quaterniond rel_q;
@@ -539,6 +529,28 @@ RefFrame * RefFrame::refFrame( Scene * s, unsigned id )
         }
     }
     return nullptr;
+}
+
+void RefFrame::validateParentId()
+{
+    Scene * s = GetScene();
+    if ( ( parentId_ >= 0 ) && (!parent_) )
+    {
+        RefFrame * rf = refFrame( s, parentId_ );
+        parent_ = SharedPtr<RefFrame>( rf );
+        return;
+    }
+    else if ( ( parentId_ < 0 ) && ( parent_ ) )
+    {
+        parent_.Reset();
+        return;
+    }
+    else if ( ( parentId_ >= 0 ) && (parent_) && (parent_->GetID() != parentId_) )
+    {
+        RefFrame * rf = refFrame( s, parentId_ );
+        parent_ = SharedPtr<RefFrame>( rf );
+        return;
+    }
 }
 
 

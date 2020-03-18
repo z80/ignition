@@ -30,7 +30,7 @@ bool ForceSourceFrame::ProducesForces() const
     return false;
 }
 
-void ForceSourceFrame::ApplyForces( PhysicsItem * receiver ) const
+void ForceSourceFrame::ApplyForces( PhysicsItem * receiver )
 {
     const bool producesForces = ProducesForces();
     if ( producesForces )

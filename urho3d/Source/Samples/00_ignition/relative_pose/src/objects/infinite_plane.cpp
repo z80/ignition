@@ -24,7 +24,7 @@ InfinitePlane::~InfinitePlane()
 
 }
 
-Float InfinitePlane::distance( RefFrame * refFrame ) const
+Float InfinitePlane::distance( RefFrame * refFrame )
 {
     if ( !refFrame )
         return -1.0;

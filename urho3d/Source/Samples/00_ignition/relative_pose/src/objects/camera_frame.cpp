@@ -20,6 +20,19 @@ void CameraFrame::RegisterComponent( Context * context )
     URHO3D_COPY_BASE_ATTRIBUTES( RefFrame );
 }
 
+void CameraFrame::CheckAttributes()
+{
+    const Vector<AttributeInfo> & attrs = *GetAttributes();
+    const unsigned qty = attrs.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        const AttributeInfo & ai = attrs[i];
+        const String name = ai.name_;
+        const VariantType tp = ai.type_;
+        const void * ptr = ai.ptr_;
+    }
+}
+
 CameraFrame::CameraFrame( Context * context )
     : RefFrame( context )
 {

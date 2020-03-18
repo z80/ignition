@@ -24,7 +24,7 @@ IcoPlanet::~IcoPlanet()
 
 }
 
-Float IcoPlanet::distance( RefFrame * refFrame ) const
+Float IcoPlanet::distance( RefFrame * refFrame )
 {
     Vector3d rel_r;
     Quaterniond rel_q;

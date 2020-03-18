@@ -16,7 +16,7 @@ public:
     IcoPlanet( Context * context );
     ~IcoPlanet();
 
-    Float distance( RefFrame * refFrame ) const override;
+    Float distance( RefFrame * refFrame ) override;
     Float distance( const Vector3d & r=Vector3d::ZERO ) const override;
     void refStateChanged() override;
 

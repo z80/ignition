@@ -13,6 +13,8 @@ class CameraFrame: public RefFrame
 public:
     static void RegisterComponent( Context * context );
 
+    void CheckAttributes();
+
     CameraFrame( Context * context );
     ~CameraFrame();
 

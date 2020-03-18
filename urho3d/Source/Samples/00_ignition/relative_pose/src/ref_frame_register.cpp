@@ -32,6 +32,7 @@ namespace Ign
 
 void RegisterComponents( Context * context )
 {
+    ControllableItem::RegisterComponent( context );
     RefFrame::RegisterComponent( context );
     PhysicsFrame::RegisterComponent( context );
     PhysicsItem::RegisterComponent( context );

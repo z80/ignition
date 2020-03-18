@@ -217,6 +217,7 @@ void Environment::StartServer( int port )
     // Create camera frame for newly connected client.
     Scene * s = GetScene();
     CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
+    cf->CheckAttributes();
     clientDesc_.cameraFrameId_ = cf->GetID();
     cf->SetCreatedBy( clientDesc_.id_ );
 
