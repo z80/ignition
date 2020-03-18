@@ -25,6 +25,7 @@ public:
     virtual void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) override;
 
     void physicsStep( float sec_dt );
+    bool handleSplitMerge();
     Node * physicsNode();
 
 protected:
@@ -55,7 +56,7 @@ protected:
     /// Check if need split into a few physics nodes.
     bool checkIfNeedToSplit();
     /// Check if need to merge with another physics frame.
-    void checkIfNeedToMerge();
+    bool checkIfNeedToMerge();
 public:
     SharedPtr<Node>          node_;
     SharedPtr<PhysicsWorld2> physicsWorld_;

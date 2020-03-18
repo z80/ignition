@@ -982,6 +982,11 @@ void Environment::UpdateDynamicNodes( Float secs_dt )
 
     const Vector<SharedPtr<Component> > & comps = s->GetComponents();
     const unsigned qty = comps.Size();
+
+    // This separate array because split/merge changes number of components.
+    // And the first loop would fail in this case.
+    static Vector<SharedPtr<PhysicsFrame> > phFrames;
+    phFrames.Clear();
     for ( unsigned i=0; i<qty; i++ )
     {
         // Try cast to dynamics integration node.
@@ -991,6 +996,17 @@ void Environment::UpdateDynamicNodes( Float secs_dt )
         if ( !pf )
             continue;
         pf->physicsStep( secs_dt );
+        phFrames.Push( SharedPtr<PhysicsFrame>( pf ) );
+    }
+
+    // Here if split or merge took place it is still fine.
+    // Also SharedPtr makes sure that deleted objects are not referenced.
+    const unsigned pfQty = phFrames.Size();
+    for ( unsigned i=0; i<pfQty; i++ )
+    {
+        SharedPtr<PhysicsFrame> & pf = phFrames[i];
+        if ( pf )
+            pf->handleSplitMerge();
     }
 }
 

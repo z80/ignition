@@ -51,17 +51,22 @@ void PhysicsFrame::physicsStep( float sec_dt )
     physicsWorld_->Update( sec_dt );
 
     updateChildStates();
+}
 
+bool PhysicsFrame::handleSplitMerge()
+{
     const Vector<SharedPtr<RefFrame> > & obs = userControlledObjects();
     const bool worthToExist = checkIfWorthToExist();
     if ( !worthToExist )
-        return;
+        return true;
     checkIfTeleport();
     checkInnerObjects();
     checkOuterObjects();
     if ( checkIfNeedToSplit() )
-        return;
+        return true;
     checkIfNeedToMerge();
+
+    return false;
 }
 
 Node * PhysicsFrame::physicsNode()
@@ -394,8 +399,9 @@ bool PhysicsFrame::checkIfNeedToSplit()
     return true;
 }
 
-void PhysicsFrame::checkIfNeedToMerge()
+bool PhysicsFrame::checkIfNeedToMerge()
 {
+    bool result = false;
     SharedPtr<RefFrame> p = parent_;
     const Float mergeDist = Settings::dynamicsWorldDistanceInclude();
     const Vector3d r = relR();
@@ -424,13 +430,14 @@ void PhysicsFrame::checkIfNeedToMerge()
                 o->setParent( this );
             }
             pf->Remove();
+            result = true;
         }
     }
     else
     {
         Scene * s = GetScene();
         if ( !s )
-            return;
+            return false;
         const Vector<SharedPtr<Component> > & comps = s->GetComponents();
         const unsigned compsQty = comps.Size();
         for ( unsigned i=0; i<compsQty; i++ )
@@ -460,8 +467,11 @@ void PhysicsFrame::checkIfNeedToMerge()
                 o->setParent( this );
             }
             pf->Remove();
+            result = true;
         }
     }
+
+    return result;
 }
 
 static Float cluster( unsigned & splitInd, Vector<SharedPtr<RefFrame> > & src, Vector<SharedPtr<RefFrame> > & dest )
