@@ -4,6 +4,7 @@
 
 #include "data_types.h"
 #include "environment.h"
+#include "pi_system.h"
 
 using namespace Urho3D;
 
@@ -11,17 +12,28 @@ namespace Ign
 {
 
 class PiSystem;
+class SphereDynamic;
 
-class SystemGenerator
+class SystemGenerator: public Urho3D::Object
 {
+    URHO3D_OBJECT( SystemGenerator, Object )
 public:
-	SystemGenerator();
+    static void RegisterObject( Context * context );
+
+	SystemGenerator( Context * context );
 	~SystemGenerator();
 
+    void generate();
+    void createBodies( Scene * scene );
 	void generate( Scene * scene );
 
-	void generateSystem( PiSystem & s );
+	void generateSystem();
 	void createBody( Scene * scene, RefFrame * parent, PiSystem & s, int bodyIndex );
+    void applyBody( SphereDynamic * sd );
+
+public:
+    PiSystem s_;
+
 };
 
 }

@@ -24,6 +24,7 @@
 #include "sphere_example.h"
 #include "sphere_dynamic.h"
 #include "test_environment.h"
+#include "system_generator.h"
 
 #include "physics_world_2.h"
 
@@ -56,6 +57,8 @@ void RegisterComponents( Context * context )
     SphereExample::RegisterComponent( context );
     SphereDynamic::RegisterComponent( context );
     TestEnvironment::RegisterComponent( context );
+
+    SystemGenerator::RegisterObject( context );
 
     RegisterPhysicsLibrary2( context );
 }

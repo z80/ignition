@@ -219,13 +219,14 @@ void PiSystemGenerator::createDumb( PiSystem * system, PiRandom & rand )
     fixed semiMajorAxis = periapsis / (fixed(1, 1) - ecc);
     fixed apoapsis = 2 * semiMajorAxis - periapsis;
 
-    fixed mass = rand.Fixed();
-    mass += rand.Fixed();
-    mass += rand.Fixed();
-    mass += rand.Fixed();
-    mass += rand.Fixed();
-    mass /= 5;
+    //fixed mass = rand.Fixed();
+    //mass += rand.Fixed();
+    //mass += rand.Fixed();
+    //mass += rand.Fixed();
+    //mass += rand.Fixed();
+    //mass /= 5;
     //const Float m = mass.ToDouble();
+    const fixed mass = fixed( 1, 100000000 );
 
 
     PiSourceDesc planet;
@@ -237,8 +238,9 @@ void PiSystemGenerator::createDumb( PiSystem * system, PiRandom & rand )
     planet.seed_ = rand.Int32();
     planet.parent_ind_ = -1;
     planet.mass_ = mass;
-    planet.rotation_period_ = fixed( rand.Int32(1, 200), 24 );
-    planet.radius_ = fixed( 1, 1 );
+    //planet.rotation_period_ = fixed( rand.Int32(1, 200), 24 );
+    planet.rotation_period_ = fixed( 6000, 86400 );
+    planet.radius_ = fixed( 1, 6400 );
 
     planet.gas_ = fixed( 50, 100 );
     planet.atmos_density_ = fixed( 100, 100 );

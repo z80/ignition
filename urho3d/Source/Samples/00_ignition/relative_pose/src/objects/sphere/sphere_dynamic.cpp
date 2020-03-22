@@ -1,6 +1,7 @@
 
 #include "sphere_dynamic.h"
 #include "physics_item.h"
+#include "system_generator.h"
 
 namespace Ign
 {
@@ -9,11 +10,13 @@ void SphereDynamic::RegisterComponent( Context * context )
 {
     context->RegisterFactory<SphereDynamic>();
     URHO3D_COPY_BASE_ATTRIBUTES( SphereItem );
+    URHO3D_ACCESSOR_ATTRIBUTE( "BodyIndex", GetBodyIndex, SetBodyIndex, int, -1, AM_DEFAULT );
 }
 
 SphereDynamic::SphereDynamic( Context * context )
     : SphereItem( context )
 {
+    body_index_        = -1;
     height_source_     = nullptr;
     atmosphere_source_ = nullptr;
     R_ = 10.0;
@@ -48,6 +51,20 @@ void SphereDynamic::ComputeForces( PhysicsItem * receiver, const State & st, Vec
     s->drag( a, st, F, P );
 }
 
+int  SphereDynamic::GetBodyIndex() const
+{
+    return body_index_;
+}
+
+void SphereDynamic::SetBodyIndex( int index )
+{
+    if ( index == body_index_ )
+        return;
+    body_index_ = index;
+    initPiSurface();
+
+    MarkNetworkUpdate();
+}
 
 void SphereDynamic::setRadius( Float r, Float h )
 {
@@ -106,6 +123,19 @@ void SphereDynamic::subdriveLevelsInit()
     subdriveSourceVisual_.addLevel( 5.0, 100.0 );
     subdriveSourceVisual_.addLevel( 50.0, 960.0 );
     subdriveSourceVisual_.addLevel( 300.0, 18000.0 );
+}
+
+void SphereDynamic::initPiSurface()
+{
+    if ( height_source_ )
+        delete height_source_;
+    if ( atmosphere_source_ )
+        delete atmosphere_source_;
+    height_source_     = nullptr;
+    atmosphere_source_ = nullptr;
+
+    SystemGenerator * generator = context_->GetSubsystem<SystemGenerator>();
+    generator->applyBody( this );
 }
 
 void SphereDynamic::applySourceCollision( Cubesphere & cs )

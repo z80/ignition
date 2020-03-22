@@ -27,6 +27,11 @@ public:
     bool ProducesForces() const override;
     void ComputeForces( PhysicsItem * receiver, const State & st, Vector3d & F, Vector3d & P ) const override;
 
+    // Sets body index in the system.
+    // It is supposed to get height source and atmosphere source 
+    // from SystemGenerator.
+    int  GetBodyIndex() const;
+    void SetBodyIndex( int index );
 
     void setRadius( Float r, Float h );
     void setHeightSource( HeightSource * src );
@@ -40,9 +45,12 @@ public:
 
     void subdriveLevelsInit() override;
 protected:
+    void initPiSurface();
+
     void applySourceCollision( Cubesphere & cs ) override;
     void applySourceVisual( Cubesphere & cs ) override;
 
+    int body_index_;
     Float R_, H_;
     HeightSource * height_source_;
     AtmosphereSource * atmosphere_source_;

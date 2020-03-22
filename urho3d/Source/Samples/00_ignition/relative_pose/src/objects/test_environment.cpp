@@ -114,9 +114,8 @@ void TestEnvironment::contentServerTestSystem()
 
         // Create generated system.
         {
-            PiRandom rand;
-            SystemGenerator generator;
-            generator.generate( s );
+            SystemGenerator * generator = context_->GetSubsystem<SystemGenerator>();
+            //generator.generate();
         }
     }
 }
@@ -168,9 +167,9 @@ void TestEnvironment::contentServerPlanet()
 
     // Create generated system.
     {
-        PiRandom rand;
-        SystemGenerator generator;
-        generator.generate( s );
+        //PiRandom rand;
+        SystemGenerator * generator = context_->GetSubsystem<SystemGenerator>();
+        generator->createBodies( s );
     }
 }
 
