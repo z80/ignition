@@ -356,10 +356,10 @@ bool PhysicsFrame::checkIfNeedToSplit()
         pf->setParent( parent_ );
 
     // Define the state of newly created physics frame.
-    {
-        const State s = this->state();
-        pf->setState( s );
-    }
+    //{
+    //    const State s = this->state();
+    //    pf->setState( s );
+    //}
     {
         SharedPtr<RefFrame> o = userControlledList_[splitInd];
         State relativeSt;
@@ -371,7 +371,7 @@ bool PhysicsFrame::checkIfNeedToSplit()
     }
 
     // Move user controlled objects to the new physics frame.
-    for ( unsigned i=0; i<qty; i++ )
+    for ( unsigned i=splitInd; i<qty; i++ )
     {
         SharedPtr<RefFrame> o = userControlledList_[i];
         o->setParent( pf );
