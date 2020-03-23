@@ -29,7 +29,7 @@ void CharacterCube::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
 
 void CharacterCube::ApplyControls( const Controls & ctrl, Float dt )
 {
-    const Float MOVE_FORCE = 5000.0;
+    const Float MOVE_FORCE = 2000.0;
     const Float W = 0.3;
 
     if ( !rigid_body_ )

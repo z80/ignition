@@ -8,9 +8,9 @@ namespace Ign
 
 AtmosphereSource::AtmosphereSource()
 {
-    normalCoefP_ = 0.1;
-    normalCoefN_ = 0.2;
-    lateralCoef_ = 0.02;
+    normalCoefP_ = 0.01;
+    normalCoefN_ = 0.02;
+    lateralCoef_ = 0.002;
 }
 
 AtmosphereSource::~AtmosphereSource()
