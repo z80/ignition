@@ -95,7 +95,7 @@ void CharacterCube::createVisualContent( Node * n )
 void CharacterCube::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
 {
     PhysicsCharacterItem::setupPhysicsContent( rb, cs );
-    rb->SetMass( 100.0f );
+    rb->SetMass( 10.0f );
     rb->SetFriction( 1.0f );
     // In addition to friction, use motion damping so that the ball can not accelerate limitlessly
     //rb->SetLinearDamping( 0.5f );
