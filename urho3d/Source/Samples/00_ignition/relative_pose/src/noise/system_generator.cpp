@@ -112,7 +112,7 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
         PiOrbit po;
         const Float semimajorAxis = sbody.semimajor_axis_.ToDouble();
         OrbitingFrame * parentOf = parent->Cast<OrbitingFrame>();
-        const Float totalMass = ( parentOf ) ? (parentOf->GM() / G) : (EARTH_MASS * 1.0e-8);
+        const Float totalMass = ( parentOf ) ? (parentOf->GM() / G) : (EARTH_MASS);
         const Float ecc = sbody.eccentricity_.ToDouble();
         po.SetShapeAroundPrimary( semimajorAxis, totalMass, ecc );
         const Float startPhase = sbody.start_eccentric_anomaly_.ToDouble();
