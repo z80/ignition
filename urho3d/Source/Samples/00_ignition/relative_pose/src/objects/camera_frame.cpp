@@ -175,6 +175,13 @@ void CameraFrame::assignCameraNode()
     assignRefFrame( n );
     node_ = SharedPtr<Node>( n );
 
+    const Float sz = Settings::cameraMaxDistance() * 1.2;
+    c->SetNearClip( Settings::cameraMinDistance() );
+    c->SetFarClip( sz );
+    Zone * z = s->GetComponent<Zone>();
+    z->SetBoundingBox( BoundingBox( -sz, sz ) );
+    z->SetFogEnd( sz );
+
     {
         const String stri = "Assigned CameraFrame userId " + String( id );
         Notifications::AddNotification( GetContext(), stri ); 

@@ -92,7 +92,7 @@ void SystemGenerator::generateSystem()
 	PiRandom rand;
 	rand.seed( UNIVERSE_SEED );
 	PiSystemGenerator generator;
-	//generator.apply( &s, rand );
+	//generator.createSystem( &s_, rand );
     generator.createDumb( &s_, rand );
 }
 
@@ -110,13 +110,16 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
     if ( bodyIndex != s_.root_body_ind_ )
     {
         PiOrbit po;
-        const Float semimajorAxis = sbody.semimajor_axis_.ToDouble();
+        const Float semimajorAxis = sbody.semimajor_axis_.ToDouble() * AU;
         OrbitingFrame * parentOf = parent->Cast<OrbitingFrame>();
         const Float totalMass = ( parentOf ) ? (parentOf->GM() / G) : (EARTH_MASS);
         const Float ecc = sbody.eccentricity_.ToDouble();
         po.SetShapeAroundPrimary( semimajorAxis, totalMass, ecc );
         const Float startPhase = sbody.start_eccentric_anomaly_.ToDouble();
         po.SetPhase( startPhase );
+
+        // Check the period.
+        const Float period = po.Period();
 
         const Quaterniond Qy( sbody.Y_, Vector3d::UP );
         const Quaterniond Qx( sbody.X_, Vector3d::LEFT );
@@ -128,6 +131,7 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
         const Vector3d R0 = po.OrbitalPosAtTime( 0.0 );
         const Vector3d V0 = po.OrbitalVelocityAtTime( totalMass, 0.0 );
 
+        of->setParent( parentOf );
         of->Launch( R0, V0 );
     }
 
@@ -193,7 +197,7 @@ void SystemGenerator::applyBody( SphereDynamic * sd )
     //sd->setRadius( 100.0, H/R*100.0 );
     //sd->setRadius( 1000.0, 50000.0 );
     const bool isStar = (sbody.super_type_ == SUPERTYPE_STAR );
-    sd->setStar( isStar );  // This sets the star material which is supposed to ignore lighing.
+    sd->setStar( isStar || true );  // This sets the star material which is supposed to ignore lighing.
     sd->subdriveLevelsInit();
 }
 

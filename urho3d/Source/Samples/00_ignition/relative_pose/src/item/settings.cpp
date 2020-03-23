@@ -82,7 +82,7 @@ Float Settings::dynamicsWorldDistanceExclude()
 
 Float Settings::cameraMaxDistance()
 {
-    return 3000.0;
+    return 300000.0;
 }
 
 Float Settings::cameraMinDistance()

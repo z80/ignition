@@ -283,7 +283,7 @@ void PiSystemGenerator::createDumb( PiSystem * system, PiRandom & rand )
     system->root_body_ind_ = 0;
 }
 
-void PiSystemGenerator::apply( PiSystem * system, PiRandom & rand )
+void PiSystemGenerator::createSystem( PiSystem * system, PiRandom & rand )
 {
 	BodyType starTypes[4];
     uint32_t seed = 0;
@@ -310,6 +310,7 @@ void PiSystemGenerator::apply( PiSystem * system, PiRandom & rand )
 		star.parent_ind_ = -1;
 		star.orb_min_ = fixed();
 		star.orb_max_ = fixed();
+        star.rotation_period_ = fixed( 10, 60*24 ); // One revolution is 10 min.
 
 		makeStarOfType( star, type, rand );
 		//system->SetRootBody( star[0] );
