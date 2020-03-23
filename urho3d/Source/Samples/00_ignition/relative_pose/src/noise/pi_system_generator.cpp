@@ -240,7 +240,7 @@ void PiSystemGenerator::createDumb( PiSystem * system, PiRandom & rand )
     planet.mass_ = mass;
     //planet.rotation_period_ = fixed( rand.Int32(1, 200), 24 );
     planet.rotation_period_ = fixed( 6000, 86400 );
-    planet.radius_ = fixed( 1, 6400 );
+    planet.radius_ = fixed( 1, 640 );
 
     planet.gas_ = fixed( 50, 100 );
     planet.atmos_density_ = fixed( 100, 100 );
