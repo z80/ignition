@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeScalarOp" inherits="VisualShaderNode" category="Core" version="3.1.2">
+<class name="VisualShaderNodeScalarOp" inherits="VisualShaderNode" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeScalarOp.Operator">
+		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeScalarOp.Operator" default="0">
 		</member>
 	</members>
 	<constants>
@@ -30,6 +30,8 @@
 		<constant name="OP_MIN" value="7" enum="Operator">
 		</constant>
 		<constant name="OP_ATAN2" value="8" enum="Operator">
+		</constant>
+		<constant name="OP_STEP" value="9" enum="Operator">
 		</constant>
 	</constants>
 </class>

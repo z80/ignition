@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,7 +48,8 @@ public:
 
 class EditorProperty : public Container {
 
-	GDCLASS(EditorProperty, Container)
+	GDCLASS(EditorProperty, Container);
+
 private:
 	String label;
 	int text_size;
@@ -138,7 +139,7 @@ public:
 	bool is_selected() const;
 
 	void set_label_reference(Control *p_control);
-	void set_bottom_editor(Control *p_editor);
+	void set_bottom_editor(Control *p_control);
 
 	void set_use_folding(bool p_use_folding);
 	bool is_using_folding() const;
@@ -167,7 +168,7 @@ public:
 };
 
 class EditorInspectorPlugin : public Reference {
-	GDCLASS(EditorInspectorPlugin, Reference)
+	GDCLASS(EditorInspectorPlugin, Reference);
 
 	friend class EditorInspector;
 	struct AddedEditor {
@@ -316,12 +317,16 @@ class EditorInspector : public ScrollContainer {
 	void _node_removed(Node *p_node);
 
 	void _changed_callback(Object *p_changed, const char *p_prop);
-	void _edit_request_change(Object *p_changed, const String &p_prop);
+	void _edit_request_change(Object *p_object, const String &p_prop);
 
 	void _filter_changed(const String &p_text);
 	void _parse_added_editors(VBoxContainer *current_vbox, Ref<EditorInspectorPlugin> ped);
 
 	void _vscroll_changed(double);
+
+	void _feature_profile_changed();
+
+	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
 
 protected:
 	static void _bind_methods();

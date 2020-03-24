@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +40,7 @@
 #include "game_center.h"
 #include "icloud.h"
 #include "in_app_store.h"
+#include "ios.h"
 #include "main/input_default.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
@@ -69,6 +70,7 @@ private:
 #ifdef ICLOUD_ENABLED
 	ICloud *icloud;
 #endif
+	iOS *ios;
 
 	MainLoop *main_loop;
 
@@ -107,7 +109,7 @@ private:
 	void queue_event(const Ref<InputEvent> &p_event);
 
 	String data_dir;
-	String unique_ID;
+	String unique_id;
 	String locale_code;
 
 	InputDefault *input;
@@ -163,7 +165,7 @@ public:
 	virtual bool can_draw() const;
 
 	virtual bool has_virtual_keyboard() const;
-	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2());
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_input_length = -1);
 	virtual void hide_virtual_keyboard();
 	virtual int get_virtual_keyboard_height() const;
 
@@ -174,7 +176,8 @@ public:
 
 	void set_data_dir(String p_dir);
 
-	virtual String get_name();
+	virtual String get_name() const;
+	virtual String get_model_name() const;
 
 	Error shell_open(String p_uri);
 
@@ -183,7 +186,7 @@ public:
 	void set_locale(String p_locale);
 	String get_locale() const;
 
-	void set_unique_id(String p_ID);
+	void set_unique_id(String p_id);
 	String get_unique_id() const;
 
 	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,7 +62,7 @@ void Sky::_bind_methods() {
 }
 
 Sky::Sky() {
-	radiance_size = RADIANCE_SIZE_512;
+	radiance_size = RADIANCE_SIZE_128;
 }
 
 /////////////////////////////////////////
@@ -553,10 +553,10 @@ ProceduralSky::ProceduralSky(bool p_desaturate) {
 	ground_energy = 1;
 
 	if (p_desaturate) {
-		sky_top_color.set_hsv(sky_top_color.get_h(),0,sky_top_color.get_v());
-		sky_horizon_color.set_hsv(sky_horizon_color.get_h(),0,sky_horizon_color.get_v());
-		ground_bottom_color.set_hsv(ground_bottom_color.get_h(),0,ground_bottom_color.get_v());
-		ground_horizon_color.set_hsv(ground_horizon_color.get_h(),0,ground_horizon_color.get_v());
+		sky_top_color.set_hsv(sky_top_color.get_h(), 0, sky_top_color.get_v());
+		sky_horizon_color.set_hsv(sky_horizon_color.get_h(), 0, sky_horizon_color.get_v());
+		ground_bottom_color.set_hsv(ground_bottom_color.get_h(), 0, ground_bottom_color.get_v());
+		ground_horizon_color.set_hsv(ground_horizon_color.get_h(), 0, ground_horizon_color.get_v());
 	}
 	sun_color = Color(1, 1, 1);
 	sun_latitude = 35;

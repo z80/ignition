@@ -14,9 +14,10 @@ def get_doc_classes():
         "NativeScript",
         "PacketPeerGDNative",
         "PluginScript",
-        "ResourceFormatLoaderVideoStreamGDNative",
         "StreamPeerGDNative",
         "VideoStreamGDNative",
+        "WebRTCPeerConnectionGDNative",
+        "WebRTCDataChannelGDNative",
     ]
 
 def get_doc_path():

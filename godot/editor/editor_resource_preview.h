@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,10 +45,11 @@ protected:
 
 public:
 	virtual bool handles(const String &p_type) const;
-	virtual Ref<Texture> generate(const RES &p_from, const Size2 p_size) const;
-	virtual Ref<Texture> generate_from_path(const String &p_path, const Size2 p_size) const;
+	virtual Ref<Texture> generate(const RES &p_from, const Size2 &p_size) const;
+	virtual Ref<Texture> generate_from_path(const String &p_path, const Size2 &p_size) const;
 
-	virtual bool should_generate_small_preview() const;
+	virtual bool generate_small_preview_automatically() const;
+	virtual bool can_generate_small_preview() const;
 
 	EditorResourcePreviewGenerator();
 };

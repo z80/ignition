@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ Written by: Marcus Hennix
 
 static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
 
-	if (Math::abs(n.z) > 0.707106781186547524400844362) {
+	if (Math::abs(n.z) > Math_SQRT12) {
 		// choose p in y-z plane
 		real_t a = n[1] * n[1] + n[2] * n[2];
 		real_t k = 1.0 / Math::sqrt(a);
@@ -127,10 +127,10 @@ bool ConeTwistJointSW::setup(real_t p_timestep) {
 		Vector3 relPos = pivotBInW - pivotAInW;
 
 		Vector3 normal[3];
-		if (relPos.length_squared() > CMP_EPSILON) {
-			normal[0] = relPos.normalized();
-		} else {
+		if (Math::is_zero_approx(relPos.length_squared())) {
 			normal[0] = Vector3(real_t(1.0), 0, 0);
+		} else {
+			normal[0] = relPos.normalized();
 		}
 
 		plane_space(normal[0], normal[1], normal[2]);

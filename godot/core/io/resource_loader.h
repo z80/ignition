@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,9 +33,6 @@
 
 #include "core/os/thread.h"
 #include "core/resource.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class ResourceInteractiveLoader : public Reference {
 
@@ -62,7 +59,7 @@ public:
 
 class ResourceFormatLoader : public Reference {
 
-	GDCLASS(ResourceFormatLoader, Reference)
+	GDCLASS(ResourceFormatLoader, Reference);
 
 protected:
 	static void _bind_methods();
@@ -81,6 +78,7 @@ public:
 	virtual bool is_import_valid(const String &p_path) const { return true; }
 	virtual bool is_imported(const String &p_path) const { return false; }
 	virtual int get_import_order(const String &p_path) const { return 0; }
+	virtual String get_import_group_file(const String &p_path) const { return ""; } //no group
 
 	virtual ~ResourceFormatLoader() {}
 };
@@ -155,6 +153,7 @@ public:
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
 	static bool is_import_valid(const String &p_path);
+	static String get_import_group_file(const String &p_path);
 	static bool is_imported(const String &p_path);
 	static int get_import_order(const String &p_path);
 

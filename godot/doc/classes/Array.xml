@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Array" category="Built-In Types" version="3.1.2">
+<class name="Array" version="3.2">
 	<brief_description>
 		Generic array datatype.
 	</brief_description>
 	<description>
-		Generic array which can contain several elements of any type, accessible by a numerical index starting at 0. Negative indices can be used to count from the back, like in Python (-1 is the last element, -2 the second to last, etc.). Example:
+		Generic array which can contain several elements of any type, accessible by a numerical index starting at 0. Negative indices can be used to count from the back, like in Python (-1 is the last element, -2 the second to last, etc.).
+		[b]Example:[/b]
 		[codeblock]
 		var array = ["One", 2, 3, "Four"]
-		print(array[0])   # One
-		print(array[2])   # 3
-		print(array[-1])  # Four
+		print(array[0]) # One.
+		print(array[2]) # 3.
+		print(array[-1]) # Four.
 		array[2] = "Three"
-		print(array[-2])  # Three
+		print(array[-2]) # Three.
+		[/codeblock]
+		Arrays can be concatenated using the [code]+[/code] operator:
+		[codeblock]
+		var array1 = ["One", 2]
+		var array2 = [3, "Four"]
+		print(array1 + array2) # ["One", 2, 3, "Four"]
 		[/codeblock]
 		Arrays are always passed by reference.
 	</description>
@@ -92,7 +99,7 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Returns the last element of the array if the array is not empty.
+				Returns the last element of the array, or [code]null[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="bsearch">
@@ -100,10 +107,11 @@
 			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
-			<argument index="1" name="before" type="bool" default="True">
+			<argument index="1" name="before" type="bool" default="true">
 			</argument>
 			<description>
-				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a before specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. Note that calling bsearch on an unsorted array results in unexpected behavior.
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
+				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
 		<method name="bsearch_custom">
@@ -115,15 +123,16 @@
 			</argument>
 			<argument index="2" name="func" type="String">
 			</argument>
-			<argument index="3" name="before" type="bool" default="True">
+			<argument index="3" name="before" type="bool" default="true">
 			</argument>
 			<description>
-				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a before specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise. Note that calling bsearch on an unsorted array results in unexpected behavior.
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
+				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
-				Clears the array (resizes to 0).
+				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
 			</description>
 		</method>
 		<method name="count">
@@ -138,7 +147,7 @@
 		<method name="duplicate">
 			<return type="Array">
 			</return>
-			<argument index="0" name="deep" type="bool" default="False">
+			<argument index="0" name="deep" type="bool" default="false">
 			</argument>
 			<description>
 				Returns a copy of the array.
@@ -183,7 +192,7 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Returns the first element of the array if the array is not empty.
+				Returns the first element of the array, or [code]null[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="has">
@@ -240,14 +249,14 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Removes the last element of the array.
+				Removes and returns the last element of the array. Returns [code]null[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="pop_front">
 			<return type="Variant">
 			</return>
 			<description>
-				Removes the first element of the array.
+				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="push_back">
@@ -275,7 +284,7 @@
 			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
-				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are Null.
+				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code].
 			</description>
 		</method>
 		<method name="rfind">
@@ -301,9 +310,30 @@
 				Returns the number of elements in the array.
 			</description>
 		</method>
+		<method name="slice">
+			<return type="Array">
+			</return>
+			<argument index="0" name="begin" type="int">
+			</argument>
+			<argument index="1" name="end" type="int">
+			</argument>
+			<argument index="2" name="step" type="int" default="1">
+			</argument>
+			<argument index="3" name="deep" type="bool" default="false">
+			</argument>
+			<description>
+				Duplicates the subset described in the function and returns it in an array, deeply copying the array if [code]deep[/code] is [code]true[/code]. Lower and upper index are inclusive, with the [code]step[/code] describing the change between indices while slicing.
+			</description>
+		</method>
 		<method name="sort">
 			<description>
-				Sorts the array. Note: strings are sorted in alphabetical, not natural order.
+				Sorts the array.
+				[b]Note:[/b] Strings are sorted in alphabetical order (as opposed to natural order). This may lead to unexpected behavior when sorting an array of strings ending with a sequence of numbers. Consider the following example:
+				[codeblock]
+				var strings = ["string1", "string2", "string10", "string11"]
+				strings.sort()
+				print(strings) # Prints [string1, string10, string11, string2]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="sort_custom">
@@ -312,17 +342,18 @@
 			<argument index="1" name="func" type="String">
 			</argument>
 			<description>
-				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
+				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code].
 				[b]Note:[/b] you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
 				[codeblock]
 				class MyCustomSorter:
-				    static func sort(a, b):
+				    static func sort_ascending(a, b):
 				        if a[0] &lt; b[0]:
 				            return true
 				        return false
 
 				var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
-				my_items.sort_custom(MyCustomSorter, "sort")
+				my_items.sort_custom(MyCustomSorter, "sort_ascending")
+				print(my_items) # Prints [[4, Tomato], [5, Potato], [9, Rice]].
 				[/codeblock]
 			</description>
 		</method>

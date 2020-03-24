@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,7 +48,7 @@ int AnimationTrackEditBool::get_key_height() const {
 Rect2 AnimationTrackEditBool::get_key_rect(int p_index, float p_pixels_sec) {
 
 	Ref<Texture> checked = get_icon("checked", "CheckBox");
-	return Rect2(0, 0, checked->get_width(), get_size().height);
+	return Rect2(-checked->get_width() / 2, 0, checked->get_width(), get_size().height);
 }
 
 bool AnimationTrackEditBool::is_key_selectable_by_distance() const {
@@ -57,17 +57,18 @@ bool AnimationTrackEditBool::is_key_selectable_by_distance() const {
 }
 void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 
-	Ref<Texture> icon;
 	bool checked = get_animation()->track_get_key_value(get_track(), p_index);
+	Ref<Texture> icon = get_icon(checked ? "checked" : "unchecked", "CheckBox");
 
-	if (checked)
-		icon = get_icon("checked", "CheckBox");
-	else
-		icon = get_icon("unchecked", "CheckBox");
+	Vector2 ofs(p_x - icon->get_width() / 2, int(get_size().height - icon->get_height()) / 2);
 
-	Vector2 ofs(p_x, int(get_size().height - icon->get_height()) / 2);
+	if (ofs.x + icon->get_width() / 2 < p_clip_left)
+		return;
 
-	draw_texture_clipped(icon, ofs);
+	if (ofs.x + icon->get_width() / 2 > p_clip_right)
+		return;
+
+	draw_texture(icon, ofs);
 
 	if (p_selected) {
 		Color color = get_color("accent_color", "Editor");
@@ -86,7 +87,7 @@ Rect2 AnimationTrackEditColor::get_key_rect(int p_index, float p_pixels_sec) {
 
 	Ref<Font> font = get_font("font", "Label");
 	int fh = font->get_height() * 0.8;
-	return Rect2(0, 0, fh, get_size().height);
+	return Rect2(-fh / 2, 0, fh, get_size().height);
 }
 
 bool AnimationTrackEditColor::is_key_selectable_by_distance() const {
@@ -96,20 +97,14 @@ bool AnimationTrackEditColor::is_key_selectable_by_distance() const {
 
 void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 
-	int x_from = p_x;
-	int x_to = p_next_x;
-
 	Ref<Font> font = get_font("font", "Label");
 	int fh = (font->get_height() * 0.8);
 
-	x_from += fh - 1;
-	x_to += 1;
+	int x_from = p_x + fh / 2 - 1;
+	int x_to = p_next_x - fh / 2 + 1;
 	fh /= 3;
 
-	if (x_from > p_clip_right)
-		return;
-
-	if (x_to < p_clip_left)
+	if (x_from > p_clip_right || x_to < p_clip_left)
 		return;
 
 	Color color = get_animation()->track_get_key_value(get_track(), p_index);
@@ -154,7 +149,7 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 	Ref<Font> font = get_font("font", "Label");
 	int fh = font->get_height() * 0.8;
 
-	Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
+	Rect2 rect(Vector2(p_x - fh / 2, int(get_size().height - fh) / 2), Size2(fh, fh));
 
 	draw_rect_clipped(Rect2(rect.position, rect.size / 2), Color(0.4, 0.4, 0.4));
 	draw_rect_clipped(Rect2(rect.position + rect.size / 2, rect.size / 2), Color(0.4, 0.4, 0.4));
@@ -342,7 +337,7 @@ AnimationTrackEditAudio::AnimationTrackEditAudio() {
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", this, "_preview_changed");
 }
 
-/// SPRITE FRAME ///
+/// SPRITE FRAME / FRAME_COORDS ///
 
 int AnimationTrackEditSpriteFrame::get_key_height() const {
 
@@ -444,12 +439,22 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 
 	if (Object::cast_to<Sprite>(object) || Object::cast_to<Sprite3D>(object)) {
 
-		int frame = get_animation()->track_get_key_value(get_track(), p_index);
-
 		texture = object->call("get_texture");
 		if (!texture.is_valid()) {
 			AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
 			return;
+		}
+
+		int hframes = object->call("get_hframes");
+		int vframes = object->call("get_vframes");
+
+		Vector2 coords;
+		if (is_coords) {
+			coords = get_animation()->track_get_key_value(get_track(), p_index);
+		} else {
+			int frame = get_animation()->track_get_key_value(get_track(), p_index);
+			coords.x = frame % hframes;
+			coords.y = frame / hframes;
 		}
 
 		region.size = texture->get_size();
@@ -459,9 +464,6 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 			region = Rect2(object->call("get_region_rect"));
 		}
 
-		int hframes = object->call("get_hframes");
-		int vframes = object->call("get_vframes");
-
 		if (hframes > 1) {
 			region.size.x /= hframes;
 		}
@@ -469,8 +471,8 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 			region.size.y /= vframes;
 		}
 
-		region.position.x += region.size.x * (frame % hframes);
-		region.position.y += region.size.y * (frame / hframes);
+		region.position.x += region.size.x * coords.x;
+		region.position.y += region.size.y * coords.y;
 
 	} else if (Object::cast_to<AnimatedSprite>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
 
@@ -535,6 +537,11 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 void AnimationTrackEditSpriteFrame::set_node(Object *p_object) {
 
 	id = p_object->get_instance_id();
+}
+
+void AnimationTrackEditSpriteFrame::set_as_coords() {
+
+	is_coords = true;
 }
 
 /// SUB ANIMATION ///
@@ -1014,7 +1021,7 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 		}
 	}
 
-	return AnimationTrackEdit::drop_data(p_point, p_data);
+	AnimationTrackEdit::drop_data(p_point, p_data);
 }
 
 void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
@@ -1298,6 +1305,14 @@ AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_value_track_edit(Obj
 	if (p_property == "frame" && (p_object->is_class("Sprite") || p_object->is_class("Sprite3D") || p_object->is_class("AnimatedSprite") || p_object->is_class("AnimatedSprite3D"))) {
 
 		AnimationTrackEditSpriteFrame *sprite = memnew(AnimationTrackEditSpriteFrame);
+		sprite->set_node(p_object);
+		return sprite;
+	}
+
+	if (p_property == "frame_coords" && (p_object->is_class("Sprite") || p_object->is_class("Sprite3D"))) {
+
+		AnimationTrackEditSpriteFrame *sprite = memnew(AnimationTrackEditSpriteFrame);
+		sprite->set_as_coords();
 		sprite->set_node(p_object);
 		return sprite;
 	}

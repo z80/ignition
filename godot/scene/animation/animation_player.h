@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,6 @@
 #include "scene/3d/skeleton.h"
 #include "scene/3d/spatial.h"
 #include "scene/resources/animation.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 #ifdef TOOLS_ENABLED
 // To save/restore animated values
@@ -66,6 +63,11 @@ public:
 		ANIMATION_PROCESS_PHYSICS,
 		ANIMATION_PROCESS_IDLE,
 		ANIMATION_PROCESS_MANUAL,
+	};
+
+	enum AnimationMethodCallMode {
+		ANIMATION_METHOD_CALL_DEFERRED,
+		ANIMATION_METHOD_CALL_IMMEDIATE,
 	};
 
 private:
@@ -246,6 +248,7 @@ private:
 
 	String autoplay;
 	AnimationProcessMode animation_process_mode;
+	AnimationMethodCallMode method_call_mode;
 	bool processing;
 	bool active;
 
@@ -338,6 +341,9 @@ public:
 	void set_animation_process_mode(AnimationProcessMode p_mode);
 	AnimationProcessMode get_animation_process_mode() const;
 
+	void set_method_call_mode(AnimationMethodCallMode p_mode);
+	AnimationMethodCallMode get_method_call_mode() const;
+
 	void seek(float p_time, bool p_update = false);
 	void seek_delta(float p_time, float p_delta);
 	float get_current_animation_position() const;
@@ -363,5 +369,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessMode);
+VARIANT_ENUM_CAST(AnimationPlayer::AnimationMethodCallMode);
 
 #endif

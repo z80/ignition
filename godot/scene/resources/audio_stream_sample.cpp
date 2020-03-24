@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "audio_stream_sample.h"
+
 #include "core/io/marshalls.h"
 #include "core/os/file_access.h"
 
@@ -95,8 +96,8 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 	// this function will be compiled branchless by any decent compiler
 
 	int32_t final, final_r, next, next_r;
-	while (amount--) {
-
+	while (amount) {
+		amount--;
 		int64_t pos = offset >> MIX_FRAC_BITS;
 		if (is_stereo && !is_ima_adpcm)
 			pos <<= 1;
@@ -444,6 +445,7 @@ int AudioStreamSample::get_loop_end() const {
 
 void AudioStreamSample::set_mix_rate(int p_hz) {
 
+	ERR_FAIL_COND(p_hz == 0);
 	mix_rate = p_hz;
 }
 int AudioStreamSample::get_mix_rate() const {
@@ -655,8 +657,8 @@ AudioStreamSample::AudioStreamSample() {
 	data = NULL;
 	data_bytes = 0;
 }
-AudioStreamSample::~AudioStreamSample() {
 
+AudioStreamSample::~AudioStreamSample() {
 	if (data) {
 		AudioServer::get_singleton()->audio_data_free(data);
 		data = NULL;

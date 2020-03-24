@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@
 #include "scene_tree_editor.h"
 
 class AnimationTimelineEdit : public Range {
-	GDCLASS(AnimationTimelineEdit, Range)
+	GDCLASS(AnimationTimelineEdit, Range);
 
 	Ref<Animation> animation;
 	int name_limit;
@@ -122,7 +122,7 @@ class AnimationTrackEditor;
 
 class AnimationTrackEdit : public Control {
 
-	GDCLASS(AnimationTrackEdit, Control)
+	GDCLASS(AnimationTrackEdit, Control);
 
 	enum {
 		MENU_CALL_MODE_CONTINUOUS,
@@ -231,13 +231,14 @@ public:
 	void cancel_drop();
 
 	void set_in_group(bool p_enable);
-	void append_to_selection(const Rect2 &p_box);
+	void append_to_selection(const Rect2 &p_box, bool p_deselection);
 
 	AnimationTrackEdit();
 };
 
 class AnimationTrackEditPlugin : public Reference {
-	GDCLASS(AnimationTrackEditPlugin, Reference)
+	GDCLASS(AnimationTrackEditPlugin, Reference);
+
 public:
 	virtual AnimationTrackEdit *create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage);
 	virtual AnimationTrackEdit *create_audio_track_edit();
@@ -245,10 +246,11 @@ public:
 };
 
 class AnimationTrackKeyEdit;
+class AnimationMultiTrackKeyEdit;
 class AnimationBezierTrackEdit;
 
 class AnimationTrackEditGroup : public Control {
-	GDCLASS(AnimationTrackEditGroup, Control)
+	GDCLASS(AnimationTrackEditGroup, Control);
 	Ref<Texture> icon;
 	String node_name;
 	NodePath node;
@@ -271,7 +273,7 @@ public:
 };
 
 class AnimationTrackEditor : public VBoxContainer {
-	GDCLASS(AnimationTrackEditor, VBoxContainer)
+	GDCLASS(AnimationTrackEditor, VBoxContainer);
 
 	enum {
 		EDIT_COPY_TRACKS,
@@ -302,12 +304,17 @@ class AnimationTrackEditor : public VBoxContainer {
 	VBoxContainer *track_vbox;
 	AnimationBezierTrackEdit *bezier_edit;
 
+	Label *info_message;
+
 	AnimationTimelineEdit *timeline;
 	HSlider *zoom;
 	EditorSpinSlider *step;
 	TextureRect *zoom_icon;
 	ToolButton *snap;
 	OptionButton *snap_mode;
+
+	Button *imported_anim_warning;
+	void _show_imported_anim_warning() const;
 
 	void _snap_mode_changed(int p_mode);
 	Vector<AnimationTrackEdit *> track_edits;
@@ -322,12 +329,13 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _name_limit_changed();
 	void _timeline_changed(float p_new_pos, bool p_drag);
 	void _track_remove_request(int p_track);
+	void _track_grab_focus(int p_track);
 
 	UndoRedo *undo_redo;
 
 	void _update_scroll(double);
 	void _update_step(double p_new_step);
-	void _update_length(double p_new_step);
+	void _update_length(double p_new_len);
 	void _dropped_track(int p_from_track, int p_to_track);
 
 	void _add_track(int p_type);
@@ -379,7 +387,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _insert_key_from_track(float p_ofs, int p_track);
 	void _add_method_key(const String &p_method);
 
-	void _clear_selection();
+	void _clear_selection(bool p_update = false);
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
 
@@ -410,6 +418,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _move_selection_cancel();
 
 	AnimationTrackKeyEdit *key_edit;
+	AnimationMultiTrackKeyEdit *multi_key_edit;
 	void _update_key_edit();
 
 	void _clear_key_edit();
@@ -434,12 +443,14 @@ class AnimationTrackEditor : public VBoxContainer {
 	SpinBox *optimize_max_angle;
 
 	ConfirmationDialog *cleanup_dialog;
-	CheckButton *cleanup_keys;
-	CheckButton *cleanup_tracks;
-	CheckButton *cleanup_all;
+	CheckBox *cleanup_keys;
+	CheckBox *cleanup_tracks;
+	CheckBox *cleanup_all;
 
 	ConfirmationDialog *scale_dialog;
 	SpinBox *scale;
+
+	void _select_all_tracks_for_copy();
 
 	void _edit_menu_pressed(int p_option);
 	int last_menu_track_opt;
@@ -456,6 +467,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	ConfirmationDialog *track_copy_dialog;
 	Tree *track_copy_select;
+
 	struct TrackClipboard {
 		NodePath full_path;
 		NodePath base_path;
@@ -507,9 +519,10 @@ public:
 	bool is_key_selected(int p_track, int p_key) const;
 	bool is_selection_active() const;
 	bool is_moving_selection() const;
+	bool is_snap_enabled() const;
 	float get_moving_selection_offset() const;
-	bool is_snap_enabled();
-	float snap_time(float p_value);
+	float snap_time(float p_value, bool p_relative = false);
+	bool is_grouping_tracks();
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();

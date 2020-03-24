@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,8 +46,6 @@ void CollisionObject2D::_notification(int p_what) {
 			else
 				Physics2DServer::get_singleton()->body_set_state(rid, Physics2DServer::BODY_STATE_TRANSFORM, global_transform);
 
-			last_transform = global_transform;
-
 			RID space = get_world_2d()->get_space();
 			if (area) {
 				Physics2DServer::get_singleton()->area_set_space(rid, space);
@@ -73,18 +71,16 @@ void CollisionObject2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			Transform2D global_transform = get_global_transform();
-
-			if (only_update_transform_changes && global_transform == last_transform) {
+			if (only_update_transform_changes) {
 				return;
 			}
+
+			Transform2D global_transform = get_global_transform();
 
 			if (area)
 				Physics2DServer::get_singleton()->area_set_transform(rid, global_transform);
 			else
 				Physics2DServer::get_singleton()->body_set_state(rid, Physics2DServer::BODY_STATE_TRANSFORM, global_transform);
-
-			last_transform = global_transform;
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -218,12 +214,13 @@ void CollisionObject2D::shape_owner_set_transform(uint32_t p_owner, const Transf
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
 	ShapeData &sd = shapes[p_owner];
+
 	sd.xform = p_transform;
 	for (int i = 0; i < sd.shapes.size(); i++) {
 		if (area) {
-			Physics2DServer::get_singleton()->area_set_shape_transform(rid, sd.shapes[i].index, p_transform);
+			Physics2DServer::get_singleton()->area_set_shape_transform(rid, sd.shapes[i].index, sd.xform);
 		} else {
-			Physics2DServer::get_singleton()->body_set_shape_transform(rid, sd.shapes[i].index, p_transform);
+			Physics2DServer::get_singleton()->body_set_shape_transform(rid, sd.shapes[i].index, sd.xform);
 		}
 	}
 }
@@ -251,9 +248,9 @@ void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2
 	s.index = total_subshapes;
 	s.shape = p_shape;
 	if (area) {
-		Physics2DServer::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform);
+		Physics2DServer::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
 	} else {
-		Physics2DServer::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform);
+		Physics2DServer::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
 	}
 	sd.shapes.push_back(s);
 
@@ -375,11 +372,12 @@ void CollisionObject2D::set_only_update_transform_changes(bool p_enable) {
 void CollisionObject2D::_update_pickable() {
 	if (!is_inside_tree())
 		return;
-	bool pickable = this->pickable && is_inside_tree() && is_visible_in_tree();
+
+	bool is_pickable = pickable && is_visible_in_tree();
 	if (area)
-		Physics2DServer::get_singleton()->area_set_pickable(rid, pickable);
+		Physics2DServer::get_singleton()->area_set_pickable(rid, is_pickable);
 	else
-		Physics2DServer::get_singleton()->body_set_pickable(rid, pickable);
+		Physics2DServer::get_singleton()->body_set_pickable(rid, is_pickable);
 }
 
 String CollisionObject2D::get_configuration_warning() const {
@@ -387,8 +385,8 @@ String CollisionObject2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (shapes.empty()) {
-		if (warning == String()) {
-			warning += "\n";
+		if (!warning.empty()) {
+			warning += "\n\n";
 		}
 		warning += TTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape2D or CollisionPolygon2D as a child to define its shape.");
 	}

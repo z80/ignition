@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef TILE_SET_EDITOR_PLUGIN_H
 #define TILE_SET_EDITOR_PLUGIN_H
 
-#include "editor/editor_name_dialog.h"
 #include "editor/editor_node.h"
 #include "scene/2d/sprite.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
@@ -46,7 +45,7 @@ class TileSetEditor : public HSplitContainer {
 	friend class TileSetEditorPlugin;
 	friend class TilesetEditorContext;
 
-	GDCLASS(TileSetEditor, HSplitContainer)
+	GDCLASS(TileSetEditor, HSplitContainer);
 
 	enum TextureToolButtons {
 		TOOL_TILESET_ADD_TEXTURE,
@@ -126,7 +125,7 @@ class TileSetEditor : public HSplitContainer {
 	Vector2 edited_shape_coord;
 	PoolVector2Array current_shape;
 	Map<Vector2i, SubtileData> current_tile_data;
-	Map<Vector2, uint16_t> bitmask_map_copy;
+	Map<Vector2, uint32_t> bitmask_map_copy;
 
 	Vector2 snap_step;
 	Vector2 snap_offset;
@@ -139,6 +138,7 @@ class TileSetEditor : public HSplitContainer {
 	int current_item_index;
 	Sprite *preview;
 	ScrollContainer *scroll;
+	Label *empty_message;
 	Control *workspace_container;
 	bool draw_handles;
 	Control *workspace_overlay;
@@ -174,6 +174,12 @@ class TileSetEditor : public HSplitContainer {
 	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
 	void _undo_redo_import_scene(Node *p_scene, bool p_merge);
 
+	bool _is_drop_valid(const Dictionary &p_drag_data, const Dictionary &p_item_data) const;
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	void _file_load_request(const PoolVector<String> &p_path, int p_at_pos = -1);
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -202,7 +208,7 @@ private:
 	void _on_grid_snap_toggled(bool p_val);
 	Vector<Vector2> _get_collision_shape_points(const Ref<Shape2D> &p_shape);
 	Vector<Vector2> _get_edited_shape_points();
-	void _set_edited_shape_points(const Vector<Vector2> points);
+	void _set_edited_shape_points(const Vector<Vector2> &points);
 	void _update_tile_data();
 	void _update_toggle_shape_button();
 	void _select_next_tile();
@@ -238,6 +244,8 @@ private:
 	void update_workspace_tile_mode();
 	void update_workspace_minsize();
 	void update_edited_region(const Vector2 &end_point);
+	int get_grabbed_point(const Vector2 &p_mouse_pos, real_t grab_threshold);
+	bool is_within_grabbing_distance_of_first_point(const Vector2 &p_pos, real_t p_grab_threshold);
 
 	int get_current_tile() const;
 	void set_current_tile(int p_id);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_scale.h"
 
 AbstractPolygon2DEditor::Vertex::Vertex() :
 		polygon(-1),
@@ -349,7 +350,6 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 							Vector<Vector2> vertices2 = _get_polygon(insert.polygon);
 							pre_move_edit = vertices2;
-							printf("setting pre_move_edit\n");
 							edited_point = PosVertex(insert.polygon, insert.vertex + 1, xform.affine_inverse().xform(insert.pos));
 							vertices2.insert(edited_point.vertex, edited_point.pos);
 							selected_point = edited_point;
@@ -367,7 +367,6 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 						if (closest.valid()) {
 
-							printf("setting pre_move_edit\n");
 							pre_move_edit = _get_polygon(closest.polygon);
 							edited_point = PosVertex(closest, xform.affine_inverse().xform(closest.pos));
 							selected_point = closest;
@@ -573,7 +572,8 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 		return;
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
-	const Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
+	// All polygon points are sharp, so use the sharp handle icon
+	const Ref<Texture> handle = get_icon("EditorPathSharpHandle", "EditorIcons");
 
 	const Vertex active_point = get_active_point();
 	const int n_polygons = _get_polygon_count();
@@ -612,7 +612,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 				Vector2 point = xform.xform(p);
 				Vector2 next_point = xform.xform(p2);
 
-				p_overlay->draw_line(point, next_point, col, 2 * EDSCALE);
+				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE), true);
 			}
 		}
 
@@ -636,7 +636,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 					p2 = points[(i + 1) % n_points] + offset;
 
 				const Vector2 next_point = xform.xform(p2);
-				p_overlay->draw_line(point, next_point, col, 2 * EDSCALE);
+				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE), true);
 			}
 		}
 
@@ -807,7 +807,7 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 
 	canvas_item_editor = NULL;
 	editor = p_editor;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	wip_active = false;
 	edited_point = PosVertex();

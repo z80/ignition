@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,9 +36,6 @@
 #include "scene/resources/texture.h"
 #include "scene/resources/world_2d.h"
 #include "servers/visual_server.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Camera;
 class Camera2D;
@@ -163,6 +160,24 @@ private:
 
 	bool arvr;
 
+	struct CameraOverrideData {
+		Transform transform;
+		enum Projection {
+			PROJECTION_PERSPECTIVE,
+			PROJECTION_ORTHOGONAL
+		};
+		Projection projection;
+		float fov;
+		float size;
+		float z_near;
+		float z_far;
+		RID rid;
+
+		operator bool() const {
+			return rid != RID();
+		}
+	} camera_override;
+
 	Camera *camera;
 	Set<Camera *> cameras;
 	Set<CanvasLayer *> canvas_layers;
@@ -176,12 +191,16 @@ private:
 	bool audio_listener_2d;
 	RID internal_listener_2d;
 
+	bool override_canvas_transform;
+
+	Transform2D canvas_transform_override;
 	Transform2D canvas_transform;
 	Transform2D global_canvas_transform;
 	Transform2D stretch_transform;
 
 	Size2 size;
 	Rect2 to_screen_rect;
+	bool render_direct_to_screen;
 
 	RID contact_2d_debug;
 	RID contact_3d_debug_multimesh;
@@ -383,8 +402,11 @@ private:
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
 
 	void _drop_mouse_focus();
+	void _drop_physics_mouseover();
 
 	void _update_canvas_items(Node *p_node);
+
+	void _own_world_changed();
 
 protected:
 	void _notification(int p_what);
@@ -394,6 +416,15 @@ protected:
 public:
 	Listener *get_listener() const;
 	Camera *get_camera() const;
+
+	void enable_camera_override(bool p_enable);
+	bool is_camera_override_enabled() const;
+
+	void set_camera_override_transform(const Transform &p_transform);
+	Transform get_camera_override_transform() const;
+
+	void set_camera_override_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
+	void set_camera_override_orthogonal(float p_size, float p_z_near, float p_z_far);
 
 	void set_use_arvr(bool p_use_arvr);
 	bool use_arvr();
@@ -418,6 +449,12 @@ public:
 
 	Ref<World2D> get_world_2d() const;
 	Ref<World2D> find_world_2d() const;
+
+	void enable_canvas_transform_override(bool p_enable);
+	bool is_canvas_transform_override_enbled() const;
+
+	void set_canvas_transform_override(const Transform2D &p_transform);
+	Transform2D get_canvas_transform_override() const;
 
 	void set_canvas_transform(const Transform2D &p_transform);
 	Transform2D get_canvas_transform() const;
@@ -479,6 +516,9 @@ public:
 
 	void set_attach_to_screen_rect(const Rect2 &p_rect);
 	Rect2 get_attach_to_screen_rect() const;
+
+	void set_use_render_direct_to_screen(bool p_render_direct_to_screen);
+	bool is_using_render_direct_to_screen() const;
 
 	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_pos);

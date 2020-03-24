@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,7 +90,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 			actions.write[actions.size() - 1].last_tick = ticks;
 
 			merge_mode = p_mode;
-
+			merging = true;
 		} else {
 
 			Action new_action;
@@ -239,8 +239,8 @@ void UndoRedo::_pop_history_tail() {
 	}
 }
 
-bool UndoRedo::is_commiting_action() const {
-	return commiting > 0;
+bool UndoRedo::is_committing_action() const {
+	return committing > 0;
 }
 
 void UndoRedo::commit_action() {
@@ -250,9 +250,14 @@ void UndoRedo::commit_action() {
 	if (action_level > 0)
 		return; //still nested
 
-	commiting++;
+	if (merging) {
+		version--;
+		merging = false;
+	}
+
+	committing++;
 	redo(); // perform action
-	commiting--;
+	committing--;
 	if (callback && actions.size() > 0) {
 		callback(callback_ud, actions[actions.size() - 1].name);
 	}
@@ -331,6 +336,7 @@ bool UndoRedo::redo() {
 
 	_process_operation_list(actions.write[current_action].do_ops.front());
 	version++;
+	emit_signal("version_changed");
 
 	return true;
 }
@@ -343,6 +349,8 @@ bool UndoRedo::undo() {
 	_process_operation_list(actions.write[current_action].undo_ops.front());
 	current_action--;
 	version--;
+	emit_signal("version_changed");
+
 	return true;
 }
 
@@ -354,16 +362,28 @@ void UndoRedo::clear_history(bool p_increase_version) {
 	while (actions.size())
 		_pop_history_tail();
 
-	if (p_increase_version)
+	if (p_increase_version) {
 		version++;
+		emit_signal("version_changed");
+	}
 }
 
 String UndoRedo::get_current_action_name() const {
 
 	ERR_FAIL_COND_V(action_level > 0, "");
 	if (current_action < 0)
-		return ""; //nothing to redo
+		return "";
 	return actions[current_action].name;
+}
+
+bool UndoRedo::has_undo() {
+
+	return current_action >= 0;
+}
+
+bool UndoRedo::has_redo() {
+
+	return (current_action + 1) < actions.size();
 }
 
 uint64_t UndoRedo::get_version() const {
@@ -391,11 +411,12 @@ void UndoRedo::set_property_notify_callback(PropertyNotifyCallback p_property_ca
 
 UndoRedo::UndoRedo() {
 
-	commiting = 0;
+	committing = 0;
 	version = 1;
 	action_level = 0;
 	current_action = -1;
 	merge_mode = MERGE_DISABLE;
+	merging = false;
 	callback = NULL;
 	callback_ud = NULL;
 
@@ -490,10 +511,8 @@ void UndoRedo::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode"), &UndoRedo::create_action, DEFVAL(MERGE_DISABLE));
 	ClassDB::bind_method(D_METHOD("commit_action"), &UndoRedo::commit_action);
-	ClassDB::bind_method(D_METHOD("is_commiting_action"), &UndoRedo::is_commiting_action);
-
-	//ClassDB::bind_method(D_METHOD("add_do_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_do_method);
-	//ClassDB::bind_method(D_METHOD("add_undo_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_undo_method);
+	// FIXME: Typo in "commiting", fix in 4.0 when breaking compat.
+	ClassDB::bind_method(D_METHOD("is_commiting_action"), &UndoRedo::is_committing_action);
 
 	{
 		MethodInfo mi;
@@ -501,7 +520,7 @@ void UndoRedo::_bind_methods() {
 		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "object"));
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "method"));
 
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "add_do_method", &UndoRedo::_add_do_method, mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "add_do_method", &UndoRedo::_add_do_method, mi, varray(), false);
 	}
 
 	{
@@ -510,7 +529,7 @@ void UndoRedo::_bind_methods() {
 		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "object"));
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "method"));
 
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "add_undo_method", &UndoRedo::_add_undo_method, mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "add_undo_method", &UndoRedo::_add_undo_method, mi, varray(), false);
 	}
 
 	ClassDB::bind_method(D_METHOD("add_do_property", "object", "property", "value"), &UndoRedo::add_do_property);
@@ -519,9 +538,13 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_undo_reference", "object"), &UndoRedo::add_undo_reference);
 	ClassDB::bind_method(D_METHOD("clear_history", "increase_version"), &UndoRedo::clear_history, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_current_action_name"), &UndoRedo::get_current_action_name);
+	ClassDB::bind_method(D_METHOD("has_undo"), &UndoRedo::has_undo);
+	ClassDB::bind_method(D_METHOD("has_redo"), &UndoRedo::has_redo);
 	ClassDB::bind_method(D_METHOD("get_version"), &UndoRedo::get_version);
 	ClassDB::bind_method(D_METHOD("redo"), &UndoRedo::redo);
 	ClassDB::bind_method(D_METHOD("undo"), &UndoRedo::undo);
+
+	ADD_SIGNAL(MethodInfo("version_changed"));
 
 	BIND_ENUM_CONSTANT(MERGE_DISABLE);
 	BIND_ENUM_CONSTANT(MERGE_ENDS);

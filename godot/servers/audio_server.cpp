@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "audio_server.h"
+
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
@@ -36,14 +37,11 @@
 #include "scene/resources/audio_stream_sample.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
+
 #ifdef TOOLS_ENABLED
-
 #define MARK_EDITED set_edited(true);
-
 #else
-
 #define MARK_EDITED
-
 #endif
 
 AudioDriver *AudioDriver::singleton = NULL;
@@ -68,16 +66,21 @@ void AudioDriver::audio_server_process(int p_frames, int32_t *p_buffer, bool p_u
 
 void AudioDriver::update_mix_time(int p_frames) {
 
-	_mix_amount += p_frames;
+	_last_mix_frames = p_frames;
 	if (OS::get_singleton())
 		_last_mix_time = OS::get_singleton()->get_ticks_usec();
 }
 
-double AudioDriver::get_mix_time() const {
+double AudioDriver::get_time_since_last_mix() const {
+
+	return (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
+}
+
+double AudioDriver::get_time_to_next_mix() const {
 
 	double total = (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
-	total += _mix_amount / (double)get_mix_rate();
-	return total;
+	double mix_buffer = _last_mix_frames / (double)get_mix_rate();
+	return mix_buffer - total;
 }
 
 void AudioDriver::input_buffer_init(int driver_buffer_frames) {
@@ -148,7 +151,7 @@ Array AudioDriver::capture_get_device_list() {
 AudioDriver::AudioDriver() {
 
 	_last_mix_time = 0;
-	_mix_amount = 0;
+	_last_mix_frames = 0;
 	input_position = 0;
 	input_size = 0;
 
@@ -279,13 +282,6 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 
 		todo -= to_copy;
 		to_mix -= to_copy;
-	}
-
-	// Calculate latency for Performance.AUDIO_OUTPUT_LATENCY
-	if (OS::get_singleton()) {
-		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		output_latency = (ticks - output_latency_ticks) / 1000000.f;
-		output_latency_ticks = ticks;
 	}
 
 #ifdef DEBUG_ENABLED
@@ -946,6 +942,15 @@ bool AudioServer::is_bus_channel_active(int p_bus, int p_channel) const {
 	return buses[p_bus]->channels[p_channel].active;
 }
 
+void AudioServer::set_global_rate_scale(float p_scale) {
+
+	global_rate_scale = p_scale;
+}
+float AudioServer::get_global_rate_scale() const {
+
+	return global_rate_scale;
+}
+
 void AudioServer::init_channels_and_buffers() {
 	channel_count = get_channel_count();
 	temp_buffer.resize(channel_count);
@@ -1054,8 +1059,10 @@ void AudioServer::update() {
 
 void AudioServer::load_default_bus_layout() {
 
-	if (ResourceLoader::exists("res://default_bus_layout.tres")) {
-		Ref<AudioBusLayout> default_layout = ResourceLoader::load("res://default_bus_layout.tres");
+	String layout_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
+
+	if (ResourceLoader::exists(layout_path)) {
+		Ref<AudioBusLayout> default_layout = ResourceLoader::load(layout_path);
 		if (default_layout.is_valid()) {
 			set_bus_layout(default_layout);
 		}
@@ -1105,13 +1112,19 @@ AudioServer *AudioServer::get_singleton() {
 	return singleton;
 }
 
-double AudioServer::get_mix_time() const {
+double AudioServer::get_output_latency() const {
 
-	return 0;
+	return AudioDriver::get_singleton()->get_latency();
 }
-double AudioServer::get_output_delay() const {
 
-	return 0;
+double AudioServer::get_time_to_next_mix() const {
+
+	return AudioDriver::get_singleton()->get_time_to_next_mix();
+}
+
+double AudioServer::get_time_since_last_mix() const {
+
+	return AudioDriver::get_singleton()->get_time_since_last_mix();
 }
 
 AudioServer *AudioServer::singleton = NULL;
@@ -1346,6 +1359,9 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bus_peak_volume_left_db", "bus_idx", "channel"), &AudioServer::get_bus_peak_volume_left_db);
 	ClassDB::bind_method(D_METHOD("get_bus_peak_volume_right_db", "bus_idx", "channel"), &AudioServer::get_bus_peak_volume_right_db);
 
+	ClassDB::bind_method(D_METHOD("set_global_rate_scale", "scale"), &AudioServer::set_global_rate_scale);
+	ClassDB::bind_method(D_METHOD("get_global_rate_scale"), &AudioServer::get_global_rate_scale);
+
 	ClassDB::bind_method(D_METHOD("lock"), &AudioServer::lock);
 	ClassDB::bind_method(D_METHOD("unlock"), &AudioServer::unlock);
 
@@ -1355,12 +1371,20 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_device"), &AudioServer::get_device);
 	ClassDB::bind_method(D_METHOD("set_device", "device"), &AudioServer::set_device);
 
+	ClassDB::bind_method(D_METHOD("get_time_to_next_mix"), &AudioServer::get_time_to_next_mix);
+	ClassDB::bind_method(D_METHOD("get_time_since_last_mix"), &AudioServer::get_time_since_last_mix);
+	ClassDB::bind_method(D_METHOD("get_output_latency"), &AudioServer::get_output_latency);
+
 	ClassDB::bind_method(D_METHOD("capture_get_device_list"), &AudioServer::capture_get_device_list);
 	ClassDB::bind_method(D_METHOD("capture_get_device"), &AudioServer::capture_get_device);
 	ClassDB::bind_method(D_METHOD("capture_set_device", "name"), &AudioServer::capture_set_device);
 
 	ClassDB::bind_method(D_METHOD("set_bus_layout", "bus_layout"), &AudioServer::set_bus_layout);
 	ClassDB::bind_method(D_METHOD("generate_bus_layout"), &AudioServer::generate_bus_layout);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_count"), "set_bus_count", "get_bus_count");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "device"), "set_device", "get_device");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_rate_scale"), "set_global_rate_scale", "get_global_rate_scale");
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
 
@@ -1379,11 +1403,12 @@ AudioServer::AudioServer() {
 	mix_frames = 0;
 	channel_count = 0;
 	to_mix = 0;
-	output_latency = 0;
-	output_latency_ticks = 0;
 #ifdef DEBUG_ENABLED
 	prof_time = 0;
 #endif
+	mix_time = 0;
+	mix_size = 0;
+	global_rate_scale = 1;
 }
 
 AudioServer::~AudioServer() {

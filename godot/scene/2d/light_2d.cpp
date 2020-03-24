@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "core/engine.h"
 #include "servers/visual_server.h"
 
+#ifdef TOOLS_ENABLED
 Dictionary Light2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = get_texture_offset();
@@ -68,6 +69,7 @@ Rect2 Light2D::_edit_get_rect() const {
 bool Light2D::_edit_use_rect() const {
 	return !texture.is_null();
 }
+#endif
 
 Rect2 Light2D::get_anchorable_rect() const {
 	if (texture.is_null())
@@ -187,6 +189,10 @@ float Light2D::get_energy() const {
 void Light2D::set_texture_scale(float p_scale) {
 
 	_scale = p_scale;
+	// Avoid having 0 scale values, can lead to errors in physics and rendering.
+	if (_scale == 0) {
+		_scale = CMP_EPSILON;
+	}
 	VS::get_singleton()->canvas_light_set_scale(canvas_light, _scale);
 	item_rect_changed();
 }
@@ -347,7 +353,7 @@ void Light2D::_notification(int p_what) {
 String Light2D::get_configuration_warning() const {
 
 	if (!texture.is_valid()) {
-		return TTR("A texture with the shape of the light must be supplied to the 'texture' property.");
+		return TTR("A texture with the shape of the light must be supplied to the \"Texture\" property.");
 	}
 
 	return String();
@@ -435,7 +441,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "texture_scale", PROPERTY_HINT_RANGE, "0.01,50,0.01"), "set_texture_scale", "get_texture_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "energy", PROPERTY_HINT_RANGE, "0.01,100,0.01"), "set_energy", "get_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_energy", "get_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Add,Sub,Mix,Mask"), "set_mode", "get_mode");
 	ADD_GROUP("Range", "range_");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "range_height", PROPERTY_HINT_RANGE, "-2048,2048,0.1,or_lesser,or_greater"), "set_height", "get_height");

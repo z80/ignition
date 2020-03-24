@@ -1,21 +1,32 @@
 import os
-import os.path
-import sys
 import re
 import glob
-import string
 import subprocess
 from compat import iteritems, isbasestring, decode_utf8
 
 
-def add_source_files(self, sources, filetype, lib_env=None, shared=False):
+def add_source_files(self, sources, files, warn_duplicates=True):
+    # Convert string to list of absolute paths (including expanding wildcard)
+    if isbasestring(files):
+        # Keep SCons project-absolute path as they are (no wildcard support)
+        if files.startswith('#'):
+            if '*' in files:
+                print("ERROR: Wildcards can't be expanded in SCons project-absolute path: '{}'".format(files))
+                return
+            files = [files]
+        else:
+            dir_path = self.Dir('.').abspath
+            files = sorted(glob.glob(dir_path + "/" + files))
 
-    if isbasestring(filetype):
-        dir_path = self.Dir('.').abspath
-        filetype = sorted(glob.glob(dir_path + "/" + filetype))
-
-    for path in filetype:
-        sources.append(self.Object(path))
+    # Add each path as compiled Object following environment (self) configuration
+    for path in files:
+        obj = self.Object(path)
+        if obj in sources:
+            if warn_duplicates:
+                print("WARNING: Object \"{}\" already included in environment sources.".format(obj))
+            else:
+                continue
+        sources.append(obj)
 
 
 def disable_warnings(self):
@@ -26,14 +37,14 @@ def disable_warnings(self):
         warn_flags = ['/Wall', '/W4', '/W3', '/W2', '/W1', '/WX']
         self.Append(CCFLAGS=['/w'])
         self.Append(CFLAGS=['/w'])
-        self.Append(CPPFLAGS=['/w'])
+        self.Append(CXXFLAGS=['/w'])
         self['CCFLAGS'] = [x for x in self['CCFLAGS'] if not x in warn_flags]
         self['CFLAGS'] = [x for x in self['CFLAGS'] if not x in warn_flags]
-        self['CPPFLAGS'] = [x for x in self['CPPFLAGS'] if not x in warn_flags]
+        self['CXXFLAGS'] = [x for x in self['CXXFLAGS'] if not x in warn_flags]
     else:
         self.Append(CCFLAGS=['-w'])
         self.Append(CFLAGS=['-w'])
-        self.Append(CPPFLAGS=['-w'])
+        self.Append(CXXFLAGS=['-w'])
 
 
 def add_module_version_string(self,s):
@@ -55,8 +66,7 @@ def update_version(module_version_string=""):
     f.write("#define VERSION_NAME \"" + str(version.name) + "\"\n")
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
     f.write("#define VERSION_MINOR " + str(version.minor) + "\n")
-    if hasattr(version, 'patch'):
-        f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
+    f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
     f.write("#define VERSION_STATUS \"" + str(version.status) + "\"\n")
     f.write("#define VERSION_BUILD \"" + str(build_name) + "\"\n")
     f.write("#define VERSION_MODULE_CONFIG \"" + str(version.module_config) + module_version_string + "\"\n")
@@ -181,7 +191,7 @@ def win32_spawn(sh, escape, cmd, args, env):
             env[e] = str(env[e])
     proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, startupinfo=startupinfo, shell=False, env=env)
-    data, err = proc.communicate()
+    _, err = proc.communicate()
     rv = proc.wait()
     if rv:
         print("=====")
@@ -218,70 +228,6 @@ def win32_spawn(sh, escape, cmd, args, spawnenv):
 	return exit_code
 """
 
-def android_add_flat_dir(self, dir):
-    if (dir not in self.android_flat_dirs):
-        self.android_flat_dirs.append(dir)
-
-def android_add_maven_repository(self, url):
-    if (url not in self.android_maven_repos):
-        self.android_maven_repos.append(url)
-
-def android_add_dependency(self, depline):
-    if (depline not in self.android_dependencies):
-        self.android_dependencies.append(depline)
-
-def android_add_java_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_java_dirs):
-        self.android_java_dirs.append(base_path)
-
-def android_add_res_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_res_dirs):
-        self.android_res_dirs.append(base_path)
-
-def android_add_asset_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_asset_dirs):
-        self.android_asset_dirs.append(base_path)
-
-def android_add_aidl_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_aidl_dirs):
-        self.android_aidl_dirs.append(base_path)
-
-def android_add_jni_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_jni_dirs):
-        self.android_jni_dirs.append(base_path)
-
-def android_add_gradle_plugin(self, plugin):
-    if (plugin not in self.android_gradle_plugins):
-        self.android_gradle_plugins.append(plugin)
-
-def android_add_gradle_classpath(self, classpath):
-    if (classpath not in self.android_gradle_classpath):
-        self.android_gradle_classpath.append(classpath)
-
-def android_add_default_config(self, config):
-    if (config not in self.android_default_config):
-        self.android_default_config.append(config)
-
-def android_add_to_manifest(self, file):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    with open(base_path, "r") as f:
-        self.android_manifest_chunk += f.read()
-
-def android_add_to_permissions(self, file):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    with open(base_path, "r") as f:
-        self.android_permission_chunk += f.read()
-
-def android_add_to_attributes(self, file):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    with open(base_path, "r") as f:
-        self.android_appattributes_chunk += f.read()
-
 def disable_module(self):
     self.disabled_modules.append(self.current_module)
 
@@ -306,7 +252,7 @@ def use_windows_spawn_fix(self, platform=None):
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, startupinfo=startupinfo, shell=False, env=env)
-        data, err = proc.communicate()
+        _, err = proc.communicate()
         rv = proc.wait()
         if rv:
             print("=====")
@@ -357,7 +303,7 @@ def split_lib(self, libname, src_list = None, env_lib = None):
         else:
             fname = env.File(f)[0].path
         fname = fname.replace("\\", "/")
-        base = string.join(fname.split("/")[:2], "/")
+        base = "/".join(fname.split("/")[:2])
         if base != cur_base and len(list) > max_src:
             if num > 0:
                 lib = env_lib.add_library(libname + str(num), list)
@@ -370,18 +316,30 @@ def split_lib(self, libname, src_list = None, env_lib = None):
     lib = env_lib.add_library(libname + str(num), list)
     lib_list.append(lib)
 
-    if len(lib_list) > 0:
-        if os.name == 'posix' and sys.platform == 'msys':
-            env.Replace(ARFLAGS=['rcsT'])
-            lib = env_lib.add_library(libname + "_collated", lib_list)
-            lib_list = [lib]
-
     lib_base = []
     env_lib.add_source_files(lib_base, "*.cpp")
     lib = env_lib.add_library(libname, lib_base)
     lib_list.insert(0, lib)
 
     env.Prepend(LIBS=lib_list)
+
+    # When we split modules into arbitrary chunks, we end up with linking issues
+    # due to symbol dependencies split over several libs, which may not be linked
+    # in the required order. We use --start-group and --end-group to tell the
+    # linker that those archives should be searched repeatedly to resolve all
+    # undefined references.
+    # As SCons doesn't give us much control over how inserting libs in LIBS
+    # impacts the linker call, we need to hack our way into the linking commands
+    # LINKCOM and SHLINKCOM to set those flags.
+
+    if '-Wl,--start-group' in env['LINKCOM'] and '-Wl,--start-group' in env['SHLINKCOM']:
+        # Already added by a previous call, skip.
+        return
+
+    env['LINKCOM'] = str(env['LINKCOM']).replace('$_LIBFLAGS',
+            '-Wl,--start-group $_LIBFLAGS -Wl,--end-group')
+    env['SHLINKCOM'] = str(env['LINKCOM']).replace('$_LIBFLAGS',
+            '-Wl,--start-group $_LIBFLAGS -Wl,--end-group')
 
 
 def save_active_platforms(apnames, ap):
@@ -551,7 +509,7 @@ def find_visual_c_batch_file(env):
     from SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file
 
     version = get_default_version(env)
-    (host_platform, target_platform,req_target_platform) = get_host_target(env)
+    (host_platform, target_platform, _) = get_host_target(env)
     return find_batch_file(env, version, host_platform, target_platform)[0]
 
 def generate_cpp_hint_file(filename):
@@ -662,15 +620,28 @@ def detect_darwin_sdk_path(platform, env):
             sdk_path = decode_utf8(subprocess.check_output(['xcrun', '--sdk', sdk_name, '--show-sdk-path']).strip())
             if sdk_path:
                 env[var_name] = sdk_path
-        except (subprocess.CalledProcessError, OSError) as e:
+        except (subprocess.CalledProcessError, OSError):
             print("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
             raise
 
 def get_compiler_version(env):
-    version = decode_utf8(subprocess.check_output([env['CXX'], '--version']).strip())
-    match = re.search('[0-9][0-9.]*', version)
+    """
+    Returns an array of version numbers as ints: [major, minor, patch].
+    The return array should have at least two values (major, minor).
+    """
+    if not env.msvc:
+        # Not using -dumpversion as some GCC distros only return major, and
+        # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
+        try:
+            version = decode_utf8(subprocess.check_output([env.subst(env['CXX']), '--version']).strip())
+        except (subprocess.CalledProcessError, OSError):
+            print("Couldn't parse CXX environment variable to infer compiler version.")
+            return None
+    else:  # TODO: Implement for MSVC
+        return None
+    match = re.search('[0-9]+\.[0-9.]+', version)
     if match is not None:
-        return match.group().split('.')
+        return list(map(int, match.group().split('.')))
     else:
         return None
 

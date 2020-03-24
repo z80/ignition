@@ -18,7 +18,7 @@ each of them.
 Everything referred to hereafter as "bug" also applies for feature requests.
 
 If you are reporting a new issue, you will make our life much simpler (and the
-fix come much sooner) by following those guidelines:
+fix come much sooner) by following these guidelines:
 
 #### Search first in the existing database
 
@@ -51,7 +51,7 @@ understand that:
   and then figure out why it's failing.
 
 To speed up our work, please prepare for us **a simple project** that isolates
-and reproduces the issue. This is always the **the best way for us to fix it**.
+and reproduces the issue. This is always the **best way for us to fix it**.
 You can attach a zip file with the minimal project directly to the bug report,
 by drag and dropping the file in the GitHub edition field.
 
@@ -80,7 +80,7 @@ In addition to the following tips, also take a look at the
 [Engine development guide](https://docs.godotengine.org/en/latest/development/cpp/)
 for an introduction to developing on Godot.
 
-The [Contributing docs](http://docs.godotengine.org/en/latest/community/contributing/index.html)
+The [Contributing docs](https://docs.godotengine.org/en/latest/community/contributing/index.html)
 also have important information on the PR workflow and the code style we use.
 
 #### Be nice to the git history
@@ -102,7 +102,7 @@ Internet).
 This git style guide has some good practices to have in mind:
 [Git Style Guide](https://github.com/agis-/git-style-guide)
 
-See our [PR workflow](http://docs.godotengine.org/en/latest/community/contributing/pr_workflow.html)
+See our [PR workflow](https://docs.godotengine.org/en/latest/community/contributing/pr_workflow.html)
 documentation for tips on using Git, amending commits and rebasing branches.
 
 #### Format your commit logs with readability in mind

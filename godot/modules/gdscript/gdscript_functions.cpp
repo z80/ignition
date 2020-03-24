@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,6 +58,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"sqrt",
 		"fmod",
 		"fposmod",
+		"posmod",
 		"floor",
 		"ceil",
 		"round",
@@ -68,13 +69,18 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"exp",
 		"is_nan",
 		"is_inf",
+		"is_equal_approx",
+		"is_zero_approx",
 		"ease",
 		"decimals",
+		"step_decimals",
 		"stepify",
 		"lerp",
+		"lerp_angle",
 		"inverse_lerp",
 		"range_lerp",
 		"smoothstep",
+		"move_toward",
 		"dectime",
 		"randomize",
 		"randi",
@@ -100,6 +106,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"typeof",
 		"type_exists",
 		"char",
+		"ord",
 		"str",
 		"print",
 		"printt",
@@ -239,6 +246,12 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_NUM(1);
 			r_ret = Math::fposmod((double)*p_args[0], (double)*p_args[1]);
 		} break;
+		case MATH_POSMOD: {
+			VALIDATE_ARG_COUNT(2);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			r_ret = Math::posmod((int)*p_args[0], (int)*p_args[1]);
+		} break;
 		case MATH_FLOOR: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
@@ -316,6 +329,17 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_NUM(0);
 			r_ret = Math::is_inf((double)*p_args[0]);
 		} break;
+		case MATH_ISEQUALAPPROX: {
+			VALIDATE_ARG_COUNT(2);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			r_ret = Math::is_equal_approx((real_t)*p_args[0], (real_t)*p_args[1]);
+		} break;
+		case MATH_ISZEROAPPROX: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			r_ret = Math::is_zero_approx((real_t)*p_args[0]);
+		} break;
 		case MATH_EASE: {
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
@@ -323,6 +347,12 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			r_ret = Math::ease((double)*p_args[0], (double)*p_args[1]);
 		} break;
 		case MATH_DECIMALS: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			r_ret = Math::step_decimals((double)*p_args[0]);
+			WARN_DEPRECATED_MSG("GDScript method 'decimals' is deprecated and has been renamed to 'step_decimals', please update your code accordingly.");
+		} break;
+		case MATH_STEP_DECIMALS: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
 			r_ret = Math::step_decimals((double)*p_args[0]);
@@ -354,6 +384,13 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				} break;
 			}
 		} break;
+		case MATH_LERP_ANGLE: {
+			VALIDATE_ARG_COUNT(3);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			r_ret = Math::lerp_angle((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
+		} break;
 		case MATH_INVERSE_LERP: {
 			VALIDATE_ARG_COUNT(3);
 			VALIDATE_ARG_NUM(0);
@@ -376,6 +413,13 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			r_ret = Math::smoothstep((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
+		} break;
+		case MATH_MOVE_TOWARD: {
+			VALIDATE_ARG_COUNT(3);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			r_ret = Math::move_toward((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
 		} break;
 		case MATH_DECTIME: {
 			VALIDATE_ARG_COUNT(3);
@@ -528,37 +572,32 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 		} break;
 		case OBJ_WEAKREF: {
 			VALIDATE_ARG_COUNT(1);
-			if (p_args[0]->get_type() != Variant::OBJECT) {
-
+			if (p_args[0]->get_type() == Variant::OBJECT) {
+				if (p_args[0]->is_ref()) {
+					Ref<WeakRef> wref = memnew(WeakRef);
+					REF r = *p_args[0];
+					if (r.is_valid()) {
+						wref->set_ref(r);
+					}
+					r_ret = wref;
+				} else {
+					Ref<WeakRef> wref = memnew(WeakRef);
+					Object *obj = *p_args[0];
+					if (obj) {
+						wref->set_obj(obj);
+					}
+					r_ret = wref;
+				}
+			} else if (p_args[0]->get_type() == Variant::NIL) {
+				Ref<WeakRef> wref = memnew(WeakRef);
+				r_ret = wref;
+			} else {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::OBJECT;
 				r_ret = Variant();
 				return;
 			}
-
-			if (p_args[0]->is_ref()) {
-
-				REF r = *p_args[0];
-				if (!r.is_valid()) {
-					r_ret = Variant();
-					return;
-				}
-
-				Ref<WeakRef> wref = memnew(WeakRef);
-				wref->set_ref(r);
-				r_ret = wref;
-			} else {
-				Object *obj = *p_args[0];
-				if (!obj) {
-					r_ret = Variant();
-					return;
-				}
-				Ref<WeakRef> wref = memnew(WeakRef);
-				wref->set_obj(obj);
-				r_ret = wref;
-			}
-
 		} break;
 		case FUNC_FUNCREF: {
 			VALIDATE_ARG_COUNT(2);
@@ -621,6 +660,33 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_NUM(0);
 			CharType result[2] = { *p_args[0], 0 };
 			r_ret = String(result);
+		} break;
+		case TEXT_ORD: {
+
+			VALIDATE_ARG_COUNT(1);
+
+			if (p_args[0]->get_type() != Variant::STRING) {
+
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 0;
+				r_error.expected = Variant::STRING;
+				r_ret = Variant();
+				return;
+			}
+
+			String str = p_args[0]->operator String();
+
+			if (str.length() != 1) {
+
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 0;
+				r_error.expected = Variant::STRING;
+				r_ret = RTR("Expected a string of length 1 (a character).");
+				return;
+			}
+
+			r_ret = str.get(0);
+
 		} break;
 		case TEXT_STR: {
 			if (p_arg_count < 1) {
@@ -1060,27 +1126,13 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 					Dictionary d;
 					d["@subpath"] = cp;
-					d["@path"] = p->path;
+					d["@path"] = p->get_path();
 
-					p = base.ptr();
-
-					while (p) {
-
-						for (Set<StringName>::Element *E = p->members.front(); E; E = E->next()) {
-
-							Variant value;
-							if (ins->get(E->get(), value)) {
-
-								String k = E->get();
-								if (!d.has(k)) {
-									d[k] = value;
-								}
-							}
+					for (Map<StringName, GDScript::MemberInfo>::Element *E = base->member_indices.front(); E; E = E->next()) {
+						if (!d.has(E->key())) {
+							d[E->key()] = ins->members[E->get().index];
 						}
-
-						p = p->_base;
 					}
-
 					r_ret = d;
 				}
 			}
@@ -1208,6 +1260,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 			if (err != OK) {
 				r_ret = Variant();
+				ERR_PRINTS(vformat("Error parsing JSON at line %s: %s", errl, errs));
 			}
 
 		} break;
@@ -1427,6 +1480,7 @@ bool GDScriptFunctions::is_deterministic(Function p_func) {
 		case MATH_SQRT:
 		case MATH_FMOD:
 		case MATH_FPOSMOD:
+		case MATH_POSMOD:
 		case MATH_FLOOR:
 		case MATH_CEIL:
 		case MATH_ROUND:
@@ -1439,11 +1493,13 @@ bool GDScriptFunctions::is_deterministic(Function p_func) {
 		case MATH_ISINF:
 		case MATH_EASE:
 		case MATH_DECIMALS:
+		case MATH_STEP_DECIMALS:
 		case MATH_STEPIFY:
 		case MATH_LERP:
 		case MATH_INVERSE_LERP:
 		case MATH_RANGE_LERP:
 		case MATH_SMOOTHSTEP:
+		case MATH_MOVE_TOWARD:
 		case MATH_DECTIME:
 		case MATH_DEG2RAD:
 		case MATH_RAD2DEG:
@@ -1461,6 +1517,7 @@ bool GDScriptFunctions::is_deterministic(Function p_func) {
 		case TYPE_OF:
 		case TYPE_EXISTS:
 		case TEXT_CHAR:
+		case TEXT_ORD:
 		case TEXT_STR:
 		case COLOR8:
 		case LEN:
@@ -1537,13 +1594,18 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_FMOD: {
-			MethodInfo mi("fmod", PropertyInfo(Variant::REAL, "x"), PropertyInfo(Variant::REAL, "y"));
+			MethodInfo mi("fmod", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_FPOSMOD: {
-			MethodInfo mi("fposmod", PropertyInfo(Variant::REAL, "x"), PropertyInfo(Variant::REAL, "y"));
+			MethodInfo mi("fposmod", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
 			mi.return_val.type = Variant::REAL;
+			return mi;
+		} break;
+		case MATH_POSMOD: {
+			MethodInfo mi("posmod", PropertyInfo(Variant::INT, "a"), PropertyInfo(Variant::INT, "b"));
+			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case MATH_FLOOR: {
@@ -1572,7 +1634,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_POW: {
-			MethodInfo mi("pow", PropertyInfo(Variant::REAL, "x"), PropertyInfo(Variant::REAL, "y"));
+			MethodInfo mi("pow", PropertyInfo(Variant::REAL, "base"), PropertyInfo(Variant::REAL, "exp"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
@@ -1596,6 +1658,16 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
+		case MATH_ISEQUALAPPROX: {
+			MethodInfo mi("is_equal_approx", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
+			mi.return_val.type = Variant::BOOL;
+			return mi;
+		} break;
+		case MATH_ISZEROAPPROX: {
+			MethodInfo mi("is_zero_approx", PropertyInfo(Variant::REAL, "s"));
+			mi.return_val.type = Variant::BOOL;
+			return mi;
+		} break;
 		case MATH_EASE: {
 			MethodInfo mi("ease", PropertyInfo(Variant::REAL, "s"), PropertyInfo(Variant::REAL, "curve"));
 			mi.return_val.type = Variant::REAL;
@@ -1603,7 +1675,12 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_DECIMALS: {
 			MethodInfo mi("decimals", PropertyInfo(Variant::REAL, "step"));
-			mi.return_val.type = Variant::REAL;
+			mi.return_val.type = Variant::INT;
+			return mi;
+		} break;
+		case MATH_STEP_DECIMALS: {
+			MethodInfo mi("step_decimals", PropertyInfo(Variant::REAL, "step"));
+			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case MATH_STEPIFY: {
@@ -1615,6 +1692,11 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			MethodInfo mi("lerp", PropertyInfo(Variant::NIL, "from"), PropertyInfo(Variant::NIL, "to"), PropertyInfo(Variant::REAL, "weight"));
 			mi.return_val.type = Variant::NIL;
 			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			return mi;
+		} break;
+		case MATH_LERP_ANGLE: {
+			MethodInfo mi("lerp_angle", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "weight"));
+			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_INVERSE_LERP: {
@@ -1629,6 +1711,11 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_SMOOTHSTEP: {
 			MethodInfo mi("smoothstep", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "weight"));
+			mi.return_val.type = Variant::REAL;
+			return mi;
+		} break;
+		case MATH_MOVE_TOWARD: {
+			MethodInfo mi("move_toward", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "delta"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
@@ -1768,8 +1855,15 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 		case TEXT_CHAR: {
 
-			MethodInfo mi("char", PropertyInfo(Variant::INT, "ascii"));
+			MethodInfo mi("char", PropertyInfo(Variant::INT, "code"));
 			mi.return_val.type = Variant::STRING;
+			return mi;
+
+		} break;
+		case TEXT_ORD: {
+
+			MethodInfo mi("ord", PropertyInfo(Variant::STRING, "char"));
+			mi.return_val.type = Variant::INT;
 			return mi;
 
 		} break;
@@ -1963,12 +2057,13 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
-		case FUNC_MAX: {
+		default: {
 
 			ERR_FAIL_V(MethodInfo());
 		} break;
 	}
 #endif
-
-	return MethodInfo();
+	MethodInfo mi;
+	mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+	return mi;
 }

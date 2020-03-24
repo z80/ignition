@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,17 +97,10 @@ Error AudioDriverOpenSL::init() {
 		{ (SLuint32)SL_ENGINEOPTION_THREADSAFE, (SLuint32)SL_BOOLEAN_TRUE }
 	};
 	res = slCreateEngine(&sl, 1, EngineOption, 0, NULL, NULL);
-	if (res != SL_RESULT_SUCCESS) {
+	ERR_FAIL_COND_V_MSG(res != SL_RESULT_SUCCESS, ERR_INVALID_PARAMETER, "Could not initialize OpenSL.");
 
-		ERR_EXPLAIN("Could not Initialize OpenSL");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
-	}
 	res = (*sl)->Realize(sl, SL_BOOLEAN_FALSE);
-	if (res != SL_RESULT_SUCCESS) {
-
-		ERR_EXPLAIN("Could not Realize OpenSL");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
-	}
+	ERR_FAIL_COND_V_MSG(res != SL_RESULT_SUCCESS, ERR_INVALID_PARAMETER, "Could not realize OpenSL.");
 
 	return OK;
 }
@@ -326,7 +319,7 @@ Error AudioDriverOpenSL::capture_stop() {
 
 int AudioDriverOpenSL::get_mix_rate() const {
 
-	return 44100;
+	return 44100; // hardcoded for Android, as selected by SL_SAMPLINGRATE_44_1
 }
 
 AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {

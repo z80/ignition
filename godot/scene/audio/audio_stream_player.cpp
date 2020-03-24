@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,16 +118,21 @@ void AudioStreamPlayer::_mix_audio() {
 		_mix_internal(true);
 		stream_playback->stop();
 		setstop = false;
-	} else if (setseek >= 0.0) {
+	}
+
+	if (setseek >= 0.0 && !stop_has_priority) {
 		if (stream_playback->is_playing()) {
 
 			//fade out to avoid pops
 			_mix_internal(true);
 		}
+
 		stream_playback->start(setseek);
 		setseek = -1.0; //reset seek
 		mix_volume_db = volume_db; //reset ramp
 	}
+
+	stop_has_priority = false;
 
 	_mix_internal(false);
 }
@@ -243,7 +248,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	if (stream_playback.is_valid()) {
 		//mix_volume_db = volume_db; do not reset volume ramp here, can cause clicks
 		setseek = p_from_pos;
-		setstop = false;
+		stop_has_priority = false;
 		active = true;
 		set_process_internal(true);
 	}
@@ -260,6 +265,7 @@ void AudioStreamPlayer::stop() {
 
 	if (stream_playback.is_valid() && active) {
 		setstop = true;
+		stop_has_priority = true;
 	}
 }
 
@@ -333,7 +339,7 @@ void AudioStreamPlayer::set_stream_paused(bool p_pause) {
 
 	if (p_pause != stream_paused) {
 		stream_paused = p_pause;
-		stream_paused_fade = p_pause ? true : false;
+		stream_paused_fade = p_pause;
 	}
 }
 
@@ -406,7 +412,7 @@ void AudioStreamPlayer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume_db", PROPERTY_HINT_RANGE, "-80,24"), "set_volume_db", "get_volume_db");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,32,0.01"), "set_pitch_scale", "get_pitch_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");

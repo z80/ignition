@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -197,7 +197,6 @@ String VisualScriptFunction::get_output_sequence_port_text(int p_port) const {
 PropertyInfo VisualScriptFunction::get_input_value_port_info(int p_idx) const {
 
 	ERR_FAIL_V(PropertyInfo());
-	return PropertyInfo();
 }
 PropertyInfo VisualScriptFunction::get_output_value_port_info(int p_idx) const {
 
@@ -357,6 +356,441 @@ int VisualScriptFunction::get_stack_size() const {
 }
 
 //////////////////////////////////////////
+/////////////////LISTS////////////////////
+//////////////////////////////////////////
+
+int VisualScriptLists::get_output_sequence_port_count() const {
+	if (sequenced)
+		return 1;
+	return 0;
+}
+bool VisualScriptLists::has_input_sequence_port() const {
+	return sequenced;
+}
+
+String VisualScriptLists::get_output_sequence_port_text(int p_port) const {
+	return "";
+}
+
+int VisualScriptLists::get_input_value_port_count() const {
+	return inputports.size();
+}
+int VisualScriptLists::get_output_value_port_count() const {
+	return outputports.size();
+}
+
+PropertyInfo VisualScriptLists::get_input_value_port_info(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, inputports.size(), PropertyInfo());
+
+	PropertyInfo pi;
+	pi.name = inputports[p_idx].name;
+	pi.type = inputports[p_idx].type;
+	return pi;
+}
+PropertyInfo VisualScriptLists::get_output_value_port_info(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, outputports.size(), PropertyInfo());
+
+	PropertyInfo pi;
+	pi.name = outputports[p_idx].name;
+	pi.type = outputports[p_idx].type;
+	return pi;
+}
+
+bool VisualScriptLists::is_input_port_editable() const {
+	return ((flags & INPUT_EDITABLE) == INPUT_EDITABLE);
+}
+bool VisualScriptLists::is_input_port_name_editable() const {
+	return ((flags & INPUT_NAME_EDITABLE) == INPUT_NAME_EDITABLE);
+}
+bool VisualScriptLists::is_input_port_type_editable() const {
+	return ((flags & INPUT_TYPE_EDITABLE) == INPUT_TYPE_EDITABLE);
+}
+
+bool VisualScriptLists::is_output_port_editable() const {
+	return ((flags & OUTPUT_EDITABLE) == OUTPUT_EDITABLE);
+}
+bool VisualScriptLists::is_output_port_name_editable() const {
+	return ((flags & INPUT_NAME_EDITABLE) == INPUT_NAME_EDITABLE);
+}
+bool VisualScriptLists::is_output_port_type_editable() const {
+	return ((flags & INPUT_TYPE_EDITABLE) == INPUT_TYPE_EDITABLE);
+}
+
+// for the inspector
+bool VisualScriptLists::_set(const StringName &p_name, const Variant &p_value) {
+
+	if (p_name == "input_count" && is_input_port_editable()) {
+
+		int new_argc = p_value;
+		int argc = inputports.size();
+		if (argc == new_argc)
+			return true;
+
+		inputports.resize(new_argc);
+
+		for (int i = argc; i < new_argc; i++) {
+			inputports.write[i].name = "arg" + itos(i + 1);
+			inputports.write[i].type = Variant::NIL;
+		}
+		ports_changed_notify();
+		_change_notify();
+		return true;
+	}
+	if (String(p_name).begins_with("input_") && is_input_port_editable()) {
+		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int() - 1;
+		ERR_FAIL_INDEX_V(idx, inputports.size(), false);
+		String what = String(p_name).get_slice("/", 1);
+		if (what == "type") {
+
+			Variant::Type new_type = Variant::Type(int(p_value));
+			inputports.write[idx].type = new_type;
+			ports_changed_notify();
+
+			return true;
+		}
+
+		if (what == "name") {
+
+			inputports.write[idx].name = p_value;
+			ports_changed_notify();
+			return true;
+		}
+	}
+
+	if (p_name == "output_count" && is_output_port_editable()) {
+
+		int new_argc = p_value;
+		int argc = outputports.size();
+		if (argc == new_argc)
+			return true;
+
+		outputports.resize(new_argc);
+
+		for (int i = argc; i < new_argc; i++) {
+			outputports.write[i].name = "arg" + itos(i + 1);
+			outputports.write[i].type = Variant::NIL;
+		}
+		ports_changed_notify();
+		_change_notify();
+		return true;
+	}
+	if (String(p_name).begins_with("output_") && is_output_port_editable()) {
+		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int() - 1;
+		ERR_FAIL_INDEX_V(idx, outputports.size(), false);
+		String what = String(p_name).get_slice("/", 1);
+		if (what == "type") {
+
+			Variant::Type new_type = Variant::Type(int(p_value));
+			outputports.write[idx].type = new_type;
+			ports_changed_notify();
+
+			return true;
+		}
+
+		if (what == "name") {
+
+			outputports.write[idx].name = p_value;
+			ports_changed_notify();
+			return true;
+		}
+	}
+
+	if (p_name == "sequenced/sequenced") {
+		sequenced = p_value;
+		ports_changed_notify();
+		return true;
+	}
+
+	return false;
+}
+bool VisualScriptLists::_get(const StringName &p_name, Variant &r_ret) const {
+
+	if (p_name == "input_count" && is_input_port_editable()) {
+		r_ret = inputports.size();
+		return true;
+	}
+	if (String(p_name).begins_with("input_") && is_input_port_editable()) {
+		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int() - 1;
+		ERR_FAIL_INDEX_V(idx, inputports.size(), false);
+		String what = String(p_name).get_slice("/", 1);
+		if (what == "type") {
+			r_ret = inputports[idx].type;
+			return true;
+		}
+		if (what == "name") {
+			r_ret = inputports[idx].name;
+			return true;
+		}
+	}
+
+	if (p_name == "output_count" && is_output_port_editable()) {
+		r_ret = outputports.size();
+		return true;
+	}
+	if (String(p_name).begins_with("output_") && is_output_port_editable()) {
+		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int() - 1;
+		ERR_FAIL_INDEX_V(idx, outputports.size(), false);
+		String what = String(p_name).get_slice("/", 1);
+		if (what == "type") {
+			r_ret = outputports[idx].type;
+			return true;
+		}
+		if (what == "name") {
+			r_ret = outputports[idx].name;
+			return true;
+		}
+	}
+
+	if (p_name == "sequenced/sequenced") {
+		r_ret = sequenced;
+		return true;
+	}
+
+	return false;
+}
+void VisualScriptLists::_get_property_list(List<PropertyInfo> *p_list) const {
+
+	if (is_input_port_editable()) {
+		p_list->push_back(PropertyInfo(Variant::INT, "input_count", PROPERTY_HINT_RANGE, "0,256"));
+		String argt = "Any";
+		for (int i = 1; i < Variant::VARIANT_MAX; i++) {
+			argt += "," + Variant::get_type_name(Variant::Type(i));
+		}
+
+		for (int i = 0; i < inputports.size(); i++) {
+			p_list->push_back(PropertyInfo(Variant::INT, "input_" + itos(i + 1) + "/type", PROPERTY_HINT_ENUM, argt));
+			p_list->push_back(PropertyInfo(Variant::STRING, "input_" + itos(i + 1) + "/name"));
+		}
+	}
+
+	if (is_output_port_editable()) {
+		p_list->push_back(PropertyInfo(Variant::INT, "output_count", PROPERTY_HINT_RANGE, "0,256"));
+		String argt = "Any";
+		for (int i = 1; i < Variant::VARIANT_MAX; i++) {
+			argt += "," + Variant::get_type_name(Variant::Type(i));
+		}
+
+		for (int i = 0; i < outputports.size(); i++) {
+			p_list->push_back(PropertyInfo(Variant::INT, "output_" + itos(i + 1) + "/type", PROPERTY_HINT_ENUM, argt));
+			p_list->push_back(PropertyInfo(Variant::STRING, "output_" + itos(i + 1) + "/name"));
+		}
+	}
+	p_list->push_back(PropertyInfo(Variant::BOOL, "sequenced/sequenced"));
+}
+
+// input data port interaction
+void VisualScriptLists::add_input_data_port(Variant::Type p_type, const String &p_name, int p_index) {
+
+	if (!is_input_port_editable())
+		return;
+
+	Port inp;
+	inp.name = p_name;
+	inp.type = p_type;
+	if (p_index >= 0)
+		inputports.insert(p_index, inp);
+	else
+		inputports.push_back(inp);
+
+	ports_changed_notify();
+	_change_notify();
+}
+void VisualScriptLists::set_input_data_port_type(int p_idx, Variant::Type p_type) {
+
+	if (!is_input_port_type_editable())
+		return;
+
+	ERR_FAIL_INDEX(p_idx, inputports.size());
+
+	inputports.write[p_idx].type = p_type;
+	ports_changed_notify();
+	_change_notify();
+}
+void VisualScriptLists::set_input_data_port_name(int p_idx, const String &p_name) {
+
+	if (!is_input_port_name_editable())
+		return;
+
+	ERR_FAIL_INDEX(p_idx, inputports.size());
+
+	inputports.write[p_idx].name = p_name;
+	ports_changed_notify();
+	_change_notify();
+}
+void VisualScriptLists::remove_input_data_port(int p_argidx) {
+
+	if (!is_input_port_editable())
+		return;
+
+	ERR_FAIL_INDEX(p_argidx, inputports.size());
+
+	inputports.remove(p_argidx);
+
+	ports_changed_notify();
+	_change_notify();
+}
+
+// output data port interaction
+void VisualScriptLists::add_output_data_port(Variant::Type p_type, const String &p_name, int p_index) {
+
+	if (!is_output_port_editable())
+		return;
+
+	Port out;
+	out.name = p_name;
+	out.type = p_type;
+	if (p_index >= 0)
+		outputports.insert(p_index, out);
+	else
+		outputports.push_back(out);
+
+	ports_changed_notify();
+	_change_notify();
+}
+void VisualScriptLists::set_output_data_port_type(int p_idx, Variant::Type p_type) {
+
+	if (!is_output_port_type_editable())
+		return;
+
+	ERR_FAIL_INDEX(p_idx, outputports.size());
+
+	outputports.write[p_idx].type = p_type;
+	ports_changed_notify();
+	_change_notify();
+}
+void VisualScriptLists::set_output_data_port_name(int p_idx, const String &p_name) {
+
+	if (!is_output_port_name_editable())
+		return;
+
+	ERR_FAIL_INDEX(p_idx, outputports.size());
+
+	outputports.write[p_idx].name = p_name;
+	ports_changed_notify();
+	_change_notify();
+}
+void VisualScriptLists::remove_output_data_port(int p_argidx) {
+
+	if (!is_output_port_editable())
+		return;
+
+	ERR_FAIL_INDEX(p_argidx, outputports.size());
+
+	outputports.remove(p_argidx);
+
+	ports_changed_notify();
+	_change_notify();
+}
+
+// sequences
+void VisualScriptLists::set_sequenced(bool p_enable) {
+	if (sequenced == p_enable)
+		return;
+	sequenced = p_enable;
+	ports_changed_notify();
+}
+bool VisualScriptLists::is_sequenced() const {
+	return sequenced;
+}
+
+VisualScriptLists::VisualScriptLists() {
+	// initialize
+	sequenced = false;
+	flags = 0;
+}
+
+void VisualScriptLists::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_input_data_port", "type", "name", "index"), &VisualScriptLists::add_input_data_port);
+	ClassDB::bind_method(D_METHOD("set_input_data_port_name", "index", "name"), &VisualScriptLists::set_input_data_port_name);
+	ClassDB::bind_method(D_METHOD("set_input_data_port_type", "index", "type"), &VisualScriptLists::set_input_data_port_type);
+	ClassDB::bind_method(D_METHOD("remove_input_data_port", "index"), &VisualScriptLists::remove_input_data_port);
+
+	ClassDB::bind_method(D_METHOD("add_output_data_port", "type", "name", "index"), &VisualScriptLists::add_output_data_port);
+	ClassDB::bind_method(D_METHOD("set_output_data_port_name", "index", "name"), &VisualScriptLists::set_output_data_port_name);
+	ClassDB::bind_method(D_METHOD("set_output_data_port_type", "index", "type"), &VisualScriptLists::set_output_data_port_type);
+	ClassDB::bind_method(D_METHOD("remove_output_data_port", "index"), &VisualScriptLists::remove_output_data_port);
+}
+
+//////////////////////////////////////////
+//////////////COMPOSEARRAY////////////////
+//////////////////////////////////////////
+
+int VisualScriptComposeArray::get_output_sequence_port_count() const {
+	if (sequenced)
+		return 1;
+	return 0;
+}
+bool VisualScriptComposeArray::has_input_sequence_port() const {
+	return sequenced;
+}
+
+String VisualScriptComposeArray::get_output_sequence_port_text(int p_port) const {
+	return "";
+}
+
+int VisualScriptComposeArray::get_input_value_port_count() const {
+	return inputports.size();
+}
+int VisualScriptComposeArray::get_output_value_port_count() const {
+	return 1;
+}
+
+PropertyInfo VisualScriptComposeArray::get_input_value_port_info(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, inputports.size(), PropertyInfo());
+
+	PropertyInfo pi;
+	pi.name = inputports[p_idx].name;
+	pi.type = inputports[p_idx].type;
+	return pi;
+}
+PropertyInfo VisualScriptComposeArray::get_output_value_port_info(int p_idx) const {
+	PropertyInfo pi;
+	pi.name = "out";
+	pi.type = Variant::ARRAY;
+	return pi;
+}
+
+String VisualScriptComposeArray::get_caption() const {
+	return "Compose Array";
+}
+String VisualScriptComposeArray::get_text() const {
+	return "";
+}
+
+class VisualScriptComposeArrayNode : public VisualScriptNodeInstance {
+public:
+	int input_count = 0;
+	virtual int get_working_memory_size() const { return 0; }
+
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+
+		if (input_count > 0) {
+			Array arr;
+			for (int i = 0; i < input_count; i++)
+				arr.push_back((*p_inputs[i]));
+			Variant va = Variant(arr);
+
+			*p_outputs[0] = va;
+		}
+
+		return 0;
+	}
+};
+
+VisualScriptNodeInstance *VisualScriptComposeArray::instance(VisualScriptInstance *p_instance) {
+
+	VisualScriptComposeArrayNode *instance = memnew(VisualScriptComposeArrayNode);
+	instance->input_count = inputports.size();
+	return instance;
+}
+
+VisualScriptComposeArray::VisualScriptComposeArray() {
+	// initialize stuff here
+	sequenced = false;
+	flags = INPUT_EDITABLE;
+}
+
+//////////////////////////////////////////
 ////////////////OPERATOR//////////////////
 //////////////////////////////////////////
 
@@ -418,7 +852,7 @@ PropertyInfo VisualScriptOperator::get_input_value_port_info(int p_idx) const {
 		{ Variant::NIL, Variant::NIL } //OP_IN,
 	};
 
-	ERR_FAIL_INDEX_V(p_idx, Variant::OP_MAX, PropertyInfo());
+	ERR_FAIL_INDEX_V(p_idx, 2, PropertyInfo());
 
 	PropertyInfo pinfo;
 	pinfo.name = p_idx == 0 ? "A" : "B";
@@ -515,7 +949,7 @@ String VisualScriptOperator::get_caption() const {
 		//mathematic
 		L"A + B", //OP_ADD,
 		L"A - B", //OP_SUBTRACT,
-		L"A x B", //OP_MULTIPLY,
+		L"A \u00D7 B", //OP_MULTIPLY,
 		L"A \u00F7 B", //OP_DIVIDE,
 		L"\u00AC A", //OP_NEGATE,
 		L"+ A", //OP_POSITIVE,
@@ -856,7 +1290,7 @@ public:
 		if (!instance->get_variable(variable, p_outputs[0])) {
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = RTR("VariableGet not found in script: ") + "'" + String(variable) + "'";
-			return false;
+			return 0;
 		}
 		return 0;
 	}
@@ -1408,7 +1842,7 @@ PropertyInfo VisualScriptGlobalConstant::get_input_value_port_info(int p_idx) co
 
 PropertyInfo VisualScriptGlobalConstant::get_output_value_port_info(int p_idx) const {
 	String name = GlobalConstants::get_global_constant_name(index);
-	return PropertyInfo(Variant::REAL, name);
+	return PropertyInfo(Variant::INT, name);
 }
 
 String VisualScriptGlobalConstant::get_caption() const {
@@ -1501,8 +1935,11 @@ PropertyInfo VisualScriptClassConstant::get_input_value_port_info(int p_idx) con
 }
 
 PropertyInfo VisualScriptClassConstant::get_output_value_port_info(int p_idx) const {
-
-	return PropertyInfo(Variant::INT, String(base_type) + "." + String(name));
+	if (name == "") {
+		return PropertyInfo(Variant::INT, String(base_type));
+	} else {
+		return PropertyInfo(Variant::INT, String(base_type) + "." + String(name));
+	}
 }
 
 String VisualScriptClassConstant::get_caption() const {
@@ -1524,6 +1961,22 @@ StringName VisualScriptClassConstant::get_class_constant() {
 void VisualScriptClassConstant::set_base_type(const StringName &p_which) {
 
 	base_type = p_which;
+	List<String> constants;
+	ClassDB::get_integer_constant_list(base_type, &constants, true);
+	if (constants.size() > 0) {
+		bool found_name = false;
+		for (List<String>::Element *E = constants.front(); E; E = E->next()) {
+			if (E->get() == name) {
+				found_name = true;
+				break;
+			}
+		}
+		if (!found_name) {
+			name = constants[0];
+		}
+	} else {
+		name = "";
+	}
 	_change_notify();
 	ports_changed_notify();
 }
@@ -1626,7 +2079,7 @@ PropertyInfo VisualScriptBasicTypeConstant::get_input_value_port_info(int p_idx)
 
 PropertyInfo VisualScriptBasicTypeConstant::get_output_value_port_info(int p_idx) const {
 
-	return PropertyInfo(Variant::INT, "value");
+	return PropertyInfo(type, "value");
 }
 
 String VisualScriptBasicTypeConstant::get_caption() const {
@@ -1635,8 +2088,11 @@ String VisualScriptBasicTypeConstant::get_caption() const {
 }
 
 String VisualScriptBasicTypeConstant::get_text() const {
-
-	return Variant::get_type_name(type) + "." + String(name);
+	if (name == "") {
+		return Variant::get_type_name(type);
+	} else {
+		return Variant::get_type_name(type) + "." + String(name);
+	}
 }
 
 void VisualScriptBasicTypeConstant::set_basic_type_constant(const StringName &p_which) {
@@ -1653,6 +2109,23 @@ StringName VisualScriptBasicTypeConstant::get_basic_type_constant() const {
 void VisualScriptBasicTypeConstant::set_basic_type(Variant::Type p_which) {
 
 	type = p_which;
+
+	List<StringName> constants;
+	Variant::get_constants_for_type(type, &constants);
+	if (constants.size() > 0) {
+		bool found_name = false;
+		for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
+			if (E->get() == name) {
+				found_name = true;
+				break;
+			}
+		}
+		if (!found_name) {
+			name = constants[0];
+		}
+	} else {
+		name = "";
+	}
 	_change_notify();
 	ports_changed_notify();
 }
@@ -1943,10 +2416,7 @@ VisualScriptEngineSingleton::TypeGuess VisualScriptEngineSingleton::guess_output
 	return tg;
 }
 
-void VisualScriptEngineSingleton::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("set_singleton", "name"), &VisualScriptEngineSingleton::set_singleton);
-	ClassDB::bind_method(D_METHOD("get_singleton"), &VisualScriptEngineSingleton::get_singleton);
+void VisualScriptEngineSingleton::_validate_property(PropertyInfo &property) const {
 
 	String cc;
 
@@ -1963,7 +2433,16 @@ void VisualScriptEngineSingleton::_bind_methods() {
 		cc += E->get().name;
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "constant", PROPERTY_HINT_ENUM, cc), "set_singleton", "get_singleton");
+	property.hint = PROPERTY_HINT_ENUM;
+	property.hint_string = cc;
+}
+
+void VisualScriptEngineSingleton::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_singleton", "name"), &VisualScriptEngineSingleton::set_singleton);
+	ClassDB::bind_method(D_METHOD("get_singleton"), &VisualScriptEngineSingleton::get_singleton);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "constant"), "set_singleton", "get_singleton");
 }
 
 VisualScriptEngineSingleton::VisualScriptEngineSingleton() {
@@ -2531,7 +3010,7 @@ String VisualScriptCustomNode::get_category() const {
 	if (get_script_instance() && get_script_instance()->has_method("_get_category")) {
 		return get_script_instance()->call("_get_category");
 	}
-	return "custom";
+	return "Custom";
 }
 
 class VisualScriptNodeInstanceCustomNode : public VisualScriptNodeInstance {
@@ -3641,6 +4120,14 @@ VisualScriptDeconstruct::VisualScriptDeconstruct() {
 	type = Variant::NIL;
 }
 
+template <Variant::Type T>
+static Ref<VisualScriptNode> create_node_deconst_typed(const String &p_name) {
+	Ref<VisualScriptDeconstruct> node;
+	node.instance();
+	node->set_deconstruct_type(T);
+	return node;
+}
+
 void register_visual_script_nodes() {
 
 	VisualScriptLanguage::singleton->add_register_func("data/set_variable", create_node_generic<VisualScriptVariableSet>);
@@ -3698,7 +4185,17 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("operators/logic/in", create_op_node<Variant::OP_IN>);
 	VisualScriptLanguage::singleton->add_register_func("operators/logic/select", create_node_generic<VisualScriptSelect>);
 
-	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct", create_node_generic<VisualScriptDeconstruct>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::VECTOR2), create_node_deconst_typed<Variant::Type::VECTOR2>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::VECTOR3), create_node_deconst_typed<Variant::Type::VECTOR3>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::COLOR), create_node_deconst_typed<Variant::Type::COLOR>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::RECT2), create_node_deconst_typed<Variant::Type::RECT2>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::TRANSFORM2D), create_node_deconst_typed<Variant::Type::TRANSFORM2D>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::PLANE), create_node_deconst_typed<Variant::Type::PLANE>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::QUAT), create_node_deconst_typed<Variant::Type::QUAT>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::AABB), create_node_deconst_typed<Variant::Type::AABB>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::BASIS), create_node_deconst_typed<Variant::Type::BASIS>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::TRANSFORM), create_node_deconst_typed<Variant::Type::TRANSFORM>);
+	VisualScriptLanguage::singleton->add_register_func("functions/compose_array", create_node_generic<VisualScriptComposeArray>);
 
 	for (int i = 1; i < Variant::VARIANT_MAX; i++) {
 

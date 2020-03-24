@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,8 @@
 #include "surface_tool.h"
 
 #include <stdlib.h>
+
+Mesh::ConvexDecompositionFunc Mesh::convex_composition_function = NULL;
 
 Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 
@@ -73,6 +75,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 			continue;
 
 		Array a = surface_get_arrays(i);
+		ERR_FAIL_COND_V(a.empty(), Ref<TriangleMesh>());
 
 		int vc = surface_get_array_len(i);
 		PoolVector<Vector3> vertices = a[ARRAY_VERTEX];
@@ -96,7 +99,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 		}
 	}
 
-	facesw = PoolVector<Vector3>::Write();
+	facesw.release();
 
 	triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
 	triangle_mesh->create(faces);
@@ -232,6 +235,7 @@ Ref<Shape> Mesh::create_convex_shape() const {
 	for (int i = 0; i < get_surface_count(); i++) {
 
 		Array a = surface_get_arrays(i);
+		ERR_FAIL_COND_V(a.empty(), Ref<ConvexPolygonShape>());
 		PoolVector<Vector3> v = a[ARRAY_VERTEX];
 		vertices.append_array(v);
 	}
@@ -271,6 +275,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			continue;
 
 		Array a = surface_get_arrays(i);
+		ERR_FAIL_COND_V(a.empty(), Ref<ArrayMesh>());
 
 		if (i == 0) {
 			arrays = a;
@@ -376,6 +381,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 		PoolVector<Vector3>::Write r = vertices.write();
 
 		if (indices.size()) {
+			ERR_FAIL_COND_V(indices.size() % 3 != 0, Ref<ArrayMesh>());
 			vc = indices.size();
 			ir = indices.write();
 			has_indices = true;
@@ -434,7 +440,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			r[i] = t;
 		}
 
-		r = PoolVector<Vector3>::Write();
+		r.release();
 		arrays[ARRAY_VERTEX] = vertices;
 
 		if (!has_indices) {
@@ -450,7 +456,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 				iw[j + 2] = j + 1;
 			}
 
-			iw = PoolVector<int>::Write();
+			iw.release();
 			arrays[ARRAY_INDEX] = new_indices;
 
 		} else {
@@ -459,7 +465,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 				SWAP(ir[j + 1], ir[j + 2]);
 			}
-			ir = PoolVector<int>::Write();
+			ir.release();
 			arrays[ARRAY_INDEX] = indices;
 		}
 	}
@@ -481,12 +487,14 @@ void Mesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &Mesh::set_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &Mesh::get_lightmap_size_hint);
+	ClassDB::bind_method(D_METHOD("get_aabb"), &Mesh::get_aabb);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
 
 	ClassDB::bind_method(D_METHOD("get_surface_count"), &Mesh::get_surface_count);
 	ClassDB::bind_method(D_METHOD("surface_get_arrays", "surf_idx"), &Mesh::surface_get_arrays);
 	ClassDB::bind_method(D_METHOD("surface_get_blend_shape_arrays", "surf_idx"), &Mesh::surface_get_blend_shape_arrays);
+	ClassDB::bind_method(D_METHOD("surface_set_material", "surf_idx", "material"), &Mesh::surface_set_material);
 	ClassDB::bind_method(D_METHOD("surface_get_material", "surf_idx"), &Mesh::surface_get_material);
 
 	BIND_ENUM_CONSTANT(PRIMITIVE_POINTS);
@@ -541,6 +549,49 @@ void Mesh::_bind_methods() {
 void Mesh::clear_cache() const {
 	triangle_mesh.unref();
 	debug_lines.clear();
+}
+
+Vector<Ref<Shape> > Mesh::convex_decompose() const {
+
+	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape> >());
+
+	PoolVector<Face3> faces = get_faces();
+	Vector<Face3> f3;
+	f3.resize(faces.size());
+	PoolVector<Face3>::Read f = faces.read();
+	for (int i = 0; i < f3.size(); i++) {
+		f3.write[i] = f[i];
+	}
+
+	Vector<Vector<Face3> > decomposed = convex_composition_function(f3);
+
+	Vector<Ref<Shape> > ret;
+
+	for (int i = 0; i < decomposed.size(); i++) {
+		Set<Vector3> points;
+		for (int j = 0; j < decomposed[i].size(); j++) {
+			points.insert(decomposed[i][j].vertex[0]);
+			points.insert(decomposed[i][j].vertex[1]);
+			points.insert(decomposed[i][j].vertex[2]);
+		}
+
+		PoolVector<Vector3> convex_points;
+		convex_points.resize(points.size());
+		{
+			PoolVector<Vector3>::Write w = convex_points.write();
+			int idx = 0;
+			for (Set<Vector3>::Element *E = points.front(); E; E = E->next()) {
+				w[idx++] = E->get();
+			}
+		}
+
+		Ref<ConvexPolygonShape> shape;
+		shape.instance();
+		shape->set_points(convex_points);
+		ret.push_back(shape);
+	}
+
+	return ret;
 }
 
 Mesh::Mesh() {
@@ -837,10 +888,7 @@ int ArrayMesh::get_surface_count() const {
 
 void ArrayMesh::add_blend_shape(const StringName &p_name) {
 
-	if (surfaces.size()) {
-		ERR_EXPLAIN("Can't add a shape key count if surfaces are already created.");
-		ERR_FAIL_COND(surfaces.size());
-	}
+	ERR_FAIL_COND_MSG(surfaces.size(), "Can't add a shape key count if surfaces are already created.");
 
 	StringName name = p_name;
 
@@ -868,10 +916,7 @@ StringName ArrayMesh::get_blend_shape_name(int p_index) const {
 }
 void ArrayMesh::clear_blend_shapes() {
 
-	if (surfaces.size()) {
-		ERR_EXPLAIN("Can't set shape key count if surfaces are already created.");
-		ERR_FAIL_COND(surfaces.size());
-	}
+	ERR_FAIL_COND_MSG(surfaces.size(), "Can't set shape key count if surfaces are already created.");
 
 	blend_shapes.clear();
 }
@@ -1063,8 +1108,7 @@ struct ArrayMeshLightmapSurface {
 Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texel_size) {
 
 	ERR_FAIL_COND_V(!array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
-	ERR_EXPLAIN("Can't unwrap mesh with blend shapes");
-	ERR_FAIL_COND_V(blend_shapes.size() != 0, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
 
 	Vector<float> vertices;
 	Vector<float> normals;
@@ -1078,15 +1122,9 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 		ArrayMeshLightmapSurface s;
 		s.primitive = surface_get_primitive_type(i);
 
-		if (s.primitive != Mesh::PRIMITIVE_TRIANGLES) {
-			ERR_EXPLAIN("Only triangles are supported for lightmap unwrap");
-			ERR_FAIL_V(ERR_UNAVAILABLE);
-		}
+		ERR_FAIL_COND_V_MSG(s.primitive != Mesh::PRIMITIVE_TRIANGLES, ERR_UNAVAILABLE, "Only triangles are supported for lightmap unwrap.");
 		s.format = surface_get_format(i);
-		if (!(s.format & ARRAY_FORMAT_NORMAL)) {
-			ERR_EXPLAIN("Normals are required for lightmap unwrap");
-			ERR_FAIL_V(ERR_UNAVAILABLE);
-		}
+		ERR_FAIL_COND_V_MSG(!(s.format & ARRAY_FORMAT_NORMAL), ERR_UNAVAILABLE, "Normals are required for lightmap unwrap.");
 
 		Array arrays = surface_get_arrays(i);
 		s.material = surface_get_material(i);
@@ -1260,7 +1298,6 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_get_array_index_len", "surf_idx"), &ArrayMesh::surface_get_array_index_len);
 	ClassDB::bind_method(D_METHOD("surface_get_format", "surf_idx"), &ArrayMesh::surface_get_format);
 	ClassDB::bind_method(D_METHOD("surface_get_primitive_type", "surf_idx"), &ArrayMesh::surface_get_primitive_type);
-	ClassDB::bind_method(D_METHOD("surface_set_material", "surf_idx", "material"), &ArrayMesh::surface_set_material);
 	ClassDB::bind_method(D_METHOD("surface_find_by_name", "name"), &ArrayMesh::surface_find_by_name);
 	ClassDB::bind_method(D_METHOD("surface_set_name", "surf_idx", "name"), &ArrayMesh::surface_set_name);
 	ClassDB::bind_method(D_METHOD("surface_get_name", "surf_idx"), &ArrayMesh::surface_get_name);

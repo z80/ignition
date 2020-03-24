@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -105,10 +105,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 	const uint8_t *buf = p_buffer;
 	int len = p_len;
 
-	if (len < 4) {
-
-		ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-	}
+	ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 
 	uint32_t type = decode_uint32(buf);
 
@@ -380,11 +377,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		/*case Variant::RESOURCE: {
-
-			ERR_EXPLAIN("Can't marshallize resources");
-			ERR_FAIL_V(ERR_INVALID_DATA); //no, i'm sorry, no go
-		} break;*/
 		case Variant::_RID: {
 
 			r_variant = RID();
@@ -486,7 +478,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 				int used;
 				Error err = decode_variant(key, buf, len, &used, p_allow_objects);
-				ERR_FAIL_COND_V(err, err);
+				ERR_FAIL_COND_V_MSG(err != OK, err, "Error when trying to decode Variant.");
 
 				buf += used;
 				len -= used;
@@ -495,7 +487,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				}
 
 				err = decode_variant(value, buf, len, &used, p_allow_objects);
-				ERR_FAIL_COND_V(err, err);
+				ERR_FAIL_COND_V_MSG(err != OK, err, "Error when trying to decode Variant.");
 
 				buf += used;
 				len -= used;
@@ -530,7 +522,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				int used = 0;
 				Variant v;
 				Error err = decode_variant(v, buf, len, &used, p_allow_objects);
-				ERR_FAIL_COND_V(err, err);
+				ERR_FAIL_COND_V_MSG(err != OK, err, "Error when trying to decode Variant.");
 				buf += used;
 				len -= used;
 				varr.push_back(v);
@@ -561,8 +553,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 					w[i] = buf[i];
 				}
-
-				w = PoolVector<uint8_t>::Write();
 			}
 
 			r_variant = data;
@@ -593,8 +583,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 					w[i] = decode_uint32(&buf[i * 4]);
 				}
-
-				w = PoolVector<int>::Write();
 			}
 			r_variant = Variant(data);
 			if (r_len) {
@@ -621,8 +609,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 					w[i] = decode_float(&buf[i * 4]);
 				}
-
-				w = PoolVector<float>::Write();
 			}
 			r_variant = data;
 
@@ -686,8 +672,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 				if (r_len)
 					(*r_len) += adv;
-				len -= adv;
-				buf += adv;
 			}
 
 			r_variant = varray;
@@ -724,8 +708,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 				if (r_len)
 					(*r_len) += adv;
-				len -= adv;
-				buf += adv;
 			}
 
 			r_variant = varray;
@@ -763,14 +745,14 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 				if (r_len)
 					(*r_len) += adv;
-				len -= adv;
-				buf += adv;
 			}
 
 			r_variant = carray;
 
 		} break;
-		default: { ERR_FAIL_V(ERR_BUG); }
+		default: {
+			ERR_FAIL_V(ERR_BUG);
+		}
 	}
 
 	return OK;
@@ -821,11 +803,24 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 		} break;
 		case Variant::OBJECT: {
+#ifdef DEBUG_ENABLED
+			// Test for potential wrong values sent by the debugger when it breaks.
+			Object *obj = p_variant;
+			if (!obj || !ObjectDB::instance_validate(obj)) {
+				// Object is invalid, send a NULL instead.
+				if (buf) {
+					encode_uint32(Variant::NIL, buf);
+				}
+				r_len += 4;
+				return OK;
+			}
+#endif // DEBUG_ENABLED
 			if (!p_full_objects) {
 				flags |= ENCODE_FLAG_OBJECT_AS_ID;
 			}
 		} break;
-		default: {} // nothing to do at this stage
+		default: {
+		} // nothing to do at this stage
 	}
 
 	if (buf) {
@@ -1078,11 +1073,6 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * 4;
 
 		} break;
-		/*case Variant::RESOURCE: {
-
-			ERR_EXPLAIN("Can't marshallize resources");
-			ERR_FAIL_V(ERR_INVALID_DATA); //no, i'm sorry, no go
-		} break;*/
 		case Variant::_RID: {
 
 		} break;
@@ -1094,7 +1084,6 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				if (!obj) {
 					if (buf) {
 						encode_uint32(0, buf);
-						buf += 4;
 					}
 					r_len += 4;
 
@@ -1391,7 +1380,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * 4 * len;
 
 		} break;
-		default: { ERR_FAIL_V(ERR_BUG); }
+		default: {
+			ERR_FAIL_V(ERR_BUG);
+		}
 	}
 
 	return OK;

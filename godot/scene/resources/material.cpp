@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,19 @@
 
 #include "material.h"
 
+#include "core/engine.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 #include "scene/scene_string_names.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 
-	ERR_FAIL_COND(p_pass == this);
+	for (Ref<Material> pass_child = p_pass; pass_child != NULL; pass_child = pass_child->get_next_pass()) {
+		ERR_FAIL_COND_MSG(pass_child == this, "Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
+	}
 
 	if (next_pass == p_pass)
 		return;
@@ -185,7 +193,10 @@ Variant ShaderMaterial::property_get_revert(const String &p_name) {
 
 void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 
-	if (shader.is_valid()) {
+	// Only connect/disconnect the signal when running in the editor.
+	// This can be a slow operation, and `_change_notify()` (which is called by `_shader_changed()`)
+	// does nothing in non-editor builds anyway. See GH-34741 for details.
+	if (shader.is_valid() && Engine::get_singleton()->is_editor_hint()) {
 		shader->disconnect("changed", this, "_shader_changed");
 	}
 
@@ -194,7 +205,10 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 	RID rid;
 	if (shader.is_valid()) {
 		rid = shader->get_rid();
-		shader->connect("changed", this, "_shader_changed");
+
+		if (Engine::get_singleton()->is_editor_hint()) {
+			shader->connect("changed", this, "_shader_changed");
+		}
 	}
 
 	VS::get_singleton()->material_set_shader(_get_material(), rid);
@@ -236,6 +250,12 @@ void ShaderMaterial::_bind_methods() {
 
 void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 
+#ifdef TOOLS_ENABLED
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+#else
+	const String quote_style = "\"";
+#endif
+
 	String f = p_function.operator String();
 	if ((f == "get_shader_param" || f == "set_shader_param") && p_idx == 0) {
 
@@ -243,7 +263,7 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 			List<PropertyInfo> pl;
 			shader->get_param_list(&pl);
 			for (List<PropertyInfo>::Element *E = pl.front(); E; E = E->next()) {
-				r_options->push_back("\"" + E->get().name.replace_first("shader_param/", "") + "\"");
+				r_options->push_back(quote_style + E->get().name.replace_first("shader_param/", "") + quote_style);
 			}
 		}
 	}
@@ -458,6 +478,9 @@ void SpatialMaterial::_update_shader() {
 	if (flags[FLAG_ENSURE_CORRECT_NORMALS]) {
 		code += ",ensure_correct_normals";
 	}
+	if (flags[FLAG_USE_SHADOW_TO_OPACITY]) {
+		code += ",shadow_to_opacity";
+	}
 	code += ";\n";
 
 	code += "uniform vec4 albedo : hint_color;\n";
@@ -481,10 +504,16 @@ void SpatialMaterial::_update_shader() {
 	}
 	code += "uniform float roughness : hint_range(0,1);\n";
 	code += "uniform float point_size : hint_range(0,128);\n";
-	code += "uniform sampler2D texture_metallic : hint_white;\n";
-	code += "uniform vec4 metallic_texture_channel;\n";
-	code += "uniform sampler2D texture_roughness : hint_white;\n";
-	code += "uniform vec4 roughness_texture_channel;\n";
+
+	if (textures[TEXTURE_METALLIC] != NULL) {
+		code += "uniform sampler2D texture_metallic : hint_white;\n";
+		code += "uniform vec4 metallic_texture_channel;\n";
+	}
+
+	if (textures[TEXTURE_ROUGHNESS] != NULL) {
+		code += "uniform sampler2D texture_roughness : hint_white;\n";
+		code += "uniform vec4 roughness_texture_channel;\n";
+	}
 	if (billboard_mode == BILLBOARD_PARTICLES) {
 		code += "uniform int particles_anim_h_frames;\n";
 		code += "uniform int particles_anim_v_frames;\n";
@@ -673,9 +702,9 @@ void SpatialMaterial::_update_shader() {
 		code += "\tTANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.z);\n";
 		code += "\tTANGENT = normalize(TANGENT);\n";
 
-		code += "\tBINORMAL = vec3(0.0,1.0,0.0) * abs(NORMAL.x);\n";
-		code += "\tBINORMAL+= vec3(0.0,0.0,-1.0) * abs(NORMAL.y);\n";
-		code += "\tBINORMAL+= vec3(0.0,1.0,0.0) * abs(NORMAL.z);\n";
+		code += "\tBINORMAL = vec3(0.0,-1.0,0.0) * abs(NORMAL.x);\n";
+		code += "\tBINORMAL+= vec3(0.0,0.0,1.0) * abs(NORMAL.y);\n";
+		code += "\tBINORMAL+= vec3(0.0,-1.0,0.0) * abs(NORMAL.z);\n";
 		code += "\tBINORMAL = normalize(BINORMAL);\n";
 	}
 
@@ -775,20 +804,30 @@ void SpatialMaterial::_update_shader() {
 	if (flags[FLAG_ALBEDO_FROM_VERTEX_COLOR]) {
 		code += "\talbedo_tex *= COLOR;\n";
 	}
-
 	code += "\tALBEDO = albedo.rgb * albedo_tex.rgb;\n";
-	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-		code += "\tfloat metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);\n";
+
+	if (textures[TEXTURE_METALLIC] != NULL) {
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tfloat metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);\n";
+		} else {
+			code += "\tfloat metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);\n";
+		}
+		code += "\tMETALLIC = metallic_tex * metallic;\n";
 	} else {
-		code += "\tfloat metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);\n";
+		code += "\tMETALLIC = metallic;\n";
 	}
-	code += "\tMETALLIC = metallic_tex * metallic;\n";
-	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-		code += "\tfloat roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);\n";
+
+	if (textures[TEXTURE_ROUGHNESS] != NULL) {
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tfloat roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);\n";
+		} else {
+			code += "\tfloat roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);\n";
+		}
+		code += "\tROUGHNESS = roughness_tex * roughness;\n";
 	} else {
-		code += "\tfloat roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);\n";
+		code += "\tROUGHNESS = roughness;\n";
 	}
-	code += "\tROUGHNESS = roughness_tex * roughness;\n";
+
 	code += "\tSPECULAR = specular;\n";
 
 	if (features[FEATURE_NORMAL_MAPPING]) {
@@ -839,7 +878,7 @@ void SpatialMaterial::_update_shader() {
 		code += "\tALBEDO *= 1.0 - ref_amount;\n";
 		code += "\tALPHA = 1.0;\n";
 
-	} else if (features[FEATURE_TRANSPARENT] || flags[FLAG_USE_ALPHA_SCISSOR] || (distance_fade == DISTANCE_FADE_PIXEL_ALPHA) || proximity_fade_enabled) {
+	} else if (features[FEATURE_TRANSPARENT] || flags[FLAG_USE_ALPHA_SCISSOR] || flags[FLAG_USE_SHADOW_TO_OPACITY] || (distance_fade == DISTANCE_FADE_PIXEL_ALPHA) || proximity_fade_enabled) {
 		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
 	}
 
@@ -1339,7 +1378,7 @@ void SpatialMaterial::set_flag(Flags p_flag, bool p_enabled) {
 		return;
 
 	flags[p_flag] = p_enabled;
-	if (p_flag == FLAG_USE_ALPHA_SCISSOR || p_flag == FLAG_UNSHADED) {
+	if ((p_flag == FLAG_USE_ALPHA_SCISSOR) || (p_flag == FLAG_UNSHADED) || (p_flag == FLAG_USE_SHADOW_TO_OPACITY)) {
 		_change_notify();
 	}
 	_queue_shader_change();
@@ -1374,6 +1413,8 @@ void SpatialMaterial::set_texture(TextureParam p_param, const Ref<Texture> &p_te
 	textures[p_param] = p_texture;
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
+	_change_notify();
+	_queue_shader_change();
 }
 
 Ref<Texture> SpatialMaterial::get_texture(TextureParam p_param) const {
@@ -1739,6 +1780,7 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_roughness_texture_channel()
 
 void SpatialMaterial::set_ao_texture_channel(TextureChannel p_channel) {
 
+	ERR_FAIL_INDEX(p_channel, 5);
 	ao_texture_channel = p_channel;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->ao_texture_channel, _get_texture_mask(p_channel));
 }
@@ -1749,6 +1791,7 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_ao_texture_channel() const 
 
 void SpatialMaterial::set_refraction_texture_channel(TextureChannel p_channel) {
 
+	ERR_FAIL_INDEX(p_channel, 5);
 	refraction_texture_channel = p_channel;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->refraction_texture_channel, _get_texture_mask(p_channel));
 }
@@ -1757,7 +1800,7 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_refraction_texture_channel(
 	return refraction_texture_channel;
 }
 
-RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass) {
+RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y) {
 
 	int version = 0;
 	if (p_shaded)
@@ -1770,6 +1813,10 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 		version |= 8;
 	if (p_double_sided)
 		version |= 16;
+	if (p_billboard)
+		version |= 32;
+	if (p_billboard_y)
+		version |= 64;
 
 	if (materials_for_2d[version].is_valid()) {
 		return materials_for_2d[version]->get_rid();
@@ -1785,6 +1832,10 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 	material->set_flag(FLAG_SRGB_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	material->set_flag(FLAG_USE_ALPHA_SCISSOR, p_cut_alpha);
+	if (p_billboard || p_billboard_y) {
+		material->set_flag(FLAG_BILLBOARD_KEEP_SCALE, true);
+		material->set_billboard_mode(p_billboard_y ? BILLBOARD_FIXED_Y : BILLBOARD_ENABLED);
+	}
 
 	materials_for_2d[version] = material;
 
@@ -2050,6 +2101,7 @@ void SpatialMaterial::_bind_methods() {
 
 	ADD_GROUP("Flags", "flags_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_transparent"), "set_feature", "get_feature", FEATURE_TRANSPARENT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_use_shadow_to_opacity"), "set_flag", "get_flag", FLAG_USE_SHADOW_TO_OPACITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_unshaded"), "set_flag", "get_flag", FLAG_UNSHADED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_vertex_lighting"), "set_flag", "get_flag", FLAG_USE_VERTEX_LIGHTING);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_no_depth_test"), "set_flag", "get_flag", FLAG_DISABLE_DEPTH_TEST);
@@ -2075,7 +2127,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard"), "set_billboard_mode", "get_billboard_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "params_billboard_keep_scale"), "set_flag", "get_flag", FLAG_BILLBOARD_KEEP_SCALE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "params_grow"), "set_grow_enabled", "is_grow_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_grow_amount", PROPERTY_HINT_RANGE, "-16,10,0.01"), "set_grow", "get_grow");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_grow_amount", PROPERTY_HINT_RANGE, "-16,16,0.001"), "set_grow", "get_grow");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "params_use_alpha_scissor"), "set_flag", "get_flag", FLAG_USE_ALPHA_SCISSOR);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
 	ADD_GROUP("Particles Anim", "particles_anim_");
@@ -2101,7 +2153,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_GROUP("Emission", "emission_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_enabled"), "set_feature", "get_feature", FEATURE_EMISSION);
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_emission", "get_emission");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_emission_energy", "get_emission_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_emission_energy", "get_emission_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_operator", PROPERTY_HINT_ENUM, "Add,Multiply"), "set_emission_operator", "get_emission_operator");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_on_uv2"), "set_flag", "get_flag", FLAG_EMISSION_ON_UV2);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "emission_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_EMISSION);
@@ -2183,11 +2235,11 @@ void SpatialMaterial::_bind_methods() {
 
 	ADD_GROUP("Proximity Fade", "proximity_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enable"), "set_proximity_fade", "is_proximity_fade_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_proximity_fade_distance", "get_proximity_fade_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_proximity_fade_distance", "get_proximity_fade_distance");
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
 
 	BIND_ENUM_CONSTANT(TEXTURE_ALBEDO);
 	BIND_ENUM_CONSTANT(TEXTURE_METALLIC);
@@ -2256,6 +2308,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_DONT_RECEIVE_SHADOWS);
 	BIND_ENUM_CONSTANT(FLAG_DISABLE_AMBIENT_LIGHT);
 	BIND_ENUM_CONSTANT(FLAG_ENSURE_CORRECT_NORMALS);
+	BIND_ENUM_CONSTANT(FLAG_USE_SHADOW_TO_OPACITY);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -445,6 +445,10 @@ Error ResourceInteractiveLoaderText::poll() {
 		} else {
 
 			resource_cache.push_back(res);
+#ifdef TOOLS_ENABLED
+			//remember ID for saving
+			res->set_id_for_path(local_path, index);
+#endif
 		}
 
 		ExtResource er;
@@ -1221,10 +1225,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderText::load_interactive(const 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (err != OK) {
-
-		ERR_FAIL_COND_V(err != OK, Ref<ResourceInteractiveLoader>());
-	}
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<ResourceInteractiveLoader>(), "Cannot open file '" + p_path + "'.");
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
 	String path = p_original_path != "" ? p_original_path : p_path;
@@ -1320,13 +1321,10 @@ Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path,
 	Error err;
 	FileAccess *f = FileAccess::open(p_src_path, FileAccess::READ, &err);
 
-	if (err != OK) {
-
-		ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
-	}
+	ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_OPEN, "Cannot open file '" + p_src_path + "'.");
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
-	String path = p_src_path;
+	const String &path = p_src_path;
 	ria->local_path = ProjectSettings::get_singleton()->localize_path(path);
 	ria->res_path = ria->local_path;
 	//ria->set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
@@ -1355,7 +1353,7 @@ String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
 
 	if (external_resources.has(res)) {
 
-		return "ExtResource( " + itos(external_resources[res] + 1) + " )";
+		return "ExtResource( " + itos(external_resources[res]) + " )";
 	} else {
 
 		if (internal_resources.has(res)) {
@@ -1368,13 +1366,10 @@ String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
 			String path = relative_paths ? local_path.path_to_file(res->get_path()) : res->get_path();
 			return "Resource( \"" + path + "\" )";
 		} else {
-			ERR_EXPLAIN("Resource was not pre cached for the resource section, bug?");
-			ERR_FAIL_V("null");
+			ERR_FAIL_V_MSG("null", "Resource was not pre cached for the resource section, bug?");
 			//internal resource
 		}
 	}
-
-	return "null";
 }
 
 void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, bool p_main) {
@@ -1443,7 +1438,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 			int len = varray.size();
 			for (int i = 0; i < len; i++) {
 
-				Variant v = varray.get(i);
+				const Variant &v = varray.get(i);
 				_find_resources(v);
 			}
 
@@ -1459,22 +1454,9 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				_find_resources(v);
 			}
 		} break;
-		default: {}
-	}
-}
-
-static String _valprop(const String &p_name) {
-
-	// Escape and quote strings with extended ASCII or further Unicode characters
-	// as well as '"', '=' or ' ' (32)
-	const CharType *cstr = p_name.c_str();
-	for (int i = 0; cstr[i]; i++) {
-		if (cstr[i] == '=' || cstr[i] == '"' || cstr[i] < 33 || cstr[i] > 126) {
-			return "\"" + p_name.c_escape_multiline() + "\"";
+		default: {
 		}
 	}
-	// Keep as is
-	return p_name;
 }
 
 Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
@@ -1485,7 +1467,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 	Error err;
 	f = FileAccess::open(p_path, FileAccess::WRITE, &err);
-	ERR_FAIL_COND_V(err, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(err, ERR_CANT_OPEN, "Cannot save file '" + p_path + "'.");
 	FileAccessRef _fref(f);
 
 	local_path = ProjectSettings::get_singleton()->localize_path(p_path);
@@ -1515,8 +1497,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		}
 	}
 
-	ERR_FAIL_COND_V(err != OK, err);
-
 	{
 		String title = packed_scene.is_valid() ? "[gd_scene " : "[gd_resource ";
 		if (packed_scene.is_null())
@@ -1538,18 +1518,58 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		f->store_line("]\n"); //one empty line
 	}
 
-	Vector<RES> sorted_er;
-	sorted_er.resize(external_resources.size());
+#ifdef TOOLS_ENABLED
+	//keep order from cached ids
+	Set<int> cached_ids_found;
+	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
+		int cached_id = E->key()->get_id_for_path(local_path);
+		if (cached_id < 0 || cached_ids_found.has(cached_id)) {
+			E->get() = -1; //reset
+		} else {
+			E->get() = cached_id;
+			cached_ids_found.insert(cached_id);
+		}
+	}
+	//create IDs for non cached resources
+	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
+		if (cached_ids_found.has(E->get())) { //already cached, go on
+			continue;
+		}
+
+		int attempt = 1; //start from one, more readable format
+		while (cached_ids_found.has(attempt)) {
+			attempt++;
+		}
+
+		cached_ids_found.insert(attempt);
+		E->get() = attempt;
+		//update also in resource
+		Ref<Resource> res = E->key();
+		res->set_id_for_path(local_path, attempt);
+	}
+#else
+	//make sure to start from one, as it makes format more readable
+	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
+		E->get() = E->get() + 1;
+	}
+#endif
+
+	Vector<ResourceSort> sorted_er;
 
 	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
 
-		sorted_er.write[E->get()] = E->key();
+		ResourceSort rs;
+		rs.resource = E->key();
+		rs.index = E->get();
+		sorted_er.push_back(rs);
 	}
 
-	for (int i = 0; i < sorted_er.size(); i++) {
-		String p = sorted_er[i]->get_path();
+	sorted_er.sort();
 
-		f->store_string("[ext_resource path=\"" + p + "\" type=\"" + sorted_er[i]->get_save_class() + "\" id=" + itos(i + 1) + "]\n"); //bundled
+	for (int i = 0; i < sorted_er.size(); i++) {
+		String p = sorted_er[i].resource->get_path();
+
+		f->store_string("[ext_resource path=\"" + p + "\" type=\"" + sorted_er[i].resource->get_save_class() + "\" id=" + itos(sorted_er[i].index) + "]\n"); //bundled
 	}
 
 	if (external_resources.size())
@@ -1641,7 +1661,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 				String vars;
 				VariantWriter::write_to_string(value, vars, _write_resources, this);
-				f->store_string(_valprop(name) + " = " + vars + "\n");
+				f->store_string(name.property_name_encode() + " = " + vars + "\n");
 			}
 		}
 
@@ -1679,6 +1699,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			}
 
 			if (groups.size()) {
+				groups.sort_custom<StringName::AlphCompare>();
 				String sgroups = " groups=[\n";
 				for (int j = 0; j < groups.size(); j++) {
 					sgroups += "\"" + String(groups[j]).c_escape() + "\",\n";
@@ -1712,7 +1733,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 				String vars;
 				VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, _write_resources, this);
 
-				f->store_string(_valprop(String(state->get_node_property_name(i, j))) + " = " + vars + "\n");
+				f->store_string(String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars + "\n");
 			}
 
 			if (i < state->get_node_count() - 1)

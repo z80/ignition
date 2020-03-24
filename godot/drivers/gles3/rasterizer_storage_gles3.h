@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -266,6 +266,8 @@ public:
 
 		int mipmaps;
 
+		bool is_npot_repeat_mipmap;
+
 		bool active;
 		GLuint tex_id;
 
@@ -297,6 +299,7 @@ public:
 				target(GL_TEXTURE_2D),
 				data_size(0),
 				compressed(false),
+				srgb(false),
 				total_data_size(0),
 				ignore_mipmaps(false),
 				mipmaps(0),
@@ -341,7 +344,7 @@ public:
 
 	mutable RID_Owner<Texture> texture_owner;
 
-	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool &srgb) const;
+	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool &r_srgb, bool p_force_decompress) const;
 
 	virtual RID texture_create();
 	virtual void texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, VS::TextureType p_type, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT);
@@ -357,6 +360,7 @@ public:
 	virtual uint32_t texture_get_height(RID p_texture) const;
 	virtual uint32_t texture_get_depth(RID p_texture) const;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth);
+	virtual void texture_bind(RID p_texture, uint32_t p_texture_no);
 
 	virtual void texture_set_path(RID p_texture, const String &p_path);
 	virtual String texture_get_path(RID p_texture) const;
@@ -384,6 +388,7 @@ public:
 
 		RID panorama;
 		GLuint radiance;
+		GLuint irradiance;
 		int radiance_size;
 	};
 
@@ -814,7 +819,7 @@ public:
 	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform);
 	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform);
 	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color);
-	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color);
+	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_custom_data);
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const;
 
@@ -867,7 +872,7 @@ public:
 	mutable RID_Owner<Immediate> immediate_owner;
 
 	virtual RID immediate_create();
-	virtual void immediate_begin(RID p_immediate, VS::PrimitiveType p_rimitive, RID p_texture = RID());
+	virtual void immediate_begin(RID p_immediate, VS::PrimitiveType p_primitive, RID p_texture = RID());
 	virtual void immediate_vertex(RID p_immediate, const Vector3 &p_vertex);
 	virtual void immediate_normal(RID p_immediate, const Vector3 &p_normal);
 	virtual void immediate_tangent(RID p_immediate, const Plane &p_tangent);
@@ -890,15 +895,12 @@ public:
 		SelfList<Skeleton> update_list;
 		Set<RasterizerScene::InstanceBase *> instances; //instances using skeleton
 		Transform2D base_transform_2d;
-		bool use_world_transform;
-		Transform world_transform;
 
 		Skeleton() :
 				use_2d(false),
 				size(0),
 				texture(0),
-				update_list(this),
-				use_world_transform(false) {
+				update_list(this) {
 		}
 	};
 
@@ -916,7 +918,6 @@ public:
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform);
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
-	virtual void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform);
 
 	/* Light API */
 
@@ -930,6 +931,7 @@ public:
 		bool shadow;
 		bool negative;
 		bool reverse_cull;
+		bool use_gi;
 		uint32_t cull_mask;
 		VS::LightOmniShadowMode omni_shadow_mode;
 		VS::LightOmniShadowDetail omni_shadow_detail;
@@ -951,6 +953,7 @@ public:
 	virtual void light_set_negative(RID p_light, bool p_enable);
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask);
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled);
+	virtual void light_set_use_gi(RID p_light, bool p_enabled);
 
 	virtual void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode);
 	virtual void light_omni_set_shadow_detail(RID p_light, VS::LightOmniShadowDetail p_detail);
@@ -970,6 +973,7 @@ public:
 	virtual VS::LightType light_get_type(RID p_light) const;
 	virtual float light_get_param(RID p_light, VS::LightParam p_param);
 	virtual Color light_get_color(RID p_light);
+	virtual bool light_get_use_gi(RID p_light);
 
 	virtual AABB light_get_aabb(RID p_light) const;
 	virtual uint64_t light_get_version(RID p_light) const;
@@ -1345,6 +1349,15 @@ public:
 					fbo(0) {}
 		} exposure;
 
+		// External FBO to render our final result to (mostly used for ARVR)
+		struct External {
+			GLuint fbo;
+			RID texture;
+
+			External() :
+					fbo(0) {}
+		} external;
+
 		uint64_t last_exposure_tick;
 
 		int width, height;
@@ -1366,6 +1379,7 @@ public:
 				msaa(VS::VIEWPORT_MSAA_DISABLED) {
 			exposure.fbo = 0;
 			buffers.fbo = 0;
+			external.fbo = 0;
 			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
 				flags[i] = false;
 			}
@@ -1381,8 +1395,10 @@ public:
 	void _render_target_allocate(RenderTarget *rt);
 
 	virtual RID render_target_create();
+	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y);
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height);
 	virtual RID render_target_get_texture(RID p_render_target) const;
+	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id);
 
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
 	virtual bool render_target_was_used(RID p_render_target);
@@ -1451,6 +1467,8 @@ public:
 	virtual int get_captured_render_info(VS::RenderInfo p_info);
 
 	virtual int get_render_info(VS::RenderInfo p_info);
+	virtual String get_video_adapter_name() const;
+	virtual String get_video_adapter_vendor() const;
 
 	RasterizerStorageGLES3();
 };

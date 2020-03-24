@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,10 +36,6 @@
 #include "core/os/semaphore.h"
 #include "core/simple_type.h"
 #include "core/typedefs.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 #define COMMA(N) _COMMA_##N
 #define _COMMA_0
@@ -346,7 +342,7 @@ class CommandQueueMT {
 				}
 				return NULL;
 			}
-		} else if (write_ptr >= dealloc_ptr) {
+		} else {
 			// ahead of dealloc_ptr, check that there is room
 
 			if ((COMMAND_MEM_SIZE - write_ptr) < alloc_size + sizeof(uint32_t)) {
@@ -406,8 +402,10 @@ class CommandQueueMT {
 	tryagain:
 
 		// tried to read an empty queue
-		if (read_ptr == write_ptr)
+		if (read_ptr == write_ptr) {
+			if (p_lock) unlock();
 			return false;
+		}
 
 		uint32_t size_ptr = read_ptr;
 		uint32_t size = *(uint32_t *)&command_mem[read_ptr] >> 1;

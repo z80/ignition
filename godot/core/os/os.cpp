@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,6 +49,35 @@ OS *OS::get_singleton() {
 
 uint32_t OS::get_ticks_msec() const {
 	return get_ticks_usec() / 1000;
+}
+
+String OS::get_iso_date_time(bool local) const {
+	OS::Date date = get_date(local);
+	OS::Time time = get_time(local);
+
+	String timezone;
+	if (!local) {
+		TimeZoneInfo zone = get_time_zone_info();
+		if (zone.bias >= 0) {
+			timezone = "+";
+		}
+		timezone = timezone + itos(zone.bias / 60).pad_zeros(2) + itos(zone.bias % 60).pad_zeros(2);
+	} else {
+		timezone = "Z";
+	}
+
+	return itos(date.year).pad_zeros(2) +
+		   "-" +
+		   itos(date.month).pad_zeros(2) +
+		   "-" +
+		   itos(date.day).pad_zeros(2) +
+		   "T" +
+		   itos(time.hour).pad_zeros(2) +
+		   ":" +
+		   itos(time.min).pad_zeros(2) +
+		   ":" +
+		   itos(time.sec).pad_zeros(2) +
+		   timezone;
 }
 
 uint64_t OS::get_splash_tick_msec() const {
@@ -167,29 +196,6 @@ bool OS::is_stdout_verbose() const {
 	return _verbose_stdout;
 }
 
-void OS::set_last_error(const char *p_error) {
-
-	GLOBAL_LOCK_FUNCTION
-	if (p_error == NULL)
-		p_error = "Unknown Error";
-
-	if (last_error)
-		memfree(last_error);
-	last_error = NULL;
-	int len = 0;
-	while (p_error[len++])
-		;
-
-	last_error = (char *)memalloc(len);
-	for (int i = 0; i < len; i++)
-		last_error[i] = p_error[i];
-}
-
-const char *OS::get_last_error() const {
-	GLOBAL_LOCK_FUNCTION
-	return last_error ? last_error : "";
-}
-
 void OS::dump_memory_to_file(const char *p_file) {
 
 	//Memory::dump_static_mem_to_file(p_file);
@@ -215,7 +221,7 @@ bool OS::has_virtual_keyboard() const {
 	return false;
 }
 
-void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
 }
 
 void OS::hide_virtual_keyboard() {
@@ -244,7 +250,7 @@ void OS::print_all_resources(String p_to_file) {
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
 			_OSPRF = NULL;
-			ERR_FAIL_COND(err != OK);
+			ERR_FAIL_MSG("Can't print all resources to file: " + String(p_to_file) + ".");
 		}
 	}
 
@@ -266,14 +272,6 @@ void OS::print_resources_in_use(bool p_short) {
 void OS::dump_resources_to_file(const char *p_file) {
 
 	ResourceCache::dump(p_file);
-}
-
-void OS::clear_last_error() {
-
-	GLOBAL_LOCK_FUNCTION
-	if (last_error)
-		memfree(last_error);
-	last_error = NULL;
 }
 
 void OS::set_no_window_mode(bool p_enable) {
@@ -344,6 +342,12 @@ String OS::get_cache_path() const {
 
 	return ".";
 }
+
+// Path to macOS .app bundle resources
+String OS::get_bundle_resource_dir() const {
+
+	return ".";
+};
 
 // OS specific path for user://
 String OS::get_user_data_dir() const {
@@ -462,12 +466,12 @@ void OS::_ensure_user_data_dir() {
 
 	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->make_dir_recursive(dd);
-	if (err != OK) {
-		ERR_EXPLAIN("Error attempting to create data dir: " + dd);
-	}
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Error attempting to create data dir: " + dd + ".");
 
 	memdelete(da);
+}
+
+void OS::set_native_icon(const String &p_filename) {
 }
 
 void OS::set_icon(const Ref<Image> &p_icon) {
@@ -572,6 +576,14 @@ void OS::set_use_vsync(bool p_enable) {
 bool OS::is_vsync_enabled() const {
 
 	return _use_vsync;
+}
+
+void OS::set_vsync_via_compositor(bool p_enable) {
+	_vsync_via_compositor = p_enable;
+}
+
+bool OS::is_vsync_via_compositor_enabled() const {
+	return _vsync_via_compositor;
 }
 
 OS::PowerState OS::get_power_state() {
@@ -693,7 +705,7 @@ int OS::get_audio_driver_count() const {
 const char *OS::get_audio_driver_name(int p_driver) const {
 
 	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
-	ERR_FAIL_COND_V(!driver, "");
+	ERR_FAIL_COND_V_MSG(!driver, "", "Cannot get audio driver at index '" + itos(p_driver) + "'.");
 	return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
@@ -735,7 +747,6 @@ OS::OS() {
 	void *volatile stack_bottom;
 
 	restart_on_exit = false;
-	last_error = NULL;
 	singleton = this;
 	_keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
 	low_processor_usage_mode = false;

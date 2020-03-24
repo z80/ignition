@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,12 +39,15 @@
 #include "scene/gui/tree.h"
 
 class ProjectDialog;
+class ProjectList;
 class ProjectListFilter;
 
 class ProjectManager : public Control {
+
 	GDCLASS(ProjectManager, Control);
 
 	Button *erase_btn;
+	Button *erase_missing_btn;
 	Button *open_btn;
 	Button *rename_btn;
 	Button *run_btn;
@@ -57,6 +60,7 @@ class ProjectManager : public Control {
 	FileDialog *scan_dir;
 	ConfirmationDialog *language_restart_ask;
 	ConfirmationDialog *erase_ask;
+	ConfirmationDialog *erase_missing_ask;
 	ConfirmationDialog *multi_open_ask;
 	ConfirmationDialog *multi_run_ask;
 	ConfirmationDialog *multi_scan_ask;
@@ -66,16 +70,13 @@ class ProjectManager : public Control {
 	AcceptDialog *dialog_error;
 	ProjectDialog *npdialog;
 
-	ScrollContainer *scroll;
-	VBoxContainer *scroll_children;
 	HBoxContainer *projects_hb;
 	TabContainer *tabs;
+	ProjectList *_project_list;
 
 	OptionButton *language_btn;
 	Control *gui_base;
 
-	Map<String, String> selected_list; // name -> main_scene
-	String last_clicked;
 	bool importing;
 
 	void _open_asset_library();
@@ -84,17 +85,19 @@ class ProjectManager : public Control {
 	void _run_project_confirm();
 	void _open_selected_projects();
 	void _open_selected_projects_ask();
-	void _show_project(const String &p_path);
 	void _import_project();
 	void _new_project();
 	void _rename_project();
 	void _erase_project();
+	void _erase_missing_projects();
 	void _erase_project_confirm();
+	void _erase_missing_projects_confirm();
 	void _update_project_buttons();
 	void _language_selected(int p_id);
 	void _restart_confirm();
 	void _exit_dialog();
 	void _scan_begin(const String &p_base);
+	void _global_menu_action(const Variant &p_id, const Variant &p_meta);
 
 	void _confirm_update_settings();
 
@@ -106,12 +109,13 @@ class ProjectManager : public Control {
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 
-	void _panel_draw(Node *p_hb);
-	void _panel_input(const Ref<InputEvent> &p_ev, Node *p_hb);
+	void _dim_window();
 	void _unhandled_input(const Ref<InputEvent> &p_ev);
-	void _favorite_pressed(Node *p_hb);
 	void _files_dropped(PoolStringArray p_files, int p_screen);
 	void _scan_multiple_folders(PoolStringArray p_files);
+
+	void _on_order_option_changed();
+	void _on_filter_option_changed();
 
 protected:
 	void _notification(int p_what);
@@ -126,17 +130,19 @@ class ProjectListFilter : public HBoxContainer {
 
 	GDCLASS(ProjectListFilter, HBoxContainer);
 
+public:
+	enum FilterOption {
+		FILTER_NAME,
+		FILTER_PATH,
+		FILTER_MODIFIED,
+	};
+
 private:
 	friend class ProjectManager;
 
 	OptionButton *filter_option;
 	LineEdit *search_box;
 	bool has_search_box;
-
-	enum FilterOption {
-		FILTER_NAME,
-		FILTER_PATH,
-	};
 	FilterOption _current_filter;
 
 	void _search_text_changed(const String &p_newtext);
@@ -148,6 +154,7 @@ protected:
 
 public:
 	void _setup_filters(Vector<String> options);
+	void add_filter_option();
 	void add_search_box();
 	void set_filter_size(int h_size);
 	String get_search_term();

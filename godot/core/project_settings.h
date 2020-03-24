@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,10 +34,6 @@
 #include "core/object.h"
 #include "core/os/thread_safe.h"
 #include "core/set.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class ProjectSettings : public Object {
 
@@ -97,9 +93,9 @@ protected:
 
 	static ProjectSettings *singleton;
 
-	Error _load_settings_text(const String p_path);
-	Error _load_settings_binary(const String p_path);
-	Error _load_settings_text_or_binary(const String p_text_path, const String p_bin_path);
+	Error _load_settings_text(const String &p_path);
+	Error _load_settings_binary(const String &p_path);
+	Error _load_settings_text_or_binary(const String &p_text_path, const String &p_bin_path);
 
 	Error _save_settings_text(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
 	Error _save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
@@ -108,7 +104,7 @@ protected:
 
 	void _convert_to_last_version(int p_from_version);
 
-	bool _load_resource_pack(const String &p_pack);
+	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true);
 
 	void _add_property_info_bind(const Dictionary &p_info);
 

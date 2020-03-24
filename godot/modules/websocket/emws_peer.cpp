@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,12 +68,17 @@ Error EMWSPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 			bytes_array[i] = getValue($1+i, 'i8');
 		}
 
-		if ($3) {
-			sock.send(bytes_array.buffer);
-		} else {
-			var string = new TextDecoder("utf-8").decode(bytes_array);
-			sock.send(string);
+		try {
+			if ($3) {
+				sock.send(bytes_array.buffer);
+			} else {
+				var string = new TextDecoder("utf-8").decode(bytes_array);
+				sock.send(string);
+			}
+		} catch (e) {
+			return 1;
 		}
+		return 0;
 	}, peer_sock, p_buffer, p_buffer_size, is_bin);
 	/* clang-format on */
 
@@ -131,15 +136,18 @@ void EMWSPeer::close(int p_code, String p_reason) {
 
 IP_Address EMWSPeer::get_connected_host() const {
 
-	ERR_EXPLAIN("Not supported in HTML5 export");
-	ERR_FAIL_V(IP_Address());
+	ERR_FAIL_V_MSG(IP_Address(), "Not supported in HTML5 export.");
 };
 
 uint16_t EMWSPeer::get_connected_port() const {
 
-	ERR_EXPLAIN("Not supported in HTML5 export");
-	ERR_FAIL_V(0);
+	ERR_FAIL_V_MSG(0, "Not supported in HTML5 export.");
 };
+
+void EMWSPeer::set_no_delay(bool p_enabled) {
+
+	ERR_FAIL_MSG("'set_no_delay' is not supported in HTML5 export.");
+}
 
 EMWSPeer::EMWSPeer() {
 	peer_sock = -1;

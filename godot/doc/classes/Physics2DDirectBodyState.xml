@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Physics2DDirectBodyState" inherits="Object" category="Core" version="3.1.2">
+<class name="Physics2DDirectBodyState" inherits="Object" version="3.2">
 	<brief_description>
 		Direct access object to a physics body in the [Physics2DServer].
 	</brief_description>
@@ -7,7 +7,7 @@
 		Provides direct access to a physics body in the [Physics2DServer], allowing safe changes to physics properties. This object is passed via the direct state callback of rigid/character bodies, and is intended for changing the direct state of that body. See [method RigidBody2D._integrate_forces].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.1/tutorials/physics/ray-casting.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_central_force">
@@ -56,7 +56,7 @@
 			<argument index="1" name="impulse" type="Vector2">
 			</argument>
 			<description>
-				Applies a positioned impulse to the body. An impulse is time independent! Applying an impulse every frame would result in a framerate dependent force. For this reason it should only be used when simulating one-time impacts (use the "_force" functions otherwise). The offset uses the rotation of the global coordinate system, but is centered at the object's origin.
+				Applies a positioned impulse to the body. An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise). The offset uses the rotation of the global coordinate system, but is centered at the object's origin.
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
@@ -135,7 +135,8 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of contacts this body has with other bodies. Note that by default this returns 0 unless bodies are configured to log contacts. See [member RigidBody2D.contact_monitor].
+				Returns the number of contacts this body has with other bodies.
+				[b]Note:[/b] By default, this returns 0 unless bodies are configured to monitor contacts. See [member RigidBody2D.contact_monitor].
 			</description>
 		</method>
 		<method name="get_contact_local_normal" qualifiers="const">

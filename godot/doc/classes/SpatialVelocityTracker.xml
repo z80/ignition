@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SpatialVelocityTracker" inherits="Reference" category="Core" version="3.1.2">
+<class name="SpatialVelocityTracker" inherits="Reference" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -31,7 +31,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="track_physics_step" type="bool" setter="set_track_physics_step" getter="is_tracking_physics_step">
+		<member name="track_physics_step" type="bool" setter="set_track_physics_step" getter="is_tracking_physics_step" default="false">
 		</member>
 	</members>
 	<constants>

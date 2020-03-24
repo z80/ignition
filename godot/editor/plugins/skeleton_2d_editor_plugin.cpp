@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,6 +108,7 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	options->get_popup()->add_item(TTR("Make Rest Pose (From Bones)"), MENU_OPTION_MAKE_REST);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Set Bones to Rest Pose"), MENU_OPTION_SET_REST);
+	options->set_switch_on_hover(true);
 
 	options->get_popup()->connect("id_pressed", this, "_menu_option");
 

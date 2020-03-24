@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -227,12 +227,6 @@ void Tabs::_notification(int p_what) {
 				tabs.write[i].xl_text = tr(tabs[i].text);
 			}
 			minimum_size_changed();
-			update();
-		} break;
-		case NOTIFICATION_MOUSE_EXIT: {
-			rb_hover = -1;
-			cb_hover = -1;
-			hover = -1;
 			update();
 		} break;
 		case NOTIFICATION_RESIZED: {
@@ -601,6 +595,15 @@ void Tabs::_update_cache() {
 	}
 }
 
+void Tabs::_on_mouse_exited() {
+
+	rb_hover = -1;
+	cb_hover = -1;
+	hover = -1;
+	highlight_arrow = -1;
+	update();
+}
+
 void Tabs::add_tab(const String &p_str, const Ref<Texture> &p_icon) {
 
 	Tab t;
@@ -897,6 +900,8 @@ void Tabs::ensure_tab_visible(int p_idx) {
 }
 
 Rect2 Tabs::get_tab_rect(int p_tab) const {
+
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
 	return Rect2(tabs[p_tab].ofs_cache, 0, tabs[p_tab].size_cache, get_size().height);
 }
 
@@ -951,6 +956,7 @@ void Tabs::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &Tabs::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_hover"), &Tabs::_update_hover);
+	ClassDB::bind_method(D_METHOD("_on_mouse_exited"), &Tabs::_on_mouse_exited);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &Tabs::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &Tabs::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &Tabs::get_current_tab);
@@ -1027,4 +1033,6 @@ Tabs::Tabs() {
 	hover = -1;
 	drag_to_rearrange_enabled = false;
 	tabs_rearrange_group = -1;
+
+	connect("mouse_exited", this, "_on_mouse_exited");
 }

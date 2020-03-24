@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 #include "editor/property_editor.h"
 
 class NoiseTexture : public Texture {
-	GDCLASS(NoiseTexture, Texture)
+	GDCLASS(NoiseTexture, Texture);
 
 private:
 	Ref<Image> data;
@@ -77,12 +77,12 @@ public:
 	Ref<OpenSimplexNoise> get_noise();
 
 	void set_width(int p_width);
-	void set_height(int p_hieght);
+	void set_height(int p_height);
 
 	void set_seamless(bool p_seamless);
 	bool get_seamless();
 
-	void set_as_normalmap(bool p_seamless);
+	void set_as_normalmap(bool p_as_normalmap);
 	bool is_normalmap();
 
 	void set_bump_strength(float p_bump_strength);

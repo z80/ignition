@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,15 +32,13 @@
 
 #include "core/io/resource_loader.h"
 #include "core/project_settings.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
 void ResourcePreloaderEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void ResourcePreloaderEditor::_notification(int p_what) {
-
-	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
-	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		load->set_icon(get_icon("Folder", "EditorIcons"));
@@ -293,10 +291,7 @@ bool ResourcePreloaderEditor::can_drop_data_fw(const Point2 &p_point, const Vari
 
 		Vector<String> files = d["files"];
 
-		if (files.size() == 0)
-			return false;
-
-		return true;
+		return files.size() != 0;
 	}
 	return false;
 }
@@ -444,7 +439,7 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin(EditorNode *p_node)
 
 	editor = p_node;
 	preloader_editor = memnew(ResourcePreloaderEditor);
-	preloader_editor->set_custom_minimum_size(Size2(0, 250));
+	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
 	button = editor->add_bottom_panel_item(TTR("ResourcePreloader"), preloader_editor);
 	button->hide();

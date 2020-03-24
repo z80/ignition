@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/main/viewport.h"
@@ -200,7 +201,8 @@ void AnimationTreePlayerEditor::_edit_dialog_changed() {
 			if (anim_tree->transition_node_get_current(edited_node) != edit_option->get_selected())
 				anim_tree->transition_node_set_current(edited_node, edit_option->get_selected());
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -457,7 +459,8 @@ void AnimationTreePlayerEditor::_popup_edit_dialog() {
 				edit_dialog->set_size(Size2(150, 100));
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 
@@ -509,9 +512,7 @@ void AnimationTreePlayerEditor::_draw_node(const StringName &p_node) {
 	font->draw_halign(ci, ofs + ascofs, HALIGN_CENTER, w, p_node, font_color);
 	ofs.y += h;
 
-	int count = 2; // title and name
 	int inputs = anim_tree->node_get_input_count(p_node);
-	count += inputs ? inputs : 1;
 
 	float icon_h_ofs = Math::floor((font->get_height() - slot_icon->get_height()) / 2.0) + 1;
 
@@ -555,7 +556,8 @@ void AnimationTreePlayerEditor::_draw_node(const StringName &p_node) {
 						text += "->";
 
 					break;
-				default: {}
+				default: {
+				}
 			}
 			font->draw(ci, ofs + ascofs + Point2(3, 0), text, font_color);
 
@@ -615,7 +617,7 @@ AnimationTreePlayerEditor::ClickType AnimationTreePlayerEditor::_locate_click(co
 
 	for (const List<StringName>::Element *E = order.back(); E; E = E->prev()) {
 
-		StringName node = E->get();
+		const StringName &node = E->get();
 
 		AnimationTreePlayer::NodeType type = anim_tree->node_get_type(node);
 
@@ -740,7 +742,8 @@ void AnimationTreePlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 						//open editor
 						//_node_edit_property(click_node);
 					} break;
-					default: {}
+					default: {
+					}
 				}
 			}
 			if (mb->get_button_index() == 2) {
@@ -817,7 +820,8 @@ void AnimationTreePlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 						anim_tree->node_set_position(click_node, new_pos);
 
 					} break;
-					default: {}
+					default: {
+					}
 				}
 
 				click_type = CLICK_NONE;
@@ -920,17 +924,18 @@ void AnimationTreePlayerEditor::_notification(int p_what) {
 				_draw_cos_line(source, dest, col);
 			}
 
+			const Ref<Font> f = get_font("font", "Label");
+			const Point2 status_offset = Point2(5, 25) * EDSCALE + Point2(0, f->get_ascent());
+
 			switch (anim_tree->get_last_error()) {
 
 				case AnimationTreePlayer::CONNECT_OK: {
 
-					Ref<Font> f = get_font("font", "Label");
-					f->draw(get_canvas_item(), Point2(5, 25 + f->get_ascent()), TTR("Animation tree is valid."), Color(0, 1, 0.6, 0.8));
+					f->draw(get_canvas_item(), status_offset, TTR("Animation tree is valid."), Color(0, 1, 0.6, 0.8));
 				} break;
 				default: {
 
-					Ref<Font> f = get_font("font", "Label");
-					f->draw(get_canvas_item(), Point2(5, 25 + f->get_ascent()), TTR("Animation tree is invalid."), Color(1, 0.6, 0.0, 0.8));
+					f->draw(get_canvas_item(), status_offset, TTR("Animation tree is invalid."), Color(1, 0.6, 0.0, 0.8));
 				} break;
 			}
 
@@ -1297,7 +1302,7 @@ AnimationTreePlayerEditor::AnimationTreePlayerEditor() {
 	p->connect("id_pressed", this, "_add_menu_item");
 
 	play_button = memnew(Button);
-	play_button->set_position(Point2(25, 0));
+	play_button->set_position(Point2(25, 0) * EDSCALE);
 	play_button->set_size(Point2(25, 15));
 	add_child(play_button);
 	play_button->set_toggle_mode(true);
@@ -1436,7 +1441,7 @@ AnimationTreePlayerEditorPlugin::AnimationTreePlayerEditorPlugin(EditorNode *p_n
 
 	editor = p_node;
 	anim_tree_editor = memnew(AnimationTreePlayerEditor);
-	anim_tree_editor->set_custom_minimum_size(Size2(0, 300));
+	anim_tree_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 
 	button = editor->add_bottom_panel_item(TTR("AnimationTree"), anim_tree_editor);
 	button->hide();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,13 +37,11 @@
 #include "scene/3d/light.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/gui/panel_container.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Camera;
 class SpatialEditor;
 class EditorSpatialGizmoPlugin;
+class ViewportContainer;
 
 class EditorSpatialGizmo : public SpatialGizmo {
 
@@ -61,6 +59,7 @@ public:
 		RID instance;
 		Ref<ArrayMesh> mesh;
 		Ref<Material> material;
+		Ref<SkinReference> skin_reference;
 		RID skeleton;
 		bool billboard;
 		bool unscaled;
@@ -103,11 +102,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard = false);
-	void add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard = false, const RID &p_skeleton = RID(), const Ref<Material> &p_material = Ref<Material>());
+	void add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard = false, const Color &p_modulate = Color(1, 1, 1));
+	void add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard = false, const Ref<SkinReference> &p_skin_reference = Ref<SkinReference>(), const Ref<Material> &p_material = Ref<Material>());
 	void add_collision_segments(const Vector<Vector3> &p_lines);
 	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh);
-	void add_unscaled_billboard(const Ref<Material> &p_material, float p_scale = 1);
+	void add_unscaled_billboard(const Ref<Material> &p_material, float p_scale = 1, const Color &p_modulate = Color(1, 1, 1));
 	void add_handles(const Vector<Vector3> &p_handles, const Ref<Material> &p_material, bool p_billboard = false, bool p_secondary = false);
 	void add_solid_box(Ref<Material> &p_material, Vector3 p_size, Vector3 p_position = Vector3());
 
@@ -119,7 +118,7 @@ public:
 
 	void set_spatial_node(Spatial *p_node);
 	Spatial *get_spatial_node() const { return spatial_node; }
-	EditorSpatialGizmoPlugin *get_plugin() const { return gizmo_plugin; }
+	Ref<EditorSpatialGizmoPlugin> get_plugin() const { return gizmo_plugin; }
 	Vector3 get_handle_pos(int p_idx) const;
 	bool intersect_frustum(const Camera *p_camera, const Vector<Plane> &p_frustum);
 	bool intersect_ray(Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = NULL, bool p_sec_first = false);
@@ -133,7 +132,7 @@ public:
 	virtual bool is_editable() const;
 
 	void set_hidden(bool p_hidden);
-	void set_plugin(EditorSpatialGizmoPlugin *p_gizmo);
+	void set_plugin(EditorSpatialGizmoPlugin *p_plugin);
 
 	EditorSpatialGizmo();
 	~EditorSpatialGizmo();
@@ -153,7 +152,8 @@ class SpatialEditorViewport : public Control {
 		VIEW_REAR,
 		VIEW_CENTER_TO_ORIGIN,
 		VIEW_CENTER_TO_SELECTION,
-		VIEW_ALIGN_SELECTION_WITH_VIEW,
+		VIEW_ALIGN_TRANSFORM_WITH_VIEW,
+		VIEW_ALIGN_ROTATION_WITH_VIEW,
 		VIEW_PERSPECTIVE,
 		VIEW_ENVIRONMENT,
 		VIEW_ORTHOGONAL,
@@ -176,6 +176,12 @@ public:
 		GIZMO_BASE_LAYER = 27,
 		GIZMO_EDIT_LAYER = 26,
 		GIZMO_GRID_LAYER = 25
+	};
+
+	enum NavigationScheme {
+		NAVIGATION_GODOT,
+		NAVIGATION_MAYA,
+		NAVIGATION_MODO,
 	};
 
 private:
@@ -211,6 +217,7 @@ private:
 	bool freelook_active;
 	real_t freelook_speed;
 
+	TextureRect *crosshair;
 	Label *info_label;
 	Label *fps_label;
 	Label *cinema_label;
@@ -259,12 +266,6 @@ private:
 	bool clicked_wants_append;
 
 	PopupMenu *selection_menu;
-
-	enum NavigationScheme {
-		NAVIGATION_GODOT,
-		NAVIGATION_MAYA,
-		NAVIGATION_MODO,
-	};
 
 	enum NavigationZoomStyle {
 		NAVIGATION_ZOOM_VERTICAL,
@@ -364,7 +365,7 @@ private:
 	Camera *preview;
 
 	bool previewing_cinema;
-
+	bool _is_node_locked(const Node *p_node);
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
 	void _toggle_cinema_preview(bool);
@@ -376,7 +377,7 @@ private:
 	Point2i _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const;
 
 	Vector3 _get_instance_position(const Point2 &p_pos) const;
-	static AABB _calculate_spatial_bounds(const Spatial *p_parent, const AABB p_bounds);
+	static AABB _calculate_spatial_bounds(const Spatial *p_parent, bool p_exclude_toplevel_transform = true);
 	void _create_preview(const Vector<String> &files) const;
 	void _remove_preview();
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
@@ -431,7 +432,8 @@ public:
 
 class SpatialEditorViewportContainer : public Container {
 
-	GDCLASS(SpatialEditorViewportContainer, Container)
+	GDCLASS(SpatialEditorViewportContainer, Container);
+
 public:
 	enum View {
 		VIEW_USE_1_VIEWPORT,
@@ -485,6 +487,8 @@ public:
 		TOOL_MODE_LIST_SELECT,
 		TOOL_LOCK_SELECTED,
 		TOOL_UNLOCK_SELECTED,
+		TOOL_GROUP_SELECTED,
+		TOOL_UNGROUP_SELECTED,
 		TOOL_MAX
 	};
 
@@ -492,6 +496,7 @@ public:
 
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
+		TOOL_OPT_OVERRIDE_CAMERA,
 		TOOL_OPT_MAX
 
 	};
@@ -524,7 +529,8 @@ private:
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[3], scale_gizmo[3], scale_plane_gizmo[3];
 	Ref<SpatialMaterial> gizmo_color[3];
 	Ref<SpatialMaterial> plane_gizmo_color[3];
-	Ref<SpatialMaterial> gizmo_hl;
+	Ref<SpatialMaterial> gizmo_color_hl[3];
+	Ref<SpatialMaterial> plane_gizmo_color_hl[3];
 
 	int over_gizmo_handle;
 
@@ -556,6 +562,7 @@ private:
 		MENU_TOOL_LIST_SELECT,
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_USE_SNAP,
+		MENU_TOOL_OVERRIDE_CAMERA,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
 		MENU_TRANSFORM_DIALOG,
 		MENU_VIEW_USE_1_VIEWPORT,
@@ -570,6 +577,8 @@ private:
 		MENU_VIEW_CAMERA_SETTINGS,
 		MENU_LOCK_SELECTED,
 		MENU_UNLOCK_SELECTED,
+		MENU_GROUP_SELECTED,
+		MENU_UNGROUP_SELECTED,
 		MENU_SNAP_TO_FLOOR
 	};
 
@@ -579,9 +588,6 @@ private:
 	MenuButton *transform_menu;
 	PopupMenu *gizmos_menu;
 	MenuButton *view_menu;
-
-	ToolButton *lock_button;
-	ToolButton *unlock_button;
 
 	AcceptDialog *accept;
 
@@ -610,13 +616,16 @@ private:
 	void _menu_item_pressed(int p_option);
 	void _menu_item_toggled(bool pressed, int p_option);
 	void _menu_gizmo_toggled(int p_option);
+	void _update_camera_override_button(bool p_game_running);
+	void _update_camera_override_viewport(Object *p_viewport);
 
 	HBoxContainer *hbc_menu;
 
 	void _generate_selection_box();
 	UndoRedo *undo_redo;
 
-	void _instance_scene();
+	int camera_override_viewport_id;
+
 	void _init_indicators();
 	void _update_gizmos_menu();
 	void _update_gizmos_menu_theme();
@@ -673,9 +682,9 @@ public:
 	ToolMode get_tool_mode() const { return tool_mode; }
 	bool are_local_coords_enabled() const { return tool_option_button[SpatialEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
-	float get_translate_snap() const { return snap_translate->get_text().to_double(); }
-	float get_rotate_snap() const { return snap_rotate->get_text().to_double(); }
-	float get_scale_snap() const { return snap_scale->get_text().to_double(); }
+	float get_translate_snap() const;
+	float get_rotate_snap() const;
+	float get_scale_snap() const;
 
 	Ref<ArrayMesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
 	Ref<ArrayMesh> get_move_plane_gizmo(int idx) const { return move_plane_gizmo[idx]; }
@@ -711,7 +720,7 @@ public:
 	void set_can_preview(Camera *p_preview);
 
 	SpatialEditorViewport *get_editor_viewport(int p_idx) {
-		ERR_FAIL_INDEX_V(p_idx, 4, NULL);
+		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), NULL);
 		return viewports[p_idx];
 	}
 

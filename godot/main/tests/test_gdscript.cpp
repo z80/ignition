@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -284,8 +284,14 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 				case GDScriptParser::OperatorNode::OP_BIT_XOR: {
 					txt = _parser_expr(c_node->arguments[0]) + "^" + _parser_expr(c_node->arguments[1]);
 				} break;
-				default: {}
+				default: {
+				}
 			}
+
+		} break;
+		case GDScriptParser::Node::TYPE_CAST: {
+			const GDScriptParser::CastNode *cast_node = static_cast<const GDScriptParser::CastNode *>(p_expr);
+			txt = _parser_expr(cast_node->source_node) + " as " + cast_node->cast_type.to_string();
 
 		} break;
 		case GDScriptParser::Node::TYPE_NEWLINE: {
@@ -294,14 +300,11 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 		} break;
 		default: {
 
-			String error = "Parser bug at " + itos(p_expr->line) + ", invalid expression type: " + itos(p_expr->type);
-			ERR_EXPLAIN(error);
-			ERR_FAIL_V("");
+			ERR_FAIL_V_MSG("", "Parser bug at " + itos(p_expr->line) + ", invalid expression type: " + itos(p_expr->type));
 		}
 	}
 
 	return txt;
-	//return "("+txt+")";
 }
 
 static void _parser_show_block(const GDScriptParser::BlockNode *p_block, int p_indent) {
@@ -668,6 +671,41 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 					incr += 2;
 
 				} break;
+				case GDScriptFunction::OPCODE_ASSIGN_TYPED_BUILTIN: {
+
+					txt += " assign typed builtin (";
+					txt += Variant::get_type_name((Variant::Type)code[ip + 1]);
+					txt += ") ";
+					txt += DADDR(2);
+					txt += " = ";
+					txt += DADDR(3);
+					incr += 4;
+
+				} break;
+				case GDScriptFunction::OPCODE_ASSIGN_TYPED_NATIVE: {
+					Variant className = func.get_constant(code[ip + 1]);
+					GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(className.operator Object *());
+
+					txt += " assign typed native (";
+					txt += nc->get_name().operator String();
+					txt += ") ";
+					txt += DADDR(2);
+					txt += " = ";
+					txt += DADDR(3);
+					incr += 4;
+
+				} break;
+				case GDScriptFunction::OPCODE_CAST_TO_SCRIPT: {
+
+					txt += " cast ";
+					txt += DADDR(3);
+					txt += "=";
+					txt += DADDR(1);
+					txt += " as ";
+					txt += DADDR(2);
+					incr += 4;
+
+				} break;
 				case GDScriptFunction::OPCODE_CONSTRUCT: {
 
 					Variant::Type t = Variant::Type(code[ip + 1]);
@@ -893,8 +931,7 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 			if (incr == 0) {
 
-				ERR_EXPLAIN("unhandled opcode: " + itos(code[ip]));
-				ERR_BREAK(incr == 0);
+				ERR_BREAK_MSG(true, "Unhandled opcode: " + itos(code[ip]));
 			}
 
 			ip += incr;
@@ -919,11 +956,7 @@ MainLoop *test(TestType p_type) {
 	}
 
 	FileAccess *fa = FileAccess::open(test, FileAccess::READ);
-
-	if (!fa) {
-		ERR_EXPLAIN("Could not open file: " + test);
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!fa, NULL, "Could not open file: " + test);
 
 	Vector<uint8_t> buf;
 	int flen = fa->get_len();
@@ -957,7 +990,7 @@ MainLoop *test(TestType p_type) {
 			if (tk.get_token() == GDScriptTokenizer::TK_IDENTIFIER)
 				text = "'" + tk.get_token_identifier() + "' (identifier)";
 			else if (tk.get_token() == GDScriptTokenizer::TK_CONSTANT) {
-				Variant c = tk.get_token_constant();
+				const Variant &c = tk.get_token_constant();
 				if (c.get_type() == Variant::STRING)
 					text = "\"" + String(c) + "\"";
 				else
@@ -1017,18 +1050,16 @@ MainLoop *test(TestType p_type) {
 			return NULL;
 		}
 
-		GDScript *script = memnew(GDScript);
+		Ref<GDScript> gds;
+		gds.instance();
 
 		GDScriptCompiler gdc;
-		err = gdc.compile(&parser, script);
+		err = gdc.compile(&parser, gds.ptr());
 		if (err) {
 
 			print_line("Compile Error:\n" + itos(gdc.get_error_line()) + ":" + itos(gdc.get_error_column()) + ":" + gdc.get_error());
-			memdelete(script);
 			return NULL;
 		}
-
-		Ref<GDScript> gds = Ref<GDScript>(script);
 
 		Ref<GDScript> current = gds;
 

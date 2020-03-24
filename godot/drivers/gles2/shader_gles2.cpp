@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -182,14 +182,11 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 
 #endif
 
-	int define_line_ofs = 1;
-
 	for (int j = 0; j < conditional_count; j++) {
 		bool enable = (conditional_version.version & (1 << j)) > 0;
 
 		if (enable) {
 			strings.push_back(conditional_defines[j]);
-			define_line_ofs++;
 			DEBUG_PRINT(conditional_defines[j]);
 		}
 	}
@@ -206,7 +203,6 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 
 		ERR_FAIL_COND_V(!cc, NULL);
 		v.code_version = cc->version;
-		define_line_ofs += 2;
 	}
 
 	// program

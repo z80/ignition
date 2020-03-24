@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -143,6 +143,8 @@ void Gradient::set_points(Vector<Gradient::Point> &p_points) {
 }
 
 void Gradient::set_offset(int pos, const float offset) {
+
+	ERR_FAIL_COND(pos < 0);
 	if (points.size() <= pos)
 		points.resize(pos + 1);
 	points.write[pos].offset = offset;
@@ -151,12 +153,12 @@ void Gradient::set_offset(int pos, const float offset) {
 }
 
 float Gradient::get_offset(int pos) const {
-	if (points.size() && points.size() > pos)
-		return points[pos].offset;
-	return 0; //TODO: Maybe throw some error instead?
+	ERR_FAIL_INDEX_V(pos, points.size(), 0.0);
+	return points[pos].offset;
 }
 
 void Gradient::set_color(int pos, const Color &color) {
+	ERR_FAIL_COND(pos < 0);
 	if (points.size() <= pos) {
 		points.resize(pos + 1);
 		is_sorted = false;
@@ -166,9 +168,8 @@ void Gradient::set_color(int pos, const Color &color) {
 }
 
 Color Gradient::get_color(int pos) const {
-	if (points.size() && points.size() > pos)
-		return points[pos].color;
-	return Color(0, 0, 0, 1); //TODO: Maybe throw some error instead?
+	ERR_FAIL_INDEX_V(pos, points.size(), Color());
+	return points[pos].color;
 }
 
 int Gradient::get_points_count() const {

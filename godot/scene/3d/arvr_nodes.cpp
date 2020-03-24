@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,7 +61,7 @@ String ARVRCamera::get_configuration_warning() const {
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
-		return TTR("ARVRCamera must have an ARVROrigin node as its parent");
+		return TTR("ARVRCamera must have an ARVROrigin node as its parent.");
 	};
 
 	return String();
@@ -78,19 +78,15 @@ Vector3 ARVRCamera::project_local_ray_normal(const Point2 &p_pos) const {
 		return Camera::project_local_ray_normal(p_pos);
 	}
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	};
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
 	Vector3 ray;
 
 	CameraMatrix cm = arvr_interface->get_projection_for_eye(ARVRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
-	float screen_w, screen_h;
-	cm.get_viewport_size(screen_w, screen_h);
-	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_w, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_h, -get_znear()).normalized();
+	Vector2 screen_he = cm.get_viewport_half_extents();
+	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_znear()).normalized();
 
 	return ray;
 };
@@ -106,10 +102,7 @@ Point2 ARVRCamera::unproject_position(const Vector3 &p_pos) const {
 		return Camera::unproject_position(p_pos);
 	}
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector2());
-	};
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector2(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
@@ -127,7 +120,7 @@ Point2 ARVRCamera::unproject_position(const Vector3 &p_pos) const {
 	return res;
 };
 
-Vector3 ARVRCamera::project_position(const Point2 &p_point) const {
+Vector3 ARVRCamera::project_position(const Point2 &p_point, float p_z_depth) const {
 	// get our ARVRServer
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, Vector3());
@@ -135,27 +128,23 @@ Vector3 ARVRCamera::project_position(const Point2 &p_point) const {
 	Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
 	if (arvr_interface.is_null()) {
 		// we might be in the editor or have VR turned off, just call superclass
-		return Camera::project_position(p_point);
+		return Camera::project_position(p_point, p_z_depth);
 	}
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	};
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	CameraMatrix cm = arvr_interface->get_projection_for_eye(ARVRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
 
-	Size2 vp_size;
-	cm.get_viewport_size(vp_size.x, vp_size.y);
+	Vector2 vp_he = cm.get_viewport_half_extents();
 
 	Vector2 point;
 	point.x = (p_point.x / viewport_size.x) * 2.0 - 1.0;
 	point.y = (1.0 - (p_point.y / viewport_size.y)) * 2.0 - 1.0;
-	point *= vp_size;
+	point *= vp_he;
 
-	Vector3 p(point.x, point.y, -get_znear());
+	Vector3 p(point.x, point.y, -p_z_depth);
 
 	return get_camera_transform().xform(p);
 };
@@ -233,6 +222,13 @@ void ARVRController::_notification(int p_what) {
 				} else {
 					button_states = 0;
 				};
+
+				// check for an updated mesh
+				Ref<Mesh> trackerMesh = tracker->get_mesh();
+				if (mesh != trackerMesh) {
+					mesh = trackerMesh;
+					emit_signal("mesh_updated", mesh);
+				}
 			};
 		}; break;
 		default:
@@ -257,9 +253,13 @@ void ARVRController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rumble"), &ARVRController::get_rumble);
 	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &ARVRController::set_rumble);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rumble", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_rumble", "get_rumble");
+	ADD_PROPERTY_DEFAULT("rumble", 0.0);
+
+	ClassDB::bind_method(D_METHOD("get_mesh"), &ARVRController::get_mesh);
 
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::INT, "button")));
 	ADD_SIGNAL(MethodInfo("button_release", PropertyInfo(Variant::INT, "button")));
+	ADD_SIGNAL(MethodInfo("mesh_updated", PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh")));
 };
 
 void ARVRController::set_controller_id(int p_controller_id) {
@@ -293,7 +293,8 @@ int ARVRController::get_joystick_id() const {
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
 	if (tracker == NULL) {
-		return 0;
+		// No tracker? no joystick id... (0 is our first joystick)
+		return -1;
 	};
 
 	return tracker->get_joy_id();
@@ -341,6 +342,10 @@ void ARVRController::set_rumble(real_t p_rumble) {
 	};
 };
 
+Ref<Mesh> ARVRController::get_mesh() const {
+	return mesh;
+}
+
 bool ARVRController::get_is_active() const {
 	return is_active;
 };
@@ -365,11 +370,11 @@ String ARVRController::get_configuration_warning() const {
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
-		return TTR("ARVRController must have an ARVROrigin node as its parent");
+		return TTR("ARVRController must have an ARVROrigin node as its parent.");
 	};
 
 	if (controller_id == 0) {
-		return TTR("The controller id must not be 0 or this controller will not be bound to an actual controller");
+		return TTR("The controller ID must not be 0 or this controller won't be bound to an actual controller.");
 	};
 
 	return String();
@@ -423,6 +428,13 @@ void ARVRAnchor::_notification(int p_what) {
 
 				// apply our reference frame and set our transform
 				set_transform(arvr_server->get_reference_frame() * transform);
+
+				// check for an updated mesh
+				Ref<Mesh> trackerMesh = tracker->get_mesh();
+				if (mesh != trackerMesh) {
+					mesh = trackerMesh;
+					emit_signal("mesh_updated", mesh);
+				}
 			};
 		}; break;
 		default:
@@ -441,6 +453,9 @@ void ARVRAnchor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &ARVRAnchor::get_size);
 
 	ClassDB::bind_method(D_METHOD("get_plane"), &ARVRAnchor::get_plane);
+
+	ClassDB::bind_method(D_METHOD("get_mesh"), &ARVRAnchor::get_mesh);
+	ADD_SIGNAL(MethodInfo("mesh_updated", PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh")));
 };
 
 void ARVRAnchor::set_anchor_id(int p_anchor_id) {
@@ -482,11 +497,11 @@ String ARVRAnchor::get_configuration_warning() const {
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
-		return TTR("ARVRAnchor must have an ARVROrigin node as its parent");
+		return TTR("ARVRAnchor must have an ARVROrigin node as its parent.");
 	};
 
 	if (anchor_id == 0) {
-		return TTR("The anchor id must not be 0 or this anchor will not be bound to an actual anchor");
+		return TTR("The anchor ID must not be 0 or this anchor won't be bound to an actual anchor.");
 	};
 
 	return String();
@@ -500,6 +515,10 @@ Plane ARVRAnchor::get_plane() const {
 
 	return plane;
 };
+
+Ref<Mesh> ARVRAnchor::get_mesh() const {
+	return mesh;
+}
 
 ARVRAnchor::ARVRAnchor() {
 	anchor_id = 1;
@@ -517,7 +536,7 @@ String ARVROrigin::get_configuration_warning() const {
 		return String();
 
 	if (tracked_camera == NULL)
-		return TTR("ARVROrigin requires an ARVRCamera child node");
+		return TTR("ARVROrigin requires an ARVRCamera child node.");
 
 	return String();
 };
@@ -555,6 +574,10 @@ void ARVROrigin::set_world_scale(float p_world_scale) {
 };
 
 void ARVROrigin::_notification(int p_what) {
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL(arvr_server);
+
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			set_process_internal(true);
@@ -563,10 +586,6 @@ void ARVROrigin::_notification(int p_what) {
 			set_process_internal(false);
 		}; break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			// get our ARVRServer
-			ARVRServer *arvr_server = ARVRServer::get_singleton();
-			ERR_FAIL_NULL(arvr_server);
-
 			// set our world origin to our node transform
 			arvr_server->set_world_origin(get_global_transform());
 
@@ -583,6 +602,14 @@ void ARVROrigin::_notification(int p_what) {
 		default:
 			break;
 	};
+
+	// send our notification to all active ARVR interfaces, they may need to react to it also
+	for (int i = 0; i < arvr_server->get_interface_count(); i++) {
+		Ref<ARVRInterface> interface = arvr_server->get_interface(i);
+		if (interface.is_valid() && interface->is_initialized()) {
+			interface->notification(p_what);
+		}
+	}
 };
 
 ARVROrigin::ARVROrigin() {

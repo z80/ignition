@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,12 +54,14 @@
 #include "audio/effects/audio_effect_stereo_enhance.h"
 #include "audio/effects/audio_stream_generator.h"
 #include "audio_server.h"
-#include "core/script_debugger_remote.h"
+#include "camera/camera_feed.h"
+#include "camera_server.h"
 #include "physics/physics_server_sw.h"
 #include "physics_2d/physics_2d_server_sw.h"
 #include "physics_2d/physics_2d_server_wrap_mt.h"
 #include "physics_2d_server.h"
 #include "physics_server.h"
+#include "scene/debugger/script_debugger_remote.h"
 #include "visual/shader_types.h"
 #include "visual_server.h"
 
@@ -114,6 +116,7 @@ void register_server_types() {
 	ClassDB::register_virtual_class<PhysicsServer>();
 	ClassDB::register_virtual_class<Physics2DServer>();
 	ClassDB::register_class<ARVRServer>();
+	ClassDB::register_class<CameraServer>();
 
 	shader_types = memnew(ShaderTypes);
 
@@ -169,6 +172,8 @@ void register_server_types() {
 		ClassDB::register_virtual_class<AudioEffectSpectrumAnalyzerInstance>();
 	}
 
+	ClassDB::register_class<CameraFeed>();
+
 	ClassDB::register_virtual_class<Physics2DDirectBodyState>();
 	ClassDB::register_virtual_class<Physics2DDirectSpaceState>();
 	ClassDB::register_virtual_class<Physics2DShapeQueryResult>();
@@ -208,4 +213,5 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer", PhysicsServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Physics2DServer", Physics2DServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ARVRServer", ARVRServer::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton()));
 }

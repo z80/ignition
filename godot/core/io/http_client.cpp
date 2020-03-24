@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -98,6 +98,8 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 
 void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
 
+	ERR_FAIL_COND_MSG(p_connection.is_null(), "Connection is not a reference to a valid StreamPeer object.");
+
 	close();
 	connection = p_connection;
 	status = STATUS_CONNECTED;
@@ -171,6 +173,7 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 	}
 
 	status = STATUS_REQUESTING;
+	head_request = p_method == METHOD_HEAD;
 
 	return OK;
 }
@@ -226,6 +229,7 @@ Error HTTPClient::request(Method p_method, const String &p_url, const Vector<Str
 	}
 
 	status = STATUS_REQUESTING;
+	head_request = p_method == METHOD_HEAD;
 
 	return OK;
 }
@@ -267,6 +271,7 @@ void HTTPClient::close() {
 
 	connection.unref();
 	status = STATUS_DISCONNECTED;
+	head_request = false;
 	if (resolving != IP::RESOLVER_INVALID_ID) {
 
 		IP::get_singleton()->erase_resolve_item(resolving);
@@ -435,7 +440,7 @@ Error HTTPClient::poll() {
 					response_num = RESPONSE_OK;
 
 					// Per the HTTP 1.1 spec, keep-alive is the default.
-					// Not following that specification breaks standard implemetations.
+					// Not following that specification breaks standard implementations.
 					// Broken web servers should be fixed.
 					bool keep_alive = true;
 
@@ -468,6 +473,12 @@ Error HTTPClient::poll() {
 						}
 					}
 
+					// This is a HEAD request, we wont receive anything.
+					if (head_request) {
+						body_size = 0;
+						body_left = 0;
+					}
+
 					if (body_size != -1 || chunked) {
 
 						status = STATUS_BODY;
@@ -482,8 +493,6 @@ Error HTTPClient::poll() {
 					return OK;
 				}
 			}
-			// Wait for response
-			return OK;
 		} break;
 		case STATUS_DISCONNECTED: {
 			return ERR_UNCONFIGURED;
@@ -715,11 +724,16 @@ void HTTPClient::set_read_chunk_size(int p_size) {
 	read_chunk_size = p_size;
 }
 
+int HTTPClient::get_read_chunk_size() const {
+	return read_chunk_size;
+}
+
 HTTPClient::HTTPClient() {
 
 	tcp_connection.instance();
 	resolving = IP::RESOLVER_INVALID_ID;
 	status = STATUS_DISCONNECTED;
+	head_request = false;
 	conn_port = -1;
 	body_size = -1;
 	chunked = false;
@@ -775,7 +789,7 @@ Dictionary HTTPClient::_get_response_headers_as_dictionary() {
 	get_response_headers(&rh);
 	Dictionary ret;
 	for (const List<String>::Element *E = rh.front(); E; E = E->next()) {
-		String s = E->get();
+		const String &s = E->get();
 		int sp = s.find(":");
 		if (sp == -1)
 			continue;
@@ -818,6 +832,7 @@ void HTTPClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_response_body_length"), &HTTPClient::get_response_body_length);
 	ClassDB::bind_method(D_METHOD("read_response_body_chunk"), &HTTPClient::read_response_body_chunk);
 	ClassDB::bind_method(D_METHOD("set_read_chunk_size", "bytes"), &HTTPClient::set_read_chunk_size);
+	ClassDB::bind_method(D_METHOD("get_read_chunk_size"), &HTTPClient::get_read_chunk_size);
 
 	ClassDB::bind_method(D_METHOD("set_blocking_mode", "enabled"), &HTTPClient::set_blocking_mode);
 	ClassDB::bind_method(D_METHOD("is_blocking_mode_enabled"), &HTTPClient::is_blocking_mode_enabled);
@@ -829,6 +844,7 @@ void HTTPClient::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_mode_enabled"), "set_blocking_mode", "is_blocking_mode_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", 0), "set_connection", "get_connection");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "read_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_read_chunk_size", "get_read_chunk_size");
 
 	BIND_ENUM_CONSTANT(METHOD_GET);
 	BIND_ENUM_CONSTANT(METHOD_HEAD);

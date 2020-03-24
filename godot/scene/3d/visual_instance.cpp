@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,7 +60,7 @@ void VisualInstance::_notification(int p_what) {
 			if (skeleton)
 				VisualServer::get_singleton()->instance_attach_skeleton( instance, skeleton->get_skeleton() );
 			*/
-
+			ERR_FAIL_COND(get_world().is_null());
 			VisualServer::get_singleton()->instance_set_scenario(instance, get_world()->get_scenario());
 			_update_visibility();
 
@@ -215,17 +215,6 @@ float GeometryInstance::get_lod_max_hysteresis() const {
 }
 
 void GeometryInstance::_notification(int p_what) {
-
-	if (p_what == NOTIFICATION_ENTER_WORLD) {
-
-		if (flags[FLAG_USE_BAKED_LIGHT]) {
-		}
-
-	} else if (p_what == NOTIFICATION_EXIT_WORLD) {
-
-		if (flags[FLAG_USE_BAKED_LIGHT]) {
-		}
-	}
 }
 
 void GeometryInstance::set_flag(Flags p_flag, bool p_value) {
@@ -236,8 +225,6 @@ void GeometryInstance::set_flag(Flags p_flag, bool p_value) {
 
 	flags[p_flag] = p_value;
 	VS::get_singleton()->instance_geometry_set_flag(get_instance(), (VS::InstanceFlags)p_flag, p_value);
-	if (p_flag == FLAG_USE_BAKED_LIGHT) {
-	}
 }
 
 bool GeometryInstance::get_flag(Flags p_flag) const {
@@ -271,6 +258,11 @@ float GeometryInstance::get_extra_cull_margin() const {
 	return extra_cull_margin;
 }
 
+void GeometryInstance::set_custom_aabb(AABB aabb) {
+
+	VS::get_singleton()->instance_set_custom_aabb(get_instance(), aabb);
+}
+
 void GeometryInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_material_override", "material"), &GeometryInstance::set_material_override);
@@ -297,6 +289,8 @@ void GeometryInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extra_cull_margin", "margin"), &GeometryInstance::set_extra_cull_margin);
 	ClassDB::bind_method(D_METHOD("get_extra_cull_margin"), &GeometryInstance::get_extra_cull_margin);
 
+	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance::set_custom_aabb);
+
 	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance::get_aabb);
 
 	ADD_GROUP("Geometry", "");
@@ -319,6 +313,7 @@ void GeometryInstance::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_SHADOWS_ONLY);
 
 	BIND_ENUM_CONSTANT(FLAG_USE_BAKED_LIGHT);
+	BIND_ENUM_CONSTANT(FLAG_DRAW_NEXT_FRAME_IF_VISIBLE);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 }
 
