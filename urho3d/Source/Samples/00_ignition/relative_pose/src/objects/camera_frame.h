@@ -13,16 +13,21 @@ class CameraFrame: public RefFrame
 public:
     static void RegisterComponent( Context * context );
 
+    void CheckAttributes();
+
     CameraFrame( Context * context );
     ~CameraFrame();
 
-    void ApplyControls( const Controls & ctrl ) override;
+    void ApplyControls( const Controls & ctrl, Float dt ) override;
 
+    void setUseSurfFrame( bool en );
     RefFrame * CameraOrigin();
 
 protected:
     void OnSceneSet( Scene * scene ) override;
 
+    void adjustSurfQuat();
+    static RefFrame * orbitingFrame( RefFrame * rf );
 public:
     void refStateChanged() override;
     void assignCameraNode();
@@ -32,6 +37,8 @@ public:
     /// Camera parameters.
     Float yaw_, pitch_;
     Float dist_;
+    bool useSurfFrame_;
+    Quaterniond surfQ_;
     static const Float alpha_;
 };
 

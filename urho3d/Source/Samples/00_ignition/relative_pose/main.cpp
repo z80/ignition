@@ -18,14 +18,16 @@ URHO3D_DEFINE_APPLICATION_MAIN(Main)
 Main::Main(Context* context) :
     BaseApp(context)
 {
-    Ign::RegisterComponents( context );
-    Ign::Register3dparty( context );
 }
 
 void Main::Start()
 {
     // Execute base class startup
     BaseApp::Start();
+
+    // Register components.
+    Ign::RegisterComponents( context_ );
+    Ign::Register3dparty( context_ );
 
     // Create the scene content
     CreateScene();
@@ -65,11 +67,13 @@ void Main::CreateScene()
     // Create a child scene node (at world origin) and a StaticModel component into it. Set the StaticModel to show a simple
     // plane mesh with a "stone" material. Note that naming the scene nodes is optional. Scale the scene node larger
     // (100 x 100 world units)
+    /*
     Node* planeNode = scene_->CreateChild("Plane", LOCAL );
     planeNode->SetScale(Vector3(100.0f, 1.0f, 100.0f));
     auto* planeObject = planeNode->CreateComponent<StaticModel>( LOCAL );
     planeObject->SetModel(cache->GetResource<Model>("Models/Plane.mdl"));
     planeObject->SetMaterial(cache->GetResource<Material>("Materials/StoneTiled.xml"));
+    */
 
     // Create a directional light to the world so that we can see something. The light scene node's orientation controls the
     // light direction; we will use the SetDirection() function which calculates the orientation from a forward direction vector.
@@ -79,13 +83,21 @@ void Main::CreateScene()
     auto* light = lightNode->CreateComponent<Light>( LOCAL );
     light->SetLightType(LIGHT_DIRECTIONAL);
 
+    Zone * z = scene_->GetOrCreateComponent<Zone>();
+    if ( z )
+    {
+        z->SetBoundingBox( BoundingBox( -1000000.0, 1000000.0 ) );
+        z->SetAmbientColor( Color( 0.3, 0.3, 0.3 ) );
+    }
+
+
     // Create more StaticModel objects to the scene, randomly positioned, rotated and scaled. For rotation, we construct a
     // quaternion from Euler angles where the Y angle (rotation about the Y axis) is randomized. The mushroom model contains
     // LOD levels, so the StaticModel component will automatically select the LOD level according to the view distance (you'll
     // see the model get simpler as it moves further away). Finally, rendering a large number of the same object with the
     // same material allows instancing to be used, if the GPU supports it. This reduces the amount of CPU work in rendering the
     // scene.
-    const unsigned NUM_OBJECTS = 200;
+    /*const unsigned NUM_OBJECTS = 200;
     for (unsigned i = 0; i < NUM_OBJECTS; ++i)
     {
         Node* mushroomNode = scene_->CreateChild( "Mushroom", LOCAL );
@@ -95,7 +107,7 @@ void Main::CreateScene()
         auto* mushroomObject = mushroomNode->CreateComponent<StaticModel>( LOCAL );
         mushroomObject->SetModel(cache->GetResource<Model>("Models/Mushroom.mdl"));
         mushroomObject->SetMaterial(cache->GetResource<Material>("Materials/Mushroom.xml"));
-    }
+    }*/
 
     // Create a scene node for the camera, which we will move around
     // The camera will use default settings (1000 far clip distance, 45 degrees FOV, set aspect ratio automatically)

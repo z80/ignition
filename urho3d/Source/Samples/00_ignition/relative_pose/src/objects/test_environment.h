@@ -22,6 +22,12 @@ public:
 protected:
     void CreateReplicatedContentServer() override;
     void CreateReplicatedContentClient( CameraFrame * camera ) override;
+
+    void contentServerTestSystem();
+    void contentClientCameraOnly( CameraFrame * camera );
+
+    void contentServerPlanet();
+    void contentClientCharacterCube( CameraFrame * camera );
 };
 
 }

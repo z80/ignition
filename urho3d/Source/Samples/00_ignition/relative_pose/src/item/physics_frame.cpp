@@ -1,6 +1,8 @@
 
 #include "physics_frame.h"
 #include "physics_item.h"
+//#include "surface_collision_mesh.h"
+#include "force_source_frame.h"
 #include "settings.h"
 #include "Notifications.h"
 
@@ -24,7 +26,7 @@ void PhysicsFrame::RegisterComponent( Context * context )
 PhysicsFrame::PhysicsFrame( Context * context )
     : RefFrame( context )
 {
-
+    setName( "PhysicsFrame" );
 }
 
 PhysicsFrame::~PhysicsFrame()
@@ -43,19 +45,28 @@ void PhysicsFrame::physicsStep( float sec_dt )
 {
     if ( !physicsWorld_ )
         return;
+
+    applyForces();
+
     physicsWorld_->Update( sec_dt );
 
     updateChildStates();
+}
 
+bool PhysicsFrame::handleSplitMerge()
+{
     const Vector<SharedPtr<RefFrame> > & obs = userControlledObjects();
-    if ( checkIfWorthToExist() )
-        return;
+    const bool worthToExist = checkIfWorthToExist();
+    if ( !worthToExist )
+        return true;
     checkIfTeleport();
     checkInnerObjects();
     checkOuterObjects();
     if ( checkIfNeedToSplit() )
-        return;
+        return true;
     checkIfNeedToMerge();
+
+    return false;
 }
 
 Node * PhysicsFrame::physicsNode()
@@ -84,6 +95,50 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     // Make smaller gravity for debugging.
     //physicsWorld_->SetGravity( Vector3( 0.0, -1.0, 0.0 ) );
     physicsWorld_->SetGravity( Vector3::ZERO );
+
+    // Also create a surface collision mesh item.
+    //SurfaceCollisionMesh * scm = scene->CreateComponent<SurfaceCollisionMesh>( LOCAL );
+    //scm->setParent( this );
+    //scm->setR( Vector3d::ZERO );
+    //scm->constructCustomGeometry();
+}
+
+void PhysicsFrame::applyForces()
+{
+    // Pick parent object and check if it is a source of forces.
+    RefFrame * p = parent();
+    ForceSourceFrame * fsf = nullptr;
+    while ( p )
+    {
+        fsf = p->Cast<ForceSourceFrame>();
+        if ( fsf )
+            break;
+        p = p->parent();
+    }
+    if ( !fsf )
+        return;
+
+    const unsigned qty = children_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        SharedPtr<RefFrame> o = children_[i];
+        if ( !o )
+            continue;
+        PhysicsItem * pi = o->Cast<PhysicsItem>();
+        if ( !pi )
+            continue;
+        RigidBody2 * rb = pi->rigidBody();
+        if ( !rb )
+            continue;
+        const bool kinematic = rb->IsKinematic();
+        if ( kinematic )
+            continue;
+        const Float m = rb->GetMass();
+        if ( m <= 0.0 )
+            continue;
+
+        fsf->ApplyForces( pi );
+    }
 }
 
 void PhysicsFrame::updateChildStates()
@@ -123,26 +178,36 @@ void PhysicsFrame::checkInnerObjects()
     // For each object compute smallest distance to user controlled object.
     // If smallest distance is bigger than horizont distance exclude object from 
     // this ref. frame.
-    const unsigned userQty = userControlledList_.Size();
-    const unsigned qty = children_.Size();
-    const Float removeDist = Settings::dynamicsWorldDistanceExclude();
-    for ( unsigned i=0; i<qty; i++ )
+    while ( true )
     {
-        SharedPtr<RefFrame> o = children_[i];
-        const bool isUserControlled = o->getUserControlled();
-        if ( isUserControlled )
-            continue;
-        Float minDist = -1.0;
-        for ( unsigned j=0; j<userQty; j++ )
+        bool doItAgain = false;
+        const unsigned userQty = userControlledList_.Size();
+        const unsigned qty = children_.Size();
+        const Float removeDist = Settings::dynamicsWorldDistanceExclude();
+        for ( unsigned i=0; i<qty; i++ )
         {
-            SharedPtr<RefFrame> userObj = userControlledList_[j];
-            const Float dist = o->distance( userObj );
-            if ( ( minDist < 0.0 ) || ( dist < minDist ) )
-                minDist = dist;
-        }
+            SharedPtr<RefFrame> o = children_[i];
+            const bool isUserControlled = o->getUserControlled();
+            if ( isUserControlled )
+                continue;
+            Float minDist = -1.0;
+            for ( unsigned j=0; j<userQty; j++ )
+            {
+                SharedPtr<RefFrame> userObj = userControlledList_[j];
+                const Float dist = o->distance( userObj );
+                if ( ( minDist < 0.0 ) || ( dist < minDist ) )
+                    minDist = dist;
+            }
 
-        if ( minDist > removeDist )
-            o->setParent( parent_ );
+            if ( minDist > removeDist )
+            {
+                o->setParent( parent_ );
+                doItAgain = true;
+                break;
+            }
+        }
+        if ( !doItAgain )
+            break;
     }
 }
 
@@ -159,60 +224,81 @@ void PhysicsFrame::checkOuterObjects()
     SharedPtr<RefFrame> p = parent_;
     if ( p )
     {
-        const Vector<SharedPtr<RefFrame> > & objs = p->children_;
-        unsigned qty = objs.Size();
         const Float includeDist = Settings::dynamicsWorldDistanceInclude();
-
-        for ( unsigned i=0; i<qty; i++ )
+        while ( true )
         {
-            SharedPtr<RefFrame> o = objs[i];
-            // Skip this node itself and any other physics frames.
-            if ( o == this )
-                continue;
-            PhysicsFrame * pf = o->Cast<PhysicsFrame>();
-            if ( pf )
-                continue;
+            bool loopAgain = false;
+            const Vector<SharedPtr<RefFrame> > & objs = p->children_;
+            unsigned qty = objs.Size();
 
-            const Float dist = o->distance( this );
-            if ( dist <= includeDist )
-                o->setParent( this );
+            for ( unsigned i=0; i<qty; i++ )
+            {
+                SharedPtr<RefFrame> o = objs[i];
+                // Skip this node itself and any other physics frames.
+                if ( o == this )
+                    continue;
+                PhysicsFrame * pf = o->Cast<PhysicsFrame>();
+                if ( pf )
+                    continue;
+
+                const Float dist = o->distance( this );
+                if ( dist <= includeDist )
+                {
+                    o->setParent( this );
+                    loopAgain = true;
+                    break;
+                }
+            }
+            if ( !loopAgain )
+                break;
         }
     }
     else
     {
         Scene * s = GetScene();
-        const Vector<SharedPtr<Component> > & comps = s->GetComponents();
-        const Float includeDist = Settings::dynamicsWorldDistanceInclude();
-        const unsigned compsQty = comps.Size();
-        for ( unsigned i=0; i<compsQty; i++ )
+        while( true )
         {
-            Component * c = comps[i];
-            if ( !c )
-                continue;
-            PhysicsItem * pi = c->Cast<PhysicsItem>();
-            if ( !pi )
-                continue;
+            bool loopAgain = false;
+            const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+            const Float includeDist = Settings::dynamicsWorldDistanceInclude();
+            const unsigned compsQty = comps.Size();
+            for ( unsigned i=0; i<compsQty; i++ )
+            {
+                Component * c = comps[i];
+                if ( !c )
+                    continue;
+                PhysicsItem * pi = c->Cast<PhysicsItem>();
+                if ( !pi )
+                    continue;
 
-            // Only consider objects with no parent
-            // and ignore others.
-            RefFrame * currentParent = pi->parent();
-            if ( currentParent )
-                continue;
+                // Only consider objects with no parent
+                // and ignore others.
+                RefFrame * currentParent = pi->parent();
+                if ( currentParent )
+                    continue;
 
-            const Float dist = pi->distance( this );
-            if ( dist <= includeDist )
-                pi->setParent( this );
-
+                const Float dist = pi->distance( this );
+                if ( dist <= includeDist )
+                {
+                    pi->setParent( this );
+                    loopAgain = true;
+                    break;
+                }
+            }
+            if ( !loopAgain )
+                break;
         }
     }
 }
 
 bool PhysicsFrame::checkIfWorthToExist()
 {
-    // If there are no user objects remove this object.
+    // If there are user controlled objects keep existing.
     if ( !userControlledList_.Empty() )
-        return false;
+        return true;
 
+    // If there are no user objects remove this object.
+    // But first parent all objects inside to the parent.
     const unsigned qty = children_.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
@@ -223,7 +309,7 @@ bool PhysicsFrame::checkIfWorthToExist()
     // Remove this physics ref. frame.
     this->Remove();
 
-    return true;
+    return false;
 }
 
 void PhysicsFrame::checkIfTeleport()
@@ -270,10 +356,10 @@ bool PhysicsFrame::checkIfNeedToSplit()
         pf->setParent( parent_ );
 
     // Define the state of newly created physics frame.
-    {
-        const State s = this->state();
-        pf->setState( s );
-    }
+    //{
+    //    const State s = this->state();
+    //    pf->setState( s );
+    //}
     {
         SharedPtr<RefFrame> o = userControlledList_[splitInd];
         State relativeSt;
@@ -285,7 +371,7 @@ bool PhysicsFrame::checkIfNeedToSplit()
     }
 
     // Move user controlled objects to the new physics frame.
-    for ( unsigned i=0; i<qty; i++ )
+    for ( unsigned i=splitInd; i<qty; i++ )
     {
         SharedPtr<RefFrame> o = userControlledList_[i];
         o->setParent( pf );
@@ -313,8 +399,9 @@ bool PhysicsFrame::checkIfNeedToSplit()
     return true;
 }
 
-void PhysicsFrame::checkIfNeedToMerge()
+bool PhysicsFrame::checkIfNeedToMerge()
 {
+    bool result = false;
     SharedPtr<RefFrame> p = parent_;
     const Float mergeDist = Settings::dynamicsWorldDistanceInclude();
     const Vector3d r = relR();
@@ -343,13 +430,14 @@ void PhysicsFrame::checkIfNeedToMerge()
                 o->setParent( this );
             }
             pf->Remove();
+            result = true;
         }
     }
     else
     {
         Scene * s = GetScene();
         if ( !s )
-            return;
+            return false;
         const Vector<SharedPtr<Component> > & comps = s->GetComponents();
         const unsigned compsQty = comps.Size();
         for ( unsigned i=0; i<compsQty; i++ )
@@ -379,8 +467,11 @@ void PhysicsFrame::checkIfNeedToMerge()
                 o->setParent( this );
             }
             pf->Remove();
+            result = true;
         }
     }
+
+    return result;
 }
 
 static Float cluster( unsigned & splitInd, Vector<SharedPtr<RefFrame> > & src, Vector<SharedPtr<RefFrame> > & dest )
@@ -415,34 +506,45 @@ static Float cluster( unsigned & splitInd, Vector<SharedPtr<RefFrame> > & src, V
 static Float clusterScore( Vector<SharedPtr<RefFrame> > & objs, unsigned splitInd )
 {
     Float score = 0.0;
-    for ( unsigned i=0; i<splitInd; i++ )
     {
-        SharedPtr<RefFrame> & oi = objs[i];
-        const Vector3d ri = oi->relR();
-        for ( unsigned j=0; j<splitInd; j++ )
+        if ( splitInd > 1 )
         {
-            if ( i == j )
-                continue;
-            SharedPtr<RefFrame> & oj = objs[j];
-            const Float dist = oj->distance( ri );
-            score += dist;
+            const unsigned upperBound = splitInd-1;
+            for ( unsigned i=0; i<(splitInd-1); i++ )
+            {
+                SharedPtr<RefFrame> & oi = objs[i];
+                const Vector3d ri = oi->relR();
+                const unsigned lowerBound = i + 1;
+                for ( unsigned j=lowerBound; j<splitInd; j++ )
+                {
+                    SharedPtr<RefFrame> & oj = objs[j];
+                    const Float dist = oj->distance( ri );
+                    score += dist;
+                }
+            }
         }
     }
 
-    const unsigned qty = objs.Size();
-    for ( unsigned i=splitInd; i<qty; i++ )
     {
-        SharedPtr<RefFrame> & oi = objs[i];
-        const Vector3d ri = oi->relR();
-        for ( unsigned j=splitInd; i<qty; j++ )
+        const unsigned qty = objs.Size();
+        const unsigned upperBound = qty - 1;
+        if ( splitInd < upperBound )
         {
-            if ( i == j )
-                continue;
-            SharedPtr<RefFrame> & oj = objs[j];
-            const Float dist = oj->distance( ri );
-            score += dist;
+            for ( unsigned i=splitInd; i<upperBound; i++ )
+            {
+                SharedPtr<RefFrame> & oi = objs[i];
+                const Vector3d ri = oi->relR();
+                const unsigned lowerBound = i + 1;
+                for ( unsigned j=lowerBound; j<qty; j++ )
+                {
+                    SharedPtr<RefFrame> & oj = objs[j];
+                    const Float dist = oj->distance(ri);
+                    score += dist;
+                }
+            }
         }
     }
+
 
     return score;
 }
@@ -461,7 +563,7 @@ static Float clusterDist( Vector<SharedPtr<RefFrame> > & objs, unsigned splitInd
             SharedPtr<RefFrame> & oj = objs[j];
             const Vector3d rj = oj->relR();
             const Float distA = oj->distance( ri );
-            const Float distB = oj->distance( rj );
+            const Float distB = oi->distance( rj );
             const Float dist = (distA + distB) * 0.5;
             if ( ( minDist < 0.0 ) || ( dist < minDist ) )
                 minDist = dist;

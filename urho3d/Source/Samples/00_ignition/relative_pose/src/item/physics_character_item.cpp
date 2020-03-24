@@ -27,7 +27,7 @@ PhysicsCharacterItem::~PhysicsCharacterItem()
 {
 }
 
-void PhysicsCharacterItem::SetAzimuth( Float az )
+void PhysicsCharacterItem::setAzimuth( Float az )
 {
     azimuth_ = az;
 }
@@ -51,39 +51,30 @@ void PhysicsCharacterItem::physicsUpdate( RigidBody2 * rb )
 
 void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
 {
+    // It doesn't work yet.
+    const Float az2 = azimuth_ * 0.5;
+    const Float co2 = std::cos( az2 );
+    const Float si2 = std::sin( az2 );
+    Quaterniond azQ( co2, 0.0, si2, 0.0 );
+
     RefFrame * rf = parent();
     OrbitingFrame * of = orbitingFrame( rf );
     if ( !of )
         return;
+
+    setQ( azQ );
+    const Quaterniond localQ = azQ; //relQ();
+    const Vector3d actualG = localQ * Vector3d( 0.0, -1.0, 0.0 );
     State rs;
-    of->relativeState( this, rs );
-    const Vector3d wantedG( 0.0, -1.0, 0.0 );
-    const Vector3d actualG = rs.r.Normalized();
-    const Vector3d cross = wantedG.CrossProduct( actualG );
-    const Float si = cross.Length();
-    static const Float EPS = 0.0001;
-    Quaterniond baseQ;
-    if ( si < EPS )
-    {
-        baseQ = Quaterniond::IDENTITY;
-    }
-    else
-    {
-        const Float co = wantedG.DotProduct( actualG );
-        const Float angle = std::atan2( si, co );
-        const Float angle_2 = angle * 0.5;
-        const Float co2 = std::cos( angle_2 );
-        const Float si2 = std::sin( angle_2 );
-        const Vector3d e = cross / si;
-        baseQ = Quaterniond( co2, si2*e.x_, si2*e.y_, si2*e.z_ );
-    }
-    const Float az_2 = azimuth_ * 0.5;
-    const Float azSi2 = std::sin( az_2 );
-    const Float azCo2 = std::cos( az_2 );
-    const Quaterniond azQ( azCo2, 0.0, azSi2, 0.0 );
-    const Quaterniond q = baseQ * azQ;
+    of->relativeState( this, rs, true );
+    const Vector3d localWantedG = -rs.r.Normalized();
+    const Vector3d wantedG = localQ * localWantedG;
+    Quaterniond q;
+    q.FromRotationTo( actualG, wantedG );
+    q = q * localQ;
 
     rb->SetRotationd( q );
+    setQ( q );
 }
 
 static OrbitingFrame * orbitingFrame( RefFrame * rf )

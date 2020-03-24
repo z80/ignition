@@ -35,7 +35,7 @@ public:
 
     virtual bool Recursive() const;
     virtual bool ProducesForces() const;
-    void ApplyForces( PhysicsItem * receiver ) const;
+    void ApplyForces( PhysicsItem * receiver );
     /// Inputs are: receiver, its pose in local ref. frame. Outputs are force and torque applied. 
     virtual void ComputeForces( PhysicsItem * receiver, const State & st, Vector3d & F, Vector3d & P ) const;
 

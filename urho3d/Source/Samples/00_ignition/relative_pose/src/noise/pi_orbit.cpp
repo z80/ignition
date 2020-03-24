@@ -8,12 +8,12 @@
 namespace Ign
 {
 
-Float Orbit::OrbitalPeriod(Float semiMajorAxis, Float centralMass)
+Float PiOrbit::OrbitalPeriod(Float semiMajorAxis, Float centralMass)
 {
 	return 2.0 * M_PI * sqrt((semiMajorAxis * semiMajorAxis * semiMajorAxis) / (G * centralMass));
 }
 
-Float Orbit::OrbitalPeriodTwoBody(Float semiMajorAxis, Float totalMass, Float bodyMass)
+Float PiOrbit::OrbitalPeriodTwoBody(Float semiMajorAxis, Float totalMass, Float bodyMass)
 {
 	// variable names according to the formula in:
 	// http://en.wikipedia.org/wiki/Barycentric_coordinates_(astronomy)#Two-body_problem
@@ -44,14 +44,14 @@ static Float calc_velocity_area_per_sec(Float semiMajorAxis, Float centralMass, 
 {
 	const Float a2 = semiMajorAxis * semiMajorAxis;
 	const Float e2 = eccentricity * eccentricity;
-	return M_PI * a2 * sqrt((eccentricity < 1.0) ? (1 - e2) : (e2 - 1.0)) / Orbit::OrbitalPeriod(semiMajorAxis, centralMass);
+	return M_PI * a2 * sqrt((eccentricity < 1.0) ? (1 - e2) : (e2 - 1.0)) / PiOrbit::OrbitalPeriod(semiMajorAxis, centralMass);
 }
 
 static Float calc_velocity_area_per_sec_gravpoint(Float semiMajorAxis, Float totalMass, Float bodyMass, Float eccentricity)
 {
 	const Float a2 = semiMajorAxis * semiMajorAxis;
 	const Float e2 = eccentricity * eccentricity;
-	return M_PI * a2 * sqrt((eccentricity < 1.0) ? (1 - e2) : (e2 - 1.0)) / Orbit::OrbitalPeriodTwoBody(semiMajorAxis, totalMass, bodyMass);
+	return M_PI * a2 * sqrt((eccentricity < 1.0) ? (1 - e2) : (e2 - 1.0)) / PiOrbit::OrbitalPeriodTwoBody(semiMajorAxis, totalMass, bodyMass);
 }
 
 static void calc_position_from_mean_anomaly(const Float M, const Float e, const Float a, Float &cos_v, Float &sin_v, Float *r)
@@ -131,14 +131,14 @@ static void calc_position_from_mean_anomaly(const Float M, const Float e, const 
 	}
 }
 
-Float Orbit::TrueAnomalyFromMeanAnomaly(Float MeanAnomaly) const
+Float PiOrbit::TrueAnomalyFromMeanAnomaly(Float MeanAnomaly) const
 {
 	Float cos_v, sin_v;
 	calc_position_from_mean_anomaly(MeanAnomaly, m_eccentricity, m_semiMajorAxis, cos_v, sin_v, 0);
 	return atan2(sin_v, cos_v);
 }
 
-Float Orbit::MeanAnomalyFromTrueAnomaly(Float trueAnomaly) const
+Float PiOrbit::MeanAnomalyFromTrueAnomaly(Float trueAnomaly) const
 {
 	Float M_t0;
 	const Float e = m_eccentricity;
@@ -155,7 +155,7 @@ Float Orbit::MeanAnomalyFromTrueAnomaly(Float trueAnomaly) const
 	return M_t0;
 }
 
-Float Orbit::MeanAnomalyAtTime(Float time) const
+Float PiOrbit::MeanAnomalyAtTime(Float time) const
 {
 	const Float e = m_eccentricity;
 	if (e < 1.0) { // elliptic orbit
@@ -165,14 +165,14 @@ Float Orbit::MeanAnomalyAtTime(Float time) const
 	}
 }
 
-Vector3d Orbit::OrbitalPosAtTime(Float t) const
+Vector3d PiOrbit::OrbitalPosAtTime(Float t) const
 {
 	Float cos_v, sin_v, r;
 	calc_position_from_mean_anomaly(MeanAnomalyAtTime(t), m_eccentricity, m_semiMajorAxis, cos_v, sin_v, &r);
 	return m_orient * Vector3d(-cos_v * r, sin_v * r, 0);
 }
 
-Float Orbit::OrbitalTimeAtPos(const Vector3d &pos, Float centralMass) const
+Float PiOrbit::OrbitalTimeAtPos(const Vector3d &pos, Float centralMass) const
 {
 	Float c = m_eccentricity * m_semiMajorAxis;
 	Matrix3d matrixInv = m_orient.Inverse();
@@ -211,7 +211,7 @@ Float Orbit::OrbitalTimeAtPos(const Vector3d &pos, Float centralMass) const
 		return -std::fabs(meanAnomaly + m_orbitalPhaseAtStart) * std::sqrt(std::pow(m_semiMajorAxis, 3) / (G * centralMass));
 }
 
-Vector3d Orbit::OrbitalVelocityAtTime(Float totalMass, Float t) const
+Vector3d PiOrbit::OrbitalVelocityAtTime(Float totalMass, Float t) const
 {
 	Float cos_v, sin_v, r;
 	calc_position_from_mean_anomaly(MeanAnomalyAtTime(t), m_eccentricity, m_semiMajorAxis, cos_v, sin_v, &r);
@@ -231,7 +231,7 @@ Vector3d Orbit::OrbitalVelocityAtTime(Float totalMass, Float t) const
 // used for stepping through the orbit in small fractions
 // mean anomaly <-> true anomaly conversion doesn't have
 // to be taken into account
-Vector3d Orbit::EvenSpacedPosTrajectory(Float t, Float timeOffset) const
+Vector3d PiOrbit::EvenSpacedPosTrajectory(Float t, Float timeOffset) const
 {
 	const Float e = m_eccentricity;
 	Float v = 2 * M_PI * t + TrueAnomalyFromMeanAnomaly(MeanAnomalyAtTime(timeOffset));
@@ -257,7 +257,7 @@ Vector3d Orbit::EvenSpacedPosTrajectory(Float t, Float timeOffset) const
 	return m_orient * Vector3d(-cos(v) * r, sin(v) * r, 0);
 }
 
-Float Orbit::Period() const
+Float PiOrbit::Period() const
 {
 	if (m_eccentricity < 1 && m_eccentricity >= 0) {
 		return M_PI * m_semiMajorAxis * m_semiMajorAxis * sqrt(1 - m_eccentricity * m_eccentricity) / m_velocityAreaPerSecond;
@@ -267,7 +267,7 @@ Float Orbit::Period() const
 	}
 }
 
-Vector3d Orbit::Apogeum() const
+Vector3d PiOrbit::Apogeum() const
 {
 	if (m_eccentricity < 1) {
 		return m_semiMajorAxis * (1 + m_eccentricity) * (m_orient * Vector3d(1, 0, 0));
@@ -276,7 +276,7 @@ Vector3d Orbit::Apogeum() const
 	}
 }
 
-Vector3d Orbit::Perigeum() const
+Vector3d PiOrbit::Perigeum() const
 {
 	if (m_eccentricity < 1) {
 		return m_semiMajorAxis * (1 - m_eccentricity) * (m_orient * Vector3d(-1, 0, 0));
@@ -285,23 +285,23 @@ Vector3d Orbit::Perigeum() const
 	}
 }
 
-void Orbit::SetShapeAroundBarycentre(Float semiMajorAxis, Float totalMass, Float bodyMass, Float eccentricity)
+void PiOrbit::SetShapeAroundBarycentre(Float semiMajorAxis, Float totalMass, Float bodyMass, Float eccentricity)
 {
 	m_semiMajorAxis = semiMajorAxis;
 	m_eccentricity = eccentricity;
 	m_velocityAreaPerSecond = calc_velocity_area_per_sec_gravpoint(semiMajorAxis, totalMass, bodyMass, eccentricity);
 }
 
-void Orbit::SetShapeAroundPrimary(Float semiMajorAxis, Float centralMass, Float eccentricity)
+void PiOrbit::SetShapeAroundPrimary(Float semiMajorAxis, Float centralMass, Float eccentricity)
 {
 	m_semiMajorAxis = semiMajorAxis;
 	m_eccentricity = eccentricity;
 	m_velocityAreaPerSecond = calc_velocity_area_per_sec(semiMajorAxis, centralMass, eccentricity);
 }
 
-Orbit Orbit::FromBodyState(const Vector3d &pos, const Vector3d &vel, Float centralMass)
+PiOrbit PiOrbit::FromBodyState(const Vector3d &pos, const Vector3d &vel, Float centralMass)
 {
-	Orbit ret;
+	PiOrbit ret;
 
 	const Float r_now = pos.Length() + 1e-12;
 	const Float v_now = vel.Length() + 1e-12;

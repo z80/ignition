@@ -15,7 +15,8 @@ SurfaceCollisionMesh::SurfaceCollisionMesh( Context * context )
     : PhysicsItem( context ),
       lastSphereItem_( nullptr )
 {
-    SubscribeToEvent( E_UPDATE, URHO3D_HANDLER(SurfaceCollisionMesh, Update) );
+    //SubscribeToEvent( E_UPDATE, URHO3D_HANDLER(SurfaceCollisionMesh, Update) );
+    setName( "SurfaceCollisionMesh" );
 }
 
 SurfaceCollisionMesh::~SurfaceCollisionMesh()
@@ -27,19 +28,19 @@ void SurfaceCollisionMesh::Update( StringHash eventType, VariantMap & eventData 
     (void)eventType;
     (void)eventData;
 
-    const unsigned elapsed =  timer_.GetMSec( false );
+    /*const unsigned elapsed =  timer_.GetMSec( false );
     if ( elapsed > 5000 )
     {
         timer_.Reset();
         constructCustomGeometry();
-    }
+    }*/
 }
 
 void SurfaceCollisionMesh::parentTeleported()
 {
     // Recompute dynamic geometry.
-
-    constructCustomGeometry();
+    setR( Vector3d::ZERO );
+    constructCustomGeometry( true );
 }
 
 bool SurfaceCollisionMesh::IsSelectable() const
@@ -61,20 +62,20 @@ void SurfaceCollisionMesh::createVisualContent( Node * n )
 
     CustomGeometry * vcg = visual_node_->CreateComponent<CustomGeometry>();
     visualCustomGeometry_ = SharedPtr<CustomGeometry>( vcg );
-
-    constructCustomGeometry();
 }
 
 void SurfaceCollisionMesh::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
 {
     rb->SetMass( 0.0 );
+    rb->SetFriction( 1.0 );
 
     CustomGeometry * cg = physics_node_->CreateComponent<CustomGeometry>();
     customGeometry_ = SharedPtr<CustomGeometry>( cg );
     // Make it invisible.
     cg->SetEnabled( false );
 
-    constructCustomGeometry();
+    setR( Vector3d::ZERO );
+    //constructCustomGeometry();
 }
 
 static SphereItem * globalSphereItem( Scene * s )
@@ -146,7 +147,7 @@ SphereItem * SurfaceCollisionMesh::pickSphere()
     return si;
 }
 
-bool SurfaceCollisionMesh::needRebuild( SphereItem * & item )
+bool SurfaceCollisionMesh::needRebuild( SphereItem * & item, bool forceRebuild )
 {
     SphereItem * si = pickSphere();
     item = si;
@@ -172,6 +173,12 @@ bool SurfaceCollisionMesh::needRebuild( SphereItem * & item )
     const Vector3d d = s.r - lastState_.r;
     const Float dist = d.Length();
 
+    if ( forceRebuild )
+    {
+        lastState_ = s;
+        return true;
+    }
+
     const Float maxDist = Settings::dynamicsWorldDistanceInclude() / 3.0;
     if ( dist > maxDist )
     {
@@ -182,11 +189,11 @@ bool SurfaceCollisionMesh::needRebuild( SphereItem * & item )
     return false;
 }
 
-void SurfaceCollisionMesh::constructCustomGeometry()
+void SurfaceCollisionMesh::constructCustomGeometry( bool forceRebuild )
 {
     SphereItem * si;
-    const bool needRebuildOk = needRebuild( si );
-    if ( !needRebuildOk )
+    const bool needRebuildOk = needRebuild( si, forceRebuild );
+    if ( (!needRebuildOk) && (!forceRebuild) )
         return;
 
     if ( customGeometry_ )
@@ -211,25 +218,31 @@ void SurfaceCollisionMesh::constructCustomGeometry( SphereItem * si, CustomGeome
     pts_.Push( lastState_.r );
     tris_.Clear();
 
-    // For debugging pick triangles from visual, not collision sphere.
-    //si->cubesphereCollision_.triangleList( pts_, dist, tris_ );
-    si->cubesphereVisual_.triangleList( pts_, dist, tris_ );
-
-    // Convert to local reference frame.
-    const Quaterniond invQ = lastState_.q.Inverse();
-    const unsigned qty = tris_.Size();
-    for ( unsigned i=0; i<qty; i++ )
+    unsigned qty = 0;
+    if ( si )
     {
-        Vertex & v = tris_[i];
-        v.at = invQ * (v.at - lastState_.r);
-        v.norm = invQ * v.norm;
+        si->cubesphereCollision_.triangleList( pts_, dist, tris_ );
+        // For debugging pick triangles from visual, not collision sphere.
+        //si->cubesphereVisual_.triangleList( pts_, dist, tris_ );
+
+        // Convert to local reference frame.
+        const Quaterniond invQ = lastState_.q.Inverse();
+        const unsigned trisQty = tris_.Size();
+        qty = trisQty;
+        for ( unsigned i=0; i<trisQty; i++ )
+        {
+            Vertex & v = tris_[i];
+            v.at = invQ * (v.at - lastState_.r);
+            v.norm = invQ * v.norm;
+        }
     }
 
     cg->Clear();
     cg->SetNumGeometries( 1 );
     cg->BeginGeometry( 0, TRIANGLE_LIST );
 
-    for ( unsigned i=0; i<qty; i++ )
+    const unsigned trisQty = qty;
+    for ( unsigned i=0; i<trisQty; i++ )
     {
         const Vertex & v = tris_[i];
         const Vector3 at( v.at.x_, v.at.y_, v.at.z_ );
@@ -241,6 +254,11 @@ void SurfaceCollisionMesh::constructCustomGeometry( SphereItem * si, CustomGeome
     }
 
     cg->Commit();
+
+    ResourceCache * cache = GetSubsystem<ResourceCache>();
+    Material * m = cache->GetResource<Material>("Materials/Stone.xml");
+    m->SetFillMode( FILL_WIREFRAME );
+    cg->SetMaterial( m );
 }
 
 

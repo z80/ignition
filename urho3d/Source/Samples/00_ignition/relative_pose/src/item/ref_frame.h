@@ -35,7 +35,7 @@ public:
     const String & name() const;
 
     void setParent( RefFrame * newParent );
-    RefFrame * parent() const;
+    RefFrame * parent();
 
     virtual void setR( const Vector3d & r );
     virtual void setQ( const Quaterniond & q );
@@ -55,18 +55,18 @@ public:
     void setState( const State & st );
     const State state() const;
 
-    bool relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging=false ) const;
-    bool relativeState( const RefFrame * other, State & stateRel, bool debugLogging=false ) const;
+    bool relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging=false );
+    bool relativeState( RefFrame * other, State & stateRel, bool debugLogging=false );
 
     /// Relative state for object in current ref. frame with state "stA" 
     /// with respect to another object with state "stB" in "other" ref. frame.
-    bool relativeState( const RefFrame * other, const State & stateInOther, State & state, const bool debugLogging=false ) const;
+    bool relativeState( RefFrame * other, const State & stateInOther, State & state, const bool debugLogging=false );
 
     // "Teleporting" with preserving orientations and velocities of
     // all children in parent->parent ref. frame.
     virtual bool teleport( RefFrame * other, const State & stateInOther );
 
-    bool computeRefState( const RefFrame * other=nullptr, Timestamp t=-1, bool recursive=false );
+    bool computeRefState( RefFrame * other=nullptr, Timestamp t=-1, bool recursive=false );
     const State & refState() const;
     /// Default implementation does nothing.
     virtual void refStateChanged();
@@ -88,14 +88,14 @@ public:
     virtual void childTeleported( RefFrame * refFrame );
 
     /// Attribute accessors.
-    unsigned getParentId() const;
-    void setParentId( unsigned parentId );
+    int getParentId() const;
+    void setParentId( int parentId );
 
     bool getUserControlled() const;
 
     /// Distance to a point. This method is virtual because it needs to
     /// take into account this object size.
-    virtual Float distance( RefFrame * refFrame ) const;
+    virtual Float distance( RefFrame * refFrame );
     /// The same method computes a distance to a point in the same ref. frame.
     virtual Float distance( const Vector3d & r=Vector3d::ZERO ) const;
 
@@ -112,10 +112,12 @@ public:
     static RefFrame * refFrame( Scene * s, unsigned id );
 
 public:
+    void validateParentId();
     /// For debugging it is easier to identify by human readable name.
     String name_;
     /// Parent ref. frame or nullptr.
     SharedPtr<RefFrame> parent_;
+    int parentId_;
     /// So far this one is used only when teleporting.
     /// This one is just to aoid memory allocation/reallocation
     /// on every teleport.

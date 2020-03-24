@@ -5,21 +5,21 @@
 #define ORBIT_H
 
 #include "matrix3d.h"
-#include "Vector3d.h"
+#include "vector3d.h"
 
 namespace Ign
 {
 
-class Orbit {
+class PiOrbit {
 public:
 	// utility functions for simple calculations
 	static Float OrbitalPeriod(Float semiMajorAxis, Float centralMass);
 	static Float OrbitalPeriodTwoBody(Float semiMajorAxis, Float totalMass, Float bodyMass);
 
 	// note: the resulting Orbit is at the given position at t=0
-	static Orbit FromBodyState(const Vector3d &position, const Vector3d &velocity, Float central_mass);
+	static PiOrbit FromBodyState(const Vector3d &position, const Vector3d &velocity, Float central_mass);
 
-	Orbit() :
+	PiOrbit() :
 		m_eccentricity(0.0),
 		m_semiMajorAxis(0.0),
 		m_orbitalPhaseAtStart(0.0),

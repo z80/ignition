@@ -13,7 +13,7 @@ namespace Ign
 struct PiSystem
 {
 public:
-        PiSystem( int x, int y, int z )
+        PiSystem( int x=10, int y=2, int z=1 )
             : sx(x),
               sy(y),
               sz(z),

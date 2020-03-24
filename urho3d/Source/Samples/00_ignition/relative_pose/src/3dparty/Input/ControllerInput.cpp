@@ -33,6 +33,8 @@ ControllerInput::ControllerInput(Context* context) :
     _controlMapNames[Ign::CTRL_ACTION]   = "Primary action";
     _controlMapNames[Ign::CTRL_SPRINT]   = "Sprint/Mode";
     _controlMapNames[Ign::CTRL_UP]       = "Move up";
+    _controlMapNames[Ign::CTRL_CW]       = "Clockwise";
+    _controlMapNames[Ign::CTRL_CCW]      = "Counter clockwise";
     //_controlMapNames[Ign::CTRL_ZOOM_IN]  = "Zoom in";
     //_controlMapNames[Ign::CTRL_ZOOM_OUT] = "Zoom out";
     _controlMapNames[Ign::CTRL_CENTER]   = "Center camera";
@@ -275,7 +277,7 @@ void ControllerInput::UpdateZoom( int d, int index )
     }
     Controls & c = _controls[index];
     VariantMap::ConstIterator it = c.extraData_.Find( Ign::IGN_ZOOM_VALUE );
-    int v = ( it != c.extraData_.End() ) ? it->second_.GetInt() : 25;
+    int v = ( it != c.extraData_.End() ) ? it->second_.GetInt() : 250;
     v += d;
     if ( v < 0 )
         v = 0;

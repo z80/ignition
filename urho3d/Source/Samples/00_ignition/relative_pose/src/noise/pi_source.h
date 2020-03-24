@@ -80,7 +80,7 @@ struct PiSourceDesc
     Uint32   seed_;
     BodySuperType super_type_;
     BodyType type_;
-	fixed GM_;
+	fixed mass_;
 	fixed radius_;
 	fixed aspectRatio_;
 	fixed life_;

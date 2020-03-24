@@ -25,7 +25,7 @@ ControllableItem::~ControllableItem()
 
 }
 
-void ControllableItem::ApplyControls( const Controls & ctrl )
+void ControllableItem::ApplyControls( const Controls & ctrl, Float dt )
 {
 
 }

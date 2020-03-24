@@ -3,6 +3,7 @@
 #include "ref_frame.h"
 #include "physics_frame.h"
 #include "evolving_frame.h"
+#include "surface_collision_mesh.h"
 #include "sphere_item.h"
 #include "camera_frame.h"
 #include "settings.h"
@@ -65,6 +66,8 @@ const ClientDesc & ClientDesc::operator=( const ClientDesc & inst )
         firstName_ = inst.firstName_;
         lastName_  = inst.lastName_;
         suffix_    = inst.suffix_;
+        cameraFrameId_  = inst.cameraFrameId_;
+        selectedItemId_ = inst.selectedItemId_;
     }
 
     return *this;
@@ -214,6 +217,7 @@ void Environment::StartServer( int port )
     // Create camera frame for newly connected client.
     Scene * s = GetScene();
     CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
+    cf->CheckAttributes();
     clientDesc_.cameraFrameId_ = cf->GetID();
     cf->SetCreatedBy( clientDesc_.id_ );
 
@@ -314,7 +318,7 @@ bool Environment::SendChatMessage( const String & message )
 
 void Environment::SendRequestItemSelect( Node * node )
 {
-    RefFrame * rf = RefFrame::refFrame( node->GetScene() );
+    RefFrame * rf = RefFrame::refFrame( node );
     if ( !rf )
     {
         //URHO3D_LOGINFO( "Selecting something not having RefFrame" );
@@ -372,7 +376,7 @@ void Environment::SendRequestCenter( RefFrame * rf )
     if ( serverRunning )
     {
         // Call callback locally.
-        SelectRequest( clientDesc_, rf );
+        CenterRequest( clientDesc_, rf );
     }
     else
     {
@@ -412,7 +416,7 @@ void Environment::SendRequestTrigger( RefFrame * rf, VariantMap & data )
     else
     {
         data[P_ID] = id;
-        c->SendRemoteEvent( E_IGN_CENTERREQUEST, true, data );
+        c->SendRemoteEvent( E_IGN_TRIGGERREQUEST, true, data );
     }
 }
 
@@ -461,16 +465,30 @@ void Environment::ChatMessage( const String & user, const String & message )
     Notifications::AddNotification( GetContext(), stri );
 }
 
-void Environment::SelectRequest( const ClientDesc & c, RefFrame * rf )
+void Environment::SelectRequest( ClientDesc & c, RefFrame * rf )
 {
     //URHO3D_LOGINFOF( "User %s wants to select: %s", c.login_.CString(), rf->name().CString() );
     const String stri = "User " + c.login_ + " wants to select " + rf->name();
     Notifications::AddNotification( GetContext(), stri );
 
+    // First unselect all objects selected by this client.
+    while ( true )
+    {
+        RefFrame * rf = FindSelectedFrame( c );
+        if ( !rf )
+            break;
+        rf->Unselect( c.id_ );
+    }
+
+    // Select the object if it is selectable.
     const bool selectable = rf->IsSelectable();
     if ( !selectable )
         return;
-    rf->Select( c.id_ );
+    const bool selected = rf->Select( c.id_ );
+    if ( selected )
+        c.selectedItemId_ = static_cast<unsigned>( rf->GetID() );
+    else
+        c.selectedItemId_ = -1;
 }
 
 void Environment::CenterRequest( const ClientDesc & c, RefFrame * rf )
@@ -637,6 +655,7 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
 
 
     ClientDesc d;
+    d.id_ = id;
     VariantMap::ConstIterator it = identity.Find( P_LOGIN );
     bool hasLogin    = (it != identity.End());
     if ( hasLogin )
@@ -670,7 +689,7 @@ void Environment::HandleClientIdentity( StringHash eventType, VariantMap & event
     // Create camera frame for newly connected client.
     CameraFrame * cf = s->CreateComponent<CameraFrame>( REPLICATED );
     d.cameraFrameId_ = cf->GetID();
-    cf->SetCreatedBy( clientDesc_.id_ );
+    cf->SetCreatedBy( d.id_ );
 
     CreateReplicatedContentClient( cf );
 
@@ -773,7 +792,7 @@ void Environment::HandleSelectRequest_Remote( StringHash eventType, VariantMap &
     if ( it == connections_.End() )
         return;
 
-    const ClientDesc & c = it->second_;
+    ClientDesc & c = it->second_;
 
     Scene * s = GetScene();
     RefFrame * rf = RefFrame::refFrame( s, id );
@@ -964,6 +983,11 @@ void Environment::UpdateDynamicNodes( Float secs_dt )
 
     const Vector<SharedPtr<Component> > & comps = s->GetComponents();
     const unsigned qty = comps.Size();
+
+    // This separate array because split/merge changes number of components.
+    // And the first loop would fail in this case.
+    static Vector<SharedPtr<PhysicsFrame> > phFrames;
+    phFrames.Clear();
     for ( unsigned i=0; i<qty; i++ )
     {
         // Try cast to dynamics integration node.
@@ -973,6 +997,17 @@ void Environment::UpdateDynamicNodes( Float secs_dt )
         if ( !pf )
             continue;
         pf->physicsStep( secs_dt );
+        phFrames.Push( SharedPtr<PhysicsFrame>( pf ) );
+    }
+
+    // Here if split or merge took place it is still fine.
+    // Also SharedPtr makes sure that deleted objects are not referenced.
+    const unsigned pfQty = phFrames.Size();
+    for ( unsigned i=0; i<pfQty; i++ )
+    {
+        SharedPtr<PhysicsFrame> & pf = phFrames[i];
+        if ( pf )
+            pf->handleSplitMerge();
     }
 }
 
@@ -1017,6 +1052,17 @@ void Environment::UpdateDynamicGeometryNodes( bool isServer, bool isClient )
         if ( isClient )
             se->updateVisualData();
     }
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        // Try cast to evolving node.
+        // And if converted make time step.
+        SharedPtr<Component> c = comps[i];
+        SurfaceCollisionMesh * scm = c->Cast<SurfaceCollisionMesh>();
+        if ( !scm )
+            continue;
+        if ( isServer || isClient )
+            scm->constructCustomGeometry();
+    }
 }
 
 void Environment::CaptureControls()
@@ -1049,7 +1095,7 @@ void Environment::ApplyControls()
         }
     }
 
-    // Process own controlsand all client controls.
+    // Process own controls and all client controls.
     Scene * s = GetScene();
     if ( !s )
         return;
@@ -1088,10 +1134,27 @@ void Environment::ApplyControls()
                 if ( conn )
                 {
                     const Controls & ctrls = conn->GetControls();
-                    rf->ApplyControls( ctrls );
+                    
+                    Float secsDt = secsDt_;
+                    const Float maxSecsDt = Settings::maxDynamicsTimeStep();
+                    while ( secsDt > 0.001 )
+                    {
+                        const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
+                        rf->ApplyControls( ctrls, dt );
+                        secsDt -= maxSecsDt;
+                    }
                 }
                 else
-                    rf->ApplyControls( controls_ );
+                {
+                    Float secsDt = secsDt_;
+                    const Float maxSecsDt = Settings::maxDynamicsTimeStep();
+                    while ( secsDt > 0.001 )
+                    {
+                        const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
+                        rf->ApplyControls( controls_, dt );
+                        secsDt -= maxSecsDt;
+                    }
+                }
             }
         }
 
@@ -1101,7 +1164,17 @@ void Environment::ApplyControls()
         {
             const int userId = cf->CreatedBy();
             if ( userId == 0 )
-                cf->ApplyControls( controls_ );
+            {
+
+                Float secsDt = secsDt_;
+                const Float maxSecsDt = Settings::maxDynamicsTimeStep();
+                while ( secsDt > 0.001 )
+                {
+                    const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
+                    cf->ApplyControls( controls_, dt );
+                    secsDt -= maxSecsDt;
+                }
+            }
             else
             {
                 HashMap<int, Connection *>::ConstIterator it = clientIds_.Find( userId );
@@ -1109,7 +1182,15 @@ void Environment::ApplyControls()
                 {
                     Connection * conn = it->second_;
                     const Controls ctrls = conn->GetControls();
-                    cf->ApplyControls( ctrls );
+                    
+                    Float secsDt = secsDt_;
+                    const Float maxSecsDt = Settings::maxDynamicsTimeStep();
+                    while ( secsDt > 0.001 )
+                    {
+                        const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
+                        cf->ApplyControls( ctrls, dt );
+                        secsDt -= maxSecsDt;
+                    }
                 }
             }
         }
@@ -1148,6 +1229,26 @@ CameraFrame * Environment::FindCameraFrame()
 {
     CameraFrame * cf = FindCameraFrame( clientDesc_ );
     return cf;
+}
+
+ClientDesc  * Environment::FindCreator( RefFrame * rf )
+{
+    const int clientId = rf->CreatedBy();
+    if ( clientId < 0 )
+        return nullptr;
+    else if ( clientId == 0 )
+    {
+        return &clientDesc_;
+    }
+    HashMap<int, Connection *>::ConstIterator it = clientIds_.Find( clientId );
+    if ( it != clientIds_.End() )
+        return nullptr;
+    Connection * conn = it->second_;
+    HashMap<Connection *, ClientDesc>::Iterator it_conn = connections_.Find( conn );
+    if ( it_conn == connections_.End() )
+        return nullptr;
+    ClientDesc & cd = it_conn->second_;
+    return &cd;
 }
 
 RefFrame * Environment::FindSelectedFrame( const ClientDesc & cd )

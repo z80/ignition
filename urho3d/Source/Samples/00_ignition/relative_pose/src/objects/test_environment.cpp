@@ -7,6 +7,7 @@
 #include "character_cube.h"
 #include "ico_planet.h"
 #include "sphere_example.h"
+#include "sphere_dynamic.h"
 #include "surface_collision_mesh.h"
 #include "rotating_frame.h"
 #include "orbiting_frame.h"
@@ -48,6 +49,16 @@ bool TestEnvironment::ClientConnected( int id, const VariantMap & identity, Stri
 }
 
 void TestEnvironment::CreateReplicatedContentServer()
+{
+    contentServerPlanet();
+}
+
+void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )
+{
+    contentClientCharacterCube( camera );
+}
+
+void TestEnvironment::contentServerTestSystem()
 {
     Scene * s = GetScene();
 
@@ -103,14 +114,13 @@ void TestEnvironment::CreateReplicatedContentServer()
 
         // Create generated system.
         {
-            PiRandom rand;
-            SystemGenerator generator;
-            generator.generate( s );
+            SystemGenerator * generator = context_->GetSubsystem<SystemGenerator>();
+            //generator.generate();
         }
     }
 }
 
-void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )
+void TestEnvironment::contentClientCameraOnly( CameraFrame * camera )
 {
     Scene * s = GetScene();
     if ( !s )
@@ -147,8 +157,75 @@ void TestEnvironment::CreateReplicatedContentClient( CameraFrame * camera )
     //SurfaceCollisionMesh * scm = s->CreateComponent<SurfaceCollisionMesh>();
     //scm->setParent( camera );
     //scm->setR( Vector3d::ZERO );
-
 }
+
+void TestEnvironment::contentServerPlanet()
+{
+    Scene * s = GetScene();
+    if ( !s )
+        return;
+
+    // Create generated system.
+    {
+        //PiRandom rand;
+        SystemGenerator * generator = context_->GetSubsystem<SystemGenerator>();
+        generator->createBodies( s );
+    }
+}
+
+void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
+{
+    Scene * s = GetScene();
+    if ( !s )
+        return;
+
+    const unsigned clientId = camera->CreatedBy();
+
+    //DynamicCube * d = s->CreateComponent<DynamicCube>();
+    //d->setName( String( "DynamicCube object" ) );
+
+    CharacterCube * cc = s->CreateComponent<CharacterCube>();
+    cc->setName( String( "CharacterCube object" ) );
+    cc->SetCreatedBy( clientId );
+
+    // Search for a planet and place everything on a side.
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    SphereDynamic * planet = nullptr;
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        planet = c->Cast<SphereDynamic>();
+        if ( planet )
+            break;
+    }
+    if ( !planet )
+        return;
+
+    cc->setParent( planet );
+    {
+        const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, 0.0 ), 30.5 );
+        cc->setR( at );
+    }
+    camera->setParent( cc );
+    // It should be PhysicsFrame.
+    RefFrame * p = cc->parent();
+    SurfaceCollisionMesh * scm = s->CreateComponent<SurfaceCollisionMesh>();
+    scm->setParent( p );
+
+
+    // Add another character cube.
+    /*CharacterCube * cc2 = s->CreateComponent<CharacterCube>();
+    cc2->setName( String( "Another CharacterCube object" ) );
+    cc2->setParent( planet );
+    {
+        const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.1, 0.0 ), 30.5 );
+        cc2->setR( at );
+    }
+    */
+}
+
+
 
 
 }

@@ -35,13 +35,14 @@ typedef Urho3D::HashMap<Urho3D::String, Urho3D::Variant> SettingsMap;
 
 class State;
 
-class ConfigManager : public Urho3D::Object {
+class ConfigManager : public Urho3D::Object
+{
 URHO3D_OBJECT(ConfigManager, Urho3D::Object);
 
 public:
 
-    ConfigManager(Urho3D::Context* context, const Urho3D::String& defaultFileName = "Data/Config/config.cfg", bool caseSensitive = false, bool saveDefaultParameters = true);
-    ~ConfigManager() override = default;;
+    ConfigManager(Urho3D::Context* context, const Urho3D::String& defaultFileName = "Data/Ign/config.cfg", bool caseSensitive = false, bool saveDefaultParameters = true);
+    ~ConfigManager() override = default;
 
     static void RegisterObject(Urho3D::Context* context);
 

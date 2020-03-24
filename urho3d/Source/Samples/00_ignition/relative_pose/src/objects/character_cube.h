@@ -20,7 +20,7 @@ public:
 
     virtual void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) override;
 
-    void ApplyControls( const Controls & ctrl ) override;
+    void ApplyControls( const Controls & ctrl, Float dt ) override;
     bool AcceptsControls( int userId ) const override;
     bool IsSelectable() const override;
 

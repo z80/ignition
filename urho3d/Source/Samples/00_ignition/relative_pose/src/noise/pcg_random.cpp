@@ -6,7 +6,7 @@ namespace Ign
 
 static const uint64_t DEF_STATE = 0x853c49e6748fea9bULL;
 static const uint64_t DEF_SEQ   = 0xda3e39cb94b95bdbULL;
-
+static const uint64_t PCG_MULT  = 6364136223846793005ULL;
 PcgRandom::PcgRandom()
 { 
     const uint64_t state = DEF_STATE;
@@ -39,8 +39,8 @@ const PcgRandom & PcgRandom::operator=( const PcgRandom & inst )
 
 void PcgRandom::seed( uint64_t s )
 {
-    const uint64_t def_state = DEF_STATE;
-    state_ = (def_state << 16) ^ s;
+    state_ = s * PCG_MULT + inc_;
+    state_ = state_ * PCG_MULT + inc_;
 }
 
 void PcgRandom::setState( uint64_t st )
@@ -57,7 +57,7 @@ uint32_t PcgRandom::uint()
 {
     const uint64_t oldstate = state_;
     // Advance internal state
-    state_ = oldstate * 6364136223846793005ULL + inc_;
+    state_ = oldstate * PCG_MULT + inc_;
     // Calculate output function (XSH RR), uses old state for max ILP
     const uint32_t xorshifted = static_cast<uint32_t>( ((oldstate >> 18u) ^ oldstate) >> 27u );
     const uint32_t rot = static_cast<uint32_t>( oldstate >> 59u );

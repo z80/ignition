@@ -120,7 +120,7 @@ public:
 	// Pick an integer like you're rolling a "choices" sided die,
 	// a 6 sided die would return a number between 0 and 5.
 	// interval [0, choices)
-	inline Uint32 Int32(const int choices)
+    inline Uint32 Int32( const unsigned int choices )
 	{
 		//return Int32() % choices;
 		const Uint32 res = mPCG.uint( choices );
@@ -129,7 +129,7 @@ public:
 
 	// Pick a number between min and max, inclusive.
 	// interval [min, max]
-	inline int Int32(const int min, const int max)
+    inline int Int32( const int min, const int max )
 	{
 		return (Int32() % (1 + max - min)) + min;
 	}
@@ -137,19 +137,19 @@ public:
 	// Pick a number in the half open interval [0, 1)
 	inline double Double()
 	{
-		return double(Int32()) * (1. / 4294967296.); // divided by 2^32
+        return double(Int32()) * (1. / double(0x80000000)); // divided by 2^32
 	}
 
 	// Pick a number in the closed interval [0, 1]
 	inline double Double_closed()
 	{
-		return double(Int32()) * (1. / 4294967295.); // divided by 2^32 - 1
+        return double(Int32()) * (1. / double(0x7FFFFFFF)); // divided by 2^32 - 1
 	}
 
 	// Pick a number in the open interval (0, 1)
 	inline double Double_open()
 	{
-		return (double(Int32()) + .5) * (1. / 4294967296.); // divided by 2^32
+        return (double(Int32()) + .5) * (1. / double(0x80000000)); // divided by 2^32
 	}
 
 	// Pick a 53-bit resolution double in the half open interval [0, 1)
@@ -162,33 +162,33 @@ public:
 	}
 
 	// Pick a number in the half-open interval [min, limit)
-	inline double Double(double min, double limit)
+    inline double Double( double min, double limit )
 	{
 		return Double(limit - min) + min;
 	}
 
 	// Pick a number in the half-open interval [0, limit)
-	inline double Double(double limit)
+    inline double Double( double limit )
 	{
 		return limit * Double();
 	}
 
 	// Pick a number between 0 and max inclusive
 	// interval [0, max]
-	inline double Double_closed(double max)
+    inline double Double_closed( double max )
 	{
 		return max * Double_closed();
 	}
 
 	// Pick a number between min and max inclusive
 	// interval [min, max]
-	inline double Double_closed(double min, double max)
+    inline double Double_closed( double min, double max )
 	{
 		return Double_closed(max - min) + min;
 	}
 
 	// interval [0,1)
-	inline double NDouble(int p)
+    inline double NDouble( int p )
 	{
 		double o = Double(1.0);
 		while (--p > 0)
@@ -203,13 +203,13 @@ public:
 	}
 
 	// Normal distribution with unit variance
-	inline double Normal(const double mean)
+    inline double Normal( const double mean )
 	{
 		return Normal(mean, 1.0);
 	}
 
 	//Normal (Gauss) distribution
-	inline double Normal(const double mean, const double stddev)
+    inline double Normal( const double mean, const double stddev )
 	{
 		//https://en.wikipedia.org/wiki/Box-Muller_transform#Polar_form
 		double u, v, s, z0;
@@ -233,7 +233,7 @@ public:
 		return mean + z0 * stddev;
 	}
 
-	inline int Poisson(const double lambda)
+    inline int Poisson( const double lambda )
 	{
 		int k = 0;
 		double p = Double();
@@ -252,7 +252,7 @@ public:
 	}
 
 	// interval [0,1)
-	inline fixed NFixed(int p)
+    inline fixed NFixed( int p )
 	{
 		fixed o = Fixed();
 		while (--p > 0)

@@ -29,6 +29,8 @@ void PhysicsItem::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
         rigid_body_->DrawDebugGeometry( debug, depthTest );
     if ( collision_shape_ )
         collision_shape_->DrawDebugGeometry( debug, depthTest );
+    if ( visual_node_ )
+        air_mesh_.drawDebugGeometry( visual_node_, debug );
 }
 
 void PhysicsItem::setR( const Vector3d & r )
@@ -80,9 +82,14 @@ void PhysicsItem::updateStateFromRigidBody()
     MarkNetworkUpdate();
 }
 
-RigidBody2* PhysicsItem::rigidBody() const
+RigidBody2 * PhysicsItem::rigidBody() const
 {
     return rigid_body_;
+}
+
+AirMesh & PhysicsItem::airMesh()
+{
+    return air_mesh_;
 }
 
 void PhysicsItem::enteredRefFrame( RefFrame * refFrame )

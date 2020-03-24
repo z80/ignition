@@ -209,7 +209,81 @@ PiSystemGenerator::~PiSystemGenerator()
 
 }
 
-void PiSystemGenerator::apply( PiSystem * system, PiRandom & rand )
+void PiSystemGenerator::createDumb( PiSystem * system, PiRandom & rand )
+{
+    // periapsis, apoapsis = closest, farthest distance in orbit
+    fixed pos( 1, 1 );
+    fixed periapsis = pos + pos * fixed(1, 2) * rand.NFixed(2); /* + jump */
+
+    fixed ecc = rand.NFixed(3);
+    fixed semiMajorAxis = periapsis / (fixed(1, 1) - ecc);
+    fixed apoapsis = 2 * semiMajorAxis - periapsis;
+
+    //fixed mass = rand.Fixed();
+    //mass += rand.Fixed();
+    //mass += rand.Fixed();
+    //mass += rand.Fixed();
+    //mass += rand.Fixed();
+    //mass /= 5;
+    //const Float m = mass.ToDouble();
+    const fixed mass = fixed( 1, 1 );
+
+
+    PiSourceDesc planet;
+    planet.eccentricity_ = ecc;
+    planet.axial_tilt_ = fixed(100, 157) * rand.NFixed(2);
+    planet.semimajor_axis_ = semiMajorAxis;
+    planet.super_type_ = SUPERTYPE_ROCKY_PLANET;
+    planet.type_ = TYPE_PLANET_TERRESTRIAL;
+    planet.seed_ = rand.Int32();
+    planet.parent_ind_ = -1;
+    planet.mass_ = mass;
+    //planet.rotation_period_ = fixed( rand.Int32(1, 200), 24 );
+    planet.rotation_period_ = fixed( 6000, 86400 );
+    planet.radius_ = fixed( 1, 1 );
+
+    planet.gas_ = fixed( 50, 100 );
+    planet.atmos_density_ = fixed( 100, 100 );
+
+    const double e = ecc.ToDouble();
+
+    const double r1 = rand.Double(2 * M_PI); // function parameter evaluation order is implementation-dependent
+    const double r2 = rand.NDouble(5); // can't put two rands in the same expression
+                                       //planet->m_orbit.SetPlane(matrix3x3d::RotateY(r1) * matrix3x3d::RotateX(-0.5 * M_PI + r2 * M_PI / 2.0));
+                                       //planet->m_orbit.SetPhase(rand.Double(2 * M_PI));
+    planet.X_ = r1;
+    planet.Y_ = r2;
+
+
+    planet.inclination_ = FIXED_PI;
+    planet.inclination_ *= r2 / 2.0;
+    planet.orb_min_ = periapsis;
+    planet.orb_max_ = apoapsis;
+
+
+    planet.super_type_ = SUPERTYPE_ROCKY_PLANET;
+    planet.type_       = TYPE_PLANET_TERRESTRIAL;
+
+    planet.metal_ = starMetallicities[ TYPE_STAR_G ] * rand.Fixed();
+
+
+    // harder to be volcanic when you are tiny (you cool down)
+    planet.volcanic_ = std::min( fixed(1, 1), planet.mass_ ) * rand.Fixed();
+    planet.atm_oxidizing_ = rand.Fixed();
+    planet.life_   = fixed( 5, 10 );
+    planet.gas_    = fixed( 5, 10 );
+    planet.liquid_ = fixed( 4, 10 );
+    planet.ice_    = fixed( 2, 10 );
+    planet.volcanic_ = fixed( 1, 10 );
+
+    planet.average_temp_ = 278;
+
+    system->bodies_.Clear();
+    system->bodies_.Push( planet );
+    system->root_body_ind_ = 0;
+}
+
+void PiSystemGenerator::createSystem( PiSystem * system, PiRandom & rand )
 {
 	BodyType starTypes[4];
     uint32_t seed = 0;
@@ -236,6 +310,7 @@ void PiSystemGenerator::apply( PiSystem * system, PiRandom & rand )
 		star.parent_ind_ = -1;
 		star.orb_min_ = fixed();
 		star.orb_max_ = fixed();
+        star.rotation_period_ = fixed( 10, 60*24 ); // One revolution is 10 min.
 
 		makeStarOfType( star, type, rand );
 		//system->SetRootBody( star[0] );
@@ -588,7 +663,7 @@ void PiSystemGenerator::makePlanetsAround( PiSystem * system, PiSourceDesc & pri
         }
         else
         {
-            discMax = 100 * rand.NFixed(2) * fixed::SqrtOf(primary.GM_);
+            discMax = 100 * rand.NFixed(2) * fixed::SqrtOf(primary.mass_);
         }
         // having limited discMin by bin-separation/fake roche, and
         // discMax by some relation to star mass, we can now compute
@@ -662,7 +737,7 @@ void PiSystemGenerator::makePlanetsAround( PiSystem * system, PiSourceDesc & pri
         planet.type_ = TYPE_PLANET_TERRESTRIAL;
         planet.seed_ = rand.Int32();
         planet.parent_ind_ = primaryInd;
-        planet.GM_ = mass;
+        planet.mass_ = mass;
         planet.rotation_period_ = fixed( rand.Int32(1, 200), 24 );
 
         const double e = ecc.ToDouble();
@@ -788,7 +863,7 @@ void PiSystemGenerator::makeStarOfType( PiSourceDesc & sbody, BodyType type, PiR
         sbody.aspectRatio_ = fixed(1, 1);
 		break;
 	}
-	sbody.GM_ = fixed( rand.Int32( starTypeInfo[type].mass[0], starTypeInfo[type].mass[1] ), 100 );
+	sbody.mass_ = fixed( rand.Int32( starTypeInfo[type].mass[0], starTypeInfo[type].mass[1] ), 100 );
 	sbody.average_temp_ = rand.Int32( starTypeInfo[type].tempMin, starTypeInfo[type].tempMax );
 }
 
@@ -797,7 +872,7 @@ void PiSystemGenerator::makeStarOfTypeLighterThan( PiSourceDesc & sbody, BodyTyp
 	int tries = 16;
 	do {
 		makeStarOfType( sbody, type, rand );
-	} while ( ( sbody.GM_ > maxMass ) && (--tries) );
+	} while ( ( sbody.mass_ > maxMass ) && (--tries) );
 }
 
 /*
@@ -814,14 +889,14 @@ fixed PiSystemGenerator::calcHillRadius( PiSystem * system, const PiSourceDesc &
 			// playing with precision since these numbers get small
 			// masses in earth masses
 			const PiSourceDesc & parent = system->bodies_[ sbody.parent_ind_ ];
-			fixedf<32> mprimary = parent.GM_;
+			fixedf<32> mprimary = parent.mass_;
 
 			fixedf<48> a = sbody.semimajor_axis_;
 			fixedf<48> e = sbody.eccentricity_;
 
 			return fixed(a * (fixedf<48>(1, 1) - e) *
 				fixedf<48>::CubeRootOf(fixedf<48>(
-					sbody.GM_ / (fixedf<32>(3, 1) * mprimary))));
+					sbody.mass_ / (fixedf<32>(3, 1) * mprimary))));
 
 			//fixed hr = semiMajorAxis*(fixed(1,1) - eccentricity) *
 			//  fixedcuberoot(mass / (3*mprimary));
@@ -862,24 +937,24 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc & sbody,
     // AndyC - Updated to use the empirically gathered data from this site:
     // http://phl.upr.edu/library/notes/standardmass-radiusrelationforexoplanets
     // but we still limit at the lowest end
-    if (sbody.GM_ <= fixed(1, 1))
+    if (sbody.mass_ <= fixed(1, 1))
 	{
-        sbody.radius_ = fixed( fixedf<48>::CubeRootOf( fixedf<48>( sbody.GM_ ) ) );
+        sbody.radius_ = fixed( fixedf<48>::CubeRootOf( fixedf<48>( sbody.mass_ ) ) );
     }
-	else if ( sbody.GM_ < ONEEUMASS )
+	else if ( sbody.mass_ < ONEEUMASS )
 	{
         // smaller than 1 Earth mass is almost certainly a rocky body
-        sbody.radius_ = fixed::FromDouble( pow( sbody.GM_.ToDouble(), 0.3 ) );
+        sbody.radius_ = fixed::FromDouble( pow( sbody.mass_.ToDouble(), 0.3 ) );
     }
-	else if ( sbody.GM_ < TWOHUNDREDEUMASSES )
+	else if ( sbody.mass_ < TWOHUNDREDEUMASSES )
 	{
         // from 1 EU to 200 they transition from Earth-like rocky bodies, through Ocean worlds and on to Gas Giants
-        sbody.radius_ = fixed::FromDouble( pow( sbody.GM_.ToDouble(), 0.5 ) );
+        sbody.radius_ = fixed::FromDouble( pow( sbody.mass_.ToDouble(), 0.5 ) );
     }
 	else
 	{
         // Anything bigger than 200 EU masses is a Gas Giant or bigger but the density changes to decrease from here on up...
-        sbody.radius_ = fixed::FromDouble( 22.6 * ( 1.0 / pow( sbody.GM_.ToDouble(), double(0.0886) ) ) );
+        sbody.radius_ = fixed::FromDouble( 22.6 * ( 1.0 / pow( sbody.mass_.ToDouble(), double(0.0886) ) ) );
     }
     // enforce minimum size of 10km
     sbody.radius_ = std::max( sbody.radius_, fixed( 1, 630 ) );
@@ -899,7 +974,7 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc & sbody,
     }
 
     // harder to be volcanic when you are tiny (you cool down)
-    sbody.volcanic_ = std::min( fixed(1, 1), sbody.GM_ ) * rand.Fixed();
+    sbody.volcanic_ = std::min( fixed(1, 1), sbody.mass_ ) * rand.Fixed();
     sbody.atm_oxidizing_ = rand.Fixed();
     sbody.life_   = fixed();
     sbody.gas_    = fixed();
@@ -907,7 +982,7 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc & sbody,
     sbody.ice_    = fixed();
 
     // pick body type
-    if (sbody.GM_ > 317 * 13)
+    if (sbody.mass_ > 317 * 13)
 	{
         // more than 13 jupiter masses can fuse deuterium - is a brown dwarf
         sbody.type_ = TYPE_BROWN_DWARF;
@@ -915,25 +990,25 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc & sbody,
         // prevent mass exceeding 65 jupiter masses or so, when it becomes a star
         // XXX since TYPE_BROWN_DWARF is supertype star, mass is now in
         // solar masses. what a fucking mess
-        sbody.GM_ = std::min( sbody.GM_, fixed(317 * 65, 1) ) / SUN_MASS_TO_EARTH_MASS;
+        sbody.mass_ = std::min( sbody.mass_, fixed(317 * 65, 1) ) / SUN_MASS_TO_EARTH_MASS;
         //Radius is too high as it now uses the planetary calculations to work out radius (Cube root of mass)
         // So tell it to use the star data instead:
         sbody.radius_ = fixed( rand.Int32( starTypeInfo[ sbody.type_ ].radius[0], 
 							starTypeInfo[ sbody.type_ ].radius[1] ), 100 );
     }
-	else if ( sbody.GM_ > 6 )
+	else if ( sbody.mass_ > 6 )
 	{
         sbody.type_ = TYPE_PLANET_GAS_GIANT;
     }
-	else if ( sbody.GM_ > fixed(1, 15000) )
+	else if ( sbody.mass_ > fixed(1, 15000) )
 	{
         sbody.type_ = TYPE_PLANET_TERRESTRIAL;
 
         fixed amount_volatiles = fixed(2, 1) * rand.Fixed();
         if ( rand.Int32(3) )
-			amount_volatiles *= sbody.GM_;
+			amount_volatiles *= sbody.mass_;
         // total atmosphere loss
-        if ( rand.Fixed() > sbody.GM_)
+        if ( rand.Fixed() > sbody.mass_)
 			amount_volatiles = fixed();
 
         //Output("Amount volatiles: %f\n", amount_volatiles.ToFloat());
@@ -993,7 +1068,7 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc & sbody,
 				{ 
 					const PiSourceDesc & star = system->bodies_[ s ];
 					//find the most massive star, mass is tied to lifespan
-                    maxMass = maxMass < star.GM_ ? star.GM_ : maxMass; //this automagically eliminates O, B and so on from consideration
+                    maxMass = maxMass < star.mass_ ? star.mass_ : maxMass; //this automagically eliminates O, B and so on from consideration
                 } //handy calculator: http://www.asc-csa.gc.ca/eng/educators/resources/astronomy/module2/calculator.asp
                 if ( maxMass < allowedMass )
 				{
@@ -1022,16 +1097,16 @@ void PiSystemGenerator::pickPlanetType( PiSystem * system, PiSourceDesc & sbody,
     if ( parent.type_ <= TYPE_STAR_MAX )
 	{
         invTidalLockTime /= (sbody.semimajor_axis_ * sbody.semimajor_axis_);
-        invTidalLockTime *= sbody.GM_;
+        invTidalLockTime *= sbody.mass_;
         invTidalLockTime /= (sbody.semimajor_axis_ * sbody.semimajor_axis_);
-        invTidalLockTime *= parent.GM_ * parent.GM_;
+        invTidalLockTime *= parent.mass_ * parent.mass_;
         invTidalLockTime /= sbody.radius_;
         invTidalLockTime /= (sbody.semimajor_axis_ * sbody.semimajor_axis_) * MOON_TIDAL_LOCK;
     } else {
         invTidalLockTime /= (sbody.semimajor_axis_ * sbody.semimajor_axis_) * SUN_MASS_TO_EARTH_MASS;
-        invTidalLockTime *= sbody.GM_;
+        invTidalLockTime *= sbody.mass_;
         invTidalLockTime /= (sbody.semimajor_axis_ * sbody.semimajor_axis_) * SUN_MASS_TO_EARTH_MASS;
-        invTidalLockTime *= parent.GM_ * parent.GM_;
+        invTidalLockTime *= parent.mass_ * parent.mass_;
         invTidalLockTime /= sbody.radius_;
         invTidalLockTime /= (sbody.semimajor_axis_ * sbody.semimajor_axis_) * MOON_TIDAL_LOCK;
     }
@@ -1280,7 +1355,7 @@ static fixed get_disc_density( const PiSourceDesc & primary, fixed discMin, fixe
 {
     discMax = std::max( discMax, discMin );
     fixed total = mass_from_disk_area(discMin, discMax, discMax);
-    return primary.GM_ * percentOfPrimaryMass / total;
+    return primary.mass_ * percentOfPrimaryMass / total;
 }
 
 static inline bool test_overlap( const fixed & x1, const fixed & x2, const fixed & y1, const fixed & y2 )

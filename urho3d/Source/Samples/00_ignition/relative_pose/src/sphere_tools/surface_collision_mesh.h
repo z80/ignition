@@ -35,12 +35,14 @@ protected:
     /// Set physical content parameters (mass, inertia tensor, collision shape, etc.).
     void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs ) override;
 
+public:
     /// Go to parent of parent and search for SphereItem within its children.
     SphereItem * pickSphere();
-    bool needRebuild( SphereItem * & item );
-    void constructCustomGeometry();
+    bool needRebuild(SphereItem * & item, bool forceRebuild=false );
+    void constructCustomGeometry( bool forceRebuild=false );
     void constructCustomGeometry( SphereItem * si, CustomGeometry * cg );
 
+protected:
     State lastState_;
     SphereItem * lastSphereItem_;
 
@@ -49,7 +51,7 @@ protected:
     Vector<Vector3d> pts_;
     Vector<Vertex>   tris_;
 
-    Timer timer_;
+    //Timer timer_;
 };
 
 

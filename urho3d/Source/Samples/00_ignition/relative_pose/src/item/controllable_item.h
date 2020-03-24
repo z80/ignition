@@ -3,6 +3,7 @@
 #define __CONTROLLABLE_ITEM_H_
 
 #include "Urho3D/Urho3DAll.h"
+#include "data_types.h"
 
 using namespace Urho3D;
 
@@ -20,7 +21,7 @@ public:
     ControllableItem( Context * context );
     virtual ~ControllableItem();
 
-    virtual void ApplyControls( const Controls & ctrl );
+    virtual void ApplyControls( const Controls & ctrl, Float dt );
     virtual bool AcceptsControls( int userId ) const;
     virtual bool IsSelectable() const;
 

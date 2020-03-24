@@ -18,6 +18,7 @@ DynamicCube::DynamicCube( Context * context )
     : PhysicsItem( context )
 {
     thrustEnabled_ = false;
+    setName( "DynamicCube" );
 }
 
 DynamicCube::~DynamicCube()
@@ -25,7 +26,7 @@ DynamicCube::~DynamicCube()
 
 }
 
-void DynamicCube::ApplyControls( const Controls & ctrl )
+void DynamicCube::ApplyControls( const Controls & ctrl, Float dt )
 {
     RigidBody2 * rb = rigidBody();
     if ( !rb )

@@ -25,6 +25,7 @@ public:
     virtual void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) override;
 
     void physicsStep( float sec_dt );
+    bool handleSplitMerge();
     Node * physicsNode();
 
 protected:
@@ -32,6 +33,9 @@ protected:
     /// during the component's lifetime. Scene-wide subsystems and events
     /// are subscribed to here.
     void OnSceneSet( Scene * scene ) override;
+
+    /// Apply forces from parents of this ref. frame.
+    void applyForces();
 
     /// Update all physics item states based on dynamics simulation.
     void updateChildStates();
@@ -52,7 +56,7 @@ protected:
     /// Check if need split into a few physics nodes.
     bool checkIfNeedToSplit();
     /// Check if need to merge with another physics frame.
-    void checkIfNeedToMerge();
+    bool checkIfNeedToMerge();
 public:
     SharedPtr<Node>          node_;
     SharedPtr<PhysicsWorld2> physicsWorld_;

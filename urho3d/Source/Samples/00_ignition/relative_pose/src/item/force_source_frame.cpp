@@ -22,7 +22,7 @@ ForceSourceFrame::~ForceSourceFrame()
 
 bool ForceSourceFrame::Recursive() const
 {
-    return false;
+    return true;
 }
 
 bool ForceSourceFrame::ProducesForces() const
@@ -30,17 +30,11 @@ bool ForceSourceFrame::ProducesForces() const
     return false;
 }
 
-void ForceSourceFrame::ApplyForces( PhysicsItem * receiver ) const
+void ForceSourceFrame::ApplyForces( PhysicsItem * receiver )
 {
     const bool producesForces = ProducesForces();
     if ( producesForces )
     {
-        if ( !receiver )
-            return;
-        RigidBody2 * rb = receiver->rigidBody();
-        if ( !rb )
-            return;
-
         State st;
         receiver->relativeState( this, st );
         Vector3d F, P;
@@ -48,14 +42,16 @@ void ForceSourceFrame::ApplyForces( PhysicsItem * receiver ) const
         // Forces are in local ref. frame.
         // But are needed in receiver's parent ref. frame.
         // 1) Convert to receiver's ref. frame.
-        F = st.q * F;
-        P = st.q * P;
+        const Quaterniond toReceiverQ = st.q.Inverse();
+        F = toReceiverQ * F;
+        P = toReceiverQ * P;
         // 2) Convert to parent ref. frame.
         const Quaterniond & q = receiver->relQ();
         F = q * F;
         P = q * P;
         // Apply forces to the receiver.
         // .........
+        RigidBody2 * rb = receiver->rigidBody();
         rb->ApplyForce( Vector3( F.x_, F.y_, F.z_ ) );
         rb->ApplyTorque( Vector3( P.x_, P.y_, P.z_ ) );
     }
@@ -70,7 +66,7 @@ void ForceSourceFrame::ApplyForces( PhysicsItem * receiver ) const
 
     ForceSourceFrame * fs = p->Cast<ForceSourceFrame>();
     if ( fs )
-        ApplyForces( receiver );
+        fs->ApplyForces( receiver );
 }
 
 void ForceSourceFrame::ComputeForces( PhysicsItem * receiver, const State & st, Vector3d & F, Vector3d & P ) const

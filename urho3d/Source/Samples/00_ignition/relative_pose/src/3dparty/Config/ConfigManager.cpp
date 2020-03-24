@@ -380,17 +380,23 @@ void ConfigManager::Clear() {
 
 // Load settings from file.
 bool ConfigManager::Load(const String& fileName, bool overwriteExisting) {
-    const FileSystem* fileSystem(context_->GetSubsystem<FileSystem>());
+    const FileSystem * fileSystem = context_->GetSubsystem<FileSystem>();
+
+    const String fullName = fileSystem->GetProgramDir() + fileName;
 
     ConfigFile configFile(context_);
 
     // Check if file exists.
-    if (!fileSystem->FileExists(fileName)) {
+    if ( !fileSystem->FileExists(fullName) )
         return false;
-    }
 
-    File file(context_, fileName, FILE_READ);
-    configFile.BeginLoad(file);
+    //ResourceCache * cache = context_->GetSubsystem<ResourceCache>();
+    //SharedPtr<File> file = cache->GetFile( fileName );
+    //if ( (!file) || (!file->IsOpen()) )
+    //    return false;
+
+    File file( context_, fullName, FILE_READ );
+    configFile.BeginLoad( file );
 
     return Load(configFile, overwriteExisting);
 }
@@ -432,12 +438,18 @@ bool ConfigManager::Load(ConfigFile& configFile, bool overwriteExisting) {
 
 // Save settings to file.
 bool ConfigManager::Save(const String& fileName, bool smartSave) {
-    const FileSystem* fileSystem(GetSubsystem<FileSystem>());
+    const FileSystem * fileSystem = GetSubsystem<FileSystem>();
+
+    const String fullName = fileSystem->GetProgramDir() + fileName;
+
+    //ResourceCache * cache = context_->GetSubsystem<ResourceCache>();
+    //SharedPtr<File> fileP = cache->GetFile( fileName );
+    //const String fullName = fileP->GetName();
 
     SharedPtr<ConfigFile> configFile(new ConfigFile(context_));
 
     if (smartSave) {
-        SharedPtr<File> file(new File(context_, fileName, FILE_READ));
+        SharedPtr<File> file(new File(context_, fullName, FILE_READ));
 
         // Ensure file is open.
         if (file->IsOpen()) {
@@ -447,7 +459,7 @@ bool ConfigManager::Save(const String& fileName, bool smartSave) {
 
     // Attempt to save the file.
     if (Save(*configFile)) {
-        SharedPtr<File> file(new File(context_, fileName, FILE_WRITE));
+        SharedPtr<File> file(new File(context_, fullName, FILE_WRITE));
 
         // Ensure file is open.
         if (!file->IsOpen()) {

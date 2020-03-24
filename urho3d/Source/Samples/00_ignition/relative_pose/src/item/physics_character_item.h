@@ -18,7 +18,7 @@ public:
     PhysicsCharacterItem( Context * context );
     virtual ~PhysicsCharacterItem();
 
-    void SetAzimuth( Float az );
+    void setAzimuth( Float az );
     Float azimuth() const;
 protected:
     virtual void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs ) override;

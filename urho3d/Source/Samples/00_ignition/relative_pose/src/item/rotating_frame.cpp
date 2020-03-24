@@ -26,6 +26,7 @@ RotatingFrame::RotatingFrame( Context * context )
 	phase_ = 0;
 	period_ = Settings::ticks(60.0);
 	orientation_ = Quaterniond::IDENTITY;
+    setName( "RotatingFrame" );
 }
 
 RotatingFrame::~RotatingFrame()
@@ -98,6 +99,8 @@ void RotatingFrame::ComputeForces( PhysicsItem * receiver, const State & st, Vec
     // Centrifugal force is "-m*W x (W x R)"
     const Vector3d F_centrifugal = -m*( W.CrossProduct( W.CrossProduct( st.r ) ) );
     F = F_coriolis + F_centrifugal;
+
+    //F *= 0.0;
 }
 
 

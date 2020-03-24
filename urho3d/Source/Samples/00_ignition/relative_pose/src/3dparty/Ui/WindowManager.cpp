@@ -143,9 +143,12 @@ void WindowManager::CloseWindow( const String & windowName )
 {
     using namespace IgnEvents::CloseWindow;
     URHO3D_LOGINFO("Closing window: " + windowName);
-    for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
-        if ((*it)->GetType() == StringHash(windowName)) {
-
+    const StringHash nameHash = StringHash(windowName);
+    for (auto it = _windowList.Begin(); it != _windowList.End(); ++it)
+    {
+        if ( (*it)->GetType() == nameHash )
+        {
+            SharedPtr<Object> obj = *it;
             _windowList.Erase(it);
             VariantMap data;
             data[P_NAME] = windowName;
