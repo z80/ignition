@@ -16,24 +16,13 @@ SurfaceCollisionMesh::SurfaceCollisionMesh( Context * context )
       lastSphereItem_( nullptr )
 {
     //SubscribeToEvent( E_UPDATE, URHO3D_HANDLER(SurfaceCollisionMesh, Update) );
+    using namespace SphereCollisionUpdated;
+    SubscribeToEvent( E_SPHERE_COLLISION_UPDATED, URHO3D_HANDLER( SurfaceCollisionMesh, OnSphereItemUpdate ) );
     setName( "SurfaceCollisionMesh" );
 }
 
 SurfaceCollisionMesh::~SurfaceCollisionMesh()
 {
-}
-
-void SurfaceCollisionMesh::Update( StringHash eventType, VariantMap & eventData )
-{
-    (void)eventType;
-    (void)eventData;
-
-    /*const unsigned elapsed =  timer_.GetMSec( false );
-    if ( elapsed > 5000 )
-    {
-        timer_.Reset();
-        constructCustomGeometry();
-    }*/
 }
 
 void SurfaceCollisionMesh::parentTeleported()
@@ -46,6 +35,29 @@ void SurfaceCollisionMesh::parentTeleported()
 bool SurfaceCollisionMesh::IsSelectable() const
 {
     return false;
+}
+
+bool SurfaceCollisionMesh::valid()
+{
+    SphereItem * si = pickSphere();
+    if ( !si )
+        return true;
+    const unsigned qty = pts_.Size();
+    const bool res = (qty > 0);
+    return res;
+}
+
+void SurfaceCollisionMesh::OnSphereItemUpdate( StringHash eventId, VariantMap & eventData )
+{
+    SphereItem * si = pickSphere();
+    if ( !si )
+        return;
+    const unsigned  localId = si->GetID();
+    using namespace SphereCollisionUpdated;
+    const unsigned  signaledId = eventData[P_REF_FRAME_ID].GetUInt();
+    if ( localId != signaledId )
+        return;
+    constructCustomGeometry( true );
 }
 
 void SurfaceCollisionMesh::OnSceneSet( Scene * scene )

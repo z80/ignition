@@ -34,6 +34,9 @@ protected:
     /// are subscribed to here.
     void OnSceneSet( Scene * scene ) override;
 
+    /// Check if can proceed with physics or needs to wait for surface to be generated.
+    bool surfaceOk();
+
     /// Apply forces from parents of this ref. frame.
     void applyForces();
 

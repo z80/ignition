@@ -22,13 +22,17 @@ public:
     SurfaceCollisionMesh( Context * context );
     ~SurfaceCollisionMesh();
 
-    void Update( StringHash eventType, VariantMap & eventData );
-
     void parentTeleported() override;
 
     bool IsSelectable() const override;
 
+    /// Phsyics frame should not integrate dynamics if unless this returns true.
+    bool valid();
+
 protected:
+    /// Callback for SphereItem done its physical surface update.
+    void OnSphereItemUpdate( StringHash eventId, VariantMap & eventData );
+
     void OnSceneSet( Scene * scene ) override;
     /// Creation of visual content when scene is set.
     void createVisualContent( Node * n ) override;

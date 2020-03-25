@@ -1,7 +1,7 @@
 
 #include "physics_frame.h"
 #include "physics_item.h"
-//#include "surface_collision_mesh.h"
+#include "surface_collision_mesh.h"
 #include "force_source_frame.h"
 #include "settings.h"
 #include "Notifications.h"
@@ -44,6 +44,10 @@ void PhysicsFrame::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
 void PhysicsFrame::physicsStep( float sec_dt )
 {
     if ( !physicsWorld_ )
+        return;
+
+    const bool surfOk = surfaceOk();
+    if ( !surfOk )
         return;
 
     applyForces();
@@ -97,10 +101,30 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     physicsWorld_->SetGravity( Vector3::ZERO );
 
     // Also create a surface collision mesh item.
-    //SurfaceCollisionMesh * scm = scene->CreateComponent<SurfaceCollisionMesh>( LOCAL );
-    //scm->setParent( this );
-    //scm->setR( Vector3d::ZERO );
-    //scm->constructCustomGeometry();
+    SurfaceCollisionMesh * scm = scene->CreateComponent<SurfaceCollisionMesh>( LOCAL );
+    scm->setParent( this );
+    scm->setR( Vector3d::ZERO );
+    scm->constructCustomGeometry();
+}
+
+bool PhysicsFrame::surfaceOk()
+{
+    const unsigned qty = children_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        SharedPtr<RefFrame> o = children_[i];
+        if ( !o )
+            continue;
+        SurfaceCollisionMesh * scm = o->Cast<SurfaceCollisionMesh>();
+        if ( !scm )
+            continue;
+
+        const bool valid = scm->valid();
+        if ( !valid )
+            return false;
+    }
+
+    return true;
 }
 
 void PhysicsFrame::applyForces()
@@ -299,10 +323,17 @@ bool PhysicsFrame::checkIfWorthToExist()
 
     // If there are no user objects remove this object.
     // But first parent all objects inside to the parent.
+    // But destroy SurfaceCollisionMesh.
     const unsigned qty = children_.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
         SharedPtr<RefFrame> o = children_[0];
+        SurfaceCollisionMesh * scm = o->Cast<SurfaceCollisionMesh>();
+        if ( scm )
+        {
+            scm->Remove();
+            continue;
+        }
         o->setParent( parent_ );
     }
 
@@ -389,6 +420,9 @@ bool PhysicsFrame::checkIfNeedToSplit()
             const bool userCtrled = o->getUserControlled();
             if ( userCtrled )
                 continue;
+            SurfaceCollisionMesh * scm = o->Cast<SurfaceCollisionMesh>();
+            if ( scm )
+                continue;
             const Float distanceA = o->distance();
             const Float distanceB = o->distance( pf );
             if ( distanceB < distanceA )
@@ -421,12 +455,20 @@ bool PhysicsFrame::checkIfNeedToMerge()
             if ( dist > mergeDist )
                 continue;
 
-            // Move all objects to a different physics frame.
+            // Move all objects to this physics frame.
+            // Except for the SurfaceCollisionMesh. That one 
+            // needs to be removed.
             userControlledList2_ = pf->children_;
             const unsigned qty = userControlledList2_.Size();
             for ( unsigned j=0; j<qty; j++ )
             {
                 SharedPtr<RefFrame> o = userControlledList2_[j];
+                SurfaceCollisionMesh * scm = o->Cast<SurfaceCollisionMesh>();
+                if ( scm )
+                {
+                    scm->Remove();
+                    continue;
+                }
                 o->setParent( this );
             }
             pf->Remove();

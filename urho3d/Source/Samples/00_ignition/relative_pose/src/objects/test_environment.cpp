@@ -209,9 +209,9 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
     }
     camera->setParent( cc );
     // It should be PhysicsFrame.
-    RefFrame * p = cc->parent();
-    SurfaceCollisionMesh * scm = s->CreateComponent<SurfaceCollisionMesh>();
-    scm->setParent( p );
+    //RefFrame * p = cc->parent();
+    //SurfaceCollisionMesh * scm = s->CreateComponent<SurfaceCollisionMesh>();
+    //scm->setParent( p );
 
 
     // Add another character cube.
