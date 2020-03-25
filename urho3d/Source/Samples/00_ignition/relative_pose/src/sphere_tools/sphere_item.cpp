@@ -30,6 +30,8 @@ SphereItem::SphereItem( Context * context )
     collisionUpdateNeeded_      = false;
     collisionUpdateRunning_     = false;
     collisionUpdateToBeApplied_ = false;
+
+    valid_ = false;
 }
 
 SphereItem::~SphereItem()
@@ -106,6 +108,12 @@ void SphereItem::subdriveLevelsInit()
 void SphereItem::setMaterialName( const String & material )
 {
     material_ = material;
+}
+
+bool SphereItem::valid() const
+{
+    const bool res = valid_;
+    return res;
 }
 
 void SphereItem::OnSceneSet( Scene * scene )
@@ -193,7 +201,6 @@ void SphereItem::checkIfSubdriveCollisionNeeded()
         return;
 
     collisionUpdateNeeded_ = true;
-
 }
 
 void SphereItem::startSubdriveCollision()
@@ -235,6 +242,13 @@ void SphereItem::finishSubdriveCollision()
         return;
     collisionUpdateToBeApplied_ = false;
     cubesphereCollision_ = cubesphereCollisionTh_;
+
+    valid_ = true;
+    using namespace SphereCollisionUpdated;
+    VariantMap & eventData = GetEventDataMap();
+    const unsigned id = GetID();
+    eventData[P_REF_FRAME_ID] = id;
+    SendEvent( E_SPHERE_COLLISION_UPDATED, eventData );
 }
 
 

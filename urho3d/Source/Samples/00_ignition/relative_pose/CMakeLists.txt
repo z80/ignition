@@ -21,7 +21,7 @@
 #
 
 # Define target name
-set( TARGET_NAME relative_pose )
+set( TARGET_NAME 00_relative_pose )
 
 include_directories( "./src"
                      "./src/math"

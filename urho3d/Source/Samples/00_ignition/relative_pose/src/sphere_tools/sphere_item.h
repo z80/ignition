@@ -10,6 +10,14 @@ using namespace Urho3D;
 namespace Ign
 {
 
+// Message to indicate Update of collision sphere.
+URHO3D_EVENT( E_SPHERE_COLLISION_UPDATED, SphereCollisionUpdated )
+{
+    // unsigned ID of the object.
+    URHO3D_PARAM( P_REF_FRAME_ID, RefFrameId );
+}
+
+
 class SphereItem: public ForceSourceFrame
 {
     URHO3D_OBJECT( SphereItem, ForceSourceFrame )
@@ -39,6 +47,11 @@ public:
     //void childLeft( RefFrame * refFrame ) override;
     //void parentTeleported() override;
     //void childTeleported( RefFrame * refFrame ) override;
+
+    /// Shows if the object has a valid collision surface generated.
+    /// It is needed because this process is asynchronous and time consuming.
+    /// Will not integrate dynamics until this thing is valid.
+    bool valid() const;
 
 protected:
     /// Handle scene being assigned. This may happen several times
@@ -93,6 +106,8 @@ public:
     /// For asynchonous implementation.
     volatile bool       visualUpdateNeeded_,    visualUpdateRunning_,    visualUpdateToBeApplied_, 
                         collisionUpdateNeeded_, collisionUpdateRunning_, collisionUpdateToBeApplied_;
+    /// For holding the state.
+    bool valid_;
 };
 
 
