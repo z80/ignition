@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,6 +94,8 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 				r_path_and_type.type = value;
 			} else if (assign == "importer") {
 				r_path_and_type.importer = value;
+			} else if (assign == "group_file") {
+				r_path_and_type.group_file = value;
 			} else if (assign == "metadata") {
 				r_path_and_type.metadata = value;
 			} else if (assign == "valid") {
@@ -159,7 +161,8 @@ void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extension
 void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
 
 	if (p_type == "") {
-		return get_recognized_extensions(p_extensions);
+		get_recognized_extensions(p_extensions);
+		return;
 	}
 
 	Set<String> found;
@@ -294,6 +297,14 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 	memdelete(f);
 }
 
+String ResourceFormatImporter::get_import_group_file(const String &p_path) const {
+
+	bool valid = true;
+	PathAndType pat;
+	_get_path_and_type(p_path, pat, &valid);
+	return valid ? pat.group_file : String();
+}
+
 bool ResourceFormatImporter::is_import_valid(const String &p_path) const {
 
 	bool valid = true;
@@ -337,7 +348,7 @@ void ResourceFormatImporter::get_dependencies(const String &p_path, List<String>
 		return;
 	}
 
-	return ResourceLoader::get_dependencies(pat.path, p_dependencies, p_add_types);
+	ResourceLoader::get_dependencies(pat.path, p_dependencies, p_add_types);
 }
 
 Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_name(const String &p_name) const {

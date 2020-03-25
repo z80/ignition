@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,7 @@
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
+#include "editor/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
@@ -115,6 +116,8 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 			button_path.push_back(p_path[i]);
 		}
 
+		edited_path = button_path;
+
 		for (int i = 0; i < editors.size(); i++) {
 			if (editors[i]->can_edit(node)) {
 				editors[i]->edit(node);
@@ -126,9 +129,8 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 		}
 	} else {
 		current_root = 0;
+		edited_path = button_path;
 	}
-
-	edited_path = button_path;
 
 	_update_path();
 }
@@ -283,7 +285,7 @@ AnimationTreeEditorPlugin::AnimationTreeEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
 	anim_tree_editor = memnew(AnimationTreeEditor);
-	anim_tree_editor->set_custom_minimum_size(Size2(0, 300));
+	anim_tree_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 
 	button = editor->add_bottom_panel_item(TTR("AnimationTree"), anim_tree_editor);
 	button->hide();

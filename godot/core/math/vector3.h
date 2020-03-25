@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,7 @@
 #ifndef VECTOR3_H
 #define VECTOR3_H
 
-#include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
-#include "core/typedefs.h"
 #include "core/ustring.h"
 
 class Basis;
@@ -94,11 +92,12 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_b, real_t p_t) const;
 	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const;
 	Vector3 cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const;
+	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_b) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_b) const;
-	_FORCE_INLINE_ Basis outer(const Vector3 &p_b) const;
-	_FORCE_INLINE_ Basis to_diagonal_matrix() const;
+	Basis outer(const Vector3 &p_b) const;
+	Basis to_diagonal_matrix() const;
 
 	_FORCE_INLINE_ Vector3 abs() const;
 	_FORCE_INLINE_ Vector3 floor() const;
@@ -109,6 +108,8 @@ struct Vector3 {
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_b) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_b) const;
 
+	_FORCE_INLINE_ Vector3 posmod(const real_t p_mod) const;
+	_FORCE_INLINE_ Vector3 posmodv(const Vector3 &p_modv) const;
 	_FORCE_INLINE_ Vector3 project(const Vector3 &p_b) const;
 
 	_FORCE_INLINE_ real_t angle_to(const Vector3 &p_b) const;
@@ -117,6 +118,8 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 slide(const Vector3 &p_normal) const;
 	_FORCE_INLINE_ Vector3 bounce(const Vector3 &p_normal) const;
 	_FORCE_INLINE_ Vector3 reflect(const Vector3 &p_normal) const;
+
+	bool is_equal_approx(const Vector3 &p_v) const;
 
 	/* Operators */
 
@@ -140,19 +143,18 @@ struct Vector3 {
 	_FORCE_INLINE_ bool operator!=(const Vector3 &p_v) const;
 	_FORCE_INLINE_ bool operator<(const Vector3 &p_v) const;
 	_FORCE_INLINE_ bool operator<=(const Vector3 &p_v) const;
+	_FORCE_INLINE_ bool operator>(const Vector3 &p_v) const;
+	_FORCE_INLINE_ bool operator>=(const Vector3 &p_v) const;
 
 	operator String() const;
 
-	_FORCE_INLINE_ Vector3() { x = y = z = 0; }
 	_FORCE_INLINE_ Vector3(real_t p_x, real_t p_y, real_t p_z) {
 		x = p_x;
 		y = p_y;
 		z = p_z;
 	}
+	_FORCE_INLINE_ Vector3() { x = y = z = 0; }
 };
-
-// Should be included after class definition, otherwise we get circular refs
-#include "core/math/basis.h"
 
 Vector3 Vector3::cross(const Vector3 &p_b) const {
 
@@ -167,21 +169,6 @@ Vector3 Vector3::cross(const Vector3 &p_b) const {
 real_t Vector3::dot(const Vector3 &p_b) const {
 
 	return x * p_b.x + y * p_b.y + z * p_b.z;
-}
-
-Basis Vector3::outer(const Vector3 &p_b) const {
-
-	Vector3 row0(x * p_b.x, x * p_b.y, x * p_b.z);
-	Vector3 row1(y * p_b.x, y * p_b.y, y * p_b.z);
-	Vector3 row2(z * p_b.x, z * p_b.y, z * p_b.z);
-
-	return Basis(row0, row1, row2);
-}
-
-Basis Vector3::to_diagonal_matrix() const {
-	return Basis(x, 0, 0,
-			0, y, 0,
-			0, 0, z);
 }
 
 Vector3 Vector3::abs() const {
@@ -230,6 +217,14 @@ real_t Vector3::distance_to(const Vector3 &p_b) const {
 real_t Vector3::distance_squared_to(const Vector3 &p_b) const {
 
 	return (p_b - *this).length_squared();
+}
+
+Vector3 Vector3::posmod(const real_t p_mod) const {
+	return Vector3(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod), Math::fposmod(z, p_mod));
+}
+
+Vector3 Vector3::posmodv(const Vector3 &p_modv) const {
+	return Vector3(Math::fposmod(x, p_modv.x), Math::fposmod(y, p_modv.y), Math::fposmod(z, p_modv.z));
 }
 
 Vector3 Vector3::project(const Vector3 &p_b) const {
@@ -337,17 +332,18 @@ Vector3 Vector3::operator-() const {
 
 bool Vector3::operator==(const Vector3 &p_v) const {
 
-	return (x == p_v.x && y == p_v.y && z == p_v.z);
+	return x == p_v.x && y == p_v.y && z == p_v.z;
 }
 
 bool Vector3::operator!=(const Vector3 &p_v) const {
-	return (x != p_v.x || y != p_v.y || z != p_v.z);
+
+	return x != p_v.x || y != p_v.y || z != p_v.z;
 }
 
 bool Vector3::operator<(const Vector3 &p_v) const {
 
-	if (x == p_v.x) {
-		if (y == p_v.y)
+	if (Math::is_equal_approx(x, p_v.x)) {
+		if (Math::is_equal_approx(y, p_v.y))
 			return z < p_v.z;
 		else
 			return y < p_v.y;
@@ -356,15 +352,39 @@ bool Vector3::operator<(const Vector3 &p_v) const {
 	}
 }
 
+bool Vector3::operator>(const Vector3 &p_v) const {
+
+	if (Math::is_equal_approx(x, p_v.x)) {
+		if (Math::is_equal_approx(y, p_v.y))
+			return z > p_v.z;
+		else
+			return y > p_v.y;
+	} else {
+		return x > p_v.x;
+	}
+}
+
 bool Vector3::operator<=(const Vector3 &p_v) const {
 
-	if (x == p_v.x) {
-		if (y == p_v.y)
+	if (Math::is_equal_approx(x, p_v.x)) {
+		if (Math::is_equal_approx(y, p_v.y))
 			return z <= p_v.z;
 		else
 			return y < p_v.y;
 	} else {
 		return x < p_v.x;
+	}
+}
+
+bool Vector3::operator>=(const Vector3 &p_v) const {
+
+	if (Math::is_equal_approx(x, p_v.x)) {
+		if (Math::is_equal_approx(y, p_v.y))
+			return z >= p_v.z;
+		else
+			return y > p_v.y;
+	} else {
+		return x > p_v.x;
 	}
 }
 
@@ -398,13 +418,14 @@ real_t Vector3::length_squared() const {
 
 void Vector3::normalize() {
 
-	real_t l = length();
-	if (l == 0) {
+	real_t lengthsq = length_squared();
+	if (lengthsq == 0) {
 		x = y = z = 0;
 	} else {
-		x /= l;
-		y /= l;
-		z /= l;
+		real_t length = Math::sqrt(lengthsq);
+		x /= length;
+		y /= length;
+		z /= length;
 	}
 }
 
@@ -433,7 +454,7 @@ void Vector3::zero() {
 // slide returns the component of the vector along the given plane, specified by its normal vector.
 Vector3 Vector3::slide(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(!p_normal.is_normalized(), Vector3());
+	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 must be normalized.");
 #endif
 	return *this - p_normal * this->dot(p_normal);
 }
@@ -444,7 +465,7 @@ Vector3 Vector3::bounce(const Vector3 &p_normal) const {
 
 Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(!p_normal.is_normalized(), Vector3());
+	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 must be normalized.");
 #endif
 	return 2.0 * p_normal * this->dot(p_normal) - *this;
 }

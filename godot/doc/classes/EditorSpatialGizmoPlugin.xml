@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSpatialGizmoPlugin" inherits="Resource" category="Core" version="3.1.2">
+<class name="EditorSpatialGizmoPlugin" inherits="Resource" version="3.2">
 	<brief_description>
 		Used by the editor to define Spatial gizmo types.
 	</brief_description>
@@ -7,7 +7,7 @@
 		EditorSpatialGizmoPlugin allows you to define a new type of Gizmo. There are two main ways to do so: extending [EditorSpatialGizmoPlugin] for the simpler gizmos, or creating a new [EditorSpatialGizmo] type. See the tutorial in the documentation for more info.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.1/tutorials/plugins/editor/spatial_gizmos.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/spatial_gizmos.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_material">
@@ -25,7 +25,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Override this method to define whether the gizmo can be hidden or not. Defaults to [code]true[/code].
+				Override this method to define whether the gizmo can be hidden or not. Returns [code]true[/code] if not overridden.
 			</description>
 		</method>
 		<method name="commit_handle" qualifiers="virtual">
@@ -49,7 +49,7 @@
 			<argument index="0" name="spatial" type="Spatial">
 			</argument>
 			<description>
-				Override this method to return a custom [EditorSpatialGizmo] for the spatial nodes of your choice, return [code]null[/code] for the rest of nodes. (See also [method has_gizmo])
+				Override this method to return a custom [EditorSpatialGizmo] for the spatial nodes of your choice, return [code]null[/code] for the rest of nodes. See also [method has_gizmo].
 			</description>
 		</method>
 		<method name="create_handle_material">
@@ -114,7 +114,7 @@
 			<argument index="1" name="index" type="int">
 			</argument>
 			<description>
-				Get actual value of a handle from gizmo. Called for this plugin's active gizmos.
+				Gets actual value of a handle from gizmo. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="get_material">
@@ -125,7 +125,7 @@
 			<argument index="1" name="gizmo" type="EditorSpatialGizmo">
 			</argument>
 			<description>
-				Get material from the internal list of materials. If an [EditorSpatialGizmo] is provided it will try to get the corresponding variant (selected and/or editable).
+				Gets material from the internal list of materials. If an [EditorSpatialGizmo] is provided, it will try to get the corresponding variant (selected and/or editable).
 			</description>
 		</method>
 		<method name="get_name" qualifiers="virtual">
@@ -158,7 +158,7 @@
 			<argument index="1" name="index" type="int">
 			</argument>
 			<description>
-				Get whether a handle is highlighted or not. Called for this plugin's active gizmos.
+				Gets whether a handle is highlighted or not. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="is_selectable_when_hidden" qualifiers="virtual">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,7 +93,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				TransformTrack *tt = static_cast<TransformTrack *>(tracks[track]);
 				PoolVector<float> values = p_value;
 				int vcount = values.size();
-				ERR_FAIL_COND_V(vcount % 12, false); // shuld be multiple of 11
+				ERR_FAIL_COND_V(vcount % 12, false); // should be multiple of 11
 
 				PoolVector<float>::Read r = values.read();
 
@@ -403,7 +403,7 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 					w[idx++] = scale.z;
 				}
 
-				w = PoolVector<real_t>::Write();
+				w.release();
 				r_ret = keys;
 				return true;
 
@@ -438,8 +438,8 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 					idx++;
 				}
 
-				wti = PoolVector<float>::Write();
-				wtr = PoolVector<float>::Write();
+				wti.release();
+				wtr.release();
 
 				d["times"] = key_times;
 				d["transitions"] = key_transitions;
@@ -478,8 +478,8 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 					idx++;
 				}
 
-				wti = PoolVector<float>::Write();
-				wtr = PoolVector<float>::Write();
+				wti.release();
+				wtr.release();
 
 				d["times"] = key_times;
 				d["transitions"] = key_transitions;
@@ -523,8 +523,8 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 					idx++;
 				}
 
-				wti = PoolVector<float>::Write();
-				wpo = PoolVector<float>::Write();
+				wti.release();
+				wpo.release();
 
 				d["times"] = key_times;
 				d["points"] = key_points;
@@ -562,7 +562,7 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 					idx++;
 				}
 
-				wti = PoolVector<float>::Write();
+				wti.release();
 
 				d["times"] = key_times;
 				d["clips"] = clips;
@@ -595,8 +595,8 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 					wcl[i] = vls[i].value;
 				}
 
-				wti = PoolVector<float>::Write();
-				wcl = PoolVector<String>::Write();
+				wti.release();
+				wcl.release();
 
 				d["times"] = key_times;
 				d["clips"] = clips;
@@ -819,15 +819,17 @@ int Animation::_insert(float p_time, T &p_keys, const V &p_value) {
 
 	while (true) {
 
-		if (idx == 0 || p_keys[idx - 1].time < p_time) {
-			//condition for insertion.
-			p_keys.insert(idx, p_value);
-			return idx;
-		} else if (p_keys[idx - 1].time == p_time) {
+		// Condition for replacement.
+		if (idx > 0 && Math::is_equal_approx(p_keys[idx - 1].time, p_time)) {
 
-			// condition for replacing.
 			p_keys.write[idx - 1] = p_value;
 			return idx - 1;
+
+			// Condition for insert.
+		} else if (idx == 0 || p_keys[idx - 1].time < p_time) {
+
+			p_keys.insert(idx, p_value);
+			return idx;
 		}
 
 		idx--;
@@ -861,7 +863,7 @@ Error Animation::transform_track_get_key(int p_track, int p_key, Vector3 *r_loc,
 	return OK;
 }
 
-int Animation::transform_track_insert_key(int p_track, float p_time, const Vector3 p_loc, const Quat &p_rot, const Vector3 &p_scale) {
+int Animation::transform_track_insert_key(int p_track, float p_time, const Vector3 &p_loc, const Quat &p_rot, const Vector3 &p_scale) {
 
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
@@ -1296,6 +1298,78 @@ float Animation::track_get_key_time(int p_track, int p_key_idx) const {
 	ERR_FAIL_V(-1);
 }
 
+void Animation::track_set_key_time(int p_track, int p_key_idx, float p_time) {
+
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+
+	switch (t->type) {
+
+		case TYPE_TRANSFORM: {
+
+			TransformTrack *tt = static_cast<TransformTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, tt->transforms.size());
+			TKey<TransformKey> key = tt->transforms[p_key_idx];
+			key.time = p_time;
+			tt->transforms.remove(p_key_idx);
+			_insert(p_time, tt->transforms, key);
+			return;
+		}
+		case TYPE_VALUE: {
+
+			ValueTrack *vt = static_cast<ValueTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, vt->values.size());
+			TKey<Variant> key = vt->values[p_key_idx];
+			key.time = p_time;
+			vt->values.remove(p_key_idx);
+			_insert(p_time, vt->values, key);
+			return;
+		}
+		case TYPE_METHOD: {
+
+			MethodTrack *mt = static_cast<MethodTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, mt->methods.size());
+			MethodKey key = mt->methods[p_key_idx];
+			key.time = p_time;
+			mt->methods.remove(p_key_idx);
+			_insert(p_time, mt->methods, key);
+			return;
+		}
+		case TYPE_BEZIER: {
+
+			BezierTrack *bt = static_cast<BezierTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, bt->values.size());
+			TKey<BezierKey> key = bt->values[p_key_idx];
+			key.time = p_time;
+			bt->values.remove(p_key_idx);
+			_insert(p_time, bt->values, key);
+			return;
+		}
+		case TYPE_AUDIO: {
+
+			AudioTrack *at = static_cast<AudioTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, at->values.size());
+			TKey<AudioKey> key = at->values[p_key_idx];
+			key.time = p_time;
+			at->values.remove(p_key_idx);
+			_insert(p_time, at->values, key);
+			return;
+		}
+		case TYPE_ANIMATION: {
+
+			AnimationTrack *at = static_cast<AnimationTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, at->values.size());
+			TKey<StringName> key = at->values[p_key_idx];
+			key.time = p_time;
+			at->values.remove(p_key_idx);
+			_insert(p_time, at->values, key);
+			return;
+		}
+	}
+
+	ERR_FAIL();
+}
+
 float Animation::track_get_key_transition(int p_track, int p_key_idx) const {
 
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
@@ -1351,7 +1425,9 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, tt->transforms.size());
+
 			Dictionary d = p_value;
+
 			if (d.has("location"))
 				tt->transforms.write[p_key_idx].value.loc = d["location"];
 			if (d.has("rotation"))
@@ -1364,6 +1440,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, vt->values.size());
+
 			vt->values.write[p_key_idx].value = p_value;
 
 		} break;
@@ -1371,11 +1448,14 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, mt->methods.size());
+
 			Dictionary d = p_value;
+
 			if (d.has("method"))
 				mt->methods.write[p_key_idx].method = d["method"];
 			if (d.has("args"))
 				mt->methods.write[p_key_idx].params = d["args"];
+
 		} break;
 		case TYPE_BEZIER: {
 
@@ -1395,6 +1475,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 		case TYPE_AUDIO: {
 
 			AudioTrack *at = static_cast<AudioTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, at->values.size());
 
 			Dictionary k = p_value;
 			ERR_FAIL_COND(!k.has("start_offset"));
@@ -1409,6 +1490,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 		case TYPE_ANIMATION: {
 
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, at->values.size());
 
 			at->values.write[p_key_idx].value = p_value;
 
@@ -1477,7 +1559,7 @@ int Animation::_find(const Vector<K> &p_keys, float p_time) const {
 
 		middle = (low + high) / 2;
 
-		if (Math::abs(p_time - keys[middle].time) < CMP_EPSILON) { //match
+		if (Math::is_equal_approx(p_time, keys[middle].time)) { //match
 			return middle;
 		} else if (p_time < keys[middle].time)
 			high = middle - 1; //search low end of array
@@ -1585,8 +1667,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			Vector2 pb = p_post_b;
 
 			return a.cubic_interpolate(b, pa, pb, p_c);
-
-		} break;
+		}
 		case Variant::RECT2: {
 
 			Rect2 a = p_a;
@@ -1597,8 +1678,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			return Rect2(
 					a.position.cubic_interpolate(b.position, pa.position, pb.position, p_c),
 					a.size.cubic_interpolate(b.size, pa.size, pb.size, p_c));
-
-		} break;
+		}
 		case Variant::VECTOR3: {
 
 			Vector3 a = p_a;
@@ -1607,8 +1687,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			Vector3 pb = p_post_b;
 
 			return a.cubic_interpolate(b, pa, pb, p_c);
-
-		} break;
+		}
 		case Variant::QUAT: {
 
 			Quat a = p_a;
@@ -1617,8 +1696,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			Quat pb = p_post_b;
 
 			return a.cubic_slerp(b, pa, pb, p_c);
-
-		} break;
+		}
 		case Variant::AABB: {
 
 			AABB a = p_a;
@@ -1629,14 +1707,12 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			return AABB(
 					a.position.cubic_interpolate(b.position, pa.position, pb.position, p_c),
 					a.size.cubic_interpolate(b.size, pa.size, pb.size, p_c));
-		} break;
+		}
 		default: {
 
 			return _interpolate(p_a, p_b, p_c);
 		}
 	}
-
-	return Variant();
 }
 float Animation::_cubic_interpolate(const float &p_pre_a, const float &p_a, const float &p_b, const float &p_post_b, float p_c) const {
 
@@ -1680,10 +1756,10 @@ T Animation::_interpolate(const Vector<TKey<T> > &p_keys, float p_time, Interpol
 				float delta = p_keys[next].time - p_keys[idx].time;
 				float from = p_time - p_keys[idx].time;
 
-				if (Math::absf(delta) > CMP_EPSILON)
-					c = from / delta;
-				else
+				if (Math::is_zero_approx(delta))
 					c = 0;
+				else
+					c = from / delta;
 
 			} else {
 
@@ -1691,10 +1767,10 @@ T Animation::_interpolate(const Vector<TKey<T> > &p_keys, float p_time, Interpol
 				float delta = (length - p_keys[idx].time) + p_keys[next].time;
 				float from = p_time - p_keys[idx].time;
 
-				if (Math::absf(delta) > CMP_EPSILON)
-					c = from / delta;
-				else
+				if (Math::is_zero_approx(delta))
 					c = 0;
+				else
+					c = from / delta;
 			}
 
 		} else {
@@ -1707,10 +1783,10 @@ T Animation::_interpolate(const Vector<TKey<T> > &p_keys, float p_time, Interpol
 			float delta = endtime + p_keys[next].time;
 			float from = endtime + p_time;
 
-			if (Math::absf(delta) > CMP_EPSILON)
-				c = from / delta;
-			else
+			if (Math::is_zero_approx(delta))
 				c = 0;
+			else
+				c = from / delta;
 		}
 
 	} else { // no loop
@@ -1723,17 +1799,17 @@ T Animation::_interpolate(const Vector<TKey<T> > &p_keys, float p_time, Interpol
 				float delta = p_keys[next].time - p_keys[idx].time;
 				float from = p_time - p_keys[idx].time;
 
-				if (Math::absf(delta) > CMP_EPSILON)
-					c = from / delta;
-				else
+				if (Math::is_zero_approx(delta))
 					c = 0;
+				else
+					c = from / delta;
 
 			} else {
 
 				next = idx;
 			}
 
-		} else if (idx < 0) {
+		} else {
 
 			// only allow extending first key to anim start if looping
 			if (loop)
@@ -2559,17 +2635,6 @@ bool Animation::has_loop() const {
 	return loop;
 }
 
-void Animation::track_move_up(int p_track) {
-
-	if (p_track >= 0 && p_track < (tracks.size() - 1)) {
-
-		SWAP(tracks.write[p_track], tracks.write[p_track + 1]);
-	}
-
-	emit_changed();
-	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
-}
-
 void Animation::track_set_imported(int p_track, bool p_imported) {
 
 	ERR_FAIL_INDEX(p_track, tracks.size());
@@ -2595,12 +2660,40 @@ bool Animation::track_is_enabled(int p_track) const {
 	return tracks[p_track]->enabled;
 }
 
+void Animation::track_move_up(int p_track) {
+
+	if (p_track >= 0 && p_track < (tracks.size() - 1)) {
+
+		SWAP(tracks.write[p_track], tracks.write[p_track + 1]);
+	}
+
+	emit_changed();
+	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
+}
+
 void Animation::track_move_down(int p_track) {
 
 	if (p_track > 0 && p_track < tracks.size()) {
 
 		SWAP(tracks.write[p_track], tracks.write[p_track - 1]);
 	}
+
+	emit_changed();
+	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
+}
+
+void Animation::track_move_to(int p_track, int p_to_index) {
+
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	ERR_FAIL_INDEX(p_to_index, tracks.size() + 1);
+	if (p_track == p_to_index || p_track == p_to_index - 1)
+		return;
+
+	Track *track = tracks.get(p_track);
+	tracks.remove(p_track);
+	// Take into account that the position of the tracks that come after the one removed will change.
+	tracks.insert(p_to_index > p_track ? p_to_index - 1 : p_to_index, track);
+
 	emit_changed();
 	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
@@ -2612,6 +2705,7 @@ void Animation::track_swap(int p_track, int p_with_track) {
 	if (p_track == p_with_track)
 		return;
 	SWAP(tracks.write[p_track], tracks.write[p_with_track]);
+
 	emit_changed();
 	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
@@ -2647,75 +2741,77 @@ void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {
 void Animation::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_track", "type", "at_position"), &Animation::add_track, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("remove_track", "idx"), &Animation::remove_track);
+	ClassDB::bind_method(D_METHOD("remove_track", "track_idx"), &Animation::remove_track);
 	ClassDB::bind_method(D_METHOD("get_track_count"), &Animation::get_track_count);
-	ClassDB::bind_method(D_METHOD("track_get_type", "idx"), &Animation::track_get_type);
-	ClassDB::bind_method(D_METHOD("track_get_path", "idx"), &Animation::track_get_path);
-	ClassDB::bind_method(D_METHOD("track_set_path", "idx", "path"), &Animation::track_set_path);
+	ClassDB::bind_method(D_METHOD("track_get_type", "track_idx"), &Animation::track_get_type);
+	ClassDB::bind_method(D_METHOD("track_get_path", "track_idx"), &Animation::track_get_path);
+	ClassDB::bind_method(D_METHOD("track_set_path", "track_idx", "path"), &Animation::track_set_path);
 	ClassDB::bind_method(D_METHOD("find_track", "path"), &Animation::find_track);
 
-	ClassDB::bind_method(D_METHOD("track_move_up", "idx"), &Animation::track_move_up);
-	ClassDB::bind_method(D_METHOD("track_move_down", "idx"), &Animation::track_move_down);
-	ClassDB::bind_method(D_METHOD("track_swap", "idx", "with_idx"), &Animation::track_swap);
+	ClassDB::bind_method(D_METHOD("track_move_up", "track_idx"), &Animation::track_move_up);
+	ClassDB::bind_method(D_METHOD("track_move_down", "track_idx"), &Animation::track_move_down);
+	ClassDB::bind_method(D_METHOD("track_move_to", "track_idx", "to_idx"), &Animation::track_move_to);
+	ClassDB::bind_method(D_METHOD("track_swap", "track_idx", "with_idx"), &Animation::track_swap);
 
-	ClassDB::bind_method(D_METHOD("track_set_imported", "idx", "imported"), &Animation::track_set_imported);
-	ClassDB::bind_method(D_METHOD("track_is_imported", "idx"), &Animation::track_is_imported);
+	ClassDB::bind_method(D_METHOD("track_set_imported", "track_idx", "imported"), &Animation::track_set_imported);
+	ClassDB::bind_method(D_METHOD("track_is_imported", "track_idx"), &Animation::track_is_imported);
 
-	ClassDB::bind_method(D_METHOD("track_set_enabled", "idx", "enabled"), &Animation::track_set_enabled);
-	ClassDB::bind_method(D_METHOD("track_is_enabled", "idx"), &Animation::track_is_enabled);
+	ClassDB::bind_method(D_METHOD("track_set_enabled", "track_idx", "enabled"), &Animation::track_set_enabled);
+	ClassDB::bind_method(D_METHOD("track_is_enabled", "track_idx"), &Animation::track_is_enabled);
 
-	ClassDB::bind_method(D_METHOD("transform_track_insert_key", "idx", "time", "location", "rotation", "scale"), &Animation::transform_track_insert_key);
-	ClassDB::bind_method(D_METHOD("track_insert_key", "idx", "time", "key", "transition"), &Animation::track_insert_key, DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("track_remove_key", "idx", "key_idx"), &Animation::track_remove_key);
-	ClassDB::bind_method(D_METHOD("track_remove_key_at_position", "idx", "position"), &Animation::track_remove_key_at_position);
-	ClassDB::bind_method(D_METHOD("track_set_key_value", "idx", "key", "value"), &Animation::track_set_key_value);
-	ClassDB::bind_method(D_METHOD("track_set_key_transition", "idx", "key_idx", "transition"), &Animation::track_set_key_transition);
-	ClassDB::bind_method(D_METHOD("track_get_key_transition", "idx", "key_idx"), &Animation::track_get_key_transition);
+	ClassDB::bind_method(D_METHOD("transform_track_insert_key", "track_idx", "time", "location", "rotation", "scale"), &Animation::transform_track_insert_key);
+	ClassDB::bind_method(D_METHOD("track_insert_key", "track_idx", "time", "key", "transition"), &Animation::track_insert_key, DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("track_remove_key", "track_idx", "key_idx"), &Animation::track_remove_key);
+	ClassDB::bind_method(D_METHOD("track_remove_key_at_position", "track_idx", "position"), &Animation::track_remove_key_at_position);
+	ClassDB::bind_method(D_METHOD("track_set_key_value", "track_idx", "key", "value"), &Animation::track_set_key_value);
+	ClassDB::bind_method(D_METHOD("track_set_key_transition", "track_idx", "key_idx", "transition"), &Animation::track_set_key_transition);
+	ClassDB::bind_method(D_METHOD("track_set_key_time", "track_idx", "key_idx", "time"), &Animation::track_set_key_time);
+	ClassDB::bind_method(D_METHOD("track_get_key_transition", "track_idx", "key_idx"), &Animation::track_get_key_transition);
 
-	ClassDB::bind_method(D_METHOD("track_get_key_count", "idx"), &Animation::track_get_key_count);
-	ClassDB::bind_method(D_METHOD("track_get_key_value", "idx", "key_idx"), &Animation::track_get_key_value);
-	ClassDB::bind_method(D_METHOD("track_get_key_time", "idx", "key_idx"), &Animation::track_get_key_time);
-	ClassDB::bind_method(D_METHOD("track_find_key", "idx", "time", "exact"), &Animation::track_find_key, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("track_get_key_count", "track_idx"), &Animation::track_get_key_count);
+	ClassDB::bind_method(D_METHOD("track_get_key_value", "track_idx", "key_idx"), &Animation::track_get_key_value);
+	ClassDB::bind_method(D_METHOD("track_get_key_time", "track_idx", "key_idx"), &Animation::track_get_key_time);
+	ClassDB::bind_method(D_METHOD("track_find_key", "track_idx", "time", "exact"), &Animation::track_find_key, DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("track_set_interpolation_type", "idx", "interpolation"), &Animation::track_set_interpolation_type);
-	ClassDB::bind_method(D_METHOD("track_get_interpolation_type", "idx"), &Animation::track_get_interpolation_type);
+	ClassDB::bind_method(D_METHOD("track_set_interpolation_type", "track_idx", "interpolation"), &Animation::track_set_interpolation_type);
+	ClassDB::bind_method(D_METHOD("track_get_interpolation_type", "track_idx"), &Animation::track_get_interpolation_type);
 
-	ClassDB::bind_method(D_METHOD("track_set_interpolation_loop_wrap", "idx", "interpolation"), &Animation::track_set_interpolation_loop_wrap);
-	ClassDB::bind_method(D_METHOD("track_get_interpolation_loop_wrap", "idx"), &Animation::track_get_interpolation_loop_wrap);
+	ClassDB::bind_method(D_METHOD("track_set_interpolation_loop_wrap", "track_idx", "interpolation"), &Animation::track_set_interpolation_loop_wrap);
+	ClassDB::bind_method(D_METHOD("track_get_interpolation_loop_wrap", "track_idx"), &Animation::track_get_interpolation_loop_wrap);
 
-	ClassDB::bind_method(D_METHOD("transform_track_interpolate", "idx", "time_sec"), &Animation::_transform_track_interpolate);
-	ClassDB::bind_method(D_METHOD("value_track_set_update_mode", "idx", "mode"), &Animation::value_track_set_update_mode);
-	ClassDB::bind_method(D_METHOD("value_track_get_update_mode", "idx"), &Animation::value_track_get_update_mode);
+	ClassDB::bind_method(D_METHOD("transform_track_interpolate", "track_idx", "time_sec"), &Animation::_transform_track_interpolate);
+	ClassDB::bind_method(D_METHOD("value_track_set_update_mode", "track_idx", "mode"), &Animation::value_track_set_update_mode);
+	ClassDB::bind_method(D_METHOD("value_track_get_update_mode", "track_idx"), &Animation::value_track_get_update_mode);
 
-	ClassDB::bind_method(D_METHOD("value_track_get_key_indices", "idx", "time_sec", "delta"), &Animation::_value_track_get_key_indices);
+	ClassDB::bind_method(D_METHOD("value_track_get_key_indices", "track_idx", "time_sec", "delta"), &Animation::_value_track_get_key_indices);
 
-	ClassDB::bind_method(D_METHOD("method_track_get_key_indices", "idx", "time_sec", "delta"), &Animation::_method_track_get_key_indices);
-	ClassDB::bind_method(D_METHOD("method_track_get_name", "idx", "key_idx"), &Animation::method_track_get_name);
-	ClassDB::bind_method(D_METHOD("method_track_get_params", "idx", "key_idx"), &Animation::method_track_get_params);
+	ClassDB::bind_method(D_METHOD("method_track_get_key_indices", "track_idx", "time_sec", "delta"), &Animation::_method_track_get_key_indices);
+	ClassDB::bind_method(D_METHOD("method_track_get_name", "track_idx", "key_idx"), &Animation::method_track_get_name);
+	ClassDB::bind_method(D_METHOD("method_track_get_params", "track_idx", "key_idx"), &Animation::method_track_get_params);
 
-	ClassDB::bind_method(D_METHOD("bezier_track_insert_key", "track", "time", "value", "in_handle", "out_handle"), &Animation::bezier_track_insert_key, DEFVAL(Vector2()), DEFVAL(Vector2()));
+	ClassDB::bind_method(D_METHOD("bezier_track_insert_key", "track_idx", "time", "value", "in_handle", "out_handle"), &Animation::bezier_track_insert_key, DEFVAL(Vector2()), DEFVAL(Vector2()));
 
-	ClassDB::bind_method(D_METHOD("bezier_track_set_key_value", "idx", "key_idx", "value"), &Animation::bezier_track_set_key_value);
-	ClassDB::bind_method(D_METHOD("bezier_track_set_key_in_handle", "idx", "key_idx", "in_handle"), &Animation::bezier_track_set_key_in_handle);
-	ClassDB::bind_method(D_METHOD("bezier_track_set_key_out_handle", "idx", "key_idx", "out_handle"), &Animation::bezier_track_set_key_out_handle);
+	ClassDB::bind_method(D_METHOD("bezier_track_set_key_value", "track_idx", "key_idx", "value"), &Animation::bezier_track_set_key_value);
+	ClassDB::bind_method(D_METHOD("bezier_track_set_key_in_handle", "track_idx", "key_idx", "in_handle"), &Animation::bezier_track_set_key_in_handle);
+	ClassDB::bind_method(D_METHOD("bezier_track_set_key_out_handle", "track_idx", "key_idx", "out_handle"), &Animation::bezier_track_set_key_out_handle);
 
-	ClassDB::bind_method(D_METHOD("bezier_track_get_key_value", "idx", "key_idx"), &Animation::bezier_track_get_key_value);
-	ClassDB::bind_method(D_METHOD("bezier_track_get_key_in_handle", "idx", "key_idx"), &Animation::bezier_track_get_key_in_handle);
-	ClassDB::bind_method(D_METHOD("bezier_track_get_key_out_handle", "idx", "key_idx"), &Animation::bezier_track_get_key_out_handle);
+	ClassDB::bind_method(D_METHOD("bezier_track_get_key_value", "track_idx", "key_idx"), &Animation::bezier_track_get_key_value);
+	ClassDB::bind_method(D_METHOD("bezier_track_get_key_in_handle", "track_idx", "key_idx"), &Animation::bezier_track_get_key_in_handle);
+	ClassDB::bind_method(D_METHOD("bezier_track_get_key_out_handle", "track_idx", "key_idx"), &Animation::bezier_track_get_key_out_handle);
 
-	ClassDB::bind_method(D_METHOD("bezier_track_interpolate", "track", "time"), &Animation::bezier_track_interpolate);
+	ClassDB::bind_method(D_METHOD("bezier_track_interpolate", "track_idx", "time"), &Animation::bezier_track_interpolate);
 
-	ClassDB::bind_method(D_METHOD("audio_track_insert_key", "track", "time", "stream", "start_offset", "end_offset"), &Animation::audio_track_insert_key, DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("audio_track_set_key_stream", "idx", "key_idx", "stream"), &Animation::audio_track_set_key_stream);
-	ClassDB::bind_method(D_METHOD("audio_track_set_key_start_offset", "idx", "key_idx", "offset"), &Animation::audio_track_set_key_start_offset);
-	ClassDB::bind_method(D_METHOD("audio_track_set_key_end_offset", "idx", "key_idx", "offset"), &Animation::audio_track_set_key_end_offset);
-	ClassDB::bind_method(D_METHOD("audio_track_get_key_stream", "idx", "key_idx"), &Animation::audio_track_get_key_stream);
-	ClassDB::bind_method(D_METHOD("audio_track_get_key_start_offset", "idx", "key_idx"), &Animation::audio_track_get_key_start_offset);
-	ClassDB::bind_method(D_METHOD("audio_track_get_key_end_offset", "idx", "key_idx"), &Animation::audio_track_get_key_end_offset);
+	ClassDB::bind_method(D_METHOD("audio_track_insert_key", "track_idx", "time", "stream", "start_offset", "end_offset"), &Animation::audio_track_insert_key, DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("audio_track_set_key_stream", "track_idx", "key_idx", "stream"), &Animation::audio_track_set_key_stream);
+	ClassDB::bind_method(D_METHOD("audio_track_set_key_start_offset", "track_idx", "key_idx", "offset"), &Animation::audio_track_set_key_start_offset);
+	ClassDB::bind_method(D_METHOD("audio_track_set_key_end_offset", "track_idx", "key_idx", "offset"), &Animation::audio_track_set_key_end_offset);
+	ClassDB::bind_method(D_METHOD("audio_track_get_key_stream", "track_idx", "key_idx"), &Animation::audio_track_get_key_stream);
+	ClassDB::bind_method(D_METHOD("audio_track_get_key_start_offset", "track_idx", "key_idx"), &Animation::audio_track_get_key_start_offset);
+	ClassDB::bind_method(D_METHOD("audio_track_get_key_end_offset", "track_idx", "key_idx"), &Animation::audio_track_get_key_end_offset);
 
-	ClassDB::bind_method(D_METHOD("animation_track_insert_key", "track", "time", "animation"), &Animation::animation_track_insert_key);
-	ClassDB::bind_method(D_METHOD("animation_track_set_key_animation", "idx", "key_idx", "animation"), &Animation::animation_track_set_key_animation);
-	ClassDB::bind_method(D_METHOD("animation_track_get_key_animation", "idx", "key_idx"), &Animation::animation_track_get_key_animation);
+	ClassDB::bind_method(D_METHOD("animation_track_insert_key", "track_idx", "time", "animation"), &Animation::animation_track_insert_key);
+	ClassDB::bind_method(D_METHOD("animation_track_set_key_animation", "track_idx", "key_idx", "animation"), &Animation::animation_track_set_key_animation);
+	ClassDB::bind_method(D_METHOD("animation_track_get_key_animation", "track_idx", "key_idx"), &Animation::animation_track_get_key_animation);
 
 	ClassDB::bind_method(D_METHOD("set_length", "time_sec"), &Animation::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &Animation::get_length);
@@ -2727,7 +2823,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_step"), &Animation::get_step);
 
 	ClassDB::bind_method(D_METHOD("clear"), &Animation::clear);
-	ClassDB::bind_method(D_METHOD("copy_track", "track", "to_animation"), &Animation::copy_track);
+	ClassDB::bind_method(D_METHOD("copy_track", "track_idx", "to_animation"), &Animation::copy_track);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
@@ -2774,9 +2870,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		const Vector3 &v1 = t1.value.loc;
 		const Vector3 &v2 = t2.value.loc;
 
-		if (v0.distance_to(v2) < CMP_EPSILON) {
+		if (v0.is_equal_approx(v2)) {
 			//0 and 2 are close, let's see if 1 is close
-			if (v0.distance_to(v1) > CMP_EPSILON) {
+			if (!v0.is_equal_approx(v1)) {
 				//not close, not optimizable
 				return false;
 			}
@@ -2813,9 +2909,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 
 		//localize both to rotation from q0
 
-		if ((q0 - q2).length() < CMP_EPSILON) {
+		if (q0.is_equal_approx(q2)) {
 
-			if ((q0 - q1).length() > CMP_EPSILON)
+			if (!q0.is_equal_approx(q1))
 				return false;
 
 		} else {
@@ -2863,9 +2959,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		const Vector3 &v1 = t1.value.scale;
 		const Vector3 &v2 = t2.value.scale;
 
-		if (v0.distance_to(v2) < CMP_EPSILON) {
+		if (v0.is_equal_approx(v2)) {
 			//0 and 2 are close, let's see if 1 is close
-			if (v0.distance_to(v1) > CMP_EPSILON) {
+			if (!v0.is_equal_approx(v1)) {
 				//not close, not optimizable
 				return false;
 			}
@@ -2926,7 +3022,6 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 				//this could be done as a second pass and would be
 				//able to optimize more
 				erase = false;
-			} else {
 			}
 		}
 	}

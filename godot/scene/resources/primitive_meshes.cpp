@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -155,6 +155,12 @@ uint32_t PrimitiveMesh::surface_get_format(int p_idx) const {
 
 Mesh::PrimitiveType PrimitiveMesh::surface_get_primitive_type(int p_idx) const {
 	return primitive_type;
+}
+
+void PrimitiveMesh::surface_set_material(int p_idx, const Ref<Material> &p_material) {
+	ERR_FAIL_INDEX(p_idx, 1);
+
+	set_material(p_material);
 }
 
 Ref<Material> PrimitiveMesh::surface_get_material(int p_idx) const {
@@ -736,8 +742,6 @@ CubeMesh::CubeMesh() {
 void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, radius;
-
-	radius = bottom_radius > top_radius ? bottom_radius : top_radius;
 
 	PoolVector<Vector3> points;
 	PoolVector<Vector3> normals;
@@ -1567,4 +1571,20 @@ SphereMesh::SphereMesh() {
 	radial_segments = 64;
 	rings = 32;
 	is_hemisphere = false;
+}
+
+/**
+  PointMesh
+*/
+
+void PointMesh::_create_mesh_array(Array &p_arr) const {
+	PoolVector<Vector3> faces;
+	faces.resize(1);
+	faces.set(0, Vector3(0.0, 0.0, 0.0));
+
+	p_arr[VS::ARRAY_VERTEX] = faces;
+}
+
+PointMesh::PointMesh() {
+	primitive_type = PRIMITIVE_POINTS;
 }

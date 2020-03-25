@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,8 +47,6 @@
 
 #include "semaphore_iphone.h"
 
-#include "ios.h"
-
 #include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {
@@ -64,8 +62,7 @@ const char *OSIPhone::get_video_driver_name(int p_driver) const {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_EXPLAIN("Invalid video driver index " + itos(p_driver));
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
 };
 
 OSIPhone *OSIPhone::get_singleton() {
@@ -84,14 +81,14 @@ void OSIPhone::set_data_dir(String p_dir) {
 	memdelete(da);
 };
 
-void OSIPhone::set_unique_id(String p_ID) {
+void OSIPhone::set_unique_id(String p_id) {
 
-	unique_ID = p_ID;
+	unique_id = p_id;
 };
 
 String OSIPhone::get_unique_id() const {
 
-	return unique_ID;
+	return unique_id;
 };
 
 void OSIPhone::initialize_core() {
@@ -183,7 +180,8 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
 	//icloud->connect();
 #endif
-	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", memnew(iOS)));
+	ios = memnew(iOS);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
 
 	return OK;
 };
@@ -358,14 +356,32 @@ void OSIPhone::delete_main_loop() {
 
 void OSIPhone::finalize() {
 
-	if (main_loop) // should not happen?
-		memdelete(main_loop);
+	delete_main_loop();
+
+	memdelete(input);
+	memdelete(ios);
+
+#ifdef GAME_CENTER_ENABLED
+	memdelete(game_center);
+#endif
+
+#ifdef STOREKIT_ENABLED
+	memdelete(store_kit);
+#endif
+
+#ifdef ICLOUD_ENABLED
+	memdelete(icloud);
+#endif
 
 	visual_server->finish();
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
 
-	memdelete(input);
+	// Free unhandled events before close
+	for (int i = 0; i < MAX_EVENTS; i++) {
+		event_queue[i].unref();
+	};
+	event_count = 0;
 };
 
 void OSIPhone::set_mouse_show(bool p_show){};
@@ -466,7 +482,7 @@ extern Error _shell_open(String p_uri);
 extern void _set_keep_screen_on(bool p_enabled);
 extern void _vibrate();
 
-void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
 	_show_keyboard(p_existing_text);
 };
 
@@ -496,10 +512,19 @@ String OSIPhone::get_user_data_dir() const {
 	return data_dir;
 };
 
-String OSIPhone::get_name() {
+String OSIPhone::get_name() const {
 
 	return "iOS";
 };
+
+String OSIPhone::get_model_name() const {
+
+	String model = ios->get_model();
+	if (model != "")
+		return model;
+
+	return OS_Unix::get_model_name();
+}
 
 Size2 OSIPhone::get_window_size() const {
 

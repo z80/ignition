@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ void godot_icall_GD_prints(MonoArray *p_what);
 
 void godot_icall_GD_printt(MonoArray *p_what);
 
-double godot_icall_GD_randf();
+float godot_icall_GD_randf();
 
 uint32_t godot_icall_GD_randi();
 
@@ -69,11 +69,13 @@ MonoString *godot_icall_GD_str(MonoArray *p_what);
 
 MonoObject *godot_icall_GD_str2var(MonoString *p_str);
 
-bool godot_icall_GD_type_exists(MonoString *p_type);
+MonoBoolean godot_icall_GD_type_exists(MonoString *p_type);
 
 MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_objects);
 
 MonoString *godot_icall_GD_var2str(MonoObject *p_var);
+
+MonoObject *godot_icall_DefaultGodotTaskScheduler();
 
 // Register internal calls
 

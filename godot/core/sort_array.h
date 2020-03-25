@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef SORT_ARRAY_H
 #define SORT_ARRAY_H
 
+#include "core/error_macros.h"
 #include "core/typedefs.h"
 
 #define ERR_BAD_COMPARE(cond)                                         \
@@ -179,14 +180,14 @@ public:
 		while (true) {
 			while (compare(p_array[p_first], p_pivot)) {
 				if (Validate) {
-					ERR_BAD_COMPARE(p_first == unmodified_last - 1)
+					ERR_BAD_COMPARE(p_first == unmodified_last - 1);
 				}
 				p_first++;
 			}
 			p_last--;
 			while (compare(p_pivot, p_array[p_last])) {
 				if (Validate) {
-					ERR_BAD_COMPARE(p_last == unmodified_first)
+					ERR_BAD_COMPARE(p_last == unmodified_first);
 				}
 				p_last--;
 			}
@@ -259,7 +260,7 @@ public:
 		int next = p_last - 1;
 		while (compare(p_value, p_array[next])) {
 			if (Validate) {
-				ERR_BAD_COMPARE(next == 0)
+				ERR_BAD_COMPARE(next == 0);
 			}
 			p_array[p_last] = p_array[next];
 			p_last = next;

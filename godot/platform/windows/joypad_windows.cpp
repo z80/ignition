@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,11 @@
 
 #ifndef __GNUC__
 #define __builtin_bswap32 _byteswap_ulong
+#endif
+
+#if defined(__GNUC__)
+// Workaround GCC warning from -Wcast-function-type.
+#define GetProcAddress (void *)GetProcAddress
 #endif
 
 DWORD WINAPI _xinput_get_state(DWORD dwUserIndex, XINPUT_STATE *pState) {
@@ -103,17 +108,17 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 	PRAWINPUTDEVICELIST dev_list = NULL;
 	unsigned int dev_list_count = 0;
 
-	if (GetRawInputDeviceList(NULL, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
+	if (GetRawInputDeviceList(NULL, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
 		return false;
 	}
 	dev_list = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
 	if (!dev_list) return false;
 
-	if (GetRawInputDeviceList(dev_list, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
+	if (GetRawInputDeviceList(dev_list, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
 		free(dev_list);
 		return false;
 	}
-	for (int i = 0; i < dev_list_count; i++) {
+	for (unsigned int i = 0; i < dev_list_count; i++) {
 
 		RID_DEVICE_INFO rdi;
 		char dev_name[128];
@@ -334,9 +339,9 @@ void JoypadWindows::process_joypads() {
 		if (joy.state.dwPacketNumber != joy.last_packet) {
 
 			int button_mask = XINPUT_GAMEPAD_DPAD_UP;
-			for (int i = 0; i <= 16; i++) {
+			for (int j = 0; j <= 16; j++) {
 
-				input->joy_button(joy.id, i, joy.state.Gamepad.wButtons & button_mask);
+				input->joy_button(joy.id, j, joy.state.Gamepad.wButtons & button_mask);
 				button_mask = button_mask * 2;
 			}
 
@@ -406,7 +411,7 @@ void JoypadWindows::process_joypads() {
 
 		// on mingw, these constants are not constants
 		int count = 6;
-		int axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ };
+		unsigned int axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ };
 		int values[] = { js.lX, js.lY, js.lZ, js.lRx, js.lRy, js.lRz };
 
 		for (int j = 0; j < joy->joy_axis.size(); j++) {
@@ -426,7 +431,11 @@ void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
 
 	int dpad_val = 0;
 
-	if (p_dpad == -1) {
+	// Should be -1 when centered, but according to docs:
+	// "Some drivers report the centered position of the POV indicator as 65,535. Determine whether the indicator is centered as follows:
+	//  BOOL POVCentered = (LOWORD(dwPOV) == 0xFFFF);"
+	// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416628(v%3Dvs.85)#remarks
+	if (LOWORD(p_dpad) == 0xFFFF) {
 		dpad_val = InputDefault::HAT_MASK_CENTER;
 	}
 	if (p_dpad == 0) {

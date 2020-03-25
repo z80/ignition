@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,9 +76,6 @@ typedef struct _xrr_monitor_info {
 } xrr_monitor_info;
 
 #undef CursorShape
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class OS_X11 : public OS_Unix {
 
@@ -118,6 +115,10 @@ class OS_X11 : public OS_Unix {
 	// IME
 	bool im_active;
 	Vector2 im_position;
+	Vector2 last_position_before_fs;
+
+	Size2 min_size;
+	Size2 max_size;
 
 	Point2 last_mouse_pos;
 	bool last_mouse_pos_valid;
@@ -130,9 +131,12 @@ class OS_X11 : public OS_Unix {
 		int opcode;
 		Vector<int> touch_devices;
 		Map<int, Vector2> absolute_devices;
+		Map<int, Vector3> pen_devices;
 		XIEventMask all_event_mask;
 		XIEventMask all_master_event_mask;
 		Map<int, Vector2> state;
+		double pressure;
+		Vector2 tilt;
 		Vector2 mouse_pos_to_filter;
 		Vector2 relative_motion;
 		Vector2 raw_pos;
@@ -164,6 +168,7 @@ class OS_X11 : public OS_Unix {
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
 	CursorShape current_cursor;
+	Map<CursorShape, Vector<Variant> > cursors_cache;
 
 	InputDefault *input;
 
@@ -191,6 +196,7 @@ class OS_X11 : public OS_Unix {
 
 	int video_driver_index;
 	bool maximized;
+	bool window_focused;
 	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
 	void set_wm_above(bool p_enabled);
@@ -216,7 +222,7 @@ protected:
 	bool is_window_maximize_allowed();
 
 public:
-	virtual String get_name();
+	virtual String get_name() const;
 
 	virtual void set_cursor_shape(CursorShape p_shape);
 	virtual CursorShape get_cursor_shape() const;
@@ -265,6 +271,10 @@ public:
 	virtual void set_window_position(const Point2 &p_position);
 	virtual Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const;
+	virtual Size2 get_max_window_size() const;
+	virtual Size2 get_min_window_size() const;
+	virtual void set_min_window_size(const Size2 p_size);
+	virtual void set_max_window_size(const Size2 p_size);
 	virtual void set_window_size(const Size2 p_size);
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;
@@ -276,6 +286,7 @@ public:
 	virtual bool is_window_maximized() const;
 	virtual void set_window_always_on_top(bool p_enabled);
 	virtual bool is_window_always_on_top() const;
+	virtual bool is_window_focused() const;
 	virtual void request_attention();
 
 	virtual void set_borderless_window(bool p_borderless);

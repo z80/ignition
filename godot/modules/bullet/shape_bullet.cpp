@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -148,7 +148,13 @@ btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(PoolVector<rea
 	const bool flipQuadEdges = false;
 	const void *heightsPtr = p_heights.read().ptr();
 
-	return bulletnew(btHeightfieldTerrainShape(p_width, p_depth, heightsPtr, ignoredHeightScale, p_min_height, p_max_height, YAxis, PHY_FLOAT, flipQuadEdges));
+	btHeightfieldTerrainShape *heightfield = bulletnew(btHeightfieldTerrainShape(p_width, p_depth, heightsPtr, ignoredHeightScale, p_min_height, p_max_height, YAxis, PHY_FLOAT, flipQuadEdges));
+
+	// The shape can be created without params when you do PhysicsServer.shape_create(PhysicsServer.SHAPE_HEIGHTMAP)
+	if (heightsPtr)
+		heightfield->buildAccelerator(16);
+
+	return heightfield;
 }
 
 btRayShape *ShapeBullet::create_shape_ray(real_t p_length, bool p_slips_on_slope) {
@@ -499,8 +505,7 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 		}
 
 	} else {
-		ERR_EXPLAIN("Expected PoolRealArray or float Image.");
-		ERR_FAIL();
+		ERR_FAIL_MSG("Expected PoolRealArray or float Image.");
 	}
 
 	ERR_FAIL_COND(l_width <= 0);

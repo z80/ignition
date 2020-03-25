@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -195,6 +195,13 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 
 		} break;
 		case SL::Node::TYPE_VARIABLE_DECLARATION: {
+			// FIXME: Implement
+		} break;
+		case SL::Node::TYPE_ARRAY: {
+			SL::ArrayNode *vnode = (SL::ArrayNode *)p_node;
+			code = vnode->name;
+		} break;
+		case SL::Node::TYPE_ARRAY_DECLARATION: {
 			// FIXME: Implement
 		} break;
 		case SL::Node::TYPE_CONSTANT: {

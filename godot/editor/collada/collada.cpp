@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef TOOLS_ENABLED
-
 #include "collada.h"
 
 #include <stdio.h>
@@ -48,7 +46,7 @@
 
 String Collada::Effect::get_texture_path(const String &p_source, Collada &state) const {
 
-	String image = p_source;
+	const String &image = p_source;
 	ERR_FAIL_COND_V(!state.state.image_map.has(image), "");
 	return state.state.image_map[image].path;
 }
@@ -166,7 +164,8 @@ Transform Collada::Node::compute_transform(Collada &state) const {
 				}
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 
 		xform = xform * xform_step;
@@ -307,7 +306,7 @@ void Collada::_parse_image(XMLParser &parser) {
 		String path = parser.get_attribute_value("source").strip_edges();
 		if (path.find("://") == -1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir() + "/" + path.percent_decode());
+			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path.percent_decode()));
 		}
 	} else {
 
@@ -324,7 +323,7 @@ void Collada::_parse_image(XMLParser &parser) {
 
 					if (path.find("://") == -1 && path.is_rel_path()) {
 						// path is relative to file being loaded, so convert to a resource path
-						path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir() + "/" + path);
+						path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path));
 
 					} else if (path.find("file:///") == 0) {
 						path = path.replace_first("file:///", "");
@@ -617,7 +616,7 @@ void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &
 
 										if (colorarr.size() >= 3) {
 
-											// alpha strangely not allright? maybe it needs to be multiplied by value as a channel intensity
+											// alpha strangely not alright? maybe it needs to be multiplied by value as a channel intensity
 											Color color(colorarr[0], colorarr[1], colorarr[2], 1.0);
 											if (what == "diffuse")
 												effect.diffuse.color = color;
@@ -650,7 +649,7 @@ void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &
 													effect.emission.texture = uri;
 												} else if (what == "bump") {
 													if (parser.has_attribute("bumptype") && parser.get_attribute_value("bumptype") != "NORMALMAP") {
-														WARN_PRINT("'bump' texture type is not NORMALMAP, only NORMALMAP is supported.")
+														WARN_PRINT("'bump' texture type is not NORMALMAP, only NORMALMAP is supported.");
 													}
 
 													effect.bump.texture = uri;
@@ -706,7 +705,7 @@ void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &
 									String uri = effect.params[surface];
 
 									if (parser.has_attribute("bumptype") && parser.get_attribute_value("bumptype") != "NORMALMAP") {
-										WARN_PRINT("'bump' texture type is not NORMALMAP, only NORMALMAP is supported.")
+										WARN_PRINT("'bump' texture type is not NORMALMAP, only NORMALMAP is supported.");
 									}
 
 									effect.bump.texture = uri;
@@ -855,7 +854,7 @@ void Collada::_parse_light(XMLParser &parser) {
 				COLLADA_PRINT("colorarr size: " + rtos(colorarr.size()));
 
 				if (colorarr.size() >= 4) {
-					// alpha strangely not allright? maybe it needs to be multiplied by value as a channel intensity
+					// alpha strangely not alright? maybe it needs to be multiplied by value as a channel intensity
 					Color color(colorarr[0], colorarr[1], colorarr[2], 1.0);
 					light.color = color;
 				}
@@ -1100,6 +1099,7 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 							Vector<float> values = _read_float_array(parser);
 							if (polygons) {
 
+								ERR_CONTINUE(prim.vertex_size == 0);
 								prim.polygons.push_back(values.size() / prim.vertex_size);
 								int from = prim.indices.size();
 								prim.indices.resize(from + values.size());
@@ -1488,7 +1488,6 @@ Collada::Node *Collada::_parse_visual_instance_geometry(XMLParser &parser) {
 
 Collada::Node *Collada::_parse_visual_instance_camera(XMLParser &parser) {
 
-	String type = parser.get_node_name();
 	NodeCamera *cam = memnew(NodeCamera);
 	cam->camera = _uri_to_id(parser.get_attribute_value_safe("url"));
 
@@ -1509,7 +1508,6 @@ Collada::Node *Collada::_parse_visual_instance_camera(XMLParser &parser) {
 
 Collada::Node *Collada::_parse_visual_instance_light(XMLParser &parser) {
 
-	String type = parser.get_node_name();
 	NodeLight *cam = memnew(NodeLight);
 	cam->light = _uri_to_id(parser.get_attribute_value_safe("url"));
 
@@ -1694,7 +1692,7 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 					}
 				}
 
-			} else if (section == "node") {
+			} else {
 
 				/* Found a child node!! what to do..*/
 
@@ -1901,8 +1899,7 @@ void Collada::_parse_animation(XMLParser &parser) {
 
 			Vector<float> &output = float_sources[output_id];
 
-			ERR_EXPLAIN("Wrong number of keys in output");
-			ERR_CONTINUE((output.size() / stride) != key_count);
+			ERR_CONTINUE_MSG((output.size() / stride) != key_count, "Wrong number of keys in output.");
 
 			for (int j = 0; j < key_count; j++) {
 				track.keys.write[j].data.resize(output_len);
@@ -2298,7 +2295,7 @@ bool Collada::_optimize_skeletons(VisualScene *p_vscene, Node *p_node) {
 		//replace parent by this...
 		Node *parent = node->parent;
 
-		//i wonder if this is allright.. i think it is since created skeleton (first joint) is already animated by bone..
+		//i wonder if this is alright.. i think it is since created skeleton (first joint) is already animated by bone..
 		node->id = parent->id;
 		node->name = parent->name;
 		node->xform_list = parent->xform_list;
@@ -2445,8 +2442,7 @@ void Collada::_find_morph_nodes(VisualScene *p_vscene, Node *p_node) {
 					state.morph_ownership_map[base] = nj->id;
 					break;
 				} else {
-					ERR_EXPLAIN("Invalid scene");
-					ERR_FAIL();
+					ERR_FAIL_MSG("Invalid scene.");
 				}
 			}
 		}
@@ -2516,12 +2512,11 @@ Error Collada::load(const String &p_path, int p_flags) {
 	Ref<XMLParser> parserr = memnew(XMLParser);
 	XMLParser &parser = *parserr.ptr();
 	Error err = parser.open(p_path);
-	ERR_FAIL_COND_V(err, err);
+	ERR_FAIL_COND_V_MSG(err, err, "Cannot open Collada file '" + p_path + "'.");
 
 	state.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	state.import_flags = p_flags;
 	/* Skip headers */
-	err = OK;
 	while ((err = parser.read()) == OK) {
 
 		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
@@ -2533,7 +2528,7 @@ Error Collada::load(const String &p_path, int p_flags) {
 		}
 	}
 
-	ERR_FAIL_COND_V(err != OK, ERR_FILE_CORRUPT);
+	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CORRUPT, "Corrupted Collada file '" + p_path + "'.");
 
 	/* Start loading Collada */
 
@@ -2577,5 +2572,3 @@ Error Collada::load(const String &p_path, int p_flags) {
 
 Collada::Collada() {
 }
-
-#endif

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TreeItem" inherits="Object" category="Core" version="3.1.2">
+<class name="TreeItem" inherits="Object" version="3.2">
 	<brief_description>
 		Control for a single item inside a [Tree].
 	</brief_description>
 	<description>
-		Control for a single item inside a [Tree]. May have child [code]TreeItem[/code]s and be styled as well as contain buttons.
+		Control for a single item inside a [Tree]. May have child [TreeItem]s and be styled as well as contain buttons.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -24,6 +24,15 @@
 			</argument>
 			<description>
 				Adds a button with [Texture] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
+			</description>
+		</method>
+		<method name="call_recursive" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="method" type="String">
+			</argument>
+			<description>
+				Calls the [code]method[/code] on the actual TreeItem and its children recursively. Pass parameters as a comma separated list.
 			</description>
 		</method>
 		<method name="clear_custom_bg_color">
@@ -84,13 +93,24 @@
 				Returns the number of buttons in column [code]column[/code]. May be used to get the most recently added button's index, if no index was specified.
 			</description>
 		</method>
+		<method name="get_button_tooltip" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="button_idx" type="int">
+			</argument>
+			<description>
+				Returns the tooltip string for the button at index [code]button_idx[/code] in column [code]column[/code].
+			</description>
+		</method>
 		<method name="get_cell_mode" qualifiers="const">
 			<return type="int" enum="TreeItem.TreeCellMode">
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
-				Returns the column's cell mode. See [code]CELL_MODE_*[/code] constants.
+				Returns the column's cell mode.
 			</description>
 		</method>
 		<method name="get_children">
@@ -107,6 +127,15 @@
 			</argument>
 			<description>
 				Returns the custom background color of column [code]column[/code].
+			</description>
+		</method>
+		<method name="get_custom_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+				Returns the custom color of column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_expand_right" qualifiers="const">
@@ -136,6 +165,15 @@
 				Returns the column's icon's maximum width.
 			</description>
 		</method>
+		<method name="get_icon_modulate" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+				Returns the [Color] modulating the column's icon.
+			</description>
+		</method>
 		<method name="get_icon_region" qualifiers="const">
 			<return type="Rect2">
 			</return>
@@ -163,8 +201,11 @@
 		<method name="get_next_visible">
 			<return type="TreeItem">
 			</return>
+			<argument index="0" name="wrap" type="bool" default="false">
+			</argument>
 			<description>
 				Returns the next visible TreeItem in the tree.
+				If [code]wrap[/code] is enabled, the method will wrap around to the first visible element in the tree when called on the last visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_parent">
@@ -184,8 +225,11 @@
 		<method name="get_prev_visible">
 			<return type="TreeItem">
 			</return>
+			<argument index="0" name="wrap" type="bool" default="false">
+			</argument>
 			<description>
 				Returns the previous visible TreeItem in the tree.
+				If [code]wrap[/code] is enabled, the method will wrap around to the last visible element in the tree when called on the first visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_range" qualifiers="const">
@@ -331,6 +375,19 @@
 				Sets the given column's button [Texture] at index [code]button_idx[/code] to [code]button[/code].
 			</description>
 		</method>
+		<method name="set_button_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="button_idx" type="int">
+			</argument>
+			<argument index="2" name="disabled" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code], disables the button at index [code]button_idx[/code] in column [code]column[/code].
+			</description>
+		</method>
 		<method name="set_cell_mode">
 			<return type="void">
 			</return>
@@ -339,7 +396,7 @@
 			<argument index="1" name="mode" type="int" enum="TreeItem.TreeCellMode">
 			</argument>
 			<description>
-				Sets the given column's cell mode to [code]mode[/code]. See [code]CELL_MODE_*[/code] constants.
+				Sets the given column's cell mode to [code]mode[/code]. See [enum TreeCellMode] constants.
 			</description>
 		</method>
 		<method name="set_checked">
@@ -445,6 +502,17 @@
 				Sets the given column's icon's maximum width.
 			</description>
 		</method>
+		<method name="set_icon_modulate">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="modulate" type="Color">
+			</argument>
+			<description>
+				Modulates the given column's icon with [code]modulate[/code].
+			</description>
+		</method>
 		<method name="set_icon_region">
 			<return type="void">
 			</return>
@@ -521,7 +589,7 @@
 			<argument index="1" name="text_align" type="int" enum="TreeItem.TextAlign">
 			</argument>
 			<description>
-				Sets the given column's text alignment. See [code]ALIGN_*[/code] constants.
+				Sets the given column's text alignment. See [enum TextAlign] for possible values.
 			</description>
 		</method>
 		<method name="set_tooltip">

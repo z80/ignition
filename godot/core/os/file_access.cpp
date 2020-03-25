@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,11 @@
 
 #include "file_access.h"
 
+#include "core/crypto/crypto_core.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
-
-#include "thirdparty/misc/md5.h"
-#include "thirdparty/misc/sha256.h"
 
 FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = { 0, 0 };
 
@@ -500,11 +498,34 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 		return 0;
 
 	FileAccess *fa = create_for_path(p_file);
-	ERR_FAIL_COND_V(!fa, 0);
+	ERR_FAIL_COND_V_MSG(!fa, 0, "Cannot create FileAccess for path '" + p_file + "'.");
 
 	uint64_t mt = fa->_get_modified_time(p_file);
 	memdelete(fa);
 	return mt;
+}
+
+uint32_t FileAccess::get_unix_permissions(const String &p_file) {
+
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_file))
+		return 0;
+
+	FileAccess *fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(!fa, 0, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	uint32_t mt = fa->_get_unix_permissions(p_file);
+	memdelete(fa);
+	return mt;
+}
+
+Error FileAccess::set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+
+	FileAccess *fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(!fa, ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	Error err = fa->_set_unix_permissions(p_file, p_permissions);
+	memdelete(fa);
+	return err;
 }
 
 void FileAccess::store_string(const String &p_string) {
@@ -571,15 +592,39 @@ void FileAccess::store_buffer(const uint8_t *p_src, int p_length) {
 		store_8(p_src[i]);
 }
 
-Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path) {
+Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path, Error *r_error) {
 
-	FileAccess *f = FileAccess::open(p_path, READ);
-	ERR_FAIL_COND_V(!f, Vector<uint8_t>());
+	FileAccess *f = FileAccess::open(p_path, READ, r_error);
+	if (!f) {
+		if (r_error) { // if error requested, do not throw error
+			return Vector<uint8_t>();
+		}
+		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Can't open file from path '" + String(p_path) + "'.");
+	}
 	Vector<uint8_t> data;
 	data.resize(f->get_len());
 	f->get_buffer(data.ptrw(), data.size());
 	memdelete(f);
 	return data;
+}
+
+String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
+
+	Error err;
+	Vector<uint8_t> array = get_file_as_array(p_path, &err);
+	if (r_error) {
+		*r_error = err;
+	}
+	if (err != OK) {
+		if (r_error) {
+			return String();
+		}
+		ERR_FAIL_V_MSG(String(), "Can't get file as string from path '" + String(p_path) + "'.");
+	}
+
+	String ret;
+	ret.parse_utf8((const char *)array.ptr(), array.size());
+	return ret;
 }
 
 String FileAccess::get_md5(const String &p_file) {
@@ -588,8 +633,8 @@ String FileAccess::get_md5(const String &p_file) {
 	if (!f)
 		return String();
 
-	MD5_CTX md5;
-	MD5Init(&md5);
+	CryptoCore::MD5Context ctx;
+	ctx.start();
 
 	unsigned char step[32768];
 
@@ -598,24 +643,24 @@ String FileAccess::get_md5(const String &p_file) {
 		int br = f->get_buffer(step, 32768);
 		if (br > 0) {
 
-			MD5Update(&md5, step, br);
+			ctx.update(step, br);
 		}
 		if (br < 4096)
 			break;
 	}
 
-	MD5Final(&md5);
-
-	String ret = String::md5(md5.digest);
+	unsigned char hash[16];
+	ctx.finish(hash);
 
 	memdelete(f);
-	return ret;
+
+	return String::md5(hash);
 }
 
 String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 
-	MD5_CTX md5;
-	MD5Init(&md5);
+	CryptoCore::MD5Context ctx;
+	ctx.start();
 
 	for (int i = 0; i < p_file.size(); i++) {
 		FileAccess *f = FileAccess::open(p_file[i], READ);
@@ -628,7 +673,7 @@ String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 			int br = f->get_buffer(step, 32768);
 			if (br > 0) {
 
-				MD5Update(&md5, step, br);
+				ctx.update(step, br);
 			}
 			if (br < 4096)
 				break;
@@ -636,11 +681,10 @@ String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 		memdelete(f);
 	}
 
-	MD5Final(&md5);
+	unsigned char hash[16];
+	ctx.finish(hash);
 
-	String ret = String::md5(md5.digest);
-
-	return ret;
+	return String::md5(hash);
 }
 
 String FileAccess::get_sha256(const String &p_file) {
@@ -649,8 +693,8 @@ String FileAccess::get_sha256(const String &p_file) {
 	if (!f)
 		return String();
 
-	sha256_context sha256;
-	sha256_init(&sha256);
+	CryptoCore::SHA256Context ctx;
+	ctx.start();
 
 	unsigned char step[32768];
 
@@ -659,15 +703,14 @@ String FileAccess::get_sha256(const String &p_file) {
 		int br = f->get_buffer(step, 32768);
 		if (br > 0) {
 
-			sha256_hash(&sha256, step, br);
+			ctx.update(step, br);
 		}
 		if (br < 4096)
 			break;
 	}
 
 	unsigned char hash[32];
-
-	sha256_done(&sha256, hash);
+	ctx.finish(hash);
 
 	memdelete(f);
 	return String::hex_encode_buffer(hash, 32);

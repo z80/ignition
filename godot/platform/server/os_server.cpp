@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #include "os_server.h"
 
 #include "core/print_string.h"
-#include "drivers/dummy/audio_driver_dummy.h"
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/dummy/texture_loader_dummy.h"
 #include "servers/visual/visual_server_raster.h"
@@ -190,7 +189,7 @@ bool OS_Server::can_draw() const {
 	return false; //can never draw
 };
 
-String OS_Server::get_name() {
+String OS_Server::get_name() const {
 
 	return "Server";
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "core/list.h"
 #include "core/map.h"
+#include "core/script_language.h"
 #include "core/string_name.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"
@@ -80,6 +81,7 @@ public:
 		TK_TYPE_SAMPLERCUBE,
 		TK_INTERPOLATION_FLAT,
 		TK_INTERPOLATION_SMOOTH,
+		TK_CONST,
 		TK_PRECISION_LOW,
 		TK_PRECISION_MID,
 		TK_PRECISION_HIGH,
@@ -123,6 +125,7 @@ public:
 		TK_CF_DO,
 		TK_CF_SWITCH,
 		TK_CF_CASE,
+		TK_CF_DEFAULT,
 		TK_CF_BREAK,
 		TK_CF_CONTINUE,
 		TK_CF_RETURN,
@@ -264,6 +267,8 @@ public:
 		FLOW_OP_DO,
 		FLOW_OP_BREAK,
 		FLOW_OP_SWITCH,
+		FLOW_OP_CASE,
+		FLOW_OP_DEFAULT,
 		FLOW_OP_CONTINUE,
 		FLOW_OP_DISCARD
 	};
@@ -272,6 +277,11 @@ public:
 		ARGUMENT_QUALIFIER_IN,
 		ARGUMENT_QUALIFIER_OUT,
 		ARGUMENT_QUALIFIER_INOUT,
+	};
+
+	enum SubClassTag {
+		TAG_GLOBAL,
+		TAG_ARRAY,
 	};
 
 	struct Node {
@@ -286,7 +296,9 @@ public:
 			TYPE_CONSTANT,
 			TYPE_OPERATOR,
 			TYPE_CONTROL_FLOW,
-			TYPE_MEMBER
+			TYPE_MEMBER,
+			TYPE_ARRAY,
+			TYPE_ARRAY_DECLARATION,
 		};
 
 		Type type;
@@ -326,15 +338,18 @@ public:
 		DataType datatype_cache;
 		StringName name;
 		virtual DataType get_datatype() const { return datatype_cache; }
+		bool is_const;
 
 		VariableNode() :
 				Node(TYPE_VARIABLE),
-				datatype_cache(TYPE_VOID) {}
+				datatype_cache(TYPE_VOID),
+				is_const(false) {}
 	};
 
 	struct VariableDeclarationNode : public Node {
 		DataPrecision precision;
 		DataType datatype;
+		bool is_const;
 
 		struct Declaration {
 			StringName name;
@@ -347,7 +362,46 @@ public:
 		VariableDeclarationNode() :
 				Node(TYPE_VARIABLE_DECLARATION),
 				precision(PRECISION_DEFAULT),
-				datatype(TYPE_VOID) {}
+				datatype(TYPE_VOID),
+				is_const(false) {}
+	};
+
+	struct ArrayNode : public Node {
+		DataType datatype_cache;
+		StringName name;
+		Node *index_expression;
+		Node *call_expression;
+		bool is_const;
+
+		virtual DataType get_datatype() const { return datatype_cache; }
+
+		ArrayNode() :
+				Node(TYPE_ARRAY),
+				datatype_cache(TYPE_VOID),
+				index_expression(NULL),
+				call_expression(NULL),
+				is_const(false) {}
+	};
+
+	struct ArrayDeclarationNode : public Node {
+		DataPrecision precision;
+		DataType datatype;
+		bool is_const;
+
+		struct Declaration {
+			StringName name;
+			uint32_t size;
+			Vector<Node *> initializer;
+		};
+
+		Vector<Declaration> declarations;
+		virtual DataType get_datatype() const { return datatype; }
+
+		ArrayDeclarationNode() :
+				Node(TYPE_ARRAY_DECLARATION),
+				precision(PRECISION_DEFAULT),
+				datatype(TYPE_VOID),
+				is_const(false) {}
 	};
 
 	struct ConstantNode : public Node {
@@ -374,10 +428,22 @@ public:
 		FunctionNode *parent_function;
 		BlockNode *parent_block;
 
+		enum BlockType {
+			BLOCK_TYPE_STANDART,
+			BLOCK_TYPE_SWITCH,
+			BLOCK_TYPE_CASE,
+			BLOCK_TYPE_DEFAULT,
+		};
+
+		int block_type;
+		SubClassTag block_tag;
+
 		struct Variable {
 			DataType type;
 			DataPrecision precision;
 			int line; //for completion
+			int array_size;
+			bool is_const;
 		};
 
 		Map<StringName, Variable> variables;
@@ -388,6 +454,8 @@ public:
 				Node(TYPE_BLOCK),
 				parent_function(NULL),
 				parent_block(NULL),
+				block_type(BLOCK_TYPE_STANDART),
+				block_tag(SubClassTag::TAG_GLOBAL),
 				single_statement(false) {}
 	};
 
@@ -440,6 +508,13 @@ public:
 	};
 
 	struct ShaderNode : public Node {
+
+		struct Constant {
+			DataType type;
+			DataPrecision precision;
+			ConstantNode *initializer;
+		};
+
 		struct Function {
 			StringName name;
 			FunctionNode *function;
@@ -451,11 +526,13 @@ public:
 			DataType type;
 			DataInterpolation interpolation;
 			DataPrecision precision;
+			int array_size;
 
 			Varying() :
 					type(TYPE_VOID),
 					interpolation(INTERPOLATION_FLAT),
-					precision(PRECISION_DEFAULT) {}
+					precision(PRECISION_DEFAULT),
+					array_size(0) {}
 		};
 
 		struct Uniform {
@@ -492,6 +569,7 @@ public:
 			}
 		};
 
+		Map<StringName, Constant> constants;
 		Map<StringName, Varying> varyings;
 		Map<StringName, Uniform> uniforms;
 		Vector<StringName> render_modes;
@@ -542,6 +620,7 @@ public:
 	static DataInterpolation get_token_interpolation(TokenType p_type);
 	static bool is_token_precision(TokenType p_type);
 	static DataPrecision get_token_precision(TokenType p_type);
+	static String get_precision_name(DataPrecision p_type);
 	static String get_datatype_name(DataType p_type);
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
@@ -573,6 +652,7 @@ public:
 		Map<StringName, BuiltInInfo> built_ins;
 		bool can_discard;
 	};
+	static bool has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
 
 private:
 	struct KeyWord {
@@ -632,9 +712,10 @@ private:
 		IDENTIFIER_FUNCTION_ARGUMENT,
 		IDENTIFIER_LOCAL_VAR,
 		IDENTIFIER_BUILTIN_VAR,
+		IDENTIFIER_CONSTANT,
 	};
 
-	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL);
+	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL, bool *r_is_const = NULL, int *r_array_size = NULL);
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = NULL);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
@@ -644,6 +725,8 @@ private:
 		const char *name;
 		DataType rettype;
 		const DataType args[MAX_ARGS];
+		SubClassTag tag;
+		bool high_end;
 	};
 
 	struct BuiltinFuncOutArgs { //arguments used as out in built in functions
@@ -655,12 +738,15 @@ private:
 	int completion_line;
 	BlockNode *completion_block;
 	DataType completion_base;
+	SubClassTag completion_class;
 	StringName completion_function;
 	int completion_argument;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 	static const BuiltinFuncDef builtin_func_defs[];
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
+
+	Error _validate_datatype(DataType p_type);
 
 	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type);
 	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = NULL);
@@ -670,7 +756,12 @@ private:
 
 	Node *_parse_and_reduce_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
 	Error _parse_block(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
+	String _get_shader_type_list(const Set<String> &p_shader_types) const;
+
 	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types);
+
+	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
+	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
 
 public:
 	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
@@ -679,7 +770,7 @@ public:
 
 	static String get_shader_type(const String &p_code);
 	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types);
-	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint);
+	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint);
 
 	String get_error_text();
 	int get_error_line();

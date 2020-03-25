@@ -9,6 +9,8 @@
     Extensions:
         GL_ARB_debug_output,
         GL_ARB_framebuffer_object,
+        GL_EXT_framebuffer_blit,
+        GL_EXT_framebuffer_multisample,
         GL_EXT_framebuffer_object
     Loader: True
     Local files: False
@@ -16,9 +18,9 @@
     Reproducible: False
 
     Commandline:
-        --profile="compatibility" --api="gl=3.3" --generator="c" --spec="gl" --extensions="GL_ARB_debug_output,GL_ARB_framebuffer_object,GL_EXT_framebuffer_object"
+        --profile="compatibility" --api="gl=3.3" --generator="c" --spec="gl" --extensions="GL_ARB_debug_output,GL_ARB_framebuffer_object,GL_EXT_framebuffer_blit,GL_EXT_framebuffer_multisample,GL_EXT_framebuffer_object"
     Online:
-        https://glad.dav1d.de/#profile=compatibility&language=c&specification=gl&loader=on&api=gl%3D3.3&extensions=GL_ARB_debug_output&extensions=GL_ARB_framebuffer_object&extensions=GL_EXT_framebuffer_object
+        https://glad.dav1d.de/#profile=compatibility&language=c&specification=gl&loader=on&api=gl%3D3.3&extensions=GL_ARB_debug_output&extensions=GL_ARB_framebuffer_object&extensions=GL_EXT_framebuffer_blit&extensions=GL_EXT_framebuffer_multisample&extensions=GL_EXT_framebuffer_object
 */
 
 #include <stdio.h>
@@ -995,11 +997,15 @@ PFNGLWINDOWPOS3SPROC glad_glWindowPos3s = NULL;
 PFNGLWINDOWPOS3SVPROC glad_glWindowPos3sv = NULL;
 int GLAD_GL_ARB_debug_output = 0;
 int GLAD_GL_ARB_framebuffer_object = 0;
+int GLAD_GL_EXT_framebuffer_blit = 0;
+int GLAD_GL_EXT_framebuffer_multisample = 0;
 int GLAD_GL_EXT_framebuffer_object = 0;
 PFNGLDEBUGMESSAGECONTROLARBPROC glad_glDebugMessageControlARB = NULL;
 PFNGLDEBUGMESSAGEINSERTARBPROC glad_glDebugMessageInsertARB = NULL;
 PFNGLDEBUGMESSAGECALLBACKARBPROC glad_glDebugMessageCallbackARB = NULL;
 PFNGLGETDEBUGMESSAGELOGARBPROC glad_glGetDebugMessageLogARB = NULL;
+PFNGLBLITFRAMEBUFFEREXTPROC glad_glBlitFramebufferEXT = NULL;
+PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC glad_glRenderbufferStorageMultisampleEXT = NULL;
 PFNGLISRENDERBUFFEREXTPROC glad_glIsRenderbufferEXT = NULL;
 PFNGLBINDRENDERBUFFEREXTPROC glad_glBindRenderbufferEXT = NULL;
 PFNGLDELETERENDERBUFFERSEXTPROC glad_glDeleteRenderbuffersEXT = NULL;
@@ -1810,6 +1816,14 @@ static void load_GL_ARB_framebuffer_object(GLADloadproc load) {
 	glad_glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC)load("glRenderbufferStorageMultisample");
 	glad_glFramebufferTextureLayer = (PFNGLFRAMEBUFFERTEXTURELAYERPROC)load("glFramebufferTextureLayer");
 }
+static void load_GL_EXT_framebuffer_blit(GLADloadproc load) {
+	if(!GLAD_GL_EXT_framebuffer_blit) return;
+	glad_glBlitFramebufferEXT = (PFNGLBLITFRAMEBUFFEREXTPROC)load("glBlitFramebufferEXT");
+}
+static void load_GL_EXT_framebuffer_multisample(GLADloadproc load) {
+	if(!GLAD_GL_EXT_framebuffer_multisample) return;
+	glad_glRenderbufferStorageMultisampleEXT = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)load("glRenderbufferStorageMultisampleEXT");
+}
 static void load_GL_EXT_framebuffer_object(GLADloadproc load) {
 	if(!GLAD_GL_EXT_framebuffer_object) return;
 	glad_glIsRenderbufferEXT = (PFNGLISRENDERBUFFEREXTPROC)load("glIsRenderbufferEXT");
@@ -1834,6 +1848,8 @@ static int find_extensionsGL(void) {
 	if (!get_exts()) return 0;
 	GLAD_GL_ARB_debug_output = has_ext("GL_ARB_debug_output");
 	GLAD_GL_ARB_framebuffer_object = has_ext("GL_ARB_framebuffer_object");
+	GLAD_GL_EXT_framebuffer_blit = has_ext("GL_EXT_framebuffer_blit");
+	GLAD_GL_EXT_framebuffer_multisample = has_ext("GL_EXT_framebuffer_multisample");
 	GLAD_GL_EXT_framebuffer_object = has_ext("GL_EXT_framebuffer_object");
 	free_exts();
 	return 1;
@@ -1915,6 +1931,8 @@ int gladLoadGLLoader(GLADloadproc load) {
 	if (!find_extensionsGL()) return 0;
 	load_GL_ARB_debug_output(load);
 	load_GL_ARB_framebuffer_object(load);
+	load_GL_EXT_framebuffer_blit(load);
+	load_GL_EXT_framebuffer_multisample(load);
 	load_GL_EXT_framebuffer_object(load);
 	return GLVersion.major != 0 || GLVersion.minor != 0;
 }

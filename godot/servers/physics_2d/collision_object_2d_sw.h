@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,6 +78,8 @@ private:
 	uint32_t collision_layer;
 	bool _static;
 
+	SelfList<CollisionObject2DSW> pending_shape_update_list;
+
 	void _update_shapes();
 
 protected:
@@ -111,7 +113,7 @@ public:
 	void _shape_changed();
 
 	_FORCE_INLINE_ Type get_type() const { return type; }
-	void add_shape(Shape2DSW *p_shape, const Transform2D &p_transform = Transform2D());
+	void add_shape(Shape2DSW *p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false);
 	void set_shape(int p_index, Shape2DSW *p_shape);
 	void set_shape_transform(int p_index, const Transform2D &p_transform);
 	void set_shape_metadata(int p_index, const Variant &p_metadata);

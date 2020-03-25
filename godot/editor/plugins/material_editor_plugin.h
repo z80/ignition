@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +40,8 @@
 #include "scene/3d/light.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/resources/material.h"
+
+class ViewportContainer;
 
 class MaterialEditor : public Control {
 
@@ -78,7 +80,7 @@ public:
 };
 
 class EditorInspectorPluginMaterial : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorPluginMaterial, EditorInspectorPlugin)
+	GDCLASS(EditorInspectorPluginMaterial, EditorInspectorPlugin);
 	Ref<Environment> env;
 
 public:
@@ -99,7 +101,8 @@ public:
 };
 
 class SpatialMaterialConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(SpatialMaterialConversionPlugin, EditorResourceConversionPlugin)
+	GDCLASS(SpatialMaterialConversionPlugin, EditorResourceConversionPlugin);
+
 public:
 	virtual String converts_to() const;
 	virtual bool handles(const Ref<Resource> &p_resource) const;
@@ -107,7 +110,8 @@ public:
 };
 
 class ParticlesMaterialConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(ParticlesMaterialConversionPlugin, EditorResourceConversionPlugin)
+	GDCLASS(ParticlesMaterialConversionPlugin, EditorResourceConversionPlugin);
+
 public:
 	virtual String converts_to() const;
 	virtual bool handles(const Ref<Resource> &p_resource) const;
@@ -115,7 +119,8 @@ public:
 };
 
 class CanvasItemMaterialConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(CanvasItemMaterialConversionPlugin, EditorResourceConversionPlugin)
+	GDCLASS(CanvasItemMaterialConversionPlugin, EditorResourceConversionPlugin);
+
 public:
 	virtual String converts_to() const;
 	virtual bool handles(const Ref<Resource> &p_resource) const;

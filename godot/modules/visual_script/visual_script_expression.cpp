@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1032,7 +1032,8 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			case TK_OP_BIT_OR: op = Variant::OP_BIT_OR; break;
 			case TK_OP_BIT_XOR: op = Variant::OP_BIT_XOR; break;
 			case TK_OP_BIT_INVERT: op = Variant::OP_BIT_NEGATE; break;
-			default: {};
+			default: {
+			};
 		}
 
 		if (op == Variant::OP_MAX) { //stop appending stuff
@@ -1129,7 +1130,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 		if (next_op == -1) {
 
 			_set_error("Yet another parser bug....");
-			ERR_FAIL_COND_V(next_op == -1, NULL);
+			ERR_FAIL_V(NULL);
 		}
 
 		// OK! create operator..

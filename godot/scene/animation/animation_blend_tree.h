@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -322,7 +322,8 @@ public:
 };
 
 class AnimationNodeOutput : public AnimationNode {
-	GDCLASS(AnimationNodeOutput, AnimationNode)
+	GDCLASS(AnimationNodeOutput, AnimationNode);
+
 public:
 	virtual String get_caption() const;
 	virtual float process(float p_time, bool p_seek);
@@ -332,7 +333,7 @@ public:
 /////
 
 class AnimationNodeBlendTree : public AnimationRootNode {
-	GDCLASS(AnimationNodeBlendTree, AnimationRootNode)
+	GDCLASS(AnimationNodeBlendTree, AnimationRootNode);
 
 	struct Node {
 		Ref<AnimationNode> node;

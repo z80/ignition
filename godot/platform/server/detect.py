@@ -35,6 +35,7 @@ def get_opts():
         BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
         BoolVariable('use_asan', 'Use LLVM/GCC compiler address sanitizer (ASAN))', False),
         BoolVariable('use_lsan', 'Use LLVM/GCC compiler leak sanitizer (LSAN))', False),
+        BoolVariable('use_tsan', 'Use LLVM/GCC compiler thread sanitizer (TSAN))', False),
         EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
         BoolVariable('separate_debug_symbols', 'Create a separate file containing debugging symbols', False),
         BoolVariable('execinfo', 'Use libexecinfo on systems where glibc is not available', False),
@@ -63,9 +64,10 @@ def configure(env):
 
     elif (env["target"] == "release_debug"):
         if (env["optimize"] == "speed"): #optimize for speed (default)
-            env.Prepend(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+            env.Prepend(CCFLAGS=['-O2'])
         else: #optimize for size
-            env.Prepend(CCFLAGS=['-Os', '-DDEBUG_ENABLED'])
+            env.Prepend(CCFLAGS=['-Os'])
+        env.Prepend(CPPDEFINES=['DEBUG_ENABLED'])
 
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
@@ -73,7 +75,8 @@ def configure(env):
             env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "debug"):
-        env.Prepend(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Prepend(CCFLAGS=['-g3'])
+        env.Prepend(CPPDEFINES=['DEBUG_ENABLED', 'DEBUG_MEMORY_ENABLED'])
         env.Append(LINKFLAGS=['-rdynamic'])
 
     ## Architecture
@@ -93,11 +96,11 @@ def configure(env):
             env["CC"] = "clang"
             env["CXX"] = "clang++"
             env["LINK"] = "clang++"
-        env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
+        env.Append(CPPDEFINES=['TYPED_METHOD_BIND'])
         env.extra_suffix = ".llvm" + env.extra_suffix
 
 
-    if env['use_ubsan'] or env['use_asan'] or env['use_lsan']:
+    if env['use_ubsan'] or env['use_asan'] or env['use_lsan'] or env['use_tsan']:
         env.extra_suffix += "s"
 
         if env['use_ubsan']:
@@ -111,6 +114,10 @@ def configure(env):
         if env['use_lsan']:
             env.Append(CCFLAGS=['-fsanitize=leak'])
             env.Append(LINKFLAGS=['-fsanitize=leak'])
+
+        if env['use_tsan']:
+            env.Append(CCFLAGS=['-fsanitize=thread'])
+            env.Append(LINKFLAGS=['-fsanitize=thread'])
 
     if env['use_lto']:
         env.Append(CCFLAGS=['-flto'])
@@ -140,22 +147,26 @@ def configure(env):
         env.ParseConfig('pkg-config freetype2 --cflags --libs')
 
     if not env['builtin_libpng']:
-        env.ParseConfig('pkg-config libpng --cflags --libs')
+        env.ParseConfig('pkg-config libpng16 --cflags --libs')
 
     if not env['builtin_bullet']:
-        # We need at least version 2.88
+        # We need at least version 2.89
         import subprocess
         bullet_version = subprocess.check_output(['pkg-config', 'bullet', '--modversion']).strip()
-        if str(bullet_version) < "2.88":
+        if str(bullet_version) < "2.89":
             # Abort as system bullet was requested but too old
-            print("Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(bullet_version, "2.88"))
+            print("Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(bullet_version, "2.89"))
             sys.exit(255)
         env.ParseConfig('pkg-config bullet --cflags --libs')
+
+    if False:  # not env['builtin_assimp']:
+        # FIXME: Add min version check
+        env.ParseConfig('pkg-config assimp --cflags --libs')
 
     if not env['builtin_enet']:
         env.ParseConfig('pkg-config libenet --cflags --libs')
 
-    if not env['builtin_squish'] and env['tools']:
+    if not env['builtin_squish']:
         env.ParseConfig('pkg-config libsquish --cflags --libs')
 
     if not env['builtin_zstd']:
@@ -194,12 +205,12 @@ def configure(env):
         # mbedTLS does not provide a pkgconfig config yet. See https://github.com/ARMmbed/mbedtls/issues/228
         env.Append(LIBS=['mbedtls', 'mbedcrypto', 'mbedx509'])
 
-    if not env['builtin_libwebsockets']:
-        env.ParseConfig('pkg-config libwebsockets --cflags --libs')
+    if not env['builtin_wslay']:
+        env.ParseConfig('pkg-config libwslay --cflags --libs')
 
     if not env['builtin_miniupnpc']:
         # No pkgconfig file so far, hardcode default paths.
-        env.Append(CPPPATH=["/usr/include/miniupnpc"])
+        env.Prepend(CPPPATH=["/usr/include/miniupnpc"])
         env.Append(LIBS=["miniupnpc"])
 
     # On Linux wchar_t should be 32-bits
@@ -213,8 +224,8 @@ def configure(env):
     if not env['builtin_zlib']:
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
-    env.Append(CPPPATH=['#platform/server'])
-    env.Append(CPPFLAGS=['-DSERVER_ENABLED', '-DUNIX_ENABLED'])
+    env.Prepend(CPPPATH=['#platform/server'])
+    env.Append(CPPDEFINES=['SERVER_ENABLED', 'UNIX_ENABLED'])
 
     if (platform.system() == "Darwin"):
         env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-lz', '-framework', 'IOKit'])

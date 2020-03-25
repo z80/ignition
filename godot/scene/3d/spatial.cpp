@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -125,6 +125,7 @@ void Spatial::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			ERR_FAIL_COND(!get_tree());
 
 			Node *p = get_parent();
 			if (p)
@@ -224,7 +225,8 @@ void Spatial::_notification(int p_what) {
 #endif
 		} break;
 
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -321,6 +323,7 @@ Transform Spatial::get_relative_transform(const Node *p_parent) const {
 void Spatial::set_translation(const Vector3 &p_translation) {
 
 	data.local_transform.origin = p_translation;
+	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -336,6 +339,7 @@ void Spatial::set_rotation(const Vector3 &p_euler_rad) {
 
 	data.rotation = p_euler_rad;
 	data.dirty |= DIRTY_LOCAL;
+	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -356,6 +360,7 @@ void Spatial::set_scale(const Vector3 &p_scale) {
 
 	data.scale = p_scale;
 	data.dirty |= DIRTY_LOCAL;
+	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -505,6 +510,8 @@ bool Spatial::is_set_as_toplevel() const {
 Ref<World> Spatial::get_world() const {
 
 	ERR_FAIL_COND_V(!is_inside_world(), Ref<World>());
+	ERR_FAIL_COND_V(!data.viewport, Ref<World>());
+
 	return data.viewport->find_world();
 }
 
@@ -675,27 +682,22 @@ void Spatial::set_identity() {
 
 void Spatial::look_at(const Vector3 &p_target, const Vector3 &p_up) {
 
-	Transform lookat;
-	lookat.origin = get_global_transform().origin;
-	if (lookat.origin == p_target) {
-		ERR_EXPLAIN("Node origin and target are in the same position, look_at() failed");
-		ERR_FAIL();
-	}
-
-	if (p_up.cross(p_target - lookat.origin) == Vector3()) {
-		ERR_EXPLAIN("Up vector and direction between node origin and target are aligned, look_at() failed");
-		ERR_FAIL();
-	}
-	lookat = lookat.looking_at(p_target, p_up);
-	set_global_transform(lookat);
+	Vector3 origin(get_global_transform().origin);
+	look_at_from_position(origin, p_target, p_up);
 }
 
 void Spatial::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up) {
 
+	ERR_FAIL_COND_MSG(p_pos == p_target, "Node origin and target are in the same position, look_at() failed.");
+	ERR_FAIL_COND_MSG(p_up.cross(p_target - p_pos) == Vector3(), "Up vector and direction between node origin and target are aligned, look_at() failed.");
+
 	Transform lookat;
 	lookat.origin = p_pos;
+
+	Vector3 original_scale(get_scale());
 	lookat = lookat.looking_at(p_target, p_up);
 	set_global_transform(lookat);
+	set_scale(original_scale);
 }
 
 Vector3 Spatial::to_local(Vector3 p_global) const {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,7 +83,7 @@ void DocDump::dump(const String &p_file) {
 	FileAccess *f = FileAccess::open(p_file, FileAccess::WRITE);
 
 	_write_string(f, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
-	_write_string(f, 0, String("<doc version=\"") + VERSION_NUMBER + "\" name=\"Engine Types\">");
+	_write_string(f, 0, String("<doc version=\"") + VERSION_BRANCH + "\" name=\"Engine Types\">");
 
 	while (class_list.size()) {
 
@@ -93,16 +93,14 @@ void DocDump::dump(const String &p_file) {
 		String inherits = ClassDB::get_parent_class(name);
 		if (inherits != "")
 			header += " inherits=\"" + inherits + "\"";
-		String category = ClassDB::get_category(name);
-		if (category == "")
-			category = "Core";
-		header += " category=\"" + category + "\"";
-		header += ">";
 		_write_string(f, 0, header);
+
 		_write_string(f, 1, "<brief_description>");
 		_write_string(f, 1, "</brief_description>");
+
 		_write_string(f, 1, "<description>");
 		_write_string(f, 1, "</description>");
+
 		_write_string(f, 1, "<methods>");
 
 		List<MethodInfo> method_list;
@@ -111,7 +109,7 @@ void DocDump::dump(const String &p_file) {
 
 		for (List<MethodInfo>::Element *E = method_list.front(); E; E = E->next()) {
 			if (E->get().name == "" || E->get().name[0] == '_')
-				continue; //hiden
+				continue; //hidden
 
 			MethodBind *m = ClassDB::get_method(name, E->get().name);
 
@@ -199,7 +197,8 @@ void DocDump::dump(const String &p_file) {
 							case Variant::ARRAY:
 							case Variant::_RID:
 
-							default: {}
+							default: {
+							}
 						}
 
 						_write_string(f, 3, "<argument index=\"" + itos(i) + "\" name=\"" + _escape_string(arginfo.name) + "\" type=\"" + type_name + "\" default=\"" + _escape_string(default_arg_text) + "\">");
@@ -227,7 +226,8 @@ void DocDump::dump(const String &p_file) {
 						}
 						break;
 					case PROPERTY_HINT_FILE: hint = "A file:"; break;
-					default: {}
+					default: {
+					}
 						//case PROPERTY_HINT_RESOURCE_TYPE: hint="Type: "+arginfo.hint_string; break;
 				};
 				if (hint != "")

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,10 @@
 #include "core/input_map.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
 
 Input *Input::singleton = NULL;
 
@@ -124,6 +128,8 @@ void Input::_bind_methods() {
 void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 #ifdef TOOLS_ENABLED
 
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+
 	String pf = p_function;
 	if (p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" || pf == "is_action_just_pressed" || pf == "is_action_just_released" || pf == "get_action_strength")) {
 
@@ -137,7 +143,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 				continue;
 
 			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
-			r_options->push_back("\"" + name + "\"");
+			r_options->push_back(quote_style + name + quote_style);
 		}
 	}
 #endif

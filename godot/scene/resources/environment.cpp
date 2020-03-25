@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,6 +111,11 @@ void Environment::set_ambient_light_sky_contribution(float p_energy) {
 	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
 }
 
+void Environment::set_camera_feed_id(int p_camera_feed_id) {
+	camera_feed_id = p_camera_feed_id;
+	VS::get_singleton()->environment_set_camera_feed_id(environment, camera_feed_id);
+};
+
 Environment::BGMode Environment::get_background() const {
 
 	return bg_mode;
@@ -164,6 +169,10 @@ float Environment::get_ambient_light_energy() const {
 float Environment::get_ambient_light_sky_contribution() const {
 
 	return ambient_sky_contribution;
+}
+int Environment::get_camera_feed_id(void) const {
+
+	return camera_feed_id;
 }
 
 void Environment::set_tonemapper(ToneMapper p_tone_mapper) {
@@ -321,6 +330,12 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		}
 	}
 
+	if (property.name == "background_camera_feed_id") {
+		if (bg_mode != BG_CAMERA_FEED) {
+			property.usage = PROPERTY_USAGE_NOEDITOR;
+		}
+	}
+
 	static const char *hide_prefixes[] = {
 		"fog_",
 		"auto_exposure_",
@@ -339,10 +354,6 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		"tonemap_",
 		"ss_reflections_",
 		"ssao_",
-		"dof_blur_far_",
-		"dof_blur_near_",
-		"glow_",
-		"adjustment_",
 		NULL
 
 	};
@@ -946,6 +957,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ambient_light_color", "color"), &Environment::set_ambient_light_color);
 	ClassDB::bind_method(D_METHOD("set_ambient_light_energy", "energy"), &Environment::set_ambient_light_energy);
 	ClassDB::bind_method(D_METHOD("set_ambient_light_sky_contribution", "energy"), &Environment::set_ambient_light_sky_contribution);
+	ClassDB::bind_method(D_METHOD("set_camera_feed_id", "camera_feed_id"), &Environment::set_camera_feed_id);
 
 	ClassDB::bind_method(D_METHOD("get_background"), &Environment::get_background);
 	ClassDB::bind_method(D_METHOD("get_sky"), &Environment::get_sky);
@@ -959,17 +971,21 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ambient_light_color"), &Environment::get_ambient_light_color);
 	ClassDB::bind_method(D_METHOD("get_ambient_light_energy"), &Environment::get_ambient_light_energy);
 	ClassDB::bind_method(D_METHOD("get_ambient_light_sky_contribution"), &Environment::get_ambient_light_sky_contribution);
+	ClassDB::bind_method(D_METHOD("get_camera_feed_id"), &Environment::get_camera_feed_id);
 
 	ADD_GROUP("Background", "background_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_mode", PROPERTY_HINT_ENUM, "Clear Color,Custom Color,Sky,Color+Sky,Canvas,Keep"), "set_background", "get_background");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_mode", PROPERTY_HINT_ENUM, "Clear Color,Custom Color,Sky,Color+Sky,Canvas,Keep,Camera Feed"), "set_background", "get_background");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "background_sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1"), "set_sky_custom_fov", "get_sky_custom_fov");
 	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "background_sky_orientation"), "set_sky_orientation", "get_sky_orientation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "background_sky_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_sky_rotation", "get_sky_rotation");
+	// Only display rotation in degrees in the inspector (like in Spatial).
+	// This avoids displaying the same information twice.
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "background_sky_rotation", PROPERTY_HINT_NONE, "", 0), "set_sky_rotation", "get_sky_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "background_sky_rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_sky_rotation_degrees", "get_sky_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "background_color"), "set_bg_color", "get_bg_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_bg_energy", "get_bg_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_canvas_max_layer", PROPERTY_HINT_RANGE, "-1000,1000,1"), "set_canvas_max_layer", "get_canvas_max_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_camera_feed_id", PROPERTY_HINT_RANGE, "1,10,1"), "set_camera_feed_id", "get_camera_feed_id");
 	ADD_GROUP("Ambient Light", "ambient_light_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ambient_light_color"), "set_ambient_light_color", "get_ambient_light_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ambient_light_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_ambient_light_energy", "get_ambient_light_energy");
@@ -1029,8 +1045,8 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_transmit_enabled"), "set_fog_transmit_enabled", "is_fog_transmit_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_transmit_curve", PROPERTY_HINT_EXP_EASING), "set_fog_transmit_curve", "get_fog_transmit_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_height_enabled"), "set_fog_height_enabled", "is_fog_height_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_height_min", PROPERTY_HINT_RANGE, "-4000,4000,0.1"), "set_fog_height_min", "get_fog_height_min");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_height_max", PROPERTY_HINT_RANGE, "-4000,4000,0.1"), "set_fog_height_max", "get_fog_height_max");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_height_min", PROPERTY_HINT_RANGE, "-4000,4000,0.1,or_lesser,or_greater"), "set_fog_height_min", "get_fog_height_min");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_height_max", PROPERTY_HINT_RANGE, "-4000,4000,0.1,or_lesser,or_greater"), "set_fog_height_max", "get_fog_height_max");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_height_curve", PROPERTY_HINT_EXP_EASING), "set_fog_height_curve", "get_fog_height_curve");
 
 	ClassDB::bind_method(D_METHOD("set_tonemapper", "mode"), &Environment::set_tonemapper);
@@ -1265,6 +1281,7 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(BG_SKY);
 	BIND_ENUM_CONSTANT(BG_COLOR_SKY);
 	BIND_ENUM_CONSTANT(BG_CANVAS);
+	BIND_ENUM_CONSTANT(BG_CAMERA_FEED);
 	BIND_ENUM_CONSTANT(BG_MAX);
 
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_ADDITIVE);
@@ -1294,8 +1311,8 @@ void Environment::_bind_methods() {
 Environment::Environment() :
 		bg_mode(BG_CLEAR_COLOR),
 		tone_mapper(TONE_MAPPER_LINEAR),
-		ssao_blur(SSAO_BLUR_DISABLED),
-		ssao_quality(SSAO_QUALITY_LOW),
+		ssao_blur(SSAO_BLUR_3x3),
+		ssao_quality(SSAO_QUALITY_MEDIUM),
 		glow_blend_mode(GLOW_BLEND_MODE_ADDITIVE),
 		dof_blur_far_quality(DOF_BLUR_QUALITY_LOW),
 		dof_blur_near_quality(DOF_BLUR_QUALITY_LOW) {
@@ -1310,6 +1327,7 @@ Environment::Environment() :
 	ambient_energy = 1.0;
 	//ambient_sky_contribution = 1.0;
 	set_ambient_light_sky_contribution(1.0);
+	set_camera_feed_id(1);
 
 	tone_mapper = TONE_MAPPER_LINEAR;
 	tonemap_exposure = 1.0;
@@ -1346,7 +1364,7 @@ Environment::Environment() :
 	ssao_ao_channel_affect = 0.0;
 	ssao_blur = SSAO_BLUR_3x3;
 	set_ssao_edge_sharpness(4);
-	set_ssao_quality(SSAO_QUALITY_LOW);
+	set_ssao_quality(SSAO_QUALITY_MEDIUM);
 
 	glow_enabled = false;
 	glow_levels = (1 << 2) | (1 << 4);
@@ -1379,15 +1397,15 @@ Environment::Environment() :
 	fog_depth_enabled = true;
 
 	fog_depth_begin = 10;
-	fog_depth_end = 0;
+	fog_depth_end = 100;
 	fog_depth_curve = 1;
 
 	fog_transmit_enabled = false;
 	fog_transmit_curve = 1;
 
 	fog_height_enabled = false;
-	fog_height_min = 0;
-	fog_height_max = 100;
+	fog_height_min = 10;
+	fog_height_max = 0;
 	fog_height_curve = 1;
 
 	set_fog_color(Color(0.5, 0.6, 0.7));

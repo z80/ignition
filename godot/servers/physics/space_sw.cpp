@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,7 +118,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3 &p_from, const Vecto
 		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
-		if (p_pick_ray && !(static_cast<CollisionObjectSW *>(space->intersection_query_results[i])->is_ray_pickable()))
+		if (p_pick_ray && !(space->intersection_query_results[i]->is_ray_pickable()))
 			continue;
 
 		if (p_exclude.has(space->intersection_query_results[i]->get_self()))
@@ -348,11 +348,9 @@ bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform &p_sh
 	cbk.max = p_result_max;
 	cbk.amount = 0;
 	cbk.ptr = r_results;
-	CollisionSolverSW::CallbackResult cbkres = NULL;
+	CollisionSolverSW::CallbackResult cbkres = PhysicsServerSW::_shape_col_cbk;
 
-	PhysicsServerSW::CollCbkData *cbkptr = NULL;
-	cbkptr = &cbk;
-	cbkres = PhysicsServerSW::_shape_col_cbk;
+	PhysicsServerSW::CollCbkData *cbkptr = &cbk;
 
 	for (int i = 0; i < amount; i++) {
 
@@ -439,7 +437,7 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_
 			continue;
 	}
 
-	if (rcd.best_len == 0)
+	if (rcd.best_len == 0 || !rcd.best_object)
 		return false;
 
 	r_info->collider_id = rcd.best_object->get_instance_id();
@@ -630,7 +628,7 @@ int SpaceSW::test_body_ray_separation(BodySW *p_body, const Transform &p_transfo
 
 						int ray_index = -1; //reuse shape
 						for (int k = 0; k < rays_found; k++) {
-							if (r_results[ray_index].collision_local_shape == j) {
+							if (r_results[k].collision_local_shape == j) {
 								ray_index = k;
 							}
 						}

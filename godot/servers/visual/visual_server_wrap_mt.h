@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,6 @@
 #include "core/os/thread.h"
 #include "servers/visual_server.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class VisualServerWrapMT : public VisualServer {
 
 	// the real visual server
@@ -95,6 +92,7 @@ public:
 	FUNC1RC(uint32_t, texture_get_height, RID)
 	FUNC1RC(uint32_t, texture_get_depth, RID)
 	FUNC4(texture_set_size_override, RID, int, int, int)
+	FUNC2(texture_bind, RID, uint32_t)
 
 	FUNC3(texture_set_detect_3d_callback, RID, TextureDetectCallback, void *)
 	FUNC3(texture_set_detect_srgb_callback, RID, TextureDetectCallback, void *)
@@ -103,7 +101,7 @@ public:
 	FUNC2(texture_set_path, RID, const String &)
 	FUNC1RC(String, texture_get_path, RID)
 	FUNC1(texture_set_shrink_all_x2_on_set_data, bool)
-	FUNC1(texture_debug_usage, List<TextureInfo> *)
+	FUNC1S(texture_debug_usage, List<TextureInfo> *)
 
 	FUNC1(textures_keep_original, bool)
 
@@ -232,7 +230,6 @@ public:
 	FUNC3(skeleton_bone_set_transform_2d, RID, int, const Transform2D &)
 	FUNC2RC(Transform2D, skeleton_bone_get_transform_2d, RID, int)
 	FUNC2(skeleton_set_base_transform_2d, RID, const Transform2D &)
-	FUNC3(skeleton_set_world_transform, RID, bool, const Transform &)
 
 	/* Light API */
 
@@ -248,6 +245,7 @@ public:
 	FUNC2(light_set_negative, RID, bool)
 	FUNC2(light_set_cull_mask, RID, uint32_t)
 	FUNC2(light_set_reverse_cull_face_mode, RID, bool)
+	FUNC2(light_set_use_gi, RID, bool)
 
 	FUNC2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
 	FUNC2(light_omni_set_shadow_detail, RID, LightOmniShadowDetail)
@@ -345,6 +343,8 @@ public:
 	FUNC2(particles_set_process_material, RID, RID)
 	FUNC2(particles_set_fixed_fps, RID, int)
 	FUNC2(particles_set_fractional_delta, RID, bool)
+	FUNC1R(bool, particles_is_inactive, RID)
+	FUNC1(particles_request_process, RID)
 	FUNC1(particles_restart, RID)
 
 	FUNC2(particles_set_draw_order, RID, VS::ParticlesDrawOrder)
@@ -360,6 +360,7 @@ public:
 	FUNCRID(camera)
 	FUNC4(camera_set_perspective, RID, float, float, float)
 	FUNC4(camera_set_orthogonal, RID, float, float, float)
+	FUNC5(camera_set_frustum, RID, float, Vector2, float, float)
 	FUNC2(camera_set_transform, RID, const Transform &)
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
@@ -379,6 +380,7 @@ public:
 	FUNC2(viewport_set_clear_mode, RID, ViewportClearMode)
 
 	FUNC3(viewport_attach_to_screen, RID, const Rect2 &, int)
+	FUNC2(viewport_set_render_direct_to_screen, RID, bool)
 	FUNC1(viewport_detach, RID)
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
@@ -427,6 +429,7 @@ public:
 	FUNC2(environment_set_bg_energy, RID, float)
 	FUNC2(environment_set_canvas_max_layer, RID, int)
 	FUNC4(environment_set_ambient_light, RID, const Color &, float, float)
+	FUNC2(environment_set_camera_feed_id, RID, int)
 	FUNC7(environment_set_ssr, RID, bool, int, float, float, float, bool)
 	FUNC13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
 
@@ -450,11 +453,10 @@ public:
 	FUNC2(scenario_set_fallback_environment, RID, RID)
 
 	/* INSTANCING API */
-	// from can be mesh, light,  area and portal so far.
 	FUNCRID(instance)
 
-	FUNC2(instance_set_base, RID, RID) // from can be mesh, light, poly, area and portal so far.
-	FUNC2(instance_set_scenario, RID, RID) // from can be mesh, light, poly, area and portal so far.
+	FUNC2(instance_set_base, RID, RID)
+	FUNC2(instance_set_scenario, RID, RID)
 	FUNC2(instance_set_layer_mask, RID, uint32_t)
 	FUNC2(instance_set_transform, RID, const Transform &)
 	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
@@ -487,6 +489,8 @@ public:
 	FUNCRID(canvas)
 	FUNC3(canvas_set_item_mirroring, RID, RID, const Point2 &)
 	FUNC2(canvas_set_modulate, RID, const Color &)
+	FUNC3(canvas_set_parent, RID, RID, float)
+	FUNC1(canvas_set_disable_scale, bool)
 
 	FUNCRID(canvas_item)
 	FUNC2(canvas_item_set_parent, RID, RID)
@@ -515,8 +519,8 @@ public:
 	FUNC11(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &, RID)
 	FUNC7(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID)
 	FUNC7(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID, bool)
-	FUNC10(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID)
-	FUNC4(canvas_item_add_mesh, RID, const RID &, RID, RID)
+	FUNC12(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID, bool, bool)
+	FUNC6(canvas_item_add_mesh, RID, const RID &, const Transform2D &, const Color &, RID, RID)
 	FUNC4(canvas_item_add_multimesh, RID, RID, RID, RID)
 	FUNC4(canvas_item_add_particles, RID, RID, RID, RID)
 	FUNC2(canvas_item_add_set_transform, RID, const Transform2D &)
@@ -597,7 +601,15 @@ public:
 		return visual_server->get_render_info(p_info);
 	}
 
-	FUNC3(set_boot_image, const Ref<Image> &, const Color &, bool)
+	virtual String get_video_adapter_name() const {
+		return visual_server->get_video_adapter_name();
+	}
+
+	virtual String get_video_adapter_vendor() const {
+		return visual_server->get_video_adapter_vendor();
+	}
+
+	FUNC4(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
 	FUNC1(set_default_clear_color, const Color &)
 
 	FUNC0R(RID, get_test_cube)

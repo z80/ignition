@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,9 +36,12 @@
 #include "core/string_name.h"
 
 #include "../csharp_script.h"
+#include "../mono_gd/gd_mono_cache.h"
+#include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_internals.h"
 #include "../mono_gd/gd_mono_utils.h"
 #include "../signal_awaiter_utils.h"
+#include "arguments_vector.h"
 
 Object *godot_icall_Object_Ctor(MonoObject *p_obj) {
 	Object *instance = memnew(Object);
@@ -75,7 +78,7 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 	}
 }
 
-void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, bool p_is_finalizer) {
+void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolean p_is_finalizer) {
 #ifdef DEBUG_ENABLED
 	CRASH_COND(p_ptr == NULL);
 	// This is only called with Reference derived classes
@@ -105,6 +108,7 @@ void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, bool p_is_
 
 	// Unsafe refcount decrement. The managed instance also counts as a reference.
 	// See: CSharpLanguage::alloc_instance_binding_data(Object *p_object)
+	CSharpLanguage::get_singleton()->pre_unsafe_unreference(ref);
 	if (ref->unreference()) {
 		memdelete(ref);
 	} else {
@@ -155,13 +159,94 @@ Error godot_icall_SignalAwaiter_connect(Object *p_source, MonoString *p_signal, 
 	return SignalAwaiterUtils::connect_signal_awaiter(p_source, signal, p_target, p_awaiter);
 }
 
+MonoArray *godot_icall_DynamicGodotObject_SetMemberList(Object *p_ptr) {
+	List<PropertyInfo> property_list;
+	p_ptr->get_property_list(&property_list);
+
+	MonoArray *result = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(String), property_list.size());
+
+	int i = 0;
+	for (List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
+		MonoString *boxed = GDMonoMarshal::mono_string_from_godot(E->get().name);
+		mono_array_setref(result, i, boxed);
+		i++;
+	}
+
+	return result;
+}
+
+MonoBoolean godot_icall_DynamicGodotObject_InvokeMember(Object *p_ptr, MonoString *p_name, MonoArray *p_args, MonoObject **r_result) {
+	String name = GDMonoMarshal::mono_string_to_godot(p_name);
+
+	int argc = mono_array_length(p_args);
+
+	ArgumentsVector<Variant> arg_store(argc);
+	ArgumentsVector<const Variant *> args(argc);
+
+	for (int i = 0; i < argc; i++) {
+		MonoObject *elem = mono_array_get(p_args, MonoObject *, i);
+		arg_store.set(i, GDMonoMarshal::mono_object_to_variant(elem));
+		args.set(i, &arg_store.get(i));
+	}
+
+	Variant::CallError error;
+	Variant result = p_ptr->call(StringName(name), args.ptr(), argc, error);
+
+	*r_result = GDMonoMarshal::variant_to_mono_object(result);
+
+	return error.error == Variant::CallError::CALL_OK;
+}
+
+MonoBoolean godot_icall_DynamicGodotObject_GetMember(Object *p_ptr, MonoString *p_name, MonoObject **r_result) {
+	String name = GDMonoMarshal::mono_string_to_godot(p_name);
+
+	bool valid;
+	Variant value = p_ptr->get(StringName(name), &valid);
+
+	if (valid) {
+		*r_result = GDMonoMarshal::variant_to_mono_object(value);
+	}
+
+	return valid;
+}
+
+MonoBoolean godot_icall_DynamicGodotObject_SetMember(Object *p_ptr, MonoString *p_name, MonoObject *p_value) {
+	String name = GDMonoMarshal::mono_string_to_godot(p_name);
+	Variant value = GDMonoMarshal::mono_object_to_variant(p_value);
+
+	bool valid;
+	p_ptr->set(StringName(name), value, &valid);
+
+	return valid;
+}
+
+MonoString *godot_icall_Object_ToString(Object *p_ptr) {
+#ifdef DEBUG_ENABLED
+	// Cannot happen in C#; would get an ObjectDisposedException instead.
+	CRASH_COND(p_ptr == NULL);
+
+	if (ScriptDebugger::get_singleton() && !Object::cast_to<Reference>(p_ptr)) { // Only if debugging!
+		// Cannot happen either in C#; the handle is nullified when the object is destroyed
+		CRASH_COND(!ObjectDB::instance_validate(p_ptr));
+	}
+#endif
+
+	String result = "[" + p_ptr->get_class() + ":" + itos(p_ptr->get_instance_id()) + "]";
+	return GDMonoMarshal::mono_string_from_godot(result);
+}
+
 void godot_register_object_icalls() {
 	mono_add_internal_call("Godot.Object::godot_icall_Object_Ctor", (void *)godot_icall_Object_Ctor);
 	mono_add_internal_call("Godot.Object::godot_icall_Object_Disposed", (void *)godot_icall_Object_Disposed);
 	mono_add_internal_call("Godot.Object::godot_icall_Reference_Disposed", (void *)godot_icall_Reference_Disposed);
 	mono_add_internal_call("Godot.Object::godot_icall_Object_ClassDB_get_method", (void *)godot_icall_Object_ClassDB_get_method);
+	mono_add_internal_call("Godot.Object::godot_icall_Object_ToString", (void *)godot_icall_Object_ToString);
 	mono_add_internal_call("Godot.Object::godot_icall_Object_weakref", (void *)godot_icall_Object_weakref);
 	mono_add_internal_call("Godot.SignalAwaiter::godot_icall_SignalAwaiter_connect", (void *)godot_icall_SignalAwaiter_connect);
+	mono_add_internal_call("Godot.DynamicGodotObject::godot_icall_DynamicGodotObject_SetMemberList", (void *)godot_icall_DynamicGodotObject_SetMemberList);
+	mono_add_internal_call("Godot.DynamicGodotObject::godot_icall_DynamicGodotObject_InvokeMember", (void *)godot_icall_DynamicGodotObject_InvokeMember);
+	mono_add_internal_call("Godot.DynamicGodotObject::godot_icall_DynamicGodotObject_GetMember", (void *)godot_icall_DynamicGodotObject_GetMember);
+	mono_add_internal_call("Godot.DynamicGodotObject::godot_icall_DynamicGodotObject_SetMember", (void *)godot_icall_DynamicGodotObject_SetMember);
 }
 
 #endif // MONO_GLUE_ENABLED

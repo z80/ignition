@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,9 +57,11 @@ class GDMonoMethod : public IMonoClassMember {
 	MonoMethod *mono_method;
 
 public:
-	virtual MemberType get_member_type() GD_FINAL { return MEMBER_TYPE_METHOD; }
+	virtual GDMonoClass *get_enclosing_class() const GD_FINAL;
 
-	virtual StringName get_name() GD_FINAL { return name; }
+	virtual MemberType get_member_type() const GD_FINAL { return MEMBER_TYPE_METHOD; }
+
+	virtual StringName get_name() const GD_FINAL { return name; }
 
 	virtual bool is_static() GD_FINAL;
 
@@ -69,10 +71,10 @@ public:
 	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) GD_FINAL;
 	void fetch_attributes();
 
+	_FORCE_INLINE_ MonoMethod *get_mono_ptr() { return mono_method; }
+
 	_FORCE_INLINE_ int get_parameters_count() { return params_count; }
 	_FORCE_INLINE_ ManagedType get_return_type() { return return_type; }
-
-	void *get_thunk();
 
 	MonoObject *invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc = NULL);
 	MonoObject *invoke(MonoObject *p_object, MonoException **r_exc = NULL);

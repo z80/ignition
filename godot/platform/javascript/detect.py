@@ -24,6 +24,7 @@ def get_opts():
 def get_flags():
     return [
         ('tools', False),
+        ('builtin_pcre2_with_jit', False),
         # Disabling the mbedtls module reduces file size.
         # The module has little use due to the limited networking functionality
         # in this platform. For the available networking methods, the browser
@@ -69,9 +70,14 @@ def configure(env):
             exec(f.read(), em_config)
         except StandardError as e:
             raise RuntimeError("Emscripten configuration file '%s' is invalid:\n%s" % (em_config_file, e))
-    if 'EMSCRIPTEN_ROOT' not in em_config:
-        raise RuntimeError("'EMSCRIPTEN_ROOT' missing in Emscripten configuration file '%s'" % em_config_file)
-    env.PrependENVPath('PATH', em_config['EMSCRIPTEN_ROOT'])
+    if 'BINARYEN_ROOT' in em_config and os.path.isdir(os.path.join(em_config.get('BINARYEN_ROOT'), 'emscripten')):
+        # New style, emscripten path as a subfolder of BINARYEN_ROOT
+        env.PrependENVPath('PATH', os.path.join(em_config.get('BINARYEN_ROOT'), 'emscripten'))
+    elif 'EMSCRIPTEN_ROOT' in em_config:
+        # Old style (but can be there as a result from previous activation, so do last)
+        env.PrependENVPath('PATH', em_config.get('EMSCRIPTEN_ROOT'))
+    else:
+        raise RuntimeError("'BINARYEN_ROOT' or 'EMSCRIPTEN_ROOT' missing in Emscripten configuration file '%s'" % em_config_file)
 
     env['CC'] = 'emcc'
     env['CXX'] = 'em++'
@@ -100,7 +106,7 @@ def configure(env):
 
     ## Compile flags
 
-    env.Append(CPPPATH=['#platform/javascript'])
+    env.Prepend(CPPPATH=['#platform/javascript'])
     env.Append(CPPDEFINES=['JAVASCRIPT_ENABLED', 'UNIX_ENABLED'])
 
     # No multi-threading (SharedArrayBuffer) available yet,
@@ -124,6 +130,11 @@ def configure(env):
     env.Append(LIBS=['idbfs.js'])
 
     env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
+
+    # Only include the JavaScript support code for the web environment
+    # (i.e. exclude Node.js and other unused environments).
+    # This makes the JavaScript support code about 4 KB smaller.
+    env.Append(LINKFLAGS=['-s', 'ENVIRONMENT=web'])
 
     # This needs to be defined for Emscripten using 'fastcomp' (default pre-1.39.0)
     # and undefined if using 'upstream'. And to make things simple, earlier

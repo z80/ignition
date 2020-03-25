@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "audio_stream.h"
+
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
@@ -49,8 +50,9 @@ void AudioStreamPlaybackResampled::_begin_resample() {
 void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 
 	float target_rate = AudioServer::get_singleton()->get_mix_rate();
+	float global_rate_scale = AudioServer::get_singleton()->get_global_rate_scale();
 
-	uint64_t mix_increment = uint64_t(((get_stream_sampling_rate() * p_rate_scale) / double(target_rate)) * double(FP_LEN));
+	uint64_t mix_increment = uint64_t(((get_stream_sampling_rate() * p_rate_scale) / double(target_rate * global_rate_scale)) * double(FP_LEN));
 
 	for (int i = 0; i < p_frames; i++) {
 
@@ -223,7 +225,7 @@ float AudioStreamPlaybackMicrophone::get_playback_position() const {
 }
 
 void AudioStreamPlaybackMicrophone::seek(float p_time) {
-	return; // Can't seek a microphone input
+	// Can't seek a microphone input
 }
 
 AudioStreamPlaybackMicrophone::~AudioStreamPlaybackMicrophone() {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -184,6 +184,20 @@ godot_bool GDAPI godot_string_ends_with(const godot_string *p_self, const godot_
 	const String *string = (const String *)p_string;
 
 	return self->ends_with(*string);
+}
+
+godot_int GDAPI godot_string_count(const godot_string *p_self, godot_string p_what, godot_int p_from, godot_int p_to) {
+	const String *self = (const String *)p_self;
+	String *what = (String *)&p_what;
+
+	return self->count(*what, p_from, p_to);
+}
+
+godot_int GDAPI godot_string_countn(const godot_string *p_self, godot_string p_what, godot_int p_from, godot_int p_to) {
+	const String *self = (const String *)p_self;
+	String *what = (String *)&p_what;
+
+	return self->countn(*what, p_from, p_to);
 }
 
 godot_int GDAPI godot_string_find(const godot_string *p_self, godot_string p_what) {

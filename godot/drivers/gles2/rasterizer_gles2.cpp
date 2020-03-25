@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,6 @@
 
 #include "core/os/os.h"
 #include "core/project_settings.h"
-#include "drivers/gl_context/context_gl.h"
 
 #define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
 #define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
@@ -203,6 +202,10 @@ Error RasterizerGLES2::is_viable() {
 			return ERR_UNAVAILABLE;
 		}
 	}
+
+	if (GLAD_GL_EXT_framebuffer_multisample) {
+		glRenderbufferStorageMultisample = glRenderbufferStorageMultisampleEXT;
+	}
 #endif // GLES_OVER_GL
 
 #endif // GLAD_ENABLED
@@ -260,8 +263,7 @@ void RasterizerGLES2::initialize() {
 #endif // GLES_OVER_GL
 #endif // CAN_DEBUG
 
-	const GLubyte *renderer = glGetString(GL_RENDERER);
-	print_line("OpenGL ES 2.0 Renderer: " + String((const char *)renderer));
+	print_line("OpenGL ES 2.0 Renderer: " + VisualServer::get_singleton()->get_video_adapter_name());
 	storage->initialize();
 	canvas->initialize();
 	scene->initialize();
@@ -321,7 +323,7 @@ void RasterizerGLES2::set_current_render_target(RID p_render_target) {
 	}
 }
 
-void RasterizerGLES2::restore_render_target() {
+void RasterizerGLES2::restore_render_target(bool p_3d_was_drawn) {
 	ERR_FAIL_COND(storage->frame.current_rt == NULL);
 	RasterizerStorageGLES2::RenderTarget *rt = storage->frame.current_rt;
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
@@ -335,7 +337,7 @@ void RasterizerGLES2::clear_render_target(const Color &p_color) {
 	storage->frame.clear_request_color = p_color;
 }
 
-void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {
+void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
 
 	if (p_image.is_null() || p_image->empty())
 		return;
@@ -357,7 +359,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	canvas->canvas_begin();
 
 	RID texture = storage->texture_create();
-	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
+	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? VS::TEXTURE_FLAG_FILTER : 0);
 	storage->texture_set_data(texture, p_image);
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
@@ -410,7 +412,11 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 	glDisable(GL_BLEND);
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
 	glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
-	glBindTexture(GL_TEXTURE_2D, rt->color);
+	if (rt->external.fbo != 0) {
+		glBindTexture(GL_TEXTURE_2D, rt->external.color);
+	} else {
+		glBindTexture(GL_TEXTURE_2D, rt->color);
+	}
 
 	// TODO normals
 

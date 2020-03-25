@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,8 +43,12 @@
 
 #include "dir_access_jandroid.h"
 #include "file_access_jandroid.h"
+#include "net_socket_android.h"
 
 #include <dlfcn.h>
+
+#include "java_godot_io_wrapper.h"
+#include "java_godot_wrapper.h"
 
 class AndroidLogger : public Logger {
 public:
@@ -68,8 +72,7 @@ const char *OS_Android::get_video_driver_name(int p_driver) const {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_EXPLAIN("Invalid video driver index " + itos(p_driver));
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
 }
 int OS_Android::get_audio_driver_count() const {
 
@@ -104,6 +107,8 @@ void OS_Android::initialize_core() {
 		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
+
+	NetSocketAndroid::make_default();
 }
 
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
@@ -118,15 +123,14 @@ int OS_Android::get_current_video_driver() const {
 
 Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-	bool use_gl3 = get_gl_version_code_func() >= 0x00030000;
+	bool use_gl3 = godot_java->get_gles_version_code() >= 0x00030000;
 	use_gl3 = use_gl3 && (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3");
 	bool gl_initialization_error = false;
 
 	while (true) {
 		if (use_gl3) {
 			if (RasterizerGLES3::is_viable() == OK) {
-				if (gfx_init_func)
-					gfx_init_func(gfx_init_ud, false);
+				godot_java->gfx_init(false);
 				RasterizerGLES3::register_config();
 				RasterizerGLES3::make_current();
 				break;
@@ -142,8 +146,7 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 			}
 		} else {
 			if (RasterizerGLES2::is_viable() == OK) {
-				if (gfx_init_func)
-					gfx_init_func(gfx_init_ud, true);
+				godot_java->gfx_init(true);
 				RasterizerGLES2::register_config();
 				RasterizerGLES2::make_current();
 				break;
@@ -173,7 +176,7 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
-	input->set_fallback_mapping("Default Android Gamepad");
+	input->set_fallback_mapping(godot_java->get_input_fallback_mapping());
 
 	//power_manager = memnew(PowerAndroid);
 
@@ -192,28 +195,42 @@ void OS_Android::delete_main_loop() {
 }
 
 void OS_Android::finalize() {
+
 	memdelete(input);
+}
+
+GodotJavaWrapper *OS_Android::get_godot_java() {
+	return godot_java;
+}
+
+GodotIOJavaWrapper *OS_Android::get_godot_io_java() {
+	return godot_io_java;
 }
 
 void OS_Android::alert(const String &p_alert, const String &p_title) {
 
 	//print("ALERT: %s\n", p_alert.utf8().get_data());
-	if (alert_func)
-		alert_func(p_alert, p_title);
+	godot_java->alert(p_alert, p_title);
 }
 
 bool OS_Android::request_permission(const String &p_name) {
-	if (request_permission_func)
-		return request_permission_func(p_name);
-	return false;
+
+	return godot_java->request_permission(p_name);
+}
+
+bool OS_Android::request_permissions() {
+
+	return godot_java->request_permissions();
+}
+
+Vector<String> OS_Android::get_granted_permissions() const {
+
+	return godot_java->get_granted_permissions();
 }
 
 Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
-	if (!p_library_handle) {
-		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
-		ERR_FAIL_V(ERR_CANT_OPEN);
-	}
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
 	return OK;
 }
 
@@ -244,6 +261,10 @@ int OS_Android::get_mouse_button_state() const {
 }
 
 void OS_Android::set_window_title(const String &p_title) {
+	//This queries/updates the currently connected devices/joypads
+	//Set_window_title is called when initializing the main loop (main.cpp)
+	//therefore this place is found to be suitable (I found no better).
+	godot_java->init_input_devices();
 }
 
 void OS_Android::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
@@ -262,9 +283,7 @@ void OS_Android::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen)
 void OS_Android::set_keep_screen_on(bool p_enabled) {
 	OS::set_keep_screen_on(p_enabled);
 
-	if (set_keep_screen_on_func) {
-		set_keep_screen_on_func(p_enabled);
-	}
+	godot_java->set_keep_screen_on(p_enabled);
 }
 
 Size2 OS_Android::get_window_size() const {
@@ -272,7 +291,7 @@ Size2 OS_Android::get_window_size() const {
 	return Vector2(default_videomode.width, default_videomode.height);
 }
 
-String OS_Android::get_name() {
+String OS_Android::get_name() const {
 
 	return "Android";
 }
@@ -466,6 +485,42 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 	}
 }
 
+void OS_Android::process_hover(int p_type, Point2 p_pos) {
+	// https://developer.android.com/reference/android/view/MotionEvent.html#ACTION_HOVER_ENTER
+	switch (p_type) {
+		case 7: // hover move
+		case 9: // hover enter
+		case 10: { // hover exit
+			Ref<InputEventMouseMotion> ev;
+			ev.instance();
+			ev->set_position(p_pos);
+			ev->set_global_position(p_pos);
+			ev->set_relative(p_pos - hover_prev_pos);
+			input->parse_input_event(ev);
+			hover_prev_pos = p_pos;
+		} break;
+	}
+}
+
+void OS_Android::process_double_tap(Point2 p_pos) {
+	Ref<InputEventMouseButton> ev;
+	ev.instance();
+	ev->set_position(p_pos);
+	ev->set_global_position(p_pos);
+	ev->set_pressed(false);
+	ev->set_doubleclick(true);
+	input->parse_input_event(ev);
+}
+
+void OS_Android::process_scroll(Point2 p_pos) {
+	Ref<InputEventPanGesture> ev;
+	ev.instance();
+	ev->set_position(p_pos);
+	ev->set_delta(p_pos - scroll_prev_pos);
+	input->parse_input_event(ev);
+	scroll_prev_pos = p_pos;
+}
+
 void OS_Android::process_accelerometer(const Vector3 &p_accelerometer) {
 
 	input->set_accelerometer(p_accelerometer);
@@ -497,18 +552,16 @@ bool OS_Android::has_virtual_keyboard() const {
 }
 
 int OS_Android::get_virtual_keyboard_height() const {
-	if (get_virtual_keyboard_height_func) {
-		return get_virtual_keyboard_height_func();
-	}
+	return godot_io_java->get_vk_height();
 
-	ERR_PRINT("Cannot obtain virtual keyboard height.");
-	return 0;
+	// ERR_PRINT("Cannot obtain virtual keyboard height.");
+	// return 0;
 }
 
-void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
 
-	if (show_virtual_keyboard_func) {
-		show_virtual_keyboard_func(p_existing_text);
+	if (godot_io_java->has_vk()) {
+		godot_io_java->show_vk(p_existing_text, p_max_input_length);
 	} else {
 
 		ERR_PRINT("Virtual keyboard not available");
@@ -517,9 +570,9 @@ void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect
 
 void OS_Android::hide_virtual_keyboard() {
 
-	if (hide_virtual_keyboard_func) {
+	if (godot_io_java->has_vk()) {
 
-		hide_virtual_keyboard_func();
+		godot_io_java->hide_vk();
 	} else {
 
 		ERR_PRINT("Virtual keyboard not available");
@@ -548,9 +601,7 @@ void OS_Android::set_display_size(Size2 p_size) {
 
 Error OS_Android::shell_open(String p_uri) {
 
-	if (open_uri_func)
-		return open_uri_func(p_uri) ? ERR_CANT_OPEN : OK;
-	return ERR_UNAVAILABLE;
+	return godot_io_java->open_uri(p_uri);
 }
 
 String OS_Android::get_resource_dir() const {
@@ -560,23 +611,29 @@ String OS_Android::get_resource_dir() const {
 
 String OS_Android::get_locale() const {
 
-	if (get_locale_func)
-		return get_locale_func();
+	String locale = godot_io_java->get_locale();
+	if (locale != "") {
+		return locale;
+	}
+
 	return OS_Unix::get_locale();
 }
 
 void OS_Android::set_clipboard(const String &p_text) {
 
-	if (set_clipboard_func) {
-		set_clipboard_func(p_text);
+	// DO we really need the fallback to OS_Unix here?!
+	if (godot_java->has_set_clipboard()) {
+		godot_java->set_clipboard(p_text);
 	} else {
 		OS_Unix::set_clipboard(p_text);
 	}
 }
 
 String OS_Android::get_clipboard() const {
-	if (get_clipboard_func) {
-		return get_clipboard_func();
+
+	// DO we really need the fallback to OS_Unix here?!
+	if (godot_java->has_get_clipboard()) {
+		return godot_java->get_clipboard();
 	}
 
 	return OS_Unix::get_clipboard();
@@ -584,17 +641,16 @@ String OS_Android::get_clipboard() const {
 
 String OS_Android::get_model_name() const {
 
-	if (get_model_func)
-		return get_model_func();
+	String model = godot_io_java->get_model();
+	if (model != "")
+		return model;
+
 	return OS_Unix::get_model_name();
 }
 
 int OS_Android::get_screen_dpi(int p_screen) const {
 
-	if (get_screen_dpi_func) {
-		return get_screen_dpi_func();
-	}
-	return 160;
+	return godot_io_java->get_screen_dpi();
 }
 
 String OS_Android::get_user_data_dir() const {
@@ -602,8 +658,8 @@ String OS_Android::get_user_data_dir() const {
 	if (data_dir_cache != String())
 		return data_dir_cache;
 
-	if (get_user_data_dir_func) {
-		String data_dir = get_user_data_dir_func();
+	String data_dir = godot_io_java->get_user_data_dir();
+	if (data_dir != "") {
 
 		//store current dir
 		char real_current_dir_name[2048];
@@ -630,45 +686,43 @@ String OS_Android::get_user_data_dir() const {
 
 void OS_Android::set_screen_orientation(ScreenOrientation p_orientation) {
 
-	if (set_screen_orientation_func)
-		set_screen_orientation_func(p_orientation);
+	godot_io_java->set_screen_orientation(p_orientation);
 }
 
 String OS_Android::get_unique_id() const {
 
-	if (get_unique_id_func)
-		return get_unique_id_func();
+	String unique_id = godot_io_java->get_unique_id();
+	if (unique_id != "")
+		return unique_id;
+
 	return OS::get_unique_id();
 }
 
 Error OS_Android::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 	// FIXME: Add support for volume, audio and subtitle tracks
-	if (video_play_func)
-		video_play_func(p_path);
+
+	godot_io_java->play_video(p_path);
 	return OK;
 }
 
 bool OS_Android::native_video_is_playing() const {
-	if (video_is_playing_func)
-		return video_is_playing_func();
-	return false;
+
+	return godot_io_java->is_video_playing();
 }
 
 void OS_Android::native_video_pause() {
-	if (video_pause_func)
-		video_pause_func();
+
+	godot_io_java->pause_video();
 }
 
 String OS_Android::get_system_dir(SystemDir p_dir) const {
 
-	if (get_system_dir_func)
-		return get_system_dir_func(p_dir);
-	return String(".");
+	return godot_io_java->get_system_dir(p_dir);
 }
 
 void OS_Android::native_video_stop() {
-	if (video_stop_func)
-		video_stop_func();
+
+	godot_io_java->stop_video();
 }
 
 void OS_Android::set_context_is_16_bits(bool p_is_16) {
@@ -691,8 +745,7 @@ String OS_Android::get_joy_guid(int p_device) const {
 }
 
 void OS_Android::vibrate_handheld(int p_duration_ms) {
-	if (vibrate_func)
-		vibrate_func(p_duration_ms);
+	godot_java->vibrate(p_duration_ms);
 }
 
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
@@ -716,7 +769,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	return false;
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, GetGLVersionCodeFunc p_get_gl_version_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, SetClipboardFunc p_set_clipboard_func, GetClipboardFunc p_get_clipboard_func, RequestPermissionFunc p_request_permission, VibrateFunc p_vibrate_func, bool p_use_apk_expansion) {
+OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion) {
 
 	use_apk_expansion = p_use_apk_expansion;
 	default_videomode.width = 800;
@@ -724,39 +777,13 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 	default_videomode.fullscreen = true;
 	default_videomode.resizable = false;
 
-	gfx_init_func = p_gfx_init_func;
-	gfx_init_ud = p_gfx_init_ud;
 	main_loop = NULL;
 	gl_extensions = NULL;
 	//rasterizer = NULL;
 	use_gl2 = false;
 
-	open_uri_func = p_open_uri_func;
-	get_user_data_dir_func = p_get_user_data_dir_func;
-	get_locale_func = p_get_locale_func;
-	get_model_func = p_get_model_func;
-	get_screen_dpi_func = p_get_screen_dpi_func;
-	get_unique_id_func = p_get_unique_id;
-	get_system_dir_func = p_get_sdir_func;
-	get_gl_version_code_func = p_get_gl_version_func;
-
-	video_play_func = p_video_play_func;
-	video_is_playing_func = p_video_is_playing_func;
-	video_pause_func = p_video_pause_func;
-	video_stop_func = p_video_stop_func;
-
-	show_virtual_keyboard_func = p_show_vk;
-	hide_virtual_keyboard_func = p_hide_vk;
-	get_virtual_keyboard_height_func = p_vk_height_func;
-
-	set_clipboard_func = p_set_clipboard_func;
-	get_clipboard_func = p_get_clipboard_func;
-
-	set_screen_orientation_func = p_screen_orient;
-	set_keep_screen_on_func = p_set_keep_screen_on_func;
-	alert_func = p_alert_func;
-	request_permission_func = p_request_permission;
-	vibrate_func = p_vibrate_func;
+	godot_java = p_godot_java;
+	godot_io_java = p_godot_io_java;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(AndroidLogger));

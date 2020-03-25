@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,17 @@
 
 #include <locale.h>
 #include <stdio.h>
+
+// For export templates, add a section; the exporter will patch it to enclose
+// the data appended to the executable (bundled PCK)
+#ifndef TOOLS_ENABLED
+#if defined _MSC_VER
+#pragma section("pck", read)
+__declspec(allocate("pck")) static char dummy[8] = { 0 };
+#elif defined __GNUC__
+static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
+#endif
+#endif
 
 PCHAR *
 CommandLineToArgvA(

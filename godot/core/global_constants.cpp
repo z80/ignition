@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -425,6 +425,16 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_DS_X);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_DS_Y);
 
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_VR_GRIP);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_VR_PAD);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_VR_TRIGGER);
+
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_OCULUS_AX);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_OCULUS_BY);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_OCULUS_MENU);
+
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_OPENVR_MENU);
+
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_SELECT);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_START);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_DPAD_UP);
@@ -458,6 +468,12 @@ void register_global_constants() {
 
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_ANALOG_L2);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_ANALOG_R2);
+
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_VR_ANALOG_TRIGGER);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_VR_ANALOG_GRIP);
+
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_OPENVR_TOUCHPADX);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_OPENVR_TOUCHPADY);
 
 	// midi
 	BIND_GLOBAL_ENUM_CONSTANT(MIDI_MESSAGE_NOTE_OFF);

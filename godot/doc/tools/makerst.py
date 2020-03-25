@@ -14,7 +14,7 @@ GODOT_DOCS_PATTERN = re.compile(r'^http(?:s)?://docs\.godotengine\.org/(?:[a-zA-
 
 
 def print_error(error, state):  # type: (str, State) -> None
-    print(error)
+    print("ERROR: {}".format(error))
     state.errored = True
 
 
@@ -37,12 +37,14 @@ class TypeName:
 
 
 class PropertyDef:
-    def __init__(self, name, type_name, setter, getter, text):  # type: (str, TypeName, Optional[str], Optional[str], Optional[str]) -> None
+    def __init__(self, name, type_name, setter, getter, text, default_value, overridden):  # type: (str, TypeName, Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
         self.name = name
         self.type_name = type_name
         self.setter = setter
         self.getter = getter
         self.text = text
+        self.default_value = default_value
+        self.overridden = overridden
 
 class ParameterDef:
     def __init__(self, name, type_name, default_value):  # type: (str, TypeName, Optional[str]) -> None
@@ -81,9 +83,10 @@ class EnumDef:
 
 
 class ThemeItemDef:
-    def __init__(self, name, type_name):  # type: (str, TypeName) -> None
+    def __init__(self, name, type_name, default_value):  # type: (str, TypeName, Optional[str]) -> None
         self.name = name
         self.type_name = type_name
+        self.default_value = default_value
 
 
 class ClassDef:
@@ -95,7 +98,6 @@ class ClassDef:
         self.methods = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.signals = OrderedDict()  # type: OrderedDict[str, SignalDef]
         self.inherits = None  # type: Optional[str]
-        self.category = None  # type: Optional[str]
         self.brief_description = None  # type: Optional[str]
         self.description = None  # type: Optional[str]
         self.theme_items = None  # type: Optional[OrderedDict[str, List[ThemeItemDef]]]
@@ -119,10 +121,6 @@ class State:
         if inherits is not None:
             class_def.inherits = inherits
 
-        category = class_root.get("category")
-        if category is not None:
-            class_def.category = category
-
         brief_desc = class_root.find("brief_description")
         if brief_desc is not None and brief_desc.text:
             class_def.brief_description = brief_desc.text
@@ -144,8 +142,12 @@ class State:
                 type_name = TypeName.from_element(property)
                 setter = property.get("setter") or None  # Use or None so '' gets turned into None.
                 getter = property.get("getter") or None
+                default_value = property.get("default") or None
+                if default_value is not None:
+                    default_value = '``{}``'.format(default_value)
+                overridden = property.get("override") or False
 
-                property_def = PropertyDef(property_name, type_name, setter, getter, property.text)
+                property_def = PropertyDef(property_name, type_name, setter, getter, property.text, default_value, overridden)
                 class_def.properties[property_name] = property_def
 
         methods = class_root.find("methods")
@@ -230,7 +232,8 @@ class State:
                 assert theme_item.tag == "theme_item"
 
                 theme_item_name = theme_item.attrib["name"]
-                theme_item_def = ThemeItemDef(theme_item_name, TypeName.from_element(theme_item))
+                default_value = theme_item.get("default") or None
+                theme_item_def = ThemeItemDef(theme_item_name, TypeName.from_element(theme_item), default_value)
                 if theme_item_name not in class_def.theme_items:
                     class_def.theme_items[theme_item_name] = []
                 class_def.theme_items[theme_item_name].append(theme_item_def)
@@ -385,24 +388,35 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             f.write(make_type(child, state))
         f.write("\n\n")
 
-    # Category
-    if class_def.category is not None:
-        f.write('**Category:** ' + class_def.category.strip() + "\n\n")
-
     # Brief description
-    f.write(make_heading('Brief Description', '-'))
     if class_def.brief_description is not None:
         f.write(rstize_text(class_def.brief_description.strip(), state) + "\n\n")
+
+    # Class description
+    if class_def.description is not None and class_def.description.strip() != '':
+        f.write(make_heading('Description', '-'))
+        f.write(rstize_text(class_def.description.strip(), state) + "\n\n")
+
+    # Online tutorials
+    if len(class_def.tutorials) > 0:
+        f.write(make_heading('Tutorials', '-'))
+        for t in class_def.tutorials:
+            link = t.strip()
+            f.write("- " + make_url(link) + "\n\n")
 
     # Properties overview
     if len(class_def.properties) > 0:
         f.write(make_heading('Properties', '-'))
-        ml = []  # type: List[Tuple[str, str]]
+        ml = []  # type: List[Tuple[str, str, str]]
         for property_def in class_def.properties.values():
             type_rst = property_def.type_name.to_rst(state)
-            ref = ":ref:`{0}<class_{1}_property_{0}>`".format(property_def.name, class_name)
-            ml.append((type_rst, ref))
-        format_table(f, ml)
+            default = property_def.default_value
+            if property_def.overridden:
+                ml.append((type_rst, property_def.name, "**O:** " + default))
+            else:
+                ref = ":ref:`{0}<class_{1}_property_{0}>`".format(property_def.name, class_name)
+                ml.append((type_rst, ref, default))
+        format_table(f, ml, True)
 
     # Methods overview
     if len(class_def.methods) > 0:
@@ -416,11 +430,11 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Theme properties
     if class_def.theme_items is not None and len(class_def.theme_items) > 0:
         f.write(make_heading('Theme Properties', '-'))
-        ml = []
+        pl = []
         for theme_item_list in class_def.theme_items.values():
             for theme_item in theme_item_list:
-                ml.append((theme_item.type_name.to_rst(state), theme_item.name))
-        format_table(f, ml)
+                pl.append((theme_item.type_name.to_rst(state), theme_item.name, theme_item.default_value))
+        format_table(f, pl, True)
 
     # Signals
     if len(class_def.signals) > 0:
@@ -482,38 +496,31 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
 
             f.write('\n\n')
 
-    # Class description
-    if class_def.description is not None and class_def.description.strip() != '':
-        f.write(make_heading('Description', '-'))
-        f.write(rstize_text(class_def.description.strip(), state) + "\n\n")
-
-    # Online tutorials
-    if len(class_def.tutorials) > 0:
-        f.write(make_heading('Tutorials', '-'))
-        for t in class_def.tutorials:
-            link = t.strip()
-            f.write("- " + make_url(link) + "\n\n")
-
     # Property descriptions
-    if len(class_def.properties) > 0:
+    if any(not p.overridden for p in class_def.properties.values()) > 0:
         f.write(make_heading('Property Descriptions', '-'))
         index = 0
 
         for property_def in class_def.properties.values():
+            if property_def.overridden:
+                continue
+
             if index != 0:
                 f.write('----\n\n')
 
             f.write(".. _class_{}_property_{}:\n\n".format(class_name, property_def.name))
             f.write('- {} **{}**\n\n'.format(property_def.type_name.to_rst(state), property_def.name))
 
-            setget = []
+            info = []
+            if property_def.default_value is not None:
+                info.append(("*Default*", property_def.default_value))
             if property_def.setter is not None and not property_def.setter.startswith("_"):
-                setget.append(("*Setter*", property_def.setter + '(value)'))
+                info.append(("*Setter*", property_def.setter + '(value)'))
             if property_def.getter is not None and not property_def.getter.startswith("_"):
-                setget.append(('*Getter*', property_def.getter + '()'))
+                info.append(('*Getter*', property_def.getter + '()'))
 
-            if len(setget) > 0:
-                format_table(f, setget)
+            if len(info) > 0:
+                format_table(f, info)
 
             if property_def.text is not None and property_def.text.strip() != '':
                 f.write(rstize_text(property_def.text.strip(), state) + '\n\n')
@@ -607,6 +614,40 @@ def make_class_list(class_list, columns):  # type: (List[str], int) -> None
     f.close()
 
 
+def escape_rst(text, until_pos=-1):  # type: (str) -> str
+    # Escape \ character, otherwise it ends up as an escape character in rst
+    pos = 0
+    while True:
+        pos = text.find('\\', pos, until_pos)
+        if pos == -1:
+            break
+        text = text[:pos] + "\\\\" + text[pos + 1:]
+        pos += 2
+
+    # Escape * character to avoid interpreting it as emphasis
+    pos = 0
+    while True:
+        pos = text.find('*', pos, until_pos)
+        if pos == -1:
+            break
+        text = text[:pos] + "\*" + text[pos + 1:]
+        pos += 2
+
+    # Escape _ character at the end of a word to avoid interpreting it as an inline hyperlink
+    pos = 0
+    while True:
+        pos = text.find('_', pos, until_pos)
+        if pos == -1:
+            break
+        if not text[pos + 1].isalnum():  # don't escape within a snake_case word
+            text = text[:pos] + "\_" + text[pos + 1:]
+            pos += 2
+        else:
+            pos += 1
+
+    return text
+
+
 def rstize_text(text, state):  # type: (str, State) -> str
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0
@@ -616,8 +657,10 @@ def rstize_text(text, state):  # type: (str, State) -> str
             break
 
         pre_text = text[:pos]
+        indent_level = 0
         while text[pos + 1] == '\t':
             pos += 1
+            indent_level += 1
         post_text = text[pos + 1:]
 
         # Handle codeblocks
@@ -641,6 +684,9 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 while code_pos + to_skip + 1 < len(code_text) and code_text[code_pos + to_skip + 1] == '\t':
                     to_skip += 1
 
+                if to_skip > indent_level:
+                    print_error("Four spaces should be used for indentation within [codeblock], file: {}".format(state.current_class), state)
+
                 if len(code_text[code_pos + to_skip + 1:]) == 0:
                     code_text = code_text[:code_pos] + "\n"
                     code_pos += 1
@@ -657,36 +703,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
             pos += 2
 
     next_brac_pos = text.find('[')
-
-    # Escape \ character, otherwise it ends up as an escape character in rst
-    pos = 0
-    while True:
-        pos = text.find('\\', pos, next_brac_pos)
-        if pos == -1:
-            break
-        text = text[:pos] + "\\\\" + text[pos + 1:]
-        pos += 2
-
-    # Escape * character to avoid interpreting it as emphasis
-    pos = 0
-    while True:
-        pos = text.find('*', pos, next_brac_pos)
-        if pos == -1:
-            break
-        text = text[:pos] + "\*" + text[pos + 1:]
-        pos += 2
-
-    # Escape _ character at the end of a word to avoid interpreting it as an inline hyperlink
-    pos = 0
-    while True:
-        pos = text.find('_', pos, next_brac_pos)
-        if pos == -1:
-            break
-        if not text[pos + 1].isalnum():  # don't escape within a snake_case word
-            text = text[:pos] + "\_" + text[pos + 1:]
-            pos += 2
-        else:
-            pos += 1
+    text = escape_rst(text, next_brac_pos)
 
     # Handle [tags]
     inside_code = False
@@ -714,7 +731,11 @@ def rstize_text(text, state):  # type: (str, State) -> str
         escape_post = False
 
         if tag_text in state.classes:
-            tag_text = make_type(tag_text, state)
+            if tag_text == state.current_class:
+                # We don't want references to the same class
+                tag_text = '``{}``'.format(tag_text)
+            else:
+                tag_text = make_type(tag_text, state)
             escape_post = True
         else:  # command
             cmd = tag_text
@@ -769,14 +790,25 @@ def rstize_text(text, state):  # type: (str, State) -> str
 
                     elif cmd.startswith("constant"):
                         found = False
-                        if method_param in class_def.constants:
-                            found = True
 
-                        else:
-                            for enum in class_def.enums.values():
-                                if method_param in enum.values:
-                                    found = True
-                                    break
+                        # Search in the current class
+                        search_class_defs = [class_def]
+
+                        if param.find('.') == -1:
+                            # Also search in @GlobalScope as a last resort if no class was specified
+                            search_class_defs.append(state.classes["@GlobalScope"])
+
+                        for search_class_def in search_class_defs:
+                            if method_param in search_class_def.constants:
+                                class_param = search_class_def.name
+                                found = True
+
+                            else:
+                                for enum in search_class_def.enums.values():
+                                    if method_param in enum.values:
+                                        class_param = search_class_def.name
+                                        found = True
+                                        break
 
                         if not found:
                             print_error("Unresolved constant '{}', file: {}".format(param, state.current_class), state)
@@ -844,6 +876,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 inside_code = True
             elif cmd.startswith('enum '):
                 tag_text = make_enum(cmd[5:], state)
+                escape_post = True
             else:
                 tag_text = make_type(tag_text, state)
                 escape_post = True
@@ -882,33 +915,33 @@ def rstize_text(text, state):  # type: (str, State) -> str
     return text
 
 
-def format_table(f, pp):  # type: (TextIO, Iterable[Tuple[str, ...]]) -> None
-    longest_t = 0
-    longest_s = 0
-    for s in pp:
-        sl = len(s[0])
-        if sl > longest_s:
-            longest_s = sl
-        tl = len(s[1])
-        if tl > longest_t:
-            longest_t = tl
+def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterable[Tuple[str, ...]]) -> None
+    if len(data) == 0:
+        return
 
-    sep = "+"
-    for i in range(longest_s + 2):
-        sep += "-"
-    sep += "+"
-    for i in range(longest_t + 2):
-        sep += "-"
+    column_sizes = [0] * len(data[0])
+    for row in data:
+        for i, text in enumerate(row):
+            text_length = len(text or '')
+            if text_length > column_sizes[i]:
+                column_sizes[i] = text_length
+
+    sep = ""
+    for size in column_sizes:
+        if size == 0 and remove_empty_columns:
+            continue
+        sep += "+" + "-" * (size + 2)
     sep += "+\n"
     f.write(sep)
-    for s in pp:
-        rt = s[0]
-        while len(rt) < longest_s:
-            rt += " "
-        st = s[1]
-        while len(st) < longest_t:
-            st += " "
-        f.write("| " + rt + " | " + st + " |\n")
+
+    for row in data:
+        row_text = "|"
+        for i, text in enumerate(row):
+            if column_sizes[i] == 0 and remove_empty_columns:
+                continue
+            row_text += " " + (text or '').ljust(column_sizes[i]) + " |"
+        row_text += "\n"
+        f.write(row_text)
         f.write(sep)
     f.write('\n')
 
@@ -935,9 +968,16 @@ def make_enum(t, state):  # type: (str, State) -> str
         if c in state.classes and e not in state.classes[c].enums:
             c = "@GlobalScope"
 
+    if not c in state.classes and c.startswith("_"):
+        c = c[1:] # Remove the underscore prefix
+
     if c in state.classes and e in state.classes[c].enums:
         return ":ref:`{0}<enum_{1}_{0}>`".format(e, c)
-    print_error("Unresolved enum '{}', file: {}".format(t, state.current_class), state)
+
+    # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
+    if "{}.{}".format(c, e) != "Vector3.Axis":
+        print_error("Unresolved enum '{}', file: {}".format(t, state.current_class), state)
+
     return t
 
 

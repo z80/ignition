@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PoolByteArray" category="Built-In Types" version="3.1.2">
+<class name="PoolByteArray" version="3.2">
 	<brief_description>
 		A pooled [Array] of bytes.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold bytes. Optimized for memory usage, does not fragment the memory. Note that this type is passed by value and not by reference.
+		An [Array] specifically designed to hold bytes. Optimized for memory usage, does not fragment the memory.
+		[b]Note:[/b] This type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,21 +16,21 @@
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Construct a new [code]PoolByteArray[/code]. Optionally, you can pass in a generic [Array] that will be converted.
+				Constructs a new [PoolByteArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
 			<argument index="0" name="byte" type="int">
 			</argument>
 			<description>
-				Append an element at the end of the array (alias of [method push_back]).
+				Appends an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="append_array">
 			<argument index="0" name="array" type="PoolByteArray">
 			</argument>
 			<description>
-				Append a [code]PoolByteArray[/code] at the end of this array.
+				Appends a [PoolByteArray] at the end of this array.
 			</description>
 		</method>
 		<method name="compress">
@@ -38,7 +39,7 @@
 			<argument index="0" name="compression_mode" type="int" default="0">
 			</argument>
 			<description>
-				Returns a new [code]PoolByteArray[/code] with the data compressed. Set the compression mode using one of [enum File.CompressionMode]'s constants.
+				Returns a new [PoolByteArray] with the data compressed. Set the compression mode using one of [enum File.CompressionMode]'s constants.
 			</description>
 		</method>
 		<method name="decompress">
@@ -49,7 +50,14 @@
 			<argument index="1" name="compression_mode" type="int" default="0">
 			</argument>
 			<description>
-				Returns a new [code]PoolByteArray[/code] with the data decompressed. Set [code]buffer_size[/code] to the size of the uncompressed data. Set the compression mode using one of [enum File.CompressionMode]'s constants.
+				Returns a new [PoolByteArray] with the data decompressed. Set [code]buffer_size[/code] to the size of the uncompressed data. Set the compression mode using one of [enum File.CompressionMode]'s constants.
+			</description>
+		</method>
+		<method name="empty">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="get_string_from_ascii">
@@ -66,6 +74,17 @@
 				Returns a copy of the array's contents as [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred.
 			</description>
 		</method>
+		<method name="hex_encode">
+			<return type="String">
+			</return>
+			<description>
+				Returns a hexadecimal representation of this array as a [String].
+				[codeblock]
+				var array = PoolByteArray([11, 46, 255])
+				print(array.hex_encode()) # Prints: 0b2eff
+				[/codeblock]
+			</description>
+		</method>
 		<method name="insert">
 			<return type="int">
 			</return>
@@ -74,33 +93,33 @@
 			<argument index="1" name="byte" type="int">
 			</argument>
 			<description>
-				Insert a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">
 			<description>
-				Reverse the order of the elements in the array.
+				Reverses the order of the elements in the array.
 			</description>
 		</method>
 		<method name="push_back">
 			<argument index="0" name="byte" type="int">
 			</argument>
 			<description>
-				Append an element at the end of the array.
+				Appends an element at the end of the array.
 			</description>
 		</method>
 		<method name="remove">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Remove an element from the array by index.
+				Removes an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Set the size of the array. If the array is grown reserve elements at the end of the array. If the array is shrunk truncate the array to the new size.
+				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
 			</description>
 		</method>
 		<method name="set">
@@ -109,7 +128,7 @@
 			<argument index="1" name="byte" type="int">
 			</argument>
 			<description>
-				Change the byte at the given index.
+				Changes the byte at the given index.
 			</description>
 		</method>
 		<method name="size">
@@ -127,7 +146,7 @@
 			<argument index="1" name="to" type="int">
 			</argument>
 			<description>
-				Returns the slice of the [code]PoolByteArray[/code] between indices (inclusive) as a new [code]PoolByteArray[/code]. Any negative index is considered to be from the end of the array.
+				Returns the slice of the [PoolByteArray] between indices (inclusive) as a new [PoolByteArray]. Any negative index is considered to be from the end of the array.
 			</description>
 		</method>
 	</methods>

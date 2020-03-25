@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,6 +76,8 @@ void VisualServerRaster::free(RID p_rid) {
 	if (VSG::viewport->free(p_rid))
 		return;
 	if (VSG::scene->free(p_rid))
+		return;
+	if (VSG::scene_render->free(p_rid))
 		return;
 }
 
@@ -151,12 +153,22 @@ int VisualServerRaster::get_render_info(RenderInfo p_info) {
 	return VSG::storage->get_render_info(p_info);
 }
 
+String VisualServerRaster::get_video_adapter_name() const {
+
+	return VSG::storage->get_video_adapter_name();
+}
+
+String VisualServerRaster::get_video_adapter_vendor() const {
+
+	return VSG::storage->get_video_adapter_vendor();
+}
+
 /* TESTING */
 
-void VisualServerRaster::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {
+void VisualServerRaster::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
 
 	redraw_request();
-	VSG::rasterizer->set_boot_image(p_image, p_color, p_scale);
+	VSG::rasterizer->set_boot_image(p_image, p_color, p_scale, p_use_filter);
 }
 void VisualServerRaster::set_default_clear_color(const Color &p_color) {
 	VSG::viewport->set_default_clear_color(p_color);
@@ -201,8 +213,10 @@ VisualServerRaster::VisualServerRaster() {
 	VSG::canvas_render = VSG::rasterizer->get_canvas();
 	VSG::scene_render = VSG::rasterizer->get_scene();
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++) {
 		black_margin[i] = 0;
+		black_image[i] = RID();
+	}
 }
 
 VisualServerRaster::~VisualServerRaster() {

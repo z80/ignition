@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Texture" inherits="Resource" category="Core" version="3.1.2">
+<class name="Texture" inherits="Resource" version="3.2">
 	<brief_description>
 		Texture for 2D and 3D.
 	</brief_description>
 	<description>
 		A texture works by registering an image in the video hardware, which then can be used in 3D models or 2D [Sprite] or GUI [Control].
 		Textures are often created by loading them from a file. See [method @GDScript.load].
+		[Texture] is a base for other resources. It cannot be used directly.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -24,6 +25,7 @@
 			<argument index="4" name="normal_map" type="Texture" default="null">
 			</argument>
 			<description>
+				Draws the texture using a [CanvasItem] with the [VisualServer] API at the specified [code]position[/code]. Equivalent to [method VisualServer.canvas_item_add_texture_rect] with a rect at [code]position[/code] and the size of this [Texture].
 			</description>
 		</method>
 		<method name="draw_rect" qualifiers="const">
@@ -42,6 +44,7 @@
 			<argument index="5" name="normal_map" type="Texture" default="null">
 			</argument>
 			<description>
+				Draws the texture using a [CanvasItem] with the [VisualServer] API. Equivalent to [method VisualServer.canvas_item_add_texture_rect].
 			</description>
 		</method>
 		<method name="draw_rect_region" qualifiers="const">
@@ -62,12 +65,14 @@
 			<argument index="6" name="clip_uv" type="bool" default="true">
 			</argument>
 			<description>
+				Draws a part of the texture using a [CanvasItem] with the [VisualServer] API. Equivalent to [method VisualServer.canvas_item_add_texture_rect_region].
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
 			<return type="Image">
 			</return>
 			<description>
+				Returns an [Image] with the data from this [Texture]. [Image]s can be accessed and manipulated directly.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
@@ -95,36 +100,37 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if this [Texture] has an alpha channel.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags">
-			The texture's flags.
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="4">
+			The texture's [enum Flags]. [enum Flags] are used to set various properties of the [Texture].
 		</member>
 	</members>
 	<constants>
 		<constant name="FLAGS_DEFAULT" value="7" enum="Flags">
-			Default flags. Generate mipmaps, repeat, and filter are enabled.
+			Default flags. [constant FLAG_MIPMAPS], [constant FLAG_REPEAT] and [constant FLAG_FILTER] are enabled.
 		</constant>
 		<constant name="FLAG_MIPMAPS" value="1" enum="Flags">
-			Generate mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
+			Generates mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
 		</constant>
 		<constant name="FLAG_REPEAT" value="2" enum="Flags">
-			Repeats texture (instead of clamp to edge).
+			Repeats the texture (instead of clamp to edge).
 		</constant>
 		<constant name="FLAG_FILTER" value="4" enum="Flags">
-			Magnifying filter, to enable smooth zooming in of the texture.
+			Uses a magnifying filter, to enable smooth zooming in of the texture.
 		</constant>
 		<constant name="FLAG_ANISOTROPIC_FILTER" value="8" enum="Flags">
-			Anisotropic mipmap filtering. Generates smaller versions of the same texture with different aspect ratios.
-			More effective on planes often shown going to the horrizon as those textures (Walls or Ground for example) get squashed in the viewport to different aspect ratios and regular mipmaps keep the aspect ratio so they don't optimize storage that well in those cases.
+			Uses anisotropic mipmap filtering. Generates smaller versions of the same texture with different aspect ratios.
+			This results in better-looking textures when viewed from oblique angles.
 		</constant>
 		<constant name="FLAG_CONVERT_TO_LINEAR" value="16" enum="Flags">
-			Converts texture to SRGB color space.
+			Converts the texture to the sRGB color space.
 		</constant>
 		<constant name="FLAG_MIRRORED_REPEAT" value="32" enum="Flags">
-			Repeats texture with alternate sections mirrored.
+			Repeats the texture with alternate sections mirrored.
 		</constant>
 		<constant name="FLAG_VIDEO_SURFACE" value="2048" enum="Flags">
 			Texture is a video surface.

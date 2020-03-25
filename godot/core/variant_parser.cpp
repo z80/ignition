@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,10 +51,16 @@ bool VariantParser::StreamFile::is_eof() const {
 
 CharType VariantParser::StreamString::get_char() {
 
-	if (pos >= s.length())
+	if (pos > s.length()) {
 		return 0;
-	else
+	} else if (pos == s.length()) {
+		// You need to try to read again when you have reached the end for EOF to be reported,
+		// so this works the same as files (like StreamFile does)
+		pos++;
+		return 0;
+	} else {
 		return s[pos++];
+	}
 }
 
 bool VariantParser::StreamString::is_utf8() const {
@@ -436,8 +442,6 @@ Error VariantParser::_parse_enginecfg(Stream *p_stream, Vector<String> &strings,
 			line++;
 		}
 	}
-
-	return OK;
 }
 
 template <class T>
@@ -799,8 +803,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 
-			return OK;
-
 		} else if (id == "Resource" || id == "SubResource" || id == "ExtResource") {
 
 			get_token(p_stream, token, line, r_err_str);
@@ -864,8 +866,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 			}
-
-			return OK;
 #ifndef DISABLE_DEPRECATED
 		} else if (id == "InputEvent") {
 
@@ -1256,8 +1256,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 		r_err_str = "Expected value, got " + String(tk_name[token.type]) + ".";
 		return ERR_PARSE_ERROR;
 	}
-
-	return ERR_PARSE_ERROR;
 }
 
 Error VariantParser::_parse_array(Array &array, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser) {
@@ -1301,8 +1299,6 @@ Error VariantParser::_parse_array(Array &array, Stream *p_stream, int &line, Str
 		array.push_back(v);
 		need_comma = true;
 	}
-
-	return OK;
 }
 
 Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser) {
@@ -1372,8 +1368,6 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 			at_key = true;
 		}
 	}
-
-	return OK;
 }
 
 Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser, bool p_simple_tag) {
@@ -1534,7 +1528,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 					return err;
 				if (tk.type != TK_STRING) {
 					r_err_str = "Error reading quoted string";
-					return err;
+					return ERR_INVALID_DATA;
 				}
 
 				what = tk.value;
@@ -1542,23 +1536,16 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 			} else if (c != '=') {
 				what += String::chr(c);
 			} else {
-				if (p_stream->is_utf8()) {
-					what.parse_utf8(what.ascii(true).get_data());
-				}
 				r_assign = what;
 				Token token;
 				get_token(p_stream, token, line, r_err_str);
 				Error err = parse_value(token, r_value, p_stream, line, r_err_str, p_res_parser);
-				if (err) {
-				}
 				return err;
 			}
 		} else if (c == '\n') {
 			line++;
 		}
 	}
-
-	return OK;
 }
 
 Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, int &r_err_line, ResourceParser *p_res_parser) {
@@ -1951,7 +1938,8 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, " )");
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return OK;
