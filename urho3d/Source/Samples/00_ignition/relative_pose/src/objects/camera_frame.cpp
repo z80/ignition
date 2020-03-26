@@ -214,7 +214,7 @@ void CameraFrame::initGeocentric()
         return;
     State rs;
     of->relativeState( rf, rs, true );
-    const Quaterniond unrotateParentQ = rf->relQ().Inverse();
+    const Quaterniond unrotateParentQ = Quaterniond::IDENTITY; //rf->relQ().Inverse();
     const Vector3d fromG = unrotateParentQ * Vector3d( 0.0, 1.0, 0.0 );
     const Vector3d toG = -(unrotateParentQ * rs.r.Normalized());
     surfQ_.FromRotationTo( fromG, toG );
@@ -232,7 +232,7 @@ void CameraFrame::adjustGeocentric()
         return;
     State rs;
     of->relativeState( rf, rs, true );
-    const Quaterniond unrotateParentQ = rf->relQ().Inverse();
+    const Quaterniond unrotateParentQ = Quaterniond::IDENTITY; //rf->relQ().Inverse();
     const Vector3d toG = -(unrotateParentQ * rs.r.Normalized());
     const Vector3d fromG = geocentric_last_up_;
     Quaterniond    adjQ;
