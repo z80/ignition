@@ -11,6 +11,8 @@ class CameraFrame: public RefFrame
 {
     URHO3D_OBJECT( CameraFrame, RefFrame )
 public:
+    enum CameraMode { TGeocentric=0, TFree, TFirstPerson };
+
     static void RegisterComponent( Context * context );
 
     void CheckAttributes();
@@ -20,13 +22,15 @@ public:
 
     void ApplyControls( const Controls & ctrl, Float dt ) override;
 
-    void setUseSurfFrame( bool en );
+    void setCameraMode( CameraMode mode );
+
     RefFrame * CameraOrigin();
 
 protected:
     void OnSceneSet( Scene * scene ) override;
 
-    void adjustSurfQuat();
+    void initGeocentric();
+    void adjustGeocentric();
     static RefFrame * orbitingFrame( RefFrame * rf );
 public:
     void refStateChanged() override;
@@ -37,8 +41,19 @@ public:
     /// Camera parameters.
     Float yaw_, pitch_;
     Float dist_;
-    bool useSurfFrame_;
+
+
+    CameraMode camera_mode_;
+
+    // Geocentric mode numbers.
+    // If it was initialized already.
+    bool     geocentric_initialized_;
+    // Previous "up" vector.
+    Vector3d geocentric_last_up_;
+
     Quaterniond surfQ_;
+
+    // This one is for adjusting the distance.
     static const Float alpha_;
 };
 

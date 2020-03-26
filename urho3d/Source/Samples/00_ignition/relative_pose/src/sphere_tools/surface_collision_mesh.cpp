@@ -29,6 +29,8 @@ void SurfaceCollisionMesh::parentTeleported()
 {
     // Recompute dynamic geometry.
     setR( Vector3d::ZERO );
+    // Need to force rebuild as with different ref. frame 
+    // origin triangles should be in different relative place.
     constructCustomGeometry( true );
 }
 

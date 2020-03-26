@@ -36,12 +36,14 @@ void CameraFrame::CheckAttributes()
 CameraFrame::CameraFrame( Context * context )
     : RefFrame( context )
 {
-    useSurfFrame_ = true;
     yaw_   = 30.0 / 180.0 * 3.14;
     pitch_ = 45.0 / 180.0 * 3.14;
     dist_  = 28.0;
     //centerBtnPrev_ = false;
     setName( "CameraFrame" );
+
+    camera_mode_ = TGeocentric;
+    geocentric_initialized_ = false;
 }
 
 CameraFrame::~CameraFrame()
@@ -53,12 +55,16 @@ void CameraFrame::ApplyControls( const Controls & ctrl, Float dt )
 {
     yaw_   = ctrl.yaw_ * 180.0 / 3.14 / 10.0;
     pitch_ = ctrl.pitch_ * 180.0 / 3.14 / 10.0;
+    // Update distance if it is in the controls.
     VariantMap::ConstIterator it = ctrl.extraData_.Find( IGN_ZOOM_VALUE );
-    const int z = (it != ctrl.extraData_.End()) ? it->second_.GetInt() : 250.0;
-    dist_ = static_cast<Float>( z ) * alpha_;
+    if ( it != ctrl.extraData_.End() )
+    {
+        const int z = it->second_.GetInt();
+        dist_ = static_cast<Float>( z );
+    }
 
-    RefFrame * directParent = parent();
-    RefFrame * originParent = CameraOrigin();
+    //RefFrame * directParent = parent();
+    //RefFrame * originParent = CameraOrigin();
     Quaterniond q;
     q.FromEulerAngles( pitch_, yaw_, 0.0 );
     /*if ( directParent )
@@ -69,11 +75,16 @@ void CameraFrame::ApplyControls( const Controls & ctrl, Float dt )
         rel_q = rel_q.Inverse();
         q = rel_q * q;
     }*/
-    if ( useSurfFrame_ )
+    if ( camera_mode_ == TGeocentric )
     {
-        adjustSurfQuat();
+        if ( !geocentric_initialized_ )
+            initGeocentric();
+        else
+            adjustGeocentric();
         q = surfQ_ * q;
     }
+    else
+        geocentric_initialized_ = false;
     Vector3d r( 0.0, 0.0, -1.0 );
     r = q * r;
     r *= dist_;
@@ -83,9 +94,9 @@ void CameraFrame::ApplyControls( const Controls & ctrl, Float dt )
     setQ( q );
 }
 
-void CameraFrame::setUseSurfFrame( bool en )
+void CameraFrame::setCameraMode( CameraMode mode )
 {
-    useSurfFrame_ = en;
+    camera_mode_ = mode;
 }
 
 RefFrame * CameraFrame::CameraOrigin()
@@ -193,7 +204,7 @@ void CameraFrame::OnSceneSet( Scene * scene )
     assignCameraNode();
 }
 
-void CameraFrame::adjustSurfQuat()
+void CameraFrame::initGeocentric()
 {
     RefFrame * rf = parent();
     if ( !rf )
@@ -202,15 +213,33 @@ void CameraFrame::adjustSurfQuat()
     if ( !of )
         return;
     State rs;
-    rf->relativeState( of, rs, true );
-    const Quaterniond toParentQ = rf->relQ().Inverse();
-    const Quaterniond localQ = toParentQ * rs.q; //rf->relQ();
-    const Vector3d actualG = localQ * Vector3d( 0.0, -1.0, 0.0 );
-    const Vector3d wantedG = -(toParentQ * rs.r.Normalized());
-    Quaterniond q;
-    q.FromRotationTo( actualG, wantedG );
-    //surfQ_ = q * localQ;
-    surfQ_ = q;
+    of->relativeState( rf, rs, true );
+    const Quaterniond unrotateParentQ = rf->relQ().Inverse();
+    const Vector3d fromG = unrotateParentQ * Vector3d( 0.0, 1.0, 0.0 );
+    const Vector3d toG = -(unrotateParentQ * rs.r.Normalized());
+    surfQ_.FromRotationTo( fromG, toG );
+    geocentric_last_up_ = toG;
+    geocentric_initialized_ = true;
+}
+
+void CameraFrame::adjustGeocentric()
+{
+    RefFrame * rf = parent();
+    if ( !rf )
+        return;
+    RefFrame * of = orbitingFrame( rf );
+    if ( !of )
+        return;
+    State rs;
+    of->relativeState( rf, rs, true );
+    const Quaterniond unrotateParentQ = rf->relQ().Inverse();
+    const Vector3d toG = -(unrotateParentQ * rs.r.Normalized());
+    const Vector3d fromG = geocentric_last_up_;
+    Quaterniond    adjQ;
+    adjQ.FromRotationTo( fromG, toG );
+    surfQ_ = surfQ_ * adjQ;
+    surfQ_.Normalize();
+    geocentric_last_up_ = toG;
 }
 
 RefFrame * CameraFrame::orbitingFrame( RefFrame * rf )
