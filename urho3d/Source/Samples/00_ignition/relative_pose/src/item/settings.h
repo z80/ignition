@@ -44,6 +44,9 @@ public:
     static Float cameraMaxDistance();
     static Float cameraMinDistance();
 
+    static int zoomDistMin();
+    static int zoomDistMax();
+
 private:
     void LoadConfig();
     void SaveConfig();

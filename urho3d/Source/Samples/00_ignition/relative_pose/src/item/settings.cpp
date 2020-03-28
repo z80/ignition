@@ -90,6 +90,16 @@ Float Settings::cameraMinDistance()
     return 1.0;
 }
 
+int Settings::zoomDistMin()
+{
+    return 2;
+}
+
+int Settings::zoomDistMax()
+{
+    return 1000000;
+}
+
 void Settings::LoadConfig()
 {
     ConfigManager * m = configManager();
