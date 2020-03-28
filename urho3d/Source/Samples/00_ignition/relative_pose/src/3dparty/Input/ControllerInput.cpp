@@ -7,7 +7,10 @@
 #include "JoystickInput.h"
 #include "Global3dparty.h"
 
+#include "settings.h"
+
 using namespace Urho3D;
+using namespace Ign;
 
 /// Construct.
 ControllerInput::ControllerInput(Context* context) :
@@ -279,9 +282,9 @@ void ControllerInput::UpdateZoom( int d, int index )
     VariantMap::ConstIterator it = c.extraData_.Find( Ign::IGN_ZOOM_VALUE );
     int v = ( it != c.extraData_.End() ) ? it->second_.GetInt() : 250;
     v += d;
-    if ( v < 0 )
+    if ( v < Settings::zoomDistMin() )
         v = 0;
-    else if (v > 50)
+    else if (v > Settings::zoomDistMax() )
         v = 50;
     c.extraData_[Ign::IGN_ZOOM_VALUE] = v;
 }
