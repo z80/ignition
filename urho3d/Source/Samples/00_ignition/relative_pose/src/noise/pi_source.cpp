@@ -277,7 +277,7 @@ PiBodySource::~PiBodySource()
 
 Float PiBodySource::height(const Vector3d& at) const
 {
-    const Float h = GetHeight(at);
+    const Float h = GetHeight( at );
     return h;
 }
 
