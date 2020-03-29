@@ -25,6 +25,11 @@ public:
         Float sz;
         Float dist;
     };
+    struct SubdividePoint
+    {
+        Vector3d at;
+        bool     close;
+    };
 
     SubdriveSource();
     virtual ~SubdriveSource();
@@ -36,7 +41,7 @@ public:
 
     // Based on changed interest points determines if 
     // need to recomute subdivision. 
-    virtual bool needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts );
+    virtual bool needSubdrive( const Cubesphere * s, Vector<SubdividePoint> & pts );
     // Determines if a particular face should be subdriven.
     virtual bool needSubdrive( const Cubesphere * s, const Face * f ) const;
 
@@ -45,7 +50,7 @@ public:
     void sortLevels( const Cubesphere * s );
 
     Vector<Level> levels_, levelsUnit_;
-    Vector<Vector3d> pts_, ptsFlat_, ptsNew_;
+    Vector<SubdividePoint> pts_, ptsFlat_, ptsNew_;
 };
 
 class HeightSource
@@ -158,7 +163,7 @@ public:
     void faceList( const Vector<Vector3d> & pts, const Float sz, const Float dist, Vector<int> & faceInds );
 
     // This is for subdriving. It is used in SubdriveSource.
-    void flattenPts( const Vector<Vector3d> & pts, Vector<Vector3d> & ptsFlat ) const;
+    void flattenPts( const Vector<SubdriveSource::SubdividePoint> & pts, Vector<SubdriveSource::SubdividePoint> & ptsFlat ) const;
 private:
     void clear();
     void init();
@@ -168,15 +173,15 @@ private:
     void applySourceHeight( HeightSource * src, Vertex & v );
     void applySourceColor( HeightSource * src, Vertex & v );
 
-    void selectFaces( const Vector<Vector3d> & pts, const Float dist, Vector<int> & faceInds );
+    void selectFaces( const Vector<SubdriveSource::SubdividePoint> & pts, const Float dist, Vector<int> & faceInds );
 
 public:
     // Radius unit sphere is scaled to 
     // when returned.
     Float R_, H_;
 
-    Vector<Vector3d> ptsFlat_;
-    Vector<int>      faceInds_;
+    Vector<SubdriveSource::SubdividePoint> ptsFlat_;
+    Vector<int>                            faceInds_;
 };
 
 class CubeSphereComponent: public Component

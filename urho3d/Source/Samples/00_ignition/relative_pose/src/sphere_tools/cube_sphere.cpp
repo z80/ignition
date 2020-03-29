@@ -20,8 +20,8 @@ void SubdriveSource::DrawDebugGeometry( float scale, DebugRenderer * debug, bool
     const unsigned qty = pts_.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
-        const Vector3d & pt = pts_[i];
-        const Vector3d & ptFlat = ptsFlat_[i];
+        const Vector3d & pt = pts_[i].at;
+        const Vector3d & ptFlat = ptsFlat_[i].at;
         const Vector3 ptf( pt.x_, pt.y_, pt.z_ );
         const Vector3 ptFlatf( ptFlat.x_, ptFlat.y_, ptFlat.z_ );
         debug->AddCross( ptf*scale, 1.0, C, depthTest );
@@ -43,13 +43,13 @@ void SubdriveSource::addLevel( Float sz, Float dist )
     levels_.Push( lvl );
 }
 
-bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts )
+bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<SubdividePoint> & pts )
 {
     ptsNew_ = pts;
     const unsigned ptsNewQty = ptsNew_.Size();
     for ( unsigned i=0; i<ptsNewQty; i++ )
     {
-        Vector3d & v = ptsNew_[i];
+        Vector3d & v = ptsNew_[i].at;
         v.Normalize();
     }
 
@@ -62,11 +62,13 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts 
 
     // Sort and normalize all levels.
     sortLevels( s );
-    const Level lvl = levelsUnit_[0];
-    const Float d = lvl.dist * 0.5;
+    const Level lvl_close = levelsUnit_[0];
+    const Float d_close = lvl_close.dist * 0.5;
+    const Level lvl_far = levelsUnit_[levelsUnit_.Size() - 1];
+    const Float d_far   = lvl_far.dist * 0.5;
 
 
-    // Check all distances. And resubdrive if shifter half the finest distance.
+    // Check all distances. And resubdrive if shifted half the finest distance.
     const unsigned ptsQty = pts_.Size();
     bool needSubdrive = false;
 	if ( ptsNewQty > 0 )
@@ -78,11 +80,13 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, Vector<Vector3d> & pts 
 			// Check distances.
 			for (unsigned i = 0; i < ptsNewQty; i++)
 			{
-				const Vector3d & v = ptsNew_[i];
+				const Vector3d & v = ptsNew_[i].at;
+                const bool isClose = ptsNew_[i].close;
+                const Float d = isClose ? d_close : d_far;
 				Float minDist = -1.0;
 				for (unsigned j = 0; j < ptsQty; j++)
 				{
-					const Vector3d & a = pts_[j];
+					const Vector3d & a = pts_[j].at;
 					const Float dot = v.DotProduct(a);
 					const Vector3d proj = a * dot;
 					const Vector3d diff = v - proj;
@@ -117,8 +121,10 @@ bool SubdriveSource::needSubdrive( const Cubesphere * s, const Face * f ) const
     const unsigned lastLevelInd = levelsQty-1;
     for ( unsigned i=0; i<ptsQty; i++ )
     {
-        const Vector3d & a = ptsFlat_[i];
-        for ( unsigned j=0; j<levelsQty; j++ )
+        const Vector3d & a = ptsFlat_[i].at;
+        const bool isClose = ptsFlat_[i].close;
+        const unsigned startInd = (isClose) ? 0 : (levelsQty-1);
+        for ( unsigned j=startInd; j<levelsQty; j++ )
         {
             const Level & lvl = levelsUnit_[j];
             //const bool inside = (j == lastLevelInd) || f->inside( s, a, n, lvl.dist );
@@ -883,7 +889,7 @@ void Cubesphere::triangleList( const Vector<Vector3d> & pts, Float dist, Vector<
     }
 }
 
-void Cubesphere::faceList( const Vector<Vector3d> & pts, const Float sz, const Float dist, Vector<int> & faceInds )
+void Cubesphere::faceList( const Vector<SubdriveSource::SubdividePoint> & pts, const Float sz, const Float dist, Vector<int> & faceInds )
 {
     faceInds.Clear();
     flattenPts( pts, ptsFlat_ );
@@ -904,7 +910,7 @@ void Cubesphere::faceList( const Vector<Vector3d> & pts, const Float sz, const F
     }
 }
 
-void Cubesphere::flattenPts( const Vector<Vector3d> & pts, Vector<Vector3d> & ptsFlat ) const
+void Cubesphere::flattenPts( const Vector<SubdriveSource::SubdividePoint> & pts, Vector<SubdriveSource::SubdividePoint> & ptsFlat ) const
 {
     // Use first 6 faces in the cubesphere to project
     // all the points onto appropriate faces.
@@ -919,7 +925,7 @@ void Cubesphere::flattenPts( const Vector<Vector3d> & pts, Vector<Vector3d> & pt
     const unsigned ptsQty = ptsFlat.Size();
     for ( unsigned i=0; i<ptsQty; i++ )
     {
-        Vector3d & pt3 = ptsFlat[i];
+        Vector3d & pt3 = ptsFlat[i].at;
         // Next 3 lines protect from zero length points.
         const Float pt3Len = pt3.Length();
         if ( pt3Len < 0.1 )
