@@ -275,16 +275,15 @@ PiBodySource::~PiBodySource()
 {
 }
 
-Float PiBodySource::height(const Vector3d& at) const
+Float PiBodySource::height( const Vector3d & at ) const
 {
     const Float h = GetHeight( at );
     return h;
 }
 
-Color PiBodySource::color(const Vector3d& at) const
+Color PiBodySource::color( const Vector3d & at, const Vector3d & norm, Float height ) const
 {
-    const Float h = GetHeight( at );
-    const Vector3d c = GetColor( at, h, at );
+    const Vector3d c = GetColor( at, height, norm );
     const Color col(c.x_, c.y_, c.z_, 1.0);
     return col;
 }

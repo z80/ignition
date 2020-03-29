@@ -235,6 +235,7 @@ const Vertex & Vertex::operator=( const Vertex & inst )
         atFlat  = inst.atFlat;
         atUnit  = inst.atUnit;
         at   = inst.at;
+        heightUnit_ = inst.heightUnit_;
         norm = inst.norm;
         a    = inst.a;
         b    = inst.b;
@@ -1159,14 +1160,14 @@ void Cubesphere::computeNormals()
 
 void Cubesphere::applySourceHeight( HeightSource * src, Vertex & v )
 {
-    const Float dh = src->height( v.atUnit );
-    const Float d  = R_ + H_*dh;
+    v.heightUnit_ = src->height( v.atUnit );
+    const Float d  = R_ + H_*v.heightUnit_;
     v.at = v.atUnit * d;
 }
 
 void Cubesphere::applySourceColor( HeightSource * src, Vertex & v )
 {
-    const Color c = src->color( v.atUnit );
+    const Color c = src->color( v.atUnit, v.norm, v.heightUnit_ );
     v.color = c;
 }
 

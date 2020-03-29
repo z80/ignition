@@ -16,7 +16,7 @@ public:
     ~SimpleSource();
 
     Float height( const Vector3d & at ) const override;
-    Color color( const Vector3d & at ) const override;
+    Color color( const Vector3d & at, const Vector3d & norm, Float height ) const override;
 };
 
 }

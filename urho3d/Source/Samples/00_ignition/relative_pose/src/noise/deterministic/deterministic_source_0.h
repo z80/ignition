@@ -17,7 +17,7 @@ public:
     ~DeterministicSource0();
 
     Float height( const Vector3d & at ) const override;
-    Color color( const Vector3d & at )  const override;
+    Color color( const Vector3d & at, const Vector3d & norm, Float height )  const override;
 
 public:
     void setFracDef(const unsigned int index, const Float featureHeightMeters, const Float featureWidthMeters, const Float smallestOctaveMeters = 20.0);

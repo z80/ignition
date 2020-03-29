@@ -55,13 +55,14 @@ public:
     virtual ~HeightSource();
 
     virtual Float height( const Vector3d & at ) const = 0;
-    virtual Color color( const Vector3d & at ) const = 0;
+    virtual Color color( const Vector3d & at, const Vector3d & norm, Float height ) const = 0;
 };
 
 struct Vertex
 {
 public:
     Vector3d at, atFlat, atUnit;
+    Float heightUnit_;
     Vector3d norm;
     Color    color;
 

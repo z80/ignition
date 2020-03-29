@@ -98,7 +98,7 @@ void DeterministicSystemGenerator::generate_system( PiSystem * system, PiRandom 
     generate_single_planet( system, rand );
 }
 
-HeightSource * DeterministicSystemGenerator::heightSource( const PiSourceDesc & bodyDesc )
+DeterministicSource0 * DeterministicSystemGenerator::heightSource( const PiSourceDesc & bodyDesc )
 {
     DeterministicSource0 * src = new DeterministicSource0( bodyDesc );
     return src;

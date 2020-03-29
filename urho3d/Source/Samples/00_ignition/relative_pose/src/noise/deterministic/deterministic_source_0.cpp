@@ -218,7 +218,7 @@ Float DeterministicSource0::height( const Vector3d & at ) const
     return (n > 0.0 ? m_maxHeight * n : 0.0);
 }
 
-Color DeterministicSource0::color( const Vector3d & at )  const
+Color DeterministicSource0::color( const Vector3d & at, const Vector3d & norm, Float height )  const
 {
     /*
     Float n = m_invMaxHeight * height / 2;

@@ -1,6 +1,7 @@
 
 #include "system_generator.h"
 #include "pi_system_generator.h"
+#include "deterministic_system_generator.h"
 #include "pi_atmosphere_source.h"
 #include "pi_source.h"
 #include "pi_consts.h"
@@ -91,9 +92,12 @@ void SystemGenerator::generateSystem()
 {
 	PiRandom rand;
 	rand.seed( UNIVERSE_SEED );
-	PiSystemGenerator generator;
+	//PiSystemGenerator generator;
 	//generator.createSystem( &s_, rand );
-    generator.createDumb( &s_, rand );
+    //generator.createDumb( &s_, rand );
+
+    DeterministicSystemGenerator generator;
+    generator.generate_single_planet( &s_, rand );
 }
 
 void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s, int bodyIndex )
@@ -180,11 +184,12 @@ void SystemGenerator::applyBody( SphereDynamic * sd )
 
     const PiSourceDesc & sbody = s_.bodies_[ bodyIndex ];
 
-    PiBodySource * src = nullptr;
+    /*PiBodySource * src = nullptr;
     if ( sbody.super_type_ == SUPERTYPE_STAR )
         src = PiBodySource::InstanceStar( sbody );
     else
-        src = PiBodySource::InstanceTerrain( sbody );
+        src = PiBodySource::InstanceTerrain( sbody );*/
+    DeterministicSource0 * src = DeterministicSystemGenerator::heightSource( sbody );
 
     PiAtmosphereSource * atmosphereSource = new PiAtmosphereSource();
     *atmosphereSource = sbody;
