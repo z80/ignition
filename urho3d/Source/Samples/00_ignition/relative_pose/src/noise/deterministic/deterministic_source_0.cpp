@@ -27,7 +27,7 @@ DeterministicSource0::~DeterministicSource0()
 Float DeterministicSource0::height( const Vector3d & at ) const
 {
     Float n = octavenoise( getFracDef(0), 0.4, at ) * dunes_octavenoise( getFracDef(1), 0.5, at );
-    n *= 10.0;
+    n *= 5.0;
 
     return (n > 0.0 ? m_maxHeight * n : 0.0);
 }
