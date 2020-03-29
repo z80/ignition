@@ -357,7 +357,7 @@ void SphereItem::finishSubdriveVisual()
     cg->Commit();
 
     ResourceCache * cache = GetSubsystem<ResourceCache>();
-    Material * m = cache->GetResource<Material>("Ign/Materials/VertexColor.xml");
+    Material * m = cache->GetResource<Material>( material_ );
     //Material * m = cache->GetResource<Material>("Materials/Stone.xml");
     //m->SetFillMode( FILL_WIREFRAME );
     cg->SetMaterial( m );
@@ -393,7 +393,7 @@ void SphereItem::regenerateMeshVisual()
     cg->Commit();
 
     ResourceCache * cache = GetSubsystem<ResourceCache>();
-    Material * m = cache->GetResource<Material>("Ign/Materials/VertexColor.xml");
+    Material * m = cache->GetResource<Material>( material_ );
     //Material * m = cache->GetResource<Material>("Materials/Stone.xml");
     //m->SetFillMode( FILL_WIREFRAME );
     cg->SetMaterial( m );
