@@ -3,6 +3,7 @@
 
 #include "deterministic_system_generator.h"
 #include "deterministic_source_0.h"
+#include "deterministic_source_star_0.h"
 
 
 namespace Ign
@@ -98,9 +99,9 @@ void DeterministicSystemGenerator::generate_system( PiSystem * system, PiRandom 
     generate_single_planet( system, rand );
 }
 
-DeterministicSource0 * DeterministicSystemGenerator::heightSource( const PiSourceDesc & bodyDesc )
+DeterministicSource * DeterministicSystemGenerator::heightSource( const PiSourceDesc & bodyDesc )
 {
-    DeterministicSource0 * src = new DeterministicSource0( bodyDesc );
+    DeterministicSourceStar0 * src = new DeterministicSourceStar0( bodyDesc );
     return src;
 }
 

@@ -6,7 +6,7 @@
 #include "pi_system.h"
 #include "pi_random.h"
 #include "pi_source.h"
-#include "deterministic_source_0.h"
+#include "deterministic_source.h"
 
 namespace Ign
 {
@@ -20,7 +20,7 @@ public:
     void generate_single_planet( PiSystem * system, PiRandom & rand );
     void generate_system( PiSystem * system, PiRandom & rand );
 
-    static DeterministicSource0 * heightSource( const PiSourceDesc & bodyDesc );
+    static DeterministicSource * heightSource( const PiSourceDesc & bodyDesc );
 };
 
 }

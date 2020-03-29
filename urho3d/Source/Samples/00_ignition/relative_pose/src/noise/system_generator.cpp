@@ -189,7 +189,7 @@ void SystemGenerator::applyBody( SphereDynamic * sd )
         src = PiBodySource::InstanceStar( sbody );
     else
         src = PiBodySource::InstanceTerrain( sbody );*/
-    DeterministicSource0 * src = DeterministicSystemGenerator::heightSource( sbody );
+    DeterministicSource * src = DeterministicSystemGenerator::heightSource( sbody );
 
     PiAtmosphereSource * atmosphereSource = new PiAtmosphereSource();
     *atmosphereSource = sbody;
@@ -201,7 +201,7 @@ void SystemGenerator::applyBody( SphereDynamic * sd )
     sd->setRadius( R, H );
     //sd->setRadius( 100.0, H/R*100.0 );
     //sd->setRadius( 1000.0, 50000.0 );
-    const bool isStar = (sbody.super_type_ == SUPERTYPE_STAR );
+    const bool isStar = ( src->src_.super_type_ == SUPERTYPE_STAR );
     sd->setStar( isStar || true );  // This sets the star material which is supposed to ignore lighing.
     sd->subdriveLevelsInit();
 }
