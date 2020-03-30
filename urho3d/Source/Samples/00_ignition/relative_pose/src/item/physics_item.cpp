@@ -2,7 +2,8 @@
 #include "physics_item.h"
 #include "physics_frame.h"
 
-
+// For debugging only. Drawing directions to all the planets.
+#include "sphere_dynamic.h"
 
 namespace Ign
 {
@@ -31,6 +32,33 @@ void PhysicsItem::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
         collision_shape_->DrawDebugGeometry( debug, depthTest );
     if ( visual_node_ )
         air_mesh_.drawDebugGeometry( visual_node_, debug );
+
+    // Draw directions to all the planets.
+    {
+        RefFrame * rf = parent();
+        if ( !rf )
+            return;
+
+        Scene * s = GetScene();
+        const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+        const unsigned qty = comps.Size();
+        for ( unsigned i=0; i<qty; i++ )
+        {
+            Component * c = comps[i];
+            SphereDynamic * sd = c->Cast<SphereDynamic>();
+            if ( !sd )
+                continue;
+            State st;
+            sd->relativeState( rf, st );
+            st.r.Normalize();
+            const Vector3d origin = relR();
+            Vector3 from( origin.x_, origin.y_, origin.z_ );
+            const Float SZ = 10.0;
+            Vector3 to( st.r.x_*SZ, st.r.y_*SZ, st.r.z_*SZ );
+            to += from;
+            debug->AddLine( from, to, Color::RED, depthTest );
+        }
+    }
 }
 
 void PhysicsItem::setR( const Vector3d & r )

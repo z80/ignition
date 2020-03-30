@@ -63,7 +63,7 @@ void SphereItem::refStateChanged()
 
     // Check the distance. If it is beyond reasonable visibility range 
     // specified in Settings make it closer and scale it down.
-    const Float maxDistance = Settings::cameraMaxDistance();
+    const Float maxDistance = Settings::cameraMaxDistance() * 0.5;
     Float dist = r.Length();
     if ( dist > maxDistance )
     {

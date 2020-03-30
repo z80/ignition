@@ -20,9 +20,9 @@ static const uint32_t UNIVERSE_SEED = 0xabcd1234;
 static const Float EARTH_RADIUS = 6378135.0 / 1.0e4; // m
 static const Float EARTH_MASS = 5.9742e24 / 1.0e6; // Kg
 static const Float SOL_RADIUS = 6.955e8 / 1.0e6; // m
-static const Float SOL_MASS = 1.98892e30 / 1.0e8; // Kg
+static const Float SOL_MASS = 1.98892e30 / 1.0e11; // Kg
 
-static const Float AU = 149598000000.0 / 1.0e5; // m
+static const Float AU = 149598000000.0 / 1.0e7; // m
 static const Float G = 6.67428e-11;
 
 static const Float EARTH_ATMOSPHERE_SURFACE_DENSITY = 1.225;

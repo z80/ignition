@@ -34,7 +34,7 @@ void DeterministicSystemGenerator::generate_root_star( PiSystem * system, PiRand
     planet.parent_ind_ = -1;
     planet.mass_ = mass;
     //planet.rotation_period_ = fixed( rand.Int32(1, 200), 24 );
-    planet.rotation_period_ = fixed( 6000, 86400 );
+    planet.rotation_period_ = fixed( 60, 86400 );
     planet.radius_ = fixed( 1, 1 );
 
     planet.gas_ = fixed( 50, 100 );
