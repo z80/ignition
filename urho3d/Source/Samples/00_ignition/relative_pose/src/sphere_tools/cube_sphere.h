@@ -159,8 +159,8 @@ public:
     void triangleList( Vector<Vertex> & tris );
 
     // For selecting collision patches.
-    void triangleList( const Vector<Vector3d> & pts, Float dist, Vector<Vertex> & tris );
-    void faceList( const Vector<Vector3d> & pts, const Float sz, const Float dist, Vector<int> & faceInds );
+    void triangleList( const Vector<SubdriveSource::SubdividePoint> & pts, Float dist, Vector<Vertex> & tris );
+    void faceList( const Vector<SubdriveSource::SubdividePoint> & pts, const Float sz, const Float dist, Vector<int> & faceInds );
 
     // This is for subdriving. It is used in SubdriveSource.
     void flattenPts( const Vector<SubdriveSource::SubdividePoint> & pts, Vector<SubdriveSource::SubdividePoint> & ptsFlat ) const;

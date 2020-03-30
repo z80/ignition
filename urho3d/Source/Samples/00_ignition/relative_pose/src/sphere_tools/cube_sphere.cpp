@@ -864,7 +864,7 @@ void Cubesphere::triangleList( Vector<Vertex> & tris )
     }
 }
 
-void Cubesphere::triangleList( const Vector<Vector3d> & pts, Float dist, Vector<Vertex> & tris )
+void Cubesphere::triangleList( const Vector<SubdriveSource::SubdividePoint> & pts, Float dist, Vector<Vertex> & tris )
 {
     selectFaces( pts, dist, faceInds_ );
 
@@ -897,7 +897,7 @@ void Cubesphere::faceList( const Vector<SubdriveSource::SubdividePoint> & pts, c
     const unsigned ptsQty = ptsFlat_.Size();
     for ( unsigned ptInd=0; ptInd<ptsQty; ptInd++ )
     {
-        const Vector3d & ptFlat = ptsFlat_[ptInd];
+        const Vector3d & ptFlat = ptsFlat_[ptInd].at;
         for ( unsigned i=0; i<6; i++ )
         {
             const Face & f = faces[i];
@@ -1178,7 +1178,7 @@ void Cubesphere::applySourceColor( HeightSource * src, Vertex & v )
 }
 
 
-void Cubesphere::selectFaces( const Vector<Vector3d> & pts, const Float dist, Vector<int> & faceInds )
+void Cubesphere::selectFaces( const Vector<SubdriveSource::SubdividePoint> & pts, const Float dist, Vector<int> & faceInds )
 {
     faceInds.Clear();
     flattenPts( pts, ptsFlat_ );
@@ -1186,7 +1186,7 @@ void Cubesphere::selectFaces( const Vector<Vector3d> & pts, const Float dist, Ve
     const unsigned ptsQty = ptsFlat_.Size();
     for ( unsigned ptInd=0; ptInd<ptsQty; ptInd++ )
     {
-        const Vector3d & ptFlat = ptsFlat_[ptInd];
+        const Vector3d & ptFlat = ptsFlat_[ptInd].at;
         for ( unsigned i=0; i<6; i++ )
         {
             const Face & f = faces[i];

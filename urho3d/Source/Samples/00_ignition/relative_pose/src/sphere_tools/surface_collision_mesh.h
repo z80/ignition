@@ -52,7 +52,7 @@ protected:
 
     SharedPtr<CustomGeometry> customGeometry_,
                               visualCustomGeometry_;
-    Vector<Vector3d> pts_;
+    Vector<SubdriveSource::SubdividePoint> pts_;
     Vector<Vertex>   tris_;
 
     //Timer timer_;

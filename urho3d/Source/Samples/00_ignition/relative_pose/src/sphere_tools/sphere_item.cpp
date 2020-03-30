@@ -167,8 +167,10 @@ void SphereItem::subdivideCollision()
         PhysicsFrame * pf = rf->Cast<PhysicsFrame>();
         if ( !pf )
             continue;
-        const Vector3d r = pf->relR();
-        ptsCollision_.Push( r );
+        SubdriveSource::SubdividePoint pt;
+        pt.close = true;
+        pt.at = pf->relR();
+        ptsCollision_.Push( pt );
     }
 
     const bool need = subdriveSourceCollision_.needSubdrive( &cubesphereCollision_, ptsCollision_ );
@@ -193,8 +195,10 @@ void SphereItem::checkIfSubdriveCollisionNeeded()
         PhysicsFrame * pf = rf->Cast<PhysicsFrame>();
         if ( !pf )
             continue;
-        const Vector3d r = pf->relR();
-        ptsCollision_.Push( r );
+        SubdriveSource::SubdividePoint pt;
+        pt.at = pf->relR();
+        pt.close = true;
+        ptsCollision_.Push( pt );
     }
     const bool need = subdriveSourceCollision_.needSubdrive( &cubesphereCollision_, ptsCollision_ );
     if ( !need )
@@ -264,7 +268,10 @@ void SphereItem::subdivideVisual()
     CameraFrame * cam = env->FindCameraFrame();
     State s;
     cam->relativeState( this, s, true );
-    ptsVisual_.Push( s.r );
+    SubdriveSource::SubdividePoint pt;
+    pt.at = s.r;
+    pt.close = true;
+    ptsVisual_.Push( pt );
 
     const bool need = subdriveSourceVisual_.needSubdrive( &cubesphereVisual_, ptsVisual_ );
     if ( need )
@@ -287,7 +294,10 @@ void SphereItem::checkIfSubdriveVisualNeeded()
     CameraFrame * cam = env->FindCameraFrame();
     State s;
     cam->relativeState( this, s, true );
-    ptsVisual_.Push( s.r );
+    SubdriveSource::SubdividePoint pt;
+    pt.at = s.r;
+    pt.close = true;
+    ptsVisual_.Push( pt );
 
     const bool need = subdriveSourceVisual_.needSubdrive( &cubesphereVisual_, ptsVisual_ );
     if ( !need )

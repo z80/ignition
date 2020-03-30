@@ -229,7 +229,10 @@ void SurfaceCollisionMesh::constructCustomGeometry( SphereItem * si, CustomGeome
 
     const Float dist = Settings::dynamicsWorldDistanceExclude();
     pts_.Clear();
-    pts_.Push( lastState_.r );
+    SubdriveSource::SubdividePoint pt;
+    pt.at = lastState_.r;
+    pt.close = true;
+    pts_.Push( pt );
     tris_.Clear();
 
     unsigned qty = 0;

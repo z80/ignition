@@ -90,7 +90,7 @@ protected:
     void regenerateMeshVisual();
 public:
     String           material_;
-    Vector<Vector3d> ptsCollision_,  ptsVisual_;
+    Vector<SubdriveSource::SubdividePoint> ptsCollision_,  ptsVisual_;
     Cubesphere     cubesphereCollision_, cubesphereCollisionTh_, 
                    cubesphereVisual_, cubesphereVisualTh_;
     SubdriveSource subdriveSourceCollision_,
