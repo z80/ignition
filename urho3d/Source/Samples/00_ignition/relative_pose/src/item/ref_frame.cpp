@@ -98,6 +98,16 @@ RefFrame * RefFrame::parent()
     return parent_;
 }
 
+bool RefFrame::isChildOf( RefFrame * refFrame ) const
+{
+    const RefFrame * p = parent_;
+    if ( refFrame == p )
+        return true;
+    else if ( !p )
+        return false;
+    const bool res = p->isChildOf( refFrame );
+}
+
 void RefFrame::setR( const Vector3d & r )
 {
     st_.r = r;

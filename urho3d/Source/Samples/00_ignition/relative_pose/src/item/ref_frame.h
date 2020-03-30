@@ -37,6 +37,8 @@ public:
     void setParent( RefFrame * newParent );
     RefFrame * parent();
 
+    bool isChildOf( RefFrame * refFrame ) const;
+
     virtual void setR( const Vector3d & r );
     virtual void setQ( const Quaterniond & q );
     Vector3d     relR() const;

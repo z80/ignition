@@ -270,7 +270,7 @@ void SphereItem::subdivideVisual()
     cam->relativeState( this, s, true );
     SubdriveSource::SubdividePoint pt;
     pt.at = s.r;
-    pt.close = true;
+    pt.close = cam->isChildOf( this );
     ptsVisual_.Push( pt );
 
     const bool need = subdriveSourceVisual_.needSubdrive( &cubesphereVisual_, ptsVisual_ );
@@ -296,7 +296,7 @@ void SphereItem::checkIfSubdriveVisualNeeded()
     cam->relativeState( this, s, true );
     SubdriveSource::SubdividePoint pt;
     pt.at = s.r;
-    pt.close = true;
+    pt.close = cam->isChildOf( this );
     ptsVisual_.Push( pt );
 
     const bool need = subdriveSourceVisual_.needSubdrive( &cubesphereVisual_, ptsVisual_ );
