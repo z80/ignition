@@ -23,17 +23,16 @@ public:
 	SystemGenerator( Context * context );
 	~SystemGenerator();
 
-    void generate();
     void createBodies( Scene * scene );
-	void generate( Scene * scene );
 
 	void generateSystem();
 	void createBody( Scene * scene, RefFrame * parent, PiSystem & s, int bodyIndex );
     void applyBody( SphereDynamic * sd );
+    SphereDynamic * homePlanet() const;
 
 public:
     PiSystem s_;
-
+    SharedPtr<SphereDynamic> homePlanet_; 
 };
 
 }

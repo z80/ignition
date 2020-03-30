@@ -33,60 +33,12 @@ SystemGenerator::~SystemGenerator()
 {
 }
 
-void SystemGenerator::generate()
-{
-    generateSystem();
-}
-
 void SystemGenerator::createBodies( Scene * scene )
 {
     createBody( scene, nullptr, s_, s_.root_body_ind_ );
 }
 
-void SystemGenerator::generate( Scene * scene )
-{
-    {
-        for ( int i=0; i<100; i++ )
-        {
-            PiRandom rand( i * 1000000 + i );
-            uint32_t v = rand.Int32( 128 );
-            v = v + 0;
-        }
-    }
-    if ( false )
-    {
-        uint32_t seed = 0;
-        for ( ;; )
-        {
-            //PiRandom rand( seed );
-            //PiSystem s( 10, 2, 1 );
-            generateSystem();
-            bool success = false;
-            if ( s_.bodies_[0].type_ == TYPE_STAR_G )
-            {
-                // Check if there is Earth-like planet.
-                const unsigned qty = s_.bodies_.Size();
-                for ( unsigned i=1; i<qty; i++ )
-                {
-                    if ( s_.bodies_[i].type_ == TYPE_PLANET_TERRESTRIAL )
-                    {
-                        success = true;
-                        break;
-                    }
-                }
-            }
-            if ( success )
-                break;
-            seed += 1;
-        }
-    }
 
-
-
-	generateSystem();
-
-    createBody( scene, nullptr, s_, s_.root_body_ind_ );
-}
 
 void SystemGenerator::generateSystem()
 {
@@ -97,7 +49,7 @@ void SystemGenerator::generateSystem()
     //generator.createDumb( &s_, rand );
 
     DeterministicSystemGenerator generator;
-    generator.generate_single_planet( &s_, rand );
+    generator.generate_system( &s_, rand );
 }
 
 void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s, int bodyIndex )
@@ -189,21 +141,29 @@ void SystemGenerator::applyBody( SphereDynamic * sd )
         src = PiBodySource::InstanceStar( sbody );
     else
         src = PiBodySource::InstanceTerrain( sbody );*/
-    DeterministicSource * src = DeterministicSystemGenerator::heightSource( sbody );
+    DeterministicSource * src = DeterministicSystemGenerator::heightSource( sbody, bodyIndex );
 
     PiAtmosphereSource * atmosphereSource = new PiAtmosphereSource();
     *atmosphereSource = sbody;
 
     sd->setHeightSource( src );
     sd->setAtmosphereSource( atmosphereSource );
+    if ( bodyIndex == 1 )
+        homePlanet_ = SharedPtr<SphereDynamic>( sd );
+
     const Float R = src->m_planetRadius;
     const Float H = src->m_maxHeightInMeters;
     sd->setRadius( R, H );
     //sd->setRadius( 100.0, H/R*100.0 );
     //sd->setRadius( 1000.0, 50000.0 );
     const bool isStar = ( src->src_.super_type_ == SUPERTYPE_STAR );
-    sd->setStar( isStar || true );  // This sets the star material which is supposed to ignore lighing.
+    sd->setStar( isStar );  // This sets the star material which is supposed to ignore lighing.
     sd->subdriveLevelsInit();
+}
+
+SphereDynamic * SystemGenerator::homePlanet() const
+{
+    return homePlanet_;
 }
 
 }

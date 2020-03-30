@@ -188,17 +188,9 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
     cc->setName( String( "CharacterCube object" ) );
     cc->SetCreatedBy( clientId );
 
-    // Search for a planet and place everything on a side.
-    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
-    const unsigned qty = comps.Size();
-    SphereDynamic * planet = nullptr;
-    for ( unsigned i=0; i<qty; i++ )
-    {
-        Component * c = comps[i];
-        planet = c->Cast<SphereDynamic>();
-        if ( planet )
-            break;
-    }
+    SystemGenerator * generator = context_->GetSubsystem<SystemGenerator>();
+    SphereDynamic * planet = generator->homePlanet();
+    
     if ( !planet )
         return;
 
