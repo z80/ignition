@@ -19,6 +19,7 @@ public:
 
     void generate_root_star( PiSystem * system, PiRandom & rand );
     void generate_single_planet( PiSystem * system, PiRandom & rand );
+    void generate_moon( PiSystem * system, PiRandom & rand );
     void generate_system( PiSystem * system, PiRandom & rand );
 
     static DeterministicSource * heightSource( const PiSourceDesc & bodyDesc, int bodyIndex );

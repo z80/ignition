@@ -2,8 +2,9 @@
 #define NOMINMAX
 
 #include "deterministic_system_generator.h"
-#include "deterministic_source_0.h"
 #include "deterministic_source_star_0.h"
+#include "deterministic_source_0.h"
+#include "deterministic_source_moon.h"
 
 
 namespace Ign
@@ -81,6 +82,7 @@ void DeterministicSystemGenerator::generate_single_planet( PiSystem * system, Pi
 
     fixed ecc = rand.NFixed(3);
     fixed semiMajorAxis = periapsis / (fixed(1, 1) - ecc);
+    const Float sma = semiMajorAxis.ToDouble();
     fixed apoapsis = 2 * semiMajorAxis - periapsis;
 
     //fixed mass = rand.Fixed();
@@ -111,7 +113,70 @@ void DeterministicSystemGenerator::generate_single_planet( PiSystem * system, Pi
 
     const double e = ecc.ToDouble();
 
-    const double r1 = rand.Double(2 * M_PI); // function parameter evaluation order is implementation-dependent
+    const double r1 = rand.Double(0.05 * M_PI); // function parameter evaluation order is implementation-dependent
+    const double r2 = rand.NDouble(5); // can't put two rands in the same expression
+                                       //planet->m_orbit.SetPlane(matrix3x3d::RotateY(r1) * matrix3x3d::RotateX(-0.5 * M_PI + r2 * M_PI / 2.0));
+                                       //planet->m_orbit.SetPhase(rand.Double(2 * M_PI));
+    planet.X_ = r1;
+    planet.Y_ = r2;
+
+
+    planet.inclination_ = FIXED_PI;
+    planet.inclination_ *= r2 / 2.0;
+    planet.orb_min_ = periapsis;
+    planet.orb_max_ = apoapsis;
+
+
+    planet.metal_ = fixed( 6, 10 );
+
+
+    // harder to be volcanic when you are tiny (you cool down)
+    planet.volcanic_ = std::min( fixed(1, 1), planet.mass_ ) * rand.Fixed();
+    planet.atm_oxidizing_ = rand.Fixed();
+    planet.life_   = fixed( 5, 10 );
+    planet.gas_    = fixed( 5, 10 );
+    planet.liquid_ = fixed( 4, 10 );
+    planet.ice_    = fixed( 2, 10 );
+    planet.volcanic_ = fixed( 1, 10 );
+
+    planet.average_temp_ = 278;
+
+    system->bodies_.Push( planet );
+}
+
+void DeterministicSystemGenerator::generate_moon( PiSystem * system, PiRandom & rand )
+{
+    // periapsis, apoapsis = closest, farthest distance in orbit
+    fixed pos( 1, 3 );
+    fixed periapsis = pos + pos * fixed(1, 5) * rand.NFixed(2);
+
+    fixed ecc = rand.NFixed(3);
+    fixed semiMajorAxis = periapsis / (fixed(1, 1) - ecc);
+    const Float sma = semiMajorAxis.ToDouble();
+    fixed apoapsis = 2 * semiMajorAxis - periapsis;
+
+    const fixed mass = fixed( 1, 100 );
+
+
+    PiSourceDesc planet;
+    planet.eccentricity_ = ecc;
+    planet.axial_tilt_ = fixed(100, 157) * rand.NFixed(2);
+    planet.semimajor_axis_ = semiMajorAxis;
+    planet.super_type_ = SUPERTYPE_ROCKY_PLANET;
+    planet.type_ = TYPE_PLANET_TERRESTRIAL;
+    planet.seed_ = rand.Int32();
+    planet.parent_ind_ = 1;
+    planet.mass_ = mass;
+    //planet.rotation_period_ = fixed( rand.Int32(1, 200), 24 );
+    planet.rotation_period_ = fixed( 60, 86400 );
+    planet.radius_ = fixed( 1, 6 );
+
+    planet.gas_ = fixed( 50, 100 );
+    planet.atmos_density_ = fixed( 100, 100 );
+
+    const double e = ecc.ToDouble();
+
+    const double r1 = rand.Double(0.05 * M_PI); // function parameter evaluation order is implementation-dependent
     const double r2 = rand.NDouble(5); // can't put two rands in the same expression
                                        //planet->m_orbit.SetPlane(matrix3x3d::RotateY(r1) * matrix3x3d::RotateX(-0.5 * M_PI + r2 * M_PI / 2.0));
                                        //planet->m_orbit.SetPhase(rand.Double(2 * M_PI));
@@ -147,10 +212,15 @@ void DeterministicSystemGenerator::generate_system( PiSystem * system, PiRandom 
     // To make it do something meaningful do the same thing here.
     generate_root_star( system, rand );
     generate_single_planet( system, rand );
+    generate_moon( system, rand );
     PiSourceDesc & star   = system->bodies_[0];
     PiSourceDesc & planet = system->bodies_[1];
     star.child_inds_.Push( 1 );
     planet.parent_ind_ = 0;
+
+    PiSourceDesc & moon = system->bodies_[2];
+    planet.child_inds_.Push( 2 );
+    moon.parent_ind_ = 1;
 }
 
 DeterministicSource * DeterministicSystemGenerator::heightSource( const PiSourceDesc & bodyDesc, int bodyIndex )
@@ -158,11 +228,11 @@ DeterministicSource * DeterministicSystemGenerator::heightSource( const PiSource
     DeterministicSource * src = nullptr;
     if ( bodyDesc.super_type_ == SUPERTYPE_STAR )
         src = new DeterministicSourceStar0( bodyDesc );
-    else if ( bodyIndex == 0 )
+    else if ( bodyIndex == 1 )
     {
         src = new DeterministicSource0( bodyDesc );
     }
-    else if ( bodyIndex == 1 )
+    else if ( bodyIndex == 2 )
     {
         src = new DeterministicSource0( bodyDesc );
     }

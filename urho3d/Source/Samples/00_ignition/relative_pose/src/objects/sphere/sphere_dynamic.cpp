@@ -122,7 +122,7 @@ void SphereDynamic::subdriveLevelsInit()
     //subdriveSourceVisual_.addLevel( 0.3, 26.0 );
     subdriveSourceVisual_.addLevel( 5.0, 100.0 );
     subdriveSourceVisual_.addLevel( 50.0, 1000.0 );
-    subdriveSourceVisual_.addLevel( 500.0, 10000.0 );
+    subdriveSourceVisual_.addLevel( R_/10.0, 10000.0 );
 }
 
 void SphereDynamic::initPiSurface()
