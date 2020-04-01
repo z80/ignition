@@ -88,7 +88,8 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
         const Vector3d V0 = po.OrbitalVelocityAtTime( totalMass, 0.0 );
 
         of->setParent( parentOf );
-        of->Launch( R0, V0 );
+        of->Launch( Vector3d( R0.x_, R0.z_, R0.y_ ), 
+                    Vector3d( V0.x_, V0.z_, V0.y_ ) );
     }
 
     RotatingFrame * rf = scene->CreateComponent<RotatingFrame>( REPLICATED );
