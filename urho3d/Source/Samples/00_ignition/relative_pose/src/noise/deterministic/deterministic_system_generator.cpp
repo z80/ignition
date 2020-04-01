@@ -234,7 +234,7 @@ DeterministicSource * DeterministicSystemGenerator::heightSource( const PiSource
     }
     else if ( bodyIndex == 2 )
     {
-        src = new DeterministicSource0( bodyDesc );
+        src = new DeterministicSourceMoon( bodyDesc );
     }
     return src;
 }

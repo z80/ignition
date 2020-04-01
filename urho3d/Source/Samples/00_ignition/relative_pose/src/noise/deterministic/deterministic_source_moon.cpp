@@ -16,12 +16,12 @@ namespace Ign
 DeterministicSourceMoon::DeterministicSourceMoon( const PiSourceDesc & body )
     : DeterministicSource( body )
 {    
-    setFracDef( 0, m_maxHeightInMeters * 0.05, m_planetRadius * 0.05, m_planetRadius * 0.002 );
-    const Float height = m_maxHeightInMeters * 0.3;
+    setFracDef( 0, m_maxHeightInMeters * 0.001, m_planetRadius * 5.0, m_planetRadius * 0.02 );
+    const Float height = m_maxHeightInMeters * 0.03;
     setFracDef( 1, height, m_rand.Double( 4.0, 20.0 ) * height );
 
-    setFracDef( 2, m_maxHeightInMeters * 0.2, m_planetRadius * 0.7, m_planetRadius * 0.01 );
-    setFracDef( 3, m_maxHeightInMeters * 0.1, m_planetRadius * 0.2, m_planetRadius * 0.01 );
+    setFracDef( 2, m_maxHeightInMeters * 0.02, m_planetRadius * 0.7, m_planetRadius * 0.01 );
+    setFracDef( 3, m_maxHeightInMeters * 0.01, m_planetRadius * 0.2, m_planetRadius * 0.01 );
 }
 
 DeterministicSourceMoon::~DeterministicSourceMoon()
@@ -30,8 +30,9 @@ DeterministicSourceMoon::~DeterministicSourceMoon()
 
 Float DeterministicSourceMoon::height( const Vector3d & at ) const
 {
-    Float n = octavenoise( getFracDef(0), 0.4, at ) * dunes_octavenoise( getFracDef(1), 0.5, at );
-    n *= 5.0;
+    Float n = octavenoise( getFracDef(0), 0.4, at );
+    //n *= dunes_octavenoise( getFracDef(1), 0.5, at );
+    //n *= 5.0;
 
     n += crater_function( getFracDef(2), at );
     n += crater_function( getFracDef(3), at );

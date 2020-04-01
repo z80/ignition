@@ -198,6 +198,7 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
     {
         const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, 0.0 ), 30.5 );
         cc->setR( at );
+        cc->setV( Vector3d::ZERO );
     }
     camera->setParent( cc );
     // It should be PhysicsFrame.

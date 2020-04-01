@@ -1007,8 +1007,14 @@ void Environment::UpdateDynamicNodes( Float secs_dt )
     {
         SharedPtr<PhysicsFrame> & pf = phFrames[i];
         if ( pf )
-            pf->handleSplitMerge();
+        {
+            const bool somebodyJustDied = pf->handleSplitMerge();
+            // The list is not valid anymore.
+            if ( somebodyJustDied )
+                break;
+        }
     }
+    phFrames.Clear();
 }
 
 void Environment::UpdateEvolvingNodes( Timestamp ticks_dt )

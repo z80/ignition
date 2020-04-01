@@ -68,7 +68,8 @@ bool PhysicsFrame::handleSplitMerge()
     checkOuterObjects();
     if ( checkIfNeedToSplit() )
         return true;
-    checkIfNeedToMerge();
+    if ( checkIfNeedToMerge() )
+        return true;
 
     return false;
 }
@@ -325,20 +326,23 @@ bool PhysicsFrame::checkIfWorthToExist()
     // But first parent all objects inside to the parent.
     // But destroy SurfaceCollisionMesh.
     const unsigned qty = children_.Size();
+    Scene * s = GetScene();
     for ( unsigned i=0; i<qty; i++ )
     {
         SharedPtr<RefFrame> o = children_[0];
         SurfaceCollisionMesh * scm = o->Cast<SurfaceCollisionMesh>();
         if ( scm )
         {
-            scm->Remove();
+            scm->setParent( nullptr );
+            s->RemoveComponent( scm );
             continue;
         }
         o->setParent( parent_ );
     }
 
     // Remove this physics ref. frame.
-    this->Remove();
+    this->setParent( nullptr );
+    s->RemoveComponent( this );
 
     return false;
 }
@@ -439,6 +443,7 @@ bool PhysicsFrame::checkIfNeedToMerge()
     SharedPtr<RefFrame> p = parent_;
     const Float mergeDist = Settings::dynamicsWorldDistanceInclude();
     const Vector3d r = relR();
+    Scene * s = GetScene();
     if ( p )
     {
         userControlledList_ = p->children_;
@@ -466,12 +471,14 @@ bool PhysicsFrame::checkIfNeedToMerge()
                 SurfaceCollisionMesh * scm = o->Cast<SurfaceCollisionMesh>();
                 if ( scm )
                 {
-                    scm->Remove();
+                    scm->setParent( nullptr );
+                    s->RemoveComponent( scm );
                     continue;
                 }
                 o->setParent( this );
             }
-            pf->Remove();
+            pf->setParent( nullptr );
+            s->RemoveComponent( pf );
             result = true;
         }
     }

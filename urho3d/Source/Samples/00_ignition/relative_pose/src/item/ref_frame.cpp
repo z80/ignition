@@ -39,7 +39,8 @@ void RefFrame::RegisterComponent( Context * context )
 RefFrame::RefFrame( Context * ctx, const String & name )
     : ControllableItem( ctx ),
       name_( name ),
-      refT_( 0 )
+      refT_( 0 ), 
+      parentId_( -1 )
 {
 }
 
@@ -77,13 +78,16 @@ void RefFrame::setParent( RefFrame * newParent )
         removeFromList( this, curParent->children_ );
         curParent->childLeft( this );
     }
-    parent_ = SharedPtr<RefFrame>( newParent );
-    parentId_ = parent_->GetID();
+
     if ( newParent )
     {
+        parent_ = SharedPtr<RefFrame>( newParent );
+        parentId_ = parent_->GetID();
         addToList( this, newParent->children_ );
         newParent->childEntered( this );
     }
+    else
+        parentId_ = -1;
 
     setState( st );
     if ( newParent )
