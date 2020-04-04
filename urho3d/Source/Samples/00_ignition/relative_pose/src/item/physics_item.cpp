@@ -195,6 +195,13 @@ void PhysicsItem::childEntered( RefFrame * refFrame )
             return;
     }
 
+    // Prior to creating physical environment check its parent.
+    // If parent enforces all children to be kinematic, 
+    // do not create physics environment.
+    const bool kinematic = shouldBeKinematic();
+    if ( kinematic )
+        return;
+
     // For simplicity just create new physics frame and place this object into it.
     // Physics frame will take all the logic load concerning if it needs to merge
     // with anything, etc.

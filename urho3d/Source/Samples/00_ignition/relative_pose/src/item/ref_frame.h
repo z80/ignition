@@ -95,6 +95,13 @@ public:
 
     bool getUserControlled() const;
 
+    /// Enforce all children to be kinematic.
+    void setEnforceCinematic( bool en );
+    bool enforceKinematic() const;
+    /// Checks all parents recursively.
+    /// If at least one enforces kinematic it should return true.
+    bool shouldBeKinematic() const;
+
     /// Distance to a point. This method is virtual because it needs to
     /// take into account this object size.
     virtual Float distance( RefFrame * refFrame );
@@ -124,6 +131,9 @@ public:
     /// This one is just to aoid memory allocation/reallocation
     /// on every teleport.
     Vector<SharedPtr<RefFrame> > children_;
+
+    /// Enforce children to be kinematic.
+    bool enforce_kinematic_;
 
     // All these are in parent's ref. frame.
     /// Relative state with respect to direct parent in its ref. frame.

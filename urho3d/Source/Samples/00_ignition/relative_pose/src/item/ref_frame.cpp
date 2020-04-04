@@ -34,6 +34,8 @@ void RefFrame::RegisterComponent( Context * context )
     URHO3D_ATTRIBUTE( "Wx", double, st_.w.x_, 0.0, AM_DEFAULT );
     URHO3D_ATTRIBUTE( "Wy", double, st_.w.y_, 0.0, AM_DEFAULT );
     URHO3D_ATTRIBUTE( "Wz", double, st_.w.z_, 0.0, AM_DEFAULT );
+
+    URHO3D_ATTRIBUTE( "EnforceKinematic", bool, enforce_kinematic_, false, AM_DEFAULT );
 }
 
 RefFrame::RefFrame( Context * ctx, const String & name )
@@ -478,6 +480,32 @@ bool RefFrame::getUserControlled() const
     }
     return false;
 }
+
+void RefFrame::setEnforceCinematic( bool en )
+{
+    enforce_kinematic_ = en;
+
+    MarkNetworkUpdate();
+}
+
+bool RefFrame::enforceKinematic() const
+{
+    return enforce_kinematic_;
+}
+
+bool RefFrame::shouldBeKinematic() const
+{
+    if ( !parent_ )
+        return false;
+
+    const bool ok = parent_->enforce_kinematic_;
+    if ( ok )
+        return true;
+
+    const bool parent_ok = parent_->shouldBeKinematic();
+    return parent_ok;
+}
+
 
 Float RefFrame::distance( RefFrame * refFrame )
 {
