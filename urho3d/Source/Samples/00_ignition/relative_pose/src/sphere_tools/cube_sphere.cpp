@@ -450,18 +450,26 @@ bool Face::subdrive( Cubesphere * s, SubdriveSource * src )
     fa.level = newLevel;
     fa.leaf  = true;
     fa.indexInParent = 0;
+    fa.hash_ = hash_;
+    fa.hash_ << fa.indexInParent;
 
     fb.level = newLevel;
     fb.leaf  = true;
     fb.indexInParent = 1;
+    fb.hash_ = hash_;
+    fb.hash_ << fb.indexInParent;
 
     fc.level = newLevel;
     fc.leaf  = true;
     fc.indexInParent = 2;
+    fc.hash_ = hash_;
+    fc.hash_ << fc.indexInParent;
 
     fd.level = newLevel;
     fd.leaf  = true;
     fd.indexInParent = 3;
+    fd.hash_ = hash_;
+    fd.hash_ << fd.indexInParent;
 
     int faceIndBase = s->faces.Size();
     const int indBase = faceIndBase;
@@ -756,6 +764,11 @@ const Cubesphere & Cubesphere::operator=( const Cubesphere & inst )
     return *this;
 }
 
+void Cubesphere::setHash( uint64_t hash )
+{
+    hash_ = hash;
+}
+
 void Cubesphere::setR( const Float newR )
 {
     R_ = newR;
@@ -1004,6 +1017,8 @@ void Cubesphere::init()
     f.vertexInds[1] = 1;
     f.vertexInds[2] = 2;
     f.vertexInds[3] = 3;
+    f.hash_.reset( hash_ );
+    f.hash_ << f.indexInParent;
     faces.Push( f );
 
     f.indexInParent = 1;
@@ -1011,6 +1026,8 @@ void Cubesphere::init()
     f.vertexInds[1] = 5;
     f.vertexInds[2] = 1;
     f.vertexInds[3] = 0;
+    f.hash_.reset( hash_ );
+    f.hash_ << f.indexInParent;
     faces.Push( f );
 
     f.indexInParent = 2;
@@ -1018,6 +1035,8 @@ void Cubesphere::init()
     f.vertexInds[1] = 6;
     f.vertexInds[2] = 5;
     f.vertexInds[3] = 4;
+    f.hash_.reset( hash_ );
+    f.hash_ << f.indexInParent;
     faces.Push( f );
 
     f.indexInParent = 3;
@@ -1025,6 +1044,8 @@ void Cubesphere::init()
     f.vertexInds[1] = 2;
     f.vertexInds[2] = 6;
     f.vertexInds[3] = 7;
+    f.hash_.reset( hash_ );
+    f.hash_ << f.indexInParent;
     faces.Push( f );
 
     f.indexInParent = 4;
@@ -1032,6 +1053,8 @@ void Cubesphere::init()
     f.vertexInds[1] = 5;
     f.vertexInds[2] = 6;
     f.vertexInds[3] = 2;
+    f.hash_.reset( hash_ );
+    f.hash_ << f.indexInParent;
     faces.Push( f );
 
     f.indexInParent = 5;
@@ -1039,6 +1062,8 @@ void Cubesphere::init()
     f.vertexInds[1] = 0;
     f.vertexInds[2] = 3;
     f.vertexInds[3] = 7;
+    f.hash_.reset( hash_ );
+    f.hash_ << f.indexInParent;
     faces.Push( f );
 
 

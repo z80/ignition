@@ -4,6 +4,7 @@
 
 #include "Urho3D/Urho3DAll.h"
 #include "vector3d.h"
+#include "sphere_hash.h"
 
 using namespace Urho3D;
 
@@ -91,6 +92,7 @@ public:
     int  indexInParent;
     int  level;
     bool leaf;
+    SphereHash hash_;
 
     Face();
     ~Face();
@@ -145,6 +147,9 @@ public:
     Cubesphere( const Cubesphere & inst );
     const Cubesphere & operator=( const Cubesphere & inst );
 
+    /// Initial hash for all the faces.
+    void setHash( uint64_t hash=0 );
+
     // Radius in physicsl units.
     void setR( const Float newR );
     Float R() const;
@@ -179,6 +184,7 @@ public:
     // Radius unit sphere is scaled to 
     // when returned.
     Float R_, H_;
+    uint64_t hash_;
 
     Vector<SubdriveSource::SubdividePoint> ptsFlat_;
     Vector<int>                            faceInds_;
