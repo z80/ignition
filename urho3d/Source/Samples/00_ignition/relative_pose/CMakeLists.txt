@@ -51,7 +51,9 @@ include_directories( "./src"
                      "./3dparty/pi_random" 
                      )
 
-file( GLOB_RECURSE src src/*.cpp )
+file( GLOB_RECURSE cpp_src src/*.cpp )
+file( GLOB_RECURSE c_src src/*.c )
+set( src ${cpp_src} ${c_src} )
 
 # Define source files
 define_source_files( EXTRA_CPP_FILES ${src}

@@ -42,6 +42,7 @@ RefFrame::RefFrame( Context * ctx, const String & name )
     : ControllableItem( ctx ),
       name_( name ),
       refT_( 0 ), 
+      enforce_kinematic_( false ), 
       parentId_( -1 )
 {
 }
