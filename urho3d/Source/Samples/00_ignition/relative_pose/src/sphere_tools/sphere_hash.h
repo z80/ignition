@@ -7,6 +7,8 @@ extern "C"
 #include "hash_md5.h"
 }
 
+#include <cinttypes>
+
 namespace Ign
 {
 
@@ -19,8 +21,10 @@ public:
     SphereHash( const SphereHash & inst );
     const SphereHash & operator=( const SphereHash & inst );
 
-    void reset();
+    void reset( uint64_t init=0 );
     const SphereHash & operator<<( int v );
+
+    uint64_t state() const;
 
 
     MD5_CTX ctx_;
