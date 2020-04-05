@@ -718,6 +718,7 @@ Cubesphere::Cubesphere()
 {
     R_ = 10.0;
     H_ = 1.0;
+    hash_ = 0;
 
     verts.Reserve( 4096 );
     faces.Reserve( 4096 );
