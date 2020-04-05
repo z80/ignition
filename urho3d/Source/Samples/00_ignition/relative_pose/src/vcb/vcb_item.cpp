@@ -1,6 +1,7 @@
 
 #include "vcb_item.h"
 #include "environment.h"
+#include "settings.h"
 
 namespace Ign
 {
@@ -50,6 +51,47 @@ VcbItem::VcbItem( Context * context )
 
 VcbItem::~VcbItem()
 {
+}
+
+void VcbItem::UpdateClient_ServerSide( Connection * c, const ClientDesc & cd, RefFrame * selectedObj )
+{
+    if ( !selectedObj )
+        return;
+    // Check if client Id is in the list.
+    const int clientId = cd.id_;
+    HashMap<int, SharedPtr<RefFrame> >::Iterator it = clients_inside_.Find( clientId );
+    if ( it == clients_inside_.End() )
+    {
+        const Float maxDist = Settings::vcbEnterDistance();
+        const Float dist = selectedObj->distance( this );
+        if ( dist > maxDist )
+            return;
+        clients_inside_[clientId] = SharedPtr<RefFrame>( selectedObj );
+        VariantMap & eventData = this->GetEventDataMap();
+        eventData[VcbClientEntered::P_CLIENT_ID] = clientId;
+        if ( c )
+            // Call handler remotely.
+            c->SendRemoteEvent( E_VCB_CLIENT_ENTERED, true, eventData );
+        else
+            // Call handler locally.
+            HandleClientEntered_Remote( E_VCB_CLIENT_ENTERED, eventData );
+    }
+    else
+    {
+        const Float maxDist = Settings::vcbLeaveDistance();
+        const Float dist = selectedObj->distance( this );
+        if ( dist < maxDist )
+            return;
+        clients_inside_.Erase( it );
+        VariantMap & eventData = this->GetEventDataMap();
+        eventData[VcbClientEntered::P_CLIENT_ID] = clientId;
+        if ( c )
+            // Call handler remotely.
+            c->SendRemoteEvent( E_VCB_CLIENT_LEFT, true, eventData );
+        else
+            // Call handler locally.
+            HandleClientLeft_Remote( E_VCB_CLIENT_LEFT, eventData );
+    }
 }
 
 void VcbItem::HandleClientEntered_Remote( StringHash eventType, VariantMap & eventData )
@@ -110,8 +152,18 @@ void VcbItem::HandleEnterBuildMode_Remote( StringHash eventType, VariantMap & ev
 
 void VcbItem::HandleLeaveBuildMode_Remote( StringHash eventType, VariantMap & eventData )
 {
+
 }
 
+void VcbItem::HandleEnterBuildModeClicked( StringHash eventType, VariantMap & eventData )
+{
+
+}
+
+void VcbItem::HandleLeaveBuildModeClicked( StringHash eventType, VariantMap & eventData )
+{
+
+}
 
 void VcbItem::createVisualContent( Node * n )
 {

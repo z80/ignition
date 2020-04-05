@@ -100,6 +100,16 @@ int Settings::zoomDistMax()
     return 1000000;
 }
 
+Float Settings::vcbEnterDistance()
+{
+    return 100.0;
+}
+
+Float Settings::vcbLeaveDistance()
+{
+    return 120.0;
+}
+
 void Settings::LoadConfig()
 {
     ConfigManager * m = configManager();

@@ -299,7 +299,7 @@ bool Environment::SendChatMessage( const String & message )
             return false;
 
         // We are server.
-        VariantMap data;
+        VariantMap & data = this->GetEventDataMap();
         data[P_CHATNAME] = "Server";
         data[P_CHATTEXT] = message;
         n->BroadcastRemoteEvent( E_IGN_CHATMESSAGE, true, data );
@@ -307,7 +307,7 @@ bool Environment::SendChatMessage( const String & message )
     else
     {
         // We are client.
-        VariantMap data;
+        VariantMap & data = this->GetEventDataMap();
         data[P_CHATTEXT] = message;
         c->SendRemoteEvent( E_IGN_CHATMESSAGE, true, data );
     }

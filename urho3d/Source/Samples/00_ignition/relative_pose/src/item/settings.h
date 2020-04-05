@@ -47,6 +47,10 @@ public:
     static int zoomDistMin();
     static int zoomDistMax();
 
+    /// Proximity to VCB.
+    static Float vcbEnterDistance();
+    static Float vcbLeaveDistance();
+
 private:
     void LoadConfig();
     void SaveConfig();

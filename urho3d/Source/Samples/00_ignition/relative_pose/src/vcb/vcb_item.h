@@ -17,10 +17,16 @@ public:
     VcbItem( Context * context );
     ~VcbItem();
 
+    /// Server part of client update cycle.
+    void UpdateClient_ServerSide( Connection * c, const ClientDesc & cd, RefFrame * selectedObj );
+
     void HandleClientEntered_Remote( StringHash eventType, VariantMap & eventData );
     void HandleClientLeft_Remote( StringHash eventType, VariantMap & eventData );
     void HandleEnterBuildMode_Remote( StringHash eventType, VariantMap & eventData );
     void HandleLeaveBuildMode_Remote( StringHash eventType, VariantMap & eventData );
+    /// GUI button responses.
+    void HandleEnterBuildModeClicked( StringHash eventType, VariantMap & eventData );
+    void HandleLeaveBuildModeClicked( StringHash eventType, VariantMap & eventData );
 protected:
     /// Creation of visual content when scene is set.
     virtual void createVisualContent( Node * n );
@@ -33,6 +39,9 @@ protected:
     SharedPtr<UIElement> leave_gui_;
     /// Client side construction GUI.
     /// .....
+
+    /// List of clients inside.
+    HashMap<int, SharedPtr<RefFrame> > clients_inside_;
 };
 
 
