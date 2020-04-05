@@ -37,11 +37,7 @@ void SphereDynamic::refStateChanged()
 {
     SphereItem::refStateChanged();
     ensureLight();
-
-    if ( !light_ )
-        return;
-    //const Vector3d r = refR();
-    //light_->set
+    orientLight();
 }
 
 bool SphereDynamic::Recursive() const
@@ -186,6 +182,11 @@ void SphereDynamic::ensureLight()
 
 void SphereDynamic::orientLight()
 {
+    if ( !light_node_ )
+        return;
+    const Vector3d at_d = refR();
+    const Vector3 at( -at_d.x_, -at_d.y_, -at_d.z_ );
+    light_node_->LookAt( at );
 }
 
 
