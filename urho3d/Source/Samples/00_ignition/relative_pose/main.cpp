@@ -78,10 +78,10 @@ void Main::CreateScene()
     // Create a directional light to the world so that we can see something. The light scene node's orientation controls the
     // light direction; we will use the SetDirection() function which calculates the orientation from a forward direction vector.
     // The light will use default settings (white light, no shadows)
-    Node* lightNode = scene_->CreateChild("DirectionalLight", LOCAL );
-    lightNode->SetDirection(Vector3(0.6f, -1.0f, 0.8f)); // The direction vector does not need to be normalized
-    auto* light = lightNode->CreateComponent<Light>( LOCAL );
-    light->SetLightType(LIGHT_DIRECTIONAL);
+    //Node* lightNode = scene_->CreateChild("DirectionalLight", LOCAL );
+    //lightNode->SetDirection(Vector3(0.6f, -1.0f, 0.8f)); // The direction vector does not need to be normalized
+    //auto* light = lightNode->CreateComponent<Light>( LOCAL );
+    //light->SetLightType(LIGHT_DIRECTIONAL);
 
     Zone * z = scene_->GetOrCreateComponent<Zone>();
     if ( z )
