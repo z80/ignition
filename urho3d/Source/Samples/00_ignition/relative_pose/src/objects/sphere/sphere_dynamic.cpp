@@ -11,11 +11,13 @@ void SphereDynamic::RegisterComponent( Context * context )
     context->RegisterFactory<SphereDynamic>();
     URHO3D_COPY_BASE_ATTRIBUTES( SphereItem );
     URHO3D_ACCESSOR_ATTRIBUTE( "BodyIndex", GetBodyIndex, SetBodyIndex, int, -1, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "IsStar", bool, is_star_, false, AM_DEFAULT );
 }
 
 SphereDynamic::SphereDynamic( Context * context )
     : SphereItem( context )
 {
+    is_star_           = false;
     body_index_        = -1;
     height_source_     = nullptr;
     atmosphere_source_ = nullptr;
@@ -29,6 +31,17 @@ SphereDynamic::~SphereDynamic()
         delete height_source_;
     if ( atmosphere_source_ )
         delete atmosphere_source_;
+}
+
+void SphereDynamic::refStateChanged()
+{
+    SphereItem::refStateChanged();
+    ensureLight();
+
+    if ( !light_ )
+        return;
+    //const Vector3d r = refR();
+    //light_->set
 }
 
 bool SphereDynamic::Recursive() const
@@ -85,10 +98,13 @@ void SphereDynamic::setAtmosphereSource( AtmosphereSource * src )
 
 void SphereDynamic::setStar( bool isStar )
 {
+    is_star_ = isStar;
     if ( isStar )
         setMaterialName( "Ign/Materials/VertexColorStar.xml" );
     else
         setMaterialName( "Ign/Materials/VertexColor.xml" );
+    ensureLight();
+    MarkNetworkUpdate();
 }
 
 Vector3d SphereDynamic::surfacePos( const Vector3d & unitAt, const Float height )
@@ -146,6 +162,30 @@ void SphereDynamic::applySourceCollision( Cubesphere & cs )
 void SphereDynamic::applySourceVisual( Cubesphere & cs )
 {
     cs.applySource( height_source_ );
+    ensureLight();
+}
+
+void SphereDynamic::ensureLight()
+{
+    if ( is_star_ && (!light_) )
+    {
+        Scene * s = GetScene();
+        if ( !s )
+            return;
+        Node * n = s->CreateChild( "StarDirectionalLight", LOCAL );
+        light_node_ = SharedPtr<Node>( n );
+        Light * l = n->CreateComponent<Light>( LOCAL );
+        l->SetLightType( LIGHT_DIRECTIONAL );
+        light_ = SharedPtr<Light>( l );
+    }
+    else if ( (!is_star_) && (light_) )
+    {
+        light_->Remove();
+    }
+}
+
+void SphereDynamic::orientLight()
+{
 }
 
 

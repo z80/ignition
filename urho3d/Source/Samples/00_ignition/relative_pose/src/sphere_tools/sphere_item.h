@@ -34,7 +34,7 @@ public:
     void updateCollisionData();
     void updateVisualData();
 
-    void refStateChanged() override;
+    virtual void refStateChanged() override;
     void poseChanged() override;
 
     /// Level of detail subdivision initialization.
