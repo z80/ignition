@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<element type="Window">
+	<attribute name="Name" value="EnterWnd" />
+	<attribute name="Position" value="887 402" />
+	<attribute name="Size" value="150 80" />
+	<attribute name="Min Size" value="150 80" />
+	<attribute name="Max Size" value="150 80" />
+	<attribute name="Pivot" value="0 0" />
+	<attribute name="Bring To Back" value="false" />
+	<attribute name="Layout Mode" value="Vertical" />
+	<attribute name="Layout Spacing" value="10" />
+	<attribute name="Layout Border" value="10 10 10 10" />
+	<attribute name="Image Rect" value="48 0 64 16" />
+	<attribute name="Border" value="4 4 4 4" />
+	<attribute name="Resize Border" value="8 8 8 8" />
+	<attribute name="Is Movable" value="true" />
+	<attribute name="Is Resizable" value="true" />
+	<element type="Button">
+		<attribute name="Name" value="EnterBtn" />
+		<attribute name="Min Size" value="0 30" />
+		<attribute name="Pivot" value="0 0" />
+		<attribute name="Color" value="1 0.7 1 1" />
+		<attribute name="Top Left Color" value="1 0.7 1 1" />
+		<attribute name="Top Right Color" value="1 0.7 1 1" />
+		<attribute name="Bottom Left Color" value="1 0.7 1 1" />
+		<attribute name="Bottom Right Color" value="1 0.7 1 1" />
+		<attribute name="Image Rect" value="16 0 32 16" />
+		<attribute name="Border" value="4 4 4 4" />
+		<attribute name="Hover Image Offset" value="0 16" />
+		<attribute name="Pressed Image Offset" value="16 0" />
+		<attribute name="Pressed Child Offset" value="-1 1" />
+		<element type="Text">
+			<attribute name="Min Anchor" value="0.5 0.5" />
+			<attribute name="Max Anchor" value="0.5 0.5" />
+			<attribute name="Pivot" value="0.5 0.5" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font Size" value="22" />
+			<attribute name="Text" value="Enter" />
+			<attribute name="Text Alignment" value="Center" />
+		</element>
+		<element type="ToolTip" style="ToolTip">
+			<attribute name="Name" value="EnterTooltip" />
+			<attribute name="Min Anchor" value="1 1" />
+			<attribute name="Max Anchor" value="1 1" />
+			<attribute name="Pivot" value="1 1" />
+			<attribute name="Priority" value="2147483647" />
+			<attribute name="Is Visible" value="false" />
+			<element type="Text">
+				<attribute name="Pivot" value="0 0" />
+				<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Font Size" value="22" />
+				<attribute name="Text" value="Click to enter building mode" />
+			</element>
+		</element>
+	</element>
+</element>
