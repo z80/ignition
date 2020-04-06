@@ -11,6 +11,7 @@
 #include "surface_collision_mesh.h"
 #include "rotating_frame.h"
 #include "orbiting_frame.h"
+#include "vcb_item.h"
 #include "settings.h"
 
 #include "Notifications.h"
@@ -170,6 +171,21 @@ void TestEnvironment::contentServerPlanet()
         //PiRandom rand;
         SystemGenerator * generator = context_->GetSubsystem<SystemGenerator>();
         generator->createBodies( s );
+    }
+
+    // Create VcbItem.
+    {
+        SystemGenerator * generator = context_->GetSubsystem<SystemGenerator>();
+        SphereDynamic * planet = generator->homePlanet();
+        if ( !planet )
+            return;
+        VcbItem * vcb = s->CreateComponent<VcbItem>();
+        vcb->setParent( planet );
+        const Vector3d at = planet->surfacePos( Vector3d( 1.0, 0.0, 0.1 ), 1.0 );
+        Quaterniond q;
+        q.FromLookRotation( Vector3d(0.0, 1.0, 0.0), Vector3d(1.0, 0.0, 0.1) );
+        vcb->setR( at );
+        vcb->setQ( q );
     }
 }
 

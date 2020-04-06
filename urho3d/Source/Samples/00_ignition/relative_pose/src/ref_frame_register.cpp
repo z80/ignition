@@ -23,6 +23,7 @@
 #include "character_cube.h"
 #include "sphere_example.h"
 #include "sphere_dynamic.h"
+#include "vcb_item.h"
 #include "test_environment.h"
 #include "system_generator.h"
 
@@ -56,6 +57,7 @@ void RegisterComponents( Context * context )
     CharacterCube::RegisterComponent( context );
     SphereExample::RegisterComponent( context );
     SphereDynamic::RegisterComponent( context );
+    VcbItem::RegisterComponent( context );
     TestEnvironment::RegisterComponent( context );
 
     SystemGenerator::RegisterObject( context );

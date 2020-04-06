@@ -29,9 +29,9 @@ public:
     void HandleLeaveBuildModeClicked( StringHash eventType, VariantMap & eventData );
 protected:
     /// Creation of visual content when scene is set.
-    virtual void createVisualContent( Node * n );
+    void createVisualContent( Node * n ) override;
     /// Set physical content parameters (mass, inertia tensor, collision shape, etc.).
-    virtual void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs );
+    void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs ) override;
 
     /// Sybscribe to remote events
     void SubscribeToRemoteEvents();

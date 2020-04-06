@@ -6,6 +6,7 @@
 #include "surface_collision_mesh.h"
 #include "sphere_item.h"
 #include "camera_frame.h"
+#include "vcb_item.h"
 #include "settings.h"
 
 #include "Notifications.h"
@@ -1068,6 +1069,26 @@ void Environment::UpdateDynamicGeometryNodes( bool isServer, bool isClient )
             continue;
         if ( isServer || isClient )
             scm->constructCustomGeometry();
+    }
+}
+
+void Environment::UpdateVcbNodesServer()
+{
+    Scene * s = GetScene();
+    if ( !s )
+        return;
+
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        // Try cast to evolving node.
+        // And if converted make time step.
+        SharedPtr<Component> c = comps[i];
+        VcbItem * vcb = c->Cast<VcbItem>();
+        if ( !vcb )
+            continue;
+        // Call it with all clients and local client.
     }
 }
 

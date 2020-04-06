@@ -121,6 +121,7 @@ private:
     void UpdateDynamicNodes( Float  secs_dt );
     void UpdateEvolvingNodes( Timestamp ticks_dt );
     void UpdateDynamicGeometryNodes( bool isServer, bool isClient );
+    void UpdateVcbNodesServer();
     void CaptureControls();
     void ApplyControls();
 public:

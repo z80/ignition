@@ -47,6 +47,9 @@ void VcbItem::RegisterComponent( Context * context )
 VcbItem::VcbItem( Context * context )
     : PhysicsItem( context )
 {
+    setName( "VcbItem" );
+
+    SubscribeToRemoteEvents();
 }
 
 VcbItem::~VcbItem()
@@ -124,6 +127,8 @@ void VcbItem::HandleClientEntered_Remote( StringHash eventType, VariantMap & eve
         enter_gui_->SetPosition( w, 0 );
 
         enter_gui_->SetEnabled( true );
+
+        SubscribeToEnterGuiEvents();
     }
 }
 
@@ -140,9 +145,9 @@ void VcbItem::HandleClientLeft_Remote( StringHash eventType, VariantMap & eventD
 
     // Hide the all the GUI.
     if ( enter_gui_ )
-        enter_gui_->SetEnabled( true );
+        enter_gui_->SetEnabled( false );
     if ( leave_gui_ )
-        leave_gui_->SetEnabled( true );
+        leave_gui_->SetEnabled( false );
 }
 
 void VcbItem::HandleEnterBuildMode_Remote( StringHash eventType, VariantMap & eventData )
@@ -195,10 +200,21 @@ void VcbItem::HandleLeaveBuildModeClicked( StringHash eventType, VariantMap & ev
 
 void VcbItem::createVisualContent( Node * n )
 {
+    if ( !n )
+        return;
+
+    ResourceCache * cache = GetSubsystem<ResourceCache>();
+
+    StaticModel * model = n->CreateComponent<StaticModel>( LOCAL );
+    model->SetModel( cache->GetResource<Model>("Ign/Models/Vcb.mdl") );
+    Material * material = cache->GetResource<Material>("Ign/Materials/Vcb_M.xml");
+    model->SetMaterial( material );
 }
 
 void VcbItem::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
 {
+    rb->SetMass( 0.0f );
+    cs->SetCylinder( 16.0f, 2.0f, Vector3( 0.0, 0.0f, 0.0f ) );
 }
 
 void VcbItem::SubscribeToRemoteEvents()
