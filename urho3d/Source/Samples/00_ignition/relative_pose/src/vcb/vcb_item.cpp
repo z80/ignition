@@ -152,17 +152,45 @@ void VcbItem::HandleEnterBuildMode_Remote( StringHash eventType, VariantMap & ev
 
 void VcbItem::HandleLeaveBuildMode_Remote( StringHash eventType, VariantMap & eventData )
 {
-
+    // Parent camera back.
 }
 
 void VcbItem::HandleEnterBuildModeClicked( StringHash eventType, VariantMap & eventData )
 {
+    Network * n = GetSubsystem<Network>();
+    Connection * c = n->GetServerConnection();
+    Environment * e = Environment::environment( context_ );
+    if ( !e )
+        return;
+    const ClientDesc & cd = e->clientDesc();
 
+    VariantMap & eData = this->GetEventDataMap();
+    eventData[VcbEnterBuildMode::P_CLIENT_ID] = cd.id_;
+    if ( c )
+        // Call handler remotely.
+        c->SendRemoteEvent( E_VCB_ENTER_BUILD_MODE, true, eData );
+    else
+        // Call handler locally.
+        HandleEnterBuildMode_Remote( E_VCB_ENTER_BUILD_MODE, eData );
 }
 
 void VcbItem::HandleLeaveBuildModeClicked( StringHash eventType, VariantMap & eventData )
 {
+    Network * n = GetSubsystem<Network>();
+    Connection * c = n->GetServerConnection();
+    Environment * e = Environment::environment( context_ );
+    if ( !e )
+        return;
+    const ClientDesc & cd = e->clientDesc();
 
+    VariantMap & eData = this->GetEventDataMap();
+    eventData[VcbLeaveBuildMode::P_CLIENT_ID] = cd.id_;
+    if ( c )
+        // Call handler remotely.
+        c->SendRemoteEvent( E_VCB_LEAVE_BUILD_MODE, true, eData );
+    else
+        // Call handler locally.
+        HandleEnterBuildMode_Remote( E_VCB_LEAVE_BUILD_MODE, eData );
 }
 
 void VcbItem::createVisualContent( Node * n )
@@ -172,6 +200,37 @@ void VcbItem::createVisualContent( Node * n )
 void VcbItem::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
 {
 }
+
+void VcbItem::SubscribeToRemoteEvents()
+{
+    SubscribeToEvent( E_VCB_CLIENT_ENTERED,   URHO3D_HANDLER( VcbItem,  HandleClientEntered_Remote ) );
+    SubscribeToEvent( E_VCB_CLIENT_LEFT,      URHO3D_HANDLER( VcbItem,  HandleClientLeft_Remote ) );
+    SubscribeToEvent( E_VCB_ENTER_BUILD_MODE, URHO3D_HANDLER( VcbItem,  HandleEnterBuildMode_Remote ) );
+    SubscribeToEvent( E_VCB_LEAVE_BUILD_MODE, URHO3D_HANDLER( VcbItem,  HandleLeaveBuildMode_Remote ) );
+}
+
+void VcbItem::SubscribeToEnterGuiEvents()
+{
+    if ( !enter_gui_ )
+        return;
+    UIElement * e = enter_gui_->GetChild( "EnterBtn", true );
+    if ( !e )
+        return;
+    Button * btn = e->Cast<Button>();
+    SubscribeToEvent( btn, E_RELEASED, URHO3D_HANDLER( VcbItem, HandleEnterBuildModeClicked ) );
+}
+
+void VcbItem::SubscribeToLeaveGuiEvents()
+{
+    if ( !leave_gui_ )
+        return;
+    UIElement * e = leave_gui_->GetChild( "LeaveBtn", true );
+    if ( !e )
+        return;
+    Button * btn = e->Cast<Button>();
+    SubscribeToEvent( btn, E_RELEASED, URHO3D_HANDLER( VcbItem, HandleLeaveBuildModeClicked ) );
+}
+
 
 
 

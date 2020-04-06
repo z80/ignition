@@ -33,6 +33,11 @@ protected:
     /// Set physical content parameters (mass, inertia tensor, collision shape, etc.).
     virtual void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs );
 
+    /// Sybscribe to remote events
+    void SubscribeToRemoteEvents();
+    void SubscribeToEnterGuiEvents();
+    void SubscribeToLeaveGuiEvents();
+
     /// Client side enter/leave GUI.
     /// .....
     SharedPtr<UIElement> enter_gui_;
