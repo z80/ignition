@@ -180,6 +180,11 @@ void Environment::Update( float timeStep )
                 ticksDt -= dt;
             }
         }
+
+        {
+            // Update VCB items.
+            UpdateVcbNodesServer();
+        }
     }
 
     const bool isClient = true;
@@ -1089,6 +1094,20 @@ void Environment::UpdateVcbNodesServer()
         if ( !vcb )
             continue;
         // Call it with all clients and local client.
+        for ( HashMap<Connection*, ClientDesc>::Iterator it=connections_.Begin(); 
+              it!=connections_.End(); it++ )
+        {
+            Connection * c = it->first_;
+            ClientDesc & cd = it->second_;
+            RefFrame * rf = FindSelectedFrame( cd );
+            vcb->UpdateClient_ServerSide( c, cd, rf );
+        }
+        // Also call for local client.
+        {
+            ClientDesc & cd = clientDesc_;
+            RefFrame * rf = FindSelectedFrame( cd );
+            vcb->UpdateClient_ServerSide( nullptr, cd, rf );
+        }
     }
 }
 
