@@ -20,6 +20,10 @@ public:
     CameraFrame( Context * context );
     ~CameraFrame();
 
+    void Select( RefFrame * rf );
+    void Unselect( RefFrame * rf );
+    void Focus( RefFrame * rf );
+
     void ApplyControls( const Controls & ctrl, Float dt ) override;
 
     void setCameraMode( CameraMode mode );
@@ -33,6 +37,15 @@ protected:
     void adjustGeocentric();
     static RefFrame * orbitingFrame( RefFrame * rf );
 public:
+    // Getters and setters for attributestransfered over network.
+    void SetSelectedId( int id );
+    int GetSelectedId() const;
+    void SetFocusedId( int id );
+    int GetFocusedId() const;
+    // Makes sure that Ids match object pointers (just 
+    // in case if id is set before appropriate obsect is created).
+    void EnsureCorrectObjects();
+
     void refStateChanged() override;
     void assignCameraNode();
     /// Camera node.
@@ -52,6 +65,14 @@ public:
     Vector3d geocentric_last_up_;
 
     Quaterniond surfQ_;
+
+
+    /// Selection parameters.
+    int selected_frame_id_;
+    SharedPtr<RefFrame> selected_frame_;
+
+    int focused_frame_id_;
+    SharedPtr<RefFrame> focused_frame_;
 
     // This one is for adjusting the distance.
     static const Float alpha_;

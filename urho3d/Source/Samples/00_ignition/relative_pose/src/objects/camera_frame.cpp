@@ -18,6 +18,10 @@ void CameraFrame::RegisterComponent( Context * context )
 {
     context->RegisterFactory<CameraFrame>();
     URHO3D_COPY_BASE_ATTRIBUTES( RefFrame );
+
+    URHO3D_ACCESSOR_ATTRIBUTE( "SelectedId", GetSelectedId, SetSelectedId, int, -1, AM_DEFAULT );
+    URHO3D_ACCESSOR_ATTRIBUTE( "FocusedId",  GetFocusedId,  SetFocusedId,  int, -1, AM_DEFAULT );
+
 }
 
 void CameraFrame::CheckAttributes()
@@ -44,6 +48,9 @@ CameraFrame::CameraFrame( Context * context )
 
     camera_mode_ = TGeocentric;
     geocentric_initialized_ = false;
+
+    selected_frame_id_ = -1;
+    focused_frame_id_  = -1;
 }
 
 CameraFrame::~CameraFrame()
@@ -51,8 +58,41 @@ CameraFrame::~CameraFrame()
 
 }
 
+void CameraFrame::Select( RefFrame * rf )
+{
+    selected_frame_ = SharedPtr<RefFrame>( rf );
+    if ( selected_frame_ )
+        selected_frame_id_ = selected_frame_->GetID();
+    else
+        selected_frame_id_ = -1;
+
+    MarkNetworkUpdate();
+}
+
+void CameraFrame::Unselect( RefFrame * rf )
+{
+    selected_frame_.Reset();
+    selected_frame_id_ = -1;
+
+    MarkNetworkUpdate();
+}
+
+void CameraFrame::Focus( RefFrame * rf )
+{
+    focused_frame_ = SharedPtr<RefFrame>( rf );
+    if ( focused_frame_ )
+        focused_frame_id_ = focused_frame_->GetID();
+    else
+        focused_frame_id_ = -1;
+
+    MarkNetworkUpdate();
+}
+
+
 void CameraFrame::ApplyControls( const Controls & ctrl, Float dt )
 {
+    EnsureCorrectObjects();
+
     yaw_   = ctrl.yaw_ * 180.0 / 3.14 / 10.0;
     pitch_ = ctrl.pitch_ * 180.0 / 3.14 / 10.0;
     // Update distance if it is in the controls.
@@ -253,6 +293,143 @@ RefFrame * CameraFrame::orbitingFrame( RefFrame * rf )
     of = orbitingFrame( p );
     return of;
 }
+
+void CameraFrame::SetSelectedId( int id )
+{
+    selected_frame_id_ = id;
+    if ( id < 0 )
+        selected_frame_.Reset();
+    else
+    {
+        Scene * s = GetScene();
+        if ( !s )
+            return;
+        Component * c = s->GetComponent( id );
+        if ( !c )
+        {
+            selected_frame_.Reset();
+            return;
+        }
+        RefFrame * rf = c->Cast<RefFrame>();
+        if ( !rf )
+        {
+            selected_frame_.Reset();
+            return;
+        }
+        selected_frame_ = SharedPtr<RefFrame>( rf );
+    }
+}
+
+int CameraFrame::GetSelectedId() const
+{
+    return selected_frame_id_;
+}
+
+void CameraFrame::SetFocusedId( int id )
+{
+    focused_frame_id_ = id;
+    if ( id < 0 )
+        focused_frame_.Reset();
+    else
+    {
+        Scene * s = GetScene();
+        if ( !s )
+            return;
+        Component * c = s->GetComponent( id );
+        if ( !c )
+        {
+            focused_frame_.Reset();
+            return;
+        }
+        RefFrame * rf = c->Cast<RefFrame>();
+        if ( !rf )
+        {
+            focused_frame_.Reset();
+            return;
+        }
+        focused_frame_ = SharedPtr<RefFrame>( rf );
+    }
+}
+
+int CameraFrame::GetFocusedId() const
+{
+    return focused_frame_id_;
+}
+
+void CameraFrame::EnsureCorrectObjects()
+{
+    int selected_id;
+    if ( selected_frame_ )
+        selected_id = selected_frame_->GetID();
+    else
+        selected_id = -1;
+
+    if ( selected_frame_id_ != selected_id )
+    {
+        if ( selected_frame_id_ < 0 )
+        {
+            selected_frame_.Reset();
+            selected_frame_id_ = -1;
+        }
+        else
+        {
+            Scene * s = GetScene();
+            bool applied = false;
+            if ( s )
+            {
+                Component * c = s->GetComponent( selected_frame_id_ );
+                if ( c )
+                {
+                    RefFrame * rf = c->Cast<RefFrame>();
+                    if ( rf )
+                    {
+                        selected_frame_ = SharedPtr<RefFrame>( rf );
+                        applied = true;
+                    }
+                }
+            }
+            if ( (!applied) && (selected_frame_) )
+                selected_frame_.Reset();
+        }
+    }
+
+
+    int focused_id;
+    if ( focused_frame_ )
+        focused_id = focused_frame_->GetID();
+    else
+        focused_id = -1;
+
+    if ( focused_frame_id_ != focused_id )
+    {
+        if ( focused_frame_id_ < 0 )
+        {
+            focused_frame_.Reset();
+            focused_frame_id_ = -1;
+        }
+        else
+        {
+            Scene * s = GetScene();
+            bool applied = false;
+            if ( s )
+            {
+                Component * c = s->GetComponent( focused_frame_id_ );
+                if ( c )
+                {
+                    RefFrame * rf = c->Cast<RefFrame>();
+                    if ( rf )
+                    {
+                        focused_frame_ = SharedPtr<RefFrame>( rf );
+                        applied = true;
+                    }
+                }
+            }
+            if ( (!applied) && (focused_frame_) )
+                focused_frame_.Reset();
+        }
+    }
+}
+
 
 
 
