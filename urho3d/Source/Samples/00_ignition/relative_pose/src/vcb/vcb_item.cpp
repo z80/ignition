@@ -112,7 +112,7 @@ void VcbItem::HandleClientEntered_Remote( StringHash eventType, VariantMap & eve
     if ( !enter_gui_ )
     {
         ResourceCache * cache = GetSubsystem<ResourceCache>();
-        XMLFile * f = cache->GetResource<XMLFile>( "Ign/UI/EnterWnd.xml" );
+        XMLFile * f = cache->GetResource<XMLFile>( "Ign/UI/VcbEnter.xml" );
         if ( !f )
             return;
         UI * ui = GetSubsystem<UI>();
@@ -120,16 +120,16 @@ void VcbItem::HandleClientEntered_Remote( StringHash eventType, VariantMap & eve
         UIElement * root = ui->GetRoot();
 
         enter_gui_->SetAlignment( HA_RIGHT, VA_TOP );
+        //enter_gui_->SetAlignment( HA_CENTER, VA_CENTER );
         root->AddChild( enter_gui_ );
 
         Graphics * graphics = GetSubsystem<Graphics>();
         const int w = graphics->GetWidth();
-        enter_gui_->SetPosition( w, 0 );
-
-        enter_gui_->SetEnabled( true );
+        enter_gui_->SetPosition( -20, 20 );
 
         SubscribeToEnterGuiEvents();
     }
+    enter_gui_->SetVisible( true );
 }
 
 void VcbItem::HandleClientLeft_Remote( StringHash eventType, VariantMap & eventData )
@@ -145,9 +145,9 @@ void VcbItem::HandleClientLeft_Remote( StringHash eventType, VariantMap & eventD
 
     // Hide the all the GUI.
     if ( enter_gui_ )
-        enter_gui_->SetEnabled( false );
+        enter_gui_->SetVisible( false );
     if ( leave_gui_ )
-        leave_gui_->SetEnabled( false );
+        leave_gui_->SetVisible( false );
 }
 
 void VcbItem::HandleEnterBuildMode_Remote( StringHash eventType, VariantMap & eventData )
@@ -169,6 +169,30 @@ void VcbItem::HandleEnterBuildModeClicked( StringHash eventType, VariantMap & ev
         return;
     const ClientDesc & cd = e->clientDesc();
 
+    // Show the Enter GUI.
+    if ( !leave_gui_ )
+    {
+        ResourceCache * cache = GetSubsystem<ResourceCache>();
+        XMLFile * f = cache->GetResource<XMLFile>( "Ign/UI/VcbLeave.xml" );
+        if ( !f )
+            return;
+        UI * ui = GetSubsystem<UI>();
+        leave_gui_ = ui->LoadLayout( f );
+        UIElement * root = ui->GetRoot();
+
+        leave_gui_->SetAlignment( HA_RIGHT, VA_TOP );
+        root->AddChild( leave_gui_ );
+
+        Graphics * graphics = GetSubsystem<Graphics>();
+        const int w = graphics->GetWidth();
+        leave_gui_->SetPosition( -20, 20 );
+
+        SubscribeToLeaveGuiEvents();
+    }
+    leave_gui_->SetVisible( true );
+    if ( enter_gui_ )
+        enter_gui_->SetVisible( false );
+
     VariantMap & eData = this->GetEventDataMap();
     eventData[VcbEnterBuildMode::P_CLIENT_ID] = cd.id_;
     if ( c )
@@ -187,6 +211,11 @@ void VcbItem::HandleLeaveBuildModeClicked( StringHash eventType, VariantMap & ev
     if ( !e )
         return;
     const ClientDesc & cd = e->clientDesc();
+
+    if ( leave_gui_ )
+        leave_gui_->SetVisible( false );
+    if ( enter_gui_ )
+        enter_gui_->SetVisible( true );
 
     VariantMap & eData = this->GetEventDataMap();
     eventData[VcbLeaveBuildMode::P_CLIENT_ID] = cd.id_;

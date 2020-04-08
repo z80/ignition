@@ -3,5 +3,5 @@
 	<technique name="Techniques/Diff.xml" />
 	<texture name="Ign/Textures/Vcb_TD.png" unit="diffuse" />
 	<parameter name="MatDiffColor" value="0.64 0.64 0.64 1" />
-	<parameter name="MatSpecColor" value="0.5 0.5 0.5 50" />
+	<parameter name="MatSpecColor" value="0.5 0.5 0.5 1" />
 </material>
