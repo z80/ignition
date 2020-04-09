@@ -9,6 +9,8 @@ using namespace Urho3D;
 namespace Ign
 {
 
+class OrbitingFrame;
+
 class PhysicsCharacterItem: public PhysicsItem
 {
     URHO3D_OBJECT( PhysicsCharacterItem, PhysicsItem )
@@ -20,12 +22,24 @@ public:
 
     void setAzimuth( Float az );
     Float azimuth() const;
+
+    virtual void enteredRefFrame( RefFrame * refFrame ) override;
+
 protected:
     virtual void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs ) override;
     virtual void physicsUpdate( RigidBody2 * rb ) override;
     virtual void orientRigidBody(RigidBody2 *rb );
 
+    void initGeocentric();
+    void adjustGeocentric();
+    static OrbitingFrame * orbitingFrame( RefFrame * rf );
+
+    bool geocentric_initialized_;
     Float azimuth_;
+    // Previous "up" vector.
+    Vector3d geocentric_last_up_;
+    Quaterniond surfQ_;
+
 };
 
 
