@@ -27,7 +27,6 @@ public:
     String lastName_;
     String suffix_;
     int    cameraFrameId_; // CameraId_ ID to find it easier.
-    int    selectedItemId_;
 };
 
 class Environment: public LogicComponent

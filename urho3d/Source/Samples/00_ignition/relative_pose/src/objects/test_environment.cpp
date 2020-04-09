@@ -216,7 +216,10 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
         cc->setR( at );
         cc->setV( Vector3d::ZERO );
     }
-    camera->setParent( cc );
+    //camera->setParent( cc );
+    camera->setParent( planet );
+    camera->Focus( cc );
+
     // It should be PhysicsFrame.
     //RefFrame * p = cc->parent();
     //SurfaceCollisionMesh * scm = s->CreateComponent<SurfaceCollisionMesh>();

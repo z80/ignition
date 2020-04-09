@@ -49,6 +49,7 @@ protected:
 
     void childEntered( RefFrame * refFrame ) override;
     void childLeft( RefFrame * refFrame ) override;
+    void focusedByCamera( RefFrame * cameraFrame ) override;
 
 
 protected:

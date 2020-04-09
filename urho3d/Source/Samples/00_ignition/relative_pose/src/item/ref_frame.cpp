@@ -36,6 +36,7 @@ void RefFrame::RegisterComponent( Context * context )
     URHO3D_ATTRIBUTE( "Wz", double, st_.w.z_, 0.0, AM_DEFAULT );
 
     URHO3D_ATTRIBUTE( "EnforceKinematic", bool, enforce_kinematic_, false, AM_DEFAULT );
+    URHO3D_ATTRIBUTE( "UserControlledCounter", int, user_controlled_counter_, 0, AM_DEFAULT );
 }
 
 RefFrame::RefFrame( Context * ctx, const String & name )
@@ -43,7 +44,8 @@ RefFrame::RefFrame( Context * ctx, const String & name )
       name_( name ),
       refT_( 0 ), 
       enforce_kinematic_( false ), 
-      parentId_( -1 )
+      parentId_( -1 ), 
+      user_controlled_counter_( 0 )
 {
 }
 
@@ -456,6 +458,20 @@ void RefFrame::childTeleported( RefFrame * refFrame )
 
 }
 
+void RefFrame::focusedByCamera( RefFrame * cameraFrame )
+{
+    user_controlled_counter_ += 1;
+
+    MarkNetworkUpdate();
+}
+
+void RefFrame::unfocusedByCamera()
+{
+    user_controlled_counter_ -= 1;
+
+    MarkNetworkUpdate();
+}
+
 int RefFrame::getParentId() const
 {
     return parentId_;
@@ -469,20 +485,11 @@ void RefFrame::setParentId( int parentId )
 
 bool RefFrame::getUserControlled() const
 {
-    const unsigned qty = children_.Size();
-    for ( unsigned i=0; i<qty; i++ )
-    {
-        RefFrame * rf = children_[i];
-        if ( !rf )
-            continue;
-        CameraFrame * cf = rf->Cast<CameraFrame>();
-        if ( cf )
-            return true;
-    }
-    return false;
+    const bool res = ( user_controlled_counter_ > 0 );
+    return res;
 }
 
-void RefFrame::setEnforceCinematic( bool en )
+void RefFrame::setEnforceKinematic( bool en )
 {
     enforce_kinematic_ = en;
 

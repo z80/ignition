@@ -171,12 +171,21 @@ void PhysicsItem::childEntered( RefFrame * refFrame )
     // Actually, this code created physics environment when
     // camera is attached to this physics item.
 
+
+}
+
+void PhysicsItem::childLeft( RefFrame * refFrame )
+{
+}
+
+void PhysicsItem::focusedByCamera( RefFrame * cameraFrame )
+{
+    RefFrame::focusedByCamera( cameraFrame );
+    // Actually, this code created physics environment when
+    // camera is attached to this physics item.
+
     Scene * scene = GetScene();
     if ( !scene )
-        return;
-
-    const bool controlledByUser = getUserControlled();
-    if ( !controlledByUser )
         return;
 
     Environment * env_ = this->env();
@@ -209,11 +218,6 @@ void PhysicsItem::childEntered( RefFrame * refFrame )
     pf->setParent( this->parent_ );
     pf->setState( this->state() );
     this->setParent( pf );
-}
-
-void PhysicsItem::childLeft( RefFrame * refFrame )
-{
-
 }
 
 void PhysicsItem::OnSceneSet( Scene * scene )

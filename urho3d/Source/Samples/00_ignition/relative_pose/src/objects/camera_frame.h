@@ -21,7 +21,7 @@ public:
     ~CameraFrame();
 
     void Select( RefFrame * rf );
-    void Unselect( RefFrame * rf );
+    void Unselect();
     void Focus( RefFrame * rf );
     RefFrame * SelectedFrame();
     RefFrame * FocusedFrame();

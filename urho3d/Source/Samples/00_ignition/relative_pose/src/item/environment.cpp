@@ -68,7 +68,6 @@ const ClientDesc & ClientDesc::operator=( const ClientDesc & inst )
         lastName_  = inst.lastName_;
         suffix_    = inst.suffix_;
         cameraFrameId_  = inst.cameraFrameId_;
-        selectedItemId_ = inst.selectedItemId_;
     }
 
     return *this;
@@ -478,23 +477,15 @@ void Environment::SelectRequest( ClientDesc & c, RefFrame * rf )
     Notifications::AddNotification( GetContext(), stri );
 
     // First unselect all objects selected by this client.
-    while ( true )
-    {
-        RefFrame * rf = FindSelectedFrame( c );
-        if ( !rf )
-            break;
-        rf->Unselect( c.id_ );
-    }
+    CameraFrame * cf = FindCameraFrame( c );
+    if ( !cf )
+        return;
 
     // Select the object if it is selectable.
     const bool selectable = rf->IsSelectable();
     if ( !selectable )
         return;
-    const bool selected = rf->Select( c.id_ );
-    if ( selected )
-        c.selectedItemId_ = static_cast<unsigned>( rf->GetID() );
-    else
-        c.selectedItemId_ = -1;
+    cf->Select( rf );
 }
 
 void Environment::CenterRequest( const ClientDesc & c, RefFrame * rf )
@@ -1127,89 +1118,14 @@ void Environment::ApplyControls()
 {
     if ( !IsServer() )
         return;
-
-    // Compose id to Connection hash map.
-    clientIds_.Clear();
+    //Apply control to local server client.
     {
-        clientIds_.Insert( Pair<int, Connection *>( clientDesc_.id_, nullptr ) );
-        for ( HashMap<Connection *, ClientDesc>::ConstIterator it=connections_.Begin();
-              it!=connections_.End(); it++ )
+        CameraFrame * camFrame = FindCameraFrame( clientDesc_ );
+        if ( !camFrame )
         {
-            Connection * c = it->first_;
-            const int id   = it->second_.id_;
-            clientIds_.Insert( Pair<int, Connection *>( id, c ) );
-        }
-    }
+            const Controls & ctrls = controls_;
 
-    // Process own controls and all client controls.
-    Scene * s = GetScene();
-    if ( !s )
-        return;
-
-    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
-    const unsigned qty = comps.Size();
-    for ( unsigned i=0; i<qty; i++ )
-    {
-        Component * c = comps[i];
-        if ( !c )
-            continue;
-
-        RefFrame * rf = c->Cast<RefFrame>();
-        if ( !rf )
-            continue;
-
-        // Check all clients this rf is selected by.
-        const Vector<SharedPtr<RefFrame> > & children = rf->children_;
-        const unsigned childrenQty = children.Size();
-        for ( unsigned j=0; j<childrenQty; j++ )
-        {
-            RefFrame * child = children[j];
-            if ( !rf )
-                continue;
-            CameraFrame * cameraChild = child->Cast<CameraFrame>();
-            if ( !cameraChild )
-                continue;
-            const int userId = child->CreatedBy();
-            const bool acceptsUserCtrls = rf->AcceptsControls( userId );
-            if ( !acceptsUserCtrls )
-                continue;
-            HashMap<int, Connection *>::ConstIterator it = clientIds_.Find( userId );
-            if ( it != clientIds_.End() )
-            {
-                Connection * conn = it->second_;
-                if ( conn )
-                {
-                    const Controls & ctrls = conn->GetControls();
-                    
-                    Float secsDt = secsDt_;
-                    const Float maxSecsDt = Settings::maxDynamicsTimeStep();
-                    while ( secsDt > 0.001 )
-                    {
-                        const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
-                        rf->ApplyControls( ctrls, dt );
-                        secsDt -= maxSecsDt;
-                    }
-                }
-                else
-                {
-                    Float secsDt = secsDt_;
-                    const Float maxSecsDt = Settings::maxDynamicsTimeStep();
-                    while ( secsDt > 0.001 )
-                    {
-                        const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
-                        rf->ApplyControls( controls_, dt );
-                        secsDt -= maxSecsDt;
-                    }
-                }
-            }
-        }
-
-        // If camera always apply controls and only from a user it was created for.
-        CameraFrame * cf = rf->Cast<CameraFrame>();
-        if ( cf )
-        {
-            const int userId = cf->CreatedBy();
-            if ( userId == 0 )
+            // Apply controls to camera frame.
             {
 
                 Float secsDt = secsDt_;
@@ -1217,27 +1133,77 @@ void Environment::ApplyControls()
                 while ( secsDt > 0.001 )
                 {
                     const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
-                    cf->ApplyControls( controls_, dt );
+                    camFrame->ApplyControls( ctrls, dt );
                     secsDt -= maxSecsDt;
                 }
             }
-            else
+
+            // Apply controls to the object camera is focused on.
             {
-                HashMap<int, Connection *>::ConstIterator it = clientIds_.Find( userId );
-                if ( it != clientIds_.End() )
+                RefFrame * rf = camFrame->FocusedFrame();
+                if ( !rf )
                 {
-                    Connection * conn = it->second_;
-                    const Controls ctrls = conn->GetControls();
-                    
-                    Float secsDt = secsDt_;
-                    const Float maxSecsDt = Settings::maxDynamicsTimeStep();
-                    while ( secsDt > 0.001 )
+                    const int userId = clientDesc_.id_;
+                    const bool acceptsUserCtrls = rf->AcceptsControls( userId );
+                    if ( !acceptsUserCtrls )
                     {
-                        const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
-                        cf->ApplyControls( ctrls, dt );
-                        secsDt -= maxSecsDt;
+                        Float secsDt = secsDt_;
+                        const Float maxSecsDt = Settings::maxDynamicsTimeStep();
+                        while ( secsDt > 0.001 )
+                        {
+                            const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
+                            rf->ApplyControls( ctrls, dt );
+                            secsDt -= maxSecsDt;
+                        }
                     }
                 }
+            }
+        }
+    }
+
+    // Apply controls to all other network clients in exactly the same way.
+    for ( HashMap<Connection *, ClientDesc>::ConstIterator it=connections_.Begin();
+        it!=connections_.End(); it++ )
+    {
+        Connection *  conn    = it->first_;
+        const ClientDesc & cd = it->second_;
+
+        CameraFrame * camFrame = FindCameraFrame( cd );
+        if ( !camFrame )
+            return;
+
+        const Controls ctrls = conn->GetControls();
+
+        // Apply controls to camera frame.
+        {
+
+            Float secsDt = secsDt_;
+            const Float maxSecsDt = Settings::maxDynamicsTimeStep();
+            while ( secsDt > 0.001 )
+            {
+                const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
+                camFrame->ApplyControls( ctrls, dt );
+                secsDt -= maxSecsDt;
+            }
+        }
+
+        // Apply controls to the object camera is focused on.
+        {
+            RefFrame * rf = camFrame->FocusedFrame();
+            if ( !rf )
+                continue;
+            const int userId = cd.id_;
+            const bool acceptsUserCtrls = rf->AcceptsControls( userId );
+            if ( !acceptsUserCtrls )
+                continue;
+
+            Float secsDt = secsDt_;
+            const Float maxSecsDt = Settings::maxDynamicsTimeStep();
+            while ( secsDt > 0.001 )
+            {
+                const Float dt = (secsDt < maxSecsDt) ? secsDt : maxSecsDt;
+                rf->ApplyControls( ctrls, dt );
+                secsDt -= maxSecsDt;
             }
         }
     }
@@ -1286,39 +1252,25 @@ ClientDesc  * Environment::FindCreator( RefFrame * rf )
     {
         return &clientDesc_;
     }
-    HashMap<int, Connection *>::ConstIterator it = clientIds_.Find( clientId );
-    if ( it != clientIds_.End() )
-        return nullptr;
-    Connection * conn = it->second_;
-    HashMap<Connection *, ClientDesc>::Iterator it_conn = connections_.Find( conn );
-    if ( it_conn == connections_.End() )
-        return nullptr;
-    ClientDesc & cd = it_conn->second_;
-    return &cd;
+    for( HashMap<Connection *, ClientDesc>::Iterator it_conn = connections_.Begin();
+         it_conn!=connections_.End(); it_conn++ )
+    {
+        ClientDesc & cd = it_conn->second_;
+        if ( clientId == cd.id_ )
+            return &cd;
+    }
+    return nullptr;
 }
 
 RefFrame * Environment::FindSelectedFrame( const ClientDesc & cd )
 {
-    Scene * s = GetScene();
-    if ( !s )
+    CameraFrame * cf = FindCameraFrame( cd );
+    if ( !cf )
         return nullptr;
 
-    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
-    const unsigned qty = comps.Size();
-    for ( unsigned i=0; i<qty; i++ )
-    {
-        Component * c = comps[i];
-        if ( !c )
-            continue;
-        RefFrame * rf = c->Cast<RefFrame>();
-        if ( !rf )
-            continue;
-        const bool selected = rf->SelectedBy( cd.id_ );
-        if ( selected )
-            return rf;
-    }
+    RefFrame * rf = cf->SelectedFrame();
 
-    return nullptr;
+    return rf;
 }
 
 RefFrame * Environment::FindSelectedFrame()

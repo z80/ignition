@@ -88,6 +88,9 @@ public:
     virtual void parentTeleported();
     /// Called when child teleported.
     virtual void childTeleported( RefFrame * refFrame );
+    /// Called when client focuses camera on this node.
+    virtual void focusedByCamera( RefFrame * cameraFrame );
+    virtual void unfocusedByCamera();
 
     /// Attribute accessors.
     int getParentId() const;
@@ -96,7 +99,7 @@ public:
     bool getUserControlled() const;
 
     /// Enforce all children to be kinematic.
-    void setEnforceCinematic( bool en );
+    void setEnforceKinematic( bool en );
     bool enforceKinematic() const;
     /// Checks all parents recursively.
     /// If at least one enforces kinematic it should return true.
@@ -134,6 +137,11 @@ public:
 
     /// Enforce children to be kinematic.
     bool enforce_kinematic_;
+
+    /// User controlled counter.
+    /// When user focuses camera on the object it is incremented.
+    /// And when user defocuses camera it is decremented.
+    int user_controlled_counter_;
 
     // All these are in parent's ref. frame.
     /// Relative state with respect to direct parent in its ref. frame.

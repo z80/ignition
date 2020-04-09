@@ -69,7 +69,7 @@ void CameraFrame::Select( RefFrame * rf )
     MarkNetworkUpdate();
 }
 
-void CameraFrame::Unselect( RefFrame * rf )
+void CameraFrame::Unselect()
 {
     selected_frame_.Reset();
     selected_frame_id_ = -1;
@@ -81,7 +81,10 @@ void CameraFrame::Focus( RefFrame * rf )
 {
     focused_frame_ = SharedPtr<RefFrame>( rf );
     if ( focused_frame_ )
+    {
+        rf->focusedByCamera( this );
         focused_frame_id_ = focused_frame_->GetID();
+    }
     else
         focused_frame_id_ = -1;
 
@@ -266,8 +269,8 @@ void CameraFrame::initGeocentric()
     if ( !of )
         return;
     State rs;
-    of->relativeState( rf, rs, true );
-    const Quaterniond unrotateParentQ = Quaterniond::IDENTITY; //rf->relQ().Inverse();
+    of->relativeState( this, rs, true );
+    const Quaterniond unrotateParentQ = this->relQ().Inverse();
     const Vector3d fromG = unrotateParentQ * Vector3d( 0.0, 1.0, 0.0 );
     const Vector3d toG = -(unrotateParentQ * rs.r.Normalized());
     surfQ_.FromRotationTo( fromG, toG );
@@ -284,8 +287,8 @@ void CameraFrame::adjustGeocentric()
     if ( !of )
         return;
     State rs;
-    of->relativeState( rf, rs, true );
-    const Quaterniond unrotateParentQ = Quaterniond::IDENTITY; //rf->relQ().Inverse();
+    of->relativeState( this, rs, true );
+    const Quaterniond unrotateParentQ = this->relQ().Inverse();
     const Vector3d toG = -(unrotateParentQ * rs.r.Normalized());
     const Vector3d fromG = geocentric_last_up_;
     Quaterniond    adjQ;
