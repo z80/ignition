@@ -218,6 +218,7 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
     }
     //camera->setParent( cc );
     camera->setParent( planet );
+    camera->setR( cc->relR() );
     camera->Focus( cc );
 
     // It should be PhysicsFrame.

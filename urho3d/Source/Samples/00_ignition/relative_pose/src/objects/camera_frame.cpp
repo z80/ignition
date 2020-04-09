@@ -94,6 +94,9 @@ void CameraFrame::Focus( RefFrame * rf )
     else
         focused_frame_id_ = -1;
 
+    // Need to reinitialize geocentricif changed focused object.
+    geocentric_initialized_ = false;
+
     MarkNetworkUpdate();
 }
 
@@ -129,28 +132,20 @@ void CameraFrame::ApplyControls( const Controls & ctrl, Float dt )
     //RefFrame * originParent = CameraOrigin();
     Quaterniond q;
     q.FromEulerAngles( pitch_, yaw_, 0.0 );
-    /*if ( directParent )
-    {
-        Vector3d    rel_r;
-        Quaterniond rel_q;
-        originParent->relativePose( directParent, rel_r, rel_q );
-        rel_q = rel_q.Inverse();
-        q = rel_q * q;
-    }*/
-    if ( camera_mode_ == TGeocentric )
-    {
-        if ( !geocentric_initialized_ )
-            initGeocentric();
-        else
-            adjustGeocentric();
-        q = surfQ_ * q;
-    }
+
+    if ( !geocentric_initialized_ )
+        initGeocentric();
     else
-        geocentric_initialized_ = false;
+        adjustGeocentric();
+    q = surfQ_ * q;
+
     Vector3d r( 0.0, 0.0, -1.0 );
     r = q * r;
     r *= dist_;
-
+    RefFrame * focusedFr = FocusedFrame();
+    if ( focusedFr )
+        targetR_ = focusedFr->relR();
+    r += targetR_;
 
     setR( r );
     setQ( q );
@@ -271,14 +266,25 @@ void CameraFrame::initGeocentric()
     RefFrame * rf = parent();
     if ( !rf )
         return;
+    RefFrame * focusedObj = FocusedFrame();
+    State s;
+    if ( focusedObj )
+    {
+        focusedObj->relativeState( rf, s );
+        s.q = Quaterniond::IDENTITY;
+        s.v = s.w = Vector3d::ZERO;
+    }
+    else
+    {
+        s.r = targetR_;
+    }
     RefFrame * of = orbitingFrame( rf );
     if ( !of )
         return;
     State rs;
-    of->relativeState( this, rs, true );
-    const Quaterniond unrotateParentQ = this->relQ().Inverse();
-    const Vector3d fromG = unrotateParentQ * Vector3d( 0.0, 1.0, 0.0 );
-    const Vector3d toG = -(unrotateParentQ * rs.r.Normalized());
+    of->relativeState( rf, s, rs, true );
+    const Vector3d fromG = Vector3d( 0.0, 1.0, 0.0 );
+    const Vector3d toG = -rs.r.Normalized();
     surfQ_.FromRotationTo( fromG, toG );
     geocentric_last_up_ = toG;
     geocentric_initialized_ = true;
@@ -289,17 +295,29 @@ void CameraFrame::adjustGeocentric()
     RefFrame * rf = parent();
     if ( !rf )
         return;
+    RefFrame * focusedObj = FocusedFrame();
+    State s;
+    if ( focusedObj )
+    {
+        focusedObj->relativeState( rf, s );
+        s.q = Quaterniond::IDENTITY;
+        s.v = s.w = Vector3d::ZERO;
+    }
+    else
+    {
+        s.r = targetR_;
+    }
+
     RefFrame * of = orbitingFrame( rf );
     if ( !of )
         return;
     State rs;
-    of->relativeState( this, rs, true );
-    const Quaterniond unrotateParentQ = this->relQ().Inverse();
-    const Vector3d toG = -(unrotateParentQ * rs.r.Normalized());
+    of->relativeState( rf, s, rs, true );
+    const Vector3d toG = -rs.r.Normalized();
     const Vector3d fromG = geocentric_last_up_;
     Quaterniond    adjQ;
     adjQ.FromRotationTo( fromG, toG );
-    surfQ_ = surfQ_ * adjQ;
+    surfQ_ = adjQ * surfQ_;
     surfQ_.Normalize();
     geocentric_last_up_ = toG;
 }

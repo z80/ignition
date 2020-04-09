@@ -67,7 +67,7 @@ public:
     Vector3d geocentric_last_up_;
 
     Quaterniond surfQ_;
-
+    Vector3d    targetR_;
 
     /// Selection parameters.
     int selected_frame_id_;

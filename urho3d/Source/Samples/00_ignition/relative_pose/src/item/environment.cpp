@@ -1121,7 +1121,7 @@ void Environment::ApplyControls()
     //Apply control to local server client.
     {
         CameraFrame * camFrame = FindCameraFrame( clientDesc_ );
-        if ( !camFrame )
+        if ( camFrame )
         {
             const Controls & ctrls = controls_;
 
@@ -1141,11 +1141,11 @@ void Environment::ApplyControls()
             // Apply controls to the object camera is focused on.
             {
                 RefFrame * rf = camFrame->FocusedFrame();
-                if ( !rf )
+                if ( rf )
                 {
                     const int userId = clientDesc_.id_;
                     const bool acceptsUserCtrls = rf->AcceptsControls( userId );
-                    if ( !acceptsUserCtrls )
+                    if ( acceptsUserCtrls )
                     {
                         Float secsDt = secsDt_;
                         const Float maxSecsDt = Settings::maxDynamicsTimeStep();
@@ -1219,22 +1219,11 @@ CameraFrame * Environment::FindCameraFrame( const ClientDesc & cd )
     if ( !s )
         return nullptr;
 
-    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
-    const unsigned qty = comps.Size();
-    for ( unsigned i=0; i<qty; i++ )
-    {
-        Component * c = comps[i];
-        if ( !c )
-            continue;
-        CameraFrame * cf = c->Cast<CameraFrame>();
-        if ( !cf )
-            continue;
-        const int id = cf->CreatedBy();
-        if ( id == cd.id_ )
-            return cf;
-    }
-
-    return nullptr;
+    Component * comp = s->GetComponent( frameId );
+    if ( !comp )
+        return nullptr;
+    CameraFrame * cf = comp->Cast<CameraFrame>();
+    return cf;
 }
 
 CameraFrame * Environment::FindCameraFrame()
