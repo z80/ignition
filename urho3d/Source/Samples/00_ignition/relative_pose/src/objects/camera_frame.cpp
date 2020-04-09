@@ -79,6 +79,12 @@ void CameraFrame::Unselect()
 
 void CameraFrame::Focus( RefFrame * rf )
 {
+    if ( focused_frame_ == rf )
+        return;
+
+    if ( focused_frame_ )
+        focused_frame_->unfocusedByCamera();
+
     focused_frame_ = SharedPtr<RefFrame>( rf );
     if ( focused_frame_ )
     {
