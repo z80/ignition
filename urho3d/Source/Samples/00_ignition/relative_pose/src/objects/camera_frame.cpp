@@ -88,6 +88,19 @@ void CameraFrame::Focus( RefFrame * rf )
     MarkNetworkUpdate();
 }
 
+RefFrame * CameraFrame::SelectedFrame()
+{
+    EnsureCorrectObjects();
+    return selected_frame_;
+}
+
+RefFrame * CameraFrame::FocusedFrame()
+{
+    EnsureCorrectObjects();
+    return focused_frame_;
+}
+
+
 
 void CameraFrame::ApplyControls( const Controls & ctrl, Float dt )
 {

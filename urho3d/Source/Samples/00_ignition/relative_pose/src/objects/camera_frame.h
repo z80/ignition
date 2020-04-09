@@ -23,6 +23,8 @@ public:
     void Select( RefFrame * rf );
     void Unselect( RefFrame * rf );
     void Focus( RefFrame * rf );
+    RefFrame * SelectedFrame();
+    RefFrame * FocusedFrame();
 
     void ApplyControls( const Controls & ctrl, Float dt ) override;
 
