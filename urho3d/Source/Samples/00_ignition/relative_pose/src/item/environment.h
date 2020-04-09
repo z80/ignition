@@ -129,7 +129,9 @@ public:
     ClientDesc  * FindCreator( RefFrame * rf );
 private:
     RefFrame    * FindSelectedFrame( const ClientDesc & cd );
+    RefFrame    * FindFocusedFrame( const ClientDesc & cd );
     RefFrame    * FindSelectedFrame();
+    RefFrame    * FindFocusedFrame();
     void ProcessLocalVisuals();
     int  UniqueId();
     void LoadTranslations();

@@ -1090,13 +1090,13 @@ void Environment::UpdateVcbNodesServer()
         {
             Connection * c = it->first_;
             ClientDesc & cd = it->second_;
-            RefFrame * rf = FindSelectedFrame( cd );
+            RefFrame * rf = FindFocusedFrame( cd );
             vcb->UpdateClient_ServerSide( c, cd, rf );
         }
         // Also call for local client.
         {
             ClientDesc & cd = clientDesc_;
-            RefFrame * rf = FindSelectedFrame( cd );
+            RefFrame * rf = FindFocusedFrame( cd );
             vcb->UpdateClient_ServerSide( nullptr, cd, rf );
         }
     }
@@ -1262,11 +1262,29 @@ RefFrame * Environment::FindSelectedFrame( const ClientDesc & cd )
     return rf;
 }
 
+RefFrame * Environment::FindFocusedFrame( const ClientDesc & cd )
+{
+    CameraFrame * cf = FindCameraFrame( cd );
+    if ( !cf )
+        return nullptr;
+
+    RefFrame * rf = cf->FocusedFrame();
+
+    return rf;
+}
+
 RefFrame * Environment::FindSelectedFrame()
 {
     RefFrame * rf = FindSelectedFrame( clientDesc_ );
     return rf;
 }
+
+RefFrame * Environment::FindFocusedFrame()
+{
+    RefFrame * rf = FindFocusedFrame( clientDesc_ );
+    return rf;
+}
+
 
 void Environment::ProcessLocalVisuals()
 {
