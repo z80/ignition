@@ -255,7 +255,7 @@ void VcbItem::HandleLeaveBuildModeClicked( StringHash eventType, VariantMap & ev
         c->SendRemoteEvent( E_VCB_LEAVE_BUILD_MODE, true, eData );
     else
         // Call handler locally.
-        HandleEnterBuildMode_Remote( E_VCB_LEAVE_BUILD_MODE, eData );
+        HandleLeaveBuildMode_Remote( E_VCB_LEAVE_BUILD_MODE, eData );
 }
 
 void VcbItem::createVisualContent( Node * n )

@@ -3,6 +3,7 @@
 #include "physics_item.h"
 #include "surface_collision_mesh.h"
 #include "force_source_frame.h"
+#include "camera_frame.h"
 #include "settings.h"
 #include "Notifications.h"
 
@@ -221,6 +222,10 @@ void PhysicsFrame::checkInnerObjects()
             SharedPtr<RefFrame> o = children_[i];
             const bool isUserControlled = o->getUserControlled();
             if ( isUserControlled )
+                continue;
+            // Also, if it is camera object, don't handle it.
+            CameraFrame * cf = o->Cast<CameraFrame>();
+            if ( cf )
                 continue;
             Float minDist = -1.0;
             for ( unsigned j=0; j<userQty; j++ )
