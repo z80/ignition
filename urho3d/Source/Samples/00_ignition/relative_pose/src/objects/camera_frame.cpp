@@ -55,7 +55,8 @@ CameraFrame::CameraFrame( Context * context )
 
 CameraFrame::~CameraFrame()
 {
-
+    if ( node_ )
+        node_.Reset();
 }
 
 void CameraFrame::Select( RefFrame * rf )

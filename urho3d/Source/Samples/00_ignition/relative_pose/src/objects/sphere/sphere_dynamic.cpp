@@ -31,6 +31,10 @@ SphereDynamic::~SphereDynamic()
         delete height_source_;
     if ( atmosphere_source_ )
         delete atmosphere_source_;
+    if ( light_ )
+        light_.Reset();
+    if ( light_node_ )
+        light_node_.Reset();
 }
 
 void SphereDynamic::refStateChanged()

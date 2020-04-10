@@ -31,7 +31,14 @@ PhysicsFrame::PhysicsFrame( Context * context )
 
 PhysicsFrame::~PhysicsFrame()
 {
+    if ( node_ )
+        node_.Reset();
+    if ( physicsWorld_ )
+        physicsWorld_.Reset();;
 
+    // This is temporary holder.
+    userControlledList_.Clear();
+    userControlledList2_.Clear();
 }
 
 void PhysicsFrame::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )

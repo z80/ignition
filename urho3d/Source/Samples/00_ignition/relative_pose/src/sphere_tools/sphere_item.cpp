@@ -36,6 +36,17 @@ SphereItem::SphereItem( Context * context )
 
 SphereItem::~SphereItem()
 {
+    if ( visualUpdateRunning_ || collisionUpdateRunning_ )
+    {
+        WorkQueue * wq = GetSubsystem<WorkQueue>();
+        wq->Complete( 0 );
+        //SharedPtr<WorkItem> wi = wq->GetFreeItem();
+    }
+    if ( node_ )
+        node_.Reset();
+    if ( geometry_ )
+        node_.Reset();
+
 
 }
 

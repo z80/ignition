@@ -100,7 +100,21 @@ Environment::Environment( Context * context )
 
 Environment::~Environment()
 {
-
+    Scene * s = GetScene();
+    if ( !s )
+        return;
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        if ( !c )
+            continue;
+        RefFrame * rf = c->Cast<RefFrame>();
+        if ( !rf )
+            continue;
+        rf->Remove();
+    }
 }
 
 Environment * Environment::environment( Context * context )

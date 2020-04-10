@@ -52,6 +52,7 @@ RefFrame::RefFrame( Context * ctx, const String & name )
 RefFrame::~RefFrame()
 {
     cleanup();
+    URHO3D_LOGINFO( name_ + String(" destroyed") );
 }
 
 void RefFrame::setName( const String & name )
@@ -535,6 +536,14 @@ void RefFrame::cleanup()
 {
     if ( parent_ )
         setParent( 0 );
+    const unsigned qty = children_.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        RefFrame * ch = children_[i];
+        if ( !ch )
+            continue;
+        ch->setParent( nullptr );
+    }
 }
 
 static const StringHash P_PARENT_ID( "ParentId" );
