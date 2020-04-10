@@ -63,6 +63,7 @@ public:
     virtual void SendRequestTrigger( RefFrame * rf, VariantMap & data );
 
     ClientDesc & clientDesc();
+    ClientDesc * clientDesc( int clientId );
 
     /// Callbacks from event handlers.
     virtual bool ClientConnected( int id, const VariantMap & identity, String & errMsg );
@@ -125,6 +126,7 @@ private:
     void ApplyControls();
 public:
     CameraFrame * FindCameraFrame( const ClientDesc & cd );
+    CameraFrame * FindCameraFrame( const int clientId );
     CameraFrame * FindCameraFrame();
     ClientDesc  * FindCreator( RefFrame * rf );
 private:

@@ -91,6 +91,7 @@ void CameraFrame::Focus( RefFrame * rf )
     {
         rf->focusedByCamera( this );
         focused_frame_id_ = focused_frame_->GetID();
+        setParent( focused_frame_->parent() );
     }
     else
         focused_frame_id_ = -1;

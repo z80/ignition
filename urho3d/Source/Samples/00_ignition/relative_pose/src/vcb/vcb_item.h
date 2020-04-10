@@ -45,8 +45,10 @@ protected:
     /// Client side construction GUI.
     /// .....
 
-    /// List of clients inside.
+    /// List of clients inside the sensitivity radius.
     HashMap<int, SharedPtr<RefFrame> > clients_inside_;
+    /// Client objects to return focus to when client leaves.
+    HashMap< CameraFrame *, SharedPtr<RefFrame> > client_objects_;
 };
 
 

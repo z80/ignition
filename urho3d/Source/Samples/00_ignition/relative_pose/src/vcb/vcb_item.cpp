@@ -1,6 +1,7 @@
 
 #include "vcb_item.h"
 #include "environment.h"
+#include "camera_frame.h"
 #include "settings.h"
 
 namespace Ign
@@ -153,11 +154,41 @@ void VcbItem::HandleClientLeft_Remote( StringHash eventType, VariantMap & eventD
 void VcbItem::HandleEnterBuildMode_Remote( StringHash eventType, VariantMap & eventData )
 {
     // Parent camera to VCB.
+    using namespace VcbEnterBuildMode;
+    const int id = eventData[VcbEnterBuildMode::P_CLIENT_ID].GetInt();
+    Environment * e = Environment::environment( context_ );
+    CameraFrame * cf = e->FindCameraFrame( id );
+    if ( !cf )
+        return;
+    RefFrame * rf = cf->FocusedFrame();
+    if ( rf )
+    {
+        // Remember the object to return camera focus to.
+        client_objects_[ cf ] = SharedPtr<RefFrame>( rf );
+    }
+    cf->Focus( this );
+
+    // Open appropriate GUI.
 }
 
 void VcbItem::HandleLeaveBuildMode_Remote( StringHash eventType, VariantMap & eventData )
 {
     // Parent camera back.
+    using namespace VcbEnterBuildMode;
+    const int id = eventData[VcbEnterBuildMode::P_CLIENT_ID].GetInt();
+    Environment * e = Environment::environment( context_ );
+    CameraFrame * cf = e->FindCameraFrame( id );
+    if ( !cf )
+        return;
+    // Restore the camera focus.
+    HashMap<CameraFrame *, SharedPtr<RefFrame> >::Iterator it = client_objects_.Find( cf );
+    if ( it != client_objects_.End() )
+    {
+        RefFrame * rf = it->second_;
+        cf->Focus( rf );
+    }
+    
+    // Hide the building GUI.
 }
 
 void VcbItem::HandleEnterBuildModeClicked( StringHash eventType, VariantMap & eventData )

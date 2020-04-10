@@ -444,6 +444,20 @@ ClientDesc & Environment::clientDesc()
     return clientDesc_;
 }
 
+ClientDesc * Environment::clientDesc( int clientId )
+{
+    if ( clientId == 0 )
+        return &clientDesc_;
+    for ( HashMap<Connection *,ClientDesc>::Iterator it=connections_.Begin(); 
+          it!=connections_.End(); it++ )
+    {
+        ClientDesc & cd = it->second_;
+        if ( cd.id_ == clientId )
+            return &cd;
+    }
+    return nullptr;
+}
+
 bool Environment::ClientConnected( int id, const VariantMap & identity, String & errMsg )
 {
     return true;
@@ -1237,6 +1251,15 @@ CameraFrame * Environment::FindCameraFrame( const ClientDesc & cd )
     if ( !comp )
         return nullptr;
     CameraFrame * cf = comp->Cast<CameraFrame>();
+    return cf;
+}
+
+CameraFrame * Environment::FindCameraFrame( const int clientId )
+{
+    ClientDesc * cd = clientDesc( clientId );
+    if ( !cd )
+        return nullptr;
+    CameraFrame * cf = FindCameraFrame( *cd );
     return cf;
 }
 
