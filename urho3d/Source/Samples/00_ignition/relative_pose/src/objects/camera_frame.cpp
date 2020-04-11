@@ -120,6 +120,9 @@ void CameraFrame::ApplyControls( const Controls & ctrl, Float dt )
 {
     EnsureCorrectObjects();
 
+    // Check that it has correct parent.
+    EnsureCorrentParent();
+
     yaw_   = ctrl.yaw_ * 180.0 / 3.14 / 10.0;
     pitch_ = ctrl.pitch_ * 180.0 / 3.14 / 10.0;
     // Update distance if it is in the controls.
@@ -469,6 +472,18 @@ void CameraFrame::EnsureCorrectObjects()
             if ( (!applied) && (focused_frame_) )
                 focused_frame_.Reset();
         }
+    }
+}
+
+void CameraFrame::EnsureCorrentParent()
+{
+    RefFrame * focusedFr = FocusedFrame();
+    if ( focusedFr )
+    {
+        RefFrame * own_parent = parent();
+        RefFrame * focus_parent = focusedFr->parent();
+        if ( focus_parent != own_parent )
+            setParent( focus_parent );
     }
 }
 

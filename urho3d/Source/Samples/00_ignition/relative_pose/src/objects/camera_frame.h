@@ -47,6 +47,8 @@ public:
     // Makes sure that Ids match object pointers (just 
     // in case if id is set before appropriate obsect is created).
     void EnsureCorrectObjects();
+    // Makes sure it has the same parent as its target.
+    void EnsureCorrentParent();
 
     void refStateChanged() override;
     void assignCameraNode();
