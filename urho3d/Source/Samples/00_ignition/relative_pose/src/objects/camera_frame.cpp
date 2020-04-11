@@ -287,7 +287,7 @@ void CameraFrame::initGeocentric()
     if ( !of )
         return;
     State rs;
-    of->relativeState( rf, s, rs, true );
+    of->relativeState( rf, s, rs );
     const Vector3d fromG = Vector3d( 0.0, 1.0, 0.0 );
     const Vector3d toG = -rs.r.Normalized();
     surfQ_.FromRotationTo( fromG, toG );
@@ -317,7 +317,7 @@ void CameraFrame::adjustGeocentric()
     if ( !of )
         return;
     State rs;
-    of->relativeState( rf, s, rs, true );
+    of->relativeState( rf, s, rs );
     const Vector3d toG = -rs.r.Normalized();
     const Vector3d fromG = geocentric_last_up_;
     Quaterniond    adjQ;

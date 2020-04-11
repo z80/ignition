@@ -304,7 +304,7 @@ void SphereItem::checkIfSubdriveVisualNeeded()
     // Get current client and find its physics environment.
     CameraFrame * cam = env->FindCameraFrame();
     State s;
-    cam->relativeState( this, s, true );
+    cam->relativeState( this, s );
     SubdriveSource::SubdividePoint pt;
     pt.at = s.r;
     pt.close = cam->isChildOf( this );

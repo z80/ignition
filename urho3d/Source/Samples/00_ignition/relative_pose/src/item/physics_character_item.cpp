@@ -80,7 +80,7 @@ void PhysicsCharacterItem::initGeocentric()
     if ( !of )
         return;
     State rs;
-    of->relativeState( rf, rs, true );
+    of->relativeState( rf, rs );
     const Vector3d fromG = Vector3d( 0.0, 1.0, 0.0 );
     const Vector3d toG = -rs.r.Normalized();
     surfQ_.FromRotationTo( fromG, toG );
@@ -97,7 +97,7 @@ void PhysicsCharacterItem::adjustGeocentric()
     if ( !of )
         return;
     State rs;
-    of->relativeState( rf, rs, true );
+    of->relativeState( rf, rs );
     const Vector3d toG = -rs.r.Normalized();
     const Vector3d fromG = geocentric_last_up_;
     Quaterniond    adjQ;
