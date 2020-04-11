@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<element type="Window">
+	<attribute name="Name" value="VcbMenu" />
+	<attribute name="Position" value="100 100" />
+	<attribute name="Size" value="150 300" />
+	<attribute name="Pivot" value="0 0" />
+	<attribute name="Layout Mode" value="Horizontal" />
+	<attribute name="Image Rect" value="48 0 64 16" />
+	<attribute name="Border" value="4 4 4 4" />
+	<attribute name="Resize Border" value="8 8 8 8" />
+	<element type="Window">
+		<attribute name="Name" value="ButtonArea" />
+		<attribute name="Min Size" value="50 0" />
+		<attribute name="Max Size" value="50 8152" />
+		<attribute name="Pivot" value="0 0" />
+		<attribute name="Color" value="0 0 1 1" />
+		<attribute name="Top Left Color" value="0 0 1 1" />
+		<attribute name="Top Right Color" value="0 0 1 1" />
+		<attribute name="Bottom Left Color" value="0 0 1 1" />
+		<attribute name="Bottom Right Color" value="0 0 1 1" />
+		<attribute name="Layout Mode" value="Vertical" />
+		<attribute name="Image Rect" value="48 0 64 16" />
+		<attribute name="Border" value="4 4 4 4" />
+		<attribute name="Resize Border" value="8 8 8 8" />
+	</element>
+</element>
