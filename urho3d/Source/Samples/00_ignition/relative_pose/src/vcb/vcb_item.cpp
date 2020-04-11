@@ -155,6 +155,14 @@ void VcbItem::HandleEnterBuildMode_Remote( StringHash eventType, VariantMap & ev
 {
     // Parent camera to VCB.
     using namespace VcbEnterBuildMode;
+    for ( VariantMap::Iterator it =eventData.Begin(); 
+          it!=eventData.End(); it++ )
+    {
+        Variant v = it->second_;
+        VariantType t = v.GetType();
+        int intV = v.GetInt();
+        URHO3D_LOGINFO( String( "value: " ) + String( intV ) );
+    }
     const int id = eventData[VcbEnterBuildMode::P_CLIENT_ID].GetInt();
     Environment * e = Environment::environment( context_ );
     CameraFrame * cf = e->FindCameraFrame( id );
@@ -225,6 +233,8 @@ void VcbItem::HandleEnterBuildModeClicked( StringHash eventType, VariantMap & ev
         enter_gui_->SetVisible( false );
 
     VariantMap & eData = this->GetEventDataMap();
+    Variant v = cd.id_;
+    VariantType vt = v.GetType();
     eventData[VcbEnterBuildMode::P_CLIENT_ID] = cd.id_;
     if ( c )
         // Call handler remotely.

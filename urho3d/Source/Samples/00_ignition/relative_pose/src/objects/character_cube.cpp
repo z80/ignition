@@ -100,7 +100,7 @@ void CharacterCube::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
     // In addition to friction, use motion damping so that the ball can not accelerate limitlessly
     //rb->SetLinearDamping( 0.5f );
 
-    cs->SetBox( Vector3( 1.0, 1.0, 1.0 ) );
+    cs->SetBox( Vector3( 2.0, 2.0, 2.0 ) );
 
     Scene * s = GetScene();
     ResourceCache * cache = GetSubsystem<ResourceCache>();
