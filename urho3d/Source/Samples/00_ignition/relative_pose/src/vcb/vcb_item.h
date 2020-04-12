@@ -44,6 +44,7 @@ protected:
     SharedPtr<UIElement> leave_gui_;
     /// Client side construction GUI.
     /// .....
+    SharedPtr<UIElement> main_menu_;
 
     /// List of clients inside the sensitivity radius.
     HashMap<int, SharedPtr<RefFrame> > clients_inside_;

@@ -169,6 +169,23 @@ void VcbItem::HandleEnterBuildMode_Remote( StringHash eventType, VariantMap & ev
     cf->Focus( this );
 
     // Open appropriate GUI.
+    if ( !main_menu_ )
+    {
+        ResourceCache * cache = GetSubsystem<ResourceCache>();
+        XMLFile * f = cache->GetResource<XMLFile>( "Ign/UI/VcbMainMenu.xml" );
+        if ( !f )
+            return;
+        UI * ui = GetSubsystem<UI>();
+        main_menu_ = ui->LoadLayout( f );
+        UIElement * root = ui->GetRoot();
+
+        main_menu_->SetAlignment( HA_LEFT, VA_TOP );
+        //enter_gui_->SetAlignment( HA_CENTER, VA_CENTER );
+        root->AddChild( main_menu_ );
+
+        main_menu_->SetPosition( 0, 0 );
+    }
+    main_menu_->SetVisible( true );
 }
 
 void VcbItem::HandleLeaveBuildMode_Remote( StringHash eventType, VariantMap & eventData )
@@ -189,6 +206,8 @@ void VcbItem::HandleLeaveBuildMode_Remote( StringHash eventType, VariantMap & ev
     }
     
     // Hide the building GUI.
+    if ( main_menu_ )
+        main_menu_->SetVisible( false );
 }
 
 void VcbItem::HandleEnterBuildModeClicked( StringHash eventType, VariantMap & eventData )
