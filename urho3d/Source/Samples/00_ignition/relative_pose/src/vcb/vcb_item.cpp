@@ -63,6 +63,10 @@ void VcbItem::UpdateClient_ServerSide( Connection * c, const ClientDesc & cd, Re
         return;
     // Check if client Id is in the list.
     const int clientId = cd.id_;
+    /*if ( clientId != 0 )
+    {
+        int i=0;
+    }*/
     HashMap<int, SharedPtr<RefFrame> >::Iterator it = clients_inside_.Find( clientId );
     if ( it == clients_inside_.End() )
     {
@@ -74,11 +78,17 @@ void VcbItem::UpdateClient_ServerSide( Connection * c, const ClientDesc & cd, Re
         VariantMap & eventData = this->GetEventDataMap();
         eventData[VcbClientEntered::P_CLIENT_ID] = clientId;
         if ( c )
+        {
             // Call handler remotely.
             c->SendRemoteEvent( E_VCB_CLIENT_ENTERED, true, eventData );
+            URHO3D_LOGINFO( String( "VCB Client entered, id: " ) + String(clientId) );
+        }
         else
+        {
             // Call handler locally.
             HandleClientEntered_Remote( E_VCB_CLIENT_ENTERED, eventData );
+            URHO3D_LOGINFO( String( "VCB Client entered, id: " ) + String(clientId) );
+        }
     }
     else
     {
@@ -90,11 +100,17 @@ void VcbItem::UpdateClient_ServerSide( Connection * c, const ClientDesc & cd, Re
         VariantMap & eventData = this->GetEventDataMap();
         eventData[VcbClientEntered::P_CLIENT_ID] = clientId;
         if ( c )
+        {
             // Call handler remotely.
             c->SendRemoteEvent( E_VCB_CLIENT_LEFT, true, eventData );
+            URHO3D_LOGINFO( String( "VCB Client left, id: " ) + String(clientId) );
+        }
         else
+        {
             // Call handler locally.
             HandleClientLeft_Remote( E_VCB_CLIENT_LEFT, eventData );
+            URHO3D_LOGINFO( String( "VCB Client left, id: " ) + String(clientId) );
+        }
     }
 }
 
