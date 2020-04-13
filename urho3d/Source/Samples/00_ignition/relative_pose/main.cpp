@@ -33,7 +33,7 @@ void Main::Start()
     CreateScene();
 
     // Create the UI content
-    CreateInstructions();
+    //CreateInstructions();
 
     // Setup the viewport for displaying the scene
     SetupViewport();
