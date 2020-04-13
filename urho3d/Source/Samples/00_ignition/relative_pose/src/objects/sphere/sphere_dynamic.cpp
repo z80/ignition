@@ -189,6 +189,10 @@ void SphereDynamic::orientLight()
     if ( !light_node_ )
         return;
     const Vector3d at_d = refR();
+    //URHO3D_LOGINFO( String("Sun at (") + String( at_d.x_ ) + 
+    //                String(", ") + String( at_d.y_ ) + 
+    //                String(", ") + String( at_d.z_ ) + String("), id: ") + 
+    //                String( this->GetID() ) );
     const Vector3 at( -at_d.x_, -at_d.y_, -at_d.z_ );
     light_node_->LookAt( at );
 }

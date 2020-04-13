@@ -83,6 +83,8 @@ void CharacterCube::createVisualContent( Node * n )
     Material * material = cache->GetResource<Material>("Ign/Materials/TestCubeM.xml");
     model->SetMaterial( material );
 
+    model_visual_ = SharedPtr<StaticModel>( model );
+
     // SetRenderOrder() doesn't really work. It must be I use it incorrectly.
     //SharedPtr<Material> material2 = material->Clone();
     //material2->SetRenderOrder( 200 ); // higher render order

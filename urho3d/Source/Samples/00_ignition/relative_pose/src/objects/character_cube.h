@@ -30,6 +30,9 @@ public:
 protected:
     virtual void createVisualContent( Node * n ) override;
     void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs ) override;
+
+    // Just for debugging to see what happens when it disappears.
+    SharedPtr<StaticModel> model_visual_;
 };
 
 }
