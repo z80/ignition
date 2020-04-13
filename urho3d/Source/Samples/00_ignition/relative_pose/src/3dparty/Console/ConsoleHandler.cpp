@@ -23,7 +23,8 @@ void ConsoleHandler::Init()
 void ConsoleHandler::Create()
 {
     Input* input = GetSubsystem<Input>();
-    if (!input->IsMouseVisible()) {
+    if (!input->IsMouseVisible())
+    {
         input->SetMouseVisible(true);
     }
     // Get default style
@@ -39,13 +40,15 @@ void ConsoleHandler::Create()
     _console->GetBackground()->SetPriority(9999);
 
     // Hack to hide interpretator DropDownList
+    // I remove it to see the original functionality.
+    /*
     PODVector<UIElement*> elements;
     _console->GetBackground()->GetChildren(elements, true);
     for (auto it = elements.Begin(); it != elements.End(); ++it) {
         if ((*it)->GetType() == "DropDownList") {
             (*it)->SetVisible(false);
         }
-    }
+    }*/
 
     for (auto it = _registeredConsoleCommands.Begin(); it != _registeredConsoleCommands.End(); ++it) {
         _console->AddAutoComplete((*it).first_);
@@ -95,15 +98,20 @@ void ConsoleHandler::SubscribeToEvents()
 
 void ConsoleHandler::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 {
-    if (GetSubsystem<ConfigManager>()->GetBool("game", "DeveloperConsole", true)) {
+    const bool consoleAvailable = GetSubsystem<ConfigManager>()->GetBool("game", "DeveloperConsole", true)
+    if ( consoleAvailable )
+    {
         using namespace KeyDown;
         int key = eventData[P_KEY].GetInt();
         if (key == KEY_F2) {
             _console->Toggle();
         }
-    } else {
+    }
+    else
+    {
         // If console is still visible when it was disabled via options, hide it
-        if (_console->IsVisible()) {
+        if (_console->IsVisible())
+        {
             _console->Toggle();
         }
     }
@@ -116,14 +124,16 @@ void ConsoleHandler::HandleConsoleCommandAdd(StringHash eventType, VariantMap& e
     String eventToCall = eventData[P_EVENT].GetString();
     String description = eventData[P_DESCRIPTION].GetString();
     bool overwrite = eventData[P_OVERWRITE].GetBool();
-    if (_registeredConsoleCommands.Contains(command) && !overwrite) {
+    if ( _registeredConsoleCommands.Contains(command) && !overwrite )
+    {
         URHO3D_LOGWARNINGF("Console command '%s' already registered! Skipping console command registration!", command.CString());
         return;
     }
 
     // Add to autocomplete
-    if (_console) {
-        _console->AddAutoComplete(command);
+    if (_console)
+    {
+        _console->AddAutoComplete( command );
     }
 
     // Register new console command
@@ -134,27 +144,29 @@ void ConsoleHandler::HandleConsoleCommandAdd(StringHash eventType, VariantMap& e
     _registeredConsoleCommands[command] = singleConsoleCommand;
 }
 
-void ConsoleHandler::HandleConsoleCommand(StringHash eventType, VariantMap& eventData)
+void ConsoleHandler::HandleConsoleCommand( StringHash eventType, VariantMap & eventData )
 {
     using namespace ConsoleCommand;
     String input = eventData[P_COMMAND].GetString();
     URHO3D_LOGINFO(input);
-    ParseCommand(input);
+    ParseCommand( input );
 }
 
-void ConsoleHandler::ParseCommand(String input)
+void ConsoleHandler::ParseCommand( const String & input )
 {
-    if (input.Empty()) {
+    if ( input.Empty() )
+    {
         return;
     }
-    StringVector commands = input.Split(' ', false);
-    String command = commands[0];
-    if (_registeredConsoleCommands.Contains(command)) {
+    StringVector commands = input.Split( ' ', false );
+    const String & command = commands[0];
+    if ( _registeredConsoleCommands.Contains(command) )
+    {
         VariantMap data;
         data["Parameters"] = commands;
 
         // Call the actual event and pass all the parameters
-        SendEvent(_registeredConsoleCommands[command].eventToCall, data);
+        SendEvent( _registeredConsoleCommands[command].eventToCall, data );
     }
 }
 

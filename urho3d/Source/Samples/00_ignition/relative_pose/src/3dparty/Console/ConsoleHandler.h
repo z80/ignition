@@ -5,7 +5,8 @@
 
 using namespace Urho3D;
 
-struct SingleConsoleCommand {
+struct SingleConsoleCommand
+{
     String command;
     String eventToCall;
     String description;
@@ -13,9 +14,11 @@ struct SingleConsoleCommand {
 
 class ConsoleHandler : public Object
 {
-    URHO3D_OBJECT(ConsoleHandler, Object);
+    URHO3D_OBJECT( ConsoleHandler, Object )
 
 public:
+    static bool AddCommand( Context * context, const SingleConsoleCommand & commandDesc );
+
     /// Construct.
     ConsoleHandler(Context* context);
 
@@ -53,7 +56,7 @@ private:
     /**
      * Parse incomming command input
      */
-    void ParseCommand(String input);
+    void ParseCommand( const String & input);
 
     /**
      * Display help
