@@ -103,6 +103,23 @@ void SystemGenerator::createBody( Scene * scene, RefFrame * parent, PiSystem & s
     SphereDynamic * sd = scene->CreateComponent<SphereDynamic>( REPLICATED );
     sd->setParent( rf );
     sd->SetBodyIndex( bodyIndex );
+    if ( bodyIndex == 0 )
+    {
+        sd->setName( "Sun" );
+        rf->setName( "Rotator Sun" );
+    }
+    else if ( bodyIndex == 1 )
+    {
+        sd->setName( "Planet" );
+        rf->setName( "Rotator Planet" );
+        of->setName( "Orbit Planet" );
+    }
+    else if ( bodyIndex == 2 )
+    {
+        sd->setName( "Moon" );
+        rf->setName( "Rotator Moon" );
+        of->setName( "Orbit Moon" );
+    }
 
     static Float at = 0.0;
     if ( parent )

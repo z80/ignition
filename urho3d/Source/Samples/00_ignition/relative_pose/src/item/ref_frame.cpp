@@ -426,7 +426,13 @@ void RefFrame::refStateChanged()
 
 void RefFrame::poseChanged()
 {
-    //URHO3D_LOGINFO( "Pose changed" );
+    if ( name_ == "Orbit Planet" )
+    {
+        URHO3D_LOGINFO( "Pose changed: (" + String(st_.r.x_) + 
+                        String(", ") + String(st_.r.y_) + 
+                        String(", ") + String(st_.r.z_) + String("), id: ") + 
+                        String(GetID()));
+    }
 }
 
 void RefFrame::enteredRefFrame( RefFrame * refFrame )
