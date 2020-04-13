@@ -5,7 +5,7 @@
 namespace Ign
 {
 
-void ForceSourceFrame::RegisterObject( Context * context )
+void ForceSourceFrame::RegisterComponent( Context * context )
 {
     context->RegisterFactory<ForceSourceFrame>();
     URHO3D_COPY_BASE_ATTRIBUTES( RefFrame );

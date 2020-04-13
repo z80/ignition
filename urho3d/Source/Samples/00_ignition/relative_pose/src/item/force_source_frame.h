@@ -27,7 +27,7 @@ class ForceSourceFrame: public RefFrame
 {
     URHO3D_OBJECT( ForceSourceFrame, RefFrame )
 public:
-    static void RegisterObject( Context * context );
+    static void RegisterComponent( Context * context );
 
     ForceSourceFrame( Context * context );
     virtual ~ForceSourceFrame();

@@ -39,6 +39,7 @@ void RegisterComponents( Context * context )
     PhysicsFrame::RegisterComponent( context );
     PhysicsItem::RegisterComponent( context );
     PhysicsCharacterItem::RegisterComponent( context );
+    ForceSourceFrame::RegisterComponent( context );
     EvolvingFrame::RegisterComponent( context );
     RotatingFrame::RegisterComponent( context );
     OrbitingFrame::RegisterComponent( context );
