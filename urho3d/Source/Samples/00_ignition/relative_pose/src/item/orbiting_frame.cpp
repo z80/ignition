@@ -101,7 +101,7 @@ void OrbitingFrame::evolveStep( Timestamp ticks_dt )
 bool OrbitingFrame::Recursive() const
 {
     // Do not process this ref. frame's parents to
-    // get another sources of force.
+    // get other sources of force.
     return false;
 }
 
