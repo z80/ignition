@@ -16,6 +16,8 @@
 
 #include "debug_geometry.h"
 
+#include "ConsoleHandler.h"
+
 namespace Ign
 {
 
@@ -44,6 +46,15 @@ static const StringHash P_CHATTEXT("CHATTEXT");
 
 
 static const StringHash ENVIRONMENT("Environment");
+
+URHO3D_EVENT( E_IGN_CLIENT_LIST, EIgnClientList )
+{
+}
+
+URHO3D_EVENT( E_IGN_OVERRIDE_CLIENT_CAM, EIgnOverrideClientCam )
+{
+    URHO3D_PARAM( P_ID, Id );
+}
 
 
 
@@ -87,6 +98,7 @@ Environment::Environment( Context * context )
     secsDt_   = 0.0;
     ticksDt_  = 0;
     clientDesc_.id_ = -1;
+    clientIdOverride_ = -1;
 
     startingServer_     = false;
     connectingToServer_ = false;
@@ -94,6 +106,17 @@ Environment::Environment( Context * context )
     Variant a;
     a = this;
     SetGlobalVar( ENVIRONMENT, a );
+
+    SingleConsoleCommand cmd;
+    cmd.command = "client_list";
+    cmd.eventToCall = E_IGN_CLIENT_LIST;
+    cmd.description = "Only for Server. Ids of all clients. Use those with \'override_client_id\'";
+    ConsoleHandler::AddCommand( context_, cmd );
+
+    cmd.command = "override_client_id";
+    cmd.eventToCall = E_IGN_OVERRIDE_CLIENT_CAM;
+    cmd.description = "Only for server. Overrides 0 client id with the one provided.";
+    ConsoleHandler::AddCommand( context_, cmd );
 
     drawDebugGeometry_ = false;
 }
@@ -590,6 +613,11 @@ void Environment::SubscribeToEvents()
     SubscribeToEvent( IgnEvents::E_SELECT_REQUEST,  URHO3D_HANDLER( Environment, HandleSelectRequest ) );
     SubscribeToEvent( IgnEvents::E_TRIGGER_REQUEST, URHO3D_HANDLER( Environment, HandleTriggerRequest ) );
     SubscribeToEvent( IgnEvents::E_CENTER_REQUEST,  URHO3D_HANDLER( Environment, HandleCenterRequest ) );
+
+
+    // Local debug events
+    SubscribeToEvent( E_IGN_CLIENT_LIST,         URHO3D_HANDLER( Environment, HandlerClientList ) );
+    SubscribeToEvent( E_IGN_OVERRIDE_CLIENT_CAM, URHO3D_HANDLER( Environment, HandlerOverrideClientCam ) );
 }
 
 void Environment::CreateReplicatedContentServer()
@@ -971,6 +999,31 @@ void Environment::HandleTriggerRequest( StringHash eventType, VariantMap & event
     SendRequestTrigger( rf, eventData );
 }
 
+void Environment::HandlerClientList( StringHash eventType, VariantMap & eventData )
+{
+    String accum( "Client ids: " );
+    for ( HashMap<Connection *, ClientDesc>::ConstIterator it = connections_.Begin(); 
+          it!=connections_.End(); it++ )
+    {
+        const ClientDesc & cd = it->second_;
+        const int id = cd.id_;
+        accum += String( id ) + String( ", " );
+    }
+    URHO3D_LOGINFO( accum.CString() );
+}
+
+void Environment::HandlerOverrideClientCam( StringHash eventType, VariantMap & eventData )
+{
+    using namespace EIgnOverrideClientCam;
+    const StringVector sv = eventData["Parameters"].GetStringVector();
+    if ( sv.Size() < 2 )
+    {
+        URHO3D_LOGERROR( "requires one argument: client id" );
+    }
+    clientIdOverride_ = ToInt( sv[1] );
+    URHO3D_LOGINFO( String( "Client Id overrwritten with " ) + sv[1] );
+}
+
 
 void Environment::SetupConsole()
 {
@@ -1325,7 +1378,11 @@ RefFrame * Environment::FindFocusedFrame()
 
 void Environment::ProcessLocalVisuals()
 {
-    CameraFrame * cam = FindCameraFrame();
+    CameraFrame * cam = nullptr;
+    if ( clientIdOverride_ <= 0 )
+        cam = FindCameraFrame();
+    else
+        cam = FindCameraFrame( clientIdOverride_ );
     if ( !cam )
         return;
 

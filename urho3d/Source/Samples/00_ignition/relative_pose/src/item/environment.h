@@ -115,6 +115,9 @@ protected:
     void HandleCenterRequest( StringHash eventType, VariantMap & eventData );
     void HandleTriggerRequest( StringHash eventType, VariantMap & eventData );
 
+    /// Local handlers for debugging.
+    void HandlerClientList( StringHash eventType, VariantMap & eventData );
+    void HandlerOverrideClientCam( StringHash eventType, VariantMap & eventData );
 private:
     void SetupConsole();
     void IncrementTime( float secs_dt );
@@ -148,6 +151,8 @@ private:
     /// In the case of client assign client Id;
     ClientDesc clientDesc_;
     Controls   controls_;
+    /// Overriding camera to debug what remote clients should see.
+    int clientIdOverride_;
 
     /// Network state holders
     bool startingServer_;

@@ -4,6 +4,13 @@
 #include "Events3dparty.h"
 #include "ConfigManager.h"
 
+bool ConsoleHandler::AddCommand( Context * context, const SingleConsoleCommand & commandDesc )
+{
+    ConsoleHandler * ch = context->GetSubsystem<ConsoleHandler>();
+    const bool res = ch->ConsoleCommandAdd( commandDesc.command, commandDesc.eventToCall, commandDesc.description );
+    return res;
+}
+
 /// Construct.
 ConsoleHandler::ConsoleHandler(Context* context) :
     Object(context)
@@ -98,12 +105,13 @@ void ConsoleHandler::SubscribeToEvents()
 
 void ConsoleHandler::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 {
-    const bool consoleAvailable = GetSubsystem<ConfigManager>()->GetBool("game", "DeveloperConsole", true)
+    const bool consoleAvailable = GetSubsystem<ConfigManager>()->GetBool( "game", "DeveloperConsole", true );
+    _console = GetSubsystem<Console>();
     if ( consoleAvailable )
     {
         using namespace KeyDown;
         int key = eventData[P_KEY].GetInt();
-        if (key == KEY_F2) {
+        if (key == KEY_F1) {
             _console->Toggle();
         }
     }
@@ -117,17 +125,12 @@ void ConsoleHandler::HandleKeyDown(StringHash eventType, VariantMap& eventData)
     }
 }
 
-void ConsoleHandler::HandleConsoleCommandAdd(StringHash eventType, VariantMap& eventData)
+bool ConsoleHandler::ConsoleCommandAdd( const String & command, const StringHash & eventToCall, const String & description, bool overwrite )
 {
-    using namespace IgnEvents::ConsoleCommandAdd;
-    String command = eventData[P_NAME].GetString();
-    String eventToCall = eventData[P_EVENT].GetString();
-    String description = eventData[P_DESCRIPTION].GetString();
-    bool overwrite = eventData[P_OVERWRITE].GetBool();
     if ( _registeredConsoleCommands.Contains(command) && !overwrite )
     {
         URHO3D_LOGWARNINGF("Console command '%s' already registered! Skipping console command registration!", command.CString());
-        return;
+        return false;
     }
 
     // Add to autocomplete
@@ -142,6 +145,19 @@ void ConsoleHandler::HandleConsoleCommandAdd(StringHash eventType, VariantMap& e
     singleConsoleCommand.description = description;
     singleConsoleCommand.eventToCall = eventToCall;
     _registeredConsoleCommands[command] = singleConsoleCommand;
+
+    return true;
+}
+
+void ConsoleHandler::HandleConsoleCommandAdd(StringHash eventType, VariantMap& eventData)
+{
+    using namespace IgnEvents::ConsoleCommandAdd;
+    String command = eventData[P_NAME].GetString();
+    String eventToCall = eventData[P_EVENT].GetString();
+    String description = eventData[P_DESCRIPTION].GetString();
+    bool overwrite = eventData[P_OVERWRITE].GetBool();
+
+    ConsoleCommandAdd( command, eventToCall, description, overwrite );
 }
 
 void ConsoleHandler::HandleConsoleCommand( StringHash eventType, VariantMap & eventData )
@@ -177,7 +193,7 @@ void ConsoleHandler::HandleConsoleCommandHelp(StringHash eventType, VariantMap& 
     URHO3D_LOGINFO("#");
     for (auto it = _registeredConsoleCommands.Begin(); it != _registeredConsoleCommands.End(); ++it) {
         SingleConsoleCommand info = (*it).second_;
-        URHO3D_LOGINFOF("# '%s' => '%s': %s", info.command.CString(), info.eventToCall.CString(), info.description.CString());
+        URHO3D_LOGINFOF("# '%s' => '%s': %s", info.command.CString(), info.eventToCall.ToString().CString(), info.description.CString());
     }
     URHO3D_LOGINFO("#");
     URHO3D_LOGINFO("#########################");

@@ -7,9 +7,9 @@ using namespace Urho3D;
 
 struct SingleConsoleCommand
 {
-    String command;
-    String eventToCall;
-    String description;
+    String     command;
+    StringHash eventToCall;
+    String     description;
 };
 
 class ConsoleHandler : public Object
@@ -46,6 +46,7 @@ private:
     /**
      * Add new console command
      */
+    bool ConsoleCommandAdd( const String & command, const StringHash & eventToCall, const String & description=String(), bool overwrite=false );
     void HandleConsoleCommandAdd(StringHash eventType, VariantMap& eventData);
 
     /**
