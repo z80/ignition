@@ -45,6 +45,7 @@ void ForceSourceFrame::ApplyForces( PhysicsItem * receiver )
         const Quaterniond toReceiverQ = st.q.Inverse();
         F = toReceiverQ * F;
         P = toReceiverQ * P;
+        const Vector3d debugDrawF = F;
         // 2) Convert to parent ref. frame.
         const Quaterniond & q = receiver->relQ();
         F = q * F;
@@ -54,6 +55,12 @@ void ForceSourceFrame::ApplyForces( PhysicsItem * receiver )
         RigidBody2 * rb = receiver->rigidBody();
         rb->ApplyForce( Vector3( F.x_, F.y_, F.z_ ) );
         rb->ApplyTorque( Vector3( P.x_, P.y_, P.z_ ) );
+
+        AirMesh & am = receiver->airMesh();
+        ForceApplied fa;
+        fa.at = Vector3d( 2.0, 0.0, 0.0 );
+        fa.Fn = debugDrawF;
+        am.forces_.Push( fa );
     }
 
     const bool recursive = Recursive();
