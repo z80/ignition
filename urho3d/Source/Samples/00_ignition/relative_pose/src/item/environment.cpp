@@ -1387,6 +1387,7 @@ void Environment::ProcessLocalVisuals()
         return;
 
     RefFrame * originParent = cam->CameraOrigin();
+    unsigned originId = ( originParent ) ? originParent->GetID() : 0;
 
     Scene * s = GetScene();
     const Vector<SharedPtr<Component> > & comps = s->GetComponents();
@@ -1404,7 +1405,7 @@ void Environment::ProcessLocalVisuals()
         if ( cf )
             continue;
 
-        rf->computeRefState( originParent );
+        rf->computeRefState( originId );
     }
 }
 

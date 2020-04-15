@@ -71,7 +71,8 @@ void VcbItem::UpdateClient_ServerSide( Connection * c, const ClientDesc & cd, Re
     if ( it == clients_inside_.End() )
     {
         const Float maxDist = Settings::vcbEnterDistance();
-        const Float dist = selectedObj->distance( this );
+        const unsigned thisId = this->GetID();
+        const Float dist = selectedObj->distance( thisId );
         if ( dist > maxDist )
             return;
         clients_inside_[clientId] = SharedPtr<RefFrame>( selectedObj );
@@ -93,7 +94,8 @@ void VcbItem::UpdateClient_ServerSide( Connection * c, const ClientDesc & cd, Re
     else
     {
         const Float maxDist = Settings::vcbLeaveDistance();
-        const Float dist = selectedObj->distance( this );
+        const unsigned thisId = this->GetID();
+        const Float dist = selectedObj->distance( thisId );
         if ( dist < maxDist )
             return;
         clients_inside_.Erase( it );
