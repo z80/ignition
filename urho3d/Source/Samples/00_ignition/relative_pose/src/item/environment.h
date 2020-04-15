@@ -118,6 +118,7 @@ protected:
     /// Local handlers for debugging.
     void HandlerClientList( StringHash eventType, VariantMap & eventData );
     void HandlerOverrideClientCam( StringHash eventType, VariantMap & eventData );
+    void HandlePrintAllChildren( StringHash eventType, VariantMap & eventData );
 private:
     void SetupConsole();
     void IncrementTime( float secs_dt );

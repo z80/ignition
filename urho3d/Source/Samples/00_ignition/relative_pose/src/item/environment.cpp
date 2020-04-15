@@ -56,6 +56,10 @@ URHO3D_EVENT( E_IGN_OVERRIDE_CLIENT_CAM, EIgnOverrideClientCam )
     URHO3D_PARAM( P_ID, Id );
 }
 
+URHO3D_EVENT( E_IGN_PRINT_ALL_CHILDREN, EIgnPrintAllChildren )
+{
+}
+
 
 
 ClientDesc::ClientDesc()
@@ -1022,6 +1026,18 @@ void Environment::HandlerOverrideClientCam( StringHash eventType, VariantMap & e
     }
     clientIdOverride_ = ToInt( sv[1] );
     URHO3D_LOGINFO( String( "Client Id overrwritten with " ) + sv[1] );
+}
+
+void Environment::HandlePrintAllChildren( StringHash eventType, VariantMap & eventData )
+{
+    Scene * s = GetScene();
+    if ( !s )
+        return;
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+    }
 }
 
 
