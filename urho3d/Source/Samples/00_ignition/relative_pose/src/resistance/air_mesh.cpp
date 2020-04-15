@@ -141,6 +141,8 @@ void AirMesh::drawDebugGeometry( Node * n, DebugRenderer * debug )
         debug->AddLine( f_at, f_fn, Color::CYAN );
         debug->AddLine( f_at, f_fl, Color::MAGENTA );
     }
+
+    forces_.Clear();
 }
 
 }

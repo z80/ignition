@@ -44,12 +44,12 @@ void PhysicsCharacterItem::setupPhysicsContent( RigidBody2 * rb, CollisionShape2
 {
     PhysicsItem::setupPhysicsContent( rb, cs );
     // All rotational degrees of freedom are disabled.
-    rb->SetAngularFactor( Vector3::ZERO );
+    //rb->SetAngularFactor( Vector3::ZERO );
 }
 
 void PhysicsCharacterItem::physicsUpdate( RigidBody2 * rb )
 {
-    orientRigidBody( rb );
+    //orientRigidBody( rb );
 }
 
 void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
