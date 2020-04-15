@@ -147,7 +147,8 @@ struct PhysicsQueryCallback : public btCollisionWorld::ContactResultCallback
 PhysicsWorld2::PhysicsWorld2(Context* context) :
     Component(context),
     fps_(DEFAULT_FPS_2),
-    debugMode_(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits)
+    debugMode_(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits), 
+    debug_node_override_( nullptr )
 {
     gContactAddedCallback = CustomMaterialCombinerCallback;
 
@@ -225,7 +226,7 @@ void PhysicsWorld2::drawLine(const btVector3& from, const btVector3& to, const b
 {
     if (debugRenderer_)
     {
-        Node * n = GetNode();
+        Node * n = (debug_node_override_) ? debug_node_override_ : GetNode();
         const Matrix3x4 m = n->GetWorldTransform();
         Vector3 f = ToVector3( from );
         f = m * f;
@@ -247,6 +248,16 @@ void PhysicsWorld2::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
         world_->debugDrawWorld();
         debugRenderer_ = nullptr;
     }
+
+    // Reset it every single time.
+    // So in order to make use of it it is necessary 
+    // to set it prior to call DrawDebugGeometry.
+    debug_node_override_ = nullptr;
+}
+
+void PhysicsWorld2::SetDebugOrigin( Node * n )
+{
+    debug_node_override_ = n;
 }
 
 void PhysicsWorld2::reportErrorWarning(const char* warningString)

@@ -35,7 +35,9 @@ PhysicsFrame::~PhysicsFrame()
     if ( node_ )
         node_.Reset();
     if ( physicsWorld_ )
-        physicsWorld_.Reset();;
+        physicsWorld_.Reset();
+    if ( debug_override_node_ )
+        debug_override_node_.Reset();
 
     // This is temporary holder.
     userControlledList_.Clear();
@@ -46,7 +48,20 @@ void PhysicsFrame::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
 {
     RefFrame::DrawDebugGeometry( debug, depthTest );
     if ( physicsWorld_ )
+    {
+        physicsWorld_->SetDebugOrigin( debug_override_node_ );
         physicsWorld_->DrawDebugGeometry( debug, depthTest );
+    }
+}
+
+void PhysicsFrame::refStateChanged()
+{
+    RefFrame::refStateChanged();
+
+    const Vector3    r = refR().vector3();
+    const Quaternion q = refQ().quaternion();
+    if ( debug_override_node_ )
+        debug_override_node_->SetTransform( r, q );
 }
 
 void PhysicsFrame::physicsStep( float sec_dt )
@@ -114,6 +129,9 @@ void PhysicsFrame::OnSceneSet( Scene * scene )
     scm->setParent( this );
     scm->setR( Vector3d::ZERO );
     scm->constructCustomGeometry();
+
+    // For frawing debug geometry.
+    debug_override_node_ = scene->CreateChild( "Physics Debug Override Node" );
 }
 
 bool PhysicsFrame::surfaceOk()

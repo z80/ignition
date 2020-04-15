@@ -24,6 +24,8 @@ public:
 
     virtual void DrawDebugGeometry( DebugRenderer * debug, bool depthTest ) override;
 
+    void refStateChanged() override;
+
     void physicsStep( float sec_dt );
     bool handleSplitMerge();
     Node * physicsNode();
@@ -63,6 +65,7 @@ protected:
 public:
     SharedPtr<Node>          node_;
     SharedPtr<PhysicsWorld2> physicsWorld_;
+    SharedPtr<Node>          debug_override_node_;
 
     // This is temporary holder.
     Vector<unsigned> userControlledList_, userControlledList2_;

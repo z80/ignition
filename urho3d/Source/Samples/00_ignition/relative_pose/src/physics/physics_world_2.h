@@ -162,6 +162,7 @@ public:
 
     /// Visualize the component as debug geometry.
     void DrawDebugGeometry(DebugRenderer* debug, bool depthTest) override;
+    void SetDebugOrigin( Node * n );
 
     /// Step the simulation forward.
     void Update(float timeStep);
@@ -365,6 +366,9 @@ private:
 
 public:
     static PhysicsWorld2 * getWorld( Node * node );
+
+private:
+    Node * debug_node_override_;
 };
 
 /// Register Physics library objects.

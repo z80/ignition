@@ -26,10 +26,11 @@ PhysicsItem::~PhysicsItem()
 void PhysicsItem::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
 {
     RefFrame::DrawDebugGeometry( debug, depthTest );
-    if ( rigid_body_ )
-        rigid_body_->DrawDebugGeometry( debug, depthTest );
-    if ( collision_shape_ )
-        collision_shape_->DrawDebugGeometry( debug, depthTest );
+    // These are drawn inside of dynamics world.
+    //if ( rigid_body_ )
+    //    rigid_body_->DrawDebugGeometry( debug, depthTest );
+    //if ( collision_shape_ )
+    //    collision_shape_->DrawDebugGeometry( debug, depthTest );
     if ( visual_node_ )
         air_mesh_.drawDebugGeometry( visual_node_, debug );
 
@@ -90,6 +91,8 @@ void PhysicsItem::setW( const Vector3d & w )
 
 void PhysicsItem::refStateChanged()
 {
+    RefFrame::refStateChanged();
+
     const Vector3    r = refR().vector3();
     const Quaternion q = refQ().quaternion();
     visual_node_->SetTransform( r, q );
