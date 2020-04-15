@@ -24,11 +24,11 @@ IcoPlanet::~IcoPlanet()
 
 }
 
-Float IcoPlanet::distance( RefFrame * refFrame )
+Float IcoPlanet::distance( unsigned refFrameId )
 {
     Vector3d rel_r;
     Quaterniond rel_q;
-    relativePose( refFrame, rel_r, rel_q );
+    relativePose( refFrameId, rel_r, rel_q );
     const Float d = rel_r.Length();
     const Float dist = ( d > R_ ) ? (d - R_) : 0.0;
     return dist;

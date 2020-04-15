@@ -89,7 +89,8 @@ void CameraFrame::Focus( RefFrame * rf )
     focused_frame_ = SharedPtr<RefFrame>( rf );
     if ( focused_frame_ )
     {
-        rf->focusedByCamera( this );
+        const unsigned thisId = this->GetID();
+        rf->focusedByCamera( thisId );
         focused_frame_id_ = focused_frame_->GetID();
         setParent( focused_frame_->parent() );
     }
@@ -175,23 +176,24 @@ RefFrame * CameraFrame::CameraOrigin()
     PhysicsItem * pi = p->Cast<PhysicsItem>();
     if ( !pi )
     {
-        computeRefState( p );
+        computeRefState( parent_id_ );
         return p;
     }
     RefFrame * p2 = pi->parent();
     if ( !p2 )
     {
-        computeRefState( p );
+        computeRefState( parent_id_ );
         return p;
     }
     PhysicsFrame * pf = p2->Cast<PhysicsFrame>();
     if ( pf )
     {
-        computeRefState( pf );
+        const unsigned pfId = pf->GetID();
+        computeRefState( pfId );
         return pf;
     }
 
-    computeRefState( p );
+    computeRefState( parent_id_ );
     return p;
 }
 
@@ -268,14 +270,14 @@ void CameraFrame::OnSceneSet( Scene * scene )
 
 void CameraFrame::initGeocentric()
 {
-    RefFrame * rf = parent();
-    if ( !rf )
+    RefFrame * prt = parent();
+    if ( !prt )
         return;
     RefFrame * focusedObj = FocusedFrame();
     State s;
     if ( focusedObj )
     {
-        focusedObj->relativeState( rf, s );
+        focusedObj->relativeState( parent_id_, s );
         s.q = Quaterniond::IDENTITY;
         s.v = s.w = Vector3d::ZERO;
     }
@@ -283,11 +285,11 @@ void CameraFrame::initGeocentric()
     {
         s.r = targetR_;
     }
-    RefFrame * of = orbitingFrame( rf );
+    RefFrame * of = orbitingFrame( prt );
     if ( !of )
         return;
     State rs;
-    of->relativeState( rf, s, rs );
+    of->relativeState( parent_id_, s, rs );
     const Vector3d fromG = Vector3d( 0.0, 1.0, 0.0 );
     const Vector3d toG = -rs.r.Normalized();
     surfQ_.FromRotationTo( fromG, toG );
@@ -297,14 +299,14 @@ void CameraFrame::initGeocentric()
 
 void CameraFrame::adjustGeocentric()
 {
-    RefFrame * rf = parent();
-    if ( !rf )
+    RefFrame * prt = parent();
+    if ( !prt )
         return;
     RefFrame * focusedObj = FocusedFrame();
     State s;
     if ( focusedObj )
     {
-        focusedObj->relativeState( rf, s );
+        focusedObj->relativeState( parent_id_, s );
         s.q = Quaterniond::IDENTITY;
         s.v = s.w = Vector3d::ZERO;
     }
@@ -313,11 +315,11 @@ void CameraFrame::adjustGeocentric()
         s.r = targetR_;
     }
 
-    RefFrame * of = orbitingFrame( rf );
+    RefFrame * of = orbitingFrame( prt );
     if ( !of )
         return;
     State rs;
-    of->relativeState( rf, s, rs );
+    of->relativeState( parent_id_, s, rs );
     const Vector3d toG = -rs.r.Normalized();
     const Vector3d fromG = geocentric_last_up_;
     Quaterniond    adjQ;

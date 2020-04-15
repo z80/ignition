@@ -43,13 +43,13 @@ public:
     AirMesh & airMesh();
 protected:
     /// Called when this thing is moved into another ref. frame.
-    void enteredRefFrame( RefFrame * refFrame ) override;
+    void enteredRefFrame( unsigned refFrameId ) override;
     /// Called when this thing is moved out of it's current parent.
-    void leftRefFrame( RefFrame * refFrame ) override;
+    void leftRefFrame( unsigned refFrameId ) override;
 
-    void childEntered( RefFrame * refFrame ) override;
-    void childLeft( RefFrame * refFrame ) override;
-    void focusedByCamera( RefFrame * cameraFrame ) override;
+    void childEntered( unsigned refFrameId ) override;
+    void childLeft( unsigned refFrameId ) override;
+    void focusedByCamera( unsigned cameraFrameId ) override;
 
 
 protected:

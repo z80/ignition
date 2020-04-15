@@ -143,7 +143,8 @@ SphereItem * SurfaceCollisionMesh::pickSphere()
     const unsigned qty = candidate->children_.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
-        RefFrame * c = children_[i];
+        const unsigned chId = children_[i];
+        RefFrame * c = refFrame( chId );
         if ( !c )
             continue;
         si = c->Cast<SphereItem>();
@@ -171,7 +172,8 @@ bool SurfaceCollisionMesh::needRebuild( SphereItem * & item, bool forceRebuild )
         if ( si )
         {
             State s;
-            relativeState( si, s );
+            const unsigned siId = si->GetID();
+            relativeState( siId, s );
             lastState_ = s;
         }
         else
@@ -183,7 +185,8 @@ bool SurfaceCollisionMesh::needRebuild( SphereItem * & item, bool forceRebuild )
         return false;
 
     State s;
-    relativeState( si, s );
+    const unsigned siId = si->GetID();
+    relativeState( siId, s );
     const Vector3d d = s.r - lastState_.r;
     const Float dist = d.Length();
 

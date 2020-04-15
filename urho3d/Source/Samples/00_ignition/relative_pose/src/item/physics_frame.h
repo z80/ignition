@@ -43,7 +43,7 @@ protected:
     /// Update all physics item states based on dynamics simulation.
     void updateChildStates();
 
-    const Vector<SharedPtr<RefFrame> > & userControlledObjects();
+    const Vector<unsigned> & userControlledObjects();
     /// After dynamics step check all user controlled objects and determine
     /// if it is necessary to exclude objects from simulation.
     void checkInnerObjects();
@@ -65,7 +65,7 @@ public:
     SharedPtr<PhysicsWorld2> physicsWorld_;
 
     // This is temporary holder.
-    Vector<SharedPtr<RefFrame> > userControlledList_, userControlledList2_;
+    Vector<unsigned> userControlledList_, userControlledList2_;
 };
 
 

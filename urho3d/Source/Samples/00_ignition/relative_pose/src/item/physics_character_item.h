@@ -23,7 +23,7 @@ public:
     void setAzimuth( Float az );
     Float azimuth() const;
 
-    virtual void enteredRefFrame( RefFrame * refFrame ) override;
+    virtual void enteredRefFrame( unsigned refFrameId ) override;
 
 protected:
     virtual void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs ) override;

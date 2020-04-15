@@ -34,9 +34,9 @@ Float PhysicsCharacterItem::azimuth() const
     return azimuth_;
 }
 
-void PhysicsCharacterItem::enteredRefFrame( RefFrame * refFrame )
+void PhysicsCharacterItem::enteredRefFrame( unsigned refFrameId )
 {
-    PhysicsItem::enteredRefFrame( refFrame );
+    PhysicsItem::enteredRefFrame( refFrameId );
     geocentric_initialized_ = false;
 }
 
@@ -73,14 +73,14 @@ void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
 
 void PhysicsCharacterItem::initGeocentric()
 {
-    RefFrame * rf = parent();
-    if ( !rf )
+    RefFrame * prt = parent();
+    if ( !prt )
         return;
-    RefFrame * of = orbitingFrame( rf );
+    RefFrame * of = orbitingFrame( prt );
     if ( !of )
         return;
     State rs;
-    of->relativeState( rf, rs );
+    of->relativeState( parent_id_, rs );
     const Vector3d fromG = Vector3d( 0.0, 1.0, 0.0 );
     const Vector3d toG = -rs.r.Normalized();
     surfQ_.FromRotationTo( fromG, toG );
@@ -90,14 +90,14 @@ void PhysicsCharacterItem::initGeocentric()
 
 void PhysicsCharacterItem::adjustGeocentric()
 {
-    RefFrame * rf = parent();
-    if ( !rf )
+    RefFrame * prt = parent();
+    if ( !prt )
         return;
-    RefFrame * of = orbitingFrame( rf );
+    RefFrame * of = orbitingFrame( prt );
     if ( !of )
         return;
     State rs;
-    of->relativeState( rf, rs );
+    of->relativeState( parent_id_, rs );
     const Vector3d toG = -rs.r.Normalized();
     const Vector3d fromG = geocentric_last_up_;
     Quaterniond    adjQ;

@@ -98,7 +98,7 @@ void SphereItem::refStateChanged()
 
 void SphereItem::poseChanged()
 {
-    computeRefState( nullptr );
+    computeRefState( (unsigned)0 );
     URHO3D_LOGINFOF( "SphereItem::poseChanged()" );
 }
 
@@ -168,11 +168,12 @@ void SphereItem::applySourceVisual( Cubesphere & cs )
 void SphereItem::subdivideCollision()
 {
     ptsCollision_.Clear();
-    const Vector<SharedPtr<RefFrame> > & chs = children_;
+    const Vector<unsigned> & chs = children_;
     const unsigned qty = chs.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
-        RefFrame * rf = chs[i];
+        const unsigned chId = chs[i];
+        RefFrame * rf = refFrame( chId );
         if ( !rf )
             continue;
         PhysicsFrame * pf = rf->Cast<PhysicsFrame>();
@@ -196,11 +197,12 @@ void SphereItem::subdivideCollision()
 void SphereItem::checkIfSubdriveCollisionNeeded()
 {
     ptsCollision_.Clear();
-    const Vector<SharedPtr<RefFrame> > & chs = children_;
+    const Vector<unsigned> & chs = children_;
     const unsigned qty = chs.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
-        RefFrame * rf = chs[i];
+        const unsigned chId = chs[i];
+        RefFrame * rf = refFrame( chId );
         if ( !rf )
             continue;
         PhysicsFrame * pf = rf->Cast<PhysicsFrame>();
@@ -278,7 +280,8 @@ void SphereItem::subdivideVisual()
     // Get current client and find its physics environment.
     CameraFrame * cam = env->FindCameraFrame();
     State s;
-    cam->relativeState( this, s, true );
+    const unsigned thisId = this->GetID();
+    cam->relativeState( thisId, s, true );
     SubdriveSource::SubdividePoint pt;
     pt.at = s.r;
     pt.close = cam->isChildOf( this );
@@ -304,7 +307,8 @@ void SphereItem::checkIfSubdriveVisualNeeded()
     // Get current client and find its physics environment.
     CameraFrame * cam = env->FindCameraFrame();
     State s;
-    cam->relativeState( this, s );
+    const unsigned thisId = this->GetID();
+    cam->relativeState( thisId, s );
     SubdriveSource::SubdividePoint pt;
     pt.at = s.r;
     pt.close = cam->isChildOf( this );

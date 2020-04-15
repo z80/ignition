@@ -35,9 +35,10 @@ public:
     const String & name() const;
 
     void setParent( RefFrame * newParent );
+    void setParent( unsigned parentId );
     RefFrame * parent();
 
-    bool isChildOf( RefFrame * refFrame ) const;
+    bool isChildOf( RefFrame * refFrame );
 
     virtual void setR( const Vector3d & r );
     virtual void setQ( const Quaterniond & q );
@@ -57,18 +58,18 @@ public:
     void setState( const State & st );
     const State state() const;
 
-    bool relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging=false );
-    bool relativeState( RefFrame * other, State & stateRel, bool debugLogging=false );
+    bool relativePose( unsigned otherId, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging=false );
+    bool relativeState( unsigned otherId, State & stateRel, bool debugLogging=false );
 
     /// Relative state for object in current ref. frame with state "stA" 
     /// with respect to another object with state "stB" in "other" ref. frame.
-    bool relativeState( RefFrame * other, const State & stateInOther, State & state, const bool debugLogging=false );
+    bool relativeState( unsigned otherId, const State & stateInOther, State & state, const bool debugLogging=false );
 
     // "Teleporting" with preserving orientations and velocities of
     // all children in parent->parent ref. frame.
-    virtual bool teleport( RefFrame * other, const State & stateInOther );
+    virtual bool teleport( unsigned otherId, const State & stateInOther );
 
-    bool computeRefState( RefFrame * other=nullptr, Timestamp t=-1, bool recursive=false );
+    bool computeRefState( unsigned other=0, Timestamp t=-1, bool recursive=false );
     const State & refState() const;
     /// Default implementation does nothing.
     virtual void refStateChanged();
@@ -77,19 +78,19 @@ public:
     virtual void poseChanged();
 
     /// Called when this thing is moved into another ref. frame.
-    virtual void enteredRefFrame( RefFrame * refFrame );
+    virtual void enteredRefFrame( unsigned refFrameId );
     /// Called when this thing is moved out of it's current parent.
-    virtual void leftRefFrame( RefFrame * refFrame );
+    virtual void leftRefFrame( unsigned refFrameId );
     /// Called when new chiled entered.
-    virtual void childEntered( RefFrame * refFrame );
+    virtual void childEntered( unsigned refFrameId );
     /// Called when child lest.
-    virtual void childLeft( RefFrame * refFrame );
+    virtual void childLeft( unsigned refFrameId );
     /// Called when parent teleported.
     virtual void parentTeleported();
     /// Called when child teleported.
-    virtual void childTeleported( RefFrame * refFrame );
+    virtual void childTeleported( unsigned refFrameId );
     /// Called when client focuses camera on this node.
-    virtual void focusedByCamera( RefFrame * cameraFrame );
+    virtual void focusedByCamera( unsigned cameraFrameId );
     virtual void unfocusedByCamera();
 
     /// Attribute accessors.
@@ -103,11 +104,11 @@ public:
     bool enforceKinematic() const;
     /// Checks all parents recursively.
     /// If at least one enforces kinematic it should return true.
-    bool shouldBeKinematic() const;
+    bool shouldBeKinematic();
 
     /// Distance to a point. This method is virtual because it needs to
     /// take into account this object size.
-    virtual Float distance( RefFrame * refFrame );
+    virtual Float distance( unsigned refFrameId );
     /// The same method computes a distance to a point in the same ref. frame.
     virtual Float distance( const Vector3d & r=Vector3d::ZERO ) const;
 
@@ -120,20 +121,19 @@ public:
     /// RefFrame when node is available.
     /// This is needed when for example selecting using mouse.
     void assignRefFrame( Node * node );
+    RefFrame * refFrame( unsigned id );
     static RefFrame * refFrame( Node * node );
     static RefFrame * refFrame( Scene * s, unsigned id );
 
 public:
-    void validateParentId();
     /// For debugging it is easier to identify by human readable name.
     String name_;
     /// Parent ref. frame or nullptr.
-    SharedPtr<RefFrame> parent_;
-    int parentId_;
+    unsigned parent_id_;
     /// So far this one is used only when teleporting.
     /// This one is just to aoid memory allocation/reallocation
     /// on every teleport.
-    Vector<SharedPtr<RefFrame> > children_;
+    Vector<unsigned> children_;
 
     /// Enforce children to be kinematic.
     bool enforce_kinematic_;

@@ -24,14 +24,14 @@ InfinitePlane::~InfinitePlane()
 
 }
 
-Float InfinitePlane::distance( RefFrame * refFrame )
+Float InfinitePlane::distance( unsigned refFrameId )
 {
-    if ( !refFrame )
+    if ( refFrameId == 0 )
         return -1.0;
 
     Vector3d rel_r;
     Quaterniond rel_q;
-    this->relativePose( refFrame, rel_r, rel_q );
+    this->relativePose( refFrameId, rel_r, rel_q );
     const Vector3d a = rel_q * Vector3d( 0.0, 1.0, 0.0 );
 
     const Float d = -rel_r.DotProduct( a );

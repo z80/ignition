@@ -35,8 +35,7 @@ void PhysicsItem::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
 
     // Draw directions to all the planets.
     {
-        RefFrame * rf = parent();
-        if ( !rf )
+        if ( parent_id_ == 0 )
             return;
 
         Scene * s = GetScene();
@@ -49,7 +48,7 @@ void PhysicsItem::DrawDebugGeometry( DebugRenderer * debug, bool depthTest )
             if ( !sd )
                 continue;
             State st;
-            sd->relativeState( rf, st );
+            sd->relativeState( parent_id_, st );
             st.r.Normalize();
             const Vector3d origin = relR();
             Vector3 from( origin.x_, origin.y_, origin.z_ );
@@ -120,7 +119,7 @@ AirMesh & PhysicsItem::airMesh()
     return air_mesh_;
 }
 
-void PhysicsItem::enteredRefFrame( RefFrame * refFrame )
+void PhysicsItem::enteredRefFrame( unsigned refFrameId )
 {
     Environment * env_ = this->env();
     if ( !env_ )
@@ -133,9 +132,12 @@ void PhysicsItem::enteredRefFrame( RefFrame * refFrame )
 
     // Check if it is a physics ref frame.
     // And if yes create physics content.
-    if ( !refFrame )
+    if ( refFrameId == 0 )
         return;
-    PhysicsFrame * pf = refFrame->Cast<PhysicsFrame>();
+    RefFrame * rf = refFrame( refFrameId );
+    if ( !rf )
+        return;
+    PhysicsFrame * pf = rf->Cast<PhysicsFrame>();
     if ( !pf )
         return;
     Node * node = pf->physicsNode();
@@ -155,14 +157,14 @@ void PhysicsItem::enteredRefFrame( RefFrame * refFrame )
     rigid_body_->SetAngularVelocityd( Vector3( st_.w.x_, st_.w.y_, st_.v.z_ ) );
 }
 
-void PhysicsItem::leftRefFrame( RefFrame * refFrame )
+void PhysicsItem::leftRefFrame( unsigned refFrameId )
 {
     // Need to destroy physics content.
     if ( physics_node_ )
         physics_node_->Remove();
 }
 
-void PhysicsItem::childEntered( RefFrame * refFrame )
+void PhysicsItem::childEntered( unsigned refFrameId )
 {
     // I commented these code out as I don't remember what logic
     // I meant when put it here. But from the code I don't quite understand
@@ -174,13 +176,13 @@ void PhysicsItem::childEntered( RefFrame * refFrame )
 
 }
 
-void PhysicsItem::childLeft( RefFrame * refFrame )
+void PhysicsItem::childLeft( unsigned refFrameId )
 {
 }
 
-void PhysicsItem::focusedByCamera( RefFrame * cameraFrame )
+void PhysicsItem::focusedByCamera( unsigned cameraFrameId )
 {
-    RefFrame::focusedByCamera( cameraFrame );
+    RefFrame::focusedByCamera( cameraFrameId );
     // Actually, this code created physics environment when
     // camera is attached to this physics item.
 
@@ -197,9 +199,10 @@ void PhysicsItem::focusedByCamera( RefFrame * cameraFrame )
         return;
 
     // Check if parent is physics frame.
-    if ( parent_ )
+    RefFrame * prt = parent();
+    if ( prt )
     {
-        PhysicsFrame * pf = parent_->Cast<PhysicsFrame>();
+        PhysicsFrame * pf = prt->Cast<PhysicsFrame>();
         if ( pf )
             return;
     }
@@ -215,7 +218,7 @@ void PhysicsItem::focusedByCamera( RefFrame * cameraFrame )
     // Physics frame will take all the logic load concerning if it needs to merge
     // with anything, etc.
     PhysicsFrame * pf = scene->CreateComponent<PhysicsFrame>();
-    pf->setParent( this->parent_ );
+    pf->setParent( parent_id_ );
     pf->setState( this->state() );
     this->setParent( pf );
 }

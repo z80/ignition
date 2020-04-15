@@ -5,8 +5,8 @@
 namespace Ign
 {
 
-static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children );
-static void addToList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children );
+static void removeFromList( unsigned item, Vector<unsigned> & children );
+static void addToList( unsigned item, Vector<unsigned> & children );
 
 void RefFrame::RegisterComponent( Context * context )
 {
@@ -14,7 +14,11 @@ void RefFrame::RegisterComponent( Context * context )
     URHO3D_COPY_BASE_ATTRIBUTES( ControllableItem );
 
     // Need to think on how to assign parent and update over network.
-    URHO3D_ACCESSOR_ATTRIBUTE( "ParentId", getParentId, setParentId, int, -1, AM_DEFAULT );
+    URHO3D_ACCESSOR_ATTRIBUTE( "ParentId", getParentId, setParentId, unsigned, 0, AM_DEFAULT );
+    // At the moment don't share "children_". Not sure if it is needed.
+    // Only parent is needed to compute relative positions.
+    // And "children_" is only needed by server to determine what nodes 
+    // should be moved when something happens.
 
     URHO3D_ATTRIBUTE( "RfName", String, name_, "", AM_DEFAULT );
 
@@ -44,7 +48,7 @@ RefFrame::RefFrame( Context * ctx, const String & name )
       name_( name ),
       refT_( 0 ), 
       enforce_kinematic_( false ), 
-      parentId_( -1 ), 
+      parent_id_( 0 ), 
       user_controlled_counter_( 0 )
 {
 }
@@ -69,48 +73,64 @@ const String & RefFrame::name() const
 
 void RefFrame::setParent( RefFrame * newParent )
 {
-    SharedPtr<RefFrame> & curParent = parent_;
-    if ( newParent == curParent )
+    const unsigned new_parent_id = (newParent) ? newParent->GetID() : 0;
+    if ( new_parent_id == parent_id_ )
         return;
+
+    const unsigned thisId = this->GetID();
 
     // Compute relative parameters with respect to the new parent.
     State st;
-    relativeState( newParent, st );
+    relativeState( new_parent_id, st );
 
     // Replace the parent.
-    if ( curParent )
+    if ( parent_id_ > 0 )
     {
-        leftRefFrame( curParent );
-        removeFromList( this, curParent->children_ );
-        curParent->childLeft( this );
+        leftRefFrame( parent_id_ );
+        RefFrame * cur_parent = parent();
+        if ( cur_parent )
+        {
+            removeFromList( thisId, cur_parent->children_ );
+            cur_parent->childLeft( thisId );
+        }
     }
 
-    if ( newParent )
+    if ( new_parent_id > 0 )
     {
-        parent_ = SharedPtr<RefFrame>( newParent );
-        parentId_ = parent_->GetID();
-        addToList( this, newParent->children_ );
-        newParent->childEntered( this );
+        parent_id_ = new_parent_id;
+        RefFrame * new_parent = refFrame( parent_id_ );
+        if ( new_parent )
+        {
+            addToList( thisId, new_parent->children_ );
+            new_parent->childEntered( thisId );
+        }
+        else
+            parent_id_ = 0;
     }
     else
-        parentId_ = -1;
+        parent_id_ = 0;
 
     setState( st );
-    if ( newParent )
-        enteredRefFrame( newParent );
+    enteredRefFrame( parent_id_ );
 
     MarkNetworkUpdate();
 }
 
-RefFrame * RefFrame::parent()
+void RefFrame::setParent( unsigned parentId )
 {
-    validateParentId();
-    return parent_;
+    RefFrame * rf = refFrame( parentId );
+    setParent( rf );
 }
 
-bool RefFrame::isChildOf( RefFrame * refFrame ) const
+RefFrame * RefFrame::parent()
 {
-    const RefFrame * p = parent_;
+    RefFrame * p = refFrame( parent_id_ );
+    return p;
+}
+
+bool RefFrame::isChildOf( RefFrame * refFrame )
+{
+    RefFrame * p = parent();
     if ( refFrame == p )
         return true;
     else if ( !p )
@@ -208,30 +228,27 @@ const State RefFrame::state() const
     return st;
 }
 
-bool RefFrame::relativePose( RefFrame * other, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging ) 
+bool RefFrame::relativePose( unsigned otherId, Vector3d & rel_r, Quaterniond & rel_q, bool debugLogging ) 
 {
     State state;
-    const bool res = relativeState( other, state, debugLogging );
+    const bool res = relativeState( otherId, state, debugLogging );
     rel_r = state.r;
     rel_q = state.q;
 
     return res;
 }
 
-bool RefFrame::relativeState( RefFrame * other, State & stateRel, bool debugLogging )
+bool RefFrame::relativeState( unsigned otherId, State & stateRel, bool debugLogging )
 {
     State stateOther;
-    const bool res = relativeState( other, stateOther, stateRel, debugLogging );
+    const bool res = relativeState( otherId, stateOther, stateRel, debugLogging );
 
     return res;
 }
 
 
-bool RefFrame::relativeState( RefFrame * other, const State & stateInOther, State & state, const bool debugLogging )
+bool RefFrame::relativeState( unsigned otherId, const State & stateInOther, State & state, const bool debugLogging )
 {
-    // First validate parent.
-    validateParentId();
-
     // root->a->b->c->d->e->this
     // root->a->b->f->g->other
     // The idea is to accumulate relative position and orientation.
@@ -248,7 +265,7 @@ bool RefFrame::relativeState( RefFrame * other, const State & stateInOther, Stat
     }
     const unsigned allQtyA = allAncestorsA.Size();
 
-    RefFrame * itemB = other;
+    RefFrame * itemB = refFrame( otherId );
     static Vector<RefFrame *> ancestorsB;
     ancestorsB.Clear();
     unsigned indA = allQtyA;
@@ -354,7 +371,7 @@ bool RefFrame::relativeState( RefFrame * other, const State & stateInOther, Stat
     return true;
 }
 
-bool RefFrame::teleport( RefFrame * other, const State & stateInOther )
+bool RefFrame::teleport( unsigned otherId, const State & stateInOther )
 {
     State st;
 
@@ -364,8 +381,9 @@ bool RefFrame::teleport( RefFrame * other, const State & stateInOther )
     newStates.Reserve( qty );
     for ( unsigned i=0; i<qty; i++ )
     {
-        RefFrame * n = children_[i];
-        n->relativeState( other, stateInOther, st );
+        const unsigned chId = children_[i];
+        RefFrame * n = refFrame( chId );
+        n->relativeState( otherId, stateInOther, st );
         newStates.Push( st );
     }
     setState( stateInOther );
@@ -373,24 +391,29 @@ bool RefFrame::teleport( RefFrame * other, const State & stateInOther )
         const unsigned int qty = children_.Size();
         for ( unsigned int i=0; i<qty; i++ )
         {
-            RefFrame * n = children_[i];
+            const unsigned chId = children_[i];
+            RefFrame * n = refFrame( chId );
             const State & st = newStates[i];
             n->setState( st );
             n->parentTeleported();
         }
     }
-    if ( parent_ )
-        parent_->childTeleported( this );
+    if ( parent_id_ > 0 )
+    {
+        RefFrame * prt = refFrame( parent_id_ );
+        const unsigned thisId = this->GetID();
+        prt->childTeleported( thisId );
+    }
 
     return true;
 }
 
-bool RefFrame::computeRefState( RefFrame * other, Timestamp t, bool recursive )
+bool RefFrame::computeRefState( unsigned otherId, Timestamp t, bool recursive )
 {
     if ( (refT_ != t) || (t < 0) )
     {
         // Compute for itself.
-        const bool res = relativeState( other, refSt_ );
+        const bool res = relativeState( otherId, refSt_ );
         // Call overrideable method with needed subclass functionality.
         refStateChanged();
         if ( !res )
@@ -403,10 +426,14 @@ bool RefFrame::computeRefState( RefFrame * other, Timestamp t, bool recursive )
             const unsigned qty = children_.Size();
             for ( unsigned i=0; i<qty; i++ )
             {
-                RefFrame * c = children_[i];
-                const bool resC = c->computeRefState( other, t );
-                if ( !resC )
-                    return false;
+                const unsigned chId = children_[i];
+                RefFrame * c = refFrame( chId );
+                if ( c )
+                {
+                    const bool resC = c->computeRefState( otherId, t );
+                    if ( !resC )
+                        return false;
+                }
             }
         }
     }
@@ -435,22 +462,22 @@ void RefFrame::poseChanged()
     }*/
 }
 
-void RefFrame::enteredRefFrame( RefFrame * refFrame )
+void RefFrame::enteredRefFrame( unsigned refFrameId )
 {
 
 }
 
-void RefFrame::leftRefFrame( RefFrame * refFrame )
+void RefFrame::leftRefFrame( unsigned refFrameId )
 {
 
 }
 
-void RefFrame::childEntered( RefFrame * refFrame )
+void RefFrame::childEntered( unsigned refFrameId )
 {
 
 }
 
-void RefFrame::childLeft( RefFrame * refFrame )
+void RefFrame::childLeft( unsigned refFrameId )
 {
 
 }
@@ -460,12 +487,12 @@ void RefFrame::parentTeleported()
 
 }
 
-void RefFrame::childTeleported( RefFrame * refFrame )
+void RefFrame::childTeleported( unsigned refFrameId )
 {
 
 }
 
-void RefFrame::focusedByCamera( RefFrame * cameraFrame )
+void RefFrame::focusedByCamera( unsigned cameraFrameId )
 {
     user_controlled_counter_ += 1;
 
@@ -481,13 +508,12 @@ void RefFrame::unfocusedByCamera()
 
 int RefFrame::getParentId() const
 {
-    return parentId_;
+    return parent_id_;
 }
 
 void RefFrame::setParentId( int parentId )
 {
-    parentId_ = parentId;
-    validateParentId();
+    parent_id_ = parentId;
 }
 
 bool RefFrame::getUserControlled() const
@@ -508,25 +534,29 @@ bool RefFrame::enforceKinematic() const
     return enforce_kinematic_;
 }
 
-bool RefFrame::shouldBeKinematic() const
+bool RefFrame::shouldBeKinematic()
 {
-    if ( !parent_ )
+    if ( parent_id_ == 0 )
         return false;
 
-    const bool ok = parent_->enforce_kinematic_;
+    RefFrame * prt = parent();
+    if ( !prt )
+        return false;
+
+    const bool ok = prt->enforce_kinematic_;
     if ( ok )
         return true;
 
-    const bool parent_ok = parent_->shouldBeKinematic();
+    const bool parent_ok = prt->shouldBeKinematic();
     return parent_ok;
 }
 
 
-Float RefFrame::distance( RefFrame * refFrame )
+Float RefFrame::distance( unsigned refFrameId )
 {
     Vector3d rel_r;
     Quaterniond rel_q;
-    relativePose( refFrame, rel_r, rel_q );
+    relativePose( refFrameId, rel_r, rel_q );
     const Float d = rel_r.Length();
     return d;
 }
@@ -540,15 +570,16 @@ Float RefFrame::distance( const Vector3d & r ) const
 
 void RefFrame::cleanup()
 {
-    if ( parent_ )
-        setParent( 0 );
+    if ( parent_id_ > 0 )
+        setParent( (unsigned)0 );
     const unsigned qty = children_.Size();
     for ( unsigned i=0; i<qty; i++ )
     {
-        RefFrame * ch = children_[i];
+        const unsigned chId = children_[i];
+        RefFrame * ch = refFrame( chId );
         if ( !ch )
             continue;
-        ch->setParent( nullptr );
+        ch->setParent( (unsigned)0 );
     }
 }
 
@@ -557,6 +588,12 @@ static const StringHash P_PARENT_ID( "ParentId" );
 void RefFrame::assignRefFrame( Node * node )
 {
     node->SetVar( P_PARENT_ID, Variant( this->GetID() ) );
+}
+
+RefFrame * RefFrame::refFrame( unsigned id )
+{
+    RefFrame * rf = refFrame( GetScene(), id );
+    return rf;
 }
 
 RefFrame * RefFrame::refFrame( Node * node )
@@ -580,57 +617,25 @@ RefFrame * RefFrame::refFrame( Scene * s, unsigned id )
     if ( !s )
         return nullptr;
 
-    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
-    const unsigned qty = comps.Size();
-    for ( unsigned i=0; i<qty; i++ )
-    {
-        Component * c = comps[i];
-        const unsigned c_id = c->GetID();
-        if ( id == c_id )
-        {
-            RefFrame * rf = c->Cast<RefFrame>();
-            if ( rf )
-                return rf;
-        }
-    }
+    Component * comp = s->GetComponent( id );
+    if ( !comp )
+        return nullptr;
+    RefFrame * rf = comp->Cast<RefFrame>();
+    if ( rf )
+        return rf;
     return nullptr;
 }
 
-void RefFrame::validateParentId()
+static void removeFromList( unsigned item, Vector<unsigned> & children )
 {
-    Scene * s = GetScene();
-    if ( ( parentId_ >= 0 ) && (!parent_) )
-    {
-        RefFrame * rf = refFrame( s, parentId_ );
-        parent_ = SharedPtr<RefFrame>( rf );
-        return;
-    }
-    else if ( ( parentId_ < 0 ) && ( parent_ ) )
-    {
-        parent_.Reset();
-        return;
-    }
-    else if ( ( parentId_ >= 0 ) && (parent_) && (parent_->GetID() != parentId_) )
-    {
-        RefFrame * rf = refFrame( s, parentId_ );
-        parent_ = SharedPtr<RefFrame>( rf );
-        return;
-    }
+    children.Remove( item );
 }
 
 
-
-static void removeFromList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children )
-{
-    const SharedPtr<RefFrame> ptr( item );
-    children.Remove( ptr );
-}
-
-
-static void addToList( RefFrame * item, Vector<SharedPtr<RefFrame> > & children )
+static void addToList( unsigned item, Vector<unsigned> & children )
 {
     removeFromList( item, children );
-    children.Push( SharedPtr<RefFrame>( item ) );
+    children.Push( item );
 }
 
 

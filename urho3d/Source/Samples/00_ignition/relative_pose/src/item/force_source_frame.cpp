@@ -36,7 +36,8 @@ void ForceSourceFrame::ApplyForces( PhysicsItem * receiver )
     if ( producesForces )
     {
         State st;
-        receiver->relativeState( this, st );
+        const unsigned thisId = this->GetID();
+        receiver->relativeState( thisId, st );
         Vector3d F, P;
         ComputeForces( receiver, st, F, P );
         // Forces are in local ref. frame.

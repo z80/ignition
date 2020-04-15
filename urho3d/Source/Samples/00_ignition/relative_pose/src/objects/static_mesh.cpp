@@ -31,7 +31,7 @@ void StaticMesh::refStateChanged()
 
 void StaticMesh::poseChanged()
 {
-    computeRefState( nullptr );
+    computeRefState( 0 );
     URHO3D_LOGINFOF( "StaticMesh::poseChanged()" );
 }
 
@@ -59,7 +59,7 @@ void StaticMesh::OnSceneSet( Scene * scene )
     // To be able to retrieve RefFrame.
     assignRefFrame( node_ );
 
-    computeRefState( nullptr, 0 );
+    computeRefState( 0, 0 );
 }
 
 void StaticMesh::OnMarkedDirty( Node * node )
