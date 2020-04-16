@@ -34,6 +34,60 @@ Float PhysicsCharacterItem::azimuth() const
     return azimuth_;
 }
 
+void PhysicsCharacterItem::refStateChanged()
+{
+    PhysicsItem::refStateChanged();
+
+    // Here it is for debugging...
+    // Here check for proper parent after merge.
+    {
+        Environment * e = Environment::environment( context_ );
+        if ( !e )
+            return;
+        const ClientDesc & cd = e->clientDesc();
+        //if ( cd.id_ < 1 )
+        //    return;
+
+        RefFrame * p = parent();
+        if ( !p )
+            URHO3D_LOGINFO( String( "No parent" ) );
+        else
+        {
+            static int counter = 0;
+            static bool en = true;
+            if ( counter >= 201 )
+            {
+                counter -= 201;
+                const Vector3d at = relR();
+                String stri = String( "name: " ) + name_ + 
+                    String(", parent name: ") + p->name() + 
+                    String(", r: (") + String(at.x_) + 
+                    String(", ") + String(at.y_) + 
+                    String(", ") + String(at.z_) + String(")");
+                const bool node_enabled = visual_node_->IsEnabled();
+                stri += String( ", node_enabled: " ) + String( node_enabled ? "True" : "False" );
+                Component * c = visual_node_->GetComponent<StaticModel>();
+                if ( c )
+                {
+                    const bool comp_enabled = c->IsEnabled();
+                    stri += String( ", comp_enabled: " ) + String( node_enabled ? "True" : "False" );
+                }
+                Node * np = visual_node_->GetParent();
+                stri += String( ", parentNode: " ) + String( (long long)np ); 
+                URHO3D_LOGINFO( stri );
+                if ( name_ == "CharacterCube object #1" )
+                {
+                    visual_node_->SetEnabled( en );
+                    if ( c )
+                        c->SetEnabled( en );
+                    en = !en;
+                }
+            }
+            counter += 1;
+        }
+    }
+}
+
 void PhysicsCharacterItem::enteredRefFrame( unsigned refFrameId )
 {
     PhysicsItem::enteredRefFrame( refFrameId );

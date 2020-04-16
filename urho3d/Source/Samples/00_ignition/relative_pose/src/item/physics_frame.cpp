@@ -27,7 +27,9 @@ void PhysicsFrame::RegisterComponent( Context * context )
 PhysicsFrame::PhysicsFrame( Context * context )
     : RefFrame( context )
 {
-    setName( "PhysicsFrame" );
+    static int counter = 0;
+    setName( String( "PhysicsFrame " ) + String( counter ) );
+    counter += 1;
 }
 
 PhysicsFrame::~PhysicsFrame()

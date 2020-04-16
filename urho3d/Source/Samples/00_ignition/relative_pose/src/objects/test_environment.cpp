@@ -201,7 +201,7 @@ void TestEnvironment::contentClientCharacterCube( CameraFrame * camera )
     //d->setName( String( "DynamicCube object" ) );
 
     CharacterCube * cc = s->CreateComponent<CharacterCube>();
-    cc->setName( String( "CharacterCube object" ) );
+    cc->setName( String( "CharacterCube object #" ) + String( clientId ) );
     cc->SetCreatedBy( clientId );
 
     SystemGenerator * generator = context_->GetSubsystem<SystemGenerator>();

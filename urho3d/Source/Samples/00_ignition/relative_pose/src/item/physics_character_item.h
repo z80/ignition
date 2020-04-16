@@ -23,6 +23,7 @@ public:
     void setAzimuth( Float az );
     Float azimuth() const;
 
+    void refStateChanged() override;
     virtual void enteredRefFrame( unsigned refFrameId ) override;
 
 protected:
