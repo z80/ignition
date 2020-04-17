@@ -201,7 +201,7 @@ void Environment::Update( float timeStep )
     const bool isServer = IsServer();
     if ( isServer )
     {
-        consistencyCheck();
+        //consistencyCheck();
 
         IncrementTime( timeStep );
 
@@ -248,8 +248,8 @@ void Environment::Update( float timeStep )
     // Update all RefFrame objects based on current user id.
     ProcessLocalVisuals();
 
-    if ( isServer )
-        consistencyCheck();
+    //if ( isServer )
+    //    //consistencyCheck();
 }
 
 void Environment::PostUpdate( float timeStep )

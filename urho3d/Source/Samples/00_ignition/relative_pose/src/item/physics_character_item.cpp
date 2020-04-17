@@ -38,7 +38,7 @@ void PhysicsCharacterItem::refStateChanged()
 {
     PhysicsItem::refStateChanged();
 
-    consistencyCheck();
+    //consistencyCheck();
 
     // Here it is for debugging...
     // Here check for proper parent after merge.
@@ -104,16 +104,16 @@ bool PhysicsCharacterItem::consistencyCheck()
 
 void PhysicsCharacterItem::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
 {
-    consistencyCheck();
+    //consistencyCheck();
 
     PhysicsItem::setupPhysicsContent( rb, cs );
 
-    consistencyCheck();
+    //consistencyCheck();
 
     // All rotational degrees of freedom are disabled.
     rb->SetAngularFactor( Vector3::ZERO );
 
-    consistencyCheck();
+    //consistencyCheck();
 }
 
 void PhysicsCharacterItem::physicsUpdate( RigidBody2 * rb )
@@ -123,7 +123,7 @@ void PhysicsCharacterItem::physicsUpdate( RigidBody2 * rb )
 
 void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
 {
-    consistencyCheck();
+    //consistencyCheck();
 
     // It doesn't work yet.
     const Float az2 = azimuth_ * 0.5;
@@ -142,7 +142,7 @@ void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
     setQ( azQ );
     rb->SetAngularVelocity( Vector3::ZERO );
 
-    consistencyCheck();
+    //consistencyCheck();
 }
 
 void PhysicsCharacterItem::initGeocentric()

@@ -93,13 +93,13 @@ void PhysicsItem::refStateChanged()
 {
     RefFrame::refStateChanged();
 
-    consistencyCheck();
+    //consistencyCheck();
 
     const Vector3    r = refR().vector3();
     const Quaternion q = refQ().quaternion();
     visual_node_->SetTransform( r, q );
 
-    consistencyCheck();
+    //consistencyCheck();
 }
 
 void PhysicsItem::updateStateFromRigidBody()
@@ -107,7 +107,7 @@ void PhysicsItem::updateStateFromRigidBody()
     if ( !rigid_body_ )
         return;
 
-    consistencyCheck();
+    //consistencyCheck();
 
     physicsUpdate( rigid_body_ );
     // Assign state variables from rigid body state.
@@ -116,7 +116,7 @@ void PhysicsItem::updateStateFromRigidBody()
     st_.v = rigid_body_->GetLinearVelocityd();
     st_.w = rigid_body_->GetAngularVelocityd();
 
-    consistencyCheck();
+    //consistencyCheck();
 
     MarkNetworkUpdate();
 }
@@ -133,7 +133,7 @@ AirMesh & PhysicsItem::airMesh()
 
 void PhysicsItem::enteredRefFrame( unsigned refFrameId )
 {
-    consistencyCheck();
+    //consistencyCheck();
 
     Environment * env_ = this->env();
     if ( !env_ )
@@ -143,7 +143,7 @@ void PhysicsItem::enteredRefFrame( unsigned refFrameId )
     if ( !isServer )
         return;
 
-    consistencyCheck();
+    //consistencyCheck();
 
     // Check if it is a physics ref frame.
     // And if yes create physics content.
@@ -163,11 +163,11 @@ void PhysicsItem::enteredRefFrame( unsigned refFrameId )
     rigid_body_      = physics_node_->CreateComponent<RigidBody2>( LOCAL );
     collision_shape_ = physics_node_->CreateComponent<CollisionShape2>( LOCAL );
 
-    consistencyCheck();
+    //consistencyCheck();
     
     setupPhysicsContent( rigid_body_, collision_shape_ );
 
-    consistencyCheck();
+    //consistencyCheck();
 
     // Assign state to rigid body.
     rigid_body_->SetPositiond( Vector3( st_.r.x_, st_.r.y_, st_.r.z_ ) );
@@ -175,12 +175,12 @@ void PhysicsItem::enteredRefFrame( unsigned refFrameId )
     rigid_body_->SetLinearVelocityd( Vector3( st_.v.x_, st_.v.y_, st_.v.z_ ) );
     rigid_body_->SetAngularVelocityd( Vector3( st_.w.x_, st_.w.y_, st_.v.z_ ) );
 
-    consistencyCheck();
+    //consistencyCheck();
 }
 
 void PhysicsItem::leftRefFrame( unsigned refFrameId )
 {
-    consistencyCheck();
+    //consistencyCheck();
 
     // Need to destroy physics content.
     if ( physics_node_ )
@@ -189,7 +189,7 @@ void PhysicsItem::leftRefFrame( unsigned refFrameId )
         physics_node_.Reset();
     }
 
-    consistencyCheck();
+    //consistencyCheck();
 }
 
 void PhysicsItem::childEntered( unsigned refFrameId )
@@ -200,23 +200,23 @@ void PhysicsItem::childEntered( unsigned refFrameId )
 
     // Actually, this code created physics environment when
     // camera is attached to this physics item.
-    consistencyCheck();
+    //consistencyCheck();
 }
 
 void PhysicsItem::childLeft( unsigned refFrameId )
 {
-    consistencyCheck();
+    //consistencyCheck();
 }
 
 void PhysicsItem::focusedByCamera( unsigned cameraFrameId )
 {
-    consistencyCheck();
+    //consistencyCheck();
 
     RefFrame::focusedByCamera( cameraFrameId );
     // Actually, this code created physics environment when
     // camera is attached to this physics item.
 
-    consistencyCheck();
+    //consistencyCheck();
 
     Scene * scene = GetScene();
     if ( !scene )
@@ -230,7 +230,7 @@ void PhysicsItem::focusedByCamera( unsigned cameraFrameId )
     if ( !isServer )
         return;
 
-    consistencyCheck();
+    //consistencyCheck();
 
     // Check if parent is physics frame.
     RefFrame * prt = parent();
@@ -252,23 +252,23 @@ void PhysicsItem::focusedByCamera( unsigned cameraFrameId )
     // Physics frame will take all the logic load concerning if it needs to merge
     // with anything, etc.
 
-    consistencyCheck();
+    //consistencyCheck();
 
     PhysicsFrame * pf = scene->CreateComponent<PhysicsFrame>();
 
-    consistencyCheck();
+    //consistencyCheck();
 
     pf->setParent( parent_id_ );
 
-    consistencyCheck();
+    //consistencyCheck();
 
     pf->setState( this->state() );
 
-    consistencyCheck();
+    //consistencyCheck();
 
     this->setParent( pf );
 
-    consistencyCheck();
+    //consistencyCheck();
 }
 
 bool PhysicsItem::consistencyCheck()
@@ -285,18 +285,18 @@ bool PhysicsItem::consistencyCheck()
 
 void PhysicsItem::OnSceneSet( Scene * scene )
 {
-    consistencyCheck();
+    //consistencyCheck();
 
     if ( !scene )
     {
         if ( visual_node_ )
         {
-            consistencyCheck();
+            //consistencyCheck();
 
             visual_node_->Remove();
             visual_node_.Reset();
 
-            consistencyCheck();
+            //consistencyCheck();
         }
         return;
     }
@@ -307,7 +307,7 @@ void PhysicsItem::OnSceneSet( Scene * scene )
     assignRefFrame( visual_node_ );
     createVisualContent( visual_node_ );
 
-    consistencyCheck();
+    //consistencyCheck();
 }
 
 

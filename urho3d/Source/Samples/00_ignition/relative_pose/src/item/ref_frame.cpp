@@ -79,30 +79,30 @@ void RefFrame::setParent( RefFrame * newParent )
 
     const unsigned thisId = this->GetID();
 
-    consistencyCheck();
+    //consistencyCheck();
 
     // Compute relative parameters with respect to the new parent.
     State st;
     relativeState( new_parent_id, st );
 
-    consistencyCheck();
+    //consistencyCheck();
 
     // Replace the parent.
     if ( parent_id_ > 0 )
     {
         leftRefFrame( parent_id_ );
 
-        consistencyCheck();
+        //consistencyCheck();
 
         RefFrame * cur_parent = parent();
 
-        consistencyCheck();
+        //consistencyCheck();
         if ( cur_parent )
         {
             removeFromList( thisId, cur_parent->children_ );
             cur_parent->childLeft( thisId );
         }
-        consistencyCheck();
+        //consistencyCheck();
     }
 
     if ( new_parent_id > 0 )
@@ -110,13 +110,13 @@ void RefFrame::setParent( RefFrame * newParent )
         parent_id_ = new_parent_id;
         RefFrame * new_parent = refFrame( parent_id_ );
 
-        consistencyCheck();
+        //consistencyCheck();
         if ( new_parent )
         {
             addToList( thisId, new_parent->children_ );
             new_parent->childEntered( thisId );
 
-            consistencyCheck();
+            //consistencyCheck();
         }
         else
             parent_id_ = 0;
@@ -127,22 +127,22 @@ void RefFrame::setParent( RefFrame * newParent )
     setState( st );
     enteredRefFrame( parent_id_ );
 
-    consistencyCheck();
+    //consistencyCheck();
 
     MarkNetworkUpdate();
 }
 
 void RefFrame::setParent( unsigned parentId )
 {
-    consistencyCheck();
+    //consistencyCheck();
 
     RefFrame * rf = refFrame( parentId );
 
-    consistencyCheck();
+    //consistencyCheck();
 
     setParent( rf );
 
-    consistencyCheck();
+    //consistencyCheck();
 }
 
 RefFrame * RefFrame::parent()
@@ -153,7 +153,7 @@ RefFrame * RefFrame::parent()
 
 bool RefFrame::isChildOf( RefFrame * refFrame )
 {
-    consistencyCheck();
+    //consistencyCheck();
 
     RefFrame * p = parent();
     if ( refFrame == p )
@@ -162,7 +162,7 @@ bool RefFrame::isChildOf( RefFrame * refFrame )
         return false;
     const bool res = p->isChildOf( refFrame );
 
-    consistencyCheck();
+    //consistencyCheck();
 }
 
 void RefFrame::setR( const Vector3d & r )
@@ -171,7 +171,7 @@ void RefFrame::setR( const Vector3d & r )
 
     poseChanged();
 
-    consistencyCheck();
+    //consistencyCheck();
 
     MarkNetworkUpdate();
 }
@@ -182,7 +182,7 @@ void RefFrame::setQ( const Quaterniond & q )
 
     poseChanged();
 
-    consistencyCheck();
+    //consistencyCheck();
 
     MarkNetworkUpdate();
 }
@@ -233,7 +233,7 @@ void RefFrame::setV( const Vector3d & v )
 
     poseChanged();
 
-    consistencyCheck();
+    //consistencyCheck();
 
     MarkNetworkUpdate();
 }
@@ -244,7 +244,7 @@ void RefFrame::setW( const Vector3d & w )
 
     poseChanged();
 
-    consistencyCheck();
+    //consistencyCheck();
 
     MarkNetworkUpdate();
 }
@@ -256,7 +256,7 @@ void RefFrame::setState( const State & st )
     setV( st.v );
     setW( st.w );
 
-    consistencyCheck();
+    //consistencyCheck();
 }
 
 const State RefFrame::state() const
@@ -416,7 +416,7 @@ bool RefFrame::teleport( unsigned otherId, const State & stateInOther )
 {
     State st;
 
-    consistencyCheck();
+    //consistencyCheck();
 
     const unsigned qty = children_.Size();
     static Vector<State> newStates;
@@ -430,11 +430,11 @@ bool RefFrame::teleport( unsigned otherId, const State & stateInOther )
         newStates.Push( st );
     }
 
-    consistencyCheck();
+    //consistencyCheck();
 
     setState( stateInOther );
 
-    consistencyCheck();
+    //consistencyCheck();
 
     {
         const unsigned int qty = children_.Size();
@@ -454,26 +454,26 @@ bool RefFrame::teleport( unsigned otherId, const State & stateInOther )
         prt->childTeleported( thisId );
     }
 
-    consistencyCheck();
+    //consistencyCheck();
 
     return true;
 }
 
 bool RefFrame::computeRefState( unsigned otherId, Timestamp t, bool recursive )
 {
-    consistencyCheck();
+    //consistencyCheck();
 
     if ( (refT_ != t) || (t < 0) )
     {
         // Compute for itself.
         const bool res = relativeState( otherId, refSt_ );
 
-        consistencyCheck();
+        //consistencyCheck();
 
         // Call overrideable method with needed subclass functionality.
         refStateChanged();
 
-        consistencyCheck();
+        //consistencyCheck();
         if ( !res )
             return false;
         refT_ = t;
@@ -496,7 +496,7 @@ bool RefFrame::computeRefState( unsigned otherId, Timestamp t, bool recursive )
         }
     }
 
-    consistencyCheck();
+    //consistencyCheck();
 
     return true;
 }
