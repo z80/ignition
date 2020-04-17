@@ -303,7 +303,7 @@ void PhysicsItem::OnSceneSet( Scene * scene )
     
     // Create visuals to the "visual_node_"
     const String n = this->name() + " visual node";
-    visual_node_ = scene->CreateChild( n );
+    visual_node_ = scene->CreateChild( n, LOCAL );
     assignRefFrame( visual_node_ );
     createVisualContent( visual_node_ );
 

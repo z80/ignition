@@ -116,9 +116,9 @@ protected:
     void HandleTriggerRequest( StringHash eventType, VariantMap & eventData );
 
     /// Local handlers for debugging.
-    void HandlerClientList( StringHash eventType, VariantMap & eventData );
-    void HandlerOverrideClientCam( StringHash eventType, VariantMap & eventData );
-    void HandlePrintAllChildren( StringHash eventType, VariantMap & eventData );
+    void HandleClientList( StringHash eventType, VariantMap & eventData );
+    void HandleOverrideClientCam( StringHash eventType, VariantMap & eventData );
+    void HandlePrintObjectTree( StringHash eventType, VariantMap & eventData );
 private:
     void SetupConsole();
     void IncrementTime( float secs_dt );
@@ -141,6 +141,11 @@ private:
     void ProcessLocalVisuals();
     int  UniqueId();
     void LoadTranslations();
+
+    /// Prinst out parent'child relations for all RefFrame objects.
+    void consistencyStructure();
+    /// Parent/child relations are correct and unique (no dual references).
+    bool consistencyCheck();
 
     /// Global time
     Timestamp T_;

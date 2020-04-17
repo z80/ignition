@@ -42,7 +42,7 @@ void PhysicsCharacterItem::refStateChanged()
 
     // Here it is for debugging...
     // Here check for proper parent after merge.
-    {
+    /*{
         Environment * e = Environment::environment( context_ );
         if ( !e )
             return;
@@ -87,7 +87,7 @@ void PhysicsCharacterItem::refStateChanged()
             }
             counter += 1;
         }
-    }
+    }*/
 }
 
 void PhysicsCharacterItem::enteredRefFrame( unsigned refFrameId )

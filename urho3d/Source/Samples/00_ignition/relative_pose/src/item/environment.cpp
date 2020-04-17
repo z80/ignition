@@ -56,7 +56,7 @@ URHO3D_EVENT( E_IGN_OVERRIDE_CLIENT_CAM, EIgnOverrideClientCam )
     URHO3D_PARAM( P_ID, Id );
 }
 
-URHO3D_EVENT( E_IGN_PRINT_ALL_CHILDREN, EIgnPrintAllChildren )
+URHO3D_EVENT( E_IGN_PRINT_OBJECT_TREE, EIgnPrintObjectTree )
 {
 }
 
@@ -120,6 +120,11 @@ Environment::Environment( Context * context )
     cmd.command = "override_client_id";
     cmd.eventToCall = E_IGN_OVERRIDE_CLIENT_CAM;
     cmd.description = "Only for server. Overrides 0 client id with the one provided.";
+    ConsoleHandler::AddCommand( context_, cmd );
+
+    cmd.command = "object_tree";
+    cmd.eventToCall = E_IGN_PRINT_OBJECT_TREE;
+    cmd.description = "Print all objects with parent/child relations";
     ConsoleHandler::AddCommand( context_, cmd );
 
     drawDebugGeometry_ = false;
@@ -196,6 +201,8 @@ void Environment::Update( float timeStep )
     const bool isServer = IsServer();
     if ( isServer )
     {
+        consistencyCheck();
+
         IncrementTime( timeStep );
 
         {
@@ -240,6 +247,9 @@ void Environment::Update( float timeStep )
     // This runs locally.
     // Update all RefFrame objects based on current user id.
     ProcessLocalVisuals();
+
+    if ( isServer )
+        consistencyCheck();
 }
 
 void Environment::PostUpdate( float timeStep )
@@ -620,8 +630,9 @@ void Environment::SubscribeToEvents()
 
 
     // Local debug events
-    SubscribeToEvent( E_IGN_CLIENT_LIST,         URHO3D_HANDLER( Environment, HandlerClientList ) );
-    SubscribeToEvent( E_IGN_OVERRIDE_CLIENT_CAM, URHO3D_HANDLER( Environment, HandlerOverrideClientCam ) );
+    SubscribeToEvent( E_IGN_CLIENT_LIST,         URHO3D_HANDLER( Environment, HandleClientList ) );
+    SubscribeToEvent( E_IGN_OVERRIDE_CLIENT_CAM, URHO3D_HANDLER( Environment, HandleOverrideClientCam ) );
+    SubscribeToEvent( E_IGN_PRINT_OBJECT_TREE,   URHO3D_HANDLER( Environment, HandlePrintObjectTree ) );
 }
 
 void Environment::CreateReplicatedContentServer()
@@ -1003,7 +1014,7 @@ void Environment::HandleTriggerRequest( StringHash eventType, VariantMap & event
     SendRequestTrigger( rf, eventData );
 }
 
-void Environment::HandlerClientList( StringHash eventType, VariantMap & eventData )
+void Environment::HandleClientList( StringHash eventType, VariantMap & eventData )
 {
     String accum( "Client ids: " );
     for ( HashMap<Connection *, ClientDesc>::ConstIterator it = connections_.Begin(); 
@@ -1016,7 +1027,7 @@ void Environment::HandlerClientList( StringHash eventType, VariantMap & eventDat
     URHO3D_LOGINFO( accum.CString() );
 }
 
-void Environment::HandlerOverrideClientCam( StringHash eventType, VariantMap & eventData )
+void Environment::HandleOverrideClientCam( StringHash eventType, VariantMap & eventData )
 {
     using namespace EIgnOverrideClientCam;
     const StringVector sv = eventData["Parameters"].GetStringVector();
@@ -1028,16 +1039,9 @@ void Environment::HandlerOverrideClientCam( StringHash eventType, VariantMap & e
     URHO3D_LOGINFO( String( "Client Id overrwritten with " ) + sv[1] );
 }
 
-void Environment::HandlePrintAllChildren( StringHash eventType, VariantMap & eventData )
+void Environment::HandlePrintObjectTree( StringHash eventType, VariantMap & eventData )
 {
-    Scene * s = GetScene();
-    if ( !s )
-        return;
-    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
-    const unsigned qty = comps.Size();
-    for ( unsigned i=0; i<qty; i++ )
-    {
-    }
+    consistencyStructure();
 }
 
 
@@ -1394,6 +1398,22 @@ RefFrame * Environment::FindFocusedFrame()
 
 void Environment::ProcessLocalVisuals()
 {
+    {
+        Scene * s = GetScene();
+        const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+        const unsigned qty = comps.Size();
+        for ( unsigned i=0; i<qty; i++ )
+        {
+            Component * c = comps[i];
+            if ( !c )
+                continue;
+            RefFrame * rf = c->Cast<RefFrame>();
+            if ( !rf )
+                continue;
+            rf->consistencyCheck();
+        }
+    }
+
     CameraFrame * cam = nullptr;
     if ( clientIdOverride_ <= 0 )
         cam = FindCameraFrame();
@@ -1487,6 +1507,113 @@ void Environment::LoadTranslations()
     // Finally set the application language
     localization->SetLanguage( GetSubsystem<ConfigManager>()->GetString("engine", "Language", "EN" ) );
 }
+
+void Environment::consistencyStructure()
+{
+    Scene * s = GetScene();
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+    String stri;
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        if ( !c )
+            continue;
+        RefFrame * rf = c->Cast<RefFrame>();
+        if ( !rf )
+            continue;
+        // Output parent/child relations.
+        const unsigned selfId = rf->GetID();
+        stri = rf->name() + String(" id: ") + String(selfId) + String( ": " );
+        const unsigned parentId = rf->parent_id_;
+        RefFrame * parentRf = rf->parent();
+        stri += String( "p:(" ) + String( parentId ) + 
+                String( ", " ) + String( parentRf ? parentRf->name() : String("_") ) + 
+                String( "), " );
+        const unsigned childrenQty = rf->children_.Size();
+        for ( unsigned j=0; j<childrenQty; j++ )
+        {
+            const unsigned childId = rf->children_[j];
+            RefFrame * chRf = rf->refFrame( childId );
+            const unsigned cpId = chRf->parent_id_;
+            stri += String("c:(id:") + String( childId ) + String(", p:") + 
+                    String(cpId) + String(", ") + chRf->name() + String("), ");
+        }
+        URHO3D_LOGINFO( stri );
+    }
+}
+
+bool Environment::consistencyCheck()
+{
+    Scene * s = GetScene();
+    const Vector<SharedPtr<Component> > & comps = s->GetComponents();
+    const unsigned qty = comps.Size();
+
+    bool result = true;
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Component * c = comps[i];
+        if ( !c )
+            continue;
+        RefFrame * rf = c->Cast<RefFrame>();
+        if ( !rf )
+            continue;
+        const unsigned id = rf->GetID();
+        // Output parent/child relations.
+        String stri = rf->name() + String( ": " );
+        const unsigned parentId = rf->parent_id_;
+        RefFrame * parentRf = rf->parent();
+        if ( (parentId > 0) && (!parentRf) )
+        {
+            URHO3D_LOGERROR( String( "object id: " ) + String(parentId) + String(" doesn\'t exist") );
+            result = false;
+            continue;
+        }
+        if ( !parentRf )
+            continue;
+        const bool containsOk = parentRf->children_.Contains( id );
+        if ( !containsOk )
+        {
+            URHO3D_LOGERROR( String( "object " ) + String( rf->name() ) + 
+                             String(" has parent") + parentRf->name() + 
+                             String(" but no such child"));
+            result = false;
+        }
+
+        // Now check all the children.
+        // And make sure their parent is this one.
+        const unsigned childrenQty = rf->children_.Size();
+        for ( unsigned j=0; j<childrenQty; j++ )
+        {
+            const unsigned chId = rf->children_[j];
+            RefFrame * ch = rf->refFrame( chId );
+            if ( !ch )
+            {
+                URHO3D_LOGERROR( rf->name() + String(", id: ") + String(id) + 
+                                 String(" has child id: ") + String(chId) + 
+                                 String(", which doesn't exist") );
+                result = false;
+                continue;
+            }
+            if ( id != ch->parent_id_ )
+            {
+                URHO3D_LOGERROR( rf->name() + String(", id: ") + String(id) + 
+                                 String(" has child ") + ch->name() + String(", id: ") + 
+                                 String(chId) + String(" but its parentId: ") + 
+                                 String(ch->parent_id_) );
+                result = false;
+            }
+        }
+    }
+
+    if ( !result )
+    {
+        URHO3D_LOGERROR( "Overall failure" );
+    }
+
+    return result;
+}
+
 
 
 
