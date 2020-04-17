@@ -51,7 +51,7 @@ protected:
     void childLeft( unsigned refFrameId ) override;
     void focusedByCamera( unsigned cameraFrameId ) override;
 
-
+    virtual bool consistencyCheck() override;
 protected:
     /// Handle scene being assigned. This may happen several times
     /// during the component's lifetime. Scene-wide subsystems and events

@@ -26,6 +26,8 @@ public:
     void refStateChanged() override;
     virtual void enteredRefFrame( unsigned refFrameId ) override;
 
+    virtual bool consistencyCheck() override;
+
 protected:
     virtual void setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs ) override;
     virtual void physicsUpdate( RigidBody2 * rb ) override;

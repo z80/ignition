@@ -125,6 +125,8 @@ public:
     static RefFrame * refFrame( Node * node );
     static RefFrame * refFrame( Scene * s, unsigned id );
 
+    virtual bool consistencyCheck();
+
 public:
     /// For debugging it is easier to identify by human readable name.
     String name_;

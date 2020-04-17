@@ -79,30 +79,44 @@ void RefFrame::setParent( RefFrame * newParent )
 
     const unsigned thisId = this->GetID();
 
+    consistencyCheck();
+
     // Compute relative parameters with respect to the new parent.
     State st;
     relativeState( new_parent_id, st );
+
+    consistencyCheck();
 
     // Replace the parent.
     if ( parent_id_ > 0 )
     {
         leftRefFrame( parent_id_ );
+
+        consistencyCheck();
+
         RefFrame * cur_parent = parent();
+
+        consistencyCheck();
         if ( cur_parent )
         {
             removeFromList( thisId, cur_parent->children_ );
             cur_parent->childLeft( thisId );
         }
+        consistencyCheck();
     }
 
     if ( new_parent_id > 0 )
     {
         parent_id_ = new_parent_id;
         RefFrame * new_parent = refFrame( parent_id_ );
+
+        consistencyCheck();
         if ( new_parent )
         {
             addToList( thisId, new_parent->children_ );
             new_parent->childEntered( thisId );
+
+            consistencyCheck();
         }
         else
             parent_id_ = 0;
@@ -113,13 +127,22 @@ void RefFrame::setParent( RefFrame * newParent )
     setState( st );
     enteredRefFrame( parent_id_ );
 
+    consistencyCheck();
+
     MarkNetworkUpdate();
 }
 
 void RefFrame::setParent( unsigned parentId )
 {
+    consistencyCheck();
+
     RefFrame * rf = refFrame( parentId );
+
+    consistencyCheck();
+
     setParent( rf );
+
+    consistencyCheck();
 }
 
 RefFrame * RefFrame::parent()
@@ -130,12 +153,16 @@ RefFrame * RefFrame::parent()
 
 bool RefFrame::isChildOf( RefFrame * refFrame )
 {
+    consistencyCheck();
+
     RefFrame * p = parent();
     if ( refFrame == p )
         return true;
     else if ( !p )
         return false;
     const bool res = p->isChildOf( refFrame );
+
+    consistencyCheck();
 }
 
 void RefFrame::setR( const Vector3d & r )
@@ -143,6 +170,9 @@ void RefFrame::setR( const Vector3d & r )
     st_.r = r;
 
     poseChanged();
+
+    consistencyCheck();
+
     MarkNetworkUpdate();
 }
 
@@ -151,6 +181,9 @@ void RefFrame::setQ( const Quaterniond & q )
     st_.q = q;
 
     poseChanged();
+
+    consistencyCheck();
+
     MarkNetworkUpdate();
 }
 
@@ -199,6 +232,9 @@ void RefFrame::setV( const Vector3d & v )
     st_.v = v;
 
     poseChanged();
+
+    consistencyCheck();
+
     MarkNetworkUpdate();
 }
 
@@ -207,6 +243,9 @@ void RefFrame::setW( const Vector3d & w )
     st_.w = w;
 
     poseChanged();
+
+    consistencyCheck();
+
     MarkNetworkUpdate();
 }
 
@@ -216,6 +255,8 @@ void RefFrame::setState( const State & st )
     setQ( st.q );
     setV( st.v );
     setW( st.w );
+
+    consistencyCheck();
 }
 
 const State RefFrame::state() const
@@ -375,6 +416,8 @@ bool RefFrame::teleport( unsigned otherId, const State & stateInOther )
 {
     State st;
 
+    consistencyCheck();
+
     const unsigned qty = children_.Size();
     static Vector<State> newStates;
     newStates.Clear();
@@ -386,7 +429,13 @@ bool RefFrame::teleport( unsigned otherId, const State & stateInOther )
         n->relativeState( otherId, stateInOther, st );
         newStates.Push( st );
     }
+
+    consistencyCheck();
+
     setState( stateInOther );
+
+    consistencyCheck();
+
     {
         const unsigned int qty = children_.Size();
         for ( unsigned int i=0; i<qty; i++ )
@@ -405,17 +454,26 @@ bool RefFrame::teleport( unsigned otherId, const State & stateInOther )
         prt->childTeleported( thisId );
     }
 
+    consistencyCheck();
+
     return true;
 }
 
 bool RefFrame::computeRefState( unsigned otherId, Timestamp t, bool recursive )
 {
+    consistencyCheck();
+
     if ( (refT_ != t) || (t < 0) )
     {
         // Compute for itself.
         const bool res = relativeState( otherId, refSt_ );
+
+        consistencyCheck();
+
         // Call overrideable method with needed subclass functionality.
         refStateChanged();
+
+        consistencyCheck();
         if ( !res )
             return false;
         refT_ = t;
@@ -437,6 +495,8 @@ bool RefFrame::computeRefState( unsigned otherId, Timestamp t, bool recursive )
             }
         }
     }
+
+    consistencyCheck();
 
     return true;
 }
@@ -624,6 +684,11 @@ RefFrame * RefFrame::refFrame( Scene * s, unsigned id )
     if ( rf )
         return rf;
     return nullptr;
+}
+
+bool RefFrame::consistencyCheck()
+{
+    return true;
 }
 
 static void removeFromList( unsigned item, Vector<unsigned> & children )

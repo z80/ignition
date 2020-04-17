@@ -38,6 +38,8 @@ void PhysicsCharacterItem::refStateChanged()
 {
     PhysicsItem::refStateChanged();
 
+    consistencyCheck();
+
     // Here it is for debugging...
     // Here check for proper parent after merge.
     {
@@ -94,11 +96,24 @@ void PhysicsCharacterItem::enteredRefFrame( unsigned refFrameId )
     geocentric_initialized_ = false;
 }
 
+bool PhysicsCharacterItem::consistencyCheck()
+{
+    const bool baseOk = PhysicsItem::consistencyCheck();
+    return baseOk;
+}
+
 void PhysicsCharacterItem::setupPhysicsContent( RigidBody2 * rb, CollisionShape2 * cs )
 {
+    consistencyCheck();
+
     PhysicsItem::setupPhysicsContent( rb, cs );
+
+    consistencyCheck();
+
     // All rotational degrees of freedom are disabled.
     rb->SetAngularFactor( Vector3::ZERO );
+
+    consistencyCheck();
 }
 
 void PhysicsCharacterItem::physicsUpdate( RigidBody2 * rb )
@@ -108,6 +123,8 @@ void PhysicsCharacterItem::physicsUpdate( RigidBody2 * rb )
 
 void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
 {
+    consistencyCheck();
+
     // It doesn't work yet.
     const Float az2 = azimuth_ * 0.5;
     const Float co2 = std::cos( az2 );
@@ -124,6 +141,8 @@ void PhysicsCharacterItem::orientRigidBody( RigidBody2 * rb )
     rb->SetRotationd( azQ );
     setQ( azQ );
     rb->SetAngularVelocity( Vector3::ZERO );
+
+    consistencyCheck();
 }
 
 void PhysicsCharacterItem::initGeocentric()
@@ -171,6 +190,7 @@ OrbitingFrame * PhysicsCharacterItem::orbitingFrame( RefFrame * rf )
         return of;
     RefFrame * p = rf->parent();
     of = orbitingFrame( p );
+
     return of;
 }
 
