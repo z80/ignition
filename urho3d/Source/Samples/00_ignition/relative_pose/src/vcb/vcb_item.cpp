@@ -185,25 +185,6 @@ void VcbItem::HandleEnterBuildMode_Remote( StringHash eventType, VariantMap & ev
         client_objects_[ cf ] = SharedPtr<RefFrame>( rf );
     }
     cf->Focus( this );
-
-    // Open appropriate GUI.
-    if ( !main_menu_ )
-    {
-        ResourceCache * cache = GetSubsystem<ResourceCache>();
-        XMLFile * f = cache->GetResource<XMLFile>( "Ign/UI/VcbMainMenu.xml" );
-        if ( !f )
-            return;
-        UI * ui = GetSubsystem<UI>();
-        main_menu_ = ui->LoadLayout( f );
-        UIElement * root = ui->GetRoot();
-
-        main_menu_->SetAlignment( HA_LEFT, VA_TOP );
-        //enter_gui_->SetAlignment( HA_CENTER, VA_CENTER );
-        root->AddChild( main_menu_ );
-
-        main_menu_->SetPosition( 0, 0 );
-    }
-    main_menu_->SetVisible( true );
 }
 
 void VcbItem::HandleLeaveBuildMode_Remote( StringHash eventType, VariantMap & eventData )
@@ -222,10 +203,6 @@ void VcbItem::HandleLeaveBuildMode_Remote( StringHash eventType, VariantMap & ev
         RefFrame * rf = it->second_;
         cf->Focus( rf );
     }
-    
-    // Hide the building GUI.
-    if ( main_menu_ )
-        main_menu_->SetVisible( false );
 }
 
 void VcbItem::HandleEnterBuildModeClicked( StringHash eventType, VariantMap & eventData )
@@ -261,6 +238,25 @@ void VcbItem::HandleEnterBuildModeClicked( StringHash eventType, VariantMap & ev
     if ( enter_gui_ )
         enter_gui_->SetVisible( false );
 
+    // Open appropriate GUI.
+    if ( !main_menu_ )
+    {
+        ResourceCache * cache = GetSubsystem<ResourceCache>();
+        XMLFile * f = cache->GetResource<XMLFile>( "Ign/UI/VcbMainMenu.xml" );
+        if ( !f )
+            return;
+        UI * ui = GetSubsystem<UI>();
+        main_menu_ = ui->LoadLayout( f );
+        UIElement * root = ui->GetRoot();
+
+        main_menu_->SetAlignment( HA_LEFT, VA_TOP );
+        //enter_gui_->SetAlignment( HA_CENTER, VA_CENTER );
+        root->AddChild( main_menu_ );
+
+        main_menu_->SetPosition( 0, 0 );
+    }
+    main_menu_->SetVisible( true );
+
     VariantMap & eData = this->GetEventDataMap();
     eData[VcbEnterBuildMode::P_CLIENT_ID] = cd.id_;
     if ( c )
@@ -284,6 +280,9 @@ void VcbItem::HandleLeaveBuildModeClicked( StringHash eventType, VariantMap & ev
         leave_gui_->SetVisible( false );
     if ( enter_gui_ )
         enter_gui_->SetVisible( true );
+    // Hide the building GUI.
+    if ( main_menu_ )
+        main_menu_->SetVisible( false );
 
     VariantMap & eData = this->GetEventDataMap();
     eData[VcbLeaveBuildMode::P_CLIENT_ID] = cd.id_;
