@@ -4,38 +4,38 @@
 
 #include "core/vector.h"
 #include "core/math/face3.h"
+#include "scene/3d/mesh_instance.h"
+#include "onode2.h"
 
 
-class ONode2;
+/**
+	This data structure is for determining empty/filled space only.
+	Nonempty leaf node means space is filled. Else means it's empty.
+**/
 
 class OTree2
 {
 public:
-    OTree2( int maxPtsPerNode=25, int maxLvl=30 );
-    OTree2( KEYPOINT_BA::ConfigReader * cr );
+    //OTree2( int maxPtsPerNode=25, int maxLvl=30 );
+	OTree2( real_t nodeSz=0.1 );
     ~OTree2();
 
     OTree2( const OTree2 & inst );
     const OTree2 & operator=( const OTree2 & inst );
 
-    void operator=( const Keypoint3d::Map & pts3 );
-    void visiblePts3( const Camera & c, std::vector<int> & ptInds ) const;
-    void addNodePts3( const Camera & c, const ONode2 & n, std::vector<int> & ptInds ) const;
-
+    void operator=( const Ref<Mesh> mesh );
+    
     bool parent( const ONode2 & node, ONode2 * & parent );
-    void destroyNode( const ONode2 & node );
 
     int  insertNode( ONode2 & node );
     void updateNode( const ONode2 & node );
-
-    bool nodeInvisible( const Camera & c, const ONode2 & n ) const;
 
     Vector<ONode2> nodes;
     Vector<Face3>  ptRefs;
 
     // Maximum subdivision level.
-    int maxDepth;
-    int maxPtsPerNode;
+	real_t node_sz_;
+    int    max_depth_;
 };
 
 

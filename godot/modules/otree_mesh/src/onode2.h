@@ -18,19 +18,16 @@ public:
 	ONode2( const ONode2 & inst );
 	const ONode2 & operator=( const ONode2 & inst );
 
-	ONode2 & parent();
-
-	bool inside( const Vector3 & pt ) const;
 	bool hasChildren() const;
-	bool subdrive();
-
-	void vertices( Vector3 * verts ) const;
-	void planes( Plane * planes ) const;
-	//bool intersectsRay( const Vector3 & start, const Vector3 & end ) const;
+	bool subdivide();
 
 	// Queries.
 	// Intersection with a triangle.
-	bool intersects( const Face3 & face ) const;
+	bool inside( const Face3 & face ) const;
+
+
+	// Initialize vertices and planes.
+	void init();
 
 	OTree2 * tree;
 	int absIndex;
@@ -41,12 +38,13 @@ public:
 	// Child indices in OTree dictionary.
 	int children[8];
 
-	real_t   value;
+	int      value;
 	real_t   size2; // Size over 2.
 	Vector3 center;
 
 	// Auxilary numbers. Hold those only to not recompute all the time.
-
+	Vector3 verts_[8];
+	Plane   planes_[6];
 
 	Vector<int> ptInds;
 };
