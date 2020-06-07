@@ -2,30 +2,11 @@
 #ifndef __OTREE_2_H_
 #define __OTREE_2_H_
 
-#include <vector>
-#include <map>
+#include "core/vector.h"
+#include "core/math/face3.h"
 
 
-namespace KEYPOINT_BA
-{
-    class ConfigReader;
-}
-
-namespace KEYPOINT_BA
-{
-
-
-//typedef Eigen::Matrix<Float, 3, 3> EMatrix33;
-//typedef Eigen::Matrix<Float, 3, 1> EVector3;
-//typedef Eigen::Matrix<Float, 4, 4> EMatrix44;
-
-
-
-struct PtRef2
-{
-    int     id;
-    Vector3 pt3;
-};
+class ONode2;
 
 class OTree2
 {
@@ -49,8 +30,8 @@ public:
 
     bool nodeInvisible( const Camera & c, const ONode2 & n ) const;
 
-    std::vector<ONode2> nodes;
-    std::vector<PtRef2> ptRefs;
+    Vector<ONode2> nodes;
+    Vector<Face3>  ptRefs;
 
     // Maximum subdivision level.
     int maxDepth;
@@ -61,8 +42,6 @@ public:
 
 
 
-
-}
 
 
 #endif

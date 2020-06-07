@@ -6,6 +6,7 @@
 #include "core/math/math_defs.h"
 #include "core/math/vector3.h"
 #include "core/math/plane.h"
+#include "core/math/face3.h"
 
 class OTree2;
 
@@ -29,6 +30,7 @@ public:
 
 	// Queries.
 	// Intersection with a triangle.
+	bool intersects( const Face3 & face ) const;
 
 	OTree2 * tree;
 	int absIndex;
@@ -42,6 +44,9 @@ public:
 	real_t   value;
 	real_t   size2; // Size over 2.
 	Vector3 center;
+
+	// Auxilary numbers. Hold those only to not recompute all the time.
+
 
 	Vector<int> ptInds;
 };
