@@ -25,7 +25,10 @@ public:
 
 	void vertices( Vector3 * verts ) const;
 	void planes( Plane * planes ) const;
-	bool intersectsRay( const Point3d & start, const Point3d & end ) const;
+	//bool intersectsRay( const Vector3 & start, const Vector3 & end ) const;
+
+	// Queries.
+	// Intersection with a triangle.
 
 	OTree2 * tree;
 	int absIndex;

@@ -1,6 +1,6 @@
 
 #include "onode2.h"
-
+#include "otree2.h"
 
 ONode2::ONode2()
 {
@@ -14,7 +14,7 @@ ONode2::ONode2()
         children[i] = -1;
 
     size2 = 1.0;
-    center = Point3d( 0.0, 0.0, 0.0 );
+    center = Vector3( 0.0, 0.0, 0.0 );
 }
 
 ONode2::~ONode2()
@@ -207,34 +207,34 @@ bool ONode2::subdrive()
 void ONode2::planes( Plane * planes ) const
 {
     // Front.
-    planes[0].r = center;
-    planes[0].r.y() += size2;
-    planes[0].a = Vector3( 0.0, 1.0, 0.0 );
+	Vector3 r0 = center;
+	r0.y += size2;
+    planes[0] = Plane( r0, Vector3(0.0, 1.0, 0.0) );
 
     // Back
-    planes[1].r = center;
-    planes[1].r.y() -= size2;
-    planes[1].a = Vector3( 0.0, -1.0, 0.0 );
+	r0 = center;
+	r0.y -= size2;
+    planes[1] = Plane(r0, Vector3(0.0, -1.0, 0.0) );
 
     // Left
-    planes[2].r = center;
-    planes[2].r.x() -= size2;
-    planes[2].a = Vector3( -1.0, 0.0, 0.0 );
+	r0 = center;
+	r0.x -= size2;
+    planes[2] = Plane( r0, Vector3(-1.0, 0.0, 0.0) );
 
     // Right
-    planes[3].r = center;
-    planes[3].r.x() += size2;
-    planes[3].a = Vector3( 1.0, 0.0, 0.0 );
+	r0 = center;
+	r0.x += size2;
+    planes[3] = Plane( r0, Vector3(1.0, 0.0, 0.0) );
 
     // Top
-    planes[4].r = center;
-    planes[4].r.z() += size2;
-    planes[4].a = Vector3( 0.0, 0.0, 1.0 );
+	r0 = center;
+	r0.z += size2;
+    planes[4] = Plane( r0, Vector3(0.0, 0.0, 1.0) );
 
     // Bottom
-    planes[5].r = center;
-    planes[5].r.z() -= size2;
-    planes[5].a = Vector3( 0.0, 0.0, -1.0 );
+	r0 = center;
+	r0.z -= size2;
+    planes[5] = Plane( r0, Vector3( 0.0, 0.0, -1.0 ) );
 }
 
 void ONode2::vertices( Vector3 * verts ) const

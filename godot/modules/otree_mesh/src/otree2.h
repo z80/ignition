@@ -15,51 +15,16 @@ namespace KEYPOINT_BA
 {
 
 
-typedef Eigen::Matrix<Float, 3, 3> EMatrix33;
-typedef Eigen::Matrix<Float, 3, 1> EVector3;
-typedef Eigen::Matrix<Float, 4, 4> EMatrix44;
+//typedef Eigen::Matrix<Float, 3, 3> EMatrix33;
+//typedef Eigen::Matrix<Float, 3, 1> EVector3;
+//typedef Eigen::Matrix<Float, 4, 4> EMatrix44;
 
-class OTree2;
-class Camera;
 
-class ONode2
-{
-public:
-    ONode2();
-    ~ONode2();
-    ONode2( const ONode2 & inst );
-    const ONode2 & operator=( const ONode2 & inst );
-
-    ONode2 & parent();
-
-    bool inside( const Point3d & pt ) const;
-    bool hasChildren() const;
-    bool subdrive();
-
-    void vertices( Point3d * verts ) const;
-    void planes( Plane * planes ) const;
-    bool intersectsRay( const Point3d & start, const Point3d & end ) const;
-
-    OTree2 * tree;
-    int absIndex;
-    int parentAbsIndex;
-    int indexInParent;
-    int level;
-
-    // Child indices in OTree dictionary.
-    int children[8];
-
-    Float   value;
-    Float   size2; // Size over 2.
-    Point3d center;
-
-    std::vector<int> ptInds;
-};
 
 struct PtRef2
 {
     int     id;
-    Point3d pt3;
+    Vector3 pt3;
 };
 
 class OTree2
