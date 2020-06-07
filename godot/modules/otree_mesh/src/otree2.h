@@ -16,14 +16,15 @@
 class OTree2
 {
 public:
-    //OTree2( int maxPtsPerNode=25, int maxLvl=30 );
 	OTree2( real_t nodeSz=0.1 );
     ~OTree2();
 
     OTree2( const OTree2 & inst );
     const OTree2 & operator=( const OTree2 & inst );
 
-    void operator=( const Ref<Mesh> mesh );
+	void clear();
+    void append( const Transform & t, const Ref<Mesh> mesh );
+	void subdivide();
     
     bool parent( const ONode2 & node, ONode2 * & parent );
 
