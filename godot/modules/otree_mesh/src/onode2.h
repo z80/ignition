@@ -8,7 +8,7 @@
 #include "core/math/plane.h"
 #include "core/math/face3.h"
 
-class OTree2;
+class OccupancyGrid;
 
 class ONode2
 {
@@ -24,12 +24,12 @@ public:
 	// Queries.
 	// Intersection with a triangle.
 	bool inside( const Face3 & face ) const;
-
+	bool inside( const Vector3 & pt ) const;
 
 	// Initialize vertices and planes.
 	void init();
 
-	OTree2 * tree;
+	OccupancyGrid * tree;
 	int absIndex;
 	int parentAbsIndex;
 	int indexInParent;

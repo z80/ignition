@@ -98,7 +98,7 @@ bool ONode2::subdivide()
     for ( int i=0; i<8; i++ )
     {
         n.absIndex = tree->insertNode( n );
-        nn[i] = tree->nodes[ n.absIndex ];
+        nn[i] = tree->nodes_[ n.absIndex ];
 
         qtys[i] = 0;
     }
@@ -161,7 +161,7 @@ bool ONode2::subdivide()
     for ( int i=0; i<qty; i++ )
     {
         const int ind = ptInds[i];
-        const Face3 & face = tree->ptRefs[ind];
+        const Face3 & face = tree->faces_[ind];
 
         for ( int i=0; i<8; i++ )
         {
@@ -185,7 +185,7 @@ bool ONode2::subdivide()
     {
         if ( ( qtys[i] > 0 ) && ( childLevel < tree->max_depth_ ) )
             nn[i].subdivide();
-        tree->nodes.ptrw()[ nn[i].absIndex ] = nn[i];
+        tree->nodes_.ptrw()[ nn[i].absIndex ] = nn[i];
     }
 
     return true;
@@ -255,6 +255,22 @@ bool ONode2::inside( const Face3 & face ) const
 		}
 		if ( qty == 8 )
 			return false;
+	}
+
+	return true;
+}
+
+bool ONode2::inside( const Vector3 & pt ) const
+{
+	// If for at least one plane the point is above,
+	// it is outside the node.
+	for ( int i=0; i<6; i++ )
+	{
+		const Plane & p = planes_[i];
+		const bool point_above = p.is_point_over( pt );
+		if ( point_above )
+			return false;
+		}
 	}
 
 	return true;
