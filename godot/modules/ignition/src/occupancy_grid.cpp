@@ -23,7 +23,7 @@ OccupancyGrid::OccupancyGrid()
 
     // Insert root node.
     /*
-    ONode2 r;
+    GridNode r;
     r.absIndex = rootIndex;
     r.level = 0;
     r.size2 = 1.0;
@@ -85,7 +85,7 @@ void OccupancyGrid::subdivide()
 }
 
 
-bool OccupancyGrid::parent( const ONode2 & node, ONode2 * & parent )
+bool OccupancyGrid::parent( const GridNode & node, GridNode * & parent )
 {
     if ( node.parentAbsIndex < 0 )
     {
@@ -97,18 +97,18 @@ bool OccupancyGrid::parent( const ONode2 & node, ONode2 * & parent )
     return true;
 }
 
-int OccupancyGrid::insertNode( ONode2 & node )
+int OccupancyGrid::insertNode( GridNode & node )
 {
     nodes_.push_back( node );
     const int ind = static_cast<int>(nodes_.size()) - 1;
-	ONode2 * nns = nodes_.ptrw();
-	ONode2 & n = nns[ind];
+	GridNode * nns = nodes_.ptrw();
+	GridNode & n = nns[ind];
     n.tree     = this;
     n.absIndex = ind;
     return ind;
 }
 
-void OccupancyGrid::updateNode( const ONode2 & node )
+void OccupancyGrid::updateNode( const GridNode & node )
 {
     nodes_.ptrw()[ node.absIndex ] = node;
 }

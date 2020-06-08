@@ -1,8 +1,8 @@
 
-#include "onode2.h"
-#include "otree2.h"
+#include "grid_node.h"
+#include "occupancy_grid.h"
 
-ONode2::ONode2()
+GridNode::GridNode()
 {
     this->tree = nullptr;
     parentAbsIndex = -1;
@@ -19,17 +19,17 @@ ONode2::ONode2()
 	init();
 }
 
-ONode2::~ONode2()
+GridNode::~GridNode()
 {
 
 }
 
-ONode2::ONode2( const ONode2 & inst )
+GridNode::GridNode( const GridNode & inst )
 {
     *this = inst;
 }
 
-const ONode2 & ONode2::operator=( const ONode2 & inst )
+const GridNode & GridNode::operator=( const GridNode & inst )
 {
     if ( this != &inst )
     {
@@ -59,7 +59,7 @@ const ONode2 & ONode2::operator=( const ONode2 & inst )
     return *this;
 }
 
-bool ONode2::hasChildren() const
+bool GridNode::hasChildren() const
 {
     // Filled can't have children.
     if ( !ptInds.empty() )
@@ -74,7 +74,7 @@ bool ONode2::hasChildren() const
     return false;
 }
 
-bool ONode2::subdivide()
+bool GridNode::subdivide()
 {
     // Subdrive means creating children.
     // It means node itself turns into not filled one.
@@ -92,9 +92,9 @@ bool ONode2::subdivide()
     const int childLevel = this->level + 1;
     const real_t chSize2 = this->size2 * 0.5;
 
-    ONode2 nn[8];
+    GridNode nn[8];
     int    qtys[8];
-    ONode2 n;
+    GridNode n;
     for ( int i=0; i<8; i++ )
     {
         n.absIndex = tree->insertNode( n );
@@ -192,7 +192,7 @@ bool ONode2::subdivide()
 }
 
 
-bool ONode2::inside( const Face3 & face ) const
+bool GridNode::inside( const Face3 & face ) const
 {
 	// If all 3 verts are above either node plane
 	// it means node can't contain the face.
@@ -260,7 +260,7 @@ bool ONode2::inside( const Face3 & face ) const
 	return true;
 }
 
-bool ONode2::inside( const Vector3 & pt ) const
+bool GridNode::inside( const Vector3 & pt ) const
 {
 	// If for at least one plane the point is above,
 	// it is outside the node.
@@ -276,7 +276,7 @@ bool ONode2::inside( const Vector3 & pt ) const
 	return true;
 }
 
-void ONode2::init()
+void GridNode::init()
 {
 	// Vertices.
 	verts_[0].x = center.x - size2;

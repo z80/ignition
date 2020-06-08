@@ -6,7 +6,7 @@
 #include "core/math/face3.h"
 #include "scene/main/node.h"
 #include "scene/3d/mesh_instance.h"
-#include "onode2.h"
+#include "grid_node.h"
 
 
 /**
@@ -34,12 +34,12 @@ public:
     void append( const Transform & t, const Ref<Mesh> mesh );
 	void subdivide();
     
-    bool parent( const ONode2 & node, ONode2 * & parent );
+    bool parent( const GridNode & node, GridNode * & parent );
 
-    int  insertNode( ONode2 & node );
-    void updateNode( const ONode2 & node );
+    int  insertNode( GridNode & node );
+    void updateNode( const GridNode & node );
 
-    Vector<ONode2> nodes_;
+    Vector<GridNode> nodes_;
     Vector<Face3>  faces_;
 
     // Maximum subdivision level.

@@ -1,6 +1,6 @@
 
-#ifndef __ONODE_H_
-#define __ONODE_H_
+#ifndef __GRID_NODE_H_
+#define __GRID_NODE_H_
 
 #include "core/vector.h"
 #include "core/math/math_defs.h"
@@ -10,13 +10,13 @@
 
 class OccupancyGrid;
 
-class ONode2
+class GridNode
 {
 public:
-	ONode2();
-	~ONode2();
-	ONode2( const ONode2 & inst );
-	const ONode2 & operator=( const ONode2 & inst );
+	GridNode();
+	~GridNode();
+	GridNode( const GridNode & inst );
+	const GridNode & operator=( const GridNode & inst );
 
 	bool hasChildren() const;
 	bool subdivide();
