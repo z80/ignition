@@ -28,11 +28,21 @@ public:
 	OccupancyGrid( const OccupancyGrid & inst );
     const OccupancyGrid & operator=( const OccupancyGrid & inst );
 
+	// Manipulating filling up the occupancy grid.
 	void setNodeSize( real_t sz = 0.1 );
 	real_t nodeSize() const;
 	void clear();
     void append( const Transform & t, const Ref<Mesh> mesh );
 	void subdivide();
+
+	// Check if certain point is occupied.
+	bool occupied( const Vector3 & at );
+	// Internally called for recursion.
+	bool pointInside( const GridNode & n, cosnt Vector3 & at );
+
+	// Moving entire tree to a different location.
+	void set_position( const Vector3 & at );
+	void set_node_position( GridNode & n, const Vector3 & from, const Vector3 & to );
     
     bool parent( const GridNode & node, GridNode * & parent );
 
