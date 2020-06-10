@@ -14,9 +14,11 @@ void OccupancyGrid::_bind_methods()
 	ClassDB::bind_method( D_METHOD("clear"), &OccupancyGrid::clear, Variant::NIL);
 	ClassDB::bind_method( D_METHOD("append", "transform", "mesh"), &OccupancyGrid::append, Variant::NIL);
 	ClassDB::bind_method( D_METHOD("subdivide"), &OccupancyGrid::subdivide, Variant::NIL);
+	ClassDB::bind_method( D_METHOD("lines"), &OccupancyGrid::subdivide, Variant::POOL_VECTOR3_ARRAY);
 }
 
 OccupancyGrid::OccupancyGrid()
+	: Node()
 {
     // Initialize counters and parameters.
     this->max_depth_  = -1;
@@ -37,7 +39,7 @@ OccupancyGrid::~OccupancyGrid()
 
 }
 
-OccupancyGrid::OccupancyGrid( const OccupancyGrid & inst )
+/*OccupancyGrid::OccupancyGrid( const OccupancyGrid & inst )
 {
     *this = inst;
 }
@@ -53,7 +55,7 @@ const OccupancyGrid & OccupancyGrid::operator=( const OccupancyGrid & inst )
         max_depth_ = inst.max_depth_;
     }
     return *this;
-}
+}*/
 
 void OccupancyGrid::setNodeSize( real_t sz )
 {
@@ -134,12 +136,12 @@ void OccupancyGrid::subdivide()
 
 bool OccupancyGrid::occupied( const Vector3 & at )
 {
-	GridNode & root = nodes_.ptr()[0];
+	GridNode & root = nodes_.ptrw()[0];
 	const bool pt_inside = pointInside( root, at );
 	return pt_inside;
 }
 
-bool OccupancyGrid::pointInside( const GridNode & n, cosnt Vector3 & at )
+bool OccupancyGrid::pointInside( const GridNode & n, const Vector3 & at )
 {
 	const bool pt_in = n.inside( at );
 	if ( !pt_in )
@@ -148,7 +150,7 @@ bool OccupancyGrid::pointInside( const GridNode & n, cosnt Vector3 & at )
 	if ( !has_ch )
 	{
 		// Check if if occupied.
-		const bool res = ( n.value > 0 )
+		const bool res = ( n.value > 0 );
 		return res;
 	}
 
@@ -159,7 +161,7 @@ bool OccupancyGrid::pointInside( const GridNode & n, cosnt Vector3 & at )
 		if ( ch_ind < 0 )
 			return false;
 		const GridNode & ch_n = nodes_.ptr()[ch_ind];
-		const ch_inside = pointInside( ch_n, at );
+		const bool ch_inside = pointInside( ch_n, at );
 		if ( ch_inside )
 			return true;
 	}
@@ -188,6 +190,69 @@ void OccupancyGrid::set_node_position( GridNode & n, const Vector3 & from, const
 		GridNode & ch_n = nodes_.ptrw()[ch_ind];
 		set_node_position( ch_n, from, to );
 	}
+}
+
+PoolVector<Vector3> OccupancyGrid::lines()
+{
+	Vector<Vector3> ls;
+	const int qty = nodes_.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		const GridNode & n = nodes_.ptr()[i];
+		const bool has_ch = n.hasChildren();
+		if ( has_ch )
+			continue;
+		const bool occupied = (n.value > 0);
+		if ( !occupied )
+			continue;
+
+		const Vector3 * vs = n.verts_;
+		ls.push_back( vs[0] );
+		ls.push_back( vs[1] );
+
+		ls.push_back( vs[1] );
+		ls.push_back( vs[2] );
+
+		ls.push_back( vs[2] );
+		ls.push_back( vs[3] );
+
+		ls.push_back( vs[3] );
+		ls.push_back( vs[0] );
+
+
+		ls.push_back( vs[4] );
+		ls.push_back( vs[5] );
+
+		ls.push_back( vs[5] );
+		ls.push_back( vs[6] );
+
+		ls.push_back( vs[6] );
+		ls.push_back( vs[7] );
+
+		ls.push_back( vs[7] );
+		ls.push_back( vs[4] );
+
+
+		ls.push_back( vs[0] );
+		ls.push_back( vs[4] );
+
+		ls.push_back( vs[1] );
+		ls.push_back( vs[5] );
+
+		ls.push_back( vs[2] );
+		ls.push_back( vs[6] );
+
+		ls.push_back( vs[3] );
+		ls.push_back( vs[7] );
+	}
+
+	PoolVector<Vector3> res;
+	const int sz = ls.size();
+	res.resize( sz );
+	for ( int i=0; i<qty; i++ )
+		res[i] = ls.ptr()[i];
+
+	return res;
 }
 
 bool OccupancyGrid::parent( const GridNode & node, GridNode * & parent )

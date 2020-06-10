@@ -1,12 +1,13 @@
 #include "register_types.h"
 
 #include "core/class_db.h"
-#include "slicer.h"
+#include "occupancy_grid.h"
 
-void register_slicer_types() {
-    ClassDB::register_class<Slicer>();
-    ClassDB::register_class<SlicedMesh>();
+void register_ignition_types()
+{
+    ClassDB::register_class<OccupancyGrid>();
 }
 
-void unregister_slicer_types() {
+void unregister_ignition_types()
+{
 }

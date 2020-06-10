@@ -270,7 +270,6 @@ bool GridNode::inside( const Vector3 & pt ) const
 		const bool point_above = p.is_point_over( pt );
 		if ( point_above )
 			return false;
-		}
 	}
 
 	return true;

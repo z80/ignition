@@ -14,7 +14,7 @@
 	Nonempty leaf node means space is filled. Else means it's empty.
 **/
 
-class OccupancyGrid
+class OccupancyGrid: public Node
 {
 	GDCLASS(OccupancyGrid, Node);
 
@@ -25,8 +25,7 @@ public:
 	OccupancyGrid();
     ~OccupancyGrid();
 
-	OccupancyGrid( const OccupancyGrid & inst );
-    const OccupancyGrid & operator=( const OccupancyGrid & inst );
+	//OccupancyGrid( const OccupancyGrid & inst );
 
 	// Manipulating filling up the occupancy grid.
 	void setNodeSize( real_t sz = 0.1 );
@@ -38,11 +37,14 @@ public:
 	// Check if certain point is occupied.
 	bool occupied( const Vector3 & at );
 	// Internally called for recursion.
-	bool pointInside( const GridNode & n, cosnt Vector3 & at );
+	bool pointInside( const GridNode & n, const Vector3 & at );
 
 	// Moving entire tree to a different location.
 	void set_position( const Vector3 & at );
 	void set_node_position( GridNode & n, const Vector3 & from, const Vector3 & to );
+
+	// For visualization.
+	PoolVector<Vector3> lines();
     
     bool parent( const GridNode & node, GridNode * & parent );
 
