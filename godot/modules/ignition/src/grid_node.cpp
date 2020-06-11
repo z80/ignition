@@ -163,14 +163,14 @@ bool GridNode::subdivide()
         const int ind = ptInds[i];
         const Face3 & face = tree->faces_[ind];
 
-        for ( int i=0; i<8; i++ )
+        for ( int j=0; j<8; j++ )
         {
-			nn[i].value = 0;
-            if ( nn[i].inside( face ) )
+            nn[j].value = 0;
+            if ( nn[j].inside( face ) )
             {
-                nn[i].ptInds.push_back( ind );
-                qtys[i] += 1;
-				nn[i].value += 1;
+                nn[j].ptInds.push_back( ind );
+                qtys[j] += 1;
+                nn[j].value += 1;
                 break;
             }
         }

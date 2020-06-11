@@ -3,18 +3,24 @@
 #include "core/math/transform.h"
 #include "core/math/math_funcs.h"
 
+//#include <iostream>
+
 static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces );
 static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces );
 
 
 void OccupancyGrid::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("set_node_size"), &OccupancyGrid::setNodeSize, Variant::NIL);
-	ClassDB::bind_method( D_METHOD("get_node_size"), &OccupancyGrid::nodeSize, Variant::REAL);
-	ClassDB::bind_method( D_METHOD("clear"), &OccupancyGrid::clear, Variant::NIL);
-	ClassDB::bind_method( D_METHOD("append", "transform", "mesh"), &OccupancyGrid::append, Variant::NIL);
-	ClassDB::bind_method( D_METHOD("subdivide"), &OccupancyGrid::subdivide, Variant::NIL);
-	ClassDB::bind_method( D_METHOD("lines"), &OccupancyGrid::subdivide, Variant::POOL_VECTOR3_ARRAY);
+    ClassDB::bind_method( D_METHOD("d_init", "int"), &OccupancyGrid::d_init );
+    ClassDB::bind_method( D_METHOD("d_add", "int"),  &OccupancyGrid::d_add );
+    ClassDB::bind_method( D_METHOD("d_result"),      &OccupancyGrid::d_result );
+
+    ClassDB::bind_method( D_METHOD("set_node_size"), &OccupancyGrid::setNodeSize );
+    ClassDB::bind_method( D_METHOD("get_node_size"), &OccupancyGrid::nodeSize );
+    ClassDB::bind_method( D_METHOD("clear"), &OccupancyGrid::clear );
+    ClassDB::bind_method( D_METHOD("append", "transform", "mesh"), &OccupancyGrid::append );
+    ClassDB::bind_method( D_METHOD("subdivide"), &OccupancyGrid::subdivide );
+    ClassDB::bind_method( D_METHOD("lines"), &OccupancyGrid::subdivide );
 }
 
 OccupancyGrid::OccupancyGrid()
@@ -32,12 +38,30 @@ OccupancyGrid::OccupancyGrid()
     r.size2 = 1.0;
     r.tree  = this;
     */
+
+    accum = 0;
 }
 
 OccupancyGrid::~OccupancyGrid()
 {
 
 }
+
+void OccupancyGrid::d_init( int v )
+{
+    accum = v;
+}
+
+void OccupancyGrid::d_add( int v )
+{
+    accum += v;
+}
+
+int  OccupancyGrid::d_result()
+{
+    return accum;
+}
+
 
 /*OccupancyGrid::OccupancyGrid( const OccupancyGrid & inst )
 {
@@ -69,6 +93,7 @@ real_t OccupancyGrid::nodeSize() const
 
 void OccupancyGrid::clear()
 {
+    //std::cout << "called clear()" << std::endl;
 	nodes_.clear();
 	faces_.clear();
 }
@@ -96,7 +121,7 @@ void OccupancyGrid::subdivide()
 		c += f.vertex[1];
 		c += f.vertex[2];
 	}
-	const real_t s = 1.0 / static_cast<real_t>( qty * 3 );
+    const real_t s = 1.0 / static_cast<real_t>( qty );
 	c *= s;
 
 	// Here adjust it to be multiple of grid size.
@@ -322,9 +347,6 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 
 	if ( is_index_array )
 	{
-		PoolVector<int> indices = arrays[Mesh::ARRAY_INDEX];
-		auto indices_reader = indices.read();
-
 		for (int i = 0; i < vert_count; i++)
 		{
 			const int face_idx   = i / 3;

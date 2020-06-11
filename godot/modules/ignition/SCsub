@@ -25,7 +25,10 @@ module_env.Append(CXXFLAGS=['-std=c++11'])
 def configure_static_build():
     #module_env.Append(CCFLAGS=['-O2'])
     env.Append(CPPPATH=["src"])
+    module_env.Append(CPPPATH=["src"])
     module_env.add_source_files(env.modules_sources, sources)
+    # To also add "register_types.h"
+    module_env.add_source_files(env.modules_sources, "*.cpp")
 
 
 

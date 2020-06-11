@@ -25,6 +25,12 @@ public:
 	OccupancyGrid();
     ~OccupancyGrid();
 
+    // Debug methods.
+    int accum;
+    void d_init( int v );
+    void d_add( int v );
+    int  d_result();
+
 	//OccupancyGrid( const OccupancyGrid & inst );
 
 	// Manipulating filling up the occupancy grid.
