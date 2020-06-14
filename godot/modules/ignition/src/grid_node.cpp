@@ -100,18 +100,14 @@ bool GridNode::subdivide()
         n.absIndex = tree->insertNode( n );
         nn[i] = tree->nodes_[ n.absIndex ];
 
-        qtys[i] = 0;
-    }
-
-    const int expectedQty = ptInds.size() / 8;
-    for ( int i=0; i<8; i++ )
-    {
-        nn[i].indexInParent = i;
+		nn[i].indexInParent = i;
         nn[i].parentAbsIndex = this->absIndex;
         nn[i].level = childLevel;
         nn[i].size2 = chSize2;
 
         children[i] = nn[i].absIndex;
+
+		qtys[i] = 0;
     }
     nn[0].center = this->center;
     nn[0].center.x -= chSize2;
@@ -165,13 +161,14 @@ bool GridNode::subdivide()
 
         for ( int j=0; j<8; j++ )
         {
-            nn[j].value = 0;
-            if ( nn[j].inside( face ) )
+			GridNode & ch_n = nn[j];
+            ch_n.value = 0;
+			const bool inside = ch_n.inside( face );
+            if ( inside )
             {
-                nn[j].ptInds.push_back( ind );
+                ch_n.ptInds.push_back( ind );
                 qtys[j] += 1;
-                nn[j].value += 1;
-                break;
+                ch_n.value += 1;
             }
         }
     }
@@ -183,9 +180,10 @@ bool GridNode::subdivide()
 	// Subdivide recursively.
     for ( int i=0; i<8; i++ )
     {
+		GridNode & ch_n = nn[i];
         if ( ( qtys[i] > 0 ) && ( childLevel < tree->max_depth_ ) )
-            nn[i].subdivide();
-        tree->nodes_.ptrw()[ nn[i].absIndex ] = nn[i];
+            ch_n.subdivide();
+        tree->nodes_.ptrw()[ ch_n.absIndex ] = ch_n;
     }
 
     return true;
@@ -243,8 +241,9 @@ bool GridNode::inside( const Face3 & face ) const
 	for ( int i=0; i<3; i++ )
 	{
 		const Vector3 & e = ee[i];
-		const Vector3 n0 = vec3_cross( normal, e );
-		const Plane   p0 = Plane( n0, face.vertex[i] );
+		const Vector3 n0 = vec3_cross( e, normal );
+		const Vector3 & r0 = face.vertex[i];
+		const Plane   p0 = Plane( n0, r0 );
 		qty = 0;
 		for ( int j=0; j<8; j++ )
 		{

@@ -6,8 +6,5 @@
 [node name="aaa" instance=ExtResource( 1 )]
 script = ExtResource( 2 )
 
-[node name="Cube" parent="." index="0"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.94573 )
-
 [node name="Camera" type="Camera" parent="." index="1"]
 transform = Transform( 0.251057, -0.476524, 0.842553, -0.0823838, 0.856754, 0.509103, -0.96446, -0.197227, 0.175836, 6.6054, 5.38659, 0.0550251 )

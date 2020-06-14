@@ -2,6 +2,7 @@
 #include "occupancy_grid.h"
 #include "core/math/transform.h"
 #include "core/math/math_funcs.h"
+#include "core/variant.h"
 
 //#include <iostream>
 
@@ -11,16 +12,16 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 
 void OccupancyGrid::_bind_methods()
 {
-    ClassDB::bind_method( D_METHOD("d_init", "int"), &OccupancyGrid::d_init );
-    ClassDB::bind_method( D_METHOD("d_add", "int"),  &OccupancyGrid::d_add );
-    ClassDB::bind_method( D_METHOD("d_result"),      &OccupancyGrid::d_result );
+    ClassDB::bind_method( D_METHOD("d_init", "int"), &OccupancyGrid::d_init, Variant::NIL );
+    ClassDB::bind_method( D_METHOD("d_add", "int"),  &OccupancyGrid::d_add, Variant::NIL );
+    ClassDB::bind_method( D_METHOD("d_result"),      &OccupancyGrid::d_result, Variant::INT );
 
-    ClassDB::bind_method( D_METHOD("set_node_size"), &OccupancyGrid::setNodeSize );
-    ClassDB::bind_method( D_METHOD("get_node_size"), &OccupancyGrid::nodeSize );
-    ClassDB::bind_method( D_METHOD("clear"), &OccupancyGrid::clear );
-    ClassDB::bind_method( D_METHOD("append", "transform", "mesh"), &OccupancyGrid::append );
-    ClassDB::bind_method( D_METHOD("subdivide"), &OccupancyGrid::subdivide );
-    ClassDB::bind_method( D_METHOD("lines"), &OccupancyGrid::subdivide );
+    ClassDB::bind_method( D_METHOD("set_node_size"), &OccupancyGrid::setNodeSize, Variant::NIL );
+    ClassDB::bind_method( D_METHOD("get_node_size"), &OccupancyGrid::nodeSize, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("clear"), &OccupancyGrid::clear, Variant::NIL );
+    ClassDB::bind_method( D_METHOD("append", "transform", "mesh"), &OccupancyGrid::append, Variant::NIL );
+    ClassDB::bind_method( D_METHOD("subdivide"), &OccupancyGrid::subdivide, Variant::NIL );
+    ClassDB::bind_method( D_METHOD("lines"), &OccupancyGrid::lines, Variant::POOL_VECTOR3_ARRAY );
 }
 
 OccupancyGrid::OccupancyGrid()
@@ -125,6 +126,9 @@ void OccupancyGrid::subdivide()
 	c *= s;
 
 	// Here adjust it to be multiple of grid size.
+	c.x = node_sz_ * Math::ceil( c.x / node_sz_ );
+	c.y = node_sz_ * Math::ceil( c.y / node_sz_ );
+	c.z = node_sz_ * Math::ceil( c.z / node_sz_ );
 
 	// Here find the largest distance.
 	real_t d = 0.0;
@@ -136,17 +140,19 @@ void OccupancyGrid::subdivide()
 			const Vector3 dv = f.vertex[j] - c;
 			real_t l = dv.length();
 			if ( l > d )
-				l = d;
+				d = l;
 		}
 	}
 
 	real_t level = Math::log( d / node_sz_) / Math::log( 2.0 );
 	level = Math::ceil( level );
 	const int level_int = static_cast<int>( level );
-	d = Math::pow( node_sz_, level_int );
+	d = node_sz_ * Math::pow( 2.0, level_int );
+	this->max_depth_ = level_int;
 
 	nodes_.clear();
 	GridNode root;
+	root.level = 0;
 	root.tree = this;
 	root.center = c;
 	root.size2  = d;
@@ -156,6 +162,21 @@ void OccupancyGrid::subdivide()
 		root.ptInds.push_back( i );
 	root.init();
 	insertNode( root );
+
+	// Debugging. All the faces should be inside the root node.
+	{
+		int inside_qty = 0;
+		for ( int i=0; i<qty; i++ )
+		{
+			const Face3 & f = faces_.ptr()[i];
+			const bool inside = root.inside( f );
+			if ( inside )
+				inside_qty += 1;
+		}
+		inside_qty += 0;
+	}
+
+
 	root.subdivide();
 }
 
