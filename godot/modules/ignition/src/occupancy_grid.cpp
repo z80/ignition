@@ -3,6 +3,7 @@
 #include "core/math/transform.h"
 #include "core/math/math_funcs.h"
 #include "core/variant.h"
+#include "core/pool_vector.h"
 
 //#include <iostream>
 
@@ -126,9 +127,9 @@ void OccupancyGrid::subdivide()
 	c *= s;
 
 	// Here adjust it to be multiple of grid size.
-	c.x = node_sz_ * Math::ceil( c.x / node_sz_ );
-	c.y = node_sz_ * Math::ceil( c.y / node_sz_ );
-	c.z = node_sz_ * Math::ceil( c.z / node_sz_ );
+	c.x = node_sz_ * Math::round( c.x / node_sz_ );
+	c.y = node_sz_ * Math::round( c.y / node_sz_ );
+	c.z = node_sz_ * Math::round( c.z / node_sz_ );
 
 	// Here find the largest distance.
 	real_t d = 0.0;
@@ -164,7 +165,7 @@ void OccupancyGrid::subdivide()
 	insertNode( root );
 
 	// Debugging. All the faces should be inside the root node.
-	{
+	/*{
 		int inside_qty = 0;
 		for ( int i=0; i<qty; i++ )
 		{
@@ -172,12 +173,18 @@ void OccupancyGrid::subdivide()
 			const bool inside = root.inside( f );
 			if ( inside )
 				inside_qty += 1;
+			else
+			{
+				bool inside2 = root.inside( f );
+				inside2 = inside2 || false;
+			}
 		}
 		inside_qty += 0;
-	}
+	}*/
 
 
 	root.subdivide();
+	nodes_.ptrw()[ 0 ] = root;
 }
 
 bool OccupancyGrid::occupied( const Vector3 & at )
@@ -295,8 +302,12 @@ PoolVector<Vector3> OccupancyGrid::lines()
 	PoolVector<Vector3> res;
 	const int sz = ls.size();
 	res.resize( sz );
-	for ( int i=0; i<qty; i++ )
-		res[i] = ls.ptr()[i];
+	PoolVector<Vector3>::Write w = res.write();
+	for ( int i=0; i<sz; i++ )
+	{
+		const Vector3 & v = ls.ptr()[i];
+		w[i] = v;
+	}
 
 	return res;
 }

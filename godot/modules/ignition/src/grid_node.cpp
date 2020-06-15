@@ -37,6 +37,7 @@ const GridNode & GridNode::operator=( const GridNode & inst )
         parentAbsIndex = inst.parentAbsIndex;
         indexInParent = inst.indexInParent;
         level = inst.level;
+		value = inst.value;
         absIndex = inst.absIndex;
 
         children[0] = inst.children[0];
@@ -50,6 +51,24 @@ const GridNode & GridNode::operator=( const GridNode & inst )
 
         size2 = inst.size2;
         center = inst.center;
+
+		verts_[0] = inst.verts_[0];
+		verts_[1] = inst.verts_[1];
+		verts_[2] = inst.verts_[2];
+		verts_[3] = inst.verts_[3];
+		verts_[4] = inst.verts_[4];
+		verts_[5] = inst.verts_[5];
+		verts_[6] = inst.verts_[6];
+		verts_[7] = inst.verts_[7];
+
+		planes_[0] = inst.planes_[0];
+		planes_[1] = inst.planes_[1];
+		planes_[2] = inst.planes_[2];
+		planes_[3] = inst.planes_[3];
+		planes_[4] = inst.planes_[4];
+		planes_[5] = inst.planes_[5];
+
+		aabb_ = inst.aabb_;
 
         ptInds = inst.ptInds;
 
@@ -154,15 +173,15 @@ bool GridNode::subdivide()
 
     // Need to assign center and size
 	const int qty = ptInds.size();
-    for ( int i=0; i<qty; i++ )
-    {
-        const int ind = ptInds[i];
-        const Face3 & face = tree->faces_[ind];
+	for ( int j=0; j<8; j++ )
+	{
+		GridNode & ch_n = nn[j];
+		ch_n.value = 0;
+		for ( int i=0; i<qty; i++ )
+		{
+			const int ind = ptInds[i];
+			const Face3 & face = tree->faces_[ind];
 
-        for ( int j=0; j<8; j++ )
-        {
-			GridNode & ch_n = nn[j];
-            ch_n.value = 0;
 			const bool inside = ch_n.inside( face );
             if ( inside )
             {
@@ -171,6 +190,22 @@ bool GridNode::subdivide()
                 ch_n.value += 1;
             }
         }
+		if ( qtys[j] == 0 )
+		{
+			for ( int i=0; i<qty; i++ )
+			{
+				const int ind = ptInds[i];
+				const Face3 & face = tree->faces_[ind];
+
+				const bool inside = ch_n.inside( face );
+				if ( inside )
+				{
+					ch_n.ptInds.push_back( ind );
+					qtys[j] += 1;
+					ch_n.value += 1;
+				}
+			}
+		}
     }
 
 	// Reset indices and value for a node with children.
@@ -192,71 +227,8 @@ bool GridNode::subdivide()
 
 bool GridNode::inside( const Face3 & face ) const
 {
-	// If all 3 verts are above either node plane
-	// it means node can't contain the face.
-	for ( int i=0; i<6; i++ )
-	{
-		const Plane & p = planes_[i];
-		bool all_above = true;
-		for ( int j=0; j<3; j++ )
-		{
-			const Vector3 & v = face.vertex[i];
-			const bool point_above = p.is_point_over( v );
-			if ( !point_above )
-			{
-				all_above = false;
-				break;
-			}
-			if ( all_above )
-				return false;
-		}
-	}
-
-	// If all node verts are on the same size of the face
-	// the node can't contain this face.
-	int qty = 0;
-	const Plane p = face.get_plane();
-	for ( int i=0; i<8; i++ )
-	{
-		const Vector3 & v = verts_[i];
-		const bool is_above = p.is_point_over( v );
-		if ( is_above )
-			qty += 1;
-		else
-			qty -= 1;
-	}
-	if ( (qty == 8) || (qty == -8) )
-		return false;
-
-	// Now compute face "side planes". And do the same thing.
-	const Vector3 e0( face.vertex[0] - face.vertex[1] );
-	const Vector3 e1( face.vertex[1] - face.vertex[2] );
-	const Vector3 e2( face.vertex[2] - face.vertex[0] );
-	const Vector3 normal = vec3_cross( e0, e2 );
-	const bool is_degenerate = (normal.length_squared() < CMP_EPSILON2);
-	if ( is_degenerate )
-		return false;
-
-	const Vector3 ee[] = { e0, e1, e2 };
-	for ( int i=0; i<3; i++ )
-	{
-		const Vector3 & e = ee[i];
-		const Vector3 n0 = vec3_cross( e, normal );
-		const Vector3 & r0 = face.vertex[i];
-		const Plane   p0 = Plane( n0, r0 );
-		qty = 0;
-		for ( int j=0; j<8; j++ )
-		{
-			const Vector3 & v = verts_[j];
-			const bool is_above = p0.is_point_over( v );
-			if ( is_above )
-				qty += 1;
-		}
-		if ( qty == 8 )
-			return false;
-	}
-
-	return true;
+	const bool intersects = face.intersects_aabb( aabb_ );
+	return intersects;
 }
 
 bool GridNode::inside( const Vector3 & pt ) const
@@ -285,11 +257,11 @@ void GridNode::init()
 	verts_[1].y = center.y - size2;
 	verts_[1].z = center.z - size2;
 
-	verts_[2].x = center.x - size2;
+	verts_[2].x = center.x + size2;
 	verts_[2].y = center.y + size2;
 	verts_[2].z = center.z - size2;
 
-	verts_[3].x = center.x + size2;
+	verts_[3].x = center.x - size2;
 	verts_[3].y = center.y + size2;
 	verts_[3].z = center.z - size2;
 
@@ -301,11 +273,11 @@ void GridNode::init()
 	verts_[5].y = center.y - size2;
 	verts_[5].z = center.z + size2;
 
-	verts_[6].x = center.x - size2;
+	verts_[6].x = center.x + size2;
 	verts_[6].y = center.y + size2;
 	verts_[6].z = center.z + size2;
 
-	verts_[7].x = center.x + size2;
+	verts_[7].x = center.x - size2;
 	verts_[7].y = center.y + size2;
 	verts_[7].z = center.z + size2;
 
@@ -339,6 +311,15 @@ void GridNode::init()
 	r0 = center;
 	r0.z -= size2;
 	planes_[5] = Plane( r0, Vector3( 0.0, 0.0, -1.0 ) );
+
+
+	// AABB
+	{
+		const Vector3 sz2 = Vector3( size2, size2, size2 );
+		const Vector3 sz  = sz2 * 2.0;
+		const Vector3 origin = center - sz2;
+		aabb_ = AABB( origin, sz );
+	}
 }
 
 

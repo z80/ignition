@@ -45,6 +45,7 @@ public:
 	// Auxilary numbers. Hold those only to not recompute all the time.
 	Vector3 verts_[8];
 	Plane   planes_[6];
+	AABB    aabb_;
 
 	Vector<int> ptInds;
 };
