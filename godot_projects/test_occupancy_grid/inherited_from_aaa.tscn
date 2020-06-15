@@ -16,4 +16,4 @@ script = ExtResource( 2 )
 material/0 = SubResource( 1 )
 
 [node name="Camera" type="Camera" parent="." index="2"]
-transform = Transform( -0.707107, -0.5, -0.5, 0, 0.707107, -0.707107, 0.707107, -0.5, -0.5, -10, -10, -10 )
+transform = Transform( -0.707107, -0.5, -0.5, 0, 0.707107, -0.707107, 0.707107, -0.5, -0.5, -11.0471, -9.56001, -12.8762 )
