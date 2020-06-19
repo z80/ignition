@@ -187,14 +187,14 @@ void OccupancyGrid::subdivide()
 	nodes_.ptrw()[ 0 ] = root;
 }
 
-bool OccupancyGrid::occupied( const Vector3 & at )
+bool OccupancyGrid::occupied( const Vector3 & at ) const
 {
-	GridNode & root = nodes_.ptrw()[0];
+	const GridNode & root = nodes_.ptr()[0];
 	const bool pt_inside = pointInside( root, at );
 	return pt_inside;
 }
 
-bool OccupancyGrid::pointInside( const GridNode & n, const Vector3 & at )
+bool OccupancyGrid::pointInside( const GridNode & n, const Vector3 & at ) const
 {
 	const bool pt_in = n.inside( at );
 	if ( !pt_in )
@@ -222,6 +222,84 @@ bool OccupancyGrid::pointInside( const GridNode & n, const Vector3 & at )
 	return false;
 }
 
+bool OccupancyGrid::pointAjacent( const Vector3 & at ) const
+{
+	Vector3 c( at );
+	const real_t sz = node_sz_ * 2.0;
+	c.x = Math::round( c.x / sz ) * sz;
+	c.y = Math::round( c.y / sz ) * sz;
+	c.z = Math::round( c.z / sz ) * sz;
+	// Test 6 possibilities.
+	{
+		const Vector3 v( c.x, c.y, c.z+sz );
+		const bool inside = occupied( v );
+		if ( inside )
+			return true;
+	}
+	{
+		const Vector3 v( c.x, c.y+sz, c.z );
+		const bool inside = occupied( v );
+		if ( inside )
+			return true;
+	}
+	{
+		const Vector3 v( c.x+sz, c.y, c.z );
+		const bool inside = occupied( v );
+		if ( inside )
+			return true;
+	}
+	{
+		const Vector3 v( c.x, c.y, c.z-sz );
+		const bool inside = occupied( v );
+		if ( inside )
+			return true;
+	}
+	{
+		const Vector3 v( c.x, c.y-sz, c.z );
+		const bool inside = occupied( v );
+		if ( inside )
+			return true;
+	}
+	{
+		const Vector3 v( c.x-sz, c.y, c.z );
+		const bool inside = occupied( v );
+		if ( inside )
+			return true;
+	}
+	return false;
+}
+
+bool OccupancyGrid::intersects( const OccupancyGrid & g ) const
+{
+	const GridNode & root = nodes_.ptr()[0];
+
+	const bool is_intersecting = root.inside( other_root );
+}
+
+bool OccupancyGrid::intersects( const GridNode & n, const OccupancyGrid & g ) const
+{
+	const GridNode & other_root = g.nodes_.ptr()[0];
+	const bool is_intersecting = n.inside( other_root );
+	if ( !is_intersecting )
+		return false;
+	const bool has_ch = n.hasChildren();
+	if ( !other_has_ch )
+	{
+		const bool is_filled = (n.value > 0);
+		return is_filled;
+	}
+
+	for ( int i=0; i<8; i++ )
+	{
+		const int ch_ind = n.children[i];
+		const GridNode & ch_n = n.tree->nodes_.ptr()[ch_ind];
+		const bool ch_intersects = intersects( ch_n, g );
+		if ( ch_intersects )
+			return true;
+	}
+	return false;
+}
+
 void OccupancyGrid::set_position( const Vector3 & at )
 {
 	GridNode & root = nodes_.ptrw()[0];
@@ -231,6 +309,12 @@ void OccupancyGrid::set_position( const Vector3 & at )
 void OccupancyGrid::set_node_position( GridNode & n, const Vector3 & from, const Vector3 & to )
 {
 	n.center = n.center - from + to;
+	const real_t sz = node_sz_ * 2.0;
+	n.center.x = Math::round( n.center.x / sz ) * sz;
+	n.center.y = Math::round( n.center.y / sz ) * sz;
+	n.center.z = Math::round( n.center.z / sz ) * sz;
+	n.init();
+
 	const bool has_ch = n.hasChildren();
 	if ( !has_ch )
 		return;

@@ -246,6 +246,28 @@ bool GridNode::inside( const Vector3 & pt ) const
 	return true;
 }
 
+bool GridNode::inside( const GridNode & n ) const
+{
+	const bool intersects = aabb_.intersects( n.aabb_ );
+	const bool has_ch = n.hasChildren();
+	if ( !has_ch )
+	{
+		const bool is_filled = (n.value_ > 0);
+		return is_filled;
+	}
+
+	for ( int i=0; i<8; i++ )
+	{
+		const int ind = n.children[i];
+		const GridNode & ch_n = tree->nodes_.ptr()[ind];
+		const bool ch_intersects = inside( ch_n );
+		if ( ch_intersects )
+			return true;
+	}
+
+	return false;
+}
+
 void GridNode::init()
 {
 	// Vertices.

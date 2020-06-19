@@ -41,9 +41,14 @@ public:
 	void subdivide();
 
 	// Check if certain point is occupied.
-	bool occupied( const Vector3 & at );
+	bool occupied( const Vector3 & at ) const;
 	// Internally called for recursion.
-	bool pointInside( const GridNode & n, const Vector3 & at );
+	bool pointInside( const GridNode & n, const Vector3 & at ) const;
+	// Point ajacent.
+	bool pointAjacent( const Vector3 & at ) const;
+	// Intersects.
+	bool intersects( const OccupancyGrid & g ) const;
+	bool intersects( const GridNode & n, const OccupancyGrid & g ) const;
 
 	// Moving entire tree to a different location.
 	void set_position( const Vector3 & at );
@@ -58,7 +63,7 @@ public:
     void updateNode( const GridNode & node );
 
     Vector<GridNode> nodes_;
-    Vector<Face3>  faces_;
+    Vector<Face3>    faces_;
 
     // Maximum subdivision level.
 	real_t node_sz_;

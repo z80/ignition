@@ -25,6 +25,7 @@ public:
 	// Intersection with a triangle.
 	bool inside( const Face3 & face ) const;
 	bool inside( const Vector3 & pt ) const;
+	bool inside( const GridNode & n ) const;
 
 	// Initialize vertices and planes.
 	void init();
