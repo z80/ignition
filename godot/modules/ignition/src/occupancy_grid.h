@@ -52,6 +52,7 @@ public:
 
 	// Moving entire tree to a different location.
 	void set_position( const Vector3 & at );
+	Vector3 get_position() const;
 	void set_node_position( GridNode & n, const Vector3 & from, const Vector3 & to );
 
 	// For visualization.

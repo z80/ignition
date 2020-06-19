@@ -252,7 +252,7 @@ bool GridNode::inside( const GridNode & n ) const
 	const bool has_ch = n.hasChildren();
 	if ( !has_ch )
 	{
-		const bool is_filled = (n.value_ > 0);
+		const bool is_filled = (n.value > 0);
 		return is_filled;
 	}
 

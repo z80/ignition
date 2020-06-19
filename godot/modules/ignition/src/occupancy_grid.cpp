@@ -273,7 +273,9 @@ bool OccupancyGrid::intersects( const OccupancyGrid & g ) const
 {
 	const GridNode & root = nodes_.ptr()[0];
 
-	const bool is_intersecting = root.inside( other_root );
+	const bool is_intersecting = root.inside( root );
+
+	return is_intersecting;
 }
 
 bool OccupancyGrid::intersects( const GridNode & n, const OccupancyGrid & g ) const
@@ -283,7 +285,7 @@ bool OccupancyGrid::intersects( const GridNode & n, const OccupancyGrid & g ) co
 	if ( !is_intersecting )
 		return false;
 	const bool has_ch = n.hasChildren();
-	if ( !other_has_ch )
+	if ( !has_ch )
 	{
 		const bool is_filled = (n.value > 0);
 		return is_filled;
@@ -304,6 +306,12 @@ void OccupancyGrid::set_position( const Vector3 & at )
 {
 	GridNode & root = nodes_.ptrw()[0];
 	set_node_position( root, root.center, at );
+}
+
+Vector3 OccupancyGrid::get_position() const
+{
+	const GridNode & root = nodes_.ptr()[0];
+	return root.center;
 }
 
 void OccupancyGrid::set_node_position( GridNode & n, const Vector3 & from, const Vector3 & to )
