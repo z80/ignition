@@ -249,6 +249,8 @@ bool GridNode::inside( const Vector3 & pt ) const
 bool GridNode::inside( const GridNode & n ) const
 {
 	const bool intersects = aabb_.intersects( n.aabb_ );
+	if ( !intersects )
+		return false;
 	const bool has_ch = n.hasChildren();
 	if ( !has_ch )
 	{

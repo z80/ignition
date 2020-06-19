@@ -1,5 +1,6 @@
 
 #include "occupancy_grid.h"
+#include "core/reference.h"
 #include "core/math/transform.h"
 #include "core/math/math_funcs.h"
 #include "core/variant.h"
@@ -17,16 +18,25 @@ void OccupancyGrid::_bind_methods()
     ClassDB::bind_method( D_METHOD("d_add", "int"),  &OccupancyGrid::d_add, Variant::NIL );
     ClassDB::bind_method( D_METHOD("d_result"),      &OccupancyGrid::d_result, Variant::INT );
 
-    ClassDB::bind_method( D_METHOD("set_node_size"), &OccupancyGrid::setNodeSize, Variant::NIL );
+    ClassDB::bind_method( D_METHOD("set_node_size", "real_t"), &OccupancyGrid::setNodeSize, Variant::NIL );
     ClassDB::bind_method( D_METHOD("get_node_size"), &OccupancyGrid::nodeSize, Variant::REAL );
     ClassDB::bind_method( D_METHOD("clear"), &OccupancyGrid::clear, Variant::NIL );
     ClassDB::bind_method( D_METHOD("append", "transform", "mesh"), &OccupancyGrid::append, Variant::NIL );
     ClassDB::bind_method( D_METHOD("subdivide"), &OccupancyGrid::subdivide, Variant::NIL );
+
+	ClassDB::bind_method( D_METHOD("occupied", "at"), &OccupancyGrid::occupied, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("intersects", "g"), &OccupancyGrid::intersects, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("touches", "g"), &OccupancyGrid::touches, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("touch_point", "g"), &OccupancyGrid::touch_point, Variant::VECTOR3 );
+
+	ClassDB::bind_method( D_METHOD("set_position", "at"), &OccupancyGrid::set_position, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("get_position" ), &OccupancyGrid::get_position, Variant::VECTOR3 );
+
     ClassDB::bind_method( D_METHOD("lines"), &OccupancyGrid::lines, Variant::POOL_VECTOR3_ARRAY );
 }
 
 OccupancyGrid::OccupancyGrid()
-	: Node()
+	: Reference()
 {
     // Initialize counters and parameters.
     this->max_depth_  = -1;
@@ -190,11 +200,11 @@ void OccupancyGrid::subdivide()
 bool OccupancyGrid::occupied( const Vector3 & at ) const
 {
 	const GridNode & root = nodes_.ptr()[0];
-	const bool pt_inside = pointInside( root, at );
+	const bool pt_inside = point_inside( root, at );
 	return pt_inside;
 }
 
-bool OccupancyGrid::pointInside( const GridNode & n, const Vector3 & at ) const
+bool OccupancyGrid::point_inside( const GridNode & n, const Vector3 & at ) const
 {
 	const bool pt_in = n.inside( at );
 	if ( !pt_in )
@@ -214,7 +224,7 @@ bool OccupancyGrid::pointInside( const GridNode & n, const Vector3 & at ) const
 		if ( ch_ind < 0 )
 			return false;
 		const GridNode & ch_n = nodes_.ptr()[ch_ind];
-		const bool ch_inside = pointInside( ch_n, at );
+		const bool ch_inside = point_inside( ch_n, at );
 		if ( ch_inside )
 			return true;
 	}
@@ -222,7 +232,7 @@ bool OccupancyGrid::pointInside( const GridNode & n, const Vector3 & at ) const
 	return false;
 }
 
-bool OccupancyGrid::pointAjacent( const Vector3 & at ) const
+bool OccupancyGrid::point_ajacent( const Vector3 & at ) const
 {
 	Vector3 c( at );
 	const real_t sz = node_sz_ * 2.0;
@@ -269,16 +279,21 @@ bool OccupancyGrid::pointAjacent( const Vector3 & at ) const
 	return false;
 }
 
-bool OccupancyGrid::intersects( const OccupancyGrid & g ) const
+bool OccupancyGrid::intersects( const Ref<OccupancyGrid> ref_g ) const
 {
+	const OccupancyGrid * pg = ref_g.ptr();
+	if ( !pg )
+		return false;
+	const OccupancyGrid & g = *pg;
+
 	const GridNode & root = nodes_.ptr()[0];
 
-	const bool is_intersecting = root.inside( root );
+	const bool is_intersecting = node_intersects( root, *pg );
 
 	return is_intersecting;
 }
 
-bool OccupancyGrid::intersects( const GridNode & n, const OccupancyGrid & g ) const
+bool OccupancyGrid::node_intersects( const GridNode & n, const OccupancyGrid & g ) const
 {
 	const GridNode & other_root = g.nodes_.ptr()[0];
 	const bool is_intersecting = n.inside( other_root );
@@ -295,11 +310,124 @@ bool OccupancyGrid::intersects( const GridNode & n, const OccupancyGrid & g ) co
 	{
 		const int ch_ind = n.children[i];
 		const GridNode & ch_n = n.tree->nodes_.ptr()[ch_ind];
-		const bool ch_intersects = intersects( ch_n, g );
+		const bool ch_intersects = node_intersects( ch_n, g );
 		if ( ch_intersects )
 			return true;
 	}
 	return false;
+}
+
+bool OccupancyGrid::touches( const Ref<OccupancyGrid> ref_g ) const
+{
+	const OccupancyGrid * pg = ref_g.ptr();
+	if ( !pg )
+		return false;
+	const OccupancyGrid & g = *pg;
+
+	const int qty = g.nodes_.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		const GridNode & n = g.nodes_.ptr()[i];
+		const bool has_ch = n.hasChildren();
+		if ( has_ch )
+			continue;
+		const bool ch_filled = (n.value > 0);
+		if ( !ch_filled )
+			continue;
+		const Vector3 c = n.center;
+		const bool is_touching = point_ajacent( c );
+		if ( is_touching )
+			return true;
+	}
+
+	return false;
+}
+
+Vector3 OccupancyGrid::touch_point( const Ref<OccupancyGrid> ref_g ) const
+{
+	const OccupancyGrid * pg = ref_g.ptr();
+	if ( !pg )
+		return Vector3( 0.0, 0.0, 0.0 );
+	const OccupancyGrid & g = *pg;
+
+	Vector3 tp( 0.0, 0.0, 0.0 );
+	const real_t sz = node_sz_ * 2.0;
+
+	const int qty = g.nodes_.size();
+	int touch_qty = 0;
+	for ( int i=0; i<qty; i++ )
+	{
+		const GridNode & n = g.nodes_.ptr()[i];
+		const bool has_ch = n.hasChildren();
+		if ( has_ch )
+			continue;
+		const bool ch_filled = (n.value > 0);
+		if ( !ch_filled )
+			continue;
+		const Vector3 c = n.center;
+		// Check 6 possibilities.
+		// Test 6 possibilities.
+		{
+			const Vector3 v( c.x, c.y, c.z+sz );
+			const bool inside = occupied( v );
+			if ( inside )
+			{
+				touch_qty += 1;
+				tp += Vector3( c.x, c.y, c.z+node_sz_ );
+			}
+		}
+		{
+			const Vector3 v( c.x, c.y+sz, c.z );
+			const bool inside = occupied( v );
+			if ( inside )
+			{
+				touch_qty += 1;
+				tp += Vector3( c.x, c.y+node_sz_, c.z );
+			}
+		}
+		{
+			const Vector3 v( c.x+sz, c.y, c.z );
+			const bool inside = occupied( v );
+			if ( inside )
+			{
+				touch_qty += 1;
+				tp += Vector3( c.x+node_sz_, c.y, c.z );
+			}
+		}
+		{
+			const Vector3 v( c.x, c.y, c.z-sz );
+			const bool inside = occupied( v );
+			if ( inside )
+			{
+				touch_qty += 1;
+				tp += Vector3( c.x, c.y, c.z-node_sz_ );
+			}
+		}
+		{
+			const Vector3 v( c.x, c.y-sz, c.z );
+			const bool inside = occupied( v );
+			if ( inside )
+			{
+				touch_qty += 1;
+				tp += Vector3( c.x, c.y-node_sz_, c.z );
+			}
+		}
+		{
+			const Vector3 v( c.x-sz, c.y, c.z );
+			const bool inside = occupied( v );
+			if ( inside )
+			{
+				touch_qty += 1;
+				tp += Vector3( c.x-node_sz_, c.y, c.z );
+			}
+		}
+	}
+
+	if ( touch_qty > 0 )
+	{
+		tp = tp * ( 1.0 / static_cast<real_t>( touch_qty ) );
+	}
+	return tp;
 }
 
 void OccupancyGrid::set_position( const Vector3 & at )

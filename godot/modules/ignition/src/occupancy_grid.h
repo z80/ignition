@@ -2,6 +2,7 @@
 #ifndef __OCCUPANCY_GRID_H_
 #define __OCCUPANCY_GRID_H_
 
+#include "core/reference.h"
 #include "core/vector.h"
 #include "core/math/face3.h"
 #include "scene/main/node.h"
@@ -14,9 +15,10 @@
 	Nonempty leaf node means space is filled. Else means it's empty.
 **/
 
-class OccupancyGrid: public Node
+class OccupancyGrid: public Reference
 {
-	GDCLASS(OccupancyGrid, Node);
+	GDCLASS(OccupancyGrid, Reference);
+	OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();
@@ -43,16 +45,21 @@ public:
 	// Check if certain point is occupied.
 	bool occupied( const Vector3 & at ) const;
 	// Internally called for recursion.
-	bool pointInside( const GridNode & n, const Vector3 & at ) const;
+	bool point_inside( const GridNode & n, const Vector3 & at ) const;
 	// Point ajacent.
-	bool pointAjacent( const Vector3 & at ) const;
+	bool point_ajacent( const Vector3 & at ) const;
 	// Intersects.
-	bool intersects( const OccupancyGrid & g ) const;
-	bool intersects( const GridNode & n, const OccupancyGrid & g ) const;
+	bool intersects( const Ref<OccupancyGrid> g ) const;
+	// Internally called for recursion.
+	bool node_intersects( const GridNode & n, const OccupancyGrid & g ) const;
+	// Touches.
+	bool touches( const Ref<OccupancyGrid> g ) const;
+	Vector3 touch_point( const Ref<OccupancyGrid> g ) const;
 
 	// Moving entire tree to a different location.
 	void set_position( const Vector3 & at );
 	Vector3 get_position() const;
+	// Internally used for recursive calls.
 	void set_node_position( GridNode & n, const Vector3 & from, const Vector3 & to );
 
 	// For visualization.
