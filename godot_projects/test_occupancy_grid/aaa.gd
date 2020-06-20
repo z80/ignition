@@ -19,10 +19,11 @@ func _ready():
 	#og.d_add( 2 )
 	#print( og.d_result() )
 	
-	og.set_node_size( 0.1 )
+	og.set_node_size( 0.55 )
 	og.clear()
 	og.append( tr, c.mesh )
 	og.subdivide()
+	og.set_position( Vector3( 3, 0, 0 ) )
 	
 	var pts = og.lines()
 	$OccupancyVis.verts = pts

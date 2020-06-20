@@ -16,4 +16,6 @@ script = ExtResource( 2 )
 material/0 = SubResource( 1 )
 
 [node name="Camera" type="Camera" parent="." index="2"]
-transform = Transform( -0.707107, -0.5, -0.5, 0, 0.707107, -0.707107, 0.707107, -0.5, -0.5, -11.0471, -9.56001, -12.8762 )
+transform = Transform( 0.965926, -0.183013, 0.183013, 0, 0.707107, 0.707107, -0.258819, -0.683013, 0.683013, 3, 10, 10 )
+current = true
+fov = 118.6

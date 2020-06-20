@@ -60,7 +60,7 @@ public:
 	void set_position( const Vector3 & at );
 	Vector3 get_position() const;
 	// Internally used for recursive calls.
-	void set_node_position( GridNode & n, const Vector3 & from, const Vector3 & to );
+	void set_node_position( GridNode & n, const Vector3 from, const Vector3 to );
 
 	// For visualization.
 	PoolVector<Vector3> lines();

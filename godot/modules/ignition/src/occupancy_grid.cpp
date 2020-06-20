@@ -137,9 +137,10 @@ void OccupancyGrid::subdivide()
 	c *= s;
 
 	// Here adjust it to be multiple of grid size.
-	c.x = node_sz_ * Math::round( c.x / node_sz_ );
-	c.y = node_sz_ * Math::round( c.y / node_sz_ );
-	c.z = node_sz_ * Math::round( c.z / node_sz_ );
+	const real_t sz = node_sz_ * 2.0;
+	c.x = sz * Math::round( c.x / sz );
+	c.y = sz * Math::round( c.y / sz );
+	c.z = sz * Math::round( c.z / sz );
 
 	// Here find the largest distance.
 	real_t d = 0.0;
@@ -442,10 +443,10 @@ Vector3 OccupancyGrid::get_position() const
 	return root.center;
 }
 
-void OccupancyGrid::set_node_position( GridNode & n, const Vector3 & from, const Vector3 & to )
+void OccupancyGrid::set_node_position( GridNode & n, const Vector3 from, const Vector3 to )
 {
 	n.center = n.center - from + to;
-	const real_t sz = node_sz_ * 2.0;
+	const real_t sz = node_sz_;
 	n.center.x = Math::round( n.center.x / sz ) * sz;
 	n.center.y = Math::round( n.center.y / sz ) * sz;
 	n.center.z = Math::round( n.center.z / sz ) * sz;
