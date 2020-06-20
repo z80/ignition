@@ -26,6 +26,8 @@ public:
 	bool inside( const Face3 & face ) const;
 	bool inside( const Vector3 & pt ) const;
 	bool inside( const GridNode & n ) const;
+	// Intersects infinite ray.
+	bool intersects_ray( const Vector3 p_from, const Vector3 p_to ) const;
 
 	// Initialize vertices and planes.
 	void init();

@@ -270,6 +270,31 @@ bool GridNode::inside( const GridNode & n ) const
 	return false;
 }
 
+bool GridNode::intersects_ray( const Vector3 p_from, const Vector3 p_to ) const
+{
+	const bool intersects = aabb_.intersects_ray( p_from, p_to );
+	if ( !intersects )
+		return false;
+
+	const bool has_ch = hasChildren();
+	if ( !has_ch )
+	{
+		const bool has_value = (value > 0);
+		return has_value;
+	}
+
+	for ( int i=0; i<8; i++ )
+	{
+		const int ind = children[i];
+		const GridNode & ch_n = tree->nodes_.ptr()[ind];
+		const bool ch_intersects = ch_n.intersects_ray( p_from, p_to );
+		if ( ch_intersects )
+			return true;
+	}
+
+	return false;
+}
+
 void GridNode::init()
 {
 	// Vertices.

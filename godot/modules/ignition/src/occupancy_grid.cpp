@@ -28,6 +28,7 @@ void OccupancyGrid::_bind_methods()
 	ClassDB::bind_method( D_METHOD("intersects", "g"), &OccupancyGrid::intersects, Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("touches", "g"), &OccupancyGrid::touches, Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("touch_point", "g"), &OccupancyGrid::touch_point, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("intersects_ray", "p_from", "p_to"), &OccupancyGrid::intersects_ray, Variant::BOOL );
 
 	ClassDB::bind_method( D_METHOD("set_position", "at"), &OccupancyGrid::set_position, Variant::NIL );
 	ClassDB::bind_method( D_METHOD("get_position" ), &OccupancyGrid::get_position, Variant::VECTOR3 );
@@ -429,6 +430,13 @@ Vector3 OccupancyGrid::touch_point( const Ref<OccupancyGrid> ref_g ) const
 		tp = tp * ( 1.0 / static_cast<real_t>( touch_qty ) );
 	}
 	return tp;
+}
+
+bool OccupancyGrid::intersects_ray( const Vector3 p_from, const Vector3 p_to ) const
+{
+	const GridNode & root = nodes_.ptr()[0];
+	const bool res = root.intersects_ray( p_from, p_to );
+	return res;
 }
 
 void OccupancyGrid::set_position( const Vector3 & at )

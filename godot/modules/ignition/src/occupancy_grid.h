@@ -55,6 +55,8 @@ public:
 	// Touches.
 	bool touches( const Ref<OccupancyGrid> g ) const;
 	Vector3 touch_point( const Ref<OccupancyGrid> g ) const;
+	// Intersects with infinite ray.
+	bool intersects_ray( const Vector3 p_from, const Vector3 p_to ) const;
 
 	// Moving entire tree to a different location.
 	void set_position( const Vector3 & at );
