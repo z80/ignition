@@ -5,9 +5,10 @@
 #include "matrix3d.h"
 #include "vector3d.h"
 #include "data_types.h"
-#include "Urho3D/Math/Quaternion.h"
+//#include "Urho3D/Math/Quaternion.h"
+#include "core/math/quat.h"
+#include "core/math/vector3.h"
 
-using namespace Urho3D;
 
 namespace Ign
 {
@@ -33,11 +34,11 @@ public:
         z_(quat.z_)
     {
     }
-    Quaterniond(const Quaternion & quat ) noexcept
-       :w_(quat.w_),
-        x_(quat.x_),
-        y_(quat.y_),
-        z_(quat.z_)
+    Quaterniond(const Quat & quat ) noexcept
+       :w_(quat.w),
+        x_(quat.x),
+        y_(quat.y),
+        z_(quat.z)
     {
     }
 
@@ -50,9 +51,9 @@ public:
     {
     }
 
-    Quaternion quaternion() const
+    Quat quaternion() const
     {
-        return Quaternion( w_, x_, y_, z_ );
+        return Quat( x_, y_, z_, w_ );
     }
 
     /// Construct from a Float array.
@@ -95,10 +96,10 @@ public:
     }
 
     /// Construct from a rotation matrix.
-    explicit Quaterniond(const Matrix3d & matrix ) noexcept
+    /*explicit Quaterniond(const Matrix3d & matrix ) noexcept
     {
         FromRotationMatrix( matrix );
-    }
+    }*/
 
     /// Assign from another quaternion.
     Quaterniond& operator =(const Quaterniond& rhs) noexcept
@@ -304,8 +305,7 @@ public:
     static const Quaterniond IDENTITY;
 };
 
+
 }
-
-
 
 #endif

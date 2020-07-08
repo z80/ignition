@@ -5,6 +5,8 @@
 class SE3
 {
 public:
+	SE3();
+	~SE3();
 };
 
 

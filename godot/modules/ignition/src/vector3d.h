@@ -3,10 +3,15 @@
 #define __VECTOR3D_H_
 
 #include "data_types.h"
+#include "math_defs.h"
 #include "core/math/vector3.h"
 #include "core/math/vector2.h"
+#include "core/ustring.h"
 
-using namespace Ign;
+using namespace Urho3D;
+
+namespace Ign
+{
 
 /// Three-dimensional vector.
 class Vector3d
@@ -94,9 +99,9 @@ public:
 
     Vector3d & operator =( const Vector3 & rhs )
     {
-        x_ = rhs.x_;
-        y_ = rhs.y_;
-        z_ = rhs.z_;
+        x_ = rhs.x;
+        y_ = rhs.y;
+        z_ = rhs.z;
         return *this;
     }
 
@@ -186,9 +191,10 @@ public:
     void Normalize()
     {
         Float lenSquared = LengthSquared();
-        if (!Urho3D::Equals(lenSquared, 1.0) && lenSquared > 0.0)
+        //if (!Urho3D::Equals(lenSquared, 1.0) && lenSquared > 0.0)
+		if ( lenSquared > 0.0 )
         {
-            Float invLen = 1.0 / sqrtf(lenSquared);
+            Float invLen = 1.0 / std::sqrt(lenSquared);
             x_ *= invLen;
             y_ *= invLen;
             z_ *= invLen;
@@ -228,7 +234,7 @@ public:
         Float factor = (*this - from).DotProduct(direction) / lengthSquared;
 
         if (clamped)
-            factor = Clamp(factor, 0.0, 1.0);
+            factor = Urho3D::Clamp(factor, 0.0, 1.0);
 
         return from + direction * factor;
     }
@@ -329,7 +335,7 @@ public:
 inline Vector3d operator *(Float lhs, const Vector3d& rhs) { return rhs * lhs; }
 
 /// Multiply IntVector3 with a scalar.
-inline IntVector3 operator *(int lhs, const IntVector3& rhs) { return rhs * lhs; }
+//inline IntVector3 operator *(int lhs, const IntVector3& rhs) { return rhs * lhs; }
 
 /// Per-component linear interpolation between two 3-vectors.
 inline Vector3d VectorLerp(const Vector3d& lhs, const Vector3d& rhs, const Vector3d& t) { return lhs + (rhs - lhs) * t; }
@@ -350,13 +356,13 @@ inline Vector3d VectorRound(const Vector3d& vec) { return Vector3d(Round(vec.x_)
 inline Vector3d VectorCeil(const Vector3d& vec) { return Vector3d(Ceil(vec.x_), Ceil(vec.y_), Ceil(vec.z_)); }
 
 /// Per-component floor of 3-vector. Returns IntVector3.
-inline IntVector3 VectorFloorToInt(const Vector3d& vec) { return IntVector3(FloorToInt(vec.x_), FloorToInt(vec.y_), FloorToInt(vec.z_)); }
+//inline IntVector3 VectorFloorToInt(const Vector3d& vec) { return IntVector3(FloorToInt(vec.x_), FloorToInt(vec.y_), FloorToInt(vec.z_)); }
 
 /// Per-component round of 3-vector. Returns IntVector3.
-inline IntVector3 VectorRoundToInt(const Vector3d& vec) { return IntVector3(RoundToInt(vec.x_), RoundToInt(vec.y_), RoundToInt(vec.z_)); }
+//inline IntVector3 VectorRoundToInt(const Vector3d& vec) { return IntVector3(RoundToInt(vec.x_), RoundToInt(vec.y_), RoundToInt(vec.z_)); }
 
 /// Per-component ceil of 3-vector. Returns IntVector3.
-inline IntVector3 VectorCeilToInt(const Vector3d& vec) { return IntVector3(CeilToInt(vec.x_), CeilToInt(vec.y_), CeilToInt(vec.z_)); }
+//inline IntVector3 VectorCeilToInt(const Vector3d& vec) { return IntVector3(CeilToInt(vec.x_), CeilToInt(vec.y_), CeilToInt(vec.z_)); }
 
 /// Per-component min of two 3-vectors.
 //inline IntVector3 VectorMin(const IntVector3& lhs, const IntVector3& rhs) { return IntVector3(Min(lhs.x_, rhs.x_), Min(lhs.y_, rhs.y_), Min(lhs.z_, rhs.z_)); }
@@ -365,8 +371,10 @@ inline IntVector3 VectorCeilToInt(const Vector3d& vec) { return IntVector3(CeilT
 //inline IntVector3 VectorMax(const IntVector3& lhs, const IntVector3& rhs) { return IntVector3(Max(lhs.x_, rhs.x_), Max(lhs.y_, rhs.y_), Max(lhs.z_, rhs.z_)); }
 
 /// Return a random value from [0, 1) from 3-vector seed.
-inline Float StableRandom(const Vector3d& seed) { return StableRandom(Vector2(StableRandom(Vector2(seed.x_, seed.y_)), seed.z_)); }
+//inline Float StableRandom(const Vector3d& seed) { return StableRandom(Vector2(StableRandom(Vector2(seed.x_, seed.y_)), seed.z_)); }
 
+
+}
 
 
 
