@@ -33,6 +33,12 @@ def configure_static_build():
     # To also add "register_types.h"
     module_env.add_source_files(env.modules_sources, "*.cpp")
 
+    from platform_methods import run_in_subprocess
+    import gdnative_builders
+
+    _, gensource = module_env.CommandNoCache(['gdnative_api_struct.gen.h', 'gdnative_api_struct.gen.cpp'],
+                                              'gdnative_api.json', run_in_subprocess(gdnative_builders.build_gdnative_api_struct))
+    module_env.add_source_files(env.modules_sources, [gensource])
 
 
 
