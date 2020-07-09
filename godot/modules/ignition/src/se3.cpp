@@ -12,6 +12,34 @@ SE3::~SE3()
 {
 }
 
+SE3::SE3( const Vector3d & r, const Quaterniond & q, const Vector3d & v, const Vector3d & w )
+{
+	r_ = r;
+	q_ = q;
+	v_ = v;
+	w_ = w;
+}
+
+SE3::SE3( const Vector3 & r, const Quat & q, const Vector3 & v, const Vector3 & w )
+{
+	r_.x_ = r.x;
+	r_.y_ = r.y;
+	r_.z_ = r.z;
+
+	q_.w_ = q.w;
+	q_.x_ = q.x;
+	q_.y_ = q.y;
+	q_.z_ = q.z;
+
+	v_.x_ = v.x;
+	v_.y_ = v.y;
+	v_.z_ = v.z;
+
+	w_.x_ = w.x;
+	w_.y_ = w.y;
+	w_.z_ = w.z;
+}
+
 SE3::SE3( const SE3 & rhs )
 {
 	*this = rhs;
@@ -65,6 +93,60 @@ SE3 SE3::absolute_to( const SE3 & o ) const
 
 	return s;
 }
+
+void SE3::setR( const Vector3 & r )
+{
+	r_.x_ = r.x;
+	r_.y_ = r.y;
+	r_.z_ = r.z;
+}
+
+void SE3::setQ( const Quat & q )
+{
+	q_.w_ = q.w;
+	q_.x_ = q.x;
+	q_.y_ = q.y;
+	q_.z_ = q.z;
+}
+
+void SE3::setV( const Vector3 & v )
+{
+	v_.x_ = v.x;
+	v_.y_ = v.y;
+	v_.z_ = v.z;
+}
+
+void SE3::setW( const Vector3 & w )
+{
+	w_.x_ = w.x;
+	w_.y_ = w.y;
+	w_.z_ = w.z;
+}
+
+Vector3 SE3::r() const
+{
+	const Vector3 res( r_.x_, r_.y_, r_.z_ );
+	return res;
+}
+
+Quat    SE3::q() const
+{
+	const Quat res( q_.x_, q_.y_, q_.z_, q_.w_ );
+	return res;
+}
+
+Vector3 SE3::v() const
+{
+	const Vector3 res( v_.x_, v_.y_, v_.z_ );
+	return res;
+}
+
+Vector3 SE3::w() const
+{
+	const Vector3 res( w_.x_, w_.y_, w_.z_ );
+	return res;
+}
+
 
 
 }

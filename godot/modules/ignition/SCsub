@@ -9,7 +9,8 @@ Import('env')
 # use an opt-in process just to have better control over what goes
 # into the final binary during development. (Especially because we
 # have some test files mucking things up)
-sources = "src/*.cpp"
+sources        = "src/*.cpp"
+native_sources = "src/gdnative/*.cpp"
 
 # Linking the final Godot binaries can take a bit of time. Following advice
 # from https://docs.godotengine.org/en/stable/development/cpp/custom_modules_in_cpp.html
@@ -25,8 +26,10 @@ module_env.Append(CXXFLAGS=['-std=c++11'])
 def configure_static_build():
     #module_env.Append(CCFLAGS=['-O2'])
     env.Append(CPPPATH=["src"])
-    module_env.Append(CPPPATH=["src"])
-    module_env.add_source_files(env.modules_sources, sources)
+    module_env.Append(CPPPATH=["#modules/ignition/src"])
+    module_env.Append(CPPPATH=["#modules/gdnative/include"])
+    module_env.add_source_files( env.modules_sources, sources )
+    module_env.add_source_files( env.modules_sources, native_sources )
     # To also add "register_types.h"
     module_env.add_source_files(env.modules_sources, "*.cpp")
 
