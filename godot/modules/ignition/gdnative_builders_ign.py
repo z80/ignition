@@ -41,13 +41,14 @@ def _build_gdnative_api_struct_header(api):
         '#ifndef GODOT_GDNATIVE_IGN_API_STRUCT_H',
         '#define GODOT_GDNATIVE_IGN_API_STRUCT_H',
         '',
-        '#include <gdnative/gdnative.h>',
-        '#include <android/godot_android.h>',
-        '#include <arvr/godot_arvr.h>',
-        '#include <nativescript/godot_nativescript.h>',
-        '#include <net/godot_net.h>',
-        '#include <pluginscript/godot_pluginscript.h>',
-        '#include <videodecoder/godot_videodecoder.h>',
+        #'#include <gdnative/gdnative.h>',
+        #'#include <android/godot_android.h>',
+        #'#include <arvr/godot_arvr.h>',
+        #'#include <nativescript/godot_nativescript.h>',
+        #'#include <net/godot_net.h>',
+        #'#include <pluginscript/godot_pluginscript.h>',
+        #'#include <videodecoder/godot_videodecoder.h>',
+        '#include "modules/ignition/src/gdnative/se3.h"'
         '',
         '#define GDNATIVE_API_INIT(options) do {  \\\n' + '  \\\n'.join(gdnative_api_init_macro) + '  \\\n } while (0)',
         '',
@@ -143,7 +144,7 @@ def _build_gdnative_api_struct_source(api):
     out = [
         '/* THIS FILE IS GENERATED DO NOT EDIT */',
         '',
-        '#include <gdnative_api_struct.gen.h>',
+        '#include <gdnative_ign_api_struct.gen.h>',
         ''
     ]
 

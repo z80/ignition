@@ -41,7 +41,7 @@
 					]
 				},
 				{
-					"name": "godot_se3_operator_divide_vector",
+					"name": "godot_se3_operator_divide_se3",
 					"return_type": "godot_se3",
 					"arguments": [
 						[ "const godot_se3 *", "p_self" ],

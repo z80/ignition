@@ -26,6 +26,7 @@ module_env.Append(CXXFLAGS=['-std=c++11'])
 def configure_static_build():
     #module_env.Append(CCFLAGS=['-O2'])
     env.Append(CPPPATH=["src"])
+    module_env.Append(CPPPATH=["#modules/ignition"])
     module_env.Append(CPPPATH=["#modules/ignition/src"])
     module_env.Append(CPPPATH=["#modules/gdnative/include"])
     module_env.add_source_files( env.modules_sources, sources )
@@ -34,10 +35,10 @@ def configure_static_build():
     module_env.add_source_files(env.modules_sources, "*.cpp")
 
     from platform_methods import run_in_subprocess
-    import gdnative_builders
+    import gdnative_builders_ign
 
-    _, gensource = module_env.CommandNoCache(['gdnative_api_struct.gen.h', 'gdnative_api_struct.gen.cpp'],
-                                              'gdnative_api.json', run_in_subprocess(gdnative_builders.build_gdnative_api_struct))
+    _, gensource = module_env.CommandNoCache(['gdnative_ign_api_struct.gen.h', 'gdnative_ign_api_struct.gen.cpp'],
+                                              'gdnative_ign_api.json', run_in_subprocess(gdnative_builders_ign.build_gdnative_api_struct))
     module_env.add_source_files(env.modules_sources, [gensource])
 
 
