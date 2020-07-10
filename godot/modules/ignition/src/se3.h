@@ -34,10 +34,10 @@ public:
 	SE3 relative_to( const SE3 & o ) const;
 	SE3 absolute_to( const SE3 & o ) const;
 
-	void setR( const Vector3 & r );
-	void setQ( const Quat & q );
-	void setV( const Vector3 & v );
-	void setW( const Vector3 & w );
+	void set_r( const Vector3 & r );
+	void set_q( const Quat & q );
+	void set_v( const Vector3 & v );
+	void set_w( const Vector3 & w );
 	Vector3 r() const;
 	Quat    q() const;
 	Vector3 v() const;

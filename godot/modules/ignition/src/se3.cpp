@@ -94,14 +94,14 @@ SE3 SE3::absolute_to( const SE3 & o ) const
 	return s;
 }
 
-void SE3::setR( const Vector3 & r )
+void SE3::set_r( const Vector3 & r )
 {
 	r_.x_ = r.x;
 	r_.y_ = r.y;
 	r_.z_ = r.z;
 }
 
-void SE3::setQ( const Quat & q )
+void SE3::set_q( const Quat & q )
 {
 	q_.w_ = q.w;
 	q_.x_ = q.x;
@@ -109,14 +109,14 @@ void SE3::setQ( const Quat & q )
 	q_.z_ = q.z;
 }
 
-void SE3::setV( const Vector3 & v )
+void SE3::set_v( const Vector3 & v )
 {
 	v_.x_ = v.x;
 	v_.y_ = v.y;
 	v_.z_ = v.z;
 }
 
-void SE3::setW( const Vector3 & w )
+void SE3::set_w( const Vector3 & w )
 {
 	w_.x_ = w.x;
 	w_.y_ = w.y;
