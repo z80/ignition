@@ -1,17 +1,25 @@
 
 #include "ref_frame_tree.h"
+#include "ref_frame.h"
 
 void RefFrameTree::_bind_methods()
 {
+	ClassDB::bind_method( D_METHOD("push_back", "ref_frame"), &RefFrameTree::push_back );
+	ClassDB::bind_method( D_METHOD("clear"),                  &RefFrameTree::clear ); //,    Variant::OBJECT );
 }
 
-void RefFrameTree::cleanup()
+void RefFrameTree::clear()
 {
 	const int qty = frames_.size();
 	for ( int i=0; i<qty; i++ )
 	{
-		frames_.
+		RefFrame * rf = frames_.ptr()[i];
+		rf->index_ = -1;
+		rf->parent_ = -1;
+		rf->tree_ = nullptr;
 	}
+
+	frames_.clear();
 }
 
 RefFrameTree::RefFrameTree()
@@ -21,15 +29,25 @@ RefFrameTree::RefFrameTree()
 
 RefFrameTree::~RefFrameTree()
 {
+	clear();
 }
 
-void RefFrameTree::add_ref_frame( Node * ref_frame )
+void RefFrameTree::push_back( Node * ref_frame )
 {
+	if ( !ref_frame )
+		return;
+	RefFrame * rf = Object::cast_to<RefFrame>( ref_frame );
+	if ( !rf )
+		return;
+
+	const int index = frames_.size();
+	frames_.push_back( rf );
+	rf->tree_ = this;
+	rf->index_ = index;
+	rf->parent_ = -1;
 }
 
-void RefFrameTree::remove_ref_frame( Node * ref_frame )
-{
-}
+
 
 
 

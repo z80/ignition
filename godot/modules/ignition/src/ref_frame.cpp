@@ -1,9 +1,13 @@
 
 #include "ref_frame.h"
+#include "ref_frame_tree.h"
 
 RefFrame::RefFrame()
 	: Spatial()
 {
+	tree_   = nullptr;
+	index_  = -1;
+	parent_ = -1;
 }
 
 RefFrame::~RefFrame()
@@ -26,8 +30,8 @@ void RefFrame::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_transform", "transform"), &RefFrame::set_transform, Variant::NIL );
 	ClassDB::bind_method( D_METHOD("transform"),                  &RefFrame::transform,    Variant::TRANSFORM );
 
-	ClassDB::bind_method( D_METHOD("set_origin", "state"), &RefFrame::set_origin );
-	ClassDB::bind_method( D_METHOD("origin"),              &RefFrame::origin ); //,    Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("set_origin", "ref_frame"), &RefFrame::set_origin );
+	ClassDB::bind_method( D_METHOD("origin"),                  &RefFrame::origin ); //,    Variant::OBJECT );
 }
 
 void RefFrame::set_name( const String & name )
@@ -106,18 +110,30 @@ Vector3 RefFrame::w() const
 
 void RefFrame::set_origin( Node * parent )
 {
-	/*if ( !parent_.is_null() )
+	if ( !parent )
 	{
-		parent_->children_.erase( this );
+		parent_ = -1;
+		return;
 	}
-	parent_ = parent;
-	if ( !parent_.is_null() )
-		parent_->children_.push_back( this );*/
+	RefFrame * rf = Object::cast_to<RefFrame>( parent );
+	if ( !rf )
+	{
+		parent_ = -1;
+		return;
+	}
+	parent_ = rf->index_;
 }
 
 Node * RefFrame::origin() const
 {
-	return parent_;
+	if ( !tree_ )
+		return nullptr;
+
+	if ( parent_ < 0 )
+		return nullptr;
+
+	RefFrame * rf = tree_->frames_.ptr()[parent_];
+	return rf;
 }
 
 

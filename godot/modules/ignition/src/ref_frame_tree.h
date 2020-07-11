@@ -12,14 +12,13 @@ class RefFrameTree: public Reference
 protected:
 	void _bind_methods();
 
-	// On delete NULL all own pointers in all RefFrame objects.
-	void cleanup();
 public:
 	RefFrameTree();
 	virtual ~RefFrameTree();
 
-	void add_ref_frame( Node * ref_frame );
-	void remove_ref_frame( Node * ref_frame );
+	// On delete NULL all own pointers in all RefFrame objects.
+	void clear();
+	void push_back( Node * ref_frame );
 
 	Vector< RefFrame * > frames_;
 };

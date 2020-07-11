@@ -14,6 +14,8 @@
 
 using namespace Ign;
 
+class RefFrameTree;
+
 class RefFrame: public Spatial
 {
 	GDCLASS(RefFrame, Spatial);
@@ -47,11 +49,12 @@ public:
 
 	String name_;
 	SE3    se3_;
-	State * parent_;
-	Vector<State * > children_;
 
-	Vector<State * > queueA_, queueB_;
+	RefFrameTree * tree_;
+	int index_;
+	int parent_;
 
+	Vector<RefFrame * > queueA_, queueB_;
 };
 
 
