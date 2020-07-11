@@ -7,7 +7,8 @@ RefFrame::RefFrame()
 {
 	tree_   = nullptr;
 	index_  = -1;
-	parent_ = -1;
+	origin_ = -1;
+	root_   = -1;
 }
 
 RefFrame::~RefFrame()
@@ -32,6 +33,9 @@ void RefFrame::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("set_origin", "ref_frame"), &RefFrame::set_origin );
 	ClassDB::bind_method( D_METHOD("origin"),                  &RefFrame::origin ); //,    Variant::OBJECT );
+
+	ClassDB::bind_method( D_METHOD("set_root", "ref_frame"), &RefFrame::set_root );
+	ClassDB::bind_method( D_METHOD("root"),                  &RefFrame::root ); //,    Variant::OBJECT );
 }
 
 void RefFrame::set_name( const String & name )
@@ -112,16 +116,16 @@ void RefFrame::set_origin( Node * parent )
 {
 	if ( !parent )
 	{
-		parent_ = -1;
+		origin_ = -1;
 		return;
 	}
 	RefFrame * rf = Object::cast_to<RefFrame>( parent );
 	if ( !rf )
 	{
-		parent_ = -1;
+		origin_ = -1;
 		return;
 	}
-	parent_ = rf->index_;
+	origin_ = rf->index_;
 }
 
 Node * RefFrame::origin() const
@@ -129,10 +133,38 @@ Node * RefFrame::origin() const
 	if ( !tree_ )
 		return nullptr;
 
-	if ( parent_ < 0 )
+	if ( origin_ < 0 )
 		return nullptr;
 
-	RefFrame * rf = tree_->frames_.ptr()[parent_];
+	RefFrame * rf = tree_->frames_.ptr()[origin_];
+	return rf;
+}
+
+void RefFrame::set_root( Node * parent )
+{
+	if ( !parent )
+	{
+		root_ = -1;
+		return;
+	}
+	RefFrame * rf = Object::cast_to<RefFrame>( parent );
+	if ( !rf )
+	{
+		root_ = -1;
+		return;
+	}
+	root_ = rf->index_;
+}
+
+Node * RefFrame::root() const
+{
+	if ( !tree_ )
+		return nullptr;
+
+	if ( root_ < 0 )
+		return nullptr;
+
+	RefFrame * rf = tree_->frames_.ptr()[root_];
 	return rf;
 }
 

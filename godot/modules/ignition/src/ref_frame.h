@@ -47,12 +47,16 @@ public:
 	void set_origin( Node * parent );
 	Node * origin() const;
 
+	void set_root( Node * parent );
+	Node * root() const;
+
 	String name_;
 	SE3    se3_;
 
 	RefFrameTree * tree_;
 	int index_;
-	int parent_;
+	int origin_;
+	int root_;
 
 	Vector<RefFrame * > queueA_, queueB_;
 };
