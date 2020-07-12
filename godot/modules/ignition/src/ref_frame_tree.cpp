@@ -14,9 +14,10 @@ void RefFrameTree::clear()
 	for ( int i=0; i<qty; i++ )
 	{
 		RefFrame * rf = frames_.ptr()[i];
-		rf->index_ = -1;
-		rf->parent_ = -1;
-		rf->tree_ = nullptr;
+		rf->index_  = -1;
+		rf->origin_ = -1;
+		rf->root_   = -1;
+		rf->tree_   = nullptr;
 	}
 
 	frames_.clear();
@@ -42,9 +43,16 @@ void RefFrameTree::push_back( Node * ref_frame )
 
 	const int index = frames_.size();
 	frames_.push_back( rf );
-	rf->tree_ = this;
-	rf->index_ = index;
-	rf->parent_ = -1;
+	rf->tree_   = this;
+	rf->index_  = index;
+	rf->origin_ = -1;
+	rf->root_   = -1;
+}
+
+RefFrame * RefFrameTree::frame( int index )
+{
+	RefFrame * rf = frames_.ptr()[index];
+	return rf;
 }
 
 

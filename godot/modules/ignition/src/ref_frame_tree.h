@@ -20,6 +20,8 @@ public:
 	void clear();
 	void push_back( Node * ref_frame );
 
+	RefFrame * frame( int index );
+
 	Vector< RefFrame * > frames_;
 };
 

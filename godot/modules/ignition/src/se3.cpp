@@ -94,6 +94,13 @@ SE3 SE3::absolute_to( const SE3 & o ) const
 	return s;
 }
 
+SE3 SE3::relative_to_child( const SE3 & ch ) const
+{
+	const SE3 ch_abs = (*this) * ch;
+	const SE3 rel_to_ch = (*this) / ch_abs;
+	return rel_to_ch;
+}
+
 void SE3::set_r( const Vector3 & r )
 {
 	r_.x_ = r.x;
@@ -123,6 +130,15 @@ void SE3::set_w( const Vector3 & w )
 	w_.z_ = w.z;
 }
 
+void SE3::set_transform( const Transform & t )
+{
+	const Vector3 r = t.get_origin();
+	set_r( r );
+	const Basis b = t.get_basis();
+	const Quat q = b.get_quat();
+	set_q( q );
+}
+
 Vector3 SE3::r() const
 {
 	const Vector3 res( r_.x_, r_.y_, r_.z_ );
@@ -145,6 +161,17 @@ Vector3 SE3::w() const
 {
 	const Vector3 res( w_.x_, w_.y_, w_.z_ );
 	return res;
+}
+
+Transform SE3::transform() const
+{
+	Transform t;
+	t.set_origin( this->r() );
+	const Quat q = this->q();
+	const Basis b = q;
+	t.set_basis( b );
+
+	return t;
 }
 
 
