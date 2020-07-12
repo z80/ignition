@@ -44,6 +44,29 @@ void RefFrame::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("change_origin", "ref_frame"), &RefFrame::change_origin );
 	ClassDB::bind_method( D_METHOD("compute_relative_to_root" ), &RefFrame::compute_relative_to_root );
+
+
+	ClassDB::bind_method( D_METHOD("set_jump_r", "vector3" ), &RefFrame::set_jump_r );
+	ClassDB::bind_method( D_METHOD("set_jump_q", "quat" ),    &RefFrame::set_jump_q );
+	ClassDB::bind_method( D_METHOD("set_jump_v", "vector3" ), &RefFrame::set_jump_v );
+	ClassDB::bind_method( D_METHOD("set_jump_w", "vector3" ), &RefFrame::set_jump_w );
+	ClassDB::bind_method( D_METHOD("set_jump_transform", "transform" ), &RefFrame::set_jump_transform );
+
+	ClassDB::bind_method( D_METHOD("set_obj_r", "vector3" ), &RefFrame::set_obj_r );
+	ClassDB::bind_method( D_METHOD("set_obj_q", "quat" ),    &RefFrame::set_obj_q );
+	ClassDB::bind_method( D_METHOD("set_obj_v", "vector3" ), &RefFrame::set_obj_v );
+	ClassDB::bind_method( D_METHOD("set_obj_w", "vector3" ), &RefFrame::set_obj_w );
+	ClassDB::bind_method( D_METHOD("set_obj_transform", "transform" ), &RefFrame::set_obj_transform );
+
+	ClassDB::bind_method( D_METHOD("calc_obj_jump_state" ), &RefFrame::calc_obj_jump_state );
+
+	ClassDB::bind_method( D_METHOD("obj_r" ), &RefFrame::obj_r, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("obj_q" ), &RefFrame::obj_q, Variant::QUAT );
+	ClassDB::bind_method( D_METHOD("obj_v" ), &RefFrame::obj_v, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("obj_w" ), &RefFrame::obj_w, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("obj_transform" ), &RefFrame::obj_transform, Variant::TRANSFORM );
+
+	ClassDB::bind_method( D_METHOD("apply_jump" ), &RefFrame::apply_jump );
 }
 
 void RefFrame::set_name( const String & name )
