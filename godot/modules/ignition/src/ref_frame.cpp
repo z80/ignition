@@ -17,27 +17,27 @@ RefFrame::~RefFrame()
 
 void RefFrame::_bind_methods()
 {
-    ClassDB::bind_method( D_METHOD("set_name", "string"), &RefFrame::set_name, Variant::NIL );
-    ClassDB::bind_method( D_METHOD("name"),               &RefFrame::name, Variant::STRING );
+    ClassDB::bind_method( D_METHOD("set_rf_name", "string"), &RefFrame::set_name, Variant::NIL );
+    ClassDB::bind_method( D_METHOD("rf_name"),               &RefFrame::name, Variant::STRING );
 
-    //ClassDB::bind_method( D_METHOD("set_r", "vector3"),   &RefFrame::set_r, Variant::NIL );
-	//ClassDB::bind_method( D_METHOD("r"),                  &RefFrame::r,    Variant::VECTOR3 );
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "r", PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, "Ba-ba-ba"), "set_r", "r");
+    ClassDB::bind_method( D_METHOD("set_r", "vector3"),   &RefFrame::set_r, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("r"),                  &RefFrame::r,    Variant::VECTOR3 );
+	//ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "r"), "set_r", "r");
 
-	//ClassDB::bind_method( D_METHOD("set_q", "quat"),      &RefFrame::set_q, Variant::NIL );
-	//ClassDB::bind_method( D_METHOD("q"),                  &RefFrame::q,    Variant::QUAT );
-	ADD_PROPERTY(PropertyInfo(Variant::QUAT, "q", PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, "Ba-ba-ba"), "set_q", "q");
+	ClassDB::bind_method( D_METHOD("set_q", "quat"),      &RefFrame::set_q, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("q"),                  &RefFrame::q,    Variant::QUAT );
+	//ADD_PROPERTY(PropertyInfo(Variant::QUAT, "q"), "set_q", "q");
 
-	//ClassDB::bind_method( D_METHOD("set_v", "vector3"),   &RefFrame::set_v, Variant::NIL );
-	//ClassDB::bind_method( D_METHOD("v"),                  &RefFrame::v,    Variant::VECTOR3 );
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "v", PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, "Ba-ba-ba"), "set_v", "v");
+	ClassDB::bind_method( D_METHOD("set_v", "vector3"),   &RefFrame::set_v, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("v"),                  &RefFrame::v,    Variant::VECTOR3 );
+	//ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "v"), "set_v", "v");
 
-	//ClassDB::bind_method( D_METHOD("set_w", "vector3"),   &RefFrame::set_w, Variant::NIL );
-	//ClassDB::bind_method( D_METHOD("w"),                  &RefFrame::w,    Variant::VECTOR3 );
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "w", PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, "Ba-ba-ba"), "set_w", "w");
+	ClassDB::bind_method( D_METHOD("set_w", "vector3"),   &RefFrame::set_w, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("w"),                  &RefFrame::w,    Variant::VECTOR3 );
+	//ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "w"), "set_w", "w");
 
-	ClassDB::bind_method( D_METHOD("set_transform", "transform"), &RefFrame::set_transform, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("transform"),                  &RefFrame::transform,    Variant::TRANSFORM );
+	ClassDB::bind_method( D_METHOD("set_rf_transform", "transform"), &RefFrame::set_transform, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("rf_transform"),                  &RefFrame::transform,    Variant::TRANSFORM );
 
 	ClassDB::bind_method( D_METHOD("r_root"),             &RefFrame::r_root,    Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("q_root"),             &RefFrame::q_root,    Variant::QUAT );
@@ -60,21 +60,21 @@ void RefFrame::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_jump_w", "vector3" ), &RefFrame::set_jump_w );
 	ClassDB::bind_method( D_METHOD("set_jump_transform", "transform" ), &RefFrame::set_jump_transform );
 
-	//ClassDB::bind_method( D_METHOD("set_obj_r", "vector3" ), &RefFrame::set_obj_r );
-	//ClassDB::bind_method( D_METHOD("obj_r" ), &RefFrame::obj_r, Variant::VECTOR3 );
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "obj_r", PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, "Ba-ba-ba"), "set_obj_r", "obj_r");
+	ClassDB::bind_method( D_METHOD("set_obj_r", "vector3" ), &RefFrame::set_obj_r );
+	ClassDB::bind_method( D_METHOD("obj_r" ), &RefFrame::obj_r, Variant::VECTOR3 );
+	//ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "obj_r"), "set_obj_r", "obj_r");
 
-	//ClassDB::bind_method( D_METHOD("set_obj_q", "quat" ),    &RefFrame::set_obj_q );
-	//ClassDB::bind_method( D_METHOD("obj_q" ), &RefFrame::obj_q, Variant::QUAT );
-	ADD_PROPERTY(PropertyInfo(Variant::QUAT, "obj_q", PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, "Ba-ba-ba"), "set_obj_q", "obj_q");
+	ClassDB::bind_method( D_METHOD("set_obj_q", "quat" ),    &RefFrame::set_obj_q );
+	ClassDB::bind_method( D_METHOD("obj_q" ), &RefFrame::obj_q, Variant::QUAT );
+	//ADD_PROPERTY(PropertyInfo(Variant::QUAT, "obj_q"), "set_obj_q", "obj_q");
 
-	//ClassDB::bind_method( D_METHOD("set_obj_v", "vector3" ), &RefFrame::set_obj_v );
-	//ClassDB::bind_method( D_METHOD("obj_v" ), &RefFrame::obj_v, Variant::VECTOR3 );
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "obj_v", PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, "Ba-ba-ba"), "set_obj_v", "obj_v");
+	ClassDB::bind_method( D_METHOD("set_obj_v", "vector3" ), &RefFrame::set_obj_v );
+	ClassDB::bind_method( D_METHOD("obj_v" ), &RefFrame::obj_v, Variant::VECTOR3 );
+	//ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "obj_v"), "set_obj_v", "obj_v");
 
-	//ClassDB::bind_method( D_METHOD("set_obj_w", "vector3" ), &RefFrame::set_obj_w );
-	//ClassDB::bind_method( D_METHOD("obj_w" ), &RefFrame::obj_w, Variant::VECTOR3 );
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "obj_w", PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, "Ba-ba-ba"), "set_obj_w", "obj_w");
+	ClassDB::bind_method( D_METHOD("set_obj_w", "vector3" ), &RefFrame::set_obj_w );
+	ClassDB::bind_method( D_METHOD("obj_w" ), &RefFrame::obj_w, Variant::VECTOR3 );
+	//ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "obj_w"), "set_obj_w", "obj_w");
 
 
 	ClassDB::bind_method( D_METHOD("set_obj_transform", "transform" ), &RefFrame::set_obj_transform );
