@@ -7,7 +7,7 @@
 
 void register_ignition_types()
 {
-    ClassDB::register_class<OccupancyGrid>();
+	ClassDB::register_class<OccupancyGrid>();
 	ClassDB::register_class<RefFrame>();
 	ClassDB::register_class<RefFrameTree>();
 }

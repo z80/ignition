@@ -36,8 +36,8 @@ void RefFrame::_bind_methods()
 	ClassDB::bind_method( D_METHOD("w"),                  &RefFrame::w,    Variant::VECTOR3 );
 	//ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "w"), "set_w", "w");
 
-	ClassDB::bind_method( D_METHOD("set_rf_transform", "transform"), &RefFrame::set_transform, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("rf_transform"),                  &RefFrame::transform,    Variant::TRANSFORM );
+	ClassDB::bind_method( D_METHOD("set_rf_transform", "transform"), &RefFrame::set_rf_transform, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("rf_transform"),                  &RefFrame::rf_transform,    Variant::TRANSFORM );
 
 	ClassDB::bind_method( D_METHOD("r_root"),             &RefFrame::r_root,    Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("q_root"),             &RefFrame::q_root,    Variant::QUAT );
@@ -116,12 +116,12 @@ void RefFrame::set_w( const Vector3 & w )
 	se3_.set_w( w );
 }
 
-void RefFrame::set_transform( const Transform & t )
+void RefFrame::set_rf_transform( const Transform & t )
 {
 	se3_.set_transform( t );
 }
 
-Transform RefFrame::transform() const
+Transform RefFrame::rf_transform() const
 {
 	Transform t;
 	t.set_origin( se3_.r() );
@@ -259,7 +259,7 @@ void RefFrame::change_origin( Node * origin )
 
 void RefFrame::compute_relative_to_root()
 {
-	se3_rel_to_root_ = relative( root_ );	
+	se3_rel_to_root_ = relative( root_ );
 }
 
 
