@@ -55,6 +55,8 @@ public:
 	void set_root( Ref<Reference> parent );
 	Ref<Reference> root() const;
 
+	bool in_tree() const;
+
 	/// Change origin without changing absolute position in space.
 	void change_origin( Ref<Reference> origin );
 

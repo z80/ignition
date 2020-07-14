@@ -50,6 +50,8 @@ void RefFrame::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_root", "ref_frame"), &RefFrame::set_root );
 	ClassDB::bind_method( D_METHOD("root"),                  &RefFrame::root ); //,    Variant::OBJECT );
 
+	ClassDB::bind_method( D_METHOD("in_tree"),               &RefFrame::in_tree, Variant::BOOL );
+
 	ClassDB::bind_method( D_METHOD("change_origin", "ref_frame"), &RefFrame::change_origin );
 	ClassDB::bind_method( D_METHOD("compute_relative_to_root" ), &RefFrame::compute_relative_to_root );
 
@@ -234,6 +236,12 @@ Ref<Reference> RefFrame::root() const
 
 	RefFrame * rf = tree_->frames_.ptr()[root_];
 	return rf;
+}
+
+bool RefFrame::in_tree() const
+{
+	const bool res = ( !tree_.is_null() );
+	return res;
 }
 
 void RefFrame::change_origin( Ref<Reference> origin )
