@@ -43,7 +43,7 @@ void RefFrameTree::push_back( Node * ref_frame )
 
 	const int index = frames_.size();
 	frames_.push_back( rf );
-	rf->tree_   = this;
+	rf->tree_   = Ref<RefFrameTree>( this );
 	rf->index_  = index;
 	rf->origin_ = -1;
 	rf->root_   = -1;

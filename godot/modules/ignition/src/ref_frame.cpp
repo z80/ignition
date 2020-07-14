@@ -3,7 +3,7 @@
 #include "ref_frame_tree.h"
 
 RefFrame::RefFrame()
-	: Spatial()
+	: Reference()
 {
 	tree_   = nullptr;
 	index_  = -1;
@@ -180,14 +180,14 @@ Vector3 RefFrame::w_root() const
 	return res;
 }
 
-void RefFrame::set_origin( Node * parent )
+void RefFrame::set_origin( Ref<Reference> parent )
 {
-	if ( !parent )
+	if ( parent.is_null() )
 	{
 		origin_ = -1;
 		return;
 	}
-	RefFrame * rf = Object::cast_to<RefFrame>( parent );
+	RefFrame * rf = Object::cast_to<RefFrame>( parent.ptr() );
 	if ( !rf )
 	{
 		origin_ = -1;
@@ -196,9 +196,9 @@ void RefFrame::set_origin( Node * parent )
 	origin_ = rf->index_;
 }
 
-Node * RefFrame::origin() const
+Ref<Reference> RefFrame::origin() const
 {
-	if ( !tree_ )
+	if ( tree_.is_null() )
 		return nullptr;
 
 	if ( origin_ < 0 )
@@ -208,14 +208,14 @@ Node * RefFrame::origin() const
 	return rf;
 }
 
-void RefFrame::set_root( Node * parent )
+void RefFrame::set_root( Ref<Reference> parent )
 {
-	if ( !parent )
+	if ( parent.is_null() )
 	{
 		root_ = -1;
 		return;
 	}
-	RefFrame * rf = Object::cast_to<RefFrame>( parent );
+	RefFrame * rf = Object::cast_to<RefFrame>( parent.ptr() );
 	if ( !rf )
 	{
 		root_ = -1;
@@ -224,9 +224,9 @@ void RefFrame::set_root( Node * parent )
 	root_ = rf->index_;
 }
 
-Node * RefFrame::root() const
+Ref<Reference> RefFrame::root() const
 {
-	if ( !tree_ )
+	if ( tree_.is_null() )
 		return nullptr;
 
 	if ( root_ < 0 )
@@ -236,16 +236,16 @@ Node * RefFrame::root() const
 	return rf;
 }
 
-void RefFrame::change_origin( Node * origin )
+void RefFrame::change_origin( Ref<Reference> origin )
 {
 	int new_origin;
-	if ( !origin )
+	if ( origin.is_null() )
 	{
 		new_origin = -1;
 	}
 	else
 	{
-		RefFrame * new_o = Object::cast_to<RefFrame>( origin );
+		RefFrame * new_o = Object::cast_to<RefFrame>( origin.ptr() );
 		if ( !new_o )
 			new_origin = -1;
 		else
@@ -357,7 +357,7 @@ void RefFrame::apply_jump()
 
 SE3 RefFrame::relative( int root_ind, const SE3 & se3_local, const SE3 & se3_root )
 {
-	if ( !tree_ )
+	if ( tree_.is_null() )
 		return SE3();
 
 	queueA_.clear();

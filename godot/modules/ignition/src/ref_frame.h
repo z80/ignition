@@ -16,9 +16,9 @@ using namespace Ign;
 
 class RefFrameTree;
 
-class RefFrame: public Spatial
+class RefFrame: public Reference
 {
-	GDCLASS(RefFrame, Spatial);
+	GDCLASS(RefFrame, Reference);
 	OBJ_CATEGORY("Ignition");
 
 protected:
@@ -49,14 +49,14 @@ public:
 	Vector3 v_root() const;
 	Vector3 w_root() const;
 
-	void set_origin( Node * parent );
-	Node * origin() const;
+	void set_origin( Ref<Reference> parent );
+	Ref<Reference> origin() const;
 
-	void set_root( Node * parent );
-	Node * root() const;
+	void set_root( Ref<Reference> parent );
+	Ref<Reference> root() const;
 
 	/// Change origin without changing absolute position in space.
-	void change_origin( Node * origin );
+	void change_origin( Ref<Reference> origin );
 
 	/// Compute state relative to the "root_" specified.
 	void compute_relative_to_root();
@@ -97,7 +97,7 @@ public:
 	SE3    se3_obj_cur_;
 	SE3    se3_obj_after_jump_;
 
-	RefFrameTree * tree_;
+	Ref<RefFrameTree> tree_;
 	int index_;
 	int origin_;
 	int root_;
