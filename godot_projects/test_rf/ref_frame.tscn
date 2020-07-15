@@ -2,5 +2,5 @@
 
 [ext_resource path="res://ref_frame.gd" type="Script" id=1]
 
-[node name="Spatial" type="Spatial"]
+[node name="RefFrame" type="Spatial"]
 script = ExtResource( 1 )

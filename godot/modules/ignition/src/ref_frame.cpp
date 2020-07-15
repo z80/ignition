@@ -43,6 +43,7 @@ void RefFrame::_bind_methods()
 	ClassDB::bind_method( D_METHOD("q_root"),             &RefFrame::q_root,    Variant::QUAT );
 	ClassDB::bind_method( D_METHOD("v_root"),             &RefFrame::v_root,    Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("w_root"),             &RefFrame::w_root,    Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("t_root"),             &RefFrame::t_root,    Variant::TRANSFORM );
 
 	ClassDB::bind_method( D_METHOD("set_origin", "ref_frame"),   &RefFrame::set_origin );
 	ClassDB::bind_method( D_METHOD("origin"),                    &RefFrame::origin ); //,    Variant::OBJECT );
@@ -180,6 +181,12 @@ Vector3 RefFrame::w_root() const
 {
 	const Vector3 res = se3_rel_to_root_.w();
 	return res;
+}
+
+Transform RefFrame::t_root() const
+{
+	const Transform t = se3_rel_to_root_.transform();
+	return t;
 }
 
 void RefFrame::set_origin( Ref<Reference> parent )

@@ -48,6 +48,7 @@ public:
 	Quat    q_root() const;
 	Vector3 v_root() const;
 	Vector3 w_root() const;
+	Transform t_root() const;
 
 	void set_origin( Ref<Reference> parent );
 	Ref<Reference> origin() const;
