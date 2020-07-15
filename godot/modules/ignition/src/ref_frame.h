@@ -75,7 +75,7 @@ public:
 	void set_obj_q( const Quat & q );
 	void set_obj_v( const Vector3 & v );
 	void set_obj_w( const Vector3 & w );
-	void set_obj_transform( const Transform & t );
+	void set_obj_t( const Transform & t );
 
 	void calc_obj_jump_state();
 
@@ -83,9 +83,17 @@ public:
 	Quat    obj_q() const;
 	Vector3 obj_v() const;
 	Vector3 obj_w() const;
-	Transform obj_transform() const;
+	Transform obj_t() const;
 
 	void apply_jump();
+
+	/// Object transform in local frame and output object relative to root.
+	void calc_obj_relative_to_root();
+	Vector3 obj_root_r() const;
+	Quat    obj_root_q() const;
+	Vector3 obj_root_v() const;
+	Vector3 obj_root_w() const;
+	Transform obj_root_t() const;
 
 
 	/// Compute relative state in the most generic way.
@@ -98,6 +106,7 @@ public:
 	SE3    se3_rel_to_root_;
 	SE3    se3_jump_to_;
 	SE3    se3_obj_cur_;
+	SE3    se3_obj_rel_to_root_;
 	SE3    se3_obj_after_jump_;
 
 	Ref<RefFrameTree> tree_;

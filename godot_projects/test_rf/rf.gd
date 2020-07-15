@@ -18,7 +18,7 @@ func init( rf_tree ):
 	
 func _process(delta):
 	_ref_frame.compute_relative_to_root()
-	var: Transform t = _ref_frame.t_root()
+	var t: Transform = _ref_frame.t_root()
 	set_transform( t )
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

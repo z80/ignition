@@ -79,14 +79,19 @@ void RefFrame::_bind_methods()
 	ClassDB::bind_method( D_METHOD("obj_w" ), &RefFrame::obj_w, Variant::VECTOR3 );
 	//ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "obj_w"), "set_obj_w", "obj_w");
 
+	ClassDB::bind_method( D_METHOD("set_obj_t", "transform" ), &RefFrame::set_obj_t );
+	ClassDB::bind_method( D_METHOD("obj_t" ), &RefFrame::obj_t, Variant::TRANSFORM );
 
-	ClassDB::bind_method( D_METHOD("set_obj_transform", "transform" ), &RefFrame::set_obj_transform );
 
 	ClassDB::bind_method( D_METHOD("calc_obj_jump_state" ), &RefFrame::calc_obj_jump_state );
-
-	ClassDB::bind_method( D_METHOD("obj_transform" ), &RefFrame::obj_transform, Variant::TRANSFORM );
-
 	ClassDB::bind_method( D_METHOD("apply_jump" ), &RefFrame::apply_jump );
+
+	ClassDB::bind_method( D_METHOD("calc_obj_relative_to_root" ), &RefFrame::calc_obj_relative_to_root );
+	ClassDB::bind_method( D_METHOD("obj_root_r" ), &RefFrame::obj_root_r, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("obj_root_q" ), &RefFrame::obj_root_q, Variant::QUAT );
+	ClassDB::bind_method( D_METHOD("obj_root_v" ), &RefFrame::obj_root_v, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("obj_root_w" ), &RefFrame::obj_root_w, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("obj_root_t" ), &RefFrame::obj_root_q, Variant::TRANSFORM );
 }
 
 void RefFrame::set_name( const String & name )
@@ -323,7 +328,7 @@ void RefFrame::set_obj_w( const Vector3 & w )
 	se3_obj_cur_.set_w( w );
 }
 
-void RefFrame::set_obj_transform( const Transform & t )
+void RefFrame::set_obj_t( const Transform & t )
 {
 	se3_obj_cur_.set_transform( t );
 }
@@ -357,7 +362,7 @@ Vector3 RefFrame::obj_w() const
 	return res;
 }
 
-Transform RefFrame::obj_transform() const
+Transform RefFrame::obj_t() const
 {
 	Transform res = se3_obj_after_jump_.transform();
 	return res;
@@ -367,6 +372,42 @@ void RefFrame::apply_jump()
 {
 	se3_ = relative( index_, se3_jump_to_ );
 }
+
+void RefFrame::calc_obj_relative_to_root()
+{
+	se3_obj_rel_to_root_ = relative( root_, se3_obj_cur_ );
+}
+
+Vector3 RefFrame::obj_root_r() const
+{
+	const Vector3 res = se3_obj_rel_to_root_.r();
+	return res;
+}
+
+Quat    RefFrame::obj_root_q() const
+{
+	const Quat res = se3_obj_rel_to_root_.q();
+	return res;
+}
+
+Vector3 RefFrame::obj_root_v() const
+{
+	const Vector3 res = se3_obj_rel_to_root_.v();
+	return res;
+}
+
+Vector3 RefFrame::obj_root_w() const
+{
+	const Vector3 res = se3_obj_rel_to_root_.w();
+	return res;
+}
+
+Transform RefFrame::obj_root_t() const
+{
+	const Transform res = se3_obj_rel_to_root_.transform();
+	return res;
+}
+
 
 
 
