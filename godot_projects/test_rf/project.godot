@@ -19,6 +19,10 @@ config/name="Test Rf"
 run/main_scene="res://rf_test.tscn"
 config/icon="res://icon.png"
 
+[editor_plugins]
+
+enabled=PoolStringArray( "godot-sqlite" )
+
 [rendering]
 
 quality/driver/driver_name="GLES2"
