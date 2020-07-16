@@ -1,2 +1,4 @@
 addons/godot-sqlite
 *.sqlite3
+*.db
+
