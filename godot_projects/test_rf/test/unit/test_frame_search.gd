@@ -56,10 +56,10 @@ func test_adding_frames():
 
 
 	dist = fs.nearest( [-1.0, -1.0, 0.9] )
-	assert_true( dist < 0.001, "Distance from tree node 3 to tree node should be very small" )
+	assert_true( dist < 0.5, "Distance from tree node 3 to tree node should not be large" )
 	
 	ind = fs.nearest_ind()
-	assert_true( ind == 2, "It should be the 3 frame chosen" )
+	assert_true( ind == 3, "It should be the 3 frame chosen" )
 
 
 
