@@ -30,6 +30,9 @@ void FrameSearch::_bind_methods()
 FrameSearch::FrameSearch()
 	: Reference()
 {
+	int   nearest_index_ = -1;
+	Float nearest_dist_  = 0.0;
+
 }
 
 FrameSearch::~FrameSearch()
