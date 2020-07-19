@@ -58,8 +58,9 @@ func frame_( index: int ):
 
 func build_kd_tree():
 	print( "started" )
+	frame_search_ = FrameSearch.new()
+	frame_search_.set_dims( 18 )
 	
-	var all: Array
 	var selected_array : Array = db_.select_rows('data', "", ['id', 'data'])
 	for v in selected_array:
 		var ind: int     = v['id']
@@ -68,7 +69,7 @@ func build_kd_tree():
 		#print( "raw data: ", stri )
 		var res = JSON.parse( data )
 		res = res.result
-		all.push_back( res )
+		frame_search_.append( res )
 	
 	print( "done" )
 	return
