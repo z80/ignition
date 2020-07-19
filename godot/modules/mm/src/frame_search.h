@@ -29,8 +29,6 @@ public:
 	// Normalization methods.
 	PoolVector<real_t> mean_std();
 	PoolVector<real_t> mean_ampl();
-	
-	//void set_normalization( const PoolVector<real_t> & bias, const PoolVector<real_t> & scale );
 
 	void build_tree();
 

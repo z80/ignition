@@ -119,12 +119,9 @@ PoolVector<real_t> FrameSearch::mean_std()
 	}
 
 	PoolVector<real_t> res;
-	res.resize( 2*dims );
+	res.resize( dims );
 	for ( int i=0; i<dims; i++ )
-	{
-		res.set( i, mean.data[i] );
 		res.set( i+dims, std.data[i] );
-	}
 
 	return res;
 }
@@ -189,12 +186,9 @@ PoolVector<real_t> FrameSearch::mean_ampl()
 	}
 
 	PoolVector<real_t> res;
-	res.resize( 2*dims );
+	res.resize( dims );
 	for ( int i=0; i<dims; i++ )
-	{
-		res.set( i, mean.data[i] );
-		res.set( i+dims, std.data[i] );
-	}
+		res.set( i, std.data[i] );
 
 	return res;
 }
