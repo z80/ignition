@@ -36,5 +36,10 @@ def configure_static_build():
 
 configure_static_build()
 
-#if ARGUMENTS.get('slicer_tests', 'no') == 'yes':
+#if ARGUMENTS.get('mm_tests', 'no') == 'yes':
 #    SConscript("tests/SCsub")
+
+
+
+
+

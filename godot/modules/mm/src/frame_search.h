@@ -2,63 +2,52 @@
 #ifndef __FRAME_SEARCH_H_
 #define __FRAME_SEARCH_H_
 
-#include "core/vector.h"
+#include "core/reference.h"
+#include "kd_tree.h"
 
 namespace MM
 {
 
-typedef double Float;
-
-struct FrameDesc
+class FrameSearch: public Reference
 {
-	Float data[MAX_SIZE];
-};
+	GDCLASS(FrameSearch, Reference);
+	OBJ_CATEGORY("MM");
+protected:
+	static void _bind_methods();
 
-struct TreeNode
-{
-	// In FrameDesc array.
-	int frame_ind_;
-	// In nodes array.
-	int left_ind_;
-	int right_ind_;
-};
-
-class KdTree
-{
 public:
-	KdTree();
-	~KdTree();
+	FrameSearch();
+	~FrameSearch();
 
-	void set_dims( int sz );
-	int  dims() const;
+	bool set_dims( int dims );
+	int dims() const;
+
 	void clear();
-	void append( const FrameDesc & data );
-	void set_weight( const FrameDesc & data );
-	void set_weight( int ind, Float v );
-
-	Float dist( const FrameDesc & a, const FrameDesc & b );
+	void append( const PoolVector<real_t> & desc );
+	// Crazification method to force it to not be selected.
+	void set_desc( int index, const PoolVector<real_t> & desc );
+	// Normalization methods.
+	PoolVector<real_t> mean_std();
+	PoolVector<real_t> mean_ampl();
 
 	void build_tree();
 
-	int nearest( const FrameDesc & point, Float & dist );
-	Float dist( const FrameDesc & point, int index );
+	void set_weight( int index, real_t w );
+	void set_weights( const PoolVector<real_t> & w );
 
-	int               dims_;
-	FrameDesc         weight_;
-	Vector<FrameDesc> data_;
-	Vector<TreeNode>  nodes_;
+	real_t nearest( const PoolVector<real_t> & desc );
+	real_t nearest_dist() const;
+	int    nearest_ind() const;
 
-	int root_;
-	int best_ind_;
-	Float best_dist_;
-	int visited_qty_;
-
+	real_t dist( const PoolVector<real_t> & desc, int index );
+	real_t dist2( int index_a, int index_b );
 
 private:
-	int make_tree( int begin, int end, int index );
-	void nearest_internal( const FrameDesc & point, int root_ind, int dim_index, int & best_ind, Float & best_dist );
-
+	KdTree tree_;
+	int   nearest_index_;
+	Float nearest_dist_;
 };
+
 
 }
 

@@ -1,181 +1,274 @@
 
 #include "frame_search.h"
 #include "core/sort_array.h"
+#include "core/math/math_funcs.h"
 
 namespace MM
 {
 
-static const int MAX_SIZE = 32;
+static const Float EPS = 1.0e-9;
 
-
-
-
-
-
-
-
-KdTree::KdTree()
+void FrameSearch::_bind_methods()
 {
-	dims_ = MAX_SIZE;
+	ClassDB::bind_method( D_METHOD("set_dims", "int"), &FrameSearch::set_dims, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("dims"),            &FrameSearch::dims,     Variant::INT );
+	ClassDB::bind_method( D_METHOD("clear"),           &FrameSearch::clear,    Variant::INT );
+	ClassDB::bind_method( D_METHOD("append",   "desc"),  &FrameSearch::append,   Variant::NIL );
+	ClassDB::bind_method( D_METHOD("set_desc", "int", "desc" ),  &FrameSearch::set_desc,   Variant::NIL );
+	ClassDB::bind_method( D_METHOD("mean_std" ),  &FrameSearch::mean_std,    Variant::POOL_REAL_ARRAY );
+	ClassDB::bind_method( D_METHOD("mean_ampl" ), &FrameSearch::mean_ampl,   Variant::POOL_REAL_ARRAY );
+	ClassDB::bind_method( D_METHOD("build_tree" ), &FrameSearch::build_tree, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("set_weight", "int", "real_t" ), &FrameSearch::set_weight, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("set_weights", "vector real_t" ), &FrameSearch::set_weights, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("nearest", "vector real_t" ), &FrameSearch::nearest, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("nearest_dist" ), &FrameSearch::nearest_dist, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("nearest_ind" ),  &FrameSearch::nearest_ind,  Variant::INT );
+	ClassDB::bind_method( D_METHOD("dist", "vector real", "int" ), &FrameSearch::dist,  Variant::REAL );
+	ClassDB::bind_method( D_METHOD("dist2", "int", "int" ), &FrameSearch::dist2,  Variant::REAL );
 }
 
-KdTree::~KdTree()
+FrameSearch::FrameSearch()
+	: Reference()
 {
 }
 
-void KdTree::set_dims( int sz )
+FrameSearch::~FrameSearch()
 {
-	dims_ = sz;
 }
 
-int  KdTree::dims() const
+bool FrameSearch::set_dims( int dims )
 {
-	return dims_;
+	const bool res = tree_.set_dims( dims );
+	return res;
 }
 
-void KdTree::clear()
+int FrameSearch::dims() const
 {
-	data_.clear();
-	nodes_.clear();
+	const int res = tree_.dims();
+	return res;
 }
 
-void KdTree::append( const FrameDesc & data )
+void FrameSearch::clear()
 {
-	data_.push_back( data );
+	tree_.clear();
 }
 
-void KdTree::set_weight( const FrameDesc & data )
+void FrameSearch::append( const PoolVector<real_t> & desc )
 {
-	weight_ = data;
+	const int sz = desc.size();
+	const int dims = tree_.dims();
+	const int qty = (sz <= dims) ? sz : dims;
+	FrameDesc d;
+	for ( int i=0; i<qty; i++ )
+		d.data[i] = desc.get( i );
+	tree_.append( d );
 }
 
-void KdTree::set_weight( int ind, Float v )
+void FrameSearch::set_desc( int index, const PoolVector<real_t> & desc )
 {
-	weight_.data[ind] = v;
+	const int sz = desc.size();
+	const int dims = tree_.dims();
+	const int qty = (sz <= dims) ? sz : dims;
+	FrameDesc d;
+	for ( int i=0; i<qty; i++ )
+		d.data[i] = desc.get( i );
+	tree_.data_.ptrw()[index] = d;
 }
 
-Float KdTree::dist( const FrameDesc & a, const FrameDesc & b )
+PoolVector<real_t> FrameSearch::mean_std()
 {
-	Float d = 0.0;
-	const int dims = dims_;
+	FrameDesc mean, std;
+	const int dims = tree_.dims();
+	for ( size_t i=0; i<dims; i++ )
+	{
+		mean.data[i]    = 0.0;
+		std.data[i] = 0.0;
+	}
+	const size_t qty = tree_.data_.size();
+	for ( size_t i=0; i<qty; i++ )
+	{
+		for ( size_t j=0; j<dims; j++ )
+		{
+			const Float v = tree_.data_.ptr()[i].data[j];
+			mean.data[j] += v;
+		}
+	}
+	for ( size_t j=0; j<dims; j++ )
+	{
+		const Float m = mean.data[j] / static_cast<Float>( qty );
+		mean.data[j] = m;
+	}
+
+	for ( size_t i=0; i<qty; i++ )
+	{
+		for ( size_t j=0; j<dims; j++ )
+		{
+			const Float v = tree_.data_.ptr()[i].data[j];
+			const Float m = mean.data[j];
+			const Float dv = v - m;
+			std.data[j] += dv*dv;
+		}
+	}
+	for ( size_t j=0; j<dims; j++ )
+	{
+		const Float s = Math::sqrt( std.data[j] / static_cast<Float>( qty ) );
+		if ( s > EPS )
+			std.data[j] = 1.0/s;
+		else
+			std.data[j] = 1.0;
+	}
+
+	PoolVector<real_t> res;
+	res.resize( 2*dims );
 	for ( int i=0; i<dims; i++ )
 	{
-		const Float dv  = a.data[i] - b.data[i];
-		const Float dv2 = dv*dv*weight_.data[i];
-		d += dv2;
+		res.set( i, mean.data[i] );
+		res.set( i+dims, std.data[i] );
 	}
 
-	return d;
+	return res;
 }
 
-void KdTree::build_tree()
+PoolVector<real_t> FrameSearch::mean_ampl()
 {
-	root_       = -1;
-	const int qty = data_.size();
-	//Create and initialize nodes.
-	nodes_.resize( qty );
+	FrameDesc mean, std;
+	FrameDesc vmin, vmax;
+	PoolVector<bool> assigned;
+	const int dims = tree_.dims();
+	assigned.resize( dims );
+	for ( size_t i=0; i<dims; i++ )
+	{
+		mean.data[i] = 0.0;
+		std.data[i]  = 0.0;
+		assigned.set( i, false );
+	}
+	const size_t qty = tree_.data_.size();
+	for ( size_t i=0; i<qty; i++ )
+	{
+		for ( size_t j=0; j<dims; j++ )
+		{
+			const Float v = tree_.data_.ptr()[i].data[j];
+			mean.data[j] += v;
+
+			const bool ass = assigned.get( j );
+			if ( !ass )
+			{
+				vmin.data[j] = vmax.data[j] = v;
+				assigned.set( j, true );
+			}
+			else
+			{
+				double & currMin = vmin.data[j];
+				if ( v < currMin )
+					currMin = v;
+				double & currMax = vmax.data[j];
+				if ( v > currMax )
+					currMax = v;
+			}
+		}
+	}
+	for ( size_t j=0; j<dims; j++ )
+	{
+		const Float m = mean.data[j] / static_cast<Float>( qty );
+		mean.data[j] = m;
+
+		double & currMin = vmin.data[j];
+		currMin = (currMin - m) + m;
+
+		double & currMax = vmax.data[j];
+		currMax = (currMax - m) + m;
+	}
+
+	for ( size_t j=0; j<dims; j++ )
+	{
+		const Float s = vmax.data[j] - vmin.data[j];
+		if ( s > EPS )
+			std.data[j] = 1.0/s;
+		else
+			std.data[j] = 1.0;
+	}
+
+	PoolVector<real_t> res;
+	res.resize( 2*dims );
+	for ( int i=0; i<dims; i++ )
+	{
+		res.set( i, mean.data[i] );
+		res.set( i+dims, std.data[i] );
+	}
+
+	return res;
+}
+
+void FrameSearch::build_tree()
+{
+	tree_.build_tree();
+}
+
+void FrameSearch::set_weight( int index, real_t w )
+{
+	tree_.set_weight( index, w );
+}
+
+void FrameSearch::set_weights( const PoolVector<real_t> & w )
+{
+	const int sz = w.size();
+	const int dims = tree_.dims();
+	const int qty = (sz <= dims) ? sz : dims;
+	FrameDesc d;
 	for ( int i=0; i<qty; i++ )
-	{
-		TreeNode & node = nodes_.ptrw()[i];
-		node.frame_ind_ =  i;
-		node.left_ind_  = -1;
-		node.right_ind_ = -1;
-	}
-	root_ = make_tree( 0, qty, 0 );
+		d.data[i] = w.get( i );
+	tree_.set_weight( d );
 }
 
-int KdTree::nearest( const FrameDesc & point, Float & dist )
+real_t FrameSearch::nearest( const PoolVector<real_t> & desc )
 {
-	int   best_ind = -1;
-	Float best_dist = 0.0;
-	nearest_internal( point, root_, 0, best_ind, best_dist );
+	const int sz = desc.size();
+	const int dims = tree_.dims();
+	const int qty = (sz <= dims) ? sz : dims;
+	FrameDesc d;
+	for ( int i=0; i<qty; i++ )
+		d.data[i] = desc.get( i );
 
-	dist = best_dist;
-	const TreeNode & node = nodes_.ptr()[best_ind];
-	const int frame_best_ind = node.frame_ind_;
-	return frame_best_ind;
+	nearest_index_ = tree_.nearest( d, nearest_dist_ );
+
+	return nearest_dist_;
 }
 
-Float KdTree::dist( const FrameDesc & point, int index )
+real_t FrameSearch::nearest_dist() const
 {
-	const FrameDesc & frame = data_.ptr()[index];
-	const Float d = dist( point, frame );
-	return d;
+	return nearest_dist_;
 }
 
-struct NthComparator
+int FrameSearch::nearest_ind() const
 {
-	int index;
-	KdTree * tree;
-	bool operator()( const TreeNode & a, const TreeNode & b ) const
-	{
-		const int ind_a = a.frame_ind_;
-		const int ind_b = b.frame_ind_;
-		const FrameDesc & fa = tree->data_.ptr()[ind_a];
-		const FrameDesc & fb = tree->data_.ptr()[ind_b];
-		const Float va = fa.data[index];
-		const Float vb = fb.data[index];
-		return (va < vb);
-	}
-};
+	return nearest_index_;
+}
 
-int KdTree::make_tree( int begin, int end, int dim_index )
+real_t FrameSearch::dist( const PoolVector<real_t> & desc, int index )
 {
-	if ( end <= begin )
-		return -1;
-	int n = begin + (end - begin)/2;
-	SortArray<TreeNode, NthComparator> comparator;
-	comparator.compare.index = dim_index;
-	comparator.compare.tree  = this;
-	comparator.nth_element( begin, end, n, nodes_.ptrw() );
-	//std::nth_element(&nodes_[begin], &nodes_[n], &nodes_[end], node_cmp(index));
-	const int new_index = (dim_index + 1) % dims_;
-	TreeNode & node = nodes_.ptrw()[n];
-	node.left_ind_  = make_tree( begin, n, new_index );
-	node.right_ind_ = make_tree( n + 1, end, new_index );
-	return n;
+	const int sz = desc.size();
+	const int dims = tree_.dims();
+	const int qty = (sz <= dims) ? sz : dims;
+	FrameDesc d;
+	for ( int i=0; i<qty; i++ )
+		d.data[i] = desc.get( i );
+
+	const Float ind_dist = tree_.dist( d, index );
+
+	return ind_dist;
 }
 
-void KdTree::nearest_internal( const FrameDesc & point, int root_ind, int dim_index, int & best_ind, Float & best_dist )
+real_t FrameSearch::dist2( int index_a, int index_b )
 {
-	if ( root_ind < 0)
-		return;
-	++visited_qty_;
+	const Float ind_dist = tree_.dist( index_a, index_b );
+	return ind_dist;
+}
 
-	const TreeNode & root_node = nodes_.ptr()[root_ind];
-	const FrameDesc & root = data_.ptr()[root_node.frame_ind_];
-	Float d = dist( root, point );
-	if ( (best_ind < 0) || (d < best_dist) )
-	{
-		best_dist = d;
-		best_ind  = root_ind;
-	}
-	if ( best_dist == 0.0 )
-		return;
 
-	const Float dx = root.data[dim_index] - point.data[dim_index];
-	const Float dx2 = dx*dx*weight_.data[dim_index];
-	const bool do_left_first = (dx > 0.0);
-	const int next_dim_index = (dim_index + 1) % dims_;
-
-	if ( do_left_first )
-		nearest_internal( point, root_node.left_ind_, next_dim_index, best_ind, best_dist );
-	else
-		nearest_internal( point, root_node.right_ind_, next_dim_index, best_ind, best_dist );
-	if ( dx2 >= best_dist_ )
-		return;
-	if ( !do_left_first )
-		nearest_internal( point, root_node.right_ind_, next_dim_index, best_ind, best_dist );
-	else
-		nearest_internal( point, root_node.left_ind_, next_dim_index, best_ind, best_dist );
 }
 
 
 
-
-
-
-}
 
 
 
