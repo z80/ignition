@@ -1,0 +1,383 @@
+[gd_scene load_steps=15 format=2]
+
+[ext_resource path="res://Console/Console.gd" type="Script" id=1]
+[ext_resource path="res://Console/noto_sans_ui/NotoSansUI-Regular.ttf" type="DynamicFontData" id=2]
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0.3, 0.27, 0.27, 1 )
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+
+[sub_resource type="StyleBoxFlat" id=2]
+bg_color = Color( 0.6, 0.6, 0.6, 0.121569 )
+border_color = Color( 1, 1, 1, 0.145098 )
+
+[sub_resource type="StyleBoxFlat" id=3]
+bg_color = Color( 0.6, 0.6, 0.6, 0 )
+
+[sub_resource type="StyleBoxFlat" id=4]
+bg_color = Color( 0.843137, 0.843137, 0.843137, 0.109804 )
+
+[sub_resource type="StyleBoxFlat" id=5]
+bg_color = Color( 0, 0, 0, 0 )
+
+[sub_resource type="StyleBoxFlat" id=6]
+bg_color = Color( 0, 0, 0, 0 )
+
+[sub_resource type="StyleBoxFlat" id=7]
+bg_color = Color( 0.588235, 0.588235, 0.588235, 0.121569 )
+border_color = Color( 0.8, 0.8, 0.8, 0 )
+
+[sub_resource type="StyleBoxFlat" id=8]
+bg_color = Color( 0.196078, 0.196078, 0.196078, 0.243137 )
+border_color = Color( 0.8, 0.8, 0.8, 0 )
+
+[sub_resource type="StyleBoxFlat" id=9]
+bg_color = Color( 0.3, 0.3, 0.32, 0.34 )
+border_color = Color( 0.8, 0.8, 0.8, 0 )
+
+[sub_resource type="DynamicFont" id=10]
+size = 10
+use_filter = true
+font_data = ExtResource( 2 )
+
+[sub_resource type="Animation" id=11]
+length = 0.2
+tracks/0/type = "bezier"
+tracks/0/path = NodePath("Control:rect_position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"points": PoolRealArray(  ),
+"times": PoolRealArray(  )
+}
+tracks/1/type = "bezier"
+tracks/1/path = NodePath("Control:rect_position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"points": PoolRealArray( -1988.11, -0.0918868, 22.29, 0.0492825, -383.376, 0, -0.25, 0, 0.0870815, -130.586 ),
+"times": PoolRealArray( 0, 0.1 )
+}
+tracks/2/type = "method"
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [  ],
+"method": "toggle_visibility"
+} ]
+}
+
+[sub_resource type="Animation" id=12]
+length = 0.2
+tracks/0/type = "bezier"
+tracks/0/path = NodePath("Control:rect_position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"points": PoolRealArray(  ),
+"times": PoolRealArray(  )
+}
+tracks/1/type = "bezier"
+tracks/1/path = NodePath("Control:rect_position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.0870815, -130.586, -1988.11, -0.0918868, 22.29, 0.0492825, -383.376 ),
+"times": PoolRealArray( 0, 0.1 )
+}
+tracks/2/type = "method"
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0.1 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [  ],
+"method": "toggle_visibility"
+} ]
+}
+
+[node name="Console" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_bottom = -325.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+consoleUserNameColor = 6
+design = 6
+textColor = 5
+showTextBackground = false
+showSendButton = false
+titleBarBackgroundColor = Color( 0.3, 0.27, 0.27, 1 )
+backgroundColor = Color( 0, 0, 0, 0.98 )
+textBackgroundColor = Color( 0, 0, 0, 0 )
+lineBackgroundColor = Color( 0.24, 0.24, 0.24, 0.98 )
+sendButtonColor = Color( 0.3, 0.3, 0.32, 0.34 )
+sendButtonTextColor = Color( 1, 1, 1, 1 )
+slideInAnimation = ""
+sendUserName = true
+
+[node name="LogTimer" type="Timer" parent="."]
+wait_time = 300.0
+
+[node name="Control" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_constants/separation = 0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TitleBar" type="Control" parent="Control/VBoxContainer"]
+margin_right = 1024.0
+margin_bottom = 15.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.5
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TitleBarBackground" type="Panel" parent="Control/VBoxContainer/TitleBar"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = -0.27739
+margin_bottom = -0.277405
+mouse_filter = 1
+custom_styles/panel = SubResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VBoxContainer" type="Control" parent="Control/VBoxContainer/TitleBar"]
+anchor_left = 0.946
+anchor_top = 0.267
+anchor_right = 0.992
+anchor_bottom = 0.933
+margin_left = 0.295959
+margin_top = -0.00500011
+margin_right = 0.191956
+margin_bottom = 0.00499916
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HideConsole" type="Button" parent="Control/VBoxContainer/TitleBar/VBoxContainer"]
+anchor_left = -0.02
+anchor_top = -0.2
+anchor_right = 1.066
+anchor_bottom = 1.06
+margin_left = 0.0233741
+margin_right = -34.0186
+margin_bottom = 5.4
+rect_scale = Vector2( 3, 0.7 )
+focus_mode = 0
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 3 )
+custom_styles/focus = SubResource( 3 )
+custom_styles/normal = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "-"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ConsoleContainer" type="Control" parent="Control/VBoxContainer"]
+margin_top = 15.0
+margin_right = 1024.0
+margin_bottom = 275.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 25.0
+
+[node name="ConsoleBackground" type="ColorRect" parent="Control/VBoxContainer/ConsoleContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 0.98 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ConsoleText" type="Control" parent="Control/VBoxContainer/ConsoleContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_bottom = -20.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 10.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TextBackground" type="ColorRect" parent="Control/VBoxContainer/ConsoleContainer/ConsoleText"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 0 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Control/VBoxContainer/ConsoleContainer/ConsoleText"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 8.0
+margin_right = -4.0
+margin_bottom = -4.0
+bbcode_enabled = true
+scroll_following = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="InputLine" type="Control" parent="Control/VBoxContainer/ConsoleContainer"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = -20.0
+rect_min_size = Vector2( 0, 20 )
+size_flags_horizontal = 3
+size_flags_vertical = 3
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LineBackground" type="ColorRect" parent="Control/VBoxContainer/ConsoleContainer/InputLine"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0.24, 0.24, 0.24, 0.98 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/VBoxContainer/ConsoleContainer/InputLine"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/separation = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ChannelSelector" type="Control" parent="Control/VBoxContainer/ConsoleContainer/InputLine/HBoxContainer"]
+margin_right = 78.0
+margin_bottom = 20.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect" type="ColorRect" parent="Control/VBoxContainer/ConsoleContainer/InputLine/HBoxContainer/ChannelSelector"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Channels" type="OptionButton" parent="Control/VBoxContainer/ConsoleContainer/InputLine/HBoxContainer/ChannelSelector"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_styles/hover = SubResource( 4 )
+custom_styles/pressed = SubResource( 5 )
+custom_styles/focus = SubResource( 5 )
+custom_styles/normal = SubResource( 5 )
+text = "All"
+items = [ "All", null, false, 0, null ]
+selected = 0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Input" type="Control" parent="Control/VBoxContainer/ConsoleContainer/InputLine/HBoxContainer"]
+margin_left = 80.0
+margin_right = 1024.0
+margin_bottom = 20.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 12.0
+
+[node name="Line" type="LineEdit" parent="Control/VBoxContainer/ConsoleContainer/InputLine/HBoxContainer/Input"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 5.0
+custom_styles/normal = SubResource( 6 )
+placeholder_text = ">"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ButtonField" type="Control" parent="Control/VBoxContainer/ConsoleContainer/InputLine/HBoxContainer"]
+visible = false
+margin_left = 950.0
+margin_right = 1024.0
+margin_bottom = 20.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ButtonBackground" type="ColorRect" parent="Control/VBoxContainer/ConsoleContainer/InputLine/HBoxContainer/ButtonField"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = -0.35849
+margin_bottom = -0.35849
+color = Color( 0, 0, 0, 0 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SendText" type="Button" parent="Control/VBoxContainer/ConsoleContainer/InputLine/HBoxContainer/ButtonField"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_styles/hover = SubResource( 7 )
+custom_styles/pressed = SubResource( 8 )
+custom_styles/focus = SubResource( 9 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 10 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "send"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Animation" type="AnimationPlayer" parent="."]
+anims/slide_in = SubResource( 11 )
+anims/slide_out = SubResource( 12 )
+[connection signal="resized" from="." to="." method="_on_Console_resized"]
+[connection signal="timeout" from="LogTimer" to="." method="_on_LogTimer_timeout"]
+[connection signal="gui_input" from="Control/VBoxContainer/TitleBar" to="." method="_on_TitleBar_gui_input"]
+[connection signal="pressed" from="Control/VBoxContainer/TitleBar/VBoxContainer/HideConsole" to="." method="_on_HideConsole_pressed"]
+[connection signal="meta_clicked" from="Control/VBoxContainer/ConsoleContainer/ConsoleText/RichTextLabel" to="." method="_on_RichTextLabel_meta_clicked"]
+[connection signal="item_selected" from="Control/VBoxContainer/ConsoleContainer/InputLine/HBoxContainer/ChannelSelector/Channels" to="." method="_on_Channels_item_selected"]
+[connection signal="text_changed" from="Control/VBoxContainer/ConsoleContainer/InputLine/HBoxContainer/Input/Line" to="." method="_on_Line_text_changed"]
+[connection signal="text_entered" from="Control/VBoxContainer/ConsoleContainer/InputLine/HBoxContainer/Input/Line" to="." method="_on_Line_text_entered"]
+[connection signal="pressed" from="Control/VBoxContainer/ConsoleContainer/InputLine/HBoxContainer/ButtonField/SendText" to="." method="_on_SendText_pressed"]
