@@ -175,9 +175,9 @@ void KdTree::nearest_internal( const FrameDesc & point, int root_ind, int dim_in
 	if ( dx2 >= best_dist )
 		return;
 	if ( !do_left_first )
-		nearest_internal( point, root_node.right_ind_, next_dim_index, best_ind, best_dist );
-	else
 		nearest_internal( point, root_node.left_ind_, next_dim_index, best_ind, best_dist );
+	else
+		nearest_internal( point, root_node.right_ind_, next_dim_index, best_ind, best_dist );
 }
 
 
