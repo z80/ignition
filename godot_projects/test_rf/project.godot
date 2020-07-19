@@ -75,12 +75,12 @@ _global_script_class_icons={
 [application]
 
 config/name="Test Rf"
-run/main_scene="res://rf_test.tscn"
+run/main_scene="res://mm/mm_tests.tscn"
 config/icon="res://icon.png"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "godot-sqlite" )
+enabled=PoolStringArray( "godot-sqlite", "gut" )
 
 [rendering]
 

@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/gut/plugin_control.gd" type="Script" id=1]
+
+[node name="mm_tests" type="Node2D"]
+
+[node name="Gut" type="Control" parent="."]
+margin_right = 826.0
+margin_bottom = 397.0
+rect_min_size = Vector2( 740, 250 )
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+_run_on_load = true
+_should_maximize = true
+_include_subdirectories = true
+_directory1 = "res://test/unit"
+_directory2 = "res://test/integration"
