@@ -27,8 +27,8 @@ public:
 	// Crazification method to force it to not be selected.
 	void set_desc( int index, const PoolVector<real_t> & desc );
 	// Normalization methods.
-	PoolVector<real_t> mean_std();
-	PoolVector<real_t> mean_ampl();
+	PoolVector<real_t> inv_std();
+	PoolVector<real_t> inv_ampl();
 
 	void build_tree();
 

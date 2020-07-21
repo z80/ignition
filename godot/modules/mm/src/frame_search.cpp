@@ -15,8 +15,8 @@ void FrameSearch::_bind_methods()
 	ClassDB::bind_method( D_METHOD("clear"),           &FrameSearch::clear,    Variant::INT );
 	ClassDB::bind_method( D_METHOD("append",   "desc"),  &FrameSearch::append,   Variant::NIL );
 	ClassDB::bind_method( D_METHOD("set_desc", "int", "desc" ),  &FrameSearch::set_desc,   Variant::NIL );
-	ClassDB::bind_method( D_METHOD("mean_std" ),  &FrameSearch::mean_std,    Variant::POOL_REAL_ARRAY );
-	ClassDB::bind_method( D_METHOD("mean_ampl" ), &FrameSearch::mean_ampl,   Variant::POOL_REAL_ARRAY );
+	ClassDB::bind_method( D_METHOD("inv_std" ),  &FrameSearch::inv_std,    Variant::POOL_REAL_ARRAY );
+	ClassDB::bind_method( D_METHOD("inv_ampl" ), &FrameSearch::inv_ampl,   Variant::POOL_REAL_ARRAY );
 	ClassDB::bind_method( D_METHOD("build_tree" ), &FrameSearch::build_tree, Variant::NIL );
 	ClassDB::bind_method( D_METHOD("set_weight", "int", "real_t" ), &FrameSearch::set_weight, Variant::NIL );
 	ClassDB::bind_method( D_METHOD("set_weights", "vector real_t" ), &FrameSearch::set_weights, Variant::NIL );
@@ -78,7 +78,7 @@ void FrameSearch::set_desc( int index, const PoolVector<real_t> & desc )
 	tree_.data_.ptrw()[index] = d;
 }
 
-PoolVector<real_t> FrameSearch::mean_std()
+PoolVector<real_t> FrameSearch::inv_std()
 {
 	FrameDesc mean, std;
 	const int dims = tree_.dims();
@@ -124,12 +124,12 @@ PoolVector<real_t> FrameSearch::mean_std()
 	PoolVector<real_t> res;
 	res.resize( dims );
 	for ( int i=0; i<dims; i++ )
-		res.set( i+dims, std.data[i] );
+		res.set( i, std.data[i] );
 
 	return res;
 }
 
-PoolVector<real_t> FrameSearch::mean_ampl()
+PoolVector<real_t> FrameSearch::inv_ampl()
 {
 	FrameDesc mean, std;
 	FrameDesc vmin, vmax;

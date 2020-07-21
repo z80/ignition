@@ -25,22 +25,8 @@ const DT: float  = 1.0/FPS
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	var db = open_frame_database()
-	var has_desc: bool = has_desc_column( db )
-	var res: bool
-	if not has_desc:
-		res = create_desc_column( db )
-		#if not res:
-		#	return
-		res = fill_descs( db )
-		if not res:
-			return
-	#build_kd_tree( db )
-	
-	#for i in range( 3 ):
-	#	var f = frame_( i * 300 )
-	#	print( f )
-	#	print( "-------" )
+	generate_descriptors()
+
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
@@ -50,7 +36,8 @@ func _ready():
 func generate_descriptors():
 	var db = open_frame_database()
 	create_desc_column( db )
-	fill_descs( db )
+	#fill_descs( db )
+	estimate_scale( db )
 	db.close_db()
 
 
@@ -71,6 +58,7 @@ func open_frame_database():
 	
 	return db
 
+
 func has_desc_column( db ):
 	var cmd: String = "SELECT COUNT(*) AS qty FROM pragma_table_info('desc') WHERE name='data';"
 	var res: bool = db.query( cmd )
@@ -78,6 +66,7 @@ func has_desc_column( db ):
 	var has_desc: bool = (qty > 0)
 	#print( "query result: ", has_desc )
 	return has_desc
+
 
 func create_desc_column( db ):
 	var cmd: String = "ALTER TABLE data ADD COLUMN desc text;"
@@ -164,20 +153,27 @@ func frame_( db, index: int ):
 	var selected_array : Array = db.query_result
 	var stri = selected_array[0]['data']
 	stri = stri.replace( "'", "\"" )
-	#print( "raw data: ", stri )
 	var ret = JSON.parse( stri )
-	#var err = res.error
-	#print( "JSON parse error line: ", err )
-	#var err_line = res.error_line
-	#print( "JSON parse error line: ", err_line )
-	#print( "result: ", res.result )
-	#print( "gnd type: ", typeof( res.result['gnd'][0] ) == TYPE_BOOL )
+	ret = ret.result
+	return ret
+
+
+func desc_( db, index: int ):
+	var cmd: String = "SELECT desc FROM data WHERE id = %d LIMIT 1;" % index
+	var res: bool = db.query( cmd )
+	if not res:
+		print( "failed to query frame from the db" )
+		return null
+	var selected_array : Array = db.query_result
+	var stri = selected_array[0]['desc']
+	stri = stri.replace( "'", "\"" )
+	var ret = JSON.parse( stri )
 	ret = ret.result
 	return ret
 
 
 func estimate_scale( db ):
-	print( "Reading frames database..." )
+	print( "Estimating scale..." )
 	var dims: int = get_config_( db, "desc_length")
 	
 	db.query("SELECT COUNT(*) AS 'qty' FROM " + TABLE_DATA_NAME + ";")
@@ -187,9 +183,22 @@ func estimate_scale( db ):
 	fs.set_dims( dims )
 	
 	for i in range( frames_qty ):
-		# I'm here today.
-		pass
+		var d: Array = desc_( db, i )
+		fs.append( d )
 	
+	var inv_std: Array  = fs.inv_std()
+	var inv_ampl: Array = fs.inv_ampl()
+	
+	set_config_( db, "inv_std", inv_std )
+	set_config_( db, "inv_ampl", inv_ampl )
+	
+	var desc_lengths = get_config_( db, "desc_lengths" )
+	var gains: Array = []
+	for i in desc_lengths:
+		gains.push_back( 1.0 )
+	
+	set_config_( db, "desc_gains", gains )
+
 
 
 func build_kd_tree( db ):
