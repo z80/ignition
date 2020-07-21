@@ -12,10 +12,10 @@ var frame_search_ = null
 var bone_names_ = null
 
 const ROOT_IND: int       = 0
-const LEFT_LEG_IND: int   = 1
-const RIGHT_LEG_IND: int  = 2
-const LEFT_HAND_IND: int  = 3
-const RIGHT_HAND_IND: int = 5
+const LEFT_LEG_IND: int   = 15
+const RIGHT_LEG_IND: int  = 19
+const LEFT_HAND_IND: int  = 8
+const RIGHT_HAND_IND: int = 12
 const POSE_LIMB_INDS: Array = [ROOT_IND, LEFT_LEG_IND, RIGHT_LEG_IND, LEFT_HAND_IND, RIGHT_HAND_IND]
 const TRAJ_FRAME_INDS: Array = [30, 60, 90, 120]
 
@@ -45,6 +45,13 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass
+
+# Need to do this once
+func generate_descriptors():
+	var db = open_frame_database()
+	create_desc_column( db )
+	fill_descs( db )
+	db.close_db()
 
 
 func open_frame_database():
@@ -95,7 +102,7 @@ func fill_descs( frame_db ):
 	var desc_lengths: Array = []
 	for d in descs:
 		var sz = d.size()
-		desc_lengths.push_back( d )
+		desc_lengths.push_back( sz )
 		desc += d
 	var desc_length: int = desc.size()
 	
@@ -111,14 +118,16 @@ func fill_descs( frame_db ):
 		for d in descs:
 			desc += d
 		
-		var stri_d = JSON.print( desc )
+		var stri_f: String = JSON.print( f )
+		stri_f = stri_f.replace( "\"", "\'" )
+		var stri_d: String = JSON.print( desc )
 		stri_d = stri_d.replace( "\"", "\'" )
-		var cmd = "INSERT OR REPLACE INTO data(id, desc) VALUES(%d, \'%s\');" % [i, stri_d]
+		var cmd = "INSERT OR REPLACE INTO data(id, data, desc) VALUES(%d, \'%s\', \'%s\');" % [i, stri_f, stri_d]
 		var res: bool = frame_db.query( cmd )
 		if not res:
 			print( "Failed to write into desc_db" )
 			return false
-			
+		
 	return true
 
 
@@ -147,7 +156,7 @@ func get_config_( db, key: String ):
 
 
 func frame_( db, index: int ):
-	var cmd: String = "SELECT data FROM data WHERE id = %d LIMIT 1;" % (index+1)
+	var cmd: String = "SELECT data FROM data WHERE id = %d LIMIT 1;" % index
 	var res: bool = db.query( cmd )
 	if not res:
 		print( "failed to query frame from the db" )
@@ -165,6 +174,22 @@ func frame_( db, index: int ):
 	#print( "gnd type: ", typeof( res.result['gnd'][0] ) == TYPE_BOOL )
 	ret = ret.result
 	return ret
+
+
+func estimate_scale( db ):
+	print( "Reading frames database..." )
+	var dims: int = get_config_( db, "desc_length")
+	
+	db.query("SELECT COUNT(*) AS 'qty' FROM " + TABLE_DATA_NAME + ";")
+	var frames_qty: int = db.query_result[0]['qty']
+
+	var fs = FrameSearch.new()
+	fs.set_dims( dims )
+	
+	for i in range( frames_qty ):
+		# I'm here today.
+		pass
+	
 
 
 func build_kd_tree( db ):

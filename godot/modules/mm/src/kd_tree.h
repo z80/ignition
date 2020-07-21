@@ -9,7 +9,7 @@ namespace MM
 
 typedef double Float;
 
-static const int MAX_SIZE = 32;
+static const int MAX_SIZE = 64;
 
 struct FrameDesc
 {
