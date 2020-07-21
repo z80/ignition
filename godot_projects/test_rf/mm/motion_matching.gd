@@ -26,7 +26,16 @@ const DT: float  = 1.0/FPS
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var db = open_frame_database()
-	build_kd_tree( db )
+	var has_desc: bool = has_desc_column( db )
+	var res: bool
+	if not has_desc:
+		res = create_desc_column( db )
+		#if not res:
+		#	return
+		res = fill_descs( db )
+		if not res:
+			return
+	#build_kd_tree( db )
 	
 	#for i in range( 3 ):
 	#	var f = frame_( i * 300 )
@@ -51,52 +60,66 @@ func open_frame_database():
 	frames_qty_ = db.query_result[0]['qty']
 	
 	# Read bone names.
-	var selected_array: Array = db.select_rows( TABLE_CONFIG_NAME, "id = \'names\'", ['data'] )
-	if selected_array.size() < 1:
-		return false
-	var stri: String = selected_array[0]['data']
-	stri = stri.replace( "'", "\"" )
-	bone_names_ = JSON.parse( stri )
+	bone_names_ = get_config_( db, "names" )
 	
 	return db
 
+func has_desc_column( db ):
+	var cmd: String = "SELECT COUNT(*) AS qty FROM pragma_table_info('desc') WHERE name='data';"
+	var res: bool = db.query( cmd )
+	var qty: int = db.query_result[0]["qty"]
+	var has_desc: bool = (qty > 0)
+	#print( "query result: ", has_desc )
+	return has_desc
 
-func create_desc_database():
-	var db = SQLite.new()
-	db.path = DESC_DB_NAME
-	var res: bool = db_.open_db()
-	
+func create_desc_column( db ):
+	var cmd: String = "ALTER TABLE data ADD COLUMN desc text;"
+	var res: bool = db.query( cmd )
 	if not res:
-		print( "Failed to open frame database ", DESC_DB_NAME )
+		print( "failed to add column \'desc\' to the table \'data\'" )
 		return false
-	
-	# Create table for frame data and descriptors.
-	var table_dict : Dictionary = Dictionary()
-	table_dict["id"]   = {"data_type":"int", "primary_key": true, "not_null": true}
-	table_dict["pose"] = {"data_type":"text", "not_null": true}
-	table_dict["desc"] = {"data_type":"text", "not_null": true}
-	# Throw away any table that was already present
-	db.drop_table( 'frame' )
-	# Create a table with the structure found in table_dict and add it to the database
-	db.create_table( 'frame', table_dict )
-	
-	
-	# Create table for configuration.
-	# Currently bone names are stored here.
-	table_dict.clear()
-	table_dict["id"]   = {"data_type":"text", "primary_key": true, "not_null": true}
-	table_dict["data"] = {"data_type":"text", "not_null": true}
-	db.drop_table( 'config' )
-	# Create a table with the structure found in table_dict and add it to the database
-	db.create_table( 'config', table_dict )
-
 	return true
 
 
-func fill_desc_database( frame_db, desc_db ):
-	# I'm here now.....
-	pass
-
+func fill_descs( frame_db ):
+	# Number of frames
+	frame_db.query("SELECT COUNT(*) AS 'qty' FROM " + TABLE_DATA_NAME + ";")
+	var frames_qty: int = frame_db.query_result[0]['qty']
+	
+	# First figure out descriptor lengths
+	var f = frame_( frame_db, 0 )
+	var pose_desc = pose_desc_( frame_db, 0 )
+	var traj_desc = traj_desc_( frame_db, 0 )
+	var descs: Array = pose_desc + traj_desc
+	var desc: Array = []
+	var desc_lengths: Array = []
+	for d in descs:
+		var sz = d.size()
+		desc_lengths.push_back( d )
+		desc += d
+	var desc_length: int = desc.size()
+	
+	set_config_( frame_db, "desc_length",  desc_length )
+	set_config_( frame_db, "desc_lengths", desc_lengths )
+	
+	for i in range( frames_qty ):
+		f = frame_( frame_db, i )
+		pose_desc = pose_desc_( frame_db, i )
+		traj_desc = traj_desc_( frame_db, i )
+		descs = pose_desc + traj_desc
+		desc = []
+		for d in descs:
+			desc += d
+		
+		var stri_d = JSON.print( desc )
+		stri_d = stri_d.replace( "\"", "\'" )
+		var cmd = "INSERT OR REPLACE INTO data(id, desc) VALUES(%d, \'%s\');" % [i, stri_d]
+		var res: bool = frame_db.query( cmd )
+		if not res:
+			print( "Failed to write into desc_db" )
+			return false
+			
+	return true
 
 
 func set_config_( db, key: String, data ):
@@ -108,31 +131,40 @@ func set_config_( db, key: String, data ):
 
 
 func get_config_( db, key: String ):
-	var cmd: String = "SELECT DISTINCT from config(data) WHERE id=\'%s\'" % key
-	db.query( cmd )
+	var cmd: String = "SELECT data FROM config WHERE id=\'%s\' LIMIT 1;" % key
+	#var cmd: String = "SELECT FROM config(id, data);"
+	var res: bool = db.query( cmd )
+	if not res:
+		print( "config query failed" )
+		return null
+	var q_res = db.query_result
 	var stri: String = db.query_result[0]['data']
 	stri = stri.replace( "\'", "\"" )
-	var res = JSON.parse( stri )
-	res = res.result
-	return res
+	var ret = JSON.parse( stri )
+	ret = ret.result
+	return ret
 
 
 
 func frame_( db, index: int ):
-	var select_condition: String = "id = %d" % index
-	var selected_array : Array = db.select_rows('data', select_condition, ['data'])
+	var cmd: String = "SELECT data FROM data WHERE id = %d LIMIT 1;" % (index+1)
+	var res: bool = db.query( cmd )
+	if not res:
+		print( "failed to query frame from the db" )
+		return null
+	var selected_array : Array = db.query_result
 	var stri = selected_array[0]['data']
 	stri = stri.replace( "'", "\"" )
 	#print( "raw data: ", stri )
-	var res = JSON.parse( stri )
+	var ret = JSON.parse( stri )
 	#var err = res.error
 	#print( "JSON parse error line: ", err )
 	#var err_line = res.error_line
 	#print( "JSON parse error line: ", err_line )
 	#print( "result: ", res.result )
 	#print( "gnd type: ", typeof( res.result['gnd'][0] ) == TYPE_BOOL )
-	res = res.result
-	return res
+	ret = ret.result
+	return ret
 
 
 func build_kd_tree( db ):
@@ -214,26 +246,27 @@ func traj_desc_( db, index: int ):
 		var frame_ind: int = index + ind
 		if frame_ind >= frames_qty_:
 			frame_ind = frames_qty_ - 1
-			var fn = frame_( db, frame_ind )
-			var q: Quat = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fn[ROOT_IND] )
-			var r: Vector3 = Vector3( fn[ROOT_IND+4], fn[ROOT_IND+5], fn[ROOT_IND+6] )
-			var q_inv: Quat = q.inverse()
-			r = r - root_r
-			r = root_q_inv.xform( r )
-			var d = [r.x, r.y]
-			desc_r += d
-			
-			var fwd: Vector3 = Vector3( 1.0, 0.0, 0.0 )
-			fwd = q.xform( fwd )
-			fwd = root_q_inv.xform( fwd )
-			d = [fwd.x, fwd.y]
-			desc_az += d
-			
-			var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
-			g =	q_inv.xform( g )
-			d = [g.x, g.y]
-			desc_g += d
-			
+		
+		var fn = frame_( db, frame_ind )
+		var q: Quat = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fn[ROOT_IND] )
+		var r: Vector3 = Vector3( fn[ROOT_IND+4], fn[ROOT_IND+5], fn[ROOT_IND+6] )
+		var q_inv: Quat = q.inverse()
+		r = r - root_r
+		r = root_q_inv.xform( r )
+		var d = [r.x, r.y]
+		desc_r += d
+		
+		var fwd: Vector3 = Vector3( 1.0, 0.0, 0.0 )
+		fwd = q.xform( fwd )
+		fwd = root_q_inv.xform( fwd )
+		d = [fwd.x, fwd.y]
+		desc_az += d
+		
+		var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
+		g =	q_inv.xform( g )
+		d = [g.x, g.y]
+		desc_g += d
+		
 	return [desc_r, desc_az, desc_g]
 		
 		

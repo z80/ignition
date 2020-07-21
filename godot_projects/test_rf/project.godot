@@ -16,7 +16,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Test Rf"
-run/main_scene="res://mm/mm_tests.tscn"
+run/main_scene="res://mm/motion_matching.tscn"
 config/icon="res://icon.png"
 
 [editor_plugins]
