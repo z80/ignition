@@ -83,16 +83,19 @@ func init():
 	desc_weights_ = get_config_( db, "inv_std" )
 	desc_gains_   = get_config_( db, "desc_gains" )
 	desc_lengths_ = get_config_( db, "desc_lengths" )
-	switch_threshold_= get_config_( db, "switch_threshold" )
-	if switch_threshold_ == null:
+	var th = get_config_( db, "switch_threshold" )
+	if th == null:
 		switch_threshold_ = 0.3
 		set_config_( db, "switch_threshold", switch_threshold_ )
+	else:
+		switch_threshold_ = th
 	
-	switch_period_= get_config_( db, "switch_period" )
-	if switch_period_ == null:
+	var sp = get_config_( db, "switch_period" )
+	if sp == null:
 		switch_period_ = 30
 		set_config_( db, "switch_period", switch_period_ )
-	
+	else:
+		switch_period_ = sp
 
 	frame_search_ = build_kd_tree_( db )
 	apply_desc_gains_()
@@ -269,8 +272,10 @@ func get_config_( db, key: String ):
 	if not res:
 		print( "config query failed" )
 		return null
-	var q_res = db.query_result
-	var stri: String = db.query_result[0]['data']
+	var q_res: Array = db.query_result
+	if q_res.size() < 1:
+		return null
+	var stri: String = q_res[0]['data']
 	stri = stri.replace( "\'", "\"" )
 	var ret = JSON.parse( stri )
 	ret = ret.result
@@ -332,6 +337,8 @@ func frame_in_space_( db, index: int ):
 		f_dest[i+6] = r.z
 		
 		ind += 1
+	
+	return f_dest
 
 
 
