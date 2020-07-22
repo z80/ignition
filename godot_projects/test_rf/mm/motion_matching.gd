@@ -58,6 +58,9 @@ var time_passed_: float = 0.0
 # Target skeleton
 var skeleton_: Skeleton = null
 
+# Parent index for each bone
+var parents_: Array
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	#generate_descriptors()
@@ -102,6 +105,14 @@ func init():
 	init_control_sequence_()
 	
 	f_ = frame_in_space_( db_, frame_ind_ )
+	
+	get_parent_skeleton()
+	
+	var ps = get_config_( db_, "parents" )
+	if ps == null:
+		parents_ = get_parents_array_()
+	else:
+		parents_ = ps
 	
 
 
@@ -647,18 +658,51 @@ func apply_to_skeleton( s: Skeleton, f: Array ):
 	
 	for i in range( 0, sz, 7 ):
 		var q: Quat    = Quat( f[i+1], f[i+3], -f[i+2], f[i] )
-		var r: Vector3 = Vector3( f[i+4], f[i+6], -f[i+7] )
+		var r: Vector3 = Vector3( f[i+4], f[i+6], -f[i+5] )
+		
+		var ip: int = s.get_bone_parent( bone_ind )
+		if ip >= 0:
+			var qp: Quat    = Quat( f[ip+1], f[ip+3], -f[ip+2], f[ip] )
+			var rp: Vector3 = Vector3( f[ip+4], f[ip+6], -f[ip+5] )
+			var inv_qp = qp.inverse()
+			q = inv_qp * q
+			r = r - rp
+			q = Quat.IDENTITY
+			r = Vector3.ZERO #inv_qp.xform( r )
+		
 		t.origin = r
 		t.basis  = Basis( q )
-		s.set_bone_global_pose( bone_ind, t )
+		s.set_bone_pose( bone_ind, t )
+		bone_ind += 1
 
 
 func get_parent_skeleton():
 	var p = get_parent()
 	if p is Skeleton:
 		skeleton_ = p
+		var qty: int = skeleton_.get_bone_count()
+		var t: Transform = Transform.IDENTITY
+		for i in range(qty):
+			skeleton_.set_bone_rest( i, t )
 	else:
 		skeleton_ = null
+
+
+func get_parents_array_():
+	if skeleton_ == null:
+		return
+	
+	var qty: int = skeleton_.get_bone_count()
+	var parents: Array
+	parents.resize( qty )
+	for i in range( qty ):
+		var ip: int = skeleton_.get_bone_parent( i )
+		parents[i] = ip
+		
+	set_config_( db_, "parents", parents )
+	
+	return parents
+	
 
 
 func _on_tree_exiting():
