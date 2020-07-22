@@ -52,15 +52,25 @@ var pose_r_: Vector3  = Vector3.ZERO
 # Latest increments. Needed to adjust pose during switches.
 var pose_dq_: Quat    = Quat.IDENTITY
 var pose_dr_: Vector3 = Vector3.ZERO
+# Time passed after last frame.
+var time_passed_: float = 0.0
+
+# Target skeleton
+var skeleton_: Skeleton = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	generate_descriptors()
+	#generate_descriptors()
+	init()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func _process( delta ):
+	time_passed_ += delta
+	while ( time_passed_ >= DT ):
+		process_frame()
+		apply_to_skeleton( skeleton_, f_ )
+		time_passed_ -= DT
 
 
 # This one is called every time it starts.
@@ -88,7 +98,7 @@ func init():
 	apply_desc_gains_()
 	init_control_sequence_()
 	
-	f_ = frame_( db_, frame_ind_ )
+	f_ = frame_in_space_( db_, frame_ind_ )
 	
 
 
@@ -307,12 +317,19 @@ func frame_in_space_( db, index: int ):
 			ind += 1
 			continue
 		var q: Quat = Quat( f[i+1], f[i+2], f[i+3], f[i] )
-		#var r: Vector3 = Vector3( f[i+4], f[i+5], f[i+6] )
+		var r: Vector3 = Vector3( f[i+4], f[i+5], f[i+6] )
 		q = pose_q_ * inv_q_root * q
+		r = r - r_root
+		r = inv_q_root.xform( r )
+		r += pose_r_
+		
 		f_dest[i]   = q.w
 		f_dest[i+1] = q.x
 		f_dest[i+2] = q.y
 		f_dest[i+3] = q.z
+		f_dest[i+4] = r.x
+		f_dest[i+5] = r.y
+		f_dest[i+6] = r.z
 		
 		ind += 1
 
@@ -604,9 +621,47 @@ func process_frame():
 	
 	pose_r_ += dr
 	pose_q_ = pose_q_ * dq
+	# Just to avoid finite precision errors and assume the quaterion 
+	# is pure rotational quaternion.
+	pose_q_ = pose_q_.normalized()
 	
 	frame_ind_ = next_ind
-	f_ = fn
+	f_ = frame_in_space_( db_, frame_ind_ )
+
+
+
+func apply_to_skeleton( s: Skeleton, f: Array ):
+	if s == null:
+		return
+		
+	var sz = f.size()
+	var bone_ind: int = 0
+	var t: Transform
+	
+	for i in range( 0, sz, 7 ):
+		var q: Quat    = Quat( f[i+1], f[i+3], -f[i+2], f[i] )
+		var r: Vector3 = Vector3( f[i+4], f[i+6], -f[i+7] )
+		t.origin = r
+		t.basis  = Basis( q )
+		s.set_bone_global_pose( bone_ind, t )
+
+
+func get_parent_skeleton():
+	var p = get_parent()
+	if p is Skeleton:
+		skeleton_ = p
+	else:
+		skeleton_ = null
+
+
+func _on_tree_exiting():
+	if ( db_ ):
+		db_.close_db()
+		db_ = null
+
+
+
+
 
 
 
