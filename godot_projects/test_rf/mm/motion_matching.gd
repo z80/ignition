@@ -85,7 +85,7 @@ func init():
 	
 
 	frame_search_ = build_kd_tree_( db )
-	
+	apply_desc_gains_()
 	init_control_sequence_()
 	
 	f_ = frame_( db_, frame_ind_ )
@@ -101,13 +101,14 @@ func set_desc_gains( gains: Array ):
 			gains.push_back( 1.0 )
 	desc_gains_ = gains
 	set_config_( db_, "desc_gains", desc_gains_ )
+	apply_desc_gains_()
 
 
 func get_desc_gains():
 	return desc_gains_
 
 
-func apply_desc_gains():
+func apply_desc_gains_():
 	var ind: int = 0
 	var qty: int = desc_gains_.size()
 	var weights: Array = []
@@ -279,6 +280,42 @@ func frame_( db, index: int ):
 	var ret = JSON.parse( stri )
 	ret = ret.result
 	return ret
+
+
+func frame_in_space_( db, index: int ):
+	var f = frame_( db, index )
+	var sz: int = f.size()
+	var f_dest: Array
+	f_dest.resize( sz )
+	
+	var q_root: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
+	var r_root: Vector3 = Vector3( f[ROOT_IND+4], f[ROOT_IND+5], f[ROOT_IND+6] )
+	var inv_q_root = q_root.inverse()
+	var dest_q_root = pose_q_ * inv_q_root
+	var dest_r_root = pose_r_
+	f_dest[ROOT_IND]   = dest_q_root.w
+	f_dest[ROOT_IND+1] = dest_q_root.x
+	f_dest[ROOT_IND+2] = dest_q_root.y
+	f_dest[ROOT_IND+3] = dest_q_root.z
+	f_dest[ROOT_IND+4] = dest_r_root.x
+	f_dest[ROOT_IND+5] = dest_r_root.y
+	f_dest[ROOT_IND+6] = dest_r_root.z
+	
+	var ind: int = 0
+	for i in range( 0, sz, 7 ):
+		if ( ind == ROOT_IND  ):
+			ind += 1
+			continue
+		var q: Quat = Quat( f[i+1], f[i+2], f[i+3], f[i] )
+		#var r: Vector3 = Vector3( f[i+4], f[i+5], f[i+6] )
+		q = pose_q_ * inv_q_root * q
+		f_dest[i]   = q.w
+		f_dest[i+1] = q.x
+		f_dest[i+2] = q.y
+		f_dest[i+3] = q.z
+		
+		ind += 1
+
 
 
 func desc_( db, index: int ):
@@ -455,8 +492,10 @@ func init_control_sequence_():
 		control_vel_sequence_.push_back( default_ctrl )
 
 
-func frame_azimuth_( f ):
+func frame_azimuth_( db, ind: int ):
+	var f = frame_( db, ind )
 	var q: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
+	q = pose_q_ * q
 	var fwd: Vector3 = Vector3( 1.0, 0.0, 0.0 )
 	fwd = q.xform( fwd )
 	var az: float = atan2( fwd.y, fwd.x )
@@ -471,7 +510,7 @@ func apply_controls( t: Transform, f: bool, b: bool, l: bool, r: bool, run: bool
 	# Because of that the easiest way to compute azimuth is to transform (0,0,1) and 
 	# for atan2 use "x" for "y" and "z for "x".
 	var cam_az = atan2( fwd.x, fwd.z )
-	var az = frame_azimuth_( f_ )
+	var az = frame_azimuth_( db_, frame_ind_ )
 	cam_az -= az
 	
 	var ctrl: Vector3 = Vector3( 0.0, 0.0, 0.0 )
@@ -517,32 +556,57 @@ func process_frame():
 		time_to_switch = true
 		switch_counter_ -= switch_counter_
 		
-	if not time_to_switch:
-		var next_ind: int = frame_ind_ + 1
-		var fp = frame_( db_, frame_ind_ )
-		var fn = frame_( db_, next_ind )
-		
-		var qp: Quat    = Quat( fp[ROOT_IND+1], fp[ROOT_IND+2], fp[ROOT_IND+3], fp[ROOT_IND] )
-		var rp: Vector3 = Vector3( fp[ROOT_IND+4], fp[ROOT_IND+5], fp[ROOT_IND+6] )
-		var qn: Quat    = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fp[ROOT_IND] )
-		var rn: Vector3 = Vector3( fn[ROOT_IND+4], fn[ROOT_IND+5], fn[ROOT_IND+6] )
-		
-		var inv_qp      = qp.inverse()
-		var dq: Quat    = qp.inverse() * qn
-		var dr: Vector3 = rn - rp
+	var next_ind: int = frame_ind_ + 1
+	var jump: bool = false
+	
+	if time_to_switch:
+		#var f_cur = frame_( db_, frame_ind_ )
+		var desc_p = pose_desc_( db_, frame_ind_ )
+		var desc_t = input_based_traj_desc_( db_, pose_q_, frame_ind_ )
+		var d = []
+		for di in desc_p:
+			for v in di:
+				d.push_back( v )
+		for di in desc_t:
+			for v in di:
+				d.push_back( v )
+		var closest_err: float = frame_search_.nearest( d )
+		var closest_ind: int   = frame_search_.nearest_ind()
+		if closest_ind != next_ind:
+			var next_err: float = frame_search_.dist( d, next_ind )
+			var improvement: float = next_err - closest_err
+			if improvement >= switch_threshold_:
+				next_ind = closest_ind
+				jump = true
+			
+	var fp = frame_( db_, frame_ind_ )
+	var fn = frame_( db_, next_ind )
+	
+	var qp: Quat    = Quat( fp[ROOT_IND+1], fp[ROOT_IND+2], fp[ROOT_IND+3], fp[ROOT_IND] )
+	var rp: Vector3 = Vector3( fp[ROOT_IND+4], fp[ROOT_IND+5], fp[ROOT_IND+6] )
+	var qn: Quat    = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fp[ROOT_IND] )
+	var rn: Vector3 = Vector3( fn[ROOT_IND+4], fn[ROOT_IND+5], fn[ROOT_IND+6] )
+	
+	var dq: Quat
+	var dr: Vector3
+	if jump:
+		dr = pose_dr_ - rn
+		dq = pose_dq_ * qn.inverse()
+	
+	else:
+		var inv_qp: Quat = qp.inverse()
+		dq = qp.inverse() * qn
+		dr = rn - rp
 		dr = inv_qp.xform( dr )
 		dr = pose_q_.xform( dr )
 		pose_dr_ = dr
 		pose_dq_ = dq
-		pose_r_ += dr
-		pose_q_ = pose_q_ * dq
-		
-		frame_ind_ = next_ind
-		
-	else:
-		pass
-		
-
+	
+	pose_r_ += dr
+	pose_q_ = pose_q_ * dq
+	
+	frame_ind_ = next_ind
+	f_ = fn
 
 
 
