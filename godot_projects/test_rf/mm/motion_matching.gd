@@ -47,8 +47,11 @@ var control_vel_sequence_: Array
 # And these two are used to place animation frame to 
 # The right place in space.
 # These two parameters are adjusted on every frame switch.
-var az_adj_q_: Quat = Quat( 0.0, 0.0, 0.0, 1.0 )
-var pos_adj_r_: Vector3   = Vector3( 0.0, 0.0, 0.0 )
+var pose_q_: Quat     = Quat.IDENTITY
+var pose_r_: Vector3  = Vector3.ZERO
+# Latest increments. Needed to adjust pose during switches.
+var pose_dq_: Quat    = Quat.IDENTITY
+var pose_dr_: Vector3 = Vector3.ZERO
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -514,8 +517,31 @@ func process_frame():
 		time_to_switch = true
 		switch_counter_ -= switch_counter_
 		
-	var next_ind: int = frame_ind_ + 1
-
+	if not time_to_switch:
+		var next_ind: int = frame_ind_ + 1
+		var fp = frame_( db_, frame_ind_ )
+		var fn = frame_( db_, next_ind )
+		
+		var qp: Quat    = Quat( fp[ROOT_IND+1], fp[ROOT_IND+2], fp[ROOT_IND+3], fp[ROOT_IND] )
+		var rp: Vector3 = Vector3( fp[ROOT_IND+4], fp[ROOT_IND+5], fp[ROOT_IND+6] )
+		var qn: Quat    = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fp[ROOT_IND] )
+		var rn: Vector3 = Vector3( fn[ROOT_IND+4], fn[ROOT_IND+5], fn[ROOT_IND+6] )
+		
+		var inv_qp      = qp.inverse()
+		var dq: Quat    = qp.inverse() * qn
+		var dr: Vector3 = rn - rp
+		dr = inv_qp.xform( dr )
+		dr = pose_q_.xform( dr )
+		pose_dr_ = dr
+		pose_dq_ = dq
+		pose_r_ += dr
+		pose_q_ = pose_q_ * dq
+		
+		frame_ind_ = next_ind
+		
+	else:
+		pass
+		
 
 
 
