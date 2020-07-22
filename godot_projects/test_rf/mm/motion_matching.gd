@@ -3,13 +3,20 @@ extends Node
 
 const SQLite = preload("res://addons/godot-sqlite/bin/gdsqlite.gdns")
 const FRAME_DB_NAME = "res://mm_data.sqlite3.db"
-const DESC_DB_NAME  = "res://desc_mm_data.sqlite3.db"
 var db_ = null
-const TABLE_DATA_NAME = "data"
+const TABLE_DATA_NAME   = "data"
 const TABLE_CONFIG_NAME = "config"
 var frames_qty_: int = -1
 var frame_search_ = null
+
 var bone_names_ = null
+
+var desc_weights_: Array
+var desc_gains_: Array
+var desc_lengths_: Array
+
+var switch_threshold_: float = 0.3
+var switch_period_: int = 30
 
 const ROOT_IND: int       = 0
 const LEFT_LEG_IND: int   = 15
@@ -23,6 +30,26 @@ const FPS: float = 60.0
 const DT: float  = 1.0/FPS
 
 
+# Movement constants for building future trajectory.
+var walk_speed_: float = 0.5
+var run_speed_: float  = 2.0
+
+# Initial/default control.
+# velocity relative to current azimuth.
+var control_input_: Array = [0.0, 0.0]
+var frame_ind_: int = 0
+var switch_counter_: int = 0
+var f_: Array
+var control_pos_sequence_: Array
+var control_vel_sequence_: Array
+
+# The state is defined by animation frame.
+# And these two are used to place animation frame to 
+# The right place in space.
+# These two parameters are adjusted on every frame switch.
+var az_adj_q_: Quat = Quat( 0.0, 0.0, 0.0, 1.0 )
+var pos_adj_r_: Vector3   = Vector3( 0.0, 0.0, 0.0 )
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	generate_descriptors()
@@ -32,11 +59,104 @@ func _ready():
 #func _process(delta):
 #	pass
 
+
+# This one is called every time it starts.
+# It assumes frames and descriptors present in the database.
+func init():
+	var db = open_frame_database()
+	db_ = db
+
+	bone_names_   = get_config_( db, "names" )
+	desc_weights_ = get_config_( db, "inv_std" )
+	desc_gains_   = get_config_( db, "desc_gains" )
+	desc_lengths_ = get_config_( db, "desc_lengths" )
+	switch_threshold_= get_config_( db, "switch_threshold" )
+	if switch_threshold_ == null:
+		switch_threshold_ = 0.3
+		set_config_( db, "switch_threshold", switch_threshold_ )
+	
+	switch_period_= get_config_( db, "switch_period" )
+	if switch_period_ == null:
+		switch_period_ = 30
+		set_config_( db, "switch_period", switch_period_ )
+	
+
+	frame_search_ = build_kd_tree_( db )
+	
+	init_control_sequence_()
+	
+	f_ = frame_( db_, frame_ind_ )
+	
+
+
+func set_desc_gains( gains: Array ):
+	var sz: int = desc_gains_.size()
+	var needed_sz: int = desc_gains_.size()
+	if ( sz != needed_sz ):
+		gains.resize( needed_sz )
+		for i in range( sz, needed_sz ):
+			gains.push_back( 1.0 )
+	desc_gains_ = gains
+	set_config_( db_, "desc_gains", desc_gains_ )
+
+
+func get_desc_gains():
+	return desc_gains_
+
+
+func apply_desc_gains():
+	var ind: int = 0
+	var qty: int = desc_gains_.size()
+	var weights: Array = []
+	for i in range( qty ):
+		var len_i: int = desc_lengths_[i]
+		var gain: float = desc_gains_[i]
+		for j in range( len_i ):
+			var weight: float = desc_weights_[ind]
+			weight = weight * gain
+			weights.push_back( weight )
+			ind += 1
+	frame_search_.set_weights( weights )
+
+
+func set_switch_threshold( th: float ):
+	switch_threshold_ = th
+
+
+func get_switch_threashold():
+	return switch_threshold_
+
+
+func build_kd_tree_( db ):
+	print( "Reading frames database..." )
+	
+	var dims: int = get_config_( db, "desc_length" )
+	var fs = FrameSearch.new()
+	fs.set_dims( dims )
+	
+	db.query("SELECT COUNT(*) AS 'qty' FROM " + TABLE_DATA_NAME + ";")
+	var frames_qty: int = db.query_result[0]['qty']
+	
+	for i in range( frames_qty ):
+		var d: Array = desc_( db, i )
+		fs.append( d )
+	
+	print( "Building KdTree..." )
+	fs.build_tree()
+	print( "done" )
+	
+	return fs
+
+
+
+
+
+
 # Need to do this once
 func generate_descriptors():
 	var db = open_frame_database()
 	create_desc_column( db )
-	#fill_descs( db )
+	fill_descs( db )
 	estimate_scale( db )
 	db.close_db()
 
@@ -198,30 +318,8 @@ func estimate_scale( db ):
 		gains.push_back( 1.0 )
 	
 	set_config_( db, "desc_gains", gains )
+	set_config_( db, "switch_threshold", switch_threshold_ )
 
-
-
-func build_kd_tree( db ):
-	print( "Reading frames database..." )
-	frame_search_ = FrameSearch.new()
-	frame_search_.set_dims( 18 )
-	
-	var selected_array : Array = db.select_rows('data', "", ['id', 'data'])
-	for v in selected_array:
-		var ind: int     = v['id']
-		var data: String = v['data']
-		data = data.replace( "'", "\"" )
-		#print( "raw data: ", stri )
-		var res = JSON.parse( data )
-		res = res.result
-		var desc = res["desc"]
-		frame_search_.append( desc )
-	
-	print( "done" )
-	
-	print( "Building KdTree..." )
-	frame_search_.build_tree()
-	print( "done" )
 
 
 func pose_desc_( db, index: int ):
@@ -302,7 +400,124 @@ func traj_desc_( db, index: int ):
 		desc_g += d
 		
 	return [desc_r, desc_az, desc_g]
+
+
+func input_based_traj_desc_( db, az_adj_q: Quat, index: int ):
+	var f = frame_( db, index )
+	
+	# Root pose
+	var root_q: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
+	#var root_r: Vector3 = Vector3( f[ROOT_IND+4], f[ROOT_IND+5], f[ROOT_IND+6] )
+	var root_q_inv = root_q.inverse()
+	
+	var desc_r: Array
+	var desc_az: Array
+	var desc_g: Array
+	
+	var rp: Vector2 = Vector2.ZERO
+	var fwd: Vector2 = Vector2( 1.0, 0.0 )
+	
+	for ind in TRAJ_FRAME_INDS:
+		var ctrl_ind: int = TRAJ_FRAME_INDS[ind]-1
 		
+		var r: Vector2 = control_pos_sequence_[ctrl_ind]
+		var d = [r.x, r.y]
+		desc_r += d
 		
+		var dr: Vector2 = r - rp
+		var sz = dr.length_squared()
+		if ( sz > 0.00001 ):
+			fwd = dr.normalized()
+		d = [fwd.x, fwd.y]
+		desc_az += d
+		
+		var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
+		#g = q_inv.xform( g )
+		d = [g.x, g.y]
+		desc_g += d
+		
+		rp = r
+		
+	return [desc_r, desc_az, desc_g]
+
+
+func init_control_sequence_():
+	control_pos_sequence_ = []
+	control_vel_sequence_ = []
+	var default_ctrl = [0.0, 0.0]
+	var sz = TRAJ_FRAME_INDS.size()
+	var qty = TRAJ_FRAME_INDS[sz-1]
+	for i in range(qty):
+		control_pos_sequence_.push_back( default_ctrl )
+		control_vel_sequence_.push_back( default_ctrl )
+
+
+func frame_azimuth_( f ):
+	var q: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
+	var fwd: Vector3 = Vector3( 1.0, 0.0, 0.0 )
+	fwd = q.xform( fwd )
+	var az: float = atan2( fwd.y, fwd.x )
+	return az
+
+
+func apply_controls( t: Transform, f: bool, b: bool, l: bool, r: bool, run: bool ):
+	var q: Quat = t.basis.get_rotation_quat()
+	var fwd: Vector3 = Vector3( 0.0, 0.0, 1.0 )
+	fwd = q.xform( fwd )
+	# Camera default orientation: X to the left, Y - upwards, Z - backwards.
+	# Because of that the easiest way to compute azimuth is to transform (0,0,1) and 
+	# for atan2 use "x" for "y" and "z for "x".
+	var cam_az = atan2( fwd.x, fwd.z )
+	var az = frame_azimuth_( f_ )
+	cam_az -= az
+	
+	var ctrl: Vector3 = Vector3( 0.0, 0.0, 0.0 )
+	if f:
+		ctrl.y += 1.0
+	if b:
+		ctrl.y -= 1.0
+	if l:
+		ctrl.x -= 1.0
+	if r:
+		ctrl.x += 1.0
+	
+	var speed: float
+	if run:
+		speed = run_speed_
+	else:
+		speed = walk_speed_
+	
+	var ln = ctrl.length_squared()
+	if ln > 0.5:
+		ctrl = ctrl.normalized() * speed
+
+	var sz: int = control_vel_sequence_.size()
+	for i in range( sz-1 ):
+		control_vel_sequence_[i] = control_vel_sequence_[i+1]
+	control_vel_sequence_[sz-1] = Vector2( ctrl.x, ctrl.y )
+	
+	# Re-generate the position sequence.
+	var at: Vector2 = Vector2( 0.0, 0.0 )
+	for i in range( sz ):
+		var v: Vector2 = control_vel_sequence_[i]
+		v = v * DT
+		at += v
+		control_pos_sequence_[i] = at
+
+
+# Assuming time passed is exactly one frame.
+func process_frame():
+	var time_to_switch: bool
+	if switch_counter_ < switch_period_:
+		time_to_switch = false
+	else:
+		time_to_switch = true
+		switch_counter_ -= switch_counter_
+		
+	var next_ind: int = frame_ind_ + 1
+
+
+
+
 
 
