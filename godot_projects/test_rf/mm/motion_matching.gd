@@ -72,7 +72,7 @@ func _process( delta ):
 	time_passed_ += delta
 	while ( time_passed_ >= DT ):
 		process_frame()
-		apply_to_skeleton( skeleton_, f_ )
+		#apply_to_skeleton( skeleton_, f_ )
 		time_passed_ -= DT
 
 
@@ -589,7 +589,7 @@ func process_frame():
 		time_to_switch = false
 	else:
 		time_to_switch = true
-		switch_counter_ -= switch_counter_
+		switch_counter_ -= switch_period_
 		
 	var next_ind: int = frame_ind_ + 1
 	var jump: bool = false
@@ -617,9 +617,9 @@ func process_frame():
 	var fp = frame_( db_, frame_ind_ )
 	var fn = frame_( db_, next_ind )
 	
-	var qp: Quat    = Quat( fp[ROOT_IND+1], fp[ROOT_IND+2], fp[ROOT_IND+3], fp[ROOT_IND] )
+	var qp: Quat    = Quat.IDENTITY #Quat( fp[ROOT_IND+1], fp[ROOT_IND+2], fp[ROOT_IND+3], fp[ROOT_IND] )
 	var rp: Vector3 = Vector3( fp[ROOT_IND+4], fp[ROOT_IND+5], fp[ROOT_IND+6] )
-	var qn: Quat    = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fp[ROOT_IND] )
+	var qn: Quat    = Quat.IDENTITY #Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fp[ROOT_IND] )
 	var rn: Vector3 = Vector3( fn[ROOT_IND+4], fn[ROOT_IND+5], fn[ROOT_IND+6] )
 	
 	var dq: Quat

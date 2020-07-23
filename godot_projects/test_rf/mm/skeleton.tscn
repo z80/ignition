@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://mm/skeleton.gd" type="Script" id=1]
 [ext_resource path="res://mm/motion_matching.tscn" type="PackedScene" id=2]
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=3]
 [ext_resource path="res://mm/skeleton_vis.tscn" type="PackedScene" id=4]
+[ext_resource path="res://mm/mm_panel.tscn" type="PackedScene" id=5]
 
 [sub_resource type="ArrayMesh" id=1]
 resource_name = "Cube.003"
@@ -80,7 +81,7 @@ bones/10/enabled = true
 bones/10/bound_children = [  ]
 bones/11/name = "RightForeArm"
 bones/11/parent = 10
-bones/11/rest = Transform( 1, 1.42109e-14, -3.08055e-18, 1.42109e-14, 1, 6.37086e-25, 3.5527e-15, 3.38813e-21, 1, 0, 0, -0.345691 )
+bones/11/rest = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.346 )
 bones/11/enabled = true
 bones/11/bound_children = [  ]
 bones/12/name = "RightHand"
@@ -132,6 +133,8 @@ bones/20/bound_children = [  ]
 [node name="MotionMatching" parent="Skeleton" instance=ExtResource( 2 )]
 
 [node name="SkeletonVis" parent="Skeleton/MotionMatching" instance=ExtResource( 4 )]
+
+[node name="Control" parent="Skeleton/MotionMatching" instance=ExtResource( 5 )]
 
 [node name="body000" type="MeshInstance" parent="Skeleton"]
 visible = false

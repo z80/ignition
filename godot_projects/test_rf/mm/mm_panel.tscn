@@ -1,0 +1,83 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://mm/mm_panel.gd" type="Script" id=1]
+
+[node name="MmPanel" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -1.0
+margin_right = 3.0
+margin_bottom = 2.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Panel" type="Panel" parent="."]
+margin_left = 65.1605
+margin_top = 55.7293
+margin_right = 483.16
+margin_bottom = 175.729
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PoseRLbl" type="Label" parent="Panel"]
+margin_left = 13.0
+margin_top = 26.0
+margin_right = 113.0
+margin_bottom = 40.0
+text = "pose_r:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PoseR" type="Label" parent="Panel"]
+margin_left = 70.0
+margin_top = 27.0
+margin_right = 230.0
+margin_bottom = 41.0
+text = "(0, 0, 0)"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PoseQLbl" type="Label" parent="Panel"]
+margin_left = 13.0
+margin_top = 46.0
+margin_right = 66.0
+margin_bottom = 60.0
+text = "pose_q: "
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PoseQ" type="Label" parent="Panel"]
+margin_left = 73.0
+margin_top = 47.5298
+margin_right = 233.0
+margin_bottom = 61.5298
+text = "(0, 0, 0, 0)"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="FrameNLb" type="Label" parent="Panel"]
+margin_left = 12.0
+margin_top = 67.0
+margin_right = 70.0
+margin_bottom = 81.0
+text = "Frame #"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="FrameN" type="Label" parent="Panel"]
+margin_left = 75.0
+margin_top = 67.0
+margin_right = 208.0
+margin_bottom = 81.0
+text = "0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
