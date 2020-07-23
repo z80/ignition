@@ -498,7 +498,7 @@ func input_based_traj_desc_( db, az_adj_q: Quat, index: int ):
 	var fwd: Vector2 = Vector2( 1.0, 0.0 )
 	
 	for ind in TRAJ_FRAME_INDS:
-		var ctrl_ind: int = TRAJ_FRAME_INDS[ind]-1
+		var ctrl_ind: int = ind-1
 		
 		var r: Vector2 = control_pos_sequence_[ctrl_ind]
 		var d = [r.x, r.y]
@@ -524,7 +524,7 @@ func input_based_traj_desc_( db, az_adj_q: Quat, index: int ):
 func init_control_sequence_():
 	control_pos_sequence_ = []
 	control_vel_sequence_ = []
-	var default_ctrl = [0.0, 0.0]
+	var default_ctrl = Vector2(0.0, 0.0)
 	var sz = TRAJ_FRAME_INDS.size()
 	var qty = TRAJ_FRAME_INDS[sz-1]
 	for i in range(qty):
@@ -609,7 +609,7 @@ func process_frame():
 		switch_counter_ -= switch_period_
 	
 	# Increment frame switch counter.
-	#switch_counter_ += 1
+	switch_counter_ += 1
 	
 	var next_ind: int = frame_ind_ + 1
 	var jump: bool = false
@@ -651,8 +651,8 @@ func process_frame():
 	var dq: Quat
 	var dr: Vector3
 	if jump:
-		dr = pose_dr_ - rn + pose_dr_
-		dq = pose_dq_ * pose_dq_ * qn.inverse()
+		dr = pose_dr_
+		dq = pose_dq_
 	
 	else:
 		var inv_az_qp: Quat = az_qp.inverse()
