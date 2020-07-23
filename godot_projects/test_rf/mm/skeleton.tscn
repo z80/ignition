@@ -142,5 +142,5 @@ mesh = SubResource( 1 )
 material/0 = null
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 0.707107, -0.122788, 0.696364, 0, 0.984808, 0.173648, -0.707107, -0.122788, 0.696364, 2.99593, 1.1765, 3.02421 )
+transform = Transform( 1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, 0, 1.39517, 4.17924 )
 script = ExtResource( 3 )

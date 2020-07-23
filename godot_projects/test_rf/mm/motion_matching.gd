@@ -544,7 +544,9 @@ func frame_azimuth_( db, ind: int ):
 
 func quat_azimuth_( q: Quat ):
 	var fwd: Vector3 = Vector3( 1.0, 0.0, 0.0 )
-	fwd = q.xform( fwd )
+	var q_norm: Quat = q.normalized()
+	#print( "quat_qzimuth_(", q, ")" )
+	fwd = q_norm.xform( fwd )
 	var ang2: float = 0.5 * atan2( fwd.y, fwd.x )
 	var co2: float = cos( ang2 )
 	var si2: float = sin( ang2 )
@@ -637,25 +639,38 @@ func process_frame():
 	
 	var qp: Quat    = Quat( fp[ROOT_IND+1], fp[ROOT_IND+2], fp[ROOT_IND+3], fp[ROOT_IND] )
 	var rp: Vector3 = Vector3( fp[ROOT_IND+4], fp[ROOT_IND+5], fp[ROOT_IND+6] )
-	var qn: Quat    = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fp[ROOT_IND] )
+	var qn: Quat    = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fn[ROOT_IND] )
 	var rn: Vector3 = Vector3( fn[ROOT_IND+4], fn[ROOT_IND+5], fn[ROOT_IND+6] )
+	
+	#print( "a" )
+	var az_qp: Quat = quat_azimuth_( qp )
+	#print( "cc" )
+	var az_qn: Quat = quat_azimuth_( qn )
+	#print( "b" )
 	
 	var dq: Quat
 	var dr: Vector3
 	if jump:
-		dr = pose_dr_ - rn
-		dq = pose_dq_ * qn.inverse()
+		dr = pose_dr_ - rn + pose_dr_
+		dq = pose_dq_ * pose_dq_ * qn.inverse()
 	
 	else:
-		var inv_qp: Quat = qp.inverse()
-		dq = inv_qp * qn
+		var inv_az_qp: Quat = az_qp.inverse()
+		dq = inv_az_qp * az_qn
 		dr = rn - rp
-		dr = inv_qp.xform( dr )
+		dr = inv_az_qp.xform( dr )
 		dr = pose_q_.xform( dr )
 		pose_dr_ = dr
 		pose_dq_ = dq
 	
+	#var rz: float = pose_r_.z
 	pose_r_ += dr
+	#pose_r_.z = rz
+	
+	#if abs(dq.z) > 0.015:
+	#	print( "Suspicious activity detected at frame # ", frame_ind_ )
+	#	print( "fp: ", fp )
+	#	print( "fn: ", fn )
 	pose_q_ = pose_q_ * dq
 	pose_q_ = quat_azimuth_( pose_q_ )
 	

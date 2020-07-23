@@ -34,8 +34,16 @@ func _process(delta):
 	stri = "(%f, %f, %f)" %[ r.x, r.y, r.z ]
 	$Panel/PoseR.text = stri
 
+	r = mm_.pose_dr_
+	stri = "(%f, %f, %f)" %[ r.x, r.y, r.z ]
+	$Panel/PoseDR.text = stri
+
 	stri = "(%f, %f, %f, %f)" %[ q.w, q.x, q.y, q.z ]
 	$Panel/PoseQ.text = stri
+
+	q = mm_.pose_dq_;
+	stri = "(%f, %f, %f, %f)" %[ q.w, q.x, q.y, q.z ]
+	$Panel/PoseDQ.text = stri
 
 
 func _input(event):

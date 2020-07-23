@@ -14,19 +14,19 @@ __meta__ = {
 }
 
 [node name="Panel" type="Panel" parent="."]
-margin_left = 65.1605
-margin_top = 55.7293
-margin_right = 483.16
-margin_bottom = 175.729
+margin_left = 65.0
+margin_top = 56.0
+margin_right = 483.0
+margin_bottom = 228.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="PoseRLbl" type="Label" parent="Panel"]
-margin_left = 13.0
-margin_top = 26.0
-margin_right = 113.0
-margin_bottom = 40.0
+margin_left = 14.0
+margin_top = 25.0
+margin_right = 64.0
+margin_bottom = 39.0
 text = "pose_r:"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -42,41 +42,81 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="PoseDRLbl" type="Label" parent="Panel"]
+margin_left = 14.8574
+margin_top = 45.577
+margin_right = 64.8574
+margin_bottom = 59.577
+text = "pose_dr:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PoseDR" type="Label" parent="Panel"]
+margin_left = 70.8574
+margin_top = 47.577
+margin_right = 230.857
+margin_bottom = 61.577
+text = "(0, 0, 0)"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="PoseQLbl" type="Label" parent="Panel"]
 margin_left = 13.0
-margin_top = 46.0
+margin_top = 73.436
 margin_right = 66.0
-margin_bottom = 60.0
+margin_bottom = 87.436
 text = "pose_q: "
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="PoseQ" type="Label" parent="Panel"]
+margin_left = 72.1426
+margin_top = 74.9658
+margin_right = 232.143
+margin_bottom = 88.9658
+text = "(0, 0, 0, 0)"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PoseDQLbl" type="Label" parent="Panel"]
+margin_left = 13.0
+margin_top = 94.013
+margin_right = 74.0
+margin_bottom = 108.013
+text = "pose_dq: "
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PoseDQ" type="Label" parent="Panel"]
 margin_left = 73.0
-margin_top = 47.5298
+margin_top = 95.5428
 margin_right = 233.0
-margin_bottom = 61.5298
+margin_bottom = 109.543
 text = "(0, 0, 0, 0)"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="FrameNLb" type="Label" parent="Panel"]
-margin_left = 12.0
-margin_top = 67.0
-margin_right = 70.0
-margin_bottom = 81.0
+margin_left = 10.2852
+margin_top = 116.728
+margin_right = 68.2852
+margin_bottom = 130.728
 text = "Frame #"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="FrameN" type="Label" parent="Panel"]
-margin_left = 75.0
-margin_top = 67.0
-margin_right = 208.0
-margin_bottom = 81.0
+margin_left = 73.2852
+margin_top = 116.728
+margin_right = 206.285
+margin_bottom = 130.728
 text = "0"
 __meta__ = {
 "_edit_use_anchors_": false
