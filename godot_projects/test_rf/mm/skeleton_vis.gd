@@ -42,8 +42,8 @@ func apply_mm():
 		if i_p < 0:
 			continue
 		var i_n: int = i*7
-		var ra: Vector3 = Vector3( fr[i_p+4], fr[i_p+5], fr[i_p+6] )
-		var rb: Vector3 = Vector3( fr[i_n+4], fr[i_n+5], fr[i_n+6] )
+		var ra: Vector3 = Vector3( fr[i_p+4], fr[i_p+6], -fr[i_p+5] )
+		var rb: Vector3 = Vector3( fr[i_n+4], fr[i_n+6], -fr[i_n+5] )
 		
 		add_vertex( ra )
 		add_vertex( rb )

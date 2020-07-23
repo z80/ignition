@@ -607,7 +607,7 @@ func process_frame():
 		switch_counter_ -= switch_period_
 	
 	# Increment frame switch counter.
-	switch_counter_ += 1
+	#switch_counter_ += 1
 	
 	var next_ind: int = frame_ind_ + 1
 	var jump: bool = false
