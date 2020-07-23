@@ -16,20 +16,32 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	return
+	var t: Transform = $Camera.get_camera_transform()
+	var mm = $Skeleton/MotionMatching
+	var w: bool = Input.is_action_pressed( "walk_w" )
+	var s: bool = Input.is_action_pressed( "walk_s" )
+	var a: bool = Input.is_action_pressed( "walk_a" )
+	var d: bool = Input.is_action_pressed( "walk_d" )
+	var fast: bool = Input.is_action_pressed( "walk_fast" )
+	var slow: bool = Input.is_action_pressed( "walk_slow" )
+	mm.generate_controls( t, w, s, a, d, fast, slow )
 	
-	time += delta
-	if time >= PERIOD:
-		time -= PERIOD
-	
-	var s: Skeleton = $Skeleton
-	var qty: int = s.get_bone_count()
-	var t: Transform = s.get_bone_pose( _root_bone_index )
-	var x: float = 2.0 * sin( 6.28 * time/PERIOD )
-	var r = t.origin
-	r[0] = x
-	t.origin = r
-	s.set_bone_pose( _root_bone_index, t )
+	mm.time_passed_ += delta
+	while ( mm.time_passed_ >= mm.DT ):
+		mm.process_frame()
+		mm.time_passed_ -= mm.DT
+
+
+
+
+
+
+
+
+
+
+
+
 	
 
 func prepare_name_to_index_dict():

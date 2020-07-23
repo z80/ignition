@@ -45,6 +45,10 @@ func _process(delta):
 	stri = "(%f, %f, %f, %f)" %[ q.w, q.x, q.y, q.z ]
 	$Panel/PoseDQ.text = stri
 
+	var v2: Vector2 = mm_.control_input_;
+	stri = "(%f, %f)" %[ v2.x, v2.y ]
+	$Panel/InstantCtrl.text = stri
+
 
 func _input(event):
 	

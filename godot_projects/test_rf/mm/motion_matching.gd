@@ -62,6 +62,11 @@ var skeleton_: Skeleton = null
 # Parent index for each bone
 var parents_: Array
 
+
+# user control input for visualization
+var vis_control_sequence_: Array
+var print_control_sequence_: Array
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	#generate_descriptors()
@@ -70,22 +75,25 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process( delta ):
-	time_passed_ += delta
-	while ( time_passed_ >= DT ):
-		process_frame()
-		time_passed_ -= DT
+	pass
+	
+	#var t: Transform = Transform.IDENTITY
+	#var w: bool = Input.is_action_pressed( "walk_w" )
+	#var s: bool = Input.is_action_pressed( "walk_s" )
+	#var a: bool = Input.is_action_pressed( "walk_a" )
+	#var d: bool = Input.is_action_pressed( "walk_d" )
+	#var fast: bool = Input.is_action_pressed( "walk_fast" )
+	#var slow: bool = Input.is_action_pressed( "walk_slow" )
+	#generate_controls( t, w, s, a, d, fast, slow )
+	
+	#time_passed_ += delta
+	#while ( time_passed_ >= DT ):
+	#	process_frame()
+	#	time_passed_ -= DT
 
 
 func _input( event ):
-	var t: Transform = Transform.IDENTITY
-	var w: bool = event.is_action_pressed( "walk_w" )
-	var s: bool = event.is_action_pressed( "walk_s" )
-	var a: bool = event.is_action_pressed( "walk_a" )
-	var d: bool = event.is_action_pressed( "walk_d" )
-	var fast: bool = event.is_action_pressed( "walk_fast" )
-	var slow: bool = event.is_action_pressed( "walk_slow" )
-	generate_controls( t, w, s, a, d, fast, slow )
-
+	pass
 
 # This one is called every time it starts.
 # It assumes frames and descriptors present in the database.
@@ -566,15 +574,9 @@ func quat_azimuth_( q: Quat ):
 
 
 func generate_controls( t: Transform, f: bool, b: bool, l: bool, r: bool, fast: bool, slow: bool ):
-	var q: Quat = t.basis.get_rotation_quat()
+	var cam_q: Quat = t.basis.get_rotation_quat()
+	cam_q = quat_azimuth_( cam_q )
 	var fwd: Vector3 = Vector3( 0.0, 0.0, 1.0 )
-	fwd = q.xform( fwd )
-	# Camera default orientation: X to the left, Y - upwards, Z - backwards.
-	# Because of that the easiest way to compute azimuth is to transform (0,0,1) and 
-	# for atan2 use "x" for "y" and "z for "x".
-	var cam_az = atan2( fwd.x, fwd.z )
-	var az = frame_azimuth_( db_, frame_ind_ )
-	cam_az -= az
 	
 	var ctrl: Vector3 = Vector3( 0.0, 0.0, 0.0 )
 	if f:
@@ -598,6 +600,10 @@ func generate_controls( t: Transform, f: bool, b: bool, l: bool, r: bool, fast: 
 	if ln > 0.5:
 		ctrl = ctrl.normalized() * speed
 	
+	ctrl = cam_q.xform( ctrl )
+	var inv_pose_q: Quat = pose_q_.inverse()
+	ctrl = inv_pose_q.xform( ctrl )
+	
 	control_input_ = Vector2(ctrl.x, ctrl.y)
 
 
@@ -618,6 +624,34 @@ func updata_control_sequence_():
 		control_pos_sequence_[i] = at
 
 
+func update_vis_control_sequence_():
+	var qty: int = control_pos_sequence_.size()
+	vis_control_sequence_.resize( qty )
+	
+	#var f = frame_( db_, frame_ind_ )
+	#var q: Quat    = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
+	#var r: Vector3 = Vector3( f[ROOT_IND+4], f[ROOT_IND+5], f[ROOT_IND+6] )
+	#var az_q: Quat = quat_azimuth_( q )
+	#var inv_az_q = az_q.inverse()
+	
+	for i in range( qty ):
+		var c2: Vector2 = control_pos_sequence_[i]
+		var c3: Vector3 = Vector3(c2.x, c2.y, 1.0 )
+		c3 = pose_q_.xform( c3 )
+		c3 = c3 + pose_r_
+		vis_control_sequence_[i] = c3
+	
+	
+	var ind: int = 0
+	qty = TRAJ_FRAME_INDS.size()
+	print_control_sequence_.resize( qty )
+	for i in TRAJ_FRAME_INDS:
+		var v = control_pos_sequence_[i]
+		print_control_sequence_[ind] = v
+		ind += 1
+
+
+
 # Assuming time passed is exactly one frame.
 func process_frame():
 	var time_to_switch: bool
@@ -635,6 +669,8 @@ func process_frame():
 	
 	# Update control sequence based on most recent user input.
 	updata_control_sequence_()
+	# For control sequence visualization.
+	update_vis_control_sequence_()
 	
 	if time_to_switch:
 		#var f_cur = frame_( db_, frame_ind_ )

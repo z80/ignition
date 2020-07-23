@@ -121,3 +121,23 @@ text = "0"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="InstantCtrlLbl" type="Label" parent="Panel"]
+margin_left = 11.1426
+margin_top = 139.02
+margin_right = 69.1426
+margin_bottom = 153.02
+text = "Instant ctrl:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="InstantCtrl" type="Label" parent="Panel"]
+margin_left = 93.8622
+margin_top = 139.877
+margin_right = 226.862
+margin_bottom = 153.877
+text = "(0, 0)"
+__meta__ = {
+"_edit_use_anchors_": false
+}

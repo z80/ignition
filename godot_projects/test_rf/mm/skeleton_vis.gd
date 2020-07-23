@@ -35,6 +35,8 @@ func apply_mm():
 	begin( Mesh.PRIMITIVE_LINES )
 	
 	var parents: Array = mm_.parents_
+	
+	# Drawing wireframe skeleton.
 	var fr = mm_.f_
 	var qty: int = parents.size()
 	for i in range( qty ):
@@ -47,4 +49,19 @@ func apply_mm():
 		
 		add_vertex( ra )
 		add_vertex( rb )
+	
+	# Drawing user input.
+	qty = mm_.vis_control_sequence_.size()
+	for i in range( qty-1 ):
+		var ra: Vector3 = mm_.vis_control_sequence_[i]
+		var rb: Vector3 = mm_.vis_control_sequence_[i+1]
+		ra = Vector3( ra.x, ra.z, -ra.y )
+		rb = Vector3( rb.x, rb.z, -rb.y )
+		add_vertex( ra )
+		add_vertex( rb )
+	
 	end()
+
+
+
+
