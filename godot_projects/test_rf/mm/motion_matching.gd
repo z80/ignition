@@ -316,8 +316,13 @@ func frame_in_space_( db, index: int ):
 	
 	var q_root: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
 	var r_root: Vector3 = Vector3( f[ROOT_IND+4], f[ROOT_IND+5], f[ROOT_IND+6] )
+	
+	var base_q_root = quat_azimuth_( q_root )
+	var inv_base_q_root = base_q_root.inverse()
+	var q_adj = pose_q_ * inv_base_q_root
+	
 	var inv_q_root = q_root.inverse()
-	var dest_q_root = pose_q_ * inv_q_root
+	var dest_q_root = q_adj * q_root
 	var dest_r_root = pose_r_
 	f_dest[ROOT_IND]   = dest_q_root.w
 	f_dest[ROOT_IND+1] = dest_q_root.x
@@ -334,9 +339,9 @@ func frame_in_space_( db, index: int ):
 			continue
 		var q: Quat = Quat( f[i+1], f[i+2], f[i+3], f[i] )
 		var r: Vector3 = Vector3( f[i+4], f[i+5], f[i+6] )
-		q = pose_q_ * inv_q_root * q
+		q = q_adj * q
 		r = r - r_root
-		r = inv_q_root.xform( r )
+		r = q_adj.xform( r )
 		r += pose_r_
 		
 		f_dest[i]   = q.w
@@ -537,6 +542,16 @@ func frame_azimuth_( db, ind: int ):
 	return az
 
 
+func quat_azimuth_( q: Quat ):
+	var fwd: Vector3 = Vector3( 1.0, 0.0, 0.0 )
+	fwd = q.xform( fwd )
+	var ang2: float = 0.5 * atan2( fwd.y, fwd.x )
+	var co2: float = cos( ang2 )
+	var si2: float = sin( ang2 )
+	var res_q: Quat = Quat( 0.0, 0.0, si2, co2 )
+	return res_q
+
+
 func apply_controls( t: Transform, f: bool, b: bool, l: bool, r: bool, run: bool ):
 	var q: Quat = t.basis.get_rotation_quat()
 	var fwd: Vector3 = Vector3( 0.0, 0.0, 1.0 )
@@ -590,7 +605,10 @@ func process_frame():
 	else:
 		time_to_switch = true
 		switch_counter_ -= switch_period_
-		
+	
+	# Increment frame switch counter.
+	switch_counter_ += 1
+	
 	var next_ind: int = frame_ind_ + 1
 	var jump: bool = false
 	
@@ -617,9 +635,9 @@ func process_frame():
 	var fp = frame_( db_, frame_ind_ )
 	var fn = frame_( db_, next_ind )
 	
-	var qp: Quat    = Quat.IDENTITY #Quat( fp[ROOT_IND+1], fp[ROOT_IND+2], fp[ROOT_IND+3], fp[ROOT_IND] )
+	var qp: Quat    = Quat( fp[ROOT_IND+1], fp[ROOT_IND+2], fp[ROOT_IND+3], fp[ROOT_IND] )
 	var rp: Vector3 = Vector3( fp[ROOT_IND+4], fp[ROOT_IND+5], fp[ROOT_IND+6] )
-	var qn: Quat    = Quat.IDENTITY #Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fp[ROOT_IND] )
+	var qn: Quat    = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fp[ROOT_IND] )
 	var rn: Vector3 = Vector3( fn[ROOT_IND+4], fn[ROOT_IND+5], fn[ROOT_IND+6] )
 	
 	var dq: Quat
@@ -630,7 +648,7 @@ func process_frame():
 	
 	else:
 		var inv_qp: Quat = qp.inverse()
-		dq = qp.inverse() * qn
+		dq = inv_qp * qn
 		dr = rn - rp
 		dr = inv_qp.xform( dr )
 		dr = pose_q_.xform( dr )
@@ -639,9 +657,9 @@ func process_frame():
 	
 	pose_r_ += dr
 	pose_q_ = pose_q_ * dq
-	# Just to avoid finite precision errors and assume the quaterion 
-	# is pure rotational quaternion.
-	pose_q_ = pose_q_.normalized()
+	pose_q_ = quat_azimuth_( pose_q_ )
+	
+	#print( "frame #%d q:(%f, %f, %f, %f), dq:(%f, %f, %f, %f), pq:(%f, %f, %f, %f)" %[ frame_ind_, qn.w, qn.x, qn.y, qn.z, dq.w, dq.x, dq.y, dq.z, pose_q_.w, pose_q_.x, pose_q_.y, pose_q_.z ] )
 	
 	frame_ind_ = next_ind
 	f_ = frame_in_space_( db_, frame_ind_ )
