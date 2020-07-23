@@ -48,7 +48,14 @@ func _process(delta):
 	var v2: Vector2 = mm_.control_input_;
 	stri = "(%f, %f)" %[ v2.x, v2.y ]
 	$Panel/InstantCtrl.text = stri
-
+	
+	var all_stri: String = ""
+	var qty: int = mm_.print_control_sequence_.size()
+	for i in range( qty ):
+		var c: Vector2 = mm_.print_control_sequence_[i]
+		stri = " (%f, %f)" % [c.x, c.y]
+		all_stri = all_stri + stri
+	$Panel/InstantCtrl.text = all_stri
 
 func _input(event):
 	

@@ -646,7 +646,7 @@ func update_vis_control_sequence_():
 	qty = TRAJ_FRAME_INDS.size()
 	print_control_sequence_.resize( qty )
 	for i in TRAJ_FRAME_INDS:
-		var v = control_pos_sequence_[i]
+		var v = control_pos_sequence_[i-1]
 		print_control_sequence_[ind] = v
 		ind += 1
 

@@ -14,10 +14,14 @@ __meta__ = {
 }
 
 [node name="Panel" type="Panel" parent="."]
-margin_left = 65.0
-margin_top = 56.0
-margin_right = 483.0
-margin_bottom = 228.0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -596.0
+margin_top = -267.0
+margin_right = -9.0
+margin_bottom = -7.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
