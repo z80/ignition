@@ -31,12 +31,13 @@ const DT: float  = 1.0/FPS
 
 
 # Movement constants for building future trajectory.
-var walk_speed_: float = 0.5
-var run_speed_: float  = 2.0
+var slow_speed_: float = 0.5
+var walk_speed_: float = 1.0
+var fast_speed_: float  = 2.0
 
 # Initial/default control.
 # velocity relative to current azimuth.
-var control_input_: Array = [0.0, 0.0]
+var control_input_: Vector2 = Vector2(0.0, 0.0)
 var frame_ind_: int = 0
 var switch_counter_: int = 0
 var f_: Array
@@ -72,8 +73,18 @@ func _process( delta ):
 	time_passed_ += delta
 	while ( time_passed_ >= DT ):
 		process_frame()
-		#apply_to_skeleton( skeleton_, f_ )
 		time_passed_ -= DT
+
+
+func _input( event ):
+	var t: Transform = Transform.IDENTITY
+	var w: bool = event.is_action_pressed( "walk_w" )
+	var s: bool = event.is_action_pressed( "walk_s" )
+	var a: bool = event.is_action_pressed( "walk_a" )
+	var d: bool = event.is_action_pressed( "walk_d" )
+	var fast: bool = event.is_action_pressed( "walk_fast" )
+	var slow: bool = event.is_action_pressed( "walk_slow" )
+	generate_controls( t, w, s, a, d, fast, slow )
 
 
 # This one is called every time it starts.
@@ -554,7 +565,7 @@ func quat_azimuth_( q: Quat ):
 	return res_q
 
 
-func apply_controls( t: Transform, f: bool, b: bool, l: bool, r: bool, run: bool ):
+func generate_controls( t: Transform, f: bool, b: bool, l: bool, r: bool, fast: bool, slow: bool ):
 	var q: Quat = t.basis.get_rotation_quat()
 	var fwd: Vector3 = Vector3( 0.0, 0.0, 1.0 )
 	fwd = q.xform( fwd )
@@ -576,15 +587,23 @@ func apply_controls( t: Transform, f: bool, b: bool, l: bool, r: bool, run: bool
 		ctrl.x += 1.0
 	
 	var speed: float
-	if run:
-		speed = run_speed_
+	if fast:
+		speed = fast_speed_
+	elif slow:
+		speed = slow_speed_
 	else:
 		speed = walk_speed_
 	
 	var ln = ctrl.length_squared()
 	if ln > 0.5:
 		ctrl = ctrl.normalized() * speed
+	
+	control_input_ = Vector2(ctrl.x, ctrl.y)
 
+
+func updata_control_sequence_():
+	var ctrl: Vector2 = control_input_
+	# Shift by one.
 	var sz: int = control_vel_sequence_.size()
 	for i in range( sz-1 ):
 		control_vel_sequence_[i] = control_vel_sequence_[i+1]
@@ -613,6 +632,9 @@ func process_frame():
 	
 	var next_ind: int = frame_ind_ + 1
 	var jump: bool = false
+	
+	# Update control sequence based on most recent user input.
+	updata_control_sequence_()
 	
 	if time_to_switch:
 		#var f_cur = frame_( db_, frame_ind_ )
