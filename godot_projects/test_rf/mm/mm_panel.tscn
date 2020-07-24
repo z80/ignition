@@ -18,10 +18,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -593.572
-margin_top = -460.572
-margin_right = -6.57208
-margin_bottom = -4.57208
+margin_left = -595.0
+margin_top = -500.0
+margin_right = -8.0
+margin_bottom = -3.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -197,10 +197,10 @@ __meta__ = {
 }
 
 [node name="CtrlSeqLbl2" type="Label" parent="Panel"]
-margin_left = 12.8573
-margin_top = 338.788
-margin_right = 86.8573
-margin_bottom = 352.788
+margin_left = 14.572
+margin_top = 369.654
+margin_right = 88.572
+margin_bottom = 383.654
 text = "traj pos:"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -227,31 +227,41 @@ __meta__ = {
 }
 
 [node name="CtrlSeqLbl3" type="Label" parent="Panel"]
-margin_left = 12.8573
-margin_top = 367.939
-margin_right = 86.8573
-margin_bottom = 381.939
-text = "traj vel:"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="CtrlSeqLbl5" type="Label" parent="Panel"]
 margin_left = 13.7147
-margin_top = 395.375
+margin_top = 398.804
 margin_right = 87.7147
-margin_bottom = 409.375
+margin_bottom = 412.804
 text = "traj az:"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="CtrlSeqLbl6" type="Label" parent="Panel"]
+[node name="CtrlSeqLbl5" type="Label" parent="Panel"]
 margin_left = 14.572
-margin_top = 421.954
+margin_top = 426.24
 margin_right = 88.572
-margin_bottom = 435.954
+margin_bottom = 440.24
 text = "traj g:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CtrlSeqLbl8" type="Label" parent="Panel"]
+margin_left = 14.572
+margin_top = 468.252
+margin_right = 88.572
+margin_bottom = 482.252
+text = "Switch th:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CtrlSeqLbl6" type="Label" parent="Panel"]
+margin_left = 12.8572
+margin_top = 338.788
+margin_right = 86.8572
+margin_bottom = 352.788
+text = "Pose g:"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -267,10 +277,10 @@ __meta__ = {
 }
 
 [node name="WeightTrajPos" type="LineEdit" parent="Panel"]
-margin_left = 103.742
-margin_top = 335.234
-margin_right = 161.742
-margin_bottom = 359.234
+margin_left = 104.6
+margin_top = 366.099
+margin_right = 162.6
+margin_bottom = 390.099
 text = "1.0"
 
 [node name="WeightPoseVel" type="LineEdit" parent="Panel"]
@@ -280,25 +290,38 @@ margin_right = 162.172
 margin_bottom = 331.798
 text = "1.0"
 
-[node name="WeightTrajVel" type="LineEdit" parent="Panel"]
-margin_left = 103.742
-margin_top = 364.385
-margin_right = 161.742
-margin_bottom = 388.385
-text = "1.0"
-
 [node name="WeightTrajAz" type="LineEdit" parent="Panel"]
 margin_left = 104.6
-margin_top = 392.678
+margin_top = 395.25
 margin_right = 162.6
-margin_bottom = 416.678
+margin_bottom = 419.25
 text = "1.0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="WeightTrajG" type="LineEdit" parent="Panel"]
+margin_left = 104.6
+margin_top = 423.544
+margin_right = 162.6
+margin_bottom = 447.544
+text = "1.0"
+
+[node name="SwitchTh" type="LineEdit" parent="Panel"]
 margin_left = 105.457
-margin_top = 419.257
+margin_top = 464.698
 margin_right = 163.457
-margin_bottom = 443.257
+margin_bottom = 488.698
+text = "0.3"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="WeightPoseG" type="LineEdit" parent="Panel"]
+margin_left = 103.742
+margin_top = 336.091
+margin_right = 161.742
+margin_bottom = 360.091
 text = "1.0"
 
 [node name="ApplyBtn" type="Button" parent="Panel"]
@@ -307,3 +330,4 @@ margin_top = 385.0
 margin_right = 348.0
 margin_bottom = 435.0
 text = "Apply descriptor weights"
+[connection signal="pressed" from="Panel/ApplyBtn" to="." method="_on_apply_weights_pressed"]

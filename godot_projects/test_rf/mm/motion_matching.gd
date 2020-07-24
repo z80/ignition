@@ -1,5 +1,6 @@
 extends Node
 
+signal data_ready
 
 const SQLite = preload("res://addons/godot-sqlite/bin/gdsqlite.gdns")
 const FRAME_DB_NAME = "res://mm_data.sqlite3.db"
@@ -105,7 +106,6 @@ func init():
 
 	bone_names_   = get_config_( db, "names" )
 	desc_weights_ = get_config_( db, "inv_std" )
-	desc_gains_   = get_config_( db, "desc_gains" )
 	desc_lengths_ = get_config_( db, "desc_lengths" )
 	var th = get_config_( db, "switch_threshold" )
 	if th == null:
@@ -120,7 +120,14 @@ func init():
 		set_config_( db, "switch_period", switch_period_ )
 	else:
 		switch_period_ = sp
-
+	
+	var dg = get_config_( db, "desc_gains" )
+	if dg == null:
+		dg  = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+		set_config_( db_, "desc_gains", dg )
+	else:
+		desc_gains_ = dg
+	
 	frame_search_ = build_kd_tree_( db )
 	apply_desc_gains_()
 	init_control_sequence_()
@@ -134,6 +141,8 @@ func init():
 		parents_ = get_parents_array_()
 	else:
 		parents_ = ps
+	
+	emit_signal( "data_ready" )
 	
 
 
@@ -170,9 +179,10 @@ func apply_desc_gains_():
 
 func set_switch_threshold( th: float ):
 	switch_threshold_ = th
+	set_config_( db_, "switch_threshold", switch_threshold_ )
 
 
-func get_switch_threashold():
+func get_switch_threshold():
 	return switch_threshold_
 
 

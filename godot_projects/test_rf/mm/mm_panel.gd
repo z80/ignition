@@ -17,6 +17,8 @@ func _ready():
 		return
 	panel.connect("mouse_entered", self, "_panel_entered")
 	panel.connect("mouse_exited", self, "_panel_exited")
+	
+	read_gains_from_mm_()
 
 
 
@@ -76,6 +78,7 @@ func _input(event):
 		panel.set_begin(panel.get_begin() + event.relative)
 		panel.rect_size = sz
 
+
 func get_mm():
 	var p = get_parent()
 	mm_ = p
@@ -84,5 +87,53 @@ func get_mm():
 func _panel_entered():
 	mouse_over_ = true
 
+
 func _panel_exited():
 	mouse_over_ = false
+
+
+func read_gains_from_mm_():
+	var gains = mm_.get_desc_gains()
+	
+	var qty = gains.size()
+	if qty > 5:
+		var pose_vel  = gains[1]
+		var pose_g    = gains[2]
+		var traj_pos  = gains[3]
+		var traj_az   = gains[4]
+		var traj_g    = gains[5]
+	
+		var switch_th = mm_.get_switch_threshold()
+	
+		$Panel/WeightPoseVel.text = String( pose_vel )
+		$Panel/WeightPoseG.text   = String( pose_g )
+		$Panel/WeightTrajPos.text = String( traj_pos )
+		$Panel/WeightTrajAz.text  = String( traj_az )
+		$Panel/WeightTrajG.text   = String( traj_g )
+	
+		$Panel/SwitchTh.text      = String( switch_th )
+
+
+func write_gains_to_mm_():
+	var pose_vel = float( $Panel/WeightPoseVel.text )
+	var pose_g   = float( $Panel/WeightPoseG.text )
+	var traj_pos = float( $Panel/WeightTrajPos.text )
+	var traj_az  = float( $Panel/WeightTrajAz.text )
+	var traj_g   = float( $Panel/WeightTrajG.text )
+	
+	var switch_th = float( $Panel/SwitchTh.text )
+	
+	var gains = [ 1.0, pose_vel, pose_g, traj_pos, traj_az, traj_g ]
+	mm_.set_desc_gains( gains )
+	
+	mm_.set_switch_threshold( switch_th )
+
+
+func _on_apply_weights_pressed():
+	write_gains_to_mm_()
+
+
+
+
+
+
