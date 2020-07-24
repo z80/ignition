@@ -18,10 +18,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -596.0
-margin_top = -267.0
-margin_right = -9.0
-margin_bottom = -7.0
+margin_left = -593.572
+margin_top = -460.572
+margin_right = -6.57208
+margin_bottom = -4.57208
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -196,6 +196,66 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="CtrlSeqLbl2" type="Label" parent="Panel"]
+margin_left = 12.8573
+margin_top = 338.788
+margin_right = 86.8573
+margin_bottom = 352.788
+text = "traj pos:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CtrlSeqLbl4" type="Label" parent="Panel"]
+margin_left = 10.2852
+margin_top = 312.21
+margin_right = 84.2852
+margin_bottom = 326.21
+text = "Pose vel:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CtrlSeqLbl7" type="Label" parent="Panel"]
+margin_left = 10.2852
+margin_top = 283.916
+margin_right = 84.2852
+margin_bottom = 297.916
+text = "Descriptor weights"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CtrlSeqLbl3" type="Label" parent="Panel"]
+margin_left = 12.8573
+margin_top = 367.939
+margin_right = 86.8573
+margin_bottom = 381.939
+text = "traj vel:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CtrlSeqLbl5" type="Label" parent="Panel"]
+margin_left = 13.7147
+margin_top = 395.375
+margin_right = 87.7147
+margin_bottom = 409.375
+text = "traj az:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CtrlSeqLbl6" type="Label" parent="Panel"]
+margin_left = 14.572
+margin_top = 421.954
+margin_right = 88.572
+margin_bottom = 435.954
+text = "traj g:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="CtrlSeq" type="Label" parent="Panel"]
 margin_left = 88.7179
 margin_top = 236.761
@@ -205,3 +265,45 @@ text = "(0, 0)"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="WeightTrajPos" type="LineEdit" parent="Panel"]
+margin_left = 103.742
+margin_top = 335.234
+margin_right = 161.742
+margin_bottom = 359.234
+text = "1.0"
+
+[node name="WeightPoseVel" type="LineEdit" parent="Panel"]
+margin_left = 104.172
+margin_top = 307.798
+margin_right = 162.172
+margin_bottom = 331.798
+text = "1.0"
+
+[node name="WeightTrajVel" type="LineEdit" parent="Panel"]
+margin_left = 103.742
+margin_top = 364.385
+margin_right = 161.742
+margin_bottom = 388.385
+text = "1.0"
+
+[node name="WeightTrajAz" type="LineEdit" parent="Panel"]
+margin_left = 104.6
+margin_top = 392.678
+margin_right = 162.6
+margin_bottom = 416.678
+text = "1.0"
+
+[node name="WeightTrajG" type="LineEdit" parent="Panel"]
+margin_left = 105.457
+margin_top = 419.257
+margin_right = 163.457
+margin_bottom = 443.257
+text = "1.0"
+
+[node name="ApplyBtn" type="Button" parent="Panel"]
+margin_left = 178.0
+margin_top = 385.0
+margin_right = 348.0
+margin_bottom = 435.0
+text = "Apply descriptor weights"
