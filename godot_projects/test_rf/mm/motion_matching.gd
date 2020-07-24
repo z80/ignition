@@ -518,10 +518,14 @@ func input_based_traj_desc_( db, az_adj_q: Quat, index: int ):
 	var rp: Vector2 = Vector2.ZERO
 	var fwd: Vector2 = Vector2( 1.0, 0.0 )
 	
+	var inv_pose_q = pose_q_.inverse()
 	for ind in TRAJ_FRAME_INDS:
 		var ctrl_ind: int = ind-1
 		
 		var r: Vector2 = control_pos_sequence_[ctrl_ind]
+		var r3 = Vector3( r.x, r.y, 0.0 )
+		r3 = inv_pose_q.xform( r3 )
+		r = Vector2( r3.x, r3.y )
 		var d = [r.x, r.y]
 		desc_r += d
 		
@@ -608,7 +612,7 @@ func generate_controls( t: Transform, f: bool, b: bool, l: bool, r: bool, fast: 
 	ctrl = cam_q.xform( ctrl )
 	var inv_pose_q: Quat = pose_q_.inverse()
 	cam_rel_q_ = inv_pose_q * cam_q
-	ctrl = cam_rel_q_.xform( ctrl )
+	#ctrl = cam_rel_q_.xform( ctrl )
 	
 	control_input_ = Vector2(ctrl.x, ctrl.y)
 
@@ -643,7 +647,7 @@ func update_vis_control_sequence_():
 	for i in range( qty ):
 		var c2: Vector2 = control_pos_sequence_[i]
 		var c3: Vector3 = Vector3(c2.x, c2.y, 1.0 )
-		c3 = pose_q_.xform( c3 )
+		#c3 = pose_q_.xform( c3 )
 		c3 = c3 + pose_r_
 		vis_control_sequence_[i] = c3
 	
@@ -651,8 +655,12 @@ func update_vis_control_sequence_():
 	var ind: int = 0
 	qty = TRAJ_FRAME_INDS.size()
 	print_control_sequence_.resize( qty )
+	var inv_pose_q = pose_q_.inverse()
 	for i in TRAJ_FRAME_INDS:
 		var v = control_pos_sequence_[i-1]
+		var v3 = Vector3( v.x, v.y, 0.0 )
+		v3 = inv_pose_q.xform( v3 )
+		v = Vector2( v3.x, v3.y )
 		print_control_sequence_[ind] = v
 		ind += 1
 
