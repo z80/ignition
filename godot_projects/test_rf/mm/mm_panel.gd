@@ -45,6 +45,14 @@ func _process(delta):
 	stri = "(%f, %f, %f, %f)" %[ q.w, q.x, q.y, q.z ]
 	$Panel/PoseDQ.text = stri
 
+	q = mm_.cam_q_;
+	stri = "(%f, %f, %f, %f)" %[ q.w, q.x, q.y, q.z ]
+	$Panel/CamQ.text = stri
+
+	q = mm_.cam_rel_q_;
+	stri = "(%f, %f, %f, %f)" %[ q.w, q.x, q.y, q.z ]
+	$Panel/CamRelQ.text = stri
+
 	var v2: Vector2 = mm_.control_input_;
 	stri = "(%f, %f)" %[ v2.x, v2.y ]
 	$Panel/InstantCtrl.text = stri
@@ -55,7 +63,7 @@ func _process(delta):
 		var c: Vector2 = mm_.print_control_sequence_[i]
 		stri = " (%f, %f)" % [c.x, c.y]
 		all_stri = all_stri + stri
-	$Panel/InstantCtrl.text = all_stri
+	$Panel/CtrlSeq.text = all_stri
 
 func _input(event):
 	

@@ -67,80 +67,140 @@ __meta__ = {
 }
 
 [node name="PoseQLbl" type="Label" parent="Panel"]
-margin_left = 13.0
-margin_top = 73.436
-margin_right = 66.0
-margin_bottom = 87.436
+margin_left = 9.5705
+margin_top = 108.588
+margin_right = 62.5705
+margin_bottom = 122.588
 text = "pose_q: "
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="PoseQ" type="Label" parent="Panel"]
-margin_left = 72.1426
-margin_top = 74.9658
-margin_right = 232.143
-margin_bottom = 88.9658
+margin_left = 68.7131
+margin_top = 110.118
+margin_right = 228.714
+margin_bottom = 124.118
+text = "(0, 0, 0, 0)"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CamQLbl" type="Label" parent="Panel"]
+margin_left = 9.5705
+margin_top = 88.0114
+margin_right = 62.5705
+margin_bottom = 102.011
+text = "cam_q: "
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CamQ" type="Label" parent="Panel"]
+margin_left = 68.7131
+margin_top = 89.5412
+margin_right = 228.714
+margin_bottom = 103.541
+text = "(0, 0, 0, 0)"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CamRelQLbl" type="Label" parent="Panel"]
+margin_left = 8.71313
+margin_top = 161.746
+margin_right = 61.7131
+margin_bottom = 175.746
+text = "cam_rel_q: "
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CamRelQ" type="Label" parent="Panel"]
+margin_left = 91.0049
+margin_top = 164.133
+margin_right = 251.005
+margin_bottom = 178.133
 text = "(0, 0, 0, 0)"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="PoseDQLbl" type="Label" parent="Panel"]
-margin_left = 13.0
-margin_top = 94.013
-margin_right = 74.0
-margin_bottom = 108.013
+margin_left = 9.5705
+margin_top = 129.165
+margin_right = 70.5705
+margin_bottom = 143.165
 text = "pose_dq: "
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="PoseDQ" type="Label" parent="Panel"]
-margin_left = 73.0
-margin_top = 95.5428
-margin_right = 233.0
-margin_bottom = 109.543
+margin_left = 69.5705
+margin_top = 130.695
+margin_right = 229.57
+margin_bottom = 144.695
 text = "(0, 0, 0, 0)"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="FrameNLb" type="Label" parent="Panel"]
-margin_left = 10.2852
-margin_top = 116.728
-margin_right = 68.2852
-margin_bottom = 130.728
+margin_left = 6.85563
+margin_top = 193.892
+margin_right = 64.8556
+margin_bottom = 207.892
 text = "Frame #"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="FrameN" type="Label" parent="Panel"]
-margin_left = 73.2852
-margin_top = 116.728
-margin_right = 206.285
-margin_bottom = 130.728
+margin_left = 68.9983
+margin_top = 193.034
+margin_right = 201.998
+margin_bottom = 207.034
 text = "0"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="InstantCtrlLbl" type="Label" parent="Panel"]
-margin_left = 11.1426
-margin_top = 139.02
-margin_right = 69.1426
-margin_bottom = 153.02
+margin_left = 6.85565
+margin_top = 215.326
+margin_right = 80.8557
+margin_bottom = 229.326
 text = "Instant ctrl:"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="InstantCtrl" type="Label" parent="Panel"]
-margin_left = 93.8622
-margin_top = 139.877
-margin_right = 226.862
-margin_bottom = 153.877
+margin_left = 89.5753
+margin_top = 216.184
+margin_right = 222.575
+margin_bottom = 230.184
+text = "(0, 0)"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CtrlSeqLbl" type="Label" parent="Panel"]
+margin_left = 5.99823
+margin_top = 235.903
+margin_right = 79.9982
+margin_bottom = 249.903
+text = "Ctrl seq:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CtrlSeq" type="Label" parent="Panel"]
+margin_left = 88.7179
+margin_top = 236.761
+margin_right = 221.718
+margin_bottom = 250.761
 text = "(0, 0)"
 __meta__ = {
 "_edit_use_anchors_": false

@@ -66,6 +66,8 @@ var parents_: Array
 # user control input for visualization
 var vis_control_sequence_: Array
 var print_control_sequence_: Array
+var cam_q_: Quat
+var cam_rel_q_: Quat
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -575,7 +577,10 @@ func quat_azimuth_( q: Quat ):
 
 func generate_controls( t: Transform, f: bool, b: bool, l: bool, r: bool, fast: bool, slow: bool ):
 	var cam_q: Quat = t.basis.get_rotation_quat()
+	# From Godot ref frame (Y upwards) to normal ref frame (Z upwards).
+	cam_q = Quat( cam_q.x, -cam_q.z, cam_q.y, cam_q.w )
 	cam_q = quat_azimuth_( cam_q )
+	cam_q_ = cam_q
 	var fwd: Vector3 = Vector3( 0.0, 0.0, 1.0 )
 	
 	var ctrl: Vector3 = Vector3( 0.0, 0.0, 0.0 )
@@ -602,7 +607,8 @@ func generate_controls( t: Transform, f: bool, b: bool, l: bool, r: bool, fast: 
 	
 	ctrl = cam_q.xform( ctrl )
 	var inv_pose_q: Quat = pose_q_.inverse()
-	ctrl = inv_pose_q.xform( ctrl )
+	cam_rel_q_ = inv_pose_q * cam_q
+	ctrl = cam_rel_q_.xform( ctrl )
 	
 	control_input_ = Vector2(ctrl.x, ctrl.y)
 
