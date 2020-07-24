@@ -689,6 +689,8 @@ func process_frame():
 	switch_counter_ += 1
 	
 	var next_ind: int = frame_ind_ + 1
+	if ( next_ind >= frames_qty_ ):
+		next_ind = frames_qty_ - 1
 	var jump: bool = false
 	
 	# Update control sequence based on most recent user input.

@@ -137,3 +137,7 @@ func _on_apply_weights_pressed():
 
 
 
+
+
+func _on_get_pressed():
+	read_gains_from_mm_()

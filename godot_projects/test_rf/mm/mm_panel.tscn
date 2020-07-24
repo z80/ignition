@@ -330,4 +330,18 @@ margin_top = 385.0
 margin_right = 348.0
 margin_bottom = 435.0
 text = "Apply descriptor weights"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="GetBtn" type="Button" parent="Panel"]
+margin_left = 178.0
+margin_top = 327.556
+margin_right = 348.0
+margin_bottom = 377.556
+text = "Get descriptor weights"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 [connection signal="pressed" from="Panel/ApplyBtn" to="." method="_on_apply_weights_pressed"]
+[connection signal="pressed" from="Panel/GetBtn" to="." method="_on_get_pressed"]
