@@ -132,9 +132,9 @@ bones/20/bound_children = [  ]
 
 [node name="MotionMatching" parent="Skeleton" instance=ExtResource( 2 )]
 
-[node name="SkeletonVis" parent="Skeleton/MotionMatching" instance=ExtResource( 4 )]
+[node name="WireframeVis" parent="Skeleton/MotionMatching" instance=ExtResource( 4 )]
 
-[node name="Control" parent="Skeleton/MotionMatching" instance=ExtResource( 5 )]
+[node name="MmPanel" parent="Skeleton/MotionMatching" instance=ExtResource( 5 )]
 
 [node name="body000" type="MeshInstance" parent="Skeleton"]
 visible = false
