@@ -66,6 +66,9 @@ func _process(delta):
 		stri = " (%f, %f)" % [c.x, c.y]
 		all_stri = all_stri + stri
 	$Panel/Tabs/Weights/CtrlSeq.text = all_stri
+	
+	$"Panel/Tabs/Motion labeling/CurFrameLbl".text = String( mm_.frame_ind_ )
+	
 
 func _input(event):
 	
@@ -167,11 +170,13 @@ func _on_GoToFrameBtn_pressed():
 
 
 func _on_PrevBtn_pressed():
-	mm_.frame_ind_ -= 1
+	if mm_.frame_ind_ > 0:
+		mm_.frame_ind_ -= 1
 
 
 func _on_NextBtn_pressed():
-	mm_.frame_ind_ += 1
+	if mm_.frame_ind_ < (mm_.frames_qty_-1):
+		mm_.frame_ind_ += 1
 
 
 
