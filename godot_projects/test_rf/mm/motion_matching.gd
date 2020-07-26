@@ -35,8 +35,8 @@ const DT: float  = 1.0/FPS
 
 # Movement constants for building future trajectory.
 var slow_speed_: float = 0.5
-var walk_speed_: float = 1.5
-var fast_speed_: float  = 3.0
+var walk_speed_: float = 1.0
+var fast_speed_: float = 4.0
 
 # Initial/default control.
 # velocity relative to current azimuth.
@@ -123,7 +123,7 @@ func init():
 	
 	var sp = get_config_( db, "switch_period" )
 	if sp == null:
-		switch_period_ = 30
+		switch_period_ = 5
 		set_config_( db, "switch_period", switch_period_ )
 	else:
 		switch_period_ = sp
