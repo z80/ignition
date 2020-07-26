@@ -429,22 +429,8 @@ func frame_in_space_( db, index: int ):
 	var inv_base_q_root = base_q_root.inverse()
 	var q_adj = pose_q_ * inv_base_q_root
 	
-	var inv_q_root = q_root.inverse()
-	var dest_q_root = q_adj * q_root
-	var dest_r_root = pose_r_
-	f_dest[ROOT_IND]   = dest_q_root.w
-	f_dest[ROOT_IND+1] = dest_q_root.x
-	f_dest[ROOT_IND+2] = dest_q_root.y
-	f_dest[ROOT_IND+3] = dest_q_root.z
-	f_dest[ROOT_IND+4] = dest_r_root.x
-	f_dest[ROOT_IND+5] = dest_r_root.y
-	f_dest[ROOT_IND+6] = dest_r_root.z
-	
 	var ind: int = 0
 	for i in range( 0, sz, 7 ):
-		if ( ind == ROOT_IND  ):
-			ind += 1
-			continue
 		var q: Quat = Quat( f[i+1], f[i+2], f[i+3], f[i] )
 		var r: Vector3 = Vector3( f[i+4], f[i+5], f[i+6] )
 		q = q_adj * q
@@ -598,20 +584,20 @@ func traj_desc_( db, index: int ):
 
 
 func input_based_traj_desc_( db, category: int = 0 ):
-	#var f = frame_( db, index )
+	#var f = frame_( db, frame_ind_ )
+	#var q_frame_az: Quat = frame_azimuth_( db, frame_ind_ )
 	
-	# Root pose
-	#var root_q: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
-	#var root_r: Vector3 = Vector3( f[ROOT_IND+4], f[ROOT_IND+5], f[ROOT_IND+6] )
-	#var root_q_inv = root_q.inverse()
+	# Skeleton orientation q = pose_q_ * q_frame_az.inverse()
+	# Inverted one is inv_q = q_frame_az * pose_q_.inverse()
+	
+	#var inv_q: Quat = q_frame_az * pose_q_.inverse()
+	
+	var q_adj = pose_q_.inverse()
 	
 	var desc_r: Array
 	#var desc_az: Array
 	#var desc_g: Array
 	var desc_c: Array
-	
-	#var rp: Vector2 = Vector2.ZERO
-	#var fwd: Vector2 = Vector2( 1.0, 0.0 )
 	
 	var inv_pose_q = pose_q_.inverse()
 	for ind in TRAJ_FRAME_INDS:
@@ -619,29 +605,14 @@ func input_based_traj_desc_( db, category: int = 0 ):
 		
 		var r: Vector2 = control_pos_sequence_[ctrl_ind]
 		var r3 = Vector3( r.x, r.y, 0.0 )
-		r3 = inv_pose_q.xform( r3 )
+		#r3 = inv_pose_q.xform( r3 )
+		r3 = q_adj.xform( r3 )
 		r = Vector2( r3.x, r3.y )
 		var d = [r.x, r.y]
 		desc_r += d
 		
-		#var dr: Vector2 = r - rp
-		#var sz = dr.length_squared()
-		#if ( sz > 0.00001 ):
-		#	fwd = dr.normalized()
-		#d = [fwd.x, fwd.y]
-		#desc_az += d
-		
-		#var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
-		#g = q_inv.xform( g )
-		#d = [g.x, g.y]
-		#desc_g += d
-		
 		desc_c.push_back( category )
 		
-		#rp = r
-		
-	#return [desc_r, desc_az, desc_g]
-	
 	return [desc_r, desc_c]
 
 
@@ -659,11 +630,8 @@ func init_control_sequence_():
 func frame_azimuth_( db, ind: int ):
 	var f = frame_( db, ind )
 	var q: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
-	q = pose_q_ * q
-	var fwd: Vector3 = Vector3( 1.0, 0.0, 0.0 )
-	fwd = q.xform( fwd )
-	var az: float = atan2( fwd.y, fwd.x )
-	return az
+	var az_q: Quat = quat_azimuth_( q )
+	return az_q
 
 
 func quat_azimuth_( q: Quat ):
@@ -754,11 +722,13 @@ func update_vis_control_sequence_():
 	var ind: int = 0
 	qty = TRAJ_FRAME_INDS.size()
 	print_control_sequence_.resize( qty )
-	var inv_pose_q = pose_q_.inverse()
+	var inv_pose_q: Quat = pose_q_.inverse()
+	var q_frame_az: Quat = frame_azimuth_( db_, frame_ind_ )
+	var q: Quat = q_frame_az * inv_pose_q
 	for i in TRAJ_FRAME_INDS:
 		var v = control_pos_sequence_[i-1]
 		var v3 = Vector3( v.x, v.y, 0.0 )
-		v3 = inv_pose_q.xform( v3 )
+		v3 = q.xform( v3 )
 		v = Vector2( v3.x, v3.y )
 		print_control_sequence_[ind] = v
 		ind += 1
