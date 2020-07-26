@@ -17,15 +17,17 @@ var desc_gains_: Array
 var desc_lengths_: Array
 
 var switch_threshold_: float = 0.3
-var switch_period_: int = 30
+var switch_period_: int = 5
 
 const ROOT_IND: int       = 0
 const LEFT_LEG_IND: int   = 15
 const RIGHT_LEG_IND: int  = 19
 const LEFT_HAND_IND: int  = 8
 const RIGHT_HAND_IND: int = 12
-const POSE_LIMB_INDS: Array = [ROOT_IND, LEFT_LEG_IND, RIGHT_LEG_IND, LEFT_HAND_IND, RIGHT_HAND_IND]
-const TRAJ_FRAME_INDS: Array = [30, 60, 90, 120]
+#const POSE_LIMB_INDS: Array = [ROOT_IND, LEFT_LEG_IND, RIGHT_LEG_IND, LEFT_HAND_IND, RIGHT_HAND_IND]
+#const TRAJ_FRAME_INDS: Array = [30, 60, 90, 120]
+const POSE_LIMB_INDS: Array = [ROOT_IND, LEFT_LEG_IND, RIGHT_LEG_IND]
+const TRAJ_FRAME_INDS: Array = [15, 30, 45, 60]
 
 const FPS: float = 60.0
 const DT: float  = 1.0/FPS
@@ -72,8 +74,8 @@ var cam_rel_q_: Quat
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	#generate_descriptors()
-	init()
+	generate_descriptors()
+	#init()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -444,7 +446,9 @@ func pose_desc_( db, index: int ):
 	# Root pose
 	var root_q: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
 	var root_r: Vector3 = Vector3( f[ROOT_IND+4], f[ROOT_IND+5], f[ROOT_IND+6] )
-	var root_q_inv = root_q.inverse()
+	var root_q_inv:    Quat = root_q.inverse()
+	var az_root_q:     Quat = quat_azimuth_( root_q )
+	var az_root_q_inv: Quat = az_root_q.inverse()
 	
 	var desc_r: Array
 	var desc_v: Array
@@ -456,8 +460,8 @@ func pose_desc_( db, index: int ):
 		var rp: Vector3 = Vector3( fp[ind+4], fp[ind+5], fp[ind+6] )
 		r  -= root_r
 		rp -= root_r
-		r  = root_q_inv.xform( r )
-		rp = root_q_inv.xform( r )
+		r  = az_root_q_inv.xform( r )
+		rp = az_root_q_inv.xform( rp )
 		#q  = root_q_inv * q
 		#qp = root_q_inv * qp
 		var v: Vector3 = (r - rp) * FPS
@@ -466,12 +470,14 @@ func pose_desc_( db, index: int ):
 		desc_v += [ v.x, v.y ]
 		
 	# Also compute Z in local ref. frame. It defines torso tilt.
-	var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
-	g = root_q_inv.xform( g )
-	var desc_g: Array = [ g.x, g.y ]
-		
-	return [ desc_r, desc_v, desc_g ]
-
+	#var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
+	#g = root_q_inv.xform( g )
+	#var desc_g: Array = [ g.x, g.y ]
+	
+	#return [ desc_r, desc_v, desc_g ]
+	
+	return [ desc_r, desc_v ]
+	
 
 func traj_desc_( db, index: int ):
 	var f = frame_( db, index )
@@ -480,10 +486,12 @@ func traj_desc_( db, index: int ):
 	var root_q: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
 	var root_r: Vector3 = Vector3( f[ROOT_IND+4], f[ROOT_IND+5], f[ROOT_IND+6] )
 	var root_q_inv = root_q.inverse()
+	var az_root_q: Quat = quat_azimuth_( root_q )
+	var az_root_q_inv = az_root_q.inverse()
 	
 	var desc_r: Array
-	var desc_az: Array
-	var desc_g: Array
+	#var desc_az: Array
+	#var desc_g: Array
 	
 	for ind in TRAJ_FRAME_INDS:
 		var frame_ind: int = index + ind
@@ -491,26 +499,28 @@ func traj_desc_( db, index: int ):
 			frame_ind = frames_qty_ - 1
 		
 		var fn = frame_( db, frame_ind )
-		var q: Quat = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fn[ROOT_IND] )
+		#var q: Quat = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fn[ROOT_IND] )
 		var r: Vector3 = Vector3( fn[ROOT_IND+4], fn[ROOT_IND+5], fn[ROOT_IND+6] )
-		var q_inv: Quat = q.inverse()
+		#var q_inv: Quat = q.inverse()
 		r = r - root_r
-		r = root_q_inv.xform( r )
+		r = az_root_q_inv.xform( r )
 		var d = [r.x, r.y]
 		desc_r += d
 		
-		var fwd: Vector3 = Vector3( 1.0, 0.0, 0.0 )
-		fwd = q.xform( fwd )
-		fwd = root_q_inv.xform( fwd )
-		d = [fwd.x, fwd.y]
-		desc_az += d
+		#var fwd: Vector3 = Vector3( 1.0, 0.0, 0.0 )
+		#fwd = q.xform( fwd )
+		#fwd = root_q_inv.xform( fwd )
+		#d = [fwd.x, fwd.y]
+		#desc_az += d
 		
-		var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
-		g =	q_inv.xform( g )
-		d = [g.x, g.y]
-		desc_g += d
+		#var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
+		#g =	q_inv.xform( g )
+		#d = [g.x, g.y]
+		#desc_g += d
 		
-	return [desc_r, desc_az, desc_g]
+	#return [desc_r, desc_az, desc_g]
+	
+	return [desc_r]
 
 
 func input_based_traj_desc_( db, az_adj_q: Quat, index: int ):

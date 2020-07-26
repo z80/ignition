@@ -227,6 +227,7 @@ __meta__ = {
 }
 
 [node name="CtrlSeqLbl3" type="Label" parent="Panel"]
+visible = false
 margin_left = 13.7147
 margin_top = 398.804
 margin_right = 87.7147
@@ -237,6 +238,7 @@ __meta__ = {
 }
 
 [node name="CtrlSeqLbl5" type="Label" parent="Panel"]
+visible = false
 margin_left = 14.572
 margin_top = 426.24
 margin_right = 88.572
@@ -257,6 +259,7 @@ __meta__ = {
 }
 
 [node name="CtrlSeqLbl6" type="Label" parent="Panel"]
+visible = false
 margin_left = 12.8572
 margin_top = 338.788
 margin_right = 86.8572
@@ -291,6 +294,7 @@ margin_bottom = 331.798
 text = "1.0"
 
 [node name="WeightTrajAz" type="LineEdit" parent="Panel"]
+visible = false
 margin_left = 104.6
 margin_top = 395.25
 margin_right = 162.6
@@ -301,6 +305,7 @@ __meta__ = {
 }
 
 [node name="WeightTrajG" type="LineEdit" parent="Panel"]
+visible = false
 margin_left = 104.6
 margin_top = 423.544
 margin_right = 162.6
@@ -318,6 +323,7 @@ __meta__ = {
 }
 
 [node name="WeightPoseG" type="LineEdit" parent="Panel"]
+visible = false
 margin_left = 103.742
 margin_top = 336.091
 margin_right = 161.742
@@ -343,5 +349,16 @@ text = "Get descriptor weights"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="RewriteDescsBtn" type="Button" parent="Panel"]
+margin_left = 177.143
+margin_top = 251.25
+margin_right = 347.143
+margin_bottom = 301.25
+text = "Rewrite descriptors"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 [connection signal="pressed" from="Panel/ApplyBtn" to="." method="_on_apply_weights_pressed"]
 [connection signal="pressed" from="Panel/GetBtn" to="." method="_on_get_pressed"]
+[connection signal="pressed" from="Panel/RewriteDescsBtn" to="." method="_on_get_pressed"]
