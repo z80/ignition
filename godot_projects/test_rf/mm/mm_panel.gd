@@ -99,35 +99,32 @@ func read_gains_from_mm_():
 	var gains = mm_.get_desc_gains()
 	
 	var qty = gains.size()
-	if qty > 3:
+	if qty > 4:
 		var pose_vel  = gains[1]
-		#var pose_g    = gains[2]
-		var traj_pos  = gains[2]
-		#var traj_az   = gains[4]
-		var traj_g    = gains[3]
+		var pose_cat  = gains[2]
+		var traj_pos  = gains[3]
+		var traj_cat  = gains[4]
 	
 		var switch_th = mm_.get_switch_threshold()
 	
 		$Panel/Tabs/Weights/WeightPoseVel.text = String( pose_vel )
-		#$Panel/WeightPoseG.text   = String( pose_g )
+		$Panel/Tabs/Weights/WeightPoseCat.text = String( pose_cat )
 		$Panel/Tabs/Weights/WeightTrajPos.text = String( traj_pos )
-		#$Panel/WeightTrajAz.text  = String( traj_az )
-		$Panel/Tabs/Weights/WeightTrajG.text   = String( traj_g )
+		$Panel/Tabs/Weights/WeightTrajCat.text = String( traj_cat )
 	
 		$Panel/Tabs/Weights/SwitchTh.text      = String( switch_th )
 
 
 func write_gains_to_mm_():
 	var pose_vel = float( $Panel/Tabs/Weights/WeightPoseVel.text )
-	#var pose_g   = float( $Panel/WeightPoseG.text )
+	var pose_cat = float( $Panel/Tabs/Weights/WeightPoseCat.text )
 	var traj_pos = float( $Panel/Tabs/Weights/WeightTrajPos.text )
-	#var traj_az  = float( $Panel/WeightTrajAz.text )
-	var traj_g   = float( $Panel/Tabs/Weights/WeightTrajG.text )
+	var traj_cat = float( $Panel/Tabs/Weights/WeightTrajCat.text )
 	
 	var switch_th = float( $Panel/Tabs/Weights/SwitchTh.text )
 	
 	#var gains = [ 1.0, pose_vel, pose_g, traj_pos, traj_az, traj_g ]
-	var gains = [ 1.0, pose_vel, traj_pos, traj_g ]
+	var gains = [ 1.0, pose_vel, pose_cat, traj_pos, traj_cat ]
 	mm_.set_desc_gains( gains )
 	
 	mm_.set_switch_threshold( switch_th )

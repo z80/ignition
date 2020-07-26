@@ -79,7 +79,7 @@ var increment_frame_ind_: bool = true
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	#generate_descriptors( true, false )
+	#generate_descriptors( false, true )
 	init()
 
 
@@ -219,15 +219,38 @@ func build_kd_tree_( db ):
 
 
 # Need to do this once
-func generate_descriptors( fill_descs: bool = true, fill_categories: bool = false ):
+func generate_descriptors( fill_categories: bool = false, fill_descs: bool = true ):
 	var db = open_frame_database_()
+	create_desc_column_( db )
+	create_cat_column_( db )
+	if fill_categories:
+		fill_default_cats_( db )
 	if fill_descs:
-		create_desc_column_( db )
 		fill_descs_( db )
 		estimate_scale_( db )
-	if fill_categories:
-		create_cat_column_( db )
-		fill_default_cats_( db )
+	
+	# Write figure out descriptor lengths
+	var f = frame_( db, 0 )
+	var pose_desc = pose_desc_( db, 0 )
+	var traj_desc = traj_desc_( db, 0 )
+	var descs: Array = pose_desc + traj_desc
+	var desc: Array = []
+	var desc_lengths: Array = []
+	for d in descs:
+		var sz = d.size()
+		desc_lengths.push_back( sz )
+		desc += d
+	var desc_length: int = desc.size()
+	
+	set_config_( db, "desc_length",  desc_length )
+	set_config_( db, "desc_lengths", desc_lengths )
+	
+	var gains: Array = []
+	for i in desc_lengths:
+		gains.push_back( 1.0 )
+	
+	set_config_( db, "desc_gains", gains )
+	set_config_( db, "switch_threshold", switch_threshold_ )
 	
 	db.close_db()
 
@@ -282,21 +305,10 @@ func fill_descs_( frame_db ):
 	frame_db.query("SELECT COUNT(*) AS 'qty' FROM " + TABLE_DATA_NAME + ";")
 	var frames_qty: int = frame_db.query_result[0]['qty']
 	
-	# First figure out descriptor lengths
-	var f = frame_( frame_db, 0 )
-	var pose_desc = pose_desc_( frame_db, 0 )
-	var traj_desc = traj_desc_( frame_db, 0 )
-	var descs: Array = pose_desc + traj_desc
-	var desc: Array = []
-	var desc_lengths: Array = []
-	for d in descs:
-		var sz = d.size()
-		desc_lengths.push_back( sz )
-		desc += d
-	var desc_length: int = desc.size()
-	
-	set_config_( frame_db, "desc_length",  desc_length )
-	set_config_( frame_db, "desc_lengths", desc_lengths )
+	var pose_desc: Array
+	var traj_desc: Array
+	var descs: Array
+	var desc: Array
 	
 	for i in range( frames_qty ):
 		#f = frame_( frame_db, i )
@@ -333,16 +345,6 @@ func fill_default_cats_( db ):
 	if not res:
 		print( "Failed to write default value into category " )
 		return false
-
-
-	#for i in range( frames_qty ):
-	#	var stri_d: String = JSON.print( [0] )
-	#	stri_d = stri_d.replace( "\"", "\'" )
-	#	var cmd = "UPDATE data SET cat=\'%s\' WHERE id=%d;" % [stri_d, i]
-	#	var res: bool = db.query( cmd )
-	#	if not res:
-	#		print( "Failed to write default value into category " )
-	#		return false
 	
 	return true
 
@@ -400,6 +402,20 @@ func frame_( db, index: int ):
 	return ret
 
 
+func cat_desc_( db, index: int ):
+	var cmd: String = "SELECT cat FROM data WHERE id = %d LIMIT 1;" % index
+	var res: bool = db.query( cmd )
+	if not res:
+		print( "failed to query frame from the db" )
+		return null
+	var selected_array : Array = db.query_result
+	var stri = selected_array[0]['cat']
+	stri = stri.replace( "'", "\"" )
+	var ret = JSON.parse( stri )
+	ret = ret.result
+	return ret
+
+
 func frame_in_space_( db, index: int ):
 	var f = frame_( db, index )
 	var sz: int = f.size()
@@ -451,7 +467,7 @@ func frame_in_space_( db, index: int ):
 
 
 func desc_( db, index: int ):
-	var cmd: String = "SELECT desc, cat FROM data WHERE id = %d LIMIT 1;" % index
+	var cmd: String = "SELECT desc FROM data WHERE id = %d LIMIT 1;" % index
 	var res: bool = db.query( cmd )
 	if not res:
 		print( "failed to query frame from the db" )
@@ -461,11 +477,7 @@ func desc_( db, index: int ):
 	stri = stri.replace( "'", "\"" )
 	var json_desc = JSON.parse( stri )
 	
-	stri = selected_array[0]['cat']
-	stri = stri.replace( "'", "\"" )
-	var json_cat = JSON.parse( stri )
-	
-	var d = json_desc.result + json_cat.result
+	var d = json_desc.result
 	
 	return d
 
@@ -489,15 +501,6 @@ func estimate_scale_( db ):
 	
 	set_config_( db, "inv_std", inv_std )
 	set_config_( db, "inv_ampl", inv_ampl )
-	
-	var desc_lengths = get_config_( db, "desc_lengths" )
-	var gains: Array = []
-	for i in desc_lengths:
-		gains.push_back( 1.0 )
-	
-	set_config_( db, "desc_gains", gains )
-	set_config_( db, "switch_threshold", switch_threshold_ )
-
 
 
 func pose_desc_( db, index: int ):
@@ -517,11 +520,12 @@ func pose_desc_( db, index: int ):
 	
 	var desc_r: Array
 	var desc_v: Array
+	var desc_c: Array
 	for limb_ind in POSE_LIMB_INDS:
 		var ind: int = limb_ind * 7
-		var q: Quat = Quat( f[ind+1], f[ind+12], f[ind+13], f[ind+10] )
+		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
 		var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
-		#var qp: Quat = Quat( fp[ind+1], fp[ind+12], fp[ind+13], fp[ind+10] )
+		#var qp: Quat = Quat( fp[ind+1], fp[ind+2], fp[ind+3], fp[ind+0] )
 		var rp: Vector3 = Vector3( fp[ind+4], fp[ind+5], fp[ind+6] )
 		r  -= root_r
 		rp -= root_r
@@ -539,9 +543,11 @@ func pose_desc_( db, index: int ):
 	#g = root_q_inv.xform( g )
 	#var desc_g: Array = [ g.x, g.y ]
 	
+	desc_c = cat_desc_( db, index )
+	
 	#return [ desc_r, desc_v, desc_g ]
 	
-	return [ desc_r, desc_v ]
+	return [ desc_r, desc_v, desc_c ]
 	
 
 func traj_desc_( db, index: int ):
@@ -556,7 +562,8 @@ func traj_desc_( db, index: int ):
 	
 	var desc_r: Array
 	#var desc_az: Array
-	var desc_g: Array
+	#var desc_g: Array
+	var desc_c: Array
 	
 	for ind in TRAJ_FRAME_INDS:
 		var frame_ind: int = index + ind
@@ -578,17 +585,19 @@ func traj_desc_( db, index: int ):
 		#d = [fwd.x, fwd.y]
 		#desc_az += d
 		
-		var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
-		g =	q_inv.xform( g )
-		d = [g.x, g.y]
-		desc_g += d
+		#var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
+		#g =	q_inv.xform( g )
+		#d = [g.x, g.y]
+		#desc_g += d
+		var c = cat_desc_( db, frame_ind )
+		desc_c += c
 		
 	#return [desc_r, desc_az, desc_g]
 	
-	return [desc_r, desc_g]
+	return [desc_r, desc_c]
 
 
-func input_based_traj_desc_( db, az_adj_q: Quat, index: int ):
+func input_based_traj_desc_( db, category: int = 0 ):
 	#var f = frame_( db, index )
 	
 	# Root pose
@@ -597,11 +606,12 @@ func input_based_traj_desc_( db, az_adj_q: Quat, index: int ):
 	#var root_q_inv = root_q.inverse()
 	
 	var desc_r: Array
-	var desc_az: Array
-	var desc_g: Array
+	#var desc_az: Array
+	#var desc_g: Array
+	var desc_c: Array
 	
-	var rp: Vector2 = Vector2.ZERO
-	var fwd: Vector2 = Vector2( 1.0, 0.0 )
+	#var rp: Vector2 = Vector2.ZERO
+	#var fwd: Vector2 = Vector2( 1.0, 0.0 )
 	
 	var inv_pose_q = pose_q_.inverse()
 	for ind in TRAJ_FRAME_INDS:
@@ -621,16 +631,18 @@ func input_based_traj_desc_( db, az_adj_q: Quat, index: int ):
 		#d = [fwd.x, fwd.y]
 		#desc_az += d
 		
-		var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
+		#var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
 		#g = q_inv.xform( g )
-		d = [g.x, g.y]
-		desc_g += d
+		#d = [g.x, g.y]
+		#desc_g += d
 		
-		rp = r
+		desc_c.push_back( category )
+		
+		#rp = r
 		
 	#return [desc_r, desc_az, desc_g]
 	
-	return [desc_r, desc_g]
+	return [desc_r, desc_c]
 
 
 func init_control_sequence_():
@@ -704,7 +716,7 @@ func generate_controls( t: Transform, f: bool, b: bool, l: bool, r: bool, fast: 
 	control_input_ = Vector2(ctrl.x, ctrl.y)
 
 
-func updata_control_sequence_():
+func updata_control_sequence_( cat: int = 0 ):
 	var ctrl: Vector2 = control_input_
 	# Shift by one.
 	var sz: int = control_vel_sequence_.size()
@@ -789,7 +801,7 @@ func process_frame():
 	if time_to_switch:
 		#var f_cur = frame_( db_, frame_ind_ )
 		var desc_p = pose_desc_( db_, frame_ind_ )
-		var desc_t = input_based_traj_desc_( db_, pose_q_, frame_ind_ )
+		var desc_t = input_based_traj_desc_( db_ )
 		var d = []
 		for di in desc_p:
 			for v in di:

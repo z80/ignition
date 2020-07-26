@@ -26,47 +26,6 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="CtrlSeqLbl3" type="Label" parent="Panel"]
-visible = false
-margin_left = 13.7147
-margin_top = 398.804
-margin_right = 87.7147
-margin_bottom = 412.804
-text = "traj az:"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="CtrlSeqLbl6" type="Label" parent="Panel"]
-visible = false
-margin_left = 12.8572
-margin_top = 338.788
-margin_right = 86.8572
-margin_bottom = 352.788
-text = "Pose g:"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="WeightTrajAz" type="LineEdit" parent="Panel"]
-visible = false
-margin_left = 104.6
-margin_top = 395.25
-margin_right = 162.6
-margin_bottom = 419.25
-text = "1.0"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="WeightPoseG" type="LineEdit" parent="Panel"]
-visible = false
-margin_left = 103.742
-margin_top = 336.091
-margin_right = 161.742
-margin_bottom = 360.091
-text = "1.0"
-
 [node name="Tabs" type="TabContainer" parent="Panel"]
 anchor_left = 0.034
 anchor_top = 0.037
@@ -81,7 +40,6 @@ __meta__ = {
 }
 
 [node name="Weights" type="GridContainer" parent="Panel/Tabs"]
-visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
@@ -297,16 +255,16 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="CtrlSeqLbl2" type="Label" parent="Panel/Tabs/Weights"]
+[node name="PoseCatLbl" type="Label" parent="Panel/Tabs/Weights"]
 margin_top = 213.0
 margin_right = 157.0
 margin_bottom = 227.0
-text = "traj pos:"
+text = "pose cat:"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="WeightTrajPos" type="LineEdit" parent="Panel/Tabs/Weights"]
+[node name="WeightPoseCat" type="LineEdit" parent="Panel/Tabs/Weights"]
 margin_left = 161.0
 margin_top = 208.0
 margin_right = 331.0
@@ -316,16 +274,16 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="CtrlSeqLbl5" type="Label" parent="Panel/Tabs/Weights"]
+[node name="CtrlSeqLbl2" type="Label" parent="Panel/Tabs/Weights"]
 margin_top = 241.0
 margin_right = 157.0
 margin_bottom = 255.0
-text = "traj g:"
+text = "traj pos:"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="WeightTrajG" type="LineEdit" parent="Panel/Tabs/Weights"]
+[node name="WeightTrajPos" type="LineEdit" parent="Panel/Tabs/Weights"]
 margin_left = 161.0
 margin_top = 236.0
 margin_right = 331.0
@@ -335,10 +293,49 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="CtrlSeqLbl9" type="Label" parent="Panel/Tabs/Weights"]
+[node name="TrajCatLbl" type="Label" parent="Panel/Tabs/Weights"]
 margin_top = 269.0
 margin_right = 157.0
 margin_bottom = 283.0
+text = "Traj cat:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="WeightTrajCat" type="LineEdit" parent="Panel/Tabs/Weights"]
+margin_left = 161.0
+margin_top = 264.0
+margin_right = 331.0
+margin_bottom = 288.0
+text = "1.0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CtrlSeqLbl5" type="Label" parent="Panel/Tabs/Weights"]
+visible = false
+margin_top = 297.0
+margin_right = 157.0
+margin_bottom = 311.0
+text = "traj g:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="WeightTrajG" type="LineEdit" parent="Panel/Tabs/Weights"]
+visible = false
+margin_top = 292.0
+margin_right = 170.0
+margin_bottom = 316.0
+text = "1.0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CtrlSeqLbl9" type="Label" parent="Panel/Tabs/Weights"]
+margin_top = 297.0
+margin_right = 157.0
+margin_bottom = 311.0
 text = "Switch th:"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -346,18 +343,18 @@ __meta__ = {
 
 [node name="SwitchTh" type="LineEdit" parent="Panel/Tabs/Weights"]
 margin_left = 161.0
-margin_top = 264.0
+margin_top = 292.0
 margin_right = 331.0
-margin_bottom = 288.0
+margin_bottom = 316.0
 text = "0.3"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="GetBtn" type="Button" parent="Panel/Tabs/Weights"]
-margin_top = 292.0
+margin_top = 320.0
 margin_right = 157.0
-margin_bottom = 312.0
+margin_bottom = 340.0
 text = "Get descriptor weights"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -365,18 +362,18 @@ __meta__ = {
 
 [node name="ApplyBtn" type="Button" parent="Panel/Tabs/Weights"]
 margin_left = 161.0
-margin_top = 292.0
+margin_top = 320.0
 margin_right = 331.0
-margin_bottom = 312.0
+margin_bottom = 340.0
 text = "Apply descriptor weights"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="RewriteDescsBtn" type="Button" parent="Panel/Tabs/Weights"]
-margin_top = 316.0
+margin_top = 344.0
 margin_right = 157.0
-margin_bottom = 336.0
+margin_bottom = 364.0
 text = "Rewrite descriptors"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -412,6 +409,7 @@ __meta__ = {
 }
 
 [node name="Motion labeling" type="Panel" parent="Panel/Tabs"]
+visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
