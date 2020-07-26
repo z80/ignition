@@ -17,7 +17,7 @@ var desc_gains_: Array
 var desc_lengths_: Array
 
 var switch_threshold_: float = 0.3
-var switch_period_: int = 5
+var switch_period_: int = 30
 
 const ROOT_IND: int       = 0
 const LEFT_LEG_IND: int   = 15
@@ -121,12 +121,12 @@ func init():
 	else:
 		switch_threshold_ = th
 	
-	var sp = get_config_( db, "switch_period" )
-	if sp == null:
-		switch_period_ = 5
-		set_config_( db, "switch_period", switch_period_ )
-	else:
-		switch_period_ = sp
+	#var sp = get_config_( db, "switch_period" )
+	#if sp == null:
+	#	switch_period_ = 5
+	#	set_config_( db, "switch_period", switch_period_ )
+	#else:
+	#	switch_period_ = sp
 	
 	var dg = get_config_( db, "desc_gains" )
 	if dg == null:
