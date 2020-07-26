@@ -72,9 +72,14 @@ var print_control_sequence_: Array
 var cam_q_: Quat
 var cam_rel_q_: Quat
 
+
+# Run the algorithm, or just demonstrate frames.
+var run_mm_algorithm_:    bool = true
+var increment_frame_ind_: bool = true
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	#generate_descriptors()
+	#generate_descriptors( true, false )
 	init()
 
 
@@ -103,7 +108,7 @@ func _input( event ):
 # This one is called every time it starts.
 # It assumes frames and descriptors present in the database.
 func init():
-	var db = open_frame_database()
+	var db = open_frame_database_()
 	db_ = db
 
 	bone_names_   = get_config_( db, "names" )
@@ -214,15 +219,20 @@ func build_kd_tree_( db ):
 
 
 # Need to do this once
-func generate_descriptors():
-	var db = open_frame_database()
-	create_desc_column( db )
-	fill_descs( db )
-	estimate_scale( db )
+func generate_descriptors( fill_descs: bool = true, fill_categories: bool = false ):
+	var db = open_frame_database_()
+	if fill_descs:
+		create_desc_column_( db )
+		fill_descs_( db )
+		estimate_scale_( db )
+	if fill_categories:
+		create_cat_column_( db )
+		fill_default_cats_( db )
+	
 	db.close_db()
 
 
-func open_frame_database():
+func open_frame_database_():
 	var db = SQLite.new()
 	db.path = FRAME_DB_NAME
 	var res: bool = db.open_db()
@@ -240,7 +250,7 @@ func open_frame_database():
 	return db
 
 
-func has_desc_column( db ):
+func has_desc_column_( db ):
 	var cmd: String = "SELECT COUNT(*) AS qty FROM pragma_table_info('desc') WHERE name='data';"
 	var res: bool = db.query( cmd )
 	var qty: int = db.query_result[0]["qty"]
@@ -249,7 +259,7 @@ func has_desc_column( db ):
 	return has_desc
 
 
-func create_desc_column( db ):
+func create_desc_column_( db ):
 	var cmd: String = "ALTER TABLE data ADD COLUMN desc text;"
 	var res: bool = db.query( cmd )
 	if not res:
@@ -258,7 +268,16 @@ func create_desc_column( db ):
 	return true
 
 
-func fill_descs( frame_db ):
+func create_cat_column_( db ):
+	var cmd: String = "ALTER TABLE data ADD COLUMN cat text;"
+	var res: bool = db.query( cmd )
+	if not res:
+		print( "failed to add column \'cat\' to the table \'data\'" )
+		return false
+	return true
+
+
+func fill_descs_( frame_db ):
 	# Number of frames
 	frame_db.query("SELECT COUNT(*) AS 'qty' FROM " + TABLE_DATA_NAME + ";")
 	var frames_qty: int = frame_db.query_result[0]['qty']
@@ -280,7 +299,7 @@ func fill_descs( frame_db ):
 	set_config_( frame_db, "desc_lengths", desc_lengths )
 	
 	for i in range( frames_qty ):
-		f = frame_( frame_db, i )
+		#f = frame_( frame_db, i )
 		pose_desc = pose_desc_( frame_db, i )
 		traj_desc = traj_desc_( frame_db, i )
 		descs = pose_desc + traj_desc
@@ -288,17 +307,57 @@ func fill_descs( frame_db ):
 		for d in descs:
 			desc += d
 		
-		var stri_f: String = JSON.print( f )
-		stri_f = stri_f.replace( "\"", "\'" )
+		#var stri_f: String = JSON.print( f )
+		#stri_f = stri_f.replace( "\"", "\'" )
 		var stri_d: String = JSON.print( desc )
 		stri_d = stri_d.replace( "\"", "\'" )
-		var cmd = "INSERT OR REPLACE INTO data(id, data, desc) VALUES(%d, \'%s\', \'%s\');" % [i, stri_f, stri_d]
+		#var cmd = "INSERT OR REPLACE INTO data(id, data, desc) VALUES(%d, \'%s\', \'%s\');" % [i, stri_f, stri_d]
+		var cmd = "UPDATE data SET desc=\'%s\' WHERE id=%d;" % [stri_d, i]
 		var res: bool = frame_db.query( cmd )
 		if not res:
 			print( "Failed to write into desc_db" )
 			return false
 		
 	return true
+
+
+func fill_default_cats_( db ):
+	# Number of frames
+	#db.query("SELECT COUNT(*) AS 'qty' FROM " + TABLE_DATA_NAME + ";")
+	#var frames_qty: int = db.query_result[0]['qty']
+
+	var stri_d: String = JSON.print( [0] )
+	stri_d = stri_d.replace( "\"", "\'" )
+	var cmd = "UPDATE data SET cat=\'%s\' WHERE id>=0;" % [stri_d]
+	var res: bool = db.query( cmd )
+	if not res:
+		print( "Failed to write default value into category " )
+		return false
+
+
+	#for i in range( frames_qty ):
+	#	var stri_d: String = JSON.print( [0] )
+	#	stri_d = stri_d.replace( "\"", "\'" )
+	#	var cmd = "UPDATE data SET cat=\'%s\' WHERE id=%d;" % [stri_d, i]
+	#	var res: bool = db.query( cmd )
+	#	if not res:
+	#		print( "Failed to write default value into category " )
+	#		return false
+	
+	return true
+
+
+func assign_cat( from: int, to: int, category: int ):
+	var stri_d: String = JSON.print( [category] )
+	stri_d = stri_d.replace( "\"", "\'" )
+	var cmd = "UPDATE data SET cat=\'%s\' WHERE id>=%d AND id <=%d;" % [stri_d, from, to]
+	var res: bool = db_.query( cmd )
+	if not res:
+		print( "Failed to write value into category column" )
+		return false
+	
+	return true
+
 
 
 func set_config_( db, key: String, data ):
@@ -392,7 +451,7 @@ func frame_in_space_( db, index: int ):
 
 
 func desc_( db, index: int ):
-	var cmd: String = "SELECT desc FROM data WHERE id = %d LIMIT 1;" % index
+	var cmd: String = "SELECT desc, cat FROM data WHERE id = %d LIMIT 1;" % index
 	var res: bool = db.query( cmd )
 	if not res:
 		print( "failed to query frame from the db" )
@@ -400,12 +459,18 @@ func desc_( db, index: int ):
 	var selected_array : Array = db.query_result
 	var stri = selected_array[0]['desc']
 	stri = stri.replace( "'", "\"" )
-	var ret = JSON.parse( stri )
-	ret = ret.result
-	return ret
+	var json_desc = JSON.parse( stri )
+	
+	stri = selected_array[0]['cat']
+	stri = stri.replace( "'", "\"" )
+	var json_cat = JSON.parse( stri )
+	
+	var d = json_desc.result + json_cat.result
+	
+	return d
 
 
-func estimate_scale( db ):
+func estimate_scale_( db ):
 	print( "Estimating scale..." )
 	var dims: int = get_config_( db, "desc_length")
 	
@@ -688,21 +753,32 @@ func update_vis_control_sequence_():
 
 
 
+
+
 # Assuming time passed is exactly one frame.
 func process_frame():
 	var time_to_switch: bool
-	if switch_counter_ < switch_period_:
-		time_to_switch = false
+	
+	if run_mm_algorithm_:
+		if switch_counter_ < switch_period_:
+			time_to_switch = false
+		else:
+			time_to_switch = true
+			switch_counter_ -= switch_period_
+		
+		# Increment frame switch counter.
+		switch_counter_ += 1
 	else:
-		time_to_switch = true
-		switch_counter_ -= switch_period_
+		time_to_switch = false
 	
-	# Increment frame switch counter.
-	switch_counter_ += 1
 	
-	var next_ind: int = frame_ind_ + 1
-	if ( next_ind >= frames_qty_ ):
-		next_ind = frames_qty_ - 1
+	var next_ind: int = frame_ind_
+	if increment_frame_ind_:
+		next_ind += 1
+		if ( next_ind >= frames_qty_ ):
+			next_ind = frames_qty_ - 1
+	
+	
 	var jump: bool = false
 	
 	# Update control sequence based on most recent user input.
@@ -761,6 +837,10 @@ func process_frame():
 	
 	#var rz: float = pose_r_.z
 	pose_r_ += dr
+	
+	# To make it not go up or down.
+	if jump:
+		pose_r_.z = 0.0
 	#pose_r_.z = rz
 	
 	#if abs(dq.z) > 0.015:
