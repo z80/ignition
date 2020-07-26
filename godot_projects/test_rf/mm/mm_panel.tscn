@@ -238,7 +238,6 @@ __meta__ = {
 }
 
 [node name="CtrlSeqLbl5" type="Label" parent="Panel"]
-visible = false
 margin_left = 14.572
 margin_top = 426.24
 margin_right = 88.572
@@ -305,12 +304,14 @@ __meta__ = {
 }
 
 [node name="WeightTrajG" type="LineEdit" parent="Panel"]
-visible = false
 margin_left = 104.6
 margin_top = 423.544
 margin_right = 162.6
 margin_bottom = 447.544
 text = "1.0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="SwitchTh" type="LineEdit" parent="Panel"]
 margin_left = 105.457

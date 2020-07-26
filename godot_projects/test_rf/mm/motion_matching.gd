@@ -35,8 +35,8 @@ const DT: float  = 1.0/FPS
 
 # Movement constants for building future trajectory.
 var slow_speed_: float = 0.5
-var walk_speed_: float = 1.0
-var fast_speed_: float  = 2.0
+var walk_speed_: float = 1.5
+var fast_speed_: float  = 3.0
 
 # Initial/default control.
 # velocity relative to current azimuth.
@@ -74,8 +74,8 @@ var cam_rel_q_: Quat
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	generate_descriptors()
-	#init()
+	#generate_descriptors()
+	init()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -491,7 +491,7 @@ func traj_desc_( db, index: int ):
 	
 	var desc_r: Array
 	#var desc_az: Array
-	#var desc_g: Array
+	var desc_g: Array
 	
 	for ind in TRAJ_FRAME_INDS:
 		var frame_ind: int = index + ind
@@ -499,9 +499,9 @@ func traj_desc_( db, index: int ):
 			frame_ind = frames_qty_ - 1
 		
 		var fn = frame_( db, frame_ind )
-		#var q: Quat = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fn[ROOT_IND] )
+		var q: Quat = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fn[ROOT_IND] )
 		var r: Vector3 = Vector3( fn[ROOT_IND+4], fn[ROOT_IND+5], fn[ROOT_IND+6] )
-		#var q_inv: Quat = q.inverse()
+		var q_inv: Quat = q.inverse()
 		r = r - root_r
 		r = az_root_q_inv.xform( r )
 		var d = [r.x, r.y]
@@ -513,23 +513,23 @@ func traj_desc_( db, index: int ):
 		#d = [fwd.x, fwd.y]
 		#desc_az += d
 		
-		#var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
-		#g =	q_inv.xform( g )
-		#d = [g.x, g.y]
-		#desc_g += d
+		var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
+		g =	q_inv.xform( g )
+		d = [g.x, g.y]
+		desc_g += d
 		
 	#return [desc_r, desc_az, desc_g]
 	
-	return [desc_r]
+	return [desc_r, desc_g]
 
 
 func input_based_traj_desc_( db, az_adj_q: Quat, index: int ):
-	var f = frame_( db, index )
+	#var f = frame_( db, index )
 	
 	# Root pose
-	var root_q: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
+	#var root_q: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
 	#var root_r: Vector3 = Vector3( f[ROOT_IND+4], f[ROOT_IND+5], f[ROOT_IND+6] )
-	var root_q_inv = root_q.inverse()
+	#var root_q_inv = root_q.inverse()
 	
 	var desc_r: Array
 	var desc_az: Array
@@ -549,12 +549,12 @@ func input_based_traj_desc_( db, az_adj_q: Quat, index: int ):
 		var d = [r.x, r.y]
 		desc_r += d
 		
-		var dr: Vector2 = r - rp
-		var sz = dr.length_squared()
-		if ( sz > 0.00001 ):
-			fwd = dr.normalized()
-		d = [fwd.x, fwd.y]
-		desc_az += d
+		#var dr: Vector2 = r - rp
+		#var sz = dr.length_squared()
+		#if ( sz > 0.00001 ):
+		#	fwd = dr.normalized()
+		#d = [fwd.x, fwd.y]
+		#desc_az += d
 		
 		var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
 		#g = q_inv.xform( g )
@@ -563,7 +563,9 @@ func input_based_traj_desc_( db, az_adj_q: Quat, index: int ):
 		
 		rp = r
 		
-	return [desc_r, desc_az, desc_g]
+	#return [desc_r, desc_az, desc_g]
+	
+	return [desc_r, desc_g]
 
 
 func init_control_sequence_():
