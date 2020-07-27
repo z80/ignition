@@ -8,9 +8,20 @@
 
 config_version=4
 
-_global_script_classes=[  ]
+_global_script_classes=[ {
+"base": "Rf",
+"class": "Body",
+"language": "GDScript",
+"path": "res://phys_clust/body.gd"
+}, {
+"base": "Spatial",
+"class": "Rf",
+"language": "GDScript",
+"path": "res://phys_clust/rf.gd"
+} ]
 _global_script_class_icons={
-
+"Body": "",
+"Rf": ""
 }
 
 [application]

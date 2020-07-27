@@ -1,6 +1,6 @@
 extends Node
 
-var Rf = preload( "res://rf.tscn" )
+var Rf = preload( "res://phys_clust/rf.tscn" )
 var _rf_tree = null
 
 # Called when the node enters the scene tree for the first time.

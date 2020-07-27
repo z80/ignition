@@ -1,10 +1,9 @@
 extends Node
 
-
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
-
+var physics_manager_ = null
+# Bit for physics contacts.
+var contact_layer_: int
+var bodies_: Array
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -14,3 +13,20 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass
+
+func init( physics_manager, layer: int = 0 ):
+	physics_manager_ = physics_manager
+	contact_layer_   = layer
+
+
+func insert_body( body ):
+	var d: Dictionary
+	var pb = body.create_physical()
+	d["body"] = body
+	d["phys"] = pb
+	bodies_.push_back( d )
+
+
+
+
+
