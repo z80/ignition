@@ -1,6 +1,6 @@
+
 extends Node
 
-var Rf = preload( "res://phys_clust/rf.tscn" )
 var _rf_tree = null
 
 # Called when the node enters the scene tree for the first time.
@@ -11,6 +11,7 @@ func _ready():
 
 func ref_frame():
 	var rf = Rf.instance()
+	get_tree().get_root().add_child( rf )
 	_rf_tree.push_back( rf )
 	return rf
 

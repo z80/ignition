@@ -1,4 +1,5 @@
 extends Node
+class_name PhysicsEnvironment
 
 var physics_manager_ = null
 # Bit for physics contacts.
@@ -25,6 +26,9 @@ func insert_body( body ):
 	d["body"] = body
 	d["phys"] = pb
 	bodies_.push_back( d )
+
+func cleanup():
+	pass
 
 
 
