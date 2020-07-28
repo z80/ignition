@@ -79,7 +79,7 @@ var increment_frame_ind_: bool = true
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	#generate_descriptors( false, true )
+	#generate_descriptors( true, true )
 	init()
 
 
@@ -227,30 +227,10 @@ func generate_descriptors( fill_categories: bool = false, fill_descs: bool = tru
 		fill_default_cats_( db )
 	if fill_descs:
 		fill_descs_( db )
+		fill_desc_lengths_( db )
 		estimate_scale_( db )
 	
-	# Write figure out descriptor lengths
-	var f = frame_( db, 0 )
-	var pose_desc = pose_desc_( db, 0 )
-	var traj_desc = traj_desc_( db, 0 )
-	var descs: Array = pose_desc + traj_desc
-	var desc: Array = []
-	var desc_lengths: Array = []
-	for d in descs:
-		var sz = d.size()
-		desc_lengths.push_back( sz )
-		desc += d
-	var desc_length: int = desc.size()
-	
-	set_config_( db, "desc_length",  desc_length )
-	set_config_( db, "desc_lengths", desc_lengths )
-	
-	var gains: Array = []
-	for i in desc_lengths:
-		gains.push_back( 1.0 )
-	
-	set_config_( db, "desc_gains", gains )
-	set_config_( db, "switch_threshold", switch_threshold_ )
+	fill_desc_lengths_( db )
 	
 	db.close_db()
 
@@ -269,6 +249,8 @@ func open_frame_database_():
 	
 	# Read bone names.
 	bone_names_ = get_config_( db, "names" )
+	for i in range(bone_names_.size()):
+		print( "%d: %s" % [i, bone_names_[i]] )
 	
 	return db
 
@@ -331,6 +313,31 @@ func fill_descs_( frame_db ):
 			return false
 		
 	return true
+
+
+func fill_desc_lengths_( db ):
+	# Write figure out descriptor lengths
+	var f = frame_( db, 0 )
+	var pose_desc = pose_desc_( db, 0 )
+	var traj_desc = traj_desc_( db, 0 )
+	var descs: Array = pose_desc + traj_desc
+	var desc: Array = []
+	var desc_lengths: Array = []
+	for d in descs:
+		var sz = d.size()
+		desc_lengths.push_back( sz )
+		desc += d
+	var desc_length: int = desc.size()
+	
+	set_config_( db, "desc_length",  desc_length )
+	set_config_( db, "desc_lengths", desc_lengths )
+	
+	var gains: Array = []
+	for i in desc_lengths:
+		gains.push_back( 1.0 )
+	
+	set_config_( db, "desc_gains", gains )
+	set_config_( db, "switch_threshold", switch_threshold_ )
 
 
 func fill_default_cats_( db ):
@@ -422,8 +429,9 @@ func frame_in_space_( db, index: int ):
 	var f_dest: Array
 	f_dest.resize( sz )
 	
-	var q_root: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
-	var r_root: Vector3 = Vector3( f[ROOT_IND+4], f[ROOT_IND+5], f[ROOT_IND+6] )
+	var root_ind: int = ROOT_IND*7
+	var q_root: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
+	var r_root: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
 	
 	var base_q_root = quat_azimuth_( q_root )
 	var inv_base_q_root = base_q_root.inverse()
@@ -498,8 +506,9 @@ func pose_desc_( db, index: int ):
 		fp = f
 	
 	# Root pose
-	var root_q: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
-	var root_r: Vector3 = Vector3( f[ROOT_IND+4], f[ROOT_IND+5], f[ROOT_IND+6] )
+	var root_ind: int = ROOT_IND*7
+	var root_q: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
+	var root_r: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
 	var root_q_inv:    Quat = root_q.inverse()
 	var az_root_q:     Quat = quat_azimuth_( root_q )
 	var az_root_q_inv: Quat = az_root_q.inverse()
@@ -540,8 +549,9 @@ func traj_desc_( db, index: int ):
 	var f = frame_( db, index )
 	
 	# Root pose
-	var root_q: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
-	var root_r: Vector3 = Vector3( f[ROOT_IND+4], f[ROOT_IND+5], f[ROOT_IND+6] )
+	var root_ind: int = ROOT_IND*7
+	var root_q: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
+	var root_r: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
 	var root_q_inv = root_q.inverse()
 	var az_root_q: Quat = quat_azimuth_( root_q )
 	var az_root_q_inv = az_root_q.inverse()
@@ -557,8 +567,8 @@ func traj_desc_( db, index: int ):
 			frame_ind = frames_qty_ - 1
 		
 		var fn = frame_( db, frame_ind )
-		var q: Quat = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fn[ROOT_IND] )
-		var r: Vector3 = Vector3( fn[ROOT_IND+4], fn[ROOT_IND+5], fn[ROOT_IND+6] )
+		var q: Quat = Quat( fn[root_ind+1], fn[root_ind+2], fn[root_ind+3], fn[root_ind] )
+		var r: Vector3 = Vector3( fn[root_ind+4], fn[root_ind+5], fn[root_ind+6] )
 		var q_inv: Quat = q.inverse()
 		r = r - root_r
 		r = az_root_q_inv.xform( r )
@@ -629,7 +639,8 @@ func init_control_sequence_():
 
 func frame_azimuth_( db, ind: int ):
 	var f = frame_( db, ind )
-	var q: Quat = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
+	var root_ind: int = ROOT_IND*7
+	var q: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
 	var az_q: Quat = quat_azimuth_( q )
 	return az_q
 
@@ -791,10 +802,11 @@ func process_frame():
 	var fp = frame_( db_, frame_ind_ )
 	var fn = frame_( db_, next_ind )
 	
-	var qp: Quat    = Quat( fp[ROOT_IND+1], fp[ROOT_IND+2], fp[ROOT_IND+3], fp[ROOT_IND] )
-	var rp: Vector3 = Vector3( fp[ROOT_IND+4], fp[ROOT_IND+5], fp[ROOT_IND+6] )
-	var qn: Quat    = Quat( fn[ROOT_IND+1], fn[ROOT_IND+2], fn[ROOT_IND+3], fn[ROOT_IND] )
-	var rn: Vector3 = Vector3( fn[ROOT_IND+4], fn[ROOT_IND+5], fn[ROOT_IND+6] )
+	var root_ind: int = ROOT_IND*7
+	var qp: Quat    = Quat( fp[root_ind+1], fp[root_ind+2], fp[root_ind+3], fp[root_ind] )
+	var rp: Vector3 = Vector3( fp[root_ind+4], fp[root_ind+5], fp[root_ind+6] )
+	var qn: Quat    = Quat( fn[root_ind+1], fn[root_ind+2], fn[root_ind+3], fn[root_ind] )
+	var rn: Vector3 = Vector3( fn[root_ind+4], fn[root_ind+5], fn[root_ind+6] )
 	
 	#print( "a" )
 	var az_qp: Quat = quat_azimuth_( qp )
