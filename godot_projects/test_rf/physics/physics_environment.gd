@@ -21,7 +21,7 @@ func init( physics_manager, layer: int = 0 ):
 
 
 func insert_body( body ):
-	var d: Dictionary
+	var d: Dictionary = {}
 	var pb = body.create_physical()
 	if pb != null:
 		d["body"] = body
