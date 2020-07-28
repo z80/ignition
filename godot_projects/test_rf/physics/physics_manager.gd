@@ -32,3 +32,13 @@ func release_environment( env ):
 			envs_[i] = null
 			env.queue_tree()
 
+
+func available_qty():
+	var qty: int = 0
+	for i in range(ENVS_QTY):
+		var e = envs_[i]
+		if e == null:
+			qty += 1
+			
+	return qty
+

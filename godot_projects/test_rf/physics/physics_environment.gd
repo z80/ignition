@@ -23,12 +23,15 @@ func init( physics_manager, layer: int = 0 ):
 func insert_body( body ):
 	var d: Dictionary
 	var pb = body.create_physical()
-	d["body"] = body
-	d["phys"] = pb
-	bodies_.push_back( d )
+	if pb != null:
+		d["body"] = body
+		bodies_.push_back( d )
+
 
 func cleanup():
-	pass
+	for data in bodies_:
+		var body = data["body"]
+		body.remove_physical()
 
 
 

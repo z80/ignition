@@ -12,22 +12,22 @@ _global_script_classes=[ {
 "base": "RfBase",
 "class": "Body",
 "language": "GDScript",
-"path": "res://phys_clust/body.gd"
+"path": "res://physics/body.gd"
 }, {
 "base": "Node",
 "class": "PhysicsEnvironment",
 "language": "GDScript",
-"path": "res://phys_clust/physics_environment.gd"
+"path": "res://physics/physics_environment.gd"
 }, {
 "base": "RfBase",
 "class": "Rf",
 "language": "GDScript",
-"path": "res://phys_clust/rf.gd"
+"path": "res://physics/rf.gd"
 }, {
 "base": "Spatial",
 "class": "RfBase",
 "language": "GDScript",
-"path": "res://phys_clust/rf_base.gd"
+"path": "res://physics/rf_base.gd"
 } ]
 _global_script_class_icons={
 "Body": "",
@@ -44,8 +44,8 @@ config/icon="res://icon.png"
 
 [autoload]
 
-PhysicsManager="*res://phys_clust/physics_manager.gd"
-RfTree="*res://phys_clust/rf_tree.gd"
+PhysicsManager="*res://physics/physics_manager.gd"
+RfTree="*res://physics/rf_tree.gd"
 
 [editor_plugins]
 

@@ -20,11 +20,12 @@ public:
 
 	// On delete NULL all own pointers in all RefFrame objects.
 	void clear();
-	void push_back( Node * ref_frame );
+	void push_back( Ref<Reference> ref_frame );
+	void remove( Ref<Reference> ref_frame );
 
 	RefFrame * frame( int index );
 
-	Vector< RefFrame * > frames_;
+	Vector< Ref<RefFrame> > frames_;
 };
 
 

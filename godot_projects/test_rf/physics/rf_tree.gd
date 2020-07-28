@@ -9,11 +9,17 @@ func _ready():
 	pass # Replace with function body.
 
 
-func ref_frame():
-	var rf = Rf.instance()
-	get_tree().get_root().add_child( rf )
-	_rf_tree.push_back( rf )
+func add( rf ):
+	if ( rf._ref_frame != null ):
+		return
+	rf._ref_frame = RefFrame.new()
+	_rf_tree.push_back( rf._ref_frame )
 	return rf
+
+
+func remove( rf ):
+	_rf_tree.remove( rf._ref_frame )
+	rf._ref_frame = null
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):

@@ -218,7 +218,7 @@ Ref<Reference> RefFrame::origin() const
 	if ( origin_ < 0 )
 		return nullptr;
 
-	RefFrame * rf = tree_->frames_.ptr()[origin_];
+	Ref<Reference> rf = tree_->frames_.ptr()[origin_];
 	return rf;
 }
 
@@ -246,7 +246,7 @@ Ref<Reference> RefFrame::root() const
 	if ( root_ < 0 )
 		return nullptr;
 
-	RefFrame * rf = tree_->frames_.ptr()[root_];
+	Ref<Reference> rf = tree_->frames_.ptr()[root_];
 	return rf;
 }
 
