@@ -8,7 +8,7 @@ func init_physics():
 	if _physics_environment != null:
 		return
 	
-	_physics_environment = PhysicsManager.
+	#_physics_environment = PhysicsManager.
 
 
 func finit_physics():

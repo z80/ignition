@@ -39,7 +39,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Test Rf"
-run/main_scene="res://mm/motion_matching.tscn"
+run/main_scene="res://mm/skeleton.tscn"
 config/icon="res://icon.png"
 
 [autoload]
