@@ -200,3 +200,22 @@ func _on_AssignCat_pressed():
 	var to   = int(to_s)
 	var cat  = int(cat_s)
 	mm_.assign_cat( from, to, cat )
+
+
+func _on_InstantDataBtn_pressed():
+	var d = mm_.desc_( mm_.db_, mm_.frame_ind_ )
+	print( "desc: ", d )
+
+
+func _on_ComputeDescBtn_pressed():
+	var pose_desc = mm_.pose_desc_( mm_.db_, mm_.frame_ind_ )
+	var traj_desc = mm_.traj_desc_( mm_.db_, mm_.frame_ind_ )
+	var generated_desc = mm_.input_based_traj_desc_( mm_.db_ )
+	print( "frame # ", mm_.frame_ind_ )
+	print( "pose desc: ", pose_desc )
+	print( "traj desc: ", traj_desc )
+	print( "gen  desc: ", generated_desc )
+
+
+
+
