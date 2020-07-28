@@ -79,7 +79,7 @@ var increment_frame_ind_: bool = true
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	#generate_descriptors( true, true )
+	generate_descriptors( true, true )
 	init()
 
 
@@ -143,11 +143,8 @@ func init():
 	
 	get_parent_skeleton()
 	
-	var ps = get_config_( db_, "parents" )
-	if ps == null:
-		parents_ = get_parents_array_()
-	else:
-		parents_ = ps
+	var ps = get_config_( db_, "parent_inds" )
+	parents_ = ps
 	
 	emit_signal( "data_ready" )
 	
@@ -890,22 +887,6 @@ func get_parent_skeleton():
 	else:
 		skeleton_ = null
 
-
-func get_parents_array_():
-	if skeleton_ == null:
-		return
-	
-	var qty: int = skeleton_.get_bone_count()
-	var parents: Array
-	parents.resize( qty )
-	for i in range( qty ):
-		var ip: int = skeleton_.get_bone_parent( i )
-		parents[i] = ip
-		
-	set_config_( db_, "parents", parents )
-	
-	return parents
-	
 
 
 func _on_tree_exiting():
