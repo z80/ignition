@@ -235,6 +235,12 @@ func _on_ComputeDescBtn_pressed():
 	print( "next err:    ", next_err )
 	print( "improvement: ", improvement )
 	print( "closest frame #: ", closest_ind )
+	
+	var cl_pose_desc = mm_.pose_desc_( mm_.db_, closest_ind )
+	var cl_traj_desc = mm_.traj_desc_( mm_.db_, closest_ind )
+	print( "cl pose desc:  ", cl_pose_desc )
+	print( "cl traj desc:  ", cl_traj_desc )
+	
 
 
 

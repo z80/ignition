@@ -17,7 +17,7 @@ var desc_gains_: Array
 var desc_lengths_: Array
 
 var switch_threshold_: float = 0.3
-var switch_period_: int = 30
+var switch_period_: int = 15
 
 const ROOT_IND: int       = 1
 const LEFT_LEG_IND: int   = 81
@@ -27,7 +27,7 @@ const RIGHT_HAND_IND: int = 12
 #const POSE_LIMB_INDS: Array = [ROOT_IND, LEFT_LEG_IND, RIGHT_LEG_IND, LEFT_HAND_IND, RIGHT_HAND_IND]
 #const TRAJ_FRAME_INDS: Array = [30, 60, 90, 120]
 const POSE_LIMB_INDS: Array = [ROOT_IND, LEFT_LEG_IND, RIGHT_LEG_IND]
-const TRAJ_FRAME_INDS: Array = [5, 10, 15, 20]
+const TRAJ_FRAME_INDS: Array = [10, 20, 30, 40]
 
 const FPS: float = 15.0
 const DT: float  = 1.0/FPS
@@ -79,7 +79,8 @@ var increment_frame_ind_: bool = true
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	#generate_descriptors( false, true )
+	# Remember! After assigning categoriesit is necessary to re-generate descriptors (!!!)
+	generate_descriptors( false, true )
 	init()
 
 
