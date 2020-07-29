@@ -2,7 +2,6 @@
 extends Spatial
 class_name Body
 
-var _visual    = null
 var _physical  = null  
 var _state_local: RefFrame = null
 var _state_root: RefFrame = null
@@ -13,7 +12,9 @@ func _ready():
 
 
 func _process( _delta ):
-	pass
+	var t: Transform = _state_root.t()
+	transform = t
+
 
 func _physics_process( delta ):
 	if _physical:
@@ -23,14 +24,6 @@ func _physics_process( delta ):
 		_state_local.set_t( t )
 		_state_local.set_v( v )
 		_state_local.set_w( w )
-
-
-func create_visual():
-	return null
-
-
-func remove_visual():
-	pass
 
 
 func create_physical():
