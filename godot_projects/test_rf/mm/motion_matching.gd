@@ -33,6 +33,10 @@ const FPS: float = 15.0
 const DT: float  = 1.0/FPS
 
 
+# Forward vector in local ref frame.
+const V_HEADING_FWD: Vector3 = Vector3( -1.0, 0.0, 0.0 )
+
+
 # Movement constants for building future trajectory.
 var slow_speed_: float = 0.5
 var walk_speed_: float = 0.7
@@ -80,6 +84,11 @@ var increment_frame_ind_: bool = true
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# Remember! After assigning categoriesit is necessary to re-generate descriptors (!!!)
+	# So the work pattern is 
+	# 1) generate_descriptors( true, true )
+	# 2) Assign categories.
+	# 3) generate_descriptors( false, true )
+	
 	generate_descriptors( false, true )
 	init()
 
@@ -529,6 +538,8 @@ func pose_desc_( db, index: int ):
 		var v: Vector3 = (r - rp) * FPS
 		if ( limb_ind != ROOT_IND ):
 			desc_r += [ r.x, r.y ]
+		else:
+			desc_r.push_back( root_r.z )
 		desc_v += [ v.x, v.y ]
 		
 	# Also compute Z in local ref. frame. It defines torso tilt.
@@ -555,6 +566,8 @@ func traj_desc_( db, index: int ):
 	var az_root_q_inv = az_root_q.inverse()
 	
 	var desc_r: Array = []
+	var desc_z: Array = []
+	var desc_heading: Array = []
 	#var desc_az: Array
 	#var desc_g: Array
 	var desc_c: Array = []
@@ -568,27 +581,24 @@ func traj_desc_( db, index: int ):
 		var q: Quat = Quat( fn[root_ind+1], fn[root_ind+2], fn[root_ind+3], fn[root_ind] )
 		var r: Vector3 = Vector3( fn[root_ind+4], fn[root_ind+5], fn[root_ind+6] )
 		var q_inv: Quat = q.inverse()
+		var r_z: float = r.z
 		r = r - root_r
 		r = az_root_q_inv.xform( r )
 		var d = [r.x, r.y]
 		desc_r += d
+		desc_z.push_back( r_z )
 		
-		#var fwd: Vector3 = Vector3( 1.0, 0.0, 0.0 )
-		#fwd = q.xform( fwd )
-		#fwd = root_q_inv.xform( fwd )
-		#d = [fwd.x, fwd.y]
-		#desc_az += d
+		var fwd: Vector3 = V_HEADING_FWD
+		fwd = q.xform( fwd )
+		fwd = az_root_q_inv.xform( fwd )
+		desc_heading.push_back( [fwd.x, fwd.y] )
 		
-		#var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
-		#g =	q_inv.xform( g )
-		#d = [g.x, g.y]
-		#desc_g += d
 		var c = cat_desc_( db, frame_ind )
 		desc_c += c
 		
 	#return [desc_r, desc_az, desc_g]
 	
-	return [desc_r, desc_c]
+	return [desc_r, desc_z, desc_heading, desc_c]
 
 
 func input_based_pose_desc_( db, index: int, cat: Array = [0] ):
@@ -607,9 +617,9 @@ func input_based_pose_desc_( db, index: int, cat: Array = [0] ):
 	var az_root_q:     Quat = quat_azimuth_( root_q )
 	var az_root_q_inv: Quat = az_root_q.inverse()
 	
-	var desc_r: Array
-	var desc_v: Array
-	var desc_c: Array
+	var desc_r: Array = []
+	var desc_v: Array = []
+	var desc_c: Array = []
 	for limb_ind in POSE_LIMB_INDS:
 		var ind: int = limb_ind * 7
 		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
@@ -625,6 +635,8 @@ func input_based_pose_desc_( db, index: int, cat: Array = [0] ):
 		var v: Vector3 = (r - rp) * FPS
 		if ( limb_ind != ROOT_IND ):
 			desc_r += [ r.x, r.y ]
+		else:
+			desc_r.push_back( root_r.z )
 		desc_v += [ v.x, v.y ]
 		
 	# Also compute Z in local ref. frame. It defines torso tilt.
@@ -640,7 +652,9 @@ func input_based_pose_desc_( db, index: int, cat: Array = [0] ):
 
 
 func input_based_traj_desc_( db, category: int = 0 ):
-	#var f = frame_( db, frame_ind_ )
+	var f = frame_( db, frame_ind_ )
+	var root_ind: int   = ROOT_IND * 7
+	var root_r_z: float = f[root_ind+6]
 	#var q_frame_az: Quat = frame_azimuth_( db, frame_ind_ )
 	
 	# Skeleton orientation q = pose_q_ * q_frame_az.inverse()
@@ -648,9 +662,9 @@ func input_based_traj_desc_( db, category: int = 0 ):
 	
 	#var inv_q: Quat = q_frame_az * pose_q_.inverse()
 	
-	var q_adj = pose_q_.inverse()
-	
 	var desc_r: Array = []
+	var desc_z: Array = []
+	var desc_heading: Array = []
 	#var desc_az: Array
 	#var desc_g: Array
 	var desc_c: Array = []
@@ -661,15 +675,31 @@ func input_based_traj_desc_( db, category: int = 0 ):
 		
 		var r: Vector2 = control_pos_sequence_[ctrl_ind]
 		var r3 = Vector3( r.x, r.y, 0.0 )
-		#r3 = inv_pose_q.xform( r3 )
-		r3 = q_adj.xform( r3 )
+		r3 = inv_pose_q.xform( r3 )
 		r = Vector2( r3.x, r3.y )
 		var d = [r.x, r.y]
 		desc_r += d
 		
-		desc_c.push_back( category )
+		desc_z.push_back( root_r_z )
 		
-	return [desc_r, desc_c]
+		desc_c.push_back( category )
+	
+	
+	var fwd = V_HEADING_FWD
+	var qty: int = control_vel_sequence_.size()
+	for ind in range( qty ):
+		var v: Vector2 = control_vel_sequence_[ind]
+		var len2: float = v.length_squared()
+		if len2 > 0.0001:
+			var v3: Vector3 = Vector3( v.x, v.y, 0.0 )
+			v3 = inv_pose_q.xform( v3 )
+			v3 = v3.normalized()
+			fwd.x = v3.x
+			fwd.y = v3.y
+		if ind in TRAJ_FRAME_INDS:
+			desc_heading.push_back( fwd )
+	
+	return [desc_r, desc_z, desc_heading, desc_c]
 
 
 func init_control_sequence_():
