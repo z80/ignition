@@ -89,7 +89,7 @@ func _ready():
 	# 2) Assign categories.
 	# 3) generate_descriptors( false, true )
 	
-	generate_descriptors( false, true )
+	#generate_descriptors( false, true )
 	init()
 
 
@@ -591,7 +591,7 @@ func traj_desc_( db, index: int ):
 		var fwd: Vector3 = V_HEADING_FWD
 		fwd = q.xform( fwd )
 		fwd = az_root_q_inv.xform( fwd )
-		desc_heading.push_back( [fwd.x, fwd.y] )
+		desc_heading += [fwd.x, fwd.y]
 		
 		var c = cat_desc_( db, frame_ind )
 		desc_c += c
@@ -697,7 +697,7 @@ func input_based_traj_desc_( db, category: int = 0 ):
 			fwd.x = v3.x
 			fwd.y = v3.y
 		if ind in TRAJ_FRAME_INDS:
-			desc_heading.push_back( fwd )
+			desc_heading += [ fwd.x, fwd.y ]
 	
 	return [desc_r, desc_z, desc_heading, desc_c]
 

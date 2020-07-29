@@ -212,6 +212,7 @@ func _on_ComputeDescBtn_pressed():
 	var traj_desc = mm_.traj_desc_( mm_.db_, mm_.frame_ind_ )
 	var gen_pose_desc = mm_.input_based_pose_desc_( mm_.db_, mm_.frame_ind_ )
 	var gen_traj_desc = mm_.input_based_traj_desc_( mm_.db_ )
+	print( "\n\n\n" )
 	print( "frame # ", mm_.frame_ind_ )
 	print( "pose desc:     ", pose_desc )
 	print( "gen pose desc: ", gen_pose_desc )
@@ -241,6 +242,16 @@ func _on_ComputeDescBtn_pressed():
 	print( "cl pose desc:  ", cl_pose_desc )
 	print( "cl traj desc:  ", cl_traj_desc )
 	
+	
+	var min_err: float = -1.0
+	var min_ind: int = -1
+	for i in range ( mm_.frames_qty_ ):
+		var err: float = mm_.frame_search_.dist( d, i )
+		if min_err < 0.0 or err < min_err:
+			min_err = err
+			min_ind = i
+			
+	print( "brute force best ind: ", min_ind, "; best err: ", min_err )
 
 
 
