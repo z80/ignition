@@ -79,7 +79,7 @@ var increment_frame_ind_: bool = true
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	generate_descriptors( true, true )
+	#generate_descriptors( false, true )
 	init()
 
 
@@ -590,6 +590,54 @@ func traj_desc_( db, index: int ):
 	return [desc_r, desc_c]
 
 
+func input_based_pose_desc_( db, index: int, cat: Array = [0] ):
+	var f = frame_( db, index )
+	var fp
+	if ( index > 0 ):
+		fp = frame_( db, index-1 )
+	else:
+		fp = f
+	
+	# Root pose
+	var root_ind: int = ROOT_IND*7
+	var root_q: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
+	var root_r: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
+	var root_q_inv:    Quat = root_q.inverse()
+	var az_root_q:     Quat = quat_azimuth_( root_q )
+	var az_root_q_inv: Quat = az_root_q.inverse()
+	
+	var desc_r: Array
+	var desc_v: Array
+	var desc_c: Array
+	for limb_ind in POSE_LIMB_INDS:
+		var ind: int = limb_ind * 7
+		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
+		var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
+		#var qp: Quat = Quat( fp[ind+1], fp[ind+2], fp[ind+3], fp[ind+0] )
+		var rp: Vector3 = Vector3( fp[ind+4], fp[ind+5], fp[ind+6] )
+		r  -= root_r
+		rp -= root_r
+		r  = az_root_q_inv.xform( r )
+		rp = az_root_q_inv.xform( rp )
+		#q  = root_q_inv * q
+		#qp = root_q_inv * qp
+		var v: Vector3 = (r - rp) * FPS
+		if ( limb_ind != ROOT_IND ):
+			desc_r += [ r.x, r.y ]
+		desc_v += [ v.x, v.y ]
+		
+	# Also compute Z in local ref. frame. It defines torso tilt.
+	#var g: Vector3 = Vector3( 0.0, 0.0, 1.0 )
+	#g = root_q_inv.xform( g )
+	#var desc_g: Array = [ g.x, g.y ]
+	
+	desc_c = cat
+	
+	#return [ desc_r, desc_v, desc_g ]
+	
+	return [ desc_r, desc_v, desc_c ]
+
+
 func input_based_traj_desc_( db, category: int = 0 ):
 	#var f = frame_( db, frame_ind_ )
 	#var q_frame_az: Quat = frame_azimuth_( db, frame_ind_ )
@@ -778,7 +826,7 @@ func process_frame():
 	
 	if time_to_switch:
 		#var f_cur = frame_( db_, frame_ind_ )
-		var desc_p = pose_desc_( db_, frame_ind_ )
+		var desc_p = input_based_pose_desc_( db_, frame_ind_ )
 		var desc_t = input_based_traj_desc_( db_ )
 		var d = []
 		for di in desc_p:

@@ -210,11 +210,32 @@ func _on_InstantDataBtn_pressed():
 func _on_ComputeDescBtn_pressed():
 	var pose_desc = mm_.pose_desc_( mm_.db_, mm_.frame_ind_ )
 	var traj_desc = mm_.traj_desc_( mm_.db_, mm_.frame_ind_ )
-	var generated_desc = mm_.input_based_traj_desc_( mm_.db_ )
+	var gen_pose_desc = mm_.input_based_pose_desc_( mm_.db_, mm_.frame_ind_ )
+	var gen_traj_desc = mm_.input_based_traj_desc_( mm_.db_ )
 	print( "frame # ", mm_.frame_ind_ )
-	print( "pose desc: ", pose_desc )
-	print( "traj desc: ", traj_desc )
-	print( "gen  desc: ", generated_desc )
+	print( "pose desc:     ", pose_desc )
+	print( "gen pose desc: ", gen_pose_desc )
+	print( "traj desc:     ", traj_desc )
+	print( "gen traj desc: ", gen_traj_desc )
+	
+	var d = []
+	for di in gen_pose_desc:
+		for v in di:
+			d.push_back( v )
+	for di in gen_traj_desc:
+		for v in di:
+			d.push_back( v )
+	var closest_err: float = mm_.frame_search_.nearest( d )
+	var closest_ind: int   = mm_.frame_search_.nearest_ind()
+
+	var next_err: float = mm_.frame_search_.dist( d, mm_.frame_ind_ )
+	var improvement: float = next_err - closest_err
+	
+	print( "closest err: ", closest_err )
+	print( "next err:    ", next_err )
+	print( "improvement: ", improvement )
+	print( "closest frame #: ", closest_ind )
+
 
 
 
