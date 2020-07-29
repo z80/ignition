@@ -20,6 +20,7 @@ void FrameSearch::_bind_methods()
 	ClassDB::bind_method( D_METHOD("build_tree" ), &FrameSearch::build_tree, Variant::NIL );
 	ClassDB::bind_method( D_METHOD("set_weight", "int", "real_t" ), &FrameSearch::set_weight, Variant::NIL );
 	ClassDB::bind_method( D_METHOD("set_weights", "vector real_t" ), &FrameSearch::set_weights, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("weights" ), &FrameSearch::weights, Variant::POOL_REAL_ARRAY );
 	ClassDB::bind_method( D_METHOD("nearest", "vector real_t" ), &FrameSearch::nearest, Variant::REAL );
 	ClassDB::bind_method( D_METHOD("nearest_dist" ), &FrameSearch::nearest_dist, Variant::REAL );
 	ClassDB::bind_method( D_METHOD("nearest_ind" ),  &FrameSearch::nearest_ind,  Variant::INT );
@@ -215,6 +216,16 @@ void FrameSearch::set_weights( const PoolVector<real_t> & w )
 	for ( int i=0; i<qty; i++ )
 		d.data[i] = w.get( i );
 	tree_.set_weight( d );
+}
+
+PoolVector<real_t> FrameSearch::weights() const
+{
+	const int dims = tree_.dims();
+	PoolVector<real_t> w;
+	w.resize( dims );
+	for ( int i=0; i<dims; i++ )
+		w.set( i, tree_.weight_.data[i] );
+	return w;
 }
 
 real_t FrameSearch::nearest( const PoolVector<real_t> & desc )

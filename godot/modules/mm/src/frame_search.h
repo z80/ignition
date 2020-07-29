@@ -34,6 +34,7 @@ public:
 
 	void set_weight( int index, real_t w );
 	void set_weights( const PoolVector<real_t> & w );
+	PoolVector<real_t> weights() const;
 
 	real_t nearest( const PoolVector<real_t> & desc );
 	real_t nearest_dist() const;

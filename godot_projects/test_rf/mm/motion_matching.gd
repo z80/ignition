@@ -34,7 +34,8 @@ const DT: float  = 1.0/FPS
 
 
 # Forward vector in local ref frame.
-const V_HEADING_FWD: Vector3 = Vector3( -1.0, 0.0, 0.0 )
+const V_HEADING_FWD: Vector3       = Vector3( 0.0, -1.0, 0.0 )
+const V_HEADING_FWD_INPUT: Vector3 = Vector3( 1.0, 0.0, 0.0 )
 
 
 # Movement constants for building future trajectory.
@@ -580,7 +581,7 @@ func traj_desc_( db, index: int ):
 		var fn = frame_( db, frame_ind )
 		var q: Quat = Quat( fn[root_ind+1], fn[root_ind+2], fn[root_ind+3], fn[root_ind] )
 		var r: Vector3 = Vector3( fn[root_ind+4], fn[root_ind+5], fn[root_ind+6] )
-		var q_inv: Quat = q.inverse()
+		var az_q: Quat = quat_azimuth_( q )
 		var r_z: float = r.z
 		r = r - root_r
 		r = az_root_q_inv.xform( r )
@@ -589,7 +590,7 @@ func traj_desc_( db, index: int ):
 		desc_z.push_back( r_z )
 		
 		var fwd: Vector3 = V_HEADING_FWD
-		fwd = q.xform( fwd )
+		fwd = az_q.xform( fwd )
 		fwd = az_root_q_inv.xform( fwd )
 		desc_heading += [fwd.x, fwd.y]
 		
@@ -671,7 +672,7 @@ func input_based_traj_desc_( db, category: int = 0 ):
 	
 	var inv_pose_q = pose_q_.inverse()
 	for ind in TRAJ_FRAME_INDS:
-		var ctrl_ind: int = ind-1
+		var ctrl_ind: int = ind
 		
 		var r: Vector2 = control_pos_sequence_[ctrl_ind]
 		var r3 = Vector3( r.x, r.y, 0.0 )
@@ -685,7 +686,7 @@ func input_based_traj_desc_( db, category: int = 0 ):
 		desc_c.push_back( category )
 	
 	
-	var fwd = V_HEADING_FWD
+	var fwd = V_HEADING_FWD_INPUT
 	var qty: int = control_vel_sequence_.size()
 	for ind in range( qty ):
 		var v: Vector2 = control_vel_sequence_[ind]
@@ -707,7 +708,7 @@ func init_control_sequence_():
 	control_vel_sequence_ = []
 	var default_ctrl = Vector2(0.0, 0.0)
 	var sz = TRAJ_FRAME_INDS.size()
-	var qty = TRAJ_FRAME_INDS[sz-1]
+	var qty = TRAJ_FRAME_INDS[sz-1]+1
 	for i in range(qty):
 		control_pos_sequence_.push_back( default_ctrl )
 		control_vel_sequence_.push_back( default_ctrl )

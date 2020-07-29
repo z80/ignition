@@ -99,17 +99,21 @@ func read_gains_from_mm_():
 	var gains = mm_.get_desc_gains()
 	
 	var qty = gains.size()
-	if qty > 4:
+	if qty > 6:
 		var pose_vel  = gains[1]
 		var pose_cat  = gains[2]
 		var traj_pos  = gains[3]
-		var traj_cat  = gains[4]
+		var traj_z    = gains[4]
+		var traj_hd   = gains[5]
+		var traj_cat  = gains[6]
 	
 		var switch_th = mm_.get_switch_threshold()
 	
 		$Panel/Tabs/Weights/WeightPoseVel.text = String( pose_vel )
 		$Panel/Tabs/Weights/WeightPoseCat.text = String( pose_cat )
 		$Panel/Tabs/Weights/WeightTrajPos.text = String( traj_pos )
+		$Panel/Tabs/Weights/WeightTrajZ.text   = String( traj_z )
+		$Panel/Tabs/Weights/WeightTrajHeading.text   = String( traj_hd )
 		$Panel/Tabs/Weights/WeightTrajCat.text = String( traj_cat )
 	
 		$Panel/Tabs/Weights/SwitchTh.text      = String( switch_th )
@@ -119,12 +123,14 @@ func write_gains_to_mm_():
 	var pose_vel = float( $Panel/Tabs/Weights/WeightPoseVel.text )
 	var pose_cat = float( $Panel/Tabs/Weights/WeightPoseCat.text )
 	var traj_pos = float( $Panel/Tabs/Weights/WeightTrajPos.text )
+	var traj_z   = float( $Panel/Tabs/Weights/WeightTrajZ.text )
+	var traj_hd  = float( $Panel/Tabs/Weights/WeightTrajHeading.text )
 	var traj_cat = float( $Panel/Tabs/Weights/WeightTrajCat.text )
 	
 	var switch_th = float( $Panel/Tabs/Weights/SwitchTh.text )
 	
 	#var gains = [ 1.0, pose_vel, pose_g, traj_pos, traj_az, traj_g ]
-	var gains = [ 1.0, pose_vel, pose_cat, traj_pos, traj_cat ]
+	var gains = [ 1.0, pose_vel, pose_cat, traj_pos, traj_z, traj_hd, traj_cat ]
 	mm_.set_desc_gains( gains )
 	
 	mm_.set_switch_threshold( switch_th )
@@ -214,9 +220,11 @@ func _on_ComputeDescBtn_pressed():
 	var gen_traj_desc = mm_.input_based_traj_desc_( mm_.db_ )
 	print( "\n\n\n" )
 	print( "frame # ", mm_.frame_ind_ )
+	print( "Current one:" )
 	print( "pose desc:     ", pose_desc )
-	print( "gen pose desc: ", gen_pose_desc )
 	print( "traj desc:     ", traj_desc )
+	print( "Wanted one:" )
+	print( "gen pose desc: ", gen_pose_desc )
 	print( "gen traj desc: ", gen_traj_desc )
 	
 	var d = []
@@ -232,16 +240,16 @@ func _on_ComputeDescBtn_pressed():
 	var next_err: float = mm_.frame_search_.dist( d, mm_.frame_ind_ )
 	var improvement: float = next_err - closest_err
 	
+	var cl_pose_desc = mm_.pose_desc_( mm_.db_, closest_ind )
+	var cl_traj_desc = mm_.traj_desc_( mm_.db_, closest_ind )
+	print( "Closest one:" )
+	print( "cl pose desc:  ", cl_pose_desc )
+	print( "cl traj desc:  ", cl_traj_desc )
+	
 	print( "closest err: ", closest_err )
 	print( "next err:    ", next_err )
 	print( "improvement: ", improvement )
 	print( "closest frame #: ", closest_ind )
-	
-	var cl_pose_desc = mm_.pose_desc_( mm_.db_, closest_ind )
-	var cl_traj_desc = mm_.traj_desc_( mm_.db_, closest_ind )
-	print( "cl pose desc:  ", cl_pose_desc )
-	print( "cl traj desc:  ", cl_traj_desc )
-	
 	
 	var min_err: float = -1.0
 	var min_ind: int = -1
@@ -250,7 +258,58 @@ func _on_ComputeDescBtn_pressed():
 		if min_err < 0.0 or err < min_err:
 			min_err = err
 			min_ind = i
-			
+	
+	# Manually comute the distance.
+	var gains = mm_.get_desc_gains()
+	print( "Gains: ", gains )
+	var desc_weights = mm_.desc_weights_
+	var weights = []
+	var diff = []
+	var abs_diff = 0.0
+	var gain_ind = 0
+	var weight_ind = 0
+	var pose_sz = gen_pose_desc.size()
+	var traj_sz = gen_traj_desc.size()
+	
+	for i in range( pose_sz ):
+		var fr = cl_pose_desc[i]
+		var gen = gen_pose_desc[i]
+		var di = []
+		var g = gains[gain_ind]
+		var pose_sz_i = fr.size()
+		for j in range( pose_sz_i ):
+			var gain = desc_weights[weight_ind] * g
+			weights.push_back( gain )
+			var d2 = fr[j] - gen[j]
+			d2 = d2 * d2 * gain
+			di.push_back( d2 )
+			abs_diff += d2
+			weight_ind += 1
+		diff.push_back( di )
+		gain_ind += 1
+	for i in range( traj_sz ):
+		var fr = cl_traj_desc[i]
+		var gen = gen_traj_desc[i]
+		var di = []
+		var g = gains[gain_ind]
+		var traj_sz_i = fr.size()
+		for j in range( traj_sz_i ):
+			var gain = desc_weights[weight_ind] * g
+			weights.push_back( gain )
+			var d2 = fr[j] - gen[j]
+			d2 = d2 * d2 * gain
+			di.push_back( d2 )
+			abs_diff += d2
+			weight_ind += 1
+		diff.push_back( di )
+		gain_ind += 1
+	
+	print( "diff: ", diff )
+	print( "abs_diff: ", abs_diff )
+	var read_weights = mm_.frame_search_.weights()
+	print( "read from frame search weights: ", read_weights )
+	print( "computed weights:               ", weights )
+	
 	print( "brute force best ind: ", min_ind, "; best err: ", min_err )
 
 
