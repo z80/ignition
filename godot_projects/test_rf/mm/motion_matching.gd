@@ -19,23 +19,23 @@ var desc_lengths_: Array
 var switch_threshold_: float = 0.3
 var switch_period_: int = 30
 
-const ROOT_IND: int       = 0
-const LEFT_LEG_IND: int   = 15
-const RIGHT_LEG_IND: int  = 19
+const ROOT_IND: int       = 1
+const LEFT_LEG_IND: int   = 81
+const RIGHT_LEG_IND: int  = 86
 const LEFT_HAND_IND: int  = 8
 const RIGHT_HAND_IND: int = 12
 #const POSE_LIMB_INDS: Array = [ROOT_IND, LEFT_LEG_IND, RIGHT_LEG_IND, LEFT_HAND_IND, RIGHT_HAND_IND]
 #const TRAJ_FRAME_INDS: Array = [30, 60, 90, 120]
 const POSE_LIMB_INDS: Array = [ROOT_IND, LEFT_LEG_IND, RIGHT_LEG_IND]
-const TRAJ_FRAME_INDS: Array = [15, 30, 45, 60]
+const TRAJ_FRAME_INDS: Array = [5, 10, 15, 20]
 
-const FPS: float = 60.0
+const FPS: float = 15.0
 const DT: float  = 1.0/FPS
 
 
 # Movement constants for building future trajectory.
 var slow_speed_: float = 0.5
-var walk_speed_: float = 1.0
+var walk_speed_: float = 0.7
 var fast_speed_: float = 4.0
 
 # Initial/default control.
@@ -314,7 +314,7 @@ func fill_descs_( frame_db ):
 
 func fill_desc_lengths_( db ):
 	# Write figure out descriptor lengths
-	var f = frame_( db, 0 )
+	#var f = frame_( db, 0 )
 	var pose_desc = pose_desc_( db, 0 )
 	var traj_desc = traj_desc_( db, 0 )
 	var descs: Array = pose_desc + traj_desc
@@ -423,7 +423,7 @@ func cat_desc_( db, index: int ):
 func frame_in_space_( db, index: int ):
 	var f = frame_( db, index )
 	var sz: int = f.size()
-	var f_dest: Array
+	var f_dest: Array = []
 	f_dest.resize( sz )
 	
 	var root_ind: int = ROOT_IND*7
@@ -553,10 +553,10 @@ func traj_desc_( db, index: int ):
 	var az_root_q: Quat = quat_azimuth_( root_q )
 	var az_root_q_inv = az_root_q.inverse()
 	
-	var desc_r: Array
+	var desc_r: Array = []
 	#var desc_az: Array
 	#var desc_g: Array
-	var desc_c: Array
+	var desc_c: Array = []
 	
 	for ind in TRAJ_FRAME_INDS:
 		var frame_ind: int = index + ind
@@ -601,10 +601,10 @@ func input_based_traj_desc_( db, category: int = 0 ):
 	
 	var q_adj = pose_q_.inverse()
 	
-	var desc_r: Array
+	var desc_r: Array = []
 	#var desc_az: Array
 	#var desc_g: Array
-	var desc_c: Array
+	var desc_c: Array = []
 	
 	var inv_pose_q = pose_q_.inverse()
 	for ind in TRAJ_FRAME_INDS:
