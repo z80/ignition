@@ -10,10 +10,10 @@ var _ref_frame_tree = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	RefFrameTree.add( self )
+	_ref_frame_tree.add( self )
 
 func cleanup():
-	RefFrameTree.remove( self )
+	_ref_frame_tree.remove( self )
 
 
 func _process(delta):

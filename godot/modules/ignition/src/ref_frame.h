@@ -36,8 +36,8 @@ public:
 	void set_v( const Vector3 & v );
 	void set_w( const Vector3 & w );
 
-	void set_rf_transform( const Transform & t );
-	Transform rf_transform() const;
+	void set_t( const Transform & t );
+	Transform t() const;
 
 	Vector3 r() const;
 	Quat    q() const;

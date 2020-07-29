@@ -9,7 +9,7 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "RfBase",
+"base": "Spatial",
 "class": "Body",
 "language": "GDScript",
 "path": "res://physics/body.gd"
