@@ -35,7 +35,6 @@ const DT: float  = 1.0/FPS
 
 # Forward vector in local ref frame.
 const V_HEADING_FWD: Vector3       = Vector3( 0.0, -1.0, 0.0 )
-const V_HEADING_FWD_INPUT: Vector3 = Vector3( 1.0, 0.0, 0.0 )
 
 
 # Movement constants for building future trajectory.
@@ -686,7 +685,7 @@ func input_based_traj_desc_( db, category: int = 0 ):
 		desc_c.push_back( category )
 	
 	
-	var fwd = V_HEADING_FWD_INPUT
+	var fwd = V_HEADING_FWD
 	var qty: int = control_vel_sequence_.size()
 	for ind in range( qty ):
 		var v: Vector2 = control_vel_sequence_[ind]
