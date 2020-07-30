@@ -26,10 +26,13 @@ func _physics_process( delta ):
 		_state_local.set_w( w )
 
 
+# Should be overriden by inheriting cripts.
 func create_physical():
 	return null
 
 
 func remove_physical():
-	pass
+	if _physical != null:
+		_physical.queue_free()
+		_physical = null
 
