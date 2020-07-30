@@ -18,10 +18,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -587.595
-margin_top = -331.65
-margin_right = -3.59497
-margin_bottom = 100.35
+margin_left = -696.287
+margin_top = -520.323
+margin_right = -112.287
+margin_bottom = -88.323
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -40,6 +40,7 @@ __meta__ = {
 }
 
 [node name="Weights" type="GridContainer" parent="Panel/Tabs"]
+visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
@@ -663,6 +664,44 @@ valign = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="Capture" type="Panel" parent="Panel/Tabs"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 32.0
+margin_right = -4.0
+margin_bottom = -4.0
+
+[node name="BoneCorrespondences" type="TextEdit" parent="Panel/Tabs/Capture"]
+margin_left = 9.0
+margin_top = 44.0
+margin_right = 566.0
+margin_bottom = 354.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CaptureBtn" type="Button" parent="Panel/Tabs/Capture"]
+margin_left = 13.2038
+margin_top = 9.24266
+margin_right = 102.204
+margin_bottom = 40.2427
+text = "Capture"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="Panel/Tabs/Capture"]
+margin_left = 109.0
+margin_top = 11.0
+margin_right = 566.0
+margin_bottom = 40.0
+text = "Status display..."
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
 [connection signal="pressed" from="Panel/Tabs/Weights/GetBtn" to="." method="_on_get_pressed"]
 [connection signal="pressed" from="Panel/Tabs/Weights/ApplyBtn" to="." method="_on_apply_weights_pressed"]
 [connection signal="pressed" from="Panel/Tabs/Weights/RewriteDescsBtn" to="." method="_on_get_pressed"]
@@ -677,3 +716,4 @@ __meta__ = {
 [connection signal="pressed" from="Panel/Tabs/Motion labeling/SetFromBtn" to="." method="_on_SetFromBtn_pressed"]
 [connection signal="pressed" from="Panel/Tabs/Motion labeling/SetToBtn" to="." method="_on_SetToBtn_pressed"]
 [connection signal="pressed" from="Panel/Tabs/Motion labeling/AssignCat" to="." method="_on_AssignCat_pressed"]
+[connection signal="pressed" from="Panel/Tabs/Capture/CaptureBtn" to="." method="_on_CaptureBtn_pressed"]

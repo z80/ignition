@@ -316,3 +316,7 @@ func _on_ComputeDescBtn_pressed():
 
 
 
+
+
+func _on_CaptureBtn_pressed():
+	pass # Replace with function body.
