@@ -40,7 +40,7 @@ const V_HEADING_FWD: Vector3       = Vector3( 0.0, -1.0, 0.0 )
 # Movement constants for building future trajectory.
 var slow_speed_: float = 0.5
 var walk_speed_: float = 0.7
-var fast_speed_: float = 4.0
+var fast_speed_: float = 2.0
 
 # Initial/default control.
 # velocity relative to current azimuth.
@@ -89,6 +89,7 @@ func _ready():
 	# 2) Assign categories.
 	# 3) generate_descriptors( false, true )
 	
+	#generate_descriptors( true, true )
 	#generate_descriptors( false, true )
 	init()
 
