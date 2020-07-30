@@ -22,11 +22,14 @@ var switch_period_: int = 15
 const ROOT_IND: int       = 1
 const LEFT_LEG_IND: int   = 81
 const RIGHT_LEG_IND: int  = 86
-const LEFT_HAND_IND: int  = 8
-const RIGHT_HAND_IND: int = 12
+const LEFT_FOREARM_IND: int  = 17
+const RIGHT_FOREARM_IND: int = 49
+const LEFT_HAND_IND: int  = 35
+const RIGHT_HAND_IND: int = 67
+const NECK_IND: int       = 9
 #const POSE_LIMB_INDS: Array = [ROOT_IND, LEFT_LEG_IND, RIGHT_LEG_IND, LEFT_HAND_IND, RIGHT_HAND_IND]
 #const TRAJ_FRAME_INDS: Array = [30, 60, 90, 120]
-const POSE_LIMB_INDS: Array = [ROOT_IND, LEFT_LEG_IND, RIGHT_LEG_IND]
+const POSE_LIMB_INDS: Array = [ROOT_IND, LEFT_LEG_IND, RIGHT_LEG_IND, LEFT_FOREARM_IND, RIGHT_FOREARM_IND, LEFT_HAND_IND, RIGHT_HAND_IND, NECK_IND]
 const TRAJ_FRAME_INDS: Array = [10, 20, 30, 40]
 
 const FPS: float = 15.0
@@ -538,7 +541,7 @@ func pose_desc_( db, index: int ):
 		#qp = root_q_inv * qp
 		var v: Vector3 = (r - rp) * FPS
 		if ( limb_ind != ROOT_IND ):
-			desc_r += [ r.x, r.y ]
+			desc_r += [ r.x, r.y, r.z ]
 		else:
 			desc_r.push_back( root_r.z )
 		desc_v += [ v.x, v.y ]
@@ -635,7 +638,7 @@ func input_based_pose_desc_( db, index: int, cat: Array = [0] ):
 		#qp = root_q_inv * qp
 		var v: Vector3 = (r - rp) * FPS
 		if ( limb_ind != ROOT_IND ):
-			desc_r += [ r.x, r.y ]
+			desc_r += [ r.x, r.y, r.z ]
 		else:
 			desc_r.push_back( root_r.z )
 		desc_v += [ v.x, v.y ]
