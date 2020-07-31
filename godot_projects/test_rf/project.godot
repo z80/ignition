@@ -15,6 +15,11 @@ _global_script_classes=[ {
 "path": "res://physics/body.gd"
 }, {
 "base": "Node",
+"class": "MmSaver",
+"language": "GDScript",
+"path": "res://mm/mm_saver.gd"
+}, {
+"base": "Node",
 "class": "PhysicsEnvironment",
 "language": "GDScript",
 "path": "res://physics/physics_environment.gd"
@@ -31,6 +36,7 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "Body": "",
+"MmSaver": "",
 "PhysicsEnvironment": "",
 "Rf": "",
 "RfBase": ""

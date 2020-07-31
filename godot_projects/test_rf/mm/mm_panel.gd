@@ -320,3 +320,31 @@ func _on_ComputeDescBtn_pressed():
 
 func _on_CaptureBtn_pressed():
 	pass # Replace with function body.
+
+
+func _on_ReadBtn_pressed():
+	pass # Replace with function body.
+
+
+func _on_SaveBtn_pressed():
+	pass # Replace with function body.
+
+
+
+func processBoneCorrespondences():
+	var names_map: Dictionary = {}
+	
+	var regex = RegEx.new()
+	regex.compile("(?<src_name>\\S+)\\s*\\->\\*(?<dest_name>\\S+)")
+	var text: String = $Panel/Tabs/Capture/BoneCorrespondences.text
+	for m in regex.search_all( text ):
+		var src_name: String  = m.get_string( "src_name" )
+		var dest_name: String = m.get_string( "dest_name" )
+		names_map[src_name] = dest_name
+	
+	return names_map
+
+
+
+
+

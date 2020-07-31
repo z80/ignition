@@ -675,7 +675,7 @@ margin_bottom = -4.0
 
 [node name="BoneCorrespondences" type="TextEdit" parent="Panel/Tabs/Capture"]
 margin_left = 9.0
-margin_top = 44.0
+margin_top = 88.0
 margin_right = 566.0
 margin_bottom = 354.0
 __meta__ = {
@@ -688,6 +688,26 @@ margin_top = 9.24266
 margin_right = 102.204
 margin_bottom = 40.2427
 text = "Capture"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ReadBtn" type="Button" parent="Panel/Tabs/Capture"]
+margin_left = 14.084
+margin_top = 47.5337
+margin_right = 103.084
+margin_bottom = 78.5337
+text = "Load"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SaveBtn" type="Button" parent="Panel/Tabs/Capture"]
+margin_left = 112.672
+margin_top = 47.9738
+margin_right = 201.672
+margin_bottom = 78.9738
+text = "Save"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -717,3 +737,5 @@ __meta__ = {
 [connection signal="pressed" from="Panel/Tabs/Motion labeling/SetToBtn" to="." method="_on_SetToBtn_pressed"]
 [connection signal="pressed" from="Panel/Tabs/Motion labeling/AssignCat" to="." method="_on_AssignCat_pressed"]
 [connection signal="pressed" from="Panel/Tabs/Capture/CaptureBtn" to="." method="_on_CaptureBtn_pressed"]
+[connection signal="pressed" from="Panel/Tabs/Capture/ReadBtn" to="." method="_on_ReadBtn_pressed"]
+[connection signal="pressed" from="Panel/Tabs/Capture/SaveBtn" to="." method="_on_SaveBtn_pressed"]
