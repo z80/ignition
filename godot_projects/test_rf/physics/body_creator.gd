@@ -1,6 +1,5 @@
 
 extends Node
-class_name BodyCreator
 
 
 # create instance

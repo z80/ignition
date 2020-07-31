@@ -8,6 +8,12 @@ var mm_ = null
 var mouse_over_: bool = false
 var mouse_pressed_: bool = false
 
+# For recording sequences
+var _mm_saver: MmSaver = MmSaver.new()
+var _mm_save_sequence: bool = false
+
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	get_mm()
@@ -319,15 +325,15 @@ func _on_ComputeDescBtn_pressed():
 
 
 func _on_CaptureBtn_pressed():
-	var en: bool = $root/Skeleton._mm_save_sequence
+	
+	var en: bool = _mm_save_sequence
 	if en:
-		$root/Skeleton._mm_save_sequence = false
-		$root/Skeleton._mm_saver.close()
+		_mm_saver.close()
 	else:
 		var names_map = processBoneCorrespondences()
-		$root/Skeleton._mm_saver.set_bone_names( $root/Skeleton/Skeleton/MotionMatching.bone_names_, names_map )
-		$root/Skeleton._mm_saver.init()
-		$root/Skeleton._mm_save_sequence = true
+		_mm_saver.set_bone_names( mm_.bone_names_, names_map )
+		_mm_saver.init()
+	_mm_save_sequence = not _mm_save_sequence
 
 
 func _on_ReadBtn_pressed():

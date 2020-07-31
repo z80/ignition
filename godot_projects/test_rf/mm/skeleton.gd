@@ -11,10 +11,6 @@ var _root_bone_index: int = -1
 var _name_to_index = {}
 
 
-# For recording sequences
-var _mm_saver: MmSaver = MmSaver.new()
-var _mm_save_sequence: bool = false
-
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
