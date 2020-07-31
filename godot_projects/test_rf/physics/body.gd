@@ -30,6 +30,9 @@ func _physics_process( delta ):
 func create_physical():
 	return null
 
+func set_contact_layer( layer ):
+	pass
+
 
 func remove_physical():
 	if _physical != null:

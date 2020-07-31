@@ -2,10 +2,10 @@
 extends Spatial
 class_name RfBase
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
-var _ref_frame = null
+# In this script it is child/parent management
+# A separate class is used for physics management and bodies creation.
+
+var _ref_frame      = null
 var _ref_frame_tree = null
 
 # Called when the node enters the scene tree for the first time.

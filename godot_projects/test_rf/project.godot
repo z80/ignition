@@ -15,6 +15,11 @@ _global_script_classes=[ {
 "path": "res://physics/body.gd"
 }, {
 "base": "Node",
+"class": "BodyCreator",
+"language": "GDScript",
+"path": "res://physics/body_creator.gd"
+}, {
+"base": "Node",
 "class": "MmSaver",
 "language": "GDScript",
 "path": "res://mm/mm_saver.gd"
@@ -36,6 +41,7 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "Body": "",
+"BodyCreator": "",
 "MmSaver": "",
 "PhysicsEnvironment": "",
 "Rf": "",
@@ -52,6 +58,7 @@ config/icon="res://icon.png"
 
 PhysicsManager="*res://physics/physics_manager.gd"
 RfTree="*res://physics/rf_tree.gd"
+BodyCreator="*res://physics/body_creator.gd"
 
 [editor_plugins]
 
