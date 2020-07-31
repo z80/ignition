@@ -324,6 +324,8 @@ func _on_CaptureBtn_pressed():
 		$root/Skeleton._mm_save_sequence = false
 		$root/Skeleton._mm_saver.close()
 	else:
+		var names_map = processBoneCorrespondences()
+		$root/Skeleton._mm_saver.set_bone_names( $root/Skeleton/Skeleton/MotionMatching.bone_names_, names_map )
 		$root/Skeleton._mm_saver.init()
 		$root/Skeleton._mm_save_sequence = true
 
