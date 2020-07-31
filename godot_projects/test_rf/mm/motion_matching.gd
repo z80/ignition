@@ -42,7 +42,7 @@ const V_HEADING_FWD: Vector3       = Vector3( 0.0, -1.0, 0.0 )
 
 # Movement constants for building future trajectory.
 var slow_speed_: float = 0.5
-var walk_speed_: float = 0.7
+var walk_speed_: float = 0.6
 var fast_speed_: float = 2.0
 
 # Initial/default control.

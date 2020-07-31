@@ -8,9 +8,17 @@ const DB_NAME = "res://mm_dump.sqlite3.db"
 var _bone_names: Dictionary
 var _db = null
 var _index: int = 0
+var _mm_frame_ind: int = -1
+
+# For determining "on ground" state.
+const LEFT_FOOT_IND:  int = 81
+const RIGHT_FOOT_IND: int = 86
+const FOOT_HEIGHT_DIFF: float = 0.03
+
 
 func init():
 	_index = 0
+	_mm_frame_ind = -1
 	_db = _open_database()
 
 
@@ -40,7 +48,7 @@ func _open_database( fname = DB_NAME ):
 
 func close():
 	if _db != null:
-		_db.close()
+		_db.close_db()
 		_db = null
 
 
@@ -55,9 +63,35 @@ func set_bone_names( names: Array, names_map: Dictionary ):
 			_bone_names[ind] = target_name
 
 
-func store( frame ):
+func _compute_gnd( frame ):
+	var li: int = LEFT_FOOT_IND*7 + 6
+	var ri: int = RIGHT_FOOT_IND*7 + 6
+	var lh: float = frame[li]
+	var rh: float = frame[ri]
+	var gnd = [false, false]
+	var diff: float = abs( lh - rh )
+	if diff < FOOT_HEIGHT_DIFF:
+		gnd[0] = true
+		gnd[1] = true
+	else:
+		if lh < rh:
+			gnd[0] = true
+		else:
+			gnd[1] = true
+	return gnd
+
+
+func store( frame, frame_ind ):
+	if frame_ind == _mm_frame_ind:
+		return
+	
+	_mm_frame_ind = frame_ind
+	
 	var data = {}
-	var gnd: Array = [false, false]
+	var gnd: Array = _compute_gnd( frame )
+	print( "gnd: ", gnd )
+	
+	
 	data['gnd'] = gnd
 	var links: Dictionary = {}
 	for ind in _bone_names:

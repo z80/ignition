@@ -24,7 +24,8 @@ func _ready():
 	panel.connect("mouse_entered", self, "_panel_entered")
 	panel.connect("mouse_exited", self, "_panel_exited")
 	
-	#read_gains_from_mm_()
+	_on_ReadBtn_pressed()
+	
 
 
 
@@ -32,6 +33,9 @@ func _ready():
 func _process(delta):
 	if not mm_:
 		return
+	
+	if _mm_save_sequence:
+		_mm_saver.store( mm_.f_, mm_.frame_ind_ )
 		
 	var stri: String = "%d" % mm_.frame_ind_
 	$Panel/Tabs/Weights/FrameN.text = stri
