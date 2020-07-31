@@ -31,10 +31,6 @@ func _process(delta):
 	mm.time_passed_ += delta
 	while ( mm.time_passed_ >= mm.DT ):
 		mm.process_frame()
-		if _mm_save_sequence:
-			_mm_saver.store( mm.f_ )
-		
-		
 		mm.time_passed_ -= mm.DT
 
 

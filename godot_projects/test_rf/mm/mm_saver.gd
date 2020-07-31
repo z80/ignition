@@ -10,7 +10,6 @@ var _db = null
 var _index: int = 0
 
 func init():
-	_bone_names = {}
 	_index = 0
 	_db = _open_database()
 
