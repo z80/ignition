@@ -10,6 +10,12 @@ const PERIOD: float = 3.0
 var _root_bone_index: int = -1
 var _name_to_index = {}
 
+
+# For recording sequences
+var _mm_saver: MmSaver = MmSaver.new()
+var _mm_save_sequence: bool = false
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	prepare_name_to_index_dict()
@@ -29,6 +35,10 @@ func _process(delta):
 	mm.time_passed_ += delta
 	while ( mm.time_passed_ >= mm.DT ):
 		mm.process_frame()
+		if _mm_save_sequence:
+			_mm_saver.store( mm.f_ )
+		
+		
 		mm.time_passed_ -= mm.DT
 
 

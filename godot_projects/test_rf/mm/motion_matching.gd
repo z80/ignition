@@ -84,6 +84,8 @@ var cam_rel_q_: Quat
 var run_mm_algorithm_:    bool = true
 var increment_frame_ind_: bool = true
 
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# Remember! After assigning categoriesit is necessary to re-generate descriptors (!!!)

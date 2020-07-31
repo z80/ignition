@@ -319,15 +319,29 @@ func _on_ComputeDescBtn_pressed():
 
 
 func _on_CaptureBtn_pressed():
-	pass # Replace with function body.
+	var en: bool = $root/Skeleton._mm_save_sequence
+	if en:
+		$root/Skeleton._mm_save_sequence = false
+		$root/Skeleton._mm_saver.close()
+	else:
+		$root/Skeleton._mm_saver.init()
+		$root/Skeleton._mm_save_sequence = true
 
 
 func _on_ReadBtn_pressed():
-	pass # Replace with function body.
+	var file = File.new()
+	file.open("res://bone_correspondence.txt", File.READ)
+	var content: String = file.get_as_text()
+	file.close()
+	$Panel/Tabs/Capture/BoneCorrespondences.text = content
 
 
 func _on_SaveBtn_pressed():
-	pass # Replace with function body.
+	var content: String = $Panel/Tabs/Capture/BoneCorrespondences.text
+	var file = File.new()
+	file.open("res://bone_correspondence.txt", File.WRITE)
+	file.store_string( content )
+	file.close()
 
 
 
