@@ -35,7 +35,7 @@ func _process(delta):
 		return
 	
 	if _mm_save_sequence:
-		_mm_saver.store( mm_.f_, mm_.frame_ind_ )
+		_mm_saver.store( mm_, mm_.f_, mm_.frame_ind_ )
 		
 	var stri: String = "%d" % mm_.frame_ind_
 	$Panel/Tabs/Weights/FrameN.text = stri

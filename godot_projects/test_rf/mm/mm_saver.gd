@@ -81,7 +81,14 @@ func _compute_gnd( frame ):
 	return gnd
 
 
-func store( frame, frame_ind ):
+func _compute_azimuth( mm, frame ):
+	var root_ind = mm.ROOT_IND * 7
+	var q: Quat = Quat( frame[root_ind+1], frame[root_ind+2], frame[root_ind+3], frame[root_ind] )
+	q = mm.quat_azimuth_( q )
+	return q
+
+
+func store( mm, frame, frame_ind ):
 	if frame_ind == _mm_frame_ind:
 		return
 	
@@ -89,8 +96,10 @@ func store( frame, frame_ind ):
 	
 	var data = {}
 	var gnd: Array = _compute_gnd( frame )
-	print( "gnd: ", gnd )
+	#print( "gnd: ", gnd )
 	
+	var q: Quat = _compute_azimuth( mm, frame )
+	data['q'] = [ q.w, q.x, q.y, q.z ]
 	
 	data['gnd'] = gnd
 	var links: Dictionary = {}
