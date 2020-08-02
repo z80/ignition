@@ -19,15 +19,18 @@ func change_parent( new_parent: Node = null ):
 		var w: Vector3 = self.w()
 
 
+func update_visual( root: Node = null ):
+	.compute_relative_to_root( root )
+	if _visual:
+		var t: Transform = self.t_root()
+		_visual.transform = t
+
+
 func _ready():
 	add_to_group( GROUP_NAME )
 	create_visual()
 
 
-func _process( _delta ):
-	if _visual:
-		var t: Transform = self.t()
-		_visual.transform = t
 
 
 func _physics_process( delta ):
