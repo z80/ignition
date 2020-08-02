@@ -24,7 +24,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/ref_frame.gd"
 }, {
-"base": "RefFrame",
+"base": "RefFrameNode",
 "class": "RefFramePhysics",
 "language": "GDScript",
 "path": "res://physics/ref_frame_physics.gd"

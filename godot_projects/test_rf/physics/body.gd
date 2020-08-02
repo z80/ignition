@@ -7,8 +7,22 @@ const GROUP_NAME: String = "bodies"
 var _visual    = null
 var _physical  = null  
 
+
+
+func change_parent( new_parent: Node = null ):
+	.change_parent( new_parent )
+	if _physical:
+		var t: Transform = self.t()
+		_physical.transform = t
+		var v: Vector3 = self.v()
+		_physical.set_linear_velocity( v )
+		var w: Vector3 = self.w()
+
+
 func _ready():
 	add_to_group( GROUP_NAME )
+	create_visual()
+
 
 func _process( _delta ):
 	if _visual:
@@ -24,6 +38,14 @@ func _physics_process( delta ):
 		self.set_t( t )
 		self.set_v( v )
 		self.set_w( w )
+
+
+func create_visual():
+	return null
+
+
+func create_physical():
+	return null
 
 
 func _create_visual( Visual ):

@@ -1,5 +1,5 @@
 
-extends RefFrame
+extends RefFrameNode
 class_name RefFramePhysics
 
 
@@ -39,8 +39,14 @@ func create_body( type_name: String, t: Transform ):
 
 
 func _cleanup_physical():
+	if _contact_layer < 0:
+		return
 	for body in _bodies:
 		body.remove_physical()
+
+
+func _destructor():
+	pass
 
 
 
