@@ -15,7 +15,6 @@ func create( type_name: String ):
 
 func _create( CL ):
 	var inst = CL.instance()
-	get_tree().get_root().add_child( inst )
 	return inst
 
 

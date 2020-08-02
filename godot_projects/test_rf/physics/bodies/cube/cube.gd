@@ -1,18 +1,31 @@
+
 extends Body
 
 
-var CubePhysical = preload( "res://physics/bodies/cube/cube_physical.tscn" )
+var Visual   = preload( "res://physics/bodies/cube/visual.tscn" )
+var Physical = preload( "res://physics/bodies/cube/physical.tscn" )
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	._ready()
 
 
+func create_visual():
+	var v = Visual.instance()
+	
+	var t: Transform = self.t()
+	v.transform = t
+	
+	get_tree().get_root().add_child( v )
+	_physical = v
+
+
+
 func create_physical():
-	var c = CubePhysical.instance()
+	var p = Physical.instance()
 	
-	var t: Transform = _state_local.t()
-	c.transform = t
+	var t: Transform = self.t()
+	p.transform = t
 	
-	get_tree().get_root().add_child( c )
-	_physical = c
+	get_tree().get_root().add_child( p )
+	_physical = p

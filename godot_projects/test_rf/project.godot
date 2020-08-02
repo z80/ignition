@@ -9,7 +9,7 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "Spatial",
+"base": "RefFrameNode",
 "class": "Body",
 "language": "GDScript",
 "path": "res://physics/body.gd"
@@ -19,27 +19,21 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://mm/mm_saver.gd"
 }, {
-"base": "Node",
-"class": "PhysicsEnvironment",
+"base": "RefFrameNode",
+"class": "RefFrame",
 "language": "GDScript",
-"path": "res://physics/physics_environment.gd"
+"path": "res://physics/ref_frame.gd"
 }, {
-"base": "RfBase",
-"class": "Rf",
+"base": "RefFrame",
+"class": "RefFramePhysics",
 "language": "GDScript",
-"path": "res://physics/rf.gd"
-}, {
-"base": "Spatial",
-"class": "RfBase",
-"language": "GDScript",
-"path": "res://physics/rf_base.gd"
+"path": "res://physics/ref_frame_physics.gd"
 } ]
 _global_script_class_icons={
 "Body": "",
 "MmSaver": "",
-"PhysicsEnvironment": "",
-"Rf": "",
-"RfBase": ""
+"RefFrame": "",
+"RefFramePhysics": ""
 }
 
 [application]

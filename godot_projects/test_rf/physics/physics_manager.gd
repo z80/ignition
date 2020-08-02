@@ -10,27 +10,20 @@ func _ready():
 		envs_[i] = null
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
-
-func create_environment():
+func acquire_environment( ref_frame ):
 	for i in range(ENVS_QTY):
 		var e = envs_[i]
 		if e == null:
-			e = PhysicsEnvironment.new()
-			get_tree().get_root().add_child( e )
-			envs_[i] = e
-			return e
-	return null
+			envs_[i] = ref_frame
+			return i
+	return -1
 
 
-func release_environment( env ):
+func release_environment( ref_frame ):
 	for i in range(ENVS_QTY):
 		var e = envs_[i]
-		if ( e == env ):
+		if ( e == ref_frame ):
 			envs_[i] = null
-			env.queue_tree()
 
 
 func available_qty():
