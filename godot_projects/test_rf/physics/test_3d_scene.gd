@@ -11,7 +11,8 @@ func _ready():
 	var v = preload( "res://physics/bodies/cube/visual.tscn" ).instance()
 	var tree = get_tree()
 	var root = tree.get_root()
-	root.add_child( v )
+	#get_parent().add_child( v )
+	self.add_child( v )
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
