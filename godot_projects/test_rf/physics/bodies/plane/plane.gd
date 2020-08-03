@@ -1,18 +1,24 @@
 extends Body
 
 
-var PlanePhysical = preload( "res://physics/bodies/plane/plane_physical.tscn" )
-
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	._ready()
-
-
-func create_physical():
-	var c = PlanePhysical.instance()
+func init():
+	var Visual   = preload( "res://physics/bodies/plane/visual.tscn" )
+	var Physical = preload( "res://physics/bodies/plane/physical.tscn" )
 	
-	var t: Transform = _state_local.t()
-	c.transform = t
-	
-	get_tree().get_root().add_child( c )
-	_physical = c
+	VisualType   = Visual
+	PhysicalType = Physical
+
+	.init()
+
+
+
+
+
+
+
+func set_collision_layer( layer ):
+	if _physical:
+		var rb = _physical.get_child( 0 )
+		rb.collision_layer = layer
+		rb.collision_mask  = layer
+

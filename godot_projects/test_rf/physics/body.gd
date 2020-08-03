@@ -4,8 +4,15 @@ class_name Body
 
 const GROUP_NAME: String = "bodies"
 
+# When inheriting need to redefine these two.
+var VisualType   = null
+var PhysicalType = null
+
 var _visual    = null
 var _physical  = null  
+
+func init():
+	add_to_group( GROUP_NAME )
 
 
 
@@ -19,6 +26,7 @@ func change_parent( new_parent: Node = null ):
 		var w: Vector3 = self.w()
 
 
+
 func update_visual( root: Node = null ):
 	.compute_relative_to_root( root )
 	if _visual:
@@ -26,10 +34,13 @@ func update_visual( root: Node = null ):
 		_visual.transform = t
 
 
-func _ready():
-	add_to_group( GROUP_NAME )
-	create_visual()
 
+
+
+
+
+func _ready():
+	create_visual()
 
 
 
@@ -44,11 +55,11 @@ func _physics_process( delta ):
 
 
 func create_visual():
-	return null
+	return _create_visual( VisualType )
 
 
 func create_physical():
-	return null
+	return _create_physical( PhysicalType )
 
 
 func _create_visual( Visual ):
@@ -60,7 +71,9 @@ func _create_visual( Visual ):
 	var t: Transform = self.t()
 	v.transform = t
 	
-	get_tree().get_root().add_child( v )
+	var root = BodyCreator.root_node
+	root.add_child( v )
+	
 	_visual = v
 
 
@@ -74,16 +87,18 @@ func _create_physical( Physical ):
 	var t: Transform = self.t()
 	p.transform = t
 	
-	get_tree().get_root().add_child( p )
+	var root = BodyCreator.root_node
+	root.add_child( p )
+	
 	_physical = p
 	
 	return _physical
 
 
 
-func set_contact_layer( layer ):
+func set_collision_layer( layer ):
 	if _physical:
-		_physical.set_contact_layer( layer )
+		_physical.collision_layer = layer
 
 
 func remove_physical():

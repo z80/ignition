@@ -18,9 +18,8 @@ func init_physics():
 		return false
 	
 	for body in _bodies:
-		_physics_env.insert_body( body )
 		var ph = body.create_physical()
-		ph.set_contact_layer( _contact_layer )
+		ph.collision_layer = _contact_layer
 
 
 func finit_physics():
@@ -29,10 +28,11 @@ func finit_physics():
 		PhysicsManager.release_environment( self )
 
 
-func create_body( type_name: String, t: Transform ):
-	var body: Body = BodyCreator.create( type_name )
-	_bodies.push_back( body )
+func create_body( type_name: String, t: Transform = Transform.IDENTITY ):
+	var body = BodyCreator.create( type_name )
 	add_child( body )
+	
+	_bodies.push_back( body )
 	if ( _contact_layer >= 0 ):
 		var ph = body.create_physical()
 		ph.set_contact_layer( _contact_layer )
