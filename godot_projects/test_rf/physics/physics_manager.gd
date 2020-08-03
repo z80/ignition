@@ -15,7 +15,8 @@ func acquire_environment( ref_frame ):
 		var e = envs_[i]
 		if e == null:
 			envs_[i] = ref_frame
-			return i
+			var bit: int = (1 << i)
+			return bit
 	return -1
 
 

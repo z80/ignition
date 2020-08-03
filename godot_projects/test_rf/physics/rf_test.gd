@@ -8,7 +8,7 @@ extends Node
 func _ready():
 	var rf = $Rf
 	BodyCreator.root_node = self
-	#rf.create_body( "plane" )
+	rf.create_body( "plane" )
 	rf.create_body( "cube" )
 	rf.init_physics()
 	
