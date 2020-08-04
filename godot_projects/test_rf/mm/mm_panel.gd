@@ -377,9 +377,45 @@ func processBoneCorrespondences():
 
 
 func _on_PrintQuatsBtn_pressed():
+	var names_map = {}
 	var regex = RegEx.new()
 	regex.compile("(?<src_name>\\S+)\\s*\\->\\s*(?<dest_name>\\S+)")
 	var text: String = $Panel/Tabs/Capture/BoneCorrespondences.text
 	for m in regex.search_all( text ):
 		var src_name: String  = m.get_string( "src_name" )
 		var dest_name: String = m.get_string( "dest_name" )
+		names_map[src_name] = dest_name
+
+	var ind_2_name = {}
+	var all_names = mm_.bone_names_
+	var names_subset: Array = names_map.keys()
+	for name in names_subset:
+		if name in all_names:
+			var ind: int = all_names.find( name )
+			var target_name: String = names_map[name]
+			ind_2_name[ind] = { "src": name, "dest": target_name }
+	
+	# Get current MM display frame.
+	# Extract quaternions from there.
+	var frame = mm_.f_
+	for ind in ind_2_name.keys():
+		var base = ind * 7
+		
+		var q: Quat = Quat( frame[base+1], frame[base+2], frame[base+3], frame[base] )
+		q = q.inverse()
+		
+		var v = ind_2_name[ind]
+		v["q"] = q
+		ind_2_name[ind] = v
+	
+	# Dump to the file.
+	var file: File = File.new()
+	file.open("res://bone_correspondence.txt", File.WRITE)
+	if not file.is_open():
+		print( "error opening bone_correspondences file" )
+		return
+	#file.store_string( content )
+	file.close()
+
+	
+	
