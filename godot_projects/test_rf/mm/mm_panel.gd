@@ -374,3 +374,12 @@ func processBoneCorrespondences():
 
 
 
+
+
+func _on_PrintQuatsBtn_pressed():
+	var regex = RegEx.new()
+	regex.compile("(?<src_name>\\S+)\\s*\\->\\s*(?<dest_name>\\S+)")
+	var text: String = $Panel/Tabs/Capture/BoneCorrespondences.text
+	for m in regex.search_all( text ):
+		var src_name: String  = m.get_string( "src_name" )
+		var dest_name: String = m.get_string( "dest_name" )

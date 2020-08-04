@@ -419,7 +419,6 @@ __meta__ = {
 }
 
 [node name="Descriptors" type="Panel" parent="Panel/Tabs"]
-visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
@@ -439,10 +438,20 @@ __meta__ = {
 
 [node name="ComputeDescBtn" type="Button" parent="Panel/Tabs/Descriptors"]
 margin_left = 157.417
-margin_top = 5.8833
+margin_top = 6.32342
 margin_right = 296.418
-margin_bottom = 39.8833
+margin_bottom = 40.3234
 text = "Compute desc"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PrintQuatsBtn" type="Button" parent="Panel/Tabs/Descriptors"]
+margin_left = 307.06
+margin_top = 6.32342
+margin_right = 446.061
+margin_bottom = 40.3234
+text = "Print quats"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -666,6 +675,7 @@ __meta__ = {
 }
 
 [node name="Capture" type="Panel" parent="Panel/Tabs"]
+visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
@@ -727,6 +737,7 @@ __meta__ = {
 [connection signal="pressed" from="Panel/Tabs/Weights/RewriteDescsBtn" to="." method="_on_get_pressed"]
 [connection signal="pressed" from="Panel/Tabs/Descriptors/InstantDataBtn" to="." method="_on_InstantDataBtn_pressed"]
 [connection signal="pressed" from="Panel/Tabs/Descriptors/ComputeDescBtn" to="." method="_on_ComputeDescBtn_pressed"]
+[connection signal="pressed" from="Panel/Tabs/Descriptors/PrintQuatsBtn" to="." method="_on_PrintQuatsBtn_pressed"]
 [connection signal="pressed" from="Panel/Tabs/Motion labeling/PlayStopBtn" to="." method="_on_PlayStopBtn_pressed"]
 [connection signal="pressed" from="Panel/Tabs/Motion labeling/GoToFrameBtn" to="." method="_on_GoToFrameBtn_pressed"]
 [connection signal="pressed" from="Panel/Tabs/Motion labeling/PrevBtn" to="." method="_on_PrevBtn_pressed"]
