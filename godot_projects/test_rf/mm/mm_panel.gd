@@ -398,10 +398,17 @@ func _on_PrintQuatsBtn_pressed():
 	# Get current MM display frame.
 	# Extract quaternions from there.
 	var frame = mm_.f_
+	var root_ind = mm_.ROOT_IND * 7
+	var root_q = Quat( frame[root_ind+1], frame[root_ind+2], frame[root_ind+3], frame[root_ind] )
+	var az_root_q = mm_.quat_azimuth_( root_q )
+	var inv_az_root_q = az_root_q.inverse()
+	
+	
 	for ind in ind_2_name.keys():
 		var base = ind * 7
 		
 		var q: Quat = Quat( frame[base+1], frame[base+2], frame[base+3], frame[base] )
+		q = inv_az_root_q * q
 		q = q.inverse()
 		
 		var v = ind_2_name[ind]
@@ -415,6 +422,16 @@ func _on_PrintQuatsBtn_pressed():
 		print( "error opening bone_correspondences file" )
 		return
 	#file.store_string( content )
+	
+	for ind in ind_2_name.keys():
+		var v = ind_2_name[ind]
+		var src_name  = v["src"]
+		var dest_name = v["dest"]
+		var q = v["q"]
+		
+		var stri: String = "%s -> %s %d (%f, %f, %f, %f)\n" % [ src_name, dest_name, ind, q.w, q.x, q.y, q.z ]
+		file.store_string( stri )
+	
 	file.close()
 
 	
