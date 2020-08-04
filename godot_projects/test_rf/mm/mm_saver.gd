@@ -53,14 +53,8 @@ func close():
 
 
 
-func set_bone_names( names: Array, names_map: Dictionary ):
-	_bone_names = {}
-	var names_subset: Array = names_map.keys()
-	for name in names_subset:
-		if name in names:
-			var ind: int = names.find( name )
-			var target_name: String = names_map[name]
-			_bone_names[ind] = target_name
+func set_names_and_quats( names_and_quats_map: Dictionary ):
+	_bone_names = names_and_quats_map
 
 
 func _compute_gnd( frame ):
@@ -98,13 +92,15 @@ func store( mm, frame, frame_ind ):
 	var gnd: Array = _compute_gnd( frame )
 	#print( "gnd: ", gnd )
 	
-	var q: Quat = _compute_azimuth( mm, frame )
-	data['q'] = [ q.w, q.x, q.y, q.z ]
+	var q_r: Quat = _compute_azimuth( mm, frame )
+	data['q'] = [ q_r.w, q_r.x, q_r.y, q_r.z ]
 	
 	data['gnd'] = gnd
 	var links: Dictionary = {}
-	for ind in _bone_names:
-		var name: String = _bone_names[ind]
+	for ind in _bone_names.keys():
+		var v = _bone_names[ind]
+		var name: String = v["dest"]
+		var adj_q: Quat = v["q"]
 		var i = ind * 7
 		var x: float  = frame[i+4]
 		var y: float  = frame[i+5]
@@ -113,7 +109,9 @@ func store( mm, frame, frame_ind ):
 		var qx: float = frame[i+1]
 		var qy: float = frame[i+2]
 		var qz: float = frame[i+3]
-		var link: Dictionary = { 'x': x, 'y': y, 'z': z, 'qw': qw, 'qx': qx, 'qy': qy, 'qz': qz }
+		var q: Quat = Quat( qx, qy, qz, qw )
+		q = q * adj_q
+		var link: Dictionary = { 'x': x, 'y': y, 'z': z, 'qw': q.w, 'qx': q.x, 'qy': q.y, 'qz': q.z }
 		links[name] = link
 	data['links'] = links
 	var stri: String = JSON.print( data )

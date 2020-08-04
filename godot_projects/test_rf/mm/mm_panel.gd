@@ -334,8 +334,8 @@ func _on_CaptureBtn_pressed():
 	if en:
 		_mm_saver.close()
 	else:
-		var names_map = processBoneCorrespondences()
-		_mm_saver.set_bone_names( mm_.bone_names_, names_map )
+		var names_map = _names_map()
+		_mm_saver.set_names_and_quats( names_map )
 		_mm_saver.init()
 	_mm_save_sequence = not _mm_save_sequence
 
@@ -434,5 +434,24 @@ func _on_PrintQuatsBtn_pressed():
 	
 	file.close()
 
+
+func _names_map():
+	var names_map = {}
+	var regex = RegEx.new()
+	regex.compile("(?<src_name>\\S+)\\s*\\->\\s*(?<dest_name>\\S+)\\s*(?<ind>\\d+)\\s*\\((?<w>[\\-\\d\\.]+),\\s*(?<x>[\\-\\d\\.]+),\\s*(?<y>[\\-\\d\\.]+),\\s*(?<z>[\\-\\d\\.]+)\\s*\\)")
+	var text: String = $Panel/Tabs/Capture/BoneCorrespondences.text
+	for m in regex.search_all( text ):
+		var src_name: String  = m.get_string( "src_name" )
+		var dest_name: String = m.get_string( "dest_name" )
+		var ind = int( m.get_string( "ind" ) )
+		var w = float( m.get_string( "w" ) )
+		var x = float( m.get_string( "x" ) )
+		var y = float( m.get_string( "y" ) )
+		var z = float( m.get_string( "z" ) )
+		names_map[ind] = { "src": src_name, "dest": dest_name, "ind": ind, "q": Quat( x, y, z, w ) }
 	
-	
+	return names_map
+
+
+
+
