@@ -81,7 +81,10 @@ remote func register_player( info ):
 	print( "    all players: " )
 	print( _all_players )
 	print( "\n\n\n" )
-	
-	
-	
-	
+
+
+
+
+
+
+
