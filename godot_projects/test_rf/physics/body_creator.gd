@@ -2,7 +2,7 @@
 extends Node
 
 
-# It is where all other nodes are attached.
+# It is where all visual and physical nodes are attached.
 # For some reason if I use get_tree().get_root().add_child( inst ) those stay invisible.
 var root_node: Node setget set_root, get_root
 

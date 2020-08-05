@@ -38,11 +38,22 @@ func create_body( type_name: String, t: Transform = Transform.IDENTITY ):
 		ph.set_contact_layer( _contact_layer )
 
 
+func compute_relative_states():
+	#_compute_state_recursive( self, root )
+	var group: String = Body.GROUP_NAME
+	for body in get_tree().get_nodes_in_group( group ):
+		body.update_visual( self )
+
+
+
 func _cleanup_physical():
 	if _contact_layer < 0:
 		return
 	for body in _bodies:
 		body.remove_physical()
+
+
+
 
 
 func _destructor():
