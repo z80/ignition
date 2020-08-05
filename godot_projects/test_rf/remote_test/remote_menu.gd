@@ -34,7 +34,7 @@ func _on_Create_pressed():
 
 func _on_Join_pressed():
 	var peer = NetworkedMultiplayerENet.new()
-	peer.create_server( HOST_PORT )
+	peer.create_client(HOST_IP, HOST_PORT)
 	var tree: SceneTree = get_tree()
 	tree.network_peer = peer
 
@@ -43,22 +43,30 @@ func _on_Join_pressed():
 
 func _player_connected(id):
 	# Called on both clients and server when a peer connects. Send my info to it.
+	print( "Player connected # ", id )
 	rpc_id( id, "register_player", _player_info )
+	print( "After rpc_id() call" )
 
 func _player_disconnected(id):
+	print( "Player disconnected # ", id )
 	_all_players.erase(id) # Erase player from info.
 
 func _connected_ok():
-	pass # Only called on clients, not server. Will go unused; not useful here.
+	print( "Connected ok" )
+
 
 func _server_disconnected():
-	pass # Server kicked us; show error and abort.
+	print( "Server disconnected" )
+
 
 func _connected_fail():
-	pass # Could not even connect to server; abort.
+	print( "Failed to connect" )
+
 
 
 remote func register_player( info ):
+	print( "Entered register player: ", info )
+	
 	var tree: SceneTree = get_tree()
 	# Get the id of the RPC sender.
 	var id = tree.get_rpc_sender_id()

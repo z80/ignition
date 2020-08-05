@@ -39,13 +39,12 @@ _global_script_class_icons={
 [application]
 
 config/name="Test Rf"
-run/main_scene="res://mm/skeleton.tscn"
+run/main_scene="res://remote_test/remote_test.tscn"
 config/icon="res://icon.png"
 
 [autoload]
 
 PhysicsManager="*res://physics/physics_manager.gd"
-RfTree="*res://physics/rf_tree.gd"
 BodyCreator="*res://physics/body_creator.gd"
 
 [editor_plugins]
