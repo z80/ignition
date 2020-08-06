@@ -15,6 +15,9 @@ const LEFT_FOOT_IND:  int = 81
 const RIGHT_FOOT_IND: int = 86
 const FOOT_HEIGHT_DIFF: float = 0.03
 
+# Origin FPS is somewhat low. Increasing it by duplicating frames.
+const FPS_MULTIPLIER: int = 4
+
 
 func init():
 	_index = 0
@@ -116,13 +119,15 @@ func store( mm, frame, frame_ind ):
 	data['links'] = links
 	var stri: String = JSON.print( data )
 	stri = stri.replace( "\"", "\'\'" )
-	var cmd_stri: String = "INSERT OR REPLACE INTO data(id, data) VALUES( %d, \'%s\' )" % [ _index, stri ]
-	var res: bool = _db.query( cmd_stri )
-	if not res:
-		print( "ERROR: failed to place frame information into the database" )
-		return
 	
-	_index += 1
+	for i in range( FPS_MULTIPLIER ):
+		var cmd_stri: String = "INSERT OR REPLACE INTO data(id, data) VALUES( %d, \'%s\' )" % [ _index, stri ]
+		var res: bool = _db.query( cmd_stri )
+		if not res:
+			print( "ERROR: failed to place frame information into the database" )
+			return
+		
+		_index += 1
 
 
 

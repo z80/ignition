@@ -24,7 +24,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/ref_frame.gd"
 }, {
-"base": "RefFrameNode",
+"base": "RefFrame",
 "class": "RefFramePhysics",
 "language": "GDScript",
 "path": "res://physics/ref_frame_physics.gd"
@@ -46,6 +46,7 @@ config/icon="res://icon.png"
 
 PhysicsManager="*res://physics/physics_manager.gd"
 BodyCreator="*res://physics/body_creator.gd"
+Constants="*res://physics/constants.gd"
 
 [editor_plugins]
 

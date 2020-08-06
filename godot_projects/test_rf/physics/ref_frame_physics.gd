@@ -1,5 +1,5 @@
 
-extends RefFrameNode
+extends RefFrame
 class_name RefFramePhysics
 
 
@@ -31,6 +31,7 @@ func finit_physics():
 func create_body( type_name: String, t: Transform = Transform.IDENTITY ):
 	var body = BodyCreator.create( type_name )
 	add_child( body )
+	body.set_t( t )
 	
 	_bodies.push_back( body )
 	if ( _contact_layer >= 0 ):
@@ -42,6 +43,8 @@ func compute_relative_states():
 	#_compute_state_recursive( self, root )
 	var group: String = Body.GROUP_NAME
 	for body in get_tree().get_nodes_in_group( group ):
+		# Update visual element position with respect to this ref. frame.
+		# "self" indicates that.
 		body.update_visual( self )
 
 
