@@ -401,7 +401,13 @@ func _on_PrintQuatsBtn_pressed():
 	var root_ind = mm_.ROOT_IND * 7
 	var root_q = Quat( frame[root_ind+1], frame[root_ind+2], frame[root_ind+3], frame[root_ind] )
 	var az_root_q = mm_.quat_azimuth_( root_q )
-	var inv_az_root_q = az_root_q.inverse()
+	
+	var fwd = az_root_q.xform( mm_.V_HEADING_FWD )
+	var ang: float = atan2( fwd.y, fwd.x )
+	var ang_2: float = ang / 2.0
+	var co2: float = cos(ang_2)
+	var si2: float = sin(ang_2)
+	var inv_az_root_q = Quat( 0.0, 0.0, -si2, co2 )
 	
 	
 	for ind in ind_2_name.keys():

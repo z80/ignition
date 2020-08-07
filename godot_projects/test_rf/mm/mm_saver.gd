@@ -10,6 +10,9 @@ var _db = null
 var _index: int = 0
 var _mm_frame_ind: int = -1
 
+var _azimuth_initialized: bool = false
+var _inv_az_q: Quat = Quat.IDENTITY
+
 # For determining "on ground" state.
 const LEFT_FOOT_IND:  int = 81
 const RIGHT_FOOT_IND: int = 86
@@ -22,6 +25,7 @@ const FPS_MULTIPLIER: int = 4
 func init():
 	_index = 0
 	_mm_frame_ind = -1
+	_azimuth_initialized = false
 	_db = _open_database()
 
 
@@ -89,6 +93,8 @@ func store( mm, frame, frame_ind ):
 	if frame_ind == _mm_frame_ind:
 		return
 	
+	_init_azimuth( mm, frame )
+	
 	_mm_frame_ind = frame_ind
 	
 	var data = {}
@@ -113,7 +119,7 @@ func store( mm, frame, frame_ind ):
 		var qy: float = frame[i+2]
 		var qz: float = frame[i+3]
 		var q: Quat = Quat( qx, qy, qz, qw )
-		q = q * adj_q
+		q = _inv_az_q * q * adj_q
 		var link: Dictionary = { 'x': x, 'y': y, 'z': z, 'qw': q.w, 'qx': q.x, 'qy': q.y, 'qz': q.z }
 		links[name] = link
 	data['links'] = links
@@ -128,6 +134,37 @@ func store( mm, frame, frame_ind ):
 			return
 		
 		_index += 1
+
+
+
+func _init_azimuth( mm, frame ):
+	if _azimuth_initialized:
+		return
+	# Here frame is already compensated for own rotation and azimuth is applied.
+	# So it is necessary to apply it's azimuth to (0, -1, 0) vector and compute its atan2(y, z).
+	var root_ind: int = mm.ROOT_IND*7
+	var q: Quat = Quat( frame[root_ind+1], frame[root_ind+2], frame[root_ind+3], frame[root_ind] )
+	var az_q: Quat = mm.quat_azimuth_( q )
+	var fwd = az_q.xform( mm.V_HEADING_FWD )
+	var ang: float = atan2( fwd.y, fwd.x )
+	var ang_2: float = ang / 2.0
+	var co2: float = cos(ang_2)
+	var si2: float = sin(ang_2)
+	_inv_az_q = Quat( 0.0, 0.0, -si2, co2 )
+	_azimuth_initialized = true
+	
+	
+
+
+
+
+
+
+
+
+
+
+
 
 
 
