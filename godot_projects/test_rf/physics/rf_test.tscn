@@ -19,3 +19,5 @@ privot = NodePath("../AxesVis")
 max_speed = Vector3( 5, 5, 5 )
 
 [node name="AxesVis" parent="." instance=ExtResource( 4 )]
+
+[node name="PinJoint" type="PinJoint" parent="."]
