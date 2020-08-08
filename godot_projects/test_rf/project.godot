@@ -14,10 +14,30 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/body.gd"
 }, {
+"base": "ColorRect",
+"class": "ColorTile",
+"language": "GDScript",
+"path": "res://addons/color-palette/ColorTile.gd"
+}, {
+"base": "Container",
+"class": "FlexGridContainer",
+"language": "GDScript",
+"path": "res://addons/color-palette/utilities/FlexGridContainer.gd"
+}, {
 "base": "Node",
 "class": "MmSaver",
 "language": "GDScript",
 "path": "res://mm/mm_saver.gd"
+}, {
+"base": "Reference",
+"class": "Palette",
+"language": "GDScript",
+"path": "res://addons/color-palette/Palette.gd"
+}, {
+"base": "Reference",
+"class": "PaletteImporter",
+"language": "GDScript",
+"path": "res://addons/color-palette/PaletteImporter.gd"
 }, {
 "base": "RefFrameNode",
 "class": "RefFrame",
@@ -31,7 +51,11 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "Body": "",
+"ColorTile": "",
+"FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
 "MmSaver": "",
+"Palette": "",
+"PaletteImporter": "",
 "RefFrame": "",
 "RefFramePhysics": ""
 }
@@ -50,7 +74,7 @@ Constants="*res://physics/constants.gd"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "godot-sqlite", "gut" )
+enabled=PoolStringArray( "color-palette", "godot-sqlite", "gut" )
 
 [input]
 
