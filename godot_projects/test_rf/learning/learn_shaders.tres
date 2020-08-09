@@ -1,11 +1,11 @@
 [gd_resource type="ShaderMaterial" load_steps=6 format=2]
 
-[sub_resource type="Shader" id=2]
+[sub_resource type="Shader" id=1]
 code = "shader_type spatial;
 
 //render_mode unshaded;
 //render_mode diffuse_toon, specular_toon;
-render_mode specular_toon;
+//render_mode specular_toon;
 
 uniform sampler2D noise;
 uniform sampler2D normalmap;
@@ -50,21 +50,21 @@ void fragment() {
 
 "
 
-[sub_resource type="OpenSimplexNoise" id=3]
+[sub_resource type="OpenSimplexNoise" id=2]
 
-[sub_resource type="NoiseTexture" id=4]
+[sub_resource type="NoiseTexture" id=3]
 seamless = true
-noise = SubResource( 3 )
+noise = SubResource( 2 )
 
-[sub_resource type="OpenSimplexNoise" id=5]
+[sub_resource type="OpenSimplexNoise" id=4]
 
-[sub_resource type="NoiseTexture" id=6]
+[sub_resource type="NoiseTexture" id=5]
 seamless = true
 as_normalmap = true
-noise = SubResource( 5 )
+noise = SubResource( 4 )
 
 [resource]
-shader = SubResource( 2 )
+shader = SubResource( 1 )
 shader_param/height_scale = 4.0
-shader_param/noise = SubResource( 4 )
-shader_param/normalmap = SubResource( 6 )
+shader_param/noise = SubResource( 3 )
+shader_param/normalmap = SubResource( 5 )
