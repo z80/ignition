@@ -1,289 +1,178 @@
-#tool
-extends ImmediateGeometry
+extends Spatial
 
-const DEBUG: bool = true
+var LandscapeTile = preload( "res://learning/landscape_tile.tscn")
 
-export var period: float = 20.0 setget set_period, get_period
-export var persistence: float = 0.3 setget set_persistence, get_persistence
-export var lacunarity: float = 0.4 setget set_lacunarity, get_lacunarity
-export var octaves: int = 4 setget set_octaves, get_octaves
-export var size: float = 100.0 setget set_size, get_size
-export var resolution: int = 32 setget set_resolution, get_resolution
+export(NodePath) var target_path
+onready var target = get_node(target_path) 
 
-export var height: float = 1.0 setget set_height, get_height
+var distance: int = 1
+var size: float = 5.0
+var resolution: int = 4
 
-var _noise = OpenSimplexNoise.new()
-var _image: Image = null
+var _initialized: bool = false
+var _point_tile_x: int = 0
+var _point_tile_z: int = 0
 
-var _b_x: int = 0
-var _b_y: int = 0
 
-var _color_map = []
+
+
+func set_target( t: Spatial):
+	target = t
+
+func get_target():
+	return target
+
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	var c = [ 0.0, Color( 0.0, 0.0, 0.7 ) ]
-	_color_map.push_back( c )
-	c = [ 0.1, Color( 0.7, 0.7, 0.2 ) ]
-	_color_map.push_back( c )
-
-	c = [ 0.2, Color( 0.0, 0.5, 0.0 ) ]
-	_color_map.push_back( c )
-
-	c = [ 0.4, Color( 0.1, 0.1, 0.1 ) ]
-	_color_map.push_back( c )
-	
-	c = [ 1.1, Color( 0.8, 0.8, 0.8 ) ]
-	_color_map.push_back( c )
-
-	
-	_rebuild()
+	pass # Replace with function body.
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
-
-
-func _block_x():
-	var v: Vector3 = translation
-	var xf: float = v.x / size
-	var xi: int = int( round( xf ) )
-	return xi
-
-func _block_y():
-	var v: Vector3 = translation
-	var yf: float = v.z / size
-	var yi: int = int( round( yf ) )
-	return yi
+func _process(delta):
+	var needs_recompute: bool = _need_recompute()
+	if needs_recompute:
+		_recompute_landscape()
 
 
 
+func _center():
+	var at = target.translation
+	var ind_x = int( floor( at.x/size ) )
+	var ind_z = int( floor( at.z/size ) )
+	return [ind_x, ind_z]
 
-func set_period( p: float):
-	period = p
-	if DEBUG:
-		_rebuild()
 
-func get_period():
-	return period
-
-func set_persistence( p: float ):
-	persistence = p
-	if DEBUG:
-		_rebuild()
-
-func get_persistence():
-	return persistence
-
-func set_lacunarity( l: float):
-	lacunarity = l
-	if DEBUG:
-		_rebuild()
+func _need_recompute():
+	if not target:
+		return false
+	if not _initialized:
+		return true
 	
-func get_lacunarity():
-	return lacunarity
-
-func set_octaves( o: int ):
-	octaves = o
-	if DEBUG:
-		_rebuild()
+	var c = _center()
+	var ind_x = c[0]
+	var ind_z = c[1]
+	if (ind_x != _point_tile_x) or (ind_z != _point_tile_x):
+		return true
 	
-func get_octaves():
-	return octaves
-
-func set_size( sz: float ):
-	size = sz
-	if DEBUG:
-		_rebuild()
-
-func get_size():
-	return size
-
-func set_resolution( res: int ):
-	resolution = res
-	if DEBUG:
-		_rebuild()
-
-func get_resolution():
-	return resolution
-
-func set_height( h: float ):
-	height = h
-	if DEBUG:
-		_rebuild()
-
-func get_height():
-	return height
+	return false
 
 
-func _height_at( ix: int, iy: int ):
-	var c: Color = _image.get_pixel( ix, iy )
-	var g: float = c.gray()
-	var h: float = g * height
-	return h
+func _recompute_landscape():
+	_label_tiles_to_recompute()
+	var existing_tiles = _get_existing_tiles()
+	print( "\nrebuilding: " )
+	for tile in existing_tiles:
+		var needs_rebuild: bool = tile.rebuild
+		if needs_rebuild:
+			print( "(%d, %d)" % [tile.index_x, tile.index_z] )
+			tile._construct()
+	# Current center to avoid recomputation.
+	var c = _center()
+	_point_tile_x = c[0]
+	_point_tile_x = c[1]
+	_initialized = true
 
 
-func _color( h: float ):
-	for v in _color_map:
-		var m: float = v[0]
-		if h < m:
-			return v[1]
-	var sz: int = _color_map.size()
-	return _color_map[sz-1][1]
 
-
-func _rebuild():
-	if not _noise:
-		return
-	if _color_map.empty():
-		return
+func _label_tiles_to_recompute():
+	var existing_tiles = _get_existing_tiles()
 	
-	var v: Vector3 = translation
-	var bx: int = _block_x()
-	var by: int = _block_y()
-	var dx: float = v.x - bx*size - size*0.5
-	var dy: float = v.z - by*size - size*0.5
+	for tile in existing_tiles:
+		tile.rebuild = true
 	
-	_noise.seed = by + 16384*bx
-	_noise.period = period
-	_noise.persistence = persistence
-	_noise.lacunarity  = lacunarity
-	_noise.octaves     = octaves
-	_image = _noise.get_image( resolution, resolution )
+	var c = _center()
+	var cx = c[0]
+	var cz = c[1]
 	
-	var positions = []
-	var normals = []
-	var colors = []
-	positions.resize( resolution * resolution )
-	normals.resize( resolution * resolution )
-	colors.resize( resolution * resolution )
-	var ind: int = 0
-	for iy in range( 0, resolution ):
-		for ix in range( 0, resolution ):
-			positions[ind] = Vector3.ZERO
-			normals[ind]   = Vector3.ZERO
-			ind += 1
-	
-	for iy in range( 1, resolution ):
-		var iya: int = iy-1
-		var iyb: int = iy
-		var ya: float = dy + iya*size/(resolution-1)
-		var yb: float = dy + iyb*size/(resolution-1)
-		for ix in range( 1, resolution ):
-			var ixa: int = ix-1
-			var ixb: int = ix
-			var xa: float = dx + ixa*size/(resolution-1)
-			var xb: float = dx + ixb*size/(resolution-1)
+	# First pass: 1) mark the ones which no not need to be rebuilt;
+	#             2) prepare the list of needed ones.
+	var needed_chunks = []
+	var n = 2*distance+1
+	for iz in range(n):
+		var z = iz - distance + cz
+		for ix in range(n):
+			var x = ix - distance + cx
 			
-			var h0 = _noise.get_noise_2d( xa, ya )
-			var h1 = _noise.get_noise_2d( xb, ya )
-			var h2 = _noise.get_noise_2d( xb, yb )
-			var h3 = _noise.get_noise_2d( xa, yb )
-			var c0 = _color( h0 )
-			h0 *= height
-			h1 *= height
-			h2 *= height
-			h3 *= height
-			var v0 := Vector3( xa, h0, ya )
-			var v1 := Vector3( xb, h1, ya )
-			var v2 := Vector3( xb, h2, yb )
-			var v3 := Vector3( xa, h3, yb )
-			var ind0: int = ix + resolution * (iy-1) - 1
-			var ind1: int = ind0 + 1
-			var ind2: int = ind1 + resolution
-			var ind3: int = ind0 + resolution
-			
-			var va = v3 - v0
-			var vb = v1 - v0
-			var n: Vector3 = va.cross( vb )
-			n = n.normalized()
-			normals[ind0] += n
-			normals[ind1] += n
-			normals[ind3] += n
-
-			va = v1 - v2
-			vb = v3 - v2
-			n = va.cross( vb )
-			n = n.normalized()
-			normals[ind1] += n
-			normals[ind2] += n
-			normals[ind3] += n
-			
-			positions[ind0] = v0
-			positions[ind1] = v1
-			positions[ind2] = v2
-			positions[ind3] = v3
-			
-			colors[ind0] = c0
-			colors[ind1] = c0
-			colors[ind2] = c0
-			colors[ind3] = c0
+			# Search if it was already computed.
+			var found: bool = false
+			for tile in existing_tiles:
+				var tx: int = tile.index_x
+				var tz: int = tile.index_z
+				if (tx == x) and (tz == z):
+					found = true
+					tile.rebuild = false
+					break
+			if not found:
+				needed_chunks.push_back( [x, z] )
 	
 	
-	ind = 0
-	for iy in range( resolution ):
-		for ix in range( resolution ):
-			var n = normals[ind]
-			n = n.normalized()
-			normals[ind] = n
-			ind += 1
+	# Iterate over needed ones and take free ones from the "tile_descs"
+	for n in needed_chunks:
+		var x = n[0]
+		var z = n[1]
+		var assigned: bool = false
+		for tile in existing_tiles:
+			var need_rebuild = tile.rebuild
+			if need_rebuild:
+				tile.index_x = x
+				tile.index_z = z
+				assigned = true
+				break
+		
+		# If no spare one found, create one.
+		if not assigned:
+			var tile = LandscapeTile.instance()
+			tile.index_x = x
+			tile.index_z = z
+			tile.rebuild = true
+			self.add_child(tile)
+		
 	
-	self.clear()
-	self.begin( Mesh.PRIMITIVE_TRIANGLES )
+
+func _get_existing_tiles():
+	var qty = get_child_count()
+	var tiles = []
+	for i in range(qty):
+		var ch = get_child(i)
+		var is_tile = ch is MeshInstance
+		if is_tile:
+			tiles.push_back( ch )
+	return tiles
+
+
+
+
+func _inside( at: Vector3, tile ):
+	var x = float(tile.index_x) * size
+	var z = float(tile.index_z) * size
+	if x > at.x:
+		return false
+	if z > at.z:
+		return false
+	if at.x > x+size:
+		return false
+	if at.z > z+size:
+		return false
+		
+	return true
+
+
+
+func _dist( at: Vector3, tile ):
+	var ix := int( floor( at.x/size ) )
+	var iz := int( floor( at.z/size ) )
+	var dx: int = tile.index_x - ix
+	var dz: int = tile.index_z - iz
+	if dx < 0:
+		dx = -dx
+	if dz < 0:
+		dz = -dz
 	
-	for iy in range( 1, resolution ):
-		var iya: int = iy-1
-		var iyb: int = iy
-		for ix in range( 1, resolution ):
-			var ixa: int = ix-1
-			var ixb: int = ix
-			
-			var ind0: int = ix + resolution * (iy-1) - 1
-			var ind1: int = ind0 + 1
-			var ind2: int = ind1 + resolution
-			var ind3: int = ind0 + resolution
-			
-			var v0 = positions[ind0]
-			var v1 = positions[ind1]
-			var v2 = positions[ind2]
-			var v3 = positions[ind3]
-			var n0 = normals[ind0]
-			var n1 = normals[ind1]
-			var n2 = normals[ind2]
-			var n3 = normals[ind3]
-			var c0 = colors[ind0]
-			var c1 = colors[ind1]
-			var c2 = colors[ind2]
-			var c3 = colors[ind3]
-
-			self.set_normal( n0 )
-			self.set_color( c0 )
-			self.add_vertex( v0 )
-			
-			self.set_normal( n1 )
-			self.set_color( c0 )
-			self.add_vertex( v1 )
-			
-			self.set_normal( n3 )
-			self.set_color( c0 )
-			self.add_vertex( v3 )
-
-			
-			self.set_normal( n1 )
-			self.set_color( c0 )
-			self.add_vertex( v1 )
-
-			self.set_normal( n2 )
-			self.set_color( c0 )
-			self.add_vertex( v2 )
-
-			
-			self.set_normal( n3 )
-			self.set_color( c0 )
-			self.add_vertex( v3 )
-
-	self.end()
+	if dx <= dz:
+		return dx
 	
+	return dz
+
 

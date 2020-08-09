@@ -1,39 +1,13 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://learning/landscape.gd" type="Script" id=1]
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=2]
 
-[sub_resource type="SpatialMaterial" id=1]
-vertex_color_use_as_albedo = true
-normal_enabled = true
-normal_scale = 1.0
-
-[sub_resource type="SphereMesh" id=2]
-
-[node name="Heightmap" type="ImmediateGeometry"]
-material_override = SubResource( 1 )
-cast_shadow = 0
+[node name="Landscape" type="Spatial"]
 script = ExtResource( 1 )
-period = 10.0
-persistence = 0.9
-lacunarity = 0.5
-octaves = 3
-resolution = 94
-height = 10.0
+target_path = NodePath("Camera")
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 5, 6 )
+transform = Transform( 1, 0, 0, 0, 0.657796, 0.753196, 0, -0.753196, 0.657796, 0, 1.77139, 2.06757 )
 script = ExtResource( 2 )
 max_speed = Vector3( 5, 5, 5 )
-
-[node name="MeshInstance" type="MeshInstance" parent="."]
-cast_shadow = 0
-mesh = SubResource( 2 )
-material/0 = null
-
-[node name="DirectionalLight" type="DirectionalLight" parent="."]
-transform = Transform( 0.104355, -0.0468146, 0.993438, -0.99454, -0.00491215, 0.104239, 0, -0.998892, -0.0470716, 12.8775, 14.956, 0 )
-light_color = Color( 1, 0.968627, 0.729412, 1 )
-light_energy = 0.5
-light_indirect_energy = 0.02
-light_specular = 0.1
