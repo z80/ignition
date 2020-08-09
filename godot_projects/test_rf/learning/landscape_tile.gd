@@ -28,10 +28,15 @@ func _construct():
 		for ix in range( ls.resolution ):
 			var x0 = 0.7 * float(ix) * ls.size / float(ls.resolution) + origin_x
 			var x1 = 0.7 * float(ix+1) * ls.size / float(ls.resolution) + origin_x
-			var v0 := Vector3( x0, 0.0, z0 )
-			var v1 := Vector3( x1, 0.0, z0 )
-			var v2 := Vector3( x1, 0.0, z1 )
-			var v3 := Vector3( x0, 0.0, z1 )
+			var h0: float = ls.height( x0, z0 )
+			var h1: float = ls.height( x1, z0 )
+			var h2: float = ls.height( x1, z1 )
+			var h3: float = ls.height( x0, z1 )
+			
+			var v0 := Vector3( x0, h0, z0 )
+			var v1 := Vector3( x1, h1, z0 )
+			var v2 := Vector3( x1, h2, z1 )
+			var v3 := Vector3( x0, h3, z1 )
 			
 			verts.push_back( v0 )
 			verts.push_back( v1 )

@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://learning/learn_shaders.tres" type="Material" id=1]
+[ext_resource path="res://learning/shader_params_for_plane.gd" type="Script" id=2]
+
+[sub_resource type="PlaneMesh" id=1]
+subdivide_width = 32
+subdivide_depth = 32
+
+[node name="Spatial" type="Spatial"]
+
+[node name="MeshInstance" type="MeshInstance" parent="."]
+transform = Transform( 10, 0, 0, 0, 1, 0, 0, 0, 10, 0, 0, 0 )
+mesh = SubResource( 1 )
+material/0 = ExtResource( 1 )
+script = ExtResource( 2 )
+height_scale = 10.5
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.721845, 0.692055, 0, -0.692055, 0.721845, 0, 2.34303, 2.95381 )
+
+[node name="OmniLight" type="OmniLight" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.382416, 0 )

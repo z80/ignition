@@ -19,14 +19,17 @@ var _point_tile_z: int = 0
 func set_target( t: Spatial):
 	target = t
 
+
 func get_target():
 	return target
 
 
+func height( x: float, y: float ):
+	return 0.0
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
+
+func color( at: Vector3 ):
+	return Color()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

@@ -1,0 +1,70 @@
+[gd_resource type="ShaderMaterial" load_steps=6 format=2]
+
+[sub_resource type="Shader" id=2]
+code = "shader_type spatial;
+
+//render_mode unshaded;
+//render_mode diffuse_toon, specular_toon;
+render_mode specular_toon;
+
+uniform sampler2D noise;
+uniform sampler2D normalmap;
+uniform float height_scale = 10.5;
+
+varying vec2 vertex_position;
+
+float wave(vec2 position){
+  position += texture(noise, position / 10.0).xy * 2.0 - 1.0;
+  vec2 wv = 1.0 - abs(sin(position));
+  return pow(1.0 - pow(wv.x * wv.y, 0.65), 4.0);
+}
+
+float height(vec2 position, float time) {
+  float d = wave((position + time) * 0.4) * 0.3;
+  d += wave((position - time) * 0.3) * 0.3;
+  d += wave((position + time) * 0.5) * 0.2;
+  d += wave((position - time) * 0.6) * 0.2;
+  return d;
+}
+
+void vertex() {
+  //VERTEX.y += cos(VERTEX.x * 4.0) * sin(VERTEX.z * 4.0);
+  //float height = texture(noise, VERTEX.xz / 2.0 ).x; //divide by the size of the PlaneMesh
+  float h = height( VERTEX.xz, TIME );
+  VERTEX.y += h * height_scale;
+
+  vertex_position = VERTEX.xz / 2.0;
+}
+
+void fragment() {
+  vec2 at = vertex_position;
+  at.x += TIME*0.05;
+  NORMALMAP = texture(normalmap, at).xyz;
+
+  float fresnel = sqrt(1.0 - dot(NORMAL, VIEW));
+  RIM = 0.2;
+  METALLIC = 0.0;
+  ROUGHNESS = 0.01 * (1.0 - fresnel);
+  ALBEDO = vec3(0.01, 0.03, 0.05) + (0.1 * fresnel);
+}
+
+"
+
+[sub_resource type="OpenSimplexNoise" id=3]
+
+[sub_resource type="NoiseTexture" id=4]
+seamless = true
+noise = SubResource( 3 )
+
+[sub_resource type="OpenSimplexNoise" id=5]
+
+[sub_resource type="NoiseTexture" id=6]
+seamless = true
+as_normalmap = true
+noise = SubResource( 5 )
+
+[resource]
+shader = SubResource( 2 )
+shader_param/height_scale = 4.0
+shader_param/noise = SubResource( 4 )
+shader_param/normalmap = SubResource( 6 )
