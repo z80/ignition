@@ -1,114 +1,41 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://learning/landscape_tile.gd" type="Script" id=1]
+[ext_resource path="res://learning/landscape_tile.tres" type="Material" id=2]
+[ext_resource path="res://learning/landscape_tile_water.tres" type="Material" id=3]
 
-[sub_resource type="Shader" id=1]
-code = "shader_type spatial;
+[sub_resource type="ConcavePolygonShape" id=1]
 
-varying float vertex_h;
+[sub_resource type="PlaneMesh" id=2]
+material = ExtResource( 3 )
+size = Vector2( 20, 20 )
+subdivide_width = 32
+subdivide_depth = 32
 
-void vertex()
-{
-	vertex_h = VERTEX.y;
-}
-
-
-
-
-
-
-
-
-"
-
-[sub_resource type="ShaderMaterial" id=2]
-shader = SubResource( 1 )
-
-[sub_resource type="ConcavePolygonShape" id=3]
-
-[sub_resource type="Shader" id=4]
-code = "shader_type spatial;
-
-//render_mode unshaded;
-//render_mode diffuse_toon, specular_toon;
-render_mode specular_toon;
-
-uniform sampler2D noise;
-uniform sampler2D normalmap;
-uniform float height_scale = 10.5;
-
-varying vec2 vertex_position;
-
-float wave(vec2 position){
-  position += texture(noise, position / 10.0).xy * 2.0 - 1.0;
-  vec2 wv = 1.0 - abs(sin(position));
-  return pow(1.0 - pow(wv.x * wv.y, 0.65), 4.0);
-}
-
-float height(vec2 position, float time) {
-  float d = wave((position + time) * 0.4) * 0.3;
-  d += wave((position - time) * 0.3) * 0.3;
-  d += wave((position + time) * 0.5) * 0.2;
-  d += wave((position - time) * 0.6) * 0.2;
-  return d;
-}
-
-void vertex()
-{
-  //VERTEX.y += cos(VERTEX.x * 4.0) * sin(VERTEX.z * 4.0);
-  //float height = texture(noise, VERTEX.xz / 2.0 ).x; //divide by the size of the PlaneMesh
-  float h = height( VERTEX.xz, TIME );
-  VERTEX.y += h * height_scale;
-
-  vertex_position = VERTEX.xz / 2.0;
-}
-
-void fragment()
-{
-  vec2 at = vertex_position;
-  at.x += TIME*0.05;
-  NORMALMAP = texture(normalmap, at).xyz;
-
-  float fresnel = sqrt(1.0 - dot(NORMAL, VIEW));
-  RIM = 0.2;
-  METALLIC = 0.0;
-  ROUGHNESS = 0.01 * (1.0 - fresnel);
-  ALBEDO = vec3(0.01, 0.03, 0.05) + (0.1 * fresnel);
-}
-"
-
-[sub_resource type="OpenSimplexNoise" id=5]
-
-[sub_resource type="NoiseTexture" id=6]
-width = 128
-height = 128
-seamless = true
-noise = SubResource( 5 )
-
-[sub_resource type="OpenSimplexNoise" id=7]
-
-[sub_resource type="NoiseTexture" id=8]
-width = 128
-height = 128
-seamless = true
-as_normalmap = true
-noise = SubResource( 7 )
-
-[sub_resource type="ShaderMaterial" id=9]
-shader = SubResource( 4 )
-shader_param/height_scale = 0.5
-shader_param/noise = SubResource( 6 )
-shader_param/normalmap = SubResource( 8 )
+[sub_resource type="SphereMesh" id=3]
+material = ExtResource( 2 )
+radius = 5.0
+height = 10.0
 
 [node name="LandscapeTile" type="MeshInstance"]
-material_override = SubResource( 2 )
+material_override = ExtResource( 2 )
 script = ExtResource( 1 )
 
 [node name="RigidBody" type="RigidBody" parent="."]
 mode = 1
 
 [node name="CollisionShape" type="CollisionShape" parent="RigidBody"]
-shape = SubResource( 3 )
+shape = SubResource( 1 )
 
 [node name="WaterMesh" type="MeshInstance" parent="."]
-material_override = SubResource( 9 )
+material_override = ExtResource( 3 )
+
+[node name="Plane" type="MeshInstance" parent="."]
+transform = Transform( -1, 3.25841e-07, 0, -3.25841e-07, -1, 0, 0, 0, 1, 0, 18.1104, 0 )
+mesh = SubResource( 2 )
+material/0 = null
+
+[node name="Sphere" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.4447, 0 )
+mesh = SubResource( 3 )
+material/0 = null

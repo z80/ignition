@@ -1,9 +1,10 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+[gd_resource type="ShaderMaterial" load_steps=4 format=2]
 
 [sub_resource type="Shader" id=1]
 code = "shader_type spatial;
 
-render_mode specular_toon;
+//render_mode specular_blinn;
+render_mode unshaded;
 
 uniform int colors_qty: hint_range( 2, 5 ) = 3;
 
@@ -25,11 +26,15 @@ uniform vec4  color_4 : hint_color = vec4(0.1, 0.1, 0.1, 1.0);
 uniform float height_4 : hint_range(-1.0, 1.0) = 0.5;
 uniform float d_height_4: hint_range(0.0001, 0.5) = 0.1;
 
+uniform sampler2D normalmap;
+
 varying float vertex_h;
+varying vec2  vertex_at;
 
 void vertex()
 {
-	vertex_h = VERTEX.y;
+	vertex_h  = VERTEX.y;
+	vertex_at = VERTEX.xz;
 }
 
 vec3 interpolate( vec3 color_a, vec3 color_b, float ch, float dh, float h )
@@ -60,6 +65,14 @@ void fragment()
 			}
 		}
 	}
+	
+	NORMALMAP = texture(normalmap, vertex_at).xyz;
+
+	float fresnel = sqrt(1.0 - dot(NORMAL, VIEW));
+	RIM = 0.02;
+	METALLIC = 0.1;
+	ROUGHNESS = 0.05 * (1.0 - fresnel);
+	ALBEDO *= (1.1 * fresnel);
 }
 
 
@@ -68,6 +81,16 @@ void fragment()
 
 
 "
+
+[sub_resource type="OpenSimplexNoise" id=2]
+period = 10.0
+
+[sub_resource type="NoiseTexture" id=3]
+width = 128
+height = 128
+seamless = true
+as_normalmap = true
+noise = SubResource( 2 )
 
 [resource]
 shader = SubResource( 1 )
@@ -85,3 +108,4 @@ shader_param/d_height_3 = 0.1
 shader_param/color_4 = Color( 1, 0, 0, 1 )
 shader_param/height_4 = 0.786
 shader_param/d_height_4 = 0.1
+shader_param/normalmap = SubResource( 3 )
