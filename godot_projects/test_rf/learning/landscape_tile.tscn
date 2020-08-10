@@ -77,24 +77,24 @@ void fragment()
 }
 "
 
-[sub_resource type="OpenSimplexNoise" id=7]
+[sub_resource type="OpenSimplexNoise" id=5]
 
 [sub_resource type="NoiseTexture" id=6]
 width = 128
 height = 128
 seamless = true
-noise = SubResource( 7 )
+noise = SubResource( 5 )
 
-[sub_resource type="OpenSimplexNoise" id=9]
+[sub_resource type="OpenSimplexNoise" id=7]
 
 [sub_resource type="NoiseTexture" id=8]
 width = 128
 height = 128
 seamless = true
 as_normalmap = true
-noise = SubResource( 9 )
+noise = SubResource( 7 )
 
-[sub_resource type="ShaderMaterial" id=5]
+[sub_resource type="ShaderMaterial" id=9]
 shader = SubResource( 4 )
 shader_param/height_scale = 0.5
 shader_param/noise = SubResource( 6 )
@@ -111,4 +111,4 @@ mode = 1
 shape = SubResource( 3 )
 
 [node name="WaterMesh" type="MeshInstance" parent="."]
-material_override = SubResource( 5 )
+material_override = SubResource( 9 )

@@ -24,6 +24,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/color-palette/utilities/FlexGridContainer.gd"
 }, {
+"base": "Reference",
+"class": "LandscapeFunc",
+"language": "GDScript",
+"path": "res://learning/landscape_funcs.gd"
+}, {
 "base": "Node",
 "class": "MmSaver",
 "language": "GDScript",
@@ -53,6 +58,7 @@ _global_script_class_icons={
 "Body": "",
 "ColorTile": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
+"LandscapeFunc": "",
 "MmSaver": "",
 "Palette": "",
 "PaletteImporter": "",
@@ -111,5 +117,4 @@ walk_slow={
 
 [rendering]
 
-quality/driver/driver_name="GLES2"
 environment/default_environment="res://default_env.tres"

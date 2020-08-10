@@ -6,8 +6,13 @@
 [node name="Landscape" type="Spatial"]
 script = ExtResource( 1 )
 target_path = NodePath("Camera")
+size = 50.0
+resolution = 33
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.657796, 0.753196, 0, -0.753196, 0.657796, 0, 1.77139, 2.06757 )
 script = ExtResource( 2 )
 max_speed = Vector3( 5, 5, 5 )
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 0.5, -3.78552e-08, 0.866025, -0.866025, -2.18557e-08, 0.5, 0, -1, -4.37114e-08, 10, 7.08468, 0 )

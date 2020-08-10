@@ -7,15 +7,15 @@ var LandscapeTile = preload( "res://learning/landscape_tile.tscn")
 export(NodePath) var target_path
 onready var target = get_node(target_path) 
 
-var distance: int = 1
-var size: float = 5.0
-var resolution: int = 4
+export var distance: int = 1
+export var size: float = 5.0
+export var resolution: int = 17
 
 var _initialized: bool = false
 var _point_tile_x: int = 0
 var _point_tile_z: int = 0
 
-
+var height_func = LandscapeFunc.new()
 
 
 func set_target( t: Spatial):
@@ -26,8 +26,8 @@ func get_target():
 	return target
 
 
-func height( x: float, y: float ):
-	return 0.0
+func height( x: float, z: float ):
+	return height_func.height( x, z )
 
 
 func color( at: Vector3 ):
@@ -76,7 +76,7 @@ func _recompute_landscape():
 	# Current center to avoid recomputation.
 	var c = _center()
 	_point_tile_x = c[0]
-	_point_tile_x = c[1]
+	_point_tile_z = c[1]
 	_initialized = true
 
 
@@ -86,6 +86,7 @@ func _label_tiles_to_recompute():
 	
 	for tile in existing_tiles:
 		tile.rebuild = true
+		tile.available = true
 	
 	var c = _center()
 	var cx = c[0]
@@ -108,6 +109,7 @@ func _label_tiles_to_recompute():
 				if (tx == x) and (tz == z):
 					found = true
 					tile.rebuild = false
+					tile.available = false
 					break
 			if not found:
 				needed_chunks.push_back( [x, z] )
@@ -119,10 +121,11 @@ func _label_tiles_to_recompute():
 		var z = n[1]
 		var assigned: bool = false
 		for tile in existing_tiles:
-			var need_rebuild = tile.rebuild
-			if need_rebuild:
+			var available = tile.available
+			if available:
 				tile.index_x = x
 				tile.index_z = z
+				tile.available = false
 				assigned = true
 				break
 		

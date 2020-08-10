@@ -3,6 +3,7 @@ extends MeshInstance
 var index_x: int = 0
 var index_z: int = 0
 var rebuild: bool = true
+var available: bool = true
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -22,12 +23,13 @@ func _construct():
 	var origin_x: float = ls.size * float(index_x)
 	var origin_z: float = ls.size * float(index_z)
 	var verts = []
+	var norms = []
 	for iz in range( ls.resolution ):
-		var z0 = 0.7 * float(iz) * ls.size / float(ls.resolution) + origin_z
-		var z1 = 0.7 * float(iz+1) * ls.size / float(ls.resolution) + origin_z
+		var z0 = 0.95 * float(iz) * ls.size / float(ls.resolution) + origin_z
+		var z1 = 0.95 * float(iz+1) * ls.size / float(ls.resolution) + origin_z
 		for ix in range( ls.resolution ):
-			var x0 = 0.7 * float(ix) * ls.size / float(ls.resolution) + origin_x
-			var x1 = 0.7 * float(ix+1) * ls.size / float(ls.resolution) + origin_x
+			var x0 = 0.95 * float(ix) * ls.size / float(ls.resolution) + origin_x
+			var x1 = 0.95 * float(ix+1) * ls.size / float(ls.resolution) + origin_x
 			var h0: float = ls.height( x0, z0 )
 			var h1: float = ls.height( x1, z0 )
 			var h2: float = ls.height( x1, z1 )
@@ -58,6 +60,7 @@ func _construct():
 	var arrays = []
 	arrays.resize(ArrayMesh.ARRAY_MAX)
 	arrays[ArrayMesh.ARRAY_VERTEX] = vertices
+	arrays[ArrayMesh.ARRAY_NORMAL] = normals
 	# Create the Mesh.
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	#arr_mesh.surface_set_material( 0 )
@@ -74,6 +77,7 @@ func _construct():
 	arrays = []
 	arrays.resize(ArrayMesh.ARRAY_MAX)
 	arrays[ArrayMesh.ARRAY_VERTEX] = vertices
+	arrays[ArrayMesh.ARRAY_NORMAL] = normals
 	# Create the Mesh.
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	#arr_mesh.surface_set_material( 0 )
