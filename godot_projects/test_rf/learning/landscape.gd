@@ -1,3 +1,5 @@
+tool
+
 extends Spatial
 
 var LandscapeTile = preload( "res://learning/landscape_tile.tscn")
@@ -56,7 +58,7 @@ func _need_recompute():
 	var c = _center()
 	var ind_x = c[0]
 	var ind_z = c[1]
-	if (ind_x != _point_tile_x) or (ind_z != _point_tile_x):
+	if (ind_x != _point_tile_x) or (ind_z != _point_tile_z):
 		return true
 	
 	return false

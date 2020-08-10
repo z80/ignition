@@ -64,6 +64,28 @@ func _construct():
 	#var m = MeshInstance.new()
 	self.mesh = arr_mesh
 	
+
+	# Create water
+	for i in range( sz ):
+		var v: Vector3 = verts[i]
+		v.y = 0.0
+		vertices[i] = v
+	arr_mesh = ArrayMesh.new()
+	arrays = []
+	arrays.resize(ArrayMesh.ARRAY_MAX)
+	arrays[ArrayMesh.ARRAY_VERTEX] = vertices
+	# Create the Mesh.
+	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	#arr_mesh.surface_set_material( 0 )
+	#var m = MeshInstance.new()
+	$WaterMesh.mesh = arr_mesh
+	
+	
+	# Create collision.
+	var editor_sh = $RigidBody/CollisionShape
+	var sh: Shape = editor_sh.shape
+	sh.set_faces( vertices )
+	
 	rebuild = false
 
 

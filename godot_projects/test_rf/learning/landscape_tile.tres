@@ -1,0 +1,87 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type spatial;
+
+render_mode specular_toon;
+
+uniform int colors_qty: hint_range( 2, 5 ) = 3;
+
+uniform vec4  color_0 : hint_color = vec4(0.1, 0.1, 0.1, 1.0);
+
+uniform vec4  color_1 : hint_color = vec4(0.2, 0.2, 0.2, 1.0);
+uniform float height_1 : hint_range(0.0, 1.0) = 0.2;
+uniform float d_height_1: hint_range(0.0001, 0.5) = 0.1;
+
+uniform vec4  color_2 : hint_color = vec4(0.1, 0.1, 0.1, 1.0);
+uniform float height_2 : hint_range(0.0, 1.0) = 0.3;
+uniform float d_height_2: hint_range(0.0001, 0.5) = 0.1;
+
+uniform vec4  color_3 : hint_color = vec4(0.1, 0.1, 0.1, 1.0);
+uniform float height_3 : hint_range(0.0, 1.0) = 0.4;
+uniform float d_height_3: hint_range(0.0001, 0.5) = 0.1;
+
+uniform vec4  color_4 : hint_color = vec4(0.1, 0.1, 0.1, 1.0);
+uniform float height_4 : hint_range(0.0, 1.0) = 0.5;
+uniform float d_height_4: hint_range(0.0001, 0.5) = 0.1;
+
+varying float vertex_h;
+
+void vertex()
+{
+	vertex_h = VERTEX.y;
+}
+
+vec3 interpolate( vec3 color_a, vec3 color_b, float ch, float dh, float h )
+{
+	float h_a = ch - dh*0.5;
+	if (h <= h_a)
+		return color_a;
+	float h_b = ch + dh*0.5;
+	if (h >= h_b)
+		return color_b;
+	vec3 c = color_a + (color_b - color_a)*(h-h_a)/(h_b-h_a);
+	return c;
+}
+
+void fragment()
+{
+	ALBEDO = color_0.rgb;
+	ALBEDO = interpolate( color_0.rgb, color_1.rgb, height_1, d_height_1, vertex_h );
+	if ( colors_qty > 2 )
+	{
+		ALBEDO = interpolate( ALBEDO, color_2.rgb, height_2, d_height_2, vertex_h );
+		if ( colors_qty > 3 )
+		{
+			ALBEDO = interpolate( ALBEDO, color_3.rgb, height_3, d_height_3, vertex_h );
+			if ( colors_qty > 4 )
+			{
+				ALBEDO = interpolate( ALBEDO, color_4.rgb, height_4, d_height_4, vertex_h );
+			}
+		}
+	}
+}
+
+
+
+
+
+
+"
+
+[resource]
+shader = SubResource( 1 )
+shader_param/colors_qty = 5
+shader_param/color_0 = Color( 0.1, 0.1, 0.1, 1 )
+shader_param/color_1 = Color( 0.988235, 0, 0, 1 )
+shader_param/height_1 = 0.075
+shader_param/d_height_1 = 0.1
+shader_param/color_2 = Color( 0.113725, 0.898039, 0, 1 )
+shader_param/height_2 = 0.3
+shader_param/d_height_2 = 0.1
+shader_param/color_3 = Color( 0, 0.129412, 0.968627, 1 )
+shader_param/height_3 = 0.532
+shader_param/d_height_3 = 0.1
+shader_param/color_4 = Color( 0.1, 0.1, 0.1, 1 )
+shader_param/height_4 = 0.786
+shader_param/d_height_4 = 0.1
