@@ -85,6 +85,11 @@ var run_mm_algorithm_:    bool = true
 var increment_frame_ind_: bool = true
 
 
+# Just after a jump implement smoothing.
+const SMOOTHING_JUMP_FRAMES_QTY: int = 10
+var frames_after_jump_qty_: int      = SMOOTHING_JUMP_FRAMES_QTY
+var frame_before_jump_               = null
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -469,6 +474,62 @@ func frame_in_space_( db, index: int ):
 		
 		ind += 1
 	
+	return f_dest
+
+
+func frame_in_space_smoothed_( db, index: int ):
+	var f_next = frame_( db, index )
+	var sz_next: int = f_next.size()
+	
+	var t: float = float(frames_after_jump_qty_) / float(SMOOTHING_JUMP_FRAMES_QTY)
+
+	var root_ind: int = ROOT_IND*7
+	var q_root_next: Quat = Quat( f_next[root_ind+1], f_next[root_ind+2], f_next[root_ind+3], f_next[root_ind] )
+	var r_root_next: Vector3 = Vector3( f_next[root_ind+4], f_next[root_ind+5], f_next[root_ind+6] )
+	var inv_q_root_next = q_root_next.inverse()
+	
+	var f_prev = frame_before_jump_
+	var q_root_prev: Quat = Quat( f_prev[root_ind+1], f_prev[root_ind+2], f_prev[root_ind+3], f_prev[root_ind] )
+	var r_root_prev: Vector3 = Vector3( f_prev[root_ind+4], f_prev[root_ind+5], f_prev[root_ind+6] )
+	var inv_q_root_prev = q_root_prev.inverse()
+	
+	# For some reason some frames are missing one bone (???)
+	var sz_prev: int = f_prev.size()
+	var sz: int
+	if sz_prev <= sz_next:
+		sz = sz_prev
+	else:
+		sz = sz_next
+	
+	var f_dest: Array = []
+	f_dest.resize( sz )
+	
+	for i in range(0, sz, 7):
+		var q0: Quat = Quat( f_prev[i+1], f_prev[i+2], f_prev[i+3], f_prev[i] )
+		var q1: Quat = Quat( f_next[i+1], f_next[i+2], f_next[i+3], f_next[i] )
+		var r0: Vector3 = Vector3( f_prev[i+4], f_prev[i+5], f_prev[i+6] )
+		var r1: Vector3 = Vector3( f_next[i+4], f_next[i+5], f_next[i+6] )
+		q0 = inv_q_root_prev * q0
+		r0 = r0 - r_root_prev
+		r0 = inv_q_root_prev.xform( r0 )
+		
+		q1 = inv_q_root_next * q1
+		r1 = r1 - r_root_next
+		r1 = inv_q_root_next.xform( r1 )
+		
+		var q: Quat    = _slerp_quat( q0, q1, t )
+		var r: Vector3 = _slerp_vector3( r0, r1, t )
+		q = pose_q_ * q
+		r = pose_q_.xform( r )
+		r = r + pose_r_
+		f_dest[i]   = q.w
+		f_dest[i+1] = q.x
+		f_dest[i+2] = q.y
+		f_dest[i+3] = q.z
+		f_dest[i+4] = r.x
+		f_dest[i+5] = r.y
+		f_dest[i+6] = r.z
+		
 	return f_dest
 
 
@@ -896,6 +957,16 @@ func process_frame():
 	var az_qn: Quat = quat_azimuth_( qn )
 	#print( "b" )
 	
+	if jump:
+		# Also remember current frame and reset smoothing frames qty.
+		frame_before_jump_ = _copy_array( fp )
+		frames_after_jump_qty_ = 0
+		print( "fp size:                 ", fp.size() )
+		print( "frame_before_jump_ size: ", frame_before_jump_.size() )
+	
+	if frames_after_jump_qty_ < SMOOTHING_JUMP_FRAMES_QTY:
+		frames_after_jump_qty_ += 1
+	
 	var dq: Quat
 	var dr: Vector3
 	if jump:
@@ -929,7 +1000,11 @@ func process_frame():
 	#print( "frame #%d q:(%f, %f, %f, %f), dq:(%f, %f, %f, %f), pq:(%f, %f, %f, %f)" %[ frame_ind_, qn.w, qn.x, qn.y, qn.z, dq.w, dq.x, dq.y, dq.z, pose_q_.w, pose_q_.x, pose_q_.y, pose_q_.z ] )
 	
 	frame_ind_ = next_ind
-	f_ = frame_in_space_( db_, frame_ind_ )
+	if (frame_before_jump_ == null) or (frames_after_jump_qty_ >= SMOOTHING_JUMP_FRAMES_QTY):
+		f_ = frame_in_space_( db_, frame_ind_ )
+	else:
+		f_ = frame_in_space_smoothed_( db_, frame_ind_ )
+
 
 
 
@@ -981,8 +1056,62 @@ func _on_tree_exiting():
 
 
 
+func _copy_array( src: Array ):
+	var qty = src.size()
+	var dest: Array
+	dest.resize( qty )
+	for i in range(qty):
+		dest[i] = src[i]
+	return dest
 
 
+func _slerp_frame( f0: Array, f1: Array, t: float ):
+	var qty: int = f0.size()
+	var f = []
+	f.resize( qty )
+	for i in range(0, qty, 7):
+		var q0: Quat = Quat( f0[i+1], f0[i+2], f0[i+3], f0[i] )
+		var q1: Quat = Quat( f1[i+1], f1[i+2], f1[i+3], f1[i] )
+		var r0: Vector3 = Vector3( f0[i+4], f0[i+5], f0[i+6] )
+		var r1: Vector3 = Vector3( f1[i+4], f1[i+5], f1[i+6] )
+		var q: Quat    = _slerp_quat( q0, q1, t )
+		var r: Vector3 = _slerp_vector3( r0, r1, t )
+		f[i]   = q.w
+		f[i+1] = q.x
+		f[i+2] = q.y
+		f[i+3] = q.z
+		f[i+4] = r.x
+		f[i+5] = r.y
+		f[i+6] = r.z
+	
+	return f
 
 
+func _slerp_quat( q0: Quat, q1: Quat, t: float ):
+	var dot: float = q0.w*q1.w + q0.x*q1.x + q0.y*q1.y + q0.z*q1.z;
+	if dot < 0.0:
+		q1 = -q1
+		dot = -dot;
+	
+	# If almost the same quats interpolate linearly and 
+	# normalize.
+	if dot > 0.9995:
+		var q: Quat = q0*(1.0-t) + q1*t
+		q = q.normalized()
+		return q
+	
+	var theta_0: float     = acos(dot)
+	var theta: float       = theta_0 * t
+	var sin_theta: float   = sin(theta)
+	var sin_theta_0: float = sin(theta_0)
+	
+	var s0: float = cos(theta) - dot * sin_theta / sin_theta_0;
+	var s1: float = sin_theta / sin_theta_0;
+	var res: Quat = (q0 * s0) + (q1 * s1)
+	return res
+
+
+func _slerp_vector3( r0: Vector3, r1: Vector3, t: float ):
+	var r: Vector3 = r0*(1.0-t) + r1*t
+	return r
 
