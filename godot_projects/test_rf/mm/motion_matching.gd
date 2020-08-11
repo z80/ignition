@@ -86,7 +86,7 @@ var increment_frame_ind_: bool = true
 
 
 # Just after a jump implement smoothing.
-const SMOOTHING_JUMP_FRAMES_QTY: int = 10
+const SMOOTHING_JUMP_FRAMES_QTY: int = 5
 var frames_after_jump_qty_: int      = SMOOTHING_JUMP_FRAMES_QTY
 var frame_before_jump_               = null
 
