@@ -965,8 +965,8 @@ func process_frame():
 		frame_before_jump_ = v[0]
 		d_frame_before_jump_ = v[1]
 		frames_after_jump_qty_ = 0
-		print( "fp size:                 ", fp.size() )
-		print( "frame_before_jump_ size: ", frame_before_jump_.size() )
+		#print( "fp size:                 ", fp.size() )
+		#print( "frame_before_jump_ size: ", frame_before_jump_.size() )
 	
 	if frames_after_jump_qty_ < SMOOTHING_JUMP_FRAMES_QTY:
 		frames_after_jump_qty_ += 1
