@@ -40,10 +40,12 @@ func _construct():
 	var verts_qty: int = res_minus_one*res_minus_one * 6
 	var vertices = PoolVector3Array()
 	var normals  = PoolVector3Array()
+	var tangents = PoolRealArray()
 	var colors   = PoolColorArray()
 	var uvs      = PoolVector2Array()
 	vertices.resize( verts_qty )
 	normals.resize( verts_qty )
+	tangents.resize( verts_qty*4 )
 	colors.resize( verts_qty )
 	uvs.resize( verts_qty )
 	
@@ -80,21 +82,26 @@ func _construct():
 			var va = v10 - v00
 			var n00 = va.cross(vb)
 			n00 = n00.normalized()
+			var t00: Vector3 = va.normalized()
 			
 			vb = v02 - v01
 			va = v11 - v01
 			var n01 = va.cross(vb)
 			n01 = n01.normalized()
+			var t01: Vector3 = va.normalized()
 			
 			vb = v12 - v11
 			va = v21 - v11
 			var n11 = va.cross(vb)
 			n11 = n01.normalized()
-			
+			var t11: Vector3 = va.normalized()
+
 			vb = v11 - v10
 			va = v20 - v10
 			var n10 = va.cross(vb)
 			n10 = n01.normalized()
+			var t10: Vector3 = va.normalized()
+			
 			
 			var uv00 := Vector2(uv_u_0, uv_v_0)
 			var uv01 := Vector2(uv_u_1, uv_v_0)
@@ -103,32 +110,56 @@ func _construct():
 			
 			vertices[ind] = v00
 			normals[ind]  = n00
+			tangents[ind*4]   = t00.x
+			tangents[ind*4+1] = t00.y
+			tangents[ind*4+2] = t00.z
+			tangents[ind*4+3] = 1.0
 			colors[ind]   = col
 			uvs[ind]      = uv00
 			ind += 1
 			vertices[ind] = v01
 			normals[ind]  = n01
+			tangents[ind*4]   = t01.x
+			tangents[ind*4+1] = t01.y
+			tangents[ind*4+2] = t01.z
+			tangents[ind*4+3] = 1.0
 			colors[ind]   = col
 			uvs[ind]      = uv01
 			ind += 1
 			vertices[ind] = v10
 			normals[ind]  = n10
+			tangents[ind*4]   = t10.x
+			tangents[ind*4+1] = t10.y
+			tangents[ind*4+2] = t10.z
+			tangents[ind*4+3] = 1.0
 			colors[ind]   = col
 			uvs[ind]      = uv10
 			ind += 1
 			
 			vertices[ind] = v01
 			normals[ind]  = n01
+			tangents[ind*4]   = t01.x
+			tangents[ind*4+1] = t01.y
+			tangents[ind*4+2] = t01.z
+			tangents[ind*4+3] = 1.0
 			colors[ind]   = col
 			uvs[ind]      = uv01
 			ind += 1
 			vertices[ind] = v11
 			normals[ind]  = n11
+			tangents[ind*4]   = t11.x
+			tangents[ind*4+1] = t11.y
+			tangents[ind*4+2] = t11.z
+			tangents[ind*4+3] = 1.0
 			colors[ind]   = col
 			uvs[ind]      = uv11
 			ind += 1
 			vertices[ind] = v10
 			normals[ind]  = n10
+			tangents[ind*4]   = t10.x
+			tangents[ind*4+1] = t10.y
+			tangents[ind*4+2] = t10.z
+			tangents[ind*4+3] = 1.0
 			colors[ind]   = col
 			uvs[ind]      = uv10
 			ind += 1
@@ -139,6 +170,7 @@ func _construct():
 	arrays.resize(ArrayMesh.ARRAY_MAX)
 	arrays[ArrayMesh.ARRAY_VERTEX] = vertices
 	arrays[ArrayMesh.ARRAY_NORMAL] = normals
+	arrays[ArrayMesh.ARRAY_TANGENT] = tangents
 	arrays[ArrayMesh.ARRAY_COLOR]  = colors
 	arrays[ArrayMesh.ARRAY_TEX_UV] = uvs
 	arrays[ArrayMesh.ARRAY_TEX_UV2] = uvs
@@ -165,6 +197,7 @@ func _construct():
 	arrays.resize(ArrayMesh.ARRAY_MAX)
 	arrays[ArrayMesh.ARRAY_VERTEX] = vertices
 	arrays[ArrayMesh.ARRAY_NORMAL] = normals
+	arrays[ArrayMesh.ARRAY_TANGENT] = tangents
 	arrays[ArrayMesh.ARRAY_COLOR]  = colors
 	arrays[ArrayMesh.ARRAY_TEX_UV] = uvs
 	arrays[ArrayMesh.ARRAY_TEX_UV2] = uvs
