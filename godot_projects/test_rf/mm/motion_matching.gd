@@ -89,6 +89,7 @@ var increment_frame_ind_: bool = true
 const SMOOTHING_JUMP_FRAMES_QTY: int = 5
 var frames_after_jump_qty_: int      = SMOOTHING_JUMP_FRAMES_QTY
 var frame_before_jump_               = null
+var d_frame_before_jump_             = null
 
 
 # Called when the node enters the scene tree for the first time.
@@ -959,7 +960,10 @@ func process_frame():
 	
 	if jump:
 		# Also remember current frame and reset smoothing frames qty.
-		frame_before_jump_ = _copy_array( fp )
+		#frame_before_jump_ = _copy_array( fp )
+		var v = _prepare_frame_and_d_frame( db_, frame_ind_ )
+		frame_before_jump_ = v[0]
+		d_frame_before_jump_ = v[1]
 		frames_after_jump_qty_ = 0
 		print( "fp size:                 ", fp.size() )
 		print( "frame_before_jump_ size: ", frame_before_jump_.size() )
@@ -1003,6 +1007,7 @@ func process_frame():
 	if (frame_before_jump_ == null) or (frames_after_jump_qty_ >= SMOOTHING_JUMP_FRAMES_QTY):
 		f_ = frame_in_space_( db_, frame_ind_ )
 	else:
+		_increment_frame()
 		f_ = frame_in_space_smoothed_( db_, frame_ind_ )
 
 
@@ -1114,4 +1119,93 @@ func _slerp_quat( q0: Quat, q1: Quat, t: float ):
 func _slerp_vector3( r0: Vector3, r1: Vector3, t: float ):
 	var r: Vector3 = r0*(1.0-t) + r1*t
 	return r
+
+
+
+func _prepare_frame_and_d_frame( db, ind: int ):
+	var ind1: int = ind
+	var ind0: int
+	if ( ind > 0 ):
+		ind0 = ind - 1
+	else:
+		ind0 = ind
+	
+	var f0 = frame_( db, ind0 )
+	var f1 = frame_( db, ind1 )
+	
+	var sz0: int = f0.size()
+	var sz1: int = f1.size()
+	
+	var sz: int
+	if sz0 <= sz1:
+		sz = sz0
+	else:
+		sz = sz1
+	
+	var root_ind: int = ROOT_IND*7
+	var q_root: Quat = Quat( f1[root_ind+1], f1[root_ind+2], f1[root_ind+3], f1[root_ind] )
+	var r_root: Vector3 = Vector3( f1[root_ind+4], f1[root_ind+5], f1[root_ind+6] )
+	var inv_q_root = q_root.inverse()
+	
+	var f_dest: Array = []
+	f_dest.resize( sz )
+	var d_f_dest: Array = []
+	d_f_dest.resize( sz )
+	
+	for i in range(0, sz, 7):
+		var q0: Quat = Quat( f0[i+1], f0[i+2], f0[i+3], f0[i] )
+		var q1: Quat = Quat( f1[i+1], f1[i+2], f1[i+3], f1[i] )
+		var r0: Vector3 = Vector3( f0[i+4], f0[i+5], f0[i+6] )
+		var r1: Vector3 = Vector3( f1[i+4], f1[i+5], f1[i+6] )
+		q0 = inv_q_root * q0
+		r0 = r0 - r_root
+		r0 = inv_q_root.xform( r0 )
+		
+		q1 = inv_q_root * q1
+		r1 = r1 - r_root
+		r1 = inv_q_root.xform( r1 )
+		
+		f_dest[i]   = q1.w
+		f_dest[i+1] = q1.x
+		f_dest[i+2] = q1.y
+		f_dest[i+3] = q1.z
+		f_dest[i+4] = r1.x
+		f_dest[i+5] = r1.y
+		f_dest[i+6] = r1.z
+		
+		r0 = r1 - r0
+		q0 = q1.inverse() * q0
+		d_f_dest[i]   = q0.w
+		d_f_dest[i+1] = q0.x
+		d_f_dest[i+2] = q0.y
+		d_f_dest[i+3] = q0.z
+		d_f_dest[i+4] = r0.x
+		d_f_dest[i+5] = r0.y
+		d_f_dest[i+6] = r0.z
+		
+	return [f_dest, d_f_dest]
+
+
+func _increment_frame():
+	var f  = frame_before_jump_
+	var df = d_frame_before_jump_
+	var sz: int = df.size()
+	for i in range(0, sz, 7):
+		var q:  Quat = Quat( f[i+1], f[i+2], f[i+3], f[i] )
+		var dq: Quat = Quat( df[i+1], df[i+2], df[i+3], df[i] )
+		var r:  Vector3 = Vector3( f[i+4], f[i+5], f[i+6] )
+		var dr: Vector3 = Vector3( df[i+4], df[i+5], df[i+6] )
+		
+		r += dr
+		q = q * dq
+		q = q.normalized()
+		frame_before_jump_[i]   = q.w
+		frame_before_jump_[i+1] = q.x
+		frame_before_jump_[i+2] = q.y
+		frame_before_jump_[i+3] = q.z
+		frame_before_jump_[i+4] = r.x
+		frame_before_jump_[i+5] = r.y
+		frame_before_jump_[i+6] = r.z
+
+		
 
