@@ -216,7 +216,7 @@ bool OccupancyTree::intersects( const OccupancyTree * tree ) const
 
 bool OccupancyTree::node_intersects( const OccupancyTreeNode & n, const OccupancyTree & tree ) const
 {
-	const OccupancyTreeNode & other_root = g.nodes_.ptr()[0];
+	const OccupancyTreeNode & other_root = tree.nodes_.ptr()[0];
 	const bool is_intersecting = n.inside( other_root );
 	if ( !is_intersecting )
 		return false;
@@ -231,7 +231,7 @@ bool OccupancyTree::node_intersects( const OccupancyTreeNode & n, const Occupanc
 	{
 		const int ch_ind = n.children[i];
 		const OccupancyTreeNode & ch_n = n.tree->nodes_.ptr()[ch_ind];
-		const bool ch_intersects = node_intersects( ch_n, g );
+		const bool ch_intersects = node_intersects( ch_n, tree );
 		if ( ch_intersects )
 			return true;
 	}

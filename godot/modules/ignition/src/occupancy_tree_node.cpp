@@ -116,7 +116,7 @@ bool OccupancyTreeNode::subdivide()
     OccupancyTreeNode n;
     for ( int i=0; i<8; i++ )
     {
-        n.absIndex = tree->insertNode( n );
+        n.absIndex = tree->insert_node( n );
         nn[i] = tree->nodes_[ n.absIndex ];
 
 		nn[i].indexInParent = i;

@@ -32,7 +32,7 @@ public:
 	// Initialize vertices and planes.
 	void init();
 
-	OccupancyGrid * tree;
+	OccupancyTree * tree;
 	int absIndex;
 	int parentAbsIndex;
 	int indexInParent;
