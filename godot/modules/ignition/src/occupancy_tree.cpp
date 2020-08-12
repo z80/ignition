@@ -16,12 +16,12 @@ OccupancyTree::~OccupancyTree()
 {
 }
 
-void OccupancyTree::setNodeSize( real_t sz )
+void OccupancyTree::set_node_size( real_t sz )
 {
 	node_sz_ = sz;
 }
 
-real_t OccupancyTree::nodeSize() const
+real_t OccupancyTree::node_size() const
 {
 	return node_sz_;
 }

@@ -18,8 +18,8 @@ void OccupancyGrid::_bind_methods()
     ClassDB::bind_method( D_METHOD("d_add", "int"),  &OccupancyGrid::d_add, Variant::NIL );
     ClassDB::bind_method( D_METHOD("d_result"),      &OccupancyGrid::d_result, Variant::INT );
 
-    ClassDB::bind_method( D_METHOD("set_node_size", "real_t"), &OccupancyGrid::setNodeSize, Variant::NIL );
-    ClassDB::bind_method( D_METHOD("get_node_size"), &OccupancyGrid::nodeSize, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("set_node_size", "real_t"), &OccupancyGrid::set_node_size, Variant::NIL );
+    ClassDB::bind_method( D_METHOD("get_node_size"), &OccupancyGrid::node_size, Variant::REAL );
     ClassDB::bind_method( D_METHOD("clear"), &OccupancyGrid::clear, Variant::NIL );
     ClassDB::bind_method( D_METHOD("append", "transform", "mesh"), &OccupancyGrid::append, Variant::NIL );
     ClassDB::bind_method( D_METHOD("subdivide"), &OccupancyGrid::subdivide, Variant::NIL );
@@ -94,12 +94,12 @@ const OccupancyGrid & OccupancyGrid::operator=( const OccupancyGrid & inst )
     return *this;
 }*/
 
-void OccupancyGrid::setNodeSize( real_t sz )
+void OccupancyGrid::set_node_size( real_t sz )
 {
 	node_sz_ = sz;
 }
 
-real_t OccupancyGrid::nodeSize() const
+real_t OccupancyGrid::node_size() const
 {
 	return node_sz_;
 }

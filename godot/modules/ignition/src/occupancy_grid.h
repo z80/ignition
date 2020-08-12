@@ -36,8 +36,8 @@ public:
 	//OccupancyGrid( const OccupancyGrid & inst );
 
 	// Manipulating filling up the occupancy grid.
-	void setNodeSize( real_t sz = 0.1 );
-	real_t nodeSize() const;
+	void set_node_size( real_t sz = 0.1 );
+	real_t node_size() const;
 	void clear();
     void append( const Transform & t, const Ref<Mesh> mesh );
 	void subdivide();
