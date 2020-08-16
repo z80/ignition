@@ -54,11 +54,11 @@ func available_qty():
 # Is supposed to be used by ref frames in order to generate static collisions 
 # in all the ref frames (if close enough).
 func physics_ref_frames():
-	var envs = []
+	var envs = {}
 	for i in range(ENVS_QTY):
 		var e = envs_[i]
 		if ( e != null ):
-			envs.push_back( e )
+			envs[i] = e
 	return envs
 
 
