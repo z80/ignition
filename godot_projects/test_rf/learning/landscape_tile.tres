@@ -69,9 +69,9 @@ void fragment()
 	NORMALMAP = texture(normalmap, vertex_at).xyz;
 
 	//float fresnel = sqrt(1.0 - dot(NORMAL, VIEW));
-	RIM = 0.02;
-	METALLIC = 0.1;
-	ROUGHNESS = 0.05;// * (1.0 - fresnel);
+	RIM = 0.01;
+	METALLIC = 0.0;
+	ROUGHNESS = 0.99;// * (1.0 - fresnel);
 	//ALBEDO *= (1.1 * fresnel);
 }
 
@@ -97,15 +97,15 @@ shader = SubResource( 1 )
 shader_param/colors_qty = 5
 shader_param/color_0 = Color( 0.721569, 0.698039, 0.537255, 1 )
 shader_param/color_1 = Color( 0.65098, 0.627451, 0, 1 )
-shader_param/height_1 = 0.132
+shader_param/height_1 = 0.0
 shader_param/d_height_1 = 0.231
 shader_param/color_2 = Color( 0.0588235, 0.47451, 0, 1 )
-shader_param/height_2 = 3.277
+shader_param/height_2 = 1.0
 shader_param/d_height_2 = 0.1
 shader_param/color_3 = Color( 0.286275, 0.286275, 0.286275, 1 )
-shader_param/height_3 = 7.974
+shader_param/height_3 = 3.0
 shader_param/d_height_3 = 0.1
 shader_param/color_4 = Color( 0.705882, 0.705882, 0.705882, 1 )
-shader_param/height_4 = 13.311
+shader_param/height_4 = 5.0
 shader_param/d_height_4 = 0.1
 shader_param/normalmap = SubResource( 3 )

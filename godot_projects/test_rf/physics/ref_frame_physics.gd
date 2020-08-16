@@ -28,6 +28,12 @@ func finit_physics():
 		PhysicsManager.release_environment( self )
 
 
+# If physics is initialized and being processed.
+func is_active():
+	var en: bool = (_contact_layer >= 0)
+	return en
+
+
 func create_body( type_name: String, t: Transform = Transform.IDENTITY ):
 	var body = BodyCreator.create( type_name )
 	add_child( body )

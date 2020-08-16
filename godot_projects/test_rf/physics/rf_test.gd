@@ -26,5 +26,6 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process( delta ):
 	var group: String = Body.GROUP_NAME
+	var player_rf = PhysicsManager.player_ref_frame
 	for body in get_tree().get_nodes_in_group( group ):
-		body.update_visual()
+		body.update_visual( player_rf )
