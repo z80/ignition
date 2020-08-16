@@ -29,6 +29,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://learning/landscape_funcs.gd"
 }, {
+"base": "Reference",
+"class": "LandscapeHeightFunc",
+"language": "GDScript",
+"path": "res://physics/landscape/height_func.gd"
+}, {
 "base": "Node",
 "class": "MmSaver",
 "language": "GDScript",
@@ -64,6 +69,7 @@ _global_script_class_icons={
 "ColorTile": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
 "LandscapeFunc": "",
+"LandscapeHeightFunc": "",
 "MmSaver": "",
 "Palette": "",
 "PaletteImporter": "",
