@@ -13,12 +13,13 @@ func _init():
 
 func _process(_delta):
 	._process(_delta)
+	_create_update_physics_frames()
 	_process_physics_frames()
-	_process_visual_frame()
+	_update_visual_frame()
 
 
 
-func _process_physics_frames():
+func _create_update_physics_frames():
 	# There might be 3 cases.
 	# 1) New physics frame showed up and it wasn't provided with physics 
 	#    object yes.
@@ -67,11 +68,26 @@ func _process_physics_frames():
 
 
 
+func _process_physics_frames():
+	var bit_rfs = PhysicsManager.physics_ref_frames()
+	for bit in _physicals:
+		# It should exist as this method is called after _create_update_physics_frames().
+		# This is for double check.
+		var bit_exists = bit_rfs.has( bit )
+		if not bit_exists:
+			continue
+		var ph = _physicals[bit]
+		var rf = bit_rfs[bit]
+		# Here it is supposed to apply forces to physics objects (if needed, of course).
+		var has_method = ph.has_method( "process_ref_frame" )
+		if has_method:
+			ph.process_ref_frame( rf )
+
 
 
 # Here just get current player ref. frame and move or 
 # re-generate visual object depending on what happened with 
-func _process_visual_frame():
+func _update_visual_frame():
 	var rf = PhysicsManager.player_ref_frame
 	update_visual( rf )
 
