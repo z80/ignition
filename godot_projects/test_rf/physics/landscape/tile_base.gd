@@ -5,16 +5,8 @@ var index_z: int = 0
 var rebuild: bool = true
 var available: bool = true
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
-
-func _construct():
+func recompute():
 	var ls = get_parent()
 	if not ls:
 		return
@@ -30,10 +22,12 @@ func _construct():
 	
 	var ind: int = 0
 	for iz in range( res_plus_one ):
-		var z = float(iz) * ls.size / float(res_minus_one) + origin_z
+		var z = float(iz) * ls.size / float(res_minus_one)
+		var probe_z: float = z + origin_z
 		for ix in range( res_plus_one ):
 			var x = float(ix) * ls.size / float(res_minus_one) + origin_x
-			var h: float = ls.height( x, z )
+			var probe_x: float = x + origin_x
+			var h: float = ls.height( probe_x, probe_z )
 			verts_ext[ind] = Vector3( x, h, z )
 			ind += 1
 	
@@ -176,14 +170,7 @@ func _construct():
 	arrays[ArrayMesh.ARRAY_TEX_UV2] = uvs
 	# Create the Mesh.
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	#arr_mesh.surface_set_material( 0 )
-	#var m = MeshInstance.new()
-	self.mesh = arr_mesh
 	
-	# Create collision.
-	var editor_sh = $RigidBody/CollisionShape
-	var sh: Shape = editor_sh.shape
-	sh.set_faces( vertices )
 	
 	# Create water.
 	var water_norm: Vector3 = Vector3.UP;
@@ -192,7 +179,7 @@ func _construct():
 		v.y = 0.0
 		vertices[i] = v
 		normals[i] = water_norm
-	arr_mesh = ArrayMesh.new()
+	var water_arr_mesh = ArrayMesh.new()
 	arrays = []
 	arrays.resize(ArrayMesh.ARRAY_MAX)
 	arrays[ArrayMesh.ARRAY_VERTEX] = vertices
@@ -202,13 +189,13 @@ func _construct():
 	arrays[ArrayMesh.ARRAY_TEX_UV] = uvs
 	arrays[ArrayMesh.ARRAY_TEX_UV2] = uvs
 	# Create the Mesh.
-	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	#arr_mesh.surface_set_material( 0 )
-	#var m = MeshInstance.new()
-	$WaterMesh.mesh = arr_mesh
-	
+	water_arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	
 	rebuild = false
+	
+	return [arr_mesh, water_arr_mesh]
+	
+	
 
 
 
