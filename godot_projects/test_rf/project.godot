@@ -24,6 +24,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/color-palette/utilities/FlexGridContainer.gd"
 }, {
+"base": "Spatial",
+"class": "LandscapeBase",
+"language": "GDScript",
+"path": "res://physics/landscape/landscape_base.gd"
+}, {
 "base": "Reference",
 "class": "LandscapeFunc",
 "language": "GDScript",
@@ -68,6 +73,7 @@ _global_script_class_icons={
 "Body": "",
 "ColorTile": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
+"LandscapeBase": "",
 "LandscapeFunc": "",
 "LandscapeHeightFunc": "",
 "MmSaver": "",

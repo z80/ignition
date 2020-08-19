@@ -1,6 +1,5 @@
-tool
-
 extends Spatial
+class_name LandscapeBase
 
 var LandscapeTileType = null
 
