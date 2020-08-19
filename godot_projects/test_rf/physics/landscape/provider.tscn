@@ -1,13 +1,14 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://learning/landscape.gd" type="Script" id=1]
+[ext_resource path="res://physics/landscape/provider.gd" type="Script" id=1]
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=2]
 
 [node name="Landscape" type="Spatial"]
 script = ExtResource( 1 )
-target_path = NodePath("Camera")
-size = 50.0
-resolution = 32
+target_path = NodePath("")
+distance = 1
+size = 5.0
+resolution = 17
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.657796, 0.753196, 0, -0.753196, 0.657796, 0, 1.77139, 2.06757 )

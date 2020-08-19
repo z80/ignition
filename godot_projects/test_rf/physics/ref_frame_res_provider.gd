@@ -36,6 +36,7 @@ func _create_update_physics_frames():
 		if has_physical:
 			continue
 		
+		rf.compute_relative_to_root( self )
 		var ph = create_physical( bit, rf )
 		if not ph:
 			continue
@@ -50,6 +51,7 @@ func _create_update_physics_frames():
 			continue
 		
 		var ph = _physicals[bit]
+		rf.compute_relative_to_root( self )
 		update_physical( ph, rf )
 	
 	# 3) Physical object exists but no appropriate ref. frame anymore.
@@ -81,6 +83,7 @@ func _process_physics_frames():
 		# Here it is supposed to apply forces to physics objects (if needed, of course).
 		var has_method = ph.has_method( "process_ref_frame" )
 		if has_method:
+			rf.compute_relative_to_root( self )
 			ph.process_ref_frame( rf )
 
 
@@ -89,6 +92,7 @@ func _process_physics_frames():
 # re-generate visual object depending on what happened with 
 func _update_visual_frame():
 	var rf = PhysicsManager.player_ref_frame
+	rf.compute_relative_to_root( self )
 	update_visual( rf )
 
 

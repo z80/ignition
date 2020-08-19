@@ -1,5 +1,3 @@
-tool
-
 extends Spatial
 
 var TileVisual   = preload( "res://physics/landscape/tile_visual.tscn")

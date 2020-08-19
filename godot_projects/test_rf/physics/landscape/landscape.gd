@@ -2,11 +2,7 @@ tool
 
 extends Spatial
 
-var TileVisual   = preload( "res://physics/landscape/tile_visual.tscn")
-var TilePhysical = preload( "res://physics/landscape/tile_physical.tscn")
-
-export(NodePath) var target_path
-onready var target = get_node(target_path) 
+var LandscapeTileType = null
 
 export var distance: int = 1
 export var size: float = 5.0
@@ -15,24 +11,21 @@ export var resolution: int = 17
 var _initialized: bool = false
 var _point_tile_x: int = 0
 var _point_tile_z: int = 0
+# Current relative ref frame transform.
+# Tile are places inside of this ref frame.
+# So need to undo this transform.
+var _rel_t: Transform
+# Transfrom for which tiles were computed.
+var _applied_rel_t: Transform
 
 var height_func = LandscapeHeightFunc.new()
 
 
-func set_target( t: Spatial):
-	target = t
-
-
-func get_target():
-	return target
 
 
 func height( x: float, z: float ):
 	return height_func.height( x, z )
 
-
-func color( at: Vector3 ):
-	return Color()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -40,21 +33,24 @@ func _process(delta):
 	var needs_recompute: bool = _need_recompute()
 	if needs_recompute:
 		_recompute_landscape()
+	var needs_move: bool = _need_move()
+	if needs_move:
+		_move_landscape()
 
 
 
 func _center():
-	var at = target.translation
+	var at: Vector3 = _rel_t.origin
 	var ind_x = int( floor( at.x/size ) )
 	var ind_z = int( floor( at.z/size ) )
 	return [ind_x, ind_z]
 
 
 func _need_recompute():
-	if not target:
-		return false
 	if not _initialized:
 		return true
+	if _rel_t == _applied_rel_t:
+		return false
 	
 	var c = _center()
 	var ind_x = c[0]
@@ -63,6 +59,10 @@ func _need_recompute():
 		return true
 	
 	return false
+
+func _need_move():
+	var res: bool = (_rel_t != _applied_rel_t)
+	return res
 
 
 func _recompute_landscape():
@@ -80,6 +80,14 @@ func _recompute_landscape():
 	_point_tile_z = c[1]
 	_initialized = true
 
+
+func _move_landscape():
+	var inv_t = _rel_t.inverse()
+	var existing_tiles = _get_existing_tiles()
+	for tile in existing_tiles:
+		var t = tile.transform
+		t = inv_t * t
+		tile.transform = t
 
 
 func _label_tiles_to_recompute():
@@ -132,7 +140,7 @@ func _label_tiles_to_recompute():
 		
 		# If no spare one found, create one.
 		if not assigned:
-			var tile = LandscapeTile.instance()
+			var tile = LandscapeTileType.instance()
 			tile.index_x = x
 			tile.index_z = z
 			tile.rebuild = true
@@ -153,35 +161,6 @@ func _get_existing_tiles():
 
 
 
-func _inside( at: Vector3, tile ):
-	var x = float(tile.index_x) * size
-	var z = float(tile.index_z) * size
-	if x > at.x:
-		return false
-	if z > at.z:
-		return false
-	if at.x > x+size:
-		return false
-	if at.z > z+size:
-		return false
-		
-	return true
 
-
-
-func _dist( at: Vector3, tile ):
-	var ix := int( floor( at.x/size ) )
-	var iz := int( floor( at.z/size ) )
-	var dx: int = tile.index_x - ix
-	var dz: int = tile.index_z - iz
-	if dx < 0:
-		dx = -dx
-	if dz < 0:
-		dz = -dz
-	
-	if dx <= dz:
-		return dx
-	
-	return dz
 
 
