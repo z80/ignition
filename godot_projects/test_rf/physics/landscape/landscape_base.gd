@@ -72,7 +72,7 @@ func _recompute_landscape():
 		var needs_rebuild: bool = tile.rebuild
 		if needs_rebuild:
 			print( "(%d, %d)" % [tile.index_x, tile.index_z] )
-			tile._construct()
+			tile.construct()
 	# Current center to avoid recomputation.
 	var c = _center()
 	_point_tile_x = c[0]

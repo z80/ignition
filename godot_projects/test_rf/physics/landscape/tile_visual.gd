@@ -1,20 +1,9 @@
-extends MeshInstance
-
-var index_x: int = 0
-var index_z: int = 0
-var rebuild: bool = true
-var available: bool = true
-
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass
+extends TileBase
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
 
-func _construct():
+
+func recompute():
 	var ls = get_parent()
 	if not ls:
 		return

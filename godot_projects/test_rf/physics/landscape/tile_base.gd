@@ -1,10 +1,16 @@
 extends MeshInstance
+class_name TileBase
 
 var index_x: int = 0
 var index_z: int = 0
 var rebuild: bool = true
 var available: bool = true
 
+
+# Need to redefine this one. Create either visual instance or 
+# Collision shape here.
+func construct():
+	pass
 
 func recompute():
 	var ls = get_parent()
