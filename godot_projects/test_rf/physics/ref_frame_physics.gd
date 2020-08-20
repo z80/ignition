@@ -65,7 +65,12 @@ func _cleanup_physical():
 
 
 
-# Objects management, clustering.
+
+
+# ********************************************
+#     Objects management, clustering.
+# ********************************************
+
 func child_bodies():
 	var children = get_children()
 	var bodies = []

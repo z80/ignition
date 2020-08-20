@@ -27,8 +27,8 @@ func height( x: float, z: float ):
 
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
+# Called externally when needed.
+func update():
 	var needs_recompute: bool = _need_recompute()
 	if needs_recompute:
 		_recompute_landscape()

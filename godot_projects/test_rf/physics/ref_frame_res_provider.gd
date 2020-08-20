@@ -9,6 +9,8 @@ var _physicals: Dictionary
 func _init():
 	._init()
 	_visual = create_visual()
+	if _visual != null:
+		add_child( _visual )
 
 
 func _process(_delta):
@@ -40,6 +42,7 @@ func _create_update_physics_frames():
 		var ph = create_physical( bit, rf )
 		if not ph:
 			continue
+		add_child( ph )
 		_physicals[bit] = ph
 	
 	
