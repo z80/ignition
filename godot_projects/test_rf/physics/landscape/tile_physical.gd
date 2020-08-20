@@ -10,7 +10,9 @@ func construct():
 	pass
 
 
-
+func set_collision_bit( bit: int ):
+	$RigidBody.collision_layer = bit
+	$RigidBody.collision_mask  = bit
 
 
 

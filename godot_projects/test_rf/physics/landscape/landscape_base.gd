@@ -28,7 +28,8 @@ func height( x: float, z: float ):
 
 
 # Called externally when needed.
-func update():
+func update( t: Transform ):
+	_rel_t = t
 	var needs_recompute: bool = _need_recompute()
 	if needs_recompute:
 		_recompute_landscape()
@@ -66,7 +67,7 @@ func _need_move():
 
 func _recompute_landscape():
 	_label_tiles_to_recompute()
-	var existing_tiles = _get_existing_tiles()
+	var existing_tiles = get_existing_tiles()
 	print( "\nrebuilding: " )
 	for tile in existing_tiles:
 		var needs_rebuild: bool = tile.rebuild
@@ -82,7 +83,7 @@ func _recompute_landscape():
 
 func _move_landscape():
 	var inv_t = _rel_t.inverse()
-	var existing_tiles = _get_existing_tiles()
+	var existing_tiles = get_existing_tiles()
 	for tile in existing_tiles:
 		var t = tile.transform
 		t = inv_t * t
@@ -90,7 +91,7 @@ func _move_landscape():
 
 
 func _label_tiles_to_recompute():
-	var existing_tiles = _get_existing_tiles()
+	var existing_tiles = get_existing_tiles()
 	
 	for tile in existing_tiles:
 		tile.rebuild = true
@@ -144,10 +145,11 @@ func _label_tiles_to_recompute():
 			tile.index_z = z
 			tile.rebuild = true
 			self.add_child(tile)
+			setup_tile( tile )
 		
 	
 
-func _get_existing_tiles():
+func get_existing_tiles():
 	var qty = get_child_count()
 	var tiles = []
 	for i in range(qty):
@@ -159,7 +161,9 @@ func _get_existing_tiles():
 
 
 
-
-
+# Need to redefine this one.
+# For collsion object it should set collision mask and layer.
+func setup_tile( tile ):
+	pass
 
 

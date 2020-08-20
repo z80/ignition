@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=2]
 
-[ext_resource path="res://learning/landscape_tile.gd" type="Script" id=1]
+[ext_resource path="res://physics/landscape/tile_physical.gd" type="Script" id=1]
 [ext_resource path="res://learning/landscape_tile.tres" type="Material" id=2]
 [ext_resource path="res://learning/landscape_tile_water.tres" type="Material" id=3]
 
@@ -26,9 +26,6 @@ mode = 1
 
 [node name="CollisionShape" type="CollisionShape" parent="RigidBody"]
 shape = SubResource( 1 )
-
-[node name="WaterMesh" type="MeshInstance" parent="."]
-material_override = ExtResource( 3 )
 
 [node name="Plane" type="MeshInstance" parent="."]
 transform = Transform( -1, 3.25841e-07, 0, -3.25841e-07, -1, 0, 0, 0, 1, 0, 18.1104, 0 )

@@ -13,28 +13,31 @@ func create_visual():
 
 
 # Need to override this one and make it draw/move visual.
-func update_visual( _rf ):
-	_visual.update()
+func update_visual( rf ):
+	var t: Transform = rf.root_t()
+	_visual.update( t )
 
 # Creating physical object(s) and assign collision bit.
 # Make it relative to provided ref. frame.
 func create_physical( bit, rf ):
 	var ph = LandscapePhysical.instance()
-	return null
+	ph.set_collision_bit( bit )
+	return ph
 
 # Update physical ref frame. Need to check if ref. frame moved
 # And if it did beyond of collision object boundaries might need to 
 # re-generate physics object appropriately.
 func update_physical( physical, rf ):
-	pass
+	var t: Transform = rf.root_t()
+	physical.update( t )
 
 # Ref. frame is no longer physical or completely removed.
 # So this physical is no longer needed.
 func destroy_physical( physical ):
-	pass
+	physical.queue_free()
 
 # Might want to reuse physical. It requires to change its collision layer.
 func change_layer_physical( physical, new_layer ):
-	pass
+	physical.set_collision_bit( new_layer )
 
 
