@@ -24,13 +24,21 @@ const FOOT_HEIGHT_DIFF: float = 0.03
 # Origin FPS is somewhat low. Increasing it by duplicating frames.
 const FPS_MULTIPLIER: int = 4
 
+var _feet = null
 
 func init():
 	_index = 0
 	_mm_frame_ind = -1
 	_azimuth_initialized = false
 	_frame_prev = null
+	_feet = _init_feet()
 	_db = _open_database()
+
+func _init_feet():
+	var l_ft = {"th": 10, "prev": 0.0, "count": 10, "ind": LEFT_FOOT_IND}
+	var r_ft = {"th": 10, "prev": 0.0, "count": 10, "ind": RIGHT_FOOT_IND}
+	var feet = [l_ft, r_ft]
+	return feet
 
 
 func _open_database( fname = DB_NAME ):
@@ -86,6 +94,62 @@ func _compute_gnd( frame ):
 	return gnd
 
 
+func _in_region( x, y, th = 0.002 ):
+	if (x >= y-th) and (x <= y+th):
+		return true
+	return false
+
+
+func _on_gnd2( frame, left: bool = true, init: bool = false ):
+	var ft
+	if left:
+		ft = _feet[0]
+	else:
+		ft = _feet[1]
+	var ind: int = 7 * ft["ind"]
+	var z: float = frame[ind + 6]
+	
+	var contact: bool = false
+	
+	if init:
+		ft["th"] = z + 0.02
+		ft["prev"] = z
+		ft["count"] = 10
+	
+	var in_reg = _in_region( z, ft["prev"] )
+	if left:
+		print( "left in reg:", in_reg, "; z: ", z, ", prev: ", ft["prev"] )
+	#else:
+	#	print( "right in reg:", in_reg )
+		
+	if z <= ft["th"]:
+		if in_reg:
+			ft["count"] += 1
+			
+			if ft["count"] > 2:
+				ft["th"] = z + 0.02
+				contact = true
+				
+				if left:
+					print( "contact <- true" )
+		else:
+			ft["count"] = 0
+	
+	else:
+		ft["count"] = 0
+	
+	ft["prev"] = z
+	
+	return contact
+
+
+func _compute_gnd2( frame, first_frame: bool ):
+	var left: bool  = _on_gnd2( frame, true,  first_frame )
+	var right: bool = _on_gnd2( frame, false, first_frame )
+	var res = [left, right]
+	return res
+
+
 func _compute_azimuth( mm, frame ):
 	var root_ind = mm.ROOT_IND * 7
 	var q: Quat = Quat( frame[root_ind+1], frame[root_ind+2], frame[root_ind+3], frame[root_ind] )
@@ -126,7 +190,9 @@ func store( mm, frame, frame_ind ):
 		_mm_frame_ind = frame_ind
 		
 		var data = {}
-		var gnd: Array = _compute_gnd( f )
+		#var gnd: Array = _compute_gnd( f )
+		var first_frame: bool = (_index < 1)
+		var gnd: Array = _compute_gnd2( f, first_frame )
 		#print( "gnd: ", gnd )
 		
 		var q_r: Quat = _compute_azimuth( mm, f )
@@ -188,6 +254,9 @@ func _init_azimuth( mm, frame ):
 
 func _slerp_frame( f0: Array, f1: Array, t: float ):
 	var qty: int = f0.size()
+	var qty1: int = f1.size()
+	if qty1 < qty:
+		qty = qty1
 	var f = []
 	f.resize( qty )
 	for i in range(0, qty, 7):

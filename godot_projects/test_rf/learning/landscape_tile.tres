@@ -1,4 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=4 format=2]
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
 
 [sub_resource type="Shader" id=1]
 code = "shader_type spatial;
@@ -82,30 +82,19 @@ void fragment()
 
 "
 
-[sub_resource type="OpenSimplexNoise" id=2]
-period = 10.0
-
-[sub_resource type="NoiseTexture" id=3]
-width = 128
-height = 128
-seamless = true
-as_normalmap = true
-noise = SubResource( 2 )
-
 [resource]
 shader = SubResource( 1 )
-shader_param/colors_qty = 5
-shader_param/color_0 = Color( 0.721569, 0.698039, 0.537255, 1 )
-shader_param/color_1 = Color( 0.65098, 0.627451, 0, 1 )
-shader_param/height_1 = 0.0
-shader_param/d_height_1 = 0.231
-shader_param/color_2 = Color( 0.0588235, 0.47451, 0, 1 )
-shader_param/height_2 = 1.0
+shader_param/colors_qty = 3
+shader_param/color_0 = Color( 0.1, 0.1, 0.1, 1 )
+shader_param/color_1 = Color( 0.2, 0.2, 0.2, 1 )
+shader_param/height_1 = 0.2
+shader_param/d_height_1 = 0.1
+shader_param/color_2 = Color( 0.1, 0.1, 0.1, 1 )
+shader_param/height_2 = 0.3
 shader_param/d_height_2 = 0.1
-shader_param/color_3 = Color( 0.286275, 0.286275, 0.286275, 1 )
-shader_param/height_3 = 3.0
+shader_param/color_3 = Color( 0.1, 0.1, 0.1, 1 )
+shader_param/height_3 = 0.4
 shader_param/d_height_3 = 0.1
-shader_param/color_4 = Color( 0.705882, 0.705882, 0.705882, 1 )
-shader_param/height_4 = 5.0
+shader_param/color_4 = Color( 0.1, 0.1, 0.1, 1 )
+shader_param/height_4 = 0.5
 shader_param/d_height_4 = 0.1
-shader_param/normalmap = SubResource( 3 )
