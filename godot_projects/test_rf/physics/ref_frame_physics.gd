@@ -63,6 +63,11 @@ func _cleanup_physical():
 
 
 
+func teleport( t: Transform ):
+	self.set_jump_t( t )
+	self.apply_jump()
+	for body in _bodies:
+		body.update_physical_state_from_rf()
 
 
 

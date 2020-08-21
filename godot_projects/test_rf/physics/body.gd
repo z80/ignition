@@ -18,12 +18,7 @@ func init():
 
 func change_parent( new_parent: Node = null ):
 	.change_parent( new_parent )
-	if _physical:
-		var t: Transform = self.t()
-		_physical.transform = t
-		var v: Vector3 = self.v()
-		_physical.set_linear_velocity( v )
-		var w: Vector3 = self.w()
+	update_physical_state_from_rf()
 
 
 
@@ -105,4 +100,18 @@ func remove_physical():
 	if _physical != null:
 		_physical.queue_free()
 		_physical = null
+
+
+# After parent teleports need to update physical state to physical object.
+func update_physical_state_from_rf():
+	if _physical:
+		var t: Transform = self.t()
+		_physical.transform = t
+		var v: Vector3 = self.v()
+		_physical.set_linear_velocity( v )
+		var w: Vector3 = self.w()
+		_physical.set_angular_velocity( w )
+
+
+
 

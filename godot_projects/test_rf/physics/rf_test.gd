@@ -11,7 +11,7 @@ func _ready():
 	var q = qa * qb
 	print( "IMU q: ", q )
 	
-	
+	PhysicsManager.player_ref_frame = $Landscape/Rf
 	#var rf = $Rf
 	#BodyCreator.root_node = self
 	#rf.create_body( "plane" )

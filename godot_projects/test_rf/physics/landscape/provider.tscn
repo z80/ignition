@@ -2,5 +2,5 @@
 
 [ext_resource path="res://physics/landscape/provider.gd" type="Script" id=1]
 
-[node name="Landscape" type="Spatial"]
+[node name="Landscape" type="RefFrameNode"]
 script = ExtResource( 1 )

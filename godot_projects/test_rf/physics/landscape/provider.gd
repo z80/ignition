@@ -1,13 +1,21 @@
 
 extends RefFrameResourceProvider
 
-var LandscapeVisual   = preload( "res://physics/landscape/landscape_visual.tscn")
-var LandscapePhysical = preload( "res://physics/landscape/landscape_physical.tscn")
+var LandscapeVisual
+var LandscapePhysical
+
+func initialize():
+	.initialize()
+	LandscapeVisual   = preload( "res://physics/landscape/landscape_visual.tscn")
+	LandscapePhysical = preload( "res://physics/landscape/landscape_physical.tscn")
+
 
 
 # Need to override this one and create a visual shape internally.
 func create_visual():
 	var v = LandscapeVisual.instance()
+	if v != null:
+		add_child( v )
 	return v
 
 
@@ -20,7 +28,9 @@ func update_visual( rf ):
 # Make it relative to provided ref. frame.
 func create_physical( bit, rf ):
 	var ph = LandscapePhysical.instance()
-	ph.set_collision_bit( bit )
+	if ph != null:
+		ph.set_collision_bit( bit )
+		add_child( ph )
 	return ph
 
 # Update physical ref frame. Need to check if ref. frame moved

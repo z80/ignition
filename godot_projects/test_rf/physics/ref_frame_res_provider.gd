@@ -6,11 +6,9 @@ class_name RefFrameResourceProvider
 var _visual = null
 var _physicals: Dictionary
 
-func _init():
-	._init()
+func _ready():
+	initialize()
 	_visual = create_visual()
-	if _visual != null:
-		add_child( _visual )
 
 
 func _process(_delta):
@@ -42,7 +40,6 @@ func _create_update_physics_frames():
 		var ph = create_physical( bit, rf )
 		if not ph:
 			continue
-		add_child( ph )
 		_physicals[bit] = ph
 	
 	
@@ -95,6 +92,8 @@ func _process_physics_frames():
 # re-generate visual object depending on what happened with 
 func _update_visual_frame():
 	var rf = PhysicsManager.player_ref_frame
+	if rf == null:
+		return
 	rf.compute_relative_to_root( self )
 	update_visual( rf )
 
@@ -107,6 +106,11 @@ func _update_visual_frame():
 
 # Below are methods needed to be implemented in the derived class 
 # in order to make use of object of this class.
+
+
+# Regidter/preload types here. As _ready() can't be overloaded.
+func initialize():
+	pass
 
 
 
