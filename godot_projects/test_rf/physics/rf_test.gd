@@ -12,20 +12,18 @@ func _ready():
 	print( "IMU q: ", q )
 	
 	
-	var rf = $Rf
-	BodyCreator.root_node = self
-	rf.create_body( "plane" )
-	rf.create_body( "cube" )
-	rf.init_physics()
-	
-	#var v = preload( "res://physics/bodies/cube/visual.tscn" ).instance()
-	#get_tree().get_root().add_child( v )
-	#self.add_child( v )
+	#var rf = $Rf
+	#BodyCreator.root_node = self
+	#rf.create_body( "plane" )
+	#rf.create_body( "cube" )
+	#rf.init_physics()
+
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process( delta ):
-	var group: String = Body.GROUP_NAME
-	var player_rf = PhysicsManager.player_ref_frame
-	for body in get_tree().get_nodes_in_group( group ):
-		body.update_visual( player_rf )
+	#var group: String = Body.GROUP_NAME
+	#var player_rf = PhysicsManager.player_ref_frame
+	#for body in get_tree().get_nodes_in_group( group ):
+	#	body.update_visual( player_rf )
+	pass

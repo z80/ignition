@@ -6,7 +6,7 @@
 [ext_resource path="res://mm/axes_visualization.tscn" type="PackedScene" id=4]
 [ext_resource path="res://physics/landscape/provider.tscn" type="PackedScene" id=5]
 
-[node name="Node" type="Node"]
+[node name="RfTest" type="Node"]
 script = ExtResource( 1 )
 
 [node name="Landscape" parent="." instance=ExtResource( 5 )]
@@ -18,7 +18,7 @@ script = ExtResource( 2 )
 transform = Transform( 1, 0, 0, 0, 0.897405, 0.441208, 0, -0.441208, 0.897405, 0, 2.33134, 4.60433 )
 near = 0.1
 script = ExtResource( 3 )
-privot = NodePath("../AxesVis")
+privot = NodePath("../../RfTest/AxesVis")
 max_speed = Vector3( 5, 5, 5 )
 
 [node name="AxesVis" parent="." instance=ExtResource( 4 )]
