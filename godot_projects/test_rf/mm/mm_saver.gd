@@ -19,7 +19,8 @@ var _frame_prev = null
 # For determining "on ground" state.
 const LEFT_FOOT_IND:  int = 81
 const RIGHT_FOOT_IND: int = 86
-const FOOT_HEIGHT_DIFF: float = 0.03
+const FOOT_HEIGHT_DIFF: float = 0.01
+const FOOT_HEIGHT_COUNTER: int = 8
 
 # Origin FPS is somewhat low. Increasing it by duplicating frames.
 const FPS_MULTIPLIER: int = 4
@@ -35,8 +36,8 @@ func init():
 	_db = _open_database()
 
 func _init_feet():
-	var l_ft = {"th": 10, "prev": 0.0, "count": 10, "ind": LEFT_FOOT_IND}
-	var r_ft = {"th": 10, "prev": 0.0, "count": 10, "ind": RIGHT_FOOT_IND}
+	var l_ft = {"th": 10, "prev": 0.0, "count": 10, "ind": LEFT_FOOT_IND, "gnd_prev": true}
+	var r_ft = {"th": 10, "prev": 0.0, "count": 10, "ind": RIGHT_FOOT_IND, "gnd_prev": true}
 	var feet = [l_ft, r_ft]
 	return feet
 
@@ -83,14 +84,50 @@ func _compute_gnd( frame ):
 	var rh: float = frame[ri]
 	var gnd = [false, false]
 	var diff: float = abs( lh - rh )
+	var left  = _feet[0]
+	var right = _feet[1]
 	if diff < FOOT_HEIGHT_DIFF:
-		gnd[0] = true
-		gnd[1] = true
-	else:
-		if lh < rh:
+		if left["count"] < FOOT_HEIGHT_COUNTER:
+			left["count"] += 1
+			gnd[0] = left["gnd_prev"]
+		else:
 			gnd[0] = true
+			
+		if right["count"] < FOOT_HEIGHT_COUNTER:
+			right["count"] += 1
+			gnd[1] = right["gnd_prev"]
 		else:
 			gnd[1] = true
+			
+	else:
+		if lh < rh:
+			if left["count"] < FOOT_HEIGHT_COUNTER:
+				left["count"] += 1
+				gnd[0] = left["gnd_prev"]
+			else:
+				gnd[0] = true
+			
+			if right["count"] > 0:
+				right["count"] -= 1
+				gnd[1] = right["gnd_prev"]
+			else:
+				gnd[1] = false
+				
+		else:
+			if right["count"] < FOOT_HEIGHT_COUNTER:
+				right["count"] += 1
+				gnd[1] = right["gnd_prev"]
+			else:
+				gnd[1] = true
+				
+			if left["count"] > 0:
+				left["count"] -= 1
+				gnd[0] = left["gnd_prev"]
+			else:
+				gnd[0] = false
+	
+	left["gnd_prev"]  = gnd[0]
+	right["gnd_prev"] = gnd[1]
 	return gnd
 
 
@@ -190,9 +227,9 @@ func store( mm, frame, frame_ind ):
 		_mm_frame_ind = frame_ind
 		
 		var data = {}
-		#var gnd: Array = _compute_gnd( f )
-		var first_frame: bool = (_index < 1)
-		var gnd: Array = _compute_gnd2( f, first_frame )
+		var gnd: Array = _compute_gnd( f )
+		#var first_frame: bool = (_index < 1)
+		#var gnd: Array = _compute_gnd2( f, first_frame )
 		#print( "gnd: ", gnd )
 		
 		var q_r: Quat = _compute_azimuth( mm, f )
