@@ -5,6 +5,7 @@ var envs_: Array
 
 # All visualization meshes/or other types are with respect to this ref. frame.
 var player_ref_frame = null setget _set_player_ref_frame, _get_player_ref_frame
+var player_focus = null setget _set_player_focus, _get_player_focus
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -69,6 +70,13 @@ func _set_player_ref_frame( rf ):
 func _get_player_ref_frame():
 	return player_ref_frame
 
+
+func _set_player_focus( rf ):
+	player_focus = rf
+
+
+func _get_player_focus():
+	return player_focus
 
 
 
