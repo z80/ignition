@@ -63,7 +63,7 @@ func _cleanup_physical():
 
 
 
-func teleport( t: Transform ):
+func jump( t: Transform ):
 	self.set_jump_t( t )
 	self.apply_jump()
 	for body in _bodies:
@@ -75,6 +75,25 @@ func teleport( t: Transform ):
 # ********************************************
 #     Objects management, clustering.
 # ********************************************
+
+func jump_if_needed():
+	var player_focus = PhysicsManager.player_focus
+	var bodies = child_bodies()
+	if not (player_focus in bodies):
+		return
+	
+	var r: Vector3 = player_focus.r()
+	var dist: float = r.length()
+	if dist < Constants.RF_JUMP_DISTANCE:
+		return
+	
+	var t: Transform = player_focus.t()
+	t.origin = r
+	jump( t )
+
+
+
+
 
 func child_bodies():
 	var children = get_children()
