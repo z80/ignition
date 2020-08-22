@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://physics/landscape/tile_visual.gd" type="Script" id=1]
 [ext_resource path="res://learning/landscape_tile.tres" type="Material" id=2]
-[ext_resource path="res://learning/landscape_tile_water.tres" type="Material" id=3]
+[ext_resource path="res://physics/landscape/water.tres" type="Material" id=3]
+[ext_resource path="res://physics/landscape/tile.tres" type="Material" id=4]
 
 [sub_resource type="PlaneMesh" id=1]
 material = ExtResource( 3 )
@@ -16,7 +17,7 @@ radius = 5.0
 height = 10.0
 
 [node name="LandscapeTile" type="MeshInstance"]
-material_override = ExtResource( 2 )
+material_override = ExtResource( 4 )
 script = ExtResource( 1 )
 
 [node name="WaterMesh" type="MeshInstance" parent="."]

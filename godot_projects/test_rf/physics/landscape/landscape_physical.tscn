@@ -4,3 +4,4 @@
 
 [node name="LandscapePhysical" type="Spatial"]
 script = ExtResource( 1 )
+size = 50.0

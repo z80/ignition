@@ -2,6 +2,7 @@ extends TileBase
 
 
 func construct():
+	.construct()
 	# Create collision.
 	#var editor_sh = $RigidBody/CollisionShape
 	#var sh: Shape = editor_sh.shape

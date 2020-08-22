@@ -21,7 +21,7 @@ func create_visual():
 
 # Need to override this one and make it draw/move visual.
 func update_visual( rf ):
-	var t: Transform = rf.root_t()
+	var t: Transform = rf.t_root()
 	_visual.update( t )
 
 # Creating physical object(s) and assign collision bit.

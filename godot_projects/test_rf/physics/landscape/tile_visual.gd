@@ -1,8 +1,9 @@
 
 extends TileBase
 
-func contruct():
-	var meshes = .recomute()
+func construct():
+	.construct()
+	var meshes = recompute()
 	var land_mesh  = meshes[0]
 	var water_mesh = meshes[1]
 	

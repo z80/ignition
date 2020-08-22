@@ -6,6 +6,8 @@ var index_z: int = 0
 var rebuild: bool = true
 var available: bool = true
 
+var origin_x: float
+var origin_z: float
 
 # Need to redefine this one. Create either visual instance or 
 # Collision shape here.
@@ -18,20 +20,25 @@ func recompute():
 		return
 	#if not (ls is MeshInstance):
 	#	return
-	var origin_x: float = ls.size * float(index_x)
-	var origin_z: float = ls.size * float(index_z)
+	origin_x = ls.size * float(index_x)
+	origin_z = ls.size * float(index_z)
 	var verts_ext = []
 	var res_plus_one = (ls.resolution+1)
 	var res_plus_one2 = res_plus_one*res_plus_one
 	verts_ext.resize( res_plus_one2 )
 	var res_minus_one: int = ls.resolution - 1
 	
+	# Move tile physically.
+	# Probably, it works correctly only for visual tiles.
+	var at: Vector3 = Vector3( origin_x, 0.0, origin_z )
+	translation = at
+	
 	var ind: int = 0
 	for iz in range( res_plus_one ):
 		var z = float(iz) * ls.size / float(res_minus_one)
 		var probe_z: float = z + origin_z
 		for ix in range( res_plus_one ):
-			var x = float(ix) * ls.size / float(res_minus_one) + origin_x
+			var x = float(ix) * ls.size / float(res_minus_one)
 			var probe_x: float = x + origin_x
 			var h: float = ls.height( probe_x, probe_z )
 			verts_ext[ind] = Vector3( x, h, z )
