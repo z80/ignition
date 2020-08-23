@@ -3,8 +3,6 @@ extends RefFrame
 class_name RefFramePhysics
 
 
-var _physics_env = null
-var _bodies: Array = []
 # Bit for physics contacts.
 var _contact_layer: int = -1
 
@@ -17,7 +15,8 @@ func init_physics():
 	if ( _contact_layer < 0 ):
 		return false
 	
-	for body in _bodies:
+	var bodies = child_bodies()
+	for body in bodies:
 		var ph = body.create_physical()
 		ph.collision_layer = _contact_layer
 
@@ -34,15 +33,26 @@ func is_active():
 	return en
 
 
+func add_body( body: Body ):
+	if body == null:
+		return
+	
+	# Make it parented.
+	body.change_parent( self )
+	
+	if ( _contact_layer >= 0 ):
+		var ph = body.create_physical()
+		ph.set_collision_layer( _contact_layer )
+
+
 func create_body( type_name: String, t: Transform = Transform.IDENTITY ):
 	var body = BodyCreator.create( type_name )
 	add_child( body )
 	body.set_t( t )
 	
-	_bodies.push_back( body )
 	if ( _contact_layer >= 0 ):
 		var ph = body.create_physical()
-		ph.set_contact_layer( _contact_layer )
+		ph.set_collision_layer( _contact_layer )
 
 
 func compute_relative_states():
@@ -58,7 +68,8 @@ func compute_relative_states():
 func _cleanup_physical():
 	if _contact_layer < 0:
 		return
-	for body in _bodies:
+	var bodies = child_bodies()
+	for body in bodies:
 		body.remove_physical()
 
 
@@ -66,7 +77,8 @@ func _cleanup_physical():
 func jump( t: Transform ):
 	self.set_jump_t( t )
 	self.apply_jump()
-	for body in _bodies:
+	var bodies = child_bodies()
+	for body in bodies:
 		body.update_physical_state_from_rf()
 
 

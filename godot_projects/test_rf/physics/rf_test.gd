@@ -18,13 +18,15 @@ func _ready():
 	#var rf = $Rf
 	#rf.create_body( "plane" )
 	#rf.create_body( "cube" )
-	#rf.init_physics()
 	
 	var rf = $Landscape/Rf
-	var capsule: Body = BodyCreator.create( "capsule_dbg" )
-	capsule.change_parent( rf )
+	rf.init_physics()
 	
-	var privot: Spatial = $Landscape/Rf/CapsuleDbg._visual
+	var capsule: Body = BodyCreator.create( "capsule_dbg" )
+	# Call add body to process inclusion and initialization properly.
+	rf.add_body( capsule )
+	
+	var privot: Spatial = capsule._visual
 	$Camera.privot = privot
 
 

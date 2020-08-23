@@ -37,7 +37,7 @@ func create_physical( bit, rf ):
 # And if it did beyond of collision object boundaries might need to 
 # re-generate physics object appropriately.
 func update_physical( physical, rf ):
-	var t: Transform = rf.root_t()
+	var t: Transform = rf.t_root()
 	physical.update( t )
 
 # Ref. frame is no longer physical or completely removed.

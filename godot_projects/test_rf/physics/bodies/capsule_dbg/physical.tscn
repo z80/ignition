@@ -5,9 +5,11 @@
 [sub_resource type="CapsuleShape" id=1]
 radius = 0.5
 
-[node name="RigidBody" type="RigidBody"]
+[node name="Physical" type="Node"]
+script = ExtResource( 1 )
 
-[node name="CollisionShape" type="CollisionShape" parent="."]
+[node name="RigidBody" type="RigidBody" parent="."]
+
+[node name="CollisionShape" type="CollisionShape" parent="RigidBody"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 1, 0 )
 shape = SubResource( 1 )
-script = ExtResource( 1 )
