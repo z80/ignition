@@ -186,16 +186,19 @@ func recompute():
 	
 	
 	# Create water.
+	var water_vertices = PoolVector3Array()
+	water_vertices.resize( verts_qty )
+
 	var water_norm: Vector3 = Vector3.UP;
 	for i in range( verts_qty ):
 		var v: Vector3 = vertices[i]
 		v.y = 0.0
-		vertices[i] = v
+		water_vertices[i] = v
 		normals[i] = water_norm
 	var water_arr_mesh = ArrayMesh.new()
 	arrays = []
 	arrays.resize(ArrayMesh.ARRAY_MAX)
-	arrays[ArrayMesh.ARRAY_VERTEX] = vertices
+	arrays[ArrayMesh.ARRAY_VERTEX] = water_vertices
 	arrays[ArrayMesh.ARRAY_NORMAL] = normals
 	arrays[ArrayMesh.ARRAY_TANGENT] = tangents
 	arrays[ArrayMesh.ARRAY_COLOR]  = colors
@@ -206,7 +209,7 @@ func recompute():
 	
 	rebuild = false
 	
-	return [arr_mesh, water_arr_mesh]
+	return [arr_mesh, water_arr_mesh, vertices]
 	
 	
 
