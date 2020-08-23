@@ -59,7 +59,8 @@ func physics_ref_frames():
 	for i in range(ENVS_QTY):
 		var e = envs_[i]
 		if ( e != null ):
-			envs[i] = e
+			var bit: int = (1<<i)
+			envs[bit] = e
 	return envs
 
 
