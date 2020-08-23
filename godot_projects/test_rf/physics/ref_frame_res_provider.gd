@@ -43,7 +43,7 @@ func _create_update_physics_frames():
 		_physicals[bit] = ph
 	
 	
-	# 2) physical object existsfor this physical layer.
+	# 2) physical object exists for this physical layer.
 	for bit in bit_rfs:
 		var rf = bit_rfs[bit]
 		var has_physical = _physicals.has( bit )
