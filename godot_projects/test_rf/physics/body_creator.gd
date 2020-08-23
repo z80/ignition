@@ -20,6 +20,8 @@ func create( type_name: String ):
 			return cube()
 		"plane":
 			return plane()
+		"capsule_dbg":
+			return capsule_dbg()
 
 
 func _create( CL ):
@@ -30,13 +32,19 @@ func _create( CL ):
 
 
 func cube():
-	var B = preload( "res://physics/bodies/cube/cube.tscn" )
+	var B = load( "res://physics/bodies/cube/cube.tscn" )
 	var b = _create( B )
 	return b
 
 
 func plane():
-	var B = preload( "res://physics/bodies/plane/plane.tscn" )
+	var B = load( "res://physics/bodies/plane/plane.tscn" )
+	var b = _create( B )
+	return b
+
+
+func capsule_dbg():
+	var B = load( "res://physics/bodies/capsule_dbg/capsule_dbg.tscn" )
 	var b = _create( B )
 	return b
 

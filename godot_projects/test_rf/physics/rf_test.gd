@@ -10,13 +10,22 @@ func _ready():
 	var qb: Quat = Quat( 0.0, 1.0, 0.0, 0.0 )
 	var q = qa * qb
 	print( "IMU q: ", q )
-	
+
+	BodyCreator.root_node = self
 	PhysicsManager.player_ref_frame = $Landscape/Rf
+	
+	
 	#var rf = $Rf
-	#BodyCreator.root_node = self
 	#rf.create_body( "plane" )
 	#rf.create_body( "cube" )
 	#rf.init_physics()
+	
+	var rf = $Landscape/Rf
+	var capsule: Body = BodyCreator.create( "capsule_dbg" )
+	capsule.change_parent( rf )
+	
+	var privot: Spatial = $Landscape/Rf/CapsuleDbg._visual
+	$Camera.privot = privot
 
 
 

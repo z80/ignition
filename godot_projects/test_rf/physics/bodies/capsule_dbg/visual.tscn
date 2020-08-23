@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/bodies/capsule_dbg/capsule.dae" type="PackedScene" id=1]
+
+[node name="capsule" instance=ExtResource( 1 )]

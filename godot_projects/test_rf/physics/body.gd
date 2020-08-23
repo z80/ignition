@@ -13,6 +13,7 @@ var _physical  = null
 
 func init():
 	add_to_group( GROUP_NAME )
+	create_visual()
 
 
 
@@ -34,8 +35,6 @@ func update_visual( root: Node = null ):
 
 
 
-func _ready():
-	create_visual()
 
 
 
