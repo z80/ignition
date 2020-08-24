@@ -2,11 +2,13 @@
 extends RefFrame
 class_name RefFrameResourceProvider
 
+const GROUP_NAME: String = "provider"
 
 var _visual = null
 var _physicals: Dictionary
 
 func _ready():
+	add_to_group( GROUP_NAME )
 	initialize()
 	_visual = create_visual()
 
