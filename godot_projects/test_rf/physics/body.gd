@@ -9,7 +9,12 @@ var VisualType   = null
 var PhysicalType = null
 
 var _visual    = null
-var _physical  = null  
+var _physical  = null
+
+# Icon showing up when it is relatively close to the camera.
+var _icon = null
+
+
 
 func init():
 	add_to_group( GROUP_NAME )
@@ -113,4 +118,12 @@ func update_physical_state_from_rf():
 
 
 
+func _create_interact_icon():
+	var Icon = load( "res://physics/interact_icon/interact_icon.tscn" )
+	_icon = Icon.instance()
+	self.add_child( _icon )
+
+
+func _remove_interact_icon():
+	pass
 
