@@ -13,6 +13,7 @@ func _ready():
 
 	BodyCreator.root_node = self
 	PhysicsManager.player_ref_frame = $Landscape/Rf
+	PhysicsManager.camera = $Camera
 	
 	
 	#var rf = $Rf

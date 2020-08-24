@@ -5,6 +5,8 @@ var body: Node setget set_body, get_body
 var HoverGui = null setget set_HoverGui, get_HoverGui
 var ClickGui = null setget set_ClickGui, get_ClickGui
 
+# Text to visualize when mouse hovers.
+var text: String setget _set_text, _get_text
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -41,3 +43,26 @@ func set_ClickGui( gui ):
 func get_ClickGui():
 	return ClickGui
 
+
+func _set_text( stri: String ):
+	text = stri
+	$HoverControl/HoverGui.text = stri
+
+
+func _get_text():
+	return text
+
+
+
+
+
+
+
+
+
+func _on_mouse_entered():
+	$HoverControl.visible = true
+
+
+func _on_mouse_exited():
+	$HoverControl.visible = false

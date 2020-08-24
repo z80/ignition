@@ -13,7 +13,7 @@ var _physical  = null
 
 # Icon showing up when it is relatively close to the camera.
 var _icon = null
-
+var _hover_text: String = "Default hover text"
 
 
 func init():
@@ -38,7 +38,8 @@ func update_visual( root: Node = null ):
 
 
 
-
+func _process( _delta ):
+	_process_interact_icon()
 
 
 
@@ -118,12 +119,68 @@ func update_physical_state_from_rf():
 
 
 
+func _process_interact_icon():
+	var cam = PhysicsManager.camera
+	if (cam == null) or (_visual == null):
+		return
+	
+	var mouse_mode = Input.get_mouse_mode() 
+	if (mouse_mode == Input.MOUSE_MODE_HIDDEN) or \
+	   (mouse_mode == Input.MOUSE_MODE_CAPTURED):
+		if _icon:
+			_icon.queue_free()
+			_icon = null
+		return
+	
+	var cam_at = cam.translation
+	var obj_at = _visual.translation
+	var dr = obj_at - cam_at
+	var dist = dr.length()
+	if dist > Constants.INTERACT_ICON_DIST:
+		if _icon:
+			_icon.queue_free()
+			_icon = null
+		return
+	
+	var mouse_pos = get_viewport().get_mouse_position()
+	var icon_at =  cam.unproject_position( obj_at )
+	
+	var vp = get_viewport()
+	var rect = vp.get_visible_rect()
+	var sz = rect.size
+	
+	if icon_at.x < 0.0 or icon_at.y < 0.0:
+		return
+	if icon_at.x >= sz.x or icon_at.y >= sz.y:
+		return
+	
+	_create_interact_icon()
+	_icon.rect_position = icon_at
+
+
+
+
 func _create_interact_icon():
+	if _icon != null:
+		_icon.visible = true
+		return
 	var Icon = load( "res://physics/interact_icon/interact_icon.tscn" )
 	_icon = Icon.instance()
 	self.add_child( _icon )
+	_icon.body = self
+	_icon.text = _hover_text
+	_icon.visible = true
 
 
 func _remove_interact_icon():
-	pass
+	if _icon == null:
+		return
+	_icon.queue_free()
+
+
+func _set_hover_text( stri: String ):
+	_hover_text = stri
+	if _icon == null:
+		return
+	_icon.text = _hover_text
 
