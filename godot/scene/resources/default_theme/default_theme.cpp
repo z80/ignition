@@ -496,6 +496,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("slider", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
 	theme->set_stylebox("grabber_area", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
+	theme->set_stylebox("grabber_area_highlight", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
 
 	theme->set_icon("grabber", "HSlider", make_icon(hslider_grabber_png));
 	theme->set_icon("grabber_highlight", "HSlider", make_icon(hslider_grabber_hl_png));
@@ -506,6 +507,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("slider", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
 	theme->set_stylebox("grabber_area", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
+	theme->set_stylebox("grabber_area_highlight", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
 
 	theme->set_icon("grabber", "VSlider", make_icon(vslider_grabber_png));
 	theme->set_icon("grabber_highlight", "VSlider", make_icon(vslider_grabber_hl_png));
@@ -757,7 +759,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// FileDialog
 
 	theme->set_icon("folder", "FileDialog", make_icon(icon_folder_png));
+	theme->set_icon("file", "FileDialog", make_icon(icon_file_png));
 	theme->set_color("folder_icon_modulate", "FileDialog", Color(1, 1, 1));
+	theme->set_color("file_icon_modulate", "FileDialog", Color(1, 1, 1));
 	theme->set_color("files_disabled", "FileDialog", Color(0, 0, 0, 0.7));
 
 	// ColorPicker

@@ -127,8 +127,13 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			selection.creating = false;
 			selection.doubleclick = false;
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length);
+			if (OS::get_singleton()->has_virtual_keyboard()) {
+				if (selection.enabled) {
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, selection.begin, selection.end);
+				} else {
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, cursor_pos);
+				}
+			}
 		}
 
 		update();
@@ -271,10 +276,30 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				} break;
 #ifdef APPLE_STYLE_KEYS
 				case (KEY_LEFT): { // Go to start of text - like HOME key.
+					shift_selection_check_pre(k->get_shift());
 					set_cursor_position(0);
+					shift_selection_check_post(k->get_shift());
 				} break;
 				case (KEY_RIGHT): { // Go to end of text - like END key.
+					shift_selection_check_pre(k->get_shift());
 					set_cursor_position(text.length());
+					shift_selection_check_post(k->get_shift());
+				} break;
+				case (KEY_BACKSPACE): {
+					if (!editable)
+						break;
+
+					// If selected, delete the selection
+					if (selection.enabled) {
+						selection_delete();
+						break;
+					}
+
+					// Otherwise delete from cursor to beginning of text edit
+					int current_pos = get_cursor_position();
+					if (current_pos != 0) {
+						delete_text(0, current_pos);
+					}
 				} break;
 #endif
 				default: {
@@ -301,7 +326,6 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					if (OS::get_singleton()->has_virtual_keyboard())
 						OS::get_singleton()->hide_virtual_keyboard();
 
-					return;
 				} break;
 
 				case KEY_BACKSPACE: {
@@ -606,7 +630,7 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		Ref<Font> font = get_font("font");
 		if (font != NULL) {
 			for (int i = selection.begin; i < selection.end; i++)
-				cached_width -= font->get_char_size(text[i]).width;
+				cached_width -= font->get_char_size(pass ? secret_character[0] : text[i]).width;
 		}
 
 		text.erase(selection.begin, selected);
@@ -900,13 +924,19 @@ void LineEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
-			OS::get_singleton()->set_ime_active(true);
-			Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
-			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
+			{
+				OS::get_singleton()->set_ime_active(true);
+				Point2 cursor_pos2 = Point2(get_cursor_position(), 1) * get_minimum_size().height;
+				OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos2);
+			}
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length);
-
+			if (OS::get_singleton()->has_virtual_keyboard()) {
+				if (selection.enabled) {
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, selection.begin, selection.end);
+				} else {
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, cursor_pos);
+				}
+			}
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 
@@ -1066,7 +1096,7 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 
 		int char_w = 0;
 		if (font != NULL) {
-			char_w = font->get_char_size(text[ofs]).width;
+			char_w = font->get_char_size(pass ? secret_character[0] : text[ofs]).width;
 		}
 		pixel_ofs += char_w;
 
@@ -1118,7 +1148,7 @@ int LineEdit::get_cursor_pixel_pos() {
 
 	while (ofs < cursor_pos) {
 		if (font != NULL) {
-			pixel_ofs += font->get_char_size(text[ofs]).width;
+			pixel_ofs += font->get_char_size(pass ? secret_character[0] : text[ofs]).width;
 		}
 		ofs++;
 	}
@@ -1177,7 +1207,7 @@ void LineEdit::delete_char() {
 
 	Ref<Font> font = get_font("font");
 	if (font != NULL) {
-		cached_width -= font->get_char_size(text[cursor_pos - 1]).width;
+		cached_width -= font->get_char_size(pass ? secret_character[0] : text[cursor_pos - 1]).width;
 	}
 
 	text.erase(cursor_pos - 1, 1);
@@ -1193,11 +1223,13 @@ void LineEdit::delete_char() {
 
 void LineEdit::delete_text(int p_from_column, int p_to_column) {
 
+	ERR_FAIL_COND_MSG(p_from_column < 0 || p_from_column > p_to_column || p_to_column > text.length(),
+			vformat("Positional parameters (from: %d, to: %d) are inverted or outside the text length (%d).", p_from_column, p_to_column, text.length()));
 	if (text.size() > 0) {
 		Ref<Font> font = get_font("font");
 		if (font != NULL) {
 			for (int i = p_from_column; i < p_to_column; i++)
-				cached_width -= font->get_char_size(text[i]).width;
+				cached_width -= font->get_char_size(pass ? secret_character[0] : text[i]).width;
 		}
 	} else {
 		cached_width = 0;
@@ -1321,7 +1353,11 @@ void LineEdit::set_cursor_position(int p_pos) {
 					// Do not do this, because if the cursor is at the end, its just fine that it takes no space.
 					// accum_width = font->get_char_size(' ').width;
 				} else {
-					accum_width += font->get_char_size(text[i], i + 1 < text.length() ? text[i + 1] : 0).width; // Anything should do.
+					if (pass) {
+						accum_width += font->get_char_size(secret_character[0], i + 1 < text.length() ? secret_character[0] : 0).width;
+					} else {
+						accum_width += font->get_char_size(text[i], i + 1 < text.length() ? text[i + 1] : 0).width; // Anything should do.
+					}
 				}
 				if (accum_width > window_width)
 					break;
@@ -1683,13 +1719,11 @@ void LineEdit::update_cached_width() {
 }
 
 void LineEdit::update_placeholder_width() {
-	if ((max_length <= 0) || (placeholder_translated.length() <= max_length)) {
-		Ref<Font> font = get_font("font");
-		cached_placeholder_width = 0;
-		if (font != NULL) {
-			for (int i = 0; i < placeholder_translated.length(); i++) {
-				cached_placeholder_width += font->get_char_size(placeholder_translated[i]).width;
-			}
+	Ref<Font> font = get_font("font");
+	cached_placeholder_width = 0;
+	if (font != NULL) {
+		for (int i = 0; i < placeholder_translated.length(); i++) {
+			cached_placeholder_width += font->get_char_size(placeholder_translated[i]).width;
 		}
 	}
 }
@@ -1775,6 +1809,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_length", "chars"), &LineEdit::set_max_length);
 	ClassDB::bind_method(D_METHOD("get_max_length"), &LineEdit::get_max_length);
 	ClassDB::bind_method(D_METHOD("append_at_cursor", "text"), &LineEdit::append_at_cursor);
+	ClassDB::bind_method(D_METHOD("delete_char_at_cursor"), &LineEdit::delete_char);
+	ClassDB::bind_method(D_METHOD("delete_text", "from_column", "to_column"), &LineEdit::delete_text);
 	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &LineEdit::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &LineEdit::is_editable);
 	ClassDB::bind_method(D_METHOD("set_secret", "enabled"), &LineEdit::set_secret);

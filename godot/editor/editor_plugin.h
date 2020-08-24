@@ -53,6 +53,7 @@ class EditorSpatialGizmoPlugin;
 class EditorResourcePreview;
 class EditorFileSystem;
 class EditorToolAddons;
+class FileSystemDock;
 class ScriptEditor;
 
 class EditorInterface : public Node {
@@ -88,6 +89,8 @@ public:
 	EditorResourcePreview *get_resource_previewer();
 	EditorFileSystem *get_resource_file_system();
 
+	FileSystemDock *get_file_system_dock();
+
 	Control *get_base_control();
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
@@ -102,6 +105,7 @@ public:
 
 	void set_main_screen_editor(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
+	bool is_distraction_free_mode_enabled() const;
 
 	EditorInterface();
 };

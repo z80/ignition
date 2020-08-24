@@ -464,18 +464,20 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 		}
 	}
 
-	if (p_object->call("property_can_revert", p_property).operator bool()) {
-
-		has_revert = true;
-	}
-
-	if (!has_revert && !p_object->get_script().is_null()) {
-		Ref<Script> scr = p_object->get_script();
-		if (scr.is_valid()) {
-			Variant orig_value;
-			if (scr->get_property_default_value(p_property, orig_value)) {
-				if (orig_value != p_object->get(p_property)) {
-					has_revert = true;
+	// If the object implements property_can_revert, rely on that completely
+	// (i.e. don't then try to revert to default value - the property_get_revert implementation
+	// can do that if so desired)
+	if (p_object->has_method("property_can_revert")) {
+		has_revert = p_object->call("property_can_revert", p_property).operator bool();
+	} else {
+		if (!has_revert && !p_object->get_script().is_null()) {
+			Ref<Script> scr = p_object->get_script();
+			if (scr.is_valid()) {
+				Variant orig_value;
+				if (scr->get_property_default_value(p_property, orig_value)) {
+					if (orig_value != p_object->get(p_property)) {
+						has_revert = true;
+					}
 				}
 			}
 		}
@@ -1707,6 +1709,18 @@ void EditorInspector::update_tree() {
 							break;
 						}
 					}
+
+					Vector<String> slices = propname.operator String().split("/");
+					if (slices.size() == 2 && slices[0].begins_with("custom_")) {
+						// Likely a theme property.
+						for (int i = 0; i < F->get().theme_properties.size(); i++) {
+							if (F->get().theme_properties[i].name == slices[1]) {
+								descr = F->get().theme_properties[i].description.strip_edges();
+								break;
+							}
+						}
+					}
+
 					if (!F->get().inherits.empty()) {
 						F = dd->class_list.find(F->get().inherits);
 					} else {

@@ -95,6 +95,8 @@ public:
 
 	bool has(const StringName &p_property) const { return values.has(p_property); }
 
+	void update_files_to_export();
+
 	Vector<String> get_files_to_export() const;
 
 	void add_export_file(const String &p_path);
@@ -232,6 +234,7 @@ public:
 	virtual Ref<EditorExportPreset> create_preset();
 
 	virtual void get_export_options(List<ExportOption> *r_options) = 0;
+	virtual bool should_update_export_options() { return false; }
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const { return true; }
 
 	virtual String get_os_name() const = 0;
@@ -291,6 +294,7 @@ class EditorExportPlugin : public Reference {
 	bool skipped;
 
 	Vector<String> ios_frameworks;
+	Vector<String> ios_project_static_libs;
 	String ios_plist_content;
 	String ios_linker_flags;
 	Vector<String> ios_bundle_files;
@@ -322,6 +326,7 @@ protected:
 	void add_shared_object(const String &p_path, const Vector<String> &tags);
 
 	void add_ios_framework(const String &p_path);
+	void add_ios_project_static_lib(const String &p_path);
 	void add_ios_plist_content(const String &p_plist_content);
 	void add_ios_linker_flags(const String &p_flags);
 	void add_ios_bundle_file(const String &p_path);
@@ -336,6 +341,7 @@ protected:
 
 public:
 	Vector<String> get_ios_frameworks() const;
+	Vector<String> get_ios_project_static_libs() const;
 	String get_ios_plist_content() const;
 	String get_ios_linker_flags() const;
 	Vector<String> get_ios_bundle_files() const;
@@ -350,6 +356,8 @@ class EditorExport : public Node {
 	Vector<Ref<EditorExportPlatform> > export_platforms;
 	Vector<Ref<EditorExportPreset> > export_presets;
 	Vector<Ref<EditorExportPlugin> > export_plugins;
+
+	StringName _export_presets_updated;
 
 	Timer *save_timer;
 	bool block_save;
@@ -382,7 +390,7 @@ public:
 	Vector<Ref<EditorExportPlugin> > get_export_plugins();
 
 	void load_config();
-
+	void update_export_presets();
 	bool poll_export_platforms();
 
 	EditorExport();

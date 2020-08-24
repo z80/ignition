@@ -101,6 +101,8 @@
 #define _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT 0x8E8E
 #define _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT 0x8E8F
 
+#define _GL_TEXTURE_EXTERNAL_OES 0x8D65
+
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
 #endif
@@ -242,24 +244,24 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 
 		} break;
 		case Image::FORMAT_RH: {
-			r_gl_internal_format = GL_R32F;
+			r_gl_internal_format = GL_R16F;
 			r_gl_format = GL_RED;
 			r_gl_type = GL_HALF_FLOAT;
 		} break;
 		case Image::FORMAT_RGH: {
-			r_gl_internal_format = GL_RG32F;
+			r_gl_internal_format = GL_RG16F;
 			r_gl_format = GL_RG;
 			r_gl_type = GL_HALF_FLOAT;
 
 		} break;
 		case Image::FORMAT_RGBH: {
-			r_gl_internal_format = GL_RGB32F;
+			r_gl_internal_format = GL_RGB16F;
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_HALF_FLOAT;
 
 		} break;
 		case Image::FORMAT_RGBAH: {
-			r_gl_internal_format = GL_RGBA32F;
+			r_gl_internal_format = GL_RGBA16F;
 			r_gl_format = GL_RGBA;
 			r_gl_type = GL_HALF_FLOAT;
 
@@ -663,6 +665,14 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 			texture->target = GL_TEXTURE_2D;
 			texture->images.resize(1);
 		} break;
+		case VS::TEXTURE_TYPE_EXTERNAL: {
+#ifdef ANDROID_ENABLED
+			texture->target = _GL_TEXTURE_EXTERNAL_OES;
+#else
+			texture->target = GL_TEXTURE_2D;
+#endif
+			texture->images.resize(0);
+		} break;
 		case VS::TEXTURE_TYPE_CUBEMAP: {
 			texture->target = GL_TEXTURE_CUBE_MAP;
 			texture->images.resize(6);
@@ -677,39 +687,55 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 		} break;
 	}
 
-	texture->is_npot_repeat_mipmap = false;
+	if (p_type != VS::TEXTURE_TYPE_EXTERNAL) {
+		texture->is_npot_repeat_mipmap = false;
 #ifdef JAVASCRIPT_ENABLED
-	// WebGL 2.0 on browsers does not seem to properly support compressed non power-of-two (NPOT)
-	// textures with repeat/mipmaps, even though NPOT textures should be supported as per the spec.
-	// Force decompressing them to work it around on WebGL 2.0 at a performance cost (GH-33058).
-	int po2_width = next_power_of_2(p_width);
-	int po2_height = next_power_of_2(p_height);
-	bool is_po2 = p_width == po2_width && p_height == po2_height;
+		// WebGL 2.0 on browsers does not seem to properly support compressed non power-of-two (NPOT)
+		// textures with repeat/mipmaps, even though NPOT textures should be supported as per the spec.
+		// Force decompressing them to work it around on WebGL 2.0 at a performance cost (GH-33058).
+		int po2_width = next_power_of_2(p_width);
+		int po2_height = next_power_of_2(p_height);
+		bool is_po2 = p_width == po2_width && p_height == po2_height;
 
-	if (!is_po2 && (p_flags & VS::TEXTURE_FLAG_REPEAT || p_flags & VS::TEXTURE_FLAG_MIPMAPS)) {
-		texture->is_npot_repeat_mipmap = true;
-	}
+		if (!is_po2 && (p_flags & VS::TEXTURE_FLAG_REPEAT || p_flags & VS::TEXTURE_FLAG_MIPMAPS)) {
+			texture->is_npot_repeat_mipmap = true;
+		}
 #endif // JAVASCRIPT_ENABLED
 
-	Image::Format real_format;
-	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, format, internal_format, type, compressed, srgb, texture->is_npot_repeat_mipmap);
+		Image::Format real_format;
+		_get_gl_image_and_format(Ref<Image>(),
+				texture->format,
+				texture->flags,
+				real_format,
+				format,
+				internal_format,
+				type,
+				compressed,
+				srgb,
+				texture->is_npot_repeat_mipmap);
 
-	texture->alloc_width = texture->width;
-	texture->alloc_height = texture->height;
-	texture->alloc_depth = texture->depth;
+		texture->alloc_width = texture->width;
+		texture->alloc_height = texture->height;
+		texture->alloc_depth = texture->depth;
 
-	texture->gl_format_cache = format;
-	texture->gl_type_cache = type;
-	texture->gl_internal_format_cache = internal_format;
-	texture->compressed = compressed;
-	texture->srgb = srgb;
-	texture->data_size = 0;
-	texture->mipmaps = 1;
+		texture->gl_format_cache = format;
+		texture->gl_type_cache = type;
+		texture->gl_internal_format_cache = internal_format;
+		texture->compressed = compressed;
+		texture->srgb = srgb;
+		texture->data_size = 0;
+		texture->mipmaps = 1;
+	}
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 
-	if (p_type == VS::TEXTURE_TYPE_3D || p_type == VS::TEXTURE_TYPE_2D_ARRAY) {
+	if (p_type == VS::TEXTURE_TYPE_EXTERNAL) {
+		glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(texture->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(texture->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	} else if (p_type == VS::TEXTURE_TYPE_3D || p_type == VS::TEXTURE_TYPE_2D_ARRAY) {
 
 		int width = p_width;
 		int height = p_height;
@@ -757,6 +783,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	ERR_FAIL_COND(texture->render_target);
 	ERR_FAIL_COND(texture->format != p_image->get_format());
 	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND(texture->type == VS::TEXTURE_TYPE_EXTERNAL);
 
 	GLenum type;
 	GLenum format;
@@ -788,7 +815,8 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	GLenum blit_target = GL_TEXTURE_2D;
 
 	switch (texture->type) {
-		case VS::TEXTURE_TYPE_2D: {
+		case VS::TEXTURE_TYPE_2D:
+		case VS::TEXTURE_TYPE_EXTERNAL: {
 			blit_target = GL_TEXTURE_2D;
 		} break;
 		case VS::TEXTURE_TYPE_CUBEMAP: {
@@ -989,6 +1017,7 @@ void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<I
 	ERR_FAIL_COND(src_x < 0 || src_y < 0 || src_x + src_w > p_image->get_width() || src_y + src_h > p_image->get_height());
 	ERR_FAIL_COND(dst_x < 0 || dst_y < 0 || dst_x + src_w > texture->alloc_width || dst_y + src_h > texture->alloc_height);
 	ERR_FAIL_COND(p_dst_mip < 0 || p_dst_mip >= texture->mipmaps);
+	ERR_FAIL_COND(texture->type == VS::TEXTURE_TYPE_EXTERNAL);
 
 	GLenum type;
 	GLenum format;
@@ -1008,7 +1037,8 @@ void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<I
 	GLenum blit_target = GL_TEXTURE_2D;
 
 	switch (texture->type) {
-		case VS::TEXTURE_TYPE_2D: {
+		case VS::TEXTURE_TYPE_2D:
+		case VS::TEXTURE_TYPE_EXTERNAL: {
 			blit_target = GL_TEXTURE_2D;
 		} break;
 		case VS::TEXTURE_TYPE_CUBEMAP: {
@@ -2163,6 +2193,9 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+		//reset flags on Sky Texture that may have changed
+		texture_set_flags(sky->panorama, texture->flags);
+
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 		glDeleteFramebuffers(1, &tmp_fb);
 		glDeleteFramebuffers(1, &tmp_fb2);
@@ -2466,6 +2499,7 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 			case ShaderLanguage::TYPE_MAT3: pi.type = Variant::BASIS; break;
 			case ShaderLanguage::TYPE_MAT4: pi.type = Variant::TRANSFORM; break;
 			case ShaderLanguage::TYPE_SAMPLER2D:
+			case ShaderLanguage::TYPE_SAMPLEREXT:
 			case ShaderLanguage::TYPE_ISAMPLER2D:
 			case ShaderLanguage::TYPE_USAMPLER2D: {
 
@@ -2522,6 +2556,34 @@ RID RasterizerStorageGLES3::shader_get_default_texture_param(RID p_shader, const
 	if (!E)
 		return RID();
 	return E->get();
+}
+
+void RasterizerStorageGLES3::shader_add_custom_define(RID p_shader, const String &p_define) {
+
+	Shader *shader = shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	shader->shader->add_custom_define(p_define);
+
+	_shader_make_dirty(shader);
+}
+
+void RasterizerStorageGLES3::shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const {
+
+	Shader *shader = shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	shader->shader->get_custom_defines(p_defines);
+}
+
+void RasterizerStorageGLES3::shader_clear_custom_defines(RID p_shader) {
+
+	Shader *shader = shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	shader->shader->clear_custom_defines();
+
+	_shader_make_dirty(shader);
 }
 
 /* COMMON MATERIAL API */
@@ -8079,6 +8141,8 @@ void RasterizerStorageGLES3::render_info_end_capture() {
 	info.snap.surface_switch_count = info.render.surface_switch_count - info.snap.surface_switch_count;
 	info.snap.shader_rebind_count = info.render.shader_rebind_count - info.snap.shader_rebind_count;
 	info.snap.vertices_count = info.render.vertices_count - info.snap.vertices_count;
+	info.snap._2d_item_count = info.render._2d_item_count - info.snap._2d_item_count;
+	info.snap._2d_draw_call_count = info.render._2d_draw_call_count - info.snap._2d_draw_call_count;
 }
 
 int RasterizerStorageGLES3::get_captured_render_info(VS::RenderInfo p_info) {
@@ -8104,6 +8168,12 @@ int RasterizerStorageGLES3::get_captured_render_info(VS::RenderInfo p_info) {
 		case VS::INFO_DRAW_CALLS_IN_FRAME: {
 			return info.snap.draw_call_count;
 		} break;
+		case VS::INFO_2D_ITEMS_IN_FRAME: {
+			return info.snap._2d_item_count;
+		} break;
+		case VS::INFO_2D_DRAW_CALLS_IN_FRAME: {
+			return info.snap._2d_draw_call_count;
+		} break;
 		default: {
 			return get_render_info(p_info);
 		}
@@ -8125,6 +8195,10 @@ int RasterizerStorageGLES3::get_render_info(VS::RenderInfo p_info) {
 			return info.render_final.surface_switch_count;
 		case VS::INFO_DRAW_CALLS_IN_FRAME:
 			return info.render_final.draw_call_count;
+		case VS::INFO_2D_ITEMS_IN_FRAME:
+			return info.render_final._2d_item_count;
+		case VS::INFO_2D_DRAW_CALLS_IN_FRAME:
+			return info.render_final._2d_draw_call_count;
 		case VS::INFO_USAGE_VIDEO_MEM_TOTAL:
 			return 0; //no idea
 		case VS::INFO_VIDEO_MEM_USED:

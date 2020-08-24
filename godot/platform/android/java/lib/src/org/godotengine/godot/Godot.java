@@ -30,6 +30,13 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.input.GodotEditText;
+import org.godotengine.godot.plugin.GodotPlugin;
+import org.godotengine.godot.plugin.GodotPluginRegistry;
+import org.godotengine.godot.utils.GodotNetUtils;
+import org.godotengine.godot.utils.PermissionsUtil;
+import org.godotengine.godot.xr.XRMode;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -61,8 +68,6 @@ import android.os.Messenger;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings.Secure;
-import android.support.annotation.Keep;
-import android.support.annotation.Nullable;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -77,6 +82,13 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.annotation.CallSuper;
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
+
 import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
 import com.google.android.vending.expansion.downloader.DownloaderClientMarshaller;
 import com.google.android.vending.expansion.downloader.DownloaderServiceMarshaller;
@@ -84,6 +96,7 @@ import com.google.android.vending.expansion.downloader.Helpers;
 import com.google.android.vending.expansion.downloader.IDownloaderClient;
 import com.google.android.vending.expansion.downloader.IDownloaderService;
 import com.google.android.vending.expansion.downloader.IStub;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -93,14 +106,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import javax.microedition.khronos.opengles.GL10;
-import org.godotengine.godot.input.GodotEditText;
-import org.godotengine.godot.payments.PaymentsManager;
-import org.godotengine.godot.utils.GodotNetUtils;
-import org.godotengine.godot.utils.PermissionsUtil;
-import org.godotengine.godot.xr.XRMode;
 
-public abstract class Godot extends Activity implements SensorEventListener, IDownloaderClient {
+import javax.microedition.khronos.opengles.GL10;
+
+public abstract class Godot extends FragmentActivity implements SensorEventListener, IDownloaderClient {
 
 	static final int MAX_SINGLETONS = 64;
 	private IStub mDownloaderClientStub;
@@ -128,6 +137,8 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 
 	// Used to dispatch events to the main thread.
 	private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
+
+	private GodotPluginRegistry pluginRegistry;
 
 	static private Intent mCurrentIntent;
 
@@ -158,7 +169,7 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 
 		protected void registerClass(String p_name, String[] p_methods) {
 
-			GodotLib.singleton(p_name, this);
+			GodotPlugin.nativeRegisterSingleton(p_name, this);
 
 			Class clazz = getClass();
 			Method[] methods = clazz.getDeclaredMethods();
@@ -184,7 +195,7 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 				String[] pt = new String[ptr.size()];
 				ptr.toArray(pt);
 
-				GodotLib.method(p_name, method.getName(), method.getReturnType().getName(), pt);
+				GodotPlugin.nativeRegisterMethod(p_name, method.getName(), method.getReturnType().getName(), pt);
 			}
 
 			Godot.singletons[Godot.singleton_count++] = this;
@@ -254,33 +265,45 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 	}
 	public ResultCallback result_callback;
 
-	private PaymentsManager mPaymentsManager = null;
-
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == PaymentsManager.REQUEST_CODE_FOR_PURCHASE) {
-			mPaymentsManager.processPurchaseResponse(resultCode, data);
-		} else if (result_callback != null) {
+		if (result_callback != null) {
 			result_callback.callback(requestCode, resultCode, data);
 			result_callback = null;
-		};
+		}
 
 		for (int i = 0; i < singleton_count; i++) {
 
 			singletons[i].onMainActivityResult(requestCode, resultCode, data);
 		}
-	};
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onMainActivityResult(requestCode, resultCode, data);
+		}
+	}
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		for (int i = 0; i < singleton_count; i++) {
 			singletons[i].onMainRequestPermissionsResult(requestCode, permissions, grantResults);
 		}
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onMainRequestPermissionsResult(requestCode, permissions, grantResults);
+		}
 
 		for (int i = 0; i < permissions.length; i++) {
 			GodotLib.requestPermissionResult(permissions[i], grantResults[i] == PackageManager.PERMISSION_GRANTED);
 		}
 	};
+
+	/**
+	 * Invoked on the render thread when the Godot main loop has started.
+	 */
+	@CallSuper
+	protected void onGodotMainLoopStarted() {
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onGodotMainLoopStarted();
+		}
+	}
 
 	/**
 	 * Used by the native code (java_godot_lib_jni.cpp) to complete initialization of the GLSurfaceView view and renderer.
@@ -304,14 +327,13 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 		edittext.setView(mView);
 		io.setEdit(edittext);
 
-		final Godot godot = this;
 		mView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
 			public void onGlobalLayout() {
 				Point fullSize = new Point();
-				godot.getWindowManager().getDefaultDisplay().getSize(fullSize);
+				getWindowManager().getDefaultDisplay().getSize(fullSize);
 				Rect gameSize = new Rect();
-				godot.mView.getWindowVisibleDisplayFrame(gameSize);
+				mView.getWindowVisibleDisplayFrame(gameSize);
 
 				final int keyboardHeight = fullSize.y - gameSize.bottom;
 				GodotLib.setVirtualKeyboardHeight(keyboardHeight);
@@ -323,6 +345,12 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 			@Override
 			public void run() {
 				GodotLib.setup(current_command_line);
+
+				// Must occur after GodotLib.setup has completed.
+				for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+					plugin.onRegisterPluginWithGodotNative();
+				}
+
 				setKeepScreenOn("True".equals(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
 
 				// The Godot Android plugins are setup on completion of GodotLib.setup
@@ -340,6 +368,14 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 				});
 			}
 		});
+
+		// Include the returned non-null views in the Godot view hierarchy.
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			View pluginView = plugin.onMainCreate(this);
+			if (pluginView != null) {
+				layout.addView(pluginView);
+			}
+		}
 	}
 
 	public void setKeepScreenOn(final boolean p_enabled) {
@@ -418,7 +454,8 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 		return deviceInfo.reqGlEsVersion;
 	}
 
-	private String[] getCommandLine() {
+	@CallSuper
+	protected String[] getCommandLine() {
 		InputStream is;
 		try {
 			is = getAssets().open("_cl_");
@@ -519,8 +556,6 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 
 		result_callback = null;
 
-		mPaymentsManager = PaymentsManager.createManager(this).initService();
-
 		godot_initialized = true;
 	}
 
@@ -537,6 +572,7 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 		Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 		mClipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
+		pluginRegistry = GodotPluginRegistry.initializePluginRegistry(this);
 
 		//check for apk expansion API
 		if (true) {
@@ -676,9 +712,11 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 	@Override
 	protected void onDestroy() {
 
-		if (mPaymentsManager != null) mPaymentsManager.destroy();
 		for (int i = 0; i < singleton_count; i++) {
 			singletons[i].onMainDestroy();
+		}
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onMainDestroy();
 		}
 
 		GodotLib.ondestroy(this);
@@ -707,6 +745,9 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 
 		for (int i = 0; i < singleton_count; i++) {
 			singletons[i].onMainPause();
+		}
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onMainPause();
 		}
 	}
 
@@ -760,6 +801,9 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 		for (int i = 0; i < singleton_count; i++) {
 
 			singletons[i].onMainResume();
+		}
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onMainResume();
 		}
 	}
 
@@ -857,6 +901,11 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 				shouldQuit = false;
 			}
 		}
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			if (plugin.onMainBackPressed()) {
+				shouldQuit = false;
+			}
+		}
 
 		if (shouldQuit && mView != null) {
 			mView.queueEvent(new Runnable() {
@@ -865,6 +914,17 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 					GodotLib.back();
 				}
 			});
+		}
+	}
+
+	/**
+	 * Queue a runnable to be run on the render thread.
+	 * <p>
+	 * This must be called after the render thread has started.
+	 */
+	public final void runOnRenderThread(@NonNull Runnable action) {
+		if (mView != null) {
+			mView.queueEvent(action);
 		}
 	}
 
@@ -999,10 +1059,6 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 			}
 		});
 		return true;
-	}
-
-	public PaymentsManager getPaymentsManager() {
-		return mPaymentsManager;
 	}
 
 	public boolean requestPermission(String p_name) {

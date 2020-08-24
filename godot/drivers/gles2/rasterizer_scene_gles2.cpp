@@ -2370,6 +2370,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 			if (vertex_lit != prev_vertex_lit) {
 				state.scene_shader.set_conditional(SceneShaderGLES2::USE_VERTEX_LIGHTING, vertex_lit);
 				prev_vertex_lit = vertex_lit;
+				rebind = true;
 			}
 
 			if (!unshaded && !accum_pass && e->refprobe_0_index != RenderList::MAX_REFLECTION_PROBES) {
@@ -2451,15 +2452,15 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		RasterizerStorageGLES2::Skeleton *skeleton = storage->skeleton_owner.getornull(e->instance->skeleton);
 
 		if (skeleton != prev_skeleton) {
-
-			if (skeleton) {
-				state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, true);
-				state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON_SOFTWARE, storage->config.use_skeleton_software);
-			} else {
-				state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, false);
-				state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON_SOFTWARE, false);
+			if ((prev_skeleton == NULL) != (skeleton == NULL)) {
+				if (skeleton) {
+					state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, true);
+					state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON_SOFTWARE, storage->config.use_skeleton_software);
+				} else {
+					state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, false);
+					state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON_SOFTWARE, false);
+				}
 			}
-
 			rebind = true;
 		}
 
@@ -3995,7 +3996,7 @@ void RasterizerSceneGLES2::initialize() {
 			//maximum compatibility, renderbuffer and RGBA shadow
 			glGenRenderbuffers(1, &directional_shadow.depth);
 			glBindRenderbuffer(GL_RENDERBUFFER, directional_shadow.depth);
-			glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_internalformat, directional_shadow.size, directional_shadow.size);
+			glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_buffer_internalformat, directional_shadow.size, directional_shadow.size);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, directional_shadow.depth);
 
 			glGenTextures(1, &directional_shadow.color);

@@ -135,7 +135,8 @@ Vector<String> FileDialog::get_selected_files() const {
 
 void FileDialog::update_dir() {
 
-	dir->set_text(dir_access->get_current_dir());
+	dir->set_text(dir_access->get_current_dir_without_drive());
+
 	if (drives->is_visible()) {
 		drives->select(dir_access->get_current_drive());
 	}
@@ -425,7 +426,9 @@ void FileDialog::update_file_list() {
 
 	TreeItem *root = tree->create_item();
 	Ref<Texture> folder = get_icon("folder");
+	Ref<Texture> file_icon = get_icon("file");
 	const Color folder_color = get_color("folder_icon_modulate");
+	const Color file_color = get_color("file_icon_modulate");
 	List<String> files;
 	List<String> dirs;
 
@@ -520,7 +523,10 @@ void FileDialog::update_file_list() {
 
 				Ref<Texture> icon = get_icon_func(base_dir.plus_file(files.front()->get()));
 				ti->set_icon(0, icon);
+			} else {
+				ti->set_icon(0, file_icon);
 			}
+			ti->set_icon_modulate(0, file_color);
 
 			if (mode == MODE_OPEN_DIR) {
 				ti->set_custom_color(0, get_color("files_disabled"));
@@ -789,6 +795,12 @@ void FileDialog::_update_drives() {
 		drives->hide();
 	} else {
 		drives->clear();
+		Node *dp = drives->get_parent();
+		if (dp) {
+			dp->remove_child(drives);
+		}
+		dp = dir_access->drives_are_shortcuts() ? shortcuts_container : drives_container;
+		dp->add_child(drives);
 		drives->show();
 
 		for (int i = 0; i < dir_access->get_drive_count(); i++) {
@@ -902,11 +914,15 @@ FileDialog::FileDialog() {
 	hbc->add_child(dir_up);
 	dir_up->connect("pressed", this, "_go_up");
 
-	drives = memnew(OptionButton);
-	hbc->add_child(drives);
-	drives->connect("item_selected", this, "_select_drive");
-
 	hbc->add_child(memnew(Label(RTR("Path:"))));
+
+	drives_container = memnew(HBoxContainer);
+	hbc->add_child(drives_container);
+
+	drives = memnew(OptionButton);
+	drives->connect("item_selected", this, "_select_drive");
+	hbc->add_child(drives);
+
 	dir = memnew(LineEdit);
 	hbc->add_child(dir);
 	dir->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -922,6 +938,9 @@ FileDialog::FileDialog() {
 	show_hidden->set_tooltip(RTR("Toggle the visibility of hidden files."));
 	show_hidden->connect("toggled", this, "set_show_hidden_files");
 	hbc->add_child(show_hidden);
+
+	shortcuts_container = memnew(HBoxContainer);
+	hbc->add_child(shortcuts_container);
 
 	makedir = memnew(Button);
 	makedir->set_text(RTR("Create Folder"));

@@ -31,6 +31,7 @@
 #include "gd_mono_class.h"
 
 #include <mono/metadata/attrdefs.h>
+#include <mono/metadata/debug-helpers.h>
 
 #include "gd_mono_assembly.h"
 #include "gd_mono_cache.h"
@@ -55,7 +56,11 @@ String GDMonoClass::get_full_name() const {
 	return get_full_name(mono_class);
 }
 
-MonoType *GDMonoClass::get_mono_type() {
+String GDMonoClass::get_type_desc() const {
+	return GDMonoUtils::get_type_desc(get_mono_type());
+}
+
+MonoType *GDMonoClass::get_mono_type() const {
 	// Careful, you cannot compare two MonoType*.
 	// There is mono_metadata_type_equal, how is this different from comparing two MonoClass*?
 	return get_mono_type(mono_class);
@@ -74,12 +79,26 @@ bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
 	return mono_class_is_assignable_from(mono_class, p_from->mono_class);
 }
 
-GDMonoClass *GDMonoClass::get_parent_class() {
+StringName GDMonoClass::get_namespace() const {
+	GDMonoClass *nesting_class = get_nesting_class();
+	if (!nesting_class)
+		return namespace_name;
+	return nesting_class->get_namespace();
+}
+
+String GDMonoClass::get_name_for_lookup() const {
+	GDMonoClass *nesting_class = get_nesting_class();
+	if (!nesting_class)
+		return class_name;
+	return nesting_class->get_name_for_lookup() + "/" + class_name;
+}
+
+GDMonoClass *GDMonoClass::get_parent_class() const {
 	MonoClass *parent_mono_class = mono_class_get_parent(mono_class);
 	return parent_mono_class ? GDMono::get_singleton()->get_class(parent_mono_class) : NULL;
 }
 
-GDMonoClass *GDMonoClass::get_nesting_class() {
+GDMonoClass *GDMonoClass::get_nesting_class() const {
 	MonoClass *nesting_type = mono_class_get_nesting_type(mono_class);
 	return nesting_type ? GDMono::get_singleton()->get_class(nesting_type) : NULL;
 }
@@ -264,6 +283,12 @@ bool GDMonoClass::implements_interface(GDMonoClass *p_interface) {
 	return mono_class_implements_interface(mono_class, p_interface->get_mono_ptr());
 }
 
+bool GDMonoClass::has_public_parameterless_ctor() {
+
+	GDMonoMethod *ctor = get_method(".ctor", 0);
+	return ctor && ctor->get_visibility() == IMonoClassMember::PUBLIC;
+}
+
 GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_count) {
 
 	MethodKey key = MethodKey(p_name, p_params_count);
@@ -327,6 +352,9 @@ GDMonoMethod *GDMonoClass::get_method_with_desc(const String &p_description, boo
 	MonoMethodDesc *desc = mono_method_desc_new(p_description.utf8().get_data(), p_include_namespace);
 	MonoMethod *method = mono_method_desc_search_in_class(desc, mono_class);
 	mono_method_desc_free(desc);
+
+	if (!method)
+		return NULL;
 
 	ERR_FAIL_COND_V(mono_method_get_class(method) != mono_class, NULL);
 

@@ -763,6 +763,11 @@ msgid "Method in target node must be specified."
 msgstr "Phương thức trong nút đích phải được chỉ định."
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Phương thức trong nút đích phải được chỉ định."
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -846,7 +851,6 @@ msgstr "Không thể kết nối tín hiệu"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1455,7 +1459,7 @@ msgstr ""
 msgid "Remove Autoload"
 msgstr ""
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Mở"
 
@@ -1463,17 +1467,8 @@ msgstr "Mở"
 msgid "Rearrange Autoloads"
 msgstr "Sắp xếp lại Autoloads"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Invalid path."
-msgstr "Đường dẫn sai."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Tệp không tồn tại."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
+msgid "Can't add autoload:"
 msgstr ""
 
 #: editor/editor_autoload_settings.cpp
@@ -2434,12 +2429,14 @@ msgstr "Không thể nạp một cảnh mà chưa lưu bao giờ."
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Revert"
-msgstr "Trở lại"
+msgid "Reload Saved Scene"
+msgstr "Lưu Cảnh"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Hành động này không thể hoàn tác. Trở lại luôn?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2719,10 +2716,6 @@ msgid "Redo"
 msgstr "Làm lại"
 
 #: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr ""
 
@@ -2927,8 +2920,13 @@ msgid "Q&A"
 msgstr "Hỏi và Đáp"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Theo dõi vấn đề"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Nhập vào lại"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3342,6 +3340,10 @@ msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
+msgstr ""
+
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
 
 #: editor/editor_sub_scene.cpp
@@ -3944,6 +3946,10 @@ msgid "Error running post-import script:"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Đang lưu ..."
 
@@ -3974,7 +3980,8 @@ msgid "Reimport"
 msgstr "Nhập vào lại"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+#, fuzzy
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Lưu các cảnh, nhập vào lại và khởi động lại"
 
 #: editor/import_dock.cpp
@@ -6849,14 +6856,6 @@ msgid "Open Godot online documentation."
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr ""
 
@@ -6921,13 +6920,13 @@ msgstr ""
 "Không có phương thức kết nối '%s' của tín hiệu '%s' từ nút '%s' đến nút '%s'."
 
 #: editor/plugins/script_text_editor.cpp
+msgid "[Ignore]"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Line"
 msgstr "Dòng:"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7303,6 +7302,10 @@ msgid "This operation requires a single selected node."
 msgstr "Hoạt động yêu cầu chọn một nút duy nhất."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr ""
 
@@ -7392,17 +7395,26 @@ msgid "Freelook Slow Modifier"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
+msgid "XForm Dialog"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "XForm Dialog"
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9864,6 +9876,13 @@ msgstr ""
 "Hiện giờ bạn không có project nào.\n"
 "Bạn có muốn xem các project official ví dụ trên Asset Library không?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr ""
@@ -10430,8 +10449,9 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Detach Script"
+msgstr "Đính kèm Script"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10594,6 +10614,13 @@ msgid "Open Documentation"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "Thêm nút con"
 
@@ -10642,11 +10669,13 @@ msgstr ""
 "Tệp tin cảnh giống như một nút. Tạo một cảnh kế thừa nếu nó không có nút gốc."
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+#, fuzzy
+msgid "Attach a new or existing script to the selected node."
 msgstr "Đính kèm một tệp lệnh cho nút đã chọn."
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+#, fuzzy
+msgid "Detach the script from the selected node."
 msgstr "Xoá tệp lệnh khỏi nút đã chọn."
 
 #: editor/scene_tree_dock.cpp
@@ -10779,6 +10808,10 @@ msgid "A directory with the same name exists."
 msgstr "Đã có một file hoặc folder trùng tên."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Tệp không tồn tại."
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid extension."
 msgstr "Phải sử dụng extension có hiệu lực"
@@ -10823,6 +10856,11 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
+msgid "Invalid path."
+msgstr "Đường dẫn sai."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
 msgid "Invalid class name."
 msgstr "Kích thước font không hợp lệ."
 
@@ -10855,6 +10893,12 @@ msgstr ""
 #, fuzzy
 msgid "Script file already exists."
 msgstr "Tam giác đã tồn tại."
+
+#: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -10987,6 +11031,11 @@ msgstr ""
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Xuất hồ sơ"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -11876,6 +11925,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -11897,6 +11950,32 @@ msgstr ""
 #, fuzzy
 msgid "Invalid package name:"
 msgstr "Kích thước font không hợp lệ."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12521,6 +12600,10 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "nguồn vô hiệu cho xem trước"
@@ -12549,6 +12632,16 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Không thể chỉnh sửa hằng số."
+
+#, fuzzy
+#~ msgid "Revert"
+#~ msgstr "Trở lại"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Hành động này không thể hoàn tác. Trở lại luôn?"
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Theo dõi vấn đề"
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "Đã thay thế %d biến cố."

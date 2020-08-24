@@ -227,6 +227,10 @@ EditorFileSystem *EditorInterface::get_resource_file_system() {
 	return EditorFileSystem::get_singleton();
 }
 
+FileSystemDock *EditorInterface::get_file_system_dock() {
+	return EditorNode::get_singleton()->get_filesystem_dock();
+}
+
 EditorSelection *EditorInterface::get_selection() {
 	return EditorNode::get_singleton()->get_editor_selection();
 }
@@ -277,6 +281,10 @@ void EditorInterface::set_distraction_free_mode(bool p_enter) {
 
 EditorInterface *EditorInterface::singleton = NULL;
 
+bool EditorInterface::is_distraction_free_mode_enabled() const {
+	return EditorNode::get_singleton()->is_distraction_free_mode_enabled();
+}
+
 void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property"), &EditorInterface::inspect_object, DEFVAL(String()));
@@ -296,6 +304,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select_file", "file"), &EditorInterface::select_file);
 	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorInterface::get_current_path);
+	ClassDB::bind_method(D_METHOD("get_file_system_dock"), &EditorInterface::get_file_system_dock);
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
@@ -307,6 +316,9 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
 	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
+	ClassDB::bind_method(D_METHOD("is_distraction_free_mode_enabled"), &EditorInterface::is_distraction_free_mode_enabled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
 }
 
 EditorInterface::EditorInterface() {

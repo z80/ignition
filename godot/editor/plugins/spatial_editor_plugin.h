@@ -33,6 +33,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/editor_scale.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/light.h"
 #include "scene/3d/visual_instance.h"
@@ -42,6 +43,7 @@ class Camera;
 class SpatialEditor;
 class EditorSpatialGizmoPlugin;
 class ViewportContainer;
+class SpatialEditorViewport;
 
 class EditorSpatialGizmo : public SpatialGizmo {
 
@@ -138,10 +140,49 @@ public:
 	~EditorSpatialGizmo();
 };
 
+class ViewportRotationControl : public Control {
+	GDCLASS(ViewportRotationControl, Control);
+
+	struct Axis2D {
+		Vector2 screen_point;
+		float z_axis = -99.0;
+		int axis = -1;
+	};
+
+	struct Axis2DCompare {
+		_FORCE_INLINE_ bool operator()(const Axis2D &l, const Axis2D &r) const {
+			return l.z_axis < r.z_axis;
+		}
+	};
+
+	SpatialEditorViewport *viewport = nullptr;
+	Vector<Color> axis_colors;
+	Vector<int> axis_menu_options;
+	Vector2i orbiting_mouse_start;
+	bool orbiting = false;
+	int focused_axis = -2;
+
+	const float AXIS_CIRCLE_RADIUS = 8.0f * EDSCALE;
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+	void _gui_input(Ref<InputEvent> p_event);
+	void _draw();
+	void _draw_axis(const Axis2D &p_axis);
+	void _get_sorted_axis(Vector<Axis2D> &r_axis);
+	void _update_focus();
+	void _on_mouse_exited();
+
+public:
+	void set_viewport(SpatialEditorViewport *p_viewport);
+};
+
 class SpatialEditorViewport : public Control {
 
 	GDCLASS(SpatialEditorViewport, Control);
 	friend class SpatialEditor;
+	friend class ViewportRotationControl;
 	enum {
 
 		VIEW_TOP,
@@ -168,7 +209,8 @@ class SpatialEditorViewport : public Control {
 		VIEW_DISPLAY_OVERDRAW,
 		VIEW_DISPLAY_SHADELESS,
 		VIEW_LOCK_ROTATION,
-		VIEW_CINEMATIC_PREVIEW
+		VIEW_CINEMATIC_PREVIEW,
+		VIEW_AUTO_ORTHOGONAL
 	};
 
 public:
@@ -184,10 +226,17 @@ public:
 		NAVIGATION_MODO,
 	};
 
+	enum FreelookNavigationScheme {
+		FREELOOK_DEFAULT,
+		FREELOOK_PARTIALLY_AXIS_LOCKED,
+		FREELOOK_FULLY_AXIS_LOCKED,
+	};
+
 private:
 	int index;
 	String name;
 	void _menu_option(int p_option);
+	void _set_auto_orthogonal();
 	Spatial *preview_node;
 	AABB *preview_bounds;
 	Vector<String> selected_files;
@@ -211,17 +260,21 @@ private:
 	Camera *camera;
 	bool transforming;
 	bool orthogonal;
+	bool auto_orthogonal;
 	bool lock_rotation;
 	float gizmo_scale;
 
 	bool freelook_active;
 	real_t freelook_speed;
+	Vector2 previous_mouse_position;
 
-	TextureRect *crosshair;
 	Label *info_label;
-	Label *fps_label;
 	Label *cinema_label;
 	Label *locked_label;
+
+	VBoxContainer *top_right_vbox;
+	ViewportRotationControl *rotation_control;
+	Label *fps_label;
 
 	struct _RayResult {
 
@@ -322,7 +375,9 @@ private:
 		Point2 region_begin, region_end;
 
 		Cursor() {
-			x_rot = y_rot = 0.5;
+			// These rotations place the camera in +X +Y +Z, aka south east, facing north west.
+			x_rot = 0.5;
+			y_rot = -0.5;
 			distance = 4;
 			region_select = false;
 		}
@@ -423,10 +478,14 @@ public:
 	Transform original; // original location when moving
 	Transform original_local;
 	Transform last_xform; // last transform
+	bool last_xform_dirty;
 	Spatial *sp;
 	RID sbox_instance;
 
-	SpatialEditorSelectedItem() { sp = NULL; }
+	SpatialEditorSelectedItem() {
+		sp = NULL;
+		last_xform_dirty = true;
+	}
 	~SpatialEditorSelectedItem();
 };
 
@@ -533,6 +592,9 @@ private:
 	Ref<SpatialMaterial> plane_gizmo_color_hl[3];
 
 	int over_gizmo_handle;
+	float snap_translate_value;
+	float snap_rotate_value;
+	float snap_scale_value;
 
 	Ref<ArrayMesh> selection_box;
 	RID indicators;
@@ -612,6 +674,8 @@ private:
 	SpinBox *settings_znear;
 	SpinBox *settings_zfar;
 
+	void _snap_changed();
+	void _snap_update();
 	void _xform_dialog_action();
 	void _menu_item_pressed(int p_option);
 	void _menu_item_toggled(bool pressed, int p_option);
@@ -773,12 +837,11 @@ public:
 	static const int HIDDEN = 1;
 	static const int ON_TOP = 2;
 
-private:
+protected:
 	int current_state;
 	List<EditorSpatialGizmo *> current_gizmos;
 	HashMap<String, Vector<Ref<SpatialMaterial> > > materials;
 
-protected:
 	static void _bind_methods();
 	virtual bool has_gizmo(Spatial *p_spatial);
 	virtual Ref<EditorSpatialGizmo> create_gizmo(Spatial *p_spatial);

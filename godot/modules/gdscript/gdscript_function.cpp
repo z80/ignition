@@ -292,7 +292,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		line = p_state->line;
 		ip = p_state->ip;
 		alloca_size = p_state->stack.size();
-		script = p_state->script.ptr();
+		script = p_state->script;
 		p_instance = p_state->instance;
 		defarg = p_state->defarg;
 		self = p_state->self;
@@ -1271,13 +1271,29 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				gdfs->state.stack_size = _stack_size;
 				gdfs->state.self = self;
 				gdfs->state.alloca_size = alloca_size;
-				gdfs->state.script = Ref<GDScript>(_script);
 				gdfs->state.ip = ip + ipofs;
 				gdfs->state.line = line;
-				gdfs->state.instance_id = (p_instance && p_instance->get_owner()) ? p_instance->get_owner()->get_instance_id() : 0;
+				gdfs->state.script = _script;
+#ifndef NO_THREADS
+				GDScriptLanguage::singleton->lock->lock();
+#endif
+
+				_script->pending_func_states.add(&gdfs->scripts_list);
+				if (p_instance) {
+					gdfs->state.instance = p_instance;
+					p_instance->pending_func_states.add(&gdfs->instances_list);
+				} else {
+					gdfs->state.instance = NULL;
+				}
+#ifndef NO_THREADS
+				GDScriptLanguage::singleton->lock->unlock();
+#endif
+#ifdef DEBUG_ENABLED
+				gdfs->state.function_name = name;
+				gdfs->state.script_path = _script->get_path();
+#endif
 				//gdfs->state.result_pos=ip+ipofs-1;
 				gdfs->state.defarg = defarg;
-				gdfs->state.instance = p_instance;
 				gdfs->function = this;
 
 				retvalue = gdfs;
@@ -1485,11 +1501,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				GET_VARIANT_PTR(test, 1);
-				GET_VARIANT_PTR(message, 2);
 				bool result = test->booleanize();
 
 				if (!result) {
-					const String &message_str = *message;
+					String message_str;
+					if (_code_ptr[ip + 2] != 0) {
+						GET_VARIANT_PTR(message, 2);
+						message_str = *message;
+					}
 					if (message_str.empty()) {
 						err_text = "Assertion failed.";
 					} else {
@@ -1828,9 +1847,17 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 		return false;
 
 	if (p_extended_check) {
-		//class instance gone?
-		if (state.instance_id && !ObjectDB::get_instance(state.instance_id))
+#ifndef NO_THREADS
+		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+#endif
+		// Script gone?
+		if (!scripts_list.in_list()) {
 			return false;
+		}
+		// Class instance gone? (if not static function)
+		if (state.instance && !instances_list.in_list()) {
+			return false;
+		}
 	}
 
 	return true;
@@ -1839,12 +1866,27 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 
 	ERR_FAIL_COND_V(!function, Variant());
-	if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
-#ifdef DEBUG_ENABLED
-		ERR_FAIL_V_MSG(Variant(), "Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script->get_path() + ":" + itos(state.line));
-#else
-		return Variant();
+	{
+#ifndef NO_THREADS
+		MutexLock lock(GDScriptLanguage::singleton->lock);
 #endif
+		if (!scripts_list.in_list()) {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after yield, but script is gone. At script: " + state.script_path + ":" + itos(state.line));
+#else
+			return Variant();
+#endif
+		}
+		if (state.instance && !instances_list.in_list()) {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after yield, but class instance is gone. At script: " + state.script_path + ":" + itos(state.line));
+#else
+			return Variant();
+#endif
+		}
+		// Do these now to avoid locking again after the call
+		scripts_list.remove_from_list();
+		instances_list.remove_from_list();
 	}
 
 	state.result = p_arg;
@@ -1876,16 +1918,20 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 #ifdef DEBUG_ENABLED
 		if (ScriptDebugger::get_singleton())
 			GDScriptLanguage::get_singleton()->exit_function();
-		if (state.stack_size) {
-			//free stack
-			Variant *stack = (Variant *)state.stack.ptr();
-			for (int i = 0; i < state.stack_size; i++)
-				stack[i].~Variant();
-		}
 #endif
 	}
 
 	return ret;
+}
+
+void GDScriptFunctionState::_clear_stack() {
+
+	if (state.stack_size) {
+		Variant *stack = (Variant *)state.stack.ptr();
+		for (int i = 0; i < state.stack_size; i++)
+			stack[i].~Variant();
+		state.stack_size = 0;
+	}
 }
 
 void GDScriptFunctionState::_bind_methods() {
@@ -1897,18 +1943,22 @@ void GDScriptFunctionState::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::NIL, "result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 }
 
-GDScriptFunctionState::GDScriptFunctionState() {
+GDScriptFunctionState::GDScriptFunctionState() :
+		scripts_list(this),
+		instances_list(this) {
 
 	function = NULL;
 }
 
 GDScriptFunctionState::~GDScriptFunctionState() {
 
-	if (function != NULL) {
-		//never called, deinitialize stack
-		for (int i = 0; i < state.stack_size; i++) {
-			Variant *v = (Variant *)&state.stack[sizeof(Variant) * i];
-			v->~Variant();
-		}
-	}
+	_clear_stack();
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->lock();
+#endif
+	scripts_list.remove_from_list();
+	instances_list.remove_from_list();
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
 }

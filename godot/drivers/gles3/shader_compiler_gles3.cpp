@@ -86,6 +86,7 @@ static int _get_datatype_size(SL::DataType p_type) {
 		case SL::TYPE_ISAMPLER3D: return 16;
 		case SL::TYPE_USAMPLER3D: return 16;
 		case SL::TYPE_SAMPLERCUBE: return 16;
+		case SL::TYPE_SAMPLEREXT: return 16;
 	}
 
 	ERR_FAIL_V(0);
@@ -125,6 +126,7 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 		case SL::TYPE_ISAMPLER3D: return 16;
 		case SL::TYPE_USAMPLER3D: return 16;
 		case SL::TYPE_SAMPLERCUBE: return 16;
+		case SL::TYPE_SAMPLEREXT: return 16;
 	}
 
 	ERR_FAIL_V(0);
@@ -315,7 +317,7 @@ void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 	}
 }
 
-String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning) {
+String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope) {
 
 	String code;
 
@@ -438,14 +440,14 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				r_gen_code.fragment_global += interp_mode + "in " + vcode;
 			}
 
-			for (Map<StringName, SL::ShaderNode::Constant>::Element *E = pnode->constants.front(); E; E = E->next()) {
+			for (int i = 0; i < pnode->vconstants.size(); i++) {
 				String gcode;
 				gcode += "const ";
-				gcode += _prestr(E->get().precision);
-				gcode += _typestr(E->get().type);
-				gcode += " " + _mkid(E->key());
+				gcode += _prestr(pnode->vconstants[i].precision);
+				gcode += _typestr(pnode->vconstants[i].type);
+				gcode += " " + _mkid(String(pnode->vconstants[i].name));
 				gcode += "=";
-				gcode += _dump_node_code(E->get().initializer, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				gcode += _dump_node_code(pnode->vconstants[i].initializer, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 				gcode += ";\n";
 				r_gen_code.vertex_global += gcode;
 				r_gen_code.fragment_global += gcode;
@@ -646,7 +648,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			if (anode->call_expression != NULL) {
 				code += ".";
-				code += _dump_node_code(anode->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				code += _dump_node_code(anode->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning, false);
 			}
 
 			if (anode->index_expression != NULL) {
@@ -749,8 +751,13 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				} break;
 
 				default: {
-
-					code = "(" + _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + _opstr(onode->op) + _dump_node_code(onode->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + ")";
+					if (p_use_scope) {
+						code += "(";
+					}
+					code += _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + _opstr(onode->op) + _dump_node_code(onode->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					if (p_use_scope) {
+						code += ")";
+					}
 					break;
 				}
 			}
@@ -884,6 +891,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["INSTANCE_CUSTOM"] = "instance_custom";
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["COLOR"] = "color";
+	actions[VS::SHADER_CANVAS_ITEM].renames["MODULATE"] = "final_modulate";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMAL"] = "normal";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMALMAP"] = "normal_map";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMALMAP_DEPTH"] = "normal_depth";
@@ -905,6 +913,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["SHADOW_VEC"] = "shadow_vec";
 
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["COLOR"] = "#define COLOR_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["MODULATE"] = "#define MODULATE_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SCREEN_TEXTURE"] = "#define SCREEN_TEXTURE_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SCREEN_PIXEL_SIZE"] = "@SCREEN_UV";

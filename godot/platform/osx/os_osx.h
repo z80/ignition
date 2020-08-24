@@ -170,6 +170,7 @@ public:
 	};
 
 	Map<String, Vector<GlobalMenuItem> > global_menus;
+	List<String> global_menus_order;
 
 	void _update_global_menu();
 
@@ -247,6 +248,11 @@ public:
 	virtual String get_executable_path() const;
 
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
+	virtual int keyboard_get_layout_count() const;
+	virtual int keyboard_get_current_layout() const;
+	virtual void keyboard_set_current_layout(int p_index);
+	virtual String keyboard_get_layout_language(int p_index) const;
+	virtual String keyboard_get_layout_name(int p_index) const;
 
 	virtual void move_window_to_foreground();
 

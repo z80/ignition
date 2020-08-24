@@ -251,7 +251,7 @@ static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscrip
 	ev.instance();
 	ev->set_echo(emscripten_event->repeat);
 	dom2godot_mod(emscripten_event, ev);
-	ev->set_scancode(dom2godot_scancode(emscripten_event->keyCode));
+	ev->set_scancode(dom_code2godot_scancode(emscripten_event->code, emscripten_event->key));
 
 	String unicode = String::utf8(emscripten_event->key);
 	// Check if empty or multi-character (e.g. `CapsLock`).
@@ -1011,7 +1011,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mousemove, mousemove_callback)
 	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, mousedown, mouse_button_callback)
 	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mouseup, mouse_button_callback)
-	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, wheel, wheel_callback)
+	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, wheel, wheel_callback)
 	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchstart, touch_press_callback)
 	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchmove, touchmove_callback)
 	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchend, touch_press_callback)

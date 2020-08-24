@@ -510,6 +510,7 @@ void ScriptCreateDialog::_built_in_pressed() {
 		_path_changed(file_path->get_text());
 	}
 	_update_dialog();
+	minimum_size_changed();
 }
 
 void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
@@ -687,6 +688,8 @@ void ScriptCreateDialog::_update_dialog() {
 
 	// Is Script created or loaded from existing file?
 
+	builtin_warning_label->set_visible(is_built_in);
+
 	if (is_built_in) {
 		get_ok()->set_text(TTR("Create"));
 		parent_name->set_editable(true);
@@ -765,6 +768,13 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	path_error_label = memnew(Label);
 	vb->add_child(path_error_label);
 
+	builtin_warning_label = memnew(Label);
+	builtin_warning_label->set_text(
+			TTR("Note: Built-in scripts have some limitations and can't be edited using an external editor."));
+	vb->add_child(builtin_warning_label);
+	builtin_warning_label->set_autowrap(true);
+	builtin_warning_label->hide();
+
 	status_panel = memnew(PanelContainer);
 	status_panel->set_h_size_flags(Control::SIZE_FILL);
 	status_panel->add_child(vb);
@@ -791,7 +801,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	gc->add_child(memnew(Label(TTR("Language:"))));
 	gc->add_child(language_menu);
 
-	default_language = 0;
+	default_language = -1;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 
 		String lang = ScriptServer::get_language(i)->get_name();
@@ -800,8 +810,9 @@ ScriptCreateDialog::ScriptCreateDialog() {
 			default_language = i;
 		}
 	}
-
-	language_menu->select(default_language);
+	if (default_language >= 0) {
+		language_menu->select(default_language);
+	}
 	current_language = default_language;
 
 	language_menu->connect("item_selected", this, "_lang_changed");

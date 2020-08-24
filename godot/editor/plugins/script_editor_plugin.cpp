@@ -902,7 +902,6 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			Error err;
 			FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 			if (err) {
-				memdelete(file);
 				editor->show_warning(TTR("Error writing TextFile:") + "\n" + p_file, TTR("Error!"));
 				break;
 			}
@@ -1101,11 +1100,6 @@ void ScriptEditor::_menu_option(int p_option) {
 
 			OS::get_singleton()->shell_open("https://docs.godotengine.org/");
 		} break;
-		case REQUEST_DOCS: {
-
-			OS::get_singleton()->shell_open("https://github.com/godotengine/godot-docs/issues/new");
-		} break;
-
 		case WINDOW_NEXT: {
 
 			_history_forward();
@@ -1452,7 +1446,6 @@ void ScriptEditor::_notification(int p_what) {
 
 			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
 			site_search->set_icon(get_icon("Instance", "EditorIcons"));
-			request_docs->set_icon(get_icon("Issue", "EditorIcons"));
 
 			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_icon("Back", "EditorIcons"));
@@ -1840,9 +1833,11 @@ void ScriptEditor::_update_script_names() {
 			if (built_in) {
 
 				name = path.get_file();
-				String resource_name = se->get_edited_resource()->get_name();
+				const String &resource_name = se->get_edited_resource()->get_name();
 				if (resource_name != "") {
-					name = name.substr(0, name.find("::", 0) + 2) + resource_name;
+					// If the built-in script has a custom resource name defined,
+					// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
+					name = vformat("%s (%s)", resource_name, name.substr(0, name.find("::", 0)));
 				}
 			} else {
 
@@ -1926,6 +1921,10 @@ void ScriptEditor::_update_script_names() {
 			if (new_cur_tab == -1 && sedata[i].index == cur_tab) {
 				new_cur_tab = i;
 			}
+			// Update index of sd entries for sorted order
+			_ScriptEditorItemData sd = sedata[i];
+			sd.index = i;
+			sedata.set(i, sd);
 		}
 		tab_container->set_current_tab(new_prev_tab);
 		tab_container->set_current_tab(new_cur_tab);
@@ -3297,7 +3296,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KEY_MASK_ALT | KEY_MASK_CMD | KEY_S), FILE_SAVE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As...")), FILE_SAVE_AS);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_S), FILE_SAVE_ALL);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_S), FILE_SAVE_ALL);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R), FILE_TOOL_RELOAD_SOFT);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
@@ -3379,12 +3378,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	site_search->connect("pressed", this, "_menu_option", varray(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
 	site_search->set_tooltip(TTR("Open Godot online documentation."));
-
-	request_docs = memnew(ToolButton);
-	request_docs->set_text(TTR("Request Docs"));
-	request_docs->connect("pressed", this, "_menu_option", varray(REQUEST_DOCS));
-	menu_hb->add_child(request_docs);
-	request_docs->set_tooltip(TTR("Help improve the Godot documentation by giving feedback."));
 
 	help_search = memnew(ToolButton);
 	help_search->set_text(TTR("Search Help"));

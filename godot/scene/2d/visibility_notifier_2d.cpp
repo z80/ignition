@@ -188,8 +188,7 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 	bool add = false;
 	Variant meta;
 
-	if (enabler[ENABLER_FREEZE_BODIES]) {
-
+	{
 		RigidBody2D *rb2d = Object::cast_to<RigidBody2D>(p_node);
 		if (rb2d && ((rb2d->get_mode() == RigidBody2D::MODE_CHARACTER || rb2d->get_mode() == RigidBody2D::MODE_RIGID))) {
 
@@ -198,24 +197,21 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 		}
 	}
 
-	if (enabler[ENABLER_PAUSE_ANIMATIONS]) {
-
+	{
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 		if (ap) {
 			add = true;
 		}
 	}
 
-	if (enabler[ENABLER_PAUSE_ANIMATED_SPRITES]) {
-
+	{
 		AnimatedSprite *as = Object::cast_to<AnimatedSprite>(p_node);
 		if (as) {
 			add = true;
 		}
 	}
 
-	if (enabler[ENABLER_PAUSE_PARTICLES]) {
-
+	{
 		Particles2D *ps = Object::cast_to<Particles2D>(p_node);
 		if (ps) {
 			add = true;
@@ -252,10 +248,19 @@ void VisibilityEnabler2D::_notification(int p_what) {
 
 		_find_nodes(from);
 
-		if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent())
-			get_parent()->set_physics_process(false);
-		if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
-			get_parent()->set_process(false);
+		// We need to defer the call of set_process and set_physics_process,
+		// otherwise they are overwritten inside NOTIFICATION_READY.
+		// We can't use call_deferred, because it happens after a physics frame.
+		// The ready signal works as it's emitted immediately after NOTIFICATION_READY.
+
+		if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent()) {
+			get_parent()->connect(SceneStringNames::get_singleton()->ready,
+					get_parent(), "set_physics_process", varray(false), CONNECT_ONESHOT);
+		}
+		if (enabler[ENABLER_PARENT_PROCESS] && get_parent()) {
+			get_parent()->connect(SceneStringNames::get_singleton()->ready,
+					get_parent(), "set_process", varray(false), CONNECT_ONESHOT);
+		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
@@ -278,7 +283,7 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 
 	ERR_FAIL_COND(!nodes.has(p_node));
 
-	{
+	if (enabler[ENABLER_FREEZE_BODIES]) {
 		RigidBody2D *rb = Object::cast_to<RigidBody2D>(p_node);
 		if (rb) {
 
@@ -286,7 +291,7 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 		}
 	}
 
-	{
+	if (enabler[ENABLER_PAUSE_ANIMATIONS]) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		if (ap) {
@@ -294,7 +299,8 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 			ap->set_active(p_enabled);
 		}
 	}
-	{
+
+	if (enabler[ENABLER_PAUSE_ANIMATED_SPRITES]) {
 		AnimatedSprite *as = Object::cast_to<AnimatedSprite>(p_node);
 
 		if (as) {
@@ -306,7 +312,7 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 		}
 	}
 
-	{
+	if (enabler[ENABLER_PAUSE_PARTICLES]) {
 		Particles2D *ps = Object::cast_to<Particles2D>(p_node);
 
 		if (ps) {

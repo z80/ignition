@@ -68,8 +68,8 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		String modules_buildphase;
 		String modules_buildgrp;
 	};
-
 	struct ExportArchitecture {
+
 		String name;
 		bool is_default;
 
@@ -343,6 +343,9 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].find("$push_notifications") != -1) {
 			bool is_on = p_preset->get("capabilities/push_notifications");
 			strnew += lines[i].replace("$push_notifications", is_on ? "1" : "0") + "\n";
+		} else if (lines[i].find("$entitlements_push_notifications") != -1) {
+			bool is_on = p_preset->get("capabilities/push_notifications");
+			strnew += lines[i].replace("$entitlements_push_notifications", is_on ? "<key>aps-environment</key><string>development</string>" : "") + "\n";
 		} else if (lines[i].find("$required_device_capabilities") != -1) {
 			String capabilities;
 
@@ -662,7 +665,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	String pbx_resources_refs;
 
 	const String file_info_format = String("$build_id = {isa = PBXBuildFile; fileRef = $ref_id; };\n") +
-									"$ref_id = {isa = PBXFileReference; lastKnownFileType = $file_type; name = $name; path = \"$file_path\"; sourceTree = \"<group>\"; };\n";
+									"$ref_id = {isa = PBXFileReference; lastKnownFileType = $file_type; name = \"$name\"; path = \"$file_path\"; sourceTree = \"<group>\"; };\n";
 	for (int i = 0; i < p_additional_assets.size(); ++i) {
 		String build_id = (++current_id).str();
 		String ref_id = (++current_id).str();
@@ -792,6 +795,13 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 		Vector<String> frameworks = export_plugins[i]->get_ios_frameworks();
 		Error err = _export_additional_assets(p_out_dir, frameworks, true, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
+
+		Vector<String> project_static_libs = export_plugins[i]->get_ios_project_static_libs();
+		for (int j = 0; j < project_static_libs.size(); j++)
+			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
+		err = _export_additional_assets(p_out_dir, project_static_libs, true, r_exported_assets);
+		ERR_FAIL_COND_V(err, err);
+
 		Vector<String> ios_bundle_files = export_plugins[i]->get_ios_bundle_files();
 		err = _export_additional_assets(p_out_dir, ios_bundle_files, false, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
@@ -925,6 +935,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	files_to_parse.insert("godot_ios/dummy.cpp");
 	files_to_parse.insert("godot_ios.xcodeproj/project.xcworkspace/contents.xcworkspacedata");
 	files_to_parse.insert("godot_ios.xcodeproj/xcshareddata/xcschemes/godot_ios.xcscheme");
+	files_to_parse.insert("godot_ios/godot_ios.entitlements");
 
 	IOSConfigData config_data = {
 		pkg_name,
@@ -1067,6 +1078,22 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		ERR_PRINTS("Requested template library '" + library_to_use + "' not found. It might be missing from your template archive.");
 		memdelete(tmp_app_path);
 		return ERR_FILE_NOT_FOUND;
+	}
+
+	// Copy project static libs to the project
+	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		Vector<String> project_static_libs = export_plugins[i]->get_ios_project_static_libs();
+		for (int j = 0; j < project_static_libs.size(); j++) {
+			const String &static_lib_path = project_static_libs[j];
+			String dest_lib_file_path = dest_dir + static_lib_path.get_file();
+			Error lib_copy_err = tmp_app_path->copy(static_lib_path, dest_lib_file_path);
+			if (lib_copy_err != OK) {
+				ERR_PRINTS("Can't copy '" + static_lib_path + "'.");
+				memdelete(tmp_app_path);
+				return lib_copy_err;
+			}
+		}
 	}
 
 	String iconset_dir = dest_dir + binary_name + "/Images.xcassets/AppIcon.appiconset/";

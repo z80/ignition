@@ -308,7 +308,8 @@ void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 
 	p_delimiters->push_back("' '"); // character literal
 	p_delimiters->push_back("\" \""); // regular string literal
-	p_delimiters->push_back("@\" \""); // verbatim string literal
+	// Verbatim string literals (`@" "`) don't render correctly, so don't highlight them.
+	// Generic string highlighting suffices as a workaround for now.
 }
 
 static String get_base_class_name(const String &p_base_class_name, const String p_class_name) {
@@ -736,7 +737,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 	if (proj_assembly) {
 		String proj_asm_path = proj_assembly->get_path();
 
-		if (!FileAccess::exists(proj_assembly->get_path())) {
+		if (!FileAccess::exists(proj_asm_path)) {
 			// Maybe it wasn't loaded from the default path, so check this as well
 			proj_asm_path = GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(appname_safe);
 			if (!FileAccess::exists(proj_asm_path))
@@ -794,7 +795,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		to_reload.push_back(script);
 
 		if (script->get_path().empty()) {
-			script->tied_class_name_for_reload = script->script_class->get_name();
+			script->tied_class_name_for_reload = script->script_class->get_name_for_lookup();
 			script->tied_class_namespace_for_reload = script->script_class->get_namespace();
 		}
 
@@ -2314,58 +2315,69 @@ void CSharpScript::_update_member_info_no_exports() {
 bool CSharpScript::_update_exports() {
 
 #ifdef TOOLS_ENABLED
-	if (!Engine::get_singleton()->is_editor_hint())
-		return false;
-
-	placeholder_fallback_enabled = true; // until proven otherwise
+	bool is_editor = Engine::get_singleton()->is_editor_hint();
+	if (is_editor)
+		placeholder_fallback_enabled = true; // until proven otherwise
+#endif
 
 	if (!valid)
 		return false;
 
 	bool changed = false;
 
-	if (exports_invalidated) {
+#ifdef TOOLS_ENABLED
+	if (!is_editor || exports_invalidated)
+#endif
+	{
 		GD_MONO_SCOPE_THREAD_ATTACH;
-
-		exports_invalidated = false;
 
 		changed = true;
 
 		member_info.clear();
-		exported_members_cache.clear();
-		exported_members_defval_cache.clear();
 
-		// Here we create a temporary managed instance of the class to get the initial values
+#ifdef TOOLS_ENABLED
+		MonoObject *tmp_object = nullptr;
+		Object *tmp_native = nullptr;
+		uint32_t tmp_pinned_gchandle = 0;
 
-		MonoObject *tmp_object = mono_object_new(mono_domain_get(), script_class->get_mono_ptr());
+		if (is_editor) {
+			exports_invalidated = false;
 
-		if (!tmp_object) {
-			ERR_PRINT("Failed to allocate temporary MonoObject.");
-			return false;
+			exported_members_cache.clear();
+			exported_members_defval_cache.clear();
+
+			// Here we create a temporary managed instance of the class to get the initial values
+			tmp_object = mono_object_new(mono_domain_get(), script_class->get_mono_ptr());
+
+			if (!tmp_object) {
+				ERR_PRINT("Failed to allocate temporary MonoObject.");
+				return false;
+			}
+
+			tmp_pinned_gchandle = MonoGCHandle::new_strong_handle_pinned(tmp_object); // pin it (not sure if needed)
+
+			GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
+
+			ERR_FAIL_NULL_V_MSG(ctor, NULL,
+					"Cannot construct temporary MonoObject because the class does not define a parameterless constructor: '" + get_path() + "'.");
+
+			MonoException *ctor_exc = NULL;
+			ctor->invoke(tmp_object, NULL, &ctor_exc);
+
+			tmp_native = GDMonoMarshal::unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(tmp_object));
+
+			if (ctor_exc) {
+				// TODO: Should we free 'tmp_native' if the exception was thrown after its creation?
+
+				MonoGCHandle::free_handle(tmp_pinned_gchandle);
+				tmp_object = NULL;
+
+				ERR_PRINT("Exception thrown from constructor of temporary MonoObject:");
+				GDMonoUtils::debug_print_unhandled_exception(ctor_exc);
+				return false;
+			}
 		}
-
-		uint32_t tmp_pinned_gchandle = MonoGCHandle::new_strong_handle_pinned(tmp_object); // pin it (not sure if needed)
-
-		GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
-
-		ERR_FAIL_NULL_V_MSG(ctor, NULL,
-				"Cannot construct temporary MonoObject because the class does not define a parameterless constructor: '" + get_path() + "'.");
-
-		MonoException *ctor_exc = NULL;
-		ctor->invoke(tmp_object, NULL, &ctor_exc);
-
-		Object *tmp_native = GDMonoMarshal::unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(tmp_object));
-
-		if (ctor_exc) {
-			// TODO: Should we free 'tmp_native' if the exception was thrown after its creation?
-
-			MonoGCHandle::free_handle(tmp_pinned_gchandle);
-			tmp_object = NULL;
-
-			ERR_PRINT("Exception thrown from constructor of temporary MonoObject:");
-			GDMonoUtils::debug_print_unhandled_exception(ctor_exc);
-			return false;
-		}
+#endif
 
 		GDMonoClass *top = script_class;
 
@@ -2381,15 +2393,22 @@ bool CSharpScript::_update_exports() {
 				if (_get_member_export(field, /* inspect export: */ true, prop_info, exported)) {
 					StringName member_name = field->get_name();
 
-					if (exported) {
-						member_info[member_name] = prop_info;
-						exported_members_cache.push_front(prop_info);
+					member_info[member_name] = prop_info;
 
-						if (tmp_object) {
-							exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
+					if (exported) {
+#ifdef TOOLS_ENABLED
+						if (is_editor) {
+							exported_members_cache.push_front(prop_info);
+
+							if (tmp_object) {
+								exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
+							}
 						}
-					} else {
-						member_info[member_name] = prop_info;
+#endif
+
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+						exported_members_names.insert(member_name);
+#endif
 					}
 				}
 			}
@@ -2402,22 +2421,28 @@ bool CSharpScript::_update_exports() {
 				if (_get_member_export(property, /* inspect export: */ true, prop_info, exported)) {
 					StringName member_name = property->get_name();
 
-					if (exported) {
-						member_info[member_name] = prop_info;
-						exported_members_cache.push_front(prop_info);
+					member_info[member_name] = prop_info;
 
-						if (tmp_object) {
-							MonoException *exc = NULL;
-							MonoObject *ret = property->get_value(tmp_object, &exc);
-							if (exc) {
-								exported_members_defval_cache[member_name] = Variant();
-								GDMonoUtils::debug_print_unhandled_exception(exc);
-							} else {
-								exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(ret);
+					if (exported) {
+#ifdef TOOLS_ENABLED
+						if (is_editor) {
+							exported_members_cache.push_front(prop_info);
+							if (tmp_object) {
+								MonoException *exc = nullptr;
+								MonoObject *ret = property->get_value(tmp_object, &exc);
+								if (exc) {
+									exported_members_defval_cache[member_name] = Variant();
+									GDMonoUtils::debug_print_unhandled_exception(exc);
+								} else {
+									exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(ret);
+								}
 							}
 						}
-					} else {
-						member_info[member_name] = prop_info;
+#endif
+
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+						exported_members_names.insert(member_name);
+#endif
 					}
 				}
 			}
@@ -2425,48 +2450,54 @@ bool CSharpScript::_update_exports() {
 			top = top->get_parent_class();
 		}
 
-		// Need to check this here, before disposal
-		bool base_ref = Object::cast_to<Reference>(tmp_native) != NULL;
+#ifdef TOOLS_ENABLED
+		if (is_editor) {
+			// Need to check this here, before disposal
+			bool base_ref = Object::cast_to<Reference>(tmp_native) != NULL;
 
-		// Dispose the temporary managed instance
+			// Dispose the temporary managed instance
 
-		MonoException *exc = NULL;
-		GDMonoUtils::dispose(tmp_object, &exc);
+			MonoException *exc = NULL;
+			GDMonoUtils::dispose(tmp_object, &exc);
 
-		if (exc) {
-			ERR_PRINT("Exception thrown from method Dispose() of temporary MonoObject:");
-			GDMonoUtils::debug_print_unhandled_exception(exc);
+			if (exc) {
+				ERR_PRINT("Exception thrown from method Dispose() of temporary MonoObject:");
+				GDMonoUtils::debug_print_unhandled_exception(exc);
+			}
+
+			MonoGCHandle::free_handle(tmp_pinned_gchandle);
+			tmp_object = NULL;
+
+			if (tmp_native && !base_ref) {
+				Node *node = Object::cast_to<Node>(tmp_native);
+				if (node && node->is_inside_tree()) {
+					ERR_PRINTS("Temporary instance was added to the scene tree.");
+				} else {
+					memdelete(tmp_native);
+				}
+			}
 		}
+#endif
+	}
 
-		MonoGCHandle::free_handle(tmp_pinned_gchandle);
-		tmp_object = NULL;
+#ifdef TOOLS_ENABLED
+	if (is_editor) {
+		placeholder_fallback_enabled = false;
 
-		if (tmp_native && !base_ref) {
-			Node *node = Object::cast_to<Node>(tmp_native);
-			if (node && node->is_inside_tree()) {
-				ERR_PRINTS("Temporary instance was added to the scene tree.");
-			} else {
-				memdelete(tmp_native);
+		if (placeholders.size()) {
+			// Update placeholders if any
+			Map<StringName, Variant> values;
+			List<PropertyInfo> propnames;
+			_update_exports_values(values, propnames);
+
+			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
+				E->get()->update(propnames, values);
 			}
 		}
 	}
-
-	placeholder_fallback_enabled = false;
-
-	if (placeholders.size()) {
-		// Update placeholders if any
-		Map<StringName, Variant> values;
-		List<PropertyInfo> propnames;
-		_update_exports_values(values, propnames);
-
-		for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-			E->get()->update(propnames, values);
-		}
-	}
+#endif
 
 	return changed;
-#endif
-	return false;
 }
 
 void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class) {
@@ -2537,7 +2568,6 @@ bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Ve
 	return false;
 }
 
-#ifdef TOOLS_ENABLED
 /**
  * Returns false if there was an error, otherwise true.
  * If there was an error, r_prop_info and r_exported are not assigned any value.
@@ -2551,8 +2581,10 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 	(m_member->get_enclosing_class()->get_full_name() + "." + (String)m_member->get_name())
 
 	if (p_member->is_static()) {
+#ifdef TOOLS_ENABLED
 		if (p_member->has_attribute(CACHED_CLASS(ExportAttribute)))
 			ERR_PRINTS("Cannot export member because it is static: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+#endif
 		return false;
 	}
 
@@ -2574,13 +2606,17 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 	if (p_member->get_member_type() == IMonoClassMember::MEMBER_TYPE_PROPERTY) {
 		GDMonoProperty *property = static_cast<GDMonoProperty *>(p_member);
 		if (!property->has_getter()) {
+#ifdef TOOLS_ENABLED
 			if (exported)
 				ERR_PRINTS("Read-only property cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+#endif
 			return false;
 		}
 		if (!property->has_setter()) {
+#ifdef TOOLS_ENABLED
 			if (exported)
 				ERR_PRINTS("Write-only property (without getter) cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+#endif
 			return false;
 		}
 	}
@@ -2593,16 +2629,21 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		return true;
 	}
 
+#ifdef TOOLS_ENABLED
 	MonoObject *attr = p_member->get_attribute(CACHED_CLASS(ExportAttribute));
+#endif
 
 	PropertyHint hint = PROPERTY_HINT_NONE;
 	String hint_string;
 
 	if (variant_type == Variant::NIL) {
+#ifdef TOOLS_ENABLED
 		ERR_PRINTS("Unknown exported member type: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+#endif
 		return false;
 	}
 
+#ifdef TOOLS_ENABLED
 	int hint_res = _try_get_member_export_hint(p_member, type, variant_type, /* allow_generics: */ true, hint, hint_string);
 
 	ERR_FAIL_COND_V_MSG(hint_res == -1, false,
@@ -2613,6 +2654,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
 		hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
 	}
+#endif
 
 	r_prop_info = PropertyInfo(variant_type, (String)p_member->get_name(), hint, hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE);
 	r_exported = true;
@@ -2622,6 +2664,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 #undef MEMBER_FULL_QUALIFIED_NAME
 }
 
+#ifdef TOOLS_ENABLED
 int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string) {
 
 	GD_MONO_ASSERT_THREAD_ATTACHED;
@@ -2880,22 +2923,6 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 }
 
 bool CSharpScript::can_instance() const {
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-
-		// Hack to lower the risk of attached scripts not being added to the C# project
-		if (!get_path().empty() && get_path().find("::") == -1) { // Ignore if built-in script. Can happen if the file is deleted...
-			if (_create_project_solution_if_needed()) {
-				CSharpProject::add_item(GodotSharpDirs::get_project_csproj_path(),
-						"Compile",
-						ProjectSettings::get_singleton()->globalize_path(get_path()));
-			} else {
-				ERR_PRINTS("C# project could not be created; cannot add file: '" + get_path() + "'.");
-			}
-		}
-	}
-#endif
 
 #ifdef TOOLS_ENABLED
 	bool extra_cond = tool || ScriptServer::is_scripting_enabled();
@@ -3182,9 +3209,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 			ERR_FAIL_NULL_V(namespace_, ERR_BUG);
 			ERR_FAIL_NULL_V(class_name, ERR_BUG);
 			GDMonoClass *klass = project_assembly->get_class(namespace_->operator String(), class_name->operator String());
-			if (klass) {
-				bool obj_type = CACHED_CLASS(GodotObject)->is_assignable_from(klass);
-				ERR_FAIL_COND_V(!obj_type, ERR_BUG);
+			if (klass && CACHED_CLASS(GodotObject)->is_assignable_from(klass)) {
 				script_class = klass;
 			}
 		} else {
@@ -3375,6 +3400,16 @@ CSharpScript::~CSharpScript() {
 #ifdef DEBUG_ENABLED
 	SCOPED_MUTEX_LOCK(CSharpLanguage::get_singleton()->script_instances_mutex);
 	CSharpLanguage::get_singleton()->script_list.remove(&this->script_list);
+#endif
+}
+
+void CSharpScript::get_members(Set<StringName> *p_members) {
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+	if (p_members) {
+		for (Set<StringName>::Element *E = exported_members_names.front(); E; E = E->next()) {
+			p_members->insert(E->get());
+		}
+	}
 #endif
 }
 

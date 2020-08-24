@@ -30,6 +30,7 @@
 
 #include "gd_mono_utils.h"
 
+#include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/exception.h>
 
 #include "core/os/dir_access.h"
@@ -128,7 +129,12 @@ void set_main_thread(MonoThread *p_thread) {
 MonoThread *attach_current_thread() {
 	ERR_FAIL_COND_V(!GDMono::get_singleton()->is_runtime_initialized(), NULL);
 	MonoDomain *scripts_domain = GDMono::get_singleton()->get_scripts_domain();
+#ifndef GD_MONO_SINGLE_APPDOMAIN
 	MonoThread *mono_thread = mono_thread_attach(scripts_domain ? scripts_domain : mono_get_root_domain());
+#else
+	// The scripts domain is the root domain
+	MonoThread *mono_thread = mono_thread_attach(scripts_domain);
+#endif
 	ERR_FAIL_NULL_V(mono_thread, NULL);
 	return mono_thread;
 }
@@ -315,6 +321,14 @@ MonoDomain *create_domain(const String &p_friendly_name) {
 	}
 
 	return domain;
+}
+
+String get_type_desc(MonoType *p_type) {
+	return mono_type_full_name(p_type);
+}
+
+String get_type_desc(MonoReflectionType *p_reftype) {
+	return get_type_desc(mono_reflection_type_get_type(p_reftype));
 }
 
 String get_exception_name_and_message(MonoException *p_exc) {
@@ -540,6 +554,46 @@ bool type_is_generic_dictionary(MonoReflectionType *p_reftype) {
 	return (bool)res;
 }
 
+bool type_is_system_generic_list(MonoReflectionType *p_reftype) {
+	NO_GLUE_RET(false);
+	MonoException *exc = NULL;
+	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsSystemGenericList).invoke(p_reftype, &exc);
+	UNHANDLED_EXCEPTION(exc);
+	return (bool)res;
+}
+
+bool type_is_system_generic_dictionary(MonoReflectionType *p_reftype) {
+	NO_GLUE_RET(false);
+	MonoException *exc = NULL;
+	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsSystemGenericDictionary).invoke(p_reftype, &exc);
+	UNHANDLED_EXCEPTION(exc);
+	return (bool)res;
+}
+
+bool type_is_generic_ienumerable(MonoReflectionType *p_reftype) {
+	NO_GLUE_RET(false);
+	MonoException *exc = NULL;
+	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericIEnumerable).invoke(p_reftype, &exc);
+	UNHANDLED_EXCEPTION(exc);
+	return (bool)res;
+}
+
+bool type_is_generic_icollection(MonoReflectionType *p_reftype) {
+	NO_GLUE_RET(false);
+	MonoException *exc = NULL;
+	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericICollection).invoke(p_reftype, &exc);
+	UNHANDLED_EXCEPTION(exc);
+	return (bool)res;
+}
+
+bool type_is_generic_idictionary(MonoReflectionType *p_reftype) {
+	NO_GLUE_RET(false);
+	MonoException *exc = NULL;
+	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericIDictionary).invoke(p_reftype, &exc);
+	UNHANDLED_EXCEPTION(exc);
+	return (bool)res;
+}
+
 void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype) {
 	MonoException *exc = NULL;
 	CACHED_METHOD_THUNK(MarshalUtils, ArrayGetElementType).invoke(p_array_reftype, r_elem_reftype, &exc);
@@ -550,65 +604,6 @@ void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoRefl
 	MonoException *exc = NULL;
 	CACHED_METHOD_THUNK(MarshalUtils, DictionaryGetKeyValueTypes).invoke(p_dict_reftype, r_key_reftype, r_value_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
-}
-
-bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype) {
-	NO_GLUE_RET(false);
-	MonoException *exc = NULL;
-	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, GenericIEnumerableIsAssignableFromType).invoke(p_reftype, &exc);
-	UNHANDLED_EXCEPTION(exc);
-	return (bool)res;
-}
-
-bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype) {
-	NO_GLUE_RET(false);
-	MonoException *exc = NULL;
-	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, GenericIDictionaryIsAssignableFromType).invoke(p_reftype, &exc);
-	UNHANDLED_EXCEPTION(exc);
-	return (bool)res;
-}
-
-bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_elem_reftype) {
-	NO_GLUE_RET(false);
-	MonoException *exc = NULL;
-	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, GenericIEnumerableIsAssignableFromType_with_info).invoke(p_reftype, r_elem_reftype, &exc);
-	UNHANDLED_EXCEPTION(exc);
-	return (bool)res;
-}
-
-bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype) {
-	NO_GLUE_RET(false);
-	MonoException *exc = NULL;
-	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, GenericIDictionaryIsAssignableFromType_with_info).invoke(p_reftype, r_key_reftype, r_value_reftype, &exc);
-	UNHANDLED_EXCEPTION(exc);
-	return (bool)res;
-}
-
-Array enumerable_to_array(MonoObject *p_enumerable) {
-	NO_GLUE_RET(Array());
-	Array result;
-	MonoException *exc = NULL;
-	CACHED_METHOD_THUNK(MarshalUtils, EnumerableToArray).invoke(p_enumerable, &result, &exc);
-	UNHANDLED_EXCEPTION(exc);
-	return result;
-}
-
-Dictionary idictionary_to_dictionary(MonoObject *p_idictionary) {
-	NO_GLUE_RET(Dictionary());
-	Dictionary result;
-	MonoException *exc = NULL;
-	CACHED_METHOD_THUNK(MarshalUtils, IDictionaryToDictionary).invoke(p_idictionary, &result, &exc);
-	UNHANDLED_EXCEPTION(exc);
-	return result;
-}
-
-Dictionary generic_idictionary_to_dictionary(MonoObject *p_generic_idictionary) {
-	NO_GLUE_RET(Dictionary());
-	Dictionary result;
-	MonoException *exc = NULL;
-	CACHED_METHOD_THUNK(MarshalUtils, GenericIDictionaryToDictionary).invoke(p_generic_idictionary, &result, &exc);
-	UNHANDLED_EXCEPTION(exc);
-	return result;
 }
 
 GDMonoClass *make_generic_array_type(MonoReflectionType *p_elem_reftype) {

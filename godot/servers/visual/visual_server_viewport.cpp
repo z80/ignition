@@ -229,15 +229,16 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 			RasterizerCanvas::Light *canvas_lights = NULL;
 
 			RasterizerCanvas::Light *ptr = lights;
+			int canvas_layer_id = E->get()->layer;
 			while (ptr) {
-				if (E->get()->layer >= ptr->layer_min && E->get()->layer <= ptr->layer_max) {
+				if (canvas_layer_id >= ptr->layer_min && canvas_layer_id <= ptr->layer_max) {
 					ptr->next_ptr = canvas_lights;
 					canvas_lights = ptr;
 				}
 				ptr = ptr->filter_next_ptr;
 			}
 
-			VSG::canvas->render_canvas(canvas, xform, canvas_lights, lights_with_mask, clip_rect);
+			VSG::canvas->render_canvas(canvas, xform, canvas_lights, lights_with_mask, clip_rect, canvas_layer_id);
 			i++;
 
 			if (scenario_draw_canvas_bg && E->key().get_layer() >= scenario_canvas_max_layer) {
@@ -349,6 +350,8 @@ void VisualServerViewport::draw_viewports() {
 			vp->render_info[VS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
 			vp->render_info[VS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
 			vp->render_info[VS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
+			vp->render_info[VS::VIEWPORT_RENDER_INFO_2D_ITEMS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_2D_ITEMS_IN_FRAME);
+			vp->render_info[VS::VIEWPORT_RENDER_INFO_2D_DRAW_CALLS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_2D_DRAW_CALLS_IN_FRAME);
 
 			if (vp->viewport_to_screen_rect != Rect2() && (!vp->viewport_render_direct_to_screen || !VSG::rasterizer->is_low_end())) {
 				//copy to screen if set as such

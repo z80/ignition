@@ -99,12 +99,11 @@ private:
 	bool dragging;
 	bool just_selected;
 	Vector2 drag_accum;
-	Point2 drag_origin; // Workaround for GH-5907
 
 	float zoom;
 
 	bool box_selecting;
-	bool box_selection_mode_aditive;
+	bool box_selection_mode_additive;
 	Point2 box_selecting_from;
 	Point2 box_selecting_to;
 	Rect2 box_selecting_rect;

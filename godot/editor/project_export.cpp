@@ -131,6 +131,12 @@ void ProjectExportDialog::_add_preset(int p_platform) {
 	_edit_preset(EditorExport::get_singleton()->get_export_preset_count() - 1);
 }
 
+void ProjectExportDialog::_force_update_current_preset_parameters() {
+	// Force the parameters section to refresh its UI.
+	parameters->edit(nullptr);
+	_update_current_preset();
+}
+
 void ProjectExportDialog::_update_current_preset() {
 
 	_edit_preset(presets->get_current());
@@ -155,6 +161,7 @@ void ProjectExportDialog::_update_presets() {
 		String name = preset->get_name();
 		if (preset->is_runnable())
 			name += " (" + TTR("Runnable") + ")";
+		preset->update_files_to_export();
 		presets->add_item(name, preset->get_platform()->get_logo());
 	}
 
@@ -1057,6 +1064,7 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("set_export_path", &ProjectExportDialog::set_export_path);
 	ClassDB::bind_method("get_export_path", &ProjectExportDialog::get_export_path);
 	ClassDB::bind_method("get_current_preset", &ProjectExportDialog::get_current_preset);
+	ClassDB::bind_method("_force_update_current_preset_parameters", &ProjectExportDialog::_force_update_current_preset_parameters);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "export_path"), "set_export_path", "get_export_path");
 }
@@ -1138,6 +1146,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	parameters->set_name(TTR("Options"));
 	parameters->set_v_size_flags(SIZE_EXPAND_FILL);
 	parameters->connect("property_edited", this, "_update_parameters");
+	EditorExport::get_singleton()->connect("export_presets_updated", this, "_force_update_current_preset_parameters");
 
 	// Resources export parameters.
 
@@ -1221,12 +1230,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	custom_features = memnew(LineEdit);
 	custom_features->connect("text_changed", this, "_custom_features_changed");
 	feature_vb->add_margin_child(TTR("Custom (comma-separated):"), custom_features);
-	Panel *features_panel = memnew(Panel);
 	custom_feature_display = memnew(RichTextLabel);
-	features_panel->add_child(custom_feature_display);
-	custom_feature_display->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 10 * EDSCALE);
-	custom_feature_display->set_v_size_flags(SIZE_EXPAND_FILL);
-	feature_vb->add_margin_child(TTR("Feature List:"), features_panel, true);
+	custom_feature_display->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	feature_vb->add_margin_child(TTR("Feature List:"), custom_feature_display, true);
 	sections->add_child(feature_vb);
 
 	// Script export parameters.

@@ -125,9 +125,9 @@ func _label_tiles_to_recompute():
 	
 	
 	# Iterate over needed ones and take free ones from the "tile_descs"
-	for n in needed_chunks:
-		var x = n[0]
-		var z = n[1]
+	for nc in needed_chunks:
+		var x = nc[0]
+		var z = nc[1]
 		var assigned: bool = false
 		for tile in existing_tiles:
 			var available = tile.available

@@ -49,12 +49,93 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
+#include <dwmapi.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
 #include <windows.h>
 #include <windowsx.h>
+// WinTab API
+#define WT_PACKET 0x7FF0
+#define WT_PROXIMITY 0x7FF5
+#define WT_INFOCHANGE 0x7FF6
+#define WT_CSRCHANGE 0x7FF7
 
+#define WTI_DEFSYSCTX 4
+#define WTI_DEVICES 100
+#define DVC_NPRESSURE 15
+#define DVC_TPRESSURE 16
+#define DVC_ORIENTATION 17
+#define DVC_ROTATION 18
+
+#define CXO_MESSAGES 0x0004
+#define PK_NORMAL_PRESSURE 0x0400
+#define PK_TANGENT_PRESSURE 0x0800
+#define PK_ORIENTATION 0x1000
+
+typedef struct tagLOGCONTEXTW {
+	WCHAR lcName[40];
+	UINT lcOptions;
+	UINT lcStatus;
+	UINT lcLocks;
+	UINT lcMsgBase;
+	UINT lcDevice;
+	UINT lcPktRate;
+	DWORD lcPktData;
+	DWORD lcPktMode;
+	DWORD lcMoveMask;
+	DWORD lcBtnDnMask;
+	DWORD lcBtnUpMask;
+	LONG lcInOrgX;
+	LONG lcInOrgY;
+	LONG lcInOrgZ;
+	LONG lcInExtX;
+	LONG lcInExtY;
+	LONG lcInExtZ;
+	LONG lcOutOrgX;
+	LONG lcOutOrgY;
+	LONG lcOutOrgZ;
+	LONG lcOutExtX;
+	LONG lcOutExtY;
+	LONG lcOutExtZ;
+	DWORD lcSensX;
+	DWORD lcSensY;
+	DWORD lcSensZ;
+	BOOL lcSysMode;
+	int lcSysOrgX;
+	int lcSysOrgY;
+	int lcSysExtX;
+	int lcSysExtY;
+	DWORD lcSysSensX;
+	DWORD lcSysSensY;
+} LOGCONTEXTW;
+
+typedef struct tagAXIS {
+	LONG axMin;
+	LONG axMax;
+	UINT axUnits;
+	DWORD axResolution;
+} AXIS;
+
+typedef struct tagORIENTATION {
+	int orAzimuth;
+	int orAltitude;
+	int orTwist;
+} ORIENTATION;
+
+typedef struct tagPACKET {
+	int pkNormalPressure;
+	int pkTangentPressure;
+	ORIENTATION pkOrientation;
+} PACKET;
+
+typedef HANDLE(WINAPI *WTOpenPtr)(HWND p_window, LOGCONTEXTW *p_ctx, BOOL p_enable);
+typedef BOOL(WINAPI *WTClosePtr)(HANDLE p_ctx);
+typedef UINT(WINAPI *WTInfoPtr)(UINT p_category, UINT p_index, LPVOID p_output);
+typedef BOOL(WINAPI *WTPacketPtr)(HANDLE p_ctx, UINT p_param, LPVOID p_packets);
+typedef BOOL(WINAPI *WTEnablePtr)(HANDLE p_ctx, BOOL p_enable);
+
+// Windows Ink API
 #ifndef POINTER_STRUCTURES
 
 #define POINTER_STRUCTURES
@@ -63,6 +144,22 @@ typedef DWORD POINTER_INPUT_TYPE;
 typedef UINT32 POINTER_FLAGS;
 typedef UINT32 PEN_FLAGS;
 typedef UINT32 PEN_MASK;
+
+#ifndef PEN_MASK_PRESSURE
+#define PEN_MASK_PRESSURE 0x00000001
+#endif
+
+#ifndef PEN_MASK_TILT_X
+#define PEN_MASK_TILT_X 0x00000004
+#endif
+
+#ifndef PEN_MASK_TILT_Y
+#define PEN_MASK_TILT_Y 0x00000008
+#endif
+
+#ifndef POINTER_MESSAGE_FLAG_FIRSTBUTTON
+#define POINTER_MESSAGE_FLAG_FIRSTBUTTON 0x00000010
+#endif
 
 enum tagPOINTER_INPUT_TYPE {
 	PT_POINTER = 0x00000001,
@@ -117,6 +214,18 @@ typedef struct tagPOINTER_PEN_INFO {
 
 #endif
 
+#ifndef WM_POINTERUPDATE
+#define WM_POINTERUPDATE 0x0245
+#endif
+
+#ifndef WM_POINTERENTER
+#define WM_POINTERENTER 0x0249
+#endif
+
+#ifndef WM_POINTERLEAVE
+#define WM_POINTERLEAVE 0x024A
+#endif
+
 typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
 typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
 
@@ -140,9 +249,32 @@ typedef struct {
 
 class JoypadWindows;
 class OS_Windows : public OS {
+	String tablet_driver;
+	Vector<String> tablet_drivers;
 
+	// WinTab API
+	static bool wintab_available;
+	static WTOpenPtr wintab_WTOpen;
+	static WTClosePtr wintab_WTClose;
+	static WTInfoPtr wintab_WTInfo;
+	static WTPacketPtr wintab_WTPacket;
+	static WTEnablePtr wintab_WTEnable;
+
+	// Windows Ink API
+	static bool winink_available;
 	static GetPointerTypePtr win8p_GetPointerType;
 	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
+
+	HANDLE wtctx;
+	LOGCONTEXTW wtlc;
+	int min_pressure;
+	int max_pressure;
+	bool tilt_supported;
+	bool block_mm = false;
+
+	int last_pressure_update;
+	float last_pressure;
+	Vector2 last_tilt;
 
 	enum {
 		KEY_EVENT_BUFFER_SIZE = 512
@@ -179,10 +311,6 @@ class OS_Windows : public OS {
 	HWND hWnd;
 	Point2 last_pos;
 
-	HBITMAP hBitmap; //DIB section for layered window
-	uint8_t *dib_data;
-	Size2 dib_size;
-	HDC hDC_dib;
 	bool layered_window;
 
 	uint32_t move_timer_id;
@@ -262,6 +390,8 @@ protected:
 	void process_events();
 	void process_key_events();
 
+	String _quote_command_line_argument(const String &p_text) const;
+
 	struct ProcessInfo {
 
 		STARTUPINFO si;
@@ -296,6 +426,11 @@ public:
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
+
+	virtual int get_tablet_driver_count() const;
+	virtual String get_tablet_driver_name(int p_driver) const;
+	virtual String get_current_tablet_driver() const;
+	virtual void set_current_tablet_driver(const String &p_driver);
 
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;
@@ -333,10 +468,6 @@ public:
 
 	virtual bool get_window_per_pixel_transparency_enabled() const;
 	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
-
-	virtual uint8_t *get_layered_buffer_data();
-	virtual Size2 get_layered_buffer_size();
-	virtual void swap_layered_buffer();
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 	virtual Error close_dynamic_library(void *p_library_handle);
@@ -385,6 +516,11 @@ public:
 	virtual int get_processor_count() const;
 
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
+	virtual int keyboard_get_layout_count() const;
+	virtual int keyboard_get_current_layout() const;
+	virtual void keyboard_set_current_layout(int p_index);
+	virtual String keyboard_get_layout_language(int p_index) const;
+	virtual String keyboard_get_layout_name(int p_index) const;
 
 	virtual void enable_for_stealing_focus(ProcessID pid);
 	virtual void move_window_to_foreground();

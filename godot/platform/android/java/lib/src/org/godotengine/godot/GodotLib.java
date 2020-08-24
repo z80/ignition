@@ -32,6 +32,7 @@ package org.godotengine.godot;
 
 import android.app.Activity;
 import android.hardware.SensorEvent;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -176,22 +177,6 @@ public class GodotLib {
 	public static native void audio();
 
 	/**
-	 * Used to setup a {@link org.godotengine.godot.Godot.SingletonBase} instance.
-	 * @param p_name Name of the instance.
-	 * @param p_object Reference to the singleton instance.
-	 */
-	public static native void singleton(String p_name, Object p_object);
-
-	/**
-	 * Used to complete registration of the {@link org.godotengine.godot.Godot.SingletonBase} instance's methods.
-	 * @param p_sname Name of the instance
-	 * @param p_name Name of the method to register
-	 * @param p_ret Return type of the registered method
-	 * @param p_params Method parameters types
-	 */
-	public static native void method(String p_sname, String p_name, String p_ret, String[] p_params);
-
-	/**
 	 * Used to access Godot global properties.
 	 * @param p_key Property key
 	 * @return String value of the property
@@ -204,7 +189,7 @@ public class GodotLib {
 	 * @param p_method Name of the method to invoke
 	 * @param p_params Parameters to use for method invocation
 	 */
-	public static native void callobject(int p_id, String p_method, Object[] p_params);
+	public static native void callobject(long p_id, String p_method, Object[] p_params);
 
 	/**
 	 * Invoke method |p_method| on the Godot object specified by |p_id| during idle time.
@@ -212,7 +197,7 @@ public class GodotLib {
 	 * @param p_method Name of the method to invoke
 	 * @param p_params Parameters to use for method invocation
 	 */
-	public static native void calldeferred(int p_id, String p_method, Object[] p_params);
+	public static native void calldeferred(long p_id, String p_method, Object[] p_params);
 
 	/**
 	 * Forward the results from a permission request.

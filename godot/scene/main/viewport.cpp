@@ -2981,12 +2981,14 @@ Control *Viewport::get_modal_stack_top() const {
 }
 
 String Viewport::get_configuration_warning() const {
-
 	/*if (get_parent() && !Object::cast_to<Control>(get_parent()) && !render_target) {
 
 		return TTR("This viewport is not set as render target. If you intend for it to display its contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign its internal texture to some node for display.");
 	}*/
 
+	if (size.x == 0 || size.y == 0) {
+		return TTR("Viewport size must be greater than 0 to render anything.");
+	}
 	return String();
 }
 
@@ -3285,6 +3287,8 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(RENDER_INFO_SHADER_CHANGES_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDER_INFO_SURFACE_CHANGES_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDER_INFO_DRAW_CALLS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDER_INFO_2D_ITEMS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDER_INFO_2D_DRAW_CALLS_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDER_INFO_MAX);
 
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_DISABLED);

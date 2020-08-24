@@ -262,6 +262,13 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --no-window                      Disable window creation (Windows only). Useful together with --script.\n");
 	OS::get_singleton()->print("  --enable-vsync-via-compositor    When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
+	OS::get_singleton()->print("  --tablet-driver                  Tablet input driver (");
+	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
+		if (i != 0)
+			OS::get_singleton()->print(", ");
+		OS::get_singleton()->print("'%s'", OS::get_singleton()->get_tablet_driver_name(i).utf8().get_data());
+	}
+	OS::get_singleton()->print(") (Windows only).\n");
 	OS::get_singleton()->print("\n");
 #endif
 
@@ -389,6 +396,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	String video_driver = "";
 	String audio_driver = "";
+	String tablet_driver = "";
 	String project_path = ".";
 	bool upwards = false;
 	String debug_mode;
@@ -427,6 +435,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	I = args.front();
 	while (I) {
+#ifdef OSX_ENABLED
+		// Ignore the process serial number argument passed by macOS Gatekeeper.
+		// Otherwise, Godot would try to open a non-existent project on the first start and abort.
+		if (I->get().begins_with("-psn_")) {
+			I = I->next();
+			continue;
+		}
+#endif
 
 		List<String>::Element *N = I->next();
 
@@ -596,6 +612,26 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--no-window") { // disable window creation (Windows only)
 
 			OS::get_singleton()->set_no_window_mode(true);
+		} else if (I->get() == "--tablet-driver") {
+			if (I->next()) {
+				tablet_driver = I->next()->get();
+				bool found = false;
+				for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
+					if (tablet_driver == OS::get_singleton()->get_tablet_driver_name(i)) {
+						found = true;
+					}
+				}
+
+				if (!found) {
+					OS::get_singleton()->print("Unknown tablet driver '%s', aborting.\n", tablet_driver.utf8().get_data());
+					goto error;
+				}
+
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing tablet driver argument, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "--enable-vsync-via-compositor") {
 
 			video_mode.vsync_via_compositor = true;
@@ -982,8 +1018,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	GLOBAL_DEF("rendering/quality/driver/fallback_to_gles2", false);
 
-	// Assigning here even though it's GLES2-specific, to be sure that it appears in docs
-	GLOBAL_DEF("rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround", false);
+	// Assigning here, to be sure that it appears in docs
+	GLOBAL_DEF("rendering/quality/2d/use_nvidia_rect_flicker_workaround", false);
 
 	GLOBAL_DEF("display/window/size/width", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width", PropertyInfo(Variant::INT, "display/window/size/width", PROPERTY_HINT_RANGE, "0,7680,or_greater")); // 8K resolution
@@ -1039,6 +1075,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	OS::get_singleton()->_vsync_via_compositor = video_mode.vsync_via_compositor;
+
+	if (tablet_driver == "") { // specified in project.godot
+		tablet_driver = GLOBAL_DEF_RST("display/window/tablet_driver", OS::get_singleton()->get_tablet_driver_name(0));
+	}
+
+	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
+		if (tablet_driver == OS::get_singleton()->get_tablet_driver_name(i)) {
+			OS::get_singleton()->set_current_tablet_driver(OS::get_singleton()->get_tablet_driver_name(i));
+			break;
+		}
+	}
+
+	if (tablet_driver == "") {
+		OS::get_singleton()->set_current_tablet_driver(OS::get_singleton()->get_tablet_driver_name(0));
+	}
 
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
 	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
@@ -1123,9 +1174,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/fps/force_fps", PropertyInfo(Variant::INT, "debug/settings/fps/force_fps", PROPERTY_HINT_RANGE, "0,120,1,or_greater"));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
+	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
 
-	if (!OS::get_singleton()->_verbose_stdout) //overridden
-		OS::get_singleton()->_verbose_stdout = GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
+	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
+		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
+	}
 
 	if (frame_delay == 0) {
 		frame_delay = GLOBAL_DEF("application/run/frame_delay_msec", 0);
@@ -1151,6 +1204,7 @@ error:
 
 	video_driver = "";
 	audio_driver = "";
+	tablet_driver = "";
 	project_path = "";
 
 	args.clear();
@@ -1216,6 +1270,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	// also init our arvr_server from here
 	arvr_server = memnew(ARVRServer);
+
+	// and finally setup this property under visual_server
+	VisualServer::get_singleton()->set_render_loop_enabled(!disable_render_loop);
 
 	register_core_singletons();
 
@@ -1433,7 +1490,11 @@ bool Main::start() {
 		} else if (args[i].length() && args[i][0] != '-' && positional_arg == "") {
 			positional_arg = args[i];
 
-			if (args[i].ends_with(".scn") || args[i].ends_with(".tscn") || args[i].ends_with(".escn")) {
+			if (args[i].ends_with(".scn") ||
+					args[i].ends_with(".tscn") ||
+					args[i].ends_with(".escn") ||
+					args[i].ends_with(".res") ||
+					args[i].ends_with(".tres")) {
 				// Only consider the positional argument to be a scene path if it ends with
 				// a file extension associated with Godot scenes. This makes it possible
 				// for projects to parse command-line arguments for custom CLI arguments
@@ -1496,7 +1557,11 @@ bool Main::start() {
 		print_line("Loading docs...");
 
 		for (int i = 0; i < _doc_data_class_path_count; i++) {
-			String path = doc_tool.plus_file(_doc_data_class_paths[i].path);
+			// Custom modules are always located by absolute path.
+			String path = _doc_data_class_paths[i].path;
+			if (path.is_rel_path()) {
+				path = doc_tool.plus_file(path);
+			}
 			String name = _doc_data_class_paths[i].name;
 			doc_data_classes[name] = path;
 			if (!checked_paths.has(path)) {
@@ -1574,7 +1639,7 @@ bool Main::start() {
 			return false;
 		}
 
-		if (script_res->can_instance() /*&& script_res->inherits_from("SceneTreeScripted")*/) {
+		if (script_res->can_instance()) {
 
 			StringName instance_type = script_res->get_instance_base_type();
 			Object *obj = ClassDB::instance(instance_type);
@@ -1582,7 +1647,7 @@ bool Main::start() {
 			if (!script_loop) {
 				if (obj)
 					memdelete(obj);
-				ERR_FAIL_V_MSG(false, "Can't load script '" + script + "', it does not inherit from a MainLoop type.");
+				ERR_FAIL_V_MSG(false, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 			}
 
 			script_loop->set_init_script(script_res);
@@ -1763,7 +1828,14 @@ bool Main::start() {
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			String appname = ProjectSettings::get_singleton()->get("application/config/name");
 			appname = TranslationServer::get_singleton()->translate(appname);
+#ifdef DEBUG_ENABLED
+			// Append a suffix to the window title to denote that the project is running
+			// from a debug build (including the editor). Since this results in lower performance,
+			// this should be clearly presented to the user.
+			OS::get_singleton()->set_window_title(vformat("%s (DEBUG)", appname));
+#else
 			OS::get_singleton()->set_window_title(appname);
+#endif
 
 			int shadow_atlas_size = GLOBAL_GET("rendering/quality/shadow_atlas/size");
 			int shadow_atlas_q0_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_0_subdiv");
@@ -2032,7 +2104,7 @@ bool Main::iteration() {
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
-	if (OS::get_singleton()->can_draw() && !disable_render_loop) {
+	if (OS::get_singleton()->can_draw() && VisualServer::get_singleton()->is_render_loop_enabled()) {
 
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (VisualServer::get_singleton()->has_changed()) {
@@ -2091,22 +2163,37 @@ bool Main::iteration() {
 	if (fixed_fps != -1)
 		return exit;
 
-	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw())
-		OS::get_singleton()->delay_usec(OS::get_singleton()->get_low_processor_usage_mode_sleep_usec()); //apply some delay to force idle time
-	else {
-		uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
-		if (frame_delay)
-			OS::get_singleton()->delay_usec(Engine::get_singleton()->get_frame_delay() * 1000);
+	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
+	if (frame_delay) {
+		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
+		// the actual frame time into account.
+		// Due to the high fluctuation of the actual sleep duration, it's not recommended
+		// to use this as a FPS limiter.
+		OS::get_singleton()->delay_usec(frame_delay * 1000);
 	}
 
-	int target_fps = Engine::get_singleton()->get_target_fps();
+	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
+	// previous frame time into account for a smoother result.
+	uint64_t dynamic_delay = 0;
+	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw()) {
+		dynamic_delay = OS::get_singleton()->get_low_processor_usage_mode_sleep_usec();
+	}
+	const int target_fps = Engine::get_singleton()->get_target_fps();
 	if (target_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
-		uint64_t time_step = 1000000L / target_fps;
-		target_ticks += time_step;
+		// Override the low processor usage mode sleep delay if the target FPS is lower.
+		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / target_fps));
+	}
+
+	if (dynamic_delay > 0) {
+		target_ticks += dynamic_delay;
 		uint64_t current_ticks = OS::get_singleton()->get_ticks_usec();
-		if (current_ticks < target_ticks) OS::get_singleton()->delay_usec(target_ticks - current_ticks);
+
+		if (current_ticks < target_ticks) {
+			OS::get_singleton()->delay_usec(target_ticks - current_ticks);
+		}
+
 		current_ticks = OS::get_singleton()->get_ticks_usec();
-		target_ticks = MIN(MAX(target_ticks, current_ticks - time_step), current_ticks + time_step);
+		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
 	}
 
 #ifdef TOOLS_ENABLED
@@ -2147,8 +2234,8 @@ void Main::cleanup() {
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
+	// Flush before uninitializing the scene, but delete the MessageQueue as late as possible.
 	message_queue->flush();
-	memdelete(message_queue);
 
 	if (script_debugger) {
 		if (use_debug_profiler) {
@@ -2224,6 +2311,10 @@ void Main::cleanup() {
 		OS::get_singleton()->execute(exec, args, false, &pid);
 		OS::get_singleton()->set_restart_on_exit(false, List<String>()); //clear list (uses memory)
 	}
+
+	// Now should be safe to delete MessageQueue (famous last words).
+	message_queue->flush();
+	memdelete(message_queue);
 
 	unregister_core_driver_types();
 	unregister_core_types();

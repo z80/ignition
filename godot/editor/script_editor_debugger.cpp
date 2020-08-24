@@ -333,7 +333,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			msg.push_back(p_file);
 			ppeer->put_var(msg);
 		} break;
-		case SAVE_CSV: {
+		case SAVE_MONITORS_CSV: {
 			Error err;
 			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
@@ -369,6 +369,36 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 				file->store_csv_line(profiler_data[i]);
 			}
 
+		} break;
+		case SAVE_VRAM_CSV: {
+			Error err;
+			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+
+			if (err != OK) {
+				ERR_PRINTS("Failed to open " + p_file);
+				return;
+			}
+
+			Vector<String> headers;
+			headers.resize(vmem_tree->get_columns());
+			for (int i = 0; i < vmem_tree->get_columns(); ++i) {
+				headers.write[i] = vmem_tree->get_column_title(i);
+			}
+			file->store_csv_line(headers);
+
+			if (vmem_tree->get_root()) {
+				TreeItem *ti = vmem_tree->get_root()->get_children();
+				while (ti) {
+					Vector<String> values;
+					values.resize(vmem_tree->get_columns());
+					for (int i = 0; i < vmem_tree->get_columns(); ++i) {
+						values.write[i] = ti->get_text(i);
+					}
+					file->store_csv_line(values);
+
+					ti = ti->get_next();
+				}
+			}
 		} break;
 	}
 }
@@ -494,6 +524,15 @@ void ScriptEditorDebugger::_video_mem_request() {
 	ppeer->put_var(msg);
 }
 
+void ScriptEditorDebugger::_video_mem_export() {
+
+	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_dialog->clear_filters();
+	file_dialog_mode = SAVE_VRAM_CSV;
+	file_dialog->popup_centered_ratio();
+}
+
 Size2 ScriptEditorDebugger::get_minimum_size() const {
 
 	Size2 ms = MarginContainer::get_minimum_size();
@@ -607,12 +646,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 					if (path.find("::") != -1) {
 						// built-in resource
 						String base_path = path.get_slice("::", 0);
-						if (ResourceLoader::get_resource_type(base_path) == "PackedScene") {
-							if (!EditorNode::get_singleton()->is_scene_open(base_path)) {
-								EditorNode::get_singleton()->load_scene(base_path);
-							}
-						} else {
-							EditorNode::get_singleton()->load_resource(base_path);
+						RES dependency = ResourceLoader::load(base_path);
+						if (dependency.is_valid()) {
+							remote_dependencies.insert(dependency);
 						}
 					}
 					var = ResourceLoader::load(path);
@@ -1132,19 +1168,20 @@ void ScriptEditorDebugger::_performance_draw() {
 
 	info_message->hide();
 
-	Ref<StyleBox> graph_sb = get_stylebox("normal", "TextEdit");
-	Ref<Font> graph_font = get_font("font", "TextEdit");
+	const Ref<StyleBox> graph_sb = get_stylebox("normal", "TextEdit");
+	const Ref<Font> graph_font = get_font("font", "TextEdit");
 
-	int cols = Math::ceil(Math::sqrt((float)which.size()));
+	const int cols = Math::ceil(Math::sqrt((float)which.size()));
 	int rows = Math::ceil((float)which.size() / cols);
-	if (which.size() == 1)
+	if (which.size() == 1) {
 		rows = 1;
+	}
 
-	int margin = 3;
-	int point_sep = 5;
-	Size2i s = Size2i(perf_draw->get_size()) / Size2i(cols, rows);
+	const int margin = 3;
+	const int point_sep = 5;
+	const Size2i s = Size2i(perf_draw->get_size()) / Size2i(cols, rows);
+
 	for (int i = 0; i < which.size(); i++) {
-
 		Point2i p(i % cols, i / cols);
 		Rect2i r(p * s, s);
 		r.position += Point2(margin, margin);
@@ -1152,33 +1189,94 @@ void ScriptEditorDebugger::_performance_draw() {
 		perf_draw->draw_style_box(graph_sb, r);
 		r.position += graph_sb->get_offset();
 		r.size -= graph_sb->get_minimum_size();
-		int pi = which[i];
-		Color c = get_color("accent_color", "Editor");
-		float h = (float)which[i] / (float)(perf_items.size());
-		// Use a darker color on light backgrounds for better visibility
-		float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4 : 0.55;
-		c.set_hsv(Math::fmod(h + 0.4, 0.9), c.get_s() * 0.9, c.get_v() * value_multiplier);
+		const int pi = which[i];
 
-		c.a = 0.6;
-		perf_draw->draw_string(graph_font, r.position + Point2(0, graph_font->get_ascent()), perf_items[pi]->get_text(0), c, r.size.x);
-		c.a = 0.9;
-		perf_draw->draw_string(graph_font, r.position + Point2(0, graph_font->get_ascent() + graph_font->get_height()), perf_items[pi]->get_text(1), c, r.size.y);
+		// Draw horizontal lines with labels.
 
-		float spacing = point_sep / float(cols);
+		int nb_lines = 5;
+		// Draw less lines if the monitor isn't tall enough to display 5 labels.
+		if (r.size.height <= 160 * EDSCALE) {
+			nb_lines = 3;
+		} else if (r.size.height <= 240 * EDSCALE) {
+			nb_lines = 4;
+		}
+
+		const float inv_nb_lines = 1.0 / nb_lines;
+
+		for (int line = 0; line < nb_lines; line += 1) {
+			const int from_x = r.position.x;
+			const int to_x = r.position.x + r.size.width;
+			const int y = r.position.y + (r.size.height * inv_nb_lines + line * inv_nb_lines * r.size.height);
+			perf_draw->draw_line(
+					Point2(from_x, y),
+					Point2i(to_x, y),
+					Color(0.5, 0.5, 0.5, 0.25),
+					Math::round(EDSCALE));
+
+			String label;
+			switch (Performance::MonitorType((int)perf_items[pi]->get_metadata(1))) {
+				case Performance::MONITOR_TYPE_MEMORY: {
+					label = String::humanize_size(Math::ceil((1 - inv_nb_lines - inv_nb_lines * line) * perf_max[pi]));
+				} break;
+				case Performance::MONITOR_TYPE_TIME: {
+					label = rtos((1 - inv_nb_lines - inv_nb_lines * line) * perf_max[pi] * 1000).pad_decimals(2) + " ms";
+				} break;
+				default: {
+					label = itos(Math::ceil((1 - inv_nb_lines - inv_nb_lines * line) * perf_max[pi]));
+				} break;
+			}
+
+			perf_draw->draw_string(
+					graph_font,
+					Point2(from_x, y - graph_font->get_ascent() * 0.25),
+					label,
+					Color(0.5, 0.5, 0.5, 1.0));
+		}
+
+		const float h = (float)which[i] / (float)(perf_items.size());
+		// Use a darker color on light backgrounds for better visibility.
+		const float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4 : 0.55;
+		Color color = get_color("accent_color", "Editor");
+		color.set_hsv(Math::fmod(h + 0.4, 0.9), color.get_s() * 0.9, color.get_v() * value_multiplier);
+
+		// Draw the monitor name in the top-left corner.
+		color.a = 0.6;
+		perf_draw->draw_string(
+				graph_font,
+				r.position + Point2(0, graph_font->get_ascent()),
+				perf_items[pi]->get_text(0),
+				color,
+				r.size.x);
+
+		// Draw the monitor value in the top-left corner, just below the name.
+		color.a = 0.9;
+		perf_draw->draw_string(
+				graph_font,
+				r.position + Point2(0, graph_font->get_ascent() + graph_font->get_height()),
+				perf_items[pi]->get_text(1),
+				color,
+				r.size.y);
+
+		const float spacing = point_sep / float(cols);
 		float from = r.size.width;
 
-		List<Vector<float> >::Element *E = perf_history.front();
+		const List<Vector<float> >::Element *E = perf_history.front();
 		float prev = -1;
 		while (from >= 0 && E) {
-
 			float m = perf_max[pi];
-			if (m == 0)
+			if (m == 0) {
 				m = 0.00001;
+			}
 			float h2 = E->get()[pi] / m;
 			h2 = (1.0 - h2) * r.size.y;
 
-			if (E != perf_history.front())
-				perf_draw->draw_line(r.position + Point2(from, h2), r.position + Point2(from + spacing, prev), c, Math::round(EDSCALE), true);
+			if (E != perf_history.front()) {
+				perf_draw->draw_line(
+						r.position + Point2(from, h2),
+						r.position + Point2(from + spacing, prev),
+						color,
+						Math::round(EDSCALE));
+			}
 			prev = h2;
 			E = E->next();
 			from -= spacing;
@@ -1207,6 +1305,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			error_tree->connect("item_selected", this, "_error_selected");
 			error_tree->connect("item_activated", this, "_error_activated");
 			vmem_refresh->set_icon(get_icon("Reload", "EditorIcons"));
+			vmem_export->set_icon(get_icon("Save", "EditorIcons"));
 
 			reason->add_color_override("font_color", get_color("error_color", "Editor"));
 
@@ -1286,12 +1385,15 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				} else {
 					errors_tab->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
 					debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
-					if (error_count == 0) {
-						debugger_button->set_icon(get_icon("Warning", "EditorIcons"));
-						tabs->set_tab_icon(errors_tab->get_index(), get_icon("Warning", "EditorIcons"));
-					} else {
+					if (error_count >= 1 && warning_count >= 1) {
+						debugger_button->set_icon(get_icon("ErrorWarning", "EditorIcons"));
+						tabs->set_tab_icon(errors_tab->get_index(), get_icon("ErrorWarning", "EditorIcons"));
+					} else if (error_count >= 1) {
 						debugger_button->set_icon(get_icon("Error", "EditorIcons"));
 						tabs->set_tab_icon(errors_tab->get_index(), get_icon("Error", "EditorIcons"));
+					} else {
+						debugger_button->set_icon(get_icon("Warning", "EditorIcons"));
+						tabs->set_tab_icon(errors_tab->get_index(), get_icon("Warning", "EditorIcons"));
 					}
 				}
 				last_error_count = error_count;
@@ -1446,6 +1548,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			dobreak->set_icon(get_icon("Pause", "EditorIcons"));
 			docontinue->set_icon(get_icon("DebugContinue", "EditorIcons"));
 			vmem_refresh->set_icon(get_icon("Reload", "EditorIcons"));
+			vmem_export->set_icon(get_icon("Save", "EditorIcons"));
 		} break;
 	}
 }
@@ -1627,7 +1730,8 @@ void ScriptEditorDebugger::_export_csv() {
 
 	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	file_dialog_mode = SAVE_CSV;
+	file_dialog->clear_filters();
+	file_dialog_mode = SAVE_MONITORS_CSV;
 	file_dialog->popup_centered_ratio();
 }
 
@@ -2099,6 +2203,7 @@ void ScriptEditorDebugger::_clear_remote_objects() {
 		memdelete(E->value());
 	}
 	remote_objects.clear();
+	remote_dependencies.clear();
 }
 
 void ScriptEditorDebugger::_clear_errors_list() {
@@ -2216,6 +2321,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_performance_select"), &ScriptEditorDebugger::_performance_select);
 	ClassDB::bind_method(D_METHOD("_scene_tree_request"), &ScriptEditorDebugger::_scene_tree_request);
 	ClassDB::bind_method(D_METHOD("_video_mem_request"), &ScriptEditorDebugger::_video_mem_request);
+	ClassDB::bind_method(D_METHOD("_video_mem_export"), &ScriptEditorDebugger::_video_mem_export);
 	ClassDB::bind_method(D_METHOD("_live_edit_set"), &ScriptEditorDebugger::_live_edit_set);
 	ClassDB::bind_method(D_METHOD("_live_edit_clear"), &ScriptEditorDebugger::_live_edit_clear);
 
@@ -2537,8 +2643,12 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmem_refresh = memnew(ToolButton);
 		vmem_refresh->set_disabled(true);
 		vmem_hb->add_child(vmem_refresh);
+		vmem_export = memnew(ToolButton);
+		vmem_export->set_tooltip(TTR("Export list to a CSV file"));
+		vmem_hb->add_child(vmem_export);
 		vmem_vb->add_child(vmem_hb);
 		vmem_refresh->connect("pressed", this, "_video_mem_request");
+		vmem_export->connect("pressed", this, "_video_mem_export");
 
 		VBoxContainer *vmmc = memnew(VBoxContainer);
 		vmem_tree = memnew(Tree);

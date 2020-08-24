@@ -3453,6 +3453,16 @@
 				Sets the default clear color which is used when a specific clear color has not been selected.
 			</description>
 		</method>
+		<method name="set_shader_time_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="float">
+			</argument>
+			<description>
+				Sets the scale to apply to the passage of time for the shaders' [code]TIME[/code] builtin.
+				The default value is [code]1.0[/code], which means [code]TIME[/code] will count the real time as it goes by, without narrowing or stretching it.
+			</description>
+		</method>
 		<method name="shader_create">
 			<return type="RID">
 			</return>
@@ -4221,6 +4231,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="render_loop_enabled" type="bool" setter="set_render_loop_enabled" getter="is_render_loop_enabled">
+			If [code]false[/code], disables rendering completely, but the engine logic is still being processed. You can call [method force_draw] to draw a frame even with rendering disabled.
+		</member>
+	</members>
 	<signals>
 		<signal name="frame_post_draw">
 			<description>
@@ -4279,13 +4294,13 @@
 		<constant name="TEXTURE_TYPE_2D" value="0" enum="TextureType">
 			Normal texture with 2 dimensions, width and height.
 		</constant>
-		<constant name="TEXTURE_TYPE_CUBEMAP" value="1" enum="TextureType">
+		<constant name="TEXTURE_TYPE_CUBEMAP" value="2" enum="TextureType">
 			Texture made up of six faces, can be looked up with a [code]vec3[/code] in shader.
 		</constant>
-		<constant name="TEXTURE_TYPE_2D_ARRAY" value="2" enum="TextureType">
+		<constant name="TEXTURE_TYPE_2D_ARRAY" value="3" enum="TextureType">
 			An array of 2-dimensional textures.
 		</constant>
-		<constant name="TEXTURE_TYPE_3D" value="3" enum="TextureType">
+		<constant name="TEXTURE_TYPE_3D" value="4" enum="TextureType">
 			A 3-dimensional texture with width, height, and depth.
 		</constant>
 		<constant name="TEXTURE_FLAG_MIPMAPS" value="1" enum="TextureFlags">
@@ -4601,7 +4616,13 @@
 		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5" enum="ViewportRenderInfo">
 			Number of draw calls during this frame.
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_MAX" value="6" enum="ViewportRenderInfo">
+		<constant name="VIEWPORT_RENDER_INFO_2D_ITEMS_IN_FRAME" value="6" enum="ViewportRenderInfo">
+			Number of 2d items drawn this frame.
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_2D_DRAW_CALLS_IN_FRAME" value="7" enum="ViewportRenderInfo">
+			Number of 2d draw calls during this frame.
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_MAX" value="8" enum="ViewportRenderInfo">
 			Represents the size of the [enum ViewportRenderInfo] enum.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLED" value="0" enum="ViewportDebugDraw">
@@ -4748,16 +4769,22 @@
 		<constant name="INFO_DRAW_CALLS_IN_FRAME" value="5" enum="RenderInfo">
 			The amount of draw calls in frame.
 		</constant>
-		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="6" enum="RenderInfo">
+		<constant name="INFO_2D_ITEMS_IN_FRAME" value="6" enum="RenderInfo">
+			The amount of 2d items in the frame.
+		</constant>
+		<constant name="INFO_2D_DRAW_CALLS_IN_FRAME" value="7" enum="RenderInfo">
+			The amount of 2d draw calls in frame.
+		</constant>
+		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="8" enum="RenderInfo">
 			Unimplemented in the GLES2 and GLES3 rendering backends, always returns 0.
 		</constant>
-		<constant name="INFO_VIDEO_MEM_USED" value="7" enum="RenderInfo">
+		<constant name="INFO_VIDEO_MEM_USED" value="9" enum="RenderInfo">
 			The amount of video memory used, i.e. texture and vertex memory combined.
 		</constant>
-		<constant name="INFO_TEXTURE_MEM_USED" value="8" enum="RenderInfo">
+		<constant name="INFO_TEXTURE_MEM_USED" value="10" enum="RenderInfo">
 			The amount of texture memory used.
 		</constant>
-		<constant name="INFO_VERTEX_MEM_USED" value="9" enum="RenderInfo">
+		<constant name="INFO_VERTEX_MEM_USED" value="11" enum="RenderInfo">
 			The amount of vertex memory used.
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features">

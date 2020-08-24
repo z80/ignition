@@ -57,7 +57,18 @@
 
 #ifdef ANDROID_ENABLED
 #include "android_mono_config.h"
-#include "gd_mono_android.h"
+#include "support/android_support.h"
+#elif defined(IPHONE_ENABLED)
+#include "support/ios_support.h"
+#endif
+
+#if defined(TOOL_ENABLED) && defined(GD_MONO_SINGLE_APPDOMAIN)
+// This will no longer be the case if we replace appdomains with AssemblyLoadContext
+#error "Editor build requires support for multiple appdomains"
+#endif
+
+#if defined(GD_MONO_HOT_RELOAD) && defined(GD_MONO_SINGLE_APPDOMAIN)
+#error "Hot reloading requires multiple appdomains"
 #endif
 
 // TODO:
@@ -117,13 +128,13 @@ void gd_mono_profiler_init() {
 	}
 }
 
-#if defined(DEBUG_ENABLED)
-
 void gd_mono_debug_init() {
 
-	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
-
 	CharString da_args = OS::get_singleton()->get_environment("GODOT_MONO_DEBUGGER_AGENT").utf8();
+
+	if (da_args.length()) {
+		OS::get_singleton()->set_environment("GODOT_MONO_DEBUGGER_AGENT", String());
+	}
 
 #ifdef TOOLS_ENABLED
 	int da_port = GLOBAL_DEF("mono/debugger_agent/port", 23685);
@@ -147,6 +158,10 @@ void gd_mono_debug_init() {
 		return; // Exported games don't use the project settings to setup the debugger agent
 #endif
 
+	// Debugging enabled
+
+	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+
 	// --debugger-agent=help
 	const char *options[] = {
 		"--soft-breakpoints",
@@ -155,7 +170,6 @@ void gd_mono_debug_init() {
 	mono_jit_parse_options(2, (char **)options);
 }
 
-#endif // defined(DEBUG_ENABLED)
 #endif // !defined(JAVASCRIPT_ENABLED)
 
 #if defined(JAVASCRIPT_ENABLED)
@@ -163,6 +177,7 @@ MonoDomain *gd_initialize_mono_runtime() {
 	const char *vfs_prefix = "managed";
 	int enable_debugging = 0;
 
+	// TODO: Provide a way to enable debugging on WASM release builds.
 #ifdef DEBUG_ENABLED
 	enable_debugging = 1;
 #endif
@@ -173,11 +188,16 @@ MonoDomain *gd_initialize_mono_runtime() {
 }
 #else
 MonoDomain *gd_initialize_mono_runtime() {
-#ifdef DEBUG_ENABLED
 	gd_mono_debug_init();
+
+#if defined(IPHONE_ENABLED) || defined(ANDROID_ENABLED)
+	// I don't know whether this actually matters or not
+	const char *runtime_version = "mobile";
+#else
+	const char *runtime_version = "v4.0.30319";
 #endif
 
-	return mono_jit_init_version("GodotEngine.RootDomain", "v4.0.30319");
+	return mono_jit_init_version("GodotEngine.RootDomain", runtime_version);
 }
 #endif
 
@@ -319,20 +339,22 @@ void GDMono::initialize() {
 	add_mono_shared_libs_dir_to_path();
 #endif
 
+#ifdef ANDROID_ENABLED
+	mono_config_parse_memory(get_godot_android_mono_config().utf8().get_data());
+#else
+	mono_config_parse(NULL);
+#endif
+
 #if defined(ANDROID_ENABLED)
-	GDMonoAndroid::initialize();
+	gdmono::android::support::initialize();
+#elif defined(IPHONE_ENABLED)
+	gdmono::ios::support::initialize();
 #endif
 
 	GDMonoAssembly::initialize();
 
 #if !defined(JAVASCRIPT_ENABLED)
 	gd_mono_profiler_init();
-#endif
-
-#ifdef ANDROID_ENABLED
-	mono_config_parse_memory(get_godot_android_mono_config().utf8().get_data());
-#else
-	mono_config_parse(NULL);
 #endif
 
 	mono_install_unhandled_exception_hook(&unhandled_exception_hook, NULL);
@@ -370,15 +392,19 @@ void GDMono::initialize() {
 	print_verbose("Mono: Runtime initialized");
 
 #if defined(ANDROID_ENABLED)
-	GDMonoAndroid::register_internal_calls();
+	gdmono::android::support::register_internal_calls();
 #endif
 
 	// mscorlib assembly MUST be present at initialization
 	bool corlib_loaded = _load_corlib_assembly();
 	ERR_FAIL_COND_MSG(!corlib_loaded, "Mono: Failed to load mscorlib assembly.");
 
+#ifndef GD_MONO_SINGLE_APPDOMAIN
 	Error domain_load_err = _load_scripts_domain();
 	ERR_FAIL_COND_MSG(domain_load_err != OK, "Mono: Failed to load scripts domain.");
+#else
+	scripts_domain = root_domain;
+#endif
 
 	_register_internal_calls();
 
@@ -399,6 +425,9 @@ void GDMono::initialize_load_assemblies() {
 #if defined(TOOLS_ENABLED)
 	bool tool_assemblies_loaded = _load_tools_assemblies();
 	CRASH_COND_MSG(!tool_assemblies_loaded, "Mono: Failed to load '" TOOLS_ASM_NAME "' assemblies.");
+
+	if (Main::is_project_manager())
+		return;
 #endif
 
 	// Load the project's main assembly. This doesn't necessarily need to succeed.
@@ -490,11 +519,15 @@ void GDMono::add_assembly(uint32_t p_domain_id, GDMonoAssembly *p_assembly) {
 	assemblies[p_domain_id][p_assembly->get_name()] = p_assembly;
 }
 
-GDMonoAssembly **GDMono::get_loaded_assembly(const String &p_name) {
+GDMonoAssembly *GDMono::get_loaded_assembly(const String &p_name) {
+
+	if (p_name == "mscorlib")
+		return get_corlib_assembly();
 
 	MonoDomain *domain = mono_domain_get();
 	uint32_t domain_id = domain ? mono_domain_get_id(domain) : 0;
-	return assemblies[domain_id].getptr(p_name);
+	GDMonoAssembly **result = assemblies[domain_id].getptr(p_name);
+	return result ? *result : NULL;
 }
 
 bool GDMono::load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly) {
@@ -547,14 +580,6 @@ bool GDMono::load_assembly_from(const String &p_name, const String &p_path, GDMo
 
 	if (!assembly)
 		return false;
-
-#ifdef DEBUG_ENABLED
-	uint32_t domain_id = mono_domain_get_id(mono_domain_get());
-	GDMonoAssembly **stored_assembly = assemblies[domain_id].getptr(p_name);
-
-	ERR_FAIL_COND_V(stored_assembly == NULL, false);
-	ERR_FAIL_COND_V(*stored_assembly != assembly, false);
-#endif
 
 	*r_assembly = assembly;
 
@@ -893,8 +918,8 @@ void GDMono::_load_api_assemblies() {
 
 	bool api_assemblies_loaded = _try_load_api_assemblies_preset();
 
+#if defined(TOOLS_ENABLED) && !defined(GD_MONO_SINGLE_APPDOMAIN)
 	if (!api_assemblies_loaded) {
-#ifdef TOOLS_ENABLED
 		// The API assemblies are out of sync or some other error happened. Fine, try one more time, but
 		// this time update them from the prebuilt assemblies directory before trying to load them again.
 
@@ -915,8 +940,8 @@ void GDMono::_load_api_assemblies() {
 
 		// 4. Try loading the updated assemblies
 		api_assemblies_loaded = _try_load_api_assemblies_preset();
-#endif
 	}
+#endif
 
 	if (!api_assemblies_loaded) {
 		// welp... too bad
@@ -990,6 +1015,7 @@ void GDMono::_install_trace_listener() {
 #endif
 }
 
+#ifndef GD_MONO_SINGLE_APPDOMAIN
 Error GDMono::_load_scripts_domain() {
 
 	ERR_FAIL_COND_V(scripts_domain != NULL, ERR_BUG);
@@ -1009,7 +1035,7 @@ Error GDMono::_unload_scripts_domain() {
 
 	ERR_FAIL_NULL_V(scripts_domain, ERR_BUG);
 
-	print_verbose("Mono: Unloading scripts domain...");
+	print_verbose("Mono: Finalizing scripts domain...");
 
 	if (mono_domain_get() != root_domain)
 		mono_domain_set(root_domain, true);
@@ -1042,6 +1068,8 @@ Error GDMono::_unload_scripts_domain() {
 	MonoDomain *domain = scripts_domain;
 	scripts_domain = NULL;
 
+	print_verbose("Mono: Unloading scripts domain...");
+
 	MonoException *exc = NULL;
 	mono_domain_try_unload(domain, (MonoObject **)&exc);
 
@@ -1053,6 +1081,7 @@ Error GDMono::_unload_scripts_domain() {
 
 	return OK;
 }
+#endif
 
 #ifdef GD_MONO_HOT_RELOAD
 Error GDMono::reload_scripts_domain() {
@@ -1091,6 +1120,7 @@ Error GDMono::reload_scripts_domain() {
 }
 #endif
 
+#ifndef GD_MONO_SINGLE_APPDOMAIN
 Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 
 	CRASH_COND(p_domain == NULL);
@@ -1122,6 +1152,7 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 
 	return OK;
 }
+#endif
 
 GDMonoClass *GDMono::get_class(MonoClass *p_raw_class) {
 
@@ -1149,13 +1180,17 @@ GDMonoClass *GDMono::get_class(MonoClass *p_raw_class) {
 
 GDMonoClass *GDMono::get_class(const StringName &p_namespace, const StringName &p_name) {
 
+	GDMonoClass *klass = corlib_assembly->get_class(p_namespace, p_name);
+	if (klass)
+		return klass;
+
 	uint32_t domain_id = mono_domain_get_id(mono_domain_get());
 	HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies[domain_id];
 
 	const String *k = NULL;
 	while ((k = domain_assemblies.next(k))) {
 		GDMonoAssembly *assembly = domain_assemblies.get(*k);
-		GDMonoClass *klass = assembly->get_class(p_namespace, p_name);
+		klass = assembly->get_class(p_namespace, p_name);
 		if (klass)
 			return klass;
 	}
@@ -1222,12 +1257,44 @@ GDMono::GDMono() {
 GDMono::~GDMono() {
 
 	if (is_runtime_initialized()) {
+#ifndef GD_MONO_SINGLE_APPDOMAIN
 		if (scripts_domain) {
 			Error err = _unload_scripts_domain();
 			if (err != OK) {
 				ERR_PRINT("Mono: Failed to unload scripts domain.");
 			}
 		}
+#else
+		CRASH_COND(scripts_domain != root_domain);
+
+		print_verbose("Mono: Finalizing scripts domain...");
+
+		if (mono_domain_get() != root_domain)
+			mono_domain_set(root_domain, true);
+
+		finalizing_scripts_domain = true;
+
+		if (!mono_domain_finalize(root_domain, 2000)) {
+			ERR_PRINT("Mono: Domain finalization timeout.");
+		}
+
+		finalizing_scripts_domain = false;
+
+		mono_gc_collect(mono_gc_max_generation());
+
+		GDMonoCache::clear_godot_api_cache();
+
+		_domain_assemblies_cleanup(mono_domain_get_id(root_domain));
+
+		core_api_assembly.assembly = NULL;
+
+		project_assembly = NULL;
+
+		root_domain = NULL;
+		scripts_domain = NULL;
+
+		// Leave the rest to 'mono_jit_cleanup'
+#endif
 
 		const uint32_t *k = NULL;
 		while ((k = assemblies.next(k))) {
@@ -1244,14 +1311,14 @@ GDMono::~GDMono() {
 
 		mono_jit_cleanup(root_domain);
 
-#if defined(ANDROID_ENABLED)
-		GDMonoAndroid::cleanup();
-#endif
-
 		print_verbose("Mono: Finalized");
 
 		runtime_initialized = false;
 	}
+
+#if defined(ANDROID_ENABLED)
+	gdmono::android::support::cleanup();
+#endif
 
 	if (gdmono_log)
 		memdelete(gdmono_log);
@@ -1326,7 +1393,10 @@ bool _GodotSharp::is_runtime_initialized() {
 
 void _GodotSharp::_reload_assemblies(bool p_soft_reload) {
 #ifdef GD_MONO_HOT_RELOAD
-	CSharpLanguage::get_singleton()->reload_assemblies(p_soft_reload);
+	// This method may be called more than once with `call_deferred`, so we need to check
+	// again if reloading is needed to avoid reloading multiple times unnecessarily.
+	if (CSharpLanguage::get_singleton()->is_assembly_reloading_needed())
+		CSharpLanguage::get_singleton()->reload_assemblies(p_soft_reload);
 #endif
 }
 

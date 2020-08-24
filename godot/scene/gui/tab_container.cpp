@@ -71,6 +71,8 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
+	Popup *popup = get_popup();
+
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
 		Point2 pos(mb->get_position().x, mb->get_position().y);
@@ -231,6 +233,7 @@ void TabContainer::_notification(int p_what) {
 			int header_width = get_size().width - side_margin * 2;
 
 			// Find the width of the header area.
+			Popup *popup = get_popup();
 			if (popup)
 				header_width -= menu->get_width();
 			if (buttons_visible_cache)
@@ -289,6 +292,7 @@ void TabContainer::_notification(int p_what) {
 			int header_x = side_margin;
 			int header_width = size.width - side_margin * 2;
 			int header_height = _get_top_margin();
+			Popup *popup = get_popup();
 			if (popup)
 				header_width -= menu->get_width();
 
@@ -438,7 +442,30 @@ void TabContainer::_notification(int p_what) {
 
 void TabContainer::_on_theme_changed() {
 	if (get_tab_count() > 0) {
-		set_current_tab(get_current_tab());
+		_repaint();
+		update();
+	}
+}
+
+void TabContainer::_repaint() {
+	Ref<StyleBox> sb = get_stylebox("panel");
+	Vector<Control *> tabs = _get_tabs();
+	for (int i = 0; i < tabs.size(); i++) {
+		Control *c = tabs[i];
+		if (i == current) {
+			c->show();
+			c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+			if (tabs_visible) {
+				c->set_margin(MARGIN_TOP, _get_top_margin());
+			}
+			c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));
+			c->set_margin(Margin(MARGIN_LEFT), c->get_margin(Margin(MARGIN_LEFT)) + sb->get_margin(Margin(MARGIN_LEFT)));
+			c->set_margin(Margin(MARGIN_RIGHT), c->get_margin(Margin(MARGIN_RIGHT)) - sb->get_margin(Margin(MARGIN_RIGHT)));
+			c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
+
+		} else {
+			c->hide();
+		}
 	}
 }
 
@@ -554,24 +581,7 @@ void TabContainer::set_current_tab(int p_current) {
 	int pending_previous = current;
 	current = p_current;
 
-	Ref<StyleBox> sb = get_stylebox("panel");
-	Vector<Control *> tabs = _get_tabs();
-	for (int i = 0; i < tabs.size(); i++) {
-
-		Control *c = tabs[i];
-		if (i == current) {
-			c->show();
-			c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-			if (tabs_visible)
-				c->set_margin(MARGIN_TOP, _get_top_margin());
-			c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));
-			c->set_margin(Margin(MARGIN_LEFT), c->get_margin(Margin(MARGIN_LEFT)) + sb->get_margin(Margin(MARGIN_LEFT)));
-			c->set_margin(Margin(MARGIN_RIGHT), c->get_margin(Margin(MARGIN_RIGHT)) - sb->get_margin(Margin(MARGIN_RIGHT)));
-			c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
-
-		} else
-			c->hide();
-	}
+	_repaint();
 
 	_change_notify("current_tab");
 
@@ -744,6 +754,7 @@ int TabContainer::get_tab_idx_at_point(const Point2 &p_point) const {
 	Size2 size = get_size();
 	int right_ofs = 0;
 
+	Popup *popup = get_popup();
 	if (popup) {
 		Ref<Texture> menu = get_icon("menu");
 		right_ofs += menu->get_width();
@@ -785,23 +796,25 @@ TabContainer::TabAlign TabContainer::get_tab_align() const {
 	return align;
 }
 
-void TabContainer::set_tabs_visible(bool p_visibe) {
+void TabContainer::set_tabs_visible(bool p_visible) {
 
-	if (p_visibe == tabs_visible)
+	if (p_visible == tabs_visible)
 		return;
 
-	tabs_visible = p_visibe;
+	tabs_visible = p_visible;
 
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
 
 		Control *c = tabs[i];
-		if (p_visibe)
+		if (p_visible)
 			c->set_margin(MARGIN_TOP, _get_top_margin());
 		else
 			c->set_margin(MARGIN_TOP, 0);
 	}
+
 	update();
+	minimum_size_changed();
 }
 
 bool TabContainer::are_tabs_visible() const {
@@ -936,8 +949,10 @@ Size2 TabContainer::get_minimum_size() const {
 	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
 	Ref<Font> font = get_font("font");
 
-	ms.y += MAX(MAX(tab_bg->get_minimum_size().y, tab_fg->get_minimum_size().y), tab_disabled->get_minimum_size().y);
-	ms.y += font->get_height();
+	if (tabs_visible) {
+		ms.y += MAX(MAX(tab_bg->get_minimum_size().y, tab_fg->get_minimum_size().y), tab_disabled->get_minimum_size().y);
+		ms.y += font->get_height();
+	}
 
 	Ref<StyleBox> sb = get_stylebox("panel");
 	ms += sb->get_minimum_size();
@@ -947,12 +962,24 @@ Size2 TabContainer::get_minimum_size() const {
 
 void TabContainer::set_popup(Node *p_popup) {
 	ERR_FAIL_NULL(p_popup);
-	popup = Object::cast_to<Popup>(p_popup);
+	Popup *popup = Object::cast_to<Popup>(p_popup);
+	popup_obj_id = popup ? popup->get_instance_id() : 0;
 	update();
 }
 
 Popup *TabContainer::get_popup() const {
-	return popup;
+	if (popup_obj_id) {
+		Popup *popup = Object::cast_to<Popup>(ObjectDB::get_instance(popup_obj_id));
+		if (popup) {
+			return popup;
+		} else {
+#ifdef DEBUG_ENABLED
+			ERR_PRINT("Popup assigned to TabContainer is gone!");
+#endif
+			popup_obj_id = 0;
+		}
+	}
+	return NULL;
 }
 
 void TabContainer::set_drag_to_rearrange_enabled(bool p_enabled) {
@@ -986,7 +1013,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabContainer::get_current_tab);
 	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabContainer::get_previous_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab_control"), &TabContainer::get_current_tab_control);
-	ClassDB::bind_method(D_METHOD("get_tab_control", "idx"), &TabContainer::get_tab_control);
+	ClassDB::bind_method(D_METHOD("get_tab_control", "tab_idx"), &TabContainer::get_tab_control);
 	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &TabContainer::set_tab_align);
 	ClassDB::bind_method(D_METHOD("get_tab_align"), &TabContainer::get_tab_align);
 	ClassDB::bind_method(D_METHOD("set_tabs_visible", "visible"), &TabContainer::set_tabs_visible);
@@ -1039,7 +1066,7 @@ TabContainer::TabContainer() {
 	previous = 0;
 	align = ALIGN_CENTER;
 	tabs_visible = true;
-	popup = NULL;
+	popup_obj_id = 0;
 	drag_to_rearrange_enabled = false;
 	tabs_rearrange_group = -1;
 	use_hidden_tabs_for_min_size = false;

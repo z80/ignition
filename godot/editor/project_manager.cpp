@@ -786,6 +786,9 @@ public:
 			_test_path();
 		}
 
+		// Reset the dialog to its initial size. Otherwise, the dialog window would be too large
+		// when opening a small dialog after closing a large dialog.
+		set_size(get_minimum_size());
 		popup_centered_minsize(Size2(500, 0) * EDSCALE);
 	}
 
@@ -942,6 +945,8 @@ public:
 		icon = NULL;
 		icon_needs_reload = true;
 		hover = false;
+
+		set_focus_mode(FocusMode::FOCUS_ALL);
 	}
 
 	void set_is_favorite(bool fav) {
@@ -2758,6 +2763,8 @@ void ProjectListFilter::add_filter_option() {
 void ProjectListFilter::add_search_box() {
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Search"));
+	search_box->set_tooltip(
+			TTR("The search box filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
 	search_box->connect("text_changed", this, "_search_text_changed");
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(search_box);

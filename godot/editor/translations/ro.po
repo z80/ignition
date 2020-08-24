@@ -749,6 +749,11 @@ msgid "Method in target node must be specified."
 msgstr "Metoda din nodul țintă trebuie specificată."
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Metoda din nodul țintă trebuie specificată."
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -830,7 +835,6 @@ msgstr "Nu se poate conecta semnalul"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1437,7 +1441,7 @@ msgstr "Mutați Autoload"
 msgid "Remove Autoload"
 msgstr "Eliminați Autoload"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Activați"
 
@@ -1445,17 +1449,9 @@ msgstr "Activați"
 msgid "Rearrange Autoloads"
 msgstr "Rearanjați Autoload-urile"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "Cale nevalidă."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Fișierul nu există."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Nu în calea de resurse."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2404,12 +2400,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Nu se poate reîncărca o scenă care nu a fost salvată niciodată."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Întoarcere"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Salvează Scena"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Această acțiune nu poate fi recuperată. Te reîntorci oricum?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2707,10 +2706,6 @@ msgid "Redo"
 msgstr "Reîntoarcere"
 
 #: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Restabilește Scena"
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Proiect Divers sau unelte pentru scenă."
 
@@ -2935,8 +2930,13 @@ msgid "Q&A"
 msgstr "Întrebări și Răspunsuri"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Agent de Monitorizare al Problemelor"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Reimportă"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3362,6 +3362,10 @@ msgstr "Nu a putut fi executat scriptul:"
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr "Ai uitat cumva metoda '_run' ?"
+
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3996,6 +4000,10 @@ msgid "Error running post-import script:"
 msgstr "Eroare la executarea scripyului post-importare:"
 
 #: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Se Salvează..."
 
@@ -4026,7 +4034,7 @@ msgid "Reimport"
 msgstr "Reimportă"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -7030,14 +7038,6 @@ msgid "Open Godot online documentation."
 msgstr "Deschide Recente"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr ""
 
@@ -7104,13 +7104,13 @@ msgid ""
 msgstr "Deconectați '%s' de la '%s'"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "[Ignore]"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Line"
 msgstr "Linie:"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7489,6 +7489,10 @@ msgid "This operation requires a single selected node."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Lock View Rotation"
 msgstr "Curăță Rotația Cursorului"
@@ -7580,18 +7584,27 @@ msgid "Freelook Slow Modifier"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "View Rotation Locked"
+msgstr "Curăță Rotația Cursorului"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "View Rotation Locked"
-msgstr "Curăță Rotația Cursorului"
+msgid "XForm Dialog"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "XForm Dialog"
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10104,6 +10117,13 @@ msgstr ""
 "Dorești să explorezi exemplele de proiecte oficiale din Librăria de Asset-"
 "uri?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr ""
@@ -10674,7 +10694,8 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
+#, fuzzy
+msgid "Detach Script"
 msgstr "Curăță Scriptul"
 
 #: editor/scene_tree_dock.cpp
@@ -10843,6 +10864,13 @@ msgid "Open Documentation"
 msgstr "Deschide Recente"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
@@ -10893,11 +10921,13 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
-msgstr ""
+#, fuzzy
+msgid "Attach a new or existing script to the selected node."
+msgstr "Curăță un script pentru nodul selectat."
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+#, fuzzy
+msgid "Detach the script from the selected node."
 msgstr "Curăță un script pentru nodul selectat."
 
 #: editor/scene_tree_dock.cpp
@@ -11026,6 +11056,10 @@ msgid "A directory with the same name exists."
 msgstr "Un fișier sau un director cu acest nume există deja."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Fișierul nu există."
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid extension."
 msgstr "Trebuie să utilizaţi o extensie valida."
@@ -11069,6 +11103,10 @@ msgid "File exists, it will be reused."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "Cale nevalidă."
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid class name."
 msgstr "Nume nevalid."
@@ -11105,6 +11143,12 @@ msgstr "Încărcaţi o Schemă de Pistă Audio existentă."
 #, fuzzy
 msgid "Script file already exists."
 msgstr "AutoLoad '%s' există deja!"
+
+#: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -11236,6 +11280,11 @@ msgstr ""
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Exportă Profil"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12135,6 +12184,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -12156,6 +12209,32 @@ msgstr ""
 #, fuzzy
 msgid "Invalid package name:"
 msgstr "Nume nevalid."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12779,6 +12858,10 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr ""
@@ -12806,6 +12889,21 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Not in resource path."
+#~ msgstr "Nu în calea de resurse."
+
+#~ msgid "Revert"
+#~ msgstr "Întoarcere"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Această acțiune nu poate fi recuperată. Te reîntorci oricum?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Restabilește Scena"
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Agent de Monitorizare al Problemelor"
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "Înlocuit %d potriviri."

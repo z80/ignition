@@ -126,6 +126,10 @@ public:
 	FUNC3(shader_set_default_texture_param, RID, const StringName &, RID)
 	FUNC2RC(RID, shader_get_default_texture_param, RID, const StringName &)
 
+	FUNC2(shader_add_custom_define, RID, const String &)
+	FUNC2SC(shader_get_custom_defines, RID, Vector<String> *)
+	FUNC1(shader_clear_custom_defines, RID)
+
 	/* COMMON MATERIAL API */
 
 	FUNCRID(material)
@@ -611,6 +615,7 @@ public:
 
 	FUNC4(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
 	FUNC1(set_default_clear_color, const Color &)
+	FUNC1(set_shader_time_scale, float)
 
 	FUNC0R(RID, get_test_cube)
 
