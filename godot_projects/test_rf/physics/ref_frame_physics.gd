@@ -45,6 +45,11 @@ func add_body( body: Body ):
 		ph.set_collision_layer( _contact_layer )
 
 
+func remove_body( body: Body ):
+	var parent = self.get_parent()
+	body.change_parent( parent )
+
+
 func create_body( type_name: String, t: Transform = Transform.IDENTITY ):
 	var body = BodyCreator.create( type_name )
 	add_child( body )
