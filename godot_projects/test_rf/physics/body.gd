@@ -36,6 +36,10 @@ func update_visual( root: Node = null ):
 
 
 
+# Should return a list of GUI classes to instantiate in a container window which is opened 
+# when interation icon is clicked.
+func gui_classes():
+	return []
 
 
 func _process( _delta ):

@@ -1,0 +1,62 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/interact_icon/gui_click_container.gd" type="Script" id=1]
+
+[node name="GuiClickContainer" type="Panel"]
+margin_top = -1.0
+margin_right = 192.0
+margin_bottom = 260.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TitleBar" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 0.096
+margin_bottom = 0.175999
+color = Color( 0.431373, 0.545098, 0.596078, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Title" type="Label" parent="TitleBar"]
+margin_left = 2.3811
+margin_top = 6.34955
+margin_right = 97.3811
+margin_bottom = 20.3495
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+text = "Title goes here"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Close" type="Button" parent="TitleBar"]
+anchor_left = 0.88
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 0.707413
+margin_top = 3.0
+margin_right = -2.33258
+margin_bottom = -2.232
+
+[node name="ResizeHandle" type="Panel" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -24.6254
+margin_top = -25.0
+margin_right = -0.625427
+
+[node name="Container" type="VBoxContainer" parent="."]
+anchor_top = 0.094
+anchor_right = 1.0
+anchor_bottom = 0.924
+margin_top = 0.466
+margin_bottom = 1.836
+[connection signal="mouse_entered" from="TitleBar" to="." method="_on_TitleBar_mouse_entered"]
+[connection signal="mouse_exited" from="TitleBar" to="." method="_on_TitleBar_mouse_exited"]
+[connection signal="pressed" from="TitleBar/Close" to="." method="_on_Close_pressed"]
+[connection signal="mouse_entered" from="ResizeHandle" to="." method="_on_ResizeHandle_mouse_entered"]
+[connection signal="mouse_exited" from="ResizeHandle" to="." method="_on_ResizeHandle_mouse_exited"]

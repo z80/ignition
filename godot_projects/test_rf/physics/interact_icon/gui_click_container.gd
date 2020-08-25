@@ -1,4 +1,5 @@
 
+extends Panel
 
 
 var _mouse = {
@@ -7,20 +8,49 @@ var _mouse = {
 	down_pos = null,
 	in_handle = false
 }
+var _pre_maximize_rect = get_rect()
+
+
+func set_title( stri: String ):
+	$TitleBar/Title.text = stri
+
+
+# List of classes to instantiate objects.
+func setup_gui( classes, target_object ):
+	for C in classes:
+		var inst = C.instance()
+		$Container.add_child( inst )
+		var has_init: bool = has_method( "init" )
+		if has_init:
+			inst.init( target_object )
+
+
+
+
+
+
+func _ready():
+	_pre_maximize_rect = get_rect()
+
+
 
 
 
 func _on_TitleBar_mouse_entered():
 	_mouse.in_title = true
 
+
 func _on_TitleBar_mouse_exited():
 	_mouse.in_title = false
+
 
 func _on_ResizeHandle_mouse_entered():
 	_mouse.in_handle = true
 
+
 func _on_ResizeHandle_mouse_exited():
 	_mouse.in_handle = false
+
 
 func _input(event):
 	if(event is InputEventMouseButton):
@@ -43,3 +73,7 @@ func _input(event):
 			_mouse.down_pos = new_mouse_down_pos
 			_pre_maximize_rect = get_rect()
 
+
+
+func _on_Close_pressed():
+	self.queue_free()

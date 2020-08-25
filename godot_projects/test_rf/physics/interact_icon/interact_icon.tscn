@@ -42,5 +42,6 @@ margin_left = -0.170654
 margin_top = 40.3818
 margin_right = 320.829
 margin_bottom = 222.382
+[connection signal="gui_input" from="MouseHoverControl" to="." method="_on_MouseHoverControl_gui_input"]
 [connection signal="mouse_entered" from="MouseHoverControl" to="." method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MouseHoverControl" to="." method="_on_mouse_exited"]

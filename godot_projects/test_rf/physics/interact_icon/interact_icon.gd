@@ -1,12 +1,12 @@
 extends Control
 
 var body: Node setget set_body, get_body
-# Can override default gui showing up when mouse is hovered.
-var HoverGui = null setget set_HoverGui, get_HoverGui
-var ClickGui = null setget set_ClickGui, get_ClickGui
 
 # Text to visualize when mouse hovers.
 var text: String setget _set_text, _get_text
+
+var _mouse_over: bool = false
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -28,22 +28,6 @@ func get_body():
 	return body
 
 
-func set_HoverGui( gui ):
-	HoverGui = gui
-
-
-func get_HoverGui():
-	return HoverGui
-
-
-func set_ClickGui( gui ):
-	ClickGui = gui
-
-
-func get_ClickGui():
-	return ClickGui
-
-
 func _set_text( stri: String ):
 	text = stri
 	$HoverControl/HoverGui.text = stri
@@ -62,7 +46,26 @@ func _get_text():
 
 func _on_mouse_entered():
 	$HoverControl.visible = true
+	_mouse_over = true
 
 
 func _on_mouse_exited():
 	$HoverControl.visible = false
+	_mouse_over = false
+
+
+func _on_MouseHoverControl_gui_input(event):
+	if not _mouse_over:
+		return
+	if not (event is InputEventMouseButton):
+		return
+	var me: InputEventMouseButton = event as InputEventMouseButton
+	# Open window on release event.
+	if (me.button_index == BUTTON_LEFT) and (not me.pressed):
+		if body == null:
+			return
+		var gui_classes = body.gui_classes()
+		var GuiClickContainer = load( "res://physics/interact_icon/gui_click_container.tscn" )
+		var window = GuiClickContainer.instance()
+		body.add_child( window )
+		window.setup_gui( gui_classes, body )
