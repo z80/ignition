@@ -17,7 +17,7 @@ var desc_gains_: Array
 var desc_lengths_: Array
 
 var switch_threshold_: float = 0.3
-var switch_period_: int = 15
+var switch_period_: int = 30
 
 const ROOT_IND: int       = 1
 const LEFT_LEG_IND: int   = 81
@@ -32,7 +32,7 @@ const NECK_IND: int       = 9
 const POSE_LIMB_INDS: Array = [ROOT_IND, LEFT_LEG_IND, RIGHT_LEG_IND, LEFT_FOREARM_IND, RIGHT_FOREARM_IND, LEFT_HAND_IND, RIGHT_HAND_IND, NECK_IND]
 const TRAJ_FRAME_INDS: Array = [10, 20, 30, 40]
 
-const FPS: float = 15.0
+const FPS: float = 24.0
 const DT: float  = 1.0/FPS
 
 
@@ -41,9 +41,9 @@ const V_HEADING_FWD: Vector3       = Vector3( 0.0, -1.0, 0.0 )
 
 
 # Movement constants for building future trajectory.
-var slow_speed_: float = 0.5
-var walk_speed_: float = 0.6
-var fast_speed_: float = 2.0
+var slow_speed_: float = 1.0
+var walk_speed_: float = 1.2
+var fast_speed_: float = 4.0
 
 # Initial/default control.
 # velocity relative to current azimuth.
