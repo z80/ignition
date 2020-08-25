@@ -69,3 +69,11 @@ func _on_MouseHoverControl_gui_input(event):
 		var window = GuiClickContainer.instance()
 		body.add_child( window )
 		window.setup_gui( gui_classes, body )
+		
+		var mouse_pos = get_viewport().get_mouse_position()
+		window.rect_position = mouse_pos
+
+
+
+
+

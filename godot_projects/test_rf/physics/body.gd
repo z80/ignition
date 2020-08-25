@@ -146,7 +146,7 @@ func _process_interact_icon():
 			_icon = null
 		return
 	
-	var mouse_pos = get_viewport().get_mouse_position()
+	#var mouse_pos = get_viewport().get_mouse_position()
 	var icon_at =  cam.unproject_position( obj_at )
 	
 	var vp = get_viewport()
