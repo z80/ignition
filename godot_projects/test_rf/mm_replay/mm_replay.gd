@@ -20,6 +20,7 @@ var _visual_meshes: Dictionary
 
 var mat_blue = preload("res://mm_replay/blue.tres")
 var mat_red  = preload("res://mm_replay/red.tres")
+var mat_gray = preload("res://mm_replay/gray.tres")
 
 const FOOT_LEFT  = "L_AK_R_link"
 const FOOT_RIGHT = "R_AK_R_link"
@@ -131,15 +132,21 @@ func _apply_to_visual():
 			mi.set_surface_material( 0, mat_blue )
 		else:
 			if (name == FOOT_LEFT):
-				if (_frame["gnd"][0]):
+				var gnd_left = _frame["gnd"][0]
+				if (gnd_left > 0):
 					mi.set_surface_material( 0, mat_red )
-				else:
+				elif gnd_left < 0:
 					mi.set_surface_material( 0, mat_blue )
+				else:
+					mi.set_surface_material( 0, mat_gray )
 			elif (name == FOOT_RIGHT):
-				if (_frame["gnd"][1]):
+				var gnd_right = _frame["gnd"][1]
+				if gnd_right > 0:
 					mi.set_surface_material( 0, mat_red )
-				else:
+				elif gnd_right < 0:
 					mi.set_surface_material( 0, mat_blue )
+				else:
+					mi.set_surface_material( 0, mat_gray )
 				
 		
 

@@ -36,8 +36,8 @@ func init():
 	_db = _open_database()
 
 func _init_feet():
-	var l_ft = {"th": 10, "prev": 0.0, "count": 10, "ind": LEFT_FOOT_IND, "gnd_prev": true}
-	var r_ft = {"th": 10, "prev": 0.0, "count": 10, "ind": RIGHT_FOOT_IND, "gnd_prev": true}
+	var l_ft = { "count": FOOT_HEIGHT_COUNTER/2 }
+	var r_ft = { "count": FOOT_HEIGHT_COUNTER/2 }
 	var feet = [l_ft, r_ft]
 	return feet
 
@@ -82,109 +82,54 @@ func _compute_gnd( frame ):
 	var ri: int = RIGHT_FOOT_IND*7 + 6
 	var lh: float = frame[li]
 	var rh: float = frame[ri]
-	var gnd = [false, false]
+	var gnd = [0, 0]
 	var diff: float = abs( lh - rh )
 	var left  = _feet[0]
 	var right = _feet[1]
 	if diff < FOOT_HEIGHT_DIFF:
 		if left["count"] < FOOT_HEIGHT_COUNTER:
 			left["count"] += 1
-			gnd[0] = left["gnd_prev"]
+			gnd[0] = 0
 		else:
-			gnd[0] = true
+			gnd[0] = 1
 			
 		if right["count"] < FOOT_HEIGHT_COUNTER:
 			right["count"] += 1
-			gnd[1] = right["gnd_prev"]
+			gnd[1] = 0
 		else:
-			gnd[1] = true
+			gnd[1] = 1
 			
 	else:
 		if lh < rh:
 			if left["count"] < FOOT_HEIGHT_COUNTER:
 				left["count"] += 1
-				gnd[0] = left["gnd_prev"]
+				gnd[0] = 0
 			else:
-				gnd[0] = true
+				gnd[0] = 1
 			
 			if right["count"] > 0:
 				right["count"] -= 1
-				gnd[1] = right["gnd_prev"]
+				gnd[1] = 0
 			else:
-				gnd[1] = false
+				gnd[1] = -1
 				
 		else:
 			if right["count"] < FOOT_HEIGHT_COUNTER:
 				right["count"] += 1
-				gnd[1] = right["gnd_prev"]
+				gnd[1] = 0
 			else:
-				gnd[1] = true
+				gnd[1] = 1
 				
 			if left["count"] > 0:
 				left["count"] -= 1
-				gnd[0] = left["gnd_prev"]
+				gnd[0] = 0
 			else:
-				gnd[0] = false
+				gnd[0] = -1
 	
-	left["gnd_prev"]  = gnd[0]
-	right["gnd_prev"] = gnd[1]
 	return gnd
 
 
-func _in_region( x, y, th = 0.002 ):
-	if (x >= y-th) and (x <= y+th):
-		return true
-	return false
 
-
-func _on_gnd2( frame, left: bool = true, init: bool = false ):
-	var ft
-	if left:
-		ft = _feet[0]
-	else:
-		ft = _feet[1]
-	var ind: int = 7 * ft["ind"]
-	var z: float = frame[ind + 6]
-	
-	var contact: bool = false
-	
-	if init:
-		ft["th"] = z + 0.02
-		ft["prev"] = z
-		ft["count"] = 10
-	
-	var in_reg = _in_region( z, ft["prev"] )
-	if left:
-		print( "left in reg:", in_reg, "; z: ", z, ", prev: ", ft["prev"] )
-	#else:
-	#	print( "right in reg:", in_reg )
-		
-	if z <= ft["th"]:
-		if in_reg:
-			ft["count"] += 1
-			
-			if ft["count"] > 2:
-				ft["th"] = z + 0.02
-				contact = true
-				
-				if left:
-					print( "contact <- true" )
-		else:
-			ft["count"] = 0
-	
-	else:
-		ft["count"] = 0
-	
-	ft["prev"] = z
-	
-	return contact
-
-
-func _compute_gnd2( frame, first_frame: bool ):
-	var left: bool  = _on_gnd2( frame, true,  first_frame )
-	var right: bool = _on_gnd2( frame, false, first_frame )
-	var res = [left, right]
-	return res
 
 
 func _compute_azimuth( mm, frame ):
