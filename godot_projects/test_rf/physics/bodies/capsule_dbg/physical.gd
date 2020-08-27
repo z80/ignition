@@ -6,6 +6,21 @@ var linear_velocity: Vector3 setget set_linear_velocity, get_linear_velocity
 var angular_velocity: Vector3 setget set_angular_velocity, get_angular_velocity
 var collision_layer: int setget set_collision_layer, get_collision_layer
 
+func _init():
+	pass
+
+
+func _physics_process(_delta):
+	#var rb: RigidBody = $RigidBody
+	#var t: Transform = rb.transform
+	#var q: Quat = t.basis.get_rotation_quat()
+	#q.x = 0.0
+	#q.z = 0.0
+	#q = q.normalized()
+	#t.basis = q
+	#rb.transform = t
+	pass
+
 
 func set_transform( t: Transform ):
 	$RigidBody.transform = t
