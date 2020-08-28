@@ -9,7 +9,6 @@ Import('env')
 # use an opt-in process just to have better control over what goes
 # into the final binary during development. (Especially because we
 # have some test files mucking things up)
-sources        = "src/*.cpp"
 
 # Linking the final Godot binaries can take a bit of time. Following advice
 # from https://docs.godotengine.org/en/stable/development/cpp/custom_modules_in_cpp.html
@@ -24,10 +23,17 @@ module_env.Append(CXXFLAGS=['-std=c++11'])
 # Build the plugin statically for more reliable builds
 def configure_static_build():
     #module_env.Append(CCFLAGS=['-O2'])
-    env.Append(CPPPATH=["src"])
     module_env.Append(CPPPATH=["#modules/mm"])
     module_env.Append(CPPPATH=["#modules/mm/src"])
-    module_env.add_source_files( env.modules_sources, sources )
+    module_env.add_source_files( env.modules_sources, "src/*.cpp" )
+
+    module_env.Append(CPPPATH=["#modules/mm/openvr/headers"])
+    module_env.Append(CPPPATH=["#modules/mm/openvr/src"])
+    module_env.Append(CPPPATH=["#modules/mm/openvr/src/vrcommon"])
+    module_env.Append(CPPPATH=["#modules/mm/openvr_capture"])
+    module_env.add_source_files( env.modules_sources, "openvr/src/*.cpp" )
+    module_env.add_source_files( env.modules_sources, "openvr/src/vrcommon/*.cpp" )
+    module_env.add_source_files( env.modules_sources, "openvr_capture/*.cpp" )
     # To also add "register_types.h"
     module_env.add_source_files(env.modules_sources, "*.cpp")
 
