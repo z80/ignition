@@ -24,6 +24,8 @@ public:
 
 	const Transform & pose( int i ) const;
 
+	String timestamp() const;
+
 private:
 	OpenvrCapture _c;
 };
