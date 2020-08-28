@@ -39,7 +39,32 @@ def configure_static_build():
 
     module_env.Append(CPPDEFINES=['OPENVR_BUILD_STATIC'])
     module_env.Append(CPPDEFINES=['VR_API_PUBLIC'])
-    
+
+    #dict = env.Dictionary()
+    #keys = dict.keys()
+    #arch = "TARGET_ARCH"
+    #if arch in keys:
+    #    print( "TARGET_ARCH: ", dict[arch] )
+    #else:
+    #    print( "TARGET_ARCH doesn\'t seem to be defined" )
+    #print( "all keys: ", keys )
+    #for key in keys:
+    #    print( "key: ", key, ", value: ", dict[key], ", type: ", type( dict[key] ) )
+    #env.Append(CPPDEFINES=['OPENVR_BUILD_STATIC'])
+    #env.Append(CPPDEFINES=['VR_API_PUBLIC'])
+
+    # Getting if the build is for 32 or 64 bit. (TARGET_ARCH is always amd64 regardless of number of bits).
+    dict = env.Dictionary()
+    keys = dict.keys()
+    BITS = 'bits'
+    if BITS in keys:
+        val = dict[BITS]
+        if val != '32':
+            # This is needed for OpenVR for picking up the right 
+            # dll. The dilema is either vrclient.dll or vrcliend_64.dll.
+            module_env.Append(CPPDEFINES=['WIN64'])
+ 
+     
 
 
 configure_static_build()

@@ -1,7 +1,8 @@
 
 #include "openvr_capture.h"
 
-
+// This one is for timestamp in exactly the same way as for SLAM.
+#include <chrono>
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -51,7 +52,11 @@ bool OpenvrCapture::init( int qty )
 	for ( int i=0; i<qty_n; i++ )
 	{
 		Tracker & t = trackers.ptrw()[i];
-		String stri = String( "/actions/demo/in/Hand_" ) + itos( i );
+		String stri = String( "/actions/demo/in/Hand_" );
+		if (i == 0)
+			stri += String( "Right" );
+		else
+			stri += String( "Left" );
 		vr::VRInput()->GetActionHandle( stri.ascii().ptr(), &t.action_pose );
 	}
 
@@ -104,6 +109,8 @@ bool OpenvrCapture::process()
 		t.valid = true;
 	}
 
+	bool result = true;
+
 	for ( int i=0; i<qty; i++ )
 	{
 		Tracker & t = trackers.ptrw()[i];
@@ -113,6 +120,7 @@ bool OpenvrCapture::process()
 		{
 			t.valid = false;
 			//printf( "fail\n" );
+			result = false;
 		}
 		else
 		{
@@ -124,15 +132,15 @@ bool OpenvrCapture::process()
 			o.z = m.m[2][3];
 
 			b.elements[0].x = m.m[0][0];
-			b.elements[0].y = m.m[1][0];
-			b.elements[0].z = m.m[2][0];
+			b.elements[0].y = m.m[0][1];
+			b.elements[0].z = m.m[0][2];
 
-			b.elements[1].x = m.m[0][1];
+			b.elements[1].x = m.m[1][0];
 			b.elements[1].y = m.m[1][1];
-			b.elements[1].z = m.m[2][1];
+			b.elements[1].z = m.m[1][2];
 
-			b.elements[2].x = m.m[0][2];
-			b.elements[2].y = m.m[1][2];
+			b.elements[2].x = m.m[2][0];
+			b.elements[2].y = m.m[2][1];
 			b.elements[2].z = m.m[2][2];
 
 
@@ -146,7 +154,7 @@ bool OpenvrCapture::process()
 
 	//return bRet;
 
-	return true;
+	return result;
 }
 
 
@@ -154,6 +162,21 @@ const Transform & OpenvrCapture::pose( int i ) const
 {
 	const Transform & t = trackers.ptr()[i].t;
 	return t;
+}
+
+unsigned long long OpenvrCapture::timestamp()
+{
+	typedef std::chrono::duration<int, std::ratio_multiply<std::chrono::hours::period, std::ratio<8> >::type > Days;
+
+	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+	auto duration = now.time_since_epoch();
+
+	const Days days = std::chrono::duration_cast<Days>(duration);
+	duration -= days;
+
+	auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+
+	return nanoseconds.count();
 }
 
 

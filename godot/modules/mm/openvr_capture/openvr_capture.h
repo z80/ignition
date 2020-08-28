@@ -20,6 +20,7 @@ public:
 	bool process();
 
 	const Transform & pose( int i ) const;
+	static unsigned long long timestamp();
 private: 
 	vr::IVRSystem * tracker;
 
