@@ -9,6 +9,22 @@
             {
                "output" : "/actions/demo/in/hand_right",
                "path" : "/user/hand/right/pose/raw"
+            }, 
+            {
+               "output" : "/actions/demo/in/foot_left",
+               "path" : "/user/foot/left/pose/raw"
+            }, 
+            {
+               "output" : "/actions/demo/in/foot_right",
+               "path" : "/user/foot/right/pose/raw"
+            }, 
+            {
+               "output" : "/actions/demo/in/chest",
+               "path" : "/user/chest/pose/raw"
+            }, 
+            {
+               "output" : "/actions/demo/in/head",
+               "path" : "/user/head/pose/raw"
             }
          ],
          "haptics" : [

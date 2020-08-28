@@ -35,6 +35,22 @@
       "type": "pose"
     },
     {
+      "name": "/actions/demo/in/Foot_Left",
+      "type": "pose"
+    },
+    {
+      "name": "/actions/demo/in/Foot_Right",
+      "type": "pose"
+    },
+    {
+      "name": "/actions/demo/in/Chest",
+      "type": "pose"
+    },
+    {
+      "name": "/actions/demo/in/Head",
+      "type": "pose"
+    },
+    {
       "name": "/actions/demo/out/haptic_left",
       "type": "vibration"
     },

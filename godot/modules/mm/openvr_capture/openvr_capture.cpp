@@ -52,11 +52,19 @@ bool OpenvrCapture::init( int qty )
 	for ( int i=0; i<qty_n; i++ )
 	{
 		Tracker & t = trackers.ptrw()[i];
-		String stri = String( "/actions/demo/in/Hand_" );
+		String stri = String( "/actions/demo/in/" );
 		if (i == 0)
-			stri += String( "Right" );
-		else
-			stri += String( "Left" );
+			stri += String( "Hand_Right" );
+		else if ( i == 1 )
+			stri += String( "Hand_Left" );
+		else if ( i == 2 )
+			stri += String( "Foot_Left" );
+		else if ( i == 3 )
+			stri += String( "Foot_Right" );
+		else if ( i == 4 )
+			stri += String( "Chest" );
+		else if ( i == 5 )
+			stri += String( "Head" );
 		vr::VRInput()->GetActionHandle( stri.ascii().ptr(), &t.action_pose );
 	}
 

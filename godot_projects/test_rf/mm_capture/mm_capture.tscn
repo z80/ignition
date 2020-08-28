@@ -8,7 +8,11 @@
 [node name="MmCapture" type="Spatial"]
 script = ExtResource( 1 )
 
-[node name="MeshInstance" type="MeshInstance" parent="."]
+[node name="Cube_0" type="MeshInstance" parent="."]
+mesh = SubResource( 1 )
+material/0 = null
+
+[node name="Cube_1" type="MeshInstance" parent="."]
 mesh = SubResource( 1 )
 material/0 = null
 

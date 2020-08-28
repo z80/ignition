@@ -7,7 +7,7 @@ var capture = null
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var c: OpenvrCaptureNode = $Capture
-	c.init( 1 )
+	c.init( 2 )
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -18,12 +18,13 @@ func _process(delta):
 		print( "fail" )
 	
 	var t: Transform = c.pose( 0 )
-	
 	# Scale the translation up.
 	t.origin = Vector3( t.origin.x, t.origin.y, t.origin.z ) * 10.0
-	var q: Quat = t.basis
-	q.y = q.y
-	t.basis = q
-	
-	var m: MeshInstance = $MeshInstance
+	var m: MeshInstance = $Cube_0
+	m.transform = t
+
+	t = c.pose( 1 )
+	# Scale the translation up.
+	t.origin = Vector3( t.origin.x, t.origin.y, t.origin.z ) * 10.0
+	m = $Cube_1
 	m.transform = t
