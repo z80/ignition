@@ -6,7 +6,6 @@ void OpenvrCaptureNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("init", "int"), &OpenvrCaptureNode::init,    Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("process"),     &OpenvrCaptureNode::process, Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("pose", "int"), &OpenvrCaptureNode::pose,    Variant::TRANSFORM );
-
 }
 
 OpenvrCaptureNode::OpenvrCaptureNode()
