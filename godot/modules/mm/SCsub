@@ -37,7 +37,9 @@ def configure_static_build():
     # To also add "register_types.h"
     module_env.add_source_files(env.modules_sources, "*.cpp")
 
-
+    module_env.Append(CPPDEFINES=['OPENVR_BUILD_STATIC'])
+    module_env.Append(CPPDEFINES=['VR_API_PUBLIC'])
+    
 
 
 configure_static_build()
