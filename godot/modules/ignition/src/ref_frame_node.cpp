@@ -204,7 +204,7 @@ void RefFrameNode::apply_jump()
 		RefFrameNode * ch = Object::cast_to<RefFrameNode>( n );
 		if ( !ch )
 			continue;
-		const SE3 se3_child_to = ch->relative_( this, se3_jump_to_ );
+		const SE3 se3_child_to = ch->relative_( this, SE3(), se3_jump_to_ );
 		ch->se3_ = se3_child_to;
 	}
 

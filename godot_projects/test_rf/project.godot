@@ -93,7 +93,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Test Rf"
-run/main_scene="res://mm_capture/mm_capture.tscn"
+run/main_scene="res://physics/rf_test.tscn"
 config/icon="res://icon.png"
 
 [autoload]

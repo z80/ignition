@@ -105,7 +105,6 @@ func jump_if_needed():
 		return
 	
 	var t: Transform = player_focus.t()
-	t.origin = r
 	jump( t )
 
 

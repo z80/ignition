@@ -23,8 +23,13 @@ func _ready():
 # Update body visual parts in accordance with what is set to be 
 # player ref. frame. (The ref. frame where the camera is located.)
 func _process(_delta):
-	var group: String = Body.GROUP_NAME
 	var player_rf = player_ref_frame
+	
+	# Check if need to follow the user object.
+	player_rf.jump_if_needed()
+	
+	# Update visuals for all the physical-visual objects.
+	var group: String = Body.GROUP_NAME
 	for body in get_tree().get_nodes_in_group( group ):
 		body.update_visual( player_rf )
 
