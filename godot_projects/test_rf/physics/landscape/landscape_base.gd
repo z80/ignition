@@ -78,6 +78,7 @@ func _recompute_landscape():
 	var c = _center()
 	_point_tile_x = c[0]
 	_point_tile_z = c[1]
+	_applied_rel_t = _rel_t
 	_initialized = true
 
 
@@ -88,6 +89,9 @@ func _move_landscape():
 		var t = tile.transform
 		t = inv_t * t
 		tile.transform = t
+	
+	_applied_rel_t = _rel_t
+	print( "Moved landscape to ", inv_t )
 
 
 func _label_tiles_to_recompute():

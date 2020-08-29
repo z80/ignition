@@ -179,6 +179,11 @@ ui_m={
  ]
 }
 
+[physics]
+
+3d/active_soft_world=false
+3d/default_gravity=0.098
+
 [rendering]
 
 environment/default_environment="res://default_env.tres"

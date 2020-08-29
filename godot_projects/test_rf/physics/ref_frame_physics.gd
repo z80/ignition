@@ -7,6 +7,11 @@ class_name RefFramePhysics
 var _contact_layer: int = -1
 
 
+# For debugging jump only this number of times.
+var _jumps_left: int = 1
+
+
+
 func init_physics():
 	if _contact_layer >= 0:
 		return true
@@ -80,11 +85,16 @@ func _cleanup_physical():
 
 
 func jump( t: Transform ):
+	var before_t: Transform = self.t()
+	
 	self.set_jump_t( t )
 	self.apply_jump()
 	var bodies = child_bodies()
 	for body in bodies:
 		body.update_physical_state_from_rf()
+	
+	var after_t: Transform = self.t()
+	print( "RefFramePhysics jumped from ", before_t, " to ", after_t )
 
 
 
@@ -94,6 +104,10 @@ func jump( t: Transform ):
 # ********************************************
 
 func jump_if_needed():
+	# This is for debugging. Jump only this amount of times.
+	if _jumps_left <= 0:
+		return
+	
 	var player_focus = PhysicsManager.player_focus
 	var bodies = child_bodies()
 	if not (player_focus in bodies):
@@ -106,6 +120,8 @@ func jump_if_needed():
 	
 	var t: Transform = player_focus.t()
 	jump( t )
+	
+	_jumps_left -= 1
 
 
 

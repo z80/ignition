@@ -2,8 +2,6 @@
 extends RefFrameNode
 class_name Body
 
-const GROUP_NAME: String = "bodies"
-
 # When inheriting need to redefine these two.
 var VisualType   = null
 var PhysicalType = null
@@ -17,7 +15,7 @@ var _hover_text: String = "Default hover text"
 
 
 func init():
-	add_to_group( GROUP_NAME )
+	add_to_group( Constants.BODIES_GROUP_NAME )
 	create_visual()
 
 

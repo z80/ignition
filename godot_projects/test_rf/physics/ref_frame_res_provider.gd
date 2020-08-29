@@ -2,19 +2,16 @@
 extends RefFrame
 class_name RefFrameResourceProvider
 
-const GROUP_NAME: String = "provider"
-
 var _visual = null
 var _physicals: Dictionary
 
 func _ready():
-	add_to_group( GROUP_NAME )
+	add_to_group( Constants.PROVIDERS_GROUP_NAME )
 	initialize()
 	_visual = create_visual()
 
 
-func _process(_delta):
-	._process(_delta)
+func update():
 	_create_update_physics_frames()
 	_process_physics_frames()
 	_update_visual_frame()
