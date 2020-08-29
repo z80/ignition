@@ -29,6 +29,10 @@ func _ready():
 	
 	var privot: Spatial = capsule._visual
 	$Camera.privot = privot
+	
+	# Initial set of select and focus object.
+	PhysicsManager.player_select = capsule
+	PhysicsManager.player_focus  = capsule
 
 
 

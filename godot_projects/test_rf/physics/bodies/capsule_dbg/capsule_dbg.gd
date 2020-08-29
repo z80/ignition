@@ -1,7 +1,8 @@
 
 extends Body
 
-const FORCE: float = 1.0
+const FORCE_H: float = 30.0
+const FORCE_V: float = 100.0
 
 func _ready():
 	init()
@@ -45,15 +46,25 @@ func process_user_input( _event: InputEvent ):
 	
 	var f: Vector3 = Vector3.ZERO
 	if is_w:
-		f = f - Vector3( 0.0, 0.0, 1.0 )
+		f = f - Vector3( 0.0, 0.0, FORCE_H )
 	if is_s:
-		f = f + Vector3( 0.0, 0.0, 1.0 )
+		f = f + Vector3( 0.0, 0.0, FORCE_H )
 	if is_a:
-		f = f - Vector3( 1.0, 0.0, 0.0 )
+		f = f - Vector3( FORCE_H, 0.0, 0.0 )
 	if is_d:
-		f = f + Vector3( 1.0, 0.0, 0.0 )
+		f = f + Vector3( FORCE_H, 0.0, 0.0 )
+	
+	# Vertical force
+	if is_e:
+		f = f + Vector3( 0.0, FORCE_V, 0.0 )
+	if is_q:
+		f = f - Vector3( 0.0, FORCE_V, 0.0 )
 	
 	_physical.apply_force( f )
+	
+	var mag = f.length()
+	if mag > 0.5:
+		print( "force applied: ", mag )
 	
 
 
