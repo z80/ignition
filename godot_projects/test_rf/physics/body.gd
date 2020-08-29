@@ -123,6 +123,15 @@ func update_physical_state_from_rf():
 
 
 
+# This thing is called in PhysicsManager only for a body which 
+# is currently under user control.
+# Need to redefine this function in a particular implementation.
+func process_user_input( event: InputEvent ):
+	pass
+
+
+
+
 func _process_interact_icon():
 	var cam = PhysicsManager.camera
 	if (cam == null) or (_visual == null):
@@ -171,7 +180,6 @@ func _create_interact_icon():
 	var Icon = load( "res://physics/interact_icon/interact_icon.tscn" )
 	_icon = Icon.instance()
 	self.add_child( _icon )
-	_icon.body = self
 	_icon.text = _hover_text
 	_icon.visible = true
 

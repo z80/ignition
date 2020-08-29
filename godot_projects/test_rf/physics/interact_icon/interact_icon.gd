@@ -1,7 +1,5 @@
 extends Control
 
-var body: Node setget set_body, get_body
-
 # Text to visualize when mouse hovers.
 var text: String setget _set_text, _get_text
 
@@ -20,12 +18,6 @@ func _ready():
 
 
 
-func set_body( node: Node ):
-	body = node
-
-
-func get_body():
-	return body
 
 
 func _set_text( stri: String ):
@@ -38,7 +30,8 @@ func _get_text():
 
 
 
-
+func _input( _event ):
+	pass
 
 
 
@@ -62,8 +55,10 @@ func _on_MouseHoverControl_gui_input(event):
 	var me: InputEventMouseButton = event as InputEventMouseButton
 	# Open window on release event.
 	if (me.button_index == BUTTON_LEFT) and (not me.pressed):
+		var body: Body = get_parent() as Body
 		if body == null:
 			return
+			
 		var gui_classes = body.gui_classes()
 		var GuiClickContainer = load( "res://physics/interact_icon/gui_click_container.tscn" )
 		var window = GuiClickContainer.instance()
@@ -72,6 +67,9 @@ func _on_MouseHoverControl_gui_input(event):
 		
 		var mouse_pos = get_viewport().get_mouse_position()
 		window.rect_position = mouse_pos
+		
+		# Also set this ref. frame as selected by the player.
+		PhysicsManager.player_select = body
 
 
 

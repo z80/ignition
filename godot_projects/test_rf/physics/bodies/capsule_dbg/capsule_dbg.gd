@@ -1,6 +1,7 @@
 
 extends Body
 
+const FORCE: float = 1.0
 
 func _ready():
 	init()
@@ -27,3 +28,34 @@ func set_collision_layer( layer ):
 		var rb = _physical.get_child( 0 )
 		rb.collision_layer = layer
 		rb.collision_mask  = layer
+
+
+func process_user_input( _event: InputEvent ):
+	if _physical == null:
+		return
+	
+	# For physical to be able to know universe position/rotation.
+	_physical.body = self
+	var is_w: bool = Input.is_action_pressed("ui_w")
+	var is_s: bool = Input.is_action_pressed("ui_s")
+	var is_a: bool = Input.is_action_pressed("ui_a")
+	var is_d: bool = Input.is_action_pressed("ui_d")
+	var is_q: bool = Input.is_action_pressed("ui_q")
+	var is_e: bool = Input.is_action_pressed("ui_e")
+	
+	var f: Vector3 = Vector3.ZERO
+	if is_w:
+		f = f - Vector3( 0.0, 0.0, 1.0 )
+	if is_s:
+		f = f + Vector3( 0.0, 0.0, 1.0 )
+	if is_a:
+		f = f - Vector3( 1.0, 0.0, 0.0 )
+	if is_d:
+		f = f + Vector3( 1.0, 0.0, 0.0 )
+	
+	_physical.apply_force( f )
+	
+
+
+
+

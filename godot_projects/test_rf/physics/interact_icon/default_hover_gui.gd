@@ -20,3 +20,4 @@ func set_text( stri: String ):
 
 func get_text():
 	return $Text.text
+

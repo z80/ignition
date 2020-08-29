@@ -6,6 +6,8 @@ var linear_velocity: Vector3 setget set_linear_velocity, get_linear_velocity
 var angular_velocity: Vector3 setget set_angular_velocity, get_angular_velocity
 var collision_layer: int setget set_collision_layer, get_collision_layer
 
+var body: Body = null
+
 func _init():
 	pass
 
@@ -51,3 +53,11 @@ func set_collision_layer( v: int ):
 
 func get_collision_layer():
 	return $RigidBody.collision_layer
+
+
+func apply_force( f: Vector3 ):
+	var t: Transform = $RigidBody.transform
+	var q: Quat = t.basis
+	var fw: Vector3 = q.xform( f )
+	$RigidBody.add_central_force( fw )
+
