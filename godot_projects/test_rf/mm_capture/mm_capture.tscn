@@ -16,6 +16,10 @@ material/0 = null
 mesh = SubResource( 1 )
 material/0 = null
 
+[node name="Cube_2" type="MeshInstance" parent="."]
+mesh = SubResource( 1 )
+material/0 = null
+
 [node name="Capture" type="OpenvrCaptureNode" parent="."]
 
 [node name="Camera" type="Camera" parent="."]

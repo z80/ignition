@@ -28,3 +28,9 @@ func _process(delta):
 	t.origin = Vector3( t.origin.x, t.origin.y, t.origin.z ) * 10.0
 	m = $Cube_1
 	m.transform = t
+
+	#t = c.pose( 2 )
+	# Scale the translation up.
+	#t.origin = Vector3( t.origin.x, t.origin.y, t.origin.z + 1.0 ) * 10.0
+	#m = $Cube_2
+	#m.transform = t
