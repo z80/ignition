@@ -28,9 +28,12 @@ func _process(_delta):
 	# Check if need to follow the user object.
 	player_rf.jump_if_needed()
 	
-	update_bodies()
+	update_bodies_visual()
 	update_providers()
 
+
+func _physics_process( delta ):
+	update_bodies_physical( delta )
 
 
 
@@ -87,13 +90,23 @@ func physics_ref_frames():
 
 
 
-func update_bodies():
+func update_bodies_visual():
 	var player_rf = player_ref_frame
 	
 	# Update visuals for all the physical-visual objects.
 	var group: String = Constants.BODIES_GROUP_NAME
 	for body in get_tree().get_nodes_in_group( group ):
 		body.update_visual( player_rf )
+
+
+
+func update_bodies_physical( delta: float ):
+	var player_rf = player_ref_frame
+	
+	# Update visuals for all the physical-visual objects.
+	var group: String = Constants.BODIES_GROUP_NAME
+	for body in get_tree().get_nodes_in_group( group ):
+		body.update_physical( delta )
 
 
 

@@ -33,6 +33,10 @@ func update_visual( root: Node = null ):
 		_visual.transform = t
 
 
+# Need to overload this in order to apply controls
+func update_physical( delta: float ):
+	pass
+
 
 # Should return a list of GUI classes to instantiate in a container window which is opened 
 # when interation icon is clicked.
