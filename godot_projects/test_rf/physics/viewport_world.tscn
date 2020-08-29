@@ -1,0 +1,48 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://physics/viewport.gd" type="Script" id=1]
+
+[sub_resource type="ProceduralSky" id=2]
+
+[sub_resource type="Environment" id=3]
+background_mode = 2
+background_sky = SubResource( 2 )
+
+[sub_resource type="World" id=4]
+environment = SubResource( 3 )
+
+[sub_resource type="BoxShape" id=5]
+
+[sub_resource type="PrismMesh" id=1]
+
+[node name="Container" type="ViewportContainer"]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -423.0
+margin_top = -263.0
+margin_right = -1.0
+margin_bottom = 2.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Viewport" type="Viewport" parent="."]
+size = Vector2( 320, 240 )
+world = SubResource( 4 )
+handle_input_locally = false
+render_target_update_mode = 3
+script = ExtResource( 1 )
+
+[node name="Camera" type="Camera" parent="Viewport"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5.70497 )
+
+[node name="RigidBody" type="RigidBody" parent="Viewport"]
+
+[node name="CollisionShape" type="CollisionShape" parent="Viewport/RigidBody"]
+shape = SubResource( 5 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Viewport/RigidBody"]
+mesh = SubResource( 1 )
+material/0 = null

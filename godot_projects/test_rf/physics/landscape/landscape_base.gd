@@ -86,7 +86,11 @@ func _move_landscape():
 	var inv_t = _rel_t.inverse()
 	var existing_tiles = get_existing_tiles()
 	for tile in existing_tiles:
-		var t = tile.transform
+		var x: float = tile.origin_x
+		var z: float = tile.origin_z
+		var t: Transform
+		t.origin = Vector3( x, 0.0, z )
+		# Translation transfrom of the ref. frame is put on top of
 		t = inv_t * t
 		tile.transform = t
 	
