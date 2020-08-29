@@ -1,0 +1,39 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://mm_capture/capture_one_gui.gd" type="Script" id=1]
+
+[node name="Control" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Panel" type="Panel" parent="."]
+margin_right = 248.0
+margin_bottom = 114.0
+
+[node name="Start" type="Button" parent="Panel"]
+margin_left = 21.0
+margin_top = 17.0
+margin_right = 127.0
+margin_bottom = 49.0
+text = "Start capture"
+
+[node name="Stop" type="Button" parent="Panel"]
+margin_left = 21.0
+margin_top = 63.0
+margin_right = 127.0
+margin_bottom = 95.0
+text = "Stop capture"
+
+[node name="Rec" type="ColorRect" parent="Panel"]
+visible = false
+margin_left = 173.0
+margin_top = 36.0
+margin_right = 213.0
+margin_bottom = 76.0
+color = Color( 0.6, 0.0196078, 0.0196078, 1 )
+[connection signal="pressed" from="Panel/Start" to="." method="_on_Start_pressed"]
+[connection signal="pressed" from="Panel/Stop" to="." method="_on_Stop_pressed"]

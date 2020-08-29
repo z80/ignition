@@ -23,7 +23,7 @@
                "path" : "/user/chest/pose/raw"
             }, 
             {
-               "output" : "/actions/demo/in/head",
+               "output" : "/actions/demo/in/waist",
                "path" : "/user/head/pose/raw"
             }
          ],

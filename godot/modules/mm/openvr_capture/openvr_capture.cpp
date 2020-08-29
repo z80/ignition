@@ -54,9 +54,9 @@ bool OpenvrCapture::init( int qty )
 		Tracker & t = trackers.ptrw()[i];
 		String stri = String( "/actions/demo/in/" );
 		if (i == 0)
-			stri += String( "Hand_Right" );
-		else if ( i == 1 )
 			stri += String( "Hand_Left" );
+		else if ( i == 1 )
+			stri += String( "Hand_Right" );
 		else if ( i == 2 )
 			stri += String( "Foot_Left" );
 		else if ( i == 3 )
