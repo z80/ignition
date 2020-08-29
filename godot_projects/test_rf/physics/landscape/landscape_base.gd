@@ -36,6 +36,7 @@ func update( t: Transform ):
 	var needs_move: bool = _need_move()
 	if needs_move:
 		_move_landscape()
+	_applied_rel_t = _rel_t
 
 
 
@@ -78,7 +79,6 @@ func _recompute_landscape():
 	var c = _center()
 	_point_tile_x = c[0]
 	_point_tile_z = c[1]
-	_applied_rel_t = _rel_t
 	_initialized = true
 
 
@@ -90,7 +90,6 @@ func _move_landscape():
 		t = inv_t * t
 		tile.transform = t
 	
-	_applied_rel_t = _rel_t
 	print( "Moved landscape to ", inv_t )
 
 
