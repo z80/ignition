@@ -8,7 +8,7 @@ var _contact_layer: int = -1
 
 
 # For debugging jump only this number of times.
-var _jumps_left: int = 5
+var _jumps_left: int = 50
 
 
 
