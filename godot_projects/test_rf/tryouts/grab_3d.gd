@@ -4,6 +4,7 @@ extends Spatial
 export(NodePath) var target_path setget _set_target_path
 var target = null
 
+signal position( r )
 
 var _mouse = {
 	hover_x = false, 
@@ -16,7 +17,8 @@ var _dragging = {
 	axis = Vector3.ZERO, 
 	origin = Vector3.ZERO, 
 	mouse_start = Vector3.ZERO, 
-	mouse_at = Vector3.ZERO
+	mouse_at = Vector3.ZERO, 
+	position = Vector3.ZERO
 }
 
 
@@ -32,6 +34,8 @@ func _process( delta ):
 func _set_target_path( t ):
 	target_path = t
 	target = get_node( t )
+	if target:
+		_dragging.position = target.position
 
 
 func _on_AreaX_mouse_entered():
@@ -132,11 +136,19 @@ func _process_dragging():
 	y = round( y ) * sz
 	z = round( z ) * sz
 	
+	r.x = x
+	r.y = y
+	r.z = z
+	
 	# Here probably need to convert back to local 
 	# first as all vectors are in global ref frame
 	self.translation = Vector3( x, y, z )
 	if target != null:
 		target.translation = self.translation
+	
+	if r != _dragging.position:
+		_dragging.position = r
+		emit_signal( "position", r )
 
 
 func _mouse_on_axis():
@@ -216,13 +228,13 @@ func _mouse_intersection():
 	
 	var r: Vector3 = inv_A.xform( p )
 	
-	print( "mouse uv: ", mouse_uv, ", ro: ", cam_r, ", a: ", cam_a )
+	#print( "mouse uv: ", mouse_uv, ", ro: ", cam_r, ", a: ", cam_a )
 	
 	return r
 
 
 func _finit_dragging():
-	emit_signal( "finished" )
+	pass
 
 
 
