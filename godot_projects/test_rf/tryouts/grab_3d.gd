@@ -27,9 +27,7 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process( delta ):
-	if _dragging.enabled:
-		_process_dragging()
-
+	pass
 
 func _set_target_path( t ):
 	target_path = t
@@ -72,6 +70,24 @@ func _on_AreaY_input_event(camera, event, click_position, click_normal, shape_id
 	_process_input( event )
 
 
+# It is here because need to process it not only when it hovers an axis.
+func _input(event):
+	var mm: InputEventMouse = event as InputEventMouse
+	if mm:
+		if _dragging.enabled:
+			_process_dragging()
+
+	var me: InputEventMouseButton = event as InputEventMouseButton
+	if not me:
+		return
+	if (me.button_index != BUTTON_LEFT):
+		return
+	
+	if not me.pressed:
+		_dragging.enabled = false
+		_finit_dragging()
+
+
 func _process_input( event ):
 	var me: InputEventMouseButton = event as InputEventMouseButton
 	if not me:
@@ -79,7 +95,8 @@ func _process_input( event ):
 	if (me.button_index != BUTTON_LEFT):
 		return
 	
-	_dragging.enabled = me.pressed
+	if me.pressed:
+		_dragging.enabled = true
 	
 	if _dragging.enabled:
 		if _mouse.hover_x:
@@ -88,15 +105,12 @@ func _process_input( event ):
 			_init_dragging( Vector3.UP )
 		else:
 			_init_dragging( Vector3.BACK )
-	
-	else:
-		_finit_dragging()
 
 
 
 func _init_dragging( axis: Vector3 ):
 	# Own origin and unit vector.
-	var t: Transform = self.global_transform
+	var t: Transform = self.transform
 	var own_r: Vector3 = t.origin
 	var own_a: Vector3 = t.basis.xform( axis )
 	
@@ -107,10 +121,13 @@ func _init_dragging( axis: Vector3 ):
 
 func _process_dragging():
 	_dragging.mouse_at = _mouse_on_axis()
+	
+	var r: Vector3 = _dragging.mouse_at - _dragging.mouse_start + _dragging.origin
+	
 	var sz: float = Constants.CONSTRUCTION_GRID_SZ
-	var x: float = _dragging.mouse_at.x / sz
-	var y: float = _dragging.mouse_at.y / sz
-	var z: float = _dragging.mouse_at.z / sz
+	var x: float = r.x / sz
+	var y: float = r.y / sz
+	var z: float = r.z / sz
 	x = round( x ) * sz
 	y = round( y ) * sz
 	z = round( z ) * sz
@@ -125,7 +142,7 @@ func _process_dragging():
 func _mouse_on_axis():
 	var r = _mouse_intersection()
 	# Now project this point onto the line.
-	var ro: Vector3 = _dragging.origin
+	var ro: Vector3 = _dragging.mouse_start
 	var a: Vector3  = _dragging.axis
 	
 	var dr: Vector3 = r - ro
@@ -146,44 +163,49 @@ func _mouse_intersection():
 	var cam_r: Vector3 = camera.project_ray_origin(mouse_uv)
 	var cam_a: Vector3 = camera.project_ray_normal(mouse_uv)
 	
+	# Convert to local ref. frame.
+	var t: Transform = self.global_transform
+	cam_r = t.basis.xform_inv( cam_r )
+	cam_a = t.basis.xform_inv( cam_a )
+	
 	# Axes origin and unit vector
 	var own_a: Vector3 = _dragging.axis
 	var own_r: Vector3 = _dragging.origin
 	
 	var m: Basis
 	m.x.x = 1.0 - own_a.x * own_a.x
-	m.x.y = own_a.y * own_a.x
-	m.x.z = own_a.z * own_a.x
-	m.y.x = own_a.x * own_a.y
+	m.x.y = -own_a.y * own_a.x
+	m.x.z = -own_a.z * own_a.x
+	m.y.x = -own_a.x * own_a.y
 	m.y.y = 1.0 - own_a.y * own_a.y
-	m.y.z = own_a.z * own_a.y
-	m.z.x = own_a.x * own_a.z
-	m.z.y = own_a.y * own_a.z
+	m.y.z = -own_a.z * own_a.y
+	m.z.x = -own_a.x * own_a.z
+	m.z.y = -own_a.y * own_a.z
 	m.z.z = 1.0 - own_a.z * own_a.z
 	
 	var own_A: Basis = m
 
 	m.x.x = 1.0 - cam_a.x * cam_a.x
-	m.x.y = cam_a.y * cam_a.x
-	m.x.z = cam_a.z * cam_a.x
-	m.y.x = cam_a.x * cam_a.y
+	m.x.y = -cam_a.y * cam_a.x
+	m.x.z = -cam_a.z * cam_a.x
+	m.y.x = -cam_a.x * cam_a.y
 	m.y.y = 1.0 - cam_a.y * cam_a.y
-	m.y.z = cam_a.z * cam_a.y
-	m.z.x = cam_a.x * cam_a.z
-	m.z.y = cam_a.y * cam_a.z
+	m.y.z = -cam_a.z * cam_a.y
+	m.z.x = -cam_a.x * cam_a.z
+	m.z.y = -cam_a.y * cam_a.z
 	m.z.z = 1.0 - cam_a.z * cam_a.z
 	
 	var cam_A: Basis = m
 	
 	var A: Basis
 	A.x.x = own_A.x.x + cam_A.x.x
-	A.x.y = own_A.x.y + cam_A.x.y
-	A.x.z = own_A.x.z + cam_A.x.z
 	A.y.x = own_A.y.x + cam_A.y.x
-	A.y.y = own_A.y.y + cam_A.y.y
-	A.y.z = own_A.y.z + cam_A.y.z
 	A.z.x = own_A.z.x + cam_A.z.x
+	A.x.y = own_A.x.y + cam_A.x.y
+	A.y.y = own_A.y.y + cam_A.y.y
 	A.z.y = own_A.z.y + cam_A.z.y
+	A.x.z = own_A.x.z + cam_A.x.z
+	A.y.z = own_A.y.z + cam_A.y.z
 	A.z.z = own_A.z.z + cam_A.z.z
 	
 	var inv_A: Basis = A.inverse()
@@ -193,6 +215,8 @@ func _mouse_intersection():
 	var p: Vector3 = own_p + cam_p
 	
 	var r: Vector3 = inv_A.xform( p )
+	
+	print( "mouse uv: ", mouse_uv, ", ro: ", cam_r, ", a: ", cam_a )
 	
 	return r
 
