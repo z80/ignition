@@ -24,6 +24,8 @@ func _ready():
 # player ref. frame. (The ref. frame where the camera is located.)
 func _process(_delta):
 	var player_rf = player_ref_frame
+	if player_rf == null:
+		return
 	
 	# Check if need to follow the user object.
 	player_rf.jump_if_needed()

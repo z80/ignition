@@ -10,3 +10,5 @@ const RF_SPLIT_DISTANCE: float = 50.0
 const RF_MERGE_DISTANCE: float = 60.0
 
 const INTERACT_ICON_DIST: float = 30.0
+
+const CONSTRUCTION_GRID_SZ: float = 0.1
