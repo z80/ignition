@@ -1,11 +1,10 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://tryouts/material_blue.tres" type="Material" id=1]
 [ext_resource path="res://meshes/Material.material" type="Material" id=2]
 [ext_resource path="res://tryouts/material_red.tres" type="Material" id=3]
 [ext_resource path="res://tryouts/material_green.tres" type="Material" id=4]
 [ext_resource path="res://tryouts/grab_3d.gd" type="Script" id=5]
-[ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=6]
 
 [sub_resource type="ArrayMesh" id=1]
 resource_name = "Cube"
@@ -65,11 +64,6 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0339563, -0.0148904, -0.006
 [node name="ShapeY" type="CollisionShape" parent="ArrowY/AreaY"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.160225, 0, 0 )
 shape = SubResource( 2 )
-
-[node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.843626, 0.536932, 0, -0.536932, 0.843626, -2.27726, 5.74836, 8.6539 )
-script = ExtResource( 6 )
-max_speed = Vector3( 5, 5, 5 )
 [connection signal="input_event" from="ArrowX/AreaX" to="." method="_on_AreaX_input_event"]
 [connection signal="mouse_entered" from="ArrowX/AreaX" to="." method="_on_AreaX_mouse_entered"]
 [connection signal="mouse_exited" from="ArrowX/AreaX" to="." method="_on_AreaX_mouse_exited"]

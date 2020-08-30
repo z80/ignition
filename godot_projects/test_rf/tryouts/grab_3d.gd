@@ -22,7 +22,7 @@ var _dragging = {
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	_set_target_path( target_path )
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -61,15 +61,15 @@ func _on_AreaY_mouse_exited():
 
 
 func _on_AreaX_input_event(camera, event, click_position, click_normal, shape_idx):
-	pass # Replace with function body.
+	_process_input( event )
 
 
 func _on_AreaZ_input_event(camera, event, click_position, click_normal, shape_idx):
-	pass # Replace with function body.
+	_process_input( event )
 
 
 func _on_AreaY_input_event(camera, event, click_position, click_normal, shape_idx):
-	pass # Replace with function body.
+	_process_input( event )
 
 
 func _process_input( event ):
