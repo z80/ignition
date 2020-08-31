@@ -3,10 +3,11 @@
 
 void OpenvrCaptureNode::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("init", "int"), &OpenvrCaptureNode::init,      Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("process"),     &OpenvrCaptureNode::process,   Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("pose", "int"), &OpenvrCaptureNode::pose,      Variant::TRANSFORM );
-	ClassDB::bind_method( D_METHOD("timestamp"),   &OpenvrCaptureNode::timestamp, Variant::STRING );
+	ClassDB::bind_method( D_METHOD("init", "int"),  &OpenvrCaptureNode::init,      Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("process"),      &OpenvrCaptureNode::process,   Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("valid", "int"), &OpenvrCaptureNode::valid,     Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("pose", "int"),  &OpenvrCaptureNode::pose,      Variant::TRANSFORM );
+	ClassDB::bind_method( D_METHOD("timestamp"),    &OpenvrCaptureNode::timestamp, Variant::STRING );
 }
 
 OpenvrCaptureNode::OpenvrCaptureNode()
@@ -35,9 +36,15 @@ bool OpenvrCaptureNode::process()
 	return res;
 }
 
-const Transform & OpenvrCaptureNode::pose( int i ) const
+bool OpenvrCaptureNode::valid( int i ) const
 {
-	const Transform & t = _c.pose( i );
+	const bool ok = _c.valid( i );
+	return ok;
+}
+
+Transform OpenvrCaptureNode::pose( int i ) const
+{
+	const Transform t = _c.pose( i );
 	return t;
 }
 

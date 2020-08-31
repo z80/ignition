@@ -22,7 +22,8 @@ public:
 	void finit();
 	bool process();
 
-	const Transform & pose( int i ) const;
+	bool valid( int i ) const;
+	Transform pose( int i ) const;
 
 	String timestamp() const;
 

@@ -19,20 +19,22 @@ public:
 	void finit();
 	bool process();
 
-	const Transform & pose( int i ) const;
+	bool valid( int i ) const;
+	Transform pose( int i ) const;
 	static unsigned long long timestamp();
 private: 
 	vr::IVRSystem * tracker;
 
 	struct Tracker
 	{
-		vr::VRActionHandle_t action_pose = vr::k_ulInvalidActionHandle;
+		//vr::VRActionHandle_t action_pose = vr::k_ulInvalidActionHandle;
 		bool valid;
 		Transform t;
 	};
 
+	Vector<vr::TrackedDevicePose_t> poses;
 	Vector<Tracker> trackers;
-	vr::VRActionSetHandle_t action_set = vr::k_ulInvalidActionSetHandle;
+	//vr::VRActionSetHandle_t action_set = vr::k_ulInvalidActionSetHandle;
 };
 
 

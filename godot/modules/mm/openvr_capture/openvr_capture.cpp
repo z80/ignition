@@ -24,6 +24,7 @@ bool OpenvrCapture::init( int qty )
 	finit();
 
 	trackers.resize( qty );
+	poses.resize( qty );
 
 	// Loading the SteamVR Runtime
 	vr::EVRInitError eError = vr::VRInitError_None;
@@ -44,7 +45,7 @@ bool OpenvrCapture::init( int qty )
 		return false;
 	}
 
-	vr::VRInput()->SetActionManifestPath( Path_MakeAbsolute( "./json/tracker.json", Path_StripFilename( Path_GetExecutablePath() ) ).c_str() );
+	/*vr::VRInput()->SetActionManifestPath( Path_MakeAbsolute( "./json/tracker.json", Path_StripFilename( Path_GetExecutablePath() ) ).c_str() );
 
 	vr::VRInput()->GetActionSetHandle( "/actions/demo", &action_set );
 
@@ -66,7 +67,9 @@ bool OpenvrCapture::init( int qty )
 		else if ( i == 5 )
 			stri += String( "Head" );
 		vr::VRInput()->GetActionHandle( stri.ascii().ptr(), &t.action_pose );
-	}
+	}*/
+
+	//vr::IVRS
 
 	return true;
 }
@@ -83,6 +86,7 @@ void OpenvrCapture::finit()
 		vr::VR_Shutdown();
 		tracker = nullptr;
 		trackers.clear();
+		poses.clear();
 	}
 }
 
@@ -103,6 +107,39 @@ bool OpenvrCapture::process()
 		//ProcessVREvent( event );
 	}
 
+	const int qty = trackers.size();
+
+	tracker->GetDeviceToAbsoluteTrackingPose( vr::TrackingUniverseStanding, 0.0f, poses.ptrw(), qty );
+	for ( int i=0; i<qty; i++ )
+	{
+		const vr::TrackedDevicePose_t & p = poses.ptr()[i];
+		Tracker & t = trackers.ptrw()[i];
+
+		t.valid = p.bPoseIsValid;
+
+		const vr::HmdMatrix34_t & m = p.mDeviceToAbsoluteTracking;
+		Basis   & b = t.t.basis;
+		Vector3 & o = t.t.origin;
+		o.x = m.m[0][3];
+		o.y = m.m[1][3];
+		o.z = m.m[2][3];
+
+		b.elements[0].x = m.m[0][0];
+		b.elements[0].y = m.m[0][1];
+		b.elements[0].z = m.m[0][2];
+
+		b.elements[1].x = m.m[1][0];
+		b.elements[1].y = m.m[1][1];
+		b.elements[1].z = m.m[1][2];
+
+		b.elements[2].x = m.m[2][0];
+		b.elements[2].y = m.m[2][1];
+		b.elements[2].z = m.m[2][2];
+	}
+
+	return true;
+
+	/*
 	// Process SteamVR action state
 	// UpdateActionState is called each frame to update the state of the actions themselves. The application
 	// controls which action sets are active with the provided array of VRActiveActionSet_t structs.
@@ -162,12 +199,24 @@ bool OpenvrCapture::process()
 
 	//return bRet;
 
-	return result;
+	return result;*/
 }
 
 
-const Transform & OpenvrCapture::pose( int i ) const
+bool OpenvrCapture::valid( int i ) const
 {
+	const int sz = trackers.size();
+	if ( i >= sz )
+		return false;
+	const bool ok = trackers.ptr()[i].valid;
+	return ok;
+}
+
+Transform OpenvrCapture::pose( int i ) const
+{
+	const int sz = trackers.size();
+	if ( i >= sz )
+		return Transform();
 	const Transform & t = trackers.ptr()[i].t;
 	return t;
 }
