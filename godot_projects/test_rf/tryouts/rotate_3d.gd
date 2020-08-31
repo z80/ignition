@@ -14,6 +14,7 @@ var _mouse = {
 
 var _dragging = {
 	enabled = false, 
+	origin = Vector3.ZERO, 
 	rotation_axis = Vector3.ZERO, 
 	drag_axis = Vector3.ZERO, 
 	start_q = Quat.IDENTITY, 
@@ -139,12 +140,16 @@ func _init_dragging( axis: Vector3 ):
 	
 	var q: Quat = t.basis
 	
+	var dist: float = (own_r - cam_r).length()
+	
 	var viewport_width: float = vp.get_visible_rect().size.x
-	_dragging.drag_scale      = 3.1415926535 / viewport_width
+	_dragging.origin = own_r
+	_dragging.drag_scale      = 3.1415926535 / dist
 	_dragging.rotation_axis   = own_a
 	_dragging.drag_axis       = drag_a
 	_dragging.start_q         = q
 	_dragging.mouse_start = _mouse_on_axis()
+	print( "set mouse_start: ", _dragging.mouse_start )
 	var euler: Vector3 = t.basis.get_euler()
 	_dragging.euler = euler
 
@@ -169,7 +174,9 @@ func _process_dragging():
 	euler.x = round( euler.x / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
 	euler.y = round( euler.y / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
 	euler.z = round( euler.z / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
-	q = Quat( euler )
+	#q = Quat( euler )
+
+	print( "rot_axis: ", a, "drag_axis: ", _dragging.drag_axis, ", mouse_at: ", _dragging.mouse_at, ", dr: ", dr, ", dot: ", dx, ", angle: ", angle, ", euler: ", euler )
 	
 	var t: Transform = self.transform
 	t.basis = q
@@ -194,6 +201,8 @@ func _mouse_on_axis():
 	var dp: Vector3 = a * proj
 	var p: Vector3  = dp + ro
 	
+	print( "mouse_start: ", ro, ", drag_axis: ", a, ", mouse_at: ", r, ", on_axis: ", p )
+	
 	return p
 
 
@@ -208,9 +217,9 @@ func _mouse_intersection():
 	var cam_a: Vector3 = camera.project_ray_normal(mouse_uv)
 	
 	# Convert to local ref. frame.
-	var t: Transform = self.global_transform
-	cam_r = t.basis.xform_inv( cam_r )
-	cam_a = t.basis.xform_inv( cam_a )
+	#var t: Transform = self.global_transform
+	#cam_r = t.basis.xform_inv( cam_r )
+	#cam_a = t.basis.xform_inv( cam_a )
 	
 	# Axes origin and unit vector
 	var own_a: Vector3 = _dragging.drag_axis
@@ -260,7 +269,7 @@ func _mouse_intersection():
 	
 	var r: Vector3 = inv_A.xform( p )
 	
-	#print( "mouse uv: ", mouse_uv, ", ro: ", cam_r, ", a: ", cam_a )
+	print( "\nmouse uv: ", mouse_uv, ", ro: ", cam_r, ", a: ", cam_a, ", closest_p: ", r )
 	
 	return r
 
