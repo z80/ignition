@@ -38,7 +38,8 @@ func _set_target_path( t ):
 	target_path = t
 	target = get_node( t )
 	if target:
-		_dragging.position = target.position
+		_dragging.transform = target.transform
+		self.transform = target.transform
 
 
 func _on_AreaX_mouse_entered():
@@ -149,7 +150,7 @@ func _init_dragging( axis: Vector3 ):
 	_dragging.drag_axis       = drag_a
 	_dragging.start_q         = q
 	_dragging.mouse_start = _mouse_on_axis()
-	print( "set mouse_start: ", _dragging.mouse_start )
+	#print( "set mouse_start: ", _dragging.mouse_start )
 	var euler: Vector3 = t.basis.get_euler()
 	_dragging.euler = euler
 
@@ -174,9 +175,9 @@ func _process_dragging():
 	euler.x = round( euler.x / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
 	euler.y = round( euler.y / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
 	euler.z = round( euler.z / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
-	#q = Quat( euler )
+	q = Quat( euler )
 
-	print( "rot_axis: ", a, "drag_axis: ", _dragging.drag_axis, ", mouse_at: ", _dragging.mouse_at, ", dr: ", dr, ", dot: ", dx, ", angle: ", angle, ", euler: ", euler )
+	#print( "rot_axis: ", a, "drag_axis: ", _dragging.drag_axis, ", mouse_at: ", _dragging.mouse_at, ", dr: ", dr, ", dot: ", dx, ", angle: ", angle, ", euler: ", euler )
 	
 	var t: Transform = self.transform
 	t.basis = q
@@ -201,7 +202,7 @@ func _mouse_on_axis():
 	var dp: Vector3 = a * proj
 	var p: Vector3  = dp + ro
 	
-	print( "mouse_start: ", ro, ", drag_axis: ", a, ", mouse_at: ", r, ", on_axis: ", p )
+	#print( "mouse_start: ", ro, ", drag_axis: ", a, ", mouse_at: ", r, ", on_axis: ", p )
 	
 	return p
 
@@ -269,7 +270,7 @@ func _mouse_intersection():
 	
 	var r: Vector3 = inv_A.xform( p )
 	
-	print( "\nmouse uv: ", mouse_uv, ", ro: ", cam_r, ", a: ", cam_a, ", closest_p: ", r )
+	#print( "\nmouse uv: ", mouse_uv, ", ro: ", cam_r, ", a: ", cam_a, ", closest_p: ", r )
 	
 	return r
 

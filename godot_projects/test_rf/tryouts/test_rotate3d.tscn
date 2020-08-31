@@ -6,12 +6,13 @@
 
 [sub_resource type="CapsuleMesh" id=1]
 
-[node name="TestGrab3D" type="Spatial"]
+[node name="TestRotate3D" type="Spatial"]
 script = ExtResource( 3 )
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.718806, 0.695211, 0, -0.695211, 0.718806, 0, 4.75121, 6.1153 )
 script = ExtResource( 2 )
+max_speed = Vector3( 10, 10, 10 )
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.55108, 0, -2.70359 )
@@ -19,3 +20,4 @@ mesh = SubResource( 1 )
 material/0 = null
 
 [node name="Rotate3D" parent="." instance=ExtResource( 1 )]
+target_path = NodePath("../../TestRotate3D/MeshInstance")

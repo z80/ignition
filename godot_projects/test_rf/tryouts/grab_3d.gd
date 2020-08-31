@@ -35,7 +35,8 @@ func _set_target_path( t ):
 	target_path = t
 	target = get_node( t )
 	if target:
-		_dragging.position = target.position
+		_dragging.position = target.translation
+		self.translation = target.translation
 
 
 func _on_AreaX_mouse_entered():
