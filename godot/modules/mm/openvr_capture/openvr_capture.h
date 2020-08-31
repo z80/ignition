@@ -21,7 +21,7 @@ public:
 
 	bool valid( int i ) const;
 	Transform pose( int i ) const;
-	static unsigned long long timestamp();
+	static signed long long timestamp();
 private: 
 	vr::IVRSystem * tracker;
 

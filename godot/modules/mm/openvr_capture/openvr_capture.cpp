@@ -3,6 +3,7 @@
 
 // This one is for timestamp in exactly the same way as for SLAM.
 #include <chrono>
+#include <ctime>
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -221,19 +222,33 @@ Transform OpenvrCapture::pose( int i ) const
 	return t;
 }
 
-unsigned long long OpenvrCapture::timestamp()
+signed long long OpenvrCapture::timestamp()
 {
-	typedef std::chrono::duration<int, std::ratio_multiply<std::chrono::hours::period, std::ratio<8> >::type > Days;
+	//typedef std::chrono::duration<int, std::ratio_multiply<std::chrono::hours::period, std::ratio<8> >::type > Days;
 
-	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-	auto duration = now.time_since_epoch();
+	//std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+	//auto duration = now.time_since_epoch();
 
-	const Days days = std::chrono::duration_cast<Days>(duration);
-	duration -= days;
+	//const Days days = std::chrono::duration_cast<Days>(duration);
+	//duration -= days;
 
-	auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+	//auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
 
-	return nanoseconds.count();
+	//return nanoseconds.count();
+
+	auto now = std::chrono::system_clock::now();
+
+	time_t tnow = std::chrono::system_clock::to_time_t( now );
+	tm * date = std::localtime( &tnow );
+	date->tm_hour = 0;
+	date->tm_min  = 0;
+	date->tm_sec  = 0;
+	auto midnight = std::chrono::system_clock::from_time_t( std::mktime( date ) );
+	auto duration = now - midnight;
+
+	auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>( duration );
+
+	return microseconds.count();
 }
 
 

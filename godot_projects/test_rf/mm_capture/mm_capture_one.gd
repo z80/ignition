@@ -10,7 +10,7 @@ var capture = {
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var c: OpenvrCaptureNode = $Capture
-	c.init( 1 )
+	c.init( 6 )
 	
 	$Gui.connect( "start", self, "start_capture" )
 	$Gui.connect( "stop",  self, "stop_capture" )
@@ -23,11 +23,11 @@ func _process(delta):
 	if not res:
 		print( "fail" )
 	
-	var t: Transform = c.pose( 0 )
+	var ts: String = c.timestamp()
+	var t: Transform = c.pose( 1 )
 	
 	# Capture to a file if enabled.
 	if capture.f != null:
-		var ts: String = c.timestamp()
 		capture_pose( ts, t )
 	
 	# Scale the translation up.
