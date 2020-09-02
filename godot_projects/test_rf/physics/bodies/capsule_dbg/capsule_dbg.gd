@@ -13,8 +13,8 @@ func _ready():
 
 
 func init():
-	var Visual   = preload( "res://physics/bodies/capsule_dbg/visual.tscn")
-	var Physical = preload( "res://physics/bodies/capsule_dbg/physical.tscn" )
+	var Visual   = load( "res://physics/bodies/capsule_dbg/visual.tscn")
+	var Physical = load( "res://physics/bodies/capsule_dbg/physical.tscn" )
 	
 	VisualType   = Visual
 	PhysicalType = Physical

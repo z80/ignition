@@ -107,7 +107,8 @@ func update_bodies_physical( delta: float ):
 	
 	# Update visuals for all the physical-visual objects.
 	var group: String = Constants.BODIES_GROUP_NAME
-	for body in get_tree().get_nodes_in_group( group ):
+	var bodies = get_tree().get_nodes_in_group( group )
+	for body in bodies:
 		body.update_physical( delta )
 
 

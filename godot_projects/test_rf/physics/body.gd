@@ -15,8 +15,11 @@ var _hover_text: String = "Default hover text"
 
 
 func init():
-	add_to_group( Constants.BODIES_GROUP_NAME )
 	create_visual()
+
+
+func _ready():
+	add_to_group( Constants.BODIES_GROUP_NAME )
 
 
 
@@ -40,11 +43,19 @@ func update_physical( delta: float ):
 
 # Should return a list of GUI classes to instantiate in a container window which is opened 
 # when interation icon is clicked.
-func gui_classes():
+# Mode might specify what game mose it is. For example, if it is parts assembling mode, there might be 
+# needed different gui panels.
+func gui_classes( mode: String = "" ):
 	return []
 
 
-func _process( _delta ):
+func _process( delta ):
+	process_inner( delta )
+
+
+# This one to be able to rederive it in derived classes.
+# The problem is _process(delta) can't be redefined in derived classes.
+func process_inner( _delta ):
 	_process_interact_icon()
 
 

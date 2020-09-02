@@ -22,6 +22,8 @@ func create( type_name: String ):
 			return plane()
 		"capsule_dbg":
 			return capsule_dbg()
+		"construction":
+			return construction()
 
 
 func _create( CL ):
@@ -48,4 +50,9 @@ func capsule_dbg():
 	var b = _create( B )
 	return b
 
+
+func construction():
+	var B = load( "res://physics/bodies/construction/construction.tscn" )
+	var b = _create( B )
+	return b
 
