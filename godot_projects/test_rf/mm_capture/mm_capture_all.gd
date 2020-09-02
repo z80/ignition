@@ -5,7 +5,7 @@ var capture = null
 
 const QTY: int = 64
 const POSITION_SCALE: float = 10.0
-var _tracker_inds = [ 1, 2, 5, 6, 7, 8 ]
+var _tracker_inds = [ 1, 2, 7, 4, 5, 6 ]
 
 var _capture: bool = false
 var _frames_qty: int = 0
@@ -49,6 +49,8 @@ func _physics_process(delta):
 		var db = $FramesDb
 		db.set_frame( _frames_qty, frame )
 		_frames_qty += 1
+	
+	#debug_print( poses )
 
 
 
@@ -92,5 +94,18 @@ func init_visuals():
 		tr.name = "Tracker_%d" % index
 		trackers.add_child( tr )
 		ind += 1
+
+
+
+func debug_print( poses ):
+	print( "" )
+	print( "" )
+	print( "" )
+	var index: int = 0
+	for ind in _tracker_inds:
+		var t: Transform = poses[index]
+		print( "tracker: ", ind, ", r: ", t.origin )
+		index += 1
+
 
 
