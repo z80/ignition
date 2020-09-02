@@ -24,7 +24,13 @@ func _ready():
 
 
 func change_parent( new_parent: Node = null ):
+	
+	var p_before = self.get_parent()
+	
 	.change_parent( new_parent )
+	
+	var p_after = self.get_parent()
+	
 	update_physical_state_from_rf()
 
 

@@ -149,7 +149,12 @@ void RefFrameNode::change_parent( Node * parent )
 	se3_    = se3_rel;
 
 	if ( parent )
+	{
+		Node * prev_parent = this->get_parent();
+		if ( prev_parent )
+			prev_parent->remove_child( this );
 		parent->add_child( this );
+	}
 }
 
 void RefFrameNode::compute_relative_to_root( Node * root )

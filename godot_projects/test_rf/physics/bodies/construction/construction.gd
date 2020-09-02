@@ -12,9 +12,9 @@ func process_inner(delta):
 	if t_elapsed >= 1.0:
 		t_elapsed -= 1.0
 		var player_rf = PhysicsManager.player_ref_frame
-		compute_relative_to_root( player_rf )
-		var t: Transform = self.t_root()
-		print( "Construction relative to player rf: ", t )
+		#compute_relative_to_root( player_rf )
+		#var t: Transform = self.t_root()
+		#print( "Construction relative to player rf: ", t )
 
 
 

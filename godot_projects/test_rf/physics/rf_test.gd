@@ -28,17 +28,17 @@ func _ready():
 	rf.add_body( capsule )
 	
 		# for debugging purposes
-	var tree = get_tree()
-	var bodies = tree.get_nodes_in_group( Constants.BODIES_GROUP_NAME )
-	print( "bodies: ", bodies )
+	#var tree = get_tree()
+	#var bodies = tree.get_nodes_in_group( Constants.BODIES_GROUP_NAME )
+	#print( "bodies: ", bodies )
 	
 	# Add construction to null ref. frame. 
 	# It is suppsed to be picked up when close enough.
 	var construction: Body = BodyCreator.create( "construction" )
 	
 		# for debugging purposes
-	bodies = tree.get_nodes_in_group( Constants.BODIES_GROUP_NAME )
-	print( "bodies: ", bodies )
+	#bodies = tree.get_nodes_in_group( Constants.BODIES_GROUP_NAME )
+	#print( "bodies: ", bodies )
 
 	
 	var privot: Spatial = capsule._visual
