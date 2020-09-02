@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="CubeMesh" id=1]
+
+[node name="Cube_0" type="MeshInstance"]
+mesh = SubResource( 1 )
+material/0 = null
