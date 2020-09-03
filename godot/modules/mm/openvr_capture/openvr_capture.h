@@ -19,6 +19,8 @@ public:
 	void finit();
 	bool process();
 
+	bool connected( int i );
+	String serial( int i );
 	bool valid( int i ) const;
 	Transform pose( int i ) const;
 	static signed long long timestamp();

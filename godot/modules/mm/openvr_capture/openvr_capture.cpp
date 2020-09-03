@@ -204,6 +204,35 @@ bool OpenvrCapture::process()
 }
 
 
+bool OpenvrCapture::connected( int i )
+{
+	const int sz = trackers.size();
+	if ( i >= sz )
+		return false;
+
+	const bool res = tracker->IsTrackedDeviceConnected( i );
+	return res;
+}
+
+
+String OpenvrCapture::serial( int i )
+{
+	const int sz = trackers.size();
+	if ( i >= sz )
+		return String();
+
+	//vr::TrackedDeviceIndex_t unDeviceIndex, ETrackedDeviceProperty prop, VR_OUT_STRING() char *pchValue, uint32_t unBufferSize, ETrackedPropertyError *pError = 0L
+	char stri[ vr::k_unMaxPropertyStringSize ];
+	vr::ETrackedPropertyError err;
+	const uint32_t bytes_qty = tracker->GetStringTrackedDeviceProperty( i, vr::Prop_SerialNumber_String, stri, vr::k_unMaxPropertyStringSize, &err );
+	if ( bytes_qty == 0 )
+		return String();
+
+	const String s( stri );
+	return s;
+}
+
+
 bool OpenvrCapture::valid( int i ) const
 {
 	const int sz = trackers.size();

@@ -3,11 +3,13 @@
 
 void OpenvrCaptureNode::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("init", "int"),  &OpenvrCaptureNode::init,      Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("process"),      &OpenvrCaptureNode::process,   Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("valid", "int"), &OpenvrCaptureNode::valid,     Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("pose", "int"),  &OpenvrCaptureNode::pose,      Variant::TRANSFORM );
-	ClassDB::bind_method( D_METHOD("timestamp"),    &OpenvrCaptureNode::timestamp, Variant::STRING );
+	ClassDB::bind_method( D_METHOD("init", "int"),      &OpenvrCaptureNode::init,      Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("process"),          &OpenvrCaptureNode::process,   Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("connected", "int"), &OpenvrCaptureNode::connected, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("serial", "int"),    &OpenvrCaptureNode::serial,    Variant::STRING );
+	ClassDB::bind_method( D_METHOD("valid", "int"),     &OpenvrCaptureNode::valid,     Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("pose", "int"),      &OpenvrCaptureNode::pose,      Variant::TRANSFORM );
+	ClassDB::bind_method( D_METHOD("timestamp"),        &OpenvrCaptureNode::timestamp, Variant::STRING );
 }
 
 OpenvrCaptureNode::OpenvrCaptureNode()
@@ -33,6 +35,18 @@ void OpenvrCaptureNode::finit()
 bool OpenvrCaptureNode::process()
 {
 	const bool res = _c.process();
+	return res;
+}
+
+bool OpenvrCaptureNode::connected( int i )
+{
+	const bool res = _c.connected( i );
+	return res;
+}
+
+String OpenvrCaptureNode::serial( int i )
+{
+	const String res = _c.serial( i );
 	return res;
 }
 
