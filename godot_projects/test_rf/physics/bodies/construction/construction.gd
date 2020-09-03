@@ -30,7 +30,7 @@ func init():
 
 	
 	var t: Transform
-	t.origin = Vector3( 0.0, 0.0, 0.0 )
+	t.origin = Vector3( 0.0, 1.0, 0.0 )
 	set_t( t )
 
 

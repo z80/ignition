@@ -5,6 +5,17 @@ class_name RefFrame
 var _axes = null
 
 
+
+func process_children():
+	pass
+
+
+func evolve():
+	pass
+
+
+
+
 # In this script it is child/parent management
 # A separate class is used for physics management and bodies creation.
 func _ready():

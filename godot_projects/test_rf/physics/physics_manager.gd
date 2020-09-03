@@ -28,7 +28,8 @@ func _process(_delta):
 		return
 	
 	# Check if need to follow the user object.
-	player_rf.jump_if_needed()
+	player_rf.evolve()
+	player_rf.process_children()
 	
 	update_bodies_visual()
 	update_providers()

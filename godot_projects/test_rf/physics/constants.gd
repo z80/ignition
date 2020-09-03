@@ -9,6 +9,9 @@ const RF_JUMP_DISTANCE: float  = 10.0
 const RF_SPLIT_DISTANCE: float = 50.0
 const RF_MERGE_DISTANCE: float = 60.0
 
+const BODY_EXCLUDE_DIST: float = 50.0
+const BODY_INCLUDE_DIST: float = 40.0
+
 const INTERACT_ICON_DIST: float = 30.0
 
 # Positional grid size.

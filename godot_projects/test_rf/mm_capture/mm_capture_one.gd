@@ -10,7 +10,7 @@ var capture = {
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var c: OpenvrCaptureNode = $Capture
-	c.init( 6 )
+	c.init( 64 )
 	
 	$Gui.connect( "start", self, "start_capture" )
 	$Gui.connect( "stop",  self, "stop_capture" )

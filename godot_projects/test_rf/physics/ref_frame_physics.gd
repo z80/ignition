@@ -11,6 +11,17 @@ var _contact_layer: int = -1
 var _jumps_left: int = 50
 
 
+func process_children():
+	.process_children()
+	exclude_too_far_bodies()
+	include_close_enough_bodies()
+
+
+func evolve():
+	.evolve()
+	jump_if_needed()
+
+
 
 func init_physics():
 	if _contact_layer >= 0:
@@ -125,6 +136,39 @@ func jump_if_needed():
 
 
 
+func exclude_too_far_bodies():
+	var max_dist: float = Constants.BODY_EXCLUDE_DIST
+	var bodies = child_bodies()
+	var player_focus = PhysicsManager.player_focus
+	var pt = self.get_parent()
+	
+	for body in bodies:
+		if body == player_focus:
+			continue
+		
+		var r: Vector3 = body.r()
+		var d: float = r.length()
+		if d > max_dist:
+			body.remove_physical()
+			body.change_parent( pt )
+
+
+
+func include_close_enough_bodies():
+	var min_dist: float = Constants.BODY_INCLUDE_DIST
+	var bodies = parent_bodies()
+	
+	for body in bodies:
+		body.compute_relative_to_root( self )
+		var r: Vector3 = body.r_root()
+		var d: float = r.length()
+		
+		if d < min_dist:
+			add_body( body )
+
+
+
+
 
 
 func child_bodies():
@@ -139,10 +183,28 @@ func child_bodies():
 
 
 
+func parent_bodies():
+	var pt = self.get_parent()
+	var rt = BodyCreator.root_node
+	
+	var bodies = []
+	
+	var children = pt.get_children()
+	for child in children:
+		var body = child as Body
+		if body != null:
+			bodies.push_back( body )
+	
+	if rt == pt:
+		return bodies
 
-
-
-
+	children = rt.get_children()
+	for child in children:
+		var body = child as Body
+		if body != null:
+			bodies.push_back( body )
+	
+	return bodies
 
 
 
