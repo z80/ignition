@@ -5,10 +5,20 @@ var capture = null
 
 const QTY: int = 64
 const POSITION_SCALE: float = 10.0
-var _tracker_inds = [ 1, 2, 7, 4, 5, 6 ]
+var _trackers: Dictionary = {}
 
 var _capture: bool = false
 var _frames_qty: int = 0
+
+const TRACKERS_QTY: int = 6
+const TRACKER_INDS: Dictionary = {
+	"0": 0, 
+	"1": 1, 
+	"2": 2, 
+	"3": 3, 
+	"4": 4, 
+	"5": 5
+}
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -19,6 +29,7 @@ func _ready():
 	
 	var c: OpenvrCaptureNode = $Capture
 	c.init( QTY )
+	_trackers = enumerate_trackers()
 	
 	$Gui.connect( "start", self, "start_capture" )
 	$Gui.connect( "stop",  self, "stop_capture" )
@@ -38,7 +49,7 @@ func _physics_process(delta):
 	
 	var index: int = 0
 	var trackers = $Trackers
-	for ind in _tracker_inds:
+	for ind in range(TRACKERS_QTY):
 		var t: Transform = poses[index]
 		t.origin *= POSITION_SCALE
 		var tr = trackers.get_child( index )
@@ -58,7 +69,7 @@ func start_capture():
 	_capture = true
 	_frames_qty = 0
 	var db = $FramesDb
-	db.set_config( "vive_inds", _tracker_inds )
+	db.set_config( "vive_inds", _trackers )
 
 
 func stop_capture():
@@ -69,17 +80,26 @@ func capture_frame():
 	var c: OpenvrCaptureNode = $Capture
 	var frame = []
 	var poses = []
-	for ind in _tracker_inds:
+	
+	var qt: int = TRACKERS_QTY*7
+	poses.resize(qt)
+	for i in range(qt):
+		frame[i] = 0.0
+	
+	for ind in _trackers:
+		var tracker = _trackers[ind]
+		var index = tracker.index
 		var t: Transform = c.pose( ind )
 		var r: Vector3 = t.origin
 		var q: Quat    = t.basis
-		frame.push_back( q.w )
-		frame.push_back( q.x )
-		frame.push_back( q.y )
-		frame.push_back( q.z )
-		frame.push_back( r.x )
-		frame.push_back( r.y )
-		frame.push_back( r.z )
+		var i: int = 7*index
+		frame[i]   = q.w
+		frame[i+1] = q.x
+		frame[i+2] = q.y
+		frame[i+3] = q.z
+		frame[i+4] = r.x
+		frame[i+5] = r.y
+		frame[i+6] = r.z
 		poses.push_back( t )
 	
 	return [poses, frame]
@@ -89,7 +109,7 @@ func init_visuals():
 	var index: int = 0
 	var Tr = load( "res://mm_capture/tracker.tscn" )
 	var trackers: Node = $Trackers
-	for ind in _tracker_inds:
+	for ind in _trackers:
 		var tr = Tr.instance()
 		tr.name = "Tracker_%d" % index
 		trackers.add_child( tr )
@@ -97,13 +117,36 @@ func init_visuals():
 
 
 
+func enumerate_trackers():
+	var trackers: Dictionary = {}
+	var qty: int = 0
+	for i in range(1, QTY):
+		var connected: bool = $Capture.connected( i )
+		if connected:
+			var serial: String = $Capture.serial( i )
+			print( "index: ", i, ", serial: ", serial )
+			var exists: bool = TRACKER_INDS.has( serial )
+			var index: int
+			if exists:
+				 index = TRACKER_INDS[serial]
+			else:
+				index = qty
+			var tracker = { index = index, serial = serial }
+			trackers[i] = tracker
+			qty += 1
+			if qty >= 6:
+				break
+	
+	return trackers
+
+
 func debug_print( poses ):
 	print( "" )
 	print( "" )
 	print( "" )
 	var index: int = 0
-	for ind in _tracker_inds:
-		var t: Transform = poses[index]
+	for ind in range(TRACKERS_QTY):
+		var t: Transform = poses[ind]
 		print( "tracker: ", ind, ", r: ", t.origin )
 		index += 1
 
