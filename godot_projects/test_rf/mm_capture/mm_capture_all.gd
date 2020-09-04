@@ -10,9 +10,9 @@ var _trackers: Dictionary = {}
 var _capture: bool = false
 var _frames_qty: int = 0
 
-const TRACKERS_QTY: int = 6
+const TRACKERS_QTY: int = 1
 const TRACKER_INDS: Dictionary = {
-	"0": 0, 
+	"LHR-3B10BC94": 0, 
 	"1": 1, 
 	"2": 2, 
 	"3": 3, 
@@ -25,11 +25,10 @@ func _ready():
 	_capture = false
 	_frames_qty = 0
 	
-	init_visuals()
-	
 	var c: OpenvrCaptureNode = $Capture
 	c.init( QTY )
 	_trackers = enumerate_trackers()
+	init_visuals()
 	
 	$Gui.connect( "start", self, "start_capture" )
 	$Gui.connect( "stop",  self, "stop_capture" )
@@ -81,10 +80,17 @@ func capture_frame():
 	var frame = []
 	var poses = []
 	
-	var qt: int = TRACKERS_QTY*7
-	poses.resize(qt)
-	for i in range(qt):
-		frame[i] = 0.0
+	var sz: int = 0
+	for ind in _trackers:
+		var tr = _trackers[ind]
+		var index = tr.index
+		if sz < index:
+			sz = index
+	sz += 1
+	
+	var qt: int = sz*7
+	poses.resize(sz)
+	frame.resize(qt)
 	
 	for ind in _trackers:
 		var tracker = _trackers[ind]
@@ -93,14 +99,14 @@ func capture_frame():
 		var r: Vector3 = t.origin
 		var q: Quat    = t.basis
 		var i: int = 7*index
-		frame[i]   = q.w
-		frame[i+1] = q.x
-		frame[i+2] = q.y
-		frame[i+3] = q.z
-		frame[i+4] = r.x
-		frame[i+5] = r.y
-		frame[i+6] = r.z
-		poses.push_back( t )
+		frame[index]   = q.w
+		frame[index+1] = q.x
+		frame[index+2] = q.y
+		frame[index+3] = q.z
+		frame[index+4] = r.x
+		frame[index+5] = r.y
+		frame[index+6] = r.z
+		poses[index] = t
 	
 	return [poses, frame]
 
@@ -134,7 +140,7 @@ func enumerate_trackers():
 			var tracker = { index = index, serial = serial }
 			trackers[i] = tracker
 			qty += 1
-			if qty >= 6:
+			if qty >= TRACKERS_QTY:
 				break
 	
 	return trackers
