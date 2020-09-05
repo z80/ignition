@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://physics/bodies/construction/panel_parts/panel_parts_theme.tres" type="Theme" id=1]
+[ext_resource path="res://physics/bodies/construction/panel_parts/item_button.gd" type="Script" id=2]
+
+[node name="ItemButton" type="Button"]
+rect_min_size = Vector2( 60, 60 )
+theme = ExtResource( 1 )
+script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Desc" type="RichTextLabel" parent="."]
+margin_left = 63.0502
+margin_top = 58.9117
+margin_right = 382.05
+margin_bottom = 221.912
+theme = ExtResource( 1 )
+text = "Item description"
+[connection signal="mouse_entered" from="." to="." method="_on_ItemButton_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_ItemButton_mouse_exited"]

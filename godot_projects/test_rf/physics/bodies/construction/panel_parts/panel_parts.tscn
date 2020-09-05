@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://physics/bodies/construction/panel_parts/panel_parts_theme.tres" type="Theme" id=1]
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0.0627451, 0.0627451, 0.0627451, 0.282353 )
 
 [node name="PanelParts" type="Control"]
 anchor_right = 0.25
@@ -14,9 +17,35 @@ __meta__ = {
 [node name="Panel" type="Panel" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
+margin_right = 6.0
+theme = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Panel"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_right = 1.0
 theme = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PanelCaterories" type="Panel" parent="Panel/HBoxContainer"]
+margin_right = 64.0
+margin_bottom = 600.0
+rect_min_size = Vector2( 64, 0 )
+
+[node name="PanelSplit" type="Panel" parent="Panel/HBoxContainer"]
+margin_left = 68.0
+margin_right = 74.0
+margin_bottom = 600.0
+rect_min_size = Vector2( 6, 0 )
+custom_styles/panel = SubResource( 1 )
+
+[node name="PanelFrameworks" type="Panel" parent="Panel/HBoxContainer"]
+margin_left = 78.0
+margin_right = 270.0
+margin_bottom = 600.0
+rect_min_size = Vector2( 192, 0 )
