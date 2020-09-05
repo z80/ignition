@@ -5,6 +5,7 @@ var text: String setget _set_text, _get_text
 
 var _mouse_over: bool = false
 
+var _window = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -22,7 +23,7 @@ func _ready():
 
 func _set_text( stri: String ):
 	text = stri
-	$HoverControl/HoverGui.text = stri
+	$HoverGui.text = stri
 
 
 func _get_text():
@@ -38,12 +39,12 @@ func _input( _event ):
 
 
 func _on_mouse_entered():
-	$HoverControl.visible = true
+	$HoverGui.visible = true
 	_mouse_over = true
 
 
 func _on_mouse_exited():
-	$HoverControl.visible = false
+	$HoverGui.visible = false
 	_mouse_over = false
 
 
@@ -58,15 +59,23 @@ func _on_MouseHoverControl_gui_input(event):
 		var body: Body = get_parent() as Body
 		if body == null:
 			return
+		
+		# If was deleted clear the reference.
+		if not is_instance_valid( _window ):
+			_window = null
+		
+		if _window != null:
+			_window.visible = true
+			return
 			
 		var gui_classes = body.gui_classes()
 		var GuiClickContainer = load( "res://physics/interact_icon/gui_click_container.tscn" )
-		var window = GuiClickContainer.instance()
-		body.add_child( window )
-		window.setup_gui( gui_classes, body )
+		_window = GuiClickContainer.instance()
+		body.add_child( _window )
+		_window.setup_gui( gui_classes, body )
 		
 		var mouse_pos = get_viewport().get_mouse_position()
-		window.rect_position = mouse_pos
+		_window.rect_position = mouse_pos
 		
 		# Also set this ref. frame as selected by the player.
 		PhysicsManager.player_select = body

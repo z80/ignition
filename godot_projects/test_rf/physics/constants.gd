@@ -18,3 +18,6 @@ const INTERACT_ICON_DIST: float = 30.0
 const CONSTRUCTION_GRID_SZ: float = 0.1
 # Rotational discretization.
 const CONSTRUCTION_ROT_SNAP: float = 5.0 * 3.1415926535 / 180.0
+
+# Deactivate distance
+const CONSTRUCTION_DEACTIVATE_DIST = 20.0

@@ -1,0 +1,22 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/bodies/construction/panel_parts/panel_parts_theme.tres" type="Theme" id=1]
+
+[node name="PanelParts" type="Control"]
+anchor_right = 0.25
+anchor_bottom = 1.0
+margin_left = 1.0
+margin_right = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Panel" type="Panel" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 1.0
+theme = ExtResource( 1 )

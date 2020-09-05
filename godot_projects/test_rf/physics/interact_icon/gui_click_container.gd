@@ -20,9 +20,9 @@ func setup_gui( classes, target_object ):
 	for C in classes:
 		var inst = C.instance()
 		$Container.add_child( inst )
-		var has_init: bool = has_method( "init" )
+		var has_init: bool = inst.has_method( "init" )
 		if has_init:
-			inst.init( target_object )
+			inst.init( target_object, self )
 
 
 

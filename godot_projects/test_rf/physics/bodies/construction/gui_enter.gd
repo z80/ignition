@@ -1,9 +1,11 @@
 extends Control
 
 var _target_obj = null
+var _parent_gui = null
 
-func init( target_obj ):
-	_target_obj = null
+func init( target_obj, parent_gui ):
+	_target_obj = target_obj
+	_parent_gui = parent_gui
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -13,6 +15,7 @@ func _ready():
 func _on_Enter_pressed():
 	if _target_obj == null:
 		return
-	var has_enter = _target_obj.has_method( "enter" )
-	if has_enter:
-		_target_obj.call_method( "enter" )
+	var has_activate: bool = _target_obj.has_method( "activate" )
+	if has_activate:
+		_target_obj.activate()
+		_parent_gui.queue_free()

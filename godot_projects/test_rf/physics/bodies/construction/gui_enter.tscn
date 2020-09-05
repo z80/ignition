@@ -16,9 +16,9 @@ anchor_bottom = 1.0
 margin_right = 1.0
 
 [node name="Enter" type="Button" parent="CenterContainer"]
-margin_left = 490.0
+margin_left = 480.0
 margin_top = 290.0
-margin_right = 535.0
+margin_right = 544.0
 margin_bottom = 310.0
-text = "Enter"
+text = "Activate"
 [connection signal="pressed" from="CenterContainer/Enter" to="." method="_on_Enter_pressed"]
