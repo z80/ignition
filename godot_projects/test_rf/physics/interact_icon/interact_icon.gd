@@ -60,6 +60,13 @@ func _on_MouseHoverControl_gui_input(event):
 		if body == null:
 			return
 		
+		var has_show_click_container = body.has_method( "show_click_container" )
+		if not has_show_click_container:
+			return
+		var do_show_container: bool = body.show_click_container()
+		if not do_show_container:
+			return
+		
 		# If was deleted clear the reference.
 		if not is_instance_valid( _window ):
 			_window = null

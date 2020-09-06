@@ -13,6 +13,11 @@ var _physical  = null
 var _icon = null
 var _hover_text: String = "Default hover text"
 
+# Body which contains this one and other bodies.
+var _super_body = null
+# List of sub-bodies this body contains if it is a super-body.
+var _sub_bodies: Array = []
+
 
 func init():
 	create_visual()
@@ -149,6 +154,8 @@ func process_user_input( event: InputEvent ):
 	pass
 
 
+func show_click_container():
+	return true
 
 
 func _process_interact_icon():
