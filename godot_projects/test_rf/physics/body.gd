@@ -174,12 +174,22 @@ func _process_interact_icon():
 			_icon = null
 		return
 	
-	#var mouse_pos = get_viewport().get_mouse_position()
-	var icon_at =  cam.unproject_position( obj_at )
-	
 	var vp = get_viewport()
 	var rect = vp.get_visible_rect()
 	var sz = rect.size
+	
+	var mouse_at = vp.get_mouse_position()
+	var icon_at  =  cam.unproject_position( obj_at )
+	var dr2: Vector2 = icon_at - mouse_at
+	var height: float = rect.size.y
+	var dist2: float = dr2.length() / height
+	
+	if dist2 > Constants.INTERACT_ICON_SCREEN_DIST:
+		if _icon != null:
+			_icon.visible = false
+			return
+	
+	print( "show icon" )
 	
 	if icon_at.x < 0.0 or icon_at.y < 0.0:
 		return

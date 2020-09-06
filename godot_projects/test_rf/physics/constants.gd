@@ -12,7 +12,11 @@ const RF_MERGE_DISTANCE: float = 60.0
 const BODY_EXCLUDE_DIST: float = 50.0
 const BODY_INCLUDE_DIST: float = 40.0
 
+# Icon shows up only if closer than this distance
 const INTERACT_ICON_DIST: float = 30.0
+# It shows up if mouse is closer than this distance on screen.
+# It is in screen heights.
+const INTERACT_ICON_SCREEN_DIST: float = 0.2
 
 # Positional grid size.
 const CONSTRUCTION_GRID_SZ: float = 0.1

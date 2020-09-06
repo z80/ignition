@@ -1,6 +1,8 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://physics/bodies/construction/panel_parts/panel_parts_theme.tres" type="Theme" id=1]
+[ext_resource path="res://physics/bodies/construction/panel_parts/item_button.tscn" type="PackedScene" id=2]
+[ext_resource path="res://physics/bodies/construction/panel_parts/panel_parts.gd" type="Script" id=3]
 
 [sub_resource type="StyleBoxFlat" id=1]
 bg_color = Color( 0.0627451, 0.0627451, 0.0627451, 0.282353 )
@@ -10,6 +12,7 @@ anchor_right = 0.25
 anchor_bottom = 1.0
 margin_left = 1.0
 margin_right = 1.0
+script = ExtResource( 3 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -32,20 +35,103 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="PanelCaterories" type="Panel" parent="Panel/HBoxContainer"]
-margin_right = 64.0
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/HBoxContainer"]
+margin_right = 60.0
 margin_bottom = 600.0
-rect_min_size = Vector2( 64, 0 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Frames" parent="Panel/HBoxContainer/VBoxContainer" instance=ExtResource( 2 )]
+description = "Frames. Frames are used for access."
+
+[node name="Parts" parent="Panel/HBoxContainer/VBoxContainer" instance=ExtResource( 2 )]
+margin_top = 64.0
+margin_bottom = 124.0
+description = "Movable parts."
 
 [node name="PanelSplit" type="Panel" parent="Panel/HBoxContainer"]
-margin_left = 68.0
-margin_right = 74.0
+margin_left = 64.0
+margin_right = 70.0
 margin_bottom = 600.0
 rect_min_size = Vector2( 6, 0 )
 custom_styles/panel = SubResource( 1 )
 
-[node name="PanelFrameworks" type="Panel" parent="Panel/HBoxContainer"]
-margin_left = 78.0
-margin_right = 270.0
+[node name="ContainerFrames" type="GridContainer" parent="Panel/HBoxContainer"]
+visible = false
+margin_left = 74.0
+margin_right = 262.0
 margin_bottom = 600.0
-rect_min_size = Vector2( 192, 0 )
+columns = 3
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Parts2" parent="Panel/HBoxContainer/ContainerFrames" instance=ExtResource( 2 )]
+description = "Movable parts."
+
+[node name="Parts3" parent="Panel/HBoxContainer/ContainerFrames" instance=ExtResource( 2 )]
+margin_left = 64.0
+margin_right = 124.0
+description = "Movable parts."
+
+[node name="Parts4" parent="Panel/HBoxContainer/ContainerFrames" instance=ExtResource( 2 )]
+margin_left = 128.0
+margin_right = 188.0
+description = "Movable parts."
+
+[node name="Parts5" parent="Panel/HBoxContainer/ContainerFrames" instance=ExtResource( 2 )]
+margin_top = 64.0
+margin_bottom = 124.0
+description = "Movable parts."
+
+[node name="Parts6" parent="Panel/HBoxContainer/ContainerFrames" instance=ExtResource( 2 )]
+margin_left = 64.0
+margin_top = 64.0
+margin_right = 124.0
+margin_bottom = 124.0
+description = "Movable parts."
+
+[node name="Parts7" parent="Panel/HBoxContainer/ContainerFrames" instance=ExtResource( 2 )]
+margin_left = 128.0
+margin_top = 64.0
+margin_right = 188.0
+margin_bottom = 124.0
+description = "Movable parts."
+
+[node name="ContainerParts" type="GridContainer" parent="Panel/HBoxContainer"]
+visible = false
+margin_left = 74.0
+margin_right = 262.0
+margin_bottom = 600.0
+columns = 3
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Parts2" parent="Panel/HBoxContainer/ContainerParts" instance=ExtResource( 2 )]
+description = "Movable parts."
+
+[node name="Parts3" parent="Panel/HBoxContainer/ContainerParts" instance=ExtResource( 2 )]
+margin_left = 64.0
+margin_right = 124.0
+description = "Movable parts."
+
+[node name="Parts4" parent="Panel/HBoxContainer/ContainerParts" instance=ExtResource( 2 )]
+margin_left = 128.0
+margin_right = 188.0
+description = "Movable parts."
+
+[node name="Parts5" parent="Panel/HBoxContainer/ContainerParts" instance=ExtResource( 2 )]
+margin_top = 64.0
+margin_bottom = 124.0
+description = "Movable parts."
+
+[node name="Parts6" parent="Panel/HBoxContainer/ContainerParts" instance=ExtResource( 2 )]
+margin_left = 64.0
+margin_top = 64.0
+margin_right = 124.0
+margin_bottom = 124.0
+description = "Movable parts."
+[connection signal="pressed" from="Panel/HBoxContainer/VBoxContainer/Frames" to="." method="_on_Frames_pressed"]
+[connection signal="pressed" from="Panel/HBoxContainer/VBoxContainer/Parts" to="." method="_on_Parts_pressed"]
