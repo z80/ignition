@@ -17,6 +17,7 @@ __meta__ = {
 [node name="Sprite" type="Sprite" parent="."]
 
 [node name="Desc" type="RichTextLabel" parent="."]
+process_priority = 1
 visible = false
 margin_left = 63.0502
 margin_top = 58.9117
