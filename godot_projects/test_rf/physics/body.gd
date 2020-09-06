@@ -189,8 +189,6 @@ func _process_interact_icon():
 			_icon.visible = false
 			return
 	
-	print( "show icon" )
-	
 	if icon_at.x < 0.0 or icon_at.y < 0.0:
 		return
 	if icon_at.x >= sz.x or icon_at.y >= sz.y:
