@@ -58,7 +58,8 @@ func add_body( body: Body ):
 	
 	if ( _contact_layer >= 0 ):
 		var ph = body.create_physical()
-		ph.set_collision_layer( _contact_layer )
+		if ph != null:
+			ph.set_collision_layer( _contact_layer )
 
 
 func remove_body( body: Body ):

@@ -28,3 +28,4 @@ func _on_Parts_pressed():
 	var parts = find_node( "ContainerParts" )
 	frames.visible = false
 	parts.visible  = true
+	parts.visible  = true

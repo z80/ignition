@@ -14,9 +14,9 @@ var _icon = null
 var _hover_text: String = "Default hover text"
 
 # Body which contains this one and other bodies.
-var _super_body = null
+var super_body = null
 # List of sub-bodies this body contains if it is a super-body.
-var _sub_bodies: Array = []
+var sub_bodies: Array = []
 
 
 func init():
@@ -30,14 +30,20 @@ func _ready():
 
 func change_parent( new_parent: Node = null ):
 	
-	var p_before = self.get_parent()
-	
-	.change_parent( new_parent )
-	
-	var p_after = self.get_parent()
+	#var p_before = self.get_parent()
+	if super_body != null:
+		super_body.change_parent( new_parent )
+	else:
+		change_parent_recursive( new_parent )
+	#var p_after = self.get_parent()
 	
 	update_physical_state_from_rf()
 
+
+func change_parent_recursive( new_parent: Node = null ):
+	.change_parent( new_parent )
+	for body in sub_bodies:
+		body.change_parent_recursive( new_parent )
 
 
 func update_visual( root: Node = null ):
@@ -57,7 +63,19 @@ func update_physical( delta: float ):
 # Mode might specify what game mose it is. For example, if it is parts assembling mode, there might be 
 # needed different gui panels.
 func gui_classes( mode: String = "" ):
-	return []
+	var classes = []
+	if super_body != null:
+		var s_classes = super_body.gui_classes( mode )
+		for cl in s_classes:
+			classes.push_back( cl )
+	return classes
+
+# Defines GUI classes to be shown.
+func gui_mode():
+	if super_body != null:
+		return super_body.gui_mode()
+	return String("")
+
 
 
 func _process( delta ):
@@ -93,7 +111,10 @@ func create_physical():
 func _create_visual( Visual ):
 	if _visual:
 		return _visual
-		
+	
+	if Visual == null:
+		return null
+	
 	var v = Visual.instance()
 	
 	var t: Transform = self.t()
@@ -109,6 +130,9 @@ func _create_visual( Visual ):
 func _create_physical( Physical ):
 	if _physical:
 		return _physical
+	
+	if Physical == null:
+		return null
 	
 	var p = Physical.instance()
 	
@@ -151,10 +175,16 @@ func update_physical_state_from_rf():
 # is currently under user control.
 # Need to redefine this function in a particular implementation.
 func process_user_input( event: InputEvent ):
-	pass
+	for body in sub_bodies:
+		body.process_user_input( event )
 
 
+# It permits or not showing the window with all the little panels.
 func show_click_container():
+	if super_body != null:
+		var res: bool = super_body.show_click_container()
+		return res
+	
 	return true
 
 

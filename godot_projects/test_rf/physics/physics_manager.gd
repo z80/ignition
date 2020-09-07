@@ -49,6 +49,14 @@ func _input( event ):
 	var body: Body = player_focus as Body
 	if body == null:
 		return
+	
+	# Call user input for the upper most body.
+	# It is supposed to distribute the same controls 
+	# to all sub-bodies.
+	var sb = body.super_body
+	while sb != null:
+		body = sb
+		sb = body.super_body
 	body.process_user_input( event )
 
 

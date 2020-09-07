@@ -74,8 +74,9 @@ func _on_MouseHoverControl_gui_input(event):
 		if _window != null:
 			_window.visible = true
 			return
-			
-		var gui_classes = body.gui_classes()
+		
+		var mode: String = body.gui_mode()
+		var gui_classes = body.gui_classes( mode )
 		var GuiClickContainer = load( "res://physics/interact_icon/gui_click_container.tscn" )
 		_window = GuiClickContainer.instance()
 		body.add_child( _window )

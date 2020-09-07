@@ -20,5 +20,6 @@ margin_left = 480.0
 margin_top = 290.0
 margin_right = 544.0
 margin_bottom = 310.0
+hint_tooltip = "Enter construction mode. In this mode one can build. But parts should not be too far from each other."
 text = "Activate"
 [connection signal="pressed" from="CenterContainer/Enter" to="." method="_on_Enter_pressed"]

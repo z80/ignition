@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://physics/bodies/construction/gui_transform.gd" type="Script" id=3]
+[ext_resource path="res://physics/bodies/construction/panel_parts/item_button.tscn" type="PackedScene" id=4]
+
+[node name="Transform" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Move" parent="HBoxContainer" instance=ExtResource( 4 )]
+size_flags_horizontal = 0
+size_flags_vertical = 0
+description = "Grab part around (shortcut G)"
+
+[node name="Rotate" parent="HBoxContainer" instance=ExtResource( 4 )]
+margin_left = 64.0
+margin_right = 124.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+description = "Rotate part (shortcut R)"
