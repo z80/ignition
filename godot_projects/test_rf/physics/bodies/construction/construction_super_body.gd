@@ -9,8 +9,8 @@ func _init():
 
 
 func gui_classes( mode: String = "" ):
-	var in_tree = self.is_inside_tree()
-	self.print_tree_pretty()
+	#var in_tree = self.is_inside_tree()
+	#self.print_tree_pretty()
 	var classes = .gui_classes( mode )
 	if mode == "construction":
 		var T  = load( "res://physics/bodies/construction/gui_transform_2.tscn" )
@@ -21,7 +21,13 @@ func gui_classes( mode: String = "" ):
 
 
 func gui_mode():
-	return String( "construction" )
+	if construction == null:
+		return ""
+	
+	if not construction.activated:
+		return ""
+	
+	return "construction"
 
 
 func activate_grab( body ):

@@ -4,7 +4,7 @@ extends Body
 
 var t_elapsed: float = 0.0
 
-var _activated: bool = false
+var activated: bool = false
 
 func _ready():
 	var V  = load( "res://physics/bodies/construction/visual.tscn")
@@ -73,7 +73,7 @@ func gui_classes( mode: String = "" ):
 	for cl in common_classes:
 		classes.push_back( cl )
 	
-	if mode != "construction"
+	if mode != "construction":
 		var PanelEnter = load( "res://physics/bodies/construction/gui_enter.tscn" )
 		classes.push_back( PanelEnter )
 	
@@ -107,14 +107,14 @@ func activate():
 
 	$PanelParts.visible = true
 	
-	_activated = true
+	activated = true
 
 
 
 func deactivate():
 	$PanelParts.visible = true
 	
-	_activated = false
+	activated = false
 
 
 func activate_grab( body ):
