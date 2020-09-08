@@ -23,5 +23,7 @@ const CONSTRUCTION_GRID_SZ: float = 0.1
 # Rotational discretization.
 const CONSTRUCTION_ROT_SNAP: float = 5.0 * 3.1415926535 / 180.0
 
-# Deactivate distance
-const CONSTRUCTION_DEACTIVATE_DIST = 20.0
+# Activation distance
+const CONSTRUCTION_ACTIVATE_DIST: float = 15.0
+# Deactivation distance
+const CONSTRUCTION_DEACTIVATE_DIST: float = 20.0

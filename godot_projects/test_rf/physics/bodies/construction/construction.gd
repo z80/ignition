@@ -7,12 +7,12 @@ var t_elapsed: float = 0.0
 var activated: bool = false
 
 func _ready():
-	var V  = load( "res://physics/bodies/construction/visual.tscn")
-	var P  = load( "res://physics/bodies/construction/physical.tscn" )
-	var B  = load( "res://physics/bodies/construction/panel_parts/item_button.tscn" )
-	var E  = load( "res://physics/bodies/construction/gui_enter.tscn" )
-	var T  = load( "res://physics/bodies/construction/gui_transform_2.tscn" )
-	var L  = load( "res://physics/bodies/construction/gui_leave_contruction_mode.tscn" )
+	#var V  = load( "res://physics/bodies/construction/visual.tscn")
+	#var P  = load( "res://physics/bodies/construction/physical.tscn" )
+	#var B  = load( "res://physics/bodies/construction/panel_parts/item_button.tscn" )
+	#var E  = load( "res://physics/bodies/construction/gui_enter.tscn" )
+	#var T  = load( "res://physics/bodies/construction/gui_transform_2.tscn" )
+	#var L  = load( "res://physics/bodies/construction/gui_leave_contruction_mode.tscn" )
 	#var mode = "construction"
 	#var classes = .gui_classes( mode )
 	#if mode == "construction":
@@ -96,15 +96,6 @@ func set_collision_layer( layer ):
 
 
 func activate():
-	# Transfer player to the center of the building zone
-	var player = PhysicsManager.player_focus
-	var player_rf = PhysicsManager.player_ref_frame
-	self.compute_relative_to_root( player_rf )
-	var t: Transform = self.t_root()
-	t.origin = Vector3( 0.0, 2.0, 0.0 )
-	player.set_t( t )
-	player.update_physical_state_from_rf()
-
 	$PanelParts.visible = true
 	
 	activated = true

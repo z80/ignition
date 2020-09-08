@@ -1,11 +1,13 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://physics/bodies/construction/panel_parts/icon_grab.png" type="Texture" id=1]
 [ext_resource path="res://physics/bodies/construction/panel_parts/icon_rotate.png" type="Texture" id=2]
+[ext_resource path="res://physics/bodies/construction/gui_transform_2.gd" type="Script" id=3]
 
 [node name="Transform" type="HBoxContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+script = ExtResource( 3 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -24,3 +26,5 @@ margin_bottom = 70.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
 icon = ExtResource( 2 )
+[connection signal="pressed" from="Grab" to="." method="_on_Grab_pressed"]
+[connection signal="pressed" from="Rotate" to="." method="_on_Rotate_pressed"]

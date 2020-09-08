@@ -30,6 +30,14 @@ func gui_mode():
 	return "construction"
 
 
+func is_activated():
+	if construction == null:
+		return false
+	
+	return construction.activated
+
+
+
 func activate_grab( body ):
 	if is_instance_valid( construction ):
 		construction.activate_grab( body )

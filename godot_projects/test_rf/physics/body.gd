@@ -77,6 +77,17 @@ func gui_mode():
 	return String("")
 
 
+# Returns the root most body.
+func root_most_body():
+	var b = self
+	var s = self.super_body
+	while s != null:
+		b = s
+		s = b.super_body
+	
+	return b
+
+
 
 func _process( delta ):
 	process_inner( delta )
