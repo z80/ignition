@@ -1,0 +1,24 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/bodies/construction/gui_finish_editing.gd" type="Script" id=1]
+
+[node name="FinishEditing" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 1.0
+
+[node name="FinishEditing" type="Button" parent="CenterContainer"]
+margin_left = 463.0
+margin_top = 290.0
+margin_right = 561.0
+margin_bottom = 310.0
+hint_tooltip = "Enter construction mode. In this mode one can build. But parts should not be too far from each other."
+text = "Finish editing"

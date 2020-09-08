@@ -7,8 +7,10 @@ var t_elapsed: float = 0.0
 # String describing editing mode.
 var activated_mode = null
 
-# Editing target.
-var editing_target = null
+# Target being edited.
+var edited_target = null
+# Widget editing the target above.
+var editing_widget = null
 
 func _ready():
 	#var V  = load( "res://physics/bodies/construction/visual.tscn")
@@ -117,7 +119,10 @@ func activate_grab( body ):
 		return
 	var Grab = load( "res://physics/bodies/construction/grab_3d.tscn" )
 	var grab = Grab.instance()
-	body.add_child( grab )
+	BodyCreator.root_node.add_child( grab )
+	edited_target  = body
+	editing_widget = grab
+	activated_mode = "construction_editing"
 
 
 func activate_rotate( body ):
@@ -126,6 +131,9 @@ func activate_rotate( body ):
 	var Rotate = load( "res://physics/bodies/construction/rotate_3d.tscn" )
 	var rotate = Rotate.instance()
 	body.add_child( rotate )
+	edited_target  = body
+	editing_widget = rotate
+	activated_mode = "construction_editing"
 
 
 func check_if_deactivate():
