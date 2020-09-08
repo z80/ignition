@@ -12,11 +12,16 @@ func gui_classes( mode: String = "" ):
 	#var in_tree = self.is_inside_tree()
 	#self.print_tree_pretty()
 	var classes = .gui_classes( mode )
-	if mode == "construction":
+	if mode == "construction_menu":
 		var T  = load( "res://physics/bodies/construction/gui_transform_2.tscn" )
 		var L  = load( "res://physics/bodies/construction/gui_leave_contruction_mode.tscn" )
 		classes.push_back( T )
 		classes.push_back( L )
+	
+	elif mode == "construction_editing":
+		var F  = load( "res://physics/bodies/construction/gui_finish_editing.tscn" )
+		classes.push_back( F )
+		
 	return classes
 
 
@@ -24,10 +29,10 @@ func gui_mode():
 	if construction == null:
 		return ""
 	
-	if not construction.activated:
+	if construction.activated_mode == null:
 		return ""
 	
-	return "construction"
+	return construction.activated_mode
 
 
 func is_activated():

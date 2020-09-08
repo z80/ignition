@@ -4,7 +4,11 @@ extends Body
 
 var t_elapsed: float = 0.0
 
-var activated: bool = false
+# String describing editing mode.
+var activated_mode = null
+
+# Editing target.
+var editing_target = null
 
 func _ready():
 	#var V  = load( "res://physics/bodies/construction/visual.tscn")
@@ -45,7 +49,7 @@ func process_inner(delta):
 		#print( "Construction relative to player rf: ", t )
 	
 	
-	# If it is active check if player is too far. It it is, deactivate.
+	# If it is active check if player is too far. If it is, deactivate.
 	var do_deac: bool = check_if_deactivate()
 	if do_deac:
 		deactivate()
@@ -98,14 +102,14 @@ func set_collision_layer( layer ):
 func activate():
 	$PanelParts.visible = true
 	
-	activated = true
+	activated_mode = "construction_menu"
 
 
 
 func deactivate():
 	$PanelParts.visible = true
 	
-	activated = false
+	activated_mode = null
 
 
 func activate_grab( body ):
