@@ -68,6 +68,17 @@ func _query_frames_qty():
 	return _frames_qty
 
 
+func cleanup():
+	var cmd_data: String = "DELETE FROM data;"
+	var res_data: bool = _db.query( cmd_data )
+	
+	var cmd_config: String = "DELETE FROM config;"
+	var res_config: bool = _db.query( cmd_config )
+
+	var res: bool = cmd_data and cmd_config
+	return res
+
+
 func set_config( key: String, data ):
 	var stri: String = JSON.print( data )
 	stri = stri.replace( "\"", "\'" )

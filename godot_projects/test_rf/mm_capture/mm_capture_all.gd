@@ -67,6 +67,7 @@ func start_capture():
 	_capture = true
 	_frames_qty = 0
 	var db = $FramesDb
+	db.cleanup()
 	db.set_config( "vive_inds", _trackers )
 
 
