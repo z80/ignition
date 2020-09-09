@@ -10,14 +10,15 @@ var _trackers: Dictionary = {}
 var _capture: bool = false
 var _frames_qty: int = 0
 
-const TRACKERS_QTY: int = 1
+const TRACKERS_QTY: int = 6
 const TRACKER_INDS: Dictionary = {
-	"LHR-3B10BC94": 0, 
-	"1": 1, 
-	"2": 2, 
-	"3": 3, 
-	"4": 4, 
-	"5": 5
+	#"LHB-4346B6EA": 0, # This is probably base station
+	"LHR-D2186009": 0, 
+	"LHR-DA64B439": 1, 
+	"LHR-726ECDB3": 2, 
+	"LHR-C03833B9": 3, 
+	"LHR-3B10BC94": 4, 
+	"LHR-1CEF4849": 5,
 }
 
 # Called when the node enters the scene tree for the first time.
@@ -46,14 +47,12 @@ func _physics_process(delta):
 	var poses = result[0]
 	var frame = result[1]
 	
-	var index: int = 0
 	var trackers = $Trackers
 	for ind in range(TRACKERS_QTY):
-		var t: Transform = poses[index]
+		var t: Transform = poses[ind]
 		t.origin *= POSITION_SCALE
-		var tr = trackers.get_child( index )
+		var tr = trackers.get_child( ind )
 		tr.transform = t
-		index += 1
 	
 	if _capture:
 		var db = $FramesDb
@@ -99,13 +98,13 @@ func capture_frame():
 		var r: Vector3 = t.origin
 		var q: Quat    = t.basis
 		var i: int = 7*index
-		frame[index]   = q.w
-		frame[index+1] = q.x
-		frame[index+2] = q.y
-		frame[index+3] = q.z
-		frame[index+4] = r.x
-		frame[index+5] = r.y
-		frame[index+6] = r.z
+		frame[i]   = q.w
+		frame[i+1] = q.x
+		frame[i+2] = q.y
+		frame[i+3] = q.z
+		frame[i+4] = r.x
+		frame[i+5] = r.y
+		frame[i+6] = r.z
 		poses[index] = t
 	
 	return [poses, frame]
@@ -138,7 +137,7 @@ func enumerate_trackers():
 			if exists:
 				 index = TRACKER_INDS[serial]
 			else:
-				index = qty
+				continue
 			var tracker = { index = index, serial = serial }
 			trackers[i] = tracker
 			qty += 1
