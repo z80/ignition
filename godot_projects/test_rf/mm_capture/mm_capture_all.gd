@@ -112,14 +112,16 @@ func capture_frame():
 
 
 func init_visuals():
-	var index: int = 0
-	var Tr = load( "res://mm_capture/tracker.tscn" )
+	var Tr = load( "res://mm_capture/one_tracker.tscn" )
 	var trackers: Node = $Trackers
 	for ind in _trackers:
+		var tracker = _trackers[ind]
+		var index  = tracker.index
+		var serial = tracker.serial
 		var tr = Tr.instance()
 		tr.name = "Tracker_%d" % index
+		tr.text = String( index ) + " (" + serial + ")"
 		trackers.add_child( tr )
-		ind += 1
 
 
 
