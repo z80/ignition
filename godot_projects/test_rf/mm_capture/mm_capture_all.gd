@@ -21,10 +21,18 @@ const TRACKER_INDS: Dictionary = {
 	"LHR-1CEF4849": 5,
 }
 
+var fps: float = 24.0
+var _period: float = 1.0/fps
+var _time_elapsed: float = _period
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_capture = false
 	_frames_qty = 0
+	
+	_period = 1.0/fps
+	_time_elapsed = _period
 	
 	var c: OpenvrCaptureNode = $Capture
 	c.init( QTY )
@@ -55,6 +63,12 @@ func _physics_process(delta):
 		tr.transform = t
 	
 	if _capture:
+		_time_elapsed += delta
+		if ( _time_elapsed < _period ):
+			return
+		
+		_time_elapsed -= _period
+		
 		var db = $FramesDb
 		db.set_frame( _frames_qty, frame )
 		_frames_qty += 1
