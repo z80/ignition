@@ -2,6 +2,7 @@ extends Button
 
 
 export(String) var description = "Description goes here" setget set_desc, get_desc
+export(String) var block_name = "frames_cube"
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

@@ -24,6 +24,8 @@ func create( type_name: String ):
 			return capsule_dbg()
 		"construction":
 			return construction()
+		"frame_box":
+			return frame_box()
 
 
 func _create( CL ):
@@ -59,3 +61,9 @@ func construction():
 	var b = _create( B )
 	return b
 
+
+func frame_box():
+	var B = load( "res://physics/bodies/frames/frame_box/frame_box.tscn" )
+	var b = _create( B )
+	return b
+	
