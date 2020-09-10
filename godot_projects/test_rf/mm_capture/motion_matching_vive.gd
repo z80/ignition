@@ -2,12 +2,7 @@ extends Node
 
 signal data_ready
 
-const SQLite = preload("res://addons/godot-sqlite/bin/gdsqlite.gdns")
-const FRAME_DB_NAME = "res://mm_data.sqlite3.db"
-var db_ = null
-const TABLE_DATA_NAME   = "data"
-const TABLE_CONFIG_NAME = "config"
-var frames_qty_: int = -1
+var _db = null
 var frame_search_ = null
 
 var bone_names_ = null
@@ -130,16 +125,14 @@ func _input( event ):
 # This one is called every time it starts.
 # It assumes frames and descriptors present in the database.
 func init():
-	var db = open_frame_database_()
-	db_ = db
+	_db = $FramesDb()
 
-	bone_names_   = get_config_( db, "names" )
-	desc_weights_ = get_config_( db, "inv_std" )
-	desc_lengths_ = get_config_( db, "desc_lengths" )
-	var th = get_config_( db, "switch_threshold" )
+	desc_weights_ = _db.get_config( "inv_std" )
+	desc_lengths_ = _db.get_config_( "desc_lengths" )
+	var th = _db.get_config( "switch_threshold" )
 	if th == null:
 		switch_threshold_ = 0.3
-		set_config_( db, "switch_threshold", switch_threshold_ )
+		_db.set_config( "switch_threshold", switch_threshold_ )
 	else:
 		switch_threshold_ = th
 	
@@ -150,22 +143,20 @@ func init():
 	#else:
 	#	switch_period_ = sp
 	
-	var dg = get_config_( db, "desc_gains" )
+	var dg = _db.get_config_( "desc_gains" )
 	if dg == null:
 		dg  = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-		set_config_( db_, "desc_gains", dg )
+		_db.set_config( "desc_gains", dg )
 	else:
 		desc_gains_ = dg
 	
-	frame_search_ = build_kd_tree_( db )
-	apply_desc_gains_()
-	init_control_sequence_()
+	frame_search_ = _build_kd_tree( db )
+	_apply_desc_gains()
+	_init_control_sequence()
 	
-	f_ = frame_in_space_( db_, frame_ind_ )
+	f_ = _frame_in_space_( frame_ind_ )
 	
-	get_parent_skeleton()
-	
-	var ps = get_config_( db_, "parent_inds" )
+	var ps = _db.get_config_( "parent_inds" )
 	parents_ = ps
 	
 	emit_signal( "data_ready" )
@@ -173,15 +164,15 @@ func init():
 
 
 func set_desc_gains( gains: Array ):
-	var sz: int = desc_gains_.size()
-	var needed_sz: int = desc_gains_.size()
+	var sz: int = _desc_gains.size()
+	var needed_sz: int = _desc_gains.size()
 	if ( sz != needed_sz ):
 		gains.resize( needed_sz )
 		for i in range( sz, needed_sz ):
 			gains.push_back( 1.0 )
-	desc_gains_ = gains
-	set_config_( db_, "desc_gains", desc_gains_ )
-	apply_desc_gains_()
+	_desc_gains = gains
+	_db.set_config_( "desc_gains", desc_gains_ )
+	_apply_desc_gains()
 
 
 func get_desc_gains():
@@ -623,6 +614,14 @@ func pose_desc_( db, index: int ):
 
 
 func traj_desc_( db, index: int ):
+	var f = frame_( db, index )
+	
+	# Root pose
+	var root_ind: int = ROOT_IND*7
+	var root_q: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
+	var root_r: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
+	var az_root_q: Quat = quat_azimuth_( root_q )
+	var az_root_q_inv = az_root_q.inverse()
 
 
 func traj_desc_original_( db, index: int ):
