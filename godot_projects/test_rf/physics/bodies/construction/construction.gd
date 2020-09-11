@@ -28,6 +28,9 @@ func _ready():
 	#	classes.push_back( Lv )
 	#print( "classes: ", classes )
 	
+	$PanelParts.construction = self
+	$PanelParts.connect( "create_block", self, "create_block"  )
+	
 		# Also create a super body.
 	super_body = ConstructionSuperBody.new()
 	var p = get_parent()
@@ -153,4 +156,14 @@ func check_if_deactivate():
 		return true
 	
 	return false
+
+
+func create_block( block_name ):
+	var block = BodyCreator.create( block_name )
+	if block == null:
+		return
+	
+	var player = PhysicsManager.player_focus
+	
+
 

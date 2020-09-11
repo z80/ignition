@@ -27,3 +27,4 @@ theme = ExtResource( 1 )
 text = "Item description"
 [connection signal="mouse_entered" from="." to="." method="_on_ItemButton_mouse_entered"]
 [connection signal="mouse_exited" from="." to="." method="_on_ItemButton_mouse_exited"]
+[connection signal="pressed" from="." to="." method="_on_ItemButton_pressed"]

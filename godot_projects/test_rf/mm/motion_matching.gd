@@ -4,6 +4,7 @@ signal data_ready
 
 const SQLite = preload("res://addons/godot-sqlite/bin/gdsqlite.gdns")
 const FRAME_DB_NAME = "res://mm_data.sqlite3.db"
+#const FRAME_DB_NAME = "res://default_pose.sqlite3.db"
 var db_ = null
 const TABLE_DATA_NAME   = "data"
 const TABLE_CONFIG_NAME = "config"
