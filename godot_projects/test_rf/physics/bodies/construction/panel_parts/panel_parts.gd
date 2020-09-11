@@ -40,8 +40,10 @@ func _cleanup_panel( panel ):
 
 
 func _add_button( panel, res_icon: String, block_name: String, desc: String ):
-	var btn = load( "res://physics/bodies/construction/panel_parts/item_button.tscn" )
+	var Btn = load( "res://physics/bodies/construction/panel_parts/item_button.tscn" )
 	var icon = load( res_icon )
+	var btn = Btn.instance()
+	panel.add_child( btn )
 	btn.icon       = icon
 	btn.block_name = block_name
 	btn.description = desc
