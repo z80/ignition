@@ -10,7 +10,7 @@ export( String) var file_name = "res://mm_vive_capture.sqlite3.db"
 const SQLite = preload("res://addons/godot-sqlite/bin/gdsqlite.gdns")
 var _db = null
 
-var _frames_qty: int = 0
+var frames_qty: int = 0
 
 
 func _ready():
@@ -64,8 +64,8 @@ func _open_frame_database( fname: String = "res://mm_data.sqlite3.db" ):
 
 func _query_frames_qty():
 	_db.query("SELECT COUNT(*) AS 'qty' FROM " + TABLE_DATA_NAME + ";")
-	_frames_qty = _db.query_result[0]['qty']
-	return _frames_qty
+	frames_qty = _db.query_result[0]['qty']
+	return frames_qty
 
 
 func cleanup():
