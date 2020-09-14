@@ -187,11 +187,11 @@ func _process_dragging():
 			body.update_physical_state_from_rf()
 		else:
 			var tt: Transform = target.transform
-			var st: Transform = self.transform
 			tt.basis = q
-			st.basis = q
-			self.transform   = st
 			target.transform = tt
+		var st: Transform = self.transform
+		st.basis = q
+		self.transform   = st
 
 	
 	if euler != _dragging.euler:

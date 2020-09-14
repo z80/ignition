@@ -53,8 +53,8 @@ func activate_rotate( body ):
 		construction.activate_rotate( body )
 
 
-func finish_editing( body ):
+func finish_editing():
 	if is_instance_valid( construction ):
-		construction.finish_editing( body )
+		construction.finish_editing()
 
 

@@ -19,4 +19,4 @@ func _on_FinishEditing_pressed():
 	var has_finish_editing: bool = s.has_method( "finish_editing" )
 	if has_finish_editing:
 		s.finish_editing()
-		_parent_gui.queue_free()
+	_parent_gui.queue_free()

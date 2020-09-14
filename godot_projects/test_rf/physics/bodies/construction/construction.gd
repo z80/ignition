@@ -112,6 +112,7 @@ func activate():
 
 
 func deactivate():
+	finish_editing()
 	$PanelParts.visible = true
 	
 	activated_mode = null
@@ -139,6 +140,15 @@ func activate_rotate( body ):
 	editing_widget = rotate
 	rotate.target = body
 	activated_mode = "construction_editing"
+
+
+func finish_editing():
+	edited_target  = null
+	if is_instance_valid( editing_widget ):
+		editing_widget.queue_free()
+	activated_mode = "construction_menu"
+
+
 
 
 func check_if_deactivate():

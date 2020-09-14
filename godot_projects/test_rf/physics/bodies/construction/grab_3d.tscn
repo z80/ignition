@@ -36,6 +36,8 @@ material/0 = ExtResource( 3 )
 
 [node name="AreaX" type="Area" parent="ArrowX"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00449347, 0, 0 )
+collision_layer = 2148532223
+collision_mask = 1048575
 
 [node name="ShapeX" type="CollisionShape" parent="ArrowX/AreaX"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.160225, 0, 0 )
