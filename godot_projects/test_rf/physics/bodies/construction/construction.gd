@@ -82,7 +82,7 @@ func gui_classes( mode: String = "" ):
 	for cl in common_classes:
 		classes.push_back( cl )
 	
-	if mode != "construction":
+	if (mode != "construction_menu") and (mode != "construction_editing"):
 		var PanelEnter = load( "res://physics/bodies/construction/gui_enter.tscn" )
 		classes.push_back( PanelEnter )
 	
