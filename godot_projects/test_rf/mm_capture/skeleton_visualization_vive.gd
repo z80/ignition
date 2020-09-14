@@ -32,17 +32,23 @@ func apply_mm():
 	begin( Mesh.PRIMITIVE_LINES )
 	
 	var parents: Array = _mm.PARENTS
+	var fr = _mm._f
 	
 	# Drawing wireframe skeleton.
-	var fr = _mm._f
+	print( "" )
 	var qty: int = parents.size()
+	for i in range( qty ):
+		var i_n: int = i*7
+		var rb: Vector3 = Vector3( fr[i_n+4], fr[i_n+5], fr[i_n+6] )
+		print( " at[", i, "]: ", rb )
+	
 	for i in range( qty ):
 		var i_p: int = parents[i]*7
 		if i_p < 0:
 			continue
 		var i_n: int = i*7
-		var ra: Vector3 = Vector3( fr[i_p+4], fr[i_p+6], -fr[i_p+5] )
-		var rb: Vector3 = Vector3( fr[i_n+4], fr[i_n+6], -fr[i_n+5] )
+		var ra: Vector3 = Vector3( fr[i_p+4], fr[i_p+5], fr[i_p+6] )
+		var rb: Vector3 = Vector3( fr[i_n+4], fr[i_n+5], fr[i_n+6] )
 		#var ra: Vector3 = Vector3( fr[i_p+4], fr[i_p+5], fr[i_p+6] )
 		#var rb: Vector3 = Vector3( fr[i_n+4], fr[i_n+5], fr[i_n+6] )
 		

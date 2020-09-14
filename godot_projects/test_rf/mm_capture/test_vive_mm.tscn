@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://mm_capture/skeleton_visualization_vive.tscn" type="PackedScene" id=1]
 [ext_resource path="res://mm_capture/motion_matching_vive.tscn" type="PackedScene" id=2]
+[ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=3]
 
 [node name="TestViveMM" type="Spatial"]
 
@@ -9,3 +10,8 @@
 
 [node name="SkeletonVis" parent="." instance=ExtResource( 1 )]
 mm_path = NodePath("../MotionMatchingVive")
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.761018, 0.648731, 0, -0.648731, 0.761018, 0, 5, 5 )
+script = ExtResource( 3 )
+max_speed = Vector3( 5, 5, 5 )

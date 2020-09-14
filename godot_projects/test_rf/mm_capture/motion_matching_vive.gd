@@ -5,7 +5,7 @@ signal data_ready
 var _db = null
 var _frame_search = null
 
-var _bone_names = null
+#var _bone_names = null
 
 var _desc_weights: Array
 var _desc_gains: Array
@@ -62,9 +62,6 @@ var _pose_dr: Vector3 = Vector3.ZERO
 # Time passed after last frame.
 var _time_passed: float = 0.0
 
-# Parent index for each bone
-var _parents: Array
-
 
 # user control input for visualization
 var _vis_control_sequence: Array
@@ -99,8 +96,10 @@ func _ready():
 	# 1) generate_descriptors( true, true )
 	# 2) Assign categories.
 	# 3) generate_descriptors( false, true )
+
+	_init_frame_ind_array()
 	
-	generate_descriptors( true, true )
+	#generate_descriptors( true, true )
 	#generate_descriptors( false, true )
 	init()
 
@@ -127,12 +126,10 @@ func _input( event ):
 # This one is called every time it starts.
 # It assumes frames and descriptors present in the database.
 func init():
-	_init_frame_ind_array()
-	
-	_db = $FramesDb
+	_db = _open_frame_database()
 	
 	_desc_weights = _db.get_config( "inv_std" )
-	_desc_lengths = _db.get_config_( "desc_lengths" )
+	_desc_lengths = _db.get_config( "desc_lengths" )
 	var th = _db.get_config( "switch_threshold" )
 	if th == null:
 		_switch_threshold = 0.3
@@ -142,7 +139,7 @@ func init():
 	
 	var dg = _db.get_config( "desc_gains" )
 	if dg == null:
-		dg  = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+		dg  = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 		_db.set_config( "desc_gains", dg )
 	else:
 		_desc_gains = dg
@@ -152,9 +149,6 @@ func init():
 	_init_control_sequence()
 	
 	_f = _frame_in_space( _frame_ind )
-	
-	var ps = _db.get_config_( "parent_inds" )
-	_parents = ps
 	
 	emit_signal( "data_ready" )
 	
@@ -233,7 +227,7 @@ func _init_frame_ind_array():
 
 # Need to do this once
 func generate_descriptors( fill_categories: bool = false, fill_descs: bool = true ):
-	var db = _open_frame_database()
+	_db = _open_frame_database()
 	if fill_categories:
 		_fill_default_cats()
 	if fill_descs:
@@ -243,7 +237,7 @@ func generate_descriptors( fill_categories: bool = false, fill_descs: bool = tru
 	
 	_fill_desc_lengths()
 	
-	db.close_db()
+	_db.close()
 
 
 func _open_frame_database():
@@ -255,9 +249,9 @@ func _open_frame_database():
 		return null
 		
 	# Read bone names.
-	_bone_names = db.get_config( "names" )
-	for i in range(_bone_names.size()):
-		print( "%d: %s" % [i, _bone_names[i]] )
+	#_bone_names = db.get_config( "names" )
+	#for i in range(_bone_names.size()):
+	#	print( "%d: %s" % [i, _bone_names[i]] )
 	
 	return db
 
@@ -266,19 +260,21 @@ func _fill_descs():
 	# Number of frames
 	var frames_qty: int = _db.frames_qty
 	
-	var pose_desc: Array
-	var traj_desc: Array
-	var descs: Array
-	var desc: Array
+	var pose_desc: Array = []
+	var traj_desc: Array = []
+	var desc: Array = []
 	
 	for i in range( frames_qty ):
 		#f = frame_( frame_db, i )
 		pose_desc = _pose_desc( i )
 		traj_desc = _traj_desc( i )
-		descs = pose_desc + traj_desc
 		desc = []
-		for d in descs:
-			desc += d
+		for d in pose_desc:
+			for v in d:
+				desc.push_back( v )
+		for d in traj_desc:
+			for v in d:
+				desc.push_back( v )
 		
 		_db.set_desc( i, desc )
 		
@@ -447,7 +443,7 @@ func _desc( db, index: int ):
 
 func _estimate_scale():
 	print( "Estimating scale..." )
-	var dims: int = _db.get_config_( "desc_length" )
+	var dims: int = _db.get_config( "desc_length" )
 	
 	var frames_qty: int = _db.frames_qty
 
@@ -525,27 +521,27 @@ func _traj_desc( index: int ):
 		var frame_ind: int = index + frame_delta_ind
 		if frame_ind < 0:
 			frame_ind = 0
+		
+		f = _db.get_frame( frame_ind )
+		
+		var ind: int = ROOT_IND * 7
+		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
+		q = _quat_azimuth( root_q )
+		q = az_root_q_inv * q
+		var v_heading: Vector3 = q.xform( V_HEADING_FWD )
+		desc_heading += [ v_heading.x, v_heading.z ]
+		
+		for limb_ind in POSE_LIMB_INDS:
+			ind = limb_ind * 7
+			q = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
+			var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
+			r  -= root_r
+			r  = az_root_q_inv.xform( r )
 			
-			f = _db.get_frame( frame_ind )
-			
-			var ind: int = ROOT_IND * 7
-			var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
-			q = _quat_azimuth( root_q )
-			q = az_root_q_inv * q
-			var v_heading: Vector3 = q.xform( V_HEADING_FWD )
-			desc_heading += [ v_heading.x, v_heading.z ]
-			
-			for limb_ind in POSE_LIMB_INDS:
-				ind = limb_ind * 7
-				q = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
-				var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
-				r  -= root_r
-				r  = az_root_q_inv.xform( r )
-				
-				desc_r += [ r.x, r.z ]
-				desc_z += [ r.y ]
-			
-			desc_c += _db.get_category( index )
+			desc_r += [ r.x, r.z ]
+			desc_z += [ r.y ]
+		
+		desc_c += _db.get_category( index )
 	
 	return [ desc_r, desc_z, desc_heading, desc_c ]
 
@@ -637,14 +633,6 @@ func _input_based_traj_desc( cat: Array = [0] ):
 
 func _init_control_sequence():
 	_control_pos_sequence = []
-	var sz = TRAJ_FRAME_INDS.size()
-	var qty = TRAJ_FRAME_INDS[sz-1]+1
-	var def_pose = [ 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
-	var state = []
-	for ind in POSE_LIMB_INDS:
-		state += def_pose
-	for i in range(qty):
-		_control_pos_sequence.push_back( state )
 
 
 func _frame_azimuth( ind: int ):
@@ -656,31 +644,40 @@ func _frame_azimuth( ind: int ):
 
 
 func _quat_azimuth( q: Quat ):
-	var fwd: Vector3 = V_HEADING_FWD
+	var fwd: Vector3 = Vector3( 1.0, 0.0, 0.0 )
 	var q_norm: Quat = q.normalized()
 	#print( "quat_qzimuth_(", q, ")" )
 	fwd = q_norm.xform( fwd )
-	var ang2: float = 0.5 * atan2( fwd.y, fwd.x )
+	var ang2: float = 0.5 * atan2( -fwd.z, fwd.x )
 	var co2: float = cos( ang2 )
 	var si2: float = sin( ang2 )
-	var res_q: Quat = Quat( 0.0, 0.0, si2, co2 )
+	var res_q: Quat = Quat( 0.0, si2, 0.0, co2 )
 	return res_q
 
 
 func generate_controls( poses: Array ):
-	_control_input = []
-	for pose in poses:
-		_control_input += pose
+	_control_input = poses.duplicate()
 
 
 func _updata_control_sequence( cat: int = 0 ):
 	var ctrl: Array = _control_input.duplicate()
 	
-	_control_pos_sequence.remove( 0 )
-	_control_pos_sequence.push_back( ctrl )
+	var sz = TRAJ_FRAME_INDS.size()
+	var qty = TRAJ_FRAME_INDS[sz-1]
+	if qty < 0:
+		qty = -qty
+	qty += 1
+	
+	sz = _control_pos_sequence.size()
+	if sz > 0:
+		_control_pos_sequence.remove( 0 )
+	while _control_pos_sequence.size() < qty:
+		_control_pos_sequence.push_back( ctrl )
 
 
 func _update_vis_control_sequence():
+	return
+	
 	var qty: int = _control_pos_sequence.size()
 	_vis_control_sequence.resize( qty )
 	
@@ -739,6 +736,9 @@ func process_frame():
 		if ( next_ind >= _db.frames_qty ):
 			next_ind = _db.frames_qty - 1
 	
+	
+	# For debugging
+	time_to_switch = false
 	
 	var jump: bool = false
 	
@@ -824,6 +824,8 @@ func process_frame():
 	#	print( "fn: ", fn )
 	_pose_q = _pose_q * dq
 	_pose_q = _quat_azimuth( _pose_q )
+
+	print( "pose q: ", _pose_q )
 	
 	#print( "frame #%d q:(%f, %f, %f, %f), dq:(%f, %f, %f, %f), pq:(%f, %f, %f, %f)" %[ frame_ind_, qn.w, qn.x, qn.y, qn.z, dq.w, dq.x, dq.y, dq.z, pose_q_.w, pose_q_.x, pose_q_.y, pose_q_.z ] )
 	
@@ -867,8 +869,8 @@ func apply_to_skeleton( s: Skeleton, f: Array ):
 
 
 func _on_tree_exiting():
-	if ( _db ):
-		_db.close_db()
+	if ( is_instance_valid( _db ) ):
+		_db.close()
 		_db = null
 
 

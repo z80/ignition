@@ -34,8 +34,9 @@ func open():
 
 
 func close():
-	_db.close_db()
-	_db = null
+	if _db != null:
+		_db.close_db()
+		_db = null
 
 
 func _open_frame_database( fname: String = "res://mm_data.sqlite3.db" ):
@@ -124,17 +125,17 @@ func set_desc( index: int, data ):
 	return ok
 
 
-func asign_default_category( cat ):
+func assign_default_category( cat ):
 	var stri_d: String = JSON.print( cat )
 	stri_d = stri_d.replace( "\"", "\'" )
-	var cmd = "UPDATA data SET cat=\'%s\';" % stri_d
+	var cmd = "UPDATE data SET cat=\'%s\';" % stri_d
 	var ok: bool = _db.query( cmd )
 	return ok
 
 func assign_category( start_index: int, end_index: int, cat ):
 	var stri_d: String = JSON.print( cat )
 	stri_d = stri_d.replace( "\"", "\'" )
-	var cmd = "UPDATA data SET cat=\'%s\' WHERE id>=%d AND id<=%d;" % [stri_d, start_index, end_index]
+	var cmd = "UPDATE data SET cat=\'%s\' WHERE id>=%d AND id<=%d;" % [stri_d, start_index, end_index]
 	var ok: bool = _db.query( cmd )
 	return ok
 
@@ -164,7 +165,7 @@ func _query_data( index: int, column_name: String ):
 		print( "failed to query data from the db at index ", index )
 		return null
 	var selected_array : Array = _db.query_result
-	var stri = selected_array[0]['data']
+	var stri = selected_array[0][column_name]
 	stri = stri.replace( "'", "\"" )
 	var ret = JSON.parse( stri )
 	ret = ret.result
