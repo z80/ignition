@@ -145,7 +145,12 @@ func _process_dragging():
 	# first as all vectors are in global ref frame
 	self.translation = Vector3( x, y, z )
 	if target != null:
-		target.translation = self.translation
+		var b: Body = target as Body
+		if b != null:
+			b.set_r( self.translation )
+			b.update_physical_state_from_rf()
+		else:
+			b.translation = self.translation
 	
 	if r != _dragging.position:
 		_dragging.position = r

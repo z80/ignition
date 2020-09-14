@@ -37,7 +37,7 @@ __meta__ = {
 }
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer2"]
-margin_right = 278.0
+margin_right = 262.0
 margin_bottom = 586.0
 size_flags_vertical = 3
 theme = ExtResource( 1 )
@@ -151,14 +151,14 @@ description = "Movable parts."
 
 [node name="PanelSplit2" type="Panel" parent="Panel/VBoxContainer2"]
 margin_top = 590.0
-margin_right = 278.0
+margin_right = 262.0
 margin_bottom = 596.0
 rect_min_size = Vector2( 256, 6 )
 custom_styles/panel = SubResource( 1 )
 
 [node name="HBoxControls" type="HBoxContainer" parent="Panel/VBoxContainer2"]
 margin_top = 600.0
-margin_right = 278.0
+margin_right = 262.0
 margin_bottom = 600.0
 alignment = 2
 

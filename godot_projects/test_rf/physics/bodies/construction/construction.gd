@@ -125,6 +125,7 @@ func activate_grab( body ):
 	BodyCreator.root_node.add_child( grab )
 	edited_target  = body
 	editing_widget = grab
+	grab.target = body
 	activated_mode = "construction_editing"
 
 
@@ -136,6 +137,7 @@ func activate_rotate( body ):
 	body.add_child( rotate )
 	edited_target  = body
 	editing_widget = rotate
+	rotate.target = body
 	activated_mode = "construction_editing"
 
 
@@ -159,11 +161,22 @@ func check_if_deactivate():
 
 
 func create_block( block_name ):
-	var block = BodyCreator.create( block_name )
+	var block: Body = BodyCreator.create( block_name )
 	if block == null:
 		return
 	
 	var player = PhysicsManager.player_focus
+	block.change_parent( player )
+	var t: Transform
+	t.origin = Constants.CONSTRUCTION_CREATE_AT
+	block.set_t( t )
+	var p = self.get_parent()
+	block.change_parent( p )
+	# Establish relations.
+	block.super_body = self.super_body
+	super_body.sub_bodies.push_back( block )
 	
+	# Make it selected to be able to move it.
+	PhysicsManager.player_select = block
 
 

@@ -45,6 +45,8 @@ func _add_button( panel, res_icon: String, block_name: String, desc: String ):
 	btn.icon       = icon
 	btn.block_name = block_name
 	btn.description = desc
+	# Connecting signal directly to construction.
+	btn.connect( "create_block", construction, "create_block" )
 
 
 func _create_buttons_frames():
@@ -53,7 +55,9 @@ func _create_buttons_frames():
 		return
 	_cleanup_panel( frames )
 	
-	_add_button( frames, "res://physics/bodies/frames/frame_box/icon.png", "box", "Box description" )
+	_add_button( frames, "res://physics/bodies/frames/frame_box/icon.png", 
+						 "frame_box", 
+						 "Frame box description" )
 
 
 func _create_buttons_parts():
@@ -61,6 +65,9 @@ func _create_buttons_parts():
 	if parts == null:
 		return
 	_cleanup_panel( parts )
+
+
+
 
 
 

@@ -27,3 +27,6 @@ const CONSTRUCTION_ROT_SNAP: float = 5.0 * 3.1415926535 / 180.0
 const CONSTRUCTION_ACTIVATE_DIST: float = 15.0
 # Deactivation distance
 const CONSTRUCTION_DEACTIVATE_DIST: float = 20.0
+
+# Where create new blocks relative to player.
+const CONSTRUCTION_CREATE_AT: Vector3 = Vector3( 0.0, 2.0, -5.0 )

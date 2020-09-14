@@ -20,5 +20,6 @@ margin_left = 463.0
 margin_top = 290.0
 margin_right = 561.0
 margin_bottom = 310.0
-hint_tooltip = "Enter construction mode. In this mode one can build. But parts should not be too far from each other."
+hint_tooltip = "Finish editing a block."
 text = "Finish editing"
+[connection signal="pressed" from="CenterContainer/FinishEditing" to="." method="_on_FinishEditing_pressed"]

@@ -179,12 +179,20 @@ func _process_dragging():
 
 	#print( "rot_axis: ", a, "drag_axis: ", _dragging.drag_axis, ", mouse_at: ", _dragging.mouse_at, ", dr: ", dr, ", dot: ", dx, ", angle: ", angle, ", euler: ", euler )
 	
-	var t: Transform = self.transform
-	t.basis = q
-	self.transform = t
 	
 	if target != null:
-		target.transform = t
+		var body: Body = target as Body
+		if body != null:
+			body.set_q( q )
+			body.update_physical_state_from_rf()
+		else:
+			var tt: Transform = target.transform
+			var st: Transform = self.transform
+			tt.basis = q
+			st.basis = q
+			self.transform   = st
+			target.transform = tt
+
 	
 	if euler != _dragging.euler:
 		_dragging.euler = euler

@@ -138,11 +138,11 @@ func _get_player_ref_frame():
 
 
 func _set_player_select( rf ):
-	player_focus = rf
+	player_select = rf
 
 
 func _get_player_select():
-	return player_focus
+	return player_select
 
 
 func _set_player_focus( rf ):
