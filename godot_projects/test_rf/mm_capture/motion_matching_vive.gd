@@ -107,11 +107,13 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process( delta ):
-	pass
-	
+	# ******************************************************
+	# This is for debugging only.
+	# It is supposed to work with VIVE input instead.
 	var f = _db.get_frame( _dbg_frame_index )
 	_dbg_frame_index += 1
 	generate_controls( f )
+	# ******************************************************
 	
 	_time_passed += delta
 	while ( _time_passed >= DT ):
