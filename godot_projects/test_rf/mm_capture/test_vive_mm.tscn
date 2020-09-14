@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://mm_capture/skeleton_visualization_vive.tscn" type="PackedScene" id=1]
+[ext_resource path="res://mm_capture/motion_matching_vive.tscn" type="PackedScene" id=2]
+
+[node name="TestViveMM" type="Spatial"]
+
+[node name="MotionMatchingVive" parent="." instance=ExtResource( 2 )]
+
+[node name="SkeletonVis" parent="." instance=ExtResource( 1 )]
+mm_path = NodePath("../MotionMatchingVive")
