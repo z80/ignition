@@ -738,7 +738,7 @@ func process_frame():
 	
 	
 	# For debugging
-	time_to_switch = false
+	#time_to_switch = false
 	
 	var jump: bool = false
 	
