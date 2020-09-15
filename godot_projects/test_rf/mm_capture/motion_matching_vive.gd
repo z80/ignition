@@ -76,7 +76,7 @@ var _increment_frame_ind: bool = true
 
 
 # Just after a jump implement smoothing.
-const SMOOTHING_JUMP_FRAMES_QTY: int = -5
+const SMOOTHING_JUMP_FRAMES_QTY: int = 5
 var _frames_after_jump_qty: int      = SMOOTHING_JUMP_FRAMES_QTY
 var _frame_before_jump               = null
 var _d_frame_before_jump             = null
@@ -110,7 +110,8 @@ func _process( delta ):
 	# This is for debugging only.
 	# It is supposed to work with VIVE input instead.
 	var f = _db.get_frame( _dbg_frame_index )
-	_dbg_frame_index += 1
+	if _dbg_frame_index < 128:
+		_dbg_frame_index += 1
 	generate_controls( f )
 	# ******************************************************
 	
@@ -370,27 +371,19 @@ func _frame_in_space( index: int ):
 
 func _frame_in_space_smoothed( index: int ):
 	var f_next = _db.get_frame( index )
-	var sz_next: int = f_next.size()
+	var sz: int = f_next.size()
 	
 	var t: float = float(_frames_after_jump_qty) / float(SMOOTHING_JUMP_FRAMES_QTY)
 
 	var root_ind: int = ROOT_IND*7
 	var q_root_next: Quat = Quat( f_next[root_ind+1], f_next[root_ind+2], f_next[root_ind+3], f_next[root_ind] )
 	var r_root_next: Vector3 = Vector3( f_next[root_ind+4], f_next[root_ind+5], f_next[root_ind+6] )
-	var inv_q_root_next = q_root_next.inverse()
+	var az_inv_q_root_next = _quat_azimuth( q_root_next ).inverse()
 	
 	var f_prev = _frame_before_jump
 	var q_root_prev: Quat = Quat( f_prev[root_ind+1], f_prev[root_ind+2], f_prev[root_ind+3], f_prev[root_ind] )
 	var r_root_prev: Vector3 = Vector3( f_prev[root_ind+4], f_prev[root_ind+5], f_prev[root_ind+6] )
-	var inv_q_root_prev = q_root_prev.inverse()
-	
-	# For some reason some frames are missing one bone (???)
-	var sz_prev: int = f_prev.size()
-	var sz: int
-	if sz_prev <= sz_next:
-		sz = sz_prev
-	else:
-		sz = sz_next
+	var az_inv_q_root_prev = _quat_azimuth( q_root_prev ).inverse()
 	
 	var f_dest: Array = []
 	f_dest.resize( sz )
@@ -400,13 +393,13 @@ func _frame_in_space_smoothed( index: int ):
 		var q1: Quat = Quat( f_next[i+1], f_next[i+2], f_next[i+3], f_next[i] )
 		var r0: Vector3 = Vector3( f_prev[i+4], f_prev[i+5], f_prev[i+6] )
 		var r1: Vector3 = Vector3( f_next[i+4], f_next[i+5], f_next[i+6] )
-		q0 = inv_q_root_prev * q0
+		q0 = az_inv_q_root_prev * q0
 		r0 = r0 - r_root_prev
-		r0 = inv_q_root_prev.xform( r0 )
+		r0 = az_inv_q_root_prev.xform( r0 )
 		
-		q1 = inv_q_root_next * q1
+		q1 = az_inv_q_root_next * q1
 		r1 = r1 - r_root_next
-		r1 = inv_q_root_next.xform( r1 )
+		r1 = az_inv_q_root_next.xform( r1 )
 		
 		var q: Quat    = _slerp_quat( q0, q1, t )
 		var r: Vector3 = _slerp_vector3( r0, r1, t )
@@ -629,7 +622,7 @@ func _input_based_traj_desc( cat: Array = [0] ):
 		if frame_ind < 0:
 			frame_ind = 0
 			
-		f = _db.get_frame( frame_ind )
+		f = _control_pos_sequence[ frame_ind ]
 			
 		var ind: int = ROOT_IND * 7
 		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
@@ -838,7 +831,7 @@ func process_frame():
 	
 	# To make it not go up or down.
 	if jump:
-		_pose_r.z = 0.0
+		_pose_r.y = 0.0
 	#pose_r_.z = rz
 	
 	#if abs(dq.z) > 0.015:
@@ -871,14 +864,6 @@ func _on_tree_exiting():
 		_db = null
 
 
-
-func _copy_array( src: Array ):
-	var qty = src.size()
-	var dest: Array
-	dest.resize( qty )
-	for i in range(qty):
-		dest[i] = src[i]
-	return dest
 
 
 func _slerp_frame( f0: Array, f1: Array, t: float ):
@@ -956,7 +941,7 @@ func _prepare_frame_and_d_frame( ind: int ):
 	var root_ind: int = ROOT_IND*7
 	var q_root: Quat = Quat( f1[root_ind+1], f1[root_ind+2], f1[root_ind+3], f1[root_ind] )
 	var r_root: Vector3 = Vector3( f1[root_ind+4], f1[root_ind+5], f1[root_ind+6] )
-	var inv_q_root = q_root.inverse()
+	var az_inv_q_root = _quat_azimuth( q_root ).inverse()
 	
 	var f_dest: Array = []
 	f_dest.resize( sz )
@@ -968,13 +953,13 @@ func _prepare_frame_and_d_frame( ind: int ):
 		var q1: Quat = Quat( f1[i+1], f1[i+2], f1[i+3], f1[i] )
 		var r0: Vector3 = Vector3( f0[i+4], f0[i+5], f0[i+6] )
 		var r1: Vector3 = Vector3( f1[i+4], f1[i+5], f1[i+6] )
-		q0 = inv_q_root * q0
+		q0 = az_inv_q_root * q0
 		r0 = r0 - r_root
-		r0 = inv_q_root.xform( r0 )
+		r0 = az_inv_q_root.xform( r0 )
 		
-		q1 = inv_q_root * q1
+		q1 = az_inv_q_root * q1
 		r1 = r1 - r_root
-		r1 = inv_q_root.xform( r1 )
+		r1 = az_inv_q_root.xform( r1 )
 		
 		f_dest[i]   = q1.w
 		f_dest[i+1] = q1.x
@@ -985,7 +970,7 @@ func _prepare_frame_and_d_frame( ind: int ):
 		f_dest[i+6] = r1.z
 		
 		r0 = r1 - r0
-		q0 = q1.inverse() * q0
+		q0 = q0.inverse() * q1
 		d_f_dest[i]   = q0.w
 		d_f_dest[i+1] = q0.x
 		d_f_dest[i+2] = q0.y
