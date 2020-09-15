@@ -1,11 +1,11 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://mm_capture/capture_one_gui.gd" type="Script" id=1]
+[ext_resource path="res://mm_capture/capture_all_gui.gd" type="Script" id=1]
 [ext_resource path="res://mm_capture/capture_one_gui.tres" type="Theme" id=2]
 [ext_resource path="res://mm_capture/new_styleboxflat.tres" type="StyleBox" id=3]
 [ext_resource path="res://mm_capture/capture_all_gui.tres" type="Theme" id=4]
 
-[node name="Gui" type="Control"]
+[node name="CaptureAllGui" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_right = 1.0
@@ -19,10 +19,10 @@ __meta__ = {
 [node name="Panel" type="Panel" parent="."]
 anchor_left = 0.999
 anchor_right = 0.999
-margin_left = -260.976
+margin_left = -260.975
 margin_top = 9.0
-margin_right = -10.9761
-margin_bottom = 123.0
+margin_right = -10.975
+margin_bottom = 165.0
 theme = ExtResource( 4 )
 custom_styles/panel = ExtResource( 3 )
 __meta__ = {
@@ -50,5 +50,16 @@ margin_top = 36.0
 margin_right = 213.0
 margin_bottom = 76.0
 color = Color( 0.6, 0.0196078, 0.0196078, 1 )
+
+[node name="PrintPositions" type="Button" parent="Panel"]
+margin_left = 24.0
+margin_top = 108.0
+margin_right = 105.0
+margin_bottom = 147.0
+text = "Print positions"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 [connection signal="pressed" from="Panel/Start" to="." method="_on_Start_pressed"]
 [connection signal="pressed" from="Panel/Stop" to="." method="_on_Stop_pressed"]
+[connection signal="pressed" from="Panel/PrintPositions" to="." method="_on_PrintPositions_pressed"]

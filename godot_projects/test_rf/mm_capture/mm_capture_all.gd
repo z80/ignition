@@ -39,8 +39,8 @@ func _ready():
 	_trackers = enumerate_trackers()
 	init_visuals()
 	
-	$Gui.connect( "start", self, "start_capture" )
-	$Gui.connect( "stop",  self, "stop_capture" )
+	$CaptureAllGui.connect( "start", self, "start_capture" )
+	$CaptureAllGui.connect( "stop",  self, "stop_capture" )
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -55,11 +55,12 @@ func _physics_process(delta):
 	var poses = result[0]
 	var frame = result[1]
 	
-	var trackers = $Trackers
-	for ind in range(TRACKERS_QTY):
-		var t: Transform = poses[ind]
+	for ind in _trackers:
+		var tracker = _trackers[ind]
+		var index = tracker.index
+		var t: Transform = poses[index]
 		t.origin *= POSITION_SCALE
-		var tr = trackers.get_child( ind )
+		var tr = tracker.tracker
 		tr.transform = t
 	
 	if _capture:
@@ -110,6 +111,10 @@ func capture_frame():
 		var tracker = _trackers[ind]
 		var index = tracker.index
 		var t: Transform = c.pose( ind )
+		
+		# Validate serial number.
+		var serial: String = tracker.serial
+		
 		var r: Vector3 = t.origin
 		var q: Quat    = t.basis
 		var i: int = 7*index
@@ -134,7 +139,8 @@ func init_visuals():
 		var serial = tracker.serial
 		var tr = Tr.instance()
 		tr.name = "Tracker_%d" % index
-		tr.text = String( index ) + " (" + serial + ")"
+		tr.text = String( index ) + " (" + serial + "), loc: " + String( ind )
+		tracker.tracker = tr
 		trackers.add_child( tr )
 
 
@@ -148,12 +154,11 @@ func enumerate_trackers():
 			var serial: String = $Capture.serial( i )
 			print( "index: ", i, ", serial: ", serial )
 			var exists: bool = TRACKER_INDS.has( serial )
-			var index: int
-			if exists:
-				 index = TRACKER_INDS[serial]
-			else:
+			if not exists:
 				continue
-			var tracker = { index = index, serial = serial }
+			var index: int = TRACKER_INDS[serial]
+			print( "                    assigned index: ", index )
+			var tracker = { index = index, serial = serial, tracker = null }
 			trackers[i] = tracker
 			qty += 1
 			if qty >= TRACKERS_QTY:
@@ -174,3 +179,20 @@ func debug_print( poses ):
 
 
 
+func debug_print_positions():
+	var c: OpenvrCaptureNode = $Capture
+	
+	for ind in _trackers:
+		var tracker = _trackers[ind]
+		var index = tracker.index
+		var t: Transform = c.pose( ind )
+		
+		# Validate serial number.
+		var serial: String = tracker.serial
+		
+		var r: Vector3 = t.origin
+		var q: Quat    = t.basis
+		
+		print( "global index: ", ind, ", serial: ", serial, ", index: ", index, ", position: ", r )
+	
+	print( "" )

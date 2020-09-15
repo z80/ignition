@@ -22,3 +22,10 @@ func _on_Start_pressed():
 func _on_Stop_pressed():
 	emit_signal( "stop" )
 	$Panel/Rec.visible = false
+
+
+func _on_PrintPositions_pressed():
+	var c = self.get_parent()
+	if c == null:
+		return
+	c.debug_print_positions()
