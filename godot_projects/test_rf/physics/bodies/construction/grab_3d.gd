@@ -28,8 +28,15 @@ func _ready():
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process( delta ):
-	pass
+# If dragging is disabled set its position to be equal to target's position.
+func _process( _delta ):
+	if not _dragging.enabled:
+		if target != null:
+			var at = target.r()
+			self.translation = at
+
+
+
 
 func _set_target_path( t ):
 	target_path = t

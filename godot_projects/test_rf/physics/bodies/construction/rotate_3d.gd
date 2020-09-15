@@ -31,8 +31,15 @@ func _ready():
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process( delta ):
-	pass
+func _process( _delta ):
+	if not _dragging.enabled:
+		if target != null:
+			var t: Transform = target.t()
+			self.transform = t
+			
+
+
+
 
 func _set_target_path( t ):
 	target_path = t
