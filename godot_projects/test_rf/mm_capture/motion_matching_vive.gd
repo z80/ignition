@@ -185,7 +185,7 @@ func _apply_desc_gains():
 
 func set_switch_threshold( th: float ):
 	_switch_threshold = th
-	_db.set_config_( "switch_threshold", _switch_threshold )
+	_db.set_config( "switch_threshold", _switch_threshold )
 
 
 func get_switch_threshold():
@@ -414,6 +414,24 @@ func _frame_in_space_smoothed( index: int ):
 	_mix_with_current_input( f_dest )
 	
 	return f_dest
+
+
+
+# For VIVE tracking want the character be in exact place where 
+# trackers are and not march to infinity.
+func _get_current_pose_from_input():
+	var sz = _control_input.size()
+	if sz == 0:
+		return
+	# On top of matched frame place current input.
+	var f = _control_input
+	var root_ind: int = POSE_LIMB_INDS.find( ROOT_IND )
+	root_ind = POSE_LIMB_INDS[root_ind]
+	var q_root: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
+	var r_root: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
+	_pose_r = r_root
+	_pose_q = _quat_azimuth( q_root )
+
 
 
 
@@ -847,6 +865,9 @@ func process_frame():
 	#print( "pose q: ", _pose_q )
 	
 	#print( "frame #%d q:(%f, %f, %f, %f), dq:(%f, %f, %f, %f), pq:(%f, %f, %f, %f)" %[ frame_ind_, qn.w, qn.x, qn.y, qn.z, dq.w, dq.x, dq.y, dq.z, pose_q_.w, pose_q_.x, pose_q_.y, pose_q_.z ] )
+	
+	# This one overrides current pose using trackers.
+	_get_current_pose_from_input()
 	
 	_frame_ind = next_ind
 	if (_frame_before_jump == null) or (_frames_after_jump_qty >= SMOOTHING_JUMP_FRAMES_QTY):
