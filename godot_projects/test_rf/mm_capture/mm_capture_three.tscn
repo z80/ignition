@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://mm_capture/mm_capture_three.gd" type="Script" id=1]
+
+[node name="MmCaptureThree" type="Spatial"]
+script = ExtResource( 1 )
+
+[node name="Capture" type="OpenvrCaptureNode" parent="."]
+
+[node name="Trackers" type="Node" parent="."]

@@ -109,16 +109,13 @@ func _process( delta ):
 	# ******************************************************
 	# This is for debugging only.
 	# It is supposed to work with VIVE input instead.
-	var f = _db.get_frame( _dbg_frame_index )
-	if _dbg_frame_index < 128:
-		_dbg_frame_index += 1
-	generate_controls( f )
+	#var f = _db.get_frame( _dbg_frame_index )
+	#if _dbg_frame_index < 128:
+	#	_dbg_frame_index += 1
+	#generate_controls( f )
 	# ******************************************************
 	
-	_time_passed += delta
-	while ( _time_passed >= DT ):
-		process_frame()
-		_time_passed -= DT
+	process( delta )
 
 
 func _input( event ):
@@ -725,7 +722,13 @@ func _update_vis_control_sequence():
 		ind += 1
 
 
-
+# This one goes into _process( delta ).
+# It calls process_frame() when needed.
+func process( delta ):
+	_time_passed += delta
+	while ( _time_passed >= DT ):
+		process_frame()
+		_time_passed -= DT
 
 
 # Assuming time passed is exactly one frame.
