@@ -34,13 +34,14 @@ func apply_mm():
 	var parents: Array = _mm.PARENTS
 	var fr = _mm._f
 	
-	# Drawing wireframe skeleton.
-	print( "" )
 	var qty: int = parents.size()
-	for i in range( qty ):
-		var i_n: int = i*7
-		var rb: Vector3 = Vector3( fr[i_n+4], fr[i_n+5], fr[i_n+6] )
-		print( " at[", i, "]: ", rb )
+	
+	# Drawing wireframe skeleton.
+	#print( "" )
+	#for i in range( qty ):
+	#	var i_n: int = i*7
+	#	var rb: Vector3 = Vector3( fr[i_n+4], fr[i_n+5], fr[i_n+6] )
+	#	print( " at[", i, "]: ", rb )
 	
 	for i in range( qty ):
 		var i_p: int = parents[i]*7

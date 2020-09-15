@@ -76,7 +76,7 @@ var _increment_frame_ind: bool = true
 
 
 # Just after a jump implement smoothing.
-const SMOOTHING_JUMP_FRAMES_QTY: int = 5
+const SMOOTHING_JUMP_FRAMES_QTY: int = -5
 var _frames_after_jump_qty: int      = SMOOTHING_JUMP_FRAMES_QTY
 var _frame_before_jump               = null
 var _d_frame_before_jump             = null
@@ -235,8 +235,6 @@ func generate_descriptors( fill_categories: bool = false, fill_descs: bool = tru
 		_fill_desc_lengths()
 		_estimate_scale()
 	
-	_fill_desc_lengths()
-	
 	_db.close()
 
 
@@ -365,6 +363,8 @@ func _frame_in_space( index: int ):
 		
 		ind += 1
 	
+	_mix_with_current_input( f_dest )
+	
 	return f_dest
 
 
@@ -420,25 +420,47 @@ func _frame_in_space_smoothed( index: int ):
 		f_dest[i+4] = r.x
 		f_dest[i+5] = r.y
 		f_dest[i+6] = r.z
-		
+	
+	_mix_with_current_input( f_dest )
+	
 	return f_dest
 
 
 
-func _desc( db, index: int ):
-	var cmd: String = "SELECT desc FROM data WHERE id = %d LIMIT 1;" % index
-	var res: bool = db.query( cmd )
-	if not res:
-		print( "failed to query frame from the db" )
-		return null
-	var selected_array : Array = db.query_result
-	var stri = selected_array[0]['desc']
-	stri = stri.replace( "'", "\"" )
-	var json_desc = JSON.parse( stri )
-	
-	var d = json_desc.result
-	
-	return d
+func _mix_with_current_input( f_dest: Array ):
+	var sz = _control_input.size()
+	if sz == 0:
+		return
+	# On top of matched frame place current input.
+	var f = _control_input
+	var root_ind: int = POSE_LIMB_INDS.find( ROOT_IND )
+	root_ind = POSE_LIMB_INDS[root_ind]
+	var q_root: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
+	var r_root: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
+	var base_q_root = _quat_azimuth( q_root )
+	var inv_base_q_root = base_q_root.inverse()
+	var q_adj = _pose_q * inv_base_q_root
+
+	var qty = POSE_LIMB_INDS.size()
+	for i in range( qty ):
+		var ind = i*7
+		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind] )
+		var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
+		q = q_adj * q
+		r = r - r_root
+		r = q_adj.xform( r )
+		r += _pose_r
+		
+		var dest_ind = POSE_LIMB_INDS[i] * 7
+		f_dest[dest_ind]   = q.w
+		f_dest[dest_ind+1] = q.x
+		f_dest[dest_ind+2] = q.y
+		f_dest[dest_ind+3] = q.z
+		f_dest[dest_ind+4] = r.x
+		f_dest[dest_ind+5] = r.y
+		f_dest[dest_ind+6] = r.z
+
+
 
 
 func _estimate_scale():
@@ -607,26 +629,26 @@ func _input_based_traj_desc( cat: Array = [0] ):
 		if frame_ind < 0:
 			frame_ind = 0
 			
-			f = _db.get_frame( frame_ind )
+		f = _db.get_frame( frame_ind )
 			
-			var ind: int = ROOT_IND * 7
-			var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
-			q = _quat_azimuth( root_q )
-			q = az_root_q_inv * q
-			var v_heading: Vector3 = q.xform( V_HEADING_FWD )
-			desc_heading += [ v_heading.x, v_heading.z ]
+		var ind: int = ROOT_IND * 7
+		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
+		q = _quat_azimuth( root_q )
+		q = az_root_q_inv * q
+		var v_heading: Vector3 = q.xform( V_HEADING_FWD )
+		desc_heading += [ v_heading.x, v_heading.z ]
 			
-			for limb_ind in POSE_LIMB_INDS:
-				ind = limb_ind * 7
-				q = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
-				var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
-				r  -= root_r
-				r  = az_root_q_inv.xform( r )
+		for limb_ind in POSE_LIMB_INDS:
+			ind = limb_ind * 7
+			q = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
+			var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
+			r  -= root_r
+			r  = az_root_q_inv.xform( r )
 				
-				desc_r += [ r.x, r.z ]
-				desc_z += [ r.y ]
+			desc_r += [ r.x, r.z ]
+			desc_z += [ r.y ]
 			
-			desc_c += cat
+		desc_c += cat
 	
 	return [ desc_r, desc_z, desc_heading, desc_c ]
 
@@ -766,6 +788,7 @@ func process_frame():
 			if improvement >= _switch_threshold:
 				next_ind = closest_ind
 				jump = true
+				print( "jump from ", _frame_ind, " to ", next_ind )
 			
 	var fp = _db.get_frame( _frame_ind )
 	var fn = _db.get_frame( next_ind )
@@ -824,8 +847,8 @@ func process_frame():
 	#	print( "fn: ", fn )
 	_pose_q = _pose_q * dq
 	_pose_q = _quat_azimuth( _pose_q )
-
-	print( "pose q: ", _pose_q )
+	
+	#print( "pose q: ", _pose_q )
 	
 	#print( "frame #%d q:(%f, %f, %f, %f), dq:(%f, %f, %f, %f), pq:(%f, %f, %f, %f)" %[ frame_ind_, qn.w, qn.x, qn.y, qn.z, dq.w, dq.x, dq.y, dq.z, pose_q_.w, pose_q_.x, pose_q_.y, pose_q_.z ] )
 	
@@ -839,32 +862,6 @@ func process_frame():
 
 
 
-func apply_to_skeleton( s: Skeleton, f: Array ):
-	if s == null:
-		return
-		
-	var sz = f.size()
-	var bone_ind: int = 0
-	var t: Transform
-	
-	for i in range( 0, sz, 7 ):
-		var q: Quat    = Quat( f[i+1], f[i+3], -f[i+2], f[i] )
-		var r: Vector3 = Vector3( f[i+4], f[i+6], -f[i+5] )
-		
-		var ip: int = s.get_bone_parent( bone_ind )
-		if ip >= 0:
-			var qp: Quat    = Quat( f[ip+1], f[ip+3], -f[ip+2], f[ip] )
-			var rp: Vector3 = Vector3( f[ip+4], f[ip+6], -f[ip+5] )
-			var inv_qp = qp.inverse()
-			q = inv_qp * q
-			r = r - rp
-			q = Quat.IDENTITY
-			r = Vector3.ZERO #inv_qp.xform( r )
-		
-		t.origin = r
-		t.basis  = Basis( q )
-		s.set_bone_pose( bone_ind, t )
-		bone_ind += 1
 
 
 
