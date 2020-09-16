@@ -112,10 +112,10 @@ func activate():
 
 
 func deactivate():
-	finish_editing()
-	$PanelParts.visible = true
-	
-	activated_mode = null
+	if activated_mode != null:
+		finish_editing()
+		$PanelParts.visible = false
+		activated_mode = null
 
 
 func activate_grab( body ):

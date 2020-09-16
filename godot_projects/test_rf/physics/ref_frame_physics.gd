@@ -8,7 +8,7 @@ var _contact_layer: int = -1
 
 
 # For debugging jump only this number of times.
-var _jumps_left: int = 50
+#var _jumps_left: int = 50
 
 
 func process_children():
@@ -117,8 +117,8 @@ func jump( t: Transform ):
 
 func jump_if_needed():
 	# This is for debugging. Jump only this amount of times.
-	if _jumps_left <= 0:
-		return
+	#if _jumps_left <= 0:
+	#	return
 	
 	var player_focus = PhysicsManager.player_focus
 	var bodies = child_bodies()
@@ -133,7 +133,7 @@ func jump_if_needed():
 	var t: Transform = player_focus.t()
 	jump( t )
 	
-	_jumps_left -= 1
+	#_jumps_left -= 1
 
 
 
