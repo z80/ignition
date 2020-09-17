@@ -47,7 +47,10 @@ func change_parent_recursive( new_parent: Node = null ):
 	else:
 		var is_ref_frame_physics = new_parent.get_class() == "RefFramePhysics"
 		if is_ref_frame_physics:
-			update_physical_state_from_rf()
+			if new_parent.is_active():
+				update_physical_state_from_rf()
+				_physical.set_collision_layer( new_parent._contact_layer )
+
 		elif _physical != null:
 			_physical.queue_free()
 			_physical = null
@@ -182,7 +185,12 @@ func remove_physical():
 
 # After parent teleports need to update physical state to physical object.
 func update_physical_state_from_rf():
-	if _physical:
+	if _physical == null:
+		create_physical()
+	
+	# There might be a body without physical, right?
+	# So need to check if it exists even after create_physical() call.
+	if _physical != null:
 		var t: Transform = self.t()
 		_physical.transform = t
 		var v: Vector3 = self.v()

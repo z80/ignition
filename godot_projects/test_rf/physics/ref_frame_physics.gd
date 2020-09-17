@@ -59,11 +59,7 @@ func add_body( body: Body ):
 	
 	# Make it parented.
 	body.change_parent( self )
-	
-	if ( _contact_layer >= 0 ):
-		var ph = body.create_physical()
-		if ph != null:
-			ph.set_collision_layer( _contact_layer )
+
 
 
 func remove_body( body: Body ):
