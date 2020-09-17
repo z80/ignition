@@ -10,6 +10,10 @@ var _contact_layer: int = -1
 # For debugging jump only this number of times.
 #var _jumps_left: int = 50
 
+# To be able to identify objects of this class.
+func get_class():
+	return "RefFramePhysics"
+
 
 func process_children():
 	.process_children()

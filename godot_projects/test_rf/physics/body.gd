@@ -36,12 +36,22 @@ func change_parent( new_parent: Node = null ):
 	else:
 		change_parent_recursive( new_parent )
 	#var p_after = self.get_parent()
-	
-	update_physical_state_from_rf()
 
 
 func change_parent_recursive( new_parent: Node = null ):
 	.change_parent( new_parent )
+	if new_parent == null:
+		if _physical != null:
+			_physical.queue_free()
+			_physical = null
+	else:
+		var is_ref_frame_physics = new_parent.get_class() == "RefFramePhysics"
+		if is_ref_frame_physics:
+			update_physical_state_from_rf()
+		elif _physical != null:
+			_physical.queue_free()
+			_physical = null
+	
 	for body in sub_bodies:
 		body.change_parent_recursive( new_parent )
 
