@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://mm_capture/skeleton_visualization_vive.tscn" type="PackedScene" id=1]
 [ext_resource path="res://mm_capture/motion_matching_vive.tscn" type="PackedScene" id=2]
@@ -7,6 +7,7 @@
 [ext_resource path="res://mm_capture/test_vive_mm.gd" type="Script" id=5]
 [ext_resource path="res://mm_capture/mm_panel_vive.tscn" type="PackedScene" id=6]
 [ext_resource path="res://mm_capture/dn.tscn" type="PackedScene" id=7]
+[ext_resource path="res://mm_capture/background.tscn" type="PackedScene" id=8]
 
 [node name="TestViveMM" type="Spatial"]
 script = ExtResource( 5 )
@@ -28,3 +29,8 @@ enabled = true
 mm_path = NodePath("../MotionMatchingVive")
 
 [node name="Dn" parent="." instance=ExtResource( 7 )]
+
+[node name="Background" parent="." instance=ExtResource( 8 )]
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 0.760179, 2.98023e-08, 0.649713, -0.369925, 0.822084, 0.43282, -0.534119, -0.569366, 0.624932, 0, 6.05436, 1.37228 )

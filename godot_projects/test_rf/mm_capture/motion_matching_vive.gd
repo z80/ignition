@@ -12,7 +12,7 @@ var _desc_gains: Array
 var _desc_lengths: Array
 
 var _switch_threshold: float = 0.3
-var _switch_period: int = 30
+var _switch_period: int = 15
 
 const HEAD_IND: int       = 0
 const ROOT_IND: int       = HEAD_IND
@@ -27,7 +27,7 @@ const PARENTS: Array = [ 3, 3, 3, -1, 3, 3 ]
 const FPS: float = 24.0
 const DT: float  = 1.0/FPS
 const POSE_LIMB_INDS: Array = [HEAD_IND, LEFT_HAND_IND, RIGHT_HAND_IND]
-const TRAJ_TIME_MOMENTS: Array = [ -0.3, -0.6, -0.9, -1.2 ]
+const TRAJ_TIME_MOMENTS: Array = [ -0.3, -0.6, -0.9, -1.2, -1.5, -1.8, -2.1 ]
 var TRAJ_FRAME_INDS: Array = []
 
 
