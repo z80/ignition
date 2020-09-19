@@ -17,3 +17,8 @@ func _process(delta):
 	if frame.size() > 0:
 		var mmv = $MotionMatchingVive
 		mmv.generate_controls( frame )
+		
+		var f = mmv._f
+		$Dn.set_frame( f )
+
+

@@ -524,8 +524,8 @@ func _pose_desc( index: int ):
 		if ( limb_ind != ROOT_IND ):
 			desc_r += [ r.x, r.y, r.z ]
 		else:
-			desc_r.push_back( root_r.z )
-		desc_v += [ v.x, v.y ]
+			desc_r.push_back( root_r.y )
+		desc_v += [ v.x, v.z ]
 	
 	desc_c = _db.get_category( index )
 	
@@ -607,8 +607,8 @@ func _input_based_pose_desc( cat: Array = [0] ):
 		if ( limb_ind != ROOT_IND ):
 			desc_r += [ r.x, r.y, r.z ]
 		else:
-			desc_r.push_back( root_r.z )
-		desc_v += [ v.x, v.y ]
+			desc_r.push_back( root_r.y )
+		desc_v += [ v.x, v.z ]
 	
 	desc_c = cat
 	

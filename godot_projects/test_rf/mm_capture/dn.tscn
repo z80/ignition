@@ -1,8 +1,12 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://mm_capture/assets/mat_1-duke_hand_d_jpg.material" type="Material" id=1]
 [ext_resource path="res://mm_capture/assets/mat_2-duke_head_d_jpg.material" type="Material" id=2]
 [ext_resource path="res://mm_capture/assets/mat_0-duke_body_d_jpg.material" type="Material" id=3]
+[ext_resource path="res://mm_capture/dn.gd" type="Script" id=4]
+[ext_resource path="res://mm_capture/red.tres" type="Material" id=5]
+[ext_resource path="res://mm_capture/green.tres" type="Material" id=6]
+[ext_resource path="res://mm/axes_visualization.tscn" type="PackedScene" id=7]
 
 [sub_resource type="ArrayMesh" id=1]
 resource_name = "Object_duke_hand_d.jpg"
@@ -46,14 +50,18 @@ surfaces/2 = {
 "vertex_count": 1403
 }
 
-[sub_resource type="CubeMesh" id=2]
+[sub_resource type="CapsuleMesh" id=2]
+
+[sub_resource type="CubeMesh" id=3]
+material = ExtResource( 5 )
 size = Vector3( 0.1, 0.1, 0.1 )
 
-[sub_resource type="CapsuleMesh" id=3]
-
-[node name="Node" type="Node"]
+[node name="Dn" type="Node"]
+script = ExtResource( 4 )
+scale = 0.9
 
 [node name="Dn" type="Skeleton" parent="."]
+transform = Transform( 0.999011, -0.00760771, -0.0438931, 0.00612502, 0.999412, -0.0338151, 0.0441244, 0.0335124, 0.998466, 0.00867309, 0.0200955, -0.0805422 )
 bones/0/name = "spine"
 bones/0/parent = -1
 bones/0/rest = Transform( 1, 0, 0, 0, -0.249639, -0.968339, 0, 0.968339, -0.24964, 0, 1.0099, -0.0552 )
@@ -213,146 +221,224 @@ process_priority = 1
 root_bone = "thigh.L"
 tip_bone = "foot.L"
 use_magnet = true
-magnet = Vector3( 0, 0, 10 )
-target_node = NodePath("../Targets/TargetLeftLeg")
+magnet = Vector3( 0.3926, 0.579065, 0.792092 )
+target_node = NodePath("../../Targets/LeftLeg")
 
 [node name="RightLeg" type="SkeletonIK" parent="Dn"]
 process_priority = 1
 root_bone = "thigh.R"
 tip_bone = "foot.R"
 use_magnet = true
-magnet = Vector3( 0, 0, 10 )
-target_node = NodePath("../Targets/TargetRightLeg")
+magnet = Vector3( -0.262112, 0.535218, 0.813251 )
+target_node = NodePath("../../Targets/RightLeg")
 
 [node name="LeftArm" type="SkeletonIK" parent="Dn"]
 process_priority = 1
 root_bone = "upper_arm.L"
 tip_bone = "hand.L"
 use_magnet = true
-magnet = Vector3( 0, 0, -10 )
-target_node = NodePath("../Targets/TargetLeftArm")
+magnet = Vector3( 0.54251, 1.2129, -0.674801 )
+target_node = NodePath("../../Targets/LeftArm")
 
 [node name="RightArm" type="SkeletonIK" parent="Dn"]
 process_priority = 1
 root_bone = "upper_arm.R"
 tip_bone = "hand.R"
 use_magnet = true
-magnet = Vector3( 0, 0, -10 )
-target_node = NodePath("../Targets/TargetRightArm")
+magnet = Vector3( -0.559458, 1.26011, -0.742798 )
+target_node = NodePath("../../Targets/RightArm")
 
 [node name="Head" type="SkeletonIK" parent="Dn"]
 process_priority = 1
 root_bone = "spine.004"
 tip_bone = "spine.006"
-override_tip_basis = false
 use_magnet = true
-magnet = Vector3( 0, 0, 10 )
-target_node = NodePath("../Targets/TargetHead")
+magnet = Vector3( -0.0576616, 1.69062, 0.551677 )
+target_node = NodePath("../../Targets/Head")
+
+[node name="Trackers" type="Node" parent="."]
+
+[node name="LeftLeg" type="Spatial" parent="Trackers"]
+transform = Transform( 0.964704, 0.157629, -0.21095, -0.157271, -0.297644, -0.941634, -0.211217, 0.941574, -0.262348, 0.201026, 0.164261, 0.160424 )
+
+[node name="Axes" parent="Trackers/LeftLeg" instance=ExtResource( 7 )]
+transform = Transform( 0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0 )
+
+[node name="Target" type="Spatial" parent="Trackers/LeftLeg"]
+transform = Transform( 0.955449, 0.243485, 0.166836, 0.214467, -0.184355, -0.959177, -0.202788, 0.952224, -0.228361, 0.0568241, -0.114824, 0.144547 )
+
+[node name="RightLeg" type="Spatial" parent="Trackers"]
+transform = Transform( 0.977664, -0.200518, -0.0629611, -0.113545, -0.251836, -0.961086, 0.176859, 0.946768, -0.268979, -0.21111, 0.152704, 0.124564 )
+
+[node name="Axes" parent="Trackers/RightLeg" instance=ExtResource( 7 )]
+transform = Transform( 0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0 )
+
+[node name="Target" type="Spatial" parent="Trackers/RightLeg"]
+transform = Transform( 0.925506, -0.13368, -0.354355, -0.37868, -0.311107, -0.871673, 0.00628315, 0.940927, -0.338553, -0.0614439, -0.114843, 0.142145 )
+
+[node name="LeftArm" type="Spatial" parent="Trackers"]
+transform = Transform( -0.154053, 0.363695, 0.918691, 0.105739, -0.918382, 0.381304, 0.982389, 0.155882, 0.103022, 0.57875, 1.12935, 0.0758424 )
+
+[node name="Axes" parent="Trackers/LeftArm" instance=ExtResource( 7 )]
+transform = Transform( 0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0 )
+
+[node name="Target" type="Spatial" parent="Trackers/LeftArm"]
+transform = Transform( 0.237186, 0.966797, 0.0951172, 0.152432, 0.0596604, -0.986512, -0.959433, 0.248485, -0.13322, -0.00339586, -0.0742627, 0.0226402 )
+
+[node name="RightArm" type="Spatial" parent="Trackers"]
+transform = Transform( -0.400127, -0.259206, -0.879039, -0.107234, -0.939338, 0.325798, -0.910165, 0.224623, 0.348059, -0.546999, 1.12935, 0.0758424 )
+
+[node name="Axes" parent="Trackers/RightArm" instance=ExtResource( 7 )]
+transform = Transform( 0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0 )
+
+[node name="Target" type="Spatial" parent="Trackers/RightArm"]
+transform = Transform( 0.190997, -0.98159, 1.49012e-08, -0.0500714, -0.00974302, -0.998699, 0.980312, 0.190749, -0.0510106, 0.00640476, -0.0897692, 0.028374 )
+
+[node name="Head" type="Spatial" parent="Trackers"]
+transform = Transform( 0.99786, 0.040708, -0.0511666, -0.0128775, -0.644862, -0.76419, -0.0641041, 0.763214, -0.642958, 0.0352514, 1.86663, 0.15216 )
+
+[node name="Axes" parent="Trackers/Head" instance=ExtResource( 7 )]
+transform = Transform( 0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0 )
+
+[node name="Target" type="Spatial" parent="Trackers/Head"]
+transform = Transform( 0.997998, -0.0620634, 0.0125156, 0.0408499, 0.782236, 0.621645, -0.0483715, -0.619887, 0.783202, -0.0277711, -0.226887, -0.0431435 )
+
+[node name="Torso" type="Spatial" parent="Trackers"]
+transform = Transform( -0.998802, -0.0278764, 0.0402378, -0.00597391, 0.885277, 0.465025, -0.0485848, 0.464227, -0.884382, 0.00986189, 1.16414, 0.154956 )
+
+[node name="Axes" parent="Trackers/Torso" instance=ExtResource( 7 )]
+transform = Transform( 0.02, -1.27055e-19, 4.36557e-11, 0, 0.02, 5.82077e-11, -4.36557e-11, -5.82077e-11, 0.02, 0, 0, 0 )
+
+[node name="Target" type="Spatial" parent="Trackers/Torso"]
+transform = Transform( -0.999993, -1.30385e-08, -0.00446787, -0.00194267, 0.900527, 0.434803, 0.00402335, 0.434808, -0.900517, 0.0194635, -1.12209, -0.323788 )
+
+[node name="MagnetHead" type="Spatial" parent="Trackers/Torso/Target"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0576611, 1.69061, 0.551676 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Trackers/Torso/Target/MagnetHead"]
+transform = Transform( 0.1, -8.54925e-11, 4.97635e-20, 8.54925e-11, 0.1, -1.16416e-10, 9.95261e-20, 2.32831e-10, 0.05, 0, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 5 )
+
+[node name="MagnetLeftLeg" type="Spatial" parent="Trackers/Torso/Target"]
+transform = Transform( 0.999998, 3.37604e-09, 3.72529e-08, -3.49246e-10, 0.999999, 0, 0, -3.72529e-09, 0.999999, 0.392597, 0.579062, 0.792089 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Trackers/Torso/Target/MagnetLeftLeg"]
+transform = Transform( 0.1, -8.54925e-11, 4.97635e-20, 8.54925e-11, 0.1, -1.16416e-10, 9.95261e-20, 2.32831e-10, 0.05, 0, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 5 )
+
+[node name="MagnetRightLeg" type="Spatial" parent="Trackers/Torso/Target"]
+transform = Transform( 0.999998, 3.84171e-09, 6.70552e-08, -3.49246e-10, 0.999999, -7.45058e-09, 0, -3.72529e-09, 0.999999, -0.26211, 0.535215, 0.813248 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Trackers/Torso/Target/MagnetRightLeg"]
+transform = Transform( 0.1, -8.54925e-11, 4.97635e-20, 8.54925e-11, 0.1, -1.16416e-10, 9.95261e-20, 2.32831e-10, 0.05, 0, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 5 )
+
+[node name="MagnetLeftArm" type="Spatial" parent="Trackers/Torso/Target"]
+transform = Transform( 0.999998, 2.53203e-09, 2.98023e-08, -6.69388e-10, 0.999999, 0, 0, -1.86265e-09, 0.999999, 0.542506, 1.21289, -0.674798 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Trackers/Torso/Target/MagnetLeftArm"]
+transform = Transform( 0.1, -8.54925e-11, 4.97635e-20, 8.54925e-11, 0.1, -1.16416e-10, 9.95261e-20, 2.32831e-10, 0.05, 0, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 5 )
+
+[node name="MagnetRightArm" type="Spatial" parent="Trackers/Torso/Target"]
+transform = Transform( 1.00001, 2.53203e-09, 2.98023e-08, -1.45519e-10, 0.999999, 0, 0, -1.86265e-09, 0.999999, -0.559454, 1.2601, -0.742795 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Trackers/Torso/Target/MagnetRightArm"]
+transform = Transform( 0.1, -8.54925e-11, 4.97635e-20, 8.54925e-11, 0.1, -1.16416e-10, 9.95261e-20, 2.32831e-10, 0.05, 0, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 5 )
 
 [node name="Targets" type="Node" parent="."]
 
-[node name="TrackerLeftLeg" type="Spatial" parent="Targets"]
-transform = Transform( -0.157727, 1.86265e-08, 0.987483, 0.331042, 0.942134, 0.0528761, -0.930341, 0.335238, -0.1486, 0.201026, 0.124758, 0.0994049 )
+[node name="LeftLeg" type="Spatial" parent="Targets"]
+transform = Transform( 0.99831, 0.00495958, 0.057926, -0.0231471, -0.880067, 0.474287, 0.0533305, -0.474826, -0.878465, 0.207253, 0.0533906, 0.00238459 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Targets/TrackerLeftLeg"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
-mesh = SubResource( 2 )
-material/0 = null
+[node name="MeshInstance" type="MeshInstance" parent="Targets/LeftLeg"]
+transform = Transform( 1, 0, 1.49012e-08, -2.98023e-08, 1, -7.45058e-09, 1.49012e-08, -3.72529e-09, 1, 0, 0, 0 )
+mesh = SubResource( 3 )
+material/0 = ExtResource( 6 )
 
-[node name="TargetLeftLeg" type="Spatial" parent="Targets/TrackerLeftLeg"]
-transform = Transform( -0.176328, 0.184047, 0.966972, -0.0165727, -0.98278, 0.184034, 0.984191, 0.0164252, 0.176342, 0.118909, -0.172707, 0.018993 )
+[node name="RightLeg" type="Spatial" parent="Targets"]
+transform = Transform( 0.98037, -0.127553, -0.150338, -0.01576, -0.810785, 0.585132, -0.196528, -0.571278, -0.796879, -0.257103, 0.0519889, -0.0332662 )
 
-[node name="TrackerRightLeg" type="Spatial" parent="Targets"]
-transform = Transform( 0.0791628, -0.0284286, 0.996456, 0.337982, 0.941152, 0, -0.937817, 0.336785, 0.0841126, -0.21111, 0.152704, 0.124564 )
+[node name="MeshInstance" type="MeshInstance" parent="Targets/RightLeg"]
+mesh = SubResource( 3 )
+material/0 = ExtResource( 6 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Targets/TrackerRightLeg"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
-mesh = SubResource( 2 )
-material/0 = null
+[node name="LeftArm" type="Spatial" parent="Targets"]
+transform = Transform( -0.862523, 0.101041, -0.495831, -0.480747, 0.142185, 0.865255, 0.157928, 0.98467, -0.074062, 0.573064, 1.20583, 0.0632626 )
 
-[node name="TargetRightLeg" type="Spatial" parent="Targets/TrackerRightLeg"]
-transform = Transform( 0.279695, 0.179047, 0.943246, -0.0700976, -0.976027, 0.206055, 0.957526, -0.123752, -0.260439, 0.163862, -0.153971, -0.0402071 )
+[node name="MeshInstance" type="MeshInstance" parent="Targets/LeftArm"]
+mesh = SubResource( 3 )
+material/0 = ExtResource( 6 )
 
-[node name="TrackerLeftArm" type="Spatial" parent="Targets"]
-transform = Transform( -0.524877, -0.822635, -0.218578, 0.794163, -0.5657, 0.22201, -0.306283, -0.057059, 0.950229, 0.541126, 1.01104, 0.066741 )
+[node name="RightArm" type="Spatial" parent="Targets"]
+transform = Transform( -0.925177, 0.22761, 0.303709, 0.345936, 0.176557, 0.921497, 0.15612, 0.957612, -0.242085, -0.551235, 1.22223, 0.0597246 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Targets/TrackerLeftArm"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
-mesh = SubResource( 2 )
-material/0 = null
-
-[node name="TargetLeftArm" type="Spatial" parent="Targets/TrackerLeftArm"]
-transform = Transform( 0.0158996, -0.0849998, 0.996255, 0.985296, -0.168187, -0.0300742, 0.170113, 0.982084, 0.0810759, -0.0013133, -0.0688835, -0.00941455 )
-
-[node name="TrackerRightArm" type="Spatial" parent="Targets"]
-transform = Transform( 0.418645, 0.823785, -0.38225, 0.86337, -0.49157, -0.113807, -0.281655, -0.282378, -0.917024, -0.546999, 0.998734, 0.0758424 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Targets/TrackerRightArm"]
+[node name="MeshInstance" type="MeshInstance" parent="Targets/RightArm"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 2.98023e-08, 0, 1, 0, 0, 0 )
-mesh = SubResource( 2 )
-material/0 = null
+mesh = SubResource( 3 )
+material/0 = ExtResource( 6 )
 
-[node name="TargetRightArm" type="Spatial" parent="Targets/TrackerRightArm"]
-transform = Transform( 0.0290099, -0.233004, 0.972043, -0.992338, -0.12355, 3.35276e-08, 0.120096, -0.964595, -0.234803, 2.98023e-07, -0.0886512, 0 )
+[node name="Head" type="Spatial" parent="Targets"]
+transform = Transform( 1, 0.00163019, -0.00227904, -0.00222925, -0.0299234, -0.999552, -0.00169772, 0.999553, -0.0299201, 0.000511076, 2.04627, 0.00851621 )
 
-[node name="TrackerHead" type="Spatial" parent="Targets"]
-transform = Transform( -1.62921e-07, 1, -1.62921e-07, 0.644991, -1.942e-08, -0.76419, -0.76419, -2.29585e-07, -0.644991, 0, 1.88053, 0.225344 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Targets/TrackerHead"]
+[node name="MeshInstance" type="MeshInstance" parent="Targets/Head"]
 transform = Transform( 1, 0, -1.69407e-21, 0, 1, -4.32443e-21, -1.69407e-21, -4.32443e-21, 1, 0, 0, 0 )
-mesh = SubResource( 2 )
-material/0 = null
+mesh = SubResource( 3 )
+material/0 = ExtResource( 6 )
 
-[node name="TargetHead" type="Spatial" parent="Targets/TrackerHead"]
-transform = Transform( -2.89729e-07, 0.690655, -0.723184, 1, 1.94707e-07, -2.1468e-07, -7.46096e-09, -0.723184, -0.690656, 0.156119, -4.02274e-09, 0.103082 )
+[node name="Torso" type="Spatial" parent="Targets"]
+transform = Transform( 0.999011, -0.00760771, -0.0438931, 0.00612502, 0.999412, -0.0338151, 0.0441244, 0.0335124, 0.998466, 0.00867309, 0.0200955, -0.0805422 )
 
-[node name="TrackerTorso" type="Spatial" parent="Targets"]
-transform = Transform( -0.0286719, -0.0743044, -0.996823, -0.999589, 0.00213138, 0.0285926, 5.37839e-08, 0.997233, -0.074335, 0, 1.17116, 0.203687 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Targets/TrackerTorso"]
+[node name="MeshInstance" type="MeshInstance" parent="Targets/Torso"]
 transform = Transform( 1, 0, -1.69407e-21, 0, 1, -4.32443e-21, -1.69407e-21, -4.32443e-21, 1, 0, 0, 0 )
+mesh = SubResource( 3 )
+material/0 = ExtResource( 6 )
+
+[node name="Axes2" parent="Targets/Torso" instance=ExtResource( 7 )]
+transform = Transform( 0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0 )
+
+[node name="MagnetHead" type="Spatial" parent="Targets"]
+transform = Transform( 0.999011, -0.00760771, -0.0438931, 0.00612502, 0.999412, -0.0338151, 0.0441244, 0.0335124, 0.998466, -0.0860074, 1.6907, 0.524399 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Targets/MagnetHead"]
+transform = Transform( 0.05, -8.54925e-11, 9.9527e-20, 4.27463e-11, 0.1, -2.32831e-10, 4.97631e-20, 2.32831e-10, 0.1, 0, 0, 0 )
 mesh = SubResource( 2 )
-material/0 = null
+material/0 = ExtResource( 6 )
 
-[node name="TargetTorso" type="Spatial" parent="Targets/TrackerTorso"]
-transform = Transform( 0.00340693, -0.99998, 0.00538233, -0.106227, 0.00499, 0.99433, -0.994337, -0.00395939, -0.106208, 1.17041, -0.194832, 0.0211086 )
+[node name="MagnetLeftLeg" type="Spatial" parent="Targets"]
+transform = Transform( 0.999009, -0.0076077, -0.043893, 0.00612501, 0.999411, -0.0338151, 0.0441243, 0.0335123, 0.998465, 0.361709, 0.574437, 0.74706 )
 
-[node name="MagnetHead" type="Spatial" parent="Targets/TrackerTorso"]
-transform = Transform( 0.00340691, -0.999981, 0.00538233, -0.106227, 0.00499001, 0.99433, -0.994338, -0.00395938, -0.106208, -0.431053, 0.513963, -0.0601004 )
+[node name="MeshInstance" type="MeshInstance" parent="Targets/MagnetLeftLeg"]
+transform = Transform( 0.05, -8.54925e-11, 9.9527e-20, 4.27463e-11, 0.1, -2.32831e-10, 4.97631e-20, 2.32831e-10, 0.1, 0, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 6 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Targets/TrackerTorso/MagnetHead"]
-transform = Transform( 0.1, 3.27418e-11, -9.31323e-10, 8.54925e-11, 0.1, -1.16415e-10, 0, 2.32831e-10, 0.1, 0, 0, 0 )
-mesh = SubResource( 3 )
-material/0 = null
+[node name="MagnetRightLeg" type="Spatial" parent="Targets"]
+transform = Transform( 0.999009, -0.0076077, -0.0438929, 0.00612501, 0.999411, -0.0338151, 0.0441243, 0.0335123, 0.998465, -0.292945, 0.52589, 0.737829 )
 
-[node name="MagnetLeftLeg" type="Spatial" parent="Targets/TrackerTorso"]
-transform = Transform( 1, -3.81565e-10, 1.46284e-08, 1.42381e-09, 1, -5.96046e-08, 3.3874e-09, 5.96046e-08, 1, 0.713943, 0.687573, -0.346374 )
+[node name="MeshInstance" type="MeshInstance" parent="Targets/MagnetRightLeg"]
+transform = Transform( 0.05, -8.54925e-11, 9.9527e-20, 4.27463e-11, 0.1, -2.32831e-10, 4.97631e-20, 2.32831e-10, 0.1, 0, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 6 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Targets/TrackerTorso/MagnetLeftLeg"]
-transform = Transform( 0.1, 3.27418e-11, -9.31323e-10, 8.54925e-11, 0.1, -1.16415e-10, 0, 2.32831e-10, 0.1, 0, 0, 0 )
-mesh = SubResource( 3 )
-material/0 = null
+[node name="MagnetLeftArm" type="Spatial" parent="Targets"]
+transform = Transform( 0.999009, -0.0076077, -0.043893, 0.00612501, 0.999411, -0.0338151, 0.0441243, 0.0335124, 0.998465, 0.571034, 1.25841, -0.68972 )
 
-[node name="MagnetRightLeg" type="Spatial" parent="Targets/TrackerTorso"]
-transform = Transform( 1, -3.81565e-10, 3.32549e-08, 2.5991e-09, 1, -1.3411e-07, 1.26651e-08, 1.04308e-07, 1, 0.721242, 0.677673, 0.0996136 )
+[node name="MeshInstance" type="MeshInstance" parent="Targets/MagnetLeftArm"]
+transform = Transform( 0.05, -8.54925e-11, 9.9527e-20, 4.27463e-11, 0.1, -2.32831e-10, 4.97631e-20, 2.32831e-10, 0.1, 0, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 6 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Targets/TrackerTorso/MagnetRightLeg"]
-transform = Transform( 0.1, 3.27418e-11, -9.31323e-10, 8.54925e-11, 0.1, -1.16415e-10, 0, 2.32831e-10, 0.1, 0, 0, 0 )
-mesh = SubResource( 3 )
-material/0 = null
+[node name="MagnetRightArm" type="Spatial" parent="Targets"]
+transform = Transform( 0.999021, -0.0076077, -0.043893, 0.00612508, 0.999411, -0.0338151, 0.0441249, 0.0335124, 0.998465, -0.52721, 1.30115, -0.804654 )
 
-[node name="MagnetLeftHand" type="Spatial" parent="Targets/TrackerTorso"]
-transform = Transform( 1, -3.81565e-10, 3.69802e-08, 2.95666e-09, 1, -1.49012e-07, 1.44837e-08, 1.04308e-07, 1, 2.38419e-07, -0.721937, -0.508217 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Targets/TrackerTorso/MagnetLeftHand"]
-transform = Transform( 0.1, 3.27418e-11, -9.31323e-10, 8.54925e-11, 0.1, -1.16415e-10, 0, 2.32831e-10, 0.1, 0, 0, 0 )
-mesh = SubResource( 3 )
-material/0 = null
-
-[node name="MagnetRightHand" type="Spatial" parent="Targets/TrackerTorso"]
-transform = Transform( 1.00001, -3.81565e-10, 4.44307e-08, 3.59204e-09, 1, -1.78814e-07, 1.81964e-08, 1.04308e-07, 1, 4.76837e-07, -0.721938, 0.553034 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Targets/TrackerTorso/MagnetRightHand"]
-transform = Transform( 0.1, 3.27418e-11, -9.31323e-10, 8.54925e-11, 0.1, -1.16415e-10, 0, 2.32831e-10, 0.1, 0, 0, 0 )
-mesh = SubResource( 3 )
-material/0 = null
+[node name="MeshInstance" type="MeshInstance" parent="Targets/MagnetRightArm"]
+transform = Transform( 0.05, -8.54925e-11, 9.9527e-20, 4.27463e-11, 0.1, -2.32831e-10, 4.97631e-20, 2.32831e-10, 0.1, 0, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 6 )
