@@ -3,6 +3,7 @@ extends Body
 
 
 var t_elapsed: float = 0.0
+var counter: int = 0
 
 # String describing editing mode.
 var activated_mode = null
@@ -48,7 +49,9 @@ func process_inner(delta):
 	t_elapsed += delta
 	if t_elapsed >= 1.0:
 		t_elapsed -= 1.0
-		var player_rf = PhysicsManager.player_ref_frame
+		print( "Construction process: ", counter )
+		counter += 1
+		#var player_rf = PhysicsManager.player_ref_frame
 		#compute_relative_to_root( player_rf )
 		#var t: Transform = self.t_root()
 		#print( "Construction relative to player rf: ", t )
