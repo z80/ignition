@@ -33,13 +33,13 @@ func _ready():
 	$PanelParts.connect( "create_block", self, "create_block"  )
 	
 		# Also create a super body.
-	super_body = ConstructionSuperBody.new()
+	var sb = ConstructionSuperBody.new()
 	var p = get_parent()
-	p.add_child( super_body )
+	p.add_child( sb )
 	# Place own reference there.
-	super_body.construction = self
+	sb.construction = self
 	# And in the list of sub-bodies.
-	super_body.sub_bodies.push_back( self )
+	sb.add_sub_body( self )
 
 
 
@@ -186,8 +186,7 @@ func create_block( block_name ):
 	var p = self.get_parent()
 	block.change_parent( p )
 	# Establish relations.
-	block.super_body = self.super_body
-	super_body.sub_bodies.push_back( block )
+	super_body.add_sub_body( block )
 	
 	# Make it selected to be able to move it.
 	PhysicsManager.player_select = block

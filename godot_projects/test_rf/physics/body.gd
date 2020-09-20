@@ -38,6 +38,82 @@ func change_parent( new_parent: Node = null ):
 	#var p_after = self.get_parent()
 
 
+
+func add_sub_body( body: Body ):
+	var sb: Body = body.super_body
+	if (sb != null) and (sb != self):
+		sb.remove_sub_body( body )
+	
+	var has: bool = has_sub_body( body )
+	if has:
+		return false
+	
+	sub_bodies.push_back( body )
+	return true
+
+
+
+func remove_sub_body( body: Body ):
+	var index: int = sub_bodies.find( body )
+	if index >= 0:
+		sub_bodies.remove( index )
+		body.super_body = null
+
+
+
+func has_sub_body( body: Body, recursive: bool = true ):
+	var has: bool = sub_bodies.has( body )
+	if has:
+		return true
+	
+	if recursive:
+		for sb in sub_bodies:
+			has = sb.has_subbody( body, true )
+			if has:
+				return true
+	
+	return false
+
+
+func distance_max( other: Body ):
+	if other.sub_bodies.empty():
+		var d: float = distance( other )
+		return d
+	
+	var max_d: float = 0.0
+	for cb in other.sub_bodies:
+		var d: float = distance_max( cb )
+		if d > max_d:
+			max_d = d
+	
+	return max_d
+
+
+
+func distance_min( other: Body ):
+	if other.sub_bodies.empty():
+		var d: float = distance( other )
+		return d
+	
+	var min_d: float = 0.0
+	for cb in other.sub_bodies:
+		var d: float = distance_max( cb )
+		if d < min_d:
+			min_d = d
+	
+	return min_d
+
+
+
+func distance( other: Body ):
+	.compute_relative_to_root( other )
+	var t: Transform = self.t_root()
+	var r: Vector3 = t.origin
+	var d: float = r.length()
+	return d
+
+
+
 func change_parent_recursive( new_parent: Node = null ):
 	.change_parent( new_parent )
 	if new_parent == null:
