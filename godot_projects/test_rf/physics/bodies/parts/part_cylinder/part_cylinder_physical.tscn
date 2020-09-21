@@ -5,6 +5,7 @@
 [sub_resource type="CylinderShape" id=1]
 
 [node name="PartCyninderPhysical" type="RigidBody"]
+continuous_cd = true
 script = ExtResource( 1 )
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
