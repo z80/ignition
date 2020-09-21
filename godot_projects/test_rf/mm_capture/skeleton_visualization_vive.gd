@@ -14,6 +14,7 @@ func set_mm_path( p ):
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	set_mm_path( mm_path )
+	_m = load( "res://mm_capture/red.tres" )
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
