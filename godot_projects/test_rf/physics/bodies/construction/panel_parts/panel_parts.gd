@@ -59,6 +59,10 @@ func _create_buttons_frames():
 						 "frame_box", 
 						 "Frame box description" )
 
+	_add_button( frames, "res://physics/bodies/frames/frame_light/assets/icon.png", 
+						 "frame_light", 
+						 "Frame light description" )
+
 
 func _create_buttons_parts():
 	var parts = find_node( "ContainerParts" )

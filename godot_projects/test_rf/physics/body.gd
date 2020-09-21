@@ -49,6 +49,7 @@ func add_sub_body( body: Body ):
 		return false
 	
 	sub_bodies.push_back( body )
+	body.super_body = self
 	return true
 
 
@@ -68,7 +69,7 @@ func has_sub_body( body: Body, recursive: bool = true ):
 	
 	if recursive:
 		for sb in sub_bodies:
-			has = sb.has_subbody( body, true )
+			has = sb.has_sub_body( body, true )
 			if has:
 				return true
 	
