@@ -15,9 +15,8 @@ func init():
 
 func set_collision_layer( layer ):
 	if _physical:
-		var rb = _physical.get_child( 0 )
-		rb.collision_layer = layer
-		rb.collision_mask  = layer
+		var rb = _physical
+		rb.set_collision_layer( layer )
 
 
 

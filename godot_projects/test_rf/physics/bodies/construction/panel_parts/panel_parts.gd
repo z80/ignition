@@ -28,7 +28,8 @@ func _on_Parts_pressed():
 	var parts = find_node( "ContainerParts" )
 	frames.visible = false
 	parts.visible  = true
-	parts.visible  = true
+	
+	_create_buttons_parts()
 
 
 func _cleanup_panel( panel ):
@@ -69,6 +70,10 @@ func _create_buttons_parts():
 	if parts == null:
 		return
 	_cleanup_panel( parts )
+	
+	_add_button( parts, "res://physics/bodies/parts/part_cylinder/assets/icon.png", 
+						 "part_cylinder", 
+						 "Cylinder part description" )
 
 
 
