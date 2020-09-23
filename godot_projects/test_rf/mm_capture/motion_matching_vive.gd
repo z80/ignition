@@ -27,7 +27,7 @@ const PARENTS: Array = [ 3, 3, 3, -1, 3, 3 ]
 const FPS: float = 24.0
 const DT: float  = 1.0/FPS
 const POSE_LIMB_INDS: Array = [HEAD_IND, LEFT_HAND_IND, RIGHT_HAND_IND]
-const TRAJ_TIME_MOMENTS: Array = [ -0.3, -0.6, -0.9, -1.2, -1.5, -1.8, -2.1 ]
+const TRAJ_TIME_MOMENTS: Array = [ -0.15, -0.30, -0.45, -1.60, -1.75, -1.90, -1.05 ]
 var TRAJ_FRAME_INDS: Array = []
 
 

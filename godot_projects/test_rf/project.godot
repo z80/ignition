@@ -64,6 +64,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/color-palette/PaletteImporter.gd"
 }, {
+"base": "Body",
+"class": "PartSuperBody",
+"language": "GDScript",
+"path": "res://physics/bodies/parts/part_super_body.gd"
+}, {
 "base": "RefFrameNode",
 "class": "RefFrame",
 "language": "GDScript",
@@ -96,6 +101,7 @@ _global_script_class_icons={
 "MmSaver": "",
 "Palette": "",
 "PaletteImporter": "",
+"PartSuperBody": "",
 "RefFrame": "",
 "RefFramePhysics": "",
 "RefFrameResourceProvider": "",
