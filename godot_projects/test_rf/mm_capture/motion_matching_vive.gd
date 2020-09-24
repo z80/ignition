@@ -5,7 +5,7 @@ signal data_ready
 var _db = null
 var _frame_search = null
 
-#var _bone_names = null
+var _drag_rf = null
 
 var _desc_weights: Array
 var _desc_gains: Array
@@ -15,12 +15,13 @@ var _switch_threshold: float = 0.3
 var _switch_period: int = 15
 
 const HEAD_IND: int       = 0
-const ROOT_IND: int       = HEAD_IND
 const LEFT_HAND_IND: int  = 1
 const RIGHT_HAND_IND: int = 2
 const TORSO_IND: int      = 3
 const LEFT_LEG_IND: int   = 4
 const RIGHT_LEG_IND: int  = 5
+
+const ROOT_IND: int       = TORSO_IND
 
 const PARENTS: Array = [ 3, 3, 3, -1, 3, 3 ]
 
@@ -33,13 +34,9 @@ var TRAJ_FRAME_INDS: Array = []
 
 
 # Forward vector in local ref frame.
-const V_HEADING_FWD: Vector3       = Vector3( -1.0, 0.0, 0.0 )
+const V_HEADING_FWD: Vector3       = Vector3( 0.0, 0.0, -1.0 )
 
 
-# Movement constants for building future trajectory.
-var _slow_speed: float = 1.0
-var _walk_speed: float = 1.2
-var _fast_speed: float = 4.0
 
 # Initial/default control.
 # velocity relative to current azimuth.
@@ -66,8 +63,6 @@ var _time_passed: float = 0.0
 # user control input for visualization
 var _vis_control_sequence: Array
 var _print_control_sequence: Array
-var _cam_q: Quat
-var _cam_rel_q: Quat
 
 
 # Run the algorithm, or just demonstrate frames.
@@ -80,8 +75,8 @@ const SMOOTHING_JUMP_FRAMES_QTY: int = 5
 var _frames_after_jump_qty: int      = SMOOTHING_JUMP_FRAMES_QTY
 var _frame_before_jump               = null
 var _d_frame_before_jump             = null
-
-
+var _position_before_jump: Vector3
+var _rotation_before_jump: Quat
 
 
 # For debugging going to play back the same exact 
@@ -121,9 +116,13 @@ func _process( delta ):
 func _input( event ):
 	pass
 
+
 # This one is called every time it starts.
 # It assumes frames and descriptors present in the database.
 func init():
+	_drag_rf = $DraggedRf
+	_drag_rf.reset()
+	
 	_db = _open_frame_database()
 	
 	_desc_weights = _db.get_config( "inv_std" )
@@ -252,9 +251,14 @@ func _open_frame_database():
 	return db
 
 
+
 func _fill_descs():
 	# Number of frames
 	var frames_qty: int = _db.frames_qty
+	
+	# Reset dragged ref. frame.
+	_drag_rf = $DraggedRf
+	_drag_rf.reset()
 	
 	var pose_desc: Array = []
 	var traj_desc: Array = []
@@ -262,6 +266,13 @@ func _fill_descs():
 	
 	for i in range( frames_qty ):
 		#f = frame_( frame_db, i )
+		var f = _db.get_frame( i )
+		var head_pose: Array = [ f[HEAD_IND], f[HEAD_IND+1], f[HEAD_IND+2], f[HEAD_IND+3], f[HEAD_IND+4], f[HEAD_IND+5], f[HEAD_IND+6] ]
+		_drag_rf.process( head_pose )
+		var rf_r: Vector3 = _drag_rf.position()
+		var rf_q: Quat    = _drag_rf.rotation()
+		_db.set_rf( i, rf_q, rf_r )
+		
 		pose_desc = _pose_desc( i )
 		traj_desc = _traj_desc( i )
 		desc = []
@@ -334,9 +345,9 @@ func _frame_in_space( index: int ):
 	var f_dest: Array = []
 	f_dest.resize( sz )
 	
-	var root_ind: int = ROOT_IND*7
-	var q_root: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
-	var r_root: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
+	var rf = _db.get_rf( index )
+	var q_root: Quat    = rf.q
+	var r_root: Vector3 = rf.r
 	
 	var base_q_root = _quat_azimuth( q_root )
 	var inv_base_q_root = base_q_root.inverse()
@@ -372,14 +383,13 @@ func _frame_in_space_smoothed( index: int ):
 	
 	var t: float = float(_frames_after_jump_qty) / float(SMOOTHING_JUMP_FRAMES_QTY)
 
-	var root_ind: int = ROOT_IND*7
-	var q_root_next: Quat = Quat( f_next[root_ind+1], f_next[root_ind+2], f_next[root_ind+3], f_next[root_ind] )
-	var r_root_next: Vector3 = Vector3( f_next[root_ind+4], f_next[root_ind+5], f_next[root_ind+6] )
+	var q_root_next: Quat    = _drag_rf.rotation()
+	var r_root_next: Vector3 = _drag_rf.position()
 	var az_inv_q_root_next = _quat_azimuth( q_root_next ).inverse()
 	
 	var f_prev = _frame_before_jump
-	var q_root_prev: Quat = Quat( f_prev[root_ind+1], f_prev[root_ind+2], f_prev[root_ind+3], f_prev[root_ind] )
-	var r_root_prev: Vector3 = Vector3( f_prev[root_ind+4], f_prev[root_ind+5], f_prev[root_ind+6] )
+	var q_root_prev: Quat = _rotation_before_jump
+	var r_root_prev: Vector3 = _position_before_jump
 	var az_inv_q_root_prev = _quat_azimuth( q_root_prev ).inverse()
 	
 	var f_dest: Array = []
@@ -420,15 +430,8 @@ func _frame_in_space_smoothed( index: int ):
 # For VIVE tracking want the character be in exact place where 
 # trackers are and not march to infinity.
 func _get_current_pose_from_input():
-	var sz = _control_input.size()
-	if sz == 0:
-		return
-	# On top of matched frame place current input.
-	var f = _control_input
-	var root_ind: int = POSE_LIMB_INDS.find( ROOT_IND )
-	root_ind = POSE_LIMB_INDS[root_ind]
-	var q_root: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
-	var r_root: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
+	var q_root: Quat = _drag_rf.rotation()
+	var r_root: Vector3 = _drag_rf.position()
 	_pose_r = r_root
 	_pose_q = _quat_azimuth( q_root )
 
@@ -500,11 +503,8 @@ func _pose_desc( index: int ):
 		fp = f
 	
 	# Root pose
-	var root_ind: int = ROOT_IND*7
-	var root_q: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
-	var root_r: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
-	var az_root_q:     Quat = _quat_azimuth( root_q )
-	var az_root_q_inv: Quat = az_root_q.inverse()
+	var root_r: Vector3 = _drag_rf.position()
+	var az_root_q_inv: Quat = _drag_rf.rotation().inverse()
 	
 	var desc_r: Array
 	var desc_v: Array
@@ -521,11 +521,8 @@ func _pose_desc( index: int ):
 		rp = az_root_q_inv.xform( rp )
 		
 		var v: Vector3 = (r - rp) * FPS
-		if ( limb_ind != ROOT_IND ):
-			desc_r += [ r.x, r.y, r.z ]
-		else:
-			desc_r.push_back( root_r.y )
-		desc_v += [ v.x, v.z ]
+		desc_r += [ r.x, r.y, r.z ]
+		desc_v += [ v.x, v.y, v.z ]
 	
 	desc_c = _db.get_category( index )
 	
@@ -536,14 +533,10 @@ func _traj_desc( index: int ):
 	var f = _db.get_frame( index )
 	
 	# Root pose
-	var root_ind: int = ROOT_IND*7
-	var root_q: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
-	var root_r: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
-	var az_root_q:     Quat = _quat_azimuth( root_q )
-	var az_root_q_inv: Quat = az_root_q.inverse()
+	var root_r: Vector3 = _drag_rf.position()
+	var az_root_q_inv: Quat = _drag_rf.rotation().inverse()
 	
 	var desc_r: Array = []
-	var desc_z: Array = []
 	var desc_heading: Array = []
 	var desc_c: Array = []
 	
@@ -554,26 +547,26 @@ func _traj_desc( index: int ):
 		
 		f = _db.get_frame( frame_ind )
 		
-		var ind: int = ROOT_IND * 7
+		var ind: int = HEAD_IND * 7
 		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
-		q = _quat_azimuth( root_q )
+		q = _quat_azimuth( q )
 		q = az_root_q_inv * q
 		var v_heading: Vector3 = q.xform( V_HEADING_FWD )
 		desc_heading += [ v_heading.x, v_heading.z ]
 		
-		for limb_ind in POSE_LIMB_INDS:
+		var limbs_qty: int = POSE_LIMB_INDS.size()
+		for limb_ind in range( limbs_qty ):
 			ind = limb_ind * 7
 			q = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
 			var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
 			r  -= root_r
 			r  = az_root_q_inv.xform( r )
 			
-			desc_r += [ r.x, r.z ]
-			desc_z += [ r.y ]
+			desc_r += [ r.x, r.y, r.z ]
 		
 		desc_c += _db.get_category( index )
 	
-	return [ desc_r, desc_z, desc_heading, desc_c ]
+	return [ desc_r, desc_heading, desc_c ]
 
 
 func _input_based_pose_desc( cat: Array = [0] ):
@@ -582,12 +575,8 @@ func _input_based_pose_desc( cat: Array = [0] ):
 	var fp = _control_pos_sequence[qty-2]
 	
 	# Root pose
-	var root_ind: int = ROOT_IND*7
-	var root_q: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
-	var root_r: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
-	var root_q_inv:    Quat = root_q.inverse()
-	var az_root_q:     Quat = _quat_azimuth( root_q )
-	var az_root_q_inv: Quat = az_root_q.inverse()
+	var root_r: Vector3 = _drag_rf.position()
+	var az_root_q_inv: Quat = _drag_rf.rotation().inverse()
 	
 	var desc_r: Array
 	var desc_v: Array
@@ -604,11 +593,8 @@ func _input_based_pose_desc( cat: Array = [0] ):
 		rp = az_root_q_inv.xform( rp )
 		
 		var v: Vector3 = (r - rp) * FPS
-		if ( limb_ind != ROOT_IND ):
-			desc_r += [ r.x, r.y, r.z ]
-		else:
-			desc_r.push_back( root_r.y )
-		desc_v += [ v.x, v.z ]
+		desc_r += [ r.x, r.y, r.z ]
+		desc_v += [ v.x, v.y, v.z ]
 	
 	desc_c = cat
 	
@@ -621,11 +607,8 @@ func _input_based_traj_desc( cat: Array = [0] ):
 	var f = _control_pos_sequence[index]
 	
 	# Root pose
-	var root_ind: int = ROOT_IND*7
-	var root_q: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
-	var root_r: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
-	var az_root_q:     Quat = _quat_azimuth( root_q )
-	var az_root_q_inv: Quat = az_root_q.inverse()
+	var root_r: Vector3 = _drag_rf.position()
+	var az_root_q_inv: Quat = _drag_rf.rotation().inverse()
 	
 	var desc_r: Array = []
 	var desc_z: Array = []
@@ -639,26 +622,25 @@ func _input_based_traj_desc( cat: Array = [0] ):
 			
 		f = _control_pos_sequence[ frame_ind ]
 			
-		var ind: int = ROOT_IND * 7
-		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
-		q = _quat_azimuth( root_q )
+		var q: Quat = Quat( f[1], f[2], f[3], f[0] )
+		q = _quat_azimuth( q )
 		q = az_root_q_inv * q
 		var v_heading: Vector3 = q.xform( V_HEADING_FWD )
 		desc_heading += [ v_heading.x, v_heading.z ]
-			
-		for limb_ind in POSE_LIMB_INDS:
-			ind = limb_ind * 7
+		
+		var limbs_qty: int = POSE_LIMB_INDS.size()
+		for limb_ind in range( limbs_qty ):
+			var ind: int = limb_ind * 7
 			q = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
 			var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
 			r  -= root_r
 			r  = az_root_q_inv.xform( r )
 				
-			desc_r += [ r.x, r.z ]
-			desc_z += [ r.y ]
+			desc_r += [ r.x, r.y, r.z ]
 			
 		desc_c += cat
 	
-	return [ desc_r, desc_z, desc_heading, desc_c ]
+	return [ desc_r, desc_heading, desc_c ]
 
 
 func _init_control_sequence():
@@ -740,6 +722,16 @@ func _update_vis_control_sequence():
 		ind += 1
 
 
+func _update_dragged_ref_frame():
+	var qty: int = _control_pos_sequence.size()
+	if qty < 1:
+		return
+	
+	var f: Array = _control_pos_sequence[qty-1]
+	var head_ind: int = POSE_LIMB_INDS.find( HEAD_IND )
+	var head_pose: Array = [ f[head_ind], f[head_ind+1], f[head_ind+2], f[head_ind+3], f[head_ind+4], f[head_ind+5], f[head_ind+6] ]
+	_drag_rf.process( head_pose )
+
 # This one goes into _process( delta ).
 # It calls process_frame() when needed.
 func process( delta ):
@@ -783,6 +775,9 @@ func process_frame():
 	# For control sequence visualization.
 	_update_vis_control_sequence()
 	
+	# Update dregged ref. frame state.
+	_update_dragged_ref_frame()
+	
 	if time_to_switch:
 		#var f_cur = frame_( db_, frame_ind_ )
 		var desc_p = _input_based_pose_desc()
@@ -825,6 +820,8 @@ func process_frame():
 		var v = _prepare_frame_and_d_frame( _frame_ind )
 		_frame_before_jump = v[0]
 		_d_frame_before_jump = v[1]
+		_position_before_jump = _drag_rf.position()
+		_rotation_before_jump = _drag_rf.rotation()
 		_frames_after_jump_qty = 0
 		#print( "fp size:                 ", fp.size() )
 		#print( "frame_before_jump_ size: ", frame_before_jump_.size() )
@@ -870,11 +867,14 @@ func process_frame():
 	_get_current_pose_from_input()
 	
 	_frame_ind = next_ind
-	if (_frame_before_jump == null) or (_frames_after_jump_qty >= SMOOTHING_JUMP_FRAMES_QTY):
-		_f = _frame_in_space( _frame_ind )
-	else:
-		_increment_frame()
-		_f = _frame_in_space_smoothed( _frame_ind )
+	#if (_frame_before_jump == null) or (_frames_after_jump_qty >= SMOOTHING_JUMP_FRAMES_QTY):
+	#	_f = _frame_in_space( _frame_ind )
+	#else:
+	#	_increment_frame()
+	#	_f = _frame_in_space_smoothed( _frame_ind )
+	
+	# For debug purposes temporarily no temporal smoothing.
+	_f = _frame_in_space( _frame_ind )
 
 
 

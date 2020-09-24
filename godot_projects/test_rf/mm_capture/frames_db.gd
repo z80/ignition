@@ -48,7 +48,7 @@ func _open_frame_database( fname: String = "res://mm_data.sqlite3.db" ):
 		print( "Failed to open frame database ", fname )
 		return false
 		
-	res = db.query("CREATE TABLE IF NOT EXISTS data (id integer PRIMARY KEY, data text, desc text, cat text);")
+	res = db.query("CREATE TABLE IF NOT EXISTS data (id integer PRIMARY KEY, data text, desc text, cat text, rf text);")
 	if not res:
 		print( "ERROR: Failed to create \'data\' table" )
 		return
@@ -57,6 +57,11 @@ func _open_frame_database( fname: String = "res://mm_data.sqlite3.db" ):
 	if not res:
 		print( "ERROR: Failed to create \'config\' table" )
 		return
+	
+	# Again make sure "rf" column exists.
+	var cmd: String = "ALTER TABLE data ADD COLUMN rf text;"
+	res = db.query( cmd )
+
 	
 	_db = db
 	
@@ -123,6 +128,17 @@ func get_desc( index ):
 func set_desc( index: int, data ):
 	var ok: bool = _set_data( index, "desc", data )
 	return ok
+
+
+func set_rf( index: int, q: Quat, r: Vector3 ):
+	var data = { q: q, r: r }
+	var ok: bool = _set_data( index, "rf", data )
+	return ok
+
+
+func get_rf( index: int ):
+	var data = _query_data( index, "rf" )
+	return data
 
 
 func assign_default_category( cat ):

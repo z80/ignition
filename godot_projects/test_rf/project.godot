@@ -24,6 +24,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/bodies/construction/construction_super_body.gd"
 }, {
+"base": "Node",
+"class": "DraggedRf",
+"language": "GDScript",
+"path": "res://mm_capture/dragged_rf.gd"
+}, {
 "base": "Container",
 "class": "FlexGridContainer",
 "language": "GDScript",
@@ -93,6 +98,7 @@ _global_script_class_icons={
 "Body": "",
 "ColorTile": "",
 "ConstructionSuperBody": "",
+"DraggedRf": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
 "FramesDb": "",
 "LandscapeBase": "",

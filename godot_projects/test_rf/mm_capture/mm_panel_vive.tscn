@@ -294,15 +294,17 @@ __meta__ = {
 }
 
 [node name="TrajZLbl" type="Label" parent="Panel/Tabs/Weights"]
-margin_top = 269.0
-margin_right = 157.0
-margin_bottom = 283.0
+visible = false
+margin_top = 264.0
+margin_right = 170.0
+margin_bottom = 278.0
 text = "Traj Z:"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="WeightTrajZ" type="LineEdit" parent="Panel/Tabs/Weights"]
+visible = false
 margin_left = 161.0
 margin_top = 264.0
 margin_right = 331.0
@@ -313,9 +315,9 @@ __meta__ = {
 }
 
 [node name="TrajHeadingLbl" type="Label" parent="Panel/Tabs/Weights"]
-margin_top = 297.0
+margin_top = 269.0
 margin_right = 157.0
-margin_bottom = 311.0
+margin_bottom = 283.0
 text = "Traj heading:"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -323,18 +325,18 @@ __meta__ = {
 
 [node name="WeightTrajHeading" type="LineEdit" parent="Panel/Tabs/Weights"]
 margin_left = 161.0
-margin_top = 292.0
+margin_top = 264.0
 margin_right = 331.0
-margin_bottom = 316.0
+margin_bottom = 288.0
 text = "1.0"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="TrajCatLbl" type="Label" parent="Panel/Tabs/Weights"]
-margin_top = 325.0
+margin_top = 297.0
 margin_right = 157.0
-margin_bottom = 339.0
+margin_bottom = 311.0
 text = "Traj cat:"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -342,9 +344,9 @@ __meta__ = {
 
 [node name="WeightTrajCat" type="LineEdit" parent="Panel/Tabs/Weights"]
 margin_left = 161.0
-margin_top = 320.0
+margin_top = 292.0
 margin_right = 331.0
-margin_bottom = 344.0
+margin_bottom = 316.0
 text = "1.0"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -371,9 +373,9 @@ __meta__ = {
 }
 
 [node name="CtrlSeqLbl9" type="Label" parent="Panel/Tabs/Weights"]
-margin_top = 353.0
+margin_top = 325.0
 margin_right = 157.0
-margin_bottom = 367.0
+margin_bottom = 339.0
 text = "Switch th:"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -381,18 +383,18 @@ __meta__ = {
 
 [node name="SwitchTh" type="LineEdit" parent="Panel/Tabs/Weights"]
 margin_left = 161.0
-margin_top = 348.0
+margin_top = 320.0
 margin_right = 331.0
-margin_bottom = 372.0
+margin_bottom = 344.0
 text = "0.3"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="GetBtn" type="Button" parent="Panel/Tabs/Weights"]
-margin_top = 376.0
+margin_top = 348.0
 margin_right = 157.0
-margin_bottom = 396.0
+margin_bottom = 368.0
 text = "Get descriptor weights"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -400,9 +402,9 @@ __meta__ = {
 
 [node name="ApplyBtn" type="Button" parent="Panel/Tabs/Weights"]
 margin_left = 161.0
-margin_top = 376.0
+margin_top = 348.0
 margin_right = 331.0
-margin_bottom = 396.0
+margin_bottom = 368.0
 text = "Apply descriptor weights"
 __meta__ = {
 "_edit_use_anchors_": false
