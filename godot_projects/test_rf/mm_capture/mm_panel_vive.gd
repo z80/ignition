@@ -208,17 +208,17 @@ func _on_AssignCat_pressed():
 
 
 func _on_InstantDataBtn_pressed():
-	var d = mm_.desc_( mm_.db_, mm_.frame_ind_ )
+	var d = mm_._pd.get_desc( mm_._frame_ind )
 	print( "desc: ", d )
 
 
 func _on_ComputeDescBtn_pressed():
-	var pose_desc = mm_.pose_desc_( mm_.db_, mm_.frame_ind_ )
-	var traj_desc = mm_.traj_desc_( mm_.db_, mm_.frame_ind_ )
-	var gen_pose_desc = mm_.input_based_pose_desc_( mm_.db_, mm_.frame_ind_ )
-	var gen_traj_desc = mm_.input_based_traj_desc_( mm_.db_ )
+	var pose_desc = mm_._pose_desc( mm_._frame_ind )
+	var traj_desc = mm_._traj_desc( mm_._frame_ind )
+	var gen_pose_desc = mm_._input_based_pose_desc()
+	var gen_traj_desc = mm_._input_based_traj_desc()
 	print( "\n\n\n" )
-	print( "frame # ", mm_.frame_ind_ )
+	print( "frame # ", mm_._frame_ind )
 	print( "Current one:" )
 	print( "pose desc:     ", pose_desc )
 	print( "traj desc:     ", traj_desc )
@@ -233,14 +233,14 @@ func _on_ComputeDescBtn_pressed():
 	for di in gen_traj_desc:
 		for v in di:
 			d.push_back( v )
-	var closest_err: float = mm_.frame_search_.nearest( d )
-	var closest_ind: int   = mm_.frame_search_.nearest_ind()
+	var closest_err: float = mm_._frame_search.nearest( d )
+	var closest_ind: int   = mm_._frame_search.nearest_ind()
 
-	var next_err: float = mm_.frame_search_.dist( d, mm_.frame_ind_ )
+	var next_err: float = mm_._frame_search.dist( d, mm_._frame_ind )
 	var improvement: float = next_err - closest_err
 	
-	var cl_pose_desc = mm_.pose_desc_( mm_.db_, closest_ind )
-	var cl_traj_desc = mm_.traj_desc_( mm_.db_, closest_ind )
+	var cl_pose_desc = mm_._pose_desc( closest_ind )
+	var cl_traj_desc = mm_._traj_desc( closest_ind )
 	print( "Closest one:" )
 	print( "cl pose desc:  ", cl_pose_desc )
 	print( "cl traj desc:  ", cl_traj_desc )
@@ -252,7 +252,7 @@ func _on_ComputeDescBtn_pressed():
 	
 	var min_err: float = -1.0
 	var min_ind: int = -1
-	for i in range ( mm_.frames_qty_ ):
+	for i in range ( mm_._frames_qty ):
 		var err: float = mm_.frame_search_.dist( d, i )
 		if min_err < 0.0 or err < min_err:
 			min_err = err
@@ -261,7 +261,7 @@ func _on_ComputeDescBtn_pressed():
 	# Manually comute the distance.
 	var gains = mm_.get_desc_gains()
 	print( "Gains: ", gains )
-	var desc_weights = mm_.desc_weights_
+	var desc_weights = mm_._desc_weights
 	var weights = []
 	var diff = []
 	var abs_diff = 0.0
@@ -305,7 +305,7 @@ func _on_ComputeDescBtn_pressed():
 	
 	print( "diff: ", diff )
 	print( "abs_diff: ", abs_diff )
-	var read_weights = mm_.frame_search_.weights()
+	var read_weights = mm_._frame_search.weights()
 	print( "read from frame search weights: ", read_weights )
 	print( "computed weights:               ", weights )
 	

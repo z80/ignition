@@ -75,8 +75,6 @@ const SMOOTHING_JUMP_FRAMES_QTY: int = 5
 var _frames_after_jump_qty: int      = SMOOTHING_JUMP_FRAMES_QTY
 var _frame_before_jump               = null
 var _d_frame_before_jump             = null
-var _position_before_jump: Vector3
-var _rotation_before_jump: Quat
 
 
 # For debugging going to play back the same exact 
@@ -364,7 +362,7 @@ func _frame_in_space( index: int ):
 		q = q_at * inv_r_rf * q
 		r = r - r_rf
 		r = q_at.xform( inv_r_rf.xform( r ) )
-		r += _pose_r
+		r += r_at
 		
 		f_dest[i]   = q.w
 		f_dest[i+1] = q.x
@@ -393,21 +391,18 @@ func _frame_in_space_smoothed( index: int ):
 	var az_inv_q_root_next = _quat_azimuth( q_root_next ).inverse()
 	
 	var f_prev = _frame_before_jump
-	var q_root_prev: Quat = _rotation_before_jump
-	var r_root_prev: Vector3 = _position_before_jump
-	var az_inv_q_root_prev = _quat_azimuth( q_root_prev ).inverse()
 	
 	var f_dest: Array = []
 	f_dest.resize( sz )
+	
+	var pose_r: Vector3 = _drag_rf.position()
+	var pose_q: Quat    = _drag_rf.rotation()
 	
 	for i in range(0, sz, 7):
 		var q0: Quat = Quat( f_prev[i+1], f_prev[i+2], f_prev[i+3], f_prev[i] )
 		var q1: Quat = Quat( f_next[i+1], f_next[i+2], f_next[i+3], f_next[i] )
 		var r0: Vector3 = Vector3( f_prev[i+4], f_prev[i+5], f_prev[i+6] )
 		var r1: Vector3 = Vector3( f_next[i+4], f_next[i+5], f_next[i+6] )
-		q0 = az_inv_q_root_prev * q0
-		r0 = r0 - r_root_prev
-		r0 = az_inv_q_root_prev.xform( r0 )
 		
 		q1 = az_inv_q_root_next * q1
 		r1 = r1 - r_root_next
@@ -415,9 +410,9 @@ func _frame_in_space_smoothed( index: int ):
 		
 		var q: Quat    = _slerp_quat( q0, q1, t )
 		var r: Vector3 = _slerp_vector3( r0, r1, t )
-		q = _pose_q * q
-		r = _pose_q.xform( r )
-		r = r + _pose_r
+		q = pose_q * q
+		r = pose_q.xform( r )
+		r = r + pose_r
 		f_dest[i]   = q.w
 		f_dest[i+1] = q.x
 		f_dest[i+2] = q.y
@@ -449,23 +444,12 @@ func _mix_with_current_input( f_dest: Array ):
 		return
 	# On top of matched frame place current input.
 	var f = _control_input
-	var root_ind: int = POSE_LIMB_INDS.find( ROOT_IND )
-	root_ind = POSE_LIMB_INDS[root_ind]
-	var q_root: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
-	var r_root: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
-	var base_q_root = _quat_azimuth( q_root )
-	var inv_base_q_root = base_q_root.inverse()
-	var q_adj = _pose_q * inv_base_q_root
 
 	var qty = POSE_LIMB_INDS.size()
 	for i in range( qty ):
 		var ind = i*7
 		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind] )
 		var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
-		q = q_adj * q
-		r = r - r_root
-		r = q_adj.xform( r )
-		r += _pose_r
 		
 		var dest_ind = POSE_LIMB_INDS[i] * 7
 		f_dest[dest_ind]   = q.w
@@ -825,8 +809,6 @@ func process_frame():
 		var v = _prepare_frame_and_d_frame( _frame_ind )
 		_frame_before_jump = v[0]
 		_d_frame_before_jump = v[1]
-		_position_before_jump = _drag_rf.position()
-		_rotation_before_jump = _drag_rf.rotation()
 		_frames_after_jump_qty = 0
 		#print( "fp size:                 ", fp.size() )
 		#print( "frame_before_jump_ size: ", frame_before_jump_.size() )
@@ -872,14 +854,14 @@ func process_frame():
 	_get_current_pose_from_input()
 	
 	_frame_ind = next_ind
-	#if (_frame_before_jump == null) or (_frames_after_jump_qty >= SMOOTHING_JUMP_FRAMES_QTY):
-	#	_f = _frame_in_space( _frame_ind )
-	#else:
-	#	_increment_frame()
-	#	_f = _frame_in_space_smoothed( _frame_ind )
+	if (_frame_before_jump == null) or (_frames_after_jump_qty >= SMOOTHING_JUMP_FRAMES_QTY):
+		_f = _frame_in_space( _frame_ind )
+	else:
+		_increment_frame()
+		_f = _frame_in_space_smoothed( _frame_ind )
 	
 	# For debug purposes temporarily no temporal smoothing.
-	_f = _frame_in_space( _frame_ind )
+	#_f = _frame_in_space( _frame_ind )
 
 
 
@@ -967,10 +949,11 @@ func _prepare_frame_and_d_frame( ind: int ):
 	else:
 		sz = sz1
 	
-	var root_ind: int = ROOT_IND*7
-	var q_root: Quat = Quat( f1[root_ind+1], f1[root_ind+2], f1[root_ind+3], f1[root_ind] )
-	var r_root: Vector3 = Vector3( f1[root_ind+4], f1[root_ind+5], f1[root_ind+6] )
+	var rf = _db.get_rf( ind1 )
+	var q_root: Quat = rf["q"]
+	var r_root: Vector3 = rf["r"]
 	var az_inv_q_root = _quat_azimuth( q_root ).inverse()
+	
 	
 	var f_dest: Array = []
 	f_dest.resize( sz )
