@@ -346,20 +346,24 @@ func _frame_in_space( index: int ):
 	f_dest.resize( sz )
 	
 	var rf = _db.get_rf( index )
-	var q_root: Quat    = rf.q
-	var r_root: Vector3 = rf.r
+	var q_rf: Quat    = rf.q
+	var r_rf: Vector3 = rf.r
+	var inv_r_rf: Quat = q_rf.inverse()
 	
-	var base_q_root = _quat_azimuth( q_root )
-	var inv_base_q_root = base_q_root.inverse()
-	var q_adj = _pose_q * inv_base_q_root
+	#var base_q_root = _quat_azimuth( q_root )
+	#var inv_base_q_root = base_q_root.inverse()
+	#var q_adj = _pose_q * inv_base_q_root
+	
+	var r_at = _drag_rf.position()
+	var q_at = _drag_rf.rotation()
 	
 	var ind: int = 0
 	for i in range( 0, sz, 7 ):
 		var q: Quat = Quat( f[i+1], f[i+2], f[i+3], f[i] )
 		var r: Vector3 = Vector3( f[i+4], f[i+5], f[i+6] )
-		q = q_adj * q
-		r = r - r_root
-		r = q_adj.xform( r )
+		q = q_at * inv_r_rf * q
+		r = r - r_rf
+		r = q_at.xform( inv_r_rf.xform( r ) )
 		r += _pose_r
 		
 		f_dest[i]   = q.w
@@ -383,8 +387,9 @@ func _frame_in_space_smoothed( index: int ):
 	
 	var t: float = float(_frames_after_jump_qty) / float(SMOOTHING_JUMP_FRAMES_QTY)
 
-	var q_root_next: Quat    = _drag_rf.rotation()
-	var r_root_next: Vector3 = _drag_rf.position()
+	var rf = _db.get_rf( index )
+	var q_root_next: Quat    = rf.q
+	var r_root_next: Vector3 = rf.r
 	var az_inv_q_root_next = _quat_azimuth( q_root_next ).inverse()
 	
 	var f_prev = _frame_before_jump

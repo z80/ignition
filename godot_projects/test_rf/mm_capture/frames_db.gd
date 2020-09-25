@@ -131,26 +131,29 @@ func set_desc( index: int, data ):
 
 
 func set_rf( index: int, q: Quat, r: Vector3 ):
-	var data = { q: q, r: r }
+	var data = [q.w, q.x, q.y, q.z, r.x, r.y, r.z]
 	var ok: bool = _set_data( index, "rf", data )
 	return ok
 
 
 func get_rf( index: int ):
 	var data = _query_data( index, "rf" )
+	var quat: Quat = Quat( data[1], data[2], data[3], data[0] )
+	var at: Vector3 = Vector3( data[4], data[5], data[6] )
+	data = { q=quat, r=at }
 	return data
 
 
 func assign_default_category( cat ):
 	var stri_d: String = JSON.print( cat )
-	stri_d = stri_d.replace( "\"", "\'" )
+	stri_d = stri_d.replace( "\"", "\'\'" )
 	var cmd = "UPDATE data SET cat=\'%s\';" % stri_d
 	var ok: bool = _db.query( cmd )
 	return ok
 
 func assign_category( start_index: int, end_index: int, cat ):
 	var stri_d: String = JSON.print( cat )
-	stri_d = stri_d.replace( "\"", "\'" )
+	stri_d = stri_d.replace( "\"", "\'\'" )
 	var cmd = "UPDATE data SET cat=\'%s\' WHERE id>=%d AND id<=%d;" % [stri_d, start_index, end_index]
 	var ok: bool = _db.query( cmd )
 	return ok
@@ -163,7 +166,7 @@ func get_category( index: int ):
 
 func _set_data( index: int, column_name: String, data ):
 	var stri_d: String = JSON.print( data )
-	stri_d = stri_d.replace( "\"", "\'" )
+	stri_d = stri_d.replace( "\"", "\'\'" )
 	#var cmd = "INSERT OR REPLACE INTO data(id, data, desc) VALUES(%d, \'%s\', \'%s\');" % [i, stri_f, stri_d]
 	var cmd: String = "INSERT OR IGNORE INTO data ( id, %s ) VALUES( %d, \'%s\' );" % [ column_name, index, stri_d ]
 	var res: bool = _db.query( cmd )
@@ -182,7 +185,7 @@ func _query_data( index: int, column_name: String ):
 		return null
 	var selected_array : Array = _db.query_result
 	var stri = selected_array[0][column_name]
-	stri = stri.replace( "'", "\"" )
+	stri = stri.replace( "\'", "\"" )
 	var ret = JSON.parse( stri )
 	ret = ret.result
 	return ret
