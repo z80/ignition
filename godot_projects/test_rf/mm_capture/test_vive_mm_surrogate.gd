@@ -30,11 +30,14 @@ func _exit_tree():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	$Vp.set_camera_pose( $Camera.transform )
+	
 	_elapsed += delta
 	if _elapsed >= _period:
 		_elapsed -= _period
 		_frame_ind += 1
 		_frame = _db.get_frame( _frame_ind )
+		$Vp.set_frame( _frame )
 
 	if _frame.size() > 0:
 		var mmv = $MotionMatchingVive
