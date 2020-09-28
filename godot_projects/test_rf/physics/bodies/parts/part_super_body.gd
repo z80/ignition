@@ -29,6 +29,6 @@ func process_inner( delta ):
 
 
 
-# For simplicity to begi with connect all pairs of closest bodies.
+# For simplicity to begin with connect all pairs of closest bodies.
 func compute_joints():
 	pass
