@@ -1246,13 +1246,20 @@ void VisualShader::_update_shader() const {
 	{
 		//fill render mode enums
 		int idx = 0;
+		bool specular = false;
 		while (render_mode_enums[idx].string) {
-
 			if (shader_mode == render_mode_enums[idx].mode) {
+				if (shader_mode == Shader::MODE_SPATIAL) {
+					if (String(render_mode_enums[idx].string) == "specular") {
+						specular = true;
+					}
+				}
+				if (modes.has(render_mode_enums[idx].string) || specular) {
 
-				if (modes.has(render_mode_enums[idx].string)) {
-
-					int which = modes[render_mode_enums[idx].string];
+					int which = 0;
+					if (modes.has(render_mode_enums[idx].string)) {
+						which = modes[render_mode_enums[idx].string];
+					}
 					int count = 0;
 					for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode)).size(); i++) {
 						String mode = ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode))[i];
@@ -1420,6 +1427,8 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_input_type_changed"), &VisualShader::_input_type_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_graph_offset", "get_graph_offset");
+
+	ADD_PROPERTY_DEFAULT("code", ""); // Inherited from Shader, prevents showing default code as override in docs.
 
 	BIND_ENUM_CONSTANT(TYPE_VERTEX);
 	BIND_ENUM_CONSTANT(TYPE_FRAGMENT);

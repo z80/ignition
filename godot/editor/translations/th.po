@@ -6,12 +6,13 @@
 # Poommetee Ketson (Noshyaar) <poommetee@protonmail.com>, 2017-2018.
 # Thanachart Monpassorn <nunf_2539@hotmail.com>, 2020.
 # Anonymous <noreply@weblate.org>, 2020.
+# Lon3r <mptube.p@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-26 13:41+0000\n"
-"Last-Translator: Thanachart Monpassorn <nunf_2539@hotmail.com>\n"
+"PO-Revision-Date: 2020-08-28 13:09+0000\n"
+"Last-Translator: Lon3r <mptube.p@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -19,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -744,9 +745,8 @@ msgid "Method in target node must be specified."
 msgstr "ต้องระบุเมธอดในโหนดเป้าหมาย"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "ไม่สามารถใช้ชื่อนี้ได้:"
+msgstr "ไม่สามารถใช้ชื่อนี้ได้."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -1101,6 +1101,9 @@ msgstr "ผู้ริเริ่มโครงการ"
 msgid "Lead Developer"
 msgstr "ผู้พัฒนาหลัก"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "ผู้จัดการโครงการ "
@@ -1120,6 +1123,16 @@ msgstr "ผู้สนับสนุนระดับทองคำขาว
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "ผู้สนับสนุนระดับทอง"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "ผู้บริจาคระดับเงิน"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "ผู้บริจาคระดับทองแดง"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1438,7 +1451,7 @@ msgstr "จัดลำดับออโต้โหลด"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "เพิ่มออโต้โหลดไม่ได้:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1607,7 +1620,7 @@ msgstr "โหมดเคลื่อนย้าย"
 #: editor/editor_feature_profile.cpp
 #, fuzzy
 msgid "FileSystem and Import Docks"
-msgstr "ระบบไฟล์"
+msgstr "ระบบไฟล์ และ นำเข้า"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -2051,7 +2064,7 @@ msgstr "กำหนด"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
-msgstr ""
+msgstr "กำหนด หลายอย่าง:"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -2103,19 +2116,21 @@ msgstr "โหนด"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
-msgstr ""
+msgstr "RPC กำลังมา"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RSET"
-msgstr ""
+msgstr "RSET กำลังมา"
 
 #: editor/editor_network_profiler.cpp
+#, fuzzy
 msgid "Outgoing RPC"
-msgstr ""
+msgstr "RPC กำลังออก"
 
 #: editor/editor_network_profiler.cpp
+#, fuzzy
 msgid "Outgoing RSET"
-msgstr ""
+msgstr "RSET กำลังออก"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
@@ -2288,10 +2303,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "ยังไม่ได้เลือกฉากที่จะเล่น"
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "ฉากปัจจุบันยังไม่ได้บันทึก กรุณาบันทึกก่อนเริ่มโปรแกรม"
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -9849,6 +9860,7 @@ msgstr ""
 "ทำการสแกนหาโปรเจกต์ ในโฟลเดอร์ %s หรือไม่?\n"
 "อาจจะใช้เวลาสักครู่"
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "ตัวจัดการโปรเจกต์"
@@ -10506,6 +10518,11 @@ msgstr ""
 #: editor/scene_tree_dock.cpp
 msgid "Make node as Root"
 msgstr "ทำโหนดให้เป็นโหนดแม่"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "ลบโหนด \"%s\" และโหนดลูก?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12168,6 +12185,12 @@ msgid ""
 "shape resource for it!"
 msgstr "ต้องมีรูปทรงเพื่อให้ CollisionShape2D ทำงานได้ กรุณาสร้างรูปทรง!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12688,6 +12711,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "ฉากปัจจุบันยังไม่ได้บันทึก กรุณาบันทึกก่อนเริ่มโปรแกรม"
 
 #~ msgid "Not in resource path."
 #~ msgstr "ไม่อยู่ในโฟลเดอร์รีซอร์ส"

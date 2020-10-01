@@ -1127,6 +1127,9 @@ msgstr "Fundadors del Projecte"
 msgid "Lead Developer"
 msgstr "Desenvolupador Principal"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Gestor del Projecte "
@@ -1146,6 +1149,16 @@ msgstr "Patrocinadors Platinum"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Patrocinadors Gold"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Donants Silver"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Donants Bronze"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -2336,11 +2349,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "No s'ha definit cap escena per executar."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"L'escena actual no s'ha desat encara. Desa l'escena abans d'executar-la."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -10141,6 +10149,7 @@ msgstr ""
 "existents?\n"
 "Això pot trigar una estona."
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Gestor del Projecte"
@@ -10816,6 +10825,11 @@ msgstr "Les escenes instanciades no es poden convertir en arrel"
 #, fuzzy
 msgid "Make node as Root"
 msgstr "Convertir node en arrel"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Voleu suprimir el node \"%s\" i els seus fills?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12585,6 +12599,12 @@ msgstr ""
 "S'ha de proporcionar una forma perquè *CollisionShape2D pugui funcionar. "
 "Creeu-li un recurs de forma (shape)!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -13160,6 +13180,10 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "L'escena actual no s'ha desat encara. Desa l'escena abans d'executar-la."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Fora del camí dels recursos."

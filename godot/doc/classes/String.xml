@@ -4,7 +4,7 @@
 		Built-in string class.
 	</brief_description>
 	<description>
-		This is the built-in string class (and the one used by GDScript). It supports Unicode and provides all necessary means for string handling. Strings are reference counted and use a copy-on-write approach, so passing them around is cheap in resources.
+		This is the built-in string class (and the one used by GDScript). It supports Unicode and provides all necessary means for string handling. Strings are reference-counted and use a copy-on-write approach, so passing them around is cheap in resources.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_format_string.html</link>
@@ -253,14 +253,15 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns a copy of the string with escaped characters replaced by their meanings according to the C language standard.
+				Returns a copy of the string with escaped characters replaced by their meanings. Supported escape sequences are [code]\'[/code], [code]\"[/code], [code]\?[/code], [code]\\[/code], [code]\a[/code], [code]\b[/code], [code]\f[/code], [code]\n[/code], [code]\r[/code], [code]\t[/code], [code]\v[/code].
+				[b]Note:[/b] Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.
 			</description>
 		</method>
 		<method name="capitalize">
 			<return type="String">
 			</return>
 			<description>
-				Changes the case of some letters. Replaces underscores with spaces, converts all letters to lowercase, then capitalizes first and every letter following the space character. For [code]capitalize camelCase mixed_with_underscores[/code], it will return [code]Capitalize Camelcase Mixed With Underscores[/code].
+				Changes the case of some letters. Replaces underscores with spaces, adds spaces before in-word uppercase characters, converts all letters to lowercase, then capitalizes the first letter and every letter following a space character. For [code]capitalize camelCase mixed_with_underscores[/code], it will return [code]Capitalize Camel Case Mixed With Underscores[/code].
 			</description>
 		</method>
 		<method name="casecmp_to">
@@ -816,8 +817,8 @@
 			<argument index="2" name="maxsplit" type="int" default="0">
 			</argument>
 			<description>
-				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings.
-				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of 0 means that all items are split.
+				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings. The [code]delimiter[/code] can be of any length.
+				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of [code]0[/code] means that all items are split.
 				Example:
 				[codeblock]
 				var some_string = "One,Two,Three,Four"
@@ -826,6 +827,7 @@
 				print(some_array[0]) # Prints "One"
 				print(some_array[1]) # Prints "Two,Three,Four"
 				[/codeblock]
+				If you need to split strings with more complex rules, use the [RegEx] class instead.
 			</description>
 		</method>
 		<method name="split_floats">

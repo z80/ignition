@@ -18,11 +18,12 @@
 # Tilto_ <tilto0822@develable.xyz>, 2020.
 # Myeongjin Lee <aranet100@gmail.com>, 2020.
 # Doyun Kwon <caen4516@gmail.com>, 2020.
+# Jun Hyung Shin <shmishmi79@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"PO-Revision-Date: 2020-07-31 03:47+0000\n"
 "Last-Translator: Ch. <ccwpc@hanmail.net>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -1128,6 +1129,9 @@ msgstr "프로젝트 창립자"
 msgid "Lead Developer"
 msgstr "리드 개발자"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "프로젝트 매니저 "
@@ -1147,6 +1151,16 @@ msgstr "플래티넘 스폰서"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "골드 스폰서"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "실버 기부자"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "브론즈 기부자"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -2327,10 +2341,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "실행할 씬이 설정되지 않았습니다."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "현재 씬이 아직 저장되지 않았습니다. 실행하기 전에 저장해주세요."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -4518,7 +4528,7 @@ msgstr "애니메이션 도구"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation"
-msgstr "애니메이션(Animation)"
+msgstr "애니메이션"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Transitions..."
@@ -7363,7 +7373,6 @@ msgid "XForm Dialog"
 msgstr "XForm 대화 상자"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Click to toggle between visibility states.\n"
 "\n"
@@ -7896,7 +7905,7 @@ msgstr "체크된 라디오 항목"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Named Sep."
-msgstr "이름있는 분기."
+msgstr "이름있는 구분자."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Submenu"
@@ -9806,6 +9815,7 @@ msgstr ""
 "Godot 프로젝트를 확인하기 위해 %s 폴더를 스캔할까요?\n"
 "시간이 걸릴 수 있습니다."
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "프로젝트 매니저"
@@ -10420,7 +10430,7 @@ msgstr "씬 인스턴스화"
 
 #: editor/scene_tree_dock.cpp
 msgid "Replace with Branch Scene"
-msgstr "분기 씬으로 교체"
+msgstr "가지 씬으로 교체"
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
@@ -10463,6 +10473,10 @@ msgstr "인스턴트화된 씬은 루트가 될 수 없습니다"
 #: editor/scene_tree_dock.cpp
 msgid "Make node as Root"
 msgstr "노드를 루트로 만들기"
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete %d nodes and any children?"
+msgstr "%d 개의 노드와 모든 자식 노드를 삭제할까요?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -10625,7 +10639,7 @@ msgstr "다른 씬에서 병합하기"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Save Branch as Scene"
-msgstr "분기를 씬으로 저장"
+msgstr "가지를 씬으로 저장"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Copy Node Path"
@@ -12135,6 +12149,14 @@ msgstr ""
 "CollisionShape2D가 작동하려면 반드시 Shape가 있어야 합니다. Shape 리소스를 만"
 "들어주세요!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+"폴리곤 기반 Shape는 CollisionShape2D에 추가하거나 거기서 편집하게끔 설계하지 "
+"않았습니다. 대신 CollisionPolygon2D 노드를 사용하십시오."
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12691,6 +12713,9 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있습니다."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "현재 씬이 아직 저장되지 않았습니다. 실행하기 전에 저장해주세요."
 
 #~ msgid "Not in resource path."
 #~ msgstr "리소스 경로에 없습니다."

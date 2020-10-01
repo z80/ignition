@@ -48,6 +48,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Centers the viewport on the line the editing cursor is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
 			</description>
 		</method>
 		<method name="clear_colors">
@@ -334,6 +335,7 @@
 			</argument>
 			<description>
 				Perform selection, from line/column to line/column.
+				If [member selecting_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
 		<method name="select_all">
@@ -341,6 +343,7 @@
 			</return>
 			<description>
 				Select all the text.
+				If [member selecting_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
 		<method name="set_line">
@@ -439,8 +442,10 @@
 			If [code]true[/code], the line containing the cursor is highlighted.
 		</member>
 		<member name="minimap_draw" type="bool" setter="draw_minimap" getter="is_drawing_minimap" default="false">
+			If [code]true[/code], a minimap is shown, providing an outline of your source code.
 		</member>
 		<member name="minimap_width" type="int" setter="set_minimap_width" getter="get_minimap_width" default="80">
+			The width, in pixels, of the minimap.
 		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" override="true" enum="Control.CursorShape" default="1" />
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color" default="false">
@@ -456,8 +461,11 @@
 			The current vertical scroll value.
 		</member>
 		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
+			If [code]true[/code], text can be selected.
+			If [code]false[/code], text can not be selected by the user or by the [method select] or [method select_all] methods.
 		</member>
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
+			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.
 		</member>
 		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled" default="false">
 			If [code]true[/code], line numbers are displayed to the left of the text.
@@ -473,6 +481,9 @@
 		</member>
 		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed" default="80.0">
 			Vertical scroll sensitivity.
+		</member>
+		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
+			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
 		</member>
 		<member name="wrap_enabled" type="bool" setter="set_wrap_enabled" getter="is_wrap_enabled" default="false">
 			If [code]true[/code], enables text wrapping when it goes beyond the edge of what is visible.

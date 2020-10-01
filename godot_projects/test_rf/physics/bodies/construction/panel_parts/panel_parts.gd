@@ -38,7 +38,7 @@ func _cleanup_panel( panel ):
 		ch.queue_free()
 
 
-func _add_button( panel, res_icon: String, block_name: String, desc: String ):
+func _add_button( panel, res_icon: String, block_name: String, desc: String, dynamic: bool=true ):
 	var Btn = load( "res://physics/bodies/construction/panel_parts/item_button.tscn" )
 	var icon = load( res_icon )
 	var btn = Btn.instance()
@@ -46,6 +46,7 @@ func _add_button( panel, res_icon: String, block_name: String, desc: String ):
 	btn.icon       = icon
 	btn.block_name = block_name
 	btn.description = desc
+	btn.dynamic     = dynamic
 	# Connecting signal directly to construction.
 	btn.connect( "create_block", construction, "create_block" )
 
@@ -58,11 +59,11 @@ func _create_buttons_frames():
 	
 	_add_button( frames, "res://physics/bodies/frames/frame_box/icon.png", 
 						 "frame_box", 
-						 "Frame box description" )
+						 "Frame box description", false )
 
 	_add_button( frames, "res://physics/bodies/frames/frame_light/assets/icon.png", 
 						 "frame_light", 
-						 "Frame light description" )
+						 "Frame light description", false )
 
 
 func _create_buttons_parts():
@@ -73,7 +74,7 @@ func _create_buttons_parts():
 	
 	_add_button( parts, "res://physics/bodies/parts/part_cylinder/assets/icon.png", 
 						 "part_cylinder", 
-						 "Cylinder part description" )
+						 "Cylinder part description", true )
 
 
 

@@ -1168,6 +1168,9 @@ msgstr "Projekt grundlæggere"
 msgid "Lead Developer"
 msgstr "Ledende Udvikler"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Projektleder "
@@ -1187,6 +1190,16 @@ msgstr "Platin Sponsorer"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Guld Sponsorer"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Sølv Donorer"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Bronze Donorer"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -2424,10 +2437,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "Der er ingen defineret scene at køre."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "Den nuværende scene er aldrig gemt, venligst gem før du kører den."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -10113,9 +10122,10 @@ msgid ""
 "This could take a while."
 msgstr ""
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
-msgstr "Projektleder"
+msgstr "Projekt Manager"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -10781,6 +10791,11 @@ msgstr ""
 #, fuzzy
 msgid "Make node as Root"
 msgstr "Gem Scene"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Vælg Node"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -12512,6 +12527,12 @@ msgstr ""
 "En figur skal gives CollisionShape2D for at det fungerer. Opret venligst en "
 "figur ressource for den!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -13029,6 +13050,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanter kan ikke ændres."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "Den nuværende scene er aldrig gemt, venligst gem før du kører den."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Ikke i stien for ressource."

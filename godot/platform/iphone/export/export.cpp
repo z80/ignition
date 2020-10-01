@@ -39,6 +39,7 @@
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "main/splash.gen.h"
 #include "platform/iphone/logo.gen.h"
 #include "string.h"
 
@@ -87,20 +88,22 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	struct IOSExportAsset {
 		String exported_path;
 		bool is_framework; // framework is anything linked to the binary, otherwise it's a resource
+		bool should_embed;
 	};
 
 	String _get_additional_plist_content();
 	String _get_linker_flags();
 	String _get_cpp_code();
 	void _fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const IOSConfigData &p_config, bool p_debug);
-	Error _export_loading_screens(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir);
+	Error _export_loading_screen_images(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir);
+	Error _export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir);
 	Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir);
 
 	Vector<ExportArchitecture> _get_supported_architectures();
 	Vector<String> _get_preset_architectures(const Ref<EditorExportPreset> &p_preset);
 
 	void _add_assets_to_project(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets);
-	Error _export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, Vector<IOSExportAsset> &r_exported_assets);
+	Error _export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets);
 	Error _export_additional_assets(const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets);
 
 	bool is_package_name_valid(const String &p_package, String *r_error = NULL) const {
@@ -257,6 +260,13 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_40x40", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_80x80", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight on devices with retina display
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_launch_screen_storyboard"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale To Fit,Scale To Fill,Scale"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@2x", PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@3x", PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_custom_bg_color"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "storyboard/custom_bg_color"), Color()));
+
 	for (uint64_t i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, loading_screen_infos[i].preset_key, PROPERTY_HINT_FILE, "*.png"), ""));
 	}
@@ -273,6 +283,12 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		"development",
 		"ad-hoc",
 		"enterprise"
+	};
+	static const String storyboard_image_scale_mode[] = {
+		"center",
+		"scaleAspectFit",
+		"scaleAspectFill",
+		"scaleToFill"
 	};
 	String str;
 	String strnew;
@@ -390,6 +406,60 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].find("$photolibrary_usage_description") != -1) {
 			String description = p_preset->get("privacy/photolibrary_usage_description");
 			strnew += lines[i].replace("$photolibrary_usage_description", description) + "\n";
+		} else if (lines[i].find("$plist_launch_screen_name") != -1) {
+			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
+			String value = is_on ? "<key>UILaunchStoryboardName</key>\n<string>Launch Screen</string>" : "";
+			strnew += lines[i].replace("$plist_launch_screen_name", value) + "\n";
+		} else if (lines[i].find("$pbx_launch_screen_file_reference") != -1) {
+			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
+			String value = is_on ? "90DD2D9D24B36E8000717FE1 = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = \"Launch Screen.storyboard\"; sourceTree = \"<group>\"; };" : "";
+			strnew += lines[i].replace("$pbx_launch_screen_file_reference", value) + "\n";
+		} else if (lines[i].find("$pbx_launch_screen_copy_files") != -1) {
+			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
+			String value = is_on ? "90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */," : "";
+			strnew += lines[i].replace("$pbx_launch_screen_copy_files", value) + "\n";
+		} else if (lines[i].find("$pbx_launch_screen_build_phase") != -1) {
+			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
+			String value = is_on ? "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */," : "";
+			strnew += lines[i].replace("$pbx_launch_screen_build_phase", value) + "\n";
+		} else if (lines[i].find("$pbx_launch_screen_build_reference") != -1) {
+			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
+			String value = is_on ? "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */; };" : "";
+			strnew += lines[i].replace("$pbx_launch_screen_build_reference", value) + "\n";
+		} else if (lines[i].find("$pbx_launch_image_usage_setting") != -1) {
+			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
+			String value = is_on ? "" : "ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;";
+			strnew += lines[i].replace("$pbx_launch_image_usage_setting", value) + "\n";
+		} else if (lines[i].find("$launch_screen_image_mode") != -1) {
+			int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
+			String value;
+
+			switch (image_scale_mode) {
+				case 0: {
+					String logo_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+					bool is_on = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
+					// If custom logo is not specified, Godot does not scale default one, so we should do the same.
+					value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
+				} break;
+				default: {
+					value = storyboard_image_scale_mode[image_scale_mode - 1];
+				}
+			}
+
+			strnew += lines[i].replace("$launch_screen_image_mode", value) + "\n";
+		} else if (lines[i].find("$launch_screen_background_color") != -1) {
+			bool use_custom = p_preset->get("storyboard/use_custom_bg_color");
+			Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : ProjectSettings::get_singleton()->get("application/boot_splash/bg_color");
+			const String value_format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
+
+			Dictionary value_dictionary;
+			value_dictionary["red"] = color.r;
+			value_dictionary["green"] = color.g;
+			value_dictionary["blue"] = color.b;
+			value_dictionary["alpha"] = color.a;
+			String value = value_format.format(value_dictionary, "$_");
+
+			strnew += lines[i].replace("$launch_screen_background_color", value) + "\n";
 		} else {
 			strnew += lines[i] + "\n";
 		}
@@ -520,7 +590,75 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 	return OK;
 }
 
-Error EditorExportPlatformIOS::_export_loading_screens(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
+Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
+	const String custom_launch_image_2x = p_preset->get("storyboard/custom_image@2x");
+	const String custom_launch_image_3x = p_preset->get("storyboard/custom_image@3x");
+
+	if (custom_launch_image_2x.length() > 0 && custom_launch_image_3x.length() > 0) {
+		Ref<Image> image;
+		String image_path = p_dest_dir.plus_file("splash@2x.png");
+		image.instance();
+		Error err = image->load(custom_launch_image_2x);
+
+		if (err) {
+			image.unref();
+			return err;
+		}
+
+		if (image->save_png(image_path) != OK) {
+			return ERR_FILE_CANT_WRITE;
+		}
+
+		image.unref();
+		image_path = p_dest_dir.plus_file("splash@3x.png");
+		image.instance();
+		err = image->load(custom_launch_image_3x);
+
+		if (err) {
+			image.unref();
+			return err;
+		}
+
+		if (image->save_png(image_path) != OK) {
+			return ERR_FILE_CANT_WRITE;
+		}
+	} else {
+		Ref<Image> splash;
+
+		const String splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+
+		if (!splash_path.empty()) {
+			splash.instance();
+			const Error err = splash->load(splash_path);
+			if (err) {
+				splash.unref();
+			}
+		}
+
+		if (splash.is_null()) {
+			splash = Ref<Image>(memnew(Image(boot_splash_png)));
+		}
+
+		// Using same image for both @2x and @3x
+		// because Godot's own boot logo uses single image for all resolutions.
+		// Also not using @1x image, because devices using this image variant
+		// are not supported by iOS 9, which is minimal target.
+		const String splash_png_path_2x = p_dest_dir.plus_file("splash@2x.png");
+		const String splash_png_path_3x = p_dest_dir.plus_file("splash@3x.png");
+
+		if (splash->save_png(splash_png_path_2x) != OK) {
+			return ERR_FILE_CANT_WRITE;
+		}
+
+		if (splash->save_png(splash_png_path_3x) != OK) {
+			return ERR_FILE_CANT_WRITE;
+		}
+	}
+
+	return OK;
+}
+
+Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
 	DirAccess *da = DirAccess::open(p_dest_dir);
 	ERR_FAIL_COND_V_MSG(!da, ERR_CANT_OPEN, "Cannot open directory '" + p_dest_dir + "'.");
 
@@ -646,15 +784,6 @@ struct ExportLibsData {
 };
 
 void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets) {
-	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
-	Vector<String> frameworks;
-	for (int i = 0; i < export_plugins.size(); ++i) {
-		Vector<String> plugin_frameworks = export_plugins[i]->get_ios_frameworks();
-		for (int j = 0; j < plugin_frameworks.size(); ++j) {
-			frameworks.push_back(plugin_frameworks[j]);
-		}
-	}
-
 	// that is just a random number, we just need Godot IDs not to clash with
 	// existing IDs in the project.
 	PbxId current_id = { 0x58938401, 0, 0 };
@@ -663,17 +792,37 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	String pbx_frameworks_refs;
 	String pbx_resources_build;
 	String pbx_resources_refs;
+	String pbx_embeded_frameworks;
 
 	const String file_info_format = String("$build_id = {isa = PBXBuildFile; fileRef = $ref_id; };\n") +
 									"$ref_id = {isa = PBXFileReference; lastKnownFileType = $file_type; name = \"$name\"; path = \"$file_path\"; sourceTree = \"<group>\"; };\n";
+
 	for (int i = 0; i < p_additional_assets.size(); ++i) {
+		String additional_asset_info_format = file_info_format;
+
 		String build_id = (++current_id).str();
 		String ref_id = (++current_id).str();
+		String framework_id = "";
+
 		const IOSExportAsset &asset = p_additional_assets[i];
 
 		String type;
 		if (asset.exported_path.ends_with(".framework")) {
+			if (asset.should_embed) {
+				additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
+				framework_id = (++current_id).str();
+				pbx_embeded_frameworks += framework_id + ",\n";
+			}
+
 			type = "wrapper.framework";
+		} else if (asset.exported_path.ends_with(".xcframework")) {
+			if (asset.should_embed) {
+				additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
+				framework_id = (++current_id).str();
+				pbx_embeded_frameworks += framework_id + ",\n";
+			}
+
+			type = "wrapper.xcframework";
 		} else if (asset.exported_path.ends_with(".dylib")) {
 			type = "compiled.mach-o.dylib";
 		} else if (asset.exported_path.ends_with(".a")) {
@@ -698,7 +847,10 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 		format_dict["name"] = asset.exported_path.get_file();
 		format_dict["file_path"] = asset.exported_path;
 		format_dict["file_type"] = type;
-		pbx_files += file_info_format.format(format_dict, "$_");
+		if (framework_id.length() > 0) {
+			format_dict["framework_id"] = framework_id;
+		}
+		pbx_files += additional_asset_info_format.format(format_dict, "$_");
 	}
 
 	// Note, frameworks like gamekit are always included in our project.pbxprof file
@@ -732,6 +884,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	str = str.replace("$additional_pbx_frameworks_refs", pbx_frameworks_refs);
 	str = str.replace("$additional_pbx_resources_build", pbx_resources_build);
 	str = str.replace("$additional_pbx_resources_refs", pbx_resources_refs);
+	str = str.replace("$pbx_embeded_frameworks", pbx_embeded_frameworks);
 
 	CharString cs = str.utf8();
 	p_project_data.resize(cs.size() - 1);
@@ -740,14 +893,16 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	}
 }
 
-Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, Vector<IOSExportAsset> &r_exported_assets) {
+Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets) {
 	DirAccess *filesystem_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String binary_name = p_out_dir.get_file().get_basename();
+
 	ERR_FAIL_COND_V_MSG(!filesystem_da, ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_out_dir + "'.");
 	for (int f_idx = 0; f_idx < p_assets.size(); ++f_idx) {
 		String asset = p_assets[f_idx];
 		if (!asset.begins_with("res://")) {
 			// either SDK-builtin or already a part of the export template
-			IOSExportAsset exported_asset = { asset, p_is_framework };
+			IOSExportAsset exported_asset = { asset, p_is_framework, p_should_embed };
 			r_exported_assets.push_back(exported_asset);
 		} else {
 			DirAccess *da = DirAccess::create_for_path(asset);
@@ -762,8 +917,42 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 				memdelete(filesystem_da);
 				return ERR_FILE_NOT_FOUND;
 			}
-			String additional_dir = p_is_framework && asset.ends_with(".dylib") ? "/dylibs/" : "/";
-			String destination_dir = p_out_dir + additional_dir + asset.get_base_dir().replace("res://", "");
+
+			String base_dir = asset.get_base_dir().replace("res://", "");
+			String destination_dir;
+			String destination;
+			String asset_path;
+
+			bool create_framework = false;
+
+			if (p_is_framework && asset.ends_with(".dylib")) {
+				// For iOS we need to turn .dylib into .framework
+				// to be able to send application to AppStore
+				asset_path = String("dylibs").plus_file(base_dir);
+
+				String file_name = asset.get_basename().get_file();
+				String framework_name = file_name + ".framework";
+
+				asset_path = asset_path.plus_file(framework_name);
+				destination_dir = p_out_dir.plus_file(asset_path);
+				destination = destination_dir.plus_file(file_name);
+				create_framework = true;
+			} else if (p_is_framework && (asset.ends_with(".framework") || asset.ends_with(".xcframework"))) {
+				asset_path = String("dylibs").plus_file(base_dir);
+
+				String file_name = asset.get_file();
+				asset_path = asset_path.plus_file(file_name);
+				destination_dir = p_out_dir.plus_file(asset_path);
+				destination = destination_dir;
+			} else {
+				asset_path = base_dir;
+
+				String file_name = asset.get_file();
+				destination_dir = p_out_dir.plus_file(asset_path);
+				asset_path = asset_path.plus_file(file_name);
+				destination = p_out_dir.plus_file(asset_path);
+			}
+
 			if (!filesystem_da->dir_exists(destination_dir)) {
 				Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
 				if (make_dir_err) {
@@ -773,15 +962,66 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 				}
 			}
 
-			String destination = destination_dir.plus_file(asset.get_file());
 			Error err = dir_exists ? da->copy_dir(asset, destination) : da->copy(asset, destination);
 			memdelete(da);
 			if (err) {
 				memdelete(filesystem_da);
 				return err;
 			}
-			IOSExportAsset exported_asset = { destination, p_is_framework };
+			IOSExportAsset exported_asset = { binary_name.plus_file(asset_path), p_is_framework, p_should_embed };
 			r_exported_assets.push_back(exported_asset);
+
+			if (create_framework) {
+				String file_name = asset.get_basename().get_file();
+				String framework_name = file_name + ".framework";
+
+				// Performing `install_name_tool -id @rpath/{name}.framework/{name} ./{name}` on dylib
+				{
+					List<String> install_name_args;
+					install_name_args.push_back("-id");
+					install_name_args.push_back(String("@rpath").plus_file(framework_name).plus_file(file_name));
+					install_name_args.push_back(destination);
+
+					OS::get_singleton()->execute("install_name_tool", install_name_args, true);
+				}
+
+				// Creating Info.plist
+				{
+					String info_plist_format = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+											   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+											   "<plist version=\"1.0\">\n"
+											   "<dict>\n"
+											   "<key>CFBundleShortVersionString</key>\n"
+											   "<string>1.0</string>\n"
+											   "<key>CFBundleIdentifier</key>\n"
+											   "<string>com.gdnative.framework.$name</string>\n"
+											   "<key>CFBundleName</key>\n"
+											   "<string>$name</string>\n"
+											   "<key>CFBundleExecutable</key>\n"
+											   "<string>$name</string>\n"
+											   "<key>DTPlatformName</key>\n"
+											   "<string>iphoneos</string>\n"
+											   "<key>CFBundleInfoDictionaryVersion</key>\n"
+											   "<string>6.0</string>\n"
+											   "<key>CFBundleVersion</key>\n"
+											   "<string>1</string>\n"
+											   "<key>CFBundlePackageType</key>\n"
+											   "<string>FMWK</string>\n"
+											   "<key>MinimumOSVersion</key>\n"
+											   "<string>10.0</string>\n"
+											   "</dict>\n"
+											   "</plist>";
+
+					String info_plist = info_plist_format.replace("$name", file_name);
+
+					FileAccess *f = FileAccess::open(destination_dir.plus_file("Info.plist"), FileAccess::WRITE);
+					if (f) {
+						f->store_string(info_plist);
+						f->close();
+						memdelete(f);
+					}
+				}
+			}
 		}
 	}
 	memdelete(filesystem_da);
@@ -792,18 +1032,22 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets) {
 	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
-		Vector<String> frameworks = export_plugins[i]->get_ios_frameworks();
-		Error err = _export_additional_assets(p_out_dir, frameworks, true, r_exported_assets);
+		Vector<String> linked_frameworks = export_plugins[i]->get_ios_frameworks();
+		Error err = _export_additional_assets(p_out_dir, linked_frameworks, true, false, r_exported_assets);
+		ERR_FAIL_COND_V(err, err);
+
+		Vector<String> embedded_frameworks = export_plugins[i]->get_ios_embedded_frameworks();
+		err = _export_additional_assets(p_out_dir, embedded_frameworks, true, true, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
 
 		Vector<String> project_static_libs = export_plugins[i]->get_ios_project_static_libs();
 		for (int j = 0; j < project_static_libs.size(); j++)
 			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
-		err = _export_additional_assets(p_out_dir, project_static_libs, true, r_exported_assets);
+		err = _export_additional_assets(p_out_dir, project_static_libs, true, true, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
 
 		Vector<String> ios_bundle_files = export_plugins[i]->get_ios_bundle_files();
-		err = _export_additional_assets(p_out_dir, ios_bundle_files, false, r_exported_assets);
+		err = _export_additional_assets(p_out_dir, ios_bundle_files, false, false, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
 	}
 
@@ -811,7 +1055,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 	for (int i = 0; i < p_libraries.size(); ++i) {
 		library_paths.push_back(p_libraries[i].path);
 	}
-	Error err = _export_additional_assets(p_out_dir, library_paths, true, r_exported_assets);
+	Error err = _export_additional_assets(p_out_dir, library_paths, true, true, r_exported_assets);
 	ERR_FAIL_COND_V(err, err);
 
 	return OK;
@@ -936,6 +1180,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	files_to_parse.insert("godot_ios.xcodeproj/project.xcworkspace/contents.xcworkspacedata");
 	files_to_parse.insert("godot_ios.xcodeproj/xcshareddata/xcschemes/godot_ios.xcscheme");
 	files_to_parse.insert("godot_ios/godot_ios.entitlements");
+	files_to_parse.insert("godot_ios/Launch Screen.storyboard");
 
 	IOSConfigData config_data = {
 		pkg_name,
@@ -1109,9 +1354,46 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	if (err)
 		return err;
 
-	err = _export_loading_screens(p_preset, dest_dir + binary_name + "/Images.xcassets/LaunchImage.launchimage/");
-	if (err)
+	bool use_storyboard = p_preset->get("storyboard/use_launch_screen_storyboard");
+
+	String launch_image_path = dest_dir + binary_name + "/Images.xcassets/LaunchImage.launchimage/";
+	String splash_image_path = dest_dir + binary_name + "/Images.xcassets/SplashImage.imageset/";
+
+	DirAccess *launch_screen_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	if (!launch_screen_da) {
+		return ERR_CANT_CREATE;
+	}
+
+	if (use_storyboard) {
+		print_line("Using Launch Storyboard");
+
+		if (launch_screen_da->change_dir(launch_image_path) == OK) {
+			launch_screen_da->erase_contents_recursive();
+			launch_screen_da->remove(launch_image_path);
+		}
+
+		err = _export_loading_screen_file(p_preset, splash_image_path);
+	} else {
+		print_line("Using Launch Images");
+
+		const String launch_screen_path = dest_dir + binary_name + "/Launch Screen.storyboard";
+
+		launch_screen_da->remove(launch_screen_path);
+
+		if (launch_screen_da->change_dir(splash_image_path) == OK) {
+			launch_screen_da->erase_contents_recursive();
+			launch_screen_da->remove(splash_image_path);
+		}
+
+		err = _export_loading_screen_images(p_preset, launch_image_path);
+	}
+
+	memdelete(launch_screen_da);
+
+	if (err) {
 		return err;
+	}
 
 	print_line("Exporting additional assets");
 	Vector<IOSExportAsset> assets;

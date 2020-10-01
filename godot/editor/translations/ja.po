@@ -36,7 +36,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"PO-Revision-Date: 2020-08-28 13:09+0000\n"
 "Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.2.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -331,11 +331,11 @@ msgstr "キュービック"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr "ループインタプリタを抑え込み(clamp)"
+msgstr "ループ補間をクランプ"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr "ループインタプリタをラップ(wrap)"
+msgstr "ループ補間をラップ"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -533,8 +533,7 @@ msgstr "警告:インポートしたアニメーションを編集していま�
 #: editor/animation_track_editor.cpp
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
-"アニメーションを作って編集するために AnimationPlayer ノードへのパスを選択して"
-"下さい。"
+"アニメーションを作って編集するには、 AnimationPlayer ノードを選択して下さい。"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -840,7 +839,7 @@ msgstr "追加の呼出し引数:"
 
 #: editor/connections_dialog.cpp
 msgid "Receiver Method:"
-msgstr "メソッドの選択:"
+msgstr "受信側メソッド:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -899,7 +898,7 @@ msgstr "'%s' を '%s' から切断"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
-msgstr "シグナル '%s' から全てを切断"
+msgstr "シグナル '%s' からすべてを切断"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
@@ -920,7 +919,7 @@ msgstr "接続を編集:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "シグナル %s から全ての接続を除去してもよろしいですか？"
+msgstr "シグナル %s からすべての接続を除去してもよろしいですか？"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -928,7 +927,7 @@ msgstr "シグナル"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
-msgstr "このシグナルから全ての接続を除去してもよろしいですか？"
+msgstr "このシグナルからすべての接続を除去してもよろしいですか？"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect All"
@@ -1144,6 +1143,9 @@ msgstr "プロジェクト創始者"
 msgid "Lead Developer"
 msgstr "開発リーダー"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "プロジェクトマネージャー "
@@ -1163,6 +1165,16 @@ msgstr "プラチナスポンサー"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "ゴールドスポンサー"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "シルバードナー"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "ブロンズドナー"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1482,7 +1494,7 @@ msgstr "自動読込みの並べ替え"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "自動読み込みを追加出来ません:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1762,7 +1774,7 @@ msgstr "Godot機能プロファイル"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
-msgstr "プロファイルのインポート"
+msgstr "プロファイルをインポート"
 
 #: editor/editor_feature_profile.cpp
 msgid "Export Profile"
@@ -2353,10 +2365,6 @@ msgid "There is no defined scene to run."
 msgstr "実行するシーンが定義されていません。"
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "現在のシーンは保存されませんでした。実行する前に保存してください。"
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "サブプロセスを開始できませんでした!"
 
@@ -2442,13 +2450,15 @@ msgstr "保存されていないシーンを読み込むことはできません
 
 #: editor/editor_node.cpp
 msgid "Reload Saved Scene"
-msgstr "保存済みのシーンをリロード"
+msgstr "保存済みシーンをリロード"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"現在のシーンには未保存の変更があります。\n"
+"それでも保存済みシーンをリロードしますか？ この動作は取り消せません。"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2754,11 +2764,11 @@ msgstr "バージョンコントロール"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
-msgstr "バージョン管理のセットアップ"
+msgstr "バージョン管理をセットアップ"
 
 #: editor/editor_node.cpp
 msgid "Shut Down Version Control"
-msgstr "バージョン管理の終了"
+msgstr "バージョン管理を終了"
 
 #: editor/editor_node.cpp
 msgid "Export..."
@@ -2897,15 +2907,15 @@ msgstr "スクリーンショットはEditor Data / Settingsフォルダに保�
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr "フルスクリーンの有効化 / 無効化"
+msgstr "フルスクリーンを有効化 / 無効化"
 
 #: editor/editor_node.cpp
 msgid "Toggle System Console"
-msgstr "システムコンソールの有効化 / 無効化"
+msgstr "システムコンソールを有効化 / 無効化"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
-msgstr "エディタのデータ・設定フォルダを開く"
+msgstr "エディタのデータ / 設定フォルダを開く"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
@@ -3062,13 +3072,13 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
-"この操作は \"res://android/build\" にソーステンプレートをインストールしアンド"
-"ロイドのカスタムビルドを設定します。\n"
-"後から設定に変更を加えたり、エクスポート時にカスタムAPKをビルドできます。(モ"
-"ジュールを追加する、AndroidManifest.xmlを変更する等)\n"
+"この操作は \"res://android/build\" にソーステンプレートをインストールし、アン"
+"ドロイドのカスタムビルドを設定します。\n"
+"後から設定に変更を加えたり、エクスポート時にカスタムAPKをビルドできます (モ"
+"ジュールを追加する、AndroidManifest.xmlを変更する等)。\n"
 "APKビルドの初期設定の代わりにカスタムビルド設定を使うためには、アンドロイドの"
-"エクスポート設定の「カスタムビルドを使用する」のオプションが有効化されている"
-"必要があることに注意してください。"
+"エクスポート設定の「Use Custom Build (カスタムビルドを使用する)」のオプション"
+"が有効化されている必要があることに注意してください。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3980,6 +3990,7 @@ msgstr "インポート済スクリプトの実行中にエラー:"
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
 msgstr ""
+"`post_import()` メソッド内で、Nodeを継承したオブジェクトを返しましたか？"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -4742,7 +4753,7 @@ msgstr "プレイモード:"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "AnimationTree(アニメーションツリー)"
+msgstr "アニメーションツリー"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -5364,7 +5375,7 @@ msgstr "IKチェーンをクリア"
 msgid ""
 "Warning: Children of a container get their position and size determined only "
 "by their parent."
-msgstr "警告:コンテナの子の位置とサイズは、親によってのみ決定されます。"
+msgstr "注意:コンテナの子の位置とサイズは、親によってのみ決定されます。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -7013,19 +7024,19 @@ msgstr "右インデント"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
-msgstr "コメントの切り替え"
+msgstr "コメントアウト / 解除"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
-msgstr "行を折りたたむ/展開する"
+msgstr "行を折りたたむ / 展開"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
-msgstr "全ての行を折りたたむ"
+msgstr "すべての行を折りたたむ"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
-msgstr "全ての行を展開する"
+msgstr "すべての行を展開"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Clone Down"
@@ -7037,7 +7048,7 @@ msgstr "シンボルを補完"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Evaluate Selection"
-msgstr "選択範囲を評価する"
+msgstr "選択範囲を評価"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
@@ -7322,11 +7333,11 @@ msgstr "シェーディングなしで表示"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Environment"
-msgstr "環境表示"
+msgstr "環境を表示"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Gizmos"
-msgstr "ギズモ(Gizmo)を表示"
+msgstr "ギズモを表示"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Information"
@@ -7412,6 +7423,11 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+"クリックで可視状態のオン / オフ。\n"
+"\n"
+"開いた目: ギズモは可視。\n"
+"閉じた目: ギズモは非可視。\n"
+"半開きの目: ギズモは非透明な面を通しても可視 (「X線」)。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -7526,7 +7542,7 @@ msgstr "ギズモ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Origin"
-msgstr "原点の表示"
+msgstr "ビューの原点"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Grid"
@@ -7571,7 +7587,7 @@ msgstr "Z-Farを表示:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Change"
-msgstr "変換の変更"
+msgstr "トランスフォームの変更"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate:"
@@ -8336,7 +8352,7 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Region"
-msgstr "タイル領域の設定"
+msgstr "タイル領域を設定"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Tile"
@@ -8545,7 +8561,7 @@ msgstr "Sampler"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
-msgstr "入力ポートの追加"
+msgstr "入力ポートを追加"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add output port"
@@ -8577,7 +8593,7 @@ msgstr "出力ポートの削除"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set expression"
-msgstr "式の設定"
+msgstr "式を設定"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Resize VisualShader node"
@@ -8646,11 +8662,11 @@ msgstr "グレースケール関数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts HSV vector to RGB equivalent."
-msgstr "HSVベクトルをRGBベクトルに変換します。"
+msgstr "HSVベクトルをRGBベクトルに変換。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts RGB vector to HSV equivalent."
-msgstr "RGBベクトルをHSVベクトルに変換します。"
+msgstr "RGBベクトルをHSVベクトルに変換。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sepia function."
@@ -8984,7 +9000,7 @@ msgstr "パラメータの符号を抽出します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the sine of the parameter."
-msgstr "パラメータの符号を返します。"
+msgstr "パラメータのサインを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the hyperbolic sine of the parameter."
@@ -9044,7 +9060,7 @@ msgstr "スカラーをスカラーで乗算します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the remainder of the two scalars."
-msgstr "2つのスカラーの残りを返します。"
+msgstr "2つのスカラーの剰余を返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Subtracts scalar from scalar."
@@ -9272,7 +9288,7 @@ msgstr "ベクトルでベクトルを乗算します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the remainder of the two vectors."
-msgstr "2つのベクトルの残りを返します。"
+msgstr "2つのベクトルの剰余を返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Subtracts vector from vector."
@@ -9834,7 +9850,7 @@ msgid ""
 "Remove %d projects from the list?\n"
 "The project folders' contents won't be modified."
 msgstr ""
-"%d プロジェクトを一覧から削除しますか?\n"
+"%d プロジェクトを一覧から削除しますか？\n"
 "プロジェクトフォルダの内容は変更されません。"
 
 #: editor/project_manager.cpp
@@ -9842,7 +9858,7 @@ msgid ""
 "Remove this project from the list?\n"
 "The project folder's contents won't be modified."
 msgstr ""
-"このプロジェクトを一覧から削除しますか?\n"
+"このプロジェクトを一覧から削除しますか？\n"
 "プロジェクトフォルダの内容は変更されません。"
 
 #: editor/project_manager.cpp
@@ -9870,6 +9886,7 @@ msgstr ""
 "既存のGodotプロジェクトの%sフォルダをスキャンしますか?\n"
 "これにはしばらく時間がかかります。"
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "プロジェクトマネージャー"
@@ -9963,11 +9980,11 @@ msgstr "入力アクションイベントの名前を変更する"
 
 #: editor/project_settings_editor.cpp
 msgid "Change Action deadzone"
-msgstr "アクションデッドゾーンの変更"
+msgstr "アクション デッドゾーンを変更"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action Event"
-msgstr "入力アクションイベントを追加"
+msgstr "入力アクション イベントを追加"
 
 #: editor/project_settings_editor.cpp
 msgid "All Devices"
@@ -10071,7 +10088,7 @@ msgstr "マウスホイールを下に。"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Global Property"
-msgstr "グローバルプロパティの追加"
+msgstr "グローバルプロパティを追加"
 
 #: editor/project_settings_editor.cpp
 msgid "Select a setting item first!"
@@ -10531,6 +10548,10 @@ msgid "Make node as Root"
 msgstr "ノードをルートにする"
 
 #: editor/scene_tree_dock.cpp
+msgid "Delete %d nodes and any children?"
+msgstr "%d ノードとその子ノードすべてを削除しますか？"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
 msgstr "%d ノードを削除しますか？"
 
@@ -10664,6 +10685,9 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"スクリプトをアタッチできません: 言語がひとつも登録されていません。\n"
+"おそらくこのエディタは、すべての言語モジュールを無効化してビルドされていま"
+"す。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -11977,26 +12001,36 @@ msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
+"「android/modules」に含まれる「GodotPaymentV3」モジュールのプロジェクト設定が"
+"無効です (Godot 3.2.2 にて変更)。\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
+"プラグインを利用するには「Use Custom Build (カスタムビルドを使用する)」が有効"
+"になっている必要があります。"
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
 msgstr ""
+"\"Degrees Of Freedom\" は \"Xr Mode\" が \"Oculus Mobile VR\" の場合にのみ有"
+"効になります。"
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"\"Hand Tracking\" は \"Xr Mode\" が \"Oculus Mobile VR\" の場合にのみ有効にな"
+"ります。"
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"\"Focus Awareness\" は \"Xr Mode\" が \"Oculus Mobile VR\" の場合にのみ有効に"
+"なります。"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12207,6 +12241,14 @@ msgid ""
 msgstr ""
 "関数に対して CollisionShape2D の形状(シェイプ)を指定する必要があります。その"
 "ためのシェイプリソースを作成してください!"
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+"ポリゴンベースのシェイプは、CollisionShape2Dノードで使用したり直接編集したり"
+"するには適しません。代わりにCollisionPolygon2Dノードを使用してください。"
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12779,6 +12821,9 @@ msgstr "Varying変数は頂点関数にのみ割り当てることができま�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "現在のシーンは保存されませんでした。実行する前に保存してください。"
 
 #~ msgid "Not in resource path."
 #~ msgstr "リソースパスにありません。"

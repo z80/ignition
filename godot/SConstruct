@@ -284,6 +284,14 @@ else:
         print("Automatically detected platform: " + selected_platform)
         env_base["platform"] = selected_platform
 
+if selected_platform in ["linux", "bsd", "linuxbsd"]:
+    if selected_platform == "linuxbsd":
+        # Alias for forward compatibility.
+        print('Platform "linuxbsd" is still called "x11" in Godot 3.2.x. Building for platform "x11".')
+    # Alias for convenience.
+    selected_platform = "x11"
+    env_base["platform"] = selected_platform
+
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
     sys.path.insert(0, tmppath)
@@ -298,9 +306,10 @@ if selected_platform in platform_list:
     from SCons import __version__ as scons_raw_version
 
     scons_ver = env._get_major_minor_revision(scons_raw_version)
-    if scons_ver >= (3, 1, 1):
-        env.Tool("compilation_db", toolpath=["misc/scons"])
-        env.Alias("compiledb", env.CompilationDatabase("compile_commands.json"))
+
+    if scons_ver >= (4, 0, 0):
+        env.Tool("compilation_db")
+        env.Alias("compiledb", env.CompilationDatabase())
 
     if env["dev"]:
         env["verbose"] = True
@@ -402,6 +411,7 @@ if selected_platform in platform_list:
         all_plus_warnings = ["-Wwrite-strings"]
 
         if methods.using_gcc(env):
+            env.Append(CCFLAGS=["-Wno-misleading-indentation"])
             if version[0] >= 7:
                 shadow_local_warning = ["-Wshadow-local"]
 

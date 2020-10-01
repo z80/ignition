@@ -36,6 +36,7 @@
 #import <UIKit/UIKit.h>
 
 @protocol GLViewDelegate;
+@class GLViewGestureRecognizer;
 
 @interface GLView : UIView <UIKeyInput> {
 @private
@@ -69,6 +70,9 @@
 	BOOL delegateSetup;
 	BOOL active;
 	float screen_scale;
+
+	// Delay gesture recognizer
+	GLViewGestureRecognizer *delayGestureRecognizer;
 }
 
 @property(nonatomic, assign) id<GLViewDelegate> delegate;
@@ -103,7 +107,7 @@
 - (void)keyboardOnScreen:(NSNotification *)notification;
 - (void)keyboardHidden:(NSNotification *)notification;
 
-@property NSTimeInterval animationInterval;
+@property(nonatomic, assign) NSTimeInterval animationInterval;
 @property(nonatomic, assign) BOOL useCADisplayLink;
 
 @end

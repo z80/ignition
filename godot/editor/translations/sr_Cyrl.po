@@ -1228,6 +1228,9 @@ msgstr "Оснивачи пројекта"
 msgid "Lead Developer"
 msgstr "Главни девелопер"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 #, fuzzy
 msgid "Project Manager "
@@ -1248,6 +1251,16 @@ msgstr "Платинумски спонзори"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Златни спонзори"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Сребрни донатори"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Бронзани донатори"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -2547,10 +2560,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "Не постоји дефинисана сцена за покретање."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "Тренутна сцена није сачувана, молим сачувајте је пре покретања."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -10998,6 +11007,7 @@ msgstr ""
 "пројектима?\n"
 "Ово може потрајати."
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Менаџер пројекта"
@@ -11808,6 +11818,11 @@ msgstr "Инстанциране сцене не могу бити корен"
 #, fuzzy
 msgid "Make node as Root"
 msgstr "Направи Корен од чвора"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Обриши чвор \"%s\" и његову децу?"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -13785,6 +13800,12 @@ msgstr ""
 "Облик мора бити снабдевен за СударниОблик2Д да би радио. Молимо креирај "
 "облик ресурс за њега!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 #, fuzzy
 msgid ""
@@ -14434,6 +14455,9 @@ msgstr "Варијације могу само бити одређене у фу
 #, fuzzy
 msgid "Constants cannot be modified."
 msgstr "Константе није могуће мењати."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "Тренутна сцена није сачувана, молим сачувајте је пре покретања."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Није на пут ресурса."

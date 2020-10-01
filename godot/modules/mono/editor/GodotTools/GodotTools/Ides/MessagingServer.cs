@@ -12,6 +12,7 @@ using GodotTools.IdeMessaging;
 using GodotTools.IdeMessaging.Requests;
 using GodotTools.IdeMessaging.Utils;
 using GodotTools.Internals;
+using GodotTools.Utils;
 using Newtonsoft.Json;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
@@ -307,6 +308,11 @@ namespace GodotTools.Ides
                         var request = JsonConvert.DeserializeObject<DebugPlayRequest>(content.Body);
                         return await HandleDebugPlay(request);
                     },
+                    [StopPlayRequest.Id] = async (peer, content) =>
+                    {
+                        var request = JsonConvert.DeserializeObject<StopPlayRequest>(content.Body);
+                        return await HandleStopPlay(request);
+                    },
                     [ReloadScriptsRequest.Id] = async (peer, content) =>
                     {
                         _ = JsonConvert.DeserializeObject<ReloadScriptsRequest>(content.Body);
@@ -324,9 +330,10 @@ namespace GodotTools.Ides
             {
                 DispatchToMainThread(() =>
                 {
-                    GodotSharpEditor.Instance.CurrentPlaySettings = new PlaySettings();
+                    // TODO: Add BuildBeforePlaying flag to PlayRequest
+
+                    // Run the game
                     Internal.EditorRunPlay();
-                    GodotSharpEditor.Instance.CurrentPlaySettings = null;
                 });
                 return Task.FromResult<Response>(new PlayResponse());
             }
@@ -335,12 +342,30 @@ namespace GodotTools.Ides
             {
                 DispatchToMainThread(() =>
                 {
-                    GodotSharpEditor.Instance.CurrentPlaySettings =
-                        new PlaySettings(request.DebuggerHost, request.DebuggerPort, buildBeforePlaying: true);
+                    // Tell the build callback whether the editor already built the solution or not
+                    GodotSharpEditor.Instance.SkipBuildBeforePlaying = !(request.BuildBeforePlaying ?? true);
+
+                    // Pass the debugger agent settings to the player via an environment variables
+                    // TODO: It would be better if this was an argument in EditorRunPlay instead
+                    Environment.SetEnvironmentVariable("GODOT_MONO_DEBUGGER_AGENT",
+                        "--debugger-agent=transport=dt_socket" +
+                        $",address={request.DebuggerHost}:{request.DebuggerPort}" +
+                        ",server=n");
+
+                    // Run the game
                     Internal.EditorRunPlay();
-                    GodotSharpEditor.Instance.CurrentPlaySettings = null;
+
+                    // Restore normal settings
+                    Environment.SetEnvironmentVariable("GODOT_MONO_DEBUGGER_AGENT", "");
+                    GodotSharpEditor.Instance.SkipBuildBeforePlaying = false;
                 });
                 return Task.FromResult<Response>(new DebugPlayResponse());
+            }
+
+            private static Task<Response> HandleStopPlay(StopPlayRequest request)
+            {
+                DispatchToMainThread(Internal.EditorRunStop);
+                return Task.FromResult<Response>(new StopPlayResponse());
             }
 
             private static Task<Response> HandleReloadScripts()
@@ -351,8 +376,13 @@ namespace GodotTools.Ides
 
             private static async Task<Response> HandleCodeCompletionRequest(CodeCompletionRequest request)
             {
+                // This is needed if the "resource path" part of the path is case insensitive.
+                // However, it doesn't fix resource loading if the rest of the path is also case insensitive.
+                string scriptFileLocalized = FsPathUtils.LocalizePathWithCaseChecked(request.ScriptFile);
+
                 var response = new CodeCompletionResponse {Kind = request.Kind, ScriptFile = request.ScriptFile};
-                response.Suggestions = await Task.Run(() => Internal.CodeCompletionRequest(response.Kind, response.ScriptFile));
+                response.Suggestions = await Task.Run(() =>
+                    Internal.CodeCompletionRequest(response.Kind, scriptFileLocalized ?? request.ScriptFile));
                 return response;
             }
         }

@@ -1948,22 +1948,22 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 		switch (nav_mode) {
 			case NAVIGATION_PAN: {
-				_nav_pan(m, pan_gesture->get_delta());
+				_nav_pan(pan_gesture, pan_gesture->get_delta());
 
 			} break;
 
 			case NAVIGATION_ZOOM: {
-				_nav_zoom(m, pan_gesture->get_delta());
+				_nav_zoom(pan_gesture, pan_gesture->get_delta());
 
 			} break;
 
 			case NAVIGATION_ORBIT: {
-				_nav_orbit(m, pan_gesture->get_delta());
+				_nav_orbit(pan_gesture, pan_gesture->get_delta());
 
 			} break;
 
 			case NAVIGATION_LOOK: {
-				_nav_look(m, pan_gesture->get_delta());
+				_nav_look(pan_gesture, pan_gesture->get_delta());
 
 			} break;
 
@@ -2073,7 +2073,12 @@ void SpatialEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const
 	camera_transform.translate(cursor.pos);
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
-	Vector3 translation(-p_relative.x * pan_speed, p_relative.y * pan_speed, 0);
+	const bool invert_x_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_x_axis");
+	const bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y_axis");
+	Vector3 translation(
+			(invert_x_axis ? -1 : 1) * -p_relative.x * pan_speed,
+			(invert_y_axis ? -1 : 1) * p_relative.y * pan_speed,
+			0);
 	translation *= cursor.distance / DISTANCE_DEFAULT;
 	camera_transform.translate(translation);
 	cursor.pos = camera_transform.origin;
@@ -2113,17 +2118,24 @@ void SpatialEditorViewport::_nav_orbit(Ref<InputEventWithModifiers> p_event, con
 		_menu_option(VIEW_PERSPECTIVE);
 	}
 
-	real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
-	real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
-	bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y_axis");
+	const real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
+	const real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
+	const bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y_axis");
+	const bool invert_x_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_x_axis");
 
 	if (invert_y_axis) {
 		cursor.x_rot -= p_relative.y * radians_per_pixel;
 	} else {
 		cursor.x_rot += p_relative.y * radians_per_pixel;
 	}
-	cursor.y_rot += p_relative.x * radians_per_pixel;
+	// Clamp the Y rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
 	cursor.x_rot = CLAMP(cursor.x_rot, -1.57, 1.57);
+
+	if (invert_x_axis) {
+		cursor.y_rot -= p_relative.x * radians_per_pixel;
+	} else {
+		cursor.y_rot += p_relative.x * radians_per_pixel;
+	}
 	name = "";
 	_update_name();
 }
@@ -2139,20 +2151,22 @@ void SpatialEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, cons
 		_menu_option(VIEW_PERSPECTIVE);
 	}
 
-	real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
-	real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
-	bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y_axis");
+	const real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
+	const real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
+	const bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y_axis");
 
 	// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
-	Transform prev_camera_transform = to_camera_transform(cursor);
+	const Transform prev_camera_transform = to_camera_transform(cursor);
 
 	if (invert_y_axis) {
 		cursor.x_rot -= p_relative.y * radians_per_pixel;
 	} else {
 		cursor.x_rot += p_relative.y * radians_per_pixel;
 	}
-	cursor.y_rot += p_relative.x * radians_per_pixel;
+	// Clamp the Y rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
 	cursor.x_rot = CLAMP(cursor.x_rot, -1.57, 1.57);
+
+	cursor.y_rot += p_relative.x * radians_per_pixel;
 
 	// Look is like the opposite of Orbit: the focus point rotates around the camera
 	Transform camera_transform = to_camera_transform(cursor);
@@ -2542,7 +2556,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
 
-		view_menu->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
+		view_menu->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
 		preview_camera->set_icon(get_icon("Camera", "EditorIcons"));
 
 		view_menu->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));

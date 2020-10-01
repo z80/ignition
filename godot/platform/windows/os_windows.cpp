@@ -557,8 +557,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 					Ref<InputEventMouseMotion> mm;
 					mm.instance();
-					mm->set_control(GetKeyState(VK_CONTROL) != 0);
-					mm->set_shift(GetKeyState(VK_SHIFT) != 0);
+					mm->set_control(GetKeyState(VK_CONTROL) < 0);
+					mm->set_shift(GetKeyState(VK_SHIFT) < 0);
 					mm->set_alt(alt_mem);
 
 					mm->set_pressure(last_pressure);
@@ -699,8 +699,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				mm->set_tilt(Vector2((float)pen_info.tiltX / 90, (float)pen_info.tiltY / 90));
 			}
 
-			mm->set_control((wParam & MK_CONTROL) != 0);
-			mm->set_shift((wParam & MK_SHIFT) != 0);
+			mm->set_control(GetKeyState(VK_CONTROL) < 0);
+			mm->set_shift(GetKeyState(VK_SHIFT) < 0);
 			mm->set_alt(alt_mem);
 
 			mm->set_button_mask(last_button_state);
@@ -1733,7 +1733,7 @@ void OS_Windows::set_clipboard(const String &p_text) {
 
 	// Convert LF line endings to CRLF in clipboard content
 	// Otherwise, line endings won't be visible when pasted in other software
-	String text = p_text.replace("\n", "\r\n");
+	String text = p_text.replace("\r\n", "\n").replace("\n", "\r\n"); // avoid \r\r\n
 
 	if (!OpenClipboard(hWnd)) {
 		ERR_FAIL_MSG("Unable to open clipboard.");

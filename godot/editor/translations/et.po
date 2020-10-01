@@ -9,15 +9,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2020-05-31 12:39+0000\n"
-"Last-Translator: René <renepiik@gmail.com>\n"
+"PO-Revision-Date: 2020-09-01 10:38+0000\n"
+"Last-Translator: StReef <streef.gtx@gmail.com>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/et/>\n"
 "Language: et\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -409,8 +409,7 @@ msgstr "Animatsiooni rajad võivad osutada ainult AnimationPlayer sõlmedele."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Animatsiooni mängija ei saa animeerida iseennast, ainult teisi mängijaid."
+msgstr "AnimationPlayer ei saa animeerida iseennast, ainult teisi mängijaid."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
@@ -492,7 +491,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr ""
+msgstr "Vali AnimationPlayer sõlm, et luua ja redigeerida animatsioone."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -503,12 +502,13 @@ msgid "Group tracks by node or display them as plain list."
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Snap:"
-msgstr ""
+msgstr "Intervall:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
-msgstr ""
+msgstr "Animatsiooni sammu väärtus."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
@@ -516,7 +516,7 @@ msgstr "Sekundid"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
-msgstr "Kaadrit/Sekundis"
+msgstr "K/S"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -530,7 +530,7 @@ msgstr "Muuda"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
-msgstr ""
+msgstr "Animatsiooni atribuudid."
 
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
@@ -638,9 +638,8 @@ msgid "Copy"
 msgstr "Kopeeri"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Tühista Valik"
+msgstr "Vali kõik/mitte ükski"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -773,7 +772,7 @@ msgstr ""
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
-msgstr ""
+msgstr "Lisa"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/editor_feature_profile.cpp editor/groups_editor.cpp
@@ -784,7 +783,7 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
-msgstr ""
+msgstr "Eemalda"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
@@ -800,7 +799,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
-msgstr ""
+msgstr "Täpsem"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
@@ -835,7 +834,7 @@ msgstr ""
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr ""
+msgstr "Sulge"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
@@ -880,7 +879,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr ""
+msgstr "Signaalid"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -913,23 +912,23 @@ msgstr ""
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
 msgid "Favorites:"
-msgstr ""
+msgstr "Lemmikud:"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
-msgstr ""
+msgstr "Hiljutised:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
-msgstr ""
+msgstr "Otsi:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
-msgstr ""
+msgstr "Vasted:"
 
 #: editor/create_dialog.cpp editor/editor_plugin_settings.cpp
 #: editor/plugin_config_dialog.cpp
@@ -937,7 +936,7 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Description:"
-msgstr ""
+msgstr "Kirjeldus:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -997,7 +996,7 @@ msgstr ""
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Open"
-msgstr ""
+msgstr "Ava"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
@@ -1060,7 +1059,7 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
-msgstr ""
+msgstr "Kustuta"
 
 #: editor/dependency_editor.cpp
 msgid "Owns"
@@ -1080,67 +1079,80 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
-msgstr ""
+msgstr "Suur tänu Godot kogukonnalt!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr ""
+msgstr "Godot mängumootori panustajad"
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
-msgstr ""
+msgstr "Projekti asutajad"
 
 #: editor/editor_about.cpp
 msgid "Lead Developer"
-msgstr ""
+msgstr "Juhtiv arendaja"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr ""
+msgstr "Projekti juht "
 
 #: editor/editor_about.cpp
 msgid "Developers"
-msgstr ""
+msgstr "Arendajad"
 
 #: editor/editor_about.cpp
 msgid "Authors"
-msgstr ""
+msgstr "Autorid"
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr ""
+msgstr "Plaatinumsponsorid"
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr ""
+msgstr "Kuldsponsorid"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Hõbennetajad"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Pronksannetajad"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr ""
+msgstr "Väikesponsorid"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr ""
+msgstr "Kuldannetajad"
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr ""
+msgstr "Hõbennetajad"
 
 #: editor/editor_about.cpp
 msgid "Bronze Donors"
-msgstr ""
+msgstr "Pronksannetajad"
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr ""
+msgstr "Annetajad"
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr ""
+msgstr "Litsents"
 
 #: editor/editor_about.cpp
 msgid "Third-party Licenses"
-msgstr ""
+msgstr "Kolmanda osapoole litsents"
 
 #: editor/editor_about.cpp
 msgid ""
@@ -1149,18 +1161,22 @@ msgid ""
 "is an exhaustive list of all such third-party components with their "
 "respective copyright statements and license terms."
 msgstr ""
+"Godot mängumootor tugineb mitmetele kolmandate osapoolte tasuta ja avatud "
+"lähtekoodiga teekidele, mis kõik on kooskõlas MIT-litsentsi tingimustega. "
+"Järgnev on kõigi selliste kolmandate osapoolte komponentide täielik loetelu "
+"koos vastavate autoriõiguste avalduste ja litsentsitingimustega."
 
 #: editor/editor_about.cpp
 msgid "All Components"
-msgstr ""
+msgstr "Kõik komponendid"
 
 #: editor/editor_about.cpp
 msgid "Components"
-msgstr ""
+msgstr "Komponendid"
 
 #: editor/editor_about.cpp
 msgid "Licenses"
-msgstr ""
+msgstr "Litsensid"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in ZIP format."
@@ -1205,11 +1221,11 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr ""
+msgstr "Heliväljundi"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
-msgstr ""
+msgstr "Lisa efekt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
@@ -1237,7 +1253,7 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
-msgstr ""
+msgstr "Lisa helisiini efekt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Bus Effect"
@@ -1270,7 +1286,7 @@ msgstr ""
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr ""
+msgstr "Duplikeeri"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
@@ -1356,7 +1372,7 @@ msgstr "Lae olemasolev siini paigutus."
 
 #: editor/editor_audio_buses.cpp
 msgid "Save As"
-msgstr "Salvesta kui…"
+msgstr "Salvesta kui"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
@@ -1510,7 +1526,6 @@ msgid "Choose"
 msgstr "Vali"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Storing File:"
 msgstr "Salvestan faili:"
 
@@ -1571,7 +1586,7 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
-msgstr "3D-redigeerija"
+msgstr "3D-redaktor"
 
 #: editor/editor_feature_profile.cpp
 msgid "Script Editor"
@@ -1715,7 +1730,7 @@ msgstr "Ekspordi profiil"
 
 #: editor/editor_feature_profile.cpp
 msgid "Manage Editor Feature Profiles"
-msgstr "Halda redigeerija funktsioonide profiile"
+msgstr "Halda redaktori funktsioonide profiile"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
@@ -1823,14 +1838,12 @@ msgid "Move Favorite Down"
 msgstr "Liiguta lemmikud alla"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "Mine Eelmisele Sammule"
+msgstr "Mine eelmisesse kausta."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "Mine Järgmisele Sammule"
+msgstr "Mine järmisesse kausta."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
@@ -1887,7 +1900,6 @@ msgstr ""
 "katkestati"
 
 #: editor/editor_file_system.cpp
-#, fuzzy
 msgid "(Re)Importing Assets"
 msgstr "(Taas)impordin varasid"
 
@@ -1906,7 +1918,7 @@ msgstr "Pärib:"
 
 #: editor/editor_help.cpp
 msgid "Inherited by:"
-msgstr "Päritud %s poolt"
+msgstr "Päritud %s poolt:"
 
 #: editor/editor_help.cpp
 msgid "Description"
@@ -2073,15 +2085,13 @@ msgstr "Puhasta väljund"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Stop"
-msgstr "Peatu/Stopp"
+msgstr "Lõpeta"
 
 #: editor/editor_network_profiler.cpp editor/editor_profiler.cpp
 #: editor/plugins/animation_state_machine_editor.cpp editor/rename_dialog.cpp
-#, fuzzy
 msgid "Start"
-msgstr "Start/Käivita"
+msgstr "Käivita"
 
 #: editor/editor_network_profiler.cpp
 msgid "%s/s"
@@ -2281,16 +2291,12 @@ msgid "There is no defined scene to run."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr ""
 
 #: editor/editor_node.cpp editor/filesystem_dock.cpp
 msgid "Open Scene"
-msgstr ""
+msgstr "Ava stseen"
 
 #: editor/editor_node.cpp
 msgid "Open Base Scene"
@@ -2298,15 +2304,15 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Open..."
-msgstr ""
+msgstr "Ava kiiresti..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
-msgstr ""
+msgstr "Ava kiiresti stseen..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script..."
-msgstr ""
+msgstr "Ava kiiresti skript..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -2326,7 +2332,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
-msgstr ""
+msgstr "Salvesta stseen kui..."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -2369,9 +2375,8 @@ msgid "Can't reload a scene that was never saved."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Stseeni salvestamine"
+msgstr "Taaslae salvestatud stseen"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2385,19 +2390,19 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quit"
-msgstr ""
+msgstr "Välju"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr ""
+msgstr "Välju redaktorist?"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
-msgstr ""
+msgstr "Ava projekti juht?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
-msgstr ""
+msgstr "Salvesta ja välju"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
@@ -2419,11 +2424,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Close Scene"
-msgstr ""
+msgstr "Sule stseen"
 
 #: editor/editor_node.cpp
 msgid "Reopen Closed Scene"
-msgstr ""
+msgstr "Taasava suletud stseen"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
@@ -2435,22 +2440,28 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
-msgstr ""
+msgstr "Lisa-skripti ei olnud võimalik laadida teelt: '%s'."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' There seems to be an error in "
 "the code, please check the syntax."
 msgstr ""
+"Lisa-skripti ei olnud võimalik laadida teelt: '%s'. Tundub, et koodis on "
+"viga, palun kontrolli süntaksi."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
+"Lisa-skripti ei olnud võimalik laadida teelt: '%s'. Baastüüp ei ole "
+"EditorPlugin."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr ""
+"Lisa-skripti ei olnud võimalik laadida teelt: '%s'. Skript ei ole tööriista "
+"režiimis."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2504,7 +2515,7 @@ msgstr ""
 #: editor/editor_node.cpp editor/import_dock.cpp
 #: editor/script_create_dialog.cpp
 msgid "Default"
-msgstr ""
+msgstr "Vaikimisi"
 
 #: editor/editor_node.cpp editor/editor_properties.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
@@ -2513,7 +2524,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play This Scene"
-msgstr ""
+msgstr "Mängi seda stseeni"
 
 #: editor/editor_node.cpp
 msgid "Close Tab"
@@ -2553,7 +2564,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
-msgstr ""
+msgstr "Doki asukoht"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
@@ -2565,20 +2576,19 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
-msgstr ""
+msgstr "Lisa uus stseen."
 
 #: editor/editor_node.cpp
 msgid "Scene"
-msgstr ""
+msgstr "Stseen"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Copy Text"
-msgstr "Kopeeri"
+msgstr "Kopeeri tekst"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -2598,31 +2608,31 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "New Scene"
-msgstr ""
+msgstr "Uus stseen"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene..."
-msgstr ""
+msgstr "Uus päritud stseen..."
 
 #: editor/editor_node.cpp
 msgid "Open Scene..."
-msgstr ""
+msgstr "Ava stseen..."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr ""
+msgstr "Hiljuti avatud"
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
-msgstr ""
+msgstr "Salvesta stseen"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
-msgstr ""
+msgstr "Salvesta kõik stseenid"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
-msgstr ""
+msgstr "Teisenda..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
@@ -2635,12 +2645,12 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Undo"
-msgstr ""
+msgstr "Võta tagasi"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
-msgstr ""
+msgstr "Tee uuesti"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -2649,11 +2659,11 @@ msgstr ""
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
 msgid "Project"
-msgstr ""
+msgstr "Projekt"
 
 #: editor/editor_node.cpp
 msgid "Project Settings..."
-msgstr ""
+msgstr "Projekti sätted..."
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control"
@@ -2669,7 +2679,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Export..."
-msgstr ""
+msgstr "Ekspordi..."
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template..."
@@ -2681,7 +2691,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
-msgstr ""
+msgstr "Tööriistad"
 
 #: editor/editor_node.cpp
 msgid "Orphan Resource Explorer..."
@@ -2694,7 +2704,7 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/project_export.cpp
 msgid "Debug"
-msgstr ""
+msgstr "Silumine"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -2766,19 +2776,19 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
-msgstr ""
+msgstr "Redaktor"
 
 #: editor/editor_node.cpp
 msgid "Editor Settings..."
-msgstr ""
+msgstr "Redaktori sätted..."
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr ""
+msgstr "Redaktori paigutus"
 
 #: editor/editor_node.cpp
 msgid "Take Screenshot"
-msgstr ""
+msgstr "Tee ekraanipilt"
 
 #: editor/editor_node.cpp
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
@@ -2814,7 +2824,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
-msgstr ""
+msgstr "Abi"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2823,68 +2833,68 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp editor/rename_dialog.cpp
 msgid "Search"
-msgstr ""
+msgstr "Otsi"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
-msgstr ""
+msgstr "Veebidokumentatsioonid"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr ""
+msgstr "Küsimused & vastused"
 
 #: editor/editor_node.cpp
 msgid "Report a Bug"
-msgstr ""
+msgstr "Teavita veast"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "Saada dokumentatsioonide tagasiside"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "Kogukond"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr ""
+msgstr "Teave"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
-msgstr ""
+msgstr "Mängi projekti."
 
 #: editor/editor_node.cpp
 msgid "Play"
-msgstr ""
+msgstr "Mängi"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene execution for debugging."
-msgstr ""
+msgstr "Peata stseeni töö selle silumiseks."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
-msgstr ""
+msgstr "Peata stseen"
 
 #: editor/editor_node.cpp
 msgid "Stop the scene."
-msgstr ""
+msgstr "Lõpeta stseen."
 
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
-msgstr ""
+msgstr "Mängi redigeeritud stseeni."
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
-msgstr ""
+msgstr "Mängi stseeni"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr ""
+msgstr "Mängi kohandatud stseeni"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
-msgstr ""
+msgstr "Mängi kohandatud stseeni"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
@@ -2913,19 +2923,19 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
-msgstr ""
+msgstr "Failikuvaja"
 
 #: editor/editor_node.cpp
 msgid "Inspector"
-msgstr ""
+msgstr "Ülevaataja"
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
-msgstr ""
+msgstr "Laienda alumist paneeli"
 
 #: editor/editor_node.cpp
 msgid "Output"
-msgstr ""
+msgstr "Väljund"
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
@@ -2984,7 +2994,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
-msgstr ""
+msgstr "Laadimisvead"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Select"
@@ -3016,7 +3026,7 @@ msgstr ""
 
 #: editor/editor_node.h
 msgid "Warning!"
-msgstr ""
+msgstr "Hoiatus!"
 
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
@@ -3040,36 +3050,36 @@ msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
-msgstr ""
+msgstr "Paigaldatud pistikprogrammid:"
 
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 msgid "Update"
-msgstr ""
+msgstr "Uuenda"
 
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Version:"
-msgstr ""
+msgstr "Versioon:"
 
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 msgid "Author:"
-msgstr ""
+msgstr "Autor:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Status:"
-msgstr ""
+msgstr "Olek:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit:"
-msgstr ""
+msgstr "Muuda:"
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
-msgstr ""
+msgstr "Mõõda:"
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
-msgstr ""
+msgstr "Kaadri aeg (sek)"
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
@@ -3077,7 +3087,7 @@ msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
-msgstr ""
+msgstr "Kaadri %"
 
 #: editor/editor_profiler.cpp
 msgid "Physics Frame %"
@@ -3093,15 +3103,15 @@ msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
-msgstr ""
+msgstr "Kaader nr:"
 
 #: editor/editor_profiler.cpp
 msgid "Time"
-msgstr ""
+msgstr "Aeg"
 
 #: editor/editor_profiler.cpp
 msgid "Calls"
-msgstr ""
+msgstr "Kutsungid"
 
 #: editor/editor_properties.cpp
 msgid "Edit Text:"
@@ -3153,15 +3163,15 @@ msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"
-msgstr ""
+msgstr "Vali vaateaken"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
-msgstr ""
+msgstr "Uus skript"
 
 #: editor/editor_properties.cpp editor/scene_tree_dock.cpp
 msgid "Extend Script"
-msgstr ""
+msgstr "Laienda skripti"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
@@ -3212,7 +3222,7 @@ msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
 msgid "New Value:"
-msgstr ""
+msgstr "Uus väärtus:"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Add Key/Value Pair"
@@ -3441,7 +3451,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
-msgstr ""
+msgstr "Praegune versioon:"
 
 #: editor/export_template_manager.cpp
 msgid "Installed Versions:"
@@ -3553,7 +3563,7 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Add to Favorites"
-msgstr ""
+msgstr "Lisa lemmikutesse"
 
 #: editor/filesystem_dock.cpp
 msgid "Remove from Favorites"
@@ -3561,60 +3571,60 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
-msgstr ""
+msgstr "Redigeeri sõltuvusi..."
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
-msgstr ""
+msgstr "Kuva omanikud..."
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Rename..."
-msgstr ""
+msgstr "Muuda nime..."
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
-msgstr ""
+msgstr "Duplikeeri..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
-msgstr ""
+msgstr "Teisalda..."
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
-msgstr ""
+msgstr "Uus stseen..."
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
-msgstr ""
+msgstr "Uus skript..."
 
 #: editor/filesystem_dock.cpp
 msgid "New Resource..."
-msgstr ""
+msgstr "Uus ressurss..."
 
 #: editor/filesystem_dock.cpp editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Expand All"
-msgstr ""
+msgstr "Laienda kõik"
 
 #: editor/filesystem_dock.cpp editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Collapse All"
-msgstr ""
+msgstr "Ahenda kõik"
 
 #: editor/filesystem_dock.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/project_manager.cpp editor/rename_dialog.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Rename"
-msgstr ""
+msgstr "Nimeta ümber"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
-msgstr ""
+msgstr "Eelmine kaust/fail"
 
 #: editor/filesystem_dock.cpp
 msgid "Next Folder/File"
-msgstr ""
+msgstr "Järgmine kaust/fail"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
@@ -3622,11 +3632,11 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Toggle Split Mode"
-msgstr ""
+msgstr "Lülita jagamisrežiim sisse/välja"
 
 #: editor/filesystem_dock.cpp
 msgid "Search files"
-msgstr ""
+msgstr "Otsi faile"
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -3647,13 +3657,12 @@ msgid "Overwrite"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Create Scene"
-msgstr "Loo"
+msgstr "Loo stseen"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
-msgstr ""
+msgstr "Loo skript"
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Find in Files"
@@ -3688,7 +3697,7 @@ msgstr ""
 
 #: editor/find_in_files.cpp editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
-msgstr ""
+msgstr "Tühista"
 
 #: editor/find_in_files.cpp
 msgid "Find: "
@@ -3704,7 +3713,7 @@ msgstr ""
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
-msgstr ""
+msgstr "Otsin..."
 
 #: editor/find_in_files.cpp
 msgid "Search complete"
@@ -3736,7 +3745,7 @@ msgstr ""
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
-msgstr ""
+msgstr "Rühmad"
 
 #: editor/groups_editor.cpp
 msgid "Nodes Not in Group"
@@ -3745,7 +3754,7 @@ msgstr ""
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
 #: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
-msgstr ""
+msgstr "Filtreeri sõlmed"
 
 #: editor/groups_editor.cpp
 msgid "Nodes in Group"
@@ -3761,7 +3770,7 @@ msgstr ""
 
 #: editor/groups_editor.cpp
 msgid "Manage Groups"
-msgstr ""
+msgstr "Halda gruppe"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
@@ -3858,15 +3867,15 @@ msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Import As:"
-msgstr ""
+msgstr "Impordi kui:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
-msgstr ""
+msgstr "Eelseadistus"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
-msgstr ""
+msgstr "Taasimpordi"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -3932,7 +3941,7 @@ msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Save the currently edited resource."
-msgstr ""
+msgstr "Salvesta käesolevalt muudetud ressurss."
 
 #: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
@@ -3944,15 +3953,15 @@ msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "History of recently edited objects."
-msgstr ""
+msgstr "Hiljuti muudetud objektide ajalugu."
 
 #: editor/inspector_dock.cpp
 msgid "Object properties."
-msgstr ""
+msgstr "Objekti atribuudid."
 
 #: editor/inspector_dock.cpp
 msgid "Filter properties"
-msgstr ""
+msgstr "Filtreeri atribuudid"
 
 #: editor/inspector_dock.cpp
 msgid "Changes may be lost!"
@@ -3968,7 +3977,7 @@ msgstr ""
 
 #: editor/plugin_config_dialog.cpp
 msgid "Edit a Plugin"
-msgstr ""
+msgstr "Pistikprogrammi muutmine"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Create a Plugin"
@@ -3976,7 +3985,7 @@ msgstr ""
 
 #: editor/plugin_config_dialog.cpp
 msgid "Plugin Name:"
-msgstr ""
+msgstr "Pistikprogrammi nimi:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Subfolder:"
@@ -3984,11 +3993,11 @@ msgstr ""
 
 #: editor/plugin_config_dialog.cpp editor/script_create_dialog.cpp
 msgid "Language:"
-msgstr ""
+msgstr "Keel:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Script Name:"
-msgstr ""
+msgstr "Skripti nimi:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Activate now?"
@@ -4228,7 +4237,7 @@ msgstr ""
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
-msgstr ""
+msgstr "Kustuta sõlm(ed)"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Toggle Filter On/Off"
@@ -4254,19 +4263,16 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Anim Clips"
-msgstr "Animatsiooni Klipid:"
+msgstr "Animatsiooniklipid"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Audio Clips"
-msgstr "Heliklipid:"
+msgstr "Heliklipid"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "Funktsioonid:"
+msgstr "Funktsioonid"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4306,16 +4312,16 @@ msgstr ""
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Animation?"
-msgstr ""
+msgstr "Kustuta animatsioon?"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
-msgstr ""
+msgstr "Eemalda animatioon"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Invalid animation name!"
-msgstr ""
+msgstr "Vigane animatsiooni nimi!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
@@ -4392,11 +4398,11 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
-msgstr ""
+msgstr "Animatsiooni tööriistad"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation"
-msgstr ""
+msgstr "Animatsioon"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Transitions..."
@@ -4404,7 +4410,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Open in Inspector"
-msgstr ""
+msgstr "Ava ülevaatajas"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -4460,7 +4466,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr ""
+msgstr "Kaasa vidinad (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
@@ -4732,7 +4738,7 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "View Files"
-msgstr ""
+msgstr "Kuva failid"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
@@ -4779,9 +4785,8 @@ msgid "Request failed, timeout"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Timeout."
-msgstr "Aeg:"
+msgstr "Aeg maha."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
@@ -4841,11 +4846,11 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Hiljuti uuendatud"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Vanim uuendus"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
@@ -4857,11 +4862,11 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "License (A-Z)"
-msgstr ""
+msgstr "Litsents (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "License (Z-A)"
-msgstr ""
+msgstr "Litsents (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -4893,32 +4898,32 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Plugins..."
-msgstr ""
+msgstr "Pistikprogrammid..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
-msgstr ""
+msgstr "Sordi:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
 msgid "Category:"
-msgstr ""
+msgstr "Kategooria:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Site:"
-msgstr ""
+msgstr "Veebisait:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Support"
-msgstr ""
+msgstr "Toetus"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "Ametlik"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr ""
+msgstr "Testimine"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Loading..."
@@ -4952,7 +4957,7 @@ msgstr ""
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview"
-msgstr ""
+msgstr "Eelvaade"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap"
@@ -4995,9 +5000,8 @@ msgid "Create Vertical Guide"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Vertical Guide"
-msgstr "Eemalda kehtetud võtmed"
+msgstr "Eemalda vertikaalne juht"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Horizontal Guide"
@@ -5008,9 +5012,8 @@ msgid "Create Horizontal Guide"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Horizontal Guide"
-msgstr "Eemalda kehtetud võtmed"
+msgstr "Eemalda horisontaalne juht"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Horizontal and Vertical Guides"
@@ -5369,7 +5372,7 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr ""
+msgstr "Kuva"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Always Show Grid"
@@ -5393,7 +5396,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Viewport"
-msgstr ""
+msgstr "Kuva vaateaken"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
@@ -6412,7 +6415,7 @@ msgstr ""
 #: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Type:"
-msgstr ""
+msgstr "Tüüp:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
@@ -6550,21 +6553,21 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Up"
-msgstr ""
+msgstr "Liiguta üles"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Down"
-msgstr ""
+msgstr "Liiguta allapoole"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Next script"
-msgstr ""
+msgstr "Järgmine skript"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Previous script"
-msgstr ""
+msgstr "Eelmine skript"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
@@ -6625,7 +6628,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
-msgstr ""
+msgstr "Käivita"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
@@ -6637,12 +6640,12 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Break"
-msgstr ""
+msgstr "Paus"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Continue"
-msgstr ""
+msgstr "Jätka"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
@@ -6690,7 +6693,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
-msgstr ""
+msgstr "Siluja"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Results"
@@ -6827,9 +6830,8 @@ msgid "Complete Symbol"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Evaluate Selection"
-msgstr "Kustuta Valim"
+msgstr "Hinda valikut"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
@@ -6853,7 +6855,7 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
-msgstr ""
+msgstr "Kontekstuaalne abi"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Bookmark"
@@ -6952,7 +6954,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective"
-msgstr ""
+msgstr "Perspektiiv"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -6996,35 +6998,35 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Pitch"
-msgstr ""
+msgstr "Frontaal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
-msgstr ""
+msgstr "Sagitaal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
-msgstr ""
+msgstr "Objekte kuvatud"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Material Changes"
-msgstr ""
+msgstr "Materjali muutused"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Shader Changes"
-msgstr ""
+msgstr "Varjutaja muutused"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Surface Changes"
-msgstr ""
+msgstr "Pinna muutused"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Draw Calls"
-msgstr ""
+msgstr "Kuvamise kutsungid"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Vertices"
-msgstr ""
+msgstr "Tipud"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
@@ -7112,15 +7114,15 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Environment"
-msgstr ""
+msgstr "Kuva keskkond"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Gizmos"
-msgstr ""
+msgstr "Kuva vidinad"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Information"
-msgstr ""
+msgstr "Kuva informatsioon"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View FPS"
@@ -7128,7 +7130,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Half Resolution"
-msgstr ""
+msgstr "Poolresolutioon"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Audio Listener"
@@ -7140,7 +7142,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Cinematic Preview"
-msgstr ""
+msgstr "Kinemaatiline eelvaade"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Not available when using the GLES2 renderer."
@@ -7226,27 +7228,27 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
-msgstr ""
+msgstr "Altvaade"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View"
-msgstr ""
+msgstr "Ülavaade"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View"
-msgstr ""
+msgstr "Tagavaade"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View"
-msgstr ""
+msgstr "Eesvaade"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View"
-msgstr ""
+msgstr "Vasakvaade"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View"
-msgstr ""
+msgstr "Paremvaade"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -7258,11 +7260,11 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Origin"
-msgstr ""
+msgstr "Fookuse alge"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
-msgstr ""
+msgstr "Fookuse valik"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
@@ -7283,44 +7285,44 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
-msgstr ""
+msgstr "1 vaateaken"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports"
-msgstr ""
+msgstr "2 vaateakent"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports (Alt)"
-msgstr ""
+msgstr "2 vaateakent (alt)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports"
-msgstr ""
+msgstr "3 vaateakent"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports (Alt)"
-msgstr ""
+msgstr "3 vaateakent (alt)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "4 Viewports"
-msgstr ""
+msgstr "4 vaateakent"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
-msgstr ""
+msgstr "Vidinad"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Origin"
-msgstr ""
+msgstr "Kuva lähtekoht"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Grid"
-msgstr ""
+msgstr "Kuva ruudustik"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Settings..."
-msgstr ""
+msgstr "Sätted..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -7340,7 +7342,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Viewport Settings"
-msgstr ""
+msgstr "Vaateakna sätted"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective FOV (deg.):"
@@ -7496,7 +7498,7 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Unable to load images"
-msgstr ""
+msgstr "Pilte ei saa laadida"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7540,7 +7542,7 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
-msgstr ""
+msgstr "Kordus"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames:"
@@ -7769,7 +7771,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
-msgstr ""
+msgstr "Andmetüüp:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -7897,7 +7899,7 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from Scene"
-msgstr ""
+msgstr "Liida stseenist"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Single Tile"
@@ -8240,9 +8242,8 @@ msgid "Renamed"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Deleted"
-msgstr "Kustuta Võti (Võtmed)"
+msgstr "Kustutatud"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Typechange"
@@ -8269,7 +8270,7 @@ msgstr ""
 #: editor/plugins/version_control_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Status"
-msgstr ""
+msgstr "Olek"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "View file diffs before committing them to the latest version"
@@ -9141,7 +9142,7 @@ msgstr ""
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
-msgstr ""
+msgstr "Lisa..."
 
 #: editor/project_export.cpp
 msgid ""
@@ -9215,7 +9216,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Script"
-msgstr ""
+msgstr "Skript"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -9514,13 +9515,14 @@ msgid ""
 "This could take a while."
 msgstr ""
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
-msgstr ""
+msgstr "projektihaldur"
 
 #: editor/project_manager.cpp
 msgid "Projects"
-msgstr ""
+msgstr "Projektid"
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -9528,7 +9530,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Scan"
-msgstr ""
+msgstr "Otsi"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
@@ -9536,7 +9538,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "New Project"
-msgstr ""
+msgstr "Uus projekt"
 
 #: editor/project_manager.cpp
 msgid "Remove Missing"
@@ -9544,7 +9546,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Templates"
-msgstr ""
+msgstr "Mallid"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
@@ -9789,11 +9791,11 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
-msgstr ""
+msgstr "Projekti sätted (project.godot)"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "Üldine"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
@@ -9829,15 +9831,15 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Localization"
-msgstr ""
+msgstr "Tõlked"
 
 #: editor/project_settings_editor.cpp
 msgid "Translations"
-msgstr ""
+msgstr "Tõlked"
 
 #: editor/project_settings_editor.cpp
 msgid "Translations:"
-msgstr ""
+msgstr "Tõlked:"
 
 #: editor/project_settings_editor.cpp
 msgid "Remaps"
@@ -9881,7 +9883,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
-msgstr ""
+msgstr "Pistikprogrammid"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -9957,7 +9959,7 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 msgid "Advanced Options"
-msgstr ""
+msgstr "Täpsemad sätted"
 
 #: editor/rename_dialog.cpp
 msgid "Substitute"
@@ -10159,8 +10161,12 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Kustuta %d sõlmed ja iga alamsõlm?"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
-msgstr "Kustuta Võti (Võtmed)"
+msgstr "Kustuta %d sõlmed?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete the root node \"%s\"?"
@@ -10171,9 +10177,8 @@ msgid "Delete node \"%s\" and its children?"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete node \"%s\"?"
-msgstr "Kustuta Võti (Võtmed)"
+msgstr "Kustuta sõlm \"%s\"?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -10221,7 +10226,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "User Interface"
-msgstr ""
+msgstr "Kasutajaliides"
 
 #: editor/scene_tree_dock.cpp
 msgid "Other Node"
@@ -10237,7 +10242,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
-msgstr ""
+msgstr "Manusta skript"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -10263,7 +10268,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Sub-Resources"
-msgstr ""
+msgstr "Alamressursid"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -10279,7 +10284,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Open Documentation"
-msgstr ""
+msgstr "Ava dokumentatsioon"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -10290,15 +10295,15 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
-msgstr ""
+msgstr "Lisa alamsõlm"
 
 #: editor/scene_tree_dock.cpp
 msgid "Expand/Collapse All"
-msgstr ""
+msgstr "Laienda/ahenda kõik"
 
 #: editor/scene_tree_dock.cpp
 msgid "Change Type"
-msgstr ""
+msgstr "Muuda tüüpi"
 
 #: editor/scene_tree_dock.cpp
 msgid "Reparent to New Node"
@@ -10306,7 +10311,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
-msgstr ""
+msgstr "Tee stseeni juurikaks"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -10314,11 +10319,11 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Save Branch as Scene"
-msgstr ""
+msgstr "Salvesta filiaal stseenina"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Copy Node Path"
-msgstr ""
+msgstr "Kopeeri sõlme tee"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"
@@ -10326,7 +10331,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node."
-msgstr ""
+msgstr "Lisa/loo uus sõlm."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -10336,7 +10341,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script to the selected node."
-msgstr ""
+msgstr "Kinnita uus või olemasolev skript valitud sõlmele."
 
 #: editor/scene_tree_dock.cpp
 msgid "Detach the script from the selected node."
@@ -10496,7 +10501,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Open Script"
-msgstr ""
+msgstr "Ava skript"
 
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
@@ -10573,9 +10578,8 @@ msgid "Warning:"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Error:"
-msgstr "Peegel"
+msgstr "Viga:"
 
 #: editor/script_editor_debugger.cpp
 msgid "C++ Error"
@@ -10603,7 +10607,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Errors"
-msgstr ""
+msgstr "Vead"
 
 #: editor/script_editor_debugger.cpp
 msgid "Child process connected."
@@ -10611,11 +10615,11 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
-msgstr ""
+msgstr "Kopeeri viga"
 
 #: editor/script_editor_debugger.cpp
 msgid "Video RAM"
-msgstr ""
+msgstr "Videomälu"
 
 #: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
@@ -10631,7 +10635,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Frames"
-msgstr ""
+msgstr "Virnakaadrid"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
@@ -10643,15 +10647,15 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitor"
-msgstr ""
+msgstr "Jälgija"
 
 #: editor/script_editor_debugger.cpp
 msgid "Value"
-msgstr ""
+msgstr "Väärtus"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitors"
-msgstr ""
+msgstr "Jälgijad"
 
 #: editor/script_editor_debugger.cpp
 msgid "Pick one or more items from the list to display the graph."
@@ -10659,7 +10663,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
-msgstr ""
+msgstr "Videomälu kasutamise loetelu ressursside kaupa:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
@@ -10671,7 +10675,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
-msgstr ""
+msgstr "Ressursi tee"
 
 #: editor/script_editor_debugger.cpp
 msgid "Type"
@@ -10679,15 +10683,15 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Format"
-msgstr ""
+msgstr "Formaat"
 
 #: editor/script_editor_debugger.cpp
 msgid "Usage"
-msgstr ""
+msgstr "Kasutus"
 
 #: editor/script_editor_debugger.cpp
 msgid "Misc"
-msgstr ""
+msgstr "Muud"
 
 #: editor/script_editor_debugger.cpp
 msgid "Clicked Control:"
@@ -10706,8 +10710,9 @@ msgid "Set From Tree"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
 msgid "Export measures as CSV"
-msgstr ""
+msgstr "Ekspordi mõõtmed/meetmed CSV-vormingus"
 
 #: editor/settings_config_dialog.cpp
 msgid "Erase Shortcut"
@@ -10723,15 +10728,15 @@ msgstr ""
 
 #: editor/settings_config_dialog.cpp
 msgid "Editor Settings"
-msgstr ""
+msgstr "Redaktori sätted"
 
 #: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
-msgstr ""
+msgstr "Kiirklahvid"
 
 #: editor/settings_config_dialog.cpp
 msgid "Binding"
-msgstr ""
+msgstr "Kombinatsioon"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
@@ -10851,11 +10856,11 @@ msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
-msgstr ""
+msgstr "Teek"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
-msgstr ""
+msgstr "Teegid: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
@@ -10998,9 +11003,8 @@ msgid "Cursor Clear Rotation"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Selects"
-msgstr "Kustuta Valitud Võti (Võtmed)"
+msgstr "Kleebi valikud"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11347,9 +11351,8 @@ msgid "Try to only have one sequence input in selection."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Create Function"
-msgstr "Loo"
+msgstr "Loo funktsioon"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -11388,14 +11391,12 @@ msgid "Add Nodes..."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function..."
-msgstr "Funktsioonid:"
+msgstr "Lisa funktsioon..."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "function_name"
-msgstr "Funktsioonid:"
+msgstr "funktsiooni_nimi"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
@@ -11418,9 +11419,8 @@ msgid "Cut Nodes"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Function"
-msgstr "Funktsioonid:"
+msgstr "Loo funktsioon"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Refresh Graph"
@@ -11765,6 +11765,12 @@ msgstr ""
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
+msgstr ""
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp
@@ -12160,7 +12166,7 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "Palun kinnita..."
 
 #: scene/gui/popup.cpp
 msgid ""

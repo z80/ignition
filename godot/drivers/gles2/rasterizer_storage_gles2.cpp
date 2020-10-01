@@ -711,7 +711,11 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 	texture->ignore_mipmaps = compressed && !img->has_mipmaps();
 
 	if ((texture->flags & VS::TEXTURE_FLAG_MIPMAPS) && !texture->ignore_mipmaps)
-		glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
+		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
+			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
+		} else {
+			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_LINEAR);
+		}
 	else {
 		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
 			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -957,7 +961,11 @@ void RasterizerStorageGLES2::texture_set_flags(RID p_texture, uint32_t p_flags) 
 		if (!had_mipmaps && texture->mipmaps == 1) {
 			glGenerateMipmap(texture->target);
 		}
-		glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
+		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
+			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
+		} else {
+			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_LINEAR);
+		}
 
 	} else {
 		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
@@ -1745,12 +1753,12 @@ void RasterizerStorageGLES2::shader_get_custom_defines(RID p_shader, Vector<Stri
 	shader->shader->get_custom_defines(p_defines);
 }
 
-void RasterizerStorageGLES2::shader_clear_custom_defines(RID p_shader) {
+void RasterizerStorageGLES2::shader_remove_custom_define(RID p_shader, const String &p_define) {
 
 	Shader *shader = shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 
-	shader->shader->clear_custom_defines();
+	shader->shader->remove_custom_define(p_define);
 
 	_shader_make_dirty(shader);
 }
@@ -2667,9 +2675,7 @@ PoolVector<uint8_t> RasterizerStorageGLES2::mesh_surface_get_array(RID p_mesh, i
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), PoolVector<uint8_t>());
 
 	Surface *surface = mesh->surfaces[p_surface];
-#ifndef TOOLS_ENABLED
-	ERR_PRINT("OpenGL ES 2.0 does not allow retrieving mesh array data");
-#endif
+
 	return surface->data;
 }
 
@@ -2713,7 +2719,7 @@ Vector<PoolVector<uint8_t> > RasterizerStorageGLES2::mesh_surface_get_blend_shap
 	ERR_FAIL_COND_V(!mesh, Vector<PoolVector<uint8_t> >());
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), Vector<PoolVector<uint8_t> >());
 #ifndef TOOLS_ENABLED
-	ERR_PRINT("OpenGL ES 2.0 does not allow retrieving mesh array data");
+	ERR_PRINT("OpenGL ES 2.0 does not allow retrieving blend shape data");
 #endif
 
 	return mesh->surfaces[p_surface]->blend_shape_data;

@@ -141,7 +141,8 @@
 			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
-				Draws multiple, parallel lines with a uniform [code]color[/code]. [code]width[/code] and [code]antialiased[/code] are currently not implemented and have no effect.
+				Draws multiple, parallel lines with a uniform [code]color[/code].
+				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently not implemented and have no effect.
 			</description>
 		</method>
 		<method name="draw_multiline_colors">
@@ -156,7 +157,8 @@
 			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
-				Draws multiple, parallel lines with a uniform [code]width[/code], segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
+				Draws multiple, parallel lines with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
+				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently not implemented and have no effect.
 			</description>
 		</method>
 		<method name="draw_multimesh">
@@ -294,7 +296,16 @@
 			<argument index="4" name="clip_w" type="int" default="-1">
 			</argument>
 			<description>
-				Draws a string using a custom font.
+				Draws [code]text[/code] using the specified [code]font[/code] at the [code]position[/code] (top-left corner). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				[b]Example using the default project font:[/b]
+				[codeblock]
+				# If using this method in a script that redraws constantly, move the
+				# `default_font` declaration to a member variable assigned in `_ready()`
+				# so the Control is only created once.
+				var default_font = Control.new().get_font("font")
+				draw_string(default_font, Vector2(64, 64), "Hello world")
+				[/codeblock]
+				See also [method Font.draw].
 			</description>
 		</method>
 		<method name="draw_style_box">
@@ -479,7 +490,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and its inherited visibility is also [code]true[/code].
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree.
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
@@ -565,7 +576,8 @@
 			If [code]true[/code], the parent [CanvasItem]'s [member material] property is used as this one's material.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
-			If [code]true[/code], this [CanvasItem] is drawn. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
+			If [code]true[/code], this [CanvasItem] is drawn. The node is only visible if all of its antecedents are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
+			[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 		</member>
 	</members>
 	<signals>

@@ -14,11 +14,12 @@
 # Богдан Матвіїв <bomtvv@gmail.com>, 2019.
 # Tymofij Lytvynenko <till.svit@gmail.com>, 2020.
 # Vladislav Glinsky <cl0ne@mithril.org.ua>, 2020.
+# Микола Тимошенко <9081@ukr.net>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"PO-Revision-Date: 2020-09-05 09:37+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -28,7 +29,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1135,6 +1136,9 @@ msgstr "Засновники проєкту"
 msgid "Lead Developer"
 msgstr "Ведучий розробник"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Керівник проектів "
@@ -1154,6 +1158,14 @@ msgstr "Платинові спонсори"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Золоті спонсори"
+
+#: editor/editor_about.cpp
+msgid "Silver Sponsors"
+msgstr "Срібні донори"
+
+#: editor/editor_about.cpp
+msgid "Bronze Sponsors"
+msgstr "Бронзові донори"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -2340,11 +2352,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "Немає визначеної сцени для виконання."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"Поточна сцена ніколи не була збережена, будь ласка, збережіть її до запуску."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -9906,6 +9913,7 @@ msgstr ""
 "Ви справді хочете виконати пошук у %s теках наявних проєктів Godot?\n"
 "Пошук може бути доволі тривалим."
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Керівник проекту"
@@ -10567,6 +10575,10 @@ msgstr "Сцени зі створеними екземплярами не мо�
 #: editor/scene_tree_dock.cpp
 msgid "Make node as Root"
 msgstr "Зробити вузол кореневим"
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete %d nodes and any children?"
+msgstr "Вилучити %d вузлів та усі їхні дочірні записи?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12015,7 +12027,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr "Неокректний відкритий ключ для розгортання APK."
+msgstr "Некоректний відкритий ключ для розгортання APK."
 
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
@@ -12274,6 +12286,15 @@ msgid ""
 msgstr ""
 "Для забезпечення працездатності CollisionShape2D слід надати форму. Будь "
 "ласка, створіть ресурс форми для цього елемента!"
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+"Засновані на багатокутниках форми не призначено для використання або "
+"редагування з вузла CollisionShape2D. Будь ласка, скористайтеся замість "
+"нього вузлом CollisionPolygon2D."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12853,6 +12874,11 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "Поточна сцена ніколи не була збережена, будь ласка, збережіть її до "
+#~ "запуску."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Не в ресурсному шляху."

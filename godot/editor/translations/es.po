@@ -18,7 +18,7 @@
 # Jose Maria Martinez <josemar1992@hotmail.com>, 2018.
 # Juan Quiroga <juanquiroga9@gmail.com>, 2017.
 # Kiji Pixel <raccoon.fella@gmail.com>, 2017.
-# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017, 2019.
+# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017, 2019, 2020.
 # Lonsfor <lotharw@protonmail.com>, 2017-2018.
 # Mario Nachbaur <manachbaur@gmail.com>, 2018.
 # Oscar Carballal <oscar.carballal@protonmail.com>, 2017-2018.
@@ -49,12 +49,13 @@
 # Serk Lintur <serk.lintur@gmail.com>, 2020.
 # Pedro J. Estébanez <pedrojrulez@gmail.com>, 2020.
 # paco <pacosoftfree@protonmail.com>, 2020.
+# Jonatan <arandajonatan94@tuta.io>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2020-07-31 03:47+0000\n"
+"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -84,7 +85,7 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Entrada inválida %i (no se pasó) en la expresión"
+msgstr "Entrada inválida %i (no aprobada) en la expresión"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -853,7 +854,7 @@ msgstr "Eliminar"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr "Añadir Argumento de Llamada Extra:"
+msgstr "Añadir Argumento Extra de Llamada:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
@@ -1171,9 +1172,12 @@ msgstr "Fundadores del Proyecto"
 msgid "Lead Developer"
 msgstr "Desarrollador Principal"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr "Administrador del Proyecto "
+msgstr "Gestor del Proyecto "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -1190,6 +1194,16 @@ msgstr "Patrocinadores Platino"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Patrocinadores Oro"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Donantes Plata"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Donantes Bronce"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1763,7 +1777,7 @@ msgstr "Nuevo"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Importar"
+msgstr "Importación"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -2381,11 +2395,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "No hay escena definida para ejecutar."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"La escena actual nunca se guardó. Por favor, guárdela antes de ejecutar."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -4369,7 +4378,7 @@ msgstr "No hay ningún triángulo, así que no se puede hacer blending."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Toggle Auto Triangles"
-msgstr "Act./Desact. Auto Triángulos"
+msgstr "Act./Desact. Triángulos Automáticos"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -4381,7 +4390,8 @@ msgstr "Borrar puntos y triángulos."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Generate blend triangles automatically (instead of manually)"
-msgstr "Generar triángulos de blending automáticamente (en vez de manualmente)"
+msgstr ""
+"Generar triángulos combinados automáticamente (en lugar de manualmente)"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -8947,7 +8957,7 @@ msgstr "Devuelve el valor absoluto del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-cosine of the parameter."
-msgstr "Devuelve el arcocoseno del parámetro."
+msgstr "Devuelve el arco-coseno del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse hyperbolic cosine of the parameter."
@@ -8955,7 +8965,7 @@ msgstr "Devuelve el coseno hiperbólico inverso del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-sine of the parameter."
-msgstr "Devuelve el arcoseno del parámetro."
+msgstr "Devuelve el arco-seno del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse hyperbolic sine of the parameter."
@@ -8963,11 +8973,11 @@ msgstr "Devuelve el seno hiperbólico inverso del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameter."
-msgstr "Devuelve el arcotangente del parámetro."
+msgstr "Devuelve el arco-tangente del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameters."
-msgstr "Devuelve el arcotangente de los parámetros."
+msgstr "Devuelve el arco-tangente de los parámetros."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse hyperbolic tangent of the parameter."
@@ -8996,11 +9006,11 @@ msgstr "Convierte una cantidad en radianes a grados."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-e Exponential."
-msgstr "Exponencial en base e."
+msgstr "Exponencial con Base-e."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-2 Exponential."
-msgstr "Exponencial en base 2."
+msgstr "Exponencial con base 2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest integer less than or equal to the parameter."
@@ -9020,7 +9030,7 @@ msgstr "Logaritmo natural."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-2 logarithm."
-msgstr "Logaritmo de la base 2."
+msgstr "Logaritmo Base-2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the greater of two values."
@@ -9968,6 +9978,7 @@ msgstr ""
 "existentes?\n"
 "Esto puede tardar un poco."
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Administrador de Proyectos"
@@ -10628,6 +10639,10 @@ msgstr "Las escenas instanciadas no pueden ser raíz"
 #: editor/scene_tree_dock.cpp
 msgid "Make node as Root"
 msgstr "Convertir nodo como Raíz"
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete %d nodes and any children?"
+msgstr "¿Eliminar %d nodos y sus hijos?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12345,6 +12360,15 @@ msgstr ""
 "Para que funcione CollisionShape2D se debe proporcionar una forma. Por "
 "favor, ¡crea un recurso de forma para ello!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+"Las formas basadas en polígonos no están pensadas para ser usadas ni "
+"editadas directamente a través del nodo CollisionShape2D. Por favor, usa el "
+"nodo CollisionPolygon2D en su lugar."
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12926,6 +12950,10 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "La escena actual nunca se guardó. Por favor, guárdela antes de ejecutar."
 
 #~ msgid "Not in resource path."
 #~ msgstr "No está en la ruta de recursos."

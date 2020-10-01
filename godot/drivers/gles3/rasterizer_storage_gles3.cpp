@@ -841,7 +841,11 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	texture->ignore_mipmaps = compressed && !img->has_mipmaps();
 
 	if ((texture->flags & VS::TEXTURE_FLAG_MIPMAPS) && !texture->ignore_mipmaps)
-		glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
+		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
+			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
+		} else {
+			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_LINEAR);
+		}
 	else {
 		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
 			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -1420,7 +1424,11 @@ void RasterizerStorageGLES3::texture_set_flags(RID p_texture, uint32_t p_flags) 
 		if (!had_mipmaps && texture->mipmaps == 1) {
 			glGenerateMipmap(texture->target);
 		}
-		glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
+		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
+			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
+		} else {
+			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_LINEAR);
+		}
 
 	} else {
 		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
@@ -2169,7 +2177,7 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 			}
 
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tmp_fb);
-			glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, sky->radiance, 0, lod);
+			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sky->radiance, lod);
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, tmp_fb2);
 			glReadBuffer(GL_COLOR_ATTACHMENT0);
 			glBlitFramebuffer(0, 0, size, size * 2, 0, 0, size, size * 2, GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -2576,12 +2584,12 @@ void RasterizerStorageGLES3::shader_get_custom_defines(RID p_shader, Vector<Stri
 	shader->shader->get_custom_defines(p_defines);
 }
 
-void RasterizerStorageGLES3::shader_clear_custom_defines(RID p_shader) {
+void RasterizerStorageGLES3::shader_remove_custom_define(RID p_shader, const String &p_define) {
 
 	Shader *shader = shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 
-	shader->shader->clear_custom_defines();
+	shader->shader->remove_custom_define(p_define);
 
 	_shader_make_dirty(shader);
 }

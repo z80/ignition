@@ -40,11 +40,14 @@
 # Tirrin <lensenjoe@gmail.com>, 2019.
 # Filip Van Raemdonck <arrawn@gmail.com>, 2019.
 # Julian <jdhoogvorst@gmail.com>, 2019, 2020.
+# kitfka <philipthuijs@gmail.com>, 2020.
+# Mike van Leeuwen <mkvanleeuwen@gmail.com>, 2020.
+# marnicq van loon <marnicqvanloon@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+"PO-Revision-Date: 2020-08-28 13:09+0000\n"
 "Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -53,22 +56,22 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.2.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Ongeldig argumenttype voor convert(), gebruik TYPE_* constanten."
+msgstr "Ongeldig type argument voor convert(), gebruik TYPE_* constanten."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Tekenreeks met lengte 1 verwacht (één karakter)."
+msgstr "Verwachtte een tekenreeks van lengte 1 (één karakter)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Niet genoeg bytes om te decoderen, of ongeldig formaat."
+msgstr "Niet genoeg bytes voor het decoderen van bytes, of ongeldig formaat."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -525,10 +528,12 @@ msgid ""
 msgstr ""
 "Deze animatie behoort tot een geïmporteerde scène, dus veranderingen aan "
 "geïmporteerde tracks zullen niet worden opgeslagen.\n"
+"\n"
 "Om aangepaste tracks toe te kunnen voegen, moet in de importinstellingen van "
 "de scène en de \"Animation→Storage\" naar \"Files\" zetten en "
 "\"Animation→Keep Custom Tracks\" inschakelen. Importeer de scène dan "
 "opnieuw.\n"
+"\n"
 "Anders kan je een importvoorinstelling gebruiken die animaties importeert en "
 "in verschillende bestanden opslaat."
 
@@ -775,7 +780,7 @@ msgstr "Uitzoomen"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr "Initialiseer Zoom"
+msgstr "Herstel Zoom"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -790,9 +795,8 @@ msgid "Method in target node must be specified."
 msgstr "Methode in doelknoop moet gespecificeerd worden."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "Naam is geen geldige identifier:"
+msgstr "Methodenaam is geen geldige naam."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -1156,6 +1160,9 @@ msgstr "Projectoprichters"
 msgid "Lead Developer"
 msgstr "Hoofdontwikkelaar"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Projectbeheer "
@@ -1175,6 +1182,16 @@ msgstr "Platina Sponsors"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Gouden Sponsors"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Zilveren Donors"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Bronzen Donors"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1494,7 +1511,7 @@ msgstr "Autoloads opnieuw ordenen"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr "Autoload kon niet toevoegd worden:"
+msgstr "Autoload kan niet toevoegd worden:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1865,11 +1882,11 @@ msgstr "Ga Omhoog"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr "Toggle Verborgen Bestanden"
+msgstr "Verborgen Bestanden Omschakelen"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Favorite"
-msgstr "Toggle Favoriet"
+msgstr "Favoriet Omschakelen"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Mode"
@@ -2363,10 +2380,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "Er is geen startscène ingesteld."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "De huidige scène is nooit opgeslagen, sla het op voor het uitvoeren."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -7361,7 +7374,7 @@ msgstr "Bekijk Omgeving"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Gizmos"
-msgstr "Bekijk Gizmos"
+msgstr "Toon Gizmos"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Information"
@@ -7450,9 +7463,9 @@ msgid ""
 msgstr ""
 "Klik om te wisselen tussen zichtbaarheidsweergaven.\n"
 "\n"
-"Open oog: handvat is zichtbaar.\n"
-"Gesloten oog: handvat is verborgen.\n"
-"Half open oog: handvat is ook zichtbaar door ondoorzichtige oppervlaktes."
+"Open oog: Gizmo is zichtbaar.\n"
+"Gesloten oog: Gizmo is verborgen.\n"
+"Half open oog: Gizmo is ook zichtbaar door ondoorzichtige oppervlaktes."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -7640,7 +7653,7 @@ msgstr "Post"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Nameless gizmo"
-msgstr "Naamloos apparaat"
+msgstr "Naamloze gizmo"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -9932,6 +9945,7 @@ msgstr ""
 "Wil je %s mappen doorzoeken naar bestaande Godot projecten?\n"
 "Dit kan een tijdje duren."
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Projectbeheer"
@@ -10594,6 +10608,10 @@ msgstr "Geïnstantieerde scène kan geen wortel worden"
 #: editor/scene_tree_dock.cpp
 msgid "Make node as Root"
 msgstr "Knoop tot wortelknoop maken"
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete %d nodes and any children?"
+msgstr "%d knopen en hun (eventuele) kinderen verwijderen?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12288,6 +12306,12 @@ msgid ""
 "shape resource for it!"
 msgstr "Een CollisionShape2D heeft een vorm nodig in de Shape-eigenschap!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12861,6 +12885,10 @@ msgstr "Varyings kunnen alleen worden toegewezenin vertex functies."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constanten kunnen niet worden aangepast."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "De huidige scène is nooit opgeslagen, sla het op voor het uitvoeren."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Niet in bronpad."

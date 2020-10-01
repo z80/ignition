@@ -1193,6 +1193,9 @@ msgstr "প্রজেক্ট ফাউন্ডার"
 msgid "Lead Developer"
 msgstr "মূল ডেভেলপার"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 #, fuzzy
 msgid "Project Manager "
@@ -1213,6 +1216,16 @@ msgstr "প্ল্যাটিনাম স্পনসর"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "গোল্ড স্পনসর"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "সিলভার ডোনার"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "ব্রোঞ্জ ডোনার"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -2488,11 +2501,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "চালানোর জন্য কোনো দৃশ্য নির্দিষ্ট করা নেই।"
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"বর্তমান দৃশ্যটি কখনোই সংরক্ষণ করা হয় নি, অনুগ্রহ করে চালানোর পূর্বে এটি সংরক্ষণ করুন।"
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -10523,6 +10531,7 @@ msgstr ""
 "বিদ্যমান Godot প্রজেক্টের খোঁজে আপনি %s ফোল্ডারসমূহ স্ক্যান করতে যাচ্ছেন। আপনি কি "
 "সুনিশ্চিত?"
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "প্রজেক্ট ম্যানেজার"
@@ -11214,6 +11223,11 @@ msgstr ""
 #, fuzzy
 msgid "Make node as Root"
 msgstr "অর্থপূর্ন!"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "নোড(সমূহ) অপসারণ করুন"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -13032,6 +13046,12 @@ msgstr ""
 "সফল্ভাবে কাজ করতে CollisionShape2D এর একটি আকৃতি প্রয়োজন। অনুগ্রহ করে তার জন্য "
 "একটি আকৃতি তৈরি করুন!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -13551,6 +13571,11 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "বর্তমান দৃশ্যটি কখনোই সংরক্ষণ করা হয় নি, অনুগ্রহ করে চালানোর পূর্বে এটি সংরক্ষণ "
+#~ "করুন।"
 
 #~ msgid "Not in resource path."
 #~ msgstr "রিসোর্সের পথে নয়।"

@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  rasterizer_array_gles2.h                                             */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #pragma once
 
 /*************************************************************************/
@@ -51,8 +81,8 @@ public:
 	}
 	~RasterizerArrayGLES2() { free(); }
 
-	_FORCE_INLINE_ T &operator[](unsigned int ui) { return _list[ui]; }
-	_FORCE_INLINE_ const T &operator[](unsigned int ui) const { return _list[ui]; }
+	T &operator[](unsigned int ui) { return _list[ui]; }
+	const T &operator[](unsigned int ui) const { return _list[ui]; }
 
 	void free() {
 		if (_list) {
@@ -72,9 +102,9 @@ public:
 		_max_size = p_size;
 	}
 
-	_FORCE_INLINE_ void reset() { _size = 0; }
+	void reset() { _size = 0; }
 
-	_FORCE_INLINE_ T *request_with_grow() {
+	T *request_with_grow() {
 		T *p = request();
 		if (!p) {
 			grow();
@@ -84,7 +114,7 @@ public:
 	}
 
 	// none of that inefficient pass by value stuff here, thanks
-	_FORCE_INLINE_ T *request() {
+	T *request() {
 		if (_size < _max_size) {
 			return &_list[_size++];
 		}
@@ -92,7 +122,7 @@ public:
 	}
 
 	// several items at a time
-	_FORCE_INLINE_ T *request(int p_num_items) {
+	T *request(int p_num_items) {
 		int old_size = _size;
 		_size += p_num_items;
 
@@ -105,9 +135,9 @@ public:
 		return 0;
 	}
 
-	_FORCE_INLINE_ int size() const { return _size; }
-	_FORCE_INLINE_ int max_size() const { return _max_size; }
-	_FORCE_INLINE_ const T *get_data() const { return _list; }
+	int size() const { return _size; }
+	int max_size() const { return _max_size; }
+	const T *get_data() const { return _list; }
 
 	bool copy_from(const RasterizerArrayGLES2<T> &o) {
 		// no resizing done here, it should be done manually

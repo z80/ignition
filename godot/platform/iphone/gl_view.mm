@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #import "gl_view.h"
+#import "gl_view_gesture_recognizer.h"
 
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
@@ -79,10 +80,12 @@ void _hide_keyboard() {
 };
 
 Rect2 _get_ios_window_safe_area(float p_window_width, float p_window_height) {
-	UIEdgeInsets insets = UIEdgeInsetsMake(0, 0, 0, 0);
-	if (_instance != nil && [_instance respondsToSelector:@selector(safeAreaInsets)]) {
+	UIEdgeInsets insets = UIEdgeInsetsZero;
+
+	if (@available(iOS 11.0, *)) {
 		insets = [_instance safeAreaInsets];
 	}
+
 	ERR_FAIL_COND_V(insets.left < 0 || insets.top < 0 || insets.right < 0 || insets.bottom < 0,
 			Rect2(0, 0, p_window_width, p_window_height));
 	UIEdgeInsets window_insets = UIEdgeInsetsMake(_points_to_pixels(insets.top), _points_to_pixels(insets.left), _points_to_pixels(insets.bottom), _points_to_pixels(insets.right));
@@ -268,6 +271,7 @@ static void clear_touches() {
 	active = FALSE;
 	if ((self = [super initWithCoder:coder])) {
 		self = [self initGLES];
+		[self initGestureRecognizer];
 	}
 	return self;
 }
@@ -318,6 +322,11 @@ static void clear_touches() {
 	// Default the animation interval to 1/60th of a second.
 	animationInterval = 1.0 / 60.0;
 	return self;
+}
+
+- (void)initGestureRecognizer {
+	delayGestureRecognizer = [[GLViewGestureRecognizer alloc] init];
+	[self addGestureRecognizer:delayGestureRecognizer];
 }
 
 - (id<GLViewDelegate>)delegate {
@@ -503,8 +512,6 @@ static void clear_touches() {
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
 
 			UITouch *touch = [tlist objectAtIndex:i];
-			if (touch.phase != UITouchPhaseBegan)
-				continue;
 			int tid = get_touch_id(touch);
 			ERR_FAIL_COND(tid == -1);
 			CGPoint touchPoint = [touch locationInView:self];
@@ -521,8 +528,6 @@ static void clear_touches() {
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
 
 			UITouch *touch = [tlist objectAtIndex:i];
-			if (touch.phase != UITouchPhaseMoved)
-				continue;
 			int tid = get_touch_id(touch);
 			ERR_FAIL_COND(tid == -1);
 			CGPoint touchPoint = [touch locationInView:self];
@@ -539,8 +544,6 @@ static void clear_touches() {
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
 
 			UITouch *touch = [tlist objectAtIndex:i];
-			if (touch.phase != UITouchPhaseEnded)
-				continue;
 			int tid = get_touch_id(touch);
 			ERR_FAIL_COND(tid == -1);
 			remove_touch(touch);
@@ -642,6 +645,7 @@ static void clear_touches() {
 	if (self != nil) {
 		self = [self initGLES];
 		printf("after init gles %p\n", self);
+		[self initGestureRecognizer];
 	}
 	init_touches();
 	self.multipleTouchEnabled = YES;
@@ -697,7 +701,7 @@ static void clear_touches() {
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
 
 	if (object == _instance.avPlayerItem && [keyPath isEqualToString:@"status"]) {
-		if (_instance.avPlayerItem.status == AVPlayerStatusFailed || _instance.avPlayer.status == AVPlayerStatusFailed) {
+		if (_instance.avPlayerItem.status == AVPlayerItemStatusFailed || _instance.avPlayer.status == AVPlayerStatusFailed) {
 			_stop_video();
 			video_found_error = true;
 		}

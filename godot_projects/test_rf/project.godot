@@ -59,6 +59,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/bodies/parts/part_super_body.gd"
 }, {
+"base": "Node",
+"class": "PartSuperBodyPhysical",
+"language": "GDScript",
+"path": "res://physics/bodies/parts/part_super_body_physical.gd"
+}, {
 "base": "RefFrameNode",
 "class": "RefFrame",
 "language": "GDScript",
@@ -90,6 +95,7 @@ _global_script_class_icons={
 "Palette": "",
 "PaletteImporter": "",
 "PartSuperBody": "",
+"PartSuperBodyPhysical": "",
 "RefFrame": "",
 "RefFramePhysics": "",
 "RefFrameResourceProvider": "",
@@ -228,7 +234,7 @@ ui_o={
 [physics]
 
 3d/active_soft_world=false
-3d/default_gravity=0.098
+3d/default_gravity=0.98
 
 [rendering]
 

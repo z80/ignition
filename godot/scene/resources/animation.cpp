@@ -821,8 +821,9 @@ int Animation::_insert(float p_time, T &p_keys, const V &p_value) {
 
 		// Condition for replacement.
 		if (idx > 0 && Math::is_equal_approx(p_keys[idx - 1].time, p_time)) {
-
+			float transition = p_keys[idx - 1].transition;
 			p_keys.write[idx - 1] = p_value;
+			p_keys.write[idx - 1].transition = transition;
 			return idx - 1;
 
 			// Condition for insert.
@@ -2732,7 +2733,10 @@ void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {
 	p_to_animation->track_set_enabled(dst_track, track_is_enabled(p_track));
 	p_to_animation->track_set_interpolation_type(dst_track, track_get_interpolation_type(p_track));
 	p_to_animation->track_set_interpolation_loop_wrap(dst_track, track_get_interpolation_loop_wrap(p_track));
-	p_to_animation->value_track_set_update_mode(dst_track, value_track_get_update_mode(p_track));
+	if (track_get_type(p_track) == TYPE_VALUE) {
+		p_to_animation->value_track_set_update_mode(dst_track, value_track_get_update_mode(p_track));
+	}
+
 	for (int i = 0; i < track_get_key_count(p_track); i++) {
 		p_to_animation->track_insert_key(dst_track, track_get_key_time(p_track, i), track_get_key_value(p_track, i), track_get_key_transition(p_track, i));
 	}

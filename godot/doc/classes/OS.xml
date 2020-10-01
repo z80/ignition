@@ -153,7 +153,18 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
-				Returns the command line arguments passed to the engine.
+				Returns the command-line arguments passed to the engine.
+				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
+				You can also incorporate environment variables using the [method get_environment] method.
+				You can set [code]editor/main_run_args[/code] in the Project Settings to define command-line arguments to be passed by the editor when running the project.
+				Here's a minimal example on how to parse command-line arguments into a dictionary using the [code]--key=value[/code] form for arguments:
+				[codeblock]
+				var arguments = {}
+				for argument in OS.get_cmdline_args():
+				    if argument.find("=") &gt; -1:
+				        var key_value = argument.split("=")
+				        arguments[key_value[0].lstrip("--")] = key_value[1]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_connected_midi_inputs">
@@ -362,6 +373,15 @@
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows. Returns [code]72[/code] on unsupported platforms.
 			</description>
 		</method>
+		<method name="get_screen_max_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the greatest scale factor of all screens.
+				[b]Note:[/b] On macOS returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
 		<method name="get_screen_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -369,6 +389,17 @@
 			</argument>
 			<description>
 				Returns the position of the specified screen by index. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
+			</description>
+		</method>
+		<method name="get_screen_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+				Return the scale factor of the specified screen by index. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
+				[b]Note:[/b] On macOS returned value is [code]2.0[/code] for hiDPI (Retina) screen, and [code]1.0[/code] for all other cases.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="get_screen_size" qualifiers="const">
@@ -965,8 +996,12 @@
 			</return>
 			<argument index="0" name="existing_text" type="String" default="&quot;&quot;">
 			</argument>
+			<argument index="1" name="multiline" type="bool" default="false">
+			</argument>
 			<description>
-				Shows the virtual keyboard if the platform has one. The [code]existing_text[/code] parameter is useful for implementing your own LineEdit, as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
+				Shows the virtual keyboard if the platform has one.
+				The [code]existing_text[/code] parameter is useful for implementing your own [LineEdit] or [TextEdit], as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
+				The [code]multiline[/code] parameter needs to be set to [code]true[/code] to be able to enter multiple lines of text, as in [TextEdit].
 				[b]Note:[/b] This method is implemented on Android, iOS and UWP.
 			</description>
 		</method>

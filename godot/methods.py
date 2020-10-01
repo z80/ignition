@@ -3,7 +3,7 @@ import re
 import glob
 import subprocess
 from collections import OrderedDict
-from compat import iteritems, isbasestring, decode_utf8, qualname
+from compat import iteritems, isbasestring, open_utf8, decode_utf8, qualname
 
 
 def add_source_files(self, sources, files, warn_duplicates=True):
@@ -86,7 +86,7 @@ def update_version(module_version_string=""):
             gitfolder = module_folder[8:]
 
     if os.path.isfile(os.path.join(gitfolder, "HEAD")):
-        head = open(os.path.join(gitfolder, "HEAD"), "r").readline().strip()
+        head = open_utf8(os.path.join(gitfolder, "HEAD"), "r").readline().strip()
         if head.startswith("ref: "):
             head = os.path.join(gitfolder, head[5:])
             if os.path.isfile(head):
@@ -201,14 +201,15 @@ void unregister_module_types() {
 def convert_custom_modules_path(path):
     if not path:
         return path
+    path = os.path.realpath(os.path.expanduser(os.path.expandvars(path)))
     err_msg = "Build option 'custom_modules' must %s"
     if not os.path.isdir(path):
         raise ValueError(err_msg % "point to an existing directory.")
-    if os.path.realpath(path) == os.path.realpath("modules"):
+    if path == os.path.realpath("modules"):
         raise ValueError(err_msg % "be a directory other than built-in `modules` directory.")
     if is_module(path):
         raise ValueError(err_msg % "point to a directory with modules, not a single module.")
-    return os.path.realpath(os.path.expanduser(path))
+    return path
 
 
 def disable_module(self):
@@ -573,6 +574,7 @@ def generate_vs_project(env, num_jobs):
                 '(if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64"))',
                 'set "tools=yes"',
                 '(if "$(Configuration)"=="release" (set "tools=no"))',
+                'set "custom_modules=%s"' % env["custom_modules"],
                 'call "' + batch_file + '" !plat!',
             ]
 
@@ -591,15 +593,15 @@ def generate_vs_project(env, num_jobs):
         # in a backslash, so we need to remove this, lest it escape the
         # last double quote off, confusing MSBuild
         env["MSVSBUILDCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! -j"
+            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! custom_modules=!custom_modules! -j"
             + str(num_jobs)
         )
         env["MSVSREBUILDCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! vsproj=yes -j"
+            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! vsproj=yes custom_modules=!custom_modules! -j"
             + str(num_jobs)
         )
         env["MSVSCLEANCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no target=$(Configuration) tools=!tools! -j"
+            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no target=$(Configuration) tools=!tools! custom_modules=!custom_modules! -j"
             + str(num_jobs)
         )
 

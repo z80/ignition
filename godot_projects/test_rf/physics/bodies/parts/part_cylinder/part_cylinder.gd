@@ -24,3 +24,17 @@ func create_physical():
 	var ph = .create_physical()
 
 
+
+func activate():
+	.activate()
+	if _physical != null:
+		_physical.mode = RigidBody.MODE_RIGID
+		_physical.sleeping = false
+
+
+func deactivate():
+	.deactivate()
+	if _physical != null:
+		_physical.mode = RigidBody.MODE_KINEMATIC
+
+

@@ -13,6 +13,8 @@ var edited_target = null
 # Widget editing the target above.
 var editing_widget = null
 
+var dynamic_blocks: Array = []
+
 func _ready():
 	#var V  = load( "res://physics/bodies/construction/visual.tscn")
 	#var P  = load( "res://physics/bodies/construction/physical.tscn" )
@@ -111,6 +113,8 @@ func activate():
 	$PanelParts.visible = true
 	
 	activated_mode = "construction_menu"
+	
+	dynamic_blocks = []
 
 
 
@@ -119,6 +123,9 @@ func deactivate():
 		finish_editing()
 		$PanelParts.visible = false
 		activated_mode = null
+		
+		_create_assembly()
+		dynamic_blocks.clear()
 
 
 func activate_grab( body ):
@@ -145,12 +152,29 @@ func activate_rotate( body ):
 	activated_mode = "construction_editing"
 
 
+
 func finish_editing():
 	edited_target  = null
 	if is_instance_valid( editing_widget ):
 		editing_widget.queue_free()
 	activated_mode = "construction_menu"
 
+
+
+
+func _create_assembly():
+	var qty = dynamic_blocks.size()
+	if qty > 1:
+		var sb = PartSuperBody.new()
+		for body in dynamic_blocks:
+			sb.add_sub_body( body )
+		
+		# Need to call this one once.
+		sb.create_edges()
+		# Setting parent after adding all the bodies.
+		var p = self.get_parent()
+		sb.change_parent( p )
+		sb.activate()
 
 
 
@@ -173,7 +197,7 @@ func check_if_deactivate():
 	return false
 
 
-func create_block( block_name ):
+func create_block( block_name, dynamic: bool = false ):
 	var block: Body = BodyCreator.create( block_name )
 	if block == null:
 		return
@@ -190,5 +214,10 @@ func create_block( block_name ):
 	
 	# Make it selected to be able to move it.
 	PhysicsManager.player_select = block
+	
+	if dynamic:
+		dynamic_blocks.push_back( block )
 
+	# Disable physics to prevent blocks from flying around.
+	block.deactivate()
 

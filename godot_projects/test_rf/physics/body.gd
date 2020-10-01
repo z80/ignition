@@ -117,6 +117,12 @@ func distance( other: Body ):
 
 func change_parent_recursive( new_parent: Node = null ):
 	.change_parent( new_parent )
+	
+	# First go down to th lowest level.
+	for body in sub_bodies:
+		body.change_parent_recursive( new_parent )
+	
+	# After that process corrent level.
 	if new_parent == null:
 		if _physical != null:
 			_physical.queue_free()
@@ -132,9 +138,6 @@ func change_parent_recursive( new_parent: Node = null ):
 		elif _physical != null:
 			_physical.queue_free()
 			_physical = null
-	
-	for body in sub_bodies:
-		body.change_parent_recursive( new_parent )
 
 
 func update_visual( root: Node = null ):
@@ -193,6 +196,11 @@ func process_inner( _delta ):
 
 
 func _physics_process( delta ):
+	physics_process_inner( delta )
+
+
+# To make it overridable.
+func physics_process_inner( delta ):
 	if _physical:
 		var t: Transform = _physical.transform
 		var v: Vector3   = _physical.linear_velocity
@@ -366,4 +374,21 @@ func _set_hover_text( stri: String ):
 	if _icon == null:
 		return
 	_icon.text = _hover_text
+
+
+# When being constructed podies are not supposed to move.
+# So it is possible to make dynamic bodies kinematic.
+# And when editing is done, one can switch those back to 
+# being dynamic.
+# These two should be overwritten.
+func activate():
+	for body in sub_bodies:
+		body.activate()
+
+
+func deactivate():
+	for body in sub_bodies:
+		body.deactivate()
+
+
 
