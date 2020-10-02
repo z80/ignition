@@ -25,6 +25,7 @@ func _ready():
 
 
 func setup( bodies: Array, edges: Array ):
+	print( "PartSuperBodyPhysical::setup()" )
 	for joint in _joints:
 		joint.queue_free()
 	_joints.clear()
@@ -46,6 +47,7 @@ func setup( bodies: Array, edges: Array ):
 
 
 func destroy():
+	print( "PartSuperBodyPhysical::destroy()" )
 	var qty = _joints.size()
 	for i in range( qty ):
 		var joint = _joints[i]
@@ -54,6 +56,9 @@ func destroy():
 	_joints.clear()
 
 
+func _exit_tree():
+	print( "PartSuperBodyPhysical::exit_tree()" )
+	destroy()
 
 
 

@@ -46,6 +46,8 @@ func process_inner( delta ):
 
 
 func create_physical():
+	print( "PartSuperBody::create_physical()" )
+	
 	if _physical != null:
 		return _physical
 	
@@ -58,6 +60,7 @@ func create_physical():
 
 
 func remove_physical():
+	print( "PartSuperBody::remove_physical()" )
 	if _physical != null:
 		_physical.queue_free()
 		_physical = null
