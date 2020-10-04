@@ -16,6 +16,15 @@ const COLOR_X_HOVER: Color = Color( 1.0, 0.0, 0.0, 0.0 )
 const COLOR_Y_HOVER: Color = Color( 0.0, 1.0, 0.0, 0.0 )
 const COLOR_Z_HOVER: Color = Color( 0.0, 0.0, 1.0, 0.0 )
 
+var state = 
+{
+	hover_x = false, 
+	hover_y = false, 
+	hover_z = false, 
+	drag = false, 
+	
+}
+
 func set_path( path ):
 	target_path = path
 	target = get_node( target_path )
