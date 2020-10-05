@@ -29,10 +29,10 @@ var _dragging = {
 }
 
 var _draw_params = {
-	origin = Vector3.ZERO,
-	axis_x = Vector3.ZERO, 
-	axis_y = Vector3.ZERO, 
-	axis_z = Vector3.ZERO, 
+	origin = Vector2.ZERO,
+	axis_x = Vector2.ZERO, 
+	axis_y = Vector2.ZERO, 
+	axis_z = Vector2.ZERO, 
 	hover_x = false, 
 	hover_y = false, 
 	hover_z = false
@@ -47,7 +47,7 @@ func set_path( path ):
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	set_path( target_path )
 
 
 
