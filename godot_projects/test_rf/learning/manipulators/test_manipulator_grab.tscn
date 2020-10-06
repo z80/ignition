@@ -14,6 +14,7 @@ material/0 = null
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.786008, 0.618216, 0, -0.618216, 0.786008, 0, 2.84933, 4.33137 )
 script = ExtResource( 1 )
+max_speed = Vector3( 5, 5, 5 )
 
 [node name="ManipGrab" parent="." instance=ExtResource( 2 )]
 target_path = NodePath("../MeshInstance")

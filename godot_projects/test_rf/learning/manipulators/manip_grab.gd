@@ -6,16 +6,17 @@ export(NodePath) var target_path setget set_path
 var target: Node = null
 
 # size dimensions.
-export(float) var axis_length = 32.0
-export(float) var sensitivity_radius = 6.0
+export(float) var axis_length = 1.0
+export(float) var origin_dist = 10.0
+export(float) var sensitivity_radius = 12.0
 
-const COLOR_X: Color = Color( 0.7, 0.0, 0.0, 0.0 )
-const COLOR_Y: Color = Color( 0.0, 0.7, 0.0, 0.0 )
-const COLOR_Z: Color = Color( 0.0, 0.0, 0.7, 0.0 )
+const COLOR_X: Color = Color( 0.7, 0.0, 0.0, 0.7 )
+const COLOR_Y: Color = Color( 0.0, 0.7, 0.0, 0.7 )
+const COLOR_Z: Color = Color( 0.0, 0.0, 0.7, 0.7 )
 
-const COLOR_X_HOVER: Color = Color( 1.0, 0.0, 0.0, 0.0 )
-const COLOR_Y_HOVER: Color = Color( 0.0, 1.0, 0.0, 0.0 )
-const COLOR_Z_HOVER: Color = Color( 0.0, 0.0, 1.0, 0.0 )
+const COLOR_X_HOVER: Color = Color( 1.0, 0.0, 0.0, 1.0 )
+const COLOR_Y_HOVER: Color = Color( 0.0, 1.0, 0.0, 1.0 )
+const COLOR_Z_HOVER: Color = Color( 0.0, 0.0, 1.0, 1.0 )
 
 const LINE_WIDTH: float = 2.3
 
@@ -97,7 +98,8 @@ func _process(_delta):
 		update()
 
 
-func _process_input( event ):
+
+func _input( event ):
 	var me: InputEventMouseButton = event as InputEventMouseButton
 	if me != null:
 		if (me.button_index != BUTTON_LEFT):
@@ -154,21 +156,28 @@ func _compute_draw_params():
 		t_target = target.global_transform
 	var t_camera: Transform = cam.global_transform
 	
-	var t: Transform = t_camera.inverse() * t_target
+	var t: Transform = t_camera.inverse() #* t_target
 	
 	var origin: Vector2 = cam.unproject_position( t_target.origin )
 	
+	var oo3: Vector3 = Vector3( 0.0, 0.0, -origin_dist )
+	oo3 = t_camera.xform( oo3 )
+	var oo = cam.unproject_position( oo3 )
+	
 	var ox3: Vector3 = Vector3( axis_length, 0.0, 0.0 )
-	ox3 = t.xform( ox3 )
-	var ox: Vector2 = Vector2( ox3.x, ox3.y )
+	ox3 += oo3
+	var ox: Vector2 = cam.unproject_position( ox3 )
+	ox -= oo
 	
 	var oy3: Vector3 = Vector3( 0.0, axis_length, 0.0 )
-	oy3 = t.xform( oy3 )
-	var oy: Vector2 = Vector2( oy3.x, oy3.y )
+	oy3 += oo3
+	var oy: Vector2 = cam.unproject_position( oy3 )
+	oy -= oo
 	
 	var oz3: Vector3 = Vector3( 0.0, 0.0, axis_length )
-	oz3 = t.xform( oz3 )
-	var oz: Vector2 = Vector2( oz3.x, oz3.y )
+	oz3 += oo3
+	var oz: Vector2 = cam.unproject_position( oz3 )
+	oz -= oo
 	
 	# Mouse cursor position.
 	var at: Vector2 = vp.get_mouse_position()
@@ -181,9 +190,9 @@ func _compute_draw_params():
 		axis_x = ox, 
 		axis_y = oy, 
 		axis_z = oz, 
-		hover_x = (dist_x >= 0.0), 
-		hover_y = (dist_y >= 0.0), 
-		hover_z = (dist_z >= 0.0)
+		hover_x = (dist_x <= 0.0), 
+		hover_y = (dist_y <= 0.0), 
+		hover_z = (dist_z <= 0.0)
 	}
 	
 	return draw
@@ -199,6 +208,14 @@ func _init_dragging( axis: Vector3 ):
 	
 	# Own origin and unit vector.
 	var t: Transform = self.transform
+	if target == null:
+		return
+	var b: Body = target as Body
+	if b != null:
+		t = b.t()
+	else:
+		t = target.transform
+
 	var own_r: Vector3 = t.origin
 	var own_a: Vector3 = t.basis.xform( axis )
 	
@@ -226,14 +243,14 @@ func _process_dragging():
 	
 	# Here probably need to convert back to local 
 	# first as all vectors are in global ref frame
-	self.translation = Vector3( x, y, z )
+	var to: Vector3 = Vector3( x, y, z )
 	if target != null:
 		var b: Body = target as Body
 		if b != null:
-			b.set_r( self.translation )
+			b.set_r( to )
 			b.update_physical_state_from_rf()
 		else:
-			b.translation = self.translation
+			target.translation = to
 	
 	if r != _dragging.position:
 		_dragging.position = r
@@ -258,7 +275,7 @@ func _mouse_intersection():
 	var vp: Viewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
-	var camera: Camera = PhysicsManager.camera
+	var camera: Camera = vp.get_camera()
 	
 	# Camera origin and unit vector.
 	var cam_r: Vector3 = camera.project_ray_origin(mouse_uv)
