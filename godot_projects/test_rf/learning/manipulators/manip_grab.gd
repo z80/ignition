@@ -28,7 +28,12 @@ var _dragging = {
 	origin = Vector3.ZERO, 
 	mouse_start = Vector3.ZERO, 
 	mouse_at = Vector3.ZERO, 
-	position = Vector3.ZERO
+	position = Vector3.ZERO, 
+	
+	rot_enabled = false, 
+	rotation_scale = 1.0, 
+	start_q = Quat.IDENTITY, 
+	euler   = Vector3.ZERO
 }
 
 var _draw_params = {
@@ -177,9 +182,17 @@ func _input( event ):
 					_init_dragging( Vector3.UP )
 				elif _draw_params.hover_z:
 					_init_dragging( Vector3.BACK )
+				if _draw_params.hover_rot_x:
+					_init_rotating( Vector3.RIGHT )
+				elif _draw_params.hover_rot_y:
+					_init_rotating( Vector3.UP )
+				elif _draw_params.hover_rot_z:
+					_init_rotating( Vector3.BACK )
 		else:
 			if _dragging.enabled:
 				_finit_dragging()
+			elif _dragging.rot_enabled:
+				_finit_rotating()
 		
 		return
 	
@@ -187,6 +200,8 @@ func _input( event ):
 	if mm != null:
 		if _dragging.enabled:
 			_process_dragging()
+		elif _dragging.rot_enabled:
+			_process_rotating()
 
 
 
@@ -272,15 +287,15 @@ func _compute_draw_params():
 
 
 func _init_dragging( axis: Vector3 ):
+	if target == null:
+		return
 	if _dragging.enabled:
 		return
 	
 	_dragging.enabled = true
 	
 	# Own origin and unit vector.
-	var t: Transform = self.transform
-	if target == null:
-		return
+	var t: Transform
 	var b: Body = target as Body
 	if b != null:
 		t = b.t()
@@ -288,7 +303,7 @@ func _init_dragging( axis: Vector3 ):
 		t = target.transform
 
 	var own_r: Vector3 = t.origin
-	var own_a: Vector3 = t.basis.xform( axis )
+	var own_a: Vector3 = axis #t.basis.xform( axis )
 	
 	_dragging.axis   = own_a
 	_dragging.origin = own_r
@@ -328,11 +343,108 @@ func _process_dragging():
 		emit_signal( "position", r )
 
 
+
+func _init_rotating( axis: Vector3 ):
+	if target == null:
+		return
+	if _dragging.rot_enabled:
+		return
+	
+	_dragging.rot_enabled = true
+	
+	# Own origin and unit vector.
+	var t: Transform 
+	var b: Body = target as Body
+	if b != null:
+		t = b.t()
+	else:
+		t = target.global_transform
+	var own_r: Vector3 = t.origin
+	var own_a: Vector3 = axis #t.basis.xform( axis )
+	
+	var vp: Viewport = get_viewport()
+	var mouse_uv = vp.get_mouse_position()
+	
+	var camera: Camera = vp.get_camera()
+	
+	# Camera origin and unit vector.
+	var cam_r: Vector3 = camera.project_ray_origin(mouse_uv)
+	var cam_a: Vector3 = camera.project_ray_normal(mouse_uv)
+	
+	# Convert to ref. frame. object resides in.
+	#var gt: Transform = target.global_transform
+	#cam_r = t.basis.xform( gt.basis.xform_inv( cam_r ) )
+	#cam_a = t.basis.xform( gt.basis.xform_inv( cam_a ) )
+	
+	var drag_a: Vector3 = cam_a.cross( own_a )
+	drag_a = drag_a.normalized()
+	
+	var q: Quat = t.basis
+	
+	var dist: float = (own_r - cam_r).length()
+	
+	var viewport_width: float = vp.get_visible_rect().size.x
+	_dragging.origin = own_r
+	_dragging.drag_scale      = 3.1415926535 / dist
+	_dragging.axis            = own_a
+	_dragging.drag_axis       = drag_a
+	_dragging.start_q         = q
+	_dragging.mouse_start = _mouse_on_axis()
+	#print( "set mouse_start: ", _dragging.mouse_start )
+	var euler: Vector3 = t.basis.get_euler()
+	_dragging.euler = euler
+
+
+func _process_rotating():
+	_dragging.mouse_at = _mouse_on_axis()
+	
+	var dr: Vector3 = _dragging.mouse_at - _dragging.mouse_start
+	var dx = dr.dot( _dragging.drag_axis )
+
+	print( "axis: ", _dragging.drag_axis, "at: ", _dragging.mouse_at, " start: ", _dragging.mouse_start, " d: ", dr, " dot: ", dx )
+	
+	var angle: float = dx * _dragging.drag_scale
+	
+	var angle_2 = angle * 0.5
+	var co2 = cos( angle_2 )
+	var si2 = sin( angle_2 )
+	var a: Vector3 = _dragging.axis
+	var dq: Quat = Quat( a.x * si2, a.y * si2, a.z * si2, co2 )
+	var q: Quat = dq * _dragging.start_q
+	var b: Basis = q
+	var euler: Vector3 = b.get_euler()
+	euler.x = round( euler.x / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
+	euler.y = round( euler.y / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
+	euler.z = round( euler.z / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
+	q = Quat( euler )
+
+	#print( "rot_axis: ", a, "drag_axis: ", _dragging.drag_axis, ", mouse_at: ", _dragging.mouse_at, ", dr: ", dr, ", dot: ", dx, ", angle: ", angle, ", euler: ", euler )
+	
+	
+	if target != null:
+		var body: Body = target as Body
+		if body != null:
+			body.set_q( q )
+			body.update_physical_state_from_rf()
+		else:
+			var tt: Transform = target.transform
+			tt.basis = q
+			target.transform = tt
+		var st: Transform = self.transform
+		st.basis = q
+
+	
+	if euler != _dragging.euler:
+		_dragging.euler = euler
+		emit_signal( "euler", euler )
+
+
+
 func _mouse_on_axis():
 	var r = _mouse_intersection()
 	# Now project this point onto the line.
 	var ro: Vector3 = _dragging.mouse_start
-	var a: Vector3  = _dragging.axis
+	var a: Vector3  = _dragging.drag_axis
 	
 	var dr: Vector3 = r - ro
 	var proj: float = a.dot( dr )
@@ -413,4 +525,7 @@ func _mouse_intersection():
 func _finit_dragging():
 	_dragging.enabled = false
 
+
+func _finit_rotating():
+	_dragging.rot_enabled = false
 
