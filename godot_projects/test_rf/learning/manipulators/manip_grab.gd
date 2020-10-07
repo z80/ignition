@@ -6,7 +6,7 @@ export(NodePath) var target_path setget set_path
 var target: Node = null
 
 # size dimensions.
-export(float) var axis_length = 1.0
+export(float) var axis_length = 3.0
 export(float) var origin_dist = 10.0
 export(float) var sensitivity_radius = 12.0
 
@@ -19,6 +19,8 @@ const COLOR_Y_HOVER: Color = Color( 0.0, 1.0, 0.0, 1.0 )
 const COLOR_Z_HOVER: Color = Color( 0.0, 0.0, 1.0, 1.0 )
 
 const LINE_WIDTH: float = 2.3
+
+const CIRCLE_SEGMENTS_QTY: int = 32
 
 var _dragging = {
 	enabled = false, 
@@ -36,7 +38,10 @@ var _draw_params = {
 	axis_z = Vector2.ZERO, 
 	hover_x = false, 
 	hover_y = false, 
-	hover_z = false
+	hover_z = false, 
+	hover_rot_x = false, 
+	hover_rot_y = false, 
+	hover_rot_z = false
 }
 
 
@@ -53,6 +58,11 @@ func _ready():
 
 
 func _draw():
+	_draw_drag_axes()
+	_draw_rot_circles()
+
+
+func _draw_drag_axes():
 	var dp = _draw_params
 	var c: Color
 	var to: Vector2
@@ -85,6 +95,60 @@ func _draw():
 	draw_circle( to, sensitivity_radius, c )
 
 
+func _draw_rot_circles():
+	var dp = _draw_params
+	var c: Color
+	var to: Vector2
+	
+	# Draw X
+	if _draw_params.hover_rot_x:
+		c = COLOR_X_HOVER
+	else:
+		c = COLOR_X
+	var center: Vector2 = dp.origin #- dp.axis_x
+	var e1: Vector2 = dp.axis_y * 0.7
+	var e2: Vector2 = dp.axis_z * 0.7
+	_draw_rot_circle( center, e1, e2, c )
+	
+	# Draw Y
+	if _draw_params.hover_rot_y:
+		c = COLOR_Y_HOVER
+	else:
+		c = COLOR_Y
+	center = dp.origin #- dp.axis_y
+	e1 = dp.axis_x * 0.7
+	e2 = dp.axis_z * 0.7
+	_draw_rot_circle( center, e1, e2, c )
+	
+	# Draw Z
+	if _draw_params.hover_rot_z:
+		c = COLOR_Z_HOVER
+	else:
+		c = COLOR_Z
+	center = dp.origin #- dp.axis_z
+	e1 = dp.axis_x * 0.7
+	e2 = dp.axis_y * 0.7
+	_draw_rot_circle( center, e1, e2, c )
+
+
+
+
+func _draw_rot_circle( center: Vector2, e1: Vector2, e2: Vector2, color: Color ):
+	var qty_1 = float(CIRCLE_SEGMENTS_QTY-1)
+	for i in range(CIRCLE_SEGMENTS_QTY):
+		var a1 = PI * 2.0 * float(i)   / qty_1
+		var a2 = PI * 2.0 * float(i+1) / qty_1
+		var co1 = cos(a1)
+		var si1 = sin(a1)
+		var co2 = cos(a2)
+		var si2 = sin(a2)
+		var v1: Vector2 = center + co1*e1 + si1*e2
+		var v2: Vector2 = center + co2*e1 + si2*e2
+		draw_line( v1, v2, color, LINE_WIDTH, false )
+	
+	var c: Vector2 = center + 0.707 * ( e1 + e2 )
+	draw_circle( c, sensitivity_radius, color )
+
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
@@ -111,7 +175,7 @@ func _input( event ):
 					_init_dragging( Vector3.RIGHT )
 				elif _draw_params.hover_y:
 					_init_dragging( Vector3.UP )
-				else:
+				elif _draw_params.hover_z:
 					_init_dragging( Vector3.BACK )
 		else:
 			if _dragging.enabled:
@@ -185,6 +249,10 @@ func _compute_draw_params():
 	var dist_y: float = (origin + oy - at).length() - sensitivity_radius
 	var dist_z: float = (origin + oz - at).length() - sensitivity_radius
 
+	var dist_rot_x: float = (origin + 0.7*0.707*(oy+oz) - at).length() - sensitivity_radius
+	var dist_rot_y: float = (origin + 0.7*0.707*(ox+oz) - at).length() - sensitivity_radius
+	var dist_rot_z: float = (origin + 0.7*0.707*(ox+oy) - at).length() - sensitivity_radius
+
 	var draw = {
 		origin = origin, 
 		axis_x = ox, 
@@ -192,7 +260,10 @@ func _compute_draw_params():
 		axis_z = oz, 
 		hover_x = (dist_x <= 0.0), 
 		hover_y = (dist_y <= 0.0), 
-		hover_z = (dist_z <= 0.0)
+		hover_z = (dist_z <= 0.0), 
+		hover_rot_x = (dist_rot_x <= 0.0), 
+		hover_rot_y = (dist_rot_y <= 0.0), 
+		hover_rot_z = (dist_rot_z <= 0.0)
 	}
 	
 	return draw
