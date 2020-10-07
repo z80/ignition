@@ -305,7 +305,8 @@ func _init_dragging( axis: Vector3 ):
 	var own_r: Vector3 = t.origin
 	var own_a: Vector3 = axis #t.basis.xform( axis )
 	
-	_dragging.axis   = own_a
+	_dragging.axis      = own_a
+	_dragging.drag_axis = own_a
 	_dragging.origin = own_r
 	_dragging.mouse_start = _mouse_on_axis()
 
