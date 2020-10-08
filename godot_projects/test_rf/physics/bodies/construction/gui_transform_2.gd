@@ -25,7 +25,3 @@ func _on_Grab_pressed():
 	_parent_gui.queue_free()
 
 
-func _on_Rotate_pressed():
-	var s = _target_obj.root_most_body()
-	s.activate_rotate( _target_obj )
-	_parent_gui.queue_free()

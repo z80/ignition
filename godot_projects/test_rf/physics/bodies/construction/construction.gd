@@ -131,7 +131,7 @@ func deactivate():
 func activate_grab( body ):
 	if not is_instance_valid( body ):
 		return
-	var Grab = load( "res://physics/bodies/construction/grab_3d.tscn" )
+	var Grab = load( "res://physics/bodies/construction/manip_grab.tscn" )
 	var grab = Grab.instance()
 	BodyCreator.root_node.add_child( grab )
 	edited_target  = body
@@ -140,16 +140,6 @@ func activate_grab( body ):
 	activated_mode = "construction_editing"
 
 
-func activate_rotate( body ):
-	if not is_instance_valid( body ):
-		return
-	var Rotate = load( "res://physics/bodies/construction/rotate_3d.tscn" )
-	var rotate = Rotate.instance()
-	body.add_child( rotate )
-	edited_target  = body
-	editing_widget = rotate
-	rotate.target = body
-	activated_mode = "construction_editing"
 
 
 
