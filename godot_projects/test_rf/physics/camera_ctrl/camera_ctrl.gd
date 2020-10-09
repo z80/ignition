@@ -47,5 +47,5 @@ func _ready():
 
 func _input( event ):
 	if event is InputEventMouseMotion:
-		_mouse_position = event.relative
+		_mouse_displacement = event.relative
 
