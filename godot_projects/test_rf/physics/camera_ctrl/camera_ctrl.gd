@@ -11,14 +11,12 @@ const Target = {
 	SELECTION = 1
 }
 
-var _mode: int = Mode.STATE_TPS_AZIMUTH
+var _mode: int   = Mode.STATE_TPS_AZIMUTH
+var _target: int = Target.PLAYER
 var _mouse_displacement: Vector2 = Vector2.ZERO
 var _zoom_displacement: int = 0
 
 export(int) var state setget _set_state
-
-export(NodePath) var target_path_tps setget _set_target_path_tps
-export(NodePath) var target_path_fps setget _set_target_path_fps
 
 export(float) var sensitivity setget _set_sensitivity
 export(float) var sensitivity_dist = 0.2
@@ -55,14 +53,6 @@ func _set_dist_min( v ):
 
 func _set_dist_max( v ):
 	dist_max = v
-
-func _set_target_path_tps( pth ):
-	target_path_tps = pth
-	_target_tps = get_node( target_path_tps )
-
-func _set_target_path_fps( pth ):
-	target_path_fps = pth
-	_target_fps = get_node( target_path_fps )
 
 func _set_sensitivity( sens ):
 	sensitivity = sens
