@@ -41,8 +41,10 @@ func _ready():
 	#print( "bodies: ", bodies )
 
 	
-	var privot: Spatial = capsule._visual
-	$Camera.privot = privot
+	#var privot: Spatial = capsule._visual
+	#$Camera.privot = privot
+	$Camera.set_target( $Camera.Target.PLAYER )
+	$Camera.set_mode( $Camera.Mode.TPS_AZIMUTH )
 	
 	# Initial set of select and focus object.
 	PhysicsManager.player_select = capsule

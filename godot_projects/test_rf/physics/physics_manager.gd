@@ -41,11 +41,6 @@ func _physics_process( delta ):
 
 
 func _input( event ):
-	var pressed_c: bool = Input.is_action_just_pressed( "ui_c" )
-	if pressed_c:
-		player_focus = player_select
-		camera.privot = player_focus
-	
 	var body: Body = player_focus as Body
 	if body == null:
 		return

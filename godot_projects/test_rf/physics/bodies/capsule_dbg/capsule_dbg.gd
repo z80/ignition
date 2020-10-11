@@ -114,3 +114,13 @@ func _user_input_rotation( _event: InputEvent ):
 	
 	_ang_vel = w
 
+
+func privot_tps( ind: int = 0 ):
+	if is_instance_valid( _visual ):
+		return _visual.target_tps
+	return null
+
+func privot_fps( ind: int = 0 ):
+	if is_instance_valid( _visual ):
+		return _visual.target_fps
+	return null

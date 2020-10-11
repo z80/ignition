@@ -1,9 +1,9 @@
 extends Camera
 
 const Mode = {
-	TPS_AZIMUTH = 0,
-	TPS_FREE = 1, 
-	FPS = 2
+	FPS         = 0, 
+	TPS_AZIMUTH = 1,
+	TPS_FREE    = 2
 }
 
 const Target = {
@@ -11,12 +11,11 @@ const Target = {
 	SELECTION = 1
 }
 
-var _mode: int   = Mode.STATE_TPS_AZIMUTH
-var _target: int = Target.PLAYER
+export(int) var mode   = Mode.TPS_AZIMUTH setget set_mode
+export(int) var target = Target.PLAYER setget set_target
+
 var _mouse_displacement: Vector2 = Vector2.ZERO
 var _zoom_displacement: int = 0
-
-export(int) var state setget _set_state
 
 export(float) var sensitivity setget _set_sensitivity
 export(float) var sensitivity_dist = 0.2
@@ -39,14 +38,52 @@ var _state = {
 
 
 
-var _target_tps: Spatial = null
-var _target_fps: Spatial = null
+var _target: Spatial = null
 
 
 
 
-func _set_state( st ):
-	state = st
+func set_mode( m ):
+	mode = m
+	_choose_target()
+
+func set_target( t ):
+	target = t
+	_choose_target()
+
+
+func _cycle_target():
+	var t: Spatial = null
+	if target == Target.PLAYER:
+		target = Target.SELECTION
+		var p = PhysicsManager.player_select
+		if p:
+			if mode == Mode.FPS:
+				_target = p.privot_fps()
+			else:
+				_target = p.privot_tps()
+		else:
+			_target = null
+	else:
+		var p = PhysicsManager.player_select
+		if p:
+			if mode == Mode.FPS:
+				_target = p.privot_fps()
+			else:
+				_target = p.privot_tps()
+		else:
+			_target = null
+
+func _cycle_mode():
+	if mode == Mode.FPS:
+		mode = Mode.TPS_AZIMUTH
+	elif mode == Mode.TPS_AZIMUTH:
+		mode = Mode.TPS_FREE
+	elif mode == Mode.TPS_FREE:
+		mode = Mode.FPS
+	_choose_target()
+
+
 
 func _set_dist_min( v ):
 	dist_min = v
@@ -56,6 +93,27 @@ func _set_dist_max( v ):
 
 func _set_sensitivity( sens ):
 	sensitivity = sens
+
+
+func _change_mode():
+	if target == Target.PLAYER:
+		if mode == Mode.FPS:
+			mode = Mode.TPS_AZIMUTH
+		elif mode == Mode.TPS_AZIMUTH:
+			mode = Mode.TPS_FREE
+		elif mode == Mode.TPS_FREE:
+			target = Target.SELECTION
+			mode   = Mode.FPS
+	elif target == Target.SELECTION:
+		if mode == Mode.FPS:
+			mode = Mode.TPS_AZIMUTH
+		elif mode == Mode.TPS_AZIMUTH:
+			mode = Mode.TPS_FREE
+		elif mode == Mode.TPS_FREE:
+			target = Target.PLAYER
+			mode   = Mode.FPS
+	_choose_target()
+	
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -71,15 +129,24 @@ func _input( event ):
 	var zoom_out: bool = Input.is_action_just_pressed( "ui_zoom_out" )
 	if zoom_out:
 		_zoom_displacement += 1
+	
+	var pressed_c: bool = Input.is_action_just_pressed( "ui_c" )
+	if pressed_c:
+		player_focus = player_select
+		camera.privot = player_focus
+
+	var change_mode: bool = Input.is_action_just_pressed( "ui_c" )
+	if change_mode:
+		_change_mode()
 
 
 
 func _process(_delta):
-	if _mode == Mode.FPS:
+	if mode == Mode.FPS:
 		_process_fps(_delta)
-	elif _mode == Mode.TPS_AZIMUTH:
+	elif mode == Mode.TPS_AZIMUTH:
 		_process_tps_azimuth(_delta)
-	elif _mode == Mode.TPS_FREE:
+	elif mode == Mode.TPS_FREE:
 		_process_tps_free(_delta)
 
 
@@ -89,7 +156,7 @@ func _process(_delta):
 
 
 func _process_fps(_delta):
-	if not is_instance_valid( _target_fps ):
+	if not is_instance_valid( _target ):
 		return
 	
 	var fr: float
@@ -109,7 +176,7 @@ func _process_fps(_delta):
 	_state.pitch +=  fr - rr
 	
 	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
-	var t: Transform = _target_fps.transform
+	var t: Transform = _target.transform
 	var base_q: Quat = t.basis
 	q = base_q * q
 	t.basis = q
@@ -122,7 +189,7 @@ func _process_fps(_delta):
 
 
 func _process_tps_azimuth( _delta ):
-	if not is_instance_valid( _target_tps ):
+	if not is_instance_valid( _target ):
 		return
 	
 	# Update the distance.
@@ -154,7 +221,7 @@ func _process_tps_azimuth( _delta ):
 	var v_dist: Vector3 = Vector3( 0.0, 0.0, _state.dist )
 	v_dist = q.xform( v_dist )
 	
-	var t: Transform = _target_fps.transform
+	var t: Transform = _target.transform
 	var base_q: Quat = t.basis
 	q = base_q * q
 	t.basis = q

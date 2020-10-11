@@ -236,6 +236,13 @@ func _create_visual( Visual ):
 	_visual = v
 
 
+# Spatials to target camera to.
+func privot_tps( ind: int = 0 ):
+	return _visual
+
+func privot_fps( ind: int = 0 ):
+	return _visual
+
 
 func _create_physical( Physical ):
 	if _physical:
