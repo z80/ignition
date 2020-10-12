@@ -26,6 +26,8 @@ func _ready():
 	var capsule: Body = BodyCreator.create( "capsule_dbg" )
 	# Call add body to process inclusion and initialization properly.
 	rf.add_body( capsule )
+	PhysicsManager.player_focus  = capsule
+	PhysicsManager.player_select = capsule
 	
 		# for debugging purposes
 	#var tree = get_tree()

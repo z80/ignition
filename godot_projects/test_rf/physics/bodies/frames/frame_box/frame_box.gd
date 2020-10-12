@@ -3,8 +3,8 @@ extends Body
 
 
 func init():
-	var Visual   = load( "res://physics/bodies/parts/part_cylinder/part_cylinder_visual.tscn")
-	var Physical = load( "res://physics/bodies/parts/part_cylinder/part_cylinder_physical.tscn" )
+	var Visual   = load( "res://physics/bodies/frames/frame_box/frame_box_visual.tscn")
+	var Physical = load( "res://physics/bodies/frames/frame_box/frame_box_physical.tscn" )
 	
 	VisualType   = Visual
 	PhysicalType = Physical

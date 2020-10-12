@@ -14,11 +14,12 @@ const Target = {
 export(int) var mode   = Mode.TPS_AZIMUTH setget set_mode
 export(int) var target = Target.PLAYER setget set_target
 
+var _ctrl_enabled: bool = false
 var _mouse_displacement: Vector2 = Vector2.ZERO
 var _zoom_displacement: int = 0
 
-export(float) var sensitivity setget _set_sensitivity
-export(float) var sensitivity_dist = 0.2
+export(float) var sensitivity = 0.01 setget _set_sensitivity
+export(float) var sensitivity_dist = 0.02
 
 export(float) var dist_min = 1.0   setget _set_dist_min
 export(float) var dist_max = 100.0 setget _set_dist_max
@@ -45,17 +46,15 @@ var _target: Spatial = null
 
 func set_mode( m ):
 	mode = m
-	_choose_target()
+	_apply_target()
 
 func set_target( t ):
 	target = t
-	_choose_target()
+	_apply_target()
 
 
-func _cycle_target():
-	var t: Spatial = null
-	if target == Target.PLAYER:
-		target = Target.SELECTION
+func _apply_target():
+	if target == Target.SELECTION:
 		var p = PhysicsManager.player_select
 		if p:
 			if mode == Mode.FPS:
@@ -65,7 +64,7 @@ func _cycle_target():
 		else:
 			_target = null
 	else:
-		var p = PhysicsManager.player_select
+		var p = PhysicsManager.player_focus
 		if p:
 			if mode == Mode.FPS:
 				_target = p.privot_fps()
@@ -74,6 +73,18 @@ func _cycle_target():
 		else:
 			_target = null
 
+
+
+
+func _cycle_target():
+	var t: Spatial = null
+	if target == Target.PLAYER:
+		target = Target.SELECTION
+	else:
+		target = Target.PLAYER
+	_apply_target()
+
+
 func _cycle_mode():
 	if mode == Mode.FPS:
 		mode = Mode.TPS_AZIMUTH
@@ -81,7 +92,7 @@ func _cycle_mode():
 		mode = Mode.TPS_FREE
 	elif mode == Mode.TPS_FREE:
 		mode = Mode.FPS
-	_choose_target()
+	_apply_target()
 
 
 
@@ -95,25 +106,6 @@ func _set_sensitivity( sens ):
 	sensitivity = sens
 
 
-func _change_mode():
-	if target == Target.PLAYER:
-		if mode == Mode.FPS:
-			mode = Mode.TPS_AZIMUTH
-		elif mode == Mode.TPS_AZIMUTH:
-			mode = Mode.TPS_FREE
-		elif mode == Mode.TPS_FREE:
-			target = Target.SELECTION
-			mode   = Mode.FPS
-	elif target == Target.SELECTION:
-		if mode == Mode.FPS:
-			mode = Mode.TPS_AZIMUTH
-		elif mode == Mode.TPS_AZIMUTH:
-			mode = Mode.TPS_FREE
-		elif mode == Mode.TPS_FREE:
-			target = Target.PLAYER
-			mode   = Mode.FPS
-	_choose_target()
-	
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -121,6 +113,14 @@ func _ready():
 
 
 func _input( event ):
+	var gained_control: bool = Input.is_action_just_pressed( "ui_rmb" )
+	if gained_control:
+		_gain_control( true )
+	else:
+		var release_control: bool = Input.is_action_just_released( "ui_rmb" )
+		if release_control:
+			_gain_control( false )
+	
 	if event is InputEventMouseMotion:
 		_mouse_displacement += event.relative
 	var zoom_in: bool = Input.is_action_just_pressed( "ui_zoom_in" )
@@ -132,12 +132,11 @@ func _input( event ):
 	
 	var pressed_c: bool = Input.is_action_just_pressed( "ui_c" )
 	if pressed_c:
-		player_focus = player_select
-		camera.privot = player_focus
+		_cycle_target()
 
-	var change_mode: bool = Input.is_action_just_pressed( "ui_c" )
+	var change_mode: bool = Input.is_action_just_pressed( "ui_v" )
 	if change_mode:
-		_change_mode()
+		_cycle_mode()
 
 
 
@@ -152,6 +151,12 @@ func _process(_delta):
 
 
 
+func _gain_control( capture: bool ):
+	_ctrl_enabled = capture
+	if capture:
+		Input.set_mouse_mode( Input.MOUSE_MODE_CAPTURED )
+	else:
+		Input.set_mouse_mode( Input.MOUSE_MODE_VISIBLE )
 
 
 
@@ -159,24 +164,33 @@ func _process_fps(_delta):
 	if not is_instance_valid( _target ):
 		return
 	
-	var fr: float
-	if (_state.yaw > limit_yaw) or (_state.yaw < -limit_yaw):
-		fr = 0.0
-	else:
-		fr = _mouse_displacement.x * sensitivity
-	var rr: float = _state.yaw * return_rate * _delta
+	if _ctrl_enabled:
+		var fr: float = -_mouse_displacement.x * sensitivity
+		if (fr > 0.0) and (_state.yaw > limit_yaw):
+			fr = 0.0
+		elif (fr < 0.0) and (_state.yaw < -limit_yaw):
+			fr = 0.0
+		var rr: float
+		if fr == 0.0:
+			rr = _state.yaw * return_rate * _delta
+		else:
+			rr = 0.0
 
-	_state.yaw +=  fr - rr
-	
-	if (_state.pitch > limit_pitch) or (_state.pitch < -limit_pitch):
-		fr = 0.0
-	else:
-		fr = _mouse_displacement.y * sensitivity
-	rr = _state.pitch * return_rate * _delta
-	_state.pitch +=  fr - rr
+		_state.yaw +=  fr - rr
+		
+		fr = -_mouse_displacement.y * sensitivity
+		if (fr > 0.0) and (_state.pitch > limit_pitch):
+			fr = 0.0
+		elif (fr < 0.0) and (_state.pitch < -limit_pitch):
+			fr = 0.0
+		if fr == 0.0:
+			rr = _state.pitch * return_rate * _delta
+		else:
+			rr = 0.0
+		_state.pitch +=  fr - rr
 	
 	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
-	var t: Transform = _target.transform
+	var t: Transform = _target.global_transform
 	var base_q: Quat = t.basis
 	q = base_q * q
 	t.basis = q
@@ -192,6 +206,10 @@ func _process_tps_azimuth( _delta ):
 	if not is_instance_valid( _target ):
 		return
 	
+	#print( "mouse displacement: ", _mouse_displacement )
+	
+	#_apply_target()
+	
 	# Update the distance.
 	var d_dist: float = sensitivity_dist * float(_zoom_displacement) * _state.dist
 	_zoom_displacement = 0
@@ -201,27 +219,32 @@ func _process_tps_azimuth( _delta ):
 	elif _state.dist < dist_min:
 		_state.dist = dist_min
 	
-	var fr: float
-	if (_state.yaw > limit_yaw) or (_state.yaw < -limit_yaw):
-		fr = 0.0
-	else:
-		fr = _mouse_displacement.x * sensitivity
-	var rr: float = _state.yaw * return_rate * _delta
+	if _ctrl_enabled:
+		var fr: float = -_mouse_displacement.x * sensitivity
+		if (fr > 0.0) and (_state.yaw > limit_yaw):
+			fr = 0.0
+		elif (fr < 0.0) and (_state.yaw < -limit_yaw):
+			fr = 0.0
+		var rr: float = 0.0 * _state.yaw * return_rate * _delta
 
-	_state.yaw +=  fr - rr
-	
-	if (_state.pitch > limit_pitch) or (_state.pitch < -limit_pitch):
-		fr = 0.0
-	else:
-		fr = _mouse_displacement.y * sensitivity
-	rr = _state.pitch * return_rate * _delta
-	_state.pitch +=  fr - rr
+		_state.yaw +=  fr - rr
+		
+		fr = -_mouse_displacement.y * sensitivity
+		if (fr > 0.0) and (_state.pitch > limit_pitch):
+			fr = 0.0
+		elif (fr < 0.0) and (_state.pitch < -limit_pitch):
+			fr = 0.0
+		rr = 0.0 * _state.pitch * return_rate * _delta
+		_state.pitch +=  fr - rr
 	
 	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
 	var v_dist: Vector3 = Vector3( 0.0, 0.0, _state.dist )
 	v_dist = q.xform( v_dist )
 	
-	var t: Transform = _target.transform
+	var t: Transform = _target.global_transform
+	
+	print( "target origin: ", t.origin )
+	
 	var base_q: Quat = t.basis
 	q = base_q * q
 	t.basis = q
