@@ -165,6 +165,10 @@ func _create_assembly():
 		var p = self.get_parent()
 		sb.change_parent( p )
 		sb.activate()
+	
+	else:
+		for body in dynamic_blocks:
+			body.activate()
 
 
 
