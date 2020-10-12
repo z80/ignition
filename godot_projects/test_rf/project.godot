@@ -24,10 +24,20 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/bodies/construction/construction_super_body.gd"
 }, {
+"base": "Node",
+"class": "DraggedRf",
+"language": "GDScript",
+"path": "res://learning/rlu_cache/dragged_rf.gd"
+}, {
 "base": "Container",
 "class": "FlexGridContainer",
 "language": "GDScript",
 "path": "res://addons/color-palette/utilities/FlexGridContainer.gd"
+}, {
+"base": "Node",
+"class": "FramesDb",
+"language": "GDScript",
+"path": "res://learning/rlu_cache/frames_db.gd"
 }, {
 "base": "Spatial",
 "class": "LandscapeBase",
@@ -84,6 +94,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/ref_frame_res_provider.gd"
 }, {
+"base": "Node",
+"class": "RluCache",
+"language": "GDScript",
+"path": "res://learning/rlu_cache/rlu_cache.gd"
+}, {
 "base": "MeshInstance",
 "class": "TileBase",
 "language": "GDScript",
@@ -93,7 +108,9 @@ _global_script_class_icons={
 "Body": "",
 "ColorTile": "",
 "ConstructionSuperBody": "",
+"DraggedRf": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
+"FramesDb": "",
 "LandscapeBase": "",
 "LandscapeFunc": "",
 "LandscapeHeightFunc": "",
@@ -105,6 +122,7 @@ _global_script_class_icons={
 "RefFrame": "",
 "RefFramePhysics": "",
 "RefFrameResourceProvider": "",
+"RluCache": "",
 "TileBase": ""
 }
 
@@ -122,7 +140,7 @@ Constants="*res://physics/constants.gd"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "color-palette", "gut" )
+enabled=PoolStringArray( "godot-sqlite", "gut" )
 
 [input]
 
