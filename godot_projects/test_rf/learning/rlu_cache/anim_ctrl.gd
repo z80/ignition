@@ -40,7 +40,7 @@ const V_HEADING_FWD: Vector3       = Vector3( 0.0, 0.0, -1.0 )
 
 # Initial/default control.
 # velocity relative to current azimuth.
-var _control_input: Array = []
+var _control_input: Dictionary = {}
 var _frame_ind: int = 0
 var _switch_counter: int = 0
 var _f: Array
@@ -497,7 +497,7 @@ func _pose_desc( index: int ):
 	
 	var desc_r: Array
 	var desc_v: Array
-	var desc_c: Array
+	#var desc_c: Array
 	for limb_ind in POSE_LIMB_INDS:
 		var ind: int = limb_ind * 7
 		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
@@ -513,9 +513,9 @@ func _pose_desc( index: int ):
 		desc_r += [ r.x, r.y, r.z ]
 		desc_v += [ v.x, v.y, v.z ]
 	
-	desc_c = _db.get_category( index )
+	#desc_c = _db.get_category( index )
 	
-	return [ desc_r, desc_v, desc_c ]
+	return [ desc_r, desc_v ]
 
 
 func _traj_desc( index: int ):
@@ -527,7 +527,7 @@ func _traj_desc( index: int ):
 	
 	var desc_r: Array = []
 	var desc_heading: Array = []
-	var desc_c: Array = []
+	#var desc_c: Array = []
 	
 	for frame_delta_ind in TRAJ_FRAME_INDS:
 		var frame_ind: int = index + frame_delta_ind
@@ -538,24 +538,20 @@ func _traj_desc( index: int ):
 		
 		var ind: int = TORSO_IND * 7
 		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
-		q = _quat_azimuth( q )
+		#q = _quat_azimuth( q )
 		q = az_root_q_inv * q
-		var v_heading: Vector3 = q.xform( Vector3.RIGHT )
-		desc_heading += [ v_heading.x, v_heading.z ]
+		var v_heading: Vector3 = q.xform( V_HEADING_FWD )
+		desc_heading += [ v_heading.x, v_heading.y, v_heading.z ]
 		
-		var limbs_qty: int = POSE_LIMB_INDS.size()
-		for limb_ind in range( limbs_qty ):
-			ind = limb_ind * 7
-			q = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
-			var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
-			r  -= root_r
-			r  = az_root_q_inv.xform( r )
-			
-			desc_r += [ r.x, r.y, r.z ]
+		var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
+		r  -= root_r
+		r  = az_root_q_inv.xform( r )
 		
-		desc_c += _db.get_category( index )
+		desc_r += [ r.x, r.y, r.z ]
+		
+		#desc_c += _db.get_category( frame_ind )
 	
-	return [ desc_r, desc_heading, desc_c ]
+	return [ desc_r, desc_heading ]
 
 
 func _input_based_pose_desc( cat: Array = [0] ):
@@ -569,7 +565,7 @@ func _input_based_pose_desc( cat: Array = [0] ):
 	
 	var desc_r: Array
 	var desc_v: Array
-	var desc_c: Array
+	#var desc_c: Array
 	for limb_ind in POSE_LIMB_INDS:
 		var ind: int = limb_ind * 7
 		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
@@ -585,55 +581,59 @@ func _input_based_pose_desc( cat: Array = [0] ):
 		desc_r += [ r.x, r.y, r.z ]
 		desc_v += [ v.x, v.y, v.z ]
 	
-	desc_c = cat
+	#desc_c = cat
 	
-	return [ desc_r, desc_v, desc_c ]
+	return [ desc_r, desc_v ]
 
 
 func _input_based_traj_desc( cat: Array = [0] ):
 	var qty: int = _control_pos_sequence.size()
 	var index: int = qty-1
-	var f = _control_pos_sequence[index]
 	
 	# Root pose
 	var root_r: Vector3 = _drag_rf.position()
 	var az_root_q_inv: Quat = _drag_rf.rotation().inverse()
 	
 	var desc_r: Array = []
-	var desc_z: Array = []
 	var desc_heading: Array = []
-	var desc_c: Array = []
+	#var desc_c: Array = []
 	
 	for frame_delta_ind in TRAJ_FRAME_INDS:
 		var frame_ind: int = index + frame_delta_ind
 		if frame_ind < 0:
 			frame_ind = 0
 			
-		f = _control_pos_sequence[ frame_ind ]
+		var f = _control_pos_sequence[ frame_ind ]
+		var r = f[0]
+		var h = f[1]
+		h = az_root_q_inv.xform( h )
+		r = az_root_q_inv.xform( r )
 			
-		var q: Quat = Quat( f[1], f[2], f[3], f[0] )
-		q = _quat_azimuth( q )
-		q = az_root_q_inv * q
-		var v_heading: Vector3 = q.xform( Vector3.RIGHT )
-		desc_heading += [ v_heading.x, v_heading.z ]
-		
-		var limbs_qty: int = POSE_LIMB_INDS.size()
-		for limb_ind in range( limbs_qty ):
-			var ind: int = limb_ind * 7
-			q = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
-			var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
-			r  -= root_r
-			r  = az_root_q_inv.xform( r )
-				
-			desc_r += [ r.x, r.y, r.z ]
+		desc_heading += [ h.x, h.y, h.z ]
+		desc_r += [ r.x, r.y, r.z ]
 			
-		desc_c += cat
+		#desc_c += cat
 	
-	return [ desc_r, desc_heading, desc_c ]
+	return [ desc_r, desc_heading ]
 
 
 func _init_control_sequence():
-	_control_pos_sequence = []
+	_control_input = {
+		tps = true, 
+		v = Vector3.ZERO, 
+		q = Quat.IDENTITY
+	}
+	
+	var sz = TRAJ_FRAME_INDS.size()
+	var qty = TRAJ_FRAME_INDS[sz-1]
+	if qty < 0:
+		qty = -qty
+	qty += 1
+	
+	_control_vel_sequence = []
+	for i in range(qty):
+		var vv = [ Vector3.ZERO, V_HEADING_FWD ]
+		_control_vel_sequence.push_back( vv )
 
 
 func _frame_azimuth( ind: int ):
@@ -645,7 +645,7 @@ func _frame_azimuth( ind: int ):
 
 
 func _quat_azimuth( q: Quat ):
-	var fwd: Vector3 = V_HEADING_FWD
+	var fwd: Vector3 = Vector3.RIGHT
 	var q_norm: Quat = q.normalized()
 	#print( "quat_qzimuth_(", q, ")" )
 	fwd = q_norm.xform( fwd )
@@ -656,12 +656,37 @@ func _quat_azimuth( q: Quat ):
 	return res_q
 
 
-func apply_controls( poses: Array ):
-	_control_input = poses.duplicate()
+func apply_controls( ctrl_v: Vector3, cam_t: Transform = Transform(), tps: bool = true ):
+	var q: Quat = cam_t.basis
+	q = _quat_azimuth( q )
+	_control_input = {
+		tps    = tps, 
+		v = ctrl_v, 
+		az_cam_q  = q
+	}
 
 
 func _updata_control_sequence( cat: int = 0 ):
-	var ctrl: Array = _control_input.duplicate()
+	# Here we assume not so much time passed since 
+	# It was aupdated. It is essential as body orientation is used 
+	# in order to compute control relative in drag frame.
+	var ctrl = _control_input.duplicate()
+	
+	var cam_q: Quat  = ctrl.az_cam_q
+	var drag_q: Quat = _drag_rf.rotation()
+	
+	# Compute velocity and heading in global rf. Yes, not in local rf.
+	# This is in order to be able to compute descriptor on purpose.
+	var v: Vector3 = cam_q.xform( ctrl.v )
+	# Heading computed depending on if it is first or third person case.
+	var heading: Vector3
+	if ctrl.tps:
+		heading = cam_q.xform( V_HEADING_FWD )
+	else:
+		# Here need to compute torso heading.
+		var q: Quat = drag_q * _pose_q
+		heading = q.xform( V_HEADING_FWD )
+	_control_vel_sequence.push_back( [v, heading] )
 	
 	var sz = TRAJ_FRAME_INDS.size()
 	var qty = TRAJ_FRAME_INDS[sz-1]
@@ -669,11 +694,32 @@ func _updata_control_sequence( cat: int = 0 ):
 		qty = -qty
 	qty += 1
 	
-	sz = _control_pos_sequence.size()
-	if sz > 0:
-		_control_pos_sequence.remove( 0 )
-	while _control_pos_sequence.size() < qty:
-		_control_pos_sequence.push_back( ctrl )
+	while _control_vel_sequence.size() > qty:
+		_control_vel_sequence.pop_front()
+	
+	# Integrate velocities and convert all to local ref. frame.
+	_control_pos_sequence.resize( qty )
+	var r: Vector3  = Vector3.ZERO
+	
+	# First step integrate.
+	for i in range( qty ):
+		var vv = _control_vel_sequence[i]
+		var dr: Vector3 = vv[0]
+		var h:  Vector3 = vv[1]
+		dr *= DT
+		r += dr
+		var pp = [r, h]
+	
+	# Second step is subtract current position.
+	var r0 = r #_control_pos_sequence.back()
+	for i in range( qty ):
+		var pp = _control_pos_sequence[i]
+		r = pp[0]
+		r -= r0
+		pp[0] = r
+
+
+
 
 
 func _update_vis_control_sequence():
@@ -762,7 +808,7 @@ func process_frame():
 	# Update control sequence based on most recent user input.
 	_updata_control_sequence()
 	# For control sequence visualization.
-	_update_vis_control_sequence()
+	#_update_vis_control_sequence()
 	
 	# Update dregged ref. frame state.
 	_update_dragged_ref_frame()
