@@ -28,7 +28,7 @@ const PARENTS: Array = [ 3, 3, 3, -1, 3, 3 ]
 const FPS: float = 24.0
 const DT: float  = 1.0/FPS
 const POSE_LIMB_INDS: Array = [TORSO_IND, LEFT_LEG_IND, RIGHT_LEG_IND]
-const TRAJ_TIME_MOMENTS: Array = [ -0.15, -0.30, -0.45, -1.60, -1.75, -1.90, -2.05 ]
+const TRAJ_TIME_MOMENTS: Array = [ 0.15, 0.30, 0.45, 0.60, 0.75, 1.00, 1.15 ]
 var TRAJ_FRAME_INDS: Array = []
 
 
@@ -491,7 +491,9 @@ func _pose_desc( index: int ):
 	else:
 		fp = f
 	
-	# Root pose
+	# Root pose for drag rf.
+	# Here take current drag rf - not recorded one as this happens when 
+	# descriptors are generated and saved.
 	var root_r: Vector3 = _drag_rf.position()
 	var az_root_q_inv: Quat = _drag_rf.rotation().inverse()
 	
@@ -555,13 +557,17 @@ func _traj_desc( index: int ):
 
 
 func _input_based_pose_desc( cat: Array = [0] ):
-	var qty: int = _control_pos_sequence.size()
-	var f = _control_pos_sequence[qty-1]
-	var fp = _control_pos_sequence[qty-2]
+	var f = _control_pos_sequence[_frame_ind]
+	var fp
+	if _frame_ind > 0:
+		fp = _control_pos_sequence[_frame_ind - 1]
+	else:
+		fp = f
 	
-	# Root pose
-	var root_r: Vector3 = _drag_rf.position()
-	var az_root_q_inv: Quat = _drag_rf.rotation().inverse()
+	# Drag pose when recorded.
+	var rf = _db.get_rf(_frame_ind)
+	var drag_r = rf.r
+	var inv_drag_q = rf.q.inverse
 	
 	var desc_r: Array
 	var desc_v: Array
@@ -572,10 +578,10 @@ func _input_based_pose_desc( cat: Array = [0] ):
 		var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
 		#var qp: Quat = Quat( fp[ind+1], fp[ind+2], fp[ind+3], fp[ind+0] )
 		var rp: Vector3 = Vector3( fp[ind+4], fp[ind+5], fp[ind+6] )
-		r  -= root_r
-		rp -= root_r
-		r  = az_root_q_inv.xform( r )
-		rp = az_root_q_inv.xform( rp )
+		r  -= drag_r
+		rp -= drag_r
+		r  = inv_drag_q.xform( r )
+		rp = inv_drag_q.xform( rp )
 		
 		var v: Vector3 = (r - rp) * FPS
 		desc_r += [ r.x, r.y, r.z ]
@@ -591,8 +597,8 @@ func _input_based_traj_desc( cat: Array = [0] ):
 	var index: int = qty-1
 	
 	# Root pose
-	var root_r: Vector3 = _drag_rf.position()
-	var az_root_q_inv: Quat = _drag_rf.rotation().inverse()
+	var drag_r: Vector3 = _drag_rf.position()
+	var az_drag_q_inv: Quat = _drag_rf.rotation().inverse()
 	
 	var desc_r: Array = []
 	var desc_heading: Array = []
@@ -606,15 +612,36 @@ func _input_based_traj_desc( cat: Array = [0] ):
 		var f = _control_pos_sequence[ frame_ind ]
 		var r = f[0]
 		var h = f[1]
-		h = az_root_q_inv.xform( h )
-		r = az_root_q_inv.xform( r )
-			
+		r -= drag_r
+		r = az_drag_q_inv.xform( r )
+		h = az_drag_q_inv.xform( h )
+		
 		desc_heading += [ h.x, h.y, h.z ]
 		desc_r += [ r.x, r.y, r.z ]
 			
 		#desc_c += cat
 	
 	return [ desc_r, desc_heading ]
+
+
+func _frame_azimuth( ind: int ):
+	var f = _db.get_frame( ind )
+	var root_ind: int = ROOT_IND*7
+	var q: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
+	var az_q: Quat = _quat_azimuth( q )
+	return az_q
+
+
+func _quat_azimuth( q: Quat ):
+	var fwd: Vector3 = Vector3.RIGHT
+	var q_norm: Quat = q.normalized()
+	#print( "quat_qzimuth_(", q, ")" )
+	fwd = q_norm.xform( fwd )
+	var ang2: float = 0.5 * atan2( -fwd.z, fwd.x )
+	var co2: float = cos( ang2 )
+	var si2: float = sin( ang2 )
+	var res_q: Quat = Quat( 0.0, si2, 0.0, co2 )
+	return res_q
 
 
 func _init_control_sequence():
@@ -636,24 +663,6 @@ func _init_control_sequence():
 		_control_vel_sequence.push_back( vv )
 
 
-func _frame_azimuth( ind: int ):
-	var f = _db.get_frame( ind )
-	var root_ind: int = ROOT_IND*7
-	var q: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
-	var az_q: Quat = _quat_azimuth( q )
-	return az_q
-
-
-func _quat_azimuth( q: Quat ):
-	var fwd: Vector3 = Vector3.RIGHT
-	var q_norm: Quat = q.normalized()
-	#print( "quat_qzimuth_(", q, ")" )
-	fwd = q_norm.xform( fwd )
-	var ang2: float = 0.5 * atan2( -fwd.z, fwd.x )
-	var co2: float = cos( ang2 )
-	var si2: float = sin( ang2 )
-	var res_q: Quat = Quat( 0.0, si2, 0.0, co2 )
-	return res_q
 
 
 func apply_controls( ctrl_v: Vector3, cam_t: Transform = Transform(), tps: bool = true ):
@@ -709,14 +718,7 @@ func _updata_control_sequence( cat: int = 0 ):
 		dr *= DT
 		r += dr
 		var pp = [r, h]
-	
-	# Second step is subtract current position.
-	var r0 = r #_control_pos_sequence.back()
-	for i in range( qty ):
-		var pp = _control_pos_sequence[i]
-		r = pp[0]
-		r -= r0
-		pp[0] = r
+
 
 
 
@@ -910,7 +912,16 @@ func process_frame():
 	#_f = _frame_in_space( _frame_ind )
 
 
-
+func frame():
+	var f: Array = []
+	for i in range(6):
+		var ind: int = i * 7
+		var link = {
+			q = Quat( _f[ind+1], _f[ind+2], _f[ind+3], _f[ind] ), 
+			r = Vector3( _f[ind+4], _f[ind+5], _f[ind+6] )
+		}
+		f.push_back( link )
+	return f
 
 
 

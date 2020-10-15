@@ -27,7 +27,7 @@ _global_script_classes=[ {
 "base": "Node",
 "class": "DraggedRf",
 "language": "GDScript",
-"path": "res://learning/rlu_cache/dragged_rf.gd"
+"path": "res://learning/cache/dragged_rf.gd"
 }, {
 "base": "Container",
 "class": "FlexGridContainer",
@@ -37,7 +37,7 @@ _global_script_classes=[ {
 "base": "Node",
 "class": "FramesDb",
 "language": "GDScript",
-"path": "res://learning/rlu_cache/frames_db.gd"
+"path": "res://learning/cache/frames_db.gd"
 }, {
 "base": "Spatial",
 "class": "LandscapeBase",
@@ -97,7 +97,7 @@ _global_script_classes=[ {
 "base": "Node",
 "class": "RluCache",
 "language": "GDScript",
-"path": "res://learning/rlu_cache/rlu_cache.gd"
+"path": "res://learning/cache/rlu_cache.gd"
 }, {
 "base": "MeshInstance",
 "class": "TileBase",

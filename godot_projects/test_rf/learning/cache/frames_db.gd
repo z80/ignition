@@ -11,8 +11,10 @@ var frames_qty: int = 0
 
 # These are for caching functionality
 export(int) var size = 1024
-var queue: Array = []
-var dict: Dictionary = {}
+var queue_data: Array = []
+var dict_data: Dictionary = {}
+var queue_rf: Array = []
+var dict_rf: Dictionary = {}
 # Cache forward qty
 # When the key is not in the cache it reads these number of items forward
 # And places to the cache.
@@ -21,7 +23,7 @@ export(int) var cache_forward_qty = 32
 # Two cache functions
 
 # Cache query
-func _cache_query( key ):
+func _cache_query( key, queue: Array, dict: Dictionary ):
 	var exists = dict.has( key )
 	if not exists:
 		return null
@@ -29,7 +31,7 @@ func _cache_query( key ):
 	var v = p[1]
 	return v
 
-func _cache_insert( key, value ):
+func _cache_insert( key, value, queue: Array, dict: Dictionary ):
 	# Limit the size
 	var sz = queue.size()
 	while sz >= size:
@@ -149,14 +151,16 @@ func get_config( key: String ):
 
 
 func get_frame( index: int ):
-	var data = _cache_query( index )
+	var data = _cache_query( index, queue_data, dict_data )
 	if data == null:
-		data = _query_data_bulk( index, "data" )
+		data = _query_data_bulk( index, "data", queue_data, dict_data )
 	return data
 
 
 func set_frame( index: int, data ):
 	var ok: bool = _set_data( index, "data", data )
+	if ok:
+		_cache_insert( index, data, queue_data, dict_data )
 	return ok
 
 
@@ -173,15 +177,21 @@ func set_desc( index: int, data ):
 func set_rf( index: int, q: Quat, r: Vector3 ):
 	var data = [q.w, q.x, q.y, q.z, r.x, r.y, r.z]
 	var ok: bool = _set_data( index, "rf", data )
+	if ok:
+		_cache_insert( index, data, queue_rf, dict_rf )
 	return ok
 
 
+
 func get_rf( index: int ):
-	var data = _query_data( index, "rf" )
+	var data = _cache_query( index, queue_rf, dict_rf )
+	if data == null:
+		data = _query_data_bulk( index, "rf", queue_rf, dict_rf )
 	var quat: Quat = Quat( data[1], data[2], data[3], data[0] )
 	var at: Vector3 = Vector3( data[4], data[5], data[6] )
 	data = { q=quat, r=at }
 	return data
+
 
 
 func assign_default_category( cat ):
@@ -231,7 +241,7 @@ func _query_data( index: int, column_name: String ):
 	return ret
 
 
-func _query_data_bulk( index: int, column_name: String ):
+func _query_data_bulk( index: int, column_name: String, queue: Array, dict: Dictionary ):
 	var ind_from: int = index
 	var ind_to: int = index + cache_forward_qty
 	if ind_to >= frames_qty:
@@ -252,7 +262,7 @@ func _query_data_bulk( index: int, column_name: String ):
 		stri = stri.replace( "\'", "\"" )
 		var ret = JSON.parse( stri )
 		ret = ret.result
-		_cache_insert( ind, ret )
+		_cache_insert( ind, ret, queue, dict )
 		if result == null:
 			result = ret
 	return result
