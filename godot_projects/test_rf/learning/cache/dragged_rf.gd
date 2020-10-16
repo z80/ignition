@@ -67,10 +67,7 @@ func _compute_drag_rf( q: Quat, r: Vector3 ):
 
 
 
-func process( head_pose: Array ):
-	var q: Quat = Quat( head_pose[1], head_pose[2], head_pose[3], head_pose[0] )
-	var r: Vector3 = Vector3( head_pose[4], 0.0, head_pose[6] )
-	
+func process( q: Quat, r: Vector3 ):
 	if not _initialized:
 		_initialize_drag( q, r )
 		_initialized = true

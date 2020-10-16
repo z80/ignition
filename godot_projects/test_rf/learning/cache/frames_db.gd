@@ -39,6 +39,7 @@ func _cache_insert( key, value, queue: Array, dict: Dictionary ):
 		var k = n[0]
 		dict.erase( k )
 		queue.pop_back()
+		sz -= 1
 	# Also make sure the same key doesn't exist
 	var exists = dict.has( key )
 	if exists:
@@ -247,7 +248,7 @@ func _query_data_bulk( index: int, column_name: String, queue: Array, dict: Dict
 	if ind_to >= frames_qty:
 		ind_to = frames_qty - 1
 	
-	var cmd: String = "SELECT %s FROM data WHERE id >= %d AND id <= %d 1;" % [column_name, ind_from, ind_to]
+	var cmd: String = "SELECT %s FROM data WHERE id >= %d AND id <= %d;" % [column_name, ind_from, ind_to]
 	var res: bool = _db.query( cmd )
 	if not res:
 		print( "failed to query data from the db at index ", index )
@@ -258,7 +259,7 @@ func _query_data_bulk( index: int, column_name: String, queue: Array, dict: Dict
 	var qty = ind_to - ind_from + 1
 	for i in range(qty):
 		var ind = ind_from + i
-		var stri = selected_array[ind][column_name]
+		var stri = selected_array[i][column_name]
 		stri = stri.replace( "\'", "\"" )
 		var ret = JSON.parse( stri )
 		ret = ret.result

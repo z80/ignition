@@ -96,11 +96,11 @@ func read_gains_from_mm_():
 	var gains = mm_.get_desc_gains()
 	
 	var qty = gains.size()
-	if qty > 5:
+	if qty > 3:
 		var pose_vel  = gains[1]
 		#var pose_cat  = gains[2]
-		var traj_pos  = gains[3]
-		var traj_hd   = gains[4]
+		var traj_pos  = gains[2]
+		var traj_hd   = gains[3]
 		#var traj_cat  = gains[5]
 	
 		var switch_th = mm_.get_switch_threshold()
@@ -249,8 +249,8 @@ func _on_ComputeDescBtn_pressed():
 	
 	var min_err: float = -1.0
 	var min_ind: int = -1
-	for i in range ( mm_._frames_qty ):
-		var err: float = mm_.frame_search_.dist( d, i )
+	for i in range ( mm_._db.frames_qty ):
+		var err: float = mm_._frame_search.dist( d, i )
 		if min_err < 0.0 or err < min_err:
 			min_err = err
 			min_ind = i

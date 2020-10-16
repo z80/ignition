@@ -134,7 +134,7 @@ func init():
 	
 	var dg = _db.get_config( "desc_gains" )
 	if dg == null:
-		dg  = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+		dg  = [1.0, 1.0, 1.0, 1.0]
 		_db.set_config( "desc_gains", dg )
 	else:
 		_desc_gains = dg
@@ -265,8 +265,8 @@ func _fill_descs():
 	for i in range( frames_qty ):
 		#f = frame_( frame_db, i )
 		var f = _db.get_frame( i )
-		var head_pose: Array = [ f[TORSO_IND], f[TORSO_IND+1], f[TORSO_IND+2], f[TORSO_IND+3], f[TORSO_IND+4], f[TORSO_IND+5], f[TORSO_IND+6] ]
-		_drag_rf.process( head_pose )
+		var torso_pose: Array = [ f[TORSO_IND], f[TORSO_IND+1], f[TORSO_IND+2], f[TORSO_IND+3], f[TORSO_IND+4], f[TORSO_IND+5], f[TORSO_IND+6] ]
+		_drag_rf.process( torso_pose )
 		var rf_r: Vector3 = _drag_rf.position()
 		var rf_q: Quat    = _drag_rf.rotation()
 		_db.set_rf( i, rf_q, rf_r )
@@ -374,8 +374,6 @@ func _frame_in_space( index: int ):
 		
 		ind += 1
 	
-	_mix_with_current_input( f_dest )
-	
 	return f_dest
 
 
@@ -421,44 +419,16 @@ func _frame_in_space_smoothed( index: int ):
 		f_dest[i+5] = r.y
 		f_dest[i+6] = r.z
 	
-	_mix_with_current_input( f_dest )
-	
 	return f_dest
 
 
 
-# For VIVE tracking want the character be in exact place where 
-# trackers are and not march to infinity.
-func _get_current_pose_from_input():
-	var q_root: Quat = _drag_rf.rotation()
-	var r_root: Vector3 = _drag_rf.position()
-	_pose_r = r_root
-	_pose_q = _quat_azimuth( q_root )
 
 
 
 
-func _mix_with_current_input( f_dest: Array ):
-	var sz = _control_input.size()
-	if sz == 0:
-		return
-	# On top of matched frame place current input.
-	var f = _control_input
 
-	var qty = POSE_LIMB_INDS.size()
-	for i in range( qty ):
-		var ind = i*7
-		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind] )
-		var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
-		
-		var dest_ind = POSE_LIMB_INDS[i] * 7
-		f_dest[dest_ind]   = q.w
-		f_dest[dest_ind+1] = q.x
-		f_dest[dest_ind+2] = q.y
-		f_dest[dest_ind+3] = q.z
-		f_dest[dest_ind+4] = r.x
-		f_dest[dest_ind+5] = r.y
-		f_dest[dest_ind+6] = r.z
+
 
 
 
@@ -531,10 +501,13 @@ func _traj_desc( index: int ):
 	var desc_heading: Array = []
 	#var desc_c: Array = []
 	
+	var max_ind = _db.frames_qty - 1
 	for frame_delta_ind in TRAJ_FRAME_INDS:
 		var frame_ind: int = index + frame_delta_ind
 		if frame_ind < 0:
 			frame_ind = 0
+		elif frame_ind > max_ind:
+			frame_ind = max_ind
 		
 		f = _db.get_frame( frame_ind )
 		
@@ -557,17 +530,18 @@ func _traj_desc( index: int ):
 
 
 func _input_based_pose_desc( cat: Array = [0] ):
-	var f = _control_pos_sequence[_frame_ind]
+	var f = _db.get_frame( _frame_ind )
 	var fp
-	if _frame_ind > 0:
-		fp = _control_pos_sequence[_frame_ind - 1]
+	if ( _frame_ind > 0 ):
+		fp = _db.get_frame( _frame_ind-1 )
 	else:
 		fp = f
 	
-	# Drag pose when recorded.
-	var rf = _db.get_rf(_frame_ind)
-	var drag_r = rf.r
-	var inv_drag_q = rf.q.inverse
+	# Root pose for drag rf.
+	# Here take current drag rf - not recorded one as this happens when 
+	# descriptors are generated and saved.
+	var root_r: Vector3 = _drag_rf.position()
+	var az_root_q_inv: Quat = _drag_rf.rotation().inverse()
 	
 	var desc_r: Array
 	var desc_v: Array
@@ -578,16 +552,16 @@ func _input_based_pose_desc( cat: Array = [0] ):
 		var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
 		#var qp: Quat = Quat( fp[ind+1], fp[ind+2], fp[ind+3], fp[ind+0] )
 		var rp: Vector3 = Vector3( fp[ind+4], fp[ind+5], fp[ind+6] )
-		r  -= drag_r
-		rp -= drag_r
-		r  = inv_drag_q.xform( r )
-		rp = inv_drag_q.xform( rp )
+		r  -= root_r
+		rp -= root_r
+		r  = az_root_q_inv.xform( r )
+		rp = az_root_q_inv.xform( rp )
 		
 		var v: Vector3 = (r - rp) * FPS
 		desc_r += [ r.x, r.y, r.z ]
 		desc_v += [ v.x, v.y, v.z ]
 	
-	#desc_c = cat
+	#desc_c = _db.get_category( index )
 	
 	return [ desc_r, desc_v ]
 
@@ -597,7 +571,6 @@ func _input_based_traj_desc( cat: Array = [0] ):
 	var index: int = qty-1
 	
 	# Root pose
-	var drag_r: Vector3 = _drag_rf.position()
 	var az_drag_q_inv: Quat = _drag_rf.rotation().inverse()
 	
 	var desc_r: Array = []
@@ -605,14 +578,9 @@ func _input_based_traj_desc( cat: Array = [0] ):
 	#var desc_c: Array = []
 	
 	for frame_delta_ind in TRAJ_FRAME_INDS:
-		var frame_ind: int = index + frame_delta_ind
-		if frame_ind < 0:
-			frame_ind = 0
-			
-		var f = _control_pos_sequence[ frame_ind ]
+		var f = _control_pos_sequence[ frame_delta_ind ]
 		var r = f[0]
 		var h = f[1]
-		r -= drag_r
 		r = az_drag_q_inv.xform( r )
 		h = az_drag_q_inv.xform( h )
 		
@@ -718,6 +686,7 @@ func _updata_control_sequence( cat: int = 0 ):
 		dr *= DT
 		r += dr
 		var pp = [r, h]
+		_control_pos_sequence[i] = pp
 
 
 
@@ -760,14 +729,7 @@ func _update_vis_control_sequence():
 
 
 func _update_dragged_ref_frame():
-	var qty: int = _control_pos_sequence.size()
-	if qty < 1:
-		return
-	
-	var f: Array = _control_pos_sequence[qty-1]
-	var head_ind: int = POSE_LIMB_INDS.find( TORSO_IND )
-	var head_pose: Array = [ f[head_ind], f[head_ind+1], f[head_ind+2], f[head_ind+3], f[head_ind+4], f[head_ind+5], f[head_ind+6] ]
-	_drag_rf.process( head_pose )
+	_drag_rf.process( _pose_q, _pose_r )
 
 # This one goes into _process( delta ).
 # It calls process_frame() when needed.
@@ -819,6 +781,7 @@ func process_frame():
 		#var f_cur = frame_( db_, frame_ind_ )
 		var desc_p = _input_based_pose_desc()
 		var desc_t = _input_based_traj_desc()
+		print( "traj desc: ", desc_t )
 		var d = []
 		for di in desc_p:
 			for v in di:
@@ -898,8 +861,7 @@ func process_frame():
 	
 	#print( "frame #%d q:(%f, %f, %f, %f), dq:(%f, %f, %f, %f), pq:(%f, %f, %f, %f)" %[ frame_ind_, qn.w, qn.x, qn.y, qn.z, dq.w, dq.x, dq.y, dq.z, pose_q_.w, pose_q_.x, pose_q_.y, pose_q_.z ] )
 	
-	# This one overrides current pose using trackers.
-	_get_current_pose_from_input()
+
 	
 	_frame_ind = next_ind
 	if (_frame_before_jump == null) or (_frames_after_jump_qty >= SMOOTHING_JUMP_FRAMES_QTY):

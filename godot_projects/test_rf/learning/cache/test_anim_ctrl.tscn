@@ -13,6 +13,7 @@ script = ExtResource( 4 )
 [node name="AnimCtrl" parent="." instance=ExtResource( 9 )]
 
 [node name="Visualization" parent="." instance=ExtResource( 1 )]
+mm_path = NodePath("../AnimCtrl")
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.761018, 0.648731, 0, -0.648731, 0.761018, 0, 5, 5 )
