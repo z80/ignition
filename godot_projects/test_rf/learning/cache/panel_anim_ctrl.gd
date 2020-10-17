@@ -147,35 +147,35 @@ func _on_get_pressed():
 
 
 func _on_PlayStopBtn_pressed():
-	mm_.increment_frame_ind_ = not mm_.increment_frame_ind_
+	mm_._increment_frame_ind = not mm_._increment_frame_ind
 
 
 
 
 
 func _on_ToPlaybackBtn_pressed():
-	mm_.run_mm_algorithm_ = false
+	mm_._run_algorithm = false
 
 
 func _on_ToMmBtn_pressed():
-	mm_.run_mm_algorithm_ = true
+	mm_._run_algorithm = true
 
 
 func _on_GoToFrameBtn_pressed():
 	var stri: String = $"Panel/Tabs/Motion labeling/GoToEdt".text
 	var ind = int(stri)
-	mm_.frame_ind_ = ind
+	mm_._frame_ind = ind
 	
 
 
 func _on_PrevBtn_pressed():
 	if mm_.frame_ind_ > 0:
-		mm_.frame_ind_ -= 1
+		mm_._frame_ind -= 1
 
 
 func _on_NextBtn_pressed():
-	if mm_.frame_ind_ < (mm_.frames_qty_-1):
-		mm_.frame_ind_ += 1
+	if mm_._frame_ind < (mm_._frames_qty-1):
+		mm_._frame_ind += 1
 
 
 
@@ -184,13 +184,13 @@ func _on_NextBtn_pressed():
 
 
 func _on_SetFromBtn_pressed():
-	var ind = mm_.frame_ind_
+	var ind = mm_._frame_ind
 	$"Panel/Tabs/Motion labeling/FromLbl".text = String(ind)
 	
 
 
 func _on_SetToBtn_pressed():
-	var ind = mm_.frame_ind_
+	var ind = mm_._frame_ind
 	$"Panel/Tabs/Motion labeling/ToLbl".text = String(ind)
 
 

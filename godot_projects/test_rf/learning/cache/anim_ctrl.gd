@@ -34,7 +34,7 @@ var TRAJ_FRAME_INDS: Array = []
 # Forward vector in local ref frame.
 const V_HEADING_FWD: Vector3       = Vector3( 0.0, 0.0, -1.0 )
 
-
+const SPEED: float = 1.0
 
 # Initial/default control.
 # velocity relative to current azimuth.
@@ -64,7 +64,7 @@ var _print_control_sequence: Array
 
 
 # Run the algorithm, or just demonstrate frames.
-var _run_mm_algorithm:    bool = true
+var _run_algorithm:    bool = true
 var _increment_frame_ind: bool = true
 
 
@@ -90,7 +90,7 @@ func _ready():
 
 	_init_frame_ind_array()
 	
-	generate_descriptors( true, true )
+	#generate_descriptors( true, true )
 	#generate_descriptors( false, true )
 	init()
 
@@ -444,7 +444,6 @@ func _pose_desc( index: int ):
 	# Root pose for drag rf.
 	# Here take current drag rf - not recorded one as this happens when 
 	# descriptors are generated and saved.
-	
 	var root_ind = ROOT_IND*7
 	var root_r: Vector3 = Vector3( f[root_ind+4], f[root_ind+5], f[root_ind+6] )
 	var root_q: Quat = Quat( f[root_ind+1], f[root_ind+2], f[root_ind+3], f[root_ind] )
@@ -453,12 +452,10 @@ func _pose_desc( index: int ):
 	
 	var desc_r: Array
 	var desc_v: Array
-	#var desc_c: Array
 	for limb_ind in POSE_LIMB_INDS:
 		var ind: int = limb_ind * 7
 		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
 		var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
-		#var qp: Quat = Quat( fp[ind+1], fp[ind+2], fp[ind+3], fp[ind+0] )
 		var rp: Vector3 = Vector3( fp[ind+4], fp[ind+5], fp[ind+6] )
 		r  -= root_r
 		rp -= root_r
@@ -466,12 +463,9 @@ func _pose_desc( index: int ):
 		rp = az_root_q_inv.xform( rp )
 		
 		var v: Vector3 = (r - rp) * FPS
-		#desc_r += [ r.x, r.y, r.z ]
-		#desc_v += [ v.x, v.y, v.z ]
-		desc_r += [ r.x, r.z ]
+		if limb_ind != ROOT_IND:
+			desc_r += [ r.x, r.z ]
 		desc_v += [ v.x, v.z ]
-	
-	#desc_c = _db.get_category( index )
 	
 	return [ desc_r, desc_v ]
 
@@ -488,7 +482,6 @@ func _traj_desc( index: int ):
 	
 	var desc_r: Array = []
 	var desc_heading: Array = []
-	#var desc_c: Array = []
 	
 	var max_ind = _db.frames_qty - 1
 	for frame_delta_ind in TRAJ_FRAME_INDS:
@@ -502,17 +495,14 @@ func _traj_desc( index: int ):
 		
 		var ind: int = TORSO_IND * 7
 		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
-		#q = _quat_azimuth( q )
 		q = az_root_q_inv * q
 		var v_heading: Vector3 = q.xform( V_HEADING_FWD )
-		#desc_heading += [ v_heading.x, v_heading.y, v_heading.z ]
 		desc_heading += [ v_heading.x, v_heading.z ]
 		
 		var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
 		r  -= root_r
 		r  = az_root_q_inv.xform( r )
 		
-		#desc_r += [ r.x, r.y, r.z ]
 		desc_r += [ r.x, r.z ]
 		
 	return [ desc_r, desc_heading ]
@@ -537,12 +527,10 @@ func _input_based_pose_desc( cat: Array = [0] ):
 	
 	var desc_r: Array
 	var desc_v: Array
-	#var desc_c: Array
 	for limb_ind in POSE_LIMB_INDS:
 		var ind: int = limb_ind * 7
 		var q: Quat = Quat( f[ind+1], f[ind+2], f[ind+3], f[ind+0] )
 		var r: Vector3 = Vector3( f[ind+4], f[ind+5], f[ind+6] )
-		#var qp: Quat = Quat( fp[ind+1], fp[ind+2], fp[ind+3], fp[ind+0] )
 		var rp: Vector3 = Vector3( fp[ind+4], fp[ind+5], fp[ind+6] )
 		r  -= root_r
 		rp -= root_r
@@ -550,13 +538,9 @@ func _input_based_pose_desc( cat: Array = [0] ):
 		rp = az_root_q_inv.xform( rp )
 		
 		var v: Vector3 = (r - rp) * FPS
-		#desc_r += [ r.x, r.y, r.z ]
-		#desc_v += [ v.x, v.y, v.z ]
-		desc_r += [ r.x, r.z ]
+		if limb_ind != ROOT_IND:
+			desc_r += [ r.x, r.z ]
 		desc_v += [ v.x, v.z ]
-
-	
-	#desc_c = _db.get_category( index )
 	
 	return [ desc_r, desc_v ]
 
@@ -575,23 +559,17 @@ func _input_based_traj_desc( cat: Array = [0] ):
 	
 	var desc_r: Array = []
 	var desc_heading: Array = []
-	#var desc_c: Array = []
 	
 	for frame_delta_ind in TRAJ_FRAME_INDS:
 		var f = _control_pos_sequence[ frame_delta_ind ]
 		var r = f[0]
 		var h = f[1]
-		r = az_root_q_inv.xform( r )
-		h = az_root_q_inv.xform( h )
+		#r = az_root_q_inv.xform( r )
+		#h = az_root_q_inv.xform( h )
 		
-		#desc_heading += [ h.x, h.y, h.z ]
-		#desc_r += [ r.x, r.y, r.z ]
 		desc_heading += [ h.x, h.z ]
 		desc_r += [ r.x, r.z ]
-
-			
-		#desc_c += cat
-	
+		
 	return [ desc_r, desc_heading ]
 
 
@@ -641,14 +619,14 @@ func apply_controls( ctrl_v: Vector3, cam_t: Transform = Transform(), tps: bool 
 	q = _quat_azimuth( q )
 	_control_input = {
 		tps    = tps, 
-		v = ctrl_v, 
+		v = ctrl_v * SPEED, 
 		az_cam_q  = q
 	}
 
 
 func _updata_control_sequence( cat: int = 0 ):
 	# Here we assume not so much time passed since 
-	# It was aupdated. It is essential as body orientation is used 
+	# it was updated. It is essential as body orientation is used 
 	# in order to compute control relative in drag frame.
 	var ctrl = _control_input.duplicate()
 	
@@ -657,15 +635,15 @@ func _updata_control_sequence( cat: int = 0 ):
 	
 	# Compute velocity and heading in global rf. Yes, not in local rf.
 	# This is in order to be able to compute descriptor on purpose.
-	var v: Vector3 = cam_q.xform( ctrl.v )
+	var v: Vector3 = ctrl.v #cam_q.xform( ctrl.v )
 	# Heading computed depending on if it is first or third person case.
 	var heading: Vector3
 	if ctrl.tps:
-		heading = cam_q.xform( V_HEADING_FWD )
+		heading = V_HEADING_FWD #cam_q.xform( V_HEADING_FWD )
 	else:
 		# Here need to compute torso heading.
-		var q: Quat = drag_q * _pose_q
-		heading = q.xform( V_HEADING_FWD )
+		#var q: Quat = drag_q * _pose_q
+		heading = V_HEADING_FWD #q.xform( V_HEADING_FWD )
 	_control_vel_sequence.push_back( [v, heading] )
 	
 	var sz = TRAJ_FRAME_INDS.size()
@@ -748,7 +726,7 @@ func process( delta ):
 func process_frame():
 	var time_to_switch: bool
 	
-	if _run_mm_algorithm:
+	if _run_algorithm:
 		if _switch_counter < _switch_period:
 			time_to_switch = false
 		else:
