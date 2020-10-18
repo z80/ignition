@@ -26,7 +26,7 @@ const PARENTS: Array = [ 3, 3, 3, -1, 3, 3 ]
 const FPS: float = 24.0
 const DT: float  = 1.0/FPS
 const POSE_LIMB_INDS: Array = [TORSO_IND, LEFT_LEG_IND, RIGHT_LEG_IND]
-const TRAJ_TIME_MOMENTS: Array = [ 0.15, 0.30, 0.45, 0.60 ]
+const TRAJ_TIME_MOMENTS: Array = [ 0.25, 0.50, 0.75, 1.00 ]
 var TRAJ_FRAME_INDS: Array = []
 
 
@@ -844,14 +844,14 @@ func process_frame():
 
 	
 	_frame_ind = next_ind
-	#if (_frame_before_jump == null) or (_frames_after_jump_qty >= SMOOTHING_JUMP_FRAMES_QTY):
-	#	_f = _frame_in_space( _frame_ind )
-	#else:
-	#	_increment_frame()
-	#	_f = _frame_in_space_smoothed( _frame_ind )
+	if (_frame_before_jump == null) or (_frames_after_jump_qty >= SMOOTHING_JUMP_FRAMES_QTY):
+		_f = _frame_in_space( _frame_ind )
+	else:
+		_increment_frame()
+		_f = _frame_in_space_smoothed( _frame_ind )
 	
 	# For debug purposes temporarily no temporal smoothing.
-	_f = _frame_in_space( _frame_ind )
+	#_f = _frame_in_space( _frame_ind )
 
 
 func frame():
@@ -953,6 +953,7 @@ func _prepare_frame_and_d_frame( ind: int ):
 	var root_q: Quat = Quat( f1[root_ind+1], f1[root_ind+2], f1[root_ind+3], f1[root_ind] )
 	var az_root_q: Quat = _quat_azimuth( root_q )
 	var az_root_q_inv: Quat = az_root_q.inverse()
+	var adj_q: Quat = _pose_q * az_root_q_inv
 	
 	
 	var f_dest: Array = []
@@ -965,13 +966,15 @@ func _prepare_frame_and_d_frame( ind: int ):
 		var q1: Quat = Quat( f1[i+1], f1[i+2], f1[i+3], f1[i] )
 		var r0: Vector3 = Vector3( f0[i+4], f0[i+5], f0[i+6] )
 		var r1: Vector3 = Vector3( f1[i+4], f1[i+5], f1[i+6] )
-		q0 = az_root_q_inv * q0
+		q0 = adj_q * q0
 		r0 = r0 - root_r
-		r0 = az_root_q_inv.xform( r0 )
+		r0 = adj_q.xform( r0 )
+		r0 += _pose_r
 		
-		q1 = az_root_q_inv * q1
+		q1 = adj_q * q1
 		r1 = r1 - root_r
-		r1 = az_root_q_inv.xform( r1 )
+		r1 = adj_q.xform( r1 )
+		r1 += _pose_r
 		
 		f_dest[i]   = q1.w
 		f_dest[i+1] = q1.x
