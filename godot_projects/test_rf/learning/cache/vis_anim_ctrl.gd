@@ -66,6 +66,12 @@ func apply_mm():
 	#	add_vertex( rb )
 	
 	end()
+	
+	var t: Transform
+	t.origin = _mm._pose_r + Vector3( 0.0, 2.0, 0.0 )
+	t.basis  = Basis( _mm._pose_q )
+	t.scaled( Vector3( 0.1, 0.1, 0.1 ) )
+	$Rf.transform = t
 
 
 

@@ -35,10 +35,12 @@ var TRAJ_FRAME_INDS: Array = []
 const V_HEADING_FWD: Vector3       = Vector3( 0.0, 0.0, -1.0 )
 
 const SPEED: float = 1.0
+#const SPEED_BWD: float = 0.5
 
 # Initial/default control.
 # velocity relative to current azimuth.
 var _control_input: Dictionary = {}
+var _last_heading: Vector3 = Vector3.FORWARD
 var _frame_ind: int = 0
 var _switch_counter: int = 0
 var _f: Array
@@ -546,15 +548,11 @@ func _input_based_pose_desc( cat: Array = [0] ):
 
 
 func _input_based_traj_desc( cat: Array = [0] ):
-	var qty: int = _control_pos_sequence.size()
-	var index: int = qty-1
-	
 	var f0 = _db.get_frame( _frame_ind )
 	# Root pose
 	var root_ind = ROOT_IND*7
-	var root_r: Vector3 = Vector3( f0[root_ind+4], f0[root_ind+5], f0[root_ind+6] )
-	var root_q: Quat = Quat( f0[root_ind+1], f0[root_ind+2], f0[root_ind+3], f0[root_ind] )
-	var az_root_q: Quat = _quat_azimuth( root_q )
+	var root_r: Vector3 = _pose_r
+	var az_root_q: Quat = _quat_azimuth( _pose_q )
 	var az_root_q_inv: Quat = az_root_q.inverse()
 	
 	var desc_r: Array = []
@@ -564,8 +562,8 @@ func _input_based_traj_desc( cat: Array = [0] ):
 		var f = _control_pos_sequence[ frame_delta_ind ]
 		var r = f[0]
 		var h = f[1]
-		#r = az_root_q_inv.xform( r )
-		#h = az_root_q_inv.xform( h )
+		r = az_root_q_inv.xform( r )
+		h = az_root_q_inv.xform( h )
 		
 		desc_heading += [ h.x, h.z ]
 		desc_r += [ r.x, r.z ]
@@ -629,21 +627,23 @@ func _updata_control_sequence( cat: int = 0 ):
 	# it was updated. It is essential as body orientation is used 
 	# in order to compute control relative in drag frame.
 	var ctrl = _control_input.duplicate()
-	
 	var cam_q: Quat  = ctrl.az_cam_q
-	var drag_q: Quat = _frame_azimuth( _frame_ind )
 	
 	# Compute velocity and heading in global rf. Yes, not in local rf.
 	# This is in order to be able to compute descriptor on purpose.
-	var v: Vector3 = ctrl.v #cam_q.xform( ctrl.v )
+	var v: Vector3 = cam_q.xform( ctrl.v )
 	# Heading computed depending on if it is first or third person case.
 	var heading: Vector3
 	if ctrl.tps:
-		heading = V_HEADING_FWD #cam_q.xform( V_HEADING_FWD )
+		var L: float = v.length()
+		if L > 0.0:
+			# Here need to compute torso heading.
+			heading = v.normalized()
+		else:
+			heading = _last_heading
 	else:
-		# Here need to compute torso heading.
-		#var q: Quat = drag_q * _pose_q
-		heading = V_HEADING_FWD #q.xform( V_HEADING_FWD )
+		heading = cam_q.xform( V_HEADING_FWD )
+	_last_heading = heading
 	_control_vel_sequence.push_back( [v, heading] )
 	
 	var sz = TRAJ_FRAME_INDS.size()
