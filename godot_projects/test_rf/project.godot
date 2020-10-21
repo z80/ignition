@@ -277,7 +277,6 @@ ui_rmb={
 
 [physics]
 
-3d/active_soft_world=false
 3d/default_gravity=0.98
 
 [rendering]

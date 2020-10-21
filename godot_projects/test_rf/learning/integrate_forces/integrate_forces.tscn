@@ -1,0 +1,44 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=1]
+[ext_resource path="res://learning/integrate_forces/integrate_forces.gd" type="Script" id=2]
+[ext_resource path="res://learning/integrate_forces/Cube.gd" type="Script" id=3]
+
+[sub_resource type="BoxShape" id=1]
+extents = Vector3( 10.928, 0.117194, 7.75817 )
+
+[sub_resource type="CubeMesh" id=4]
+
+[sub_resource type="BoxShape" id=2]
+
+[sub_resource type="CubeMesh" id=3]
+
+[node name="Spatial" type="Spatial"]
+script = ExtResource( 2 )
+
+[node name="Plane" type="RigidBody" parent="."]
+mode = 1
+
+[node name="CollisionShape" type="CollisionShape" parent="Plane"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Plane"]
+transform = Transform( 10.9229, 0, 0, 0, 0.243658, 0, 0, 0, 7.32222, 0, 0, 0 )
+mesh = SubResource( 4 )
+material/0 = null
+
+[node name="Cube" type="RigidBody" parent="."]
+transform = Transform( 0.908571, 0.388054, -0.154634, -0.256848, 0.810898, 0.525808, 0.329434, -0.438017, 0.83643, 0, 8.42869, 0 )
+script = ExtResource( 3 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Cube"]
+shape = SubResource( 2 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Cube"]
+mesh = SubResource( 3 )
+material/0 = null
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.942601, 0.333922, 0, -0.333922, 0.942601, 0, 12.6987, 16.7131 )
+script = ExtResource( 1 )
+max_speed = Vector3( 5, 5, 5 )
