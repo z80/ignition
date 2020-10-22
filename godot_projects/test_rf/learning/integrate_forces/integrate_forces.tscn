@@ -33,7 +33,6 @@ transform = Transform( 0.908571, 0.388054, -0.154634, -0.256848, 0.810898, 0.525
 script = ExtResource( 3 )
 
 [node name="Rf" parent="Cube" instance=ExtResource( 4 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 
 [node name="CollisionShape" type="CollisionShape" parent="Cube"]
 shape = SubResource( 3 )
