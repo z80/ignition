@@ -102,11 +102,11 @@ func ang_vel_control( state ):
 	if do_print:
 		print( "inputs: ", i, " ", k, " ", j, " ", l, " ", u, " ", o )
 	if i:
-		w += Vector3.LEFT
+		w += Vector3.RIGHT
 		if do_print:
 			print( "add LEFT ", w )
 	if k:
-		w += Vector3.RIGHT
+		w += Vector3.LEFT
 		if do_print:
 			print( "add RIGHT ", w )
 	if j:
@@ -197,11 +197,11 @@ func rotation_control( state ):
 	if do_print:
 		print( "inputs: ", i, " ", k, " ", j, " ", l, " ", u, " ", o )
 	if i:
-		w += Vector3.LEFT
+		w += Vector3.RIGHT
 		if do_print:
 			print( "add LEFT ", w )
 	if k:
-		w += Vector3.RIGHT
+		w += Vector3.LEFT
 		if do_print:
 			print( "add RIGHT ", w )
 	if j:
