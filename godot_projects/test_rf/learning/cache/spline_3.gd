@@ -27,11 +27,13 @@ static func spline_init( ar_a: Array, ar_b: Array, T=1.0 ):
 
 static func spline_update( data, dt ):
 	data.t += dt
+	#print( "spline t: ", data.t )
 	if data.t >= data.T:
 		var t = data.t - data.T
 		data.t = data.T
 		var at = spline_at( data )
 		spline_recompute( data, at )
+		data.t = t
 
 
 static func spline_recompute( data, ar_b: Array ):
@@ -48,6 +50,8 @@ static func spline_recompute( data, ar_b: Array ):
 static func spline_at( data, integrate=false ):
 	var T: float = data.T
 	var t: float = data.t / T
+	if t > 1.0:
+		t = 1.0
 	var ys = []
 	var qty = len( data.data )
 	for i in range( qty ):
@@ -72,9 +76,11 @@ static func spline_array_at( data, tt: Array, integrate=false ):
 	
 	var points = []
 	for i in qty:
-		data.t = tt[i]
+		data.t = t_save + tt[i]
 		var d = spline_at( data, integrate )
 		points.push_back( d )
+	
+	data.t = t_save
 	
 	return points
 

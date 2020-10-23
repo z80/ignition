@@ -43,6 +43,7 @@ const SPEED: float = 1.0
 # velocity relative to current azimuth.
 var _control_input: Dictionary = {}
 var _last_heading: Vector3 = Vector3.FORWARD
+var _last_velocity: Vector3 = Vector3.ZERO
 var _frame_ind: int = 0
 var _switch_counter: int = 0
 var _f: Array
@@ -562,16 +563,33 @@ func _input_based_traj_desc( cat: Array = [0] ):
 	var desc_r: Array = []
 	var desc_heading: Array = []
 	
-	for frame_delta_ind in TRAJ_FRAME_INDS:
-		var f = _control_pos_sequence[ frame_delta_ind ]
-		var r = f[0]
-		var h = f[1]
+	#for frame_delta_ind in TRAJ_FRAME_INDS:
+	#	var f = _control_pos_sequence[ frame_delta_ind ]
+	#	var r = f[0]
+	#	var h = f[1]
+	#	r = az_root_q_inv.xform( r )
+	#	h = az_root_q_inv.xform( h )
+	#	
+	#	desc_heading += [ h.x, h.z ]
+	#	desc_r += [ r.x, r.z ]
+	
+	#_control_vel_spline
+	#_control_heading_spline
+	
+	var qty: int = len( TRAJ_TIME_MOMENTS )
+	var vx: Array = Spline3.spline_array_at( _control_vel_spline, TRAJ_TIME_MOMENTS, true )
+	var hd: Array = Spline3.spline_array_at( _control_heading_spline, TRAJ_TIME_MOMENTS, false )
+	for i in range( qty ):
+		var d: Array = vx[i]
+		var r: Vector3 = Vector3( d[1], d[3], d[5] )
+		d = hd[i]
+		var h: Vector3 = Vector3( d[0], d[1], d[2] )
 		r = az_root_q_inv.xform( r )
 		h = az_root_q_inv.xform( h )
 		
 		desc_heading += [ h.x, h.z ]
 		desc_r += [ r.x, r.z ]
-		
+	
 	return [ desc_r, desc_heading ]
 
 
@@ -630,7 +648,7 @@ func apply_controls( ctrl_v: Vector3, cam_t: Transform = Transform(), tps: bool 
 	}
 
 
-func _updata_control_sequence( dt: float, cat: int = 0 ):
+func _update_control_sequence( dt: float, cat: int = 0 ):
 	# Here we assume not so much time passed since 
 	# it was updated. It is essential as body orientation is used 
 	# in order to compute control relative in drag frame.
@@ -653,11 +671,12 @@ func _updata_control_sequence( dt: float, cat: int = 0 ):
 		heading = cam_q.xform( V_HEADING_FWD )
 	
 	# Spline based update.
-	Spline3.spline_update( _control_vel_spline, [v.x, v.y, v.z], dt )
-	Spline3.spline_update( _control_heading_spline, [heading.x, heading.y, heading.z], dt )
+	Spline3.spline_update( _control_vel_spline, dt )
+	Spline3.spline_update( _control_heading_spline, dt )
 	# / Spline based update.
 	
 	_last_heading = heading
+	_last_velocity = v
 	_control_vel_sequence.push_back( [v, heading] )
 	
 	var sz = TRAJ_FRAME_INDS.size()
@@ -684,6 +703,10 @@ func _updata_control_sequence( dt: float, cat: int = 0 ):
 		_control_pos_sequence[i] = pp
 
 
+
+func _recompute_control_sequence():
+	Spline3.spline_recompute( _control_vel_spline, [_last_velocity.x, _last_velocity.y, _last_velocity.z] )
+	Spline3.spline_recompute( _control_heading_spline, [_last_heading.x, _last_heading.y, _last_heading.z] )
 
 
 
@@ -766,16 +789,29 @@ func process_frame():
 	var jump: bool = false
 	
 	# Update control sequence based on most recent user input.
-	_updata_control_sequence( DT )
+	_update_control_sequence( DT )
 	# For control sequence visualization.
 	#_update_vis_control_sequence()
+	
+	#print( "spline velocity t: ", _control_vel_spline.t )
+	#print( "spline heading  t: ", _control_heading_spline.t )
 
 	
 	if time_to_switch:
 		#var f_cur = frame_( db_, frame_ind_ )
 		var desc_p = _input_based_pose_desc()
+		#print( "recompute middle spline velocity t: ", _control_vel_spline.t )
+		#print( "recompute middle spline heading  t: ", _control_heading_spline.t )
 		var desc_t = _input_based_traj_desc()
 		print( "traj desc: ", desc_t )
+		
+		#print( "recompute before spline velocity t: ", _control_vel_spline.t )
+		#print( "recompute before spline heading  t: ", _control_heading_spline.t )
+		_recompute_control_sequence()
+		#print( "recompute after spline velocity t: ", _control_vel_spline.t )
+		#print( "recompute after spline heading  t: ", _control_heading_spline.t )
+		
+		
 		var d = []
 		for di in desc_p:
 			for v in di:
