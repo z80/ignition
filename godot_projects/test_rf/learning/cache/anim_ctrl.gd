@@ -2,6 +2,8 @@ extends Node
 
 signal data_ready
 
+var Spline3 = preload( "res://learning/cache/spline_3.gd" )
+
 var _db = null
 var _frame_search = null
 
@@ -46,6 +48,8 @@ var _switch_counter: int = 0
 var _f: Array
 var _control_pos_sequence: Array
 var _control_vel_sequence: Array
+var _control_vel_spline
+var _control_heading_spline
 
 # The state is defined by animation frame.
 # And these two are used to place animation frame to 
@@ -608,6 +612,10 @@ func _init_control_sequence():
 	for i in range(qty):
 		var vv = [ Vector3.ZERO, V_HEADING_FWD ]
 		_control_vel_sequence.push_back( vv )
+	
+	var T: float = TRAJ_TIME_MOMENTS.back()
+	_control_vel_spline = Spline3.spline_init( [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], T )
+	_control_heading_spline = Spline3.spline_init( [0.0, 0.0, -1.0], [0.0, 0.0, -1.0], T )
 
 
 
@@ -622,7 +630,7 @@ func apply_controls( ctrl_v: Vector3, cam_t: Transform = Transform(), tps: bool 
 	}
 
 
-func _updata_control_sequence( cat: int = 0 ):
+func _updata_control_sequence( dt: float, cat: int = 0 ):
 	# Here we assume not so much time passed since 
 	# it was updated. It is essential as body orientation is used 
 	# in order to compute control relative in drag frame.
@@ -643,6 +651,12 @@ func _updata_control_sequence( cat: int = 0 ):
 			heading = _last_heading
 	else:
 		heading = cam_q.xform( V_HEADING_FWD )
+	
+	# Spline based update.
+	Spline3.spline_update( _control_vel_spline, [v.x, v.y, v.z], dt )
+	Spline3.spline_update( _control_heading_spline, [heading.x, heading.y, heading.z], dt )
+	# / Spline based update.
+	
 	_last_heading = heading
 	_control_vel_sequence.push_back( [v, heading] )
 	
@@ -752,7 +766,7 @@ func process_frame():
 	var jump: bool = false
 	
 	# Update control sequence based on most recent user input.
-	_updata_control_sequence()
+	_updata_control_sequence( DT )
 	# For control sequence visualization.
 	#_update_vis_control_sequence()
 

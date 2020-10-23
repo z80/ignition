@@ -42,7 +42,8 @@ static func spline_recompute( data, ar_b: Array ):
 	data.t = 0.0
 	data.T = T
 	data.data = d.data
-	
+
+
 
 static func spline_at( data, integrate=false ):
 	var T: float = data.T
@@ -62,4 +63,20 @@ static func spline_at( data, integrate=false ):
 			ys.append( int_y )
 	
 	return ys
+
+
+
+static func spline_array_at( data, tt: Array, integrate=false ):
+	var t_save = data.t
+	var qty = len( tt )
+	
+	var points = []
+	for i in qty:
+		data.t = tt[i]
+		var d = spline_at( data, integrate )
+		points.push_back( d )
+	
+	return points
+
+
 
