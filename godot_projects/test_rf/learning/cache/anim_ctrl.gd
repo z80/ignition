@@ -47,8 +47,8 @@ var _last_velocity: Vector3 = Vector3.ZERO
 var _frame_ind: int = 0
 var _switch_counter: int = 0
 var _f: Array
-var _control_pos_sequence: Array
-var _control_vel_sequence: Array
+#var _control_pos_sequence: Array
+#var _control_vel_sequence: Array
 var _control_vel_spline
 var _control_heading_spline
 
@@ -620,17 +620,6 @@ func _init_control_sequence():
 		q = Quat.IDENTITY
 	}
 	
-	var sz = TRAJ_FRAME_INDS.size()
-	var qty = TRAJ_FRAME_INDS[sz-1]
-	if qty < 0:
-		qty = -qty
-	qty += 1
-	
-	_control_vel_sequence = []
-	for i in range(qty):
-		var vv = [ Vector3.ZERO, V_HEADING_FWD ]
-		_control_vel_sequence.push_back( vv )
-	
 	var T: float = TRAJ_TIME_MOMENTS.back()
 	_control_vel_spline = Spline3.spline_init( [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], T )
 	_control_heading_spline = Spline3.spline_init( [0.0, 0.0, -1.0], [0.0, 0.0, -1.0], T )
@@ -677,30 +666,7 @@ func _update_control_sequence( dt: float, cat: int = 0 ):
 	
 	_last_heading = heading
 	_last_velocity = v
-	_control_vel_sequence.push_back( [v, heading] )
-	
-	var sz = TRAJ_FRAME_INDS.size()
-	var qty = TRAJ_FRAME_INDS[sz-1]
-	if qty < 0:
-		qty = -qty
-	qty += 1
-	
-	while _control_vel_sequence.size() > qty:
-		_control_vel_sequence.pop_front()
-	
-	# Integrate velocities and convert all to local ref. frame.
-	_control_pos_sequence.resize( qty )
-	var r: Vector3  = Vector3.ZERO
-	
-	# First step integrate.
-	for i in range( qty ):
-		var vv = _control_vel_sequence[i]
-		var dr: Vector3 = vv[0]
-		var h:  Vector3 = vv[1]
-		dr *= DT
-		r += dr
-		var pp = [r, h]
-		_control_pos_sequence[i] = pp
+
 
 
 
@@ -714,36 +680,8 @@ func _recompute_control_sequence():
 func _update_vis_control_sequence():
 	return
 	
-	var qty: int = _control_pos_sequence.size()
-	_vis_control_sequence.resize( qty )
 	
-	#var f = frame_( db_, frame_ind_ )
-	#var q: Quat    = Quat( f[ROOT_IND+1], f[ROOT_IND+2], f[ROOT_IND+3], f[ROOT_IND] )
-	#var r: Vector3 = Vector3( f[ROOT_IND+4], f[ROOT_IND+5], f[ROOT_IND+6] )
-	#var az_q: Quat = quat_azimuth_( q )
-	#var inv_az_q = az_q.inverse()
-	
-	for i in range( qty ):
-		var c2: Vector2 = _control_pos_sequence[i]
-		var c3: Vector3 = Vector3(c2.x, c2.y, 1.0 )
-		#c3 = pose_q_.xform( c3 )
-		c3 = c3 + _pose_r
-		_vis_control_sequence[i] = c3
-	
-	
-	var ind: int = 0
-	qty = TRAJ_FRAME_INDS.size()
-	_print_control_sequence.resize( qty )
-	var inv_pose_q: Quat = _pose_q.inverse()
-	var q_frame_az: Quat = _frame_azimuth( _frame_ind )
-	var q: Quat = q_frame_az * inv_pose_q
-	for i in TRAJ_FRAME_INDS:
-		var v = _control_pos_sequence[i-1]
-		var v3 = Vector3( v.x, v.y, 0.0 )
-		v3 = q.xform( v3 )
-		v = Vector2( v3.x, v3.y )
-		_print_control_sequence[ind] = v
-		ind += 1
+
 
 
 
