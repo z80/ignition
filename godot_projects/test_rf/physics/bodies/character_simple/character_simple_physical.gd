@@ -1,10 +1,5 @@
 
-extends Node
-
-var transform: Transform setget set_transform, get_transform
-var linear_velocity: Vector3 setget set_linear_velocity, get_linear_velocity
-var angular_velocity: Vector3 setget set_angular_velocity, get_angular_velocity
-var collision_layer: int setget set_collision_layer, get_collision_layer
+extends RigidBody
 
 var body: Body = null
 
@@ -24,40 +19,21 @@ func _physics_process(_delta):
 	pass
 
 
-func set_transform( t: Transform ):
-	$RigidBody.transform = t
-	
-func get_transform():
-	return $RigidBody.transform
 
-func set_linear_velocity( v: Vector3 ):
-	$RigidBody.linear_velocity = v
-
-
-func get_linear_velocity():
-	return $RigidBody.linear_velocity
-
-
-func set_angular_velocity( w: Vector3 ):
-	$RigidBody.angular_velocity = w
-
-
-func get_angular_velocity():
-	return $RigidBody.angular_velocity
 
 
 func set_collision_layer( v: int ):
-	$RigidBody.collision_layer = v
-	$RigidBody.collision_mask  = v
+	self.collision_layer = v
+	self.collision_mask  = v
 
 
 func get_collision_layer():
-	return $RigidBody.collision_layer
+	return self.collision_layer
 
 
 func apply_force( f: Vector3 ):
-	var t: Transform = $RigidBody.transform
+	var t: Transform = self.transform
 	var q: Quat = t.basis
 	var fw: Vector3 = q.xform( f )
-	$RigidBody.add_central_force( fw )
+	self.add_central_force( fw )
 

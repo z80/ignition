@@ -13,8 +13,8 @@ func _ready():
 
 
 func init():
-	var Visual   = load( "res://physics/bodies/capsule_dbg/visual.tscn")
-	var Physical = load( "res://physics/bodies/capsule_dbg/physical.tscn" )
+	var Visual   = load( "res://physics/bodies/character_simple/character_simple_visual.tscn")
+	var Physical = load( "res://physics/bodies/character_simple/character_simple_physical.tscn" )
 	
 	VisualType   = Visual
 	PhysicalType = Physical
@@ -53,8 +53,7 @@ func update_physical( delta: float ):
 func set_collision_layer( layer ):
 	if _physical:
 		var rb = _physical.get_child( 0 )
-		rb.collision_layer = layer
-		rb.collision_mask  = layer
+		rb.set_collision_layer( layer )
 
 
 func process_user_input( _event: InputEvent ):
