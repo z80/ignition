@@ -1,12 +1,7 @@
 
 extends Body
 
-const FORCE_H: float = 30.0
-const FORCE_V: float = 100.0
-
-const ANG_VEL: float = 30.0 / 180.0 * 3.14
-
-var _ang_vel: float = 0.0
+var user_input_applied: bool = false
 
 func _ready():
 	init()
@@ -60,8 +55,8 @@ func process_user_input( _event: InputEvent ):
 	if _physical == null:
 		return
 	
-	_user_input_translation( _event )
-	_user_input_rotation( _event )
+	_user_input_applied = true
+
 
 
 
