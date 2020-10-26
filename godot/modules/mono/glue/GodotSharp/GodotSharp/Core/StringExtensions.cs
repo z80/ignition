@@ -401,35 +401,6 @@ namespace Godot
             return instance.Substring(sep + 1);
         }
 
-        /// <summary>
-        /// Converts the given byte array of ASCII encoded text to a string.
-        /// Faster alternative to <see cref="GetStringFromUTF8"/> if the
-        /// content is ASCII-only. Unlike the UTF-8 function this function
-        /// maps every byte to a character in the array. Multibyte sequences
-        /// will not be interpreted correctly. For parsing user input always
-        /// use <see cref="GetStringFromUTF8"/>.
-        /// </summary>
-        /// <param name="bytes">A byte array of ASCII characters (on the range of 0-127).</param>
-        /// <returns>A string created from the bytes.</returns>
-        public static string GetStringFromASCII(this byte[] bytes)
-        {
-            return Encoding.ASCII.GetString(bytes);
-        }
-
-        /// <summary>
-        /// Converts the given byte array of UTF-8 encoded text to a string.
-        /// Slower than <see cref="GetStringFromASCII"/> but supports UTF-8
-        /// encoded data. Use this function if you are unsure about the
-        /// source of the data. For user input this function
-        /// should always be preferred.
-        /// </summary>
-        /// <param name="bytes">A byte array of UTF-8 characters (a character may take up multiple bytes).</param>
-        /// <returns>A string created from the bytes.</returns>
-        public static string GetStringFromUTF8(this byte[] bytes)
-        {
-            return Encoding.UTF8.GetString(bytes);
-        }
-
         // <summary>
         // Hash the string and return a 32 bits integer.
         // </summary>
@@ -477,12 +448,7 @@ namespace Godot
         // </summary>
         public static bool IsAbsPath(this string instance)
         {
-            if (string.IsNullOrEmpty(instance))
-                return false;
-            else if (instance.Length > 1)
-                return instance[0] == '/' || instance[0] == '\\' || instance.Contains(":/") || instance.Contains(":\\");
-            else
-                return instance[0] == '/' || instance[0] == '\\';
+            return System.IO.Path.IsPathRooted(instance);
         }
 
         // <summary>
@@ -490,7 +456,7 @@ namespace Godot
         // </summary>
         public static bool IsRelPath(this string instance)
         {
-            return !IsAbsPath(instance);
+            return !System.IO.Path.IsPathRooted(instance);
         }
 
         // <summary>
@@ -666,46 +632,41 @@ namespace Godot
             return instance.Length;
         }
 
-        /// <summary>
-        /// Do a simple expression match, where '*' matches zero or more arbitrary characters and '?' matches any single character except '.'.
-        /// </summary>
-        private static bool ExprMatch(this string instance, string expr, bool caseSensitive)
+        // <summary>
+        // Do a simple expression match, where '*' matches zero or more arbitrary characters and '?' matches any single character except '.'.
+        // </summary>
+        public static bool ExprMatch(this string instance, string expr, bool caseSensitive)
         {
-            // case '\0':
-            if (expr.Length == 0)
-                return instance.Length == 0;
+            if (expr.Length == 0 || instance.Length == 0)
+                return false;
 
             switch (expr[0])
             {
+                case '\0':
+                    return instance[0] == 0;
                 case '*':
-                    return ExprMatch(instance, expr.Substring(1), caseSensitive) || (instance.Length > 0 && ExprMatch(instance.Substring(1), expr, caseSensitive));
+                    return ExprMatch(expr + 1, instance, caseSensitive) || instance[0] != 0 && ExprMatch(expr, instance + 1, caseSensitive);
                 case '?':
-                    return instance.Length > 0 && instance[0] != '.' && ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
+                    return instance[0] != 0 && instance[0] != '.' && ExprMatch(expr + 1, instance + 1, caseSensitive);
                 default:
-                    if (instance.Length == 0) return false;
-                    return (caseSensitive ? instance[0] == expr[0] : char.ToUpper(instance[0]) == char.ToUpper(expr[0])) && ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
+                    return (caseSensitive ? instance[0] == expr[0] : char.ToUpper(instance[0]) == char.ToUpper(expr[0])) &&
+                                ExprMatch(expr + 1, instance + 1, caseSensitive);
             }
         }
 
-        /// <summary>
-        /// Do a simple case sensitive expression match, using ? and * wildcards (see [method expr_match]).
-        /// </summary>
+        // <summary>
+        // Do a simple case sensitive expression match, using ? and * wildcards (see [method expr_match]).
+        // </summary>
         public static bool Match(this string instance, string expr, bool caseSensitive = true)
         {
-            if (instance.Length == 0 || expr.Length == 0)
-                return false;
-
             return instance.ExprMatch(expr, caseSensitive);
         }
 
-        /// <summary>
-        /// Do a simple case insensitive expression match, using ? and * wildcards (see [method expr_match]).
-        /// </summary>
+        // <summary>
+        // Do a simple case insensitive expression match, using ? and * wildcards (see [method expr_match]).
+        // </summary>
         public static bool MatchN(this string instance, string expr)
         {
-            if (instance.Length == 0 || expr.Length == 0)
-                return false;
-
             return instance.ExprMatch(expr, caseSensitive: false);
         }
 

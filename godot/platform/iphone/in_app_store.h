@@ -35,17 +35,6 @@
 
 #include "core/object.h"
 
-#ifdef __OBJC__
-@class GodotProductsDelegate;
-@class GodotTransactionsObserver;
-
-typedef GodotProductsDelegate InAppStoreProductDelegate;
-typedef GodotTransactionsObserver InAppStoreTransactionObserver;
-#else
-typedef void InAppStoreProductDelegate;
-typedef void InAppStoreTransactionObserver;
-#endif
-
 class InAppStore : public Object {
 
 	GDCLASS(InAppStore, Object);
@@ -54,9 +43,6 @@ class InAppStore : public Object {
 	static void _bind_methods();
 
 	List<Variant> pending_events;
-
-	InAppStoreProductDelegate *products_request_delegate;
-	InAppStoreTransactionObserver *transactions_observer;
 
 public:
 	Error request_product_info(Variant p_params);

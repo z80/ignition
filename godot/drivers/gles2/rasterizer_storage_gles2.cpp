@@ -1452,7 +1452,6 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			shaders.actions_canvas.usage_flag_pointers["TIME"] = &p_shader->canvas_item.uses_time;
 			shaders.actions_canvas.usage_flag_pointers["MODULATE"] = &p_shader->canvas_item.uses_modulate;
 			shaders.actions_canvas.usage_flag_pointers["COLOR"] = &p_shader->canvas_item.uses_color;
-
 			shaders.actions_canvas.usage_flag_pointers["VERTEX"] = &p_shader->canvas_item.uses_vertex;
 
 			actions = &shaders.actions_canvas;
@@ -1474,8 +1473,6 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			p_shader->spatial.uses_screen_texture = false;
 			p_shader->spatial.uses_depth_texture = false;
 			p_shader->spatial.uses_vertex = false;
-			p_shader->spatial.uses_tangent = false;
-			p_shader->spatial.uses_ensure_correct_normals = false;
 			p_shader->spatial.writes_modelview_or_projection = false;
 			p_shader->spatial.uses_world_coordinates = false;
 
@@ -1500,8 +1497,6 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 
 			shaders.actions_scene.render_mode_flags["world_vertex_coords"] = &p_shader->spatial.uses_world_coordinates;
 
-			shaders.actions_scene.render_mode_flags["ensure_correct_normals"] = &p_shader->spatial.uses_ensure_correct_normals;
-
 			shaders.actions_scene.usage_flag_pointers["ALPHA"] = &p_shader->spatial.uses_alpha;
 			shaders.actions_scene.usage_flag_pointers["ALPHA_SCISSOR"] = &p_shader->spatial.uses_alpha_scissor;
 
@@ -1510,11 +1505,6 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			shaders.actions_scene.usage_flag_pointers["SCREEN_TEXTURE"] = &p_shader->spatial.uses_screen_texture;
 			shaders.actions_scene.usage_flag_pointers["DEPTH_TEXTURE"] = &p_shader->spatial.uses_depth_texture;
 			shaders.actions_scene.usage_flag_pointers["TIME"] = &p_shader->spatial.uses_time;
-
-			// Use of any of these BUILTINS indicate the need for transformed tangents.
-			// This is needed to know when to transform tangents in software skinning.
-			shaders.actions_scene.usage_flag_pointers["TANGENT"] = &p_shader->spatial.uses_tangent;
-			shaders.actions_scene.usage_flag_pointers["NORMALMAP"] = &p_shader->spatial.uses_tangent;
 
 			shaders.actions_scene.write_flag_pointers["MODELVIEW_MATRIX"] = &p_shader->spatial.writes_modelview_or_projection;
 			shaders.actions_scene.write_flag_pointers["PROJECTION_MATRIX"] = &p_shader->spatial.writes_modelview_or_projection;
@@ -1553,10 +1543,10 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 	// some logic for batching
 	if (p_shader->mode == VS::SHADER_CANVAS_ITEM) {
 		if (p_shader->canvas_item.uses_modulate | p_shader->canvas_item.uses_color) {
-			p_shader->canvas_item.batch_flags |= RasterizerStorageCommon::PREVENT_COLOR_BAKING;
+			p_shader->canvas_item.batch_flags |= Shader::CanvasItem::PREVENT_COLOR_BAKING;
 		}
 		if (p_shader->canvas_item.uses_vertex) {
-			p_shader->canvas_item.batch_flags |= RasterizerStorageCommon::PREVENT_VERTEX_BAKING;
+			p_shader->canvas_item.batch_flags |= Shader::CanvasItem::PREVENT_VERTEX_BAKING;
 		}
 	}
 
@@ -1905,36 +1895,6 @@ bool RasterizerStorageGLES2::material_casts_shadows(RID p_material) {
 	}
 
 	return casts_shadows;
-}
-
-bool RasterizerStorageGLES2::material_uses_tangents(RID p_material) {
-	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material, false);
-
-	if (!material->shader) {
-		return false;
-	}
-
-	if (material->shader->dirty_list.in_list()) {
-		_update_shader(material->shader);
-	}
-
-	return material->shader->spatial.uses_tangent;
-}
-
-bool RasterizerStorageGLES2::material_uses_ensure_correct_normals(RID p_material) {
-	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material, false);
-
-	if (!material->shader) {
-		return false;
-	}
-
-	if (material->shader->dirty_list.in_list()) {
-		_update_shader(material->shader);
-	}
-
-	return material->shader->spatial.uses_ensure_correct_normals;
 }
 
 void RasterizerStorageGLES2::material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) {
@@ -3788,17 +3748,14 @@ void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<
 
 	glBindBuffer(GL_ARRAY_BUFFER, resources.skeleton_transform_buffer);
 
-	uint32_t buffer_size = p_size * sizeof(float);
-
 	if (p_size > resources.skeleton_transform_buffer_size) {
 		// new requested buffer is bigger, so resizing the GPU buffer
 
 		resources.skeleton_transform_buffer_size = p_size;
 
-		glBufferData(GL_ARRAY_BUFFER, buffer_size, p_data.read().ptr(), GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, p_size * sizeof(float), p_data.read().ptr(), GL_DYNAMIC_DRAW);
 	} else {
-		// this may not be best, it could be better to use glBufferData in both cases.
-		buffer_orphan_and_upload(resources.skeleton_transform_buffer_size, 0, buffer_size, p_data.read().ptr());
+		glBufferSubData(GL_ARRAY_BUFFER, 0, p_size * sizeof(float), p_data.read().ptr());
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -3859,7 +3816,7 @@ RID RasterizerStorageGLES2::light_create(VS::LightType p_type) {
 	light->directional_blend_splits = false;
 	light->directional_range_mode = VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE;
 	light->reverse_cull = false;
-	light->bake_mode = VS::LIGHT_BAKE_INDIRECT;
+	light->use_gi = true;
 	light->version = 0;
 
 	return light_owner.make_rid(light);
@@ -3948,15 +3905,10 @@ void RasterizerStorageGLES2::light_set_reverse_cull_face_mode(RID p_light, bool 
 }
 
 void RasterizerStorageGLES2::light_set_use_gi(RID p_light, bool p_enabled) {
-	WARN_DEPRECATED_MSG("'VisualServer.light_set_use_gi' is deprecated and will be removed in a future version. Use 'VisualServer.light_set_bake_mode' instead.");
-	light_set_bake_mode(p_light, p_enabled ? VS::LightBakeMode::LIGHT_BAKE_INDIRECT : VS::LightBakeMode::LIGHT_BAKE_DISABLED);
-}
-
-void RasterizerStorageGLES2::light_set_bake_mode(RID p_light, VS::LightBakeMode p_bake_mode) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
-	light->bake_mode = p_bake_mode;
+	light->use_gi = p_enabled;
 
 	light->version++;
 	light->instance_change_notify(true, false);
@@ -4058,14 +4010,10 @@ Color RasterizerStorageGLES2::light_get_color(RID p_light) {
 }
 
 bool RasterizerStorageGLES2::light_get_use_gi(RID p_light) {
-	return light_get_bake_mode(p_light) != VS::LightBakeMode::LIGHT_BAKE_DISABLED;
-}
-
-VS::LightBakeMode RasterizerStorageGLES2::light_get_bake_mode(RID p_light) {
 	Light *light = light_owner.getornull(p_light);
-	ERR_FAIL_COND_V(!light, VS::LightBakeMode::LIGHT_BAKE_DISABLED);
+	ERR_FAIL_COND_V(!light, false);
 
-	return light->bake_mode;
+	return light->use_gi;
 }
 
 bool RasterizerStorageGLES2::light_has_shadow(RID p_light) const {
@@ -5414,13 +5362,6 @@ void RasterizerStorageGLES2::render_target_set_msaa(RID p_render_target, VS::Vie
 	_render_target_allocate(rt);
 }
 
-void RasterizerStorageGLES2::render_target_set_use_fxaa(RID p_render_target, bool p_fxaa) {
-	RenderTarget *rt = render_target_owner.getornull(p_render_target);
-	ERR_FAIL_COND(!rt);
-
-	rt->use_fxaa = p_fxaa;
-}
-
 /* CANVAS SHADOW */
 
 RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
@@ -5828,9 +5769,6 @@ bool RasterizerStorageGLES2::has_os_feature(const String &p_feature) const {
 	if (p_feature == "etc")
 		return config.etc1_supported;
 
-	if (p_feature == "skinning_fallback")
-		return config.use_skeleton_software;
-
 	return false;
 }
 
@@ -5960,7 +5898,7 @@ void RasterizerStorageGLES2::initialize() {
 	config.float_texture_supported = config.extensions.has("GL_ARB_texture_float") || config.extensions.has("GL_OES_texture_float");
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 	config.etc1_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture") || config.extensions.has("WEBGL_compressed_texture_etc1");
-	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc") || config.extensions.has("WEBGL_compressed_texture_pvrtc");
+	config.pvrtc_supported = config.extensions.has("IMG_texture_compression_pvrtc") || config.extensions.has("WEBGL_compressed_texture_pvrtc");
 	config.support_npot_repeat_mipmap = config.extensions.has("GL_OES_texture_npot");
 
 #ifdef JAVASCRIPT_ENABLED

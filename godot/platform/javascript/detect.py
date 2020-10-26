@@ -1,7 +1,6 @@
 import os
 
-from emscripten_helpers import run_closure_compiler, create_engine_file
-from SCons.Util import WhereIs
+from emscripten_helpers import parse_config, run_closure_compiler, create_engine_file
 
 
 def is_active():
@@ -13,7 +12,7 @@ def get_name():
 
 
 def can_build():
-    return WhereIs("emcc") is not None
+    return "EM_CONFIG" in os.environ or os.path.exists(os.path.expanduser("~/.emscripten"))
 
 
 def get_opts():
@@ -101,6 +100,9 @@ def configure(env):
     # Closure compiler extern and support for ecmascript specs (const, let, etc).
     env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT6"
 
+    em_config = parse_config()
+    env.PrependENVPath("PATH", em_config["EMCC_ROOT"])
+
     env["CC"] = "emcc"
     env["CXX"] = "em++"
     env["LINK"] = "emcc"
@@ -135,9 +137,8 @@ def configure(env):
         env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
         env.Append(CCFLAGS=["-s", "USE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
-        env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=8"])
+        env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=4"])
         env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
-        env.extra_suffix = ".threads" + env.extra_suffix
     else:
         env.Append(CPPDEFINES=["NO_THREADS"])
 

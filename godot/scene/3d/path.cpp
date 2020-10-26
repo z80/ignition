@@ -264,23 +264,16 @@ String PathFollow::get_configuration_warning() const {
 	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
-	String warning = Spatial::get_configuration_warning();
 	if (!Object::cast_to<Path>(get_parent())) {
-		if (warning != String()) {
-			warning += "\n\n";
-		}
-		warning += TTR("PathFollow only works when set as a child of a Path node.");
+		return TTR("PathFollow only works when set as a child of a Path node.");
 	} else {
 		Path *path = Object::cast_to<Path>(get_parent());
 		if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
-			if (warning != String()) {
-				warning += "\n\n";
-			}
-			warning += TTR("PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path's Curve resource.");
+			return TTR("PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path's Curve resource.");
 		}
 	}
 
-	return warning;
+	return String();
 }
 
 void PathFollow::_bind_methods() {

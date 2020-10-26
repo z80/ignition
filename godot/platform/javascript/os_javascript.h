@@ -71,7 +71,8 @@ class OS_JavaScript : public OS_Unix {
 
 	bool swap_ok_cancel;
 	bool idb_available;
-	bool idb_needs_sync;
+	int64_t sync_wait_time;
+	int64_t last_sync_check_time;
 
 	static EM_BOOL fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data);
 
@@ -109,7 +110,6 @@ protected:
 
 public:
 	String canvas_id;
-	bool idb_is_syncing;
 	void finalize_async();
 	bool check_size_force_redraw();
 

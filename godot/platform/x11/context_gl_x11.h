@@ -68,7 +68,6 @@ public:
 	void swap_buffers();
 	int get_window_width();
 	int get_window_height();
-	void *get_glx_context();
 
 	Error initialize();
 

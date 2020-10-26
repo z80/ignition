@@ -1741,9 +1741,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		}
 
 		for (int i = 0; i < state->get_connection_count(); i++) {
-			if (i == 0) {
-				f->store_line("");
-			}
 
 			String connstr = "[connection";
 			connstr += " signal=\"" + String(state->get_connection_signal(i)) + "\"";
@@ -1768,10 +1765,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 		Vector<NodePath> editable_instances = state->get_editable_instances();
 		for (int i = 0; i < editable_instances.size(); i++) {
-			if (i == 0) {
-				f->store_line("");
-			}
-			f->store_line("[editable path=\"" + editable_instances[i].operator String() + "\"]");
+			f->store_line("\n[editable path=\"" + editable_instances[i].operator String() + "\"]");
 		}
 	}
 

@@ -143,15 +143,12 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_sc
 }
 
 String ParallaxLayer::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
+
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
-		if (warning != String()) {
-			warning += "\n\n";
-		}
-		warning += TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node.");
+		return TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node.");
 	}
 
-	return warning;
+	return String();
 }
 
 void ParallaxLayer::_bind_methods() {

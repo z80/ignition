@@ -21,13 +21,12 @@
 # Ondrej Pavelka <ondrej.pavelka@outlook.com>, 2020.
 # Zbyněk <zbynek.fiala@gmail.com>, 2020.
 # Daniel Kříž <Daniel.kriz@protonmail.com>, 2020.
-# VladimirBlazek <vblazek042@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-12 00:46+0000\n"
-"Last-Translator: VladimirBlazek <vblazek042@gmail.com>\n"
+"PO-Revision-Date: 2020-08-16 03:50+0000\n"
+"Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -35,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -547,7 +546,6 @@ msgid "Seconds"
 msgstr "Sekundy"
 
 #: editor/animation_track_editor.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "FPS"
 
@@ -726,7 +724,7 @@ msgstr "Rozlišovat malá/velká"
 msgid "Whole Words"
 msgstr "Celá slova"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/rename_dialog.cpp
 msgid "Replace"
 msgstr "Nahradit"
 
@@ -918,11 +916,6 @@ msgid "Signals"
 msgstr "Signály"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
-msgid "Filter signals"
-msgstr "Filtrovat soubory..."
-
-#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Jste si jistí, že chcete odstranit všechna připojení z tohoto signálu?"
 
@@ -960,7 +953,7 @@ msgid "Recent:"
 msgstr "Nedávné:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Hledat:"
@@ -1649,18 +1642,18 @@ msgid "Scene Tree Editing"
 msgstr "Úpravy stromu scény"
 
 #: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "Importovat dok"
+
+#: editor/editor_feature_profile.cpp
 #, fuzzy
 msgid "Node Dock"
 msgstr "Uzel přesunut"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
-msgid "FileSystem Dock"
+msgid "FileSystem and Import Docks"
 msgstr "Souborový systém"
-
-#: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "Importovat dok"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1923,7 +1916,7 @@ msgstr "Složky a soubory:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Preview:"
 msgstr "Náhled:"
 
@@ -2573,8 +2566,6 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Vybraná scéna '%s' neexistuje, vybrat platnou? \n"
-"Později to můžete změnit v \"Nastavení projektu\" v kategorii  'application'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2791,28 +2782,24 @@ msgstr "Nasazení se vzdáleným laděním"
 
 #: editor/editor_node.cpp
 msgid ""
-"When this option is enabled, using one-click deploy will make the executable "
-"attempt to connect to this computer's IP so the running project can be "
-"debugged.\n"
-"This option is intended to be used for remote debugging (typically with a "
-"mobile device).\n"
-"You don't need to enable it to use the GDScript debugger locally."
+"When exporting or deploying, the resulting executable will attempt to "
+"connect to the IP of this computer in order to be debugged."
 msgstr ""
+"Při exportu nebo nasazení, se výsledný spustitelný soubor pokusí připojit k "
+"IP tohoto počítače, aby ho bylo možné ladit."
 
 #: editor/editor_node.cpp
-#, fuzzy
-msgid "Small Deploy with Network Filesystem"
+msgid "Small Deploy with Network FS"
 msgstr "Minimální nasazení se síťovým FS"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
-"When this option is enabled, using one-click deploy for Android will only "
-"export an executable without the project data.\n"
+"When this option is enabled, export or deploy will produce a minimal "
+"executable.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploying will use the USB cable for faster performance. This "
-"option speeds up testing for projects with large assets."
+"On Android, deploy will use the USB cable for faster performance. This "
+"option speeds up testing for games with a large footprint."
 msgstr ""
 "Když je tato možnost povolena, export nebo nasazení bude vytvářet minimální "
 "spustitelný soubor.\n"
@@ -2825,10 +2812,9 @@ msgid "Visible Collision Shapes"
 msgstr "Viditelné kolizní tvary"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
-"When this option is enabled, collision shapes and raycast nodes (for 2D and "
-"3D) will be visible in the running project."
+"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
+"running game if this option is turned on."
 msgstr ""
 "Kolizní tvary a raycast uzly (pro 2D a 3D) budou viditelné během hry, po "
 "aktivaci této volby."
@@ -2838,25 +2824,22 @@ msgid "Visible Navigation"
 msgstr "Viditelná navigace"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
-"When this option is enabled, navigation meshes and polygons will be visible "
-"in the running project."
+"Navigation meshes and polygons will be visible on the running game if this "
+"option is turned on."
 msgstr ""
 "Navigační meshe a polygony budou viditelné během hry, po aktivaci této volby."
 
 #: editor/editor_node.cpp
-#, fuzzy
-msgid "Synchronize Scene Changes"
+msgid "Sync Scene Changes"
 msgstr "Synchronizovat změny scény"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
-"When this option is enabled, any changes made to the scene in the editor "
-"will be replicated in the running project.\n"
-"When used remotely on a device, this is more efficient when the network "
-"filesystem option is enabled."
+"When this option is turned on, any changes made to the scene in the editor "
+"will be replicated in the running game.\n"
+"When used remotely on a device, this is more efficient with network "
+"filesystem."
 msgstr ""
 "Když je zapnuta tato možnost, všechny změny provedené ve scéně v editoru "
 "budou replikovány v běžící hře.\n"
@@ -2864,17 +2847,15 @@ msgstr ""
 "síťového souborového systému."
 
 #: editor/editor_node.cpp
-#, fuzzy
-msgid "Synchronize Script Changes"
+msgid "Sync Script Changes"
 msgstr "Synchornizace změn skriptu"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
-"When this option is enabled, any script that is saved will be reloaded in "
-"the running project.\n"
-"When used remotely on a device, this is more efficient when the network "
-"filesystem option is enabled."
+"When this option is turned on, any script that is saved will be reloaded on "
+"the running game.\n"
+"When used remotely on a device, this is more efficient with network "
+"filesystem."
 msgstr ""
 "Když je zapnuta tato volba, jakýkoliv skript, který je uložen bude znovu "
 "nahrán do spuštěné hry.\n"
@@ -2941,7 +2922,7 @@ msgstr "Nápověda"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
 msgid "Search"
 msgstr "Hledat"
 
@@ -3205,7 +3186,7 @@ msgstr "Fyzikální snímek %"
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
-msgstr "Inkluzivní"
+msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Self"
@@ -3344,11 +3325,9 @@ msgid "Add Key/Value Pair"
 msgstr "Vložte pár klíč/hodnota"
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the Export menu or define an existing preset "
-"as runnable."
+"Please add a runnable preset in the export menu."
 msgstr ""
 "Nebylo nalezeno žádné spustilené přednastavení pro exportování na tuto "
 "platformu.\n"
@@ -3386,9 +3365,8 @@ msgstr ""
 "podpisu."
 
 #: editor/editor_sub_scene.cpp
-#, fuzzy
 msgid "Select Node(s) to Import"
-msgstr "Vyberte uzly (Node) pro import"
+msgstr ""
 
 #: editor/editor_sub_scene.cpp editor/project_manager.cpp
 msgid "Browse"
@@ -3396,7 +3374,7 @@ msgstr "Procházet"
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
-msgstr "Cesta ke scéně:"
+msgstr ""
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
@@ -3968,17 +3946,16 @@ msgid "Running Custom Script..."
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Couldn't load post-import script:"
-msgstr "Nepodařilo se načíst post-import script:"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Invalid/broken script for post-import (check console):"
-msgstr "Neplatný/rozbitý skript pro post-import (viz konzole):"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
-msgstr "Chyba při spuštění post-import scriptu:"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
@@ -4063,7 +4040,7 @@ msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Make Sub-Resources Unique"
-msgstr "Udělat Sub-prostředky unikátní"
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Open in Help"
@@ -4443,7 +4420,7 @@ msgstr "Povolit filtrování"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
-msgstr "Zapnout Autoplay"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Animation Name:"
@@ -4486,7 +4463,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
-msgstr "Změnit Blend Time"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
@@ -4541,9 +4518,8 @@ msgid "Animation position (in seconds)."
 msgstr "Pozice animace (v sekundách)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Scale animation playback globally for the node."
-msgstr "Škálovat playback animace globálně pro uzel"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
@@ -4566,9 +4542,8 @@ msgid "Display list of animations in player."
 msgstr "Zobrazit seznam animací v přehrávači."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Autoplay on Load"
-msgstr "Autoplay při načtení"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
@@ -4645,7 +4620,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Next (Auto Queue):"
-msgstr "Další (Automatická řada):"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
@@ -4759,9 +4734,8 @@ msgid "Scale:"
 msgstr "Zvětšení:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
-#, fuzzy
 msgid "Fade In (s):"
-msgstr "Zmizení do (s):"
+msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade Out (s):"
@@ -4781,11 +4755,11 @@ msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Restart (s):"
-msgstr "Restart (s):"
+msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Random Restart (s):"
-msgstr "Náhodný Restart (s):"
+msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Start!"
@@ -4820,7 +4794,7 @@ msgstr "Přidat vstup"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Clear Auto-Advance"
-msgstr "Čistý Auto-Advance"
+msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Set Auto-Advance"
@@ -5111,7 +5085,7 @@ msgid "Bake Lightmaps"
 msgstr "Zapéct lightmapy"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview"
 msgstr "Náhled"
 
@@ -7793,8 +7767,7 @@ msgid "New Animation"
 msgstr "Nová animace"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
-msgid "Speed:"
+msgid "Speed (FPS):"
 msgstr "Rychlost (FPS):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10359,18 +10332,11 @@ msgid "Batch Rename"
 msgstr "Dávkové přejmenování"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
-msgid "Replace:"
-msgstr "Nahradit: "
-
-#: editor/rename_dialog.cpp
-#, fuzzy
-msgid "Prefix:"
+msgid "Prefix"
 msgstr "Prefix"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
-msgid "Suffix:"
+msgid "Suffix"
 msgstr "Sufix"
 
 #: editor/rename_dialog.cpp
@@ -10418,7 +10384,7 @@ msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "If set, the counter restarts for each group of child nodes."
+msgid "If set the counter restarts for each group of child nodes"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10478,8 +10444,7 @@ msgid "Reset"
 msgstr "Resetovat"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
-msgid "Regular Expression Error:"
+msgid "Regular Expression Error"
 msgstr "Chyba regulárního výrazu"
 
 #: editor/rename_dialog.cpp
@@ -12522,11 +12487,6 @@ msgid ""
 "Use a BakedLightmap instead."
 msgstr ""
 
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
-
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -12811,17 +12771,6 @@ msgstr "Odlišnosti mohou být přiřazeny pouze ve vertex funkci."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanty není možné upravovat."
-
-#, fuzzy
-#~ msgid "FileSystem and Import Docks"
-#~ msgstr "Souborový systém"
-
-#~ msgid ""
-#~ "When exporting or deploying, the resulting executable will attempt to "
-#~ "connect to the IP of this computer in order to be debugged."
-#~ msgstr ""
-#~ "Při exportu nebo nasazení, se výsledný spustitelný soubor pokusí připojit "
-#~ "k IP tohoto počítače, aby ho bylo možné ladit."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr ""

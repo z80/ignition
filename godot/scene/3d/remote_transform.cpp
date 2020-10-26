@@ -180,15 +180,11 @@ void RemoteTransform::force_update_cache() {
 
 String RemoteTransform::get_configuration_warning() const {
 
-	String warning = Spatial::get_configuration_warning();
 	if (!has_node(remote_node) || !Object::cast_to<Spatial>(get_node(remote_node))) {
-		if (warning != String()) {
-			warning += "\n\n";
-		}
-		warning += TTR("The \"Remote Path\" property must point to a valid Spatial or Spatial-derived node to work.");
+		return TTR("The \"Remote Path\" property must point to a valid Spatial or Spatial-derived node to work.");
 	}
 
-	return warning;
+	return String();
 }
 
 void RemoteTransform::_bind_methods() {

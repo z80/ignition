@@ -177,21 +177,19 @@ def configure_msvc(env, manual_msvc_config):
     # Build type
 
     if env["target"] == "release":
-        if env["debug_symbols"] != "full":
-            if env["optimize"] == "speed":  # optimize for speed (default)
-                env.Append(CCFLAGS=["/O2"])
-            else:  # optimize for size
-                env.Append(CCFLAGS=["/O1"])
+        if env["optimize"] == "speed":  # optimize for speed (default)
+            env.Append(CCFLAGS=["/O2"])
+        else:  # optimize for size
+            env.Append(CCFLAGS=["/O1"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
         env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
         env.Append(LINKFLAGS=["/OPT:REF"])
 
     elif env["target"] == "release_debug":
-        if env["debug_symbols"] != "full":
-            if env["optimize"] == "speed":  # optimize for speed (default)
-                env.Append(CCFLAGS=["/O2"])
-            else:  # optimize for size
-                env.Append(CCFLAGS=["/O1"])
+        if env["optimize"] == "speed":  # optimize for speed (default)
+            env.Append(CCFLAGS=["/O2"])
+        else:  # optimize for size
+            env.Append(CCFLAGS=["/O1"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env.Append(LINKFLAGS=["/OPT:REF"])
@@ -209,8 +207,8 @@ def configure_msvc(env, manual_msvc_config):
     ## Compile/link flags
 
     env.AppendUnique(CCFLAGS=["/MT", "/Gd", "/GR", "/nologo"])
-    # Force to use Unicode encoding
-    env.AppendUnique(CCFLAGS=["/utf-8"])
+    if int(env["MSVC_VERSION"].split(".")[0]) >= 14:  # vs2015 and later
+        env.AppendUnique(CCFLAGS=["/utf-8"])
     env.AppendUnique(CXXFLAGS=["/TP"])  # assume all sources are C++
     if manual_msvc_config:  # should be automatic if SCons found it
         if os.getenv("WindowsSdkDir") is not None:

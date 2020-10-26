@@ -74,7 +74,7 @@ public:
 
 	bool file_exists(String p_name) const;
 
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset);
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files);
 	FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
 
 	static ZipArchive *get_singleton();
@@ -84,7 +84,8 @@ public:
 };
 
 class FileAccessZip : public FileAccess {
-	unzFile zfile = nullptr;
+
+	unzFile zfile;
 	unz_file_info64 file_info;
 
 	mutable bool at_eof;

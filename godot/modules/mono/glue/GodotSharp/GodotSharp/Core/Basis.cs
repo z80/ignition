@@ -207,7 +207,7 @@ namespace Godot
             }
         }
 
-        public Quat RotationQuat()
+        internal Quat RotationQuat()
         {
             Basis orthonormalizedBasis = Orthonormalized();
             real_t det = orthonormalizedBasis.Determinant();

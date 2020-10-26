@@ -81,21 +81,17 @@ Color CanvasModulate::get_color() const {
 
 String CanvasModulate::get_configuration_warning() const {
 
-	String warning = Node2D::get_configuration_warning();
 	if (!is_visible_in_tree() || !is_inside_tree())
-		return warning;
+		return String();
 
 	List<Node *> nodes;
 	get_tree()->get_nodes_in_group("_canvas_modulate_" + itos(get_canvas().get_id()), &nodes);
 
 	if (nodes.size() > 1) {
-		if (warning != String()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Only one visible CanvasModulate is allowed per scene (or set of instanced scenes). The first created one will work, while the rest will be ignored.");
+		return TTR("Only one visible CanvasModulate is allowed per scene (or set of instanced scenes). The first created one will work, while the rest will be ignored.");
 	}
 
-	return warning;
+	return String();
 }
 
 CanvasModulate::CanvasModulate() {

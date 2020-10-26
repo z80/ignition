@@ -50,12 +50,6 @@ public:
 private:
 	Vector<Point> points;
 	bool is_sorted;
-	_FORCE_INLINE_ void _update_sorting() {
-		if (!is_sorted) {
-			points.sort();
-			is_sorted = true;
-		}
-	}
 
 protected:
 	static void _bind_methods();
@@ -71,10 +65,10 @@ public:
 	Vector<Point> &get_points();
 
 	void set_offset(int pos, const float offset);
-	float get_offset(int pos);
+	float get_offset(int pos) const;
 
 	void set_color(int pos, const Color &color);
-	Color get_color(int pos);
+	Color get_color(int pos) const;
 
 	void set_offsets(const Vector<float> &p_offsets);
 	Vector<float> get_offsets() const;
@@ -87,7 +81,10 @@ public:
 		if (points.empty())
 			return Color(0, 0, 0, 1);
 
-		_update_sorting();
+		if (!is_sorted) {
+			points.sort();
+			is_sorted = true;
+		}
 
 		//binary search
 		int low = 0;

@@ -18,24 +18,8 @@ uniform highp mat4 projection_matrix;
 uniform highp mat4 modelview_matrix;
 uniform highp mat4 extra_matrix;
 attribute highp vec2 vertex; // attrib:0
-
-#ifdef USE_ATTRIB_LIGHT_ANGLE
-// shared with tangent, not used in canvas shader
-attribute highp float light_angle; // attrib:2
-#endif
-
 attribute vec4 color_attrib; // attrib:3
 attribute vec2 uv_attrib; // attrib:4
-
-#ifdef USE_ATTRIB_MODULATE
-attribute highp vec4 modulate_attrib; // attrib:5
-#endif
-
-#ifdef USE_ATTRIB_LARGE_VERTEX
-// shared with skeleton attributes, not used in batched shader
-attribute highp vec2 translate_attrib; // attrib:6
-attribute highp vec4 basis_attrib; // attrib:7
-#endif
 
 #ifdef USE_SKELETON
 attribute highp vec4 bone_indices; // attrib:6
@@ -64,12 +48,6 @@ uniform highp mat4 skeleton_transform_inverse;
 
 varying vec2 uv_interp;
 varying vec4 color_interp;
-
-#ifdef USE_ATTRIB_MODULATE
-// modulate doesn't need interpolating but we need to send it to the fragment shader
-varying vec4 modulate_interp;
-#endif
-
 #ifdef MODULATE_USED
 uniform vec4 final_modulate;
 #endif
@@ -187,24 +165,6 @@ VERTEX_SHADER_CODE
 
 	gl_PointSize = point_size;
 
-#ifdef USE_ATTRIB_MODULATE
-	// modulate doesn't need interpolating but we need to send it to the fragment shader
-	modulate_interp = modulate_attrib;
-#endif
-
-#ifdef USE_ATTRIB_LARGE_VERTEX
-	// transform is in attributes
-	vec2 temp;
-
-	temp = outvec.xy;
-	temp.x = (outvec.x * basis_attrib.x) + (outvec.y * basis_attrib.z);
-	temp.y = (outvec.x * basis_attrib.y) + (outvec.y * basis_attrib.w);
-
-	temp += translate_attrib;
-	outvec.xy = temp;
-
-#endif
-
 #if !defined(SKIP_TRANSFORM_USED)
 	outvec = extra_matrix_instance * outvec;
 	outvec = modelview_matrix * outvec;
@@ -259,34 +219,12 @@ VERTEX_SHADER_CODE
 	pos = outvec.xy;
 #endif
 
-#ifdef USE_ATTRIB_LIGHT_ANGLE
-	// we add a fixed offset because we are using the sign later,
-	// and don't want floating point error around 0.0
-	float la = abs(light_angle) - 1.0;
-
-	// vector light angle
-	vec4 vla;
-	vla.xy = vec2(cos(la), sin(la));
-	vla.zw = vec2(-vla.y, vla.x);
-
-	// vertical flip encoded in the sign
-	vla.zw *= sign(light_angle);
-
-	// apply the transform matrix.
-	// The rotate will be encoded in the transform matrix for single rects,
-	// and just the flips in the light angle.
-	// For batching we will encode the rotation and the flips
-	// in the light angle, and can use the same shader.
-	local_rot.xy = normalize((modelview_matrix * (extra_matrix_instance * vec4(vla.xy, 0.0, 0.0))).xy);
-	local_rot.zw = normalize((modelview_matrix * (extra_matrix_instance * vec4(vla.zw, 0.0, 0.0))).xy);
-#else
 	local_rot.xy = normalize((modelview_matrix * (extra_matrix_instance * vec4(1.0, 0.0, 0.0, 0.0))).xy);
 	local_rot.zw = normalize((modelview_matrix * (extra_matrix_instance * vec4(0.0, 1.0, 0.0, 0.0))).xy);
 #ifdef USE_TEXTURE_RECT
 	local_rot.xy *= sign(src_rect.z);
 	local_rot.zw *= sign(src_rect.w);
 #endif
-#endif // not using light angle
 
 #endif
 }
@@ -337,10 +275,6 @@ uniform mediump sampler2D normal_texture; // texunit:-2
 varying mediump vec2 uv_interp;
 varying mediump vec4 color_interp;
 
-#ifdef USE_ATTRIB_MODULATE
-varying mediump vec4 modulate_interp;
-#endif
-
 uniform highp float time;
 
 uniform vec4 final_modulate;
@@ -371,7 +305,7 @@ uniform highp float light_height;
 uniform highp float light_outside_alpha;
 uniform highp float shadow_distance_mult;
 
-uniform lowp sampler2D light_texture; // texunit:-6
+uniform lowp sampler2D light_texture; // texunit:-4
 varying vec4 light_uv_interp;
 varying vec2 transformed_light_uv;
 
@@ -478,11 +412,6 @@ FRAGMENT_SHADER_CODE
 	}
 #if !defined(MODULATE_USED)
 	color *= final_modulate;
-#endif
-
-#ifdef USE_ATTRIB_MODULATE
-	// todo .. this won't be used at the same time as MODULATE_USED
-	color *= modulate_interp;
 #endif
 
 #ifdef USE_LIGHTING

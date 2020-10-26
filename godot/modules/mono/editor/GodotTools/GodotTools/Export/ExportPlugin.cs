@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using GodotTools.Build;
 using GodotTools.Core;
 using GodotTools.Internals;
 using JetBrains.Annotations;
@@ -144,8 +143,6 @@ namespace GodotTools.Export
 
         private void _ExportBeginImpl(string[] features, bool isDebug, string path, int flags)
         {
-            _ = flags; // Unused
-
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return;
 
@@ -157,10 +154,12 @@ namespace GodotTools.Export
 
             string buildConfig = isDebug ? "ExportDebug" : "ExportRelease";
 
-            string scriptsMetadataPath = BuildManager.GenerateExportedGameScriptMetadata(isDebug);
+            string scriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, $"scripts_metadata.{(isDebug ? "debug" : "release")}");
+            CsProjOperations.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, scriptsMetadataPath);
+
             AddFile(scriptsMetadataPath, scriptsMetadataPath);
 
-            if (!BuildManager.BuildProjectBlocking(buildConfig, platform: platform))
+            if (!BuildManager.BuildProjectBlocking(buildConfig, platform))
                 throw new Exception("Failed to build project");
 
             // Add dependency assemblies

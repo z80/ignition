@@ -667,15 +667,11 @@ StringName AnimatedSprite::get_animation() const {
 
 String AnimatedSprite::get_configuration_warning() const {
 
-	String warning = Node2D::get_configuration_warning();
 	if (frames.is_null()) {
-		if (warning != String()) {
-			warning += "\n\n";
-		}
-		warning += TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite to display frames.");
+		return TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite to display frames.");
 	}
 
-	return warning;
+	return String();
 }
 
 void AnimatedSprite::_bind_methods() {

@@ -44,7 +44,10 @@ namespace GodotTools.Build
             }
         }
 
-        private static Process LaunchBuild(BuildInfo buildInfo, Action<string> stdOutHandler, Action<string> stdErrHandler)
+        private static bool PrintBuildOutput =>
+            (bool)EditorSettings.GetSetting("mono/builds/print_build_output");
+
+        private static Process LaunchBuild(BuildInfo buildInfo)
         {
             (string msbuildPath, BuildTool buildTool) = MsBuildFinder.FindMsBuild();
 
@@ -55,13 +58,13 @@ namespace GodotTools.Build
 
             var startInfo = new ProcessStartInfo(msbuildPath, compilerArgs);
 
-            string launchMessage = $"Running: \"{startInfo.FileName}\" {startInfo.Arguments}";
-            stdOutHandler?.Invoke(launchMessage);
-            if (Godot.OS.IsStdoutVerbose())
-                Console.WriteLine(launchMessage);
+            bool redirectOutput = !IsDebugMsBuildRequested() && !PrintBuildOutput;
 
-            startInfo.RedirectStandardOutput = true;
-            startInfo.RedirectStandardError = true;
+            if (!redirectOutput || Godot.OS.IsStdoutVerbose())
+                Console.WriteLine($"Running: \"{startInfo.FileName}\" {startInfo.Arguments}");
+
+            startInfo.RedirectStandardOutput = redirectOutput;
+            startInfo.RedirectStandardError = redirectOutput;
             startInfo.UseShellExecute = false;
 
             if (UsingMonoMsBuildOnWindows)
@@ -79,22 +82,20 @@ namespace GodotTools.Build
 
             var process = new Process {StartInfo = startInfo};
 
-            if (stdOutHandler != null)
-                process.OutputDataReceived += (s, e) => stdOutHandler.Invoke(e.Data);
-            if (stdErrHandler != null)
-                process.ErrorDataReceived += (s, e) => stdErrHandler.Invoke(e.Data);
-
             process.Start();
 
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+            if (redirectOutput)
+            {
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+            }
 
             return process;
         }
 
-        public static int Build(BuildInfo buildInfo, Action<string> stdOutHandler, Action<string> stdErrHandler)
+        public static int Build(BuildInfo buildInfo)
         {
-            using (var process = LaunchBuild(buildInfo, stdOutHandler, stdErrHandler))
+            using (var process = LaunchBuild(buildInfo))
             {
                 process.WaitForExit();
 
@@ -102,9 +103,9 @@ namespace GodotTools.Build
             }
         }
 
-        public static async Task<int> BuildAsync(BuildInfo buildInfo, Action<string> stdOutHandler, Action<string> stdErrHandler)
+        public static async Task<int> BuildAsync(BuildInfo buildInfo)
         {
-            using (var process = LaunchBuild(buildInfo, stdOutHandler, stdErrHandler))
+            using (var process = LaunchBuild(buildInfo))
             {
                 await process.WaitForExitAsync();
 
@@ -150,6 +151,11 @@ namespace GodotTools.Build
 
             foreach (string env in platformEnvironmentVariables)
                 environmentVariables.Remove(env);
+        }
+
+        private static bool IsDebugMsBuildRequested()
+        {
+            return Environment.GetEnvironmentVariable("GODOT_DEBUG_MSBUILD")?.Trim() == "1";
         }
     }
 }

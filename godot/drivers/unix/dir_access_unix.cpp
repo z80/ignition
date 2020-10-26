@@ -154,7 +154,7 @@ String DirAccessUnix::get_next() {
 		_cisdir = (entry->d_type == DT_DIR);
 	}
 
-	_cishidden = is_hidden(fname);
+	_cishidden = (fname != "." && fname != ".." && fname.begins_with("."));
 
 	return fname;
 }
@@ -406,10 +406,6 @@ size_t DirAccessUnix::get_space_left() {
 
 String DirAccessUnix::get_filesystem_type() const {
 	return ""; //TODO this should be implemented
-}
-
-bool DirAccessUnix::is_hidden(const String &p_name) {
-	return p_name != "." && p_name != ".." && p_name.begins_with(".");
 }
 
 DirAccessUnix::DirAccessUnix() {

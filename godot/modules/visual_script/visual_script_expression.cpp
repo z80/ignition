@@ -1147,7 +1147,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				}
 			}
 
-			//consecutively do unary operators
+			//consecutively do unary opeators
 			for (int i = expr_pos - 1; i >= next_op; i--) {
 
 				OperatorNode *op = alloc_node<OperatorNode>();

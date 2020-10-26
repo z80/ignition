@@ -625,10 +625,13 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				} break;
 
 				case SL::OP_ASSIGN_MOD: {
-					String a = _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-					String n = _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-					code += a + " = " + n + " == 0 ? 0 : ";
-					code += a + " - " + n + " * (" + a + " / " + n + ")";
+					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, true);
+					code += " = ";
+					code += "mod(";
+					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, true);
+					code += ", ";
+					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += ")";
 				} break;
 
 				case SL::OP_BIT_INVERT:
@@ -761,10 +764,12 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				} break;
 
 				case SL::OP_MOD: {
-					String a = _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-					String n = _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-					code += "(" + n + " == 0 ? 0 : ";
-					code += a + " - " + n + " * (" + a + " / " + n + "))";
+
+					code += "mod(float(";
+					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += "), float(";
+					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += "))";
 				} break;
 
 				default: {

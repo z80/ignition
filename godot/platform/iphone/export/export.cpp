@@ -165,9 +165,13 @@ public:
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 
 	String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
-	r_features->push_back("pvrtc");
-	if (driver == "GLES3") {
+	if (driver == "GLES2") {
+		r_features->push_back("etc");
+	} else if (driver == "GLES3") {
 		r_features->push_back("etc2");
+		if (ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2")) {
+			r_features->push_back("etc");
+		}
 	}
 
 	Vector<String> architectures = _get_preset_architectures(p_preset);
@@ -1511,7 +1515,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 
-	String etc_error = test_etc2_or_pvrtc();
+	String etc_error = test_etc2();
 	if (etc_error != String()) {
 		valid = false;
 		err += etc_error;

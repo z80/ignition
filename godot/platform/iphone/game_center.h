@@ -49,7 +49,7 @@ class GameCenter : public Object {
 	void return_connect_error(const char *p_error_description);
 
 public:
-	Error authenticate();
+	void connect();
 	bool is_authenticated();
 
 	Error post_score(Variant p_score);

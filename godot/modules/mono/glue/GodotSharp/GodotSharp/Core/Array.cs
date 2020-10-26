@@ -44,15 +44,6 @@ namespace Godot.Collections
                 Add(element);
         }
 
-        public Array(params object[] array) : this()
-        {
-            if (array == null)
-            {
-                throw new NullReferenceException($"Parameter '{nameof(array)} cannot be null.'");
-            }
-            safeHandle = new ArraySafeHandle(godot_icall_Array_Ctor_MonoArray(array));
-        }
-
         internal Array(ArraySafeHandle handle)
         {
             safeHandle = handle;
@@ -79,11 +70,6 @@ namespace Godot.Collections
         public Error Resize(int newSize)
         {
             return godot_icall_Array_Resize(GetPtr(), newSize);
-        }
-
-        public static Array operator +(Array left, Array right)
-        {
-            return new Array(godot_icall_Array_Concatenate(left.GetPtr(), right.GetPtr()));
         }
 
         // IDisposable
@@ -169,9 +155,6 @@ namespace Godot.Collections
         internal extern static IntPtr godot_icall_Array_Ctor();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Array_Ctor_MonoArray(System.Array array);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Array_Dtor(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -191,9 +174,6 @@ namespace Godot.Collections
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Array_Clear(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Array_Concatenate(IntPtr left, IntPtr right);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static bool godot_icall_Array_Contains(IntPtr ptr, object item);
@@ -251,15 +231,6 @@ namespace Godot.Collections
             objectArray = new Array(collection);
         }
 
-        public Array(params T[] array) : this()
-        {
-            if (array == null)
-            {
-                throw new NullReferenceException($"Parameter '{nameof(array)} cannot be null.'");
-            }
-            objectArray = new Array(array);
-        }
-
         public Array(Array array)
         {
             objectArray = array;
@@ -293,11 +264,6 @@ namespace Godot.Collections
         public Error Resize(int newSize)
         {
             return objectArray.Resize(newSize);
-        }
-
-        public static Array<T> operator +(Array<T> left, Array<T> right)
-        {
-            return new Array<T>(left.objectArray + right.objectArray);
         }
 
         // IList<T>

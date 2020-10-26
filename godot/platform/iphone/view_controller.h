@@ -31,16 +31,17 @@
 #import <GameKit/GameKit.h>
 #import <UIKit/UIKit.h>
 
-@class GodotView;
-@class GodotNativeVideoView;
+@interface ViewController : UIViewController <GKGameCenterControllerDelegate> {
+};
 
-@interface ViewController : UIViewController <GKGameCenterControllerDelegate>
+- (void)didReceiveMemoryWarning;
 
-@property(nonatomic, readonly, strong) GodotView *godotView;
-@property(nonatomic, readonly, strong) GodotNativeVideoView *videoView;
+- (void)viewDidLoad;
 
-// MARK: Native Video Player
+- (UIRectEdge)preferredScreenEdgesDeferringSystemGestures;
 
-- (BOOL)playVideoAtPath:(NSString *)filePath volume:(float)videoVolume audio:(NSString *)audioTrack subtitle:(NSString *)subtitleTrack;
+- (BOOL)prefersStatusBarHidden;
+
+- (BOOL)prefersHomeIndicatorAutoHidden;
 
 @end

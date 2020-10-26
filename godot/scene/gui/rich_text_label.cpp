@@ -2578,10 +2578,10 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 	return false;
 }
 
-String RichTextLabel::get_selected_text() {
-	if (!selection.active || !selection.enabled) {
-		return "";
-	}
+void RichTextLabel::selection_copy() {
+
+	if (!selection.active || !selection.enabled)
+		return;
 
 	String text;
 
@@ -2610,12 +2610,6 @@ String RichTextLabel::get_selected_text() {
 
 		item = _get_next_item(item, true);
 	}
-
-	return text;
-}
-
-void RichTextLabel::selection_copy() {
-	String text = get_selected_text();
 
 	if (text != "") {
 		OS::get_singleton()->set_clipboard(text);
