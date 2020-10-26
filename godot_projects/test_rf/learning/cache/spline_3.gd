@@ -50,8 +50,6 @@ static func spline_recompute( data, ar_b: Array ):
 static func spline_at( data, integrate=false ):
 	var T: float = data.T
 	var t: float = data.t / T
-	if t > 1.0:
-		t = 1.0
 	var ys = []
 	var qty = len( data.data )
 	for i in range( qty ):
@@ -60,10 +58,19 @@ static func spline_at( data, integrate=false ):
 		var y2: float = d[1]
 		var a:  float = d[2]
 		var b:  float = d[3]
-		var y: float = (1.0-t)*y1 + t*y2 + t*(1.0-t)*( (1.0-t)*a + t*b )
+		var y: float
+		if t < 1.0:
+			y = (1.0-t)*y1 + t*y2 + t*(1.0-t)*( (1.0-t)*a + t*b )
+		else:
+			y = y2
 		ys.append( y )
 		if integrate:
-			var int_y: float = ((t*t*y2)/2+(t-t*t*0.5)*y1-(3.0*(b-a)*t*t*t*t+(8.0*a-4.0*b)*t*t*t-6.0*a*t*t)/12.0) * T
+			var int_y: float
+			if t < 1.0:
+				int_y = ((t*t*y2)/2+(t-t*t*0.5)*y1-(3.0*(b-a)*t*t*t*t+(8.0*a-4.0*b)*t*t*t-6.0*a*t*t)/12.0) * T
+			else:
+				int_y  = T*(y1 + y2)*0.5
+				int_y += T*(t - 1.0)*y2
 			ys.append( int_y )
 	
 	return ys
