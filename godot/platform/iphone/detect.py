@@ -1,6 +1,6 @@
 import os
 import sys
-from methods import detect_darwin_sdk_path
+from methods import detect_darwin_sdk_path, get_darwin_sdk_version
 
 
 def is_active():
@@ -13,7 +13,12 @@ def get_name():
 
 def can_build():
 
-    if sys.platform == "darwin" or ("OSXCROSS_IOS" in os.environ):
+    if sys.platform == "darwin":
+        if get_darwin_sdk_version("iphone") < 13.0:
+            print("Detected iOS SDK version older than 13")
+            return False
+        return True
+    elif "OSXCROSS_IOS" in os.environ:
         return True
 
     return False
@@ -115,18 +120,18 @@ def configure(env):
             CCFLAGS=(
                 "-arch "
                 + arch_flag
-                + " -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -isysroot $IPHONESDK -mios-simulator-version-min=10.0"
+                + " -fobjc-arc -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -isysroot $IPHONESDK -mios-simulator-version-min=10.0"
             ).split()
         )
     elif env["arch"] == "arm":
         detect_darwin_sdk_path("iphone", env)
         env.Append(
-            CCFLAGS='-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=10.0 -MMD -MT dependencies'.split()
+            CCFLAGS='-fobjc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=10.0 -MMD -MT dependencies'.split()
         )
     elif env["arch"] == "arm64":
         detect_darwin_sdk_path("iphone", env)
         env.Append(
-            CCFLAGS="-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies -miphoneos-version-min=10.0 -isysroot $IPHONESDK".split()
+            CCFLAGS="-fobjc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies -miphoneos-version-min=10.0 -isysroot $IPHONESDK".split()
         )
         env.Append(CPPDEFINES=["NEED_LONG_INT"])
         env.Append(CPPDEFINES=["LIBYUV_DISABLE_NEON"])
@@ -137,6 +142,9 @@ def configure(env):
             env.Append(CCFLAGS=["-fexceptions"])
         else:
             env.Append(CCFLAGS=["-fno-exceptions"])
+
+    # Temp fix for ABS/MAX/MIN macros in iPhone SDK blocking compilation
+    env.Append(CCFLAGS=["-Wno-ambiguous-macro"])
 
     ## Link flags
 

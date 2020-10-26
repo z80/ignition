@@ -146,6 +146,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	bool updating_members;
 
 	void _update_members();
+	String _sanitized_variant_text(const StringName &property_name);
 
 	StringName selected;
 
@@ -295,6 +296,7 @@ public:
 	virtual void apply_code();
 	virtual RES get_edited_resource() const;
 	virtual void set_edited_resource(const RES &p_res);
+	virtual void enable_editor();
 	virtual Vector<String> get_functions();
 	virtual void reload_text();
 	virtual String get_name();

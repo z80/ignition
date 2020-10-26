@@ -100,6 +100,10 @@ void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
 
 	ERR_FAIL_COND_MSG(p_connection.is_null(), "Connection is not a reference to a valid StreamPeer object.");
 
+	if (connection == p_connection) {
+		return;
+	}
+
 	close();
 	connection = p_connection;
 	status = STATUS_CONNECTED;
@@ -473,7 +477,7 @@ Error HTTPClient::poll() {
 						}
 					}
 
-					// This is a HEAD request, we wont receive anything.
+					// This is a HEAD request, we won't receive anything.
 					if (head_request) {
 						body_size = 0;
 						body_left = 0;

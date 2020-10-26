@@ -84,6 +84,7 @@ public:
 
 		bool srgb_decode_supported;
 
+		bool support_npot_repeat_mipmap;
 		bool texture_float_linear_supported;
 		bool framebuffer_float_supported;
 		bool framebuffer_half_float_supported;
@@ -455,9 +456,18 @@ public:
 
 			int light_mode;
 
+			// these flags are specifically for batching
+			// some of the logic is thus in rasterizer_storage.cpp
+			// we could alternatively set bitflags for each 'uses' and test on the fly
+			// defined in RasterizerStorageCommon::BatchFlags
+			unsigned int batch_flags;
+
 			bool uses_screen_texture;
 			bool uses_screen_uv;
 			bool uses_time;
+			bool uses_modulate;
+			bool uses_color;
+			bool uses_vertex;
 
 		} canvas_item;
 
@@ -499,6 +509,8 @@ public:
 			bool uses_screen_texture;
 			bool uses_depth_texture;
 			bool uses_time;
+			bool uses_tangent;
+			bool uses_ensure_correct_normals;
 			bool writes_modelview_or_projection;
 			bool uses_vertex_lighting;
 			bool uses_world_coordinates;
@@ -606,6 +618,8 @@ public:
 
 	virtual bool material_is_animated(RID p_material);
 	virtual bool material_casts_shadows(RID p_material);
+	virtual bool material_uses_tangents(RID p_material);
+	virtual bool material_uses_ensure_correct_normals(RID p_material);
 
 	virtual void material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance);
 	virtual void material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance);
@@ -939,7 +953,7 @@ public:
 		bool shadow;
 		bool negative;
 		bool reverse_cull;
-		bool use_gi;
+		VS::LightBakeMode bake_mode;
 		uint32_t cull_mask;
 		VS::LightOmniShadowMode omni_shadow_mode;
 		VS::LightOmniShadowDetail omni_shadow_detail;
@@ -962,6 +976,7 @@ public:
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask);
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled);
 	virtual void light_set_use_gi(RID p_light, bool p_enabled);
+	virtual void light_set_bake_mode(RID p_light, VS::LightBakeMode p_bake_mode);
 
 	virtual void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode);
 	virtual void light_omni_set_shadow_detail(RID p_light, VS::LightOmniShadowDetail p_detail);
@@ -982,6 +997,7 @@ public:
 	virtual float light_get_param(RID p_light, VS::LightParam p_param);
 	virtual Color light_get_color(RID p_light);
 	virtual bool light_get_use_gi(RID p_light);
+	virtual VS::LightBakeMode light_get_bake_mode(RID p_light);
 
 	virtual AABB light_get_aabb(RID p_light) const;
 	virtual uint64_t light_get_version(RID p_light) const;
@@ -1374,6 +1390,7 @@ public:
 
 		bool used_in_frame;
 		VS::ViewportMSAA msaa;
+		bool use_fxaa;
 
 		RID texture;
 
@@ -1384,7 +1401,8 @@ public:
 				width(0),
 				height(0),
 				used_in_frame(false),
-				msaa(VS::VIEWPORT_MSAA_DISABLED) {
+				msaa(VS::VIEWPORT_MSAA_DISABLED),
+				use_fxaa(false) {
 			exposure.fbo = 0;
 			buffers.fbo = 0;
 			external.fbo = 0;
@@ -1412,6 +1430,7 @@ public:
 	virtual bool render_target_was_used(RID p_render_target);
 	virtual void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
+	virtual void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa);
 
 	/* CANVAS SHADOW */
 
@@ -1477,7 +1496,18 @@ public:
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
 
+	void buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target = GL_ARRAY_BUFFER);
+
 	RasterizerStorageGLES3();
 };
+
+// standardize the orphan / upload in one place so it can be changed per platform as necessary, and avoid future
+// bugs causing pipeline stalls
+inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target) {
+	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
+	// Was previously #ifndef GLES_OVER_GL however this causes stalls on desktop mac also (and possibly other)
+	glBufferData(p_target, p_buffer_size, NULL, GL_DYNAMIC_DRAW);
+	glBufferSubData(p_target, p_offset, p_data_size, p_data);
+}
 
 #endif // RASTERIZERSTORAGEGLES3_H

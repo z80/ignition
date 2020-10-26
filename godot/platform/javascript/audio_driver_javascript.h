@@ -31,18 +31,33 @@
 #ifndef AUDIO_DRIVER_JAVASCRIPT_H
 #define AUDIO_DRIVER_JAVASCRIPT_H
 
+#include "core/os/mutex.h"
+#include "core/os/thread.h"
 #include "servers/audio_server.h"
 
 class AudioDriverJavaScript : public AudioDriver {
 
+private:
 	float *internal_buffer;
 
-	int _driver_id;
 	int buffer_length;
 
+	int mix_rate;
+	int channel_count;
+
 public:
+#ifndef NO_THREADS
+	Mutex *mutex;
+	Thread *thread;
+	bool quit;
+	bool needs_process;
+
+	static void _audio_thread_func(void *p_data);
+#endif
+
+	void _js_driver_process();
+
 	static bool is_available();
-	void mix_to_js();
 	void process_capture(float sample);
 
 	static AudioDriverJavaScript *singleton;

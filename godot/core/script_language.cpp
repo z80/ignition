@@ -276,7 +276,13 @@ void ScriptServer::save_global_classes() {
 		gcarr.push_back(d);
 	}
 
-	ProjectSettings::get_singleton()->set("_global_script_classes", gcarr);
+	if (gcarr.empty()) {
+		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
+			ProjectSettings::get_singleton()->clear("_global_script_classes");
+		}
+	} else {
+		ProjectSettings::get_singleton()->set("_global_script_classes", gcarr);
+	}
 	ProjectSettings::get_singleton()->save();
 }
 

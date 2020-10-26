@@ -8,6 +8,7 @@ javascript_files = [
     "javascript_eval.cpp",
     "javascript_main.cpp",
     "os_javascript.cpp",
+    "api/javascript_tools_editor_plugin.cpp",
 ]
 
 build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
@@ -18,6 +19,7 @@ build = env.add_program(build_targets, javascript_files)
 
 js_libraries = [
     "native/http_request.js",
+    "native/library_godot_audio.js",
 ]
 for lib in js_libraries:
     env.Append(LINKFLAGS=["--js-library", env.File(lib).path])
@@ -53,7 +55,7 @@ out_files = [
     zip_dir.File(binary_name + ".wasm"),
     zip_dir.File(binary_name + ".html"),
 ]
-html_file = "#misc/dist/html/full-size.html"
+html_file = "#misc/dist/html/editor.html" if env["tools"] else "#misc/dist/html/full-size.html"
 in_files = [js_wrapped, build[1], html_file]
 if env["threads_enabled"]:
     in_files.append(build[2])
@@ -65,5 +67,5 @@ env.Zip(
     zip_files,
     ZIPROOT=zip_dir,
     ZIPSUFFIX="${PROGSUFFIX}${ZIPSUFFIX}",
-    ZIPCOMSTR="Archving $SOURCES as $TARGET",
+    ZIPCOMSTR="Archiving $SOURCES as $TARGET",
 )

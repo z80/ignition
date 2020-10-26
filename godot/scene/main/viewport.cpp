@@ -2986,10 +2986,14 @@ String Viewport::get_configuration_warning() const {
 		return TTR("This viewport is not set as render target. If you intend for it to display its contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign its internal texture to some node for display.");
 	}*/
 
+	String warning = Node::get_configuration_warning();
+
 	if (size.x == 0 || size.y == 0) {
-		return TTR("Viewport size must be greater than 0 to render anything.");
+		if (warning != String())
+			warning += "\n\n";
+		warning += TTR("Viewport size must be greater than 0 to render anything.");
 	}
-	return String();
+	return warning;
 }
 
 void Viewport::gui_reset_canvas_sort_index() {
@@ -3012,6 +3016,17 @@ void Viewport::set_msaa(MSAA p_msaa) {
 Viewport::MSAA Viewport::get_msaa() const {
 
 	return msaa;
+}
+
+void Viewport::set_use_fxaa(bool p_fxaa) {
+
+	use_fxaa = p_fxaa;
+	VS::get_singleton()->viewport_set_use_fxaa(viewport, use_fxaa);
+}
+
+bool Viewport::get_use_fxaa() const {
+
+	return use_fxaa;
 }
 
 void Viewport::set_hdr(bool p_hdr) {
@@ -3149,6 +3164,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_msaa", "msaa"), &Viewport::set_msaa);
 	ClassDB::bind_method(D_METHOD("get_msaa"), &Viewport::get_msaa);
 
+	ClassDB::bind_method(D_METHOD("set_use_fxaa", "enable"), &Viewport::set_use_fxaa);
+	ClassDB::bind_method(D_METHOD("get_use_fxaa"), &Viewport::get_use_fxaa);
+
 	ClassDB::bind_method(D_METHOD("set_hdr", "enable"), &Viewport::set_hdr);
 	ClassDB::bind_method(D_METHOD("get_hdr"), &Viewport::get_hdr);
 
@@ -3237,6 +3255,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fxaa"), "set_use_fxaa", "get_use_fxaa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "get_hdr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_3d_linear"), "set_keep_3d_linear", "get_keep_3d_linear");
@@ -3397,6 +3416,7 @@ Viewport::Viewport() {
 	gui.last_mouse_focus = NULL;
 
 	msaa = MSAA_DISABLED;
+	use_fxaa = false;
 	hdr = true;
 
 	usage = USAGE_3D;

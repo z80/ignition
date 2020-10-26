@@ -30,6 +30,7 @@
 
 #include "os_osx.h"
 
+#include "core/math/geometry.h"
 #include "core/os/keyboard.h"
 #include "core/print_string.h"
 #include "core/version_generated.gen.h"
@@ -104,6 +105,7 @@ static int mouse_x = 0;
 static int mouse_y = 0;
 static int button_mask = 0;
 static bool mouse_down_control = false;
+static bool ignore_momentum_scroll = false;
 
 static Vector2 get_mouse_pos(NSPoint locationInWindow) {
 
@@ -1178,6 +1180,8 @@ static int remapKey(unsigned int key, unsigned int state) {
 
 - (void)keyDown:(NSEvent *)event {
 
+	ignore_momentum_scroll = true;
+
 	// Ignore all input if IME input is in progress
 	if (!imeInputEventInProgress) {
 		NSString *characters = [event characters];
@@ -1217,6 +1221,8 @@ static int remapKey(unsigned int key, unsigned int state) {
 }
 
 - (void)flagsChanged:(NSEvent *)event {
+
+	ignore_momentum_scroll = true;
 
 	// Ignore all input if IME input is in progress
 	if (!imeInputEventInProgress) {
@@ -1358,6 +1364,13 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 		deltaY *= 0.03;
 	}
 
+	if ([event momentumPhase] != NSEventPhaseNone) {
+		if (ignore_momentum_scroll) {
+			return;
+		}
+	} else {
+		ignore_momentum_scroll = false;
+	}
 	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
 		sendPanEvent(deltaX, deltaY, [event modifierFlags]);
 	} else {
@@ -2136,6 +2149,13 @@ void OS_OSX::set_window_title(const String &p_title) {
 	[window_object setTitle:[NSString stringWithUTF8String:p_title.utf8().get_data()]];
 }
 
+void OS_OSX::set_window_mouse_passthrough(const PoolVector2Array &p_region) {
+	mpath.clear();
+	for (int i = 0; i < p_region.size(); i++) {
+		mpath.push_back(p_region[i]);
+	}
+}
+
 void OS_OSX::set_native_icon(const String &p_filename) {
 
 	FileAccess *f = FileAccess::open(p_filename, FileAccess::READ);
@@ -2463,8 +2483,15 @@ int OS_OSX::get_screen_dpi(int p_screen) const {
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
-		NSSize displayDPI = [[description objectForKey:NSDeviceResolution] sizeValue];
-		return (displayDPI.width + displayDPI.height) / 2;
+
+		const NSSize displayPixelSize = [[description objectForKey:NSDeviceSize] sizeValue];
+		const CGSize displayPhysicalSize = CGDisplayScreenSize([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
+		float scale = [[screenArray objectAtIndex:p_screen] backingScaleFactor];
+
+		float den2 = (displayPhysicalSize.width / 25.4f) * (displayPhysicalSize.width / 25.4f) + (displayPhysicalSize.height / 25.4f) * (displayPhysicalSize.height / 25.4f);
+		if (den2 > 0.0f) {
+			return ceil(sqrt(displayPixelSize.width * displayPixelSize.width + displayPixelSize.height * displayPixelSize.height) / sqrt(den2) * scale);
+		}
 	}
 
 	return 72;
@@ -3053,6 +3080,23 @@ void OS_OSX::process_events() {
 	}
 	process_key_events();
 
+	if (mpath.size() > 0) {
+		const Vector2 mpos = get_mouse_pos([window_object mouseLocationOutsideOfEventStream]);
+		if (Geometry::is_point_in_polygon(mpos, mpath)) {
+			if ([window_object ignoresMouseEvents]) {
+				[window_object setIgnoresMouseEvents:NO];
+			}
+		} else {
+			if (![window_object ignoresMouseEvents]) {
+				[window_object setIgnoresMouseEvents:YES];
+			}
+		}
+	} else {
+		if ([window_object ignoresMouseEvents]) {
+			[window_object setIgnoresMouseEvents:NO];
+		}
+	}
+
 	[autoreleasePool drain];
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
 
@@ -3174,6 +3218,12 @@ void OS_OSX::set_mouse_mode(MouseMode p_mode) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		CGAssociateMouseAndMouseCursorPosition(false);
+
+		const NSRect contentRect = [window_view frame];
+		NSRect pointInWindowRect = NSMakeRect(contentRect.size.width / 2, contentRect.size.height / 2, 0, 0);
+		NSPoint pointOnScreen = [[window_view window] convertRectToScreen:pointInWindowRect].origin;
+		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
+		CGWarpMouseCursorPosition(lMouseWarpPos);
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
 		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);

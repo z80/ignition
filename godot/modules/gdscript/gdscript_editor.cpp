@@ -47,9 +47,9 @@ void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const 
 
 void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 
+	p_delimiters->push_back("\"\"\" \"\"\"");
 	p_delimiters->push_back("\" \"");
 	p_delimiters->push_back("' '");
-	p_delimiters->push_back("\"\"\" \"\"\"");
 }
 
 String GDScriptLanguage::_get_processed_template(const String &p_template, const String &p_base_class_name) const {
@@ -644,7 +644,7 @@ static GDScriptCompletionIdentifier _type_from_gdtype(const GDScriptDataType &p_
 	ci.type.has_type = true;
 	ci.type.builtin_type = p_gdtype.builtin_type;
 	ci.type.native_type = p_gdtype.native_type;
-	ci.type.script_type = p_gdtype.script_type;
+	ci.type.script_type = Ref<Script>(p_gdtype.script_type);
 
 	switch (p_gdtype.kind) {
 		case GDScriptDataType::UNINITIALIZED: {

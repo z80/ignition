@@ -7,6 +7,7 @@
 		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, date and time, timers, environment variables, execution of binaries, command line, etc.
 	</description>
 	<tutorials>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="alert">
@@ -291,6 +292,16 @@
 				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
 			</description>
 		</method>
+		<method name="get_native_handle">
+			<return type="int">
+			</return>
+			<argument index="0" name="handle_type" type="int" enum="OS.HandleType">
+			</argument>
+			<description>
+				Returns internal structure pointers for use in GDNative plugins.
+				[b]Note:[/b] This method is implemented on Linux and Windows (other OSs will soon be supported).
+			</description>
+		</method>
 		<method name="get_power_percent_left">
 			<return type="int">
 			</return>
@@ -361,7 +372,8 @@
 			</argument>
 			<description>
 				Returns the dots per inch density of the specified screen. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
-				On Android devices, the actual screen densities are grouped into six generalized densities:
+				[b]Note:[/b] On macOS, returned value is inaccurate if fractional display scaling mode is used.
+				[b]Note:[/b] On Android devices, the actual screen densities are grouped into six generalized densities:
 				[codeblock]
 				   ldpi - 120 dpi
 				   mdpi - 160 dpi
@@ -634,7 +646,7 @@
 			<argument index="0" name="tag_name" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=https://docs.godotengine.org/en/latest/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
+				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=https://docs.godotengine.org/en/3.2/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
 			</description>
 		</method>
@@ -966,6 +978,28 @@
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="set_window_mouse_passthrough">
+			<return type="void">
+			</return>
+			<argument index="0" name="region" type="PoolVector2Array">
+			</argument>
+			<description>
+				Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
+				Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
+				[codeblock]
+				# Set region, using Path2D node.
+				OS.set_window_mouse_passthrough($Path2D.curve.get_baked_points())
+
+				# Set region, using Polygon2D node.
+				OS.set_window_mouse_passthrough($Polygon2D.polygon)
+
+				# Reset region to default.
+				OS.set_window_mouse_passthrough([])
+				[/codeblock]
+				[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux and macOS it is.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="set_window_title">
 			<return type="void">
 			</return>
@@ -1036,7 +1070,7 @@
 			The current screen orientation.
 		</member>
 		<member name="tablet_driver" type="String" setter="set_current_tablet_driver" getter="get_current_tablet_driver" default="&quot;&quot;">
-			The current tablet drvier in use.
+			The current tablet driver in use.
 		</member>
 		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled" default="true">
 			If [code]true[/code], vertical synchronization (Vsync) is enabled.
@@ -1138,6 +1172,34 @@
 		</constant>
 		<constant name="MONTH_DECEMBER" value="12" enum="Month">
 			December.
+		</constant>
+		<constant name="APPLICATION_HANDLE" value="0" enum="HandleType">
+			Application handle:
+			- Windows: [code]HINSTANCE[/code] of the application
+			- MacOS: [code]NSApplication*[/code] of the application (not yet implemented)
+			- Android: [code]JNIEnv*[/code] of the application (not yet implemented)
+		</constant>
+		<constant name="DISPLAY_HANDLE" value="1" enum="HandleType">
+			Display handle:
+			- Linux: [code]X11::Display*[/code] for the display
+		</constant>
+		<constant name="WINDOW_HANDLE" value="2" enum="HandleType">
+			Window handle:
+			- Windows: [code]HWND[/code] of the main window
+			- Linux: [code]X11::Window*[/code] of the main window
+			- MacOS: [code]NSWindow*[/code] of the main window (not yet implemented)
+			- Android: [code]jObject[/code] the main android activity (not yet implemented)
+		</constant>
+		<constant name="WINDOW_VIEW" value="3" enum="HandleType">
+			Window view:
+			- Windows: [code]HDC[/code] of the main window drawing context
+			- MacOS: [code]NSView*[/code] of the main windows view (not yet implemented)
+		</constant>
+		<constant name="OPENGL_CONTEXT" value="4" enum="HandleType">
+			OpenGL Context:
+			- Windows: [code]HGLRC[/code]
+			- Linux: [code]X11::GLXContext[/code]
+			- MacOS: [code]NSOpenGLContext*[/code] (not yet implemented)
 		</constant>
 		<constant name="SCREEN_ORIENTATION_LANDSCAPE" value="0" enum="ScreenOrientation">
 			Landscape screen orientation.
