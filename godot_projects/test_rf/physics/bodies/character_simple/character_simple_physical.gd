@@ -28,6 +28,7 @@ var print_period: float = 0.1
 var print_elapsed: float = 0.0
 
 var apply_user_input: bool = false
+var free_floating: bool = false
 
 func _init():
 	pass
@@ -37,7 +38,12 @@ func _init():
 func _integrate_forces( state ):
 	if apply_user_input:
 		apply_user_input = false
-		
+	
+	# If it is free floating, don't apply any forces. 
+	# Just let it drift on its own.
+	if free_floating:
+		return
+	
 	position_control( state )
 	ang_vel_control( state )
 
@@ -79,19 +85,20 @@ func get_speed_normalized():
 
 func position_control( state ):
 	var dt: float = state.step
-	var w: bool = Input.is_action_pressed( "ui_w" )
-	var s: bool = Input.is_action_pressed( "ui_s" )
-	var a: bool = Input.is_action_pressed( "ui_a" )
-	var d: bool = Input.is_action_pressed( "ui_d" )
 	var v: Vector3 = Vector3.ZERO
-	if w:
-		v += Vector3.FORWARD
-	if s:
-		v += Vector3.BACK
-	if a:
-		v += Vector3.LEFT
-	if d:
-		v += Vector3.RIGHT
+	if apply_user_input:
+		var w: bool = Input.is_action_pressed( "ui_w" )
+		var s: bool = Input.is_action_pressed( "ui_s" )
+		var a: bool = Input.is_action_pressed( "ui_a" )
+		var d: bool = Input.is_action_pressed( "ui_d" )
+		if w:
+			v += Vector3.FORWARD
+		if s:
+			v += Vector3.BACK
+		if a:
+			v += Vector3.LEFT
+		if d:
+			v += Vector3.RIGHT
 	if v.length_squared() > 0.0:
 		v = v.normalized()
 		v *= SPEED
@@ -129,39 +136,42 @@ func ang_vel_control( state ):
 		do_print = false
 	
 	
-	var i: bool = Input.is_action_pressed( "ui_i" )
-	var k: bool = Input.is_action_pressed( "ui_k" )
-	var j: bool = Input.is_action_pressed( "ui_j" )
-	var l: bool = Input.is_action_pressed( "ui_l" )
-	var u: bool = Input.is_action_pressed( "ui_u" )
-	var o: bool = Input.is_action_pressed( "ui_o" )
 	var w: Vector3 = Vector3.ZERO
-	if do_print:
-		print( "inputs: ", i, " ", k, " ", j, " ", l, " ", u, " ", o )
-	if i:
-		w += Vector3.RIGHT
+	
+	if apply_user_input:
+		var i: bool = Input.is_action_pressed( "ui_i" )
+		var k: bool = Input.is_action_pressed( "ui_k" )
+		var j: bool = Input.is_action_pressed( "ui_j" )
+		var l: bool = Input.is_action_pressed( "ui_l" )
+		var u: bool = Input.is_action_pressed( "ui_u" )
+		var o: bool = Input.is_action_pressed( "ui_o" )
+
 		if do_print:
-			print( "add LEFT ", w )
-	if k:
-		w += Vector3.LEFT
-		if do_print:
-			print( "add RIGHT ", w )
-	if j:
-		w += Vector3.UP
-		if do_print:
-			print( "add UP ", w )
-	if l:
-		w += Vector3.DOWN
-		if do_print:
-			print( "add DOWN ", w )
-	if u:
-		w += Vector3.BACK
-		if do_print:
-			print( "add BACK ", w )
-	if o:
-		w += Vector3.FORWARD
-		if do_print:
-			print( "add FORWARD ", w )
+			print( "inputs: ", i, " ", k, " ", j, " ", l, " ", u, " ", o )
+		if i:
+			w += Vector3.RIGHT
+			if do_print:
+				print( "add LEFT ", w )
+		if k:
+			w += Vector3.LEFT
+			if do_print:
+				print( "add RIGHT ", w )
+		if j:
+			w += Vector3.UP
+			if do_print:
+				print( "add UP ", w )
+		if l:
+			w += Vector3.DOWN
+			if do_print:
+				print( "add DOWN ", w )
+		if u:
+			w += Vector3.BACK
+			if do_print:
+				print( "add BACK ", w )
+		if o:
+			w += Vector3.FORWARD
+			if do_print:
+				print( "add FORWARD ", w )
 	if w.length_squared() > 0.0:
 		w = w.normalized()
 		if do_print:
@@ -224,39 +234,43 @@ func rotation_control( state ):
 		do_print = false
 	
 	
-	var i: bool = Input.is_action_pressed( "ui_i" )
-	var k: bool = Input.is_action_pressed( "ui_k" )
-	var j: bool = Input.is_action_pressed( "ui_j" )
-	var l: bool = Input.is_action_pressed( "ui_l" )
-	var u: bool = Input.is_action_pressed( "ui_u" )
-	var o: bool = Input.is_action_pressed( "ui_o" )
 	var w: Vector3 = Vector3.ZERO
-	if do_print:
-		print( "inputs: ", i, " ", k, " ", j, " ", l, " ", u, " ", o )
-	if i:
-		w += Vector3.RIGHT
+
+	if apply_user_input:
+		var i: bool = Input.is_action_pressed( "ui_i" )
+		var k: bool = Input.is_action_pressed( "ui_k" )
+		var j: bool = Input.is_action_pressed( "ui_j" )
+		var l: bool = Input.is_action_pressed( "ui_l" )
+		var u: bool = Input.is_action_pressed( "ui_u" )
+		var o: bool = Input.is_action_pressed( "ui_o" )
+
 		if do_print:
-			print( "add LEFT ", w )
-	if k:
-		w += Vector3.LEFT
-		if do_print:
-			print( "add RIGHT ", w )
-	if j:
-		w += Vector3.UP
-		if do_print:
-			print( "add UP ", w )
-	if l:
-		w += Vector3.DOWN
-		if do_print:
-			print( "add DOWN ", w )
-	if u:
-		w += Vector3.BACK
-		if do_print:
-			print( "add BACK ", w )
-	if o:
-		w += Vector3.FORWARD
-		if do_print:
-			print( "add FORWARD ", w )
+			print( "inputs: ", i, " ", k, " ", j, " ", l, " ", u, " ", o )
+		if i:
+			w += Vector3.RIGHT
+			if do_print:
+				print( "add LEFT ", w )
+		if k:
+			w += Vector3.LEFT
+			if do_print:
+				print( "add RIGHT ", w )
+		if j:
+			w += Vector3.UP
+			if do_print:
+				print( "add UP ", w )
+		if l:
+			w += Vector3.DOWN
+			if do_print:
+				print( "add DOWN ", w )
+		if u:
+			w += Vector3.BACK
+			if do_print:
+				print( "add BACK ", w )
+		if o:
+			w += Vector3.FORWARD
+			if do_print:
+				print( "add FORWARD ", w )
+	
 	if w.length_squared() > 0.0:
 		w = w.normalized()
 		if do_print:
