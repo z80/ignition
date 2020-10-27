@@ -236,17 +236,17 @@ func _process_tps_azimuth( _delta ):
 			fr = 0.0
 		rr = 0.0 * _state.pitch * return_rate * _delta
 		_state.pitch +=  fr - rr
+
+	var t: Transform = _target.global_transform
+	print( "target origin: ", t.origin )
+	var base_q: Quat = t.basis
 	
 	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
+	q = base_q * q
 	var v_dist: Vector3 = Vector3( 0.0, 0.0, _state.dist )
 	v_dist = q.xform( v_dist )
 	
-	var t: Transform = _target.global_transform
 	
-	print( "target origin: ", t.origin )
-	
-	var base_q: Quat = t.basis
-	q = base_q * q
 	t.basis = q
 	t.origin += v_dist
 	
