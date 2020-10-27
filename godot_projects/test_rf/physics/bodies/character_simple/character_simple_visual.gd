@@ -11,6 +11,9 @@ func _ready():
 	target_fps = get_node("target_fps")
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func set_speed( v: float ):
+	if v < 0.0:
+		v = 0.0
+	elif v > 1.0:
+		v = 1.0
+	$AnimationTree.set( "parameters/blend_position", v )

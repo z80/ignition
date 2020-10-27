@@ -12,7 +12,7 @@ var _desc_gains: Array
 var _desc_lengths: Array
 
 var _switch_threshold: float = 0.3
-var _switch_period: int = 25
+var _switch_period: int = 15
 
 const HEAD_IND: int       = 0
 const LEFT_HAND_IND: int  = 1
