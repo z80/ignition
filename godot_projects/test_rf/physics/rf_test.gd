@@ -23,7 +23,7 @@ func _ready():
 	var rf = $Landscape/Rf
 	rf.init_physics()
 	
-	var capsule: Body = BodyCreator.create( "capsule_dbg" )
+	var capsule: Body = BodyCreator.create( "character_simple" )
 	# Call add body to process inclusion and initialization properly.
 	rf.add_body( capsule )
 	PhysicsManager.player_focus  = capsule

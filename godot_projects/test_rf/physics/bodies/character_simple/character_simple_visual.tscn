@@ -699,6 +699,7 @@ skin = SubResource( 2 )
 material/0 = null
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="simple_character"]
+playback_speed = 3.0
 anims/Idle = SubResource( 3 )
 anims/Walk = SubResource( 4 )
 
@@ -707,3 +708,9 @@ tree_root = SubResource( 7 )
 anim_player = NodePath("../simple_character/AnimationPlayer")
 active = true
 parameters/blend_position = 0.723535
+
+[node name="target_fps" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.55732, -0.135631 )
+
+[node name="target_tps" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7566, 0.0344489 )

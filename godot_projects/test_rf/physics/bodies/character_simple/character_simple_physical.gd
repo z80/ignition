@@ -4,7 +4,7 @@ extends RigidBody
 var body: Body = null
 
 
-const SPEED = 10.0
+const SPEED = 3.0
 const GAIN = 50.5
 const MAX_FORCE = 5.0
 
@@ -19,7 +19,7 @@ export(bool) var translation_abolute = false
 export(bool) var rotation_abolute = false
 
 # Amount of force projected onto this direction is zeroed.
-export(bool) var translation_do_ignore_direction = false
+export(bool) var translation_do_ignore_direction = true
 export(Vector3) var translation_ignore_direction = Vector3.UP
 
 var target_q: Quat = Quat.IDENTITY
@@ -27,29 +27,19 @@ var target_q: Quat = Quat.IDENTITY
 var print_period: float = 0.1
 var print_elapsed: float = 0.0
 
+var apply_user_input: bool = false
 
 func _init():
 	pass
 
 
-func _physics_process(_delta):
-	#var rb: RigidBody = $RigidBody
-	#var t: Transform = rb.transform
-	#var q: Quat = t.basis.get_rotation_quat()
-	#q.x = 0.0
-	#q.z = 0.0
-	#q = q.normalized()
-	#t.basis = q
-	#rb.transform = t
-	pass
-
 
 func _integrate_forces( state ):
-	if body and body.user_input_applied:
-		body.user_input_applied = false
+	if apply_user_input:
+		apply_user_input = false
 		
-		position_control( state )
-		ang_vel_control( state )
+	position_control( state )
+	ang_vel_control( state )
 
 
 
@@ -70,7 +60,10 @@ func apply_force( f: Vector3 ):
 	self.add_central_force( fw )
 
 
-
+func get_speed_normalized():
+	var v: Vector3 = self.linear_velocity
+	var s: float = v.length() / SPEED
+	return s
 
 
 

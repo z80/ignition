@@ -30,6 +30,8 @@ func create( type_name: String ):
 			return frame_light()
 		"part_cylinder":
 			return part_cylinder()
+		"character_simple":
+			return part_character_simple()
 
 
 func _create( CL ):
@@ -84,4 +86,8 @@ func part_cylinder():
 	return b
 
 
+func part_character_simple():
+	var B = load( "res://physics/bodies/character_simple/character_simple.tscn" )
+	var b = _create( B )
+	return b
 
