@@ -277,6 +277,9 @@ ui_rmb={
 
 [physics]
 
+2d/default_gravity=981
+2d/default_linear_damp=0.02
+2d/default_angular_damp=0.3
 3d/default_gravity=0.98
 
 [rendering]
