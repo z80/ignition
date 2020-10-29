@@ -1,0 +1,42 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://physics/menu/root_menu/assets/intro_loop.webm" type="VideoStream" id=1]
+[ext_resource path="res://physics/menu/root_menu/assets/intro_click.webm" type="VideoStream" id=2]
+[ext_resource path="res://physics/menu/root_menu/video_background.gd" type="Script" id=3]
+[ext_resource path="res://physics/menu/root_menu/assets/intro_start.webm" type="VideoStream" id=4]
+
+[node name="Panel" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Intro" type="VideoPlayer" parent="."]
+margin_right = 1024.0
+margin_bottom = 600.0
+stream = ExtResource( 4 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Loop" type="VideoPlayer" parent="."]
+visible = false
+margin_right = 1024.0
+margin_bottom = 600.0
+stream = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Click" type="VideoPlayer" parent="."]
+visible = false
+margin_right = 1024.0
+margin_bottom = 600.0
+stream = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+[connection signal="finished" from="Intro" to="." method="_on_Intro_finished"]
+[connection signal="finished" from="Loop" to="." method="_on_Loop_finished"]

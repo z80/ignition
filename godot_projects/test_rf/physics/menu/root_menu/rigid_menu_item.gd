@@ -39,6 +39,8 @@ func _on_mouse_entered():
 func _on_mouse_exited():
 	mouse_inside = false
 
+func _input_event(viewport, event, shape_idx):
+	pass
 
 func _on_input_event(viewport, event, shape_idx):
 	if event is InputEventMouseButton:

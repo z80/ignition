@@ -1,28 +1,40 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://physics/menu/root_menu/rigid_menu_item.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/menu/root_menu/test_menu_items.gd" type="Script" id=2]
+[ext_resource path="res://physics/menu/root_menu/video_background.tscn" type="PackedScene" id=3]
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource( 2 )
 
 [node name="Item01" parent="." instance=ExtResource( 1 )]
-position = Vector2( 531.85, -57.211 )
+position = Vector2( 843.31, -104.636 )
 rotation = -0.68766
+z_index = 1
 
 [node name="Item02" parent="." instance=ExtResource( 1 )]
-position = Vector2( 582.162, -383.364 )
+position = Vector2( 889.472, -392 )
 rotation = -0.371755
+z_index = 1
 
 [node name="Item03" parent="." instance=ExtResource( 1 )]
-position = Vector2( 436.69, -267.485 )
+position = Vector2( 840, -272 )
 rotation = 0.242601
+z_index = 1
 
 [node name="Floor" type="RigidBody2D" parent="."]
 mode = 1
 
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="Floor"]
 build_mode = 1
-polygon = PoolVector2Array( 256.077, 1.87622, 384, 448, 640, 448, 832, 0, 1024, 0, 1024, 592, 8, 600, 0, 0 )
+polygon = PoolVector2Array( 640, 0, 768, 512, 960, 512, 1088, 0, 1344, 0, 1344, 600, 8, 600, 0, 0 )
 one_way_collision = true
 one_way_collision_margin = 128.0
+
+[node name="Background" parent="." instance=ExtResource( 3 )]
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 7.0
+one_shot = true
+autostart = true
+[connection signal="timeout" from="Timer" to="." method="_on_timeout"]
