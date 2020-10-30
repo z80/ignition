@@ -46,3 +46,4 @@ __meta__ = {
 }
 [connection signal="finished" from="Intro" to="." method="_on_Intro_finished"]
 [connection signal="finished" from="Loop" to="." method="_on_Loop_finished"]
+[connection signal="finished" from="Click" to="." method="_on_Click_finished"]

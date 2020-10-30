@@ -1,9 +1,8 @@
 extends Control
 
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
+var object = null
+var method: String = ""
 
 
 # Called when the node enters the scene tree for the first time.
@@ -48,3 +47,8 @@ func _on_Intro_finished():
 	play_loop()
 
 
+
+
+func _on_Click_finished():
+	if is_instance_valid( object ) and (method != ""):
+		object.call( method )

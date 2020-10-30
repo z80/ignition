@@ -36,16 +36,20 @@ func _init():
 
 
 func _integrate_forces( state ):
-	if apply_user_input:
-		apply_user_input = false
+	#if  apply_user_input:
+	#	apply_user_input = false
 	
 	# If it is free floating, don't apply any forces. 
 	# Just let it drift on its own.
 	if free_floating:
 		return
 	
+	#
 	position_control( state )
 	ang_vel_control( state )
+	
+
+	
 
 
 

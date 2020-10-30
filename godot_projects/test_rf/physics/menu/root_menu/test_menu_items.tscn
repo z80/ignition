@@ -37,13 +37,8 @@ z_index = 2
 scale = Vector2( 0.4, 0.4 )
 texture = ExtResource( 6 )
 
-[node name="Item03" parent="Node2D" instance=ExtResource( 1 )]
-position = Vector2( 840, -272 )
-rotation = 0.242601
-z_index = 2
-
 [node name="Title" parent="Node2D" instance=ExtResource( 1 )]
-position = Vector2( 504, -376 )
+position = Vector2( 448, -936 )
 rotation = -0.68766
 z_index = 2
 
