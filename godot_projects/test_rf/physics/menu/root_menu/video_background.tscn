@@ -5,17 +5,21 @@
 [ext_resource path="res://physics/menu/root_menu/video_background.gd" type="Script" id=3]
 [ext_resource path="res://physics/menu/root_menu/assets/intro_start.webm" type="VideoStream" id=4]
 
-[node name="Panel" type="Control"]
+[node name="C" type="PanelContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 2
 script = ExtResource( 3 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="Intro" type="VideoPlayer" parent="."]
-margin_right = 1024.0
-margin_bottom = 600.0
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 1017.0
+margin_bottom = 593.0
+mouse_filter = 2
 stream = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -25,6 +29,7 @@ __meta__ = {
 visible = false
 margin_right = 1024.0
 margin_bottom = 600.0
+mouse_filter = 2
 stream = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -34,6 +39,7 @@ __meta__ = {
 visible = false
 margin_right = 1024.0
 margin_bottom = 600.0
+mouse_filter = 2
 stream = ExtResource( 2 )
 __meta__ = {
 "_edit_use_anchors_": false

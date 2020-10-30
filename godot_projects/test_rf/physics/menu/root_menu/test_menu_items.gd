@@ -1,4 +1,4 @@
-extends Node2D
+extends Control
 
 
 # Declare member variables here. Examples:
@@ -8,9 +8,9 @@ extends Node2D
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	$Item01.connect( "click", $Background, "play_click" )
-	$Item02.connect( "click", $Background, "play_click" )
-	$Item02.connect( "click", $Background, "play_click" )
+	$Node2D/Item01.connect( "clicked", $Background, "play_click" )
+	$Node2D/Item02.connect( "clicked", $Background, "play_click" )
+	$Node2D/Item02.connect( "clicked", $Background, "play_click" )
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -18,11 +18,14 @@ func _ready():
 #	pass
 
 
-func _on_timeout():
-	$Item01.start()
-	$Item02.start()
-	$Item03.start()
 
 
 
 
+
+
+func _on_Timer_timeout():
+	$Node2D/Item01.start()
+	$Node2D/Item02.start()
+	$Node2D/Item03.start()
+	$Node2D/Title.start()
