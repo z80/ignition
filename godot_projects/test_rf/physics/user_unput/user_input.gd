@@ -11,11 +11,12 @@ func _ready():
 	pass # Replace with function body.
 
 
-func _input( event ):
+func _process( _delta ):
 	for i in inputs:
 		describe_event( i )
 	
-	PhysicsManager.rpc( "user_input" )
+	#PhysicsManager.rpc( "user_input" )
+	PhysicsManager.process_user_input( input )
 
 
 func describe_event( e: String ):

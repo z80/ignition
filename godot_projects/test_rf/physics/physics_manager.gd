@@ -8,7 +8,7 @@ var player_ref_frame = null setget _set_player_ref_frame, _get_player_ref_frame
 # Ref frame is selected when player clicks the icon.
 var player_select = null setget _set_player_select, _get_player_select
 # Ref frame gets focus when explicitly pressed "c" (center) on a selected ref. frame.
-var player_focus = null setget _set_player_focus, _get_player_focus
+var player_control = null setget _set_player_control, _get_player_control
 
 var camera = null setget _set_camera, _get_camera
 
@@ -61,7 +61,7 @@ func _input( event ):
 func process_user_input( input: Dictionary ):
 	print( "user_input: ", input )
 	
-	var body: Body = player_focus as Body
+	var body: Body = player_control as Body
 	if body == null:
 		return
 	
@@ -164,16 +164,16 @@ func _get_player_select():
 	return player_select
 
 
-func _set_player_focus( rf ):
-	if is_instance_valid( player_focus ):
-		var b = player_focus as Body
+func _set_player_control( rf ):
+	if is_instance_valid( player_control ):
+		var b = player_control as Body
 		if b:
 			b.process_user_input_2( {} )
-	player_focus = rf
+	player_control = rf
 
 
-func _get_player_focus():
-	return player_focus
+func _get_player_control():
+	return player_control
 
 
 func _set_camera( cam ):

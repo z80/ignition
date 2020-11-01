@@ -158,6 +158,12 @@ func update_physical( delta: float ):
 # needed different gui panels.
 func gui_classes( mode: String = "" ):
 	var classes = []
+	if mode.length() < 1:
+		var cam_mode = load( "res://physics/camera_ctrl/gui_elements/gui_camera_mode.tscn" )
+		var cam_this = load( "res://physics/camera_ctrl/gui_elements/gui_control_this.tscn" )
+		classes.push_back( cam_mode )
+		classes.push_back( cam_this )
+	
 	if super_body != null:
 		var s_classes = super_body.gui_classes( mode )
 		for cl in s_classes:

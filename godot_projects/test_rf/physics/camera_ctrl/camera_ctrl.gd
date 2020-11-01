@@ -6,13 +6,8 @@ const Mode = {
 	TPS_FREE    = 2
 }
 
-const Target = {
-	PLAYER    = 0, 
-	SELECTION = 1
-}
 
 export(int) var mode   = Mode.TPS_AZIMUTH setget set_mode
-export(int) var target = Target.PLAYER setget set_target
 
 var _ctrl_enabled: bool = false
 var _mouse_displacement: Vector2 = Vector2.ZERO
@@ -48,41 +43,29 @@ func set_mode( m ):
 	mode = m
 	_apply_target()
 
-func set_target( t ):
-	target = t
-	_apply_target()
+
+func set_mode_fps():
+	set_mode( Mode.FPS )
+
+
+func set_mode_tps():
+	set_mode( Mode.TPS )
+
+
 
 
 func _apply_target():
-	if target == Target.SELECTION:
-		var p = PhysicsManager.player_select
-		if p:
-			if mode == Mode.FPS:
-				_target = p.privot_fps()
-			else:
-				_target = p.privot_tps()
+	var p = PhysicsManager.player_control
+	if p:
+		if mode == Mode.FPS:
+			_target = p.privot_fps()
 		else:
-			_target = null
+			_target = p.privot_tps()
 	else:
-		var p = PhysicsManager.player_focus
-		if p:
-			if mode == Mode.FPS:
-				_target = p.privot_fps()
-			else:
-				_target = p.privot_tps()
-		else:
-			_target = null
+		_target = null
 
 
 
-
-func _cycle_target():
-	var t: Spatial = null
-	if target == Target.PLAYER:
-		target = Target.SELECTION
-	else:
-		target = Target.PLAYER
-	_apply_target()
 
 
 func _cycle_mode():
@@ -93,6 +76,8 @@ func _cycle_mode():
 	elif mode == Mode.TPS_FREE:
 		mode = Mode.FPS
 	_apply_target()
+
+
 
 
 
@@ -121,22 +106,22 @@ func _input( event ):
 		if release_control:
 			_gain_control( false )
 	
-	if event is InputEventMouseMotion:
-		_mouse_displacement += event.relative
-	var zoom_in: bool = Input.is_action_just_pressed( "ui_zoom_in" )
-	if zoom_in:
-		_zoom_displacement -= 1
-	var zoom_out: bool = Input.is_action_just_pressed( "ui_zoom_out" )
-	if zoom_out:
-		_zoom_displacement += 1
+	#if event is InputEventMouseMotion:
+	#	_mouse_displacement += event.relative
+	#var zoom_in: bool = Input.is_action_just_pressed( "ui_zoom_in" )
+	#if zoom_in:
+	#	_zoom_displacement -= 1
+	#var zoom_out: bool = Input.is_action_just_pressed( "ui_zoom_out" )
+	#if zoom_out:
+	#	_zoom_displacement += 1
 	
-	var pressed_c: bool = Input.is_action_just_pressed( "ui_c" )
-	if pressed_c:
-		_cycle_target()
+	#var pressed_c: bool = Input.is_action_just_pressed( "ui_c" )
+	#if pressed_c:
+	#	_cycle_target()
 
-	var change_mode: bool = Input.is_action_just_pressed( "ui_v" )
-	if change_mode:
-		_cycle_mode()
+	#var change_mode: bool = Input.is_action_just_pressed( "ui_v" )
+	#if change_mode:
+	#	_cycle_mode()
 
 
 

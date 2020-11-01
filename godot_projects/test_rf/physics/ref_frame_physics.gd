@@ -120,17 +120,17 @@ func jump_if_needed():
 	#if _jumps_left <= 0:
 	#	return
 	
-	var player_focus = PhysicsManager.player_focus
+	var player_control = PhysicsManager.player_control
 	var bodies = child_bodies()
-	if not (player_focus in bodies):
+	if not (player_control in bodies):
 		return
 	
-	var r: Vector3 = player_focus.r()
+	var r: Vector3 = player_control.r()
 	var dist: float = r.length()
 	if dist < Constants.RF_JUMP_DISTANCE:
 		return
 	
-	var t: Transform = player_focus.t()
+	var t: Transform = player_control.t()
 	jump( t )
 	
 	#_jumps_left -= 1
@@ -140,11 +140,11 @@ func jump_if_needed():
 func exclude_too_far_bodies():
 	var max_dist: float = Constants.BODY_EXCLUDE_DIST
 	var bodies = child_bodies()
-	var player_focus = PhysicsManager.player_focus
+	var player_control = PhysicsManager.player_control
 	var pt = self.get_parent()
 	
 	for body in bodies:
-		if body == player_focus:
+		if body == player_control:
 			continue
 		
 		var r: Vector3 = body.r()

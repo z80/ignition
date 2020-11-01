@@ -26,7 +26,7 @@ func _ready():
 	var capsule: Body = BodyCreator.create( "character_simple" )
 	# Call add body to process inclusion and initialization properly.
 	rf.add_body( capsule )
-	PhysicsManager.player_focus  = capsule
+	PhysicsManager.player_control  = capsule
 	PhysicsManager.player_select = capsule
 	
 		# for debugging purposes
@@ -45,12 +45,11 @@ func _ready():
 	
 	#var privot: Spatial = capsule._visual
 	#$Camera.privot = privot
-	$Camera.set_target( $Camera.Target.PLAYER )
 	$Camera.set_mode( $Camera.Mode.TPS_AZIMUTH )
 	
 	# Initial set of select and focus object.
 	PhysicsManager.player_select = capsule
-	PhysicsManager.player_focus  = capsule
+	PhysicsManager.player_control  = capsule
 
 
 

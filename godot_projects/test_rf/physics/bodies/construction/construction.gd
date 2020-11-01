@@ -169,7 +169,7 @@ func _create_assembly():
 
 
 func check_if_deactivate():
-	var player = PhysicsManager.player_focus
+	var player = PhysicsManager.player_control
 	if player == null:
 		return true
 	
@@ -192,7 +192,7 @@ func create_block( block_name, dynamic: bool = false ):
 	if block == null:
 		return
 	
-	var player = PhysicsManager.player_focus
+	var player = PhysicsManager.player_control
 	block.change_parent( player )
 	var t: Transform
 	t.origin = Constants.CONSTRUCTION_CREATE_AT
