@@ -137,6 +137,7 @@ config/icon="res://icon.png"
 PhysicsManager="*res://physics/physics_manager.gd"
 BodyCreator="*res://physics/body_creator.gd"
 Constants="*res://physics/constants.gd"
+UserInput="*res://physics/user_unput/user_input.gd"
 
 [editor_plugins]
 

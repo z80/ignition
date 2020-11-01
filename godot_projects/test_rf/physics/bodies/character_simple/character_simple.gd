@@ -33,14 +33,16 @@ func process_inner( delta ):
 	_visual.set_speed_normalized( s )
 
 
-func process_user_input( _event: InputEvent ):
-	if not is_instance_valid( _physical ):
-		return
-	
-	_physical.apply_user_input = true
+#func process_user_input( _event: InputEvent ):
+#	if not is_instance_valid( _physical ):
+#		return
+#	
+#	_physical.apply_user_input = true
 
 
-
+func process_user_input_2( input: Dictionary ):
+	if _physical:
+		_physical.user_input = input.duplicate( true )
 
 
 

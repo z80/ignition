@@ -301,6 +301,11 @@ func process_user_input( event: InputEvent ):
 		body.process_user_input( event )
 
 
+func process_user_input_2( input: Dictionary ):
+	for body in sub_bodies:
+		body.process_user_input_2( input )
+
+
 # It permits or not showing the window with all the little panels.
 func show_click_container():
 	if super_body != null:

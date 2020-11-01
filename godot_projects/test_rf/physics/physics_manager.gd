@@ -7,7 +7,7 @@ var envs_: Array
 var player_ref_frame = null setget _set_player_ref_frame, _get_player_ref_frame
 # Ref frame is selected when player clicks the icon.
 var player_select = null setget _set_player_select, _get_player_select
-# Ref frame gets focus when eplicitly pressed "c" (center) on a selected ref. frame.
+# Ref frame gets focus when explicitly pressed "c" (center) on a selected ref. frame.
 var player_focus = null setget _set_player_focus, _get_player_focus
 
 var camera = null setget _set_camera, _get_camera
@@ -41,6 +41,26 @@ func _physics_process( delta ):
 
 
 func _input( event ):
+	return
+	
+	#var body: Body = player_focus as Body
+	#if body == null:
+	#	return
+	
+	# Call user input for the upper most body.
+	# It is supposed to distribute the same controls 
+	# to all sub-bodies.
+	#var sb = body.super_body
+	#while sb != null:
+	#	body = sb
+	#	sb = body.super_body
+	#body.process_user_input( event )
+
+
+# Called externally by UserInput global object.
+func process_user_input( input: Dictionary ):
+	print( "user_input: ", input )
+	
 	var body: Body = player_focus as Body
 	if body == null:
 		return
@@ -52,7 +72,7 @@ func _input( event ):
 	while sb != null:
 		body = sb
 		sb = body.super_body
-	body.process_user_input( event )
+	body.process_user_input_2( input )
 
 
 
@@ -133,6 +153,10 @@ func _get_player_ref_frame():
 
 
 func _set_player_select( rf ):
+	if is_instance_valid( player_select ):
+		var b = player_select as Body
+		if b:
+			b.process_user_input_2( {} )
 	player_select = rf
 
 
@@ -141,6 +165,10 @@ func _get_player_select():
 
 
 func _set_player_focus( rf ):
+	if is_instance_valid( player_focus ):
+		var b = player_focus as Body
+		if b:
+			b.process_user_input_2( {} )
 	player_focus = rf
 
 

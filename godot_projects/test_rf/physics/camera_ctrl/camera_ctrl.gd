@@ -238,7 +238,7 @@ func _process_tps_azimuth( _delta ):
 		_state.pitch +=  fr - rr
 
 	var t: Transform = _target.global_transform
-	print( "target origin: ", t.origin )
+	#print( "target origin: ", t.origin )
 	var base_q: Quat = t.basis
 	
 	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )

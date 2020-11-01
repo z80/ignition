@@ -48,15 +48,11 @@ func _ready():
 func process_inner(delta):
 	.process_inner(delta)
 	
-	t_elapsed += delta
-	if t_elapsed >= 1.0:
-		t_elapsed -= 1.0
-		print( "Construction process: ", counter )
-		counter += 1
-		#var player_rf = PhysicsManager.player_ref_frame
-		#compute_relative_to_root( player_rf )
-		#var t: Transform = self.t_root()
-		#print( "Construction relative to player rf: ", t )
+	#t_elapsed += delta
+	#if t_elapsed >= 1.0:
+	#	t_elapsed -= 1.0
+	#	print( "Construction process: ", counter )
+	#	counter += 1
 	
 	
 	# If it is active check if player is too far. If it is, deactivate.
