@@ -48,8 +48,8 @@ func _ready():
 	$Camera.set_mode( $Camera.Mode.TPS_AZIMUTH )
 	
 	# Initial set of select and focus object.
-	PhysicsManager.player_select = capsule
-	PhysicsManager.player_control  = capsule
+	PhysicsManager.player_select  = capsule
+	PhysicsManager.player_control = capsule
 
 
 

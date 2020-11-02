@@ -3,10 +3,15 @@
 [ext_resource path="res://physics/interact_icon/gui_click_container.gd" type="Script" id=1]
 
 [node name="GuiClickContainer" type="Panel"]
-margin_left = -25.0
-margin_top = -10.0
-margin_right = 167.0
-margin_bottom = 251.0
+anchor_left = -0.024
+anchor_top = -0.017
+anchor_right = -0.024
+anchor_bottom = -0.017
+margin_left = -0.424
+margin_top = 0.200001
+margin_right = 171.576
+margin_bottom = 188.2
+rect_min_size = Vector2( 180, 120 )
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -14,8 +19,7 @@ __meta__ = {
 
 [node name="TitleBar" type="ColorRect" parent="."]
 anchor_right = 1.0
-anchor_bottom = 0.096
-margin_bottom = 0.175999
+margin_bottom = 23.408
 color = Color( 0.431373, 0.545098, 0.596078, 1 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -33,13 +37,15 @@ __meta__ = {
 }
 
 [node name="Close" type="Button" parent="TitleBar"]
-anchor_left = 0.88
+anchor_left = 1.0
 anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = 0.707413
+margin_left = -19.9326
 margin_top = 3.0
 margin_right = -2.33258
-margin_bottom = -2.232
+margin_bottom = 21.176
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="ResizeHandle" type="Panel" parent="."]
 anchor_left = 1.0
@@ -51,11 +57,11 @@ margin_top = -25.0
 margin_right = -0.625427
 
 [node name="Container" type="VBoxContainer" parent="."]
-anchor_top = 0.094
 anchor_right = 1.0
-anchor_bottom = 0.924
-margin_top = 0.466
-margin_bottom = 1.836
+anchor_bottom = 0.835
+margin_top = 26.0
+margin_right = -2.0
+margin_bottom = 0.019989
 __meta__ = {
 "_edit_use_anchors_": false
 }

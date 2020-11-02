@@ -23,7 +23,12 @@ func setup_gui( classes, target_object ):
 		var has_init: bool = inst.has_method( "init" )
 		if has_init:
 			inst.init( target_object, self )
-
+	
+	var sz = $Container.rect_size
+	print( "Container size: ", sz )
+	for ch in $Container.get_children():
+		sz = ch.rect_size
+		print( "child size: ", sz )
 
 
 

@@ -13,9 +13,10 @@ func _ready():
 
 
 func _on_ControlThis_pressed():
-	if is_instance_valid( _target_obj ):
+	if not is_instance_valid( _target_obj ):
 		return
 	
 	PhysicsManager.player_control = _target_obj
+	PhysicsManager.camera.apply_target()
 	
 	_parent_gui.queue_free()

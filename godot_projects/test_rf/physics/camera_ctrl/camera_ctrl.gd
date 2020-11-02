@@ -41,7 +41,7 @@ var _target: Spatial = null
 
 func set_mode( m ):
 	mode = m
-	_apply_target()
+	apply_target()
 
 
 func set_mode_fps():
@@ -49,12 +49,12 @@ func set_mode_fps():
 
 
 func set_mode_tps():
-	set_mode( Mode.TPS )
+	set_mode( Mode.TPS_AZIMUTH )
 
 
 
 
-func _apply_target():
+func apply_target():
 	var p = PhysicsManager.player_control
 	if p:
 		if mode == Mode.FPS:
@@ -75,7 +75,7 @@ func _cycle_mode():
 		mode = Mode.TPS_FREE
 	elif mode == Mode.TPS_FREE:
 		mode = Mode.FPS
-	_apply_target()
+	apply_target()
 
 
 
@@ -106,14 +106,14 @@ func _input( event ):
 		if release_control:
 			_gain_control( false )
 	
-	#if event is InputEventMouseMotion:
-	#	_mouse_displacement += event.relative
-	#var zoom_in: bool = Input.is_action_just_pressed( "ui_zoom_in" )
-	#if zoom_in:
-	#	_zoom_displacement -= 1
-	#var zoom_out: bool = Input.is_action_just_pressed( "ui_zoom_out" )
-	#if zoom_out:
-	#	_zoom_displacement += 1
+	if event is InputEventMouseMotion:
+		_mouse_displacement += event.relative
+	var zoom_in: bool = Input.is_action_just_pressed( "ui_zoom_in" )
+	if zoom_in:
+		_zoom_displacement -= 1
+	var zoom_out: bool = Input.is_action_just_pressed( "ui_zoom_out" )
+	if zoom_out:
+		_zoom_displacement += 1
 	
 	#var pressed_c: bool = Input.is_action_just_pressed( "ui_c" )
 	#if pressed_c:
@@ -193,7 +193,7 @@ func _process_tps_azimuth( _delta ):
 	
 	#print( "mouse displacement: ", _mouse_displacement )
 	
-	#_apply_target()
+	#apply_target()
 	
 	# Update the distance.
 	var d_dist: float = sensitivity_dist * float(_zoom_displacement) * _state.dist

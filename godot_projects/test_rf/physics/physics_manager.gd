@@ -59,7 +59,7 @@ func _input( event ):
 
 # Called externally by UserInput global object.
 func process_user_input( input: Dictionary ):
-	print( "user_input: ", input )
+	#print( "user_input: ", input )
 	
 	var body: Body = player_control as Body
 	if body == null:

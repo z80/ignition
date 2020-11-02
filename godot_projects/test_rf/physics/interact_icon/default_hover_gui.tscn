@@ -5,6 +5,7 @@
 [node name="HoverGui" type="Control"]
 margin_right = 321.0
 margin_bottom = 182.0
+mouse_filter = 2
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -16,3 +17,6 @@ margin_bottom = 48.0
 text = "Default description"
 valign = 1
 autowrap = true
+__meta__ = {
+"_edit_use_anchors_": false
+}

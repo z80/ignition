@@ -21,6 +21,6 @@ func _on_fps_pressed():
 
 func _on_tps_pressed():
 	var camera = PhysicsManager.camera
-	camera.set_mode_fps()
+	camera.set_mode_tps()
 	
 	_parent_gui.queue_free()

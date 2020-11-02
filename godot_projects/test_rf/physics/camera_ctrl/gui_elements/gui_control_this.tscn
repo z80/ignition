@@ -2,9 +2,10 @@
 
 [ext_resource path="res://physics/camera_ctrl/gui_elements/gui_control_this.gd" type="Script" id=1]
 
-[node name="ControlThis" type="Control"]
+[node name="ControlThis" type="Panel"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+rect_min_size = Vector2( 120, 30 )
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -14,11 +15,15 @@ __meta__ = {
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_right = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="ControlThis" type="Button" parent="CenterContainer"]
 margin_left = 469.0
 margin_top = 290.0
 margin_right = 555.0
 margin_bottom = 310.0
-hint_tooltip = "Finish editing a block."
+hint_tooltip = "Control this item."
 text = "Control this"
+[connection signal="pressed" from="CenterContainer/ControlThis" to="." method="_on_ControlThis_pressed"]
