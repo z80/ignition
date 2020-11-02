@@ -12,6 +12,14 @@ func init():
 	.init()
 
 
+func process_user_input_2( input: Dictionary ):
+	if _physical:
+		_physical.user_input = input.duplicate( true )
+		if _physical.user_input.size() != 0:
+			_physical.sleeping = false
+			print( "wheels input: ", _physical.user_input )
+
+
 
 func set_collision_layer( layer ):
 	if _physical:
