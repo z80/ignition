@@ -61,8 +61,6 @@ func create_physical():
 
 func remove_physical():
 	print( "PartSuperBody::remove_physical()" )
-	if _physical != null:
-		_physical.queue_free()
-		_physical = null
+	.remove_physical()
 
 

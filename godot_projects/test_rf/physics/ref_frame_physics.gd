@@ -150,7 +150,7 @@ func exclude_too_far_bodies():
 		var r: Vector3 = body.r()
 		var d: float = r.length()
 		if d > max_dist:
-			body.remove_physical()
+			#body.remove_physical()
 			body.change_parent( pt )
 
 
@@ -211,7 +211,8 @@ func parent_bodies():
 
 
 
-func _destructor():
+# Destructor.
+func _exit_tree():
 	pass
 
 

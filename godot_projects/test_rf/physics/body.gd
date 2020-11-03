@@ -118,7 +118,7 @@ func distance( other: Body ):
 func change_parent_recursive( new_parent: Node = null ):
 	.change_parent( new_parent )
 	
-	# First go down to th lowest level.
+	# First go down to the lowest level.
 	for body in sub_bodies:
 		body.change_parent_recursive( new_parent )
 	
