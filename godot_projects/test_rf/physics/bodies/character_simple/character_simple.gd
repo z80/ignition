@@ -29,8 +29,9 @@ func set_collision_layer( layer ):
 func process_inner( delta ):
 	.process_inner( delta )
 	# Update visual animation state.
-	var s: float = _physical.get_speed_normalized()
-	_visual.set_speed_normalized( s )
+	if _physical:
+		var s: float = _physical.get_speed_normalized()
+		_visual.set_speed_normalized( s )
 
 
 #func process_user_input( _event: InputEvent ):

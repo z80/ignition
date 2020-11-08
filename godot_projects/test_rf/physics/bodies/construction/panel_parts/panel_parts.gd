@@ -79,6 +79,10 @@ func _create_buttons_parts():
 	_add_button( parts, "res://physics/bodies/parts/2m/reaction_wheels/assets/icon.png", 
 						 "reaction_wheels_2m", 
 						 "2m reaction control wheels", true )
+
+	_add_button( parts, "res://physics/bodies/parts/thrusters/thruster_01/assets/icon.png", 
+						 "thruster_01", 
+						 "Thrsuter ver 01", true )
 	
 
 

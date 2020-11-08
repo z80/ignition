@@ -4,22 +4,24 @@ extends RigidBody
 const MIN_THRUST: float = 10.0
 const MAX_THRUST: float = 20.0
 
-export(bool) var enabled = false setget _set_enabled
-export(float) var throttle = 0.0 setget _set_throttle
+export(bool) var on = false setget _set_on
+export(float) var throttle = 100.0 setget _set_throttle
 
 var user_input: Dictionary = {}
 
 
-func _set_enabled( en ):
-	enabled = en
+func _set_on( en ):
+	on = en
+	sleeping = false
 
 
 func _set_throttle( th ):
 	throttle = th
+	sleeping = false
 
 
 func _integrate_forces( state ):
-	if enabled and (throttle > 0.0):
+	if on and (throttle > 0.0):
 		var th: float = MIN_THRUST + (MAX_THRUST - MIN_THRUST) * throttle
 		var t: Transform = self.transform
 		var b: Basis = t.basis

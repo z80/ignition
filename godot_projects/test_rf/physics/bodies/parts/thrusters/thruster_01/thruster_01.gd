@@ -20,22 +20,22 @@ func process_user_input_2( input: Dictionary ):
 		if user_input.has( "ui_space" ):
 			var inp = user_input[ "ui_space" ]
 			if inp.pressed:
-				var en: bool = _physical.enabled
+				var en: bool = _physical.on
 				en = not en
 				set_enabled( en )
 		
 		if user_input.has( "ui_z" ):
-			var inp = user_input[ "ui.z" ]
+			var inp = user_input[ "ui_z" ]
 			if inp.pressed:
 				var th: float = _physical.throttle
-				th -= 0.1*th
+				th -= 0.1
 				set_throttle( th )
 		
 		if user_input.has( "ui_x" ):
-			var inp = user_input[ "ui.x" ]
+			var inp = user_input[ "ui_x" ]
 			if inp.pressed:
 				var th: float = _physical.throttle
-				th += 0.1*th
+				th += 0.1
 				set_throttle( th )
 
 
@@ -80,7 +80,7 @@ func deactivate():
 
 func set_enabled( en ):
 	if _physical != null:
-		_physical.enabled = en
+		_physical.on = en
 	if _visual != null:
 		_visual.enabled = en
 
