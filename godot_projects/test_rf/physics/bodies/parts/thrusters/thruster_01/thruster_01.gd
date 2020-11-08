@@ -87,18 +87,22 @@ func set_enabled( en ):
 
 
 func set_throttle( th: float ):
-	if _physical:
+	if th < 0.0:
+		th = 0.0
+	elif th > 1.0:
+		th = 1.0
+	if _physical != null:
 		_physical.throttle = th
-	if _visual:
+	if _visual != null:
 		_visual.throttle = th
 
 
 func get_throttle():
-	if _physical:
+	if _physical != null:
 		var th: float = _physical.throttle
 		return th
 	
-	return 100.0
+	return 1.0
 
 
 # Overriding physics body removal.

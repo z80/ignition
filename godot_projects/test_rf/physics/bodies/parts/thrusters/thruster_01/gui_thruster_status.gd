@@ -16,7 +16,7 @@ func _ready():
 
 func _process( _delta ):
 	$CenterContainer/ProgressBar.value = _target_obj.throttle * 100.0
-
+	#pass
 
 func _on_ControlThis_pressed():
 	if not is_instance_valid( _target_obj ):

@@ -2,10 +2,10 @@
 extends RigidBody
 
 const MIN_THRUST: float = 1.0
-const MAX_THRUST: float = 2.0
+const MAX_THRUST: float = 5.0
 
 export(bool) var on = false setget _set_on
-export(float) var throttle = 100.0 setget _set_throttle
+export(float) var throttle = 1.0 setget _set_throttle
 
 var user_input: Dictionary = {}
 

@@ -17,8 +17,7 @@ func _set_throttle( th ):
 	else:
 		if throttle > 1.0:
 			throttle = 1.0
-		_set_enabled( false )
-		var velocity: float = throttle * 150.0 + 5.0
+		var velocity: float = throttle * 150.0 + 50.0
 		$CPUParticles.initial_velocity = velocity
 
 # Called when the node enters the scene tree for the first time.

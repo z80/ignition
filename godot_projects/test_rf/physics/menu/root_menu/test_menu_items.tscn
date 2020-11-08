@@ -19,7 +19,7 @@ __meta__ = {
 [node name="Node2D" type="Node2D" parent="."]
 
 [node name="Item01" parent="Node2D" instance=ExtResource( 1 )]
-position = Vector2( 843.31, -104.636 )
+position = Vector2( 96, -112 )
 rotation = -0.68766
 z_index = 2
 
@@ -29,7 +29,7 @@ scale = Vector2( 0.4, 0.4 )
 texture = ExtResource( 5 )
 
 [node name="Item02" parent="Node2D" instance=ExtResource( 1 )]
-position = Vector2( 889.472, -392 )
+position = Vector2( 136, -384 )
 rotation = -0.371755
 z_index = 2
 
@@ -38,12 +38,12 @@ scale = Vector2( 0.4, 0.4 )
 texture = ExtResource( 6 )
 
 [node name="Title" parent="Node2D" instance=ExtResource( 1 )]
-position = Vector2( 448, -936 )
+position = Vector2( 432, -504 )
 rotation = -0.68766
 z_index = 2
 
 [node name="Sprite3" type="Sprite" parent="Node2D/Title"]
-position = Vector2( 300, 200 )
+position = Vector2( -250, 200 )
 scale = Vector2( 0.4, 0.4 )
 texture = ExtResource( 4 )
 
@@ -52,7 +52,7 @@ mode = 1
 
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="Node2D/Floor"]
 build_mode = 1
-polygon = PoolVector2Array( 680, 64, 768, 512, 960, 512, 1088, 0, 1344, 0, 1344, 600, 0, 600, 0, 64 )
+polygon = PoolVector2Array( -128, 64, 24, 512, 248, 512, 384, 64, 1088, 64, 1088, 600, -192, 600, -200, 64 )
 one_way_collision = true
 one_way_collision_margin = 128.0
 
