@@ -1,8 +1,8 @@
 
 extends RigidBody
 
-const MIN_THRUST: float = 10.0
-const MAX_THRUST: float = 20.0
+const MIN_THRUST: float = 1.0
+const MAX_THRUST: float = 2.0
 
 export(bool) var on = false setget _set_on
 export(float) var throttle = 100.0 setget _set_throttle
