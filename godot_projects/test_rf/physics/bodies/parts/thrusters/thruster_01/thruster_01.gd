@@ -1,6 +1,7 @@
 
 extends Body
 
+export(float)  var throttle = 100.0 setget set_throttle, get_throttle
 
 var user_input: Dictionary
 
@@ -90,6 +91,14 @@ func set_throttle( th: float ):
 		_physical.throttle = th
 	if _visual:
 		_visual.throttle = th
+
+
+func get_throttle():
+	if _physical:
+		var th: float = _physical.throttle
+		return th
+	
+	return 100.0
 
 
 # Overriding physics body removal.
