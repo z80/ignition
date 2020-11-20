@@ -35,6 +35,16 @@ _global_script_classes=[ {
 "path": "res://addons/color-palette/utilities/FlexGridContainer.gd"
 }, {
 "base": "Node",
+"class": "ForceSource",
+"language": "GDScript",
+"path": "res://physics/force_source/force_source.gd"
+}, {
+"base": "ForceSource",
+"class": "ForceSourceGravity",
+"language": "GDScript",
+"path": "res://physics/force_source/force_source_gravity.gd"
+}, {
+"base": "Node",
 "class": "FramesDb",
 "language": "GDScript",
 "path": "res://learning/cache/frames_db.gd"
@@ -110,6 +120,8 @@ _global_script_class_icons={
 "ConstructionSuperBody": "",
 "DraggedRf": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
+"ForceSource": "",
+"ForceSourceGravity": "",
 "FramesDb": "",
 "LandscapeBase": "",
 "LandscapeFunc": "",
