@@ -4,7 +4,7 @@ class_name RefFrame
 
 var _axes = null
 
-var force_source: ForceSource = null
+var force_source: Node = null
 
 
 func process_children():
@@ -95,7 +95,7 @@ func closest_force_source():
 	var n: Node =  _force_source_recursive( self )
 	if n == null:
 		return null
-	var fs: ForceSource = n as ForceSource
+	var fs: RefFrame = n as RefFrame
 	return fs
 
 
@@ -106,7 +106,7 @@ func _force_source_recursive( n: Node ):
 	var rf: RefFrame = n as RefFrame
 	if rf != null:
 		if rf.force_source != null:
-			return rf.force_source
+			return rf
 	
 	var p: Node = n.get_parent()
 	return _force_source_recursive( p )

@@ -221,7 +221,39 @@ func apply_forces():
 	for child in children:
 		var body = child as Body
 		if body != null:
-			fs.process_body( self, body )
+			fs.process_body( fs, body )
+
+
+
+func process_body( force_source_rf: RefFrame, body: Body ):
+	force_source_rf.compute_relative_to_root( body )
+	var r: Vector3 = force_source_rf.r_root()
+	var v: Vector3 = force_source_rf.v_root()
+	var q: Quat    = force_source_rf.q_root()
+	var w: Vector3 = force_source_rf.w_root()
+
+	var ret: Array = []
+	force_source_rf.force_source.compute_force( body, r, v, q, w, ret )
+
+	var F: Vector3 = ret[0]
+	var P: Vector3 = ret[1]
+	# Convert to physics ref. frame.
+	var q_adj: Quat = body.q()
+
+	F = q_adj.xform( F )
+	P = q_adj.xform( P )
+
+	# Apply force and torque to the body.
+	body.add_force_torque( F, P )
+
+	# Befor computing own force contribution recursively searches for 
+	# other force sources if recursive search is allowed.
+	if force_source_rf.force_source.recursive():
+		var p_ref_frame: RefFrame = force_source_rf.closest_parent_ref_frame()
+		if p_ref_frame != null:
+			force_source_rf = p_ref_frame.closest_force_source()
+			if force_source_rf != null:
+				process_body( force_source_rf, body )
 
 
 
