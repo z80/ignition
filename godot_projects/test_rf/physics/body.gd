@@ -409,5 +409,16 @@ func deactivate():
 	for body in sub_bodies:
 		body.deactivate()
 
+# May need to be overridden in derived classes in the case if 
+# _physical is not a rigid body.
+func add_force_torque( F: Vector3, P: Vector3 ):
+	if _physical != null:
+		var rb: RigidBody = _physical as RigidBody
+		if rb:
+			rb.add_central_force( F )
+			rb.add_torque( P )
+
+
+
 
 

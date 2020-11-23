@@ -36,6 +36,14 @@ func _process(_delta):
 
 
 func _physics_process( delta ):
+	# Apply forces to all the bodes.
+	# Forces are applied in physics ref. frame.
+	# For now there is just one of those. And it is player's ref. frame.
+	var player_rf = player_ref_frame
+	if player_rf != null:
+		player_rf.apply_forces()
+	
+	# Update. Here controla sre applied.
 	update_bodies_physical( delta )
 
 

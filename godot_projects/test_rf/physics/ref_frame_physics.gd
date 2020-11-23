@@ -17,8 +17,11 @@ func get_class():
 
 func process_children():
 	.process_children()
+	apply_forces()
 	exclude_too_far_bodies()
 	include_close_enough_bodies()
+
+
 
 
 func evolve():
@@ -207,6 +210,18 @@ func parent_bodies():
 	
 	return bodies
 
+
+
+func apply_forces():
+	var fs: ForceSource = closest_force_source()
+	if fs == null:
+		return
+	
+	var children = self.get_children()
+	for child in children:
+		var body = child as Body
+		if body != null:
+			fs.process_body( self, body )
 
 
 

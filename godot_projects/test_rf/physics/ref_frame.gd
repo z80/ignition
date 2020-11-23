@@ -4,6 +4,7 @@ class_name RefFrame
 
 var _axes = null
 
+var force_source: ForceSource = null
 
 
 func process_children():
@@ -19,7 +20,7 @@ func evolve():
 # In this script it is child/parent management
 # A separate class is used for physics management and bodies creation.
 func _ready():
-	pass
+	_init_force_source()
 
 
 
@@ -59,8 +60,54 @@ func _update_axes():
 	_axes.transform = t
 
 
+func _init_force_source():
+	if force_source == null:
+		for c in self.get_children():
+			var fs: ForceSource = c as ForceSource
+			if fs != null:
+				force_source = fs
+				break
 
 
+# Closest not in terms of distance. But in terms of graph node distance.
+func closest_parent_ref_frame():
+	var p = self.get_parent()
+	if p == null:
+		return null
+	
+	var rf: RefFrame = _closest_parent_ref_frame_recursive( p )
+	return rf
+	
+	
+func _closest_parent_ref_frame_recursive( n: Node ):
+	if n == null:
+		return null
+	
+	var rf: RefFrame = n as RefFrame
+	if rf:
+		return rf
+	
+	var p: Node = n.get_parent()
+	return _closest_parent_ref_frame_recursive( p )
+	
+
+func closest_force_source():
+	var n: Node =  _force_source_recursive( self )
+	if n == null:
+		return null
+	var fs: ForceSource = n as ForceSource
+	return fs
 
 
+func _force_source_recursive( n: Node ):
+	if n == null:
+		return null
+	
+	var rf: RefFrame = n as RefFrame
+	if rf != null:
+		if rf.force_source != null:
+			return rf.force_source
+	
+	var p: Node = n.get_parent()
+	return _force_source_recursive( p )
 
