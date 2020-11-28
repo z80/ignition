@@ -11,6 +11,13 @@ func recursive():
 func defines_vertical():
 	return true
 
+# Need to override this one.
+# Should use "res://physics/utils/local_up.gd" in order to convert from 
+# own rf to player's ref. frame.
+func up( own_rf: Node, player_rf: Node ):
+	return Vector3.UP
+
+
 # Compute forces applied to rigid body.
 # All quantities are in body's ref. frame.
 func compute_force( body: Body, r: Vector3, v: Vector3, q: Quat, w: Vector3, ret: Array ):

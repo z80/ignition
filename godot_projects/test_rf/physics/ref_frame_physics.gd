@@ -110,8 +110,10 @@ func jump( t: Transform ):
 	
 	var after_t: Transform = self.t()
 	print( "RefFramePhysics jumped from ", before_t, " to ", after_t )
-
-
+	
+	# Jump camera basis.
+	var c: Camera = PhysicsManager.camera
+	c.jump_basis( before_t, after_t )
 
 
 # ********************************************
@@ -223,8 +225,11 @@ func apply_forces():
 		if body != null:
 			process_body( rf, body )
 	
-	#var defines_vertical: bool = rf.force_source.defines_vertical()
-	#if defines_vertical:
+	var defines_vertical: bool = rf.force_source.defines_vertical()
+	if defines_vertical:
+		var c: Camera = PhysicsManager.camera
+		var up: Vector3 = rf.force_source.up( rf, self )
+		c.process_basis( up )
 	#	rf.compute_relative_to_root( self )
 	#	var q: Quat = rf.q_root()
 

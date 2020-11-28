@@ -15,7 +15,11 @@ func compute_force( body: Body, r: Vector3, v: Vector3, q: Quat, w: Vector3, ret
 	ret.push_back( P )
 
 
-
+func up( own_rf: Node, player_rf: Node ):
+	var Utils = preload( "res://physics/utils/local_up.gd" )
+	var up: Vector3 = Vector3.UP
+	up =  Utils.local_up( own_rf, up, player_rf )
+	return up
 
 
 
