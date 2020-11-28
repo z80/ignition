@@ -110,10 +110,10 @@ func _input( event ):
 		_mouse_displacement += event.relative
 	var zoom_in: bool = Input.is_action_just_pressed( "ui_zoom_in" )
 	if zoom_in:
-		_zoom_displacement -= 1
+		_zoom_displacement *= 0.7
 	var zoom_out: bool = Input.is_action_just_pressed( "ui_zoom_out" )
 	if zoom_out:
-		_zoom_displacement += 1
+		_zoom_displacement *= 1.3
 	
 	#var pressed_c: bool = Input.is_action_just_pressed( "ui_c" )
 	#if pressed_c:

@@ -6,6 +6,10 @@ class_name ForceSource
 func recursive():
 	return false
 
+# In order to be able to rotate camera without jumps and 
+# weird turns, make force source define vertical.
+func defines_vertical():
+	return true
 
 # Compute forces applied to rigid body.
 # All quantities are in body's ref. frame.
