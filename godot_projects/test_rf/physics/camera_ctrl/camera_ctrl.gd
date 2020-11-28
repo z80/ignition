@@ -18,8 +18,8 @@ export(float) var sensitivity_dist = 0.02
 
 export(float) var dist_min = 1.0   setget _set_dist_min
 export(float) var dist_max = 100.0 setget _set_dist_max
-export(float) var limit_yaw   = 1.0
-export(float) var limit_pitch = 1.0
+export(float) var limit_yaw   = 0.5
+export(float) var limit_pitch = 1.57
 export(float) var return_rate = 0.1
 
 # All states share the same state set as one 
@@ -182,6 +182,7 @@ func _process_fps(_delta):
 	var q: Quat = Quat( e_y, _state.yaw ) * Quat( e_x, _state.pitch )
 	var t: Transform = Transform.IDENTITY
 	t.basis = q
+	t.origin = _target.global_transform.origin
 	transform = t
 	
 	# Zero mouse displacement as this thing is continuously accumulated.
@@ -208,10 +209,10 @@ func _process_tps_azimuth( _delta ):
 	
 	if _ctrl_enabled:
 		var fr: float = -_mouse_displacement.x * sensitivity
-		if (fr > 0.0) and (_state.yaw > limit_yaw):
-			fr = 0.0
-		elif (fr < 0.0) and (_state.yaw < -limit_yaw):
-			fr = 0.0
+		#if (fr > 0.0) and (_state.yaw > limit_yaw):
+		#	fr = 0.0
+		#elif (fr < 0.0) and (_state.yaw < -limit_yaw):
+		#	fr = 0.0
 		var rr: float = 0.0 * _state.yaw * return_rate * _delta
 
 		_state.yaw +=  fr - rr
@@ -230,8 +231,8 @@ func _process_tps_azimuth( _delta ):
 	
 	var t: Transform = Transform.IDENTITY
 	t.basis = q
-	t.origin += v_dist
-	
+	var target_origin: Vector3 = _target.global_transform.origin
+	t.origin += v_dist + target_origin
 	transform = t
 	
 	# Zero mouse displacement as this thing is continuously accumulated.
