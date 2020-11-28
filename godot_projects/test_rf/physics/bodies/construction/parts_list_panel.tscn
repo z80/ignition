@@ -8,9 +8,8 @@ __meta__ = {
 }
 
 [node name="Panel" type="Panel" parent="."]
-anchor_right = 0.105
 anchor_bottom = 0.998
-margin_right = 0.479996
+margin_right = 108.0
 margin_bottom = 0.200012
 __meta__ = {
 "_edit_use_anchors_": false

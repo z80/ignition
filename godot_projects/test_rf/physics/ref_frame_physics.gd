@@ -216,13 +216,12 @@ func apply_forces():
 	var rf: RefFrame = closest_force_source()
 	if rf == null:
 		return
-	var fs: ForceSource = rf.force_source
 	
 	var children = self.get_children()
 	for child in children:
 		var body = child as Body
 		if body != null:
-			fs.process_body( fs, body )
+			process_body( rf, body )
 
 
 
