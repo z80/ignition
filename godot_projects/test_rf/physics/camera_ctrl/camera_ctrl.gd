@@ -32,6 +32,11 @@ var _state = {
 }
 
 
+# Camera unit vectors defining up axis and two horizontal axes.
+var basis_initialized: bool = false
+var e_x: Vector3 = Vector3(1.0, 0.0, 0.0)
+var e_y: Vector3 = Vector3(0.0, 1.0, 0.0)
+var e_z: Vector3 = Vector3(0.0, 0.0, 1.0)
 
 
 var _target: Spatial = null
@@ -174,7 +179,7 @@ func _process_fps(_delta):
 			rr = 0.0
 		_state.pitch +=  fr - rr
 	
-	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
+	var q: Quat = Quat( e_y, _state.yaw ) * Quat( e_x, _state.pitch )
 	var t: Transform = _target.global_transform
 	var base_q: Quat = t.basis
 	q = base_q * q
@@ -226,7 +231,7 @@ func _process_tps_azimuth( _delta ):
 	#print( "target origin: ", t.origin )
 	var base_q: Quat = t.basis
 	
-	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
+	var q: Quat = Quat( e_y, _state.yaw ) * Quat( e_x, _state.pitch )
 	q = base_q * q
 	var v_dist: Vector3 = Vector3( 0.0, 0.0, _state.dist )
 	v_dist = q.xform( v_dist )
@@ -246,6 +251,41 @@ func _process_tps_azimuth( _delta ):
 func _process_tps_free( _delta ):
 	_process_tps_azimuth( _delta )
 
+
+
+
+func _init_basis( up: Vector3 ):
+	var Utils = preload( "res://physics/utils/orthogonalize.gd" )
+	var ret = Utils.pick_basis( up )
+	e_x = ret[0]
+	e_y = ret[1]
+	e_z = ret[2]
+
+
+func _adjust_basis( up: Vector3 ):
+	var Utils = preload( "res://physics/utils/orthogonalize.gd" )
+	var ret = Utils.adjust_basis( e_x, e_z, up )
+	e_x = ret[0]
+	e_y = ret[1]
+	e_z = ret[2]
+
+
+func process_basis( up: Vector3 ):
+	if basis_initialized:
+		_adjust_basis( up )
+	else:
+		_init_basis( up )
+		basis_initialized = true
+
+
+func jump_basis( t_before: Transform, t_after: Transform ):
+	var q_before: Quat = t_before.basis
+	var q_after: Quat  = t_after.basis
+	var q: Quat = q_before.inverse() * q_after
+	q = q.inverse()
+	e_x = q.xform( e_x )
+	e_y = q.xform( e_y )
+	e_z = q.xform( e_z )
 
 
 

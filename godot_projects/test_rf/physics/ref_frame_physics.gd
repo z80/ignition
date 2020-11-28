@@ -222,6 +222,11 @@ func apply_forces():
 		var body = child as Body
 		if body != null:
 			process_body( rf, body )
+	
+	#var defines_vertical: bool = rf.force_source.defines_vertical()
+	#if defines_vertical:
+	#	rf.compute_relative_to_root( self )
+	#	var q: Quat = rf.q_root()
 
 
 
