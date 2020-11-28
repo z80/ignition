@@ -213,9 +213,10 @@ func parent_bodies():
 
 
 func apply_forces():
-	var fs: ForceSource = closest_force_source()
-	if fs == null:
+	var rf: RefFrame = closest_force_source()
+	if rf == null:
 		return
+	var fs: ForceSource = rf.force_source
 	
 	var children = self.get_children()
 	for child in children:

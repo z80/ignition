@@ -40,9 +40,9 @@ _global_script_classes=[ {
 "path": "res://physics/force_source/force_source.gd"
 }, {
 "base": "ForceSource",
-"class": "ForceSourceGravity",
+"class": "ForceSourceGravityDown",
 "language": "GDScript",
-"path": "res://physics/force_source/force_source_gravity.gd"
+"path": "res://physics/force_source/force_source_gravity_down.gd"
 }, {
 "base": "Node",
 "class": "FramesDb",
@@ -121,7 +121,7 @@ _global_script_class_icons={
 "DraggedRf": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
 "ForceSource": "",
-"ForceSourceGravity": "",
+"ForceSourceGravityDown": "",
 "FramesDb": "",
 "LandscapeBase": "",
 "LandscapeFunc": "",
@@ -298,12 +298,16 @@ ui_x={
  ]
 }
 
+[node]
+
+name_num_separator=2
+
 [physics]
 
 2d/default_gravity=981
 2d/default_linear_damp=0.02
 2d/default_angular_damp=0.3
-3d/default_gravity=0.98
+3d/default_gravity=0.0
 
 [rendering]
 
