@@ -14,7 +14,7 @@ var _mouse_displacement: Vector2 = Vector2.ZERO
 var _zoom_displacement: int = 0
 
 export(float) var sensitivity = 0.01 setget _set_sensitivity
-export(float) var sensitivity_dist = 0.02
+export(float) var sensitivity_dist = 0.2
 
 export(float) var dist_min = 1.0   setget _set_dist_min
 export(float) var dist_max = 100.0 setget _set_dist_max
@@ -115,10 +115,10 @@ func _input( event ):
 		_mouse_displacement += event.relative
 	var zoom_in: bool = Input.is_action_just_pressed( "ui_zoom_in" )
 	if zoom_in:
-		_zoom_displacement *= 0.7
+		_zoom_displacement -= 1
 	var zoom_out: bool = Input.is_action_just_pressed( "ui_zoom_out" )
 	if zoom_out:
-		_zoom_displacement *= 1.3
+		_zoom_displacement += 1
 	
 	#var pressed_c: bool = Input.is_action_just_pressed( "ui_c" )
 	#if pressed_c:
@@ -181,7 +181,11 @@ func _process_fps(_delta):
 	
 	var q: Quat = Quat( e_y, _state.yaw ) * Quat( e_x, _state.pitch )
 	var t: Transform = Transform.IDENTITY
-	t.basis = q
+	t.basis.x = e_x
+	t.basis.y = e_y
+	t.basis.z = e_z
+	t.basis = t.basis
+	t.basis = t.basis * Basis( q )
 	t.origin = _target.global_transform.origin
 	transform = t
 	
@@ -199,13 +203,14 @@ func _process_tps_azimuth( _delta ):
 	#apply_target()
 	
 	# Update the distance.
-	var d_dist: float = sensitivity_dist * float(_zoom_displacement) * _state.dist
-	_zoom_displacement = 0
-	_state.dist += d_dist
-	if _state.dist > dist_max:
-		_state.dist = dist_max
-	elif _state.dist < dist_min:
-		_state.dist = dist_min
+	if _zoom_displacement != 0:
+		var d_dist: float = exp( log(1.0 + sensitivity_dist) * float(_zoom_displacement) )
+		_state.dist *= d_dist
+		if _state.dist > dist_max:
+			_state.dist = dist_max
+		elif _state.dist < dist_min:
+			_state.dist = dist_min
+		_zoom_displacement = 0
 	
 	if _ctrl_enabled:
 		var fr: float = -_mouse_displacement.x * sensitivity
@@ -230,7 +235,11 @@ func _process_tps_azimuth( _delta ):
 	v_dist = q.xform( v_dist )
 	
 	var t: Transform = Transform.IDENTITY
-	t.basis = q
+	t.basis.x = e_x
+	t.basis.y = e_y
+	t.basis.z = e_z
+	t.basis = t.basis
+	t.basis = t.basis * Basis( q )
 	var target_origin: Vector3 = _target.global_transform.origin
 	t.origin += v_dist + target_origin
 	transform = t
@@ -271,13 +280,14 @@ func process_basis( up: Vector3 ):
 
 
 func jump_basis( t_before: Transform, t_after: Transform ):
-	var q_before: Quat = t_before.basis
-	var q_after: Quat  = t_after.basis
-	var q: Quat = q_before.inverse() * q_after
-	q = q.inverse()
-	e_x = q.xform( e_x )
-	e_y = q.xform( e_y )
-	e_z = q.xform( e_z )
+#	var q_before: Quat = t_before.basis
+#	var q_after: Quat  = t_after.basis
+#	var q: Quat = q_after.inverse() * q_before
+#	q = q.inverse()
+#	e_x = q.xform( e_x )
+#	e_y = q.xform( e_y )
+#	e_z = q.xform( e_z )
+	pass
 
 
 

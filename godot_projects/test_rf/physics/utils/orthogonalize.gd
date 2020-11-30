@@ -34,6 +34,10 @@ static func adjust_basis( e0: Vector3, e2: Vector3, up: Vector3 ):
 	var u2: Vector3 = e2 - e2.project(u0) - e2.project(u1)
 	u2 = u2.normalized()
 	
+	var d01: float = u0.dot( u1 )
+	var d02: float = u0.dot( u2 )
+	var d12: float = u1.dot( u2 )
+	
 	return [u0, u1, u2]
 	
 

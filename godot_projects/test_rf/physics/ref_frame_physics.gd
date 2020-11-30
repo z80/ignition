@@ -136,6 +136,7 @@ func jump_if_needed():
 		return
 	
 	var t: Transform = player_control.t()
+	t.basis = Basis.IDENTITY
 	jump( t )
 	
 	#_jumps_left -= 1
@@ -241,6 +242,13 @@ func process_body( force_source_rf: RefFrame, body: Body ):
 	var v: Vector3 = force_source_rf.v_root()
 	var q: Quat    = force_source_rf.q_root()
 	var w: Vector3 = force_source_rf.w_root()
+	if body.name == "Thruster_01":
+		body.compute_relative_to_root( force_source_rf )
+		var r_rel: Vector3 = body.r_root()
+		var q_rel: Quat    = body.q_root()
+		var qq: Quat = q_rel * q
+		var i = 1
+		
 
 	var ret: Array = []
 	force_source_rf.force_source.compute_force( body, r, v, q, w, ret )

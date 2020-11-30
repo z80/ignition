@@ -19,12 +19,19 @@ var super_body = null
 var sub_bodies: Array = []
 
 
+# Force visualizer
+var force: Spatial = null
+
 func init():
 	create_visual()
 
 
 func _ready():
 	add_to_group( Constants.BODIES_GROUP_NAME )
+	
+	var Force = preload( "res://physics/force_source/force_visualizer.tscn" )
+	force = Force.instance()
+	self.add_child( force )
 
 
 
@@ -241,6 +248,12 @@ func _create_visual( Visual ):
 	root.add_child( v )
 	
 	_visual = v
+	
+	# Own ref. frame visualizer
+	var OwnRf = preload( "res://physics/force_source/own_ref_frame_visualizer.tscn" )
+	var rf = OwnRf.instance()
+	_visual.add_child( rf )
+
 
 
 # Spatials to target camera to.
@@ -417,6 +430,10 @@ func add_force_torque( F: Vector3, P: Vector3 ):
 		if rb:
 			rb.add_central_force( F )
 			rb.add_torque( P )
+			if force:
+				force.set_force( true, F, self.r() )
+	else:
+		force.set_force( false, F, self.r() )
 
 
 
