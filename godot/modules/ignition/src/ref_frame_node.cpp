@@ -272,8 +272,9 @@ SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const S
 	SE3 se3B = se3_root;
 	for ( int i=0; i<qtyB; i++ )
 	{
-		const int indB = qtyB - i - 1;
-		RefFrameNode * rf = queueB_.ptr()[indB];
+		//const int indB = qtyB - i - 1;
+		//RefFrameNode * rf = queueB_.ptr()[indB];
+		RefFrameNode * rf = queueB_.ptr()[i];
 		const SE3 & se3_rf = rf->se3_;
 		se3B = se3_rf * se3B;
 	}
