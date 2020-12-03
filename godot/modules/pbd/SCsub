@@ -25,6 +25,8 @@ def configure_static_build():
     #module_env.Append(CCFLAGS=['-O2'])
     module_env.Append( CCFLAGS=['/bigobj'] )
 
+    module_env.Append( CPPDEFINES = ['USE_DOUBLE'] )
+
     # Includes
     module_env.Append(CPPPATH=["#modules/pbd"])
     module_env.Append(CPPPATH=["#modules/pbd/Common"])

@@ -7,6 +7,9 @@
 #include "src/pbd_server.h"
 #include "src/_pbd_server.h"
 
+#include "src/pbd_simulation_node.h"
+
+
 #include "Common.h"
 #include "Logger.h"
 #include "Timing.h"
@@ -23,6 +26,8 @@ void register_pbd_types()
 	_pbd_server = memnew(_PbdServer);
 	ClassDB::register_class<_PbdServer>();
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PbdServer", _PbdServer::get_singleton()));
+
+	ClassDB::register_class<PbdSimulationNode>();
 }
 
 void unregister_pbd_types()

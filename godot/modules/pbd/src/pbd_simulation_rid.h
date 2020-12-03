@@ -7,6 +7,7 @@
 namespace PBD
 {
 	class Simulation;
+	class TimeManager;
 }
 
 class PbdSimulationRid : public RID_Data
@@ -14,7 +15,8 @@ class PbdSimulationRid : public RID_Data
 	RID self;
 
 private:
-	PBD::Simulation * simulation;
+	PBD::Simulation  * simulation;
+	PBD::TimeManager * time_manager;
 
 public:
 	_FORCE_INLINE_ void set_self(const RID & p_self)
@@ -35,6 +37,16 @@ public:
 	_FORCE_INLINE_ PBD::Simulation * get_simulation()
 	{
 		return simulation;
+	}
+
+	_FORCE_INLINE_ void set_time_manager( PBD::TimeManager * tm )
+	{
+		time_manager = tm;
+	}
+
+	_FORCE_INLINE_ PBD::TimeManager * get_time_manager()
+	{
+		return time_manager;
 	}
 
 	PbdSimulationRid();

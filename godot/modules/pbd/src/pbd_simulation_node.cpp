@@ -5,11 +5,13 @@
 
 #include "Simulation.h"
 #include "TimeStep.h"
+#include "TimeManager.h"
 
 PbdSimulationNode::PbdSimulationNode()
 	: Spatial()
 {
 	sim = nullptr;
+	t = 0.0;
 }
 
 PbdSimulationNode::~PbdSimulationNode()
@@ -33,20 +35,41 @@ void PbdSimulationNode::_notification( int p_what )
 
 void PbdSimulationNode::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("step"), &PbdSimulationNode::step );
+	ClassDB::bind_method( D_METHOD("set_time_step", "h"), &PbdSimulationNode::set_time_step );
+	ClassDB::bind_method( D_METHOD("step", "delta"),      &PbdSimulationNode::step );
 }
 
 
 
-void PbdSimulationNode::step()
+void PbdSimulationNode::step( real_t dt )
 {
 	if ( sim == nullptr )
 		return;
 
 	PBD::Simulation * s = sim->get_simulation();
 	PBD::SimulationModel * sm = s->getModel();
+	// Setup time step size.
+	PBD::TimeManager * tm = sim->get_time_manager();
+	PBD::TimeManager::setCurrent( tm );
+
 	PBD::TimeStep * ts = s->getTimeStep();
-	ts->step( *sm );
+
+	const Real h = tm->getTimeStepSize();
+	t += dt;
+	while ( t >= h )
+	{
+		ts->step( *sm );
+		t -= h;
+	}
+}
+
+void PbdSimulationNode::set_time_step( real_t h )
+{
+	if ( !sim )
+		return;
+
+	PBD::TimeManager * tm = sim->get_time_manager();
+	tm->setTimeStepSize( h );
 }
 
 bool PbdSimulationNode::init()

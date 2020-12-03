@@ -3,6 +3,7 @@
 #define __PBD_SIMULATION_NODE_H_
 
 #include "scene/3d/spatial.h"
+#include "Common.h"
 
 class PbdSimulationRid;
 
@@ -19,10 +20,12 @@ protected:
 	static void _bind_methods();
 
 public:
-	void step();
+	void set_time_step( real_t h );
+	void step( real_t dt );
 
 	RID sim_rid;
 	PbdSimulationRid * sim;
+	Real t;
 
 private:
 	bool init();
