@@ -36,8 +36,10 @@ def configure_static_build():
     module_env.Append(CPPPATH=["#modules/pbd/Ext_Discregrid/discregrid/include"])
     module_env.Append(CPPPATH=["#modules/pbd/Ext_Discregrid/discregrid/include/Discregrid"])
     module_env.Append(CPPPATH=["#modules/pbd/Ext_GenericParameters"])
+    module_env.Append(CPPPATH=["#modules/pbd/src"])
     # Sources
     module_env.add_source_files( env.modules_sources, "*.cpp" )
+    module_env.add_source_files( env.modules_sources, "src/*.cpp" )
     module_env.add_source_files( env.modules_sources, "PositionBasedDynamics/*.cpp" )
     module_env.add_source_files( env.modules_sources, "Simulation/*.cpp" )
     module_env.add_source_files( env.modules_sources, "Utils/*.cpp" )
