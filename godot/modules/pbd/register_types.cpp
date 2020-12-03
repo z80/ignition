@@ -7,6 +7,12 @@
 #include "src/pbd_server.h"
 #include "src/_pbd_server.h"
 
+#include "Common.h"
+#include "Logger.h"
+#include "Timing.h"
+INIT_LOGGING;
+INIT_TIMING;
+
 static PbdServer * pbd_server   = nullptr;
 static _PbdServer * _pbd_server = NULL;
 
