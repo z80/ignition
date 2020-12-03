@@ -4,6 +4,7 @@
 #include "pbd_simulation_rid.h"
 
 #include "Simulation.h"
+#include "TimeStep.h"
 
 PbdSimulationNode::PbdSimulationNode()
 	: Spatial()
@@ -43,6 +44,9 @@ void PbdSimulationNode::step()
 		return;
 
 	PBD::Simulation * s = sim->get_simulation();
+	PBD::SimulationModel * sm = s->getModel();
+	PBD::TimeStep * ts = s->getTimeStep();
+	ts->step( *sm );
 }
 
 bool PbdSimulationNode::init()

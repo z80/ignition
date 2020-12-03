@@ -9,6 +9,7 @@ PbdSimulationRid::PbdSimulationRid()
 	simulation = memnew( Simulation );
 	SimulationModel * model = memnew( SimulationModel );
 	simulation->setModel( model );
+	simulation->init();
 }
 
 PbdSimulationRid::~PbdSimulationRid()
