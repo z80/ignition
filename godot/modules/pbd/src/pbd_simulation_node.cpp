@@ -1,10 +1,14 @@
 
 #include "pbd_simulation_node.h"
 #include "pbd_server.h"
+#include "pbd_simulation_rid.h"
+
+#include "Simulation.h"
 
 PbdSimulationNode::PbdSimulationNode()
 	: Spatial()
 {
+	sim = nullptr;
 }
 
 PbdSimulationNode::~PbdSimulationNode()
@@ -28,27 +32,44 @@ void PbdSimulationNode::_notification( int p_what )
 
 void PbdSimulationNode::_bind_methods()
 {
+	ClassDB::bind_method( D_METHOD("step"), &PbdSimulationNode::step );
 }
 
 
 
 void PbdSimulationNode::step()
 {
+	if ( sim == nullptr )
+		return;
+
+	PBD::Simulation * s = sim->get_simulation();
 }
 
 bool PbdSimulationNode::init()
 {
-	//sim_rid.
+	const bool valid_ok = sim_rid.is_valid();
+	if ( valid_ok )
+		return true;
 
-	return false;
+	sim_rid = PbdServer::get_singleton()->create_simulation();
+	const bool new_is_valid = sim_rid.is_valid();
+	if ( new_is_valid )
+		sim = PbdServer::get_singleton()->get_simulation( sim_rid );
+	else
+		sim = nullptr;
+
+	return new_is_valid;
 }
 
 void PbdSimulationNode::finit()
 {
-	//if ( sim_rid.self_id() != 0 )
-	{
+	const bool valid_ok = sim_rid.is_valid();
+	if ( !valid_ok )
+		return;
 
-	}
+	PbdServer::get_singleton()->destroy_simulation( sim_rid );
+	sim_rid = RID();
+	sim = nullptr;
 }
 
 

@@ -63,6 +63,11 @@ bool PbdServer::destroy_simulation(RID rid)
 	return false;
 }
 
+PbdSimulationRid * PbdServer::get_simulation(RID rid)
+{
+	return simulation_owner.get( rid );
+}
+
 RID PbdServer::create_rigid_body()
 {
 	PbdRigidBodyRid * ptr = memnew( PbdRigidBodyRid() );

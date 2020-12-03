@@ -46,6 +46,7 @@ public:
 	// Methods it exposes.
 	RID  create_simulation();
 	bool destroy_simulation(RID rid);
+	PbdSimulationRid * get_simulation(RID rid);
 
 	RID  create_rigid_body();
 	bool destroy_rigid_body(RID rid);

@@ -4,6 +4,8 @@
 
 #include "scene/3d/spatial.h"
 
+class PbdSimulationRid;
+
 class PbdSimulationNode: public Spatial
 {
 	GDCLASS( PbdSimulationNode, Spatial );
@@ -20,6 +22,7 @@ public:
 	void step();
 
 	RID sim_rid;
+	PbdSimulationRid * sim;
 
 private:
 	bool init();
