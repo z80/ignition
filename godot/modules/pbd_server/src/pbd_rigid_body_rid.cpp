@@ -4,6 +4,10 @@
 
 using namespace PBD;
 
+/*class PBD::RigidBody
+{
+};*/
+
 PbdRigidBodyRid::PbdRigidBodyRid()
 {
 	rigid_body = memnew( RigidBody() );

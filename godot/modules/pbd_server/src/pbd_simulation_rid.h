@@ -27,19 +27,19 @@ public:
 		return self;
 	}
 
-	_FORCE_INLINE_ void set_simulation(Simulation * sim)
+	_FORCE_INLINE_ void set_simulation( PBD::Simulation * sim )
 	{
 		simulation = sim;
 	}
 
-	_FORCE_INLINE_ Simulation * get_simulation()
+	_FORCE_INLINE_ PBD::Simulation * get_simulation()
 	{
 		return simulation;
 	}
 
 	PbdSimulationRid();
 	~PbdSimulationRid();
-}
+};
 
 
 

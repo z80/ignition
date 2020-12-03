@@ -14,10 +14,12 @@
 #include "pbd_rigid_body_rid.h"
 #include "pbd_joint_hinge_mpos_rid.h"
 
+
 class PbdServer : public Object
 {
 	GDCLASS(PbdServer, Object);
 
+private:
 	static PbdServer * singleton;
 	static void thread_func(void * p_udata);
 

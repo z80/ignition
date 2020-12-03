@@ -11,6 +11,7 @@ void PbdServer::thread_func( void * p_udata )
 PbdServer::PbdServer()
 	: Object()
 {
+	singleton = this;
 }
 
 PbdServer::~PbdServer()

@@ -41,7 +41,7 @@ public:
 
 	PbdJointHingeMposRid();
 	~PbdJointHingeMposRid();
-}
+};
 
 
 

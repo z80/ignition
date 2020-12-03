@@ -28,19 +28,19 @@ public:
 		return self;
 	}
 
-	_FORCE_INLINE_ void set_rigid_body( RigidBody * rb )
+	_FORCE_INLINE_ void set_rigid_body( PBD::RigidBody * rb )
 	{
 		rigid_body = rb;
 	}
 
-	_FORCE_INLINE_ RigidBody * get_rigid_body()
+	_FORCE_INLINE_ PBD::RigidBody * get_rigid_body()
 	{
 		return rigid_body;
 	}
 
 	PbdRigidBodyRid();
 	~PbdRigidBodyRid();
-}
+};
 
 
 
