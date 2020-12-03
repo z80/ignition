@@ -50,9 +50,11 @@ public:
 
 	RID  create_rigid_body();
 	bool destroy_rigid_body(RID rid);
+	PbdRigidBodyRid * get_rigid_body(RID rid);
 
 	RID  create_joint_hinge_mpos();
 	bool destroy_joint_hinge_mpos(RID rid);
+	PbdJointHingeMposRid * get_joint_hinge_mpos(RID rid);
 };
 
 

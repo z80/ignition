@@ -93,6 +93,11 @@ bool PbdServer::destroy_rigid_body(RID rid)
 	return false;
 }
 
+PbdRigidBodyRid * PbdServer::get_rigid_body(RID rid)
+{
+	return rigid_body_owner.get( rid );
+}
+
 RID PbdServer::create_joint_hinge_mpos()
 {
 	PbdJointHingeMposRid * ptr = memnew( PbdJointHingeMposRid() );
@@ -116,6 +121,11 @@ bool PbdServer::destroy_joint_hinge_mpos(RID rid)
 	}
 
 	return false;
+}
+
+PbdJointHingeMposRid * PbdServer::get_joint_hinge_mpos(RID rid)
+{
+	return joint_hinge_mpos_owner.get( rid );
 }
 
 

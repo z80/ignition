@@ -27,9 +27,12 @@ void PbdSimulationNode::_notification( int p_what )
 			ERR_FAIL_COND( init() );
 			break;
 
-		case NOTIFICATION_EXIT_TREE:
-			finit();
-			break;
+		// Destroy when it is physically deleted.
+		// Have to destroy bodies and joints before simulation. But don't know how
+		// based on the fact that there is no pre-exit event.
+		//case NOTIFICATION_EXIT_TREE:
+		//	finit();
+		//	break;
 	}
 }
 
