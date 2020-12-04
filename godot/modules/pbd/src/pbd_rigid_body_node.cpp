@@ -163,9 +163,6 @@ bool PbdRigidBodyNode::init()
 
 	rigid_body_rid = PbdServer::get_singleton()->get_rigid_body( rid );
 
-	// Apply mass, inertia, etc.
-	apply_all_body_props();
-
 	// Initialize collision properties.
 	MeshInstance * mi = get_mesh_path_instance();
 	if ( !mi )
@@ -173,6 +170,11 @@ bool PbdRigidBodyNode::init()
 	const bool initialized_collistions_ok = init_collision_mesh( mi );
 	if ( !initialized_collistions_ok )
 		return false;
+
+	// Apply mass, inertia, etc.
+	// And this should be after initializing collision mesh. It is because
+	// there is sets friction, restitution and other params to default values.
+	apply_all_body_props();
 
 	// Check if parent is simulation.
 	PbdSimulationNode * sim = get_parent_simulation();
@@ -227,11 +229,33 @@ bool PbdRigidBodyNode::init_collision_mesh( MeshInstance * mi )
 	Utilities::IndexedFaceMesh ifm;
 
 	const int qty = mesh->get_surface_count();
+	// This is a little bit strange.
+	// Count overall number of vertices for Utilities::IndexedFaceMesh initialization.
+	// Yes. It is required. Otherwise it fails.
+	int total_qty = 0;
+	for ( int i=0; i<qty; i++ )
+	{
+		const Mesh & m = **mesh;
+		const uint32_t fmt = m.surface_get_format( i );
+		const bool is_index_array = ( fmt & Mesh::ARRAY_FORMAT_INDEX );
+		const int vert_count = is_index_array ? m.surface_get_array_index_len( i ) :
+						                        m.surface_get_array_len( i );
+		total_qty += vert_count;
+	}
+	ifm.initMesh( total_qty, total_qty, total_qty );
+
+	// And now normal mesh parsing.
 	for ( int i=0; i<qty; i++ )
 	{
 		const Mesh & m = **mesh;
 		faces_from_surface( t, m, i, vd, ifm );
 	}
+
+	// Some magic after inserting vertices and faces.
+	ifm.buildNeighbors();
+	ifm.updateNormals( vd, 0 );
+	ifm.updateVertexNormals( vd );
+
 
 	const Transform own_t = get_transform();
 	const Vector3   x = own_t.get_origin();
@@ -283,7 +307,7 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 			const int lookup_index = indices_reader[i];
 			const Vector3 v = vertices_reader[lookup_index];
 			const Vector3 vt = t.xform( v );
-			vd.setPosition( i, Vector3r( vt.x, vt.y, vt.z ) );
+			vd.addVertex( Vector3r( vt.x, vt.y, vt.z ) );
 			if ( set_offset == 0 )
 			{
 				const unsigned int inds[] = {i, i+1, i+2};
@@ -308,10 +332,6 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 			}
 		}
 	}
-
-	ifm.buildNeighbors();
-	ifm.updateNormals( vd, 0 );
-	ifm.updateVertexNormals( vd );
 }
 
 void PbdRigidBodyNode::apply_all_body_props()
