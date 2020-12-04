@@ -32,7 +32,7 @@ void PbdRigidBodyNode::set_shape_mesh_path( const NodePath & path )
 	shape_mesh_path = path;
 }
 
-NodePath PbdRigidBodyNode::get_shape_mesh_path() const
+const NodePath & PbdRigidBodyNode::get_shape_mesh_path() const
 {
 	return shape_mesh_path;
 }
@@ -129,6 +129,7 @@ void PbdRigidBodyNode::_notification( int p_what )
 void PbdRigidBodyNode::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_shape_mesh_path", "node_path"), &PbdRigidBodyNode::set_shape_mesh_path );
+	ClassDB::bind_method( D_METHOD("get_shape_mesh_path"), &PbdRigidBodyNode::get_shape_mesh_path, Variant::NODE_PATH );
 
 	ClassDB::bind_method( D_METHOD("set_mass", "m"), &PbdRigidBodyNode::set_mass );
 	ClassDB::bind_method( D_METHOD("get_mass"), &PbdRigidBodyNode::get_mass, Variant::REAL );
@@ -142,12 +143,11 @@ void PbdRigidBodyNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_restitution", "k"), &PbdRigidBodyNode::set_restitution );
 	ClassDB::bind_method( D_METHOD("get_restitution"), &PbdRigidBodyNode::get_restitution, Variant::REAL );
 
-	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH, "mesh_path"), "set_shape_mesh_path", "get_shape_mesh_path" );
+	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH, "shape_mesh_path"), "set_shape_mesh_path", "get_shape_mesh_path" );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL, "mass"), "set_mass", "get_mass" );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3, "inertia"), "set_inertia", "get_inertia" );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL, "friction"), "set_friction", "get_friction" );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL, "restitution"), "set_restitution", "get_restitution" );
-
 }
 
 bool PbdRigidBodyNode::init()
@@ -165,8 +165,14 @@ bool PbdRigidBodyNode::init()
 
 	// Apply mass, inertia, etc.
 	apply_all_body_props();
+
 	// Initialize collision properties.
-	init_collision_mesh( get_mesh_path_instance() );
+	MeshInstance * mi = get_mesh_path_instance();
+	if ( !mi )
+		return false;
+	const bool initialized_collistions_ok = init_collision_mesh( mi );
+	if ( !initialized_collistions_ok )
+		return false;
 
 	// Check if parent is simulation.
 	PbdSimulationNode * sim = get_parent_simulation();
@@ -182,7 +188,6 @@ bool PbdRigidBodyNode::init()
 	rbs.push_back( rb );
 
 	return true;
-
 }
 
 void PbdRigidBodyNode::finit()
@@ -212,6 +217,9 @@ MeshInstance * PbdRigidBodyNode::get_mesh_path_instance() const
 
 bool PbdRigidBodyNode::init_collision_mesh( MeshInstance * mi )
 {
+	if ( !mi )
+		return false;
+
 	const Transform t    = mi->get_transform();
 	const Ref<Mesh> mesh = mi->get_mesh();
 

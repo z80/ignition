@@ -24,7 +24,8 @@ void PbdSimulationNode::_notification( int p_what )
 	switch ( p_what )
 	{
 		case NOTIFICATION_ENTER_TREE:
-			ERR_FAIL_COND( init() );
+			//ERR_FAIL_COND( init() );
+			init();
 			break;
 
 		// Destroy when it is physically deleted.
@@ -33,6 +34,8 @@ void PbdSimulationNode::_notification( int p_what )
 		//case NOTIFICATION_EXIT_TREE:
 		//	finit();
 		//	break;
+		default:
+			break;
 	}
 }
 
