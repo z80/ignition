@@ -8,6 +8,7 @@
 
 #include "Common.h"
 #include "RigidBody.h"
+#include "Simulation.h"
 
 static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, PBD::VertexData & vs, Utilities::IndexedFaceMesh & ifm );
 static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, PBD::VertexData & vs, Utilities::IndexedFaceMesh & ifm );
@@ -29,6 +30,11 @@ PbdRigidBodyNode::~PbdRigidBodyNode()
 void PbdRigidBodyNode::set_shape_mesh_path( const NodePath & path )
 {
 	shape_mesh_path = path;
+}
+
+NodePath PbdRigidBodyNode::get_shape_mesh_path() const
+{
+	return shape_mesh_path;
 }
 
 void PbdRigidBodyNode::set_mass( real_t m )
@@ -109,7 +115,7 @@ void PbdRigidBodyNode::_notification( int p_what )
 	switch ( p_what )
 	{
 	// One step after simulation initialization.
-	case NOTIFICATION_POST_ENTER_TREE:
+	case NOTIFICATION_READY:
 		ERR_FAIL_COND( init() );
 		break;
 
@@ -122,6 +128,26 @@ void PbdRigidBodyNode::_notification( int p_what )
 
 void PbdRigidBodyNode::_bind_methods()
 {
+	ClassDB::bind_method( D_METHOD("set_shape_mesh_path", "node_path"), &PbdRigidBodyNode::set_shape_mesh_path );
+
+	ClassDB::bind_method( D_METHOD("set_mass", "m"), &PbdRigidBodyNode::set_mass );
+	ClassDB::bind_method( D_METHOD("get_mass"), &PbdRigidBodyNode::get_mass, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD("set_inertia", "i3"), &PbdRigidBodyNode::set_inertia );
+	ClassDB::bind_method( D_METHOD("get_inertia"), &PbdRigidBodyNode::get_inertia, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD("set_friction", "k"), &PbdRigidBodyNode::set_friction );
+	ClassDB::bind_method( D_METHOD("get_friction"), &PbdRigidBodyNode::get_friction, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD("set_restitution", "k"), &PbdRigidBodyNode::set_restitution );
+	ClassDB::bind_method( D_METHOD("get_restitution"), &PbdRigidBodyNode::get_restitution, Variant::REAL );
+
+	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH, "mesh_path"), "set_shape_mesh_path", "get_shape_mesh_path" );
+	ADD_PROPERTY( PropertyInfo(Variant::REAL, "mass"), "set_mass", "get_mass" );
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3, "inertia"), "set_inertia", "get_inertia" );
+	ADD_PROPERTY( PropertyInfo(Variant::REAL, "friction"), "set_friction", "get_friction" );
+	ADD_PROPERTY( PropertyInfo(Variant::REAL, "restitution"), "set_restitution", "get_restitution" );
+
 }
 
 bool PbdRigidBodyNode::init()
@@ -147,7 +173,13 @@ bool PbdRigidBodyNode::init()
 	if ( !sim )
 		return false;
 
+	// Insert rigid body into simulation.
+	PBD::Simulation * s = sim->sim->get_simulation();
+	PBD::SimulationModel * sm = s->getModel();
+	PBD::SimulationModel::RigidBodyVector & rbs = sm->getRigidBodies();
 
+	PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
+	rbs.push_back( rb );
 
 	return true;
 
@@ -183,8 +215,8 @@ bool PbdRigidBodyNode::init_collision_mesh( MeshInstance * mi )
 	const Transform t    = mi->get_transform();
 	const Ref<Mesh> mesh = mi->get_mesh();
 
-	const PBD::VertexData            vd;
-	const Utilities::IndexedFaceMesh ifm;
+	PBD::VertexData            vd;
+	Utilities::IndexedFaceMesh ifm;
 
 	const int qty = mesh->get_surface_count();
 	for ( int i=0; i<qty; i++ )
@@ -193,17 +225,20 @@ bool PbdRigidBodyNode::init_collision_mesh( MeshInstance * mi )
 		faces_from_surface( t, m, i, vd, ifm );
 	}
 
-	const Transform t = get_transform();
-	const Vector3   x = t.get_origin();
-	const Quat      q = t.basis.get_rotation_quat();
+	const Transform own_t = get_transform();
+	const Vector3   x = own_t.get_origin();
+	const Quat      q = own_t.basis.get_rotation_quat();
 
 	PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
 	rb->initBody( mass, Vector3r( x.x, x.y, x.z ),
-		          inertia_tensor, Quanterionr( q.x, q.y, q.z, q.w ),
-		          vd, ifr );
+		          Vector3r( inertia_tensor.x, inertia_tensor.y, inertia_tensor.z ),
+		          Quaternionr( q.w, q.x, q.y, q.z ),
+		          vd, ifm );
+
+	return true;
 }
 
-static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, PBD::VertexData & vs, Utilities::IndexedFaceMesh & ifm )
+static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, PBD::VertexData & vd, Utilities::IndexedFaceMesh & ifm )
 {
 	// Don't add faces if doesn't consist of triangles.
 	if (mesh.surface_get_primitive_type(surface_idx) != Mesh::PRIMITIVE_TRIANGLES)

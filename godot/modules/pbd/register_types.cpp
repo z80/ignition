@@ -8,6 +8,7 @@
 #include "src/_pbd_server.h"
 
 #include "src/pbd_simulation_node.h"
+#include "src/pbd_rigid_body_node.h"
 
 
 #include "Common.h"
@@ -28,6 +29,7 @@ void register_pbd_types()
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PbdServer", _PbdServer::get_singleton()));
 
 	ClassDB::register_class<PbdSimulationNode>();
+	ClassDB::register_class<PbdRigidBodyNode>();
 }
 
 void unregister_pbd_types()

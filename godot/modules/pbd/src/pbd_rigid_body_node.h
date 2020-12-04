@@ -20,6 +20,7 @@ public:
 	~PbdRigidBodyNode();
 
 	void set_shape_mesh_path( const NodePath & path );
+	NodePath get_shape_mesh_path() const;
 
 	void set_mass( real_t mass );
 	real_t get_mass() const;
