@@ -16,6 +16,7 @@ PbdRigidBodyRid::PbdRigidBodyRid()
 PbdRigidBodyRid::~PbdRigidBodyRid()
 {
 	memfree( rigid_body );
+	rigid_body = nullptr;
 }
 
 

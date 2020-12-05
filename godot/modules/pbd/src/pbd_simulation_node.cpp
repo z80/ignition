@@ -6,6 +6,9 @@
 #include "Simulation.h"
 #include "TimeStep.h"
 #include "TimeManager.h"
+#include "DistanceFieldCollisionDetection.h"
+
+#include "pbd_rigid_body_node.h"
 
 PbdSimulationNode::PbdSimulationNode()
 	: Spatial()
@@ -21,6 +24,8 @@ PbdSimulationNode::~PbdSimulationNode()
 
 void PbdSimulationNode::_notification( int p_what )
 {
+	Spatial::_notification( p_what );
+
 	switch ( p_what )
 	{
 		case NOTIFICATION_ENTER_TREE:
@@ -41,6 +46,7 @@ void PbdSimulationNode::_notification( int p_what )
 
 void PbdSimulationNode::_bind_methods()
 {
+	ClassDB::bind_method( D_METHOD("start"),              &PbdSimulationNode::start );
 	ClassDB::bind_method( D_METHOD("set_time_step", "h"), &PbdSimulationNode::set_time_step );
 	ClassDB::bind_method( D_METHOD("step", "delta"),      &PbdSimulationNode::step );
 }
@@ -53,12 +59,17 @@ void PbdSimulationNode::step( real_t dt )
 		return;
 
 	PBD::Simulation * s = sim->get_simulation();
+	PBD::Simulation::setCurrent( s );
+
 	PBD::SimulationModel * sm = s->getModel();
 	// Setup time step size.
 	PBD::TimeManager * tm = sim->get_time_manager();
 	PBD::TimeManager::setCurrent( tm );
 
 	PBD::TimeStep * ts = s->getTimeStep();
+	PBD::DistanceFieldCollisionDetection * cfcd = sim->get_collision_detection();
+	ts->setCollisionDetection( *sm, cfcd );
+
 
 	const Real h = tm->getTimeStepSize();
 	t += dt;
@@ -66,6 +77,35 @@ void PbdSimulationNode::step( real_t dt )
 	{
 		ts->step( *sm );
 		t -= h;
+	}
+}
+
+void PbdSimulationNode::start()
+{
+	if ( !sim )
+		return;
+	PBD::Simulation * s = sim->get_simulation();
+	PBD::SimulationModel * sm = s->getModel();
+	PBD::SimulationModel::RigidBodyVector & rbs = sm->getRigidBodies();
+
+	rbs.clear();
+
+	const int qty = this->get_child_count();
+	for ( int i=0; i<qty; i++ )
+	{
+		Node * n = this->get_child( i );
+
+		// Check if it is a rigid body.
+		PbdRigidBodyNode * rbn = Object::cast_to<PbdRigidBodyNode>( n );
+		if ( rbn )
+		{
+			// Insert the rigid body into the simulation.
+			PBD::RigidBody * body = rbn->get_rigid_body();
+			rbs.push_back( body );
+		}
+
+		// Check if it is a constraint.
+		// ..... TODO .....
 	}
 }
 

@@ -16,14 +16,21 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 PbdRigidBodyNode::PbdRigidBodyNode()
 	: Spatial()
 {
+	WARN_PRINT( "PbdRigidBodyNode()" );
+
+	rigid_body_rid  = nullptr;
 	mass            = 1.0;
 	inertia_tensor  = Vector3( 1.0, 1.0, 1.0 );
 	friction        = 1.0;
 	restitution     = 0.5;
+
+	// Make it respond on NOTIFICATION_PROCESS.
+	set_process( true );
 }
 
 PbdRigidBodyNode::~PbdRigidBodyNode()
 {
+	WARN_PRINT( "~PbdRigidBodyNode()" );
 	finit();
 }
 
@@ -39,9 +46,13 @@ const NodePath & PbdRigidBodyNode::get_shape_mesh_path() const
 
 void PbdRigidBodyNode::set_mass( real_t m )
 {
+	WARN_PRINT( "PbdRigidBodyNode::set_mass()" );
 	mass = m;
-	PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
-	rb->setMass( mass );
+	if ( rigid_body_rid )
+	{
+		PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
+		rb->setMass( mass );
+	}
 }
 
 real_t PbdRigidBodyNode::get_mass() const
@@ -51,9 +62,13 @@ real_t PbdRigidBodyNode::get_mass() const
 
 void PbdRigidBodyNode::set_inertia( const Vector3 & i )
 {
+	WARN_PRINT( "PbdRigidBodyNode::set_inertia()" );
 	inertia_tensor = i;
-	PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
-	rb->setInertiaTensor( Vector3r( inertia_tensor.x, inertia_tensor.y, inertia_tensor.z ) );
+	if ( rigid_body_rid )
+	{
+		PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
+		rb->setInertiaTensor( Vector3r( inertia_tensor.x, inertia_tensor.y, inertia_tensor.z ) );
+	}
 }
 
 Vector3 PbdRigidBodyNode::get_inertia() const
@@ -63,9 +78,13 @@ Vector3 PbdRigidBodyNode::get_inertia() const
 
 void PbdRigidBodyNode::set_friction( real_t k )
 {
+	WARN_PRINT( "PbdRigidBodyNode::set_friction()" );
 	friction = k;
-	PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
-	rb->setFrictionCoeff( friction );
+	if ( rigid_body_rid )
+	{
+		PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
+		rb->setFrictionCoeff( friction );
+	}
 }
 
 real_t PbdRigidBodyNode::get_friction() const
@@ -75,9 +94,13 @@ real_t PbdRigidBodyNode::get_friction() const
 
 void PbdRigidBodyNode::set_restitution( real_t k )
 {
+	WARN_PRINT( "PbdRigidBodyNode::set_restitution()" );
 	restitution = k;
-	PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
-	rb->setRestitutionCoeff( restitution );
+	if ( rigid_body_rid )
+	{
+		PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
+		rb->setRestitutionCoeff( restitution );
+	}
 }
 
 real_t PbdRigidBodyNode::get_restitution() const
@@ -112,6 +135,9 @@ String PbdRigidBodyNode::get_configuration_warning() const
 
 void PbdRigidBodyNode::_notification( int p_what )
 {
+	// Call the original one first.
+	Spatial::_notification( p_what );
+
 	switch ( p_what )
 	{
 	// One step after simulation initialization.
@@ -121,6 +147,14 @@ void PbdRigidBodyNode::_notification( int p_what )
 
 	case NOTIFICATION_EXIT_TREE:
 		finit();
+		break;
+
+	case NOTIFICATION_PROCESS:
+		//const real_t delta = get_process_delta_time();
+		apply_rigid_body_pose();
+		break;
+
+	default:
 		break;
 	}
 
@@ -152,15 +186,18 @@ void PbdRigidBodyNode::_bind_methods()
 
 bool PbdRigidBodyNode::init()
 {
+	WARN_PRINT( "PbdRigidBodyNode::init()" );
 	const bool valid_ok = rid.is_valid();
-	if ( valid_ok )
-		return true;
-
-	rid = PbdServer::get_singleton()->create_rigid_body();
-	const bool new_is_valid = rid.is_valid();
-	if ( !new_is_valid )
-		rigid_body_rid = nullptr;
-
+	if ( !valid_ok )
+	{
+		rid = PbdServer::get_singleton()->create_rigid_body();
+		const bool new_is_valid = rid.is_valid();
+		if ( !new_is_valid )
+		{
+			rigid_body_rid = nullptr;
+			return false;
+		}
+	}
 	rigid_body_rid = PbdServer::get_singleton()->get_rigid_body( rid );
 
 	// Initialize collision properties.
@@ -176,24 +213,12 @@ bool PbdRigidBodyNode::init()
 	// there is sets friction, restitution and other params to default values.
 	apply_all_body_props();
 
-	// Check if parent is simulation.
-	PbdSimulationNode * sim = get_parent_simulation();
-	if ( !sim )
-		return false;
-
-	// Insert rigid body into simulation.
-	PBD::Simulation * s = sim->sim->get_simulation();
-	PBD::SimulationModel * sm = s->getModel();
-	PBD::SimulationModel::RigidBodyVector & rbs = sm->getRigidBodies();
-
-	PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
-	rbs.push_back( rb );
-
 	return true;
 }
 
 void PbdRigidBodyNode::finit()
 {
+	WARN_PRINT( "PbdRigidBodyNode::finit()" );
 	const bool valid_ok = rid.is_valid();
 	if ( !valid_ok )
 		return;
@@ -343,6 +368,30 @@ void PbdRigidBodyNode::apply_all_body_props()
 	rb->setInertiaTensor( Vector3r( inertia_tensor.x, inertia_tensor.y, inertia_tensor.z ) );
 	rb->setFrictionCoeff( friction );
 	rb->setRestitutionCoeff( restitution );
+}
+
+void PbdRigidBodyNode::apply_rigid_body_pose()
+{
+	if ( !rigid_body_rid )
+		return;
+	PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
+	const Vector3r & r_ = rb->getPosition();
+	const Quaternionr & q_ = rb->getRotation();
+	const Vector3 r( r_.x(), r_.y(), r_.z() );
+	const Quat q( q_.x(), q_.y(), q_.z(), q_.w() );
+
+	Transform t = get_transform();
+	t.set_origin( r );
+	t.set_basis( q );
+	set_transform( t );
+}
+
+PBD::RigidBody * PbdRigidBodyNode::get_rigid_body()
+{
+	if ( !rigid_body_rid )
+		return nullptr;
+	PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
+	return rb;
 }
 
 

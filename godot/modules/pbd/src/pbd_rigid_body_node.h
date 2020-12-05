@@ -11,6 +11,12 @@ class MeshInstance;
 class PbdRigidBodyRid;
 class PbdSimulationNode;
 
+namespace PBD
+{
+	class RigidBody;
+}
+
+
 class PbdRigidBodyNode: public Spatial
 {
 	GDCLASS( PbdRigidBodyNode, Spatial );
@@ -60,6 +66,9 @@ private:
 	MeshInstance      * get_mesh_path_instance() const;
 	bool init_collision_mesh( MeshInstance * mi );
 	void apply_all_body_props();
+	void apply_rigid_body_pose();
+public:
+	PBD::RigidBody * get_rigid_body();
 };
 
 

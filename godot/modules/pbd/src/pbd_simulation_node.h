@@ -20,6 +20,10 @@ protected:
 	static void _bind_methods();
 
 public:
+	// This one iterates over direct children and inserts
+	// them into simulation if those are
+	// rigid bodies or constraints (joints).
+	void start();
 	void set_time_step( real_t h );
 	void step( real_t dt );
 

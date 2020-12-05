@@ -8,6 +8,7 @@ namespace PBD
 {
 	class Simulation;
 	class TimeManager;
+	class DistanceFieldCollisionDetection;
 }
 
 class PbdSimulationRid : public RID_Data
@@ -17,6 +18,7 @@ class PbdSimulationRid : public RID_Data
 private:
 	PBD::Simulation  * simulation;
 	PBD::TimeManager * time_manager;
+	PBD::DistanceFieldCollisionDetection * collision_detection;
 
 public:
 	_FORCE_INLINE_ void set_self(const RID & p_self)
@@ -47,6 +49,11 @@ public:
 	_FORCE_INLINE_ PBD::TimeManager * get_time_manager()
 	{
 		return time_manager;
+	}
+
+	_FORCE_INLINE_ PBD::DistanceFieldCollisionDetection * get_collision_detection()
+	{
+		return collision_detection;
 	}
 
 	PbdSimulationRid();
