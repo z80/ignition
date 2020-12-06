@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelMesherBlocky" inherits="VoxelMesher" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+		Produces a mesh by batching models corresponding to each voxel value, similar to games like Minecraft or StarMade. Occluded faces are removed from the result, and some degree of ambient occlusion can be baked on the edges. Values are expected to be in the [constant VoxelBuffer.CHANNEL_TYPE] channel. Models are defined with a [VoxelLibrary], in which model indices correspond to the voxel values. Models don't have to be cubes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_library" qualifiers="const">
+			<return type="VoxelLibrary">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_occlusion_darkness" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_occlusion_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_library">
+			<return type="void">
+			</return>
+			<argument index="0" name="voxel_library" type="VoxelLibrary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_occlusion_darkness">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_occlusion_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

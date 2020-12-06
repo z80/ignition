@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelGeneratorNoise2D" inherits="VoxelGeneratorHeightmap" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="curve" type="Curve" setter="set_curve" getter="get_curve">
+		</member>
+		<member name="noise" type="OpenSimplexNoise" setter="set_noise" getter="get_noise">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
