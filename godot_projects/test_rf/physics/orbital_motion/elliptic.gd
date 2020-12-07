@@ -1,5 +1,6 @@
 
 const Consts = preload( "res://physics/orbital_motion/constants.gd" )
+const Velocity = preload( "res://physics/orbital_motion/velocity.gd" )
 
 static func init( r: Vector3, v: Vector3, args: Dictionary ):
 	# Semi-latus-rectum.
@@ -29,6 +30,7 @@ static func process( args: Dictionary, dt: float ):
 	var periapsis_t: float = args.periapsis_t + dt
 	if periapsis_t > args.T:
 		periapsis_t -= args.T
+	args.periapsis_t = periapsis_t
 	
 	var M: float = periapsis_t / args.n
 	var E: float = solve( args.abs_e, M, args.E )
@@ -37,9 +39,10 @@ static func process( args: Dictionary, dt: float ):
 	var si_E: float = sin( E )
 	var x: float = args.a*(co_E - args.abs_e)
 	var y: float = args.a*(1.0 - args.abs_e*args.abs_e)*si_E
+	var r2: Vector2 = Vector2( x, y )
 
 	var f: float = abs( acos( (args.abs_e - co_E)/(args.abs_e*co_E - 1.0) ) )
-	var v2: Vector2 = velocity( args, f )
+	var v2: Vector2 = Velocity.velocity( args, f )
 
 
 static func solve( e: float, M: float, E: float ):

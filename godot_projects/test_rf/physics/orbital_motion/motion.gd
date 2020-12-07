@@ -43,8 +43,7 @@ static func init_with_state( gm: float, r: Vector3, v: Vector3 ):
 	
 	var args = {
 		gm = gm, 
-		r = r, 
-		v = v, 
+		h  = h, 
 		e = e, 
 		abs_e = abs_e, 
 		a = a, 
