@@ -17,6 +17,7 @@ PbdSimulationRid::PbdSimulationRid()
 	collision_detection = memnew( DistanceFieldCollisionDetection );
 }
 
+
 PbdSimulationRid::~PbdSimulationRid()
 {
 	SimulationModel * model = simulation->getModel();
@@ -24,6 +25,11 @@ PbdSimulationRid::~PbdSimulationRid()
 	memfree( simulation );
 
 	memfree( time_manager );
+
+	// Don't allow "collision_detection" to delete objects.
+	// Those are managed in rigid bodies.
+	std::vector<PBD::CollisionDetection::CollisionObject*> & collision_objects = collision_detection->getCollisionObjects();
+	collision_objects.clear();
 	memfree( collision_detection );
 }
 

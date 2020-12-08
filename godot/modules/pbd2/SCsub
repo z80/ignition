@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+import sys
+
+Import('env')
+
+# The main source files of our Slicer plugin. We could also
+# do a Glob to get cpp files automatically but for now we'll
+# use an opt-in process just to have better control over what goes
+# into the final binary during development. (Especially because we
+# have some test files mucking things up)
+
+# Linking the final Godot binaries can take a bit of time. Following advice
+# from https://docs.godotengine.org/en/stable/development/cpp/custom_modules_in_cpp.html
+# we instead put our main logic into a shared library (as this is more likely to require tweaking).
+# This allows us to build the main binaries once and link them against quick to build artifacts dynamically
+use_shared_libs = ARGUMENTS.get('pbd_shared', 'yes') == 'yes'
+
+module_env = env.Clone()
+module_env.Append(CXXFLAGS=['-std=c++11'])
+
+
+# Build the plugin statically for more reliable builds
+def configure_static_build():
+    #module_env.Append(CCFLAGS=['-O2'])
+    module_env.Append( CCFLAGS=['/bigobj'] )
+
+    module_env.Append( CPPDEFINES = ['USE_DOUBLE'] )
+
+    # Includes
+    module_env.Append(CPPPATH=["#modules/ignition/src"])
+    module_env.Append(CPPPATH=["#modules/pbd2"])
+    module_env.Append(CPPPATH=["#modules/pbd2/cpp"])
+    # Sources
+    module_env.add_source_files( env.modules_sources, "*.cpp" )
+    module_env.add_source_files( env.modules_sources, "src/*.cpp" )
+
+
+
+configure_static_build()
+
+
+

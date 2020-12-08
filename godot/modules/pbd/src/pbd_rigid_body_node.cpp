@@ -9,9 +9,12 @@
 #include "Common.h"
 #include "RigidBody.h"
 #include "Simulation.h"
+#include "ParticleData.h"
+#include "DistanceFieldCollisionDetection.h"
 
 static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, PBD::VertexData & vs, Utilities::IndexedFaceMesh & ifm );
 static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, PBD::VertexData & vs, Utilities::IndexedFaceMesh & ifm );
+static void create_collision_box( PbdRigidBodyRid * rigid_body_rid, PBD::VertexData & vd );
 
 PbdRigidBodyNode::PbdRigidBodyNode()
 	: Spatial()
@@ -22,7 +25,7 @@ PbdRigidBodyNode::PbdRigidBodyNode()
 	mass            = 1.0;
 	inertia_tensor  = Vector3( 1.0, 1.0, 1.0 );
 	friction        = 1.0;
-	restitution     = 0.5;
+	restitution     = 0.0;
 
 	// Make it respond on NOTIFICATION_PROCESS.
 	set_process( true );
@@ -292,6 +295,9 @@ bool PbdRigidBodyNode::init_collision_mesh( MeshInstance * mi )
 		          Quaternionr( q.w, q.x, q.y, q.z ),
 		          vd, ifm );
 
+	// Creating rigid body collision shape.
+	create_collision_box( rigid_body_rid, vd );
+
 	return true;
 }
 
@@ -370,6 +376,46 @@ void PbdRigidBodyNode::apply_all_body_props()
 	rb->setRestitutionCoeff( restitution );
 }
 
+static void create_collision_box( PbdRigidBodyRid * rigid_body_rid, PBD::VertexData & vd )
+{
+	Vector3r box = Vector3r::Zero();
+	PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
+	const size_t qty = vd.size();
+	// Should be some data there, right. Otherwise keep previous
+	// collision data.
+	if ( qty < 3 )
+		return;
+
+	for ( size_t i=0; i<qty; i++ )
+	{
+		const Vector3r & r = vd.getPosition( i );
+		const Real x = std::abs( r.x() );
+		const Real y = std::abs( r.y() );
+		const Real z = std::abs( r.z() );
+		if ( box.x() < x )
+			box.x() = x;
+		if ( box.y() < y )
+			box.y() = y;
+		if ( box.z() < z )
+			box.z() = z;
+	}
+
+	PBD::DistanceFieldCollisionDetection::DistanceFieldCollisionBox *cf = memnew( PBD::DistanceFieldCollisionDetection::DistanceFieldCollisionBox() );
+	cf->m_bodyIndex = -1;
+	cf->m_bodyType  = PBD::CollisionDetection::CollisionObject::RigidBodyCollisionObjectType;
+	// distance function requires 0.5*box
+	cf->m_box = 0.5*box; //0.5*box;
+	Vector3r * vertices = const_cast<Vector3r *>( &( (*vd.getVertices())[0] ) );
+	cf->m_bvh.init( vertices, qty );
+	cf->m_bvh.construct();
+	cf->m_testMesh = true;
+
+	//if (invertSDF)
+	//	cf->m_invertSDF = -1.0;
+
+	rigid_body_rid->set_collision_object( cf );
+}
+
 void PbdRigidBodyNode::apply_rigid_body_pose()
 {
 	if ( !rigid_body_rid )
@@ -392,6 +438,14 @@ PBD::RigidBody * PbdRigidBodyNode::get_rigid_body()
 		return nullptr;
 	PBD::RigidBody * rb = rigid_body_rid->get_rigid_body();
 	return rb;
+}
+
+void * PbdRigidBodyNode::get_collision_object()
+{
+	if ( !rigid_body_rid )
+		return nullptr;
+	void * co = rigid_body_rid->get_collision_object();
+	return co;
 }
 
 

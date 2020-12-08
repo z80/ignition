@@ -47,6 +47,7 @@ void PbdSimulationNode::_notification( int p_what )
 void PbdSimulationNode::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("start"),              &PbdSimulationNode::start );
+	ClassDB::bind_method( D_METHOD("rescan"),             &PbdSimulationNode::rescan );
 	ClassDB::bind_method( D_METHOD("set_time_step", "h"), &PbdSimulationNode::set_time_step );
 	ClassDB::bind_method( D_METHOD("step", "delta"),      &PbdSimulationNode::step );
 }
@@ -82,11 +83,19 @@ void PbdSimulationNode::step( real_t dt )
 
 void PbdSimulationNode::start()
 {
+	rescan();
+}
+
+void PbdSimulationNode::rescan()
+{
 	if ( !sim )
 		return;
 	PBD::Simulation * s = sim->get_simulation();
 	PBD::SimulationModel * sm = s->getModel();
 	PBD::SimulationModel::RigidBodyVector & rbs = sm->getRigidBodies();
+
+	PBD::DistanceFieldCollisionDetection * cd = sim->get_collision_detection();
+	std::vector<PBD::CollisionDetection::CollisionObject*> & collision_objects = cd->getCollisionObjects();
 
 	rbs.clear();
 
@@ -102,6 +111,14 @@ void PbdSimulationNode::start()
 			// Insert the rigid body into the simulation.
 			PBD::RigidBody * body = rbn->get_rigid_body();
 			rbs.push_back( body );
+
+			PBD::DistanceFieldCollisionDetection::DistanceFieldCollisionObject * co = reinterpret_cast<PBD::DistanceFieldCollisionDetection::DistanceFieldCollisionObject *>( rbn->get_collision_object() );
+			if ( co )
+			{
+				const int index = static_cast<int>( rbs.size() ) - 1;
+				co->m_bodyIndex = index;
+				collision_objects.push_back( co );
+			}
 		}
 
 		// Check if it is a constraint.

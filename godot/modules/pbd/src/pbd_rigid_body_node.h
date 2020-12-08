@@ -69,6 +69,7 @@ private:
 	void apply_rigid_body_pose();
 public:
 	PBD::RigidBody * get_rigid_body();
+	void * get_collision_object();
 };
 
 

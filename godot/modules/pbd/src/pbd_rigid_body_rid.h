@@ -12,10 +12,13 @@ namespace PBD
 
 class PbdRigidBodyRid: public RID_Data
 {
+private:
 	RID self;
 
-private:
-	PBD::RigidBody * rigid_body;
+	//PBD::RigidBody * rigid_body;
+	//PBD::CollisionObject * collision_object;
+	class PD;
+	PD * pd;
 
 public:
 	_FORCE_INLINE_ void set_self(const RID & p_self)
@@ -28,15 +31,10 @@ public:
 		return self;
 	}
 
-	_FORCE_INLINE_ void set_rigid_body( PBD::RigidBody * rb )
-	{
-		rigid_body = rb;
-	}
-
-	_FORCE_INLINE_ PBD::RigidBody * get_rigid_body()
-	{
-		return rigid_body;
-	}
+	void set_rigid_body( PBD::RigidBody * rb );
+	PBD::RigidBody * get_rigid_body();
+	void set_collision_object( void * p );
+	void * get_collision_object();
 
 	PbdRigidBodyRid();
 	~PbdRigidBodyRid();

@@ -24,6 +24,7 @@ public:
 	// them into simulation if those are
 	// rigid bodies or constraints (joints).
 	void start();
+	void rescan();
 	void set_time_step( real_t h );
 	void step( real_t dt );
 
