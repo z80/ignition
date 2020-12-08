@@ -48,6 +48,21 @@ void RigidBody::set_inertia( const Matrix3d & I )
     inv_inertia = I.Inverese();
 }
 
+Matrix33 RigidBody::I() const
+{
+    const Matrix3d A = pose.q.RotationMatrix();
+    const Matrix3d i = A.Transpose() * inertia * A;
+    return i;
+}
+
+Matrix33 RigidBody::inv_I() const
+{
+    const Matrix3d A = pose.q.RotationMatrix();
+    const Matrix3d inv_i = A * inv_inertia * A.Transpose();
+    return i;
+}
+
+
 void RigidBody::integrate_dynamics( Float h )
 {
     // Save previous pose.
@@ -97,7 +112,7 @@ Float RigidBody::specific_inv_mass_pos( const Vector3d & r, const Vector3d & n )
     return mu;
 }
 
-// "n" local.
+// "n" world.
 Float RigidBody::specific_inv_mass_rot( const Vector3d & n )
 {
     if ( mass <= 0.0 )
@@ -105,8 +120,7 @@ Float RigidBody::specific_inv_mass_rot( const Vector3d & n )
 
     const Matrix3d A = pose.q.RotationMatrix();
     const Matrix3d inv_I = A * inv_inertia * A.Transpose();
-    const Vector3d n_world = pose.q * n;
-    const Float mu = n_world.dot( inv_I * n_world );
+    const Float mu = n.Dot( inv_I * n );
 
     return mu;
 }

@@ -5,6 +5,8 @@
 #include "pbd2_pose.h"
 #include "matrix3d.h"
 
+using namespace Ign;
+
 namespace Pbd
 {
 
@@ -40,6 +42,8 @@ public:
     const RigidBody & operator=( const RigidBody & inst );
 
     void set_inertia( const Matrix3d & I );
+    Matrix33 I() const;
+    Matrix33 inv_I() const;
 
     void integrate_dynamics( Float dt );
     void update_velocities( Float dt );
