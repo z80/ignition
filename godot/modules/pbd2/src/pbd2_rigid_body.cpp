@@ -97,6 +97,37 @@ void RigidBody::update_velocities( Float h )
     w *= 2.0 / h;
 }
 
+void RigidBody::init_contact_lambdas()
+{
+    const int qty = contact_points.size();
+    for ( int i=0; i<qty; i++ )
+    {
+        ContactPont & pt = contact_points.wptr()[i];
+        pt.init_lambdas();
+    }
+}
+
+void RigidBody::solve_contacts( Float h )
+{
+    const int qty = contact_points.size();
+    for ( int i=0; i<qty; i++ )
+    {
+        ContactPont & pt = contact_points.wptr()[i];
+        pt.solve( this, h );
+    }
+}
+
+void RigidBody::update_contact_velocities( Float h )
+{
+    const int qty = contact_points.size();
+    for ( int i=0; i<qty; i++ )
+    {
+        ContactPont & pt = contact_points.wptr()[i];
+        pt->solve_dynamic_friction( this, h );
+    }
+}
+
+
 // "r" local, "n" world.
 Float RigidBody::specific_inv_mass_pos( const Vector3d & r, const Vector3d & n )
 {

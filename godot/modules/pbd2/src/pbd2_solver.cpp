@@ -61,7 +61,7 @@ Float correct_position( Float h, Float compliance, Float c, const Vector3d & n, 
     return lambda;
 }
 
-Float correct_rotation( Float h, Float compliance, Float theta, const Vector3d & n, Float lambda, RigidBody * body_a, RigidBoy * body_b )
+Float correct_rotation( Float h, Float compliance, Float theta, const Vector3d & n, Float lambda, RigidBody * body_a, RigidBody * body_b )
 {
     const Float mu_a = (body_a != nullptr) ? body_a->specific_inv_mass_rot( n ) : 0.0;
     const Float mu_b = (body_b != nullptr) ? body_b->specific_inv_mass_rot( n ) : 0.0;

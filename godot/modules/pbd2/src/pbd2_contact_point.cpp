@@ -63,6 +63,62 @@ void ContactPoint::solve( RigidBody * body, Float h )
 
 void ContactPoint::solve_dynamic_friction( RigidBody * body, Float h )
 {
+    if ( !this->in_contact )
+        return;
+
+    Vector3d dv = Vector3d::ZERO;
+    
+    // World velocity of this point.
+    const Vector3d v_w = body->v + body->w.Cross( body->pose.q * this->r );
+    const Vector3d v_n = -( this->normal * (v_w.Dot(this->normal)) );
+    const Vector3d v_t = v + v_n;
+
+    const Float abs_v_t = v_t.Length();
+    if ( abs_v_t > EPS )
+    {
+        Float f_n = body->friction * this->lambda_normal / h;
+        if ( f_n > abs_v_t )
+            f_n = abs_v_t;
+        dv = -( v_t * (f_n / abs_v_t) );
+    }
+
+    // Linear damping.
+    Float lin_damp = body->damping_linear * h;
+    if (lin_damp > 1.0)
+        lin_damp = 1.0;
+    dv -= v_t * lin_damp;
+
+    const Vector3d r_w = bosy->pose.q * this->r;
+    // Restitution
+    // Project current world velocity onto contact normal.
+    const Float v_w_n = v_w.Dot( this->normal );
+    // The same projection just before the contact has been processed.
+    Float v_w_n_prev = this->v_world.Dot( this->normal );
+    v_w_n_prev = v_w_n_prev * body->restitution;
+    if (v_w_n_prev > 0.0)
+        v_w_n_prev = 0.0;
+    dv -= this->normal * ( v_w_n + v_w_n_prev );
+
+    // Applying "dv".
+    const Float abs_dv = dv.Length();
+    if ( abs_dv > EPS )
+    {
+        const Vector3d n = dv / abs_dv;
+        const Float mu_b = bosy->specific_inv_mass_pos( this->r, n );
+        const Vector3d p = dv/mu_b;
+        const Float m = body->mass;
+        body->v += p / m;
+
+        const Matrix3d inv_I = body->inv_I();
+        body->omega -= inv_I * ( r_w.Cross( p ) );
+    }
+
+    // Angular damping.
+    const Float ang_damp = body->damping_angular * h;
+    if (ang_damp > 1.0)
+        ang_damp = 1.0;
+    const Vector3d dw = body->omega * ang_damp;
+    body->omega -= dw;
 }
 
 bool ContactPoint::solve_normal( RigidBody * body, Float h )

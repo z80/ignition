@@ -4,6 +4,7 @@
 
 #include "pbd2_pose.h"
 #include "matrix3d.h"
+#include "pbd2_contact_point.h"
 
 using namespace Ign;
 
@@ -47,6 +48,10 @@ public:
 
     void integrate_dynamics( Float dt );
     void update_velocities( Float dt );
+    void init_contact_lambdas();
+    void solve_contacts( Float h );
+    void update_contact_velocities( Float h );
+
     Float specific_inv_mass_pos( const Vector3d & r, const Vector3d & n );
     Float specific_inv_mass_rot( const Vector3d & n );
 };
