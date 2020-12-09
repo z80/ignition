@@ -27,7 +27,7 @@ Float correct_position( Float h, Float compliance, Float c, const Vector3d & n, 
         body_a->pose.r += dr;
 
         const Vector3d ra_w = body_a->pose.q * r_a;
-        Vector3d k = ra_w.Cross( p );
+        Vector3d k = ra_w.CrossProduct( p );
         const Matrix3d inv_I = body_a->inv_I();
         k = inv_I * k;
         k *= 0.5;
@@ -47,7 +47,7 @@ Float correct_position( Float h, Float compliance, Float c, const Vector3d & n, 
         body_b->pose.r += dr;
 
         const Vector3d ra_w = body_b->pose.q * r_a;
-        Vector3d k = ra_w.Cross( p );
+        Vector3d k = ra_w.CrossProduct( p );
         const Matrix3d inv_I = body_b->inv_I();
         k = inv_I * k;
         k *= 0.5;

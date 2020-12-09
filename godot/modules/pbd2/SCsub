@@ -22,15 +22,10 @@ module_env.Append(CXXFLAGS=['-std=c++11'])
 
 # Build the plugin statically for more reliable builds
 def configure_static_build():
-    #module_env.Append(CCFLAGS=['-O2'])
-    module_env.Append( CCFLAGS=['/bigobj'] )
-
-    module_env.Append( CPPDEFINES = ['USE_DOUBLE'] )
-
     # Includes
     module_env.Append(CPPPATH=["#modules/ignition/src"])
     module_env.Append(CPPPATH=["#modules/pbd2"])
-    module_env.Append(CPPPATH=["#modules/pbd2/cpp"])
+    module_env.Append(CPPPATH=["#modules/pbd2/src"])
     # Sources
     module_env.add_source_files( env.modules_sources, "*.cpp" )
     module_env.add_source_files( env.modules_sources, "src/*.cpp" )

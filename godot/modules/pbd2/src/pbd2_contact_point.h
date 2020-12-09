@@ -25,7 +25,7 @@ public:
     void solve_dynamic_friction( RigidBody * body, Float h );
 
     bool solve_normal( RigidBody * body, Float h );
-    void solve_tangential( Rigid_body * body, Float h );
+    void solve_tangential( RigidBody * body, Float h );
 
     // Point position in body ref. frame.
     Vector3d r;

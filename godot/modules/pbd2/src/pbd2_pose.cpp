@@ -12,18 +12,20 @@ Pose::~Pose()
 {
 }
 
-Pose::Pose( cosnt Pose & inst )
+Pose::Pose( const Pose & inst )
 {
     *this = inst;
 }
 
-const Pose & Pose::operator=( Pose & inst )
+const Pose & Pose::operator=( const Pose & inst )
 {
     if ( this != &inst )
     {
         q = inst.q;
         r = inst.r;
     }
+
+    return *this;
 }
 
 

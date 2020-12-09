@@ -6,8 +6,8 @@ namespace Pbd
 
 static void orthogonalize( Vector3d & e1, Vector3d & e2, Vector3d & e3 );
 
-const FLOAT Joint::EPS = 0.0001;
-const Joint::_2_PI = 6.283185307179586;
+const Float Joint::EPS   = 0.0001;
+const Float Joint::_2_PI = 6.283185307179586;
 
 
 Joint::Joint()
@@ -33,8 +33,8 @@ Joint::~Joint()
 
 void Joint::orthogonalize()
 {
-    orthogonalize( e1_a, e2_a, e3_a );
-    orthogonalize( e1_b, e2_b, e3_b );
+    Pbd::orthogonalize( e1_a, e2_a, e3_a );
+    Pbd::orthogonalize( e1_b, e2_b, e3_b );
 }
 
 

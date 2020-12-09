@@ -3,7 +3,9 @@
 #define __PBD2_POSE_H_
 
 #include "vector3d.h"
-#include "quaternion.h"
+#include "quaterniond.h"
+
+using namespace Ign;
 
 namespace Pbd
 {
@@ -11,13 +13,13 @@ namespace Pbd
 class Pose
 {
 public:
-    Quatenriond q;
+    Quaterniond q;
     Vector3d    r;
 
     Pose();
     ~Pose();
-    Pose( cosnt Pose & inst );
-    const Pose & operator=( Pose & inst );
+    Pose( const Pose & inst );
+    const Pose & operator=( const Pose & inst );
 };
 
 }

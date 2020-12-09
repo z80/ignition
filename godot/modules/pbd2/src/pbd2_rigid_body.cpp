@@ -48,14 +48,14 @@ void RigidBody::set_inertia( const Matrix3d & I )
     inv_inertia = I.Inverese();
 }
 
-Matrix33 RigidBody::I() const
+Matrix3d RigidBody::I() const
 {
     const Matrix3d A = pose.q.RotationMatrix();
     const Matrix3d i = A.Transpose() * inertia * A;
     return i;
 }
 
-Matrix33 RigidBody::inv_I() const
+Matrix3d RigidBody::inv_I() const
 {
     const Matrix3d A = pose.q.RotationMatrix();
     const Matrix3d inv_i = A * inv_inertia * A.Transpose();
@@ -76,7 +76,7 @@ void RigidBody::integrate_dynamics( Float h )
     const Matrix3d I = A.Transpose() * inertia * A;
     const Matrix3d inv_I = A * inv_inertia * A.Transpose();
 
-    const Vector3d w_x_Iw = omega.Cross( I * omega );
+    const Vector3d w_x_Iw = omega.CrossProduct( I * omega );
     const Vector3d dw = ( inv_I * ( torque - w_x_Iw ) ) * h;
     omega += dw;
 
@@ -102,7 +102,7 @@ void RigidBody::init_contact_lambdas()
     const int qty = contact_points.size();
     for ( int i=0; i<qty; i++ )
     {
-        ContactPont & pt = contact_points.wptr()[i];
+        ContactPont & pt = contact_points.ptrw()[i];
         pt.init_lambdas();
     }
 }
@@ -112,7 +112,7 @@ void RigidBody::solve_contacts( Float h )
     const int qty = contact_points.size();
     for ( int i=0; i<qty; i++ )
     {
-        ContactPont & pt = contact_points.wptr()[i];
+        ContactPont & pt = contact_points.ptrw()[i];
         pt.solve( this, h );
     }
 }
@@ -122,7 +122,7 @@ void RigidBody::update_contact_velocities( Float h )
     const int qty = contact_points.size();
     for ( int i=0; i<qty; i++ )
     {
-        ContactPont & pt = contact_points.wptr()[i];
+        ContactPont & pt = contact_points.ptrw()[i];
         pt->solve_dynamic_friction( this, h );
     }
 }
@@ -137,8 +137,8 @@ Float RigidBody::specific_inv_mass_pos( const Vector3d & r, const Vector3d & n )
     const Matrix3d A = pose.q.RotationMatrix();
     const Matrix3d inv_I = A * inv_inertia * A.Transpose();
     const Vector3d r_world = pose.q * r;
-    const Vector3d r_x_n = r_world.Cross( n );
-    const Float mu = 1.0/mass + r.Dot( inv_I * r_x_n );
+    const Vector3d r_x_n = r_world.CrossProduct( n );
+    const Float mu = 1.0/mass + r.DotProduct( inv_I * r_x_n );
 
     return mu;
 }
@@ -151,7 +151,7 @@ Float RigidBody::specific_inv_mass_rot( const Vector3d & n )
 
     const Matrix3d A = pose.q.RotationMatrix();
     const Matrix3d inv_I = A * inv_inertia * A.Transpose();
-    const Float mu = n.Dot( inv_I * n );
+    const Float mu = n.DotProduct( inv_I * n );
 
     return mu;
 }

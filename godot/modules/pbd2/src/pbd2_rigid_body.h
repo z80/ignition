@@ -43,8 +43,8 @@ public:
     const RigidBody & operator=( const RigidBody & inst );
 
     void set_inertia( const Matrix3d & I );
-    Matrix33 I() const;
-    Matrix33 inv_I() const;
+    Matrix3d I() const;
+    Matrix3d inv_I() const;
 
     void integrate_dynamics( Float dt );
     void update_velocities( Float dt );

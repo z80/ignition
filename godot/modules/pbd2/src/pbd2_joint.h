@@ -6,7 +6,7 @@
 
 using namespace Ign;
 
-namespace Pdb
+namespace Pbd
 {
 
 class RigidBody;
@@ -47,15 +47,15 @@ public:
     Vector3d e2_a;
     Vector3d e3_a;
 
-    Vector at_b;
+    Vector3d at_b;
     Vector3d e1_b;
     Vector3d e2_b;
     Vector3d e3_b;
 
     Vector<Float> lambdas;
 
-    static const FLOAT EPS;
-    static const _2_PI;
+    static const Float EPS;
+    static const Float _2_PI;
 };
 
 

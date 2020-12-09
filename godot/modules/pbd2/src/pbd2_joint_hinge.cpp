@@ -17,9 +17,9 @@ JointHinge::~JointHinge()
 void JointHinge::init_lambdas()
 {
     lambdas.resize( 3 );
-    lambdas.wptr()[0] = 0.0;
-    lambdas.wptr()[1] = 0.0;
-    lambdas.wptr()[2] = 0.0;
+    lambdas.ptrw()[0] = 0.0;
+    lambdas.ptrw()[1] = 0.0;
+    lambdas.ptrw()[2] = 0.0;
 }
 
 void JointHinge::init_motor_target()
@@ -33,7 +33,7 @@ void JointHinge::init_motor_target()
     const Vector3d e2b_w = body_b->pose.q * e2_b;
 
     // First rotation "e1b" towards "e1a".
-    const Vector3d n = e1b_w.Cross( e1a_w );
+    const Vector3d n = e1b_w.CrossProduct( e1a_w );
     const Float si = n.Length();
     Quaterniond q1;
     if ( si < EPS ):
@@ -49,18 +49,18 @@ void JointHinge::init_motor_target()
     }
 
     const Vector3d e2b_w_2 = q1 * e2b_w;
-    const Vector3d n2 = e2a_w.Cross( e2b_w_2 );
+    const Vector3d n2 = e2a_w.CrossProduct( e2b_w_2 );
     const Float si = n2.Length();
-    const Float co = e2b_w_2.Dot( e2a_w );
+    const Float co = e2b_w_2.DotProduct( e2a_w );
 
     target_position = -atan2( si, co );
 }
 
 void JointHinge::solver_step( Float h )
 {
-    lambdas.wptr()[0] = solver_step_position( lambdas.ptr()[0], h );
-    lambdas.wptr()[1] = solver_step_rotation( lambdas.ptr()[1], h );
-    lambdas.wptr()[2] = solver_step_motor( lambdas.ptr()[2], h );
+    lambdas.ptrw()[0] = solver_step_position( lambdas.ptr()[0], h );
+    lambdas.ptrw()[1] = solver_step_rotation( lambdas.ptr()[1], h );
+    lambdas.ptrw()[2] = solver_step_motor( lambdas.ptr()[2], h );
 }
 
 Float JointHinge::solver_step_position( Float lambda, Float h )
@@ -119,7 +119,7 @@ Float JointHinge::solver_step_motor( Float lambda, Float h )
 
 
 
-Float JointHinge::_delta_r() const
+Vector3d JointHinge::_delta_r() const
 {
     const Vector3d ra_w = _world_r( body_a, at_a );
     const Vector3d rb_w = _world_r( body_b, at_b );
@@ -131,7 +131,7 @@ Float JointHinge::_delta_theta() const
 {
     const Vector3d ra_w = body_a->pose.q * e1_a;
     const Vector3d rb_w = body_b->pose.q * e1_b;
-    const Vector3d dtheta = rb_w.Cross( ra_w );
+    const Vector3d dtheta = rb_w.CrossProduct( ra_w );
     return dtheta;
 }
 
@@ -148,7 +148,7 @@ Float JointHinge::_delta_motor() const
     const Quaterniond quat = Quaterniond( targe_position, e1a_w );
     const Vector3d e2_target = quat * e2a_w;
     const Vector3d e2b_w = body_b->pose.q * e2_b;
-    const Vector3d dtheta = e2b_w.Cross( e2_target );
+    const Vector3d dtheta = e2b_w.CrossProduct( e2_target );
     return dtheta;
 }
 

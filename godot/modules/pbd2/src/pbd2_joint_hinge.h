@@ -21,7 +21,7 @@ public:
     Float solver_step_rotation( Float lambda, Float h );
     Float solver_step_motor( Float lambda, Float h );
 
-    Float _delta_r() const;
+    Vector3d _delta_r() const;
     Float _delta_theta() const;
     Vector3d _world_r( RigidBody * body, const Vector3d & r ) const;
     Float _delta_motor() const;
