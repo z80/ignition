@@ -6,6 +6,9 @@
 extents = Vector2( 94.6973, 21.9069 )
 
 [node name="RootMenuItem" type="RigidBody2D"]
+continuous_cd = 2
+linear_damp = 1.0
+angular_damp = 1.0
 script = ExtResource( 1 )
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

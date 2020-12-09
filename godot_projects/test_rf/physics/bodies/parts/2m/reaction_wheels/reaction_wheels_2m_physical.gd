@@ -1,7 +1,7 @@
 
 extends RigidBody
 
-const MAX_TORQUE: float   = 5.0
+const MAX_TORQUE: float   = 50.0
 const ANG_VEL: float      = 1.0
 const GAIN_ANGULAR: float = 100.0
 

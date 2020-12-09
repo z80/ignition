@@ -38,12 +38,12 @@ scale = Vector2( 0.4, 0.4 )
 texture = ExtResource( 6 )
 
 [node name="Title" parent="Node2D" instance=ExtResource( 1 )]
-position = Vector2( 432, -504 )
-rotation = -0.68766
+position = Vector2( 700, -800 )
+rotation = 0.523599
 z_index = 2
 
 [node name="Sprite3" type="Sprite" parent="Node2D/Title"]
-position = Vector2( -250, 200 )
+position = Vector2( -500, 200 )
 scale = Vector2( 0.4, 0.4 )
 texture = ExtResource( 4 )
 
