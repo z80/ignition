@@ -1,5 +1,5 @@
 
-#include "pbd3_solver.h"
+#include "pbd2_solver.h"
 
 
 namespace Pbd
@@ -22,7 +22,7 @@ Float correct_position( Float h, Float compliance, Float c, const Vector3d & n, 
     {
         const Float inv_m   = 1.0 / body_a->mass;
         const Vector3d r    = body_a->pose.r;
-        const Quaterniond q = body_a->pose.q;
+        Quaterniond q = body_a->pose.q;
         const Vector3d dr = p * inv_m;
         body_a->pose.r += dr;
 
@@ -42,7 +42,7 @@ Float correct_position( Float h, Float compliance, Float c, const Vector3d & n, 
     {
         const Float inv_m   = 1.0 / body_b->mass;
         const Vector3d r    = body_b->pose.r;
-        const Quaterniond q = body_b->pose.q;
+        Quaterniond q = body_b->pose.q;
         const Vector3d dr = p * inv_m;
         body_b->pose.r += dr;
 
@@ -70,12 +70,33 @@ Float correct_rotation( Float h, Float compliance, Float theta, const Vector3d &
     lambda += d_lambda;
     const Vector3d p = n * d_lambda;
 
-    if ( (body_a != nullptr) && (bosy_a->mass > 0.0) )
+    if ( (body_a != nullptr) && (body_a->mass > 0.0) )
     {
-        const Quaterniond q = body_a->pose.q;
+        Quaterniond q = body_a->pose.q;
         const Matrix3d inv_I = body_a->inv_I();
         Vector3d k = inv_I * p;
+        k *= 0.5;
+        Quaterniond dq( 0.0, k.x_, k.y_, k.z_ );
+        dq = dq * q;
+        q += dq;
+        q.Normalize();
+        body_a->pose.q = q;
     }
+
+    if ( (body_b != nullptr) && (body_b->mass > 0.0) )
+    {
+        Quaterniond q = body_b->pose.q;
+        const Matrix3d inv_I = body_b->inv_I();
+        Vector3d k = inv_I * p;
+        k *= 0.5;
+        Quaterniond dq( 0.0, k.x_, k.y_, k.z_ );
+        dq = dq * q;
+        q += dq;
+        q.Normalize();
+        body_b->pose.q = q;
+    }
+
+    return lambda;
 }
 
 }
