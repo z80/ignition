@@ -52,6 +52,6 @@ static func process( args: Dictionary, dt: float ):
 	
 	var v2: Vector2 = Velocity.velocity( args, true_anomaly )
 	
-
+	return [r2, v2]
 
 

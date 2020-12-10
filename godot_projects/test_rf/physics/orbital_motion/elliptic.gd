@@ -4,7 +4,7 @@ const Velocity = preload( "res://physics/orbital_motion/velocity.gd" )
 
 static func init( r: Vector3, v: Vector3, args: Dictionary ):
 	# Semi-latus-rectum.
-	var slr: float = args.a * (1.0 - args.e*args.e)
+	var slr: float = args.a * (1.0 - args.abs_e*args.abs_e)
 	
 	var abs_r: float = r.length()
 	var cos_E: float = 1.0 - abs_r/args.a
@@ -43,6 +43,8 @@ static func process( args: Dictionary, dt: float ):
 
 	var f: float = abs( acos( (args.abs_e - co_E)/(args.abs_e*co_E - 1.0) ) )
 	var v2: Vector2 = Velocity.velocity( args, f )
+
+	return [r2, v2]
 
 
 static func solve( e: float, M: float, E: float ):
