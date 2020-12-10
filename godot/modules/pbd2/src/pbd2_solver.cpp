@@ -31,7 +31,7 @@ Float correct_position( Float h, Float compliance, Float c, const Vector3d & n, 
         const Matrix3d inv_I = body_a->inv_I();
         k = inv_I * k;
         k *= 0.5;
-        const Quaterniond dq( 0.0, k.x_, k.y_, k.z_ );
+        Quaterniond dq( 0.0, k.x_, k.y_, k.z_ );
         dq = dq * q;
         q += dq;
         q.Normalize();
@@ -51,7 +51,7 @@ Float correct_position( Float h, Float compliance, Float c, const Vector3d & n, 
         const Matrix3d inv_I = body_b->inv_I();
         k = inv_I * k;
         k *= 0.5;
-        const Quaterniond dq( 0.0, k.x_, k.y_, k.z_ );
+        Quaterniond dq( 0.0, k.x_, k.y_, k.z_ );
         dq = dq * q;
         q += dq;
         q.Normalize();
@@ -66,7 +66,7 @@ Float correct_rotation( Float h, Float compliance, Float theta, const Vector3d &
     const Float mu_a = (body_a != nullptr) ? body_a->specific_inv_mass_rot( n ) : 0.0;
     const Float mu_b = (body_b != nullptr) ? body_b->specific_inv_mass_rot( n ) : 0.0;
     const Float alpha_ = compliance / (h*h);
-    const Float d_lambda = -(theta + alpha_*lambda)/(mu__a + mu_b + alpha_);
+    const Float d_lambda = -(theta + alpha_*lambda)/(mu_a + mu_b + alpha_);
     lambda += d_lambda;
     const Vector3d p = n * d_lambda;
 

@@ -22,9 +22,9 @@ public:
     Float solver_step_motor( Float lambda, Float h );
 
     Vector3d _delta_r() const;
-    Float _delta_theta() const;
+    Vector3d _delta_theta() const;
     Vector3d _world_r( RigidBody * body, const Vector3d & r ) const;
-    Float _delta_motor() const;
+    Vector3d _delta_motor() const;
 
     // Defining the looseness of the joint.
     // Bodies are not connected perfectly.

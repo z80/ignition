@@ -1,4 +1,6 @@
 
+#include "pbd2_rigid_body.h"
+
 
 namespace Pbd
 {
@@ -45,7 +47,7 @@ const RigidBody & RigidBody::operator=( const RigidBody & inst )
 void RigidBody::set_inertia( const Matrix3d & I )
 {
     inertia = I;
-    inv_inertia = I.Inverese();
+    inv_inertia = I.Inverse();
 }
 
 Matrix3d RigidBody::I() const
@@ -59,7 +61,7 @@ Matrix3d RigidBody::inv_I() const
 {
     const Matrix3d A = pose.q.RotationMatrix();
     const Matrix3d inv_i = A * inv_inertia * A.Transpose();
-    return i;
+    return inv_i;
 }
 
 
@@ -81,20 +83,21 @@ void RigidBody::integrate_dynamics( Float h )
     omega += dw;
 
     const Float k = 0.5 * h;
-    const Quaterniond dq( w.x_*k, w.y_*k, w.z_*k, 0.0 );
+    const Quaterniond dq( 0.0, dw.x_*k, dw.y_*k, dw.z_*k );
     pose.q += dq;
     pose.q.Normalize();
 }
 
 void RigidBody::update_velocities( Float h )
 {
-    vel = ( pose.r - prev_pose.r ) / h;
-    Quaterniond dq = pose.q * prev_pose.q.Conjugate();
-    Vector3 w = Vector3( dq.x_, dq.y_, dq.z_ );
+    this->vel = ( pose.r - prev_pose.r ) / h;
+    const Quaterniond dq = pose.q * prev_pose.q.Conjugate();
+    Vector3d w = Vector3d( dq.x_, dq.y_, dq.z_ );
     if ( dq.w_ < 0.0 )
         w = -w;
 
     w *= 2.0 / h;
+    this->omega = w;
 }
 
 void RigidBody::init_contact_lambdas()
@@ -102,7 +105,7 @@ void RigidBody::init_contact_lambdas()
     const int qty = contact_points.size();
     for ( int i=0; i<qty; i++ )
     {
-        ContactPont & pt = contact_points.ptrw()[i];
+        ContactPoint & pt = contact_points.ptrw()[i];
         pt.init_lambdas();
     }
 }
@@ -112,7 +115,7 @@ void RigidBody::solve_contacts( Float h )
     const int qty = contact_points.size();
     for ( int i=0; i<qty; i++ )
     {
-        ContactPont & pt = contact_points.ptrw()[i];
+        ContactPoint & pt = contact_points.ptrw()[i];
         pt.solve( this, h );
     }
 }
@@ -122,8 +125,8 @@ void RigidBody::update_contact_velocities( Float h )
     const int qty = contact_points.size();
     for ( int i=0; i<qty; i++ )
     {
-        ContactPont & pt = contact_points.ptrw()[i];
-        pt->solve_dynamic_friction( this, h );
+        ContactPoint & pt = contact_points.ptrw()[i];
+        pt.solve_dynamic_friction( this, h );
     }
 }
 

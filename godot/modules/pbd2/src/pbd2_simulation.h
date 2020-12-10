@@ -10,6 +10,9 @@ using namespace Ign;
 namespace Pbd
 {
 
+class RigidBody;
+class Joint;
+
 class Simulation
 {
 public:

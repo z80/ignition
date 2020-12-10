@@ -35,7 +35,7 @@ public:
     Float compliance_normal;
     Float compliance_tangential;
 
-    Vector<Vector3d> contact_points;
+    Vector<ContactPoint> contact_points;
 
     RigidBody();
     ~RigidBody();

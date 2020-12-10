@@ -1,6 +1,7 @@
 
 #include "pbd2_simulation.h"
-
+#include "pbd2_rigid_body.h"
+#include "pbd2_joint.h"
 
 namespace Pbd
 {
@@ -60,7 +61,8 @@ void Simulation::step()
     for ( int i=0; i<bodies_qty; i++ )
     {
         // Here contact point solver lambdas init should go.
-        //body->init_contact_lambdas();
+        RigidBody * body = bodies.ptr()[i];
+        body->init_contact_lambdas();
     }
 
     // Solve joint and contact constraints.
@@ -74,19 +76,20 @@ void Simulation::step()
 
         for ( int j=0; j<bodies_qty; j++ )
         {
+            RigidBody * body = bodies.ptr()[i];
             body->solve_contacts( h );
         }
     }
 
     // Update velocities.
-    for ( int i=0; i<qty; i++ )
+    for ( int i=0; i<bodies_qty; i++ )
     {
         RigidBody * body = bodies.ptr()[i];
         body->update_velocities( h );
     }
 
     // Update contact velocities.
-    for ( int i=0; i<qty; i++ )
+    for ( int i=0; i<bodies_qty; i++ )
     {
         RigidBody * body = bodies.ptr()[i];
         body->update_contact_velocities( h );
@@ -96,7 +99,7 @@ void Simulation::step()
 void Simulation::clear()
 {
     bodies.clear();
-    joint.clear();
+    joints.clear();
 }
 
 void Simulation::add_body( RigidBody * body )
