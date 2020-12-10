@@ -151,6 +151,12 @@ BodyCreator="*res://physics/body_creator.gd"
 Constants="*res://physics/constants.gd"
 UserInput="*res://physics/user_unput/user_input.gd"
 
+[display]
+
+window/size/fullscreen=true
+mouse_cursor/custom_image="res://cursor.png"
+mouse_cursor/tooltip_position_offset=Vector2( 32, 10 )
+
 [editor_plugins]
 
 enabled=PoolStringArray( "godot-sqlite", "gut" )

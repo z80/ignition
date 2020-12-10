@@ -1,61 +1,60 @@
 
-#ifndef __PBD2_JOINT_H_
-#define __PBD2_JOINT_H_
+#ifndef __PBD2_JOINT_NODE_H_
+#define __PBD2_JOINT_NODE_H_
 
-#include "vector3d.h"
+#include "scene/main/node.h"
+#include "pbd2_joint.h"
 
 using namespace Ign;
 
 namespace Pbd
 {
 
-class RigidBody;
+class Joint;
 
-class Joint
+class JointNode: public Node
 {
+    GDCLASS( JointNode, Node );
+
 public:
-    Joint();
-    virtual ~Joint();
+    JointNode();
+     ~JointNode();
 
-    // Places as many zeros to "lambdas" array as needed.
-    virtual void init_lambdas() = 0;
-    // This thing should be implemented. It is supposed to set 
-    // motor target to the current relative configuration to 
-    // avoid initial "jump".
-    virtual void init_motor_target() = 0;
-     // performs all necessary steps. Each with its own lambda.
-    virtual void solver_step( Float h ) = 0;
-   
-    // Orthogonalizes joint basis vectors 
-    // "e1_a", "e2_a", "e3_a" and "e1_b", "e2_b", "e3_b".
-    void orthogonalize();
+    void set_body_path_a( const NodePath & p );
+    NodePath get_body_path_a() const;
+
+    void set_body_path_b( const NodePath & p );
+    NodePath get_body_path_b() const;
+
+    void set_at_a( const Vector3 & at );
+    Vector3 get_at_a() const;
+
+    void set_at_b( const Vector3 & at );
+    Vector3 get_at_b() const;
+
+    void set_e1_a( const Vector3 & e );
+    Vector3 get_e1_a() const;
+
+    void set_e2_a( const Vector3 & e );
+    Vector3 get_e2_a() const;
+
+    void set_e3_a( const Vector3 & e );
+    Vector3 get_e3_a() const;
+
+    void set_e1_b( const Vector3 & e );
+    Vector3 get_e1_b() const;
+
+    void set_e2_b( const Vector3 & e );
+    Vector3 get_e2_b() const;
+
+    void set_e3_b( const Vector3 & e );
+    Vector3 get_e3_b() const;
 
 
-    RigidBody * body_a;
-    RigidBody * body_b;
 
-    // Force and dtrque applied to bodies.
-    // These are outputs.
-    Vector3d force, torque;
 
-    Float compliance_joint;
-    Float compliance_motor;
-    bool  motor;
 
-    Vector3d at_a;
-    Vector3d e1_a;
-    Vector3d e2_a;
-    Vector3d e3_a;
 
-    Vector3d at_b;
-    Vector3d e1_b;
-    Vector3d e2_b;
-    Vector3d e3_b;
-
-    Vector<Float> lambdas;
-
-    static const Float EPS;
-    static const Float _2_PI;
 };
 
 
