@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelTerrain" inherits="Spatial" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="block_to_voxel">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="block_pos" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_statistics" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_voxel_tool">
+			<return type="VoxelTool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="save_block">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="save_modified_blocks">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="material" type="Material">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="voxel_to_block">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="voxel_pos" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="generate_collisions" type="bool" setter="set_generate_collisions" getter="get_generate_collisions" default="true">
+		</member>
+		<member name="stream" type="VoxelStream" setter="set_stream" getter="get_stream">
+		</member>
+		<member name="view_distance" type="int" setter="set_view_distance" getter="get_view_distance" default="128">
+		</member>
+		<member name="viewer_path" type="NodePath" setter="set_viewer_path" getter="get_viewer_path" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="voxel_library" type="VoxelLibrary" setter="set_voxel_library" getter="get_voxel_library">
+		</member>
+	</members>
+	<signals>
+		<signal name="block_loaded">
+			<argument index="0" name="position" type="Vector3">
+			</argument>
+			<argument index="1" name="voxels" type="VoxelBuffer">
+			</argument>
+			<description>
+				Emitted when a new block is loaded from stream. Note it might be not visible yet.
+			</description>
+		</signal>
+		<signal name="block_unloaded">
+			<argument index="0" name="position" type="Vector3">
+			</argument>
+			<argument index="1" name="voxels" type="VoxelBuffer">
+			</argument>
+			<description>
+				Emitted when a block unloaded due to being outside view distance.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

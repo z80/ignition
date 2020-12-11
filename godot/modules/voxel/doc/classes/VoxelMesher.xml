@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelMesher" inherits="Reference" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="build_mesh">
+			<return type="Mesh">
+			</return>
+			<argument index="0" name="voxel_buffer" type="VoxelBuffer">
+			</argument>
+			<argument index="1" name="materials" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_maximum_padding" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_minimum_padding" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

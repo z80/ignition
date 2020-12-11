@@ -1,0 +1,6 @@
+*.obj
+*.pyc
+*.o
+*.autosave
+*.bc
+*.d

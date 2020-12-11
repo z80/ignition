@@ -1,0 +1,44 @@
+Import('env')
+Import('env_modules')
+
+env_voxel = env_modules.Clone()
+
+# TODO Exclude editor stuff when building an export template?
+files = [
+	"*.cpp",
+	"meshers/blocky/*.cpp",
+	"meshers/transvoxel/*.cpp",
+	"meshers/dmc/*.cpp",
+	"meshers/mc/*.cpp",
+	"meshers/*.cpp",
+	"streams/*.cpp",
+	"generators/*.cpp",
+	"generators/graph/*.cpp",
+	"util/*.cpp",
+	"terrain/*.cpp",
+	"math/*.cpp",
+	"edition/*.cpp",
+	"editor/graph/*.cpp",
+	"editor/terrain/*.cpp",
+	"thirdparty/lz4/*.c"
+]
+
+for f in files:
+	env_voxel.add_source_files(env.modules_sources, f)
+
+# Ignored clang warnings because Godot's codebase is old and isn't using override yet
+if env['platform'] == 'osx' or env['platform'] == 'android':
+    env_voxel.Append(CXXFLAGS=['-Wno-inconsistent-missing-override'])
+
+# Doesn't work, because reasons
+#if env.msvc:
+#	env_voxel.Append(CXXFLAGS=['/std:c++17'])
+#else:
+#	env_voxel.Append(CXXFLAGS=['-std=c++17'])
+
+# This also doesn't work, since the rest of Godot doesn't use this, linking fails.
+# No safe STL boundary checks for you.
+#if env['target'] == 'debug':
+#	if env.msvc:
+#		# Enable STL bound checks, Godot's master environment doesn't do it
+#		env_voxel.Append(CXXFLAGS=['/D_DEBUG'])
