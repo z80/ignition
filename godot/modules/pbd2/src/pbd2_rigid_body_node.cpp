@@ -290,9 +290,9 @@ void PbdRigidBodyNode::_bind_methods()
 
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "mass" ),    "set_mass", "get_mass" );
     ADD_PROPERTY( PropertyInfo( Variant::BASIS, "inertia" ), "set_inertia", "get_inertia" );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "transform_rb" ), "set_transform_rb", "get_transform_rb" );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "linear_velocity" ), "set_linear_velcoity", "get_linear_velocity" );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "angular_velocity" ), "set_angular_velcoity", "get_angular_velocity" );
+    ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform_rb" ), "set_transform_rb", "get_transform_rb" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "linear_velocity" ), "set_linear_velocity", "get_linear_velocity" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "angular_velocity" ), "set_angular_velocity", "get_angular_velocity" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "friction" ), "set_friction", "get_friction" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "restitution" ), "set_restitution", "get_restitution" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "damping_linear" ), "set_damping_linear", "get_damping_linear" );
