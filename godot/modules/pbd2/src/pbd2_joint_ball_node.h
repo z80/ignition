@@ -33,7 +33,6 @@ protected:
     static void _bind_methods();
 
     JointBall joint_ball;
-
 };
 
 

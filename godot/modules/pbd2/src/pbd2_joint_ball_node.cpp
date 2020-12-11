@@ -54,11 +54,29 @@ void PbdJointBallNode::set_target_position( const Quat & q )
 Quat PbdJointBallNode::get_target_position() const
 {
     const Quateriond & Q = joint_ball.target_q;
-    const Quat q( Q.x_, Q.y_, Q.z_,  )
+    const Quat q( Q.x_, Q.y_, Q.z_, Q.w_ );
+    return q;
 }
 
 void PbdJointBallNode::_bind_methods()
 {
+    ClassDB::bind_method( D_METHOD( "set_spatial_gap", "d" ), &PbdRigidBodyNode::set_spatial_gap );
+    ClassDB::bind_method( D_METHOD( "get_spatial_gap" ),      &PbdRigidBodyNode::get_spatial_gap, Variant::REAL );
+
+    ClassDB::bind_method( D_METHOD( "set_angular_gap", "d" ), &PbdRigidBodyNode::set_angular_gap );
+    ClassDB::bind_method( D_METHOD( "get_angular_gap" ),      &PbdRigidBodyNode::get_angular_gap, Variant::REAL );
+
+    ClassDB::bind_method( D_METHOD( "set_target_position", "r" ), &PbdRigidBodyNode::set_target_position );
+    ClassDB::bind_method( D_METHOD( "get_target_position" ),      &PbdRigidBodyNode::get_target_position, Variant::REAL );
+
+    ClassDB::bind_method( D_METHOD( "set_motor_gap", "d" ), &PbdRigidBodyNode::set_motor_gap );
+    ClassDB::bind_method( D_METHOD( "get_motor_gap" ),      &PbdRigidBodyNode::get_motor_gap, Variant::REAL );
+
+
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "spatial_gap" ), &PbdRigidBodyNode::set_spatial_gap, &PbdRigidBodyNode::get_spatial_gap );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "angular_gap" ), &PbdRigidBodyNode::set_angular_gap, &PbdRigidBodyNode::get_angular_gap );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "target_position" ), &PbdRigidBodyNode::set_target_position, &PbdRigidBodyNode::get_target_position );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "motor_gap" ), &PbdRigidBodyNode::set_motor_gap, &PbdRigidBodyNode::get_motor_gap );
 }
 
 
