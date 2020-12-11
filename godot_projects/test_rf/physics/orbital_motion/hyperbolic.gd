@@ -26,7 +26,7 @@ static func init( r: Vector3, v: Vector3, args: Dictionary ):
 	args.periapsis_t = periapsis_t
 
 
-static func process( args: Dictionary, dt: float ):
+static func process( dt: float, args: Dictionary ):
 	var periapsis_t: float = args.periapsis_t + dt
 	if periapsis_t > args.T:
 		periapsis_t -= args.T
@@ -38,9 +38,15 @@ static func process( args: Dictionary, dt: float ):
 	var si_E: float = sin( E )
 	var x: float = args.a*(co_E - args.abs_e)
 	var y: float = args.a*(1.0 - args.abs_e*args.abs_e)*si_E
-
+	var r2: Vector2 = Vector2( x, y )
+	
 	var f: float = abs( acos( (args.abs_e - co_E)/(args.abs_e*co_E - 1.0) ) )
 	var v2: Vector2 = Velocity.velocity( args, f )
+	
+	var r3: Vector3 = (args.e_x * r2.x) + (args.e_y * r2.y)
+	var v3: Vector3 = (args.e_x * v2.x) + (args.e_y * v2.y)
+	
+	return [r3, v3]
 
 
 static func solve( e: float, M: float, E: float ):

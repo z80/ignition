@@ -30,7 +30,7 @@ static func init( r: Vector3, v: Vector3, args: Dictionary ):
 	args.periapsis_t = t
 
 
-static func process( args: Dictionary, dt: float ):
+static func process( dt: float, args: Dictionary ):
 	var periapsis_t: float = args.periapsis_t + dt
 	args.periapsis_t = periapsis_t
 	
@@ -52,6 +52,11 @@ static func process( args: Dictionary, dt: float ):
 	
 	var v2: Vector2 = Velocity.velocity( args, true_anomaly )
 	
+	var r3: Vector3 = (args.e_x * r2.x) + (args.e_y * r2.y)
+	var v3: Vector3 = (args.e_x * v2.x) + (args.e_y * v2.y)
+	
+	return [r3, v3]
+
 
 
 

@@ -1,16 +1,13 @@
-extends Node
 
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
+static func init( r: Vector3, v: Vector3, args: Dictionary ):
+	args.r = r
+	args.v = v
+	args.e_x = v.normalized()
+	args.e_y = args.e_x
+
+static func process( dt: float, args: Dictionary ):
+	args.r += args.v * dt
+	return [ args.r, args.v ]
 
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass

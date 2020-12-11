@@ -3,17 +3,18 @@ const Consts = preload( "res://physics/orbital_motion/constants.gd" )
 const Velocity = preload( "res://physics/orbital_motion/velocity.gd" )
 
 static func init( r: Vector3, v: Vector3, args: Dictionary ):
+	var gm: float    = args.gm
+	var abs_e: float = args.abs_e
 	# Semi-latus-rectum.
-	var slr: float = args.a * (1.0 - args.e*args.e)
+	var slr: float = args.a * (1.0 - args.abs_e*args.abs_e)
 	
 	var abs_r: float = r.length()
 	var cos_E: float = 1.0 - abs_r/args.a
 	var r_dot_v: float = r.dot( v )
-	var abs_e: float = args.e.length()
-	var sin_E: float = r_dot_v / ( abs_e * sqrt( args.gm * args.a ) )
+	var sin_E: float = r_dot_v / ( abs_e * sqrt( gm * args.a ) )
 	var E: float = atan2( sin_E, cos_E )
 	
-	var n: float = sqrt( args.a*args.a*args.a/args.gm )
+	var n: float = sqrt( args.a*args.a*args.a/gm )
 	# Orbital period.
 	var T: float = 2.0*PI*n
 	# Time to periapsis.
@@ -21,12 +22,13 @@ static func init( r: Vector3, v: Vector3, args: Dictionary ):
 	
 	# Filling in parameters
 	args.slr = slr
+	args.n   = n
 	args.E   = E
 	args.T   = T
 	args.periapsis_t = periapsis_t
 
 
-static func process( args: Dictionary, dt: float ):
+static func process( dt: float, args: Dictionary ):
 	var periapsis_t: float = args.periapsis_t + dt
 	if periapsis_t > args.T:
 		periapsis_t -= args.T
@@ -43,6 +45,11 @@ static func process( args: Dictionary, dt: float ):
 
 	var f: float = abs( acos( (args.abs_e - co_E)/(args.abs_e*co_E - 1.0) ) )
 	var v2: Vector2 = Velocity.velocity( args, f )
+	
+	var r3: Vector3 = (args.e_x * r2.x) + (args.e_y * r2.y)
+	var v3: Vector3 = (args.e_x * v2.x) + (args.e_y * v2.y)
+	
+	return [r3, v3]
 
 
 static func solve( e: float, M: float, E: float ):
@@ -55,10 +62,14 @@ static func solve( e: float, M: float, E: float ):
 		ret = solve_next( e, M, En )
 		err = ret[0]
 		En  = ret[1]
-		if En > Consts._2PI:
-			En -= Consts._2PI
-		elif En < 0.0:
-			En += Consts._2PI
+		
+		iters += 1
+		
+	if En > PI:
+		En -= Consts._2PI
+	elif En < -PI:
+		En += Consts._2PI
+		
 	return En
 	
 
@@ -66,8 +77,8 @@ static func solve( e: float, M: float, E: float ):
 static func solve_next( e: float, M: float, E: float ):
 	var si_E: float = sin( E )
 	var co_E: float = cos( E )
-	E = E - ( E - e*si_E - M ) / (1.0  - e*co_E)
-	si_E = sin( E )
-	var err: float = abs( E - e*si_E - M )
-	return [err, E]
+	var En: float = E - ( E - e*si_E - M ) / (1.0  - e*co_E)
+	var si_En: float = sin( En )
+	var err: float = abs( En - e*si_En - M )
+	return [err, En]
 
