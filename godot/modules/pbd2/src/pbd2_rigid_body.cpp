@@ -11,6 +11,12 @@ RigidBody::RigidBody()
     mass = 1.0;
     inertia     = Matrix3d::IDENTITY;
     inv_inertia = Matrix3d::IDENTITY;
+
+	friction        = 1.0;
+	damping_linear  = 0.1;
+	damping_angular = 0.1;
+	restitution     = 0.0;;
+
 }
 
 RigidBody::~RigidBody()

@@ -37,6 +37,12 @@ public:
     void set_restitution( real_t k );
     real_t get_restitution() const;
 
+	void set_damping_linear( real_t k );
+	real_t get_damping_linear() const;
+
+	void set_damping_angular( real_t k );
+	real_t get_damping_angular() const;
+
     void set_force( const Vector3 & f );
     Vector3 get_force() const;
 

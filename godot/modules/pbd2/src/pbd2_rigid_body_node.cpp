@@ -158,6 +158,27 @@ real_t PbdRigidBodyNode::get_restitution() const
     return rigid_body.restitution;
 }
 
+void PbdRigidBodyNode::set_damping_linear( real_t k )
+{
+	rigid_body.damping_linear = k;
+}
+
+real_t PbdRigidBodyNode::get_damping_linear() const
+{
+	return rigid_body.damping_linear;
+}
+
+void PbdRigidBodyNode::set_damping_angular( real_t k )
+{
+	rigid_body.damping_angular = k;
+}
+
+real_t PbdRigidBodyNode::get_damping_angular() const
+{
+	return rigid_body.damping_angular;
+}
+
+
 void PbdRigidBodyNode::set_force( const Vector3 & f )
 {
     const Vector3d F( f.x, f.y, f.z );
@@ -253,6 +274,13 @@ void PbdRigidBodyNode::_bind_methods()
     ClassDB::bind_method( D_METHOD( "set_restitution", "k" ), &PbdRigidBodyNode::set_restitution );
     ClassDB::bind_method( D_METHOD( "get_restitution" ),      &PbdRigidBodyNode::get_restitution, Variant::REAL );
 
+	ClassDB::bind_method( D_METHOD( "set_damping_linear", "k" ), &PbdRigidBodyNode::set_damping_linear );
+	ClassDB::bind_method( D_METHOD( "get_damping_linear" ),      &PbdRigidBodyNode::get_damping_linear, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD( "set_damping_angular", "k" ), &PbdRigidBodyNode::set_damping_angular );
+	ClassDB::bind_method( D_METHOD( "get_damping_angular" ),      &PbdRigidBodyNode::get_damping_angular, Variant::REAL );
+
+
     ClassDB::bind_method( D_METHOD( "set_force", "f" ), &PbdRigidBodyNode::set_force );
     ClassDB::bind_method( D_METHOD( "get_force" ),      &PbdRigidBodyNode::get_force, Variant::VECTOR3 );
 
@@ -267,6 +295,8 @@ void PbdRigidBodyNode::_bind_methods()
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "angular_velocity" ), "set_angular_velcoity", "get_angular_velocity" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "friction" ), "set_friction", "get_friction" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "restitution" ), "set_restitution", "get_restitution" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "damping_linear" ), "set_damping_linear", "get_damping_linear" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "damping_angular" ), "set_damping_angular", "get_damping_angular" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "force" ), "set_force", "get_force" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "torque" ), "set_torque", "get_torque" );
 }
