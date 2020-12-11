@@ -46,7 +46,7 @@ public:
     void rebuild_contacts();
 
 protected:
-    void _notifications( int p_what );
+    void _notification( int p_what );
     static void _bind_methods();
 
 public:

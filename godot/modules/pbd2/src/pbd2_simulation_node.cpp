@@ -1,5 +1,6 @@
 
 #include "pbd2_simulation_node.h"
+#include "pbd2_rigid_body_node.h"
 
 namespace Pbd
 {
@@ -45,14 +46,14 @@ void PbdSimulationNode::one_step()
 
 void PbdSimulationNode::_bind_methods()
 {
-    ClassDB::bind_method( D_METHOD( "set_time_step", "h" ), &PbdRigidBodyNode::set_time_step );
-    ClassDB::bind_method( D_METHOD( "get_time_step" ),      &PbdRigidBodyNode::get_time_step, Variant::REAL );
+    ClassDB::bind_method( D_METHOD( "set_time_step", "h" ), &PbdSimulationNode::set_time_step );
+    ClassDB::bind_method( D_METHOD( "get_time_step" ),      &PbdSimulationNode::get_time_step, Variant::REAL );
 
-    ClassDB::bind_method( D_METHOD( "set_solver_iterations", "h" ), &PbdRigidBodyNode::set_solver_iterations );
-    ClassDB::bind_method( D_METHOD( "get_solver_iterations" ),      &PbdRigidBodyNode::get_solver_iterations, Variant::REAL );
+    ClassDB::bind_method( D_METHOD( "set_solver_iterations", "h" ), &PbdSimulationNode::set_solver_iterations );
+    ClassDB::bind_method( D_METHOD( "get_solver_iterations" ),      &PbdSimulationNode::get_solver_iterations, Variant::REAL );
 
-    ClassDB::bind_method( D_METHOD( "step", "delta" ), &PbdRigidBodyNode::step );
-    ClassDB::bind_method( D_METHOD( "one_step" ),      &PbdRigidBodyNode::one_step );
+    ClassDB::bind_method( D_METHOD( "step", "delta" ), &PbdSimulationNode::step );
+    ClassDB::bind_method( D_METHOD( "one_step" ),      &PbdSimulationNode::one_step );
 
 
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "time_step" ),         "set_time_step", "get_time_step" );

@@ -252,8 +252,10 @@ Vector3 PbdJointNode::get_torque() const
 
 
 
-void PbdJointNode::_notifications( int p_what )
+void PbdJointNode::_notification( int p_what )
 {
+    Node::_notification( p_what );
+
     switch ( p_what )
     {
         case NOTIFICATION_READY:

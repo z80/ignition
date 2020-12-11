@@ -63,7 +63,7 @@ public:
     Vector3 get_torque() const;
 
 protected:
-    void _notifications( int p_what );
+    void _notification( int p_what );
     static void _bind_methods();
 
 private:

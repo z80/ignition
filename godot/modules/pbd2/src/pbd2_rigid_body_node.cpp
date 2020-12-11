@@ -1,6 +1,7 @@
 
 #include "pbd2_rigid_body_node.h"
 #include "pbd2_simulation_node.h"
+#include "pbd2_contact_point_node.h"
 
 namespace Pbd
 {
@@ -15,16 +16,16 @@ static void apply_rigid_body_pose( PbdRigidBodyNode * rbn )
     const Vector3 r( r_.x_, r_.y_, r_.z_ );
     const Quat q( q_.x_, q_.y_, q_.z_, q_.w_ );
 
-    Transform t = get_transform();
+    Transform t = rbn->get_transform();
     t.set_origin( r );
     t.set_basis( q );
-    set_transform( t );
+    rbn->set_transform( t );
 }
 
 static void enter_tree( PbdRigidBodyNode * rbn )
 {
     Node * n = rbn->get_parent();
-    PbdSimulationNode * sn = Node::cast_to<PbdSimulation>( n );
+    PbdSimulationNode * sn = Node::cast_to<PbdSimulationNode>( n );
     if ( sn == nullptr )
         return;
     Simulation & s = sn->simulation;
@@ -34,7 +35,7 @@ static void enter_tree( PbdRigidBodyNode * rbn )
 static void exit_tree( PbdRigidBodyNode * rbn )
 {
     Node * n = rbn->get_parent();
-    PbdSimulationNode * sn = Node::cast_to<PbdSimulation>( n );
+    PbdSimulationNode * sn = Node::cast_to<PbdSimulationNode>( n );
     if ( sn == nullptr )
         return;
     Simulation & s = sn->simulation;
@@ -70,7 +71,7 @@ void PbdRigidBodyNode::set_inertia( const Basis & I )
 
 Basis PbdRigidBodyNode::get_inertia() const
 {
-    Basis I = Basis::IDENTITY;
+    Basis I = Basis();
     rigid_body.inertia;
     return I;
 }
@@ -81,8 +82,8 @@ void PbdRigidBodyNode::set_transform_rb( const Transform & t )
 
 Transform PbdRigidBodyNode::get_transform_rb() const
 {
-    Transform t = Transform::IDENTITY;
-    return Transform;
+    Transform t = Transform();
+    return t;
 }
 
 void PbdRigidBodyNode::set_linear_velocity( const Vector3 & v )
@@ -131,7 +132,7 @@ real_t PbdRigidBodyNode::get_restitution() const
     return rigid_body.restitution;
 }
 
-void PbdRigidBodyNode::set_force( cosnt Vector3 & f )
+void PbdRigidBodyNode::set_force( const Vector3 & f )
 {
     const Vector3d F( f.x, f.y, f.z );
     rigid_body.force = F;
@@ -161,25 +162,25 @@ Vector3 PbdRigidBodyNode::get_torque() const
 
 void PbdRigidBodyNode::rebuild_contacts()
 {
-    rigid_body.points.clear();
-    const int qty = get_children_count();
+    rigid_body.contact_points.clear();
+    const int qty = get_child_count();
     for ( int i=0; i<qty; i++ )
     {
         Node * n = get_child( i );
         PbdContactPointNode * cpn = Node::cast_to<PbdContactPointNode>( n );
         if ( cpn != nullptr )
         {
-            Vector3 at = cpn->get_transform.origin();
+            Vector3 at = cpn->get_transform().origin;
             ContactPoint cp;
             cp.r = Vector3d( at.x, at.y, at.z );
-            rigid_body.points.push_back( cp );
+            rigid_body.contact_points.push_back( cp );
         }
     }
 }
 
-void PbdRigidBodyNode::_notifications( int p_what )
+void PbdRigidBodyNode::_notification( int p_what )
 {
-    Spatial::_notifications( p_what );
+    Spatial::_notification( p_what );
 
     switch ( p_what )
     {
