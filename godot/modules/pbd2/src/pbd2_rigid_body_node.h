@@ -37,7 +37,7 @@ public:
     void set_restitution( real_t k );
     real_t get_restitution() const;
 
-    void set_force( cosnt Vector3 & f );
+    void set_force( const Vector3 & f );
     Vector3 get_force() const;
 
     void set_torque( const Vector3 & p );

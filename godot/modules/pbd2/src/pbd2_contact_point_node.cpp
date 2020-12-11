@@ -6,10 +6,10 @@
 namespace Pbd
 {
 
-static RigidBodyNode * get_parent_body( Node * n )
+static PbdRigidBodyNode * get_parent_body( const Node * n )
 {
     Node * p = n->get_parent();
-    RigidBodyNode * rb = Node::cast_to<RigidBodyNode>( p );
+    PbdRigidBodyNode * rb = Node::cast_to<PbdRigidBodyNode>( p );
     return rb;
 }
 
@@ -26,7 +26,7 @@ String PbdContactPointNode::get_configuration_warning() const
 {
     String pre = Spatial::get_configuration_warning();
 
-    RigidBody * body = get_parent_body();
+    PbdRigidBodyNode * body = get_parent_body( this );
     if ( body == nullptr )
     {
         const String post = "\nWarning: should be a child of PbdRigidBodyNode";

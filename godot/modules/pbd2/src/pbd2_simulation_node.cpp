@@ -55,8 +55,8 @@ void PbdSimulationNode::_bind_methods()
     ClassDB::bind_method( D_METHOD( "one_step" ),      &PbdRigidBodyNode::one_step );
 
 
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "time_step" ),         &PbdRigidBodyNode::set_time_step, &PbdRigidBodyNode::get_time_step );
-    ADD_PROPERTY( PropertyInfo( Variant::INT,  "solver_iterations" ), &PbdRigidBodyNode::set_solver_iterations, &PbdRigidBodyNode::get_solver_iterations );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "time_step" ),         "set_time_step", "get_time_step" );
+    ADD_PROPERTY( PropertyInfo( Variant::INT,  "solver_iterations" ), "set_solver_iterations", "get_solver_iterations" );
 }
 
 

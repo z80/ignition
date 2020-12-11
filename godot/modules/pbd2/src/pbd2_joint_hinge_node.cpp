@@ -1,11 +1,12 @@
 
 #include "pbd2_joint_hinge_node.h"
+#include "pbd2_rigid_body_node.h"
 
 namespace Pbd
 {
 
 PbdJointHingeNode::PbdJointHingeNode()
-    : PbdJoint()
+    : PbdJointNode()
 {
     joint = &joint_hinge;
 }
@@ -77,31 +78,31 @@ bool PbdJointHingeNode::get_position_control() const
 
 void PbdJointHingeNode::_bind_methods()
 {
-    ClassDB::bind_method( D_METHOD( "set_spatial_gap", "d" ), &PbdRigidBodyNode::set_spatial_gap );
-    ClassDB::bind_method( D_METHOD( "get_spatial_gap" ),      &PbdRigidBodyNode::get_spatial_gap, Variant::REAL );
+    ClassDB::bind_method( D_METHOD( "set_spatial_gap", "d" ), &PbdJointHingeNode::set_spatial_gap );
+    ClassDB::bind_method( D_METHOD( "get_spatial_gap" ),      &PbdJointHingeNode::get_spatial_gap, Variant::REAL );
 
-    ClassDB::bind_method( D_METHOD( "set_angular_gap", "d" ), &PbdRigidBodyNode::set_angular_gap );
-    ClassDB::bind_method( D_METHOD( "get_angular_gap" ),      &PbdRigidBodyNode::get_angular_gap, Variant::REAL );
+    ClassDB::bind_method( D_METHOD( "set_angular_gap", "d" ), &PbdJointHingeNode::set_angular_gap );
+    ClassDB::bind_method( D_METHOD( "get_angular_gap" ),      &PbdJointHingeNode::get_angular_gap, Variant::REAL );
 
-    ClassDB::bind_method( D_METHOD( "set_target_position", "r" ), &PbdRigidBodyNode::set_target_position );
-    ClassDB::bind_method( D_METHOD( "get_target_position" ),      &PbdRigidBodyNode::get_target_position, Variant::REAL );
+    ClassDB::bind_method( D_METHOD( "set_target_position", "r" ), &PbdJointHingeNode::set_target_position );
+    ClassDB::bind_method( D_METHOD( "get_target_position" ),      &PbdJointHingeNode::get_target_position, Variant::REAL );
 
-    ClassDB::bind_method( D_METHOD( "set_target_velocity", "r" ), &PbdRigidBodyNode::set_target_velocity );
-    ClassDB::bind_method( D_METHOD( "get_target_velocity" ),      &PbdRigidBodyNode::get_target_velocity, Variant::REAL );
+    ClassDB::bind_method( D_METHOD( "set_target_velocity", "r" ), &PbdJointHingeNode::set_target_velocity );
+    ClassDB::bind_method( D_METHOD( "get_target_velocity" ),      &PbdJointHingeNode::get_target_velocity, Variant::REAL );
 
-    ClassDB::bind_method( D_METHOD( "set_motor_gap", "d" ), &PbdRigidBodyNode::set_motor_gap );
-    ClassDB::bind_method( D_METHOD( "get_motor_gap" ),      &PbdRigidBodyNode::get_motor_gap, Variant::REAL );
+    ClassDB::bind_method( D_METHOD( "set_motor_gap", "d" ), &PbdJointHingeNode::set_motor_gap );
+    ClassDB::bind_method( D_METHOD( "get_motor_gap" ),      &PbdJointHingeNode::get_motor_gap, Variant::REAL );
 
-    ClassDB::bind_method( D_METHOD( "set_position_control", "d" ), &PbdRigidBodyNode::set_position_control );
-    ClassDB::bind_method( D_METHOD( "get_position_control" ),      &PbdRigidBodyNode::get_position_control, Variant::BOOL );
+    ClassDB::bind_method( D_METHOD( "set_position_control", "d" ), &PbdJointHingeNode::set_position_control );
+    ClassDB::bind_method( D_METHOD( "get_position_control" ),      &PbdJointHingeNode::get_position_control, Variant::BOOL );
 
 
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "spatial_gap" ), &PbdRigidBodyNode::set_spatial_gap, &PbdRigidBodyNode::get_spatial_gap );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "angular_gap" ), &PbdRigidBodyNode::set_angular_gap, &PbdRigidBodyNode::get_angular_gap );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "target_position" ), &PbdRigidBodyNode::set_target_position, &PbdRigidBodyNode::get_target_position );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "target_velocity" ), &PbdRigidBodyNode::set_target_velocity, &PbdRigidBodyNode::get_target_velocity );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "motor_gap" ), &PbdRigidBodyNode::set_motor_gap, &PbdRigidBodyNode::get_motor_gap );
-    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "position_control" ), &PbdRigidBodyNode::set_position_control, &PbdRigidBodyNode::get_position_control );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "spatial_gap" ), "set_spatial_gap", "get_spatial_gap" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "angular_gap" ), "set_angular_gap", "get_angular_gap" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "target_position" ), "set_target_position", "get_target_position" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "target_velocity" ), "set_target_velocity", "get_target_velocity" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "motor_gap" ), "set_motor_gap", "get_motor_gap" );
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "position_control" ), "set_position_control", "get_position_control" );
 }
 
 

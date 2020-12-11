@@ -21,7 +21,7 @@ public:
     real_t get_spatial_gap() const;
 
     void set_angular_gap( real_t a );
-    real_t get_angilar_gap() const;
+    real_t get_angular_gap() const;
 
     void set_motor_gap( real_t r );
     real_t get_motor_gap() const;

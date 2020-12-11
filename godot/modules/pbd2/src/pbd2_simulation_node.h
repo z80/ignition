@@ -2,6 +2,7 @@
 #ifndef __PBD2_SIMULATION_NODE_H_
 #define __PBD2_SIMULATION_NODE_H_
 
+#include "scene/3d/spatial.h"
 #include "pbd2_simulation.h"
 
 namespace Pbd
@@ -27,6 +28,7 @@ public:
 protected:
     static void _bind_methods();
 
+public:
     Simulation simulation;
 };
 

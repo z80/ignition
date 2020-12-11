@@ -12,7 +12,7 @@
 
 void register_pbd2_types()
 {
-    ClassDB::register_class<Pbd::PbdSimualionNode>();
+    ClassDB::register_class<Pbd::PbdSimulationNode>();
     ClassDB::register_class<Pbd::PbdRigidBodyNode>();
     ClassDB::register_class<Pbd::PbdJointNode>();
     ClassDB::register_class<Pbd::PbdJointHingeNode>();

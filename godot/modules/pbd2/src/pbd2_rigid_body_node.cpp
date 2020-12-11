@@ -7,11 +7,11 @@ namespace Pbd
 
 static void apply_rigid_body_pose( PbdRigidBodyNode * rbn )
 {
-    if ( rbd == nullptr )
+    if ( rbn == nullptr )
             return;
     const RigidBody & rb = rbn->rigid_body;
-    const Vector3d & r_ = rb.pose.r
-    const Quaterniond & q_ = rb.pose.q
+    const Vector3d & r_ = rb.pose.r;
+    const Quaterniond & q_ = rb.pose.q;
     const Vector3 r( r_.x_, r_.y_, r_.z_ );
     const Quat q( q_.x_, q_.y_, q_.z_, q_.w_ );
 
@@ -233,15 +233,15 @@ void PbdRigidBodyNode::_bind_methods()
     ClassDB::bind_method( D_METHOD( "get_torque" ),      &PbdRigidBodyNode::get_torque, Variant::VECTOR3 );
 
 
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "mass" ),    &PbdRigidBodyNode::set_mass, &PbdRigidBodyNode::get_mass );
-    ADD_PROPERTY( PropertyInfo( Variant::BASIS, "inertia" ), &PbdRigidBodyNode::set_inertia, &PbdRigidBodyNode::get_inertia );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "transform_rb" ), &PbdRigidBodyNode::set_transform_rb, &PbdRigidBodyNode::get_transform_rb );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "linear_velocity" ), &PbdRigidBodyNode::set_linear_velcoity, &PbdRigidBodyNode::get_linear_velocity );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "angular_velocity" ), &PbdRigidBodyNode::set_angular_velcoity, &PbdRigidBodyNode::get_angular_velocity );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "friction" ), &PbdRigidBodyNode::set_friction, &PbdRigidBodyNode::get_friction );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "restitution" ), &PbdRigidBodyNode::set_restitution, &PbdRigidBodyNode::get_restitution );
-    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "force" ), &PbdRigidBodyNode::set_force, &PbdRigidBodyNode::get_force );
-    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "torque" ), &PbdRigidBodyNode::set_torque, &PbdRigidBodyNode::get_torque );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "mass" ),    "set_mass", "get_mass" );
+    ADD_PROPERTY( PropertyInfo( Variant::BASIS, "inertia" ), "set_inertia", "get_inertia" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "transform_rb" ), "set_transform_rb", "get_transform_rb" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "linear_velocity" ), "set_linear_velcoity", "get_linear_velocity" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "angular_velocity" ), "set_angular_velcoity", "get_angular_velocity" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "friction" ), "set_friction", "get_friction" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "restitution" ), "set_restitution", "get_restitution" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "force" ), "set_force", "get_force" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "torque" ), "set_torque", "get_torque" );
 }
 
 

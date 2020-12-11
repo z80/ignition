@@ -12,13 +12,13 @@ namespace Pbd
 
 class Joint;
 
-class JointNode: public Node
+class PbdJointNode: public Node
 {
-    GDCLASS( JointNode, Node );
+    GDCLASS( PbdJointNode, Node );
 
 public:
-    JointNode();
-     virtual ~JointNode();
+    PbdJointNode();
+     virtual ~PbdJointNode();
 
     void set_body_path_a( const NodePath & p );
     NodePath get_body_path_a() const;
@@ -64,11 +64,12 @@ public:
 
 protected:
     void _notifications( int p_what );
-    void _bind_methods();
+    static void _bind_methods();
 
 private:
     RigidBody * body_from_path( const NodePath & path );
-    
+
+public: 
     // In derived class assign this pointer to 
     // point to an instance of an actual joint.
     Joint * joint;
