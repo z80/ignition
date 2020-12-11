@@ -18,7 +18,7 @@ class JointNode: public Node
 
 public:
     JointNode();
-     ~JointNode();
+     virtual ~JointNode();
 
     void set_body_path_a( const NodePath & p );
     NodePath get_body_path_a() const;

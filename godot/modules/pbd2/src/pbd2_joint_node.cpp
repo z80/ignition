@@ -318,23 +318,23 @@ void JointNode::_bind_methods()
     ClassDB::bind_method( D_METHOD( "get_torque" ), &PbdRigidBodyNode::get_torque, Variant::VECTOR3 );
 
 
+    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "body_path_a" ), &PbdRigidBodyNode::set_body_path_a, &PbdRigidBodyNode::get_body_path_a );
+    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "body_path_b" ), &PbdRigidBodyNode::set_body_path_b, &PbdRigidBodyNode::get_body_path_b );
 
+    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "at_a" ),        &PbdRigidBodyNode::set_at_a, &PbdRigidBodyNode::get_at_a );
+    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "at_b" ),        &PbdRigidBodyNode::set_at_b, &PbdRigidBodyNode::get_at_b );
 
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "body_path_a" ),    &PbdRigidBodyNode::set_body_path_a, &PbdRigidBodyNode::get_body_path_a );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "body_path_b" ),    &PbdRigidBodyNode::set_body_path_b, &PbdRigidBodyNode::get_body_path_b );
+    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e1_a" ),        &PbdRigidBodyNode::set_e1_a, &PbdRigidBodyNode::get_e1_a );
+    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e2_a" ),        &PbdRigidBodyNode::set_e2_a, &PbdRigidBodyNode::get_e2_a );
+    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e3_a" ),        &PbdRigidBodyNode::set_e3_a, &PbdRigidBodyNode::get_e3_a );
 
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "at_a" ),    &PbdRigidBodyNode::set_at_a, &PbdRigidBodyNode::get_at_a );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "at_b" ),    &PbdRigidBodyNode::set_at_b, &PbdRigidBodyNode::get_at_b );
+    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e1_b" ),        &PbdRigidBodyNode::set_e1_b, &PbdRigidBodyNode::get_e1_b );
+    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e2_b" ),        &PbdRigidBodyNode::set_e2_b, &PbdRigidBodyNode::get_e2_b );
+    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e3_b" ),        &PbdRigidBodyNode::set_e3_b, &PbdRigidBodyNode::get_e3_b );
 
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e1_a" ),    &PbdRigidBodyNode::set_e1_a, &PbdRigidBodyNode::get_e1_a );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e2_a" ),    &PbdRigidBodyNode::set_e2_a, &PbdRigidBodyNode::get_e2_a );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e3_a" ),    &PbdRigidBodyNode::set_e3_a, &PbdRigidBodyNode::get_e3_a );
-
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e1_b" ),    &PbdRigidBodyNode::set_e1_b, &PbdRigidBodyNode::get_e1_b );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e2_b" ),    &PbdRigidBodyNode::set_e2_b, &PbdRigidBodyNode::get_e2_b );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e3_b" ),    &PbdRigidBodyNode::set_e3_b, &PbdRigidBodyNode::get_e3_b );
-
-
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "motor" ),            &PbdRigidBodyNode::set_motor, &PbdRigidBodyNode::get_motor );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "compliance_joint" ), &PbdRigidBodyNode::set_compliance_joint, &PbdRigidBodyNode::get_compliance_joint );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "compliance_motor" ), &PbdRigidBodyNode::set_compliance_motor, &PbdRigidBodyNode::get_compliance_motor );
 }
 
 RigidBody * JointNode::body_from_path( const NodePath & path )
