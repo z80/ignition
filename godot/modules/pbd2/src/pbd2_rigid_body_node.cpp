@@ -66,23 +66,49 @@ real_t PbdRigidBodyNode::get_mass() const
 void PbdRigidBodyNode::set_inertia( const Basis & I )
 {
     Matrix3d i;
-    rigid_body.inertia = i;
+	i.m00_ = I.elements[0].x;
+	i.m10_ = I.elements[0].y;
+	i.m20_ = I.elements[0].z;
+	i.m01_ = I.elements[1].x;
+	i.m11_ = I.elements[1].y;
+	i.m21_ = I.elements[1].z;
+	i.m02_ = I.elements[2].x;
+	i.m12_ = I.elements[2].y;
+	i.m22_ = I.elements[2].z;
+	rigid_body.inertia = i;
 }
 
 Basis PbdRigidBodyNode::get_inertia() const
 {
-    Basis I = Basis();
-    rigid_body.inertia;
-    return I;
+	const Matrix3d & I = rigid_body.inertia;
+	Basis i;
+	i.elements[0].x = I.m00_;
+	i.elements[0].y = I.m10_;
+	i.elements[0].z = I.m20_;
+	i.elements[1].x = I.m01_;
+	i.elements[1].y = I.m11_;
+	i.elements[1].z = I.m21_;
+	i.elements[2].x = I.m02_;
+	i.elements[2].y = I.m12_;
+	i.elements[2].z = I.m22_;
+	return i;
 }
 
 void PbdRigidBodyNode::set_transform_rb( const Transform & t )
 {
+	const Vector3 & o = t.origin;
+	const Quat q = t.basis.get_quat();
+	rigid_body.pose.r = Vector3d( o.x, o.y, o.z );
+	rigid_body.pose.q = Quaterniond( q.w, q.x, q.y, q.z );
 }
 
 Transform PbdRigidBodyNode::get_transform_rb() const
 {
-    Transform t = Transform();
+	const Vector3d & o = rigid_body.pose.r;
+	const Quaterniond & q = rigid_body.pose.q;
+	Transform t;
+	t.origin = Vector3( o.x_, o.y_, o.z_ );
+	t.basis = Quat( q.x_, q.y_, q.z_, q.w_ );
     return t;
 }
 
