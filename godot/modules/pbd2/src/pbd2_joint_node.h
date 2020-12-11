@@ -1,61 +1,80 @@
 
-#ifndef __PBD2_JOINT_H_
-#define __PBD2_JOINT_H_
+#ifndef __PBD2_JOINT_NODE_H_
+#define __PBD2_JOINT_NODE_H_
 
-#include "vector3d.h"
+#include "scene/main/node.h"
+#include "pbd2_joint.h"
 
 using namespace Ign;
 
 namespace Pbd
 {
 
-class RigidBody;
+class Joint;
 
-class Joint
+class JointNode: public Node
 {
+    GDCLASS( JointNode, Node );
+
 public:
-    Joint();
-    virtual ~Joint();
+    JointNode();
+     ~JointNode();
 
-    // Places as many zeros to "lambdas" array as needed.
-    virtual void init_lambdas() {}
-    // This thing should be implemented. It is supposed to set 
-    // motor target to the current relative configuration to 
-    // avoid initial "jump".
-    virtual void init_motor_target() {}
-     // performs all necessary steps. Each with its own lambda.
-    virtual void solver_step( Float h ) {}
-   
-    // Orthogonalizes joint basis vectors 
-    // "e1_a", "e2_a", "e3_a" and "e1_b", "e2_b", "e3_b".
-    void orthogonalize();
+    void set_body_path_a( const NodePath & p );
+    NodePath get_body_path_a() const;
 
+    void set_body_path_b( const NodePath & p );
+    NodePath get_body_path_b() const;
 
-    RigidBody * body_a;
-    RigidBody * body_b;
+    void set_at_a( const Vector3 & at );
+    Vector3 get_at_a() const;
 
-    // Force and dtrque applied to bodies.
-    // These are outputs.
-    Vector3d force, torque;
+    void set_at_b( const Vector3 & at );
+    Vector3 get_at_b() const;
 
-    Float compliance_joint;
-    Float compliance_motor;
-    bool  motor;
+    void set_e1_a( const Vector3 & e );
+    Vector3 get_e1_a() const;
 
-    Vector3d at_a;
-    Vector3d e1_a;
-    Vector3d e2_a;
-    Vector3d e3_a;
+    void set_e2_a( const Vector3 & e );
+    Vector3 get_e2_a() const;
 
-    Vector3d at_b;
-    Vector3d e1_b;
-    Vector3d e2_b;
-    Vector3d e3_b;
+    void set_e3_a( const Vector3 & e );
+    Vector3 get_e3_a() const;
 
-    Vector<Float> lambdas;
+    void set_e1_b( const Vector3 & e );
+    Vector3 get_e1_b() const;
 
-    static const Float EPS;
-    static const Float _2_PI;
+    void set_e2_b( const Vector3 & e );
+    Vector3 get_e2_b() const;
+
+    void set_e3_b( const Vector3 & e );
+    Vector3 get_e3_b() const;
+
+    void set_motor( bool en );
+    bool get_motor() const;
+
+    void set_compliance_joint( real_t k );
+    real_t get_compliance_joint() const;
+
+    void set_compliance_motor( real_t k );
+    real_t get_compliance_motor() const;
+
+    Vector3 get_force() const;
+    Vector3 get_torque() const;
+
+protected:
+    void _notifications( int p_what );
+    void _bind_methods();
+
+private:
+    RigidBody * body_from_path( const NodePath & path );
+    
+    // In derived class assign this pointer to 
+    // point to an instance of an actual joint.
+    Joint * joint;
+    NodePath body_a;
+    NodePath body_b;
+
 };
 
 
@@ -65,6 +84,7 @@ public:
 
 
 #endif
+
 
 
 
