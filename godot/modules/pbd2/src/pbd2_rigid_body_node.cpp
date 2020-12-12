@@ -19,7 +19,7 @@ static void apply_rigid_body_pose( PbdRigidBodyNode * rbn )
     Transform t = rbn->get_transform();
     t.set_origin( r );
     t.set_basis( q );
-    rbn->set_transform( t );
+    //rbn->set_transform( t );
 }
 
 static void enter_tree( PbdRigidBodyNode * rbn )
@@ -47,6 +47,7 @@ PbdRigidBodyNode::PbdRigidBodyNode()
     : Spatial()
 {
     set_process( true );
+	set_notify_local_transform( true );
 }
 
 PbdRigidBodyNode::~PbdRigidBodyNode()
@@ -102,15 +103,15 @@ void PbdRigidBodyNode::set_transform_rb( const Transform & t )
 	rigid_body.pose.q = Quaterniond( q.w, q.x, q.y, q.z );
 }
 
-Transform PbdRigidBodyNode::get_transform_rb() const
-{
-	const Vector3d & o = rigid_body.pose.r;
-	const Quaterniond & q = rigid_body.pose.q;
-	Transform t;
-	t.origin = Vector3( o.x_, o.y_, o.z_ );
-	t.basis = Quat( q.x_, q.y_, q.z_, q.w_ );
-    return t;
-}
+//Transform PbdRigidBodyNode::get_transform_rb() const
+//{
+//	const Vector3d & o = rigid_body.pose.r;
+//	const Quaterniond & q = rigid_body.pose.q;
+//	Transform t;
+//	t.origin = Vector3( o.x_, o.y_, o.z_ );
+//	t.basis = Quat( q.x_, q.y_, q.z_, q.w_ );
+//    return t;
+//}
 
 void PbdRigidBodyNode::set_linear_velocity( const Vector3 & v )
 {
@@ -236,7 +237,8 @@ void PbdRigidBodyNode::_notification( int p_what )
             break;
 
         case NOTIFICATION_PROCESS:
-            apply_rigid_body_pose( this );        
+			//if ( !is_edited() )
+				apply_rigid_body_pose( this );        
             break;
 
         case NOTIFICATION_ENTER_TREE:
@@ -245,6 +247,10 @@ void PbdRigidBodyNode::_notification( int p_what )
 
         case NOTIFICATION_EXIT_TREE:
             exit_tree( this );
+
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
+			set_transform_rb( get_transform() );
+			break;
 
         default:
             break;
@@ -259,8 +265,8 @@ void PbdRigidBodyNode::_bind_methods()
     ClassDB::bind_method( D_METHOD( "set_inertia", "I" ), &PbdRigidBodyNode::set_inertia );
     ClassDB::bind_method( D_METHOD( "get_inertia" ),      &PbdRigidBodyNode::get_inertia, Variant::BASIS );
 
-    ClassDB::bind_method( D_METHOD( "set_transform_rb", "t" ), &PbdRigidBodyNode::set_transform_rb );
-    ClassDB::bind_method( D_METHOD( "get_transform_rb" ),      &PbdRigidBodyNode::get_transform_rb, Variant::TRANSFORM );
+    //ClassDB::bind_method( D_METHOD( "set_transform_rb", "t" ), &PbdRigidBodyNode::set_transform_rb );
+    //ClassDB::bind_method( D_METHOD( "get_transform_rb" ),      &PbdRigidBodyNode::get_transform_rb, Variant::TRANSFORM );
 
     ClassDB::bind_method( D_METHOD( "set_linear_velocity", "v" ), &PbdRigidBodyNode::set_linear_velocity );
     ClassDB::bind_method( D_METHOD( "get_linear_velocity" ),      &PbdRigidBodyNode::get_linear_velocity, Variant::VECTOR3 );
@@ -290,7 +296,7 @@ void PbdRigidBodyNode::_bind_methods()
 
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "mass" ),    "set_mass", "get_mass" );
     ADD_PROPERTY( PropertyInfo( Variant::BASIS, "inertia" ), "set_inertia", "get_inertia" );
-    ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform_rb" ), "set_transform_rb", "get_transform_rb" );
+    //ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform_rb" ), "set_transform_rb", "get_transform_rb" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "linear_velocity" ), "set_linear_velocity", "get_linear_velocity" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "angular_velocity" ), "set_angular_velocity", "get_angular_velocity" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "friction" ), "set_friction", "get_friction" );

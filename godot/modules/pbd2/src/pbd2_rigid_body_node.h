@@ -23,7 +23,7 @@ public:
     Basis get_inertia() const;
 
     void set_transform_rb( const Transform & t );
-    Transform get_transform_rb() const;
+    //Transform get_transform_rb() const;
 
     void set_linear_velocity( const Vector3 & v );
     Vector3 get_linear_velocity() const;
