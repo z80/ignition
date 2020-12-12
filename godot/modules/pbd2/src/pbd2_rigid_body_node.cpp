@@ -19,7 +19,7 @@ static void apply_rigid_body_pose( PbdRigidBodyNode * rbn )
     Transform t = rbn->get_transform();
     t.set_origin( r );
     t.set_basis( q );
-    //rbn->set_transform( t );
+    rbn->set_transform( t );
 }
 
 static void enter_tree( PbdRigidBodyNode * rbn )
@@ -237,7 +237,7 @@ void PbdRigidBodyNode::_notification( int p_what )
             break;
 
         case NOTIFICATION_PROCESS:
-			//if ( !is_edited() )
+			if ( !is_edited() )
 				apply_rigid_body_pose( this );        
             break;
 
