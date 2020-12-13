@@ -3,17 +3,19 @@ const Consts = preload( "res://physics/orbital_motion/constants.gd" )
 const Velocity = preload( "res://physics/orbital_motion/velocity.gd" )
 
 static func init( r: Vector3, v: Vector3, args: Dictionary ):
+	var a: float = args.a
+	var gm: float = args.gm
+	var abs_e: float = args.abs_e
 	# Semi-latus-rectum.
-	var slr: float = args.a * (1.0 - args.e*args.e)
+	var slr: float = args.a * (1.0 - abs_e*abs_e)
 	
 	var abs_r: float = r.length()
-	var cos_E: float = 1.0 - abs_r/args.a
+	var cos_E: float = 1.0 - abs_r/a
 	var r_dot_v: float = r.dot( v )
-	var abs_e: float = args.e.length()
-	var sin_E: float = r_dot_v / ( abs_e * sqrt( args.gm * args.a ) )
+	var sin_E: float = r_dot_v / ( abs_e * sqrt( gm * a ) )
 	var E: float = atan2( sin_E, cos_E )
 	
-	var n: float = sqrt( args.a*args.a*args.a/args.gm )
+	var n: float = sqrt( a*a*a/gm )
 	# Orbital period.
 	var T: float = 2.0*PI*n
 	# Time to periapsis.

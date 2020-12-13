@@ -41,7 +41,7 @@ static func init( gm: float, r: Vector3, v: Vector3 ):
 	if abs_e > Consts.EPS:
 		e_x = e / abs_e
 	else:
-		e_x = eb
+		e_x = r.normalized()
 	
 	var h_cross_ex: Vector3 = h.cross( e_x )
 	var abs_h_corss_ex: float = h_cross_ex.length()
@@ -49,7 +49,16 @@ static func init( gm: float, r: Vector3, v: Vector3 ):
 	if abs_h_corss_ex > Consts.EPS:
 		e_y = h_cross_ex / abs_h_corss_ex
 	else:
-		e_y = Vector3.ZERO
+		e_y = v.normalized()
+		e_y = e_y - e_y.project( e_x )
+		e_y = e_y.normalized()
+	
+	var e_z: Vector3 = e_x.cross( e_y )
+	var A: Basis
+	A.x = e_x
+	A.y = e_y
+	A.z = e_z
+	var inv_A: Basis = A.inverse()
 	
 	var args = {
 		gm = gm, 
@@ -57,8 +66,8 @@ static func init( gm: float, r: Vector3, v: Vector3 ):
 		e = e, 
 		abs_e = abs_e, 
 		a = a, 
-		e_x = e_x, 
-		e_y = e_y
+		A = A, 
+		inv_A = inv_A
 	}
 	
 	if abs_e > (1.0 + Consts.EPS):
@@ -76,8 +85,6 @@ static func init( gm: float, r: Vector3, v: Vector3 ):
 
 
 static func process( dt: float, args: Dictionary ):
-	var e_x: Vector3 = args.e_x
-	var e_y: Vector3 = args.e_y
 	var t: int = args.type
 	
 	var ret: Array

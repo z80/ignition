@@ -24,14 +24,12 @@ static func velocity( args: Dictionary, f: float ):
 	var a: float  = args.a
 	var r: float = slr/(1.0 + abs_e*co_f)
 	
-	var parabolic: bool = (abs_e > (1.0 - Consts.EPS)) and (abs_e < (1.0 + Consts.EPS))
-	
-	var abs_v: float = speed( gm, a, r, parabolic )
+	var abs_v: float = speed( gm, a, r )
 	
 	var v_x: float = k_x * abs_v
 	var v_y: float = k_y * abs_v
 	
-	var v: Vector2 = Vector2( v_x, v_y )
+	var v: Vector3 = Vector3( v_x, v_y, 0.0 )
 	
 	return v
 
@@ -41,11 +39,11 @@ static func velocity( args: Dictionary, f: float ):
 # semimajor axis is positive, so it reduces the velocity.
 # And for hyperbolic case semimajor axis is negative, so it adds 
 # up to the velocity.
-static func speed( gm: float, a: float, r: float, parabolic: bool ):
-	var v: float
-	if parabolic:
-		v = sqrt( 2.0*gm/r )
-	else:
-		v = sqrt( gm*( 2.0/r - 1.0/a ) )
+static func speed( gm: float, a: float, r: float ):
+	var v: float = sqrt( gm*( 2.0/r - 1.0/a ) )
 	return v
 
+
+static func speed_parabolic( gm: float, r: float ):
+	var v: float = sqrt( 2.0*gm/r )
+	return v
