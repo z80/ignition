@@ -27,16 +27,20 @@ static func init( gm: float, r: Vector3, v: Vector3 ):
 	var eb: Vector3 = r / abs_r
 	# Eccentricity vector.
 	var e: Vector3 = ea - eb
+	var abs_e: float = e.length()
 	
 	var abs_v: float = v.length()
 	var Ws: float = gm/abs_r - 0.5*abs_v*abs_v
 	# Semimajor axis.
-	var a: float = 0.5*gm/Ws
+	var a: float
+	if ( abs_e > (1.0 + Consts.EPS) ) or ( abs_e < ( 1.0 - Consts.EPS ) ):
+		a = 0.5*gm/Ws
+	else:
+		a = 0.0
 	
 	# Unit vectors.
 	# "e_a" towards perigee.
 	# "e_b" 90 deg to "e_a" in the orbit plain and towards object movement.
-	var abs_e: float = e.length()
 	var e_x: Vector3
 	if abs_e > Consts.EPS:
 		e_x = e / abs_e
