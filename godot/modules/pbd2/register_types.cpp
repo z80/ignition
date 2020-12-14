@@ -9,6 +9,7 @@
 #include "pbd2_joint_node.h"
 #include "pbd2_joint_hinge_node.h"
 #include "pbd2_joint_ball_node.h"
+#include "pbd2_contact_point_node.h"
 
 void register_pbd2_types()
 {
@@ -17,6 +18,7 @@ void register_pbd2_types()
     ClassDB::register_class<Pbd::PbdJointNode>();
     ClassDB::register_class<Pbd::PbdJointHingeNode>();
     ClassDB::register_class<Pbd::PbdJointBallNode>();
+	ClassDB::register_class<Pbd::PbdContactPointNode>();
 }
 
 void unregister_pbd2_types()

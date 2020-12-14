@@ -3,6 +3,8 @@
 #include "pbd2_simulation_node.h"
 #include "pbd2_contact_point_node.h"
 
+#include "core/engine.h"
+
 namespace Pbd
 {
 
@@ -237,7 +239,7 @@ void PbdRigidBodyNode::_notification( int p_what )
             break;
 
         case NOTIFICATION_PROCESS:
-			if ( !is_edited() )
+			if ( !Engine::get_singleton()->is_editor_hint() )
 				apply_rigid_body_pose( this );        
             break;
 
