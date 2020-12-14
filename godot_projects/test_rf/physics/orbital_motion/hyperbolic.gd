@@ -53,8 +53,10 @@ static func process( dt: float, args: Dictionary ):
 	var x: float = abs_r * co_f
 	var y: float = abs_r * si_f
 	var r: Vector3 = Vector3( x, y, 0.0 )
+	print( "local r: ", r )
 	
 	var v: Vector3 = velocity( args, r )
+	print( "local v: ", v )
 	
 	var A: Basis = args.A
 	r = A.xform( r )
@@ -95,8 +97,8 @@ static func velocity( args: Dictionary, r: Vector3 ):
 	var abs_e: float = args.abs_e
 	var abs_r: float = r.length()
 	
-	var si_f: float = r.x/abs_r
-	var co_f: float = r.y/abs_r
+	var si_f: float = r.y/abs_r
+	var co_f: float = r.x/abs_r
 	
 	var v: Vector3 = Vector3( -si_f, co_f + abs_e, 0.0 )
 	v = v.normalized()
