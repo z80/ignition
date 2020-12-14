@@ -53,10 +53,10 @@ static func process( dt: float, args: Dictionary ):
 	var x: float = a*(co_E - abs_e)
 	var y: float = b*si_E
 	var r: Vector3 = Vector3( x, y, 0.0 )
-	print( "local r: ", r )
+	#print( "local r: ", r )
 
 	var v: Vector3 = velocity( args, r, E )
-	print( "local v: ", v )
+	#print( "local v: ", v )
 	
 	var A: Basis = args.A
 	r = A.xform( r )
