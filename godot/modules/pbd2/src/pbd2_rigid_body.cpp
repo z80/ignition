@@ -69,14 +69,14 @@ void RigidBody::set_inertia( const Matrix3d & I )
 Matrix3d RigidBody::I() const
 {
     const Matrix3d A = pose.q.RotationMatrix();
-    const Matrix3d i = A.Transpose() * inertia * A;
+    const Matrix3d i = A * inertia * A.Transpose();
     return i;
 }
 
 Matrix3d RigidBody::inv_I() const
 {
     const Matrix3d A = pose.q.RotationMatrix();
-    const Matrix3d inv_i = A * inv_inertia * A.Transpose();
+    const Matrix3d inv_i = A.Transpose() * inv_inertia * A;
     return inv_i;
 }
 
@@ -94,8 +94,8 @@ void RigidBody::integrate_dynamics( Float h )
     pose.r += vel * h;
 
     const Matrix3d A = pose.q.RotationMatrix();
-    const Matrix3d I = A.Transpose() * inertia * A;
-    const Matrix3d inv_I = A * inv_inertia * A.Transpose();
+    const Matrix3d I = A * inertia * A.Transpose();
+    const Matrix3d inv_I = A.Transpose() * inv_inertia * A;
 
     const Vector3d w_x_Iw = omega.CrossProduct( I * omega );
     const Vector3d dw = ( inv_I * ( torque - w_x_Iw ) ) * h;
@@ -174,7 +174,7 @@ Float RigidBody::specific_inv_mass_pos( const Vector3d & r, const Vector3d & n )
         return 0.0;
 
     const Matrix3d A = pose.q.RotationMatrix();
-    const Matrix3d inv_I = A * inv_inertia * A.Transpose();
+    const Matrix3d inv_I = A.Transpose() * inv_inertia * A;
     const Vector3d r_world = pose.q * r;
     const Vector3d r_x_n = r_world.CrossProduct( n );
     const Float mu = 1.0/mass + r_x_n.DotProduct( inv_I * r_x_n );
@@ -189,7 +189,7 @@ Float RigidBody::specific_inv_mass_rot( const Vector3d & n )
         return 0.0;
 
     const Matrix3d A = pose.q.RotationMatrix();
-    const Matrix3d inv_I = A * inv_inertia * A.Transpose();
+    const Matrix3d inv_I = A.Transpose() * inv_inertia * A;
     const Float mu = n.DotProduct( inv_I * n );
 
     return mu;
