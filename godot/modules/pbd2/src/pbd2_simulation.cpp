@@ -92,7 +92,7 @@ void Simulation::step()
     for ( int i=0; i<bodies_qty; i++ )
     {
         RigidBody * body = bodies.ptr()[i];
-        //body->update_contact_velocities( h );
+        body->update_contact_velocities( h );
     }
 
 	// Update contact prev. positions.
