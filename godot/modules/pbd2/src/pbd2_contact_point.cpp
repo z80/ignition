@@ -110,7 +110,7 @@ void ContactPoint::solve_dynamic_friction( RigidBody * body, Float h )
         const Float mu_b = body->specific_inv_mass_pos( this->r, n );
         const Vector3d p = dv/mu_b;
         const Float m = body->mass;
-        body->vel += p / m;
+        body->vel -= p / m;
 
         const Matrix3d inv_I = body->inv_I();
         body->omega -= inv_I * ( r_w.CrossProduct( p ) );
