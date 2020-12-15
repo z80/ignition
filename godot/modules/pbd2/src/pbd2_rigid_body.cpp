@@ -102,8 +102,12 @@ void RigidBody::integrate_dynamics( Float h )
     omega += dw;
 
     const Float k = 0.5 * h;
-    const Quaterniond dq( 0.0, omega.x_*k, omega.y_*k, omega.z_*k );
-    pose.q += dq;
+    Quaterniond dq( 0.0, omega.x_*k, omega.y_*k, omega.z_*k );
+	dq = dq * pose.q;
+    pose.q.w_ += dq.w_;
+	pose.q.x_ += dq.x_;
+	pose.q.y_ += dq.y_;
+	pose.q.z_ += dq.z_;
     pose.q.Normalize();
 }
 

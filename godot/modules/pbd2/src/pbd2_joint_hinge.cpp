@@ -96,7 +96,7 @@ Float JointHinge::solver_step_rotation( Float lambda, Float h )
     const Vector3d n = dtheta / theta;
     theta -= angular_gap;
 
-    const Float ret = 0.0; //Solver::correct_rotation( h, compliance_joint, theta, n, lambda, body_a, body_b );
+    const Float ret = Solver::correct_rotation( h, compliance_joint, theta, n, lambda, body_a, body_b );
     return ret;
 }
 
