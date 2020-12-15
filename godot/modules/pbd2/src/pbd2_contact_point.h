@@ -27,6 +27,8 @@ public:
     bool solve_normal( RigidBody * body, Float h );
     void solve_tangential( RigidBody * body, Float h );
 
+	void update_prev();
+
     // Point position in body ref. frame.
     Vector3d r;
     Vector3d r_world;

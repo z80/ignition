@@ -51,6 +51,7 @@ public:
     void init_contact_lambdas();
     void solve_contacts( Float h );
     void update_contact_velocities( Float h );
+	void update_contact_positions();
 
     Float specific_inv_mass_pos( const Vector3d & r, const Vector3d & n );
     Float specific_inv_mass_rot( const Vector3d & n );

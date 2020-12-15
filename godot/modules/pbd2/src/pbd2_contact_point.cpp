@@ -54,7 +54,7 @@ void ContactPoint::init_lambdas()
 
 void ContactPoint::solve( RigidBody * body, Float h )
 {
-    r_world_prev = r_world;
+    //r_world_prev = r_world;
     r_world  = (body->pose.q * r) + body->pose.r;
 
     const bool in_contact = solve_normal( body, h );
@@ -224,7 +224,7 @@ void ContactPoint::solve_tangential( RigidBody * body, Float h )
         body->pose.r = r;
 
         const Vector3d rb_w = q * this->r;
-        Vector3d k = rb_w * p;
+        Vector3d k = rb_w.CrossProduct( p );
         const Matrix3d inv_I = body->inv_I();
         k = inv_I * k;
         k *= 0.5;
@@ -238,6 +238,11 @@ void ContactPoint::solve_tangential( RigidBody * body, Float h )
         q.Normalized();
         body->pose.q = q;
     }
+}
+
+void ContactPoint::update_prev()
+{
+	r_world_prev = r_world;
 }
 
 

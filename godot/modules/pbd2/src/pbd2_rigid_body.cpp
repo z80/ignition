@@ -156,6 +156,16 @@ void RigidBody::update_contact_velocities( Float h )
     }
 }
 
+void RigidBody::update_contact_positions()
+{
+	const int qty = contact_points.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		ContactPoint & pt = contact_points.ptrw()[i];
+		pt.update_prev();
+	}
+}
+
 
 // "r" local, "n" world.
 Float RigidBody::specific_inv_mass_pos( const Vector3d & r, const Vector3d & n )
