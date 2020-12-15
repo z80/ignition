@@ -23,6 +23,10 @@ Joint::Joint()
     e2_b = Vector3d( 0.0, 1.0, 0.0 );
     e3_b = Vector3d( 0.0, 0.0, 1.0 );
 
+	compliance_joint = 0.0;
+	compliance_motor = 0.0;
+	motor            = false;
+
     body_a = nullptr;
     body_b = nullptr;
 }
@@ -35,6 +39,13 @@ void Joint::orthogonalize()
 {
     Pbd::orthogonalize( e1_a, e2_a, e3_a );
     Pbd::orthogonalize( e1_b, e2_b, e3_b );
+}
+
+void Joint::init_joint_at_vectors()
+{
+	// TODO
+	// Also, may be make it optional.
+	// ......
 }
 
 

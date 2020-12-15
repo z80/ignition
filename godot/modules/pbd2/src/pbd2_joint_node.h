@@ -18,7 +18,7 @@ class PbdJointNode: public Node
 
 public:
     PbdJointNode();
-     virtual ~PbdJointNode();
+    virtual ~PbdJointNode();
 
     void set_body_path_a( const NodePath & p );
     NodePath get_body_path_a() const;
@@ -63,7 +63,7 @@ public:
     Vector3 get_torque() const;
 
 protected:
-    void _notification( int p_what );
+    virtual void _notification( int p_what );
     static void _bind_methods();
 
 private:

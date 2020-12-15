@@ -35,7 +35,7 @@ public:
     bool get_position_control() const;
 
 protected:
-    static void _bind_methods();
+	static void _bind_methods();
 
     JointHinge joint_hinge;
 };

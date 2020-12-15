@@ -44,7 +44,7 @@ Float JointBall::solver_step_position( Float lambda, Float h )
 {
     const Vector3d dr = _delta_r();
     Float c = dr.Length();
-    if ( c <= spatial_gap )
+    if ( (c <= spatial_gap) || (c < EPS) )
         return lambda;
 
     const Vector3d n = dr / c;
@@ -58,7 +58,7 @@ void JointBall::solver_step_motor( Float h )
 {
     Vector3d d_angle_3 = _delta_motor_eta();
     Float abs_angle = d_angle_3.Length();
-    if ( abs_angle > motor_gap )
+    if ( (abs_angle > motor_gap) && (abs_angle > EPS) )
     {
         const Vector3d n = d_angle_3 / abs_angle;
         abs_angle -= motor_gap;
@@ -67,7 +67,7 @@ void JointBall::solver_step_motor( Float h )
 
     d_angle_3 = _delta_motor_theta();
     abs_angle = d_angle_3.Length();
-    if ( abs_angle > motor_gap )
+    if ( (abs_angle > motor_gap) && (abs_angle > EPS) )
     {
         const Vector3d n = d_angle_3 / abs_angle;
         abs_angle -= motor_gap;
@@ -76,7 +76,7 @@ void JointBall::solver_step_motor( Float h )
 
     d_angle_3 = _delta_motor_zeta();
     abs_angle = d_angle_3.Length();
-    if ( abs_angle > motor_gap )
+    if ( (abs_angle > motor_gap) && (abs_angle > EPS) )
     {
         const Vector3d n = d_angle_3 / abs_angle;
         abs_angle -= motor_gap;

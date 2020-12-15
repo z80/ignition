@@ -138,7 +138,7 @@ Vector3 PbdJointNode::get_e3_a() const
     if ( joint == nullptr )
         return Vector3();
     
-    const Vector3d & a = joint->e2_a;
+    const Vector3d & a = joint->e3_a;
     const Vector3 at( a.x_, a.y_, a.z_ );
     return at;
 }
@@ -263,6 +263,8 @@ void PbdJointNode::_notification( int p_what )
             {
                 joint->body_a = body_from_path( body_a );
                 joint->body_b = body_from_path( body_b );
+				joint->init_joint_at_vectors();
+				joint->init_motor_target();
             }
             break;
 
@@ -326,16 +328,16 @@ void PbdJointNode::_bind_methods()
     ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "body_path_a" ), "set_body_path_a", "get_body_path_a" );
     ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "body_path_b" ), "set_body_path_b", "get_body_path_b" );
 
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "at_a" ),        "set_at_a", "get_at_a" );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "at_b" ),        "set_at_b", "get_at_b" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "at_a" ),        "set_at_a", "get_at_a" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "at_b" ),        "set_at_b", "get_at_b" );
 
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e1_a" ),        "set_e1_a", "get_e1_a" );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e2_a" ),        "set_e2_a", "get_e2_a" );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e3_a" ),        "set_e3_a", "get_e3_a" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "e1_a" ),        "set_e1_a", "get_e1_a" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "e2_a" ),        "set_e2_a", "get_e2_a" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "e3_a" ),        "set_e3_a", "get_e3_a" );
 
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e1_b" ),        "set_e1_b", "get_e1_b" );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e2_b" ),        "set_e2_b", "get_e2_b" );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "e3_b" ),        "set_e3_b", "get_e3_b" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "e1_b" ),        "set_e1_b", "get_e1_b" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "e2_b" ),        "set_e2_b", "get_e2_b" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "e3_b" ),        "set_e3_b", "get_e3_b" );
 
     ADD_PROPERTY( PropertyInfo( Variant::BOOL, "motor" ),            "set_motor", "get_motor" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "compliance_joint" ), "set_compliance_joint", "get_compliance_joint" );

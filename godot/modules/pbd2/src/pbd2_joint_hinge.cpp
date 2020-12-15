@@ -10,6 +10,13 @@ namespace Pbd
 JointHinge::JointHinge()
     : Joint()
 {
+	spatial_gap = 0.0;
+	angular_gap = 0.0;
+
+	target_position = 0.0;
+	target_velocity = 0.0;
+	motor_gap       = 0.0;
+	position_control = false;
 }
 
 JointHinge::~JointHinge()
@@ -60,8 +67,8 @@ void JointHinge::init_motor_target()
 
 void JointHinge::solver_step( Float h )
 {
-    lambdas.ptrw()[0] = solver_step_position( lambdas.ptr()[0], h );
-    lambdas.ptrw()[1] = solver_step_rotation( lambdas.ptr()[1], h );
+	lambdas.ptrw()[0] = solver_step_rotation( lambdas.ptr()[0], h );
+	lambdas.ptrw()[1] = solver_step_position( lambdas.ptr()[1], h );
     lambdas.ptrw()[2] = solver_step_motor( lambdas.ptr()[2], h );
 }
 
@@ -69,7 +76,7 @@ Float JointHinge::solver_step_position( Float lambda, Float h )
 {
     const Vector3d dr = _delta_r();
     Float c = dr.Length();
-    if ( c <= spatial_gap )
+    if ( (c <= spatial_gap) || (c < EPS) )
         return lambda;
 
     const Vector3d n = dr / c;
@@ -83,13 +90,13 @@ Float JointHinge::solver_step_rotation( Float lambda, Float h )
 {
     const Vector3d dtheta = _delta_theta();
     Float theta = dtheta.Length();
-    if ( theta <= angular_gap )
+    if ( (theta <= angular_gap) || (theta < EPS) )
         return lambda;
 
     const Vector3d n = dtheta / theta;
     theta -= angular_gap;
 
-    const Float ret = Solver::correct_rotation( h, compliance_joint, theta, n, lambda, body_a, body_b );
+    const Float ret = 0.0; //Solver::correct_rotation( h, compliance_joint, theta, n, lambda, body_a, body_b );
     return ret;
 }
 

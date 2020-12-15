@@ -33,7 +33,10 @@ Float correct_position( Float h, Float compliance, Float c, const Vector3d & n, 
         k *= 0.5;
         Quaterniond dq( 0.0, k.x_, k.y_, k.z_ );
         dq = dq * q;
-        q += dq;
+        q.w_ += dq.w_;
+		q.x_ += dq.x_;
+		q.y_ += dq.y_;
+		q.z_ += dq.z_;
         q.Normalize();
         body_a->pose.q = q;
     }
@@ -44,17 +47,20 @@ Float correct_position( Float h, Float compliance, Float c, const Vector3d & n, 
         const Vector3d r    = body_b->pose.r;
         Quaterniond q = body_b->pose.q;
         const Vector3d dr = p * inv_m;
-        body_b->pose.r += dr;
+        body_b->pose.r -= dr;
 
-        const Vector3d ra_w = body_b->pose.q * r_a;
-        Vector3d k = ra_w.CrossProduct( p );
+        const Vector3d rb_w = body_b->pose.q * r_b;
+        Vector3d k = rb_w.CrossProduct( p );
         const Matrix3d inv_I = body_b->inv_I();
         k = inv_I * k;
         k *= 0.5;
         Quaterniond dq( 0.0, k.x_, k.y_, k.z_ );
         dq = dq * q;
-        q += dq;
-        q.Normalize();
+		q.w_ -= dq.w_;
+		q.x_ -= dq.x_;
+		q.y_ -= dq.y_;
+		q.z_ -= dq.z_;
+		q.Normalize();
         body_b->pose.q = q;
     }
     
@@ -78,8 +84,11 @@ Float correct_rotation( Float h, Float compliance, Float theta, const Vector3d &
         k *= 0.5;
         Quaterniond dq( 0.0, k.x_, k.y_, k.z_ );
         dq = dq * q;
-        q += dq;
-        q.Normalize();
+		q.w_ += dq.w_;
+		q.x_ += dq.x_;
+		q.y_ += dq.y_;
+		q.z_ += dq.z_;
+		q.Normalize();
         body_a->pose.q = q;
     }
 
@@ -91,8 +100,11 @@ Float correct_rotation( Float h, Float compliance, Float theta, const Vector3d &
         k *= 0.5;
         Quaterniond dq( 0.0, k.x_, k.y_, k.z_ );
         dq = dq * q;
-        q += dq;
-        q.Normalize();
+		q.w_ -= dq.w_;
+		q.x_ -= dq.x_;
+		q.y_ -= dq.y_;
+		q.z_ -= dq.z_;
+		q.Normalize();
         body_b->pose.q = q;
     }
 

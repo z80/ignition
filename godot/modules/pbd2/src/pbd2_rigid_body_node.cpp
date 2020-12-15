@@ -78,7 +78,8 @@ void PbdRigidBodyNode::set_inertia( const Basis & I )
 	i.m02_ = I.elements[2].x;
 	i.m12_ = I.elements[2].y;
 	i.m22_ = I.elements[2].z;
-	rigid_body.inertia = i;
+	// It also computes inverted inertia.
+	rigid_body.set_inertia( i );
 }
 
 Basis PbdRigidBodyNode::get_inertia() const

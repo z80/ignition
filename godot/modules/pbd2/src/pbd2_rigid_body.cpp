@@ -17,6 +17,8 @@ RigidBody::RigidBody()
 	damping_angular = 0.1;
 	restitution     = 0.0;;
 
+	compliance_normal     = 0.0;
+	compliance_tangential = 0.0;
 }
 
 RigidBody::~RigidBody()
@@ -44,6 +46,14 @@ const RigidBody & RigidBody::operator=( const RigidBody & inst )
 
         force       = inst.force;
         torque      = inst.torque;
+
+		friction         = inst.friction;
+		damping_linear   = inst.damping_linear;
+		damping_angular  = inst.damping_angular;
+		restitution      = inst.restitution;
+
+		compliance_normal     = inst.compliance_normal;
+		compliance_tangential = inst.compliance_tangential;
         
         contact_points = inst.contact_points;
     }
@@ -73,11 +83,14 @@ Matrix3d RigidBody::inv_I() const
 
 void RigidBody::integrate_dynamics( Float h )
 {
+	if ( mass <= 0.0 )
+		return;
+
     // Save previous pose.
     prev_pose = pose;
 
     // Translation.
-    vel += force * h;
+    vel += (force * h) / mass;
     pose.r += vel * h;
 
     const Matrix3d A = pose.q.RotationMatrix();
@@ -89,13 +102,16 @@ void RigidBody::integrate_dynamics( Float h )
     omega += dw;
 
     const Float k = 0.5 * h;
-    const Quaterniond dq( 0.0, dw.x_*k, dw.y_*k, dw.z_*k );
+    const Quaterniond dq( 0.0, omega.x_*k, omega.y_*k, omega.z_*k );
     pose.q += dq;
     pose.q.Normalize();
 }
 
 void RigidBody::update_velocities( Float h )
 {
+	if ( mass <= 0.0 )
+		return;
+
     this->vel = ( pose.r - prev_pose.r ) / h;
     const Quaterniond dq = pose.q * prev_pose.q.Conjugate();
     Vector3d w = Vector3d( dq.x_, dq.y_, dq.z_ );
@@ -147,7 +163,7 @@ Float RigidBody::specific_inv_mass_pos( const Vector3d & r, const Vector3d & n )
     const Matrix3d inv_I = A * inv_inertia * A.Transpose();
     const Vector3d r_world = pose.q * r;
     const Vector3d r_x_n = r_world.CrossProduct( n );
-    const Float mu = 1.0/mass + r.DotProduct( inv_I * r_x_n );
+    const Float mu = 1.0/mass + r_x_n.DotProduct( inv_I * r_x_n );
 
     return mu;
 }

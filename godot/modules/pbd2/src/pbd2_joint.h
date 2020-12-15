@@ -30,6 +30,9 @@ public:
     // "e1_a", "e2_a", "e3_a" and "e1_b", "e2_b", "e3_b".
     void orthogonalize();
 
+	// Makes at_a and at_b to be in one point.
+	// It computes the miggle point of a common perpendicular.
+	void init_joint_at_vectors();
 
     RigidBody * body_a;
     RigidBody * body_b;
