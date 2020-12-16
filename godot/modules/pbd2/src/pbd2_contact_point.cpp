@@ -10,6 +10,7 @@ const Float ContactPoint::EPS = 0.0001;
 ContactPoint::ContactPoint()
 {
     in_contact = false;
+	apply_friction = false;
     init_lambdas();
 }
 
@@ -36,6 +37,7 @@ const ContactPoint & ContactPoint::operator=( const ContactPoint & inst )
         lambda_tangential = inst.lambda_tangential;
         
         in_contact = inst.in_contact;
+		apply_friction = inst.apply_friction;
     }
     return * this;
 }
@@ -76,20 +78,23 @@ void ContactPoint::solve_dynamic_friction( RigidBody * body, Float h )
     const Vector3d v_n = -( this->n_world * (v_w.DotProduct(this->n_world)) );
     const Vector3d v_t = v_w + v_n;
 
-    const Float abs_v_t = v_t.Length();
-    if ( abs_v_t > EPS )
-    {
-        Float f_n = body->friction * this->lambda_normal / h;
-        if ( f_n > abs_v_t )
-            f_n = abs_v_t;
-        dv = -( v_t * (f_n / abs_v_t) );
-    }
+	if ( apply_friction )
+	{
+		const Float abs_v_t = v_t.Length();
+		if ( abs_v_t > EPS )
+		{
+			Float f_n = body->friction * this->lambda_normal / h;
+			if ( f_n > abs_v_t )
+				f_n = abs_v_t;
+			dv = -( v_t * (f_n / abs_v_t) );
+		}
+	}
 
     // Linear damping.
     Float lin_damp = body->damping_linear * h;
     if (lin_damp > 1.0)
         lin_damp = 1.0;
-    dv -= v_t * lin_damp;
+    dv += v_t * lin_damp;
 
     const Vector3d r_w = body->pose.q * this->r;
     // Restitution
@@ -107,7 +112,7 @@ void ContactPoint::solve_dynamic_friction( RigidBody * body, Float h )
     if ( abs_dv > EPS )
     {
         const Vector3d n = dv / abs_dv;
-        const Float mu_b = body->specific_inv_mass_pos( this->r, n );
+		const Float mu_b = 1.0 / body->mass; //body->specific_inv_mass_pos( this->r, n );
         const Vector3d p = dv/mu_b;
         const Float m = body->mass;
         body->vel -= p / m;
@@ -208,7 +213,8 @@ void ContactPoint::solve_tangential( RigidBody * body, Float h )
     lambda += d_lambda;
 
     const Float th = body->friction * this->lambda_normal;
-    if ( std::abs(lambda) > std::abs(th) )
+	apply_friction = ( std::abs(lambda) > std::abs(th) );
+    if ( apply_friction )
         return;
 
     this->lambda_tangential = lambda;

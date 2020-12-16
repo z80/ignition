@@ -40,6 +40,7 @@ public:
     Float lambda_tangential;
     
     bool in_contact;
+	bool apply_friction;
 
     static const Float EPS;
 };

@@ -289,12 +289,13 @@ void PbdRigidBodyNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD( "set_damping_angular", "k" ), &PbdRigidBodyNode::set_damping_angular );
 	ClassDB::bind_method( D_METHOD( "get_damping_angular" ),      &PbdRigidBodyNode::get_damping_angular, Variant::REAL );
 
-
     ClassDB::bind_method( D_METHOD( "set_force", "f" ), &PbdRigidBodyNode::set_force );
     ClassDB::bind_method( D_METHOD( "get_force" ),      &PbdRigidBodyNode::get_force, Variant::VECTOR3 );
 
     ClassDB::bind_method( D_METHOD( "set_torque", "p" ), &PbdRigidBodyNode::set_torque );
     ClassDB::bind_method( D_METHOD( "get_torque" ),      &PbdRigidBodyNode::get_torque, Variant::VECTOR3 );
+
+	ClassDB::bind_method( D_METHOD( "rebuild_contacts" ), &PbdRigidBodyNode::rebuild_contacts );
 
 
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "mass" ),    "set_mass", "get_mass" );
