@@ -58,6 +58,30 @@ Quat PbdJointBallNode::get_target_position() const
     return q;
 }
 
+void PbdJointBallNode::set_target_velocity( const Vector3 & w )
+{
+	const Vector3d W( w.x, w.y, w.z );
+	joint_ball.target_w = W;
+}
+
+Vector3 PbdJointBallNode::get_target_velocity() const
+{
+	const Vector3d & W = joint_ball.target_w;
+	const Vector3 w( W.x_, W.y_, W.z_ );
+	return w;
+}
+
+void PbdJointBallNode::set_position_control( bool en )
+{
+	joint_ball.position_control = en;
+}
+
+bool PbdJointBallNode::get_position_control() const
+{
+	return joint_ball.position_control;
+}
+
+
 void PbdJointBallNode::_bind_methods()
 {
     ClassDB::bind_method( D_METHOD( "set_spatial_gap", "d" ), &PbdJointBallNode::set_spatial_gap );
@@ -72,11 +96,19 @@ void PbdJointBallNode::_bind_methods()
     ClassDB::bind_method( D_METHOD( "set_motor_gap", "d" ), &PbdJointBallNode::set_motor_gap );
     ClassDB::bind_method( D_METHOD( "get_motor_gap" ),      &PbdJointBallNode::get_motor_gap, Variant::REAL );
 
+	ClassDB::bind_method( D_METHOD( "set_target_velocity", "v" ), &PbdJointBallNode::set_target_velocity );
+	ClassDB::bind_method( D_METHOD( "get_target_velocity" ),      &PbdJointBallNode::get_target_velocity, Variant::VECTOR3 );
+
+	ClassDB::bind_method( D_METHOD( "set_position_control", "en" ), &PbdJointBallNode::set_position_control );
+	ClassDB::bind_method( D_METHOD( "get_position_control" ),       &PbdJointBallNode::get_position_control, Variant::BOOL );
+
 
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "spatial_gap" ), "set_spatial_gap", "get_spatial_gap" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "angular_gap" ), "set_angular_gap", "get_angular_gap" );
     ADD_PROPERTY( PropertyInfo( Variant::QUAT, "target_position" ), "set_target_position", "get_target_position" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "motor_gap" ), "set_motor_gap", "get_motor_gap" );
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "target_velocity" ), "set_target_velocity", "get_target_velocity" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "position_control" ), "set_position_control", "get_position_control" );
 }
 
 

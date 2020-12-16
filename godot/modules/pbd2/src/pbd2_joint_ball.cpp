@@ -10,6 +10,7 @@ namespace Pbd
 JointBall::JointBall()
     : Joint()
 {
+	position_control = true;
 }
 
 JointBall::~JointBall()
@@ -56,6 +57,18 @@ Float JointBall::solver_step_position( Float lambda, Float h )
 
 void JointBall::solver_step_motor( Float h )
 {
+	if ( !position_control )
+	{
+		const Float k = 0.5*h;
+		Quaterniond dq( 0.0, target_w.x_*k, target_w.y_*k, target_w.z_*k );
+		dq = dq * target_q;
+		target_q.w_ += dq.w_;
+		target_q.x_ += dq.x_;
+		target_q.y_ += dq.y_;
+		target_q.z_ += dq.z_;
+		target_q.Normalize();
+	}
+
     Vector3d d_angle_3 = _delta_motor_eta();
     Float abs_angle = d_angle_3.Length();
     if ( (abs_angle > motor_gap) && (abs_angle > EPS) )

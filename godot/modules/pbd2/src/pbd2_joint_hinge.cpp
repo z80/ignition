@@ -59,10 +59,13 @@ void JointHinge::init_motor_target()
 
     const Vector3d e2b_w_2 = q1 * e2b_w;
     const Vector3d n2 = e2a_w.CrossProduct( e2b_w_2 );
-    const Float si_t = n2.Length();
+	const Float sign = n2.DotProduct( e1a_w );
+    Float si_t = n2.Length();
+	if ( sign < 0.0 )
+		si_t = -si_t;
     const Float co_t = e2b_w_2.DotProduct( e2a_w );
 
-    target_position = -atan2( si_t, co_t );
+    target_position = atan2( si_t, co_t );
 }
 
 void JointHinge::solver_step( Float h )
@@ -154,7 +157,7 @@ Vector3d JointHinge::_delta_motor() const
 {
     const Vector3d e1a_w = body_a->pose.q * e1_a;
     const Vector3d e2a_w = body_a->pose.q * e2_a;
-    const Quaterniond quat = Quaterniond( target_position, e1a_w );
+    const Quaterniond quat = Quaterniond( ToDegrees<Float>( target_position ) , e1a_w );
     const Vector3d e2_target = quat * e2a_w;
     const Vector3d e2b_w = body_b->pose.q * e2_b;
     const Vector3d dtheta = e2b_w.CrossProduct( e2_target );

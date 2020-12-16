@@ -29,6 +29,12 @@ public:
     void set_target_position( const Quat & q );
     Quat get_target_position() const;
 
+	void set_target_velocity( const Vector3 & w );
+	Vector3 get_target_velocity() const;
+
+	void set_position_control( bool en );
+	bool get_position_control() const;
+
 protected:
     static void _bind_methods();
 

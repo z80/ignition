@@ -32,7 +32,8 @@ public:
     Float motor_gap;
 
     Quaterniond target_q;
-
+	Vector3d    target_w;
+	bool        position_control;
 };
 
 
