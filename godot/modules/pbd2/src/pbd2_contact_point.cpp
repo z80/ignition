@@ -100,7 +100,7 @@ void ContactPoint::solve_dynamic_friction( RigidBody * body, Float h )
     v_w_n_prev = v_w_n_prev * body->restitution;
     if (v_w_n_prev > 0.0)
         v_w_n_prev = 0.0;
-    dv -= this->n_world * ( v_w_n + v_w_n_prev );
+    dv += this->n_world * ( v_w_n + v_w_n_prev );
 
     // Applying "dv".
     const Float abs_dv = dv.Length();
