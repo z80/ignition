@@ -112,7 +112,7 @@ void ContactPoint::solve_dynamic_friction( RigidBody * body, Float h )
     if ( abs_dv > EPS )
     {
         const Vector3d n = dv / abs_dv;
-		const Float mu_b = 1.0 / body->mass; //body->specific_inv_mass_pos( this->r, n );
+		const Float mu_b = body->specific_inv_mass_pos( this->r, n ); // 1.0 / body->mass;
         const Vector3d p = dv/mu_b;
         const Float m = body->mass;
         body->vel -= p / m;
