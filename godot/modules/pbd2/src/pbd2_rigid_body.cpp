@@ -249,7 +249,7 @@ Float RigidBody::specific_inv_mass_pos_all( bool check_in_contact )
 	return mu;
 }
 
-bool RigidBody::solve_normal_all()
+bool RigidBody::solve_normal_all( Float h )
 {
 	const Float mu_all = specific_inv_mass_pos_all( true );
 	if ( mu_all <= 0.0 )
@@ -262,7 +262,7 @@ bool RigidBody::solve_normal_all()
 	
 	for ( int i=0; i<qty; i++ )
 	{
-		const ContactPoint & cp = contact_points.ptr()[i];
+		ContactPoint & cp = contact_points.ptrw()[i];
 		if ( !cp.in_contact_next )
 			continue;
 
@@ -271,6 +271,16 @@ bool RigidBody::solve_normal_all()
 		const Vector3d r_x_d = r_w.CrossProduct( d );
 		d_accum     += d;
 		r_x_d_accum += r_x_d;
+
+		// Compute lambda_normal. It is needed for further tangential procesing.
+		const Float mu_b = specific_inv_mass_pos( cp.r, cp.n_world );
+		const Float compliance = this->compliance_normal;
+		Float lambda = cp.lambda_normal;
+
+		const Float alpha_ = compliance / (h*h);
+		const Float d_lambda = -(cp.depth + alpha_*lambda) / (mu_b + alpha_);
+		lambda += d_lambda;
+		cp.lambda_normal = lambda;
 	}
 
 	const Vector3d dr = d_accum / ( mu_all * mass );

@@ -57,7 +57,7 @@ public:
     Float specific_inv_mass_rot( const Vector3d & n ) const;
 	Float specific_inv_mass_pos_all( bool check_in_contact );
 
-	bool solve_normal_all();
+	bool solve_normal_all( Float h );
 	void solve_tangential_all( Float h );
 	void solve_dynamic_friction( Float h );
 };

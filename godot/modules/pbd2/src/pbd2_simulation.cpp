@@ -78,7 +78,7 @@ void Simulation::step()
         {
             RigidBody * body = bodies.ptr()[j];
             //body->solve_contacts( h );
-			body->solve_normal_all();
+			body->solve_normal_all( h );
 			body->solve_tangential_all( h );
         }
     }
