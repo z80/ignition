@@ -42,7 +42,7 @@ PbdJointNode::~PbdJointNode()
 void PbdJointNode::set_body_path_a( const NodePath & p )
 {
     body_a = p;
-    if ( joint != nullptr )
+    if ( (joint != nullptr) && (is_inside_tree()) )
         joint->body_a = body_from_path( body_a );
 }
 
@@ -54,7 +54,7 @@ NodePath PbdJointNode::get_body_path_a() const
 void PbdJointNode::set_body_path_b( const NodePath & p )
 {
     body_b = p;
-    if ( joint != nullptr )
+    if ( (joint != nullptr) && (is_inside_tree()) )
         joint->body_b = body_from_path( body_b );
 }
 
@@ -191,6 +191,12 @@ Vector3 PbdJointNode::get_e3_b() const
     return at;
 }
 
+void PbdJointNode::init_motor_target()
+{
+	if ( joint != nullptr )
+		joint->init_motor_target();
+}
+
 void PbdJointNode::set_motor( bool en )
 {
     if ( joint != nullptr )
@@ -311,6 +317,8 @@ void PbdJointNode::_bind_methods()
 
     ClassDB::bind_method( D_METHOD( "set_e3_b", "at" ), &PbdJointNode::set_e3_b );
     ClassDB::bind_method( D_METHOD( "get_e3_b" ),       &PbdJointNode::get_e3_b, Variant::VECTOR3 );
+
+	ClassDB::bind_method( D_METHOD( "init_motor_target" ), &PbdJointNode::init_motor_target );
 
     ClassDB::bind_method( D_METHOD( "set_motor", "en" ), &PbdJointNode::set_motor );
     ClassDB::bind_method( D_METHOD( "get_motor" ),       &PbdJointNode::get_motor, Variant::BOOL );

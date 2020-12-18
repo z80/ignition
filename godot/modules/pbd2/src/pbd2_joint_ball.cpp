@@ -28,9 +28,12 @@ void JointBall::init_lambdas()
 
 void JointBall::init_motor_target()
 {
-    const Quaterniond q_a = body_a->pose.q;
-    const Quaterniond q_b = body_b->pose.q;
-    target_q = q_b.Inverse() * q_a;
+	if ( (body_a != nullptr) && (body_b != nullptr) )
+	{
+		const Quaterniond q_a = body_a->pose.q;
+		const Quaterniond q_b = body_b->pose.q;
+		target_q = q_b.Inverse() * q_a;
+	}
 }
 
 void JointBall::solver_step( Float h )

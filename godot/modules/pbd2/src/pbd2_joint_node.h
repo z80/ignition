@@ -50,6 +50,8 @@ public:
     void set_e3_b( const Vector3 & e );
     Vector3 get_e3_b() const;
 
+	void init_motor_target();
+
     void set_motor( bool en );
     bool get_motor() const;
 
