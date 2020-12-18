@@ -77,7 +77,9 @@ void Simulation::step()
         for ( int j=0; j<bodies_qty; j++ )
         {
             RigidBody * body = bodies.ptr()[j];
-            body->solve_contacts( h );
+            //body->solve_contacts( h );
+			body->solve_normal_all();
+			body->solve_tangential_all( h );
         }
     }
 
@@ -92,7 +94,8 @@ void Simulation::step()
     for ( int i=0; i<bodies_qty; i++ )
     {
         RigidBody * body = bodies.ptr()[i];
-        body->update_contact_velocities( h );
+        //body->update_contact_velocities( h );
+		body->solve_dynamic_friction( h );
     }
 
 	// Update contact prev. positions.

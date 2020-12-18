@@ -27,6 +27,8 @@ public:
     bool solve_normal( RigidBody * body, Float h );
     void solve_tangential( RigidBody * body, Float h );
 
+	bool check_in_contact() const;
+
 	void update_prev();
 
     // Point position in body ref. frame.
@@ -35,11 +37,13 @@ public:
     Vector3d r_world_prev;
     Vector3d v_world;
     Vector3d n_world;
+	Float    depth;
 
     Float lambda_normal;
     Float lambda_tangential;
     
     bool in_contact;
+	bool in_contact_next;
 	bool apply_friction;
 
     static const Float EPS;

@@ -10,6 +10,8 @@ const Float ContactPoint::EPS = 0.0001;
 ContactPoint::ContactPoint()
 {
     in_contact = false;
+	in_contact_next = false;
+	depth = 0.0;
 	apply_friction = false;
     init_lambdas();
 }
@@ -32,12 +34,14 @@ const ContactPoint & ContactPoint::operator=( const ContactPoint & inst )
         r_world_prev = inst.r_world_prev;
         v_world      = inst.v_world;
         n_world      = inst.n_world;
+		depth        = inst.depth;
 
         lambda_normal     = inst.lambda_normal;
         lambda_tangential = inst.lambda_tangential;
         
-        in_contact = inst.in_contact;
-		apply_friction = inst.apply_friction;
+        in_contact      = inst.in_contact;
+		in_contact_next = inst.in_contact_next;
+		apply_friction  = inst.apply_friction;
     }
     return * this;
 }
@@ -134,7 +138,7 @@ bool ContactPoint::solve_normal( RigidBody * body, Float h )
     const Vector3d v_w = body->vel + body->omega.CrossProduct( body->pose.q * r );
     v_world = v_w;
 
-    bool in_contact = ( r_world.y_ < 0.0 );
+    bool in_contact = check_in_contact();
     if ( !in_contact )
     {
         this->in_contact = false;
@@ -244,6 +248,12 @@ void ContactPoint::solve_tangential( RigidBody * body, Float h )
         q.Normalized();
         body->pose.q = q;
     }
+}
+
+bool ContactPoint::check_in_contact() const
+{
+	bool in_contact = ( r_world.y_ < 0.0 );
+	return in_contact;
 }
 
 void ContactPoint::update_prev()

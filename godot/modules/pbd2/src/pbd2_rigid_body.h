@@ -53,8 +53,13 @@ public:
     void update_contact_velocities( Float h );
 	void update_contact_positions();
 
-    Float specific_inv_mass_pos( const Vector3d & r, const Vector3d & n );
-    Float specific_inv_mass_rot( const Vector3d & n );
+    Float specific_inv_mass_pos( const Vector3d & r, const Vector3d & n ) const;
+    Float specific_inv_mass_rot( const Vector3d & n ) const;
+	Float specific_inv_mass_pos_all( bool check_in_contact );
+
+	bool solve_normal_all();
+	void solve_tangential_all( Float h );
+	void solve_dynamic_friction( Float h );
 };
 
 

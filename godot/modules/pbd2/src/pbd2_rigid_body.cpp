@@ -168,7 +168,7 @@ void RigidBody::update_contact_positions()
 
 
 // "r" local, "n" world.
-Float RigidBody::specific_inv_mass_pos( const Vector3d & r, const Vector3d & n )
+Float RigidBody::specific_inv_mass_pos( const Vector3d & r, const Vector3d & n ) const
 {
     if ( mass <= 0.0 )
         return 0.0;
@@ -183,7 +183,7 @@ Float RigidBody::specific_inv_mass_pos( const Vector3d & r, const Vector3d & n )
 }
 
 // "n" world.
-Float RigidBody::specific_inv_mass_rot( const Vector3d & n )
+Float RigidBody::specific_inv_mass_rot( const Vector3d & n ) const
 {
     if ( mass <= 0.0 )
         return 0.0;
@@ -194,6 +194,126 @@ Float RigidBody::specific_inv_mass_rot( const Vector3d & n )
 
     return mu;
 }
+
+Float RigidBody::specific_inv_mass_pos_all( bool check_in_contact )
+{
+	int in_contact_qty = 0;
+	const int qty = contact_points.size();
+
+	const Matrix3d inv_I = this->inv_I();
+	Vector3d r_x_n_accum = Vector3d::ZERO;
+	
+	for ( int i=0; i<qty; i++ )
+	{
+		ContactPoint & cp = contact_points.ptrw()[i];
+		cp.r_world  = (pose.q * cp.r) + pose.r;
+		const bool in_contact = (check_in_contact) ? cp.check_in_contact() : cp.in_contact;
+		if ( !in_contact )
+		{
+			cp.in_contact_next = false;
+			continue;
+		}
+
+		const Vector3d d( 0.0, -cp.r_world.y_, 0.0 );
+		const Float c = d.Length();
+		if ( c < ContactPoint::EPS )
+		{
+			cp.in_contact_next = false;
+			continue;
+		}
+
+		// This is for using in calling method.
+		cp.in_contact_next = true;
+
+		// Here the point is truely in contact.
+		// So we count it.
+		in_contact_qty += 1;
+
+		const Vector3d n = d / c;
+		// Fill in normal and depth.
+		cp.n_world = n;
+		cp.depth   = c;
+		const Vector3d r_w = pose.q * cp.r;
+		const Vector3d r_x_n = r_w.CrossProduct( n );
+		r_x_n_accum += r_x_n;
+	}
+
+	if ( in_contact_qty < 1 )
+		return 0.0;
+
+	const Float qty_f   = static_cast<Float>( in_contact_qty );
+	const Float mu_tran = qty_f / mass;
+	const Float mu_rot  = r_x_n_accum.DotProduct( inv_I * r_x_n_accum );
+	const Float mu = mu_tran + mu_rot;
+
+	return mu;
+}
+
+bool RigidBody::solve_normal_all()
+{
+	const Float mu_all = specific_inv_mass_pos_all( true );
+	if ( mu_all <= 0.0 )
+		return false;
+
+	const int qty = contact_points.size();
+
+	Vector3d d_accum     = Vector3d::ZERO;
+	Vector3d r_x_d_accum = Vector3d::ZERO;
+	
+	for ( int i=0; i<qty; i++ )
+	{
+		const ContactPoint & cp = contact_points.ptr()[i];
+		if ( !cp.in_contact_next )
+			continue;
+
+		const Vector3d d   = cp.n_world * cp.depth;
+		const Vector3d r_w = pose.q * cp.r;
+		const Vector3d r_x_d = r_w.CrossProduct( d );
+		d_accum     += d;
+		r_x_d_accum += r_x_d;
+	}
+
+	const Vector3d dr = d_accum / ( mu_all * mass );
+	const Matrix3d inv_I = this->inv_I();
+	const Vector3d rot = (inv_I * r_x_d_accum) / mu_all;
+	Quaterniond dq( 0.0, rot.x_, rot.y_, rot.z_ );
+	dq = dq * pose.q;
+	Quaterniond q = pose.q;
+	q.w_ += dq.w_;
+	q.x_ += dq.x_;
+	q.y_ += dq.y_;
+	q.z_ += dq.z_;
+	q.Normalize();
+
+	pose.r += dr;
+	pose.q  = q;
+
+	return true;
+}
+
+void RigidBody::solve_tangential_all( Float h )
+{
+	const int qty = contact_points.size();
+	for ( int i=0 ;i<qty; i++ )
+	{
+		ContactPoint & cp = contact_points.ptrw()[i];
+		if ( cp.in_contact_next )
+			cp.solve_tangential( this, h );
+
+		cp.in_contact = cp.in_contact_next;
+	}
+}
+
+void RigidBody::solve_dynamic_friction( Float h )
+{
+	const int qty = contact_points.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		ContactPoint & pt = contact_points.ptrw()[i];
+		pt.solve_dynamic_friction( this, h );
+	}
+}
+
 
 
 }
