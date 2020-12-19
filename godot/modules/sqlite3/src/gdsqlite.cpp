@@ -4,6 +4,7 @@
 #include "core/io/json.h"
 #include "core/project_settings.h"
 #include "core/print_string.h"
+#include "core/bind/core_bind.h"
 
 using namespace godot;
 
@@ -149,7 +150,7 @@ bool SQLite::import_from_json( const String & imp_path )
     ifs.close();
 
     /* Attempt to open the json and, if unsuccessful, throw a parse error specifying the erroneous line */
-    Ref<JSONParseResult> result = JSON::get_singleton()->parse(json_string);
+    Ref<JSONParseResult> result = _JSON::get_singleton()->parse(json_string);
     if (result->get_error() != Error::OK)
     {
         /* Throw a parsing error */
@@ -196,8 +197,9 @@ bool SQLite::import_from_json( const String & imp_path )
     return true;
 }
 
-bool SQLite::export_to_json( const String & export_path )
+bool SQLite::export_to_json( const String & exp_path )
 {
+	String export_path( exp_path );
     /* Get all names and sql templates for all tables present in the database */
     query(String("SELECT name,sql FROM sqlite_master WHERE type = 'table';"));
     int number_of_tables = query_result.size();
@@ -217,9 +219,9 @@ bool SQLite::export_to_json( const String & export_path )
     }
     /* Find the real path */
     export_path = ProjectSettings::get_singleton()->globalize_path(export_path.strip_edges());
-    const char *char_path = export_path.alloc_c_string();
+    CharString char_path = export_path.utf8();
 
-    std::ofstream ofs(char_path, std::ios::trunc);
+    std::ofstream ofs(char_path.ptr(), std::ios::trunc);
     if (ofs.fail())
     {
 		print_line("GDSQLite Error: Can't open specified json-file, file does not exist or is locked");
@@ -237,9 +239,9 @@ bool SQLite::export_to_json( const String & export_path )
         query(query_string);
         table_dict["row_array"] = query_result;
 
-        json_string = JSON::get_singleton()->print(table_dict);
-        const char *json_char = json_string.alloc_c_string();
-        ofs << json_char;
+        json_string = _JSON::get_singleton()->print(table_dict);
+        const CharString json_char = json_string.utf8();
+        ofs << json_char.ptr();
         if (i != number_of_tables - 1)
         {
             ofs << ",";
@@ -310,19 +312,18 @@ bool SQLite::query( const String & p_query )
 {
     char *zErrMsg = 0;
     int rc;
-    const char *sql;
 
     if (verbose_mode)
     {
         print_line(p_query);
     }
-    sql = p_query.alloc_c_string();
+    const CharString sql = p_query.utf8();
 
     /* Clear the previous query results */
     query_result.clear();
 
     /* Execute SQL statement */
-    rc = sqlite3_exec(db, sql, callback, (void *)this, &zErrMsg);
+    rc = sqlite3_exec(db, sql.ptr(), callback, (void *)this, &zErrMsg);
 
     error_message = String(zErrMsg);
     if (rc != SQLITE_OK)
@@ -406,7 +407,7 @@ bool SQLite::create_table( const String & p_name, const Dictionary & p_table_dic
                 if (column_dict["foreign_key"])
                 {
                     const String foreign_key_definition = (const String &)(column_dict["foreign_key"]);
-                    const Array foreign_key_elements = foreign_key_definition.split(".");
+                    const Vector<String> foreign_key_elements = foreign_key_definition.split(".");
                     if (foreign_key_elements.size() == 2)
                     {
                         const String column_name = (const String &)(columns[i]);
