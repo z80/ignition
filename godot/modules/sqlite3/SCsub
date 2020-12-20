@@ -25,9 +25,11 @@ def configure_static_build():
     # Includes
     module_env.Append(CPPPATH=["#modules/sqlite3"])
     module_env.Append(CPPPATH=["#modules/sqlite3/src"])
+    module_env.Append(CPPPATH=["#modules/sqlite3/sqlite/src"])
     # Sources
     module_env.add_source_files( env.modules_sources, "*.cpp" )
     module_env.add_source_files( env.modules_sources, "src/*.cpp" )
+    module_env.add_source_files( env.modules_sources, "src/sqlite/*.c" )
 
 
 

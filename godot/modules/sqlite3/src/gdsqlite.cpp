@@ -613,7 +613,8 @@ static void function_callback( sqlite3_context *context, int argc, sqlite3_value
         argv += 1;
     }
 
-    Variant output = func_ref->call_func(argument_array);
+    Variant output = func_ref->call_funcv( argument_array );
+	CharString stri;
 
     switch (output.get_type())
     {
@@ -627,11 +628,13 @@ static void function_callback( sqlite3_context *context, int argc, sqlite3_value
         break;
 
     case Variant::STRING:
-        sqlite3_result_text(context, ((String)output).alloc_c_string(), -1, SQLITE_STATIC);
+		stri = ((String)output).utf8();
+        sqlite3_result_text(context, stri.ptr(), -1, SQLITE_STATIC);
         break;
 
     default:
-        sqlite3_result_text(context, ((String)output).alloc_c_string(), -1, SQLITE_STATIC);
+		stri = ((String)output).utf8();
+        sqlite3_result_text(context, stri.ptr(), -1, SQLITE_STATIC);
         break;
     }
 }
@@ -642,7 +645,7 @@ bool SQLite::create_function( const String & p_name, Ref<FuncRef> p_func_ref, in
     function_registry.push_back(p_func_ref);
 
     int rc;
-    const char *zFunctionName = p_name.alloc_c_string();
+    const CharString zFunctionName = p_name.utf8();
     int nArg = p_argc;
     int eTextRep = SQLITE_UTF8;
 
@@ -653,7 +656,7 @@ bool SQLite::create_function( const String & p_name, Ref<FuncRef> p_func_ref, in
     void (*xFinal)(sqlite3_context*) = NULL;
 
     /* Create the actual function */
-    rc = sqlite3_create_function(db, zFunctionName, nArg, eTextRep, pApp, xFunc, xStep, xFinal);
+    rc = sqlite3_create_function(db, zFunctionName.ptr(), nArg, eTextRep, pApp, xFunc, xStep, xFinal);
     if (rc)
     {
         print_line("GDSQLite Error: " + String(sqlite3_errmsg(db)));
