@@ -8,7 +8,7 @@
 
 using namespace godot;
 
-void SQLite::_register_methods()
+void SQLite::_bind_methods()
 {
 
 	ClassDB::bind_method( D_METHOD( "open_db" ), &SQLite::open_db, Variant::BOOL );
@@ -59,9 +59,12 @@ void SQLite::_register_methods()
 }
 
 SQLite::SQLite()
+	: Reference()
 {
     db = nullptr;
     query_result = Array();
+
+	_init();
 }
 
 SQLite::~SQLite()

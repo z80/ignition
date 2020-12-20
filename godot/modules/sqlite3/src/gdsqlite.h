@@ -27,8 +27,12 @@ struct table_struct
     Array row_array;
 };
 
-class SQLite : public Reference {
-    GDCLASS(SQLite, Reference);
+class SQLite : public Reference
+{
+	GDCLASS(SQLite, Reference);
+
+protected:
+	static void _bind_methods();
 
 private:
     String path;
@@ -44,7 +48,6 @@ public:
     String error_message;
     Array query_result;
 
-    static void _register_methods();
 
     SQLite();
     ~SQLite();
