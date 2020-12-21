@@ -7,30 +7,38 @@ const Velocity = preload( "res://physics/orbital_motion/velocity.gd" )
 # So it is not complete.
 
 static func init( r: Vector3, v: Vector3, args: Dictionary ):
+	var inv_A: Basis = args.inv_A
+	r = inv_A.xform( r )
+	v = inv_A.xform( v )
+	
 	# Semi-latus-rectum in parabolic case.
 	var abs_h: float = args.h.length()
 	var slr: float = (abs_h * abs_h) / args.gm
-	# Filling in parameters
-	args.slr = slr
 	
 	# True anomaly and distance connection formula.
 	# r = slr/(1+cos(true_anomaly))
 	# Determine the sign of the "true_anomaly" from dot(v, e).
 	var abs_r: float = r.length()
-	var true_anomaly: float = acos(slr/abs_r - 1.0)
-	var neg: bool = ( args.e.dot( v ) < 0.0 )
+	# Due to numerical precision need to do this.
+	var arg: float = slr/abs_r - 1.0
+	if arg > 1.0:
+		arg = 1.0
+	elif arg < -1.0:
+		arg = -1.0
+	var true_anomaly: float = acos( arg )
+	var neg: bool = ( r.y < 0.0 )
 	if neg:
 		true_anomaly = -true_anomaly
 	
 	var D: float = tan( true_anomaly * 0.5 )
 	var t: float = 0.5 * sqrt( (slr*slr*slr)/args.gm ) * ( D + (D*D*D)/3.0 )
-	if neg: 
-		t = -t
 	
+	# Filling in parameters
+	args.slr = slr
 	args.periapsis_t = t
 
 
-static func process( args: Dictionary, dt: float ):
+static func process( dt: float, args: Dictionary ):
 	var periapsis_t: float = args.periapsis_t + dt
 	args.periapsis_t = periapsis_t
 	
@@ -42,16 +50,37 @@ static func process( args: Dictionary, dt: float ):
 	var true_anomaly: float = 2.0*atan( B - 1.0/B )
 	
 	var co_f: float = cos( true_anomaly )
-	var si_f: float = cos( true_anomaly )
+	var si_f: float = sin( true_anomaly )
 	
-	var r: float = slr/(1.0 + co_f)
+	var abs_r: float = slr/(1.0 + co_f)
 	
-	var r_x: float = r * co_f
-	var r_y: float = r * si_f
-	var r2: Vector2 = Vector2( r_x, r_y )
+	var r_x: float = abs_r * co_f
+	var r_y: float = abs_r * si_f
+	var r: Vector3 = Vector3( r_x, r_y, 0.0 )
 	
-	var v2: Vector2 = Velocity.velocity( args, true_anomaly )
+	var v: Vector3 = velocity( args, r )
 	
-	return [r2, v2]
+	var Aw: Basis = args.A
+	r = Aw.xform( r )
+	v = Aw.xform( v )
+	
+	return [r, v]
 
+
+
+
+static func velocity( args: Dictionary, r: Vector3 ):
+	var gm: float    = args.gm
+	var a: float     = args.a
+	var abs_e: float = args.abs_e
+	var abs_r: float = r.length()
+	
+	var si_f: float = r.y/abs_r
+	var co_f: float = r.x/abs_r
+	
+	var v: Vector3 = Vector3( -si_f, co_f + 1.0, 0.0 )
+	v = v.normalized()
+	var abs_v: float = sqrt( (2.0*gm)/abs_r )
+	v *= abs_v
+	return v
 

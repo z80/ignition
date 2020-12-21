@@ -3,34 +3,29 @@ const Consts = preload( "res://physics/orbital_motion/constants.gd" )
 const Velocity = preload( "res://physics/orbital_motion/velocity.gd" )
 
 static func init( r: Vector3, v: Vector3, args: Dictionary ):
-	# Semi-latus-rectum.
-	var slr: float = (args.abs_h*args.abs_h) / args.gm
+	r = args.inv_A.xform( r )
+	v = args.inv_A.xform( v )
 	
-	var abs_r: float = r.length()
-	# True anomaly.
-	# r = l / ( 1.0 + e*cos(f) )
-	# Solve for "f" and define the sign using dot product of (r,v)
-	var abs_r: float = r.length()
-	var f: float = acos( (slr/abs_r - 1.0) / args.abs_e )
-	var r_dot_v: float = r.dot( v )
-	var negative: bool = (r_dot_v < 0.0)
-	if negative:
-		f = -f
-
-	# Eccentric anomaly.
-	# cosh(E) = (cos(f) + e) / (1.0 + e*cos(f))
-	var co_f = cos(f)
-	var E: float = acosh( (co_f + args.abs_e) / (1.0 + args.abs_e*co_f) )
-	if negative:
-		E = -E
-
-	# Periapsis crossing time
-	var a: float  = args.a
+	var a: float = args.a
 	var gm: float = args.gm
-	var n: float  = sqrt( -(a*a*a)/gm )
-	var periapsis_t: float = (args.abs_e * sinh(E) - E) * n
-	if negative:
-		periapsis_t = -periapsis_t
+	var abs_e: float = args.abs_e
+	# Semi-latus-rectum.
+	var slr: float = a * (1.0 - abs_e*abs_e)
+	var n: float = sqrt( -a*a*a/gm )
+	
+	# True anomaly from "r".
+	#var f: float = atan2( r.y, r.x )
+	# Hyperbolic eccentric anomaly E (or H).
+	var co_f: float = r.x/r.length()
+	var cosh_E: float = (co_f + abs_e)/(1.0 + abs_e*co_f)
+	var sinh_E: float = sqrt(cosh_E*cosh_E - 1.0)
+	if r.y < 0.0:
+		sinh_E = -sinh_E
+	var exp_E: float = cosh_E + sinh_E
+	var E: float = log( exp_E )
+	
+	var M: float = abs_e * sinh_E - E
+	var periapsis_t = M * n
 	
 	# Filling in parameters
 	args.slr = slr
@@ -39,35 +34,35 @@ static func init( r: Vector3, v: Vector3, args: Dictionary ):
 	args.periapsis_t = periapsis_t
 
 
-static func process( args: Dictionary, dt: float ):
+static func process( dt: float, args: Dictionary ):
 	var periapsis_t: float = args.periapsis_t + dt
 	args.periapsis_t = periapsis_t
-	var a: float = args.a
-	var gm: float = args.gm
-	var e: float = args.abs_e
+	
 	var n: float = args.n
-	var slr: float = args.slr
-
-	var M: float = periapsis_t / n
-	var E: float = solve( e, M, args.E )
+	var M: float = periapsis_t / args.n
+	var E: float = solve( args.abs_e, M, args.E )
 	
-	var co_E: float = cosh( E )
-	# cosh(E) = (cos(f) + e) / (1.0 + e*cos(f))
-	const f: float = acos( (e - co_E) / (e*co_E - 1.0) )
+	var coh_E: float = cosh( E )
+	var abs_e: float = args.abs_e
+	var co_f: float  = ( coh_E - abs_e )/( 1.0 - abs_e*coh_E )
+	var si_f: float = sqrt( 1.0 - co_f*co_f )
 	if E < 0.0:
-		f = -f
+		si_f = -si_f
 	
-	# r = slr/(1.0 + e*cos(f))
-	var si_f = sin(f)
-	var co_f = cos(f)
-	var r: float = slr / ( 1.0 + e*co_f )
-	var x: float = r * co_f
-	var y: float = r * si_f
-	var r2: Vector2 = Vector2( x, y )
-
-	var v2: Vector2 = Velocity.velocity( args, f )
-
-	return [ r2, v2 ]
+	var abs_r = args.slr/(1.0 + abs_e*co_f)
+	var x: float = abs_r * co_f
+	var y: float = abs_r * si_f
+	var r: Vector3 = Vector3( x, y, 0.0 )
+	#print( "local r: ", r )
+	
+	var v: Vector3 = velocity( args, r )
+	#print( "local v: ", v )
+	
+	var A: Basis = args.A
+	r = A.xform( r )
+	v = A.xform( v )
+	
+	return [r, v]
 
 
 static func solve( e: float, M: float, E: float ):
@@ -81,16 +76,38 @@ static func solve( e: float, M: float, E: float ):
 	while ( err > Consts.EPS ) and ( iters < Consts.MAX_ITERS ):
 		ret = solve_next( e, M, En, exp_En )
 		err = ret[0]
-		En = ret[1]
-		exp_En  = ret[2]
+		En  = ret[1]
+		iters += 1
 	return En
 	
 
 
-static func solve_next( e: float, M: float, E: float, exp_E: float ):
+static func solve_next( e: float, M: float, E: float ):
+	var sih_E: float = sinh( E )
+	var coh_E: float = cosh( E )
+	E = E - ( e*sih_E - E - M ) / (e*coh_E - 1.0)
+	sih_E = sinh( E )
+	var err: float = abs( e*sih_E - E - M )
+	return [err, E]
 
-	var next_exp_E: float = ( 2.0*exp_E*(e-exp_E+exp_E*E+exp_E*M) ) / ( e*exp_E*exp_E-2.0*exp_E + e )
-	var next_E: float = log(next_exp_E)
-	var err: float = abs( 0.5*e*(next_exp_E - 1.0/next_exp_E) - next_E - M )
-	return [err, next_E, next_exp_E]
+
+
+
+static func velocity( args: Dictionary, r: Vector3 ):
+	var gm: float    = args.gm
+	var a: float     = args.a
+	var abs_e: float = args.abs_e
+	var abs_r: float = r.length()
+	
+	var si_f: float = r.y/abs_r
+	var co_f: float = r.x/abs_r
+	
+	var v: Vector3 = Vector3( -si_f, co_f + abs_e, 0.0 )
+	v = v.normalized()
+	var abs_v: float = sqrt( gm*( 2.0/abs_r - 1.0/a ) )
+	v *= abs_v
+	return v
+
+
+
 

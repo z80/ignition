@@ -17,6 +17,7 @@ script = ExtResource( 2 )
 
 [node name="ForceSourceGravityDown" type="Node" parent="Landscape"]
 script = ExtResource( 6 )
+GM = 0.3
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.897405, 0.441208, 0, -0.441208, 0.897405, 0, 2.33134, 4.60433 )
