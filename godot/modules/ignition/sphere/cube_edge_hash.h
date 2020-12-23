@@ -2,6 +2,9 @@
 #ifndef __CUBE_EDGE_HASH_H_
 #define __CUBE_EDGE_HASH_H_
 
+#include <cinttypes>
+
+
 namespace Ign
 {
 
@@ -17,7 +20,8 @@ public:
     EdgeHash( int a, int b );
     EdgeHash( const EdgeHash & inst );
     const EdgeHash & operator=( const EdgeHash & inst );
-    //unsigned ToHash() const;
+    uint64_t to_hash() const;
+	operator uint64_t() { return to_hash(); }
     friend bool operator<( const EdgeHash & a, const EdgeHash & b );
     friend bool operator==( const EdgeHash & a, const EdgeHash & b );
 };

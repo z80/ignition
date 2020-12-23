@@ -2,7 +2,8 @@
 #ifndef __HEIGHT_SOURCE_H_
 #define __HEIGHT_SOURCE_H_
 
-#include "vector3d.h" 
+#include "vector3d.h"
+#include "core/color.h"
 
 namespace Ign
 {

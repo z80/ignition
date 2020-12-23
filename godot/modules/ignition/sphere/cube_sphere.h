@@ -3,8 +3,10 @@
 #define __CUBE_SPHERE_H_
 
 #include "core/vector.h"
-#include ""
-
+#include "core/hash_map.h"
+#include "cube_edge_hash.h"
+#include "cube_vertex.h"
+#include "subdivide_source.h"
 
 namespace Ign
 {
@@ -17,7 +19,7 @@ class CubeSphere
 public:
     Vector<Vertex>          verts;
     Vector<CubeQuadNode>    faces;
-    HashMap<EdgeHash, int>  lookup;
+    HashMap<uint64_t, int>  lookup;
 
     CubeSphere();
     ~CubeSphere();

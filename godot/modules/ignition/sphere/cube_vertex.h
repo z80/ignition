@@ -3,6 +3,7 @@
 #define __CUBE_VERTEX_H_
 
 #include "vector3d.h"
+#include "core/color.h"
 
 namespace Ign
 {

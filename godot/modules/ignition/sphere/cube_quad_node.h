@@ -20,7 +20,7 @@ public:
     int  indexInParent;
     int  level;
     bool leaf;
-    SphereHash hash_;
+    CubeHash hash_;
 
     CubeQuadNode();
     ~CubeQuadNode();

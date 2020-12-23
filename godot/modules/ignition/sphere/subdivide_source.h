@@ -3,13 +3,12 @@
 #define __SUBDIVIDE_SOURCE_H_
 
 #include "vector3d.h"
-#include "subdivide_point.h"
 
 namespace Ign
 {
 
-class CubeFace;
-class Cubesphere;
+class CubeQuadNode;
+class CubeSphere;
 
 class SubdivideSource
 {
@@ -35,7 +34,7 @@ public:
     // need to recomute subdivision. 
     virtual bool need_subdivide( const CubeSphere * s, Vector<SubdividePoint> & pts );
     // Determines if a particular face should be subdriven.
-    virtual bool need_subdivide( const CubeSphere * s, const CubeFace * f ) const;
+    virtual bool need_subdivide( const CubeSphere * s, const CubeQuadNode * f ) const;
 
 public:
     void flatten_pts( const CubeSphere * s );

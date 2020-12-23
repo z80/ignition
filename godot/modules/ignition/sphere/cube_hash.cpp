@@ -1,5 +1,5 @@
 
-#include "hash_hash.h"
+#include "cube_hash.h"
 
 namespace Ign
 {

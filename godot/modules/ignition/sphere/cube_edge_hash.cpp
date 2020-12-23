@@ -1,5 +1,5 @@
 
-#include "cube_Edge_hash.h"
+#include "cube_edge_hash.h"
 
 namespace Ign
 {
@@ -52,14 +52,15 @@ const EdgeHash & EdgeHash::operator=( const EdgeHash & inst )
     return *this;
 }
 
-/*unsigned EdgeHash::ToHash() const
+uint64_t EdgeHash::to_hash() const
 {
-    long long a = 0;
+    uint64_t a = 0;
     for ( int i=0; i<EDGE_HASH_SZ; i++ )
         a = (a << 8) + d[i];
-    const unsigned h = MakeHash( a );
-    return h;
-}*/
+    //const unsigned h = MakeHash( a );
+    //return h;
+	return a;
+}
 
 bool operator<( const EdgeHash & a, const EdgeHash & b )
 {

@@ -20,8 +20,8 @@ def configure_static_build():
 
     # Also sphere tools.
     module_env.Append(CPPPATH=["#modules/ignition/sphere"])
-    module_env.add_source_fules( env.module_sources, "sphere/*.cpp" )
-    module_env.add_source_fules( env.module_sources, "sphere/*.c" )
+    module_env.add_source_files( env.modules_sources, "sphere/*.cpp" )
+    module_env.add_source_files( env.modules_sources, "sphere/*.c" )
 
 
 

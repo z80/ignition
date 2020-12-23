@@ -16,7 +16,7 @@ SubdivideSource::~SubdivideSource()
 
 void SubdivideSource::clear_levels()
 {
-    levels_.Clear();
+    levels_.clear();
 }
 
 void SubdivideSource::add_level( Float sz, Float dist )
@@ -24,23 +24,23 @@ void SubdivideSource::add_level( Float sz, Float dist )
     Level lvl;
     lvl.sz   = sz;
     lvl.dist = dist;
-    levels_.Push( lvl );
+    levels_.push_back( lvl );
 }
 
 bool SubdivideSource::need_subdivide( const Cubesphere * s, Vector<SubdividePoint> & pts )
 {
     ptsNew_ = pts;
-    const unsigned ptsNewQty = ptsNew_.Size();
+    const unsigned ptsNewQty = ptsNew_.size();
     for ( unsigned i=0; i<ptsNewQty; i++ )
     {
-        Vector3d & v = ptsNew_[i].at;
+        Vector3d & v = ptsNew_.ptrw()[i].at;
         v.Normalize();
     }
 
     if ( levels_.Empty() )
     {
         pts_ = ptsNew_;
-        flattenPts( s );
+        flatten_pts( s );
         return true;
     }
 

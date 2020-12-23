@@ -1,5 +1,6 @@
 
 #include "cube_quad_node.h"
+#include "cube_sphere.h"
 
 namespace Ign
 {
@@ -59,7 +60,7 @@ const CubeQuadNode & CubeQuadNode::operator=( const CubeQuadNode & inst )
     return *this;
 }
 
-bool CubeQuadNode::subdivide( CubeSphere * s, SubdriveSource * src )
+bool CubeQuadNode::subdivide( CubeSphere * s, SubdivideSource * src )
 {
     if ( !leaf )
     {
@@ -67,8 +68,8 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdriveSource * src )
         {
             const int faceInd = childInds[i];
             CubeQuadNode f = s->faces[faceInd];
-            const bool ok = f.subdrive( s, src );
-            s->faces[faceInd] = f;
+            const bool ok = f.subdivide( s, src );
+            s->faces.ptrw()[faceInd] = f;
             if ( !ok )
                 return false;
             return true;
@@ -76,7 +77,7 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdriveSource * src )
     }
 
     // Check if needs subdivision.
-    const bool needProcessing = src->needSubdrive( s, this );
+    const bool needProcessing = src->need_subdivide( s, this );
     if ( !needProcessing )
         return true;
 
@@ -93,8 +94,8 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdriveSource * src )
         const int vertIndA = vertexInds[indA];
         const int vertIndB = vertexInds[indB];
         const EdgeHash hashN( vertIndA, vertIndB );
-        HashMap<EdgeHash, int>::ConstIterator it = s->lookup.Find( hashN );
-        if ( it == s->lookup.End() )
+        const int * it = s->lookup.getptr( hashN.to_hash() );
+        if ( it == nullptr )
         {
             const Vertex & va = s->verts[vertIndA];
             const Vertex & vb = s->verts[vertIndB];
@@ -104,14 +105,14 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdriveSource * src )
             v.atFlat = atFlat;
             v.a = vertIndA;
             v.b = vertIndB;
-            const int newInd = (int)s->verts.Size();
-            s->verts.Push( v );
-            s->lookup.Insert( Pair<EdgeHash, int>( hashN, newInd ) );
+            const int newInd = (int)s->verts.size();
+            s->verts.push_back( v );
+            s->lookup.set( hashN.to_hash(), newInd );
             newVertInds[i] = newInd;
         }
         else
         {
-            const int vertInd = it->second_;
+            const int vertInd = *it;
             //Vertex & v = s->verts[vertInd];
             newVertInds[i] = vertInd;
         }
@@ -127,8 +128,8 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdriveSource * src )
     v.atFlat = atFlat;
     v.a = -1;
     v.b = -1;
-    const int fifthVertInd = (int)s->verts.Size();
-    s->verts.Push( v );
+    const int fifthVertInd = (int)s->verts.size();
+    s->verts.push_back( v );
     newVertInds[4] = fifthVertInd;
 
     // Create faces.
@@ -160,13 +161,13 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdriveSource * src )
     fd.hash_ = hash_;
     fd.hash_ << fd.indexInParent;
 
-    int faceIndBase = s->faces.Size();
+    int faceIndBase = s->faces.size();
     const int indBase = faceIndBase;
 
-    s->faces.Push( fa );
-    s->faces.Push( fb );
-    s->faces.Push( fc );
-    s->faces.Push( fd );
+    s->faces.push_back( fa );
+    s->faces.push_back( fb );
+    s->faces.push_back( fc );
+    s->faces.push_back( fd );
 
     this->childInds[0] = faceIndBase++;
     this->childInds[1] = faceIndBase++;
@@ -177,9 +178,9 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdriveSource * src )
     for ( int i=0; i<4; i++ )
     {
         const int faceInd = indBase + i;
-        CubeQuadNode face = s->faces[faceInd];
-        const bool ok = face.subdrive( s, src );
-        s->faces[faceInd] = face;
+        CubeQuadNode face = s->faces.ptr()[faceInd];
+        const bool ok = face.subdivide( s, src );
+        s->faces.ptrw()[faceInd] = face;
         if ( !ok )
             return false;
     }
@@ -250,10 +251,10 @@ bool CubeQuadNode::select_leafs( const CubeSphere * s, const Vector3d & a, const
         const int childInd = childInds[i];
         if ( childInd < 0 )
             continue;
-        const CubeQuadNode & f = s->faces[ childInds[i] ];
-        const bool insideOk = f.selectLeafs( s, a, dist, faceInds );
+        const CubeQuadNode & f = s->faces.ptr()[ childInds[i] ];
+        const bool insideOk = f.select_leafs( s, a, dist, faceInds );
         if ( insideOk )
-            faceInds.Push( childInd );
+            faceInds.push_back( childInd );
     }
     return false;
 }
@@ -271,10 +272,10 @@ bool CubeQuadNode::select_by_size( const CubeSphere * s, const Vector3d & a, con
         const int childInd = childInds[i];
         if ( childInd < 0 )
             continue;
-        const CubeQuadNode & f = s->faces[ childInds[i] ];
-        const bool insideOk = f.selectBySize( s, a, sz, dist, faceInds );
+        const CubeQuadNode & f = s->faces.ptr()[ childInds[i] ];
+        const bool insideOk = f.select_by_size( s, a, sz, dist, faceInds );
         if ( insideOk )
-            faceInds.Push( childInd );
+            faceInds.push_back( childInd );
     }
     return false;
 }
