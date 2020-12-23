@@ -75,12 +75,12 @@ Float CubeSphere::h() const
     return H_;
 }
 
-void CubeSphere::subdrive( SubdivideSource * src )
+void CubeSphere::subdivide( SubdivideSource * src )
 {
     clear();
     init();
 
-    const int qty = (int)faces.size();
+    const int qty = faces.size();
     for ( int i=0; i<qty; i++ )
     {
         CubeQuadNode f = faces.ptr()[i];
@@ -107,7 +107,7 @@ void CubeSphere::apply_source( HeightSource * src )
     if ( !src )
         return;
 
-    const int qty = (int)verts.size();
+    const int qty = verts.size();
     for ( int i=0; i<qty; i++ )
     {
         CubeVertex & v = verts.ptrw()[i];

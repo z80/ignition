@@ -38,7 +38,7 @@ public:
     Float h() const;
 
 
-    void subdrive( SubdivideSource * src );
+    void subdivide( SubdivideSource * src );
     void apply_source( HeightSource * src );
 
     void triangle_list( Vector<CubeVertex> & tris );
