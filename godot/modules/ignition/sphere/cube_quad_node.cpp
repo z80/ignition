@@ -97,11 +97,11 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdivideSource * src )
         const int * it = s->lookup.getptr( hashN.to_hash() );
         if ( it == nullptr )
         {
-            const Vertex & va = s->verts[vertIndA];
-            const Vertex & vb = s->verts[vertIndB];
+            const CubeVertex & va = s->verts[vertIndA];
+            const CubeVertex & vb = s->verts[vertIndB];
             // Create new vertex;
             const Vector3d atFlat( (va.atFlat + vb.atFlat) * 0.5 );
-            Vertex v;
+            CubeVertex v;
             v.atFlat = atFlat;
             v.a = vertIndA;
             v.b = vertIndB;
@@ -118,13 +118,13 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdivideSource * src )
         }
     }
     // Also create middle vertex.
-    const Vertex & a = s->verts[newVertInds[0]];
-    const Vertex & b = s->verts[newVertInds[1]];
-    const Vertex & c = s->verts[newVertInds[2]];
-    const Vertex & d = s->verts[newVertInds[3]];
+    const CubeVertex & a = s->verts[newVertInds[0]];
+    const CubeVertex & b = s->verts[newVertInds[1]];
+    const CubeVertex & c = s->verts[newVertInds[2]];
+    const CubeVertex & d = s->verts[newVertInds[3]];
 
     const Vector3d atFlat( (a.atFlat + b.atFlat + c.atFlat + d.atFlat)*0.25 );
-    Vertex v;
+    CubeVertex v;
     v.atFlat = atFlat;
     v.a = -1;
     v.b = -1;
@@ -190,9 +190,9 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdivideSource * src )
 
 const Vector3d CubeQuadNode::normal( const CubeSphere * s ) const
 {
-    const Vertex & v0 = s->verts[ vertexInds[0] ];
-    const Vertex & v1 = s->verts[ vertexInds[1] ];
-    const Vertex & v3 = s->verts[ vertexInds[3] ];
+    const CubeVertex & v0 = s->verts[ vertexInds[0] ];
+    const CubeVertex & v1 = s->verts[ vertexInds[1] ];
+    const CubeVertex & v3 = s->verts[ vertexInds[3] ];
     const Vector3d a30 = v3.atFlat - v0.atFlat;
     const Vector3d a10 = v1.atFlat - v0.atFlat;
     Vector3d n = a30.CrossProduct( a10 );
@@ -202,8 +202,8 @@ const Vector3d CubeQuadNode::normal( const CubeSphere * s ) const
 
 const Float CubeQuadNode::size( const CubeSphere * s ) const
 {
-    const Vertex & v0 = s->verts[ vertexInds[0] ];
-    const Vertex & v1 = s->verts[ vertexInds[1] ];
+    const CubeVertex & v0 = s->verts[ vertexInds[0] ];
+    const CubeVertex & v1 = s->verts[ vertexInds[1] ];
     const Vector3d d = v1.atFlat - v0.atFlat;
     const Float sz = d.Length();
     return sz;
@@ -211,10 +211,10 @@ const Float CubeQuadNode::size( const CubeSphere * s ) const
 
 bool CubeQuadNode::inside( const CubeSphere * s, const Vector3d & a, const Vector3d & n, const Float dist ) const
 {
-    const Vertex & v0 = s->verts[ vertexInds[0] ];
-    const Vertex & v1 = s->verts[ vertexInds[1] ];
+    const CubeVertex & v0 = s->verts[ vertexInds[0] ];
+    const CubeVertex & v1 = s->verts[ vertexInds[1] ];
     //const Vertex & v2 = s->verts[ vertexInds[2] ];
-    const Vertex & v3 = s->verts[ vertexInds[3] ];
+    const CubeVertex & v3 = s->verts[ vertexInds[3] ];
     //const Vector3d at = (v0.atFlat + v1.atFlat + v2.atFlat + v3.atFlat) * 0.25;
     const Vector3d a30 = v3.atFlat - v0.atFlat;
     const Vector3d a10 = v1.atFlat - v0.atFlat;

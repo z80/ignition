@@ -8,7 +8,7 @@
 namespace Ign
 {
 
-struct Vertex
+struct CubeVertex
 {
 public:
     Vector3d at, atFlat, atUnit;
@@ -20,11 +20,11 @@ public:
     bool isMidPoint;
     int  leafFacesQty;
 
-    Vertex();
-    ~Vertex();
-    Vertex( const Vector3d & at );
-    Vertex( const Vertex & inst );
-    const Vertex & operator=( const Vertex & inst );
+    CubeVertex();
+    ~CubeVertex();
+    CubeVertex( const Vector3d & at );
+    CubeVertex( const CubeVertex & inst );
+    const CubeVertex & operator=( const CubeVertex & inst );
 };
 
 

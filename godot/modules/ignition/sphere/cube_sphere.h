@@ -17,7 +17,7 @@ class HeightSource;
 class CubeSphere
 {
 public:
-    Vector<Vertex>          verts;
+    Vector<CubeVertex>      verts;
     Vector<CubeQuadNode>    faces;
     HashMap<uint64_t, int>  lookup;
 
@@ -41,10 +41,10 @@ public:
     void subdrive( SubdivideSource * src );
     void apply_source( HeightSource * src );
 
-    void triangle_list( Vector<Vertex> & tris );
+    void triangle_list( Vector<CubeVertex> & tris );
 
     // For selecting collision patches.
-    void triangle_list( const Vector<SubdivideSource::SubdividePoint> & pts, Float dist, Vector<Vertex> & tris );
+    void triangle_list( const Vector<SubdivideSource::SubdividePoint> & pts, Float dist, Vector<CubeVertex> & tris );
     void face_list( const Vector<SubdivideSource::SubdividePoint> & pts, const Float sz, const Float dist, Vector<int> & faceInds );
 
     // This is for subdriving. It is used in SubdriveSource.
@@ -55,8 +55,8 @@ private:
     void label_mid_points();
     void scale_to_sphere();
     void compute_normals();
-    void apply_source_height( HeightSource * src, Vertex & v );
-    void apply_source_color( HeightSource * src, Vertex & v );
+    void apply_source_height( HeightSource * src, CubeVertex & v );
+    void apply_source_color( HeightSource * src, CubeVertex & v );
 
     void select_faces( const Vector<SubdivideSource::SubdividePoint> & pts, const Float dist, Vector<int> & faceInds );
 

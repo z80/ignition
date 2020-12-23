@@ -5,19 +5,19 @@
 namespace Ign
 {
 
-Vertex::Vertex()
+CubeVertex::CubeVertex()
 {
     a = b = -1;
     leafFacesQty = 0;
     isMidPoint   = false;
 }
 
-Vertex::~Vertex()
+CubeVertex::~CubeVertex()
 {
 
 }
 
-Vertex::Vertex( const Vector3d & at )
+CubeVertex::CubeVertex( const Vector3d & at )
 {
     a = b = -1;
     leafFacesQty = 0;
@@ -27,12 +27,12 @@ Vertex::Vertex( const Vector3d & at )
     this->at     = at;
 }
 
-Vertex::Vertex( const Vertex & inst )
+CubeVertex::CubeVertex( const CubeVertex & inst )
 {
     *this = inst;
 }
 
-const Vertex & Vertex::operator=( const Vertex & inst )
+const CubeVertex & CubeVertex::operator=( const CubeVertex & inst )
 {
     if ( this != &inst )
     {

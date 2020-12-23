@@ -1,6 +1,7 @@
 
 #include "cube_sphere.h"
 #include "cube_quad_node.h"
+#include "height_source.h"
 
 namespace Ign
 {
@@ -109,20 +110,20 @@ void CubeSphere::apply_source( HeightSource * src )
     const int qty = (int)verts.size();
     for ( int i=0; i<qty; i++ )
     {
-        Vertex & v = verts.ptrw()[i];
+        CubeVertex & v = verts.ptrw()[i];
         if ( !v.isMidPoint )
             apply_source_height( src, v );
     }
 
     for ( int i=0; i<qty; i++ )
     {
-        Vertex & v = verts.ptrw()[i];
+        CubeVertex & v = verts.ptrw()[i];
         if ( v.isMidPoint )
         {
             const int vertIndA = v.a;
             const int vertIndB = v.b;
-            const Vertex & va = verts.ptr()[vertIndA];
-            const Vertex & vb = verts.ptr()[vertIndB];
+            const CubeVertex & va = verts.ptr()[vertIndA];
+            const CubeVertex & vb = verts.ptr()[vertIndB];
             v.at = (va.at + vb.at) * 0.5;
             v.norm = va.norm + vb.norm;
             v.norm.Normalize();
@@ -134,12 +135,12 @@ void CubeSphere::apply_source( HeightSource * src )
     // Apply color information.
     for ( int i=0; i<qty; i++ )
     {
-        Vertex & v = verts.ptrw()[i];
+        CubeVertex & v = verts.ptrw()[i];
         apply_source_color( src, v );
     }
 }
 
-void CubeSphere::triangle_list( Vector<Vertex> & tris )
+void CubeSphere::triangle_list( Vector<CubeVertex> & tris )
 {
     tris.clear();
     const unsigned qty = faces.size();
@@ -162,7 +163,7 @@ void CubeSphere::triangle_list( Vector<Vertex> & tris )
     }
 }
 
-void CubeSphere::triangle_list( const Vector<SubdivideSource::SubdividePoint> & pts, Float dist, Vector<Vertex> & tris )
+void CubeSphere::triangle_list( const Vector<SubdivideSource::SubdividePoint> & pts, Float dist, Vector<CubeVertex> & tris )
 {
     select_faces( pts, dist, faceInds_ );
 
@@ -192,7 +193,7 @@ void CubeSphere::face_list( const Vector<SubdivideSource::SubdividePoint> & pts,
     faceInds.clear();
     flatten_pts( pts, ptsFlat_ );
 
-    const unsigned ptsQty = ptsFlat_.cize();
+    const unsigned ptsQty = ptsFlat_.size();
     for ( unsigned ptInd=0; ptInd<ptsQty; ptInd++ )
     {
         const Vector3d & ptFlat = ptsFlat_.ptr()[ptInd].at;
@@ -223,7 +224,7 @@ void CubeSphere::flatten_pts( const Vector<SubdivideSource::SubdividePoint> & pt
     const unsigned ptsQty = ptsFlat.size();
     for ( unsigned i=0; i<ptsQty; i++ )
     {
-        Vector3d & pt3 = ptsFlat[i].at;
+        Vector3d & pt3 = ptsFlat.ptrw()[i].at;
         // Next 3 lines protect from zero length points.
         const Float pt3Len = pt3.Length();
         if ( pt3Len < 0.1 )
@@ -263,7 +264,7 @@ void CubeSphere::clear()
 
 void CubeSphere::init()
 {
-    Vertex v;
+    CubeVertex v;
     v.atFlat = Vector3d( -1.0, -1.0, -1.0 );
     verts.push_back( v );
 
@@ -357,7 +358,7 @@ void CubeSphere::init()
         const unsigned qty = verts.Size();
         for ( unsigned i=0; i<qty; i++ )
         {
-            Vertex & v = verts[i];
+            CubeVertex & v = verts[i];
             v.at = v.at * 0.001 + Vector3d( 0.0, 1.0, 0.0 );
         }
     }*/
@@ -369,7 +370,7 @@ void CubeSphere::label_mid_points()
     const int qty = (int)verts.size();
     for ( int i=0; i<qty; i++ )
     {
-        Vertex & v = verts.ptrw()[i];
+        CubeVertex & v = verts.ptrw()[i];
         v.leafFacesQty = 0;
         v.isMidPoint   = false;
     }
@@ -378,13 +379,13 @@ void CubeSphere::label_mid_points()
     const int facesQty = faces.size();
     for ( int i=0; i<facesQty; i++ )
     {
-        const Face & f = faces.ptr()[i];
+        const CubeQuadNode & f = faces.ptr()[i];
         if ( !f.leaf )
             continue;
         for ( int j=0; j<4; j++ )
         {
             const int vertInd = f.vertexInds[j];
-            Vertex & v = verts.ptrw()[vertInd];
+            CubeVertex & v = verts.ptrw()[vertInd];
             v.leafFacesQty += 1;
         }
     }
@@ -393,7 +394,7 @@ void CubeSphere::label_mid_points()
     // at least 3 leaf faces
     for ( int i=0; i<qty; i++ )
     {
-        Vertex & v   = verts.ptrw()[i];
+        CubeVertex & v   = verts.ptrw()[i];
         const bool enoughFaces = (v.leafFacesQty > 2);
         v.isMidPoint = !enoughFaces;
     }
@@ -405,7 +406,7 @@ void CubeSphere::scale_to_sphere()
     const int qty = (int)verts.size();
     for ( int i=0; i<qty; i++ )
     {
-        Vertex & v = verts.ptrw()[i];
+        CubeVertex & v = verts.ptrw()[i];
         if ( !v.isMidPoint )
         {
             v.atUnit = v.atFlat;
@@ -416,13 +417,13 @@ void CubeSphere::scale_to_sphere()
 
     for ( int i=0; i<qty; i++ )
     {
-        Vertex & v = verts.ptrw()[i];
+        CubeVertex & v = verts.ptrw()[i];
         if ( v.isMidPoint )
         {
             const int vertIndA = v.a;
             const int vertIndB = v.b;
-            const Vertex & va = verts[vertIndA];
-            const Vertex & vb = verts[vertIndB];
+            const CubeVertex & va = verts[vertIndA];
+            const CubeVertex & vb = verts[vertIndB];
             v.atUnit = (va.atUnit + vb.atUnit) * 0.5;
             v.norm = va.norm + vb.norm;
             v.norm.Normalize();
@@ -436,7 +437,7 @@ void CubeSphere::compute_normals()
     const int qty = (int)verts.size();
     for ( int i=0; i<qty; i++ )
     {
-        Vertex & v = verts.ptrw()[i];
+        CubeVertex & v = verts.ptrw()[i];
         v.norm = Vector3d::ZERO;
     }
 
@@ -444,7 +445,7 @@ void CubeSphere::compute_normals()
     // Concatenate all normals.
     for ( int i=0; i<facesQty; i++ )
     {
-        const Face & f = faces.ptr()[i];
+        const CubeQuadNode & f = faces.ptr()[i];
         if ( !f.leaf )
             continue;
         {
@@ -452,10 +453,10 @@ void CubeSphere::compute_normals()
             const int vInd1 = f.vertexInds[1];
             const int vInd2 = f.vertexInds[2];
             const int vInd3 = f.vertexInds[3];
-            Vertex & v0 = verts.ptrw()[vInd0];
-            Vertex & v1 = verts.ptrw()[vInd1];
-            Vertex & v2 = verts.ptrw()[vInd2];
-            Vertex & v3 = verts.ptrw()[vInd3];
+            CubeVertex & v0 = verts.ptrw()[vInd0];
+            CubeVertex & v1 = verts.ptrw()[vInd1];
+            CubeVertex & v2 = verts.ptrw()[vInd2];
+            CubeVertex & v3 = verts.ptrw()[vInd3];
             const Vector3d a = v1.at - v0.at;
             const Vector3d b = v2.at - v0.at;
             Vector3d n = a.CrossProduct( b );
@@ -469,19 +470,19 @@ void CubeSphere::compute_normals()
     // Normalize normals.
     for ( int i=0; i<qty; i++ )
     {
-        Vertex & v = verts.ptrw()[i];
+        CubeVertex & v = verts.ptrw()[i];
         v.norm.Normalize();
     }
 }
 
-void CubeSphere::apply_source_height( HeightSource * src, Vertex & v )
+void CubeSphere::apply_source_height( HeightSource * src, CubeVertex & v )
 {
     v.heightUnit_ = src->height( v.atUnit );
     const Float d  = R_ + H_*v.heightUnit_;
     v.at = v.atUnit * d;
 }
 
-void CubeSphere::apply_source_color( HeightSource * src, Vertex & v )
+void CubeSphere::apply_source_color( HeightSource * src, CubeVertex & v )
 {
     const Color c = src->color( v.atUnit, v.norm, v.heightUnit_ );
     v.color = c;
@@ -491,22 +492,22 @@ void CubeSphere::apply_source_color( HeightSource * src, Vertex & v )
 void CubeSphere::select_faces( const Vector<SubdivideSource::SubdividePoint> & pts, const Float dist, Vector<int> & faceInds )
 {
     faceInds.clear();
-    flattenPts( pts, ptsFlat_ );
+    flatten_pts( pts, ptsFlat_ );
 
     const unsigned ptsQty = ptsFlat_.size();
     for ( unsigned ptInd=0; ptInd<ptsQty; ptInd++ )
     {
-        const Vector3d & ptFlat = ptsFlat_[ptInd].at;
+        const Vector3d & ptFlat = ptsFlat_.ptr()[ptInd].at;
         for ( unsigned i=0; i<6; i++ )
         {
-            const Face & f = faces.ptr()[i];
+            const CubeQuadNode & f = faces.ptr()[i];
             const Vector3d n = f.normal( this );
             const bool inside = f.inside( this, ptFlat, n, dist );
             if ( !inside )
                 continue;
-            const bool insideOk = f.selectLeafs( this, ptFlat, dist, faceInds );
+            const bool insideOk = f.select_leafs( this, ptFlat, dist, faceInds );
             if ( insideOk )
-                faceInds.Push( i );
+                faceInds.push_back( i );
         }
     }
 }
