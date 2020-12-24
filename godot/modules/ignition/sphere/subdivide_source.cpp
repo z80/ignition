@@ -65,8 +65,9 @@ bool SubdivideSource::need_subdivide( const CubeSphere * s, Vector<SubdividePoin
 			// Check distances.
 			for (unsigned i = 0; i < ptsNewQty; i++)
 			{
-				const Vector3d & v = ptsNew_.ptr()[i].at;
-                const bool isClose = ptsNew_.ptr()[i].close;
+				const SubdividePoint & sp = ptsNew_.ptr()[i];
+				const Vector3d & v = sp.at;
+                const bool isClose = sp.close;
                 const Float d = isClose ? d_close : d_far;
 				Float minDist = -1.0;
 				for (unsigned j = 0; j < ptsQty; j++)
