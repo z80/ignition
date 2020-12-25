@@ -3,8 +3,8 @@
 #ifndef __REF_FRAME_NODE_H_
 #define __REF_FRAME_NODE_H_
 
-#include "scene/main/node.h"
-//#include "core/reference.h"
+#include "scene/3d/spatial.h"
+
 #include "core/math/vector3.h"
 #include "core/math/quat.h"
 #include "core/math/transform.h"
@@ -15,9 +15,9 @@
 
 using namespace Ign;
 
-class RefFrameNode: public Node
+class RefFrameNode: public Spatial
 {
-	GDCLASS(RefFrameNode, Node);
+	GDCLASS(RefFrameNode, Spatial);
 	OBJ_CATEGORY("Ignition");
 
 protected:

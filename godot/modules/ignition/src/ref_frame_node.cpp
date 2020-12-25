@@ -36,7 +36,7 @@ void RefFrameNode::_bind_methods()
 }
 
 RefFrameNode::RefFrameNode()
-	: Node()
+	: Spatial()
 {
 }
 
