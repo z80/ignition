@@ -47,7 +47,7 @@ public:
     void triangle_list( const Vector<SubdivideSource::SubdividePoint> & pts, Float dist, Vector<CubeVertex> & tris );
     void face_list( const Vector<SubdivideSource::SubdividePoint> & pts, const Float sz, const Float dist, Vector<int> & faceInds );
 
-    // This is for subdriving. It is used in SubdriveSource.
+    // This is for subdividing. It is used in SubdivideSource.
     void flatten_pts( const Vector<SubdivideSource::SubdividePoint> & pts, Vector<SubdivideSource::SubdividePoint> & ptsFlat ) const;
 private:
     void clear();

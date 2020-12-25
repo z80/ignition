@@ -4,6 +4,7 @@
 
 #include "scene/3d/mesh_instance.h"
 #include "scene/resources/mesh.h"
+#include "core/reference.h"
 
 #include "cube_sphere.h"
 #include "subdivide_source.h"
@@ -15,22 +16,59 @@ namespace Ign
 class CubeSphereNode: public MeshInstance
 {
 	GDCLASS( CubeSphereNode, MeshInstance );
-public:
-	CubeSphereNode();
-	~CubeSphereNode();
-
 
 protected:
 	static void _bind_methods();
 
 public:
-	// This one is for constructing actual mesh.
-	ArrayMesh      * array_mesh;
+	CubeSphereNode();
+	~CubeSphereNode();
+
+	void set_height_source( Reference * hs );
+
+	void set_r( real_t r );
+	real_t get_r() const;
+
+	void set_h( real_t h );
+	real_t get_h() const;
+
+	// Subdivision levels.
+	void clear_levels();
+	void add_level( real_t sz, real_t dist );
+
+	// Need in sphere rebuild is checked every period.
+	void set_subdivision_check_period( real_t sec );
+	real_t get_subdivision_check_period() const;
+
+	// Points around which subdivision occurs.
+	void clear_points_of_interest();
+	void add_point_of_interest( const Vector3 & at, bool close );
+
+	// For debugging check for rebuild and rebuild manually.
+	bool need_rebuild();
+	void rebuild();
+	// All geometry triangles.
+	PoolVector3Array triangles();
+	// Only collision triangles.
+	PoolVector3Array collision_triangles( real_t dist );
+
+public:
 
 	// These all are for geometry generation.
-	CubeSphere       sphere;
-	SubdivideSource  subdivide_source;
-	HeightSourceTest height_source;
+	CubeSphere        sphere;
+	SubdivideSource   subdivide_source;
+	HeightSource    * height_source;
+
+	real_t check_period;
+	Vector<SubdivideSource::SubdividePoint> points_of_interest;
+
+	// All triangles.
+	Vector<CubeVertex> & all_tris;
+	PoolVector3Array vertices;
+	PoolVector3Array normals;
+	PoolRealArray    tangents;
+	PoolColorArray   colors;
+	PoolVector3Array uvs;
 };
 
 

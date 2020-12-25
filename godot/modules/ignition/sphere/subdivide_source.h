@@ -33,7 +33,7 @@ public:
     // Based on changed interest points determines if 
     // need to recomute subdivision. 
     virtual bool need_subdivide( const CubeSphere * s, Vector<SubdividePoint> & pts );
-    // Determines if a particular face should be subdriven.
+    // Determines if a particular face should be subdivided.
     virtual bool need_subdivide( const CubeSphere * s, const CubeQuadNode * f ) const;
 
 public:
