@@ -1,5 +1,7 @@
 
 #include "height_source_ref.h"
+#include "height_source.h"
+#include "vector3d.h"
 
 namespace Ign
 {
@@ -34,8 +36,8 @@ Color  HeightSourceRef::color( const Vector3 & at, const Vector3 & norm, real_t 
 
 	const Vector3d at_d( at.x, at.y, at.z );
 	const Vector3d norm_d( norm.x, norm.y, norm.z );
-	const real_t height_t = static_cast<real_t>( height );
-	const Color c = height_source->color( at_d, norm_d, height_d ) const;
+	const Float height_d = static_cast<Float>( height );
+	const Color c = height_source->color( at_d, norm_d, height_d );
 
 	return c;
 }

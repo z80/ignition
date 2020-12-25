@@ -8,10 +8,14 @@
 
 #include "cube_sphere.h"
 #include "subdivide_source.h"
-#include "height_source_test.h"
+
+#include "height_source_ref.h"
+
 
 namespace Ign
 {
+
+class HeightSourceRef;
 
 class CubeSphereNode: public MeshInstance
 {
@@ -24,7 +28,7 @@ public:
 	CubeSphereNode();
 	~CubeSphereNode();
 
-	void set_height_source( Reference * hs );
+	void set_height_source( Ref<HeightSourceRef> hs );
 
 	void set_r( real_t r );
 	real_t get_r() const;
@@ -55,20 +59,21 @@ public:
 public:
 
 	// These all are for geometry generation.
-	CubeSphere        sphere;
-	SubdivideSource   subdivide_source;
-	HeightSource    * height_source;
+	CubeSphere           sphere;
+	SubdivideSource      subdivide_source;
+	Ref<HeightSourceRef> height_source;
 
 	real_t check_period;
 	Vector<SubdivideSource::SubdividePoint> points_of_interest;
 
 	// All triangles.
-	Vector<CubeVertex> & all_tris;
+	Vector<CubeVertex> all_tris;
 	PoolVector3Array vertices;
 	PoolVector3Array normals;
 	PoolRealArray    tangents;
 	PoolColorArray   colors;
-	PoolVector3Array uvs;
+	PoolVector2Array uvs;
+	PoolVector2Array uvs2;
 };
 
 

@@ -10,7 +10,7 @@ HeightSourceTestRef::HeightSourceTestRef()
 	height_source = &height_source_test;
 }
 
-HeightSourceTest::~HeightSourceTest()
+HeightSourceTestRef::~HeightSourceTestRef()
 {
 }
 
