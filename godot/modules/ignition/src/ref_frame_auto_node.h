@@ -3,12 +3,11 @@
 #define __REF_FRAME_AUTO_NODE_H_
 
 #include "ref_frame_node.h"
+#include "distance_scaler_ref.h"
 #include "core/reference.h"
 
 namespace Ign
 {
-
-class SpatialScalerRef;
 
 class RefFrameAutoNode: public RefFrameNode
 {
@@ -22,8 +21,8 @@ public:
 	RefFrameAutoNode();
 	~RefFrameAutoNode();
 
-	void set_distance_scaler( Ref<SpatialScalerRef> new_scaler );
-	Ref<SpatialScalerRef> get_distance_scaler() const;
+	void set_distance_scaler( Ref<DistanceScalerRef> new_scaler );
+	Ref<DistanceScalerRef> get_distance_scaler() const;
 
 	void set_root_path( const NodePath & root );
 	const NodePath & get_root_path() const;
@@ -41,7 +40,7 @@ public:
 	NodePath root_path;
 	bool apply_scale;
 	Vector3d scaled_r;
-	Ref<SpatialScalerRef> scaler;
+	Ref<DistanceScalerRef> scaler;
 };
 
 

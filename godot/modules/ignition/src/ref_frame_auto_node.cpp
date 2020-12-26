@@ -22,6 +22,7 @@ void RefFrameAutoNode::_notification( int p_what )
 	switch ( p_what )
 	{
 	case NOTIFICATION_PROCESS:
+		process_transform();
 		break;
 	default:
 		break;
@@ -41,12 +42,12 @@ RefFrameAutoNode::~RefFrameAutoNode()
 {
 }
 
-void RefFrameAutoNode::set_distance_scaler( Ref<SpatialScalerRef> new_scaler )
+void RefFrameAutoNode::set_distance_scaler( Ref<DistanceScalerRef> new_scaler )
 {
 	scaler = new_scaler;
 }
 
-Ref<SpatialScalerRef> RefFrameAutoNode::get_distance_scaler() const
+Ref<DistanceScalerRef> RefFrameAutoNode::get_distance_scaler() const
 {
 	return scaler;
 }
@@ -87,10 +88,15 @@ void RefFrameAutoNode::process_transform()
 	Node * n = get_node_or_null( root_path );
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( n );
 	se3_root_ = relative_( rf );
-	if ( !apply_scale )
+	if ( ( !apply_scale ) || ( scaler.ptr() == nullptr ) )
 		scaled_r = se3_root_.r_;
 	else
-		scaled_r = se3_root_.r_;
+	{
+		const Vector3d r = se3_root_.r_;
+		const Float dist = r.Length();
+		const Float scale = scaler->scale( dist );
+		scaled_r = r * scale;
+	}
 }
 
 
