@@ -49,7 +49,7 @@ real_t DistanceScalerRef::get_log_scale() const
 
 real_t DistanceScalerRef::scale( real_t d ) const
 {
-	return scale.scale( d );
+	return scaler.scale( d );
 }
 
 }

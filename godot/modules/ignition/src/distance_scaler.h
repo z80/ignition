@@ -4,6 +4,8 @@
 
 #include "data_types.h"
 
+namespace Ign
+{
 
 class DistanceScaler
 {
@@ -12,7 +14,7 @@ public:
 	virtual ~DistanceScaler();
 
 	void set_plain_distance( Float dist );
-	Float plain_dist() const;
+	Float plain_distance() const;
 
 	void set_log_scale( Float scale );
 	Float log_scale() const;
@@ -24,6 +26,8 @@ public:
 	Float log_scale_;
 };
 
+
+}
 
 
 #endif

@@ -1,6 +1,6 @@
 
 #include "distance_scaler.h"
-
+#include <cmath>
 
 
 namespace Ign
@@ -21,7 +21,7 @@ void DistanceScaler::set_plain_distance( Float dist )
 	plain_dist_ = dist;
 }
 
-Float DistanceScaler::plain_dist() const
+Float DistanceScaler::plain_distance() const
 {
 	return plain_dist_;
 }

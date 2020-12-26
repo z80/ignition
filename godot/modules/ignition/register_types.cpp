@@ -5,6 +5,8 @@
 //#include "ref_frame.h"
 //#include "ref_frame_tree.h"
 #include "ref_frame_node.h"
+#include "ref_frame_auto_node.h"
+#include "distance_scaler_ref.h"
 
 // Sphere related classes.
 #include "height_source_ref.h"
