@@ -57,6 +57,14 @@ public:
 	// Only collision triangles.
 	PoolVector3Array collision_triangles( real_t dist );
 
+
+	// Distance scaling.
+	//void set_distance_scaler( Ref<DistanceScalerRef> new_scaler );
+	//Ref<DistanceScalerRef> get_distance_scaler() const;
+
+	//void set_apply_scale( bool en );
+	//bool get_apply_scale() const;
+
 public:
 
 	// These all are for geometry generation.
@@ -75,6 +83,10 @@ public:
 	PoolColorArray   colors;
 	PoolVector2Array uvs;
 	PoolVector2Array uvs2;
+
+	// Distance scale.
+	//Ref<DistanceScalerRef> scale;
+	//bool apply_scale;
 };
 
 

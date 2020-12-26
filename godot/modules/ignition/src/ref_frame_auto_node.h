@@ -39,6 +39,7 @@ private:
 public:
 	NodePath root_path;
 	bool apply_scale;
+	Float    scale;
 	Vector3d scaled_r;
 	Ref<DistanceScalerRef> scaler;
 };

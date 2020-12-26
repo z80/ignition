@@ -32,7 +32,8 @@ void RefFrameAutoNode::_notification( int p_what )
 RefFrameAutoNode::RefFrameAutoNode()
 	: RefFrameNode()
 {
-	apply_scale = false;
+	apply_scale = true;
+	scale       = 1.0;
 	// Make call "_notification( p_what )" when
 	// "_process( delta )" is to be called.
 	set_process( true );
@@ -64,13 +65,15 @@ const NodePath & RefFrameAutoNode::get_root_path() const
 
 Transform RefFrameAutoNode::distance_scaled_t() const
 {
-	Transform t;
+	Transform t = se3_root_.transform();
+	t.basis.scale( Vector3( scale, scale, scale ) );
+	t.origin = Vector3( scaled_r.x_, scaled_r.y_, scaled_r.z_ );
 	return t;
 }
 
 real_t RefFrameAutoNode::distance_scale() const
 {
-	return 1.0;
+	return scale;
 }
 
 void RefFrameAutoNode::set_apply_scale( bool en )
@@ -94,9 +97,15 @@ void RefFrameAutoNode::process_transform()
 	{
 		const Vector3d r = se3_root_.r_;
 		const Float dist = r.Length();
-		const Float scale = scaler->scale( dist );
+		scale = scaler->scale( dist );
 		scaled_r = r * scale;
 	}
+
+	// Apply transform
+	Transform t = se3_root_.transform();
+	t.basis.scale( Vector3( scale, scale, scale ) );
+	t.origin = Vector3( scaled_r.x_, scaled_r.y_, scaled_r.z_ );
+	set_transform( t );
 }
 
 
