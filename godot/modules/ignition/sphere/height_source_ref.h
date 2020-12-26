@@ -13,6 +13,8 @@ class HeightSource;
 class HeightSourceRef: public Reference
 {
 	GDCLASS( HeightSourceRef, Reference );
+	OBJ_CATEGORY("Ignition");
+
 protected:
 	static void _bind_methods();
 

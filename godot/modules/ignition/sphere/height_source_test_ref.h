@@ -12,6 +12,8 @@ namespace Ign
 class HeightSourceTestRef: public HeightSourceRef
 {
 	GDCLASS( HeightSourceTestRef, HeightSourceRef );
+	OBJ_CATEGORY("Ignition");
+
 public:
 	HeightSourceTestRef();
 	~HeightSourceTestRef();

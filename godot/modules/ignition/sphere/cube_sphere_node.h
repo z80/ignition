@@ -20,6 +20,7 @@ class HeightSourceRef;
 class CubeSphereNode: public MeshInstance
 {
 	GDCLASS( CubeSphereNode, MeshInstance );
+	OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();
