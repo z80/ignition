@@ -30,11 +30,12 @@ public:
 	const SE3 & operator=( const SE3 & rhs );
 	SE3 operator*( const SE3 & rhs ) const;
 	SE3 operator/( const SE3 & rhs ) const;
-
+	Vector3d operator*( const Vector3d & r ) const;
 
 	SE3 relative_to( const SE3 & o ) const;
 	SE3 absolute_to( const SE3 & o ) const;
 	SE3 relative_to_child( const SE3 & ch ) const;
+	SE3 inverse() const;
 
 	void set_r( const Vector3 & r );
 	void set_q( const Quat & q );

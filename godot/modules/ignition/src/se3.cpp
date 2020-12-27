@@ -69,6 +69,12 @@ SE3 SE3::operator/( const SE3 & rhs ) const
 	return s;
 }
 
+Vector3d SE3::operator*( const Vector3d & r ) const
+{
+	const Vector3d ret = (q_ * r) + r_;
+	return ret;
+}
+
 
 SE3 SE3::relative_to( const SE3 & o ) const
 {
@@ -99,6 +105,20 @@ SE3 SE3::relative_to_child( const SE3 & ch ) const
 	const SE3 ch_abs = (*this) * ch;
 	const SE3 rel_to_ch = (*this) / ch_abs;
 	return rel_to_ch;
+}
+
+SE3 SE3::inverse() const
+{
+	SE3 s;
+	const Quaterniond o_qInv = q_.Inverse();
+	const Vector3d    dr = r_;
+	s.q_ = o_qInv;
+	s.r_ = -(o_qInv * dr);
+	s.w_ = -(o_qInv * w_);
+	s.v_ = -(o_qInv * (v_ + w_.CrossProduct( dr ) ));
+
+	return s;
+
 }
 
 void SE3::set_r( const Vector3 & r )

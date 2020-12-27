@@ -60,6 +60,9 @@ public:
 
 
 	// Distance scaling.
+	void set_close( bool en );
+	bool get_close() const;
+
 	// Sphere center RefFrame
 	void set_center_ref_frame( const NodePath & path );
 	const NodePath & get_center_ref_frame() const;
@@ -76,6 +79,8 @@ public:
 
 private:
 	void process_transform();
+	void regenerate_mesh();
+	void adjust_pose();
 
 public:
 
@@ -86,10 +91,11 @@ public:
 
 	// These are for determining when subdivision is needed and for placement of
 	// points of interest.
+	bool     generate_close;
 	NodePath center_path;
 	NodePath origin_path;
-	SE3 poi_relative_to_center;
-	SE3 poi_relative_to_origin;
+	SE3      poi_relative_to_center;
+	SE3      poi_relative_to_origin;
 
 	real_t check_period;
 	Vector<SubdivideSource::SubdividePoint> points_of_interest;

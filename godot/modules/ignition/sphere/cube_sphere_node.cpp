@@ -69,6 +69,16 @@ void CubeSphereNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("need_rebuild"), &CubeSphereNode::need_rebuild, Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("rebuild"), &CubeSphereNode::rebuild );
 
+	ClassDB::bind_method( D_METHOD("set_close( bool en );
+	ClassDB::bind_method( D_METHOD("get_close() const;
+
+	ClassDB::bind_method( D_METHOD("set_center_ref_frame( const NodePath & path );
+	ClassDB::bind_method( D_METHOD("get_center_ref_frame() const;
+
+	ClassDB::bind_method( D_METHOD("set_origin_ref_frame( const NodePath & path );
+	ClassDB::bind_method( D_METHOD("get_origin_ref_frame() const;
+
+
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ), "set_r", "get_r" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ), "set_h", "get_h" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rebuild_check_period" ), "set_subdivision_check_period", "get_subdivision_check_period" );
@@ -91,8 +101,9 @@ CubeSphereNode::CubeSphereNode()
 	: MeshInstance()
 {
 	height_source = nullptr;
+	check_period   = 1.0;
+	generate_close = true;
 
-	check_period = 1.0;
 	set_process( true );
 }
 
@@ -231,6 +242,16 @@ PoolVector3Array CubeSphereNode::collision_triangles( real_t dist )
 	return arr;
 }
 
+void CubeSphereNode::set_close( bool en )
+{
+	generate_close = en;
+}
+
+bool CubeSphereNode::get_close() const
+{
+	return generate_close;
+}
+
 void CubeSphereNode::set_center_ref_frame( const NodePath & path )
 {
 	center_path = path;
@@ -257,11 +278,112 @@ void CubeSphereNode::process_transform()
 	RefFrameNode * center_rf = Node::cast_to<RefFrameNode>( n );
 	n = get_node_or_null( origin_path );
 	RefFrameNode * origin_rf = Node::cast_to<RefFrameNode>( n );
-	if ( ( center_rf == nullptr ) || ( origin_rf == nullptr ) )
+
+	const bool both_rf_ok = ( ( center_rf != nullptr ) && ( origin_rf != nullptr ) );
+
+	if ( both_rf_ok )
+	{
+		const SE3 poi = origin_rf->relative_( center_rf );
+		clear_points_of_interest();
+		add_point_of_interest( poi.r_, generate_close );
+
+		poi_relative_to_origin = center_rf->relative_( origin_rf );
+		adjust_pose();
+	}
+	else
+	{
+		poi_relative_to_origin = SE3();
+	}
+
+	const bool need_rebuild = this->need_rebuild();
+	if ( !need_rebuild )
 		return;
 
-	const SE3 poi = origin_rf->relative_( center_rf );
+	if ( generate_close )
+	{
+		const Float L    = poi_relative_to_origin.r_.Length();
+		const Float _L_R = L - sphere.r();
+		const Vector3d r = poi_relative_to_origin.r_ * (_L_R / L);
+		SE3 se3 = poi_relative_to_origin;
+		se3.r_ = r;
+		poi_relative_to_center = se3 / poi_relative_to_origin;
+	}
+	else
+	{
+		if ( both_rf_ok )
+			poi_relative_to_center = SE3();
+		else
+			poi_relative_to_center = Vector3d( 0.0, 0.0, sphere.r() );
+	}
+
+	regenerate_mesh();
 }
+
+void CubeSphereNode::regenerate_mesh()
+{
+	sphere.subdivide( &subdivide_source );
+	if ( height_source.ptr() != nullptr )
+		sphere.apply_source( height_source->height_source );
+	sphere.triangle_list( all_tris );
+
+	// Inverted transform.
+	const SE3 se3 = poi_relative_to_center.inverse();
+
+	// Fill in arrays.
+	const int qty = all_tris.size();
+	vertices.resize( qty );
+	normals.resize( qty );
+	tangents.resize( qty*4 );
+	colors.resize( qty );
+	uvs.resize( qty );
+	uvs2.resize( qty );
+	for ( int i=0; i<qty; i++ )
+	{
+		const CubeVertex & v = all_tris.ptr()[i];
+		Vector3 at( v.at.x_, v.at.y_, v.at.z_ );
+		at = se3 * at;
+		Vector3 n( v.norm.x_, v.norm.y_, v.norm.z_ );
+		n = se3.q_ * n;
+		const Vector3 t   = compute_tangent( n );
+		const Vector2 uv  = compute_uv( at, sphere.r() );
+		const Vector2 uv2 = compute_uv2( at, sphere.r() );
+		vertices.set( i, at );
+		normals.set( i, n );
+		int ind = i*4;
+		tangents.set( ind++, t.x );
+		tangents.set( ind++, t.y );
+		tangents.set( ind++, t.z );
+		tangents.set( ind, 1.0 );
+		const Color c = v.color;
+		colors.set( i, c );
+		uvs.set( i, uv );
+		uvs2.set( i, uv2 );
+	}
+
+	Array arrays;
+	arrays.resize( ArrayMesh::ARRAY_MAX );
+	arrays.set( ArrayMesh::ARRAY_VERTEX,  vertices );
+	arrays.set( ArrayMesh::ARRAY_NORMAL,  normals );
+	arrays.set( ArrayMesh::ARRAY_TANGENT, tangents );
+	arrays.set( ArrayMesh::ARRAY_COLOR,   colors );
+	arrays.set( ArrayMesh::ARRAY_TEX_UV,  uvs );
+	arrays.set( ArrayMesh::ARRAY_TEX_UV2, uvs2 );
+
+	Ref<ArrayMesh> am = memnew(ArrayMesh);
+	am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );
+
+	this->set_mesh( am );
+}
+
+void CubeSphereNode::adjust_pose()
+{
+	const SE3 se3 = poi_relative_to_origin * poi_relative_to_center;
+	// Here it should be distance scale.
+	const Transform t = se3.transform();
+	set_transform( t );
+}
+
+
 
 
 
