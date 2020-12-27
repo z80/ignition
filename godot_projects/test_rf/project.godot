@@ -141,7 +141,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Test Rf"
-run/main_scene="res://test/tests.tscn"
+run/main_scene="res://tryouts/test_cube_sphere.tscn"
 config/icon="res://icon.png"
 
 [autoload]

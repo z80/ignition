@@ -1,5 +1,6 @@
 
 #include "cube_sphere_node.h"
+#include "ref_frame_node.h"
 
 namespace Ign
 {
@@ -73,6 +74,18 @@ void CubeSphereNode::_bind_methods()
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rebuild_check_period" ), "set_subdivision_check_period", "get_subdivision_check_period" );
 }
 
+void CubeSphereNode::_notification( int p_what )
+{
+	switch ( p_what )
+	{
+	case NOTIFICATION_PROCESS:
+		process_transform();
+		break;
+	default:
+		break;
+	}
+}
+
 
 CubeSphereNode::CubeSphereNode()
 	: MeshInstance()
@@ -80,6 +93,7 @@ CubeSphereNode::CubeSphereNode()
 	height_source = nullptr;
 
 	check_period = 1.0;
+	set_process( true );
 }
 
 CubeSphereNode::~CubeSphereNode()
@@ -154,7 +168,7 @@ bool CubeSphereNode::need_rebuild()
 void CubeSphereNode::rebuild()
 {
 	sphere.subdivide( &subdivide_source );
-	if ( height_source != nullptr )
+	if ( height_source.ptr() != nullptr )
 		sphere.apply_source( height_source->height_source );
 	sphere.triangle_list( all_tris );
 
@@ -211,7 +225,42 @@ PoolVector3Array CubeSphereNode::triangles()
 PoolVector3Array CubeSphereNode::collision_triangles( real_t dist )
 {
 	PoolVector3Array arr;
+
+	sphere.triangle_list( points_of_interest, dist, collision_tris );
+
 	return arr;
+}
+
+void CubeSphereNode::set_center_ref_frame( const NodePath & path )
+{
+	center_path = path;
+}
+
+const NodePath & CubeSphereNode::get_center_ref_frame() const
+{
+	return center_path;
+}
+
+void CubeSphereNode::set_origin_ref_frame( const NodePath & path )
+{
+	origin_path = path;
+}
+
+const NodePath & CubeSphereNode::get_origin_ref_frame() const
+{
+	return origin_path;
+}
+
+void CubeSphereNode::process_transform()
+{
+	Node * n = get_node_or_null( center_path );
+	RefFrameNode * center_rf = Node::cast_to<RefFrameNode>( n );
+	n = get_node_or_null( origin_path );
+	RefFrameNode * origin_rf = Node::cast_to<RefFrameNode>( n );
+	if ( ( center_rf == nullptr ) || ( origin_rf == nullptr ) )
+		return;
+
+	const SE3 poi = origin_rf->relative_( center_rf );
 }
 
 

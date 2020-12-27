@@ -10,7 +10,7 @@
 #include "subdivide_source.h"
 
 #include "height_source_ref.h"
-
+#include "se3.h"
 
 namespace Ign
 {
@@ -24,6 +24,7 @@ class CubeSphereNode: public MeshInstance
 
 protected:
 	static void _bind_methods();
+	void _notification( int p_what );
 
 public:
 	CubeSphereNode();
@@ -59,11 +60,22 @@ public:
 
 
 	// Distance scaling.
+	// Sphere center RefFrame
+	void set_center_ref_frame( const NodePath & path );
+	const NodePath & get_center_ref_frame() const;
+
+	// Player physics ref frame.
+	void set_origin_ref_frame( const NodePath & path );
+	const NodePath & get_origin_ref_frame() const;
+
 	//void set_distance_scaler( Ref<DistanceScalerRef> new_scaler );
 	//Ref<DistanceScalerRef> get_distance_scaler() const;
 
 	//void set_apply_scale( bool en );
 	//bool get_apply_scale() const;
+
+private:
+	void process_transform();
 
 public:
 
@@ -72,11 +84,18 @@ public:
 	SubdivideSource      subdivide_source;
 	Ref<HeightSourceRef> height_source;
 
+	// These are for determining when subdivision is needed and for placement of
+	// points of interest.
+	NodePath center_path;
+	NodePath origin_path;
+	SE3 poi_relative_to_center;
+	SE3 poi_relative_to_origin;
+
 	real_t check_period;
 	Vector<SubdivideSource::SubdividePoint> points_of_interest;
 
 	// All triangles.
-	Vector<CubeVertex> all_tris;
+	Vector<CubeVertex> all_tris, collision_tris;
 	PoolVector3Array vertices;
 	PoolVector3Array normals;
 	PoolRealArray    tangents;

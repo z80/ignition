@@ -14,7 +14,6 @@ void RefFrameAutoNode::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD( "distance_scaled_t"), &RefFrameAutoNode::distance_scaled_t, Variant::TRANSFORM );
 	ClassDB::bind_method( D_METHOD( "distance_scale" ), &RefFrameAutoNode::distance_scale, Variant::REAL );
-
 }
 
 void RefFrameAutoNode::_notification( int p_what )
@@ -92,7 +91,10 @@ void RefFrameAutoNode::process_transform()
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( n );
 	se3_root_ = relative_( rf );
 	if ( ( !apply_scale ) || ( scaler.ptr() == nullptr ) )
+	{
+		scale = 1.0;
 		scaled_r = se3_root_.r_;
+	}
 	else
 	{
 		const Vector3d r = se3_root_.r_;
@@ -100,12 +102,6 @@ void RefFrameAutoNode::process_transform()
 		scale = scaler->scale( dist );
 		scaled_r = r * scale;
 	}
-
-	// Apply transform
-	Transform t = se3_root_.transform();
-	t.basis.scale( Vector3( scale, scale, scale ) );
-	t.origin = Vector3( scaled_r.x_, scaled_r.y_, scaled_r.z_ );
-	set_transform( t );
 }
 
 
