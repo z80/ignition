@@ -6,6 +6,10 @@ var height_source = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	var o: RefFrameNode = $Origin
+	o.set_r( Vector3( 0.0, 0.0, 20.0 ) )
+	
+	
 	height_source = HeightSourceTestRef.new()
 	var sphere: CubeSphereNode = get_node( "sphere" )
 	sphere.set_height_source( height_source )
