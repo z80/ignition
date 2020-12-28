@@ -154,11 +154,11 @@ void CubeSphere::triangle_list( Vector<CubeVertex> & tris )
             const int ind2 = f.vertexInds[2];
             const int ind3 = f.vertexInds[3];
             tris.push_back( this->verts[ind0] );
-            tris.push_back( this->verts[ind2] );
             tris.push_back( this->verts[ind1] );
-            tris.push_back( this->verts[ind0] );
-            tris.push_back( this->verts[ind3] );
             tris.push_back( this->verts[ind2] );
+            tris.push_back( this->verts[ind0] );
+            tris.push_back( this->verts[ind2] );
+            tris.push_back( this->verts[ind3] );
         }
     }
 }
