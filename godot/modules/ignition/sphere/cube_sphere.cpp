@@ -104,8 +104,8 @@ void CubeSphere::apply_source( HeightSource * src )
     label_mid_points();
     scale_to_sphere();
 
-    if ( !src )
-        return;
+    //if ( !src )
+    //    return;
 
     const int qty = verts.size();
     for ( int i=0; i<qty; i++ )
@@ -477,14 +477,14 @@ void CubeSphere::compute_normals()
 
 void CubeSphere::apply_source_height( HeightSource * src, CubeVertex & v )
 {
-    v.heightUnit_ = src->height( v.atUnit );
+    v.heightUnit_ = (src != nullptr) ? src->height( v.atUnit ) : 0.0;
     const Float d  = R_ + H_*v.heightUnit_;
     v.at = v.atUnit * d;
 }
 
 void CubeSphere::apply_source_color( HeightSource * src, CubeVertex & v )
 {
-    const Color c = src->color( v.atUnit, v.norm, v.heightUnit_ );
+    const Color c = (src != nullptr) ? src->color( v.atUnit, v.norm, v.heightUnit_ ) : Color( 0.0, 0.7, 0.0, 1.0 );
     v.color = c;
 }
 

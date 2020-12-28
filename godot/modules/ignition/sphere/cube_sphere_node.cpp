@@ -397,6 +397,8 @@ void CubeSphereNode::regenerate_mesh()
 	sphere.subdivide( &subdivide_source );
 	if ( height_source.ptr() != nullptr )
 		sphere.apply_source( height_source->height_source );
+	else
+		sphere.apply_source( nullptr );
 	sphere.triangle_list( all_tris );
 
 	// Inverted transform.
