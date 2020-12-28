@@ -7,8 +7,14 @@
 script = ExtResource( 1 )
 
 [node name="sphere" type="CubeSphereNode" parent="."]
+center_ref_frame = NodePath("../Center")
+origin_ref_frame = NodePath("../Origin")
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15 )
 script = ExtResource( 2 )
 max_speed = Vector3( 5, 5, 5 )
+
+[node name="Origin" type="RefFrameNode" parent="."]
+
+[node name="Center" type="RefFrameNode" parent="."]

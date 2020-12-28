@@ -261,6 +261,7 @@ bool CubeSphereNode::get_close() const
 void CubeSphereNode::set_center_ref_frame( const NodePath & path )
 {
 	center_path = path;
+	validate_ref_frames();
 }
 
 const NodePath & CubeSphereNode::get_center_ref_frame() const
@@ -271,6 +272,7 @@ const NodePath & CubeSphereNode::get_center_ref_frame() const
 void CubeSphereNode::set_origin_ref_frame( const NodePath & path )
 {
 	origin_path = path;
+	validate_ref_frames();
 }
 
 const NodePath & CubeSphereNode::get_origin_ref_frame() const

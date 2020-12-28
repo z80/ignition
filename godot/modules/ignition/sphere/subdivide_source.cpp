@@ -30,6 +30,9 @@ void SubdivideSource::add_level( Float sz, Float dist )
 
 bool SubdivideSource::need_subdivide( const CubeSphere * s, Vector<SubdividePoint> & pts )
 {
+	if ( pts.empty() )
+		return false;
+
     ptsNew_ = pts;
     const unsigned ptsNewQty = ptsNew_.size();
     for ( unsigned i=0; i<ptsNewQty; i++ )
