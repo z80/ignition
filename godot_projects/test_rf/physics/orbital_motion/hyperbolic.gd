@@ -66,15 +66,13 @@ static func process( dt: float, args: Dictionary ):
 
 
 static func solve( e: float, M: float, E: float ):
-	var exp_E: float = exp(E)
-	var ret: Array = solve_next( e, M, E, exp_E )
+	var ret: Array = solve_next( e, M, E )
 	var err: float = ret[0]
-	var En: float = ret[1]
-	var exp_En: float  = ret[2]
+	var En: float  = ret[1]
 	var iters: int = 0
 	
 	while ( err > Consts.EPS ) and ( iters < Consts.MAX_ITERS ):
-		ret = solve_next( e, M, En, exp_En )
+		ret = solve_next( e, M, En )
 		err = ret[0]
 		En  = ret[1]
 		iters += 1
