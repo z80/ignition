@@ -16,6 +16,7 @@ namespace Ign
 {
 
 class HeightSourceRef;
+class RefFrameNode;
 
 class CubeSphereNode: public MeshInstance
 {
@@ -71,6 +72,11 @@ public:
 	void set_origin_ref_frame( const NodePath & path );
 	const NodePath & get_origin_ref_frame() const;
 
+	// Adding ref frames of interest (those can be view ref frames or physics ref frames).
+	void clear_ref_frames();
+	void add_ref_frame( const NodePath & path );
+	void remove_ref_frame( const NodePath & path );
+
 	//void set_distance_scaler( Ref<DistanceScalerRef> new_scaler );
 	//Ref<DistanceScalerRef> get_distance_scaler() const;
 
@@ -78,6 +84,10 @@ public:
 	//bool get_apply_scale() const;
 
 private:
+	// Makes sure that origin ref frame is in the list.
+	// Removes nonexisting ones. Created an array of ref frames.
+	void validate_ref_frames();
+
 	void process_transform();
 	void regenerate_mesh();
 	void adjust_pose();
@@ -91,23 +101,25 @@ public:
 
 	// These are for determining when subdivision is needed and for placement of
 	// points of interest.
-	bool     generate_close;
-	NodePath center_path;
-	NodePath origin_path;
-	SE3      poi_relative_to_center;
-	SE3      poi_relative_to_origin;
+	bool                   generate_close;
+	NodePath               center_path;
+	NodePath               origin_path;
+	Vector<NodePath>       ref_frame_paths;
+	Vector<RefFrameNode *> ref_frames;
+	SE3                    poi_relative_to_center;
+	SE3                    poi_relative_to_origin;
 
 	real_t check_period;
 	Vector<SubdivideSource::SubdividePoint> points_of_interest;
 
 	// All triangles.
 	Vector<CubeVertex> all_tris, collision_tris;
-	PoolVector3Array vertices;
-	PoolVector3Array normals;
-	PoolRealArray    tangents;
-	PoolColorArray   colors;
-	PoolVector2Array uvs;
-	PoolVector2Array uvs2;
+	PoolVector3Array   vertices;
+	PoolVector3Array   normals;
+	PoolRealArray      tangents;
+	PoolColorArray     colors;
+	PoolVector2Array   uvs;
+	PoolVector2Array   uvs2;
 
 	// Distance scale.
 	//Ref<DistanceScalerRef> scale;

@@ -13,7 +13,8 @@
 
 #include "se3.h"
 
-using namespace Ign;
+namespace Ign
+{
 
 class RefFrameNode: public Node
 {
@@ -102,6 +103,7 @@ public:
 	Vector<RefFrameNode * > queueA_, queueB_;
 };
 
+}
 
 
 

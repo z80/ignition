@@ -1,6 +1,9 @@
 
 #include "ref_frame_node.h"
 
+namespace Ign
+{
+
 void RefFrameNode::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_r", "vector3"),  &RefFrameNode::set_r, Variant::NIL );
@@ -289,6 +292,9 @@ RefFrameNode * RefFrameNode::parent_rf_() const
 
 	RefFrameNode * p = Object::cast_to<RefFrameNode>( n );
 	return p;
+}
+
+
 }
 
 

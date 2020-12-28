@@ -69,19 +69,25 @@ void CubeSphereNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("need_rebuild"), &CubeSphereNode::need_rebuild, Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("rebuild"), &CubeSphereNode::rebuild );
 
-	ClassDB::bind_method( D_METHOD("set_close( bool en );
-	ClassDB::bind_method( D_METHOD("get_close() const;
+	ClassDB::bind_method( D_METHOD("set_close", "en"), &CubeSphereNode::set_close );
+	ClassDB::bind_method( D_METHOD("get_close"), &CubeSphereNode::get_close, Variant::BOOL );
 
-	ClassDB::bind_method( D_METHOD("set_center_ref_frame( const NodePath & path );
-	ClassDB::bind_method( D_METHOD("get_center_ref_frame() const;
+	ClassDB::bind_method( D_METHOD("set_center_ref_frame", "path"), &CubeSphereNode::set_center_ref_frame );
+	ClassDB::bind_method( D_METHOD("get_center_ref_frame"), &CubeSphereNode::get_center_ref_frame, Variant::NODE_PATH );
 
-	ClassDB::bind_method( D_METHOD("set_origin_ref_frame( const NodePath & path );
-	ClassDB::bind_method( D_METHOD("get_origin_ref_frame() const;
+	ClassDB::bind_method( D_METHOD("set_origin_ref_frame", "path"), &CubeSphereNode::set_origin_ref_frame );
+	ClassDB::bind_method( D_METHOD("get_origin_ref_frame"), &CubeSphereNode::get_origin_ref_frame, Variant::NODE_PATH );
+
+	ClassDB::bind_method( D_METHOD("clear_ref_frames"), &CubeSphereNode::clear_ref_frames );
+	ClassDB::bind_method( D_METHOD("add_ref_frame", "path"), &CubeSphereNode::add_ref_frame );
+	ClassDB::bind_method( D_METHOD("remove_ref_frame", "path"), &CubeSphereNode::remove_ref_frame );
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ), "set_r", "get_r" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ), "set_h", "get_h" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rebuild_check_period" ), "set_subdivision_check_period", "get_subdivision_check_period" );
+	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "center_ref_frame" ), "set_center_ref_frame", "get_center_ref_frame" );
+	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "origin_ref_frame" ), "set_origin_ref_frame", "get_origin_ref_frame" );
 }
 
 void CubeSphereNode::_notification( int p_what )
@@ -272,6 +278,61 @@ const NodePath & CubeSphereNode::get_origin_ref_frame() const
 	return origin_path;
 }
 
+void CubeSphereNode::clear_ref_frames()
+{
+	ref_frame_paths.clear();
+	validate_ref_frames();
+}
+
+void CubeSphereNode::add_ref_frame( const NodePath & path )
+{
+	const int ind = ref_frame_paths.find( path );
+	if ( ind < 0 )
+		ref_frame_paths.push_back( path );
+	validate_ref_frames();
+}
+
+void CubeSphereNode::remove_ref_frame( const NodePath & path )
+{
+	ref_frame_paths.erase( path );
+	validate_ref_frames();
+}
+
+void CubeSphereNode::validate_ref_frames()
+{
+	// Make sure the origin ref frame is in or not in depending on if it is valid.
+	Node * n = get_node_or_null( origin_path );
+	if ( n != nullptr )
+	{
+		const int ind = ref_frame_paths.find( origin_path );
+		if ( ind < 0 )
+			ref_frame_paths.push_back( origin_path );
+	}
+	else
+	{
+		ref_frame_paths.erase( origin_path );
+	}
+
+	// Go over all node paths and make sure they exist.
+	ref_frames.clear();
+	clear_points_of_interest();
+	int current_index = 0;
+	while ( current_index < ref_frame_paths.size() )
+	{
+		const NodePath & np = ref_frame_paths.ptr()[current_index];
+		n = get_node_or_null( np );
+		RefFrameNode * rfn = Object::cast_to<RefFrameNode>( n );
+		if ( rfn == nullptr )
+		{
+			ref_frame_paths.remove( current_index );
+			continue;
+		}
+		ref_frames.push_back( rfn );
+		current_index += 1;
+	}
+}
+
+
 void CubeSphereNode::process_transform()
 {
 	Node * n = get_node_or_null( center_path );
@@ -279,42 +340,42 @@ void CubeSphereNode::process_transform()
 	n = get_node_or_null( origin_path );
 	RefFrameNode * origin_rf = Node::cast_to<RefFrameNode>( n );
 
-	const bool both_rf_ok = ( ( center_rf != nullptr ) && ( origin_rf != nullptr ) );
+	const int origin_index = ref_frames.find( origin_rf );
+	const bool both_rf_ok = ( ( center_rf != nullptr ) &&
+		                      ( origin_rf != nullptr ) &&
+		                      ( origin_index >= 0 ) );
 
 	if ( both_rf_ok )
 	{
 		const SE3 poi = origin_rf->relative_( center_rf );
-		clear_points_of_interest();
-		add_point_of_interest( poi.r_, generate_close );
-
 		poi_relative_to_origin = center_rf->relative_( origin_rf );
-		adjust_pose();
 	}
 	else
-	{
 		poi_relative_to_origin = SE3();
-	}
 
+	// Adding points of interest.
+	points_of_interest.clear();
+	const int qty = ref_frames.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		RefFrameNode * rf = ref_frames.ptrw()[i];
+		const SE3 se3 = rf->relative_( center_rf );
+		SubdivideSource::SubdividePoint pt;
+		pt.at    = se3.r_;
+		pt.close = generate_close;
+		points_of_interest.push_back( pt );
+	}
+	// Check if need to be rebuilt.
 	const bool need_rebuild = this->need_rebuild();
 	if ( !need_rebuild )
 		return;
 
-	if ( generate_close )
-	{
-		const Float L    = poi_relative_to_origin.r_.Length();
-		const Float _L_R = L - sphere.r();
-		const Vector3d r = poi_relative_to_origin.r_ * (_L_R / L);
-		SE3 se3 = poi_relative_to_origin;
-		se3.r_ = r;
-		poi_relative_to_center = se3 / poi_relative_to_origin;
-	}
-	else
-	{
-		if ( both_rf_ok )
-			poi_relative_to_center = SE3();
-		else
-			poi_relative_to_center = Vector3d( 0.0, 0.0, sphere.r() );
-	}
+	const Float L    = poi_relative_to_origin.r_.Length();
+	const Float _L_R = L - sphere.r();
+	const Vector3d r = poi_relative_to_origin.r_ * (_L_R / L);
+	SE3 se3 = poi_relative_to_origin;
+	se3.r_ = r;
+	poi_relative_to_center = se3 / poi_relative_to_origin;
 
 	regenerate_mesh();
 }
@@ -340,15 +401,16 @@ void CubeSphereNode::regenerate_mesh()
 	for ( int i=0; i<qty; i++ )
 	{
 		const CubeVertex & v = all_tris.ptr()[i];
-		Vector3 at( v.at.x_, v.at.y_, v.at.z_ );
-		at = se3 * at;
-		Vector3 n( v.norm.x_, v.norm.y_, v.norm.z_ );
-		n = se3.q_ * n;
-		const Vector3 t   = compute_tangent( n );
-		const Vector2 uv  = compute_uv( at, sphere.r() );
-		const Vector2 uv2 = compute_uv2( at, sphere.r() );
-		vertices.set( i, at );
-		normals.set( i, n );
+		const Vector3d at = se3 * v.at;
+		const Vector3d n  = se3.q_ * v.norm;
+		const Vector3 at_f( at.x_, at.y_, at.z_ );
+		const Vector3 n_f( n.x_, n.y_, n.z_ );
+		const Vector3 t   = compute_tangent( n_f );
+		const Vector2 uv  = compute_uv( at_f, sphere.r() );
+		const Vector2 uv2 = compute_uv2( at_f, sphere.r() );
+
+		vertices.set( i, at_f );
+		normals.set( i, n_f );
 		int ind = i*4;
 		tangents.set( ind++, t.x );
 		tangents.set( ind++, t.y );
