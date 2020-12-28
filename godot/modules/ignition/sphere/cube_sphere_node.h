@@ -91,6 +91,7 @@ private:
 	void process_transform();
 	void regenerate_mesh();
 	void adjust_pose();
+	void init_levels();
 
 public:
 

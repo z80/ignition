@@ -2,6 +2,8 @@
 #include "cube_sphere_node.h"
 #include "ref_frame_node.h"
 
+#include "core/engine.h"
+
 namespace Ign
 {
 
@@ -94,6 +96,9 @@ void CubeSphereNode::_notification( int p_what )
 {
 	switch ( p_what )
 	{
+	case NOTIFICATION_READY:
+		init_levels();
+		break;
 	case NOTIFICATION_PROCESS:
 		process_transform();
 		break;
@@ -337,6 +342,8 @@ void CubeSphereNode::validate_ref_frames()
 
 void CubeSphereNode::process_transform()
 {
+	validate_ref_frames();
+
 	Node * n = get_node_or_null( center_path );
 	RefFrameNode * center_rf = Node::cast_to<RefFrameNode>( n );
 	n = get_node_or_null( origin_path );
@@ -445,6 +452,16 @@ void CubeSphereNode::adjust_pose()
 	// Here it should be distance scale.
 	const Transform t = se3.transform();
 	set_transform( t );
+}
+
+void CubeSphereNode::init_levels()
+{
+	if ( !Engine::get_singleton()->is_editor_hint() )
+		return;
+
+	const Float r = sphere.r();
+	subdivide_source.add_level( r/20.0, r/5.0 );
+	subdivide_source.add_level( r/5.0, r*3.0 );
 }
 
 
