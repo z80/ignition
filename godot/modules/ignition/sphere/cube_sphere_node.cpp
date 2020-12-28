@@ -379,8 +379,11 @@ void CubeSphereNode::process_transform()
 	if ( !need_rebuild )
 		return;
 
-	const Float L    = poi_relative_to_origin.r_.Length();
-	const Float _L_R = L - sphere.r();
+	Float L    = poi_relative_to_origin.r_.Length();
+	const Float R = sphere.r();
+	if ( L < R )
+		L = R;
+	const Float _L_R = L - R;
 	const Vector3d r = poi_relative_to_origin.r_ * (_L_R / L);
 	SE3 se3 = poi_relative_to_origin;
 	se3.r_ = r;
