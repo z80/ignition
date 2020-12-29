@@ -7,6 +7,10 @@
 namespace Ign
 {
 
+// Signal name.
+static const char SIGNAL_MESH_UPDATED[] = "mesh_updated";
+
+
 static Vector3 compute_tangent( const Vector3 & n )
 {
 	const Float MIN_L = 0.1;
@@ -84,12 +88,28 @@ void CubeSphereNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("add_ref_frame", "path"), &CubeSphereNode::add_ref_frame );
 	ClassDB::bind_method( D_METHOD("remove_ref_frame", "path"), &CubeSphereNode::remove_ref_frame );
 
+	ClassDB::bind_method( D_METHOD("set_distance_scaler", "scaler"), &CubeSphereNode::set_distance_scaler );
+	ClassDB::bind_method( D_METHOD("get_distance_scaler"), &CubeSphereNode::get_distance_scaler, Variant::OBJECT );
+
+	ClassDB::bind_method( D_METHOD("set_apply_scale", "en"), &CubeSphereNode::set_apply_scale );
+	ClassDB::bind_method( D_METHOD("get_apply_scale"), &CubeSphereNode::get_apply_scale, Variant::BOOL );
+
+	ClassDB::bind_method( D_METHOD("set_scale_mode_distance", "radie"), &CubeSphereNode::set_scale_mode_distance );
+	ClassDB::bind_method( D_METHOD("get_scale_mode_distance"), &CubeSphereNode::get_scale_mode_distance, Variant::REAL );
+
+
+	// It is emit when sphere mesh is changed.
+	// Should be listened by collision surfaces.
+	ADD_SIGNAL( MethodInfo(SIGNAL_MESH_UPDATED) );
 
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ), "set_r", "get_r" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ), "set_h", "get_h" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rebuild_check_period" ), "set_subdivision_check_period", "get_subdivision_check_period" );
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "center_ref_frame" ), "set_center_ref_frame", "get_center_ref_frame" );
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "origin_ref_frame" ), "set_origin_ref_frame", "get_origin_ref_frame" );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "distance_scaler" ), "set_distance_scaler", "get_distance_scaler" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "apply_scale" ), "set_apply_scale", "get_apply_scale" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scale_mode_distance" ), "set_scale_mode_distance", "get_scale_mode_distance" );
 }
 
 void CubeSphereNode::_notification( int p_what )
@@ -111,9 +131,11 @@ void CubeSphereNode::_notification( int p_what )
 CubeSphereNode::CubeSphereNode()
 	: MeshInstance()
 {
-	height_source = nullptr;
 	check_period   = 1.0;
+	check_time_elapsed = check_period;
 	generate_close = true;
+	apply_scale    = true;
+	scale_mode_distance = 5.0;
 
 	set_process( true );
 }
@@ -161,6 +183,8 @@ void CubeSphereNode::add_level( real_t sz, real_t dist )
 void CubeSphereNode::set_subdivision_check_period( real_t sec )
 {
 	check_period = sec;
+	// Make it due immediately.
+	check_time_elapsed = sec;
 }
 
 real_t CubeSphereNode::get_subdivision_check_period() const
@@ -305,6 +329,37 @@ void CubeSphereNode::remove_ref_frame( const NodePath & path )
 	validate_ref_frames();
 }
 
+void CubeSphereNode::set_distance_scaler( Ref<DistanceScalerRef> new_scaler )
+{
+	scale = new_scaler;
+}
+
+Ref<DistanceScalerRef> CubeSphereNode::get_distance_scaler() const
+{
+	return scale;
+}
+
+void CubeSphereNode::set_apply_scale( bool en )
+{
+	apply_scale = en;
+}
+
+bool CubeSphereNode::get_apply_scale() const
+{
+	return apply_scale;
+}
+
+void CubeSphereNode::set_scale_mode_distance( real_t radie )
+{
+	scale_mode_distance = radie;
+}
+
+real_t CubeSphereNode::get_scale_mode_distance() const
+{
+	return scale_mode_distance;
+}
+
+
 void CubeSphereNode::validate_ref_frames()
 {
 	// Make sure the origin ref frame is in or not in depending on if it is valid.
@@ -342,6 +397,15 @@ void CubeSphereNode::validate_ref_frames()
 
 void CubeSphereNode::process_transform()
 {
+	// First increment time and check if it is necessary
+	// to test all the points and rebuild the mesh.
+	const real_t dt = get_process_delta_time();
+	check_time_elapsed += dt;
+	if ( check_time_elapsed < check_period )
+		return;
+	check_time_elapsed -= check_period;
+
+
 	validate_ref_frames();
 
 	Node * n = get_node_or_null( center_path );
@@ -390,6 +454,7 @@ void CubeSphereNode::process_transform()
 	poi_relative_to_center = se3 / poi_relative_to_origin;
 
 	regenerate_mesh();
+	emit_signal( SIGNAL_MESH_UPDATED );
 }
 
 void CubeSphereNode::regenerate_mesh()
@@ -401,8 +466,18 @@ void CubeSphereNode::regenerate_mesh()
 		sphere.apply_source( nullptr );
 	sphere.triangle_list( all_tris );
 
-	// Inverted transform.
-	const SE3 se3 = poi_relative_to_center.inverse();
+	const bool use_scale = apply_scale ? (scale.ptr() != nullptr) : false;
+	const Float d = poi_relative_to_origin.r_.Length() / sphere.r();
+	const bool generate_close = ( d <= scale_mode_distance );
+	if ( use_scale )
+	{
+		if ( generate_close )
+			scale_close();
+		else
+			scale_far();
+	}
+	else
+		scale_neutral();
 
 	// Fill in arrays.
 	const int qty = all_tris.size();
@@ -415,8 +490,10 @@ void CubeSphereNode::regenerate_mesh()
 	for ( int i=0; i<qty; i++ )
 	{
 		const CubeVertex & v = all_tris.ptr()[i];
-		const Vector3d at = se3 * v.at;
-		const Vector3d n  = se3.q_ * v.norm;
+		// Vertex position and normal are supposed to be relative to point of interest.
+		// They are converted to that ref. frame in scaling methods.
+		const Vector3d at = v.at;
+		const Vector3d n  = v.norm;
 		const Vector3 at_f( at.x_, at.y_, at.z_ );
 		const Vector3 n_f( n.x_, n.y_, n.z_ );
 		const Vector3 t   = compute_tangent( n_f );
@@ -449,6 +526,7 @@ void CubeSphereNode::regenerate_mesh()
 	am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );
 
 	this->set_mesh( am );
+	adjust_pose();
 }
 
 void CubeSphereNode::adjust_pose()
@@ -468,6 +546,90 @@ void CubeSphereNode::init_levels()
 	subdivide_source.add_level( r/20.0, r/5.0 );
 	subdivide_source.add_level( r/5.0, r*3.0 );
 }
+
+void CubeSphereNode::scale_close()
+{
+	// Here assume that 1) scale is applied and 2) scaler object is set.
+	// Convert to absolute ref frame.
+	SE3 center = poi_relative_to_origin;
+	const int qty = all_tris.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		CubeVertex & v = all_tris.ptrw()[i];
+		Vector3d r = v.at;
+		// Point relative to the observer.
+		r = (center.q_ * r) + center.r_;
+		const Float d = r.Length();
+		const Float s = scale->scale( d );
+		r = r * s;
+		v.at = r;
+		v.norm = center.q_ * v.norm;
+	}
+	// Point of interest relative to origin.
+	SE3 poi = poi_relative_to_origin * poi_relative_to_center;
+	const Float poi_d = poi.r_.Length();
+	const Float poi_s = scale->scale( poi_d );
+	poi.r_ = poi.r_ * poi_s;
+
+	// Center relative to origin.
+	const Float center_d = center.r_.Length();
+	const Float center_s = scale->scale( center_d );
+	center.r_ = center.r_ * center_s;
+
+	poi_relative_to_center = poi / center;
+	poi_relative_to_origin = poi;
+
+	const SE3 inv_poi = poi.inverse();
+
+	for ( int i=0; i<qty; i++ )
+	{
+		CubeVertex & v = all_tris.ptrw()[i];
+		Vector3d r = v.at;
+		// Point relative to poi.
+		r = (inv_poi.q_ * r) + inv_poi.r_;
+		v.at = r;
+		// Rotate normal.
+		v.norm = inv_poi.q_ * v.norm;
+	}
+}
+
+void CubeSphereNode::scale_far()
+{
+	SE3 poi = poi_relative_to_origin * poi_relative_to_center;
+	const Float poi_d = poi.r_.Length();
+	const Float poi_s = scale->scale( poi_d );
+	poi.r_ = poi.r_ * poi_s;
+
+	const SE3 inv_center = poi_relative_to_center.inverse();
+	const int qty = all_tris.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		CubeVertex & v = all_tris.ptrw()[i];
+		Vector3d r = v.at;
+		r = ( inv_center.q_ * r) + inv_center.r_;
+		r = r * poi_s;
+		v.at = r;
+		// Rotate normal.
+		v.norm = inv_center.q_ * v.norm;
+	}
+	poi_relative_to_origin.r_ = poi_relative_to_origin.r_ * poi_s;
+	poi_relative_to_center.r_ = poi_relative_to_center.r_ * poi_s;
+}
+
+void CubeSphereNode::scale_neutral()
+{
+	const SE3 inv_center = poi_relative_to_center.inverse();
+	const int qty = all_tris.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		CubeVertex & v = all_tris.ptrw()[i];
+		Vector3d r = v.at;
+		r = ( inv_center.q_ * r) + inv_center.r_;
+		v.at = r;
+	}
+}
+
+
 
 
 

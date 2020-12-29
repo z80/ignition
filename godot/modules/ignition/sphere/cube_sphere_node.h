@@ -11,6 +11,7 @@
 
 #include "height_source_ref.h"
 #include "se3.h"
+#include "distance_scaler_ref.h"
 
 namespace Ign
 {
@@ -77,11 +78,15 @@ public:
 	void add_ref_frame( const NodePath & path );
 	void remove_ref_frame( const NodePath & path );
 
-	//void set_distance_scaler( Ref<DistanceScalerRef> new_scaler );
-	//Ref<DistanceScalerRef> get_distance_scaler() const;
+	void set_distance_scaler( Ref<DistanceScalerRef> new_scaler );
+	Ref<DistanceScalerRef> get_distance_scaler() const;
 
-	//void set_apply_scale( bool en );
-	//bool get_apply_scale() const;
+	void set_apply_scale( bool en );
+	bool get_apply_scale() const;
+
+	// How far "close"/"far" scaling mode shifts from one to another.
+	void set_scale_mode_distance( real_t radie );
+	real_t get_scale_mode_distance() const;
 
 private:
 	// Makes sure that origin ref frame is in the list.
@@ -93,6 +98,9 @@ private:
 	void adjust_pose();
 	void init_levels();
 
+	void scale_close();
+	void scale_far();
+	void scale_neutral();
 public:
 
 	// These all are for geometry generation.
@@ -107,10 +115,13 @@ public:
 	NodePath               origin_path;
 	Vector<NodePath>       ref_frame_paths;
 	Vector<RefFrameNode *> ref_frames;
+	// Sphere point closest to the observation point relative to sphere center.
 	SE3                    poi_relative_to_center;
+	// Sphere center relative to observation point.
 	SE3                    poi_relative_to_origin;
 
 	real_t check_period;
+	real_t check_time_elapsed;
 	Vector<SubdivideSource::SubdividePoint> points_of_interest;
 
 	// All triangles.
@@ -123,8 +134,13 @@ public:
 	PoolVector2Array   uvs2;
 
 	// Distance scale.
-	//Ref<DistanceScalerRef> scale;
-	//bool apply_scale;
+	// It applies scale depending on the distance.
+	Ref<DistanceScalerRef> scale;
+	// Should apply scale at all.
+	bool apply_scale;
+	// How far measured in sphere radie scaling mode shifts from "close" to "far"
+	// and vise versa.
+	Float scale_mode_distance;
 };
 
 
