@@ -48,17 +48,10 @@ public:
 	void set_subdivision_check_period( real_t sec );
 	real_t get_subdivision_check_period() const;
 
-	// Points around which subdivision occurs.
-	void clear_points_of_interest();
-	void add_point_of_interest( const Vector3 & at, bool close );
-
-	// For debugging check for rebuild and rebuild manually.
-	bool need_rebuild();
-	void rebuild();
-	// All geometry triangles.
-	PoolVector3Array triangles();
 	// Only collision triangles.
-	PoolVector3Array collision_triangles( real_t dist );
+	// Triangles are in "origin"'s ref frame.
+	// Triangles are all triangles closer than "dist" from all "ref_frames".
+	const PoolVector3Array & collision_triangles( Node * origin, const Array & ref_frames, real_t dist );
 
 
 	// Distance scaling.
@@ -92,6 +85,7 @@ private:
 	// Makes sure that origin ref frame is in the list.
 	// Removes nonexisting ones. Created an array of ref frames.
 	void validate_ref_frames();
+	bool need_rebuild();
 
 	void process_transform();
 	void regenerate_mesh();
@@ -120,12 +114,18 @@ public:
 	// Sphere center relative to observation point.
 	SE3                    poi_relative_to_origin;
 
+	// For querying collisions store all ref frames in this container.
+	Vector<RefFrameNode *> collision_ref_frames;
+	Vector<SubdivideSource::SubdividePoint> collision_pts;
+	Vector<CubeVertex> collision_tris;
+	PoolVector3Array   collision_ret;
+
 	real_t check_period;
 	real_t check_time_elapsed;
 	Vector<SubdivideSource::SubdividePoint> points_of_interest;
 
 	// All triangles.
-	Vector<CubeVertex> all_tris, collision_tris;
+	Vector<CubeVertex> all_tris;
 	PoolVector3Array   vertices;
 	PoolVector3Array   normals;
 	PoolRealArray      tangents;

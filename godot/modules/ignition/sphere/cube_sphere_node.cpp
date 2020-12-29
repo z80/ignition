@@ -69,11 +69,7 @@ void CubeSphereNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_subdivision_check_period", "sec"), &CubeSphereNode::set_subdivision_check_period );
 	ClassDB::bind_method( D_METHOD("get_subdivision_check_period"), &CubeSphereNode::get_subdivision_check_period, Variant::REAL );
 
-	ClassDB::bind_method( D_METHOD("clear_points_of_interest"), &CubeSphereNode::clear_points_of_interest );
-	ClassDB::bind_method( D_METHOD("add_point_of_interest", "at", "close"), &CubeSphereNode::add_point_of_interest );
-
-	ClassDB::bind_method( D_METHOD("need_rebuild"), &CubeSphereNode::need_rebuild, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("rebuild"), &CubeSphereNode::rebuild );
+	ClassDB::bind_method( D_METHOD("collision_triangles", "origin", "ref_frames", "dist"), &CubeSphereNode::collision_triangles, Variant::POOL_VECTOR3_ARRAY );
 
 	ClassDB::bind_method( D_METHOD("set_close", "en"), &CubeSphereNode::set_close );
 	ClassDB::bind_method( D_METHOD("get_close"), &CubeSphereNode::get_close, Variant::BOOL );
@@ -192,88 +188,63 @@ real_t CubeSphereNode::get_subdivision_check_period() const
 	return check_period;
 }
 
-void CubeSphereNode::clear_points_of_interest()
+const PoolVector3Array & CubeSphereNode::collision_triangles( Node * origin, const Array & ref_frames, real_t dist )
 {
-	points_of_interest.clear();
-}
+	PoolVector3Array & arr = collision_ret;
 
-void CubeSphereNode::add_point_of_interest( const Vector3 & at, bool close )
-{
-	SubdivideSource::SubdividePoint pt;
-	pt.at = Vector3d( at.x, at.y, at.z );
-	pt.close = close;
-	points_of_interest.push_back( pt );
-}
-
-bool CubeSphereNode::need_rebuild()
-{
-	const bool rebuild_is_needed = subdivide_source.need_subdivide( &sphere, points_of_interest );
-	return rebuild_is_needed;
-}
-
-void CubeSphereNode::rebuild()
-{
-	sphere.subdivide( &subdivide_source );
-	if ( height_source.ptr() != nullptr )
-		sphere.apply_source( height_source->height_source );
-	sphere.triangle_list( all_tris );
-
-	// Fill in arrays.
-	const int qty = all_tris.size();
-	vertices.resize( qty );
-	normals.resize( qty );
-	tangents.resize( qty*4 );
-	colors.resize( qty );
-	uvs.resize( qty );
-	uvs2.resize( qty );
-	for ( int i=0; i<qty; i++ )
+	Node * n = get_node( center_path );
+	if ( n == nullptr )
 	{
-		const CubeVertex & v = all_tris.ptr()[i];
-		const Vector3 at( v.at.x_, v.at.y_, v.at.z_ );
-		const Vector3 n( v.norm.x_, v.norm.y_, v.norm.z_ );
-		const Vector3 t   = compute_tangent( n );
-		const Vector2 uv  = compute_uv( at, sphere.r() );
-		const Vector2 uv2 = compute_uv2( at, sphere.r() );
-		vertices.set( i, at );
-		normals.set( i, n );
-		int ind = i*4;
-		tangents.set( ind++, t.x );
-		tangents.set( ind++, t.y );
-		tangents.set( ind++, t.z );
-		tangents.set( ind, 1.0 );
-		const Color c = v.color;
-		colors.set( i, c );
-		uvs.set( i, uv );
-		uvs2.set( i, uv2 );
+		arr.resize( 0 );
+		return arr;
+	}
+	RefFrameNode * center_rf = Node::cast_to<RefFrameNode>( n );
+	if ( center_rf == nullptr )
+	{
+		arr.resize( 0 );
+		return arr;
 	}
 
-	Array arrays;
-	arrays.resize( ArrayMesh::ARRAY_MAX );
-	arrays.set( ArrayMesh::ARRAY_VERTEX,  vertices );
-	arrays.set( ArrayMesh::ARRAY_NORMAL,  normals );
-	arrays.set( ArrayMesh::ARRAY_TANGENT, tangents );
-	arrays.set( ArrayMesh::ARRAY_COLOR,   colors );
-	arrays.set( ArrayMesh::ARRAY_TEX_UV,  uvs );
-	arrays.set( ArrayMesh::ARRAY_TEX_UV2, uvs2 );
+	RefFrameNode * origin_rf = Node::cast_to<RefFrameNode>( origin );
+	if ( center_rf == nullptr )
+	{
+		arr.resize( 0 );
+		return arr;
+	}
 
-	Ref<ArrayMesh> am = memnew(ArrayMesh);
-	am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );
+	collision_ref_frames.clear();
+	collision_pts.clear();
+	const int qty = ref_frames.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		Node * n = ref_frames.get( i );
+		if ( n == nullptr )
+			continue;
+		RefFrameNode * rf = Node::cast_to<RefFrameNode>( n );
+		if ( rf == nullptr )
+			continue;
+		collision_ref_frames.push_back( rf );
+		const SE3 se3 = rf->relative_( center_rf );
+		SubdivideSource::SubdividePoint pt;
+		pt.close = true;
+		pt.at = se3.r_;
+		collision_pts.push_back( pt );
+	}
 
-	this->set_mesh( am );
-}
-
-PoolVector3Array CubeSphereNode::triangles()
-{
-	PoolVector3Array arr;
-	return arr;
-}
-
-PoolVector3Array CubeSphereNode::collision_triangles( real_t dist )
-{
-	PoolVector3Array arr;
-
-	sphere.triangle_list( points_of_interest, dist, collision_tris );
-
+	sphere.triangle_list( collision_pts, dist, collision_tris );
+	const SE3 center_rel_to_origin = center_rf->relative_( origin_rf );
+	const int pts_qty = collision_tris.size();
+	arr.resize( pts_qty );
+	// Convert to ref. frame relative to origin.
+	for ( int i=0; i<pts_qty; i++ )
+	{
+		CubeVertex & v = collision_tris.ptrw()[i];
+		Vector3d r = v.at;
+		r = (center_rel_to_origin.q_ * r) + center_rel_to_origin.r_;
+		v.at = r;
+		Vector3 c( r.x_, r.y_, r.z_ );
+		arr.set( i, c );
+	}
 	return arr;
 }
 
@@ -377,7 +348,6 @@ void CubeSphereNode::validate_ref_frames()
 
 	// Go over all node paths and make sure they exist.
 	ref_frames.clear();
-	clear_points_of_interest();
 	int current_index = 0;
 	while ( current_index < ref_frame_paths.size() )
 	{
@@ -392,6 +362,12 @@ void CubeSphereNode::validate_ref_frames()
 		ref_frames.push_back( rfn );
 		current_index += 1;
 	}
+}
+
+bool CubeSphereNode::need_rebuild()
+{
+	const bool rebuild_is_needed = subdivide_source.need_subdivide( &sphere, points_of_interest );
+	return rebuild_is_needed;
 }
 
 
