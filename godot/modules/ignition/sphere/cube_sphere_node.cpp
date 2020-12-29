@@ -1,6 +1,7 @@
 
 #include "cube_sphere_node.h"
 #include "ref_frame_node.h"
+#include "cube_quad_node.h"
 
 #include "core/engine.h"
 
@@ -70,6 +71,7 @@ void CubeSphereNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_subdivision_check_period"), &CubeSphereNode::get_subdivision_check_period, Variant::REAL );
 
 	ClassDB::bind_method( D_METHOD("collision_triangles", "origin", "ref_frames", "dist"), &CubeSphereNode::collision_triangles, Variant::POOL_VECTOR3_ARRAY );
+	ClassDB::bind_method( D_METHOD("content_cells", "origin", "cell_size", "dist"), &CubeSphereNode::content_cells, Variant::ARRAY );
 
 	ClassDB::bind_method( D_METHOD("set_close", "en"), &CubeSphereNode::set_close );
 	ClassDB::bind_method( D_METHOD("get_close"), &CubeSphereNode::get_close, Variant::BOOL );
@@ -231,6 +233,17 @@ const PoolVector3Array & CubeSphereNode::collision_triangles( Node * origin, con
 		collision_pts.push_back( pt );
 	}
 
+	// Also check if origin is in the list of ref frames.
+	const int ind = collision_ref_frames.find( origin_rf );
+	if ( ind < 0 )
+	{
+		const SE3 se3 = origin_rf->relative_( center_rf );
+		SubdivideSource::SubdividePoint pt;
+		pt.close = true;
+		pt.at = se3.r_;
+		collision_pts.push_back( pt );
+	}
+
 	sphere.triangle_list( collision_pts, dist, collision_tris );
 	const SE3 center_rel_to_origin = center_rf->relative_( origin_rf );
 	const int pts_qty = collision_tris.size();
@@ -245,6 +258,78 @@ const PoolVector3Array & CubeSphereNode::collision_triangles( Node * origin, con
 		Vector3 c( r.x_, r.y_, r.z_ );
 		arr.set( i, c );
 	}
+	return arr;
+}
+
+const Array & CubeSphereNode::content_cells( Node * origin, real_t cell_size, real_t dist )
+{
+	Array & arr = content_cells_ret;
+
+	Node * n = get_node( center_path );
+	if ( n == nullptr )
+	{
+		arr.resize( 0 );
+		return arr;
+	}
+	RefFrameNode * center_rf = Node::cast_to<RefFrameNode>( n );
+	if ( center_rf == nullptr )
+	{
+		arr.resize( 0 );
+		return arr;
+	}
+
+	RefFrameNode * origin_rf = Node::cast_to<RefFrameNode>( origin );
+	if ( center_rf == nullptr )
+	{
+		arr.resize( 0 );
+		return arr;
+	}
+
+	content_pts.clear();
+	// Adding a single interest point for content.
+	{
+		const SE3 se3 = origin_rf->relative_( center_rf );
+		SubdivideSource::SubdividePoint pt;
+		pt.close = true;
+		pt.at = se3.r_;
+		content_pts.push_back( pt );
+	}
+
+	// For converting to origin rf.
+	const SE3 to_origin_se3 = origin_rf->relative_( center_rf );
+
+	// Traversing all the faces.
+	sphere.face_list( content_pts, cell_size, dist, content_cell_inds );
+	const int qty = content_cell_inds.size();
+	arr.resize( qty * 5 );
+	int counter = 0;
+	for ( int i=0; i<qty; i++ )
+	{
+		const int ind = content_cell_inds.ptr()[i];
+		const CubeQuadNode & face = sphere.faces.ptr()[ind];
+		const CubeVertex & v0 = sphere.verts.ptr()[ face.vertexInds[0] ];
+		const CubeVertex & v1 = sphere.verts.ptr()[ face.vertexInds[1] ];
+		const CubeVertex & v2 = sphere.verts.ptr()[ face.vertexInds[2] ];
+		const CubeVertex & v3 = sphere.verts.ptr()[ face.vertexInds[3] ];
+		// Face index.
+		arr.set( counter++, Variant( ind ) );
+		// Face hash.
+		const uint64_t hash =  face.hash_.state();
+		const String hash_s = String::num_uint64( hash );
+		arr.set( counter++, Variant( hash_s ) );
+		// Center unit vector.
+		const Vector3d c = (v0.atUnit + v1.atUnit + v2.atUnit + v3.atUnit) / 4.0;
+		arr.set( counter++, Variant( Vector3( c.x_, c.y_, c.z_ ) ) );
+		// Center height.
+		const Float h = ( (v0.heightUnit_ + v1.heightUnit_ + v2.heightUnit_ + v3.heightUnit_) * sphere.h() ) / 4.0;
+		arr.set( counter++, Variant( real_t(h) ) );
+		// 0-2 diagonal, 1-3 diagonal divided by sqrt(2).
+		const Float d_02 = (v2.at - v0.at).Length();
+		arr.set( counter++,  Variant( real_t(d_02) ) );
+		const Float d_13 = (v3.at - v1.at).Length();
+		arr.set( counter++,  Variant( real_t(d_13) ) );
+	}
+
 	return arr;
 }
 

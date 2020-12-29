@@ -53,6 +53,8 @@ public:
 	// Triangles are all triangles closer than "dist" from all "ref_frames".
 	const PoolVector3Array & collision_triangles( Node * origin, const Array & ref_frames, real_t dist );
 
+	// Content generation faces.
+	const Array & content_cells( Node * origin, real_t cell_size, real_t dist );
 
 	// Distance scaling.
 	void set_close( bool en );
@@ -120,6 +122,12 @@ public:
 	Vector<CubeVertex> collision_tris;
 	PoolVector3Array   collision_ret;
 
+	// Returning content cells.
+	Vector<SubdivideSource::SubdividePoint> content_pts;
+	Vector<int> content_cell_inds;
+	Array       content_cells_ret;
+
+	// For checking rebuild status periodically.
 	real_t check_period;
 	real_t check_time_elapsed;
 	Vector<SubdivideSource::SubdividePoint> points_of_interest;

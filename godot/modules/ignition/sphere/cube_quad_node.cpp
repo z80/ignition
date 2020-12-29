@@ -261,7 +261,8 @@ bool CubeQuadNode::select_leafs( const CubeSphere * s, const Vector3d & a, const
 
 bool CubeQuadNode::select_by_size( const CubeSphere * s, const Vector3d & a, const Float sz, const Float dist, Vector<int> & faceInds ) const
 {
-    const Float thisSize = size( s );
+	// If face is leaf face than no need to try subdivide further.
+    const Float thisSize = ( this->leaf ) ? 0.0 : size( s );
     const Vector3d n = normal( s );
     const bool insideOk = inside( s, a, n, dist );
     if ( (thisSize <= sz) && (insideOk) )
