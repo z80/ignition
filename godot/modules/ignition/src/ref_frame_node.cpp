@@ -132,6 +132,20 @@ Transform RefFrameNode::t_root() const
 	return res;
 }
 
+void RefFrameNode::set_se3( const Ref<Se3Ref> & se3 )
+{
+	se3_ = se3.ptr()->se3;
+}
+
+Ref<Se3Ref> RefFrameNode::get_se3() const
+{
+	Ref<Se3Ref> se3;
+	se3.instance();
+	se3.ptr()->se3 = se3_;
+	return se3;
+}
+
+
 void RefFrameNode::change_parent( Node * parent )
 {
 	RefFrameNode * parent_rf;

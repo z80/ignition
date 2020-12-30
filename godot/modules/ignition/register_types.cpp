@@ -6,6 +6,7 @@
 //#include "ref_frame_tree.h"
 #include "ref_frame_node.h"
 #include "ref_frame_auto_node.h"
+#include "se3_ref.h"
 #include "distance_scaler_ref.h"
 
 // Sphere related classes.
@@ -20,6 +21,8 @@ void register_ignition_types()
 	//ClassDB::register_class<RefFrameTree>();
 	ClassDB::register_class<Ign::RefFrameNode>();
 	ClassDB::register_class<Ign::RefFrameAutoNode>();
+	ClassDB::register_class<Ign::Se3Ref>();
+	ClassDB::register_class<Ign::DistanceScalerRef>();
 
 	ClassDB::register_class<Ign::HeightSourceRef>();
 	ClassDB::register_class<Ign::HeightSourceTestRef>();
