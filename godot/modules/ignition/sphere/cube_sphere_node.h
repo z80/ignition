@@ -11,6 +11,7 @@
 
 #include "height_source_ref.h"
 #include "se3.h"
+#include "se3_ref.h"
 #include "distance_scaler_ref.h"
 
 namespace Ign
@@ -55,10 +56,7 @@ public:
 
 	// Content generation faces.
 	const Array & content_cells( Node * origin, real_t cell_size, real_t dist );
-
-	// Distance scaling.
-	void set_close( bool en );
-	bool get_close() const;
+	Ref<Se3Ref> local_se3( int cell_ind, const Vector2 & unit_at, bool true_surface_normal );
 
 	// Sphere center RefFrame
 	void set_center_ref_frame( const NodePath & path );

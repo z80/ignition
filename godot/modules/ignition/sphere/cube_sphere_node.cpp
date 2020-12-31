@@ -2,6 +2,7 @@
 #include "cube_sphere_node.h"
 #include "ref_frame_node.h"
 #include "cube_quad_node.h"
+#include "height_source.h"
 
 #include "core/engine.h"
 
@@ -72,9 +73,7 @@ void CubeSphereNode::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("collision_triangles", "origin", "ref_frames", "dist"), &CubeSphereNode::collision_triangles, Variant::POOL_VECTOR3_ARRAY );
 	ClassDB::bind_method( D_METHOD("content_cells", "origin", "cell_size", "dist"), &CubeSphereNode::content_cells, Variant::ARRAY );
-
-	ClassDB::bind_method( D_METHOD("set_close", "en"), &CubeSphereNode::set_close );
-	ClassDB::bind_method( D_METHOD("get_close"), &CubeSphereNode::get_close, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("local_se3", "cell_ind", "unit_at", "true_surface_normal"), &CubeSphereNode::local_se3, Variant::OBJECT );
 
 	ClassDB::bind_method( D_METHOD("set_center_ref_frame", "path"), &CubeSphereNode::set_center_ref_frame );
 	ClassDB::bind_method( D_METHOD("get_center_ref_frame"), &CubeSphereNode::get_center_ref_frame, Variant::NODE_PATH );
@@ -301,10 +300,12 @@ const Array & CubeSphereNode::content_cells( Node * origin, real_t cell_size, re
 	// Traversing all the faces.
 	sphere.face_list( content_pts, cell_size, dist, content_cell_inds );
 	const int qty = content_cell_inds.size();
-	arr.resize( qty * 5 );
-	int counter = 0;
+	arr.resize( qty );
 	for ( int i=0; i<qty; i++ )
 	{
+		int counter = 0;
+		Array cell_data;
+		cell_data.resize( 7 );
 		const int ind = content_cell_inds.ptr()[i];
 		const CubeQuadNode & face = sphere.faces.ptr()[ind];
 		const CubeVertex & v0 = sphere.verts.ptr()[ face.vertexInds[0] ];
@@ -312,35 +313,85 @@ const Array & CubeSphereNode::content_cells( Node * origin, real_t cell_size, re
 		const CubeVertex & v2 = sphere.verts.ptr()[ face.vertexInds[2] ];
 		const CubeVertex & v3 = sphere.verts.ptr()[ face.vertexInds[3] ];
 		// Face index.
-		arr.set( counter++, Variant( ind ) );
+		cell_data.set( counter++, Variant( ind ) );
 		// Face hash.
 		const uint64_t hash =  face.hash_.state();
 		const String hash_s = String::num_uint64( hash );
-		arr.set( counter++, Variant( hash_s ) );
-		// Center unit vector.
-		const Vector3d c = (v0.atUnit + v1.atUnit + v2.atUnit + v3.atUnit) / 4.0;
-		arr.set( counter++, Variant( Vector3( c.x_, c.y_, c.z_ ) ) );
+		cell_data.set( counter++, Variant( hash_s ) );
 		// Center height.
 		const Float h = ( (v0.heightUnit_ + v1.heightUnit_ + v2.heightUnit_ + v3.heightUnit_) * sphere.h() ) / 4.0;
-		arr.set( counter++, Variant( real_t(h) ) );
-		// 0-2 diagonal, 1-3 diagonal divided by sqrt(2).
-		const Float d_02 = (v2.at - v0.at).Length();
-		arr.set( counter++,  Variant( real_t(d_02) ) );
-		const Float d_13 = (v3.at - v1.at).Length();
-		arr.set( counter++,  Variant( real_t(d_13) ) );
+		cell_data.set( counter++, Variant( real_t(h) ) );
+		// Deviation from vertical angle.
+		const Vector3d c = (v0.atUnit + v1.atUnit + v2.atUnit + v3.atUnit) / 4.0;
+		const Vector3d norm = (v0.norm + v1.norm + v2.norm + v3.norm) / 4.0;
+		const Float angle = std::asin( c.CrossProduct( norm ).Length() );
+		cell_data.set( counter++, angle );
+		// Center unit vector.
+		cell_data.set( counter++, Variant( Vector3( c.x_, c.y_, c.z_ ) ) );
+		// 0-2 diagonal divided by sqrt(2).
+		const Float d_02 = (v2.at - v0.at).Length() * 0.707;
+		cell_data.set( counter++,  Variant( real_t(d_02) ) );
+		// 1-3 diagonal divided by sqrt(2).
+		const Float d_13 = (v3.at - v1.at).Length() * 0.707;
+		cell_data.set( counter,  Variant( real_t(d_13) ) );
+
+		arr.set( i, cell_data );
 	}
 
 	return arr;
 }
 
-void CubeSphereNode::set_close( bool en )
+Ref<Se3Ref> CubeSphereNode::local_se3( int cell_ind, const Vector2 & unit_at, bool true_surface_normal )
 {
-	generate_close = en;
-}
+	const CubeQuadNode & face = sphere.faces.ptr()[cell_ind];
+	const CubeVertex & v0 = sphere.verts.ptr()[ face.vertexInds[0] ];
+	const CubeVertex & v1 = sphere.verts.ptr()[ face.vertexInds[1] ];
+	const CubeVertex & v2 = sphere.verts.ptr()[ face.vertexInds[2] ];
+	const CubeVertex & v3 = sphere.verts.ptr()[ face.vertexInds[3] ];
 
-bool CubeSphereNode::get_close() const
-{
-	return generate_close;
+	const Vector3d ex   = v1.atUnit - v0.atUnit;
+	const Vector3d ey_a = v2.atUnit - v0.atUnit;
+	const Vector3d ey_b = v3.atUnit - v0.atUnit;
+
+	const Float x = unit_at.x;
+	const Float y = unit_at.y;
+	const Float _1_x = 1.0 - x;
+	const Float _1_y = 1.0 - y;
+
+	Vector3d r_unit = ex*x + (ey_a*x + ey_b*_1_x)*y;
+	r_unit.Normalize();
+	Float h;
+	if (height_source.ptr() == nullptr)
+		h = 0.0;
+	else
+	{
+		HeightSourceRef * hsr = height_source.ptr();
+		h = hsr->height_source->height( r_unit );
+		const Float height_scale = sphere.h();
+		h = h * height_scale;
+	}
+	const Vector3d r_scaled = r_unit * (sphere.r() + h);
+
+	Ref<Se3Ref> se3;
+	se3.instance();
+	se3.ptr()->se3.r_ = r_scaled;
+
+	if ( true_surface_normal )
+	{
+		const Vector3d na = (v0.norm * _1_x) + (v1.norm * x);
+		const Vector3d nb = (v3.norm * _1_x) + (v2.norm * x);
+		Vector3d norm = (na * _1_y) + (nb * y);
+		norm.Normalize();
+		const Quaterniond q( Vector3d(0.0, 1.0, 0.0 ), norm );
+		se3.ptr()->se3.q_ = q;
+	}
+	else
+	{
+		const Quaterniond q( Vector3d(0.0, 1.0, 0.0 ), r_unit );
+		se3.ptr()->se3.q_ = q;
+	}
+
+	return se3;
 }
 
 void CubeSphereNode::set_center_ref_frame( const NodePath & path )
