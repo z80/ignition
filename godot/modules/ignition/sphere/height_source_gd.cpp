@@ -1,24 +1,24 @@
 
-#include "height_source_test.h"
+#include "height_source_gd.h"
 
 namespace Ign
 {
 
-HeightSourceTest::HeightSourceTest()
+HeightSourceGd::HeightSourceGd()
 	: HeightSource()
 {
 }
 
-HeightSourceTest::~HeightSourceTest()
+HeightSourceGd::~HeightSourceGd()
 {
 }
 
-Float HeightSourceTest::height( const Vector3d & at ) const
+Float HeightSourceGd::height( const Vector3d & at ) const
 {
 	return 0.0;
 }
 
-Color HeightSourceTest::color( const Vector3d & at, const Vector3d & norm, Float height ) const
+Color HeightSourceGd::color( const Vector3d & at, const Vector3d & norm, Float height ) const
 {
 	Color c;
 	c.r = 0.7;

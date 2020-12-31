@@ -81,6 +81,10 @@ public:
 	void set_scale_mode_distance( real_t radie );
 	real_t get_scale_mode_distance() const;
 
+	// For debugging (when origin rf is not in (0,0,0)) need to convert to world rf.
+	void set_convert_to_global( bool en );
+	bool get_convert_to_global() const;
+
 private:
 	// Makes sure that origin ref frame is in the list.
 	// Removes nonexisting ones. Created an array of ref frames.
@@ -147,6 +151,9 @@ public:
 	// How far measured in sphere radie scaling mode shifts from "close" to "far"
 	// and vise versa.
 	Float scale_mode_distance;
+
+	// convert "center_to_origin" to world rf.
+	bool convert_to_global;
 };
 
 

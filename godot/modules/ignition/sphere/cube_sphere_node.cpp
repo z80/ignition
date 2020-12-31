@@ -94,6 +94,8 @@ void CubeSphereNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_scale_mode_distance", "radie"), &CubeSphereNode::set_scale_mode_distance );
 	ClassDB::bind_method( D_METHOD("get_scale_mode_distance"), &CubeSphereNode::get_scale_mode_distance, Variant::REAL );
 
+	ClassDB::bind_method( D_METHOD("set_convert_to_global", "radie"), &CubeSphereNode::set_convert_to_global );
+	ClassDB::bind_method( D_METHOD("get_convert_to_global"), &CubeSphereNode::get_convert_to_global, Variant::BOOL );
 
 	// It is emit when sphere mesh is changed.
 	// Should be listened by collision surfaces.
@@ -106,7 +108,8 @@ void CubeSphereNode::_bind_methods()
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "origin_ref_frame" ), "set_origin_ref_frame", "get_origin_ref_frame" );
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "distance_scaler" ), "set_distance_scaler", "get_distance_scaler" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "apply_scale" ), "set_apply_scale", "get_apply_scale" );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scale_mode_distance" ), "set_scale_mode_distance", "get_scale_mode_distance" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "scale_mode_distance" ), "set_scale_mode_distance", "get_scale_mode_distance" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "convert_to_global" ), "set_convert_to_global", "get_convert_to_global" );
 }
 
 void CubeSphereNode::_notification( int p_what )
@@ -133,6 +136,8 @@ CubeSphereNode::CubeSphereNode()
 	generate_close = true;
 	apply_scale    = true;
 	scale_mode_distance = 5.0;
+
+	convert_to_global = false;
 
 	set_process( true );
 }
@@ -466,6 +471,16 @@ real_t CubeSphereNode::get_scale_mode_distance() const
 	return scale_mode_distance;
 }
 
+void CubeSphereNode::set_convert_to_global( bool en )
+{
+	convert_to_global = en;
+}
+
+bool CubeSphereNode::get_convert_to_global() const
+{
+	return convert_to_global;
+}
+
 
 void CubeSphereNode::validate_ref_frames()
 {
@@ -509,64 +524,53 @@ bool CubeSphereNode::need_rebuild()
 
 void CubeSphereNode::process_transform()
 {
-	// First increment time and check if it is necessary
-	// to test all the points and rebuild the mesh.
-	const real_t dt = get_process_delta_time();
-	check_time_elapsed += dt;
-	if ( check_time_elapsed < check_period )
-		return;
-	check_time_elapsed -= check_period;
-
-
-	validate_ref_frames();
-
 	Node * n = get_node_or_null( center_path );
 	RefFrameNode * center_rf = Node::cast_to<RefFrameNode>( n );
 	n = get_node_or_null( origin_path );
 	RefFrameNode * origin_rf = Node::cast_to<RefFrameNode>( n );
 
-	const int origin_index = ref_frames.find( origin_rf );
 	const bool both_rf_ok = ( ( center_rf != nullptr ) &&
-		                      ( origin_rf != nullptr ) &&
-		                      ( origin_index >= 0 ) );
+		                      ( origin_rf != nullptr ) );
 
 	if ( both_rf_ok )
-	{
-		const SE3 poi = origin_rf->relative_( center_rf );
 		center_relative_to_origin = center_rf->relative_( origin_rf );
-	}
 	else
 		center_relative_to_origin = SE3();
 
-	// Adding points of interest.
-	points_of_interest.clear();
-	const int qty = ref_frames.size();
-	for ( int i=0; i<qty; i++ )
+	// First increment time and check if it is necessary
+	// to test all the points and rebuild the mesh.
+	const real_t dt = get_process_delta_time();
+	check_time_elapsed += dt;
+	const bool check_rebuild = ( check_time_elapsed >= check_period );
+	if ( check_rebuild )
 	{
-		RefFrameNode * rf = ref_frames.ptrw()[i];
-		const SE3 se3 = rf->relative_( center_rf );
-		SubdivideSource::SubdividePoint pt;
-		pt.at    = se3.r_;
-		pt.close = generate_close;
-		points_of_interest.push_back( pt );
+		check_time_elapsed -= check_period;
+
+		// Validate all observer points.
+		validate_ref_frames();
+
+		// Adding points of interest.
+		points_of_interest.clear();
+		const int qty = ref_frames.size();
+		for ( int i=0; i<qty; i++ )
+		{
+			RefFrameNode * rf = ref_frames.ptrw()[i];
+			const SE3 se3 = rf->relative_( center_rf );
+			SubdivideSource::SubdividePoint pt;
+			pt.at    = se3.r_;
+			pt.close = generate_close;
+			points_of_interest.push_back( pt );
+		}
+		// Check if need to be rebuilt.
+		const bool need_rebuild = this->need_rebuild();
+		if ( need_rebuild )
+		{
+			regenerate_mesh();
+			emit_signal( SIGNAL_MESH_UPDATED );
+		}
 	}
-	// Check if need to be rebuilt.
-	const bool need_rebuild = this->need_rebuild();
-	if ( !need_rebuild )
-		return;
-
-	Float L    = center_relative_to_origin.r_.Length();
-	const Float R = sphere.r();
-	if ( L < R )
-		L = R;
-	const Float _L_R = L - R;
-	const Vector3d r = center_relative_to_origin.r_ * (_L_R / L);
-	SE3 se3 = center_relative_to_origin;
-	se3.r_ = r;
-	poi_relative_to_center = se3 / center_relative_to_origin;
-
-	regenerate_mesh();
-	emit_signal( SIGNAL_MESH_UPDATED );
+	// Adjust mesh pose.
+	adjust_pose();
 }
 
 void CubeSphereNode::regenerate_mesh()
@@ -578,9 +582,24 @@ void CubeSphereNode::regenerate_mesh()
 		sphere.apply_source( nullptr );
 	sphere.triangle_list( all_tris );
 
+	// Compute point of interest relative to center.
+	Float L    = center_relative_to_origin.r_.Length();
+	const Float R = sphere.r();
+	if ( L < R )
+		L = R;
+	const Float _L_R = L - R;
+	const Vector3d r = center_relative_to_origin.r_ * (_L_R / L);
+	SE3 se3 = center_relative_to_origin;
+	se3.r_ = r;
+	poi_relative_to_center = se3 / center_relative_to_origin;
+	// "poi_relative_to_center" will be changed later in scale methods.
+
+	// Check which way to scale the sphere.
 	const bool use_scale = apply_scale ? (scale.ptr() != nullptr) : false;
 	const Float d = center_relative_to_origin.r_.Length() / sphere.r();
 	const bool generate_close = ( d <= scale_mode_distance );
+
+	// Do scale the sphere.
 	if ( use_scale )
 	{
 		if ( generate_close )
@@ -638,12 +657,18 @@ void CubeSphereNode::regenerate_mesh()
 	am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );
 
 	this->set_mesh( am );
-	adjust_pose();
 }
 
 void CubeSphereNode::adjust_pose()
 {
-	const SE3 se3 = center_relative_to_origin * poi_relative_to_center;
+	SE3 se3 = center_relative_to_origin * poi_relative_to_center;
+	if ( convert_to_global )
+	{
+		Node * n = get_node_or_null( origin_path );
+		RefFrameNode * origin_rf = Node::cast_to<RefFrameNode>( n );
+		SE3 to_global = origin_rf->relative_( nullptr );
+		se3 = to_global * se3;
+	}
 	// Here it should be distance scale.
 	const Transform t = se3.transform();
 	set_transform( t );

@@ -1,24 +1,24 @@
 
-#ifndef __HEIGHT_SOURCE_TEST_REF_H_
-#define __HEIGHT_SOURCE_TEST_REF_H_
+#ifndef __HEIGHT_SOURCE_GD_REF_H_
+#define __HEIGHT_SOURCE_GD_REF_H_
 
 #include "height_source_ref.h"
-#include "height_source_test.h"
+#include "height_source_gd.h"
 
 
 namespace Ign
 {
 
-class HeightSourceTestRef: public HeightSourceRef
+class HeightSourceGdRef: public HeightSourceRef
 {
-	GDCLASS( HeightSourceTestRef, HeightSourceRef );
+	GDCLASS( HeightSourceGdRef, HeightSourceRef );
 	OBJ_CATEGORY("Ignition");
 
 public:
-	HeightSourceTestRef();
-	~HeightSourceTestRef();
+	HeightSourceGdRef();
+	~HeightSourceGdRef();
 
-	HeightSourceTest height_source_test;
+	HeightSourceGd height_source_gd;
 };
 
 }

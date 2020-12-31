@@ -12,6 +12,7 @@
 // Sphere related classes.
 #include "height_source_ref.h"
 #include "height_source_test_ref.h"
+#include "height_source_gd_ref.h"
 #include "cube_sphere_node.h"
 
 void register_ignition_types()
@@ -26,6 +27,7 @@ void register_ignition_types()
 
 	ClassDB::register_class<Ign::HeightSourceRef>();
 	ClassDB::register_class<Ign::HeightSourceTestRef>();
+	ClassDB::register_class<Ign::HeightSourceGdRef>();
 	ClassDB::register_class<Ign::CubeSphereNode>();
 }
 

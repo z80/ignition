@@ -1,16 +1,16 @@
 
-#include "height_source_test_ref.h"
+#include "height_source_gd_ref.h"
 
 namespace Ign
 {
 
-HeightSourceTestRef::HeightSourceTestRef()
+HeightSourceGdRef::HeightSourceGdRef()
 	: HeightSourceRef()
 {
-	height_source = &height_source_test;
+	height_source = &height_source_gd;
 }
 
-HeightSourceTestRef::~HeightSourceTestRef()
+HeightSourceGdRef::~HeightSourceGdRef()
 {
 }
 

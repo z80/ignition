@@ -10,6 +10,8 @@ func _ready():
 	o.set_t( $Camera.transform )
 
 	var sphere: CubeSphereNode = get_node( "sphere" )
+	# Additional ref frame convertion.
+	sphere.convert_to_global = true
 	
 	distance_scaler = DistanceScalerRef.new()
 	distance_scaler.plain_distance = 100.0
@@ -24,6 +26,7 @@ func _ready():
 	sphere.clear_levels()
 	sphere.add_level( 0.5, 3.0 )
 	sphere.add_level( 2.0, 30.0 )
+	
 	
 	
 
