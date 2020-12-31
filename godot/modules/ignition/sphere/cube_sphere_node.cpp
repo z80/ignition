@@ -533,10 +533,10 @@ void CubeSphereNode::process_transform()
 	if ( both_rf_ok )
 	{
 		const SE3 poi = origin_rf->relative_( center_rf );
-		poi_relative_to_origin = center_rf->relative_( origin_rf );
+		center_relative_to_origin = center_rf->relative_( origin_rf );
 	}
 	else
-		poi_relative_to_origin = SE3();
+		center_relative_to_origin = SE3();
 
 	// Adding points of interest.
 	points_of_interest.clear();
@@ -555,15 +555,15 @@ void CubeSphereNode::process_transform()
 	if ( !need_rebuild )
 		return;
 
-	Float L    = poi_relative_to_origin.r_.Length();
+	Float L    = center_relative_to_origin.r_.Length();
 	const Float R = sphere.r();
 	if ( L < R )
 		L = R;
 	const Float _L_R = L - R;
-	const Vector3d r = poi_relative_to_origin.r_ * (_L_R / L);
-	SE3 se3 = poi_relative_to_origin;
+	const Vector3d r = center_relative_to_origin.r_ * (_L_R / L);
+	SE3 se3 = center_relative_to_origin;
 	se3.r_ = r;
-	poi_relative_to_center = se3 / poi_relative_to_origin;
+	poi_relative_to_center = se3 / center_relative_to_origin;
 
 	regenerate_mesh();
 	emit_signal( SIGNAL_MESH_UPDATED );
@@ -579,7 +579,7 @@ void CubeSphereNode::regenerate_mesh()
 	sphere.triangle_list( all_tris );
 
 	const bool use_scale = apply_scale ? (scale.ptr() != nullptr) : false;
-	const Float d = poi_relative_to_origin.r_.Length() / sphere.r();
+	const Float d = center_relative_to_origin.r_.Length() / sphere.r();
 	const bool generate_close = ( d <= scale_mode_distance );
 	if ( use_scale )
 	{
@@ -643,7 +643,7 @@ void CubeSphereNode::regenerate_mesh()
 
 void CubeSphereNode::adjust_pose()
 {
-	const SE3 se3 = poi_relative_to_origin * poi_relative_to_center;
+	const SE3 se3 = center_relative_to_origin * poi_relative_to_center;
 	// Here it should be distance scale.
 	const Transform t = se3.transform();
 	set_transform( t );
@@ -662,8 +662,8 @@ void CubeSphereNode::init_levels()
 void CubeSphereNode::scale_close()
 {
 	// Here assume that 1) scale is applied and 2) scaler object is set.
-	// Convert to absolute ref frame.
-	SE3 center = poi_relative_to_origin;
+	// Convert to origin (observer) ref frame.
+	const SE3 & center = center_relative_to_origin;
 	const int qty = all_tris.size();
 	for ( int i=0; i<qty; i++ )
 	{
@@ -673,59 +673,59 @@ void CubeSphereNode::scale_close()
 		r = (center.q_ * r) + center.r_;
 		const Float d = r.Length();
 		const Float s = scale->scale( d );
-		r = r * s;
+		r = r * (s / d);
 		v.at = r;
 		v.norm = center.q_ * v.norm;
 	}
 	// Point of interest relative to origin.
-	SE3 poi = poi_relative_to_origin * poi_relative_to_center;
-	const Float poi_d = poi.r_.Length();
-	const Float poi_s = scale->scale( poi_d );
-	poi.r_ = poi.r_ * poi_s;
+	SE3 poi_to_origin = center_relative_to_origin * poi_relative_to_center;
+	const Float poi_d = poi_to_origin.r_.Length();
+	const Float poi_s = scale->scale( poi_d ) / poi_d;
+	poi_to_origin.r_ = poi_to_origin.r_ * poi_s;
 
-	// Center relative to origin.
-	const Float center_d = center.r_.Length();
-	const Float center_s = scale->scale( center_d );
-	center.r_ = center.r_ * center_s;
-
-	poi_relative_to_center = poi / center;
-	poi_relative_to_origin = poi;
-
-	const SE3 inv_poi = poi.inverse();
+	const SE3 origin_to_poi = poi_to_origin.inverse();
 
 	for ( int i=0; i<qty; i++ )
 	{
 		CubeVertex & v = all_tris.ptrw()[i];
 		Vector3d r = v.at;
 		// Point relative to poi.
-		r = (inv_poi.q_ * r) + inv_poi.r_;
+		r = (origin_to_poi.q_ * r) + origin_to_poi.r_;
 		v.at = r;
 		// Rotate normal.
-		v.norm = inv_poi.q_ * v.norm;
+		v.norm = poi_to_origin.q_ * v.norm;
 	}
+
+	// Make POI relative to center such that scaled POI in origin rf
+	// is obtained by center_relative_to_origin * poi_relative_to_center.
+	const SE3 origin_relative_to_center = center_relative_to_origin.inverse();
+	poi_relative_to_center = origin_relative_to_center * poi_to_origin;
 }
 
 void CubeSphereNode::scale_far()
 {
-	SE3 poi = poi_relative_to_origin * poi_relative_to_center;
-	const Float poi_d = poi.r_.Length();
-	const Float poi_s = scale->scale( poi_d );
-	poi.r_ = poi.r_ * poi_s;
+	SE3 poi_to_origin = center_relative_to_origin * poi_relative_to_center;
+	const Float poi_d = poi_to_origin.r_.Length();
+	const Float poi_s = scale->scale( poi_d ) / poi_d;
+	poi_to_origin.r_ = poi_to_origin.r_ * (poi_s / poi_d);
 
-	const SE3 inv_center = poi_relative_to_center.inverse();
+	const SE3 center_to_poi = poi_relative_to_center.inverse();
 	const int qty = all_tris.size();
 	for ( int i=0; i<qty; i++ )
 	{
 		CubeVertex & v = all_tris.ptrw()[i];
 		Vector3d r = v.at;
-		r = ( inv_center.q_ * r) + inv_center.r_;
+		r = ( center_to_poi.q_ * r) + center_to_poi.r_;
 		r = r * poi_s;
 		v.at = r;
 		// Rotate normal.
-		v.norm = inv_center.q_ * v.norm;
+		v.norm = center_to_poi.q_ * v.norm;
 	}
-	poi_relative_to_origin.r_ = poi_relative_to_origin.r_ * poi_s;
-	poi_relative_to_center.r_ = poi_relative_to_center.r_ * poi_s;
+
+	// Make POI relative to center such that scaled POI in origin rf
+	// is obtained by center_relative_to_origin * poi_relative_to_center.
+	const SE3 origin_relative_to_center = center_relative_to_origin.inverse();
+	poi_relative_to_center = origin_relative_to_center * poi_to_origin;
 }
 
 void CubeSphereNode::scale_neutral()

@@ -112,7 +112,7 @@ public:
 	// Sphere point closest to the observation point relative to sphere center.
 	SE3                    poi_relative_to_center;
 	// Sphere center relative to observation point.
-	SE3                    poi_relative_to_origin;
+	SE3                    center_relative_to_origin;
 
 	// For querying collisions store all ref frames in this container.
 	Vector<RefFrameNode *> collision_ref_frames;

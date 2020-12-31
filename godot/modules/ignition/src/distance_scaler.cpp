@@ -44,7 +44,7 @@ Float DistanceScaler::scale( Float dist ) const
 
 	const Float extra_dist = dist - plain_dist_;
 	const Float log_dist = std::log( 1.0 + extra_dist ) * log_scale_;
-	const Float scaled_dist = dist + log_dist;
+	const Float scaled_dist = plain_dist_ + log_dist;
 
 	return scaled_dist;
 }
