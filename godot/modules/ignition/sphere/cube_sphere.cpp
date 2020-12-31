@@ -190,6 +190,7 @@ void CubeSphere::triangle_list( const Vector<SubdivideSource::SubdividePoint> & 
 
 void CubeSphere::face_list( const Vector<SubdivideSource::SubdividePoint> & pts, const Float sz, const Float dist, Vector<int> & faceInds )
 {
+	const Float sz_unit = sz / (R_*PI2*0.25);
     faceInds.clear();
     flatten_pts( pts, ptsFlat_ );
 
@@ -204,7 +205,7 @@ void CubeSphere::face_list( const Vector<SubdivideSource::SubdividePoint> & pts,
             const bool inside = f.inside( this, ptFlat, n, dist );
             if ( !inside )
                 continue;
-            f.select_by_size( this, ptFlat, sz, dist, faceInds );
+            f.select_by_size( this, ptFlat, sz_unit, dist, faceInds );
         }
     }
 }
