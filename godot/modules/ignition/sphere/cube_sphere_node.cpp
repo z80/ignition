@@ -758,7 +758,7 @@ void CubeSphereNode::scale_far()
 	SE3 poi_to_origin = center_relative_to_origin * poi_relative_to_center;
 	const Float poi_d = poi_to_origin.r_.Length();
 	const Float poi_s = scale->scale( poi_d ) / poi_d;
-	poi_to_origin.r_ = poi_to_origin.r_ * (poi_s / poi_d);
+	poi_to_origin.r_ = poi_to_origin.r_ * poi_s;
 
 	const SE3 center_to_poi = poi_relative_to_center.inverse();
 	const int qty = all_tris.size();
