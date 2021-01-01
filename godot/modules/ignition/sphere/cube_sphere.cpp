@@ -465,7 +465,14 @@ void CubeSphere::compute_normals()
             v0.norm += n;
             v1.norm += n;
             v2.norm += n;
-        }
+
+			const Vector3d c = v3.at - v0.at;
+			n = c.CrossProduct( c );
+			n.Normalize();
+			v0.norm += n;
+			v2.norm += n;
+			v3.norm += n;
+		}
     }
 
     // Normalize normals.

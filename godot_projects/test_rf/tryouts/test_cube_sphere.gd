@@ -10,6 +10,8 @@ func _ready():
 	o.set_t( $Camera.transform )
 
 	var sphere: CubeSphereNode = get_node( "sphere" )
+	sphere.radius = 10.0
+	sphere.height = 3.0
 	# Additional ref frame convertion.
 	sphere.convert_to_global = true
 	
@@ -18,14 +20,14 @@ func _ready():
 	distance_scaler.log_scale      = 0.5
 	sphere.distance_scaler = distance_scaler
 	
-	height_source = HeightSourceTestRef.new()
+	height_source = HeightSourceGdRef.new()
+	var script = preload( "res://tryouts/height_source_gd.gd" )
+	height_source.set_script( script  )
 	sphere.set_height_source( height_source )
-	sphere.radius = 10.0
-	sphere.height = 1.0
 	
 	sphere.clear_levels()
-	sphere.add_level( 0.5, 3.0 )
-	sphere.add_level( 2.0, 30.0 )
+	sphere.add_level( 0.5, 6.0 )
+	sphere.add_level( 3.0, 30.0 )
 	
 	
 	

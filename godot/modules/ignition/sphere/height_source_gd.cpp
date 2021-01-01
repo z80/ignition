@@ -9,7 +9,6 @@ namespace Ign
 HeightSourceGd::HeightSourceGd()
 	: HeightSource()
 {
-	object = nullptr;
 }
 
 HeightSourceGd::~HeightSourceGd()
