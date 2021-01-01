@@ -4,7 +4,6 @@ class_name FramesDb
 
 export( String) var file_name = "res://anim.db"
 
-const SQLite = preload("res://addons/godot-sqlite/bin/gdsqlite.gdns")
 var _db = null
 
 var frames_qty: int = 0

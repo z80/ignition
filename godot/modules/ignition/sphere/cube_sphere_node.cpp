@@ -74,6 +74,7 @@ void CubeSphereNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("collision_triangles", "origin", "ref_frames", "dist"), &CubeSphereNode::collision_triangles, Variant::POOL_VECTOR3_ARRAY );
 	ClassDB::bind_method( D_METHOD("content_cells", "origin", "cell_size", "dist"), &CubeSphereNode::content_cells, Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("local_se3", "cell_ind", "unit_at", "true_surface_normal"), &CubeSphereNode::local_se3, Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("surface_se3", "unit_at"), &CubeSphereNode::surface_se3, Variant::OBJECT );
 
 	ClassDB::bind_method( D_METHOD("set_center_ref_frame", "path"), &CubeSphereNode::set_center_ref_frame );
 	ClassDB::bind_method( D_METHOD("get_center_ref_frame"), &CubeSphereNode::get_center_ref_frame, Variant::NODE_PATH );
@@ -346,7 +347,7 @@ const Array & CubeSphereNode::content_cells( Node * origin, real_t cell_size, re
 	return arr;
 }
 
-Ref<Se3Ref> CubeSphereNode::local_se3( int cell_ind, const Vector2 & unit_at, bool true_surface_normal )
+Ref<Se3Ref> CubeSphereNode::local_se3( int cell_ind, const Vector2 & unit_at, bool true_surface_normal ) const
 {
 	const CubeQuadNode & face = sphere.faces.ptr()[cell_ind];
 	const CubeVertex & v0 = sphere.verts.ptr()[ face.vertexInds[0] ];
@@ -370,7 +371,7 @@ Ref<Se3Ref> CubeSphereNode::local_se3( int cell_ind, const Vector2 & unit_at, bo
 		h = 0.0;
 	else
 	{
-		HeightSourceRef * hsr = height_source.ptr();
+		const HeightSourceRef * hsr = height_source.ptr();
 		h = hsr->height_source->height( r_unit );
 		const Float height_scale = sphere.h();
 		h = h * height_scale;
@@ -395,6 +396,31 @@ Ref<Se3Ref> CubeSphereNode::local_se3( int cell_ind, const Vector2 & unit_at, bo
 		const Quaterniond q( Vector3d(0.0, 1.0, 0.0 ), r_unit );
 		se3.ptr()->se3.q_ = q;
 	}
+
+	return se3;
+}
+
+Ref<Se3Ref> CubeSphereNode::surface_se3( const Vector3 & unit_at ) const
+{
+	Ref<Se3Ref> se3;
+	se3.instance();
+
+	Vector3d at = unit_at;
+	at.Normalize();
+
+	Float h;
+	if (height_source.ptr() == nullptr)
+		h = 0.0;
+	else
+	{
+		const HeightSourceRef * hsr = height_source.ptr();
+		h = hsr->height_source->height( at );
+		const Float height_scale = sphere.h();
+		h = h * height_scale;
+	}
+	const Quaterniond q( Vector3d( 0.0, 1.0, 0.0 ), unit_at );
+	se3->se3.r_ = (sphere.r() + h) * at;
+	se3->se3.q_ = q;
 
 	return se3;
 }

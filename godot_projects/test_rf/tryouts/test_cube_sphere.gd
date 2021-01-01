@@ -27,8 +27,8 @@ func _ready():
 	
 	sphere.clear_levels()
 	sphere.add_level( 0.5, 6.0 )
+	sphere.add_level( 1.5, 10.0 )
 	sphere.add_level( 3.0, 30.0 )
-	
 	
 	
 
