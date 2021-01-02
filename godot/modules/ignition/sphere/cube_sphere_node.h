@@ -57,7 +57,7 @@ public:
 	// Content generation faces.
 	const Array & content_cells( Node * origin, real_t cell_size, real_t dist );
 	Ref<Se3Ref> local_se3( int cell_ind, const Vector2 & unit_at, bool true_surface_normal ) const;
-	Ref<Se3Ref> surface_se3( const Vector3 & unit_at ) const;
+	Ref<Se3Ref> surface_se3( const Vector3 & unit_at, real_t height ) const;
 
 	// Sphere center RefFrame
 	void set_center_ref_frame( const NodePath & path );
