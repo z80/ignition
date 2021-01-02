@@ -400,7 +400,7 @@ Ref<Se3Ref> CubeSphereNode::local_se3( int cell_ind, const Vector2 & unit_at, bo
 	return se3;
 }
 
-Ref<Se3Ref> CubeSphereNode::surface_se3( const Vector3 & unit_at ) const
+Ref<Se3Ref> CubeSphereNode::surface_se3( const Vector3 & unit_at, real_t height ) const
 {
 	Ref<Se3Ref> se3;
 	se3.instance();
@@ -419,7 +419,7 @@ Ref<Se3Ref> CubeSphereNode::surface_se3( const Vector3 & unit_at ) const
 		h = h * height_scale;
 	}
 	const Quaterniond q( Vector3d( 0.0, 1.0, 0.0 ), unit_at );
-	se3->se3.r_ = (sphere.r() + h) * at;
+	se3->se3.r_ = (sphere.r() + h + height) * at;
 	se3->se3.q_ = q;
 
 	return se3;
