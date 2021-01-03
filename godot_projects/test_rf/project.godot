@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "CanvasItem",
+"class": "AtmosphereCanvasItem",
+"language": "GDScript",
+"path": "res://tryouts/atmosphere/atmosphere_canvas_item.gd"
+}, {
 "base": "RefFrameNode",
 "class": "Body",
 "language": "GDScript",
@@ -115,6 +120,7 @@ _global_script_classes=[ {
 "path": "res://physics/landscape/tile_base.gd"
 } ]
 _global_script_class_icons={
+"AtmosphereCanvasItem": "",
 "Body": "",
 "ColorTile": "",
 "ConstructionSuperBody": "",
