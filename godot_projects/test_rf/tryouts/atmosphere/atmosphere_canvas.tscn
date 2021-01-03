@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://tryouts/atmosphere/atmosphere_canvas_item.gd" type="Script" id=1]
+
+[node name="Node2D" type="Control"]
+anchor_right = 0.208
+anchor_bottom = 0.285
+margin_right = 0.00799561
+margin_bottom = -1.52588e-05
+rect_min_size = Vector2( 100, 100 )
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}

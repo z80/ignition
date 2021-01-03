@@ -9,7 +9,7 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "CanvasItem",
+"base": "Control",
 "class": "AtmosphereCanvasItem",
 "language": "GDScript",
 "path": "res://tryouts/atmosphere/atmosphere_canvas_item.gd"
