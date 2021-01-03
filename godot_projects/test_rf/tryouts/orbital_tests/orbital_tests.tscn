@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://tryouts/orbital_tests/planet_body.tscn" type="PackedScene" id=1]
+[ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=2]
+
+[node name="Spatial" type="Spatial"]
+
+[node name="Sun" parent="." instance=ExtResource( 1 )]
+r = 3.0
+v = 10.0
+
+[node name="Planet0" parent="Sun" instance=ExtResource( 1 )]
+parent = NodePath("..")
+v = 10.0
+T = 10.0
+
+[node name="Planet1" parent="Sun" instance=ExtResource( 1 )]
+parent = NodePath("..")
+v = 10.0
+ecc = 0.5
+T = 20.0
+
+[node name="PlanetA" parent="Sun" instance=ExtResource( 1 )]
+parent = NodePath("..")
+v = 10.0
+
+[node name="PlanetB" parent="Sun" instance=ExtResource( 1 )]
+parent = NodePath("..")
+T = 120.0
+
+[node name="Camera" type="Camera" parent="."]
+script = ExtResource( 2 )
+max_speed = Vector3( 10, 10, 10 )

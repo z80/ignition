@@ -106,3 +106,32 @@ static func process( dt: float, args: Dictionary ):
 	return ret
 
 
+
+# On demand launching bodies.
+# "unit_r"  direction towards perigee.
+# "unit_v"  velocity direction at perigee.
+# "ecc"     desired eccentricity.
+# "T"       desired period.
+static func launch_elliptic( gm: float, unit_r: Vector3, unit_v: Vector3, T: float, ecc: float ):
+	var ee: float = (1.0+ecc)/(1.0-ecc)
+	var pi_T: float = 2.0*PI*gm/T
+	var arg: float = pi_T*pi_T*ee*ee*ee
+	var v: float = pow(arg, 1.0/6.0)
+	var r: float = (1.0+ecc)*gm/(v*v)
+	
+	var v_r: Vector3 = unit_r.normalized() * r
+	var v_v: Vector3 = unit_v.normalized() * v
+	
+	return [v_r, v_v]
+
+
+static func init_elliptic( gm: float, unit_r: Vector3, unit_v: Vector3, T: float, ecc: float ):
+	var ret: Array = launch_elliptic( gm, unit_r, unit_v, T, ecc )
+	var st: Dictionary = init( gm, ret[0], ret[1] )
+	return st
+
+
+# Compute "GM" based on surface radius and circular velocity desired
+static func init_gm( r: float, v: float ):
+	return r*v*v
+
