@@ -9,25 +9,13 @@
 r = 3.0
 v = 10.0
 
-[node name="Planet0" parent="Sun" instance=ExtResource( 1 )]
-parent = NodePath("..")
-v = 10.0
-T = 10.0
-
 [node name="Planet1" parent="Sun" instance=ExtResource( 1 )]
 parent = NodePath("..")
 v = 10.0
-ecc = 0.5
+ecc = 0.9
 T = 20.0
 
-[node name="PlanetA" parent="Sun" instance=ExtResource( 1 )]
-parent = NodePath("..")
-v = 10.0
-
-[node name="PlanetB" parent="Sun" instance=ExtResource( 1 )]
-parent = NodePath("..")
-T = 120.0
-
 [node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 30, 0 )
 script = ExtResource( 2 )
 max_speed = Vector3( 10, 10, 10 )

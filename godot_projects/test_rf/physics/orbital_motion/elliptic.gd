@@ -62,6 +62,8 @@ static func process( dt: float, args: Dictionary ):
 	r = A.xform( r )
 	v = A.xform( v )
 	
+	print( "t: ", periapsis_t, ", M: ", M, ", E: ", E )
+	
 	return [r, v]
 
 
@@ -72,7 +74,7 @@ static func solve( e: float, M: float, E: float ):
 	var iters: int = 0
 	
 	while ( err > Consts.EPS ) and ( iters < Consts.MAX_ITERS ):
-		ret = solve_next( e, M, En )
+		ret = solve_next( e, M, En, err )
 		err = ret[0]
 		En  = ret[1]
 		
@@ -87,12 +89,21 @@ static func solve( e: float, M: float, E: float ):
 	
 
 
-static func solve_next( e: float, M: float, E: float ):
+static func solve_next( e: float, M: float, E: float, max_err: float = -1.0 ):
 	var si_E: float = sin( E )
 	var co_E: float = cos( E )
-	var En: float = E - ( E - e*si_E - M ) / (1.0  - e*co_E)
-	var si_En: float = sin( En )
-	var err: float = abs( En - e*si_En - M )
+	var alpha: float = 1.0
+	var err: float
+	var En: float
+	var iters: int = 0
+	while iters < Consts.MAX_ITERS:
+		En = E - alpha * ( E - e*si_E - M ) / (1.0  - e*co_E)
+		var si_En: float = sin( En )
+		err = abs( En - e*si_En - M )
+		if (max_err < 0.0) or (err < max_err):
+			break
+		alpha = alpha * 0.5
+		iters += 1
 	return [err, En]
 
 

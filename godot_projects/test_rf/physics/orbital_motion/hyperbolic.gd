@@ -72,7 +72,7 @@ static func solve( e: float, M: float, E: float ):
 	var iters: int = 0
 	
 	while ( err > Consts.EPS ) and ( iters < Consts.MAX_ITERS ):
-		ret = solve_next( e, M, En )
+		ret = solve_next( e, M, En, err )
 		err = ret[0]
 		En  = ret[1]
 		iters += 1
@@ -80,12 +80,21 @@ static func solve( e: float, M: float, E: float ):
 	
 
 
-static func solve_next( e: float, M: float, E: float ):
+static func solve_next( e: float, M: float, E: float, max_err: float = -1.0 ):
 	var sih_E: float = sinh( E )
 	var coh_E: float = cosh( E )
-	E = E - ( e*sih_E - E - M ) / (e*coh_E - 1.0)
-	sih_E = sinh( E )
-	var err: float = abs( e*sih_E - E - M )
+	var err: float
+	var En: float
+	var alpha: float = 1.0
+	var iters: int = 0
+	while iters < Consts.MAX_ITERS:
+		En = E - alpha * ( e*sih_E - E - M ) / (e*coh_E - 1.0)
+		var sih_En: float = sinh( En )
+		err = abs( e*sih_En - En - M )
+		if (max_err < 0.0) or (err < max_err):
+			break
+		iters += 1
+		alpha *= 0.5
 	return [err, E]
 
 

@@ -1,6 +1,6 @@
 extends Spatial
 
-const Motion = preload( "res://physics/orbital_motion/motion.gd" )
+var Motion = load( "res://physics/orbital_motion/motion.gd" )
 
 export(NodePath) var parent
 export(float) var r = 1.0
