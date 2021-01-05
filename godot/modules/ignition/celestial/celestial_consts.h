@@ -7,12 +7,13 @@
 namespace Ign
 {
 
-namespace Celestial
+class Celestial
 {
-    typename Ticks int64_t;
+public:
+    typedef signed long long Ticks;
     // For "dt" adjustments.
-    Ticks secs_to_tics( Float secs );
-    Float ticks_to_secs( Ticks ticks );
+    static Ticks secs_to_ticks( Float secs );
+    static Float ticks_to_secs( Ticks ticks );
 
     static const Float EPS;
     static const int   MAX_ITERS;

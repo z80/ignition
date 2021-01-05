@@ -1,5 +1,7 @@
 
 #include "celestial_motion.h"
+#include "celestial_consts.h"
+#include <cmath>
 
 namespace Ign
 {
@@ -52,11 +54,11 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     const Float abs_v = v.Length();
     const Float Ws    = gm/abs_r - 0.5*abs_v*abs_v;
     // Semimajor axis.
-    if ( ( abs_e > (1.0 + Celesial::EPS) ) || 
-         ( abs_e < (1.0 - Celestial::EPS) )
+    if ( ( abs_e > (1.0 + Celestial::EPS) ) || 
+         ( abs_e < (1.0 - Celestial::EPS) ) )
         a = 0.5*gm/Ws;
     else
-        a= 0.0;
+        a = 0.0;
 
     // Orbit plane unit vectors.
     // "e_a" towards perigee.
@@ -73,8 +75,8 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     if ( abs_h_cross_ex > Celestial::EPS )
         e_y = h_cross_ex / abs_h_cross_ex;
     else
-        e_y= v.normalized();
-        e_y = e_y - ( e_x * e_y.DotPRoduct( e_x ) );
+        e_y= v.Normalized();
+        e_y = e_y - ( e_x * e_y.DotProduct( e_x ) );
         e_y = e_y.Normalized();
 
     const Vector3d e_z = e_x.CrossProduct( e_y );
@@ -90,7 +92,7 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     A.m12_ = e_z.y_;
     A.m22_ = e_z.z_;
 
-    inv_A = A.Transposed();
+    inv_A = A.Transpose();
 
     se3_local.r_ = inv_A * se3_global.r_;
     se3_local.v_ = inv_A * se3_global.v_;
@@ -100,7 +102,7 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
         type = HYPERBOLIC;
         init_hyperbolic();
     }
-    else if ( abs_e < (1.0 - Celestial:EPS) )
+    else if ( abs_e < (1.0 - Celestial::EPS) )
     {
         type = ELLIPTIC;
         init_elliptic();
@@ -112,27 +114,27 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     }
 }
 
-Float CelestialMotion::init_gm( Float radius_km, Float wanted_surface_orbit_velocity_kms ) const
+Float CelestialMotion::init_gm( Float radius_km, Float wanted_surface_orbit_velocity_kms )
 {
-    const Flaot v = wanted_surface_orbit_velocity_kms * 1000.0;
+    const Float v = wanted_surface_orbit_velocity_kms * 1000.0;
     const Float r = radius_km * 1000.0;
     const Float gm = v*v*r;
     return gm;
 }
 
-void CelestialMotion::init_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity )
+void CelestialMotion::launch_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity )
 {
 }
 
 const SE3 & CelestialMotion::process( Float dt )
 {
-    if (type == Celestial::LINEAR)
+    if (type == LINEAR)
         process_linear( dt );
-    else if (type == Celestial::HYPERBOLIC)
+    else if (type == HYPERBOLIC)
         process_hyperbolic( dt );
-    else if (type == Celestial::ELLIPTIC)
+    else if (type == ELLIPTIC)
         process_elliptic( dt );
-    else if (type == Celestial::PARABOLIC)
+    else if (type == PARABOLIC)
         process_parabolic( dt );
 
     return se3_global;
@@ -152,13 +154,13 @@ void CelestialMotion::init_parabolic()
     // True anomaly.
     const Vector3d & r = se3_local.r_;
     const Float abs_r = r.Length();
-    const Float arg = slr/abs_r - 1.0;
+    Float arg = slr/abs_r - 1.0;
     if (arg > 1.0)
-        arg = 1.0
+        arg = 1.0;
     else if (arg < -1.0)
-        arg = -1.0
+        arg = -1.0;
     Float true_anomaly = std::acos(arg);
-    const bool neg = (r.y < 0.0);
+    const bool neg = (r.y_ < 0.0);
     if ( neg )
         true_anomaly = -true_anomaly;
 
@@ -169,8 +171,8 @@ void CelestialMotion::init_parabolic()
 
 void CelestialMotion::init_elliptic()
 {
-    const Vector3d & r = se3_local_.r_;
-    const Vector3d & v = se3_local_.v_;
+    const Vector3d & r = se3_local.r_;
+    const Vector3d & v = se3_local.v_;
 
     // Semi latus rectum.
     slr = a * (1.0 - abs_e*abs_e);
@@ -204,26 +206,30 @@ void CelestialMotion::init_hyperbolic()
     const Float cosh_E = (co_f + abs_e)/(1.0 + abs_e*co_f);
     Float sinh_E = std::sqrt(cosh_E*cosh_E - 1.0); 
     if ( r.y_ < 0.0 )
-        sinh = -sinh_E;
+        sinh_E = -sinh_E;
     const Float exp_E = cosh_E + sinh_E;
     const Float E = std::log( exp_E );
 
     const Float M = abs_e * sinh_E - E;
     const Float pt = M * n;
 
-    periapsis_t = Celesital::secs_to_ticks( pt );
+    periapsis_t = Celestial::secs_to_ticks( pt );
 }
 
 void CelestialMotion::process_linear( Float dt )
 {
+    const Float abs_r = se3_global.r_.Length();
+    const Vector3d a = se3_global.r_ * ( -gm/(abs_r*abs_r*abs_r) );
+    se3_global.v_ += a * dt;
+    se3_global.r_ += se3_global.v_ * dt;
 }
 
 void CelestialMotion::process_parabolic( Float dt )
 {
-    const Celestial::Ticks d_ticks = secs_to_ticks( dt );
+    const Celestial::Ticks d_ticks = Celestial::secs_to_ticks( dt );
     periapsis_t += d_ticks;
 
-    const Float pt = ticks_to_secs( periapsis_t );
+    const Float pt = Celestial::ticks_to_secs( periapsis_t );
     const Float rp = slr * 0.5;
     const Float A = 1.5 * std::sqrt( gm/(2.0*rp*rp*rp) ) * pt;
     const Float B = std::pow( A + std::sqrt(A*A + 1.0), 1.0/3.0 );
@@ -271,9 +277,9 @@ void CelestialMotion::process_hyperbolic( Float dt )
 {
     const Float d_ticks = Celestial::secs_to_ticks( dt );
     periapsis_t += d_ticks;
-    const Float pt = Celesital::ticks_to_secs( periapsis_t );
+    const Float pt = Celestial::ticks_to_secs( periapsis_t );
     
-    const Flaot M = pt / n;
+    const Float M = pt / n;
     E = solve_hyperbolic( abs_e, M, E );
 
     const Float coh_E = std::cosh( E );
@@ -282,7 +288,7 @@ void CelestialMotion::process_hyperbolic( Float dt )
     if (E < 0.0)
         si_f = -si_f;
 
-    const Flaot abs_r = slr/(1.0 + abs_e*co_f);
+    const Float abs_r = slr/(1.0 + abs_e*co_f);
     const Float x = abs_r * co_f;
     const Float y = abs_r * si_f;
 
@@ -297,10 +303,10 @@ Vector3d CelestialMotion::velocity_parabolic() const
 {
     const Float abs_r = se3_local.r_.Length();
 
-    const Float si = se3_local.r_.y_;
-    const Float co = se3_local.r_.x_;
+    const Float si = se3_local.r_.y_ / abs_r;
+    const Float co = se3_local.r_.x_ / abs_r;
 
-    Vector3d v( -si_f, co_f + 1.0, 0.0 );
+    Vector3d v( -si, co + 1.0, 0.0 );
     v.Normalize();
     const Float abs_v = std::sqrt( (2.0*gm)/abs_r );
     v = v * abs_v;
@@ -308,9 +314,9 @@ Vector3d CelestialMotion::velocity_parabolic() const
     return v;
 }
 
-Vector3d CelestialMotion::velocity_elliptic()
+Vector3d CelestialMotion::velocity_elliptic() const
 {
-    abs_r = se3_local.r_.Length();
+    const Float abs_r = se3_local.r_.Length();
     Vector3d v( -a*std::sin(E), b*std::cos(E), 0.0 );
     v.Normalize();
     const Float abs_v = std::sqrt( gm*( 2.0/abs_r - 1.0/a ) );
@@ -319,9 +325,10 @@ Vector3d CelestialMotion::velocity_elliptic()
     return v;
 }
 
-Vector3d CelestialMotion::velocity_huperbolic() const
+Vector3d CelestialMotion::velocity_hyperbolic() const
 {
-    const Float abs_r = se3_local.r_.Length();
+	const Vector3d & r = se3_local.r_;
+    const Float abs_r = r.Length();
 
     const Float si_f = r.y_ / abs_r;
     const Float co_f = r.x_ / abs_r;
@@ -364,9 +371,9 @@ Float CelestialMotion::solve_next_elliptic( Float e, Float M, Float E, Float max
     while ( iters < Celestial::MAX_ITERS )
     {
         En = E - alpha*(E - e*si_E - M) / (1.0 - e*co_E);
-        const Float si_en = std::sin(En);
+        const Float si_En = std::sin(En);
         err_out = std::abs(En - e*si_En - M);
-        if ( ( err < 0.0 ) || (err_out < err) )
+        if ( (max_err < 0.0) || (err_out < max_err) )
             break;
         alpha = alpha * 0.5;
         iters += 1;
@@ -374,6 +381,46 @@ Float CelestialMotion::solve_next_elliptic( Float e, Float M, Float E, Float max
 
     return En;
 }
+
+
+Float CelestialMotion::solve_hyperbolic( Float e, Float M, Float E )
+{
+    Float err;
+    Float En = solve_next_hyperbolic( e, M, E, -1.0, err );
+    int iters = 0;
+
+    while ( (err > Celestial::EPS) && (iters < Celestial::MAX_ITERS) )
+    {
+        En = solve_next_hyperbolic( e, M, En, err, err );
+        iters += 1;
+    }
+
+    return En;
+}
+
+Float CelestialMotion::solve_next_hyperbolic( Float e, Float M, Float E, Float max_err, Float & err_out )
+{
+    const Float sih_E = std::sinh( E );
+    const Float coh_E = std::cosh( E );
+    Float err;
+    Float En;
+    Float alpha = 1.0;
+    int iters = 0;
+    while (iters < Celestial::MAX_ITERS)
+    {
+        En = E - alpha * ( e*sih_E - E - M ) / ( e*coh_E - 1.0 );
+        Float sih_En = std::sinh( En );
+        err = std::abs( e*sih_En - En - M );
+        if ( (max_err < 0.0) || (err < max_err) )
+            break;
+        iters += 1;
+        alpha *= 0.5;
+    }
+    return En;
+}
+
+
+
 
 
 

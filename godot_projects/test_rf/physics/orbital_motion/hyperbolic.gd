@@ -95,7 +95,7 @@ static func solve_next( e: float, M: float, E: float, max_err: float = -1.0 ):
 			break
 		iters += 1
 		alpha *= 0.5
-	return [err, E]
+	return [err, En]
 
 
 

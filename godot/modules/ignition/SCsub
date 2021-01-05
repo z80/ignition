@@ -23,6 +23,9 @@ def configure_static_build():
     module_env.add_source_files( env.modules_sources, "sphere/*.cpp" )
     module_env.add_source_files( env.modules_sources, "sphere/*.c" )
 
+    # Also celestial motion tools.
+    module_env.Append(CPPPATH=["#modules/ignition/celestial"])
+    module_env.add_source_files( env.modules_sources, "celestial/*.cpp" )
 
 
 
@@ -30,3 +33,7 @@ configure_static_build()
 
 #if ARGUMENTS.get('slicer_tests', 'no') == 'yes':
 #    SConscript("tests/SCsub")
+
+
+
+

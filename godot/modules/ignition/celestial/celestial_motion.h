@@ -18,8 +18,8 @@ public:
     ~CelestialMotion();
 
     void init( Float gm, const SE3 & se3 );
-    static Float init_gm( Float radius_km, Float wanted_surface_orbit_velocity_kms ) const;
-    void init_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity );
+    static Float init_gm( Float radius_km, Float wanted_surface_orbit_velocity_kms );
+    void launch_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity );
     const SE3 & process( Float dt );
 
     Type type;
@@ -58,7 +58,7 @@ private:
 
     Vector3d velocity_parabolic() const;
     Vector3d velocity_elliptic() const;
-    Vector3d velocity_huperbolic() const;
+    Vector3d velocity_hyperbolic() const;
 
     static Float solve_elliptic( Float e, Float M, Float E );
     static Float solve_next_elliptic( Float e, Float M, Float E, Float max_err, Float & err_out );
