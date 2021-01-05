@@ -1,5 +1,6 @@
 
 #include "celestial_motion_ref.h"
+#include "ref_frame_node.h"
 
 namespace Ign
 {
@@ -10,6 +11,7 @@ void CelestialMotionRef::_bind_methods()
 	ClassDB::bind_method( D_METHOD("init_gm", "radius_km", "suface_orbit_velocity_kms"), &CelestialMotionRef::init_gm );
 	ClassDB::bind_method( D_METHOD("launch_elliptic", "gm", "unit_r", "unit_v", "period_hrs", "eccentricity"), &CelestialMotionRef::launch_elliptic );
 	ClassDB::bind_method( D_METHOD("process", "dt"), &CelestialMotionRef::process, Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("process_rf", "dt", "rf"), &CelestialMotionRef::process_rf );
 }
 
 CelestialMotionRef::CelestialMotionRef()
@@ -43,6 +45,13 @@ Ref<Se3Ref> CelestialMotionRef::process( real_t dt )
 	se3.instance();
 	se3->se3 = cm.process( dt );
 	return se3;
+}
+
+void CelestialMotionRef::process_rf( real_t dt, Node * rf )
+{
+	RefFrameNode * rf_node = Node::cast_to<RefFrameNode>( rf );
+	if (rf_node != nullptr )
+		rf_node->se3_ = cm.process( dt );
 }
 
 

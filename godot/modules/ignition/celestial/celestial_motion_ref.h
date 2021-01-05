@@ -10,6 +10,8 @@
 namespace Ign
 {
 
+class RefFrameNode;
+
 class CelestialMotionRef: public Reference
 {
 	GDCLASS( CelestialMotionRef, Reference );
@@ -26,6 +28,7 @@ public:
 	real_t init_gm( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const;
 	void launch_elliptic( real_t gm, const Vector3 & unit_r, const Vector3 & unit_v, real_t period_hrs, real_t eccentricity );
 	Ref<Se3Ref> process( real_t dt );
+	void process_rf( real_t dt, Node * rf );
 
 public:
 	CelestialMotion cm;
