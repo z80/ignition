@@ -15,6 +15,9 @@
 #include "height_source_gd_ref.h"
 #include "cube_sphere_node.h"
 
+// Celestial motion.
+#include "celestial_motion_ref.h"
+
 void register_ignition_types()
 {
 	ClassDB::register_class<OccupancyGrid>();
@@ -29,6 +32,8 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::HeightSourceTestRef>();
 	ClassDB::register_class<Ign::HeightSourceGdRef>();
 	ClassDB::register_class<Ign::CubeSphereNode>();
+
+	ClassDB::register_class<Ign::CelestialMotionRef>();
 }
 
 void unregister_ignition_types()
