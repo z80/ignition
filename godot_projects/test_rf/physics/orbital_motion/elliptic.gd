@@ -62,7 +62,7 @@ static func process( dt: float, args: Dictionary ):
 	r = A.xform( r )
 	v = A.xform( v )
 	
-	print( "t: ", periapsis_t, ", M: ", M, ", E: ", E )
+	#print( "t: ", periapsis_t, ", M: ", M, ", E: ", E )
 	
 	return [r, v]
 
