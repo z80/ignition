@@ -17,6 +17,7 @@
 
 // Celestial motion.
 #include "celestial_motion_ref.h"
+#include "celestial_rotation_ref.h"
 
 void register_ignition_types()
 {
@@ -34,6 +35,7 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::CubeSphereNode>();
 
 	ClassDB::register_class<Ign::CelestialMotionRef>();
+	ClassDB::register_class<Ign::CelestialRotationRef>();
 }
 
 void unregister_ignition_types()

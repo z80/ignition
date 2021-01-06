@@ -7,7 +7,7 @@ export(float)   var rotation_period_hrs = 0.1
 export(Vector3) var rotation_axis       = Vector3( 0.0, 1.0, 0.0 )
 
 # Defining geometry and GM based on surface orbiting velocity.
-export(float)  var surface_orbital_vel_km_sec = 0.3
+export(float)  var surface_orbital_vel_kms = 0.3
 export(float)  var planet_radius_km    = 1.0
 export(float)  var planet_height_km    = 0.1
 export(String) var height_source_name = "test"
@@ -28,7 +28,7 @@ export(float) var detail_dist_2 = 1e10
 
 var initialized: bool = false
 var gm: float = -1.0
-var orbital_state = null
+var motion: CelestialMotionRef = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -46,9 +46,10 @@ func init():
 		return
 	initialized = true
 	
+	motion = CelestialMotionRef.new()
+	
 	# Initialize GM.
-	var Motion = load( "res://physics/orbital_motion/motion.gd" )
-	gm = Motion.init_gm( planet_radius_km*1000.0, surface_orbital_vel_km_sec*1000.0 )
+	gm = motion.init_gm( planet_radius_km, surface_orbital_vel_kms )
 	
 	# Initialize orbital movement.
 	perigee_dir = perigee_dir.normalized()
@@ -60,7 +61,7 @@ func init():
 	if parent_body != null:
 		parent_body.init()
 		var parent_gm: float = parent_body.gm
-		orbital_state = Motion.init_elliptic( parent_gm, perigee_dir, perigee_vel, orbital_period_hrs*3600.0, orbital_eccentricity )
+		motion.launch_elliptic( parent_gm, perigee_dir, perigee_vel, orbital_period_hrs, orbital_eccentricity )
 	
 	# Initialize rotation.
 
