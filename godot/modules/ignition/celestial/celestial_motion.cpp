@@ -75,7 +75,7 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     if ( abs_h_cross_ex > Celestial::EPS )
         e_y = h_cross_ex / abs_h_cross_ex;
     else
-        e_y= v.Normalized();
+        e_y = v.Normalized();
         e_y = e_y - ( e_x * e_y.DotProduct( e_x ) );
         e_y = e_y.Normalized();
 
@@ -124,6 +124,27 @@ Float CelestialMotion::init_gm( Float radius_km, Float wanted_surface_orbit_velo
 
 void CelestialMotion::launch_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity )
 {
+    const Float ee = (1.0 + eccentricity) / (1.0 - eccentricity);
+    const Float period = period_hrs * 3600.0;
+    const Float pi_T = (PI2 * gm) / period;
+    const Float arg = pi_T*pi_T*ee*ee*ee;
+    const Float v = std::pow( arg, 1.0/6.0 );
+    const Float r = ((1.0+eccentricity)*gm) / (v*v);
+
+    Vector3d v_r = unit_r;
+    v_r.Normalize();
+    Vector3d v_v = unit_v;
+    v_v.Normalize();
+    v_v = v_v - v_r * v_r.DotProduct(v_v);
+    v_v.Normalize();
+
+    v_r = v_r * r;
+    v_v = v_v * v;
+
+	SE3 se3;
+	se3.r_ = v_r;
+	se3.v_ = v_v;
+    init( gm, se3 );
 }
 
 const SE3 & CelestialMotion::process( Float dt )
@@ -178,7 +199,7 @@ void CelestialMotion::init_elliptic()
     slr = a * (1.0 - abs_e*abs_e);
 
     b = a * std::sqrt(1.0 - abs_e*abs_e);
-    const Float cos_E = (e.x_ + a*abs_e) / a;
+    const Float cos_E = (r.x_ + a*abs_e) / a;
     const Float sin_E = r.y_ / b;
     
     E = std::atan2( sin_E, cos_E );
