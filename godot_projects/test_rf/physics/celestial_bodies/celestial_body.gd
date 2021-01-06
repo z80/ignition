@@ -33,7 +33,7 @@ var rotation: CelestialRotationRef = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	init()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -73,7 +73,10 @@ func init():
 	celestial_body.radius = planet_radius_km * 1000.0
 	celestial_body.height = planet_height_km * 1000.0
 	#celestial_body.set_height_source( height_source )
-	#celestial_body.distance_scaler = distance_scaler
+	celestial_body.distance_scaler = PhysicsManager.distance_scaler
+	
+	celestial_body.apply_scale             = true
+	celestial_body.set_scale_mode_distance = 3.0
 
 
 func process( delta ):

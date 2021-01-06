@@ -1,3 +1,4 @@
+
 extends Node
 
 const ENVS_QTY = 32
@@ -9,15 +10,24 @@ var player_ref_frame = null setget _set_player_ref_frame, _get_player_ref_frame
 var player_select = null setget _set_player_select, _get_player_select
 # Ref frame gets focus when explicitly pressed "c" (center) on a selected ref. frame.
 var player_control = null setget _set_player_control, _get_player_control
-
+# Camera. It is supposed to be the only one.
 var camera = null setget _set_camera, _get_camera
+# Scaler for large distances.
+var distance_scaler = DistanceScalerRef.new()
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	init()
+
+
+func init():
 	envs_.resize(ENVS_QTY)
 	for i in range(ENVS_QTY):
 		envs_[i] = null
-
+	
+	distance_scaler.plain_distance = 1000.0
+	distance_scaler.log_scale      = 1.0
 
 
 # Update body visual parts in accordance with what is set to be 
