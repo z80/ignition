@@ -8,3 +8,4 @@ script = ExtResource( 1 )
 [node name="Rotation" type="RefFrameNode" parent="."]
 
 [node name="CelestialBody" type="CubeSphereNode" parent="Rotation"]
+center_ref_frame = NodePath("..")

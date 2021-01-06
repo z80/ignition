@@ -58,6 +58,7 @@ Vector2 compute_uv2( const Vector3 & at, real_t R )
 void CubeSphereNode::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_height_source", "height_source"), &CubeSphereNode::set_height_source );
+	ClassDB::bind_method( D_METHOD("get_height_source"),                  &CubeSphereNode::get_height_source, Variant::OBJECT );
 
 	ClassDB::bind_method( D_METHOD("set_r", "r"), &CubeSphereNode::set_r );
 	ClassDB::bind_method( D_METHOD("get_r" ),     &CubeSphereNode::get_r, Variant::REAL );
@@ -102,6 +103,7 @@ void CubeSphereNode::_bind_methods()
 	// Should be listened by collision surfaces.
 	ADD_SIGNAL( MethodInfo(SIGNAL_MESH_UPDATED) );
 
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "height_source" ), "set_height_source", "get_height_source" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ), "set_r", "get_r" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ), "set_h", "get_h" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rebuild_check_period" ), "set_subdivision_check_period", "get_subdivision_check_period" );
@@ -147,11 +149,16 @@ CubeSphereNode::~CubeSphereNode()
 {
 }
 
-void CubeSphereNode::set_height_source( Ref<HeightSourceRef> hs )
+void CubeSphereNode::set_height_source( const Ref<HeightSourceRef> & hs )
 {
 	height_source = hs; //Object::cast_to<HeightSourceRef>( hs );
 }
 
+
+Ref<HeightSourceRef> CubeSphereNode::get_height_source() const
+{
+	return height_source;
+}
 
 void CubeSphereNode::set_r( real_t r )
 {

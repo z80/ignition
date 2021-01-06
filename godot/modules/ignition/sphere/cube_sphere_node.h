@@ -33,7 +33,8 @@ public:
 	CubeSphereNode();
 	~CubeSphereNode();
 
-	void set_height_source( Ref<HeightSourceRef> hs );
+	void set_height_source( const Ref<HeightSourceRef> & hs );
+	Ref<HeightSourceRef> get_height_source() const;
 
 	void set_r( real_t r );
 	real_t get_r() const;

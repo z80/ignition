@@ -29,6 +29,7 @@ export(float) var detail_dist_2 = 1e10
 var initialized: bool = false
 var gm: float = -1.0
 var motion: CelestialMotionRef = null
+var rotation: CelestialRotationRef = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -64,4 +65,38 @@ func init():
 		motion.launch_elliptic( parent_gm, perigee_dir, perigee_vel, orbital_period_hrs, orbital_eccentricity )
 	
 	# Initialize rotation.
+	rotation = CelestialRotationRef.new()
+	rotation.init( rotation_axis, rotation_period_hrs )
+	
+	# Initialize body geometry
+	var celestial_body = get_node( "Rotation/CelestialBody" )
+	celestial_body.radius = planet_radius_km * 1000.0
+	celestial_body.height = planet_height_km * 1000.0
+	#celestial_body.set_height_source( height_source )
+	#celestial_body.distance_scaler = distance_scaler
+
+
+func process( delta ):
+	var translation_rf = get_node( "." )
+	var rotation_rf    = get_node( "Rotation" )
+	motion.process_rf( delta, translation_rf )
+	rotation.process_rf( delta, rotation_rf )
+
+
+func set_origin( rf ):
+	var celestial_body = get_node( "Rotation/CelestialBody" )
+	var rf_path = rf.get_path()
+	celestial_body.origin_ref_frame = rf_path
+
+
+
+
+
+
+
+
+
+
+
+
 
