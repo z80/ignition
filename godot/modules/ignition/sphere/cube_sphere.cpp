@@ -125,8 +125,6 @@ void CubeSphere::apply_source( HeightSource * src )
             const CubeVertex & va = verts.ptr()[vertIndA];
             const CubeVertex & vb = verts.ptr()[vertIndB];
             v.at = (va.at + vb.at) * 0.5;
-            v.norm = va.norm + vb.norm;
-            v.norm.Normalize();
         }
     }
     compute_normals();
