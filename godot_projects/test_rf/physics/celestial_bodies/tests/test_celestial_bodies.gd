@@ -6,6 +6,9 @@ var camera: Camera = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	# Make creator know where to add visual and physical objects.
+	BodyCreator.root_node = self
+
 	var sun = get_node( "Sun" )
 	
 	var rf = RefFramePhysics.new()
@@ -16,7 +19,6 @@ func _ready():
 	rf.change_parent( sun )
 	rf.add_child( camera )
 	
-	BodyCreator.root_node = sun
 	PhysicsManager.player_ref_frame = rf
 	PhysicsManager.camera = camera
 	
