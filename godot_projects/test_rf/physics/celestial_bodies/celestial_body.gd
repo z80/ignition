@@ -31,6 +31,8 @@ var gm: float = -1.0
 var motion: CelestialMotionRef = null
 var rotation: CelestialRotationRef = null
 
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	init()
@@ -70,13 +72,15 @@ func init():
 	
 	# Initialize body geometry
 	var celestial_body = get_node( "Rotation/CelestialBody" )
-	celestial_body.radius = planet_radius_km * 1000.0
-	celestial_body.height = planet_height_km * 1000.0
-	celestial_body.height_source   = height_source( height_source_name )
+	var radius: float  = planet_radius_km * 1000.0
+	var height: float  = planet_height_km * 1000.0
+	celestial_body.radius = radius
+	celestial_body.height = height
+	celestial_body.height_source   = height_source( height_source_name, radius, height )
 	celestial_body.distance_scaler = PhysicsManager.distance_scaler
 	
-	celestial_body.apply_scale             = true
-	celestial_body.set_scale_mode_distance = 3.0
+	celestial_body.apply_scale         = true
+	celestial_body.scale_mode_distance = 3.0
 	
 	celestial_body.clear_levels()
 	celestial_body.add_level( detail_size_0, detail_dist_0 )
@@ -86,11 +90,19 @@ func init():
 	connect( "mesh_updated", self, "on_mesh_updated" )
 
 
+
+func process( delta ):
+	process_motion( delta )
+	process_geometry()
+
+
+
 func process_motion( delta ):
 	var translation_rf = get_node( "." )
 	var rotation_rf    = get_node( "Rotation" )
 	motion.process_rf( delta, translation_rf )
 	rotation.process_rf( delta, rotation_rf )
+
 
 
 func process_geometry():
@@ -106,6 +118,9 @@ func process_geometry():
 
 
 
+
+
+
 func set_origin( rf ):
 	var celestial_body = get_node( "Rotation/CelestialBody" )
 	var rf_path = rf.get_path()
@@ -113,16 +128,31 @@ func set_origin( rf ):
 
 
 
-func height_source( name: String ):
+func height_source( name: String, radius: float, height: float ):
 	var HS = preload( "res://physics/celestial_bodies/height_sources.gd" )
-	var hs: HeightSourceRef = HS.height_source( name )
+	var hs: HeightSourceRef = HS.height_source( name, radius, height )
 	return hs
+
 
 
 # Callback on mesh updated.
 func on_mesh_updated():
+	print( "on \"mesh_updated()\" called" )
+	
+	var cube_sphere: CubeSphereNode = get_node( "Rotation/CelestialBody" )
+	var collision_dist = Constants.RF_MERGE_DISTANCE
 	# In all RefFramePhysics re-generate surface meshes.
-	pass
+	var translation: RefFrameNode = get_node( "." ) as RefFrameNode
+	var children: Array = translation.get_children()
+	for ch in children:
+		var rf: RefFramePhysics = ch as RefFramePhysics
+		if rf != null:
+			var ref_frames = [ rf ]
+			var verts: PoolVector3Array = cube_sphere.collision_triangles( rf, ref_frames, collision_dist )
+			rf.set_surface_vertices( verts )
+
+
+
 
 
 

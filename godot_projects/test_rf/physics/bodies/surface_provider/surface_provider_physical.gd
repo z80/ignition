@@ -44,6 +44,6 @@ func set_vertices( vertices: PoolVector3Array ):
 	concave_sh.set_faces( vertices )
 	
 	# Create collision.
-	var editor_sh = get_node( "CollisionShape" )
-	editor_sh.shape = concave_sh
+	var collision_shape = get_node( "CollisionShape" )
+	collision_shape.shape = concave_sh
 

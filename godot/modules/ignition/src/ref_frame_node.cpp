@@ -25,6 +25,12 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("w_root"), &RefFrameNode::w_root, Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("t_root"), &RefFrameNode::t_root, Variant::TRANSFORM );
 
+	ClassDB::bind_method( D_METHOD("set_se3"), &RefFrameNode::set_se3 );
+	ClassDB::bind_method( D_METHOD("get_se3"), &RefFrameNode::get_se3, Variant::OBJECT );
+
+	ClassDB::bind_method( D_METHOD("relative_to", "origin"), &RefFrameNode::relative_to, Variant::OBJECT );
+
+
 	ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent, Variant::NIL );
 
 	ClassDB::bind_method( D_METHOD("compute_relative_to_root", "node"), &RefFrameNode::compute_relative_to_root, Variant::NIL );
@@ -36,6 +42,12 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_jump_t", "transform"), &RefFrameNode::set_jump_t, Variant::NIL );
 
 	ClassDB::bind_method( D_METHOD("apply_jump"),              &RefFrameNode::apply_jump, Variant::NIL );
+
+
+	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform" ),        "set_t", "t" );
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "linear_velocity" ),  "set_v", "v" );
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "angular_velocity" ), "set_w", "w" );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ),              "set_se3", "get_se3" );
 }
 
 RefFrameNode::RefFrameNode()
@@ -142,6 +154,20 @@ Ref<Se3Ref> RefFrameNode::get_se3() const
 	Ref<Se3Ref> se3;
 	se3.instance();
 	se3.ptr()->se3 = se3_;
+	return se3;
+}
+
+
+Ref<Se3Ref> RefFrameNode::relative_to( Node * origin )
+{
+	Ref<Se3Ref> se3;
+	se3.instance();
+
+	RefFrameNode * rf = Node::cast_to<RefFrameNode>( origin );
+	if (!rf)
+		return se3;
+
+	se3->se3 = relative_( rf );
 	return se3;
 }
 

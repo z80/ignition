@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://physics/celestial_bodies/celestial_body.tscn" type="PackedScene" id=1]
+[ext_resource path="res://physics/celestial_bodies/tests/test_celestial_bodies.gd" type="Script" id=2]
+
+[node name="Node" type="Node"]
+script = ExtResource( 2 )
+
+[node name="Sun" parent="." instance=ExtResource( 1 )]
+se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"script":null)
+
+rotation_period_hrs = 0.01
+planet_radius_km = 0.005
+planet_height_km = 0.001
+
+[node name="Rotation" parent="Sun" index="0"]
+se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"script":null)
+
+
+[editable path="Sun"]

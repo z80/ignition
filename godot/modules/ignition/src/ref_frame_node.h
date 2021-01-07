@@ -51,6 +51,7 @@ public:
 	void set_se3( const Ref<Se3Ref> & se3 );
 	Ref<Se3Ref> get_se3() const;
 
+	Ref<Se3Ref> relative_to( Node * origin );
 
 	/// Change origin without changing absolute position in space.
 	void change_parent( Node * origin );

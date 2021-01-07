@@ -6,9 +6,14 @@ class_name RefFramePhysics
 # Bit for physics contacts.
 var _contact_layer: int = -1
 
+# Surface collision.
+var SurfaceProvider = preload( "res://physics/bodies/surface_provider/surface_provider.tscn" )
+var _surface_provider = null
 
 # For debugging jump only this number of times.
 #var _jumps_left: int = 50
+
+
 
 # To be able to identify objects of this class.
 func get_class():
@@ -29,6 +34,24 @@ func evolve():
 	jump_if_needed()
 
 
+# Override ready. Added surface provider creation.
+func ready():
+	.ready()
+	create_surface_provider()
+
+
+func create_surface_provider():
+	if _surface_provider != null:
+		return
+	_surface_provider = SurfaceProvider.instance()
+	_surface_provider.init()
+	_surface_provider.change_parent( self )
+
+
+func set_surface_vertices( verts: PoolVector3Array ):
+	if _surface_provider != null:
+		_surface_provider.set_vertices( verts )
+
 
 func init_physics():
 	if _contact_layer >= 0:
@@ -44,16 +67,19 @@ func init_physics():
 		ph.collision_layer = _contact_layer
 
 
+
 func finit_physics():
 	if ( _contact_layer >= 0 ):
 		_cleanup_physical()
 		PhysicsManager.release_environment( self )
 
 
+
 # If physics is initialized and being processed.
 func is_active():
 	var en: bool = (_contact_layer >= 0)
 	return en
+
 
 
 func add_body( body: Body ):
@@ -68,6 +94,7 @@ func add_body( body: Body ):
 func remove_body( body: Body ):
 	var parent = self.get_parent()
 	body.change_parent( parent )
+
 
 
 func create_body( type_name: String, t: Transform = Transform.IDENTITY ):

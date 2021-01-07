@@ -20,8 +20,11 @@ func evolve():
 # In this script it is child/parent management
 # A separate class is used for physics management and bodies creation.
 func _ready():
-	_init_force_source()
+	ready()
 
+
+func ready():
+	_init_force_source()
 
 
 func _process( _delta ):
