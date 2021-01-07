@@ -10,5 +10,8 @@ script = ExtResource( 2 )
 rotation_period_hrs = 0.01
 planet_radius_km = 0.005
 planet_height_km = 0.001
+detail_size_0 = 0.5
+detail_size_1 = 1.0
+detail_dist_1 = 3.0
 
 [editable path="Sun"]

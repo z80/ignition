@@ -130,6 +130,19 @@ void CubeSphere::apply_source( HeightSource * src )
         }
     }
     compute_normals();
+	for ( int i=0; i<qty; i++ )
+	{
+		CubeVertex & v = verts.ptrw()[i];
+		if ( v.isMidPoint )
+		{
+			const int vertIndA = v.a;
+			const int vertIndB = v.b;
+			const CubeVertex & va = verts.ptr()[vertIndA];
+			const CubeVertex & vb = verts.ptr()[vertIndB];
+			v.norm = va.norm + vb.norm;
+			v.norm.Normalize();
+		}
+	}
 
 
     // Apply color information.
@@ -460,7 +473,7 @@ void CubeSphere::compute_normals()
             CubeVertex & v3 = verts.ptrw()[vInd3];
             const Vector3d a = v1.at - v0.at;
             const Vector3d b = v2.at - v0.at;
-            Vector3d n = a.CrossProduct( b );
+            Vector3d n = b.CrossProduct( a );
             n.Normalize();
             v0.norm += n;
             v1.norm += n;

@@ -49,10 +49,12 @@ bool SubdivideSource::need_subdivide( const CubeSphere * s, Vector<SubdividePoin
     }
 
     // Sort and normalize all levels.
-    sort_levels( s );
+	// Keep levels sorted.
+	sort_levels( s );
+	const int levels_qty = levelsUnit_.size();
     const Level lvl_close = levelsUnit_.ptr()[0];
     const Float d_close = lvl_close.dist * 0.25;
-    const Level lvl_far = levelsUnit_.ptr()[levelsUnit_.size() - 1];
+    const Level lvl_far = levelsUnit_.ptr()[levels_qty - 1];
     const Float d_far   = lvl_far.dist * 0.25;
 
 
