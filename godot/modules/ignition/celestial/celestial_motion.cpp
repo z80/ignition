@@ -8,6 +8,8 @@ namespace Ign
 
 CelestialMotion::CelestialMotion()
 {
+	moving = false;
+
     type = LINEAR;
 
     gm = 1.0;
@@ -30,6 +32,8 @@ CelestialMotion::~CelestialMotion()
 
 void CelestialMotion::init( Float gm_, const SE3 & se3_ )
 {
+	moving = true;
+
     gm  = gm_;
     se3_global = se3_;
     const Vector3d & r = se3_global.r_;
@@ -149,6 +153,9 @@ void CelestialMotion::launch_elliptic( Float gm, const Vector3d & unit_r, const 
 
 const SE3 & CelestialMotion::process( Float dt )
 {
+	if ( !moving )
+		return se3_global;
+
     if (type == LINEAR)
         process_linear( dt );
     else if (type == HYPERBOLIC)

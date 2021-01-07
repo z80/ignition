@@ -9,6 +9,7 @@ CelestialRotation::CelestialRotation()
 {
 	period = 1000;
 	time   = 0;
+	spinning = false;
 }
 
 CelestialRotation::~CelestialRotation()
@@ -17,6 +18,8 @@ CelestialRotation::~CelestialRotation()
 
 void CelestialRotation::init( const Vector3d & up, Float period_hrs )
 {
+	spinning = true;
+
 	axis_orientation = Quaterniond( Vector3d( 0.0, 1.0, 0.0 ), up );
 	time = 0;
 	const Float T = period_hrs * 3600.0;
@@ -28,6 +31,9 @@ void CelestialRotation::init( const Vector3d & up, Float period_hrs )
 
 const SE3 & CelestialRotation::process( Float dt )
 {
+	if ( !spinning )
+		return se3;
+
 	const Celestial::Ticks d_time = Celestial::secs_to_ticks( dt );
 	time += d_time;
 	if ( time >= period )

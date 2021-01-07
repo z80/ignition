@@ -21,7 +21,7 @@ public:
 	~CelestialRotationRef();
 
 	void init( const Vector3 & up, real_t period_hrs );
-	void process( real_t dt, Node * rf );
+	void process_rf( real_t dt, Node * rf );
 
 public:
 	CelestialRotation celestial_rotation;

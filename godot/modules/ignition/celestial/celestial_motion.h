@@ -22,6 +22,8 @@ public:
     void launch_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity );
     const SE3 & process( Float dt );
 
+	bool moving;
+
     Type type;
 
     Float    gm;

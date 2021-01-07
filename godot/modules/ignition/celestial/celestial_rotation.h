@@ -17,6 +17,7 @@ public:
 	void init( const Vector3d & up, Float period_hrs );
 	const SE3 & process( Float dt );
 
+	bool             spinning;
 	Celestial::Ticks period;
 	Celestial::Ticks time;
 	Quaterniond      axis_orientation;
