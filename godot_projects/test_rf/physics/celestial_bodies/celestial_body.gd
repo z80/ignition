@@ -43,6 +43,22 @@ func _ready():
 #	pass
 
 
+func rotation_rf():
+	var rf: RefFrameNode = get_node( "." ) as RefFrameNode
+	return rf
+
+
+func translation_rf():
+	var rf: RefFrameNode = get_node( "Rotation" ) as RefFrameNode
+	return rf
+
+
+func surface_node():
+	var cube_sphere: CubeSphereNode = get_node( "Rotation/CelestialBody" ) as CubeSphereNode
+	return cube_sphere
+
+
+
 
 func init():
 	if initialized:
