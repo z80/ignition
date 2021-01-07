@@ -7,14 +7,8 @@
 script = ExtResource( 2 )
 
 [node name="Sun" parent="." instance=ExtResource( 1 )]
-se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"script":null)
-
 rotation_period_hrs = 0.01
 planet_radius_km = 0.005
 planet_height_km = 0.001
-
-[node name="Rotation" parent="Sun" index="0"]
-se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"script":null)
-
 
 [editable path="Sun"]

@@ -107,13 +107,16 @@ func process_motion( delta ):
 
 func process_geometry():
 	var player_rf: RefFramePhysics = PhysicsManager.player_ref_frame
-	var physics_ref_frames: Array  = PhysicsManager.physics_ref_frames()
+	var physics_ref_frames: Dictionary  = PhysicsManager.physics_ref_frames()
 	var planet: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	
 	planet.clear_ref_frames()
 	planet.origin_ref_frame = player_rf.get_path()
-	for rf in physics_ref_frames:
+	var paths: Array = []
+	for k in physics_ref_frames:
+		var rf = physics_ref_frames[k]
 		var path: NodePath = rf.get_path()
+		paths.push_back( path )
 		planet.add_ref_frame( path )
 
 

@@ -47,7 +47,8 @@ void RefFrameNode::_bind_methods()
 	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform" ),        "set_t", "t" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "linear_velocity" ),  "set_v", "v" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "angular_velocity" ), "set_w", "w" );
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ),              "set_se3", "get_se3" );
+	//Otherwise continuously requests "SE3" in editor.
+	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ),              "set_se3", "get_se3" );
 }
 
 RefFrameNode::RefFrameNode()
