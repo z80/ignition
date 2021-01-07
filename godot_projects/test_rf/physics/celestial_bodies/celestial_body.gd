@@ -19,11 +19,11 @@ export(float)   var orbital_period_hrs   = 0.1
 export(float)   var orbital_eccentricity = 0.0
 
 # Subdivision levels.
-export(float) var detail_size_0 = 5.0
+export(float) var detail_size_0 = 10.0
 export(float) var detail_dist_0 = 100.0
-export(float) var detail_size_1 = 20.0
-export(float) var detail_dist_1 = 300.0
-export(float) var detail_size_2 = 100.0
+export(float) var detail_size_1 = 50.0
+export(float) var detail_dist_1 = 1000.0
+export(float) var detail_size_2 = 300.0
 export(float) var detail_dist_2 = 1e10
 
 var initialized: bool = false
@@ -72,18 +72,38 @@ func init():
 	var celestial_body = get_node( "Rotation/CelestialBody" )
 	celestial_body.radius = planet_radius_km * 1000.0
 	celestial_body.height = planet_height_km * 1000.0
-	#celestial_body.set_height_source( height_source )
+	celestial_body.height_source   = height_source( height_source_name )
 	celestial_body.distance_scaler = PhysicsManager.distance_scaler
 	
 	celestial_body.apply_scale             = true
 	celestial_body.set_scale_mode_distance = 3.0
+	
+	celestial_body.clear_levels()
+	celestial_body.add_level( detail_size_0, detail_dist_0 )
+	celestial_body.add_level( detail_size_1, detail_dist_1 )
+	celestial_body.add_level( detail_size_2, detail_dist_2 )
+	
+	connect( "mesh_updated", self, "on_mesh_updated" )
 
 
-func process( delta ):
+func process_motion( delta ):
 	var translation_rf = get_node( "." )
 	var rotation_rf    = get_node( "Rotation" )
 	motion.process_rf( delta, translation_rf )
 	rotation.process_rf( delta, rotation_rf )
+
+
+func process_geometry():
+	var player_rf: RefFramePhysics = PhysicsManager.player_ref_frame
+	var physics_ref_frames: Array  = PhysicsManager.physics_ref_frames()
+	var planet: CubeSphereNode = get_node( "Rotation/CelestialBody" )
+	
+	planet.clear_ref_frames()
+	planet.origin_ref_frame = player_rf.get_path()
+	for rf in physics_ref_frames:
+		var path: NodePath = rf.get_path()
+		planet.add_ref_frame( path )
+
 
 
 func set_origin( rf ):
@@ -93,11 +113,16 @@ func set_origin( rf ):
 
 
 
+func height_source( name: String ):
+	var HS = preload( "res://physics/celestial_bodies/height_sources.gd" )
+	var hs: HeightSourceRef = HS.height_source( name )
+	return hs
 
 
-
-
-
+# Callback on mesh updated.
+func on_mesh_updated():
+	# In all RefFramePhysics re-generate surface meshes.
+	pass
 
 
 

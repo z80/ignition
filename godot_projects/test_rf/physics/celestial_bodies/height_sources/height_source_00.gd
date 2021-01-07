@@ -1,12 +1,14 @@
 
 extends Object
 
-
 var noise_rough: OpenSimplexNoise = null
 
 
 # Called when the node enters the scene tree for the first time.
 func _init():
+	init()
+	
+func init( radius: float = 1.0, height: float = 0.2 ):
 	noise_rough = OpenSimplexNoise.new()
 	noise_rough.seed = 0
 	noise_rough.octaves = 4
@@ -30,3 +32,8 @@ func color( at: Vector3, norm: Vector3, height: float ):
 	else:
 		c = Color( 0.8, 0.8, 0.8, 1.0 )
 	return c
+
+
+
+
+
