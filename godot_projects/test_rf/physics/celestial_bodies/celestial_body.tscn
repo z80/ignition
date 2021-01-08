@@ -10,3 +10,4 @@ height_source_name = "00"
 
 [node name="CelestialBody" type="CubeSphereNode" parent="Rotation"]
 center_ref_frame = NodePath("..")
+[connection signal="mesh_updated" from="Rotation/CelestialBody" to="." method="on_mesh_updated"]

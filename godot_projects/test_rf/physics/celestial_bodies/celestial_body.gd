@@ -103,7 +103,7 @@ func init():
 	celestial_body.add_level( detail_size_1, detail_dist_1 )
 	celestial_body.add_level( detail_size_2, detail_dist_2 )
 	
-	connect( "mesh_updated", self, "on_mesh_updated" )
+	#connect( "mesh_updated", self, "on_mesh_updated" )
 
 
 

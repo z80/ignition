@@ -259,14 +259,15 @@ const PoolVector3Array & CubeSphereNode::collision_triangles( Node * origin, con
 	sphere.triangle_list( collision_pts, dist, collision_tris );
 	const SE3 center_rel_to_origin = center_rf->relative_( origin_rf );
 	const int pts_qty = collision_tris.size();
+
 	arr.resize( pts_qty );
+
 	// Convert to ref. frame relative to origin.
 	for ( int i=0; i<pts_qty; i++ )
 	{
-		CubeVertex & v = collision_tris.ptrw()[i];
+		const CubeVertex & v = collision_tris.ptr()[i];
 		Vector3d r = v.at;
 		r = (center_rel_to_origin.q_ * r) + center_rel_to_origin.r_;
-		v.at = r;
 		Vector3 c( r.x_, r.y_, r.z_ );
 		arr.set( i, c );
 	}
