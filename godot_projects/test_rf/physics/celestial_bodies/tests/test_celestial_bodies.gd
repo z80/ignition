@@ -22,10 +22,12 @@ func _ready():
 	PhysicsManager.player_ref_frame = rf
 	PhysicsManager.camera = camera
 	
+	rf.change_parent( sun.rotation_rf() )
+	
 	rf.init_physics()
 	
 	var t: Transform = Transform.IDENTITY
-	t.origin = Vector3( 0.0, 0.0, -50.0 )
+	t.origin = Vector3( 0.0, 0.0, 10.0 )
 	rf.transform = t
 	
 	sun.set_origin( rf )

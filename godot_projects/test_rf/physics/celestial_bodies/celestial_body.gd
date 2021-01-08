@@ -43,12 +43,12 @@ func _ready():
 #	pass
 
 
-func rotation_rf():
+func translation_rf():
 	var rf: RefFrameNode = get_node( "." ) as RefFrameNode
 	return rf
 
 
-func translation_rf():
+func rotation_rf():
 	var rf: RefFrameNode = get_node( "Rotation" ) as RefFrameNode
 	return rf
 
@@ -161,8 +161,8 @@ func on_mesh_updated():
 	var cube_sphere: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	var collision_dist = Constants.RF_MERGE_DISTANCE
 	# In all RefFramePhysics re-generate surface meshes.
-	var translation: RefFrameNode = get_node( "." ) as RefFrameNode
-	var children: Array = translation.get_children()
+	var rotation: RefFrameNode = rotation_rf()
+	var children: Array = rotation.get_children()
 	for ch in children:
 		var rf: RefFramePhysics = ch as RefFramePhysics
 		if rf != null:
