@@ -1,19 +1,16 @@
 
-#ifndef __OCCUPANCY_TYPES_H_
-#define __OCCUPANCY_TYPES_H_
+#ifndef __PBD_OCCUPANCY_TYPES_H_
+#define __PBD_OCCUPANCY_TYPES_H_
 
 #include "data_types.h"
 #include "vector3d.h"
 #include "se3.h"
 
 
+using namespace Ign;
+
 namespace Pbd
 {
-
-struct Vertex
-{
-    Vector3d at;
-};
 
 struct Plane
 {
@@ -27,34 +24,47 @@ struct Plane
 
 struct Face
 {
+    // Vertices in local ref. frame.
+    Vector3d verts_0[3];
+    // Vertex indices in the mesh.
     int inds[3];
+    // Vertices in gloval ref. frame.
     Vector3d verts[3];
+    // Face plane.
     Plane    plane;
+    // Outward edge planes.
     Plane    planes[3];
-    void init();
-    void init_verts_and_planes()
+    
+    void apply( const SE3 & se3 );
+    void init_planes();
     bool intersects( const Vector3d & r1, const Vector3d & r2, Vector3d & at ) const;
     bool intersects( const Face & f, Vector3d & at, Vector3d & depth ) const;
 };
 
 struct Cube
 {
+    // Center before transform.
+    Vector3d center_0;
     // These are half sizes.
     Float    szx2, szy2, szz2;
-    // Separate origin and center.
-    // Transformation occurs with respect to the origin 
-    // in order to make all cubes in octtree transform as a single rigid body.
-    Vector3d origin, center;
+    Vector3d center;
     Vector3d ex, ey, ez;
+    // AABB size.
+    Flaot aabb2;
 
-    Quaterniond q;
     Vector3d    verts[8];
     Plane       planes[6];
 
-    void init();
+    void init( const Vector3d & c, Float x2, Float y2, Float z2 );
+    void apply( const SE3 & se3 );
+    void init_verts_and_planes()
     Cube operator*( const SE3 & se3 ) const;
+    // Intersects line
     bool intersects( const Vector3d & a, const Vector3d & b ) const;
+    // Intersects another cube
     bool intersects( const Cube & c ) const;
+    // Intersects face (triangle)
+    bool intersects( const Face & f ) const;
 };
 
 

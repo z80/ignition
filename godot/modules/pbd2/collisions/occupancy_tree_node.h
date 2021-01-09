@@ -1,6 +1,6 @@
 
-#ifndef __OCCUPANCY_TREE_NODE_H_
-#define __OCCUPANCY_TREE_NODE_H_
+#ifndef __PBD_OCCUPANCY_TREE_NODE_H_
+#define __PBD_OCCUPANCY_TREE_NODE_H_
 
 #include "data_types.h"
 #include "occupancy_types.h"
@@ -23,12 +23,11 @@ public:
 	bool subdivide();
 
 	// Queries.
-	// Intersection with a triangle.
+	// Intersection with a triangle. It is for initial fill up.
 	bool inside( const Face & face ) const;
-	bool inside( const Vector3d & pt ) const;
+        // This is for recursive collision detection.
+        // Will need to extend it with "optimal" box later.
 	bool inside( const OccupancyTreeNode & n ) const;
-	// Intersects infinite ray.
-	bool intersects_ray( const Vector3 p_from, const Vector3 p_to ) const;
 
 	// Initialize vertices and planes.
 	void init();
@@ -41,15 +40,13 @@ public:
 
 	// Child indices in Octtree list.
 	int children[8];
-
+        
+        // Value is number of triangles inside.
 	int      value;
-	Float   size2; // Size over 2.
-	Vector3d center;
-
-	// Auxilary numbers. Hold those only to not recompute all the time.
-	Vector3 verts_[8];
-	Plane   planes_[6];
-	AABB    aabb_;
+	Float    size2; // Size over 2.
+	Vector3d  center;
+        
+        Cube cube_;
 
 	Vector<int> ptInds;
 };

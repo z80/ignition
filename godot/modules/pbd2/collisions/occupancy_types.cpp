@@ -78,7 +78,20 @@ bool Plane::intersects( const Vector3d & a, const Vector3d & b, Vector3d & at ) 
 
 
 
-void Face::init()
+
+void Face::apply( const SE3 & se3 )
+{
+    for ( int i=0; i<3; i++ )
+    {
+        const Vector3d & v0 = verts_0[i];
+        Vector3d & v = verts[i];
+        v = se3.r_ + se3.q_ * v0;
+    }
+    init_planes();
+}
+
+
+void Face::init_planes()
 {
     plane.init( verts[0], verts[1], verts[2] );
     planes[0].init( vers[0], verts[1], verts[0]+plane.norm );
@@ -229,14 +242,53 @@ bool Face::intersects( const Face & f, Vector3d & at, Vector3d & depth ) const
 
 
 
-void Cube::init()
-{
-    q = Quaterniond( 1.0, 0.0, 0.0, 0.0 );
 
+
+void Cube::init( const Vector3d & c, Float x2, Float y2, Float z2 )
+{
+    center = c;
+    szx2 = x2;
+    szy2 = y2;
+    szz2 = z2;
     ex = Vector3d( 1.0, 0.0, 0.0 );
     ey = Vector3d( 0.0, 1.0, 0.0 );
     ez = Vector3d( 0.0, 0.0, 1.0 );
+
+    init_verts_and_planes();
+
+    // Also init AABB size.
+    aabb2 = szx2;
+    if ( aabb2 < szy2 )
+        aabb2 = szy2;
+    if (aabb2 < szz2)
+        aabb2 = azz2;
+    // Multiply by sqrt(3);
+    aabb2 *= 1.7320508075688772935274463415059;
 }
+
+
+void Cube::apply( const SE3 & se3 )
+{
+    center = se3.r_ + se3.q_ * center_0;
+    ex = Vector3d( 1.0, 0.0, 0.0 );
+    ey = Vector3d( 0.0, 1.0, 0.0 );
+    ez = Vector3d( 0.0, 0.0, 1.0 );
+    ex = se3.q_ * ex;
+    ey = se3.q_ * ey;
+    ez = se3.q_ * ez;
+
+    init_verts_and_planes();
+
+    // Also init AABB size.
+    aabb2 = szx2;
+    if ( aabb2 < szy2 )
+        aabb2 = szy2;
+    if (aabb2 < szz2)
+        aabb2 = azz2;
+    // Multiply by sqrt(3);
+    aabb2 *= 1.7320508075688772935274463415059;
+}
+
 
 void Cube::init_verts_and_planes()
 {
@@ -267,18 +319,6 @@ void Cube::init_verts_and_planes()
     planes[5].init( verts[2], verts[3], verts[6] );
 }
 
-
-const Cube & Cube::operator*( const SE3 & se3 ) const
-{
-    Cube c = *this;
-    c.origin = se3.r_ + origin;
-    c.center = c.origin + se3.q_ * (center - origin);
-    c.ex     = se3.q_ * ex;
-    c.ey     = se3.q_ * ey;
-    c.ez     = se3.q_ * ez;
-    c.init_verts_and_planes();
-    return c;
-}
 
 bool Cube::intersects( const Vector3d & a, const Vector3d & b ) const
 {
@@ -444,6 +484,73 @@ bool Cube::intersects( const Cube & c ) const
             return true;
     }
 
+    return false;
+}
+
+
+
+bool Cube::intersects( const Face & f ) const
+{
+    // Check if all cube vertices are on one side of triangle plane.
+    int qty = 0;
+    for (int i=0; i<8; i++)
+    {
+        const Vector3d & v = verts[i];
+        const bool above = f.plane.above( v );
+        if ( above )
+            qty += 1;
+        else
+            qty -= 1;
+    }
+    if ( qty > 7 )
+        return false;
+    else if ( qty < -7 )
+        return false;
+
+    // Check if all triangle vertices are outside of either cube plane.
+    for ( int i=0; i<6; i++ )
+    {
+        const Plane & pl = planes[i];
+        qty = 0;
+        for ( int j=0; j<3; j++ )
+        {
+            const Vector3d & v = f.verts[j];
+            const bool out = pl.above( v );
+            if ( out )
+                qty += 1;
+        }
+        if ( qty > 2 )
+            return false;
+    }
+
+    // Check if either triangle vertex is inside of a cube.
+    for ( int i=0; i<3; i++ )
+    {
+        const Vector3d & v = f.verts[i];
+        qty = 0;
+        for ( int j=0; j<6; j++ )
+        {
+            const Plane & pl = planes[j];
+            const bool outside = pl.above( v );
+            if ( !outside )
+                qty += 1;
+        }
+        if ( qty > 5 )
+            return true;
+    }
+
+    // The only option left is if cube and triangle intersects.
+    // Compute if triangle edges intersect cube.
+    for ( int i=0; i<3; i++ )
+    {
+        const int ind_a = i;
+        const int ind_b = (i+1) % 3;
+        const Vector3d & a = f.verts[ind_a];
+        const Vector3d & b = f.verts[ind_b];
+        const bool ok = intersects( a, b );
+        if ( ok )
+            return true;
+    }
     return false;
 }
 
