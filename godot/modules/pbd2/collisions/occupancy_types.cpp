@@ -7,6 +7,38 @@ namespace Pbd
 
 static const Float EPS = 0.000001;
 
+static bool common_perpendicular( const Vector3d a0, const Vector3d & a1, const Vector3d & b0, const Vector3d & b1, Vector3d & ra, Vector3d & rb )
+{
+    {
+        const Vector3d a1 = ra1 - ra0;
+        const Vector3d a2 = rb1 - rb0;
+        const Vector3  n = a1.CrossProduct( a1.CrossProduct(a2) );
+        const Float den = a2.CotProduct( n );
+        if ( std::abs(den) < EPS )
+            return false;
+
+        const Float num = n.DotProduct(ra0 - rb0);
+        const Float t = num / den;
+        // This point is on the "f" edge.
+        rb = rb0 + a2*t;
+    }
+
+    {
+        const Vector3d a1 = rb1 - rb0;
+        const Vector3d a2 = ra1 - ra0;
+        const Vector3  n = a1.CrossProduct( a1.CrossProduct(a2) );
+        const Float den = a2.CotProduct( n );
+        if ( std::abs(den) < EPS )
+            return false;
+
+        const Float num = n.DotProduct(rb0 - ra0);
+        const Float t = num / den;
+        // This point is on the "f" edge.
+        ra = ra0 + a2*t;
+    }
+
+    return true;
+}
 
 
 void Plane::init( const Vector3d & a, const Vector3d & b, const Vector3d & c )
@@ -152,15 +184,21 @@ bool Face::intersects( const Face & f, Vector3d & at, Vector3d & depth ) const
         // Own points.
         const int_ind_a_0 = edges[intersecting_a_edge_index][0];
         const int_ind_a_1 = edges[intersecting_a_edge_index][1];
-        const Vector3d & a0 = verts[ind_ind_a_0];
-        const Vector3d & a1 = verts[ind_ind_a_1];
+        const Vector3d & ra0 = verts[ind_ind_a_0];
+        const Vector3d & ra1 = verts[ind_ind_a_1];
         // Other points.
         const int_ind_b_0 = edges[intersecting_b_edge_index][0];
         const int_ind_b_1 = edges[intersecting_b_edge_index][1];
-        const Vector3d & b0 = verts[ind_ind_b_0];
-        const Vector3d & b1 = verts[ind_ind_b_1];
+        const Vector3d & rb0 = f.verts[ind_ind_b_0];
+        const Vector3d & rb1 = f.verts[ind_ind_b_1];
         // Solving for the common perpendicular between the two crossing lines.
-        const Vector3 a = (a1-a0).CrossProduct(b1-b0);
+        Vector3d a, b;
+        const bool ok = common_perpendicular( ra0, ra1, rb0, rb1, a, b );
+        if ( !ok )
+            return false;
+        
+        at    = (a + b) * 0.5;
+        depth = (a - b);
 
         return true;
     }
