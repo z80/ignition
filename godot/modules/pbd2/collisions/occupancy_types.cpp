@@ -204,12 +204,18 @@ bool Face::intersects( const Face & f, Vector3d & at, Vector3d & depth ) const
     }
     else if ( intersects_a )
     {
-
+        // This edges intersect "f" plane.
+        const Vector3d d = at_a - head_a;
+        depth = f.norm * f.norm.DotProduct( d );
+        at    = head_a;
         return true;
     }
     else if ( intersects_b )
     {
-
+        // This edges intersect "f" plane.
+        const Vector3d d = at_b - head_b;
+        depth = norm * norm.DotProduct( d );
+        at    = head_b;
         return true;
     }
 
