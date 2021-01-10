@@ -79,6 +79,15 @@ bool Plane::intersects( const Vector3d & a, const Vector3d & b, Vector3d & at ) 
 
 
 
+
+void Face::init( const Vector3d & a, const Vector3d & b, const Vector3d & c )
+{
+    verts_0[0] = a;
+    verts_0[1] = b;
+    verts_0[2] = c;
+}
+
+
 void Face::apply( const SE3 & se3 )
 {
     for ( int i=0; i<3; i++ )

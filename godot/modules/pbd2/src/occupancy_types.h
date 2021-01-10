@@ -35,6 +35,7 @@ struct Face
     // Outward edge planes.
     Plane    planes[3];
     
+    void init( const Vector3d & a, const Vector3d & b, const Vector3d & c );
     void apply( const SE3 & se3 );
     void init_planes();
     bool intersects( const Vector3d & r1, const Vector3d & r2, Vector3d & at ) const;
