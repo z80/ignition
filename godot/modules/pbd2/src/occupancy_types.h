@@ -44,6 +44,8 @@ struct Face
     void init_planes();
     bool intersects( const Vector3d & r1, const Vector3d & r2, Vector3d & at ) const;
     bool intersects( const Face & f, Vector3d & at, Vector3d & depth ) const;
+	// Actually, can be 0, 1 or 2 intersections.
+	int intersects_all( const Face & f, Vector3d * at, Vector3d * depth ) const;
 };
 
 struct Cube

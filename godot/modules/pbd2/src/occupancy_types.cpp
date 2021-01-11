@@ -254,6 +254,15 @@ bool Face::intersects( const Face & f, Vector3d & at, Vector3d & depth ) const
     return false;
 }
 
+int Face::intersects_all( const Face & f, Vector3d * at, Vector3d * depth ) const
+{
+	// Check each edge.
+	static const int edge_verts[3][2] = { {0, 1}, {1, 2}, {2, 0} };
+	static const int vert_edges[3][2] = { {0, 2}, {0, 1}, {1, 2} };
+
+	return 0;
+}
+
 
 
 
