@@ -19,6 +19,7 @@ struct Plane
 {
     Vector3d norm;
     Float    d;
+	Vector3d r0;
 
     void init( const Vector3d & a, const Vector3d & b, const Vector3d & c );
     bool above( const Vector3d & r ) const;

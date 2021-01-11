@@ -48,6 +48,8 @@ void Plane::init( const Vector3d & a, const Vector3d & b, const Vector3d & c )
     norm = r1.CrossProduct( r2 );
     norm.Normalize();
     d = -a.DotProduct( norm );
+
+	r0 = a;
 }
 
 bool Plane::above( const Vector3d & r ) const
@@ -256,9 +258,9 @@ bool Face::intersects( const Face & f, Vector3d & at, Vector3d & depth ) const
 void Cube::init( const Vector3d & c, Float x2, Float y2, Float z2 )
 {
     center = c;
-    szx2 = x2;
-    szy2 = y2;
-    szz2 = z2;
+    szx2 = std::abs( x2 );
+    szy2 = std::abs( y2 );
+    szz2 = std::abs( z2 );
     ex = Vector3d( 1.0, 0.0, 0.0 );
     ey = Vector3d( 0.0, 1.0, 0.0 );
     ez = Vector3d( 0.0, 0.0, 1.0 );
@@ -527,6 +529,8 @@ bool Cube::intersects( const Face & f ) const
             const bool out = pl.above( v );
             if ( out )
                 qty += 1;
+			else
+				break;
         }
         if ( qty > 2 )
             return false;
