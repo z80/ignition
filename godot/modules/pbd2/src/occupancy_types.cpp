@@ -7,7 +7,7 @@ namespace Pbd
 
 static const Float EPS = 0.000001;
 
-static bool common_perpendicular( const Vector3d & ra0, const Vector3d & ra1, const Vector3d & rb0, const Vector3d & rb1, Vector3d & ra, Vector3d & rb )
+bool common_perpendicular( const Vector3d & ra0, const Vector3d & ra1, const Vector3d & rb0, const Vector3d & rb1, Vector3d & ra, Vector3d & rb )
 {
     {
         const Vector3d a1 = ra1 - ra0;
@@ -562,6 +562,8 @@ bool Cube::intersects( const Face & f ) const
     }
     return false;
 }
+
+
 
 
 

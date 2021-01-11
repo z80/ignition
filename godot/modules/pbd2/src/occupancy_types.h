@@ -12,6 +12,9 @@ using namespace Ign;
 namespace Pbd
 {
 
+bool common_perpendicular( const Vector3d & ra0, const Vector3d & ra1, const Vector3d & rb0, const Vector3d & rb1, Vector3d & ra, Vector3d & rb );
+
+
 struct Plane
 {
     Vector3d norm;
