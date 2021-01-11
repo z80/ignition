@@ -66,8 +66,8 @@ bool Plane::intersects( const Vector3d & a, const Vector3d & b, Vector3d & at ) 
     if ( abs_den < EPS )
         return false;
 
-    const Float num = d + norm.DotProduct( a );
-    const Float t = num / den;
+    const Float num = norm.DotProduct( a ) + d;
+    const Float t = -num/den;
     if ( (t < 0.0) || (t > 1.0) )
         return false;
 
@@ -87,6 +87,14 @@ void Face::init( const Vector3d & a, const Vector3d & b, const Vector3d & c )
     verts_0[0] = a;
     verts_0[1] = b;
     verts_0[2] = c;
+	
+	for ( int i=0; i<3; i++ )
+	{
+		const Vector3d & v0 = verts_0[i];
+		Vector3d & v = verts[i];
+		v = v0;
+	}
+	init_planes();
 }
 
 
@@ -257,7 +265,8 @@ bool Face::intersects( const Face & f, Vector3d & at, Vector3d & depth ) const
 
 void Cube::init( const Vector3d & c, Float x2, Float y2, Float z2 )
 {
-    center = c;
+	center_0 = c;
+    center = center_0;
     szx2 = std::abs( x2 );
     szy2 = std::abs( y2 );
     szz2 = std::abs( z2 );
@@ -378,7 +387,7 @@ bool Cube::intersects( const Vector3d & a, const Vector3d & b ) const
             continue;
         // Restore collision point.
         const Float num = plane.d + a.DotProduct( plane.norm );
-        const Float t = num / den;
+        const Float t = -num/den;
         // Intersection point relative to the center.
         const Vector3d at = a + t*(b-a) - center;
         const Float dist_x = std::abs( at.DotProduct( ex ) );
@@ -413,6 +422,8 @@ bool Cube::intersects( const Cube & c ) const
             const bool point_is_above = plane.above( pt );
             if ( point_is_above )
                 out_qty += 1;
+			else
+				break;
         }
         if ( out_qty > 7 )
             return false;
@@ -428,6 +439,8 @@ bool Cube::intersects( const Cube & c ) const
             const bool point_is_above = plane.above( pt );
             if ( point_is_above )
                 out_qty += 1;
+			else
+				break;
         }
         if ( out_qty > 7 )
             return false;
