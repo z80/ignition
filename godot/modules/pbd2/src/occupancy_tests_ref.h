@@ -35,7 +35,7 @@ public:
 
     void set_cube_b( const Vector3 & c, real_t sz_x, real_t sz_y, real_t sz_z );
     void apply_to_cube_b( const Transform & t );
-    bool cubes_intersect() const;
+    bool intersect_cubes() const;
 
     void set_face_b( const Vector3 & a, const Vector3 & b, const Vector3 & c );
     void apply_to_face_b( const Transform & t );

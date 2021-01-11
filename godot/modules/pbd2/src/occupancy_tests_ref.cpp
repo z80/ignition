@@ -7,6 +7,30 @@ namespace Pbd
 
 void OccupancyTestsRef::_bind_methods()
 {
+    ClassDB::bind_method( D_METHOD( "set_ray_a", "a", "b" ), &OccupancyTestsRef::set_ray_a );
+    ClassDB::bind_method( D_METHOD( "set_ray_b", "a", "b" ), &OccupancyTestsRef::set_ray_b );
+    ClassDB::bind_method( D_METHOD( "intersect_rays" ),      &OccupancyTestsRef::intersect_rays, Variant::BOOL );
+    ClassDB::bind_method( D_METHOD( "common_perpendicualr_a" ), &OccupancyTestsRef::common_perpendicualr_b, Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD( "common_perpendicualr_b" ), &OccupancyTestsRef::common_perpendicualr_b, Variant::VECTOR3 );
+
+    ClassDB::bind_method( D_METHOD( "set_cube", "c", "sz_x", "sz_y", "sz_z" ), &OccupancyTestsRef::set_cube );
+    ClassDB::bind_method( D_METHOD( "apply_to_cube", "t" ), &OccupancyTestsRef::apply_to_cube );
+
+    ClassDB::bind_method( D_METHOD( "set_face", "a", "b", "c" ), &OccupancyTestsRef::set_face );
+    ClassDB::bind_method( D_METHOD( "apply_to_face", "t" ), &OccupancyTestsRef::apply_to_face );
+
+    ClassDB::bind_method( D_METHOD( "intersect_face_with_cube" ), &OccupancyTestsRef::intersect_face_with_cube, Variant::BOOL );
+
+    ClassDB::bind_method( D_METHOD( "set_cube_b", "c", "sz_x", "sz_y", "sz_z" ), &OccupancyTestsRef::set_cube_b );;
+    ClassDB::bind_method( D_METHOD( "apply_to_cube_b", "t" ), &OccupancyTestsRef::apply_to_cube_b );
+    ClassDB::bind_method( D_METHOD( "intersect_cubes" ), &OccupancyTestsRef::intersect_cubes, Variant::BOOL );
+
+    ClassDB::bind_method( D_METHOD( "set_face_b", "a", "b", "c" ), &OccupancyTestsRef::set_face_b );
+    ClassDB::bind_method( D_METHOD( "apply_to_face_b", "t" ), &OccupancyTestsRef::apply_to_face_b );
+    
+    ClassDB::bind_method( D_METHOD( "intersect_faces" ), &OccupancyTestsRef::intersect_faces, Variant::BOOL );
+    ClassDB::bind_method( D_METHOD( "face_intersection_point" ), &OccupancyTestsRef::face_intersection_point, Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD( "face_depth_point" ), &OccupancyTestsRef::face_depth_point, Variant::VECTOR3 );
 }
 
 OccupancyTestsRef::OccupancyTestsRef()
@@ -106,7 +130,7 @@ void OccupancyTestsRef::apply_to_cube_b( const Transform & t )
     cube_b_.apply( se3 );
 }
 
-bool OccupancyTestsRef::cubes_intersect() const
+bool OccupancyTestsRef::intersect_cubes() const
 {
     const bool ok = cube_.intersects( cube_b_ );
     return ok;

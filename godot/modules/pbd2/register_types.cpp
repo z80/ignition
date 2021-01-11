@@ -11,6 +11,9 @@
 #include "pbd2_joint_ball_node.h"
 #include "pbd2_contact_point_node.h"
 
+
+#include "occupancy_tests_ref.h"
+
 void register_pbd2_types()
 {
     ClassDB::register_class<Pbd::PbdSimulationNode>();
@@ -18,7 +21,10 @@ void register_pbd2_types()
     ClassDB::register_class<Pbd::PbdJointNode>();
     ClassDB::register_class<Pbd::PbdJointHingeNode>();
     ClassDB::register_class<Pbd::PbdJointBallNode>();
-	ClassDB::register_class<Pbd::PbdContactPointNode>();
+    ClassDB::register_class<Pbd::PbdContactPointNode>();
+
+
+    ClassDB::register_class<Pbd::OccupancyTestsRef>();
 }
 
 void unregister_pbd2_types()
