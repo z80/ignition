@@ -66,6 +66,26 @@ const NarrowTreeNode & NarrowTreeNode::operator=( const NarrowTreeNode & inst )
     return *this;
 }
 
+
+void NarrowTreeNode::apply( const SE3 & se3 )
+{
+    cube_.apply( se3 );
+    if ( value > 0 )
+    {
+        cube_optimized_.apply( se3 * se3_optimized_ );
+
+        const int qty = ptInds.size();
+        for ( int i=0; i<qty; i++ )
+        {
+            const int ind = ptInds.ptr()[i];
+            Face & face = tree->faces_.ptrw()[ind];
+            face.apply( se3 );
+        }
+    }
+}
+
+
+
 bool NarrowTreeNode::hasChildren() const
 {
     // Filled can't have children.
@@ -104,7 +124,7 @@ bool NarrowTreeNode::subdivide()
         return false;
 
     const int childLevel = this->level + 1;
-    const real_t chSize2 = this->size2 * 0.5;
+    const Float chSize2 = this->size2 * 0.5;
 
     NarrowTreeNode nn[8];
     int    qtys[8];

@@ -20,6 +20,8 @@ public:
 	NarrowTreeNode( const NarrowTreeNode & inst );
 	const NarrowTreeNode & operator=( const NarrowTreeNode & inst );
 
+        void apply( const SE3 & se3 );
+
 	bool hasChildren() const;
 	bool subdivide();
 
@@ -48,6 +50,7 @@ public:
 	Vector3d center;
         
         Cube cube_;
+        SE3  se3_optimized_;
         Cube cube_optimized_;
 
 	Vector<int> ptInds;
