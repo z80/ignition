@@ -318,7 +318,7 @@ int Face::intersects_all( const Face & f, Vector3d * ats, Vector3d * depths ) co
 				common_perp_index = j;
 				common_perp_depth = depth;
 				const Float sign = disp.DotProduct( f.plane.norm );
-				if ( sign < 0.0 )
+				if ( sign > 0.0 )
 					disp = -disp;
 				common_perp_displacement = disp;
 			}
@@ -329,7 +329,7 @@ int Face::intersects_all( const Face & f, Vector3d * ats, Vector3d * depths ) co
 		c.edge_other = common_perp_index;
 		c.at         = at;
 			// Now compare the point depth and common perpendicular.
-		if ( displacement_point_depth < common_perp_depth )
+		if ( displacement_point_depth <= common_perp_depth )
 			c.depth = displacement_point;
 		else
 			c.depth = common_perp_displacement;
@@ -404,7 +404,7 @@ int Face::intersects_all( const Face & f, Vector3d * ats, Vector3d * depths ) co
 		c.edge_other = common_perp_index;
 		c.at         = at;
 		// Now compare the point depth and common perpendicular.
-		if ( displacement_point_depth < common_perp_depth )
+		if ( displacement_point_depth <= common_perp_depth )
 			c.depth = displacement_point;
 		else
 			c.depth = common_perp_displacement;
