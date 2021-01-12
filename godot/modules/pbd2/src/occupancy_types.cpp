@@ -87,14 +87,20 @@ void Face::init( const Vector3d & a, const Vector3d & b, const Vector3d & c )
     verts_0[0] = a;
     verts_0[1] = b;
     verts_0[2] = c;
-	
-	for ( int i=0; i<3; i++ )
-	{
-		const Vector3d & v0 = verts_0[i];
-		Vector3d & v = verts[i];
-		v = v0;
-	}
-	init_planes();
+    
+    init();
+}
+
+
+void Face::init()
+{
+    for ( int i=0; i<3; i++ )
+    {
+            const Vector3d & v0 = verts_0[i];
+            Vector3d & v = verts[i];
+            v = v0;
+    }
+    init_planes();
 }
 
 

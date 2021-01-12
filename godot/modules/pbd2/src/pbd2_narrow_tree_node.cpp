@@ -1,6 +1,6 @@
 
-#include "occupancy_tree_node.h"
-#include "occupancy_tree.h"
+#include "pbd2_narrow_tree_node.h"
+#include "pbd2_narrow_tree.h"
 
 namespace Pbd
 {
@@ -124,44 +124,44 @@ bool NarrowTreeNode::subdivide()
         qtys[i] = 0;
     }
     nn[0].center = this->center;
-    nn[0].center.x -= chSize2;
-    nn[0].center.y -= chSize2;
-    nn[0].center.z -= chSize2;
+    nn[0].center.x_ -= chSize2;
+    nn[0].center.y_ -= chSize2;
+    nn[0].center.z_ -= chSize2;
 
     nn[1].center = this->center;
-    nn[1].center.x += chSize2;
-    nn[1].center.y -= chSize2;
-    nn[1].center.z -= chSize2;
+    nn[1].center.x_ += chSize2;
+    nn[1].center.y_ -= chSize2;
+    nn[1].center.z_ -= chSize2;
 
     nn[2].center = this->center;
-    nn[2].center.x -= chSize2;
-    nn[2].center.y += chSize2;
-    nn[2].center.z -= chSize2;
+    nn[2].center.x_ -= chSize2;
+    nn[2].center.y_ += chSize2;
+    nn[2].center.z_ -= chSize2;
 
     nn[3].center = this->center;
-    nn[3].center.x += chSize2;
-    nn[3].center.y += chSize2;
-    nn[3].center.z -= chSize2;
+    nn[3].center.x_ += chSize2;
+    nn[3].center.y_ += chSize2;
+    nn[3].center.z_ -= chSize2;
 
     nn[4].center = this->center;
-    nn[4].center.x -= chSize2;
-    nn[4].center.y -= chSize2;
-    nn[4].center.z += chSize2;
+    nn[4].center.x_ -= chSize2;
+    nn[4].center.y_ -= chSize2;
+    nn[4].center.z_ += chSize2;
 
     nn[5].center = this->center;
-    nn[5].center.x += chSize2;
-    nn[5].center.y -= chSize2;
-    nn[5].center.z += chSize2;
+    nn[5].center.x_ += chSize2;
+    nn[5].center.y_ -= chSize2;
+    nn[5].center.z_ += chSize2;
 
     nn[6].center = this->center;
-    nn[6].center.x -= chSize2;
-    nn[6].center.y += chSize2;
-    nn[6].center.z += chSize2;
+    nn[6].center.x_ -= chSize2;
+    nn[6].center.y_ += chSize2;
+    nn[6].center.z_ += chSize2;
 
     nn[7].center = this->center;
-    nn[7].center.x += chSize2;
-    nn[7].center.y += chSize2;
-    nn[7].center.z += chSize2;
+    nn[7].center.x_ += chSize2;
+    nn[7].center.y_ += chSize2;
+    nn[7].center.z_ += chSize2;
 
     for ( int i=0; i<8; i++ )
         nn[i].init();

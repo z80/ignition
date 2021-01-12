@@ -3,7 +3,8 @@
 #define __PBD_OCCUPANCY_TREE_H_
 
 #include "data_types.h"
-#include "occupancy_tree_node.h"
+#include "se3.h"
+#include "pbd2_narrow_tree_node.h"
 
 #include "scene/3d/mesh_instance.h"
 
@@ -29,6 +30,7 @@ public:
 	void append( const Transform & t, const Ref<Mesh> & mesh );
 	void subdivide();
 
+        bool intersects( const NarrowTree * tree ) const;
 	// Internally called for recursion.
 	bool node_intersects( const NarrowTreeNode & n, const NarrowTree & tree ) const;
 

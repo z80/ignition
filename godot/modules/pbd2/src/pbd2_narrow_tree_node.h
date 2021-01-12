@@ -3,6 +3,7 @@
 #define __PBD_NARROW_TREE_NODE_H_
 
 #include "data_types.h"
+#include "se3.h"
 #include "occupancy_types.h"
 
 
@@ -44,7 +45,7 @@ public:
         // Value is number of triangles inside.
 	int      value;
 	Float    size2; // Size over 2.
-	Vector3d  center;
+	Vector3d center;
         
         Cube cube_;
         Cube cube_optimized_;

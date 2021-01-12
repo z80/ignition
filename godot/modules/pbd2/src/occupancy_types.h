@@ -19,7 +19,7 @@ struct Plane
 {
     Vector3d norm;
     Float    d;
-	Vector3d r0;
+    Vector3d r0;
 
     void init( const Vector3d & a, const Vector3d & b, const Vector3d & c );
     bool above( const Vector3d & r ) const;
@@ -40,12 +40,13 @@ struct Face
     Plane    planes[3];
     
     void init( const Vector3d & a, const Vector3d & b, const Vector3d & c );
+    void init();
     void apply( const SE3 & se3 );
     void init_planes();
     bool intersects( const Vector3d & r1, const Vector3d & r2, Vector3d & at ) const;
     bool intersects( const Face & f, Vector3d & at, Vector3d & depth ) const;
-	// Actually, can be 0, 1 or 2 intersections.
-	int intersects_all( const Face & f, Vector3d * at, Vector3d * depth ) const;
+    // Actually, can be 0, 1 or 2 intersections.
+    int intersects_all( const Face & f, Vector3d * at, Vector3d * depth ) const;
 };
 
 struct Cube
