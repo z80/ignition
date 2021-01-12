@@ -8,6 +8,8 @@
 namespace Pbd
 {
 
+	static const Float EPS = 0.0001;
+
 NarrowTreeNode::NarrowTreeNode()
 {
     this->tree = nullptr;
@@ -122,6 +124,9 @@ bool NarrowTreeNode::subdivide()
     // If it is empty, no need to subdivide.
     if ( ptInds.empty() )
         return false;
+
+	// Here initialize optimized cube "cube_optimized_" and its pose adjustment "se3_optimized_".
+	compute_cube_optimized();
     
     // Don't subdivide if very few triangles.
     if ( ptInds.size() <= tree->min_triangles_ )
@@ -393,7 +398,81 @@ bool NarrowTreeNode::compute_cube_optimized()
 	if ( ret < 1 )
 		return false;
 
-    return false;
+	Matrix3d A;
+	A.m00_ = std_diag.x_;
+	A.m11_ = std_diag.y_;
+	A.m22_ = std_diag.z_;
+
+	A.m01_ = std_off_diag.x_;
+	A.m02_ = std_off_diag.y_;
+	A.m12_ = std_off_diag.z_;
+
+	A.m10_ = std_off_diag.x_;
+	A.m20_ = std_off_diag.y_;
+	A.m21_ = std_off_diag.z_;
+
+	Quaterniond Q;
+	Q.FromRotationMatrix( A );
+	Q.Normalize();
+
+	const Vector3d ex = Q * Vector3d( 1.0, 0.0, 0.0 );
+	const Vector3d ey = Q * Vector3d( 0.0, 1.0, 0.0 );
+	const Vector3d ez = Q * Vector3d( 0.0, 0.0, 1.0 );
+	Float x_min, x_max, y_min, y_max, z_min, z_max;
+
+	// Initialize with the very first point.
+	{
+		const int ind0 = ptInds.ptr()[0];
+		const Face & f0 = tree->faces_.ptr()[ind0];
+		const Vector3d v0 = f0.verts_0[0];
+		x_min = x_max = ex.DotProduct( v0 );
+		y_min = y_max = ey.DotProduct( v0 );
+		z_min = z_max = ez.DotProduct( v0 );
+	}
+
+	const int qty = ptInds.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		const int ind = ptInds.ptr()[i];
+		const Face & f = tree->faces_.ptr()[ind];
+		for ( int j=0; j<3; j++ )
+		{
+			const Vector3d v = f.verts_0[j];
+			const Float x = v.DotProduct( ex );
+			const Float y = v.DotProduct( ey );
+			const Float z = v.DotProduct( ez );
+			if ( x < x_min )
+				x_min = x;
+			if ( x > x_max )
+				x_max = x;
+			if ( y < y_min )
+				y_min = y;
+			if ( y > y_max )
+				y_max = y;
+			if ( z < z_min )
+				z_min = z;
+			if ( z > z_max )
+				z_max = z;
+		}
+	}
+
+	Vector3d r_adj( (x_min+x_max)/2.0, (y_min+y_max)/2.0, (z_min+z_max)/2.0 );
+	r_adj -= cube_.center_0;
+	Float szx2 = (x_max - x_min)/2.0;
+	if ( szx2 < EPS )
+		szx2 = EPS;
+	Float szy2 = (y_max - y_min)/2.0;
+	if ( szy2 < EPS )
+		szy2 = EPS;
+	Float szz2 = (z_max - z_min)/2.0;
+	if ( szz2 < EPS )
+		szz2 = EPS;
+
+	cube_optimized_.init( cube_.center_0, szx2, szy2, szz2 );
+	se3_optimized_.r_ = r_adj;
+	se3_optimized_.q_ = Q;
+
+	return false;
 }
 
 
