@@ -1,6 +1,9 @@
 
 #include "pbd2_narrow_tree_node.h"
 #include "pbd2_narrow_tree.h"
+#include "matrix3d.h"
+
+#include "SymmetricEigensolver3x3.h"
 
 namespace Pbd
 {
@@ -370,6 +373,101 @@ bool NarrowTreeNode::collide_faces( const NarrowTreeNode & this_node, Vector<Vec
 }
 
 
+static bool compute_mean_and_std( NarrowTreeNode & node, Vector3d & std_diag, Vector3d & std_off_diag );
+
+bool NarrowTreeNode::compute_cube_optimized()
+{
+	Vector3d std_diag;
+	Vector3d std_off_diag;
+	const bool std_ok = compute_mean_and_std( *this, std_diag, std_off_diag );
+	if ( !std_ok )
+		return false;
+
+	std::array<Float, 3> eval                = { 0.0, 0.0, 0.0 };
+	std::array<std::array<Float, 3>, 3> evec; //= { {0.0, 0.0, 0.0},
+	                                          //   {0.0, 0.0, 0.0},
+	                                          //   {0.0, 0.0, 0.0} };
+	gte::SymmetricEigensolver3x3<Float> solver;
+	const int ret = solver( std_diag.x_, std_off_diag.x_, std_off_diag.y_, std_diag.y_, std_off_diag.z_, std_diag.z_,
+		                    false, -1, eval, evec );
+	if ( ret < 1 )
+		return false;
+
+    return false;
+}
+
+
+
+
+
+static bool compute_mean_and_std( NarrowTreeNode & node, Vector3d & std_diag, Vector3d & std_off_diag )
+{
+	const int qty = node.ptInds.size();
+	if ( qty < 0 )
+		return false;
+
+	Vector3d m = Vector3d( 0.0, 0.0, 0.0 );
+	for ( int i=0; i<qty; i++ )
+	{
+		const int ind = node.ptInds.ptr()[i];
+		const Face & f = node.tree->faces_.ptr()[ind];
+		for ( int j=0; j<3; j++ )
+		{
+			const Vector3d & v = f.verts_0[j];
+			m += v;
+		}
+	}
+	const Float inv_qty = 1.0 / static_cast<Float>(qty);
+	m *= inv_qty;
+
+	Matrix3d std;
+	std.m00_ = 0.0;
+	std.m01_ = 0.0;
+	std.m02_ = 0.0;
+	std.m10_ = 0.0;
+	std.m11_ = 0.0;
+	std.m12_ = 0.0;
+	std.m20_ = 0.0;
+	std.m21_ = 0.0;
+	std.m22_ = 0.0;
+	for ( int i=0; i<qty; i++ )
+	{
+		const int ind = node.ptInds.ptr()[i];
+		const Face & f = node.tree->faces_.ptr()[ind];
+		for ( int j=0; j<3; j++ )
+		{
+			const Vector3d v = f.verts_0[j] - m;
+			std.m00_ += v.x_*v.x_;
+			std.m11_ += v.y_*v.y_;
+			std.m22_ += v.z_*v.z_;
+			std.m01_ += v.x_*v.y_;
+			std.m02_ += v.x_*v.z_;
+			std.m12_ += v.y_*v.z_;
+		}
+	}
+	std.m00_ *= inv_qty;
+	std.m11_ *= inv_qty;
+	std.m22_ *= inv_qty;
+	std.m01_ *= inv_qty;
+	std.m02_ *= inv_qty;
+	std.m12_ *= inv_qty;
+
+	std.m00_ = std::sqrt( std.m00_ );
+	std.m11_ = std::sqrt( std.m11_ );
+	std.m22_ = std::sqrt( std.m22_ );
+	std.m01_ = std::sqrt( std.m01_ );
+	std.m02_ = std::sqrt( std.m02_ );
+	std.m12_ = std::sqrt( std.m12_ );
+
+	std_diag.x_ = std.m00_;
+	std_diag.y_ = std.m11_;
+	std_diag.z_ = std.m22_;
+	std_off_diag.x_ = std.m01_;
+	std_off_diag.y_ = std.m02_;
+	std_off_diag.z_ = std.m12_;
+
+	return true;
+}
 
 
 

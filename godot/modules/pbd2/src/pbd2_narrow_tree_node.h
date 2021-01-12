@@ -41,7 +41,8 @@ public:
         bool collide_backward( const NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
         bool collide_faces( const NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
 
-
+        // Compute "se3_optimized_" and "cube_optimized_".
+        bool compute_cube_optimized();
 
 	NarrowTree * tree;
 	int absIndex;

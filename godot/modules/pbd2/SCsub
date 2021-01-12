@@ -31,10 +31,11 @@ def configure_static_build():
     module_env.add_source_files( env.modules_sources, "src/*.cpp" )
 
     # Collision related includes.
-    module_env.Append(CPPPATH=["#modules/pbd2/collisions"])
-    module_env.Append(CPPPATH=["#modules/pbd2/collisions/3dparty"])
+    module_env.Append(CPPPATH=["#modules/pbd2/src/3dparty"])
+    #module_env.Append(CPPPATH=["#modules/pbd2/collisions"])
+    #module_env.Append(CPPPATH=["#modules/pbd2/collisions/3dparty"])
     # Collision related sources.
-    module_env.add_source_files( env.modules_sources, "src/collisions/*.cpp" )
+    #module_env.add_source_files( env.modules_sources, "src/collisions/*.cpp" )
 
 
 
