@@ -56,6 +56,7 @@ const NarrowTreeNode & NarrowTreeNode::operator=( const NarrowTreeNode & inst )
         center = inst.center;
         
         cube_ = inst.cube_;
+        se3_optimized_  = inst.se3_optimized_;
         cube_optimized_ = inst.cube_optimized_;
 
         ptInds = inst.ptInds;
@@ -124,7 +125,7 @@ bool NarrowTreeNode::subdivide()
         return false;
 
     const int childLevel = this->level + 1;
-    const Float chSize2 = this->size2 * 0.5;
+    const Float chSize2  = this->size2 * 0.5;
 
     NarrowTreeNode nn[8];
     int    qtys[8];
@@ -275,6 +276,102 @@ void NarrowTreeNode::init()
 {
     cube_.init( center, size2, size2, size2 );
 }
+
+
+
+
+bool NarrowTreeNode::collide_forward( const NarrowTreeNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
+{
+    const bool intersects = cube_.intersects( n.cube_ );
+    if ( !intersects )
+        return false;
+    const bool has_ch = n.hasChildren();
+    if ( !has_ch )
+    {
+        const bool is_filled = (n.value > 0);
+        if ( !is_filled )
+            return false;
+        const bool ret = n.collide_backward( *this, pts, depths );
+        return ret;
+    }
+
+    bool children_intersect = false;
+    for ( int i=0; i<8; i++ )
+    {
+        const int ind = n.children[i];
+        const NarrowTreeNode & child_node = tree->nodes_.ptr()[ind];
+        const bool ch_intersects = collide_forward( child_node, pts, depths );
+        children_intersect = children_intersect || ch_intersects;
+    }
+
+    return children_intersect;
+}
+
+bool NarrowTreeNode::collide_backward( const NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
+{
+    const bool intersects = cube_.intersects( this_node.cube_ );
+    if ( !intersects )
+        return false;
+    const bool has_ch = this_node.hasChildren();
+    if ( !has_ch )
+    {
+        const bool is_filled = (this_node.value > 0);
+        if ( !is_filled )
+            return false;
+        // Colliding individual faces.
+        const bool ret = collide_faces( this_node, pts, depths );
+        return ret;
+    }
+
+    bool children_intersect = false;
+    for ( int i=0; i<8; i++ )
+    {
+        const int ind = this_node.children[i];
+        const NarrowTreeNode & child_node = tree->nodes_.ptr()[ind];
+        const bool ch_intersects = collide_backward( child_node, pts, depths );
+        children_intersect = children_intersect || ch_intersects;
+    }
+
+    return children_intersect;
+
+    return true;
+}
+
+
+bool NarrowTreeNode::collide_faces( const NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
+{
+    const NarrowTreeNode & other_node = *this;
+    const int own_qty   = this_node.ptInds.size();
+    const int other_qty = other_node.ptInds.size();
+    Vector3d face_pts[3];
+    Vector3d face_depths[3];
+    
+    bool ret = false;
+    for ( int i=0; i<own_qty; i++ )
+    {
+        const int this_ind = this_node.ptInds.ptr()[i];
+        const Face & this_face = tree->faces_.ptr()[this_ind];
+        for ( int j=0; j<other_qty; j++ )
+        {
+            const int other_ind = other_node.ptInds.ptr()[j];
+            const Face & other_face = tree->faces_.ptr()[other_ind];
+            const int qty = this_face.intersects_all( other_face, face_pts, face_depths );
+            ret = ret || (qty > 0);
+            for ( int k=0; k<qty; k++ )
+            {
+                const Vector3d & pt    = face_pts[k];
+                const Vector3d & depth = face_depths[k];
+                pts.push_back( pt );
+                depths.push_back( depth );
+            }
+        }
+    }
+    return ret;
+}
+
+
+
+
 
 
 

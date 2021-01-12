@@ -32,8 +32,16 @@ public:
         // Will need to extend it with "optimal" box later.
 	bool inside( const NarrowTreeNode & n ) const;
 
+
 	// Initialize vertices and planes.
 	void init();
+
+
+        bool collide_forward( const NarrowTreeNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
+        bool collide_backward( const NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
+        bool collide_faces( const NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
+
+
 
 	NarrowTree * tree;
 	int absIndex;
