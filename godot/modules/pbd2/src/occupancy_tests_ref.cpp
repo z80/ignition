@@ -28,9 +28,9 @@ void OccupancyTestsRef::_bind_methods()
     ClassDB::bind_method( D_METHOD( "set_face_b", "a", "b", "c" ), &OccupancyTestsRef::set_face_b );
     ClassDB::bind_method( D_METHOD( "apply_to_face_b", "t" ), &OccupancyTestsRef::apply_to_face_b );
     
-    ClassDB::bind_method( D_METHOD( "intersect_faces" ), &OccupancyTestsRef::intersect_faces, Variant::BOOL );
-    ClassDB::bind_method( D_METHOD( "face_intersection_point" ), &OccupancyTestsRef::face_intersection_point, Variant::VECTOR3 );
-    ClassDB::bind_method( D_METHOD( "face_depth_point" ), &OccupancyTestsRef::face_depth_point, Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD( "intersect_faces" ), &OccupancyTestsRef::intersect_faces, Variant::INT );
+    ClassDB::bind_method( D_METHOD( "face_intersection_point", "ind" ), &OccupancyTestsRef::face_intersection_point, Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD( "face_depth_point", "ind" ), &OccupancyTestsRef::face_depth_point, Variant::VECTOR3 );
 }
 
 OccupancyTestsRef::OccupancyTestsRef()
@@ -155,24 +155,26 @@ void OccupancyTestsRef::apply_to_face_b( const Transform & t )
     face_b_.apply( se3 );
 }
     
-bool OccupancyTestsRef::intersect_faces()
+int OccupancyTestsRef::intersect_faces()
 {
-    const bool ok = face_.intersects( face_b_, face_face_intersection_point_, face_face_intersection_depth_ );
-    return ok;
+    const int qty = face_.intersects_all( face_b_, face_face_intersection_point_, face_face_intersection_depth_ );
+    return qty;
 }
 
-Vector3 OccupancyTestsRef::face_intersection_point() const
+Vector3 OccupancyTestsRef::face_intersection_point( int ind ) const
 {
-    return Vector3( face_face_intersection_point_.x_, 
-                    face_face_intersection_point_.y_, 
-                    face_face_intersection_point_.z_ );
+	const Vector3 ret = Vector3( face_face_intersection_point_[ind].x_, 
+                                 face_face_intersection_point_[ind].y_, 
+                                 face_face_intersection_point_[ind].z_ );
+	return ret;
 }
 
-Vector3 OccupancyTestsRef::face_depth_point() const
+Vector3 OccupancyTestsRef::face_depth_point( int ind ) const
 {
-    return Vector3( face_face_intersection_depth_.x_, 
-                    face_face_intersection_depth_.y_, 
-                    face_face_intersection_depth_.z_ );
+    const Vector3 ret = Vector3( face_face_intersection_depth_[ind].x_, 
+                                 face_face_intersection_depth_[ind].y_, 
+                                 face_face_intersection_depth_[ind].z_ );
+	return ret;
 }
 
 

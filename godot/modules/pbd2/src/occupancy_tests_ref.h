@@ -40,9 +40,9 @@ public:
     void set_face_b( const Vector3 & a, const Vector3 & b, const Vector3 & c );
     void apply_to_face_b( const Transform & t );
     
-    bool intersect_faces();
-    Vector3 face_intersection_point() const;
-    Vector3 face_depth_point() const;
+    int intersect_faces();
+    Vector3 face_intersection_point( int ind ) const;
+    Vector3 face_depth_point( int ind ) const;
 
 
 
@@ -60,7 +60,7 @@ public:
     bool cubes_intersect_;
 
     Face face_b_;
-    Vector3d face_face_intersection_point_, face_face_intersection_depth_;
+    Vector3d face_face_intersection_point_[3], face_face_intersection_depth_[3];
 };
 
 
