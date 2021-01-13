@@ -47,6 +47,10 @@ struct Face
     bool intersects( const Face & f, Vector3d & at, Vector3d & depth ) const;
     // Actually, can be 0, 1 or 2 intersections.
     int intersects_all( const Face & f, Vector3d * at, Vector3d * depth ) const;
+
+    // Colliding using common line.
+    // Always either 0 or exactly 2 points.
+    bool intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const;
 };
 
 struct Cube

@@ -49,7 +49,7 @@ void Plane::init( const Vector3d & a, const Vector3d & b, const Vector3d & c )
     norm.Normalize();
     d = -a.DotProduct( norm );
 
-	r0 = a;
+        r0 = a;
 }
 
 bool Plane::above( const Vector3d & r ) const
@@ -262,170 +262,555 @@ bool Face::intersects( const Face & f, Vector3d & at, Vector3d & depth ) const
 
 struct Collision
 {
-	// Which edge (0, 1, 2) intersects or is the closest.
-	int edge_this;
-	// Which edge (0, 1, 2) in the other is the closest or intersects.
-	int edge_other;
-	// Intersection point.
-	Vector3d at;
-	// Correction displacement to fix penetration. "this" moves, "other" stays in place.
-	Vector3d depth;
+        // Which edge (0, 1, 2) intersects or is the closest.
+        int edge_this;
+        // Which edge (0, 1, 2) in the other is the closest or intersects.
+        int edge_other;
+        // Intersection point.
+        Vector3d at;
+        // Correction displacement to fix penetration. "this" moves, "other" stays in place.
+        Vector3d depth;
 };
 
 int Face::intersects_all( const Face & f, Vector3d * ats, Vector3d * depths ) const
 {
-	// Check each edge.
-	static const int edge_verts[3][2] = { {0, 1}, {1, 2}, {2, 0} };
-	static const int vert_edges[3][2] = { {0, 2}, {0, 1}, {1, 2} };
+        // Check each edge.
+        static const int edge_verts[3][2] = { {0, 1}, {1, 2}, {2, 0} };
+        static const int vert_edges[3][2] = { {0, 2}, {0, 1}, {1, 2} };
 
-	Collision collisions[2];
-	int collisions_qty = 0;
+        Collision collisions[2];
+        int collisions_qty = 0;
 
-	// Check if edges of "*this" intersect "f".
-	for ( int i=0; i<3; i++ )
-	{
-		const int ind_a_0 = edge_verts[i][0];
-		const int ind_a_1 = edge_verts[i][1];
-		const Vector3d & a = verts[ind_a_0];
-		const Vector3d & b = verts[ind_a_1];
-		Vector3d at;
-		const bool ok = f.intersects( a, b, at );
-		if (!ok)
-			continue;
-		// Check which vertex is under the surface.
-		const bool a_is_above = f.plane.above( a );
-		const Vector3d head = (a_is_above) ? b : a;
-		// Compute the depth.
-		const Vector3d displacement_raw = at - head;
-		// Project it on the normal.
-		const Vector3d displacement_point = f.plane.norm * ( displacement_raw.DotProduct( f.plane.norm ) );
-		const Float displacement_point_depth = displacement_point.Length();
+        // Check if edges of "*this" intersect "f".
+        for ( int i=0; i<3; i++ )
+        {
+                const int ind_a_0 = edge_verts[i][0];
+                const int ind_a_1 = edge_verts[i][1];
+                const Vector3d & a = verts[ind_a_0];
+                const Vector3d & b = verts[ind_a_1];
+                Vector3d at;
+                const bool ok = f.intersects( a, b, at );
+                if (!ok)
+                        continue;
+                // Check which vertex is under the surface.
+                const bool a_is_above = f.plane.above( a );
+                const Vector3d head = (a_is_above) ? b : a;
+                // Compute the depth.
+                const Vector3d displacement_raw = at - head;
+                // Project it on the normal.
+                const Vector3d displacement_point = f.plane.norm * ( displacement_raw.DotProduct( f.plane.norm ) );
+                const Float displacement_point_depth = displacement_point.Length();
 
-		// Now search for the common perpendicualr.
-		Vector3d common_perp_displacement;
-		Float common_perp_depth = -1.0;
-		int common_perp_index = -1;
-		for ( int j=0; j<3; j++ )
-		{
-			const int ind_b_0 = edge_verts[j][0];
-			const int ind_b_1 = edge_verts[j][1];
-			const Vector3d & c = f.verts[ind_b_0];
-			const Vector3d & d = f.verts[ind_b_1];
+                // Now search for the common perpendicualr.
+                Vector3d common_perp_displacement;
+                Float common_perp_depth = -1.0;
+                int common_perp_index = -1;
+                for ( int j=0; j<3; j++ )
+                {
+                        const int ind_b_0 = edge_verts[j][0];
+                        const int ind_b_1 = edge_verts[j][1];
+                        const Vector3d & c = f.verts[ind_b_0];
+                        const Vector3d & d = f.verts[ind_b_1];
 
-			Vector3d ra, rb;
-			const bool ok = common_perpendicular( a, b, c, d, ra, rb );
-			if (!ok)
-				continue;
+                        Vector3d ra, rb;
+                        const bool ok = common_perpendicular( a, b, c, d, ra, rb );
+                        if (!ok)
+                                continue;
 
-			Vector3d disp = ra - rb;
-			const Float depth = disp.Length();
-			if ( (common_perp_index < 0) || (common_perp_depth > depth) )
-			{
-				common_perp_index = j;
-				common_perp_depth = depth;
-				const Float sign = disp.DotProduct( f.plane.norm );
-				if ( sign > 0.0 )
-					disp = -disp;
-				common_perp_displacement = disp;
-			}
-		}
+                        Vector3d disp = ra - rb;
+                        const Float depth = disp.Length();
+                        if ( (common_perp_index < 0) || (common_perp_depth > depth) )
+                        {
+                                common_perp_index = j;
+                                common_perp_depth = depth;
+                                const Float sign = disp.DotProduct( f.plane.norm );
+                                if ( sign > 0.0 )
+                                        disp = -disp;
+                                common_perp_displacement = disp;
+                        }
+                }
 
-		Collision & c = collisions[collisions_qty];
-		c.edge_this  = i;
-		c.edge_other = common_perp_index;
-		c.at         = at;
-			// Now compare the point depth and common perpendicular.
-		if ( displacement_point_depth <= common_perp_depth )
-			c.depth = displacement_point;
-		else
-			c.depth = common_perp_displacement;
-		collisions_qty += 1;
-	}
+                Collision & c = collisions[collisions_qty];
+                c.edge_this  = i;
+                c.edge_other = common_perp_index;
+                c.at         = at;
+                        // Now compare the point depth and common perpendicular.
+                if ( displacement_point_depth <= common_perp_depth )
+                        c.depth = displacement_point;
+                else
+                        c.depth = common_perp_displacement;
+                collisions_qty += 1;
+        }
 
-	// If already 2 points, return the points.
-	if ( collisions_qty >= 2 )
-	{
-		for ( int i=0; i<collisions_qty; i++ )
-		{
-			const Collision & c = collisions[i];
-			ats[i]    = c.at;
-			depths[i] = c.depth;
-		}
-		return collisions_qty;
-	}
-	// Now do the exactly opposite thing.
-	// Check "f"'s edges for collision with "*this"'s plane.
-	for ( int i=0; i<3; i++ )
-	{
-		const int ind_a_0 = edge_verts[i][0];
-		const int ind_a_1 = edge_verts[i][1];
-		const Vector3d & a = f.verts[ind_a_0];
-		const Vector3d & b = f.verts[ind_a_1];
+        // If already 2 points, return the points.
+        if ( collisions_qty >= 2 )
+        {
+                for ( int i=0; i<collisions_qty; i++ )
+                {
+                        const Collision & c = collisions[i];
+                        ats[i]    = c.at;
+                        depths[i] = c.depth;
+                }
+                return collisions_qty;
+        }
+        // Now do the exactly opposite thing.
+        // Check "f"'s edges for collision with "*this"'s plane.
+        for ( int i=0; i<3; i++ )
+        {
+                const int ind_a_0 = edge_verts[i][0];
+                const int ind_a_1 = edge_verts[i][1];
+                const Vector3d & a = f.verts[ind_a_0];
+                const Vector3d & b = f.verts[ind_a_1];
 
-		Vector3d at;
-		const bool ok = intersects( a, b, at );
-		if ( !ok )
-			continue;
+                Vector3d at;
+                const bool ok = intersects( a, b, at );
+                if ( !ok )
+                        continue;
 
-		// Check which vertex is under the surface.
-		const bool a_is_above = plane.above( a );
-		const Vector3d head = (a_is_above) ? b : a;
-		// Compute the depth.
-		const Vector3d displacement_raw = at - head;
-		// Project it on the normal.
-		const Vector3d displacement_point = -plane.norm * ( displacement_raw.DotProduct( plane.norm ) );
-		const Float displacement_point_depth = displacement_point.Length();
+                // Check which vertex is under the surface.
+                const bool a_is_above = plane.above( a );
+                const Vector3d head = (a_is_above) ? b : a;
+                // Compute the depth.
+                const Vector3d displacement_raw = at - head;
+                // Project it on the normal.
+                const Vector3d displacement_point = -plane.norm * ( displacement_raw.DotProduct( plane.norm ) );
+                const Float displacement_point_depth = displacement_point.Length();
 
-		// Now search for the common perpendicualr.
-		Vector3d common_perp_displacement;
-		Float common_perp_depth = -1.0;
-		int common_perp_index = -1;
-		for ( int j=0; j<3; j++ )
-		{
-			const int ind_b_0 = edge_verts[j][0];
-			const int ind_b_1 = edge_verts[j][1];
-			const Vector3d & c = verts[ind_b_0];
-			const Vector3d & d = verts[ind_b_1];
+                // Now search for the common perpendicualr.
+                Vector3d common_perp_displacement;
+                Float common_perp_depth = -1.0;
+                int common_perp_index = -1;
+                for ( int j=0; j<3; j++ )
+                {
+                        const int ind_b_0 = edge_verts[j][0];
+                        const int ind_b_1 = edge_verts[j][1];
+                        const Vector3d & c = verts[ind_b_0];
+                        const Vector3d & d = verts[ind_b_1];
 
-			Vector3d ra, rb;
-			const bool ok = common_perpendicular( a, b, c, d, ra, rb );
-			if (!ok)
-				continue;
+                        Vector3d ra, rb;
+                        const bool ok = common_perpendicular( a, b, c, d, ra, rb );
+                        if (!ok)
+                                continue;
 
-			Vector3d disp = ra - rb;
-			const Float depth = disp.Length();
-			if ( (common_perp_index < 0) || (common_perp_depth > depth) )
-			{
-				common_perp_index = j;
-				common_perp_depth = depth;
-				const Float sign = disp.DotProduct( plane.norm );
-				if ( sign > 0.0 )
-					disp = -disp;
-				common_perp_displacement = disp;
-			}
-		}
+                        Vector3d disp = ra - rb;
+                        const Float depth = disp.Length();
+                        if ( (common_perp_index < 0) || (common_perp_depth > depth) )
+                        {
+                                common_perp_index = j;
+                                common_perp_depth = depth;
+                                const Float sign = disp.DotProduct( plane.norm );
+                                if ( sign > 0.0 )
+                                        disp = -disp;
+                                common_perp_displacement = disp;
+                        }
+                }
 
-		Collision & c = collisions[collisions_qty];
-		c.edge_this  = i;
-		c.edge_other = common_perp_index;
-		c.at         = at;
-		// Now compare the point depth and common perpendicular.
-		if ( displacement_point_depth <= common_perp_depth )
-			c.depth = displacement_point;
-		else
-			c.depth = common_perp_displacement;
-		collisions_qty += 1;
-	}
+                Collision & c = collisions[collisions_qty];
+                c.edge_this  = i;
+                c.edge_other = common_perp_index;
+                c.at         = at;
+                // Now compare the point depth and common perpendicular.
+                if ( displacement_point_depth <= common_perp_depth )
+                        c.depth = displacement_point;
+                else
+                        c.depth = common_perp_displacement;
+                collisions_qty += 1;
+        }
 
-	// Return collisions.
-	for ( int i=0; i<collisions_qty; i++ )
-	{
-		const Collision & c = collisions[i];
-		ats[i]    = c.at;
-		depths[i] = c.depth;
-	}
-	return collisions_qty;
+        // Return collisions.
+        for ( int i=0; i<collisions_qty; i++ )
+        {
+                const Collision & c = collisions[i];
+                ats[i]    = c.at;
+                depths[i] = c.depth;
+        }
+        return collisions_qty;
 }
+
+
+
+
+
+
+
+
+bool Face::intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const
+{
+    // Constants defining vertices and edges in a triangle.
+    static const int edge_verts[3][2] = { {0, 1}, {1, 2}, {2, 0} };
+    static const int vert_edges[3][2] = { {0, 2}, {0, 1}, {1, 2} };
+
+    // Check if triangles intersect at all.
+    // It is done by determining if edge vertices are on the opposite sides of the 
+    // other triangle plane.
+    bool vert_a_above[3];
+    bool vert_b_above[3];
+    {
+        int below_a_qty;
+        int below_b_qty;
+        for ( int i=0; i<3; i++ )
+        {
+            const bool above_a = f.plane.above( verts[i] );
+            vert_a_above[i] = above_a;
+            if ( !above_a )
+                below_a_qty += 1;
+
+            const bool above_b = plane.above( f.verts[i] );
+            vert_b_above[i] = above_b;
+            if ( !above_b )
+                below_b_qty += 1;
+        }
+        
+        // If triangle is fully on one side, no intersection.
+        if ( (below_a_qty == 0) || (below_a_qty == 3) )
+            return false;
+        if ( (below_b_qty == 0) || (below_b_qty == 3) )
+            return false;
+    }
+
+
+    // 1) Search for a common line.
+    Vector3d common_a = plane.norm.CrossProduct( f.plane.norm );
+    {
+        const Float common_a_length = common_a.Length();
+        // If too short, means, triangles are parallel.
+        // No collision in this case.
+        if ( common_a_length < EPS )
+            return false;
+        common_a = common_a / common_a_length;
+    }
+
+    // Searching for a point on the line.
+    // This point satisfies to both planes simultaneously.
+    Vector3d common_r;
+    {
+        const Vector3d r0 = verts[0];
+        const Vector3d a = verts[1] - verts[0];
+        const Vector3d b = verts[2] - verts[0];
+        // a*ta + b*tb + r0 - all points within the triangle's plane.
+        // Intersect it with the other triangle and require it to satisfy it.
+        // (a, f.plane.n)*ta + (b, f.plane.n)*tb + (r0, f.plane.n) + f.plane.d = 0
+        const Float a_n = a.DotProduct( f.plane.norm );
+        const Float b_n = b.DotProduct( f.plane.norm );
+        const Float rhs = -( f.plane.d + r0.DotProduct( f.plane.norm ) );
+        // Either "a" or "b" might be parallel to other triangle plane. So 
+        // check which one is less parallel and use it in the denominator.
+        Float ta, tb;
+        if ( std::abs(a_n) > std::abd(b_n) )
+        {
+            tb = 0.0;
+            ta = rhs / a_n;
+        }
+        else
+        {
+            ta = 0.0;
+            tb = ths / b_n;
+        }
+        common_r = r0 + a*ta + b*tb;
+    }
+
+    // 2) Compute line parameter number "t" in the equation "r = common_a*t + common_r" 
+    // which corresponds intersection with edge planes of each triangle.
+    Float    t_a[2];
+    Vector3d at_a[2];
+    int      edge_ind_a[0];
+    Float    t_b[2];
+    Vector3d at_b[2];
+    int      edge_ind_b[2];
+    int qty_a = 0;
+    int qty_b = 0;
+    for ( int i=0; i<3; i++ )
+    {
+        const int ind_0 = edge_verts[i][0];
+        const int ind_1 = edge_verts[i][1];
+
+        // First "this" thiangle.
+        const bool above_a_0 = vert_a_above[ind_0];
+        const bool above_a_1 = vert_a_above[ind_1];
+        if ( above_a_0 ^ above_a_1 )
+        {
+            const Plane & pl = planes[i];
+            const Float den = common_a.DotProduct( pl.norm );
+            if ( std::abs(den) < EPS )
+                return false;
+            const Float num = common_r.DotProduct( pl.norm ) + pl.d;
+            const Float t = -num/den;
+            const Vector3d at = common_a*t + common_r;
+            t_a[qty_a] = t;
+            at_a[qty_a] = at;
+            edge_ind_a[qty_a] = i;
+            qty_a += 1;
+        }
+
+        // And now "f" triangle.
+        const bool above_b_0 = vert_b_above[ind_0];
+        const bool above_b_1 = vert_b_above[ind_1];
+        if ( above_b_0 && (!above_b_1) )
+        {
+            const Plane & pl = f.planes[i];
+            const Float den = common_b.DotProduct( pl.norm );
+            if ( std::abs(den) < EPS )
+                return false;
+            const Float num = common_r.DotProduct( pl.norm ) + pl.d;
+            const Float t = -num/den;
+            const Vector3d at = common_a*t + common_r;
+            t_b[qty_b] = t;
+            at_b[qty_b] = at;
+            edge_ind_b[qty_b] = i;
+            qty_b += 1;
+        }
+
+    }
+
+    // Sort points in accending "t" order.
+    if ( t_a[0] > t_a[1] )
+    {
+        const int t = t_a[0];
+        t_a[0] = t_a[1];
+        t_a[1] = t;
+        
+        const Vector3d at = at_a[0];
+        at_a[0] = at_a[1];
+        at_a[1] = at;
+
+        const int edge_ind = edge_ind_a[0];
+        edge_ind_a[0] = edge_ind_a[1];
+        edge_ind_a[1] = edge_ind;
+    }
+    if ( t_b[0] > t_b[1] )
+    {
+        const int t = t_b[0];
+        t_b[0] = t_b[1];
+        t_b[1] = t;
+        
+        const Vector3d at = at_b[0];
+        at_b[0] = at_b[1];
+        at_b[1] = at;
+
+        const int edge_ind = edge_ind_b[0];
+        edge_ind_b[0] = edge_ind_b[1];
+        edge_ind_b[1] = edge_ind;
+    }
+    
+    // They don't intersect id smallest "t" for one interval is 
+    // begger than biggest "t" for the other interval.
+    if ( (t_a[0] > t_b[1]) || (t_a[1] < t_b[0]) )
+        return false;
+
+    // At this point intervals do intersect.
+    // But they either partially overlap 
+    // or one fully contains the other.
+    // Regardless of that pick the biggest of the two left bounds 
+    // and the smallest of the two right bounds.
+    Vector3d depth_0;
+    {
+        const bool pick_a_0  = ( t_a[0] > t_b[0] );
+        const Vector3d at_0  = (pick_a_0) ? at_a[0] : at_b[0];
+        const int edge_ind_0 = (pick_a_0) ? edge_ind_a[0] : edge_ind_b[0];
+
+        // First edge crossing depth.
+        Vector3d head;
+        Face * crossing;
+        Face * crossed; // The triangle being crossed
+        const int ind_0 = edge_verts[edge_ind_0][0];
+        const int ind_1 = edge_verts[edge_ind_0][1];
+        if ( pick_a_0 )
+        {
+            const bool ind_0_above = vert_a_above[ind_0];
+            head = (ind_0_above) ? verts[ind_1] : verts[ind_0];
+            crossing = this;
+            crossed  = &f;
+        }
+        else
+        {
+            const bool ind_0_above = vert_b_above[ind_0];
+            head = (ind_0_above) ? f.verts[ind_1] : f.verts[ind_0];
+            crossing = &f;
+            crossed  = this;
+        }
+        // Surround (at->head) vector by face side planes and limit head.
+        for ( int i=0; i<3; i++ )
+        {
+            const Plane & pl = crossed->planes[i];
+            Vector3d cropped_head;
+            const bool intersects_ok = pl.intersects( at_0, head, cropped_head );
+            if ( intersects_ok )
+            {
+                head = cropped_head;
+                break;
+            }
+        }
+        // Project the vector onto "crossed" normal.
+        Vector3d crossing_depth = head - at_0;
+        crossing_depth = crossed->plane.norm * ( crossed->plane.norm.DotProduct( crossing_depth ) );
+        // Crossing depth should be in the same direction as "f"'s normal.
+        const Float along_f = crossing_depth.DotProduct( f.plane.norm );
+        if ( along_f < 0.0 )
+            crossing_depth = -crossing_depth;
+        depth_0 = crossing_depth;
+
+        // Crossed triangle depth directly undernear the point.
+        // It's the intersection of appropriate crossing edge's plane with 
+        // all the edges of crossed triangle edges. And taking the one below 
+        // the plane of crossed triangle.
+        const Plane & crossing_plane = crossing->planes[edge_ind_0];
+        Vector3d crossed_depth;
+        for ( int i=0; i<3; i++ )
+        {
+            const int vert_ind_0 = edge_verts[i][0];
+            const int vert_ind_1 = edge_verts[i][1];
+            const Vector3d & r0 = crossed->verts[vert_ind_0];
+            const Vector3d & r1 = crossed->verts[vert_ind_b];
+            const Vector3d a = r1 - r0;
+            const Float den = a.DotProduct( crossing_plane.norm );
+            if ( std::abs(den) < EPS )
+                continue;
+            const Float num = r0.DotProduct( crossing_plane.norm ) + crossing_plane.d;
+            const Float t = -(num/den);
+            if ( ( t >= 0.0 ) || ( t <= 1.0 ) )
+                continue;
+            const Vector3d pt = r0 + a*t;
+            // Check if it is under the crossed triangle plane.
+            const Vector3d dr = pt - crossed->verts[0];
+            const Float dr_is_above = dr.DotProduct( crossed->plane.norm );
+            if ( dr_is_above > 0.0 )
+                continue;
+
+            crossed_depth = pt - at_0;
+            // It should be in the same direction as f.plane.norm;
+            const Float along_f = crossed_depth.DotProduct( f.plane.norm );
+            if ( along_f < 0.0 )
+                crossed_depth = -crossed_depth;
+            // Choose the smallest depth.
+            const Float depth_0_lenght       = depth_0.LengthSquared();
+            const Float crossed_depth_length = crossed_depth.LengthSquared();
+            if ( depth_0_lenght > crossed_depth_length )
+                depth_0 = crossed_depth;
+            // If found the crossing point below, interrupt the loop, 
+            // as there should be only one point intersecting triangle below.
+            break;
+        }
+
+        // Crossed triangle depth directly behind the point.
+        // Don't implement it just yet. Even though this option is possible, 
+        // but with continuous bodies motion previous two should be enough.
+        // (At least I think so at the moment).
+    }
+
+
+
+    Vector3d depth_1;
+    {
+        const bool pick_a_1 = ( t_a[1] < t_b[1] );
+        const Vector3d at_1  = (pick_a_1) ? at_a[1] : at_b[1];
+        const int edge_ind_1 = (pick_a_1) ? edge_ind_a[1] : edge_ind_b[1];
+
+        // First edge crossing depth.
+        Vector3d head;
+        Face * crossing;
+        Face * crossed; // The triangle being crossed.
+        const int ind_0 = edge_verts[edge_ind_1][0];
+        const int ind_1 = edge_verts[edge_ind_1][1];
+        if ( pick_a_1 )
+        {
+            const bool ind_0_above = vert_a_above[ind_0];
+            head = (ind_0_above) ? verts[ind_1] : verts[ind_0];
+            crossing = this;
+            crossed  = &f;
+        }
+        else
+        {
+            const bool ind_0_above = vert_b_above[ind_0];
+            head = (ind_0_above) ? f.verts[ind_1] : f.verts[ind_0];
+            crossing = &f;
+            crossed  = this;
+        }
+        // Surround (at->head) vector by face side planes and limit head.
+        for ( int i=0; i<3; i++ )
+        {
+            const Plane & pl = crossed->planes[i];
+            Vector3d cropped_head;
+            const bool intersects_ok = pl.intersects( at_1, head, cropped_head );
+            if ( intersects_ok )
+            {
+                head = cropped_head;
+                break;
+            }
+        }
+        // Project the vector onto "crossed" normal.
+        Vector3d crossing_depth = head - at_1;
+        crossing_depth = crossed->plane.norm * ( crossed->plane.norm.DotProduct( crossing_depth ) );
+        // Crossing depth should be in the same direction as "f"'s normal.
+        const Float along_f = crossing_depth.DotProduct( f.plane.norm );
+        if ( along_f < 0.0 )
+            crossing_depth = -crossing_depth;
+        depth_1 = crossing_depth;
+    
+
+        // Crossed triangle depth directly undernear the point.
+        // It's the intersection of appropriate crossing edge's plane with 
+        // all the edges of crossed triangle edges. And taking the one below 
+        // the plane of crossed triangle.
+        const Plane & crossing_plane = crossing->planes[edge_ind_0];
+        for ( int i=0; i<3; i++ )
+        {
+            const int vert_ind_0 = edge_verts[i][0];
+            const int vert_ind_1 = edge_verts[i][1];
+            const Vector3d & r0 = crossed->verts[vert_ind_0];
+            const Vector3d & r1 = crossed->verts[vert_ind_b];
+            const Vector3d a = r1 - r0;
+            const Float den = a.DotProduct( crossing_plane.norm );
+            if ( std::abs(den) < EPS )
+                continue;
+            const Float num = r0.DotProduct( crossing_plane.norm ) + crossing_plane.d;
+            const Float t = -(num/den);
+            if ( ( t >= 0.0 ) || ( t <= 1.0 ) )
+                continue;
+            const Vector3d pt = r0 + a*t;
+            // Check if it is under the crossed triangle plane.
+            const Vector3d dr = pt - crossed->verts[0];
+            const Float dr_is_above = dr.DotProduct( crossed->plane.norm );
+            if ( dr_is_above > 0.0 )
+                continue;
+
+            Vector3d crossed_depth = pt - at_1;
+            // It should be in the same direction as f.plane.norm;
+            const Float along_f = crossed_depth.DotProduct( f.plane.norm );
+            if ( along_f < 0.0 )
+                crossed_depth = -crossed_depth;
+            // Choose the smallest depth.
+            const Float depth_1_lenght = depth_1.LengthSquared();
+            const Float crossed_depth_length  = crossed_depth.LengthSquared();
+            if ( depth_1_lenght > crossed_depth_length )
+                depth_1 = crossed_depth;
+            // If found the crossing point below, interrupt the loop, 
+            // as there should be only one point intersecting triangle below.
+            break;
+        }
+
+        // Crossed triangle depth directly behind the point.
+        // Don't implement it just yet. Even though this option is possible, 
+        // but with continuous bodies motion previous two should be enough.
+        // (At least I think so at the moment).
+    }
+    
+    // Fill in the results. 
+    ats[0] = at_0;
+    ats[1] = at_1;
+    depths[0] = depth_0;
+    depths[1] = depth_1;
+
+    // Return success.
+    return true;
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -438,7 +823,7 @@ int Face::intersects_all( const Face & f, Vector3d * ats, Vector3d * depths ) co
 
 void Cube::init( const Vector3d & c, Float x2, Float y2, Float z2 )
 {
-	center_0 = c;
+        center_0 = c;
     center = center_0;
     szx2 = std::abs( x2 );
     szy2 = std::abs( y2 );
@@ -595,8 +980,8 @@ bool Cube::intersects( const Cube & c ) const
             const bool point_is_above = plane.above( pt );
             if ( point_is_above )
                 out_qty += 1;
-			else
-				break;
+                        else
+                                break;
         }
         if ( out_qty > 7 )
             return false;
@@ -612,8 +997,8 @@ bool Cube::intersects( const Cube & c ) const
             const bool point_is_above = plane.above( pt );
             if ( point_is_above )
                 out_qty += 1;
-			else
-				break;
+                        else
+                                break;
         }
         if ( out_qty > 7 )
             return false;
@@ -715,8 +1100,8 @@ bool Cube::intersects( const Face & f ) const
             const bool out = pl.above( v );
             if ( out )
                 qty += 1;
-			else
-				break;
+                        else
+                                break;
         }
         if ( qty > 2 )
             return false;
