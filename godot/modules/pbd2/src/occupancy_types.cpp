@@ -434,7 +434,7 @@ int Face::intersects_all( const Face & f, Vector3d * ats, Vector3d * depths ) co
 
 
 
-bool Face::intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const
+bool Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths ) const
 {
     // Constants defining vertices and edges in a triangle.
     static const int edge_verts[3][2] = { {0, 1}, {1, 2}, {2, 0} };
@@ -446,8 +446,8 @@ bool Face::intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const
     bool vert_a_above[3];
     bool vert_b_above[3];
     {
-        int below_a_qty;
-        int below_b_qty;
+        int below_a_qty = 0;
+        int below_b_qty = 0;
         for ( int i=0; i<3; i++ )
         {
             const bool above_a = f.plane.above( verts[i] );
@@ -496,7 +496,7 @@ bool Face::intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const
         // Either "a" or "b" might be parallel to other triangle plane. So 
         // check which one is less parallel and use it in the denominator.
         Float ta, tb;
-        if ( std::abs(a_n) > std::abd(b_n) )
+        if ( std::abs(a_n) > std::abs(b_n) )
         {
             tb = 0.0;
             ta = rhs / a_n;
@@ -504,7 +504,7 @@ bool Face::intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const
         else
         {
             ta = 0.0;
-            tb = ths / b_n;
+            tb = rhs / b_n;
         }
         common_r = r0 + a*ta + b*tb;
     }
@@ -513,7 +513,7 @@ bool Face::intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const
     // which corresponds intersection with edge planes of each triangle.
     Float    t_a[2];
     Vector3d at_a[2];
-    int      edge_ind_a[0];
+    int      edge_ind_a[2];
     Float    t_b[2];
     Vector3d at_b[2];
     int      edge_ind_b[2];
@@ -548,7 +548,7 @@ bool Face::intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const
         if ( above_b_0 && (!above_b_1) )
         {
             const Plane & pl = f.planes[i];
-            const Float den = common_b.DotProduct( pl.norm );
+            const Float den = common_a.DotProduct( pl.norm );
             if ( std::abs(den) < EPS )
                 return false;
             const Float num = common_r.DotProduct( pl.norm ) + pl.d;
@@ -602,16 +602,17 @@ bool Face::intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const
     // or one fully contains the other.
     // Regardless of that pick the biggest of the two left bounds 
     // and the smallest of the two right bounds.
+	Vector3d at_0;
     Vector3d depth_0;
     {
         const bool pick_a_0  = ( t_a[0] > t_b[0] );
-        const Vector3d at_0  = (pick_a_0) ? at_a[0] : at_b[0];
+        at_0  = (pick_a_0) ? at_a[0] : at_b[0];
         const int edge_ind_0 = (pick_a_0) ? edge_ind_a[0] : edge_ind_b[0];
 
         // First edge crossing depth.
         Vector3d head;
-        Face * crossing;
-        Face * crossed; // The triangle being crossed
+        const Face * crossing;
+        const Face * crossed; // The triangle being crossed
         const int ind_0 = edge_verts[edge_ind_0][0];
         const int ind_1 = edge_verts[edge_ind_0][1];
         if ( pick_a_0 )
@@ -660,7 +661,7 @@ bool Face::intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const
             const int vert_ind_0 = edge_verts[i][0];
             const int vert_ind_1 = edge_verts[i][1];
             const Vector3d & r0 = crossed->verts[vert_ind_0];
-            const Vector3d & r1 = crossed->verts[vert_ind_b];
+            const Vector3d & r1 = crossed->verts[vert_ind_1];
             const Vector3d a = r1 - r0;
             const Float den = a.DotProduct( crossing_plane.norm );
             if ( std::abs(den) < EPS )
@@ -699,16 +700,17 @@ bool Face::intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const
 
 
 
+	Vector3d at_1;
     Vector3d depth_1;
     {
         const bool pick_a_1 = ( t_a[1] < t_b[1] );
-        const Vector3d at_1  = (pick_a_1) ? at_a[1] : at_b[1];
+        at_1  = (pick_a_1) ? at_a[1] : at_b[1];
         const int edge_ind_1 = (pick_a_1) ? edge_ind_a[1] : edge_ind_b[1];
 
         // First edge crossing depth.
         Vector3d head;
-        Face * crossing;
-        Face * crossed; // The triangle being crossed.
+        const Face * crossing;
+        const Face * crossed; // The triangle being crossed.
         const int ind_0 = edge_verts[edge_ind_1][0];
         const int ind_1 = edge_verts[edge_ind_1][1];
         if ( pick_a_1 )
@@ -751,13 +753,13 @@ bool Face::intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const
         // It's the intersection of appropriate crossing edge's plane with 
         // all the edges of crossed triangle edges. And taking the one below 
         // the plane of crossed triangle.
-        const Plane & crossing_plane = crossing->planes[edge_ind_0];
+        const Plane & crossing_plane = crossing->planes[edge_ind_1];
         for ( int i=0; i<3; i++ )
         {
             const int vert_ind_0 = edge_verts[i][0];
             const int vert_ind_1 = edge_verts[i][1];
             const Vector3d & r0 = crossed->verts[vert_ind_0];
-            const Vector3d & r1 = crossed->verts[vert_ind_b];
+            const Vector3d & r1 = crossed->verts[vert_ind_1];
             const Vector3d a = r1 - r0;
             const Float den = a.DotProduct( crossing_plane.norm );
             if ( std::abs(den) < EPS )
