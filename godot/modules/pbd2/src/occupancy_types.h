@@ -50,7 +50,7 @@ struct Face
 
     // Colliding using common line.
     // Always either 0 or exactly 2 points.
-    bool intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const;
+    int intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const;
 };
 
 struct Cube

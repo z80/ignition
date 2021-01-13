@@ -434,7 +434,7 @@ int Face::intersects_all( const Face & f, Vector3d * ats, Vector3d * depths ) co
 
 
 
-bool Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths ) const
+int Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths ) const
 {
     // Constants defining vertices and edges in a triangle.
     static const int edge_verts[3][2] = { {0, 1}, {1, 2}, {2, 0} };
@@ -463,9 +463,9 @@ bool Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths ) con
         
         // If triangle is fully on one side, no intersection.
         if ( (below_a_qty == 0) || (below_a_qty == 3) )
-            return false;
+            return 0;
         if ( (below_b_qty == 0) || (below_b_qty == 3) )
-            return false;
+            return 0;
     }
 
 
@@ -476,7 +476,7 @@ bool Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths ) con
         // If too short, means, triangles are parallel.
         // No collision in this case.
         if ( common_a_length < EPS )
-            return false;
+            return 0;
         common_a = common_a / common_a_length;
     }
 
@@ -532,7 +532,7 @@ bool Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths ) con
             const Plane & pl = planes[i];
             const Float den = common_a.DotProduct( pl.norm );
             if ( std::abs(den) < EPS )
-                return false;
+                return 0;
             const Float num = common_r.DotProduct( pl.norm ) + pl.d;
             const Float t = -num/den;
             const Vector3d at = common_a*t + common_r;
@@ -550,7 +550,7 @@ bool Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths ) con
             const Plane & pl = f.planes[i];
             const Float den = common_a.DotProduct( pl.norm );
             if ( std::abs(den) < EPS )
-                return false;
+                return 0;
             const Float num = common_r.DotProduct( pl.norm ) + pl.d;
             const Float t = -num/den;
             const Vector3d at = common_a*t + common_r;
@@ -595,7 +595,7 @@ bool Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths ) con
     // They don't intersect id smallest "t" for one interval is 
     // begger than biggest "t" for the other interval.
     if ( (t_a[0] > t_b[1]) || (t_a[1] < t_b[0]) )
-        return false;
+        return 0;
 
     // At this point intervals do intersect.
     // But they either partially overlap 
@@ -803,7 +803,7 @@ bool Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths ) con
     depths[1] = depth_1;
 
     // Return success.
-    return true;
+    return 2;
 }
 
 

@@ -154,10 +154,10 @@ void OccupancyTestsRef::apply_to_face_b( const Transform & t )
 
     face_b_.apply( se3 );
 }
-    
+
 int OccupancyTestsRef::intersect_faces()
 {
-    const int qty = face_.intersects_all( face_b_, face_face_intersection_point_, face_face_intersection_depth_ );
+    const int qty = face_.intersects_2( face_b_, face_face_intersection_point_, face_face_intersection_depth_ );
     return qty;
 }
 
