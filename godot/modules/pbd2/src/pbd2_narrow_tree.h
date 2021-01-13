@@ -30,9 +30,11 @@ public:
 	void append( const Transform & t, const Ref<Mesh> & mesh );
 	void subdivide();
 
-        bool intersects( const NarrowTree * tree ) const;
+	void apply( const SE3 & se3 );
+
+    bool intersects( NarrowTree * tree );
 	// Internally called for recursion.
-	bool node_intersects( const NarrowTreeNode & n, const NarrowTree & tree ) const;
+	bool node_intersects( NarrowTreeNode & n, NarrowTree & tree );
 
 	// For visualization.
 	PoolVector<Vector3> lines();
@@ -42,13 +44,14 @@ public:
 	int  insert_node( NarrowTreeNode & node );
 	void update_node( const NarrowTreeNode & node );
 
+	SE3                    se3_;
 	Vector<NarrowTreeNode> nodes_;
 	Vector<Face>           faces_;
 
 	// Maximum subdivision level.
 	Float node_sz_;
 	int   max_depth_;
-        int   min_triangles_;
+    int   min_triangles_;
 };
 
 

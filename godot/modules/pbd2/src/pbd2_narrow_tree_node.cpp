@@ -76,18 +76,19 @@ const NarrowTreeNode & NarrowTreeNode::operator=( const NarrowTreeNode & inst )
 void NarrowTreeNode::apply( const SE3 & se3 )
 {
     cube_.apply( se3 );
-    if ( value > 0 )
-    {
-        cube_optimized_.apply( se3 * se3_optimized_ );
+	// Applying to "cube_optimized_" and individual faces only when colliding individual faces.
+	//if ( value > 0 )
+ //   {
+        //cube_optimized_.apply( se3 * se3_optimized_ );
 
-        const int qty = ptInds.size();
-        for ( int i=0; i<qty; i++ )
-        {
-            const int ind = ptInds.ptr()[i];
-            Face & face = tree->faces_.ptrw()[ind];
-            face.apply( se3 );
-        }
-    }
+        //const int qty = ptInds.size();
+        //for ( int i=0; i<qty; i++ )
+        //{
+        //    const int ind = ptInds.ptr()[i];
+        //    Face & face = tree->faces_.ptrw()[ind];
+        //    face.apply( se3 );
+        //}
+    //}
 }
 
 
@@ -125,12 +126,14 @@ bool NarrowTreeNode::subdivide()
     if ( ptInds.empty() )
         return false;
 
-	// Here initialize optimized cube "cube_optimized_" and its pose adjustment "se3_optimized_".
-	compute_cube_optimized();
     
     // Don't subdivide if very few triangles.
     if ( ptInds.size() <= tree->min_triangles_ )
-        return false;
+	{
+		// Here initialize optimized cube "cube_optimized_" and its pose adjustment "se3_optimized_".
+		compute_cube_optimized();
+		return false;
+	}
 
     const int childLevel = this->level + 1;
     const Float chSize2  = this->size2 * 0.5;
@@ -256,8 +259,11 @@ bool NarrowTreeNode::inside( const Face & face ) const
     return intersects;
 }
 
-bool NarrowTreeNode::inside( const NarrowTreeNode & n ) const
+bool NarrowTreeNode::inside( NarrowTreeNode & n )
 {
+	this->apply( tree->se3_ );
+	n.apply( n.tree->se3_ );
+
     const bool intersects = cube_.intersects( n.cube_ );
     if ( !intersects )
         return false;
@@ -271,7 +277,7 @@ bool NarrowTreeNode::inside( const NarrowTreeNode & n ) const
     for ( int i=0; i<8; i++ )
     {
         const int ind = n.children[i];
-        const NarrowTreeNode & ch_n = tree->nodes_.ptr()[ind];
+        NarrowTreeNode & ch_n = tree->nodes_.ptrw()[ind];
         const bool ch_intersects = inside( ch_n );
         if ( ch_intersects )
             return true;
@@ -288,8 +294,12 @@ void NarrowTreeNode::init()
 
 
 
-bool NarrowTreeNode::collide_forward( const NarrowTreeNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
+bool NarrowTreeNode::collide_forward( NarrowTreeNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths )
 {
+	// Apply transforms.
+	this->apply( this->tree->se3_ );
+	n.apply( n.tree->se3_ );
+
     const bool intersects = cube_.intersects( n.cube_ );
     if ( !intersects )
         return false;
@@ -307,7 +317,7 @@ bool NarrowTreeNode::collide_forward( const NarrowTreeNode & n, Vector<Vector3d>
     for ( int i=0; i<8; i++ )
     {
         const int ind = n.children[i];
-        const NarrowTreeNode & child_node = tree->nodes_.ptr()[ind];
+        NarrowTreeNode & child_node = tree->nodes_.ptrw()[ind];
         const bool ch_intersects = collide_forward( child_node, pts, depths );
         children_intersect = children_intersect || ch_intersects;
     }
@@ -315,8 +325,15 @@ bool NarrowTreeNode::collide_forward( const NarrowTreeNode & n, Vector<Vector3d>
     return children_intersect;
 }
 
-bool NarrowTreeNode::collide_backward( const NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
+bool NarrowTreeNode::collide_backward( NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths )
 {
+	// Apply transforms.
+	// This one shouldn't be necessary as
+	// it has already been applied in "collide_forward()".
+	this->apply( this->tree->se3_ );
+	// And this one is necessary.
+	this_node.apply( this_node.tree->se3_ );
+
     const bool intersects = cube_.intersects( this_node.cube_ );
     if ( !intersects )
         return false;
@@ -335,7 +352,7 @@ bool NarrowTreeNode::collide_backward( const NarrowTreeNode & this_node, Vector<
     for ( int i=0; i<8; i++ )
     {
         const int ind = this_node.children[i];
-        const NarrowTreeNode & child_node = tree->nodes_.ptr()[ind];
+        NarrowTreeNode & child_node = tree->nodes_.ptrw()[ind];
         const bool ch_intersects = collide_backward( child_node, pts, depths );
         children_intersect = children_intersect || ch_intersects;
     }
@@ -346,23 +363,41 @@ bool NarrowTreeNode::collide_backward( const NarrowTreeNode & this_node, Vector<
 }
 
 
-bool NarrowTreeNode::collide_faces( const NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
+bool NarrowTreeNode::collide_faces( NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths )
 {
-    const NarrowTreeNode & other_node = *this;
+	NarrowTreeNode & other_node = *this;
+
+	// First collide optimized bounding boxes.
+	this_node.cube_optimized_.apply( this_node.tree->se3_ * this_node.se3_optimized_ );
+	other_node.cube_optimized_.apply( other_node.tree->se3_ * other_node.se3_optimized_ );
+
     const int own_qty   = this_node.ptInds.size();
     const int other_qty = other_node.ptInds.size();
     Vector3d face_pts[3];
     Vector3d face_depths[3];
     
     bool ret = false;
+
+	// Apply to others.
+	for ( int j=0; j<other_qty; j++ )
+	{
+		const int other_ind = other_node.ptInds.ptr()[j];
+		Face & other_face = other_node.tree->faces_.ptrw()[other_ind];
+		other_face.apply( other_node.tree->se3_ );
+	}
+
     for ( int i=0; i<own_qty; i++ )
     {
         const int this_ind = this_node.ptInds.ptr()[i];
-        const Face & this_face = tree->faces_.ptr()[this_ind];
+        Face & this_face = this_node.tree->faces_.ptrw()[this_ind];
+		// Apply transform to each face first.
+		this_face.apply( this_node.tree->se3_ );
+
+		// Transform has been already applied to other faces.
         for ( int j=0; j<other_qty; j++ )
         {
             const int other_ind = other_node.ptInds.ptr()[j];
-            const Face & other_face = tree->faces_.ptr()[other_ind];
+            const Face & other_face = other_node.tree->faces_.ptr()[other_ind];
             const int qty = this_face.intersects_all( other_face, face_pts, face_depths );
             ret = ret || (qty > 0);
             for ( int k=0; k<qty; k++ )

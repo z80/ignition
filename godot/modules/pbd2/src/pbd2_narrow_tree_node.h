@@ -30,16 +30,16 @@ public:
 	bool inside( const Face & face ) const;
     // This is for recursive collision detection.
     // Will need to extend it with "optimal" box later.
-	bool inside( const NarrowTreeNode & n ) const;
+	bool inside( NarrowTreeNode & n );
 
 
 	// Initialize vertices and planes.
 	void init();
 
 
-    bool collide_forward( const NarrowTreeNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
-    bool collide_backward( const NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
-    bool collide_faces( const NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
+    bool collide_forward( NarrowTreeNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths );
+    bool collide_backward( NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths );
+    bool collide_faces( NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths );
 
     // Compute "se3_optimized_" and "cube_optimized_".
     bool compute_cube_optimized();

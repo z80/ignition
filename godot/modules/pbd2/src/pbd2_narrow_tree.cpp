@@ -128,24 +128,29 @@ void NarrowTree::subdivide()
     nodes_.ptrw()[ 0 ] = root;
 }
 
+void NarrowTree::apply( const SE3 & se3 )
+{
+	se3_ = se3;
+}
 
 
 
-bool NarrowTree::intersects( const NarrowTree * tree ) const
+
+bool NarrowTree::intersects( NarrowTree * tree )
 {
     if ( !tree )
         return false;
 
-    const NarrowTreeNode & root = nodes_.ptr()[0];
+    NarrowTreeNode & root = nodes_.ptrw()[0];
 
     const bool is_intersecting = node_intersects( root, *tree );
 
     return is_intersecting;
 }
 
-bool NarrowTree::node_intersects( const NarrowTreeNode & n, const NarrowTree & tree ) const
+bool NarrowTree::node_intersects( NarrowTreeNode & n, NarrowTree & tree )
 {
-    const NarrowTreeNode & other_root = tree.nodes_.ptr()[0];
+    NarrowTreeNode & other_root = tree.nodes_.ptrw()[0];
     const bool is_intersecting = n.inside( other_root );
     if ( !is_intersecting )
         return false;
@@ -159,7 +164,7 @@ bool NarrowTree::node_intersects( const NarrowTreeNode & n, const NarrowTree & t
     for ( int i=0; i<8; i++ )
     {
         const int ch_ind = n.children[i];
-        const NarrowTreeNode & ch_n = n.tree->nodes_.ptr()[ch_ind];
+        NarrowTreeNode & ch_n = n.tree->nodes_.ptrw()[ch_ind];
         const bool ch_intersects = node_intersects( ch_n, tree );
         if ( ch_intersects )
             return true;
