@@ -124,7 +124,11 @@ bool NarrowTreeNode::subdivide()
     // It means node itself turns into not filled one.
 
     if ( level >= tree->max_depth_ )
+	{
+		if ( !ptInds.empty() )
+			compute_cube_optimized();
         return false;
+	}
     
     // It can't have children because subdivision is happening.
     // But just in case.
@@ -135,15 +139,6 @@ bool NarrowTreeNode::subdivide()
     // If it is empty, no need to subdivide.
     if ( ptInds.empty() )
         return false;
-
-    
-    // Don't subdivide if very few triangles.
-    if ( ptInds.size() <= tree->min_triangles_ )
-	{
-		// Here initialize optimized cube "cube_optimized_" and its pose adjustment "se3_optimized_".
-		compute_cube_optimized();
-		return false;
-	}
 
     const int childLevel = this->level + 1;
     const Float chSize2  = this->size2 * 0.5;

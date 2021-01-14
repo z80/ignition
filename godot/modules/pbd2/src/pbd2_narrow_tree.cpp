@@ -13,23 +13,21 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 NarrowTree::NarrowTree()
 {
     // Initialize counters and parameters.
-    this->max_depth_     = -1;
-    this->node_sz_       = 0.1;
-    this->min_triangles_ = 2;
+    this->max_depth_     = 1;
 }
 
 NarrowTree::~NarrowTree()
 {
 }
 
-void NarrowTree::set_node_size( Float sz )
+void NarrowTree::set_max_level( int new_level )
 {
-    node_sz_ = sz;
+    max_depth_ = new_level;
 }
 
-Float NarrowTree::node_size() const
+int NarrowTree::max_level() const
 {
-    return node_sz_;
+    return max_depth_;
 }
 
 void NarrowTree::clear()
@@ -46,6 +44,13 @@ void NarrowTree::append( const Transform & t, const Ref<Mesh> & mesh )
         const Mesh & m = **mesh;
         faces_from_surface( t, m, i, faces_ );
     }
+}
+
+void NarrowTree::append_triangle( const Vector3d & a, const Vector3d & b, const Vector3d & c )
+{
+	Face f;
+	f.init( a, b, c );
+	faces_.push_back( f );
 }
 
 void NarrowTree::subdivide()
@@ -69,9 +74,6 @@ void NarrowTree::subdivide()
     const Float s = 1.0 / static_cast<Float>( qty );
     c *= s;
 
-    // Here adjust it to be multiple of grid size.
-    const Float sz = node_sz_ * 2.0;
-
     // Here find the largest distance.
     Float d = 0.0;
     for ( int i=0; i<qty; i++ )
@@ -86,11 +88,9 @@ void NarrowTree::subdivide()
         }
     }
 
-    Float level = Math::log( d / node_sz_) / Math::log( 2.0 );
-    level = Math::ceil( level );
-    const int level_int = static_cast<int>( level );
-    d = node_sz_ * Math::pow( 2.0, level_int );
-    this->max_depth_ = level_int;
+	// Just to have some gap ???
+	// Not sure if it is needed.
+    d *= 1.5;
 
     nodes_.clear();
     NarrowTreeNode root;

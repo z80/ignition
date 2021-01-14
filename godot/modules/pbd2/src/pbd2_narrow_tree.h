@@ -24,10 +24,11 @@ public:
 	~NarrowTree();
 
 	// Manipulating filling up the occupancy grid.
-	void set_node_size( Float sz = 0.1 );
-	Float node_size() const;
+	void set_max_level( int new_level=2 );
+	int max_level() const;
 	void clear();
 	void append( const Transform & t, const Ref<Mesh> & mesh );
+	void append_triangle( const Vector3d & a, const Vector3d & b, const Vector3d & c );
 	void subdivide();
 
 	void apply( const SE3 & se3 );
@@ -49,9 +50,7 @@ public:
 	Vector<Face>           faces_;
 
 	// Maximum subdivision level.
-	Float node_sz_;
 	int   max_depth_;
-    int   min_triangles_;
 };
 
 
