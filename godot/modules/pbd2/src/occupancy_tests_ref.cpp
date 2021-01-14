@@ -31,6 +31,14 @@ void OccupancyTestsRef::_bind_methods()
     ClassDB::bind_method( D_METHOD( "intersect_faces" ), &OccupancyTestsRef::intersect_faces, Variant::INT );
     ClassDB::bind_method( D_METHOD( "face_intersection_point", "ind" ), &OccupancyTestsRef::face_intersection_point, Variant::VECTOR3 );
     ClassDB::bind_method( D_METHOD( "face_depth_point", "ind" ), &OccupancyTestsRef::face_depth_point, Variant::VECTOR3 );
+
+
+	ClassDB::bind_method( D_METHOD( "tree_apply", "t" ), &OccupancyTestsRef::tree_apply );
+	ClassDB::bind_method( D_METHOD( "tree_clear" ), &OccupancyTestsRef::tree_clear );
+	ClassDB::bind_method( D_METHOD( "tree_add_triangle", "a", "b", "c" ), &OccupancyTestsRef::tree_add_triangle );
+	ClassDB::bind_method( D_METHOD( "tree_set_level", "level" ), &OccupancyTestsRef::tree_set_level );
+	ClassDB::bind_method( D_METHOD( "tree_subdivide" ), &OccupancyTestsRef::tree_subdivide );
+	ClassDB::bind_method( D_METHOD( "tree_depth", "at" ), &OccupancyTestsRef::tree_depth, Variant::ARRAY );
 }
 
 OccupancyTestsRef::OccupancyTestsRef()
@@ -178,6 +186,57 @@ Vector3 OccupancyTestsRef::face_depth_point( int ind ) const
                                  face_face_intersection_depth_[ind].z_ );
 	return ret;
 }
+
+
+
+void OccupancyTestsRef::tree_apply( const Transform & t )
+{
+	const Quat q = Quat( t.basis );
+	SE3 se3;
+	se3.q_ = Quaterniond( q.w, q.x, q.y, q.z );
+	const Vector3 r = t.origin;
+	se3.r_ = Vector3d( r.x, r.y, r.z );
+
+	tree_.apply( se3 );
+}
+
+void OccupancyTestsRef::tree_clear()
+{
+	tree_.clear();
+}
+
+void OccupancyTestsRef::tree_add_triangle( const Vector3 & a, const Vector3 & b, const Vector3 & c )
+{
+	tree_.append_triangle( Vector3d( a.x, a.y, a.z ), Vector3d( b.x, b.y, b.z ), Vector3d( c.x, c.y, c.z ) );
+}
+
+void OccupancyTestsRef::tree_set_level( int level )
+{
+	tree_.set_max_level( level );
+}
+
+void OccupancyTestsRef::tree_subdivide()
+{
+	tree_.subdivide();
+}
+
+Array OccupancyTestsRef::tree_depth( const Vector3 & at )
+{
+	Array ret;
+	ret.resize( 2 );
+
+	const Vector3d at_d( at.x, at.y, at.z );
+
+	const NarrowTreeNode & n = tree_.nodes_.ptr()[0];
+	Vector3d depth_d;
+	const Float d = n.distance( at_d, depth_d );
+	const Vector3 depth( depth_d.x_, depth_d.y_, depth_d.z_ );
+	ret.set( 0, static_cast<real_t>( d ) );
+	ret.set( 1, depth );
+
+	return ret;
+}
+
 
 
 

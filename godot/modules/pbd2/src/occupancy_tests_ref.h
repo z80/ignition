@@ -4,6 +4,7 @@
 
 #include "core/reference.h"
 #include "occupancy_types.h"
+#include "pbd2_narrow_tree.h"
 
 namespace Pbd
 {
@@ -61,6 +62,17 @@ public:
 
     Face face_b_;
     Vector3d face_face_intersection_point_[3], face_face_intersection_depth_[3];
+
+
+	NarrowTree tree_;
+
+	void tree_apply( const Transform & t );
+	void tree_clear();
+	void tree_add_triangle( const Vector3 & a, const Vector3 & b, const Vector3 & c );
+	void tree_set_level( int level );
+	void tree_subdivide();
+	Array tree_depth( const Vector3 & at );
+
 };
 
 
