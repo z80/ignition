@@ -149,7 +149,7 @@ bool NarrowTreeNode::subdivide()
     for ( int i=0; i<8; i++ )
     {
         n.absIndex = tree->insert_node( n );
-        nn[i] = tree->nodes_[ n.absIndex ];
+        nn[i] = tree->nodes_sdf_[ n.absIndex ];
 
         nn[i].indexInParent = i;
         nn[i].parentAbsIndex = this->absIndex;
@@ -251,7 +251,7 @@ bool NarrowTreeNode::subdivide()
         NarrowTreeNode & ch_n = nn[i];
         if ( ( qtys[i] > 0 ) && ( childLevel < tree->max_depth_ ) )
             ch_n.subdivide();
-        tree->nodes_.ptrw()[ ch_n.absIndex ] = ch_n;
+        tree->nodes_sdf_.ptrw()[ ch_n.absIndex ] = ch_n;
     }
 
     return true;
@@ -282,7 +282,7 @@ bool NarrowTreeNode::inside( NarrowTreeNode & n )
     for ( int i=0; i<8; i++ )
     {
         const int ind = n.children[i];
-        NarrowTreeNode & ch_n = tree->nodes_.ptrw()[ind];
+        NarrowTreeNode & ch_n = tree->nodes_sdf_.ptrw()[ind];
         const bool ch_intersects = inside( ch_n );
         if ( ch_intersects )
             return true;
@@ -326,7 +326,7 @@ bool NarrowTreeNode::collide_forward( NarrowTreeNode & n, Vector<Vector3d> & pts
     for ( int i=0; i<8; i++ )
     {
         const int ind = n.children[i];
-        NarrowTreeNode & child_node = tree->nodes_.ptrw()[ind];
+        NarrowTreeNode & child_node = tree->nodes_sdf_.ptrw()[ind];
         const bool ch_intersects = collide_forward( child_node, pts, depths );
         children_intersect = children_intersect || ch_intersects;
     }
@@ -361,7 +361,7 @@ bool NarrowTreeNode::collide_backward( NarrowTreeNode & this_node, Vector<Vector
     for ( int i=0; i<8; i++ )
     {
         const int ind = this_node.children[i];
-        NarrowTreeNode & child_node = tree->nodes_.ptrw()[ind];
+        NarrowTreeNode & child_node = tree->nodes_sdf_.ptrw()[ind];
         const bool ch_intersects = collide_backward( child_node, pts, depths );
         children_intersect = children_intersect || ch_intersects;
     }
@@ -589,7 +589,7 @@ void NarrowTreeNode::init_distances()
 	for ( int i=0; i<8; i++ )
 	{
 		const int ch_ind = children[i];
-		NarrowTreeNode & n = tree->nodes_.ptrw()[ch_ind];
+		NarrowTreeNode & n = tree->nodes_sdf_.ptrw()[ch_ind];
 		n.init_distances();
 	}
 }
@@ -626,7 +626,7 @@ bool NarrowTreeNode::distance_recursive( const Vector3d & r, Float & d, Vector3d
 	for ( int i=0; i<8; i++ )
 	{
 		const int ch_ind = children[i];
-		const NarrowTreeNode & child_node = tree->nodes_.ptr()[ch_ind];
+		const NarrowTreeNode & child_node = tree->nodes_sdf_.ptr()[ch_ind];
 		const bool ok = child_node.distance_recursive( r, min_dist, min_ret );
 		if ( ok )
 		{
@@ -692,7 +692,7 @@ Float NarrowTreeNode::distance_for_this_node( const Vector3d & r, Vector3d & dis
 
 bool NarrowTreeNode::point_inside_mesh( const Vector3d & r ) const
 {
-	const NarrowTreeNode & n0 = tree->nodes_.ptr()[0];
+	const NarrowTreeNode & n0 = tree->nodes_sdf_.ptr()[0];
 	const Float max_d = 4.0 * n0.size2;
 	const Vector3d r2 = r + Vector3d( max_d, 0.0, 0.0 );
 
@@ -731,7 +731,7 @@ bool NarrowTreeNode::intersects_ray( const Vector3d & r1, const Vector3d & r2 ) 
 	for ( int i=0; i<8; i++ )
 	{
 		const int ch_ind = children[i];
-		const NarrowTreeNode & child_node = tree->nodes_.ptr()[ch_ind];
+		const NarrowTreeNode & child_node = tree->nodes_sdf_.ptr()[ch_ind];
 		const bool ret = child_node.intersects_ray( r1, r2 );
 		if ( ret )
 			return true;

@@ -38,7 +38,7 @@ public:
 	bool node_intersects( NarrowTreeNode & n, NarrowTree & tree );
 
 	// For visualization.
-	PoolVector<Vector3> lines();
+	PoolVector<Vector3> lines_sdf_nodes();
     
         // These three for tree construction.
 	bool parent( const NarrowTreeNode & node, NarrowTreeNode * & parent );
@@ -46,7 +46,7 @@ public:
 	void update_node( const NarrowTreeNode & node );
 
 	SE3                    se3_;
-	Vector<NarrowTreeNode> nodes_;
+	Vector<NarrowTreeNode> nodes_sdf_;
 	Vector<Face>           faces_;
 
 	// Maximum subdivision level.
