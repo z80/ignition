@@ -25,6 +25,7 @@ NarrowTreeNode::NarrowTreeNode()
     center = Vector3( 0.0, 0.0, 0.0 );
 
     init();
+	reset_distances();
 }
 
 NarrowTreeNode::~NarrowTreeNode()
@@ -63,6 +64,15 @@ const NarrowTreeNode & NarrowTreeNode::operator=( const NarrowTreeNode & inst )
         cube_ = inst.cube_;
         se3_optimized_  = inst.se3_optimized_;
         cube_optimized_ = inst.cube_optimized_;
+
+		d000 = inst.d000;
+		d100 = inst.d100;
+		d110 = inst.d110;
+		d010 = inst.d010;
+		d001 = inst.d001;
+		d101 = inst.d101;
+		d111 = inst.d111;
+		d011 = inst.d011;
 
         ptInds = inst.ptInds;
 
@@ -294,6 +304,10 @@ void NarrowTreeNode::init()
 
 
 
+
+
+
+
 bool NarrowTreeNode::collide_forward( NarrowTreeNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths )
 {
 	// Apply transforms.
@@ -509,6 +523,229 @@ bool NarrowTreeNode::compute_cube_optimized()
 
 	return false;
 }
+
+void NarrowTreeNode::reset_distances()
+{
+	d000 = d100 = d110 = d010 = 
+	d001 = d101 = d111 = d011 = -1.0;
+}
+
+void NarrowTreeNode::init_distances()
+{
+	// Initialize distances for the root node
+	// and for leaf nodes.
+	if ( (absIndex == 0) || (value > 0) )
+	{
+		const int faces_qty = tree->faces_.size();
+		for ( int i=0; i<8; i++ )
+		{
+			const Vector3d & v = cube_.verts[i];
+			Float min_dist = -1.0;
+			for ( int j=0; j<faces_qty; j++ )
+			{
+				const Face & f = tree->faces_.ptr()[j];
+				const Float d = f.distance( v );
+				if ( (min_dist < 0.0) || (min_dist > d) )
+					min_dist = min_dist;
+			}
+			// If point is inside the mesh, point is by definition negative.
+			const bool inside_mesh = point_inside_mesh( v );
+			if ( inside_mesh )
+				min_dist = -min_dist;
+
+			switch ( i )
+			{
+			case 0:
+				d000 = min_dist;
+				break;
+			case 1:
+				d100 = min_dist;
+				break;
+			case 2:
+				d110 = min_dist;
+				break;
+			case 3:
+				d010 = min_dist;
+				break;
+			case 4:
+				d001 = min_dist;
+				break;
+			case 5:
+				d101 = min_dist;
+				break;
+			case 6:
+				d111 = min_dist;
+				break;
+			default:
+				d011 = min_dist;
+				break;
+			}
+		}
+	}
+	if ( !hasChildren() )
+		return;
+
+	for ( int i=0; i<8; i++ )
+	{
+		const int ch_ind = children[i];
+		NarrowTreeNode & n = tree->nodes_.ptrw()[ch_ind];
+		n.init_distances();
+	}
+}
+
+Float NarrowTreeNode::distance( const Vector3d & r, Vector3d & ret ) const
+{
+	Vector3d rel_r;
+	const Float d = distance_recursive( r, rel_r );
+	ret = tree->se3_.q_ * rel_r;
+	return d;
+}
+
+Float NarrowTreeNode::distance_recursive( const Vector3d & r, Vector3d & ret ) const
+{
+	const bool inside = cube_.contains( r );
+	if ( !inside )
+	{
+		// Point is outside.
+		if ( absIndex != 0 )
+		{
+			// Point outside and it is not a root node.
+			return -1.0;
+		}
+		else
+		{
+			// Point is outside and it is a root node.
+			const Float d = distance_for_this_node( r, ret );
+			return d;
+		}
+	}
+	// If point is inside check if the node is leaf node.
+	const bool has_children = hasChildren();
+	if ( !has_children )
+	{
+		// Compute distance for this node.
+		const Float d = distance_for_this_node( r, ret );
+		return d;
+	}
+
+	bool min_initialized = false;
+	// Min distance means the deepest inside the body.
+	Float min_dist = 0.0;
+	Vector3d min_ret;
+	for ( int i=0; i<8; i++ )
+	{
+		const int ch_ind = children[i];
+		const NarrowTreeNode & child_node = tree->nodes_.ptr()[ch_ind];
+		Vector3d rr;
+		const Float d = distance_recursive( r, rr );
+		if ( d < 0.0 )
+			return d;
+		if ( (!min_initialized) || (d < min_dist) )
+		{
+			min_dist = d;
+			min_ret = rr;
+		}
+	}
+
+	ret = min_ret;
+	return min_dist;
+}
+
+Float NarrowTreeNode::distance_for_this_node( const Vector3d & r, Vector3d & disp ) const
+{
+	const Vector3d rel_r = r - cube_.center;
+	const Float x = rel_r.DotProduct( cube_.ex );
+	const Float y = rel_r.DotProduct( cube_.ey );
+	const Float z = rel_r.DotProduct( cube_.ez );
+
+	const Float d = ((((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*x + 2.0*d111
+		- 2.0*d110 - 2.0*d101 + 2.0*d100 + 2.0*d011 - 2.0*d010 + 2.0*d001 + 2.0*d000)*y
+		+ (2.0*d111 - 2.0*d110 + 2.0*d101 - 2.0*d100 - 2.0*d011 + 2.0*d010 - 2.0*d001 + 2.0*d000)*x
+		+ 4.0*d111 - 4.0*d110 + 4.0*d101 - 4.0*d100 + 4.0*d011 - 4.0*d010 - 4.0*d001 - 4.0*d000)*z
+		+ ((2.0*d111 + 2.0*d110 - 2.0*d101 - 2.0*d100 - 2.0*d011 - 2.0*d010 + 2.0*d001 + 2.0*d000)*x
+			+ 4.0*d111 + 4.0*d110 - 4.0*d101 - 4.0*d100 + 4.0*d011 + 4.0*d010 + 4.0*d001 - 4.0*d000)*y
+		+ (4.0*d111 + 4.0*d110 + 4.0*d101 + 4.0*d100 - 4.0*d011 - 4.0*d010 - 4.0*d001 - 4.0*d000)*x
+		+ 8.0*d111 + 8.0*d110 + 8.0*d101 + 8.0*d100 + 8.0*d011 + 8.0*d010 - 8.0*d001 + 8.0*d000)/8.0;
+
+	const Float dx = (((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*y + 2.0*d111
+		- 2.0*d110 + 2.0*d101 - 2.0*d100 - 2.0*d011 + 2.0*d010 - 2.0*d001 + 2.0*d000)*z
+		+ (2.0*d111 + 2.0*d110 - 2.0*d101 - 2.0*d100 - 2.0*d011 - 2.0*d010 + 2.0*d001 + 2.0*d000)*y
+		+ 4.0*d111 + 4.0*d110 + 4.0*d101 + 4.0*d100 - 4.0*d011 - 4.0*d010 - 4.0*d001 - 4.0*d000)/8.0;
+
+	const Float dy = (((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*x + 2.0*d111
+		- 2.0*d110 - 2.0*d101 + 2.0*d100 + 2.0*d011 - 2.0*d010 + 2.0*d001 + 2.0*d000)*z
+		+ (2.0*d111 + 2.0*d110 - 2.0*d101 - 2.0*d100 - 2.0*d011 - 2.0*d010 + 2.0*d001 + 2.0*d000)*x
+		+ 4.0*d111 + 4.0*d110 - 4.0*d101 - 4.0*d100 + 4.0*d011 + 4.0*d010 + 4.0*d001 - 4.0*d000)/8.0;
+
+	const Float dz = (((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*x + 2.0*d111
+		- 2.0*d110 - 2.0*d101 + 2.0*d100 + 2.0*d011 - 2.0*d010 + 2.0*d001 + 2.0*d000)*y
+		+ (2.0*d111 - 2.0*d110 + 2.0*d101 - 2.0*d100 - 2.0*d011 + 2.0*d010 - 2.0*d001 + 2.0*d000)*x
+		+ 4.0*d111 - 4.0*d110 + 4.0*d101 - 4.0*d100 + 4.0*d011 - 4.0*d010 - 4.0*d001 - 4.0*d000)/8.0;
+
+	const Vector3d local_dr( dx, dy, dz );
+	const Float L = local_dr.Length();
+	Vector3d local_disp;
+	if ( L > 0.000001 )
+	{
+		// Towards the surface. And absolute value is equal to
+		// the displacement.
+		local_disp = local_dr * ( -d/L );
+	}
+	// Apply basis.
+	disp = cube_.ex*local_disp.x_ + cube_.ey*local_disp.y_ + cube_.ez*local_disp.z_;
+	return d;
+}
+
+
+bool NarrowTreeNode::point_inside_mesh( const Vector3d & r ) const
+{
+	const NarrowTreeNode & n0 = tree->nodes_.ptr()[0];
+	const Float max_d = 4.0 * n0.size2;
+	const Vector3d r2 = r + Vector3d( max_d, 0.0, 0.0 );
+
+	const int faces_qty = tree->faces_.size();
+	int intersections_qty = 0;
+	for ( int i=0; i<faces_qty; i++ )
+	{
+		const Face & tri = tree->faces_.ptr()[i];
+		Vector3d at;
+		const bool intersects = tri.intersects( r, r2, at );
+		if ( intersects )
+			intersections_qty += 1;
+	}
+	const bool inside = ( (intersections_qty & 1) != 0 );
+	return inside;
+}
+
+bool NarrowTreeNode::point_inside( const Vector3d & at ) const
+{
+	const bool ret = cube_.contains( at );
+	return ret;
+}
+
+bool NarrowTreeNode::intersects_ray( const Vector3d & r1, const Vector3d & r2 ) const
+{
+	if ( value > 0 )
+	{
+		if ( ptInds.empty() )
+			return false;
+		// Check bounding boxes.
+		const bool ret = cube_.intersects( r1, r2 );
+		return ret;
+	}
+	if ( !hasChildren() )
+		return false;
+	for ( int i=0; i<8; i++ )
+	{
+		const int ch_ind = children[i];
+		const NarrowTreeNode & child_node = tree->nodes_.ptr()[ch_ind];
+		const bool ret = child_node.intersects_ray( r1, r2 );
+		if ( ret )
+			return true;
+	}
+	return false;
+}
+
 
 
 

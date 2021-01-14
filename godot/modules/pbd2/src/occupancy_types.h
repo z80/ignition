@@ -43,6 +43,10 @@ struct Face
     void init();
     void apply( const SE3 & se3 );
     void init_planes();
+	Float distance( const Vector3d & r ) const;
+	// Intersects with a ray.
+	// And if intersects steps further "eps" along "a" and returns the next point.
+	bool intersects_ray( const Vector3d & r0, const Vector3d & a, Float max_dist, Vector3d & next_r, Float eps=0.0001 );
     bool intersects( const Vector3d & r1, const Vector3d & r2, Vector3d & at ) const;
     bool intersects( const Face & f, Vector3d & at, Vector3d & depth ) const;
     // Actually, can be 0, 1 or 2 intersections.
@@ -50,7 +54,11 @@ struct Face
 
     // Colliding using common line.
     // Always either 0 or exactly 2 points.
-    int intersects_2( const Face & f, Vector3d * at, Vector3d * depth ) const;
+	// Also return which triangle's edge it is "this" thiangle or "f" triangle.
+	// And edge index.
+	// The idea is that after all triangles are collided in the case of multiple collisions per edge ,
+	// the smallest one is used.
+    int intersects_2( const Face & f, Vector3d * at, Vector3d * depth, bool * this_edge, int * edge_index ) const;
 };
 
 struct Cube
@@ -76,6 +84,9 @@ struct Cube
     bool intersects( const Cube & c ) const;
     // Intersects face (triangle)
     bool intersects( const Face & f ) const;
+
+	// Contains point inside
+	bool contains( const Vector3d & at ) const;
 };
 
 

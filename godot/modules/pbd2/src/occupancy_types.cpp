@@ -124,6 +124,58 @@ void Face::init_planes()
     planes[2].init( verts[2], verts[0], verts[2]+plane.norm );
 }
 
+Float Face::distance( const Vector3d & r ) const
+{
+	// First project onto plane.
+	const Float den = plane.norm.LengthSquared();
+	const Float num = plane.d + r.DotProduct( plane.norm );
+	const Float t = -(num/den);
+	const Vector3d at = r + (plane.norm*t);
+	// Check if the point is inside of triangle side planes.
+	bool inside = true;
+	for ( int i=0; i<3; i++ )
+	{
+		const bool outside = planes[i].above( at );
+		if ( outside )
+		{
+			inside = false;
+			break;
+		}
+	}
+	// If inside, compute the distance.
+	if ( inside )
+	{
+		const Vector3d dr = at - r;
+		return dr.Length();
+	}
+
+	Float min_d = -1.0;
+	Vector3d min_v;
+	for ( int i=0; i<3; i++ )
+	{
+		const Vector3d & v = verts[i];
+		const Vector3d dr = v - r;
+		const Float d2 = dr.LengthSquared();
+		if ( (min_d < 0.0) || (d2 < min_d) )
+		{
+			min_d = d2;
+			min_v = dr;
+		}
+	}
+	return Math::sqrt( min_d );
+}
+
+bool Face::intersects_ray( const Vector3d & r0, const Vector3d & a, Float max_dist, Vector3d & next_r, Float eps )
+{
+	const Vector3d r1 = r0 + (a*max_dist);
+	Vector3d at;
+	const bool ok = intersects( r0, r1, at );
+	if ( !ok )
+		return false;
+	next_r = at + (a*eps);
+	return true;
+}
+
 bool Face::intersects( const Vector3d & r1, const Vector3d & r2, Vector3d & at ) const
 {
     const bool intersects_plane = plane.intersects( r1, r2, at );
@@ -434,7 +486,7 @@ int Face::intersects_all( const Face & f, Vector3d * ats, Vector3d * depths ) co
 
 
 
-int Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths ) const
+int Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths, bool * this_edge, int * edge_index ) const
 {
     // Constants defining vertices and edges in a triangle.
     static const int edge_verts[3][2] = { {0, 1}, {1, 2}, {2, 0} };
@@ -545,7 +597,7 @@ int Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths ) cons
         // And now "f" triangle.
         const bool above_b_0 = vert_b_above[ind_0];
         const bool above_b_1 = vert_b_above[ind_1];
-        if ( above_b_0 && (!above_b_1) )
+        if ( above_b_0 ^ above_b_1 )
         {
             const Plane & pl = f.planes[i];
             const Float den = common_a.DotProduct( pl.norm );
@@ -825,7 +877,7 @@ int Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths ) cons
 
 void Cube::init( const Vector3d & c, Float x2, Float y2, Float z2 )
 {
-        center_0 = c;
+    center_0 = c;
     center = center_0;
     szx2 = std::abs( x2 );
     szy2 = std::abs( y2 );
@@ -1138,6 +1190,19 @@ bool Cube::intersects( const Face & f ) const
             return true;
     }
     return false;
+}
+
+bool Cube::contains( const Vector3d & at ) const
+{
+	for ( int i=0; i<6; i++ )
+	{
+		const Plane & pl = planes[i];
+		const bool above = pl.above( at );
+		if ( above )
+			return false;
+	}
+
+	return true;
 }
 
 

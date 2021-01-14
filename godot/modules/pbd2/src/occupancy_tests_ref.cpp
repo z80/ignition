@@ -157,7 +157,9 @@ void OccupancyTestsRef::apply_to_face_b( const Transform & t )
 
 int OccupancyTestsRef::intersect_faces()
 {
-    const int qty = face_.intersects_2( face_b_, face_face_intersection_point_, face_face_intersection_depth_ );
+	bool own_triangle[2];
+	int  edge_index[2];
+    const int qty = face_.intersects_2( face_b_, face_face_intersection_point_, face_face_intersection_depth_, own_triangle, edge_index );
     return qty;
 }
 

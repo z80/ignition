@@ -126,6 +126,10 @@ void NarrowTree::subdivide()
 
     root.subdivide();
     nodes_.ptrw()[ 0 ] = root;
+
+	// Recursively compute distance fields.
+	NarrowTreeNode & n = nodes_.ptrw()[0];
+	n.init_distances();
 }
 
 void NarrowTree::apply( const SE3 & se3 )
