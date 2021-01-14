@@ -223,7 +223,7 @@ void OccupancyTestsRef::tree_subdivide()
 Array OccupancyTestsRef::tree_depth( const Vector3 & at )
 {
 	Array ret;
-	ret.resize( 2 );
+	ret.resize( 3 );
 
 	const Vector3d at_d( at.x, at.y, at.z );
 
@@ -232,8 +232,9 @@ Array OccupancyTestsRef::tree_depth( const Vector3 & at )
 	Vector3d depth_d;
 	const bool ok = n.distance( at_d, d, depth_d );
 	const Vector3 depth( depth_d.x_, depth_d.y_, depth_d.z_ );
-	ret.set( 0, static_cast<real_t>( d ) );
-	ret.set( 1, depth );
+	ret.set( 0, ok );
+	ret.set( 1, static_cast<real_t>( d ) );
+	ret.set( 2, depth );
 
 	return ret;
 }
