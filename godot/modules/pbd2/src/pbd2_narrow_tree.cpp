@@ -13,7 +13,7 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 NarrowTree::NarrowTree()
 {
     // Initialize counters and parameters.
-    this->max_depth_     = 1;
+    this->max_depth_     = 3;
 }
 
 NarrowTree::~NarrowTree()
@@ -62,35 +62,50 @@ void NarrowTree::subdivide()
         Face & face = faces_.ptrw()[i];
         face.init();
     }
-    // Get average of all the face points.
-    Vector3d c = Vector3d( 0.0, 0.0, 0.0 );
-    for ( int i=0; i<qty; i++ )
-    {
-        const Face & f = faces_.ptr()[i];
-        c += f.verts[0];
-        c += f.verts[1];
-        c += f.verts[2];
-    }
-    const Float s = 1.0 / static_cast<Float>( qty*3 );
-    c *= s;
 
-    // Here find the largest distance.
-    Float d = 0.0;
-    for ( int i=0; i<qty; i++ )
-    {
-        const Face & f = faces_.ptr()[i];
-        for ( int j=0; j<3; j++ )
-        {
-            const Vector3d dv = f.verts[j] - c;
-            const Float l = dv.Length();
-            if ( l > d )
-                d = l;
-        }
-    }
+	Float x_min, x_max, y_min, y_max, z_min, z_max;
+	// Initialize with the very first point.
+	{
+		const Face & f0 = faces_.ptr()[0];
+		const Vector3d v0 = f0.verts_0[0];
+		x_min = x_max = v0.x_;
+		y_min = y_max = v0.y_;
+		z_min = z_max = v0.z_;
+	}
+
+	const int faces_qty = faces_.size();
+	for ( int i=0; i<faces_qty; i++ )
+	{
+		const Face & f = faces_.ptr()[i];
+		for ( int j=0; j<3; j++ )
+		{
+			const Vector3d v = f.verts_0[j];
+			const Float x = v.x_;
+			const Float y = v.y_;
+			const Float z = v.z_;
+			if ( x < x_min )
+				x_min = x;
+			if ( x > x_max )
+				x_max = x;
+			if ( y < y_min )
+				y_min = y;
+			if ( y > y_max )
+				y_max = y;
+			if ( z < z_min )
+				z_min = z;
+			if ( z > z_max )
+				z_max = z;
+		}
+	}
+
+	const Vector3d c( (x_min+x_max)/2.0, (y_min+y_max)/2.0, (z_min+z_max)/2.0 );
+	const Vector3d dims( (x_max-x_min)/2.0, (y_max-y_min)/2.0, (z_max-z_min)/2.0 );
+	Float d = ( dims.x_ > dims.y_ ) ? dims.x_ : dims.y_;
+	d = (d > dims.z_) ? d : dims.z_;
 
 	// Just to have some gap ???
 	// Not sure if it is needed.
-    d *= 1.5;
+    d *= 1.1;
 
     nodes_.clear();
     NarrowTreeNode root;
@@ -104,6 +119,7 @@ void NarrowTree::subdivide()
         root.ptInds.push_back( i );
     root.init();
     insert_node( root );
+	root = nodes_.ptr()[0];
 
     // Debugging. All the faces should be inside the root node.
     /*{

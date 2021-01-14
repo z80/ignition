@@ -228,8 +228,9 @@ Array OccupancyTestsRef::tree_depth( const Vector3 & at )
 	const Vector3d at_d( at.x, at.y, at.z );
 
 	const NarrowTreeNode & n = tree_.nodes_.ptr()[0];
+	Float    d;
 	Vector3d depth_d;
-	const Float d = n.distance( at_d, depth_d );
+	const bool ok = n.distance( at_d, d, depth_d );
 	const Vector3 depth( depth_d.x_, depth_d.y_, depth_d.z_ );
 	ret.set( 0, static_cast<real_t>( d ) );
 	ret.set( 1, depth );

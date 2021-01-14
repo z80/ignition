@@ -71,9 +71,9 @@ public:
 	// Compute distances.
 	void init_distances();
 	// Compute distance and gradient.
-	Float distance( const Vector3d & r, Vector3d & d ) const;
+	bool distance( const Vector3d & r, Float & d, Vector3d & depth ) const;
 	// These two are called internally.
-	Float distance_recursive( const Vector3d & r, Vector3d & ret ) const;
+	bool distance_recursive( const Vector3d & r, Float & d, Vector3d & ret ) const;
 	Float distance_for_this_node( const Vector3d & r, Vector3d & disp ) const;
 
 	// Determines if point is inside of a mesh or not.

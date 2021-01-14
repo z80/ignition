@@ -171,12 +171,12 @@ bool NarrowTreeNode::subdivide()
     nn[1].center.z_ -= chSize2;
 
     nn[2].center = this->center;
-    nn[2].center.x_ -= chSize2;
+    nn[2].center.x_ += chSize2;
     nn[2].center.y_ += chSize2;
     nn[2].center.z_ -= chSize2;
 
     nn[3].center = this->center;
-    nn[3].center.x_ += chSize2;
+    nn[3].center.x_ -= chSize2;
     nn[3].center.y_ += chSize2;
     nn[3].center.z_ -= chSize2;
 
@@ -191,12 +191,12 @@ bool NarrowTreeNode::subdivide()
     nn[5].center.z_ += chSize2;
 
     nn[6].center = this->center;
-    nn[6].center.x_ -= chSize2;
+    nn[6].center.x_ += chSize2;
     nn[6].center.y_ += chSize2;
     nn[6].center.z_ += chSize2;
 
     nn[7].center = this->center;
-    nn[7].center.x_ += chSize2;
+    nn[7].center.x_ -= chSize2;
     nn[7].center.y_ += chSize2;
     nn[7].center.z_ += chSize2;
 
@@ -529,7 +529,9 @@ void NarrowTreeNode::init_distances()
 {
 	// Initialize distances for the root node
 	// and for leaf nodes.
-	if ( (absIndex == 0) || (value > 0) )
+	const bool has_children = hasChildren();
+
+	if ( (absIndex == 0) || (!has_children) )
 	{
 		const int faces_qty = tree->faces_.size();
 		for ( int i=0; i<8; i++ )
@@ -581,7 +583,7 @@ void NarrowTreeNode::init_distances()
 			}
 		}
 	}
-	if ( !hasChildren() )
+	if ( !has_children )
 		return;
 
 	for ( int i=0; i<8; i++ )
@@ -592,94 +594,86 @@ void NarrowTreeNode::init_distances()
 	}
 }
 
-Float NarrowTreeNode::distance( const Vector3d & r, Vector3d & ret ) const
+bool NarrowTreeNode::distance( const Vector3d & r, Float & d, Vector3d & dist ) const
 {
 	Vector3d rel_r;
-	const Float d = distance_recursive( r, rel_r );
-	ret = tree->se3_.q_ * rel_r;
-	return d;
+	const bool ok = distance_recursive( r, d, rel_r );
+	if ( !ok )
+		return false;
+	dist = tree->se3_.q_ * rel_r;
+	return true;
 }
 
-Float NarrowTreeNode::distance_recursive( const Vector3d & r, Vector3d & ret ) const
+bool NarrowTreeNode::distance_recursive( const Vector3d & r, Float & d, Vector3d & ret ) const
 {
 	const bool inside = cube_.contains( r );
 	if ( !inside )
-	{
-		// Point is outside.
-		if ( absIndex != 0 )
-		{
-			// Point outside and it is not a root node.
-			return -1.0;
-		}
-		else
-		{
-			// Point is outside and it is a root node.
-			const Float d = distance_for_this_node( r, ret );
-			return d;
-		}
-	}
+		return false;
+
 	// If point is inside check if the node is leaf node.
 	const bool has_children = hasChildren();
 	if ( !has_children )
 	{
 		// Compute distance for this node.
-		const Float d = distance_for_this_node( r, ret );
-		return d;
+		d = distance_for_this_node( r, ret );
+		return true;
 	}
 
-	bool min_initialized = false;
 	// Min distance means the deepest inside the body.
+	bool min_dist_initialized = false;
 	Float min_dist = 0.0;
 	Vector3d min_ret;
 	for ( int i=0; i<8; i++ )
 	{
 		const int ch_ind = children[i];
 		const NarrowTreeNode & child_node = tree->nodes_.ptr()[ch_ind];
-		Vector3d rr;
-		const Float d = distance_recursive( r, rr );
-		if ( d < 0.0 )
-			return d;
-		if ( (!min_initialized) || (d < min_dist) )
+		const bool ok = child_node.distance_recursive( r, min_dist, min_ret );
+		if ( ok )
 		{
-			min_dist = d;
-			min_ret = rr;
+			min_dist_initialized = true;
+			break;
 		}
 	}
 
+	if ( !min_dist_initialized )
+		return false;
+
+	d = min_dist;
 	ret = min_ret;
-	return min_dist;
+	return true;
 }
 
 Float NarrowTreeNode::distance_for_this_node( const Vector3d & r, Vector3d & disp ) const
 {
+	// Input must be normalized to [-1, 1] with zero at the center.
 	const Vector3d rel_r = r - cube_.center;
-	const Float x = rel_r.DotProduct( cube_.ex );
-	const Float y = rel_r.DotProduct( cube_.ey );
-	const Float z = rel_r.DotProduct( cube_.ez );
+	const Float x = rel_r.DotProduct( cube_.ex ) / cube_.szx2;
+	const Float y = rel_r.DotProduct( cube_.ey ) / cube_.szy2;
+	const Float z = rel_r.DotProduct( cube_.ez ) / cube_.szz2;
 
-	const Float d = ((((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*x + 2.0*d111
-		- 2.0*d110 - 2.0*d101 + 2.0*d100 + 2.0*d011 - 2.0*d010 + 2.0*d001 + 2.0*d000)*y
-		+ (2.0*d111 - 2.0*d110 + 2.0*d101 - 2.0*d100 - 2.0*d011 + 2.0*d010 - 2.0*d001 + 2.0*d000)*x
-		+ 4.0*d111 - 4.0*d110 + 4.0*d101 - 4.0*d100 + 4.0*d011 - 4.0*d010 - 4.0*d001 - 4.0*d000)*z
-		+ ((2.0*d111 + 2.0*d110 - 2.0*d101 - 2.0*d100 - 2.0*d011 - 2.0*d010 + 2.0*d001 + 2.0*d000)*x
-			+ 4.0*d111 + 4.0*d110 - 4.0*d101 - 4.0*d100 + 4.0*d011 + 4.0*d010 + 4.0*d001 - 4.0*d000)*y
-		+ (4.0*d111 + 4.0*d110 + 4.0*d101 + 4.0*d100 - 4.0*d011 - 4.0*d010 - 4.0*d001 - 4.0*d000)*x
-		+ 8.0*d111 + 8.0*d110 + 8.0*d101 + 8.0*d100 + 8.0*d011 + 8.0*d010 - 8.0*d001 + 8.0*d000)/8.0;
+	const Float d = ((((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*x + d111
+		- d110 - d101 + d100 + d011 - d010 + d001 + d000)*y
+		+ (d111 - d110 + d101 - d100 - d011 + d010 - d001 + d000)*x + d111 - d110
+		+ d101 - d100 + d011 - d010 - d001 - d000)*z
+		+ ((d111 + d110 - d101 - d100 - d011 - d010 + d001 + d000)*x + d111 + d110
+			- d101 - d100 + d011 + d010 + d001 - d000)*y
+		+ (d111 + d110 + d101 + d100 - d011 - d010 - d001 - d000)*x + d111 + d110
+		+ d101 + d100 + d011 + d010 - d001 + d000)/8.0;
 
-	const Float dx = (((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*y + 2.0*d111
-		- 2.0*d110 + 2.0*d101 - 2.0*d100 - 2.0*d011 + 2.0*d010 - 2.0*d001 + 2.0*d000)*z
-		+ (2.0*d111 + 2.0*d110 - 2.0*d101 - 2.0*d100 - 2.0*d011 - 2.0*d010 + 2.0*d001 + 2.0*d000)*y
-		+ 4.0*d111 + 4.0*d110 + 4.0*d101 + 4.0*d100 - 4.0*d011 - 4.0*d010 - 4.0*d001 - 4.0*d000)/8.0;
+	const Float dx = (((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*y + d111 - d110
+		+ d101 - d100 - d011 + d010 - d001 + d000)*z
+		+ (d111 + d110 - d101 - d100 - d011 - d010 + d001 + d000)*y + d111 + d110
+		+ d101 + d100 - d011 - d010 - d001 - d000)/8.0;
 
-	const Float dy = (((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*x + 2.0*d111
-		- 2.0*d110 - 2.0*d101 + 2.0*d100 + 2.0*d011 - 2.0*d010 + 2.0*d001 + 2.0*d000)*z
-		+ (2.0*d111 + 2.0*d110 - 2.0*d101 - 2.0*d100 - 2.0*d011 - 2.0*d010 + 2.0*d001 + 2.0*d000)*x
-		+ 4.0*d111 + 4.0*d110 - 4.0*d101 - 4.0*d100 + 4.0*d011 + 4.0*d010 + 4.0*d001 - 4.0*d000)/8.0;
+	const Float dy = (((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*x + d111
+		- d110 - d101 + d100 + d011 - d010 + d001 + d000)*z
+		+ (d111 + d110 - d101 - d100 - d011 - d010 + d001 + d000)*x + d111 + d110
+		- d101 - d100 + d011 + d010 + d001 - d000)/8.0;
 
-	const Float dz = (((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*x + 2.0*d111
-		- 2.0*d110 - 2.0*d101 + 2.0*d100 + 2.0*d011 - 2.0*d010 + 2.0*d001 + 2.0*d000)*y
-		+ (2.0*d111 - 2.0*d110 + 2.0*d101 - 2.0*d100 - 2.0*d011 + 2.0*d010 - 2.0*d001 + 2.0*d000)*x
-		+ 4.0*d111 - 4.0*d110 + 4.0*d101 - 4.0*d100 + 4.0*d011 - 4.0*d010 - 4.0*d001 - 4.0*d000)/8.0;
+	const Float dz = (((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*x + d111
+		- d110 - d101 + d100 + d011 - d010 + d001 + d000)*y
+		+ (d111 - d110 + d101 - d100 - d011 + d010 - d001 + d000)*x + d111 - d110
+		+ d101 - d100 + d011 - d010 - d001 - d000)/8.0;
 
 	const Vector3d local_dr( dx, dy, dz );
 	const Float L = local_dr.Length();
