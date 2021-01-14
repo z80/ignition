@@ -71,7 +71,7 @@ void NarrowTree::subdivide()
         c += f.verts[1];
         c += f.verts[2];
     }
-    const Float s = 1.0 / static_cast<Float>( qty );
+    const Float s = 1.0 / static_cast<Float>( qty*3 );
     c *= s;
 
     // Here find the largest distance.

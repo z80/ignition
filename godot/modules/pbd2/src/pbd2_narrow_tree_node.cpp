@@ -535,16 +535,20 @@ void NarrowTreeNode::init_distances()
 		for ( int i=0; i<8; i++ )
 		{
 			const Vector3d & v = cube_.verts[i];
+			// Check if the point is inside the mesh.
+			const bool inside_mesh = point_inside_mesh( v );
+			if ( inside_mesh )
+				int aaa = 0;
+			// Compute the smallest distance to the surface.
 			Float min_dist = -1.0;
 			for ( int j=0; j<faces_qty; j++ )
 			{
 				const Face & f = tree->faces_.ptr()[j];
 				const Float d = f.distance( v );
 				if ( (min_dist < 0.0) || (min_dist > d) )
-					min_dist = min_dist;
+					min_dist = d;
 			}
 			// If point is inside the mesh, point is by definition negative.
-			const bool inside_mesh = point_inside_mesh( v );
 			if ( inside_mesh )
 				min_dist = -min_dist;
 
