@@ -25,7 +25,6 @@ NarrowTreePtsNode::NarrowTreePtsNode()
     center = Vector3( 0.0, 0.0, 0.0 );
 
     init();
-	reset_distances();
 }
 
 NarrowTreePtsNode::~NarrowTreePtsNode()
@@ -61,17 +60,7 @@ const NarrowTreePtsNode & NarrowTreePtsNode::operator=( const NarrowTreePtsNode 
         center = inst.center;
         
         cube_ = inst.cube_;
-        se3_optimized_  = inst.se3_optimized_;
         cube_optimized_ = inst.cube_optimized_;
-
-		d000 = inst.d000;
-		d100 = inst.d100;
-		d110 = inst.d110;
-		d010 = inst.d010;
-		d001 = inst.d001;
-		d101 = inst.d101;
-		d111 = inst.d111;
-		d011 = inst.d011;
 
         ptInds = inst.ptInds;
 
@@ -289,7 +278,7 @@ bool NarrowTreePtsNode::collide_backward( const SE3 & se3_rel, const NarrowTreeS
     {
         const int ind = this_node->children[i];
         const NarrowTreeSdfNode * child_node = &( this_node->tree->nodes_sdf_.ptrw()[ind] );
-        const bool ch_intersects = collide_backward( child_node, pts, depths );
+        const bool ch_intersects = collide_backward( se3_rel, child_node, pts, depths );
         children_intersect = children_intersect || ch_intersects;
     }
 
@@ -305,8 +294,8 @@ bool NarrowTreePtsNode::collide_points( const NarrowTreeSdfNode * this_node, Vec
 	for ( int i=0; i<qty; i++ )
 	{
 		const int ind = ptInds.ptr()[i];
-		const Vector3d & pt = tree->min_pts_.ptr()[ind];
-		const Vector3d pt_local = (se3.q_ * pt) + se3.r_;
+		const Vector3d & pt = tree->pts_.ptr()[ind];
+		const Vector3d pt_local = (se3_rel.q_ * pt) + se3_rel.r_;
 
 		Vector3d depth;
 		const Float d = this_node->distance_for_this_node( pt_local, depth );
@@ -338,36 +327,43 @@ bool NarrowTreePtsNode::compute_cube_optimized()
 	if ( !std_ok )
 		return false;
 
-	std::array<Float, 3> eval                = { 0.0, 0.0, 0.0 };
-	std::array<std::array<Float, 3>, 3> evec; //= { {0.0, 0.0, 0.0},
-	                                          //   {0.0, 0.0, 0.0},
-	                                          //   {0.0, 0.0, 0.0} };
-	gte::SymmetricEigensolver3x3<Float> solver;
-	const int ret = solver( std_diag.x_, std_off_diag.x_, std_off_diag.y_, std_diag.y_, std_off_diag.z_, std_diag.z_,
-		                    false, -1, eval, evec );
-	if ( ret < 1 )
-		return false;
-
-	Matrix3d A;
-	A.m00_ = std_diag.x_;
-	A.m11_ = std_diag.y_;
-	A.m22_ = std_diag.z_;
-
-	A.m01_ = std_off_diag.x_;
-	A.m02_ = std_off_diag.y_;
-	A.m12_ = std_off_diag.z_;
-
-	A.m10_ = std_off_diag.x_;
-	A.m20_ = std_off_diag.y_;
-	A.m21_ = std_off_diag.z_;
-
 	Quaterniond Q;
-	Q.FromRotationMatrix( A );
-	Q.Normalize();
+	const int qty = ptInds.size();
+	if ( qty > 1 )
+	{
+		std::array<Float, 3> eval                = { 0.0, 0.0, 0.0 };
+		std::array<std::array<Float, 3>, 3> evec; //= { {0.0, 0.0, 0.0},
+												  //   {0.0, 0.0, 0.0},
+												  //   {0.0, 0.0, 0.0} };
+		gte::SymmetricEigensolver3x3<Float> solver;
+		const int ret = solver( std_diag.x_, std_off_diag.x_, std_off_diag.y_, std_diag.y_, std_off_diag.z_, std_diag.z_,
+								false, -1, eval, evec );
+		if ( ret < 1 )
+			return false;
+
+		Matrix3d A;
+		A.m00_ = std_diag.x_;
+		A.m11_ = std_diag.y_;
+		A.m22_ = std_diag.z_;
+
+		A.m01_ = std_off_diag.x_;
+		A.m02_ = std_off_diag.y_;
+		A.m12_ = std_off_diag.z_;
+
+		A.m10_ = std_off_diag.x_;
+		A.m20_ = std_off_diag.y_;
+		A.m21_ = std_off_diag.z_;
+
+		Q.FromRotationMatrix( A );
+		Q.Normalize();
+	}
+	else
+		Q = Quaterniond( 1.0, 0.0, 0.0, 0.0 );
 
 	const Vector3d ex = Q * Vector3d( 1.0, 0.0, 0.0 );
 	const Vector3d ey = Q * Vector3d( 0.0, 1.0, 0.0 );
 	const Vector3d ez = Q * Vector3d( 0.0, 0.0, 1.0 );
+
 	Float x_min, x_max, y_min, y_max, z_min, z_max;
 
 	// Initialize with the very first point.
@@ -380,14 +376,13 @@ bool NarrowTreePtsNode::compute_cube_optimized()
 		z_min = z_max = ez.DotProduct( v0 );
 	}
 
-	const int qty = ptInds.size();
 	for ( int i=0; i<qty; i++ )
 	{
 		const int ind = ptInds.ptr()[i];
 		const Face & f = tree->faces_.ptr()[ind];
 		for ( int j=0; j<3; j++ )
 		{
-			const Vector3d v = f.verts_0[j];
+			const Vector3d v = f.verts_0[j] - cube_.center_0;
 			const Float x = v.DotProduct( ex );
 			const Float y = v.DotProduct( ey );
 			const Float z = v.DotProduct( ez );
@@ -407,7 +402,7 @@ bool NarrowTreePtsNode::compute_cube_optimized()
 	}
 
 	Vector3d r_adj( (x_min+x_max)/2.0, (y_min+y_max)/2.0, (z_min+z_max)/2.0 );
-	r_adj -= cube_.center_0;
+	r_adj += cube_.center_0;
 	Float szx2 = (x_max - x_min)/2.0;
 	if ( szx2 < EPS )
 		szx2 = EPS;
@@ -419,229 +414,15 @@ bool NarrowTreePtsNode::compute_cube_optimized()
 		szz2 = EPS;
 
 	cube_optimized_.init( cube_.center_0, szx2, szy2, szz2 );
-	se3_optimized_.r_ = r_adj;
-	se3_optimized_.q_ = Q;
+	SE3 se3;
+	se3.r_ = r_adj;
+	se3.q_ = Q;
+	cube_optimized_.apply( se3 );
 
 	return false;
 }
 
-void NarrowTreePtsNode::reset_distances()
-{
-	d000 = d100 = d110 = d010 = 
-	d001 = d101 = d111 = d011 = -1.0;
-}
 
-void NarrowTreePtsNode::init_distances()
-{
-	// Initialize distances for the root node
-	// and for leaf nodes.
-	const bool has_children = hasChildren();
-
-	if ( (absIndex == 0) || (!has_children) )
-	{
-		const int faces_qty = tree->faces_.size();
-		for ( int i=0; i<8; i++ )
-		{
-			const Vector3d & v = cube_.verts[i];
-			// Check if the point is inside the mesh.
-			const bool inside_mesh = point_inside_mesh( v );
-			if ( inside_mesh )
-				int aaa = 0;
-			// Compute the smallest distance to the surface.
-			Float min_dist = -1.0;
-			for ( int j=0; j<faces_qty; j++ )
-			{
-				const Face & f = tree->faces_.ptr()[j];
-				const Float d = f.distance( v );
-				if ( (min_dist < 0.0) || (min_dist > d) )
-					min_dist = d;
-			}
-			// If point is inside the mesh, point is by definition negative.
-			if ( inside_mesh )
-				min_dist = -min_dist;
-
-			switch ( i )
-			{
-			case 0:
-				d000 = min_dist;
-				break;
-			case 1:
-				d100 = min_dist;
-				break;
-			case 2:
-				d110 = min_dist;
-				break;
-			case 3:
-				d010 = min_dist;
-				break;
-			case 4:
-				d001 = min_dist;
-				break;
-			case 5:
-				d101 = min_dist;
-				break;
-			case 6:
-				d111 = min_dist;
-				break;
-			default:
-				d011 = min_dist;
-				break;
-			}
-		}
-	}
-	if ( !has_children )
-		return;
-
-	for ( int i=0; i<8; i++ )
-	{
-		const int ch_ind = children[i];
-		NarrowTreePtsNode & n = tree->nodes_sdf_.ptrw()[ch_ind];
-		n.init_distances();
-	}
-}
-
-bool NarrowTreePtsNode::distance( const Vector3d & r, Float & d, Vector3d & dist ) const
-{
-	Vector3d rel_r;
-	const bool ok = distance_recursive( r, d, rel_r );
-	if ( !ok )
-		return false;
-	dist = tree->se3_.q_ * rel_r;
-	return true;
-}
-
-bool NarrowTreePtsNode::distance_recursive( const Vector3d & r, Float & d, Vector3d & ret ) const
-{
-	const bool inside = cube_.contains( r );
-	if ( !inside )
-		return false;
-
-	// If point is inside check if the node is leaf node.
-	const bool has_children = hasChildren();
-	if ( !has_children )
-	{
-		// Compute distance for this node.
-		d = distance_for_this_node( r, ret );
-		return true;
-	}
-
-	// Min distance means the deepest inside the body.
-	bool min_dist_initialized = false;
-	Float min_dist = 0.0;
-	Vector3d min_ret;
-	for ( int i=0; i<8; i++ )
-	{
-		const int ch_ind = children[i];
-		const NarrowTreePtsNode & child_node = tree->nodes_sdf_.ptr()[ch_ind];
-		const bool ok = child_node.distance_recursive( r, min_dist, min_ret );
-		if ( ok )
-		{
-			min_dist_initialized = true;
-			break;
-		}
-	}
-
-	if ( !min_dist_initialized )
-		return false;
-
-	d = min_dist;
-	ret = min_ret;
-	return true;
-}
-
-Float NarrowTreePtsNode::distance_for_this_node( const Vector3d & r, Vector3d & disp ) const
-{
-	// Input must be normalized to [-1, 1] with zero at the center.
-	const Vector3d rel_r = r - cube_.center;
-	const Float x = rel_r.DotProduct( cube_.ex ) / cube_.szx2;
-	const Float y = rel_r.DotProduct( cube_.ey ) / cube_.szy2;
-	const Float z = rel_r.DotProduct( cube_.ez ) / cube_.szz2;
-
-	const Float d = ((((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*x + d111
-		- d110 - d101 + d100 + d011 - d010 + d001 + d000)*y
-		+ (d111 - d110 + d101 - d100 - d011 + d010 - d001 + d000)*x + d111 - d110
-		+ d101 - d100 + d011 - d010 - d001 - d000)*z
-		+ ((d111 + d110 - d101 - d100 - d011 - d010 + d001 + d000)*x + d111 + d110
-			- d101 - d100 + d011 + d010 + d001 - d000)*y
-		+ (d111 + d110 + d101 + d100 - d011 - d010 - d001 - d000)*x + d111 + d110
-		+ d101 + d100 + d011 + d010 - d001 + d000)/8.0;
-
-	const Float dx = (((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*y + d111 - d110
-		+ d101 - d100 - d011 + d010 - d001 + d000)*z
-		+ (d111 + d110 - d101 - d100 - d011 - d010 + d001 + d000)*y + d111 + d110
-		+ d101 + d100 - d011 - d010 - d001 - d000)/8.0;
-
-	const Float dy = (((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*x + d111
-		- d110 - d101 + d100 + d011 - d010 + d001 + d000)*z
-		+ (d111 + d110 - d101 - d100 - d011 - d010 + d001 + d000)*x + d111 + d110
-		- d101 - d100 + d011 + d010 + d001 - d000)/8.0;
-
-	const Float dz = (((d111 - d110 - d101 + d100 - d011 + d010 + d001 - d000)*x + d111
-		- d110 - d101 + d100 + d011 - d010 + d001 + d000)*y
-		+ (d111 - d110 + d101 - d100 - d011 + d010 - d001 + d000)*x + d111 - d110
-		+ d101 - d100 + d011 - d010 - d001 - d000)/8.0;
-
-	const Vector3d local_dr( dx, dy, dz );
-	const Float L = local_dr.Length();
-	Vector3d local_disp;
-	if ( L > 0.000001 )
-	{
-		// Towards the surface. And absolute value is equal to
-		// the displacement.
-		local_disp = local_dr * ( -d/L );
-	}
-	// Apply basis.
-	disp = cube_.ex*local_disp.x_ + cube_.ey*local_disp.y_ + cube_.ez*local_disp.z_;
-	return d;
-}
-
-
-bool NarrowTreePtsNode::point_inside_mesh( const Vector3d & r ) const
-{
-	const NarrowTreePtsNode & n0 = tree->nodes_sdf_.ptr()[0];
-	const Float max_d = 4.0 * n0.size2;
-	const Vector3d r2 = r + Vector3d( max_d, 0.0, 0.0 );
-
-	const int faces_qty = tree->faces_.size();
-	int intersections_qty = 0;
-	for ( int i=0; i<faces_qty; i++ )
-	{
-		const Face & tri = tree->faces_.ptr()[i];
-		Vector3d at;
-		const bool intersects = tri.intersects( r, r2, at );
-		if ( intersects )
-			intersections_qty += 1;
-	}
-	const bool inside = ( (intersections_qty & 1) != 0 );
-	return inside;
-}
-
-bool NarrowTreePtsNode::point_inside( const Vector3d & at ) const
-{
-	const bool ret = cube_.contains( at );
-	return ret;
-}
-
-bool NarrowTreePtsNode::intersects_ray( const Vector3d & r1, const Vector3d & r2 ) const
-{
-	if ( !ptInds.empty() )
-	{
-		// Check bounding boxes.
-		const bool ret = cube_.intersects( r1, r2 );
-		return ret;
-	}
-	if ( !hasChildren() )
-		return false;
-	for ( int i=0; i<8; i++ )
-	{
-		const int ch_ind = children[i];
-		const NarrowTreePtsNode & child_node = tree->nodes_sdf_.ptr()[ch_ind];
-		const bool ret = child_node.intersects_ray( r1, r2 );
-		if ( ret )
-			return true;
-	}
-	return false;
-}
 
 
 
@@ -651,7 +432,7 @@ bool NarrowTreePtsNode::intersects_ray( const Vector3d & r1, const Vector3d & r2
 static bool compute_mean_and_std( NarrowTreePtsNode & node, Vector3d & std_diag, Vector3d & std_off_diag )
 {
 	const int qty = node.ptInds.size();
-	if ( qty < 0 )
+	if ( qty <= 0 )
 		return false;
 
 	Vector3d m = Vector3d( 0.0, 0.0, 0.0 );

@@ -247,8 +247,8 @@ bool NarrowTreeSdfNode::collide_forward( const SE3 & se3_rel, const NarrowTreePt
 
 		// Now the other leaf node contains 3d points. Need to make sure that
 		// this node intersects a node in this SDF node which is on or below the surface.
-		const SE3 backward_rel_se3 = n->tree->se3_ / tree->se3;
-        const bool ret = n.collide_backward( backward_rel_se3, *this, pts, depths );
+		const SE3 backward_rel_se3 = n->tree->se3_ / tree->se3_;
+        const bool ret = n->collide_backward( backward_rel_se3, this, pts, depths );
         return ret;
     }
 
@@ -256,7 +256,7 @@ bool NarrowTreeSdfNode::collide_forward( const SE3 & se3_rel, const NarrowTreePt
     for ( int i=0; i<8; i++ )
     {
         const int ind = n->children[i];
-        const NarrowTreePtsNode * child_node = &( n->tree->nodes_sdf_.ptrw()[ind] );
+        const NarrowTreePtsNode * child_node = &( n->tree->nodes_pts_.ptr()[ind] );
         const bool ch_intersects = collide_forward( se3_rel, child_node, pts, depths );
         children_intersect = children_intersect || ch_intersects;
     }
@@ -350,7 +350,7 @@ static void probing_points( const Cube & c, Vector3d * pts )
 void NarrowTreeSdfNode::probe_distances( Vector3d * pts, Float * ds )
 {
 	probing_points( cube_, pts );
-	for ( int i=0 i<7; i++ )
+	for ( int i=0; i<7; i++ )
 	{
 		const Vector3d & v = pts[i];
 		ds[i] = probe_distance( v );
@@ -359,22 +359,9 @@ void NarrowTreeSdfNode::probe_distances( Vector3d * pts, Float * ds )
 
 Float NarrowTreeSdfNode::probe_distance( const Vector3d & at ) const
 {
-	Float min_dist = -1.0;
-
-	const bool inside = point_inside_mesh( v );
-	const int faces_qty = tree_->faces_.size();
-	for ( int j=0; j<faces_qty; j++ )
-	{
-		const Face & f = tree->faces_.ptr()[j];
-		const Float d = f.distance( v );
-		if ( (min_dist < 0.0) || (min_dist > d) )
-			min_dist = d;
-	}
-	// If point is inside the mesh, point is by definition negative.
-	if ( inside_mesh )
-		min_dist = -min_dist;
-
-	return min_dist;
+	Vector3d displacement;
+	const Float ret = probe_distance( at, displacement );
+	return ret;
 }
 
 Float NarrowTreeSdfNode::probe_distance( const Vector3d & at, Vector3d & displacement ) const
@@ -382,13 +369,13 @@ Float NarrowTreeSdfNode::probe_distance( const Vector3d & at, Vector3d & displac
 	Float min_dist = -1.0;
 	Vector3d min_displacement;
 
-	const bool inside = point_inside_mesh( v );
-	const int faces_qty = tree_->faces_.size();
+	const bool inside = point_inside_mesh( at );
+	const int faces_qty = tree->faces_.size();
 	for ( int j=0; j<faces_qty; j++ )
 	{
 		const Face & f = tree->faces_.ptr()[j];
 		Vector3d disp;
-		const Float d = f.distance( v, disp );
+		const Float d = f.distance( at, disp );
 		if ( (min_dist < 0.0) || (min_dist > d) )
 		{
 			min_dist = d;
@@ -396,7 +383,7 @@ Float NarrowTreeSdfNode::probe_distance( const Vector3d & at, Vector3d & displac
 		}
 	}
 	// If point is inside the mesh, point is by definition negative.
-	if ( inside_mesh )
+	if ( inside )
 		min_dist = -min_dist;
 
 	displacement = min_displacement;
@@ -410,6 +397,7 @@ Float NarrowTreeSdfNode::depth_error( Vector3d * pts, Float * ds )
 	{
 		const Float real_d = ds[i];
 		Vector3d disp;
+		const Vector3d & v = pts[i];
 		const Float d = distance_for_this_node( v, disp );
 		const Float err = std::abs( real_d - d );
 		if ( max_err < err )
@@ -419,14 +407,9 @@ Float NarrowTreeSdfNode::depth_error( Vector3d * pts, Float * ds )
 	return max_err;
 }
 
-static void probing_points( const Cube & c, Vector3d * pts )
-{
-
-}
-
 void NarrowTreeSdfNode::generate_surface_points()
 {
-	const Vector3d * vs = c.verts;
+	const Vector3d * vs = cube_.verts;
 	Vector3d pts[8];
 	pts[0] = (vs[0] + vs[6]*2.0)/3.0;
 	pts[1] = (vs[1] + vs[7]*2.0)/3.0;

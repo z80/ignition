@@ -44,13 +44,15 @@ public:
 	// For visualization.
 	PoolVector3Array lines_sdf_nodes();
 	PoolVector3Array lines_surface_pts();
-	PoolVector3Array lines_aligned_cubes();
+	PoolVector3Array lines_pts_nodes();
+	PoolVector3Array lines_aligned_nodes();
 
     // These three for tree construction.
 	bool parent_sdf( const NarrowTreeSdfNode & node, NarrowTreeSdfNode * & parent );
 	bool parent_pts( const NarrowTreePtsNode & node, NarrowTreePtsNode * & parent );
 	int  insert_node_sdf( NarrowTreeSdfNode & node );
 	int  insert_node_pts( NarrowTreePtsNode & node );
+	void update_node_sdf( const NarrowTreeSdfNode & node );
 	void update_node_pts( const NarrowTreePtsNode & node );
 
 	SE3                       se3_;

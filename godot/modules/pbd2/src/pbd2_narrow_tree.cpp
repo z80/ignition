@@ -121,10 +121,6 @@ void NarrowTree::subdivide_sdf()
     root.tree = this;
     root.center = c;
     root.size2  = d;
-    root.value  = qty;
-    root.ptInds.clear();
-    for ( int i=0; i<qty; i++ )
-        root.ptInds.push_back( i );
     root.init();
     insert_node_sdf( root );
 
@@ -149,10 +145,6 @@ void NarrowTree::subdivide_sdf()
 
     root.subdivide();
     update_node_sdf( root );
-
-	// Recursively compute distance fields.
-	NarrowTreeSdfNode & n = nodes_sdf_.ptrw()[0];
-	n.init_distances();
 }
 
 void NarrowTree::subdivide_pts()
@@ -163,11 +155,10 @@ void NarrowTree::subdivide_pts()
 	root.center = sdf_root.center;
 	root.size2 = sdf_root.size2;
 
+	root.ptInds.clear();
 	const int pts_qty = pts_.size();
 		for ( int i=0; i<pts_qty; i++ )
 		root.ptInds.push_back( i );
-
-	root.value = pts_qty;
 
     insert_node_pts( root );
 	root.subdivide();
@@ -187,8 +178,8 @@ bool NarrowTree::intersects( NarrowTree * tree, Vector<Vector3d> & pts, Vector<V
     if ( !tree )
         return false;
 
-    NarrowTreeSdfNode & root_sdf = nodes_sdf_.ptrw()[0];
-	NarrowTreePtsNode * root_pts = &( tree->nodes_pts_.ptrw()[0] );
+    const NarrowTreeSdfNode & root_sdf = nodes_sdf_.ptr()[0];
+	const NarrowTreePtsNode * root_pts = &( tree->nodes_pts_.ptr()[0] );
 
 	const SE3 se3_rel = tree->se3_ / this->se3_;
 	pts.clear();
@@ -285,7 +276,7 @@ PoolVector3Array NarrowTree::lines_surface_pts()
 	return res;
 }
 
-PoolVector3Array NarrowTree::lines_aligned_cubes()
+PoolVector3Array NarrowTree::lines_aligned_nodes()
 {
 	Vector<Vector3> ls;
 	const int qty = nodes_pts_.size();

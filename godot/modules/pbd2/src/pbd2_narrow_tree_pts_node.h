@@ -48,7 +48,6 @@ public:
 	Vector3d center;
         
     Cube cube_;
-    SE3  se3_optimized_;
     Cube cube_optimized_;
 
 	Vector<int> ptInds;
