@@ -239,6 +239,31 @@ Array OccupancyTestsRef::tree_depth( const Vector3 & at )
 	return ret;
 }
 
+PoolVector3Array OccupancyTestsRef::lines_sdf_nodes() const
+{
+	PoolVector3Array ret = tree_.lines_sdf_nodes();
+	return ret;
+}
+
+PoolVector3Array OccupancyTestsRef::lines_surface_pts() const
+{
+	PoolVector3Array ret = tree_.lines_surface_pts();
+	return ret;
+}
+
+PoolVector3Array OccupancyTestsRef::lines_pts_nodes() const
+{
+	PoolVector3Array ret = tree_.lines_pts_nodes();
+	return ret;
+}
+
+PoolVector3Array OccupancyTestsRef::lines_aligned_nodes() const
+{
+	PoolVector3Array ret = tree_.lines_aligned_nodes();
+	return ret;
+}
+
+
 
 
 

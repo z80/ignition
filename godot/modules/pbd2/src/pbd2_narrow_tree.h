@@ -42,10 +42,10 @@ public:
     bool intersects( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
 
 	// For visualization.
-	PoolVector3Array lines_sdf_nodes();
-	PoolVector3Array lines_surface_pts();
-	PoolVector3Array lines_pts_nodes();
-	PoolVector3Array lines_aligned_nodes();
+	PoolVector3Array lines_sdf_nodes() const;
+	PoolVector3Array lines_surface_pts() const;
+	PoolVector3Array lines_pts_nodes() const;
+	PoolVector3Array lines_aligned_nodes() const;
 
     // These three for tree construction.
 	bool parent_sdf( const NarrowTreeSdfNode & node, NarrowTreeSdfNode * & parent );

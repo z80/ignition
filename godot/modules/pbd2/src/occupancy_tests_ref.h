@@ -73,6 +73,11 @@ public:
 	void tree_subdivide();
 	Array tree_depth( const Vector3 & at );
 
+	PoolVector3Array lines_sdf_nodes() const;
+	PoolVector3Array lines_surface_pts() const;
+	PoolVector3Array lines_pts_nodes() const;
+	PoolVector3Array lines_aligned_nodes() const;
+
 };
 
 

@@ -191,7 +191,7 @@ bool NarrowTree::intersects( NarrowTree * tree, Vector<Vector3d> & pts, Vector<V
 
 
 
-PoolVector3Array NarrowTree::lines_sdf_nodes()
+PoolVector3Array NarrowTree::lines_sdf_nodes() const
 {
     Vector<Vector3> ls;
     const int qty = nodes_sdf_.size();
@@ -261,7 +261,79 @@ PoolVector3Array NarrowTree::lines_sdf_nodes()
     return res;
 }
 
-PoolVector3Array NarrowTree::lines_surface_pts()
+PoolVector3Array NarrowTree::lines_pts_nodes() const
+{
+	Vector<Vector3> ls;
+	const int qty = nodes_pts_.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		const NarrowTreePtsNode & n = nodes_pts_.ptr()[i];
+		const bool has_ch = n.hasChildren();
+		if ( has_ch )
+			continue;
+		if ( n.ptInds.empty() )
+			continue;
+
+		const Vector3d * vs = n.cube_.verts;
+		Vector3 v[8];
+		for ( int i=0; i<8; i++ )
+		{
+			const Vector3d & vd = vs[i];
+			v[i] = Vector3( vd.x_, vd.y_, vd.z_ );
+		}
+
+		ls.push_back( v[0] );
+		ls.push_back( v[1] );
+
+		ls.push_back( v[1] );
+		ls.push_back( v[2] );
+
+		ls.push_back( v[2] );
+		ls.push_back( v[3] );
+
+		ls.push_back( v[3] );
+		ls.push_back( v[0] );
+
+
+		ls.push_back( v[4] );
+		ls.push_back( v[5] );
+
+		ls.push_back( v[5] );
+		ls.push_back( v[6] );
+
+		ls.push_back( v[6] );
+		ls.push_back( v[7] );
+
+		ls.push_back( v[7] );
+		ls.push_back( v[4] );
+
+
+		ls.push_back( v[0] );
+		ls.push_back( v[4] );
+
+		ls.push_back( v[1] );
+		ls.push_back( v[5] );
+
+		ls.push_back( v[2] );
+		ls.push_back( v[6] );
+
+		ls.push_back( v[3] );
+		ls.push_back( v[7] );
+	}
+
+	PoolVector3Array res;
+	const int sz = ls.size();
+	res.resize( sz );
+	for ( int i=0; i<sz; i++ )
+	{
+		const Vector3 & v = ls.ptr()[i];
+		res.set( i, v );
+	}
+
+	return res;
+}
+
+PoolVector3Array NarrowTree::lines_surface_pts() const
 {
 	const int qty = pts_.size();
 	PoolVector3Array res;
@@ -276,7 +348,7 @@ PoolVector3Array NarrowTree::lines_surface_pts()
 	return res;
 }
 
-PoolVector3Array NarrowTree::lines_aligned_nodes()
+PoolVector3Array NarrowTree::lines_aligned_nodes() const
 {
 	Vector<Vector3> ls;
 	const int qty = nodes_pts_.size();
