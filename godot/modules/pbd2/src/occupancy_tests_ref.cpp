@@ -39,6 +39,11 @@ void OccupancyTestsRef::_bind_methods()
 	ClassDB::bind_method( D_METHOD( "tree_set_level", "level" ), &OccupancyTestsRef::tree_set_level );
 	ClassDB::bind_method( D_METHOD( "tree_subdivide" ), &OccupancyTestsRef::tree_subdivide );
 	ClassDB::bind_method( D_METHOD( "tree_depth", "at" ), &OccupancyTestsRef::tree_depth, Variant::ARRAY );
+
+	ClassDB::bind_method( D_METHOD( "lines_sdf_nodes" ),     &OccupancyTestsRef::lines_sdf_nodes,     Variant::POOL_VECTOR3_ARRAY );
+	ClassDB::bind_method( D_METHOD( "lines_surface_pts" ),   &OccupancyTestsRef::lines_surface_pts,   Variant::POOL_VECTOR3_ARRAY );
+	ClassDB::bind_method( D_METHOD( "lines_pts_nodes" ),     &OccupancyTestsRef::lines_pts_nodes,     Variant::POOL_VECTOR3_ARRAY );
+	ClassDB::bind_method( D_METHOD( "lines_aligned_nodes" ), &OccupancyTestsRef::lines_aligned_nodes, Variant::POOL_VECTOR3_ARRAY );
 }
 
 OccupancyTestsRef::OccupancyTestsRef()
