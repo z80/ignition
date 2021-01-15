@@ -258,20 +258,20 @@ void NarrowTreePtsNode::init()
 
 
 
-bool NarrowTreePtsNode::collide_backward( const SE3 & se3_rel, const NarrowTreeSdfNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
+bool NarrowTreePtsNode::collide_backward( const SE3 & se3_rel, const NarrowTreeSdfNode * this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
 {
 	// Apply transforms.
-	Cube this_cube = this_node.cube_;
+	Cube this_cube = this_node->cube_;
 	this_cube.apply( se3_rel );
 
     const bool intersects = cube_.intersects( this_cube );
     if ( !intersects )
         return false;
 
-    const bool has_ch = this_node.hasChildren();
+    const bool has_ch = this_node->hasChildren();
     if ( !has_ch )
     {
-        const bool is_on_or_bleow_surf = this_node.on_or_below_surface;
+        const bool is_on_or_bleow_surf = this_node->on_or_below_surface;
         if ( !is_on_or_bleow_surf )
             return false;
 
@@ -287,8 +287,8 @@ bool NarrowTreePtsNode::collide_backward( const SE3 & se3_rel, const NarrowTreeS
     bool children_intersect = false;
     for ( int i=0; i<8; i++ )
     {
-        const int ind = this_node.children[i];
-        const NarrowTreeSdfNode & child_node = tree->nodes_sdf_.ptrw()[ind];
+        const int ind = this_node->children[i];
+        const NarrowTreeSdfNode * child_node = &( this_node->tree->nodes_sdf_.ptrw()[ind] );
         const bool ch_intersects = collide_backward( child_node, pts, depths );
         children_intersect = children_intersect || ch_intersects;
     }
@@ -297,10 +297,10 @@ bool NarrowTreePtsNode::collide_backward( const SE3 & se3_rel, const NarrowTreeS
 }
 
 
-bool NarrowTreePtsNode::collide_points( const NarrowTreeSdfNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
+bool NarrowTreePtsNode::collide_points( const NarrowTreeSdfNode * this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
 {
 	bool ret = false;
-	const SE3 se3_rel = tree->se3_ / this_node.tree->se3_;
+	const SE3 se3_rel = tree->se3_ / this_node->tree->se3_;
 	const int qty = ptInds.size();
 	for ( int i=0; i<qty; i++ )
 	{
@@ -309,14 +309,15 @@ bool NarrowTreePtsNode::collide_points( const NarrowTreeSdfNode & this_node, Vec
 		const Vector3d pt_local = (se3.q_ * pt) + se3.r_;
 
 		Vector3d depth;
-		const Float d = this_node.distance_for_this_node( pt_local, depth );
+		const Float d = this_node->distance_for_this_node( pt_local, depth );
 		if ( d < 0.0 )
 		{
 			// Convert to global ref. frame.
-			const Vector3d pt_global = ( this_node.tree->se3_.q_ * pt_local ) + this_node.tree->se3_.r_;
+			const SE3 & se3 = this_node->tree->se3_;
+			const Vector3d pt_global = ( se3.q_ * pt_local ) + se3.r_;
 			pts.push_back( pt_global );
 			// Convert to global ref. frame.
-			depth = this_node.tree->se3_.q_ * depth;
+			depth = se3.q_ * depth;
 			depths.push_back( depth );
 
 			ret = true;

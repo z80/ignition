@@ -1,6 +1,7 @@
 
 #include "pbd2_narrow_tree_sdf_node.h"
 #include "pbd2_narrow_tree.h"
+#include "pbd2_narrow_tree_pts_node.h"
 #include "matrix3d.h"
 
 #include "SymmetricEigensolver3x3.h"
@@ -227,26 +228,26 @@ void NarrowTreeSdfNode::init()
 
 
 
-bool NarrowTreeSdfNode::collide_forward( const SE3 & se3_rel, const NarrowTreePtsNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
+bool NarrowTreeSdfNode::collide_forward( const SE3 & se3_rel, const NarrowTreePtsNode * n, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
 {
 	// Apply transforms.
-	Cube other_cube = n.cube_;
+	Cube other_cube = n->cube_;
 	other_cube.apply( se3_rel );
 
     const bool intersects = cube_.intersects( other_cube );
     if ( !intersects )
         return false;
-    const bool has_ch = n.hasChildren();
+    const bool has_ch = n->hasChildren();
     if ( !has_ch )
     {
 		// Check if the node contains points.
-		const bool other_is_empty = n.ptInds.empty();
+		const bool other_is_empty = n->ptInds.empty();
 		if ( other_is_empty )
 			return false;
 
 		// Now the other leaf node contains 3d points. Need to make sure that
 		// this node intersects a node in this SDF node which is on or below the surface.
-		const SE3 backward_rel_se3 = n.tree->se3_ / tree->se3;
+		const SE3 backward_rel_se3 = n->tree->se3_ / tree->se3;
         const bool ret = n.collide_backward( backward_rel_se3, *this, pts, depths );
         return ret;
     }
@@ -254,8 +255,8 @@ bool NarrowTreeSdfNode::collide_forward( const SE3 & se3_rel, const NarrowTreePt
     bool children_intersect = false;
     for ( int i=0; i<8; i++ )
     {
-        const int ind = n.children[i];
-        const NarrowTreePtsNode & child_node = tree->nodes_sdf_.ptrw()[ind];
+        const int ind = n->children[i];
+        const NarrowTreePtsNode * child_node = &( n->tree->nodes_sdf_.ptrw()[ind] );
         const bool ch_intersects = collide_forward( se3_rel, child_node, pts, depths );
         children_intersect = children_intersect || ch_intersects;
     }

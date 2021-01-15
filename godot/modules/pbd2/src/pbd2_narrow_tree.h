@@ -39,14 +39,14 @@ public:
 
 	void apply( const SE3 & se3 );
 
-    bool intersects( NarrowTree * tree );
-	// Internally called for recursion.
-	bool node_intersects( NarrowTreeSdfNode & n, NarrowTree & tree );
+    bool intersects( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
 
 	// For visualization.
-	PoolVector<Vector3> lines_sdf_nodes();
-    
-        // These three for tree construction.
+	PoolVector3Array lines_sdf_nodes();
+	PoolVector3Array lines_surface_pts();
+	PoolVector3Array lines_aligned_cubes();
+
+    // These three for tree construction.
 	bool parent_sdf( const NarrowTreeSdfNode & node, NarrowTreeSdfNode * & parent );
 	bool parent_pts( const NarrowTreePtsNode & node, NarrowTreePtsNode * & parent );
 	int  insert_node_sdf( NarrowTreeSdfNode & node );

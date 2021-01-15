@@ -29,8 +29,8 @@ public:
 	// Initialize vertices and planes.
 	void init();
 
-    bool collide_backward( const SE3 & se3_rel, const NarrowTreeSdfNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
-    bool collide_points( const NarrowTreeSdfNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
+    bool collide_backward( const SE3 & se3_rel, const NarrowTreeSdfNode * this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
+    bool collide_points( const NarrowTreeSdfNode * this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
 
     // Compute "se3_optimized_" and "cube_optimized_".
     bool compute_cube_optimized();

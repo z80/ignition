@@ -182,45 +182,25 @@ void NarrowTree::apply( const SE3 & se3 )
 
 
 
-bool NarrowTree::intersects( NarrowTree * tree )
+bool NarrowTree::intersects( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
 {
     if ( !tree )
         return false;
 
-    NarrowTreeSdfNode & root = nodes_sdf_.ptrw()[0];
+    NarrowTreeSdfNode & root_sdf = nodes_sdf_.ptrw()[0];
+	NarrowTreePtsNode * root_pts = &( tree->nodes_pts_.ptrw()[0] );
 
-    const bool is_intersecting = node_intersects( root, *tree );
+	const SE3 se3_rel = tree->se3_ / this->se3_;
+	pts.clear();
+	depths.clear();
+	const bool ret = root_sdf.collide_forward( se3_rel, root_pts, pts, depths );
 
-    return is_intersecting;
-}
-
-bool NarrowTree::node_intersects( NarrowTreeSdfNode & n, NarrowTree & tree )
-{
-    NarrowTreeSdfNode & other_root = tree.nodes_sdf_.ptrw()[0];
-    const bool is_intersecting = n.inside( other_root );
-    if ( !is_intersecting )
-        return false;
-    const bool has_ch = n.hasChildren();
-    if ( !has_ch )
-    {
-        const bool is_filled = (n.value > 0);
-        return is_filled;
-    }
-
-    for ( int i=0; i<8; i++ )
-    {
-        const int ch_ind = n.children[i];
-        NarrowTreeSdfNode & ch_n = n.tree->nodes_sdf_.ptrw()[ch_ind];
-        const bool ch_intersects = node_intersects( ch_n, tree );
-        if ( ch_intersects )
-            return true;
-    }
-    return false;
+    return ret;
 }
 
 
 
-PoolVector<Vector3> NarrowTree::lines_sdf_nodes()
+PoolVector3Array NarrowTree::lines_sdf_nodes()
 {
     Vector<Vector3> ls;
     const int qty = nodes_sdf_.size();
@@ -230,62 +210,151 @@ PoolVector<Vector3> NarrowTree::lines_sdf_nodes()
         const bool has_ch = n.hasChildren();
         if ( has_ch )
             continue;
-        const bool occupied = (n.value > 0);
-        if ( !occupied )
-            continue;
 
-        /*
-        const Vector3 * vs = n.verts_;
-        ls.push_back( vs[0] );
-        ls.push_back( vs[1] );
+        const Vector3d * vs = n.cube_.verts;
+		Vector3 v[8];
+		for ( int i=0; i<8; i++ )
+		{
+			const Vector3d & vd = vs[i];
+			v[i] = Vector3( vd.x_, vd.y_, vd.z_ );
+		}
 
-        ls.push_back( vs[1] );
-        ls.push_back( vs[2] );
+        ls.push_back( v[0] );
+        ls.push_back( v[1] );
 
-        ls.push_back( vs[2] );
-        ls.push_back( vs[3] );
+        ls.push_back( v[1] );
+        ls.push_back( v[2] );
 
-        ls.push_back( vs[3] );
-        ls.push_back( vs[0] );
+        ls.push_back( v[2] );
+        ls.push_back( v[3] );
 
-
-        ls.push_back( vs[4] );
-        ls.push_back( vs[5] );
-
-        ls.push_back( vs[5] );
-        ls.push_back( vs[6] );
-
-        ls.push_back( vs[6] );
-        ls.push_back( vs[7] );
-
-        ls.push_back( vs[7] );
-        ls.push_back( vs[4] );
+        ls.push_back( v[3] );
+        ls.push_back( v[0] );
 
 
-        ls.push_back( vs[0] );
-        ls.push_back( vs[4] );
+        ls.push_back( v[4] );
+        ls.push_back( v[5] );
 
-        ls.push_back( vs[1] );
-        ls.push_back( vs[5] );
+        ls.push_back( v[5] );
+        ls.push_back( v[6] );
 
-        ls.push_back( vs[2] );
-        ls.push_back( vs[6] );
+        ls.push_back( v[6] );
+        ls.push_back( v[7] );
 
-        ls.push_back( vs[3] );
-        ls.push_back( vs[7] );*/
+        ls.push_back( v[7] );
+        ls.push_back( v[4] );
+
+
+        ls.push_back( v[0] );
+        ls.push_back( v[4] );
+
+        ls.push_back( v[1] );
+        ls.push_back( v[5] );
+
+        ls.push_back( v[2] );
+        ls.push_back( v[6] );
+
+        ls.push_back( v[3] );
+        ls.push_back( v[7] );
     }
 
-    PoolVector<Vector3> res;
+	PoolVector3Array res;
     const int sz = ls.size();
     res.resize( sz );
-    PoolVector<Vector3>::Write w = res.write();
     for ( int i=0; i<sz; i++ )
     {
         const Vector3 & v = ls.ptr()[i];
-        w[i] = v;
+        res.set( i, v );
     }
 
     return res;
+}
+
+PoolVector3Array NarrowTree::lines_surface_pts()
+{
+	const int qty = pts_.size();
+	PoolVector3Array res;
+	res.resize( qty );
+
+	for ( int i=0; i<qty; i++ )
+	{
+		const Vector3d & vd = pts_.ptr()[i];
+		const Vector3 v( vd.x_, vd.y_, vd.z_ );
+		res.set( i, v );
+	}
+	return res;
+}
+
+PoolVector3Array NarrowTree::lines_aligned_cubes()
+{
+	Vector<Vector3> ls;
+	const int qty = nodes_pts_.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		const NarrowTreePtsNode & n = nodes_pts_.ptr()[i];
+		const bool has_ch = n.hasChildren();
+		if ( has_ch )
+			continue;
+		if ( n.ptInds.empty() )
+			continue;
+
+		const Vector3d * vs = n.cube_optimized_.verts;
+		Vector3 v[8];
+		for ( int i=0; i<8; i++ )
+		{
+			const Vector3d & vd = vs[i];
+			v[i] = Vector3( vd.x_, vd.y_, vd.z_ );
+		}
+
+		ls.push_back( v[0] );
+		ls.push_back( v[1] );
+
+		ls.push_back( v[1] );
+		ls.push_back( v[2] );
+
+		ls.push_back( v[2] );
+		ls.push_back( v[3] );
+
+		ls.push_back( v[3] );
+		ls.push_back( v[0] );
+
+
+		ls.push_back( v[4] );
+		ls.push_back( v[5] );
+
+		ls.push_back( v[5] );
+		ls.push_back( v[6] );
+
+		ls.push_back( v[6] );
+		ls.push_back( v[7] );
+
+		ls.push_back( v[7] );
+		ls.push_back( v[4] );
+
+
+		ls.push_back( v[0] );
+		ls.push_back( v[4] );
+
+		ls.push_back( v[1] );
+		ls.push_back( v[5] );
+
+		ls.push_back( v[2] );
+		ls.push_back( v[6] );
+
+		ls.push_back( v[3] );
+		ls.push_back( v[7] );
+	}
+
+	PoolVector3Array res;
+	const int sz = ls.size();
+	res.resize( sz );
+	for ( int i=0; i<sz; i++ )
+	{
+		const Vector3 & v = ls.ptr()[i];
+		res.set( i, v );
+	}
+
+	return res;
 }
 
 

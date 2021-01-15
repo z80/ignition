@@ -6,11 +6,11 @@
 #include "se3.h"
 #include "occupancy_types.h"
 
-
 namespace Pbd
 {
 
 class NarrowTree;
+class NarrowTreePtsNode;
 
 class NarrowTreeSdfNode
 {
@@ -26,7 +26,7 @@ public:
 	void init();
 
 
-    bool collide_forward( const SE3 & se3_rel, const NarrowTreePtsNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
+    bool collide_forward( const SE3 & se3_rel, const NarrowTreePtsNode * n, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
 
 	NarrowTree * tree;
 	int absIndex;
