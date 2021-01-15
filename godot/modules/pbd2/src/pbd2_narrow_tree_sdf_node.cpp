@@ -208,8 +208,7 @@ bool NarrowTreeSdfNode::subdivide()
     for ( int i=0; i<8; i++ )
     {
         NarrowTreeSdfNode & ch_n = nn[i];
-        if ( ( qtys[i] > 0 ) && ( childLevel < tree->max_depth_ ) )
-            ch_n.subdivide();
+        ch_n.subdivide();
         tree->update_node_sdf( ch_n );
     }
 

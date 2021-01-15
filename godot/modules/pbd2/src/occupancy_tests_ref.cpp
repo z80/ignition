@@ -222,7 +222,7 @@ void OccupancyTestsRef::tree_set_level( int level )
 
 void OccupancyTestsRef::tree_subdivide()
 {
-	tree_.subdivide_sdf();
+	tree_.subdivide();
 }
 
 Array OccupancyTestsRef::tree_depth( const Vector3 & at )
