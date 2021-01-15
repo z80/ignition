@@ -44,6 +44,7 @@ struct Face
     void apply( const SE3 & se3 );
     void init_planes();
 	Float distance( const Vector3d & r ) const;
+	Float distance( const Vector3d & r, Vector3d & displacement ) const;
 	// Intersects with a ray.
 	// And if intersects steps further "eps" along "a" and returns the next point.
 	bool intersects_ray( const Vector3d & r0, const Vector3d & a, Float max_dist, Vector3d & next_r, Float eps=0.0001 );

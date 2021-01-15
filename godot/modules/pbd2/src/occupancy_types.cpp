@@ -126,6 +126,13 @@ void Face::init_planes()
 
 Float Face::distance( const Vector3d & r ) const
 {
+	Vector3d displacement;
+	const Float d = distance( r, displacement );
+	return d;
+}
+
+Float Face::distance( const Vector3d & r, Vector3d & displacement ) const
+{
 	// First project onto plane.
 	const Float den = plane.norm.LengthSquared();
 	const Float num = plane.d + r.DotProduct( plane.norm );
@@ -146,7 +153,9 @@ Float Face::distance( const Vector3d & r ) const
 	if ( inside )
 	{
 		const Vector3d dr = at - r;
-		return dr.Length();
+		displacement = dr;
+		const Float d = dr.Length();
+		return d;
 	}
 
 	Float min_d = -1.0;
@@ -162,7 +171,9 @@ Float Face::distance( const Vector3d & r ) const
 			min_v = dr;
 		}
 	}
-	return Math::sqrt( min_d );
+	displacement = min_v;
+	const Float d = std::sqrt( min_d );
+	return d;
 }
 
 bool Face::intersects_ray( const Vector3d & r0, const Vector3d & a, Float max_dist, Vector3d & next_r, Float eps )

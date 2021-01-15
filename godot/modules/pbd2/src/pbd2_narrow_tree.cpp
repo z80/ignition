@@ -12,8 +12,9 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 
 NarrowTree::NarrowTree()
 {
-    // Initialize counters and parameters.
-    this->max_depth_     = 3;
+	max_sdf_error_ = 0.1;
+	min_depth_ = 1;
+    max_depth_ = 3;
 }
 
 NarrowTree::~NarrowTree()
@@ -55,7 +56,13 @@ void NarrowTree::append_triangle( const Vector3d & a, const Vector3d & b, const 
 
 void NarrowTree::subdivide()
 {
-    // Initialize vertices.
+	subdivide_sdf();
+	subdivide_pts();
+}
+
+void NarrowTree::subdivide_sdf()
+{
+    // Initialize faces.
     const int qty = faces_.size();
     for ( int i=0; i<qty; i++ )
     {
@@ -108,7 +115,7 @@ void NarrowTree::subdivide()
     d *= 1.1;
 
     nodes_sdf_.clear();
-    NarrowTreeNode root;
+    NarrowTreeSdfNode root;
     root.level = 0;
     root.tree = this;
     root.center = c;
@@ -118,8 +125,7 @@ void NarrowTree::subdivide()
     for ( int i=0; i<qty; i++ )
         root.ptInds.push_back( i );
     root.init();
-    insert_node( root );
-	root = nodes_sdf_.ptr()[0];
+    insert_node_sdf( root );
 
     // Debugging. All the faces should be inside the root node.
     /*{
@@ -141,11 +147,30 @@ void NarrowTree::subdivide()
 
 
     root.subdivide();
-    nodes_sdf_.ptrw()[ 0 ] = root;
+    update_node_sdf( root );
 
 	// Recursively compute distance fields.
-	NarrowTreeNode & n = nodes_sdf_.ptrw()[0];
+	NarrowTreeSdfNode & n = nodes_sdf_.ptrw()[0];
 	n.init_distances();
+}
+
+void NarrowTree::subdivide_pts()
+{
+	nodes_pts_.clear();
+	NarrowTreePtsNode root;
+	const NarrowTreeSdfNode & sdf_root = nodes_sdf_.ptr()[0];
+	root.center = sdf_root.center;
+	root.size2 = sdf_root.size2;
+
+	const int pts_qty = pts_.size();
+		for ( int i=0; i<pts_qty; i++ )
+		root.ptInds.push_back( i );
+
+	root.value = pts_qty;
+
+    insert_node_pts( root );
+	root.subdivide();
+	update_node_pts( root );
 }
 
 void NarrowTree::apply( const SE3 & se3 )
@@ -161,16 +186,16 @@ bool NarrowTree::intersects( NarrowTree * tree )
     if ( !tree )
         return false;
 
-    NarrowTreeNode & root = nodes_sdf_.ptrw()[0];
+    NarrowTreeSdfNode & root = nodes_sdf_.ptrw()[0];
 
     const bool is_intersecting = node_intersects( root, *tree );
 
     return is_intersecting;
 }
 
-bool NarrowTree::node_intersects( NarrowTreeNode & n, NarrowTree & tree )
+bool NarrowTree::node_intersects( NarrowTreeSdfNode & n, NarrowTree & tree )
 {
-    NarrowTreeNode & other_root = tree.nodes_sdf_.ptrw()[0];
+    NarrowTreeSdfNode & other_root = tree.nodes_sdf_.ptrw()[0];
     const bool is_intersecting = n.inside( other_root );
     if ( !is_intersecting )
         return false;
@@ -184,7 +209,7 @@ bool NarrowTree::node_intersects( NarrowTreeNode & n, NarrowTree & tree )
     for ( int i=0; i<8; i++ )
     {
         const int ch_ind = n.children[i];
-        NarrowTreeNode & ch_n = n.tree->nodes_sdf_.ptrw()[ch_ind];
+        NarrowTreeSdfNode & ch_n = n.tree->nodes_sdf_.ptrw()[ch_ind];
         const bool ch_intersects = node_intersects( ch_n, tree );
         if ( ch_intersects )
             return true;
@@ -200,7 +225,7 @@ PoolVector<Vector3> NarrowTree::lines_sdf_nodes()
     const int qty = nodes_sdf_.size();
     for ( int i=0; i<qty; i++ )
     {
-        const NarrowTreeNode & n = nodes_sdf_.ptr()[i];
+        const NarrowTreeSdfNode & n = nodes_sdf_.ptr()[i];
         const bool has_ch = n.hasChildren();
         if ( has_ch )
             continue;
@@ -263,7 +288,7 @@ PoolVector<Vector3> NarrowTree::lines_sdf_nodes()
 }
 
 
-bool NarrowTree::parent( const NarrowTreeNode & node, NarrowTreeNode * & parent )
+bool NarrowTree::parent_sdf( const NarrowTreeSdfNode & node, NarrowTreeSdfNode * & parent )
 {
     if ( node.parentAbsIndex < 0 )
     {
@@ -275,20 +300,48 @@ bool NarrowTree::parent( const NarrowTreeNode & node, NarrowTreeNode * & parent 
     return true;
 }
 
-int  NarrowTree::insert_node( NarrowTreeNode & node )
+bool NarrowTree::parent_pts( const NarrowTreePtsNode & node, NarrowTreePtsNode * & parent )
+{
+	if ( node.parentAbsIndex < 0 )
+	{
+		parent = 0;
+		return false;
+	}
+
+	parent = &( nodes_pts_.ptrw()[ node.parentAbsIndex ] );
+	return true;
+}
+
+int  NarrowTree::insert_node_sdf( NarrowTreeSdfNode & node )
 {
     nodes_sdf_.push_back( node );
     const int ind = static_cast<int>(nodes_sdf_.size()) - 1;
-    NarrowTreeNode * nns = nodes_sdf_.ptrw();
-    NarrowTreeNode & n = nns[ind];
+    NarrowTreeSdfNode * nns = nodes_sdf_.ptrw();
+    NarrowTreeSdfNode & n = nns[ind];
     n.tree     = this;
     n.absIndex = ind;
     return ind;
 }
 
-void NarrowTree::update_node( const NarrowTreeNode & node )
+int  NarrowTree::insert_node_pts( NarrowTreePtsNode & node )
+{
+	nodes_pts_.push_back( node );
+	const int ind = static_cast<int>(nodes_pts_.size()) - 1;
+	NarrowTreePtsNode * nns = nodes_pts_.ptrw();
+	NarrowTreePtsNode & n = nns[ind];
+	n.tree     = this;
+	n.absIndex = ind;
+	return ind;
+}
+
+void NarrowTree::update_node_sdf( const NarrowTreeSdfNode & node )
 {
     nodes_sdf_.ptrw()[ node.absIndex ] = node;
+}
+
+void NarrowTree::update_node_pts( const NarrowTreePtsNode & node )
+{
+	nodes_pts_.ptrw()[ node.absIndex ] = node;
 }
 
 

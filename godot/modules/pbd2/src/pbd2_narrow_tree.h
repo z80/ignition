@@ -4,7 +4,8 @@
 
 #include "data_types.h"
 #include "se3.h"
-#include "pbd2_narrow_tree_node.h"
+#include "pbd2_narrow_tree_sdf_node.h"
+#include "pbd2_narrow_tree_pts_node.h"
 
 #include "scene/3d/mesh_instance.h"
 
@@ -29,28 +30,42 @@ public:
 	void clear();
 	void append( const Transform & t, const Ref<Mesh> & mesh );
 	void append_triangle( const Vector3d & a, const Vector3d & b, const Vector3d & c );
+	// "subdivide" should be called.
 	void subdivide();
+	// These two are used by the upper one.
+	// These shouldn't be used individually.
+	void subdivide_sdf();
+	void subdivide_pts();
 
 	void apply( const SE3 & se3 );
 
     bool intersects( NarrowTree * tree );
 	// Internally called for recursion.
-	bool node_intersects( NarrowTreeNode & n, NarrowTree & tree );
+	bool node_intersects( NarrowTreeSdfNode & n, NarrowTree & tree );
 
 	// For visualization.
 	PoolVector<Vector3> lines_sdf_nodes();
     
         // These three for tree construction.
-	bool parent( const NarrowTreeNode & node, NarrowTreeNode * & parent );
-	int  insert_node( NarrowTreeNode & node );
-	void update_node( const NarrowTreeNode & node );
+	bool parent_sdf( const NarrowTreeSdfNode & node, NarrowTreeSdfNode * & parent );
+	bool parent_pts( const NarrowTreePtsNode & node, NarrowTreePtsNode * & parent );
+	int  insert_node_sdf( NarrowTreeSdfNode & node );
+	int  insert_node_pts( NarrowTreePtsNode & node );
+	void update_node_pts( const NarrowTreePtsNode & node );
 
-	SE3                    se3_;
-	Vector<NarrowTreeNode> nodes_sdf_;
-	Vector<Face>           faces_;
+	SE3                       se3_;
+	Vector<NarrowTreeSdfNode> nodes_sdf_;
+	Vector<NarrowTreePtsNode> nodes_pts_;
+	Vector<Face>              faces_;
+	Vector<Vector3d>          pts_;
 
+	// Unconditionally subdivide to this level.
+	int   min_depth_;
+	// Subdivide SDF node if it's error is bigger than this.
+	Float max_sdf_error_;
+	// Unconditionally stop subdividing if level has reached this value.
 	// Maximum subdivision level.
-	int   max_depth_;
+	int max_depth_;
 };
 
 

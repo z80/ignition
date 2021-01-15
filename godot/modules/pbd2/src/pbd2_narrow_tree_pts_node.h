@@ -1,6 +1,6 @@
 
-#ifndef __PBD_NARROW_TREE_NODE_H_
-#define __PBD_NARROW_TREE_NODE_H_
+#ifndef __PBD_NARROW_TREE_PTS_NODE_H_
+#define __PBD_NARROW_TREE_PTS_NODE_H_
 
 #include "data_types.h"
 #include "se3.h"
@@ -12,13 +12,13 @@ namespace Pbd
 
 class NarrowTree;
 
-class NarrowTreeNode
+class NarrowTreePtsNode
 {
 public:
-	NarrowTreeNode();
-	~NarrowTreeNode();
-	NarrowTreeNode( const NarrowTreeNode & inst );
-	const NarrowTreeNode & operator=( const NarrowTreeNode & inst );
+	NarrowTreePtsNode();
+	~NarrowTreePtsNode();
+	NarrowTreePtsNode( const NarrowTreePtsNode & inst );
+	const NarrowTreePtsNode & operator=( const NarrowTreePtsNode & inst );
 
     void apply( const SE3 & se3 );
 
@@ -30,16 +30,16 @@ public:
 	bool inside( const Face & face ) const;
     // This is for recursive collision detection.
     // Will need to extend it with "optimal" box later.
-	bool inside( NarrowTreeNode & n );
+	bool inside( NarrowTreePtsNode & n );
 
 
 	// Initialize vertices and planes.
 	void init();
 
 
-    bool collide_forward( NarrowTreeNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths );
-    bool collide_backward( NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths );
-    bool collide_faces( NarrowTreeNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths );
+    bool collide_forward( NarrowTreePtsNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths );
+    bool collide_backward( NarrowTreePtsNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths );
+    bool collide_faces( NarrowTreePtsNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths );
 
     // Compute "se3_optimized_" and "cube_optimized_".
     bool compute_cube_optimized();
