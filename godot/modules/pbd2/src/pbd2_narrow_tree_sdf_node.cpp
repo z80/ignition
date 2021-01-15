@@ -22,6 +22,7 @@ NarrowTreeSdfNode::NarrowTreeSdfNode()
     for ( int i=0; i<8; i++ )
         children[i] = -1;
 
+	on_or_below_surface = false;
     size2 = 1.0;
     center = Vector3( 0.0, 0.0, 0.0 );
 
@@ -47,7 +48,6 @@ const NarrowTreeSdfNode & NarrowTreeSdfNode::operator=( const NarrowTreeSdfNode 
         parentAbsIndex = inst.parentAbsIndex;
         indexInParent = inst.indexInParent;
         level = inst.level;
-        value = inst.value;
         absIndex = inst.absIndex;
 
         children[0] = inst.children[0];
@@ -59,12 +59,11 @@ const NarrowTreeSdfNode & NarrowTreeSdfNode::operator=( const NarrowTreeSdfNode 
         children[6] = inst.children[6];
         children[7] = inst.children[7];
 
+		on_or_below_surface = inst.on_or_below_surface;
         size2 = inst.size2;
         center = inst.center;
         
         cube_ = inst.cube_;
-        se3_optimized_  = inst.se3_optimized_;
-        cube_optimized_ = inst.cube_optimized_;
 
 		d000 = inst.d000;
 		d100 = inst.d100;
@@ -82,26 +81,6 @@ const NarrowTreeSdfNode & NarrowTreeSdfNode::operator=( const NarrowTreeSdfNode 
 }
 
 
-void NarrowTreeSdfNode::apply( const SE3 & se3 )
-{
-    cube_.apply( se3 );
-	// Applying to "cube_optimized_" and individual faces only when colliding individual faces.
-	//if ( value > 0 )
- //   {
-        //cube_optimized_.apply( se3 * se3_optimized_ );
-
-        //const int qty = ptInds.size();
-        //for ( int i=0; i<qty; i++ )
-        //{
-        //    const int ind = ptInds.ptr()[i];
-        //    Face & face = tree->faces_.ptrw()[ind];
-        //    face.apply( se3 );
-        //}
-    //}
-}
-
-
-
 bool NarrowTreeSdfNode::hasChildren() const
 {
     for ( int i=0; i<8; i++ )
@@ -117,6 +96,9 @@ bool NarrowTreeSdfNode::subdivide()
 {
 	// Self initialize distances.
 	init_distances();
+	// This one is needed only for leaf nodes,
+	// but just to not keep value uninitialized.
+	compute_on_or_below_surface();
 
 	//If has reached max depth, stop right here.
     if ( level >= tree->max_depth_ )
@@ -139,8 +121,16 @@ bool NarrowTreeSdfNode::subdivide()
 	// If didn't reach minimum level, subdivide unconditionally.
 	// If reached minimum level, subdivide if distance error is
 	// bigger than the threshold specified.
-	if ( this->level < tree->min_depth_ )
+	// Also, if it doesn't contain surface, there is really no need
+	// to subdivide anyway.
+	if ( this->level >= tree->min_depth_ )
 	{
+		// If it doesn't contain surface, nobody cares if it
+		// isn't precise enough.
+		const bool is_surface_node = contains_surface();
+		if ( !is_surface_node )
+			return false;
+
 		// Check for depth error.
 		const Float err = depth_error( mid_pts, mid_depths );
 		if ( err < tree->max_sdf_error_ )
@@ -225,37 +215,6 @@ bool NarrowTreeSdfNode::subdivide()
     return true;
 }
 
-
-bool NarrowTreeSdfNode::inside( const Face & face ) const
-{
-    const bool intersects = cube_.intersects( face );
-    return intersects;
-}
-
-bool NarrowTreeSdfNode::inside( NarrowTreeSdfNode & n )
-{
-	this->apply( tree->se3_ );
-	n.apply( n.tree->se3_ );
-
-    const bool intersects = cube_.intersects( n.cube_ );
-    if ( !intersects )
-        return false;
-    const bool has_ch = n.hasChildren();
-    if ( !has_ch )
-        return true;
-
-    for ( int i=0; i<8; i++ )
-    {
-        const int ind = n.children[i];
-        NarrowTreeSdfNode & ch_n = tree->nodes_sdf_.ptrw()[ind];
-        const bool ch_intersects = inside( ch_n );
-        if ( ch_intersects )
-            return true;
-    }
-
-    return false;
-}
-
 void NarrowTreeSdfNode::init()
 {
     cube_.init( center, size2, size2, size2 );
@@ -268,19 +227,27 @@ void NarrowTreeSdfNode::init()
 
 
 
-bool NarrowTreeSdfNode::collide_forward( NarrowTreeSdfNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths )
+bool NarrowTreeSdfNode::collide_forward( const SE3 & se3_rel, const NarrowTreePtsNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
 {
 	// Apply transforms.
-	this->apply( this->tree->se3_ );
-	n.apply( n.tree->se3_ );
+	Cube other_cube = n.cube_;
+	other_cube.apply( se3_rel );
 
-    const bool intersects = cube_.intersects( n.cube_ );
+    const bool intersects = cube_.intersects( other_cube );
     if ( !intersects )
         return false;
     const bool has_ch = n.hasChildren();
     if ( !has_ch )
     {
-        const bool ret = n.collide_backward( *this, pts, depths );
+		// Check if the node contains points.
+		const bool other_is_empty = n.ptInds.empty();
+		if ( other_is_empty )
+			return false;
+
+		// Now the other leaf node contains 3d points. Need to make sure that
+		// this node intersects a node in this SDF node which is on or below the surface.
+		const SE3 backward_rel_se3 = n.tree->se3_ / tree->se3;
+        const bool ret = n.collide_backward( backward_rel_se3, *this, pts, depths );
         return ret;
     }
 
@@ -288,96 +255,12 @@ bool NarrowTreeSdfNode::collide_forward( NarrowTreeSdfNode & n, Vector<Vector3d>
     for ( int i=0; i<8; i++ )
     {
         const int ind = n.children[i];
-        NarrowTreeSdfNode & child_node = tree->nodes_sdf_.ptrw()[ind];
-        const bool ch_intersects = collide_forward( child_node, pts, depths );
+        const NarrowTreePtsNode & child_node = tree->nodes_sdf_.ptrw()[ind];
+        const bool ch_intersects = collide_forward( se3_rel, child_node, pts, depths );
         children_intersect = children_intersect || ch_intersects;
     }
 
     return children_intersect;
-}
-
-bool NarrowTreeSdfNode::collide_backward( NarrowTreeSdfNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths )
-{
-	// Apply transforms.
-	// This one shouldn't be necessary as
-	// it has already been applied in "collide_forward()".
-	this->apply( this->tree->se3_ );
-	// And this one is necessary.
-	this_node.apply( this_node.tree->se3_ );
-
-    const bool intersects = cube_.intersects( this_node.cube_ );
-    if ( !intersects )
-        return false;
-    const bool has_ch = this_node.hasChildren();
-    if ( !has_ch )
-    {
-        // Colliding individual faces.
-        const bool ret = collide_faces( this_node, pts, depths );
-        return ret;
-    }
-
-    bool children_intersect = false;
-    for ( int i=0; i<8; i++ )
-    {
-        const int ind = this_node.children[i];
-        NarrowTreeSdfNode & child_node = tree->nodes_sdf_.ptrw()[ind];
-        const bool ch_intersects = collide_backward( child_node, pts, depths );
-        children_intersect = children_intersect || ch_intersects;
-    }
-
-    return children_intersect;
-
-    return true;
-}
-
-
-bool NarrowTreeSdfNode::collide_faces( NarrowTreeSdfNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths )
-{
-	NarrowTreeSdfNode & other_node = *this;
-
-	// First collide optimized bounding boxes.
-	this_node.cube_optimized_.apply( this_node.tree->se3_ * this_node.se3_optimized_ );
-	other_node.cube_optimized_.apply( other_node.tree->se3_ * other_node.se3_optimized_ );
-
-    const int own_qty   = this_node.ptInds.size();
-    const int other_qty = other_node.ptInds.size();
-    Vector3d face_pts[3];
-    Vector3d face_depths[3];
-    
-    bool ret = false;
-
-	// Apply to others.
-	for ( int j=0; j<other_qty; j++ )
-	{
-		const int other_ind = other_node.ptInds.ptr()[j];
-		Face & other_face = other_node.tree->faces_.ptrw()[other_ind];
-		other_face.apply( other_node.tree->se3_ );
-	}
-
-    for ( int i=0; i<own_qty; i++ )
-    {
-        const int this_ind = this_node.ptInds.ptr()[i];
-        Face & this_face = this_node.tree->faces_.ptrw()[this_ind];
-		// Apply transform to each face first.
-		this_face.apply( this_node.tree->se3_ );
-
-		// Transform has been already applied to other faces.
-        for ( int j=0; j<other_qty; j++ )
-        {
-            const int other_ind = other_node.ptInds.ptr()[j];
-            const Face & other_face = other_node.tree->faces_.ptr()[other_ind];
-            const int qty = this_face.intersects_all( other_face, face_pts, face_depths );
-            ret = ret || (qty > 0);
-            for ( int k=0; k<qty; k++ )
-            {
-                const Vector3d & pt    = face_pts[k];
-                const Vector3d & depth = face_depths[k];
-                pts.push_back( pt );
-                depths.push_back( depth );
-            }
-        }
-    }
-    return ret;
 }
 
 
@@ -444,15 +327,6 @@ void NarrowTreeSdfNode::init_distances()
 				break;
 			}
 		}
-	}
-	if ( !has_children )
-		return;
-
-	for ( int i=0; i<8; i++ )
-	{
-		const int ch_ind = children[i];
-		NarrowTreeSdfNode & n = tree->nodes_sdf_.ptrw()[ch_ind];
-		n.init_distances();
 	}
 }
 
@@ -714,6 +588,92 @@ bool NarrowTreeSdfNode::intersects_ray( const Vector3d & r1, const Vector3d & r2
 			return true;
 	}
 	return false;
+}
+
+bool NarrowTreeSdfNode::contains_surface() const
+{
+	int qty_under = 0;
+	int qty_over  = 0;
+
+	if ( d000 < 0.0 )
+		qty_under += 1;
+	else
+		qty_over += 1;
+
+	if ( d100 < 0.0 )
+		qty_under += 1;
+	else
+		qty_over += 1;
+
+	if ( d110 < 0.0 )
+		qty_under += 1;
+	else
+		qty_over += 1;
+
+	if ( d010 < 0.0 )
+		qty_under += 1;
+	else
+		qty_over += 1;
+
+
+
+
+	if ( d001 < 0.0 )
+		qty_under += 1;
+	else
+		qty_over += 1;
+
+	if ( d101 < 0.0 )
+		qty_under += 1;
+	else
+		qty_over += 1;
+
+	if ( d111 < 0.0 )
+		qty_under += 1;
+	else
+		qty_over += 1;
+
+	if ( d011 < 0.0 )
+		qty_under += 1;
+	else
+		qty_over += 1;
+
+	const bool ret = (qty_under > 0) && (qty_over > 0);
+	return ret;
+}
+
+void NarrowTreeSdfNode::compute_on_or_below_surface()
+{
+	int qty_under = 0;
+
+	if ( d000 < 0.0 )
+		qty_under += 1;
+
+	if ( d100 < 0.0 )
+		qty_under += 1;
+
+	if ( d110 < 0.0 )
+		qty_under += 1;
+
+	if ( d010 < 0.0 )
+		qty_under += 1;
+
+
+
+
+	if ( d001 < 0.0 )
+		qty_under += 1;
+
+	if ( d101 < 0.0 )
+		qty_under += 1;
+
+	if ( d111 < 0.0 )
+		qty_under += 1;
+
+	if ( d011 < 0.0 )
+		qty_under += 1;
+
+	on_or_below_surface = (qty_under > 0);
 }
 
 

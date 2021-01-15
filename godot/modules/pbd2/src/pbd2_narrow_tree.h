@@ -66,6 +66,8 @@ public:
 	// Unconditionally stop subdividing if level has reached this value.
 	// Maximum subdivision level.
 	int max_depth_;
+	// Min points in a node while keeping subdividing.
+	int min_pts_;
 };
 
 

@@ -46,7 +46,6 @@ const NarrowTreePtsNode & NarrowTreePtsNode::operator=( const NarrowTreePtsNode 
         parentAbsIndex = inst.parentAbsIndex;
         indexInParent = inst.indexInParent;
         level = inst.level;
-        value = inst.value;
         absIndex = inst.absIndex;
 
         children[0] = inst.children[0];
@@ -83,24 +82,6 @@ const NarrowTreePtsNode & NarrowTreePtsNode::operator=( const NarrowTreePtsNode 
 }
 
 
-void NarrowTreePtsNode::apply( const SE3 & se3 )
-{
-    cube_.apply( se3 );
-	// Applying to "cube_optimized_" and individual faces only when colliding individual faces.
-	//if ( value > 0 )
- //   {
-        //cube_optimized_.apply( se3 * se3_optimized_ );
-
-        //const int qty = ptInds.size();
-        //for ( int i=0; i<qty; i++ )
-        //{
-        //    const int ind = ptInds.ptr()[i];
-        //    Face & face = tree->faces_.ptrw()[ind];
-        //    face.apply( se3 );
-        //}
-    //}
-}
-
 
 
 bool NarrowTreePtsNode::hasChildren() const
@@ -120,14 +101,17 @@ bool NarrowTreePtsNode::hasChildren() const
 
 bool NarrowTreePtsNode::subdivide()
 {
-    // Subdrive means creating children.
-    // It means node itself turns into not filled one.
-
     if ( level >= tree->max_depth_ )
 	{
 		if ( !ptInds.empty() )
 			compute_cube_optimized();
         return false;
+	}
+	if ( ptInds.size() < tree->min_pts_ )
+	{
+		if ( !ptInds.empty() )
+			compute_cube_optimized();
+		return false;
 	}
     
     // It can't have children because subdivision is happening.
@@ -208,18 +192,16 @@ bool NarrowTreePtsNode::subdivide()
     for ( int j=0; j<8; j++ )
     {
         NarrowTreePtsNode & ch_n = nn[j];
-        ch_n.value = 0;
         for ( int i=0; i<qty; i++ )
         {
             const int ind = ptInds[i];
-            const Face & face = tree->faces_[ind];
+			const Vector3d & pt = tree->pts_[ind];
 
-            const bool inside = ch_n.inside( face );
+			const bool inside = ch_n.point_inside( pt );
             if ( inside )
             {
                 ch_n.ptInds.push_back( ind );
                 qtys[j] += 1;
-                ch_n.value += 1;
             }
         }
         // This is probably debug code as it duplicates stuff above.
@@ -228,14 +210,13 @@ bool NarrowTreePtsNode::subdivide()
            for ( int i=0; i<qty; i++ )
            {
                const int ind = ptInds[i];
-               const Face & face = tree->faces_[ind];
+               const Vector3d & pt = tree->pts_[ind];
 
-               const bool inside = ch_n.inside( face );
+               const bool inside = ch_n.point_inside( pt );
                if ( inside )
                {
                    ch_n.ptInds.push_back( ind );
                    qtys[j] += 1;
-                   ch_n.value += 1;
                }
            }
         }
@@ -243,7 +224,6 @@ bool NarrowTreePtsNode::subdivide()
 
     // Reset indices and value for a node with children.
     ptInds.clear();
-    value = 0;
 
     // Subdivide recursively.
     for ( int i=0; i<8; i++ )
@@ -258,37 +238,10 @@ bool NarrowTreePtsNode::subdivide()
 }
 
 
-bool NarrowTreePtsNode::inside( const Face & face ) const
+bool NarrowTreePtsNode::point_inside( const Vector3d & at ) const
 {
-    const bool intersects = cube_.intersects( face );
-    return intersects;
-}
-
-bool NarrowTreePtsNode::inside( NarrowTreePtsNode & n )
-{
-	this->apply( tree->se3_ );
-	n.apply( n.tree->se3_ );
-
-    const bool intersects = cube_.intersects( n.cube_ );
-    if ( !intersects )
-        return false;
-    const bool has_ch = n.hasChildren();
-    if ( !has_ch )
-    {
-        const bool is_filled = (n.value > 0);
-        return is_filled;
-    }
-
-    for ( int i=0; i<8; i++ )
-    {
-        const int ind = n.children[i];
-        NarrowTreePtsNode & ch_n = tree->nodes_pts_.ptrw()[ind];
-        const bool ch_intersects = inside( ch_n );
-        if ( ch_intersects )
-            return true;
-    }
-
-    return false;
+	const bool ret = cube_.contains( at );
+	return ret;
 }
 
 void NarrowTreePtsNode::init()
@@ -303,57 +256,31 @@ void NarrowTreePtsNode::init()
 
 
 
-bool NarrowTreePtsNode::collide_forward( NarrowTreePtsNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths )
+
+
+bool NarrowTreePtsNode::collide_backward( const SE3 & se3_rel, const NarrowTreeSdfNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
 {
 	// Apply transforms.
-	this->apply( this->tree->se3_ );
-	n.apply( n.tree->se3_ );
+	Cube this_cube = this_node.cube_;
+	this_cube.apply( se3_rel );
 
-    const bool intersects = cube_.intersects( n.cube_ );
+    const bool intersects = cube_.intersects( this_cube );
     if ( !intersects )
         return false;
-    const bool has_ch = n.hasChildren();
-    if ( !has_ch )
-    {
-        const bool is_filled = (n.value > 0);
-        if ( !is_filled )
-            return false;
-        const bool ret = n.collide_backward( *this, pts, depths );
-        return ret;
-    }
 
-    bool children_intersect = false;
-    for ( int i=0; i<8; i++ )
-    {
-        const int ind = n.children[i];
-        NarrowTreePtsNode & child_node = tree->nodes_sdf_.ptrw()[ind];
-        const bool ch_intersects = collide_forward( child_node, pts, depths );
-        children_intersect = children_intersect || ch_intersects;
-    }
-
-    return children_intersect;
-}
-
-bool NarrowTreePtsNode::collide_backward( NarrowTreePtsNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths )
-{
-	// Apply transforms.
-	// This one shouldn't be necessary as
-	// it has already been applied in "collide_forward()".
-	this->apply( this->tree->se3_ );
-	// And this one is necessary.
-	this_node.apply( this_node.tree->se3_ );
-
-    const bool intersects = cube_.intersects( this_node.cube_ );
-    if ( !intersects )
-        return false;
     const bool has_ch = this_node.hasChildren();
     if ( !has_ch )
     {
-        const bool is_filled = (this_node.value > 0);
-        if ( !is_filled )
+        const bool is_on_or_bleow_surf = this_node.on_or_below_surface;
+        if ( !is_on_or_bleow_surf )
             return false;
+
+		// Last thing is check optimized cube.
+		const bool intersects_optimized = cube_optimized_.intersects( this_cube );
+		if ( !intersects_optimized )
+			return false;
         // Colliding individual faces.
-        const bool ret = collide_faces( this_node, pts, depths );
+        const bool ret = collide_points( this_node, pts, depths );
         return ret;
     }
 
@@ -361,64 +288,42 @@ bool NarrowTreePtsNode::collide_backward( NarrowTreePtsNode & this_node, Vector<
     for ( int i=0; i<8; i++ )
     {
         const int ind = this_node.children[i];
-        NarrowTreePtsNode & child_node = tree->nodes_sdf_.ptrw()[ind];
+        const NarrowTreeSdfNode & child_node = tree->nodes_sdf_.ptrw()[ind];
         const bool ch_intersects = collide_backward( child_node, pts, depths );
         children_intersect = children_intersect || ch_intersects;
     }
 
     return children_intersect;
-
-    return true;
 }
 
 
-bool NarrowTreePtsNode::collide_faces( NarrowTreePtsNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths )
+bool NarrowTreePtsNode::collide_points( const NarrowTreeSdfNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
 {
-	NarrowTreePtsNode & other_node = *this;
-
-	// First collide optimized bounding boxes.
-	this_node.cube_optimized_.apply( this_node.tree->se3_ * this_node.se3_optimized_ );
-	other_node.cube_optimized_.apply( other_node.tree->se3_ * other_node.se3_optimized_ );
-
-    const int own_qty   = this_node.ptInds.size();
-    const int other_qty = other_node.ptInds.size();
-    Vector3d face_pts[3];
-    Vector3d face_depths[3];
-    
-    bool ret = false;
-
-	// Apply to others.
-	for ( int j=0; j<other_qty; j++ )
+	bool ret = false;
+	const SE3 se3_rel = tree->se3_ / this_node.tree->se3_;
+	const int qty = ptInds.size();
+	for ( int i=0; i<qty; i++ )
 	{
-		const int other_ind = other_node.ptInds.ptr()[j];
-		Face & other_face = other_node.tree->faces_.ptrw()[other_ind];
-		other_face.apply( other_node.tree->se3_ );
+		const int ind = ptInds.ptr()[i];
+		const Vector3d & pt = tree->min_pts_.ptr()[ind];
+		const Vector3d pt_local = (se3.q_ * pt) + se3.r_;
+
+		Vector3d depth;
+		const Float d = this_node.distance_for_this_node( pt_local, depth );
+		if ( d < 0.0 )
+		{
+			// Convert to global ref. frame.
+			const Vector3d pt_global = ( this_node.tree->se3_.q_ * pt_local ) + this_node.tree->se3_.r_;
+			pts.push_back( pt_global );
+			// Convert to global ref. frame.
+			depth = this_node.tree->se3_.q_ * depth;
+			depths.push_back( depth );
+
+			ret = true;
+		}
 	}
 
-    for ( int i=0; i<own_qty; i++ )
-    {
-        const int this_ind = this_node.ptInds.ptr()[i];
-        Face & this_face = this_node.tree->faces_.ptrw()[this_ind];
-		// Apply transform to each face first.
-		this_face.apply( this_node.tree->se3_ );
-
-		// Transform has been already applied to other faces.
-        for ( int j=0; j<other_qty; j++ )
-        {
-            const int other_ind = other_node.ptInds.ptr()[j];
-            const Face & other_face = other_node.tree->faces_.ptr()[other_ind];
-            const int qty = this_face.intersects_all( other_face, face_pts, face_depths );
-            ret = ret || (qty > 0);
-            for ( int k=0; k<qty; k++ )
-            {
-                const Vector3d & pt    = face_pts[k];
-                const Vector3d & depth = face_depths[k];
-                pts.push_back( pt );
-                depths.push_back( depth );
-            }
-        }
-    }
-    return ret;
+	return ret;
 }
 
 
@@ -718,10 +623,8 @@ bool NarrowTreePtsNode::point_inside( const Vector3d & at ) const
 
 bool NarrowTreePtsNode::intersects_ray( const Vector3d & r1, const Vector3d & r2 ) const
 {
-	if ( value > 0 )
+	if ( !ptInds.empty() )
 	{
-		if ( ptInds.empty() )
-			return false;
 		// Check bounding boxes.
 		const bool ret = cube_.intersects( r1, r2 );
 		return ret;

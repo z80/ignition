@@ -20,26 +20,13 @@ public:
 	NarrowTreeSdfNode( const NarrowTreeSdfNode & inst );
 	const NarrowTreeSdfNode & operator=( const NarrowTreeSdfNode & inst );
 
-    void apply( const SE3 & se3 );
-
 	bool hasChildren() const;
 	bool subdivide();
-
-	// Queries.
-	// Intersection with a triangle. It is for initial fill up.
-	bool inside( const Face & face ) const;
-    // This is for recursive collision detection.
-    // Will need to extend it with "optimal" box later.
-	bool inside( NarrowTreeSdfNode & n );
-
-
 	// Initialize vertices and planes.
 	void init();
 
 
-    bool collide_forward( NarrowTreeSdfNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths );
-    bool collide_backward( NarrowTreeSdfNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths );
-    bool collide_faces( NarrowTreeSdfNode & this_node, Vector<Vector3d> & pts, Vector<Vector3d> & depths );
+    bool collide_forward( const SE3 & se3_rel, const NarrowTreePtsNode & n, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
 
 	NarrowTree * tree;
 	int absIndex;
@@ -51,7 +38,7 @@ public:
 	int children[8];
         
     // Value is number of triangles inside.
-	int      value;
+	bool     on_or_below_surface;
 	Float    size2; // Size over 2.
 	Vector3d center;
         
@@ -89,6 +76,9 @@ public:
 	// No transforms should be applied.
 	bool point_inside( const Vector3d & at ) const;
 	bool intersects_ray( const Vector3d & r1, const Vector3d & r2 ) const;
+
+	bool contains_surface() const;
+	void compute_on_or_below_surface();
 };
 
 }

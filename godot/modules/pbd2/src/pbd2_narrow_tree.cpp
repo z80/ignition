@@ -15,6 +15,7 @@ NarrowTree::NarrowTree()
 	max_sdf_error_ = 0.1;
 	min_depth_ = 1;
     max_depth_ = 3;
+	min_pts_   = 10;
 }
 
 NarrowTree::~NarrowTree()
