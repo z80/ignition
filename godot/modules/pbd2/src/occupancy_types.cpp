@@ -160,6 +160,36 @@ Float Face::distance( const Vector3d & r, Vector3d & displacement ) const
 
 	Float min_d = -1.0;
 	Vector3d min_v;
+
+	// Project onto 3 edges and see if line parameter "t" is within [0,1].
+	bool hits_edge = false;
+	for ( int i=0; i<3; i++ )
+	{
+		const int ind1 = i;
+		const int ind2 = (i+1) % 3;
+		const Vector3d & a1 = verts[ind1];
+		const Vector3d & a2 = verts[ind2];
+		const Vector3d a = a2 - a1;
+		const Float t = (r - a1).DotProduct( a ) / a.LengthSquared();
+		if ( ( t >= 0.0 ) && ( t <= 1.0 ) )
+		{
+			const Vector3d at = a1 + a*t;
+			const Float d = at.Length();
+			if ( (!hits_edge) || (min_d > d) )
+			{
+				min_d = d;
+				min_v = at - r;
+			}
+			hits_edge = true;
+		}
+	}
+	if ( hits_edge )
+	{
+		displacement = min_v;
+		return min_d;
+	}
+
+	// Didn't hit edge. Pick the closest vertex.
 	for ( int i=0; i<3; i++ )
 	{
 		const Vector3d & v = verts[i];
