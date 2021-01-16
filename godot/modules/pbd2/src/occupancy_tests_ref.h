@@ -72,6 +72,7 @@ public:
 	void tree_set_level( int level );
 	void tree_subdivide();
 	Array tree_depth( const Vector3 & at );
+	Vector3 tree_probe_depth( const Vector3 & at );
 
 	PoolVector3Array lines_sdf_nodes() const;
 	PoolVector3Array lines_surface_pts() const;

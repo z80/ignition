@@ -39,6 +39,7 @@ void OccupancyTestsRef::_bind_methods()
 	ClassDB::bind_method( D_METHOD( "tree_set_level", "level" ), &OccupancyTestsRef::tree_set_level );
 	ClassDB::bind_method( D_METHOD( "tree_subdivide" ), &OccupancyTestsRef::tree_subdivide );
 	ClassDB::bind_method( D_METHOD( "tree_depth", "at" ), &OccupancyTestsRef::tree_depth, Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD( "tree_probe_depth", "at" ), &OccupancyTestsRef::tree_probe_depth, Variant::VECTOR3 );
 
 	ClassDB::bind_method( D_METHOD( "lines_sdf_nodes" ),     &OccupancyTestsRef::lines_sdf_nodes,     Variant::POOL_VECTOR3_ARRAY );
 	ClassDB::bind_method( D_METHOD( "lines_surface_pts" ),   &OccupancyTestsRef::lines_surface_pts,   Variant::POOL_VECTOR3_ARRAY );
@@ -243,6 +244,16 @@ Array OccupancyTestsRef::tree_depth( const Vector3 & at )
 
 	return ret;
 }
+
+Vector3 OccupancyTestsRef::tree_probe_depth( const Vector3 & at )
+{
+	const NarrowTreeSdfNode & n = tree_.nodes_sdf_.ptr()[0];
+	Vector3d depth;
+	const Float d = n.probe_distance( at, depth );
+	Vector3 ret( depth.x_, depth.y_, depth.z_ );
+	return ret;
+}
+
 
 PoolVector3Array OccupancyTestsRef::lines_sdf_nodes() const
 {
