@@ -13,8 +13,8 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 NarrowTree::NarrowTree()
 {
 	max_sdf_error_ = 0.1;
-	min_depth_ = 1;
-    max_depth_ = 2;
+	min_depth_ = 2;
+    max_depth_ = 5;
 	min_pts_   = 10;
 }
 
@@ -58,6 +58,7 @@ void NarrowTree::append_triangle( const Vector3d & a, const Vector3d & b, const 
 void NarrowTree::subdivide()
 {
 	subdivide_sdf();
+	remove_pt_duplicates();
 	subdivide_pts();
 }
 
@@ -147,17 +148,55 @@ void NarrowTree::subdivide_sdf()
     update_node_sdf( root );
 }
 
+void NarrowTree::remove_pt_duplicates()
+{
+	const int qty = pts_.size();
+	int removed_qty = 0;
+	for ( int i=0; i<(qty-1); i++ )
+	{
+		bool removed = true;
+		while ( removed )
+		{
+			removed = false;
+			const Vector3d pt_a = pts_.ptr()[i];
+			const int valid_qty = (qty - removed_qty);
+			for ( int j=(i+1); j<valid_qty; j++ )
+			{
+				const Vector3d pt_b = pts_.ptr()[j];
+				const Vector3d diff = pt_b - pt_a;
+				const Float d = diff.Length();
+				// Swap with the last element.
+				if ( d < 0.001 )
+				{
+					int last_ind = qty - removed_qty - 1;
+					const Vector3d last_pt = pts_.ptr()[last_ind];
+					pts_.ptrw()[last_ind] = pt_b;
+					pts_.ptrw()[j] = last_pt;
+					removed_qty += 1;
+
+					removed = true;
+				}
+			}
+		}
+	}
+
+	pts_.resize( qty - removed_qty );
+}
+
 void NarrowTree::subdivide_pts()
 {
 	nodes_pts_.clear();
 	NarrowTreePtsNode root;
 	const NarrowTreeSdfNode & sdf_root = nodes_sdf_.ptr()[0];
+	root.level = 0;
+	root.tree = this;
 	root.center = sdf_root.center;
 	root.size2 = sdf_root.size2;
+	root.init();
 
 	root.ptInds.clear();
 	const int pts_qty = pts_.size();
-		for ( int i=0; i<pts_qty; i++ )
+	for ( int i=0; i<pts_qty; i++ )
 		root.ptInds.push_back( i );
 
     insert_node_pts( root );
@@ -453,6 +492,8 @@ int  NarrowTree::insert_node_sdf( NarrowTreeSdfNode & node )
     NarrowTreeSdfNode & n = nns[ind];
     n.tree     = this;
     n.absIndex = ind;
+
+	node = n;
     return ind;
 }
 
@@ -464,6 +505,8 @@ int  NarrowTree::insert_node_pts( NarrowTreePtsNode & node )
 	NarrowTreePtsNode & n = nns[ind];
 	n.tree     = this;
 	n.absIndex = ind;
+
+	node = n;
 	return ind;
 }
 

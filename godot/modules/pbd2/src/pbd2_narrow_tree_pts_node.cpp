@@ -218,8 +218,7 @@ bool NarrowTreePtsNode::subdivide()
     for ( int i=0; i<8; i++ )
     {
         NarrowTreePtsNode & ch_n = nn[i];
-        if ( ( qtys[i] > 0 ) && ( childLevel < tree->max_depth_ ) )
-            ch_n.subdivide();
+        ch_n.subdivide();
         tree->update_node_pts( ch_n );
     }
 
@@ -321,20 +320,18 @@ static bool compute_mean_and_std( NarrowTreePtsNode & node, Vector3d & std_diag,
 
 bool NarrowTreePtsNode::compute_cube_optimized()
 {
-	Vector3d std_diag;
-	Vector3d std_off_diag;
-	const bool std_ok = compute_mean_and_std( *this, std_diag, std_off_diag );
-	if ( !std_ok )
-		return false;
 
 	Quaterniond Q;
 	const int qty = ptInds.size();
 	if ( qty > 1 )
 	{
-		std::array<Float, 3> eval                = { 0.0, 0.0, 0.0 };
-		std::array<std::array<Float, 3>, 3> evec; //= { {0.0, 0.0, 0.0},
-												  //   {0.0, 0.0, 0.0},
-												  //   {0.0, 0.0, 0.0} };
+		Vector3d std_diag;
+		Vector3d std_off_diag;
+		const bool std_ok = compute_mean_and_std( *this, std_diag, std_off_diag );
+		if ( !std_ok )
+			return false;
+		std::array<Float, 3> eval;
+		std::array<std::array<Float, 3>, 3> evec;
 		gte::SymmetricEigensolver3x3<Float> solver;
 		const int ret = solver( std_diag.x_, std_off_diag.x_, std_off_diag.y_, std_diag.y_, std_off_diag.z_, std_diag.z_,
 								false, -1, eval, evec );
@@ -342,17 +339,17 @@ bool NarrowTreePtsNode::compute_cube_optimized()
 			return false;
 
 		Matrix3d A;
-		A.m00_ = std_diag.x_;
-		A.m11_ = std_diag.y_;
-		A.m22_ = std_diag.z_;
+		A.m00_ = evec[0][0];
+		A.m11_ = evec[1][1];
+		A.m22_ = evec[2][2];
 
-		A.m01_ = std_off_diag.x_;
-		A.m02_ = std_off_diag.y_;
-		A.m12_ = std_off_diag.z_;
+		A.m01_ = evec[0][1];
+		A.m02_ = evec[0][2];
+		A.m12_ = evec[1][2];
 
-		A.m10_ = std_off_diag.x_;
-		A.m20_ = std_off_diag.y_;
-		A.m21_ = std_off_diag.z_;
+		A.m10_ = evec[1][0];
+		A.m20_ = evec[2][0];
+		A.m21_ = evec[2][1];
 
 		Q.FromRotationMatrix( A );
 		Q.Normalize();
@@ -368,41 +365,37 @@ bool NarrowTreePtsNode::compute_cube_optimized()
 
 	// Initialize with the very first point.
 	{
-		const int ind0 = ptInds.ptr()[0];
-		const Face & f0 = tree->faces_.ptr()[ind0];
-		const Vector3d v0 = f0.verts_0[0];
-		x_min = x_max = ex.DotProduct( v0 );
-		y_min = y_max = ey.DotProduct( v0 );
-		z_min = z_max = ez.DotProduct( v0 );
+		const int ind = ptInds.ptr()[0];
+		const Vector3d v = tree->pts_.ptr()[ind] - cube_.center_0;
+		x_min = x_max = ex.DotProduct( v );
+		y_min = y_max = ey.DotProduct( v );
+		z_min = z_max = ez.DotProduct( v );
 	}
 
 	for ( int i=0; i<qty; i++ )
 	{
 		const int ind = ptInds.ptr()[i];
-		const Face & f = tree->faces_.ptr()[ind];
-		for ( int j=0; j<3; j++ )
-		{
-			const Vector3d v = f.verts_0[j] - cube_.center_0;
-			const Float x = v.DotProduct( ex );
-			const Float y = v.DotProduct( ey );
-			const Float z = v.DotProduct( ez );
-			if ( x < x_min )
-				x_min = x;
-			if ( x > x_max )
-				x_max = x;
-			if ( y < y_min )
-				y_min = y;
-			if ( y > y_max )
-				y_max = y;
-			if ( z < z_min )
-				z_min = z;
-			if ( z > z_max )
-				z_max = z;
-		}
+		const Vector3d v = tree->pts_.ptr()[ind] - cube_.center_0;
+		const Float x = v.DotProduct( ex );
+		const Float y = v.DotProduct( ey );
+		const Float z = v.DotProduct( ez );
+		if ( x < x_min )
+			x_min = x;
+		if ( x > x_max )
+			x_max = x;
+		if ( y < y_min )
+			y_min = y;
+		if ( y > y_max )
+			y_max = y;
+		if ( z < z_min )
+			z_min = z;
+		if ( z > z_max )
+			z_max = z;
 	}
 
-	Vector3d r_adj( (x_min+x_max)/2.0, (y_min+y_max)/2.0, (z_min+z_max)/2.0 );
-	r_adj += cube_.center_0;
+	Vector3d center( (x_min+x_max)/2.0, (y_min+y_max)/2.0, (z_min+z_max)/2.0 );
+	center += cube_.center_0;
+
 	Float szx2 = (x_max - x_min)/2.0;
 	if ( szx2 < EPS )
 		szx2 = EPS;
@@ -413,9 +406,8 @@ bool NarrowTreePtsNode::compute_cube_optimized()
 	if ( szz2 < EPS )
 		szz2 = EPS;
 
-	cube_optimized_.init( cube_.center_0, szx2, szy2, szz2 );
+	cube_optimized_.init( center, szx2, szy2, szz2 );
 	SE3 se3;
-	se3.r_ = r_adj;
 	se3.q_ = Q;
 	cube_optimized_.apply( se3 );
 
@@ -439,12 +431,8 @@ static bool compute_mean_and_std( NarrowTreePtsNode & node, Vector3d & std_diag,
 	for ( int i=0; i<qty; i++ )
 	{
 		const int ind = node.ptInds.ptr()[i];
-		const Face & f = node.tree->faces_.ptr()[ind];
-		for ( int j=0; j<3; j++ )
-		{
-			const Vector3d & v = f.verts_0[j];
-			m += v;
-		}
+		const Vector3d v = node.tree->pts_.ptr()[ind];
+		m += v;
 	}
 	const Float inv_qty = 1.0 / static_cast<Float>(qty);
 	m *= inv_qty;
@@ -462,17 +450,14 @@ static bool compute_mean_and_std( NarrowTreePtsNode & node, Vector3d & std_diag,
 	for ( int i=0; i<qty; i++ )
 	{
 		const int ind = node.ptInds.ptr()[i];
-		const Face & f = node.tree->faces_.ptr()[ind];
-		for ( int j=0; j<3; j++ )
-		{
-			const Vector3d v = f.verts_0[j] - m;
-			std.m00_ += v.x_*v.x_;
-			std.m11_ += v.y_*v.y_;
-			std.m22_ += v.z_*v.z_;
-			std.m01_ += v.x_*v.y_;
-			std.m02_ += v.x_*v.z_;
-			std.m12_ += v.y_*v.z_;
-		}
+		const Vector3d & vd = node.tree->pts_.ptr()[ind];
+		const Vector3d v = vd - m;
+		std.m00_ += v.x_*v.x_;
+		std.m11_ += v.y_*v.y_;
+		std.m22_ += v.z_*v.z_;
+		std.m01_ += v.x_*v.y_;
+		std.m02_ += v.x_*v.z_;
+		std.m12_ += v.y_*v.z_;
 	}
 	std.m00_ *= inv_qty;
 	std.m11_ *= inv_qty;
@@ -480,13 +465,6 @@ static bool compute_mean_and_std( NarrowTreePtsNode & node, Vector3d & std_diag,
 	std.m01_ *= inv_qty;
 	std.m02_ *= inv_qty;
 	std.m12_ *= inv_qty;
-
-	std.m00_ = std::sqrt( std.m00_ );
-	std.m11_ = std::sqrt( std.m11_ );
-	std.m22_ = std::sqrt( std.m22_ );
-	std.m01_ = std::sqrt( std.m01_ );
-	std.m02_ = std::sqrt( std.m02_ );
-	std.m12_ = std::sqrt( std.m12_ );
 
 	std_diag.x_ = std.m00_;
 	std_diag.y_ = std.m11_;

@@ -35,6 +35,7 @@ public:
 	// These two are used by the upper one.
 	// These shouldn't be used individually.
 	void subdivide_sdf();
+	void remove_pt_duplicates();
 	void subdivide_pts();
 
 	void apply( const SE3 & se3 );
