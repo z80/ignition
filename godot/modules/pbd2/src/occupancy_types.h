@@ -77,7 +77,7 @@ struct Cube
     Plane       planes[6];
 
     void init( const Vector3d & c, Float x2, Float y2, Float z2 );
-    void apply( const SE3 & se3 );
+    void apply( const SE3 & se3, bool only_axes=false );
     void init_verts_and_planes();
     // Intersects line
     bool intersects( const Vector3d & a, const Vector3d & b ) const;

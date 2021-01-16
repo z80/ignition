@@ -12,7 +12,7 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 
 NarrowTree::NarrowTree()
 {
-	max_sdf_error_ = 0.1;
+	max_sdf_error_ = 0.5;
 	min_depth_ = 2;
     max_depth_ = 5;
 	min_pts_   = 10;

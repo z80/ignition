@@ -320,7 +320,6 @@ static bool compute_mean_and_std( NarrowTreePtsNode & node, Vector3d & std_diag,
 
 bool NarrowTreePtsNode::compute_cube_optimized()
 {
-
 	Quaterniond Q;
 	const int qty = ptInds.size();
 	if ( qty > 1 )
@@ -375,7 +374,7 @@ bool NarrowTreePtsNode::compute_cube_optimized()
 	for ( int i=0; i<qty; i++ )
 	{
 		const int ind = ptInds.ptr()[i];
-		const Vector3d v = tree->pts_.ptr()[ind] - cube_.center_0;
+		const Vector3d v = tree->pts_.ptr()[ind] - cube_.center;
 		const Float x = v.DotProduct( ex );
 		const Float y = v.DotProduct( ey );
 		const Float z = v.DotProduct( ez );
@@ -393,8 +392,8 @@ bool NarrowTreePtsNode::compute_cube_optimized()
 			z_max = z;
 	}
 
-	Vector3d center( (x_min+x_max)/2.0, (y_min+y_max)/2.0, (z_min+z_max)/2.0 );
-	center += cube_.center_0;
+	const Vector3d c( (x_min+x_max)/2.0, (y_min+y_max)/2.0, (z_min+z_max)/2.0 );
+	const Vector3d center = cube_.center + ex*c.x_ + ey*c.y_ + ez*c.z_;
 
 	Float szx2 = (x_max - x_min)/2.0;
 	if ( szx2 < EPS )
@@ -409,7 +408,7 @@ bool NarrowTreePtsNode::compute_cube_optimized()
 	cube_optimized_.init( center, szx2, szy2, szz2 );
 	SE3 se3;
 	se3.q_ = Q;
-	cube_optimized_.apply( se3 );
+	cube_optimized_.apply( se3, true );
 
 	return false;
 }

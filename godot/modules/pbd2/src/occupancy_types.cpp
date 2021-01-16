@@ -174,11 +174,12 @@ Float Face::distance( const Vector3d & r, Vector3d & displacement ) const
 		if ( ( t >= 0.0 ) && ( t <= 1.0 ) )
 		{
 			const Vector3d at = a1 + a*t;
-			const Float d = at.Length();
+			const Vector3d dr = at - r;
+			const Float d = dr.Length();
 			if ( (!hits_edge) || (min_d > d) )
 			{
 				min_d = d;
-				min_v = at - r;
+				min_v = dr;
 			}
 			hits_edge = true;
 		}
@@ -194,7 +195,7 @@ Float Face::distance( const Vector3d & r, Vector3d & displacement ) const
 	{
 		const Vector3d & v = verts[i];
 		const Vector3d dr = v - r;
-		const Float d2 = dr.LengthSquared();
+		const Float d2 = dr.Length();
 		if ( (min_d < 0.0) || (d2 < min_d) )
 		{
 			min_d = d2;
@@ -202,7 +203,7 @@ Float Face::distance( const Vector3d & r, Vector3d & displacement ) const
 		}
 	}
 	displacement = min_v;
-	const Float d = std::sqrt( min_d );
+	const Float d = min_d;
 	return d;
 }
 
@@ -940,9 +941,10 @@ void Cube::init( const Vector3d & c, Float x2, Float y2, Float z2 )
 }
 
 
-void Cube::apply( const SE3 & se3 )
+void Cube::apply( const SE3 & se3, bool only_axes )
 {
-    center = se3.r_ + se3.q_ * center_0;
+	if ( !only_axes )
+		center = se3.r_ + se3.q_ * center_0;
     ex = Vector3d( 1.0, 0.0, 0.0 );
     ey = Vector3d( 0.0, 1.0, 0.0 );
     ez = Vector3d( 0.0, 0.0, 1.0 );
