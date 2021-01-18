@@ -244,7 +244,7 @@ bool NarrowTreeSdfNode::collide_forward( const SE3 & se3_rel, const NarrowTreePt
 
 		// Now the other leaf node contains 3d points. Need to make sure that
 		// this node intersects a node in this SDF node which is on or below the surface.
-		const SE3 backward_rel_se3 = n->tree->se3_ / tree->se3_;
+		const SE3 backward_rel_se3 = tree->se3_ / n->tree->se3_;
         const bool ret = n->collide_backward( backward_rel_se3, this, pts, depths );
         return ret;
     }
@@ -414,12 +414,11 @@ void NarrowTreeSdfNode::generate_surface_points()
 	pts[1] = (vs[1] + vs[7]*2.0)/3.0;
 	pts[2] = (vs[2] + vs[4]*2.0)/3.0;
 	pts[3] = (vs[3] + vs[5]*2.0)/3.0;
-
+	
 	pts[4] = (vs[0]*2.0 + vs[6])/3.0;
 	pts[5] = (vs[1]*2.0 + vs[7])/3.0;
 	pts[6] = (vs[2]*2.0 + vs[4])/3.0;
 	pts[7] = (vs[3]*2.0 + vs[5])/3.0;
-
 	for ( int i=0; i<8; i++ )
 	{
 		Vector3d adj;
@@ -528,22 +527,33 @@ Float NarrowTreeSdfNode::distance_for_this_node( const Vector3d & r, Vector3d & 
 
 bool NarrowTreeSdfNode::point_inside_mesh( const Vector3d & r ) const
 {
+	static const int QTY = 3;
+	static const Vector3d dirs[] = { Vector3d(1.0, 0.0, 0.0), Vector3d(0.0, 1.0, 0.0), Vector3d(0.0, 0.0, 1.0) };
 	const NarrowTreeSdfNode & n0 = tree->nodes_sdf_.ptr()[0];
 	const Float max_d = 4.0 * n0.size2;
-	const Vector3d r2 = r + Vector3d( max_d, 0.0, 0.0 );
 
-	const int faces_qty = tree->faces_.size();
-	int intersections_qty = 0;
-	for ( int i=0; i<faces_qty; i++ )
+	for ( int k=0; k<QTY; k++ )
 	{
-		const Face & tri = tree->faces_.ptr()[i];
-		Vector3d at;
-		const bool intersects = tri.intersects( r, r2, at );
-		if ( intersects )
-			intersections_qty += 1;
+		const Vector3d r2 = r + dirs[k]*max_d;
+
+		const int faces_qty = tree->faces_.size();
+		int intersections_qty = 0;
+		for ( int i=0; i<3; i++ )
+		{
+			const Face & tri = tree->faces_.ptr()[i];
+			Vector3d at;
+			bool concerning;
+			const bool intersects = tri.intersects_eps( r, r2, EPS, at, concerning );
+			if ( concerning && (i<QTY) )
+				continue;
+			if ( intersects )
+				intersections_qty += 1;
+		}
+		const bool inside = ( (intersections_qty & 1) != 0 );
+		return inside;
 	}
-	const bool inside = ( (intersections_qty & 1) != 0 );
-	return inside;
+
+	return false;
 }
 
 bool NarrowTreeSdfNode::point_inside( const Vector3d & at ) const

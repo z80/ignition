@@ -49,7 +49,8 @@ struct Face
 	// And if intersects steps further "eps" along "a" and returns the next point.
 	bool intersects_ray( const Vector3d & r0, const Vector3d & a, Float max_dist, Vector3d & next_r, Float eps=0.0001 );
     bool intersects( const Vector3d & r1, const Vector3d & r2, Vector3d & at ) const;
-    bool intersects( const Face & f, Vector3d & at, Vector3d & depth ) const;
+	bool intersects_eps( const Vector3d & r1, const Vector3d & r2, Float eps, Vector3d & at, bool & concerning ) const;
+	bool intersects( const Face & f, Vector3d & at, Vector3d & depth ) const;
     // Actually, can be 0, 1 or 2 intersections.
     int intersects_all( const Face & f, Vector3d * at, Vector3d * depth ) const;
 

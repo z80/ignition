@@ -259,14 +259,15 @@ bool NarrowTreePtsNode::collide_backward( const SE3 & se3_rel, const NarrowTreeS
     const bool has_ch = this_node->hasChildren();
     if ( !has_ch )
     {
-        const bool is_on_or_bleow_surf = this_node->on_or_below_surface;
-        if ( !is_on_or_bleow_surf )
+        const bool is_on_or_below_surf = this_node->on_or_below_surface;
+        if ( !is_on_or_below_surf )
             return false;
 
 		// Last thing is check optimized cube.
-		const bool intersects_optimized = cube_optimized_.intersects( this_cube );
-		if ( !intersects_optimized )
-			return false;
+		// <<<<<<<<< FOR NOW WITHOUT OPTIMIZED BOXES >>>>>>>>>>>>>>
+		//const bool intersects_optimized = cube_optimized_.intersects( this_cube );
+		//if ( !intersects_optimized )
+		//	return false;
         // Colliding individual faces.
         const bool ret = collide_points( this_node, pts, depths );
         return ret;

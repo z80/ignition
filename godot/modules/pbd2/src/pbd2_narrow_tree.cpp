@@ -58,10 +58,10 @@ void NarrowTree::append_triangle( const Vector3d & a, const Vector3d & b, const 
 void NarrowTree::subdivide()
 {
 	subdivide_sdf();
-	{
+	/*{
 		NarrowTreeSdfNode root_sdf = nodes_sdf_.ptrw()[0];
 		merge_nodes_on_either_side( root_sdf );
-	}
+	}*/
 	{
 		NarrowTreeSdfNode & root_sdf = nodes_sdf_.ptrw()[0];
 		root_sdf.generate_surface_points();
@@ -616,31 +616,34 @@ void NarrowTree::merge_nodes_on_either_side( NarrowTreeSdfNode n )
 	if ( !has_children )
 		return;
 
-	int qty_above = 0;
-	int qty_below = 0;
-	for ( int i=0; i<8; i++ )
+	if ( n.level > min_depth_ )
 	{
-		const int child_ind = n.children[i];
-		const NarrowTreeSdfNode & cn = nodes_sdf_.ptr()[child_ind];
-		const bool is_above = cn.is_above();
-		if ( is_above )
-			qty_above += 1;
-		else
-		{
-			const bool is_below = cn.is_below();
-			if ( is_below )
-				qty_below += 1;
-		}
-	}
-	if ( (qty_above == 8) || (qty_below == 8) )
-	{
+		int qty_above = 0;
+		int qty_below = 0;
 		for ( int i=0; i<8; i++ )
 		{
-			const int ind = 7-i;
-			const int child_ind = n.children[ind];
-			remove_node_sdf( child_ind );
+			const int child_ind = n.children[i];
+			const NarrowTreeSdfNode & cn = nodes_sdf_.ptr()[child_ind];
+			const bool is_above = cn.is_above();
+			if ( is_above )
+				qty_above += 1;
+			else
+			{
+				const bool is_below = cn.is_below();
+				if ( is_below )
+					qty_below += 1;
+			}
 		}
-		return;
+		if ( (qty_above == 8) || (qty_below == 8) )
+		{
+			for ( int i=0; i<8; i++ )
+			{
+				const int ind = 7-i;
+				const int child_ind = n.children[ind];
+				remove_node_sdf( child_ind );
+			}
+			return;
+		}
 	}
 
 	for ( int i=0; i<8; i++ )
