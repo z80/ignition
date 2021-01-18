@@ -145,7 +145,6 @@ void PbdNarrowTreeNode::subdivide()
 
 void PbdNarrowTreeNode::parse_children()
 {
-
 	const int children_qty = get_child_count();
 	for ( int k=0; k<children_qty; k++ )
 	{

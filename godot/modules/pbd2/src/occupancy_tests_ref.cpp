@@ -198,12 +198,12 @@ Vector3 OccupancyTestsRef::face_depth_point( int ind ) const
 void OccupancyTestsRef::tree_apply( const Transform & t )
 {
 	const Quat q = Quat( t.basis );
-	SE3 se3;
-	se3.q_ = Quaterniond( q.w, q.x, q.y, q.z );
+	Pose pose;
+	pose.q = Quaterniond( q.w, q.x, q.y, q.z );
 	const Vector3 r = t.origin;
-	se3.r_ = Vector3d( r.x, r.y, r.z );
+	pose.r = Vector3d( r.x, r.y, r.z );
 
-	tree_.apply( se3 );
+	tree_.apply( pose );
 }
 
 void OccupancyTestsRef::tree_clear()

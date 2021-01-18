@@ -6,6 +6,7 @@
 #include "se3.h"
 #include "pbd2_narrow_tree_sdf_node.h"
 #include "pbd2_narrow_tree_pts_node.h"
+#include "pbd2_pose.h"
 
 #include "scene/3d/mesh_instance.h"
 
@@ -45,7 +46,7 @@ public:
     void remove_pt_duplicates();
     void subdivide_pts();
 
-    void apply( const SE3 & se3 );
+    void apply( const Pose & pose );
 
     bool intersects( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
 

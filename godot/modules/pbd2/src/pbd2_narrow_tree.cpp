@@ -244,9 +244,13 @@ void NarrowTree::subdivide_pts()
         update_node_pts( root );
 }
 
-void NarrowTree::apply( const SE3 & se3 )
+void NarrowTree::apply( const Pose & pose )
 {
-        se3_ = se3;
+	SE3 se3;
+	se3.q_ = pose.q;
+	se3.r_ = pose.r;
+
+    se3_ = se3;
 }
 
 
