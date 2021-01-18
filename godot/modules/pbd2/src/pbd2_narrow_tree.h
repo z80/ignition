@@ -56,6 +56,12 @@ public:
 	void update_node_sdf( const NarrowTreeSdfNode & node );
 	void update_node_pts( const NarrowTreePtsNode & node );
 
+	// Swapping two nodes in the array.
+	void swap_nodes_sdf( int i, int j );
+	void remove_node_sdf( int i );
+	// Here by value as array changes while it runs.
+	void merge_nodes_on_either_side( const NarrowTreeSdfNode n );
+
 	SE3                       se3_;
 	Vector<NarrowTreeSdfNode> nodes_sdf_;
 	Vector<NarrowTreePtsNode> nodes_pts_;

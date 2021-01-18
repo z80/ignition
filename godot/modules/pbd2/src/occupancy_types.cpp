@@ -162,7 +162,6 @@ Float Face::distance( const Vector3d & r, Vector3d & displacement ) const
 	Vector3d min_v;
 
 	// Project onto 3 edges and see if line parameter "t" is within [0,1].
-	bool hits_edge = false;
 	for ( int i=0; i<3; i++ )
 	{
 		const int ind1 = i;
@@ -176,21 +175,15 @@ Float Face::distance( const Vector3d & r, Vector3d & displacement ) const
 			const Vector3d at = a1 + a*t;
 			const Vector3d dr = at - r;
 			const Float d = dr.Length();
-			if ( (!hits_edge) || (min_d > d) )
+			if ( (min_d < 0.0) || (min_d > d) )
 			{
 				min_d = d;
 				min_v = dr;
 			}
-			hits_edge = true;
 		}
 	}
-	if ( hits_edge )
-	{
-		displacement = min_v;
-		return min_d;
-	}
 
-	// Didn't hit edge. Pick the closest vertex.
+	// Pick the closest vertex.
 	for ( int i=0; i<3; i++ )
 	{
 		const Vector3d & v = verts[i];

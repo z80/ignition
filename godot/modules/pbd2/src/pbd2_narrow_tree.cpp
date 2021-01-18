@@ -58,6 +58,14 @@ void NarrowTree::append_triangle( const Vector3d & a, const Vector3d & b, const 
 void NarrowTree::subdivide()
 {
 	subdivide_sdf();
+	{
+		NarrowTreeSdfNode root_sdf = nodes_sdf_.ptrw()[0];
+		merge_nodes_on_either_side( root_sdf );
+	}
+	{
+		NarrowTreeSdfNode & root_sdf = nodes_sdf_.ptrw()[0];
+		root_sdf.generate_surface_points();
+	}
 	remove_pt_duplicates();
 	subdivide_pts();
 }
@@ -519,6 +527,130 @@ void NarrowTree::update_node_pts( const NarrowTreePtsNode & node )
 {
 	nodes_pts_.ptrw()[ node.absIndex ] = node;
 }
+
+void NarrowTree::swap_nodes_sdf( int ind_a, int ind_b )
+{
+	NarrowTreeSdfNode a = nodes_sdf_.ptr()[ind_a];
+	NarrowTreeSdfNode b = nodes_sdf_.ptr()[ind_b];
+	{
+		// update self, parent and children.
+		b.absIndex = ind_a;
+		const bool has_children = b.hasChildren();
+		if ( has_children )
+		{
+			for ( int i=0; i<8; i++ )
+			{
+				const int ind = b.children[i];
+				NarrowTreeSdfNode & c = nodes_sdf_.ptrw()[ind];
+				c.parentAbsIndex = ind_a;
+			}
+			
+			if ( b.parentAbsIndex >= 0 )
+			{
+				const int ind = b.parentAbsIndex;
+				NarrowTreeSdfNode & p = nodes_sdf_.ptrw()[ind];
+				p.children[ b.indexInParent ] = ind_a;
+			}
+		}
+		nodes_sdf_.ptrw()[ind_a] = b;
+	}
+
+	{
+		// update self, parent and children.
+		a.absIndex = ind_b;
+		const bool has_children = a.hasChildren();
+		if ( has_children )
+		{
+			for ( int i=0; i<8; i++ )
+			{
+				const int ind = a.children[i];
+				NarrowTreeSdfNode & c = nodes_sdf_.ptrw()[ind];
+				c.parentAbsIndex = ind_b;
+			}
+
+			if ( a.parentAbsIndex >= 0 )
+			{
+				const int ind = a.parentAbsIndex;
+				NarrowTreeSdfNode & p = nodes_sdf_.ptrw()[ind];
+				p.children[ a.indexInParent ] = ind_b;
+			}
+		}
+		nodes_sdf_.ptrw()[ind_a] = b;
+
+		nodes_sdf_.ptrw()[ind_b] = a;
+	}
+}
+
+void NarrowTree::remove_node_sdf( int ind )
+{
+	NarrowTreeSdfNode n = nodes_sdf_.ptr()[ind];
+
+	if ( n.parentAbsIndex >= 0 )
+	{
+		NarrowTreeSdfNode & p = nodes_sdf_.ptrw()[n.parentAbsIndex];
+		p.children[n.indexInParent] = -1;
+	}
+
+	const bool has_children = n.hasChildren();
+	if ( has_children )
+	{
+		for ( int i=0; i<8; i++ )
+		{
+			const int child_ind = n.children[i];
+			remove_node_sdf( child_ind );
+		}
+	}
+
+	const int last_ind = nodes_sdf_.size() - 1;
+	if ( ind != last_ind )
+	{
+		swap_nodes_sdf( ind, last_ind );
+	}
+
+	nodes_sdf_.resize( last_ind );
+}
+
+void NarrowTree::merge_nodes_on_either_side( NarrowTreeSdfNode n )
+{
+	const bool has_children = n.hasChildren();
+	if ( !has_children )
+		return;
+
+	int qty_above = 0;
+	int qty_below = 0;
+	for ( int i=0; i<8; i++ )
+	{
+		const int child_ind = n.children[i];
+		const NarrowTreeSdfNode & cn = nodes_sdf_.ptr()[child_ind];
+		const bool is_above = cn.is_above();
+		if ( is_above )
+			qty_above += 1;
+		else
+		{
+			const bool is_below = cn.is_below();
+			if ( is_below )
+				qty_below += 1;
+		}
+	}
+	if ( (qty_above == 8) || (qty_below == 8) )
+	{
+		for ( int i=0; i<8; i++ )
+		{
+			const int ind = 7-i;
+			const int child_ind = n.children[ind];
+			remove_node_sdf( child_ind );
+		}
+		return;
+	}
+
+	for ( int i=0; i<8; i++ )
+	{
+		const int child_ind = n.children[i];
+		const NarrowTreeSdfNode cn = nodes_sdf_.ptr()[child_ind];
+		merge_nodes_on_either_side( cn );
+	}
+}
+
 
 
 

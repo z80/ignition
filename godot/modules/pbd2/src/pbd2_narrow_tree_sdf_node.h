@@ -78,6 +78,8 @@ public:
 	bool intersects_ray( const Vector3d & r1, const Vector3d & r2 ) const;
 
 	bool contains_surface() const;
+	bool is_above() const;
+	bool is_below() const;
 	void compute_on_or_below_surface();
 };
 

@@ -104,7 +104,6 @@ bool NarrowTreeSdfNode::subdivide()
 	//If has reached max depth, stop right here.
     if ( level >= tree->max_depth_ )
 	{
-		generate_surface_points();
         return false;
 	}
     
@@ -136,7 +135,6 @@ bool NarrowTreeSdfNode::subdivide()
 		const Float err = depth_error( mid_pts, mid_depths );
 		if ( err < tree->max_sdf_error_ )
 		{
-			generate_surface_points();
 			return false;
 		}
 	}
@@ -283,21 +281,11 @@ void NarrowTreeSdfNode::init_distances()
 		{
 			const Vector3d & v = cube_.verts[i];
 			// Check if the point is inside the mesh.
-			const bool inside_mesh = point_inside_mesh( v );
-			if ( inside_mesh )
-				int aaa = 0;
+			//const bool inside_mesh = point_inside_mesh( v );
+			//if ( inside_mesh )
+			//	int aaa = 0;
 			// Compute the smallest distance to the surface.
-			Float min_dist = -1.0;
-			for ( int j=0; j<faces_qty; j++ )
-			{
-				const Face & f = tree->faces_.ptr()[j];
-				const Float d = f.distance( v );
-				if ( (min_dist < 0.0) || (min_dist > d) )
-					min_dist = d;
-			}
-			// If point is inside the mesh, point is by definition negative.
-			if ( inside_mesh )
-				min_dist = -min_dist;
+			const Float min_dist = probe_distance( v );
 
 			switch ( i )
 			{
@@ -408,6 +396,18 @@ Float NarrowTreeSdfNode::depth_error( Vector3d * pts, Float * ds )
 
 void NarrowTreeSdfNode::generate_surface_points()
 {
+	const bool has_children = hasChildren();
+	if ( has_children )
+	{
+		for ( int i=0; i<8; i++ )
+		{
+			const int ind = children[i];
+			NarrowTreeSdfNode & child_node = tree->nodes_sdf_.ptrw()[ind];
+			child_node.generate_surface_points();
+		}
+		return;
+	}
+
 	const Vector3d * vs = cube_.verts;
 	Vector3d pts[8];
 	pts[0] = (vs[0] + vs[6]*2.0)/3.0;
@@ -625,6 +625,77 @@ bool NarrowTreeSdfNode::contains_surface() const
 	return ret;
 }
 
+bool NarrowTreeSdfNode::is_above() const
+{
+	int qty = 0;
+
+	if ( d000 >= 0.0 )
+		qty += 1;
+
+	if ( d100 >= 0.0 )
+		qty += 1;
+
+	if ( d110 >= 0.0 )
+		qty += 1;
+
+	if ( d010 >= 0.0 )
+		qty += 1;
+
+
+
+
+	if ( d001 >= 0.0 )
+		qty += 1;
+
+	if ( d101 >= 0.0 )
+		qty += 1;
+
+	if ( d111 >= 0.0 )
+		qty += 1;
+
+	if ( d011 >= 0.0 )
+		qty += 1;
+
+	const bool ret = (qty == 8);
+	return ret;
+}
+
+bool NarrowTreeSdfNode::is_below() const
+{
+	int qty = 0;
+
+	if ( d000 <= 0.0 )
+		qty += 1;
+
+	if ( d100 <= 0.0 )
+		qty += 1;
+
+	if ( d110 <= 0.0 )
+		qty += 1;
+
+	if ( d010 <= 0.0 )
+		qty += 1;
+
+
+
+
+	if ( d001 <= 0.0 )
+		qty += 1;
+
+	if ( d101 <= 0.0 )
+		qty += 1;
+
+	if ( d111 <= 0.0 )
+		qty += 1;
+
+	if ( d011 <= 0.0 )
+		qty += 1;
+
+	const bool ret = (qty == 8);
+	return ret;
+}
+
+
 void NarrowTreeSdfNode::compute_on_or_below_surface()
 {
 	int qty_under = 0;
@@ -658,7 +729,6 @@ void NarrowTreeSdfNode::compute_on_or_below_surface()
 
 	on_or_below_surface = (qty_under > 0);
 }
-
 
 
 
