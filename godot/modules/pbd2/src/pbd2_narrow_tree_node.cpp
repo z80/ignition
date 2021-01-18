@@ -3,6 +3,8 @@
 #include "pbd2_rigid_body_node.h"
 #include "pbd2_simulation_node.h"
 
+#include "scene/3d/mesh_instance.h"
+
 
 namespace Pbd
 {
@@ -144,6 +146,17 @@ void PbdNarrowTreeNode::subdivide()
 void PbdNarrowTreeNode::parse_children()
 {
 
+	const int children_qty = get_child_count();
+	for ( int k=0; k<children_qty; k++ )
+	{
+		Node * n = get_child( k );
+		MeshInstance * mi = Node::cast_to<MeshInstance>( n );
+		if ( mi == nullptr )
+			continue;
+		Ref<Mesh> mesh = mi->get_mesh();
+		const Transform t = mi->get_transform();
+		tree.append( t, mesh );
+	}
 }
 
 

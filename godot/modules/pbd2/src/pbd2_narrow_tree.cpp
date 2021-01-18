@@ -64,8 +64,10 @@ int NarrowTree::min_points() const
 
 void NarrowTree::clear()
 {
-    nodes_sdf_.clear();
-    faces_.clear();
+	nodes_sdf_.clear();
+	nodes_pts_.clear();
+	faces_.clear();
+	pts_.clear();
 }
 
 void NarrowTree::append( const Transform & t, const Ref<Mesh> & mesh )
