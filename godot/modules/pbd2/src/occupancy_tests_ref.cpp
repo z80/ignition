@@ -218,7 +218,7 @@ void OccupancyTestsRef::tree_add_triangle( const Vector3 & a, const Vector3 & b,
 
 void OccupancyTestsRef::tree_set_level( int level )
 {
-	tree_.set_max_level( level );
+	tree_.set_max_depth( level );
 }
 
 void OccupancyTestsRef::tree_subdivide()

@@ -21,62 +21,69 @@ Nonempty leaf node means space is filled. Else means it's empty.
 class NarrowTree
 {
 public:
-	NarrowTree();
-	~NarrowTree();
+    NarrowTree();
+    ~NarrowTree();
 
-	// Manipulating filling up the occupancy grid.
-	void set_max_level( int new_level=2 );
-	int max_level() const;
-	void clear();
-	void append( const Transform & t, const Ref<Mesh> & mesh );
-	void append_triangle( const Vector3d & a, const Vector3d & b, const Vector3d & c );
-	// "subdivide" should be called.
-	void subdivide();
-	// These two are used by the upper one.
-	// These shouldn't be used individually.
-	void subdivide_sdf();
-	void remove_pt_duplicates();
-	void subdivide_pts();
+    // Manipulating filling up the occupancy grid.
+    void set_min_depth( int new_level=2 );
+    int min_depth() const;
+    void set_max_depth( int new_level=5 );
+    int max_depth() const;
+    void set_max_error( const Float new_err );
+    Float max_error() const;
+    void set_min_points( int new_qty );
+    int min_points() const;
 
-	void apply( const SE3 & se3 );
+    void clear();
+    void append( const Transform & t, const Ref<Mesh> & mesh );
+    void append_triangle( const Vector3d & a, const Vector3d & b, const Vector3d & c );
+    // "subdivide" should be called.
+    void subdivide();
+    // These two are used by the upper one.
+    // These shouldn't be used individually.
+    void subdivide_sdf();
+    void remove_pt_duplicates();
+    void subdivide_pts();
+
+    void apply( const SE3 & se3 );
 
     bool intersects( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
 
-	// For visualization.
-	PoolVector3Array lines_sdf_nodes() const;
-	PoolVector3Array lines_surface_pts() const;
-	PoolVector3Array lines_pts_nodes() const;
-	PoolVector3Array lines_aligned_nodes() const;
+    // For visualization.
+    PoolVector3Array lines_sdf_nodes() const;
+    PoolVector3Array lines_surface_pts() const;
+    PoolVector3Array lines_pts_nodes() const;
+    PoolVector3Array lines_aligned_nodes() const;
 
     // These three for tree construction.
-	bool parent_sdf( const NarrowTreeSdfNode & node, NarrowTreeSdfNode * & parent );
-	bool parent_pts( const NarrowTreePtsNode & node, NarrowTreePtsNode * & parent );
-	int  insert_node_sdf( NarrowTreeSdfNode & node );
-	int  insert_node_pts( NarrowTreePtsNode & node );
-	void update_node_sdf( const NarrowTreeSdfNode & node );
-	void update_node_pts( const NarrowTreePtsNode & node );
+    bool parent_sdf( const NarrowTreeSdfNode & node, NarrowTreeSdfNode * & parent );
+    bool parent_pts( const NarrowTreePtsNode & node, NarrowTreePtsNode * & parent );
+    int  insert_node_sdf( NarrowTreeSdfNode & node );
+    int  insert_node_pts( NarrowTreePtsNode & node );
+    void update_node_sdf( const NarrowTreeSdfNode & node );
+    void update_node_pts( const NarrowTreePtsNode & node );
 
-	// Swapping two nodes in the array.
-	void swap_nodes_sdf( int i, int j );
-	void remove_node_sdf( int i );
-	// Here by value as array changes while it runs.
-	void merge_nodes_on_either_side( const NarrowTreeSdfNode n );
+    // Swapping two nodes in the array.
+    void swap_nodes_sdf( int i, int j );
+    void remove_node_sdf( int i );
+    // Here by value as array changes while it runs.
+    void merge_nodes_on_either_side( const NarrowTreeSdfNode n );
 
-	SE3                       se3_;
-	Vector<NarrowTreeSdfNode> nodes_sdf_;
-	Vector<NarrowTreePtsNode> nodes_pts_;
-	Vector<Face>              faces_;
-	Vector<Vector3d>          pts_;
+    SE3                       se3_;
+    Vector<NarrowTreeSdfNode> nodes_sdf_;
+    Vector<NarrowTreePtsNode> nodes_pts_;
+    Vector<Face>              faces_;
+    Vector<Vector3d>          pts_;
 
-	// Unconditionally subdivide to this level.
-	int   min_depth_;
-	// Subdivide SDF node if it's error is bigger than this.
-	Float max_sdf_error_;
-	// Unconditionally stop subdividing if level has reached this value.
-	// Maximum subdivision level.
-	int max_depth_;
-	// Min points in a node while keeping subdividing.
-	int min_pts_;
+    // Unconditionally subdivide to this level.
+    int   min_depth_;
+    // Subdivide SDF node if it's error is bigger than this.
+    Float max_sdf_error_;
+    // Unconditionally stop subdividing if level has reached this value.
+    // Maximum subdivision level.
+    int max_depth_;
+    // Min points in a node while keeping subdividing.
+    int min_pts_;
 };
 
 
