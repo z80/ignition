@@ -78,9 +78,29 @@ void Simulation::step()
         {
             RigidBody * body = bodies.ptr()[j];
             //body->solve_contacts( h );
-			body->solve_normal_all( h );
-			body->solve_tangential_all( h );
+            body->solve_normal_all( h );
+            body->solve_tangential_all( h );
         }
+    }
+
+    // Solve for normal collisions body with another body.
+    for ( int i=0; i<bodies_qty; i++ )
+    {
+        RigidBody * body = bodies.ptr()[j];
+        // Collide with other bodies.
+        // List of potentially olliding pairs.
+        // for each pair actually collide and get numebr of contact points.
+        // For all contact points reset lambdas.
+        //for ( int j=0; j<contacts_qty; j++ )
+        //{
+        //    ContactPointBb & pt = contacts.ptrw()[j];
+        //    pt.init_lambdas();
+        //}
+        for ( int j=0; j<solver_iterations; j++ )
+        {
+            // solve_normal( body, other_body, contact_points );
+        }
+
     }
 
     // Update velocities.
@@ -95,15 +115,15 @@ void Simulation::step()
     {
         RigidBody * body = bodies.ptr()[i];
         //body->update_contact_velocities( h );
-		body->solve_dynamic_friction( h );
+                body->solve_dynamic_friction( h );
     }
 
-	// Update contact prev. positions.
-	for ( int i=0; i<bodies_qty; i++ )
-	{
-		RigidBody * body = bodies.ptr()[i];
-		body->update_contact_positions();
-	}
+    // Update contact prev. positions.
+    for ( int i=0; i<bodies_qty; i++ )
+    {
+        RigidBody * body = bodies.ptr()[i];
+        body->update_contact_positions();
+    }
 }
 
 void Simulation::clear()
@@ -121,6 +141,128 @@ void Simulation::add_joint( Joint * joint )
 {
     joints.push_back( joint );
 }
+
+
+bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, const Vector<ContatPointBb> & pts, Float h )
+{
+    Float w_a;
+    const bool ok_a = specific_mass_pos( body_a, pts, w_a );
+    if ( !ok_a )
+        return false;
+
+    Float w_b;
+    const bool ok_b = specific_mass_pos( body_b, pts, w_b );
+    if ( !ok_b )
+        return false;
+
+    const Float mu_both = mu_a + mu_b;
+
+    const Float compliance_a = body_a->compliance_normal;
+    const Float compliance_b = body_b->compliance_normal;
+    const Float compliance_normal = (compliance_a + compliance_b) / 2.0;
+
+    Vector3d d_accum     = Vector3d::ZERO;
+    Vector3d r_x_d_accum_a = Vector3d::ZERO;
+    Vector3d r_x_d_accum_b = Vector3d::ZERO;
+ 
+    const int qty = pts.size();
+    for ( int i=0; i<qty; i++ )
+    {
+        ContactPointBb & cp = contact_points.ptrw()[i];
+
+        // Compute lambda_normal. It is needed for further tangential procesing.
+        Float lambda = cp.lambda_normal;
+
+        const Float alpha_ = compliance_normal / (h*h);
+        const Float d_lambda = -(cp.depth + alpha_*lambda) / (mu_both + alpha_);
+        lambda += d_lambda;
+        cp.lambda_normal = lambda;
+
+        const Vector3d d = d_lambda * cp.n_world;
+        d_accum += d;
+
+        const Vector3d r_w_a = body_a->pose.q * cp.r_a;
+        const Vector3d r_x_d_a = r_w_a.CrossProduct( d );
+        r_x_d_accum_a += r_x_d_a;
+
+        const Vector3d r_w_b = body_b->pose.q * cp.r_b;
+        const Vector3d r_x_d_b = r_w_b.CrossProduct( d );
+        r_x_d_accum_b += r_x_d_b;
+    }
+
+    // Body "a".
+    // Plus for body "a".
+    {
+        const Vector3d dr = d_accum / body_a->mass;
+        const Matrix3d inv_I = body_a->inv_I();
+        const Vector3d rot = inv_I * r_x_d_accum_a;
+        Quaterniond dq( 0.0, rot.x_, rot.y_, rot.z_ );
+        dq = dq * pose.q;
+        Quaterniond q = pose.q;
+        q.w_ += dq.w_;
+        q.x_ += dq.x_;
+        q.y_ += dq.y_;
+        q.z_ += dq.z_;
+        q.Normalize();
+
+        body_a->pose.r += dr;
+        body_a->pose.q  = q;
+    }
+    
+    // Body "b".
+    // And minus for body "b".
+    {
+        const Vector3d dr = d_accum / body_b->mass;
+        const Matrix3d inv_I = body_b->inv_I();
+        const Vector3d rot = inv_I * r_x_d_accum_b;
+        Quaterniond dq( 0.0, rot.x_, rot.y_, rot.z_ );
+        dq = dq * pose.q;
+        Quaterniond q = pose.q;
+        q.w_ -= dq.w_;
+        q.x_ -= dq.x_;
+        q.y_ -= dq.y_;
+        q.z_ -= dq.z_;
+        q.Normalize();
+
+        body_b->pose.r -= dr;
+        body_b->pose.q  = q;
+    }
+
+    return true;
+}
+
+bool Simulation::solve_tangential( RigidBody * body_a, RigidBody * body_b, const Vector<ContatPointBb> & pts, Float h )
+{
+    
+    return true;
+}
+
+
+bool Simulation::specific_mass_pos( bool is_a, RigidBody * body, const Vector<ContactPointBb> & pts, Float & w )
+{
+    w = 0.0;
+    position_part = 0.0;
+    Vector3d r_x_n_accum = Vector3d( 0.0, 0.0, 0.0 );
+    const int qty = pts.size();
+    if ( qty < 1 )
+        return false;
+    
+    for ( int i=0; i<qty; i++ )
+    {
+        const ContactPointBb & pt = pts.ptr()[i];
+        const Vector3d & rl = (is_a) ? pt.r_a : pt.r_b;
+        const Vector3d rw = body->pose.q * rl;
+        const Vector3d r_x_n = rw.CrossProduct( pt.n_world );
+        r_x_n_accum += r_x_n;
+    }
+    const Matrix3d inv_I = body->inv_I();
+    const Float position_part = static_cast<Float>(qty)/body->mass;
+    const Vector3d rotation_part = r_x_n_accum.DotProduct( inv_I * r_x_n_accum );
+    w = position_part + rotation_part;
+    
+    return true;
+}
+
 
 
 }

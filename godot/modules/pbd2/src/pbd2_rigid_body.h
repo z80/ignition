@@ -35,7 +35,13 @@ public:
     Float compliance_normal;
     Float compliance_tangential;
 
+    // These are fixed points in body's ref frame.
+    // It is checked if a point is below "y=0" plane.
     Vector<ContactPoint> contact_points;
+
+    // These points are dynamic points. These are
+    // computed based on how body interacts with other bodies.
+    Vector<ContactPoint> contact_points_dynamic;
 
     RigidBody();
     ~RigidBody();
@@ -48,18 +54,18 @@ public:
 
     void integrate_dynamics( Float dt );
     void update_velocities( Float dt );
-    void init_contact_lambdas();
+    void init_contact_lambdas_bb();
     void solve_contacts( Float h );
     void update_contact_velocities( Float h );
-	void update_contact_positions();
+    void update_contact_positions();
 
     Float specific_inv_mass_pos( const Vector3d & r, const Vector3d & n ) const;
     Float specific_inv_mass_rot( const Vector3d & n ) const;
-	Float specific_inv_mass_pos_all( bool check_in_contact );
+    Float specific_inv_mass_pos_all( bool check_in_contact );
 
-	bool solve_normal_all( Float h );
-	void solve_tangential_all( Float h );
-	void solve_dynamic_friction( Float h );
+    bool solve_normal_all( Float h );
+    void solve_tangential_all( Float h );
+    void solve_dynamic_friction( Float h );
 };
 
 
