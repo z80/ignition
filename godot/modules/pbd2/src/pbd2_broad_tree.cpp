@@ -114,7 +114,7 @@ const Vector<int> & BroadTree::intersect_with_all( int ind )
     return body_inds_;
 }
 
-const Vector<CollisionPoint> & BroadTree::collison_points( int ind_a, int ind_b )
+const Vector<CollisionPoint> & BroadTree::collision_points( int ind_a, int ind_b )
 {
     collisions_.clear();
     collide_pair( ind_a, ind_b );

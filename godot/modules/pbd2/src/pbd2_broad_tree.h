@@ -31,10 +31,15 @@ public:
     int max_depth() const;
 
     void clear();
-    void subdivide();
 
+    // These three are supposed to be used in simulation loop.
+    // "subdivide" should be called once.
+    void subdivide();
+    // Pair of these methods is supposed to be used for each body's bollision object.
+    // This one determines with what objects it might intersect.
     const Vector<int> & intersect_with_all( int ind );
-    const Vector<CollisionPoint> & collison_points( int ind_a, int ind_b );
+    // And this one actually collides objects.
+    const Vector<CollisionPoint> & collision_points( int ind_a, int ind_b );
 
     // For visualization.
     PoolVector3Array lines_nodes() const;
