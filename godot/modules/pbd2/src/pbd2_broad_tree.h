@@ -41,7 +41,7 @@ public:
     void clear();
     void subdivide();
 
-    bool intersect();
+    bool intersect_with_all( int ind );
 
     // For visualization.
     PoolVector3Array lines_nodes() const;
@@ -52,13 +52,23 @@ public:
     void update_node( const BroadTreeNode & node );
 
     // Selecting intersecting nodes.
-    void select( int tree_ind, Vector<int> & inds );
+    void intersecting_pairs( int ind );
+    bool select_for_one( int tree_ind, Vector<int> & inds );
+    void remove_duplicates();
+
+    void collide_pairs();
+    void collide_pair( int ind_a, int ind_b );
 
     SE3                   se3_;
     Vector<BroadTreeNode> nodes_;
     Vector<NarrowTree *>  bodies_;
 
     Vector<CollisionPoint> collisions_;
+    // This one is a helper array used in "select".
+    Vector<int> body_inds_;
+    // 
+    Vector<Vector3d> ats_;
+    Vector<Vector3d> depths_;
 
     // Maximum subdivision level.
     int max_depth_;
