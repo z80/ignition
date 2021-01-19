@@ -4,7 +4,7 @@
 
 #include "data_types.h"
 #include "se3.h"
-#include "pbd2_broad_tree_node.h"
+#include "pbd2_broad_node.h"
 #include "pbd2_pose.h"
 
 #include "core/variant.h"
