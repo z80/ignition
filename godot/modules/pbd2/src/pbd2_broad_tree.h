@@ -22,6 +22,12 @@ struct CollisionPoint
     Vector3d displacement; // How to move body "A" to fix it.
 };
 
+struct CollidingPair
+{
+    int ind_a;
+    int ind_b;
+};
+
 class BroadTree
 {
 public:
@@ -44,6 +50,9 @@ public:
     bool parent( const BroadTreeNode & node, BroadTreeNode * & parent );
     int  insert_node( BroadTreeNode & node );
     void update_node( const BroadTreeNode & node );
+
+    // Selecting intersecting nodes.
+    void select( int tree_ind, Vector<int> & inds );
 
     SE3                   se3_;
     Vector<BroadTreeNode> nodes_;

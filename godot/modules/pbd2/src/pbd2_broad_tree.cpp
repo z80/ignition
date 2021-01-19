@@ -103,6 +103,8 @@ void BroadTree::subdivide()
 
 bool BroadTree::intersect()
 {
+    clear();
+    subdivide();
     return false;
 }
 
@@ -214,7 +216,24 @@ void BroadTree::update_node( const BroadTreeNode & node )
     nodes_.ptrw()[ node.absIndex ] = node;
 }
 
+void BroadTree::select( int tree_ind, Vector<int> & inds )
+{
+    inds.clear();
+    const int qty = bodes_.size();
+    if ( qty < 1 )
+        return;
 
+    const int bodies_qty = bodies_.size();
+    if ( tree_ind >= bodies_qty )
+        return;
+
+    const NarrowTree * tree = bodies_.ptr()[tree_ind];
+    const Vector3d & center = tree.center();
+    const Float size2 = tree.size2();
+
+    const BroadTreeNode & root = nodes_.ptr()[0];
+    cosnt bool ok = root.objects_inside(  )
+}
 
 
 

@@ -3,6 +3,8 @@
 #define __PBD2_SIMULATION_H_
 
 #include "data_types.h"
+#include "pbd2_broad_tree.h"
+
 #include "core/vector.h"
 
 using namespace Ign;
@@ -33,6 +35,7 @@ public:
     int solver_iterations;
     Vector<RigidBody *> bodies;
     Vector<Joint *>     joints;
+    BroadTree           tree;
 };
 
 

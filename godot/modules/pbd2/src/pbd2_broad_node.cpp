@@ -98,7 +98,8 @@ bool BroadTreeNode::subdivide()
         return false;
     
     // If it is empty, no need to subdivide.
-    if ( ptInds.empty() )
+    // Or if there is just one object inside, also don't subdivide.
+    if ( ptInds.size() < 2 )
         return false;
 
     const int childLevel = this->level + 1;
@@ -217,6 +218,49 @@ bool BroadTreeNode::inside( const NarrowTree * nt ) const
     
     return false;
 }
+
+bool BroadTreeNode::inside( const Vector3d & c, Float sz ) const
+{
+    const Float sz2 = sz + size2();
+    const Vector3d dr = c - center();
+    if ( std::abs(dr.x_) > sz2 )
+        return false;
+    if ( std::abs(dr.y_) > sz2 )
+        return false;
+    if ( std::abs(dr.z_) > sz2 )
+        return false;
+
+    return true;
+}
+
+bool BroadTreeNode::objects_inside( const Vector3d & c, Float sz, Vector<int> & bodies ) const
+{
+    const bool intersects = inside( c, sz );
+    if ( !intersects )
+        return false;
+
+    const bool has_children = hasChildren();
+    if ( !has_children )
+    {
+        const int qty = ptInds.size();
+        for ( int i=0; i<qty; i++ )
+        {
+            const int ind = ptInds.ptr()[i];
+            trees.push_back( ind );
+        }
+        return true;
+    }
+
+    for ( int i=0; i<8; i++ )
+    {
+        const int child_ind = children[i];
+        const BroadTreeNode & child = tree->bodies_.ptr()[child_ind];
+        child->objects_inside( c, sz, bodies );
+    }
+    return true;
+}
+
+
 
 void BroadTreeNode::init()
 {
