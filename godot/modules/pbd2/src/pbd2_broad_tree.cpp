@@ -105,14 +105,21 @@ void BroadTree::subdivide()
 
 
 
-bool BroadTree::intersect_with_all( int ind )
+const Vector<int> & BroadTree::intersect_with_all( int ind )
 {
-    intersecting_pairs( ind );
-    collide_pairs();
-    // After this "collisions_" is supposed to contain all collisions of this "ind" 
-    // body with all other bodies.
+    body_inds_.clear();
+    select_for_one( ind, body_inds_ );
+    remove_duplicates( body_inds_ );
 
-    return true;
+    return body_inds_;
+}
+
+const Vector<CollisionPoint> & BroadTree::collison_points( int ind_a, int ind_b )
+{
+    collisions_.clear();
+    collide_pair( ind_a, ind_b );
+
+    return collisions_;
 }
 
 
@@ -223,29 +230,10 @@ void BroadTree::update_node( const BroadTreeNode & node )
     nodes_.ptrw()[ node.absIndex ] = node;
 }
 
-void BroadTree::intersecting_pairs( int ind )
-{
-    collisions_.clear();
-    body_inds_.clear();
-    select_for_one( i, body_inds_ );
-    const int inds_qty = body_inds_.size();
-    for ( int j=0; j<inds_qty; j++ )
-    {
-        const int ind_b = inds_qty_.ptr()[j];
-        if ( ind_b == i )
-            continue;
-        CollidingPair p;
-        p.ind_a = i;
-        p.ind_b = ind_b;
-        collisions.push_back( p );
-    }
-    remove_duplicates();
-}
-
 bool BroadTree::select_for_one( int tree_ind, Vector<int> & inds )
 {
     inds.clear();
-    const int qty = bodes_.size();
+    const int qty = bodies_.size();
     if ( qty < 1 )
         return false;
 
@@ -254,54 +242,42 @@ bool BroadTree::select_for_one( int tree_ind, Vector<int> & inds )
         return false;
 
     const NarrowTree * tree = bodies_.ptr()[tree_ind];
-    const Vector3d & center = tree.center();
-    const Float size2 = tree.size2();
+    const Vector3d center = tree->center();
+    const Float size2 = tree->size2();
 
     const BroadTreeNode & root = nodes_.ptr()[0];
-    const bool ok = root.objects_inside( center, size2, inds );
+    const bool ok = root.objects_inside( tree_ind, center, size2, inds );
 
     return ok;
 }
 
-void BroadTree::remove_duplicates()
+void BroadTree::remove_duplicates( Vector<int> & inds )
 {
-    const int qty = collisions_.size();
+    const int qty = inds.size();
     int removed_qty = 0;
     for ( int i=0; i<(qty-removed_qty-1); i++ )
     {
-        const CollidingPair pa = collisions_.ptr()[i];
+        const int pa = inds.ptr()[i];
         bool do_again = true;
         while ( do_again )
         {
             do_again = false;
             for ( int j=(i+1); j<(qty-removed_qty); i++ )
             {
-                const CollidingPair pb = collisions_.ptr()[j];
-                if ( ( pa.ind_a == pb.ind_a ) && (pa.ind_b == pb.ind_b) )
+                const int pb = inds.ptr()[j];
+                if ( pa == pb )
                 {
                     // Swap with the last one and increment "removed_qty".
                     const int last_ind = qty - removed_qty - 1;
-                    const CollidingPair last = collisions_.ptr()[last_ind];
-                    collisions_.ptr()[last_ind] = pb;
-                    collisions_.ptrw()[j] = last;
+                    const int last = inds.ptr()[last_ind];
+                    inds.ptrw()[last_ind] = pb;
+                    inds.ptrw()[j] = last;
                     removed_qty += 1;
                     do_again = true;
                     break;
                 }
             }
         }
-    }
-}
-
-void BroadTree::collide_pairs()
-{
-    const int qty = collisions_.size();
-    for ( int i=0; i<qty; i++ )
-    {
-        const CollidingPair & p = collisions_.ptr()[i];
-        const int ind_a = p.ind_a;
-        const int ind_b = p.ind_b;
-        collide_pair( ind_a, ind_b );
     }
 }
 
@@ -318,9 +294,7 @@ void BroadTree::collide_pair( int ind_a, int ind_b )
         const Vector3d & at    = ats_.ptr()[i];
         const Vector3d & depth = depths_.ptr()[i];
         CollisionPoint pt;
-        pt.ind_a = ind_a;
-        pt.ind_b = ind_b;
-        pt.at    = at;
+        pt.at           = at;
         pt.displacement = depth;
         collisions_.push_back( pt );
     }

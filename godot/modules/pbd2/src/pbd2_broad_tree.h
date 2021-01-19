@@ -16,16 +16,8 @@ class NarrowTree;
 
 struct CollisionPoint
 {
-    int ind_a;
-    int ind_b;
     Vector3d at;
     Vector3d displacement; // How to move body "A" to fix it.
-};
-
-struct CollidingPair
-{
-    int ind_a;
-    int ind_b;
 };
 
 class BroadTree
@@ -41,7 +33,8 @@ public:
     void clear();
     void subdivide();
 
-    bool intersect_with_all( int ind );
+    const Vector<int> & intersect_with_all( int ind );
+    const Vector<CollisionPoint> & collison_points( int ind_a, int ind_b );
 
     // For visualization.
     PoolVector3Array lines_nodes() const;
@@ -54,9 +47,8 @@ public:
     // Selecting intersecting nodes.
     void intersecting_pairs( int ind );
     bool select_for_one( int tree_ind, Vector<int> & inds );
-    void remove_duplicates();
+    void remove_duplicates( Vector<int> & inds );
 
-    void collide_pairs();
     void collide_pair( int ind_a, int ind_b );
 
     SE3                   se3_;

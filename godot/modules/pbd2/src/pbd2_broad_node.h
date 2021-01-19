@@ -26,7 +26,7 @@ public:
 
     bool inside( const NarrowTree * nt ) const;
     bool inside( const Vector3d & c, Float sz ) const;
-    bool objects_inside( const Vector3d & c, Float sz, Vector<int> & bodies ) const;
+    bool objects_inside( int body_ind, const Vector3d & c, Float sz, Vector<int> & bodies ) const;
 
     // Initialize vertices and planes.
     void init();

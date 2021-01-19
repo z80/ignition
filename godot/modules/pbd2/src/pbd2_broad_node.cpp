@@ -221,8 +221,8 @@ bool BroadTreeNode::inside( const NarrowTree * nt ) const
 
 bool BroadTreeNode::inside( const Vector3d & c, Float sz ) const
 {
-    const Float sz2 = sz + size2();
-    const Vector3d dr = c - center();
+    const Float sz2 = sz + size2;
+    const Vector3d dr = c - center;
     if ( std::abs(dr.x_) > sz2 )
         return false;
     if ( std::abs(dr.y_) > sz2 )
@@ -233,7 +233,7 @@ bool BroadTreeNode::inside( const Vector3d & c, Float sz ) const
     return true;
 }
 
-bool BroadTreeNode::objects_inside( const Vector3d & c, Float sz, Vector<int> & bodies ) const
+bool BroadTreeNode::objects_inside( int body_ind, const Vector3d & c, Float sz, Vector<int> & bodies ) const
 {
     const bool intersects = inside( c, sz );
     if ( !intersects )
@@ -246,18 +246,21 @@ bool BroadTreeNode::objects_inside( const Vector3d & c, Float sz, Vector<int> & 
         for ( int i=0; i<qty; i++ )
         {
             const int ind = ptInds.ptr()[i];
-            trees.push_back( ind );
+            if ( ind != body_ind )
+                bodies.push_back( ind );
         }
         return true;
     }
 
+    bool ret = false;
     for ( int i=0; i<8; i++ )
     {
         const int child_ind = children[i];
-        const BroadTreeNode & child = tree->bodies_.ptr()[child_ind];
-        child->objects_inside( c, sz, bodies );
+        const BroadTreeNode & child = tree->nodes_.ptr()[child_ind];
+        const bool ok = child.objects_inside( body_ind, c, sz, bodies );
+        ret = ret || ok;
     }
-    return true;
+    return ret;
 }
 
 
