@@ -12,10 +12,12 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 
 NarrowTree::NarrowTree()
 {
-        max_sdf_error_ = 0.5;
-        min_depth_ = 2;
+    max_sdf_error_ = 0.5;
+    min_depth_ = 2;
     max_depth_ = 5;
-        min_pts_   = 10;
+    min_pts_   = 10;
+
+    speed_margin = 0.0;
 }
 
 NarrowTree::~NarrowTree()
@@ -62,12 +64,31 @@ int NarrowTree::min_points() const
     return min_pts_;
 }
 
+Float NarrowTree::size2() const
+{
+    const int qty = nodes_sdf_.size();
+    if ( qty < 1 )
+        return -1.0;
+    const NarrowTreeSdfNode & n = nodes_sdf_.ptr()[0];
+    const Float sz = n.size2 + speed_margin;
+    return sz;
+}
+
+Vector3d NarrowTree::center() const
+{
+    const int qty = nodes_sdf_.size();
+    if ( qty < 1 )
+        return Vector3d( 0.0, 0.0, 0.0 );
+    const NarrowTreeSdfNode & n = nodes_sdf_.ptr()[0];
+    return n.center;
+}
+
 void NarrowTree::clear()
 {
-	nodes_sdf_.clear();
-	nodes_pts_.clear();
-	faces_.clear();
-	pts_.clear();
+    nodes_sdf_.clear();
+    nodes_pts_.clear();
+    faces_.clear();
+    pts_.clear();
 }
 
 void NarrowTree::append( const Transform & t, const Ref<Mesh> & mesh )
@@ -246,9 +267,9 @@ void NarrowTree::subdivide_pts()
 
 void NarrowTree::apply( const Pose & pose )
 {
-	SE3 se3;
-	se3.q_ = pose.q;
-	se3.r_ = pose.r;
+        SE3 se3;
+        se3.q_ = pose.q;
+        se3.r_ = pose.r;
 
     se3_ = se3;
 }

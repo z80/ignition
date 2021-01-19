@@ -19,6 +19,8 @@ This data structure is for determining empty/filled space only.
 Nonempty leaf node means space is filled. Else means it's empty.
 **/
 
+class RigidBody;
+
 class NarrowTree
 {
 public:
@@ -34,6 +36,9 @@ public:
     Float max_error() const;
     void set_min_points( int new_qty );
     int min_points() const;
+
+    Float size2() const;
+    Vector3d center() const;
 
     void clear();
     void append( const Transform & t, const Ref<Mesh> & mesh );
@@ -85,6 +90,9 @@ public:
     int max_depth_;
     // Min points in a node while keeping subdividing.
     int min_pts_;
+
+    // Should be filled based on speed and time step.
+    Float speed_margin;
 };
 
 
