@@ -37,8 +37,9 @@ void BroadTree::clear()
    contacts_.clear();
 }
 
-void BroadTree::subdivide( Float h )
+void BroadTree::subdivide( Simulation * sim, Float h )
 {
+    simulation = sim;
     // Before eerything else clear nodes.
     nodes_.clear();
     
@@ -251,7 +252,9 @@ void BroadTree::update_node( const BroadTreeNode & node )
 
 bool BroadTree::select_for_one( int body_ind, Float h, Vector<int> & inds )
 {
+    // First clear potential contacts from previous calls.
     inds.clear();
+
     const Vector<RigidBody *> & bodies = simulation->bodies;
     const int qty = bodies.size();
     if ( qty < 1 )
@@ -265,6 +268,11 @@ bool BroadTree::select_for_one( int body_ind, Float h, Vector<int> & inds )
     const CollisionObject * co = body->collision_object;
     if ( co == nullptr )
         return true;
+    
+    // IF wasn't subdivided (may be because no bodies have collision objects), return "true".
+    if ( nodes_.empty() )
+        return true;
+
     const Vector3d center = co->center();
     const Float size2 = co->size2( h );
 
@@ -306,11 +314,17 @@ void BroadTree::remove_duplicates( Vector<int> & inds )
 
 void BroadTree::collide_pair( int ind_a, int ind_b )
 {
+    // Clear contact information from previous usages.
+    contacts_.clear();
+
     Vector<RigidBody *> & bodies = simulation->bodies;
     RigidBody * body_a = bodies.ptrw()[ind_a];
     RigidBody * body_b = bodies.ptrw()[ind_b];
     CollisionObject * obj_a = body_a->collision_object;
     CollisionObject * obj_b = body_b->collision_object;
+    if ( (obj_a == nullptr) || (obj_b == nullptr) )
+        return;
+
     const Pose pose_a = body_a->pose;
     const Pose pose_b = body_b->pose;
 

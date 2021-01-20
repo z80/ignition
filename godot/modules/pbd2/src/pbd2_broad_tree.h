@@ -36,7 +36,7 @@ public:
 
     // These three are supposed to be used in simulation loop.
     // "subdivide" should be called once.
-    void subdivide( Float h );
+    void subdivide( Simulation * sim, Float h );
     // Pair of these methods is supposed to be used for each body's bollision object.
     // This one determines with what objects it might intersect.
     const Vector<int> & intersect_with_all( int ind, Float h );
