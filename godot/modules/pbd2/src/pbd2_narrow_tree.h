@@ -54,7 +54,7 @@ public:
     void apply( const Pose & pose );
     Pose pose() const;
 
-    bool intersects( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
+    bool intersect( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
 
     // For visualization.
     PoolVector3Array lines_sdf_nodes() const;

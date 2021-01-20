@@ -288,7 +288,7 @@ Pose NarrowTree::pose() const
 
 
 
-bool NarrowTree::intersects( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
+bool NarrowTree::intersect( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
 {
     if ( !tree )
         return false;

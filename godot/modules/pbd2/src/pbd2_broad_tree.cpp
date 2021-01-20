@@ -294,7 +294,7 @@ void BroadTree::collide_pair( int ind_a, int ind_b )
         ats_.clear();
         depths_.clear();
 
-        tree_a->intersects( tree_b, ats_, depths_ );
+        tree_a->intersect( tree_b, ats_, depths_ );
         const int qty = ats_.size();
         for ( int i=0; i<qty; i++ )
         {
@@ -318,7 +318,7 @@ void BroadTree::collide_pair( int ind_a, int ind_b )
         ats_.clear();
         depths_.clear();
 
-        tree_b->intersects( tree_a, ats_, depths_ );
+        tree_b->intersect( tree_a, ats_, depths_ );
         const int qty = ats_.size();
         for ( int i=0; i<qty; i++ )
         {
