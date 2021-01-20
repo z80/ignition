@@ -15,8 +15,20 @@ class RigidBody;
 class CollisionObject
 {
 public:
+    enum CollisionObjectType 
+    {
+        WrongType = 0, 
+        Point     = 1, 
+        Sphere    = 2, 
+        Plane     = 3, 
+        Heightmap = 4, 
+        Compound  = 5
+    };
+
     CollisionObject();
     virtual ~CollisionObject();
+
+    CollisionObjectType type() const;
     
     // It doesn't just return the origin of the ref. frame as 
     // the volume of the collision object might be displaced with respect to it.
@@ -31,9 +43,13 @@ public:
     // Intersecting this object with another collision object.
     virtual void intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths );
 
-    
+    // Computes and returns world pose.
+    Pose pose_w() const;
+
+    CollisionObjectType obj_type;
     // RigidBody it is a child of.
     RigidBody * rigid_body;
+    CollisionObject * parent_object;
     // Pose within its rigid body.
     // Global pose is "rigid_body->pose * pose".
     Pose pose;

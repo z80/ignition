@@ -7,13 +7,21 @@ namespace Pbd
 
 CollisionObject::CollisionObject()
     : rigid_body( nullptr ), 
-      k( 2.0 )
+      parent_object( nullptr ), 
+      k( 2.0 ), 
+      obj_type( WrongType ) 
 {
 }
 
 CollisionObject::~CollisionObject()
 {
 }
+
+CollisionObject::CollisionObjectType CollisionObject::type() const
+{
+    return obj_type;
+}
+
  
 Vector3d CollisionObject::center() const
 {
@@ -47,6 +55,16 @@ void CollisionObject::intersect( CollisionObject * b, Vector<Vector3d> & ats, Ve
     // By default do nothing of course.
 }
 
+Pose CollisionObject::pose_w() const
+{
+    Pose pw;
+    if ( (parent_object != nullptr) && (parent_object != this) )
+        pw = parent_object->pose_w();
+    else
+        pw = rigid_body->pose;
+    pw = pw * pose;
+    return pw;
+}
 
 
 
