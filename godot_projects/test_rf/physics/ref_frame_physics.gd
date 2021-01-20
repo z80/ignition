@@ -269,6 +269,8 @@ func process_body( force_source_rf: RefFrame, body: Body ):
 	var v: Vector3 = force_source_rf.v_root()
 	var q: Quat    = force_source_rf.q_root()
 	var w: Vector3 = force_source_rf.w_root()
+	
+	# This "if" statement is for debugging.
 	if body.name == "Thruster_01":
 		body.compute_relative_to_root( force_source_rf )
 		var r_rel: Vector3 = body.r_root()
