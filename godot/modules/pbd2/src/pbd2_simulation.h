@@ -43,7 +43,7 @@ public:
 
     static bool solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h );
     static bool solve_tangential( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h );
-    static bool specific_mass_pos( RigidBody * body, const Vector<ContactPointBb> & pts, Float & w );
+    static bool specific_mass_pos( bool is_a, RigidBody * body, const Vector<ContactPointBb> & pts, Float & w );
 };
 
 

@@ -146,12 +146,12 @@ void Simulation::add_joint( Joint * joint )
 bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h )
 {
     Float w_a;
-    const bool ok_a = specific_mass_pos( body_a, pts, w_a );
+    const bool ok_a = specific_mass_pos( true, body_a, pts, w_a );
     if ( !ok_a )
         return false;
 
     Float w_b;
-    const bool ok_b = specific_mass_pos( body_b, pts, w_b );
+    const bool ok_b = specific_mass_pos( false, body_b, pts, w_b );
     if ( !ok_b )
         return false;
 
@@ -198,6 +198,7 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<Co
         const Matrix3d inv_I = body_a->inv_I();
         const Vector3d rot = inv_I * r_x_d_accum_a;
         Quaterniond dq( 0.0, rot.x_, rot.y_, rot.z_ );
+        const Pose pose = body_a->pose;
         dq = dq * pose.q;
         Quaterniond q = pose.q;
         q.w_ += dq.w_;
@@ -218,6 +219,7 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<Co
         const Matrix3d inv_I = body_b->inv_I();
         const Vector3d rot = inv_I * r_x_d_accum_b;
         Quaterniond dq( 0.0, rot.x_, rot.y_, rot.z_ );
+        const Pose pose = body_b->pose;
         dq = dq * pose.q;
         Quaterniond q = pose.q;
         q.w_ -= dq.w_;
@@ -233,7 +235,7 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<Co
     return true;
 }
 
-bool Simulation::solve_tangential( RigidBody * body_a, RigidBody * body_b, Vector<ContatPointBb> & pts, Float h )
+bool Simulation::solve_tangential( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h )
 {
     const int qty = pts.size();
     for ( int i=0; i<qty; i++ )
@@ -266,7 +268,7 @@ bool Simulation::specific_mass_pos( bool is_a, RigidBody * body, const Vector<Co
     }
     const Matrix3d inv_I = body->inv_I();
     const Float position_part = static_cast<Float>(qty)/body->mass;
-    const Vector3d rotation_part = r_x_n_accum.DotProduct( inv_I * r_x_n_accum );
+    const Float rotation_part = r_x_n_accum.DotProduct( inv_I * r_x_n_accum );
     w = position_part + rotation_part;
     
     return true;
