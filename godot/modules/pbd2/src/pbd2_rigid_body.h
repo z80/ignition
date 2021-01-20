@@ -11,6 +11,8 @@ using namespace Ign;
 namespace Pbd
 {
 
+class CollisionObject;
+
 class RigidBody
 {
 public:
@@ -39,9 +41,8 @@ public:
     // It is checked if a point is below "y=0" plane.
     Vector<ContactPoint> contact_points;
 
-    // These points are dynamic points. These are
-    // computed based on how body interacts with other bodies.
-    Vector<ContactPoint> contact_points_dynamic;
+    // Collision object for colliding mobing bodies.
+    CollisionObject * collision_object;
 
     RigidBody();
     ~RigidBody();

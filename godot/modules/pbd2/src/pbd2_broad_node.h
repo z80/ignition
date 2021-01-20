@@ -11,7 +11,7 @@ namespace Pbd
 {
 
 class BroadTree;
-class NarrowTree;
+class CollisionObject;
 
 class BroadTreeNode
 {
@@ -22,9 +22,9 @@ public:
     const BroadTreeNode & operator=( const BroadTreeNode & inst );
 
     bool hasChildren() const;
-    bool subdivide();
+    bool subdivide( Float h );
 
-    bool inside( const NarrowTree * nt ) const;
+    bool inside( const CollisionObject * nt, Float h ) const;
     bool inside( const Vector3d & c, Float sz ) const;
     bool objects_inside( int body_ind, const Vector3d & c, Float sz, Vector<int> & bodies ) const;
 

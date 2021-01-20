@@ -22,11 +22,11 @@ public:
     // the volume of the collision object might be displaced with respect to it.
     // For example in Octree object Octree center is determined after analysing all the vertices.
     // And it doesn't only depend of "pose" field.
-    virtual Vector3d center();
+    virtual Vector3d center() const;
     // Here it is a timestep.
-    Float    size2( Float h );
+    Float    size2( Float h ) const;
     // This should be defined by implementations.
-    virtual Float bounding_radius();
+    virtual Float bounding_radius() const;
 
     // Intersecting this object with another collision object.
     virtual void intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths );

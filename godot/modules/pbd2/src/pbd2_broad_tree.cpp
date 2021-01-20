@@ -1,6 +1,9 @@
 
 #include "pbd2_broad_tree.h"
-#include "pbd2_narrow_tree.h"
+#include "pbd2_simulation.h"
+#include "pbd2_rigid_body.h"
+#include "pbd2_collision_object.h"
+
 
 
 namespace Pbd
@@ -8,11 +11,8 @@ namespace Pbd
 
 static const Float EPS = 0.0001;
 
-static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, Vector<Face> & faces );
-static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face> & faces );
-
-
 BroadTree::BroadTree()
+    : simulation( nullptr )
 {
     max_depth_ = 5;
 }
@@ -34,35 +34,55 @@ int BroadTree::max_depth() const
 void BroadTree::clear()
 {
    nodes_.clear();
-   bodies_.clear();
    contacts_.clear();
 }
 
-void BroadTree::subdivide()
+void BroadTree::subdivide( Float h )
 {
     // Before eerything else clear nodes.
     nodes_.clear();
+    
+    const Vector<RigidBody *> & bodies = simulation->bodies;
+    const int bodies_qty = bodies.size();
+    if ( bodies_qty < 1 )
+        return;
 
-
+    bool initialized = false;
     Float x_min, x_max, y_min, y_max, z_min, z_max;
     // Initialize with the very first point.
+    for ( int i=0; i<bodies_qty; i++ )
     {
-        const NarrowTree * nt = bodies_.ptr()[0];
-        const Vector3d c = nt->center();
-        const Float sz = nt->size2();
+        const RigidBody * body = bodies.ptr()[0];
+        const CollisionObject * co = body->collision_object;
+        if ( co == nullptr )
+            continue;
+        const Vector3d c = co->center();
+        const Float sz = co->size2( h );
         x_min = x_max = c.x_;
         y_min = y_max = c.y_;
         z_min = z_max = c.z_;
+        initialized = true;
+        break;
     }
+    if ( !initialized )
+        return;
 
-    const int bodies_qty = bodies_.size();
+    BroadTreeNode root;
+
     for ( int i=0; i<bodies_qty; i++ )
     {
-        const NarrowTree * nt = bodies_.ptr()[i];
-        const Float sz = nt->size2();
+        const RigidBody * body = bodies.ptr()[i];
+        const CollisionObject * co = body->collision_object;
+        if ( co == nullptr )
+            continue;
+        const Float sz = co->size2( h );
         if ( sz < 0.0 )
             continue;
-        const Vector3d center = nt->center();
+        // Put only body indices for the bodies who have collision objects.
+        // And collision objects are valid.
+        root.ptInds.push_back( i );
+        // Determine dimensions.
+        const Vector3d center = co->center();
         const Vector3d v_max = center + Vector3d( sz, sz, sz );
         const Vector3d v_min = center - Vector3d( sz, sz, sz );
         if ( v_min.x_ < x_min )
@@ -88,8 +108,6 @@ void BroadTree::subdivide()
     // Not sure if it is needed.
     d *= 1.1;
 
-    nodes_.clear();
-    BroadTreeNode root;
     root.level = 0;
     root.tree = this;
     root.center = c;
@@ -99,17 +117,17 @@ void BroadTree::subdivide()
         root.ptInds.push_back( i );
     insert_node( root );
 
-    root.subdivide();
+    root.subdivide( h );
     update_node( root );
 }
 
 
 
 
-const Vector<int> & BroadTree::intersect_with_all( int ind )
+const Vector<int> & BroadTree::intersect_with_all( int ind, Float h )
 {
     body_inds_.clear();
-    select_for_one( ind, body_inds_ );
+    select_for_one( ind, h, body_inds_ );
     remove_duplicates( body_inds_ );
 
     return body_inds_;
@@ -231,23 +249,27 @@ void BroadTree::update_node( const BroadTreeNode & node )
     nodes_.ptrw()[ node.absIndex ] = node;
 }
 
-bool BroadTree::select_for_one( int tree_ind, Vector<int> & inds )
+bool BroadTree::select_for_one( int body_ind, Float h, Vector<int> & inds )
 {
     inds.clear();
-    const int qty = bodies_.size();
+    const Vector<RigidBody *> & bodies = simulation->bodies;
+    const int qty = bodies.size();
     if ( qty < 1 )
         return false;
 
-    const int bodies_qty = bodies_.size();
-    if ( tree_ind >= bodies_qty )
+    const int bodies_qty = bodies.size();
+    if ( body_ind >= bodies_qty )
         return false;
 
-    const NarrowTree * tree = bodies_.ptr()[tree_ind];
-    const Vector3d center = tree->center();
-    const Float size2 = tree->size2();
+    const RigidBody * body = bodies.ptr()[body_ind];
+    const CollisionObject * co = body->collision_object;
+    if ( co == nullptr )
+        return true;
+    const Vector3d center = co->center();
+    const Float size2 = co->size2( h );
 
     const BroadTreeNode & root = nodes_.ptr()[0];
-    const bool ok = root.objects_inside( tree_ind, center, size2, inds );
+    const bool ok = root.objects_inside( body_ind, center, size2, inds );
 
     return ok;
 }
@@ -284,17 +306,20 @@ void BroadTree::remove_duplicates( Vector<int> & inds )
 
 void BroadTree::collide_pair( int ind_a, int ind_b )
 {
-    NarrowTree * tree_a = bodies_.ptrw()[ind_a];
-    NarrowTree * tree_b = bodies_.ptrw()[ind_b];
-    const Pose pose_a = tree_a->pose();
-    const Pose pose_b = tree_b->pose();
+    Vector<RigidBody *> & bodies = simulation->bodies;
+    RigidBody * body_a = bodies.ptrw()[ind_a];
+    RigidBody * body_b = bodies.ptrw()[ind_b];
+    CollisionObject * obj_a = body_a->collision_object;
+    CollisionObject * obj_b = body_b->collision_object;
+    const Pose pose_a = body_a->pose;
+    const Pose pose_b = body_b->pose;
 
     // Intersect "a" with "b".
     {
         ats_.clear();
         depths_.clear();
 
-        tree_a->intersect( tree_b, ats_, depths_ );
+        obj_a->intersect( obj_b, ats_, depths_ );
         const int qty = ats_.size();
         for ( int i=0; i<qty; i++ )
         {
@@ -318,7 +343,7 @@ void BroadTree::collide_pair( int ind_a, int ind_b )
         ats_.clear();
         depths_.clear();
 
-        tree_b->intersect( tree_a, ats_, depths_ );
+        obj_b->intersect( obj_a, ats_, depths_ );
         const int qty = ats_.size();
         for ( int i=0; i<qty; i++ )
         {

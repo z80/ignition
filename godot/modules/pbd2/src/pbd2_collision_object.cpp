@@ -15,7 +15,7 @@ CollisionObject::~CollisionObject()
 {
 }
  
-Vector3d CollisionObject::center()
+Vector3d CollisionObject::center() const
 {
     Pose p = pose;
     if ( rigid_body != nullptr )
@@ -24,12 +24,12 @@ Vector3d CollisionObject::center()
     return p.r;
 }
 
-Float CollisionObject::size2( Float h )
+Float CollisionObject::size2( Float h ) const
 {
     Float sz = bounding_radius();
     if ( sz <= 0.0 )
         return sz;
-    if ( rigid_body == null )
+    if ( rigid_body == nullptr )
         return sz;
 
     const Float v = rigid_body->vel.Length();
@@ -37,7 +37,7 @@ Float CollisionObject::size2( Float h )
     return sz;
 }
 
-Float CollisionObject::bounding_radius()
+Float CollisionObject::bounding_radius() const
 {
     return -1.0;
 }

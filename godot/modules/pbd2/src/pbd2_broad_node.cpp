@@ -1,7 +1,9 @@
 
 #include "pbd2_broad_node.h"
 #include "pbd2_broad_tree.h"
-#include "pbd2_narrow_tree.h"
+#include "pbd2_simulation.h"
+#include "pbd2_rigid_body.h"
+#include "pbd2_collision_object.h"
 #include "matrix3d.h"
 
 namespace Pbd
@@ -84,7 +86,7 @@ bool BroadTreeNode::hasChildren() const
     return false;
 }
 
-bool BroadTreeNode::subdivide()
+bool BroadTreeNode::subdivide( Float h )
 {
     if ( level >= tree->max_depth_ )
     {
@@ -173,9 +175,10 @@ bool BroadTreeNode::subdivide()
         for ( int i=0; i<qty; i++ )
         {
             const int ind = ptInds[i];
-            const NarrowTree * nt = tree->bodies_[ind];
+            const RigidBody * body = tree->simulation->bodies.ptr()[ind];
+            const CollisionObject * co = body->collision_object;
 
-            const bool inside = ch_n.inside( nt );
+            const bool inside = ch_n.inside( co, h );
             if ( inside )
             {
                 ch_n.ptInds.push_back( ind );
@@ -191,7 +194,7 @@ bool BroadTreeNode::subdivide()
     for ( int i=0; i<8; i++ )
     {
         BroadTreeNode & ch_n = nn[i];
-        ch_n.subdivide();
+        ch_n.subdivide( h );
         tree->update_node( ch_n );
     }
 
@@ -199,16 +202,16 @@ bool BroadTreeNode::subdivide()
 }
 
 
-bool BroadTreeNode::inside( const NarrowTree * nt ) const
+bool BroadTreeNode::inside( const CollisionObject * co, Float h ) const
 {
-    if ( nt == nullptr )
+    if ( co == nullptr )
         return false;
     
-    const Float sz2 = nt->size2();
+    const Float sz2 = co->size2( h );
     if (sz2 < 0.0 )
         return false;
     const Float d = size2 + sz2;
-    const Vector3d dr = center - nt->center();
+    const Vector3d dr = center - co->center();
     if ( std::abs(dr.x_) <= d )
         return true; 
     if ( std::abs(dr.y_) <= d )

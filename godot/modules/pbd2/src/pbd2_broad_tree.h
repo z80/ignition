@@ -13,7 +13,8 @@
 namespace Pbd
 {
 
-class NarrowTree;
+class CollisionObject;
+class Simulation;
 
 struct CollisionPoint
 {
@@ -35,10 +36,10 @@ public:
 
     // These three are supposed to be used in simulation loop.
     // "subdivide" should be called once.
-    void subdivide();
+    void subdivide( Float h );
     // Pair of these methods is supposed to be used for each body's bollision object.
     // This one determines with what objects it might intersect.
-    const Vector<int> & intersect_with_all( int ind );
+    const Vector<int> & intersect_with_all( int ind, Float h );
     // And this one actually collides objects.
     const Vector<ContactPointBb> & contact_points( int ind_a, int ind_b );
 
@@ -52,14 +53,16 @@ public:
 
     // Selecting intersecting nodes.
     void intersecting_pairs( int ind );
-    bool select_for_one( int tree_ind, Vector<int> & inds );
+    bool select_for_one( int tree_ind, Float h, Vector<int> & inds );
     void remove_duplicates( Vector<int> & inds );
 
     void collide_pair( int ind_a, int ind_b );
 
     SE3                   se3_;
     Vector<BroadTreeNode> nodes_;
-    Vector<NarrowTree *>  bodies_;
+
+    Simulation * simulation;
+    //Vector<NarrowTree *>  bodies_;
 
     Vector<ContactPointBb> contacts_;
     // This one is a helper array used in "select".
