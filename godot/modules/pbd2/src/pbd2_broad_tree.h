@@ -6,6 +6,7 @@
 #include "se3.h"
 #include "pbd2_broad_node.h"
 #include "pbd2_pose.h"
+#include "pbd2_contact_point_bb.h"
 
 #include "core/variant.h"
 
@@ -39,7 +40,7 @@ public:
     // This one determines with what objects it might intersect.
     const Vector<int> & intersect_with_all( int ind );
     // And this one actually collides objects.
-    const Vector<CollisionPoint> & collision_points( int ind_a, int ind_b );
+    const Vector<ContactPointBb> & contact_points( int ind_a, int ind_b );
 
     // For visualization.
     PoolVector3Array lines_nodes() const;
@@ -60,7 +61,7 @@ public:
     Vector<BroadTreeNode> nodes_;
     Vector<NarrowTree *>  bodies_;
 
-    Vector<CollisionPoint> collisions_;
+    Vector<ContactPointBb> contacts_;
     // This one is a helper array used in "select".
     Vector<int> body_inds_;
     // 

@@ -34,7 +34,7 @@ void BroadTree::clear()
 {
    nodes_.clear();
    bodies_.clear();
-   collisions_.clear();
+   contacts_.clear();
 }
 
 void BroadTree::subdivide()
@@ -114,12 +114,12 @@ const Vector<int> & BroadTree::intersect_with_all( int ind )
     return body_inds_;
 }
 
-const Vector<CollisionPoint> & BroadTree::collision_points( int ind_a, int ind_b )
+const Vector<Contact_pointBb> & BroadTree::contact_points( int ind_a, int ind_b )
 {
-    collisions_.clear();
+    contacts_.clear();
     collide_pair( ind_a, ind_b );
 
-    return collisions_;
+    return contacts_;
 }
 
 
@@ -285,18 +285,56 @@ void BroadTree::collide_pair( int ind_a, int ind_b )
 {
     NarrowTree * tree_a = bodies_.ptrw()[ind_a];
     NarrowTree * tree_b = bodies_.ptrw()[ind_b];
-    ats_.clear();
-    depths_.clear();
-    tree_a->intersects( tree_b, ats_, depths_ );
-    const int qty = ats_.size();
-    for ( int i=0; i<qty; i++ )
+    const Pose pose_a = tree_a->pose();
+    const Pose pose_b = tree_b->pose();
+
+    // Intersect "a" with "b".
     {
-        const Vector3d & at    = ats_.ptr()[i];
-        const Vector3d & depth = depths_.ptr()[i];
-        CollisionPoint pt;
-        pt.at           = at;
-        pt.displacement = depth;
-        collisions_.push_back( pt );
+        ats_.clear();
+        depths_.clear();
+
+        tree_a->intersects( tree_b, ats_, depths_ );
+        const int qty = ats_.size();
+        for ( int i=0; i<qty; i++ )
+        {
+            const Vector3d & at    = ats_.ptr()[i];
+            const Vector3d & depth = depths_.ptr()[i];
+            const Float L = depth.Length();
+            if ( L < EPS )
+                continue;
+
+            ContactPointBb pt;
+            pt.depth   = L;
+            pt.n_world = depth / L;
+            pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
+            pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
+            contacts_.push_back( pt );
+        }
+    }
+
+    // Now the opposite. Intersect "b" with "a".
+    {
+        ats_.clear();
+        depths_.clear();
+
+        tree_b->intersects( tree_a, ats_, depths_ );
+        const int qty = ats_.size();
+        for ( int i=0; i<qty; i++ )
+        {
+            const Vector3d & at    = ats_.ptr()[i];
+            const Float L = depth.Length();
+            if ( L < EPS )
+                continue;
+
+            ContactPointBb pt;
+            pt.depth   = L;
+            // Here it is with "-". as here "b" collided with "a".
+            // But depth is supposed to be towsrds "a".
+            pt.n_world = -depth / L;
+            pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
+            pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
+            collisions_.push_back( pt );
+        }
     }
 }
 

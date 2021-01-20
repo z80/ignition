@@ -233,7 +233,12 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, const Vec
 
 bool Simulation::solve_tangential( RigidBody * body_a, RigidBody * body_b, const Vector<ContatPointBb> & pts, Float h )
 {
-    
+    const int qty = pts.size();
+    for ( int i=0; i<qty; i++ )
+    {
+        ContactPointBb & pt = pts.ptrw()[i];
+        pt.solve_tangential( body_a, body_b, h );
+    }
     return true;
 }
 
