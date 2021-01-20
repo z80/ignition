@@ -277,9 +277,11 @@ void NarrowTree::apply( const Pose & pose )
 
 Pose NarrowTree::pose() const
 {
-    Pose pose;
-    pose.q = se3_.q_;
-    pose.r = se3_.r_;
+    Pose p;
+    p.q = se3_.q_;
+    p.r = se3_.r_;
+
+    return p;
 }
 
 

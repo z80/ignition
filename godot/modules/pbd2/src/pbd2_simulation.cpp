@@ -86,9 +86,9 @@ void Simulation::step()
     // Solve for normal collisions body with another body.
     for ( int i=0; i<bodies_qty; i++ )
     {
-        RigidBody * body = bodies.ptr()[j];
+        RigidBody * body = bodies.ptr()[i];
         // Collide with other bodies.
-        // List of potentially olliding pairs.
+        // List of potentially colliding pairs.
         // for each pair actually collide and get numebr of contact points.
         // For all contact points reset lambdas.
         //for ( int j=0; j<contacts_qty; j++ )
@@ -143,7 +143,7 @@ void Simulation::add_joint( Joint * joint )
 }
 
 
-bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, const Vector<ContatPointBb> & pts, Float h )
+bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h )
 {
     Float w_a;
     const bool ok_a = specific_mass_pos( body_a, pts, w_a );
@@ -155,7 +155,7 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, const Vec
     if ( !ok_b )
         return false;
 
-    const Float mu_both = mu_a + mu_b;
+    const Float w_both = w_a + w_b;
 
     const Float compliance_a = body_a->compliance_normal;
     const Float compliance_b = body_b->compliance_normal;
@@ -168,13 +168,13 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, const Vec
     const int qty = pts.size();
     for ( int i=0; i<qty; i++ )
     {
-        ContactPointBb & cp = contact_points.ptrw()[i];
+        ContactPointBb & cp = pts.ptrw()[i];
 
         // Compute lambda_normal. It is needed for further tangential procesing.
         Float lambda = cp.lambda_normal;
 
         const Float alpha_ = compliance_normal / (h*h);
-        const Float d_lambda = -(cp.depth + alpha_*lambda) / (mu_both + alpha_);
+        const Float d_lambda = -(cp.depth + alpha_*lambda) / (w_both + alpha_);
         lambda += d_lambda;
         cp.lambda_normal = lambda;
 
@@ -192,6 +192,7 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, const Vec
 
     // Body "a".
     // Plus for body "a".
+    if ( body_a->mass > 0.0 )
     {
         const Vector3d dr = d_accum / body_a->mass;
         const Matrix3d inv_I = body_a->inv_I();
@@ -211,6 +212,7 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, const Vec
     
     // Body "b".
     // And minus for body "b".
+    if ( body_b->mass > 0.0 )
     {
         const Vector3d dr = d_accum / body_b->mass;
         const Matrix3d inv_I = body_b->inv_I();
@@ -231,7 +233,7 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, const Vec
     return true;
 }
 
-bool Simulation::solve_tangential( RigidBody * body_a, RigidBody * body_b, const Vector<ContatPointBb> & pts, Float h )
+bool Simulation::solve_tangential( RigidBody * body_a, RigidBody * body_b, Vector<ContatPointBb> & pts, Float h )
 {
     const int qty = pts.size();
     for ( int i=0; i<qty; i++ )
@@ -246,7 +248,9 @@ bool Simulation::solve_tangential( RigidBody * body_a, RigidBody * body_b, const
 bool Simulation::specific_mass_pos( bool is_a, RigidBody * body, const Vector<ContactPointBb> & pts, Float & w )
 {
     w = 0.0;
-    position_part = 0.0;
+    if ( body->mass <= 0.0 )
+        return true;
+
     Vector3d r_x_n_accum = Vector3d( 0.0, 0.0, 0.0 );
     const int qty = pts.size();
     if ( qty < 1 )

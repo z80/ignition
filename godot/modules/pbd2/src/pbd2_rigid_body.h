@@ -54,7 +54,7 @@ public:
 
     void integrate_dynamics( Float dt );
     void update_velocities( Float dt );
-    void init_contact_lambdas_bb();
+    void init_contact_lambdas();
     void solve_contacts( Float h );
     void update_contact_velocities( Float h );
     void update_contact_positions();
