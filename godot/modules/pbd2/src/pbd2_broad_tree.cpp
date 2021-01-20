@@ -6,6 +6,7 @@
 namespace Pbd
 {
 
+static const Float EPS = 0.0001;
 
 static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, Vector<Face> & faces );
 static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face> & faces );
@@ -114,7 +115,7 @@ const Vector<int> & BroadTree::intersect_with_all( int ind )
     return body_inds_;
 }
 
-const Vector<Contact_pointBb> & BroadTree::contact_points( int ind_a, int ind_b )
+const Vector<ContactPointBb> & BroadTree::contact_points( int ind_a, int ind_b )
 {
     contacts_.clear();
     collide_pair( ind_a, ind_b );
@@ -321,7 +322,8 @@ void BroadTree::collide_pair( int ind_a, int ind_b )
         const int qty = ats_.size();
         for ( int i=0; i<qty; i++ )
         {
-            const Vector3d & at    = ats_.ptr()[i];
+            const Vector3d & at  = ats_.ptr()[i];
+            const Vector3d depth = depths_.ptr()[i];
             const Float L = depth.Length();
             if ( L < EPS )
                 continue;
@@ -333,7 +335,7 @@ void BroadTree::collide_pair( int ind_a, int ind_b )
             pt.n_world = -depth / L;
             pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
             pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
-            collisions_.push_back( pt );
+            contacts_.push_back( pt );
         }
     }
 }

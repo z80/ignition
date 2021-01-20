@@ -1,6 +1,6 @@
 
-#ifndef __PBD_OCCUPANCY_TREE_H_
-#define __PBD_OCCUPANCY_TREE_H_
+#ifndef __PBD_NARROW_TREE_H_
+#define __PBD_NARROW_TREE_H_
 
 #include "data_types.h"
 #include "se3.h"
@@ -52,6 +52,7 @@ public:
     void subdivide_pts();
 
     void apply( const Pose & pose );
+    Pose pose() const;
 
     bool intersects( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
 

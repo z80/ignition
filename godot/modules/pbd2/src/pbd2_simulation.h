@@ -4,6 +4,7 @@
 
 #include "data_types.h"
 #include "pbd2_broad_tree.h"
+#include "pbd2_contact_point_bb.h"
 
 #include "core/vector.h"
 
@@ -40,8 +41,8 @@ public:
 
 
 
-    static bool solve_normal( RigidBody * body_a, RigidBody * body_b, const Vector<ContatPointBb> & pts, Float h );
-    static bool solve_tangential( RigidBody * body_a, RigidBody * body_b, const Vector<ContatPointBb> & pts, Float h );
+    static bool solve_normal( RigidBody * body_a, RigidBody * body_b, const Vector<ContactPointBb> & pts, Float h );
+    static bool solve_tangential( RigidBody * body_a, RigidBody * body_b, const Vector<ContactPointBb> & pts, Float h );
     static bool specific_mass_pos( RigidBody * body, const Vector<ContactPointBb> & pts, Float & w, Float & position_part, Vector3d & rotation_part );
 };
 

@@ -5,6 +5,7 @@
 namespace Pbd
 {
 
+static const Float EPS = 0.0001;
 
 static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, Vector<Face> & faces );
 static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face> & faces );
@@ -211,68 +212,76 @@ void NarrowTree::subdivide_sdf()
 
 void NarrowTree::remove_pt_duplicates()
 {
-        const int qty = pts_.size();
-        int removed_qty = 0;
-        for ( int i=0; i<(qty-1); i++ )
+    const int qty = pts_.size();
+    int removed_qty = 0;
+    for ( int i=0; i<(qty-1); i++ )
+    {
+        bool removed = true;
+        while ( removed )
         {
-                bool removed = true;
-                while ( removed )
+            removed = false;
+            const Vector3d pt_a = pts_.ptr()[i];
+            const int valid_qty = (qty - removed_qty);
+            for ( int j=(i+1); j<valid_qty; j++ )
+            {
+                const Vector3d pt_b = pts_.ptr()[j];
+                const Vector3d diff = pt_b - pt_a;
+                const Float d = diff.Length();
+                // Swap with the last element.
+                if ( d < EPS )
                 {
-                        removed = false;
-                        const Vector3d pt_a = pts_.ptr()[i];
-                        const int valid_qty = (qty - removed_qty);
-                        for ( int j=(i+1); j<valid_qty; j++ )
-                        {
-                                const Vector3d pt_b = pts_.ptr()[j];
-                                const Vector3d diff = pt_b - pt_a;
-                                const Float d = diff.Length();
-                                // Swap with the last element.
-                                if ( d < 0.001 )
-                                {
-                                        int last_ind = qty - removed_qty - 1;
-                                        const Vector3d last_pt = pts_.ptr()[last_ind];
-                                        pts_.ptrw()[last_ind] = pt_b;
-                                        pts_.ptrw()[j] = last_pt;
-                                        removed_qty += 1;
+                    int last_ind = qty - removed_qty - 1;
+                    const Vector3d last_pt = pts_.ptr()[last_ind];
+                    pts_.ptrw()[last_ind] = pt_b;
+                    pts_.ptrw()[j] = last_pt;
+                    removed_qty += 1;
 
-                                        removed = true;
-                                }
-                        }
+                    removed = true;
                 }
+            }
         }
+    }
 
-        pts_.resize( qty - removed_qty );
+    pts_.resize( qty - removed_qty );
 }
 
 void NarrowTree::subdivide_pts()
 {
-        nodes_pts_.clear();
-        NarrowTreePtsNode root;
-        const NarrowTreeSdfNode & sdf_root = nodes_sdf_.ptr()[0];
-        root.level = 0;
-        root.tree = this;
-        root.center = sdf_root.center;
-        root.size2 = sdf_root.size2;
-        root.init();
+    nodes_pts_.clear();
+    NarrowTreePtsNode root;
+    const NarrowTreeSdfNode & sdf_root = nodes_sdf_.ptr()[0];
+    root.level = 0;
+    root.tree = this;
+    root.center = sdf_root.center;
+    root.size2 = sdf_root.size2;
+    root.init();
 
-        root.ptInds.clear();
-        const int pts_qty = pts_.size();
-        for ( int i=0; i<pts_qty; i++ )
-                root.ptInds.push_back( i );
+    root.ptInds.clear();
+    const int pts_qty = pts_.size();
+    for ( int i=0; i<pts_qty; i++ )
+        root.ptInds.push_back( i );
 
     insert_node_pts( root );
-        root.subdivide();
-        update_node_pts( root );
+    root.subdivide();
+    update_node_pts( root );
 }
 
 void NarrowTree::apply( const Pose & pose )
 {
-        SE3 se3;
-        se3.q_ = pose.q;
-        se3.r_ = pose.r;
+    SE3 se3;
+    se3.q_ = pose.q;
+    se3.r_ = pose.r;
 
     se3_ = se3;
 }
+
+Pose NarrowTree::pose() const
+{
+    Pose pose;
+    pose.q = se3_.q_;
+    pose.r = se3_.r_;
+}
+
 
 
 
@@ -367,161 +376,161 @@ PoolVector3Array NarrowTree::lines_sdf_nodes() const
 
 PoolVector3Array NarrowTree::lines_pts_nodes() const
 {
-        Vector<Vector3> ls;
-        const int qty = nodes_pts_.size();
-        for ( int i=0; i<qty; i++ )
+    Vector<Vector3> ls;
+    const int qty = nodes_pts_.size();
+    for ( int i=0; i<qty; i++ )
+    {
+        const NarrowTreePtsNode & n = nodes_pts_.ptr()[i];
+        const bool has_ch = n.hasChildren();
+        if ( has_ch )
+            continue;
+        if ( n.ptInds.empty() )
+            continue;
+
+        const Vector3d * vs = n.cube_.verts;
+        Vector3 v[8];
+        for ( int i=0; i<8; i++ )
         {
-                const NarrowTreePtsNode & n = nodes_pts_.ptr()[i];
-                const bool has_ch = n.hasChildren();
-                if ( has_ch )
-                        continue;
-                if ( n.ptInds.empty() )
-                        continue;
-
-                const Vector3d * vs = n.cube_.verts;
-                Vector3 v[8];
-                for ( int i=0; i<8; i++ )
-                {
-                        const Vector3d & vd = vs[i];
-                        v[i] = Vector3( vd.x_, vd.y_, vd.z_ );
-                }
-
-                ls.push_back( v[0] );
-                ls.push_back( v[1] );
-
-                ls.push_back( v[1] );
-                ls.push_back( v[2] );
-
-                ls.push_back( v[2] );
-                ls.push_back( v[3] );
-
-                ls.push_back( v[3] );
-                ls.push_back( v[0] );
-
-
-                ls.push_back( v[4] );
-                ls.push_back( v[5] );
-
-                ls.push_back( v[5] );
-                ls.push_back( v[6] );
-
-                ls.push_back( v[6] );
-                ls.push_back( v[7] );
-
-                ls.push_back( v[7] );
-                ls.push_back( v[4] );
-
-
-                ls.push_back( v[0] );
-                ls.push_back( v[4] );
-
-                ls.push_back( v[1] );
-                ls.push_back( v[5] );
-
-                ls.push_back( v[2] );
-                ls.push_back( v[6] );
-
-                ls.push_back( v[3] );
-                ls.push_back( v[7] );
+            const Vector3d & vd = vs[i];
+            v[i] = Vector3( vd.x_, vd.y_, vd.z_ );
         }
 
-        PoolVector3Array res;
-        const int sz = ls.size();
-        res.resize( sz );
-        for ( int i=0; i<sz; i++ )
-        {
-                const Vector3 & v = ls.ptr()[i];
-                res.set( i, v );
-        }
+        ls.push_back( v[0] );
+        ls.push_back( v[1] );
 
-        return res;
+        ls.push_back( v[1] );
+        ls.push_back( v[2] );
+
+        ls.push_back( v[2] );
+        ls.push_back( v[3] );
+
+        ls.push_back( v[3] );
+        ls.push_back( v[0] );
+
+
+        ls.push_back( v[4] );
+        ls.push_back( v[5] );
+
+        ls.push_back( v[5] );
+        ls.push_back( v[6] );
+
+        ls.push_back( v[6] );
+        ls.push_back( v[7] );
+
+        ls.push_back( v[7] );
+        ls.push_back( v[4] );
+
+
+        ls.push_back( v[0] );
+        ls.push_back( v[4] );
+
+        ls.push_back( v[1] );
+        ls.push_back( v[5] );
+
+        ls.push_back( v[2] );
+        ls.push_back( v[6] );
+
+        ls.push_back( v[3] );
+        ls.push_back( v[7] );
+    }
+
+    PoolVector3Array res;
+    const int sz = ls.size();
+    res.resize( sz );
+    for ( int i=0; i<sz; i++ )
+    {
+        const Vector3 & v = ls.ptr()[i];
+        res.set( i, v );
+    }
+
+    return res;
 }
 
 PoolVector3Array NarrowTree::lines_surface_pts() const
 {
-        const int qty = pts_.size();
-        PoolVector3Array res;
-        res.resize( qty );
+    const int qty = pts_.size();
+    PoolVector3Array res;
+    res.resize( qty );
 
-        for ( int i=0; i<qty; i++ )
-        {
-                const Vector3d & vd = pts_.ptr()[i];
-                const Vector3 v( vd.x_, vd.y_, vd.z_ );
-                res.set( i, v );
-        }
-        return res;
+    for ( int i=0; i<qty; i++ )
+    {
+        const Vector3d & vd = pts_.ptr()[i];
+        const Vector3 v( vd.x_, vd.y_, vd.z_ );
+        res.set( i, v );
+    }
+    return res;
 }
 
 PoolVector3Array NarrowTree::lines_aligned_nodes() const
 {
-        Vector<Vector3> ls;
-        const int qty = nodes_pts_.size();
-        for ( int i=0; i<qty; i++ )
+    Vector<Vector3> ls;
+    const int qty = nodes_pts_.size();
+    for ( int i=0; i<qty; i++ )
+    {
+        const NarrowTreePtsNode & n = nodes_pts_.ptr()[i];
+        const bool has_ch = n.hasChildren();
+        if ( has_ch )
+            continue;
+        if ( n.ptInds.empty() )
+            continue;
+
+        const Vector3d * vs = n.cube_optimized_.verts;
+        Vector3 v[8];
+        for ( int i=0; i<8; i++ )
         {
-                const NarrowTreePtsNode & n = nodes_pts_.ptr()[i];
-                const bool has_ch = n.hasChildren();
-                if ( has_ch )
-                        continue;
-                if ( n.ptInds.empty() )
-                        continue;
-
-                const Vector3d * vs = n.cube_optimized_.verts;
-                Vector3 v[8];
-                for ( int i=0; i<8; i++ )
-                {
-                        const Vector3d & vd = vs[i];
-                        v[i] = Vector3( vd.x_, vd.y_, vd.z_ );
-                }
-
-                ls.push_back( v[0] );
-                ls.push_back( v[1] );
-
-                ls.push_back( v[1] );
-                ls.push_back( v[2] );
-
-                ls.push_back( v[2] );
-                ls.push_back( v[3] );
-
-                ls.push_back( v[3] );
-                ls.push_back( v[0] );
-
-
-                ls.push_back( v[4] );
-                ls.push_back( v[5] );
-
-                ls.push_back( v[5] );
-                ls.push_back( v[6] );
-
-                ls.push_back( v[6] );
-                ls.push_back( v[7] );
-
-                ls.push_back( v[7] );
-                ls.push_back( v[4] );
-
-
-                ls.push_back( v[0] );
-                ls.push_back( v[4] );
-
-                ls.push_back( v[1] );
-                ls.push_back( v[5] );
-
-                ls.push_back( v[2] );
-                ls.push_back( v[6] );
-
-                ls.push_back( v[3] );
-                ls.push_back( v[7] );
+            const Vector3d & vd = vs[i];
+            v[i] = Vector3( vd.x_, vd.y_, vd.z_ );
         }
 
-        PoolVector3Array res;
-        const int sz = ls.size();
-        res.resize( sz );
-        for ( int i=0; i<sz; i++ )
-        {
-                const Vector3 & v = ls.ptr()[i];
-                res.set( i, v );
-        }
+        ls.push_back( v[0] );
+        ls.push_back( v[1] );
 
-        return res;
+        ls.push_back( v[1] );
+        ls.push_back( v[2] );
+
+        ls.push_back( v[2] );
+        ls.push_back( v[3] );
+
+        ls.push_back( v[3] );
+        ls.push_back( v[0] );
+
+
+        ls.push_back( v[4] );
+        ls.push_back( v[5] );
+
+        ls.push_back( v[5] );
+        ls.push_back( v[6] );
+
+        ls.push_back( v[6] );
+        ls.push_back( v[7] );
+
+        ls.push_back( v[7] );
+        ls.push_back( v[4] );
+
+
+        ls.push_back( v[0] );
+        ls.push_back( v[4] );
+
+        ls.push_back( v[1] );
+        ls.push_back( v[5] );
+
+        ls.push_back( v[2] );
+        ls.push_back( v[6] );
+
+        ls.push_back( v[3] );
+        ls.push_back( v[7] );
+    }
+
+    PoolVector3Array res;
+    const int sz = ls.size();
+    res.resize( sz );
+    for ( int i=0; i<sz; i++ )
+    {
+        const Vector3 & v = ls.ptr()[i];
+        res.set( i, v );
+    }
+
+    return res;
 }
 
 
@@ -539,14 +548,14 @@ bool NarrowTree::parent_sdf( const NarrowTreeSdfNode & node, NarrowTreeSdfNode *
 
 bool NarrowTree::parent_pts( const NarrowTreePtsNode & node, NarrowTreePtsNode * & parent )
 {
-        if ( node.parentAbsIndex < 0 )
-        {
-                parent = 0;
-                return false;
-        }
+    if ( node.parentAbsIndex < 0 )
+    {
+        parent = 0;
+        return false;
+    }
 
-        parent = &( nodes_pts_.ptrw()[ node.parentAbsIndex ] );
-        return true;
+    parent = &( nodes_pts_.ptrw()[ node.parentAbsIndex ] );
+    return true;
 }
 
 int  NarrowTree::insert_node_sdf( NarrowTreeSdfNode & node )
@@ -558,21 +567,21 @@ int  NarrowTree::insert_node_sdf( NarrowTreeSdfNode & node )
     n.tree     = this;
     n.absIndex = ind;
 
-        node = n;
+    node = n;
     return ind;
 }
 
 int  NarrowTree::insert_node_pts( NarrowTreePtsNode & node )
 {
-        nodes_pts_.push_back( node );
-        const int ind = static_cast<int>(nodes_pts_.size()) - 1;
-        NarrowTreePtsNode * nns = nodes_pts_.ptrw();
-        NarrowTreePtsNode & n = nns[ind];
-        n.tree     = this;
-        n.absIndex = ind;
+    nodes_pts_.push_back( node );
+    const int ind = static_cast<int>(nodes_pts_.size()) - 1;
+    NarrowTreePtsNode * nns = nodes_pts_.ptrw();
+    NarrowTreePtsNode & n = nns[ind];
+    n.tree     = this;
+    n.absIndex = ind;
 
-        node = n;
-        return ind;
+    node = n;
+    return ind;
 }
 
 void NarrowTree::update_node_sdf( const NarrowTreeSdfNode & node )
@@ -582,133 +591,133 @@ void NarrowTree::update_node_sdf( const NarrowTreeSdfNode & node )
 
 void NarrowTree::update_node_pts( const NarrowTreePtsNode & node )
 {
-        nodes_pts_.ptrw()[ node.absIndex ] = node;
+    nodes_pts_.ptrw()[ node.absIndex ] = node;
 }
 
 void NarrowTree::swap_nodes_sdf( int ind_a, int ind_b )
 {
-        NarrowTreeSdfNode a = nodes_sdf_.ptr()[ind_a];
-        NarrowTreeSdfNode b = nodes_sdf_.ptr()[ind_b];
+    NarrowTreeSdfNode a = nodes_sdf_.ptr()[ind_a];
+    NarrowTreeSdfNode b = nodes_sdf_.ptr()[ind_b];
+    {
+        // update self, parent and children.
+        b.absIndex = ind_a;
+        const bool has_children = b.hasChildren();
+        if ( has_children )
         {
-                // update self, parent and children.
-                b.absIndex = ind_a;
-                const bool has_children = b.hasChildren();
-                if ( has_children )
-                {
-                        for ( int i=0; i<8; i++ )
-                        {
-                                const int ind = b.children[i];
-                                NarrowTreeSdfNode & c = nodes_sdf_.ptrw()[ind];
-                                c.parentAbsIndex = ind_a;
-                        }
-                        
-                        if ( b.parentAbsIndex >= 0 )
-                        {
-                                const int ind = b.parentAbsIndex;
-                                NarrowTreeSdfNode & p = nodes_sdf_.ptrw()[ind];
-                                p.children[ b.indexInParent ] = ind_a;
-                        }
-                }
-                nodes_sdf_.ptrw()[ind_a] = b;
+            for ( int i=0; i<8; i++ )
+            {
+                const int ind = b.children[i];
+                NarrowTreeSdfNode & c = nodes_sdf_.ptrw()[ind];
+                c.parentAbsIndex = ind_a;
+            }
+            
+            if ( b.parentAbsIndex >= 0 )
+            {
+                const int ind = b.parentAbsIndex;
+                NarrowTreeSdfNode & p = nodes_sdf_.ptrw()[ind];
+                p.children[ b.indexInParent ] = ind_a;
+            }
         }
+        nodes_sdf_.ptrw()[ind_a] = b;
+    }
 
+    {
+        // update self, parent and children.
+        a.absIndex = ind_b;
+        const bool has_children = a.hasChildren();
+        if ( has_children )
         {
-                // update self, parent and children.
-                a.absIndex = ind_b;
-                const bool has_children = a.hasChildren();
-                if ( has_children )
-                {
-                        for ( int i=0; i<8; i++ )
-                        {
-                                const int ind = a.children[i];
-                                NarrowTreeSdfNode & c = nodes_sdf_.ptrw()[ind];
-                                c.parentAbsIndex = ind_b;
-                        }
+            for ( int i=0; i<8; i++ )
+            {
+                const int ind = a.children[i];
+                NarrowTreeSdfNode & c = nodes_sdf_.ptrw()[ind];
+                c.parentAbsIndex = ind_b;
+            }
 
-                        if ( a.parentAbsIndex >= 0 )
-                        {
-                                const int ind = a.parentAbsIndex;
-                                NarrowTreeSdfNode & p = nodes_sdf_.ptrw()[ind];
-                                p.children[ a.indexInParent ] = ind_b;
-                        }
-                }
-                nodes_sdf_.ptrw()[ind_a] = b;
-
-                nodes_sdf_.ptrw()[ind_b] = a;
+            if ( a.parentAbsIndex >= 0 )
+            {
+                const int ind = a.parentAbsIndex;
+                NarrowTreeSdfNode & p = nodes_sdf_.ptrw()[ind];
+                p.children[ a.indexInParent ] = ind_b;
+            }
         }
+        nodes_sdf_.ptrw()[ind_a] = b;
+
+        nodes_sdf_.ptrw()[ind_b] = a;
+    }
 }
 
 void NarrowTree::remove_node_sdf( int ind )
 {
-        NarrowTreeSdfNode n = nodes_sdf_.ptr()[ind];
+    NarrowTreeSdfNode n = nodes_sdf_.ptr()[ind];
 
-        if ( n.parentAbsIndex >= 0 )
+    if ( n.parentAbsIndex >= 0 )
+    {
+        NarrowTreeSdfNode & p = nodes_sdf_.ptrw()[n.parentAbsIndex];
+        p.children[n.indexInParent] = -1;
+    }
+
+    const bool has_children = n.hasChildren();
+    if ( has_children )
+    {
+        for ( int i=0; i<8; i++ )
         {
-                NarrowTreeSdfNode & p = nodes_sdf_.ptrw()[n.parentAbsIndex];
-                p.children[n.indexInParent] = -1;
+            const int child_ind = n.children[i];
+            remove_node_sdf( child_ind );
         }
+    }
 
-        const bool has_children = n.hasChildren();
-        if ( has_children )
-        {
-                for ( int i=0; i<8; i++ )
-                {
-                        const int child_ind = n.children[i];
-                        remove_node_sdf( child_ind );
-                }
-        }
+    const int last_ind = nodes_sdf_.size() - 1;
+    if ( ind != last_ind )
+    {
+        swap_nodes_sdf( ind, last_ind );
+    }
 
-        const int last_ind = nodes_sdf_.size() - 1;
-        if ( ind != last_ind )
-        {
-                swap_nodes_sdf( ind, last_ind );
-        }
-
-        nodes_sdf_.resize( last_ind );
+    nodes_sdf_.resize( last_ind );
 }
 
 void NarrowTree::merge_nodes_on_either_side( NarrowTreeSdfNode n )
 {
-        const bool has_children = n.hasChildren();
-        if ( !has_children )
-                return;
+    const bool has_children = n.hasChildren();
+    if ( !has_children )
+        return;
 
-        if ( n.level > min_depth_ )
-        {
-                int qty_above = 0;
-                int qty_below = 0;
-                for ( int i=0; i<8; i++ )
-                {
-                        const int child_ind = n.children[i];
-                        const NarrowTreeSdfNode & cn = nodes_sdf_.ptr()[child_ind];
-                        const bool is_above = cn.is_above();
-                        if ( is_above )
-                                qty_above += 1;
-                        else
-                        {
-                                const bool is_below = cn.is_below();
-                                if ( is_below )
-                                        qty_below += 1;
-                        }
-                }
-                if ( (qty_above == 8) || (qty_below == 8) )
-                {
-                        for ( int i=0; i<8; i++ )
-                        {
-                                const int ind = 7-i;
-                                const int child_ind = n.children[ind];
-                                remove_node_sdf( child_ind );
-                        }
-                        return;
-                }
-        }
-
+    if ( n.level > min_depth_ )
+    {
+        int qty_above = 0;
+        int qty_below = 0;
         for ( int i=0; i<8; i++ )
         {
-                const int child_ind = n.children[i];
-                const NarrowTreeSdfNode cn = nodes_sdf_.ptr()[child_ind];
-                merge_nodes_on_either_side( cn );
+            const int child_ind = n.children[i];
+            const NarrowTreeSdfNode & cn = nodes_sdf_.ptr()[child_ind];
+            const bool is_above = cn.is_above();
+            if ( is_above )
+                qty_above += 1;
+            else
+            {
+                const bool is_below = cn.is_below();
+                if ( is_below )
+                    qty_below += 1;
+            }
         }
+        if ( (qty_above == 8) || (qty_below == 8) )
+        {
+            for ( int i=0; i<8; i++ )
+            {
+                const int ind = 7-i;
+                const int child_ind = n.children[ind];
+                remove_node_sdf( child_ind );
+            }
+            return;
+        }
+    }
+
+    for ( int i=0; i<8; i++ )
+    {
+        const int child_ind = n.children[i];
+        const NarrowTreeSdfNode cn = nodes_sdf_.ptr()[child_ind];
+        merge_nodes_on_either_side( cn );
+    }
 }
 
 
