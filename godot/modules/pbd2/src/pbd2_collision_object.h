@@ -4,7 +4,7 @@
 
 #include "data_types.h"
 #include "pbd2_pose.h"
-#include "pbd2_contact_point.h"
+#include "pbd2_contact_point_bb.h"
 
 
 namespace Pbd
@@ -39,6 +39,8 @@ public:
     Pose pose;
     // Safety parameter.
     Float k;
+    // All contacts with all other bodies.
+    Vector<ContactPointBb> contacts;
 };
 
 

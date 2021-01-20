@@ -36,6 +36,8 @@ public:
     
     bool apply_friction;
 
+    RigidBody * body_b;
+
     static const Float EPS;
 };
 

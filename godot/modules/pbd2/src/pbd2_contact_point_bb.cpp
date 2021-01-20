@@ -9,6 +9,7 @@ const Float ContactPointBb::EPS = 0.0001;
 
 ContactPointBb::ContactPointBb()
 {
+    body_b = nullptr;
     depth = 0.0;
     apply_friction = false;
     init_lambdas();
@@ -36,6 +37,8 @@ const ContactPointBb & ContactPointBb::operator=( const ContactPointBb & inst )
         lambda_tangential = inst.lambda_tangential;
         
         apply_friction  = inst.apply_friction;
+
+        body_b = inst.body_b;
     }
     return * this;
 }

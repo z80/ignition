@@ -39,9 +39,9 @@ public:
     void subdivide( Simulation * sim, Float h );
     // Pair of these methods is supposed to be used for each body's bollision object.
     // This one determines with what objects it might intersect.
-    const Vector<int> & intersect_with_all( int ind, Float h );
+    const Vector<int> & potential_collisions( int ind, Float h );
     // And this one actually collides objects.
-    const Vector<ContactPointBb> & contact_points( int ind_a, int ind_b );
+    void contact_points( int ind_a, int ind_b, Vector<ContactPointBb> & contacts );
 
     // For visualization.
     PoolVector3Array lines_nodes() const;
@@ -55,8 +55,6 @@ public:
     void intersecting_pairs( int ind );
     bool select_for_one( int tree_ind, Float h, Vector<int> & inds );
     void remove_duplicates( Vector<int> & inds );
-
-    void collide_pair( int ind_a, int ind_b );
 
     SE3                   se3_;
     Vector<BroadTreeNode> nodes_;

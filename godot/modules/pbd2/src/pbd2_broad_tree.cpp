@@ -125,7 +125,7 @@ void BroadTree::subdivide( Simulation * sim, Float h )
 
 
 
-const Vector<int> & BroadTree::intersect_with_all( int ind, Float h )
+const Vector<int> & BroadTree::potential_collisions( int ind, Float h )
 {
     body_inds_.clear();
     select_for_one( ind, h, body_inds_ );
@@ -134,12 +134,72 @@ const Vector<int> & BroadTree::intersect_with_all( int ind, Float h )
     return body_inds_;
 }
 
-const Vector<ContactPointBb> & BroadTree::contact_points( int ind_a, int ind_b )
+void BroadTree::contact_points( int ind_a, int ind_b, Vector<ContactPointBb> & contacts )
 {
-    contacts_.clear();
-    collide_pair( ind_a, ind_b );
+    contacts.clear();    // Clear contact information from previous usages.
 
-    return contacts_;
+    Vector<RigidBody *> & bodies = simulation->bodies;
+    RigidBody * body_a = bodies.ptrw()[ind_a];
+    RigidBody * body_b = bodies.ptrw()[ind_b];
+    CollisionObject * obj_a = body_a->collision_object;
+    CollisionObject * obj_b = body_b->collision_object;
+    if ( (obj_a == nullptr) || (obj_b == nullptr) )
+        return;
+
+    const Pose pose_a = body_a->pose;
+    const Pose pose_b = body_b->pose;
+
+    // Intersect "a" with "b".
+    {
+        ats_.clear();
+        depths_.clear();
+
+        obj_a->intersect( obj_b, ats_, depths_ );
+        const int qty = ats_.size();
+        for ( int i=0; i<qty; i++ )
+        {
+            const Vector3d & at    = ats_.ptr()[i];
+            const Vector3d & depth = depths_.ptr()[i];
+            const Float L = depth.Length();
+            if ( L < EPS )
+                continue;
+
+            ContactPointBb pt;
+            pt.depth   = L;
+            pt.n_world = depth / L;
+            pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
+            pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
+            pt.body_b = body_b;
+            contacts.push_back( pt );
+        }
+    }
+
+    // Now the opposite. Intersect "b" with "a".
+    {
+        ats_.clear();
+        depths_.clear();
+
+        obj_b->intersect( obj_a, ats_, depths_ );
+        const int qty = ats_.size();
+        for ( int i=0; i<qty; i++ )
+        {
+            const Vector3d & at  = ats_.ptr()[i];
+            const Vector3d depth = depths_.ptr()[i];
+            const Float L = depth.Length();
+            if ( L < EPS )
+                continue;
+
+            ContactPointBb pt;
+            pt.depth   = L;
+            // Here it is with "-". as here "b" collided with "a".
+            // But depth is supposed to be towsrds "a".
+            pt.n_world = -depth / L;
+            pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
+            pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
+            pt.body_b = body_b;
+            contacts.push_back( pt );
+        }
+    }
 }
 
 
@@ -312,72 +372,6 @@ void BroadTree::remove_duplicates( Vector<int> & inds )
     }
 }
 
-void BroadTree::collide_pair( int ind_a, int ind_b )
-{
-    // Clear contact information from previous usages.
-    contacts_.clear();
-
-    Vector<RigidBody *> & bodies = simulation->bodies;
-    RigidBody * body_a = bodies.ptrw()[ind_a];
-    RigidBody * body_b = bodies.ptrw()[ind_b];
-    CollisionObject * obj_a = body_a->collision_object;
-    CollisionObject * obj_b = body_b->collision_object;
-    if ( (obj_a == nullptr) || (obj_b == nullptr) )
-        return;
-
-    const Pose pose_a = body_a->pose;
-    const Pose pose_b = body_b->pose;
-
-    // Intersect "a" with "b".
-    {
-        ats_.clear();
-        depths_.clear();
-
-        obj_a->intersect( obj_b, ats_, depths_ );
-        const int qty = ats_.size();
-        for ( int i=0; i<qty; i++ )
-        {
-            const Vector3d & at    = ats_.ptr()[i];
-            const Vector3d & depth = depths_.ptr()[i];
-            const Float L = depth.Length();
-            if ( L < EPS )
-                continue;
-
-            ContactPointBb pt;
-            pt.depth   = L;
-            pt.n_world = depth / L;
-            pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
-            pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
-            contacts_.push_back( pt );
-        }
-    }
-
-    // Now the opposite. Intersect "b" with "a".
-    {
-        ats_.clear();
-        depths_.clear();
-
-        obj_b->intersect( obj_a, ats_, depths_ );
-        const int qty = ats_.size();
-        for ( int i=0; i<qty; i++ )
-        {
-            const Vector3d & at  = ats_.ptr()[i];
-            const Vector3d depth = depths_.ptr()[i];
-            const Float L = depth.Length();
-            if ( L < EPS )
-                continue;
-
-            ContactPointBb pt;
-            pt.depth   = L;
-            // Here it is with "-". as here "b" collided with "a".
-            // But depth is supposed to be towsrds "a".
-            pt.n_world = -depth / L;
-            pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
-            pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
-            contacts_.push_back( pt );
-        }
-    }
-}
 
 
 

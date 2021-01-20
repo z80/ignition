@@ -2,10 +2,31 @@
 #include "pbd2_simulation.h"
 #include "pbd2_rigid_body.h"
 #include "pbd2_joint.h"
+#include "pbd2_collision_object.h"
 
 namespace Pbd
 {
 
+static void clear_contacts( RigidBody * body )
+{
+    CollisionObject * co = body->collision_object;
+    if ( co == nullptr )
+        return;
+    co->contacts.clear();
+}
+
+static void store_contacts( RigidBody * body, const Vector<ContactPointBb> & contacts )
+{
+    CollisionObject * co = body->collision_object;
+    if ( co == nullptr )
+        return;
+    const int qty = contacts.size();
+    for ( int i=0; i<qty; i++ )
+    {
+        const ContactPointBb & pt = contacts.ptr()[i];
+        co->contacts.push_back( pt );
+    }
+}
 
 Simulation::Simulation()
 {
@@ -84,22 +105,35 @@ void Simulation::step()
     }
 
     // Solve for normal collisions body with another body.
+    tree.subdivide( this, h );
     for ( int i=0; i<bodies_qty; i++ )
     {
-        RigidBody * body = bodies.ptr()[i];
+        RigidBody * body_a = bodies.ptrw()[i];
+        clear_contacts( body_a );
         // Collide with other bodies.
         // List of potentially colliding pairs.
-        // for each pair actually collide and get numebr of contact points.
+        const Vector<int> & inds = tree.potential_collisions( i, h );
+        const int pairs_qty = inds.size();
+        for ( int j=0; j<pairs_qty; j++ )
+        {
+            const int ind_b = inds.ptr()[j];
+            tree.contact_points( i, ind_b, contacts );
+            for ( int j=0; j<solver_iterations; j++ )
+            {
+                RigidBody * body_b = bodies.ptrw()[ind_b];
+                solve_normal( body_a, body_b, contacts, h );
+                solve_tangential( body_a, body_b, contacts, h );
+            }
+            // Store contacts for future use in "solve_dynamic_friction".
+            store_contacts( body_a, contacts );
+        }
+        // for each pair actually collide and get number of contact points.
         // For all contact points reset lambdas.
         //for ( int j=0; j<contacts_qty; j++ )
         //{
         //    ContactPointBb & pt = contacts.ptrw()[j];
         //    pt.init_lambdas();
         //}
-        for ( int j=0; j<solver_iterations; j++ )
-        {
-            // solve_normal( body, other_body, contact_points );
-        }
 
     }
 
@@ -115,7 +149,9 @@ void Simulation::step()
     {
         RigidBody * body = bodies.ptr()[i];
         //body->update_contact_velocities( h );
-                body->solve_dynamic_friction( h );
+        body->solve_dynamic_friction( h );
+        // The same for ContactPointBb. Those are stored inside body->collision_object.
+        solve_dynamic_friction( body, h );
     }
 
     // Update contact prev. positions.
@@ -243,6 +279,23 @@ bool Simulation::solve_tangential( RigidBody * body_a, RigidBody * body_b, Vecto
         ContactPointBb & pt = pts.ptrw()[i];
         pt.solve_tangential( body_a, body_b, h );
     }
+    return true;
+}
+
+bool Simulation::solve_dynamic_friction( RigidBody * body, Float h )
+{
+    CollisionObject * co = body->collision_object;
+    if ( co == nullptr )
+        return false;
+    Vector<ContactPointBb> & contacts = co->contacts;
+    const int qty = contacts.size();
+    for ( int i=0; i<qty; i++ )
+    {
+        ContactPointBb & pt = contacts.ptrw()[i];
+        RigidBody * other_body = pt.body_b;
+        pt.solve_dynamic_friction( body, other_body, h );
+    }
+
     return true;
 }
 

@@ -37,12 +37,13 @@ public:
     Vector<RigidBody *> bodies;
     Vector<Joint *>     joints;
     BroadTree           tree;
-
+    Vector<ContactPointBb> contacts;
 
 
 
     static bool solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h );
     static bool solve_tangential( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h );
+    static bool solve_dynamic_friction( RigidBody * body, Float h );
     static bool specific_mass_pos( bool is_a, RigidBody * body, const Vector<ContactPointBb> & pts, Float & w );
 };
 
