@@ -116,14 +116,17 @@ void Simulation::step()
         // Not using contact reference here because points are to be modified modified (lambdas are modified during interations).
         contacts = tree.contact_points( body_a, h, body_b );
         const int contacts_qty = contacts.size();
-        for ( int j=0; j<solver_iterations; j++ )
-        {
-            solve_normal( body_a, body_b, contacts, h );
-            solve_tangential( body_a, body_b, contacts, h );
-        }
-        // Store contacts for future use in "solve_dynamic_friction".
-        // Storing after as lambdas are modified.
-        store_contacts( body_a, contacts );
+		if ( contacts_qty > 0 )
+		{
+            for ( int j=0; j<solver_iterations; j++ )
+            {
+                solve_normal( body_a, body_b, contacts, h );
+                solve_tangential( body_a, body_b, contacts, h );
+            }
+            // Store contacts for future use in "solve_dynamic_friction".
+            // Storing after as lambdas are modified.
+            store_contacts( body_a, contacts );
+		}
     }
 
     // Update velocities.
