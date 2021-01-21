@@ -49,7 +49,6 @@ public:
     CollisionObjectType obj_type;
     // RigidBody it is a child of.
     RigidBody * rigid_body;
-    CollisionObject * parent_object;
     // Pose within its rigid body.
     // Global pose is "rigid_body->pose * pose".
     Pose pose;

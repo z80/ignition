@@ -33,8 +33,7 @@ static void enter_tree( PbdCollisionObjectNode * con )
     PbdRigidBodyNode * rbn = Node::cast_to<PbdRigidBodyNode>( n );
     if ( rbn == nullptr )
         return;
-    rbn->rigid_body.collision_object = con->collision_object;
-    con->collision_object->rigid_body = &(rbn->rigid_body);
+    rbn->rigid_body.add_collision( con->collision_object );
 }
 
 static void exit_tree( PbdCollisionObjectNode * con )
@@ -46,8 +45,7 @@ static void exit_tree( PbdCollisionObjectNode * con )
     if ( rbn == nullptr )
         return;
 
-    rbn->rigid_body.collision_object = nullptr;
-    con->collision_object->rigid_body = nullptr;
+    rbn->rigid_body.remove_collision( con->collision_object );
 }
 
 static void set_transform_con( PbdCollisionObjectNode * con, const Transform & t )

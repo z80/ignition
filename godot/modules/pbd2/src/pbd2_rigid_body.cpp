@@ -24,6 +24,7 @@ RigidBody::RigidBody()
 
 RigidBody::~RigidBody()
 {
+    clear_collisions();
 }
 
 RigidBody::RigidBody( const RigidBody & inst )
