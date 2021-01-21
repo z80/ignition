@@ -235,7 +235,7 @@ bool BroadTreeNode::inside( const Vector3d & c, Float sz ) const
     return true;
 }
 
-bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObject * co, const Vector3d & c, Float sz, Vector<int> & bodies ) const
+bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObject * co, const Vector3d & c, Float sz, Vector<int> & collision_obj_inds ) const
 {
     const bool intersects = inside( c, sz );
     if ( !intersects )
@@ -251,7 +251,12 @@ bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObjec
             const CollisionObject * co_candidate = tree->collision_object( ind );
             const RigidBody * body_candidate = co_candidate->rigid_body;
             if ( ( body != body_candidate ) && ( co != co_candidate ) )
-                bodies.push_back( ind );
+			{
+				// First check if it is already there.
+				const int already_ind = collision_obj_inds.find( ind );
+				if ( ind < 0 )
+					collision_obj_inds.push_back( ind );
+			}
         }
         return true;
     }
@@ -261,7 +266,7 @@ bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObjec
     {
         const int child_ind = children[i];
         const BroadTreeNode & child = tree->nodes_.ptr()[child_ind];
-        const bool ok = child.objects_inside( body, co, c, sz, bodies );
+        const bool ok = child.objects_inside( body, co, c, sz, collision_obj_inds );
         ret = ret || ok;
     }
     return ret;

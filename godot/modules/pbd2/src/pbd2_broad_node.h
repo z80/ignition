@@ -27,7 +27,7 @@ public:
 
     bool inside( const CollisionObject * nt, Float h ) const;
     bool inside( const Vector3d & c, Float sz ) const;
-    bool objects_inside( const RigidBody * body, const CollisionObject * co, const Vector3d & c, Float sz, Vector<int> & bodies ) const;
+    bool objects_inside( const RigidBody * body, const CollisionObject * co, const Vector3d & c, Float sz, Vector<int> & collision_obj_inds ) const;
 
     // Initialize vertices and planes.
     void init();
