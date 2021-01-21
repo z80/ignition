@@ -27,7 +27,7 @@ void collision_sphere_sphere( CollisionSphere * obj_a, CollisionSphere * obj_b, 
     }
 
     const Vector3d a = dr / dist;
-    const Vector3d at = (pose_b.r + a*obj_b->radius) + (pose_a.r - a*obj_a->radius) * 0.5;
+    const Vector3d at = ( (pose_b.r + a*obj_b->radius) + (pose_a.r - a*obj_a->radius) ) * 0.5;
     const Vector3d depth = pose_b.r - pose_a.r + a*(obj_b->radius + obj_a->radius);
     ats.push_back( at );
     depths.push_back( depth );

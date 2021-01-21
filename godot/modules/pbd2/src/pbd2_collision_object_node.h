@@ -14,7 +14,7 @@ class PbdCollisionObjectNode: public Spatial
     GDCLASS( PbdCollisionObjectNode, Spatial );
 protected:
     static void _bind_methods();
-    void _notifications( int p_what );
+    void _notification( int p_what );
 public:
     PbdCollisionObjectNode();
     ~PbdCollisionObjectNode();

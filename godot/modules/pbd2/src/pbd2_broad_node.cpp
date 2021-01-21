@@ -175,8 +175,7 @@ bool BroadTreeNode::subdivide( Float h )
         for ( int i=0; i<qty; i++ )
         {
             const int ind = ptInds[i];
-            const RigidBody * body = tree->simulation->bodies.ptr()[ind];
-            const CollisionObject * co = body->collision_object;
+            const CollisionObject * co = tree->collision_object(ind);
 
             const bool inside = ch_n.inside( co, h );
             if ( inside )
@@ -212,14 +211,14 @@ bool BroadTreeNode::inside( const CollisionObject * co, Float h ) const
         return false;
     const Float d = size2 + sz2;
     const Vector3d dr = center - co->center();
-    if ( std::abs(dr.x_) <= d )
-        return true; 
-    if ( std::abs(dr.y_) <= d )
-        return true; 
-    if ( std::abs(dr.z_) <= d )
-        return true; 
+    if ( std::abs(dr.x_) > d )
+        return false;
+    if ( std::abs(dr.y_) > d )
+        return false;
+    if ( std::abs(dr.z_) > d )
+        return false;
     
-    return false;
+    return true;
 }
 
 bool BroadTreeNode::inside( const Vector3d & c, Float sz ) const

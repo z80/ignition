@@ -62,7 +62,7 @@ void PbdCollisionObjectNode::_bind_methods()
 {
 }
 
-void PbdCollisionObjectNode::_notifications( int p_what )
+void PbdCollisionObjectNode::_notification( int p_what )
 {
     switch ( p_what )
     {
@@ -79,7 +79,8 @@ void PbdCollisionObjectNode::_notifications( int p_what )
             exit_tree( this );
 
         case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
-            set_transform_con( this, get_transform() );
+			if ( Engine::get_singleton()->is_editor_hint() )
+				set_transform_con( this, get_transform() );
             break;
 
         default:
@@ -92,6 +93,8 @@ void PbdCollisionObjectNode::_notifications( int p_what )
 PbdCollisionObjectNode::PbdCollisionObjectNode()
     : Spatial()
 {
+	set_process( true );
+	set_notify_local_transform( true );
 }
 
 PbdCollisionObjectNode::~PbdCollisionObjectNode()

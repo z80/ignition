@@ -1,5 +1,6 @@
 
 #include "pbd2_collision_sphere.h"
+#include "pbd2_collisions.h"
 
 namespace Pbd
 {
@@ -29,7 +30,7 @@ void CollisionSphere::intersect( CollisionObject * b, Vector<Vector3d> & ats, Ve
         CollisionSphere * bs = dynamic_cast<CollisionSphere *>( b );
         if ( !bs )
             return;
-
+		collision_sphere_sphere( this, bs, ats, depths );
     }
 }
 

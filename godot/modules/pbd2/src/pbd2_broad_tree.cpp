@@ -14,7 +14,7 @@ static const Float EPS = 0.0001;
 BroadTree::BroadTree()
     : simulation( nullptr )
 {
-    max_depth_ = 5;
+    max_depth_ = 2;
 }
 
 BroadTree::~BroadTree()
@@ -125,8 +125,6 @@ void BroadTree::subdivide( Simulation * sim, Float h )
     root.center = c;
     root.size2  = d;
     root.init();
-    for ( int i=0; i<bodies_qty; i++ )
-        root.ptInds.push_back( i );
     insert_node( root );
 
     root.subdivide( h );
@@ -348,9 +346,6 @@ void BroadTree::update_node( const BroadTreeNode & node )
 
 bool BroadTree::select_for_one( RigidBody * body, CollisionObject * co, Float h, Vector<int> & inds )
 {
-    // First clear potential contacts from previous calls.
-    inds.clear();
-
     // IF wasn't subdivided (may be because no bodies have collision objects), return "true".
     if ( nodes_.empty() )
         return true;
@@ -389,7 +384,7 @@ void BroadTree::remove_duplicates( Vector<int> & inds )
                 const int pb = inds.ptr()[j];
                 CollisionObject * co = collision_object( pb );
                 const RigidBody * rb = co->rigid_body;
-                if ( (pa == pb) || (rb != first_rb) )
+                if ( (pa == pb) || (rb == first_rb) )
                 {
                     // Swap with the last one and increment "removed_qty".
                     const int last_ind = qty - removed_qty - 1;
@@ -403,6 +398,7 @@ void BroadTree::remove_duplicates( Vector<int> & inds )
             }
         }
     }
+	inds.resize( qty - removed_qty );
 }
 
 CollisionObject * BroadTree::collision_object( int ind )
