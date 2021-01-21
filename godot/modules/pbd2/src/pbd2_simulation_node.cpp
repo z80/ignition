@@ -44,6 +44,12 @@ void PbdSimulationNode::one_step()
     simulation.step();
 }
 
+PoolVector3Array PbdSimulationNode::lines_nodes() const
+{
+    const PoolVector3Array ret = simulation.tree.lines_nodes();
+    return ret;
+}
+
 void PbdSimulationNode::_bind_methods()
 {
     ClassDB::bind_method( D_METHOD( "set_time_step", "h" ), &PbdSimulationNode::set_time_step );
@@ -54,6 +60,8 @@ void PbdSimulationNode::_bind_methods()
 
     ClassDB::bind_method( D_METHOD( "step", "delta" ), &PbdSimulationNode::step );
     ClassDB::bind_method( D_METHOD( "one_step" ),      &PbdSimulationNode::one_step );
+
+    ClassDB::bind_method( D_METHOD( "lines_nodes" ),   &PbdSimulationNode::lines_nodes );
 
 
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "time_step" ),         "set_time_step", "get_time_step" );

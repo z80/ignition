@@ -25,6 +25,8 @@ public:
     void step( real_t delta );
     void one_step();
 
+    PoolVector3Array lines_nodes() const;
+
 protected:
     static void _bind_methods();
 
