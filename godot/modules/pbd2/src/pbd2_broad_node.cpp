@@ -254,7 +254,7 @@ bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObjec
 			{
 				// First check if it is already there.
 				const int already_ind = collision_obj_inds.find( ind );
-				if ( ind < 0 )
+				if ( already_ind < 0 )
 					collision_obj_inds.push_back( ind );
 			}
         }
