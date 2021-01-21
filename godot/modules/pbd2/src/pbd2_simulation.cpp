@@ -202,7 +202,7 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<Co
         Float lambda = cp.lambda_normal;
 
         const Float alpha_ = compliance_normal / (h*h);
-        const Float d_lambda = -(cp.depth + alpha_*lambda) / (w_both + alpha_);
+        const Float d_lambda = (cp.depth + alpha_*lambda) / (w_both + alpha_);
         lambda += d_lambda;
         cp.lambda_normal = lambda;
 
