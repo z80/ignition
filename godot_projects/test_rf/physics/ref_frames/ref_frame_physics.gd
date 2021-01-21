@@ -107,16 +107,6 @@ func create_body( type_name: String, t: Transform = Transform.IDENTITY ):
 		ph.set_collision_layer( _contact_layer )
 
 
-func compute_relative_states():
-	#_compute_state_recursive( self, root )
-	var group: String = Body.GROUP_NAME
-	for body in get_tree().get_nodes_in_group( group ):
-		# Update visual element position with respect to this ref. frame.
-		# "self" indicates that.
-		body.update_visual( self )
-
-
-
 func _cleanup_physical():
 	if _contact_layer < 0:
 		return
