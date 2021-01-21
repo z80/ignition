@@ -49,7 +49,7 @@ PbdRigidBodyNode::PbdRigidBodyNode()
     : Spatial()
 {
     set_process( true );
-	set_notify_local_transform( true );
+    set_notify_local_transform( true );
 }
 
 PbdRigidBodyNode::~PbdRigidBodyNode()
@@ -69,50 +69,50 @@ real_t PbdRigidBodyNode::get_mass() const
 void PbdRigidBodyNode::set_inertia( const Basis & I )
 {
     Matrix3d i;
-	i.m00_ = I.elements[0].x;
-	i.m10_ = I.elements[0].y;
-	i.m20_ = I.elements[0].z;
-	i.m01_ = I.elements[1].x;
-	i.m11_ = I.elements[1].y;
-	i.m21_ = I.elements[1].z;
-	i.m02_ = I.elements[2].x;
-	i.m12_ = I.elements[2].y;
-	i.m22_ = I.elements[2].z;
-	// It also computes inverted inertia.
-	rigid_body.set_inertia( i );
+    i.m00_ = I.elements[0].x;
+    i.m10_ = I.elements[0].y;
+    i.m20_ = I.elements[0].z;
+    i.m01_ = I.elements[1].x;
+    i.m11_ = I.elements[1].y;
+    i.m21_ = I.elements[1].z;
+    i.m02_ = I.elements[2].x;
+    i.m12_ = I.elements[2].y;
+    i.m22_ = I.elements[2].z;
+    // It also computes inverted inertia.
+    rigid_body.set_inertia( i );
 }
 
 Basis PbdRigidBodyNode::get_inertia() const
 {
-	const Matrix3d & I = rigid_body.inertia;
-	Basis i;
-	i.elements[0].x = I.m00_;
-	i.elements[0].y = I.m10_;
-	i.elements[0].z = I.m20_;
-	i.elements[1].x = I.m01_;
-	i.elements[1].y = I.m11_;
-	i.elements[1].z = I.m21_;
-	i.elements[2].x = I.m02_;
-	i.elements[2].y = I.m12_;
-	i.elements[2].z = I.m22_;
-	return i;
+    const Matrix3d & I = rigid_body.inertia;
+    Basis i;
+    i.elements[0].x = I.m00_;
+    i.elements[0].y = I.m10_;
+    i.elements[0].z = I.m20_;
+    i.elements[1].x = I.m01_;
+    i.elements[1].y = I.m11_;
+    i.elements[1].z = I.m21_;
+    i.elements[2].x = I.m02_;
+    i.elements[2].y = I.m12_;
+    i.elements[2].z = I.m22_;
+    return i;
 }
 
 void PbdRigidBodyNode::set_transform_rb( const Transform & t )
 {
-	const Vector3 & o = t.origin;
-	const Quat q = t.basis.get_quat();
-	rigid_body.pose.r = Vector3d( o.x, o.y, o.z );
-	rigid_body.pose.q = Quaterniond( q.w, q.x, q.y, q.z );
+    const Vector3 & o = t.origin;
+    const Quat q = t.basis.get_quat();
+    rigid_body.pose.r = Vector3d( o.x, o.y, o.z );
+    rigid_body.pose.q = Quaterniond( q.w, q.x, q.y, q.z );
 }
 
 //Transform PbdRigidBodyNode::get_transform_rb() const
 //{
-//	const Vector3d & o = rigid_body.pose.r;
-//	const Quaterniond & q = rigid_body.pose.q;
-//	Transform t;
-//	t.origin = Vector3( o.x_, o.y_, o.z_ );
-//	t.basis = Quat( q.x_, q.y_, q.z_, q.w_ );
+//      const Vector3d & o = rigid_body.pose.r;
+//      const Quaterniond & q = rigid_body.pose.q;
+//      Transform t;
+//      t.origin = Vector3( o.x_, o.y_, o.z_ );
+//      t.basis = Quat( q.x_, q.y_, q.z_, q.w_ );
 //    return t;
 //}
 
@@ -164,22 +164,22 @@ real_t PbdRigidBodyNode::get_restitution() const
 
 void PbdRigidBodyNode::set_damping_linear( real_t k )
 {
-	rigid_body.damping_linear = k;
+        rigid_body.damping_linear = k;
 }
 
 real_t PbdRigidBodyNode::get_damping_linear() const
 {
-	return rigid_body.damping_linear;
+        return rigid_body.damping_linear;
 }
 
 void PbdRigidBodyNode::set_damping_angular( real_t k )
 {
-	rigid_body.damping_angular = k;
+        rigid_body.damping_angular = k;
 }
 
 real_t PbdRigidBodyNode::get_damping_angular() const
 {
-	return rigid_body.damping_angular;
+        return rigid_body.damping_angular;
 }
 
 
@@ -231,8 +231,6 @@ void PbdRigidBodyNode::rebuild_contacts()
 
 void PbdRigidBodyNode::_notification( int p_what )
 {
-    Spatial::_notification( p_what );
-
     switch ( p_what )
     {
         case NOTIFICATION_READY:
@@ -240,8 +238,8 @@ void PbdRigidBodyNode::_notification( int p_what )
             break;
 
         case NOTIFICATION_PROCESS:
-			if ( !Engine::get_singleton()->is_editor_hint() )
-				apply_rigid_body_pose( this );        
+            if ( !Engine::get_singleton()->is_editor_hint() )
+                apply_rigid_body_pose( this );        
             break;
 
         case NOTIFICATION_ENTER_TREE:
@@ -251,9 +249,9 @@ void PbdRigidBodyNode::_notification( int p_what )
         case NOTIFICATION_EXIT_TREE:
             exit_tree( this );
 
-		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
-			set_transform_rb( get_transform() );
-			break;
+        case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
+            set_transform_rb( get_transform() );
+            break;
 
         default:
             break;
@@ -283,11 +281,11 @@ void PbdRigidBodyNode::_bind_methods()
     ClassDB::bind_method( D_METHOD( "set_restitution", "k" ), &PbdRigidBodyNode::set_restitution );
     ClassDB::bind_method( D_METHOD( "get_restitution" ),      &PbdRigidBodyNode::get_restitution, Variant::REAL );
 
-	ClassDB::bind_method( D_METHOD( "set_damping_linear", "k" ), &PbdRigidBodyNode::set_damping_linear );
-	ClassDB::bind_method( D_METHOD( "get_damping_linear" ),      &PbdRigidBodyNode::get_damping_linear, Variant::REAL );
+    ClassDB::bind_method( D_METHOD( "set_damping_linear", "k" ), &PbdRigidBodyNode::set_damping_linear );
+    ClassDB::bind_method( D_METHOD( "get_damping_linear" ),      &PbdRigidBodyNode::get_damping_linear, Variant::REAL );
 
-	ClassDB::bind_method( D_METHOD( "set_damping_angular", "k" ), &PbdRigidBodyNode::set_damping_angular );
-	ClassDB::bind_method( D_METHOD( "get_damping_angular" ),      &PbdRigidBodyNode::get_damping_angular, Variant::REAL );
+    ClassDB::bind_method( D_METHOD( "set_damping_angular", "k" ), &PbdRigidBodyNode::set_damping_angular );
+    ClassDB::bind_method( D_METHOD( "get_damping_angular" ),      &PbdRigidBodyNode::get_damping_angular, Variant::REAL );
 
     ClassDB::bind_method( D_METHOD( "set_force", "f" ), &PbdRigidBodyNode::set_force );
     ClassDB::bind_method( D_METHOD( "get_force" ),      &PbdRigidBodyNode::get_force, Variant::VECTOR3 );
@@ -295,7 +293,7 @@ void PbdRigidBodyNode::_bind_methods()
     ClassDB::bind_method( D_METHOD( "set_torque", "p" ), &PbdRigidBodyNode::set_torque );
     ClassDB::bind_method( D_METHOD( "get_torque" ),      &PbdRigidBodyNode::get_torque, Variant::VECTOR3 );
 
-	ClassDB::bind_method( D_METHOD( "rebuild_contacts" ), &PbdRigidBodyNode::rebuild_contacts );
+    ClassDB::bind_method( D_METHOD( "rebuild_contacts" ), &PbdRigidBodyNode::rebuild_contacts );
 
 
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "mass" ),    "set_mass", "get_mass" );
@@ -305,8 +303,8 @@ void PbdRigidBodyNode::_bind_methods()
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "angular_velocity" ), "set_angular_velocity", "get_angular_velocity" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "friction" ), "set_friction", "get_friction" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "restitution" ), "set_restitution", "get_restitution" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "damping_linear" ), "set_damping_linear", "get_damping_linear" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "damping_angular" ), "set_damping_angular", "get_damping_angular" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "damping_linear" ), "set_damping_linear", "get_damping_linear" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "damping_angular" ), "set_damping_angular", "get_damping_angular" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "force" ), "set_force", "get_force" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "torque" ), "set_torque", "get_torque" );
 }
