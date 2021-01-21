@@ -1,11 +1,10 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://physics/rf_test.gd" type="Script" id=1]
 [ext_resource path="res://physics/ref_frames/ref_frame_physics.gd" type="Script" id=2]
 [ext_resource path="res://physics/camera_ctrl/camera_ctrl.gd" type="Script" id=3]
 [ext_resource path="res://physics/axes_visualization.tscn" type="PackedScene" id=4]
 [ext_resource path="res://physics/landscape/provider.tscn" type="PackedScene" id=5]
-[ext_resource path="res://physics/force_source/force_source_gravity_down.gd" type="Script" id=6]
 
 [node name="RfTest" type="Node"]
 script = ExtResource( 1 )
@@ -14,10 +13,6 @@ script = ExtResource( 1 )
 
 [node name="Rf" type="RefFrameNode" parent="Landscape"]
 script = ExtResource( 2 )
-
-[node name="ForceSourceGravityDown" type="Node" parent="Landscape"]
-script = ExtResource( 6 )
-GM = 0.3
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.897405, 0.441208, 0, -0.441208, 0.897405, 0, 2.33134, 4.60433 )

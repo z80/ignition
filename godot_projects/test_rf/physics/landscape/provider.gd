@@ -10,12 +10,16 @@ func initialize():
 	LandscapePhysical = preload( "res://physics/landscape/landscape_physical.tscn")
 
 
+func init_force_source():
+	.init_force_source()
+	force_source = ForceSourceGravityDown.new()
+
 
 # Need to override this one and create a visual shape internally.
 func create_visual():
 	var v = LandscapeVisual.instance()
 	if v != null:
-		add_child( v )
+		self.add_child( v )
 	return v
 
 

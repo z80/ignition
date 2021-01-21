@@ -4,7 +4,7 @@ class_name RefFrame
 
 var _axes = null
 
-var force_source: Node = null
+var force_source = null
 
 
 func process_children():
@@ -24,7 +24,7 @@ func _ready():
 
 
 func ready():
-	_init_force_source()
+	init_force_source()
 
 
 func _process( _delta ):
@@ -63,13 +63,9 @@ func _update_axes():
 	_axes.transform = t
 
 
-func _init_force_source():
-	if force_source == null:
-		for c in self.get_children():
-			var fs: ForceSource = c as ForceSource
-			if fs != null:
-				force_source = fs
-				break
+# Need to be re-defined in subclasses.
+func init_force_source():
+	force_source = null
 
 
 # Closest not in terms of distance. But in terms of graph node distance.

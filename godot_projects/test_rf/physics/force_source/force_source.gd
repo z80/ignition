@@ -1,5 +1,5 @@
 
-extends Node
+extends Reference
 class_name ForceSource
 
 
@@ -31,9 +31,6 @@ func compute_force( body: Body, r: Vector3, v: Vector3, q: Quat, w: Vector3, ret
 
 
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
 
 
 #func parent_force_source():
