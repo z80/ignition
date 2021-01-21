@@ -37,16 +37,20 @@ func test_quats():
 	var q_from_ea: Quat = Quat( ea )
 	
 	print( "t: ", t )
-	
-	
-	
+
+
+
+
+func _enter_tree():
+	# In order to assign in before everything else.
+	BodyCreator.root_node = self
+
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	test_quats()
 	
-	BodyCreator.root_node = self
 	PhysicsManager.player_ref_frame = $Landscape/Rf
 	PhysicsManager.camera = $Camera
 	

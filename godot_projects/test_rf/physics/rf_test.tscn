@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://physics/rf_test.gd" type="Script" id=1]
-[ext_resource path="res://physics/ref_frame_physics.gd" type="Script" id=2]
+[ext_resource path="res://physics/ref_frames/ref_frame_physics.gd" type="Script" id=2]
 [ext_resource path="res://physics/camera_ctrl/camera_ctrl.gd" type="Script" id=3]
 [ext_resource path="res://physics/axes_visualization.tscn" type="PackedScene" id=4]
 [ext_resource path="res://physics/landscape/provider.tscn" type="PackedScene" id=5]

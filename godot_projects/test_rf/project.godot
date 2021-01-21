@@ -17,7 +17,7 @@ _global_script_classes=[ {
 "base": "RefFrameNode",
 "class": "Body",
 "language": "GDScript",
-"path": "res://physics/body.gd"
+"path": "res://physics/bodies/body.gd"
 }, {
 "base": "RefFrame",
 "class": "CelestialBody",
@@ -102,12 +102,12 @@ _global_script_classes=[ {
 "base": "RefFrameNode",
 "class": "RefFrame",
 "language": "GDScript",
-"path": "res://physics/ref_frame.gd"
+"path": "res://physics/ref_frames/ref_frame.gd"
 }, {
 "base": "RefFrame",
 "class": "RefFramePhysics",
 "language": "GDScript",
-"path": "res://physics/ref_frame_physics.gd"
+"path": "res://physics/ref_frames/ref_frame_physics.gd"
 }, {
 "base": "RefFrame",
 "class": "RefFrameResourceProvider",
@@ -158,9 +158,9 @@ config/icon="res://icon.png"
 
 [autoload]
 
-PhysicsManager="*res://physics/physics_manager.gd"
-BodyCreator="*res://physics/body_creator.gd"
-Constants="*res://physics/constants.gd"
+PhysicsManager="*res://physics/singletons/physics_manager.gd"
+BodyCreator="*res://physics/singletons/body_creator.gd"
+Constants="*res://physics/singletons/constants.gd"
 UserInput="*res://physics/user_unput/user_input.gd"
 
 [display]
