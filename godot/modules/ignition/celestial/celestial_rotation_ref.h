@@ -10,21 +10,21 @@ namespace Ign
 
 class CelestialRotationRef: public Reference
 {
-	GDCLASS( CelestialRotationRef, Reference );
-	OBJ_CATEGORY("Ignition");
+    GDCLASS( CelestialRotationRef, Reference );
+    OBJ_CATEGORY("Ignition");
 
 protected:
-	static void _bind_methods();
+    static void _bind_methods();
 
 public:
-	CelestialRotationRef();
-	~CelestialRotationRef();
+    CelestialRotationRef();
+    ~CelestialRotationRef();
 
-	void init( const Vector3 & up, real_t period_hrs );
-	void process_rf( real_t dt, Node * rf );
+    void init( const Vector3 & up, real_t period_hrs );
+    void process_rf( real_t dt, Node * rf );
 
 public:
-	CelestialRotation celestial_rotation;
+    CelestialRotation celestial_rotation;
 };
 
 

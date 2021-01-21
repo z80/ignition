@@ -8,10 +8,11 @@ namespace Ign
 
 CelestialMotion::CelestialMotion()
 {
-	moving = false;
+    type = STATIONARY;
 
-    type = LINEAR;
-
+    stationary_threshold = 1.0;
+    allow_orbiting = true;
+ 
     gm = 1.0;
     abs_e = 0.0;
     a = 1.0;
@@ -29,13 +30,89 @@ CelestialMotion::~CelestialMotion()
 {
 }
 
+CelestialMotion::CelestialMotion( const CelestialMotion & inst )
+{
+    *this = inst;
+}
+
+const CelestialMotion & CelestialMotion::operator=( const CelestialMotion & inst )
+{
+    if ( &inst != this )
+    {
+        type = inst.type;
+
+        stationary_threshold = inst.stationary_threshold;
+        allow_orbiting = inst.allow_orbiting;
+
+        gm = inst.gm;
+        h  = inst.h;
+        e  = inst.e;
+        abs_e = inst.abs_e;
+        a = inst.a;
+        A = inst.A;
+        inv_A = inst.inv_A;
+        slr = inst.slr;
+        E = inst.E;
+        n = inst.n;
+        periapsis_t = inst.periapsis_t;
+        T = inst.T;
+        b = inst.b;
+        
+        se3_global = inst.se3_global;
+        se3_local  = inst.se3_local;
+    }
+
+    return *this;
+}
+
+void CelestialMotion::set_allow_orbiting( bool en )
+{
+    allow_orbiting = en;
+}
+
+bool CelestialMotion::get_allow_orbiting() const
+{
+    return allow_orbiting;
+}
+
+void CelestialMotion::set_stationary_threshold( Float th )
+{
+    stationary_threshold = th;
+}
+
+Float CelestialMotion::get_stationary_threshold() const
+{
+    return stationary_threshold;
+}
+
+void CelestialMotion::stop()
+{
+    type = STATIONARY;
+}
+
+
 
 void CelestialMotion::init( Float gm_, const SE3 & se3_ )
 {
-	moving = true;
-
     gm  = gm_;
     se3_global = se3_;
+
+    if ( !allow_orbiting )
+    {
+        const Float abs_v = se3_.v_.Length();
+        if ( abs_v < stationary_threshold )
+        {
+            type = STATIONARY;
+        }
+        else
+        {
+            type = LINEAR;
+            init_linear();
+        }
+        return;
+    }
+
+
     const Vector3d & r = se3_global.r_;
     const Vector3d & v = se3_global.v_;
     
@@ -43,7 +120,7 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     const Float abs_h = h.Length();
     if ( abs_h < Celestial::MIN_ANGULAR_MOMENTUM )
     {
-        type = LINEAR;
+        type = LINEAR_GRAVITY;
         init_linear();
         return;
     }
@@ -145,19 +222,18 @@ void CelestialMotion::launch_elliptic( Float gm, const Vector3d & unit_r, const 
     v_r = v_r * r;
     v_v = v_v * v;
 
-	SE3 se3;
-	se3.r_ = v_r;
-	se3.v_ = v_v;
+    SE3 se3;
+    se3.r_ = v_r;
+    se3.v_ = v_v;
     init( gm, se3 );
 }
 
 const SE3 & CelestialMotion::process( Float dt )
 {
-	if ( !moving )
-		return se3_global;
-
     if (type == LINEAR)
         process_linear( dt );
+    else if (type == LINEAR_GRAVITY)
+        process_linear_gravity( dt );
     else if (type == HYPERBOLIC)
         process_hyperbolic( dt );
     else if (type == ELLIPTIC)
@@ -171,6 +247,11 @@ const SE3 & CelestialMotion::process( Float dt )
 void CelestialMotion::init_linear()
 {
     // Nothing here.
+}
+
+void CelestialMotion::init_linear_gravity()
+{
+    // Nothing here as well.
 }
 
 void CelestialMotion::init_parabolic()
@@ -245,6 +326,11 @@ void CelestialMotion::init_hyperbolic()
 }
 
 void CelestialMotion::process_linear( Float dt )
+{
+    se3_global.r_ += se3_global.v_ * dt;
+}
+
+void CelestialMotion::process_linear_gravity( Float dt )
 {
     const Float abs_r = se3_global.r_.Length();
     const Vector3d a = se3_global.r_ * ( -gm/(abs_r*abs_r*abs_r) );
@@ -355,7 +441,7 @@ Vector3d CelestialMotion::velocity_elliptic() const
 
 Vector3d CelestialMotion::velocity_hyperbolic() const
 {
-	const Vector3d & r = se3_local.r_;
+        const Vector3d & r = se3_local.r_;
     const Float abs_r = r.Length();
 
     const Float si_f = r.y_ / abs_r;
