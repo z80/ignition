@@ -46,9 +46,9 @@ static void exit_tree( PbdNarrowTreeNode * rbn )
 
 void PbdNarrowTreeNode::_bind_methods()
 {
-    ClassDB::bind_method( D_METHOD( "set_min_depth", "d" ), &PbdNarrowTreeNode::set_min_depth );
+    ClassDB::bind_method( D_METHOD( "set_min_depth", "depth" ), &PbdNarrowTreeNode::set_min_depth );
     ClassDB::bind_method( D_METHOD( "get_min_depth" ), &PbdNarrowTreeNode::get_min_depth, Variant::INT );
-    ClassDB::bind_method( D_METHOD( "set_max_depth" "d" ), &PbdNarrowTreeNode::set_max_depth );
+    ClassDB::bind_method( D_METHOD( "set_max_depth", "depth" ), &PbdNarrowTreeNode::set_max_depth );
     ClassDB::bind_method( D_METHOD( "get_max_depth" ), &PbdNarrowTreeNode::get_max_depth, Variant::INT );
     ClassDB::bind_method( D_METHOD( "set_max_error", "err" ), &PbdNarrowTreeNode::set_max_error );
     ClassDB::bind_method( D_METHOD( "get_max_error" ), &PbdNarrowTreeNode::get_max_error, Variant::REAL );
@@ -60,7 +60,7 @@ void PbdNarrowTreeNode::_bind_methods()
     ADD_PROPERTY( PropertyInfo( Variant::INT,  "min_depth" ), "set_min_depth", "get_min_depth" );
     ADD_PROPERTY( PropertyInfo( Variant::INT,  "max_depth" ), "set_max_depth", "get_max_depth" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "max_error" ), "set_max_error", "get_max_error" );
-    ADD_PROPERTY( PropertyInfo( Variant::INT,  "mmin_points" ), "set_min_points", "get_min_points" );
+    ADD_PROPERTY( PropertyInfo( Variant::INT,  "min_points" ), "set_min_points", "get_min_points" );
 }
 
 void PbdNarrowTreeNode::_notification( int p_what )
