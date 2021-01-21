@@ -43,6 +43,7 @@ public:
 
     // Collision object for colliding mobing bodies.
     CollisionObject * collision_object;
+    Vector<CollisionObject *> collision_objects;
 
     RigidBody();
     ~RigidBody();
@@ -59,6 +60,10 @@ public:
     void solve_contacts( Float h );
     void update_contact_velocities( Float h );
     void update_contact_positions();
+
+    void add_collision( CollisionObject * co );
+    void remove_collision( CollisionObject * co );
+    void clear_collisions();
 
     Float specific_inv_mass_pos( const Vector3d & r, const Vector3d & n ) const;
     Float specific_inv_mass_rot( const Vector3d & n ) const;

@@ -42,8 +42,9 @@ void BroadTree::subdivide( Simulation * sim, Float h )
     simulation = sim;
     // Before eerything else clear nodes.
     nodes_.clear();
+    collision_objects_.clear();
     
-    const Vector<RigidBody *> & bodies = simulation->bodies;
+    Vector<RigidBody *> & bodies = simulation->bodies;
     const int bodies_qty = bodies.size();
     if ( bodies_qty < 1 )
         return;
@@ -53,17 +54,21 @@ void BroadTree::subdivide( Simulation * sim, Float h )
     // Initialize with the very first point.
     for ( int i=0; i<bodies_qty; i++ )
     {
-        const RigidBody * body = bodies.ptr()[0];
-        const CollisionObject * co = body->collision_object;
-        if ( co == nullptr )
-            continue;
-        const Vector3d c = co->center();
-        const Float sz = co->size2( h );
-        x_min = x_max = c.x_;
-        y_min = y_max = c.y_;
-        z_min = z_max = c.z_;
-        initialized = true;
-        break;
+        RigidBody * body = bodies.ptr()[i];
+        const int collisions_qty = body->collision_objects.size();
+        for ( int j=0; j<collisions_qty; j++ )
+        {
+            CollisionObject * co = body->collision_objects.ptrw()[j];
+            const Vector3d c = co->center();
+            const Float sz = co->size2( h );
+            x_min = x_max = c.x_;
+            y_min = y_max = c.y_;
+            z_min = z_max = c.z_;
+            initialized = true;
+            break;
+        }
+        if ( initialized )
+            break;
     }
     if ( !initialized )
         return;
@@ -72,32 +77,38 @@ void BroadTree::subdivide( Simulation * sim, Float h )
 
     for ( int i=0; i<bodies_qty; i++ )
     {
-        const RigidBody * body = bodies.ptr()[i];
-        const CollisionObject * co = body->collision_object;
-        if ( co == nullptr )
-            continue;
-        const Float sz = co->size2( h );
-        if ( sz < 0.0 )
-            continue;
-        // Put only body indices for the bodies who have collision objects.
-        // And collision objects are valid.
-        root.ptInds.push_back( i );
-        // Determine dimensions.
-        const Vector3d center = co->center();
-        const Vector3d v_max = center + Vector3d( sz, sz, sz );
-        const Vector3d v_min = center - Vector3d( sz, sz, sz );
-        if ( v_min.x_ < x_min )
-            x_min = v_min.x_;
-        if ( v_max.x_ > x_max )
-            x_max = v_max.x_;
-        if ( v_min.y_ < y_min )
-            y_min = v_min.y_;
-        if ( v_max.y_ > y_max )
-            y_max = v_max.y_;
-        if ( v_min.z_ < z_min )
-            z_min = v_min.z_;
-        if ( v_max.z_ > z_max )
-            z_max = v_max.z_;
+        RigidBody * body = bodies.ptrw()[i];
+        const int collisions_qty = body->collision_objects.size();
+        for ( int j=0; j<collisions_qty; j++ )
+        {
+            CollisionObject * co = body->collision_objects.ptrw()[j];
+            if ( co == nullptr )
+                continue;
+            const Float sz = co->size2( h );
+            if ( sz < 0.0 )
+                continue;
+            // Put only body indices for the bodies who have collision objects.
+            // And collision objects are valid.
+            collision_objects_.push_back( co );
+            const int co_ind = collision_objects_.size() - 1;
+            root.ptInds.push_back( co_ind );
+            // Determine dimensions.
+            const Vector3d center = co->center();
+            const Vector3d v_max = center + Vector3d( sz, sz, sz );
+            const Vector3d v_min = center - Vector3d( sz, sz, sz );
+            if ( v_min.x_ < x_min )
+                x_min = v_min.x_;
+            if ( v_max.x_ > x_max )
+                x_max = v_max.x_;
+            if ( v_min.y_ < y_min )
+                y_min = v_min.y_;
+            if ( v_max.y_ > y_max )
+                y_max = v_max.y_;
+            if ( v_min.z_ < z_min )
+                z_min = v_min.z_;
+            if ( v_max.z_ > z_max )
+                z_max = v_max.z_;
+        }
     }
 
     const Vector3d c( (x_min+x_max)/2.0, (y_min+y_max)/2.0, (z_min+z_max)/2.0 );
@@ -125,84 +136,109 @@ void BroadTree::subdivide( Simulation * sim, Float h )
 
 
 
-const Vector<int> & BroadTree::potential_collisions( int ind, Float h )
+const Vector<ContactPointBb> & BroadTree::contact_points( RigidBody * body, Float h, RigidBody * & body_b )
 {
-    body_inds_.clear();
-    select_for_one( ind, h, body_inds_ );
-    remove_duplicates( body_inds_ );
+    contacts_.clear();
+    collision_object_inds_.clear();
 
-    return body_inds_;
-}
+    Vector<CollisionObject *> & objects = body->collision_objects;
+    const int body_objects_qty = objects.size();
 
-void BroadTree::contact_points( int ind_a, int ind_b, Vector<ContactPointBb> & contacts )
-{
-    contacts.clear();    // Clear contact information from previous usages.
-
-    Vector<RigidBody *> & bodies = simulation->bodies;
-    RigidBody * body_a = bodies.ptrw()[ind_a];
-    RigidBody * body_b = bodies.ptrw()[ind_b];
-    CollisionObject * obj_a = body_a->collision_object;
-    CollisionObject * obj_b = body_b->collision_object;
-    if ( (obj_a == nullptr) || (obj_b == nullptr) )
-        return;
-
-    const Pose pose_a = body_a->pose;
-    const Pose pose_b = body_b->pose;
-
-    // Intersect "a" with "b".
+    for ( int i=0; i<body_objects_qty; i++ )
     {
-        ats_.clear();
-        depths_.clear();
+        CollisionObject * co = objects.ptrw()[i];
+        const int ind = collision_objects_.find( co );
+        select_for_one( body, co, h, collision_object_inds_ );
+    }
+    remove_duplicates( collision_object_inds_ );
 
-        obj_a->intersect( obj_b, ats_, depths_ );
-        const int qty = ats_.size();
-        for ( int i=0; i<qty; i++ )
+    if ( collision_object_inds_.empty() )
+        body_b = nullptr;
+    else
+    {
+        const int ind = collision_object_inds_.ptr()[0];
+        CollisionObject * co = collision_object( ind );
+        body_b = co->rigid_body;
+    }
+
+    // Intersect all contacts of requested body with all potential collision objects found.
+    const int other_objects_qty = collision_object_inds_.size();
+    for ( int i=0; i<body_objects_qty; i++ )
+    {
+        CollisionObject * body_object = objects.ptr()[i];
+        const Pose pose_a = body_object->pose_w();
+        for ( int j=0; j<other_objects_qty; j++ )
         {
-            const Vector3d & at    = ats_.ptr()[i];
-            const Vector3d & depth = depths_.ptr()[i];
-            const Float L = depth.Length();
-            if ( L < EPS )
-                continue;
+            const int ind = collision_object_inds_.ptr()[j];
+            CollisionObject * other_object = collision_object( ind );
+            const Pose pose_b = other_object->pose_w();
+            {
+                ats_.clear();
+                depths_.clear();
 
-            ContactPointBb pt;
-            pt.depth   = L;
-            pt.n_world = depth / L;
-            pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
-            pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
-            pt.body_b = body_b;
-            contacts.push_back( pt );
+                body_object->intersect( other_object, ats_, depths_ );
+                const int qty = ats_.size();
+                for ( int i=0; i<qty; i++ )
+                {
+                    const Vector3d & at    = ats_.ptr()[i];
+                    const Vector3d & depth = depths_.ptr()[i];
+                    const Float L = depth.Length();
+                    if ( L < EPS )
+                        continue;
+
+                    ContactPointBb pt;
+                    pt.depth   = L;
+                    pt.n_world = depth / L;
+                    pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
+                    pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
+                    pt.body_b = body_b;
+                    contacts_.push_back( pt );
+                }
+            }
         }
     }
 
-    // Now the opposite. Intersect "b" with "a".
+    // Now intersect in the opposite direction and revert the depth.
+    for ( int j=0; j<other_objects_qty; j++ )
     {
-        ats_.clear();
-        depths_.clear();
-
-        obj_b->intersect( obj_a, ats_, depths_ );
-        const int qty = ats_.size();
-        for ( int i=0; i<qty; i++ )
+        const int ind = collision_object_inds_.ptr()[j];
+        CollisionObject * other_object = collision_object( ind );
+        const Pose pose_b = other_object->pose_w();
+        for ( int i=0; i<body_objects_qty; i++ )
         {
-            const Vector3d & at  = ats_.ptr()[i];
-            const Vector3d depth = depths_.ptr()[i];
-            const Float L = depth.Length();
-            if ( L < EPS )
-                continue;
+            CollisionObject * body_object = objects.ptr()[i];
+            const Pose pose_a = body_object->pose_w();
+            {
+                ats_.clear();
+                depths_.clear();
 
-            ContactPointBb pt;
-            pt.depth   = L;
-            // Here it is with "-". as here "b" collided with "a".
-            // But depth is supposed to be towsrds "a".
-            pt.n_world = -depth / L;
-            pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
-            pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
-            pt.body_b = body_b;
-            contacts.push_back( pt );
+                other_object->intersect( body_object, ats_, depths_ );
+                const int qty = ats_.size();
+                for ( int i=0; i<qty; i++ )
+                {
+                    const Vector3d & at  = ats_.ptr()[i];
+                    const Vector3d depth = depths_.ptr()[i];
+                    const Float L = depth.Length();
+                    if ( L < EPS )
+                        continue;
+
+                    ContactPointBb pt;
+                    pt.depth   = L;
+                    // Here it is with "-". as here "b" collided with "a".
+                    // But depth is supposed to be towsrds "a".
+                    pt.n_world = -depth / L;
+                    pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
+                    pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
+                    pt.body_b = body_b;
+                    contacts_.push_back( pt );
+                }
+            }
         }
+
     }
+
+    return contacts_;
 }
-
-
 
 PoolVector3Array BroadTree::lines_nodes() const
 {
@@ -310,25 +346,11 @@ void BroadTree::update_node( const BroadTreeNode & node )
     nodes_.ptrw()[ node.absIndex ] = node;
 }
 
-bool BroadTree::select_for_one( int body_ind, Float h, Vector<int> & inds )
+bool BroadTree::select_for_one( RigidBody * body, CollisionObject * co, Float h, Vector<int> & inds )
 {
     // First clear potential contacts from previous calls.
     inds.clear();
 
-    const Vector<RigidBody *> & bodies = simulation->bodies;
-    const int qty = bodies.size();
-    if ( qty < 1 )
-        return false;
-
-    const int bodies_qty = bodies.size();
-    if ( body_ind >= bodies_qty )
-        return false;
-
-    const RigidBody * body = bodies.ptr()[body_ind];
-    const CollisionObject * co = body->collision_object;
-    if ( co == nullptr )
-        return true;
-    
     // IF wasn't subdivided (may be because no bodies have collision objects), return "true".
     if ( nodes_.empty() )
         return true;
@@ -337,7 +359,7 @@ bool BroadTree::select_for_one( int body_ind, Float h, Vector<int> & inds )
     const Float size2 = co->size2( h );
 
     const BroadTreeNode & root = nodes_.ptr()[0];
-    const bool ok = root.objects_inside( body_ind, center, size2, inds );
+    const bool ok = root.objects_inside( body, co, center, size2, inds );
 
     return ok;
 }
@@ -345,6 +367,15 @@ bool BroadTree::select_for_one( int body_ind, Float h, Vector<int> & inds )
 void BroadTree::remove_duplicates( Vector<int> & inds )
 {
     const int qty = inds.size();
+    if ( qty < 1 )
+        return;
+    
+    // Going to keep only collisions with one rigid body.
+    // All bodies are collided in a loop anyway, so all will be eventually processed.
+    const int first_ind = inds.ptr()[0];
+    CollisionObject * first_co = collision_object( first_ind );
+    const RigidBody * first_rb = first_co->rigid_body;
+
     int removed_qty = 0;
     for ( int i=0; i<(qty-removed_qty-1); i++ )
     {
@@ -356,7 +387,9 @@ void BroadTree::remove_duplicates( Vector<int> & inds )
             for ( int j=(i+1); j<(qty-removed_qty); i++ )
             {
                 const int pb = inds.ptr()[j];
-                if ( pa == pb )
+                CollisionObject * co = collision_object( pb );
+                const RigidBody * rb = co->rigid_body;
+                if ( (pa == pb) || (rb != first_rb) )
                 {
                     // Swap with the last one and increment "removed_qty".
                     const int last_ind = qty - removed_qty - 1;
@@ -372,6 +405,15 @@ void BroadTree::remove_duplicates( Vector<int> & inds )
     }
 }
 
+CollisionObject * BroadTree::collision_object( int ind )
+{
+    const int qty = collision_objects_.size();
+    if ( ( ind < 0 ) || (ind >= qty) )
+        return nullptr;
+
+    CollisionObject * ret = collision_objects_.ptrw()[ind];
+    return ret;
+}
 
 
 

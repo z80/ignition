@@ -7,7 +7,6 @@ namespace Pbd
 
 CollisionObject::CollisionObject()
     : rigid_body( nullptr ), 
-      parent_object( nullptr ), 
       k( 2.0 ), 
       obj_type( WrongType ) 
 {
@@ -58,11 +57,10 @@ void CollisionObject::intersect( CollisionObject * b, Vector<Vector3d> & ats, Ve
 Pose CollisionObject::pose_w() const
 {
     Pose pw;
-    if ( (parent_object != nullptr) && (parent_object != this) )
-        pw = parent_object->pose_w();
+    if ( rigid_body != nullptr )
+        pw = rigid_body->pose * pose;
     else
-        pw = rigid_body->pose;
-    pw = pw * pose;
+        pw = pose;
     return pw;
 }
 

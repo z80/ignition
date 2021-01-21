@@ -112,29 +112,18 @@ void Simulation::step()
         clear_contacts( body_a );
         // Collide with other bodies.
         // List of potentially colliding pairs.
-        const Vector<int> & inds = tree.potential_collisions( i, h );
-        const int pairs_qty = inds.size();
-        for ( int j=0; j<pairs_qty; j++ )
+        RigidBody * body_b;
+        // Not using contact reference here because points are to be modified modified (lambdas are modified during interations).
+        contacts = tree.contact_points( body_a, h, body_b );
+        const int contacts_qty = contacts.size();
+        for ( int j=0; j<solver_iterations; j++ )
         {
-            const int ind_b = inds.ptr()[j];
-            tree.contact_points( i, ind_b, contacts );
-            for ( int j=0; j<solver_iterations; j++ )
-            {
-                RigidBody * body_b = bodies.ptrw()[ind_b];
-                solve_normal( body_a, body_b, contacts, h );
-                solve_tangential( body_a, body_b, contacts, h );
-            }
-            // Store contacts for future use in "solve_dynamic_friction".
-            store_contacts( body_a, contacts );
+            solve_normal( body_a, body_b, contacts, h );
+            solve_tangential( body_a, body_b, contacts, h );
         }
-        // for each pair actually collide and get number of contact points.
-        // For all contact points reset lambdas.
-        //for ( int j=0; j<contacts_qty; j++ )
-        //{
-        //    ContactPointBb & pt = contacts.ptrw()[j];
-        //    pt.init_lambdas();
-        //}
-
+        // Store contacts for future use in "solve_dynamic_friction".
+        // Storing after as lambdas are modified.
+        store_contacts( body_a, contacts );
     }
 
     // Update velocities.

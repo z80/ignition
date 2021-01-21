@@ -1,6 +1,6 @@
 
 #include "pbd2_rigid_body.h"
-
+#include "pbd2_collision_object.h"
 
 namespace Pbd
 {
@@ -159,12 +159,40 @@ void RigidBody::update_contact_velocities( Float h )
 
 void RigidBody::update_contact_positions()
 {
-        const int qty = contact_points.size();
-        for ( int i=0; i<qty; i++ )
-        {
-                ContactPoint & pt = contact_points.ptrw()[i];
-                pt.update_prev();
-        }
+    const int qty = contact_points.size();
+    for ( int i=0; i<qty; i++ )
+    {
+        ContactPoint & pt = contact_points.ptrw()[i];
+        pt.update_prev();
+    }
+}
+
+void RigidBody::add_collision( CollisionObject * co )
+{
+    remove_collision( co );
+
+    collision_objects.push_back( co );
+    co->rigid_body = this;
+}
+
+void RigidBody::remove_collision( CollisionObject * co )
+{
+    const int ind = collision_objects.find( co );
+    if ( ind < 0 )
+        return;
+    collision_objects.erase( co );
+    co->rigid_body = nullptr;
+}
+
+void RigidBody::clear_collisions()
+{
+    const int qty = collision_objects.size();
+    for ( int i=0; i<qty; i++ )
+    {
+        CollisionObject * co = collision_objects.ptrw()[i];
+        co->rigid_body = nullptr;
+    }
+    collision_objects.clear();
 }
 
 

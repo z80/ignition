@@ -37,11 +37,9 @@ public:
     // These three are supposed to be used in simulation loop.
     // "subdivide" should be called once.
     void subdivide( Simulation * sim, Float h );
-    // Pair of these methods is supposed to be used for each body's bollision object.
+    // Pair of these methods is supposed to be used for each body's collision object.
     // This one determines with what objects it might intersect.
-    const Vector<int> & potential_collisions( int ind, Float h );
-    // And this one actually collides objects.
-    void contact_points( int ind_a, int ind_b, Vector<ContactPointBb> & contacts );
+    const Vector<ContactPointBb> & contact_points( RigidBody * body, Float h, RigidBody * & body_b );
 
     // For visualization.
     PoolVector3Array lines_nodes() const;
@@ -53,18 +51,21 @@ public:
 
     // Selecting intersecting nodes.
     void intersecting_pairs( int ind );
-    bool select_for_one( int tree_ind, Float h, Vector<int> & inds );
+    bool select_for_one( RigidBody * body, CollisionObject * co, Float h, Vector<int> & inds );
     void remove_duplicates( Vector<int> & inds );
 
-    SE3                   se3_;
-    Vector<BroadTreeNode> nodes_;
+    CollisionObject * collision_object( int ind );
+
+    Vector<CollisionObject *> collision_objects_;
+    SE3                     se3_;
+    Vector<BroadTreeNode>   nodes_;
 
     Simulation * simulation;
     //Vector<NarrowTree *>  bodies_;
 
     Vector<ContactPointBb> contacts_;
     // This one is a helper array used in "select".
-    Vector<int> body_inds_;
+    Vector<int> collision_object_inds_;
     // 
     Vector<Vector3d> ats_;
     Vector<Vector3d> depths_;

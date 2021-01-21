@@ -11,6 +11,7 @@ namespace Pbd
 {
 
 class BroadTree;
+class RigidBody;
 class CollisionObject;
 
 class BroadTreeNode
@@ -26,7 +27,7 @@ public:
 
     bool inside( const CollisionObject * nt, Float h ) const;
     bool inside( const Vector3d & c, Float sz ) const;
-    bool objects_inside( int body_ind, const Vector3d & c, Float sz, Vector<int> & bodies ) const;
+    bool objects_inside( const RigidBody * body, const CollisionObject * co, const Vector3d & c, Float sz, Vector<int> & bodies ) const;
 
     // Initialize vertices and planes.
     void init();
