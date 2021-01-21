@@ -88,7 +88,7 @@ bool BroadTreeNode::hasChildren() const
 
 bool BroadTreeNode::subdivide( Float h )
 {
-    if ( level >= tree->max_depth_ )
+    if ( (level >= tree->max_depth_) || (size2 <= tree->min_size_) )
     {
         return false;
     }
@@ -251,12 +251,12 @@ bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObjec
             const CollisionObject * co_candidate = tree->collision_object( ind );
             const RigidBody * body_candidate = co_candidate->rigid_body;
             if ( ( body != body_candidate ) && ( co != co_candidate ) )
-			{
-				// First check if it is already there.
-				const int already_ind = collision_obj_inds.find( ind );
-				if ( already_ind < 0 )
-					collision_obj_inds.push_back( ind );
-			}
+            {
+                // First check if it is already there.
+                const int already_ind = collision_obj_inds.find( ind );
+                if ( already_ind < 0 )
+                    collision_obj_inds.push_back( ind );
+            }
         }
         return true;
     }

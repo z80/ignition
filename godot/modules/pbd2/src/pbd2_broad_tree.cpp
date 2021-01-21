@@ -15,6 +15,7 @@ BroadTree::BroadTree()
     : simulation( nullptr )
 {
     max_depth_ = 2;
+    min_size_  = 0.0;
 }
 
 BroadTree::~BroadTree()
@@ -64,6 +65,7 @@ void BroadTree::subdivide( Simulation * sim, Float h )
             x_min = x_max = c.x_;
             y_min = y_max = c.y_;
             z_min = z_max = c.z_;
+            min_size_ = sz;
             initialized = true;
             break;
         }
@@ -108,8 +110,13 @@ void BroadTree::subdivide( Simulation * sim, Float h )
                 z_min = v_min.z_;
             if ( v_max.z_ > z_max )
                 z_max = v_max.z_;
+            // Determine minimum node size.
+            if ( min_size_ < sz )
+                min_size_ = sz;
         }
     }
+    // Half of the object size.
+    //min_size_ *= 0.5;
 
     const Vector3d c( (x_min+x_max)/2.0, (y_min+y_max)/2.0, (z_min+z_max)/2.0 );
     const Vector3d dims( (x_max-x_min)/2.0, (y_max-y_min)/2.0, (z_max-z_min)/2.0 );

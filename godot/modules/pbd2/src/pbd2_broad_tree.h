@@ -72,6 +72,8 @@ public:
 
     // Maximum subdivision level.
     int max_depth_;
+    // Minimum size is determined at every iteration by taking the smallest object size.
+    Float min_size_;
 };
 
 
