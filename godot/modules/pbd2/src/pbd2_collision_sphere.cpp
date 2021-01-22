@@ -1,5 +1,6 @@
 
 #include "pbd2_collision_sphere.h"
+#include "pbd2_collision_plane.h"
 #include "pbd2_collisions.h"
 
 namespace Pbd
@@ -30,7 +31,14 @@ void CollisionSphere::intersect( CollisionObject * b, Vector<Vector3d> & ats, Ve
         CollisionSphere * bs = dynamic_cast<CollisionSphere *>( b );
         if ( !bs )
             return;
-		collision_sphere_sphere( this, bs, ats, depths );
+        collision_sphere_sphere( this, bs, ats, depths );
+    }
+    else if ( tp == Plane )
+    {
+        CollisionPlane * bs = dynamic_cast<CollisionPlane *>( b );
+        if ( !bs )
+            return;
+        collision_sphere_plane( this, bs, ats, depths );
     }
 }
 

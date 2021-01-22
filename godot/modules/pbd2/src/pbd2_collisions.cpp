@@ -34,6 +34,16 @@ void collision_sphere_sphere( CollisionSphere * obj_a, CollisionSphere * obj_b, 
 }
 
 
+void collision_sphere_plane( CollisionSphere * obj_a, CollisionPlane * obj_b, Vector<Vector3d> & ats, Vector<Vector3d> & depths )
+{
+    const Pose pose_a = obj_a->pose_w();
+    const Pose pose_b = obj_b->pose_w();
+
+
+
+
+
+}
 
 
 
