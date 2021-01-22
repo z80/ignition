@@ -19,8 +19,28 @@ static func cluster_dist( rf: RefFramePhysics, objs: Array, split_ind: int ) -> 
 	return min_dist
 	
 
-static func cluster_swap( rf: RefFramePhysics, src: Array, dest: Array, element_ind: int ) -> int:
-	return -1
+static func cluster_swap( rf: RefFramePhysics, src: Array, dest: Array, element_ind: int, split_ind: int ) -> int:
+	# Not sure if this will work.
+	# If not, per element copy should.
+	dest = src.duplicate()
+	if element_ind < split_ind:
+		var last_ind: int = split_ind - 1
+		if element_ind < last_ind:
+			var a: Body = dest[element_ind]
+			var b: Body = dest[last_ind]
+			dest[last_ind] = a
+			dest[element_ind] = b
+		split_ind -= 1
+	else:
+		var first_ind: int = split_ind
+		if first_ind < element_ind:
+			var a: Body = dest[first_ind]
+			var b: Body = dest[element_ind]
+			dest[first_ind] = b
+			dest[element_ind] = a
+		split_ind += 1
+	
+	return split_ind
 
 
 
