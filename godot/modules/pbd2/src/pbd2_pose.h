@@ -20,10 +20,11 @@ public:
     ~Pose();
     Pose( const Pose & inst );
     const Pose & operator=( const Pose & inst );
-    Pose operator*( const Pose & b );
-    Pose operator/( const Pose & b );
     Pose inverse() const;
 };
+
+Pose operator*( const Pose & a, const Pose & b );
+Pose operator/( const Pose & a, const Pose & b );
 
 }
 

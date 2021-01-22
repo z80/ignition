@@ -1,6 +1,7 @@
 
 #include "pbd2_collisions.h"
 #include "pbd2_collision_sphere.h"
+#include "pbd2_collision_box.h"
 #include "pbd2_collision_plane.h"
 
 namespace Pbd
@@ -66,8 +67,9 @@ void collision_sphere_box( CollisionSphere * obj_a, CollisionBox * obj_b, Vector
 {
     // Sphere in Box ref. frame.
     const Pose pose_sphere = obj_a->pose_w();
-    const Pose pose_box    = obj_b->powe_w();
+    const Pose pose_box    = obj_b->pose_w();
     const Pose pose_rel = pose_sphere / pose_box;
+    const Float radius = obj_a->radius;
     // Copy-pase from ODE.
     // Clip sphere center onto the box surface and check the distance.
 
@@ -76,8 +78,8 @@ void collision_sphere_box( CollisionSphere * obj_a, CollisionBox * obj_b, Vector
     const Vector3d sz2 = obj_b->get_size2();
     if (p.x_ < -sz2.x_)
     {
-        p.x_ = -sz2.x_
-        on_bound = true;
+        p.x_ = -sz2.x_;
+        on_border = true;
     }
     else if (p.x_ > sz2.x_)
     {
@@ -87,8 +89,8 @@ void collision_sphere_box( CollisionSphere * obj_a, CollisionBox * obj_b, Vector
 
     if (p.y_ < -sz2.y_)
     {
-        p.y_ = -sz2.y_
-        on_bound = true;
+        p.y_ = -sz2.y_;
+        on_border = true;
     }
     else if (p.y_ > sz2.y_)
     {
@@ -98,8 +100,8 @@ void collision_sphere_box( CollisionSphere * obj_a, CollisionBox * obj_b, Vector
 
     if (p.z_ < -sz2.z_)
     {
-        p.z_ = -sz2.z_
-        on_bound = true;
+        p.z_ = -sz2.z_;
+        on_border = true;
     }
     else if (p.z_ > sz2.z_)
     {
@@ -137,14 +139,14 @@ void collision_sphere_box( CollisionSphere * obj_a, CollisionBox * obj_b, Vector
             min_dist = dist_back;
             min_ind = 4;
         }
-        const Float dist_forward = std::abs( p.z_ + sz2.z_ )
+        const Float dist_forward = std::abs( p.z_ + sz2.z_ );
         if ( dist_forward < min_dist )
         {
             min_dist = dist_forward;
             min_ind = 5;
         }
         // Two points. One on the surface, the other is the deepest point on the sphere.
-        const Vector3d v_surf, v_deep;
+        Vector3d v_surf, v_deep;
         if ( min_ind == 0 )
         {
             v_surf = Vector3d( sz2.x_, p.y_, p.z_ );
@@ -196,12 +198,12 @@ void collision_sphere_box( CollisionSphere * obj_a, CollisionBox * obj_b, Vector
     // Unit vector away from cube surface.
     const Vector3d a = v_surf/v_surf.Length();
     const Vector3d v_deep = pose_rel.r - (radius * a);
-    Vector3d at = (v_surf + v_deep) * 0.5;
-    Vector3d depth = v_surf - v_deep;
-    at = pose_box.r + (pose_box.q * at);
-    depth = pose_box.q * depth;
-    ats.push_back( at );
-    depths.push_back( depth );
+    Vector3d v_at = (v_surf + v_deep) * 0.5;
+    Vector3d v_depth = v_surf - v_deep;
+    v_at = pose_box.r + (pose_box.q * v_at);
+    v_depth = pose_box.q * v_depth;
+    ats.push_back( v_at );
+    depths.push_back( v_depth );
 }
 
 void collision_box_plane( CollisionBox * obj_a, CollisionPlane * obj_b, Vector<Vector3d> & ats, Vector<Vector3d> & depths )
@@ -213,14 +215,14 @@ void collision_box_plane( CollisionBox * obj_a, CollisionPlane * obj_b, Vector<V
     const Pose pose_plane = obj_b->pose_w();
     const Pose pose_rel = pose_box / pose_plane;
     const Vector3d sz = obj_a->get_size2();
-    const Vector3 verts[] = { Vector3d(-sz.x_, -sz.y_, -sz.z_), 
-                              Vector3d( sz.x_, -sz.y_, -sz.z_), 
-                              Vector3d( sz.x_,  sz.y_, -sz.z_ ), 
-                              Vector3d(-sz.x_,  sz.y_, -sz.z_), 
-                              Vector3d(-sz.x_, -sz.y_,  sz.z_), 
-                              Vector3d( sz.x_, -sz.y_,  sz.z_), 
-                              Vector3d( sz.x_,  sz.y_,  sz.z_ ), 
-                              Vector3d(-sz.x_,  sz.y_,  sz.z_) }; 
+    const Vector3d verts[] = { Vector3d(-sz.x_, -sz.y_, -sz.z_), 
+                               Vector3d( sz.x_, -sz.y_, -sz.z_), 
+                               Vector3d( sz.x_,  sz.y_, -sz.z_ ), 
+                               Vector3d(-sz.x_,  sz.y_, -sz.z_), 
+                               Vector3d(-sz.x_, -sz.y_,  sz.z_), 
+                               Vector3d( sz.x_, -sz.y_,  sz.z_), 
+                               Vector3d( sz.x_,  sz.y_,  sz.z_ ), 
+                               Vector3d(-sz.x_,  sz.y_,  sz.z_) }; 
     for ( int i=0; i<8; i++ )
     {
         const Vector3d v = pose_rel.r + (pose_rel.q * verts[i]);

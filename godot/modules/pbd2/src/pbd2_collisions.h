@@ -8,6 +8,7 @@ namespace Pbd
 {
 
 class CollisionSphere;
+class CollisionBox;
 class CollisionPlane;
 
 void collision_sphere_sphere( CollisionSphere * obj_a, CollisionSphere * obj_b, Vector<Vector3d> & ats, Vector<Vector3d> & depths );

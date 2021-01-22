@@ -28,23 +28,6 @@ const Pose & Pose::operator=( const Pose & inst )
     return *this;
 }
 
-Pose Pose::operator*( const Pose & b )
-{
-    Pose ret;
-    ret.q = q * b.q;
-    ret.r = r + (q*b.r);
-
-    return ret;
-}
-
-Pose Pose::operator/( const Pose & b )
-{
-    Pose inv = b.inverse();
-    Pose ret = inv * (*this);
-
-    return ret;
-}
-
 Pose Pose::inverse() const
 {
     Pose ret;
@@ -55,6 +38,21 @@ Pose Pose::inverse() const
 }
 
 
+Pose operator*( const Pose & a, const Pose & b )
+{
+    Pose ret;
+    ret.q = a.q * b.q;
+    ret.r = a.r + (a.q*b.r);
 
+    return ret;
+}
+
+Pose operator/( const Pose & a, const Pose & b )
+{
+    Pose inv = b.inverse();
+    Pose ret = inv * a;
+
+    return ret;
+}
 }
 
