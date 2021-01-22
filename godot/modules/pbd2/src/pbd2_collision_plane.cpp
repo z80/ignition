@@ -23,6 +23,16 @@ Float CollisionPlane::bounding_radius() const
     return size_;
 }
 
+void CollisionPlane::set_size( Float sz )
+{
+    size_ = sz;
+}
+
+Float CollisionPlane::get_size() const
+{
+    return size_;
+}
+
 void CollisionPlane::intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths )
 {
     // Other objects collide with it.
