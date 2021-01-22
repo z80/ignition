@@ -20,9 +20,9 @@ public:
         WrongType = 0, 
         Point     = 1, 
         Sphere    = 2, 
-        Plane     = 3, 
-        Heightmap = 4, 
-        Compound  = 5
+        Box       = 3, 
+        Plane     = 4, 
+        Heightmap = 5
     };
 
     CollisionObject();
