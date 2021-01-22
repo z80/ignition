@@ -28,6 +28,8 @@ public:
 
     void stop();
 
+    bool is_orbiting() const;
+
     void init( Float gm, const SE3 & se3 );
     static Float init_gm( Float radius_km, Float wanted_surface_orbit_velocity_kms );
     void launch_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity );

@@ -90,6 +90,12 @@ void CelestialMotion::stop()
     type = STATIONARY;
 }
 
+bool CelestialMotion::is_orbiting() const
+{
+    const bool not_orbiting = (type == STATIONARY) || (type == LINEAR);
+	const bool orbiting = !not_orbiting;
+	return orbiting;
+}
 
 
 void CelestialMotion::init( Float gm_, const SE3 & se3_ )

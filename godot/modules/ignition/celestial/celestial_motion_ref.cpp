@@ -15,6 +15,8 @@ void CelestialMotionRef::_bind_methods()
 
     ClassDB::bind_method( D_METHOD("stop"), &CelestialMotionRef::stop );
 
+    ClassDB::bind_method( D_METHOD("is_orbiting"), &CelestialMotionRef::is_orbiting );
+
     ClassDB::bind_method( D_METHOD("init", "gm", "se3"), &CelestialMotionRef::init );
     ClassDB::bind_method( D_METHOD("init_gm", "radius_km", "suface_orbit_velocity_kms"), &CelestialMotionRef::init_gm );
     ClassDB::bind_method( D_METHOD("launch_elliptic", "gm", "unit_r", "unit_v", "period_hrs", "eccentricity"), &CelestialMotionRef::launch_elliptic );
@@ -63,6 +65,12 @@ void CelestialMotionRef::stop()
 {
     cm.stop();
 }
+
+bool CelestialMotionRef::is_orbiting() const
+{
+    return cm.is_orbiting();
+}
+
 
 
 
