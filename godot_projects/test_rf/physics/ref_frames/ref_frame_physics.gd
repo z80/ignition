@@ -25,6 +25,8 @@ func process_children():
 	apply_forces()
 	exclude_too_far_bodies()
 	include_close_enough_bodies()
+	split_if_needed()
+	merge_if_needed()
 
 
 
@@ -192,7 +194,12 @@ func include_close_enough_bodies():
 
 
 
+func split_if_needed():
+	pass
 
+
+func merge_if_needed():
+	pass
 
 
 func child_bodies():
