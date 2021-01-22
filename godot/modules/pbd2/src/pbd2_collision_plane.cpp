@@ -10,8 +10,8 @@ namespace Pbd
 CollisionPlane::CollisionPlane()
     : CollisionObject()
 {
-    radius = 1.0;
-    obj_type = Sphere;
+    obj_type = Plane;
+    size_ = 100.0;
 }
 
 CollisionPlane::~CollisionPlane()
@@ -20,19 +20,13 @@ CollisionPlane::~CollisionPlane()
     
 Float CollisionPlane::bounding_radius() const
 {
-    return radius;
+    return size_;
 }
 
 void CollisionPlane::intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths )
 {
-    CollisionObjectType tp = b->type();
-    if ( tp == Sphere )
-    {
-        CollisionSphere * bs = dynamic_cast<CollisionSphere *>( b );
-        if ( !bs )
-            return;
-        collision_plane_sphere( this, bs, ats, depths );
-    }
+    // Other objects collide with it.
+    return;
 }
 
 }
