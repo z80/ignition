@@ -258,6 +258,37 @@ void collision_box_box( CollisionBox * obj_a, CollisionBox * obj_b, Vector<Vecto
     const Pose pose_a   = obj_a->pose_w();
     const Pose pose_b = obj_b->pose_w();
     const Pose pose_rel = pose_a / pose_b;
+
+    Box box_a;
+    box_a.init( obj_a.get_size2() );
+    Box box_b;
+    box_b.init( obj_b.get_size2() );
+
+    box_a.apply( pose_rel );
+
+    for ( int i=0; i<8; i++ )
+    {
+        BoxVertex & v = box_a.verts[i];
+        const bool inside = box_b.inside( v );
+        if ( inside )
+        {
+            const BoxFace & f = box_b.faces[v.face_id];
+            Vector3d depth;
+        }
+    }
+    
+    static const int edges[][] = { {0, 1}, {1, 2}, {2, 3}, {3, 0}, 
+                                   {4, 5}, {5, 6}, {6, 7}, {7, 4}, 
+                                   {0, 4}, {1, 5}, {2, 6}, {3, 7} };
+    for ( int i=0; i<12; i++ )
+    {
+        const int ind_a = edges[i][0];
+        const int ind_b = edges[i][1];
+        const BoxVertex & a = box_a.verts[ind_a];
+        const BoxVertex & b = box_a.verts[ind_b];
+        Vector3d at, depth;
+        const bool intersects = box_b.intersects( a, b, at, depth );
+    }
 }
 
 

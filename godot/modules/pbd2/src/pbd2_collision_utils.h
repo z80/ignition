@@ -9,7 +9,7 @@ using namespace Ign;
 namespace Pbd
 {
 
-enum FaceId { BACK, RIGHT, FORWARD, LEFT, DOWN, UP };
+enum FaceId { BACK=0, RIGHT=1, FORWARD=2, LEFT=3, DOWN=4, UP=5 };
 struct BoxVertex
 {
     Vector3d v;
