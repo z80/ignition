@@ -49,6 +49,12 @@ Float CollisionObject::bounding_radius() const
     return -1.0;
 }
 
+bool CollisionObject::inside( BroadTreeNode * n, Float h ) const
+{
+    return false;
+}
+
+
 void CollisionObject::intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths )
 {
     // By default do nothing of course.

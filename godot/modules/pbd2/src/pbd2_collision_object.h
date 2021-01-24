@@ -11,6 +11,7 @@ namespace Pbd
 {
 
 class RigidBody;
+class BroadTreeNode;
 
 class CollisionObject
 {
@@ -39,6 +40,13 @@ public:
     Float    size2( Float h ) const;
     // This should be defined by implementations.
     virtual Float bounding_radius() const;
+
+
+    // Instead bounding sphere thing to determine if the object is inside broad tree node, 
+    // let the object decide it.
+    virtual bool inside( BroadTreeNode * n, Float h ) const;
+
+
 
     // Intersecting this object with another collision object.
     virtual void intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths );
