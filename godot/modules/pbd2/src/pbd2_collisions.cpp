@@ -273,7 +273,10 @@ void collision_box_box( CollisionBox * obj_a, CollisionBox * obj_b, Vector<Vecto
         if ( inside )
         {
             const BoxFace & f = box_b.faces[v.face_id];
-            Vector3d depth;
+            const Vector3d depth = f.n * v.depth;
+            const Vector3d at = v.at + depth * 0.5;
+            ats.push_back( at );
+            depths.push_back( depth );
         }
     }
     
@@ -288,6 +291,11 @@ void collision_box_box( CollisionBox * obj_a, CollisionBox * obj_b, Vector<Vecto
         const BoxVertex & b = box_a.verts[ind_b];
         Vector3d at, depth;
         const bool intersects = box_b.intersects( a, b, at, depth );
+        if ( intersects )
+        {
+            ats.push_back( at );
+            depths.push_back( depth );
+        }
     }
 }
 
