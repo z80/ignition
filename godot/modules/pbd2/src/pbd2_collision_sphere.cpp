@@ -15,7 +15,7 @@ CollisionSphere::CollisionSphere()
     : CollisionObject()
 {
     radius = 1.0;
-    obj_type = Sphere;
+    obj_type = ObjectSphere;
 }
 
 CollisionSphere::~CollisionSphere()
@@ -51,21 +51,21 @@ bool CollisionSphere::inside( BroadTreeNode * n, Float h ) const
 void CollisionSphere::intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths )
 {
     CollisionObjectType tp = b->type();
-    if ( tp == Sphere )
+    if ( tp == ObjectSphere )
     {
         CollisionSphere * bs = dynamic_cast<CollisionSphere *>( b );
         if ( !bs )
             return;
         collision_sphere_sphere( this, bs, ats, depths );
     }
-    if ( tp == Box )
+    if ( tp == ObjectBox )
     {
         CollisionBox * bs = dynamic_cast<CollisionBox *>( b );
         if ( !bs )
             return;
         collision_sphere_box( this, bs, ats, depths );
     }
-    else if ( tp == Plane )
+    else if ( tp == ObjectPlane )
     {
         CollisionPlane * bs = dynamic_cast<CollisionPlane *>( b );
         if ( !bs )

@@ -193,6 +193,52 @@ bool Box::inside( BoxVertex & v ) const
     return true;
 }
 
+bool Box::inside_const( const BoxVertex & v ) const
+{
+    for ( int i=0; i<6; i++ )
+    {
+        const BoxFace & f = faces[i];
+        const Float nd = f.n.DotProduct( v.v - f.center );
+        if ( nd > -EPS )
+            return false;
+    }
+
+    return true;
+}
+
+bool Box::intersects( const Box & b ) const
+{
+    for ( int i=0; i<8; i++ )
+    {
+        const BoxVertex & v = b.verts[i];
+        const bool ok = inside_const( v );
+        if ( ok )
+            return true;
+    }
+
+    static const int edges[12][2] = { {0, 1}, {1, 2}, {2, 3}, {3, 0}, 
+                                      {4, 5}, {5, 6}, {6, 7}, {7, 4}, 
+                                      {0, 4}, {1, 5}, {2, 6}, {3, 7} };
+    for ( int i=0; i<12; i++ )
+    {
+        const int ind_a = edges[i][0];
+        const int ind_b = edges[i][1];
+        const BoxVertex & va = b.verts[ind_a];
+        const BoxVertex & vb = b.verts[ind_b];
+        for ( int j=0; j<6; j++ )
+        {
+            const BoxFace & f = faces[j];
+            Vector3d at, depth;
+            const bool intersects = f.intersects( va, vb, at, depth );
+            if ( intersects )
+                return true;
+        }
+    }
+
+    return false;
+}
+
+
 
 
 

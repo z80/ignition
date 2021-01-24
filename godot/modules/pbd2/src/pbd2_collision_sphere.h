@@ -14,7 +14,7 @@ public:
     ~CollisionSphere();
     
     Float bounding_radius() const override;
-    bool inside( BroadTreeNode * n, Float h ) const;
+    bool inside( BroadTreeNode * n, Float h ) const override;
     void intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths ) override;
 
 

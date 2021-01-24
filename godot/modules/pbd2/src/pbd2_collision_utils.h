@@ -1,4 +1,8 @@
 
+#ifndef __COLLISION_UTILS_H_
+#define __COLLISION_UTILS_H_
+
+
 #include "data_types.h"
 #include "vector3d.h"
 #include "quaterniond.h"
@@ -39,6 +43,8 @@ struct Box
     void init( const Vector3d sz2 );
     void apply( const Pose & pose );
     bool inside( BoxVertex & v ) const;
+    bool inside_const( const BoxVertex & v ) const;
+    bool intersects( const Box & b ) const;
 
 };
  
@@ -46,5 +52,8 @@ struct Box
 
 
 
+
+
+#endif
 
 

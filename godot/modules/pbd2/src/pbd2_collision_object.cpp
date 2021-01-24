@@ -8,7 +8,7 @@ namespace Pbd
 CollisionObject::CollisionObject()
     : rigid_body( nullptr ), 
       k( 2.0 ), 
-      obj_type( WrongType ) 
+      obj_type( ObjectWrongType ) 
 {
 }
 

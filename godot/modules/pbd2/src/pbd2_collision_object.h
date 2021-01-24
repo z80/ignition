@@ -18,12 +18,12 @@ class CollisionObject
 public:
     enum CollisionObjectType 
     {
-        WrongType = 0, 
-        Point     = 1, 
-        Sphere    = 2, 
-        Box       = 3, 
-        Plane     = 4, 
-        Heightmap = 5
+        ObjectWrongType = 0, 
+		ObjectPoint     = 1, 
+		ObjectSphere    = 2, 
+		ObjectBox       = 3, 
+		ObjectPlane     = 4, 
+		ObjectHeightmap = 5
     };
 
     CollisionObject();
