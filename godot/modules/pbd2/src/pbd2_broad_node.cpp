@@ -177,7 +177,7 @@ bool BroadTreeNode::subdivide( Float h )
             const int ind = ptInds[i];
             const CollisionObject * co = tree->collision_object(ind);
 
-            const bool inside = ch_n.inside( co, h );
+            const bool inside = co->inside( &ch_n, h );
             if ( inside )
             {
                 ch_n.ptInds.push_back( ind );
@@ -201,44 +201,10 @@ bool BroadTreeNode::subdivide( Float h )
 }
 
 
-bool BroadTreeNode::inside( const CollisionObject * co, Float h ) const
+bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObject * co, Float h, Vector<int> & collision_obj_inds ) const
 {
-    if ( co == nullptr )
-        return false;
-    
-    const Float sz2 = co->size2( h );
-    if (sz2 < 0.0 )
-        return false;
-    const Float d = size2 + sz2;
-    const Vector3d dr = center - co->center();
-    if ( std::abs(dr.x_) > d )
-        return false;
-    if ( std::abs(dr.y_) > d )
-        return false;
-    if ( std::abs(dr.z_) > d )
-        return false;
-    
-    return true;
-}
-
-bool BroadTreeNode::inside( const Vector3d & c, Float sz ) const
-{
-    const Float sz2 = sz + size2;
-    const Vector3d dr = c - center;
-    if ( std::abs(dr.x_) > sz2 )
-        return false;
-    if ( std::abs(dr.y_) > sz2 )
-        return false;
-    if ( std::abs(dr.z_) > sz2 )
-        return false;
-
-    return true;
-}
-
-bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObject * co, const Vector3d & c, Float sz, Vector<int> & collision_obj_inds ) const
-{
-    const bool intersects = inside( c, sz );
-    if ( !intersects )
+    const bool object_inside_this_node = co->inside( this, h );
+    if ( !object_inside_this_node )
         return false;
 
     const bool has_children = hasChildren();
@@ -253,6 +219,7 @@ bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObjec
             if ( ( body != body_candidate ) && ( co != co_candidate ) )
             {
                 // First check if it is already there.
+                // It is because one and the same object may be in a few different nodes.
                 const int already_ind = collision_obj_inds.find( ind );
                 if ( already_ind < 0 )
                     collision_obj_inds.push_back( ind );
@@ -266,7 +233,7 @@ bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObjec
     {
         const int child_ind = children[i];
         const BroadTreeNode & child = tree->nodes_.ptr()[child_ind];
-        const bool ok = child.objects_inside( body, co, c, sz, collision_obj_inds );
+        const bool ok = child.objects_inside( body, co, h, collision_obj_inds );
         ret = ret || ok;
     }
     return ret;

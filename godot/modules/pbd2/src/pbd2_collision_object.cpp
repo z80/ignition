@@ -49,7 +49,7 @@ Float CollisionObject::bounding_radius() const
     return -1.0;
 }
 
-bool CollisionObject::inside( BroadTreeNode * n, Float h ) const
+bool CollisionObject::inside( const BroadTreeNode * n, Float h ) const
 {
     return false;
 }

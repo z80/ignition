@@ -27,7 +27,7 @@ Float CollisionBox::bounding_radius() const
     return size2.Length() * 0.5;
 }
 
-bool CollisionBox::inside( BroadTreeNode * n, Float h ) const
+bool CollisionBox::inside( const BroadTreeNode * n, Float h ) const
 {
     const Pose pose_box = pose_w();
     Pose pose_node;

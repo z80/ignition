@@ -44,7 +44,7 @@ public:
 
     // Instead bounding sphere thing to determine if the object is inside broad tree node, 
     // let the object decide it.
-    virtual bool inside( BroadTreeNode * n, Float h ) const;
+    virtual bool inside( const BroadTreeNode * n, Float h ) const;
 
 
 

@@ -28,7 +28,7 @@ Float CollisionSphere::bounding_radius() const
 }
 
 
-bool CollisionSphere::inside( BroadTreeNode * n, Float h ) const
+bool CollisionSphere::inside( const BroadTreeNode * n, Float h ) const
 {
     const Pose p = pose_w();
     Float r = radius;

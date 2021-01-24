@@ -37,7 +37,7 @@ Float CollisionPlane::bounding_radius() const
     return size_;
 }
 
-bool CollisionPlane::inside( BroadTreeNode * n, Float h ) const
+bool CollisionPlane::inside( const BroadTreeNode * n, Float h ) const
 {
     Pose pose_node;
     pose_node.r = n->center;

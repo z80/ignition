@@ -361,7 +361,7 @@ bool BroadTree::select_for_one( RigidBody * body, CollisionObject * co, Float h,
     const Float size2 = co->size2( h );
 
     const BroadTreeNode & root = nodes_.ptr()[0];
-    const bool ok = root.objects_inside( body, co, center, size2, inds );
+    const bool ok = root.objects_inside( body, co, h, inds );
 
     return ok;
 }
