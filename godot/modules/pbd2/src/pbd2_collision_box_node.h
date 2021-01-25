@@ -19,8 +19,8 @@ public:
     PbdCollisionBoxNode();
     ~PbdCollisionBoxNode();
 
-    void set_size2( const Vector3 & r );
-    Vector3 get_size2() const;
+    void set_size( const Vector3 & sz );
+    Vector3 get_size() const;
 
 
 public:

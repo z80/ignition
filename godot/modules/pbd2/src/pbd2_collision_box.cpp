@@ -63,15 +63,21 @@ void CollisionBox::intersect( CollisionObject * b, Vector<Vector3d> & ats, Vecto
     }
 }
 
-void CollisionBox::set_size2( const Vector3d sz )
+void CollisionBox::set_size( const Vector3d & sz )
 {
-    size2 = sz;
+    size2 = sz * 0.5;
+}
+
+Vector3d CollisionBox::get_size() const
+{
+    return size2 * 2.0;
 }
 
 Vector3d CollisionBox::get_size2() const
 {
-    return size2;
+	return size2;
 }
+
 
 
 }

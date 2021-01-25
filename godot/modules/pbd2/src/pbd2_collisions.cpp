@@ -198,7 +198,8 @@ void collision_sphere_box( CollisionSphere * obj_a, CollisionBox * obj_b, Vector
         return;
     const Vector3d v_surf = p; 
     // Unit vector away from cube surface.
-    const Vector3d a = v_surf/v_surf.Length();
+	Vector3d a = pose_rel.r - v_surf;
+    a.Normalize();
     const Vector3d v_deep = pose_rel.r - (radius * a);
     Vector3d v_at = (v_surf + v_deep) * 0.5;
     Vector3d v_depth = v_surf - v_deep;

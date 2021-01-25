@@ -17,8 +17,9 @@ public:
     bool inside( const BroadTreeNode * n, Float h ) const override;
     void intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths ) override;
 
-    void set_size2( const Vector3d sz );
-    Vector3d get_size2() const;
+    void set_size( const Vector3d & sz );
+    Vector3d get_size() const;
+	Vector3d get_size2() const;
 
 
     Vector3d size2;
