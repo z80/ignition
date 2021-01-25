@@ -64,7 +64,7 @@ void ContactPointBb::solve_tangential( RigidBody * body_a, RigidBody * body_b, F
     const Vector3d pb_prev = body_b->prev_pose.r + (body_b->prev_pose.q * this->r_b);
 
     Vector3d d = (pa - pa_prev) - (pb - pb_prev);
-	const Float normal_proj = n_world.DotProduct( d )
+	const Float normal_proj = n_world.DotProduct( d );
 	d = d - (n_world * normal_proj);
 
     const Float c = d.Length();
