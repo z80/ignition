@@ -13,7 +13,7 @@ static void apply_pose( PbdCollisionObjectNode * con )
 {
     if ( (con == nullptr) || (con->collision_object == nullptr) )
         return;
-    const Pose p = con->collision_object->pose_w();
+    const Pose p = con->collision_object->pose;
     const Vector3d & r_ = p.r;
     const Quaterniond & q_ = p.q;
     const Vector3 r( r_.x_, r_.y_, r_.z_ );
