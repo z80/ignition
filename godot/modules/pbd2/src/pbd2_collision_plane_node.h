@@ -19,10 +19,6 @@ public:
     PbdCollisionPlaneNode();
     ~PbdCollisionPlaneNode();
 
-    void set_size( real_t r );
-    real_t get_size() const;
-
-
 public:
     CollisionPlane collision_plane;
 };

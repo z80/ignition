@@ -4,6 +4,8 @@
 #include "pbd2_joint.h"
 #include "pbd2_collision_object.h"
 
+#include "core/print_string.h"
+
 namespace Pbd
 {
 
@@ -33,6 +35,8 @@ Simulation::Simulation()
     h = 0.01;
     solver_iterations = 3;
     time_remainder = 0.0;
+
+	step_number = 0;
 }
 
 Simulation::~Simulation()
@@ -62,6 +66,9 @@ void Simulation::step( Float delta )
 
 void Simulation::step()
 {
+	if ( step_number == 474 )
+		int i=0;
+
     // Integrate dynamics.
     const int bodies_qty = bodies.size();
     for ( int i=0; i<bodies_qty; i++ )
@@ -151,6 +158,23 @@ void Simulation::step()
         RigidBody * body = bodies.ptr()[i];
         body->update_contact_positions();
     }*/
+
+	String stri = String( "step " ) + itos( step_number ) + String( ": " );
+	for ( int i=0; i<bodies_qty; i++ )
+	{
+		RigidBody * body = bodies.ptr()[i];
+		if ( body->mass <= 0.0 )
+			continue;
+		String s = String("body[") + itos(i) + String("].vel = (") +
+			       rtos( body->vel.x_ ) + String( ", " ) + 
+                   rtos( body->vel.y_ ) + String( ", " ) + 
+                   rtos( body->vel.z_ ) + String(")");
+		stri += s;
+	}
+	print_line( stri );
+
+
+	step_number += 1;
 }
 
 void Simulation::clear()
