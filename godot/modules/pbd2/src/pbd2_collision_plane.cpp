@@ -15,26 +15,15 @@ CollisionPlane::CollisionPlane()
     : CollisionObject()
 {
     obj_type = ObjectPlane;
-    size_ = 100.0;
 }
 
 CollisionPlane::~CollisionPlane()
 {
 }
-
-void CollisionPlane::set_size( Float sz )
-{
-    size_ = sz;
-}
-
-Float CollisionPlane::get_size() const
-{
-    return size_;
-}
    
 Float CollisionPlane::bounding_radius() const
 {
-    return size_;
+    return -1.0;
 }
 
 bool CollisionPlane::inside( const BroadTreeNode * n, Float h ) const

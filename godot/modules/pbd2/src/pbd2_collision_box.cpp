@@ -24,7 +24,7 @@ CollisionBox::~CollisionBox()
     
 Float CollisionBox::bounding_radius() const
 {
-    return size2.Length() * 0.5;
+    return size2.Length();
 }
 
 bool CollisionBox::inside( const BroadTreeNode * n, Float h ) const

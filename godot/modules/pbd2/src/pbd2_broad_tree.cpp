@@ -86,9 +86,9 @@ void BroadTree::subdivide( Simulation * sim, Float h )
             CollisionObject * co = body->collision_objects.ptrw()[j];
             if ( co == nullptr )
                 continue;
-            const Float sz = co->size2( h );
+            Float sz = co->size2( h );
             if ( sz < 0.0 )
-                continue;
+                sz = 0.0;
             // Put only body indices for the bodies who have collision objects.
             // And collision objects are valid.
             collision_objects_.push_back( co );

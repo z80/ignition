@@ -13,14 +13,9 @@ public:
     CollisionPlane();
     ~CollisionPlane();
    
-    void set_size( Float sz );
-    Float get_size() const;
-
     Float bounding_radius() const;
     bool inside( const BroadTreeNode * n, Float h ) const override;
     void intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths ) override;
-
-    Float size_;
 };
 
 
