@@ -86,9 +86,7 @@ void BroadTree::subdivide( Simulation * sim, Float h )
             CollisionObject * co = body->collision_objects.ptrw()[j];
             if ( co == nullptr )
                 continue;
-            Float sz = co->size2( h );
-            if ( sz < 0.0 )
-                sz = 0.0;
+            const Float sz = co->size2( h );
             // Put only body indices for the bodies who have collision objects.
             // And collision objects are valid.
             collision_objects_.push_back( co );
@@ -111,7 +109,7 @@ void BroadTree::subdivide( Simulation * sim, Float h )
             if ( v_max.z_ > z_max )
                 z_max = v_max.z_;
             // Determine minimum node size.
-            if ( min_size_ < sz )
+            if ( (sz > 0.0) && ( (min_size_ > sz) || (min_size_ < 0.0) ) )
                 min_size_ = sz;
         }
     }

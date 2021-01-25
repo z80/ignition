@@ -31,7 +31,7 @@ Float CollisionSphere::bounding_radius() const
 bool CollisionSphere::inside( const BroadTreeNode * n, Float h ) const
 {
     const Pose p = pose_w();
-    Float r = radius;
+    Float r = radius + n->size2;
     if ( rigid_body != nullptr )
     {
         const Vector3d v = rigid_body->vel;
