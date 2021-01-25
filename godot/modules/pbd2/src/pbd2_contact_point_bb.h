@@ -36,6 +36,7 @@ public:
     
     bool apply_friction;
 
+    RigidBody * body_a;
     RigidBody * body_b;
 
     static const Float EPS;

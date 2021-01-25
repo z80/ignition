@@ -9,6 +9,7 @@ const Float ContactPointBb::EPS = 0.0001;
 
 ContactPointBb::ContactPointBb()
 {
+    body_a = nullptr;
     body_b = nullptr;
     depth = 0.0;
     apply_friction = false;

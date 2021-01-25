@@ -62,8 +62,6 @@ public:
     Pose pose;
     // Safety parameter.
     Float k;
-    // All contacts with all other bodies.
-    Vector<ContactPointBb> contacts;
 };
 
 

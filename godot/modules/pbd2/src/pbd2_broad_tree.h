@@ -39,7 +39,7 @@ public:
     void subdivide( Simulation * sim, Float h );
     // Pair of these methods is supposed to be used for each body's collision object.
     // This one determines with what objects it might intersect.
-    const Vector<ContactPointBb> & contact_points( RigidBody * body, Float h, RigidBody * & body_b );
+    const Vector<ContactPointBb> & find_contact_points( RigidBody * body, Float h );
 
     // For visualization.
     PoolVector3Array lines_nodes() const;
@@ -63,6 +63,7 @@ public:
     Simulation * simulation;
     //Vector<NarrowTree *>  bodies_;
 
+    // This one is used for querying contacts in between pairs of bodies.
     Vector<ContactPointBb> contacts_;
     // This one is a helper array used in "select".
     Vector<int> collision_object_inds_;

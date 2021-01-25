@@ -139,10 +139,10 @@ void BroadTree::subdivide( Simulation * sim, Float h )
 
 
 
-const Vector<ContactPointBb> & BroadTree::contact_points( RigidBody * body, Float h, RigidBody * & body_b )
+const Vector<ContactPointBb> & BroadTree::find_contact_points( RigidBody * body, Float h )
 {
-    contacts_.clear();
     collision_object_inds_.clear();
+    contacts_.clear();
 
     Vector<CollisionObject *> & objects = body->collision_objects;
     const int body_objects_qty = objects.size();
@@ -155,37 +155,33 @@ const Vector<ContactPointBb> & BroadTree::contact_points( RigidBody * body, Floa
     }
     remove_duplicates( collision_object_inds_ );
 
-    if ( collision_object_inds_.empty() )
-        body_b = nullptr;
-    else
-    {
-        const int ind = collision_object_inds_.ptr()[0];
-        CollisionObject * co = collision_object( ind );
-        body_b = co->rigid_body;
-    }
-
     // Intersect all contacts of requested body with all potential collision objects found.
     const int other_objects_qty = collision_object_inds_.size();
+    bool do_stop = false;
     for ( int i=0; i<body_objects_qty; i++ )
     {
         CollisionObject * body_object = objects.ptr()[i];
         const Pose pose_a = body_object->pose_w();
+        int contacts_qty = 0;
         for ( int j=0; j<other_objects_qty; j++ )
         {
             const int ind = collision_object_inds_.ptr()[j];
             CollisionObject * other_object = collision_object( ind );
-            const Pose pose_b = other_object->pose_w();
+            
+            RigidBody * body_b = other_object->rigid_body;
+            const Pose pose_b  = other_object->pose_w();
             {
                 ats_.clear();
                 depths_.clear();
 
                 body_object->intersect( other_object, ats_, depths_ );
+                contacts_qty += ats_.size();
                 const int qty = ats_.size();
                 for ( int i=0; i<qty; i++ )
                 {
                     const Vector3d & at    = ats_.ptr()[i];
                     const Vector3d & depth = depths_.ptr()[i];
-                    const Float L = depth.Length();
+                    const Float L          = depth.Length();
                     if ( L < EPS )
                         continue;
 
@@ -194,28 +190,21 @@ const Vector<ContactPointBb> & BroadTree::contact_points( RigidBody * body, Floa
                     pt.n_world = depth / L;
                     pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
                     pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
+                    pt.body_a = body;
                     pt.body_b = body_b;
                     contacts_.push_back( pt );
                 }
             }
-        }
-    }
 
-    // Now intersect in the opposite direction and revert the depth.
-    for ( int j=0; j<other_objects_qty; j++ )
-    {
-        const int ind = collision_object_inds_.ptr()[j];
-        CollisionObject * other_object = collision_object( ind );
-        const Pose pose_b = other_object->pose_w();
-        for ( int i=0; i<body_objects_qty; i++ )
-        {
+
+            // Now intersect in the opposite direction and revert the depth.
             CollisionObject * body_object = objects.ptr()[i];
-            const Pose pose_a = body_object->pose_w();
             {
                 ats_.clear();
                 depths_.clear();
 
                 other_object->intersect( body_object, ats_, depths_ );
+                contacts_qty += ats_.size();
                 const int qty = ats_.size();
                 for ( int i=0; i<qty; i++ )
                 {
@@ -232,16 +221,26 @@ const Vector<ContactPointBb> & BroadTree::contact_points( RigidBody * body, Floa
                     pt.n_world = -depth / L;
                     pt.r_a = pose_a.q.Inverse() * (at - pose_a.r);
                     pt.r_b = pose_b.q.Inverse() * (at - pose_b.r);
+                    pt.body_a = body;
                     pt.body_b = body_b;
                     contacts_.push_back( pt );
                 }
             }
+            // Store number of contacts with one and the same collision object.
+            if ( contacts_qty > 0 )
+            {
+                do_stop = true;
+                break;
+            }
         }
-
+        if ( do_stop )
+            break;
     }
 
     return contacts_;
 }
+
+
 
 PoolVector3Array BroadTree::lines_nodes() const
 {
@@ -403,7 +402,7 @@ void BroadTree::remove_duplicates( Vector<int> & inds )
             }
         }
     }
-	inds.resize( qty - removed_qty );
+    inds.resize( qty - removed_qty );
 }
 
 CollisionObject * BroadTree::collision_object( int ind )
