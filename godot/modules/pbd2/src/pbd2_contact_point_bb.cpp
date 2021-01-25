@@ -57,10 +57,10 @@ void ContactPointBb::solve_tangential( RigidBody * body_a, RigidBody * body_b, F
     // It leaves us with tangential component.
     //d = d - n_world * d.DotProduct( n_world );
     
-    const Vector3d pa = body_a->pose.r + (body_a->pose.q * this->r_a);
+    const Vector3d pa = body_a->orig_pose.r + (body_a->orig_pose.q * this->r_a);
     const Vector3d pa_prev = body_a->prev_pose.r + (body_a->prev_pose.q * this->r_a);
 
-    const Vector3d pb = body_b->pose.r + (body_b->pose.q * this->r_b);
+    const Vector3d pb = body_b->orig_pose.r + (body_b->orig_pose.q * this->r_b);
     const Vector3d pb_prev = body_b->prev_pose.r + (body_b->prev_pose.q * this->r_b);
 
     Vector3d d = (pa - pa_prev) - (pb - pb_prev);
@@ -175,14 +175,14 @@ void ContactPointBb::solve_dynamic_friction( RigidBody * body_a, RigidBody * bod
 
     // Restitution
     // The same projection just before the contact has been processed.
-    const Vector3d vel_a = body_a->vel;
-    const Vector3d vel_b = body_b->vel;
+	const Vector3d vel_a = body_a->orig_vel + body_a->omega.CrossProduct( body_a->orig_pose.q * this->r_a );
+    const Vector3d vel_b = body_b->orig_vel + body_b->omega.CrossProduct( body_b->orig_pose.q * this->r_b );
     Float v_w_n_prev = this->n_world.DotProduct(vel_a - vel_b);
     const Float restitution = (body_a->restitution + body_b->restitution) * 0.5;
     v_w_n_prev = v_w_n_prev * restitution;
     if (v_w_n_prev > 0.0)
         v_w_n_prev = 0.0;
-    dv += this->n_world * ( v_w_n + v_w_n_prev );
+    dv += this->n_world * ( v_w_n_prev - v_w_n );
 
     // Applying "dv".
     const Float abs_dv = dv.Length();

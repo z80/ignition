@@ -37,14 +37,14 @@ public:
     Vector3d r_world_prev;
     Vector3d v_world;
     Vector3d n_world;
-        Float    depth;
+    Float    depth;
 
     Float lambda_normal;
     Float lambda_tangential;
     
     bool in_contact;
-        bool in_contact_next;
-        bool apply_friction;
+    bool in_contact_next;
+    bool apply_friction;
 
     static const Float EPS;
 };

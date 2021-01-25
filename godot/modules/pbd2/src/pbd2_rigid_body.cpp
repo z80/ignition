@@ -39,6 +39,7 @@ const RigidBody & RigidBody::operator=( const RigidBody & inst )
         prev_pose = inst.prev_pose;
         orig_pose = inst.orig_pose;
         vel       = inst.vel;
+		orig_vel  = inst.orig_vel;
         omega     = inst.omega;
 
         mass        = inst.mass;
@@ -282,7 +283,7 @@ bool RigidBody::solve_normal_all( Float h )
 {
     const Float mu_all = specific_inv_mass_pos_all( true );
     if ( mu_all <= 0.0 )
-                return false;
+        return false;
 
     const int qty = contact_points.size();
 

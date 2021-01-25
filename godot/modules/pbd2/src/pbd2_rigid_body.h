@@ -20,6 +20,7 @@ public:
     Pose prev_pose;
     Pose orig_pose;
     Vector3d vel;
+	Vector3d orig_vel;
     Vector3d omega;
 
     Float mass;
