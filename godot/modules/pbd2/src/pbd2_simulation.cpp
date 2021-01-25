@@ -296,7 +296,7 @@ bool Simulation::solve_dynamic_friction( Simulation * sim, int base_ind, int qty
 {
     for ( int i=0; i<qty; i++ )
     {
-        const int ind = base_ind + qty;
+        const int ind = base_ind + i;
         ContactPointBb & pt = sim->contacts_all.ptrw()[ind];
         RigidBody * body_a = pt.body_a;
         RigidBody * body_b = pt.body_b;

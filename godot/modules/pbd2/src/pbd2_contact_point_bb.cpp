@@ -39,7 +39,8 @@ const ContactPointBb & ContactPointBb::operator=( const ContactPointBb & inst )
         
         apply_friction  = inst.apply_friction;
 
-        body_b = inst.body_b;
+		body_a = inst.body_a;
+		body_b = inst.body_b;
     }
     return * this;
 }
