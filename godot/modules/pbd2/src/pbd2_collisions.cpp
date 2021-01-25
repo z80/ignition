@@ -49,7 +49,8 @@ void collision_sphere_plane( CollisionSphere * obj_a, CollisionPlane * obj_b, Ve
     // Compute the height.
     const Vector3d dr = pose_sphere.r - pose_plane.r;
     const Float h = n.DotProduct( dr );
-    if ( h >= radius )
+	const Float dh = h - radius;
+    if ( dh > -EPS )
         return;
 
     // The lowest sphere point.
@@ -232,7 +233,7 @@ void collision_box_plane( CollisionBox * obj_a, CollisionPlane * obj_b, Vector<V
         // Check Y component. It should be below surface.
         if ( v.y_ > -EPS )
             continue;
-        const Vector3d v_surf = Vector3d( v.x_, 0.0, v.y_ );
+        const Vector3d v_surf = Vector3d( v.x_, 0.0, v.z_ );
         const Vector3d v_deep = v;
         Vector3d at = (v_surf + v_deep) * 0.5;
         Vector3d depth = (v_surf - v_deep);

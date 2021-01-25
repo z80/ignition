@@ -9,7 +9,7 @@ namespace Pbd
 
 static void clear_contacts( RigidBody * body )
 {
-    CollisionObject * co = body->collision_object;
+    CollisionObject * co = body->collision_objects.ptrw()[0];
     if ( co == nullptr )
         return;
     co->contacts.clear();
@@ -17,7 +17,7 @@ static void clear_contacts( RigidBody * body )
 
 static void store_contacts( RigidBody * body, const Vector<ContactPointBb> & contacts )
 {
-    CollisionObject * co = body->collision_object;
+    CollisionObject * co = body->collision_objects.ptrw()[0];
     if ( co == nullptr )
         return;
     const int qty = contacts.size();
@@ -276,7 +276,7 @@ bool Simulation::solve_tangential( RigidBody * body_a, RigidBody * body_b, Vecto
 
 bool Simulation::solve_dynamic_friction( RigidBody * body, Float h )
 {
-    CollisionObject * co = body->collision_object;
+    CollisionObject * co = body->collision_objects.ptrw()[0];
     if ( co == nullptr )
         return false;
     Vector<ContactPointBb> & contacts = co->contacts;

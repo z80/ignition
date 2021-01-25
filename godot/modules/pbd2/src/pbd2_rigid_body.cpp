@@ -7,7 +7,6 @@ namespace Pbd
 
 
 RigidBody::RigidBody()
-    : collision_object( nullptr )
 {
     mass = 1.0;
     inertia     = Matrix3d::IDENTITY;

@@ -384,7 +384,7 @@ void BroadTree::remove_duplicates( Vector<int> & inds )
         while ( do_again )
         {
             do_again = false;
-            for ( int j=(i+1); j<(qty-removed_qty); i++ )
+            for ( int j=(i+1); j<(qty-removed_qty); j++ )
             {
                 const int pb = inds.ptr()[j];
                 CollisionObject * co = collision_object( pb );

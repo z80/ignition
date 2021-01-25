@@ -42,7 +42,6 @@ public:
     Vector<ContactPoint> contact_points;
 
     // Collision object for colliding mobing bodies.
-    CollisionObject * collision_object;
     Vector<CollisionObject *> collision_objects;
 
     RigidBody();
