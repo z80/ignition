@@ -146,7 +146,7 @@ void Simulation::step()
     }
 
 
-    {
+    /*{
         String stri = String( "step " ) + itos( step_number ) + String( ": " );
         for ( int i=0; i<bodies_qty; i++ )
         {
@@ -160,7 +160,7 @@ void Simulation::step()
             stri += s;
         }
         print_line( stri );
-    }
+    }*/
 
 
     step_number += 1;
