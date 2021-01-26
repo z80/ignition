@@ -10,6 +10,9 @@ namespace Pbd
 JointBall::JointBall()
     : Joint()
 {
+	spatial_gap = 0.0;
+	angular_gap = 0.0;
+	motor_gap   = 0.0;
 	position_control = true;
 }
 
