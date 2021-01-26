@@ -38,6 +38,16 @@ Simulation::Simulation()
 Simulation::~Simulation()
 {
 }
+
+void Simulation::set_broad_phase_max_depth( int depth )
+{
+	tree.set_max_depth( depth );
+}
+
+int  Simulation::get_broad_phase_max_depth() const
+{
+	return tree.max_depth();
+}
     
 void Simulation::set_time_step( Float h )
 {

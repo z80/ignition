@@ -14,6 +14,16 @@ PbdSimulationNode::~PbdSimulationNode()
 {
 }
 
+void PbdSimulationNode::set_broad_phase_max_depth( int depth )
+{
+	simulation.set_broad_phase_max_depth( depth );
+}
+
+int PbdSimulationNode::get_broad_phase_max_depth() const
+{
+	return simulation.get_broad_phase_max_depth();
+}
+
 void PbdSimulationNode::set_time_step( real_t h )
 {
     simulation.h = h;
@@ -52,7 +62,10 @@ PoolVector3Array PbdSimulationNode::lines_nodes() const
 
 void PbdSimulationNode::_bind_methods()
 {
-    ClassDB::bind_method( D_METHOD( "set_time_step", "h" ), &PbdSimulationNode::set_time_step );
+	ClassDB::bind_method( D_METHOD( "set_broad_phase_max_depth", "depth" ), &PbdSimulationNode::set_broad_phase_max_depth );
+	ClassDB::bind_method( D_METHOD( "get_broad_phase_max_depth" ),          &PbdSimulationNode::get_broad_phase_max_depth, Variant::INT );
+
+	ClassDB::bind_method( D_METHOD( "set_time_step", "h" ), &PbdSimulationNode::set_time_step );
     ClassDB::bind_method( D_METHOD( "get_time_step" ),      &PbdSimulationNode::get_time_step, Variant::REAL );
 
     ClassDB::bind_method( D_METHOD( "set_solver_iterations", "h" ), &PbdSimulationNode::set_solver_iterations );
@@ -64,8 +77,9 @@ void PbdSimulationNode::_bind_methods()
     ClassDB::bind_method( D_METHOD( "lines_nodes" ),   &PbdSimulationNode::lines_nodes );
 
 
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "time_step" ),         "set_time_step", "get_time_step" );
-    ADD_PROPERTY( PropertyInfo( Variant::INT,  "solver_iterations" ), "set_solver_iterations", "get_solver_iterations" );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "broad_phase_max_depth" ), "set_broad_phase_max_depth", "get_broad_phase_max_depth" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "time_step" ),            "set_time_step", "get_time_step" );
+    ADD_PROPERTY( PropertyInfo( Variant::INT,  "solver_iterations" ),    "set_solver_iterations", "get_solver_iterations" );
 }
 
 

@@ -16,6 +16,9 @@ public:
     PbdSimulationNode();
     ~PbdSimulationNode();
 
+	void set_broad_phase_max_depth( int depth );
+	int get_broad_phase_max_depth() const;
+
     void set_time_step( real_t h );
     real_t get_time_step() const;
 

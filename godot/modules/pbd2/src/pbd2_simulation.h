@@ -21,6 +21,9 @@ class Simulation
 public:
     Simulation();
     ~Simulation();
+
+	void set_broad_phase_max_depth( int depth );
+	int  get_broad_phase_max_depth() const;
     
     void set_time_step( Float h );
     void set_solver_iterations( int qty );
