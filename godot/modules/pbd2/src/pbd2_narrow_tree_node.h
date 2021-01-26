@@ -2,7 +2,7 @@
 #ifndef __PBD2_NARROW_TREE_NODE_H_
 #define __PBD2_NARROW_TREE_NODE_H_
 
-#include "scene/main/node.h"
+#include "pbd2_collision_object_node.h"
 #include "pbd2_narrow_tree.h"
 
 namespace Pbd
@@ -10,15 +10,15 @@ namespace Pbd
 
 class RigidBody;
 
-class PbdNarrowTreeNode: public Node
+class PbdCollisionSdfMeshTreeNode: public PbdCollisionObjectNode
 {
-    GDCLASS( PbdNarrowTreeNode, Node );
+    GDCLASS( PbdCollisionSdfMeshTreeNode, PbdCollisionObjectNode );
 protected:
     static void _bind_methods();
     void _notification( int p_what );
 public:
-    PbdNarrowTreeNode();
-    ~PbdNarrowTreeNode();
+    PbdCollisionSdfMeshTreeNode();
+    ~PbdCollisionSdfMeshTreeNode();
 
     void set_min_depth( int d );
     int  get_min_depth() const;
@@ -30,6 +30,10 @@ public:
     int  get_min_points() const;
 
     void subdivide();
+
+    PoolVector3Array lines_nodes_sdf();
+    PoolVector3Array lines_nodes_pts();
+    PoolVector3Array lines_pts();
 
 public:
     NarrowTree tree;

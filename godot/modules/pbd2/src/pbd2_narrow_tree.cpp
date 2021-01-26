@@ -319,6 +319,8 @@ bool NarrowTree::intersect_sdf( NarrowTree * tree, Vector<Vector3d> & pts, Vecto
 
 PoolVector3Array NarrowTree::lines_sdf_nodes() const
 {
+    const Pose pose = pose_w();
+
     Vector<Vector3> ls;
     const int qty = nodes_sdf_.size();
     for ( int i=0; i<qty; i++ )
@@ -329,12 +331,13 @@ PoolVector3Array NarrowTree::lines_sdf_nodes() const
             continue;
 
         const Vector3d * vs = n.cube_.verts;
-                Vector3 v[8];
-                for ( int i=0; i<8; i++ )
-                {
-                        const Vector3d & vd = vs[i];
-                        v[i] = Vector3( vd.x_, vd.y_, vd.z_ );
-                }
+        Vector3 v[8];
+        for ( int i=0; i<8; i++ )
+        {
+            const Vector3d & v_local = vs[i];
+            const Vector3d vd = pose.r + (pose.q * v_local);
+            v[i] = Vector3( vd.x_, vd.y_, vd.z_ );
+        }
 
         ls.push_back( v[0] );
         ls.push_back( v[1] );
@@ -375,7 +378,7 @@ PoolVector3Array NarrowTree::lines_sdf_nodes() const
         ls.push_back( v[7] );
     }
 
-        PoolVector3Array res;
+    PoolVector3Array res;
     const int sz = ls.size();
     res.resize( sz );
     for ( int i=0; i<sz; i++ )
@@ -389,6 +392,8 @@ PoolVector3Array NarrowTree::lines_sdf_nodes() const
 
 PoolVector3Array NarrowTree::lines_pts_nodes() const
 {
+    const Pose pose = pose_w();
+
     Vector<Vector3> ls;
     const int qty = nodes_pts_.size();
     for ( int i=0; i<qty; i++ )
@@ -404,7 +409,8 @@ PoolVector3Array NarrowTree::lines_pts_nodes() const
         Vector3 v[8];
         for ( int i=0; i<8; i++ )
         {
-            const Vector3d & vd = vs[i];
+            const Vector3d & v_local = vs[i];
+            const Vector3d vd = pose.r + (pose.q * v_local);
             v[i] = Vector3( vd.x_, vd.y_, vd.z_ );
         }
 
@@ -461,13 +467,16 @@ PoolVector3Array NarrowTree::lines_pts_nodes() const
 
 PoolVector3Array NarrowTree::lines_surface_pts() const
 {
+    const Pose pose = pose_w();
+
     const int qty = pts_.size();
     PoolVector3Array res;
     res.resize( qty );
 
     for ( int i=0; i<qty; i++ )
     {
-        const Vector3d & vd = pts_.ptr()[i];
+        const Vector3d & v_local = pts_.ptr()[i];
+        const Vector3d vd = pose.r + (pose.q * v_local);
         const Vector3 v( vd.x_, vd.y_, vd.z_ );
         res.set( i, v );
     }
@@ -476,6 +485,8 @@ PoolVector3Array NarrowTree::lines_surface_pts() const
 
 PoolVector3Array NarrowTree::lines_aligned_nodes() const
 {
+    const Pose pose = pose_w();
+
     Vector<Vector3> ls;
     const int qty = nodes_pts_.size();
     for ( int i=0; i<qty; i++ )
@@ -491,7 +502,8 @@ PoolVector3Array NarrowTree::lines_aligned_nodes() const
         Vector3 v[8];
         for ( int i=0; i<8; i++ )
         {
-            const Vector3d & vd = vs[i];
+            const Vector3d & v_local = vs[i];
+            const Vector3d vd = pose.r + (pose.q * v_local);
             v[i] = Vector3( vd.x_, vd.y_, vd.z_ );
         }
 

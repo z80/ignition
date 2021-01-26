@@ -38,7 +38,7 @@ void register_pbd2_types()
     ClassDB::register_class<Pbd::PbdCollisionPlaneNode>();
     ClassDB::register_class<Pbd::PbdCollisionBoxNode>();
 
-    ClassDB::register_class<Pbd::PbdNarrowTreeNode>();
+    ClassDB::register_class<Pbd::PbdCollisionSdfMeshTreeNode>();
     ClassDB::register_class<Pbd::OccupancyTestsRef>();
 }
 
