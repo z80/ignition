@@ -161,6 +161,26 @@ void Simulation::step()
         }
         print_line( stri );
     }*/
+	{
+		bool do_print = false;
+		String stri = String( "step " ) + itos( step_number ) + String( ": " );
+		for ( int i=0; i<bodies_qty; i++ )
+		{
+			RigidBody * body = bodies.ptr()[i];
+			if ( body->mass <= 0.0 )
+				continue;
+			const Float dh = std::abs( body->pose.r.y_ - body->prev_pose.r.y_ );
+			if ( dh > 0.01 )
+			{
+				String s = String("body[") + itos(i) + String("].dh = ") +
+					rtos( dh );
+				stri += s;
+				do_print = true;
+			}
+		}
+		if ( do_print )
+			print_line( stri );
+	}
 
 
     step_number += 1;
