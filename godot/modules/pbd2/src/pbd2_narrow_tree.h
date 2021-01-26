@@ -2,8 +2,8 @@
 #ifndef __PBD_NARROW_TREE_H_
 #define __PBD_NARROW_TREE_H_
 
+#include "pbd2_collision_object.h"
 #include "data_types.h"
-#include "se3.h"
 #include "pbd2_narrow_tree_sdf_node.h"
 #include "pbd2_narrow_tree_pts_node.h"
 #include "pbd2_pose.h"
@@ -21,7 +21,7 @@ Nonempty leaf node means space is filled. Else means it's empty.
 
 class RigidBody;
 
-class NarrowTree
+class NarrowTree: public CollisionObject
 {
 public:
     NarrowTree();
@@ -37,8 +37,9 @@ public:
     void set_min_points( int new_qty );
     int min_points() const;
 
-    Float size2() const;
-    Vector3d center() const;
+    Float bounding_radius() const override;
+    bool inside( const BroadTreeNode * n, Float h ) const override;
+
 
     void clear();
     void append( const Transform & t, const Ref<Mesh> & mesh );
@@ -51,10 +52,8 @@ public:
     void remove_pt_duplicates();
     void subdivide_pts();
 
-    void apply( const Pose & pose );
-    Pose pose() const;
-
-    bool intersect( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
+    void intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths ) override;
+    bool intersect_sdf( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
 
     // For visualization.
     PoolVector3Array lines_sdf_nodes() const;
@@ -76,7 +75,6 @@ public:
     // Here by value as array changes while it runs.
     void merge_nodes_on_either_side( const NarrowTreeSdfNode n );
 
-    SE3                       se3_;
     Vector<NarrowTreeSdfNode> nodes_sdf_;
     Vector<NarrowTreePtsNode> nodes_pts_;
     Vector<Face>              faces_;

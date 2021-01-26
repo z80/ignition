@@ -65,13 +65,13 @@ int NarrowTree::min_points() const
     return min_pts_;
 }
 
-Float NarrowTree::size2() const
+Float NarrowTree::bounding_radius() const
 {
     const int qty = nodes_sdf_.size();
     if ( qty < 1 )
         return -1.0;
     const NarrowTreeSdfNode & n = nodes_sdf_.ptr()[0];
-    const Float sz = n.size2 + speed_margin;
+    const Float sz = n.size2;
     return sz;
 }
 
@@ -134,14 +134,14 @@ void NarrowTree::subdivide_sdf()
         face.init();
     }
 
-    Float x_min, x_max, y_min, y_max, z_min, z_max;
+    Float x_max, y_max, z_max;
     // Initialize with the very first point.
     {
         const Face & f0 = faces_.ptr()[0];
         const Vector3d v0 = f0.verts_0[0];
-        x_min = x_max = v0.x_;
-        y_min = y_max = v0.y_;
-        z_min = z_max = v0.z_;
+        x_max = std::abs( v0.x_ );
+        y_max = std::abs( v0.y_ );
+        z_max = std::abs( v0.z_ );
     }
 
     const int faces_qty = faces_.size();
@@ -151,26 +151,20 @@ void NarrowTree::subdivide_sdf()
         for ( int j=0; j<3; j++ )
         {
             const Vector3d v = f.verts_0[j];
-            const Float x = v.x_;
-            const Float y = v.y_;
-            const Float z = v.z_;
-            if ( x < x_min )
-                x_min = x;
+            const Float x = std::abs( v.x_ );
+            const Float y = std::abs( v.y_ );
+            const Float z = std::abs( v.z_ );
             if ( x > x_max )
                 x_max = x;
-            if ( y < y_min )
-                y_min = y;
             if ( y > y_max )
                 y_max = y;
-            if ( z < z_min )
-                z_min = z;
             if ( z > z_max )
                 z_max = z;
         }
     }
 
-    const Vector3d c( (x_min+x_max)/2.0, (y_min+y_max)/2.0, (z_min+z_max)/2.0 );
-    const Vector3d dims( (x_max-x_min)/2.0, (y_max-y_min)/2.0, (z_max-z_min)/2.0 );
+    const Vector3d c( 0.0, 0.0, 0.0 );
+    const Vector3d dims( x_max, y_max, z_max );
     Float d = ( dims.x_ > dims.y_ ) ? dims.x_ : dims.y_;
     d = (d > dims.z_) ? d : dims.z_;
 
@@ -266,40 +260,27 @@ void NarrowTree::subdivide_pts()
     update_node_pts( root );
 }
 
-void NarrowTree::apply( const Pose & pose )
-{
-    SE3 se3;
-    se3.q_ = pose.q;
-    se3.r_ = pose.r;
 
-    se3_ = se3;
+
+
+void NarrowTree::intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths )
+{
+    NarrowTree * tree = dynamic_cast<NarrowTree *>( b );
+    intersect_sdf( tree, ats, depths );
 }
 
-Pose NarrowTree::pose() const
-{
-    Pose p;
-    p.q = se3_.q_;
-    p.r = se3_.r_;
-
-    return p;
-}
-
-
-
-
-
-bool NarrowTree::intersect( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
+bool NarrowTree::intersect_sdf( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
 {
     if ( !tree )
         return false;
 
     const NarrowTreeSdfNode & root_sdf = nodes_sdf_.ptr()[0];
-        const NarrowTreePtsNode * root_pts = &( tree->nodes_pts_.ptr()[0] );
+    const NarrowTreePtsNode * root_pts = &( tree->nodes_pts_.ptr()[0] );
 
-        const SE3 se3_rel = tree->se3_ / this->se3_;
-        pts.clear();
-        depths.clear();
-        const bool ret = root_sdf.collide_forward( se3_rel, root_pts, pts, depths );
+    const Pose se3_rel = tree->pose_w() / this->pose_w();
+    pts.clear();
+    depths.clear();
+    const bool ret = root_sdf.collide_forward( se3_rel, root_pts, pts, depths );
 
     return ret;
 }
