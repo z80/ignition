@@ -66,7 +66,7 @@ bool BoxFace::intersects( const BoxVertex & a, const BoxVertex & b, Vector3d & a
     return true;
 }
 
-void Box::init( const Vector3d sz2 )
+void Box::init( const Vector3d & sz2 )
 {
     // Init 6 faces.
     {

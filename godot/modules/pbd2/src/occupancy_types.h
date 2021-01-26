@@ -4,7 +4,7 @@
 
 #include "data_types.h"
 #include "vector3d.h"
-#include "se3.h"
+#include "pbd2_pose.h"
 
 
 using namespace Ign;
@@ -41,25 +41,25 @@ struct Face
     
     void init( const Vector3d & a, const Vector3d & b, const Vector3d & c );
     void init();
-    void apply( const SE3 & se3 );
+    void apply( const Pose & se3 );
     void init_planes();
-	Float distance( const Vector3d & r ) const;
-	Float distance( const Vector3d & r, Vector3d & displacement ) const;
-	// Intersects with a ray.
-	// And if intersects steps further "eps" along "a" and returns the next point.
-	bool intersects_ray( const Vector3d & r0, const Vector3d & a, Float max_dist, Vector3d & next_r, Float eps=0.0001 );
+        Float distance( const Vector3d & r ) const;
+        Float distance( const Vector3d & r, Vector3d & displacement ) const;
+        // Intersects with a ray.
+        // And if intersects steps further "eps" along "a" and returns the next point.
+        bool intersects_ray( const Vector3d & r0, const Vector3d & a, Float max_dist, Vector3d & next_r, Float eps=0.0001 );
     bool intersects( const Vector3d & r1, const Vector3d & r2, Vector3d & at ) const;
-	bool intersects_eps( const Vector3d & r1, const Vector3d & r2, Float eps, Vector3d & at, bool & concerning ) const;
-	bool intersects( const Face & f, Vector3d & at, Vector3d & depth ) const;
+        bool intersects_eps( const Vector3d & r1, const Vector3d & r2, Float eps, Vector3d & at, bool & concerning ) const;
+        bool intersects( const Face & f, Vector3d & at, Vector3d & depth ) const;
     // Actually, can be 0, 1 or 2 intersections.
     int intersects_all( const Face & f, Vector3d * at, Vector3d * depth ) const;
 
     // Colliding using common line.
     // Always either 0 or exactly 2 points.
-	// Also return which triangle's edge it is "this" thiangle or "f" triangle.
-	// And edge index.
-	// The idea is that after all triangles are collided in the case of multiple collisions per edge ,
-	// the smallest one is used.
+        // Also return which triangle's edge it is "this" thiangle or "f" triangle.
+        // And edge index.
+        // The idea is that after all triangles are collided in the case of multiple collisions per edge ,
+        // the smallest one is used.
     int intersects_2( const Face & f, Vector3d * at, Vector3d * depth, bool * this_edge, int * edge_index ) const;
 };
 
@@ -78,7 +78,7 @@ struct Cube
     Plane       planes[6];
 
     void init( const Vector3d & c, Float x2, Float y2, Float z2 );
-    void apply( const SE3 & se3, bool only_axes=false );
+    void apply( const Pose & se3, bool only_axes=false );
     void init_verts_and_planes();
     // Intersects line
     bool intersects( const Vector3d & a, const Vector3d & b ) const;
@@ -87,8 +87,8 @@ struct Cube
     // Intersects face (triangle)
     bool intersects( const Face & f ) const;
 
-	// Contains point inside
-	bool contains( const Vector3d & at ) const;
+    // Contains point inside
+    bool contains( const Vector3d & at ) const;
 };
 
 

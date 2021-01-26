@@ -40,7 +40,7 @@ struct Box
     BoxFace faces[6];
     BoxVertex verts[8];
 
-    void init( const Vector3d sz2 );
+    void init( const Vector3d & sz2 );
     void apply( const Pose & pose );
     bool inside( BoxVertex & v ) const;
     bool inside_const( const BoxVertex & v ) const;

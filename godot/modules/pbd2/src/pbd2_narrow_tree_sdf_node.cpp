@@ -435,7 +435,8 @@ bool NarrowTreeSdfNode::distance( const Vector3d & r, Float & d, Vector3d & dist
     const bool ok = distance_recursive( r, d, rel_r );
     if ( !ok )
         return false;
-    dist = tree->se3_.q_ * rel_r;
+    const Pose pose = tree->pose_w();
+    dist = pose.q * rel_r;
     return true;
 }
 

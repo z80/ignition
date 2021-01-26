@@ -295,18 +295,18 @@ bool NarrowTreePtsNode::collide_points( const NarrowTreeSdfNode * this_node, Vec
     {
         const int ind = ptInds.ptr()[i];
         const Vector3d & pt = tree->pts_.ptr()[ind];
-        const Vector3d pt_local = (se3_rel.q_ * pt) + se3_rel.r_;
+        const Vector3d pt_local = (se3_rel.q * pt) + se3_rel.r;
 
         Vector3d depth;
         const Float d = this_node->distance_for_this_node( pt_local, depth );
         if ( d < 0.0 )
         {
             // Convert to global ref. frame.
-            const SE3 & se3 = this_node->tree->se3_;
-            const Vector3d pt_global = ( se3.q_ * pt_local ) + se3.r_;
+            const Pose pose = this_node->tree->pose_w();
+            const Vector3d pt_global = ( pose.q * pt_local ) + pose.r;
             pts.push_back( pt_global );
             // Convert to global ref. frame.
-            depth = se3.q_ * depth;
+            depth = pose.q * depth;
             depths.push_back( depth );
 
             ret = true;
@@ -407,8 +407,8 @@ bool NarrowTreePtsNode::compute_cube_optimized()
         szz2 = EPS;
 
     cube_optimized_.init( center, szx2, szy2, szz2 );
-    SE3 se3;
-    se3.q_ = Q;
+    Pose se3;
+    se3.q = Q;
     cube_optimized_.apply( se3, true );
 
     return false;

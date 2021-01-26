@@ -104,13 +104,13 @@ void Face::init()
 }
 
 
-void Face::apply( const SE3 & se3 )
+void Face::apply( const Pose & se3 )
 {
     for ( int i=0; i<3; i++ )
     {
         const Vector3d & v0 = verts_0[i];
         Vector3d & v = verts[i];
-        v = se3.r_ + se3.q_ * v0;
+        v = se3.r + se3.q * v0;
     }
     init_planes();
 }
@@ -126,89 +126,89 @@ void Face::init_planes()
 
 Float Face::distance( const Vector3d & r ) const
 {
-	Vector3d displacement;
-	const Float d = distance( r, displacement );
-	return d;
+        Vector3d displacement;
+        const Float d = distance( r, displacement );
+        return d;
 }
 
 Float Face::distance( const Vector3d & r, Vector3d & displacement ) const
 {
-	// First project onto plane.
-	const Float den = plane.norm.LengthSquared();
-	const Float num = plane.d + r.DotProduct( plane.norm );
-	const Float t = -(num/den);
-	const Vector3d at = r + (plane.norm*t);
-	// Check if the point is inside of triangle side planes.
-	bool inside = true;
-	for ( int i=0; i<3; i++ )
-	{
-		const bool outside = planes[i].above( at );
-		if ( outside )
-		{
-			inside = false;
-			break;
-		}
-	}
-	// If inside, compute the distance.
-	if ( inside )
-	{
-		const Vector3d dr = at - r;
-		displacement = dr;
-		const Float d = dr.Length();
-		return d;
-	}
+        // First project onto plane.
+        const Float den = plane.norm.LengthSquared();
+        const Float num = plane.d + r.DotProduct( plane.norm );
+        const Float t = -(num/den);
+        const Vector3d at = r + (plane.norm*t);
+        // Check if the point is inside of triangle side planes.
+        bool inside = true;
+        for ( int i=0; i<3; i++ )
+        {
+                const bool outside = planes[i].above( at );
+                if ( outside )
+                {
+                        inside = false;
+                        break;
+                }
+        }
+        // If inside, compute the distance.
+        if ( inside )
+        {
+                const Vector3d dr = at - r;
+                displacement = dr;
+                const Float d = dr.Length();
+                return d;
+        }
 
-	Float min_d = -1.0;
-	Vector3d min_v;
+        Float min_d = -1.0;
+        Vector3d min_v;
 
-	// Project onto 3 edges and see if line parameter "t" is within [0,1].
-	for ( int i=0; i<3; i++ )
-	{
-		const int ind1 = i;
-		const int ind2 = (i+1) % 3;
-		const Vector3d & a1 = verts[ind1];
-		const Vector3d & a2 = verts[ind2];
-		const Vector3d a = a2 - a1;
-		const Float t = (r - a1).DotProduct( a ) / a.LengthSquared();
-		if ( ( t >= 0.0 ) && ( t <= 1.0 ) )
-		{
-			const Vector3d at = a1 + a*t;
-			const Vector3d dr = at - r;
-			const Float d = dr.Length();
-			if ( (min_d < 0.0) || (min_d > d) )
-			{
-				min_d = d;
-				min_v = dr;
-			}
-		}
-	}
+        // Project onto 3 edges and see if line parameter "t" is within [0,1].
+        for ( int i=0; i<3; i++ )
+        {
+                const int ind1 = i;
+                const int ind2 = (i+1) % 3;
+                const Vector3d & a1 = verts[ind1];
+                const Vector3d & a2 = verts[ind2];
+                const Vector3d a = a2 - a1;
+                const Float t = (r - a1).DotProduct( a ) / a.LengthSquared();
+                if ( ( t >= 0.0 ) && ( t <= 1.0 ) )
+                {
+                        const Vector3d at = a1 + a*t;
+                        const Vector3d dr = at - r;
+                        const Float d = dr.Length();
+                        if ( (min_d < 0.0) || (min_d > d) )
+                        {
+                                min_d = d;
+                                min_v = dr;
+                        }
+                }
+        }
 
-	// Pick the closest vertex.
-	for ( int i=0; i<3; i++ )
-	{
-		const Vector3d & v = verts[i];
-		const Vector3d dr = v - r;
-		const Float d2 = dr.Length();
-		if ( (min_d < 0.0) || (d2 < min_d) )
-		{
-			min_d = d2;
-			min_v = dr;
-		}
-	}
-	displacement = min_v;
-	const Float d = min_d;
-	return d;
+        // Pick the closest vertex.
+        for ( int i=0; i<3; i++ )
+        {
+                const Vector3d & v = verts[i];
+                const Vector3d dr = v - r;
+                const Float d2 = dr.Length();
+                if ( (min_d < 0.0) || (d2 < min_d) )
+                {
+                        min_d = d2;
+                        min_v = dr;
+                }
+        }
+        displacement = min_v;
+        const Float d = min_d;
+        return d;
 }
 
 bool Face::intersects_ray( const Vector3d & r0, const Vector3d & a, Float max_dist, Vector3d & next_r, Float eps )
 {
-	const Vector3d r1 = r0 + (a*max_dist);
-	Vector3d at;
-	const bool ok = intersects( r0, r1, at );
-	if ( !ok )
-		return false;
-	next_r = at + (a*eps);
-	return true;
+        const Vector3d r1 = r0 + (a*max_dist);
+        Vector3d at;
+        const bool ok = intersects( r0, r1, at );
+        if ( !ok )
+                return false;
+        next_r = at + (a*eps);
+        return true;
 }
 
 bool Face::intersects( const Vector3d & r1, const Vector3d & r2, Vector3d & at ) const
@@ -230,23 +230,23 @@ bool Face::intersects( const Vector3d & r1, const Vector3d & r2, Vector3d & at )
 
 bool Face::intersects_eps( const Vector3d & r1, const Vector3d & r2, Float eps, Vector3d & at, bool & concerning ) const
 {
-	const bool intersects_plane = plane.intersects( r1, r2, at );
-	if ( !intersects_plane )
-		return false;
+        const bool intersects_plane = plane.intersects( r1, r2, at );
+        if ( !intersects_plane )
+                return false;
 
-	concerning = false;
-	for ( int i=0; i<3; i++ )
-	{
-		const Plane & pl = planes[i];
-		const Float d = pl.norm.DotProduct( at ) + pl.d;
-		if ( (d < -eps) || (d > eps) )
-			concerning = true;
-		const bool above_a = (d > 0.0);
-		if ( above_a )
-			return false;
-	}
+        concerning = false;
+        for ( int i=0; i<3; i++ )
+        {
+                const Plane & pl = planes[i];
+                const Float d = pl.norm.DotProduct( at ) + pl.d;
+                if ( (d < -eps) || (d > eps) )
+                        concerning = true;
+                const bool above_a = (d > 0.0);
+                if ( above_a )
+                        return false;
+        }
 
-	return true;
+        return true;
 }
 
 bool Face::intersects( const Face & f, Vector3d & at, Vector3d & depth ) const
@@ -710,7 +710,7 @@ int Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths, bool 
     // or one fully contains the other.
     // Regardless of that pick the biggest of the two left bounds 
     // and the smallest of the two right bounds.
-	Vector3d at_0;
+        Vector3d at_0;
     Vector3d depth_0;
     {
         const bool pick_a_0  = ( t_a[0] > t_b[0] );
@@ -808,7 +808,7 @@ int Face::intersects_2( const Face & f, Vector3d * ats, Vector3d * depths, bool 
 
 
 
-	Vector3d at_1;
+        Vector3d at_1;
     Vector3d depth_1;
     {
         const bool pick_a_1 = ( t_a[1] < t_b[1] );
@@ -955,16 +955,16 @@ void Cube::init( const Vector3d & c, Float x2, Float y2, Float z2 )
 }
 
 
-void Cube::apply( const SE3 & se3, bool only_axes )
+void Cube::apply( const Pose & se3, bool only_axes )
 {
-	if ( !only_axes )
-		center = se3.r_ + se3.q_ * center_0;
+    if ( !only_axes )
+        center = se3.r + se3.q * center_0;
     ex = Vector3d( 1.0, 0.0, 0.0 );
     ey = Vector3d( 0.0, 1.0, 0.0 );
     ez = Vector3d( 0.0, 0.0, 1.0 );
-    ex = se3.q_ * ex;
-    ey = se3.q_ * ey;
-    ez = se3.q_ * ez;
+    ex = se3.q * ex;
+    ey = se3.q * ey;
+    ez = se3.q * ez;
 
     init_verts_and_planes();
 
@@ -1108,8 +1108,8 @@ bool Cube::intersects( const Cube & c ) const
             const bool point_is_above = plane.above( pt );
             if ( point_is_above )
                 out_qty += 1;
-                        else
-                                break;
+            else
+                break;
         }
         if ( out_qty > 7 )
             return false;
@@ -1211,8 +1211,8 @@ bool Cube::intersects( const Face & f ) const
             const bool out = pl.above( v );
             if ( out )
                 qty += 1;
-                        else
-                                break;
+            else
+                break;
         }
         if ( qty > 2 )
             return false;
@@ -1251,15 +1251,15 @@ bool Cube::intersects( const Face & f ) const
 
 bool Cube::contains( const Vector3d & at ) const
 {
-	for ( int i=0; i<6; i++ )
-	{
-		const Plane & pl = planes[i];
-		const bool above = pl.above( at );
-		if ( above )
-			return false;
-	}
+    for ( int i=0; i<6; i++ )
+    {
+        const Plane & pl = planes[i];
+        const bool above = pl.above( at );
+        if ( above )
+            return false;
+    }
 
-	return true;
+    return true;
 }
 
 

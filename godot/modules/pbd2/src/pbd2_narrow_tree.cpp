@@ -1,5 +1,9 @@
 
 #include "pbd2_narrow_tree.h"
+#include "pbd2_broad_tree.h"
+#include "pbd2_broad_node.h"
+#include "pbd2_rigid_body.h"
+#include "pbd2_collision_utils.h"
 
 
 namespace Pbd
@@ -12,7 +16,10 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 
 
 NarrowTree::NarrowTree()
+    : CollisionObject()
 {
+    obj_type = ObjectSdfMesh;
+
     max_sdf_error_ = 0.5;
     min_depth_ = 2;
     max_depth_ = 5;
@@ -75,13 +82,32 @@ Float NarrowTree::bounding_radius() const
     return sz;
 }
 
-Vector3d NarrowTree::center() const
+bool NarrowTree::inside( const BroadTreeNode * n, Float h ) const
 {
-    const int qty = nodes_sdf_.size();
-    if ( qty < 1 )
-        return Vector3d( 0.0, 0.0, 0.0 );
-    const NarrowTreeSdfNode & n = nodes_sdf_.ptr()[0];
-    return n.center;
+    Box box_other;
+    box_other.init( Vector3d(n->size2, n->size2, n->size2) );
+    Pose pose_other;
+    pose_other.r = n->center;
+    box_other.apply( pose_other );
+    
+    if ( nodes_sdf_.empty() )
+        return false;
+
+    const NarrowTreeSdfNode & root = nodes_sdf_.ptr()[0];
+    
+    Float sz = root.size2;
+    if ( rigid_body )
+    {
+        const Float v = rigid_body->vel.Length();
+        sz += k * v * h;
+    }
+    Box box_this;
+    box_this.init( Vector3d(sz, sz, sz) );
+    const Pose pose_this = pose_w();
+    box_this.apply( pose_this );
+    const bool ret = box_other.intersects( box_this );
+
+    return ret;
 }
 
 void NarrowTree::clear()
@@ -265,8 +291,12 @@ void NarrowTree::subdivide_pts()
 
 void NarrowTree::intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths )
 {
-    NarrowTree * tree = dynamic_cast<NarrowTree *>( b );
-    intersect_sdf( tree, ats, depths );
+    CollisionObjectType tp = b->type();
+    if ( tp == ObjectSdfMesh )
+    {
+        NarrowTree * tree = dynamic_cast<NarrowTree *>( b );
+        intersect_sdf( tree, ats, depths );
+    }
 }
 
 bool NarrowTree::intersect_sdf( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const

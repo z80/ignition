@@ -64,20 +64,20 @@ public:
     Vector3d face_face_intersection_point_[3], face_face_intersection_depth_[3];
 
 
-	NarrowTree tree_;
+    NarrowTree tree_;
 
-	void tree_apply( const Transform & t );
-	void tree_clear();
-	void tree_add_triangle( const Vector3 & a, const Vector3 & b, const Vector3 & c );
-	void tree_set_level( int level );
-	void tree_subdivide();
-	Array tree_depth( const Vector3 & at );
-	Vector3 tree_probe_depth( const Vector3 & at );
+    void tree_apply( const Transform & t );
+    void tree_clear();
+    void tree_add_triangle( const Vector3 & a, const Vector3 & b, const Vector3 & c );
+    void tree_set_level( int level );
+    void tree_subdivide();
+    Array tree_depth( const Vector3 & at );
+    Vector3 tree_probe_depth( const Vector3 & at );
 
-	PoolVector3Array lines_sdf_nodes() const;
-	PoolVector3Array lines_surface_pts() const;
-	PoolVector3Array lines_pts_nodes() const;
-	PoolVector3Array lines_aligned_nodes() const;
+    PoolVector3Array lines_sdf_nodes() const;
+    PoolVector3Array lines_surface_pts() const;
+    PoolVector3Array lines_pts_nodes() const;
+    PoolVector3Array lines_aligned_nodes() const;
 
 };
 
