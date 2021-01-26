@@ -32,7 +32,7 @@ Simulation::Simulation()
     solver_iterations = 3;
     time_remainder = 0.0;
 
-    step_number = 0;
+    //step_number = 0;
 }
 
 Simulation::~Simulation()
@@ -62,9 +62,6 @@ void Simulation::step( Float delta )
 
 void Simulation::step()
 {
-    if ( step_number == 474 )
-        int i=0;
-
     // Clear all contacts from previous simulation step.
     clear_contacts( this );
 
@@ -120,7 +117,7 @@ void Simulation::step()
         {
             solve_normal( body_a, body_b, contacts, h );
             solve_tangential( body_a, body_b, contacts, h );
-        }
+		}
         // Store contacts for future use in "solve_dynamic_friction".
         // Storing after as lambdas are modified.
         store_contacts( this, contacts );
@@ -146,6 +143,7 @@ void Simulation::step()
     }
 
 
+
     /*{
         String stri = String( "step " ) + itos( step_number ) + String( ": " );
         for ( int i=0; i<bodies_qty; i++ )
@@ -160,7 +158,7 @@ void Simulation::step()
             stri += s;
         }
         print_line( stri );
-    }*/
+    }
 	{
 		bool do_print = false;
 		String stri = String( "step " ) + itos( step_number ) + String( ": " );
@@ -173,8 +171,14 @@ void Simulation::step()
 			if ( dh > 0.01 )
 			{
 				String s = String("body[") + itos(i) + String("].dh = ") +
-					rtos( dh );
-				stri += s;
+					rtos( dh ) +
+					String( ", r0: ") + rtos( body->r_0.y_ ) + 
+					String( ", r1: ") + rtos( body->r_1.y_ ) + 
+					String( ", r2: ") + rtos( body->r_2.y_ ) + 
+					String( ", r3: ") + rtos( body->r_3.y_ ) + 
+					String( ", r4: ") + rtos( body->r_4.y_ ) + 
+					String( ", r5: ") + rtos( body->r_5.y_ );
+					stri += s;
 				do_print = true;
 			}
 		}
@@ -183,7 +187,7 @@ void Simulation::step()
 	}
 
 
-    step_number += 1;
+    step_number += 1;*/
 }
 
 void Simulation::clear()

@@ -41,7 +41,7 @@ public:
     Vector<ContactPointBb> contacts_all;
     Vector<int>            contacts_all_qtys;
 
-    int step_number;
+    //int step_number;
 
     static bool solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h );
     static bool solve_tangential( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h );
