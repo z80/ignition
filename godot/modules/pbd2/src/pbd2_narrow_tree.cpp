@@ -137,6 +137,9 @@ void NarrowTree::append_triangle( const Vector3d & a, const Vector3d & b, const 
 
 void NarrowTree::subdivide()
 {
+    if ( faces_.empty() )
+        return;
+
     subdivide_sdf();
     /*{
             NarrowTreeSdfNode root_sdf = nodes_sdf_.ptrw()[0];
