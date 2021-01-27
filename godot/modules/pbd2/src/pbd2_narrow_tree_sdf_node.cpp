@@ -481,6 +481,20 @@ bool NarrowTreeSdfNode::distance_recursive( const Vector3d & r, Float & d, Vecto
 
 Float NarrowTreeSdfNode::distance_for_this_node( const Vector3d & r, Vector3d & disp ) const
 {
+	const Vector3d rel_r = r - cube_.center;
+	const Float L = rel_r.Length();
+	const Float d = size2 - L;
+	if ( d > EPS )
+	{
+		disp = rel_r * (-d / L);
+		return -d;
+	}
+
+	return d + EPS;
+}
+
+/*Float NarrowTreeSdfNode::distance_for_this_node( const Vector3d & r, Vector3d & disp ) const
+{
     // Input must be normalized to [-1, 1] with zero at the center.
     const Vector3d rel_r = r - cube_.center;
     const Float x = rel_r.DotProduct( cube_.ex ) / cube_.szx2;
@@ -514,22 +528,22 @@ Float NarrowTreeSdfNode::distance_for_this_node( const Vector3d & r, Vector3d & 
     const Vector3d local_dr( dx, dy, dz );
     const Float L = local_dr.Length();
     Vector3d local_disp;
-    if ( L > 0.000001 )
+    if ( L > EPS )
     {
         // Towards the surface. And absolute value is equal to
         // the displacement.
-        local_disp = local_dr * ( -d/L );
+        local_disp = local_dr * ( d/L );
     }
     // Apply basis.
     disp = cube_.ex*local_disp.x_ + cube_.ey*local_disp.y_ + cube_.ez*local_disp.z_;
     return d;
-}
+}*/
 
 
 bool NarrowTreeSdfNode::point_inside_mesh( const Vector3d & r ) const
 {
     static const int QTY = 3;
-    static const Vector3d dirs[] = { Vector3d(1.0, 0.0, 0.0), Vector3d(0.0, 1.0, 0.0), Vector3d(0.0, 0.0, 1.0) };
+    static const Vector3d dirs[] = { Vector3d(1.0, 0.0, 0.0), Vector3d(1.1, 0.1, 0.0), Vector3d(1.0, 0.1, 1.0) };
     const NarrowTreeSdfNode & n0 = tree->nodes_sdf_.ptr()[0];
     const Float max_d = 4.0 * n0.size2;
 
@@ -539,17 +553,19 @@ bool NarrowTreeSdfNode::point_inside_mesh( const Vector3d & r ) const
 
         const int faces_qty = tree->faces_.size();
         int intersections_qty = 0;
-        for ( int i=0; i<3; i++ )
+		bool concerning = false;
+		for ( int i=0; i<faces_qty; i++ )
         {
             const Face & tri = tree->faces_.ptr()[i];
             Vector3d at;
-            bool concerning;
             const bool intersects = tri.intersects_eps( r, r2, EPS, at, concerning );
-            if ( concerning && (i<QTY) )
-                continue;
+            if ( concerning && (k<QTY) )
+                break;
             if ( intersects )
                 intersections_qty += 1;
         }
+		if ( concerning && (k<QTY) )
+			continue;
         const bool inside = ( (intersections_qty & 1) != 0 );
         return inside;
     }

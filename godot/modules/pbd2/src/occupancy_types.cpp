@@ -230,23 +230,23 @@ bool Face::intersects( const Vector3d & r1, const Vector3d & r2, Vector3d & at )
 
 bool Face::intersects_eps( const Vector3d & r1, const Vector3d & r2, Float eps, Vector3d & at, bool & concerning ) const
 {
-        const bool intersects_plane = plane.intersects( r1, r2, at );
-        if ( !intersects_plane )
-                return false;
+	concerning = false;
+	const bool intersects_plane = plane.intersects( r1, r2, at );
+    if ( !intersects_plane )
+        return false;
 
-        concerning = false;
-        for ( int i=0; i<3; i++ )
-        {
-                const Plane & pl = planes[i];
-                const Float d = pl.norm.DotProduct( at ) + pl.d;
-                if ( (d < -eps) || (d > eps) )
-                        concerning = true;
-                const bool above_a = (d > 0.0);
-                if ( above_a )
-                        return false;
-        }
+    for ( int i=0; i<3; i++ )
+    {
+        const Plane & pl = planes[i];
+        const Float d = pl.norm.DotProduct( at ) + pl.d;
+        if ( std::abs(d) < eps )
+            concerning = true;
+        const bool above_a = (d > 0.0);
+        if ( above_a )
+            return false;
+    }
 
-        return true;
+    return true;
 }
 
 bool Face::intersects( const Face & f, Vector3d & at, Vector3d & depth ) const
