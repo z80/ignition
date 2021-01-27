@@ -37,7 +37,6 @@ public:
 
 public:
     NarrowTree tree;
-    RigidBody * rigid_body;
 
 private:
     void parse_children();

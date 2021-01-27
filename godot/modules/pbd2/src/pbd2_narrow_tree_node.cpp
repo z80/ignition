@@ -9,35 +9,6 @@
 namespace Pbd
 {
 
-static void enter_tree( PbdCollisionSdfMeshTreeNode * rbn )
-{
-    Node * n = rbn->get_parent();
-    PbdRigidBodyNode * rb = Node::cast_to<PbdRigidBodyNode>( n );
-    if ( rb == nullptr )
-        return;
-    rbn->rigid_body = &(rb->rigid_body);
-    n = n->get_parent();
-    PbdSimulationNode * sn = Node::cast_to<PbdSimulationNode>( n );
-    if ( sn == nullptr )
-        return;
-    Simulation & s = sn->simulation;
-    //s.bodies.push_back( &(rbn->rigid_body) );
-}
-
-static void exit_tree( PbdCollisionSdfMeshTreeNode * rbn )
-{
-    Node * n = rbn->get_parent();
-    PbdRigidBodyNode * rb = Node::cast_to<PbdRigidBodyNode>( n );
-    if ( rb == nullptr )
-        return;
-    n = n->get_parent();
-    PbdSimulationNode * sn = Node::cast_to<PbdSimulationNode>( n );
-    if ( sn == nullptr )
-        return;
-    Simulation & s = sn->simulation;
-    //s.bodies.erase( &(rbn->rigid_body) );
-}
-
 
 
 
@@ -75,13 +46,6 @@ void PbdCollisionSdfMeshTreeNode::_notification( int p_what )
             subdivide();
             break;
 
-        case NOTIFICATION_ENTER_TREE:
-            enter_tree( this );
-            break;
-
-        case NOTIFICATION_EXIT_TREE:
-            exit_tree( this );
-
         default:
             break;
     }
@@ -91,7 +55,7 @@ void PbdCollisionSdfMeshTreeNode::_notification( int p_what )
 PbdCollisionSdfMeshTreeNode::PbdCollisionSdfMeshTreeNode()
     : PbdCollisionObjectNode()
 {
-    rigid_body = nullptr;
+    collision_object = &tree;
 }
 
 PbdCollisionSdfMeshTreeNode::~PbdCollisionSdfMeshTreeNode()
