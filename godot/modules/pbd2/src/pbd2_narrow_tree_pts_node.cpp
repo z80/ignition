@@ -308,7 +308,9 @@ bool NarrowTreePtsNode::collide_points( const NarrowTreeSdfNode * this_node, Vec
         if ( d < 0.0 )
         {
 			const Float d2 = this_node->distance_for_this_node( pt_local, depth );
-            // Convert to global ref. frame.
+			// It's the displecement of object "a". So it is in the opposite direction.
+			depth = -depth;
+			// Convert to global ref. frame.
             const Pose pose = this_node->tree->pose_w();
 			const Vector3d at_local = pt_local - (depth*0.5);
             const Vector3d pt_global = ( pose.q * at_local ) + pose.r;

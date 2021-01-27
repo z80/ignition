@@ -486,7 +486,7 @@ Float NarrowTreeSdfNode::distance_for_this_node( const Vector3d & r, Vector3d & 
 	const Float d = size2 - L;
 	if ( d > EPS )
 	{
-		disp = rel_r * (-d / L);
+		disp = rel_r * (d / L);
 		return -d;
 	}
 
@@ -532,7 +532,7 @@ Float NarrowTreeSdfNode::distance_for_this_node( const Vector3d & r, Vector3d & 
     {
         // Towards the surface. And absolute value is equal to
         // the displacement.
-        local_disp = local_dr * ( d/L );
+        local_disp = local_dr * ( -d/L );
     }
     // Apply basis.
     disp = cube_.ex*local_disp.x_ + cube_.ey*local_disp.y_ + cube_.ez*local_disp.z_;
