@@ -43,6 +43,12 @@ public:
 	void set_damping_angular( real_t k );
 	real_t get_damping_angular() const;
 
+	void set_compliance_normal( real_t k );
+	real_t get_compliance_normal() const;
+
+	void set_compliance_tangential( real_t k );
+	real_t get_compliance_tangential() const;
+
     void set_force( const Vector3 & f );
     Vector3 get_force() const;
 

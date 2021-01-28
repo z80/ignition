@@ -182,6 +182,27 @@ real_t PbdRigidBodyNode::get_damping_angular() const
         return rigid_body.damping_angular;
 }
 
+void PbdRigidBodyNode::set_compliance_normal( real_t k )
+{
+	rigid_body.compliance_normal = k;
+}
+
+real_t PbdRigidBodyNode::get_compliance_normal() const
+{
+	return rigid_body.compliance_normal;
+}
+
+void PbdRigidBodyNode::set_compliance_tangential( real_t k )
+{
+	rigid_body.compliance_tangential = k;
+}
+
+real_t PbdRigidBodyNode::get_compliance_tangential() const
+{
+	return rigid_body.compliance_tangential;
+}
+
+
 
 void PbdRigidBodyNode::set_force( const Vector3 & f )
 {
@@ -287,6 +308,13 @@ void PbdRigidBodyNode::_bind_methods()
     ClassDB::bind_method( D_METHOD( "set_damping_angular", "k" ), &PbdRigidBodyNode::set_damping_angular );
     ClassDB::bind_method( D_METHOD( "get_damping_angular" ),      &PbdRigidBodyNode::get_damping_angular, Variant::REAL );
 
+	ClassDB::bind_method( D_METHOD( "set_compliance_normal", "k" ), &PbdRigidBodyNode::set_compliance_normal );
+	ClassDB::bind_method( D_METHOD( "get_compliance_normal" ),      &PbdRigidBodyNode::get_compliance_normal, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD( "set_compliance_tangential", "k" ), &PbdRigidBodyNode::set_compliance_tangential );
+	ClassDB::bind_method( D_METHOD( "get_compliance_tangential" ),      &PbdRigidBodyNode::get_compliance_tangential, Variant::REAL );
+
+
     ClassDB::bind_method( D_METHOD( "set_force", "f" ), &PbdRigidBodyNode::set_force );
     ClassDB::bind_method( D_METHOD( "get_force" ),      &PbdRigidBodyNode::get_force, Variant::VECTOR3 );
 
@@ -305,7 +333,9 @@ void PbdRigidBodyNode::_bind_methods()
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "restitution" ), "set_restitution", "get_restitution" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "damping_linear" ), "set_damping_linear", "get_damping_linear" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "damping_angular" ), "set_damping_angular", "get_damping_angular" );
-    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "force" ), "set_force", "get_force" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "compliance_normal" ), "set_compliance_normal", "get_compliance_normal" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "compliance_tangential" ), "set_compliance_tangential", "get_compliance_tangential" );
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "force" ), "set_force", "get_force" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "torque" ), "set_torque", "get_torque" );
 }
 

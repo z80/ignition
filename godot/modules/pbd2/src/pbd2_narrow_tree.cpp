@@ -3,7 +3,9 @@
 #include "pbd2_broad_tree.h"
 #include "pbd2_broad_node.h"
 #include "pbd2_rigid_body.h"
+#include "pbd2_collision_plane.h"
 #include "pbd2_collision_utils.h"
+#include "occupancy_types.h"
 
 
 namespace Pbd
@@ -299,8 +301,14 @@ void NarrowTree::intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<
     {
         NarrowTree * tree_b = dynamic_cast<NarrowTree *>( b );
         //intersect_sdf( tree_b, ats, depths );
-		intersect_brute_force( tree_b, ats, depths );
-    }
+		//intersect_brute_force( tree_b, ats, depths );
+		intersect_brute_force_2( tree_b, ats, depths );
+	}
+	else if ( tp == ObjectPlane )
+	{
+		CollisionPlane * plane = dynamic_cast<CollisionPlane *>( b );
+		intersect_plane(plane, ats, depths );
+	}
 }
 
 bool NarrowTree::intersect_sdf( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const
@@ -341,8 +349,8 @@ bool NarrowTree::intersect_brute_force( NarrowTree * tree_b, Vector<Vector3d> & 
 		const bool collides = root.point_collides( pt_rel, at, depth );
 		if ( collides )
 		{
-			const Float d = depth.Length();
-			print_line( String( "depth: " ) + rtos( d ) );
+			//const Float d = depth.Length();
+			//print_line( String( "depth: " ) + rtos( d ) );
 
 			depth = -depth;
 			at = pose_a.r + (pose_a.q * at);
@@ -351,6 +359,89 @@ bool NarrowTree::intersect_brute_force( NarrowTree * tree_b, Vector<Vector3d> & 
 			depths.push_back( depth );
 		}
 		ret = ret || collides;
+	}
+
+	return ret;
+}
+
+bool NarrowTree::intersect_brute_force_2( NarrowTree * tree_b, Vector<Vector3d> & pts, Vector<Vector3d> & depths )const
+{
+	if ( nodes_sdf_.empty() )
+		return false;
+
+	const Pose pose_a = pose_w();
+	const Pose pose_b = tree_b->pose_w();
+	const Pose pose_rel = pose_b / pose_a;
+	const int nodes_qty_a = nodes_sdf_.size();
+	const int pts_qty_b = tree_b->pts_.size();
+
+	bool ret = false;
+	for ( int i=0; i<nodes_qty_a; i++ )
+	{
+		const NarrowTreeSdfNode & sdf_node = nodes_sdf_.ptr()[i];
+		const bool has_children = sdf_node.hasChildren();
+		if ( has_children )
+			continue;
+		const bool on_or_below = sdf_node.on_or_below_surface;
+		if ( !on_or_below )
+			continue;
+
+		for ( int j=0; j<pts_qty_b; j++ )
+		{
+			const Vector3d & pt_local = tree_b->pts_.ptr()[j];
+			// Convert to current tree's ref frame.
+			const Vector3d pt_rel = pose_rel.r + (pose_rel.q * pt_local);
+
+			const Vector3d dr     = pt_rel - sdf_node.center;
+			const Float    abs_dr = dr.Length();
+			const Float    d      = abs_dr - sdf_node.size2;
+			if ( d > -EPS )
+				continue;
+
+			const Vector3d a = dr / abs_dr;
+			const Vector3d depth = a * d * 0.2;
+			const Vector3d at = pt_rel - (depth * 0.5);
+			//const Float d = depth.Length();
+				//print_line( String( "depth: " ) + rtos( d ) );
+
+			const Vector3d at_w = pose_a.r + (pose_a.q * at);
+			const Vector3d depth_w = pose_a.q * depth;
+			pts.push_back( at_w );
+			depths.push_back( depth_w );
+
+			ret = true;
+		}
+	}
+
+	return ret;
+}
+
+bool NarrowTree::intersect_plane( CollisionPlane * plane, Vector<Vector3d> & ats, Vector<Vector3d> & depths ) const
+{
+	const Pose pose_a = pose_w();
+	const Pose pose_b = plane->pose_w();
+	const Pose pose_rel = pose_b / pose_a;
+	const Vector3d norm = pose_rel.q * Vector3d( 0.0, 1.0, 0.0 );
+	const Vector3d r0 = pose_rel.r;
+
+	bool ret = false;
+	const int pts_qty = pts_.size();
+	for ( int i=0; i<pts_qty; i++ )
+	{
+		const Vector3d & v = pts_.ptr()[i];
+		const Vector3d dr = v - r0;
+		const Float d = norm.DotProduct( dr );
+		if ( d > -EPS )
+			continue;
+		const Vector3d depth = -norm * d;
+		const Vector3d at = v - (depth * 0.5);
+
+		const Vector3d depth_w = pose_a.q * depth;
+		const Vector3d at_w    = pose_a.r + (pose_a.q * at);
+		ats.push_back( at_w );
+		depths.push_back( depth_w );
+
+		ret = true;
 	}
 
 	return ret;

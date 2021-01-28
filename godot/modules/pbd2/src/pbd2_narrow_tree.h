@@ -20,6 +20,7 @@ Nonempty leaf node means space is filled. Else means it's empty.
 **/
 
 class RigidBody;
+class CollisionPlane;
 
 class NarrowTree: public CollisionObject
 {
@@ -55,6 +56,8 @@ public:
     void intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths ) override;
     bool intersect_sdf( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
 	bool intersect_brute_force( NarrowTree * tree_b, Vector<Vector3d> & pts, Vector<Vector3d> & depths )const;
+	bool intersect_brute_force_2( NarrowTree * tree_b, Vector<Vector3d> & pts, Vector<Vector3d> & depths )const;
+	bool intersect_plane( CollisionPlane * plane, Vector<Vector3d> & ats, Vector<Vector3d> & depths ) const;
 
     // For visualization.
     PoolVector3Array lines_sdf_nodes() const;
