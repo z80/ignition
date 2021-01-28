@@ -86,7 +86,18 @@ Float NarrowTree::bounding_radius() const
 
 bool NarrowTree::inside( const BroadTreeNode * n, Float h ) const
 {
-    Box box_other;
+	const Vector3d broad_r = n->center;
+	const Float broad_sz = n->size2;
+
+	const Pose p = pose_w();
+	const Vector3d obj_r = p.r;
+	const Float obj_sz = bounding_radius();
+
+	const Float dr = (broad_r - obj_r).Length() * 1.8;
+	const Float is_inside = ( dr < (broad_sz + obj_sz) );
+	return is_inside;
+
+    /*Box box_other;
     box_other.init( Vector3d(n->size2, n->size2, n->size2) );
     Pose pose_other;
     pose_other.r = n->center;
@@ -109,7 +120,7 @@ bool NarrowTree::inside( const BroadTreeNode * n, Float h ) const
     box_this.apply( pose_this );
     const bool ret = box_other.intersects( box_this );
 
-    return ret;
+    return ret;*/
 }
 
 void NarrowTree::clear()
