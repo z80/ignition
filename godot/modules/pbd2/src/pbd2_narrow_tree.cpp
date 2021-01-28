@@ -93,7 +93,7 @@ bool NarrowTree::inside( const BroadTreeNode * n, Float h ) const
 	const Vector3d obj_r = p.r;
 	const Float obj_sz = bounding_radius();
 
-	const Float dr = (broad_r - obj_r).Length() * 1.8;
+	const Float dr = (broad_r - obj_r).Length() / 1.8;
 	const Float is_inside = ( dr < (broad_sz + obj_sz) );
 	return is_inside;
 
