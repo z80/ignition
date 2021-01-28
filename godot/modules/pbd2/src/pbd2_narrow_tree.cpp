@@ -86,7 +86,9 @@ Float NarrowTree::bounding_radius() const
 
 bool NarrowTree::inside( const BroadTreeNode * n, Float h ) const
 {
-	const Vector3d broad_r = n->center;
+	return true;
+
+	/*const Vector3d broad_r = n->center;
 	const Float broad_sz = n->size2;
 
 	const Pose p = pose_w();
@@ -95,13 +97,10 @@ bool NarrowTree::inside( const BroadTreeNode * n, Float h ) const
 
 	const Float dr = (broad_r - obj_r).Length() / 1.8;
 	const Float is_inside = ( dr < (broad_sz + obj_sz) );
-	return is_inside;
+	return is_inside;*/
 
-    /*Box box_other;
-    box_other.init( Vector3d(n->size2, n->size2, n->size2) );
-    Pose pose_other;
-    pose_other.r = n->center;
-    box_other.apply( pose_other );
+    Cube box_other;
+    box_other.init( n->center, n->size2, n->size2, n->size2 );
     
     if ( nodes_sdf_.empty() )
         return false;
@@ -114,13 +113,12 @@ bool NarrowTree::inside( const BroadTreeNode * n, Float h ) const
         const Float v = rigid_body->vel.Length();
         sz += k * v * h;
     }
-    Box box_this;
-    box_this.init( Vector3d(sz, sz, sz) );
+    Cube box_this = root.cube_;
     const Pose pose_this = pose_w();
     box_this.apply( pose_this );
     const bool ret = box_other.intersects( box_this );
 
-    return ret;*/
+    return ret;
 }
 
 void NarrowTree::clear()
@@ -311,9 +309,9 @@ void NarrowTree::intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<
     if ( tp == ObjectSdfMesh )
     {
         NarrowTree * tree_b = dynamic_cast<NarrowTree *>( b );
-        //intersect_sdf( tree_b, ats, depths );
+        intersect_sdf( tree_b, ats, depths );
 		//intersect_brute_force( tree_b, ats, depths );
-		intersect_brute_force_2( tree_b, ats, depths );
+		//intersect_brute_force_2( tree_b, ats, depths );
 	}
 	else if ( tp == ObjectPlane )
 	{

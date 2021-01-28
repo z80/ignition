@@ -508,21 +508,21 @@ bool NarrowTreeSdfNode::distance_recursive( const Vector3d & r, Float & d, Vecto
     return true;
 }
 
+//Float NarrowTreeSdfNode::distance_for_this_node( const Vector3d & r, Vector3d & disp ) const
+//{
+//	const Vector3d rel_r = r - cube_.center;
+//	const Float L = rel_r.Length();
+//	const Float d = size2 - L;
+//	if ( d > EPS )
+//	{
+//		disp = rel_r * (d / L);
+//		return -d;
+//	}
+//
+//	return -d;
+//}
+
 Float NarrowTreeSdfNode::distance_for_this_node( const Vector3d & r, Vector3d & disp ) const
-{
-	const Vector3d rel_r = r - cube_.center;
-	const Float L = rel_r.Length();
-	const Float d = size2 - L;
-	if ( d > EPS )
-	{
-		disp = rel_r * (d / L);
-		return -d;
-	}
-
-	return -d;
-}
-
-/*Float NarrowTreeSdfNode::distance_for_this_node( const Vector3d & r, Vector3d & disp ) const
 {
     // Input must be normalized to [-1, 1] with zero at the center.
     const Vector3d rel_r = r - cube_.center;
@@ -566,7 +566,7 @@ Float NarrowTreeSdfNode::distance_for_this_node( const Vector3d & r, Vector3d & 
     // Apply basis.
     disp = cube_.ex*local_disp.x_ + cube_.ey*local_disp.y_ + cube_.ez*local_disp.z_;
     return d;
-}*/
+}
 
 
 bool NarrowTreeSdfNode::point_inside_mesh( const Vector3d & r ) const
