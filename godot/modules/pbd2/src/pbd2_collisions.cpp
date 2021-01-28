@@ -6,6 +6,9 @@
 
 #include "pbd2_collision_utils.h"
 
+#include "core/print_string.h"
+
+
 namespace Pbd
 {
 
@@ -218,18 +221,13 @@ void collision_box_plane( CollisionBox * obj_a, CollisionPlane * obj_b, Vector<V
     const Pose pose_box   = obj_a->pose_w();
     const Pose pose_plane = obj_b->pose_w();
     const Pose pose_rel = pose_box / pose_plane;
-    const Vector3d sz = obj_a->get_size2();
-    const Vector3d verts[] = { Vector3d(-sz.x_, -sz.y_, -sz.z_), 
-                               Vector3d( sz.x_, -sz.y_, -sz.z_), 
-                               Vector3d( sz.x_,  sz.y_, -sz.z_ ), 
-                               Vector3d(-sz.x_,  sz.y_, -sz.z_), 
-                               Vector3d(-sz.x_, -sz.y_,  sz.z_), 
-                               Vector3d( sz.x_, -sz.y_,  sz.z_), 
-                               Vector3d( sz.x_,  sz.y_,  sz.z_ ), 
-                               Vector3d(-sz.x_,  sz.y_,  sz.z_) }; 
-    for ( int i=0; i<8; i++ )
+	Box box_a;
+	box_a.init( obj_a->get_size2() );
+
+	for ( int i=0; i<8; i++ )
     {
-        const Vector3d v = pose_rel.r + (pose_rel.q * verts[i]);
+		const BoxVertex & bv = box_a.verts[i];
+        const Vector3d v = pose_rel.r + (pose_rel.q * bv.v);
         // Check Y component. It should be below surface.
         if ( v.y_ > -EPS )
             continue;
@@ -241,6 +239,10 @@ void collision_box_plane( CollisionBox * obj_a, CollisionPlane * obj_b, Vector<V
         depth = pose_plane.q * depth;
         ats.push_back( at );
         depths.push_back( depth );
+
+		{
+			//print_line( String("box-plane depth: " ) + rtos( depth.Length() ) );
+		}
     }
 }
 
@@ -277,31 +279,124 @@ void collision_box_box( CollisionBox * obj_a, CollisionBox * obj_b, Vector<Vecto
             const BoxFace & f = box_b.faces[v.face_id];
             const Vector3d depth = f.n * v.depth;
             const Vector3d at = v.v + depth * 0.5;
-            ats.push_back( at );
-            depths.push_back( depth );
+			// Convert to world ref frame.
+			const Vector3d at_w = pose_b.r + (pose_b.q * at);
+			const Vector3d depth_w = pose_b.q * depth;
+            ats.push_back( at_w );
+            depths.push_back( depth_w );
+
+			print_line( String("vertex id: " ) + itos(i) + String(", face id: ") + itos(v.face_id) + String(", depth: ") + rtos( depth.Length() ) );
         }
     }
-    
-    static const int edges[12][2] = { {0, 1}, {1, 2}, {2, 3}, {3, 0}, 
-                                      {4, 5}, {5, 6}, {6, 7}, {7, 4}, 
-                                      {0, 4}, {1, 5}, {2, 6}, {3, 7} };
+
     for ( int i=0; i<12; i++ )
     {
-        const int ind_a = edges[i][0];
-        const int ind_b = edges[i][1];
-        const BoxVertex & a = box_a.verts[ind_a];
-        const BoxVertex & b = box_a.verts[ind_b];
-        for ( int j=0; j<6; j++ )
-        {
-            const BoxFace & f = box_b.faces[j];
-            Vector3d at, depth;
-            const bool intersects = f.intersects( a, b, at, depth );
-            if ( intersects )
-            {
-                ats.push_back( at );
-                depths.push_back( depth );
-            }
-        }
+        const int ind_a = Box::vert_inds[i][0];
+        const int ind_b = Box::vert_inds[i][1];
+        BoxVertex a = box_a.verts[ind_a];
+        BoxVertex b = box_a.verts[ind_b];
+		// Cropping the edge to only box "b" internal part.
+		int intersections_qty = 0;
+		int intersecting_face_inds[2] = {-1, -1};
+		for ( int face_b=0; face_b<6; face_b++ )
+		{
+			// Check if edge vertices inder the surface. And if yes,
+			// if their face id is the same is for the perpendicular.
+			// And if yes, reject it.
+			if ( a.inside )
+			{
+				if ( a.face_id == face_b )
+					continue;
+			}
+			if ( b.inside )
+			{
+				if ( b.face_id == face_b )
+					continue;
+			}
+
+			const BoxFace & f = box_b.faces[face_b];
+			Float t_at;
+			Vector3d v_at;
+			const bool intersects = f.intersects( a, b, t_at, v_at );
+			if ( !intersects )
+				continue;
+			/*// Check which point to reject. Either "a" or "b" should be above.
+			const Float d = f.n.DotProduct(a.v - f.center);
+			if ( d >= 0.0 )
+				a.v = v_at;
+			else
+				b.v = v_at;/**/
+			intersecting_face_inds[intersections_qty] = face_b;
+			intersections_qty += 1;
+			// Line cannot cross cube in more than 2 points.
+			// So stop checking if 2 intersections were detected.
+			if ( intersections_qty >= 2 )
+				break;
+		}
+		// At this point "a"-"b" is inside the cube.
+		// Search for the shortest common perpendicular.
+		int last_closest_edge_ind = -1;
+		Vector3d min_va, min_vb;
+		bool closest_edge_found = false;
+		Float min_d2 = -1.0;
+		for ( int j=0; j<intersections_qty; j++ )
+		{
+			const int face_ind = intersecting_face_inds[j];
+			const BoxFace & f = box_b.faces[face_ind];
+			for ( int face_edge_ind=0; face_edge_ind<4; face_edge_ind++ )
+			{
+				const int edge_ind = f.edge_inds[face_edge_ind];
+				// Check if it was already tested.
+				if ( last_closest_edge_ind == edge_ind )
+					continue;
+				const int ind_1 = Box::vert_inds[edge_ind][0];
+				const int ind_2 = Box::vert_inds[edge_ind][1];
+				const BoxVertex & b1 = box_b.verts[ind_1];
+				const BoxVertex & b2 = box_b.verts[ind_2];
+				Vector3d pa, pb;
+				const bool ok = common_perp( a.v, b.v, b1.v, b2.v, pa, pb );
+				if ( !ok )
+					continue;
+				// Point on the edge should be below face surface.
+				const Float d = f.n.DotProduct(pa - f.center);
+				if ( d > -EPS )
+					continue;
+				// Looking for the smallest one.
+				const Float len = (pb - pa).LengthSquared();
+				if ( (!closest_edge_found) || (len < min_d2) )
+				{
+					min_d2 = len;
+					min_va = pa;
+					min_vb = pb;
+					last_closest_edge_ind = edge_ind;
+					closest_edge_found = true;
+				}
+			}
+		}
+
+		if ( closest_edge_found )
+		{
+			// Add position and depth.
+			// For "a" depth is towards edge "b".
+			const Vector3d at = (min_va + min_vb) * 0.5;
+			const Vector3d depth = (min_vb - min_va);
+			// Convert to world ref frame.
+			const Vector3d at_w = pose_b.r + (pose_b.q * at);
+			const Vector3d depth_w = pose_b.q * depth;
+			ats.push_back( at_w );
+			depths.push_back( depth_w );
+
+			{
+				print_line( String("edge-edge depth: " ) + rtos( depth.Length() ) );
+
+				const Float d = depth.Length();
+				if ( d > 0.1 )
+				{
+					//Vector<Vector3d> ats2, depths2;
+					//collision_box_box( obj_a, obj_b, ats2, depths2 );
+				}
+			}
+		}
     }
 }
 

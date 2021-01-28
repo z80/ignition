@@ -6,7 +6,76 @@ namespace Pbd
 
 static const Float EPS = 0.0001;
 
-bool BoxFace::intersects( const BoxVertex & a, const BoxVertex & b, Vector3d & at, Vector3d & depth ) const
+bool common_perp( const Vector3d & a1, const Vector3d & a2, const Vector3d & b1, const Vector3d & b2,
+                  Vector3d & at_a, Vector3d & at_b )
+{
+	// Line vectors.
+	const Vector3d da = a2 - a1;
+	const Vector3d db = b2 - b1;
+	// Common perpendicular line vector.
+	const Vector3d nn = da.CrossProduct( db );
+	const Float abs_n = nn.Length();
+	if ( abs_n < EPS )
+		return false;
+	const Vector3d n = nn / abs_n;
+	// Plane "a" normal.
+	const Vector3d na = da.CrossProduct( n );
+	// Plane "b" normal.
+	const Vector3d nb = db.CrossProduct( n );
+	// Common perpendicular is the intersection of the two planes.
+	// Plane "a": (r - a1)*(na) = 0;
+	// Plane "b": (r - b1)*(nb) = 0;
+	// Substitute line "a" (r = da*t + a1) into plane "b" to find point on line "a".
+	// Substitute line "b" (r = db*t + b1) intp plane "a" to find point on line "b".
+	// Common perpendicular between line segments exists only if both
+	// points "t" parameters are within [0, 1].
+	const Float den_a = da.DotProduct(nb);
+	if ( std::abs(den_a) < EPS )
+		return false;
+	const Float num_a = nb.DotProduct(b1 - a1);
+	const Float ta = num_a / den_a;
+	if ( (ta < 0.0) || (ta > 1.0) )
+		return false;
+
+	const Float den_b = db.DotProduct(na);
+	if ( std::abs(den_b) < EPS )
+		return false;
+	const Float num_b = na.DotProduct(a1 - b1);
+	const Float tb = num_b / den_b;
+	if ( (tb < 0.0) || (tb > 1.0) )
+		return false;
+
+	at_a = da*ta + a1;
+	at_b = db*tb + b1;
+	return true;
+}
+
+bool BoxFace::intersects( const BoxVertex & a, const BoxVertex & b, Float & t_at, Vector3d & v_at ) const
+{
+	const Vector3d b_a = b.v-a.v;
+	const Float den = n.DotProduct( b_a );
+	if ( std::abs(den) < EPS )
+		return false;
+	const Float num = n.DotProduct(center - a.v);
+	const Float t = num / den;
+	if ( (t < 0.0) || (t > 1.0) )
+		return false;
+	const Vector3d at = a.v + (b_a*t);
+	const Vector3d d_at = at - center;
+	const Float dist_x = d_at.DotProduct( x );
+	if ( std::abs(dist_x) > sz_x )
+		return false;
+	const Float dist_y = d_at.DotProduct( y );
+	if ( std::abs(dist_y) > sz_y )
+		return false;
+	t_at = t;
+	v_at = at;
+
+	return true;
+}
+
+
+/*bool BoxFace::intersects( const BoxVertex & a, const BoxVertex & b, Vector3d & at, Vector3d & depth ) const
 {
     const Vector3d b_a = b.v-a.v;
     const Float den = n.DotProduct( b_a );
@@ -47,7 +116,7 @@ bool BoxFace::intersects( const BoxVertex & a, const BoxVertex & b, Vector3d & a
     }
     depth = depth * min_d;
 
-    // Now check if either vertices is insede and if closest face is the same face.
+    // Now check if either vertices is inside and if closest face is the same face.
     if ( a.inside && (a.face_id == id) )
     {
         if ( a.depth < min_d )
@@ -64,86 +133,117 @@ bool BoxFace::intersects( const BoxVertex & a, const BoxVertex & b, Vector3d & a
     at = v_at - depth * 0.5;
 
     return true;
-}
+}*/
+
+const int Box::vert_inds[12][2] = { {0, 1}, {1, 2}, {2, 3}, {3, 0}, 
+							        {4, 5}, {5, 6}, {6, 7}, {7, 4}, 
+							        {0, 4}, {1, 5}, {2, 6}, {3, 7} };
 
 void Box::init( const Vector3d & sz2 )
 {
     // Init 6 faces.
     {
+		// Left
         BoxFace & v = faces[0];
-        v.id = LEFT;
         v.n = Vector3d( -1.0, 0.0, 0.0 );
         v.center = Vector3d( -sz2.x_, 0.0, 0.0 );
         v.x = Vector3d( 0.0, 0.0, 1.0 );
         v.y = Vector3d( 0.0, 1.0, 0.0 );
         v.sz_x = sz2.z_;
         v.sz_y = sz2.y_;
+		v.edge_inds[0] = 0;
+		v.edge_inds[1] = 8;
+		v.edge_inds[2] = 4;
+		v.edge_inds[3] = 9;
     }
     {
+		// Back
         BoxFace & v = faces[1];
-        v.id = BACK;
         v.n = Vector3d( 0.0, 0.0, 1.0 );
         v.center = Vector3d( 0.0, 0.0, sz2.z_ );
         v.x = Vector3d( 1.0, 0.0, 0.0 );
         v.y = Vector3d( 0.0, 1.0, 0.0 );
         v.sz_x = sz2.x_;
         v.sz_y = sz2.y_;
-    }
+		v.edge_inds[0] = 1;
+		v.edge_inds[1] = 10;
+		v.edge_inds[2] = 5;
+		v.edge_inds[3] = 9;
+	}
     {
+		// Right
         BoxFace & v = faces[2];
-        v.id = RIGHT;
         v.n = Vector3d( 1.0, 0.0, 0.0 );
         v.center = Vector3d( sz2.x_, 0.0, 0.0 );
         v.x = Vector3d( 0.0, 0.0, -1.0 );
         v.y = Vector3d( 0.0, 1.0, 0.0 );
         v.sz_x = sz2.z_;
         v.sz_y = sz2.y_;
+		v.edge_inds[0] = 2;
+		v.edge_inds[1] = 11;
+		v.edge_inds[2] = 6;
+		v.edge_inds[3] = 10;
     }
     {
+		// Forward
         BoxFace & v = faces[3];
-        v.id = FORWARD;
         v.n = Vector3d( 0.0, 0.0, -1.0 );
         v.center = Vector3d( 0.0, 0.0, -sz2.z_ );
         v.x = Vector3d( -1.0, 0.0, 0.0 );
         v.y = Vector3d( 0.0, 1.0, 0.0 );
         v.sz_x = sz2.x_;
         v.sz_y = sz2.y_;
+		v.edge_inds[0] = 3;
+		v.edge_inds[1] = 11;
+		v.edge_inds[2] = 7;
+		v.edge_inds[3] = 8;
     }
     {
+		// Down
         BoxFace & v = faces[4];
-        v.id = DOWN;
         v.n = Vector3d( 0.0, -1.0, 0.0 );
         v.center = Vector3d( 0.0, -sz2.y_, 0.0 );
         v.x = Vector3d( 1.0, 0.0, 0.0 );
-        v.y = Vector3d( 0.0, 0.0, -1.0 );
+        v.y = Vector3d( 0.0, 0.0, 1.0 );
         v.sz_x = sz2.x_;
         v.sz_y = sz2.z_;
+		v.edge_inds[0] = 0;
+		v.edge_inds[1] = 1;
+		v.edge_inds[2] = 2;
+		v.edge_inds[3] = 3;
     }
     {
+		// Up
         BoxFace & v = faces[5];
-        v.id = UP;
         v.n = Vector3d( 0.0, 1.0, 0.0 );
         v.center = Vector3d( 0.0, sz2.y_, 0.0 );
         v.x = Vector3d( 1.0, 0.0, 0.0 );
         v.y = Vector3d( 0.0, 0.0, -1.0 );
         v.sz_x = sz2.x_;
         v.sz_y = sz2.z_;
-    }
+		v.edge_inds[0] = 4;
+		v.edge_inds[1] = 5;
+		v.edge_inds[2] = 6;
+		v.edge_inds[3] = 7;
+	}
 
     // Init 8 vertices.
     {
         const Vector3d vv[] = { Vector3d(-sz2.x_, -sz2.y_, -sz2.z_), 
-                                Vector3d( sz2.x_, -sz2.y_, -sz2.z_), 
-                                Vector3d( sz2.x_,  sz2.y_, -sz2.z_ ), 
-                                Vector3d(-sz2.x_,  sz2.y_, -sz2.z_), 
                                 Vector3d(-sz2.x_, -sz2.y_,  sz2.z_), 
-                                Vector3d( sz2.x_, -sz2.y_,  sz2.z_), 
+                                Vector3d( sz2.x_, -sz2.y_,  sz2.z_ ), 
+                                Vector3d( sz2.x_, -sz2.y_, -sz2.z_), 
+                                Vector3d(-sz2.x_,  sz2.y_, -sz2.z_), 
+                                Vector3d(-sz2.x_,  sz2.y_,  sz2.z_), 
                                 Vector3d( sz2.x_,  sz2.y_,  sz2.z_ ), 
-                                Vector3d(-sz2.x_,  sz2.y_,  sz2.z_) }; 
+                                Vector3d( sz2.x_,  sz2.y_, -sz2.z_) }; 
         for ( int i=0; i<8; i++ )
         {
             BoxVertex & v = verts[i];
             v.v = vv[i];
+			v.inside = false;
+			v.face_id = -1;
+			v.depth = -1.0;
         }
     }
 }
@@ -167,7 +267,7 @@ void Box::apply( const Pose & pose )
 
 bool Box::inside( BoxVertex & v ) const
 {
-    FaceId min_id = BACK;
+    int min_id = -1;
     Float min_depth = -1.0;
     for ( int i=0; i<6; i++ )
     {
@@ -182,7 +282,7 @@ bool Box::inside( BoxVertex & v ) const
         const Float d = -nd;
         if ( (min_depth < 0.0) || (min_depth > d) )
         {
-            min_id = f.id;
+            min_id = i;
             min_depth = d;
         }
     }
@@ -216,24 +316,47 @@ bool Box::intersects( const Box & b ) const
             return true;
     }
 
-    static const int edges[12][2] = { {0, 1}, {1, 2}, {2, 3}, {3, 0}, 
-                                      {4, 5}, {5, 6}, {6, 7}, {7, 4}, 
-                                      {0, 4}, {1, 5}, {2, 6}, {3, 7} };
+	for ( int i=0; i<8; i++ )
+	{
+		const BoxVertex & v = verts[i];
+		const bool ok = b.inside_const( v );
+		if ( ok )
+			return true;
+	}
+
     for ( int i=0; i<12; i++ )
     {
-        const int ind_a = edges[i][0];
-        const int ind_b = edges[i][1];
+        const int ind_a = vert_inds[i][0];
+        const int ind_b = vert_inds[i][1];
         const BoxVertex & va = b.verts[ind_a];
         const BoxVertex & vb = b.verts[ind_b];
         for ( int j=0; j<6; j++ )
         {
             const BoxFace & f = faces[j];
-            Vector3d at, depth;
-            const bool intersects = f.intersects( va, vb, at, depth );
+			Float t_at;
+            Vector3d v_at;
+            const bool intersects = f.intersects( va, vb, t_at, v_at );
             if ( intersects )
                 return true;
         }
     }
+
+	for ( int i=0; i<12; i++ )
+	{
+		const int ind_a = vert_inds[i][0];
+		const int ind_b = vert_inds[i][1];
+		const BoxVertex & va = verts[ind_a];
+		const BoxVertex & vb = verts[ind_b];
+		for ( int j=0; j<6; j++ )
+		{
+			const BoxFace & f = b.faces[j];
+			Float t_at;
+			Vector3d v_at;
+			const bool intersects = f.intersects( va, vb, t_at, v_at );
+			if ( intersects )
+				return true;
+		}
+	}
 
     return false;
 }

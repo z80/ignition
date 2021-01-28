@@ -17,13 +17,12 @@ enum FaceId { BACK=0, RIGHT=1, FORWARD=2, LEFT=3, DOWN=4, UP=5 };
 struct BoxVertex
 {
     Vector3d v;
-    bool inside;
-    FaceId face_id;
-    Float  depth;
+    bool     inside;
+    int      face_id;
+    Float    depth;
 };
 struct BoxFace
 {
-    FaceId id;
     // Outwards normal.
     Vector3d n;
     // Face center.
@@ -32,7 +31,16 @@ struct BoxFace
     Vector3d x, y;
     // Appropriate half sizes.
     Float sz_x, sz_y;
-    bool intersects( const BoxVertex & a, const BoxVertex & b, Vector3d & at, Vector3d & depth ) const;
+	// Edge indices in the box.
+	int edge_inds[4];
+
+	// Cross line with face, return line parameter and intersection point.
+	bool intersects( const BoxVertex & a, const BoxVertex & b, Float & t_at, Vector3d & v_at ) const;
+
+	// Returns if there is an intersection.
+	// Returns through arguments where the intersection occured,
+	// the depth is determined as the smallest common perpendicular with all face edges.
+    //bool intersects( const BoxVertex & a, const BoxVertex & b, Vector3d & at, Vector3d & depth ) const;
 };
 
 struct Box
@@ -46,7 +54,11 @@ struct Box
     bool inside_const( const BoxVertex & v ) const;
     bool intersects( const Box & b ) const;
 
+	static const int vert_inds[12][2];
 };
+
+bool common_perp( const Vector3d & a1, const Vector3d & a2, const Vector3d & b1, const Vector3d & b2,
+	              Vector3d & at_a, Vector3d & at_b );
  
 }
 
