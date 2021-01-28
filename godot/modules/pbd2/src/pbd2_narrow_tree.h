@@ -54,6 +54,7 @@ public:
 
     void intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<Vector3d> & depths ) override;
     bool intersect_sdf( NarrowTree * tree, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
+	bool intersect_brute_force( NarrowTree * tree_b, Vector<Vector3d> & pts, Vector<Vector3d> & depths )const;
 
     // For visualization.
     PoolVector3Array lines_sdf_nodes() const;

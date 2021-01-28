@@ -27,6 +27,7 @@ public:
 
 
     bool collide_forward( const Pose & se3_rel, const NarrowTreePtsNode * n, Vector<Vector3d> & pts, Vector<Vector3d> & depths ) const;
+	bool point_collides( const Vector3d & pt, Vector3d & at, Vector3d & depth ) const;
 
     NarrowTree * tree;
     int absIndex;

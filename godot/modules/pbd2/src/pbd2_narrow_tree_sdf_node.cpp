@@ -261,6 +261,35 @@ bool NarrowTreeSdfNode::collide_forward( const Pose & se3_rel, const NarrowTreeP
     return children_intersect;
 }
 
+bool NarrowTreeSdfNode::point_collides( const Vector3d & pt, Vector3d & at, Vector3d & depth ) const
+{
+	const bool pt_inside = point_inside( pt );
+	if (!pt_inside)
+		return false;
+	const bool has_children = hasChildren();
+	if ( !has_children )
+	{
+		if ( !on_or_below_surface )
+			return false;
+		const float d = distance_for_this_node( pt, depth );
+		if ( d <= 0.0 )
+			return false;
+		at = pt - (depth * 0.5);
+		return true;
+	}
+
+	for ( int i=0; i<8; i++ )
+	{
+		const int ch_index = children[i];
+		const NarrowTreeSdfNode & child_node = tree->nodes_sdf_.ptr()[ch_index];
+		const bool collides = child_node.point_collides( pt, at, depth );
+		if ( collides )
+			return true;
+	}
+
+	return false;
+}
+
 
 void NarrowTreeSdfNode::reset_distances()
 {
@@ -490,7 +519,7 @@ Float NarrowTreeSdfNode::distance_for_this_node( const Vector3d & r, Vector3d & 
 		return -d;
 	}
 
-	return d + EPS;
+	return -d;
 }
 
 /*Float NarrowTreeSdfNode::distance_for_this_node( const Vector3d & r, Vector3d & disp ) const

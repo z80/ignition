@@ -297,8 +297,9 @@ void NarrowTree::intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<
     CollisionObjectType tp = b->type();
     if ( tp == ObjectSdfMesh )
     {
-        NarrowTree * tree = dynamic_cast<NarrowTree *>( b );
-        intersect_sdf( tree, ats, depths );
+        NarrowTree * tree_b = dynamic_cast<NarrowTree *>( b );
+        //intersect_sdf( tree_b, ats, depths );
+		intersect_brute_force( tree_b, ats, depths );
     }
 }
 
@@ -316,6 +317,43 @@ bool NarrowTree::intersect_sdf( NarrowTree * tree, Vector<Vector3d> & pts, Vecto
     const bool ret = root_sdf.collide_forward( se3_rel, root_pts, pts, depths );
 
     return ret;
+}
+
+bool NarrowTree::intersect_brute_force( NarrowTree * tree_b, Vector<Vector3d> & pts, Vector<Vector3d> & depths )const
+{
+	if ( nodes_sdf_.empty() )
+		return false;
+
+	const NarrowTreeSdfNode & root = nodes_sdf_.ptr()[0];
+
+	const Pose pose_a = pose_w();
+	const Pose pose_b = tree_b->pose_w();
+	const Pose pose_rel = pose_b / pose_a;
+	const int pts_qty_b = tree_b->pts_.size();
+	bool ret = false;
+	for ( int i=0; i<pts_qty_b; i++ )
+	{
+		const Vector3d & pt_local = tree_b->pts_.ptr()[i];
+		// Convert to current tree's ref frame.
+		const Vector3d pt_rel = pose_rel.r + (pose_rel.q * pt_local);
+		Vector3d at;
+		Vector3d depth;
+		const bool collides = root.point_collides( pt_rel, at, depth );
+		if ( collides )
+		{
+			const Float d = depth.Length();
+			print_line( String( "depth: " ) + rtos( d ) );
+
+			depth = -depth;
+			at = pose_a.r + (pose_a.q * at);
+			depth = pose_a.q * depth;
+			pts.push_back( at );
+			depths.push_back( depth );
+		}
+		ret = ret || collides;
+	}
+
+	return ret;
 }
 
 
