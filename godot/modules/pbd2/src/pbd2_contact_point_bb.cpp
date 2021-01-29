@@ -79,7 +79,7 @@ void ContactPointBb::solve_normal( RigidBody * body_a, RigidBody * body_b, Float
 		const Pose & pose = body_a->pose;
 		const Vector3d r_world = pose.q * r_a;
 		const Vector3d r_x_d = r_world.CrossProduct( d );
-		const Vector3d rot_2 = inv_I * r_x_d * 0.5;
+		const Vector3d rot_2 = inv_I * r_x_d * 0.45;
 		Quaterniond dq( 0.0, rot_2.x_, rot_2.y_, rot_2.z_ );
 		dq = dq * pose.q;
 		Quaterniond q = pose.q;
@@ -102,7 +102,7 @@ void ContactPointBb::solve_normal( RigidBody * body_a, RigidBody * body_b, Float
 		const Matrix3d inv_I = body_b->inv_I();
 		const Vector3d r_world = pose.q * r_b;
 		const Vector3d r_x_d = r_world.CrossProduct( d );
-		const Vector3d rot_2 = inv_I * r_x_d * 0.5;
+		const Vector3d rot_2 = inv_I * r_x_d * 0.45;
 		Quaterniond dq( 0.0, rot_2.x_, rot_2.y_, rot_2.z_ );
 		dq = dq * pose.q;
 		Quaterniond q = pose.q;

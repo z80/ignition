@@ -333,7 +333,7 @@ void collision_box_box( CollisionBox * obj_a, CollisionBox * obj_b, Vector<Vecto
 			if ( intersections_qty >= 2 )
 				break;
 		}
-		// At this point "a"-"b" is inside the cube.
+		
 		// Search for the shortest common perpendicular.
 		int last_closest_edge_ind = -1;
 		Vector3d min_va, min_vb;
@@ -357,7 +357,7 @@ void collision_box_box( CollisionBox * obj_a, CollisionBox * obj_b, Vector<Vecto
 				const bool ok = common_perp( a.v, b.v, b1.v, b2.v, pa, pb );
 				if ( !ok )
 					continue;
-				// Point on the edge should be below face surface.
+				// Point "pb" which is on "b1"-"b2" should be inside of box_a.
 				const bool inside_a = box_a.inside_const( pb );
 				if ( !inside_a )
 					continue;
@@ -393,7 +393,7 @@ void collision_box_box( CollisionBox * obj_a, CollisionBox * obj_b, Vector<Vecto
 				if ( d > 0.1 )
 				{
 					Vector<Vector3d> ats2, depths2;
-					collision_box_box( obj_a, obj_b, ats2, depths2 );
+					//collision_box_box( obj_a, obj_b, ats2, depths2 );
 				}
 			}
 		}
