@@ -31,6 +31,8 @@ const ContactPointBb & ContactPointBb::operator=( const ContactPointBb & inst )
     {
         r_a      = inst.r_a;
         r_b      = inst.r_b;
+		pose_a   = inst.pose_a;
+		pose_b   = inst.pose_b;
         n_world  = inst.n_world;
         depth    = inst.depth;
 
@@ -79,7 +81,7 @@ void ContactPointBb::solve_normal( RigidBody * body_a, RigidBody * body_b, Float
 		const Pose & pose = body_a->pose;
 		const Vector3d r_world = pose.q * r_a;
 		const Vector3d r_x_d = r_world.CrossProduct( d );
-		const Vector3d rot_2 = inv_I * r_x_d * 0.45;
+		const Vector3d rot_2 = inv_I * r_x_d * 0.5;
 		Quaterniond dq( 0.0, rot_2.x_, rot_2.y_, rot_2.z_ );
 		dq = dq * pose.q;
 		Quaterniond q = pose.q;
@@ -102,7 +104,7 @@ void ContactPointBb::solve_normal( RigidBody * body_a, RigidBody * body_b, Float
 		const Matrix3d inv_I = body_b->inv_I();
 		const Vector3d r_world = pose.q * r_b;
 		const Vector3d r_x_d = r_world.CrossProduct( d );
-		const Vector3d rot_2 = inv_I * r_x_d * 0.45;
+		const Vector3d rot_2 = inv_I * r_x_d * 0.5;
 		Quaterniond dq( 0.0, rot_2.x_, rot_2.y_, rot_2.z_ );
 		dq = dq * pose.q;
 		Quaterniond q = pose.q;
@@ -238,7 +240,7 @@ void ContactPointBb::solve_dynamic_friction( RigidBody * body_a, RigidBody * bod
     Float lin_damp = damping_linear * h;
     if (lin_damp > 1.0)
         lin_damp = 1.0;
-    dv += v_t * lin_damp;
+    dv -= v_t * lin_damp;
 
     // Restitution
     // The same projection just before the contact has been processed.
@@ -299,6 +301,19 @@ void ContactPointBb::solve_dynamic_friction( RigidBody * body_a, RigidBody * bod
         const Vector3d dw = body_b->omega * ang_damp;
         body_b->omega -= dw;
     }
+}
+
+Float ContactPointBb::current_depth() const
+{
+	const Pose & pose_a_new = body_a->pose;
+	const Pose & pose_b_new = body_b->pose;
+	const Vector3d dr_a = (pose_a_new.q * r_a) - (pose_a.q * r_a) + pose_a_new.r - pose_a.r;
+	const Vector3d dr_b = (pose_b_new.q * r_b) - (pose_b.q * r_b) + pose_b_new.r - pose_b.r;
+	// Project onto normal.
+	const Float da = n_world.DotProduct( dr_a );
+	const Float db = n_world.DotProduct( dr_b );
+	const Float d = depth + da - db;
+	return d;
 }
 
 
