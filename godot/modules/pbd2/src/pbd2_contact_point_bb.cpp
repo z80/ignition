@@ -246,10 +246,10 @@ void ContactPointBb::solve_dynamic_friction( RigidBody * body_a, RigidBody * bod
     const Vector3d vel_b = body_b->orig_vel + body_b->omega.CrossProduct( body_b->orig_pose.q * this->r_b );
     Float v_w_n_prev = this->n_world.DotProduct(vel_a - vel_b);
     const Float restitution = (body_a->restitution + body_b->restitution) * 0.5;
-    v_w_n_prev = v_w_n_prev * restitution;
     if (v_w_n_prev > 0.0)
         v_w_n_prev = 0.0;
-    dv += this->n_world * ( v_w_n_prev - v_w_n );
+    //dv += this->n_world * ( v_w_n_prev - v_w_n * restitution );
+	dv += -this->n_world * ( v_w_n_prev + v_w_n_prev * restitution );
 
     // Applying "dv".
     const Float abs_dv = dv.Length();
@@ -264,7 +264,7 @@ void ContactPointBb::solve_dynamic_friction( RigidBody * body_a, RigidBody * bod
             if ( body_a->mass > 0.0 )
             {
                 const Float m = body_a->mass;
-                body_a->vel += p / m;
+                body_a->vel = body_a->orig_vel + (p / m);
 
                 const Matrix3d inv_I = body_a->inv_I();
                 const Vector3d r_w = body_a->pose.q * this->r_a;
@@ -273,7 +273,7 @@ void ContactPointBb::solve_dynamic_friction( RigidBody * body_a, RigidBody * bod
             if ( body_b->mass > 0.0 )
             {
                 const Float m = body_b->mass;
-                body_b->vel -= p / m;
+                body_b->vel = body_b->orig_vel - (p / m);
 
                 const Matrix3d inv_I = body_b->inv_I();
                 const Vector3d r_w = body_b->pose.q * this->r_b;
