@@ -295,16 +295,22 @@ bool Box::inside( BoxVertex & v ) const
 
 bool Box::inside_const( const BoxVertex & v ) const
 {
-    for ( int i=0; i<6; i++ )
-    {
-        const BoxFace & f = faces[i];
-        const Float nd = f.n.DotProduct( v.v - f.center );
-        if ( nd > -EPS )
-            return false;
-    }
-
-    return true;
+    return inside_const( v.v );
 }
+
+bool Box::inside_const( const Vector3d & v ) const
+{
+	for ( int i=0; i<6; i++ )
+	{
+		const BoxFace & f = faces[i];
+		const Float nd = f.n.DotProduct( v - f.center );
+		if ( nd > -EPS )
+			return false;
+	}
+
+	return true;
+}
+
 
 bool Box::intersects( const Box & b ) const
 {

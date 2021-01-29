@@ -52,7 +52,8 @@ struct Box
     void apply( const Pose & pose );
     bool inside( BoxVertex & v ) const;
     bool inside_const( const BoxVertex & v ) const;
-    bool intersects( const Box & b ) const;
+	bool inside_const( const Vector3d & v ) const;
+	bool intersects( const Box & b ) const;
 
 	static const int vert_inds[12][2];
 };

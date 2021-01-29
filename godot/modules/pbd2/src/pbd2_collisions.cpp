@@ -358,8 +358,8 @@ void collision_box_box( CollisionBox * obj_a, CollisionBox * obj_b, Vector<Vecto
 				if ( !ok )
 					continue;
 				// Point on the edge should be below face surface.
-				const Float d = f.n.DotProduct(pa - f.center);
-				if ( d > -EPS )
+				const bool inside_a = box_a.inside_const( pb );
+				if ( !inside_a )
 					continue;
 				// Looking for the smallest one.
 				const Float len = (pb - pa).LengthSquared();
@@ -392,8 +392,8 @@ void collision_box_box( CollisionBox * obj_a, CollisionBox * obj_b, Vector<Vecto
 				const Float d = depth.Length();
 				if ( d > 0.1 )
 				{
-					//Vector<Vector3d> ats2, depths2;
-					//collision_box_box( obj_a, obj_b, ats2, depths2 );
+					Vector<Vector3d> ats2, depths2;
+					collision_box_box( obj_a, obj_b, ats2, depths2 );
 				}
 			}
 		}
