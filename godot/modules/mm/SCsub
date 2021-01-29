@@ -19,7 +19,6 @@ use_shared_libs = ARGUMENTS.get('slicer_shared', 'no') == 'yes'
 module_env = env.Clone()
 module_env.Append(CXXFLAGS=['-std=c++11'])
 
-
 # Build the plugin statically for more reliable builds
 def configure_static_build():
     #module_env.Append(CCFLAGS=['-O2'])
@@ -27,18 +26,20 @@ def configure_static_build():
     module_env.Append(CPPPATH=["#modules/mm/src"])
     module_env.add_source_files( env.modules_sources, "src/*.cpp" )
 
-    module_env.Append(CPPPATH=["#modules/mm/openvr/headers"])
-    module_env.Append(CPPPATH=["#modules/mm/openvr/src"])
-    module_env.Append(CPPPATH=["#modules/mm/openvr/src/vrcommon"])
-    module_env.Append(CPPPATH=["#modules/mm/openvr_capture"])
-    module_env.add_source_files( env.modules_sources, "openvr/src/*.cpp" )
-    module_env.add_source_files( env.modules_sources, "openvr/src/vrcommon/*.cpp" )
-    module_env.add_source_files( env.modules_sources, "openvr_capture/*.cpp" )
+    if env['PLATFORM'] == 'win32':
+        module_env.Append(CPPPATH=["#modules/mm/openvr/headers"])
+        module_env.Append(CPPPATH=["#modules/mm/openvr/src"])
+        module_env.Append(CPPPATH=["#modules/mm/openvr/src/vrcommon"])
+        module_env.Append(CPPPATH=["#modules/mm/openvr_capture"])
+        module_env.add_source_files( env.modules_sources, "openvr/src/*.cpp" )
+        module_env.add_source_files( env.modules_sources, "openvr/src/vrcommon/*.cpp" )
+        module_env.add_source_files( env.modules_sources, "openvr_capture/*.cpp" )
+        module_env.Append(CPPDEFINES=['OPENVR_BUILD_STATIC'])
+        module_env.Append(CPPDEFINES=['VR_API_PUBLIC'])
+
     # To also add "register_types.h"
     module_env.add_source_files(env.modules_sources, "*.cpp")
 
-    module_env.Append(CPPDEFINES=['OPENVR_BUILD_STATIC'])
-    module_env.Append(CPPDEFINES=['VR_API_PUBLIC'])
 
     #dict = env.Dictionary()
     #keys = dict.keys()
