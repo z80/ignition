@@ -249,7 +249,7 @@ void ContactPointBb::solve_dynamic_friction( RigidBody * body_a, RigidBody * bod
     if (v_w_n_prev > 0.0)
         v_w_n_prev = 0.0;
     //dv += this->n_world * ( v_w_n_prev - v_w_n * restitution );
-	dv += -this->n_world * ( v_w_n_prev + v_w_n_prev * restitution );
+	dv += -this->n_world * ( v_w_n + v_w_n_prev * restitution );
 
     // Applying "dv".
     const Float abs_dv = dv.Length();
@@ -264,7 +264,7 @@ void ContactPointBb::solve_dynamic_friction( RigidBody * body_a, RigidBody * bod
             if ( body_a->mass > 0.0 )
             {
                 const Float m = body_a->mass;
-                body_a->vel = body_a->orig_vel + (p / m);
+                body_a->vel += (p / m);
 
                 const Matrix3d inv_I = body_a->inv_I();
                 const Vector3d r_w = body_a->pose.q * this->r_a;
@@ -273,7 +273,7 @@ void ContactPointBb::solve_dynamic_friction( RigidBody * body_a, RigidBody * bod
             if ( body_b->mass > 0.0 )
             {
                 const Float m = body_b->mass;
-                body_b->vel = body_b->orig_vel - (p / m);
+                body_b->vel -= (p / m);
 
                 const Matrix3d inv_I = body_b->inv_I();
                 const Vector3d r_w = body_b->pose.q * this->r_b;

@@ -35,12 +35,12 @@ const RigidBody & RigidBody::operator=( const RigidBody & inst )
 {
     if ( this != &inst )
     {
-        pose      = inst.pose;
-        prev_pose = inst.prev_pose;
-        orig_pose = inst.orig_pose;
-        vel       = inst.vel;
-		orig_vel  = inst.orig_vel;
-        omega     = inst.omega;
+        pose       = inst.pose;
+        prev_pose  = inst.prev_pose;
+        orig_pose  = inst.orig_pose;
+        vel        = inst.vel;
+		orig_vel   = inst.orig_vel;
+        omega      = inst.omega;
 
         mass        = inst.mass;
         inertia     = inst.inertia;
