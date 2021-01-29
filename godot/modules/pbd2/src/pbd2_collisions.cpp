@@ -357,10 +357,6 @@ void collision_box_box( CollisionBox * obj_a, CollisionBox * obj_b, Vector<Vecto
 				const bool ok = common_perp( a.v, b.v, b1.v, b2.v, pa, pb );
 				if ( !ok )
 					continue;
-				// Point "pb" which is on "b1"-"b2" should be inside of box_a.
-				const bool inside_a = box_a.inside_const( pb );
-				if ( !inside_a )
-					continue;
 				// Looking for the smallest one.
 				const Float len = (pb - pa).LengthSquared();
 				if ( (!closest_edge_found) || (len < min_d2) )
@@ -376,6 +372,10 @@ void collision_box_box( CollisionBox * obj_a, CollisionBox * obj_b, Vector<Vecto
 
 		if ( closest_edge_found )
 		{
+			// Point "pb" which is on "b1"-"b2" should be inside of box_a.
+			const bool inside_a = box_a.inside_const( min_vb );
+			if ( !inside_a )
+				continue;
 			// Add position and depth.
 			// For "a" depth is towards edge "b".
 			const Vector3d at = (min_va + min_vb) * 0.5;
