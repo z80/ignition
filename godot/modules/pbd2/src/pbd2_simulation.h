@@ -50,6 +50,9 @@ public:
     static bool solve_tangential( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h );
     static bool solve_dynamic_friction( Simulation * sim, int base_ind, int qty, Float h );
     static bool specific_mass_pos( bool is_a, RigidBody * body, const Vector<ContactPointBb> & pts, Float & w );
+
+	static bool solve_simple_all( Vector<ContactPointBb> & pts, Float h );
+	static bool solve_dynamic_friction_simple_all( Vector<ContactPointBb> & pts, Float h );
 };
 
 

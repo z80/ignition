@@ -53,6 +53,7 @@ public:
     void intersecting_pairs( int ind );
     bool select_for_one( RigidBody * body, CollisionObject * co, Float h, Vector<int> & inds );
     void remove_duplicates( Vector<int> & inds );
+	void remove_spatial_duplicates( Vector<ContactPointBb> & pts );
 
     CollisionObject * collision_object( int ind );
 

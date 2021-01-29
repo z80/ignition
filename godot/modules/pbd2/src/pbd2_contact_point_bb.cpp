@@ -52,6 +52,71 @@ void ContactPointBb::init_lambdas()
     lambda_tangential = 0.0;
 }
 
+void ContactPointBb::solve_normal( RigidBody * body_a, RigidBody * body_b, Float h )
+{
+	const Float w_a = body_a->specific_inv_mass_pos( r_a, n_world );
+	const Float w_b = body_b->specific_inv_mass_pos( r_b, n_world );
+
+	const Float w_both = w_a + w_b;
+
+	const Float compliance_a = body_a->compliance_normal;
+	const Float compliance_b = body_b->compliance_normal;
+	const Float compliance_normal = (compliance_a + compliance_b) / 2.0;
+
+	const Float alpha_ = compliance_normal / (h*h);
+	const Float lambda = lambda_normal;
+	const Float d_lambda = (depth + alpha_*lambda) / (w_both + alpha_);
+	lambda_normal += d_lambda;
+
+	const Vector3d d = d_lambda * n_world;
+
+	// Body "a".
+	// Plus for body "a".
+	if ( body_a->mass > 0.0 )
+	{
+		const Vector3d dr = d / body_a->mass;
+		const Matrix3d inv_I = body_a->inv_I();
+		const Pose & pose = body_a->pose;
+		const Vector3d r_world = pose.q * r_a;
+		const Vector3d r_x_d = r_world.CrossProduct( d );
+		const Vector3d rot_2 = inv_I * r_x_d * 0.5;
+		Quaterniond dq( 0.0, rot_2.x_, rot_2.y_, rot_2.z_ );
+		dq = dq * pose.q;
+		Quaterniond q = pose.q;
+		q.w_ += dq.w_;
+		q.x_ += dq.x_;
+		q.y_ += dq.y_;
+		q.z_ += dq.z_;
+		q.Normalize();
+
+		body_a->pose.r += dr;
+		body_a->pose.q  = q;
+	}
+
+	// Body "b".
+	// And minus for body "b".
+	if ( body_b->mass > 0.0 )
+	{
+		const Vector3d dr = d / body_b->mass;
+		const Pose & pose = body_b->pose;
+		const Matrix3d inv_I = body_b->inv_I();
+		const Vector3d r_world = pose.q * r_b;
+		const Vector3d r_x_d = r_world.CrossProduct( d );
+		const Vector3d rot_2 = inv_I * r_x_d * 0.5;
+		Quaterniond dq( 0.0, rot_2.x_, rot_2.y_, rot_2.z_ );
+		dq = dq * pose.q;
+		Quaterniond q = pose.q;
+		q.w_ -= dq.w_;
+		q.x_ -= dq.x_;
+		q.y_ -= dq.y_;
+		q.z_ -= dq.z_;
+		q.Normalize();
+
+		body_b->pose.r -= dr;
+		body_b->pose.q  = q;
+	}
+}
+
 void ContactPointBb::solve_tangential( RigidBody * body_a, RigidBody * body_b, Float h )
 {
     //Vector3d d = r_world_prev - r_world;

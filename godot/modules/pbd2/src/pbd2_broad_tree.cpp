@@ -10,6 +10,7 @@ namespace Pbd
 {
 
 static const Float EPS = 0.0001;
+static const Float MIN_CONTACT_DIST = 0.001;
 
 BroadTree::BroadTree()
     : simulation( nullptr )
@@ -403,6 +404,54 @@ void BroadTree::remove_duplicates( Vector<int> & inds )
         }
     }
     inds.resize( qty - removed_qty );
+}
+
+void BroadTree::remove_spatial_duplicates( Vector<ContactPointBb> & pts )
+{
+	const int qty = pts.size();
+	if ( qty < 1 )
+		return;
+
+	// Removing points which are too close.
+	// It usually means "a" collided with "b",
+	// "b" collided with "a" and it is actually one and the same point.
+
+	int removed_qty = 0;
+	for ( int i=0; i<(qty-removed_qty-1); i++ )
+	{
+		const ContactPointBb pa = pts.ptr()[i];
+		bool do_again = true;
+		while ( do_again )
+		{
+			do_again = false;
+			for ( int j=(i+1); j<(qty-removed_qty); j++ )
+			{
+				const ContactPointBb & pb = pts.ptr()[j];
+				// Check if it is for the same pair of bodies.
+				const bool same_bodies_straight = ( pa.body_a == pb.body_a ) && (pa.body_b == pb.body_b);
+				const bool same_bodies_cross = ( pa.body_a == pb.body_b ) && (pa.body_b == pb.body_a);
+				const bool same_bodies = same_bodies_straight || same_bodies_cross;
+				// Measure distance. Let it be on body "a"
+				bool remove = false;
+				if ( !same_bodies )
+					continue;
+				const Vector3d dr = same_bodies_straight ? (pa.r_a - pb.r_a) : (pa.r_a - pb.r_b);
+				const Float dist = dr.Length();
+				if ( dist < MIN_CONTACT_DIST )
+				{
+					// Swap with the last one and increment "removed_qty".
+					const int last_ind = qty - removed_qty - 1;
+					const ContactPointBb last = pts.ptr()[last_ind];
+					pts.ptrw()[last_ind] = pb;
+					pts.ptrw()[j] = last;
+					removed_qty += 1;
+					do_again = true;
+					break;
+				}
+			}
+		}
+	}
+	pts.resize( qty - removed_qty );
 }
 
 CollisionObject * BroadTree::collision_object( int ind )

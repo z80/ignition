@@ -111,7 +111,28 @@ void Simulation::step()
 
     // Solve for normal collisions body with another body.
     tree.subdivide( this, h );
-    for ( int i=0; i<bodies_qty; i++ )
+	for ( int i=0; i<bodies_qty; i++ )
+	{
+		RigidBody * body_a = bodies.ptrw()[i];
+		// Collide with other bodies.
+		// List of potentially colliding pairs.
+		// Not using contact reference here because points are to be modified modified (lambdas are modified during interations).
+		// Returned contacts are for a single pair of objects.
+		contacts = tree.find_contact_points( body_a, h );
+		const int qty = contacts.size();
+		for ( int j=0; j<qty; j++ )
+		{
+			const ContactPointBb & pt = contacts.ptr()[j];
+			contacts_all.push_back( pt );
+		}
+	}
+	// Remove duplicate contact points.
+	tree.remove_spatial_duplicates( contacts_all );
+	// Process contacts.
+	const int contacts_qty = contacts_all.size();
+	solve_simple_all( contacts_all, h );
+
+    /*for ( int i=0; i<bodies_qty; i++ )
     {
         RigidBody * body_a = bodies.ptrw()[i];
         // Collide with other bodies.
@@ -123,15 +144,12 @@ void Simulation::step()
             continue;
         ContactPointBb & pt = contacts.ptrw()[0];
         RigidBody * body_b = pt.body_b;
-        for ( int j=0; j<solver_iterations; j++ )
-        {
-            solve_normal( body_a, body_b, contacts, h );
-            solve_tangential( body_a, body_b, contacts, h );
-		}
+        solve_normal( body_a, body_b, contacts, h );
+        solve_tangential( body_a, body_b, contacts, h );
         // Store contacts for future use in "solve_dynamic_friction".
         // Storing after as lambdas are modified.
         store_contacts( this, contacts );
-    }
+    }*/
 
     // Update velocities.
     for ( int i=0; i<bodies_qty; i++ )
@@ -140,8 +158,10 @@ void Simulation::step()
         body->update_velocities( h );
     }
 
+	solve_dynamic_friction_simple_all( contacts_all, h );
+
     // Update contact velocities.
-    const int groups_qty = contacts_all_qtys.size();
+    /*const int groups_qty = contacts_all_qtys.size();
     int group_base_ind = 0;
     for ( int group_ind=0; group_ind<groups_qty; group_ind++ )
     {
@@ -150,7 +170,7 @@ void Simulation::step()
         solve_dynamic_friction( this, group_base_ind, qty, h );
 
         group_base_ind += qty;
-    }
+    }*/
 
 
 
@@ -235,7 +255,7 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<Co
     const Float compliance_b = body_b->compliance_normal;
     const Float compliance_normal = (compliance_a + compliance_b) / 2.0;
 
-    Vector3d d_accum     = Vector3d::ZERO;
+    Vector3d d_accum       = Vector3d::ZERO;
     Vector3d r_x_d_accum_a = Vector3d::ZERO;
     Vector3d r_x_d_accum_b = Vector3d::ZERO;
  
@@ -268,12 +288,9 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<Co
     // Plus for body "a".
     if ( body_a->mass > 0.0 )
     {
-                body_a->orig_pose = body_a->pose;
-                body_a->orig_vel  = body_a->vel;
-
         const Vector3d dr = d_accum / body_a->mass;
         const Matrix3d inv_I = body_a->inv_I();
-        const Vector3d rot = inv_I * r_x_d_accum_a;
+        const Vector3d rot = inv_I * r_x_d_accum_a * 0.5;
         Quaterniond dq( 0.0, rot.x_, rot.y_, rot.z_ );
         const Pose pose = body_a->pose;
         dq = dq * pose.q;
@@ -292,12 +309,9 @@ bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<Co
     // And minus for body "b".
     if ( body_b->mass > 0.0 )
     {
-        body_b->orig_pose = body_b->pose;
-        body_b->orig_vel  = body_b->orig_vel;
-
         const Vector3d dr = d_accum / body_b->mass;
         const Matrix3d inv_I = body_b->inv_I();
-        const Vector3d rot = inv_I * r_x_d_accum_b;
+        const Vector3d rot = inv_I * r_x_d_accum_b * 0.5;
         Quaterniond dq( 0.0, rot.x_, rot.y_, rot.z_ );
         const Pose pose = body_b->pose;
         dq = dq * pose.q;
@@ -368,6 +382,33 @@ bool Simulation::specific_mass_pos( bool is_a, RigidBody * body, const Vector<Co
     return true;
 }
 
+
+bool Simulation::solve_simple_all( Vector<ContactPointBb> & pts, Float h )
+{
+	const int qty = pts.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		ContactPointBb & pt = pts.ptrw()[i];
+		RigidBody * body_a = pt.body_a;
+		RigidBody * body_b = pt.body_b;
+		pt.solve_normal( body_a, body_b, h );
+		pt.solve_tangential( body_a, body_b, h );
+	}
+	return true;
+}
+
+bool Simulation::solve_dynamic_friction_simple_all( Vector<ContactPointBb> & pts, Float h )
+{
+	const int qty = pts.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		ContactPointBb & pt = pts.ptrw()[i];
+		RigidBody * body_a = pt.body_a;
+		RigidBody * body_b = pt.body_b;
+		pt.solve_dynamic_friction( body_a, body_b, h );
+	}
+	return true;
+}
 
 
 }

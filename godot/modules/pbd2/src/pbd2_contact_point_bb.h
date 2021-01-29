@@ -20,7 +20,8 @@ public:
     const ContactPointBb & operator=( const ContactPointBb & inst );
     
     void init_lambdas();
-    void solve_tangential( RigidBody * body_a, RigidBody * body_b, Float h );
+	void solve_normal( RigidBody * body_a, RigidBody * body_b, Float h );
+	void solve_tangential( RigidBody * body_a, RigidBody * body_b, Float h );
     void solve_dynamic_friction( RigidBody * body_a, RigidBody * body_b, Float h );
 
     // Point position in body ref. frame.

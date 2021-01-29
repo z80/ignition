@@ -111,6 +111,10 @@ void RigidBody::integrate_dynamics( Float h )
     pose.q.y_ += dq.y_;
     pose.q.z_ += dq.z_;
     pose.q.Normalize();
+
+	// Store these for solving tangential case.
+	orig_pose = pose;
+	orig_vel  = vel;
 }
 
 void RigidBody::update_velocities( Float h )
