@@ -393,20 +393,13 @@ void Simulation::store_body_states( Vector<RigidBody *> & bodies )
 void Simulation::solve_simple_all( Vector<ContactPointBb> & pts, Float h )
 {
 	const int qty = pts.size();
-	//for ( int iter=0; iter<solver_iterations; iter++ )
+	for ( int i=0; i<qty; i++ )
 	{
-		for ( int i=0; i<qty; i++ )
-		{
-			ContactPointBb & pt = pts.ptrw()[i];
-			RigidBody * body_a = pt.body_a;
-			RigidBody * body_b = pt.body_b;
-			//const Float depth_now = pt.current_depth();
-			//if ( depth_now > 0.0 )
-			{
-				pt.solve_normal( body_a, body_b, h );
-				pt.solve_tangential( body_a, body_b, h );
-			}
-		}
+		ContactPointBb & pt = pts.ptrw()[i];
+		RigidBody * body_a = pt.body_a;
+		RigidBody * body_b = pt.body_b;
+		pt.solve_normal( body_a, body_b, h );
+		pt.solve_tangential( body_a, body_b, h );
 	}
 }
 

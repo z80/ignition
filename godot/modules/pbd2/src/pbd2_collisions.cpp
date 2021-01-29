@@ -8,8 +8,6 @@
 
 #include "core/print_string.h"
 
-#include "pbd2_rigid_body.h"
-
 
 namespace Pbd
 {
@@ -248,7 +246,7 @@ void collision_box_plane( CollisionBox * obj_a, CollisionPlane * obj_b, Vector<V
     }
 }
 
-void collision_box_box( CollisionBox * obj_a_, CollisionBox * obj_b_, Vector<Vector3d> & ats, Vector<Vector3d> & depths )
+void collision_box_box( CollisionBox * obj_a, CollisionBox * obj_b, Vector<Vector3d> & ats, Vector<Vector3d> & depths )
 {
     // Ok. Box A is converted to box B ref. frame.
     // Vertices of box A are tested if they are inside of box B.
@@ -261,9 +259,6 @@ void collision_box_box( CollisionBox * obj_a_, CollisionBox * obj_b_, Vector<Vec
     // If not smaller that iti s also added to toe intersections list.
     // Also, box need to be intersected symmetrically a->b and b->a. It naturally happens 
     // in collision processing loop.
-	CollisionBox * obj_a = (obj_a_->rigid_body->mass > 0.0) ? obj_a_ : obj_b_;
-	CollisionBox * obj_b = (obj_a_->rigid_body->mass > 0.0) ? obj_b_ : obj_a_;
-
     const Pose pose_a   = obj_a->pose_w();
     const Pose pose_b = obj_b->pose_w();
     const Pose pose_rel = pose_a / pose_b;
@@ -392,13 +387,7 @@ void collision_box_box( CollisionBox * obj_a_, CollisionBox * obj_b_, Vector<Vec
 			depths.push_back( depth_w );
 
 			{
-				print_line( String("edge-edge depth: " ) + rtos( depth.Length() ) +
-				            String("             pose: q(") + rtos(pose_a.q.w_) + String(",") +
-								rtos(pose_a.q.x_) + String(",") +
-								rtos(pose_a.q.y_) + String(",") +
-								rtos(pose_a.q.z_) + String(", r(") + rtos(pose_a.r.x_) +
-								String(", ") + rtos(pose_a.r.x_) +
-								String(", ") + rtos(pose_a.r.x_) + String(")") );
+				print_line( String("edge-edge depth: " ) + rtos( depth.Length() ) );
 
 				const Float d = depth.Length();
 				if ( d > 0.1 )
