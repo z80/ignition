@@ -26,7 +26,13 @@ public:
 	int  get_broad_phase_max_depth() const;
     
     void set_time_step( Float h );
+	Float get_time_step() const;
+
     void set_solver_iterations( int qty );
+	int get_solver_iterations() const;
+
+	void set_contact_erp( Float k );
+	Float get_contact_erp() const;
 
     void step( Float delta );
     void step();
@@ -37,6 +43,7 @@ public:
 
     Float h, time_remainder;
     int solver_iterations;
+	Float contact_erp;
     Vector<RigidBody *> bodies;
     Vector<Joint *>     joints;
     BroadTree           tree;
@@ -44,7 +51,7 @@ public:
     Vector<ContactPointBb> contacts_all;
     Vector<int>            contacts_all_qtys;
 
-    //int step_number;
+    int step_number;
 
     static bool solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h );
     static void solve_tangential( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h );
@@ -52,7 +59,7 @@ public:
     static bool specific_mass_pos( bool is_a, RigidBody * body, const Vector<ContactPointBb> & pts, Float & w );
 
 	static void store_body_states( Vector<RigidBody *> & bodies );
-	static void solve_simple_all( Vector<ContactPointBb> & pts, Float h );
+	static void solve_simple_all( Vector<ContactPointBb> & pts, Float contact_erp, Float h );
 	static void solve_dynamic_friction_simple_all( Vector<ContactPointBb> & pts, Float h );
 };
 

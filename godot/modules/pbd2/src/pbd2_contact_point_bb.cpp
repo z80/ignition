@@ -52,7 +52,7 @@ void ContactPointBb::init_lambdas()
     lambda_tangential = 0.0;
 }
 
-void ContactPointBb::solve_normal( RigidBody * body_a, RigidBody * body_b, Float h )
+void ContactPointBb::solve_normal( RigidBody * body_a, RigidBody * body_b, Float contact_erp, Float h )
 {
 	const Float w_a = body_a->specific_inv_mass_pos( r_a, n_world );
 	const Float w_b = body_b->specific_inv_mass_pos( r_b, n_world );
@@ -65,7 +65,7 @@ void ContactPointBb::solve_normal( RigidBody * body_a, RigidBody * body_b, Float
 
 	const Float alpha_ = compliance_normal / (h*h);
 	const Float lambda = lambda_normal;
-	const Float d_lambda = (depth + alpha_*lambda) / (w_both + alpha_);
+	const Float d_lambda = (depth*contact_erp + alpha_*lambda) / (w_both + alpha_);
 	lambda_normal += d_lambda;
 
 	const Vector3d d = d_lambda * n_world;

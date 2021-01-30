@@ -381,6 +381,8 @@ void Box::collisions_with( const Box & box_b, Vector<Vector3d> & ats, Vector<Vec
 	// Process intersections with box "a".
 	{
 		const int face_ind = box_nearest_face( *this, edges_a_crossing_b, edges_b_crossing_a );
+		//if ( (face_ind != 5) && (face_ind != 4) )
+		//	int kkk = 5;
 		const BoxFace & f = this->faces[face_ind];
 		// Vertices "b" inside "a".
 		const int verts_qty = verts_b_inside_a.size();
@@ -392,6 +394,8 @@ void Box::collisions_with( const Box & box_b, Vector<Vector3d> & ats, Vector<Vec
 			const Float d = f.n.DotProduct( v.v - f.center );
 			// It should be towards "a".
 			const Vector3d depth = (d * f.n);
+			//if ( (depth.x_ != 0.0) || (depth.z_ != 0.0) )
+			//	int kkk = 0;
 			const Vector3d at = v.v + (depth * 0.5);
 			ats.push_back( at );
 			depths.push_back( depth );
@@ -405,6 +409,8 @@ void Box::collisions_with( const Box & box_b, Vector<Vector3d> & ats, Vector<Vec
 			const Float d = f.n.DotProduct( pt - f.center );
 			// It should be towards "a".
 			const Vector3d depth = (d * f.n);
+			//if ( (depth.x_ != 0.0) || (depth.z_ != 0.0) )
+			//	int kkk = 0;
 			const Vector3d at = pt + (depth * 0.5);
 			ats.push_back( at );
 			depths.push_back( depth );
@@ -413,6 +419,8 @@ void Box::collisions_with( const Box & box_b, Vector<Vector3d> & ats, Vector<Vec
 	// And now with "b".
 	{
 		const int face_ind = box_nearest_face( box_b, edges_a_crossing_b, edges_b_crossing_a );
+		//if ( (face_ind != 5) && (face_ind != 4) )
+		//	int kkk = 5;
 		const BoxFace & f = box_b.faces[face_ind];
 		// Vertices "a" inside "b".
 		const int verts_qty = verts_a_inside_b.size();
@@ -424,6 +432,8 @@ void Box::collisions_with( const Box & box_b, Vector<Vector3d> & ats, Vector<Vec
 			const Float d = f.n.DotProduct( v.v - f.center );
 			// It should be towards "a".
 			const Vector3d depth = -(d * f.n);
+			//if ( (depth.x_ != 0.0) || (depth.z_ != 0.0) )
+			//	int kkk = 0;
 			const Vector3d at = v.v - (depth * 0.5);
 			ats.push_back( at );
 			depths.push_back( depth );
@@ -437,6 +447,8 @@ void Box::collisions_with( const Box & box_b, Vector<Vector3d> & ats, Vector<Vec
 			const Float d = f.n.DotProduct( pt - f.center );
 			// It should be towards "a".
 			const Vector3d depth = -(d * f.n);
+			//if ( (depth.x_ != 0.0) || (depth.z_ != 0.0) )
+			//	int kkk = 0;
 			const Vector3d at = pt - (depth * 0.5);
 			ats.push_back( at );
 			depths.push_back( depth );

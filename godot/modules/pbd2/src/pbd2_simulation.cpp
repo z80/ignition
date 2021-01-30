@@ -30,9 +30,10 @@ Simulation::Simulation()
 {
     h = 0.01;
     solver_iterations = 3;
-    time_remainder = 0.0;
+    time_remainder    = 0.0;
+	contact_erp       = 1.0;
 
-    //step_number = 0;
+    step_number = 0;
 }
 
 Simulation::~Simulation()
@@ -54,9 +55,33 @@ void Simulation::set_time_step( Float h )
     this->h = h;
 }
 
+Float Simulation::get_time_step() const
+{
+	return h;
+}
+
 void Simulation::set_solver_iterations( int qty )
 {
     solver_iterations = qty;
+}
+
+int Simulation::get_solver_iterations() const
+{
+	return solver_iterations;
+}
+
+void Simulation::set_contact_erp( Float k )
+{
+	if ( k < 0.0 )
+		k = 0.0;
+	else if ( k > 1.0 )
+		k = 1.0;
+	contact_erp = k;
+}
+
+Float Simulation::get_contact_erp() const
+{
+	return contact_erp;
 }
 
 void Simulation::step( Float delta )
@@ -132,7 +157,7 @@ void Simulation::step()
 	store_body_states( bodies );
 	// Process contacts.
 	const int contacts_qty = contacts_all.size();
-	solve_simple_all( contacts_all, h );
+	solve_simple_all( contacts_all, contact_erp, h );
 
     /*for ( int i=0; i<bodies_qty; i++ )
     {
@@ -215,10 +240,10 @@ void Simulation::step()
 		}
 		if ( do_print )
 			print_line( stri );
-	}
+	}*/
 
 
-    step_number += 1;*/
+    step_number += 1;
 }
 
 void Simulation::clear()
@@ -390,7 +415,7 @@ void Simulation::store_body_states( Vector<RigidBody *> & bodies )
 	}
 }
 
-void Simulation::solve_simple_all( Vector<ContactPointBb> & pts, Float h )
+void Simulation::solve_simple_all( Vector<ContactPointBb> & pts, Float contact_erp, Float h )
 {
 	const int qty = pts.size();
 	for ( int i=0; i<qty; i++ )
@@ -398,7 +423,7 @@ void Simulation::solve_simple_all( Vector<ContactPointBb> & pts, Float h )
 		ContactPointBb & pt = pts.ptrw()[i];
 		RigidBody * body_a = pt.body_a;
 		RigidBody * body_b = pt.body_b;
-		pt.solve_normal( body_a, body_b, h );
+		pt.solve_normal( body_a, body_b, contact_erp, h );
 		pt.solve_tangential( body_a, body_b, h );
 	}
 }

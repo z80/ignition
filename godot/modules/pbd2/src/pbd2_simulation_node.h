@@ -25,6 +25,9 @@ public:
     void set_solver_iterations( int qty );
     int get_solver_iterations() const;
 
+	void set_contact_erp( real_t k );
+	real_t get_contact_erp() const;
+
     void step( real_t delta );
     void one_step();
 
