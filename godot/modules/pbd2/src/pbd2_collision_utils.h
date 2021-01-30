@@ -55,12 +55,32 @@ struct Box
 	bool inside_const( const Vector3d & v ) const;
 	bool intersects( const Box & b ) const;
 
+	void collisions_with( const Box & box_b, Vector<Vector3d> & ats, Vector<Vector3d> & depths );
+
+	// Auxilary containers for computing collision points.
+	Vector<int>      verts_a_inside_b;
+	Vector<Vector3d> edges_a_crossing_b;
+	Vector<int>      verts_b_inside_a;
+	Vector<Vector3d> edges_b_crossing_a;
+
+
 	static const int vert_inds[12][2];
+
+	static int all_box_intersections( const Box & box_a, const Box & box_b,
+		Vector<int> & verts_a_inside_b, 
+		Vector<Vector3d> & edges_a_crossing_b,
+		Vector<int> & verts_b_inside_a, 
+		Vector<Vector3d> & edges_b_crossing_a );
+
+	static int box_nearest_face( const Box & box, 
+		const Vector<Vector3d> & edges_a_crossing_b,
+		const Vector<Vector3d> & edges_b_crossing_a );
 };
 
 bool common_perp( const Vector3d & a1, const Vector3d & a2, const Vector3d & b1, const Vector3d & b2,
 	              Vector3d & at_a, Vector3d & at_b );
- 
+
+
 }
 
 
