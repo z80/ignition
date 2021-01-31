@@ -144,39 +144,23 @@ void Simulation::step()
 		// Not using contact reference here because points are to be modified modified (lambdas are modified during interations).
 		// Returned contacts are for a single pair of objects.
 		contacts = tree.find_contact_points( body_a, h );
+		const int contacts_qty = contacts.size();
+		for ( int j=0; j<contacts_qty; j++ )
+		{
+			ContactPointBb & pt = contacts.ptrw()[j];
+			RigidBody * body_a = pt.body_a;
+			RigidBody * body_b = pt.body_b;
+			body_a->orig_vel = body_a->vel;
+			body_b->orig_vel = body_b->vel;
+		}
+		solve_simple_all( contacts, contact_erp, h );
 		const int qty = contacts.size();
-		for ( int j=0; j<qty; j++ )
+		for ( int j=0; j<contacts_qty; j++ )
 		{
 			const ContactPointBb & pt = contacts.ptr()[j];
 			contacts_all.push_back( pt );
 		}
 	}
-	// Remove duplicate contact points.
-	tree.remove_spatial_duplicates( contacts_all );
-	// Store bosy states before contacts are processed.
-	store_body_states( bodies );
-	// Process contacts.
-	const int contacts_qty = contacts_all.size();
-	solve_simple_all( contacts_all, contact_erp, h );
-
-    /*for ( int i=0; i<bodies_qty; i++ )
-    {
-        RigidBody * body_a = bodies.ptrw()[i];
-        // Collide with other bodies.
-        // List of potentially colliding pairs.
-        // Not using contact reference here because points are to be modified modified (lambdas are modified during interations).
-        // Returned contacts are for a single pair of objects.
-        contacts = tree.find_contact_points( body_a, h );
-        if ( contacts.empty() )
-            continue;
-        ContactPointBb & pt = contacts.ptrw()[0];
-        RigidBody * body_b = pt.body_b;
-        solve_normal( body_a, body_b, contacts, h );
-        solve_tangential( body_a, body_b, contacts, h );
-        // Store contacts for future use in "solve_dynamic_friction".
-        // Storing after as lambdas are modified.
-        store_contacts( this, contacts );
-    }*/
 
     // Update velocities.
     for ( int i=0; i<bodies_qty; i++ )

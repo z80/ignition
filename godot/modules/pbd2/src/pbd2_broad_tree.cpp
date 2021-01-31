@@ -158,7 +158,6 @@ const Vector<ContactPointBb> & BroadTree::find_contact_points( RigidBody * body,
 
     // Intersect all contacts of requested body with all potential collision objects found.
     const int other_objects_qty = collision_object_inds_.size();
-    bool do_stop = false;
     for ( int i=0; i<body_objects_qty; i++ )
     {
         CollisionObject * body_object = objects.ptr()[i];
@@ -227,16 +226,12 @@ const Vector<ContactPointBb> & BroadTree::find_contact_points( RigidBody * body,
                     contacts_.push_back( pt );
                 }
             }
-            // Store number of contacts with one and the same collision object.
-            if ( contacts_qty > 0 )
-            {
-                do_stop = true;
-                break;
-            }
         }
-        if ( do_stop )
-            break;
     }
+
+	// Remove duplicate contact points.
+	remove_spatial_duplicates( contacts_ );
+
 
     return contacts_;
 }
