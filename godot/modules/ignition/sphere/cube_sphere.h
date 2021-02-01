@@ -17,6 +17,12 @@ class HeightSource;
 class CubeSphere
 {
 public:
+    struct Level
+    {
+        Float sz;
+        Float dist;
+    };
+
     Vector<CubeVertex>      verts;
     Vector<CubeQuadNode>    faces;
     HashMap<uint64_t, int>  lookup;
@@ -36,6 +42,11 @@ public:
     // Height in physicsl units.
     void set_h( const Float newH );
     Float h() const;
+    
+    // Subdivision levels.
+    // Units are in real distance units. I.e. not normalized.
+    void clear_levels();
+    void add_level( Float sz, Float dist );
 
 
     void subdivide( SubdivideSource * src );
@@ -65,9 +76,12 @@ public:
     // when returned.
     Float R_, H_;
     uint64_t hash_;
+    Vector<Level> levels_, levelsUnit_;
 
     Vector<SubdivideSource::SubdividePoint> ptsFlat_;
     Vector<int>                             faceInds_;
+
+    void sort_levels();
 };
 
 
