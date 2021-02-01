@@ -23,9 +23,10 @@ Joint::Joint()
     e2_b = Vector3d( 0.0, 1.0, 0.0 );
     e3_b = Vector3d( 0.0, 0.0, 1.0 );
 
-	compliance_joint = 0.0;
-	compliance_motor = 0.0;
-	motor            = false;
+	compliance_joint  = 0.0;
+	compliance_motor  = 0.0;
+	motor             = false;
+	ignore_collisions = true;
 
     body_a = nullptr;
     body_b = nullptr;
@@ -33,6 +34,16 @@ Joint::Joint()
 
 Joint::~Joint()
 {
+}
+
+void Joint::set_ignore_collisions( bool en )
+{
+	ignore_collisions = en;
+}
+
+bool Joint::get_ignore_collisions() const
+{
+	return ignore_collisions;
 }
 
 void Joint::orthogonalize()

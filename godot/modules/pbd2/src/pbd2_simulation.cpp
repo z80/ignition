@@ -99,6 +99,8 @@ void Simulation::step()
 {
     // Clear all contacts from previous simulation step.
     clear_contacts( this );
+	// Update joint lists.
+	//update_joint_lists( this );
 
     // Integrate dynamics.
     const int bodies_qty = bodies.size();
@@ -170,63 +172,6 @@ void Simulation::step()
     }
 	solve_dynamic_friction_simple_all( contacts_all, h );
 
-    // Update contact velocities.
-    /*const int groups_qty = contacts_all_qtys.size();
-    int group_base_ind = 0;
-    for ( int group_ind=0; group_ind<groups_qty; group_ind++ )
-    {
-        const int qty = contacts_all_qtys.ptr()[group_ind];
-        // The same for ContactPointBb. Those are stored inside body->collision_object.
-        solve_dynamic_friction( this, group_base_ind, qty, h );
-
-        group_base_ind += qty;
-    }*/
-
-
-
-    /*{
-        String stri = String( "step " ) + itos( step_number ) + String( ": " );
-        for ( int i=0; i<bodies_qty; i++ )
-        {
-            RigidBody * body = bodies.ptr()[i];
-            if ( body->mass <= 0.0 )
-                continue;
-            String s = String("body[") + itos(i) + String("].vel = (") +
-                       rtos( body->vel.x_ ) + String( ", " ) + 
-            rtos( body->vel.y_ ) + String( ", " ) + 
-            rtos( body->vel.z_ ) + String(")");
-            stri += s;
-        }
-        print_line( stri );
-    }
-	{
-		bool do_print = false;
-		String stri = String( "step " ) + itos( step_number ) + String( ": " );
-		for ( int i=0; i<bodies_qty; i++ )
-		{
-			RigidBody * body = bodies.ptr()[i];
-			if ( body->mass <= 0.0 )
-				continue;
-			const Float dh = std::abs( body->pose.r.y_ - body->prev_pose.r.y_ );
-			if ( dh > 0.01 )
-			{
-				String s = String("body[") + itos(i) + String("].dh = ") +
-					rtos( dh ) +
-					String( ", r0: ") + rtos( body->r_0.y_ ) + 
-					String( ", r1: ") + rtos( body->r_1.y_ ) + 
-					String( ", r2: ") + rtos( body->r_2.y_ ) + 
-					String( ", r3: ") + rtos( body->r_3.y_ ) + 
-					String( ", r4: ") + rtos( body->r_4.y_ ) + 
-					String( ", r5: ") + rtos( body->r_5.y_ );
-					stri += s;
-				do_print = true;
-			}
-		}
-		if ( do_print )
-			print_line( stri );
-	}*/
-
-
     step_number += 1;
 }
 
@@ -246,6 +191,27 @@ void Simulation::add_joint( Joint * joint )
     joints.push_back( joint );
 }
 
+void Simulation::update_joint_lists( Simulation * sim )
+{
+	const int bodies_qty = sim->bodies.size();
+	const int joints_qty = sim->joints.size();
+	for ( int i=0; i<bodies_qty; i++ )
+	{
+		RigidBody * body = sim->bodies.ptrw()[i];
+		body->joints.clear();
+	}
+
+	for ( int i=0; i<joints_qty; i++ )
+	{
+		Joint * joint = sim->joints.ptrw()[i];
+		RigidBody * body_a = joint->body_a;
+		if ( body_a != nullptr )
+			body_a->joints.push_back( joint );
+		RigidBody * body_b = joint->body_b;
+		if ( body_b != nullptr )
+			body_b->joints.push_back( joint );
+	}
+}
 
 bool Simulation::solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h )
 {

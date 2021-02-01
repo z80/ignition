@@ -2,6 +2,7 @@
 #include "pbd2_broad_tree.h"
 #include "pbd2_simulation.h"
 #include "pbd2_rigid_body.h"
+#include "pbd2_joint.h"
 #include "pbd2_collision_object.h"
 
 
@@ -399,6 +400,52 @@ void BroadTree::remove_duplicates( Vector<int> & inds )
         }
     }
     inds.resize( qty - removed_qty );
+}
+
+void BroadTree::remove_if_disabled( RigidBody * body, CollisionObject * co, Vector<int> & inds )
+{
+	const int joints_qty = body->joints.size();
+	int removed_qty = 0;
+
+	const int objs_qty = inds.size();
+
+	for ( int i=0; i<joints_qty; i++ )
+	{
+		Joint * joint = body->joints.ptrw()[i];
+		const bool disabled = joint->get_ignore_collisions();
+		if ( !disabled )
+			continue;
+
+		bool redo = true;
+		int start_ind = 0;
+		while ( redo )
+		{
+			redo = false;
+			for ( int j=start_ind; j<(objs_qty-removed_qty); j++ )
+			{
+				const int obj_ind = inds.ptr()[j];
+				CollisionObject * o = collision_objects_.ptrw()[obj_ind];
+				RigidBody * obj_body = o->rigid_body;
+				if ( (obj_body == joint->body_a) || (obj_body == joint->body_b) )
+				{
+					const int obj_last_ind = objs_qty - removed_qty - 1;
+					// Swap with the last element.
+					if ( j != obj_last_ind )
+					{
+						const int ind_last = inds.ptr()[obj_last_ind];
+						inds.ptrw()[j] = ind_last;
+						inds.ptrw()[obj_last_ind] = obj_ind;
+					}
+					removed_qty += 1;
+					start_ind = j;
+					redo = true;
+					break;
+				}
+			}
+		}
+	}
+
+	inds.resize( objs_qty-removed_qty );
 }
 
 void BroadTree::remove_spatial_duplicates( Vector<ContactPointBb> & pts )

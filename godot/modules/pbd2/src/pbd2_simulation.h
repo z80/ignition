@@ -53,6 +53,8 @@ public:
 
     int step_number;
 
+	static void update_joint_lists( Simulation * sim );
+
     static bool solve_normal( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h );
     static void solve_tangential( RigidBody * body_a, RigidBody * body_b, Vector<ContactPointBb> & pts, Float h );
     static void solve_dynamic_friction( Simulation * sim, int base_ind, int qty, Float h );

@@ -17,6 +17,9 @@ public:
     Joint();
     virtual ~Joint();
 
+	void set_ignore_collisions( bool en );
+	bool get_ignore_collisions() const;
+
     // Places as many zeros to "lambdas" array as needed.
     virtual void init_lambdas() {}
     // This thing should be implemented. It is supposed to set 
@@ -44,6 +47,7 @@ public:
     Float compliance_joint;
     Float compliance_motor;
     bool  motor;
+	bool ignore_collisions;
 
     Vector3d at_a;
     Vector3d e1_a;

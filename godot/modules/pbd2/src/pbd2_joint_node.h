@@ -55,6 +55,9 @@ public:
     void set_motor( bool en );
     bool get_motor() const;
 
+	void set_ignore_collisions( bool en );
+	bool get_ignore_collisions() const;
+
     void set_compliance_joint( real_t k );
     real_t get_compliance_joint() const;
 

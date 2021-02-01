@@ -12,6 +12,7 @@ namespace Pbd
 {
 
 class CollisionObject;
+class Joint;
 
 class RigidBody
 {
@@ -44,6 +45,12 @@ public:
 
     // Collision object for colliding mobing bodies.
     Vector<CollisionObject *> collision_objects;
+
+	// All joints connected to this rigid body.
+	// It is filled every step in simulation.
+	// It is needed to filter out all collisions from bodies connected
+	// to the same joint (if disabled in the joint).
+	Vector<Joint *> joints;
 
     RigidBody();
     ~RigidBody();

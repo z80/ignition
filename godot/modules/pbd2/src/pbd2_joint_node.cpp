@@ -210,6 +210,16 @@ bool PbdJointNode::get_motor() const
     return joint->motor;
 }
 
+void PbdJointNode::set_ignore_collisions( bool en )
+{
+	joint->set_ignore_collisions( en );
+}
+
+bool PbdJointNode::get_ignore_collisions() const
+{
+	return joint->get_ignore_collisions();
+}
+
 void PbdJointNode::set_compliance_joint( real_t k )
 {
     if ( joint != nullptr )
@@ -323,6 +333,9 @@ void PbdJointNode::_bind_methods()
     ClassDB::bind_method( D_METHOD( "set_motor", "en" ), &PbdJointNode::set_motor );
     ClassDB::bind_method( D_METHOD( "get_motor" ),       &PbdJointNode::get_motor, Variant::BOOL );
 
+	ClassDB::bind_method( D_METHOD( "set_ignore_collisions", "en" ), &PbdJointNode::set_ignore_collisions );
+	ClassDB::bind_method( D_METHOD( "get_ignore_collisions" ),       &PbdJointNode::get_ignore_collisions, Variant::BOOL );
+
     ClassDB::bind_method( D_METHOD( "set_compliance_joint", "k" ), &PbdJointNode::set_compliance_joint );
     ClassDB::bind_method( D_METHOD( "get_compliance_joint" ),      &PbdJointNode::get_compliance_joint, Variant::REAL );
 
@@ -347,8 +360,9 @@ void PbdJointNode::_bind_methods()
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "e2_b" ),        "set_e2_b", "get_e2_b" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "e3_b" ),        "set_e3_b", "get_e3_b" );
 
-    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "motor" ),            "set_motor", "get_motor" );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "compliance_joint" ), "set_compliance_joint", "get_compliance_joint" );
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "motor" ),             "set_motor", "get_motor" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "ignore_collisions" ), "set_ignore_collisions", "get_ignore_collisions" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "compliance_joint" ), "set_compliance_joint", "get_compliance_joint" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "compliance_motor" ), "set_compliance_motor", "get_compliance_motor" );
 }
 
