@@ -117,14 +117,6 @@ void Simulation::step()
         Joint * joint = joints.ptr()[i];
         joint->init_lambdas();
     }
-    
-    // Initialize contact lambdas.
-    for ( int i=0; i<bodies_qty; i++ )
-    {
-        // Here contact point solver lambdas init should go.
-        RigidBody * body = bodies.ptr()[i];
-        body->init_contact_lambdas();
-    }
 
     // Solve joint and contact constraints.
     for ( int i=0; i<solver_iterations; i++ )

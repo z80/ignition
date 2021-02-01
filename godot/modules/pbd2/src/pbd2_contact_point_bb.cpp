@@ -270,7 +270,8 @@ void ContactPointBb::solve_dynamic_friction( RigidBody * body_a, RigidBody * bod
 
                 const Matrix3d inv_I = body_a->inv_I();
                 const Vector3d r_w = body_a->pose.q * this->r_a;
-                body_a->omega += inv_I * ( r_w.CrossProduct( p ) );
+				const Vector3d r_x_p = r_w.CrossProduct( p );
+                body_a->omega += inv_I * r_x_p;
             }
             if ( body_b_dynamic )
             {
@@ -279,7 +280,8 @@ void ContactPointBb::solve_dynamic_friction( RigidBody * body_a, RigidBody * bod
 
                 const Matrix3d inv_I = body_b->inv_I();
                 const Vector3d r_w = body_b->pose.q * this->r_b;
-                body_b->omega -= inv_I * ( r_w.CrossProduct( p ) );
+				const Vector3d r_x_p = r_w.CrossProduct( p );
+				body_b->omega -= inv_I * r_x_p;
             }
         }
     }

@@ -232,32 +232,10 @@ Vector3 PbdRigidBodyNode::get_torque() const
 
 
 
-void PbdRigidBodyNode::rebuild_contacts()
-{
-    rigid_body.contact_points.clear();
-    const int qty = get_child_count();
-    for ( int i=0; i<qty; i++ )
-    {
-        Node * n = get_child( i );
-        PbdContactPointNode * cpn = Node::cast_to<PbdContactPointNode>( n );
-        if ( cpn != nullptr )
-        {
-            Vector3 at = cpn->get_transform().origin;
-            ContactPoint cp;
-            cp.r = Vector3d( at.x, at.y, at.z );
-            rigid_body.contact_points.push_back( cp );
-        }
-    }
-}
-
 void PbdRigidBodyNode::_notification( int p_what )
 {
     switch ( p_what )
     {
-        case NOTIFICATION_READY:
-            rebuild_contacts();
-            break;
-
         case NOTIFICATION_PROCESS:
             if ( !Engine::get_singleton()->is_editor_hint() )
                 apply_rigid_body_pose( this );        
@@ -320,8 +298,6 @@ void PbdRigidBodyNode::_bind_methods()
 
     ClassDB::bind_method( D_METHOD( "set_torque", "p" ), &PbdRigidBodyNode::set_torque );
     ClassDB::bind_method( D_METHOD( "get_torque" ),      &PbdRigidBodyNode::get_torque, Variant::VECTOR3 );
-
-    ClassDB::bind_method( D_METHOD( "rebuild_contacts" ), &PbdRigidBodyNode::rebuild_contacts );
 
 
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "mass" ),    "set_mass", "get_mass" );

@@ -39,10 +39,6 @@ public:
     Float compliance_normal;
     Float compliance_tangential;
 
-    // These are fixed points in body's ref frame.
-    // It is checked if a point is below "y=0" plane.
-    Vector<ContactPoint> contact_points;
-
     // Collision object for colliding mobing bodies.
     Vector<CollisionObject *> collision_objects;
 
@@ -63,22 +59,13 @@ public:
 
     void integrate_dynamics( Float dt );
     void update_velocities( Float dt );
-    void init_contact_lambdas();
-    void solve_contacts( Float h );
-    void update_contact_velocities( Float h );
-    void update_contact_positions();
 
-    void add_collision( CollisionObject * co );
+	void add_collision( CollisionObject * co );
     void remove_collision( CollisionObject * co );
     void clear_collisions();
 
     Float specific_inv_mass_pos( const Vector3d & r, const Vector3d & n ) const;
     Float specific_inv_mass_rot( const Vector3d & n ) const;
-    Float specific_inv_mass_pos_all( bool check_in_contact );
-
-    bool solve_normal_all( Float h );
-    void solve_tangential_all( Float h );
-    void solve_dynamic_friction( Float h );
 };
 
 

@@ -55,8 +55,6 @@ public:
     void set_torque( const Vector3 & p );
     Vector3 get_torque() const;
 
-    void rebuild_contacts();
-
 protected:
     void _notification( int p_what );
     static void _bind_methods();
