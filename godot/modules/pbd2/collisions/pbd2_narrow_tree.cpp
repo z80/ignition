@@ -315,8 +315,8 @@ void NarrowTree::intersect( CollisionObject * b, Vector<Vector3d> & ats, Vector<
     {
         NarrowTree * tree_b = dynamic_cast<NarrowTree *>( b );
         //intersect_sdf( tree_b, ats, depths );
-		//intersect_brute_force( tree_b, ats, depths );
-		intersect_brute_force_2( tree_b, ats, depths );
+		intersect_brute_force( tree_b, ats, depths );
+		//intersect_brute_force_2( tree_b, ats, depths );
 	}
 	else if ( tp == ObjectPlane )
 	{

@@ -22,8 +22,6 @@
 #include "pbd2_collision_plane_node.h"
 #include "pbd2_collision_box_node.h"
 
-#include "pbd2_narrow_tree_node.h"
-#include "occupancy_tests_ref.h"
 
 void register_pbd2_types()
 {
@@ -37,9 +35,6 @@ void register_pbd2_types()
     ClassDB::register_class<Pbd::PbdCollisionSphereNode>();
     ClassDB::register_class<Pbd::PbdCollisionPlaneNode>();
     ClassDB::register_class<Pbd::PbdCollisionBoxNode>();
-
-    ClassDB::register_class<Pbd::PbdCollisionSdfMeshTreeNode>();
-    ClassDB::register_class<Pbd::OccupancyTestsRef>();
 }
 
 void unregister_pbd2_types()
