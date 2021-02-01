@@ -156,6 +156,7 @@ const Vector<ContactPointBb> & BroadTree::find_contact_points( RigidBody * body,
         select_for_one( body, co, h, collision_object_inds_ );
     }
     remove_duplicates( collision_object_inds_ );
+	remove_if_disabled( body, collision_object_inds_ );
 
     // Intersect all contacts of requested body with all potential collision objects found.
     const int other_objects_qty = collision_object_inds_.size();
@@ -402,7 +403,7 @@ void BroadTree::remove_duplicates( Vector<int> & inds )
     inds.resize( qty - removed_qty );
 }
 
-void BroadTree::remove_if_disabled( RigidBody * body, CollisionObject * co, Vector<int> & inds )
+void BroadTree::remove_if_disabled( RigidBody * body, Vector<int> & inds )
 {
 	const int joints_qty = body->joints.size();
 	int removed_qty = 0;

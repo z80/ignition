@@ -100,7 +100,7 @@ void Simulation::step()
     // Clear all contacts from previous simulation step.
     clear_contacts( this );
 	// Update joint lists.
-	//update_joint_lists( this );
+	update_joint_lists( this );
 
     // Integrate dynamics.
     const int bodies_qty = bodies.size();
