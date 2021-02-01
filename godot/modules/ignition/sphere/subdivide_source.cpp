@@ -30,8 +30,8 @@ void SubdivideSource::add_level( Float sz, Float dist )
 
 bool SubdivideSource::need_subdivide( const CubeSphere * s, Vector<SubdividePoint> & pts )
 {
-	if ( pts.empty() )
-		return false;
+    if ( pts.empty() )
+        return false;
 
     ptsNew_ = pts;
     const unsigned ptsNewQty = ptsNew_.size();
@@ -49,9 +49,9 @@ bool SubdivideSource::need_subdivide( const CubeSphere * s, Vector<SubdividePoin
     }
 
     // Sort and normalize all levels.
-	// Keep levels sorted.
-	sort_levels( s );
-	const int levels_qty = levelsUnit_.size();
+    // Keep levels sorted.
+    sort_levels( s );
+    const int levels_qty = levelsUnit_.size();
     const Level lvl_close = levelsUnit_.ptr()[0];
     const Float d_close = lvl_close.dist * 0.25;
     const Level lvl_far = levelsUnit_.ptr()[levels_qty - 1];
@@ -61,38 +61,38 @@ bool SubdivideSource::need_subdivide( const CubeSphere * s, Vector<SubdividePoin
     // Check all distances. And resubdrive if shifted half the finest distance.
     const unsigned ptsQty = pts_.size();
     bool needSubdrive = false;
-	if ( ptsNewQty > 0 )
-	{
-		if ((ptsQty < 1) || (ptsNewQty > ptsQty))
-			needSubdrive = true;
-		else
-		{
-			// Check distances.
-			for (unsigned i = 0; i < ptsNewQty; i++)
-			{
-				const SubdividePoint & sp = ptsNew_.ptr()[i];
-				const Vector3d & v = sp.at;
+    if ( ptsNewQty > 0 )
+    {
+        if ((ptsQty < 1) || (ptsNewQty > ptsQty))
+            needSubdrive = true;
+        else
+        {
+            // Check distances.
+            for (unsigned i = 0; i < ptsNewQty; i++)
+            {
+                const SubdividePoint & sp = ptsNew_.ptr()[i];
+                const Vector3d & v = sp.at;
                 const bool isClose = sp.close;
                 const Float d = isClose ? d_close : d_far;
-				Float minDist = -1.0;
-				for (unsigned j = 0; j < ptsQty; j++)
-				{
-					const Vector3d & a = pts_.ptr()[j].at;
-					const Float dot = v.DotProduct(a);
-					const Vector3d proj = a * dot;
-					const Vector3d diff = v - proj;
-					const Float dist = diff.Length();
-					if ((minDist < 0.0) || (dist < minDist))
-						minDist = dist;
-				}
-				if (minDist >= d)
-				{
-					needSubdrive = true;
-					break;
-				}
-			}
-		}
-	}
+                Float minDist = -1.0;
+                for (unsigned j = 0; j < ptsQty; j++)
+                {
+                    const Vector3d & a = pts_.ptr()[j].at;
+                    const Float dot = v.DotProduct(a);
+                    const Vector3d proj = a * dot;
+                    const Vector3d diff = v - proj;
+                    const Float dist = diff.Length();
+                    if ((minDist < 0.0) || (dist < minDist))
+                        minDist = dist;
+                }
+                if (minDist >= d)
+                {
+                    needSubdrive = true;
+                    break;
+                }
+            }
+        }
+    }
 
     if ( needSubdrive )
     {
