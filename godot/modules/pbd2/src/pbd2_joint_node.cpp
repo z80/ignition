@@ -212,12 +212,15 @@ bool PbdJointNode::get_motor() const
 
 void PbdJointNode::set_ignore_collisions( bool en )
 {
-	joint->set_ignore_collisions( en );
+	if ( joint != nullptr )
+		joint->set_ignore_collisions( en );
 }
 
 bool PbdJointNode::get_ignore_collisions() const
 {
-	return joint->get_ignore_collisions();
+	if ( joint != nullptr )
+		return joint->get_ignore_collisions();
+	return true;
 }
 
 void PbdJointNode::set_compliance_joint( real_t k )
