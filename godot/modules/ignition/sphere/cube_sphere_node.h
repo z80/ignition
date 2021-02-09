@@ -66,11 +66,6 @@ public:
     void set_target_mesh( const NodePath & path );
     const NodePath & get_target_mesh() const;
 
-    // Adding ref frames of interest (those can be view ref frames or physics ref frames).
-    void clear_ref_frames();
-    void add_ref_frame( const NodePath & path );
-    void remove_ref_frame( const NodePath & path );
-
     void set_distance_scaler( Ref<DistanceScalerRef> new_scaler );
     Ref<DistanceScalerRef> get_distance_scaler() const;
 
@@ -118,14 +113,14 @@ public:
 
     // For querying collisions store all ref frames in this container.
     Vector<RefFrameNode *> collision_ref_frames;
-    Vector<SubdivideSource::SubdividePoint> collision_pts;
+    Vector<Vector3d>   collision_pts;
     Vector<CubeVertex> collision_tris;
     PoolVector3Array   collision_ret;
 
     // Returning content cells.
-    Vector<SubdivideSource::SubdividePoint> content_pts;
-    Vector<int> content_cell_inds;
-    Array       content_cells_ret;
+    Vector<Vector3d> content_pts;
+    Vector<int>      content_cell_inds;
+    Array            content_cells_ret;
 
     // All triangles.
     Vector<CubeVertex> all_tris;

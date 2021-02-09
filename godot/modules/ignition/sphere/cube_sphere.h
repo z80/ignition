@@ -55,11 +55,11 @@ public:
     void triangle_list( Vector<CubeVertex> & tris );
 
     // For selecting collision patches.
-    void triangle_list( const Vector<SubdivideSource::SubdividePoint> & pts, Float dist, Vector<CubeVertex> & tris );
-    void face_list( const Vector<SubdivideSource::SubdividePoint> & pts, const Float sz, const Float dist, Vector<int> & faceInds );
+    void triangle_list( const Vector<Vector3d> & pts, Float dist, Vector<CubeVertex> & tris );
+    void face_list( const Vector<Vector3d> & pts, const Float sz, const Float dist, Vector<int> & faceInds );
 
     // This is for subdividing. It is used in SubdivideSource.
-    void flatten_pts( const Vector<SubdivideSource::SubdividePoint> & pts, Vector<SubdivideSource::SubdividePoint> & ptsFlat ) const;
+    void flatten_pts( const Vector<Vector3d> & pts, Vector<Vector3d> & ptsFlat ) const;
 private:
     void clear();
     void init();
@@ -69,7 +69,7 @@ private:
     void apply_source_height( HeightSource * src, CubeVertex & v );
     void apply_source_color( HeightSource * src, CubeVertex & v );
 
-    void select_faces( const Vector<SubdivideSource::SubdividePoint> & pts, const Float dist, Vector<int> & faceInds );
+    void select_faces( const Vector<Vector3d> & pts, const Float dist, Vector<int> & faceInds );
 
 public:
     // Radius unit sphere is scaled to 
@@ -78,8 +78,8 @@ public:
     uint64_t hash_;
     Vector<Level> levels_, levelsUnit_;
 
-    Vector<SubdivideSource::SubdividePoint> ptsFlat_;
-    Vector<int>                             faceInds_;
+    Vector<Vector3d> ptsFlat_;
+    Vector<int>      faceInds_;
 
     void sort_levels();
 };

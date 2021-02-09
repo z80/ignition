@@ -191,7 +191,7 @@ void CubeSphere::triangle_list( Vector<CubeVertex> & tris )
     }
 }
 
-void CubeSphere::triangle_list( const Vector<SubdivideSource::SubdividePoint> & pts, Float dist, Vector<CubeVertex> & tris )
+void CubeSphere::triangle_list( const Vector<Vector3d> & pts, Float dist, Vector<CubeVertex> & tris )
 {
     select_faces( pts, dist, faceInds_ );
 
@@ -216,7 +216,7 @@ void CubeSphere::triangle_list( const Vector<SubdivideSource::SubdividePoint> & 
     }
 }
 
-void CubeSphere::face_list( const Vector<SubdivideSource::SubdividePoint> & pts, const Float sz, const Float dist, Vector<int> & faceInds )
+void CubeSphere::face_list( const Vector<Vector3d> & pts, const Float sz, const Float dist, Vector<int> & faceInds )
 {
 	const Float sz_unit = sz / (R_*PI2*0.25);
     faceInds.clear();
@@ -238,7 +238,7 @@ void CubeSphere::face_list( const Vector<SubdivideSource::SubdividePoint> & pts,
     }
 }
 
-void CubeSphere::flatten_pts( const Vector<SubdivideSource::SubdividePoint> & pts, Vector<SubdivideSource::SubdividePoint> & ptsFlat ) const
+void CubeSphere::flatten_pts( const Vector<Vector3d> & pts, Vector<Vector3d> & ptsFlat ) const
 {
     // Use first 6 faces in the cubesphere to project
     // all the points onto appropriate faces.
@@ -525,7 +525,7 @@ void CubeSphere::apply_source_color( HeightSource * src, CubeVertex & v )
 }
 
 
-void CubeSphere::select_faces( const Vector<SubdivideSource::SubdividePoint> & pts, const Float dist, Vector<int> & faceInds )
+void CubeSphere::select_faces( const Vector<Vector3d> & pts, const Float dist, Vector<int> & faceInds )
 {
     faceInds.clear();
     flatten_pts( pts, ptsFlat_ );
