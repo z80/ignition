@@ -66,26 +66,13 @@ void CubeSphereNode::_bind_methods()
     ClassDB::bind_method( D_METHOD("set_h", "h"), &CubeSphereNode::set_h );
     ClassDB::bind_method( D_METHOD("get_h" ),     &CubeSphereNode::get_h, Variant::REAL );
 
-    ClassDB::bind_method( D_METHOD("clear_levels"), &CubeSphereNode::clear_levels );
-    ClassDB::bind_method( D_METHOD("add_level", "sz", "dist"), &CubeSphereNode::add_level );
-
-    ClassDB::bind_method( D_METHOD("set_subdivision_check_period", "sec"), &CubeSphereNode::set_subdivision_check_period );
-    ClassDB::bind_method( D_METHOD("get_subdivision_check_period"), &CubeSphereNode::get_subdivision_check_period, Variant::REAL );
 
     ClassDB::bind_method( D_METHOD("collision_triangles", "origin", "ref_frames", "dist"), &CubeSphereNode::collision_triangles, Variant::POOL_VECTOR3_ARRAY );
     ClassDB::bind_method( D_METHOD("content_cells", "origin", "cell_size", "dist"), &CubeSphereNode::content_cells, Variant::ARRAY );
     ClassDB::bind_method( D_METHOD("local_se3", "cell_ind", "unit_at", "true_surface_normal"), &CubeSphereNode::local_se3, Variant::OBJECT );
     ClassDB::bind_method( D_METHOD("surface_se3", "unit_at"), &CubeSphereNode::surface_se3, Variant::OBJECT );
 
-    ClassDB::bind_method( D_METHOD("set_center_ref_frame", "path"), &CubeSphereNode::set_center_ref_frame );
-    ClassDB::bind_method( D_METHOD("get_center_ref_frame"), &CubeSphereNode::get_center_ref_frame, Variant::NODE_PATH );
 
-    ClassDB::bind_method( D_METHOD("set_origin_ref_frame", "path"), &CubeSphereNode::set_origin_ref_frame );
-    ClassDB::bind_method( D_METHOD("get_origin_ref_frame"), &CubeSphereNode::get_origin_ref_frame, Variant::NODE_PATH );
-
-    ClassDB::bind_method( D_METHOD("clear_ref_frames"), &CubeSphereNode::clear_ref_frames );
-    ClassDB::bind_method( D_METHOD("add_ref_frame", "path"), &CubeSphereNode::add_ref_frame );
-    ClassDB::bind_method( D_METHOD("remove_ref_frame", "path"), &CubeSphereNode::remove_ref_frame );
 
     ClassDB::bind_method( D_METHOD("set_distance_scaler", "scaler"), &CubeSphereNode::set_distance_scaler );
     ClassDB::bind_method( D_METHOD("get_distance_scaler"), &CubeSphereNode::get_distance_scaler, Variant::OBJECT );
@@ -106,9 +93,6 @@ void CubeSphereNode::_bind_methods()
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "height_source" ), "set_height_source", "get_height_source" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ), "set_r", "get_r" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ), "set_h", "get_h" );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "rebuild_check_period" ), "set_subdivision_check_period", "get_subdivision_check_period" );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "center_ref_frame" ), "set_center_ref_frame", "get_center_ref_frame" );
-    ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "origin_ref_frame" ), "set_origin_ref_frame", "get_origin_ref_frame" );
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "distance_scaler" ), "set_distance_scaler", "get_distance_scaler" );
     ADD_PROPERTY( PropertyInfo( Variant::BOOL, "apply_scale" ), "set_apply_scale", "get_apply_scale" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "scale_mode_distance" ), "set_scale_mode_distance", "get_scale_mode_distance" );
@@ -119,9 +103,6 @@ void CubeSphereNode::_notification( int p_what )
 {
     switch ( p_what )
     {
-    case NOTIFICATION_READY:
-        init_levels();
-        break;
     case NOTIFICATION_PROCESS:
         process_transform();
         break;
@@ -433,46 +414,14 @@ Ref<Se3Ref> CubeSphereNode::surface_se3( const Vector3 & unit_at, real_t height 
     return se3;
 }
 
-void CubeSphereNode::set_center_ref_frame( const NodePath & path )
+void CubeSphereNode::set_target_mesh( const NodePath & path )
 {
-    center_path = path;
-    validate_ref_frames();
+    target_path = path;
 }
 
-const NodePath & CubeSphereNode::get_center_ref_frame() const
+const NodePath & CubeSphereNode::get_target_mesh() const
 {
-    return center_path;
-}
-
-void CubeSphereNode::set_origin_ref_frame( const NodePath & path )
-{
-    origin_path = path;
-    validate_ref_frames();
-}
-
-const NodePath & CubeSphereNode::get_origin_ref_frame() const
-{
-    return origin_path;
-}
-
-void CubeSphereNode::clear_ref_frames()
-{
-    ref_frame_paths.clear();
-    validate_ref_frames();
-}
-
-void CubeSphereNode::add_ref_frame( const NodePath & path )
-{
-    const int ind = ref_frame_paths.find( path );
-    if ( ind < 0 )
-        ref_frame_paths.push_back( path );
-    validate_ref_frames();
-}
-
-void CubeSphereNode::remove_ref_frame( const NodePath & path )
-{
-    ref_frame_paths.erase( path );
-    validate_ref_frames();
+    return target_path;
 }
 
 void CubeSphereNode::set_distance_scaler( Ref<DistanceScalerRef> new_scaler )

@@ -26,6 +26,7 @@ public:
 
 public:
     SubdivideSource subdivide_source;
+    Vector<SubdividePoint> points;
 };
 
 

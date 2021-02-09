@@ -6,6 +6,8 @@
 #include "scene/resources/mesh.h"
 #include "core/reference.h"
 
+#include "ref_frame_node.h"
+
 #include "cube_sphere.h"
 #include "subdivide_source.h"
 
@@ -20,9 +22,9 @@ namespace Ign
 class HeightSourceRef;
 class RefFrameNode;
 
-class CubeSphereNode: public MeshInstance
+class CubeSphereNode: public RefFrameNode
 {
-    GDCLASS( CubeSphereNode, MeshInstance );
+    GDCLASS( CubeSphereNode, RefFrameNode );
     OBJ_CATEGORY("Ignition");
 
 protected:
@@ -61,12 +63,8 @@ public:
     Ref<Se3Ref> surface_se3( const Vector3 & unit_at, real_t height ) const;
 
     // Sphere center RefFrame
-    void set_center_ref_frame( const NodePath & path );
-    const NodePath & get_center_ref_frame() const;
-
-    // Player physics ref frame.
-    void set_origin_ref_frame( const NodePath & path );
-    const NodePath & get_origin_ref_frame() const;
+    void set_target_mesh( const NodePath & path );
+    const NodePath & get_target_mesh() const;
 
     // Adding ref frames of interest (those can be view ref frames or physics ref frames).
     void clear_ref_frames();
@@ -105,20 +103,18 @@ public:
 
     // These all are for geometry generation.
     CubeSphere           sphere;
-    SubdivideSource      subdivide_source;
     Ref<HeightSourceRef> height_source;
+
+    // Where to generate sphere.
+    NodePath             target_path;
 
     // These are for determining when subdivision is needed and for placement of
     // points of interest.
-    bool                   generate_close;
-    NodePath               center_path;
-    NodePath               origin_path;
-    Vector<NodePath>       ref_frame_paths;
-    Vector<RefFrameNode *> ref_frames;
+    bool                 generate_close;
     // Sphere point closest to the observation point relative to sphere center.
-    SE3                    poi_relative_to_center;
+    SE3                  poi_relative_to_center;
     // Sphere center relative to observation point.
-    SE3                    center_relative_to_origin;
+    SE3                  center_relative_to_origin;
 
     // For querying collisions store all ref frames in this container.
     Vector<RefFrameNode *> collision_ref_frames;
@@ -130,11 +126,6 @@ public:
     Vector<SubdivideSource::SubdividePoint> content_pts;
     Vector<int> content_cell_inds;
     Array       content_cells_ret;
-
-    // For checking rebuild status periodically.
-    real_t check_period;
-    real_t check_time_elapsed;
-    Vector<SubdivideSource::SubdividePoint> points_of_interest;
 
     // All triangles.
     Vector<CubeVertex> all_tris;
