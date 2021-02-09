@@ -75,6 +75,23 @@ Float CubeSphere::h() const
     return H_;
 }
 
+void CubeSphere::clear_levels()
+{
+    levels_.clear();
+    levelsUnit_.clear();
+}
+
+void CubeSphere::add_level( Float sz, Float dist )
+{
+    Level lvl;
+    lvl.sz   = sz;
+    lvl.dist = dist;
+    levels_.push_back( lvl );
+
+    sort_levels();
+}
+
+
 void CubeSphere::subdivide( SubdivideSource * src )
 {
     clear();
@@ -529,6 +546,38 @@ void CubeSphere::select_faces( const Vector<SubdivideSource::SubdividePoint> & p
                 faceInds.push_back( i );
         }
     }
+}
+
+void CubeSphere::sort_levels()
+{
+    levelsUnit_ = levels_;
+
+    // Normalize all distances.
+    const Float R = this->r();
+    const unsigned qty = levelsUnit_.size();
+    for ( unsigned i=0; i<qty; i++ )
+    {
+        Level & a = levelsUnit_.ptrw()[i];
+        a.sz   /= R;
+        a.dist /= R;
+    }
+
+    // Sort levels in distance accending order.
+    for ( unsigned i=0; i<(qty-1); i++ )
+    {
+        Level & a = levelsUnit_.ptrw()[i];
+        for ( unsigned j=(i+1); j<qty; j++ )
+        {
+            Level & b = levelsUnit_.ptrw()[j];
+            if ( a.dist > b.dist )
+            {
+                const Level c = a;
+                a = b;
+                b = c;
+            }
+        }
+    }
+
 }
 
 
