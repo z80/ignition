@@ -225,7 +225,7 @@ void CubeSphere::face_list( const Vector<Vector3d> & pts, const Float sz, const 
     const unsigned ptsQty = ptsFlat_.size();
     for ( unsigned ptInd=0; ptInd<ptsQty; ptInd++ )
     {
-        const Vector3d & ptFlat = ptsFlat_.ptr()[ptInd].at;
+        const Vector3d & ptFlat = ptsFlat_.ptr()[ptInd];
         for ( unsigned i=0; i<6; i++ )
         {
             const CubeQuadNode & f = faces.ptr()[i];
@@ -253,7 +253,7 @@ void CubeSphere::flatten_pts( const Vector<Vector3d> & pts, Vector<Vector3d> & p
     const unsigned ptsQty = ptsFlat.size();
     for ( unsigned i=0; i<ptsQty; i++ )
     {
-        Vector3d & pt3 = ptsFlat.ptrw()[i].at;
+        Vector3d & pt3 = ptsFlat.ptrw()[i];
         // Next 3 lines protect from zero length points.
         const Float pt3Len = pt3.Length();
         if ( pt3Len < 0.1 )
@@ -533,7 +533,7 @@ void CubeSphere::select_faces( const Vector<Vector3d> & pts, const Float dist, V
     const unsigned ptsQty = ptsFlat_.size();
     for ( unsigned ptInd=0; ptInd<ptsQty; ptInd++ )
     {
-        const Vector3d & ptFlat = ptsFlat_.ptr()[ptInd].at;
+        const Vector3d & ptFlat = ptsFlat_.ptr()[ptInd];
         for ( unsigned i=0; i<6; i++ )
         {
             const CubeQuadNode & f = faces.ptr()[i];

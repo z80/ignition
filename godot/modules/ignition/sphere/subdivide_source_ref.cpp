@@ -1,6 +1,6 @@
 
 #include "subdivide_source_ref.h"
-#include "ref_frame.h"
+#include "ref_frame_node.h"
 
 
 namespace Ign
@@ -33,7 +33,7 @@ void SubdivideSourceRef::add_level( Float sz, Float dist )
 // Of course, it is correct to take every object inside ref frame and compute that way.
 bool SubdivideSourceRef::need_subdivide( Node * ref_frame, Node * cubesphere_node )
 {
-    CubeSphereNode * csn = Object::cast_to<CubeSphereNode>( cubesphere );
+    CubeSphereNode * csn = Object::cast_to<CubeSphereNode>( cubesphere_node );
     if ( csn == nullptr )
         return false;
 
@@ -41,14 +41,12 @@ bool SubdivideSourceRef::need_subdivide( Node * ref_frame, Node * cubesphere_nod
     if (rf == nullptr)
     {
         Spatial * s = Object::cast_to<Spatial>( ref_frame );
-        SubdividePoint sp;
         const Vector3 at = s->get_transform().origin;
-        sp.at = Vector3d( at.x, at.y, at.z );
-        sp.close = true;
+        const Vector3d sp = Vector3d( at.x, at.y, at.z );
 
-        points.clear();
-        points.push_back( sp );
-        const bool ret = subdivide_source.need_subdivide( csn, points );
+        subdivide_points.clear();
+        subdivide_points.push_back( sp );
+        const bool ret = subdivide_source.need_subdivide( csn, subdivide_points );
         return ret;
     }
 
@@ -57,10 +55,10 @@ bool SubdivideSourceRef::need_subdivide( Node * ref_frame, Node * cubesphere_nod
     sp.at    = se3.r_;
     sp.close = true;
 
-    points.clear();
-    points.push_back( sp );
+    subdivide_points.clear();
+    subdivide_points.push_back( sp );
 
-    const bool ret = subdivide_source.need_subdivide( csn, points );
+    const bool ret = subdivide_source.need_subdivide( csn, subdivide_points );
      
     return ret;
 }

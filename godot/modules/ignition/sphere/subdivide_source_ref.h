@@ -26,7 +26,7 @@ public:
 
 public:
     SubdivideSource subdivide_source;
-    Vector<SubdividePoint> points;
+    Vector<Vector3d> subdivide_points;
 };
 
 

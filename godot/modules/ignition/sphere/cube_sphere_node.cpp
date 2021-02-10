@@ -113,17 +113,13 @@ void CubeSphereNode::_notification( int p_what )
 
 
 CubeSphereNode::CubeSphereNode()
-    : MeshInstance()
+    : RefFrameNode()
 {
-    check_period   = 1.0;
-    check_time_elapsed = check_period;
     generate_close = true;
     apply_scale    = true;
     scale_mode_distance = 5.0;
 
     convert_to_global = false;
-
-    set_process( true );
 }
 
 CubeSphereNode::~CubeSphereNode()
@@ -132,7 +128,7 @@ CubeSphereNode::~CubeSphereNode()
 
 void CubeSphereNode::set_height_source( const Ref<HeightSourceRef> & hs )
 {
-    height_source = hs; //Object::cast_to<HeightSourceRef>( hs );
+    height_source = hs;
 }
 
 
@@ -163,24 +159,12 @@ real_t CubeSphereNode::get_h() const
 
 void CubeSphereNode::clear_levels()
 {
-    subdivide_source.clear_levels();
+    sphere.clear_levels();
 }
 
 void CubeSphereNode::add_level( real_t sz, real_t dist )
 {
-    subdivide_source.add_level( sz, dist );
-}
-
-void CubeSphereNode::set_subdivision_check_period( real_t sec )
-{
-    check_period = sec;
-    // Make it due immediately.
-    check_time_elapsed = sec;
-}
-
-real_t CubeSphereNode::get_subdivision_check_period() const
-{
-    return check_period;
+    sphere.add_level( sz, dist );
 }
 
 const PoolVector3Array & CubeSphereNode::collision_triangles( Node * origin, const Array & ref_frames, real_t dist )
@@ -464,45 +448,15 @@ bool CubeSphereNode::get_convert_to_global() const
     return convert_to_global;
 }
 
-
-void CubeSphereNode::validate_ref_frames()
+void CubeSphereNode::relocate_mesh( Node * ref_frame )
 {
-    // Make sure the origin ref frame is in or not in depending on if it is valid.
-    Node * n = get_node_or_null( origin_path );
-    if ( n != nullptr )
-    {
-        const int ind = ref_frame_paths.find( origin_path );
-        if ( ind < 0 )
-            ref_frame_paths.push_back( origin_path );
-    }
-    else
-    {
-        ref_frame_paths.erase( origin_path );
-    }
-
-    // Go over all node paths and make sure they exist.
-    ref_frames.clear();
-    int current_index = 0;
-    while ( current_index < ref_frame_paths.size() )
-    {
-        const NodePath & np = ref_frame_paths.ptr()[current_index];
-        n = get_node_or_null( np );
-        RefFrameNode * rfn = Object::cast_to<RefFrameNode>( n );
-        if ( rfn == nullptr )
-        {
-            ref_frame_paths.remove( current_index );
-            continue;
-        }
-        ref_frames.push_back( rfn );
-        current_index += 1;
-    }
 }
 
-bool CubeSphereNode::need_rebuild()
+void CubeSphereNode::rebuild_mesh( Node * ref_frame, Ref<SubdivideSourceRef> & subdivide_source )
 {
-    const bool rebuild_is_needed = subdivide_source.need_subdivide( &sphere, points_of_interest );
-    return rebuild_is_needed;
 }
+
+
 
 
 void CubeSphereNode::process_transform()

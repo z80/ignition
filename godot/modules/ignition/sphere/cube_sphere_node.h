@@ -80,11 +80,10 @@ public:
     void set_convert_to_global( bool en );
     bool get_convert_to_global() const;
 
+	void relocate_mesh( Node * ref_frame );
+	void rebuild_mesh( Node * ref_frame, Ref<SubdivideSourceRef> & subdivide_source );
+
 private:
-    // Makes sure that origin ref frame is in the list.
-    // Removes nonexisting ones. Created an array of ref frames.
-    void validate_ref_frames();
-    bool need_rebuild();
 
     void process_transform();
     void regenerate_mesh();
