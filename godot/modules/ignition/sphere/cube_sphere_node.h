@@ -47,7 +47,7 @@ public:
     // Only collision triangles.
     // Triangles are in "origin"'s ref frame.
     // Triangles are all triangles closer than "dist" from all "ref_frames".
-    const PoolVector3Array & collision_triangles( Node * ref_frame, Ref<SubdivideSourceRef> & subdivide_source_ref, real_t dist );
+    const PoolVector3Array & collision_triangles( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref, real_t dist );
 
     // Content generation faces.
     const Array & content_cells( Node * origin, real_t cell_size, real_t dist );
@@ -58,7 +58,7 @@ public:
     void set_target_mesh( const NodePath & path );
     const NodePath & get_target_mesh() const;
 
-    void set_distance_scaler( Ref<DistanceScalerRef> & new_scaler );
+    void set_distance_scaler( const Ref<DistanceScalerRef> & new_scaler );
     Ref<DistanceScalerRef> get_distance_scaler() const;
 
     void set_apply_scale( bool en );

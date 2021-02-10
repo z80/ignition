@@ -32,6 +32,8 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::HeightSourceRef>();
 	ClassDB::register_class<Ign::HeightSourceTestRef>();
 	ClassDB::register_class<Ign::HeightSourceGdRef>();
+
+	ClassDB::register_class<Ign::SubdivideSourceRef>();
 	ClassDB::register_class<Ign::CubeSphereNode>();
 
 	ClassDB::register_class<Ign::CelestialMotionRef>();

@@ -1,6 +1,7 @@
 
 #include "subdivide_source_ref.h"
 #include "ref_frame_node.h"
+#include "cube_sphere_node.h"
 
 
 namespace Ign
@@ -8,6 +9,7 @@ namespace Ign
 
 void SubdivideSourceRef::_bind_methods()
 {
+	ClassDB::bind_method( D_METHOD("need_subdivide", "ref_frame", "cubesphere_node"), &SubdivideSourceRef::need_subdivide, Variant::BOOL );
 }
 
 SubdivideSourceRef::SubdivideSourceRef()
@@ -17,16 +19,6 @@ SubdivideSourceRef::SubdivideSourceRef()
 
 SubdivideSourceRef::~SubdivideSourceRef()
 {
-}
-
-void SubdivideSourceRef::clear_levels()
-{
-    subdivide_source.clear_levels();
-}
-
-void SubdivideSourceRef::add_level( Float sz, Float dist )
-{
-    subdivide_source.add_level( sz, dist );
 }
 
 // Let's for now only use ref_frame position relative to cubesphere ref frame.
@@ -46,19 +38,15 @@ bool SubdivideSourceRef::need_subdivide( Node * ref_frame, Node * cubesphere_nod
 
         subdivide_points.clear();
         subdivide_points.push_back( sp );
-        const bool ret = subdivide_source.need_subdivide( csn, subdivide_points );
+        const bool ret = subdivide_source.need_subdivide( &(csn->sphere), subdivide_points );
         return ret;
     }
 
     const SE3 se3 = rf->relative_( csn ); 
-    SubdividePoint sp;
-    sp.at    = se3.r_;
-    sp.close = true;
-
     subdivide_points.clear();
-    subdivide_points.push_back( sp );
+    subdivide_points.push_back( se3.r_ );
 
-    const bool ret = subdivide_source.need_subdivide( csn, subdivide_points );
+    const bool ret = subdivide_source.need_subdivide( &(csn->sphere), subdivide_points );
      
     return ret;
 }

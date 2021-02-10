@@ -19,9 +19,6 @@ public:
     SubdivideSourceRef();
     ~SubdivideSourceRef();
 
-    void clear_levels();
-    void add_level( Float sz, Float dist );
-
     bool need_subdivide( Node * ref_frame, Node * cubesphere_node );
 
 public:

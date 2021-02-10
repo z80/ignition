@@ -25,7 +25,7 @@ bool SubdivideSource::need_subdivide( const CubeSphere * s, const Vector<Vector3
     const unsigned ptsNewQty = ptsNew_.size();
     for ( unsigned i=0; i<ptsNewQty; i++ )
     {
-        Vector3d & v = ptsNew_.ptrw()[i].at;
+        Vector3d & v = ptsNew_.ptrw()[i];
         v.Normalize();
     }
 
@@ -59,7 +59,7 @@ bool SubdivideSource::need_subdivide( const CubeSphere * s, const Vector<Vector3
                 Float minDist = -1.0;
                 for (unsigned j = 0; j < ptsQty; j++)
                 {
-                    const Vector3d & a = pts_.ptr()[j].at;
+                    const Vector3d & a = pts_.ptr()[j];
                     const Float dot = v.DotProduct(a);
                     const Vector3d proj = a * dot;
                     const Vector3d diff = v - proj;
@@ -94,7 +94,7 @@ bool SubdivideSource::need_subdivide( const CubeSphere * s, const CubeQuadNode *
     const unsigned lastLevelInd = levelsQty-1;
     for ( unsigned i=0; i<ptsQty; i++ )
     {
-        const Vector3d & a = ptsFlat_.ptr()[i].at;
+        const Vector3d & a = ptsFlat_.ptr()[i];
         for ( unsigned j=0; j<levelsQty; j++ )
         {
             const CubeSphere::Level & lvl = s->levelsUnit_.ptr()[j];

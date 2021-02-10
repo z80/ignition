@@ -67,7 +67,7 @@ void CubeSphereNode::_bind_methods()
     ClassDB::bind_method( D_METHOD("get_h" ),     &CubeSphereNode::get_h, Variant::REAL );
 
 
-    ClassDB::bind_method( D_METHOD("collision_triangles", "origin", "ref_frames", "dist"), &CubeSphereNode::collision_triangles, Variant::POOL_VECTOR3_ARRAY );
+    ClassDB::bind_method( D_METHOD("collision_triangles", "ref_frame", "subdivide_source", "dist"), &CubeSphereNode::collision_triangles, Variant::POOL_VECTOR3_ARRAY );
     ClassDB::bind_method( D_METHOD("content_cells", "origin", "cell_size", "dist"), &CubeSphereNode::content_cells, Variant::ARRAY );
     ClassDB::bind_method( D_METHOD("local_se3", "cell_ind", "unit_at", "true_surface_normal"), &CubeSphereNode::local_se3, Variant::OBJECT );
     ClassDB::bind_method( D_METHOD("surface_se3", "unit_at"), &CubeSphereNode::surface_se3, Variant::OBJECT );
@@ -83,7 +83,7 @@ void CubeSphereNode::_bind_methods()
     ClassDB::bind_method( D_METHOD("set_scale_mode_distance", "radie"), &CubeSphereNode::set_scale_mode_distance );
     ClassDB::bind_method( D_METHOD("get_scale_mode_distance"), &CubeSphereNode::get_scale_mode_distance, Variant::REAL );
 
-    ClassDB::bind_method( D_METHOD("set_convert_to_global", "radie"), &CubeSphereNode::set_convert_to_global );
+    ClassDB::bind_method( D_METHOD("set_convert_to_global", "en"), &CubeSphereNode::set_convert_to_global );
     ClassDB::bind_method( D_METHOD("get_convert_to_global"), &CubeSphereNode::get_convert_to_global, Variant::BOOL );
 
     // It is emit when sphere mesh is changed.
@@ -93,7 +93,7 @@ void CubeSphereNode::_bind_methods()
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "height_source" ), "set_height_source", "get_height_source" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ), "set_r", "get_r" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ), "set_h", "get_h" );
-    ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "distance_scaler" ), "set_distance_scaler", "get_distance_scaler" );
+    //ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "distance_scaler" ), "set_distance_scaler", "get_distance_scaler" );
     ADD_PROPERTY( PropertyInfo( Variant::BOOL, "apply_scale" ), "set_apply_scale", "get_apply_scale" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "scale_mode_distance" ), "set_scale_mode_distance", "get_scale_mode_distance" );
     ADD_PROPERTY( PropertyInfo( Variant::BOOL, "convert_to_global" ), "set_convert_to_global", "get_convert_to_global" );
@@ -156,7 +156,7 @@ void CubeSphereNode::add_level( real_t sz, real_t dist )
     sphere.add_level( sz, dist );
 }
 
-const PoolVector3Array & CubeSphereNode::collision_triangles( Node * ref_frame, Ref<SubdivideSourceRef> & subdivide_source_ref, real_t dist )
+const PoolVector3Array & CubeSphereNode::collision_triangles( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref, real_t dist )
 {
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( ref_frame );
     PoolVector3Array & arr = collision_ret;
@@ -334,7 +334,7 @@ const NodePath & CubeSphereNode::get_target_mesh() const
     return target_path;
 }
 
-void CubeSphereNode::set_distance_scaler( Ref<DistanceScalerRef> & new_scaler )
+void CubeSphereNode::set_distance_scaler( const Ref<DistanceScalerRef> & new_scaler )
 {
     scale = new_scaler;
 }
@@ -380,7 +380,7 @@ void CubeSphereNode::relocate_mesh( Node * ref_frame )
 	adjust_pose( rf );
 }
 
-void CubeSphereNode::rebuild_mesh( Node * ref_frame, Ref<SubdivideSourceRef> & subdivide_source )
+void CubeSphereNode::rebuild_mesh( Node * ref_frame, Ref<SubdivideSourceRef> & subdivide_source_ref )
 {
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( ref_frame );
 	if ( rf == nullptr )
@@ -424,7 +424,7 @@ void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, Ref<SubdivideSou
         scale_neutral();
 
 	SubdivideSource * ss = &(subdivide_source_ref->subdivide_source);
-	sphere.subdivide( subdivide_source );
+	sphere.subdivide( ss );
 	if ( height_source.ptr() != nullptr )
 		sphere.apply_source( height_source->height_source );
 	else
@@ -477,7 +477,7 @@ void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, Ref<SubdivideSou
     Ref<ArrayMesh> am = memnew(ArrayMesh);
     am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );
 
-	MeshInstance * mi = get_mesh_instance( target_path );
+	MeshInstance * mi = get_mesh_instance();
     mi->set_mesh( am );
 
 	emit_signal( SIGNAL_MESH_UPDATED );
@@ -488,6 +488,10 @@ void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, Ref<SubdivideSou
 
 void CubeSphereNode::adjust_pose( RefFrameNode * ref_frame )
 {
+	MeshInstance * mi = get_mesh_instance();
+	if ( mi == nullptr )
+		return;
+	
 	center_relative_to_ref_frame = this->relative_( ref_frame );
 
     SE3 se3 = center_relative_to_ref_frame * poi_relative_to_center;
@@ -498,7 +502,7 @@ void CubeSphereNode::adjust_pose( RefFrameNode * ref_frame )
     }
     // Here it should be distance scale.
     const Transform t = se3.transform();
-    set_transform( t );
+    mi->set_transform( t );
 }
 
 void CubeSphereNode::init_levels()
@@ -507,8 +511,8 @@ void CubeSphereNode::init_levels()
         return;
 
     const Float r = sphere.r();
-    subdivide_source.add_level( r/20.0, r/5.0 );
-    subdivide_source.add_level( r/5.0, r*3.0 );
+    add_level( r/20.0, r/5.0 );
+    add_level( r/5.0, r*3.0 );
 }
 
 void CubeSphereNode::scale_close()
