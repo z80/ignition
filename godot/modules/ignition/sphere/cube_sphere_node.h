@@ -48,14 +48,10 @@ public:
     void clear_levels();
     void add_level( real_t sz, real_t dist );
 
-    // Need in sphere rebuild is checked every period.
-    void set_subdivision_check_period( real_t sec );
-    real_t get_subdivision_check_period() const;
-
     // Only collision triangles.
     // Triangles are in "origin"'s ref frame.
     // Triangles are all triangles closer than "dist" from all "ref_frames".
-    const PoolVector3Array & collision_triangles( Node * origin, const Array & ref_frames, real_t dist );
+    const PoolVector3Array & collision_triangles( Node * ref_frame, Ref<SubdivideSourceRef> & subdivide_source_ref, real_t dist );
 
     // Content generation faces.
     const Array & content_cells( Node * origin, real_t cell_size, real_t dist );
@@ -66,8 +62,8 @@ public:
     void set_target_mesh( const NodePath & path );
     const NodePath & get_target_mesh() const;
 
-    void set_distance_scaler( Ref<DistanceScalerRef> new_scaler );
-    Ref<DistanceScalerRef> get_distance_scaler() const;
+    void set_distance_scaler( Ref<DistanceScalerRef> & new_scaler );
+    Ref<DistanceScalerRef> & get_distance_scaler() const;
 
     void set_apply_scale( bool en );
     bool get_apply_scale() const;
@@ -85,14 +81,15 @@ public:
 
 private:
 
-    void process_transform();
-    void regenerate_mesh();
-    void adjust_pose();
+    void regenerate_mesh( RefFrameNode * ref_frame, Ref<SubdivideSourceRef> & subdivide_source_ref );
+    void adjust_pose( RefFrameNode * ref_frame );
     void init_levels();
 
     void scale_close();
     void scale_far();
     void scale_neutral();
+
+	MeshInstance * get_mesh_instance();
 public:
 
     // These all are for geometry generation.
@@ -108,11 +105,9 @@ public:
     // Sphere point closest to the observation point relative to sphere center.
     SE3                  poi_relative_to_center;
     // Sphere center relative to observation point.
-    SE3                  center_relative_to_origin;
+    SE3                  center_relative_to_ref_frame;
 
     // For querying collisions store all ref frames in this container.
-    Vector<RefFrameNode *> collision_ref_frames;
-    Vector<Vector3d>   collision_pts;
     Vector<CubeVertex> collision_tris;
     PoolVector3Array   collision_ret;
 
