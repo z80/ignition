@@ -99,17 +99,6 @@ void CubeSphereNode::_bind_methods()
     ADD_PROPERTY( PropertyInfo( Variant::BOOL, "convert_to_global" ), "set_convert_to_global", "get_convert_to_global" );
 }
 
-void CubeSphereNode::_notification( int p_what )
-{
-    switch ( p_what )
-    {
-    case NOTIFICATION_PROCESS:
-        process_transform();
-        break;
-    default:
-        break;
-    }
-}
 
 
 CubeSphereNode::CubeSphereNode()
@@ -169,10 +158,16 @@ void CubeSphereNode::add_level( real_t sz, real_t dist )
 
 const PoolVector3Array & CubeSphereNode::collision_triangles( Node * ref_frame, Ref<SubdivideSourceRef> & subdivide_source_ref, real_t dist )
 {
+	RefFrameNode * rf = Node::cast_to<RefFrameNode>( ref_frame );
     PoolVector3Array & arr = collision_ret;
+	if ( rf == nullptr )
+	{
+		arr.resize( 0 );
+		return arr;
+	}
 
     sphere.triangle_list( subdivide_source_ref->subdivide_points, dist, collision_tris );
-    const SE3 center_rel_to_origin = center_rf->relative_( origin_rf );
+    const SE3 center_rel_to_origin = this->relative_( rf );
     const int pts_qty = collision_tris.size();
 
     arr.resize( pts_qty );
@@ -191,17 +186,21 @@ const PoolVector3Array & CubeSphereNode::collision_triangles( Node * ref_frame, 
 
 const Array & CubeSphereNode::content_cells( Node * ref_frame, real_t cell_size, real_t dist )
 {
+	RefFrameNode * rf = Node::cast_to<RefFrameNode>( ref_frame );
     Array & arr = content_cells_ret;
+	if ( rf == nullptr )
+	{
+		arr.resize( 0 );
+		return arr;
+	}
 
     content_pts.clear();
-    // Adding a single interest point for content.
-    {
-        const SE3 se3 = ref_frame->relative_( this );
-        content_pts.push_back( se3.r_ );
-    }
+	// For converting to origin rf.
+	const SE3 to_origin_se3 = rf->relative_( this );
 
-    // For converting to origin rf.
-    const SE3 to_origin_se3 = ref_frame->relative_( this );
+	// Adding a single interest point for content.
+    content_pts.push_back( to_origin_se3.r_ );
+
 
     // Traversing all the faces.
     sphere.face_list( content_pts, cell_size, dist, content_cell_inds );
@@ -340,7 +339,7 @@ void CubeSphereNode::set_distance_scaler( Ref<DistanceScalerRef> & new_scaler )
     scale = new_scaler;
 }
 
-Ref<DistanceScalerRef> & CubeSphereNode::get_distance_scaler() const
+Ref<DistanceScalerRef> CubeSphereNode::get_distance_scaler() const
 {
     return scale;
 }
@@ -377,13 +376,13 @@ bool CubeSphereNode::get_convert_to_global() const
 
 void CubeSphereNode::relocate_mesh( Node * ref_frame )
 {
-	RefFrameNode * rf = Node:cast_to<RefFrameNode>( ref_frame );
+	RefFrameNode * rf = Node::cast_to<RefFrameNode>( ref_frame );
 	adjust_pose( rf );
 }
 
 void CubeSphereNode::rebuild_mesh( Node * ref_frame, Ref<SubdivideSourceRef> & subdivide_source )
 {
-	RefFrameNode * rf = Node:cast_to<RefFrameNode>( ref_frame );
+	RefFrameNode * rf = Node::cast_to<RefFrameNode>( ref_frame );
 	if ( rf == nullptr )
 		return;
 	regenerate_mesh( rf, subdivide_source_ref );

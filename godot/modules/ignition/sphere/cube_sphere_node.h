@@ -6,15 +6,12 @@
 #include "scene/resources/mesh.h"
 #include "core/reference.h"
 
-#include "ref_frame_node.h"
-
 #include "cube_sphere.h"
-#include "subdivide_source.h"
-
+#include "ref_frame_node.h"
+#include "subdivide_source_ref.h"
 #include "height_source_ref.h"
-#include "se3.h"
-#include "se3_ref.h"
 #include "distance_scaler_ref.h"
+#include "se3_ref.h"
 
 namespace Ign
 {
@@ -29,7 +26,6 @@ class CubeSphereNode: public RefFrameNode
 
 protected:
     static void _bind_methods();
-    void _notification( int p_what );
 
 public:
     CubeSphereNode();
@@ -63,7 +59,7 @@ public:
     const NodePath & get_target_mesh() const;
 
     void set_distance_scaler( Ref<DistanceScalerRef> & new_scaler );
-    Ref<DistanceScalerRef> & get_distance_scaler() const;
+    Ref<DistanceScalerRef> get_distance_scaler() const;
 
     void set_apply_scale( bool en );
     bool get_apply_scale() const;
