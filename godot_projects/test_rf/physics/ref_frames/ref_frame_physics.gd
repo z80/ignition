@@ -314,7 +314,8 @@ func process_body( force_source_rf: RefFrame, body: Body ):
 				process_body( force_source_rf, body )
 
 
-
+func get_subdivide_source():
+	return _subdivide_source
 
 
 # Destructor.

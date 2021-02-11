@@ -32,7 +32,6 @@ var motion: CelestialMotionRef = null
 var rotation: CelestialRotationRef = null
 
 
-
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	init()
@@ -66,7 +65,6 @@ func init():
 	initialized = true
 	
 	add_to_group( Constants.SPHERES_GROUP_NAME )
-
 	
 	motion = CelestialMotionRef.new()
 	
@@ -127,16 +125,34 @@ func process_motion( delta ):
 func process_geometry():
 	var player_rf: RefFramePhysics = PhysicsManager.player_ref_frame
 	var physics_ref_frames: Dictionary  = PhysicsManager.physics_ref_frames()
+	
+	var translation: RefFrame = self
+	var rotation: RefFrame    = get_node( "Rotation" )
 	var planet: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	
 	planet.clear_ref_frames()
 	planet.origin_ref_frame = player_rf.get_path()
+
 	var paths: Array = []
 	for k in physics_ref_frames:
-		var rf = physics_ref_frames[k]
-		var path: NodePath = rf.get_path()
-		paths.push_back( path )
-		planet.add_ref_frame( path )
+		var rf: RefFramePhysics = physics_ref_frames[k]
+		# Check if either node is direct parent of this rf
+		var p = rf.get_parent()
+		var is_child: bool = ( p == planet ) or ( p == rotation ) or ( p == translation )
+		if not is_child:
+			continue
+		
+		var subdiv: SubdivideSourceRef = rf.get_subdivide_source()
+		var need_rebuild: bool = subdiv.need_subdivide( rf, planet )
+		if not need_rebuild:
+			continue
+		
+		# Build the surface for this particular ref frame physics.
+		planet.regenerate_mesh( rf, subdiv )
+		var collision_dist = Constants.RF_MERGE_DISTANCE
+		var verts: PoolVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
+		rf.set_surface_vertices( verts )
+
 
 
 
