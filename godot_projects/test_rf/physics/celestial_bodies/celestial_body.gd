@@ -65,6 +65,9 @@ func init():
 		return
 	initialized = true
 	
+	add_to_group( Constants.SPHERES_GROUP_NAME )
+
+	
 	motion = CelestialMotionRef.new()
 	
 	# Initialize GM.

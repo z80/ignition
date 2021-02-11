@@ -10,6 +10,10 @@ var _contact_layer: int = -1
 var SurfaceProvider = preload( "res://physics/bodies/surface_provider/surface_provider.tscn" )
 var _surface_provider = null
 
+# Subdividion source reference in order to determine 
+# if it's time to rebuild the sphere visual and collision surface.
+var _subdivide_source = null
+
 # For debugging jump only this number of times.
 #var _jumps_left: int = 50
 
@@ -40,6 +44,7 @@ func evolve():
 func ready():
 	.ready()
 	create_surface_provider()
+	create_subdivide_source()
 
 
 func create_surface_provider():
@@ -48,6 +53,15 @@ func create_surface_provider():
 	_surface_provider = SurfaceProvider.instance()
 	_surface_provider.init()
 	_surface_provider.change_parent( self )
+
+
+func create_subdivide_source():
+	if _subdivide_source != null:
+		return
+	
+	_subdivide_source = SubdivideSourceRef.new()
+
+
 
 
 func set_surface_vertices( verts: PoolVector3Array ):
@@ -298,6 +312,7 @@ func process_body( force_source_rf: RefFrame, body: Body ):
 			force_source_rf = p_ref_frame.closest_force_source()
 			if force_source_rf != null:
 				process_body( force_source_rf, body )
+
 
 
 
