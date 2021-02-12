@@ -155,7 +155,7 @@ func process_geometry():
 			continue
 		
 		# Build the surface for this particular ref frame physics.
-		planet.regenerate_mesh( rf, subdiv )
+		planet.rebuild_shape( rf, subdiv )
 		var collision_dist = Constants.RF_MERGE_DISTANCE
 		var verts: PoolVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
 		rf.set_surface_vertices( verts )
@@ -163,7 +163,8 @@ func process_geometry():
 	# For player ref frame rebuild mesh if needed
 	if player_rf != null:
 		var need_rebuild_visual: bool = _subdivide_source_visual.need_subdivide( player_rf, planet )
-		planet.regenerate_mesh( player_rf, _subdivide_source_visual )
+		planet.rebuild_shape( player_rf, _subdivide_source_visual )
+		planet.apply_visual_mesh()
 
 
 

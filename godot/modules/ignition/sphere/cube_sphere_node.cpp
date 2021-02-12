@@ -92,6 +92,11 @@ void CubeSphereNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("apply_visual_mesh"), &CubeSphereNode::apply_visual_mesh );
 
 
+	ClassDB::bind_method( D_METHOD("set_target_mesh", "path"), &CubeSphereNode::set_target_mesh);
+	ClassDB::bind_method( D_METHOD("get_target_mesh"),         &CubeSphereNode::get_target_mesh, Variant::NODE_PATH);
+
+
+
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "height_source" ), "set_height_source", "get_height_source" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ), "set_radius", "get_radius" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ), "set_height", "get_height" );
@@ -99,6 +104,7 @@ void CubeSphereNode::_bind_methods()
     ADD_PROPERTY( PropertyInfo( Variant::BOOL, "apply_scale" ), "set_apply_scale", "get_apply_scale" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "scale_mode_distance" ), "set_scale_mode_distance", "get_scale_mode_distance" );
     ADD_PROPERTY( PropertyInfo( Variant::BOOL, "convert_to_global" ), "set_convert_to_global", "get_convert_to_global" );
+	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "target_mesh" ), "set_target_mesh", "get_target_mesh" );
 }
 
 
