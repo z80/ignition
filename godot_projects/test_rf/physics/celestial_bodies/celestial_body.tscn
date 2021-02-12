@@ -9,6 +9,6 @@ height_source_name = "00"
 [node name="Rotation" type="RefFrameNode" parent="."]
 
 [node name="CelestialBody" type="CubeSphereNode" parent="Rotation"]
+target_mesh = NodePath("Mesh")
 
 [node name="Mesh" type="MeshInstance" parent="Rotation/CelestialBody"]
-[connection signal="mesh_updated" from="Rotation/CelestialBody" to="." method="on_mesh_updated"]

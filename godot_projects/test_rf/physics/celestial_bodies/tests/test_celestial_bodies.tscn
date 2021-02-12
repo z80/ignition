@@ -14,4 +14,7 @@ detail_size_0 = 0.5
 detail_size_1 = 1.0
 detail_dist_1 = 3.0
 
+[node name="CelestialBody" parent="Sun/Rotation" index="0"]
+target_mesh = NodePath("Mesh")
+
 [editable path="Sun"]
