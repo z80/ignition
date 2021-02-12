@@ -9,8 +9,6 @@
 namespace Ign
 {
 
-// Signal name.
-static const char SIGNAL_MESH_UPDATED[] = "mesh_updated";
 
 
 static Vector3 compute_tangent( const Vector3 & n )
@@ -86,9 +84,12 @@ void CubeSphereNode::_bind_methods()
     ClassDB::bind_method( D_METHOD("set_convert_to_global", "en"), &CubeSphereNode::set_convert_to_global );
     ClassDB::bind_method( D_METHOD("get_convert_to_global"), &CubeSphereNode::get_convert_to_global, Variant::BOOL );
 
-    // It is emit when sphere mesh is changed.
-    // Should be listened by collision surfaces.
-    ADD_SIGNAL( MethodInfo(SIGNAL_MESH_UPDATED) );
+
+
+	ClassDB::bind_method( D_METHOD("relocate_mesh", "rf"), &CubeSphereNode::relocate_mesh );
+	ClassDB::bind_method( D_METHOD("rebuild_shape", "rf", "subdiv_src"), &CubeSphereNode::rebuild_shape );
+	ClassDB::bind_method( D_METHOD("apply_visual_mesh"), &CubeSphereNode::apply_visual_mesh );
+
 
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "height_source" ), "set_height_source", "get_height_source" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ), "set_r", "get_r" );
@@ -380,7 +381,7 @@ void CubeSphereNode::relocate_mesh( Node * ref_frame )
 	adjust_pose( rf );
 }
 
-void CubeSphereNode::rebuild_mesh( Node * ref_frame, Ref<SubdivideSourceRef> & subdivide_source_ref )
+void CubeSphereNode::rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref )
 {
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( ref_frame );
 	if ( rf == nullptr )
@@ -388,10 +389,64 @@ void CubeSphereNode::rebuild_mesh( Node * ref_frame, Ref<SubdivideSourceRef> & s
 	regenerate_mesh( rf, subdivide_source_ref );
 }
 
+void CubeSphereNode::apply_visual_mesh()
+{
+	sphere.triangle_list( all_tris );
+
+	// Fill in arrays.
+	const int qty = all_tris.size();
+	vertices.resize( qty );
+	normals.resize( qty );
+	tangents.resize( qty*4 );
+	colors.resize( qty );
+	uvs.resize( qty );
+	uvs2.resize( qty );
+	for ( int i=0; i<qty; i++ )
+	{
+		const CubeVertex & v = all_tris.ptr()[i];
+		// Vertex position and normal are supposed to be relative to point of interest.
+		// They are converted to that ref. frame in scaling methods.
+		const Vector3d at = v.at;
+		const Vector3d n  = v.norm;
+		const Vector3 at_f( at.x_, at.y_, at.z_ );
+		const Vector3 n_f( n.x_, n.y_, n.z_ );
+		const Vector3 t   = compute_tangent( n_f );
+		const Vector2 uv  = compute_uv( at_f, sphere.r() );
+		const Vector2 uv2 = compute_uv2( at_f, sphere.r() );
+
+		vertices.set( i, at_f );
+		normals.set( i, n_f );
+		int ind = i*4;
+		tangents.set( ind++, t.x );
+		tangents.set( ind++, t.y );
+		tangents.set( ind++, t.z );
+		tangents.set( ind, 1.0 );
+		const Color c = v.color;
+		colors.set( i, c );
+		uvs.set( i, uv );
+		uvs2.set( i, uv2 );
+	}
+
+	Array arrays;
+	arrays.resize( ArrayMesh::ARRAY_MAX );
+	arrays.set( ArrayMesh::ARRAY_VERTEX,  vertices );
+	arrays.set( ArrayMesh::ARRAY_NORMAL,  normals );
+	arrays.set( ArrayMesh::ARRAY_TANGENT, tangents );
+	arrays.set( ArrayMesh::ARRAY_COLOR,   colors );
+	arrays.set( ArrayMesh::ARRAY_TEX_UV,  uvs );
+	arrays.set( ArrayMesh::ARRAY_TEX_UV2, uvs2 );
+
+	Ref<ArrayMesh> am = memnew(ArrayMesh);
+	am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );
+
+	MeshInstance * mi = get_mesh_instance();
+	mi->set_mesh( am );
+}
 
 
 
-void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, Ref<SubdivideSourceRef> & subdivide_source_ref )
+
+void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref )
 {
 	center_relative_to_ref_frame = this->relative_( ref_frame );
 
@@ -423,67 +478,12 @@ void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, Ref<SubdivideSou
     else
         scale_neutral();
 
-	SubdivideSource * ss = &(subdivide_source_ref->subdivide_source);
+	SubdivideSource * ss = const_cast<SubdivideSource *>( &(subdivide_source_ref->subdivide_source) );
 	sphere.subdivide( ss );
 	if ( height_source.ptr() != nullptr )
 		sphere.apply_source( height_source->height_source );
 	else
 		sphere.apply_source( nullptr );
-	sphere.triangle_list( all_tris );
-
-    // Fill in arrays.
-    const int qty = all_tris.size();
-    vertices.resize( qty );
-    normals.resize( qty );
-    tangents.resize( qty*4 );
-    colors.resize( qty );
-    uvs.resize( qty );
-    uvs2.resize( qty );
-    for ( int i=0; i<qty; i++ )
-    {
-        const CubeVertex & v = all_tris.ptr()[i];
-        // Vertex position and normal are supposed to be relative to point of interest.
-        // They are converted to that ref. frame in scaling methods.
-        const Vector3d at = v.at;
-        const Vector3d n  = v.norm;
-        const Vector3 at_f( at.x_, at.y_, at.z_ );
-        const Vector3 n_f( n.x_, n.y_, n.z_ );
-        const Vector3 t   = compute_tangent( n_f );
-        const Vector2 uv  = compute_uv( at_f, sphere.r() );
-        const Vector2 uv2 = compute_uv2( at_f, sphere.r() );
-
-        vertices.set( i, at_f );
-        normals.set( i, n_f );
-        int ind = i*4;
-        tangents.set( ind++, t.x );
-        tangents.set( ind++, t.y );
-        tangents.set( ind++, t.z );
-        tangents.set( ind, 1.0 );
-        const Color c = v.color;
-        colors.set( i, c );
-        uvs.set( i, uv );
-        uvs2.set( i, uv2 );
-    }
-
-    Array arrays;
-    arrays.resize( ArrayMesh::ARRAY_MAX );
-    arrays.set( ArrayMesh::ARRAY_VERTEX,  vertices );
-    arrays.set( ArrayMesh::ARRAY_NORMAL,  normals );
-    arrays.set( ArrayMesh::ARRAY_TANGENT, tangents );
-    arrays.set( ArrayMesh::ARRAY_COLOR,   colors );
-    arrays.set( ArrayMesh::ARRAY_TEX_UV,  uvs );
-    arrays.set( ArrayMesh::ARRAY_TEX_UV2, uvs2 );
-
-    Ref<ArrayMesh> am = memnew(ArrayMesh);
-    am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );
-
-	MeshInstance * mi = get_mesh_instance();
-    mi->set_mesh( am );
-
-	emit_signal( SIGNAL_MESH_UPDATED );
-
-	// Adjust mesh pose.
-	adjust_pose( ref_frame );
 }
 
 void CubeSphereNode::adjust_pose( RefFrameNode * ref_frame )

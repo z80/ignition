@@ -73,11 +73,12 @@ public:
     bool get_convert_to_global() const;
 
 	void relocate_mesh( Node * ref_frame );
-	void rebuild_mesh( Node * ref_frame, Ref<SubdivideSourceRef> & subdivide_source );
+	void rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source );
+	void apply_visual_mesh();
 
 private:
 
-    void regenerate_mesh( RefFrameNode * ref_frame, Ref<SubdivideSourceRef> & subdivide_source_ref );
+    void regenerate_mesh( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref );
     void adjust_pose( RefFrameNode * ref_frame );
     void init_levels();
 

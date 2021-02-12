@@ -12,7 +12,8 @@ var _surface_provider = null
 
 # Subdividion source reference in order to determine 
 # if it's time to rebuild the sphere visual and collision surface.
-var _subdivide_source = null
+# Can collide with just one.
+var _subdivide_source_physical: SubdivideSourceRef = null
 
 # For debugging jump only this number of times.
 #var _jumps_left: int = 50
@@ -56,10 +57,10 @@ func create_surface_provider():
 
 
 func create_subdivide_source():
-	if _subdivide_source != null:
+	if _subdivide_source_physical != null:
 		return
 	
-	_subdivide_source = SubdivideSourceRef.new()
+	_subdivide_source_physical = SubdivideSourceRef.new()
 
 
 
@@ -315,7 +316,7 @@ func process_body( force_source_rf: RefFrame, body: Body ):
 
 
 func get_subdivide_source():
-	return _subdivide_source
+	return _subdivide_source_physical
 
 
 # Destructor.

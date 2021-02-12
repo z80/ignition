@@ -31,6 +31,11 @@ var gm: float = -1.0
 var motion: CelestialMotionRef = null
 var rotation: CelestialRotationRef = null
 
+# As currently there is just one player
+# And even if many one player per PC need just one 
+# subdivide source per visual sphere.
+var _subdivide_source_visual: SubdivideSourceRef = null
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -65,6 +70,8 @@ func init():
 	initialized = true
 	
 	add_to_group( Constants.SPHERES_GROUP_NAME )
+	
+	_subdivide_source_visual = SubdivideSourceRef.new()
 	
 	motion = CelestialMotionRef.new()
 	
@@ -152,7 +159,11 @@ func process_geometry():
 		var collision_dist = Constants.RF_MERGE_DISTANCE
 		var verts: PoolVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
 		rf.set_surface_vertices( verts )
-
+	
+	# For player ref frame rebuild mesh if needed
+	if player_rf != null:
+		var need_rebuild_visual: bool = _subdivide_source_visual.need_subdivide( player_rf, planet )
+		planet.regenerate_mesh( player_rf, _subdivide_source_visual )
 
 
 
