@@ -34,11 +34,11 @@ public:
     void set_height_source( const Ref<HeightSourceRef> & hs );
     Ref<HeightSourceRef> get_height_source() const;
 
-    void set_r( real_t r );
-    real_t get_r() const;
+    void set_radius( real_t r );
+    real_t get_radius() const;
 
-    void set_h( real_t h );
-    real_t get_h() const;
+    void set_height( real_t h );
+    real_t get_height() const;
 
     // Subdivision levels.
     void clear_levels();

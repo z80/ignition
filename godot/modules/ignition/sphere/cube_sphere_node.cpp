@@ -55,14 +55,15 @@ Vector2 compute_uv2( const Vector3 & at, real_t R )
 
 void CubeSphereNode::_bind_methods()
 {
-    ClassDB::bind_method( D_METHOD("set_height_source", "height_source"), &CubeSphereNode::set_height_source );
+	ClassDB::bind_method( D_METHOD("set_radius", "r"), &CubeSphereNode::set_radius );
+	ClassDB::bind_method( D_METHOD("get_radius" ),     &CubeSphereNode::get_radius, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD("set_height", "h"), &CubeSphereNode::set_height );
+	ClassDB::bind_method( D_METHOD("get_height" ),     &CubeSphereNode::get_height, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD("set_height_source", "height_source"), &CubeSphereNode::set_height_source );
     ClassDB::bind_method( D_METHOD("get_height_source"),                  &CubeSphereNode::get_height_source, Variant::OBJECT );
 
-    ClassDB::bind_method( D_METHOD("set_r", "r"), &CubeSphereNode::set_r );
-    ClassDB::bind_method( D_METHOD("get_r" ),     &CubeSphereNode::get_r, Variant::REAL );
-
-    ClassDB::bind_method( D_METHOD("set_h", "h"), &CubeSphereNode::set_h );
-    ClassDB::bind_method( D_METHOD("get_h" ),     &CubeSphereNode::get_h, Variant::REAL );
 
 
     ClassDB::bind_method( D_METHOD("collision_triangles", "ref_frame", "subdivide_source", "dist"), &CubeSphereNode::collision_triangles, Variant::POOL_VECTOR3_ARRAY );
@@ -92,8 +93,8 @@ void CubeSphereNode::_bind_methods()
 
 
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "height_source" ), "set_height_source", "get_height_source" );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ), "set_r", "get_r" );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ), "set_h", "get_h" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ), "set_radius", "get_radius" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ), "set_height", "get_height" );
     //ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "distance_scaler" ), "set_distance_scaler", "get_distance_scaler" );
     ADD_PROPERTY( PropertyInfo( Variant::BOOL, "apply_scale" ), "set_apply_scale", "get_apply_scale" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "scale_mode_distance" ), "set_scale_mode_distance", "get_scale_mode_distance" );
@@ -127,22 +128,22 @@ Ref<HeightSourceRef> CubeSphereNode::get_height_source() const
     return height_source;
 }
 
-void CubeSphereNode::set_r( real_t r )
+void CubeSphereNode::set_radius( real_t r )
 {
     sphere.set_r( r );
 }
 
-real_t CubeSphereNode::get_r() const
+real_t CubeSphereNode::get_radius() const
 {
     return sphere.r();
 }
 
-void CubeSphereNode::set_h( real_t h )
+void CubeSphereNode::set_height( real_t h )
 {
     sphere.set_h( h );
 }
 
-real_t CubeSphereNode::get_h() const
+real_t CubeSphereNode::get_height() const
 {
     return sphere.h();
 }
