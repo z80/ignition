@@ -4,60 +4,17 @@
 code = "shader_type spatial;
 render_mode unshaded;
 
+// Atmosphere parameters
+uniform vec4  atmosphere_color: hint_color = vec4( 0.3, 0.3, 0.7, 1.0 );
 uniform float sphere_radius = 8.0;
-uniform float atm_height    = 2.0;
+uniform float atmosphere_height    = 2.0;
+uniform float transparency_scale_outer = 30.0;
+uniform float transparency_scale_inner = 0.5;
 uniform vec3  light_dir     = vec3(1.0, 0.0, 0.0);
-uniform float displacement  = 0.0;
+uniform float displacement: hint_range(-1.0, 1.0);
 
 varying vec3 cam_position;
 varying vec3 sphere_position;
-
-bool ray_intersects_sphere( vec3 cam_origin, vec3 sphere_center, vec3 ray, float r )
-{
-	// Find the closest point.
-	// It should be in front.
-	float t = dot( sphere_center - cam_origin, ray );
-	if ( t < 0.0 )
-		return false;
-	vec3 v = cam_origin + ray*t;
-	// Distance from the closest point to the sphere center should be 
-	// smaller than radius.
-	float h = length(v - sphere_center);
-	if ( h > r )
-		return false;
-	return true;
-}
-
-bool ray_sphere_intersection_length( vec3 ray_origin, vec3 sphere_center, vec3 ray, float r, out float len, out bool inside )
-{
-	vec3 sphere_rel = sphere_center - ray_origin;
-	// Find the closest point.
-	float t = dot( sphere_rel, ray );
-	vec3 v = ray*t - sphere_rel;
-	// Distance from the closest point to the sphere center should be 
-	// smaller than radius.
-	float h = length(v);
-	if ( h > r )
-	{
-		len    = 0.0;
-		inside = false;
-		return false;
-	}
-	
-	// Compute using Phifagorous theorem.
-	float x = sqrt( r*r - h*h );
-	float t2 = t + x;
-	inside = ( (t - x) < 0.0 );
-	float t1;
-	if (inside)
-		t1 = 0.0;
-	else
-		t1 =t - x;
-	len = t2 - t1;
-	
-	return true;
-}
-
 
 bool ray_atmosphere_intersection_length( vec3 ray_origin, vec3 sphere_center, vec3 ray, float r, float h, out float len, out bool inside )
 {
@@ -114,6 +71,38 @@ bool ray_atmosphere_intersection_length( vec3 ray_origin, vec3 sphere_center, ve
 	return true;
 }
 
+float ramp_transparency_length( vec3 ray_origin, vec3 sphere_center )
+{
+	float d = length(ray_origin - sphere_center);
+	float R = sphere_radius + atmosphere_height;
+	if ( d > R )
+		return transparency_scale_outer;
+	else if (d < sphere_radius)
+		return transparency_scale_inner;
+	
+	float alpha = (d - sphere_radius) / atmosphere_height;
+	float t = transparency_scale_outer * alpha + transparency_scale_inner * (1.0 - alpha);
+	
+	return t;
+}
+
+vec4 compute_atmosphere_color( vec3 ray_origin, vec3 sphere_center, vec3 ray )
+{
+	float through_length;
+	bool  inside;
+	bool intersects = ray_atmosphere_intersection_length( ray_origin, sphere_center, ray, sphere_radius, atmosphere_height, through_length, inside );
+	if ( !intersects )
+	{
+		vec4 c = vec4( atmosphere_color.xyz, 0.0 );
+		return c;
+	}
+	
+	float transparency_scale = ramp_transparency_length( ray_origin, sphere_center );
+	float alpha = clamp( through_length / transparency_scale, 0.0, 1.0 );
+	vec4 c = vec4( atmosphere_color.xyz, alpha );
+	return c;
+}
+
 
 void vertex()
 {
@@ -132,18 +121,25 @@ void fragment()
 	bool inside = false;
 	//bool ok2 = ray_sphere_intersection_length( cam_position, sphere_position, ray, sphere_radius, len, inside );
 	
-	bool ok3 = ray_atmosphere_intersection_length( cam_position, sphere_position, ray, sphere_radius, atm_height, len, inside );
+	//bool ok3 = ray_atmosphere_intersection_length( cam_position, sphere_position, ray, sphere_radius, atmosphere_height, len, inside );
 	
-	ALBEDO.r = len / sphere_radius/2.0;
-	ALBEDO.g = 0.0;
-	ALBEDO.b = 0.0;
-	ALPHA = len / sphere_radius/2.0;
+	//ALBEDO.r = len / sphere_radius/2.0;
+	//ALBEDO.g = 0.0;
+	//ALBEDO.b = 0.0;
+	//ALPHA = len / sphere_radius/2.0;
+	
+	vec4 c = compute_atmosphere_color( cam_position, sphere_position, ray );
+	ALBEDO = c.rgb;
+	ALPHA  = c.a;
 }
 "
 
 [resource]
 shader = SubResource( 1 )
+shader_param/atmosphere_color = Color( 0.615686, 0.784314, 1, 1 )
 shader_param/sphere_radius = 8.0
-shader_param/atm_height = 2.0
+shader_param/atmosphere_height = 2.0
+shader_param/transparency_scale_outer = 30.0
+shader_param/transparency_scale_inner = 0.5
 shader_param/light_dir = Vector3( 1, 0, 0 )
-shader_param/displacement = -0.2
+shader_param/displacement = 0.703
