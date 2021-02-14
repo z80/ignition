@@ -6,6 +6,8 @@ render_mode unshaded;
 
 uniform float sphere_radius = 8.0;
 uniform float atm_height    = 2.0;
+uniform vec3  light_dir     = vec3(1.0, 0.0, 0.0);
+uniform float displacement  = 0.0;
 
 varying vec3 cam_position;
 varying vec3 sphere_position;
@@ -97,6 +99,18 @@ bool ray_atmosphere_intersection_length( vec3 ray_origin, vec3 sphere_center, ve
 	
 	len = t2 - t1;
 	
+	// Additional reduction of effective length depending on how high ray goes.
+	if ( d > r )
+	{
+		float height = (d - r)/h;
+		len *= (1.0 - height);
+	}
+	
+	// Also redusing by means of sun light direction.
+	vec3 at = v / length( v );
+	d = clamp( dot( at, light_dir ) + displacement, 0.0, 1.0 );
+	len *= d;
+	
 	return true;
 }
 
@@ -131,3 +145,5 @@ void fragment()
 shader = SubResource( 1 )
 shader_param/sphere_radius = 8.0
 shader_param/atm_height = 2.0
+shader_param/light_dir = Vector3( 1, 0, 0 )
+shader_param/displacement = -0.2
