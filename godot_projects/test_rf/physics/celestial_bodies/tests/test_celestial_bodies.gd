@@ -30,11 +30,10 @@ func _ready():
 	
 	var t: Transform = Transform.IDENTITY
 	t.origin = Vector3( 0.0, 0.0, 10.0 )
-	rf.transform = t
+	camera.transform = t
 	
 	rf_physics = rf
-	
-	sun.set_origin( rf )
+
 
 
 

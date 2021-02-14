@@ -126,6 +126,9 @@ func process_motion( delta ):
 	var rotation_rf    = get_node( "Rotation" )
 	motion.process_rf( delta, translation_rf )
 	rotation.process_rf( delta, rotation_rf )
+	
+	var t: Transform = rotation_rf.transform
+	print( "rotation: ", Quat( t.basis ) )
 
 
 
@@ -133,13 +136,10 @@ func process_geometry():
 	var player_rf: RefFramePhysics = PhysicsManager.player_ref_frame
 	var physics_ref_frames: Dictionary  = PhysicsManager.physics_ref_frames()
 	
-	var translation: RefFrame = self
-	var rotation: RefFrame    = get_node( "Rotation" )
+	var translation: RefFrameNode = self
+	var rotation: RefFrameNode    = get_node( "Rotation" )
 	var planet: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	
-	planet.clear_ref_frames()
-	planet.origin_ref_frame = player_rf.get_path()
-
 	var paths: Array = []
 	for k in physics_ref_frames:
 		var rf: RefFramePhysics = physics_ref_frames[k]
@@ -171,10 +171,7 @@ func process_geometry():
 
 
 
-func set_origin( rf ):
-	var celestial_body = get_node( "Rotation/CelestialBody" )
-	var rf_path = rf.get_path()
-	celestial_body.origin_ref_frame = rf_path
+
 
 
 

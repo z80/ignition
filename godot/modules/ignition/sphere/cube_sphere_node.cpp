@@ -64,6 +64,8 @@ void CubeSphereNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_height_source", "height_source"), &CubeSphereNode::set_height_source );
     ClassDB::bind_method( D_METHOD("get_height_source"),                  &CubeSphereNode::get_height_source, Variant::OBJECT );
 
+	ClassDB::bind_method( D_METHOD("clear_levels"), &CubeSphereNode::clear_levels);
+	ClassDB::bind_method( D_METHOD("add_level", "sz", "dist"), &CubeSphereNode::add_level);
 
 
     ClassDB::bind_method( D_METHOD("collision_triangles", "ref_frame", "subdivide_source", "dist"), &CubeSphereNode::collision_triangles, Variant::POOL_VECTOR3_ARRAY );
