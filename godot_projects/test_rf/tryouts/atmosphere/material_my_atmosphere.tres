@@ -4,7 +4,8 @@
 code = "shader_type spatial;
 render_mode unshaded;
 
-uniform float sphere_radius = 10.0;
+uniform float sphere_radius = 8.0;
+uniform float atm_height    = 2.0;
 
 varying vec3 cam_position;
 varying vec3 sphere_position;
@@ -29,14 +30,7 @@ bool ray_sphere_intersection_length( vec3 ray_origin, vec3 sphere_center, vec3 r
 {
 	vec3 sphere_rel = sphere_center - ray_origin;
 	// Find the closest point.
-	// It should be in front.
 	float t = dot( sphere_rel, ray );
-	if ( t < 0.0 )
-	{
-		len    = 0.0;
-		inside = false;
-		return false;
-	}
 	vec3 v = ray*t - sphere_rel;
 	// Distance from the closest point to the sphere center should be 
 	// smaller than radius.
@@ -63,6 +57,50 @@ bool ray_sphere_intersection_length( vec3 ray_origin, vec3 sphere_center, vec3 r
 }
 
 
+bool ray_atmosphere_intersection_length( vec3 ray_origin, vec3 sphere_center, vec3 ray, float r, float h, out float len, out bool inside )
+{
+	vec3 sphere_rel = sphere_center - ray_origin;
+	// Find the closest point.
+	float t = dot( sphere_rel, ray );
+	vec3 v = ray*t - sphere_rel;
+	// Distance from the closest point to the sphere center should be 
+	// smaller than radius.
+	float d = length(v);
+	// Atmosphere radius.
+	float R = r + h;
+	if ( d > R )
+	{
+		len    = 0.0;
+		inside = false;
+		return false;
+	}
+	
+	// Compute using Phifagorous theorem.
+	float x = sqrt( R*R - d*d );
+	float t2 = t + x;
+	inside = ( (t - x) < 0.0 );
+	float t1;
+	if (inside)
+		t1 = 0.0;
+	else
+		t1 = t - x;
+
+	// Intersects surface?
+	bool intersects_surface = (d < r);
+	// If intersects surface, need to crop the distance 
+	// to the surface intersection.
+	x = sqrt( r*r - d*d );
+	float surf_t1 = t - x;
+	// If surface is on the way.
+	if ( surf_t1 > 0.0 )
+		t2 = surf_t1;
+	
+	len = t2 - t1;
+	
+	return true;
+}
+
+
 void vertex()
 {
 	sphere_position = (WORLD_MATRIX * vec4(0.0, 0.0, 0.0, 1.0) ).xyz;
@@ -74,11 +112,13 @@ void fragment()
 	vec3 ray = -(CAMERA_MATRIX * vec4(VIEW, 0.0)).xyz;
 	ray = ray / length(ray);
 	
-	bool ok = ray_intersects_sphere( cam_position, sphere_position, ray, sphere_radius );
+	//bool ok = ray_intersects_sphere( cam_position, sphere_position, ray, sphere_radius );
 	
 	float len = 0.0;
 	bool inside = false;
-	bool ok2 = ray_sphere_intersection_length( cam_position, sphere_position, ray, sphere_radius, len, inside );
+	//bool ok2 = ray_sphere_intersection_length( cam_position, sphere_position, ray, sphere_radius, len, inside );
+	
+	bool ok3 = ray_atmosphere_intersection_length( cam_position, sphere_position, ray, sphere_radius, atm_height, len, inside );
 	
 	ALBEDO.r = len / sphere_radius/2.0;
 	ALBEDO.g = 0.0;
@@ -89,4 +129,5 @@ void fragment()
 
 [resource]
 shader = SubResource( 1 )
-shader_param/sphere_radius = 10.0
+shader_param/sphere_radius = 8.0
+shader_param/atm_height = 2.0
