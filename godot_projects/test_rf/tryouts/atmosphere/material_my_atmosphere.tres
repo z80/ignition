@@ -135,7 +135,6 @@ void fragment()
 "
 
 [resource]
-render_priority = -1
 shader = SubResource( 1 )
 shader_param/atmosphere_color = Color( 0.615686, 0.784314, 1, 1 )
 shader_param/sphere_position = Vector3( 0, 0, 0 )

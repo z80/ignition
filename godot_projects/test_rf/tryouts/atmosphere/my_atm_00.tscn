@@ -33,11 +33,10 @@ mesh = SubResource( 4 )
 material/0 = null
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 0.998416, 0, -0.0562568, 0, 1, 0, 0.0562568, 0, 0.998416, 8.05277, 0.971101, 17.6832 )
-far = 9.6
+transform = Transform( 0.998416, 0, -0.0562568, 0, 1, 0, 0.0562568, 0, 0.998416, 8.05277, 0.971101, 24.2654 )
+far = 8192.0
 script = ExtResource( 4 )
 
 [node name="Atm" type="MeshInstance" parent="Camera"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.227117, 0, 1.01239 )
 mesh = SubResource( 1 )
 material/0 = ExtResource( 1 )
