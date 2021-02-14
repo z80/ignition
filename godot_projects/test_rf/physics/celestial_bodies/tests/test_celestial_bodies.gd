@@ -3,6 +3,7 @@ extends Node
 
 
 var camera: Camera = null
+var rf_physics: RefFramePhysics = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -17,7 +18,8 @@ func _ready():
 	camera.script = camera_script
 	
 	rf.change_parent( sun )
-	rf.add_child( camera )
+	# PArent camera to the root node of this scene.
+	self.add_child( camera )
 	
 	PhysicsManager.player_ref_frame = rf
 	PhysicsManager.camera = camera
@@ -30,6 +32,8 @@ func _ready():
 	t.origin = Vector3( 0.0, 0.0, 10.0 )
 	rf.transform = t
 	
+	rf_physics = rf
+	
 	sun.set_origin( rf )
 
 
@@ -39,3 +43,6 @@ func _ready():
 func _process(delta):
 	var sun = get_node( "Sun" )
 	sun.process( delta )
+	
+	var t: Transform = camera.transform
+	rf_physics.transform = t
