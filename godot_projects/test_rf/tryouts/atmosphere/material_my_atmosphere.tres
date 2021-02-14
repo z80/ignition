@@ -6,6 +6,7 @@ render_mode unshaded;
 
 // Atmosphere parameters
 uniform vec4  atmosphere_color: hint_color = vec4( 0.3, 0.3, 0.7, 1.0 );
+uniform vec3  sphere_position = vec3(0.0, 0.0, 0.0);
 uniform float sphere_radius = 8.0;
 uniform float atmosphere_height    = 2.0;
 uniform float transparency_scale_outer = 30.0;
@@ -14,7 +15,6 @@ uniform vec3  light_dir     = vec3(1.0, 0.0, 0.0);
 uniform float displacement: hint_range(-1.0, 1.0);
 
 varying vec3 cam_position;
-varying vec3 sphere_position;
 
 bool ray_atmosphere_intersection_length( vec3 ray_origin, vec3 sphere_center, vec3 ray, float r, float h, out float len, out bool inside )
 {
@@ -106,7 +106,7 @@ vec4 compute_atmosphere_color( vec3 ray_origin, vec3 sphere_center, vec3 ray )
 
 void vertex()
 {
-	sphere_position = (WORLD_MATRIX * vec4(0.0, 0.0, 0.0, 1.0) ).xyz;
+	//sphere_position = (WORLD_MATRIX * vec4(0.0, 0.0, 0.0, 1.0) ).xyz;
 	cam_position = (CAMERA_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 }
 
@@ -135,8 +135,10 @@ void fragment()
 "
 
 [resource]
+render_priority = -1
 shader = SubResource( 1 )
 shader_param/atmosphere_color = Color( 0.615686, 0.784314, 1, 1 )
+shader_param/sphere_position = Vector3( 0, 0, 0 )
 shader_param/sphere_radius = 8.0
 shader_param/atmosphere_height = 2.0
 shader_param/transparency_scale_outer = 30.0

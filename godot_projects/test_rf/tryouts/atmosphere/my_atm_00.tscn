@@ -1,12 +1,9 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://tryouts/atmosphere/material_my_atmosphere.tres" type="Material" id=1]
 [ext_resource path="res://tryouts/atmosphere/assets/starmap_2020_4k.jpg" type="Texture" id=2]
 [ext_resource path="res://tryouts/atmosphere/material_earth.tres" type="Material" id=3]
-
-[sub_resource type="CubeMesh" id=1]
-flip_faces = true
-size = Vector3( 20, 20, 20 )
+[ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=4]
 
 [sub_resource type="PanoramaSky" id=2]
 panorama = ExtResource( 2 )
@@ -23,11 +20,10 @@ material = ExtResource( 3 )
 radius = 8.0
 height = 16.0
 
-[node name="Spatial" type="Spatial"]
+[sub_resource type="CubeMesh" id=1]
+flip_faces = true
 
-[node name="Atm" type="MeshInstance" parent="."]
-mesh = SubResource( 1 )
-material/0 = ExtResource( 1 )
+[node name="Spatial" type="Spatial"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 3 )
@@ -35,3 +31,13 @@ environment = SubResource( 3 )
 [node name="MeshInstance" type="MeshInstance" parent="."]
 mesh = SubResource( 4 )
 material/0 = null
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 0.998416, 0, -0.0562568, 0, 1, 0, 0.0562568, 0, 0.998416, 8.05277, 0.971101, 17.6832 )
+far = 9.6
+script = ExtResource( 4 )
+
+[node name="Atm" type="MeshInstance" parent="Camera"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.227117, 0, 1.01239 )
+mesh = SubResource( 1 )
+material/0 = ExtResource( 1 )
