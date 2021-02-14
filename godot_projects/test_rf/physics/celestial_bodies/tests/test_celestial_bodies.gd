@@ -13,6 +13,7 @@ func _ready():
 	var sun = get_node( "Sun" )
 	
 	var rf = RefFramePhysics.new()
+	rf.name = "my_physics_rf"
 	camera = Camera.new()
 	var camera_script = preload( "res://assets/maujoe.camera_control/scripts/camera_control.gd" )
 	camera.script = camera_script
@@ -23,8 +24,6 @@ func _ready():
 	
 	PhysicsManager.player_ref_frame = rf
 	PhysicsManager.camera = camera
-	
-	rf.change_parent( sun.rotation_rf() )
 	
 	rf.init_physics()
 	
@@ -44,4 +43,4 @@ func _process(delta):
 	sun.process( delta )
 	
 	var t: Transform = camera.transform
-	rf_physics.transform = t
+	rf_physics.transform.origin = t.origin

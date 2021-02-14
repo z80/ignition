@@ -400,8 +400,6 @@ void CubeSphereNode::rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceR
 
 void CubeSphereNode::apply_visual_mesh()
 {
-	sphere.triangle_list( all_tris );
-
 	// Fill in arrays.
 	const int qty = all_tris.size();
 	vertices.resize( qty );
@@ -457,6 +455,18 @@ void CubeSphereNode::apply_visual_mesh()
 
 void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref )
 {
+	// Regenerate spherical landscape.
+	SubdivideSource * ss = const_cast<SubdivideSource *>( &(subdivide_source_ref->subdivide_source) );
+	sphere.subdivide( ss );
+	if ( height_source.ptr() != nullptr )
+		sphere.apply_source( height_source->height_source );
+	else
+		sphere.apply_source( nullptr );
+	// Obtain triangles.
+	sphere.triangle_list( all_tris );
+
+
+	// Reference frame convertion.
 	center_relative_to_ref_frame = this->relative_( ref_frame );
 
     // Compute point of interest relative to center.
@@ -477,6 +487,7 @@ void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, const Ref<Subdiv
     const bool generate_close = ( d <= scale_mode_distance );
 
     // Do scale the sphere.
+	// I.e. modify triangles.
     if ( use_scale )
     {
         if ( generate_close )
@@ -487,12 +498,6 @@ void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, const Ref<Subdiv
     else
         scale_neutral();
 
-	SubdivideSource * ss = const_cast<SubdivideSource *>( &(subdivide_source_ref->subdivide_source) );
-	sphere.subdivide( ss );
-	if ( height_source.ptr() != nullptr )
-		sphere.apply_source( height_source->height_source );
-	else
-		sphere.apply_source( nullptr );
 }
 
 void CubeSphereNode::adjust_pose( RefFrameNode * ref_frame )

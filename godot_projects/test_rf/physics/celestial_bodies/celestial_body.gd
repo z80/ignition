@@ -103,7 +103,8 @@ func init():
 	celestial_body.height_source   = height_source( height_source_name, radius, height )
 	celestial_body.distance_scaler = PhysicsManager.distance_scaler
 	
-	celestial_body.apply_scale         = true
+	celestial_body.apply_scale         = false
+	celestial_body.convert_to_global   = true
 	celestial_body.scale_mode_distance = 3.0
 	
 	celestial_body.clear_levels()
@@ -164,8 +165,10 @@ func process_geometry():
 	if player_rf != null:
 		var need_rebuild_visual: bool = _subdivide_source_visual.need_subdivide( player_rf, planet )
 		print( "need_rebuild_visual: ", need_rebuild_visual )
-		planet.rebuild_shape( player_rf, _subdivide_source_visual )
-		planet.apply_visual_mesh()
+		if need_rebuild_visual:
+			planet.rebuild_shape( player_rf, _subdivide_source_visual )
+			planet.apply_visual_mesh()
+		planet.relocate_mesh( player_rf )
 
 
 
@@ -183,21 +186,6 @@ func height_source( name: String, radius: float, height: float ):
 
 
 
-# Callback on mesh updated.
-func on_mesh_updated():
-	print( "on \"mesh_updated()\" called" )
-	
-	var cube_sphere: CubeSphereNode = get_node( "Rotation/CelestialBody" )
-	var collision_dist = Constants.RF_MERGE_DISTANCE
-	# In all RefFramePhysics re-generate surface meshes.
-	var rotation: RefFrameNode = rotation_rf()
-	var children: Array = rotation.get_children()
-	for ch in children:
-		var rf: RefFramePhysics = ch as RefFramePhysics
-		if rf != null:
-			var ref_frames = [ rf ]
-			var verts: PoolVector3Array = cube_sphere.collision_triangles( rf, ref_frames, collision_dist )
-			rf.set_surface_vertices( verts )
 
 
 
