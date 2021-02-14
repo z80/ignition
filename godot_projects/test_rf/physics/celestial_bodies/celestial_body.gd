@@ -163,6 +163,7 @@ func process_geometry():
 	# For player ref frame rebuild mesh if needed
 	if player_rf != null:
 		var need_rebuild_visual: bool = _subdivide_source_visual.need_subdivide( player_rf, planet )
+		print( "need_rebuild_visual: ", need_rebuild_visual )
 		planet.rebuild_shape( player_rf, _subdivide_source_visual )
 		planet.apply_visual_mesh()
 
