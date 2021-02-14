@@ -1,0 +1,92 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type spatial;
+render_mode unshaded;
+
+uniform float sphere_radius = 10.0;
+
+varying vec3 cam_position;
+varying vec3 sphere_position;
+
+bool ray_intersects_sphere( vec3 cam_origin, vec3 sphere_center, vec3 ray, float r )
+{
+	// Find the closest point.
+	// It should be in front.
+	float t = dot( sphere_center - cam_origin, ray );
+	if ( t < 0.0 )
+		return false;
+	vec3 v = cam_origin + ray*t;
+	// Distance from the closest point to the sphere center should be 
+	// smaller than radius.
+	float h = length(v - sphere_center);
+	if ( h > r )
+		return false;
+	return true;
+}
+
+bool ray_sphere_intersection_length( vec3 ray_origin, vec3 sphere_center, vec3 ray, float r, out float len, out bool inside )
+{
+	vec3 sphere_rel = sphere_center - ray_origin;
+	// Find the closest point.
+	// It should be in front.
+	float t = dot( sphere_rel, ray );
+	if ( t < 0.0 )
+	{
+		len    = 0.0;
+		inside = false;
+		return false;
+	}
+	vec3 v = ray*t - sphere_rel;
+	// Distance from the closest point to the sphere center should be 
+	// smaller than radius.
+	float h = length(v);
+	if ( h > r )
+	{
+		len    = 0.0;
+		inside = false;
+		return false;
+	}
+	
+	// Compute using Phifagorous theorem.
+	float x = sqrt( r*r - h*h );
+	float t2 = t + x;
+	inside = ( (t - x) < 0.0 );
+	float t1;
+	if (inside)
+		t1 = 0.0;
+	else
+		t1 =t - x;
+	len = t2 - t1;
+	
+	return true;
+}
+
+
+void vertex()
+{
+	sphere_position = (WORLD_MATRIX * vec4(0.0, 0.0, 0.0, 1.0) ).xyz;
+	cam_position = (CAMERA_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+}
+
+void fragment()
+{
+	vec3 ray = -(CAMERA_MATRIX * vec4(VIEW, 0.0)).xyz;
+	ray = ray / length(ray);
+	
+	bool ok = ray_intersects_sphere( cam_position, sphere_position, ray, sphere_radius );
+	
+	float len = 0.0;
+	bool inside = false;
+	bool ok2 = ray_sphere_intersection_length( cam_position, sphere_position, ray, sphere_radius, len, inside );
+	
+	ALBEDO.r = len / sphere_radius/2.0;
+	ALBEDO.g = 0.0;
+	ALBEDO.b = 0.0;
+	ALPHA = len / sphere_radius/2.0;
+}
+"
+
+[resource]
+shader = SubResource( 1 )
+shader_param/sphere_radius = 10.0
