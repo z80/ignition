@@ -5,38 +5,40 @@
 [ext_resource path="res://tryouts/atmosphere/material_earth.tres" type="Material" id=3]
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=4]
 
-[sub_resource type="PanoramaSky" id=2]
+[sub_resource type="PanoramaSky" id=1]
 panorama = ExtResource( 2 )
 
-[sub_resource type="Environment" id=3]
+[sub_resource type="Environment" id=2]
 background_mode = 2
-background_sky = SubResource( 2 )
+background_sky = SubResource( 1 )
 ambient_light_color = Color( 0.529412, 0.529412, 0.501961, 1 )
 ambient_light_energy = 16.0
 ambient_light_sky_contribution = 0.55
 
-[sub_resource type="SphereMesh" id=4]
+[sub_resource type="SphereMesh" id=3]
 material = ExtResource( 3 )
-radius = 8.0
-height = 16.0
+radius = 50.0
+height = 100.0
 
-[sub_resource type="CubeMesh" id=1]
+[sub_resource type="CubeMesh" id=4]
 flip_faces = true
+size = Vector3( 20, 20, 20 )
 
 [node name="Spatial" type="Spatial"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource( 3 )
+environment = SubResource( 2 )
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
-mesh = SubResource( 4 )
+mesh = SubResource( 3 )
 material/0 = null
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 0.998416, 0, -0.0562568, 0, 1, 0, 0.0562568, 0, 0.998416, 8.05277, 0.971101, 24.2654 )
+transform = Transform( 0.998485, 0, 0.0550203, 0, 1, 0, -0.0550203, 0, 0.998485, 60.8411, 0.590513, 128.455 )
 far = 8192.0
 script = ExtResource( 4 )
 
 [node name="Atm" type="MeshInstance" parent="Camera"]
-mesh = SubResource( 1 )
+transform = Transform( 1, 0, 2.6077e-08, 0, 1, 0, -2.6077e-08, 0, 1, -0.645694, 0.249531, 1.80499 )
+mesh = SubResource( 4 )
 material/0 = ExtResource( 1 )
