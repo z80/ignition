@@ -48,6 +48,9 @@ public:
     // Triangles are in "origin"'s ref frame.
     // Triangles are all triangles closer than "dist" from all "ref_frames".
     const PoolVector3Array & collision_triangles( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref, real_t dist );
+	// Needed for updates.
+	Ref<Se3Ref> se3_center_relative_to_ref_frame();
+	Ref<Se3Ref> se3_poi_relative_to_center();
 
     // Content generation faces.
     const Array & content_cells( Node * origin, real_t cell_size, real_t dist );

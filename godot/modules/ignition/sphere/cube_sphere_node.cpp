@@ -3,6 +3,7 @@
 #include "ref_frame_node.h"
 #include "cube_quad_node.h"
 #include "height_source.h"
+#include "se3_ref.h"
 
 #include "core/engine.h"
 
@@ -69,6 +70,10 @@ void CubeSphereNode::_bind_methods()
 
 
     ClassDB::bind_method( D_METHOD("collision_triangles", "ref_frame", "subdivide_source", "dist"), &CubeSphereNode::collision_triangles, Variant::POOL_VECTOR3_ARRAY );
+	ClassDB::bind_method( D_METHOD("se3_center_relative_to_ref_frame"), &CubeSphereNode::se3_center_relative_to_ref_frame, Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("se3_poi_relative_to_center"),       &CubeSphereNode::se3_center_relative_to_ref_frame, Variant::OBJECT );
+
+
     ClassDB::bind_method( D_METHOD("content_cells", "origin", "cell_size", "dist"), &CubeSphereNode::content_cells, Variant::ARRAY );
     ClassDB::bind_method( D_METHOD("local_se3", "cell_ind", "unit_at", "true_surface_normal"), &CubeSphereNode::local_se3, Variant::OBJECT );
     ClassDB::bind_method( D_METHOD("surface_se3", "unit_at"), &CubeSphereNode::surface_se3, Variant::OBJECT );
@@ -200,6 +205,24 @@ const PoolVector3Array & CubeSphereNode::collision_triangles( Node * ref_frame, 
     }
 
     return arr;
+}
+
+Ref<Se3Ref> CubeSphereNode::se3_center_relative_to_ref_frame()
+{
+	Ref<Se3Ref> ret;
+	ret.instance();
+	ret.ptr()->se3 = center_relative_to_ref_frame;
+
+	return ret;
+}
+
+Ref<Se3Ref> CubeSphereNode::se3_poi_relative_to_center()
+{
+	Ref<Se3Ref> ret;
+	ret.instance();
+	ret.ptr()->se3 = poi_relative_to_center;
+
+	return ret;
 }
 
 const Array & CubeSphereNode::content_cells( Node * ref_frame, real_t cell_size, real_t dist )
