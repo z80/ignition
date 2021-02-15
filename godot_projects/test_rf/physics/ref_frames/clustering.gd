@@ -3,8 +3,21 @@
 static func cluster( rf: RefFramePhysics, src: Array, dest: Array, ret: Array ) -> float:
 	return -1.0
 
+
 static func cluster_score( rf: RefFramePhysics, objs: Array, split_ind: int ) -> float:
-	return -1.0
+	var score: float = 0.0
+	var upper_bound: int = split_ind - 1
+	for i in range(upper_bound):
+		var body_a: Body = objs[i]
+		var lower_bound: int = i+1
+		for j in range(lower_bound, upper_bound):
+			var body_b: Body = objs[j]
+			var d: float = body_a.distance_max( body_b )
+			score += d
+	
+	return score
+	
+	
 	
 static func cluster_dist( rf: RefFramePhysics, objs: Array, split_ind: int ) -> float:
 	var min_dist: float = -1.0
