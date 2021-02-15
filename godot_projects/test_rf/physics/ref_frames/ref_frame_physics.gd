@@ -65,9 +65,14 @@ func create_subdivide_source():
 
 
 
-func set_surface_vertices( verts: PoolVector3Array ):
+func set_surface_vertices( verts: PoolVector3Array, se3: Se3Ref ):
 	if _surface_provider != null:
-		_surface_provider.set_vertices( verts )
+		_surface_provider.set_vertices( verts, se3 )
+
+
+func update_surface_vertices( se3: Se3Ref ):
+	if _surface_provider != null:
+		_surface_provider.update_vertices( se3 )
 
 
 func init_physics():

@@ -152,14 +152,19 @@ func process_geometry():
 		
 		var subdiv: SubdivideSourceRef = rf.get_subdivide_source()
 		var need_rebuild: bool = subdiv.need_subdivide( rf, planet )
-		if not need_rebuild:
-			continue
-		
-		# Build the surface for this particular ref frame physics.
-		planet.rebuild_shape( rf, subdiv )
-		var collision_dist = Constants.RF_MERGE_DISTANCE
-		var verts: PoolVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
-		rf.set_surface_vertices( verts )
+		if need_rebuild:
+			# Build the surface for this particular ref frame physics.
+			planet.rebuild_shape( rf, subdiv )
+			var collision_dist = Constants.RF_MERGE_DISTANCE
+			var verts: PoolVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
+			var surface_relative_to_rf: Se3Ref = planet.relative_to( rf )
+			rf.set_surface_vertices( verts, surface_relative_to_rf )
+		else:
+			# Need to update current pose for surface vertices as 
+			# planet position might have changed if ref. frame is not 
+			# a child of the rotation part.
+			var surface_relative_to_rf: Se3Ref = planet.relative_to( rf )
+			rf.update_surface_vertices( surface_relative_to_rf )
 	
 	# For player ref frame rebuild mesh if needed
 	if player_rf != null:

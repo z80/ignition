@@ -30,6 +30,9 @@ public:
 	void set_q( const Quat & q );
 	Quat get_q() const;
 
+	void set_transform( const Transform & t );
+	Transform get_transform() const;
+
 	void copy_from( const Ref<Se3Ref> & ref );
 	void copy_r_from( const Ref<Se3Ref> & ref );
 	void copy_v_from( const Ref<Se3Ref> & ref );
