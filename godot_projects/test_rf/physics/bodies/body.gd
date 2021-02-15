@@ -105,7 +105,7 @@ func distance_min( other: Body ):
 	
 	var min_d: float = 0.0
 	for cb in other.sub_bodies:
-		var d: float = distance_max( cb )
+		var d: float = distance_min( cb )
 		if d < min_d:
 			min_d = d
 	

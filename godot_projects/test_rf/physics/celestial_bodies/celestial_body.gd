@@ -163,8 +163,9 @@ func process_geometry():
 			# Need to update current pose for surface vertices as 
 			# planet position might have changed if ref. frame is not 
 			# a child of the rotation part.
-			var surface_relative_to_rf: Se3Ref = planet.relative_to( rf )
-			rf.update_surface_vertices( surface_relative_to_rf )
+			#var surface_relative_to_rf: Se3Ref = planet.relative_to( rf )
+			#rf.update_surface_vertices( surface_relative_to_rf )
+			pass
 	
 	# For player ref frame rebuild mesh if needed
 	if player_rf != null:
