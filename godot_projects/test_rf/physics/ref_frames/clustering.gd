@@ -1,10 +1,29 @@
 
 
-static func cluster( rf: RefFramePhysics, src: Array, dest: Array, ret: Array ) -> float:
-	return -1.0
+static func cluster( src: Array, dest: Array, ret: Array ) -> Array:
+	var qty: int = src.size();
+	var split_ind: int = qty;
+	var modified: bool = true
+	var base_score: float = cluster_score( src, split_ind )
+	while ( modified ):
+		modified = false
+		
+		for i in range(qty):
+			split_ind = cluster_swap( src, dest, split_ind, i )
+			var score: float = cluster_score( dest, split_ind );
+			if ( score < base_score ):
+				src = dest
+				base_score = score
+				modified = true
+				break
+	
+	var dist = cluster_dist( src, split_ind )
+	dest = src
+	
+	return [split_ind, dist]
 
 
-static func cluster_score( rf: RefFramePhysics, objs: Array, split_ind: int ) -> float:
+static func cluster_score( objs: Array, split_ind: int ) -> float:
 	var score: float = 0.0
 	var upper_bound: int = split_ind - 1
 	for i in range(upper_bound):
@@ -28,20 +47,20 @@ static func cluster_score( rf: RefFramePhysics, objs: Array, split_ind: int ) ->
 	
 	
 	
-static func cluster_dist( rf: RefFramePhysics, objs: Array, split_ind: int ) -> float:
+static func cluster_dist( objs: Array, split_ind: int ) -> float:
 	var min_dist: float = -1.0
 	var qty: int = objs.size()
 	for i in range(split_ind):
 		var body_a: Body = objs[i]
 		for j in range(split_ind, qty):
 			var body_b: Body = objs[j]
-			var d: float = body_a.distance(body_b)
+			var d: float = body_a.distance_min(body_b)
 			if (min_dist < 0.0) or (min_dist > d):
 				min_dist = d
 	return min_dist
 	
 
-static func cluster_swap( rf: RefFramePhysics, src: Array, dest: Array, element_ind: int, split_ind: int ) -> int:
+static func cluster_swap( src: Array, dest: Array, element_ind: int, split_ind: int ) -> int:
 	# Not sure if this will work.
 	# If not, per element copy should.
 	dest = src.duplicate()
