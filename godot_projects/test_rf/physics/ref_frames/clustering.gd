@@ -15,6 +15,15 @@ static func cluster_score( rf: RefFramePhysics, objs: Array, split_ind: int ) ->
 			var d: float = body_a.distance_max( body_b )
 			score += d
 	
+	upper_bound = objs.size() - 1
+	for i in range(split_ind, upper_bound):
+		var body_a: Body = objs[i]
+		var lower_bound = i+1
+		for j in range(lower_bound, upper_bound+1):
+			var body_b: Body = objs[j]
+			var d: float = body_a.distance_max( body_b )
+			score += d
+	
 	return score
 	
 	
