@@ -85,13 +85,14 @@ bool ray_atmosphere_intersection_length( vec3 ray_origin, vec3 sphere_center, ve
 float ramp_transparency_length( vec3 ray_origin, vec3 sphere_center )
 {
 	float d = length(ray_origin - sphere_center);
-	float R = sphere_radius + opaque_height;
+	float R = sphere_radius + atmosphere_height;
+	float r = sphere_radius + opaque_height;
 	if ( d > R )
 		return transparency_scale_outer;
-	else if (d < sphere_radius)
+	else if (d < r)
 		return transparency_scale_inner;
 	
-	float alpha = (d - sphere_radius) / atmosphere_height;
+	float alpha = (d - r) / (R - r);
 	float t = transparency_scale_outer * alpha + transparency_scale_inner * (1.0 - alpha);
 	
 	return t;
@@ -156,9 +157,9 @@ shader_param/atmosphere_color_day = Color( 0.67451, 0.886275, 1, 1 )
 shader_param/atmosphere_color_evening = Color( 0.580392, 0, 0, 1 )
 shader_param/sphere_position = Vector3( 0, 0, 0 )
 shader_param/sphere_radius = 50.0
-shader_param/atmosphere_height = 5.0
-shader_param/opaque_height = 2.0
-shader_param/transparency_scale_outer = 100.0
-shader_param/transparency_scale_inner = 1.0
+shader_param/atmosphere_height = 2.0
+shader_param/opaque_height = 1.0
+shader_param/transparency_scale_outer = 30.0
+shader_param/transparency_scale_inner = 0.5
 shader_param/light_dir = Vector3( 1, 0, 0 )
-shader_param/displacement = 0.267
+shader_param/displacement = 0.164

@@ -22,7 +22,6 @@ height = 100.0
 
 [sub_resource type="CubeMesh" id=4]
 flip_faces = true
-size = Vector3( 20, 20, 20 )
 
 [node name="Spatial" type="Spatial"]
 
@@ -34,11 +33,11 @@ mesh = SubResource( 3 )
 material/0 = null
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 0.998485, 0, 0.0550203, 0, 1, 0, -0.0550203, 0, 0.998485, 60.8411, 0.590513, 128.455 )
+transform = Transform( -0.0168436, 0.991754, 0.127047, 0.999856, 0.0169812, 0, -0.00215741, 0.127028, -0.991897, 19.7108, -0.114661, -83.5114 )
 far = 8192.0
 script = ExtResource( 4 )
 
 [node name="Atm" type="MeshInstance" parent="Camera"]
-transform = Transform( 1, 0, 2.6077e-08, 0, 1, 0, -2.6077e-08, 0, 1, -0.645694, 0.249531, 1.80499 )
+transform = Transform( 1, 8.14907e-10, 2.6077e-08, 5.87897e-09, 1, 0, -2.51457e-08, 5.96046e-08, 1, 0, 0, 0 )
 mesh = SubResource( 4 )
 material/0 = ExtResource( 1 )
