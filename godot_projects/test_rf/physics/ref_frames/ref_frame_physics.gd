@@ -2,6 +2,7 @@
 extends RefFrame
 class_name RefFramePhysics
 
+var Clustering = preload( "res://physics/ref_frames/clustering.gd" )
 
 # Bit for physics contacts.
 var _contact_layer: int = -1
@@ -215,11 +216,32 @@ func include_close_enough_bodies():
 
 
 func split_if_needed():
-	pass
+	var bodies = child_bodies()
+	var ret: Array = Clustering.cluster( bodies )
+	var dist: float    = ret[0]
+	var split_ind: int = ret[1]
+	var dest: Array    = ret[2]
+	var split_dist: float = Constants.RF_SPLIT_DISTANCE
+	if dist > split_dist:
+		return false
+	
+	# Check on which side the user controlled body is.
+	
+	
+	return true 
 
 
 func merge_if_needed():
-	pass
+	var ref_frames: Array = PhysicsManager.physics_ref_frames()
+	for rf in ref_frames:
+		if rf == self:
+			continue
+
+
+# Need to be removed if returned "true".
+func self_delete_if_inactive():
+	return false
+
 
 
 func child_bodies():

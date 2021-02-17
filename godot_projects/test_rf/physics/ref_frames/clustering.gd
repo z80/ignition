@@ -1,6 +1,7 @@
 
 
-static func cluster( src: Array, dest: Array, ret: Array ) -> Array:
+static func cluster( src: Array ) -> Array:
+	var dest: Array = []
 	var qty: int = src.size();
 	var split_ind: int = qty;
 	var modified: bool = true
@@ -9,7 +10,9 @@ static func cluster( src: Array, dest: Array, ret: Array ) -> Array:
 		modified = false
 		
 		for i in range(qty):
-			split_ind = cluster_swap( src, dest, split_ind, i )
+			var ret: Array = cluster_swap( src, split_ind, i )
+			split_ind = ret[0]
+			dest      = ret[1]
 			var score: float = cluster_score( dest, split_ind );
 			if ( score < base_score ):
 				src = dest
@@ -20,7 +23,7 @@ static func cluster( src: Array, dest: Array, ret: Array ) -> Array:
 	var dist = cluster_dist( src, split_ind )
 	dest = src
 	
-	return [split_ind, dist]
+	return [dist, split_ind, dest]
 
 
 static func cluster_score( objs: Array, split_ind: int ) -> float:
@@ -60,10 +63,10 @@ static func cluster_dist( objs: Array, split_ind: int ) -> float:
 	return min_dist
 	
 
-static func cluster_swap( src: Array, dest: Array, element_ind: int, split_ind: int ) -> int:
+static func cluster_swap( src: Array, element_ind: int, split_ind: int ) -> Array:
 	# Not sure if this will work.
 	# If not, per element copy should.
-	dest = src.duplicate()
+	var dest: Array = src.duplicate()
 	if element_ind < split_ind:
 		var last_ind: int = split_ind - 1
 		if element_ind < last_ind:
@@ -81,7 +84,7 @@ static func cluster_swap( src: Array, dest: Array, element_ind: int, split_ind: 
 			dest[element_ind] = a
 		split_ind += 1
 	
-	return split_ind
+	return [split_ind, dest]
 
 
 
