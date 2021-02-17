@@ -106,6 +106,8 @@ public:
     SE3                  poi_relative_to_center;
     // Sphere center relative to observation point.
     SE3                  center_relative_to_ref_frame;
+	// Scale for adjusting mesh pose.
+	Float                distance_scale;
 
     // For querying collisions store all ref frames in this container.
     Vector<CubeVertex> collision_tris;

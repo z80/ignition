@@ -124,6 +124,8 @@ CubeSphereNode::CubeSphereNode()
     scale_mode_distance = 5.0;
 
     convert_to_global = false;
+
+	distance_scale = 1.0;
 }
 
 CubeSphereNode::~CubeSphereNode()
@@ -538,6 +540,8 @@ void CubeSphereNode::adjust_pose( RefFrameNode * ref_frame )
 		return;
 	
 	center_relative_to_ref_frame = this->relative_( ref_frame );
+	// Apply scale.
+	center_relative_to_ref_frame.r_ *= distance_scale;
 
     SE3 se3 = center_relative_to_ref_frame * poi_relative_to_center;
     if ( convert_to_global )
@@ -599,34 +603,35 @@ void CubeSphereNode::scale_close()
 
     // Make POI relative to center such that scaled POI in origin rf
     // is obtained by center_relative_to_ref_frame * poi_relative_to_center.
-    const SE3 origin_relative_to_center = center_relative_to_ref_frame.inverse();
-    poi_relative_to_center = origin_relative_to_center * poi_to_origin;
+	center_relative_to_ref_frame.r_ *= poi_s;
+	poi_relative_to_center.r_       *= poi_s;
+	distance_scale = poi_s;
 }
 
 void CubeSphereNode::scale_far()
 {
-    SE3 poi_to_origin = center_relative_to_ref_frame * poi_relative_to_center;
-    const Float poi_d = poi_to_origin.r_.Length();
-    const Float poi_s = scale->scale( poi_d ) / poi_d;
-    poi_to_origin.r_ = poi_to_origin.r_ * poi_s;
+	// Make POI relative to center such that scaled POI in origin rf
+	// is obtained by center_relative_to_ref_frame * poi_relative_to_center.
+	SE3 poi_to_origin = center_relative_to_ref_frame * poi_relative_to_center;
+	const Float poi_d = poi_to_origin.r_.Length();
+	const Float poi_s = scale->scale( poi_d ) / poi_d;
 
-    const SE3 center_to_poi = poi_relative_to_center.inverse();
+	const SE3 center_to_poi = poi_relative_to_center.inverse();
     const int qty = all_tris.size();
     for ( int i=0; i<qty; i++ )
     {
         CubeVertex & v = all_tris.ptrw()[i];
         Vector3d r = v.at;
-        r = ( center_to_poi.q_ * r) + center_to_poi.r_;
+        r = (center_to_poi.q_ * r) + center_to_poi.r_;
         r = r * poi_s;
         v.at = r;
         // Rotate normal.
         v.norm = center_to_poi.q_ * v.norm;
     }
 
-    // Make POI relative to center such that scaled POI in origin rf
-    // is obtained by center_relative_to_ref_frame * poi_relative_to_center.
-    const SE3 origin_relative_to_center = center_relative_to_ref_frame.inverse();
-    poi_relative_to_center = origin_relative_to_center * poi_to_origin;
+	center_relative_to_ref_frame.r_ *= poi_s;
+    poi_relative_to_center.r_       *= poi_s;
+	distance_scale = poi_s;
 }
 
 void CubeSphereNode::scale_neutral()

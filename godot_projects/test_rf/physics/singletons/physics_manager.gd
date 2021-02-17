@@ -26,7 +26,7 @@ func init():
 	for i in range(ENVS_QTY):
 		envs_[i] = null
 	
-	distance_scaler.plain_distance = 1000.0
+	distance_scaler.plain_distance = 7.0
 	distance_scaler.log_scale      = 1.0
 
 
