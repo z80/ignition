@@ -33,6 +33,8 @@ func process_children():
 	include_close_enough_bodies()
 	split_if_needed()
 	merge_if_needed()
+	var to_be_removed: bool = self_delete_if_unused()
+	return to_be_removed
 
 
 

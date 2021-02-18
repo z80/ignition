@@ -33,16 +33,22 @@ func init():
 # Update body visual parts in accordance with what is set to be 
 # player ref. frame. (The ref. frame where the camera is located.)
 func _process(_delta):
+	var ref_frames = physics_ref_frames()
+	var to_be_removed: Array = []
+	for rf in ref_frames:
+		rf.evolve()
+		var remove: bool = rf.process_children()
+		if remove:
+			to_be_removed.push_back( remove )
+	
 	var player_rf = player_ref_frame
 	if player_rf == null:
 		return
-	
-	# Check if need to follow the user object.
-	player_rf.evolve()
-	player_rf.process_children()
-	
 	update_bodies_visual()
 	update_providers()
+	
+	for rf in to_be_removed:
+		rf.queue_free()
 
 
 func _physics_process( delta ):
