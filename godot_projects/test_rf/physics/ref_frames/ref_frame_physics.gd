@@ -225,8 +225,37 @@ func split_if_needed():
 	if dist > split_dist:
 		return false
 	
-	# Check on which side the user controlled body is.
+	var qty: int = dest.size()
+	if ( split_ind < 1 ) or ( split_ind >= (qty-1) ):
+		return false
 	
+	var bodies_a: Array = []
+	var bodies_b: Array = []
+	for i in range(split_ind):
+		var body: Body = dest[i]
+		bodies_a.push_back( body )
+	for i in range( split_ind, qty ):
+		var body: Body = dest[i]
+		bodies_b.push_back( body )
+	
+	# Check on which side the user controlled body is.
+	var player_control = PhysicsManager.player_control
+	var player_in_b: bool = false
+	for body in bodies_b:
+		if body == player_control:
+			# Swap bodies_a  and bodies_b
+			var bodies_c: Array = bodies_b
+			bodies_b = bodies_a
+			bodies_a = bodies_c
+			break
+	
+	# At this point both arrays are not empty and if player ref frame is here, 
+	# it is in bodies_a.
+	var p = get_parent()
+	var rf: RefFramePhysics = RefFramePhysics.new()
+	rf.change_parent( p )
+	for body in bodies_b:
+		body.change_parent( rf )
 	
 	return true 
 
@@ -236,10 +265,23 @@ func merge_if_needed():
 	for rf in ref_frames:
 		if rf == self:
 			continue
+		
+		var dist: float = distance( rf )
+		if dist < Constants.RF_MERGE_DISTANCE:
+			var bodies: Array = rf.child_bodies()
+			for body in bodies:
+				body.change_parent( self )
+			
+			return true
+	return false
 
 
 # Need to be removed if returned "true".
-func self_delete_if_inactive():
+func self_delete_if_unused():
+	var bodies: Array = child_bodies()
+	var qty: int = bodies.size()
+	if ( qty < 1 ):
+		return true
 	return false
 
 
@@ -344,6 +386,19 @@ func process_body( force_source_rf: RefFrame, body: Body ):
 
 func get_subdivide_source():
 	return _subdivide_source_physical
+
+
+func distance( b: RefFramePhysics ):
+	var bodies_a: Array = child_bodies()
+	var bodies_b: Array = b.child_bodies()
+	var min_d: float = -1.0
+	for body_a in bodies_a:
+		for body_b in bodies_b:
+			var d: float = body_a.distance_min( body_b )
+			if (min_d < 0.0) or (d < min_d):
+				min_d = d
+	
+	return min_d
 
 
 # Destructor.
