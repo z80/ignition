@@ -76,7 +76,7 @@ void CubeSphereNode::_bind_methods()
 
     ClassDB::bind_method( D_METHOD("content_cells", "origin", "cell_size", "dist"), &CubeSphereNode::content_cells, Variant::ARRAY );
     ClassDB::bind_method( D_METHOD("local_se3", "cell_ind", "unit_at", "true_surface_normal"), &CubeSphereNode::local_se3, Variant::OBJECT );
-    ClassDB::bind_method( D_METHOD("surface_se3", "unit_at"), &CubeSphereNode::surface_se3, Variant::OBJECT );
+    ClassDB::bind_method( D_METHOD("surface_se3", "unit_at", "height"), &CubeSphereNode::surface_se3, Variant::OBJECT );
 
 
 

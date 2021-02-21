@@ -267,7 +267,8 @@ func split_if_needed():
 
 func merge_if_needed():
 	var ref_frames: Dictionary = PhysicsManager.physics_ref_frames()
-	for rf in ref_frames:
+	for id in ref_frames:
+		var rf: RefFramePhysics = ref_frames[id]
 		if rf == self:
 			continue
 		var queued_for_deletion: bool = rf.is_queued_for_deletion()
