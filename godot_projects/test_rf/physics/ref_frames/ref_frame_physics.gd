@@ -29,12 +29,11 @@ func get_class():
 func process_children():
 	.process_children()
 	apply_forces()
-	exclude_too_far_bodies()
+	#exclude_too_far_bodies()
 	include_close_enough_bodies()
 	split_if_needed()
 	merge_if_needed()
-	var to_be_removed: bool = self_delete_if_unused()
-	return to_be_removed
+	self_delete_if_unused()
 
 
 
@@ -185,6 +184,8 @@ func jump_if_needed():
 
 
 
+# Actually, with modern approach it shouldn't exclude.
+# It should split ref frame into two. So this one is probably not used now...
 func exclude_too_far_bodies():
 	var max_dist: float = Constants.BODY_EXCLUDE_DIST
 	var bodies = child_bodies()
@@ -219,6 +220,8 @@ func include_close_enough_bodies():
 
 func split_if_needed():
 	var bodies = child_bodies()
+	if ( bodies.size() < 2 ):
+		return false
 	var ret: Array = Clustering.cluster( bodies )
 	var dist: float    = ret[0]
 	var split_ind: int = ret[1]
@@ -254,7 +257,7 @@ func split_if_needed():
 	# At this point both arrays are not empty and if player ref frame is here, 
 	# it is in bodies_a.
 	var p = get_parent()
-	var rf: RefFramePhysics = RefFramePhysics.new()
+	var rf: RefFrame = PhysicsManager.create_ref_frame_physics()
 	rf.change_parent( p )
 	for body in bodies_b:
 		body.change_parent( rf )
@@ -263,9 +266,12 @@ func split_if_needed():
 
 
 func merge_if_needed():
-	var ref_frames: Array = PhysicsManager.physics_ref_frames()
+	var ref_frames: Dictionary = PhysicsManager.physics_ref_frames()
 	for rf in ref_frames:
 		if rf == self:
+			continue
+		var queued_for_deletion: bool = rf.is_queued_for_deletion()
+		if queued_for_deletion:
 			continue
 		
 		var dist: float = distance( rf )
@@ -283,6 +289,7 @@ func self_delete_if_unused():
 	var bodies: Array = child_bodies()
 	var qty: int = bodies.size()
 	if ( qty < 1 ):
+		self.queue_free()
 		return true
 	return false
 
@@ -293,7 +300,7 @@ func child_bodies():
 	var bodies = []
 	for ch in children:
 		var b = ch as Body
-		if b != null:
+		if (b != null) and (b != _surface_provider):
 			bodies.push_back( b )
 	
 	return bodies
@@ -405,7 +412,7 @@ func distance( b: RefFramePhysics ):
 
 # Destructor.
 func _exit_tree():
-	pass
+	finit_physics()
 
 
 

@@ -1,4 +1,6 @@
+
 extends Camera
+class_name PlayerCamera
 
 const Mode = {
 	FPS         = 0, 

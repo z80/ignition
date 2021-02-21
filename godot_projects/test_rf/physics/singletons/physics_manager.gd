@@ -34,12 +34,10 @@ func init():
 # player ref. frame. (The ref. frame where the camera is located.)
 func _process(_delta):
 	var ref_frames = physics_ref_frames()
-	var to_be_removed: Array = []
-	for rf in ref_frames:
+	for id in ref_frames:
+		var rf: RefFramePhysics = ref_frames[id]
 		rf.evolve()
-		var remove: bool = rf.process_children()
-		if remove:
-			to_be_removed.push_back( remove )
+		rf.process_children()
 	
 	var player_rf = player_ref_frame
 	if player_rf == null:
@@ -47,8 +45,6 @@ func _process(_delta):
 	update_bodies_visual()
 	update_providers()
 	
-	for rf in to_be_removed:
-		rf.queue_free()
 
 
 func _physics_process( delta ):
@@ -165,6 +161,15 @@ func update_providers():
 	var group: String = Constants.PROVIDERS_GROUP_NAME
 	for pr in get_tree().get_nodes_in_group( group ):
 		pr.update()
+
+
+func create_ref_frame_physics():
+	var available: int = available_qty()
+	if available < 1:
+		return null
+	var rf: RefFramePhysics = RefFramePhysics.new()
+	rf.init_physics()
+	return rf
 
 
 

@@ -1,6 +1,7 @@
 
 
-static func cluster( src: Array ) -> Array:
+static func cluster( src_full: Array ) -> Array:
+	var src: Array = filter_top_hierarchy( src_full )
 	var dest: Array = []
 	var qty: int = src.size();
 	var split_ind: int = qty;
@@ -10,7 +11,7 @@ static func cluster( src: Array ) -> Array:
 		modified = false
 		
 		for i in range(qty):
-			var ret: Array = cluster_swap( src, split_ind, i )
+			var ret: Array = cluster_swap( src, i, split_ind )
 			split_ind = ret[0]
 			dest      = ret[1]
 			var score: float = cluster_score( dest, split_ind );
@@ -32,16 +33,17 @@ static func cluster_score( objs: Array, split_ind: int ) -> float:
 	for i in range(upper_bound):
 		var body_a: Body = objs[i]
 		var lower_bound: int = i+1
-		for j in range(lower_bound, upper_bound):
+		for j in range(lower_bound, split_ind):
 			var body_b: Body = objs[j]
 			var d: float = body_a.distance_max( body_b )
 			score += d
 	
-	upper_bound = objs.size() - 1
+	var qty: int = objs.size()
+	upper_bound = qty - 1
 	for i in range(split_ind, upper_bound):
 		var body_a: Body = objs[i]
 		var lower_bound = i+1
-		for j in range(lower_bound, upper_bound+1):
+		for j in range(lower_bound, qty):
 			var body_b: Body = objs[j]
 			var d: float = body_a.distance_max( body_b )
 			score += d
