@@ -12,11 +12,13 @@ func _enter_tree():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var rf = PhysicsManager.create_ref_frame_physics()
+	rf.name = "MyRefFramePhysics"
 	var celestial_body = get_node( "CelestialBody" ) as CelestialBody
 	var rot = celestial_body.rotation_rf()
 	rf.change_parent( rot )
 	
 	var character: Body = BodyCreator.create( "character_simple" )
+	character.name = "MyCharacter"
 	# Call add body to process inclusion and initialization properly.
 	rf.add_body( character )
 	
