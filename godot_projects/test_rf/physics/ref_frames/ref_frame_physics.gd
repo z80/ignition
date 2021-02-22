@@ -231,7 +231,7 @@ func split_if_needed():
 		return false
 	
 	var qty: int = dest.size()
-	if ( split_ind < 1 ) or ( split_ind >= (qty-1) ):
+	if ( split_ind < 1 ) or ( split_ind >= qty ):
 		return false
 	
 	var bodies_a: Array = []
