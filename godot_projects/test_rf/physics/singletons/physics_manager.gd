@@ -33,8 +33,6 @@ func init():
 # Update body visual parts in accordance with what is set to be 
 # player ref. frame. (The ref. frame where the camera is located.)
 func _process(_delta):
-	print( "player_ref_frame before: ", player_ref_frame )
-	
 	var ref_frames = physics_ref_frames()
 	for id in ref_frames:
 		var rf: RefFramePhysics = ref_frames[id]
@@ -47,8 +45,7 @@ func _process(_delta):
 	update_bodies_visual()
 	update_providers()
 	update_spheres( _delta )
-	
-	print( "player_ref_frame after: ", player_ref_frame )
+
 
 
 func _physics_process( delta ):

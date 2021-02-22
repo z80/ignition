@@ -18,6 +18,7 @@ func _process( _delta ):
 	
 	#PhysicsManager.rpc( "user_input" )
 	PhysicsManager.process_user_input( input )
+	print( "input: ", input )
 
 
 func describe_event( e: String ):
