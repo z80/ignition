@@ -101,7 +101,7 @@ func finit_physics():
 
 # If physics is initialized and being processed.
 func is_active():
-	var en: bool = (_contact_layer >= 0)
+	var en: bool = (_contact_layer > 0)
 	return en
 
 
