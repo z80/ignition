@@ -42,9 +42,9 @@ func _ready():
 	init()
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func init_force_source():
+	.init_force_source()
+	force_source = ForceSourceGravity.new()
 
 
 func translation_rf():
