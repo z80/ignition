@@ -14,7 +14,6 @@ func _ready():
 	var rf = PhysicsManager.create_ref_frame_physics()
 	var celestial_body = get_node( "CelestialBody" ) as CelestialBody
 	var rot = celestial_body.rotation_rf()
-	var cp: bool = rf.has_method( "change_parent" )
 	rf.change_parent( rot )
 	
 	var character: Body = BodyCreator.create( "character_simple" )
@@ -38,7 +37,7 @@ func _ready():
 
 	var surf: CubeSphereNode = celestial_body.surface_node()
 	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.0, 0.0 ), 1100.0 )
-	character.set_se3( se3 )
+	rf.set_se3( se3 )
 
 
 
