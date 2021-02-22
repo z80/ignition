@@ -145,7 +145,7 @@ func jump( t: Transform ):
 	
 	self.set_jump_t( t )
 	self.apply_jump()
-	var bodies = child_bodies()
+	var bodies = child_bodies( true )
 	for body in bodies:
 		body.update_physical_state_from_rf()
 	
@@ -300,12 +300,15 @@ func self_delete_if_unused():
 
 
 
-func child_bodies():
+func child_bodies( including_surf_provider: bool = false ):
 	var children = get_children()
 	var bodies = []
 	for ch in children:
 		var b = ch as Body
-		if (b != null) and (b != _surface_provider):
+		var include: bool = (b != null)
+		if not including_surf_provider:
+			include = include and (b != _surface_provider)
+		if include:
 			bodies.push_back( b )
 	
 	return bodies

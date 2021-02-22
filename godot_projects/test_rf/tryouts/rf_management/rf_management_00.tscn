@@ -8,6 +8,10 @@
 script = ExtResource( 2 )
 
 [node name="CelestialBody" parent="." instance=ExtResource( 1 )]
+planet_radius_km = 0.01
+planet_height_km = 0.01
 
 [node name="Camera" type="Camera" parent="."]
+near = 0.5
+far = 8192.0
 script = ExtResource( 3 )
