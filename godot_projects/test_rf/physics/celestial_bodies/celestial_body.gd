@@ -129,7 +129,7 @@ func process_motion( delta ):
 	rotation.process_rf( delta, rotation_rf )
 	
 	var t: Transform = rotation_rf.transform
-	print( "rotation: ", Quat( t.basis ) )
+	#print( "rotation: ", Quat( t.basis ) )
 
 
 

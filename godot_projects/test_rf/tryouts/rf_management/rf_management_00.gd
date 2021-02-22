@@ -17,9 +17,9 @@ func _ready():
 	var cp: bool = rf.has_method( "change_parent" )
 	rf.change_parent( rot )
 	
-	var capsule: Body = BodyCreator.create( "character_simple" )
+	var character: Body = BodyCreator.create( "character_simple" )
 	# Call add body to process inclusion and initialization properly.
-	rf.add_body( capsule )
+	rf.add_body( character )
 	
 	# Add construction to null ref. frame. 
 	# It is suppsed to be picked up when close enough.
@@ -31,7 +31,15 @@ func _ready():
 	# Initial set of select and focus object.
 	PhysicsManager.player_ref_frame = rf
 	PhysicsManager.camera           = camera
-	PhysicsManager.player_control   = capsule
-	PhysicsManager.player_select    = capsule
+	PhysicsManager.player_control   = character
+	PhysicsManager.player_select    = character
+	
+	camera.apply_target()
+
+	var surf: CubeSphereNode = celestial_body.surface_node()
+	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.0, 0.0 ), 2.0 )
+	character.set_se3( se3 )
+
+
 
 

@@ -42,5 +42,6 @@ func _process(delta):
 	var sun = get_node( "Sun" )
 	sun.process( delta )
 	
-	var t: Transform = camera.transform
-	rf_physics.transform.origin = t.origin
+	if rf_physics != null:
+		var t: Transform = camera.transform
+		rf_physics.transform.origin = t.origin

@@ -290,6 +290,10 @@ func self_delete_if_unused():
 	var bodies: Array = child_bodies()
 	var qty: int = bodies.size()
 	if ( qty < 1 ):
+		# Also don't delete player ref. frame.
+		var player_rf: RefFramePhysics = PhysicsManager.player_ref_frame
+		if self == player_rf:
+			return false
 		self.queue_free()
 		return true
 	return false
