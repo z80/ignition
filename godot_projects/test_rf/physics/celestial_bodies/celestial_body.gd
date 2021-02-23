@@ -104,7 +104,7 @@ func init():
 	celestial_body.distance_scaler = PhysicsManager.distance_scaler
 	
 	celestial_body.apply_scale         = true
-	celestial_body.convert_to_global   = true
+	celestial_body.convert_to_global   = false
 	celestial_body.scale_mode_distance = 3.0
 	
 	celestial_body.clear_levels()

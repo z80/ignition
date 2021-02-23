@@ -38,7 +38,7 @@ func _ready():
 	camera.apply_target()
 
 	var surf: CubeSphereNode = celestial_body.surface_node()
-	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.0, 0.0 ), 1100.0 )
+	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.0, 0.0 ), 2.0 )
 	rf.set_se3( se3 )
 
 

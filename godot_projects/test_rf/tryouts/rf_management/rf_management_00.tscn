@@ -8,8 +8,11 @@
 script = ExtResource( 2 )
 
 [node name="CelestialBody" parent="." instance=ExtResource( 1 )]
-planet_radius_km = 0.01
-planet_height_km = 0.01
+surface_orbital_vel_kms = 3.0
+planet_radius_km = 100.0
+planet_height_km = 1.0
+detail_size_1 = 200.0
+detail_size_2 = 5000.0
 
 [node name="Camera" type="Camera" parent="."]
 near = 0.5

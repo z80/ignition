@@ -355,7 +355,8 @@ func apply_forces():
 	if defines_vertical:
 		var c: Camera = PhysicsManager.camera
 		var up: Vector3 = rf.force_source.up( rf, self )
-		c.process_basis( up )
+		if c.has_method( "process_basis" ):
+			c.process_basis( up )
 	#	rf.compute_relative_to_root( self )
 	#	var q: Quat = rf.q_root()
 

@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://physics/celestial_bodies/celestial_body.gd" type="Script" id=1]
+[ext_resource path="res://physics/celestial_bodies/material_celestial_body_mesh.tres" type="Material" id=2]
 
 [node name="Translation" type="RefFrameNode"]
 script = ExtResource( 1 )
@@ -12,3 +13,4 @@ height_source_name = "00"
 target_mesh = NodePath("Mesh")
 
 [node name="Mesh" type="MeshInstance" parent="Rotation/CelestialBody"]
+material_override = ExtResource( 2 )
