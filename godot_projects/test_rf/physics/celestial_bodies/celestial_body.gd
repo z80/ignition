@@ -45,6 +45,7 @@ func _ready():
 func init_force_source():
 	.init_force_source()
 	force_source = ForceSourceGravity.new()
+	force_source.GM = gm
 
 
 func translation_rf():
@@ -77,6 +78,7 @@ func init():
 	
 	# Initialize GM.
 	gm = motion.init_gm( planet_radius_km, surface_orbital_vel_kms )
+	init_force_source()
 	
 	# Initialize orbital movement.
 	perigee_dir = perigee_dir.normalized()
