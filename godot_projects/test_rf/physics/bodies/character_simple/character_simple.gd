@@ -57,3 +57,10 @@ func privot_fps( ind: int = 0 ):
 	if is_instance_valid( _visual ):
 		return _visual.target_fps
 	return null
+
+
+
+func set_local_up( up: Vector3 ):
+	if _physical != null:
+		_physical.local_up = up
+

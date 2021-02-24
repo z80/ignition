@@ -362,7 +362,7 @@ func apply_forces():
 
 
 
-func process_body( force_source_rf: RefFrame, body: Body ):
+func process_body( force_source_rf: RefFrame, body: Body, up_defined: bool = false ):
 	force_source_rf.compute_relative_to_root( body )
 	var r: Vector3 = force_source_rf.r_root()
 	var v: Vector3 = force_source_rf.v_root()
@@ -379,7 +379,17 @@ func process_body( force_source_rf: RefFrame, body: Body ):
 		
 
 	var ret: Array = []
-	force_source_rf.force_source.compute_force( body, r, v, q, w, ret )
+	var fs: ForceSource = force_source_rf.force_source
+	fs.compute_force( body, r, v, q, w, ret )
+	if not up_defined:
+		var defines_vertical: bool = fs.defines_vertical()
+		if defines_vertical:
+			up_defined = true
+			var p: Node = body.get_parent()
+			var rfp: RefFramePhysics = p as RefFramePhysics
+			if rfp != null:
+				var up: Vector3 = fs.up( force_source_rf, rfp )
+				body.set_local_up( up )
 
 	var F: Vector3 = ret[0]
 	var P: Vector3 = ret[1]
@@ -399,7 +409,7 @@ func process_body( force_source_rf: RefFrame, body: Body ):
 		if p_ref_frame != null:
 			force_source_rf = p_ref_frame.closest_force_source()
 			if force_source_rf != null:
-				process_body( force_source_rf, body )
+				process_body( force_source_rf, body, up_defined )
 
 
 func get_subdivide_source():

@@ -23,6 +23,7 @@ export(bool) var translation_do_ignore_direction = true
 export(Vector3) var translation_ignore_direction = Vector3.UP
 
 var target_q: Quat = Quat.IDENTITY
+var local_up: Vector3 = Vector3.UP
 
 var print_period: float = 0.1
 var print_elapsed: float = 0.0
