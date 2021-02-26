@@ -110,8 +110,9 @@ func position_control( state ):
 		v = v.normalized()
 		v *= SPEED
 	
+	var t: Transform = self.transform
+	
 	if not translation_abolute:
-		var t: Transform = self.transform
 		v = t.basis.xform( v )
 	
 	var model_v: Vector3 = self.linear_velocity
@@ -120,6 +121,8 @@ func position_control( state ):
 	
 	if translation_do_ignore_direction:
 		var dir: Vector3 = translation_ignore_direction.normalized()
+		if not translation_abolute:
+			dir = t.basis.xform( dir )
 		var ign_force = dir * dir.dot( f )
 		f -= ign_force
 	
