@@ -6,8 +6,8 @@ func _ready():
 
 
 func init():
-	var Visual   = load( "res://physics/bodies/character_simple/character_simple_visual.tscn")
-	var Physical = load( "res://physics/bodies/character_simple/character_simple_physical.tscn" )
+	var Visual   = load( "res://physics/bodies/character_central/character_central_visual.tscn")
+	var Physical = load( "res://physics/bodies/character_central/character_central_physical.tscn" )
 	
 	VisualType   = Visual
 	PhysicalType = Physical

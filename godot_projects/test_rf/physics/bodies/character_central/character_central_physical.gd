@@ -32,6 +32,7 @@ var user_input: Dictionary = {}
 
 var apply_user_input: bool = false
 var free_floating: bool = false
+var preserve_vertical: bool = true
 
 func _init():
 	pass
@@ -44,15 +45,14 @@ func _integrate_forces( state ):
 	
 	# If it is free floating, don't apply any forces. 
 	# Just let it drift on its own.
-	if free_floating:
-		return
+	if not free_floating:
+		position_control( state )
 	
-	#
-	position_control( state )
-	ang_vel_control( state )
+	ang_vel_control( state, preserve_vertical )
+	preserve_vertical( state, preserve_vertical )
 	
 
-	
+
 
 
 
@@ -131,7 +131,7 @@ func position_control( state ):
 	#self.add_central_force( f )
 
 
-func ang_vel_control( state ):
+func ang_vel_control( state, preserving_vertical: bool = true ):
 	var dt: float = state.step
 	
 	var w: Vector3 = Vector3.ZERO
@@ -156,6 +156,11 @@ func ang_vel_control( state ):
 	if o:
 		w += Vector3.FORWARD
 	
+	if preserving_vertical:
+		# Only take care of "w" projection along vertical.
+		var up: Vector3 = Vector3.UP
+		w = up * ( up.dot( w ) )
+	
 	if w.length_squared() > 0.0:
 		w = w.normalized()
 		w *= ANG_VEL #* dt * 0.5
@@ -167,8 +172,7 @@ func ang_vel_control( state ):
 	#	print( "target q: ", target_q )
 	
 	# Adjustment q.
-	var t: Transform = self.transform
-	var q: Quat = t.basis
+	#var q: Quat = t.basis
 	#if do_print:
 	#	print( "current q: ", q )
 	#dq = q.inverse() * target_q
@@ -180,7 +184,8 @@ func ang_vel_control( state ):
 	
 	var wanted_w = w
 	if not rotation_abolute:
-		wanted_w = q.xform( wanted_w )
+		var t: Transform = self.transform
+		wanted_w = t.basis.xform( wanted_w )
 	wanted_w *= MAX_ANG_VEL
 	var current_w: Vector3 = state.angular_velocity
 	var dw = wanted_w - current_w
@@ -194,6 +199,29 @@ func ang_vel_control( state ):
 
 
 
+func preserve_vertical( state, preserving_vertical: bool = true ):
+	if not preserving_vertical:
+		return
+	
+	var dt: float = state.step
+	var t: Transform = self.transform
+	var up: Vector3 = Vector3.UP
+	up = t.basis.xform( up )
+	# Want to convert "up" to "local_up".
+	var da: Vector3 = up.cross( local_up )
+	var wanted_w: Vector3 = da.normalized() * ANG_VEL
+	var current_w: Vector3 = state.angular_velocity
+	# Also subtract angular velocity projection along vertical.
+	wanted_w = wanted_w - up * ( up.dot( wanted_w ) )
+	
+	var dw = wanted_w - current_w
+	var torque: Vector3 = dt * (GAIN_ANGULAR * dw - current_w * GAIN_D_ANGULAR)
+	var L = torque.length()
+
+	if L > MAX_TORQUE:
+		torque = torque * (MAX_TORQUE / L)
+	
+	state.add_torque( torque )
 
 
 func rotation_control( state ):

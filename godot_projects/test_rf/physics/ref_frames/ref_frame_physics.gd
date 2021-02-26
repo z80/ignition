@@ -377,7 +377,7 @@ func process_body( force_source_rf: RefFrame, body: Body, up_defined: bool = fal
 		var qq: Quat = q_rel * q
 		var i = 1
 		
-
+	
 	var ret: Array = []
 	var fs: ForceSource = force_source_rf.force_source
 	fs.compute_force( body, r, v, q, w, ret )
@@ -388,9 +388,10 @@ func process_body( force_source_rf: RefFrame, body: Body, up_defined: bool = fal
 			var p: Node = body.get_parent()
 			var rfp: RefFramePhysics = p as RefFramePhysics
 			if rfp != null:
-				var up: Vector3 = fs.up( force_source_rf, rfp )
+				var up: Vector3 = fs.up( force_source_rf, body )
+				up = body.q().xform( up )
 				body.set_local_up( up )
-
+	
 	var F: Vector3 = ret[0]
 	var P: Vector3 = ret[1]
 	# Convert to physics ref. frame.

@@ -25,8 +25,8 @@ func compute_force( body: Body, r: Vector3, v: Vector3, q: Quat, w: Vector3, ret
 
 # I don't remember what it should return.
 func up( force_source_rf: Node, player_rf: Node ):
-	var p_rf: RefFrame = player_rf as RefFrame
-	var f_rf: RefFrame = force_source_rf as RefFrame
+	var p_rf: RefFrameNode = player_rf as RefFrameNode
+	var f_rf: RefFrameNode = force_source_rf as RefFrameNode
 	var se3: Se3Ref = f_rf.relative_to( p_rf )
 	var r = se3.r
 	var abs_r: float = r.length()

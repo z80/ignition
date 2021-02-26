@@ -17,7 +17,7 @@ func _ready():
 	var rot = celestial_body.rotation_rf()
 	rf.change_parent( rot )
 	
-	var character: Body = BodyCreator.create( "character_simple" )
+	var character: Body = BodyCreator.create( "character_central" )
 	character.name = "MyCharacter"
 	# Call add body to process inclusion and initialization properly.
 	rf.add_body( character )

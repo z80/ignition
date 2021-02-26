@@ -32,6 +32,8 @@ func create( type_name: String ):
 			return part_cylinder()
 		"character_simple":
 			return part_character_simple()
+		"character_central":
+			return part_character_central()
 		"reaction_wheels_2m":
 			return part_reaction_wheels_2m()
 		"thruster_01":
@@ -92,6 +94,12 @@ func part_cylinder():
 
 func part_character_simple():
 	var B = load( "res://physics/bodies/character_simple/character_simple.tscn" )
+	var b = _create( B )
+	return b
+
+
+func part_character_central():
+	var B = load( "res://physics/bodies/character_central/character_central.tscn" )
 	var b = _create( B )
 	return b
 

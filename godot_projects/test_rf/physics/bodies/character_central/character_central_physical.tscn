@@ -6,8 +6,6 @@
 radius = 0.5
 
 [node name="CharacterCentralPhysical" type="RigidBody"]
-axis_lock_angular_x = true
-axis_lock_angular_z = true
 script = ExtResource( 1 )
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
