@@ -193,6 +193,8 @@ void CubeSphere::triangle_list( Vector<CubeVertex> & tris )
 
 void CubeSphere::triangle_list( const Vector<Vector3d> & pts, Float dist, Vector<CubeVertex> & tris )
 {
+	tris.clear();
+
     select_faces( pts, dist, faceInds_ );
 
     const unsigned qty = faceInds_.size();
