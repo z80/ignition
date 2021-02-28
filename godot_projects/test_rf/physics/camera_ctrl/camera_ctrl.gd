@@ -101,7 +101,7 @@ func _set_sensitivity( sens ):
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	_init_basis()
 
 
 func _input( event ):
@@ -257,39 +257,35 @@ func _process_tps_free( _delta ):
 
 
 
-func _init_basis( up: Vector3 ):
-	var Utils = preload( "res://physics/utils/orthogonalize.gd" )
-	var ret = Utils.pick_basis( up )
-	e_x = ret[0]
-	e_y = ret[1]
-	e_z = ret[2]
+func _init_basis():
+	e_x = Vector3.RIGHT
+	e_y = Vector3.UP
+	e_z = Vector3.BACK
 
 
-func _adjust_basis( up: Vector3 ):
-	var Utils = preload( "res://physics/utils/orthogonalize.gd" )
-	var ret = Utils.adjust_basis( e_x, e_z, up )
-	e_x = ret[0]
-	e_y = ret[1]
-	e_z = ret[2]
 
 
 func process_basis( up: Vector3 ):
-	if basis_initialized:
-		_adjust_basis( up )
+	var rot: Vector3 = Vector3.UP.cross( up )
+	var a: float = rot.length()
+	var q: Quat
+	if a < 0.0001:
+		q = Quat.IDENTITY
 	else:
-		_init_basis( up )
-		basis_initialized = true
+		var a_2: float = a * 0.5
+		var co2: float = cos( a_2 )
+		var si2: float = sin( a_2 )
+		var k: float = si2 / a
+		q.w = co2
+		q.x = rot.x*k
+		q.y = rot.y*k
+		q.z = rot.z*k
+	
+	e_x = q.xform( Vector3.RIGHT )
+	e_y = q.xform( Vector3.UP )
+	e_z = q.xform( Vector3.BACK )
 
 
-func jump_basis( t_before: Transform, t_after: Transform ):
-#	var q_before: Quat = t_before.basis
-#	var q_after: Quat  = t_after.basis
-#	var q: Quat = q_after.inverse() * q_before
-#	q = q.inverse()
-#	e_x = q.xform( e_x )
-#	e_y = q.xform( e_y )
-#	e_z = q.xform( e_z )
-	pass
 
 
 
