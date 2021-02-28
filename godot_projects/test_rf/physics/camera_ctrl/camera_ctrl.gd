@@ -34,11 +34,7 @@ var _state = {
 }
 
 
-# Camera unit vectors defining up axis and two horizontal axes.
-var basis_initialized: bool = false
-var e_x: Vector3 = Vector3(1.0, 0.0, 0.0)
-var e_y: Vector3 = Vector3(0.0, 1.0, 0.0)
-var e_z: Vector3 = Vector3(0.0, 0.0, 1.0)
+var local_ref_frame: Quat = Quat.IDENTITY
 
 
 var _target: Spatial = null
@@ -181,13 +177,10 @@ func _process_fps(_delta):
 			rr = 0.0
 		_state.pitch +=  fr - rr
 	
-	var q: Quat = Quat( e_y, _state.yaw ) * Quat( e_x, _state.pitch )
+	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
 	var t: Transform = Transform.IDENTITY
-	t.basis.x = e_x
-	t.basis.y = e_y
-	t.basis.z = e_z
-	t.basis = t.basis
-	t.basis = t.basis * Basis( q )
+	q = local_ref_frame * q
+	t.basis = Basis( q )
 	t.origin = _target.global_transform.origin
 	transform = t
 	
@@ -232,16 +225,16 @@ func _process_tps_azimuth( _delta ):
 		rr = 0.0 * _state.pitch * return_rate * _delta
 		_state.pitch +=  fr - rr
 
-	var q: Quat = Quat( e_y, _state.yaw ) * Quat( e_x, _state.pitch )
+#	_state.yaw = PI / 2.0
+#	_state.pitch = 0.0
+
+	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
+	q = local_ref_frame * q
 	var v_dist: Vector3 = Vector3( 0.0, 0.0, _state.dist )
 	v_dist = q.xform( v_dist )
 	
 	var t: Transform = Transform.IDENTITY
-	t.basis.x = e_x
-	t.basis.y = e_y
-	t.basis.z = e_z
-	t.basis = t.basis
-	t.basis = t.basis * Basis( q )
+	t.basis = Basis( q )
 	var target_origin: Vector3 = _target.global_transform.origin
 	t.origin += v_dist + target_origin
 	transform = t
@@ -258,18 +251,17 @@ func _process_tps_free( _delta ):
 
 
 func _init_basis():
-	e_x = Vector3.RIGHT
-	e_y = Vector3.UP
-	e_z = Vector3.BACK
+	local_ref_frame = Quat.IDENTITY
 
 
 
 
 func process_basis( up: Vector3 ):
-	var rot: Vector3 = Vector3.UP.cross( up )
+	var current_up: Vector3 = local_ref_frame.xform( Vector3.UP )
+	var rot: Vector3 = current_up.cross( up )
 	var a: float = rot.length()
 	var q: Quat
-	if a < 0.0001:
+	if a < 0.000001:
 		q = Quat.IDENTITY
 	else:
 		var a_2: float = a * 0.5
@@ -281,9 +273,8 @@ func process_basis( up: Vector3 ):
 		q.y = rot.y*k
 		q.z = rot.z*k
 	
-	e_x = q.xform( Vector3.RIGHT )
-	e_y = q.xform( Vector3.UP )
-	e_z = q.xform( Vector3.BACK )
+	local_ref_frame = q * local_ref_frame
+	local_ref_frame = local_ref_frame.normalized()
 
 
 

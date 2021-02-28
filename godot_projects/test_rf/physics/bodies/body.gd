@@ -257,10 +257,10 @@ func _create_visual( Visual ):
 
 
 # Spatials to target camera to.
-func privot_tps( ind: int = 0 ):
+func privot_tps( _ind: int = 0 ):
 	return _visual
 
-func privot_fps( ind: int = 0 ):
+func privot_fps( _ind: int = 0 ):
 	return _visual
 
 

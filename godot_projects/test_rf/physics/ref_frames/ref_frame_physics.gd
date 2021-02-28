@@ -68,6 +68,7 @@ func create_subdivide_source():
 
 
 func set_surface_vertices( verts: PoolVector3Array, se3: Se3Ref ):
+	print( "surface provides is given ", verts.size(), " vertices" )
 	if _surface_provider != null:
 		_surface_provider.set_vertices( verts, se3 )
 
@@ -143,6 +144,7 @@ func _cleanup_physical():
 func jump( t: Transform ):
 	var before_t: Transform = self.t()
 	
+	t.basis = Basis.IDENTITY
 	self.set_jump_t( t )
 	self.apply_jump()
 	var bodies = child_bodies( true )
