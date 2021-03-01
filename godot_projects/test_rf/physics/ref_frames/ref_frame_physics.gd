@@ -352,19 +352,6 @@ func apply_forces():
 		if body != null:
 			process_body( rf, body )
 	
-	var defines_vertical: bool = rf.force_source.defines_vertical()
-	if defines_vertical:
-		var pc: Body = PhysicsManager.player_control
-		if pc == null:
-			return
-		var c: Camera = PhysicsManager.camera
-		if not c.has_method( "process_basis" ):
-			return
-		var up: Vector3 = rf.force_source.up( rf, pc )
-		up = pc.q().xform( up )
-		c.process_basis( up )
-	#	rf.compute_relative_to_root( self )
-	#	var q: Quat = rf.q_root()
 
 
 

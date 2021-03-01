@@ -277,8 +277,33 @@ func process_basis( up: Vector3 ):
 	local_ref_frame = local_ref_frame.normalized()
 
 
-
-
-
+func apply_atmosphere( celestial_body: CelestialBody ):
+	var planet_radius: float = celestial_body.planet_radius_km * 1000.0
+	var atmosphere_height: float = celestial_body.atmosphere_height_km * 1000.0
+	var t: Transform = self.transform
+	t = t.inverse()
+	var planet_t: Transform = celestial_body.t_root()
+	t = t * planet_t
+	var r: Vector3 = t.origin
+	
+	var atm: MeshInstance = get_node( "Atmosphere" ) as MeshInstance
+	if atm == null:
+		return
+	
+	var opaque_height: float = 1.0
+	var transparency_scale_outer: float = 30.0
+	var transparency_scale_inner: float = 0.5
+	var light_dir: Vector3 = Vector3( 1.0, 0.0, 0.0 )
+	var displacement: float = 0.267
+	
+	var m: ShaderMaterial = atm.material_override as ShaderMaterial
+	m.set_shader_param( "sphere_position", r )
+	m.set_shader_param( "sphere_radius", planet_radius )
+	m.set_shader_param( "atmosphere_height", atmosphere_height )
+	m.set_shader_param( "opaque_height", opaque_height )
+	m.set_shader_param( "transparency_scale_outer", transparency_scale_outer )
+	m.set_shader_param( "transparency_scale_inner", transparency_scale_inner )
+	m.set_shader_param( "light_dir", light_dir )
+	m.set_shader_param( "displacement", displacement )
 
 

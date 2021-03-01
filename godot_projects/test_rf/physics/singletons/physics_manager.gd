@@ -56,8 +56,11 @@ func _physics_process( delta ):
 	if player_rf != null:
 		player_rf.apply_forces()
 	
-	# Update. Here controla sre applied.
+	update_camera()
+	
+	# Update. Here controls are applied.
 	update_bodies_physical( delta )
+	
 
 
 
@@ -168,6 +171,39 @@ func update_spheres( delta: float ):
 	var group: String = Constants.SPHERES_GROUP_NAME
 	for sphere in get_tree().get_nodes_in_group( group ):
 		sphere.process( delta )
+
+
+func update_camera():
+	var ClosestForceSource = preload( "res://physics/utils/closest_force_source.gd" )
+	# Update camera orientation.
+	var pc: Body = PhysicsManager.player_control
+	if pc == null:
+		return
+	
+	var rf: RefFrame = ClosestForceSource.closest_force_source( pc )
+	if rf == null:
+		return
+	
+	if rf.force_source == null:
+		return
+	
+	var defines_vertical: bool = rf.force_source.defines_vertical()
+	var c: Camera = PhysicsManager.camera
+	if defines_vertical:
+		if pc == null:
+			return
+		if not c.has_method( "process_basis" ):
+			return
+		var up: Vector3 = rf.force_source.up( rf, pc )
+		up = pc.q().xform( up )
+		c.process_basis( up )
+		
+	# For the body under player control find the closest celestial
+	# body. If found, specify the atmosphere parameters.
+	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
+	var celestial_body: Node = ClosestCelestialBody.closest_celestial_body( pc )
+	if celestial_body != null:
+		c.apply_atmosphere( celestial_body )
 
 
 func create_ref_frame_physics():
