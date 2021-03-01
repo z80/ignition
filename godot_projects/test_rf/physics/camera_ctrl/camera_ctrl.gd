@@ -280,7 +280,7 @@ func process_basis( up: Vector3 ):
 func apply_atmosphere( celestial_body: CelestialBody ):
 	var planet_radius: float = celestial_body.planet_radius_km * 1000.0
 	var t: Transform = self.global_transform
-	t = t.inverse()
+	#t = t.inverse()
 	var planet_t: Transform = celestial_body.t_root()
 	t = t * planet_t
 	var r: Vector3 = t.origin
