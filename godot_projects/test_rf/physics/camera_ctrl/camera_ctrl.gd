@@ -279,8 +279,7 @@ func process_basis( up: Vector3 ):
 
 func apply_atmosphere( celestial_body: CelestialBody ):
 	var planet_radius: float = celestial_body.planet_radius_km * 1000.0
-	var atmosphere_height: float = celestial_body.atmosphere_height_km * 1000.0
-	var t: Transform = self.transform
+	var t: Transform = self.global_transform
 	t = t.inverse()
 	var planet_t: Transform = celestial_body.t_root()
 	t = t * planet_t
@@ -290,6 +289,7 @@ func apply_atmosphere( celestial_body: CelestialBody ):
 	if atm == null:
 		return
 	
+	var atmosphere_height: float = 20.0
 	var opaque_height: float = 1.0
 	var transparency_scale_outer: float = 30.0
 	var transparency_scale_inner: float = 0.5
