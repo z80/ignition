@@ -167,18 +167,19 @@ func jump_if_needed():
 	#if _jumps_left <= 0:
 	#	return
 	
-	var player_control = PhysicsManager.player_control
-	var bodies = child_bodies()
-	if not (player_control in bodies):
-		return
+	# Compute center of all bodies in the ref frame.
+	var bodies: Array = child_bodies( false )
+	var r: Vector3 = Vector3.ZERO
+	for b in bodies:
+		r += b.r()
+	r /= float( bodies.size() )
 	
-	var r: Vector3 = player_control.r()
 	var dist: float = r.length()
 	if dist < Constants.RF_JUMP_DISTANCE:
 		return
 	
-	var t: Transform = player_control.t()
-	t.basis = Basis.IDENTITY
+	var t: Transform = Transform.IDENTITY
+	t.origin = r
 	jump( t )
 	
 	#_jumps_left -= 1

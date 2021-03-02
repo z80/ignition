@@ -24,6 +24,7 @@ radial_segments = 16
 rings = 8
 
 [node name="Camera" type="Camera"]
+far = 1000.0
 script = ExtResource( 2 )
 
 [node name="Atmosphere" parent="." instance=ExtResource( 1 )]
