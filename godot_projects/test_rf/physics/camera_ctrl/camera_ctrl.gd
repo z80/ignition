@@ -135,6 +135,8 @@ func _process(_delta):
 		_process_tps_azimuth(_delta)
 	elif mode == Mode.TPS_FREE:
 		_process_tps_free(_delta)
+	
+	_process_sky()
 
 
 
@@ -303,5 +305,28 @@ func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialBody
 	m.set_shader_param( "transparency_scale_inner", transparency_scale_inner )
 	m.set_shader_param( "light_dir", light_dir )
 	m.set_shader_param( "displacement", displacement )
+
+
+
+
+func _process_sky():
+	var player_rf: RefFrameNode = PhysicsManager.player_ref_frame
+	if player_rf == null:
+		return
+	
+	var se3: Se3Ref = player_rf.relative_to( null )
+	var q: Quat = self.global_transform.basis.get_rotation_quat()
+	q = (se3.q * q).inverse()
+	
+	#print( "global q: ", q )
+	
+	var bg: Spatial = get_node( "Background" ) as Spatial
+	
+	var far: float = self.far * 0.9
+	var t: Transform = bg.transform
+	t.basis = q
+	t.basis = t.basis.scaled( Vector3( far, far, far ) )
+	
+	bg.transform = t
 
 
