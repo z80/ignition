@@ -165,8 +165,8 @@ Ref<Se3Ref> RefFrameNode::relative_to( Node * origin )
 	se3.instance();
 
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( origin );
-	if (!rf)
-		return se3;
+	//if (!rf)
+	//	return se3;
 
 	se3->se3 = relative_( rf );
 	return se3;
