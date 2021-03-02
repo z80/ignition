@@ -228,7 +228,7 @@ func split_if_needed():
 	var split_ind: int = ret[1]
 	var dest: Array    = ret[2]
 	var split_dist: float = Constants.RF_SPLIT_DISTANCE
-	if dist > split_dist:
+	if dist < split_dist:
 		return false
 	
 	var qty: int = dest.size()

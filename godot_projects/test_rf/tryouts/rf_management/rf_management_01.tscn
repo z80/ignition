@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://physics/celestial_bodies/celestial_body.tscn" type="PackedScene" id=1]
+[ext_resource path="res://tryouts/rf_management/rf_management_01.gd" type="Script" id=2]
+[ext_resource path="res://physics/camera_ctrl/camera.tscn" type="PackedScene" id=3]
+
+[node name="Root" type="Node"]
+script = ExtResource( 2 )
+
+[node name="CelestialBody" parent="." instance=ExtResource( 1 )]
+surface_orbital_vel_kms = 0.01
+planet_radius_km = 0.1
+planet_height_km = 0.01
+detail_size_1 = 200.0
+detail_size_2 = 5000.0
+
+[node name="Camera" parent="." instance=ExtResource( 3 )]

@@ -165,7 +165,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Test Rf"
-run/main_scene="res://tryouts/rf_management/rf_management_00.tscn"
+run/main_scene="res://tryouts/rf_management/rf_management_01.tscn"
 config/icon="res://icon.png"
 
 [autoload]
