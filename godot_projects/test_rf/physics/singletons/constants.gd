@@ -6,12 +6,12 @@ const PROVIDERS_GROUP_NAME: String = "providers"
 const SPHERES_GROUP_NAME: String   = "spheres"
 
 const DEBUG := true
-const RF_JUMP_DISTANCE: float  = 10.0
-const RF_SPLIT_DISTANCE: float = 60.0
-const RF_MERGE_DISTANCE: float = 50.0
+const RF_JUMP_DISTANCE: float  = 3.0
+const RF_SPLIT_DISTANCE: float = 6.0
+const RF_MERGE_DISTANCE: float = 5.0
 
-const BODY_EXCLUDE_DIST: float = 50.0
-const BODY_INCLUDE_DIST: float = 40.0
+const BODY_EXCLUDE_DIST: float = 5.0
+const BODY_INCLUDE_DIST: float = 4.0
 
 # Icon shows up only if closer than this distance
 const INTERACT_ICON_DIST: float = 30.0
