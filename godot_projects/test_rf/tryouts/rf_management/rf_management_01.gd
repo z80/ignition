@@ -20,7 +20,7 @@ func _ready():
 	var character: Body = BodyCreator.create( "character_central" )
 	character.name = "MyCharacter"
 	# Call add body to process inclusion and initialization properly.
-	rf.add_body( character )
+	character.change_parent( rf )
 	
 	# Add construction to null ref. frame. 
 	# It is suppsed to be picked up when close enough.
@@ -54,9 +54,17 @@ func _create_other_body():
 	body.name = "MyCylinder"
 	
 	# Call add body to process inclusion and initialization properly.
-	var rf: RefFrameNode = celestial_body.rotation_rf()
+	#var rf: RefFrameNode = celestial_body.rotation_rf()
+	#body.change_parent( rf )
+	#body.set_se3( se3 )
+	
+	var rf = PhysicsManager.create_ref_frame_physics()
+	rf.name = "OtherRefFramePhysics"
 	body.change_parent( rf )
-	body.set_se3( se3 )
+	var rot = celestial_body.rotation_rf()
+	rf.change_parent( rot )
+	rf.set_se3( se3 )
+
 	
 
 

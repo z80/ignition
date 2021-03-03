@@ -169,10 +169,13 @@ func jump_if_needed():
 	
 	# Compute center of all bodies in the ref frame.
 	var bodies: Array = child_bodies( false )
+	var qty: int =  bodies.size()
+	if qty < 1:
+		return
 	var r: Vector3 = Vector3.ZERO
 	for b in bodies:
 		r += b.r()
-	r /= float( bodies.size() )
+	r /= float( qty )
 	
 	var dist: float = r.length()
 	if dist < Constants.RF_JUMP_DISTANCE:
@@ -216,7 +219,7 @@ func include_close_enough_bodies():
 		var d: float = r.length()
 		
 		if d < min_dist:
-			add_body( body )
+			body.change_parent( self )
 
 
 
@@ -259,10 +262,13 @@ func split_if_needed():
 	# At this point both arrays are not empty and if player ref frame is here, 
 	# it is in bodies_a.
 	var p = get_parent()
-	var rf: RefFrame = PhysicsManager.create_ref_frame_physics()
-	rf.change_parent( p )
+	#var rf: RefFrame = PhysicsManager.create_ref_frame_physics()
+	#rf.change_parent( p )
+	#var se3: Se3Ref = self.get_se3()
+	#rf.set_se3( se3 )
+	
 	for body in bodies_b:
-		body.change_parent( rf )
+		body.change_parent( p )
 	
 	return true 
 
@@ -282,6 +288,8 @@ func merge_if_needed():
 			var bodies: Array = rf.child_bodies()
 			for body in bodies:
 				body.change_parent( self )
+			
+			self.queue_free()
 			
 			return true
 	return false
@@ -427,6 +435,8 @@ func distance( b: RefFramePhysics ):
 # Destructor.
 func _exit_tree():
 	finit_physics()
+	_surface_provider.queue_free()
+	_subdivide_source_physical.queue_free()
 
 
 
