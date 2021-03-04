@@ -36,6 +36,9 @@ func _process(_delta):
 	var ref_frames = physics_ref_frames()
 	for id in ref_frames:
 		var rf: RefFramePhysics = ref_frames[id]
+		var deleted: bool =  rf.is_queued_for_deletion()
+		if deleted:
+			continue
 		rf.evolve()
 		rf.process_children()
 	
@@ -145,7 +148,8 @@ func update_bodies_visual():
 	
 	# Update visuals for all the physical-visual objects.
 	var group: String = Constants.BODIES_GROUP_NAME
-	for body in get_tree().get_nodes_in_group( group ):
+	var all_bodies: Array = get_tree().get_nodes_in_group( group )
+	for body in all_bodies:
 		body.update_visual( player_rf )
 
 
@@ -163,7 +167,8 @@ func update_bodies_physical( delta: float ):
 
 func update_providers():
 	var group: String = Constants.PROVIDERS_GROUP_NAME
-	for pr in get_tree().get_nodes_in_group( group ):
+	var surface_providers: Array = get_tree().get_nodes_in_group( group )
+	for pr in surface_providers:
 		pr.update()
 
 

@@ -32,8 +32,12 @@ func process_children():
 	#exclude_too_far_bodies()
 	include_close_enough_bodies()
 	split_if_needed()
-	merge_if_needed()
-	self_delete_if_unused()
+	if ( merge_if_needed() ):
+		return true
+	if ( self_delete_if_unused() ):
+		return true
+	
+	return false
 
 
 
@@ -135,7 +139,7 @@ func create_body( type_name: String, t: Transform = Transform.IDENTITY ):
 func _cleanup_physical():
 	if _contact_layer < 0:
 		return
-	var bodies = child_bodies()
+	var bodies = child_bodies( true )
 	for body in bodies:
 		body.remove_physical()
 
@@ -262,13 +266,13 @@ func split_if_needed():
 	# At this point both arrays are not empty and if player ref frame is here, 
 	# it is in bodies_a.
 	var p = get_parent()
-	#var rf: RefFrame = PhysicsManager.create_ref_frame_physics()
-	#rf.change_parent( p )
-	#var se3: Se3Ref = self.get_se3()
-	#rf.set_se3( se3 )
+	var rf: RefFrame = PhysicsManager.create_ref_frame_physics()
+	rf.change_parent( p )
+	var se3: Se3Ref = self.get_se3()
+	rf.set_se3( se3 )
 	
 	for body in bodies_b:
-		body.change_parent( p )
+		body.change_parent( rf )
 	
 	return true 
 
@@ -285,11 +289,18 @@ func merge_if_needed():
 		
 		var dist: float = distance( rf )
 		if dist < Constants.RF_MERGE_DISTANCE:
-			var bodies: Array = rf.child_bodies()
+			var bodies: Array = rf.child_bodies( false )
 			for body in bodies:
 				body.change_parent( self )
 			
-			self.queue_free()
+			# Also check if it is player's ref frame.
+			# If it is, change it to the one everything is merged to.
+			var player_rf: RefFramePhysics = PhysicsManager.player_ref_frame
+			if rf == player_rf:
+				PhysicsManager.player_ref_frame = rf
+			
+			# Queue for deletion.
+			rf.queue_free()
 			
 			return true
 	return false
@@ -436,7 +447,10 @@ func distance( b: RefFramePhysics ):
 func _exit_tree():
 	finit_physics()
 	_surface_provider.queue_free()
-	_subdivide_source_physical.queue_free()
+	# It's subclassed from a reference.
+	# Should be enough to just remove all references to 
+	# make it released.
+	_subdivide_source_physical = null
 
 
 

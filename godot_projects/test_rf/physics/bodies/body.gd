@@ -435,6 +435,7 @@ func add_force_torque( F: Vector3, P: Vector3 ):
 	else:
 		force.set_force( false, F, self.r() )
 
+
 # Body (like a character) might need to know it.
 func set_local_up( up: Vector3 ):
 	pass

@@ -29,7 +29,7 @@ func set_collision_layer( layer ):
 func process_inner( delta ):
 	.process_inner( delta )
 	# Update visual animation state.
-	if _physical:
+	if (_physical != null) and (_visual != null):
 		var s: float = _physical.get_speed_normalized()
 		_visual.set_speed_normalized( s )
 
