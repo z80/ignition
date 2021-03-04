@@ -112,6 +112,9 @@ func _force_source_recursive( n: Node ):
 
 
 
+func _exit_tree():
+	if _axes != null:
+		_axes.queue_free()
 
 
 
