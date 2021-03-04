@@ -50,7 +50,7 @@ func _create_other_body():
 	var surf: CubeSphereNode = celestial_body.surface_node()
 	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.2, -0.2 ), 2.0 )
 
-	var body: Body = BodyCreator.create( "part_cylinder" )
+	var body: Body = BodyCreator.create( "cube" )
 	body.name = "MyCylinder"
 	
 	# Call add body to process inclusion and initialization properly.

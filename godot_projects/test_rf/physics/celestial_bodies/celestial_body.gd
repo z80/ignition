@@ -146,6 +146,13 @@ func process_geometry():
 	var paths: Array = []
 	for k in physics_ref_frames:
 		var rf: RefFramePhysics = physics_ref_frames[k]
+		
+		
+		# For debug purposes only process only player's ref frame.
+		if rf != player_rf:
+			continue
+		
+		
 		# Check if either node is direct parent of this rf
 		var p = rf.get_parent()
 		var is_child: bool = ( p == planet ) or ( p == rotation ) or ( p == translation )

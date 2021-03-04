@@ -174,7 +174,8 @@ func update_providers():
 
 func update_spheres( delta: float ):
 	var group: String = Constants.SPHERES_GROUP_NAME
-	for sphere in get_tree().get_nodes_in_group( group ):
+	var all_spheres: Array = get_tree().get_nodes_in_group( group )
+	for sphere in all_spheres:
 		sphere.process( delta )
 
 
