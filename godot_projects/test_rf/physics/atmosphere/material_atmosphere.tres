@@ -39,12 +39,13 @@ bool ray_atmosphere_intersection_length( vec3 ray_origin, vec3 sphere_center, ve
 	// Compute using Phifagorous theorem.
 	float x = sqrt( R*R - d*d );
 	float t2 = t + x;
-	inside = ( (t - x) < 0.0 );
+	float t1_candidate = t - x;
+	inside = ( t1_candidate < 0.0 );
 	float t1;
 	if (inside)
 		t1 = 0.0;
 	else
-		t1 = t - x;
+		t1 = t1_candidate;
 
 	// Intersects surface?
 	bool intersects_surface = (d < sphere_radius);
@@ -53,14 +54,14 @@ bool ray_atmosphere_intersection_length( vec3 ray_origin, vec3 sphere_center, ve
 	x = sqrt( sphere_radius*sphere_radius - d*d );
 	float surf_t1 = t - x;
 	// If surface is on the way.
-	if ( surf_t1 > 0.0 )
+	/*if ( surf_t1 > 0.0 )
 	{
 		// If inside atmosphere, make it transparent, i.e. no distance fog.
-		if ( inside )
-			t1 = t2 = surf_t1;
-		else
-			t2 = surf_t1;
-	}
+		// No, make it totally opaque.
+		if ( !inside )
+			// Should make it fully transparent outside.
+			t2 = t1; //surf_t1;
+	}*/
 	
 	len = t2 - t1;
 	
@@ -134,8 +135,8 @@ void fragment()
 	
 	//bool ok = ray_intersects_sphere( cam_position, sphere_position, ray, sphere_radius );
 	
-	float len = 0.0;
-	bool inside = false;
+	//float len = 0.0;
+	//bool inside = false;
 	//bool ok2 = ray_sphere_intersection_length( cam_position, sphere_position, ray, sphere_radius, len, inside );
 	
 	//bool ok3 = ray_atmosphere_intersection_length( cam_position, sphere_position, ray, sphere_radius, atmosphere_height, len, inside );

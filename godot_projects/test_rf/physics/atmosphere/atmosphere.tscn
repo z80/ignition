@@ -4,7 +4,7 @@
 
 [sub_resource type="CubeMesh" id=1]
 flip_faces = true
-size = Vector3( 100, 100, 100 )
+size = Vector3( 1, 1, 1 )
 
 [node name="AtmosphereMesh" type="MeshInstance"]
 mesh = SubResource( 1 )

@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=2]
 
-[ext_resource path="res://tryouts/atmosphere/material_my_atmosphere.tres" type="Material" id=1]
+[ext_resource path="res://physics/atmosphere/material_atmosphere.tres" type="Material" id=1]
 [ext_resource path="res://physics/atmosphere/assets/starmap_2020_4k.jpg" type="Texture" id=2]
 [ext_resource path="res://tryouts/atmosphere/material_earth.tres" type="Material" id=3]
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=4]

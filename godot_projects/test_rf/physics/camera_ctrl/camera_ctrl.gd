@@ -292,6 +292,12 @@ func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialBody
 	if atm == null:
 		return
 	
+	var far: float = self.far * 0.5
+	var t: Transform = atm.transform
+	t.basis = Basis.IDENTITY
+	t.basis = t.basis.scaled( Vector3( far, far, far ) )
+	atm.transform = t
+
 	var atmosphere_height: float = 5.0
 	var opaque_height: float = 1.0
 	var transparency_scale_outer: float = 30.0
