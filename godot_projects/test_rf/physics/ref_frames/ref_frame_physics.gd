@@ -19,6 +19,7 @@ var _subdivide_source_physical: SubdivideSourceRef = null
 # For debugging jump only this number of times.
 #var _jumps_left: int = 50
 
+var debug_has_split: bool = false
 
 
 # To be able to identify objects of this class.
@@ -29,13 +30,15 @@ func get_class():
 func process_children():
 	.process_children()
 	apply_forces()
-	#exclude_too_far_bodies()
-	include_close_enough_bodies()
-	split_if_needed()
-	if ( merge_if_needed() ):
-		return true
-	if ( self_delete_if_unused() ):
-		return true
+	if not debug_has_split:
+		#exclude_too_far_bodies()
+		include_close_enough_bodies()
+		var has_split: bool = split_if_needed()
+		debug_has_split = has_split
+		if ( merge_if_needed() ):
+			return true
+		if ( self_delete_if_unused() ):
+			return true
 	
 	return false
 
@@ -227,6 +230,20 @@ func include_close_enough_bodies():
 
 
 
+static func print_all_ref_frames():
+	print( "*********************************************************" )
+	print( "All ref frames" )
+	var player_rf = PhysicsManager.player_ref_frame
+	print( "player rf: ", player_rf.name )
+	var rfs: Dictionary = PhysicsManager.physics_ref_frames()
+	for id in rfs:
+		var rf: RefFramePhysics = rfs[id]
+		var se3: Se3Ref = rf.get_se3()
+		print( "rf: #", id, " name: ", rf.name, " r: ", se3.r )
+	
+	print( "" )
+
+
 func split_if_needed():
 	var bodies = child_bodies()
 	if ( bodies.size() < 2 ):
@@ -242,6 +259,10 @@ func split_if_needed():
 	var qty: int = dest.size()
 	if ( split_ind < 1 ) or ( split_ind >= qty ):
 		return false
+	
+	print( "splitting ref frame ", self.name )
+	print( "just before split: " )
+	print_all_ref_frames()
 	
 	var bodies_a: Array = []
 	var bodies_b: Array = []
@@ -274,6 +295,11 @@ func split_if_needed():
 	for body in bodies_b:
 		body.change_parent( rf )
 	
+	print( "new rf created ", rf. name )
+	print( "after split: " )
+	print_all_ref_frames()
+	print( "" )
+	
 	return true 
 
 
@@ -289,18 +315,29 @@ func merge_if_needed():
 		
 		var dist: float = distance( rf )
 		if dist < Constants.RF_MERGE_DISTANCE:
+			
+			print( "merging ", rf.name, " with ", self.name )
+			print( "infor before" )
+			print_all_ref_frames()
+			
 			var bodies: Array = rf.child_bodies( false )
 			for body in bodies:
 				body.change_parent( self )
 			
+			
+			print( "merged ", rf.name, " with ", self.name )
 			# Also check if it is player's ref frame.
 			# If it is, change it to the one everything is merged to.
 			var player_rf: RefFramePhysics = PhysicsManager.player_ref_frame
 			if rf == player_rf:
-				PhysicsManager.player_ref_frame = rf
+				PhysicsManager.player_ref_frame = self
+				print( "player ref frame changed to ", rf.name )
 			
 			# Queue for deletion.
 			rf.queue_free()
+			
+			print( "infor after" )
+			print_all_ref_frames()
 			
 			return true
 	return false

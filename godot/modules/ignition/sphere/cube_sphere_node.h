@@ -48,9 +48,6 @@ public:
     // Triangles are in "origin"'s ref frame.
     // Triangles are all triangles closer than "dist" from all "ref_frames".
     const PoolVector3Array & collision_triangles( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref, real_t dist );
-	// Needed for updates.
-	Ref<Se3Ref> se3_center_relative_to_ref_frame();
-	Ref<Se3Ref> se3_poi_relative_to_center();
 
     // Content generation faces.
     const Array & content_cells( Node * origin, real_t cell_size, real_t dist );
@@ -75,19 +72,19 @@ public:
     void set_convert_to_global( bool en );
     bool get_convert_to_global() const;
 
-	void relocate_mesh( Node * ref_frame );
+	void relocate_mesh( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source );
 	void rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source );
 	void apply_visual_mesh();
 
 private:
 
     void regenerate_mesh( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref );
-    void adjust_pose( RefFrameNode * ref_frame );
+    void adjust_pose( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source );
     void init_levels();
 
-    void scale_close();
-    void scale_far();
-    void scale_neutral();
+    void scale_close( SE3 & poi_relative_to_center );
+    void scale_far( SE3 & poi_relative_to_center );
+    void scale_neutral( const SE3 & poi_relative_to_center );
 
 	MeshInstance * get_mesh_instance();
 public:
@@ -102,8 +99,6 @@ public:
     // These are for determining when subdivision is needed and for placement of
     // points of interest.
     bool                 generate_close;
-    // Sphere point closest to the observation point relative to sphere center.
-    SE3                  poi_relative_to_center;
     // Sphere center relative to observation point.
     SE3                  center_relative_to_ref_frame;
 	// Scale for adjusting mesh pose.

@@ -54,6 +54,21 @@ Vector2 compute_uv2( const Vector3 & at, real_t R )
     return uv;
 }
 
+static SE3 compute_poi_relative_to_center( CubeSphere * s, const SE3 & center_relative_to_rf )
+{
+	Float L = center_relative_to_rf.r_.Length();
+	const Float R = s->r();
+	if ( L < R )
+		L = R;
+	const Float _L_R = L - R;
+	const Vector3d r = center_relative_to_rf.r_ * (_L_R / L);
+	SE3 se3 = center_relative_to_rf;
+	se3.r_ = r;
+	const SE3 poi_relative_to_center = se3 / center_relative_to_rf;
+
+	return poi_relative_to_center;
+}
+
 void CubeSphereNode::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_radius", "r"), &CubeSphereNode::set_radius );
@@ -68,11 +83,7 @@ void CubeSphereNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("clear_levels"), &CubeSphereNode::clear_levels);
 	ClassDB::bind_method( D_METHOD("add_level", "sz", "dist"), &CubeSphereNode::add_level);
 
-
     ClassDB::bind_method( D_METHOD("collision_triangles", "ref_frame", "subdivide_source", "dist"), &CubeSphereNode::collision_triangles, Variant::POOL_VECTOR3_ARRAY );
-	ClassDB::bind_method( D_METHOD("se3_center_relative_to_ref_frame"), &CubeSphereNode::se3_center_relative_to_ref_frame, Variant::OBJECT );
-	ClassDB::bind_method( D_METHOD("se3_poi_relative_to_center"),       &CubeSphereNode::se3_center_relative_to_ref_frame, Variant::OBJECT );
-
 
     ClassDB::bind_method( D_METHOD("content_cells", "origin", "cell_size", "dist"), &CubeSphereNode::content_cells, Variant::ARRAY );
     ClassDB::bind_method( D_METHOD("local_se3", "cell_ind", "unit_at", "true_surface_normal"), &CubeSphereNode::local_se3, Variant::OBJECT );
@@ -94,7 +105,7 @@ void CubeSphereNode::_bind_methods()
 
 
 
-	ClassDB::bind_method( D_METHOD("relocate_mesh", "rf"), &CubeSphereNode::relocate_mesh );
+	ClassDB::bind_method( D_METHOD("relocate_mesh", "rf", "subdiv_src"), &CubeSphereNode::relocate_mesh );
 	ClassDB::bind_method( D_METHOD("rebuild_shape", "rf", "subdiv_src"), &CubeSphereNode::rebuild_shape );
 	ClassDB::bind_method( D_METHOD("apply_visual_mesh"), &CubeSphereNode::apply_visual_mesh );
 
@@ -209,23 +220,6 @@ const PoolVector3Array & CubeSphereNode::collision_triangles( Node * ref_frame, 
     return arr;
 }
 
-Ref<Se3Ref> CubeSphereNode::se3_center_relative_to_ref_frame()
-{
-	Ref<Se3Ref> ret;
-	ret.instance();
-	ret.ptr()->se3 = center_relative_to_ref_frame;
-
-	return ret;
-}
-
-Ref<Se3Ref> CubeSphereNode::se3_poi_relative_to_center()
-{
-	Ref<Se3Ref> ret;
-	ret.instance();
-	ret.ptr()->se3 = poi_relative_to_center;
-
-	return ret;
-}
 
 const Array & CubeSphereNode::content_cells( Node * ref_frame, real_t cell_size, real_t dist )
 {
@@ -417,10 +411,10 @@ bool CubeSphereNode::get_convert_to_global() const
     return convert_to_global;
 }
 
-void CubeSphereNode::relocate_mesh( Node * ref_frame )
+void CubeSphereNode::relocate_mesh( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source )
 {
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( ref_frame );
-	adjust_pose( rf );
+	adjust_pose( rf, subdivide_source );
 }
 
 void CubeSphereNode::rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref )
@@ -503,15 +497,8 @@ void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, const Ref<Subdiv
 	center_relative_to_ref_frame = this->relative_( ref_frame );
 
     // Compute point of interest relative to center.
-    Float L = center_relative_to_ref_frame.r_.Length();
-    const Float R = sphere.r();
-    if ( L < R )
-        L = R;
-    const Float _L_R = L - R;
-    const Vector3d r = center_relative_to_ref_frame.r_ * (_L_R / L);
-    SE3 se3 = center_relative_to_ref_frame;
-    se3.r_ = r;
-    poi_relative_to_center = se3 / center_relative_to_ref_frame;
+    
+    ss->poi_relative_to_center = compute_poi_relative_to_center( &sphere, center_relative_to_ref_frame );
     // "poi_relative_to_center" will be changed later in scale methods.
 
     // Check which way to scale the sphere.
@@ -524,16 +511,16 @@ void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, const Ref<Subdiv
     if ( use_scale )
     {
         if ( generate_close )
-            scale_close();
+            scale_close( ss->poi_relative_to_center );
         else
-            scale_far();
+            scale_far( ss->poi_relative_to_center );
     }
     else
-        scale_neutral();
+        scale_neutral( ss->poi_relative_to_center );
 
 }
 
-void CubeSphereNode::adjust_pose( RefFrameNode * ref_frame )
+void CubeSphereNode::adjust_pose( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source )
 {
 	MeshInstance * mi = get_mesh_instance();
 	if ( mi == nullptr )
@@ -543,7 +530,8 @@ void CubeSphereNode::adjust_pose( RefFrameNode * ref_frame )
 	// Apply scale.
 	center_relative_to_ref_frame.r_ *= distance_scale;
 
-    SE3 se3 = center_relative_to_ref_frame * poi_relative_to_center;
+	SubdivideSource * ss = const_cast<SubdivideSource *>( &(subdivide_source->subdivide_source) );
+    SE3 se3 = center_relative_to_ref_frame * ss->poi_relative_to_center;
     if ( convert_to_global )
     {
         SE3 to_global = ref_frame->relative_( nullptr );
@@ -564,7 +552,7 @@ void CubeSphereNode::init_levels()
     add_level( r/5.0, r*3.0 );
 }
 
-void CubeSphereNode::scale_close()
+void CubeSphereNode::scale_close( SE3 & poi_relative_to_center )
 {
     // Here assume that 1) scale is applied and 2) scaler object is set.
     // Convert to origin (observer) ref frame.
@@ -608,7 +596,7 @@ void CubeSphereNode::scale_close()
 	distance_scale = poi_s;
 }
 
-void CubeSphereNode::scale_far()
+void CubeSphereNode::scale_far( SE3 & poi_relative_to_center )
 {
 	// Make POI relative to center such that scaled POI in origin rf
 	// is obtained by center_relative_to_ref_frame * poi_relative_to_center.
@@ -634,7 +622,7 @@ void CubeSphereNode::scale_far()
 	distance_scale = poi_s;
 }
 
-void CubeSphereNode::scale_neutral()
+void CubeSphereNode::scale_neutral( const SE3 & poi_relative_to_center )
 {
     const SE3 inv_center = poi_relative_to_center.inverse();
     const int qty = all_tris.size();

@@ -285,6 +285,9 @@ func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialBody
 	var planet_t: Transform = se3.transform
 	var r: Vector3 = planet_t.origin
 	
+	var player_parent = player_ref_frame.get_parent()
+	#print( "planet origin: ", r, ", player parent: ", player_parent.name )
+	
 	var atm: MeshInstance = get_node( "Atmosphere" ) as MeshInstance
 	if atm == null:
 		return

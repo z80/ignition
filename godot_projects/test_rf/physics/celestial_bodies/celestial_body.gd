@@ -147,12 +147,6 @@ func process_geometry():
 	for k in physics_ref_frames:
 		var rf: RefFramePhysics = physics_ref_frames[k]
 		
-		
-		# For debug purposes only process only player's ref frame.
-		if rf != player_rf:
-			continue
-		
-		
 		# Check if either node is direct parent of this rf
 		var p = rf.get_parent()
 		var is_child: bool = ( p == planet ) or ( p == rotation ) or ( p == translation )
@@ -165,8 +159,8 @@ func process_geometry():
 			# Build the surface for this particular ref frame physics.
 			planet.rebuild_shape( rf, subdiv )
 			var collision_dist = Constants.RF_MERGE_DISTANCE
-			var verts: PoolVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
 			var surface_relative_to_rf: Se3Ref = planet.relative_to( rf )
+			var verts: PoolVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
 			rf.set_surface_vertices( verts, surface_relative_to_rf )
 		else:
 			# Need to update current pose for surface vertices as 
@@ -183,7 +177,7 @@ func process_geometry():
 		if need_rebuild_visual:
 			planet.rebuild_shape( player_rf, _subdivide_source_visual )
 			planet.apply_visual_mesh()
-		planet.relocate_mesh( player_rf )
+		planet.relocate_mesh( player_rf, _subdivide_source_visual )
 
 
 

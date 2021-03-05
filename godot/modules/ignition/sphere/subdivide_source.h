@@ -3,6 +3,7 @@
 #define __SUBDIVIDE_SOURCE_H_
 
 #include "vector3d.h"
+#include "se3.h"
 
 namespace Ign
 {
@@ -27,6 +28,9 @@ public:
     void flatten_pts( const CubeSphere * s );
 
     Vector<Vector3d> pts_, ptsFlat_, ptsNew_;
+	// This one is stored when mesh is generated in
+	// order to correctly relocate.
+	SE3 poi_relative_to_center;
 };
 
 
