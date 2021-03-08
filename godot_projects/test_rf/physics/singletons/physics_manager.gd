@@ -4,8 +4,8 @@ extends Node
 const ENVS_QTY = 32
 var envs_: Array
 
-# All visualization meshes/or other types are with respect to this ref. frame.
-var player_ref_frame = null setget _set_player_ref_frame, _get_player_ref_frame
+# All visualization meshes/or other types are with respect to the ref frame 
+# where controlled object is.
 # Ref frame is selected when player clicks the icon.
 var player_select = null setget _set_player_select, _get_player_select
 # Ref frame gets focus when explicitly pressed "c" (center) on a selected ref. frame.
@@ -42,7 +42,7 @@ func _process(_delta):
 		rf.evolve()
 		rf.process_children()
 	
-	var player_rf = player_ref_frame
+	var player_rf = get_player_ref_frame()
 	if player_rf == null:
 		return
 	update_bodies_visual()
@@ -55,7 +55,7 @@ func _physics_process( delta ):
 	# Apply forces to all the bodes.
 	# Forces are applied in physics ref. frame.
 	# For now there is just one of those. And it is player's ref. frame.
-	var player_rf = player_ref_frame
+	var player_rf = get_player_ref_frame()
 	if player_rf != null:
 		player_rf.apply_forces()
 	
@@ -144,7 +144,7 @@ func physics_ref_frames():
 
 
 func update_bodies_visual():
-	var player_rf = player_ref_frame
+	var player_rf = get_player_ref_frame()
 	
 	# Update visuals for all the physical-visual objects.
 	var group: String = Constants.BODIES_GROUP_NAME
@@ -155,7 +155,7 @@ func update_bodies_visual():
 
 
 func update_bodies_physical( delta: float ):
-	var player_rf = player_ref_frame
+	var player_rf = get_player_ref_frame()
 	
 	# Update visuals for all the physical-visual objects.
 	var group: String = Constants.BODIES_GROUP_NAME
@@ -207,7 +207,7 @@ func update_camera():
 	# For the body under player control find the closest celestial
 	# body. If found, specify the atmosphere parameters.
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
-	var p_rf = player_ref_frame
+	var p_rf = get_player_ref_frame()
 	if p_rf == null:
 		return
 	var celestial_body: Node = ClosestCelestialBody.closest_celestial_body( p_rf )
@@ -225,12 +225,26 @@ func create_ref_frame_physics():
 
 
 
-func _set_player_ref_frame( rf ):
-	player_ref_frame = rf
+func _set_player_ref_frame( _rf ):
+	#player_ref_frame = rf
+	pass
 
 
 func _get_player_ref_frame():
-	return player_ref_frame
+	#return player_ref_frame
+	var body: Body = self.player_control
+	var p: Node = body.get_parent()
+	var rf_p: RefFramePhysics = p as RefFramePhysics
+	
+	return rf_p
+
+
+func get_player_ref_frame():
+	var body: Body = self.player_control
+	var p: Node = body.get_parent()
+	var rf_p: RefFramePhysics = p as RefFramePhysics
+	
+	return rf_p
 
 
 func _set_player_select( rf ):

@@ -233,7 +233,7 @@ func include_close_enough_bodies():
 static func print_all_ref_frames():
 	print( "*********************************************************" )
 	print( "All ref frames" )
-	var player_rf = PhysicsManager.player_ref_frame
+	var player_rf = PhysicsManager.get_player_ref_frame()
 	print( "player rf: ", player_rf.name )
 	var rfs: Dictionary = PhysicsManager.physics_ref_frames()
 	for id in rfs:
@@ -328,9 +328,8 @@ func merge_if_needed():
 			print( "merged ", rf.name, " with ", self.name )
 			# Also check if it is player's ref frame.
 			# If it is, change it to the one everything is merged to.
-			var player_rf: RefFramePhysics = PhysicsManager.player_ref_frame
+			var player_rf: RefFramePhysics = PhysicsManager.get_player_ref_frame()
 			if rf == player_rf:
-				PhysicsManager.player_ref_frame = self
 				print( "player ref frame changed to ", rf.name )
 			
 			# Queue for deletion.
@@ -349,7 +348,7 @@ func self_delete_if_unused():
 	var qty: int = bodies.size()
 	if ( qty < 1 ):
 		# Also don't delete player ref. frame.
-		var player_rf: RefFramePhysics = PhysicsManager.player_ref_frame
+		var player_rf: RefFramePhysics = PhysicsManager.get_player_ref_frame()
 		if self == player_rf:
 			return false
 		self.queue_free()

@@ -22,7 +22,6 @@ func _ready():
 	# PArent camera to the root node of this scene.
 	self.add_child( camera )
 	
-	PhysicsManager.player_ref_frame = rf
 	PhysicsManager.camera = camera
 	
 	rf.init_physics()

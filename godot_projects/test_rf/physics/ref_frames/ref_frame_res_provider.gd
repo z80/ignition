@@ -90,7 +90,7 @@ func _process_physics_frames():
 # Here just get current player ref. frame and move or 
 # re-generate visual object depending on what happened with 
 func _update_visual_frame():
-	var rf = PhysicsManager.player_ref_frame
+	var rf = PhysicsManager.get_player_ref_frame()
 	if rf == null:
 		return
 	rf.compute_relative_to_root( self )

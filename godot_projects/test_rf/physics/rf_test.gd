@@ -15,7 +15,6 @@ func _ready():
 	var rf = PhysicsManager.create_ref_frame_physics()
 	rf.change_parent( get_node( "Landscape" ) )
 	
-	PhysicsManager.player_ref_frame = rf
 	PhysicsManager.camera = $Camera
 	
 	var capsule: Body = BodyCreator.create( "character_simple" )

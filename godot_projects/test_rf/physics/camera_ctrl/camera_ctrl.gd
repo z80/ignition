@@ -298,12 +298,12 @@ func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialBody
 	t.basis = t.basis.scaled( Vector3( far, far, far ) )
 	atm.transform = t
 
-	var atmosphere_height: float = 5.0
-	var opaque_height: float = 1.0
-	var transparency_scale_outer: float = 30.0
-	var transparency_scale_inner: float = 0.5
+	var atmosphere_height: float = 50.0
+	var opaque_height: float = 10.0
+	var transparency_scale_outer: float = 300.0
+	var transparency_scale_inner: float = 5
 	var light_dir: Vector3 = Vector3( 1.0, 0.0, 0.0 )
-	var displacement: float = 10.267
+	var displacement: float = 2.0
 	
 	var m: ShaderMaterial = atm.material_override as ShaderMaterial
 	m.set_shader_param( "sphere_position", r )
@@ -319,7 +319,7 @@ func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialBody
 
 
 func _process_sky():
-	var player_rf: RefFrameNode = PhysicsManager.player_ref_frame
+	var player_rf: RefFrameNode = PhysicsManager.get_player_ref_frame()
 	if player_rf == null:
 		return
 	

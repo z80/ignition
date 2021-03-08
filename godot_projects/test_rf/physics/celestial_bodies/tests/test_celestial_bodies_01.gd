@@ -19,7 +19,6 @@ func _ready():
 	rf.change_parent( sun )
 	rf.add_child( camera )
 	
-	PhysicsManager.player_ref_frame = rf
 	PhysicsManager.camera = camera
 	
 	rf.init_physics()

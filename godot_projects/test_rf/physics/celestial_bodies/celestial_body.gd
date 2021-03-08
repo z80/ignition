@@ -136,7 +136,7 @@ func process_motion( delta ):
 
 
 func process_geometry():
-	var player_rf: RefFramePhysics = PhysicsManager.player_ref_frame
+	var player_rf: RefFramePhysics = PhysicsManager.get_player_ref_frame()
 	var physics_ref_frames: Dictionary  = PhysicsManager.physics_ref_frames()
 	
 	var translation: RefFrameNode = self

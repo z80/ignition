@@ -163,4 +163,4 @@ shader_param/opaque_height = 1.0
 shader_param/transparency_scale_outer = 30.0
 shader_param/transparency_scale_inner = 0.5
 shader_param/light_dir = Vector3( 1, 0, 0 )
-shader_param/displacement = 0.267
+shader_param/displacement = 0.0
