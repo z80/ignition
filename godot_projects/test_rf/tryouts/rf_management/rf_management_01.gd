@@ -11,19 +11,10 @@ func _enter_tree():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	var rf = PhysicsManager.create_ref_frame_physics()
-	rf.name = "MyRefFramePhysics"
-	var celestial_body = get_node( "CelestialBody" ) as CelestialBody
-	var rot = celestial_body.rotation_rf()
-	rf.change_parent( rot )
-	
-	var character: Body = BodyCreator.create( "character_central" )
-	character.name = "MyCharacter"
-	# Call add body to process inclusion and initialization properly.
-	character.change_parent( rf )
-	
 	var camera: Camera = get_node( "Camera" )
 	camera.set_mode( PlayerCamera.Mode.TPS_AZIMUTH )
+	
+	var character = _create_character( "my_character", Vector3( 1.0, 0.0, 0.0 ), 1.0 )
 	
 	# Initial set of select and focus object.
 	PhysicsManager.camera           = camera
@@ -31,13 +22,12 @@ func _ready():
 	PhysicsManager.player_select    = character
 	
 	camera.apply_target()
-
-	var surf: CubeSphereNode = celestial_body.surface_node()
-	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.0, 0.0 ), 2.0 )
-	rf.set_se3( se3 )
+	
+	var character2 = _create_character( "my_character", Vector3( 1.0, 0.0, -0.02 ), 1.0 )
+	
 	
 	#_create_other_body()
-	_create_construction()
+	#_create_construction()
 	
 	
 	
