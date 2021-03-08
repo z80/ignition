@@ -27,7 +27,7 @@ func _ready():
 	
 	
 	#_create_other_body()
-	#_create_construction()
+	_create_construction()
 	
 	
 	
