@@ -35,6 +35,8 @@ func process_children():
 	include_close_enough_bodies()
 	var has_split: bool = split_if_needed()
 	debug_has_split = has_split
+	if has_split:
+		return true
 	if ( merge_if_needed() ):
 		return true
 	if ( self_delete_if_unused() ):

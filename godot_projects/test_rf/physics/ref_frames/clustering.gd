@@ -3,10 +3,11 @@
 static func cluster( src_full: Array ) -> Array:
 	var src: Array = filter_top_hierarchy( src_full )
 	var dest: Array = []
-	var qty: int = src.size();
-	var split_ind: int = qty;
+	var qty: int = src.size()
+	var split_ind: int = qty
 	var modified: bool = true
 	var base_score: float = cluster_score( src, split_ind )
+	var base_split_ind: int = split_ind
 	while ( modified ):
 		modified = false
 		
@@ -18,13 +19,14 @@ static func cluster( src_full: Array ) -> Array:
 			if ( score < base_score ):
 				src = dest
 				base_score = score
+				base_split_ind = split_ind
 				modified = true
 				break
 	
-	var dist = cluster_dist( src, split_ind )
+	var dist = cluster_dist( src, base_split_ind )
 	dest = src
 	
-	return [dist, split_ind, dest]
+	return [dist, base_split_ind, dest]
 
 
 static func cluster_score( objs: Array, split_ind: int ) -> float:
