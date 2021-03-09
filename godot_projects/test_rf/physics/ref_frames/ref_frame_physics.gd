@@ -30,15 +30,15 @@ func get_class():
 func process_children():
 	.process_children()
 	apply_forces()
-	if not debug_has_split:
-		#exclude_too_far_bodies()
-		include_close_enough_bodies()
-		var has_split: bool = split_if_needed()
-		debug_has_split = has_split
-		if ( merge_if_needed() ):
-			return true
-		if ( self_delete_if_unused() ):
-			return true
+	#if not debug_has_split:
+	#exclude_too_far_bodies()
+	include_close_enough_bodies()
+	var has_split: bool = split_if_needed()
+	debug_has_split = has_split
+	if ( merge_if_needed() ):
+		return true
+	if ( self_delete_if_unused() ):
+		return true
 	
 	return false
 

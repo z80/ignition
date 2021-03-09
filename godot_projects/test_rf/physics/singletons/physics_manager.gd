@@ -33,6 +33,19 @@ func init():
 # Update body visual parts in accordance with what is set to be 
 # player ref. frame. (The ref. frame where the camera is located.)
 func _process(_delta):
+	
+	var player_rf = get_player_ref_frame()
+	if player_rf == null:
+		return
+	update_bodies_visual()
+	update_providers()
+	update_spheres( _delta )
+	update_camera()
+
+
+
+
+func _physics_process( delta ):
 	var ref_frames = physics_ref_frames()
 	for id in ref_frames:
 		var rf: RefFramePhysics = ref_frames[id]
@@ -42,28 +55,9 @@ func _process(_delta):
 		rf.evolve()
 		rf.process_children()
 	
-	var player_rf = get_player_ref_frame()
-	if player_rf == null:
-		return
-	update_bodies_visual()
-	update_providers()
-	update_spheres( _delta )
-
-
-
-func _physics_process( delta ):
-	# Apply forces to all the bodes.
-	# Forces are applied in physics ref. frame.
-	# For now there is just one of those. And it is player's ref. frame.
-	var player_rf = get_player_ref_frame()
-	if player_rf != null:
-		player_rf.apply_forces()
-	
-	update_camera()
-	
 	# Update. Here controls are applied.
 	update_bodies_physical( delta )
-	
+
 
 
 
@@ -143,6 +137,14 @@ func physics_ref_frames():
 
 
 
+func update_super_bodies():
+	var group: String = Constants.BODIES_GROUP_NAME
+	var all_bodies: Array = get_tree().get_nodes_in_group( group )
+	for body in all_bodies:
+		var b: Body = body as Body
+		var sb: bool = b.is_super_body()
+
+
 func update_bodies_visual():
 	var player_rf = get_player_ref_frame()
 	
@@ -162,6 +164,10 @@ func update_bodies_physical( delta: float ):
 	var bodies = get_tree().get_nodes_in_group( group )
 	for body in bodies:
 		body.update_physical( delta )
+	
+	# And update super body poses.
+	for body in bodies:
+		body.update_super_body_pose()
 
 
 

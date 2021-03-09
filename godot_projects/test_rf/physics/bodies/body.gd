@@ -68,6 +68,11 @@ func remove_sub_body( body: Body ):
 		body.super_body = null
 
 
+func is_super_body():
+	var empty: bool = sub_bodies.empty()
+	var ret: bool = not empty
+	return ret
+
 
 func has_sub_body( body: Body, recursive: bool = true ):
 	var has: bool = sub_bodies.has( body )
@@ -213,6 +218,9 @@ func _physics_process( delta ):
 	physics_process_inner( delta )
 
 
+
+
+
 # To make it overridable.
 func physics_process_inner( delta ):
 	if _physical:
@@ -222,6 +230,16 @@ func physics_process_inner( delta ):
 		self.set_t( t )
 		self.set_v( v )
 		self.set_w( w )
+	
+
+
+
+# This one is called later, after all regular bodies got their poses.
+func update_super_body_pose():
+	for b in sub_bodies:
+		var se3: Se3Ref = b.get_se3()
+		self.set_se3( se3 )
+		break
 
 
 func create_visual():

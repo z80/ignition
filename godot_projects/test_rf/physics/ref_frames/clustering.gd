@@ -35,7 +35,8 @@ static func cluster_score( objs: Array, split_ind: int ) -> float:
 		var lower_bound: int = i+1
 		for j in range(lower_bound, split_ind):
 			var body_b: Body = objs[j]
-			var d: float = body_a.distance_max( body_b )
+			#var d: float = body_a.distance_max( body_b )
+			var d: float = body_a.distance( body_b )
 			score += d
 	
 	var qty: int = objs.size()
@@ -45,7 +46,8 @@ static func cluster_score( objs: Array, split_ind: int ) -> float:
 		var lower_bound = i+1
 		for j in range(lower_bound, qty):
 			var body_b: Body = objs[j]
-			var d: float = body_a.distance_max( body_b )
+			#var d: float = body_a.distance_max( body_b )
+			var d: float = body_a.distance( body_b )
 			score += d
 	
 	return score
@@ -59,7 +61,8 @@ static func cluster_dist( objs: Array, split_ind: int ) -> float:
 		var body_a: Body = objs[i]
 		for j in range(split_ind, qty):
 			var body_b: Body = objs[j]
-			var d: float = body_a.distance_min(body_b)
+			#var d: float = body_a.distance_min(body_b)
+			var d: float = body_a.distance(body_b)
 			if (min_dist < 0.0) or (min_dist > d):
 				min_dist = d
 	return min_dist
