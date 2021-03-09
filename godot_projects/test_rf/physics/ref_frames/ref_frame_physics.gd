@@ -161,7 +161,7 @@ func jump( t: Transform ):
 		body.update_physical_state_from_rf()
 	
 	var after_t: Transform = self.t()
-	print( "RefFramePhysics jumped from ", before_t, " to ", after_t )
+	print( "RefFramePhysics jumped from\n", before_t, "\nto\n", after_t )
 
 
 

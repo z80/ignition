@@ -53,6 +53,12 @@ func _physics_process( delta ):
 		if deleted:
 			continue
 		rf.evolve()
+	
+	for id in ref_frames:
+		var rf: RefFramePhysics = ref_frames[id]
+		var deleted: bool =  rf.is_queued_for_deletion()
+		if deleted:
+			continue
 		rf.process_children()
 	
 	# Update. Here controls are applied.
