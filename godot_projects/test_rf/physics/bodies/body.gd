@@ -93,10 +93,10 @@ func distance_max( other: Body ):
 		var d: float = distance( other )
 		return d
 	
-	var max_d: float = 0.0
+	var max_d: float = -1.0
 	for cb in other.sub_bodies:
 		var d: float = distance_max( cb )
-		if d > max_d:
+		if (d > max_d) or (max_d < 0.0):
 			max_d = d
 	
 	return max_d
@@ -108,10 +108,10 @@ func distance_min( other: Body ):
 		var d: float = distance( other )
 		return d
 	
-	var min_d: float = 0.0
+	var min_d: float = -1.0
 	for cb in other.sub_bodies:
 		var d: float = distance_min( cb )
-		if d < min_d:
+		if (d < min_d) or (min_d < 0.0):
 			min_d = d
 	
 	return min_d

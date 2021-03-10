@@ -46,6 +46,9 @@ func _process(_delta):
 
 
 func _physics_process( delta ):
+	# Need to have all super body poses up to date.
+	update_super_bodies()
+	
 	var ref_frames = physics_ref_frames()
 	for id in ref_frames:
 		var rf: RefFramePhysics = ref_frames[id]
@@ -147,8 +150,9 @@ func update_super_bodies():
 	var group: String = Constants.BODIES_GROUP_NAME
 	var all_bodies: Array = get_tree().get_nodes_in_group( group )
 	for body in all_bodies:
-		var b: Body = body as Body
-		var sb: bool = b.is_super_body()
+		var is_super_body: bool = body.is_super_body()
+		if is_super_body:
+			body.update_super_body_pose()
 
 
 func update_bodies_visual():

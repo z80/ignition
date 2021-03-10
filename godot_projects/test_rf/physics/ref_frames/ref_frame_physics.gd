@@ -152,17 +152,32 @@ func _cleanup_physical():
 
 func jump( t: Transform ):
 	var before_t: Transform = self.t()
+	var bodies = child_bodies( true )
+	
+	var poses_before: Array = []
+	for body in bodies:
+		var se3: Se3Ref = body.get_se3()
+		poses_before.push_back( se3.r )
 	
 	t.basis = Basis.IDENTITY
 	self.set_jump_t( t )
 	self.apply_jump()
-	var bodies = child_bodies( true )
 	for body in bodies:
 		body.update_physical_state_from_rf()
 	
 	var after_t: Transform = self.t()
-	print( "RefFramePhysics jumped from\n", before_t, "\nto\n", after_t )
 
+	var poses_after: Array = []
+	for body in bodies:
+		var se3: Se3Ref = body.get_se3()
+		poses_after.push_back( se3.r )
+	
+	print( "\n\n\n" )
+	print( "RefFramePhysics jumped from\n", before_t, "\nto\n", after_t )
+	var qty: int = len( bodies )
+	for i in range( qty ):
+		var name: String = bodies[i].name
+		print( "body ", name, ": ", poses_before[i], " -> ", poses_after[i] )
 
 
 
@@ -242,6 +257,12 @@ static func print_all_ref_frames():
 		var rf: RefFramePhysics = rfs[id]
 		var se3: Se3Ref = rf.get_se3()
 		print( "rf: #", id, " name: ", rf.name, " r: ", se3.r )
+		print( "bodies: " )
+		var bodies: Array = rf.child_bodies( false )
+		for body in bodies:
+			var name: String = body.name
+			se3 = body.get_se3()
+			print( name, ": ", se3.r )
 	
 	print( "" )
 
@@ -250,6 +271,7 @@ func split_if_needed():
 	var bodies = child_bodies()
 	if ( bodies.size() < 2 ):
 		return false
+	
 	var ret: Array = Clustering.cluster( bodies )
 	var dist: float    = ret[0]
 	var split_ind: int = ret[1]
@@ -262,6 +284,7 @@ func split_if_needed():
 	if ( split_ind < 1 ) or ( split_ind >= qty ):
 		return false
 	
+	print( "\n\n\n" )
 	print( "splitting ref frame ", self.name )
 	print( "just before split: " )
 	print_all_ref_frames()
@@ -318,8 +341,9 @@ func merge_if_needed():
 		var dist: float = distance( rf )
 		if dist < Constants.RF_MERGE_DISTANCE:
 			
+			print( "\n\n\n" )
 			print( "merging ", rf.name, " with ", self.name )
-			print( "infor before" )
+			print( "info before" )
 			print_all_ref_frames()
 			
 			var bodies: Array = rf.child_bodies( false )
@@ -337,7 +361,7 @@ func merge_if_needed():
 			# Queue for deletion.
 			rf.queue_free()
 			
-			print( "infor after" )
+			print( "info after" )
 			print_all_ref_frames()
 			
 			return true
@@ -474,7 +498,7 @@ func distance( b: RefFramePhysics ):
 	var min_d: float = -1.0
 	for body_a in bodies_a:
 		for body_b in bodies_b:
-			var d: float = body_a.distance_min( body_b )
+			var d: float = body_a.distance( body_b )
 			if (min_d < 0.0) or (d < min_d):
 				min_d = d
 	
