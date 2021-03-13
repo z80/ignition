@@ -168,6 +168,8 @@ func update_bodies_visual():
 
 func update_bodies_physical( delta: float ):
 	var player_rf = get_player_ref_frame()
+	if player_rf == null:
+		return
 	
 	# Update visuals for all the physical-visual objects.
 	var group: String = Constants.BODIES_GROUP_NAME
@@ -257,6 +259,8 @@ func _get_player_ref_frame():
 
 func get_player_ref_frame():
 	var body: Body = self.player_control
+	if body == null:
+		return null
 	var p: Node = body.get_parent()
 	var rf_p: RefFramePhysics = p as RefFramePhysics
 	

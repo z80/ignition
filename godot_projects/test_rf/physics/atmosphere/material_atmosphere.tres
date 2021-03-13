@@ -121,6 +121,16 @@ vec4 compute_atmosphere_color( vec3 ray_origin, vec3 sphere_center, vec3 ray )
 	return c;
 }
 
+vec4 sun_color( vec3 ray_origin, vec3 sphere_center, vec3 ray )
+{
+	vec3 deviation_vec = cross( ray, light_dir );
+	float deviation_sine = length( deviation_vec );
+	const vec3 sun_color = vec3( 0.8, 0.8, 0.8 );
+	const float sun_size = 0.1;
+	
+	return vec4( 0.0 );
+}
+
 
 void vertex()
 {
