@@ -11,7 +11,7 @@ uniform float light_size    = 0.05;
 uniform float glow_size     = 0.1;
 // Ray geometry.
 uniform float ray_scale     = 6.0;
-uniform float ray_size      = 0.5;
+uniform float ray_size      = 0.7;
 uniform float ray_bias      = 0.3;
 // Noise for rays generation.
 uniform sampler2D ray_noise;
@@ -103,7 +103,7 @@ void fragment()
 	
 	vec4 c = sun_color( VIEW, sun_dir_local );
 	vec4 rc = rays_color( VIEW, sun_dir_local );
-	//if ( c.a < rc.a )
+
 	c.rgb = mix( c.rgb, rc.rgb, rc.a );
 	c.a = max(c.a, rc.a);
 	ALBEDO = c.rgb;
@@ -129,6 +129,6 @@ shader_param/light_dir = Vector3( 1, -0.5, 0 )
 shader_param/light_size = 0.05
 shader_param/glow_size = 0.1
 shader_param/ray_scale = 6.0
-shader_param/ray_size = 0.5
+shader_param/ray_size = 0.7
 shader_param/ray_bias = 0.3
 shader_param/ray_noise = SubResource( 15 )
