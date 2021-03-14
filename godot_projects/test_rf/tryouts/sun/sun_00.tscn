@@ -80,17 +80,17 @@ shader = SubResource( 9 )
 code = "shader_type spatial;
 render_mode unshaded;
 
-// Atmosphere parameters
+// Light parameters
 uniform vec4  light_color: hint_color = vec4( 1.0, 0.988, 0.871, 1.0 );
 uniform vec3  light_dir     = vec3(1.0, -0.5, 0.0);
 uniform float light_size    = 0.05;
 uniform float glow_size     = 0.1;
+// Ray geometry.
 uniform float ray_scale     = 6.0;
 uniform float ray_size      = 0.5;
 uniform float ray_bias      = 0.3;
-
 // Noise for rays generation.
-uniform sampler2D noise;
+uniform sampler2D ray_noise;
 
 
 
@@ -158,7 +158,7 @@ vec4 rays_color( in vec3 view_local, in vec3 light_dir_local )
 		alpha = 1.0;
 	else
 		alpha = pow( clamp( 1.0 - edge_to_view_len / ray_length, 0.0, 1.0 ), 5.0 );
-	float t = texture( noise, vec2( arg, 0.5 ) ).r;
+	float t = texture( ray_noise, vec2( arg, 0.5 ) ).r;
 	float tex_th = 0.0;
 	t = clamp( t-tex_th, 0.0, 1.0 )  * (1.0 - tex_th);
 	alpha = alpha * pow(t, 5.0);
@@ -189,11 +189,12 @@ void fragment()
 
 [sub_resource type="OpenSimplexNoise" id=14]
 octaves = 1
-period = 5.0
+period = 15.7
+persistence = 0.15
+lacunarity = 0.91
 
 [sub_resource type="NoiseTexture" id=15]
-width = 128
-height = 128
+height = 1
 seamless = true
 noise = SubResource( 14 )
 
@@ -206,7 +207,7 @@ shader_param/glow_size = 0.1
 shader_param/ray_scale = 6.0
 shader_param/ray_size = 0.5
 shader_param/ray_bias = 0.3
-shader_param/noise = SubResource( 15 )
+shader_param/ray_noise = SubResource( 15 )
 
 [sub_resource type="CubeMesh" id=13]
 flip_faces = true
