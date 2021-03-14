@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" load_steps=4 format=2]
 
-[sub_resource type="Shader" id=11]
+[sub_resource type="Shader" id=1]
 code = "shader_type spatial;
 render_mode unshaded;
 
@@ -111,19 +111,19 @@ void fragment()
 }
 "
 
-[sub_resource type="OpenSimplexNoise" id=14]
+[sub_resource type="OpenSimplexNoise" id=2]
 octaves = 1
 period = 15.7
 persistence = 0.15
 lacunarity = 0.91
 
-[sub_resource type="NoiseTexture" id=15]
+[sub_resource type="NoiseTexture" id=3]
 height = 1
 seamless = true
-noise = SubResource( 14 )
+noise = SubResource( 2 )
 
 [resource]
-shader = SubResource( 11 )
+shader = SubResource( 1 )
 shader_param/light_color = Color( 1, 0.988, 0.871, 1 )
 shader_param/light_dir = Vector3( 1, -0.5, 0 )
 shader_param/light_size = 0.05
@@ -131,4 +131,4 @@ shader_param/glow_size = 0.1
 shader_param/ray_scale = 6.0
 shader_param/ray_size = 0.7
 shader_param/ray_bias = 0.3
-shader_param/ray_noise = SubResource( 15 )
+shader_param/ray_noise = SubResource( 3 )
