@@ -111,15 +111,15 @@ void fragment()
 }
 "
 
-[sub_resource type="OpenSimplexNoise" id=4]
+[sub_resource type="OpenSimplexNoise" id=2]
 period = 51.3
 
-[sub_resource type="NoiseTexture" id=5]
+[sub_resource type="NoiseTexture" id=3]
 height = 1
 seamless = true
-noise = SubResource( 4 )
+noise = SubResource( 2 )
 
-[sub_resource type="ShaderMaterial" id=2]
+[sub_resource type="ShaderMaterial" id=4]
 render_priority = 1
 shader = SubResource( 1 )
 shader_param/light_color = Color( 1, 0.988, 0.871, 1 )
@@ -129,9 +129,9 @@ shader_param/glow_size = 0.2
 shader_param/ray_scale = 10.0
 shader_param/ray_size = 1.0
 shader_param/ray_bias = 0.1
-shader_param/ray_noise = SubResource( 5 )
+shader_param/ray_noise = SubResource( 3 )
 
-[sub_resource type="Shader" id=3]
+[sub_resource type="Shader" id=5]
 code = "shader_type spatial;
 render_mode unshaded;
 
@@ -294,8 +294,8 @@ void fragment()
 "
 
 [resource]
-next_pass = SubResource( 2 )
-shader = SubResource( 3 )
+next_pass = SubResource( 4 )
+shader = SubResource( 5 )
 shader_param/atmosphere_color_day = Color( 0.470588, 0.560784, 0.611765, 1 )
 shader_param/atmosphere_color_evening = Color( 0.607843, 0.227451, 0.227451, 1 )
 shader_param/sphere_position = Vector3( 0, 0, 0 )

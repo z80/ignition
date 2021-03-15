@@ -302,7 +302,6 @@ func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialBody
 	var opaque_height: float = 10.0
 	var transparency_scale_outer: float = 300.0
 	var transparency_scale_inner: float = 5
-	var light_dir: Vector3 = Vector3( 1.0, 0.0, 0.0 )
 	var displacement: float = 2.0
 	
 	var m: ShaderMaterial = atm.material_override as ShaderMaterial
@@ -312,9 +311,33 @@ func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialBody
 	m.set_shader_param( "opaque_height", opaque_height )
 	m.set_shader_param( "transparency_scale_outer", transparency_scale_outer )
 	m.set_shader_param( "transparency_scale_inner", transparency_scale_inner )
-	m.set_shader_param( "light_dir", light_dir )
 	m.set_shader_param( "displacement", displacement )
 
+
+
+func apply_sun( player_ref_frame: RefFrame, sun: Sun ):
+	var atm: MeshInstance = get_node( "Atmosphere" ) as MeshInstance
+	if atm == null:
+		return
+	# Determine relative position.
+	var se3: Se3Ref = sun.relative_to( player_ref_frame )
+	var dist: float = se3.r.length()
+	var light_dir: Vector3 = se3.r.normalized()
+	# Determine sun angular radius.
+	var sz: float = sun.planet_radius_km / dist * 1000.0
+	
+	var glow_size: float = sz * sun.glow_size
+	var ray_scale: float = sun.ray_scale
+	var ray_size: float  = sun.ray_size
+	var ray_bias: float  = sun.ray_bias
+	
+	var m: ShaderMaterial = atm.material_override as ShaderMaterial
+	m = m.next_pass as ShaderMaterial
+	m.set_shader_param( "light_dir", light_dir )
+	m.set_shader_param( "glow_size", glow_size )
+	m.set_shader_param( "ray_scale", ray_scale )
+	m.set_shader_param( "ray_size", ray_size )
+	m.set_shader_param( "ray_bias", ray_bias )
 
 
 

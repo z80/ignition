@@ -197,6 +197,13 @@ func update_spheres( delta: float ):
 		sphere.process( delta )
 
 
+func update_sun():
+	var group: String = Constants.SUN_GROUP_NAME
+	var all_suns: Array = get_tree().get_nodes_in_group( group )
+	for sun in all_suns:
+		sun.process()
+
+
 func update_camera():
 	var ClosestForceSource = preload( "res://physics/utils/closest_force_source.gd" )
 	# Update camera orientation.
@@ -231,6 +238,14 @@ func update_camera():
 	var celestial_body: Node = ClosestCelestialBody.closest_celestial_body( p_rf )
 	if celestial_body != null:
 		c.apply_atmosphere( p_rf, celestial_body )
+	
+	# Apply sun.
+	var group: String = Constants.SUN_GROUP_NAME
+	var all_suns: Array = get_tree().get_nodes_in_group( group )
+	if not all_suns.empty():
+		var sun: Sun = all_suns[0] as Sun
+		c.apply_sun( p_rf, sun )
+
 
 
 func create_ref_frame_physics():

@@ -78,7 +78,7 @@ nodes/fragment/connections = PoolIntArray( 6, 0, 7, 1, 7, 0, 0, 0, 2, 0, 7, 0 )
 [sub_resource type="ShaderMaterial" id=10]
 shader = SubResource( 9 )
 
-[sub_resource type="CubeMesh" id=13]
+[sub_resource type="CubeMesh" id=11]
 flip_faces = true
 size = Vector3( 100, 100, 100 )
 
@@ -99,5 +99,5 @@ material/0 = SubResource( 10 )
 [node name="MeshInstance_3" type="MeshInstance" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5.50625, 8.49195, 8.84745 )
 material_override = ExtResource( 1 )
-mesh = SubResource( 13 )
+mesh = SubResource( 11 )
 material/0 = null

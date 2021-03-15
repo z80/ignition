@@ -4,6 +4,7 @@ extends Node
 const BODIES_GROUP_NAME: String    = "bodies"
 const PROVIDERS_GROUP_NAME: String = "providers"
 const SPHERES_GROUP_NAME: String   = "spheres"
+const SUN_GROUP_NAME: String       = "sun"
 
 const DEBUG := true
 const RF_JUMP_DISTANCE: float  = 5.0

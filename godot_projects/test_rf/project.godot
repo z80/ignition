@@ -129,6 +129,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://learning/cache/rlu_cache.gd"
 }, {
+"base": "RefFrame",
+"class": "Sun",
+"language": "GDScript",
+"path": "res://physics/celestial_bodies/sun.gd"
+}, {
 "base": "MeshInstance",
 "class": "TileBase",
 "language": "GDScript",
@@ -159,13 +164,14 @@ _global_script_class_icons={
 "RefFramePhysics": "",
 "RefFrameResourceProvider": "",
 "RluCache": "",
+"Sun": "",
 "TileBase": ""
 }
 
 [application]
 
 config/name="Test Rf"
-run/main_scene="res://tryouts/rf_management/rf_management_01.tscn"
+run/main_scene="res://tryouts/rf_management/rf_management_02.tscn"
 config/icon="res://icon.png"
 
 [autoload]

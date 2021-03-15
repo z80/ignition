@@ -82,7 +82,7 @@ func init():
 	
 	# Initialize orbital movement.
 	perigee_dir = perigee_dir.normalized()
-	perigee_vel = perigee_dir - perigee_vel.project( perigee_dir )
+	perigee_vel = perigee_vel - perigee_vel.project( perigee_dir )
 	perigee_vel = perigee_vel.normalized()
 	
 	var p = get_parent()
@@ -90,6 +90,11 @@ func init():
 	if parent_body != null:
 		parent_body.init()
 		var parent_gm: float = parent_body.gm
+		motion.launch_elliptic( parent_gm, perigee_dir, perigee_vel, orbital_period_hrs, orbital_eccentricity )
+	else:
+		var sun: Sun = p as Sun
+		sun.init()
+		var parent_gm: float = sun.gm
 		motion.launch_elliptic( parent_gm, perigee_dir, perigee_vel, orbital_period_hrs, orbital_eccentricity )
 	
 	# Initialize rotation.
@@ -132,6 +137,8 @@ func process_motion( delta ):
 	
 	var t: Transform = rotation_rf.transform
 	#print( "rotation: ", Quat( t.basis ) )
+	t = translation_rf.transform
+	print( "planet pos: ", t.origin )
 
 
 
