@@ -135,10 +135,10 @@ func process_motion( delta ):
 	motion.process_rf( delta, translation_rf )
 	rotation.process_rf( delta, rotation_rf )
 	
-	var t: Transform = rotation_rf.transform
+	#var t: Transform = rotation_rf.transform
 	#print( "rotation: ", Quat( t.basis ) )
-	t = translation_rf.transform
-	print( "planet pos: ", t.origin )
+	#t = translation_rf.transform
+	#print( "planet pos: ", t.origin )
 
 
 
