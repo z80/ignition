@@ -37,6 +37,9 @@ var rotation: CelestialRotationRef = null
 var _subdivide_source_visual: SubdivideSourceRef = null
 
 
+export(bool) var convert_to_global = false setget _set_convert_to_global
+export(bool) var apply_scale       = true setget _set_apply_scale
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	init()
@@ -93,16 +96,17 @@ func init():
 		motion.launch_elliptic( parent_gm, perigee_dir, perigee_vel, orbital_period_hrs, orbital_eccentricity )
 	else:
 		var sun: Sun = p as Sun
-		sun.init()
-		var parent_gm: float = sun.gm
-		motion.launch_elliptic( parent_gm, perigee_dir, perigee_vel, orbital_period_hrs, orbital_eccentricity )
+		if sun != null:
+			sun.init()
+			var parent_gm: float = sun.gm
+			motion.launch_elliptic( parent_gm, perigee_dir, perigee_vel, orbital_period_hrs, orbital_eccentricity )
 	
 	# Initialize rotation.
 	rotation = CelestialRotationRef.new()
 	rotation.init( rotation_axis, rotation_period_hrs )
 	
 	# Initialize body geometry
-	var celestial_body = get_node( "Rotation/CelestialBody" )
+	var celestial_body: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	var radius: float  = planet_radius_km * 1000.0
 	var height: float  = planet_height_km * 1000.0
 	celestial_body.radius = radius
@@ -123,9 +127,9 @@ func init():
 
 
 
-func process( delta ):
+func process( delta: float, force_player_rf: RefFrame = null ):
 	process_motion( delta )
-	process_geometry()
+	process_geometry( force_player_rf )
 
 
 
@@ -142,8 +146,13 @@ func process_motion( delta ):
 
 
 
-func process_geometry():
-	var player_rf: RefFramePhysics = PhysicsManager.get_player_ref_frame()
+func process_geometry( force_player_rf: RefFrame = null ):
+	var player_rf: RefFrame
+	if force_player_rf != null:
+		player_rf = force_player_rf
+	else:
+		player_rf = PhysicsManager.get_player_ref_frame()
+	
 	var physics_ref_frames: Dictionary  = PhysicsManager.physics_ref_frames()
 	
 	var translation: RefFrameNode = self
@@ -203,10 +212,14 @@ func height_source( name: String, radius: float, height: float ):
 
 
 
+func _set_convert_to_global( en ):
+	var celestial_body: CubeSphereNode = get_node( "Rotation/CelestialBody" )
+	celestial_body.convert_to_global = en
 
 
-
-
+func _set_apply_scale( en ):
+	var celestial_body: CubeSphereNode = get_node( "Rotation/CelestialBody" )
+	celestial_body.apply_scale = en
 
 
 

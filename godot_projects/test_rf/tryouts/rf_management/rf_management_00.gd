@@ -30,7 +30,6 @@ func _ready():
 	camera.set_mode( PlayerCamera.Mode.TPS_AZIMUTH )
 	
 	# Initial set of select and focus object.
-	PhysicsManager.player_ref_frame = rf
 	PhysicsManager.camera           = camera
 	PhysicsManager.player_control   = character
 	PhysicsManager.player_select    = character

@@ -5,11 +5,13 @@ extends Node
 var camera: Camera = null
 var rf_physics: RefFramePhysics = null
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
+func _init():
 	# Make creator know where to add visual and physical objects.
 	BodyCreator.root_node = self
 
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
 	var sun = get_node( "Sun" )
 	
 	var rf = RefFramePhysics.new()
@@ -19,7 +21,7 @@ func _ready():
 	camera.script = camera_script
 	
 	rf.change_parent( sun )
-	# PArent camera to the root node of this scene.
+	# Parent camera to the root node of this scene.
 	self.add_child( camera )
 	
 	PhysicsManager.camera = camera

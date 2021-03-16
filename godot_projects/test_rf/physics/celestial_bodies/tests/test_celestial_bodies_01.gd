@@ -27,7 +27,7 @@ func _ready():
 	t.origin = Vector3( 0.0, 0.0, -50.0 )
 	rf.transform = t
 	
-	sun.set_origin( rf )
+	#sun.set_origin( rf )
 
 
 
