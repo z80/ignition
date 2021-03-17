@@ -12,12 +12,12 @@ script = ExtResource( 2 )
 [node name="Sun" parent="." instance=ExtResource( 1 )]
 rotation_period_hrs = 0.03
 planet_radius_km = 0.04
-planet_height_km = 0.001
-height_source_name = "01"
+planet_height_km = 0.002
+height_source_name = "moon"
 detail_size_0 = 1.0
 detail_dist_0 = 10.0
 detail_size_1 = 3.0
-detail_dist_1 = 25.0
+detail_dist_1 = 50.0
 convert_to_global = true
 apply_scale = false
 
