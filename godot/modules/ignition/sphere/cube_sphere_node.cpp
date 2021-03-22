@@ -135,8 +135,6 @@ CubeSphereNode::CubeSphereNode()
     scale_mode_distance = 5.0;
 
     convert_to_global = false;
-
-	distance_scale = 1.0;
 }
 
 CubeSphereNode::~CubeSphereNode()
@@ -525,13 +523,14 @@ void CubeSphereNode::adjust_pose( RefFrameNode * ref_frame, const Ref<SubdivideS
 	MeshInstance * mi = get_mesh_instance();
 	if ( mi == nullptr )
 		return;
-	
-	center_relative_to_ref_frame = this->relative_( ref_frame );
-	// Apply scale.
-	center_relative_to_ref_frame.r_ *= distance_scale;
-
 	SubdivideSource * ss = const_cast<SubdivideSource *>( &(subdivide_source->subdivide_source) );
+
+	center_relative_to_ref_frame = this->relative_( ref_frame );
     SE3 se3 = center_relative_to_ref_frame * ss->poi_relative_to_center;
+	// Apply scale.
+	const Float poi_d = se3.r_.Length();
+	const Float poi_s = scale->scale( poi_d ) / poi_d;
+	se3.r_ *= poi_s;
     if ( convert_to_global )
     {
         SE3 to_global = ref_frame->relative_( nullptr );
@@ -588,12 +587,6 @@ void CubeSphereNode::scale_close( SE3 & poi_relative_to_center )
         // Rotate normal.
         v.norm = poi_to_origin.q_ * v.norm;
     }
-
-    // Make POI relative to center such that scaled POI in origin rf
-    // is obtained by center_relative_to_ref_frame * poi_relative_to_center.
-	center_relative_to_ref_frame.r_ *= poi_s;
-	poi_relative_to_center.r_       *= poi_s;
-	distance_scale = poi_s;
 }
 
 void CubeSphereNode::scale_far( SE3 & poi_relative_to_center )
@@ -616,10 +609,6 @@ void CubeSphereNode::scale_far( SE3 & poi_relative_to_center )
         // Rotate normal.
         v.norm = center_to_poi.q_ * v.norm;
     }
-
-	center_relative_to_ref_frame.r_ *= poi_s;
-    poi_relative_to_center.r_       *= poi_s;
-	distance_scale = poi_s;
 }
 
 void CubeSphereNode::scale_neutral( const SE3 & poi_relative_to_center )

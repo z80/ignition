@@ -30,7 +30,7 @@ public:
     Vector<Vector3d> pts_, ptsFlat_, ptsNew_;
 	// This one is stored when mesh is generated in
 	// order to correctly relocate.
-	SE3 poi_relative_to_center;
+	SE3   poi_relative_to_center;
 };
 
 
