@@ -5,6 +5,7 @@ static func cluster( src_full: Array ) -> Array:
 	var dest: Array = []
 	var qty: int = src.size()
 	var split_ind: int = qty
+	var dest_split_ind: int = qty
 	var modified: bool = true
 	var base_score: float = cluster_score( src, split_ind )
 	var base_split_ind: int = split_ind
@@ -13,13 +14,15 @@ static func cluster( src_full: Array ) -> Array:
 		
 		for i in range(qty):
 			var ret: Array = cluster_swap( src, i, split_ind )
-			split_ind = ret[0]
-			dest      = ret[1]
-			var score: float = cluster_score( dest, split_ind );
+			dest_split_ind = ret[0]
+			dest           = ret[1]
+			var score: float = cluster_score( dest, dest_split_ind )
 			if ( score < base_score ):
-				src = dest
+				split_ind = dest_split_ind
+				src       = dest.duplicate()
+				
 				base_score = score
-				base_split_ind = split_ind
+				base_split_ind = dest_split_ind
 				modified = true
 				break
 	

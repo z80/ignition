@@ -280,7 +280,7 @@ func process_basis( up: Vector3 ):
 
 
 func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialBody ):
-	var planet_radius: float = celestial_body.planet_radius_km * 1000.0
+	var planet_radius: float = celestial_body.radius_km * 1000.0
 	var se3: Se3Ref = celestial_body.relative_to( player_ref_frame )
 	var planet_t: Transform = se3.transform
 	var r: Vector3 = planet_t.origin
@@ -324,7 +324,7 @@ func apply_sun( player_ref_frame: RefFrame, sun: Sun ):
 	var dist: float = se3.r.length()
 	var light_dir: Vector3 = se3.r.normalized()
 	# Determine sun angular radius.
-	var sz: float = sun.planet_radius_km / dist * 1000.0
+	var sz: float = sun.radius_km / dist * 1000.0
 	
 	var glow_size: float = sz * sun.glow_size
 	var ray_scale: float = sun.ray_scale

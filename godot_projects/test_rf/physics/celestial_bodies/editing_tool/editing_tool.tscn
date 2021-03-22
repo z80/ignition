@@ -1,8 +1,9 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://physics/celestial_bodies/celestial_body.tscn" type="PackedScene" id=1]
+[ext_resource path="res://physics/celestial_bodies/celestial_surface.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/celestial_bodies/editing_tool/editing_tool.gd" type="Script" id=2]
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=3]
+
 
 [sub_resource type="CubeMesh" id=1]
 

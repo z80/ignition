@@ -32,7 +32,7 @@ func _ready():
 	
 	
 func _create_other_body():
-	var celestial_body: CelestialBody = get_node( "Sun/Planet" ) as CelestialBody
+	var celestial_body: CelestialSurface = get_node( "Sun/Planet" ) as CelestialSurface
 	var surf: CubeSphereNode = celestial_body.surface_node()
 	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.2, -0.2 ), 2.0 )
 
