@@ -21,8 +21,6 @@ export(float)   var orbital_eccentricity = 0.0
 var initialized: bool = false
 var gm: float = -1.0
 
-
-
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	init()
@@ -48,11 +46,28 @@ func init():
 
 
 
+# This thing is supposed to process physics ref frames which are children of the 
+# celestial body. Need to compute influence and change parent or allow/disallow orbiting.
+func process_ref_frames( celestial_bodies: Array ):
+	pass
 
 
 
+# Returns all physics ref frames for a node.
+func ref_frames( n: Node ):
+	var children = get_children()
+	var rfs = []
+	for ch in children:
+		var rfp: RefFramePhysics = ch as RefFramePhysics
+		if rfp != null:
+			rfs.push_back( rfp )
+	return rfs
 
 
-
+func gravitational_influence( se3: Se3Ref ):
+	var r: Vector3 = se3.r
+	var dist2 = r.length_squared()
+	var ret: float = gm/dist2
+	return ret
 
 

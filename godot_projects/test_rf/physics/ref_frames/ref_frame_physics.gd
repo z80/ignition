@@ -16,6 +16,11 @@ var _surface_provider = null
 # Can collide with just one.
 var _subdivide_source_physical: SubdivideSourceRef = null
 
+# This is the thing which computes celestial orbits.
+# It is TODO. Not yet really integrated.
+var motion: CelestialMotionRef = null
+
+
 # For debugging jump only this number of times.
 #var _jumps_left: int = 50
 
@@ -488,8 +493,10 @@ func process_body( force_source_rf: RefFrame, body: Body, up_defined: bool = fal
 				process_body( force_source_rf, body, up_defined )
 
 
+
 func get_subdivide_source():
 	return _subdivide_source_physical
+
 
 
 func distance( b: RefFramePhysics ):
@@ -503,6 +510,7 @@ func distance( b: RefFramePhysics ):
 				min_d = d
 	
 	return min_d
+
 
 
 # Destructor.

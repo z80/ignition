@@ -27,6 +27,8 @@ export(bool) var convert_to_global = false setget _set_convert_to_global
 export(bool) var apply_scale       = true setget _set_apply_scale
 
 
+var ref_frame_to_check_rotating_index: int = 0
+var ref_frame_to_check_orbiting_index: int = 0
 
 
 
@@ -194,4 +196,42 @@ func _set_apply_scale( en ):
 	celestial_body.apply_scale = en
 
 
+
+
+
+
+# Here need to switch between orbiting and being on a rotating surface.
+func process_ref_frames( celestial_bodies: Array ):
+	.process_ref_frames( celestial_bodies )
+
+
+func process_ref_frames_rotating():
+	var rot: RefFrameNode = rotation_rf()
+	var rfs: Array = ref_frames( rot )
+
+func process_ref_frames_orbiting( celestial_bodies: Array ):
+	var tr: RefFrameNode = translation_rf()
+	var rfs: Array = ref_frames( tr )
+	var qty: int = len( rfs )
+	if ref_frame_to_check_orbiting_index >= qty:
+		ref_frame_to_check_orbiting_index = 0
+	
+	var rf: RefFramePhysics = rfs[ref_frame_to_check_orbiting_index]
+	# Determine distance to all bodies.
+	var celestial_bodies_qty: int = celestial_bodies.size()
+	var biggest_influence: float = -1.0
+	var biggest_influence_body: CelestialBody = null
+	for i in range( celestial_bodies_qty ):
+		var cb: CelestialBody = celestial_bodies[i]
+		var se3: Se3Ref = rf.relative_to( cb )
+		var infl: float = cb.gravitational_influence( se3 )
+		if (biggest_influence_body == null) or (biggest_influence < infl):
+			biggest_influence = infl
+			biggest_influence_body = cb
+	
+	# Check if the strongest influence is caused by other celestial body.
+	if (biggest_influence_body != null) and (biggest_influence_body != tr):
+		# Need to teleport celestial body to that other celestial body
+		rf.change_parent( biggest_influence_body )
+	
 
