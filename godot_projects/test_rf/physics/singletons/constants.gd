@@ -10,6 +10,12 @@ const DEBUG := true
 const RF_JUMP_DISTANCE: float  = 5.0
 const RF_SPLIT_DISTANCE: float = 10.0
 const RF_MERGE_DISTANCE: float = 8.0
+# Switching ref frames.
+# Switches to orbiting with atmosphere height+rf_change_DELTA. 
+# And back to surface rf with atmosphere height-rf_change_DELTA.
+const RF_CHANGE_DELTA = 5.0
+
+
 
 const BODY_EXCLUDE_DIST: float = 10.0
 const BODY_INCLUDE_DIST: float = 8.0
@@ -32,3 +38,7 @@ const CONSTRUCTION_DEACTIVATE_DIST: float = 20.0
 
 # Where create new blocks relative to player.
 const CONSTRUCTION_CREATE_AT: Vector3 = Vector3( 0.0, 2.0, -5.0 )
+
+
+
+

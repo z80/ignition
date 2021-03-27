@@ -279,7 +279,7 @@ func process_basis( up: Vector3 ):
 	local_ref_frame = local_ref_frame.normalized()
 
 
-func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialBody ):
+func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialSurface ):
 	var planet_radius: float = celestial_body.radius_km * 1000.0
 	var se3: Se3Ref = celestial_body.relative_to( player_ref_frame )
 	var planet_t: Transform = se3.transform
@@ -298,20 +298,20 @@ func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialBody
 	t.basis = t.basis.scaled( Vector3( far, far, far ) )
 	atm.transform = t
 
-	var atmosphere_height: float = 50.0
-	var opaque_height: float = 10.0
-	var transparency_scale_outer: float = 300.0
-	var transparency_scale_inner: float = 5
-	var displacement: float = 2.0
+	var atmosphere_height: float        = celestial_body.atmosphere_height_km * 1000.0
+	var opaque_height: float            = celestial_body.opaque_height_km * 1000.0
+	var transparency_scale_outer: float = celestial_body.transparency_scale_outer_km * 1000.0
+	var transparency_scale_inner: float = celestial_body.transparency_scale_inner_km * 1000.0
+	var displacement: float             = celestial_body.displacement
 	
 	var m: ShaderMaterial = atm.material_override as ShaderMaterial
-	m.set_shader_param( "sphere_position", r )
-	m.set_shader_param( "sphere_radius", planet_radius )
-	m.set_shader_param( "atmosphere_height", atmosphere_height )
-	m.set_shader_param( "opaque_height", opaque_height )
+	m.set_shader_param( "sphere_position",          r )
+	m.set_shader_param( "sphere_radius",            planet_radius )
+	m.set_shader_param( "atmosphere_height",        atmosphere_height )
+	m.set_shader_param( "opaque_height",            opaque_height )
 	m.set_shader_param( "transparency_scale_outer", transparency_scale_outer )
 	m.set_shader_param( "transparency_scale_inner", transparency_scale_inner )
-	m.set_shader_param( "displacement", displacement )
+	m.set_shader_param( "displacement",             displacement )
 
 
 

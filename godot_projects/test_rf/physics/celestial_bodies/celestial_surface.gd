@@ -14,6 +14,13 @@ export(float) var detail_dist_1 = 1000.0
 export(float) var detail_size_2 = 300.0
 export(float) var detail_dist_2 = 1e10
 
+export(float) var atmosphere_height_km = 1.0
+export(float) var opaque_height_km     = 0.1
+export(float) var transparency_scale_outer_km = 30.0
+export(float) var transparency_scale_inner_km = 5.0
+export(float) var displacement = 2.0
+
+
 var motion: CelestialMotionRef = null
 var rotation: CelestialRotationRef = null
 
@@ -203,16 +210,58 @@ func _set_apply_scale( en ):
 # Here need to switch between orbiting and being on a rotating surface.
 func process_ref_frames( celestial_bodies: Array ):
 	.process_ref_frames( celestial_bodies )
+	process_ref_frames_rotating_to_orbiting()
+	process_ref_frames_orbiting_to_rotating()
+	process_ref_frames_orbiting_change_parent( celestial_bodies )
+
+	ref_frame_to_check_rotating_index += 1
+	ref_frame_to_check_orbiting_index += 1
 
 
-func process_ref_frames_rotating():
+
+
+func process_ref_frames_rotating_to_orbiting():
 	var rot: RefFrameNode = rotation_rf()
 	var rfs: Array = ref_frames( rot )
+	var qty: int = len( rfs )
+	if qty < 1:
+		return
+	if ref_frame_to_check_rotating_index >= qty:
+		ref_frame_to_check_rotating_index = 0
 
-func process_ref_frames_orbiting( celestial_bodies: Array ):
+	var rf: RefFramePhysics = rfs[ref_frame_to_check_rotating_index]
+	var tr: RefFrameNode = translation_rf()
+	var se3: Se3Ref = rf.relative_to( rot )
+	var dist: float = se3.r.length()
+	var inclustion_dist: float = (radius_km + atmosphere_height_km)*1000.0 + Constants.RF_CHANGE_DELTA
+	if dist <= inclustion_dist:
+		rf.change_parent( tr )
+
+
+func process_ref_frames_orbiting_to_rotating():
 	var tr: RefFrameNode = translation_rf()
 	var rfs: Array = ref_frames( tr )
 	var qty: int = len( rfs )
+	if qty < 1:
+		return
+	if ref_frame_to_check_orbiting_index >= qty:
+		ref_frame_to_check_orbiting_index = 0
+	
+	var rf: RefFramePhysics = rfs[ref_frame_to_check_orbiting_index]
+	var rot: RefFrameNode = rotation_rf()
+	var se3: Se3Ref = rf.relative_to( rot )
+	var dist: float = se3.r.length()
+	var inclustion_dist: float = (radius_km + atmosphere_height_km)*1000.0 - Constants.RF_CHANGE_DELTA
+	if dist <= inclustion_dist:
+		rf.change_parent( rot )
+
+
+func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
+	var tr: RefFrameNode = translation_rf()
+	var rfs: Array = ref_frames( tr )
+	var qty: int = len( rfs )
+	if qty < 1:
+		return
 	if ref_frame_to_check_orbiting_index >= qty:
 		ref_frame_to_check_orbiting_index = 0
 	
@@ -233,5 +282,6 @@ func process_ref_frames_orbiting( celestial_bodies: Array ):
 	if (biggest_influence_body != null) and (biggest_influence_body != tr):
 		# Need to teleport celestial body to that other celestial body
 		rf.change_parent( biggest_influence_body )
-	
+
+
 
