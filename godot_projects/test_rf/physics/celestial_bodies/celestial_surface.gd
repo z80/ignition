@@ -236,6 +236,8 @@ func process_ref_frames_rotating_to_orbiting():
 	var exclusion_dist: float = (radius_km + atmosphere_height_km)*1000.0 + Constants.RF_CHANGE_DELTA
 	if dist >= exclusion_dist:
 		rf.change_parent( tr )
+		print( "surface -> orbiting" )
+
 
 
 func process_ref_frames_orbiting_to_rotating():
@@ -254,6 +256,7 @@ func process_ref_frames_orbiting_to_rotating():
 	var inclustion_dist: float = (radius_km + atmosphere_height_km)*1000.0 - Constants.RF_CHANGE_DELTA
 	if dist <= inclustion_dist:
 		rf.change_parent( rot )
+		print( "orbiting -> surface" )
 
 
 func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
@@ -282,6 +285,7 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 	if (biggest_influence_body != null) and (biggest_influence_body != tr):
 		# Need to teleport celestial body to that other celestial body
 		rf.change_parent( biggest_influence_body )
+		print( "orbiting -> another orbiting" )
 
 
 
