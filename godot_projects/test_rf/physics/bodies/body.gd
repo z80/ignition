@@ -36,7 +36,6 @@ func _ready():
 
 
 func change_parent( new_parent: Node = null ):
-	
 	#var p_before = self.get_parent()
 	if super_body != null:
 		super_body.change_parent( new_parent )

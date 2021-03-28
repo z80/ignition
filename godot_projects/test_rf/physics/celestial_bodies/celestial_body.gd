@@ -28,6 +28,9 @@ func _ready():
 
 func init_force_source():
 	.init_force_source()
+	
+	add_to_group( Constants.CELESTIAL_BODIES_NAME )
+	
 	force_source = ForceSourceGravity.new()
 	force_source.GM = gm
 
@@ -55,7 +58,7 @@ func process_ref_frames( celestial_bodies: Array ):
 
 # Returns all physics ref frames for a node.
 func ref_frames( n: Node ):
-	var children = get_children()
+	var children = n.get_children()
 	var rfs = []
 	for ch in children:
 		var rfp: RefFramePhysics = ch as RefFramePhysics

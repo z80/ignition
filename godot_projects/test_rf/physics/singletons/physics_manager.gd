@@ -41,6 +41,10 @@ func _process(_delta):
 	update_providers()
 	update_spheres( _delta )
 	update_camera()
+	
+	# Relocate children of celestial bodies depending on the 
+	# gravitational influence and atmosphere bounds.
+	process_celestial_body_children()
 
 
 
@@ -202,6 +206,13 @@ func update_sun():
 	var all_suns: Array = get_tree().get_nodes_in_group( group )
 	for sun in all_suns:
 		sun.process()
+
+
+func process_celestial_body_children():
+	var group: String = Constants.CELESTIAL_BODIES_NAME
+	var celestial_bodies: Array = get_tree().get_nodes_in_group( group )
+	for cb in celestial_bodies:
+		cb.process_ref_frames( celestial_bodies )
 
 
 func update_camera():

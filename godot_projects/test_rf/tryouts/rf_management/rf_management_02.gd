@@ -23,9 +23,7 @@ func _ready():
 	
 	camera.apply_target()
 	
-	var character2 = _create_character( "my_character", Vector3( 1.0, 0.0, -0.02 ), 1.0 )
-	
-	
+	#var character2 = _create_character( "my_character", Vector3( 1.0, 0.0, -0.02 ), 1.0 )
 	#_create_other_body()
 	_create_construction()
 	

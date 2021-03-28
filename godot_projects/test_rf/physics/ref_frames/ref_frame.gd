@@ -5,6 +5,7 @@ class_name RefFrame
 var _axes = null
 
 var force_source = null
+var changing_parent: bool = false
 
 
 func process_children():
@@ -111,10 +112,20 @@ func _force_source_recursive( n: Node ):
 	return _force_source_recursive( p )
 
 
+func change_parent( p: Node = null ):
+	changing_parent = true
+	.change_parent( p )
+
+
 
 func _exit_tree():
+	process_exit_tree()
+
+
+func process_exit_tree():
+	if changing_parent:
+		changing_parent = false
+		return
 	if _axes != null:
 		_axes.queue_free()
-
-
 

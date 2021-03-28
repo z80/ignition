@@ -38,6 +38,8 @@ func process_ref_frames( celestial_bodies: Array ):
 	.process_ref_frames( celestial_bodies )
 	var rfs: Array = ref_frames( self )
 	var qty: int = len( rfs )
+	if qty < 1:
+		return
 	if ref_frame_to_check_index >= qty:
 		ref_frame_to_check_index = 0
 	

@@ -10,7 +10,7 @@ static func _celestial_body_recursive( n: Node ):
 	if n == null:
 		return null
 	
-	var cb: CelestialBody = n as CelestialBody
+	var cb: CelestialSurface = n as CelestialSurface
 	if cb != null:
 		return n
 	

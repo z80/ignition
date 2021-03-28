@@ -513,16 +513,23 @@ func distance( b: RefFramePhysics ):
 
 
 
-# Destructor.
-func _exit_tree():
+
+
+
+func process_exit_tree():
+	if changing_parent:
+		changing_parent = false
+		return
 	finit_physics()
-	_surface_provider.queue_free()
+	if _surface_provider != null:
+		_surface_provider.queue_free()
+		_surface_provider = null
 	# It's subclassed from a reference.
 	# Should be enough to just remove all references to 
 	# make it released.
 	_subdivide_source_physical = null
-
-
+	
+	.process_exit_tree()
 
 
 
