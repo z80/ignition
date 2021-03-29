@@ -72,18 +72,18 @@ public:
     void set_convert_to_global( bool en );
     bool get_convert_to_global() const;
 
-	void relocate_mesh( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source );
-	void rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source );
+	void relocate_mesh( Node * ref_frame, Node * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source );
+	void rebuild_shape( Node * ref_frame, Node * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source );
 	void apply_visual_mesh();
 
 private:
 
-    void regenerate_mesh( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref );
-    void adjust_pose( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source );
+    void regenerate_mesh( RefFrameNode * ref_frame, RefFrameNode * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source_ref );
+    void adjust_pose( RefFrameNode * ref_frame, RefFrameNode * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source );
     void init_levels();
 
-    void scale_close( SE3 & poi_relative_to_center );
-    void scale_far( SE3 & poi_relative_to_center );
+    void scale_close( const SE3 center_relative_to_ref_frame, const SE3 & poi_relative_to_center );
+    void scale_far( const SE3 center_relative_to_ref_frame, const SE3 & poi_relative_to_center );
     void scale_neutral( const SE3 & poi_relative_to_center );
 
 	MeshInstance * get_mesh_instance();
@@ -99,8 +99,6 @@ public:
     // These are for determining when subdivision is needed and for placement of
     // points of interest.
     bool                 generate_close;
-    // Sphere center relative to observation point.
-    SE3                  center_relative_to_ref_frame;
 
     // For querying collisions store all ref frames in this container.
     Vector<CubeVertex> collision_tris;

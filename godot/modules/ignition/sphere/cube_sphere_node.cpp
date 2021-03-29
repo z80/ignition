@@ -105,8 +105,8 @@ void CubeSphereNode::_bind_methods()
 
 
 
-	ClassDB::bind_method( D_METHOD("relocate_mesh", "rf", "subdiv_src"), &CubeSphereNode::relocate_mesh );
-	ClassDB::bind_method( D_METHOD("rebuild_shape", "rf", "subdiv_src"), &CubeSphereNode::rebuild_shape );
+	ClassDB::bind_method( D_METHOD("relocate_mesh", "rf", "player_ctrl", "subdiv_src"), &CubeSphereNode::relocate_mesh );
+	ClassDB::bind_method( D_METHOD("rebuild_shape", "rf", "player_ctrl", "subdiv_src"), &CubeSphereNode::rebuild_shape );
 	ClassDB::bind_method( D_METHOD("apply_visual_mesh"), &CubeSphereNode::apply_visual_mesh );
 
 
@@ -409,18 +409,24 @@ bool CubeSphereNode::get_convert_to_global() const
     return convert_to_global;
 }
 
-void CubeSphereNode::relocate_mesh( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source )
+void CubeSphereNode::relocate_mesh( Node * ref_frame, Node * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source )
 {
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( ref_frame );
-	adjust_pose( rf, subdivide_source );
+	RefFrameNode * player_ctrl_rf = Node::cast_to<RefFrameNode>( player_ctrl );
+	if ( player_ctrl_rf == nullptr )
+		player_ctrl_rf = rf;
+	adjust_pose( rf, player_ctrl_rf, subdivide_source );
 }
 
-void CubeSphereNode::rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref )
+void CubeSphereNode::rebuild_shape( Node * ref_frame, Node * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source_ref )
 {
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( ref_frame );
+	RefFrameNode * player_ctrl_rf = Node::cast_to<RefFrameNode>( player_ctrl );
 	if ( rf == nullptr )
 		return;
-	regenerate_mesh( rf, subdivide_source_ref );
+	if ( player_ctrl_rf == nullptr )
+		player_ctrl_rf = rf;
+	regenerate_mesh( rf, player_ctrl_rf, subdivide_source_ref );
 }
 
 void CubeSphereNode::apply_visual_mesh()
@@ -478,7 +484,7 @@ void CubeSphereNode::apply_visual_mesh()
 
 
 
-void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref )
+void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, RefFrameNode * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source_ref )
 {
 	// Regenerate spherical landscape.
 	SubdivideSource * ss = const_cast<SubdivideSource *>( &(subdivide_source_ref->subdivide_source) );
@@ -492,7 +498,7 @@ void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, const Ref<Subdiv
 
 
 	// Reference frame convertion.
-	center_relative_to_ref_frame = this->relative_( ref_frame );
+	const SE3 center_relative_to_ref_frame = this->relative_( ref_frame );
 
     // Compute point of interest relative to center.
     
@@ -509,28 +515,30 @@ void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, const Ref<Subdiv
     if ( use_scale )
     {
         if ( generate_close )
-            scale_close( ss->poi_relative_to_center );
+            scale_close( center_relative_to_ref_frame, ss->poi_relative_to_center );
         else
-            scale_far( ss->poi_relative_to_center );
+            scale_far( center_relative_to_ref_frame, ss->poi_relative_to_center );
     }
     else
         scale_neutral( ss->poi_relative_to_center );
 
 }
 
-void CubeSphereNode::adjust_pose( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source )
+void CubeSphereNode::adjust_pose( RefFrameNode * ref_frame, RefFrameNode * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source )
 {
 	MeshInstance * mi = get_mesh_instance();
 	if ( mi == nullptr )
 		return;
 	SubdivideSource * ss = const_cast<SubdivideSource *>( &(subdivide_source->subdivide_source) );
 
-	center_relative_to_ref_frame = this->relative_( ref_frame );
-    SE3 se3 = center_relative_to_ref_frame * ss->poi_relative_to_center;
+	const SE3 center_relative_to_player_rf = this->relative_( player_ctrl );
+    SE3 se3 = center_relative_to_player_rf * ss->poi_relative_to_center;
 	// Apply scale.
 	const Float poi_d = se3.r_.Length();
 	const Float poi_s = scale->scale( poi_d ) / poi_d;
 	se3.r_ *= poi_s;
+	const SE3 player_relative_to_ref_frame = player_ctrl->se3_;
+	se3 = player_relative_to_ref_frame * se3;
     if ( convert_to_global )
     {
         SE3 to_global = ref_frame->relative_( nullptr );
@@ -551,7 +559,7 @@ void CubeSphereNode::init_levels()
     add_level( r/5.0, r*3.0 );
 }
 
-void CubeSphereNode::scale_close( SE3 & poi_relative_to_center )
+void CubeSphereNode::scale_close( const SE3 center_relative_to_ref_frame, const SE3 & poi_relative_to_center )
 {
     // Here assume that 1) scale is applied and 2) scaler object is set.
     // Convert to origin (observer) ref frame.
@@ -589,7 +597,7 @@ void CubeSphereNode::scale_close( SE3 & poi_relative_to_center )
     }
 }
 
-void CubeSphereNode::scale_far( SE3 & poi_relative_to_center )
+void CubeSphereNode::scale_far( const SE3 center_relative_to_ref_frame, const SE3 & poi_relative_to_center )
 {
 	// Make POI relative to center such that scaled POI in origin rf
 	// is obtained by center_relative_to_ref_frame * poi_relative_to_center.
