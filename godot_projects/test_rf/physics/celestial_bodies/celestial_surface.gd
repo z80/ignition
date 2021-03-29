@@ -128,7 +128,7 @@ func process_motion( delta ):
 
 
 func process_geometry( force_player_rf: RefFrame = null ):
-	var player_rf: RefFrame
+	var player_rf: RefFrameNode
 	if force_player_rf != null:
 		player_rf = force_player_rf
 	else:
