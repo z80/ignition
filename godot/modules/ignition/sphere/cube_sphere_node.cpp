@@ -106,7 +106,7 @@ void CubeSphereNode::_bind_methods()
 
 
 	ClassDB::bind_method( D_METHOD("relocate_mesh", "rf", "player_ctrl", "subdiv_src"), &CubeSphereNode::relocate_mesh );
-	ClassDB::bind_method( D_METHOD("rebuild_shape", "rf", "player_ctrl", "subdiv_src"), &CubeSphereNode::rebuild_shape );
+	ClassDB::bind_method( D_METHOD("rebuild_shape", "rf", "subdiv_src"), &CubeSphereNode::rebuild_shape );
 	ClassDB::bind_method( D_METHOD("apply_visual_mesh"), &CubeSphereNode::apply_visual_mesh );
 
 
@@ -418,15 +418,12 @@ void CubeSphereNode::relocate_mesh( Node * ref_frame, Node * player_ctrl, const 
 	adjust_pose( rf, player_ctrl_rf, subdivide_source );
 }
 
-void CubeSphereNode::rebuild_shape( Node * ref_frame, Node * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source_ref )
+void CubeSphereNode::rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref )
 {
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( ref_frame );
-	RefFrameNode * player_ctrl_rf = Node::cast_to<RefFrameNode>( player_ctrl );
 	if ( rf == nullptr )
 		return;
-	if ( player_ctrl_rf == nullptr )
-		player_ctrl_rf = rf;
-	regenerate_mesh( rf, player_ctrl_rf, subdivide_source_ref );
+	regenerate_mesh( rf, subdivide_source_ref );
 }
 
 void CubeSphereNode::apply_visual_mesh()
@@ -484,7 +481,7 @@ void CubeSphereNode::apply_visual_mesh()
 
 
 
-void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, RefFrameNode * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source_ref )
+void CubeSphereNode::regenerate_mesh( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref )
 {
 	// Regenerate spherical landscape.
 	SubdivideSource * ss = const_cast<SubdivideSource *>( &(subdivide_source_ref->subdivide_source) );

@@ -129,10 +129,12 @@ func process_motion( delta ):
 
 func process_geometry( force_player_rf: RefFrame = null ):
 	var player_rf: RefFrameNode
+	var player_ctrl: RefFrameNode
 	if force_player_rf != null:
 		player_rf = force_player_rf
 	else:
 		player_rf = PhysicsManager.get_player_ref_frame()
+	player_ctrl = PhysicsManager.player_control
 	
 	var physics_ref_frames: Dictionary  = PhysicsManager.physics_ref_frames()
 	
@@ -174,7 +176,7 @@ func process_geometry( force_player_rf: RefFrame = null ):
 		if need_rebuild_visual:
 			planet.rebuild_shape( player_rf, _subdivide_source_visual )
 			planet.apply_visual_mesh()
-		planet.relocate_mesh( player_rf, _subdivide_source_visual )
+		planet.relocate_mesh( player_rf, player_ctrl, _subdivide_source_visual )
 
 
 
