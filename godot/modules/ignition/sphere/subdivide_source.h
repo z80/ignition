@@ -24,6 +24,8 @@ public:
     // Determines if a particular face should be subdivided.
     virtual bool need_subdivide( const CubeSphere * s, const CubeQuadNode * f ) const;
 
+	void force_subdivide();
+
 public:
     void flatten_pts( const CubeSphere * s );
 

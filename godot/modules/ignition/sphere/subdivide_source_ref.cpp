@@ -10,6 +10,7 @@ namespace Ign
 void SubdivideSourceRef::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("need_subdivide", "ref_frame", "cubesphere_node"), &SubdivideSourceRef::need_subdivide, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("force_subdivide"), &SubdivideSourceRef::force_subdivide );
 }
 
 SubdivideSourceRef::SubdivideSourceRef()
@@ -49,6 +50,11 @@ bool SubdivideSourceRef::need_subdivide( Node * ref_frame, Node * cubesphere_nod
     const bool ret = subdivide_source.need_subdivide( &(csn->sphere), subdivide_points );
      
     return ret;
+}
+
+void SubdivideSourceRef::force_subdivide()
+{
+	subdivide_source.force_subdivide();
 }
 
 

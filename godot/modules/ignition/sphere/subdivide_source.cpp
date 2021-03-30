@@ -110,6 +110,12 @@ bool SubdivideSource::need_subdivide( const CubeSphere * s, const CubeQuadNode *
     return false;
 }
 
+void SubdivideSource::force_subdivide()
+{
+	// This should cause it to rebuild.
+	pts_.clear();
+}
+
 void SubdivideSource::flatten_pts( const CubeSphere * s )
 {
     s->flatten_pts( pts_, ptsFlat_ );
