@@ -214,6 +214,11 @@ func jump_if_needed():
 	t.origin = r
 	jump( t )
 	
+	# Enforce collision layer and visual subdivide.
+	_subdivide_source_physical.force_subdivide()
+	var player_rf: RefFrameNode = PhysicsManager.get_player_ref_frame()
+	if self == player_rf:
+		PhysicsManager.force_rebuild_visual_spheres()
 	#_jumps_left -= 1
 
 
@@ -438,7 +443,7 @@ func apply_forces():
 		var body = child as Body
 		if body != null:
 			process_body( rf, body )
-	
+
 
 
 

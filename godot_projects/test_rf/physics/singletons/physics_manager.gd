@@ -201,6 +201,13 @@ func update_spheres( delta: float ):
 		sphere.process( delta )
 
 
+func force_rebuild_visual_spheres():
+	var group: String = Constants.SPHERES_GROUP_NAME
+	var all_spheres: Array = get_tree().get_nodes_in_group( group )
+	for sphere in all_spheres:
+		sphere.force_rebuild()
+	
+
 func update_sun():
 	var group: String = Constants.SUN_GROUP_NAME
 	var all_suns: Array = get_tree().get_nodes_in_group( group )

@@ -40,9 +40,9 @@ func init_force_source():
 
 
 func init():
-	if initialized:
-		return
-	initialized = true
+#	if initialized:
+#		return
+#	initialized = true
 	
 	# Initialize GM.
 	init_force_source()

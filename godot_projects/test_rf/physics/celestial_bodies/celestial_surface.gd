@@ -179,7 +179,8 @@ func process_geometry( force_player_rf: RefFrame = null ):
 		planet.relocate_mesh( player_rf, player_ctrl, _subdivide_source_visual )
 
 
-
+func force_rebuild():
+	_subdivide_source_visual.force_subdivide()
 
 
 
