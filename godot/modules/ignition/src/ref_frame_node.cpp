@@ -29,6 +29,7 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_se3"), &RefFrameNode::get_se3, Variant::OBJECT );
 
 	ClassDB::bind_method( D_METHOD("relative_to", "origin"), &RefFrameNode::relative_to, Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("relative_to_se3", "origin", "origin_se3"), &RefFrameNode::relative_to_se3, Variant::OBJECT );
 
 
 	ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent, Variant::NIL );
@@ -42,6 +43,7 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_jump_t", "transform"), &RefFrameNode::set_jump_t, Variant::NIL );
 
 	ClassDB::bind_method( D_METHOD("apply_jump"),              &RefFrameNode::apply_jump, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("jump_to", "dest", "dest_se3"), &RefFrameNode::jump_to );
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform" ),        "set_t", "t" );
@@ -172,11 +174,24 @@ Ref<Se3Ref> RefFrameNode::relative_to( Node * origin )
 	return se3;
 }
 
+Ref<Se3Ref> RefFrameNode::relative_to_se3( Node * origin, const Ref<Se3Ref> & origin_se3 )
+{
+	Ref<Se3Ref> se3;
+	se3.instance();
+
+	RefFrameNode * rf = Node::cast_to<RefFrameNode>( origin );
+	//if (!rf)
+	//	return se3;
+
+	se3->se3 = relative_( rf, SE3(), origin_se3->se3 );
+	return se3;
+}
+
 
 void RefFrameNode::change_parent( Node * parent )
 {
 	RefFrameNode * parent_rf;
-	if ( !parent )
+	if ( parent == nullptr )
 	{
 		parent_rf = nullptr;
 	}
@@ -267,6 +282,61 @@ void RefFrameNode::apply_jump()
 	const SE3 se3_in_parent = relative_( parent_rf, se3_jump_to_ );
 	se3_ = se3_in_parent;
 }
+
+void RefFrameNode::jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 )
+{
+	const int qty = get_child_count();
+	RefFrameNode * dest_rf;
+	Node * p = get_parent();
+	if ( dest == nullptr )
+	{
+		dest_rf = nullptr;
+	}
+	else
+	{
+		if ( dest != this )
+			dest_rf = Object::cast_to<RefFrameNode>( dest );
+		else
+			dest_rf = Object::cast_to<RefFrameNode>( p );
+	}
+
+	SE3 dest_se3_adjusted;
+	if ( dest != this )
+		dest_se3_adjusted = dest_se3->se3;
+	else
+	{
+		RefFrameNode * parent_rf = Object::cast_to<RefFrameNode>( p );
+		dest_se3_adjusted = relative_( parent_rf, dest_se3->se3 );
+	}
+
+
+	for ( int i=0; i<qty; i++ )
+	{
+		Node * n = get_child( i );
+		RefFrameNode * ch = Object::cast_to<RefFrameNode>( n );
+		if ( !ch )
+			continue;
+		const SE3 se3_child_to = ch->relative_( dest_rf, SE3(), dest_se3_adjusted );
+		ch->se3_ = se3_child_to;
+	}
+
+	if ( dest != this )
+	{
+		if ( p != nullptr )
+		{
+			RefFrameNode * parent_rf = Object::cast_to<RefFrameNode>( p );
+			p->remove_child( this );
+		}
+
+		if ( dest_rf )
+		{
+			dest_rf->add_child( this );
+		}
+	}
+
+	se3_ = dest_se3_adjusted;
+}
+
 
 SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const SE3 & se3_root )
 {

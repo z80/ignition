@@ -52,6 +52,7 @@ public:
 	Ref<Se3Ref> get_se3() const;
 
 	Ref<Se3Ref> relative_to( Node * origin );
+	Ref<Se3Ref> relative_to_se3( Node * origin, const Ref<Se3Ref> & origin_se3 );
 
 	/// Change origin without changing absolute position in space.
 	void change_parent( Node * origin );
@@ -81,6 +82,7 @@ public:
 	//Transform obj_t() const;
 
 	void apply_jump();
+	void jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 );
 
 	/// Object transform in local frame and output object relative to root.
 	//void calc_obj_relative_to_root( Node * root );
