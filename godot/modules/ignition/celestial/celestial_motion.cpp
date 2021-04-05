@@ -97,6 +97,113 @@ bool CelestialMotion::is_orbiting() const
 	return orbiting;
 }
 
+Type CelestialMotion::movement_type() const
+{
+	return type;
+}
+
+Float CelestialMotion::specific_angular_momentum() const
+{
+	return h;
+}
+
+Float CelestialMotion::eccentricity() const
+{
+	return abs_e;
+}
+
+Float CelestialMotion::period() const
+{
+	if ( type != ELLIPTIC )
+		return -1.0;
+
+	const Float ret = Celestial::ticks_to_secs( T );
+	return ret;
+}
+
+Float CelestialMotion::time_after_periapsis() const
+{
+	if ( (type != ELLIPTIC) && (type != PARABOLIC) && (type != HYPERBOLIC) )
+		return 0.0;
+
+	const Float ret = Celestial::ticks_to_secs( periapsis_t );
+	return ret;
+}
+
+Float CelestialMotion::closest_approach() const
+{
+	if ( (type != ELLIPTIC) && (type != PARABOLIC) && (type != HYPERBOLIC) )
+		return -1.0;
+
+	const Float return ret = slr / (1.0 + abs_e );
+}
+
+Float CelestialMotion::perigee() const
+{
+	if ( (type != ELLIPTIC) && (type != PARABOLIC) && (type != HYPERBOLIC) )
+		return -1.0;
+
+	const Float return ret = slr / (1.0 + abs_e );
+	return ret;
+}
+
+Float CelestialMotion::apogee() const
+{
+	if (type != ELLIPTIC)
+		return -1.0;
+
+	const Float return ret = slr / (1.0 - abs_e );
+	return ret;
+}
+
+Float CelestialMotion::min_velocity() const
+{
+	if (type != ELLIPTIC)
+		return -1.0;
+	const Float r = apogee();
+	const Float v = std::sqrt( gm*( 2.0/r - 1.0/a ) );
+}
+
+Float CelestialMotion::max_velocity() const
+{
+	if ( (type != ELLIPTIC) && (type != PARABOLIC) && (type != HYPERBOLIC) )
+		return -1.0;
+
+	const Float r = perigee();
+	const Float v = std::sqrt( gm*( 2.0/r - 1.0/a ) );
+}
+
+Float CelestialMotion::excess_velocity() const
+{
+	if ( (type != ELLIPTIC) && (type != PARABOLIC) && (type != HYPERBOLIC) )
+		return -1.0;
+
+	if (type == ELLIPTIC)
+	{
+		const Float ret = std::sqrt( gm/a );
+		return ret;
+	}
+	if ( type == PARABOLIC )
+		return 0.0;
+	// HYPERBOLIC.
+	const Float ret = std::sqrt( -gm/a );
+	return ret;
+}
+
+Float CelestialMotion::deflection_angle() const
+{
+	if ( type == PARABOLIC )
+		return PI1;
+	if ( type != HYPERBOLIC )
+		return -1.0;
+	const Float ang = 2.0 * std::acos( -1.0/abs_e );
+	const Float ret = ang - PI1;
+
+	return ret;
+}
+
+
+
 
 void CelestialMotion::init( Float gm_, const SE3 & se3_ )
 {
@@ -126,7 +233,7 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     const Float abs_h = h.Length();
     if ( abs_h < Celestial::MIN_ANGULAR_MOMENTUM )
     {
-        type = LINEAR_GRAVITY;
+        type = LINEAR;
         init_linear();
         return;
     }
@@ -238,8 +345,8 @@ const SE3 & CelestialMotion::process( Float dt )
 {
     if (type == LINEAR)
         process_linear( dt );
-    else if (type == LINEAR_GRAVITY)
-        process_linear_gravity( dt );
+    //else if (type == LINEAR_GRAVITY)
+    //    process_linear_gravity( dt );
     else if (type == HYPERBOLIC)
         process_hyperbolic( dt );
     else if (type == ELLIPTIC)
