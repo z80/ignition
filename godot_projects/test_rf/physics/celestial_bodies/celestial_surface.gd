@@ -7,12 +7,12 @@ export(String) var height_source_name = "test"
 
 
 # Subdivision levels.
-export(float) var detail_size_0 = 10.0
-export(float) var detail_dist_0 = 100.0
-export(float) var detail_size_1 = 50.0
-export(float) var detail_dist_1 = 1000.0
-export(float) var detail_size_2 = 300.0
-export(float) var detail_dist_2 = 1e10
+export(float) var detail_size_0 = 0.01
+export(float) var detail_dist_0 = 0.05
+export(float) var detail_size_1 = 0.03
+export(float) var detail_dist_1 = 0.2
+export(float) var detail_size_2 = 0.05
+export(float) var detail_dist_2 = 10.0
 
 export(float) var atmosphere_height_km = 1.0
 export(float) var opaque_height_km     = 0.1

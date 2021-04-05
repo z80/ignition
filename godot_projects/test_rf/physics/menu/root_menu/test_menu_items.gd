@@ -30,7 +30,7 @@ func _on_quit_click():
 
 func on_start():
 	var t = get_tree()
-	t.change_scene( "res://physics/rf_test.tscn" )
+	t.change_scene( "res://tryouts/rf_management/rf_management_02.tscn" )
 
 
 

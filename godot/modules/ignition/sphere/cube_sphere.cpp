@@ -554,15 +554,16 @@ void CubeSphere::sort_levels()
 {
     levelsUnit_ = levels_;
 
+	// I assume levels are already normalized.
     // Normalize all distances.
-    const Float R = this->r();
+    //const Float R = this->r();
     const unsigned qty = levelsUnit_.size();
-    for ( unsigned i=0; i<qty; i++ )
-    {
-        Level & a = levelsUnit_.ptrw()[i];
-        a.sz   /= R;
-        a.dist /= R;
-    }
+    //for ( unsigned i=0; i<qty; i++ )
+    //{
+    //    Level & a = levelsUnit_.ptrw()[i];
+    //    a.sz   /= R;
+    //    a.dist /= R;
+    //}
 
     // Sort levels in distance accending order.
     for ( unsigned i=0; i<(qty-1); i++ )

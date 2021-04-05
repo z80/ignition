@@ -6,6 +6,9 @@
 [node name="Translation" type="RefFrameNode"]
 script = ExtResource( 1 )
 height_source_name = "00"
+detail_size_0 = 0.03
+detail_size_1 = 0.1
+detail_size_2 = 0.15
 
 [node name="Rotation" type="RefFrameNode" parent="."]
 
