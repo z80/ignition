@@ -518,6 +518,13 @@ func distance( b: RefFramePhysics ):
 
 
 
+func change_parent( p: Node = null ):
+	changing_parent = true
+	var se3: Se3Ref = self.relative_to( p )
+	se3.v = Vector3.ZERO
+	se3.w = Vector3.ZERO
+	self.jump_to( p, se3 )
+	changing_parent = false
 
 
 
