@@ -15,7 +15,21 @@ void CelestialMotionRef::_bind_methods()
 
     ClassDB::bind_method( D_METHOD("stop"), &CelestialMotionRef::stop );
 
-    ClassDB::bind_method( D_METHOD("is_orbiting"), &CelestialMotionRef::is_orbiting );
+    ClassDB::bind_method( D_METHOD("is_orbiting"), &CelestialMotionRef::is_orbiting, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("movement_type"), &CelestialMotionRef::movement_type, Variant::STRING );
+	ClassDB::bind_method( D_METHOD("specific_angular_momentum"), &CelestialMotionRef::specific_angular_momentum, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("eccentricity"), &CelestialMotionRef::eccentricity, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("period"), &CelestialMotionRef::period, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("time_after_periapsis"), &CelestialMotionRef::time_after_periapsis, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("closest_approach"), &CelestialMotionRef::closest_approach, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("perigee"), &CelestialMotionRef::perigee, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("apogee"), &CelestialMotionRef::apogee, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("min_velocity"), &CelestialMotionRef::min_velocity, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("max_velocity"), &CelestialMotionRef::max_velocity, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("excess_velocity"), &CelestialMotionRef::excess_velocity, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("deflection_angle"), &CelestialMotionRef::deflection_angle, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("ex"), &CelestialMotionRef::ex, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("ey"), &CelestialMotionRef::ey, Variant::VECTOR3 );
 
     ClassDB::bind_method( D_METHOD("init", "gm", "se3"), &CelestialMotionRef::init );
     ClassDB::bind_method( D_METHOD("init_gm", "radius_km", "suface_orbit_velocity_kms"), &CelestialMotionRef::init_gm );
@@ -70,6 +84,111 @@ bool CelestialMotionRef::is_orbiting() const
 {
     return cm.is_orbiting();
 }
+
+String CelestialMotionRef::movement_type() const
+{
+	CelestialMotion::Type t = cm.movement_type();
+	String ret;
+	switch (t)
+	{
+	case CelestialMotion::LINEAR:
+		ret = "linear";
+		break;
+	case CelestialMotion::ELLIPTIC:
+		ret = "elliptic";
+		break;
+	case CelestialMotion::PARABOLIC:
+		ret = "parabolic";
+		break;
+	case CelestialMotion::HYPERBOLIC:
+		ret = "hyperbolic";
+	default:
+		ret = "idle";
+	}
+
+	return ret;
+}
+
+real_t CelestialMotionRef::specific_angular_momentum() const
+{
+	const real_t ret = cm.specific_angular_momentum();
+	return ret;
+}
+
+real_t CelestialMotionRef::eccentricity() const
+{
+	const real_t ret = cm.eccentricity();
+	return ret;
+}
+
+real_t CelestialMotionRef::period() const
+{
+	const real_t ret = cm.period();
+	return ret;
+}
+
+real_t CelestialMotionRef::time_after_periapsis() const
+{
+	const real_t ret = cm.time_after_periapsis();
+	return ret;
+}
+
+real_t CelestialMotionRef::closest_approach() const
+{
+	const real_t ret = cm.closest_approach();
+	return ret;
+}
+
+real_t CelestialMotionRef::perigee() const
+{
+	const real_t ret = cm.perigee();
+	return ret;
+}
+
+real_t CelestialMotionRef::apogee() const
+{
+	const real_t ret = cm.apogee();
+	return ret;
+}
+
+real_t CelestialMotionRef::min_velocity() const
+{
+	const real_t ret = cm.min_velocity();
+	return ret;
+}
+
+real_t CelestialMotionRef::max_velocity() const
+{
+	const real_t ret = cm.max_velocity();
+	return ret;
+}
+
+real_t CelestialMotionRef::excess_velocity() const
+{
+	const real_t ret = cm.excess_velocity();
+	return ret;
+}
+
+real_t CelestialMotionRef::deflection_angle() const
+{
+	const real_t ret = cm.deflection_angle();
+	return ret;
+}
+
+Vector3 CelestialMotionRef::ex() const
+{
+	const Vector3d e = cm.ex();
+	const Vector3 ret( e.x_, e.y_, e.z_ );
+	return ret;
+}
+
+Vector3 CelestialMotionRef::ey() const
+{
+	const Vector3d e = cm.ey();
+	const Vector3 ret( e.x_, e.y_, e.z_ );
+	return ret;
+}
+
 
 
 

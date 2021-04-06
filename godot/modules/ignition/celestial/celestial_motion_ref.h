@@ -33,6 +33,23 @@ public:
     void stop();
 
     bool is_orbiting() const;
+	String movement_type() const;
+	real_t specific_angular_momentum() const;
+	real_t eccentricity() const;
+	real_t period() const;
+	real_t time_after_periapsis() const;
+	real_t closest_approach() const;
+	real_t perigee() const;
+	real_t apogee() const;
+	real_t min_velocity() const;
+	real_t max_velocity() const;
+	real_t excess_velocity() const;
+	real_t deflection_angle() const;
+	// Orbit orientation.
+	// From focus towards perigee.
+	Vector3 ex() const;
+	// Along velocity at perigee.
+	Vector3 ey() const;
 
     void init( real_t gm, const Ref<Se3Ref> & se3 );
     real_t init_gm( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const;
