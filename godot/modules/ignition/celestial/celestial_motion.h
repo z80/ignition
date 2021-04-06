@@ -42,6 +42,11 @@ public:
 	Float max_velocity() const;
 	Float excess_velocity() const;
 	Float deflection_angle() const;
+	// Orbit orientation.
+	// From focus towards perigee.
+	Vector3d ex() const;
+	// Along velocity at perigee.
+	Vector3d ey() const;
 
 
 	// Functionality needed for processing.

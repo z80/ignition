@@ -97,14 +97,15 @@ bool CelestialMotion::is_orbiting() const
 	return orbiting;
 }
 
-Type CelestialMotion::movement_type() const
+CelestialMotion::Type CelestialMotion::movement_type() const
 {
 	return type;
 }
 
 Float CelestialMotion::specific_angular_momentum() const
 {
-	return h;
+	const Float h_abs = h.Length();
+	return h_abs;
 }
 
 Float CelestialMotion::eccentricity() const
@@ -135,7 +136,8 @@ Float CelestialMotion::closest_approach() const
 	if ( (type != ELLIPTIC) && (type != PARABOLIC) && (type != HYPERBOLIC) )
 		return -1.0;
 
-	const Float return ret = slr / (1.0 + abs_e );
+	const Float ret = slr / (1.0 + abs_e );
+	return ret;
 }
 
 Float CelestialMotion::perigee() const
@@ -143,7 +145,7 @@ Float CelestialMotion::perigee() const
 	if ( (type != ELLIPTIC) && (type != PARABOLIC) && (type != HYPERBOLIC) )
 		return -1.0;
 
-	const Float return ret = slr / (1.0 + abs_e );
+	const Float ret = slr / (1.0 + abs_e );
 	return ret;
 }
 
@@ -152,7 +154,7 @@ Float CelestialMotion::apogee() const
 	if (type != ELLIPTIC)
 		return -1.0;
 
-	const Float return ret = slr / (1.0 - abs_e );
+	const Float ret = slr / (1.0 - abs_e );
 	return ret;
 }
 
@@ -162,6 +164,7 @@ Float CelestialMotion::min_velocity() const
 		return -1.0;
 	const Float r = apogee();
 	const Float v = std::sqrt( gm*( 2.0/r - 1.0/a ) );
+	return v;
 }
 
 Float CelestialMotion::max_velocity() const
@@ -171,6 +174,7 @@ Float CelestialMotion::max_velocity() const
 
 	const Float r = perigee();
 	const Float v = std::sqrt( gm*( 2.0/r - 1.0/a ) );
+	return v;
 }
 
 Float CelestialMotion::excess_velocity() const
@@ -201,6 +205,19 @@ Float CelestialMotion::deflection_angle() const
 
 	return ret;
 }
+
+Vector3d CelestialMotion::ex() const
+{
+	const Vector3d ret( A.m00_, A.m10_, A.m20_ );
+	return ret;
+}
+
+Vector3d CelestialMotion::ey() const
+{
+	const Vector3d ret( A.m01_, A.m11_, A.m21_ );
+	return ret;
+}
+
 
 
 
