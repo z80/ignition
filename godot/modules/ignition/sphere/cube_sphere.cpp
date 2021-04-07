@@ -142,7 +142,9 @@ void CubeSphere::apply_source( HeightSource * src )
             const CubeVertex & va = verts.ptr()[vertIndA];
             const CubeVertex & vb = verts.ptr()[vertIndB];
             v.at = (va.at + vb.at) * 0.5;
-        }
+			v.atUnit = (va.atUnit + vb.atUnit) * 0.5;
+			v.heightUnit_ = (va.heightUnit_ + vb.heightUnit_) * 0.5;
+		}
     }
     compute_normals();
 	for ( int i=0; i<qty; i++ )
