@@ -43,7 +43,7 @@ func setup( bodies: Array, edges: Array ):
 		
 		j.set( "nodes/node_a", body_a._physical.get_path() )
 		j.set( "nodes/node_b", body_b._physical.get_path() )
-		j.precision = 10
+		j.precision = 100
 
 
 
