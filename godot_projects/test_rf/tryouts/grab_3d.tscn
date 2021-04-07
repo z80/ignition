@@ -1,10 +1,10 @@
 [gd_scene load_steps=8 format=2]
 
-[ext_resource path="res://physics/bodies/construction/material_blue.tres" type="Material" id=1]
-[ext_resource path="res://meshes/Material.material" type="Material" id=2]
+[ext_resource path="res://meshes/Material.material" type="Material" id=1]
+[ext_resource path="res://physics/bodies/construction/material_green.tres" type="Material" id=2]
 [ext_resource path="res://physics/bodies/construction/material_red.tres" type="Material" id=3]
-[ext_resource path="res://physics/bodies/construction/material_green.tres" type="Material" id=4]
-[ext_resource path="res://physics/bodies/construction/grab_3d.gd" type="Script" id=5]
+[ext_resource path="res://physics/bodies/construction/material_blue.tres" type="Material" id=4]
+[ext_resource path="res://tryouts/grab_3d.gd" type="Script" id=5]
 
 [sub_resource type="ArrayMesh" id=1]
 resource_name = "Cube"
@@ -15,7 +15,7 @@ surfaces/0 = {
 "blend_shape_data": [  ],
 "format": 97559,
 "index_count": 144,
-"material": ExtResource( 2 ),
+"material": ExtResource( 1 ),
 "name": "Material",
 "primitive": 4,
 "skeleton_aabb": [  ],
@@ -46,7 +46,7 @@ shape = SubResource( 2 )
 [node name="ArrowZ" type="MeshInstance" parent="."]
 transform = Transform( -1.62921e-07, 0, -1, 0, 1, 0, 1, 0, -1.62921e-07, -2.15448, 0, 1.64838 )
 mesh = SubResource( 1 )
-material/0 = ExtResource( 1 )
+material/0 = ExtResource( 4 )
 
 [node name="AreaZ" type="Area" parent="ArrowZ"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.011866, 0, 0.000621222 )
@@ -58,7 +58,7 @@ shape = SubResource( 2 )
 [node name="ArrowY" type="MeshInstance" parent="."]
 transform = Transform( -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0, 0, 1, -2.13013, 2.13803, 0.000342131 )
 mesh = SubResource( 1 )
-material/0 = ExtResource( 4 )
+material/0 = ExtResource( 2 )
 
 [node name="AreaY" type="Area" parent="ArrowY"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0339563, -0.0148904, -0.00606108 )
