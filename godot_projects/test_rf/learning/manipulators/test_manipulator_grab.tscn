@@ -3,7 +3,6 @@
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=1]
 [ext_resource path="res://physics/bodies/construction/manip_grab.tscn" type="PackedScene" id=2]
 
-
 [sub_resource type="CubeMesh" id=1]
 
 [node name="Spatial" type="Spatial"]
