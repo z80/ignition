@@ -1,5 +1,6 @@
 
 #include "ref_frame_node.h"
+#include "core/print_string.h"
 
 namespace Ign
 {
@@ -54,7 +55,8 @@ void RefFrameNode::_bind_methods()
 }
 
 RefFrameNode::RefFrameNode()
-	: Node()
+	: Node(),
+	  debug_( false )
 {
 }
 
@@ -340,15 +342,30 @@ void RefFrameNode::jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 )
 
 SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const SE3 & se3_root )
 {
+	if ( debug_ && (root != nullptr) )
+	{
+		print_line( String("relative \"") + this->get_name() + String( "\" relative to \"" ) + root->get_name() + String( "\"" ) );
+		print_line( String("own  path: ") + this->get_path() );
+		print_line( String("root path: ") + root->get_path() );
+	}
+
 	queueA_.clear();
 	RefFrameNode * rf = this;
 	while (rf != nullptr)
 	{
+		if ( debug_ )
+			print_line( String("queueA <- \"") + rf->get_name() + String("\"") );
 		queueA_.push_back( rf );
 		rf = rf->parent_rf_();
 	}
 	const int qtyA = queueA_.size();
 	int intersection_ind = qtyA;
+
+	if ( debug_ )
+	{
+		print_line( String( "intersection_ind <- " ) + itos( intersection_ind ) );
+		print_line( String("---") );
+	}
 
 	queueB_.clear();
 	rf = root;
@@ -368,6 +385,8 @@ SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const S
 		}
 		if ( match )
 			break;
+		if ( debug_ )
+			print_line( String("queueB <- \"") + rf->get_name() + String("\"") );
 		queueB_.push_back( rf );
 		rf = rf->parent_rf_();
 	}
@@ -404,6 +423,17 @@ RefFrameNode * RefFrameNode::parent_rf_() const
 	RefFrameNode * p = Object::cast_to<RefFrameNode>( n );
 	return p;
 }
+
+void RefFrameNode::set_debug( bool en )
+{
+	debug_ = en;
+}
+
+bool RefFrameNode::get_debug() const
+{
+	return debug_;
+}
+
 
 
 }

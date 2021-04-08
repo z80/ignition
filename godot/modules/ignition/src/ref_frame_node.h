@@ -100,6 +100,9 @@ public:
 
 	RefFrameNode * parent_rf_() const;
 
+	void set_debug( bool en );
+	bool get_debug() const;
+
 	SE3    se3_;
 	SE3    se3_root_;
 	SE3    se3_jump_to_;
@@ -108,6 +111,8 @@ public:
 	//SE3    se3_obj_after_jump_;
 
 	Vector<RefFrameNode * > queueA_, queueB_;
+
+	bool debug_;
 };
 
 }
