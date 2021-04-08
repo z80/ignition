@@ -159,6 +159,11 @@ func _create_assembly():
 		sb.create_edges()
 		# Setting parent after adding all the bodies.
 		var p = self.get_parent()
+		
+		
+		var se3: Se3Ref = sb.relative_to( p )
+		
+		
 		sb.change_parent( p )
 		sb.activate()
 

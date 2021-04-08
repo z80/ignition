@@ -41,9 +41,12 @@ func setup( bodies: Array, edges: Array ):
 		BodyCreator.root_node.add_child( j )
 		_joints.push_back( j )
 		
+		j.transform = body_a.t()
 		j.set( "nodes/node_a", body_a._physical.get_path() )
 		j.set( "nodes/node_b", body_b._physical.get_path() )
 		j.precision = 100
+		
+
 
 
 
