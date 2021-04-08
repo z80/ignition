@@ -391,6 +391,13 @@ SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const S
 		rf = rf->parent_rf_();
 	}
 
+	if ( debug_ )
+	{
+		print_line( String( "intersection_ind <- " ) + itos( intersection_ind ) );
+		print_line( String("---") );
+	}
+
+
 	// Route A.
 	SE3 se3A = se3_local;
 	for ( int i=0; i<intersection_ind; i++ )
