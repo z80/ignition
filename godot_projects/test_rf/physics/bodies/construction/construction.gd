@@ -152,6 +152,7 @@ func _create_assembly():
 	var qty = dynamic_blocks.size()
 	if qty > 0:
 		var sb = PartSuperBody.new()
+		self.add_child( sb )
 		for body in dynamic_blocks:
 			sb.add_sub_body( body )
 		
@@ -163,8 +164,9 @@ func _create_assembly():
 		
 		var se3: Se3Ref = sb.relative_to( p )
 		
-		
+		sb.debug = true
 		sb.change_parent( p )
+		sb.debug = false
 		sb.activate()
 
 	#if qty > 1:

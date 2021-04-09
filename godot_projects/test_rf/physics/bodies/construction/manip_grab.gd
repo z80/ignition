@@ -332,10 +332,12 @@ func _process_dragging():
 	# first as all vectors are in global ref frame
 	var to: Vector3 = Vector3( x, y, z )
 	if target != null:
-		var b: Body = target as Body
-		if b != null:
-			b.set_r( to )
-			b.update_physical_state_from_rf()
+		var body: Body = target as Body
+		if body != null:
+			body.set_r( to )
+			body.set_v( Vector3.ZERO )
+			body.set_w( Vector3.ZERO )
+			body.update_physical_state_from_rf()
 		else:
 			target.translation = to
 	
@@ -426,6 +428,8 @@ func _process_rotating():
 		var body: Body = target as Body
 		if body != null:
 			body.set_q( q )
+			body.set_v( Vector3.ZERO )
+			body.set_w( Vector3.ZERO )
 			body.update_physical_state_from_rf()
 		else:
 			var tt: Transform = target.transform
