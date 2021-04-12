@@ -23,8 +23,9 @@ func _on_Timer_timeout():
 
 func _update_celestial_motion():
 	var ctrl = PhysicsManager.player_control as Body
-	
-	_do_show = false
+	if ctrl == null:
+		_do_show = false
+	_do_show = true
 	
 
 func _visualize():
@@ -49,3 +50,18 @@ func _visualize_none():
 	l.text = "--:--"
 	l = get_node( "TimeToPerigee" )
 	l.text = "--:--"
+	l = get_node( "TimeToApogee" )
+	l.text = "--:--"
+	
+	l = get_node( "VPerigee" )
+	l.text = "--:--"
+	l = get_node( "VPerigee" )
+	l.text = "--:--"
+	l = get_node( "Period" )
+	l.text = "--:--"
+	l = get_node( "Velocity" )
+	l.text = "--:--"
+
+
+
+
