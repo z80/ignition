@@ -29,14 +29,19 @@ func _update_celestial_motion():
 		_do_show = false
 		return
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
-	var p: Node = self.get_parent()
+	var p: Node = ctrl.get_parent()
 	var cb: CelestialSurface = ClosestCelestialBody.closest_celestial_body( p )
 	if cb == null:
 		_do_show = false
+		return
 	var se3: Se3Ref = ctrl.relative_to( cb )
+	_cm.allow_orbiting = true
 	_cm.init( cb.gm, se3 )
 	_target_name = cb.name
 	_do_show = true
+	
+	var h: float = _cm.specific_angular_momentum()
+	print( "h: ", h )
 	
 
 func _visualize():
@@ -57,13 +62,13 @@ func _visualize_celestial_motion():
 	l = get_node( "Perigee" )
 	l.text = str( _cm.perigee() * 0.001 )
 	l = get_node( "TimeToPerigee" )
-	var t: float = -_cm.time_after_periapsis()
+	var t: float = abs( _cm.time_after_periapsis() )
 	var stri: String = Time.seconds_to_str( t )
 	l.text = stri
 	l = get_node( "TimeToApogee" )
 	if movement_type == "elliptic":
 		var T: float = _cm.period()
-		t = _cm.time_after_periapsis()
+		t = abs( _cm.time_after_periapsis() )
 		t = T*0.5 - t
 		stri = Time.seconds_to_str( t )
 	else:
@@ -73,8 +78,14 @@ func _visualize_celestial_motion():
 	l.text = "--:--"
 	l = get_node( "VPerigee" )
 	l.text = "--:--"
+
 	l = get_node( "Period" )
-	l.text = "--:--"
+	if movement_type == "elliptic":
+		var T: float = _cm.period()
+		stri = Time.seconds_to_str( T )
+		l.text = stri
+	else:
+		l.text = "--:--"
 	l = get_node( "Velocity" )
 	l.text = "--:--"
 
