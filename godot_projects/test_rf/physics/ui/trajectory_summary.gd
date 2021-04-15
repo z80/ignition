@@ -7,10 +7,12 @@ const Time = preload( "res://physics/utils/time.gd" )
 var _cm: CelestialMotionRef = null
 var _do_show: bool = false
 var _target_name: String = ""
+var _labels: Dictionary = {}
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_cm = CelestialMotionRef.new()
+	_init_labels()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -41,7 +43,7 @@ func _update_celestial_motion():
 	_do_show = true
 	
 	var h: float = _cm.specific_angular_momentum()
-	print( "h: ", h )
+	print( "h: ", h, " type: ", _cm.movement_type() )
 	
 
 func _visualize():
@@ -52,20 +54,20 @@ func _visualize():
 
 
 func _visualize_celestial_motion():
-	var l: Label = get_node( "Target" )
+	var l: Label = _labels[ "target" ]
 	l.text = _target_name
-	l = get_node( "TrajectoryType" )
+	l = _labels[ "trajectory_type" ]
 	var movement_type: String = _cm.movement_type()
 	l.text = movement_type
-	l = get_node( "Apogee" )
-	l.text = str( _cm.apogee() * 0.001 )
-	l = get_node( "Perigee" )
-	l.text = str( _cm.perigee() * 0.001 )
-	l = get_node( "TimeToPerigee" )
+	l = _labels[ "apogee" ]
+	l.text = str( _cm.apogee() * 0.001 ) + "km"
+	l = _labels[ "perigee" ]
+	l.text = str( _cm.perigee() * 0.001 ) + "km"
+	l = _labels[ "time_to_perigee" ]
 	var t: float = abs( _cm.time_after_periapsis() )
 	var stri: String = Time.seconds_to_str( t )
 	l.text = stri
-	l = get_node( "TimeToApogee" )
+	l = _labels[ "time_to_apogee" ]
 	if movement_type == "elliptic":
 		var T: float = _cm.period()
 		t = abs( _cm.time_after_periapsis() )
@@ -74,19 +76,27 @@ func _visualize_celestial_motion():
 	else:
 		l.text = "--:--"
 	var v: float = _cm.max_velocity()
-	l = get_node( "VPerigee" )
-	l.text = "--:--"
-	l = get_node( "VPerigee" )
-	l.text = "--:--"
+	l = _labels[ "v_perigee" ]
+	l.text = str(v) + "m/s"
+	
+	if movement_type == "elliptic":
+		v = _cm.min_velocity()
+	elif (movement_type == "hyperbolic") or (movement_type == "parabolic"):
+		v = _cm.excess_velocity()
+	l = _labels[ "v_apogee" ]
+	l.text = str( v ) + "m/s"
 
-	l = get_node( "Period" )
+	l = _labels[ "period" ]
 	if movement_type == "elliptic":
 		var T: float = _cm.period()
 		stri = Time.seconds_to_str( T )
 		l.text = stri
 	else:
 		l.text = "--:--"
-	l = get_node( "Velocity" )
+	#v = _cm.get
+	l = _labels[ "velocity" ]
+	l.text = "--:--"
+	l = _labels[ "distance" ]
 	l.text = "--:--"
 
 
@@ -115,4 +125,27 @@ func _visualize_none():
 
 
 
+func _init_labels():
+	var l: Label = get_node( "Target" )
+	_labels["target"] = l
+	l = get_node( "TrajectoryType" )
+	_labels["trajectory_type"] = l
+	l = get_node( "Apogee" )
+	_labels["apogee"] = l
+	l = get_node( "Perigee" )
+	_labels["perigee"] = l
+	l = get_node( "TimeToPerigee" )
+	_labels["time_to_perigee"] = l
+	l = get_node( "TimeToApogee" )
+	_labels["time_to_apogee"] = l
+	l = get_node( "VPerigee" )
+	_labels["v_perigee"] = l
+	l = get_node( "VApogee" )
+	_labels["v_apogee"] = l
+	l = get_node( "Period" )
+	_labels["period"] = l
+	l = get_node( "Velocity" )
+	_labels["velocity"] = l
+	l = get_node( "Distance" )
+	_labels["distance"] = l
 

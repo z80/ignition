@@ -158,7 +158,7 @@ margin_right = 102.0
 margin_bottom = 125.0
 bbcode_enabled = true
 bbcode_text = "[b]V apogee:[/b]"
-text = "V apogee:"
+text = "V perigee:"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -210,6 +210,28 @@ margin_left = 105.119
 margin_top = 138.687
 margin_right = 145.119
 margin_bottom = 152.687
+text = "Sun"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="DistanceLbl" type="RichTextLabel" parent="."]
+margin_left = 1.00113
+margin_top = 152.683
+margin_right = 103.001
+margin_bottom = 167.683
+bbcode_enabled = true
+bbcode_text = "[b]Velocity:[/b]"
+text = "Velocity:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Distance" type="Label" parent="."]
+margin_left = 106.12
+margin_top = 153.37
+margin_right = 146.12
+margin_bottom = 167.37
 text = "Sun"
 __meta__ = {
 "_edit_use_anchors_": false
