@@ -153,8 +153,9 @@ __meta__ = {
 }
 
 [node name="VPerigeeLbl" type="RichTextLabel" parent="."]
+margin_left = 0.749153
 margin_top = 110.0
-margin_right = 102.0
+margin_right = 102.749
 margin_bottom = 125.0
 bbcode_enabled = true
 bbcode_text = "[b]V apogee:[/b]"
@@ -222,7 +223,7 @@ margin_right = 103.001
 margin_bottom = 167.683
 bbcode_enabled = true
 bbcode_text = "[b]Velocity:[/b]"
-text = "Velocity:"
+text = "Distance:"
 __meta__ = {
 "_edit_use_anchors_": false
 }
