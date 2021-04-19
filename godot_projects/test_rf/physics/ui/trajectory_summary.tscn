@@ -158,7 +158,7 @@ margin_top = 110.0
 margin_right = 102.749
 margin_bottom = 125.0
 bbcode_enabled = true
-bbcode_text = "[b]V apogee:[/b]"
+bbcode_text = "[b]V perigee:[/b]"
 text = "V perigee:"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -222,7 +222,7 @@ margin_top = 152.683
 margin_right = 103.001
 margin_bottom = 167.683
 bbcode_enabled = true
-bbcode_text = "[b]Velocity:[/b]"
+bbcode_text = "[b]Distance:[/b]"
 text = "Distance:"
 __meta__ = {
 "_edit_use_anchors_": false

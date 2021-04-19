@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://physics/ui/navigation/assets/material_navball.material" type="Material" id=1]
-[ext_resource path="res://physics/ui/navigation//assets/navball.png" type="Texture" id=2]
+[ext_resource path="res://physics/ui/navigation/assets/navball.png" type="Texture" id=2]
+[ext_resource path="res://physics/ui/navigation/navball.gd" type="Script" id=3]
 
 [sub_resource type="Environment" id=1]
 ambient_light_color = Color( 1, 1, 1, 1 )
@@ -25,7 +26,8 @@ surfaces/0 = {
 albedo_texture = ExtResource( 2 )
 roughness = 0.25
 
-[node name="Spatial" type="Spatial"]
+[node name="Navball" type="Spatial"]
+script = ExtResource( 3 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 1 )
@@ -39,9 +41,8 @@ spot_angle = 32.5
 [node name="navball" type="Spatial" parent="."]
 
 [node name="navball_uv" type="MeshInstance" parent="navball"]
-transform = Transform( -1.62921e-07, 0, -1, 0, 1, 0, 1, 0, -1.62921e-07, 0, 0, 0 )
 mesh = SubResource( 2 )
 material/0 = SubResource( 3 )
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.76991 )
+transform = Transform( -1, -3.25841e-07, -5.30863e-14, 0, -1.62921e-07, 1, -3.25841e-07, 1, 1.62921e-07, 0, 1.77, 0 )

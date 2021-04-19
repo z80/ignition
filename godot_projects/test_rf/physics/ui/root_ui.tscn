@@ -14,3 +14,9 @@ __meta__ = {
 [node name="TrajectorySummary" parent="." instance=ExtResource( 1 )]
 
 [node name="Navigation" parent="." instance=ExtResource( 2 )]
+anchor_left = 0.994
+anchor_right = 0.994
+margin_left = -199.672
+margin_top = -206.855
+margin_right = 0.32843
+margin_bottom = -6.85516

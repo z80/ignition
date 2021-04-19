@@ -5,6 +5,8 @@ const Time = preload( "res://physics/utils/time.gd" )
 
 
 var _cm: CelestialMotionRef = null
+var velocity: float = 0.0
+var distance: float = 0.0
 var _do_show: bool = false
 var _target_name: String = ""
 var _labels: Dictionary = {}
@@ -39,6 +41,8 @@ func _update_celestial_motion():
 	var se3: Se3Ref = ctrl.relative_to( cb )
 	_cm.allow_orbiting = true
 	_cm.init( cb.gm, se3 )
+	velocity = se3.v.length()
+	distance = se3.r.length()
 	_target_name = cb.name
 	_do_show = true
 	
@@ -95,9 +99,9 @@ func _visualize_celestial_motion():
 		l.text = "--:--"
 	#v = _cm.get
 	l = _labels[ "velocity" ]
-	l.text = "--:--"
+	l.text = str( velocity ) + "m/s"
 	l = _labels[ "distance" ]
-	l.text = "--:--"
+	l.text = str( distance * 0.001 ) + "km"
 
 
 func _visualize_none():

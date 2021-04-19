@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://physics/ui/navigation/navball.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/ui/navigation/assets/level_indicator.png" type="Texture" id=2]
 [ext_resource path="res://physics/ui/navigation/font_digital.tres" type="DynamicFont" id=3]
+[ext_resource path="res://physics/ui/navigation/navigation.gd" type="Script" id=4]
 
 [sub_resource type="Environment" id=1]
 ambient_light_color = Color( 1, 1, 1, 1 )
@@ -11,55 +12,56 @@ ambient_light_color = Color( 1, 1, 1, 1 )
 environment = SubResource( 1 )
 
 [node name="Navigation" type="Control"]
-anchor_left = 0.5
+anchor_left = 1.0
 anchor_top = 1.0
-anchor_right = 0.5
+anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -192.0
-margin_top = -384.0
-margin_right = 192.0
-rect_min_size = Vector2( 384, 384 )
+margin_left = -200.0
+margin_top = -200.0
+margin_right = 0.455566
+rect_min_size = Vector2( 200, 200 )
+script = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="ViewportContainer" type="ViewportContainer" parent="."]
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-margin_left = -127.242
-margin_top = -67.2981
-margin_right = 128.758
-margin_bottom = 188.702
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -192.0
+margin_top = -192.0
+margin_right = 1.52588e-05
+margin_bottom = 1.52588e-05
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="Viewport" type="Viewport" parent="ViewportContainer"]
-size = Vector2( 256, 256 )
+size = Vector2( 192, 192 )
 world = SubResource( 2 )
 transparent_bg = true
 handle_input_locally = false
 render_target_update_mode = 3
 gui_disable_input = true
 
-[node name="Spatial" parent="ViewportContainer/Viewport" instance=ExtResource( 1 )]
+[node name="Navball" parent="ViewportContainer/Viewport" instance=ExtResource( 1 )]
 
 [node name="Sprite" type="Sprite" parent="."]
-position = Vector2( 192.076, 253.19 )
-scale = Vector2( 2, 2 )
+position = Vector2( 102.233, 99.5334 )
+scale = Vector2( 1.52957, 1.5435 )
 texture = ExtResource( 2 )
 
 [node name="Mode" type="Label" parent="."]
-anchor_left = 0.252
-anchor_top = 0.261
-anchor_right = 0.252
-anchor_bottom = 0.261
-margin_left = 6.23199
-margin_top = -10.224
-margin_right = 117.232
-margin_bottom = 13.776
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -184.253
+margin_top = -242.467
+margin_right = -73.2534
+margin_bottom = -218.467
 custom_fonts/font = ExtResource( 3 )
 text = "mode: surface"
 __meta__ = {
@@ -67,16 +69,54 @@ __meta__ = {
 }
 
 [node name="Speed" type="Label" parent="."]
-anchor_left = 0.252
-anchor_top = 0.261
-anchor_right = 0.252
-anchor_bottom = 0.261
-margin_left = 6.23199
-margin_top = 8.64998
-margin_right = 117.232
-margin_bottom = 32.65
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -184.131
+margin_top = -216.858
+margin_right = -73.1309
+margin_bottom = -192.858
 custom_fonts/font = ExtResource( 3 )
 text = "Speed: 0 m/s"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.2
+autostart = true
+
+[node name="ModeSurface" type="Button" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -259.051
+margin_top = -26.9704
+margin_right = -194.051
+margin_bottom = -6.97041
+hint_tooltip = "Surface mode
+Speed is relative to rotating planet surface."
+custom_fonts/font = ExtResource( 3 )
+text = "surface"
+
+[node name="ModeOrbit" type="Button" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -259.646
+margin_top = -52.5383
+margin_right = -194.646
+margin_bottom = -32.5383
+hint_tooltip = "Orbit mode
+Speed is relative to not rotating planet center."
+custom_fonts/font = ExtResource( 3 )
+text = "orbit"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+[connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
+[connection signal="pressed" from="ModeSurface" to="." method="_on_ModeSurface_pressed"]
+[connection signal="pressed" from="ModeOrbit" to="." method="_on_ModeOrbit_pressed"]
