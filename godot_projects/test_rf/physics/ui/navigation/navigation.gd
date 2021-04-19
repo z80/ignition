@@ -2,7 +2,7 @@ extends Control
 
 
 enum NavigationMode { Surface=0, Orbit=1 }
-
+var mode = NavigationMode.Surface
 
 
 # Called when the node enters the scene tree for the first time.
@@ -16,7 +16,10 @@ func _ready():
 
 
 func _on_Timer_timeout():
-	recompute_surface()
+	if mode == NavigationMode.Surface:
+		_recompute_mode_surface()
+	else:
+		_recompute_mode_orbit()
 
 
 
@@ -27,7 +30,7 @@ func _on_Timer_timeout():
 
 
 
-func recompute_surface():
+func _recompute_mode_surface():
 	var ctrl: Body = PhysicsManager.player_control as Body
 	if ctrl == null:
 		return
@@ -48,6 +51,12 @@ func recompute_surface():
 	var speed: float = se3.v.length()
 	var speed_lbl = get_node( "Speed" )
 	speed_lbl.text = "speed: " + str( speed ) + "m/s"
+
+
+
+func _recompute_mode_orbit():
+	pass
+
 
 
 # https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
@@ -84,8 +93,10 @@ func _compute_yaw_pitch_roll( q: Quat ):
 
 
 func _on_ModeSurface_pressed():
-	pass # Replace with function body.
+	mode = NavigationMode.Surface
+	_recompute_mode_surface()
 
 
 func _on_ModeOrbit_pressed():
-	pass # Replace with function body.
+	mode = NavigationMode.Surface
+	_recompute_mode_orbit()
