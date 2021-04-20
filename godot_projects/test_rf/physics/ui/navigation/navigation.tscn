@@ -87,29 +87,15 @@ __meta__ = {
 wait_time = 0.2
 autostart = true
 
-[node name="ModeSurface" type="Button" parent="."]
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = -259.051
-margin_top = -26.9704
-margin_right = -194.051
-margin_bottom = -6.97041
-hint_tooltip = "Surface mode
-Speed is relative to rotating planet surface."
-custom_fonts/font = ExtResource( 3 )
-text = "surface"
-
 [node name="ModeOrbit" type="Button" parent="."]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = -259.646
-margin_top = -52.5383
+margin_top = -85.5383
 margin_right = -194.646
-margin_bottom = -32.5383
+margin_bottom = -65.5383
 hint_tooltip = "Orbit mode
 Speed is relative to not rotating planet center."
 custom_fonts/font = ExtResource( 3 )
@@ -117,6 +103,57 @@ text = "orbit"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="ModeSurface" type="Button" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -259.051
+margin_top = -59.9704
+margin_right = -194.051
+margin_bottom = -39.9704
+hint_tooltip = "Surface mode
+Speed is relative to rotating planet surface."
+custom_fonts/font = ExtResource( 3 )
+text = "surface"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ModeTarget" type="Button" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -259.051
+margin_top = -33.9704
+margin_right = -194.051
+margin_bottom = -13.9704
+hint_tooltip = "Target mode
+Speed is relative to selected target."
+custom_fonts/font = ExtResource( 3 )
+text = "target"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Sas" type="CheckBox" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -71.1564
+margin_top = -298.407
+margin_right = -6.15637
+margin_bottom = -278.407
+hint_tooltip = "Stability Augmentation System (S.A.S.)
+When vehicle rotation is not under control actively zeroes angular velocity. "
+text = "SAS"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
-[connection signal="pressed" from="ModeSurface" to="." method="_on_ModeSurface_pressed"]
 [connection signal="pressed" from="ModeOrbit" to="." method="_on_ModeOrbit_pressed"]
+[connection signal="pressed" from="ModeSurface" to="." method="_on_ModeSurface_pressed"]
+[connection signal="pressed" from="ModeTarget" to="." method="_on_ModeTarget_pressed"]

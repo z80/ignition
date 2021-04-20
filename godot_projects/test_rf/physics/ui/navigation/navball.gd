@@ -20,6 +20,18 @@ func set_prograde( v: Vector3 ):
 func set_retrograde( v: Vector3 ):
 	_set_indicator( "Retrograde", v )
 
+func set_radial_out( v: Vector3 ):
+	_set_indicator( "RadialOut", v )
+
+func set_radial_in( v: Vector3 ):
+	_set_indicator( "RadialIn", v )
+
+func set_normal( v: Vector3 ):
+	_set_indicator( "Normal", v )
+
+func set_anti_normal( v: Vector3 ):
+	_set_indicator( "AntiNormal", v )
+
 
 func _process(delta):
 	_update_orientation()
@@ -37,7 +49,7 @@ func _update_orientation():
 	var n: Spatial = get_node( "navball" )
 	n.transform.basis = q
 
-
+# All except ones not having a pair one.
 func _set_indicator( name: String, v: Vector3 ):
 	var s: Spatial = get_node( name )
 	if s == null:
@@ -48,17 +60,15 @@ func _set_indicator( name: String, v: Vector3 ):
 		s.visible = false
 		return
 	
-	s.visible = true
 	var r: Vector3 = v.normalized()
-	r *= LEN
+	if r.y < -0.1:
+		s.visible = false
+		return
+	s.visible = true
+	r.y = LEN
 	t.origin = r
 	
-	var alpha: float = atan2( r.x, r.z )
-	var beta: float  = acos( r.y )
-	var q_alpha: Quat = Quat( Vector3.UP, alpha )
-	var q_beta: Quat  = Quat( Vector3.RIGHT, beta )
-	var q: Quat = q_alpha * q_beta
-	t.basis = q
+	t.basis = Quat.IDENTITY
 	
 	s.transform = t
 
