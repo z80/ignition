@@ -147,17 +147,17 @@ func ang_vel_control( state, preserving_vertical: bool = true ):
 	var o: bool = user_input.has( "ui_o" )
 
 	if i:
-		w += Vector3.RIGHT
-	if k:
 		w += Vector3.LEFT
+	if k:
+		w += Vector3.RIGHT
 	if j:
-		w += Vector3.UP
-	if l:
-		w += Vector3.DOWN
-	if u:
 		w += Vector3.BACK
-	if o:
+	if l:
 		w += Vector3.FORWARD
+	if u:
+		w += Vector3.UP
+	if o:
+		w += Vector3.DOWN
 	
 	if preserving_vertical:
 		# Only take care of "w" projection along vertical.
@@ -240,17 +240,17 @@ func rotation_control( state ):
 	var o: bool = user_input.has( "ui_o" )
 
 	if i:
-		w += Vector3.RIGHT
-	if k:
 		w += Vector3.LEFT
+	if k:
+		w += Vector3.RIGHT
 	if j:
-		w += Vector3.UP
-	if l:
-		w += Vector3.DOWN
-	if u:
 		w += Vector3.BACK
-	if o:
+	if l:
 		w += Vector3.FORWARD
+	if u:
+		w += Vector3.UP
+	if o:
+		w += Vector3.DOWN
 	
 	if w.length_squared() > 0.0:
 		w = w.normalized()
