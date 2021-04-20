@@ -3,7 +3,7 @@ extends RigidBody
 
 const MAX_TORQUE: float   = 50.0
 const ANG_VEL: float      = 1.0
-const GAIN_ANGULAR: float = 100.0
+const GAIN_ANGULAR: float = 1000.0
 
 const rotation_abolute: bool = false
 
@@ -45,17 +45,17 @@ func ang_vel_control( state ):
 	var o: bool = user_input.has( "ui_o" )
 
 	if i:
-		w += Vector3.RIGHT
-	if k:
 		w += Vector3.LEFT
+	if k:
+		w += Vector3.RIGHT
 	if j:
-		w += Vector3.UP
-	if l:
-		w += Vector3.DOWN
-	if u:
 		w += Vector3.BACK
-	if o:
+	if l:
 		w += Vector3.FORWARD
+	if u:
+		w += Vector3.UP
+	if o:
+		w += Vector3.DOWN
 	
 	if w.length_squared() > 0.0:
 		w = w.normalized()

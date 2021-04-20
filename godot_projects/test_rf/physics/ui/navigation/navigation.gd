@@ -54,11 +54,12 @@ func _recompute_mode_surface():
 	
 	# Compute prograde/retrograde.
 	var v: Vector3 = se3.v
-	var q: Quat = se3.q
-	var q_inv: Quat = q.inverse()
+	var q_inv: Quat = se3.q.inverse()
+	var q_i: Quat = Quat.IDENTITY
 	v = q_inv.xform( v )
 	
 	var r: Vector3 = se3.r.normalized()
+	r = q_inv.xform( r )
 	var n: Vector3 = r.cross( v )
 	var Orthogonalize = preload( "res://physics/utils/orthogonalize.gd" )
 	var ret: Array = Orthogonalize.orthogonalize( v, n, r )
@@ -109,16 +110,25 @@ func _recompute_mode_orbit():
 	
 	# Compute prograde/retrograde.
 	var v: Vector3 = se3.v
-	navball.set_prograde( v )
-	navball.set_retrograde( -v )
+	var q_inv: Quat = se3.q.inverse()
+	var q_i: Quat = Quat.IDENTITY
+	v = q_inv.xform( v )
 	
 	var r: Vector3 = se3.r.normalized()
+	r = q_inv.xform( r )
 	var n: Vector3 = r.cross( v )
 	var Orthogonalize = preload( "res://physics/utils/orthogonalize.gd" )
 	var ret: Array = Orthogonalize.orthogonalize( v, n, r )
 	v = ret[0]
 	n = ret[1]
 	r = ret[2]
+	
+	navball.set_prograde( v )
+	navball.set_retrograde( -v )
+	navball.set_normal( n )
+	navball.set_anti_normal( -n )
+	navball.set_radial_out( r )
+	navball.set_radial_in( -r )
 	
 	var speed: float = se3.v.length()
 	var speed_lbl = get_node( "Speed" )
