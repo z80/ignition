@@ -3,6 +3,7 @@ extends Body
 
 
 func init():
+	hover_text = "Construction light source."
 	var Visual   = load( "res://physics/bodies/frames/frame_light/frame_light_visual.tscn")
 	var Physical = load( "res://physics/bodies/frames/frame_light/frame_light_physical.tscn" )
 	

@@ -160,7 +160,7 @@ func _process(_delta):
 	var draw = _compute_draw_params()
 	if draw == null:
 		return
-	var do_redraw: bool = _need_rewraw( draw )
+	var do_redraw: bool = _need_redraw( draw )
 	
 	if do_redraw:
 		_draw_params = draw
@@ -207,7 +207,7 @@ func _input( event ):
 
 
 
-func _need_rewraw( draw ):
+func _need_redraw( draw ):
 	for k in _draw_params:
 		var v0 = _draw_params[k]
 		var v1 = draw[k]
@@ -388,7 +388,7 @@ func _init_rotating( axis: Vector3 ):
 	
 	var viewport_width: float = vp.get_visible_rect().size.x
 	_dragging.origin = own_r
-	_dragging.drag_scale      = 3.1415926535 / dist
+	_dragging.drag_scale      = PI / dist
 	_dragging.axis            = own_a
 	_dragging.drag_axis       = drag_a
 	_dragging.start_q         = q

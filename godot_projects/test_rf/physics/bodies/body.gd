@@ -11,7 +11,7 @@ var _physical  = null
 
 # Icon showing up when it is relatively close to the camera.
 var _icon = null
-var _hover_text: String = "Default hover text"
+export(String) var hint_text = "Default hint text" setget _set_hint_text
 
 # Body which contains this one and other bodies.
 var super_body = null
@@ -408,7 +408,7 @@ func _create_interact_icon():
 	var Icon = load( "res://physics/interact_icon/interact_icon.tscn" )
 	_icon = Icon.instance()
 	self.add_child( _icon )
-	_icon.text = _hover_text
+	_icon.text = hint_text
 	_icon.visible = true
 
 
@@ -418,11 +418,11 @@ func _remove_interact_icon():
 	_icon.queue_free()
 
 
-func _set_hover_text( stri: String ):
-	_hover_text = stri
+func _set_hint_text( stri: String ):
+	hint_text = stri
 	if _icon == null:
 		return
-	_icon.text = _hover_text
+	_icon.text = hint_text
 
 
 # When being constructed podies are not supposed to move.

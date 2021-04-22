@@ -63,6 +63,7 @@ func process_inner(delta):
 
 
 func init():
+	hint_text = "Vehicle construction area. Activate \n" + "it from the menu in order to be able \n" + "to build crafts."
 	var Visual   = load( "res://physics/bodies/construction/visual.tscn")
 	var Physical = load( "res://physics/bodies/construction/physical.tscn" )
 	
