@@ -23,7 +23,7 @@ func _ready():
 
 func _set_text( stri: String ):
 	text = stri
-	$HoverGui.text = stri
+	self.hint_tooltip = stri
 
 
 func _get_text():
@@ -39,21 +39,20 @@ func _input( _event ):
 
 
 func _on_mouse_entered():
-	$HoverGui.visible = true
 	_mouse_over = true
 
 
 func _on_mouse_exited():
-	$HoverGui.visible = false
 	_mouse_over = false
 
 
-func _on_MouseHoverControl_gui_input(event):
+func _on_mouse_gui_input(event):
 	if not _mouse_over:
 		return
 	if not (event is InputEventMouseButton):
 		return
 	var me: InputEventMouseButton = event as InputEventMouseButton
+	print( "here, ", me.pressed )
 	# Open window on release event.
 	if (me.button_index == BUTTON_LEFT) and (not me.pressed):
 		var body: Body = get_parent() as Body
