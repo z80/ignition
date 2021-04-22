@@ -6,7 +6,8 @@ enum PartClass {
 	SRB_TANK=2, 
 	REACTION_CONTROL_WHEELS=3, 
 	REACTION_CONTROL_THRUSTER=4, 
-	HABITAT=5
+	HABITAT=5, 
+	PASSIVE=6 # This one just means no predefined functionality.
  }
 
 export(PartClass) var part_class = PartClass.THRUSTER
@@ -14,6 +15,7 @@ export(bool) var allows_surface_attachments=true
 export(bool) var allows_y_radial_symmetry=true
 export(bool) var allows_x_mirror_symmetry=true
 export(bool) var conducts_liquid_fuel=true
+export(bool) var conducts_solid_fuel=true
 export(bool) var conducts_electricity=true
 export(bool) var conducts_air=true
 
