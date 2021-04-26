@@ -137,7 +137,43 @@ func _recompute_mode_orbit():
 
 
 func _recompute_mode_target():
-	pass
+	var ctrl: Body = PhysicsManager.player_control as Body
+	if ctrl == null:
+		return
+	# For now Use celestial body as a target.
+	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
+	var p: Node = ctrl.get_parent()
+	var cb: CelestialSurface = ClosestCelestialBody.closest_celestial_body( p )
+	if cb == null:
+		return
+	var tran: RefFrameNode = cb.translation_rf()
+	
+	var se3: Se3Ref = ctrl.relative_to( tran )
+	var LocalRefFrame = preload( "res://physics/utils/rotation_to.gd" )
+	var local_up: Vector3 = se3.r.normalized()
+	var q_rf: Quat = LocalRefFrame.rotation_to( Vector3.UP, local_up )
+	var q_rel: Quat = q_rf.inverse() * se3.q
+	var angles: Array = _compute_yaw_pitch_roll( q_rel )
+	var navball = get_node( "ViewportContainer/Viewport/Navball" )
+	navball.set_orientation( angles[0], angles[1], angles[2] )
+	
+	# Compute prograde/retrograde.
+	var r: Vector3 = se3.r
+	var q_inv: Quat = se3.q.inverse()
+	var q_i: Quat = Quat.IDENTITY
+	r = q_inv.xform( r )
+	r = r.normalized()
+	
+	navball.set_prograde( r )
+	navball.set_retrograde( -r )
+	navball.set_normal( r, false )
+	navball.set_anti_normal( r, false )
+	navball.set_radial_out( r, false )
+	navball.set_radial_in( r, false )
+	
+	var speed: float = se3.v.length()
+	var speed_lbl = get_node( "Speed" )
+	speed_lbl.text = "speed: " + str( speed ) + "m/s"
 
 
 

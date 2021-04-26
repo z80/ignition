@@ -1,3 +1,4 @@
+
 extends Spatial
 
 const LEN: float = 1.0+0.03
@@ -9,36 +10,54 @@ var ball_roll: float  = 0.0
 
 var speed: float = 0.0
 
+
+
 func set_orientation( yaw: float, pitch: float, roll: float ):
 	ball_yaw   = -yaw
 	ball_pitch = -pitch
 	ball_roll  = -roll
 
-func set_prograde( v: Vector3 ):
-	_set_indicator( "Prograde", v )
 
-func set_retrograde( v: Vector3 ):
-	_set_indicator( "Retrograde", v )
 
-func set_radial_out( v: Vector3 ):
-	_set_indicator( "RadialOut", v )
+func set_prograde( v: Vector3, visible: bool = true ):
+	_set_indicator( "Prograde", v, visible )
 
-func set_radial_in( v: Vector3 ):
-	_set_indicator( "RadialIn", v )
 
-func set_normal( v: Vector3 ):
-	_set_indicator( "Normal", v )
 
-func set_anti_normal( v: Vector3 ):
-	_set_indicator( "AntiNormal", v )
+func set_retrograde( v: Vector3, visible: bool = true ):
+	_set_indicator( "Retrograde", v, visible )
+
+
+
+func set_radial_out( v: Vector3, visible: bool = true ):
+	_set_indicator( "RadialOut", v, visible )
+
+
+
+func set_radial_in( v: Vector3, visible: bool = true ):
+	_set_indicator( "RadialIn", v, visible )
+
+
+
+func set_normal( v: Vector3, visible: bool = true ):
+	_set_indicator( "Normal", v, visible )
+
+
+
+func set_anti_normal( v: Vector3, visible: bool = true ):
+	_set_indicator( "AntiNormal", v, visible )
+
 
 
 func _process(delta):
 	_update_orientation()
 
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
+
 
 
 func _update_orientation():
@@ -49,11 +68,17 @@ func _update_orientation():
 	var n: Spatial = get_node( "navball" )
 	n.transform.basis = q
 
+
+
 # All except ones not having a pair one.
-func _set_indicator( name: String, v: Vector3 ):
+func _set_indicator( name: String, v: Vector3, visible: bool = true ):
 	var s: Spatial = get_node( name )
 	if s == null:
 		return
+	if not visible:
+		s.visible = false
+		return
+	
 	var t: Transform = s.transform
 	var l: float = v.length()
 	if l < SPEED_EPS:

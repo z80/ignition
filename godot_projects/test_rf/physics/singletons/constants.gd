@@ -42,4 +42,11 @@ const CONSTRUCTION_CREATE_AT: Vector3 = Vector3( 0.0, 2.0, -5.0 )
 
 
 
+# Node sizes when stacking parts together.
+const NODE_SIZE_SMALL: float  = 0.5
+const NODE_SIZE_MEDIUM: float = 1.0
+const NODE_SIZE_LARGE: float  = 2.0
+
+
+
 

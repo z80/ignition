@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://physics/parts/part_cylinder/part_cylinder_physical.tscn" type="PackedScene" id=1]
+[ext_resource path="res://physics/parts/part_cylinder/part_cylinder_visual.tscn" type="PackedScene" id=2]
+
+
+[node name="Spatial" type="Spatial"]
+
+[node name="PartCylinderVisual" parent="." instance=ExtResource( 2 )]
+
+[node name="PartCyninderPhysical" parent="PartCylinderVisual" instance=ExtResource( 1 )]
