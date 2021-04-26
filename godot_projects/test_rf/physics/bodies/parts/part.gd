@@ -1,4 +1,6 @@
+
 extends Body
+class_name Part
 
 enum PartClass {
 	THRUSTER=0, 
@@ -22,6 +24,8 @@ export(bool) var conducts_air=true
 var stacking_nodes: Array = []
 var surface_nodes: Array  = []
 
+
+
 # If contains Spatial with prefix "stacking_node" it's position and Y axis direction 
 # define the stacking node. Stackig nodes can be coupled with each other.
 # If it contains Spatial with prefix "surface_node" defines a surface coupling node. 
@@ -30,34 +34,53 @@ var surface_nodes: Array  = []
 func _traverse_coupling_nodes():
 	_traverse_coupling_nodes_recursive( self )
 
-func _traverse_coupling_nodes_recursive( p: Node, t_to_root: Transform=Transform.IDENTITY ):
+
+
+func _traverse_coupling_nodes_recursive( p: Node ):
 	var s: Spatial = p as Spatial
 	if s != null:
-		var name: String = s.name
-		var is_stacking_node: bool = name.begins_with( "stacking_node" )
+		var stacking_node: PartNodeStacking = s as PartNodeStacking
+		var is_stacking_node: bool = (stacking_node != null)
 		var is_surface_node: bool = false
 		if not is_stacking_node:
-			is_surface_node = name.begins_with( "surface_node" )
-		var t: Transform = s.transform
-		t_to_root = t_to_root * t
+			var surface_node: PartNodeSurface = s as PartNodeSurface
+			is_surface_node = (surface_node != null)
 		if is_stacking_node or is_surface_node:
-			var r: Vector3 = t_to_root.origin
-			var q: Quat = t_to_root.basis.get_rotation_quat()
-			var e: Vector3 = q.xform( Vector3.UP )
-			
-			var n: Dictionary = {
-				r=r, 
-				e=e
-			}
 			if is_stacking_node:
-				stacking_nodes.push_back( n )
+				stacking_nodes.push_back( s )
 			else:
-				surface_nodes.push_back( n )
+				surface_nodes.push_back( s )
 	
 	var qty: int = get_child_count()
 	for i in range( qty ):
 		var ch: Node = get_child( i )
-		_traverse_coupling_nodes_recursive( ch, t_to_root )
+		_traverse_coupling_nodes_recursive( ch )
+
+
+
+# When being constructed podies are not supposed to move.
+# So it is possible to make dynamic bodies kinematic.
+# And when editing is done, one can switch those back to 
+# being dynamic.
+# These two should be overwritten.
+func activate():
+	if _physical != null:
+		_physical.mode = RigidBody.MODE_RIGID
+		_physical.sleeping = false
+	
+	for body in sub_bodies:
+		body.activate()
+
+
+
+func deactivate():
+	if _physical != null:
+		_physical.mode = RigidBody.MODE_KINEMATIC
+	
+	for body in sub_bodies:
+		body.deactivate()
+
+
 
 
 
@@ -65,11 +88,17 @@ func init():
 	.init()
 	_traverse_coupling_nodes()
 
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	._ready()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass
+
+
+
+

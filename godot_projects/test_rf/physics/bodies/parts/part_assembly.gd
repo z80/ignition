@@ -1,5 +1,5 @@
 extends Body
-class_name PartSuperBody
+class_name PartAssembly
 
 # This class handles dynamic body group.
 # On every update it should average it's position to the mean of 

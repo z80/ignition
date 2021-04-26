@@ -425,19 +425,6 @@ func _set_hint_text( stri: String ):
 	_icon.text = hint_text
 
 
-# When being constructed podies are not supposed to move.
-# So it is possible to make dynamic bodies kinematic.
-# And when editing is done, one can switch those back to 
-# being dynamic.
-# These two should be overwritten.
-func activate():
-	for body in sub_bodies:
-		body.activate()
-
-
-func deactivate():
-	for body in sub_bodies:
-		body.deactivate()
 
 # May need to be overridden in derived classes in the case if 
 # _physical is not a rigid body.

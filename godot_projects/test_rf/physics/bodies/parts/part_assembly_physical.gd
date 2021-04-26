@@ -1,5 +1,5 @@
 extends Node
-class_name PartSuperBodyPhysical
+class_name PartAssemblyPhysical
 
 var _part_super_body = null
 var _joints: Array = []
@@ -25,7 +25,7 @@ func _ready():
 
 
 func setup( bodies: Array, edges: Array ):
-	print( "PartSuperBodyPhysical::setup()" )
+	print( "PartAssemblyPhysical::setup()" )
 	for joint in _joints:
 		joint.queue_free()
 	_joints.clear()

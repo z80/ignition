@@ -152,7 +152,7 @@ func finish_editing():
 func _create_assembly():
 	var qty = dynamic_blocks.size()
 	if qty > 0:
-		var sb = PartSuperBody.new()
+		var sb = PartAssembly.new()
 		self.add_child( sb )
 		for body in dynamic_blocks:
 			sb.add_sub_body( body )
@@ -171,7 +171,7 @@ func _create_assembly():
 		sb.activate()
 
 	#if qty > 1:
-	#	var sb = PartSuperBody.new()
+	#	var sb = PartAssembly.new()
 	#	for body in dynamic_blocks:
 	#		sb.add_sub_body( body )
 		
