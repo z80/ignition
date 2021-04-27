@@ -32,6 +32,16 @@ func try_couple_with( n: CouplingNode ):
 	var inv_owner_t: Transform = owner.transform
 	var t: Transform = n_owner_t * n_relative_to_owner * inv_relative_to_owner * inv_owner_t
 	
+	base_transform = t
+	part_b_path = n.get_path()
+	part_b      = n
+	is_parent   = false
+	
+	n.part_b_path = get_path()
+	n.part_b      = self
+	n.is_parent   = true
+	
+	return true
 
 
 
