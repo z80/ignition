@@ -13,7 +13,11 @@ func _ready():
 	._ready()
 
 
-func try_couple_with( n: CouplingNode ):
+func process():
+	position_rel_to_parent()
+
+
+func couple_with( n: CouplingNode ):
 	if not allows_connecting:
 		return false
 	
@@ -24,26 +28,44 @@ func try_couple_with( n: CouplingNode ):
 	if not node_stacking.allows_connections:
 		return false
 	
-	# n.owner.t * n.relative_to_owner = t * owner.t * relative_to_owner
-	# t = n.owner.t * n.relative_to_owner * relative_to_woner.inverse() * owner.t.inverse()
-	var n_owner_t: Transform = n.owner.transform
-	var n_relative_to_owner: Transform = n.relative_to_owner
-	var inv_relative_to_owner: Transform = relative_to_owner.inverse()
-	var inv_owner_t: Transform = owner.transform
-	var t: Transform = n_owner_t * n_relative_to_owner * inv_relative_to_owner * inv_owner_t
+	# Now measure the distance.
+	var t_w: Transform = world_transform()
+	var n_t_w: Transform = n.world_transform()
+	var r_w: Vector3 = t_w.origin
+	var n_r_w: Vector3 = n_t_w.origin
+	var d: float = (r_w - n_r_w).length()
 	
-	base_transform = t
+	var max_d: float = snap_size() + n.snap_size()
+	if max_d < d:
+		return false
+	
+	# No more excuses, couple these two together.
 	part_b_path = n.get_path()
 	part_b      = n
 	is_parent   = false
 	
-	n.part_b_path = get_path()
-	n.part_b      = self
-	n.is_parent   = true
+	part_b.part_b_path = get_path()
+	part_b.part_b      = self
+	part_b.is_parent   = true
+	
+	relative_to_owner = compute_owner_rel_to_parent()
 	
 	return true
 
 
+func decouple():
+	part_b = get_node( part_b_path )
+	if part_b == null:
+		part_b_path = ""
+		return
+	
+	part_b_path = ""
+	part_b      = null
+	is_parent   = false
+	
+	part_b.part_b_path = ""
+	part_b.part_b      = null
+	part_b.is_parent   = false
 
 
 
