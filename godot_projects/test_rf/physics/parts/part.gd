@@ -32,7 +32,7 @@ var surface_nodes: Array  = []
 # A part can use this node to get attached to another part's surface which allows such 
 # conenctions.
 func _traverse_coupling_nodes():
-	_traverse_coupling_nodes_recursive( self )
+	_traverse_coupling_nodes_recursive( _visual )
 
 
 
@@ -46,6 +46,9 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 			var surface_node: CouplingNodeSurface = s as CouplingNodeSurface
 			is_surface_node = (surface_node != null)
 		if is_stacking_node or is_surface_node:
+			# Specify the reference to itself.
+			# Not sure if it is 100% needed but just in case.
+			s.part = self
 			if is_stacking_node:
 				stacking_nodes.push_back( s )
 			else:
@@ -58,7 +61,7 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 
 
 
-# When being constructed podies are not supposed to move.
+# When being constructed parts are not supposed to move.
 # So it is possible to make dynamic bodies kinematic.
 # And when editing is done, one can switch those back to 
 # being dynamic.
@@ -80,6 +83,67 @@ func deactivate():
 	for body in sub_bodies:
 		body.deactivate()
 
+
+func set_show_node_visuals( en: bool ):
+	for n in stacking_nodes:
+		n.show_visual = en
+	for n in surface_nodes:
+		n.show_visual = en
+
+
+func couple():
+	# Get parent ref frame, get all parts in it.
+	var rf: RefFrameNode = get_parent()
+	var parts: Array = []
+	var qty: int = rf.get_child_count()
+	for i in range(qty):
+		var ch: Node = rf.get_child( i )
+		var p: Part = ch as Part
+		if (p != null) and (p != self):
+			parts.push_back( p )
+	
+	var parts_qty: int = parts.size()
+	
+	var done: bool = false
+	var own_nodes_qty: int = stacking_nodes.size()
+	for own_node_ind in range( own_nodes_qty ):
+		var own_node: CouplingNodeStacking = stacking_nodes[own_node_ind]
+		# Skip the already coupled ones.
+		if own_node.part_b != null:
+			continue
+		
+		for part_ind in range(parts_qty):
+			var part: Part = parts[part_ind]
+			var other_nodes_qty: int = part.stacking_nodes.size()
+			for other_node_ind in range(other_nodes_qty):
+				var other_node: CouplingNodeStacking = part.stacking_nodes[other_node_ind]
+				# If already coupled, skip it.
+				if other_node.part_b != null:
+					continue
+				
+				# Try couple.
+				var ret: bool = own_node.couple_with( other_node )
+				if ret:
+					done = true
+					break
+			
+			if done:
+				break
+	
+	return done
+
+
+
+func decouple():
+	var own_nodes_qty: int = stacking_nodes.size()
+	for own_node_ind in range( own_nodes_qty ):
+		var own_node: CouplingNodeStacking = stacking_nodes[own_node_ind]
+		# Skip the already coupled ones.
+		if (own_node.part_b != null) or (own_node.is_parent):
+			continue
+		own_node.decouple()
+		return true
+	return false
 
 
 

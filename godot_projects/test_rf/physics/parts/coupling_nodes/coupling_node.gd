@@ -5,6 +5,11 @@ class_name CouplingNode
 enum NodeSize { SMALL=0, MEDIUM=1, LARGE=2 }
 export(NodeSize) var node_size = NodeSize.MEDIUM
 
+# Reference to the part.
+# Can't use "owner" field as it shows the Visual's root which 
+# isn't the part itself.
+var part: RefFrameNode = null
+
 # If this part is attached to another one 
 # here it is stored "parent" part path.
 export(NodePath) var part_b_path = null
@@ -133,23 +138,18 @@ func position_rel_to_parent():
 	if is_parent:
 		return false
 	var t_rel: Transform = compute_owner_rel_to_parent()
-	var parent: Spatial = part_b.owner as Spatial
-	if parent == null:
+	var parent_rf: RefFrameNode = part_b.part
+	if parent_rf == null:
 		return
-	var t_parent: Transform = parent.transform
+	var t_parent: Transform = parent_rf.transform
 	var t: Transform = t_parent * t_rel
-	var s: Spatial = self.owner
-	s.transform = t
+	var rf: RefFrameNode = self.part
+	rf.transform = t
 
 
 func world_transform():
-	var parent: Spatial = part_b.owner as Spatial
-	var t_parent: Transform
-	if parent == null:
-		t_parent = Transform.IDENTITY
-	else:
-		t_parent = parent.transform
-	
+	var parent_rf: RefFrameNode = part_b.part
+	var t_parent: Transform = parent_rf.transform
 	var t: Transform = t_parent * relative_to_owner
 	return t
 
@@ -161,4 +161,10 @@ func snap_size():
 		return Constants.NODE_SIZE_MEDIUM
 	
 	return Constants.NODE_SIZE_LARGE
+
+
+
+
+
+
 
