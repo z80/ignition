@@ -60,9 +60,9 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 			else:
 				surface_nodes.push_back( s )
 	
-	var qty: int = get_child_count()
+	var qty: int = p.get_child_count()
 	for i in range( qty ):
-		var ch: Node = get_child( i )
+		var ch: Node = p.get_child( i )
 		_traverse_coupling_nodes_recursive( ch )
 
 
