@@ -1,13 +1,13 @@
 
-extends Body
+extends Part
 
 export(float)  var throttle = 100.0 setget set_throttle, get_throttle
 
 var user_input: Dictionary
 
 func init():
-	var Visual   = load( "res://physics/bodies/parts/thrusters/thruster_01/thruster_01_visual.tscn")
-	var Physical = load( "res://physics/bodies/parts/thrusters/thruster_01/thruster_01_physical.tscn" )
+	var Visual   = load( "res://physics/parts/thrusters/thruster_01/thruster_01_visual.tscn")
+	var Physical = load( "res://physics/parts/thrusters/thruster_01/thruster_01_physical.tscn" )
 	
 	VisualType   = Visual
 	PhysicalType = Physical

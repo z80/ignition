@@ -1,5 +1,5 @@
 
-extends Body
+extends Part
 
 
 func init():

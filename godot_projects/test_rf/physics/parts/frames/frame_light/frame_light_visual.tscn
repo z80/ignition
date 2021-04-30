@@ -1,6 +1,7 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://physics/bodies/frames/frame_light/assets/LampMeshMaterial.material" type="Material" id=1]
+[ext_resource path="res://physics/parts/frames/frame_light/assets/LampMeshMaterial.material" type="Material" id=1]
+
 
 [sub_resource type="ArrayMesh" id=1]
 resource_name = "Cube.001"

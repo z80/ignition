@@ -2,12 +2,12 @@
 
 importer="scene"
 type="PackedScene"
-path="res://.import/lamp_mesh.dae-d3653a0a5442a3a17e4195aa236ccede.scn"
+path="res://.import/lamp_mesh.dae-eeb7334e942463b7a707eef2250dbee1.scn"
 
 [deps]
 
-source_file="res://physics/bodies/frames/frame_light/assets/lamp_mesh.dae"
-dest_files=[ "res://.import/lamp_mesh.dae-d3653a0a5442a3a17e4195aa236ccede.scn" ]
+source_file="res://physics/parts/frames/frame_light/assets/lamp_mesh.dae"
+dest_files=[ "res://.import/lamp_mesh.dae-eeb7334e942463b7a707eef2250dbee1.scn" ]
 
 [params]
 

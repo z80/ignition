@@ -1,11 +1,11 @@
 
-extends Body
+extends Part
 
 
 func init():
-	hover_text = "Concrete cube. Can be used as a construction element."
-	var Visual   = load( "res://physics/bodies/frames/frame_box/frame_box_visual.tscn")
-	var Physical = load( "res://physics/bodies/frames/frame_box/frame_box_physical.tscn" )
+	hint_text = "Concrete cube. Can be used as a construction element."
+	var Visual   = load( "res://physics/frames/frame_box/frame_box_visual.tscn")
+	var Physical = load( "res://physics/frames/frame_box/frame_box_physical.tscn" )
 	
 	VisualType   = Visual
 	PhysicalType = Physical

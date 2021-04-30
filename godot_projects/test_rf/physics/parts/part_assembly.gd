@@ -6,7 +6,7 @@ class_name PartAssembly
 # all sub-bodies.
 
 # Also should keep connection information in order to create/destroy joints.
-var MinSpanTree = preload( "res://physics/bodies/parts/min_span_tree.gd" )
+var MinSpanTree = preload( "res://physics/parts/min_span_tree.gd" )
 
 # Indices which bodies to connect
 var _edges: Array
@@ -51,7 +51,7 @@ func create_physical():
 	if _physical != null:
 		return _physical
 	
-	_physical = PartSuperBodyPhysical.new()
+	_physical = PartAssemblyPhysical.new()
 	var root = BodyCreator.root_node
 	root.add_child( _physical )
 	_physical.setup( sub_bodies, _edges )

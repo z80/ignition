@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/icon.png-c578222551986306db4046f4d427e258.stex"
+path="res://.import/icon.png-14d2f8daaf8dafd98f47ec9fdc38d6bf.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://physics/bodies/frames/frame_box/icon.png"
-dest_files=[ "res://.import/icon.png-c578222551986306db4046f4d427e258.stex" ]
+source_file="res://physics/parts/frames/frame_light/assets/icon.png"
+dest_files=[ "res://.import/icon.png-14d2f8daaf8dafd98f47ec9fdc38d6bf.stex" ]
 
 [params]
 

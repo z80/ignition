@@ -1,10 +1,10 @@
 
-extends Body
+extends Part
 
 
 func init():
-	var Visual   = load( "res://physics/bodies/parts/part_cylinder/part_cylinder_visual.tscn")
-	var Physical = load( "res://physics/bodies/parts/part_cylinder/part_cylinder_physical.tscn" )
+	var Visual   = load( "res://physics/parts/part_cylinder/part_cylinder_visual.tscn")
+	var Physical = load( "res://physics/parts/part_cylinder/part_cylinder_physical.tscn" )
 	
 	VisualType   = Visual
 	PhysicalType = Physical

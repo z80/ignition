@@ -75,25 +75,25 @@ func construction():
 
 
 func frame_box():
-	var B = load( "res://physics/bodies/frames/frame_box/frame_box.tscn" )
+	var B = load( "res://physics/parts/frames/frame_box/frame_box.tscn" )
 	var b = _create( B )
 	return b
 
 
 func frame_light():
-	var B = load( "res://physics/bodies/frames/frame_light/frame_light.tscn" )
+	var B = load( "res://physics/parts/frames/frame_light/frame_light.tscn" )
 	var b = _create( B )
 	return b
 
 
 func part_cylinder():
-	var B = load( "res://physics/bodies/parts/part_cylinder/part_cylinder.tscn" )
+	var B = load( "res://physics/parts/parts/part_cylinder/part_cylinder.tscn" )
 	var b = _create( B )
 	return b
 
 
 func part_character_simple():
-	var B = load( "res://physics/bodies/character_simple/character_simple.tscn" )
+	var B = load( "res://physics/parts/character_simple/character_simple.tscn" )
 	var b = _create( B )
 	return b
 
@@ -105,13 +105,13 @@ func part_character_central():
 
 
 func part_reaction_wheels_2m():
-	var B = load( "res://physics/bodies/parts/2m/reaction_wheels/reaction_wheels_2m.tscn" )
+	var B = load( "res://physics/parts/2m/reaction_wheels/reaction_wheels_2m.tscn" )
 	var b = _create( B )
 	return b
 
 
 func part_thruster_01():
-	var B = load( "res://physics/bodies/parts/thrusters/thruster_01/thruster_01.tscn" )
+	var B = load( "res://physics/parts/thrusters/thruster_01/thruster_01.tscn" )
 	var b = _create( B )
 	return b
 
