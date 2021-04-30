@@ -2,6 +2,13 @@
 extends RefFrameNode
 class_name Body
 
+enum BodyState {
+	KINEMATIC=0, 
+	DYNAMIC=1
+}
+export(BodyState) var body_state = BodyState.DYNAMIC
+
+
 # When inheriting need to redefine these two.
 var VisualType   = null
 var PhysicalType = null
@@ -443,6 +450,43 @@ func add_force_torque( F: Vector3, P: Vector3 ):
 # Body (like a character) might need to know it.
 func set_local_up( up: Vector3 ):
 	pass
+
+
+
+
+# When being constructed parts are not supposed to move.
+# So it is possible to make dynamic bodies kinematic.
+# And when editing is done, one can switch those back to 
+# being dynamic.
+# These two should be overwritten.
+func activate():
+	if body_state == BodyState.DYNAMIC:
+		return
+	body_state = BodyState.DYNAMIC
+
+	if _physical != null:
+		_physical.mode = RigidBody.MODE_RIGID
+		_physical.sleeping = false
+	
+	for body in sub_bodies:
+		body.activate()
+	
+	
+	
+
+
+
+func deactivate():
+	if body_state == BodyState.KINEMATIC:
+		return
+	body_state = BodyState.KINEMATIC
+	
+	if _physical != null:
+		_physical.mode = RigidBody.MODE_KINEMATIC
+	
+	for body in sub_bodies:
+		body.deactivate()
+	
 
 
 

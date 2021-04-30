@@ -57,11 +57,11 @@ func _create_buttons_frames():
 		return
 	_cleanup_panel( frames )
 	
-	_add_button( frames, "res://physics/bodies/frames/frame_box/icon.png", 
+	_add_button( frames, "res://physics/parts/frames/frame_box/icon.png", 
 						 "frame_box", 
 						 "Frame box description", false )
 
-	_add_button( frames, "res://physics/bodies/frames/frame_light/assets/icon.png", 
+	_add_button( frames, "res://physics/parts/frames/frame_light/assets/icon.png", 
 						 "frame_light", 
 						 "Frame light description", false )
 
@@ -72,15 +72,15 @@ func _create_buttons_parts():
 		return
 	_cleanup_panel( parts )
 	
-	_add_button( parts, "res://physics/bodies/parts/part_cylinder/assets/icon.png", 
+	_add_button( parts, "res://physics/parts/part_cylinder/assets/icon.png", 
 						 "part_cylinder", 
 						 "Cylinder part description", true )
 	
-	_add_button( parts, "res://physics/bodies/parts/2m/reaction_wheels/assets/icon.png", 
+	_add_button( parts, "res://physics/parts/2m/reaction_wheels/assets/icon.png", 
 						 "reaction_wheels_2m", 
 						 "2m reaction control wheels", true )
 
-	_add_button( parts, "res://physics/bodies/parts/thrusters/thruster_01/assets/icon.png", 
+	_add_button( parts, "res://physics/parts/thrusters/thruster_01/assets/icon.png", 
 						 "thruster_01", 
 						 "Thrsuter ver 01", true )
 	

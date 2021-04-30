@@ -12,13 +12,8 @@ enum PartClass {
 	PASSIVE=6 # This one just means no predefined functionality.
  }
 
-enum PartState {
-	CONSTRUCTION=0, 
-	SIMULATION=1
-}
 
 export(PartClass) var part_class = PartClass.THRUSTER
-export(PartState) var part_state = PartState.SIMULATION
 export(bool) var allows_surface_attachments=true
 export(bool) var allows_y_radial_symmetry=true
 export(bool) var allows_x_mirror_symmetry=true
@@ -73,38 +68,27 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 # being dynamic.
 # These two should be overwritten.
 func activate():
-	if part_state == PartState.SIMULATION:
-		return
-	if _physical != null:
-		_physical.mode = RigidBody.MODE_RIGID
-		_physical.sleeping = false
-	
-	for body in sub_bodies:
-		body.activate()
-	
+	.activate()
 	
 	# Get all connected parts and switch them as well.
 	var nodes_qty: int = stacking_nodes.size()
 	for i in range(nodes_qty):
 		pass
 	
-	part_state = PartState.SIMULATION
-	
-	
+
 
 
 
 func deactivate():
-	if part_state == PartState.CONSTRUCTION:
-		return
+	.deactivate()
 	
-	if _physical != null:
-		_physical.mode = RigidBody.MODE_KINEMATIC
-	
-	for body in sub_bodies:
-		body.deactivate()
-	
-	part_state = PartState.CONSTRUCTION
+		# Get all connected parts and switch them as well.
+	var nodes_qty: int = stacking_nodes.size()
+	for i in range(nodes_qty):
+		pass
+
+
+
 
 
 func set_show_node_visuals( en: bool ):
