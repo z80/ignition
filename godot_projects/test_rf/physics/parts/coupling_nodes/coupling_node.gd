@@ -95,6 +95,11 @@ func _get_angle():
 func _set_show_visual( en: bool ):
 	show_visual = en
 	if show_visual:
+		# Don't show ones which are already connected.
+		var c: bool = connected()
+		if c:
+			return
+		
 		if _visual == null:
 			var Visual = preload( "res://physics/parts/coupling_nodes/coupling_node_visual.tscn" )
 			_visual = Visual.instance()

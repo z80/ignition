@@ -7,6 +7,7 @@ export(bool) var allows_connecting = true
 # Other parts can be connected to this node.
 export(bool) var allows_connections = true
 
+var _joint: Generic6DOFJoint = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -66,6 +67,38 @@ func decouple():
 	part_b.part_b_path = ""
 	part_b.part_b      = null
 	part_b.is_parent   = false
+
+
+func activate():
+	var c: bool = connected()
+	if not c:
+		return
+	if not is_parent:
+		return
+	_joint = Generic6DOFJoint.new()
+	BodyCreator.root_node.add_child( _joint )
+	
+	var part_a: Part = self.part
+	var part_b: Part = part_b.part
+	
+	var body_a: RigidBody = part_a._physical
+	var body_b: RigidBody = part_b._physical
+	
+	var joint_t: Transform = self.world_transform()
+	_joint.transform = joint_t
+	_joint.set( "nodes/node_a", body_a.get_path() )
+	_joint.set( "nodes/node_b", body_b.get_path() )
+	_joint.precision = 100
+
+
+
+func deactivate():
+	if _joint == null:
+		return
+	
+	_joint.queue_free()
+	_joint = null
+
 
 
 

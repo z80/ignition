@@ -68,12 +68,21 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 # being dynamic.
 # These two should be overwritten.
 func activate():
+	var is_activated: bool = (body_state == BodyState.DYNAMIC)
+	if is_activated:
+		return
+	
 	.activate()
 	
 	# Get all connected parts and switch them as well.
 	var nodes_qty: int = stacking_nodes.size()
 	for i in range(nodes_qty):
-		pass
+		var n: CouplingNodeStacking = stacking_nodes[i]
+		var c: bool = n.connected()
+		if not c:
+			continue
+		var p: Part = n.part_b.part
+		p.activate()
 	
 
 

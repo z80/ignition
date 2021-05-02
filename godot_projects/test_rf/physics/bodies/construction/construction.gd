@@ -134,6 +134,7 @@ func activate_grab( body ):
 	edited_target  = body
 	editing_widget = grab
 	grab.target = body
+	set_show_coupling_nodes( true )
 	activated_mode = "construction_editing"
 
 
@@ -141,6 +142,7 @@ func activate_grab( body ):
 
 
 func finish_editing():
+	set_show_coupling_nodes( false )
 	edited_target  = null
 	if is_instance_valid( editing_widget ):
 		editing_widget.queue_free()
@@ -193,7 +195,7 @@ func check_if_deactivate():
 	if player == null:
 		return true
 	
-	# Player in this ref. fame in order to easily compoute each coordinate.
+	# Player in this ref. fame in order to easily compute each coordinate.
 	player.compute_relative_to_root( self )
 	var t: Transform = player.t_root()
 	var r: Vector3 = t.origin
@@ -230,4 +232,15 @@ func create_block( block_name, dynamic: bool = false ):
 
 	# Disable physics to prevent blocks from flying around.
 	block.deactivate()
+
+
+
+
+
+func set_show_coupling_nodes( en: bool ):
+	var qty: int = dynamic_blocks.size()
+	for i in range(qty):
+		var p: Part = dynamic_blocks[i]
+		p.set_show_node_visuals( en )
+
 

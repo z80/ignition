@@ -4,14 +4,20 @@
 # Depth first search for all the parts connected with each other.
 
 
-static func init( p: Part ):
+static func dfs_search( p: Part ):
 	var root_part: Part = _find_root( p )
-	var parts: Array = [root_part]
+	var parts: Array = []
+	_dfs( root_part, parts )
+	
+	var ret: Array = [ root_part, parts ]
+	return ret
 
 
 
 
 # Called when the node enters the scene tree for the first time.
+# It's not formally needed to start with root.
+# It is only done for extra convenience to know what part is the root.
 static func _find_root( p: Part ):
 	var part: Part = p
 	var again: bool = true
@@ -37,8 +43,10 @@ static func _find_root( p: Part ):
 
 static func _dfs( part: Part, parts: Array ):
 	var already_there: bool = parts.has( part )
-	if not already_there:
-		parts.push_back( part )
+	if already_there:
+		return
+	
+	parts.push_back( part )
 	
 	var qty: int = part.stacking_nodes.size()
 	for i in range(qty):
@@ -49,6 +57,9 @@ static func _dfs( part: Part, parts: Array ):
 		var is_parent: bool = n.is_parent
 		if not is_parent:
 			continue
+		
+		var p: Part = n.part
+		_dfs( p, parts )
 
 
 
