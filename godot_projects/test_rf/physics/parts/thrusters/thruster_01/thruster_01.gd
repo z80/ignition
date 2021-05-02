@@ -47,7 +47,7 @@ func gui_classes( mode: String = "" ):
 		classes.push_back( cl )
 	
 	if mode.length() < 1:
-		var Status = load( "res://physics/bodies/parts/thrusters/thruster_01/gui_thruster_status.tscn" )
+		var Status = load( "res://physics/parts/thrusters/thruster_01/gui_thruster_status.tscn" )
 		classes.push_back( Status )
 	
 	return classes

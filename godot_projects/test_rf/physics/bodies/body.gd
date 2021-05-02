@@ -460,6 +460,9 @@ func set_local_up( up: Vector3 ):
 # being dynamic.
 # These two should be overwritten.
 func activate():
+	for body in sub_bodies:
+		body.activate()
+	
 	if body_state == BodyState.DYNAMIC:
 		return
 	body_state = BodyState.DYNAMIC
@@ -467,26 +470,25 @@ func activate():
 	if _physical != null:
 		_physical.mode = RigidBody.MODE_RIGID
 		_physical.sleeping = false
-	
-	for body in sub_bodies:
-		body.activate()
-	
-	
-	
+
+
+
+
 
 
 
 func deactivate():
+	for body in sub_bodies:
+		body.deactivate()
+	
 	if body_state == BodyState.KINEMATIC:
 		return
 	body_state = BodyState.KINEMATIC
 	
 	if _physical != null:
 		_physical.mode = RigidBody.MODE_KINEMATIC
-	
-	for body in sub_bodies:
-		body.deactivate()
-	
+
+
 
 
 
