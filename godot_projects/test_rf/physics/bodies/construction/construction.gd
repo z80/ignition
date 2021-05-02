@@ -9,7 +9,7 @@ var counter: int = 0
 var activated_mode = null
 
 # Target being edited.
-var edited_target = null
+var edited_target: Part = null
 # Widget editing the target above.
 var editing_widget = null
 
@@ -142,8 +142,10 @@ func activate_grab( body ):
 
 
 func finish_editing():
+	edited_target.couple()
 	set_show_coupling_nodes( false )
 	edited_target  = null
+	
 	if is_instance_valid( editing_widget ):
 		editing_widget.queue_free()
 	activated_mode = "construction_menu"

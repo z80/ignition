@@ -84,7 +84,15 @@ func activate():
 		var p: Part = n.part_b.part
 		p.activate()
 	
-
+	for i in range(nodes_qty):
+		var n: CouplingNodeStacking = stacking_nodes[i]
+		var c: bool = n.connected()
+		if not c:
+			continue
+		if not n.is_parent:
+			continue
+		n.activate()
+		
 
 
 
@@ -94,7 +102,21 @@ func deactivate():
 		# Get all connected parts and switch them as well.
 	var nodes_qty: int = stacking_nodes.size()
 	for i in range(nodes_qty):
-		pass
+		var n: CouplingNodeStacking = stacking_nodes[i]
+		var c: bool = n.connected()
+		if not c:
+			continue
+		if not n.is_parent:
+			continue
+		n.deactivate()
+	
+	for i in range(nodes_qty):
+		var n: CouplingNodeStacking = stacking_nodes[i]
+		var c: bool = n.connected()
+		if not c:
+			continue
+		var p: Part = n.part_b.part
+		p.deactivate()
 
 
 
@@ -122,7 +144,7 @@ func couple():
 	
 	var done: bool = false
 	var own_nodes_qty: int = stacking_nodes.size()
-	for own_node_ind in range( own_nodes_qty ):
+	for own_node_ind in range(own_nodes_qty):
 		var own_node: CouplingNodeStacking = stacking_nodes[own_node_ind]
 		# Skip the already coupled ones.
 		if own_node.part_b != null:

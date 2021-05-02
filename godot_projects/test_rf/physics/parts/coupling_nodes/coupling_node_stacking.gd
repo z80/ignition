@@ -78,8 +78,8 @@ func activate():
 	_joint = Generic6DOFJoint.new()
 	BodyCreator.root_node.add_child( _joint )
 	
-	var part_a: Part = self.part
-	var part_b: Part = part_b.part
+	var part_a: RefFrameNode = self.part
+	var part_b: RefFrameNode = part_b.part
 	
 	var body_a: RigidBody = part_a._physical
 	var body_b: RigidBody = part_b._physical
