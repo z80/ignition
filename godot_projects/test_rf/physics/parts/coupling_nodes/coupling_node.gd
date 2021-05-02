@@ -53,6 +53,12 @@ func process():
 
 
 
+func connected():
+	var ret: bool = (part_b != null) and is_instance_valid(part_b)
+	return ret
+
+
+
 func compute_relative_to_owner():
 	var p: Node = self
 	var t: Transform = Transform.IDENTITY
