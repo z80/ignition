@@ -67,12 +67,12 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 # And when editing is done, one can switch those back to 
 # being dynamic.
 # These two should be overwritten.
-func activate():
+func activate( root_call: bool = true ):
 	var is_activated: bool = (body_state == BodyState.DYNAMIC)
 	if is_activated:
 		return
 	
-	.activate()
+	.activate( root_call )
 	
 	# Get all connected parts and switch them as well.
 	var nodes_qty: int = stacking_nodes.size()
@@ -82,7 +82,7 @@ func activate():
 		if not c:
 			continue
 		var p: Part = n.part_b.part
-		p.activate()
+		p.activate( false )
 	
 	for i in range(nodes_qty):
 		var n: CouplingNodeStacking = stacking_nodes[i]
@@ -92,12 +92,34 @@ func activate():
 		if not n.is_parent:
 			continue
 		n.activate()
+	
+	# Create super body. Through it controls are computed and 
+	# merge/split ref frames are computed.
+	if root_call:
+		var sb = PartAssembly.new()
+		BodyCreator.root_node.add_child( sb )
+		var p = self.get_parent()
+		var se3: Se3Ref = sb.relative_to( p )
+		sb.debug = true
+		sb.change_parent( p )
+		sb.debug = false
+		sb.set_se3( se3 )
 		
+		# Add all bodies to this super body.
+		var Dfs = preload( "res://physics/parts/dfs_parts.gd" )
+		var ret: Array = Dfs.dfs_search( self )
+		var bodies: Array = ret[1]
+		for body in bodies:
+			sb.add_sub_body( body )
+		
+		# Now sure what this one is doing.
+		#sb.activate()
 
 
 
-func deactivate():
-	.deactivate()
+
+func deactivate( root_call: bool = true ):
+	.deactivate(root_call)
 	
 		# Get all connected parts and switch them as well.
 	var nodes_qty: int = stacking_nodes.size()
@@ -116,8 +138,12 @@ func deactivate():
 		if not c:
 			continue
 		var p: Part = n.part_b.part
-		p.deactivate()
-
+		p.deactivate( false )
+	
+	if root_call:
+		if super_body != null:
+			super_body.queue_free()
+			super_body = null
 
 
 

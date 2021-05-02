@@ -459,7 +459,7 @@ func set_local_up( up: Vector3 ):
 # And when editing is done, one can switch those back to 
 # being dynamic.
 # These two should be overwritten.
-func activate():
+func activate( root_call: bool = true ):
 	for body in sub_bodies:
 		body.activate()
 	
@@ -477,7 +477,7 @@ func activate():
 
 
 
-func deactivate():
+func deactivate( root_call: bool = true ):
 	for body in sub_bodies:
 		body.deactivate()
 	

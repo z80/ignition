@@ -106,7 +106,8 @@ func set_collision_layer( layer ):
 
 
 
-func activate():
+func activate( root_part: bool = true ):
+	.activate( root_part )
 	$PanelParts.visible = true
 	
 	activated_mode = "construction_menu"
@@ -115,7 +116,8 @@ func activate():
 
 
 
-func deactivate():
+func deactivate( root_part: bool = true ):
+	.deactivate( root_part )
 	if activated_mode != null:
 		finish_editing()
 		$PanelParts.visible = false
@@ -156,23 +158,14 @@ func finish_editing():
 func _create_assembly():
 	var qty = dynamic_blocks.size()
 	if qty > 0:
-		var sb = PartAssembly.new()
-		self.add_child( sb )
-		for body in dynamic_blocks:
-			sb.add_sub_body( body )
-		
-		# Need to call this one once.
-		sb.create_edges()
-		# Setting parent after adding all the bodies.
-		var p = self.get_parent()
-		
-		
-		var se3: Se3Ref = sb.relative_to( p )
-		
-		sb.debug = true
-		sb.change_parent( p )
-		sb.debug = false
-		sb.activate()
+		# Pick any one.
+		var part: Part = dynamic_blocks[0]
+		# And call Dfs to find the root one.
+		var Dfs = preload( "res://physics/parts/dfs_parts.gd" )
+		var ret: Array = Dfs.dfs_search( self )
+		part = ret[0]
+		part.activate()
+
 
 	#if qty > 1:
 	#	var sb = PartAssembly.new()
