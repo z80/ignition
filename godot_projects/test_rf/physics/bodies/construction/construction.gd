@@ -213,8 +213,6 @@ func create_block( block_name, dynamic: bool = false ):
 	block.set_t( t )
 	var p = self.get_parent()
 	block.change_parent( p )
-	# Establish relations.
-	#super_body.add_sub_body( block )
 	
 	# Make it selected to be able to move it.
 	PhysicsManager.player_select = block
@@ -224,6 +222,11 @@ func create_block( block_name, dynamic: bool = false ):
 
 	# Disable physics to prevent blocks from flying around.
 	block.deactivate()
+
+	# Establish relations.
+	# This one is needed in ordr to 
+	# have the right gui elements in the context menu.
+	super_body.add_sub_body( block )
 
 
 

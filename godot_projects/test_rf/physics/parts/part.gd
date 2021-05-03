@@ -61,6 +61,14 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 		_traverse_coupling_nodes_recursive( ch )
 
 
+func process_inner( _delta ):
+	.process_inner( _delta )
+	var qty: int = stacking_nodes.size()
+	for i in range(qty):
+		var n: CouplingNodeStacking = stacking_nodes[i]
+		n.process()
+
+
 
 # When being constructed parts are not supposed to move.
 # So it is possible to make dynamic bodies kinematic.

@@ -15,6 +15,7 @@ func _ready():
 
 
 func process():
+	.process()
 	position_rel_to_parent()
 
 

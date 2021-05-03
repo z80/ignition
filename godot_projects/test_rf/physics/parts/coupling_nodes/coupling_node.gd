@@ -143,6 +143,8 @@ func compute_owner_rel_to_parent():
 
 # When connected position it's owner correctly with respecto to the parent.
 func position_rel_to_parent():
+	if part_b_path == null:
+		return
 	part_b = get_node( part_b_path )
 	if part_b == null:
 		return false
@@ -159,8 +161,7 @@ func position_rel_to_parent():
 
 
 func world_transform():
-	var parent_rf: RefFrameNode = part_b.part
-	var t_parent: Transform = parent_rf.transform
+	var t_parent: Transform = part.transform
 	var t: Transform = t_parent * relative_to_owner
 	return t
 
