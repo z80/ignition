@@ -17,5 +17,5 @@ func _on_Enter_pressed():
 		return
 	var has_activate: bool = _target_obj.has_method( "activate" )
 	if has_activate:
-		_target_obj.activate()
+		_target_obj.construction_activate()
 		_parent_gui.queue_free()

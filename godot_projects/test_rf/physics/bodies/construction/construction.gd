@@ -9,7 +9,7 @@ var counter: int = 0
 var activated_mode = null
 
 # Target being edited.
-var edited_target: Part = null
+var edited_target: RefFrameNode = null
 # Widget editing the target above.
 var editing_widget = null
 
@@ -32,7 +32,7 @@ func _ready():
 	#print( "classes: ", classes )
 	
 	$PanelParts.construction = self
-	$PanelParts.connect( "create_block", self, "create_block"  )
+	$PanelParts.connect( "create_block", self, "create_block" )
 	
 		# Also create a super body.
 	var sb = ConstructionSuperBody.new()
@@ -58,7 +58,7 @@ func process_inner(delta):
 	# If it is active check if player is too far. If it is, deactivate.
 	var do_deac: bool = check_if_deactivate()
 	if do_deac:
-		deactivate()
+		construction_deactivate()
 
 
 
@@ -71,9 +71,8 @@ func init():
 	PhysicalType = Physical
 
 	.init()
-
 	
-	var t: Transform
+	var t: Transform = Transform.IDENTITY
 	t.origin = Vector3( 0.0, 1.0, 0.0 )
 	set_t( t )
 
@@ -106,8 +105,7 @@ func set_collision_layer( layer ):
 
 
 
-func activate( root_part: bool = true ):
-	.activate( root_part )
+func construction_activate():
 	$PanelParts.visible = true
 	
 	activated_mode = "construction_menu"
@@ -116,8 +114,7 @@ func activate( root_part: bool = true ):
 
 
 
-func deactivate( root_part: bool = true ):
-	.deactivate( root_part )
+func construction_deactivate():
 	if activated_mode != null:
 		finish_editing()
 		$PanelParts.visible = false
@@ -144,12 +141,13 @@ func activate_grab( body ):
 
 
 func finish_editing():
-	edited_target.couple()
-	set_show_coupling_nodes( false )
-	edited_target  = null
-	
 	if is_instance_valid( editing_widget ):
 		editing_widget.queue_free()
+		
+		edited_target.couple()
+		set_show_coupling_nodes( false )
+		edited_target  = null
+	
 	activated_mode = "construction_menu"
 
 
@@ -161,8 +159,7 @@ func _create_assembly():
 		# Pick any one.
 		var part: Part = dynamic_blocks[0]
 		# And call Dfs to find the root one.
-		var Dfs = preload( "res://physics/parts/dfs_parts.gd" )
-		var ret: Array = Dfs.dfs_search( self )
+		var ret: Array = Part.dfs_search( part )
 		part = ret[0]
 		part.activate()
 
@@ -211,13 +208,13 @@ func create_block( block_name, dynamic: bool = false ):
 	
 	var player = PhysicsManager.player_control
 	block.change_parent( player )
-	var t: Transform
+	var t: Transform = Transform.IDENTITY
 	t.origin = Constants.CONSTRUCTION_CREATE_AT
 	block.set_t( t )
 	var p = self.get_parent()
 	block.change_parent( p )
 	# Establish relations.
-	super_body.add_sub_body( block )
+	#super_body.add_sub_body( block )
 	
 	# Make it selected to be able to move it.
 	PhysicsManager.player_select = block
@@ -235,7 +232,7 @@ func create_block( block_name, dynamic: bool = false ):
 func set_show_coupling_nodes( en: bool ):
 	var qty: int = dynamic_blocks.size()
 	for i in range(qty):
-		var p: Part = dynamic_blocks[i]
+		var p: RefFrameNode = dynamic_blocks[i]
 		p.set_show_node_visuals( en )
 
 
