@@ -10,8 +10,13 @@ enum PartClass {
 	REACTION_CONTROL_THRUSTER=4, 
 	HABITAT=5, 
 	PASSIVE=6 # This one just means no predefined functionality.
- }
+}
 
+
+enum PartMode {
+	CONSTRUCTION=0, 
+	SIMULATION=1
+}
 
 export(PartClass) var part_class = PartClass.THRUSTER
 export(bool) var allows_surface_attachments=true
@@ -25,6 +30,7 @@ export(bool) var conducts_air=true
 var stacking_nodes: Array = []
 var surface_nodes: Array  = []
 
+var mode: int = PartMode.SIMULATION
 
 
 # If contains Spatial with prefix "stacking_node" it's position and Y axis direction 
@@ -81,6 +87,9 @@ func activate( root_call: bool = true ):
 		return
 	
 	.activate( root_call )
+	
+	# If activated, not in construction anymore.
+	mode = PartMode.SIMULATION
 	
 	# Get all connected parts and switch them as well.
 	var nodes_qty: int = stacking_nodes.size()
@@ -147,7 +156,10 @@ func deactivate( root_call: bool = true ):
 		var p: Part = n.part_b.part
 		p.deactivate( false )
 	
-	if root_call:
+	# Need to make sure that not in a construction mode.
+	# In construction mode super boy is provided externally 
+	# And provides additional context menu GUIs.
+	if root_call and (mode != PartMode.CONSTRUCTION):
 		if super_body != null:
 			super_body.queue_free()
 			super_body = null

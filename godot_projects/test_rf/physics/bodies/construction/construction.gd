@@ -219,10 +219,13 @@ func create_block( block_name, dynamic: bool = false ):
 	
 	if dynamic:
 		dynamic_blocks.push_back( block )
-
+	
+	# This one makes it not delete superbosy on activation.
+	block.mode = Part.PartMode.CONSTRUCTION
+	
 	# Disable physics to prevent blocks from flying around.
 	block.deactivate()
-
+	
 	# Establish relations.
 	# This one is needed in ordr to 
 	# have the right gui elements in the context menu.
