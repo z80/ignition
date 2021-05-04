@@ -470,6 +470,7 @@ func activate( root_call: bool = true ):
 	if _physical != null:
 		_physical.mode = RigidBody.MODE_RIGID
 		_physical.sleeping = false
+		update_physical_state_from_rf()
 
 
 
