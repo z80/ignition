@@ -337,7 +337,6 @@ func _process_dragging():
 			body.set_r( to )
 			body.set_v( Vector3.ZERO )
 			body.set_w( Vector3.ZERO )
-			body.update_physical_state_from_rf()
 		else:
 			target.translation = to
 	

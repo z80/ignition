@@ -206,6 +206,10 @@ func create_block( block_name, dynamic: bool = false ):
 	if block == null:
 		return
 	
+	# This one makes it not delete superbosy on activation.
+	block.mode = Part.PartMode.CONSTRUCTION
+	block.body_state = Body.BodyState.KINEMATIC
+	
 	var player = PhysicsManager.player_control
 	block.change_parent( player )
 	var t: Transform = Transform.IDENTITY
@@ -220,8 +224,6 @@ func create_block( block_name, dynamic: bool = false ):
 	if dynamic:
 		dynamic_blocks.push_back( block )
 	
-	# This one makes it not delete superbosy on activation.
-	block.mode = Part.PartMode.CONSTRUCTION
 	
 	# Disable physics to prevent blocks from flying around.
 	block.deactivate()

@@ -146,12 +146,13 @@ func change_parent_recursive( new_parent: Node = null ):
 			_physical.queue_free()
 			_physical = null
 	else:
-		var is_ref_frame_physics: bool = new_parent.get_class() == "RefFramePhysics"
-		if is_ref_frame_physics:
-			if new_parent.is_active():
-				update_physical_state_from_rf()
-				if _physical:
-					_physical.set_collision_layer( new_parent._contact_layer )
+		if body_state != BodyState.KINEMATIC:
+			var is_ref_frame_physics: bool = new_parent.get_class() == "RefFramePhysics"
+			if is_ref_frame_physics:
+				if new_parent.is_active():
+					update_physical_state_from_rf()
+					if _physical:
+						_physical.set_collision_layer( new_parent._contact_layer )
 
 		elif _physical != null:
 			_physical.queue_free()
@@ -467,10 +468,10 @@ func activate( root_call: bool = true ):
 		return
 	body_state = BodyState.DYNAMIC
 
-	if _physical != null:
-		_physical.mode = RigidBody.MODE_RIGID
-		_physical.sleeping = false
-		update_physical_state_from_rf()
+	update_physical_state_from_rf()
+	#_physical.mode = RigidBody.MODE_RIGID
+	_physical.sleeping = false
+	
 
 
 
@@ -487,7 +488,7 @@ func deactivate( root_call: bool = true ):
 	body_state = BodyState.KINEMATIC
 	
 	if _physical != null:
-		_physical.mode = RigidBody.MODE_KINEMATIC
+		remove_physical()
 
 
 

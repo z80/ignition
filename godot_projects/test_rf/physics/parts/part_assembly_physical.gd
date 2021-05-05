@@ -24,29 +24,6 @@ func _ready():
 	pass # Replace with function body.
 
 
-func setup( bodies: Array, edges: Array ):
-	print( "PartAssemblyPhysical::setup()" )
-	for joint in _joints:
-		joint.queue_free()
-	_joints.clear()
-	
-	# Create joints.
-	for edge in edges:
-		var ind_a: int = edge[0]
-		var ind_b: int = edge[1]
-		var body_a = bodies[ind_a]
-		var body_b = bodies[ind_b]
-		
-		var j = Generic6DOFJoint.new()
-		BodyCreator.root_node.add_child( j )
-		_joints.push_back( j )
-		
-		j.transform = body_a.t()
-		j.set( "nodes/node_a", body_a._physical.get_path() )
-		j.set( "nodes/node_b", body_b._physical.get_path() )
-		j.precision = 100
-		
-
 
 
 
