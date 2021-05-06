@@ -58,14 +58,14 @@ func decouple():
 		return
 	part_b = get_node( part_b_path )
 	if part_b == null:
-		part_b_path = ""
+		part_b_path = null
 		return
 	
-	part_b_path = ""
+	part_b_path = null
 	part_b      = null
 	is_parent   = false
 	
-	part_b.part_b_path = ""
+	part_b.part_b_path = null
 	part_b.part_b      = null
 	part_b.is_parent   = false
 

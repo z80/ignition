@@ -221,8 +221,9 @@ func decouple():
 	var own_nodes_qty: int = stacking_nodes.size()
 	for own_node_ind in range( own_nodes_qty ):
 		var own_node: CouplingNodeStacking = stacking_nodes[own_node_ind]
-		# Skip the already coupled ones.
-		if (own_node.part_b != null) or (own_node.is_parent):
+		# Don't disconnect child nodes.
+		# Only disconnect from a parent.
+		if (own_node.part_b != null) and (own_node.is_parent):
 			continue
 		own_node.decouple()
 		return true
