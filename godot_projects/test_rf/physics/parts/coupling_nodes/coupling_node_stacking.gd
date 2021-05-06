@@ -42,32 +42,33 @@ func couple_with( n: CouplingNode ):
 		return false
 	
 	# No more excuses, couple these two together.
-	part_b_path = n.get_path()
-	part_b      = n
+	node_b_path = n.get_path()
+	node_b      = n
 	is_parent   = false
 	
-	part_b.part_b_path = get_path()
-	part_b.part_b      = self
-	part_b.is_parent   = true
+	node_b.node_b_path = get_path()
+	node_b.node_b      = self
+	node_b.is_parent   = true
 	
 	return true
 
 
 func decouple():
-	if part_b_path == null:
+	if node_b_path == null:
 		return
-	part_b = get_node( part_b_path )
-	if part_b == null:
-		part_b_path = null
+	node_b = get_node( node_b_path )
+	if node_b == null:
+		node_b_path = null
 		return
 	
-	part_b_path = null
-	part_b      = null
+	node_b.node_b_path = null
+	node_b.node_b      = null
+	node_b.is_parent   = false
+
+	node_b_path = null
+	node_b      = null
 	is_parent   = false
 	
-	part_b.part_b_path = null
-	part_b.part_b      = null
-	part_b.is_parent   = false
 
 
 func activate():
@@ -80,7 +81,7 @@ func activate():
 	BodyCreator.root_node.add_child( _joint )
 	
 	var part_a: RefFrameNode = self.part
-	var part_b: RefFrameNode = part_b.part
+	var part_b: RefFrameNode = node_b.part
 	
 	var body_a: RigidBody = part_a._physical
 	var body_b: RigidBody = part_b._physical

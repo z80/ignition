@@ -98,7 +98,7 @@ func activate( root_call: bool = true ):
 		var c: bool = n.connected()
 		if not c:
 			continue
-		var p: Part = n.part_b.part
+		var p: Part = n.node_b.part
 		p.activate( false )
 	
 	for i in range(nodes_qty):
@@ -192,7 +192,7 @@ func couple():
 	for own_node_ind in range(own_nodes_qty):
 		var own_node: CouplingNodeStacking = stacking_nodes[own_node_ind]
 		# Skip the already coupled ones.
-		if own_node.part_b != null:
+		if own_node.node_b != null:
 			continue
 		
 		for part_ind in range(parts_qty):
@@ -201,7 +201,7 @@ func couple():
 			for other_node_ind in range(other_nodes_qty):
 				var other_node: CouplingNodeStacking = part.stacking_nodes[other_node_ind]
 				# If already coupled, skip it.
-				if other_node.part_b != null:
+				if other_node.node_b != null:
 					continue
 				
 				# Try couple.
@@ -223,7 +223,7 @@ func decouple():
 		var own_node: CouplingNodeStacking = stacking_nodes[own_node_ind]
 		# Don't disconnect child nodes.
 		# Only disconnect from a parent.
-		if (own_node.part_b != null) and (own_node.is_parent):
+		if (own_node.node_b != null) and (own_node.is_parent):
 			continue
 		own_node.decouple()
 		return true

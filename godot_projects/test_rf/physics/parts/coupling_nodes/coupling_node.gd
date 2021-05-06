@@ -12,9 +12,9 @@ var part: RefFrameNode = null
 
 # If this part is attached to another one 
 # here it is stored "parent" part path.
-export(NodePath) var part_b_path = null
+export(NodePath) var node_b_path = null
 # The other s node is is connected to.
-var part_b: CouplingNode = null
+var node_b: CouplingNode = null
 # If it was connected to, it's parent, else it's child.
 var is_parent: bool = false
 
@@ -54,7 +54,7 @@ func process():
 
 
 func connected():
-	var ret: bool = (part_b != null) and is_instance_valid(part_b)
+	var ret: bool = (node_b != null) and is_instance_valid(node_b)
 	return ret
 
 
@@ -128,12 +128,12 @@ func _compute_angle_transform():
 
 
 func compute_owner_rel_to_parent():
-	part_b = get_node( part_b_path )
+	node_b = get_node( node_b_path )
 	var t_cnr: Transform = relative_to_owner
 	var inv_t_cnr: Transform = t_cnr.inverse()
 	var t_pnr: Transform
-	if part_b != null:
-		t_pnr = part_b.relative_to_owner
+	if node_b != null:
+		t_pnr = node_b.relative_to_owner
 	else:
 		t_pnr = Transform.IDENTITY
 	var t_a: Transform = _compute_angle_transform()
@@ -143,15 +143,15 @@ func compute_owner_rel_to_parent():
 
 # When connected position it's owner correctly with respecto to the parent.
 func position_rel_to_parent():
-	if part_b_path == null:
+	if node_b_path == null:
 		return
-	part_b = get_node( part_b_path )
-	if part_b == null:
+	node_b = get_node( node_b_path )
+	if node_b == null:
 		return false
 	if is_parent:
 		return false
 	var t_rel: Transform = compute_owner_rel_to_parent()
-	var parent_rf: RefFrameNode = part_b.part
+	var parent_rf: RefFrameNode = node_b.part
 	if parent_rf == null:
 		return
 	var t_parent: Transform = parent_rf.transform
