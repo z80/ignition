@@ -133,6 +133,7 @@ func activate_grab( body ):
 	edited_target  = body
 	editing_widget = grab
 	grab.target = body
+	edited_target.decouple()
 	set_show_coupling_nodes( true )
 	activated_mode = "construction_editing"
 

@@ -50,8 +50,6 @@ func couple_with( n: CouplingNode ):
 	part_b.part_b      = self
 	part_b.is_parent   = true
 	
-	relative_to_owner = compute_owner_rel_to_parent()
-	
 	return true
 
 

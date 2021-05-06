@@ -210,8 +210,8 @@ func couple():
 					done = true
 					break
 			
-			if done:
-				break
+		if done:
+			break
 	
 	return done
 
