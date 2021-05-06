@@ -54,6 +54,8 @@ func couple_with( n: CouplingNode ):
 
 
 func decouple():
+	if part_b_path == null:
+		return
 	part_b = get_node( part_b_path )
 	if part_b == null:
 		part_b_path = ""
