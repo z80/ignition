@@ -294,10 +294,10 @@ func split_if_needed():
 	if ( split_ind < 1 ) or ( split_ind >= qty ):
 		return false
 	
-	#print( "\n\n\n" )
-	#print( "splitting ref frame ", self.name )
-	#print( "just before split: " )
-	#print_all_ref_frames()
+	print( "\n\n\n" )
+	print( "splitting ref frame ", self.name )
+	print( "just before split: " )
+	print_all_ref_frames()
 	
 	var bodies_a: Array = []
 	var bodies_b: Array = []
@@ -330,10 +330,10 @@ func split_if_needed():
 	for body in bodies_b:
 		body.change_parent( rf )
 	
-	#print( "new rf created ", rf. name )
-	#print( "after split: " )
-	#print_all_ref_frames()
-	#print( "" )
+	print( "new rf created ", rf. name )
+	print( "after split: " )
+	print_all_ref_frames()
+	print( "" )
 	
 	return true 
 
@@ -351,22 +351,22 @@ func merge_if_needed():
 		var dist: float = distance( rf )
 		if dist < Constants.RF_MERGE_DISTANCE:
 			
-			#print( "\n\n\n" )
-			#print( "merging ", rf.name, " with ", self.name )
-			#print( "info before" )
-			#print_all_ref_frames()
+			print( "\n\n\n" )
+			print( "merging ", rf.name, " with ", self.name )
+			print( "info before" )
+			print_all_ref_frames()
 			
 			var bodies: Array = rf.child_bodies( false )
 			for body in bodies:
 				body.change_parent( self )
 			
 			
-			#print( "merged ", rf.name, " with ", self.name )
+			print( "merged ", rf.name, " with ", self.name )
 			# Also check if it is player's ref frame.
 			# If it is, change it to the one everything is merged to.
-			#var player_rf: RefFramePhysics = PhysicsManager.get_player_ref_frame()
-			#if rf == player_rf:
-			#	print( "player ref frame changed to ", rf.name )
+			var player_rf: RefFramePhysics = PhysicsManager.get_player_ref_frame()
+			if rf == player_rf:
+				print( "player ref frame changed to ", rf.name )
 			
 			# Queue for deletion.
 			rf.queue_free()
@@ -406,6 +406,21 @@ func child_bodies( including_surf_provider: bool = false ):
 	
 	return bodies
 
+
+func top_hierarchy_child_bodies( including_surf_provider: bool = false ):
+	var children = get_children()
+	var bodies = []
+	for ch in children:
+		var b = ch as Body
+		var include: bool = (b != null)
+		if not including_surf_provider:
+			include = include and (b != _surface_provider)
+		var root_most_body: Body = b.root_most_body()
+		include = include and (not (root_most_body in bodies))
+		if include:
+			bodies.push_back( b )
+	
+	return bodies
 
 
 func parent_bodies():

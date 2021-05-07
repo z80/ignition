@@ -15,7 +15,7 @@ func _ready():
 func _on_Leave_pressed():
 	if _target_obj == null:
 		return
-	var has_activate: bool = _target_obj.has_method( "deactivate" )
+	var has_activate: bool = _target_obj.has_method( "construction_deactivate" )
 	if has_activate:
 		_target_obj.construction_deactivate()
 		_parent_gui.queue_free()
