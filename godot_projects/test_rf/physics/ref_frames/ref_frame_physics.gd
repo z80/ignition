@@ -227,7 +227,7 @@ func jump_if_needed():
 # It should split ref frame into two. So this one is probably not used now...
 func exclude_too_far_bodies():
 	var max_dist: float = Constants.BODY_EXCLUDE_DIST
-	var bodies = child_bodies()
+	var bodies = root_most_child_bodies()
 	var player_control = PhysicsManager.player_control
 	var pt = self.get_parent()
 	
@@ -278,7 +278,7 @@ static func print_all_ref_frames():
 
 
 func split_if_needed():
-	var bodies = child_bodies()
+	var bodies = root_most_child_bodies()
 	if ( bodies.size() < 2 ):
 		return false
 	
@@ -356,7 +356,7 @@ func merge_if_needed():
 			print( "info before" )
 			print_all_ref_frames()
 			
-			var bodies: Array = rf.child_bodies( false )
+			var bodies: Array = rf.root_most_child_bodies( false )
 			for body in bodies:
 				body.change_parent( self )
 			
@@ -380,7 +380,7 @@ func merge_if_needed():
 
 # Need to be removed if returned "true".
 func self_delete_if_unused():
-	var bodies: Array = child_bodies()
+	var bodies: Array = root_most_child_bodies()
 	var qty: int = bodies.size()
 	if ( qty < 1 ):
 		# Also don't delete player ref. frame.
@@ -407,7 +407,7 @@ func child_bodies( including_surf_provider: bool = false ):
 	return bodies
 
 
-func top_hierarchy_child_bodies( including_surf_provider: bool = false ):
+func root_most_child_bodies( including_surf_provider: bool = false ):
 	var children = get_children()
 	var bodies = []
 	for ch in children:
@@ -433,7 +433,9 @@ func parent_bodies():
 	for child in children:
 		var body = child as Body
 		if body != null:
-			bodies.push_back( body )
+			body = body.root_most_body()
+			if not (body in bodies):
+				bodies.push_back( body )
 	
 	if rt == pt:
 		return bodies
@@ -442,7 +444,9 @@ func parent_bodies():
 	for child in children:
 		var body = child as Body
 		if body != null:
-			bodies.push_back( body )
+			body = body.root_most_body()
+			if not (body in bodies):
+				bodies.push_back( body )
 	
 	return bodies
 
@@ -520,8 +524,8 @@ func get_subdivide_source():
 
 
 func distance( b: RefFramePhysics ):
-	var bodies_a: Array = child_bodies()
-	var bodies_b: Array = b.child_bodies()
+	var bodies_a: Array = root_most_child_bodies()
+	var bodies_b: Array = b.root_most_child_bodies()
 	var min_d: float = -1.0
 	for body_a in bodies_a:
 		for body_b in bodies_b:
