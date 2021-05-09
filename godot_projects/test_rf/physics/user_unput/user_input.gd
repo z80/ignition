@@ -6,7 +6,10 @@ var input: Dictionary = {}
 var inputs: Array = [ "ui_w", "ui_s", "ui_a", "ui_d", "ui_q", "ui_e", 
 					  "ui_z", "ui_x", "ui_c", "ui_v", 
 					  "ui_i", "ui_k", "ui_j", "ui_l", "ui_u", "ui_o", "ui_m", "ui_space" ]
-var injected_controls: Dictionary = {}
+
+var gui_controls: Dictionary = {}
+var gui_controls_active: Dictionary = {}
+var gui_controls_to_remove: Array = []
 
 
 # Called when the node enters the scene tree for the first time.
@@ -18,11 +21,10 @@ func _process( _delta ):
 	for i in inputs:
 		describe_event( i )
 	
-	for id in injected_controls:
-		var d: Dictionary = injected_controls[id]
-		input[id] = d
-	injected_controls.clear()
+	# GUI controls
+	_process_gui_controls()
 	
+	# Sending to all the recipients.
 	#PhysicsManager.rpc( "user_input" )
 	PhysicsManager.process_user_input( input )
 	#print( "input: ", input )
@@ -36,15 +38,38 @@ func describe_event( e: String ):
 	# Add or replace.
 	if is_pressed or is_just_pressed or is_just_released:
 		var d = { pressed = is_just_pressed, 
-				 released = is_just_released}
+				 released = is_just_released }
 		input[e] = d
 	
 	else:
 		input.erase( e )
 
 
-func inject_control_bool( id: String, en: bool ):
-	var d: Dictionary = { pressed = en, released = not en }
-	injected_controls[ id ] = d
+func gui_control_bool( id: String, pressed: bool, just_pressed: bool, just_released: bool ):
+	var d: Dictionary = { pressed = pressed, released = not pressed }
+	gui_controls[ id ] = d
+
+
+
+func _process_gui_controls():
+	# Remove ones from previous list.
+	for id in gui_controls_to_remove:
+		var has: bool = gui_controls_active.has( id )
+		if has:
+			gui_controls_active.erase( id )
+	gui_controls_to_remove.clear()
+	# Add new ones and compose the deletion list.
+	for id in gui_controls:
+		var d: Dictionary = gui_controls[id]
+		gui_controls_active[id] = d
+		if d.released:
+			gui_controls_to_remove.push_back( id )
+	
+	# Update the dictionary which goes to the consumers.
+	for id in gui_controls_active:
+		var d: Dictionary = gui_controls_active[id]
+		input[id] = d
+
+
 
 
