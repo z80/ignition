@@ -230,7 +230,7 @@ func _physics_process( delta ):
 
 # To make it overridable.
 func physics_process_inner( delta ):
-	if _physical:
+	if _physical != null:
 		var t: Transform = _physical.transform
 		var v: Vector3   = _physical.linear_velocity
 		var w: Vector3   = _physical.angular_velocity

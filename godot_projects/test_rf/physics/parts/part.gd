@@ -318,7 +318,7 @@ static func _dfs( part: Part, parts: Array ):
 		if not is_parent:
 			continue
 		
-		var p: Part = n.part
+		var p: Part = n.node_b.part
 		_dfs( p, parts )
 
 

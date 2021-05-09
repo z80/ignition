@@ -102,11 +102,8 @@ func process_user_input( input: Dictionary ):
 	# Call user input for the upper most body.
 	# It is supposed to distribute the same controls 
 	# to all sub-bodies.
-	var sb = body.super_body
-	while sb != null:
-		body = sb
-		sb = body.super_body
-	body.process_user_input_2( input )
+	var sb: Body = body.root_most_body()
+	sb.process_user_input_2( input )
 
 
 
