@@ -7,8 +7,6 @@ export(bool) var allows_connecting = true
 # Other parts can be connected to this node.
 export(bool) var allows_connections = true
 
-var _joint: Generic6DOFJoint = null
-
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	._ready()

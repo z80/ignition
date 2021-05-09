@@ -231,6 +231,17 @@ func decouple():
 
 
 
+func update_physical_state_from_rf():
+	.update_physical_state_from_rf()
+	
+	var t: Transform = self.transform
+	var qty: int = stacking_nodes.size()
+	for i in range( qty ):
+		var n: CouplingNodeStacking = stacking_nodes[i]
+		n.update_joint_pose( t )
+
+
+
 
 func init():
 	.init()

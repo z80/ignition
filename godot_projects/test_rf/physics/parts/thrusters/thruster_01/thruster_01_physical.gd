@@ -41,9 +41,9 @@ func get_collision_layer():
 
 
 
-func _physics_process(_delta):
-	var v: Vector3 = linear_velocity
-	print( "thruster v: ", v )
+#func _physics_process(_delta):
+#	var v: Vector3 = linear_velocity
+#	print( "thruster v: ", v )
 
 
 

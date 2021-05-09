@@ -36,6 +36,9 @@ export(bool) var show_visual = false setget _set_show_visual, _get_show_visual
 var _visual = null
 
 
+var _joint: Generic6DOFJoint = null
+
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -176,7 +179,10 @@ func snap_size():
 
 
 
-
+func update_joint_pose( t_owner: Transform ):
+	if _joint != null:
+		var t: Transform = t_owner * relative_to_owner
+		_joint.transform = t
 
 
 
