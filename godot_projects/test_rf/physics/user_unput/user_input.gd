@@ -6,6 +6,8 @@ var input: Dictionary = {}
 var inputs: Array = [ "ui_w", "ui_s", "ui_a", "ui_d", "ui_q", "ui_e", 
 					  "ui_z", "ui_x", "ui_c", "ui_v", 
 					  "ui_i", "ui_k", "ui_j", "ui_l", "ui_u", "ui_o", "ui_m", "ui_space" ]
+var injected_controls: Dictionary = {}
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -15,6 +17,11 @@ func _ready():
 func _process( _delta ):
 	for i in inputs:
 		describe_event( i )
+	
+	for id in injected_controls:
+		var d: Dictionary = injected_controls[id]
+		input[id] = d
+	injected_controls.clear()
 	
 	#PhysicsManager.rpc( "user_input" )
 	PhysicsManager.process_user_input( input )
@@ -34,3 +41,10 @@ func describe_event( e: String ):
 	
 	else:
 		input.erase( e )
+
+
+func inject_control_bool( id: String, en: bool ):
+	var d: Dictionary = { pressed = en, released = not en }
+	injected_controls[ id ] = d
+
+
