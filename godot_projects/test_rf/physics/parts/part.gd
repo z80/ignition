@@ -339,21 +339,29 @@ func gui_classes( mode: String = "" ):
 
 # Returns if the part should process user input based on its control group.
 func control_group_active( input: Dictionary ):
-	if control_group == PartControlGroups.ControlGroup.ANY:
-		return true
-	elif control_group == PartControlGroups.ControlGroup.NONE:
+	if control_group == PartControlGroups.ControlGroup.NONE:
 		return false
 	var input_name: String = PartControlGroups.CONTROL_GROUP_NAMES[control_group]
 	var has: bool = input.has( input_name )
-	return has
+	if has:
+		return true
+	# Now if any of the names exists, and control group is "ANY", than 
+	# also return true.
+	if control_group == PartControlGroups.ControlGroup.ANY:
+		for id in PartControlGroups.CONTROL_GROUP_NAMES:
+			var gui_name: String = PartControlGroups.CONTROL_GROUP_NAMES[id]
+			has = input.has( gui_name )
+			if has:
+				return true
+	return false
+
 
 
 func process_user_input_2( input: Dictionary ):
 	var do_process: bool = control_group_active( input )
 	if do_process:
 		process_user_input_group( input )
-	for body in sub_bodies:
-		body.process_user_input_2( input )
+	.process_user_input_2( input )
 
 
 # This one should be overriden by implementations.

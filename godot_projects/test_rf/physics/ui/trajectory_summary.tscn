@@ -34,8 +34,8 @@ margin_top = 16.0
 margin_right = 102.0
 margin_bottom = 31.0
 bbcode_enabled = true
-bbcode_text = "[b]Trajectory type:[/b]"
-text = "Trajectory type:"
+bbcode_text = "[b]Traj. type:[/b]"
+text = "Traj. type:"
 
 [node name="TrajectoryType" type="Label" parent="."]
 margin_left = 105.119
