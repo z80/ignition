@@ -202,6 +202,10 @@ mouse_cursor/tooltip_position_offset=Vector2( 32, 10 )
 
 enabled=PoolStringArray( "gut" )
 
+[gui]
+
+theme/custom_font="res://physics/ui/navigation/font_digital.tres"
+
 [input]
 
 walk_w={

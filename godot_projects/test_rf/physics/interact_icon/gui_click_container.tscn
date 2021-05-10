@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://physics/interact_icon/gui_click_container.gd" type="Script" id=1]
+[ext_resource path="res://physics/ui/navigation/font_digital.tres" type="DynamicFont" id=2]
 
 [node name="GuiClickContainer" type="Panel"]
 anchor_left = -0.024
@@ -30,6 +31,7 @@ margin_left = 2.3811
 margin_top = 6.34955
 margin_right = 97.3811
 margin_bottom = 20.3495
+custom_fonts/font = ExtResource( 2 )
 custom_colors/font_color = Color( 0, 0, 0, 1 )
 text = "Title goes here"
 __meta__ = {

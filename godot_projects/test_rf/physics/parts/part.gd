@@ -32,6 +32,9 @@ var surface_nodes: Array  = []
 
 var mode: int = PartMode.SIMULATION
 
+# 0 = any, <0 = none.
+var control_group: int = 0
+
 
 # If contains Spatial with prefix "stacking_node" it's position and Y axis direction 
 # define the stacking node. Stackig nodes can be coupled with each other.
@@ -320,6 +323,16 @@ static func _dfs( part: Part, parts: Array ):
 		
 		var p: Part = n.node_b.part
 		_dfs( p, parts )
+
+
+
+func gui_classes( mode: String = "" ):
+	var classes: Array = .gui_classes( mode )
+	# Append with control group selection.
+	var gui_control_group = preload( "res://physics/parts/gui_elements/gui_control_group.tscn" )
+	classes.push_back( gui_control_group )
+	return classes
+
 
 
 

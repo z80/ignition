@@ -25,6 +25,7 @@ margin_right = 176.0
 margin_bottom = 332.0
 rect_min_size = Vector2( 96, 64 )
 text = "Object placement"
+valign = 1
 autowrap = true
 clip_text = true
 [connection signal="pressed" from="Grab" to="." method="_on_Grab_pressed"]
