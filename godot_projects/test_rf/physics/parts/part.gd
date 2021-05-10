@@ -18,6 +18,8 @@ enum PartMode {
 	SIMULATION=1
 }
 
+var PartControlGroups = preload( "res://physics/parts/part_control_groups.gd" )
+
 export(PartClass) var part_class = PartClass.THRUSTER
 export(bool) var allows_surface_attachments=true
 export(bool) var allows_y_radial_symmetry=true
@@ -33,7 +35,7 @@ var surface_nodes: Array  = []
 var mode: int = PartMode.SIMULATION
 
 # 0 = any, <0 = none.
-var control_group: int = 0
+var control_group: int = PartControlGroups.ControlGroup.NONE
 
 
 # If contains Spatial with prefix "stacking_node" it's position and Y axis direction 
@@ -335,4 +337,25 @@ func gui_classes( mode: String = "" ):
 
 
 
+# Returns if the part should process user input based on its control group.
+func control_group_active( input: Dictionary ):
+	if control_group == PartControlGroups.ControlGroup.ANY:
+		return true
+	elif control_group == PartControlGroups.ControlGroup.NONE:
+		return false
+	var input_name: String = PartControlGroups.CONTROL_GROUP_NAMES[control_group]
+	var has: bool = input.has( input_name )
+	return has
 
+
+func process_user_input_2( input: Dictionary ):
+	var do_process: bool = control_group_active( input )
+	if do_process:
+		process_user_input_group( input )
+	for body in sub_bodies:
+		body.process_user_input_2( input )
+
+
+# This one should be overriden by implementations.
+func process_user_input_group( input: Dictionary ):
+	pass

@@ -3,15 +3,7 @@ extends Control
 var _target_obj = null
 var _parent_gui = null
 
-const GROUPS: Array = [
-	["Group none", -1], 
-	["Group any",   0], 
-	["Group 1", 1], 
-	["Group 2", 2], 
-	["Group 3", 3], 
-	["Group 4", 4], 
-	["Group 5", 5]
-]
+var PartControlGroups = preload( "res://physics/parts/part_control_groups.gd" )
 
 func init( target_obj, parent_gui ):
 	_target_obj = target_obj
@@ -23,19 +15,15 @@ func init( target_obj, parent_gui ):
 func _ready():
 	if _target_obj != null:
 		var group: int = _target_obj.control_group
-		if group < -1:
-			group = -1
-		elif group > 5:
-			group = 5
+		if group < PartControlGroups.ControlGroup.NONE:
+			group = PartControlGroups.ControlGroup.NONE
+		elif group > PartControlGroups.ControlGroup._5:
+			group = PartControlGroups.ControlGroup._5
 		_id_pressed( group )
 	else:
-		_id_pressed( -1 )
+		_id_pressed( PartControlGroups.ControlGroup.NONE )
 
 
-
-
-func _on_menu_pressed():
-	pass # Replace with function body.
 
 
 
@@ -45,7 +33,7 @@ func _init_menu():
 	var menu: PopupMenu = menu_button.get_popup()
 	menu.connect( "id_pressed", self, "_id_pressed" )
 	menu.clear()
-	for group in GROUPS:
+	for group in PartControlGroups.CONTROL_GROUP_IDS:
 		var stri: String = group[0]
 		var id: int = group[1]
 		menu.add_item( stri, id, 0 )
@@ -54,7 +42,7 @@ func _init_menu():
 func _id_pressed( id ):
 	if _target_obj != null:
 		_target_obj.control_group = id
-	for group in GROUPS:
+	for group in PartControlGroups.CONTROL_GROUP_IDS:
 		var group_id: int = group[1]
 		if group_id == id:
 			var menu_button: MenuButton = get_node("MenuButton")

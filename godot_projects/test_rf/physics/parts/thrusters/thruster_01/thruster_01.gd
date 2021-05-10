@@ -15,7 +15,7 @@ func init():
 	.init()
 
 
-func process_user_input_2( input: Dictionary ):
+func process_user_input_group( input: Dictionary ):
 	user_input = input.duplicate( true )
 	if _physical:
 		if user_input.has( "ui_space" ):
