@@ -341,10 +341,12 @@ func gui_classes( mode: String = "" ):
 func control_group_active( input: Dictionary ):
 	if control_group == PartControlGroups.ControlGroup.NONE:
 		return false
-	var input_name: String = PartControlGroups.CONTROL_GROUP_NAMES[control_group]
-	var has: bool = input.has( input_name )
+	var has: bool = PartControlGroups.CONTROL_GROUP_NAMES.has(control_group)
 	if has:
-		return true
+		var input_name: String = PartControlGroups.CONTROL_GROUP_NAMES[control_group]
+		has = input.has( input_name )
+		if has:
+			return true
 	# Now if any of the names exists, and control group is "ANY", than 
 	# also return true.
 	if control_group == PartControlGroups.ControlGroup.ANY:
