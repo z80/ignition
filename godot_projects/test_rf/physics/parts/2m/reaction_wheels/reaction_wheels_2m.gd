@@ -33,16 +33,13 @@ func create_physical():
 
 
 
-func activate():
-	.activate()
+func activate( root_part: bool = true ):
+	.activate( root_part )
 	if _physical != null:
-		_physical.mode = RigidBody.MODE_RIGID
 		_physical.sleeping = false
 
 
-func deactivate():
-	.deactivate()
-	if _physical != null:
-		_physical.mode = RigidBody.MODE_KINEMATIC
+func deactivate( root_part: bool = true ):
+	.deactivate( root_part )
 
 

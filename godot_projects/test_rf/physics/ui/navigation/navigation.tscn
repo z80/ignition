@@ -157,3 +157,4 @@ __meta__ = {
 [connection signal="pressed" from="ModeOrbit" to="." method="_on_ModeOrbit_pressed"]
 [connection signal="pressed" from="ModeSurface" to="." method="_on_ModeSurface_pressed"]
 [connection signal="pressed" from="ModeTarget" to="." method="_on_ModeTarget_pressed"]
+[connection signal="pressed" from="Sas" to="." method="_on_Sas_pressed"]

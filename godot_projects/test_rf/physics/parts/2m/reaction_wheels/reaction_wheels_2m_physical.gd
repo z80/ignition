@@ -43,6 +43,7 @@ func ang_vel_control( state ):
 	var l: bool = user_input.has( "ui_l" )
 	var u: bool = user_input.has( "ui_u" )
 	var o: bool = user_input.has( "ui_o" )
+	var sas: bool = user_input.has( "gui_sas" )
 
 	if i:
 		w += Vector3.LEFT
@@ -62,7 +63,7 @@ func ang_vel_control( state ):
 	
 	# If no control and no orientation lock, 
 	# don't force angular velocity.
-	elif not rotation_lock:
+	elif not sas:
 		return
 	
 	# Adjustment q.

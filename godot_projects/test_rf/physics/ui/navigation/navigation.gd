@@ -240,3 +240,9 @@ func _on_ModeOrbit_pressed():
 
 func _on_ModeTarget_pressed():
 	set_mode_target()
+
+
+func _on_Sas_pressed():
+	var check = get_node( "Sas" )
+	var down: bool = check.pressed()
+	UserInput.gui_control_bool( "gui_sas", true, down, not down )

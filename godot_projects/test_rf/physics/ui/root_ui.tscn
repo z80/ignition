@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://physics/ui/trajectory_summary.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/ui/navigation/navigation.tscn" type="PackedScene" id=2]
+[ext_resource path="res://physics/ui/control_groups/control_groups.tscn" type="PackedScene" id=3]
 
 [node name="RootUi" type="Control"]
 anchor_right = 1.0
@@ -20,3 +21,5 @@ margin_left = -199.672
 margin_top = -206.855
 margin_right = 0.32843
 margin_bottom = -6.85516
+
+[node name="ControlGroups" parent="." instance=ExtResource( 3 )]
