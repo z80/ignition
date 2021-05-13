@@ -54,6 +54,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/parts/coupling_nodes/coupling_node_surface.gd"
 }, {
+"base": "Spatial",
+"class": "ExhaustNode",
+"language": "GDScript",
+"path": "res://physics/parts/thrusters/exhaust_node.gd"
+}, {
 "base": "Container",
 "class": "FlexGridContainer",
 "language": "GDScript",
@@ -144,6 +149,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/celestial_bodies/sun.gd"
 }, {
+"base": "Part",
+"class": "Thruster",
+"language": "GDScript",
+"path": "res://physics/parts/thrusters/thruster.gd"
+}, {
 "base": "MeshInstance",
 "class": "TileBase",
 "language": "GDScript",
@@ -159,6 +169,7 @@ _global_script_class_icons={
 "CouplingNode": "",
 "CouplingNodeStacking": "",
 "CouplingNodeSurface": "",
+"ExhaustNode": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
 "ForceSource": "",
 "ForceSourceGravity": "",
@@ -177,6 +188,7 @@ _global_script_class_icons={
 "RefFramePhysics": "",
 "RefFrameResourceProvider": "",
 "Sun": "",
+"Thruster": "",
 "TileBase": ""
 }
 

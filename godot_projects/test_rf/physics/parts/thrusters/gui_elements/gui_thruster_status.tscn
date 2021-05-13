@@ -1,7 +1,6 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://physics/parts/thrusters/thruster_01/gui_thruster_status.gd" type="Script" id=1]
-
+[ext_resource path="res://physics/parts/thrusters/gui_elements/gui_thruster_status.gd" type="Script" id=1]
 
 [node name="GuiThrusterStatus" type="Panel"]
 anchor_right = 1.0

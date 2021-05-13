@@ -40,17 +40,7 @@ func process_user_input_group( input: Dictionary ):
 				set_throttle( th )
 
 
-func gui_classes( mode: String = "" ):
-	var classes = []
-	var common_classes = .gui_classes( mode )
-	for cl in common_classes:
-		classes.push_back( cl )
-	
-	if mode.length() < 1:
-		var Status = load( "res://physics/parts/thrusters/thruster_01/gui_thruster_status.tscn" )
-		classes.push_back( Status )
-	
-	return classes
+
 
 
 func set_collision_layer( layer ):
