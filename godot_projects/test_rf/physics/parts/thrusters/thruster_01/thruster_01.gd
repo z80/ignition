@@ -1,7 +1,7 @@
 
-extends Part
+extends Thruster
 
-export(float)  var throttle = 100.0 setget set_throttle, get_throttle
+#export(float)  var throttle = 100.0 setget set_throttle, get_throttle
 
 var user_input: Dictionary
 
@@ -15,29 +15,6 @@ func init():
 	.init()
 
 
-func process_user_input_group( input: Dictionary ):
-	user_input = input.duplicate( true )
-	if _physical:
-		if user_input.has( "ui_space" ):
-			var inp = user_input[ "ui_space" ]
-			if inp.pressed:
-				var en: bool = _physical.on
-				en = not en
-				set_enabled( en )
-		
-		if user_input.has( "ui_z" ):
-			var inp = user_input[ "ui_z" ]
-			if inp.pressed:
-				var th: float = _physical.throttle
-				th -= 0.1
-				set_throttle( th )
-		
-		if user_input.has( "ui_x" ):
-			var inp = user_input[ "ui_x" ]
-			if inp.pressed:
-				var th: float = _physical.throttle
-				th += 0.1
-				set_throttle( th )
 
 
 

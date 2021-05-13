@@ -39,3 +39,6 @@ environment = SubResource( 2 )
 material_override = SubResource( 3 )
 mesh = SubResource( 4 )
 material/0 = null
+
+[node name="Listener" type="Listener" parent="."]
+current = true
