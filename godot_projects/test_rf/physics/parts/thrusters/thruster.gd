@@ -21,8 +21,14 @@ var _ignited: bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	._ready()
+
+
+func init():
+	.init()
 	restarts_left = restarts_qty
 	_ignited      = false
+	_traverse_exhaust_nodes()
 
 
 func _traverse_exhaust_nodes():
