@@ -12,7 +12,7 @@ func _ready():
 
 
 # Both are assumed to be from 0 to 1.
-func setup( power: float, pressure: float ):
+func set_exhaust( power: float, pressure: float ):
 	var mi: MeshInstance = get_node( "inner" )
 	var m: Material = mi.get_surface_material( 0 )
 	m.set( "shader_param/power", pressure )

@@ -7,5 +7,5 @@ func _ready():
 	pass # Replace with function body.
 
 
-func setup( power: float, pressure: float ):
+func set_exhaust( power: float, pressure: float ):
 	pass

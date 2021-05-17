@@ -216,6 +216,8 @@ func create_block( block_name, dynamic: bool = false ):
 	var t: Transform = Transform.IDENTITY
 	t.origin = Constants.CONSTRUCTION_CREATE_AT
 	block.set_t( t )
+	block.set_v( Vector3.ZERO )
+	block.set_w( Vector3.ZERO )
 	var p = self.get_parent()
 	block.change_parent( p )
 	

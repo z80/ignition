@@ -21,6 +21,7 @@ export(Resource) var exhausts = preload( "res://physics/parts/thrusters/exhausts
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_relative_to_owner = compute_relative_to_owner()
+	_create_exhaust()
 
 
 func compute_relative_to_owner():
@@ -61,7 +62,7 @@ func _create_exhaust():
 func set_exhaust( power: float, pressure: float ):
 	if _exhaust == null:
 		return
-	_exhaust.setup( power, pressure )
+	_exhaust.set_exhaust( power, pressure )
 
 
 

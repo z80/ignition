@@ -78,14 +78,14 @@ func process_user_input_group( input: Dictionary ):
 	if input.has( "ui_space" ):
 		var inp = input[ "ui_space" ]
 		if inp.pressed:
-			var en: bool = _physical.on
+			var en: bool = get_ignited()
 			en = not en
 			set_ignited( en )
 		
 	if input.has( "ui_z" ):
 		var inp = input[ "ui_z" ]
 		if inp.pressed:
-			var th: float = throttle
+			var th: float = get_throttle()
 			th -= 0.1
 			if th < 0.0:
 				th = 0.0
@@ -94,7 +94,7 @@ func process_user_input_group( input: Dictionary ):
 	if input.has( "ui_x" ):
 		var inp = input[ "ui_x" ]
 		if inp.pressed:
-			var th: float = throttle
+			var th: float = get_throttle()
 			th += 0.1
 			if th > 1.0:
 				th = 1.0
@@ -106,19 +106,24 @@ func process_user_input_group( input: Dictionary ):
 
 
 func set_ignited( en: bool ):
-	if (not _ignited) and en:
-		restarts_left -= 1
-	if restarts_left < 0:
-		return
+	if restarts_qty > 0:
+		if (not _ignited) and en:
+			restarts_left -= 1
+		if restarts_left < 0:
+			return
 	_ignited = en
 	if _exhaust_node != null:
 		var t: float = throttle
 		if not _ignited:
 			t = 0.0
-		_exhaust_node.setup( t, 1.0 )
+		_exhaust_node.set_exhaust( t, 1.0 )
 	
 	_setup_thrust()
 
+
+
+func get_ignited():
+	return _ignited
 
 
 
@@ -128,7 +133,7 @@ func set_throttle( th: float ):
 		var t: float = throttle
 		if not _ignited:
 			t = 0.0
-		_exhaust_node.setup( t, 1.0 )
+		_exhaust_node.set_exhaust( t, 1.0 )
 	
 	_setup_thrust()
 
@@ -148,7 +153,7 @@ func _setup_thrust():
 			p = 0.0
 		var n: Vector3 = _exhaust_node.thrust_direction()
 		var se3: Se3Ref = self.get_se3()
-		var q: Quat = se3.q()
+		var q: Quat = se3.q
 		n = q.xform( n )
 		var thrust: Vector3 = n * p
 		_physical.thrust = thrust
