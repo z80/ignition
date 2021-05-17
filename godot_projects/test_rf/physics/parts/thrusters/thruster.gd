@@ -22,6 +22,7 @@ var _ignited: bool = false
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	restarts_left = restarts_qty
+	_ignited      = false
 
 
 func _traverse_exhaust_nodes():
@@ -99,12 +100,50 @@ func process_user_input_group( input: Dictionary ):
 
 
 func set_ignited( en: bool ):
+	if (not _ignited) and en:
+		restarts_left -= 1
+	if restarts_left < 0:
+		return
 	_ignited = en
+	if _exhaust_node != null:
+		var t: float = throttle
+		if not _ignited:
+			t = 0.0
+		_exhaust_node.setup( t, 1.0 )
+	
+	_setup_thrust()
+
+
 
 
 func set_throttle( th: float ):
 	throttle = th
+	if (_exhaust_node != null):
+		var t: float = throttle
+		if not _ignited:
+			t = 0.0
+		_exhaust_node.setup( t, 1.0 )
+	
+	_setup_thrust()
 
 
 
+func get_throttle():
+	return throttle
+
+
+
+func _setup_thrust():
+	if _physical != null:
+		var p: float
+		if _ignited:
+			p = (thrust_max_atm - thrust_min_atm)*throttle + thrust_min_atm
+		else:
+			p = 0.0
+		var n: Vector3 = _exhaust_node.thrust_direction()
+		var se3: Se3Ref = self.get_se3()
+		var q: Quat = se3.q()
+		n = q.xform( n )
+		var thrust: Vector3 = n * p
+		_physical.thrust = thrust
 

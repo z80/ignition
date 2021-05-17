@@ -11,10 +11,12 @@ enum ExhaustType {
 
 export(ExhaustType) var exhaust_type = ExhaustType.A
 export(float) var exhaust_radius = 1.0
-export(float) var exhaust_length = 10.0
 
 var _relative_to_owner: Transform = Transform.IDENTITY
 
+var _exhaust: Spatial = null
+
+export(Resource) var exhausts = preload( "res://physics/parts/thrusters/exhausts/resource_exhausts.tres" )
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -41,3 +43,30 @@ func _compute_relative_to_owner_recursive( n: Node, t: Transform ):
 	var p: Node = get_parent()
 	var ret: Transform = _compute_relative_to_owner_recursive( p, t )
 	return ret
+
+
+func _create_exhaust():
+	if _exhaust != null:
+		return
+	var path: String = exhausts.get_exhaust_scene( exhaust_type )
+	var Exhaust = load( path )
+	if Exhaust == null:
+		return
+	_exhaust = Exhaust.instance()
+	add_child( _exhaust )
+	_exhaust.scale = Vector3( exhaust_radius, 1.0, exhaust_radius )
+
+
+
+func set_exhaust( power: float, pressure: float ):
+	if _exhaust == null:
+		return
+	_exhaust.setup( power, pressure )
+
+
+
+func thrust_direction():
+	var v: Vector3 = Vector3.UP
+	v = _relative_to_owner.basis.xform( v )
+	return v
+
