@@ -56,6 +56,7 @@ func _create_exhaust():
 	_exhaust = Exhaust.instance()
 	add_child( _exhaust )
 	_exhaust.scale = Vector3( exhaust_radius, 1.0, exhaust_radius )
+	_exhaust.visible = false
 
 
 
@@ -63,6 +64,8 @@ func set_exhaust( power: float, pressure: float ):
 	if _exhaust == null:
 		return
 	_exhaust.set_exhaust( power, pressure )
+	var visible: bool = (power > 0.0)
+	_exhaust.visible = visible
 
 
 
