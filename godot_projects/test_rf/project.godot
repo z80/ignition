@@ -84,6 +84,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/force_source/force_source_gravity_down.gd"
 }, {
+"base": "Part",
+"class": "FuelTank",
+"language": "GDScript",
+"path": "res://physics/parts/fuel_tanks/fuel_tank.gd"
+}, {
 "base": "Spatial",
 "class": "LandscapeBase",
 "language": "GDScript",
@@ -180,6 +185,7 @@ _global_script_class_icons={
 "ForceSource": "",
 "ForceSourceGravity": "",
 "ForceSourceGravityDown": "",
+"FuelTank": "",
 "LandscapeBase": "",
 "LandscapeFunc": "",
 "LandscapeHeightFunc": "",

@@ -28,6 +28,9 @@ export(bool) var conducts_liquid_fuel=true
 export(bool) var conducts_solid_fuel=true
 export(bool) var conducts_electricity=true
 export(bool) var conducts_air=true
+# Dry mass of the part. For fuel tanks there should be a separate thing 
+# For computing total mass.
+export(float) var mass = 1.0
 
 var stacking_nodes: Array = []
 var surface_nodes: Array  = []
@@ -92,6 +95,10 @@ func activate( root_call: bool = true ):
 		return
 	
 	.activate( root_call )
+	
+	# Assign mass
+	if _physical != null:
+		_physical.mass = mass
 	
 	# If activated, not in construction anymore.
 	mode = PartMode.SIMULATION

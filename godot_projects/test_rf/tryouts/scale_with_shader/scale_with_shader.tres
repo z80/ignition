@@ -1,0 +1,36 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+
+[sub_resource type="Shader" id=2]
+code = "shader_type spatial;
+render_mode skip_vertex_transform;
+
+void vertex()
+{
+	//VERTEX   = (MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	NORMAL   = (MODELVIEW_MATRIX * vec4(NORMAL, 0.0)).xyz;
+	BINORMAL = (MODELVIEW_MATRIX * vec4(BINORMAL, 0.0)).xyz;
+	TANGENT  = (MODELVIEW_MATRIX * vec4(TANGENT, 0.0)).xyz;
+	
+	
+	float s = (sin( TIME * 3.1415*2.0 ) + 2.0)*0.1;
+	mat4 inv_mvm = inverse(MODELVIEW_MATRIX);
+	vec4 p = (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
+	p.xyz *= s;
+	//p.x += 0.5;
+	VERTEX = p.xyz;
+	//VERTEX = (inv_mvm *p).xyz;
+	
+	/*
+	VERTEX.z *= s;
+	VERTEX.x *= s;
+	VERTEX.y *= s;
+	*/
+}
+
+void fragment()
+{
+	ALBEDO = vec3(1.0, 0.0, 0.0);
+}"
+
+[resource]
+shader = SubResource( 2 )
