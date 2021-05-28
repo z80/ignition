@@ -7,9 +7,10 @@ enum FuelType {LIQUID_FUEL=0, LIQUID_OXIDIZER=1, SOLID_FUEL=2}
 export(Resource) var fuel_params = preload( "res://physics/parts/fuel_tanks/resource_fuel_tanks.tres" )
 
 export(FuelType) var fuel_type = FuelType.LIQUID_FUEL
-export(float) var total_volume = 10.0
+export(float) var radius = 1.0
+export(float) var height = 5.0
 
-var _initial_volume: float = 0.0
+var initial_volume_percent: float = 100.0
 var _fuel_left: float    = 0.0
 
 
@@ -17,15 +18,43 @@ var _fuel_left: float    = 0.0
 func _ready():
 	._ready()
 	
-	_fuel_left = _initial_volume
 
 
 
 func init():
 	.init()
-	_initial_volume = total_volume
-	_fuel_left      = total_volume
-	
+	set_volume_percent( initial_volume_percent )
+
+
+
+func set_volume_percent( percent: float = 100.0 ):
+	var full_v: float = full_volume()
+	_fuel_left = full_v * percent / 100.0
+
+
+func full_volume():
+	var v: float = height * radius * radius * PI
+	return v
+
+
+
+func update_inertia():
+	var density: float = _fuel_density()
+	var m: float = _fuel_left * density
+
+
+
+func _fuel_density():
+	var density: float = 0.0
+	if fuel_type == FuelType.LIQUID_FUEL:
+		density = fuel_params.liquid_fuel_density
+	elif fuel_type == FuelType.LIQUID_OXIDIZER:
+		density = fuel_params.liquid_oxidizer_density
+	else:
+		density = fuel_params.solid_fuel_density
+	return density
+
+
 
 
 
