@@ -1,20 +1,8 @@
 [gd_resource type="Resource" load_steps=2 format=2]
 
-[sub_resource type="GDScript" id=1]
-script/source = "
-extends Resource
-
-export(float) var fuel_density     = 1.0
-export(float) var oxidizer_density = 2.0
-
-
-
-
-
-
-"
+[ext_resource path="res://physics/parts/fuel_tanks/resource_fiel_tanks.gd" type="Script" id=1]
 
 [resource]
-script = SubResource( 1 )
+script = ExtResource( 1 )
 fuel_density = 1.0
 oxidizer_density = 2.0
