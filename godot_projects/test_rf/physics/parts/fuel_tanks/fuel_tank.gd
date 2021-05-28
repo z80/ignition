@@ -14,10 +14,11 @@ var initial_volume_percent: float = 100.0
 var _fuel_left: float    = 0.0
 
 
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	._ready()
-	
+
 
 
 
@@ -41,6 +42,21 @@ func full_volume():
 func update_inertia():
 	var density: float = _fuel_density()
 	var m: float = _fuel_left * density
+	# Add dry mass.
+	m += mass
+	
+	# And compute inertia based on cynindrical shape.
+	var h: float = height
+	var r: float = radius
+	var Ixx: float = m*h*h/12.0 + m*r*r/4.0
+	var Izz: float = Ixx
+	var Iyy: float = m*r*r/2.0
+	
+	if _physical != null:
+		_physical.mass = m
+		# Don't know how to specify inertia.
+		# Can't find a method or property.
+
 
 
 
