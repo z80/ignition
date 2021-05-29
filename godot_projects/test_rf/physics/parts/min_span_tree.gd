@@ -1,9 +1,5 @@
 
 
-
-
-
-
 # Computing minimum spanning tree.
 static func mst_compute( bodies: Array ):
 	var in_tree: Array = []
@@ -49,3 +45,9 @@ static func add_closest( bodies: Array, in_tree: Array, edges: Array ):
 		return true
 	
 	return false
+
+
+
+
+
+
