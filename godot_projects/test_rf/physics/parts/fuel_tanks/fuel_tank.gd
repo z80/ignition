@@ -15,6 +15,7 @@ var initial_volume_percent: float = 100.0
 # This is in volume.
 var _fuel_left: float    = 0.0
 var _fuel_initial: float = 0.0
+var _mass_changed: bool = false
 
 var accessible_fuel_tanks: Array = []
 
@@ -29,12 +30,15 @@ func _ready():
 func init():
 	.init()
 	set_volume_percent( initial_volume_percent )
-	
+	update_inertia()
+
 
 
 func process( _delta: float ):
 	_equalize_volumes()
-	update_inertia()
+	if _mass_changed:
+		update_inertia()
+		_mass_changed = false
 
 
 
@@ -55,14 +59,14 @@ func update_inertia():
 	var m: float = _fuel_left * density
 	# Add dry mass.
 	m += mass
-	
+
 	# And compute inertia based on cynindrical shape.
 	var h: float = height
 	var r: float = radius
 	var Ixx: float = m*h*h/12.0 + m*r*r/4.0
 	var Izz: float = Ixx
 	var Iyy: float = m*r*r/2.0
-	
+
 	if _physical != null:
 		_physical.mass = m
 		# Don't know how to specify inertia.
@@ -83,15 +87,17 @@ func _fuel_density():
 
 
 
-func _find_fuel_tanks():
-	var found: Array = []
-	var visited: Array = []
-	if fuel_type == FuelType.LIQUID_FUEL:
-		accessible_fuel_tanks = find_liquid_fuel_tanks( self )
-	elif fuel_type == FuelType.LIQUID_OXIDIZER:
-		accessible_fuel_tanks = find_liquid_oxidizer_tanks( self )
-	else:
-		accessible_fuel_tanks = []
+#func _find_fuel_tanks():
+#	var found: Array = []
+#	var visited: Array = []
+#	if fuel_type == FuelType.LIQUID_FUEL:
+#		accessible_fuel_tanks = find_liquid_fuel_tanks( self )
+#	elif fuel_type == FuelType.LIQUID_OXIDIZER:
+#		accessible_fuel_tanks = find_liquid_oxidizer_tanks( self )
+#	elif fuel_type == FuelType.SOLID_FUEL:
+#		accessible_fuel_tanks = find_solid_fuel_tanks( self )
+#	else:
+#		accessible_fuel_tanks = []
 
 
 func fill_relative():
@@ -107,28 +113,32 @@ func _equalize_volumes():
 	var consumed: float = _fuel_initial - _fuel_left
 	var consumed_enough: bool = (consumed >= fuel_params.delta_volume)
 	if not consumed_enough:
-		return
+		return false
 	var this_percent: float = fill_relative()
-	
+
 	for tank in accessible_fuel_tanks:
 		if tank == self:
 			continue
-		
+
 		var other_percent: float = tank.fill_relative()
 		if other_percent <= this_percent:
 			continue
-		
+
 		var delta: float = (tank._fuel_left - _fuel_left)*0.5
 		var has_enough: bool = (tank._fuel_left > fuel_params.delta_volume)
 		if delta >= fuel_params.delta_volume:
 			_fuel_left += fuel_params.delta_volume
 			tank._fuel_left -= fuel_params.delta_volume
+			_mass_changed = true
+			tank._mass_changed = true
 			# No need to update inertia here.
 			# It is done externally anyway each frame.
 			#update_inertia()
 			#tank.update_inertia()
 			# Return immediately after the very first adjustment.
-			return
+			return true
+
+	return false
 
 
 
@@ -136,7 +146,7 @@ func _equalize_volumes():
 static func find_liquid_fuel_tanks( part: Part ):
 	var visited: Array = []
 	var found: Array = []
-	find_liquid_fuel_tanks_recursive( part, visited, found )
+	#find_liquid_fuel_tanks_recursive( part, visited, found )
 	return found
 
 
@@ -145,23 +155,23 @@ static func find_liquid_fuel_tanks_recursive( part: Part, visited: Array, found:
 	var has: bool = visited.has( part )
 	if has:
 		return
-	
+
 	# Add to visited parts list
 	visited.push_back( part )
-	
+
 	# If it is a fuel tans and has the right fuel, add to the found parts list.
 	var ft: FuelTank = part as FuelTank
 	if ft != null:
-		var right_fuel: bool = (ft.fuel_type == FuelTank.FuelType.LIQUID_FUEL)
+		var right_fuel: bool = (ft.fuel_type == FuelType.LIQUID_FUEL)
 		if right_fuel:
 			found.push_back( part )
-	
+
 	# If it is a fuel tank or if it is a part which can conduct fuel, 
 	# recursively check all connected parts.
 	var conducts: bool = (ft != null) or part.conducts_liquid_fuel
 	if not conducts:
 		return
-	
+
 	for node in part.stacking_nodes:
 		var n: CouplingNodeStacking = node
 		var connected: bool = n.connected()
@@ -183,28 +193,71 @@ static func find_liquid_oxidizer_tanks_recursive( part: Part, visited: Array, fo
 	var has: bool = visited.has( part )
 	if has:
 		return
-	
+
 	# Add to visited parts list
 	visited.push_back( part )
-	
+
 	# If it is a fuel tans and has the right fuel, add to the found parts list.
 	var ft: FuelTank = part as FuelTank
 	if ft != null:
-		var right_fuel: bool = (ft.fuel_type == FuelTank.FuelType.LIQUID_OXIDIZER)
+		var right_fuel: bool = (ft.fuel_type == FuelType.LIQUID_OXIDIZER)
 		if right_fuel:
 			found.push_back( part )
-	
+
 	# If it is a fuel tank or if it is a part which can conduct fuel, 
 	# recursively check all connected parts.
 	var conducts: bool = (ft != null) or part.conducts_liquid_fuel
 	if not conducts:
 		return
-	
+
 	for node in part.stacking_nodes:
 		var n: CouplingNodeStacking = node
 		var connected: bool = n.connected()
 		var other_part: Part = n.node_b.part
 		find_liquid_oxidizer_tanks_recursive( other_part, visited, found )
+
+
+
+
+
+static func find_solid_fuel_tanks( part: Part ):
+	var visited: Array = []
+	var found: Array = []
+	find_solid_fuel_tanks_recursive( part, visited, found )
+	return found
+
+
+static func find_solid_fuel_tanks_recursive( part: Part, visited: Array, found: Array ):
+	# First check if was already visited
+	var has: bool = visited.has( part )
+	if has:
+		return
+
+	# Add to visited parts list
+	visited.push_back( part )
+
+	# If it is a fuel tans and has the right fuel, add to the found parts list.
+	var ft: FuelTank = part as FuelTank
+	if ft != null:
+		var right_fuel: bool = (ft.fuel_type == FuelType.SOLID_FUEL)
+		if right_fuel:
+			found.push_back( part )
+
+	# If it is a fuel tank or if it is a part which can conduct fuel, 
+	# recursively check all connected parts.
+	var conducts: bool = (ft != null) or part.conducts_solid_fuel
+	if not conducts:
+		return
+
+	for node in part.stacking_nodes:
+		var n: CouplingNodeStacking = node
+		var connected: bool = n.connected()
+		var other_part: Part = n.node_b.part
+		find_solid_fuel_tanks_recursive( other_part, visited, found )
+
+
+
+
 
 
 

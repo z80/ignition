@@ -1,6 +1,6 @@
 [gd_resource type="Resource" load_steps=2 format=2]
 
-[ext_resource path="res://physics/parts/fuel_tanks/resource_fiel_tanks.gd" type="Script" id=1]
+[ext_resource path="res://physics/parts/fuel_tanks/resource_fuel_tanks.gd" type="Script" id=1]
 
 [resource]
 script = ExtResource( 1 )

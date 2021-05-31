@@ -2,7 +2,8 @@
 extends Part
 class_name Thruster
 
-
+enum FuelType {LIQUID_FUEL=0, SOLID_FUEL=1}
+export(FuelType) var fuel_type = FuelType.LIQUID_FUEL
 
 export(float) var throttle = 0.0
 export(bool) var can_shut_down = true
@@ -17,6 +18,10 @@ export(float) var thrust_max_vac = 2.0
 var _exhaust_node: ExhaustNode = null
 
 var _ignited: bool = false
+
+var _liquid_fuel_tank: FuelTank     = null
+var _liquid_oxidizer_tank: FuelTank = null
+var _solid_fuel_tank: FuelTank      = null
 
 
 # Called when the node enters the scene tree for the first time.
@@ -157,4 +162,107 @@ func _setup_thrust():
 		n = q.xform( n )
 		var thrust: Vector3 = n * p
 		_physical.thrust = thrust
+
+
+
+# Find the closest fuel tank.
+func _find_fuel_tanks():
+	if fuel_type == FuelType.LIQUID_FUEL:
+		_find_liquid_fuel_tank()
+	elif fuel_type == FuelType.SOLID_FUEL:
+		_find_solid_fuel_tank()
+
+
+
+
+func _find_liquid_fuel_tank():
+	var visited: Array = []
+	_liquid_fuel_tank = _find_closest_liquid_fuel_tank( self, visited )
+	visited = []
+	_liquid_oxidizer_tank = _find_closest_liquid_oxidizer_tank( self, visited )
+
+
+
+func _find_solid_fuel_tank():
+	var visited: Array = []
+	_solid_fuel_tank = _find_closest_solid_fuel_tank( self, visited )
+
+
+
+static func _find_closest_liquid_fuel_tank( part: Part, visited: Array ):
+	var has: bool = visited.has( part )
+	if has:
+		return null
+	
+	var ft: FuelTank = part as FuelTank
+	if ft != null:
+		var right_fuel: bool = (ft.fuel_type == FuelTank.FuelType.LIQUID_FUEL)
+		if right_fuel:
+			return ft
+	
+	var conducts: bool = part.conducts_liquid_fuel
+	visited.push_back( part )
+	for node in part.stacking_nodes:
+		var n: CouplingNodeStacking = node
+		var connected: bool = n.connected()
+		var other_part: Part = n.node_b.part
+		var ret: Part = _find_closest_liquid_fuel_tank( other_part, visited )
+		if ret != null:
+			return ret
+	
+	return null
+
+
+
+
+static func _find_closest_liquid_oxidizer_tank( part: Part, visited: Array ):
+	var has: bool = visited.has( part )
+	if has:
+		return null
+	
+	var ft: FuelTank = part as FuelTank
+	if ft != null:
+		var right_fuel: bool = (ft.fuel_type == FuelTank.FuelType.LIQUID_OXIDIZER)
+		if right_fuel:
+			return ft
+	
+	var conducts: bool = part.conducts_liquid_fuel
+	visited.push_back( part )
+	for node in part.stacking_nodes:
+		var n: CouplingNodeStacking = node
+		var connected: bool = n.connected()
+		var other_part: Part = n.node_b.part
+		var ret: Part = _find_closest_liquid_oxidizer_tank( other_part, visited )
+		if ret != null:
+			return ret
+	
+	return null
+
+
+static func _find_closest_solid_fuel_tank( part: Part, visited: Array ):
+	var has: bool = visited.has( part )
+	if has:
+		return null
+	
+	var ft: FuelTank = part as FuelTank
+	if ft != null:
+		var right_fuel: bool = (ft.fuel_type == FuelTank.FuelType.SOLID_FUEL)
+		if right_fuel:
+			return ft
+	
+	var conducts: bool = part.conducts_solid_fuel
+	visited.push_back( part )
+	for node in part.stacking_nodes:
+		var n: CouplingNodeStacking = node
+		var connected: bool = n.connected()
+		var other_part: Part = n.node_b.part
+		var ret: Part = _find_closest_solid_fuel_tank( other_part, visited )
+		if ret != null:
+			return ret
+	
+	return null
+
+
+
+
 
