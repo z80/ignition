@@ -14,6 +14,9 @@ export(float) var thrust_min_atm = 1.0
 export(float) var thrust_max_atm = 2.0
 export(float) var thrust_min_vac = 1.0
 export(float) var thrust_max_vac = 2.0
+# Units of volume per second.
+export(float) var fuel_consumption_min = 0.2
+export(float) var fuel_consumption_max = 0.5
 
 var _exhaust_node: ExhaustNode = null
 
@@ -34,6 +37,14 @@ func init():
 	restarts_left = restarts_qty
 	_ignited      = false
 	_traverse_exhaust_nodes()
+	_find_fuel_tanks()
+
+
+
+func process( _delta: float ):
+	pass
+
+
 
 
 func _traverse_exhaust_nodes():
@@ -111,11 +122,16 @@ func process_user_input_group( input: Dictionary ):
 
 
 func set_ignited( en: bool ):
-	if restarts_qty > 0:
-		if (not _ignited) and en:
-			restarts_left -= 1
-		if restarts_left < 0:
-			return
+	if en:
+		if restarts_qty > 0:
+			if (not _ignited) and en:
+				restarts_left -= 1
+			if restarts_left < 0:
+				return
+		var ok: bool = _check_fuel()
+	
+	
+	
 	_ignited = en
 	if _exhaust_node != null:
 		var t: float = throttle
@@ -146,6 +162,57 @@ func set_throttle( th: float ):
 
 func get_throttle():
 	return throttle
+
+
+
+func _process_fuel( _delta: float ):
+	if not _ignited:
+		return
+	if fuel_type == FuelType.LIQUID_FUEL:
+		_process_liquid_fuel( _delta )
+	elif fuel_type == FuelType.SOLID_FUEL:
+		_process_solid_fuel( _delta )
+
+
+func _check_fuel():
+	pass
+
+
+
+func _process_liquid_fuel( _delta: float ):
+	if _liquid_fuel_tank == null:
+		_ignited = false
+		return
+
+	if _liquid_oxidizer_tank == null:
+		_ignited = false
+		return
+	
+	var v: float = throttle * (fuel_consumption_max - fuel_consumption_min) + fuel_consumption_min
+	var dv: float = _delta * v
+	var fuel_left: float = _liquid_fuel_tank._fuel_left - dv
+	if fuel_left <= 0.0:
+		_liquid_fuel_tank._fuel_left = 0.0
+		_ignited = false
+
+	fuel_left = _liquid_oxidizer_tank._fuel_left - dv
+	if fuel_left <= 0.0:
+		_liquid_oxidizer_tank._fuel_left = 0.0
+		_ignited = false
+
+
+
+func _process_solid_fuel( _delta: float ):
+	if _solid_fuel_tank == null:
+		_ignited = false
+		return
+	
+	var v: float = throttle * (fuel_consumption_max - fuel_consumption_min) + fuel_consumption_min
+	var dv: float = _delta * v
+	var fuel_left = _solid_fuel_tank._fuel_left - dv
+	if fuel_left <= 0.0:
+		_solid_fuel_tank._fuel_left = 0.0
+		_ignited = false
 
 
 
