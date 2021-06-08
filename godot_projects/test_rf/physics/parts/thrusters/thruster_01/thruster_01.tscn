@@ -2,6 +2,5 @@
 
 [ext_resource path="res://physics/parts/thrusters/thruster_01/thruster_01.gd" type="Script" id=1]
 
-
 [node name="Thruster_01" type="RefFrameNode"]
 script = ExtResource( 1 )

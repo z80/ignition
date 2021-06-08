@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/icon.png-3b5babc29d482c57bc4cca01531560de.stex"
+path="res://.import/icon.png-665c9d0c3c1a0d9b177cd72bc7f68580.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://physics/parts/part_cylinder/assets/icon.png"
-dest_files=[ "res://.import/icon.png-3b5babc29d482c57bc4cca01531560de.stex" ]
+source_file="res://physics/parts/fuel_tanks/2m/1m_fuel/assets/icon.png"
+dest_files=[ "res://.import/icon.png-665c9d0c3c1a0d9b177cd72bc7f68580.stex" ]
 
 [params]
 

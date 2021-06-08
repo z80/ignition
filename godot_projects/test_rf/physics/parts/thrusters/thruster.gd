@@ -37,7 +37,6 @@ func init():
 	restarts_left = restarts_qty
 	_ignited      = false
 	_traverse_exhaust_nodes()
-	_find_fuel_tanks()
 
 
 
@@ -123,12 +122,16 @@ func process_user_input_group( input: Dictionary ):
 
 func set_ignited( en: bool ):
 	if en:
+		# If fuel is not available, just return.
+		var ok: bool = _check_fuel_available()
+		if not ok:
+			return
+		
 		if restarts_qty > 0:
 			if (not _ignited) and en:
 				restarts_left -= 1
 			if restarts_left < 0:
 				return
-		var ok: bool = _check_fuel()
 	
 	
 	
@@ -165,6 +168,12 @@ func get_throttle():
 
 
 
+func activate( root_call: bool = true ):
+	.activate( root_call )
+	_find_fuel_tanks()
+
+
+
 func _process_fuel( _delta: float ):
 	if not _ignited:
 		return
@@ -172,10 +181,6 @@ func _process_fuel( _delta: float ):
 		_process_liquid_fuel( _delta )
 	elif fuel_type == FuelType.SOLID_FUEL:
 		_process_solid_fuel( _delta )
-
-
-func _check_fuel():
-	pass
 
 
 
@@ -213,6 +218,39 @@ func _process_solid_fuel( _delta: float ):
 	if fuel_left <= 0.0:
 		_solid_fuel_tank._fuel_left = 0.0
 		_ignited = false
+
+
+
+
+
+func _check_fuel_available():
+	var ret: bool = false
+	if fuel_type == FuelType.LIQUID_FUEL:
+		ret = _check_liquid_fuel_available()
+	elif fuel_type == FuelType.SOLID_FUEL:
+		ret = _check_solid_fuel_available()
+	return ret
+
+
+func _check_liquid_fuel_available():
+	if _liquid_fuel_tank == null:
+		return false
+	if _liquid_oxidizer_tank == null:
+		return false
+	if _liquid_fuel_tank._fuel_left <= 0.0:
+		return false
+	if _liquid_oxidizer_tank._fuel_left <= 0.0:
+		return false
+	return true
+
+
+func _check_solid_fuel_available():
+	if _solid_fuel_tank == null:
+		return false
+	if _solid_fuel_tank._fuel_left <= 0.0:
+		return false
+	return true
+
 
 
 
@@ -272,6 +310,8 @@ static func _find_closest_liquid_fuel_tank( part: Part, visited: Array ):
 	for node in part.stacking_nodes:
 		var n: CouplingNodeStacking = node
 		var connected: bool = n.connected()
+		if not connected:
+			continue
 		var other_part: Part = n.node_b.part
 		var ret: Part = _find_closest_liquid_fuel_tank( other_part, visited )
 		if ret != null:

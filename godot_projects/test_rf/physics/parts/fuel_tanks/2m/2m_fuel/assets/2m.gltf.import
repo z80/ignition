@@ -2,12 +2,12 @@
 
 importer="scene"
 type="PackedScene"
-path="res://.import/cylinder_mesh.dae-941ab1b74562b14d3e94b553a50c9c99.scn"
+path="res://.import/2m.gltf-c8d6df24d7e350f2424432e14f31a471.scn"
 
 [deps]
 
-source_file="res://physics/parts/part_cylinder/assets/cylinder_mesh.dae"
-dest_files=[ "res://.import/cylinder_mesh.dae-941ab1b74562b14d3e94b553a50c9c99.scn" ]
+source_file="res://physics/parts/fuel_tanks/2m/2m_fuel/assets/2m.gltf"
+dest_files=[ "res://.import/2m.gltf-c8d6df24d7e350f2424432e14f31a471.scn" ]
 
 [params]
 
