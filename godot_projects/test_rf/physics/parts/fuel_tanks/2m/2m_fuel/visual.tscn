@@ -1,9 +1,8 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://physics/parts/coupling_nodes/coupling_node_stacking.gd" type="Script" id=1]
 [ext_resource path="res://physics/parts/fuel_tanks/2m/2m_fuel/fuel_tank_material.tres" type="Material" id=2]
 [ext_resource path="res://physics/parts/fuel_tanks/2m/2m_fuel/assets/1m.material" type="Material" id=3]
-[ext_resource path="res://physics/parts/fuel_tanks/2m/2m_fuel/visual.gd" type="Script" id=4]
 
 [sub_resource type="ArrayMesh" id=1]
 resource_name = "2m"
@@ -21,13 +20,6 @@ surfaces/0 = {
 }
 
 [node name="visual" type="Spatial"]
-script = ExtResource( 4 )
-hint_text = "Liquid fuel tank"
-part_class = 1
-conducts_solid_fuel = false
-conducts_air = false
-mass = 0.15
-height = 2.0
 
 [node name="2m" type="MeshInstance" parent="."]
 mesh = SubResource( 1 )

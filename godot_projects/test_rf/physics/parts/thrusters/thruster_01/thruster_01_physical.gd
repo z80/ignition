@@ -1,8 +1,6 @@
 
 extends RigidBody
 
-const MIN_THRUST: float = 1.0
-const MAX_THRUST: float = 5.0
 
 export(Vector3) var thrust = Vector3.ZERO setget _set_thrust
 

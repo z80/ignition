@@ -38,6 +38,16 @@ func create( type_name: String ):
 			return part_reaction_wheels_2m()
 		"thruster_01":
 			return part_thruster_01()
+		
+		# 2m diameter fuel tanks.
+		"fuel_tank_2m_1m":
+			return fuel_tank_2m_1m()
+		"oxidizer_tank_2m_1m":
+			return oxidizer_tank_2m_1m()
+		"fuel_tank_2m_2m":
+			return fuel_tank_2m_2m()
+		"oxidizer_tank_2m_2m":
+			return oxidizer_tank_2m_2m()
 
 
 func _create( CL ):
@@ -114,4 +124,33 @@ func part_thruster_01():
 	var B = load( "res://physics/parts/thrusters/thruster_01/thruster_01.tscn" )
 	var b = _create( B )
 	return b
+
+
+func fuel_tank_2m_1m():
+	var B = load( "res://physics/parts/fuel_tanks/2m/1m_fuel/fuel_tank_2m_1m.tscn" )
+	var b = _create( B )
+	return b
+
+
+func oxidizer_tank_2m_1m():
+	var B = load( "res://physics/parts/fuel_tanks/2m/1m_oxidizer/oxidizer_tank_2m_1m.tscn" )
+	var b = _create( B )
+	return b
+
+
+func fuel_tank_2m_2m():
+	var B = load( "res://physics/parts/fuel_tanks/2m/2m_fuel/fuel_tank_2m_2m.tscn" )
+	var b = _create( B )
+	return b
+
+
+func oxidizer_tank_2m_2m():
+	var B = load( "res://physics/parts/fuel_tanks/2m/2m_oxidizer/oxidizer_tank_2m_2m.tscn" )
+	var b = _create( B )
+	return b
+
+
+
+
+
 

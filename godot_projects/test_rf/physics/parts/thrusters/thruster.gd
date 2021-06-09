@@ -338,6 +338,8 @@ static func _find_closest_liquid_oxidizer_tank( part: Part, visited: Array ):
 	for node in part.stacking_nodes:
 		var n: CouplingNodeStacking = node
 		var connected: bool = n.connected()
+		if not connected:
+			continue
 		var other_part: Part = n.node_b.part
 		var ret: Part = _find_closest_liquid_oxidizer_tank( other_part, visited )
 		if ret != null:
@@ -362,6 +364,8 @@ static func _find_closest_solid_fuel_tank( part: Part, visited: Array ):
 	for node in part.stacking_nodes:
 		var n: CouplingNodeStacking = node
 		var connected: bool = n.connected()
+		if not connected:
+			continue
 		var other_part: Part = n.node_b.part
 		var ret: Part = _find_closest_solid_fuel_tank( other_part, visited )
 		if ret != null:
