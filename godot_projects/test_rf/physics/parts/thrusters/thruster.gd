@@ -199,12 +199,14 @@ func _process_liquid_fuel( _delta: float ):
 	if fuel_left <= 0.0:
 		_liquid_fuel_tank._fuel_left = 0.0
 		_ignited = false
+	_liquid_fuel_tank._fuel_left = fuel_left
 	_liquid_fuel_tank._mass_changed = true
 	
 	fuel_left = _liquid_oxidizer_tank._fuel_left - dv
 	if fuel_left <= 0.0:
 		_liquid_oxidizer_tank._fuel_left = 0.0
 		_ignited = false
+	_liquid_oxidizer_tank._fuel_left = fuel_left
 	_liquid_oxidizer_tank._mass_changed = true
 
 
@@ -220,6 +222,7 @@ func _process_solid_fuel( _delta: float ):
 	if fuel_left <= 0.0:
 		_solid_fuel_tank._fuel_left = 0.0
 		_ignited = false
+	_solid_fuel_tank._fuel_left = fuel_left
 	_solid_fuel_tank._mass_changed = true
 
 
