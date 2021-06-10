@@ -34,7 +34,8 @@ func init():
 
 
 
-func process( _delta: float ):
+func process_inner( _delta: float ):
+	.process_inner( _delta )
 	_equalize_volumes()
 	if _mass_changed:
 		update_inertia()

@@ -40,8 +40,9 @@ func init():
 
 
 
-func process( _delta: float ):
-	pass
+func process_inner( _delta: float ):
+	.process_inner( _delta )
+	_process_fuel( _delta )
 
 
 
@@ -170,7 +171,6 @@ func get_throttle():
 
 func activate( root_call: bool = true ):
 	.activate( root_call )
-	_find_fuel_tanks()
 
 
 
@@ -199,11 +199,13 @@ func _process_liquid_fuel( _delta: float ):
 	if fuel_left <= 0.0:
 		_liquid_fuel_tank._fuel_left = 0.0
 		_ignited = false
-
+	_liquid_fuel_tank._mass_changed = true
+	
 	fuel_left = _liquid_oxidizer_tank._fuel_left - dv
 	if fuel_left <= 0.0:
 		_liquid_oxidizer_tank._fuel_left = 0.0
 		_ignited = false
+	_liquid_oxidizer_tank._mass_changed = true
 
 
 
@@ -218,12 +220,14 @@ func _process_solid_fuel( _delta: float ):
 	if fuel_left <= 0.0:
 		_solid_fuel_tank._fuel_left = 0.0
 		_ignited = false
+	_solid_fuel_tank._mass_changed = true
 
 
 
 
 
 func _check_fuel_available():
+	_find_fuel_tanks()
 	var ret: bool = false
 	if fuel_type == FuelType.LIQUID_FUEL:
 		ret = _check_liquid_fuel_available()
@@ -305,7 +309,10 @@ static func _find_closest_liquid_fuel_tank( part: Part, visited: Array ):
 		if right_fuel:
 			return ft
 	
-	var conducts: bool = part.conducts_liquid_fuel
+	var conducts: bool = (ft != null) or part.conducts_liquid_fuel
+	if not conducts:
+		return null
+	
 	visited.push_back( part )
 	for node in part.stacking_nodes:
 		var n: CouplingNodeStacking = node
@@ -333,7 +340,10 @@ static func _find_closest_liquid_oxidizer_tank( part: Part, visited: Array ):
 		if right_fuel:
 			return ft
 	
-	var conducts: bool = part.conducts_liquid_fuel
+	var conducts: bool = (ft != null) or part.conducts_liquid_fuel
+	if not conducts:
+		return null
+	
 	visited.push_back( part )
 	for node in part.stacking_nodes:
 		var n: CouplingNodeStacking = node
@@ -359,7 +369,10 @@ static func _find_closest_solid_fuel_tank( part: Part, visited: Array ):
 		if right_fuel:
 			return ft
 	
-	var conducts: bool = part.conducts_solid_fuel
+	var conducts: bool = (ft != null) or part.conducts_solid_fuel
+	if not conducts:
+		return null
+	
 	visited.push_back( part )
 	for node in part.stacking_nodes:
 		var n: CouplingNodeStacking = node

@@ -4,3 +4,7 @@
 
 [node name="oxidizer_tank_2m_2m" type="RefFrameNode"]
 script = ExtResource( 1 )
+conducts_solid_fuel = false
+conducts_air = false
+mass = 0.2
+fuel_type = 1
