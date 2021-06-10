@@ -52,9 +52,17 @@ func process_children():
 
 
 
-func evolve():
-	.evolve()
+func evolve( _dt: float ):
+	.evolve( _dt )
 	jump_if_needed()
+
+
+
+func evolve_motion( _dt: float ):
+	if motion == null:
+		return
+	motion.process_rf( _dt, self )
+
 
 
 # Override ready. Added surface provider creation.

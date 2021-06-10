@@ -12,7 +12,7 @@ func process_children():
 	pass
 
 
-func evolve():
+func evolve( _dt: float ):
 	pass
 
 

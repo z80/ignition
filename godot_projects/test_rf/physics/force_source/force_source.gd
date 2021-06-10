@@ -28,7 +28,10 @@ func compute_force( body: Body, r: Vector3, v: Vector3, q: Quat, w: Vector3, ret
 	ret.push_back( P )
 
 
-
+# If ref. frame is orbiting, no need to apply gravity.
+# But it is necessary to apply all other forces.
+func apply_in_orbit():
+	return false
 
 
 

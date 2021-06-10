@@ -59,7 +59,7 @@ func _physics_process( delta ):
 		var deleted: bool =  rf.is_queued_for_deletion()
 		if deleted:
 			continue
-		rf.evolve()
+		rf.evolve( delta )
 	
 	for id in ref_frames:
 		var rf: RefFramePhysics = ref_frames[id]
