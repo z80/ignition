@@ -29,6 +29,10 @@ var sub_bodies: Array = []
 # Force visualizer
 var force: Spatial = null
 
+
+# GUI arguments. Additional arguments chich can be used by GUI elements.
+var gui_arguments: Dictionary = {}
+
 func init():
 	create_visual()
 

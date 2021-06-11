@@ -120,6 +120,7 @@ func construction_deactivate():
 		$PanelParts.visible = false
 		activated_mode = null
 		
+		_cleanup_arguments()
 		_create_assembly()
 		dynamic_blocks.clear()
 
@@ -151,6 +152,12 @@ func finish_editing():
 	
 	activated_mode = "construction_menu"
 
+
+
+func _cleanup_arguments():
+	for b in dynamic_blocks:
+		var body: Body = b
+		body.gui_arguments.clear()
 
 
 
@@ -206,6 +213,9 @@ func create_block( block_name, dynamic: bool = false ):
 	var block: Body = BodyCreator.create( block_name )
 	if block == null:
 		return
+	
+	# Specify the construction as a GUI argument.
+	block.gui_arguments["construction"] = self
 	
 	# This one makes it not delete superbosy on activation.
 	block.mode = Part.PartMode.CONSTRUCTION
