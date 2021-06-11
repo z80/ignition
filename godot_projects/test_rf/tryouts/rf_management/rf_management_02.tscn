@@ -10,10 +10,14 @@
 script = ExtResource( 2 )
 
 [node name="Sun" parent="." instance=ExtResource( 4 )]
+se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
+
 surface_orbital_vel_kms = 1.0
 glow_size = 0.3
 
 [node name="Planet" parent="Sun" instance=ExtResource( 1 )]
+se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
+
 rotation_period_hrs = 1.0
 surface_orbital_vel_kms = 0.03
 orbital_period_hrs = 100.0
@@ -24,6 +28,8 @@ transparency_scale_outer_km = 3.0
 transparency_scale_inner_km = 1.0
 
 [node name="Moon" parent="Sun/Planet" instance=ExtResource( 1 )]
+se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
+
 rotation_period_hrs = 0.3
 surface_orbital_vel_kms = 0.015
 orbital_period_hrs = 2.0

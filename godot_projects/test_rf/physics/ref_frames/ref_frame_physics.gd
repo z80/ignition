@@ -21,6 +21,8 @@ var _subdivide_source_physical: SubdivideSourceRef = null
 var motion: CelestialMotionRef = null
 
 
+export(bool) var allow_orbiting setget _set_allow_orbiting, _get_allow_orbiting
+
 # For debugging jump only this number of times.
 #var _jumps_left: int = 50
 
@@ -62,7 +64,9 @@ func evolve( _dt: float ):
 func evolve_motion( _dt: float ):
 	if motion == null:
 		return
+	# SE3 is assigned internally.
 	motion.process_rf( _dt, self )
+
 
 
 
@@ -183,7 +187,10 @@ func jump( t: Transform ):
 	self.apply_jump()
 	for body in bodies:
 		body.update_physical_state_from_rf()
-	motion.se3 = self.get
+	
+	# Update SE3 in orbital motion.
+	var se3: Se3Ref = self.get_se3
+	motion.se3 = se3
 	
 	#var after_t: Transform = self.t()
 
@@ -235,6 +242,15 @@ func jump_if_needed():
 	if self == player_rf:
 		PhysicsManager.force_rebuild_visual_spheres()
 	#_jumps_left -= 1
+
+
+# Trying to override the default one in order to take into account
+# orbital motion.
+func set_se3( se3: Se3Ref ):
+	if motion != null:
+		motion.se3 = se3
+	.set_se3( se3 )
+
 
 
 
@@ -576,6 +592,22 @@ func process_exit_tree():
 	_subdivide_source_physical = null
 	
 	.process_exit_tree()
+
+
+
+func _set_allow_orbiting( en: bool ):
+	if motion == null:
+		return
+	motion.allow_orbiting = allow_orbiting
+
+
+
+func _get_allow_orbiting():
+	if motion == null:
+		return false
+	allow_orbiting = motion.allow_orbiting
+	return allow_orbiting
+
 
 
 

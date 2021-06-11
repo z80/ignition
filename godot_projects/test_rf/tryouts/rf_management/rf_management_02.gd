@@ -42,7 +42,7 @@ func _create_other_body():
 	#body.change_parent( rf )
 	#body.set_se3( se3 )
 	
-	var rf = PhysicsManager.create_ref_frame_physics()
+	var rf: RefFramePhysics = PhysicsManager.create_ref_frame_physics()
 	rf.name = "OtherRefFramePhysics"
 	body.change_parent( rf )
 	var rot = celestial_body.rotation_rf()

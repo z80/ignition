@@ -68,6 +68,9 @@ const CelestialMotion & CelestialMotion::operator=( const CelestialMotion & inst
 void CelestialMotion::set_allow_orbiting( bool en )
 {
     allow_orbiting = en;
+	// Stop orbiting if it is disabled.
+	if ( !en )
+		stop();
 }
 
 bool CelestialMotion::get_allow_orbiting() const
@@ -88,6 +91,10 @@ Float CelestialMotion::get_stationary_threshold() const
 void CelestialMotion::stop()
 {
     type = STATIONARY;
+	se3_local.v_  = Vector3d::ZERO;
+	se3_local.w_  = Vector3d::ZERO;
+	se3_global.v_ = Vector3d::ZERO;
+	se3_global.w_ = Vector3d::ZERO;
 }
 
 bool CelestialMotion::is_orbiting() const
@@ -382,14 +389,7 @@ const SE3 & CelestialMotion::get_se3() const
 
 void CelestialMotion::set_se3( const SE3 & se3 )
 {
-	se3_global = se3;
-	// Need to apply "invA".
-	se3_local.r_ = inv_A * se3.r_;
-	se3_local.v_ = inv_A * se3.v_;
-	Quaterniond q;
-	q.FromRotationMatrix( inv_A );
-	se3_local.q_ = q * se3.q_;
-	se3_local.w_ = inv_A * se3.w_;
+	init( gm, se3 );
 }
 
 
