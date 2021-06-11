@@ -54,6 +54,7 @@ func process_children():
 
 func evolve( _dt: float ):
 	.evolve( _dt )
+	evolve_motion( _dt )
 	jump_if_needed()
 
 
@@ -68,8 +69,13 @@ func evolve_motion( _dt: float ):
 # Override ready. Added surface provider creation.
 func ready():
 	.ready()
+	create_motion()
 	create_surface_provider()
 	create_subdivide_source()
+
+
+func create_motion():
+	motion = CelestialMotionRef.new()
 
 
 func create_surface_provider():
@@ -177,6 +183,7 @@ func jump( t: Transform ):
 	self.apply_jump()
 	for body in bodies:
 		body.update_physical_state_from_rf()
+	motion.se3 = self.get
 	
 	#var after_t: Transform = self.t()
 

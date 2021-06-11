@@ -374,6 +374,25 @@ const SE3 & CelestialMotion::process( Float dt )
     return se3_global;
 }
 
+const SE3 & CelestialMotion::get_se3() const
+{
+	return se3_global;
+}
+
+
+void CelestialMotion::set_se3( const SE3 & se3 )
+{
+	se3_global = se3;
+	// Need to apply "invA".
+	se3_local.r_ = inv_A * se3.r_;
+	se3_local.v_ = inv_A * se3.v_;
+	Quaterniond q;
+	q.FromRotationMatrix( inv_A );
+	se3_local.q_ = q * se3.q_;
+	se3_local.w_ = inv_A * se3.w_;
+}
+
+
 void CelestialMotion::init_linear()
 {
     // Nothing here.
@@ -490,8 +509,8 @@ void CelestialMotion::process_parabolic( Float dt )
     se3_local.r_ = Vector3d( r_x, r_y, 0.0 );
     se3_local.v_ = velocity_parabolic();
 
-    se3_global.r_ = A * se3_local.r_;
-    se3_global.v_ = A * se3_local.v_;
+    se3_global.r_ = this->A * se3_local.r_;
+    se3_global.v_ = this->A * se3_local.v_;
 }
 
 void CelestialMotion::process_elliptic( Float dt )

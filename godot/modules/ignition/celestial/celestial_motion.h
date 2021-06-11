@@ -55,6 +55,9 @@ public:
     void launch_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity );
     const SE3 & process( Float dt );
 
+	const SE3 & get_se3() const;
+	void set_se3( const SE3 & se3 );
+
     Type type;
 
     Float stationary_threshold;

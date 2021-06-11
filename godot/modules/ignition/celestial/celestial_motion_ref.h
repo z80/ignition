@@ -51,6 +51,9 @@ public:
 	// Along velocity at perigee.
 	Vector3 ey() const;
 
+	void set_se3( const Ref<Se3Ref> & se3 );
+	Ref<Se3Ref> get_se3() const;
+
     void init( real_t gm, const Ref<Se3Ref> & se3 );
     real_t init_gm( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const;
     void launch_elliptic( real_t gm, const Vector3 & unit_r, const Vector3 & unit_v, real_t period_hrs, real_t eccentricity );

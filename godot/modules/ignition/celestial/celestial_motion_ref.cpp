@@ -31,6 +31,9 @@ void CelestialMotionRef::_bind_methods()
 	ClassDB::bind_method( D_METHOD("ex"), &CelestialMotionRef::ex, Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("ey"), &CelestialMotionRef::ey, Variant::VECTOR3 );
 
+	ClassDB::bind_method( D_METHOD("set_se3", "se3"), &CelestialMotionRef::set_se3 );
+	ClassDB::bind_method( D_METHOD("get_se3"),        &CelestialMotionRef::get_se3, Variant::OBJECT );
+
     ClassDB::bind_method( D_METHOD("init", "gm", "se3"), &CelestialMotionRef::init );
     ClassDB::bind_method( D_METHOD("init_gm", "radius_km", "suface_orbit_velocity_kms"), &CelestialMotionRef::init_gm );
     ClassDB::bind_method( D_METHOD("launch_elliptic", "gm", "unit_r", "unit_v", "period_hrs", "eccentricity"), &CelestialMotionRef::launch_elliptic );
@@ -39,9 +42,9 @@ void CelestialMotionRef::_bind_methods()
     ClassDB::bind_method( D_METHOD("duplicate"), &CelestialMotionRef::duplicate, Variant::OBJECT );
 
 
-    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "allow_orbiting" ),       "set_allow_orbiting",       "get_allow_orbiting" );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "stationary_threshold" ), "set_stationary_threshold", "get_stationary_threshold" );
-
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "allow_orbiting" ),       "set_allow_orbiting",       "get_allow_orbiting" );
+    ADD_PROPERTY( PropertyInfo( Variant::REAL,   "stationary_threshold" ), "set_stationary_threshold", "get_stationary_threshold" );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),                  "set_se3",                  "get_se3" );
 }
 
 CelestialMotionRef::CelestialMotionRef()
@@ -187,6 +190,22 @@ Vector3 CelestialMotionRef::ey() const
 	const Vector3d e = cm.ey();
 	const Vector3 ret( e.x_, e.y_, e.z_ );
 	return ret;
+}
+
+
+void CelestialMotionRef::set_se3( const Ref<Se3Ref> & se3 )
+{
+	cm.set_se3( se3->se3 );
+}
+
+
+Ref<Se3Ref> CelestialMotionRef::get_se3() const
+{
+	const SE3 se3 = cm.get_se3();
+	Ref<Se3Ref> se3_ref;
+	se3_ref.instance();
+	se3_ref->se3 = se3;
+	return se3_ref;
 }
 
 
