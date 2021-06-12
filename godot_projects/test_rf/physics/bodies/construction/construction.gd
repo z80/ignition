@@ -77,13 +77,14 @@ func init():
 	set_t( t )
 
 
-func gui_classes( mode: String = "" ):
+func gui_classes( mode: Array = [] ):
 	var classes = []
-	var common_classes = .gui_classes( mode )
-	for cl in common_classes:
-		classes.push_back( cl )
+	# Don't unclude standard classes as we don't want to control the contruction.
+	#var common_classes = .gui_classes( mode )
+	#for cl in common_classes:
+	#	classes.push_back( cl )
 	
-	if (mode != "construction_menu") and (mode != "construction_editing"):
+	if ( not mode.has( "construction_menu" ) ) and ( not mode.has( "construction_editing" ) ):
 		var PanelEnter = load( "res://physics/bodies/construction/gui_enter.tscn" )
 		classes.push_back( PanelEnter )
 	
@@ -157,7 +158,6 @@ func finish_editing():
 func _cleanup_arguments():
 	for b in dynamic_blocks:
 		var body: Body = b
-		body.gui_arguments.clear()
 
 
 
@@ -214,9 +214,6 @@ func create_block( block_name, dynamic: bool = false ):
 	if block == null:
 		return
 	
-	# Specify the construction as a GUI argument.
-	block.gui_arguments["construction"] = self
-	
 	# This one makes it not delete superbosy on activation.
 	block.mode = Part.PartMode.CONSTRUCTION
 	block.body_state = Body.BodyState.KINEMATIC
@@ -247,6 +244,10 @@ func create_block( block_name, dynamic: bool = false ):
 	super_body.add_sub_body( block )
 
 
+func delete_block( block: Body ):
+	dynamic_blocks.erase( block )
+	super_body.remove_sub_body( block )
+	block.queue_free()
 
 
 

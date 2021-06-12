@@ -74,7 +74,7 @@ func _on_mouse_gui_input(event):
 			_window.visible = true
 			return
 		
-		var mode: String = body.gui_mode()
+		var mode: Array = body.gui_mode()
 		var gui_classes = body.gui_classes( mode )
 		var GuiClickContainer = load( "res://physics/interact_icon/gui_click_container.tscn" )
 		_window = GuiClickContainer.instance()

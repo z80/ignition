@@ -15,8 +15,7 @@ func _ready():
 func _on_Delete_pressed():
 	if _target_obj == null:
 		return
-	var s = _target_obj.root_most_body()
-	var has_finish_editing: bool = s.has_method( "delete_part" )
-	if has_finish_editing:
-		s.delete_part()
+	var construction_super_body = _target_obj.root_most_body()
+	var construction = construction_super_body.construction
+	construction.delete_block( _target_obj )
 	_parent_gui.queue_free()

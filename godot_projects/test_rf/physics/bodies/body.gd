@@ -30,9 +30,6 @@ var sub_bodies: Array = []
 var force: Spatial = null
 
 
-# GUI arguments. Additional arguments chich can be used by GUI elements.
-var gui_arguments: Dictionary = {}
-
 func init():
 	create_visual()
 
@@ -44,6 +41,22 @@ func _ready():
 	force = Force.instance()
 	self.add_child( force )
 
+
+func _exit_tree():
+	# Make this call in order to make it overrrideable.
+	var to_be_deleted: bool = is_queued_for_deletion()
+	if to_be_deleted:
+		on_delete()
+
+
+# The overrideable version without "_" prefix.
+func on_delete():
+	if is_instance_valid( super_body ):
+		super_body.remove_sub_body( self )
+	if _visual != null:
+		_visual.queue_free()
+	if _physical != null:
+		_physical.queue_free()
 
 
 func change_parent( new_parent: Node = null ):
@@ -179,7 +192,7 @@ func update_physical( delta: float ):
 # when interation icon is clicked.
 # Mode might specify what game mose it is. For example, if it is parts assembling mode, there might be 
 # needed different gui panels.
-func gui_classes( mode: String = "" ):
+func gui_classes( mode: Array ):
 	var classes = []
 	
 	if super_body != null:
@@ -187,7 +200,8 @@ func gui_classes( mode: String = "" ):
 		for cl in s_classes:
 			classes.push_back( cl )
 	else:
-		if mode.length() < 1:
+		var empty: bool = mode.empty()
+		if empty:
 			var cam_mode = load( "res://physics/camera_ctrl/gui_elements/gui_camera_mode.tscn" )
 			var cam_this = load( "res://physics/camera_ctrl/gui_elements/gui_control_this.tscn" )
 			classes.push_back( cam_mode )
@@ -198,7 +212,7 @@ func gui_classes( mode: String = "" ):
 func gui_mode():
 	if super_body != null:
 		return super_body.gui_mode()
-	return String("")
+	return []
 
 
 # Returns the root most body.

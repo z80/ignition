@@ -243,6 +243,15 @@ func decouple():
 
 
 
+func decouple_all():
+	# Decouple all the nodes if the thing is deleted.
+	# Well, it is assumed that Part is added to the 
+	for n in stacking_nodes:
+		var node: CouplingNodeStacking = n
+		node.decouple()
+
+
+
 func update_physical_state_from_rf():
 	.update_physical_state_from_rf()
 	
@@ -266,12 +275,9 @@ func _ready():
 	._ready()
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
-
-
-
+func on_delete():
+	.on_delete()
+	decouple_all()
 
 
 
@@ -335,11 +341,12 @@ static func _dfs( part: Part, parts: Array ):
 
 
 
-func gui_classes( mode: String = "" ):
+func gui_classes( mode: Array ):
 	var classes: Array = .gui_classes( mode )
-	# Append with control group selection.
-	var gui_control_group = preload( "res://physics/parts/gui_elements/gui_control_group.tscn" )
-	classes.push_back( gui_control_group )
+	if not mode.has( "construction_editing" ):
+		# Append with control group selection.
+		var gui_control_group = preload( "res://physics/parts/gui_elements/gui_control_group.tscn" )
+		classes.push_back( gui_control_group )
 	return classes
 
 

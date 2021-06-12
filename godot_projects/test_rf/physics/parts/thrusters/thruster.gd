@@ -72,13 +72,14 @@ func _traverse_exhaust_nodes_recursive( p: Node ):
 
 
 
-func gui_classes( mode: String = "" ):
+func gui_classes( mode: Array ):
 	var classes = []
 	var common_classes = .gui_classes( mode )
 	for cl in common_classes:
 		classes.push_back( cl )
 	
-	if mode.length() < 1:
+	var empty: bool = mode.empty()
+	if empty:
 		var Status = load( "res://physics/parts/thrusters/gui_elements/gui_thruster_status.tscn" )
 		classes.push_back( Status )
 	

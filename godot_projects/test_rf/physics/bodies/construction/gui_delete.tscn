@@ -21,10 +21,10 @@ __meta__ = {
 }
 
 [node name="Delete" type="Button" parent="CenterContainer"]
-margin_left = 463.0
+margin_left = 462.0
 margin_top = 292.0
-margin_right = 561.0
+margin_right = 562.0
 margin_bottom = 308.0
-hint_tooltip = "Finish editing a block."
-text = "Finish editing"
+hint_tooltip = "Delete a block from construction."
+text = "Delete block"
 [connection signal="pressed" from="CenterContainer/Delete" to="." method="_on_Delete_pressed"]

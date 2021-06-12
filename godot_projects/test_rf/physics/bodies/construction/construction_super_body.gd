@@ -8,17 +8,21 @@ func _init():
 	self.name = "ConstructionSuperBody"
 
 
-func gui_classes( mode: String = "" ):
+
+
+func gui_classes( mode: Array ):
 	#var in_tree = self.is_inside_tree()
 	#self.print_tree_pretty()
 	var classes = .gui_classes( mode )
-	if mode == "construction_menu":
-		var T  = load( "res://physics/bodies/construction/gui_transform_2.tscn" )
-		var L  = load( "res://physics/bodies/construction/gui_leave_contruction_mode.tscn" )
+	if mode.has( "construction_menu" ):
+		var T = load( "res://physics/bodies/construction/gui_transform_2.tscn" )
+		var D = load( "res://physics/bodies/construction/gui_delete.tscn" )
+		var L = load( "res://physics/bodies/construction/gui_leave_contruction_mode.tscn" )
 		classes.push_back( T )
+		classes.push_back( D )
 		classes.push_back( L )
 	
-	elif mode == "construction_editing":
+	if mode.has( "construction_editing" ):
 		var F  = load( "res://physics/bodies/construction/gui_finish_editing.tscn" )
 		classes.push_back( F )
 		
@@ -27,12 +31,12 @@ func gui_classes( mode: String = "" ):
 
 func gui_mode():
 	if construction == null:
-		return ""
+		return []
 	
 	if construction.activated_mode == null:
-		return ""
+		return []
 	
-	return construction.activated_mode
+	return [ construction.activated_mode ]
 
 
 func is_activated():
