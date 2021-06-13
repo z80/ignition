@@ -88,17 +88,19 @@ func _fuel_density():
 
 
 
-#func _find_fuel_tanks():
-#	var found: Array = []
-#	var visited: Array = []
-#	if fuel_type == FuelType.LIQUID_FUEL:
-#		accessible_fuel_tanks = find_liquid_fuel_tanks( self )
-#	elif fuel_type == FuelType.LIQUID_OXIDIZER:
-#		accessible_fuel_tanks = find_liquid_oxidizer_tanks( self )
-#	elif fuel_type == FuelType.SOLID_FUEL:
-#		accessible_fuel_tanks = find_solid_fuel_tanks( self )
-#	else:
-#		accessible_fuel_tanks = []
+func gui_classes( mode: Array ):
+	var classes = []
+	var common_classes = .gui_classes( mode )
+	for cl in common_classes:
+		classes.push_back( cl )
+	
+	var empty: bool = mode.empty()
+	if empty:
+		var Status = load( "res://physics/parts/fuel_tanks/gui_elements/gui_fuel_tank.tscn" )
+		classes.push_back( Status )
+	
+	return classes
+
 
 
 func fill_relative():

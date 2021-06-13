@@ -53,6 +53,10 @@ func process_children():
 
 
 
+func launch( gm: float, se3: Se3Ref ):
+	if motion != null:
+		motion.init( gm, se3 )
+
 
 func evolve( _dt: float ):
 	.evolve( _dt )
@@ -571,9 +575,13 @@ func distance( b: RefFramePhysics ):
 func change_parent( p: Node = null ):
 	changing_parent = true
 	var se3: Se3Ref = self.relative_to( p )
-	se3.v = Vector3.ZERO
-	se3.w = Vector3.ZERO
+	var allowed: bool = self.allow_orbiting
+	if not allowed:
+		se3.v = Vector3.ZERO
+		se3.w = Vector3.ZERO
 	self.jump_to( p, se3 )
+	if motion != null:
+		motion.se3 = se3
 	changing_parent = false
 
 

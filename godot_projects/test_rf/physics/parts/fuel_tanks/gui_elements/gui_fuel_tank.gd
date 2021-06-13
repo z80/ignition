@@ -14,18 +14,10 @@ func _ready():
 	pass # Replace with function body.
 
 
-func _process( _delta ):
-	$CenterContainer/ProgressBar.value = _target_obj.throttle * 100.0
-	#pass
+func _process( _delta: float ):
+	_update_from_object()
 
-func _on_ControlThis_pressed():
-	if not is_instance_valid( _target_obj ):
-		return
-	
-	PhysicsManager.player_control = _target_obj
-	PhysicsManager.camera.apply_target()
-	
-	_parent_gui.queue_free()
+
 
 
 
@@ -34,5 +26,12 @@ func _update_from_object():
 	if not real_obj:
 		return
 	
-	var left: float = _target_obj.fuel_left
-	var full: float = _target_obj.total_volume
+	var left: float = _target_obj._fuel_left
+	var full: float = _target_obj._fuel_initial
+	
+	var v: float = (left * 100.0) / full
+	var indicator = get_node( "Container/Indicator" )
+	indicator.value = v
+	
+	var label = get_node( "Container/Label" )
+	label.text = "fuel left: " + str( left )

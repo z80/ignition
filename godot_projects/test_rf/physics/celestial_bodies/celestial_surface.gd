@@ -236,10 +236,13 @@ func process_ref_frames_rotating_to_orbiting():
 	var tr: RefFrameNode = translation_rf()
 	var se3: Se3Ref = rf.relative_to( rot )
 	var dist: float = se3.r.length()
-	var exclusion_dist: float = (radius_km + atmosphere_height_km)*1000.0 + Constants.RF_CHANGE_DELTA
+	var exclusion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_EXCLUDE_DIST
 	if dist >= exclusion_dist:
 		rf.change_parent( tr )
-		print( "surface -> orbiting" )
+		rf.allow_orbiting = true
+		se3 = rf.get_se3()
+		rf.launch( gm, se3 )
+		print( "rotating -> orbiting" )
 
 
 
@@ -256,10 +259,11 @@ func process_ref_frames_orbiting_to_rotating():
 	var rot: RefFrameNode = rotation_rf()
 	var se3: Se3Ref = rf.relative_to( rot )
 	var dist: float = se3.r.length()
-	var inclustion_dist: float = (radius_km + atmosphere_height_km)*1000.0 - Constants.RF_CHANGE_DELTA
+	var inclustion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_INCLUDE_DIST
 	if dist <= inclustion_dist:
 		rf.change_parent( rot )
-		print( "orbiting -> surface" )
+		rf.allow_orbiting = false
+		print( "orbiting -> rotating" )
 
 
 func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
@@ -288,6 +292,9 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 	if (biggest_influence_body != null) and (biggest_influence_body != tr):
 		# Need to teleport celestial body to that other celestial body
 		rf.change_parent( biggest_influence_body )
+		rf.allow_orbiting = true
+		se3 = rf.get_se3()
+		rf.launch( biggest_influence_body.gm, se3 )
 		print( "orbiting -> another orbiting" )
 
 
