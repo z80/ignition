@@ -35,3 +35,9 @@ func _update_from_object():
 	
 	var label = get_node( "Container/Label" )
 	label.text = "fuel left: " + str( left )
+
+
+
+
+
+

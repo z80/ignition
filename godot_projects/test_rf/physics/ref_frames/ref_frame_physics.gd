@@ -193,7 +193,7 @@ func jump( t: Transform ):
 		body.update_physical_state_from_rf()
 	
 	# Update SE3 in orbital motion.
-	var se3: Se3Ref = self.get_se3
+	var se3: Se3Ref = self.get_se3()
 	motion.se3 = se3
 	
 	#var after_t: Transform = self.t()
