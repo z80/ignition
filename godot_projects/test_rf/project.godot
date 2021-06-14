@@ -139,6 +139,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/camera_ctrl/camera_ctrl.gd"
 }, {
+"base": "Part",
+"class": "ReactionControlWheels",
+"language": "GDScript",
+"path": "res://physics/parts/reaction_control_wheels/reaction_control_wheels.gd"
+}, {
 "base": "RefFrameNode",
 "class": "RefFrame",
 "language": "GDScript",
@@ -196,6 +201,7 @@ _global_script_class_icons={
 "PartAssembly": "",
 "PartAssemblyPhysical": "",
 "PlayerCamera": "",
+"ReactionControlWheels": "",
 "RefFrame": "",
 "RefFramePhysics": "",
 "RefFrameResourceProvider": "",

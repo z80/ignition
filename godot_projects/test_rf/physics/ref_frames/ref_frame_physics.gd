@@ -84,6 +84,7 @@ func ready():
 
 func create_motion():
 	motion = CelestialMotionRef.new()
+	motion.allow_orbiting = false
 
 
 func create_surface_provider():
@@ -177,7 +178,7 @@ func _cleanup_physical():
 
 
 
-func jump( t: Transform ):
+func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	#var before_t: Transform = self.t()
 	var bodies = child_bodies( true )
 	
@@ -188,6 +189,7 @@ func jump( t: Transform ):
 	
 	t.basis = Basis.IDENTITY
 	self.set_jump_t( t )
+	self.set_jump_v( v )
 	self.apply_jump()
 	for body in bodies:
 		body.update_physical_state_from_rf()
@@ -232,13 +234,19 @@ func jump_if_needed():
 		r += b.r()
 	r /= float( qty )
 	
+	var v: Vector3 = Vector3.ZERO
+	if self.allow_orbiting:
+		for b in bodies:
+			v += b.v()
+		v /= float( qty )
+	
 	var dist: float = r.length()
 	if dist < Constants.RF_JUMP_DISTANCE:
 		return
 	
 	var t: Transform = Transform.IDENTITY
 	t.origin = r
-	jump( t )
+	jump( t, v )
 	
 	# Enforce collision layer and visual subdivide.
 	_subdivide_source_physical.force_subdivide()

@@ -13,7 +13,7 @@ CelestialMotion::CelestialMotion()
     stationary_threshold = 1.0;
     allow_orbiting = true;
  
-    gm = 1.0;
+    gm = -1.0;
     abs_e = 0.0;
     a = 1.0;
     A = Matrix3d::IDENTITY;
@@ -90,16 +90,19 @@ Float CelestialMotion::get_stationary_threshold() const
 
 void CelestialMotion::stop()
 {
-    type = STATIONARY;
-	se3_local.v_  = Vector3d::ZERO;
-	se3_local.w_  = Vector3d::ZERO;
-	se3_global.v_ = Vector3d::ZERO;
-	se3_global.w_ = Vector3d::ZERO;
+	if ( type != STATIONARY )
+	{
+		type = STATIONARY;
+		se3_local.v_  = Vector3d::ZERO;
+		se3_local.w_  = Vector3d::ZERO;
+		se3_global.v_ = Vector3d::ZERO;
+		se3_global.w_ = Vector3d::ZERO;
+	}
 }
 
 bool CelestialMotion::is_orbiting() const
 {
-    const bool not_orbiting = (type == STATIONARY) || (type == LINEAR);
+    const bool not_orbiting = (type == STATIONARY) || (type == LINEAR) || (gm <= 0.0);
 	const bool orbiting = !not_orbiting;
 	return orbiting;
 }
@@ -233,6 +236,13 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
 {
     gm  = gm_;
     se3_global = se3_;
+
+	// If "gm" is not positive, shouldn't really initialize.
+	if ( gm <= 0.0 )
+	{
+		type = STATIONARY;
+		return;
+	}
 
     if ( !allow_orbiting )
     {
