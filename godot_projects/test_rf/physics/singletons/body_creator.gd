@@ -48,6 +48,10 @@ func create( type_name: String ):
 			return fuel_tank_2m_2m()
 		"oxidizer_tank_2m_2m":
 			return oxidizer_tank_2m_2m()
+		
+		# Reaction control wheels
+		"reaction_control_wheels_2m_m1":
+			return part_reaction_control_wheels_2m_m1()
 
 
 func _create( CL ):
@@ -149,6 +153,10 @@ func oxidizer_tank_2m_2m():
 	var b = _create( B )
 	return b
 
+func part_reaction_control_wheels_2m_m1():
+	var B = load( "res://physics/parts/reaction_control_wheels/2m/m1/m1.tscn" )
+	var b = _create( B )
+	return b
 
 
 

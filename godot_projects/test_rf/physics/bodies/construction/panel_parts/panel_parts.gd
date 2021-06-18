@@ -98,6 +98,12 @@ func _create_buttons_parts():
 						 "thruster_01", 
 						 "Thrsuter ver 01", true )
 	
+	
+	_add_button( parts, "res://physics/parts/reaction_control_wheels/2m/m1/assets/icon.png", 
+						 "reaction_control_wheels_2m_m1", 
+						 "2m reaction control wheels", true )
+	
+	
 
 
 

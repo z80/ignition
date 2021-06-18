@@ -39,6 +39,7 @@ func apply_control( dt: float ):
 	var o: bool   = _user_input.has( "ui_o" )
 	var sas: bool = _user_input.has( "gui_sas" )
 
+	var control_applied: bool = false
 	if i:
 		w += Vector3.LEFT
 	if k:
@@ -48,20 +49,19 @@ func apply_control( dt: float ):
 	if l:
 		w += Vector3.FORWARD
 	if u:
-		w += Vector3.UP
-	if o:
 		w += Vector3.DOWN
+	if o:
+		w += Vector3.UP
 	
 	if w.length_squared() > 0.0:
 		w = w.normalized()
+		control_applied = true
+	
+	if (not sas) and (not control_applied):
+		return
 	
 	_w_normalized = w
 	_torque       = Vector3.ZERO
-	
-	# If no control and no orientation lock, 
-	# don't force angular velocity.
-	if not sas:
-		return
 	
 	# Adjustment q.
 	var t: Transform = self.transform
@@ -75,12 +75,12 @@ func apply_control( dt: float ):
 	var dw = wanted_w - current_w
 	var torque: Vector3 = dt * angular_gain * dw
 	var L = torque.length()
-
+	
 	if L > max_torque:
 		torque = torque * (max_torque / L)
 	
 	_torque = torque
-	_physical.apply_torque( _torque )
+	_physical.add_torque( _torque )
 
 
 

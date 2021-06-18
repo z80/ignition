@@ -244,5 +244,5 @@ func _on_ModeTarget_pressed():
 
 func _on_Sas_pressed():
 	var check = get_node( "Sas" )
-	var down: bool = check.pressed()
+	var down: bool = check.pressed
 	UserInput.gui_control_bool( "gui_sas", true, down, not down )
