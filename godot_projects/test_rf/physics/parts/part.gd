@@ -9,7 +9,8 @@ enum PartClass {
 	REACTION_CONTROL_WHEELS=3, 
 	REACTION_CONTROL_THRUSTER=4, 
 	HABITAT=5, 
-	PASSIVE=6 # This one just means no predefined functionality.
+	CHARACTER=6, 
+	PASSIVE=7 # This one just means no predefined functionality.
 }
 
 

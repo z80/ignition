@@ -55,6 +55,11 @@ _global_script_classes=[ {
 "path": "res://physics/parts/coupling_nodes/coupling_node_surface.gd"
 }, {
 "base": "Spatial",
+"class": "EntranceNode",
+"language": "GDScript",
+"path": "res://physics/parts/habitats/entrance_node.gd"
+}, {
+"base": "Spatial",
 "class": "Exhaust",
 "language": "GDScript",
 "path": "res://physics/parts/thrusters/exhausts/exhaust.gd"
@@ -88,6 +93,11 @@ _global_script_classes=[ {
 "class": "FuelTank",
 "language": "GDScript",
 "path": "res://physics/parts/fuel_tanks/fuel_tank.gd"
+}, {
+"base": "Part",
+"class": "Habitat",
+"language": "GDScript",
+"path": "res://physics/parts/habitats/habitat.gd"
 }, {
 "base": "Spatial",
 "class": "LandscapeBase",
@@ -184,6 +194,7 @@ _global_script_class_icons={
 "CouplingNode": "",
 "CouplingNodeStacking": "",
 "CouplingNodeSurface": "",
+"EntranceNode": "",
 "Exhaust": "",
 "ExhaustNode": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
@@ -191,6 +202,7 @@ _global_script_class_icons={
 "ForceSourceGravity": "",
 "ForceSourceGravityDown": "",
 "FuelTank": "",
+"Habitat": "",
 "LandscapeBase": "",
 "LandscapeFunc": "",
 "LandscapeHeightFunc": "",
