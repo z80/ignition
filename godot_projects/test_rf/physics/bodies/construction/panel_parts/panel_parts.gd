@@ -103,7 +103,9 @@ func _create_buttons_parts():
 						 "reaction_control_wheels_2m_m1", 
 						 "2m reaction control wheels", true )
 	
-	
+	_add_button( parts, "res://physics/parts/habitats/2m/m1/assets/icon.png", 
+						 "habitat_2m_m1", 
+						 "Habitat 2m diameter", true )
 
 
 

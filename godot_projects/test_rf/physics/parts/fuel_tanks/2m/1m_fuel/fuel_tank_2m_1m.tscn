@@ -3,7 +3,10 @@
 [ext_resource path="res://physics/parts/fuel_tanks/2m/1m_fuel/fuel_tank_2m_1m.gd" type="Script" id=1]
 
 [node name="fuel_tank_2m_1m" type="RefFrameNode"]
+se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
+
 script = ExtResource( 1 )
+part_class = 1
 conducts_solid_fuel = false
 conducts_air = false
 mass = 0.15

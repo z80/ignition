@@ -9,9 +9,17 @@ var entrance_nodes: Array = []
 var characters_inside: Array = []
 
 
+func init():
+	.init()
+	# This is needed to get number of nodes through which a character
+	# is suppsed to get in or out.
+	_traverse_entrance_nodes()
+
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	_traverse_entrance_nodes()
+	._ready()
 
 
 func can_enter( character: Part ):
@@ -33,7 +41,7 @@ func can_enter( character: Part ):
 	return false
 
 
-
+# Called by gui creating thing.
 func _traverse_entrance_nodes():
 	_traverse_entrance_nodes_recursive( _visual )
 
@@ -45,9 +53,6 @@ func _traverse_entrance_nodes_recursive( p: Node ):
 		var node: EntranceNode = s as EntranceNode
 		var is_node: bool = (node != null)
 		if is_node:
-			# Specify the reference to itself.
-			# Not sure if it is 100% needed but just in case.
-			s.part = self
 			entrance_nodes.push_back( s )
 	
 	var qty: int = p.get_child_count()
