@@ -47,6 +47,9 @@ public:
 	Vector3 v() const;
 	Vector3 w() const;
 	Transform transform() const;
+
+	String save() const;
+	bool   load( const String & stri );
 };
 
 }

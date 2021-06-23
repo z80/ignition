@@ -1,5 +1,7 @@
 
 #include "se3.h"
+#include "core/dictionary.h"
+#include "core/io/json.h"
 
 namespace Ign
 {
@@ -193,6 +195,112 @@ Transform SE3::transform() const
 
 	return t;
 }
+
+String SE3::save() const
+{
+	Dictionary dict;
+	dict["qw"] = q_.w_;
+	dict["qx"] = q_.x_;
+	dict["qy"] = q_.y_;
+	dict["qz"] = q_.z_;
+
+	dict["rx"] = r_.x_;
+	dict["ry"] = r_.y_;
+	dict["rz"] = r_.z_;
+
+	dict["vx"] = v_.x_;
+	dict["vy"] = v_.y_;
+	dict["vz"] = v_.z_;
+
+	dict["wx"] = w_.x_;
+	dict["wy"] = w_.y_;
+	dict["wz"] = w_.z_;
+
+	const String stri = JSON::print( dict );
+	return stri;
+}
+
+bool SE3::load( const String & stri )
+{
+	Variant ret;
+	String err_stri;
+	int err_line;
+	const Error err = JSON::parse( stri, ret, err_stri, err_line );
+	if (err != OK)
+		return false;
+	const Dictionary dict = ret;
+
+	if ( dict.has( "qw" ) )
+		q_.w_ = dict["qw"];
+	else
+		return false;
+
+	if ( dict.has( "qx" ) )
+		q_.x_ = dict["qx"];
+	else
+		return false;
+
+	if ( dict.has( "qy" ) )
+		q_.y_ = dict["qy"];
+	else
+		return false;
+
+	if ( dict.has( "qz" ) )
+		q_.z_ = dict["qz"];
+	else
+		return false;
+
+
+	if ( dict.has( "rx" ) )
+		r_.x_ = dict["rx"];
+	else
+		return false;
+
+	if ( dict.has( "ry" ) )
+		r_.y_ = dict["ry"];
+	else
+		return false;
+
+	if ( dict.has( "rz" ) )
+		r_.z_ = dict["rz"];
+	else
+		return false;
+
+
+	if ( dict.has( "vx" ) )
+		v_.x_ = dict["vx"];
+	else
+		return false;
+
+	if ( dict.has( "vy" ) )
+		v_.y_ = dict["vy"];
+	else
+		return false;
+
+	if ( dict.has( "vz" ) )
+		v_.z_ = dict["vz"];
+	else
+		return false;
+
+
+	if ( dict.has( "wx" ) )
+		w_.x_ = dict["wx"];
+	else
+		return false;
+
+	if ( dict.has( "wy" ) )
+		w_.y_ = dict["wy"];
+	else
+		return false;
+
+	if ( dict.has( "wz" ) )
+		w_.z_ = dict["wz"];
+	else
+		return false;
+
+	return true;
+}
+
 
 
 
