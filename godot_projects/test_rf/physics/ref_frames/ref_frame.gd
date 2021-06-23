@@ -113,19 +113,17 @@ func _force_source_recursive( n: Node ):
 
 
 func change_parent( p: Node = null ):
-	changing_parent = true
 	.change_parent( p )
 
 
 
 func _exit_tree():
-	process_exit_tree()
+	var to_be_deleted: bool = is_queued_for_deletion()
+	if to_be_deleted:
+		on_delete()
 
 
-func process_exit_tree():
-	if changing_parent:
-		changing_parent = false
-		return
+func on_delete():
 	if _axes != null:
 		_axes.queue_free()
 

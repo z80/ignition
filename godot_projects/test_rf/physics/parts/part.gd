@@ -21,6 +21,10 @@ enum PartMode {
 
 var PartControlGroups = preload( "res://physics/parts/part_control_groups.gd" )
 
+# If estimated acceleration is greater than this, 
+# The part should be destroyed.
+export(float) var destruction_acc = 50.0
+
 export(PartClass) var part_class = PartClass.THRUSTER
 export(bool) var allows_surface_attachments=true
 export(bool) var allows_y_radial_symmetry=true

@@ -42,15 +42,10 @@ func _ready():
 	self.add_child( force )
 
 
-func _exit_tree():
-	# Make this call in order to make it overrrideable.
-	var to_be_deleted: bool = is_queued_for_deletion()
-	if to_be_deleted:
-		on_delete()
-
 
 # The overrideable version without "_" prefix.
 func on_delete():
+	.on_delete()
 	if is_instance_valid( super_body ):
 		super_body.remove_sub_body( self )
 	if _visual != null:
