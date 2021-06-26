@@ -293,7 +293,7 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 		# Need to teleport celestial body to that other celestial body
 		rf.change_parent( biggest_influence_body )
 		rf.allow_orbiting = true
-		se3 = rf.get_se3()
+		var se3: Se3Ref = rf.get_se3()
 		rf.launch( biggest_influence_body.gm, se3 )
 		print( "orbiting -> another orbiting" )
 
