@@ -9,9 +9,9 @@ const SPHERES_GROUP_NAME: String   = "spheres"
 const SUN_GROUP_NAME: String       = "sun"
 
 const DEBUG := true
-const RF_JUMP_DISTANCE: float  = 50.0
-const RF_SPLIT_DISTANCE: float = 100.0
-const RF_MERGE_DISTANCE: float = 80.0
+const RF_JUMP_DISTANCE: float  = 5.0
+const RF_SPLIT_DISTANCE: float = 10.0
+const RF_MERGE_DISTANCE: float = 8.0
 # Switching ref frames.
 # Switches to orbiting with atmosphere height+rf_change_DELTA. 
 # And back to surface rf with atmosphere height-rf_change_DELTA.

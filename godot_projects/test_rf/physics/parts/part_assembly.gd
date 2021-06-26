@@ -20,7 +20,7 @@ func change_parent( new_parent: Node = null ):
 	
 	# First go down to the lowest level.
 	for body in sub_bodies:
-		body.change_parent( new_parent )
+		body.change_parent_inner( new_parent )
 
 
 
@@ -52,16 +52,10 @@ func is_super_body():
 	return ret
 
 
-func has_sub_body( body: RefFrameNode, recursive: bool = true ):
+func has_sub_body( body: RefFrameNode ):
 	var has: bool = sub_bodies.has( body )
 	if has:
 		return true
-	
-	if recursive:
-		for sb in sub_bodies:
-			has = sb.has_sub_body( body, true )
-			if has:
-				return true
 	
 	return false
 
@@ -107,7 +101,7 @@ func distance( other: RefFrameNode ):
 
 
 
-func process_inner( delta ):
+func update_pose():
 	# Loop over all sub bodies.
 	var at: Vector3 = Vector3.ZERO
 	for body in sub_bodies:
@@ -129,8 +123,16 @@ func process_user_input_2( input: Dictionary ):
 
 
 
+func root_most_body():
+	return self
 
 
+func show_click_container():
+	return true
+
+
+func gui_mode():
+	return []
 
 
 func activate( root_call: bool = true ):
@@ -143,6 +145,10 @@ func deactivate( root_call: bool = true ):
 	for body in sub_bodies:
 		body.deactivate()
 
+
+
+func gui_classes( mode: Array ):
+	return []
 
 
 

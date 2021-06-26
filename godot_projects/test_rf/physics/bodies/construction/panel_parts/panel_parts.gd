@@ -3,6 +3,7 @@ extends Control
 
 var construction = null
 
+signal create_block
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

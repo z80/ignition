@@ -102,7 +102,7 @@ func process_user_input( input: Dictionary ):
 	# Call user input for the upper most body.
 	# It is supposed to distribute the same controls 
 	# to all sub-bodies.
-	var sb: Body = body.root_most_body()
+	var sb: RefFrameNode = body.root_most_body()
 	sb.process_user_input_2( input )
 
 
@@ -148,12 +148,10 @@ func physics_ref_frames():
 
 
 func update_super_bodies():
-	var group: String = Constants.BODIES_GROUP_NAME
+	var group: String = Constants.SUPER_BODIES_GROUP_NAME
 	var all_bodies: Array = get_tree().get_nodes_in_group( group )
 	for body in all_bodies:
-		var is_super_body: bool = body.is_super_body()
-		if is_super_body:
-			body.update_super_body_pose()
+			body.update_pose()
 
 
 func update_bodies_visual():
@@ -179,8 +177,10 @@ func update_bodies_physical( delta: float ):
 		body.update_physical( delta )
 	
 	# And update super body poses.
+	group = Constants.SUPER_BODIES_GROUP_NAME
+	bodies = get_tree().get_nodes_in_group( group )
 	for body in bodies:
-		body.update_super_body_pose()
+		body.update_pose()
 
 
 

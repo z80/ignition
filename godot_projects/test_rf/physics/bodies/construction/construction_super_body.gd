@@ -1,5 +1,5 @@
 
-extends Body
+extends PartAssembly
 class_name ConstructionSuperBody
 
 var construction = null

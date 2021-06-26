@@ -35,7 +35,7 @@ func _process( _delta ):
 
 
 func _create_axes():
-	if _axes:
+	if _axes != null:
 		return false
 	
 	var root = BodyCreator.root_node

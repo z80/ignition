@@ -110,20 +110,23 @@ func gui_classes( mode: Array ):
 		var s_classes = super_body.gui_classes( mode )
 		for cl in s_classes:
 			classes.push_back( cl )
-	else:
-		var empty: bool = mode.empty()
-		if empty:
-			var cam_mode = load( "res://physics/camera_ctrl/gui_elements/gui_camera_mode.tscn" )
-			var cam_this = load( "res://physics/camera_ctrl/gui_elements/gui_control_this.tscn" )
-			classes.push_back( cam_mode )
-			classes.push_back( cam_this )
+	
+	var empty: bool = mode.empty()
+	if empty:
+		var cam_mode = load( "res://physics/camera_ctrl/gui_elements/gui_camera_mode.tscn" )
+		var cam_this = load( "res://physics/camera_ctrl/gui_elements/gui_control_this.tscn" )
+		classes.push_back( cam_mode )
+		classes.push_back( cam_this )
 	return classes
 
 # Defines GUI classes to be shown.
 func gui_mode():
+	var ret: Array = []
 	if super_body != null:
-		return super_body.gui_mode()
-	return []
+		var more: Array = super_body.gui_mode()
+		for m in more:
+			ret.push_back( m )
+	return ret
 
 
 # Returns the root most body.
@@ -131,6 +134,14 @@ func root_most_body():
 	if self.super_body != null:
 		return self.super_body
 	return self
+
+
+
+func distance( other: RefFrameNode ):
+	var se3: Se3Ref = self.relative_to( other )
+	var v: Vector3 = se3.r
+	var d: float = v.length()
+	return d
 
 
 

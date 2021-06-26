@@ -34,7 +34,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/color-palette/ColorTile.gd"
 }, {
-"base": "Body",
+"base": "PartAssembly",
 "class": "ConstructionSuperBody",
 "language": "GDScript",
 "path": "res://physics/bodies/construction/construction_super_body.gd"

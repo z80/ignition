@@ -345,10 +345,10 @@ func split_if_needed():
 	var bodies_a: Array = []
 	var bodies_b: Array = []
 	for i in range(split_ind):
-		var body: Body = dest[i]
+		var body: RefFrameNode = dest[i]
 		bodies_a.push_back( body )
 	for i in range( split_ind, qty ):
-		var body: Body = dest[i]
+		var body: RefFrameNode = dest[i]
 		bodies_b.push_back( body )
 	
 	# Check on which side the user controlled body is.
@@ -454,11 +454,11 @@ func root_most_child_bodies( including_surf_provider: bool = false ):
 	var children = get_children()
 	var bodies = []
 	for ch in children:
-		var b = ch as Body
+		var b = ch as RefFrameNode
 		var include: bool = (b != null)
 		if not including_surf_provider:
 			include = include and (b != _surface_provider)
-		var root_most_body: Body = b.root_most_body()
+		var root_most_body: RefFrameNode = b.root_most_body()
 		include = include and (not (root_most_body in bodies))
 		if include:
 			bodies.push_back( b )
