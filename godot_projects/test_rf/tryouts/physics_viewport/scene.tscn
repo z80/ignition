@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://tryouts/physics_viewport/scene.gd" type="Script" id=1]
+[ext_resource path="res://tryouts/physics_viewport/physics_env.tscn" type="PackedScene" id=2]
+
+[sub_resource type="CubeMesh" id=1]
+
+[sub_resource type="CubeMesh" id=2]
+
+[node name="Spatial" type="Spatial"]
+script = ExtResource( 1 )
+
+[node name="RfA" parent="." instance=ExtResource( 2 )]
+visible = false
+
+[node name="RfB" parent="." instance=ExtResource( 2 )]
+visible = false
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 8.31099 )
+
+[node name="BoxA" type="MeshInstance" parent="."]
+mesh = SubResource( 1 )
+material/0 = null
+
+[node name="BoxB" type="MeshInstance" parent="."]
+mesh = SubResource( 2 )
+material/0 = null
