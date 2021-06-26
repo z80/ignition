@@ -22,8 +22,6 @@ export(String) var hint_text = "Default hint text" setget _set_hint_text
 
 # Body which contains this one and other bodies.
 var super_body = null
-# List of sub-bodies this body contains if it is a super-body.
-var sub_bodies: Array = []
 
 
 # Force visualizer
@@ -59,98 +57,16 @@ func change_parent( new_parent: Node = null ):
 	if super_body != null:
 		super_body.change_parent( new_parent )
 	else:
-		change_parent_recursive( new_parent )
-	#var p_after = self.get_parent()
+		change_parent_inner( new_parent )
 
 
 
-func add_sub_body( body: Body ):
-	var sb: Body = body.super_body
-	if (sb != null) and (sb != self):
-		sb.remove_sub_body( body )
-	
-	var has: bool = has_sub_body( body )
-	if has:
-		return false
-	
-	sub_bodies.push_back( body )
-	body.super_body = self
-	return true
 
 
 
-func remove_sub_body( body: Body ):
-	var index: int = sub_bodies.find( body )
-	if index >= 0:
-		sub_bodies.remove( index )
-		body.super_body = null
 
-
-func is_super_body():
-	var empty: bool = sub_bodies.empty()
-	var ret: bool = not empty
-	return ret
-
-
-func has_sub_body( body: Body, recursive: bool = true ):
-	var has: bool = sub_bodies.has( body )
-	if has:
-		return true
-	
-	if recursive:
-		for sb in sub_bodies:
-			has = sb.has_sub_body( body, true )
-			if has:
-				return true
-	
-	return false
-
-
-func distance_max( other: Body ):
-	if other.sub_bodies.empty():
-		var d: float = distance( other )
-		return d
-	
-	var max_d: float = -1.0
-	for cb in other.sub_bodies:
-		var d: float = distance_max( cb )
-		if (d > max_d) or (max_d < 0.0):
-			max_d = d
-	
-	return max_d
-
-
-
-func distance_min( other: Body ):
-	if other.sub_bodies.empty():
-		var d: float = distance( other )
-		return d
-	
-	var min_d: float = -1.0
-	for cb in other.sub_bodies:
-		var d: float = distance_min( cb )
-		if (d < min_d) or (min_d < 0.0):
-			min_d = d
-	
-	return min_d
-
-
-
-func distance( other: Body ):
-	.compute_relative_to_root( other )
-	var t: Transform = self.t_root()
-	var r: Vector3 = t.origin
-	var d: float = r.length()
-	return d
-
-
-
-func change_parent_recursive( new_parent: Node = null ):
+func change_parent_inner( new_parent: Node = null ):
 	.change_parent( new_parent )
-	
-	# First go down to the lowest level.
-	for body in sub_bodies:
-		body.change_parent_recursive( new_parent )
 	
 	# After that process corrent level.
 	if new_parent == null:
@@ -212,13 +128,9 @@ func gui_mode():
 
 # Returns the root most body.
 func root_most_body():
-	var b = self
-	var s = self.super_body
-	while s != null:
-		b = s
-		s = b.super_body
-	
-	return b
+	if self.super_body != null:
+		return self.super_body
+	return self
 
 
 
@@ -254,12 +166,6 @@ func physics_process_inner( delta ):
 
 
 
-# This one is called later, after all regular bodies got their poses.
-func update_super_body_pose():
-	for b in sub_bodies:
-		var se3: Se3Ref = b.get_se3()
-		self.set_se3( se3 )
-		break
 
 
 func create_visual():
@@ -354,14 +260,19 @@ func update_physical_state_from_rf():
 # This thing is called in PhysicsManager only for a body which 
 # is currently under user control.
 # Need to redefine this function in a particular implementation.
-func process_user_input( event: InputEvent ):
-	for body in sub_bodies:
-		body.process_user_input( event )
+#func process_user_input( event: InputEvent ):
+#	for body in sub_bodies:
+#		body.process_user_input( event )
+#
+#
+#func process_user_input_2( input: Dictionary ):
+#	for body in sub_bodies:
+#		body.process_user_input_2( input )
 
 
+# Nothing here by default.
 func process_user_input_2( input: Dictionary ):
-	for body in sub_bodies:
-		body.process_user_input_2( input )
+	pass
 
 
 # It permits or not showing the window with all the little panels.
@@ -468,15 +379,12 @@ func set_local_up( up: Vector3 ):
 
 
 
-# When being constructed parts are not supposed to move.
+# When being constructed, parts are not supposed to move.
 # So it is possible to make dynamic bodies kinematic.
 # And when editing is done, one can switch those back to 
 # being dynamic.
 # These two should be overwritten.
 func activate( root_call: bool = true ):
-	for body in sub_bodies:
-		body.activate()
-	
 	if body_state == BodyState.DYNAMIC:
 		return
 	body_state = BodyState.DYNAMIC
@@ -493,9 +401,6 @@ func activate( root_call: bool = true ):
 
 
 func deactivate( root_call: bool = true ):
-	for body in sub_bodies:
-		body.deactivate()
-	
 	if body_state == BodyState.KINEMATIC:
 		return
 	body_state = BodyState.KINEMATIC
@@ -503,6 +408,38 @@ func deactivate( root_call: bool = true ):
 	if _physical != null:
 		remove_physical()
 
+
+
+
+
+
+func save():
+	var data: Dictionary = {}
+	var fname: String = self.filename
+	# Check the node is an instanced scene so it can be instanced again during load.
+	if fname.empty():
+		print( "persistent node '%s' is not an instanced scene, skipped" % fname )
+		return data
+	
+	# To be able to actually create it.
+	data["filename"] = fname
+	
+	# To assign the name.
+	data["name"]     = self.name
+	
+	# To assign it to a parent.
+	var parent = self.get_parent()
+	if parent != null:
+		data["parent"] = parent.get_path()
+	else:
+		data["parent"] = null
+	
+	# This is one of the properties.
+	var se3: Se3Ref = self.se3
+	var se3_data: Dictionary = se3.save()
+	data["se3"] = se3_data
+	
+	return data
 
 
 

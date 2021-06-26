@@ -134,15 +134,10 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/parts/part.gd"
 }, {
-"base": "Body",
+"base": "RefFrameNode",
 "class": "PartAssembly",
 "language": "GDScript",
 "path": "res://physics/parts/part_assembly.gd"
-}, {
-"base": "Node",
-"class": "PartAssemblyPhysical",
-"language": "GDScript",
-"path": "res://physics/parts/part_assembly_physical.gd"
 }, {
 "base": "Camera",
 "class": "PlayerCamera",
@@ -211,7 +206,6 @@ _global_script_class_icons={
 "PaletteImporter": "",
 "Part": "",
 "PartAssembly": "",
-"PartAssemblyPhysical": "",
 "PlayerCamera": "",
 "ReactionControlWheels": "",
 "RefFrame": "",
