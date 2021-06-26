@@ -1,7 +1,7 @@
 
 #include "se3.h"
+#include "core/variant.h"
 #include "core/dictionary.h"
-#include "core/io/json.h"
 
 namespace Ign
 {
@@ -196,7 +196,7 @@ Transform SE3::transform() const
 	return t;
 }
 
-String SE3::save() const
+Dictionary SE3::save() const
 {
 	Dictionary dict;
 	dict["qw"] = q_.w_;
@@ -216,20 +216,11 @@ String SE3::save() const
 	dict["wy"] = w_.y_;
 	dict["wz"] = w_.z_;
 
-	const String stri = JSON::print( dict );
-	return stri;
+	return dict;
 }
 
-bool SE3::load( const String & stri )
+bool SE3::load( const Dictionary & dict )
 {
-	Variant ret;
-	String err_stri;
-	int err_line;
-	const Error err = JSON::parse( stri, ret, err_stri, err_line );
-	if (err != OK)
-		return false;
-	const Dictionary dict = ret;
-
 	if ( dict.has( "qw" ) )
 		q_.w_ = dict["qw"];
 	else

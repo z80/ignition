@@ -43,6 +43,9 @@ public:
 	Ref<Se3Ref> div( const Ref<Se3Ref> & rhs );
 	Ref<Se3Ref> inverse() const;
 
+	Dictionary save() const;
+	bool load( const Dictionary & data );
+
 public:
 	SE3 se3;
 };

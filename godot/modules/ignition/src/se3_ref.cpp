@@ -31,6 +31,9 @@ void Se3Ref::_bind_methods()
 	ClassDB::bind_method( D_METHOD("div", "se3"), &Se3Ref::div, Variant::OBJECT );
 	ClassDB::bind_method( D_METHOD("inverse"),    &Se3Ref::inverse, Variant::OBJECT );
 
+	ClassDB::bind_method( D_METHOD("save"),         &Se3Ref::save, Variant::DICTIONARY );
+	ClassDB::bind_method( D_METHOD("load", "data"), &Se3Ref::load, Variant::BOOL );
+
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "r" ), "set_r", "get_r" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "v" ), "set_v", "get_v" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "w" ), "set_w", "get_w" );
@@ -158,6 +161,18 @@ Ref<Se3Ref> Se3Ref::inverse() const
 	Ref<Se3Ref> ret;
 	ret.instance();
 	ret.ptr()->se3 = this->se3.inverse();
+	return ret;
+}
+
+Dictionary Se3Ref::save() const
+{
+	const Dictionary ret = se3.save();
+	return ret;
+}
+
+bool Se3Ref::load( const Dictionary & data )
+{
+	const bool ret = se3.load( data );
 	return ret;
 }
 

@@ -9,6 +9,8 @@
 #include "core/math/quat.h"
 #include "core/math/transform.h"
 
+#include "core/dictionary.h"
+
 namespace Ign
 {
 
@@ -48,8 +50,8 @@ public:
 	Vector3 w() const;
 	Transform transform() const;
 
-	String save() const;
-	bool   load( const String & stri );
+	Dictionary save() const;
+	bool   load( const Dictionary & stri );
 };
 
 }
