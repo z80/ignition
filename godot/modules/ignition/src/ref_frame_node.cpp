@@ -443,7 +443,7 @@ void RefFrameNode::jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 )
 			continue;
 		ch->_parent_jumped();
 	}
-
+}
 
 
 SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const SE3 & se3_root )
