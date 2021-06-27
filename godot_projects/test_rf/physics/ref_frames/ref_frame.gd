@@ -52,10 +52,10 @@ func _create_axes():
 
 
 func _update_axes():
-	if Constants.DEBUG:
+	if not Constants.DEBUG:
 		return
 	
-	if not _axes:
+	if _axes == null:
 		var created: bool = _create_axes()
 		if not created:
 			return

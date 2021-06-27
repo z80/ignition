@@ -1,12 +1,12 @@
 extends Node
 
 
-func root_for_bodies():
+func get_root_for_bodies():
 	var ret = get_node( "bodies" )
 	return ret
 
 
-func root_for_physics_envs():
+func get_root_for_physics_envs():
 	var ret = get_node( "physics_envs" )
 	return ret
 

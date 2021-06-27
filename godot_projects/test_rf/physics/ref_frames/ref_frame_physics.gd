@@ -29,7 +29,8 @@ export(bool) var allow_orbiting setget _set_allow_orbiting, _get_allow_orbiting
 var debug_has_split: bool = false
 
 
-# To be able to identify objects of this class.
+# Override get_class() method in order
+# to be able to identify objects of this class.
 func get_class():
 	return "RefFramePhysics"
 
@@ -77,17 +78,24 @@ func evolve_motion( _dt: float ):
 # Override ready. Added surface provider creation.
 func ready():
 	.ready()
-	create_motion()
-	create_surface_provider()
-	create_subdivide_source()
+	_create_motion()
+	_create_surface_provider()
+	_create_subdivide_source()
 
 
-func create_motion():
+func _create_motion():
 	motion = CelestialMotionRef.new()
 	motion.allow_orbiting = false
 
 
-func create_surface_provider():
+func _create_physics_environment():
+	var Env = preload( "res://physics/ref_frames/physics_env/physics_env.tscn" )
+	var env = Env.instance()
+	var root: Node = RootScene.root_for_physics_envs()
+	root.add_child( env )
+
+
+func _create_surface_provider():
 	if _surface_provider != null:
 		return
 	_surface_provider = SurfaceProvider.instance()
@@ -95,7 +103,7 @@ func create_surface_provider():
 	_surface_provider.change_parent( self )
 
 
-func create_subdivide_source():
+func _create_subdivide_source():
 	if _subdivide_source_physical != null:
 		return
 	

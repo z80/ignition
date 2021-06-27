@@ -264,12 +264,19 @@ func update_camera():
 
 
 func create_ref_frame_physics():
-	var available: int = available_qty()
-	if available < 1:
-		return null
 	var rf: RefFramePhysics = RefFramePhysics.new()
-	rf.init_physics()
+	if BodyCreator.root_node != null:
+		BodyCreator.root_node.add_child( rf )
 	return rf
+
+
+#func create_ref_frame_physics():
+#	var available: int = available_qty()
+#	if available < 1:
+#		return null
+#	var rf: RefFramePhysics = RefFramePhysics.new()
+#	rf.init_physics()
+#	return rf
 
 
 

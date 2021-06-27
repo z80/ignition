@@ -8,7 +8,7 @@ const CELESTIAL_BODIES_NAME: String = "celestial_bodies"
 const SPHERES_GROUP_NAME: String   = "spheres"
 const SUN_GROUP_NAME: String       = "sun"
 
-const DEBUG := true
+const DEBUG: bool = true
 const RF_JUMP_DISTANCE: float  = 5.0
 const RF_SPLIT_DISTANCE: float = 10.0
 const RF_MERGE_DISTANCE: float = 8.0
