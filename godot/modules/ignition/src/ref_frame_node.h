@@ -71,6 +71,8 @@ public:
 
 	void apply_jump();
 	void jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 );
+	// Callbacks for script notification.
+	void _jumped();
 	void _parent_jumped();
 
 	/// Compute relative state in the most generic way.

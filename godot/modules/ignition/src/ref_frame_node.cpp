@@ -122,6 +122,18 @@ void RefFrameNode::_parent_changed()
 	old_parent_ = new_parent;
 }
 
+void RefFrameNode::_jumped()
+{
+	ScriptInstance * si = get_script_instance();
+	if ( si != nullptr )
+	{
+		const Variant *ptr[1] = {};
+		get_script_instance()->call_multilevel( "_jumped", ptr, 0 );
+	}
+	if ( debug_ )
+		print_line( "jumped" );
+}
+
 void RefFrameNode::_parent_jumped()
 {
 	ScriptInstance * si = get_script_instance();
@@ -418,7 +430,19 @@ void RefFrameNode::jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 )
 	}
 
 	se3_ = dest_se3_adjusted;
-}
+
+	// Call script notifications.
+	// For the node itself.
+	_jumped();
+	// And for all the children.
+	for ( int i=0; i<qty; i++ )
+	{
+		Node * n = get_child( i );
+		RefFrameNode * ch = Object::cast_to<RefFrameNode>( n );
+		if ( !ch )
+			continue;
+		ch->_parent_jumped();
+	}
 
 
 
