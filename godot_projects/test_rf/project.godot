@@ -228,6 +228,7 @@ PhysicsManager="*res://physics/singletons/physics_manager.gd"
 BodyCreator="*res://physics/singletons/body_creator.gd"
 Constants="*res://physics/singletons/constants.gd"
 UserInput="*res://physics/user_unput/user_input.gd"
+RootScene="*res://physics/singletons/root_scene.tscn"
 
 [display]
 
