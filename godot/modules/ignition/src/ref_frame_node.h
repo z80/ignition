@@ -24,6 +24,7 @@ class RefFrameNode: public Node
 
 protected:
 	static void _bind_methods();
+	void _notification(int p_notification);
 
 public:
 	RefFrameNode();
@@ -56,6 +57,7 @@ public:
 
 	/// Change origin without changing absolute position in space.
 	void change_parent( Node * origin );
+	void _parent_changed();
 
 	/// Compute state relative to the "root_" specified.
 	void compute_relative_to_root( Node * root );
@@ -67,31 +69,9 @@ public:
 	void set_jump_w( const Vector3 & w );
 	void set_jump_t( const Transform & t );
 
-	//void set_obj_r( const Vector3 & r );
-	//void set_obj_q( const Quat & q );
-	//void set_obj_v( const Vector3 & v );
-	//void set_obj_w( const Vector3 & w );
-	//void set_obj_t( const Transform & t );
-
-	//void calc_obj_jump_state();
-
-	//Vector3 obj_r() const;
-	//Quat    obj_q() const;
-	//Vector3 obj_v() const;
-	//Vector3 obj_w() const;
-	//Transform obj_t() const;
-
 	void apply_jump();
 	void jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 );
-
-	/// Object transform in local frame and output object relative to root.
-	//void calc_obj_relative_to_root( Node * root );
-	//Vector3 obj_root_r() const;
-	//Quat    obj_root_q() const;
-	//Vector3 obj_root_v() const;
-	//Vector3 obj_root_w() const;
-	//Transform obj_root_t() const;
-
+	void _parent_jumped();
 
 	/// Compute relative state in the most generic way.
 	/// Provide two points in local and in root frames.
@@ -100,12 +80,18 @@ public:
 
 	RefFrameNode * parent_rf_() const;
 
+
 	void set_debug( bool en );
 	bool get_debug() const;
 
 	SE3    se3_;
 	SE3    se3_root_;
 	SE3    se3_jump_to_;
+
+	// Keep old parent.
+	// If add_child() is called on this ref frame node by another new parent
+	// it will be possible to compute SE3 for the new parent using this old parent.
+	Node * old_parent_;
 	//SE3    se3_obj_cur_;
 	//SE3    se3_obj_rel_to_root_;
 	//SE3    se3_obj_after_jump_;

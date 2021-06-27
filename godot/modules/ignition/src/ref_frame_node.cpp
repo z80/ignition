@@ -1,6 +1,7 @@
 
 #include "ref_frame_node.h"
 #include "core/print_string.h"
+#include "scene/scene_string_names.h"
 
 namespace Ign
 {
@@ -58,8 +59,84 @@ void RefFrameNode::_bind_methods()
 	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ),              "set_se3", "get_se3" );
 }
 
+void RefFrameNode:: _notification(int p_notification)
+{
+	switch ( p_notification )
+	{
+	case NOTIFICATION_PARENTED:
+		_parent_changed();
+		break;
+	}
+}
+
+void RefFrameNode::_parent_changed()
+{
+	Node * new_parent = get_parent();
+	RefFrameNode * new_ref_frame = dynamic_cast<RefFrameNode *>( new_parent );
+	const SE3 old_se3 = se3_;
+	const bool still_exists = ObjectDB::instance_validate( old_parent_ );
+	SE3 new_se3;
+	if ( still_exists )
+	{
+		RefFrameNode * old_ref_frame = dynamic_cast<RefFrameNode *>( old_parent_ );
+		if ( old_ref_frame != nullptr )
+			new_se3 = old_ref_frame->relative_( new_ref_frame, se3_, SE3() );
+		else
+		{
+			se3_.r_ = Vector3d::ZERO;
+			se3_.q_ = Quaterniond::IDENTITY;
+			se3_.v_ = Vector3d::ZERO;
+			se3_.w_ = Vector3d::ZERO;
+			new_se3 = this->relative_( new_ref_frame );
+		}
+	}
+	else
+		new_se3 = this->relative_( new_ref_frame );
+	// Overwrite se3 with the new one.
+	se3_ = new_se3;
+
+	// ********************************************************************
+	// I don't need this as _enter_tree() is called upon add_child() call.
+	// ********************************************************************
+	/*ScriptInstance * si = get_script_instance();
+	if ( si != nullptr )
+	{
+		Variant old_parent_v = old_parent_;
+		const Variant *ptr[1] = { &old_parent_v };
+		get_script_instance()->call_multilevel( SceneStringNames::get_singleton()->_parent_changed, ptr, 1 );
+	}*/
+
+	if ( debug_ )
+	{
+		String stri = "parent changed";
+		if ( still_exists )
+			stri += String(" ") + old_parent_->get_name() + " -> ";
+		if ( new_parent != nullptr )
+			stri += new_parent->get_name();
+		else
+			stri += String( "NULL" );
+		print_line( stri );
+	}
+
+	// Overwrite the old parent pointer.
+	old_parent_ = new_parent;
+}
+
+void RefFrameNode::_parent_jumped()
+{
+	ScriptInstance * si = get_script_instance();
+	if ( si != nullptr )
+	{
+		const Variant *ptr[1] = {};
+		get_script_instance()->call_multilevel( "_parent_jumped", ptr, 0 );
+	}
+	if ( debug_ )
+		print_line( "parent jumped" );
+}
+
 RefFrameNode::RefFrameNode()
 	: Node(),
+	  old_parent_( nullptr ), 
 	  debug_( false )
 {
 }
@@ -342,6 +419,7 @@ void RefFrameNode::jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 )
 
 	se3_ = dest_se3_adjusted;
 }
+
 
 
 SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const SE3 & se3_root )
