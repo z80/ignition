@@ -131,7 +131,7 @@ func activate_grab( body ):
 		return
 	var Grab = load( "res://physics/bodies/construction/manip_grab.tscn" )
 	var grab = Grab.instance()
-	BodyCreator.root_node.add_child( grab )
+	RootScene.get_root_for_bodies().add_child( grab )
 	edited_target  = body
 	editing_widget = grab
 	grab.target = body

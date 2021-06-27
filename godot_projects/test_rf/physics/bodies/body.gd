@@ -28,8 +28,9 @@ var super_body = null
 var force: Spatial = null
 
 
-func init():
-	create_visual()
+func _enter_tree():
+	create_physical()
+
 
 
 func _ready():
@@ -38,6 +39,27 @@ func _ready():
 	var Force = preload( "res://physics/force_source/force_visualizer.tscn" )
 	force = Force.instance()
 	self.add_child( force )
+
+
+
+func _parent_jumped():
+	var parent_rf = _parent_physics_ref_frame()
+	if parent_rf == null:
+		remove_physical()
+	else:
+		update_physics_from_state()
+
+
+func _parent_changed():
+	var parent_rf = _parent_physics_ref_frame()
+	if parent_rf == null:
+		remove_physical()
+	else:
+		update_physics_from_state()
+
+
+func init():
+	create_visual()
 
 
 
@@ -52,12 +74,6 @@ func on_delete():
 		_physical.queue_free()
 
 
-func change_parent( new_parent: Node = null ):
-	#var p_before = self.get_parent()
-	if super_body != null:
-		super_body.change_parent( new_parent )
-	else:
-		change_parent_inner( new_parent )
 
 
 
@@ -65,26 +81,8 @@ func change_parent( new_parent: Node = null ):
 
 
 
-func change_parent_inner( new_parent: Node = null ):
-	.change_parent( new_parent )
-	
-	# After that process corrent level.
-	if new_parent == null:
-		if _physical != null:
-			_physical.queue_free()
-			_physical = null
-	else:
-		if body_state != BodyState.KINEMATIC:
-			var is_ref_frame_physics: bool = new_parent.get_class() == "RefFramePhysics"
-			if is_ref_frame_physics:
-				if new_parent.is_active():
-					update_physical_state_from_rf()
-					if _physical:
-						_physical.set_collision_layer( new_parent._contact_layer )
 
-		elif _physical != null:
-			_physical.queue_free()
-			_physical = null
+
 
 
 func update_visual( root: Node = null ):
@@ -158,14 +156,14 @@ func process_inner( _delta ):
 
 
 func _physics_process( delta ):
-	physics_process_inner( delta )
+	update_state_from_physics( delta )
 
 
 
 
 
 # To make it overridable.
-func physics_process_inner( delta ):
+func update_state_from_physics( delta ):
 	if _physical != null:
 		var t: Transform = _physical.transform
 		var v: Vector3   = _physical.linear_velocity
@@ -176,6 +174,20 @@ func physics_process_inner( delta ):
 	
 
 
+
+# After parent teleports need to update physical state to physical object.
+func update_physics_from_state():
+	create_physical()
+	
+	# There might be a body without physical, right?
+	# So need to check if it exists even after create_physical() call.
+	if _physical != null:
+		var t: Transform = self.t()
+		_physical.transform = t
+		var v: Vector3 = self.v()
+		_physical.set_linear_velocity( v )
+		var w: Vector3 = self.w()
+		_physical.set_angular_velocity( w )
 
 
 
@@ -199,7 +211,7 @@ func _create_visual( Visual ):
 	var t: Transform = self.t()
 	v.transform = t
 	
-	var root = BodyCreator.root_node
+	var root = RootScene.get_root_for_visuals()
 	root.add_child( v )
 	
 	_visual = v
@@ -220,19 +232,31 @@ func privot_fps( _ind: int = 0 ):
 
 
 func _create_physical( Physical ):
-	if _physical:
+	if body_state != BodyState.DYNAMIC:
+		return null
+	
+	if _physical != null:
 		return _physical
 	
 	if Physical == null:
+		return null
+	
+	# Make sure that parent is physics reference frame.
+	var parent_node = get_parent()
+	var parent_rf = parent_node as RefFramePhysics
+	if parent_rf == null:
 		return null
 	
 	var p = Physical.instance()
 	
 	var t: Transform = self.t()
 	p.transform = t
+	var v: Vector3 = self.v()
+	p.linear_velocity = v
+	var w: Vector3 = self.w()
+	p.angular_velocity = w
 	
-	var root = BodyCreator.root_node
-	root.add_child( p )
+	parent_rf.add_physics_body( p )
 	
 	_physical = p
 	
@@ -240,31 +264,18 @@ func _create_physical( Physical ):
 
 
 
-func set_collision_layer( layer ):
-	if _physical:
-		_physical.collision_layer = layer
 
 
 func remove_physical():
+	var valid: bool = is_instance_valid( _physical )
+	if not valid:
+		_physical = null
+	
 	if _physical != null:
 		_physical.queue_free()
 		_physical = null
 
 
-# After parent teleports need to update physical state to physical object.
-func update_physical_state_from_rf():
-	if _physical == null:
-		create_physical()
-	
-	# There might be a body without physical, right?
-	# So need to check if it exists even after create_physical() call.
-	if _physical != null:
-		var t: Transform = self.t()
-		_physical.transform = t
-		var v: Vector3 = self.v()
-		_physical.set_linear_velocity( v )
-		var w: Vector3 = self.w()
-		_physical.set_angular_velocity( w )
 
 
 
@@ -372,15 +383,20 @@ func _set_hint_text( stri: String ):
 # May need to be overridden in derived classes in the case if 
 # _physical is not a rigid body.
 func add_force_torque( F: Vector3, P: Vector3 ):
+	var valid: bool = is_instance_valid( _physical )
+	if not valid:
+		_physical = null
+		
 	if _physical != null:
 		var rb: RigidBody = _physical as RigidBody
 		if rb:
 			rb.add_central_force( F )
 			rb.add_torque( P )
-			if force:
+			if force != null:
 				force.set_force( true, F, self.r() )
 	else:
-		force.set_force( false, F, self.r() )
+		if force != null:
+			force.set_force( false, F, self.r() )
 
 
 # Body (like a character) might need to know it.
@@ -400,7 +416,7 @@ func activate( root_call: bool = true ):
 		return
 	body_state = BodyState.DYNAMIC
 
-	update_physical_state_from_rf()
+	update_physics_from_state()
 	#_physical.mode = RigidBody.MODE_RIGID
 	_physical.sleeping = false
 	
@@ -416,8 +432,22 @@ func deactivate( root_call: bool = true ):
 		return
 	body_state = BodyState.KINEMATIC
 	
+	var valid: bool = is_instance_valid( _physical )
+	if not valid:
+		_physical = null
 	if _physical != null:
 		remove_physical()
+
+
+
+
+func _parent_physics_ref_frame():
+	# Check if parent is RefFramePhysics
+	var parent_node = get_parent()
+	var parent_rf = parent_node as RefFramePhysics
+	return parent_rf
+
+
 
 
 

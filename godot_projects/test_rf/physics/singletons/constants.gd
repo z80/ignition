@@ -3,6 +3,7 @@ extends Node
 
 const BODIES_GROUP_NAME: String    = "bodies"
 const SUPER_BODIES_GROUP_NAME: String    = "super_bodies"
+const REF_FRAME_PHYSICS_GROUP_NAME: String = "ref_frame_physics"
 const PROVIDERS_GROUP_NAME: String = "providers"
 const CELESTIAL_BODIES_NAME: String = "celestial_bodies"
 const SPHERES_GROUP_NAME: String   = "spheres"

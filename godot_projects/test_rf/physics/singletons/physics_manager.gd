@@ -53,7 +53,9 @@ func _physics_process( delta ):
 	# Need to have all super body poses up to date.
 	update_super_bodies()
 	
-	var ref_frames = physics_ref_frames()
+	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
+	var ref_frames: Array = get_tree().get_nodes_in_group( group )
+	
 	for id in ref_frames:
 		var rf: RefFramePhysics = ref_frames[id]
 		var deleted: bool =  rf.is_queued_for_deletion()
@@ -134,16 +136,6 @@ func available_qty():
 	return qty
 
 
-# Is supposed to be used by ref frames in order to generate static collisions 
-# in all the ref frames (if close enough).
-func physics_ref_frames():
-	var envs = {}
-	for i in range(ENVS_QTY):
-		var e = envs_[i]
-		if ( e != null ):
-			var bit: int = (1<<i)
-			envs[bit] = e
-	return envs
 
 
 
@@ -265,8 +257,6 @@ func update_camera():
 
 func create_ref_frame_physics():
 	var rf: RefFramePhysics = RefFramePhysics.new()
-	if BodyCreator.root_node != null:
-		BodyCreator.root_node.add_child( rf )
 	return rf
 
 

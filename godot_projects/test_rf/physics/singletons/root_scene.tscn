@@ -8,3 +8,5 @@ script = ExtResource( 1 )
 [node name="bodies" type="Node" parent="."]
 
 [node name="physics_envs" type="Node" parent="."]
+
+[node name="visuals" type="Spatial" parent="."]

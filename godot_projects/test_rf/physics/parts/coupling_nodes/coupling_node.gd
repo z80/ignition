@@ -107,7 +107,7 @@ func _set_show_visual( en: bool ):
 			var Visual = preload( "res://physics/parts/coupling_nodes/coupling_node_visual.tscn" )
 			_visual = Visual.instance()
 			_visual.size = snap_size()
-			BodyCreator.root_node.add_child( _visual )
+			RootScene.get_root_for_visuals().add_child( _visual )
 		_visual.visible = true
 	else:
 		if _visual != null:

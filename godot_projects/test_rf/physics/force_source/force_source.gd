@@ -20,7 +20,7 @@ func up( own_rf: Node, player_rf: Node ):
 
 # Compute forces applied to rigid body.
 # All quantities are in body's ref. frame.
-func compute_force( body: Body, r: Vector3, v: Vector3, q: Quat, w: Vector3, ret: Array ):
+func compute_force( body: RefFrameNode, r: Vector3, v: Vector3, q: Quat, w: Vector3, ret: Array ):
 	var F: Vector3 = Vector3.ZERO
 	var P: Vector3 = Vector3.ZERO
 	ret.clear()

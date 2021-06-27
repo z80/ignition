@@ -10,6 +10,10 @@ func get_root_for_physics_envs():
 	var ret = get_node( "physics_envs" )
 	return ret
 
+func get_root_for_visuals():
+	var ret = get_node( "visuals" )
+	return ret
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

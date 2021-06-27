@@ -38,7 +38,7 @@ func _create_axes():
 	if _axes != null:
 		return false
 	
-	var root = BodyCreator.root_node
+	var root = RootScene.get_root_for_bodies()
 	if not root:
 		return false
 	

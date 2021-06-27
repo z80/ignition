@@ -75,14 +75,16 @@ func activate():
 		return
 	if not is_parent:
 		return
-	_joint = Generic6DOFJoint.new()
-	BodyCreator.root_node.add_child( _joint )
 	
 	var part_a: RefFrameNode = self.part
 	var part_b: RefFrameNode = node_b.part
 	
 	var body_a: RigidBody = part_a._physical
 	var body_b: RigidBody = part_b._physical
+	
+	_joint = Generic6DOFJoint.new()
+	var physics_env = body_a.get_parent()
+	physics_env.add_child( _joint )
 	
 	var joint_t: Transform = self.world_transform()
 	_joint.transform = joint_t

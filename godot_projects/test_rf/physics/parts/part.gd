@@ -131,10 +131,10 @@ func activate( root_call: bool = true ):
 	# merge/split ref frames are computed.
 	if root_call:
 		var sb = PartAssembly.new()
-		BodyCreator.root_node.add_child( sb )
+		RootScene.get_root_for_bodies().add_child( sb )
 		var p = self.get_parent()
 		sb.debug = true
-		sb.change_parent( p )
+		p.add_child( sb )
 		sb.debug = false
 		var se3: Se3Ref = self.get_se3()
 		sb.set_se3( se3 )

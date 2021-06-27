@@ -2,10 +2,9 @@
 extends RefFrame
 class_name RefFramePhysics
 
-var Clustering = preload( "res://physics/ref_frames/clustering.gd" )
+var _physics_env = null
 
-# Bit for physics contacts.
-var _contact_layer: int = -1
+var Clustering = preload( "res://physics/ref_frames/clustering.gd" )
 
 # Surface collision.
 var SurfaceProvider = preload( "res://physics/bodies/surface_provider/surface_provider.tscn" )
@@ -78,9 +77,13 @@ func evolve_motion( _dt: float ):
 # Override ready. Added surface provider creation.
 func ready():
 	.ready()
+	_create_physics_environment()
 	_create_motion()
 	_create_surface_provider()
 	_create_subdivide_source()
+	
+	add_to_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
+
 
 
 func _create_motion():
@@ -93,6 +96,13 @@ func _create_physics_environment():
 	var env = Env.instance()
 	var root: Node = RootScene.root_for_physics_envs()
 	root.add_child( env )
+	_physics_env = env
+
+
+func _destroy_physics_environment():
+	if _physics_env != null:
+		_physics_env.queue_free()
+		_physics_env = null
 
 
 func _create_surface_provider():
@@ -110,6 +120,11 @@ func _create_subdivide_source():
 	_subdivide_source_physical = SubdivideSourceRef.new()
 
 
+# This one is called by Bodies in order to enable physics. 
+func add_physics_body( body: RigidBody ):
+	if _physics_env != null:
+		_physics_env.add_physics_body( body )
+
 
 
 func set_surface_vertices( verts: PoolVector3Array, se3: Se3Ref ):
@@ -124,83 +139,36 @@ func update_surface_vertices( se3: Se3Ref ):
 
 
 func init_physics():
-	if _contact_layer >= 0:
-		return true
-	
-	_contact_layer = PhysicsManager.acquire_environment( self )
-	if ( _contact_layer < 0 ):
-		return false
-	
-	var bodies = child_bodies()
-	for body in bodies:
-		var ph = body.create_physical()
-		ph.collision_layer = _contact_layer
+	_create_physics_environment()
 
 
 
 func finit_physics():
-	if ( _contact_layer >= 0 ):
-		_cleanup_physical()
-		PhysicsManager.release_environment( self )
+	_destroy_physics_environment()
 
 
 
 # If physics is initialized and being processed.
 func is_active():
-	var en: bool = (_contact_layer > 0)
+	var en: bool = (_physics_env != null)
 	return en
 
 
 
-func add_body( body: Body ):
-	if body == null:
-		return
-	
-	# Make it parented.
-	body.change_parent( self )
 
 
 
-func remove_body( body: Body ):
-	var parent = self.get_parent()
-	body.change_parent( parent )
 
 
 
-func create_body( type_name: String, t: Transform = Transform.IDENTITY ):
-	var body = BodyCreator.create( type_name )
-	add_child( body )
-	body.set_t( t )
-	
-	if ( _contact_layer >= 0 ):
-		var ph = body.create_physical()
-		ph.set_collision_layer( _contact_layer )
-
-
-func _cleanup_physical():
-	if _contact_layer < 0:
-		return
-	var bodies = child_bodies( true )
-	for body in bodies:
-		body.remove_physical()
 
 
 
 func jump( t: Transform, v: Vector3=Vector3.ZERO ):
-	#var before_t: Transform = self.t()
-	var bodies = child_bodies( true )
-	
-	#var poses_before: Array = []
-	#for body in bodies:
-	#	var se3: Se3Ref = body.get_se3()
-	#	poses_before.push_back( se3.r )
-	
 	t.basis = Basis.IDENTITY
 	self.set_jump_t( t )
 	self.set_jump_v( v )
 	self.apply_jump()
-	for body in bodies:
-		body.update_physical_state_from_rf()
 	
 	# Update SE3 in orbital motion.
 	var se3: Se3Ref = self.get_se3()
@@ -290,7 +258,7 @@ func exclude_too_far_bodies():
 		var d: float = r.length()
 		if d > max_dist:
 			#body.remove_physical()
-			body.change_parent( pt )
+			pt.add_child( body )
 
 
 
@@ -304,7 +272,7 @@ func include_close_enough_bodies():
 		var d: float = r.length()
 		
 		if d < min_dist:
-			body.change_parent( self )
+			self.add_child( body )
 
 
 
@@ -374,12 +342,12 @@ func split_if_needed():
 	# it is in bodies_a.
 	var p = get_parent()
 	var rf: RefFrame = PhysicsManager.create_ref_frame_physics()
-	rf.change_parent( p )
+	p.add_child( rf )
 	var se3: Se3Ref = self.get_se3()
 	rf.set_se3( se3 )
 	
 	for body in bodies_b:
-		body.change_parent( rf )
+		rf.add_child( body )
 	
 	print( "new rf created ", rf. name )
 	print( "after split: " )
@@ -409,7 +377,7 @@ func merge_if_needed():
 			
 			var bodies: Array = rf.root_most_child_bodies( false )
 			for body in bodies:
-				body.change_parent( self )
+				self.add_child( body )
 			
 			
 			print( "merged ", rf.name, " with ", self.name )
@@ -448,7 +416,7 @@ func child_bodies( including_surf_provider: bool = false ):
 	var children = get_children()
 	var bodies = []
 	for ch in children:
-		var b = ch as Body
+		var b = ch as RefFrameNode
 		var include: bool = (b != null)
 		if not including_surf_provider:
 			include = include and (b != _surface_provider)
@@ -476,13 +444,13 @@ func root_most_child_bodies( including_surf_provider: bool = false ):
 
 func parent_bodies():
 	var pt = self.get_parent()
-	var rt = BodyCreator.root_node
+	var rt = RootScene.get_root_for_bodies()
 	
 	var bodies = []
 	
 	var children = pt.get_children()
 	for child in children:
-		var body = child as Body
+		var body = child as RefFrameNode
 		if body != null:
 			body = body.root_most_body()
 			if not (body in bodies):
@@ -493,7 +461,7 @@ func parent_bodies():
 
 	children = rt.get_children()
 	for child in children:
-		var body = child as Body
+		var body = child as RefFrameNode
 		if body != null:
 			body = body.root_most_body()
 			if not (body in bodies):
@@ -510,28 +478,27 @@ func apply_forces():
 	
 	var children = self.get_children()
 	for child in children:
-		var body = child as Body
+		var body = child as RefFrameNode
 		if body != null:
 			process_body( rf, body )
 
 
 
 
-func process_body( force_source_rf: RefFrame, body: Body, up_defined: bool = false ):
+func process_body( force_source_rf: RefFrameNode, body: RefFrameNode, up_defined: bool = false ):
 	force_source_rf.compute_relative_to_root( body )
 	var r: Vector3 = force_source_rf.r_root()
 	var v: Vector3 = force_source_rf.v_root()
 	var q: Quat    = force_source_rf.q_root()
 	var w: Vector3 = force_source_rf.w_root()
 	
-	# This "if" statement is for debugging.
-	if body.name == "Thruster_01":
-		body.compute_relative_to_root( force_source_rf )
-		var r_rel: Vector3 = body.r_root()
-		var q_rel: Quat    = body.q_root()
-		var qq: Quat = q_rel * q
-		var i = 1
-		
+#	# This "if" statement is for debugging.
+#	if body.name == "Thruster_01":
+#		body.compute_relative_to_root( force_source_rf )
+#		var r_rel: Vector3 = body.r_root()
+#		var q_rel: Quat    = body.q_root()
+#		var qq: Quat = q_rel * q
+#		var i = 1
 	
 	var ret: Array = []
 	var fs: ForceSource = force_source_rf.force_source
@@ -587,9 +554,8 @@ func distance( b: RefFramePhysics ):
 	return min_d
 
 
-
-func change_parent( p: Node = null ):
-	changing_parent = true
+func _parent_changed():
+	var p = get_parent()
 	var se3: Se3Ref = self.relative_to( p )
 	var allowed: bool = self.allow_orbiting
 	if not allowed:
@@ -598,14 +564,11 @@ func change_parent( p: Node = null ):
 	self.jump_to( p, se3 )
 	if motion != null:
 		motion.se3 = se3
-	changing_parent = false
 
 
 
-func process_exit_tree():
-	if changing_parent:
-		changing_parent = false
-		return
+
+func on_delete():
 	finit_physics()
 	if _surface_provider != null:
 		_surface_provider.queue_free()
@@ -615,7 +578,7 @@ func process_exit_tree():
 	# make it released.
 	_subdivide_source_physical = null
 	
-	.process_exit_tree()
+
 
 
 
