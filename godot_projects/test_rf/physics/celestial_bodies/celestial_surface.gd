@@ -214,9 +214,9 @@ func _set_apply_scale( en ):
 # Here need to switch between orbiting and being on a rotating surface.
 func process_ref_frames( celestial_bodies: Array ):
 	.process_ref_frames( celestial_bodies )
-	#process_ref_frames_rotating_to_orbiting()
-	#process_ref_frames_orbiting_to_rotating()
-	#process_ref_frames_orbiting_change_parent( celestial_bodies )
+	process_ref_frames_rotating_to_orbiting()
+	process_ref_frames_orbiting_to_rotating()
+	process_ref_frames_orbiting_change_parent( celestial_bodies )
 
 	ref_frame_to_check_rotating_index += 1
 	ref_frame_to_check_orbiting_index += 1
