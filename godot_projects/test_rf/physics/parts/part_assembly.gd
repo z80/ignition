@@ -15,12 +15,6 @@ func _ready():
 	add_to_group( Constants.SUPER_BODIES_GROUP_NAME )
 
 
-func change_parent( new_parent: Node = null ):
-	.change_parent( new_parent )
-	
-	# First go down to the lowest level.
-	for body in sub_bodies:
-		body.change_parent_inner( new_parent )
 
 
 
@@ -58,6 +52,18 @@ func has_sub_body( body: RefFrameNode ):
 		return true
 	
 	return false
+
+
+
+func change_parent( p: Node = null ):
+	#var t_before: Transform = self.transform
+	#var se3: Se3Ref = self.relative_to( p )
+	.change_parent( p )
+	#var t_after: Transform = self.transform
+	for b in sub_bodies:
+		#t_before = b.transform
+		b.change_parent_inner( p )
+		#t_after = b.transform
 
 
 func distance_max( other: RefFrameNode ):

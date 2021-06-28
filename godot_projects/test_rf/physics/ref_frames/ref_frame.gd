@@ -112,8 +112,6 @@ func _force_source_recursive( n: Node ):
 	return _force_source_recursive( p )
 
 
-func change_parent( p: Node = null ):
-	.change_parent( p )
 
 
 

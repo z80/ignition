@@ -94,7 +94,7 @@ func _create_motion():
 func _create_physics_environment():
 	var Env = preload( "res://physics/ref_frames/physics_env/physics_env.tscn" )
 	var env = Env.instance()
-	var root: Node = RootScene.root_for_physics_envs()
+	var root: Node = RootScene.get_root_for_physics_envs()
 	root.add_child( env )
 	_physics_env = env
 
@@ -257,8 +257,7 @@ func exclude_too_far_bodies():
 		var r: Vector3 = body.r()
 		var d: float = r.length()
 		if d > max_dist:
-			#body.remove_physical()
-			pt.add_child( body )
+			body.change_parent( pt )
 
 
 
@@ -267,12 +266,17 @@ func include_close_enough_bodies():
 	var bodies = parent_bodies()
 	
 	for body in bodies:
+		# This is to make sure that bodies added as a part of a super body 
+		# are not added twice.
+		var p = body.get_parent()
+		if p == self:
+			continue
 		body.compute_relative_to_root( self )
 		var r: Vector3 = body.r_root()
 		var d: float = r.length()
 		
 		if d < min_dist:
-			self.add_child( body )
+			body.change_parent( self )
 
 
 
@@ -281,11 +285,10 @@ static func print_all_ref_frames():
 	print( "All ref frames" )
 	var player_rf = PhysicsManager.get_player_ref_frame()
 	print( "player rf: ", player_rf.name )
-	var rfs: Dictionary = PhysicsManager.physics_ref_frames()
-	for id in rfs:
-		var rf: RefFramePhysics = rfs[id]
+	var rfs: Array = PhysicsManager.physics_ref_frames()
+	for rf in rfs:
 		var se3: Se3Ref = rf.get_se3()
-		print( "rf: #", id, " name: ", rf.name, " r: ", se3.r )
+		print( "rf name: ", rf.name, " r: ", se3.r )
 		print( "bodies: " )
 		var bodies: Array = rf.child_bodies( false )
 		for body in bodies:
@@ -342,12 +345,12 @@ func split_if_needed():
 	# it is in bodies_a.
 	var p = get_parent()
 	var rf: RefFrame = PhysicsManager.create_ref_frame_physics()
-	p.add_child( rf )
+	rf.change_parent( p )
 	var se3: Se3Ref = self.get_se3()
 	rf.set_se3( se3 )
 	
 	for body in bodies_b:
-		rf.add_child( body )
+		body.change_parent( rf )
 	
 	print( "new rf created ", rf. name )
 	print( "after split: " )
@@ -358,9 +361,8 @@ func split_if_needed():
 
 
 func merge_if_needed():
-	var ref_frames: Dictionary = PhysicsManager.physics_ref_frames()
-	for id in ref_frames:
-		var rf: RefFramePhysics = ref_frames[id]
+	var ref_frames: Array = PhysicsManager.physics_ref_frames()
+	for rf in ref_frames:
 		if rf == self:
 			continue
 		var queued_for_deletion: bool = rf.is_queued_for_deletion()
@@ -377,7 +379,7 @@ func merge_if_needed():
 			
 			var bodies: Array = rf.root_most_child_bodies( false )
 			for body in bodies:
-				self.add_child( body )
+				body.change_parent( self )
 			
 			
 			print( "merged ", rf.name, " with ", self.name )
@@ -452,9 +454,11 @@ func parent_bodies():
 	for child in children:
 		var body = child as RefFrameNode
 		if body != null:
-			body = body.root_most_body()
-			if not (body in bodies):
-				bodies.push_back( body )
+			var cl_name: String = body.get_class()
+			if cl_name == "Body":
+				body = body.root_most_body()
+				if not (body in bodies):
+					bodies.push_back( body )
 	
 	if rt == pt:
 		return bodies
@@ -464,8 +468,10 @@ func parent_bodies():
 		var body = child as RefFrameNode
 		if body != null:
 			body = body.root_most_body()
-			if not (body in bodies):
-				bodies.push_back( body )
+			var cl_name: String = body.get_class()
+			if cl_name == "Body":
+				if not (body in bodies):
+					bodies.push_back( body )
 	
 	return bodies
 
@@ -512,7 +518,8 @@ func process_body( force_source_rf: RefFrameNode, body: RefFrameNode, up_defined
 			if rfp != null:
 				var up: Vector3 = fs.up( force_source_rf, body )
 				up = body.q().xform( up )
-				body.set_local_up( up )
+				if body.has_method( "set_local_up" ):
+					body.set_local_up( up )
 	
 	var F: Vector3 = ret[0]
 	var P: Vector3 = ret[1]
@@ -523,7 +530,8 @@ func process_body( force_source_rf: RefFrameNode, body: RefFrameNode, up_defined
 	P = q_adj.xform( P )
 
 	# Apply force and torque to the body.
-	body.add_force_torque( F, P )
+	if body.has_method( "add_force_torque" ):
+		body.add_force_torque( F, P )
 
 	# Befor computing own force contribution recursively searches for 
 	# other force sources if recursive search is allowed.

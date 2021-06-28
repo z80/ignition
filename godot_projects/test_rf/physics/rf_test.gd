@@ -13,6 +13,7 @@ func _enter_tree():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var rf = PhysicsManager.create_ref_frame_physics()
+	rf.remove_parent()
 	rf.change_parent( get_node( "Landscape" ) )
 	
 	PhysicsManager.camera = $Camera

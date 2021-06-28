@@ -37,7 +37,7 @@ func _ready():
 		# Also create a super body.
 	var sb = ConstructionSuperBody.new()
 	var p = get_parent()
-	p.add_child( sb )
+	sb.change_parent( p )
 	# Place own reference there.
 	sb.construction = self
 	# And in the list of sub-bodies.
@@ -131,7 +131,7 @@ func activate_grab( body ):
 		return
 	var Grab = load( "res://physics/bodies/construction/manip_grab.tscn" )
 	var grab = Grab.instance()
-	RootScene.get_root_for_bodies().add_child( grab )
+	RootScene.get_root_for_visuals().add_child( grab )
 	edited_target  = body
 	editing_widget = grab
 	grab.target = body

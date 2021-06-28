@@ -5,7 +5,7 @@ class_name ForceSourceGravity
 export(float) var GM = 1.0
 
 
-func compute_force( body: Body, r: Vector3, v: Vector3, q: Quat, w: Vector3, ret: Array ):
+func compute_force( body: RefFrameNode, r: Vector3, v: Vector3, q: Quat, w: Vector3, ret: Array ):
 	# Later need to add body's mass to the formula.
 	# For now it comuted free fall acceleration.
 	var abs_r: float = r.length()

@@ -12,5 +12,5 @@ func _ready():
 
 
 func add_physics_body( body: RigidBody ):
-	var s = get_node( "Vp/Scene" )
+	var s = get_node( "Vp/PhysicsScene" )
 	s.add_physics_body( body )

@@ -22,7 +22,7 @@ func _ready():
 	
 	rf.change_parent( sun )
 	# Parent camera to the root node of this scene.
-	self.add_child( camera )
+	RootScene.get_root_for_visuas().add_child( camera )
 	
 	PhysicsManager.camera = camera
 	

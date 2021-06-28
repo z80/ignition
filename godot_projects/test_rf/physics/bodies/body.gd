@@ -28,9 +28,24 @@ var super_body = null
 var force: Spatial = null
 
 
+func get_class():
+	return "Body"
+
+
+
+
+
 func _enter_tree():
+	print( "_enter_tree called on Body" )
+	remove_physical()
 	create_physical()
 
+
+
+#func _notification(what):
+#	if what == NOTIFICATION_ENTER_TREE:
+#		print( "enter tree notification" )
+#	pass
 
 
 func _ready():
@@ -38,7 +53,7 @@ func _ready():
 	
 	var Force = preload( "res://physics/force_source/force_visualizer.tscn" )
 	force = Force.instance()
-	self.add_child( force )
+	RootScene.get_root_for_visuals().add_child( force )
 
 
 
@@ -50,12 +65,6 @@ func _parent_jumped():
 		update_physics_from_state()
 
 
-func _parent_changed():
-	var parent_rf = _parent_physics_ref_frame()
-	if parent_rf == null:
-		remove_physical()
-	else:
-		update_physics_from_state()
 
 
 func init():
@@ -243,8 +252,8 @@ func _create_physical( Physical ):
 	
 	# Make sure that parent is physics reference frame.
 	var parent_node = get_parent()
-	var parent_rf = parent_node as RefFramePhysics
-	if parent_rf == null:
+	var parent_rf = parent_node as RefFrameNode
+	if (parent_rf == null) or (parent_rf.get_class() != "RefFramePhysics"):
 		return null
 	
 	var p = Physical.instance()
@@ -277,19 +286,15 @@ func remove_physical():
 
 
 
+func change_parent( p: Node = null ):
+	if (super_body != null) and is_instance_valid( super_body ):
+		super_body.change_parent( p )
+	else:
+		change_parent_inner( p )
 
 
-# This thing is called in PhysicsManager only for a body which 
-# is currently under user control.
-# Need to redefine this function in a particular implementation.
-#func process_user_input( event: InputEvent ):
-#	for body in sub_bodies:
-#		body.process_user_input( event )
-#
-#
-#func process_user_input_2( input: Dictionary ):
-#	for body in sub_bodies:
-#		body.process_user_input_2( input )
+func change_parent_inner( p: Node ):
+	.change_parent( p )
 
 
 # Nothing here by default.
@@ -443,8 +448,11 @@ func deactivate( root_call: bool = true ):
 
 func _parent_physics_ref_frame():
 	# Check if parent is RefFramePhysics
-	var parent_node = get_parent()
-	var parent_rf = parent_node as RefFramePhysics
+	var parent_node: Node = get_parent()
+	var cl_name: String = parent_node.get_class()
+	if cl_name != "RefFramePhysics":
+		return null
+	var parent_rf = parent_node as RefFrameNode
 	return parent_rf
 
 

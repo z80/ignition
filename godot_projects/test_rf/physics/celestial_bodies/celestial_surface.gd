@@ -38,6 +38,9 @@ var ref_frame_to_check_rotating_index: int = 0
 var ref_frame_to_check_orbiting_index: int = 0
 
 
+func get_class():
+	return "CelestialSurface"
+
 
 func translation_rf():
 	var rf: RefFrameNode = get_node( "." ) as RefFrameNode
@@ -136,16 +139,14 @@ func process_geometry( force_player_rf: RefFrame = null ):
 		player_rf = PhysicsManager.get_player_ref_frame()
 	player_ctrl = PhysicsManager.player_control
 	
-	var physics_ref_frames: Dictionary  = PhysicsManager.physics_ref_frames()
+	var physics_ref_frames: Array  = PhysicsManager.physics_ref_frames()
 	
 	var translation: RefFrameNode = self
 	var rotation: RefFrameNode    = get_node( "Rotation" )
 	var planet: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	
 	var paths: Array = []
-	for k in physics_ref_frames:
-		var rf: RefFramePhysics = physics_ref_frames[k]
-		
+	for rf in physics_ref_frames:
 		# Check if either node is direct parent of this rf
 		var p = rf.get_parent()
 		var is_child: bool = ( p == planet ) or ( p == rotation ) or ( p == translation )

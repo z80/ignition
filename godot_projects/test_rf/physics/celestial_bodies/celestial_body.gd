@@ -21,6 +21,10 @@ export(float)   var orbital_eccentricity = 0.0
 var initialized: bool = false
 var gm: float = -1.0
 
+
+func get_class():
+	return "CelestialBody"
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	init()

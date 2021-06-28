@@ -10,8 +10,9 @@ static func _celestial_body_recursive( n: Node ):
 	if n == null:
 		return null
 	
-	var cb: CelestialSurface = n as CelestialSurface
-	if cb != null:
+	var cb: RefFrameNode = n as CelestialSurface
+	
+	if (cb != null) and (cb.get_class() == "CelestialSurface"):
 		return cb
 	
 	# Try the owner (root of local scene 

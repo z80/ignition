@@ -61,9 +61,9 @@ func create( type_name: String ):
 func _create( CL ):
 	var inst = CL.instance()
 	var root = RootScene.get_root_for_bodies()
-	if root != null:
-		root.add_child( inst )
 	inst.init()
+	if root != null:
+		inst.change_parent( root )
 	return inst
 
 

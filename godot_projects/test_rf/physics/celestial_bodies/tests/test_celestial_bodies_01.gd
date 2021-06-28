@@ -16,8 +16,8 @@ func _ready():
 	var camera_script = preload( "res://assets/maujoe.camera_control/scripts/camera_control.gd" )
 	camera.script = camera_script
 	
-	rf.change_parent( sun )
-	rf.add_child( camera )
+	rf.change_parent( sub )
+	RootScene.get_root_for_visuals().add_child( camera )
 	
 	PhysicsManager.camera = camera
 	

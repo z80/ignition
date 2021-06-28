@@ -279,7 +279,7 @@ func process_basis( up: Vector3 ):
 	local_ref_frame = local_ref_frame.normalized()
 
 
-func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialSurface ):
+func apply_atmosphere( player_ref_frame: RefFrameNode, celestial_body: RefFrameNode ):
 	var planet_radius: float = celestial_body.radius_km * 1000.0
 	var se3: Se3Ref = celestial_body.relative_to( player_ref_frame )
 	var planet_t: Transform = se3.transform
@@ -315,7 +315,7 @@ func apply_atmosphere( player_ref_frame: RefFrame, celestial_body: CelestialSurf
 
 
 
-func apply_sun( player_ref_frame: RefFrame, sun: Sun ):
+func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 	var atm: MeshInstance = get_node( "Atmosphere" ) as MeshInstance
 	if atm == null:
 		return

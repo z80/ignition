@@ -13,6 +13,10 @@ export(float) var ray_bias  = 0.1
 var ref_frame_to_check_index: int = 0
 
 
+func get_class():
+	return "Sun"
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	init()

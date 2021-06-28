@@ -19,7 +19,8 @@ func set_title( stri: String ):
 func setup_gui( classes, target_object ):
 	for C in classes:
 		var inst = C.instance()
-		$Container.add_child( inst )
+		var c = get_node( "Container" )
+		c.add_child( inst )
 		var has_init: bool = inst.has_method( "init" )
 		if has_init:
 			inst.init( target_object, self )

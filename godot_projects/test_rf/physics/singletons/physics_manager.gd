@@ -1,8 +1,6 @@
 
 extends Node
 
-const ENVS_QTY = 32
-var envs_: Array
 
 # All visualization meshes/or other types are with respect to the ref frame 
 # where controlled object is.
@@ -22,10 +20,6 @@ func _ready():
 
 
 func init():
-	envs_.resize(ENVS_QTY)
-	for i in range(ENVS_QTY):
-		envs_[i] = null
-	
 	distance_scaler.plain_distance = 100.0
 	distance_scaler.log_scale      = 1.0
 
@@ -56,15 +50,13 @@ func _physics_process( delta ):
 	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
 	var ref_frames: Array = get_tree().get_nodes_in_group( group )
 	
-	for id in ref_frames:
-		var rf: RefFramePhysics = ref_frames[id]
+	for rf in ref_frames:
 		var deleted: bool =  rf.is_queued_for_deletion()
 		if deleted:
 			continue
 		rf.evolve( delta )
 	
-	for id in ref_frames:
-		var rf: RefFramePhysics = ref_frames[id]
+	for rf in ref_frames:
 		var deleted: bool =  rf.is_queued_for_deletion()
 		if deleted:
 			continue
@@ -93,6 +85,12 @@ func _input( event ):
 	#body.process_user_input( event )
 
 
+func physics_ref_frames():
+	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
+	var ref_frames: Array = get_tree().get_nodes_in_group( group )
+	return ref_frames
+
+
 # Called externally by UserInput global object.
 func process_user_input( input: Dictionary ):
 	#print( "user_input: ", input )
@@ -109,31 +107,7 @@ func process_user_input( input: Dictionary ):
 
 
 
-func acquire_environment( ref_frame ):
-	for i in range(ENVS_QTY):
-		var e = envs_[i]
-		if e == null:
-			envs_[i] = ref_frame
-			var bit: int = (1 << i)
-			return bit
-	return -1
 
-
-func release_environment( ref_frame ):
-	for i in range(ENVS_QTY):
-		var e = envs_[i]
-		if ( e == ref_frame ):
-			envs_[i] = null
-
-
-func available_qty():
-	var qty: int = 0
-	for i in range(ENVS_QTY):
-		var e = envs_[i]
-		if e == null:
-			qty += 1
-			
-	return qty
 
 
 
@@ -238,7 +212,7 @@ func update_camera():
 		
 	# For the body under player control find the closest celestial
 	# body. If found, specify the atmosphere parameters.
-	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
+	var ClosestCelestialBody = load( "res://physics/utils/closest_celestial_body.gd" )
 	var p_rf = get_player_ref_frame()
 	if p_rf == null:
 		return
@@ -250,7 +224,7 @@ func update_camera():
 	var group: String = Constants.SUN_GROUP_NAME
 	var all_suns: Array = get_tree().get_nodes_in_group( group )
 	if not all_suns.empty():
-		var sun: Sun = all_suns[0] as Sun
+		var sun: RefFrameNode = all_suns[0] as RefFrameNode
 		c.apply_sun( p_rf, sun )
 
 
