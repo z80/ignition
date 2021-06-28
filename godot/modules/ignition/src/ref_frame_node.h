@@ -69,6 +69,8 @@ public:
 
 	void apply_jump();
 	void jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 );
+	// This is actual implementation.
+	void jump_to_( Node * dest, const SE3 & dest_se3 );
 	// Callbacks for script notification.
 	void _jumped();
 	void _parent_jumped();

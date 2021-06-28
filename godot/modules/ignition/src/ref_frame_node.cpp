@@ -294,29 +294,15 @@ void RefFrameNode::set_jump_t( const Transform & t )
 
 void RefFrameNode::apply_jump()
 {
-	const int qty = get_child_count();
-	for ( int i=0; i<qty; i++ )
-	{
-		Node * n = get_child( i );
-		RefFrameNode * ch = Object::cast_to<RefFrameNode>( n );
-		if ( !ch )
-			continue;
-		const SE3 se3_child_to = ch->relative_( this, SE3(), se3_jump_to_ );
-		ch->se3_ = se3_child_to;
-	}
-
-	Node * p = get_parent();
-	RefFrameNode * parent_rf;
-	if ( !p )
-		parent_rf = nullptr;
-	else
-		parent_rf = Object::cast_to<RefFrameNode>( p );
-
-	const SE3 se3_in_parent = relative_( parent_rf, se3_jump_to_ );
-	se3_ = se3_in_parent;
+	jump_to_( this, se3_jump_to_ );
 }
 
 void RefFrameNode::jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 )
+{
+	jump_to_( dest, dest_se3->se3 );
+}
+
+void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 {
 	const int qty = get_child_count();
 	RefFrameNode * dest_rf;
@@ -335,11 +321,11 @@ void RefFrameNode::jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 )
 
 	SE3 dest_se3_adjusted;
 	if ( dest != this )
-		dest_se3_adjusted = dest_se3->se3;
+		dest_se3_adjusted = dest_se3;
 	else
 	{
 		RefFrameNode * parent_rf = Object::cast_to<RefFrameNode>( p );
-		dest_se3_adjusted = relative_( parent_rf, dest_se3->se3 );
+		dest_se3_adjusted = relative_( parent_rf, dest_se3, SE3() );
 	}
 
 

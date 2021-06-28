@@ -33,6 +33,9 @@ var debug_has_split: bool = false
 func get_class():
 	return "RefFramePhysics"
 
+func _enter_tree():
+	pass
+
 
 func process_children():
 	.process_children()
@@ -40,7 +43,7 @@ func process_children():
 	#if not debug_has_split:
 	#exclude_too_far_bodies()
 	include_close_enough_bodies()
-	var has_split: bool = split_if_needed()
+	var has_split: bool = false #split_if_needed()
 	debug_has_split = has_split
 	if has_split:
 		return true
