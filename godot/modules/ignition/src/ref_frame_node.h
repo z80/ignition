@@ -24,7 +24,6 @@ class RefFrameNode: public Node
 
 protected:
 	static void _bind_methods();
-	void _notification(int p_notification);
 
 public:
 	RefFrameNode();
@@ -57,7 +56,6 @@ public:
 
 	/// Change origin without changing absolute position in space.
 	void change_parent( Node * origin );
-	void _parent_changed();
 
 	/// Compute state relative to the "root_" specified.
 	void compute_relative_to_root( Node * root );
@@ -90,10 +88,6 @@ public:
 	SE3    se3_root_;
 	SE3    se3_jump_to_;
 
-	// Keep old parent.
-	// If add_child() is called on this ref frame node by another new parent
-	// it will be possible to compute SE3 for the new parent using this old parent.
-	Node * old_parent_;
 	//SE3    se3_obj_cur_;
 	//SE3    se3_obj_rel_to_root_;
 	//SE3    se3_obj_after_jump_;
