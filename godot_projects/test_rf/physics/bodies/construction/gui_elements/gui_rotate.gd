@@ -8,10 +8,12 @@ func init( target_obj, parent_gui ):
 	_parent_gui = parent_gui
 	
 	var s: Control = get_node( "RotateContainer/Angle" )
+	var label: Label = get_node( "RotateContainer/Label" )
 	var n = _target_obj.get_coupled_child_node()
 	if n != null:
 		var angle: float = n.angle * 180.0 / PI
 		s.value = angle
+		label.text = "rotation: " + str( angle )
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -30,8 +32,10 @@ func _on_Delete_pressed():
 func _on_Angle_value_changed(value):
 	var angle: float = value
 	var n = _target_obj.get_coupled_child_node()
+	var label: Label = get_node( "RotateContainer/Label" )
 	if n != null:
-		n.angle = angle
+		n.angle = angle / 180.0 * PI
+		label.text = "rotation: " + str( angle )
 
 
 

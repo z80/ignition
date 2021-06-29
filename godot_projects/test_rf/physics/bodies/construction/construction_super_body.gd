@@ -21,9 +21,9 @@ func gui_classes( mode: Array ):
 	var classes = .gui_classes( mode )
 	if mode.has( "construction_menu" ):
 		var T = load( "res://physics/bodies/construction/gui_elements/gui_transform_2.tscn" )
+		var R = load( "res://physics/bodies/construction/gui_elements/gui_rotate.tscn" )
 		var D = load( "res://physics/bodies/construction/gui_elements/gui_delete.tscn" )
 		var L = load( "res://physics/bodies/construction/gui_elements/gui_leave_contruction_mode.tscn" )
-		var R = load( "res://physics/bodies/construction/gui_elements/gui_rotate.tscn" )
 		classes.push_back( T )
 		classes.push_back( D )
 		classes.push_back( L )

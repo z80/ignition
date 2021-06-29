@@ -11,22 +11,26 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="RotateContainer" type="CenterContainer" parent="."]
+[node name="RotateContainer" type="VBoxContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_right = 1.0
 rect_min_size = Vector2( 80, 32 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Angle" type="HSlider" parent="RotateContainer"]
-margin_left = 474.0
-margin_top = 286.0
-margin_right = 550.0
-margin_bottom = 314.0
-rect_min_size = Vector2( 76, 28 )
+margin_right = 1025.0
+margin_bottom = 20.0
+rect_min_size = Vector2( 76, 20 )
 hint_tooltip = "Part rotation around connecttion point."
 max_value = 359.0
 step = 5.0
+tick_count = 10
+ticks_on_borders = true
+
+[node name="Label" type="Label" parent="RotateContainer"]
+margin_top = 24.0
+margin_right = 1025.0
+margin_bottom = 56.0
+rect_min_size = Vector2( 80, 32 )
+text = "rotation angle"
 [connection signal="value_changed" from="RotateContainer/Angle" to="." method="_on_Angle_value_changed"]
