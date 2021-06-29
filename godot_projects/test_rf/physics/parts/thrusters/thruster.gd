@@ -2,6 +2,8 @@
 extends Part
 class_name Thruster
 
+export(bool) var debug_mode = false
+
 enum FuelType {LIQUID_FUEL=0, SOLID_FUEL=1}
 export(FuelType) var fuel_type = FuelType.LIQUID_FUEL
 
@@ -129,7 +131,7 @@ func set_ignited( en: bool ):
 		if not ok:
 			return
 		
-		if restarts_qty > 0:
+		if debug_mode or (restarts_qty > 0):
 			if (not _ignited) and en:
 				restarts_left -= 1
 			if restarts_left < 0:
@@ -177,6 +179,8 @@ func activate( root_call: bool = true ):
 
 func _process_fuel( _delta: float ):
 	if not _ignited:
+		return
+	if debug_mode:
 		return
 	if fuel_type == FuelType.LIQUID_FUEL:
 		_process_liquid_fuel( _delta )
@@ -235,6 +239,8 @@ func _process_solid_fuel( _delta: float ):
 func _check_fuel_available():
 	_find_fuel_tanks()
 	var ret: bool = false
+	if debug_mode:
+		return true
 	if fuel_type == FuelType.LIQUID_FUEL:
 		ret = _check_liquid_fuel_available()
 	elif fuel_type == FuelType.SOLID_FUEL:
