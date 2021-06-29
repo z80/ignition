@@ -1,0 +1,32 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/bodies/construction/gui_elements/gui_rotate.gd" type="Script" id=1]
+
+[node name="Rotate" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_min_size = Vector2( 80, 32 )
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="RotateContainer" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 1.0
+rect_min_size = Vector2( 80, 32 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Angle" type="HSlider" parent="RotateContainer"]
+margin_left = 474.0
+margin_top = 286.0
+margin_right = 550.0
+margin_bottom = 314.0
+rect_min_size = Vector2( 76, 28 )
+hint_tooltip = "Part rotation around connecttion point."
+max_value = 359.0
+step = 5.0
+[connection signal="value_changed" from="RotateContainer/Angle" to="." method="_on_Angle_value_changed"]

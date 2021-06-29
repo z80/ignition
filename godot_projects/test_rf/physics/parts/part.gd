@@ -191,6 +191,25 @@ func set_show_node_visuals( en: bool ):
 		n.show_visual = en
 
 
+
+# Checks all the nodes.
+# If either one is connected and is not a parent return it here.
+func get_coupled_child_node():
+	for node in stacking_nodes:
+		var n: CouplingNodeStacking = node as CouplingNodeStacking
+		var is_connected: bool = n.connected()
+		if not is_connected:
+			continue
+		var is_parent: bool = n.is_parent
+		if is_parent:
+			continue
+		return n
+	
+	return null
+
+
+
+
 func couple():
 	# Get parent ref frame, get all parts in it.
 	var rf: RefFrameNode = get_parent()

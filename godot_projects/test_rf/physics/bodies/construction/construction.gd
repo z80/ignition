@@ -85,7 +85,7 @@ func gui_classes( mode: Array = [] ):
 	#	classes.push_back( cl )
 	
 	if ( not mode.has( "construction_menu" ) ) and ( not mode.has( "construction_editing" ) ):
-		var PanelEnter = load( "res://physics/bodies/construction/gui_enter.tscn" )
+		var PanelEnter = load( "res://physics/bodies/construction/gui_elements/gui_enter.tscn" )
 		classes.push_back( PanelEnter )
 	
 	return classes
