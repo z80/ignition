@@ -334,10 +334,10 @@ func split_if_needed():
 		bodies_b.push_back( body )
 	
 	# Check on which side the user controlled body is.
-	var player_control = PhysicsManager.player_control
 	var player_in_b: bool = false
 	for body in bodies_b:
-		if body == player_control:
+		var has_player: bool = body.has_player_control
+		if has_player:
 			# Swap bodies_a  and bodies_b
 			var bodies_c: Array = bodies_b
 			bodies_b = bodies_a
@@ -596,7 +596,7 @@ func on_delete():
 func _set_allow_orbiting( en: bool ):
 	if motion == null:
 		return
-	motion.allow_orbiting = allow_orbiting
+	motion.allow_orbiting = en
 
 
 

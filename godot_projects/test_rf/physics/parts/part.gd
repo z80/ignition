@@ -300,8 +300,8 @@ func _ready():
 
 
 func on_delete():
-	.on_delete()
 	decouple_all()
+	.on_delete()
 
 
 

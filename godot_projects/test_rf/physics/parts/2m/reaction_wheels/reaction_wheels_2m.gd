@@ -3,8 +3,8 @@ extends Part
 
 
 func init():
-	var Visual   = load( "res://physics/bodies/parts/2m/reaction_wheels/reaction_wheels_2m_visual.tscn")
-	var Physical = load( "res://physics/bodies/parts/2m/reaction_wheels/reaction_wheels_2m_physical.tscn" )
+	var Visual   = load( "res://physics/parts/reaction_control_wheels/2m/m1/visual.tscn")
+	var Physical = load( "res://physics/parts/reaction_control_wheels/2m/m1/physical.tscn" )
 	
 	VisualType   = Visual
 	PhysicalType = Physical

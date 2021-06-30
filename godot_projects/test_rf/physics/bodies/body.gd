@@ -42,11 +42,10 @@ func _enter_tree():
 
 
 
-#func _notification(what):
-#	if what == NOTIFICATION_ENTER_TREE:
-#		print( "enter tree notification" )
-#	pass
-
+func _exit_tree():
+	var to_be_deleted: bool = is_queued_for_deletion()
+	if to_be_deleted:
+		on_delete()
 
 func _ready():
 	add_to_group( Constants.BODIES_GROUP_NAME )
@@ -74,7 +73,6 @@ func init():
 
 # The overrideable version without "_" prefix.
 func on_delete():
-	.on_delete()
 	if is_instance_valid( super_body ):
 		super_body.remove_sub_body( self )
 	if _visual != null:
@@ -142,6 +140,11 @@ func root_most_body():
 		return self.super_body
 	return self
 
+
+func has_player_control():
+	var pc = PhysicsManager.player_control
+	var ret: bool = (self == pc)
+	return ret
 
 
 func distance( other: RefFrameNode ):
@@ -276,13 +279,14 @@ func _create_physical( Physical ):
 
 
 func remove_physical():
+	if _physical == null:
+		return
 	var valid: bool = is_instance_valid( _physical )
 	if not valid:
 		_physical = null
 	
-	if _physical != null:
-		_physical.queue_free()
-		_physical = null
+	_physical.queue_free()
+	_physical = null
 
 
 

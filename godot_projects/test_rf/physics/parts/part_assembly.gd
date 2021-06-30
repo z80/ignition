@@ -54,6 +54,15 @@ func has_sub_body( body: RefFrameNode ):
 	return false
 
 
+func has_player_control():
+	var pc = PhysicsManager.player_control
+	for body in sub_bodies:
+		if body == pc:
+			return true
+	
+	return false
+
+
 
 func change_parent( p: Node = null ):
 	#var t_before: Transform = self.transform
