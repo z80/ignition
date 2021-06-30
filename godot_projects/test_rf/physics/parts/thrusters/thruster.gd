@@ -131,11 +131,12 @@ func set_ignited( en: bool ):
 		if not ok:
 			return
 		
-		if debug_mode or (restarts_qty > 0):
-			if (not _ignited) and en:
-				restarts_left -= 1
-			if restarts_left < 0:
-				return
+		if not debug_mode:
+			if (restarts_qty > 0):
+				if (not _ignited) and en:
+					restarts_left -= 1
+				if restarts_left < 0:
+					return
 	
 	
 	
