@@ -10,9 +10,6 @@ void CelestialMotionRef::_bind_methods()
     ClassDB::bind_method( D_METHOD("set_allow_orbiting", "en"), &CelestialMotionRef::set_allow_orbiting );
     ClassDB::bind_method( D_METHOD("get_allow_orbiting"), &CelestialMotionRef::get_allow_orbiting, Variant::BOOL );
 
-    ClassDB::bind_method( D_METHOD("set_stationary_threshold", "th"), &CelestialMotionRef::set_stationary_threshold );
-    ClassDB::bind_method( D_METHOD("get_stationary_threshold"), &CelestialMotionRef::get_stationary_threshold, Variant::REAL );
-
     ClassDB::bind_method( D_METHOD("stop"), &CelestialMotionRef::stop );
 
     ClassDB::bind_method( D_METHOD("is_orbiting"), &CelestialMotionRef::is_orbiting, Variant::BOOL );
@@ -34,6 +31,8 @@ void CelestialMotionRef::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_se3", "se3"), &CelestialMotionRef::set_se3 );
 	ClassDB::bind_method( D_METHOD("get_se3"),        &CelestialMotionRef::get_se3, Variant::OBJECT );
 
+	ClassDB::bind_method( D_METHOD("get_gm"),        &CelestialMotionRef::get_gm, Variant::REAL );
+
     ClassDB::bind_method( D_METHOD("init", "gm", "se3"), &CelestialMotionRef::init );
     ClassDB::bind_method( D_METHOD("init_gm", "radius_km", "suface_orbit_velocity_kms"), &CelestialMotionRef::init_gm );
     ClassDB::bind_method( D_METHOD("launch_elliptic", "gm", "unit_r", "unit_v", "period_hrs", "eccentricity"), &CelestialMotionRef::launch_elliptic );
@@ -43,7 +42,6 @@ void CelestialMotionRef::_bind_methods()
 
 
     ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "allow_orbiting" ),       "set_allow_orbiting",       "get_allow_orbiting" );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL,   "stationary_threshold" ), "set_stationary_threshold", "get_stationary_threshold" );
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),                  "set_se3",                  "get_se3" );
 }
 
@@ -67,17 +65,6 @@ bool CelestialMotionRef::get_allow_orbiting() const
     return ret;
 }
 
-void CelestialMotionRef::set_stationary_threshold( real_t th )
-{
-    cm.set_stationary_threshold( th );
-}
-
-real_t CelestialMotionRef::get_stationary_threshold() const
-{
-    const real_t ret = cm.get_stationary_threshold();
-    return ret;
-}
-
 void CelestialMotionRef::stop()
 {
     cm.stop();
@@ -94,8 +81,8 @@ String CelestialMotionRef::movement_type() const
 	String ret;
 	switch (t)
 	{
-	case CelestialMotion::LINEAR:
-		ret = "linear";
+	case CelestialMotion::NUMERIC:
+		ret = "numeric";
 		break;
 	case CelestialMotion::ELLIPTIC:
 		ret = "elliptic";
@@ -206,6 +193,11 @@ Ref<Se3Ref> CelestialMotionRef::get_se3() const
 	se3_ref.instance();
 	se3_ref->se3 = se3;
 	return se3_ref;
+}
+
+real_t CelestialMotionRef::get_gm() const
+{
+	return cm.gm;
 }
 
 

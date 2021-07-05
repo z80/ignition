@@ -10,7 +10,6 @@ CelestialMotion::CelestialMotion()
 {
     type = STATIONARY;
 
-    stationary_threshold = 1.0;
     allow_orbiting = true;
  
     gm = -1.0;
@@ -41,7 +40,6 @@ const CelestialMotion & CelestialMotion::operator=( const CelestialMotion & inst
     {
         type = inst.type;
 
-        stationary_threshold = inst.stationary_threshold;
         allow_orbiting = inst.allow_orbiting;
 
         gm = inst.gm;
@@ -78,16 +76,6 @@ bool CelestialMotion::get_allow_orbiting() const
     return allow_orbiting;
 }
 
-void CelestialMotion::set_stationary_threshold( Float th )
-{
-    stationary_threshold = th;
-}
-
-Float CelestialMotion::get_stationary_threshold() const
-{
-    return stationary_threshold;
-}
-
 void CelestialMotion::stop()
 {
 	if ( type != STATIONARY )
@@ -102,7 +90,7 @@ void CelestialMotion::stop()
 
 bool CelestialMotion::is_orbiting() const
 {
-    const bool not_orbiting = (type == STATIONARY) || (type == LINEAR) || (gm <= 0.0);
+    const bool not_orbiting = (type == STATIONARY) || (gm <= 0.0);
 	const bool orbiting = !not_orbiting;
 	return orbiting;
 }
@@ -247,15 +235,7 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     if ( !allow_orbiting )
     {
         const Float abs_v = se3_.v_.Length();
-        if ( abs_v < stationary_threshold )
-        {
-            type = STATIONARY;
-        }
-        else
-        {
-            type = LINEAR;
-            init_linear();
-        }
+        type = STATIONARY;
         return;
     }
 
@@ -267,8 +247,8 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     const Float abs_h = h.Length();
     if ( abs_h < Celestial::MIN_ANGULAR_MOMENTUM )
     {
-        type = LINEAR;
-        init_linear();
+        type = NUMERIC;
+        init_numeric();
         return;
     }
 
@@ -377,10 +357,8 @@ void CelestialMotion::launch_elliptic( Float gm, const Vector3d & unit_r, const 
 
 const SE3 & CelestialMotion::process( Float dt )
 {
-    if (type == LINEAR)
-        process_linear( dt );
-    //else if (type == LINEAR_GRAVITY)
-    //    process_linear_gravity( dt );
+    if (type == NUMERIC)
+        process_numeric( dt );
     else if (type == HYPERBOLIC)
         process_hyperbolic( dt );
     else if (type == ELLIPTIC)
@@ -403,14 +381,9 @@ void CelestialMotion::set_se3( const SE3 & se3 )
 }
 
 
-void CelestialMotion::init_linear()
+void CelestialMotion::init_numeric()
 {
     // Nothing here.
-}
-
-void CelestialMotion::init_linear_gravity()
-{
-    // Nothing here as well.
 }
 
 void CelestialMotion::init_parabolic()
@@ -484,17 +457,82 @@ void CelestialMotion::init_hyperbolic()
     periapsis_t = Celestial::secs_to_ticks( pt );
 }
 
-void CelestialMotion::process_linear( Float dt )
+
+// RK4 method
+// "x" - current point, "h" - integration time step.
+// diff equation "dx/dt = f(x, t)".
+// k1 = h*f(x, t)
+// k2 = h*f(x+k1/2, t+h/2)
+// k3 = h*f(x+k2/2, t+h/2)
+// k4 = h*f(x+k3,   t+h)
+// x = x + 1/6*(k1 + 2*k2 + 2*k3 + k4).
+
+struct RK4_Vector6
 {
-    se3_global.r_ += se3_global.v_ * dt;
+	Float x[6];
+};
+
+void rk4_f( const RK4_Vector6 & x, Float gm, Float h, RK4_Vector6 & f )
+{
+	const Vector3d r( x.x[0], x.x[1], x.x[2] );
+	const Float abs_r = r.Length();
+	const Vector3d a = r * ( -gm/(abs_r*abs_r*abs_r) );
+	// Position derivative is velocity.
+	f.x[0] = h * x.x[3];
+	f.x[1] = h * x.x[4];
+	f.x[2] = h * x.x[5];
+	// Velocity derivative is acceleration.
+	f.x[3] = h * a.x_;
+	f.x[4] = h * a.y_;
+	f.x[5] = h * a.z_;
 }
 
-void CelestialMotion::process_linear_gravity( Float dt )
+static void rk4_step( SE3 & se3, Float gm, Float h )
 {
-    const Float abs_r = se3_global.r_.Length();
-    const Vector3d a = se3_global.r_ * ( -gm/(abs_r*abs_r*abs_r) );
-    se3_global.v_ += a * dt;
-    se3_global.r_ += se3_global.v_ * dt;
+	RK4_Vector6 x, x1, x2, x3, k1, k2, k3, k4;
+	x.x[0] = se3.r_.x_;
+	x.x[1] = se3.r_.y_;
+	x.x[2] = se3.r_.z_;
+	x.x[3] = se3.v_.x_;
+	x.x[4] = se3.v_.y_;
+	x.x[5] = se3.v_.z_;
+
+	rk4_f( x, gm, h, k1 );
+	for ( int i=0; i<6; i++ )
+		x1.x[i] = x.x[i] + k1.x[i]*0.5;
+
+	rk4_f( x1, gm, h, k2 );
+	for ( int i=0; i<6; i++ )
+		x2.x[i] = x.x[i] + k2.x[i]*0.5;
+
+	rk4_f( x2, gm, h, k3 );
+	for ( int i=0; i<6; i++ )
+		x3.x[i] = x.x[i] + k3.x[i]*0.5;
+
+	rk4_f( x3, gm, h, k4 );
+
+	for ( int i=0; i<6; i++ )
+	{
+		const Float dx_i = (k1.x[0] + 2.0*k2.x[i] + 2.0*k3.x[i] + k4.x[i]) / 6.0;
+		x.x[i] += dx_i;
+	}
+
+	se3.r_.x_ = x.x[0];
+	se3.r_.y_ = x.x[1];
+	se3.r_.z_ = x.x[2];
+	se3.v_.x_ = x.x[3];
+	se3.v_.y_ = x.x[4];
+	se3.v_.z_ = x.x[5];
+}
+
+void CelestialMotion::process_numeric( Float dt )
+{
+	//const Float abs_r = se3_global.r_.Length();
+	//const Vector3d a = se3_global.r_ * ( -gm/(abs_r*abs_r*abs_r) );
+	//se3_global.v_ += a * dt;
+	//se3_global.r_ += se3_global.v_ * dt;
+
+	rk4_step( se3_global, gm, dt );
 }
 
 void CelestialMotion::process_parabolic( Float dt )

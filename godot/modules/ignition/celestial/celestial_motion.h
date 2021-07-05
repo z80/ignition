@@ -12,7 +12,7 @@ namespace Ign
 class CelestialMotion
 {
 public:
-    enum Type { STATIONARY=0, LINEAR=1, ELLIPTIC=2, PARABOLIC=3, HYPERBOLIC=4 };
+    enum Type { STATIONARY=0, NUMERIC=1, ELLIPTIC=2, PARABOLIC=3, HYPERBOLIC=4 };
 
     CelestialMotion();
     ~CelestialMotion();
@@ -22,9 +22,6 @@ public:
 
     void set_allow_orbiting( bool en );
     bool get_allow_orbiting() const;
-
-    void set_stationary_threshold( Float th );
-    Float get_stationary_threshold() const;
 
     void stop();
 
@@ -60,7 +57,6 @@ public:
 
     Type type;
 
-    Float stationary_threshold;
     bool allow_orbiting;
 
     Float    gm;
@@ -85,14 +81,12 @@ public:
     SE3 se3_local;
 
 private:
-    void init_linear();
-    void init_linear_gravity();
+    void init_numeric();
     void init_parabolic();
     void init_elliptic();
     void init_hyperbolic();
 
-    void process_linear( Float dt );
-    void process_linear_gravity( Float dt );
+    void process_numeric( Float dt );
     void process_parabolic( Float dt );
     void process_elliptic( Float dt );
     void process_hyperbolic( Float dt );

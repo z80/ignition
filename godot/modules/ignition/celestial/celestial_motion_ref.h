@@ -27,9 +27,6 @@ public:
     void set_allow_orbiting( bool en );
     bool get_allow_orbiting() const;
 
-    void set_stationary_threshold( real_t th );
-    real_t get_stationary_threshold() const;
-
     void stop();
 
     bool is_orbiting() const;
@@ -53,6 +50,8 @@ public:
 
 	void set_se3( const Ref<Se3Ref> & se3 );
 	Ref<Se3Ref> get_se3() const;
+
+	real_t get_gm() const;
 
     void init( real_t gm, const Ref<Se3Ref> & se3 );
     real_t init_gm( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const;
