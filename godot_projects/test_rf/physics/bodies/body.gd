@@ -37,12 +37,13 @@ func get_class():
 
 func _enter_tree():
 	print( "_enter_tree called on Body" )
-	remove_physical()
 	create_physical()
 
 
 
 func _exit_tree():
+	remove_physical()
+	
 	var to_be_deleted: bool = is_queued_for_deletion()
 	if to_be_deleted:
 		on_delete()
@@ -290,6 +291,8 @@ func remove_physical():
 	var valid: bool = is_instance_valid( _physical )
 	if not valid:
 		_physical = null
+	
+	
 	
 	_physical.queue_free()
 	_physical = null

@@ -202,6 +202,13 @@ func set_show_node_visuals( en: bool ):
 
 
 
+
+func remove_physical():
+	deactivate_nodes( false )
+	.remove_physical()
+
+
+
 # Checks all the nodes.
 # If either one is connected and is not a parent return it here.
 func get_coupled_child_node():

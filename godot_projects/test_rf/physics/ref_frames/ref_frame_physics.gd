@@ -176,6 +176,7 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	# Update SE3 in orbital motion.
 	var se3: Se3Ref = self.get_se3()
 	motion.se3 = se3
+	motion.get_meta( "a" )
 	
 	#var after_t: Transform = self.t()
 

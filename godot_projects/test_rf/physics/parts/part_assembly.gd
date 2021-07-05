@@ -11,6 +11,25 @@ class_name PartAssembly
 var sub_bodies: Array = []
 
 
+func _enter_tree():
+	# If physics body is already created it shouldn't hurt 
+	# anything.
+	for b in sub_bodies:
+		b.create_physical()
+	# The thing is it is necessary to be sure that rigid bodies 
+	# on both sides are attached. And due to that it is necessary 
+	# to first create all bodies in a loop and after that activate 
+	# joints.
+	# After physics bodies are created for all sub-bodies, 
+	# Create connecting joints.
+	for b in sub_bodies:
+		# Only parts have this method, so check if it exists first.
+		var has: bool = b.has_method( "activate_nodes" )
+		if has:
+			b.activate_nodes( false )
+
+
+
 func _ready():
 	add_to_group( Constants.SUPER_BODIES_GROUP_NAME )
 
@@ -70,11 +89,8 @@ func change_parent( p: Node = null ):
 	.change_parent( p )
 	
 	# First need to remove all physical joints.
-	for b in sub_bodies:
-		# Only parts have this method, so check if it exists first.
-		var has: bool = b.has_method( "deactivate_nodes" )
-		if has:
-			b.deactivate_nodes( false )
+	# Physical joints are being removed within 
+	# remove_physical() call.
 	
 	#var t_after: Transform = self.transform
 	for b in sub_bodies:
@@ -82,7 +98,10 @@ func change_parent( p: Node = null ):
 		b.change_parent_inner( p )
 		#t_after = b.transform
 	
-	
+	# The thing is it is necessary to be sure that rigid bodies 
+	# on both sides are attached. And due to that it is necessary 
+	# to first create all bodies in a loop and after that activate 
+	# joints.
 	# After physics bodies are created for all sub-bodies, 
 	# Create connecting joints.
 	for b in sub_bodies:
