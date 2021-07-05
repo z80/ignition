@@ -254,9 +254,8 @@ func _create_physical( Physical ):
 		return null
 	
 	# Make sure that parent is physics reference frame.
-	var parent_node = get_parent()
-	var parent_rf = parent_node as RefFrameNode
-	if (parent_rf == null) or (parent_rf.get_class() != "RefFramePhysics"):
+	var parent_rf = parent_physics_ref_frame()
+	if parent_rf == null:
 		return null
 	
 	var p = Physical.instance()
@@ -276,6 +275,13 @@ func _create_physical( Physical ):
 
 
 
+
+func parent_physics_ref_frame():
+	var parent_node = get_parent()
+	var parent_rf = parent_node as RefFrameNode
+	if (parent_rf == null) or (parent_rf.get_class() != "RefFramePhysics"):
+		return null
+	return parent_node
 
 
 func remove_physical():

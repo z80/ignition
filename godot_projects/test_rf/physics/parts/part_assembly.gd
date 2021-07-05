@@ -68,11 +68,28 @@ func change_parent( p: Node = null ):
 	#var t_before: Transform = self.transform
 	#var se3: Se3Ref = self.relative_to( p )
 	.change_parent( p )
+	
+	# First need to remove all physical joints.
+	for b in sub_bodies:
+		# Only parts have this method, so check if it exists first.
+		var has: bool = b.has_method( "deactivate_nodes" )
+		if has:
+			b.deactivate_nodes( false )
+	
 	#var t_after: Transform = self.transform
 	for b in sub_bodies:
 		#t_before = b.transform
 		b.change_parent_inner( p )
 		#t_after = b.transform
+	
+	
+	# After physics bodies are created for all sub-bodies, 
+	# Create connecting joints.
+	for b in sub_bodies:
+		# Only parts have this method, so check if it exists first.
+		var has: bool = b.has_method( "deactivate_nodes" )
+		if has:
+			b.activate_nodes( false )
 
 
 func distance_max( other: RefFrameNode ):

@@ -108,24 +108,7 @@ func activate( root_call: bool = true ):
 	# If activated, not in construction anymore.
 	mode = PartMode.SIMULATION
 	
-	# Get all connected parts and switch them as well.
-	var nodes_qty: int = stacking_nodes.size()
-	for i in range(nodes_qty):
-		var n: CouplingNodeStacking = stacking_nodes[i]
-		var c: bool = n.connected()
-		if not c:
-			continue
-		var p: Part = n.node_b.part
-		p.activate( false )
-	
-	for i in range(nodes_qty):
-		var n: CouplingNodeStacking = stacking_nodes[i]
-		var c: bool = n.connected()
-		if not c:
-			continue
-		if not n.is_parent:
-			continue
-		n.activate()
+	activate_nodes( true )
 	
 	# Create super body. Through it controls are computed and 
 	# merge/split ref frames are computed.
@@ -154,7 +137,43 @@ func activate( root_call: bool = true ):
 func deactivate( root_call: bool = true ):
 	.deactivate(root_call)
 	
-		# Get all connected parts and switch them as well.
+	deactivate_nodes( true )
+	
+	# Need to make sure that not in a construction mode.
+	# In construction mode super body is provided externally 
+	# And provides additional context menu GUIs.
+	if root_call and (mode != PartMode.CONSTRUCTION):
+		if super_body != null:
+			super_body.queue_free()
+			super_body = null
+
+
+
+
+func activate_nodes( activate_parts: bool = false ):
+	# Get all connected parts and switch them as well.
+	var nodes_qty: int = stacking_nodes.size()
+	if activate_parts:
+		for i in range(nodes_qty):
+			var n: CouplingNodeStacking = stacking_nodes[i]
+			var c: bool = n.connected()
+			if not c:
+				continue
+			var p: Part = n.node_b.part
+			p.activate( false )
+	
+	for i in range(nodes_qty):
+		var n: CouplingNodeStacking = stacking_nodes[i]
+		var c: bool = n.connected()
+		if not c:
+			continue
+		if not n.is_parent:
+			continue
+		n.activate()
+
+
+func deactivate_nodes( deactivate_parts: bool = false ):
+	# Get all connected parts and switch them as well.
 	var nodes_qty: int = stacking_nodes.size()
 	for i in range(nodes_qty):
 		var n: CouplingNodeStacking = stacking_nodes[i]
@@ -165,23 +184,14 @@ func deactivate( root_call: bool = true ):
 			continue
 		n.deactivate()
 	
-	for i in range(nodes_qty):
-		var n: CouplingNodeStacking = stacking_nodes[i]
-		var c: bool = n.connected()
-		if not c:
-			continue
-		var p: Part = n.part_b.part
-		p.deactivate( false )
-	
-	# Need to make sure that not in a construction mode.
-	# In construction mode super boy is provided externally 
-	# And provides additional context menu GUIs.
-	if root_call and (mode != PartMode.CONSTRUCTION):
-		if super_body != null:
-			super_body.queue_free()
-			super_body = null
-
-
+	if deactivate_parts:
+		for i in range(nodes_qty):
+			var n: CouplingNodeStacking = stacking_nodes[i]
+			var c: bool = n.connected()
+			if not c:
+				continue
+			var p: Part = n.part_b.part
+			p.deactivate( false )
 
 
 func set_show_node_visuals( en: bool ):

@@ -336,7 +336,7 @@ func split_if_needed():
 	# Check on which side the user controlled body is.
 	var player_in_b: bool = false
 	for body in bodies_b:
-		var has_player: bool = body.has_player_control
+		var has_player: bool = body.has_player_control()
 		if has_player:
 			# Swap bodies_a  and bodies_b
 			var bodies_c: Array = bodies_b
