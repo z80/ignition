@@ -234,7 +234,6 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
 
     if ( !allow_orbiting )
     {
-        const Float abs_v = se3_.v_.Length();
         type = STATIONARY;
         return;
     }

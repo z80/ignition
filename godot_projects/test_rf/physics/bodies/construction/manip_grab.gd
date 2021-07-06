@@ -429,7 +429,7 @@ func _process_rotating():
 			body.set_q( q )
 			body.set_v( Vector3.ZERO )
 			body.set_w( Vector3.ZERO )
-			body.update_physical_state_from_rf()
+			#body.update_physical_state_from_rf()
 		else:
 			var tt: Transform = target.transform
 			tt.basis = q

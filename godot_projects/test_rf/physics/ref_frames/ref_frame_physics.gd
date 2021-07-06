@@ -72,7 +72,22 @@ func evolve_motion( _dt: float ):
 	if motion == null:
 		return
 	# SE3 is assigned internally.
+	if _dt > 0.1:
+		_dt = 0.1
 	motion.process_rf( _dt, self )
+	
+#	var t: String = motion.movement_type()
+#	if t == "idle":
+#		return
+#	var se3: Se3Ref = motion.se3
+#	var r: Vector3 = se3.r
+#	var v: Vector3 = se3.v
+#	var l: float = motion.specific_angular_momentum()
+#	print( "movement type: ", t )
+#	print( "spec ang mom:  ", l )
+#	print( "r:             ", r )
+#	print( "v:             ", v )
+#	print( "" )
 
 
 
@@ -168,6 +183,11 @@ func is_active():
 
 
 func jump( t: Transform, v: Vector3=Vector3.ZERO ):
+	# Debug output.
+	var tp: String = motion.movement_type()
+	var dbg: bool = (tp != "idle")
+	self.debug = dbg
+	
 	t.basis = Basis.IDENTITY
 	self.set_jump_t( t )
 	self.set_jump_v( v )
@@ -176,8 +196,31 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	# Update SE3 in orbital motion.
 	var se3: Se3Ref = self.get_se3()
 	motion.se3 = se3
-	motion.get_meta( "a" )
+
+	# Turn debug off and keep with debug output.
+	self.debug = false
 	
+	if tp == "idle":
+		return
+	se3 = motion.se3
+	var r: Vector3 = se3.r
+	v = se3.v
+	var l: float = motion.specific_angular_momentum()
+	print( "movement type: ", t )
+	print( "spec ang mom:  ", l )
+	print( "r:             ", r )
+	print( "v:             ", v )
+
+	var v_accum: Vector3 = Vector3.ZERO
+	var bodies: Array = child_bodies( false )
+	var qty: int = bodies.size()
+	for b in bodies:
+		var vv: Vector3 = b.v()
+		v_accum += vv
+	v_accum /= float( qty )
+
+	print( "" )
+
 	#var after_t: Transform = self.t()
 
 	#var poses_after: Array = []

@@ -329,6 +329,19 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 	}
 
 
+	if ( debug_ )
+	{
+		const SE3 sold = se3_;
+		const SE3 snew = dest_se3_adjusted;
+		String stri = String( this->get_name() ) + String( ": v0: (" )
+			+ rtos( sold.v_.x_ ) + String( ", " ) 
+			+ rtos( sold.v_.y_ ) + String( ", " ) 
+			+ rtos( sold.v_.z_ ) + String( "), v1: (" ) 
+			+ rtos( sold.v_.x_ ) + String( ", " ) 
+			+ rtos( sold.v_.y_ ) + String( ", " ) 
+			+ rtos( sold.v_.z_ ) + String( ")" );
+		print_line( stri );
+	}
 	for ( int i=0; i<qty; i++ )
 	{
 		Node * n = get_child( i );
@@ -336,6 +349,19 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 		if ( !ch )
 			continue;
 		const SE3 se3_child_to = ch->relative_( dest_rf, SE3(), dest_se3_adjusted );
+		if ( debug_ )
+		{
+			const SE3 sold = ch->se3_;
+			const SE3 snew = se3_child_to;
+			String stri = String( "    " ) + String( ch->get_name() ) + String( ": v0: (" )
+				          + rtos( sold.v_.x_ ) + String( ", " ) 
+				          + rtos( sold.v_.y_ ) + String( ", " ) 
+						  + rtos( sold.v_.z_ ) + String( "), v1: (" ) 
+						  + rtos( sold.v_.x_ ) + String( ", " ) 
+				          + rtos( sold.v_.y_ ) + String( ", " ) 
+				          + rtos( sold.v_.z_ ) + String( ")" );
+			print_line( stri );
+		}
 		ch->se3_ = se3_child_to;
 	}
 

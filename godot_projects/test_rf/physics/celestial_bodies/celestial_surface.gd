@@ -240,10 +240,22 @@ func process_ref_frames_rotating_to_orbiting():
 	var exclusion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_EXCLUDE_DIST
 	if dist >= exclusion_dist:
 		rf.change_parent( tr )
+		#rf.jump_to( tr, se3 )
 		rf.allow_orbiting = true
 		se3 = rf.get_se3()
 		rf.launch( gm, se3 )
 		print( "rotating -> orbiting" )
+		
+		var m: CelestialMotionRef = rf.motion
+		var t: String = m.movement_type()
+		var l: float = m.specific_angular_momentum()
+		se3 = m.se3
+		var r: Vector3 = se3.r
+		var v: Vector3 = se3.v
+		print( "movement type: ", t )
+		print( "spec ang mom:  ", l )
+		print( "r:             ", r )
+		print( "v:             ", v )
 
 
 
