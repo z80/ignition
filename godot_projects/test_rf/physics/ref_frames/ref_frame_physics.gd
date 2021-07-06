@@ -187,6 +187,9 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	var tp: String = motion.movement_type()
 	var dbg: bool = (tp != "idle")
 	self.debug = dbg
+	if dbg:
+		print( "" )
+		print( "jump with debug output:" )
 	
 	t.basis = Basis.IDENTITY
 	self.set_jump_t( t )
@@ -260,8 +263,12 @@ func jump_if_needed():
 	var v: Vector3 = Vector3.ZERO
 	if self.allow_orbiting:
 		for b in bodies:
+			if b.get_class() == "PartAssembly":
+				qty -= 1
+				continue
 			v += b.v()
-		v /= float( qty )
+		if qty > 0:
+			v /= float( qty )
 	
 	var dist: float = r.length()
 	if dist < Constants.RF_JUMP_DISTANCE:
@@ -555,7 +562,8 @@ func process_body( force_source_rf: RefFrameNode, body: RefFrameNode, up_defined
 	
 	var ret: Array = []
 	var fs: ForceSource = force_source_rf.force_source
-	fs.compute_force( body, r, v, q, w, ret )
+	var orbiting: bool = self.is_orbiting()
+	fs.compute_force( body, orbiting, r, v, q, w, ret )
 	if not up_defined:
 		var defines_vertical: bool = fs.defines_vertical()
 		if defines_vertical:
@@ -634,6 +642,11 @@ func on_delete():
 	_subdivide_source_physical = null
 	
 
+
+func is_orbiting():
+	var t: String = motion.movement_type()
+	var ret: bool = (t != "idle")
+	return ret
 
 
 

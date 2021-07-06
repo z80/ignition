@@ -27,13 +27,12 @@ func get_class():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	add_to_group( Constants.CELESTIAL_BODIES_NAME )
 	init()
 
 
 func init_force_source():
 	.init_force_source()
-	
-	add_to_group( Constants.CELESTIAL_BODIES_NAME )
 	
 	force_source = ForceSourceGravity.new()
 	force_source.GM = gm

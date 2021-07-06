@@ -337,9 +337,9 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 			+ rtos( sold.v_.x_ ) + String( ", " ) 
 			+ rtos( sold.v_.y_ ) + String( ", " ) 
 			+ rtos( sold.v_.z_ ) + String( "), v1: (" ) 
-			+ rtos( sold.v_.x_ ) + String( ", " ) 
-			+ rtos( sold.v_.y_ ) + String( ", " ) 
-			+ rtos( sold.v_.z_ ) + String( ")" );
+			+ rtos( snew.v_.x_ ) + String( ", " ) 
+			+ rtos( snew.v_.y_ ) + String( ", " ) 
+			+ rtos( snew.v_.z_ ) + String( ")" );
 		print_line( stri );
 	}
 	for ( int i=0; i<qty; i++ )
@@ -357,9 +357,9 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 				          + rtos( sold.v_.x_ ) + String( ", " ) 
 				          + rtos( sold.v_.y_ ) + String( ", " ) 
 						  + rtos( sold.v_.z_ ) + String( "), v1: (" ) 
-						  + rtos( sold.v_.x_ ) + String( ", " ) 
-				          + rtos( sold.v_.y_ ) + String( ", " ) 
-				          + rtos( sold.v_.z_ ) + String( ")" );
+						  + rtos( snew.v_.x_ ) + String( ", " ) 
+				          + rtos( snew.v_.y_ ) + String( ", " ) 
+				          + rtos( snew.v_.z_ ) + String( ")" );
 			print_line( stri );
 		}
 		ch->se3_ = se3_child_to;

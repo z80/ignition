@@ -11,6 +11,10 @@ class_name PartAssembly
 var sub_bodies: Array = []
 
 
+func get_class():
+	return "PartAssembly"
+
+
 func _enter_tree():
 	# If physics body is already created it shouldn't hurt 
 	# anything.
@@ -154,16 +158,21 @@ func distance( other: RefFrameNode ):
 
 func update_pose():
 	# Loop over all sub bodies.
-	var at: Vector3 = Vector3.ZERO
+	var r_accum: Vector3 = Vector3.ZERO
+	var v_accum: Vector3 = Vector3.ZERO
 	for body in sub_bodies:
 		var r: Vector3 = body.r()
-		at += r
+		r_accum += r
+		var v: Vector3 = body.v()
+		v_accum += v
 	
 	var qty: int = sub_bodies.size()
 	if qty > 0:
-		at = at / qty
+		r_accum = r_accum / qty
+		v_accum = v_accum / qty
 	
-	self.set_r( at )
+	self.set_r( r_accum )
+	self.set_v( v_accum )
 
 
 

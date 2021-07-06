@@ -5,11 +5,17 @@ class_name ForceSourceGravity
 export(float) var GM = 1.0
 
 
-func compute_force( body: RefFrameNode, r: Vector3, v: Vector3, q: Quat, w: Vector3, ret: Array ):
+func compute_force( body: RefFrameNode, is_orbiting: bool, r: Vector3, v: Vector3, q: Quat, w: Vector3, ret: Array ):
 	# Later need to add body's mass to the formula.
 	# For now it comuted free fall acceleration.
-	var abs_r: float = r.length()
-	if ( abs_r < 0.001 ):
+	var abs_r: float
+	var dont_compute: bool = is_orbiting
+	if not dont_compute:
+		abs_r = r.length()
+		if ( abs_r < 0.001 ):
+			dont_compute = true
+	
+	if dont_compute:
 		ret.clear()
 		ret.push_back( Vector3.ZERO )
 		ret.push_back( Vector3.ZERO )
