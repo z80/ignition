@@ -10,6 +10,7 @@ Here is the battle plan.
 - [ ] Make player characters to get in/out a habitat module.
 - [ ] Trajectory visualization. In a separate viewport???
 - [ ] Continuous scale application on every frame and recomputing the landscape on indication. Now it is both applied when needed and on every rf jump.
+- [ ] Apply scaler on every visual frame. It is especially needed for celestial bodies. Pitching up edges do look weird.
 
 
 
