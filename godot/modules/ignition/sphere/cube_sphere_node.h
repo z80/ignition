@@ -74,6 +74,7 @@ public:
 
 	void relocate_mesh( Node * ref_frame, Node * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source );
 	void rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source );
+	void rebuild_scale( Node * ref_frame );
 	void apply_visual_mesh();
 
 private:
@@ -82,6 +83,7 @@ private:
     void adjust_pose( RefFrameNode * ref_frame, RefFrameNode * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source );
     void init_levels();
 
+	void apply_scale( RefFrameNode * ref_frame );
     void scale_close( const SE3 center_relative_to_ref_frame, const SE3 & poi_relative_to_center );
     void scale_far( const SE3 center_relative_to_ref_frame, const SE3 & poi_relative_to_center );
     void scale_neutral( const SE3 & poi_relative_to_center );
@@ -122,7 +124,7 @@ public:
     // It applies scale depending on the distance.
     Ref<DistanceScalerRef> scale;
     // Should apply scale at all.
-    bool apply_scale;
+    bool _apply_scale;
     // How far measured in sphere radie scaling mode shifts from "close" to "far"
     // and vise versa.
     Float scale_mode_distance;

@@ -11,7 +11,7 @@ namespace Ign
 struct CubeVertex
 {
 public:
-    Vector3d at, atFlat, atUnit;
+    Vector3d at, atFlat, atUnit, atScaled;
     Float heightUnit_;
     Vector3d norm;
     Color    color;

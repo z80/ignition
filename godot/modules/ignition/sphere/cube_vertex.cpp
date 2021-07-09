@@ -25,6 +25,7 @@ CubeVertex::CubeVertex( const Vector3d & at )
     this->atFlat = at;
     this->atUnit = at;
     this->at     = at;
+	this->atScaled = at;
 }
 
 CubeVertex::CubeVertex( const CubeVertex & inst )
@@ -39,6 +40,7 @@ const CubeVertex & CubeVertex::operator=( const CubeVertex & inst )
         atFlat  = inst.atFlat;
         atUnit  = inst.atUnit;
         at   = inst.at;
+		atScaled = inst.atScaled;
         heightUnit_ = inst.heightUnit_;
         norm = inst.norm;
         a    = inst.a;
