@@ -7,7 +7,10 @@ enum BodyState {
 	DYNAMIC=1
 }
 export(BodyState) var body_state = BodyState.DYNAMIC
-
+# When "load" is called nonpermanent objects are destroyed.
+# Permanent objects are not destroyed, they only search for their 
+# saved data. Probably, celestial bodies are permanent objects.
+export(bool) var is_permanent = false
 
 # When inheriting need to redefine these two.
 var VisualType   = null
@@ -472,10 +475,19 @@ func _parent_physics_ref_frame():
 
 
 
-
-
-
 func save():
+	var data_self: Dictionary = save_self()
+	var data_children: Array  = save_children()
+	var data: Dictionary = {
+		node     = data_self, 
+		children = data_children
+	}
+	return data
+
+
+
+
+func save_self():
 	var data: Dictionary = {}
 	var fname: String = self.filename
 	# Check the node is an instanced scene so it can be instanced again during load.
@@ -503,6 +515,22 @@ func save():
 	
 	return data
 
+
+# This thing should be called by "save". It just calls "save" for 
+# all children for whom "save" method exists.
+func save_children():
+	var children_data: Dictionary = {}
+	var qty: int = get_child_count()
+	for i in range( qty ):
+		var ch: Node = get_child( i )
+		var has: bool = ch.has_method( "save" )
+		if not has:
+			continue
+		var data: Dictionary = ch.save()
+		var name: String = ch.name
+		children_data[name] = data
+	
+	return children_data
 
 
 
