@@ -475,62 +475,23 @@ func _parent_physics_ref_frame():
 
 
 
-func save():
-	var data_self: Dictionary = save_self()
-	var data_children: Array  = save_children()
-	var data: Dictionary = {
-		node     = data_self, 
-		children = data_children
-	}
-	return data
 
 
 
-
-func save_self():
+func serialize():
 	var data: Dictionary = {}
-	var fname: String = self.filename
-	# Check the node is an instanced scene so it can be instanced again during load.
-	if fname.empty():
-		print( "persistent node '%s' is not an instanced scene, skipped" % fname )
-		return data
-	
-	# To be able to actually create it.
-	data["filename"] = fname
-	
-	# To assign the name.
-	data["name"]     = self.name
-	
-	# To assign it to a parent.
-	var parent = self.get_parent()
-	if parent != null:
-		data["parent"] = parent.get_path()
-	else:
-		data["parent"] = null
 	
 	# This is one of the properties.
 	var se3: Se3Ref = self.se3
 	var se3_data: Dictionary = se3.save()
 	data["se3"] = se3_data
 	
+	data["body_state"] = int(body_state)
+	
 	return data
 
 
-# This thing should be called by "save". It just calls "save" for 
-# all children for whom "save" method exists.
-func save_children():
-	var children_data: Dictionary = {}
-	var qty: int = get_child_count()
-	for i in range( qty ):
-		var ch: Node = get_child( i )
-		var has: bool = ch.has_method( "save" )
-		if not has:
-			continue
-		var data: Dictionary = ch.save()
-		var name: String = ch.name
-		children_data[name] = data
-	
-	return children_data
 
-
+func deserialize( data: Dictionary ):
+	return true
 
