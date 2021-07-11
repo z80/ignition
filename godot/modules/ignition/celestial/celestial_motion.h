@@ -25,35 +25,35 @@ public:
 
     void stop();
 
-	// Functionality for requesting state.
+    // Functionality for requesting state.
     bool is_orbiting() const;
-	Type movement_type() const;
-	Float specific_angular_momentum() const;
-	Float eccentricity() const;
-	Float period() const;
-	Float time_after_periapsis() const;
-	Float closest_approach() const;
-	Float perigee() const;
-	Float apogee() const;
-	Float min_velocity() const;
-	Float max_velocity() const;
-	Float excess_velocity() const;
-	Float deflection_angle() const;
-	// Orbit orientation.
-	// From focus towards perigee.
-	Vector3d ex() const;
-	// Along velocity at perigee.
-	Vector3d ey() const;
+    Type movement_type() const;
+    Float specific_angular_momentum() const;
+    Float eccentricity() const;
+    Float period() const;
+    Float time_after_periapsis() const;
+    Float closest_approach() const;
+    Float perigee() const;
+    Float apogee() const;
+    Float min_velocity() const;
+    Float max_velocity() const;
+    Float excess_velocity() const;
+    Float deflection_angle() const;
+    // Orbit orientation.
+    // From focus towards perigee.
+    Vector3d ex() const;
+    // Along velocity at perigee.
+    Vector3d ey() const;
 
 
-	// Functionality needed for processing.
+    // Functionality needed for processing.
     void init( Float gm, const SE3 & se3 );
     static Float init_gm( Float radius_km, Float wanted_surface_orbit_velocity_kms );
     void launch_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity );
     const SE3 & process( Float dt );
 
-	const SE3 & get_se3() const;
-	void set_se3( const SE3 & se3 );
+    const SE3 & get_se3() const;
+    void set_se3( const SE3 & se3 );
 
     Type type;
 

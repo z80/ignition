@@ -1,6 +1,7 @@
 
 #include "celestial_motion_ref.h"
 #include "ref_frame_node.h"
+#include "save_load.h"
 
 namespace Ign
 {
@@ -13,25 +14,25 @@ void CelestialMotionRef::_bind_methods()
     ClassDB::bind_method( D_METHOD("stop"), &CelestialMotionRef::stop );
 
     ClassDB::bind_method( D_METHOD("is_orbiting"), &CelestialMotionRef::is_orbiting, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("movement_type"), &CelestialMotionRef::movement_type, Variant::STRING );
-	ClassDB::bind_method( D_METHOD("specific_angular_momentum"), &CelestialMotionRef::specific_angular_momentum, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("eccentricity"), &CelestialMotionRef::eccentricity, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("period"), &CelestialMotionRef::period, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("time_after_periapsis"), &CelestialMotionRef::time_after_periapsis, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("closest_approach"), &CelestialMotionRef::closest_approach, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("perigee"), &CelestialMotionRef::perigee, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("apogee"), &CelestialMotionRef::apogee, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("min_velocity"), &CelestialMotionRef::min_velocity, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("max_velocity"), &CelestialMotionRef::max_velocity, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("excess_velocity"), &CelestialMotionRef::excess_velocity, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("deflection_angle"), &CelestialMotionRef::deflection_angle, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("ex"), &CelestialMotionRef::ex, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("ey"), &CelestialMotionRef::ey, Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD("movement_type"), &CelestialMotionRef::movement_type, Variant::STRING );
+    ClassDB::bind_method( D_METHOD("specific_angular_momentum"), &CelestialMotionRef::specific_angular_momentum, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("eccentricity"), &CelestialMotionRef::eccentricity, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("period"), &CelestialMotionRef::period, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("time_after_periapsis"), &CelestialMotionRef::time_after_periapsis, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("closest_approach"), &CelestialMotionRef::closest_approach, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("perigee"), &CelestialMotionRef::perigee, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("apogee"), &CelestialMotionRef::apogee, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("min_velocity"), &CelestialMotionRef::min_velocity, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("max_velocity"), &CelestialMotionRef::max_velocity, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("excess_velocity"), &CelestialMotionRef::excess_velocity, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("deflection_angle"), &CelestialMotionRef::deflection_angle, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("ex"), &CelestialMotionRef::ex, Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD("ey"), &CelestialMotionRef::ey, Variant::VECTOR3 );
 
-	ClassDB::bind_method( D_METHOD("set_se3", "se3"), &CelestialMotionRef::set_se3 );
-	ClassDB::bind_method( D_METHOD("get_se3"),        &CelestialMotionRef::get_se3, Variant::OBJECT );
+    ClassDB::bind_method( D_METHOD("set_se3", "se3"), &CelestialMotionRef::set_se3 );
+    ClassDB::bind_method( D_METHOD("get_se3"),        &CelestialMotionRef::get_se3, Variant::OBJECT );
 
-	ClassDB::bind_method( D_METHOD("get_gm"),        &CelestialMotionRef::get_gm, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("get_gm"),        &CelestialMotionRef::get_gm, Variant::REAL );
 
     ClassDB::bind_method( D_METHOD("init", "gm", "se3"), &CelestialMotionRef::init );
     ClassDB::bind_method( D_METHOD("init_gm", "radius_km", "suface_orbit_velocity_kms"), &CelestialMotionRef::init_gm );
@@ -42,7 +43,7 @@ void CelestialMotionRef::_bind_methods()
 
 
     ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "allow_orbiting" ),       "set_allow_orbiting",       "get_allow_orbiting" );
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),                  "set_se3",                  "get_se3" );
+    ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),                  "set_se3",                  "get_se3" );
 }
 
 CelestialMotionRef::CelestialMotionRef()
@@ -77,127 +78,127 @@ bool CelestialMotionRef::is_orbiting() const
 
 String CelestialMotionRef::movement_type() const
 {
-	CelestialMotion::Type t = cm.movement_type();
-	String ret;
-	switch (t)
-	{
-	case CelestialMotion::NUMERIC:
-		ret = "numeric";
-		break;
-	case CelestialMotion::ELLIPTIC:
-		ret = "elliptic";
-		break;
-	case CelestialMotion::PARABOLIC:
-		ret = "parabolic";
-		break;
-	case CelestialMotion::HYPERBOLIC:
-		ret = "hyperbolic";
-	default:
-		ret = "idle";
-	}
+    CelestialMotion::Type t = cm.movement_type();
+    String ret;
+    switch (t)
+    {
+    case CelestialMotion::NUMERIC:
+        ret = "numeric";
+        break;
+    case CelestialMotion::ELLIPTIC:
+        ret = "elliptic";
+        break;
+    case CelestialMotion::PARABOLIC:
+        ret = "parabolic";
+        break;
+    case CelestialMotion::HYPERBOLIC:
+        ret = "hyperbolic";
+    default:
+        ret = "idle";
+    }
 
-	return ret;
+    return ret;
 }
 
 real_t CelestialMotionRef::specific_angular_momentum() const
 {
-	const real_t ret = cm.specific_angular_momentum();
-	return ret;
+    const real_t ret = cm.specific_angular_momentum();
+    return ret;
 }
 
 real_t CelestialMotionRef::eccentricity() const
 {
-	const real_t ret = cm.eccentricity();
-	return ret;
+    const real_t ret = cm.eccentricity();
+    return ret;
 }
 
 real_t CelestialMotionRef::period() const
 {
-	const real_t ret = cm.period();
-	return ret;
+    const real_t ret = cm.period();
+    return ret;
 }
 
 real_t CelestialMotionRef::time_after_periapsis() const
 {
-	const real_t ret = cm.time_after_periapsis();
-	return ret;
+    const real_t ret = cm.time_after_periapsis();
+    return ret;
 }
 
 real_t CelestialMotionRef::closest_approach() const
 {
-	const real_t ret = cm.closest_approach();
-	return ret;
+    const real_t ret = cm.closest_approach();
+    return ret;
 }
 
 real_t CelestialMotionRef::perigee() const
 {
-	const real_t ret = cm.perigee();
-	return ret;
+    const real_t ret = cm.perigee();
+    return ret;
 }
 
 real_t CelestialMotionRef::apogee() const
 {
-	const real_t ret = cm.apogee();
-	return ret;
+    const real_t ret = cm.apogee();
+    return ret;
 }
 
 real_t CelestialMotionRef::min_velocity() const
 {
-	const real_t ret = cm.min_velocity();
-	return ret;
+    const real_t ret = cm.min_velocity();
+    return ret;
 }
 
 real_t CelestialMotionRef::max_velocity() const
 {
-	const real_t ret = cm.max_velocity();
-	return ret;
+    const real_t ret = cm.max_velocity();
+    return ret;
 }
 
 real_t CelestialMotionRef::excess_velocity() const
 {
-	const real_t ret = cm.excess_velocity();
-	return ret;
+    const real_t ret = cm.excess_velocity();
+    return ret;
 }
 
 real_t CelestialMotionRef::deflection_angle() const
 {
-	const real_t ret = cm.deflection_angle();
-	return ret;
+    const real_t ret = cm.deflection_angle();
+    return ret;
 }
 
 Vector3 CelestialMotionRef::ex() const
 {
-	const Vector3d e = cm.ex();
-	const Vector3 ret( e.x_, e.y_, e.z_ );
-	return ret;
+    const Vector3d e = cm.ex();
+    const Vector3 ret( e.x_, e.y_, e.z_ );
+    return ret;
 }
 
 Vector3 CelestialMotionRef::ey() const
 {
-	const Vector3d e = cm.ey();
-	const Vector3 ret( e.x_, e.y_, e.z_ );
-	return ret;
+    const Vector3d e = cm.ey();
+    const Vector3 ret( e.x_, e.y_, e.z_ );
+    return ret;
 }
 
 
 void CelestialMotionRef::set_se3( const Ref<Se3Ref> & se3 )
 {
-	cm.set_se3( se3->se3 );
+    cm.set_se3( se3->se3 );
 }
 
 
 Ref<Se3Ref> CelestialMotionRef::get_se3() const
 {
-	const SE3 se3 = cm.get_se3();
-	Ref<Se3Ref> se3_ref;
-	se3_ref.instance();
-	se3_ref->se3 = se3;
-	return se3_ref;
+    const SE3 se3 = cm.get_se3();
+    Ref<Se3Ref> se3_ref;
+    se3_ref.instance();
+    se3_ref->se3 = se3;
+    return se3_ref;
 }
 
 real_t CelestialMotionRef::get_gm() const
 {
-	return cm.gm;
+    return cm.gm;
 }
 
 
@@ -247,11 +248,29 @@ Ref<CelestialMotionRef> CelestialMotionRef::duplicate() const
 
 Dictionary CelestialMotionRef::serialize() const
 {
-	Dictionary data;
+    Dictionary data;
+    data["type"]           = static_cast<int>( cm.type );
+    data["allow_orbiting"] = cm.allow_orbiting;
+    serialize_vector( cm.h, "h", data );
+    serialize_vector( cm.e, "e", data );
+    data["abs_e"]            = cm.abs_e;
+    data["a"]                = cm.a;
+    serialize_matrix( cm.A, "A", data );
+    serialize_matrix( cm.inv_A, "inv_A", data );
+    data["slr"]              = cm.slr;
+    data["E"]                = cm.E;
+    data["n"]                = cm.n;
+    data["periapsis_t"]      = cm.periapsis_t;
+    data["T"]                = cm.T;
+    data["b"]                = cm.b;
+
+	return data;
 }
 
 bool CelestialMotionRef::deserialize( const Dictionary & data )
 {
+
+	return true;
 }
 
 
