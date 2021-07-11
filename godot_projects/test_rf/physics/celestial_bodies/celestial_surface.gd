@@ -116,7 +116,7 @@ func init():
 
 
 
-func process( delta: float, force_player_rf: RefFrame = null ):
+func process( delta: float, force_player_rf: RefFrameNode = null ):
 	process_motion( delta )
 	process_geometry( force_player_rf )
 	process_rescale( force_player_rf )
@@ -136,7 +136,7 @@ func process_motion( delta ):
 
 
 
-func process_geometry( force_player_rf: RefFrame = null ):
+func process_geometry( force_player_rf: RefFrameNode = null ):
 	var player_rf: RefFrameNode
 	var player_ctrl: RefFrameNode
 	if force_player_rf != null:
@@ -187,7 +187,7 @@ func process_geometry( force_player_rf: RefFrame = null ):
 
 
 
-func process_rescale( force_player_rf: RefFrame = null ):
+func process_rescale( force_player_rf: RefFrameNode = null ):
 	var player_rf: RefFrameNode
 	if force_player_rf != null:
 		player_rf = force_player_rf
