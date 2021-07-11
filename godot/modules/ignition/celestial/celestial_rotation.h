@@ -11,17 +11,17 @@ namespace Ign
 class CelestialRotation
 {
 public:
-	CelestialRotation();
-	~CelestialRotation();
+    CelestialRotation();
+    ~CelestialRotation();
 
-	void init( const Vector3d & up, Float period_hrs );
-	const SE3 & process( Float dt );
+    void init( const Vector3d & up, Float period_hrs );
+    const SE3 & process( Float dt );
 
-	bool             spinning;
-	Celestial::Ticks period;
-	Celestial::Ticks time;
-	Quaterniond      axis_orientation;
-	SE3              se3;
+    bool             spinning;
+    Celestial::Ticks period;
+    Celestial::Ticks time;
+    Quaterniond      axis_orientation;
+    SE3              se3;
 };
 
 

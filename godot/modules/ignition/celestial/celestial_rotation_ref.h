@@ -23,6 +23,9 @@ public:
     void init( const Vector3 & up, real_t period_hrs );
     void process_rf( real_t dt, Node * rf );
 
+    Dictionary serialize() const;
+    bool deserialize( const Dictionary & data );
+
 public:
     CelestialRotation celestial_rotation;
 };

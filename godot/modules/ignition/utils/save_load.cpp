@@ -28,6 +28,34 @@ Vector3d deserialize_vector( const String & name, const Dictionary & data )
     return v;
 }
 
+void serialize_quat( const Quaterniond & v, const String & name, Dictionary & data )
+{
+    String n = name + String( "_x" );
+    data[n] = v.x_;
+    n = name + String( "_y" );
+    data[n] = v.y_;
+    n = name + String( "_z" );
+    data[n] = v.z_;
+    n = name + String( "_w" );
+    data[n] = v.w_;
+}
+
+Quaterniond deserialize_quat( const String & name, const Dictionary & data )
+{
+    Quaterniond v;
+    String n = name + String( "_x" );
+    v.x_ = data[n];
+    n = name + String( "_y" );
+    v.y_ = data[n];
+    n = name + String( "_z" );
+    v.z_ = data[n];
+    n = name + String( "_w" );
+    v.w_ = data[n];
+
+
+    return v;
+}
+
 
 void serialize_matrix( const Matrix3d & v, const String & name, Dictionary & data )
 {

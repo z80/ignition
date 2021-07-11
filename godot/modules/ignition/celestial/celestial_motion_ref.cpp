@@ -263,14 +263,33 @@ Dictionary CelestialMotionRef::serialize() const
     data["periapsis_t"]      = cm.periapsis_t;
     data["T"]                = cm.T;
     data["b"]                = cm.b;
+    data["se3_local"]        = cm.se3_local.serialize();
+    data["se3_global"]       = cm.se3_global.serialize();
 
-	return data;
+    return data;
 }
 
 bool CelestialMotionRef::deserialize( const Dictionary & data )
 {
+	const int t = data["type"];
+    cm.type           = static_cast<CelestialMotion::Type>( t );
+    cm.allow_orbiting = data["allow_orbiting"];
+    cm.h              = deserialize_vector( "h", data );
+    cm.e              = deserialize_vector( "e", data );
+    cm.abs_e          = data["abs_e"];
+	cm.a              = data["a"];
+    cm.A              = deserialize_matrix( "A", data );
+    cm.inv_A          = deserialize_matrix( "inv_A", data );
+    cm.slr            = data["slr"];
+    cm.E              = data["E"];
+    cm.n              = data["n"];
+    cm.periapsis_t    = data["periapsis_t"];
+    cm.T              = data["T"];
+    cm.b              = data["b"];
+    cm.se3_local.deserialize( data["se3_local"] );
+    cm.se3_global.deserialize( data["se3_global"] );
 
-	return true;
+    return true;
 }
 
 
