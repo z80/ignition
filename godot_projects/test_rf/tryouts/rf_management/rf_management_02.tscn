@@ -24,10 +24,10 @@ transparency_scale_outer_km = 3.0
 transparency_scale_inner_km = 1.0
 
 [node name="Moon" parent="Sun/Planet" instance=ExtResource( 1 )]
+height_source_name = "moon"
 rotation_period_hrs = 0.3
 surface_orbital_vel_kms = 0.015
 orbital_period_hrs = 2.0
-height_source_name = "moon"
 atmosphere_height_km = 0.15
 
 [node name="Camera" parent="." instance=ExtResource( 3 )]

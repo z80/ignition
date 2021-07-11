@@ -61,6 +61,9 @@ public:
 
     Ref<CelestialMotionRef> duplicate() const;
 
+	Dictionary serialize() const;
+	bool deserialize( const Dictionary & data );
+
 public:
     CelestialMotion cm;
 };

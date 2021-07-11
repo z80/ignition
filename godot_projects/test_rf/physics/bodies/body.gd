@@ -12,6 +12,10 @@ export(BodyState) var body_state = BodyState.DYNAMIC
 # saved data. Probably, celestial bodies are permanent objects.
 export(bool) var is_permanent = false
 
+# Should have an interaction icon onit or not.
+# For example, for collision mesh it is not needed.
+export(bool) var use_interact_icon = true
+
 # When inheriting need to redefine these two.
 var VisualType   = null
 var PhysicalType = null
@@ -328,6 +332,9 @@ func show_click_container():
 
 
 func _process_interact_icon():
+	if not use_interact_icon:
+		return
+	
 	var cam = PhysicsManager.camera
 	if (cam == null) or (_visual == null):
 		return
@@ -482,7 +489,7 @@ func serialize():
 	var data: Dictionary = {}
 	
 	# This is one of the properties.
-	var se3: Se3Ref = self.se3
+	var se3: Se3Ref = self.get_se3()
 	var se3_data: Dictionary = se3.save()
 	data["se3"] = se3_data
 	

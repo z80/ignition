@@ -245,6 +245,16 @@ Ref<CelestialMotionRef> CelestialMotionRef::duplicate() const
     return ret;
 }
 
+Dictionary CelestialMotionRef::serialize() const
+{
+	Dictionary data;
+}
+
+bool CelestialMotionRef::deserialize( const Dictionary & data )
+{
+}
+
+
 
 }
 
