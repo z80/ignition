@@ -64,9 +64,30 @@ func process_ref_frames( celestial_bodies: Array ):
 	if (biggest_influence_body != null) and (biggest_influence_body != self):
 		# Need to teleport celestial body to that other celestial body
 		rf.change_parent( biggest_influence_body )
+
+
+
+
+
+
+func serialize():
+	var data: Ditionary = {}
+	data["glow_size"] = glow_size
+	data["ray_scale"] = ray_scale
+	data["ray_size"]  = ray_size
+	data["ray_bias"]  = ray_bias
 	
+	return data
 
 
+
+
+func deserialize( data: Dictionary ):
+	glow_size = data["glow_size"]
+	ray_scale = data["ray_scale"]
+	ray_size  = data["ray_size"]
+	ray_bias  = data["ray_bias"]
+	return true
 
 
 
