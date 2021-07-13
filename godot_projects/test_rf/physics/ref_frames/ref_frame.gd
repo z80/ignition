@@ -157,6 +157,6 @@ func deserialize( data: Dictionary ):
 	self.set_se3( se3 )
 	
 	return true
-	
+
 
 

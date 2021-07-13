@@ -69,7 +69,7 @@ func init():
 		return
 	initialized = true
 	
-	add_to_group( Constants.SPHERES_GROUP_NAME )
+	add_to_group( Constants.PLANETS_GROUP_NAME )
 	
 	_subdivide_source_visual = SubdivideSourceRef.new()
 	

@@ -81,35 +81,14 @@ func gravitational_influence( se3: Se3Ref ):
 
 
 func serialize():
-	var data: Dictionary = {}
-	data["rotation_period_hrs"]     = rotation_period_hrs
-	data["rotation_axis"]           = rotation_axis
-	data["surface_orbital_vel_kms"] = surface_orbital_vel_kms
-	data["radius_km"]               = radius_km
-	data["height_km"]               = height_km
-
-	data["perigee_dir"]             = perigee_dir
-	data["perigee_vel"]             = perigee_vel
-	data["orbital_period_hrs"]      = orbital_period_hrs
-	data["orbital_eccentricity"]    = orbital_eccentricity
-	
+	var data: Dictionary = .serialize()
 	return data
 
 
 
 func deserialize( data: Dictionary ):
-	rotation_period_hrs     = data["rotation_period_hrs"]
-	rotation_axis           = data["rotation_axis"]
-	surface_orbital_vel_kms = data["surface_orbital_vel_kms"]
-	radius_km               = data["radius_km"]
-	height_km               = data["height_km"]
-
-	perigee_dir             = data["perigee_dir"]
-	perigee_vel             = data["perigee_vel"]
-	orbital_period_hrs      = data["orbital_period_hrs"]
-	orbital_eccentricity    = data["orbital_eccentricity"]
-	
-	return true
+	var ret: bool = .deserialize( data )
+	return ret
 
 
 

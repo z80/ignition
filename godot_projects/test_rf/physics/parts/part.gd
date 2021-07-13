@@ -424,3 +424,46 @@ func process_user_input_2( input: Dictionary ):
 # This one should be overriden by implementations.
 func process_user_input_group( input: Dictionary ):
 	pass
+
+
+
+func serialize():
+	var data: Dictionary = .serialize()
+	data["mode"]          = int(mode)
+	data["control_group"] = int(control_group)
+	
+	# Need to serialize all the nodes.
+	var stacking_nodes_data: Array = []
+	for n in stacking_nodes:
+		var node: CouplingNodeStacking = n
+		var node_data: Dictionary = node.serialize()
+		stacking_nodes_data.push_back( node_data )
+	data["stacking_nodes"] = stacking_nodes_data
+	
+	return data
+
+
+
+func deserialize( data: Dictionary ):
+	var ret: bool = .deserialize( data )
+	if not ret:
+		return false
+	
+	mode          = data["mode"]
+	control_group = data["control_group"]
+	
+	init()
+	# Need to deserialize all the nodes.
+	var stacking_nodes_data: Array = data["stacking_nodes"]
+	var qty: int = stacking_nodes.size()
+	for i in range( qty ):
+		var node_data: Dictionary = stacking_nodes_data[i]
+		var n = stacking_nodes[i]
+		n.deserialize( node_data )
+	
+	return true
+
+
+
+
+

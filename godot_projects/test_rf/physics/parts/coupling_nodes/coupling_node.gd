@@ -186,3 +186,21 @@ func update_joint_pose( t_owner: Transform ):
 
 
 
+func serialize():
+	var data: Dictionary = {}
+	data["node_b_path"] = node_b_path
+	data["is_parent"]   = is_parent
+	data["angle"]       = angle
+	return data
+
+
+func deserialize( data: Dictionary ):
+	node_b_path = data["node_b_path"]
+	is_parent   = data["is_parent"]
+	angle       = data["angle"]
+	if node_b_path.size() > 0:
+		node_b = get_node(node_b_path)
+	else:
+		node_b = null
+	return true
+

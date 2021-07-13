@@ -23,10 +23,6 @@ func _ready():
 
 
 func init():
-	if initialized:
-		return
-	initialized = true
-	
 	add_to_group( Constants.SUN_GROUP_NAME )
 	
 	# Initialize GM.
@@ -71,7 +67,7 @@ func process_ref_frames( celestial_bodies: Array ):
 
 
 func serialize():
-	var data: Ditionary = {}
+	var data: Ditionary = .serialize()
 	data["glow_size"] = glow_size
 	data["ray_scale"] = ray_scale
 	data["ray_size"]  = ray_size
@@ -83,10 +79,14 @@ func serialize():
 
 
 func deserialize( data: Dictionary ):
+	var ret: bool = .deserialize( data )
+	if not ret:
+		return false
 	glow_size = data["glow_size"]
 	ray_scale = data["ray_scale"]
 	ray_size  = data["ray_size"]
 	ray_bias  = data["ray_bias"]
+	init()
 	return true
 
 

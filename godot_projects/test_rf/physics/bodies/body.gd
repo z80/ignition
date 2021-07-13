@@ -55,6 +55,8 @@ func _exit_tree():
 	if to_be_deleted:
 		on_delete()
 
+
+
 func _ready():
 	add_to_group( Constants.BODIES_GROUP_NAME )
 	
@@ -499,6 +501,10 @@ func serialize():
 
 
 
+# When this thing is called all objects are created.
+# So can assume that all saved paths should be valid.
 func deserialize( data: Dictionary ):
 	return true
+
+
 
