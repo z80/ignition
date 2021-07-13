@@ -46,7 +46,7 @@ func _create_other_body():
 	var body: Body = BodyCreator.create( "cube" )
 	body.name = "MyCylinder"
 	
-	var rf: RefFramePhysics = PhysicsManager.create_ref_frame_physics()
+	var rf: RefFrameNode = PhysicsManager.create_ref_frame_physics()
 	rf.name = "OtherRefFramePhysics"
 	var rot = celestial_body.rotation_rf()
 	
