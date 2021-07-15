@@ -4,26 +4,59 @@
 
 static func serialize_all( n: Node ):
 	var data: Dictionary = {}
-	var camera_data: Dictionary     = serialize_camera()
-	var bodies_data: Dictionary     = serialize_bodies( n )
-	var ref_frames_data: Dictionary = serialize_ref_frames_physics( n )
+	
+	var stars_data: Dictionary      = serialize_stars( n )
+	data["stars"] = stars_data
+	
 	var planets_data: Dictionary    = serialize_planets( n )
-	var suns_data: Dictionary       = serialize_suns( n )
+	data["planets"] = planets_data
+	
+	var ref_frames_data: Dictionary = serialize_ref_frames_physics( n )
+	data["ref_frames"] = ref_frames_data
+	
+	var bodies_data: Dictionary     = serialize_bodies( n )
+	data["bodies"] = bodies_data
+	
+	var camera_data: Dictionary     = serialize_camera()
+	data["camera"] = camera_data
+	
+	return data
+
+
 
 
 # Planets and the sun are fixed. No need to establish or 
 # keep parent/child relationship.
 # Argument can be any valid node in the scene tree. It is 
 # used to only get access to the scene root.
-static func serialize_suns( n: Node ):
+static func serialize_stars( n: Node ):
 	var suns: Array = n.get_tree().get_nodes_in_group( Constants.SUN_GROUP_NAME )
 	var suns_data: Dictionary = {}
 	for sun in suns:
 		var data: Dictionary = sun.serialize()
+		var path: String = sun.get_path()
+		var all_data: Dictionary = {
+			data = data, 
+			path = path
+		}
 		var name: String = sun.name
-		suns_data[name] = data
+		suns_data[name] = all_data
 	
 	return suns_data
+
+
+static func deserialize_stars( n: Node, stars_data: Dictionary ):
+	for name in stars_data:
+		var all_data: Dictionary = stars_data[name]
+		var path: String = all_data["path"]
+		# This reports error if the node is not found.
+		# So it is net additionally reported here in the code.
+		var star = n.get_node( path )
+		if star == null:
+			continue
+		var data: Dictionary = all_data["data"]
+		star.deserialize()
+		
 
 
 
@@ -36,6 +69,37 @@ static func serialize_planets( n: Node ):
 		planets_data[name] = data
 	
 	return planets_data
+
+
+static func deserialize_planets( n: Node, planets_data: Dictionary ):
+	for name in planets_data:
+		var all_data: Dictionary = planets_data[name]
+		var path: String = all_data["path"]
+		# This reports error if the node is not found.
+		# So it is net additionally reported here in the code.
+		var planet = n.get_node( path )
+		if planet == null:
+			continue
+		var data: Dictionary = all_data["data"]
+		planet.deserialize()
+
+
+
+static func serialize_ref_frames_physics( n: Node ):
+	var ref_frames: Array = n.get_tree().get_nodes_in_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
+	var rfs_data: Dictionary = {}
+	for rf in ref_frames:
+		var data: Dictionary = rf.serialize()
+		var name: String = rf.name
+		var parentpath: String = rf.get_parent().get_path()
+		var all_data: Dictionary = {
+			parentpath = parentpath, 
+			data = data
+		}
+		rfs_data[name] = all_data
+	
+	return rfs_data
+
 
 
 static func serialize_bodies( n: Node ):
@@ -58,20 +122,6 @@ static func serialize_bodies( n: Node ):
 
 
 
-static func serialize_ref_frames_physics( n: Node ):
-	var ref_frames: Array = n.get_tree().get_nodes_in_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
-	var rfs_data: Dictionary = {}
-	for rf in ref_frames:
-		var data: Dictionary = rf.serialize()
-		var name: String = rf.name
-		var parentpath: String = rf.get_parent().get_path()
-		var all_data: Dictionary = {
-			parentpath = parentpath, 
-			data = data
-		}
-		rfs_data[name] = all_data
-	
-	return rfs_data
 
 
 
