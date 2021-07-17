@@ -45,12 +45,12 @@ static func deserialize_all( n: Node, data: Dictionary ):
 		return false
 	
 	var bodies_data: Dictionary = data.bodies
-	ret = serialize_bodies( n )
+	ret = deserialize_bodies( n, bodies_data )
 	if not ret:
 		return false
 	
 	var camera_data: Dictionary = data.camera
-	ret = serialize_camera()
+	ret = deserialize_camera( camera_data )
 	if not ret:
 		return false
 	
@@ -154,6 +154,9 @@ static func serialize_ref_frames_physics( n: Node ):
 static func destroy_all_ref_frames_physics( n: Node ):
 	var ref_frames: Array = n.get_tree().get_nodes_in_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
 	for rf in ref_frames:
+		var p = rf.get_parent()
+		if p != null:
+			p.remove_child( rf )
 		rf.queue_free()
 
 
@@ -206,6 +209,9 @@ static func serialize_bodies( n: Node ):
 static func destroy_all_bodies( n: Node ):
 	var bodies: Array = n.get_tree().get_nodes_in_group( Constants.BODIES_GROUP_NAME )
 	for b in bodies:
+		var p = b.get_parent()
+		if p != null:
+			p.remove_child( b )
 		b.queue_free()
 
 
