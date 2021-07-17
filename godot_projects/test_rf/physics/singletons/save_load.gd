@@ -26,6 +26,8 @@ static func serialize_all( n: Node ):
 
 
 static func deserialize_all( n: Node, data: Dictionary ):
+	destroy_all_bodies( n )
+	destroy_all_ref_frames_physics( n )
 	
 	var stars_data: Dictionary = data.stars
 	var ret: bool = deserialize_stars( n, stars_data )
@@ -86,10 +88,14 @@ static func deserialize_stars( n: Node, stars_data: Dictionary ):
 		# So it is net additionally reported here in the code.
 		var star = n.get_node( path )
 		if star == null:
-			continue
+			return false
 		var data: Dictionary = all_data["data"]
-		star.deserialize( data )
-		
+		var ret: bool = star.deserialize( data )
+		if not ret:
+			return false
+	
+	return true
+
 
 
 
@@ -98,8 +104,13 @@ static func serialize_planets( n: Node ):
 	var planets_data: Dictionary = {}
 	for p in planets:
 		var data: Dictionary = p.serialize()
+		var path: String = p.get_path()
 		var name: String = p.name
-		planets_data[name] = data
+		var all_data: Dictionary = {
+			data=data, 
+			path=path
+		}
+		planets_data[name] = all_data
 	
 	return planets_data
 
@@ -137,6 +148,13 @@ static func serialize_ref_frames_physics( n: Node ):
 		rfs_data[name] = all_data
 	
 	return rfs_data
+
+
+
+static func destroy_all_ref_frames_physics( n: Node ):
+	var ref_frames: Array = n.get_tree().get_nodes_in_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
+	for rf in ref_frames:
+		rf.queue_free()
 
 
 
@@ -182,6 +200,15 @@ static func serialize_bodies( n: Node ):
 		bodies_data[name] = all_data
 	
 	return bodies_data
+
+
+
+static func destroy_all_bodies( n: Node ):
+	var bodies: Array = n.get_tree().get_nodes_in_group( Constants.BODIES_GROUP_NAME )
+	for b in bodies:
+		b.queue_free()
+
+
 
 
 static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
