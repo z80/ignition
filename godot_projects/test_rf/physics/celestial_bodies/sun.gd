@@ -67,11 +67,7 @@ func process_ref_frames( celestial_bodies: Array ):
 
 
 func serialize():
-	var data: Ditionary = .serialize()
-	data["glow_size"] = glow_size
-	data["ray_scale"] = ray_scale
-	data["ray_size"]  = ray_size
-	data["ray_bias"]  = ray_bias
+	var data: Dictionary = .serialize()
 	
 	return data
 
@@ -82,10 +78,6 @@ func deserialize( data: Dictionary ):
 	var ret: bool = .deserialize( data )
 	if not ret:
 		return false
-	glow_size = data["glow_size"]
-	ray_scale = data["ray_scale"]
-	ray_size  = data["ray_size"]
-	ray_bias  = data["ray_bias"]
 	init()
 	return true
 

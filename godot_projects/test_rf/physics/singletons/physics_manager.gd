@@ -33,7 +33,7 @@ func _process(_delta):
 		return
 	update_bodies_visual()
 	update_providers()
-	update_spheres( _delta )
+	update_planets( _delta )
 	update_camera()
 	
 	# Relocate children of celestial bodies depending on the 
@@ -157,8 +157,8 @@ func update_providers():
 		pr.update()
 
 
-func update_spheres( delta: float ):
-	var group: String = Constants.SPHERES_GROUP_NAME
+func update_planets( delta: float ):
+	var group: String = Constants.PLANETS_GROUP_NAME
 	var all_spheres: Array = get_tree().get_nodes_in_group( group )
 	for sphere in all_spheres:
 		sphere.process( delta )

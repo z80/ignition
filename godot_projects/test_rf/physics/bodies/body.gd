@@ -492,7 +492,7 @@ func serialize():
 	
 	# This is one of the properties.
 	var se3: Se3Ref = self.get_se3()
-	var se3_data: Dictionary = se3.save()
+	var se3_data: Dictionary = se3.serialize()
 	data["se3"] = se3_data
 	
 	data["body_state"] = int(body_state)
@@ -504,6 +504,13 @@ func serialize():
 # When this thing is called all objects are created.
 # So can assume that all saved paths should be valid.
 func deserialize( data: Dictionary ):
+	var se3: Se3Ref = self.get_se3()
+	var se3_data: Dictionary = data.se3
+	var ret: bool = se3.deserialize( se3_data )
+	if not ret:
+		return false
+	
+	body_state = data["body_state"]
 	return true
 
 
