@@ -302,11 +302,25 @@ func _get_camera():
 
 
 func serialize():
-	return {}
+	var data: Dictionary = {}
+	if player_select != null:
+		data["select"] = player_select.get_path()
+	else:
+		data["select"] = ""
+
+	if player_control != null:
+		data["control"] = player_control.get_path()
+	else:
+		data["control"] = ""
+	return data
 
 
 
 func deserialize( data: Dictionary ):
+	var select_path: String = data["select"]
+	player_select = get_node( select_path )
+	var control_path: String = data["control"]
+	player_control = get_node( control_path )
 	return true
 
 

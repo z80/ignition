@@ -17,6 +17,9 @@ static func serialize_all( n: Node ):
 	var bodies_data: Dictionary     = serialize_bodies( n )
 	data["bodies"] = bodies_data
 	
+	var physics_data: Dictionary = serialize_physics_manager()
+	data["physics"] = physics_data
+	
 	var camera_data: Dictionary     = serialize_camera()
 	data["camera"] = camera_data
 	
@@ -49,6 +52,11 @@ static func deserialize_all( n: Node, data: Dictionary ):
 	if not ret:
 		return false
 	
+	var physics_data: Dictionary = data.physics
+	ret = deserialize_physics_manager( physics_data )
+	if not ret:
+		return false
+	
 	var camera_data: Dictionary = data.camera
 	ret = deserialize_camera( camera_data )
 	if not ret:
@@ -57,6 +65,16 @@ static func deserialize_all( n: Node, data: Dictionary ):
 	return true
 
 
+
+
+static func serialize_physics_manager():
+	var data: Dictionary = PhysicsManager.serialize()
+	return data
+
+
+static func deserialize_physics_manager( data: Dictionary ):
+	var ret: bool = PhysicsManager.deserialize( data )
+	return ret
 
 
 # Planets and the sun are fixed. No need to establish or 
@@ -155,9 +173,9 @@ static func destroy_all_ref_frames_physics( n: Node ):
 	var ref_frames: Array = n.get_tree().get_nodes_in_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
 	for rf in ref_frames:
 		var p = rf.get_parent()
+		rf.queue_free()
 		if p != null:
 			p.remove_child( rf )
-		rf.queue_free()
 
 
 
@@ -214,14 +232,15 @@ static func destroy_all_bodies( n: Node ):
 	var bodies: Array = n.get_tree().get_nodes_in_group( Constants.BODIES_GROUP_NAME )
 	for b in bodies:
 		var p = b.get_parent()
+		b.queue_free()
 		if p != null:
 			p.remove_child( b )
-		b.queue_free()
 
 
 
 
 static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
+	var bodies: Array = []
 	for name in bodies_data:
 		var all_data: Dictionary = bodies_data[name]
 		var filename: String = all_data.filename
@@ -241,6 +260,11 @@ static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 		var ret: bool = b.deserialize( data )
 		if not ret:
 			return false
+	
+	# By now all properties are applied. Now can activate/deactivate bodies based 
+	# on their mode.
+	for b in bodies:
+		b.activate()
 	
 	return true
 	
