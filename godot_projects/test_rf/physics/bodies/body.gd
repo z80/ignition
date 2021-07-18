@@ -442,8 +442,8 @@ func set_local_up( up: Vector3 ):
 # being dynamic.
 # These two should be overwritten.
 func activate( root_call: bool = true ):
-	if body_state == BodyState.DYNAMIC:
-		return
+	#if body_state == BodyState.DYNAMIC:
+	#	return
 	body_state = BodyState.DYNAMIC
 
 	update_physics_from_state()
@@ -458,15 +458,11 @@ func activate( root_call: bool = true ):
 
 
 func deactivate( root_call: bool = true ):
-	if body_state == BodyState.KINEMATIC:
-		return
+	#if body_state == BodyState.KINEMATIC:
+	#	return
 	body_state = BodyState.KINEMATIC
 	
-	var valid: bool = is_instance_valid( _physical )
-	if not valid:
-		_physical = null
-	if _physical != null:
-		remove_physical()
+	remove_physical()
 
 
 
@@ -509,8 +505,15 @@ func deserialize( data: Dictionary ):
 	var ret: bool = se3.deserialize( se3_data )
 	if not ret:
 		return false
+	self.set_se3( se3 )
 	
 	body_state = data["body_state"]
+	
+	if body_state == BodyState.DYNAMIC:
+		activate()
+	else:
+		deactivate()
+	
 	return true
 
 

@@ -16,20 +16,7 @@ var editing_widget = null
 var dynamic_blocks: Array = []
 
 func _ready():
-	#var V  = load( "res://physics/bodies/construction/visual.tscn")
-	#var P  = load( "res://physics/bodies/construction/physical.tscn" )
-	#var B  = load( "res://physics/bodies/construction/panel_parts/item_button.tscn" )
-	#var E  = load( "res://physics/bodies/construction/gui_enter.tscn" )
-	#var T  = load( "res://physics/bodies/construction/gui_transform_2.tscn" )
-	#var L  = load( "res://physics/bodies/construction/gui_leave_contruction_mode.tscn" )
-	#var mode = "construction"
-	#var classes = .gui_classes( mode )
-	#if mode == "construction":
-	#	var Tr = null #load( "res://physics/bodies/construction/gui_transform.tscn" )
-	#	var Lv = null #load( "res://physics/bodies/construction/gui_leave_construction_mode.tscn" )
-	#	classes.push_back( Tr )
-	#	classes.push_back( Lv )
-	#print( "classes: ", classes )
+	init()
 	
 	$PanelParts.construction = self
 	$PanelParts.connect( "create_block", self, "create_block" )
@@ -72,9 +59,9 @@ func init():
 
 	.init()
 	
-	var t: Transform = Transform.IDENTITY
-	t.origin = Vector3( 0.0, 1.0, 0.0 )
-	set_t( t )
+	#var t: Transform = Transform.IDENTITY
+	#t.origin = Vector3( 0.0, 1.0, 0.0 )
+	#set_t( t )
 
 
 func gui_classes( mode: Array = [] ):
