@@ -299,3 +299,14 @@ func _set_camera( cam ):
 func _get_camera():
 	return camera
 
+
+
+func serialize():
+	return {}
+
+
+
+func deserialize( data: Dictionary ):
+	return true
+
+

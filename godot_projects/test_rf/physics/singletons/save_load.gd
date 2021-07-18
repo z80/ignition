@@ -192,6 +192,9 @@ static func serialize_bodies( n: Node ):
 	var bodies_data: Dictionary = {}
 	for b in bodies:
 		# Don't save SurfaceProvider and PartAssembly
+		var cl: String = b.get_class()
+		if (cl == "SurfaceProvider") or (cl == "PartAssembly"):
+			continue
 		var data: Dictionary    = b.serialize()
 		var filename: String    = b.filename
 		var name: String        = b.name
