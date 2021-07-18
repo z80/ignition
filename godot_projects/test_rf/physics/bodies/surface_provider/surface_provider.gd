@@ -3,6 +3,11 @@ extends Body
 
 var inv_surface_relative_to_rf: Se3Ref = null
 
+
+func get_class():
+	return "SurfaceProvider"
+
+
 func init():
 	var Visual   = load( "res://physics/bodies/surface_provider/surface_provider_visual.tscn")
 	var Physical = load( "res://physics/bodies/surface_provider/surface_provider_physical.tscn" )

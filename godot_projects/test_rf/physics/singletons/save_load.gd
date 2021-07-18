@@ -191,8 +191,9 @@ static func serialize_bodies( n: Node ):
 	var bodies: Array = n.get_tree().get_nodes_in_group( Constants.BODIES_GROUP_NAME )
 	var bodies_data: Dictionary = {}
 	for b in bodies:
+		# Don't save SurfaceProvider and PartAssembly
 		var data: Dictionary    = b.serialize()
-		var filename: String    = n.filename
+		var filename: String    = b.filename
 		var name: String        = b.name
 		var parent_path: String = b.get_parent().get_path()
 		var all_data: Dictionary = {
