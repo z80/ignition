@@ -12,7 +12,7 @@ var part: RefFrameNode = null
 
 # If this part is attached to another one 
 # here it is stored "parent" part path.
-export(NodePath) var node_b_path = null
+export(String) var node_b_path = ""
 # The other s node is is connected to.
 var node_b: CouplingNode = null
 # If it was connected to, it's parent, else it's child.
@@ -146,8 +146,8 @@ func compute_owner_rel_to_parent():
 
 # When connected position it's owner correctly with respecto to the parent.
 func position_rel_to_parent():
-	if node_b_path == null:
-		return
+	if node_b_path.empty():
+		return false
 	node_b = get_node( node_b_path )
 	if node_b == null:
 		return false
@@ -198,9 +198,10 @@ func deserialize( data: Dictionary ):
 	node_b_path = data["node_b_path"]
 	is_parent   = data["is_parent"]
 	angle       = data["angle"]
-	if node_b_path.size() > 0:
-		node_b = get_node(node_b_path)
-	else:
+	var empty: bool = node_b_path.empty()
+	if empty:
 		node_b = null
+	else:
+		node_b = get_node(node_b_path)
 	return true
 

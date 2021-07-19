@@ -449,7 +449,7 @@ func deserialize( data: Dictionary ):
 	if not ret:
 		return false
 	
-	mode          = data["mode"]
+	var new_mode: int = data["mode"]
 	control_group = data["control_group"]
 	
 	init()
@@ -460,6 +460,11 @@ func deserialize( data: Dictionary ):
 		var node_data: Dictionary = stacking_nodes_data[i]
 		var n = stacking_nodes[i]
 		n.deserialize( node_data )
+	
+	if new_mode == PartMode.SIMULATION:
+		activate()
+	else:
+		deactivate()
 	
 	return true
 
