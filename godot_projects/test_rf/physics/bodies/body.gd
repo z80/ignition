@@ -509,10 +509,10 @@ func deserialize( data: Dictionary ):
 	
 	body_state = data["body_state"]
 	
-	if body_state == BodyState.DYNAMIC:
-		activate()
-	else:
-		deactivate()
+#	if restored_body_state == BodyState.DYNAMIC:
+#		activate()
+#	else:
+#		deactivate()
 	
 	return true
 

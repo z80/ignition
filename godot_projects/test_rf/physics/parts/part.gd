@@ -40,7 +40,7 @@ export(float) var mass = 1.0
 var stacking_nodes: Array = []
 var surface_nodes: Array  = []
 
-var mode: int = PartMode.SIMULATION
+var mode: int = PartMode.CONSTRUCTION
 
 # 0 = any, <0 = none.
 var control_group: int = PartControlGroups.ControlGroup.NONE
@@ -95,7 +95,7 @@ func process_inner( _delta ):
 # being dynamic.
 # These two should be overwritten.
 func activate( root_call: bool = true ):
-	var is_activated: bool = (body_state == BodyState.DYNAMIC)
+	var is_activated: bool = (mode == PartMode.SIMULATION)
 	if is_activated:
 		return
 	
@@ -445,11 +445,11 @@ func serialize():
 
 
 func deserialize( data: Dictionary ):
-	var ret: bool = .deserialize( data )
-	if not ret:
-		return false
+	# Reset body state to something impossible to force it to initialize.
+	body_state = -1
 	
-	var new_mode: int = data["mode"]
+	# It is set to the right value in activation inside of the Body.deserialize( data ).
+	#var new_mode: int = data["mode"]
 	control_group = data["control_group"]
 	
 	init()
@@ -461,10 +461,9 @@ func deserialize( data: Dictionary ):
 		var n = stacking_nodes[i]
 		n.deserialize( node_data )
 	
-	if new_mode == PartMode.SIMULATION:
-		activate()
-	else:
-		deactivate()
+	var ret: bool = .deserialize( data )
+	if not ret:
+		return false
 	
 	return true
 

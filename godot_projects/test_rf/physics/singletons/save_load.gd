@@ -174,8 +174,7 @@ static func destroy_all_ref_frames_physics( n: Node ):
 	for rf in ref_frames:
 		var p = rf.get_parent()
 		rf.queue_free()
-		if p != null:
-			p.remove_child( rf )
+		rf.name = rf.name + "_t_be_deleted"
 
 
 
@@ -231,11 +230,12 @@ static func serialize_bodies( n: Node ):
 static func destroy_all_bodies( n: Node ):
 	var bodies: Array = n.get_tree().get_nodes_in_group( Constants.BODIES_GROUP_NAME )
 	for b in bodies:
-		var p = b.get_parent()
 		b.queue_free()
-		if p != null:
-			p.remove_child( b )
-
+		b.name = b.name + "_to_be_deleted"
+		if b._visual != null:
+			b._visual.name = b._visual.name + "_to_be_deleted"
+		if b._physical != null:
+			b._physical.name = b._physical.name + "_to_be_deleted"
 
 
 
@@ -250,6 +250,7 @@ static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 		b.name = name
 		var p: Node = n.get_node( parentpath )
 		p.add_child( b )
+		bodies.push_back( b )
 	
 	for name in bodies_data:
 		var all_data: Dictionary = bodies_data[name]
