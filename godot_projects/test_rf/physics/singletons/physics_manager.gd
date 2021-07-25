@@ -165,7 +165,7 @@ func update_planets( delta: float ):
 
 
 func force_rebuild_visual_spheres():
-	var group: String = Constants.SPHERES_GROUP_NAME
+	var group: String = Constants.PLANETS_GROUP_NAME
 	var all_spheres: Array = get_tree().get_nodes_in_group( group )
 	for sphere in all_spheres:
 		sphere.force_rebuild()

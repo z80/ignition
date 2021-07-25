@@ -452,7 +452,7 @@ func deserialize( data: Dictionary ):
 	#var new_mode: int = data["mode"]
 	control_group = data["control_group"]
 	
-	init()
+	#init()
 	# Need to deserialize all the nodes.
 	var stacking_nodes_data: Array = data["stacking_nodes"]
 	var qty: int = stacking_nodes.size()

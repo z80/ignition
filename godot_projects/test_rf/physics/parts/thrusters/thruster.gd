@@ -173,8 +173,6 @@ func get_throttle():
 
 
 
-func activate( root_call: bool = true ):
-	.activate( root_call )
 
 
 

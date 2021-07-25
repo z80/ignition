@@ -250,6 +250,7 @@ static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 		b.name = name
 		var p: Node = n.get_node( parentpath )
 		p.add_child( b )
+		b.init()
 		bodies.push_back( b )
 	
 	for name in bodies_data:
