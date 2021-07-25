@@ -14,6 +14,30 @@ var camera = null setget _set_camera, _get_camera
 var distance_scaler = DistanceScalerRef.new()
 
 
+
+# Time acceleration.
+enum TimeScale { 
+	X_1 = 0, 
+	X_1_10 = 1, 
+	X_1_4 = 2,
+	X_1_2 = 3, 
+	X_2 = 4, 
+	X_4 = 5, 
+	X_10 = 6, 
+	# No physics computation.
+	X_0 = 7, 
+	X_100 = 7, 
+	X_1000 = 8, 
+	X_10000 = 9, 
+	X_100000 = 10
+}
+
+var _time_scale_physics: float = 1.0
+var _time_scale_evolution: float = 1.0
+
+
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	init()
@@ -322,5 +346,38 @@ func deserialize( data: Dictionary ):
 	var control_path: String = data["control"]
 	player_control = get_node( control_path )
 	return true
+
+
+
+
+
+func set_time_scale( acc: int ):
+	match acc:
+		TimeScale.X_0:
+			_time_scale_physics = 0.0
+			_time_scale_evolution = 0.0
+		TimeScale.X_1:
+			_time_scale_physics = 1.0
+			_time_scale_evolution = 1.0
+		TimeScale.X_10:
+			_time_scale_physics = 0.0
+			_time_scale_evolution = 10.0
+		TimeScale.X_100:
+			_time_scale_physics = 0.0
+			_time_scale_evolution = 100.0
+		TimeScale.X_1000:
+			_time_scale_physics = 0.0
+			_time_scale_evolution = 1000.0
+			
+		
+
+
+func get_time_scale():
+	pass
+
+
+
+
+
 
 
