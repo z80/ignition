@@ -17,22 +17,24 @@ var distance_scaler = DistanceScalerRef.new()
 
 # Time acceleration.
 enum TimeScale { 
-	X_1 = 0, 
+	# No physics computation.
+	X_0 = 0, 
 	X_1_10 = 1, 
 	X_1_4 = 2,
 	X_1_2 = 3, 
-	X_2 = 4, 
-	X_4 = 5, 
-	X_10 = 6, 
-	# No physics computation.
-	X_0 = 7, 
-	X_100 = 7, 
-	X_1000 = 8, 
-	X_10000 = 9, 
-	X_100000 = 10
+	X_1 = 4, 
+	X_2 = 5, 
+	X_4 = 6, 
+	X_10 = 7, 
+	X_100 = 8, 
+	X_1000 = 9, 
+	X_10000 = 10, 
+	X_100000 = 11, 
+	X_MAX = 12
 }
 
-var _time_scale_physics: float = 1.0
+var _time_scale: int = TimeScale.X_1
+var _time_scale_physics: float   = 1.0
 var _time_scale_evolution: float = 1.0
 
 
@@ -52,12 +54,27 @@ func init():
 # player ref. frame. (The ref. frame where the camera is located.)
 func _process(_delta):
 	
+	# Celestial body orbital movement time delta.
+	# It should be applied to planet movement and ref. frames 
+	# moving under gravitational influence of a planet.
+	var orbital_delta: float = _delta * _time_scale_evolution
+	
 	var player_rf = get_player_ref_frame()
 	if player_rf == null:
 		return
 	update_bodies_visual()
 	update_providers()
-	update_planets( _delta )
+	update_planets( orbital_delta )
+	
+	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
+	var ref_frames: Array = get_tree().get_nodes_in_group( group )
+	
+	for rf in ref_frames:
+		var deleted: bool =  rf.is_queued_for_deletion()
+		if deleted:
+			continue
+		rf.evolve( orbital_delta )
+	
 	update_camera()
 	
 	# Relocate children of celestial bodies depending on the 
@@ -73,12 +90,6 @@ func _physics_process( delta ):
 	
 	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
 	var ref_frames: Array = get_tree().get_nodes_in_group( group )
-	
-	for rf in ref_frames:
-		var deleted: bool =  rf.is_queued_for_deletion()
-		if deleted:
-			continue
-		rf.evolve( delta )
 	
 	for rf in ref_frames:
 		var deleted: bool =  rf.is_queued_for_deletion()
@@ -352,13 +363,37 @@ func deserialize( data: Dictionary ):
 
 
 func set_time_scale( acc: int ):
+	# At first limit to the valid range.
+	if acc < 0:
+		acc = 0
+	elif acc >= TimeScale.X_MAX:
+		acc = TimeScale.X_MAX - 1
+	
+	# BAsed on overall time acceleration pick
+	# physics time acceleration and evolution time acceleration.
 	match acc:
+		# No physics computation.
 		TimeScale.X_0:
 			_time_scale_physics = 0.0
 			_time_scale_evolution = 0.0
+		TimeScale.X_1_10:
+			_time_scale_physics   = 0.1
+			_time_scale_evolution = 0.1
+		TimeScale.X_1_4:
+			_time_scale_physics   = 0.25
+			_time_scale_evolution = 0.25
+		TimeScale.X_1_2:
+			_time_scale_physics   = 0.5
+			_time_scale_evolution = 0.5
 		TimeScale.X_1:
 			_time_scale_physics = 1.0
 			_time_scale_evolution = 1.0
+		TimeScale.X_2:
+			_time_scale_physics   = 2.0
+			_time_scale_evolution = 2.0
+		TimeScale.X_4:
+			_time_scale_physics   = 4.0
+			_time_scale_evolution = 4.0
 		TimeScale.X_10:
 			_time_scale_physics = 0.0
 			_time_scale_evolution = 10.0
@@ -368,8 +403,11 @@ func set_time_scale( acc: int ):
 		TimeScale.X_1000:
 			_time_scale_physics = 0.0
 			_time_scale_evolution = 1000.0
-			
-		
+	
+	_time_scale = acc
+	
+	# Apply physics time acceleration.
+	OS.time_scale = _time_scale_physics
 
 
 func get_time_scale():
