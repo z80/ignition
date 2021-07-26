@@ -36,7 +36,7 @@ enum TimeScale {
 var _time_scale: int = TimeScale.X_1
 var _time_scale_physics: float   = 1.0
 var _time_scale_evolution: float = 1.0
-
+var _time_scale_string: String = "1"
 
 
 
@@ -53,7 +53,7 @@ func init():
 # Update body visual parts in accordance with what is set to be 
 # player ref. frame. (The ref. frame where the camera is located.)
 func _process(_delta):
-	
+	#print( "delta: ", _delta )
 	# Celestial body orbital movement time delta.
 	# It should be applied to planet movement and ref. frames 
 	# moving under gravitational influence of a planet.
@@ -374,47 +374,95 @@ func set_time_scale( acc: int ):
 	match acc:
 		# No physics computation.
 		TimeScale.X_0:
-			_time_scale_physics = 0.0
+			_time_scale_physics   = 0.0
 			_time_scale_evolution = 0.0
+			_time_scale_string    = "paused"
 		TimeScale.X_1_10:
 			_time_scale_physics   = 0.1
-			_time_scale_evolution = 0.1
+			_time_scale_evolution = 1.0
+			_time_scale_string    = "0.1"
 		TimeScale.X_1_4:
 			_time_scale_physics   = 0.25
-			_time_scale_evolution = 0.25
+			_time_scale_evolution = 1.0
+			_time_scale_string    = "0.25"
 		TimeScale.X_1_2:
 			_time_scale_physics   = 0.5
-			_time_scale_evolution = 0.5
-		TimeScale.X_1:
-			_time_scale_physics = 1.0
 			_time_scale_evolution = 1.0
+			_time_scale_string    = "0.5"
+		TimeScale.X_1:
+			_time_scale_physics   = 1.0
+			_time_scale_evolution = 1.0
+			_time_scale_string    = "1.0"
 		TimeScale.X_2:
 			_time_scale_physics   = 2.0
-			_time_scale_evolution = 2.0
+			_time_scale_evolution = 1.0
+			_time_scale_string    = "2.0"
 		TimeScale.X_4:
 			_time_scale_physics   = 4.0
-			_time_scale_evolution = 4.0
+			_time_scale_evolution = 1.0
+			_time_scale_string    = "4.0"
 		TimeScale.X_10:
-			_time_scale_physics = 0.0
+			_time_scale_physics   = 1.0
 			_time_scale_evolution = 10.0
+			_time_scale_string    = "10.0"
 		TimeScale.X_100:
-			_time_scale_physics = 0.0
+			_time_scale_physics   = 1.0
 			_time_scale_evolution = 100.0
+			_time_scale_string    = "100.0"
 		TimeScale.X_1000:
-			_time_scale_physics = 0.0
+			_time_scale_physics   = 1.0
 			_time_scale_evolution = 1000.0
+			_time_scale_string    = "1000.0"
 	
 	_time_scale = acc
 	
 	# Apply physics time acceleration.
-	OS.time_scale = _time_scale_physics
+	# For now it doesn't work correctly.
+#	if _time_scale >= TimeScale.X_10:
+#		_set_physics_process( false )
+#	else:
+#		_set_physics_process( true )
+	Engine.time_scale = _time_scale_physics
 
 
 func get_time_scale():
-	pass
+	return _time_scale
+
+
+func increase_time_scale():
+	var ts: int = _time_scale + 1
+	set_time_scale( ts )
+
+
+func decrease_time_scale():
+	var ts: int = _time_scale - 1
+	set_time_scale( ts )
 
 
 
+func set_time_scale_0():
+	var ts: int = TimeScale.X_0
+	set_time_scale( ts )
+
+
+func set_time_scale_1():
+	var ts: int = TimeScale.X_1
+	set_time_scale( ts )
+
+
+func get_time_scale_string():
+	return _time_scale_string
+
+
+func _set_physics_process( en: bool ):
+	var group: String = Constants.BODIES_GROUP_NAME
+	var bodies: Array = get_tree().get_nodes_in_group( group )
+	if en:
+		for b in bodies:
+			b.activate()
+	else:
+		for b in bodies:
+			b.deactivate()
 
 
 

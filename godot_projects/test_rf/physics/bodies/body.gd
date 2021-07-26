@@ -466,6 +466,10 @@ func deactivate( root_call: bool = true ):
 
 
 
+func set_process_physics( en: bool ):
+	if _physical != null:
+		_physical.set_physics_process( en )
+
 
 func _parent_physics_ref_frame():
 	# Check if parent is RefFramePhysics
