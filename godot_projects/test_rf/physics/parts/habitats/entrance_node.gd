@@ -2,10 +2,15 @@
 extends Spatial
 class_name EntranceNode
 
-var relative_to_owner: Transform = Transform.IDENTITY
+# Boarding works within this distance 
+# from the node's origin.
+# Unboarding happens in the node origin. So it shouldn't be inside of 
+# the habitat module.
+export(float) var radius = 10.0
 
-enum NodeSize { SMALL=0, MEDIUM=1, LARGE=2 }
-export(NodeSize) var node_size = NodeSize.MEDIUM
+var relative_to_owner: Transform = Transform.IDENTITY
+# Part pointer. This thing should be filled externally.
+var part: Node = null
 
 
 # Called when the node enters the scene tree for the first time.
@@ -35,13 +40,32 @@ func _compute_relative_to_owner_recursive( n: Node, t: Transform ):
 	return ret
 
 
-func compute_node_size():
-	if node_size == NodeSize.SMALL:
-		return Constants.NODE_SIZE_SMALL
-	elif node_size == NodeSize.MEDIUM:
-		return Constants.NODE_SIZE_MEDIUM
+
+
+
+# Check if player controlled entity is within the radius.
+func boarding_available():
+	if part == null:
+		return null
 	
-	return Constants.NODE_SIZE_LARGE
+	var ctrl: Node = PhysicsManager.player_control
+	
+	# Only characters can board. 
+	var is_character: bool = ctrl.has_method( "is_character" ) and ctrl.is_character()
+	if not is_character:
+		return null
+	
+	var se3: Se3Ref = Se3Ref.new()
+	se3.transform = relative_to_owner
+	se3 = ctrl.relative_to_se3( part, se3 )
+	var r: Vector3 = se3.r
+	var d: float = r.length()
+	if d > radius:
+		return null
+	
+	return ctrl
+
+
 
 
 

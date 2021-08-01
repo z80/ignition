@@ -62,3 +62,30 @@ func _traverse_entrance_nodes_recursive( p: Node ):
 
 
 
+func gui_classes( mode: Array ):
+	var classes: Array = []
+	var classes_base: Array = .gui_classes( mode )
+	return classes
+
+
+
+func _can_board():
+	var current_qty: int = characters_inside.size()
+	if current_qty >= capacity:
+		return null
+	
+	var can_board: Array = []
+	for n in entrance_nodes:
+		var candidate: Node = n.boarding_available()
+		if candidate == null:
+			continue
+		
+		can_board.push_back( candidate )
+	
+	return can_board
+
+
+
+func _can_unboard():
+	return characters_inside
+

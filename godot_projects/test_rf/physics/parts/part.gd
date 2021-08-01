@@ -468,6 +468,8 @@ func deserialize( data: Dictionary ):
 	return true
 
 
-
+func is_character():
+	var ret: bool = (part_class == PartClass.CHARACTER)
+	return ret
 
 

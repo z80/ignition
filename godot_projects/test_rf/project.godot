@@ -29,6 +29,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/celestial_bodies/celestial_surface.gd"
 }, {
+"base": "Part",
+"class": "Character",
+"language": "GDScript",
+"path": "res://physics/parts/characters/character.gd"
+}, {
 "base": "ColorRect",
 "class": "ColorTile",
 "language": "GDScript",
@@ -184,6 +189,7 @@ _global_script_class_icons={
 "Body": "",
 "CelestialBody": "",
 "CelestialSurface": "",
+"Character": "",
 "ColorTile": "",
 "ConstructionSuperBody": "",
 "CouplingNode": "",
