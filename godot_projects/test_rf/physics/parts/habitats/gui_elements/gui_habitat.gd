@@ -59,7 +59,8 @@ func _update_from_object():
 func _remove_buttons():
 	for b in _buttons:
 		var btn: Button = b
-		btn.queue_free()
+		if btn != null:
+			btn.queue_free()
 	
 	_buttons.clear()
 

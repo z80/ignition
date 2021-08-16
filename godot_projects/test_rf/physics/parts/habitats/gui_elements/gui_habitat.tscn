@@ -18,9 +18,3 @@ margin_right = 1.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
-
-[node name="Label" type="Label" parent="Container"]
-margin_right = 1025.0
-margin_bottom = 20.0
-rect_min_size = Vector2( 70, 20 )
-text = "Fuel left: 10t"

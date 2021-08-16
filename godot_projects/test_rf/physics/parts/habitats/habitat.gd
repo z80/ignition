@@ -64,7 +64,12 @@ func _traverse_entrance_nodes_recursive( p: Node ):
 
 func gui_classes( mode: Array ):
 	var classes: Array = []
+	# Adding habitat specific classes prior to generic classes.
+	var C = load( "res://physics/parts/habitats/gui_elements/gui_habitat.tscn" )
+	classes.push_back( C )
+	# Adding generic classes.
 	var classes_base: Array = .gui_classes( mode )
+	classes = classes + classes_base
 	return classes
 
 

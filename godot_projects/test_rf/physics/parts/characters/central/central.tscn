@@ -4,3 +4,13 @@
 
 [node name="Central" type="RefFrameNode"]
 script = ExtResource( 1 )
+destruction_acc = 60.0
+part_class = 6
+allows_surface_attachments = false
+allows_y_radial_symmetry = false
+allows_x_mirror_symmetry = false
+conducts_liquid_fuel = false
+conducts_solid_fuel = false
+conducts_electricity = false
+conducts_air = false
+mass = 0.1
