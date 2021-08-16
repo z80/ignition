@@ -57,8 +57,10 @@ func process_inner( delta ):
 	# Update visual animation state.
 	if (_physical != null) and (_visual != null):
 		# This is for visualizing walk.
-		var s: float = _physical.get_speed_normalized()
-		_visual.set_speed_normalized( s )
+		var ret: Array = get_speed_normalized( _physical )
+		var s: float   = ret[0]
+		var v: Vector3 = ret[1]
+		_visual.set_speed_normalized( s, v )
 
 
 
@@ -76,8 +78,7 @@ func privot_fps( ind: int = 0 ):
 
 
 func set_local_up( up: Vector3 ):
-	if _physical != null:
-		_physical.local_up = up
+	local_up = up
 
 
 
@@ -115,9 +116,15 @@ func apply_force( body: RigidBody, f: Vector3 ):
 
 
 func get_speed_normalized( body: RigidBody ):
+	var t: Transform = body.transform
+	var q: Quat = t.basis
+	q = q.inverse()
 	var v: Vector3 = body.linear_velocity
-	var s: float = v.length() / speed
-	return s
+	v = q.xform( v )
+	var current_speed: float = v.length()
+	var s: float = current_speed / speed
+	var current_velocity: Vector3 = v / speed
+	return [s, current_velocity]
 
 
 

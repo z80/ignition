@@ -1,7 +1,7 @@
 [gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://physics/bodies/character_simple/assets/Material.material" type="Material" id=1]
-[ext_resource path="res://physics/bodies/character_central/character_central_visual.gd" type="Script" id=2]
+[ext_resource path="res://physics/parts/characters/central/visual.gd" type="Script" id=2]
 
 [sub_resource type="ArrayMesh" id=1]
 resource_name = "Character"

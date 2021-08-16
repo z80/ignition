@@ -10,12 +10,12 @@ var target_fps: Spatial = null
 func _ready():
 	target_tps = get_node("target_tps")
 	target_fps = get_node("target_fps")
-	set_speed_normalized( 0.0 )
+	set_speed_normalized( 0.0, Vector3.ZERO )
 
 
-func set_speed_normalized( v: float ):
-	if v < 0.0:
-		v = 0.0
-	elif v > 1.0:
-		v = 1.0
-	$AnimationTree.set( "parameters/blend_position", v )
+# This one should be overridden.
+func set_speed_normalized( s: float, v: Vector3 ):
+	pass
+
+
+

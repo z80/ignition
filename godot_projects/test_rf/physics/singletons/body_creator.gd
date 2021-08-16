@@ -119,8 +119,8 @@ func part_cylinder():
 
 
 func part_character_central():
-	#var B = load( "res://physics/bodies/character_central/character_central.tscn" )
-	var B = load( "res://physics/parts/characters/central/central.tscn" )
+	var B = load( "res://physics/bodies/character_central/character_central.tscn" )
+	#var B = load( "res://physics/parts/characters/central/central.tscn" )
 	var b = _create( B )
 	return b
 
