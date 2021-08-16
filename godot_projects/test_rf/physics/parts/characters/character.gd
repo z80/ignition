@@ -46,9 +46,10 @@ func _ready():
 	._ready()
 
 
-# This one should be overriden by implementations.
+# Copying user input into a local variable. So it can be processed 
+# when it wants to do so.
 func process_user_input_group( input: Dictionary ):
-	pass
+	_input = input.duplicate( true )
 
 
 func process_inner( delta ):
@@ -87,7 +88,10 @@ func create_physical():
 	var ph: Node =  _create_physical( PhysicalType )
 	# Physics body calls "integrate_forces" method from this instance.
 	# Becasue of that it is necesary to provide the reference to "self".
-	ph.body = self
+	# Check for "null" beacuse when there is no parent ref. frame, 
+	# physics body is not created.
+	if ph != null:
+		ph.body = self
 
 
 

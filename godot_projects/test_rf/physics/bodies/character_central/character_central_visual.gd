@@ -17,4 +17,5 @@ func set_speed_normalized( v: float ):
 		v = 0.0
 	elif v > 1.0:
 		v = 1.0
-	$AnimationTree.set( "parameters/blend_position", v )
+	var at: AnimationTree = get_node( "AnimationTree" )
+	at.set( "parameters/blend_position", v )
