@@ -9,6 +9,9 @@
 [node name="TimeDilation" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+margin_right = -682.0
+margin_bottom = -552.0
+mouse_filter = 1
 script = ExtResource( 5 )
 __meta__ = {
 "_edit_use_anchors_": false
