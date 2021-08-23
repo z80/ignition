@@ -9,12 +9,12 @@ var _buttons: Array = []
 func init( target_obj, parent_gui ):
 	_target_obj = target_obj
 	_parent_gui = parent_gui
+	_update_from_object()
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	_update_from_object()
-
+	pass
 
 func _process( _delta: float ):
 	pass
@@ -31,19 +31,21 @@ func _update_from_object():
 	# Remove old buttons
 	_remove_buttons()
 	
-	# Check if there are characters outside.
+	var container: VBoxContainer = get_node( "Container" )
+	
+		# Check if there are characters outside.
 	# If there are characters close, make a button which lets them inside.
-	var character: Part = _check_external_characters()
+	var character: Part = _characters_for_boarding()
 	if character != null:
 		var b: Button = Button.new()
 		b.text = "Let in"
 		b.rect_min_size = Vector2( 70, 20 )
 		b.connect( "pressed", self, "_get_inside_pressed", [character] )
+		container.add_child( b )
 	
 	
 	# Get list of characters inside.
 	# And create appropriate number of buttons to let them out.
-	var container: VBoxContainer = get_node( "Container" )
 	var characters: Array = _target_obj.characters_inside
 	var ind: int = 1
 	for c in characters:
@@ -81,19 +83,21 @@ func _eva_pressed( button ):
 
 
 
-func _get_inside_pressed( characters ):
-	_target_obj.let_character_in()
+func _get_inside_pressed( character ):
+	_target_obj.let_character_in( character )
 
 
 
 
-func _check_external_characters():
+func _characters_for_boarding():
 	var real_obj: bool = is_instance_valid( _target_obj )
 	if not real_obj:
 		print( "Target habitat does not exist." )
 		return
 	
-	var characters: Array = _target_obj.characters_in_entrance_range()
+	var characters = _target_obj.characters_for_boarding()
+	if characters == null:
+		return null
 	if characters.empty():
 		return null
 	

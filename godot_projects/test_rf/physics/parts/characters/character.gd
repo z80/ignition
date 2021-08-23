@@ -35,6 +35,38 @@ var print_elapsed: float = 0.0
 var _input: Dictionary = {}
 
 
+# Need this mode in order to get in/out a habitat module.
+enum BoardingMode {
+	OUTSIDE=0, 
+	INSIDE=1
+}
+
+export(BoardingMode) var boarding_mode = BoardingMode.OUTSIDE setget set_boarding_mode, get_boarding_mode
+
+
+func set_boarding_mode( new_mode ):
+	if new_mode == BoardingMode.INSIDE:
+		set_boarding_mode_inside()
+	elif new_mode == BoardingMode.OUTSIDE:
+		set_boarding_mode_outside()
+
+
+func set_boarding_mode_inside():
+	remove_physical()
+	_visual.visible = false
+	body_state = BodyState.KINEMATIC
+	boarding_mode = BoardingMode.INSIDE
+
+
+func set_boarding_mode_outside():
+	_visual.visible = true
+	body_state = BodyState.DYNAMIC
+	update_physical_state_from_rf()
+	boarding_mode = BoardingMode.OUTSIDE
+
+
+func get_boarding_mode():
+	return boarding_mode
 
 
 func init():

@@ -53,7 +53,11 @@ func _traverse_entrance_nodes_recursive( p: Node ):
 		var node: EntranceNode = s as EntranceNode
 		var is_node: bool = (node != null)
 		if is_node:
+			# Add to the list.
 			entrance_nodes.push_back( s )
+			# And provide self as the part.
+			s.part = self
+
 	
 	var qty: int = p.get_child_count()
 	for i in range( qty ):
@@ -74,14 +78,14 @@ func gui_classes( mode: Array ):
 
 
 
-func _can_board():
+func characters_for_boarding():
 	var current_qty: int = characters_inside.size()
 	if current_qty >= capacity:
 		return null
 	
 	var can_board: Array = []
 	for n in entrance_nodes:
-		var candidate: Node = n.boarding_available()
+		var candidate: Node = n.characters_for_boarding()
 		if candidate == null:
 			continue
 		
@@ -91,6 +95,47 @@ func _can_board():
 
 
 
-func _can_unboard():
+func characters_for_unboarding():
 	return characters_inside
 
+
+
+
+func let_character_in( character ):
+	character.set_boarding_mode_inside()
+
+
+func let_character_out( ind: int ):
+	var character: Node = characters_inside[ind]
+	characters_inside.remove( ind )
+	
+	var en: EntranceNode = entrance_nodes[0]
+	var t: Transform = en.relative_to_owner
+	var rel_se3: Se3Ref = Se3Ref.new()
+	rel_se3.transform = t
+	var own_se3: Se3Ref = self.get_se3()
+	var total_se3 = own_se3.mul( rel_se3 )
+	character.set_se3( total_se3 )
+	
+	var character_p: Node = character.get_parent()
+	var needed_p: Node = self.get_parent()
+	if needed_p != character_p:
+		character_p.remove_child( character )
+		needed_p.add_child( character )
+	
+	character.set_boarding_mode_outside()
+
+
+
+
+func process_inner( delta: float ):
+	.process_inner( delta )
+	_process_boarded_characters()
+
+
+
+
+func _process_boarded_characters():
+	var se3: Se3Ref = self.get_se3()
+	for ch in characters_inside:
+		ch.set_se3( se3 )

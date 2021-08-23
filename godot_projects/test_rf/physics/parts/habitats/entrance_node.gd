@@ -44,7 +44,7 @@ func _compute_relative_to_owner_recursive( n: Node, t: Transform ):
 
 
 # Check if player controlled entity is within the radius.
-func boarding_available():
+func characters_for_boarding():
 	if part == null:
 		return null
 	
