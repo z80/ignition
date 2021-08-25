@@ -89,7 +89,9 @@ func characters_for_boarding():
 		if candidate == null:
 			continue
 		
-		can_board.push_back( candidate )
+		var already_inside: int = characters_inside.has( candidate )
+		if not already_inside:
+			can_board.push_back( candidate )
 	
 	return can_board
 
@@ -103,6 +105,7 @@ func characters_for_unboarding():
 
 func let_character_in( character ):
 	character.set_boarding_mode_inside()
+	characters_inside.push_back( character )
 
 
 func let_character_out( ind: int ):

@@ -33,3 +33,4 @@ atmosphere_height_km = 0.15
 [node name="Camera" parent="." instance=ExtResource( 3 )]
 
 [node name="RootUi" parent="." instance=ExtResource( 5 )]
+margin_top = -1.0
