@@ -293,8 +293,8 @@ func decouple_all():
 
 
 
-func update_physical_state_from_rf():
-	.update_physical_state_from_rf()
+func update_physics_from_state():
+	.update_physics_from_state()
 	
 	var t: Transform = self.transform
 	var qty: int = stacking_nodes.size()

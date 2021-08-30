@@ -61,7 +61,7 @@ func set_boarding_mode_inside():
 func set_boarding_mode_outside():
 	_visual.visible = true
 	body_state = BodyState.DYNAMIC
-	update_physical_state_from_rf()
+	update_physics_from_state()
 	boarding_mode = BoardingMode.OUTSIDE
 
 

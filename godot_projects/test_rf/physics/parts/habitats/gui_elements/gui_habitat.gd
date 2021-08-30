@@ -48,13 +48,15 @@ func _update_from_object():
 	# And create appropriate number of buttons to let them out.
 	var characters: Array = _target_obj.characters_inside
 	var ind: int = 1
+	_buttons = []
 	for c in characters:
 		var stri = "character #" + str(ind)
 		ind += 1
 		var b: Button = Button.new()
 		b.text = stri
-		b.connect( "pressed", self, "_eva_pressed", [b] )
+		b.connect( "pressed", self, "_get_outside_pressed", [b] )
 		container.add_child( b )
+		_buttons.push_back( b )
 
 
 
@@ -68,7 +70,7 @@ func _remove_buttons():
 
 
 
-func _eva_pressed( button ):
+func _get_outside_pressed( button ):
 	var ind: int = _buttons.find( button )
 	if ind < 0:
 		print( "EVA failed. Button is not in the list." )
