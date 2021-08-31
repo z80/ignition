@@ -349,3 +349,21 @@ func rotation_control( state ):
 
 
 
+func serialize():
+	var data: Dictionary = .serialize()
+	data["boarding_mode"] = boarding_mode
+	return data
+
+
+
+func deserialize( data: Dictionary ):
+	var ok: bool = .deserialize( data )
+	boarding_mode = data["boarding_mode"]
+	if boarding_mode == BoardingMode.INSIDE:
+		set_boarding_mode_inside()
+	else:
+		set_boarding_mode_outside()
+	return true
+
+
+

@@ -142,3 +142,19 @@ func _process_boarded_characters():
 	var se3: Se3Ref = self.get_se3()
 	for ch in characters_inside:
 		ch.set_se3( se3 )
+
+
+
+
+
+func serialize():
+	var data: Dictionary = .serialize()
+	return data
+
+
+
+func deserialize( data: Dictionary ):
+	var ok: bool = .deserialize( data )
+	return ok
+
+
