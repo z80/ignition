@@ -358,11 +358,12 @@ func serialize():
 
 func deserialize( data: Dictionary ):
 	var ok: bool = .deserialize( data )
-	boarding_mode = data["boarding_mode"]
-	if boarding_mode == BoardingMode.INSIDE:
-		set_boarding_mode_inside()
-	else:
-		set_boarding_mode_outside()
+	if data.has( "boarding_mode" ):
+		boarding_mode = data["boarding_mode"]
+		if boarding_mode == BoardingMode.INSIDE:
+			set_boarding_mode_inside()
+		else:
+			set_boarding_mode_outside()
 	return true
 
 

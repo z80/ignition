@@ -106,6 +106,9 @@ func characters_for_unboarding():
 func let_character_in( character ):
 	character.set_boarding_mode_inside()
 	characters_inside.push_back( character )
+	# Also make habitat selected.
+	PhysicsManager.player_control = self
+	PhysicsManager.player_select  = self
 
 
 func let_character_out( ind: int ):
@@ -149,12 +152,27 @@ func _process_boarded_characters():
 
 func serialize():
 	var data: Dictionary = .serialize()
+	
+	var paths: Array = []
+	for ch in characters_inside:
+		var path: String = ch.get_path()
+		paths.push_back( path )
+	data["characters_inside"] = paths
+	
 	return data
 
 
 
 func deserialize( data: Dictionary ):
 	var ok: bool = .deserialize( data )
+	
+	if data.has( "characters_inside" ):
+		characters_inside.clear()
+		var paths: Array = data["characters_inside"]
+		for p in paths:
+			var n: Node = get_node( p )
+			characters_inside.push_back( n )
+	
 	return ok
 
 
