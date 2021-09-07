@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://physics/celestial_bodies/orbit_visualizer.gd" type="Script" id=1]
+[ext_resource path="res://physics/celestial_bodies/material_orbit_visual.tres" type="Material" id=2]
+
+[node name="OrbitVisualizer" type="ImmediateGeometry"]
+script = ExtResource( 1 )
+material = ExtResource( 2 )
