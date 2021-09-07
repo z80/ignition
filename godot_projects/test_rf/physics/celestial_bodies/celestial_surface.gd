@@ -125,6 +125,7 @@ func process( delta: float, force_player_rf: RefFrameNode = null ):
 	process_motion( delta )
 	process_geometry( force_player_rf )
 	process_rescale( force_player_rf )
+	_process_visualize_orbits()
 
 
 
@@ -371,5 +372,11 @@ func _set_show_orbit( en: bool ):
 func _get_show_orbit():
 	return show_orbit
 
+
+func _process_visualize_orbits():
+	var new_state: bool = PhysicsManager.visualize_orbits
+	var current_state: bool = self.show_orbit
+	if current_state != new_state:
+		self.show_orbit = new_state
 
 

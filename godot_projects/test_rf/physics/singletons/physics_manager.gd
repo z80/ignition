@@ -13,7 +13,7 @@ var camera = null setget _set_camera, _get_camera
 # Scaler for large distances.
 var distance_scaler = DistanceScalerRef.new()
 
-
+var visualize_orbits: bool = false
 
 # Time acceleration.
 enum TimeScale { 
