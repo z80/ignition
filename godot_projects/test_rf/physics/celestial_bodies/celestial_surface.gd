@@ -21,11 +21,11 @@ export(float) var transparency_scale_inner_km = 5.0
 export(float) var displacement = 2.0
 
 
-export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
 
 var motion: CelestialMotionRef = null
 var rotation: CelestialRotationRef = null
 var orbit_visualizer: Node = null
+export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
 
 
 # As currently there is just one player

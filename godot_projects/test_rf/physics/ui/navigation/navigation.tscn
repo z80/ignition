@@ -143,10 +143,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -71.1564
-margin_top = -298.407
-margin_right = -6.15637
-margin_bottom = -278.407
+margin_left = -191.2
+margin_top = -284.816
+margin_right = -126.2
+margin_bottom = -260.816
 hint_tooltip = "Stability Augmentation System (S.A.S.)
 When vehicle rotation is not under control actively zeroes angular velocity. "
 focus_mode = 0
@@ -155,8 +155,27 @@ text = "SAS"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="ShowOrbits" type="CheckBox" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -191.2
+margin_top = -266.703
+margin_right = -84.2002
+margin_bottom = -242.703
+hint_tooltip = "Stability Augmentation System (S.A.S.)
+When vehicle rotation is not under control actively zeroes angular velocity. "
+focus_mode = 0
+enabled_focus_mode = 0
+text = "Show orbits"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
 [connection signal="pressed" from="ModeOrbit" to="." method="_on_ModeOrbit_pressed"]
 [connection signal="pressed" from="ModeSurface" to="." method="_on_ModeSurface_pressed"]
 [connection signal="pressed" from="ModeTarget" to="." method="_on_ModeTarget_pressed"]
 [connection signal="pressed" from="Sas" to="." method="_on_Sas_pressed"]
+[connection signal="pressed" from="ShowOrbits" to="." method="_on_ShowOrbits_pressed"]

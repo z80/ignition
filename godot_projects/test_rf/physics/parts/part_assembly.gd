@@ -10,6 +10,9 @@ class_name PartAssembly
 # List of sub-bodies this body contains if it is a super-body.
 var sub_bodies: Array = []
 
+var orbit_visualizer: Node = null
+export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
+
 
 func get_class():
 	return "PartAssembly"
@@ -36,8 +39,13 @@ func _enter_tree():
 
 func _ready():
 	add_to_group( Constants.SUPER_BODIES_GROUP_NAME )
+	_create_orbit_visualizer()
 
 
+
+
+func _process( _delta: float ):
+	_process_visualize_orbits()
 
 
 
@@ -212,12 +220,38 @@ func gui_classes( mode: Array ):
 
 
 
-func save():
+func _create_orbit_visualizer():
+	var Vis = load( "res://physics/celestial_bodies/orbit_visualizer.tscn" )
+	orbit_visualizer = Vis.instance()
+	self.add_child( orbit_visualizer )
+
+
+
+func _set_show_orbit( en: bool ):
+	show_orbit = en
+	if show_orbit:
+		orbit_visualizer.draw()
+	orbit_visualizer.visible = show_orbit
+
+
+func _get_show_orbit():
+	return show_orbit
+
+
+func _process_visualize_orbits():
+	var new_state: bool = PhysicsManager.visualize_orbits
+	var current_state: bool = self.show_orbit
+	if current_state != new_state:
+		self.show_orbit = new_state
+
+
+
+func serialize():
 	return {}
 
 
 
-func load( data: Dictionary ):
+func deserialize( data: Dictionary ):
 	return true
 
 

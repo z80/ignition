@@ -28,7 +28,7 @@ var _icon = null
 export(String) var hint_text = "Default hint text" setget _set_hint_text
 
 # Body which contains this one and other bodies.
-var super_body = null
+var super_body = null setget _set_super_body, _get_super_body
 
 
 # Force visualizer
@@ -483,6 +483,15 @@ func _parent_physics_ref_frame():
 
 
 
+
+func _set_super_body( new_super_body ):
+	super_body = new_super_body
+
+
+
+
+func _get_super_body():
+	return super_body
 
 
 

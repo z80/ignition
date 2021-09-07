@@ -246,3 +246,17 @@ func _on_Sas_pressed():
 	var check = get_node( "Sas" )
 	var down: bool = check.pressed
 	UserInput.gui_control_bool( "gui_sas", true, down, not down )
+
+
+
+
+
+
+
+func _on_ShowOrbits_pressed():
+	var check = get_node( "ShowOrbits" )
+	var down: bool = check.pressed
+	PhysicsManager.visualize_orbits = down
+
+
+
