@@ -14,7 +14,7 @@ func _init():
 func _ready():
 	_camera = get_node( "Camera" )
 	var sun = get_node( "Sun" )
-	sun.convert_to_global = true
+	sun.convert_to_global = false
 	sun.apply_scale = false
 	_rf = RefFrame.new()
 	
@@ -38,3 +38,4 @@ func _process(delta):
 	
 	var sun = get_node( "Sun" )
 	sun.process( delta, _rf )
+	#sun.process( delta, null )

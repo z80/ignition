@@ -3,9 +3,11 @@
 #define __CELESTIAL_MOTION_REF_H_
 
 #include "core/reference.h"
+#include "scene/3d/spatial.h"
+
 #include "se3_ref.h"
 #include "celestial_motion.h"
-
+#include "distance_scaler_ref.h"
 
 namespace Ign
 {
@@ -64,8 +66,12 @@ public:
     Dictionary serialize() const;
     bool deserialize( const Dictionary & data );
 
+	PoolVector3Array orbit_points( Node * own_rf, Node * player_rf, Node * camera, Ref<DistanceScalerRef> scaler, int qty );
+
 public:
     CelestialMotion cm;
+	// This one is for trajectory visualization buffering.
+	Vector<Vector3d> pts;
 };
 
 

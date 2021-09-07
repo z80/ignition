@@ -5,9 +5,12 @@
 #include "se3.h"
 #include "celestial_consts.h"
 
+#include "core/math/transform.h"
+
 namespace Ign
 {
 
+class RefFrameNode;
 
 class CelestialMotion
 {
@@ -55,6 +58,10 @@ public:
     const SE3 & get_se3() const;
     void set_se3( const SE3 & se3 );
 
+	// For drawing orbits.
+	void orbit_points( RefFrameNode * own_rf, RefFrameNode * player_rf, int pts_qty, Vector<Vector3d> & pts );
+
+
     Type type;
 
     bool allow_orbiting;
@@ -101,6 +108,9 @@ private:
     static Float solve_hyperbolic( Float e, Float M, Float E );
     static Float solve_next_hyperbolic( Float e, Float M, Float E, Float max_err, Float & err_out );
 
+
+	// For placing manuver nodes.
+	//static Float eccentric_from_true_anomaly_elliptic( Float f );
 };
 
 

@@ -1,7 +1,11 @@
 
 #include "celestial_motion.h"
 #include "celestial_consts.h"
+#include "ref_frame_node.h"
+#include "math_defs.h"
 #include <cmath>
+
+using namespace Urho3D;
 
 namespace Ign
 {
@@ -731,6 +735,32 @@ Float CelestialMotion::solve_next_hyperbolic( Float e, Float M, Float E, Float m
 
 
 
+
+
+void CelestialMotion::orbit_points( RefFrameNode * own_rf, RefFrameNode * player_rf, int pts_qty, Vector<Vector3d> & pts )
+{
+	pts.clear();
+	const SE3 rel = own_rf->relative_( player_rf );
+
+	// r = slr/( 1 + e*cos(f) );
+	for ( int i=0; i<pts_qty; i++ )
+	{
+		// Start at -PI in order to have points at infinity on the sides.
+		const Float true_anomaly = 2.0 * M_PI * ( static_cast<Float>(i) / static_cast<Float>(pts_qty - 1) - 0.5 );
+		const Float co = std::cos(true_anomaly);
+		const Float den = 1.0 + abs_e*co;
+		if (den < Celestial::EPS)
+			continue;
+		const Float si = std::sin(true_anomaly);
+		const Float r = slr/den;
+		const Float x = co*r;
+		const Float y = si*r;
+		const Vector3d local( x, y, 0.0 );
+		const Vector3d r_in_own_rf = A * local;
+		const Vector3d r_in_player_rf = rel.r_ + (rel.q_ * r_in_own_rf);
+		pts.push_back( r_in_player_rf );
+	}
+}
 
 
 
