@@ -34,7 +34,7 @@ func draw():
 	var pts: PoolVector3Array = []
 	
 	clear()
-	begin(Mesh.PRIMITIVE_LINE_STRIP
+	begin(Mesh.PRIMITIVE_LINE_STRIP)
 	
 #	for pt in pts:
 #		add_vertex(Vector3(1, 1, 0))
