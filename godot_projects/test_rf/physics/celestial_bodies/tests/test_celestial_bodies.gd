@@ -22,11 +22,15 @@ func _ready():
 	
 	rf.change_parent( sun )
 	# Parent camera to the root node of this scene.
-	RootScene.get_root_for_visuas().add_child( camera )
+	RootScene.get_root_for_visuals().add_child( camera )
+	
+	var player_control: RefFrame = RefFrame.new()
+	rf.init_physics()
+	player_control.change_parent( rf )
+	PhysicsManager.player_control = player_control
 	
 	PhysicsManager.camera = camera
 	
-	rf.init_physics()
 	
 	var t: Transform = Transform.IDENTITY
 	t.origin = Vector3( 0.0, 0.0, 10.0 )
