@@ -21,8 +21,12 @@ export(float) var transparency_scale_inner_km = 5.0
 export(float) var displacement = 2.0
 
 
+export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
+
 var motion: CelestialMotionRef = null
 var rotation: CelestialRotationRef = null
+var orbit_visualizer: Node = null
+
 
 # As currently there is just one player
 # And even if many one player per PC need just one 
@@ -74,7 +78,8 @@ func init():
 	_subdivide_source_visual = SubdivideSourceRef.new()
 	
 	motion = CelestialMotionRef.new()
-	
+	_create_orbit_visualizer()
+
 	# Initialize GM.
 	gm = motion.init_gm( radius_km, surface_orbital_vel_kms )
 	
@@ -347,6 +352,24 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 		var se3: Se3Ref = rf.get_se3()
 		rf.launch( biggest_influence_body.gm, se3 )
 		print( "orbiting -> another orbiting" )
+
+
+func _create_orbit_visualizer():
+	var Vis = load( "res://physics/celestial_bodies/orbit_visualizer.tscn" )
+	orbit_visualizer = Vis.instance()
+	self.add_child( orbit_visualizer )
+
+
+
+func _set_show_orbit( en: bool ):
+	show_orbit = en
+	if show_orbit:
+		orbit_visualizer.draw()
+	orbit_visualizer.visible = show_orbit
+
+
+func _get_show_orbit():
+	return show_orbit
 
 
 

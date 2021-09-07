@@ -21,7 +21,6 @@ export(float)   var orbital_eccentricity = 0.0
 var initialized: bool = false
 var gm: float = -1.0
 
-
 func get_class():
 	return "CelestialBody"
 
@@ -75,8 +74,6 @@ func gravitational_influence( se3: Se3Ref ):
 	var dist2 = r.length_squared()
 	var ret: float = gm/dist2
 	return ret
-
-
 
 
 
