@@ -89,6 +89,13 @@ private:
     void scale_neutral( const SE3 & poi_relative_to_center );
 
 	MeshInstance * get_mesh_instance();
+
+
+public:
+	// Reworking the way mesh is generated.
+	void subdivide_2( RefFrameNode * player_rf, Ref<SubdivideSourceRef> subdivide_source_ref );
+	void apply_heightmap_2( const Ref<HeightSourceRef> & hs );
+	void apply_scale_2( RefFrameNode * player_rf, Node * camera_node, Ref<DistanceScalerRef> scaler );
 public:
 
     // These all are for geometry generation.

@@ -663,6 +663,69 @@ MeshInstance * CubeSphereNode::get_mesh_instance()
 
 
 
+void CubeSphereNode::subdivide_2( RefFrameNode * player_rf, Ref<SubdivideSourceRef> subdivide_source_ref )
+{
+	if ( subdivide_source_ref.ptr() == nullptr )
+		return;
+	SubdivideSource * ss = &(subdivide_source_ref->subdivide_source);
+	sphere.subdivide( ss );
+}
+
+void CubeSphereNode::apply_heightmap_2( const Ref<HeightSourceRef> & hs )
+{
+	if ( height_source.ptr() != nullptr )
+		sphere.apply_source( height_source->height_source );
+	else
+		sphere.apply_source( nullptr );
+	// Obtain triangles.
+	sphere.triangle_list( all_tris );
+}
+
+void CubeSphereNode::apply_scale_2( RefFrameNode * player_rf, Node * camera_node, Ref<DistanceScalerRef> scaler )
+{
+	Spatial * c = (camera_node != nullptr) ? Node::cast_to<Spatial>( camera_node ) : nullptr;
+	SE3 camera_se3;
+	if ( c != nullptr )
+	{
+		const Transform camera_t = c->get_global_transform();
+		const Vector3 r = camera_t.origin;
+		camera_se3.r_ = Vector3d( r.x, r.y, r.z );
+		const Quat q = camera_t.basis.get_rotation_quat();
+		camera_se3.q_ = q;
+	}
+	if ( convert_to_global )
+		player_rf = nullptr;
+	const SE3 to_camera_rf = this->relative_( player_rf, SE3(), camera_se3 );
+	// 1) Convert all points to camera ref. frame.
+	// 2) Apply scale.
+	// 3) convert to player_ref. frame by applying camera_se3 to the points.
+	DistanceScaler * s = ((scaler.ptr() != nullptr) && _apply_scale) ? &(scaler->scaler) : nullptr;
+
+	const int qty = all_tris.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		CubeVertex & v = all_tris.ptrw()[i];
+		Vector3d r = v.at;
+		r = (to_camera_rf.q_ * r) + to_camera_rf.r_;
+		if ( s != nullptr )
+		{
+			const Float d = r.Length();
+			const Float z = s->scale( d );
+			r = r * (z / d);
+		}
+		// Convert to player ref. frame.
+		r = (camera_se3.q_ * r) + camera_se3.r_;
+		v.atScaled = r;
+		// Rotate normal.
+		//v.norm = center_to_poi.q_ * v.norm;
+	}
+}
+
+
+
+
+
+
 
 
 
