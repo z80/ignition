@@ -347,7 +347,11 @@ PoolVector3Array CelestialMotionRef::orbit_points( Node * own_rf, Node * player_
 	PoolVector3Array ret;
 	ret.resize( pts_qty );
 	for ( int i=0; i<pts_qty; i++ )
-		pts.push_back( pts.ptr()[i] );
+	{
+		const Vector3d r = pts.ptr()[i];
+		const Vector3 at( r.x_, r.y_, r.z_ );
+		ret.set( i, at );
+	}
 	return ret;
 }
 
