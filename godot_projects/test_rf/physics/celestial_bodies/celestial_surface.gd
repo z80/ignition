@@ -25,6 +25,7 @@ export(float) var displacement = 2.0
 var motion: CelestialMotionRef = null
 var rotation: CelestialRotationRef = null
 var orbit_visualizer: Node = null
+export(Color) var orbit_color = Color( 1.0, 0.0, 0.0, 1.0 ) setget _set_orbit_color, _get_orbit_color
 export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
 
 
@@ -361,14 +362,22 @@ func _create_orbit_visualizer():
 	self.add_child( orbit_visualizer )
 	orbit_visualizer.ref_frame = self
 	orbit_visualizer.motion    = motion
+	orbit_visualizer.color     = orbit_color
 
 
+
+func _set_orbit_color( c: Color ):
+	orbit_color = c
+	if orbit_visualizer != null:
+		orbit_visualizer.color = orbit_color
+
+func _get_orbit_color():
+	return orbit_color
 
 func _set_show_orbit( en: bool ):
 	show_orbit = en
-	if show_orbit:
-		orbit_visualizer.draw()
 	orbit_visualizer.visible = show_orbit
+	orbit_visualizer.color   = orbit_color
 
 
 func _get_show_orbit():
@@ -380,5 +389,7 @@ func _process_visualize_orbits():
 	var current_state: bool = self.show_orbit
 	if current_state != new_state:
 		self.show_orbit = new_state
+	if show_orbit:
+		orbit_visualizer.draw()
 
 
