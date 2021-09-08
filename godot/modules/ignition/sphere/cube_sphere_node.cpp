@@ -115,6 +115,10 @@ void CubeSphereNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_target_mesh"),         &CubeSphereNode::get_target_mesh, Variant::NODE_PATH);
 
 
+	ClassDB::bind_method( D_METHOD("subdivide_2", "player_rf", "subdivide_source_ref"), &CubeSphereNode::subdivide_2 );
+	ClassDB::bind_method( D_METHOD("apply_heightmap_2", "height_source_ref"), &CubeSphereNode::apply_heightmap_2 );
+	ClassDB::bind_method( D_METHOD("apply_scale_2", "player_rf", "camera_node", "scaler_ref"), &CubeSphereNode::apply_scale_2 );
+
 
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "height_source" ), "set_height_source", "get_height_source" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ), "set_radius", "get_radius" );
@@ -663,7 +667,25 @@ MeshInstance * CubeSphereNode::get_mesh_instance()
 
 
 
-void CubeSphereNode::subdivide_2( RefFrameNode * player_rf, Ref<SubdivideSourceRef> subdivide_source_ref )
+
+void CubeSphereNode::subdivide_2( Node * player_rf, Ref<SubdivideSourceRef> subdivide_source_ref )
+{
+	RefFrameNode * player_rf_node = Node::cast_to<RefFrameNode>(player_rf);
+	_subdivide_2( player_rf_node, subdivide_source_ref );
+}
+
+void CubeSphereNode::apply_heightmap_2( const Ref<HeightSourceRef> & hs )
+{
+	_apply_heightmap_2( hs );
+}
+
+void CubeSphereNode::apply_scale_2( Node * player_rf, Node * camera_node, Ref<DistanceScalerRef> scaler )
+{
+	RefFrameNode * player_rf_node = Node::cast_to<RefFrameNode>(player_rf);
+	_apply_scale_2( player_rf_node, camera_node, scaler );
+}
+
+void CubeSphereNode::_subdivide_2( RefFrameNode * player_rf, Ref<SubdivideSourceRef> subdivide_source_ref )
 {
 	if ( subdivide_source_ref.ptr() == nullptr )
 		return;
@@ -671,7 +693,7 @@ void CubeSphereNode::subdivide_2( RefFrameNode * player_rf, Ref<SubdivideSourceR
 	sphere.subdivide( ss );
 }
 
-void CubeSphereNode::apply_heightmap_2( const Ref<HeightSourceRef> & hs )
+void CubeSphereNode::_apply_heightmap_2( const Ref<HeightSourceRef> & hs )
 {
 	if ( height_source.ptr() != nullptr )
 		sphere.apply_source( height_source->height_source );
@@ -681,7 +703,7 @@ void CubeSphereNode::apply_heightmap_2( const Ref<HeightSourceRef> & hs )
 	sphere.triangle_list( all_tris );
 }
 
-void CubeSphereNode::apply_scale_2( RefFrameNode * player_rf, Node * camera_node, Ref<DistanceScalerRef> scaler )
+void CubeSphereNode::_apply_scale_2( RefFrameNode * player_rf, Node * camera_node, Ref<DistanceScalerRef> scaler )
 {
 	Spatial * c = (camera_node != nullptr) ? Node::cast_to<Spatial>( camera_node ) : nullptr;
 	SE3 camera_se3;
@@ -698,7 +720,7 @@ void CubeSphereNode::apply_scale_2( RefFrameNode * player_rf, Node * camera_node
 	const SE3 to_camera_rf = this->relative_( player_rf, SE3(), camera_se3 );
 	// 1) Convert all points to camera ref. frame.
 	// 2) Apply scale.
-	// 3) convert to player_ref. frame by applying camera_se3 to the points.
+	// 3) convert to player ref. frame by applying camera_se3 to the points.
 	DistanceScaler * s = ((scaler.ptr() != nullptr) && _apply_scale) ? &(scaler->scaler) : nullptr;
 
 	const int qty = all_tris.size();
