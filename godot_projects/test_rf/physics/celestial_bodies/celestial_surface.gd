@@ -170,7 +170,8 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 		var need_rebuild: bool = subdiv.need_subdivide( rf, planet )
 		if need_rebuild:
 			# Build the surface for this particular ref frame physics.
-			planet.rebuild_shape( rf, subdiv )
+			planet.subdivide_2( rf, subdiv )
+			planet.apply_heightmap_2( planet.height_source )
 			var collision_dist = Constants.RF_MERGE_DISTANCE
 			var surface_relative_to_rf: Se3Ref = planet.relative_to( rf )
 			var verts: PoolVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
@@ -184,13 +185,16 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 			pass
 	
 	# For player ref frame rebuild mesh if needed
-	if player_rf != null:
+	if (player_rf != null) or true:
 		var need_rebuild_visual: bool = _subdivide_source_visual.need_subdivide( player_rf, planet )
 		#print( "need_rebuild_visual: ", need_rebuild_visual )
 		if need_rebuild_visual:
-			planet.rebuild_shape( player_rf, _subdivide_source_visual )
+			planet.subdivide_2( player_rf, _subdivide_source_visual )
+			planet.apply_heightmap_2( planet.height_source )
 			planet.apply_visual_mesh()
-		planet.relocate_mesh( player_rf, player_ctrl, _subdivide_source_visual )
+		var camera: Camera = PhysicsManager.camera
+		var distance_scaler: DistanceScalerRef = PhysicsManager.distance_scaler
+		planet.apply_scale_2( player_rf, camera, distance_scaler )
 
 
 
