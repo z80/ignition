@@ -9,6 +9,7 @@
 [node name="RootUi" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+margin_right = 4.0
 mouse_filter = 2
 __meta__ = {
 "_edit_use_anchors_": false
@@ -25,6 +26,10 @@ margin_right = 0.32843
 margin_bottom = -6.85516
 
 [node name="ControlGroups" parent="." instance=ExtResource( 3 )]
+margin_left = -128.378
+margin_top = 58.3445
+margin_right = -5.37842
+margin_bottom = 317.344
 
 [node name="UiSaveLoad" parent="." instance=ExtResource( 4 )]
 anchor_left = 0.182
@@ -37,3 +42,9 @@ margin_right = 94.632
 margin_bottom = -9.0
 
 [node name="TimeDilation" parent="." instance=ExtResource( 5 )]
+anchor_left = 1.0
+anchor_bottom = 0.0
+margin_left = -349.361
+margin_top = 1.21281
+margin_right = -3.36133
+margin_bottom = 49.2128

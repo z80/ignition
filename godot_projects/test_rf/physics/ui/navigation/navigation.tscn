@@ -165,8 +165,7 @@ margin_left = -191.2
 margin_top = -266.703
 margin_right = -84.2002
 margin_bottom = -242.703
-hint_tooltip = "Stability Augmentation System (S.A.S.)
-When vehicle rotation is not under control actively zeroes angular velocity. "
+hint_tooltip = "Visualize orbits"
 focus_mode = 0
 enabled_focus_mode = 0
 text = "Show orbits"
