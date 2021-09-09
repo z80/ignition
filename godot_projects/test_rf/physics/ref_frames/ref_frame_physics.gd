@@ -281,8 +281,8 @@ func jump_if_needed():
 	# Enforce collision layer and visual subdivide.
 	_subdivide_source_physical.force_subdivide()
 	var player_rf: RefFrameNode = PhysicsManager.get_player_ref_frame()
-	if self == player_rf:
-		PhysicsManager.force_rebuild_visual_spheres()
+#	if self == player_rf:
+#		PhysicsManager.force_rebuild_visual_spheres()
 	#_jumps_left -= 1
 
 
