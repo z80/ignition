@@ -125,7 +125,7 @@ func init():
 func process( delta: float, force_player_rf: RefFrameNode = null ):
 	process_motion( delta )
 	process_geometry( force_player_rf )
-	process_rescale( force_player_rf )
+	#process_rescale( force_player_rf )
 	_process_visualize_orbits()
 
 
@@ -195,6 +195,7 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 		var camera: Camera = PhysicsManager.camera
 		var distance_scaler: DistanceScalerRef = PhysicsManager.distance_scaler
 		planet.apply_scale_2( player_rf, camera, distance_scaler )
+		planet.apply_visual_mesh()
 
 
 
