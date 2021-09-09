@@ -277,7 +277,7 @@ func process_ref_frames( celestial_bodies: Array ):
 func process_ref_frames_rotating_to_orbiting():
 	var rot: RefFrameNode = rotation_rf()
 	var rfs: Array = ref_frames( rot )
-	var qty: int = len( rfs )
+	var qty: int = rfs.size()
 	if qty < 1:
 		return
 	if ref_frame_to_check_rotating_index >= qty:
@@ -312,7 +312,7 @@ func process_ref_frames_rotating_to_orbiting():
 func process_ref_frames_orbiting_to_rotating():
 	var tr: RefFrameNode = translation_rf()
 	var rfs: Array = ref_frames( tr )
-	var qty: int = len( rfs )
+	var qty: int = rfs.size()
 	if qty < 1:
 		return
 	if ref_frame_to_check_orbiting_index >= qty:
@@ -332,7 +332,7 @@ func process_ref_frames_orbiting_to_rotating():
 func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 	var tr: RefFrameNode = translation_rf()
 	var rfs: Array = ref_frames( tr )
-	var qty: int = len( rfs )
+	var qty: int = rfs.size()
 	if qty < 1:
 		return
 	if ref_frame_to_check_orbiting_index >= qty:
