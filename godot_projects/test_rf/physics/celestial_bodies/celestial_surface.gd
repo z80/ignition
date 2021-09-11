@@ -68,6 +68,12 @@ func surface_node():
 
 
 
+func _ready():
+	._ready()
+	# It should be created only when the thing is in the tree.
+	_create_orbit_visualizer()
+
+
 
 func init():
 	if initialized:
@@ -79,7 +85,6 @@ func init():
 	_subdivide_source_visual = SubdivideSourceRef.new()
 	
 	motion = CelestialMotionRef.new()
-	_create_orbit_visualizer()
 
 	# Initialize GM.
 	gm = motion.init_gm( radius_km, surface_orbital_vel_kms )
@@ -362,6 +367,8 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 
 
 func _create_orbit_visualizer():
+	if is_instance_valid( orbit_visualizer ):
+		orbit_visualizer.queue_free()
 	var Vis = load( "res://physics/celestial_bodies/orbit_visualizer.tscn" )
 	orbit_visualizer = Vis.instance()
 	self.add_child( orbit_visualizer )
