@@ -181,13 +181,6 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 			var surface_relative_to_rf: Se3Ref = planet.relative_to( rf )
 			var verts: PoolVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
 			rf.set_surface_vertices( verts, surface_relative_to_rf )
-		else:
-			# Need to update current pose for surface vertices as 
-			# planet position might have changed if ref. frame is not 
-			# a child of the rotation part.
-			#var surface_relative_to_rf: Se3Ref = planet.relative_to( rf )
-			#rf.update_surface_vertices( surface_relative_to_rf )
-			pass
 	
 	# For player ref frame rebuild mesh if needed
 	if (player_rf != null) or true:
@@ -204,39 +197,6 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 
 
 
-#func process_rescale( force_player_rf: RefFrameNode = null ):
-#	var player_rf: RefFrameNode
-#	if force_player_rf != null:
-#		player_rf = force_player_rf
-#	else:
-#		player_rf = PhysicsManager.get_player_ref_frame()
-#
-#	if player_rf == null:
-#		return
-#
-#	var planet: CubeSphereNode = get_node( "Rotation/CelestialBody" )
-#	var se3: Se3Ref = player_rf.relative_to( planet )
-#	var r: Vector3 = se3.r
-#	var dr: Vector3 = (r - last_player_rf_r)
-#	var abs_r: float = r.length()
-#	if abs_r <= 0.0:
-#		return
-#
-#	dr /= abs_r
-#	var d: float = dr.length()
-#	if d < rescale_angular_distance:
-#		return
-#
-#	planet.rebuild_scale( player_rf )
-#	planet.apply_visual_mesh()
-#	last_player_rf_r = r
-#
-#	print( "scale updated" )
-
-
-
-#func force_rebuild():
-#	_subdivide_source_visual.force_subdivide()
 
 
 
