@@ -10,6 +10,9 @@ class_name PartAssembly
 # List of sub-bodies this body contains if it is a super-body.
 var sub_bodies: Array = []
 
+
+# For visualizing the orbit it is needed to have an OrbitalMotionRef in order 
+# to have points on the trajectory.
 var orbit_visualizer: Node = null
 export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
 
