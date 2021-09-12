@@ -86,8 +86,10 @@ func on_delete():
 	if is_instance_valid( super_body ):
 		super_body.remove_sub_body( self )
 	if _visual != null:
+		_visual.name = _visual.name + "_to_be_deleted"
 		_visual.queue_free()
 	if _physical != null:
+		_physical.name = _physical.name + "_to_be_deleted"
 		_physical.queue_free()
 
 
@@ -505,6 +507,9 @@ func serialize():
 	data["se3"] = se3_data
 	
 	data["body_state"] = int(body_state)
+	
+	# Need to save this in order to restore it correctly.
+	data["visual_name"] = _visual.name
 	
 	return data
 

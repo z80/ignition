@@ -251,6 +251,14 @@ static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 		var p: Node = n.get_node( parentpath )
 		p.add_child( b )
 		b.init()
+		# Need to overwrite visual name in order to make 
+		# connecting nodes to be detected correctly.
+		# This is argualble that this is the best place to do it.
+		# But I can't come up with more elegant solution right now.
+		var data: Dictionary = all_data.data
+		if data.has("visual_name"):
+			var visual_name: String = data["visual_name"]
+			b._visual.name = visual_name
 		bodies.push_back( b )
 	
 	for name in bodies_data:
