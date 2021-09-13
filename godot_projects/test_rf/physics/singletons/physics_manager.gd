@@ -266,6 +266,7 @@ func update_camera():
 
 func create_ref_frame_physics():
 	var rf: RefFramePhysics = RefFramePhysics.new()
+	rf.name = "ref_frame_physics"
 	return rf
 
 

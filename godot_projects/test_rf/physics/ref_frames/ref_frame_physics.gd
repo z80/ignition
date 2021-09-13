@@ -401,6 +401,14 @@ func split_if_needed():
 	var rf: RefFrame = PhysicsManager.create_ref_frame_physics()
 	rf.change_parent( p )
 	var se3: Se3Ref = self.get_se3()
+	
+#	var accum_r: Vector3 = Vector3.ZERO
+#	for b in bodies_b:
+#		var se3_b: Se3Ref = b.get_se3()
+#		accum_r += se3_b.r
+#	accum_r /= float( bodies_b.size() )
+#	se3.r = accum_r
+
 	rf.set_se3( se3 )
 	
 	for body in bodies_b:
@@ -410,6 +418,10 @@ func split_if_needed():
 	print( "after split: " )
 	print_all_ref_frames()
 	print( "" )
+	
+	#For debugging compute distance as if we wanted to merge ref frames.
+	var dist_2: float = distance( rf )
+
 	
 	return true 
 

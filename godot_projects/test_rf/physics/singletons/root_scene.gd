@@ -37,6 +37,11 @@ func get_unique_name_for_visuals( name_template: String ):
 
 func _get_unique_name_for( section: Node, name_template: String ):
 	var path: String = section.get_path()
+	var p0: String = path + "/" + name_template
+	var n0: Node = get_node_or_null( p0 )
+	if n0 == null:
+		return name_template
+	
 	var ind: int = 0
 	while true:
 		var name: String = name_template + "_" + str(ind)
@@ -44,6 +49,7 @@ func _get_unique_name_for( section: Node, name_template: String ):
 		var n: Node = get_node_or_null( p )
 		if n == null:
 			return name
+		ind += 1
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

@@ -235,7 +235,8 @@ func _create_visual( Visual ):
 	var t: Transform = self.t()
 	v.transform = t
 	
-	var root = RootScene.get_root_for_visuals()
+	var root: Node = RootScene.get_root_for_visuals()
+	v.name = RootScene.get_unique_name_for_visuals( v.name )
 	root.add_child( v )
 	
 	_visual = v
