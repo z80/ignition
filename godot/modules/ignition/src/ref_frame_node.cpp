@@ -245,6 +245,8 @@ void RefFrameNode::change_parent( Node * parent )
 		Node * prev_parent = this->get_parent();
 		if ( prev_parent )
 			prev_parent->remove_child( this );
+		const String unique_name = _unique_name( this->get_name(), parent );
+		this->set_name( unique_name );
 		parent->add_child( this );
 	}
 }
@@ -497,6 +499,27 @@ bool RefFrameNode::get_debug() const
 	return debug_;
 }
 
+String RefFrameNode::_unique_name( const String & name_base, Node * parent )
+{
+	if (parent == nullptr)
+		return name_base;
+	const NodePath parent_path = parent->get_path();
+	const String s_parent_path = String(parent_path);
+	const String path = s_parent_path + String( "/" ) + name_base;
+	Node * n = parent->get_node_or_null( path );
+	if (n == nullptr)
+		return name_base;
+	int ind = 0;
+	while (true)
+	{
+		const String name = name_base + String("_") + rtos( ind );
+		const String path = s_parent_path + String("/") + name;
+		Node * n = parent->get_node_or_null( path );
+		if ( n == nullptr )
+			return name;
+		ind += 1;
+	}
+}
 
 
 }

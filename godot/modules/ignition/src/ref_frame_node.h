@@ -82,6 +82,8 @@ public:
 
 	RefFrameNode * parent_rf_() const;
 
+	String _unique_name( const String & name_base, Node * parent );
+
 
 	void set_debug( bool en );
 	bool get_debug() const;
