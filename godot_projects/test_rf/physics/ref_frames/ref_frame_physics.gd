@@ -191,7 +191,7 @@ func is_active():
 func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	# Debug output.
 	var tp: String = motion.movement_type()
-	var dbg: bool = (tp != "idle")
+	var dbg: bool = true
 	self.debug = dbg
 	if dbg:
 		print( "" )
@@ -209,8 +209,8 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	# Turn debug off and keep with debug output.
 	self.debug = false
 	
-	if tp == "idle":
-		return
+#	if tp == "idle":
+#		return
 	se3 = motion.se3
 	var r: Vector3 = se3.r
 	v = se3.v
@@ -220,13 +220,13 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	print( "r:             ", r )
 	print( "v:             ", v )
 
-	var v_accum: Vector3 = Vector3.ZERO
-	var bodies: Array = child_bodies( false )
-	var qty: int = bodies.size()
-	for b in bodies:
-		var vv: Vector3 = b.v()
-		v_accum += vv
-	v_accum /= float( qty )
+#	var v_accum: Vector3 = Vector3.ZERO
+#	var bodies: Array = child_bodies( false )
+#	var qty: int = bodies.size()
+#	for b in bodies:
+#		var vv: Vector3 = b.v()
+#		v_accum += vv
+#	v_accum /= float( qty )
 
 	print( "" )
 

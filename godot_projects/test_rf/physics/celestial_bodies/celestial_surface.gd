@@ -312,6 +312,13 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 		var cb: CelestialBody = celestial_bodies[i]
 		var se3: Se3Ref = rf.relative_to( cb )
 		var infl: float = cb.gravitational_influence( se3 )
+		if is_nan(infl) or is_inf(infl):
+			var iii: int = 0
+			rf.debug = true
+			var stri: String = rf.motion.movement_type()
+			se3 = rf.relative_to( cb )
+			rf.debug = false
+		
 		if (biggest_influence_body == null) or (biggest_influence < infl):
 			biggest_influence = infl
 			biggest_influence_body = cb
