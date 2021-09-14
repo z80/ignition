@@ -66,6 +66,9 @@ CelestialMotionRef::~CelestialMotionRef()
 
 void CelestialMotionRef::set_allow_orbiting( bool en )
 {
+	const bool prev = cm.get_allow_orbiting();
+	if ( prev && (!en) )
+		print_line( "********************************* CelestialMotionRef: reset allow_orbiting to false!!!" )
     cm.set_allow_orbiting( en );
 }
 

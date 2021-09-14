@@ -287,8 +287,8 @@ func process_ref_frames_orbiting_to_rotating():
 	var rot: RefFrameNode = rotation_rf()
 	var se3: Se3Ref = rf.relative_to( rot )
 	var dist: float = se3.r.length()
-	var inclustion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_INCLUDE_DIST
-	if dist <= inclustion_dist:
+	var inclusion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_INCLUDE_DIST
+	if dist <= inclusion_dist:
 		rf.change_parent( rot )
 		rf.allow_orbiting = false
 		print( "orbiting -> rotating" )
