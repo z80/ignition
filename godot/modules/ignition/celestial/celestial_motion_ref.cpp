@@ -43,11 +43,15 @@ void CelestialMotionRef::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("orbit_points", "own_rf", "player_rf", "camera_node", "scaler", "qty"), &CelestialMotionRef::orbit_points, Variant::POOL_VECTOR3_ARRAY );
 
+	ClassDB::bind_method( D_METHOD("set_force_numerical", "en"), &CelestialMotionRef::set_force_numerical );
+	ClassDB::bind_method( D_METHOD("get_force_numerical"),       &CelestialMotionRef::get_force_numerical, Variant::BOOL );
+
 	ClassDB::bind_method( D_METHOD("set_debug", "en"), &CelestialMotionRef::set_debug );
 	ClassDB::bind_method( D_METHOD("get_debug"), &CelestialMotionRef::get_debug, Variant::BOOL );
 
     ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "allow_orbiting" ),       "set_allow_orbiting",       "get_allow_orbiting" );
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),                  "set_se3",                  "get_se3" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "force_numerical" ),      "set_force_numerical",      "get_force_numerical" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "debug" ),                "set_debug",                "get_debug" );
 }
 
@@ -87,7 +91,7 @@ String CelestialMotionRef::movement_type() const
     String ret;
     switch (t)
     {
-    case CelestialMotion::NUMERIC:
+    case CelestialMotion::NUMERICAL:
         ret = "numeric";
         break;
     case CelestialMotion::ELLIPTIC:
@@ -357,6 +361,16 @@ PoolVector3Array CelestialMotionRef::orbit_points( Node * own_rf, Node * player_
 		ret.set( i, at );
 	}
 	return ret;
+}
+
+void CelestialMotionRef::set_force_numerical( bool en )
+{
+	cm.force_numerical = en;
+}
+
+bool CelestialMotionRef::get_force_numerical() const
+{
+	return cm.force_numerical;
 }
 
 void CelestialMotionRef::set_debug( bool en )

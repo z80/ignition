@@ -16,7 +16,7 @@ namespace Ign
 CelestialMotion::CelestialMotion()
 {
     type = STATIONARY;
-
+	force_numerical = false;
     allow_orbiting = true;
  
     gm = -1.0;
@@ -49,6 +49,8 @@ const CelestialMotion & CelestialMotion::operator=( const CelestialMotion & inst
     {
         type = inst.type;
 
+		force_numerical = inst.force_numerical;
+
         allow_orbiting = inst.allow_orbiting;
 
         gm = inst.gm;
@@ -67,6 +69,8 @@ const CelestialMotion & CelestialMotion::operator=( const CelestialMotion & inst
         
         se3_global = inst.se3_global;
         se3_local  = inst.se3_local;
+
+		_debug = inst._debug;
     }
 
     return *this;
@@ -231,6 +235,9 @@ Vector3d CelestialMotion::ey() const
 
 void CelestialMotion::init( Float gm_, const SE3 & se3_ )
 {
+	_last_init_gm  = gm_;
+	_last_init_se3 = se3_;
+
     gm  = gm_;
     se3_global = se3_;
 
@@ -255,9 +262,12 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     
     h = r.CrossProduct( v );    
     const Float abs_h = h.Length();
-    if ( abs_h < Celestial::MIN_ANGULAR_MOMENTUM )
+	const Float abs_v_x_r = r.Length() * v.Length();
+	const Float abs_h_normalized = (abs_v_x_r > 0.0) ? (abs_h / abs_v_x_r) : abs_h;
+	print_line( String("CelestialMotion: abs_h_normalized: ") + rtos(abs_h_normalized) );
+    if ( force_numerical || (abs_h_normalized < Celestial::MIN_ANGULAR_MOMENTUM) )
     {
-        type = NUMERIC;
+        type = NUMERICAL;
         init_numeric();
         return;
     }
@@ -293,9 +303,11 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     if ( abs_h_cross_ex > Celestial::EPS )
         e_y = h_cross_ex / abs_h_cross_ex;
     else
+	{
         e_y = v.Normalized();
         e_y = e_y - ( e_x * e_y.DotProduct( e_x ) );
         e_y = e_y.Normalized();
+	}
 
     const Vector3d e_z = e_x.CrossProduct( e_y );
     A.m00_ = e_x.x_;
@@ -375,7 +387,10 @@ void CelestialMotion::launch_elliptic( Float gm, const Vector3d & unit_r, const 
 
 const SE3 & CelestialMotion::process( Float dt )
 {
-    if (type == NUMERIC)
+	const SE3 se3_local_save = se3_local;
+	const SE3 se3_global_save = se3_global;
+
+    if (type == NUMERICAL)
         process_numeric( dt );
     else if (type == HYPERBOLIC)
         process_hyperbolic( dt );
@@ -383,6 +398,26 @@ const SE3 & CelestialMotion::process( Float dt )
         process_elliptic( dt );
     else if (type == PARABOLIC)
         process_parabolic( dt );
+
+	
+	if ( isnan( se3_global.r_.x_ ) || isnan( se3_global.r_.y_ ) || isnan( se3_global.r_.z_ ) ||
+		isnan( se3_global.v_.x_ ) || isnan( se3_global.v_.y_ ) || isnan( se3_global.v_.z_ ) )
+	{
+		init( _last_init_gm, _last_init_se3 );
+
+		//se3_local = se3_local_save;
+		//se3_global = se3_global_save;
+
+		if (type == NUMERICAL)
+			process_numeric( dt );
+		else if (type == HYPERBOLIC)
+			process_hyperbolic( dt );
+		else if (type == ELLIPTIC)
+			process_elliptic( dt );
+		else if (type == PARABOLIC)
+			process_parabolic( dt );
+	}
+
 
     return se3_global;
 }
@@ -461,7 +496,7 @@ void CelestialMotion::init_hyperbolic()
 
     // True anomaly from "r".
     const Vector3d & r = se3_local.r_;
-    const Float co_f = r.x_;
+    const Float co_f = r.x_ / r.Length();
     const Float cosh_E = (co_f + abs_e)/(1.0 + abs_e*co_f);
     Float sinh_E = std::sqrt(cosh_E*cosh_E - 1.0); 
     if ( r.y_ < 0.0 )

@@ -15,7 +15,7 @@ class RefFrameNode;
 class CelestialMotion
 {
 public:
-    enum Type { STATIONARY=0, NUMERIC=1, ELLIPTIC=2, PARABOLIC=3, HYPERBOLIC=4 };
+    enum Type { STATIONARY=0, NUMERICAL=1, ELLIPTIC=2, PARABOLIC=3, HYPERBOLIC=4 };
 
     CelestialMotion();
     ~CelestialMotion();
@@ -63,6 +63,7 @@ public:
 
 
     Type type;
+	bool force_numerical;
 
     bool allow_orbiting;
 
@@ -88,6 +89,8 @@ public:
     SE3 se3_local;
 
 	bool _debug;
+	SE3 _last_init_se3;
+	Float _last_init_gm;
 
 private:
     void init_numeric();
