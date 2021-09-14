@@ -288,7 +288,7 @@ func jump_if_needed():
 	
 	# Enforce collision layer and visual subdivide.
 	_subdivide_source_physical.force_subdivide()
-	var player_rf: RefFrameNode = PhysicsManager.get_player_ref_frame()
+#	var player_rf: RefFrameNode = PhysicsManager.get_player_ref_frame()
 #	if self == player_rf:
 #		PhysicsManager.force_rebuild_visual_spheres()
 	#_jumps_left -= 1
@@ -681,6 +681,9 @@ func is_orbiting():
 func _set_allow_orbiting( en: bool ):
 	if motion == null:
 		return
+	var prev: bool = motion.allow_orbiting
+	if prev and (not en):
+		var iii: int = 0
 	motion.allow_orbiting = en
 
 

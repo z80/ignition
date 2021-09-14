@@ -333,6 +333,8 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 		var se3: Se3Ref = rf.get_se3()
 		rf.launch( biggest_influence_body.gm, se3 )
 		print( "orbiting -> another orbiting" )
+		print( "biggest influence obj: ", biggest_influence_body.name )
+		print( "biggest influence gm: ", biggest_influence_body.gm )
 
 
 func _create_orbit_visualizer():
