@@ -5,6 +5,9 @@
 #include "math_defs.h"
 #include <cmath>
 
+#include "core/print_string.h"
+
+
 using namespace Urho3D;
 
 namespace Ign
@@ -27,6 +30,8 @@ CelestialMotion::CelestialMotion()
     periapsis_t = 0;
     T = 1000;
     b = 1.0;
+
+	_debug = false;
 }
 
 CelestialMotion::~CelestialMotion()
@@ -233,13 +238,15 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
 	if ( gm <= 0.0 )
 	{
 		type = STATIONARY;
+		print_line( String("gm < 0.0: ") + rtos(gm) + String(", switching to idle") );
 		return;
 	}
 
     if ( !allow_orbiting )
     {
         type = STATIONARY;
-        return;
+		print_line( String("allow_orbiting == false, switching to idle") );
+		return;
     }
 
 
@@ -536,6 +543,8 @@ void CelestialMotion::process_numeric( Float dt )
 	//se3_global.r_ += se3_global.v_ * dt;
 
 	rk4_step( se3_global, gm, dt );
+	print_line( String("numerical integration: x: (" )  + rtos(se3_global.r_.x_) + String(", ") +
+		rtos(se3_global.r_.y_) + String(", ") + rtos(se3_global.r_.z_) + String(")") );
 }
 
 void CelestialMotion::process_parabolic( Float dt )

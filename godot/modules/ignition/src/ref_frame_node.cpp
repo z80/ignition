@@ -70,7 +70,7 @@ void RefFrameNode::_jumped()
 		get_script_instance()->call_multilevel( "_jumped", ptr, 0 );
 	}
 	if ( debug_ )
-		print_line( "jumped" );
+		( "jumped" );
 }
 
 void RefFrameNode::_parent_jumped()

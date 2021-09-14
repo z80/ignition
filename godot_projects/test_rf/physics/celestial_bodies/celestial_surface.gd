@@ -315,6 +315,8 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 		if is_nan(infl) or is_inf(infl):
 			var iii: int = 0
 			rf.debug = true
+			var motion_se3: Se3Ref = rf.motion.se3
+			var rf_se3: Se3Ref     = rf.get_se3()
 			var stri: String = rf.motion.movement_type()
 			se3 = rf.relative_to( cb )
 			rf.debug = false

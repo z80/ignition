@@ -82,18 +82,20 @@ func evolve_motion( _dt: float ):
 		_dt = 0.1
 	motion.process_rf( _dt, self )
 	
-#	var t: String = motion.movement_type()
-#	if t == "idle":
-#		return
-#	var se3: Se3Ref = motion.se3
-#	var r: Vector3 = se3.r
-#	var v: Vector3 = se3.v
-#	var l: float = motion.specific_angular_momentum()
-#	print( "movement type: ", t )
-#	print( "spec ang mom:  ", l )
-#	print( "r:             ", r )
-#	print( "v:             ", v )
-#	print( "" )
+	var t: String = motion.movement_type()
+	if t == "idle":
+		return
+	print( "" )
+	print( "motion analysis" )
+	var se3: Se3Ref = motion.se3
+	var r: Vector3 = se3.r
+	var v: Vector3 = se3.v
+	var l: float = motion.specific_angular_momentum()
+	print( "movement type: ", t )
+	print( "spec ang mom:  ", l )
+	print( "r:             ", r )
+	print( "v:             ", v )
+	print( "" )
 
 
 
@@ -215,7 +217,7 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	var r: Vector3 = se3.r
 	v = se3.v
 	var l: float = motion.specific_angular_momentum()
-	print( "movement type: ", t )
+	print( "movement type: ", tp )
 	print( "spec ang mom:  ", l )
 	print( "r:             ", r )
 	print( "v:             ", v )

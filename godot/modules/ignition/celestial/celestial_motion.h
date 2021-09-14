@@ -87,6 +87,8 @@ public:
     SE3 se3_global;
     SE3 se3_local;
 
+	bool _debug;
+
 private:
     void init_numeric();
     void init_parabolic();
