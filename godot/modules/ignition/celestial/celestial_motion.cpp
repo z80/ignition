@@ -315,6 +315,14 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     se3_local.r_ = inv_A * se3_global.r_;
     se3_local.v_ = inv_A * se3_global.v_;
 
+	if (_debug)
+	{
+		print_line( "CelestialMotion: Init" );
+		print_line( "h:  " + rtos(abs_h) );
+		print_line( "e:  " + rtos(abs_e) );
+		print_line( "gm: " + rtos(gm) );
+	}
+
     if ( abs_e > (1.0 + Celestial::EPS) )
     {
         type = HYPERBOLIC;
@@ -594,6 +602,11 @@ void CelestialMotion::process_elliptic( Float dt )
 
     se3_global.r_ = A * se3_local.r_;
     se3_global.v_ = A * se3_local.v_;
+
+	if (_debug)
+	{
+
+	}
 }
 
 void CelestialMotion::process_hyperbolic( Float dt )
