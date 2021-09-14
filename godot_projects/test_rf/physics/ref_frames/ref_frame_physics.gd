@@ -38,17 +38,23 @@ func _enter_tree():
 
 
 func process_children():
+	#print( "******************** process children" )
 	.process_children()
+	#print( "******************** apply forces" )
 	apply_forces()
 	#if not debug_has_split:
 	#exclude_too_far_bodies()
+	#print( "******************** include close enough bodies" )
 	include_close_enough_bodies()
+	#print( "******************** split if needed" )
 	var has_split: bool = split_if_needed()
 	debug_has_split = has_split
 	if has_split:
 		return true
+	#print( "******************** merge if needed" )
 	if ( merge_if_needed() ):
 		return true
+	#print( "******************** self delete if unused" )
 	if ( self_delete_if_unused() ):
 		return true
 	
@@ -374,6 +380,7 @@ func split_if_needed():
 	print( "splitting ref frame ", self.name )
 	print( "just before split: " )
 	print_all_ref_frames()
+	#_debug_distances( bodies )
 	
 	var bodies_a: Array = []
 	var bodies_b: Array = []
@@ -420,7 +427,9 @@ func split_if_needed():
 	print( "" )
 	
 	#For debugging compute distance as if we wanted to merge ref frames.
-	var dist_2: float = distance( rf )
+	#var dist_2: float = distance( rf )
+	#_debug_distances( bodies )
+	#dist_2 = distance( rf )
 
 	
 	return true 
@@ -439,6 +448,7 @@ func merge_if_needed():
 		if dist < Constants.RF_MERGE_DISTANCE:
 			
 			print( "\n\n\n" )
+			dist = distance( rf )
 			print( "merging ", rf.name, " with ", self.name )
 			print( "info before" )
 			print_all_ref_frames()
@@ -619,6 +629,10 @@ func get_subdivide_source():
 func distance( b: RefFramePhysics ):
 	var bodies_a: Array = root_most_child_bodies()
 	var bodies_b: Array = b.root_most_child_bodies()
+	
+	#var bodies_all: Array = bodies_a + bodies_b
+	#_debug_distances( bodies_all )
+	
 	var min_d: float = -1.0
 	for body_a in bodies_a:
 		for body_b in bodies_b:
@@ -690,6 +704,25 @@ func deserialize( data: Dictionary ):
 		return false
 	
 	return true
+
+
+
+static func _debug_distances( bodies: Array ):
+	var bodies_node: Node = RootScene.get_root_for_bodies()
+	var tree: SceneTree = bodies_node.get_tree()
+	var vp: Viewport = tree.root
+	var root_node: Node = vp.get_node( "Root" ).get_node( "Sun" )
+	var ass: Body = root_node.find_node( "Construction", true, false )
+	print( "" )
+	print( "                All relative to assembly:" )
+	for b in bodies:
+		var body = b as RefFrameNode
+		if body == null:
+			continue
+		var se3: Se3Ref = body.relative_to( ass )
+		print( body.name, ": ", se3.r )
+	pass
+
 
 
 

@@ -118,6 +118,10 @@ func set_local_up( up: Vector3 ):
 
 
 func create_physical():
+	# Check if not inside a habitat. Inside of a habitat don't create physics body.
+	if boarding_mode == BoardingMode.INSIDE:
+		return
+	
 	var ph: Node =  _create_physical( PhysicalType )
 	# Physics body calls "integrate_forces" method from this instance.
 	# Becasue of that it is necesary to provide the reference to "self".

@@ -304,8 +304,6 @@ func remove_physical():
 	if not valid:
 		_physical = null
 	
-	
-	
 	_physical.queue_free()
 	_physical = null
 
@@ -451,7 +449,8 @@ func activate( root_call: bool = true ):
 
 	update_physics_from_state()
 	#_physical.mode = RigidBody.MODE_RIGID
-	_physical.sleeping = false
+	if _physical != null:
+		_physical.sleeping = false
 	
 
 
