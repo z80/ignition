@@ -68,6 +68,9 @@ public:
 
 	PoolVector3Array orbit_points( Node * own_rf, Node * player_rf, Node * camera, Ref<DistanceScalerRef> scaler, int qty );
 
+	void set_debug( bool en );
+	bool get_debug() const;
+
 public:
     CelestialMotion cm;
 	// This one is for trajectory visualization buffering.

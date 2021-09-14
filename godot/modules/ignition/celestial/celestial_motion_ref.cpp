@@ -43,8 +43,12 @@ void CelestialMotionRef::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("orbit_points", "own_rf", "player_rf", "camera_node", "scaler", "qty"), &CelestialMotionRef::orbit_points, Variant::POOL_VECTOR3_ARRAY );
 
+	ClassDB::bind_method( D_METHOD("set_debug", "en"), &CelestialMotionRef::set_debug );
+	ClassDB::bind_method( D_METHOD("get_debug"), &CelestialMotionRef::get_debug, Variant::BOOL );
+
     ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "allow_orbiting" ),       "set_allow_orbiting",       "get_allow_orbiting" );
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),                  "set_se3",                  "get_se3" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "debug" ),                "set_debug",                "get_debug" );
 }
 
 CelestialMotionRef::CelestialMotionRef()
@@ -353,6 +357,16 @@ PoolVector3Array CelestialMotionRef::orbit_points( Node * own_rf, Node * player_
 		ret.set( i, at );
 	}
 	return ret;
+}
+
+void CelestialMotionRef::set_debug( bool en )
+{
+	cm._debug = en;
+}
+
+bool CelestialMotionRef::get_debug() const
+{
+	return cm._debug;
 }
 
 
