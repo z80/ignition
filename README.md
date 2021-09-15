@@ -15,6 +15,7 @@ Here is the battle plan.
 - [x] Continuous scale application on every frame and recomputing the landscape on indication. Now it is both applied when needed and on every rf jump.
 - [x] Apply scaler on every visual frame. It is especially needed for celestial bodies. Pitching up edges do look weird.
 - [x] A BUG: The issue is with split/merge. Shortest distance after split is smaller than the clustering distance just before split. It shouldn't be the case !!!!!
+- [ ] Fix the uncontrollable ref. frame axes spawning. Make sure it either doesn't spawn or gets destroyed.
 - [ ] Port over the air friction model using mesh traingles.
 - [ ] Vegetation and other static assets placement based on surface quad-tree node Ids.
 
