@@ -68,7 +68,7 @@ void CelestialMotionRef::set_allow_orbiting( bool en )
 {
 	const bool prev = cm.get_allow_orbiting();
 	if ( prev && (!en) )
-		print_line( "********************************* CelestialMotionRef: reset allow_orbiting to false!!!" )
+		print_line( "********************************* CelestialMotionRef: reset allow_orbiting to false!!!" );
     cm.set_allow_orbiting( en );
 }
 
@@ -97,16 +97,22 @@ String CelestialMotionRef::movement_type() const
     case CelestialMotion::NUMERICAL:
         ret = "numeric";
         break;
+
     case CelestialMotion::ELLIPTIC:
         ret = "elliptic";
         break;
+
     case CelestialMotion::PARABOLIC:
         ret = "parabolic";
         break;
+
     case CelestialMotion::HYPERBOLIC:
         ret = "hyperbolic";
+		break;
+
     default:
         ret = "idle";
+		break;
     }
 
     return ret;

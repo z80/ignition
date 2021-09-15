@@ -241,6 +241,11 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     gm  = gm_;
     se3_global = se3_;
 
+	if ( type == ELLIPTIC )
+	{
+		int i = 0;
+	}
+
 	// If "gm" is not positive, shouldn't really initialize.
 	if ( gm <= 0.0 )
 	{
@@ -400,23 +405,23 @@ const SE3 & CelestialMotion::process( Float dt )
         process_parabolic( dt );
 
 	
-	if ( isnan( se3_global.r_.x_ ) || isnan( se3_global.r_.y_ ) || isnan( se3_global.r_.z_ ) ||
-		isnan( se3_global.v_.x_ ) || isnan( se3_global.v_.y_ ) || isnan( se3_global.v_.z_ ) )
-	{
-		init( _last_init_gm, _last_init_se3 );
+	//if ( isnan( se3_global.r_.x_ ) || isnan( se3_global.r_.y_ ) || isnan( se3_global.r_.z_ ) ||
+	//	isnan( se3_global.v_.x_ ) || isnan( se3_global.v_.y_ ) || isnan( se3_global.v_.z_ ) )
+	//{
+	//	init( _last_init_gm, _last_init_se3 );
 
-		//se3_local = se3_local_save;
-		//se3_global = se3_global_save;
+	//	//se3_local = se3_local_save;
+	//	//se3_global = se3_global_save;
 
-		if (type == NUMERICAL)
-			process_numeric( dt );
-		else if (type == HYPERBOLIC)
-			process_hyperbolic( dt );
-		else if (type == ELLIPTIC)
-			process_elliptic( dt );
-		else if (type == PARABOLIC)
-			process_parabolic( dt );
-	}
+	//	if (type == NUMERICAL)
+	//		process_numeric( dt );
+	//	else if (type == HYPERBOLIC)
+	//		process_hyperbolic( dt );
+	//	else if (type == ELLIPTIC)
+	//		process_elliptic( dt );
+	//	else if (type == PARABOLIC)
+	//		process_parabolic( dt );
+	//}
 
 
     return se3_global;
@@ -773,7 +778,6 @@ Float CelestialMotion::solve_next_hyperbolic( Float e, Float M, Float E, Float m
 {
     const Float sih_E = std::sinh( E );
     const Float coh_E = std::cosh( E );
-    Float err;
     Float En;
     Float alpha = 1.0;
     int iters = 0;
@@ -781,8 +785,8 @@ Float CelestialMotion::solve_next_hyperbolic( Float e, Float M, Float E, Float m
     {
         En = E - alpha * ( e*sih_E - E - M ) / ( e*coh_E - 1.0 );
         Float sih_En = std::sinh( En );
-        err = std::abs( e*sih_En - En - M );
-        if ( (max_err < 0.0) || (err < max_err) )
+        err_out = std::abs( e*sih_En - En - M );
+        if ( (max_err < 0.0) || (err_out < max_err) )
             break;
         iters += 1;
         alpha *= 0.5;

@@ -201,20 +201,39 @@ func is_active():
 func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	# Debug output.
 	var tp: String = motion.movement_type()
-	var dbg: bool = true
+	var dbg: bool = false
 	self.debug = dbg
 	if dbg:
 		print( "" )
 		print( "jump with debug output:" )
+	
+	var elliptic_motion: bool = (motion != null) and (motion.movement_type() == "elliptic")
+	if elliptic_motion:
+		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
+		var se3: Se3Ref = self.relative_to( n )
+		print( "relative_to_planet before jump: ", se3.r, ", v: ", se3.v )
 	
 	t.basis = Basis.IDENTITY
 	self.set_jump_t( t )
 	self.set_jump_v( v )
 	self.apply_jump()
 	
+	if elliptic_motion:
+		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
+		var se3: Se3Ref = self.relative_to( n )
+		print( "relative_to_planet after jump: ", se3.r, ", v: ", se3.v )
+
 	# Update SE3 in orbital motion.
 	var se3: Se3Ref = self.get_se3()
+	if elliptic_motion:
+		print( "motion type just before assigning se3 to motion: ", motion.movement_type() )
 	motion.se3 = se3
+	
+	if elliptic_motion:
+		print( "motion type after assigning se3 to motion: ", motion.movement_type() )
+		se3 = motion.se3
+		print( "se3 right after assigning se3 to motion: ", se3.r, " v: ", se3.v )
+
 
 	# Turn debug off and keep with debug output.
 	self.debug = false
