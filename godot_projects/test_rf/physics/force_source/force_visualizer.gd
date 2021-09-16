@@ -5,6 +5,13 @@ extends Spatial
 # var a = 2
 # var b = "text"
 
+func _init():
+	print( "ForceVisualizer::_init(): ", self )
+	
+func _leave_tree():
+	if is_queued_for_deletion():
+		print( "ForceVisualizer::on_delete(): ", self )
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

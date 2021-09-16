@@ -82,28 +82,28 @@ func evolve_motion( _dt: float ):
 		_dt = 0.1
 	motion.process_rf( _dt, self )
 	
-	var n: String = self.name
-	if n != "rf_p for my_character":
-		return
-	
-	var planet: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
-	var path: String = planet.get_path()
-	var se3_p: Se3Ref = self.relative_to( planet )
-	
-	var t: String = motion.movement_type()
-	print( "" )
-	print( "motion analysis" )
-	print( "movement type: ", t )
-	print( "distance to planet: ", se3_p.r.length() )
-	if t == "idle":
-		return
-	var se3: Se3Ref = motion.se3
-	var r: Vector3 = se3.r
-	var v: Vector3 = se3.v
-	var l: float = motion.specific_angular_momentum()
-	print( "spec ang mom:  ", l )
-	print( "r:             ", r )
-	print( "v:             ", v )
+#	var n: String = self.name
+#	if n != "rf_p for my_character":
+#		return
+#
+#	var planet: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
+#	var path: String = planet.get_path()
+#	var se3_p: Se3Ref = self.relative_to( planet )
+#
+#	var t: String = motion.movement_type()
+#	print( "" )
+#	print( "motion analysis" )
+#	print( "movement type: ", t )
+#	print( "distance to planet: ", se3_p.r.length() )
+#	if t == "idle":
+#		return
+#	var se3: Se3Ref = motion.se3
+#	var r: Vector3 = se3.r
+#	var v: Vector3 = se3.v
+#	var l: float = motion.specific_angular_momentum()
+#	print( "spec ang mom:  ", l )
+#	print( "r:             ", r )
+#	print( "v:             ", v )
 
 
 

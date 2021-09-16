@@ -1,9 +1,8 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://physics/blue.tres" type="Material" id=1]
 [ext_resource path="res://physics/red.tres" type="Material" id=2]
-
-
+[ext_resource path="res://physics/axes_visualization.gd" type="Script" id=3]
 
 [sub_resource type="CubeMesh" id=1]
 
@@ -15,6 +14,8 @@ constant = Vector3( 0, 1, 0 )
 
 [sub_resource type="VisualShader" id=4]
 code = "shader_type spatial;
+render_mode specular_schlick_ggx;
+
 
 
 
@@ -46,6 +47,7 @@ nodes/fragment/connections = PoolIntArray( 2, 0, 0, 0 )
 shader = SubResource( 4 )
 
 [node name="Spatial" type="Spatial"]
+script = ExtResource( 3 )
 
 [node name="O" type="MeshInstance" parent="."]
 transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0 )

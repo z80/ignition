@@ -39,6 +39,9 @@ func _process( _delta ):
 
 
 func _create_axes():
+	if not Constants.DEBUG:
+		return
+	
 	if _axes != null:
 		return false
 	

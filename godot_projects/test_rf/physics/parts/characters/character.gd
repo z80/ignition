@@ -71,6 +71,9 @@ func get_boarding_mode():
 
 func init():
 	.init()
+	
+	var PartControlGroups = load( "res://physics/parts/part_control_groups.gd" )
+	control_group = PartControlGroups.ControlGroup._1
 
 
 # Called when the node enters the scene tree for the first time.

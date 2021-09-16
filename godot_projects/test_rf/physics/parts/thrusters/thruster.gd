@@ -39,6 +39,9 @@ func init():
 	restarts_left = restarts_qty
 	_ignited      = false
 	_traverse_exhaust_nodes()
+	
+	var PartControlGroups = load( "res://physics/parts/part_control_groups.gd" )
+	control_group = PartControlGroups.ControlGroup._1
 
 
 

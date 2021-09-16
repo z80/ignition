@@ -9,11 +9,12 @@ var PartControlGroups = preload( "res://physics/parts/part_control_groups.gd" )
 func init( target_obj, parent_gui ):
 	_target_obj = target_obj
 	_parent_gui = parent_gui
+	_init_group()
 	_init_menu()
 
 
 # Called when the node enters the scene tree for the first time.
-func _ready():
+func _init_group():
 	if _target_obj != null:
 		var group: int = _target_obj.control_group
 		if group < PartControlGroups.ControlGroup.NONE:

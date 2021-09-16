@@ -60,9 +60,10 @@ func _exit_tree():
 func _ready():
 	add_to_group( Constants.BODIES_GROUP_NAME )
 	
-	var Force = preload( "res://physics/force_source/force_visualizer.tscn" )
-	force = Force.instance()
-	RootScene.get_root_for_visuals().add_child( force )
+	if Constants.DEBUG and (force == null):
+		var Force = preload( "res://physics/force_source/force_visualizer.tscn" )
+		force = Force.instance()
+		RootScene.get_root_for_visuals().add_child( force )
 
 
 
@@ -85,6 +86,9 @@ func init():
 func on_delete():
 	if is_instance_valid( super_body ):
 		super_body.remove_sub_body( self )
+	if force != null:
+		force.name = force.name + "_to_be_deleted"
+		force.queue_free()
 	if _visual != null:
 		_visual.name = _visual.name + "_to_be_deleted"
 		_visual.queue_free()
@@ -242,9 +246,10 @@ func _create_visual( Visual ):
 	_visual = v
 	
 	# Own ref. frame visualizer
-	var OwnRf = preload( "res://physics/force_source/own_ref_frame_visualizer.tscn" )
-	var rf = OwnRf.instance()
-	_visual.add_child( rf )
+	if Constants.DEBUG and (get_class() != "SurfaceProvider"):
+		var OwnRf = preload( "res://physics/force_source/own_ref_frame_visualizer.tscn" )
+		var rf = OwnRf.instance()
+		_visual.add_child( rf )
 
 
 
@@ -533,6 +538,11 @@ func deserialize( data: Dictionary ):
 #		deactivate()
 	
 	return true
+
+
+
+
+
 
 
 

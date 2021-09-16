@@ -11,6 +11,12 @@ var _w_normalized: Vector3 = Vector3.ZERO
 var _torque: Vector3       = Vector3.ZERO
 
 
+func init():
+	.init()
+	
+	var PartControlGroups = load( "res://physics/parts/part_control_groups.gd" )
+	control_group = PartControlGroups.ControlGroup._1
+
 
 
 func process_user_input_2(input: Dictionary ):

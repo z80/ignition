@@ -6,3 +6,4 @@
 
 [node name="Spatial" parent="." instance=ExtResource( 1 )]
 transform = Transform( 0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0 )
+visible = false
