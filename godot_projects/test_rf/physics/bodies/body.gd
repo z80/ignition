@@ -426,6 +426,7 @@ func add_force_torque( F: Vector3, P: Vector3 ):
 	if _physical != null:
 		var rb: RigidBody = _physical as RigidBody
 		if rb:
+			rb.sleeping = false
 			rb.add_central_force( F )
 			rb.add_torque( P )
 			if force != null:
