@@ -280,18 +280,18 @@ func create_ref_frame_physics():
 
 
 
-func _set_player_ref_frame( _rf ):
-	#player_ref_frame = rf
-	pass
-
-
-func _get_player_ref_frame():
-	#return player_ref_frame
-	var body: Body = self.player_control
-	var p: Node = body.get_parent()
-	var rf_p: RefFramePhysics = p as RefFramePhysics
-	
-	return rf_p
+#func _set_player_ref_frame( _rf ):
+#	#player_ref_frame = rf
+#	pass
+#
+#
+#func _get_player_ref_frame():
+#	#return player_ref_frame
+#	var body: Body = self.player_control
+#	var p: Node = body.get_parent()
+#	var rf_p: RefFramePhysics = p as RefFramePhysics
+#
+#	return rf_p
 
 
 func get_player_ref_frame():
