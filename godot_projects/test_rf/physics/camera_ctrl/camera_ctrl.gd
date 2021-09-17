@@ -1,5 +1,5 @@
 
-extends Camera
+extends RefFrameNode
 class_name PlayerCamera
 
 const Mode = {
@@ -8,7 +8,7 @@ const Mode = {
 	TPS_FREE    = 2
 }
 
-
+export(bool) var map_mode = false setget _set_map_mode, _get_map_mode
 export(int) var mode   = Mode.TPS_AZIMUTH setget set_mode
 
 var _ctrl_enabled: bool = false
@@ -17,6 +17,7 @@ var _zoom_displacement: int = 0
 
 export(float) var sensitivity = 0.01 setget _set_sensitivity
 export(float) var sensitivity_dist = 0.2
+export(float) var map_distance_multiplier = 100.0
 
 export(float) var dist_min = 1.0   setget _set_dist_min
 export(float) var dist_max = 100.0 setget _set_dist_max
@@ -30,6 +31,8 @@ var _state = {
 	yaw   = 0.0, 
 	pitch = 0.0, 
 	dist  = 5.0, 
+	last_dist = -1.0, 
+	last_map_dist = -1.0, 
 	quat = Quat.IDENTITY
 }
 
@@ -40,6 +43,32 @@ var local_ref_frame: Quat = Quat.IDENTITY
 var _target: Spatial = null
 
 
+
+func _set_map_mode( en: bool ):
+	if en == false:
+		self.transform = Transform.IDENTITY
+		_state.last_map_dist = _state._dist
+		if _state.last_dist > 0.0:
+			_state.dist = _state.last_dist
+		elif map_mode == true:
+			_state.dist = _state.dist / map_distance_multiplier
+	else:
+		_state.last_dist = _state.dist
+		if _state.last_map_dist > 0.0:
+			_state.dist = _state.last_map_dist
+		elif map_mode == false:
+			_state.dist = _state.dist * map_distance_multiplier
+		# In map mode displace ref frame and keep camera at the origin with identity transform
+		# all the time.
+		var c: Camera = get_node( "Camera" )
+		var t: Transform = c.transform
+		self.transform = t
+		c.transform = Transform.IDENTITY
+	map_mode = en
+
+
+func _get_map_mode():
+	return map_mode
 
 
 func set_mode( m ):
@@ -129,12 +158,15 @@ func _input( event ):
 
 
 func _process(_delta):
-	if mode == Mode.FPS:
-		_process_fps(_delta)
-	elif mode == Mode.TPS_AZIMUTH:
-		_process_tps_azimuth(_delta)
-	elif mode == Mode.TPS_FREE:
-		_process_tps_free(_delta)
+	if map_mode:
+		pass
+	else:
+		if mode == Mode.FPS:
+			_process_fps(_delta)
+		elif mode == Mode.TPS_AZIMUTH:
+			_process_tps_azimuth(_delta)
+		elif mode == Mode.TPS_FREE:
+			_process_tps_free(_delta)
 	
 	_process_sky()
 
@@ -246,9 +278,14 @@ func _process_tps_azimuth( _delta ):
 
 
 
-func _process_tps_free( _delta ):
+func _process_tps_free( _delta: float ):
 	_process_tps_azimuth( _delta )
 
+
+
+
+func _process_map_mode( _delta: float ):
+	pass
 
 
 
@@ -288,7 +325,7 @@ func apply_atmosphere( player_ref_frame: RefFrameNode, celestial_body: RefFrameN
 	var player_parent = player_ref_frame.get_parent()
 	#print( "planet origin: ", r, ", player parent: ", player_parent.name )
 	
-	var atm: MeshInstance = get_node( "Atmosphere" ) as MeshInstance
+	var atm: MeshInstance = get_node( "Camera/Atmosphere" ) as MeshInstance
 	if atm == null:
 		return
 	
@@ -316,7 +353,7 @@ func apply_atmosphere( player_ref_frame: RefFrameNode, celestial_body: RefFrameN
 
 
 func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
-	var sky: MeshInstance = get_node( "BackgroundSky" ) as MeshInstance
+	var sky: MeshInstance = get_node( "Camera/BackgroundSky" ) as MeshInstance
 	if sky == null:
 		return
 	# Determine relative position.
@@ -352,7 +389,7 @@ func _process_sky():
 	
 	#print( "global q: ", q )
 	
-	var bg: Spatial = get_node( "BackgroundSky" ) as Spatial
+	var bg: Spatial = get_node( "Camera/BackgroundSky" ) as Spatial
 	
 	var far: float = self.far * 0.9
 	var t: Transform = bg.transform
