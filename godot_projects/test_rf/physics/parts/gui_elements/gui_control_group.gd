@@ -9,8 +9,8 @@ var PartControlGroups = preload( "res://physics/parts/part_control_groups.gd" )
 func init( target_obj, parent_gui ):
 	_target_obj = target_obj
 	_parent_gui = parent_gui
-	_init_group()
 	_init_menu()
+	#_init_group()
 
 
 # Called when the node enters the scene tree for the first time.
@@ -60,6 +60,7 @@ func _id_pressed( index ):
 		if group_id == group:
 			var menu_button: MenuButton = get_node("MenuButton")
 			menu_button.text = g[0]
+			break
 			
 
 
