@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" load_steps=2 format=2]
 
-[sub_resource type="Shader" id=5]
+[sub_resource type="Shader" id=1]
 code = "shader_type spatial;
 render_mode unshaded;
 
@@ -163,7 +163,7 @@ void fragment()
 "
 
 [resource]
-shader = SubResource( 5 )
+shader = SubResource( 1 )
 shader_param/atmosphere_color_day = Color( 0.470588, 0.560784, 0.611765, 1 )
 shader_param/atmosphere_color_evening = Color( 0.607843, 0.227451, 0.227451, 1 )
 shader_param/sphere_position = Vector3( 0, 0, 0 )

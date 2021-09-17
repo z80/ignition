@@ -58,35 +58,35 @@ public:
     void set_target_mesh( const NodePath & path );
     const NodePath & get_target_mesh() const;
 
-    void set_distance_scaler( const Ref<DistanceScalerRef> & new_scaler );
-    Ref<DistanceScalerRef> get_distance_scaler() const;
+    //void set_distance_scaler( const Ref<DistanceScalerRef> & new_scaler );
+    //Ref<DistanceScalerRef> get_distance_scaler() const;
 
     void set_apply_scale( bool en );
     bool get_apply_scale() const;
 
     // How far "close"/"far" scaling mode shifts from one to another.
-    void set_scale_mode_distance( real_t radie );
-    real_t get_scale_mode_distance() const;
+    //void set_scale_mode_distance( real_t radie );
+    //real_t get_scale_mode_distance() const;
 
     // For debugging (when origin rf is not in (0,0,0)) need to convert to world rf.
     void set_convert_to_global( bool en );
     bool get_convert_to_global() const;
 
-	void relocate_mesh( Node * ref_frame, Node * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source );
-	void rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source );
-	void rebuild_scale( Node * ref_frame );
+	//void relocate_mesh( Node * ref_frame, Node * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source );
+	//void rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source );
+	//void rebuild_scale( Node * ref_frame );
 	void apply_visual_mesh();
 
 private:
 
-    void regenerate_mesh( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref );
-    void adjust_pose( RefFrameNode * ref_frame, RefFrameNode * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source );
+    //void regenerate_mesh( RefFrameNode * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref );
+    //void adjust_pose( RefFrameNode * ref_frame, RefFrameNode * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source );
     void init_levels();
 
-	void apply_scale( RefFrameNode * ref_frame );
-    void scale_close( const SE3 center_relative_to_ref_frame, const SE3 & poi_relative_to_center );
-    void scale_far( const SE3 center_relative_to_ref_frame, const SE3 & poi_relative_to_center );
-    void scale_neutral( const SE3 & poi_relative_to_center );
+	//void apply_scale( RefFrameNode * ref_frame );
+ //   void scale_close( const SE3 center_relative_to_ref_frame, const SE3 & poi_relative_to_center );
+ //   void scale_far( const SE3 center_relative_to_ref_frame, const SE3 & poi_relative_to_center );
+ //   void scale_neutral( const SE3 & poi_relative_to_center );
 
 	MeshInstance * get_mesh_instance();
 
@@ -111,7 +111,7 @@ public:
 
     // These are for determining when subdivision is needed and for placement of
     // points of interest.
-    bool                 generate_close;
+    //bool                 generate_close;
 
     // For querying collisions store all ref frames in this container.
     Vector<CubeVertex> collision_tris;
@@ -133,15 +133,15 @@ public:
 
     // Distance scale.
     // It applies scale depending on the distance.
-    Ref<DistanceScalerRef> scale;
+    //Ref<DistanceScalerRef> scale;
     // Should apply scale at all.
     bool _apply_scale;
     // How far measured in sphere radie scaling mode shifts from "close" to "far"
     // and vise versa.
-    Float scale_mode_distance;
+    //Float scale_mode_distance;
 
     // convert "center_to_origin" to world rf.
-    bool convert_to_global;
+    bool _convert_to_global;
 };
 
 

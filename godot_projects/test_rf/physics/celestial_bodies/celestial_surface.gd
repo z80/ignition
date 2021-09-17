@@ -112,11 +112,11 @@ func init():
 	celestial_body.radius = radius
 	celestial_body.height = height
 	celestial_body.height_source   = height_source( height_source_name, radius, height )
-	celestial_body.distance_scaler = PhysicsManager.distance_scaler
+#	celestial_body.distance_scaler = PhysicsManager.distance_scaler
 	
 	celestial_body.apply_scale         = true
 	celestial_body.convert_to_global   = false
-	celestial_body.scale_mode_distance = 3.0
+#	celestial_body.scale_mode_distance = 3.0
 	
 	celestial_body.clear_levels()
 	celestial_body.add_level( detail_size_0, detail_dist_0 )
