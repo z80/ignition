@@ -1,0 +1,10 @@
+[gd_resource type="SpatialMaterial" load_steps=3 format=2]
+
+[ext_resource path="res://physics/atmosphere/assets/starmap_2020_4k.jpg" type="Texture" id=1]
+[ext_resource path="res://physics/camera_ctrl/material_sun.tres" type="Material" id=2]
+
+[resource]
+next_pass = ExtResource( 2 )
+flags_unshaded = true
+flags_do_not_receive_shadows = true
+albedo_texture = ExtResource( 1 )

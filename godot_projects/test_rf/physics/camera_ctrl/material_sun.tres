@@ -1,0 +1,134 @@
+[gd_resource type="ShaderMaterial" load_steps=4 format=2]
+
+[sub_resource type="Shader" id=5]
+code = "shader_type spatial;
+render_mode unshaded;
+
+// Light parameters
+uniform vec4  light_color: hint_color = vec4( 1.0, 0.988, 0.871, 1.0 );
+uniform vec3  light_dir     = vec3(1.0, -0.5, 0.0);
+uniform float light_size    = 0.05;
+uniform float glow_size     = 0.1;
+// Ray geometry.
+uniform float ray_scale     = 6.0;
+uniform float ray_size      = 0.7;
+uniform float ray_bias      = 0.3;
+// Noise for rays generation.
+uniform sampler2D ray_noise;
+
+
+
+vec4 sun_color( in vec3 ray_local, in vec3 light_dir_local )
+{
+	// First check if it is the same direction to reject sun behind.
+	if (light_dir_local.z < 0.0)
+		return vec4( light_color.xyz, 0.0 );
+	float dist = length( ray_local.xy - light_dir_local.xy );
+	float light_and_glow = light_size + glow_size;
+	if (dist > light_and_glow)
+		return vec4( light_color.xyz, 0.0 );
+	if ( dist <= light_size )
+		return light_color;
+	
+	// Ramp transparency.
+	// (x-1)/(deviation_sine-light_size) = (0-1)/(light_and_glow - light_size)
+	// x = 1 - (deviation_sine-light_size)/(light_and_glow-light_size)
+	float alpha = pow(1.0 - (dist-light_size)/(light_and_glow-light_size), 5.0 );
+	
+	//alpha *= 0.0;
+	return vec4(light_color.xyz, alpha);
+}
+
+vec4 rays_color( in vec3 view_local, in vec3 light_dir_local )
+{
+	if (light_dir_local.z < 0.0)
+		return vec4( light_color.xyz, 0.0 );
+
+	// Draw center.
+	/*{
+		float view_to_center_len = length(view_local.xy);
+		if ( view_to_center_len < 0.02 )
+			return vec4( 0.0, 0.5, 0.0, 1.0);
+	}
+	// Draw line to screen center.
+	{
+		vec2 light = light_dir_local.xy;
+		vec2 view  = view_local.xy;
+		float light_len = length( light );
+		if ( light_len < 0.001 )
+			return vec4( 0.0 );
+		float dist = abs(light.x*view.y - light.y*view.x);
+		if ( dist < 0.002 )
+			return light_color;
+	}*/
+	
+	vec2 view_rel = view_local.xy - light_dir_local.xy;
+	float view_len = length( view_rel );
+	if ( view_len < 0.001 )
+		return vec4( 0.0 );
+	view_rel = view_rel * (light_size / view_len);
+	vec2 sun_edge = light_dir_local.xy + view_rel;
+	// Distance of this sun edge to the center of screen.
+	float sun_edge_len = length( sun_edge );
+	
+	
+	
+	vec2  edge_to_view = view_local.xy - sun_edge;
+	float edge_to_view_len = length(edge_to_view);
+	float arg = atan( view_rel.y, view_rel.x );
+	float ray_length = ray_size * ( 1.0 - clamp( sun_edge_len/(light_size*ray_scale) - ray_bias, 0.0, 1.0 ) );
+	float alpha;
+	if ( view_len < light_size )
+		alpha = 1.0;
+	else
+		alpha = pow( clamp( 1.0 - edge_to_view_len / ray_length, 0.0, 1.0 ), 5.0 );
+	float t = texture( ray_noise, vec2( arg, 0.5 ) ).r;
+	float tex_th = 0.0;
+	t = clamp( t-tex_th, 0.0, 1.0 )  * (1.0 - tex_th);
+	alpha = alpha * pow(t, 5.0);
+	return vec4( light_color.xyz, alpha );
+}
+
+
+void vertex()
+{
+}
+
+void fragment()
+{
+	vec3 ray = -(CAMERA_MATRIX * vec4(VIEW, 0.0)).xyz;
+	ray = ray / length(ray);
+	
+	vec3 sun_dir_local = -(INV_CAMERA_MATRIX * vec4(light_dir, 0.0)).xyz;
+	
+	vec4 c = sun_color( VIEW, sun_dir_local );
+	vec4 rc = rays_color( VIEW, sun_dir_local );
+
+	c.rgb = mix( c.rgb, rc.rgb, rc.a );
+	c.a = max(c.a, rc.a);
+	ALBEDO = c.rgb;
+	ALPHA  = c.a;
+}
+"
+
+[sub_resource type="OpenSimplexNoise" id=6]
+period = 14.1
+persistence = 0.429
+lacunarity = 2.21
+
+[sub_resource type="NoiseTexture" id=7]
+width = 64
+height = 1
+seamless = true
+noise = SubResource( 6 )
+
+[resource]
+shader = SubResource( 5 )
+shader_param/light_color = Color( 1, 0.988, 0.871, 1 )
+shader_param/light_dir = Vector3( 1, -0.5, 0 )
+shader_param/light_size = 0.05
+shader_param/glow_size = 0.1
+shader_param/ray_scale = 6.0
+shader_param/ray_size = 1.0
+shader_param/ray_bias = 0.2
+shader_param/ray_noise = SubResource( 7 )

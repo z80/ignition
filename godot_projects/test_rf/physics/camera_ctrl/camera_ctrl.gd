@@ -316,8 +316,8 @@ func apply_atmosphere( player_ref_frame: RefFrameNode, celestial_body: RefFrameN
 
 
 func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
-	var atm: MeshInstance = get_node( "Atmosphere" ) as MeshInstance
-	if atm == null:
+	var sky: MeshInstance = get_node( "BackgroundSky" ) as MeshInstance
+	if sky == null:
 		return
 	# Determine relative position.
 	var se3: Se3Ref = sun.relative_to( player_ref_frame )
@@ -331,13 +331,13 @@ func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 	var ray_size: float  = sun.ray_size
 	var ray_bias: float  = sun.ray_bias
 	
-	var m: ShaderMaterial = atm.material_override as ShaderMaterial
-	m = m.next_pass as ShaderMaterial
-	m.set_shader_param( "light_dir", light_dir )
-	m.set_shader_param( "glow_size", glow_size )
-	m.set_shader_param( "ray_scale", ray_scale )
-	m.set_shader_param( "ray_size", ray_size )
-	m.set_shader_param( "ray_bias", ray_bias )
+	var m: SpatialMaterial = sky.get_surface_material( 0 ) as SpatialMaterial
+	var ms: ShaderMaterial = m.next_pass as ShaderMaterial
+	ms.set_shader_param( "light_dir", light_dir )
+	ms.set_shader_param( "glow_size", glow_size )
+	ms.set_shader_param( "ray_scale", ray_scale )
+	ms.set_shader_param( "ray_size", ray_size )
+	ms.set_shader_param( "ray_bias", ray_bias )
 
 
 
@@ -352,7 +352,7 @@ func _process_sky():
 	
 	#print( "global q: ", q )
 	
-	var bg: Spatial = get_node( "Background" ) as Spatial
+	var bg: Spatial = get_node( "BackgroundSky" ) as Spatial
 	
 	var far: float = self.far * 0.9
 	var t: Transform = bg.transform
