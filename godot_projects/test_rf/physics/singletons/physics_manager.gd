@@ -235,7 +235,7 @@ func update_camera():
 		return
 	
 	var defines_vertical: bool = rf.force_source.defines_vertical()
-	var c: Camera = PhysicsManager.camera
+	var c: RefFrameNode = PhysicsManager.camera
 	if defines_vertical:
 		if pc == null:
 			return

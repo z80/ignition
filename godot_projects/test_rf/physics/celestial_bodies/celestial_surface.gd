@@ -190,7 +190,7 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 			planet.subdivide_2( player_rf, _subdivide_source_visual )
 			planet.apply_heightmap_2( planet.height_source )
 			planet.apply_visual_mesh()
-		var camera: Camera = PhysicsManager.camera
+		var camera: RefFrameNode = PhysicsManager.camera
 		var distance_scaler: DistanceScalerRef = PhysicsManager.distance_scaler
 		planet.apply_scale_2( player_rf, camera, distance_scaler )
 		planet.apply_visual_mesh()

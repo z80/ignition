@@ -2,6 +2,9 @@
 extends RefFrameNode
 class_name PlayerCamera
 
+export(float) var near setget _set_near, _get_near
+export(float) var far  setget _set_far,  _get_far
+
 const Mode = {
 	FPS         = 0, 
 	TPS_AZIMUTH = 1,
@@ -41,6 +44,28 @@ var local_ref_frame: Quat = Quat.IDENTITY
 
 
 var _target: Spatial = null
+
+
+func _set_near( v: float ):
+	var c: Camera = get_node("Camera")
+	c.near = v
+
+
+func _get_near():
+	var c: Camera = get_node("Camera")
+	var ret: float =c.near
+	return ret
+
+
+func _set_far( v: float ):
+	var c: Camera = get_node("Camera")
+	c.far = v
+
+
+func _get_far():
+	var c: Camera = get_node("Camera")
+	var ret: float =c.far
+	return ret
 
 
 
@@ -285,8 +310,52 @@ func _process_tps_free( _delta: float ):
 
 
 func _process_map_mode( _delta: float ):
-	pass
+	var player_ctrl: RefFrameNode = PhysicsManager.player_control
+	
+	# Update the distance.
+	if _zoom_displacement != 0:
+		var d_dist: float = exp( log(1.0 + sensitivity_dist) * float(_zoom_displacement) )
+		_state.dist *= d_dist
+		if _state.dist > dist_max:
+			_state.dist = dist_max
+		elif _state.dist < dist_min:
+			_state.dist = dist_min
+		_zoom_displacement = 0
+	
+	if _ctrl_enabled:
+		var fr: float = -_mouse_displacement.x * sensitivity
+		#if (fr > 0.0) and (_state.yaw > limit_yaw):
+		#	fr = 0.0
+		#elif (fr < 0.0) and (_state.yaw < -limit_yaw):
+		#	fr = 0.0
+		var rr: float = 0.0 * _state.yaw * return_rate * _delta
 
+		_state.yaw +=  fr - rr
+		
+		fr = -_mouse_displacement.y * sensitivity
+		if (fr > 0.0) and (_state.pitch > limit_pitch):
+			fr = 0.0
+		elif (fr < 0.0) and (_state.pitch < -limit_pitch):
+			fr = 0.0
+		rr = 0.0 * _state.pitch * return_rate * _delta
+		_state.pitch +=  fr - rr
+	
+	# Also need to know global Player ref frame orientation to undo it.
+	var se3: Se3Ref = player_ctrl.relative_to( null )
+	var base_q: Quat = se3.q
+	base_q = base_q.inverse()
+	
+	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
+	q = base_q * q
+	var v_dist: Vector3 = Vector3( 0.0, 0.0, _state.dist )
+	v_dist = q.xform( v_dist )
+	
+	# Assigning camera ref. frame a pose.
+	self.q = q
+	self.r = v_dist
+	
+	# Zero mouse displacement as this thing is continuously accumulated.
+	_mouse_displacement = Vector2.ZERO
 
 
 func _init_basis():
