@@ -4,6 +4,8 @@ class_name PlayerCamera
 
 export(float) var near setget _set_near, _get_near
 export(float) var far  setget _set_far,  _get_far
+export(Vector3) var translation setget _set_translation, _get_translation
+export(Transform) var global_transform setget _set_global_transform, _get_global_transform
 
 const Mode = {
 	FPS         = 0, 
@@ -68,6 +70,33 @@ func _get_far():
 	return ret
 
 
+func _set_translation( v: Vector3 ):
+	var c: Camera = get_node("Camera")
+	c.translation = v
+
+
+func _get_translation():
+	var c: Camera = get_node("Camera")
+	var ret: Vector3 = c.translation
+	return ret
+
+
+func _set_global_transform( t: Transform ):
+	var c: Camera = get_node("Camera")
+	c.global_transform = t
+
+
+func _get_global_transform():
+	var c: Camera = get_node("Camera")
+	var t: Transform = c.global_transform
+	return t
+
+
+func unproject_position( world_at: Vector3 ):
+	var c: Camera = get_node("Camera")
+	var at_2d: Vector2 = c.unproject_position( world_at )
+	return at_2d
+
 
 func _set_map_mode( en: bool ):
 	if en == false:
@@ -112,12 +141,13 @@ func set_mode_tps():
 
 
 func apply_target():
-	var p = PhysicsManager.player_control
+	var p: RefFrameNode = PhysicsManager.player_control
+	self.change_parent( p )
 	if p:
 		if mode == Mode.FPS:
-			_target = p.privot_fps()
+			_target = p.pivot_fps()
 		else:
-			_target = p.privot_tps()
+			_target = p.pivot_tps()
 	else:
 		_target = null
 
@@ -184,8 +214,13 @@ func _input( event ):
 
 func _process(_delta):
 	if map_mode:
-		pass
+		_process_map_mode( _delta )
 	else:
+		# In normal mode RefFrame transform is identity. And 
+		# camera moves.
+#		var t: Transform = Transform.IDENTITY
+#		self.transform = t
+		
 		if mode == Mode.FPS:
 			_process_fps(_delta)
 		elif mode == Mode.TPS_AZIMUTH:
@@ -249,7 +284,9 @@ func _process_fps(_delta):
 
 
 func _process_tps_azimuth( _delta ):
-	if not is_instance_valid( _target ):
+	#var player_ctrl: RefFrameNode = PhysicsManager.player_control
+	var player_ctrl: RefFrameNode = get_parent()
+	if not is_instance_valid( player_ctrl ):
 		return
 	
 	#print( "mouse displacement: ", _mouse_displacement )
@@ -294,9 +331,14 @@ func _process_tps_azimuth( _delta ):
 	
 	var t: Transform = Transform.IDENTITY
 	t.basis = Basis( q )
-	var target_origin: Vector3 = _target.global_transform.origin
+	var target_origin: Vector3
+	if is_instance_valid(_target):
+		target_origin = _target.transform.origin
+	else:
+		target_origin = Vector3.ZERO
+	
 	t.origin += v_dist + target_origin
-	transform = t
+	self.transform = t
 	
 	# Zero mouse displacement as this thing is continuously accumulated.
 	_mouse_displacement = Vector2.ZERO
@@ -426,7 +468,7 @@ func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 	if sky == null:
 		return
 	# Determine relative position.
-	var se3: Se3Ref = sun.relative_to( player_ref_frame )
+	var se3: Se3Ref = sun.relative_to( self )
 	var dist: float = se3.r.length()
 	var light_dir: Vector3 = se3.r.normalized()
 	# Determine sun angular radius.
@@ -448,13 +490,8 @@ func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 
 
 func _process_sky():
-	var player_rf: RefFrameNode = PhysicsManager.get_player_ref_frame()
-	if player_rf == null:
-		return
-	
-	var se3: Se3Ref = player_rf.relative_to( null )
-	var q: Quat = self.global_transform.basis.get_rotation_quat()
-	q = (se3.q * q).inverse()
+	var se3: Se3Ref = self.relative_to( null )
+	var q: Quat = se3.q.inverse()
 	
 	#print( "global q: ", q )
 	

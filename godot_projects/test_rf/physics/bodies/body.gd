@@ -108,10 +108,10 @@ func on_delete():
 
 
 
-func update_visual( root: Node = null ):
-	.compute_relative_to_root( root )
+func update_visual( origin: RefFrameNode = null ):
 	if _visual:
-		var t: Transform = self.t_root()
+		var se3: Se3Ref = self.relative_to( origin )
+		var t: Transform = se3.transform
 		_visual.transform = t
 
 
@@ -254,11 +254,11 @@ func _create_visual( Visual ):
 
 
 # Spatials to target camera to.
-func privot_tps( _ind: int = 0 ):
-	return _visual
+func pivot_tps( _ind: int = 0 ):
+	return null
 
-func privot_fps( _ind: int = 0 ):
-	return _visual
+func pivot_fps( _ind: int = 0 ):
+	return null
 
 
 func _create_physical( Physical ):

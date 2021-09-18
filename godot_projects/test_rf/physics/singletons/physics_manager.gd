@@ -156,7 +156,7 @@ func update_super_bodies():
 
 
 func update_bodies_visual():
-	var player_rf = get_player_ref_frame()
+	var player_rf: RefFrameNode = self.camera
 	
 	# Update visuals for all the physical-visual objects.
 	var group: String = Constants.BODIES_GROUP_NAME
