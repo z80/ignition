@@ -227,49 +227,48 @@ func _compute_draw_params():
 	if cam == null:
 		return null
 	
-	var t_target: Transform
-	var b: Body = target as Body
-	if b != null:
-		t_target = b.t()
-	else:
-		t_target = target.global_transform
+	# Axes in target parent ref frame.
+	var target_parent_rf: RefFrameNode = target.get_parent()
+	var target_rf_tr: Transform        = target.transform
+	var cam_rf: RefFrameNode           = PhysicsManager.camera
+	var cam_rf_se3: Se3Ref             = cam_rf.relative_to( target_parent_rf )
+	var cam_rf_tr: Transform           = cam_rf_se3.transform
+	var target_parent_to_camera_rf_tr: Transform = cam_rf_tr.inverse()
+	var target_rf_to_camera_rf_tr: Transform = target_parent_to_camera_rf_tr * target_rf_tr
+
 	var t_camera: Transform = cam.global_transform
 	
-	var t: Transform = t_camera.inverse() #* t_target
+	var origin_3d_in_parent: Vector3 = target_rf_tr.origin
+	var origin_3d: Vector3           = target_parent_to_camera_rf_tr.xform( origin_3d_in_parent ) #origin.normalized() * origin_dist
+	var origin_2d: Vector2           = cam.unproject_position( origin_3d )
 	
-	var origin: Vector2 = cam.unproject_position( t_target.origin )
+	var ox3_w: Vector3 = Vector3( axis_length, 0.0, 0.0 )
+	ox3_w = target_parent_to_camera_rf_tr.xform( ox3_w + origin_3d_in_parent )
+	var ox: Vector2 = cam.unproject_position( ox3_w )
+	ox -= origin_2d
 	
-	var oo3: Vector3 = Vector3( 0.0, 0.0, -origin_dist )
-	oo3 = t_camera.xform( oo3 )
-	var oo = cam.unproject_position( oo3 )
+	var oy3_w: Vector3 = Vector3( 0.0, axis_length, 0.0 )
+	oy3_w = target_parent_to_camera_rf_tr.xform( oy3_w + origin_3d_in_parent )
+	var oy: Vector2 = cam.unproject_position( oy3_w )
+	oy -= origin_2d
 	
-	var ox3: Vector3 = Vector3( axis_length, 0.0, 0.0 )
-	ox3 += oo3
-	var ox: Vector2 = cam.unproject_position( ox3 )
-	ox -= oo
-	
-	var oy3: Vector3 = Vector3( 0.0, axis_length, 0.0 )
-	oy3 += oo3
-	var oy: Vector2 = cam.unproject_position( oy3 )
-	oy -= oo
-	
-	var oz3: Vector3 = Vector3( 0.0, 0.0, axis_length )
-	oz3 += oo3
-	var oz: Vector2 = cam.unproject_position( oz3 )
-	oz -= oo
+	var oz3_w: Vector3 = Vector3( 0.0, 0.0, axis_length )
+	oz3_w = target_parent_to_camera_rf_tr.xform( oz3_w + origin_3d_in_parent )
+	var oz: Vector2 = cam.unproject_position( oz3_w )
+	oz -= origin_2d
 	
 	# Mouse cursor position.
 	var at: Vector2 = vp.get_mouse_position()
-	var dist_x: float = (origin + ox - at).length() - sensitivity_radius
-	var dist_y: float = (origin + oy - at).length() - sensitivity_radius
-	var dist_z: float = (origin + oz - at).length() - sensitivity_radius
+	var dist_x: float = (origin_2d + ox - at).length() - sensitivity_radius
+	var dist_y: float = (origin_2d + oy - at).length() - sensitivity_radius
+	var dist_z: float = (origin_2d + oz - at).length() - sensitivity_radius
 
-	var dist_rot_x: float = (origin + 0.7*0.707*(oy+oz) - at).length() - sensitivity_radius
-	var dist_rot_y: float = (origin + 0.7*0.707*(ox+oz) - at).length() - sensitivity_radius
-	var dist_rot_z: float = (origin + 0.7*0.707*(ox+oy) - at).length() - sensitivity_radius
+	var dist_rot_x: float = (origin_2d + 0.7*0.707*(oy+oz) - at).length() - sensitivity_radius
+	var dist_rot_y: float = (origin_2d + 0.7*0.707*(ox+oz) - at).length() - sensitivity_radius
+	var dist_rot_z: float = (origin_2d + 0.7*0.707*(ox+oy) - at).length() - sensitivity_radius
 
 	var draw = {
-		origin = origin, 
+		origin = origin_2d, 
 		axis_x = ox, 
 		axis_y = oy, 
 		axis_z = oz, 
@@ -295,19 +294,14 @@ func _init_dragging( axis: Vector3 ):
 	_dragging.enabled = true
 	
 	# Own origin and unit vector.
-	var t: Transform
-	var b: Body = target as Body
-	if b != null:
-		t = b.t()
-	else:
-		t = target.transform
+	var t: Transform = target.transform
 
 	var own_r: Vector3 = t.origin
 	var own_a: Vector3 = axis #t.basis.xform( axis )
 	
 	_dragging.axis      = own_a
 	_dragging.drag_axis = own_a
-	_dragging.origin = own_r
+	_dragging.origin    = own_r
 	_dragging.mouse_start = _mouse_on_axis()
 
 
@@ -331,14 +325,9 @@ func _process_dragging():
 	# Here probably need to convert back to local 
 	# first as all vectors are in global ref frame
 	var to: Vector3 = Vector3( x, y, z )
-	if target != null:
-		var body: Body = target as Body
-		if body != null:
-			body.set_r( to )
-			body.set_v( Vector3.ZERO )
-			body.set_w( Vector3.ZERO )
-		else:
-			target.translation = to
+	target.set_r( to )
+	target.set_v( Vector3.ZERO )
+	target.set_w( Vector3.ZERO )
 	
 	if r != _dragging.position:
 		_dragging.position = r
@@ -386,7 +375,7 @@ func _init_rotating( axis: Vector3 ):
 	var dist: float = (own_r - cam_r).length()
 	
 	var viewport_width: float = vp.get_visible_rect().size.x
-	_dragging.origin = own_r
+	_dragging.origin          = own_r
 	_dragging.drag_scale      = PI / dist
 	_dragging.axis            = own_a
 	_dragging.drag_axis       = drag_a
@@ -423,20 +412,9 @@ func _process_rotating():
 	#print( "rot_axis: ", a, "drag_axis: ", _dragging.drag_axis, ", mouse_at: ", _dragging.mouse_at, ", dr: ", dr, ", dot: ", dx, ", angle: ", angle, ", euler: ", euler )
 	
 	
-	if target != null:
-		var body: Body = target as Body
-		if body != null:
-			body.set_q( q )
-			body.set_v( Vector3.ZERO )
-			body.set_w( Vector3.ZERO )
-			#body.update_physics_from_state()
-		else:
-			var tt: Transform = target.transform
-			tt.basis = q
-			target.transform = tt
-		var st: Transform = self.transform
-		st.basis = q
-
+	target.set_q( q )
+	target.set_v( Vector3.ZERO )
+	target.set_w( Vector3.ZERO )
 	
 	if euler != _dragging.euler:
 		_dragging.euler = euler
@@ -468,10 +446,13 @@ func _mouse_intersection():
 	var cam_r: Vector3 = camera.project_ray_origin(mouse_uv)
 	var cam_a: Vector3 = camera.project_ray_normal(mouse_uv)
 	
-	# Convert to local ref. frame.
-	var t: Transform = self.global_transform
-	cam_r = t.basis.xform_inv( cam_r )
-	cam_a = t.basis.xform_inv( cam_a )
+	var target_parent_rf: RefFrameNode     = target.get_parent()
+	var cam_rf: RefFrameNode               = PhysicsManager.camera
+	var cam_rf_se3: Se3Ref                 = cam_rf.relative_to( target_parent_rf )
+	var cam_to_target_parent_tr: Transform = cam_rf_se3.transform
+	
+	cam_r = cam_to_target_parent_tr.xform( cam_r )
+	cam_a = cam_to_target_parent_tr.basis.xform( cam_a )
 	
 	# Axes origin and unit vector
 	var own_a: Vector3 = _dragging.axis
