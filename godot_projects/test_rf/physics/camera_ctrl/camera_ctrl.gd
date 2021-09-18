@@ -323,9 +323,11 @@ func _process_tps_azimuth( _delta ):
 
 #	_state.yaw = PI / 2.0
 #	_state.pitch = 0.0
-
+	
+	var player_ctrl_rotation: Quat = player_ctrl.q()
+	var inv_player_rotation: Quat = player_ctrl_rotation.inverse()
 	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
-	q = local_ref_frame * q
+	q = local_ref_frame * inv_player_rotation * q
 	var v_dist: Vector3 = Vector3( 0.0, 0.0, _state.dist )
 	v_dist = q.xform( v_dist )
 	

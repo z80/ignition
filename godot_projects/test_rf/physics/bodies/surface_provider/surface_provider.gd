@@ -7,8 +7,14 @@ var inv_surface_relative_to_rf: Se3Ref = null
 func get_class():
 	return "SurfaceProvider"
 
+func _init():
+	# Do not use interact icon on this invisible object.
+	use_interact_icon = false
+
 
 func init():
+	# Visual here contains ref frame axes. IT is used un debugging.
+	# Normally it is invisible.
 	var Visual   = load( "res://physics/bodies/surface_provider/surface_provider_visual.tscn")
 	var Physical = load( "res://physics/bodies/surface_provider/surface_provider_physical.tscn" )
 	
