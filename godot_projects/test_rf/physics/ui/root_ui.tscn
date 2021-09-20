@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://physics/ui/trajectory_summary.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/ui/navigation/navigation.tscn" type="PackedScene" id=2]
 [ext_resource path="res://physics/ui/control_groups/control_groups.tscn" type="PackedScene" id=3]
 [ext_resource path="res://physics/ui/save_load/ui_save_load.tscn" type="PackedScene" id=4]
 [ext_resource path="res://physics/ui/time_dilation/time_dilation.tscn" type="PackedScene" id=5]
+[ext_resource path="res://physics/ui/map_mode/map_mode.tscn" type="PackedScene" id=6]
 
 [node name="RootUi" type="Control"]
 anchor_right = 1.0
@@ -48,3 +49,13 @@ margin_left = -349.361
 margin_top = 1.21281
 margin_right = -3.36133
 margin_bottom = 49.2128
+
+[node name="MapMode" parent="." instance=ExtResource( 6 )]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -265.426
+margin_top = -163.13
+margin_right = -216.426
+margin_bottom = -136.13

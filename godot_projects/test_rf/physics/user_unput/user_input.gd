@@ -51,6 +51,10 @@ func gui_control_bool( id: String, pressed: bool, just_pressed: bool, just_relea
 
 
 
+func get_input():
+	return input
+
+
 func _process_gui_controls():
 	# Remove ones from previous list.
 	for id in gui_controls_to_remove:

@@ -1,0 +1,22 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/ui/map_mode/map_mode.gd" type="Script" id=1]
+
+[node name="MapMode" type="Control"]
+margin_right = 49.0
+margin_bottom = 19.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Map" type="Button" parent="."]
+margin_right = 48.0
+margin_bottom = 20.0
+hint_tooltip = "Toggle between normal view and map mode"
+toggle_mode = true
+text = "Map"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+[connection signal="pressed" from="Map" to="." method="_on_Map_pressed"]

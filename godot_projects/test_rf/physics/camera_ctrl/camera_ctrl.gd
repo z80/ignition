@@ -100,6 +100,8 @@ func unproject_position( world_at: Vector3 ):
 
 func _set_map_mode( en: bool ):
 	if en == false:
+		if not map_mode:
+			return
 		self.transform = Transform.IDENTITY
 		_state.last_map_dist = _state._dist
 		if _state.last_dist > 0.0:
@@ -107,6 +109,8 @@ func _set_map_mode( en: bool ):
 		elif map_mode == true:
 			_state.dist = _state.dist / map_distance_multiplier
 	else:
+		if map_mode:
+			return
 		_state.last_dist = _state.dist
 		if _state.last_map_dist > 0.0:
 			_state.dist = _state.last_map_dist
@@ -213,6 +217,12 @@ func _input( event ):
 
 
 func _process(_delta):
+	var input: Dictionary = UserInput.get_input()
+	if input.has( "ui_map" ):
+		map_mode = true
+	else:
+		map_mode = false
+	
 	if map_mode:
 		_process_map_mode( _delta )
 	else:
@@ -360,10 +370,9 @@ func _process_map_mode( _delta: float ):
 	if _zoom_displacement != 0:
 		var d_dist: float = exp( log(1.0 + sensitivity_dist) * float(_zoom_displacement) )
 		_state.dist *= d_dist
-		if _state.dist > dist_max:
+		# Yes, in map mode the smallest distance is max distance for normal mode.
+		if _state.dist < dist_max:
 			_state.dist = dist_max
-		elif _state.dist < dist_min:
-			_state.dist = dist_min
 		_zoom_displacement = 0
 	
 	if _ctrl_enabled:
@@ -395,8 +404,8 @@ func _process_map_mode( _delta: float ):
 	v_dist = q.xform( v_dist )
 	
 	# Assigning camera ref. frame a pose.
-	self.q = q
-	self.r = v_dist
+	self.set_q( q )
+	self.set_r( v_dist )
 	
 	# Zero mouse displacement as this thing is continuously accumulated.
 	_mouse_displacement = Vector2.ZERO
