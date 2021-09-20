@@ -248,12 +248,10 @@ func update_camera():
 	# For the body under player control find the closest celestial
 	# body. If found, specify the atmosphere parameters.
 	var ClosestCelestialBody = load( "res://physics/utils/closest_celestial_body.gd" )
-	var p_rf = get_player_ref_frame()
-	if p_rf == null:
-		return
+	var p_rf: RefFrameNode = camera
 	var celestial_body: Node = ClosestCelestialBody.closest_celestial_body( p_rf )
 	if celestial_body != null:
-		c.apply_atmosphere( p_rf, celestial_body )
+		c.apply_atmosphere( celestial_body )
 	
 	# Apply sun.
 	var group: String = Constants.SUN_GROUP_NAME

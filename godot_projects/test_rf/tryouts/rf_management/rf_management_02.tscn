@@ -19,9 +19,11 @@ surface_orbital_vel_kms = 0.03
 orbital_period_hrs = 100.0
 detail_dist_0 = 0.1
 detail_dist_1 = 0.4
-atmosphere_height_km = 0.2
-transparency_scale_outer_km = 3.0
-transparency_scale_inner_km = 1.0
+atmosphere_height_km = 1.0
+opaque_height_km = 0.7
+transparency_scale_outer_km = 2.0
+transparency_scale_inner_km = 0.1
+displacement = 5.0
 orbit_color = Color( 0.243137, 1, 0, 1 )
 
 [node name="Moon" parent="Sun/Planet" instance=ExtResource( 1 )]

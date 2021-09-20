@@ -448,13 +448,14 @@ func process_basis( up: Vector3 ):
 	local_ref_frame = local_ref_frame.normalized()
 
 
-func apply_atmosphere( player_ref_frame: RefFrameNode, celestial_body: RefFrameNode ):
+func apply_atmosphere( celestial_body: RefFrameNode ):
 	var planet_radius: float = celestial_body.radius_km * 1000.0
-	var se3: Se3Ref = celestial_body.relative_to( player_ref_frame )
+	var camera_rf: RefFrameNode = PhysicsManager.camera
+	var se3: Se3Ref = celestial_body.relative_to( camera_rf )
 	var planet_t: Transform = se3.transform
 	var r: Vector3 = planet_t.origin
 	
-	var player_parent = player_ref_frame.get_parent()
+	var player_parent = camera_rf.get_parent()
 	#print( "planet origin: ", r, ", player parent: ", player_parent.name )
 	
 	var atm: MeshInstance = get_node( "Camera/Atmosphere" ) as MeshInstance
