@@ -286,7 +286,7 @@ static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 # And the remaining object currently existing is the camera.
 # It is not destroyable. So no need to save name.
 static func serialize_camera():
-	var c: Camera = PhysicsManager.camera
+	var c: RefFrameNode = PhysicsManager.camera
 	var data: Dictionary = c.serialize()
 	var name: String = c.name
 	var filename: String = c.filename
