@@ -1,6 +1,9 @@
 extends Node
 
 
+var vp_container: Node = null
+
+
 func get_root_for_bodies():
 	var ret = get_node( "bodies" )
 	return ret
@@ -13,6 +16,18 @@ func get_root_for_physics_envs():
 func get_root_for_visuals():
 	var ret = get_node( "visuals" )
 	return ret
+
+
+func get_overlay_viewport():
+	if vp_container == null:
+		vp_container = get_node( "viewport" )
+	var vp: Viewport = vp_container.get_viewport()
+
+
+func set_overlay_visible( en: bool ):
+	if vp_container == null:
+		vp_container = get_node( "viewport" )
+	vp_container.visible = en
 
 
 func get_unique_name_for_bodies( name_template: String ):
