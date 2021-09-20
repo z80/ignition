@@ -7,5 +7,6 @@ flip_faces = true
 size = Vector3( 1, 1, 1 )
 
 [node name="AtmosphereMesh" type="MeshInstance"]
+transform = Transform( 100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0 )
 mesh = SubResource( 1 )
 material/0 = ExtResource( 1 )

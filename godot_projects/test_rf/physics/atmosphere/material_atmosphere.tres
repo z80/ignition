@@ -48,7 +48,7 @@ bool ray_atmosphere_intersection_length( vec3 ray_origin, vec3 sphere_center, ve
 		t1 = t1_candidate;
 
 	// Intersects surface?
-	bool intersects_surface = (d < sphere_radius);
+	//bool intersects_surface = (d < sphere_radius);
 	// If intersects surface, need to crop the distance 
 	// to the surface intersection.
 	x = sqrt( sphere_radius*sphere_radius - d*d );
@@ -74,7 +74,7 @@ bool ray_atmosphere_intersection_length( vec3 ray_origin, vec3 sphere_center, ve
 	}
 	
 	// Also redusing by means of sun light direction.
-	v = ray*t1 + ray_origin;
+	v = ray; //ray*t1 + ray_origin;
 	vec3 at = v / length( v );
 	d = clamp( dot( at,light_dir ) + displacement, 0.0, 1.0 );
 	day_evening = d;
@@ -85,15 +85,15 @@ bool ray_atmosphere_intersection_length( vec3 ray_origin, vec3 sphere_center, ve
 
 float ramp_transparency_length( vec3 ray_origin, vec3 sphere_center )
 {
-	float d = length(ray_origin - sphere_center);
-	float R = sphere_radius + atmosphere_height;
-	float r = sphere_radius + opaque_height;
-	if ( d > R )
-		return transparency_scale_outer;
-	else if (d < r)
+	float distance_from_center = length(ray_origin - sphere_center);
+	float outer_radius = sphere_radius + atmosphere_height;
+	float opaque_radius = sphere_radius + opaque_height;
+	if (distance_from_center < opaque_radius)
 		return transparency_scale_inner;
+	else if ( distance_from_center > outer_radius )
+		return transparency_scale_outer;
 	
-	float alpha = (d - r) / (R - r);
+	float alpha = (distance_from_center - opaque_radius) / (outer_radius - opaque_radius);
 	float t = transparency_scale_outer * alpha + transparency_scale_inner * (1.0 - alpha);
 	
 	return t;
@@ -111,24 +111,25 @@ vec4 compute_atmosphere_color( vec3 ray_origin, vec3 sphere_center, vec3 ray )
 		return c;
 	}
 	
+//	if (inside)
+//	{
+//		//vec4 c = vec4( 0.0, 0.7, 0.0, 1.0 );
+//		//return c;
+//		//through_length = sphere_radius + 1.0;
+//	}
+	
 	float transparency_scale = ramp_transparency_length( ray_origin, sphere_center );
 	float alpha = clamp( through_length / transparency_scale, 0.0, 1.0 );
+	if (inside)
+	{
+		alpha = 1.0;
+	}
 	
 	float k_day = dot_;
 	float k_evening = 1.0 - dot_;
 	vec4 color = atmosphere_color_day*k_day  + atmosphere_color_evening*k_evening;
 	vec4 c = vec4( color.xyz, alpha );
 	return c;
-}
-
-vec4 sun_color( vec3 ray_origin, vec3 sphere_center, vec3 ray )
-{
-	vec3 deviation_vec = cross( ray, light_dir );
-	float deviation_sine = length( deviation_vec );
-	const vec3 sun_color = vec3( 0.8, 0.8, 0.8 );
-	const float sun_size = 0.1;
-	
-	return vec4( 0.0 );
 }
 
 
@@ -167,10 +168,10 @@ shader = SubResource( 1 )
 shader_param/atmosphere_color_day = Color( 0.470588, 0.560784, 0.611765, 1 )
 shader_param/atmosphere_color_evening = Color( 0.607843, 0.227451, 0.227451, 1 )
 shader_param/sphere_position = Vector3( 0, 0, 0 )
-shader_param/sphere_radius = 50.0
-shader_param/atmosphere_height = 2.0
+shader_param/sphere_radius = 8.0
+shader_param/atmosphere_height = 4.0
 shader_param/opaque_height = 1.0
-shader_param/transparency_scale_outer = 30.0
-shader_param/transparency_scale_inner = 0.5
+shader_param/transparency_scale_outer = 2.0
+shader_param/transparency_scale_inner = 2.0
 shader_param/light_dir = Vector3( 1, 0, 0 )
-shader_param/displacement = 0.34
+shader_param/displacement = 1.0

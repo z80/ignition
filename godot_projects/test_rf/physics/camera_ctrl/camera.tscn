@@ -26,6 +26,7 @@ script = ExtResource( 2 )
 far = 1000.0
 
 [node name="Atmosphere" parent="Camera" instance=ExtResource( 1 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 material_override = ExtResource( 3 )
 cast_shadow = 0
 material/0 = null

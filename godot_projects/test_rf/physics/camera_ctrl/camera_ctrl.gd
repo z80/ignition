@@ -462,7 +462,8 @@ func apply_atmosphere( celestial_body: RefFrameNode ):
 	if atm == null:
 		return
 	
-	var far: float = self.far * 0.5
+	var f: float = self.far
+	var far: float = f * 0.2
 	var t: Transform = atm.transform
 	t.basis = Basis.IDENTITY
 	t.basis = t.basis.scaled( Vector3( far, far, far ) )
