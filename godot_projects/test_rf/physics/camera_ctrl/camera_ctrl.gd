@@ -44,61 +44,68 @@ var _state = {
 
 var local_ref_frame: Quat = Quat.IDENTITY
 
-
 var _target: Spatial = null
+
+var _camera: Camera = null
+
+
+func _get_camera():
+	if _camera == null:
+		_camera = get_node( "Camera" )
+	return _camera
 
 
 func _set_near( v: float ):
-	var c: Camera = get_node("Camera")
+	var c: Camera = _get_camera()
 	c.near = v
 
 
 func _get_near():
-	var c: Camera = get_node("Camera")
-	var ret: float =c.near
+	var c: Camera = _get_camera()
+	var ret: float = c.near
 	return ret
 
 
 func _set_far( v: float ):
-	var c: Camera = get_node("Camera")
+	var c: Camera = _get_camera()
 	c.far = v
 
 
 func _get_far():
-	var c: Camera = get_node("Camera")
-	var ret: float =c.far
+	var c: Camera = _get_camera()
+	var ret: float = c.far
 	return ret
 
 
 func _set_translation( v: Vector3 ):
-	var c: Camera = get_node("Camera")
+	var c: Camera = _get_camera()
 	c.translation = v
 
 
 func _get_translation():
-	var c: Camera = get_node("Camera")
+	var c: Camera = _get_camera()
 	var ret: Vector3 = c.translation
 	return ret
 
 
 func _set_global_transform( t: Transform ):
-	var c: Camera = get_node("Camera")
+	var c: Camera = _get_camera()
 	c.global_transform = t
 
 
 func _get_global_transform():
-	var c: Camera = get_node("Camera")
+	var c: Camera = _get_camera()
 	var t: Transform = c.global_transform
 	return t
 
 
 func get_camera():
-	var camera: Camera = get_node( "Camera" )
+	var camera: Camera = _get_camera()
 	return camera
 
 
 func unproject_position( world_at: Vector3 ):
-	var c: Camera = get_node("Camera")
+	var c: Camera = _get_camera()
 	var at_2d: Vector2 = c.unproject_position( world_at )
 	return at_2d
 
@@ -123,7 +130,7 @@ func _set_map_mode( en: bool ):
 			_state.dist = _state.dist * map_distance_multiplier
 		# In map mode displace ref frame and keep camera at the origin with identity transform
 		# all the time.
-		var c: Camera = get_node( "Camera" )
+		var c: Camera = _get_camera()
 		var t: Transform = c.transform
 		self.transform = t
 		c.transform = Transform.IDENTITY
