@@ -107,12 +107,16 @@ func _set_show_visual( en: bool ):
 			var Visual = preload( "res://physics/parts/coupling_nodes/coupling_node_visual.tscn" )
 			_visual = Visual.instance()
 			_visual.size = snap_size()
-			RootScene.get_root_for_visuals().add_child( _visual )
+			var vp: Viewport = RootScene.get_overlay_viewport()
+			vp.add_child( _visual )
 		_visual.visible = true
 	else:
 		if _visual != null:
 			_visual.queue_free()
 			_visual = null
+	
+	# Make overlay 3d viewport visible.
+	RootScene.set_overlay_visible( en )
 
 
 
@@ -164,7 +168,9 @@ func position_rel_to_parent():
 
 
 func world_transform():
-	var t_parent: Transform = part.transform
+	var camera: RefFrameNode = PhysicsManager.camera
+	var se3: Se3Ref = part.relative_to( camera )
+	var t_parent: Transform = se3.transform
 	var t: Transform = t_parent * relative_to_owner
 	return t
 

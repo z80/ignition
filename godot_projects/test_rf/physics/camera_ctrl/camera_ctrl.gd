@@ -92,6 +92,11 @@ func _get_global_transform():
 	return t
 
 
+func get_camera():
+	var camera: Camera = get_node( "Camera" )
+	return camera
+
+
 func unproject_position( world_at: Vector3 ):
 	var c: Camera = get_node("Camera")
 	var at_2d: Vector2 = c.unproject_position( world_at )

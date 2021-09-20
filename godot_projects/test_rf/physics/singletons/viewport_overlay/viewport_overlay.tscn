@@ -13,7 +13,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="ViewportContainer" type="ViewportContainer" parent="."]
+[node name="Container" type="ViewportContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
@@ -22,7 +22,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Viewport" type="Viewport" parent="ViewportContainer"]
+[node name="Viewport" type="Viewport" parent="Container"]
 size = Vector2( 1024, 600 )
 own_world = true
 world = SubResource( 1 )
@@ -30,3 +30,5 @@ transparent_bg = true
 handle_input_locally = false
 render_target_update_mode = 3
 gui_disable_input = true
+
+[node name="Camera" type="Camera" parent="Container/Viewport"]

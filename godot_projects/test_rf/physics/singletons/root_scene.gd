@@ -22,6 +22,7 @@ func get_overlay_viewport():
 	if vp_container == null:
 		vp_container = get_node( "viewport" )
 	var vp: Viewport = vp_container.get_viewport()
+	return vp
 
 
 func set_overlay_visible( en: bool ):
