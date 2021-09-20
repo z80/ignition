@@ -103,7 +103,7 @@ func _set_map_mode( en: bool ):
 		if not map_mode:
 			return
 		self.transform = Transform.IDENTITY
-		_state.last_map_dist = _state._dist
+		_state.last_map_dist = _state.dist
 		if _state.last_dist > 0.0:
 			_state.dist = _state.last_dist
 		elif map_mode == true:
@@ -218,10 +218,8 @@ func _input( event ):
 
 func _process(_delta):
 	var input: Dictionary = UserInput.get_input()
-	if input.has( "ui_map" ):
-		map_mode = true
-	else:
-		map_mode = false
+	var mm: bool = input.has( "ui_map" )
+	_set_map_mode( mm )
 	
 	if map_mode:
 		_process_map_mode( _delta )

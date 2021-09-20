@@ -324,18 +324,25 @@ PoolVector3Array CelestialMotionRef::orbit_points( Node * own_rf, Node * player_
 	// Retrieve scaler from the reference.
 	DistanceScalerRef * s = scaler.ptr();
 	// If no scaler provided, return points as they are.
-	if ( (s == nullptr) || (c == nullptr) )
+	if ( s == nullptr )
 	{
 		PoolVector3Array ret;
 		ret.resize( pts_qty );
 		for ( int i=0; i<pts_qty; i++ )
-			pts.push_back( pts.ptr()[i] );
+		{
+			const Vector3d & r = pts.ptr()[i];
+			ret.push_back( Vector3( r.x_, r.y_, r.z_ ) );
+		}
 		return ret;
 	}
 
-	// Get camera transform if there is a place .
+	// Get camera transform if there is a place.
 	SE3 camera_se3;
-	Transform camera_t = c->get_global_transform();
+	Transform camera_t;
+	if (c != nullptr)
+		camera_t = c->get_global_transform();
+	else
+		camera_t = Transform( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 );
 	const Vector3 r = camera_t.origin;
 	camera_se3.r_ = Vector3d( r.x, r.y, r.z );
 	const Quat q = camera_t.basis.get_rotation_quat();
