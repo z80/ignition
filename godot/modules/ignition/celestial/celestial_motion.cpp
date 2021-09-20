@@ -798,10 +798,12 @@ Float CelestialMotion::solve_next_hyperbolic( Float e, Float M, Float E, Float m
 
 
 
-void CelestialMotion::orbit_points( RefFrameNode * own_rf, RefFrameNode * player_rf, int pts_qty, Vector<Vector3d> & pts )
+void CelestialMotion::orbit_points( RefFrameNode * parent_of_own_rf, RefFrameNode * player_rf, int pts_qty, Vector<Vector3d> & pts )
 {
 	pts.clear();
-	const SE3 rel = own_rf->relative_( player_rf );
+	// Firce compute the inverse transform because own_rf can be null.
+	const SE3 inv_rel = player_rf->relative_( parent_of_own_rf );
+	const SE3 rel = inv_rel.inverse();
 
 	// r = slr/( 1 + e*cos(f) );
 	for ( int i=0; i<pts_qty; i++ )

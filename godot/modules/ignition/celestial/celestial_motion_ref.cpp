@@ -317,7 +317,10 @@ PoolVector3Array CelestialMotionRef::orbit_points( Node * own_rf, Node * player_
 	if (own_rf_node == nullptr)
 		return PoolVector3Array();
 
-	cm.orbit_points( own_rf_node, player_rf_node, qty, pts );
+	// Cotation center. It can be NULL.
+	RefFrameNode * orbiting_center_node = Node::cast_to<RefFrameNode>( own_rf_node->get_parent() );
+
+	cm.orbit_points( orbiting_center_node, player_rf_node, qty, pts );
 	const int pts_qty = pts.size();
 	Spatial * c = (camera_node != nullptr) ? Node::cast_to<Spatial>( camera_node ) : nullptr;
 

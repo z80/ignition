@@ -59,7 +59,7 @@ public:
     void set_se3( const SE3 & se3 );
 
 	// For drawing orbits.
-	void orbit_points( RefFrameNode * own_rf, RefFrameNode * player_rf, int pts_qty, Vector<Vector3d> & pts );
+	void orbit_points( RefFrameNode * parent_of_own_rf, RefFrameNode * player_rf, int pts_qty, Vector<Vector3d> & pts );
 
 
     Type type;

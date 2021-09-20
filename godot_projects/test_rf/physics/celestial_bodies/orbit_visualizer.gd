@@ -3,7 +3,7 @@ extends ImmediateGeometry
 
 export(Color) var color = Color( 1.0, 0.0, 0.0, 1.0 )
 export(Resource) var material
-export(int) var pts_qty = 8
+export(int) var pts_qty = 128
 
 # Need to specify these two in order to draw.
 var ref_frame: RefFrameNode = null
