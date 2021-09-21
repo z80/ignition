@@ -95,7 +95,7 @@ vec4 compute_atmosphere_color( vec3 ray )
 	
 	// At this point it intersects the very outer surface. 
 	// Check if intersects opaque.
-	/*bool intersects_inner = ray_atmosphere_intersection_length( ray, inner_radius, through_length_inner, closest_distance, inside_inner, day_night );
+	bool intersects_inner = ray_atmosphere_intersection_length( ray, inner_radius, through_length_inner, closest_distance, inside_inner );
 	float alpha;
 	if ( intersects_inner )
 	{
@@ -105,9 +105,9 @@ vec4 compute_atmosphere_color( vec3 ray )
 	}
 	else
 	{
-		alpha += through_length_outer / outer_transparency_distance;
-	}*/
-	float alpha = through_length_outer / outer_transparency_distance;
+		alpha = through_length_outer / outer_transparency_distance;
+	}
+	//float alpha = through_length_outer / outer_transparency_distance;
 	alpha = clamp( alpha, 0.0, 1.0 );
 	
 	float ray_dot_light = dot( ray, light_dir );
