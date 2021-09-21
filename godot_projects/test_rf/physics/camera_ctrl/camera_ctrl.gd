@@ -467,7 +467,7 @@ func apply_atmosphere( celestial_body: RefFrameNode ):
 		return
 	
 	var f: float = self.far
-	var far: float = f * 0.2
+	var far: float = f * 0.5
 	var t: Transform = atm.transform
 	t.basis = Basis.IDENTITY
 	t.basis = t.basis.scaled( Vector3( far, far, far ) )
@@ -481,7 +481,7 @@ func apply_atmosphere( celestial_body: RefFrameNode ):
 	var color_night: Color  = celestial_body.atmosphere_color_night
 	var displacement: float = celestial_body.displacement
 	
-	var m: ShaderMaterial = atm.material_override as ShaderMaterial
+	var m = atm.get_surface_material( 0 )
 	m.set_shader_param( "sphere_center",               sphere_r )
 	m.set_shader_param( "light_dir",                   light_dir )
 	m.set_shader_param( "sphere_radius",               planet_radius )

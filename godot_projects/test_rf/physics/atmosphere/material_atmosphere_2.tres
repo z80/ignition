@@ -44,6 +44,16 @@ bool ray_atmosphere_intersection_length( vec3 ray, float sphere_radius, out floa
 	float closest_dist   = sqrt( closest_distance_2 );
 	float intersect_dist = sqrt( intersect_dist_2 );
 	float distance_positive = intersect_dist;
+	
+	bool is_in_front = ( (d_to_closest_point + intersect_dist) > 0.0 );
+	if ( !is_in_front )
+	{
+		// Ray doesn't go through.
+		out_inside = false;
+		out_length = -1.0;
+		return false;
+	}
+	
 	float distance_negative;
 	// Return \"inside\".
 	out_inside = ( d_to_closest_point_2 < intersect_dist_2 );
