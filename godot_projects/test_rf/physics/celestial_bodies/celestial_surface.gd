@@ -14,11 +14,13 @@ export(float) var detail_dist_1 = 0.2
 export(float) var detail_size_2 = 0.05
 export(float) var detail_dist_2 = 10.0
 
-export(float) var atmosphere_height_km = 1.0
-export(float) var opaque_height_km     = 0.1
-export(float) var transparency_scale_outer_km = 30.0
-export(float) var transparency_scale_inner_km = 5.0
-export(float) var displacement = 2.0
+export(float) var atmosphere_height_inner_km = 1.0
+export(float) var atmosphere_height_outer_km = 0.1
+export(float) var transparency_dist_inner_km = 30.0
+export(float) var transparency_dist_outer_km = 5.0
+export(Color) var atmosphere_color_day   = Color(0.65, 0.8, 1.0, 1.0)
+export(Color) var atmosphere_color_night = Color(1.0, 0.43, 0.46, 1.0)
+export(float) var displacement = 0.0
 
 
 

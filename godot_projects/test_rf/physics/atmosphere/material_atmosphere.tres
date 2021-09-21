@@ -11,10 +11,10 @@ uniform vec3  sphere_position = vec3(0.0, 0.0, 0.0);
 uniform float sphere_radius = 50.0;
 uniform float atmosphere_height    = 2.0;
 uniform float opaque_height        = 1.0;
-uniform float transparency_scale_outer = 30.0;
-uniform float transparency_scale_inner = 0.5;
+uniform float transparency_distance_outer = 30.0;
+uniform float transparency_distance_inner = 0.5;
 uniform vec3  light_dir     = vec3(1.0, 0.0, 0.0);
-uniform float displacement: hint_range(-1.0, 1.0);
+uniform float displacement: hint_range(-5.0, 5.0);
 
 varying vec3 cam_position;
 
@@ -89,12 +89,12 @@ float ramp_transparency_length( vec3 ray_origin, vec3 sphere_center )
 	float outer_radius = sphere_radius + atmosphere_height;
 	float opaque_radius = sphere_radius + opaque_height;
 	if (distance_from_center < opaque_radius)
-		return transparency_scale_inner;
+		return transparency_distance_inner;
 	else if ( distance_from_center > outer_radius )
-		return transparency_scale_outer;
+		return transparency_distance_outer;
 	
 	float alpha = (distance_from_center - opaque_radius) / (outer_radius - opaque_radius);
-	float t = transparency_scale_outer * alpha + transparency_scale_inner * (1.0 - alpha);
+	float t = transparency_distance_outer * alpha + transparency_distance_inner * (1.0 - alpha);
 	
 	return t;
 }
@@ -171,7 +171,7 @@ shader_param/sphere_position = Vector3( 0, 0, 0 )
 shader_param/sphere_radius = 8.0
 shader_param/atmosphere_height = 4.0
 shader_param/opaque_height = 1.0
-shader_param/transparency_scale_outer = 2.0
-shader_param/transparency_scale_inner = 2.0
+shader_param/transparency_distance_outer = 30.0
+shader_param/transparency_distance_inner = 0.5
 shader_param/light_dir = Vector3( 1, 0, 0 )
 shader_param/displacement = 1.0

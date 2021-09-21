@@ -452,8 +452,12 @@ func apply_atmosphere( celestial_body: RefFrameNode ):
 	var planet_radius: float = celestial_body.radius_km * 1000.0
 	var camera_rf: RefFrameNode = PhysicsManager.camera
 	var se3: Se3Ref = celestial_body.relative_to( camera_rf )
-	var planet_t: Transform = se3.transform
-	var r: Vector3 = planet_t.origin
+	var sphere_r: Vector3 = se3.r
+	
+	# Relative to the Sun.
+	se3 = camera_rf.relative_to( null )
+	se3 = se3.inverse()
+	var light_dir: Vector3 = se3.r.normalized()
 	
 	var player_parent = camera_rf.get_parent()
 	#print( "planet origin: ", r, ", player parent: ", player_parent.name )
@@ -469,20 +473,25 @@ func apply_atmosphere( celestial_body: RefFrameNode ):
 	t.basis = t.basis.scaled( Vector3( far, far, far ) )
 	atm.transform = t
 
-	var atmosphere_height: float        = celestial_body.atmosphere_height_km * 1000.0
-	var opaque_height: float            = celestial_body.opaque_height_km * 1000.0
-	var transparency_scale_outer: float = celestial_body.transparency_scale_outer_km * 1000.0
-	var transparency_scale_inner: float = celestial_body.transparency_scale_inner_km * 1000.0
-	var displacement: float             = celestial_body.displacement
+	var inner_height: float = celestial_body.atmosphere_height_inner_km * 1000.0
+	var outer_height: float = celestial_body.atmosphere_height_outer_km * 1000.0
+	var inner_dist: float   = celestial_body.transparency_dist_inner_km * 1000.0
+	var outer_dist: float   = celestial_body.transparency_dist_outer_km * 1000.0
+	var color_day: Color    = celestial_body.atmosphere_color_day
+	var color_night: Color  = celestial_body.atmosphere_color_night
+	var displacement: float = celestial_body.displacement
 	
 	var m: ShaderMaterial = atm.material_override as ShaderMaterial
-	m.set_shader_param( "sphere_position",          r )
-	m.set_shader_param( "sphere_radius",            planet_radius )
-	m.set_shader_param( "atmosphere_height",        atmosphere_height )
-	m.set_shader_param( "opaque_height",            opaque_height )
-	m.set_shader_param( "transparency_scale_outer", transparency_scale_outer )
-	m.set_shader_param( "transparency_scale_inner", transparency_scale_inner )
-	m.set_shader_param( "displacement",             displacement )
+	m.set_shader_param( "sphere_center",               sphere_r )
+	m.set_shader_param( "light_dir",                   light_dir )
+	m.set_shader_param( "sphere_radius",               planet_radius )
+	m.set_shader_param( "inner_height",                inner_height )
+	m.set_shader_param( "outer_height",                outer_height )
+	m.set_shader_param( "inner_transparency_distance", inner_dist )
+	m.set_shader_param( "outer_transparency_distance", outer_dist )
+	m.set_shader_param( "displacement",                displacement )
+	m.set_shader_param( "color_day",                   color_day )
+	m.set_shader_param( "color_night",                 color_night )
 
 
 
@@ -505,6 +514,7 @@ func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 	var m: SpatialMaterial = sky.get_surface_material( 0 ) as SpatialMaterial
 	var ms: ShaderMaterial = m.next_pass as ShaderMaterial
 	ms.set_shader_param( "light_dir", light_dir )
+	ms.set_shader_param( "light_size", sz )
 	ms.set_shader_param( "glow_size", glow_size )
 	ms.set_shader_param( "ray_scale", ray_scale )
 	ms.set_shader_param( "ray_size", ray_size )

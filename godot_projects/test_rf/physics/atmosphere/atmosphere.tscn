@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://physics/atmosphere/material_atmosphere.tres" type="Material" id=1]
+[ext_resource path="res://physics/atmosphere/material_atmosphere_2.tres" type="Material" id=1]
 
 [sub_resource type="CubeMesh" id=1]
 flip_faces = true

@@ -19,11 +19,10 @@ surface_orbital_vel_kms = 0.03
 orbital_period_hrs = 100.0
 detail_dist_0 = 0.1
 detail_dist_1 = 0.4
-atmosphere_height_km = 1.0
-opaque_height_km = 0.1
-transparency_scale_outer_km = 0.1
-transparency_scale_inner_km = 0.1
-displacement = 5.0
+atmosphere_height_inner_km = 0.01
+atmosphere_height_outer_km = 0.01
+transparency_dist_inner_km = 0.1
+transparency_dist_outer_km = 0.1
 orbit_color = Color( 0.243137, 1, 0, 1 )
 
 [node name="Moon" parent="Sun/Planet" instance=ExtResource( 1 )]
@@ -31,7 +30,6 @@ rotation_period_hrs = 0.3
 surface_orbital_vel_kms = 0.015
 orbital_period_hrs = 2.0
 height_source_name = "moon"
-atmosphere_height_km = 0.15
 orbit_color = Color( 1, 1, 1, 1 )
 
 [node name="Camera" parent="." instance=ExtResource( 3 )]
