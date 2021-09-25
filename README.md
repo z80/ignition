@@ -19,7 +19,9 @@ Here is the battle plan.
 - [ ] A BUG: When switches to orbiting ref. frame engine thrust seems to get rest to 0. And have to reastart the engine in order to make it non zero again.
 - [ ] A BUG: "A body with joints is destroyed" warning message is displayed sometimes.
 - [x] Fix picking control group from the object when initilizing control group menu.
-- [ ] IN PROCESS: Make zooming by attaching camera to a separate ref. frame which is a child of a physics ref. frame in which simulation happens.
+- [x] IN PROCESS: Make zooming by attaching camera to a separate ref. frame which is a child of a physics ref. frame in which simulation happens.
+- [ ] Make vehicle orbits visualization.
+- [ ] A BUG: Fix navball rotations. Icons seem to be correct but navball is not always.
 - [ ] Port over the air friction model using mesh traingles.
 - [ ] Make atmosphere mesh per planet.
 - [ ] Vegetation and other static assets placement based on surface quad-tree node Ids.
