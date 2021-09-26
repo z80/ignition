@@ -66,7 +66,7 @@ public:
     Dictionary serialize() const;
     bool deserialize( const Dictionary & data );
 
-	PoolVector3Array orbit_points( Node * own_rf, Node * player_rf, Node * camera, Ref<DistanceScalerRef> scaler, int qty );
+	PoolVector3Array orbit_points( Node * orbiting_center, Node * player_viewpoint, Node * camera_node, Ref<DistanceScalerRef> scaler, int qty );
 
 	void set_force_numerical( bool en );
 	bool get_force_numerical() const;

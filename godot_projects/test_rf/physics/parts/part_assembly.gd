@@ -13,7 +13,10 @@ var sub_bodies: Array = []
 
 # For visualizing the orbit it is needed to have an OrbitalMotionRef in order 
 # to have points on the trajectory.
+var motion: CelestialMotionRef = null
 var orbit_visualizer: Node = null
+var closest_celestial_body: RefFrameNode = null
+export(Color) var orbit_color = Color( 0.0, 0.7, 0.0, 1.0 )
 export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
 
 
@@ -224,17 +227,30 @@ func gui_classes( mode: Array ):
 
 
 func _create_orbit_visualizer():
+	motion = CelestialMotionRef.new()
+	
 	var Vis = load( "res://physics/celestial_bodies/orbit_visualizer.tscn" )
 	orbit_visualizer = Vis.instance()
 	self.add_child( orbit_visualizer )
+	
+	orbit_visualizer.ref_frame = self
+	orbit_visualizer.motion    = motion
+	orbit_visualizer.color     = orbit_color
 
 
+
+func _set_orbit_color( c: Color ):
+	orbit_color = c
+	if orbit_visualizer != null:
+		orbit_visualizer.color = orbit_color
+
+func _get_orbit_color():
+	return orbit_color
 
 func _set_show_orbit( en: bool ):
 	show_orbit = en
-	if show_orbit:
-		orbit_visualizer.draw()
 	orbit_visualizer.visible = show_orbit
+	orbit_visualizer.color   = orbit_color
 
 
 func _get_show_orbit():
@@ -246,6 +262,29 @@ func _process_visualize_orbits():
 	var current_state: bool = self.show_orbit
 	if current_state != new_state:
 		self.show_orbit = new_state
+	if show_orbit or true:
+		# Here additionally we need to initialize celestial motion every single time.
+		_update_celestial_motion()
+		orbit_visualizer.ref_frame = closest_celestial_body
+		orbit_visualizer.draw()
+
+
+func _update_celestial_motion():
+	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
+	var p: Node = self.get_parent()
+	var cb: CelestialSurface = ClosestCelestialBody.closest_celestial_body( p )
+	if cb == null:
+		#_do_show = false
+		closest_celestial_body = null
+		return
+	closest_celestial_body = cb
+	var se3: Se3Ref = self.relative_to( cb )
+	motion.allow_orbiting = true
+	motion.init( cb.gm, se3 )
+	
+	# Check out what's the mode.
+	var m: String = motion.movement_type()
+	#print( "movement_type: ", m )
 
 
 

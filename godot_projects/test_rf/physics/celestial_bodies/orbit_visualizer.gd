@@ -29,12 +29,11 @@ func draw():
 	var m: SpatialMaterial = material as SpatialMaterial
 	m.albedo_color = color
 	
-	var player_rf: RefFrame = PhysicsManager.get_player_ref_frame()
-	var own_rf: RefFrame = ref_frame
-	var scaler: DistanceScalerRef = PhysicsManager.distance_scaler
-	var camera_rf: RefFrameNode = PhysicsManager.camera
+	var orbiting_center_rf: RefFrameNode = ref_frame
+	var camera_rf: RefFrameNode          = PhysicsManager.camera
+	var scaler: DistanceScalerRef        = PhysicsManager.distance_scaler
 	
-	var pts: PoolVector3Array = motion.orbit_points( own_rf, camera_rf, null, scaler, pts_qty )
+	var pts: PoolVector3Array = motion.orbit_points( orbiting_center_rf, camera_rf, null, scaler, pts_qty )
 	
 	clear()
 	begin(Mesh.PRIMITIVE_LINE_STRIP)
@@ -42,5 +41,4 @@ func draw():
 	for pt in pts:
 		set_color( color )
 		add_vertex( pt )
-	
 	end()

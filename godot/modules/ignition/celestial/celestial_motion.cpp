@@ -269,7 +269,7 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     const Float abs_h = h.Length();
 	const Float abs_v_x_r = r.Length() * v.Length();
 	const Float abs_h_normalized = (abs_v_x_r > 0.0) ? (abs_h / abs_v_x_r) : abs_h;
-	print_line( String("CelestialMotion: abs_h_normalized: ") + rtos(abs_h_normalized) );
+	//print_line( String("CelestialMotion: abs_h_normalized: ") + rtos(abs_h_normalized) );
     if ( force_numerical || (abs_h_normalized < Celestial::MIN_ANGULAR_MOMENTUM) )
     {
         type = NUMERICAL;
@@ -798,11 +798,11 @@ Float CelestialMotion::solve_next_hyperbolic( Float e, Float M, Float E, Float m
 
 
 
-void CelestialMotion::orbit_points( RefFrameNode * parent_of_own_rf, RefFrameNode * player_rf, int pts_qty, Vector<Vector3d> & pts )
+void CelestialMotion::orbit_points( RefFrameNode * orbiting_center_node, RefFrameNode * player_viewpoint_node, int pts_qty, Vector<Vector3d> & pts )
 {
 	pts.clear();
-	// Firce compute the inverse transform because own_rf can be null.
-	const SE3 inv_rel = player_rf->relative_( parent_of_own_rf );
+	// First compute the inverse transform because own_rf can be null.
+	const SE3 inv_rel = player_viewpoint_node->relative_( orbiting_center_node );
 	const SE3 rel = inv_rel.inverse();
 
 	// r = slr/( 1 + e*cos(f) );

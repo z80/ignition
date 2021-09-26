@@ -41,7 +41,7 @@ void CelestialMotionRef::_bind_methods()
     ClassDB::bind_method( D_METHOD("process_rf", "dt", "rf"), &CelestialMotionRef::process_rf );
     ClassDB::bind_method( D_METHOD("duplicate"), &CelestialMotionRef::duplicate, Variant::OBJECT );
 
-	ClassDB::bind_method( D_METHOD("orbit_points", "own_rf", "player_rf", "camera_node", "scaler", "qty"), &CelestialMotionRef::orbit_points, Variant::POOL_VECTOR3_ARRAY );
+	ClassDB::bind_method( D_METHOD("orbit_points", "orbiting_center_node", "player_viewpoint_node", "camera_node", "scaler", "qty"), &CelestialMotionRef::orbit_points, Variant::POOL_VECTOR3_ARRAY );
 
 	ClassDB::bind_method( D_METHOD("set_force_numerical", "en"), &CelestialMotionRef::set_force_numerical );
 	ClassDB::bind_method( D_METHOD("get_force_numerical"),       &CelestialMotionRef::get_force_numerical, Variant::BOOL );
@@ -310,17 +310,14 @@ bool CelestialMotionRef::deserialize( const Dictionary & data )
     return true;
 }
 
-PoolVector3Array CelestialMotionRef::orbit_points( Node * own_rf, Node * player_rf, Node * camera_node, Ref<DistanceScalerRef> scaler, int qty )
+PoolVector3Array CelestialMotionRef::orbit_points( Node * orbiting_center, Node * player_viewpoint, Node * camera_node, Ref<DistanceScalerRef> scaler, int qty )
 {
-	RefFrameNode * own_rf_node    = Node::cast_to<RefFrameNode>( own_rf );
-	RefFrameNode * player_rf_node = Node::cast_to<RefFrameNode>( player_rf );
-	if (own_rf_node == nullptr)
+	RefFrameNode * orbiting_center_node  = Node::cast_to<RefFrameNode>( orbiting_center );
+	RefFrameNode * player_viewpoint_node = Node::cast_to<RefFrameNode>( player_viewpoint );
+	if (player_viewpoint_node == nullptr)
 		return PoolVector3Array();
 
-	// Cotation center. It can be NULL.
-	RefFrameNode * orbiting_center_node = Node::cast_to<RefFrameNode>( own_rf_node->get_parent() );
-
-	cm.orbit_points( orbiting_center_node, player_rf_node, qty, pts );
+	cm.orbit_points( orbiting_center_node, player_viewpoint_node, qty, pts );
 	const int pts_qty = pts.size();
 	Spatial * c = (camera_node != nullptr) ? Node::cast_to<Spatial>( camera_node ) : nullptr;
 
