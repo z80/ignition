@@ -559,7 +559,6 @@ func deserialize( data: Dictionary ):
 	_mouse_displacement.x = data.mouse_displacement_x
 	_mouse_displacement.y = data.mouse_displacement_y
 	_zoom_displacement    = data.zoom_displacement
-	
 	apply_target()
 	return true
 

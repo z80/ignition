@@ -30,6 +30,7 @@ static func serialize_all( n: Node ):
 
 static func deserialize_all( n: Node, data: Dictionary ):
 	destroy_all_bodies( n )
+	destroy_all_assemblies( n )
 	destroy_all_ref_frames_physics( n )
 	
 	var stars_data: Dictionary = data.stars
@@ -238,6 +239,17 @@ static func destroy_all_bodies( n: Node ):
 			b._physical.name = b._physical.name + "_to_be_deleted"
 
 
+static func destroy_all_assemblies( n: Node ):
+	var assemblies: Array = n.get_tree().get_nodes_in_group( Constants.SUPER_BODIES_GROUP_NAME )
+	for b in assemblies:
+		b.queue_free()
+		b.name = b.name + "_to_be_deleted"
+		if b._visual != null:
+			b._visual.name = b._visual.name + "_to_be_deleted"
+		if b._physical != null:
+			b._physical.name = b._physical.name + "_to_be_deleted"
+
+
 
 static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 	var bodies: Array = []
@@ -301,7 +313,7 @@ static func serialize_camera():
 
 
 static func deserialize_camera( camera_data: Dictionary ):
-	var c: Camera = PhysicsManager.camera
+	var c: RefFrameNode = PhysicsManager.camera
 	var parentpath: String = camera_data.parentpath
 	var data: Dictionary = camera_data.data
 	var ret: bool = c.deserialize( data )
