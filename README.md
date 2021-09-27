@@ -22,7 +22,7 @@ Here is the battle plan.
 - [x] IN PROCESS: Make zooming by attaching camera to a separate ref. frame which is a child of a physics ref. frame in which simulation happens.
 - [x] Make vehicle orbits visualization.
 - [x] Adjust camera serialization/deserialization to match its modified scene.
-- [ ] A BUG: Assemblies are not destroyed on load. It causes a vehicle to have two assemblies.
+- [x] A BUG: Assemblies are not destroyed on load. It causes a vehicle to have two assemblies.
 - [ ] A BUG: Fix navball rotations. Icons seem to be correct but navball is not always.
 - [ ] Port over the air friction model using mesh traingles.
 - [ ] Make atmosphere mesh per planet.
