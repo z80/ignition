@@ -244,10 +244,6 @@ static func destroy_all_assemblies( n: Node ):
 	for b in assemblies:
 		b.queue_free()
 		b.name = b.name + "_to_be_deleted"
-		if b._visual != null:
-			b._visual.name = b._visual.name + "_to_be_deleted"
-		if b._physical != null:
-			b._physical.name = b._physical.name + "_to_be_deleted"
 
 
 

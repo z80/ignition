@@ -14,7 +14,9 @@ __meta__ = {
 margin_right = 48.0
 margin_bottom = 20.0
 hint_tooltip = "Toggle between normal view and map mode"
+focus_mode = 0
 toggle_mode = true
+enabled_focus_mode = 0
 text = "Map"
 __meta__ = {
 "_edit_use_anchors_": false

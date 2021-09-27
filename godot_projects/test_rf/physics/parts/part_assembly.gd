@@ -272,7 +272,7 @@ func _process_visualize_orbits():
 func _update_celestial_motion():
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
 	var p: Node = self.get_parent()
-	var cb: CelestialSurface = ClosestCelestialBody.closest_celestial_body( p )
+	var cb: CelestialBody = ClosestCelestialBody.closest_celestial_body( p )
 	if cb == null:
 		#_do_show = false
 		closest_celestial_body = null

@@ -98,7 +98,9 @@ margin_right = -194.646
 margin_bottom = -65.5383
 hint_tooltip = "Orbit mode
 Speed is relative to not rotating planet center."
+focus_mode = 0
 custom_fonts/font = ExtResource( 3 )
+enabled_focus_mode = 0
 text = "orbit"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -115,7 +117,9 @@ margin_right = -194.051
 margin_bottom = -39.9704
 hint_tooltip = "Surface mode
 Speed is relative to rotating planet surface."
+focus_mode = 0
 custom_fonts/font = ExtResource( 3 )
+enabled_focus_mode = 0
 text = "surface"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -132,7 +136,9 @@ margin_right = -194.051
 margin_bottom = -13.9704
 hint_tooltip = "Target mode
 Speed is relative to selected target."
+focus_mode = 0
 custom_fonts/font = ExtResource( 3 )
+enabled_focus_mode = 0
 text = "target"
 __meta__ = {
 "_edit_use_anchors_": false
