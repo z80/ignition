@@ -24,6 +24,8 @@ Here is the battle plan.
 - [x] Adjust camera serialization/deserialization to match its modified scene.
 - [x] A BUG: Assemblies are not destroyed on load. It causes a vehicle to have two assemblies.
 - [ ] Make control group #1 selected by default.
+- [ ] Make assemblies created on first access.
+- [ ] Make dynamic splits and merges.
 - [ ] A BUG: Fix navball rotations. Icons seem to be correct but navball is not always.
 - [ ] Port over the air friction model using mesh traingles.
 - [ ] Make atmosphere mesh per planet.
