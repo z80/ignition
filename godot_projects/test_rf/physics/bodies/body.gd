@@ -499,8 +499,15 @@ func _set_super_body( new_super_body ):
 
 
 func _get_super_body():
+	if super_body == null:
+		super_body = create_super_body()
 	return super_body
 
+
+
+# This one should be overwritten by decendant classes.
+func create_super_body():
+	return null
 
 
 

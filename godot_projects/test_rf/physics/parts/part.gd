@@ -112,21 +112,21 @@ func activate( root_call: bool = true ):
 	
 	# Create super body. Through it controls are computed and 
 	# merge/split ref frames are computed.
-	if root_call:
-		var sb = PartAssembly.new()
-		sb.change_parent( RootScene.get_root_for_bodies() )
-		var p = self.get_parent()
-		sb.debug = true
-		sb.change_parent( p )
-		sb.debug = false
-		var se3: Se3Ref = self.get_se3()
-		sb.set_se3( se3 )
-		
-		# Add all bodies to this super body.
-		var ret: Array = dfs_search( self )
-		var bodies: Array = ret[1]
-		for body in bodies:
-			sb.add_sub_body( body )
+#	if root_call:
+#		var sb = PartAssembly.new()
+#		sb.change_parent( RootScene.get_root_for_bodies() )
+#		var p = self.get_parent()
+#		sb.debug = true
+#		sb.change_parent( p )
+#		sb.debug = false
+#		var se3: Se3Ref = self.get_se3()
+#		sb.set_se3( se3 )
+#
+#		# Add all bodies to this super body.
+#		var ret: Array = dfs_search( self )
+#		var bodies: Array = ret[1]
+#		for body in bodies:
+#			sb.add_sub_body( body )
 		
 		# Now sure what this one is doing.
 		#sb.activate()
@@ -424,6 +424,32 @@ func process_user_input_2( input: Dictionary ):
 # This one should be overriden by implementations.
 func process_user_input_group( input: Dictionary ):
 	pass
+
+
+# This one is supposed to override the dummy one 
+# declared in "Body".
+func create_super_body():
+	if super_body != null:
+		return super_body
+	
+	var sb = PartAssembly.new()
+	sb.change_parent( RootScene.get_root_for_bodies() )
+	var p = self.get_parent()
+	sb.debug = true
+	sb.change_parent( p )
+	sb.debug = false
+	var se3: Se3Ref = self.get_se3()
+	sb.set_se3( se3 )
+	
+	# Add all bodies to this super body.
+	var ret: Array = dfs_search( self )
+	var bodies: Array = ret[1]
+	for body in bodies:
+		sb.add_sub_body( body )
+	
+	super_body = sb
+	
+	return super_body
 
 
 
