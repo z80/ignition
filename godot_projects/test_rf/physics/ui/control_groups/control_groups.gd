@@ -14,6 +14,8 @@ func _ready():
 		[KEY_5, "gui_group_5", get_node("VBox/Group5")], 
 	]
 	_msgs = msgs
+	
+	_make_group_1_selected()
 
 
 func _input(event):
@@ -42,6 +44,14 @@ func _on_group_pressed():
 		var pressed: bool = check.pressed
 		var gui_input_stri: String = msg[1]
 		UserInput.gui_control_bool( gui_input_stri, pressed, pressed, not pressed )
+
+
+
+
+func _make_group_1_selected():
+	var check: CheckButton = _msgs[0][2]
+	check.pressed = true
+	_on_group_pressed()
 
 
 
