@@ -237,7 +237,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Test Rf"
-run/main_scene="res://tryouts/rf_management/rf_management_02.tscn"
+run/main_scene="res://physics/menu/root_menu/test_menu_items.tscn"
 config/icon="res://icon.png"
 
 [autoload]
