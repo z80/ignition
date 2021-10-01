@@ -91,9 +91,9 @@ func _create_buttons_parts():
 						 "Oxidizer tank 2m diameter, 2m height", true )
 	
 	
-	_add_button( parts, "res://physics/parts/2m/reaction_wheels/assets/icon.png", 
-						 "reaction_wheels_2m", 
-						 "2m reaction control wheels", true )
+#	_add_button( parts, "res://physics/parts/2m/reaction_wheels/assets/icon.png", 
+#						 "reaction_wheels_2m", 
+#						 "2m reaction control wheels", true )
 
 	_add_button( parts, "res://physics/parts/thrusters/thruster_01/assets/icon.png", 
 						 "thruster_01", 

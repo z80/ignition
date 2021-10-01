@@ -28,7 +28,7 @@ func _on_Timer_timeout():
 
 
 func _update_celestial_motion():
-	return
+#	return
 	
 	var ctrl: Body = PhysicsManager.player_control as Body
 	if ctrl == null:
