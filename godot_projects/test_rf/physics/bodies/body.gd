@@ -84,8 +84,10 @@ func init():
 
 # The overrideable version without "_" prefix.
 func on_delete():
-	if is_instance_valid( super_body ):
-		super_body.remove_sub_body( self )
+	var sb: Node = get_super_body_raw()
+
+	if is_instance_valid( sb ):
+		sb.remove_sub_body( self )
 	if force != null:
 		force.name = force.name + "_to_be_deleted"
 		force.queue_free()
@@ -127,8 +129,9 @@ func update_physical( delta: float ):
 func gui_classes( mode: Array ):
 	var classes = []
 	
-	if super_body != null:
-		var s_classes = super_body.gui_classes( mode )
+	var sb: Node = get_super_body_raw()
+	if sb != null:
+		var s_classes = sb.gui_classes( mode )
 		for cl in s_classes:
 			classes.push_back( cl )
 	
@@ -143,8 +146,9 @@ func gui_classes( mode: Array ):
 # Defines GUI classes to be shown.
 func gui_mode():
 	var ret: Array = []
-	if super_body != null:
-		var more: Array = super_body.gui_mode()
+	var sb: Node = get_super_body_raw()
+	if sb != null:
+		var more: Array = sb.gui_mode()
 		for m in more:
 			ret.push_back( m )
 	return ret
@@ -152,8 +156,9 @@ func gui_mode():
 
 # Returns the root most body.
 func root_most_body():
-	if self.super_body != null:
-		return self.super_body
+	var sb = _get_super_body()
+	if sb != null:
+		return sb
 	return self
 
 
@@ -315,8 +320,9 @@ func remove_physical():
 
 
 func change_parent( p: Node = null ):
-	if (super_body != null) and is_instance_valid( super_body ):
-		super_body.change_parent( p )
+	var sb: Node = get_super_body_raw()
+	if (sb != null) and is_instance_valid( sb ):
+		sb.change_parent( p )
 	else:
 		change_parent_inner( p )
 
@@ -332,8 +338,9 @@ func process_user_input_2( input: Dictionary ):
 
 # It permits or not showing the window with all the little panels.
 func show_click_container():
-	if super_body != null:
-		var res: bool = super_body.show_click_container()
+	var sb: Node = get_super_body_raw()
+	if sb != null:
+		var res: bool = sb.show_click_container()
 		return res
 	
 	return true
@@ -493,6 +500,9 @@ func _parent_physics_ref_frame():
 
 
 func _set_super_body( new_super_body ):
+	if super_body != null:
+		super_body.queue_free()
+		super_body = null
 	super_body = new_super_body
 
 
@@ -501,6 +511,10 @@ func _set_super_body( new_super_body ):
 func _get_super_body():
 	if super_body == null:
 		super_body = create_super_body()
+	return super_body
+
+
+func get_super_body_raw():
 	return super_body
 
 

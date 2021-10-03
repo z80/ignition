@@ -24,6 +24,12 @@ func get_class():
 	return "PartAssembly"
 
 
+
+func queue_free():
+	self.name = self.name + "_to_be_deleted"
+	.queue_free()
+
+
 func _enter_tree():
 	# If physics body is already created it shouldn't hurt 
 	# anything.
@@ -56,7 +62,7 @@ func _process( _delta: float ):
 
 
 func add_sub_body( body: RefFrameNode ):
-	var sb: RefFrameNode = body.super_body
+	var sb: RefFrameNode = body.get_super_body_raw()
 	if (sb != null) and (sb != self):
 		sb.remove_sub_body( body )
 	

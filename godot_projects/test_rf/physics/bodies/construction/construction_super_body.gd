@@ -8,10 +8,10 @@ func _init():
 	self.name = "ConstructionSuperBody"
 
 
-func remove_parent():
-	var p = get_parent()
-	if p != null:
-		p.remove_child()
+#func remove_parent():
+#	var p = get_parent()
+#	if p != null:
+#		p.remove_child( self )
 
 
 

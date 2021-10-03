@@ -20,15 +20,7 @@ func _ready():
 	
 	$PanelParts.construction = self
 	$PanelParts.connect( "create_block", self, "create_block" )
-	
-		# Also create a super body.
-	var sb = ConstructionSuperBody.new()
-	var p = get_parent()
-	sb.change_parent( p )
-	# Place own reference there.
-	sb.construction = self
-	# And in the list of sub-bodies.
-	sb.add_sub_body( self )
+
 
 
 
@@ -243,5 +235,20 @@ func set_show_coupling_nodes( en: bool ):
 	for i in range(qty):
 		var p: RefFrameNode = dynamic_blocks[i]
 		p.set_show_node_visuals( en )
+
+
+
+func create_super_body():
+	var sb = ConstructionSuperBody.new()
+	var p = get_parent()
+	sb.change_parent( p )
+	# Place own reference there.
+	sb.construction = self
+	# And in the list of sub-bodies.
+	sb.add_sub_body( self )
+	
+	return sb
+
+
 
 

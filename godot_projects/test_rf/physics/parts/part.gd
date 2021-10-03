@@ -143,9 +143,10 @@ func deactivate( root_call: bool = true ):
 	# In construction mode super body is provided externally 
 	# And provides additional context menu GUIs.
 	if root_call and (mode != PartMode.CONSTRUCTION):
-		if super_body != null:
-			super_body.queue_free()
-			super_body = null
+		var sb: Node = get_super_body_raw()
+		if sb != null:
+			sb.queue_free()
+			sb = null
 
 
 
@@ -429,12 +430,8 @@ func process_user_input_group( input: Dictionary ):
 # This one is supposed to override the dummy one 
 # declared in "Body".
 func create_super_body():
-	if super_body != null:
-		return super_body
-	
-	var sb = PartAssembly.new()
-	sb.change_parent( RootScene.get_root_for_bodies() )
 	var p = self.get_parent()
+	var sb = PartAssembly.new()
 	sb.debug = true
 	sb.change_parent( p )
 	sb.debug = false
@@ -447,9 +444,7 @@ func create_super_body():
 	for body in bodies:
 		sb.add_sub_body( body )
 	
-	super_body = sb
-	
-	return super_body
+	return sb
 
 
 
