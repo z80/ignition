@@ -28,6 +28,8 @@ var _icon = null
 export(String) var hint_text = "Default hint text" setget _set_hint_text
 
 # Body which contains this one and other bodies.
+# When setter and getter are allowed simultaneously it falls into infinite recursion which 
+# can not be stopped even by the debugger.
 var super_body: Node = null setget , _get_super_body #_set_super_body, _get_super_body
 export(bool) var need_super_body = false
 
