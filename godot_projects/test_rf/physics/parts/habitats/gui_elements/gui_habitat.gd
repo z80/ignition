@@ -82,11 +82,13 @@ func _get_outside_pressed( button ):
 		return
 	
 	_target_obj.let_character_out( ind )
+	_parent_gui.queue_free()
 
 
 
 func _get_inside_pressed( character ):
 	_target_obj.let_character_in( character )
+	_parent_gui.queue_free()
 
 
 
