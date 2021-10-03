@@ -28,8 +28,8 @@ var _icon = null
 export(String) var hint_text = "Default hint text" setget _set_hint_text
 
 # Body which contains this one and other bodies.
-var super_body = null setget _set_super_body, _get_super_body
-
+var super_body: Node = null setget _set_super_body, _get_super_body
+var _super_body: Node = null
 
 # Force visualizer
 var force: Spatial = null
@@ -500,22 +500,22 @@ func _parent_physics_ref_frame():
 
 
 func _set_super_body( new_super_body ):
-	if super_body != null:
-		super_body.queue_free()
-		super_body = null
-	super_body = new_super_body
+	if _super_body != null:
+		_super_body.queue_free()
+		_super_body = null
+	_super_body = new_super_body
 
 
 
 
 func _get_super_body():
-	if super_body == null:
-		super_body = create_super_body()
-	return super_body
+	if _super_body == null:
+		_super_body = create_super_body()
+	return _super_body
 
 
 func get_super_body_raw():
-	return super_body
+	return _super_body
 
 
 
