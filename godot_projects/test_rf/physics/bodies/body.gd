@@ -30,7 +30,7 @@ export(String) var hint_text = "Default hint text" setget _set_hint_text
 # Body which contains this one and other bodies.
 # When setter and getter are allowed simultaneously it falls into infinite recursion which 
 # can not be stopped even by the debugger.
-var super_body: Node = null setget , _get_super_body #_set_super_body, _get_super_body
+var _super_body: Node = null
 export(bool) var need_super_body = false
 
 # Force visualizer
@@ -158,7 +158,7 @@ func gui_mode():
 
 # Returns the root most body.
 func root_most_body():
-	var sb = _get_super_body()
+	var sb = get_super_body()
 	if sb != null:
 		return sb
 	return self
@@ -501,23 +501,23 @@ func _parent_physics_ref_frame():
 
 
 
-func _set_super_body( new_super_body ):
-	if super_body != null:
-		super_body.queue_free()
-		super_body = null
-	super_body = new_super_body
+func set_super_body( new_super_body ):
+	if _super_body != null:
+		_super_body.remove_sub_body( self )
+	if new_super_body != null:
+		new_super_body.add_sub_body( self )
 
 
 
 
-func _get_super_body():
-	if (super_body == null) and need_super_body:
-		super_body = create_super_body()
-	return super_body
+func get_super_body():
+	if (_super_body == null) and need_super_body:
+		_super_body = create_super_body()
+	return _super_body
 
 
 func get_super_body_raw():
-	return super_body
+	return _super_body
 
 
 

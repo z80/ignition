@@ -150,8 +150,14 @@ func _create_assembly():
 		# And call Dfs to find the root one.
 		var ret: Array = Part.dfs_search( part )
 		part = ret[0]
+		var parts: Array = ret[1]
+		# Remove ConstructionSuperBody.
+		# Own super body will be created on the first request.
+		for pt in parts:
+			pt.set_super_body( null )
 		part.activate()
-
+	
+	
 
 	#if qty > 1:
 	#	var sb = PartAssembly.new()
@@ -222,12 +228,14 @@ func create_block( block_name, dynamic: bool = false ):
 	# Establish relations.
 	# This one is needed in ordr to 
 	# have the right gui elements in the context menu.
-	super_body.add_sub_body( block )
+	var sb: Node = get_super_body()
+	sb.add_sub_body( block )
 
 
 func delete_block( block: Body ):
 	dynamic_blocks.erase( block )
-	super_body.remove_sub_body( block )
+	var sb: Node = get_super_body()
+	sb.remove_sub_body( block )
 	block.queue_free()
 
 

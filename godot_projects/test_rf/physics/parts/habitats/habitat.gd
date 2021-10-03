@@ -126,8 +126,7 @@ func let_character_out( ind: int ):
 	var character_p: Node = character.get_parent()
 	var needed_p: Node = self.get_parent()
 	if needed_p != character_p:
-		character_p.remove_child( character )
-		needed_p.add_child( character )
+		character.change_parent( needed_p )
 	
 	character.set_boarding_mode_outside()
 

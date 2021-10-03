@@ -71,7 +71,7 @@ func add_sub_body( body: RefFrameNode ):
 		return false
 	
 	sub_bodies.push_back( body )
-	body.super_body = self
+	body.set_super_body( self )
 	return true
 
 
@@ -80,7 +80,7 @@ func remove_sub_body( body: RefFrameNode ):
 	var index: int = sub_bodies.find( body )
 	if index >= 0:
 		sub_bodies.remove( index )
-		body.super_body = null
+		body.set_super_body( null )
 
 
 func is_super_body():

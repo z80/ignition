@@ -60,9 +60,12 @@ func set_boarding_mode_inside():
 
 func set_boarding_mode_outside():
 	_visual.visible = true
-	body_state = BodyState.DYNAMIC
-	update_physics_from_state()
+	# First set modes.
+	body_state    = BodyState.DYNAMIC
 	boarding_mode = BoardingMode.OUTSIDE
+	# After that update/create physical body as the result depends on 
+	# the states provided.
+	update_physics_from_state()
 
 
 func get_boarding_mode():
