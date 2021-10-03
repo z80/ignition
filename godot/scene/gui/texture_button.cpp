@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -281,11 +281,13 @@ void TextureButton::set_pressed_texture(const Ref<Texture> &p_pressed) {
 
 	pressed = p_pressed;
 	update();
+	minimum_size_changed();
 }
 void TextureButton::set_hover_texture(const Ref<Texture> &p_hover) {
 
 	hover = p_hover;
 	update();
+	minimum_size_changed();
 }
 void TextureButton::set_disabled_texture(const Ref<Texture> &p_disabled) {
 
@@ -296,6 +298,7 @@ void TextureButton::set_click_mask(const Ref<BitMap> &p_click_mask) {
 
 	click_mask = p_click_mask;
 	update();
+	minimum_size_changed();
 }
 
 Ref<Texture> TextureButton::get_normal_texture() const {

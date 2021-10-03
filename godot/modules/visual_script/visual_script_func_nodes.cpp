@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1042,7 +1042,7 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 	ClassDB::get_property_list(_get_base_type(), &props, false);
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		if (E->get().name == property) {
-			PropertyInfo pinfo = PropertyInfo(E->get().type, "value", PROPERTY_HINT_TYPE_STRING, E->get().hint_string);
+			PropertyInfo pinfo = PropertyInfo(E->get().type, "value", E->get().hint, E->get().hint_string);
 			_adjust_input_index(pinfo);
 			return pinfo;
 		}
@@ -2199,6 +2199,7 @@ void VisualScriptPropertyGet::_bind_methods() {
 	BIND_ENUM_CONSTANT(CALL_MODE_SELF);
 	BIND_ENUM_CONSTANT(CALL_MODE_NODE_PATH);
 	BIND_ENUM_CONSTANT(CALL_MODE_INSTANCE);
+	BIND_ENUM_CONSTANT(CALL_MODE_BASIC_TYPE);
 }
 
 class VisualScriptNodeInstancePropertyGet : public VisualScriptNodeInstance {

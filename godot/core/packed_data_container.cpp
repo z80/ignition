@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -128,6 +128,7 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, b
 uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
 
 	PoolVector<uint8_t>::Read rd = data.read();
+	ERR_FAIL_COND_V(!rd.ptr(), 0);
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
@@ -158,6 +159,10 @@ int PackedDataContainer::_size(uint32_t p_ofs) const {
 Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, bool &err) const {
 
 	PoolVector<uint8_t>::Read rd = data.read();
+	if (!rd.ptr()) {
+		err = true;
+		ERR_FAIL_COND_V(!rd.ptr(), Variant());
+	}
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 

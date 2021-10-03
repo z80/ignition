@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1262,34 +1262,30 @@ public:
 					p_list->push_back(PropertyInfo(Variant::VECTOR3, "scale"));
 				} break;
 				case Animation::TYPE_VALUE: {
+					if (same_key_type) {
+						Variant v = animation->track_get_key_value(first_track, first_key);
 
-					if (!same_key_type)
-						break;
+						if (hint.type != Variant::NIL) {
+							PropertyInfo pi = hint;
+							pi.name = "value";
+							p_list->push_back(pi);
+						} else {
+							PropertyHint hint = PROPERTY_HINT_NONE;
+							String hint_string;
 
-					Variant v = animation->track_get_key_value(first_track, first_key);
+							if (v.get_type() == Variant::OBJECT) {
+								//could actually check the object property if exists..? yes i will!
+								Ref<Resource> res = v;
+								if (res.is_valid()) {
+									hint = PROPERTY_HINT_RESOURCE_TYPE;
+									hint_string = res->get_class();
+								}
+							}
 
-					if (hint.type != Variant::NIL) {
-
-						PropertyInfo pi = hint;
-						pi.name = "value";
-						p_list->push_back(pi);
-					} else {
-
-						PropertyHint hint = PROPERTY_HINT_NONE;
-						String hint_string;
-
-						if (v.get_type() == Variant::OBJECT) {
-							//could actually check the object property if exists..? yes i will!
-							Ref<Resource> res = v;
-							if (res.is_valid()) {
-
-								hint = PROPERTY_HINT_RESOURCE_TYPE;
-								hint_string = res->get_class();
+							if (v.get_type() != Variant::NIL) {
+								p_list->push_back(PropertyInfo(v.get_type(), "value", hint, hint_string));
 							}
 						}
-
-						if (v.get_type() != Variant::NIL)
-							p_list->push_back(PropertyInfo(v.get_type(), "value", hint, hint_string));
 					}
 
 					p_list->push_back(PropertyInfo(Variant::REAL, "easing", PROPERTY_HINT_EXP_EASING));
@@ -4512,7 +4508,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			}
 
 			if (node == AnimationPlayerEditor::singleton->get_player()) {
-				EditorNode::get_singleton()->show_warning(TTR("An animation player can't animate itself, only other players."));
+				EditorNode::get_singleton()->show_warning(TTR("AnimationPlayer can't animate itself, only other players."));
 				return;
 			}
 
@@ -5359,7 +5355,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		case EDIT_PASTE_TRACKS: {
 
 			if (track_clipboard.size() == 0) {
-				EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty"));
+				EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty!"));
 				break;
 			}
 
@@ -6026,7 +6022,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	optimize_max_angle->set_value(22);
 
 	optimize_dialog->get_ok()->set_text(TTR("Optimize"));
-	optimize_dialog->connect("confirmed", this, "_edit_menu_pressed", varray(EDIT_CLEAN_UP_ANIMATION_CONFIRM));
+	optimize_dialog->connect("confirmed", this, "_edit_menu_pressed", varray(EDIT_OPTIMIZE_ANIMATION_CONFIRM));
 
 	//
 

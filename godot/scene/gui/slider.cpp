@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,8 +74,10 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 			}
 		} else if (scrollable) {
 			if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+				grab_focus();
 				set_value(get_value() + get_step());
 			} else if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+				grab_focus();
 				set_value(get_value() - get_step());
 			}
 		}
@@ -177,7 +179,7 @@ void Slider::_notification(int p_what) {
 				int widget_width = style->get_minimum_size().width + style->get_center_size().width;
 				float areasize = size.height - grabber->get_size().height;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
-				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_size().height / 2), Size2i(widget_width, areasize * ratio + grabber->get_size().width / 2)));
+				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_size().height / 2), Size2i(widget_width, areasize * ratio + grabber->get_size().height / 2)));
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_size().height / 2 - tick->get_height() / 2);

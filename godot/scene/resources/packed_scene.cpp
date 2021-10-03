@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,8 +102,9 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 #endif
 			parent = nparent;
 		} else {
-			// i == 0 is root node. Confirm that it doesn't have a parent defined.
+			// i == 0 is root node.
 			ERR_FAIL_COND_V_MSG(n.parent != -1, nullptr, vformat("Invalid scene: root node %s cannot specify a parent node.", snames[n.name]));
+			ERR_FAIL_COND_V_MSG(n.type == TYPE_INSTANCED && base_scene_idx < 0, nullptr, vformat("Invalid scene: root node %s in an instance, but there's no base scene.", snames[n.name]));
 		}
 
 		Node *node = NULL;
@@ -152,15 +153,20 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 				}
 #endif
 			}
-		} else if (ClassDB::is_class_enabled(snames[n.type])) {
-			//node belongs to this scene and must be created
-			Object *obj = ClassDB::instance(snames[n.type]);
+		} else {
+			Object *obj = nullptr;
+
+			if (ClassDB::is_class_enabled(snames[n.type])) {
+				//node belongs to this scene and must be created
+				obj = ClassDB::instance(snames[n.type]);
+			}
+
 			if (!Object::cast_to<Node>(obj)) {
 				if (obj) {
 					memdelete(obj);
 					obj = NULL;
 				}
-				WARN_PRINT(String("Warning node of type " + snames[n.type].operator String() + " does not exist.").ascii().get_data());
+				WARN_PRINT(vformat("Node %s of type %s cannot be created. A placeholder will be created instead.", snames[n.name], snames[n.type]).ascii().get_data());
 				if (n.parent >= 0 && n.parent < nc && ret_nodes[n.parent]) {
 					if (Object::cast_to<Spatial>(ret_nodes[n.parent])) {
 						obj = memnew(Spatial);
@@ -177,10 +183,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			}
 
 			node = Object::cast_to<Node>(obj);
-
-		} else {
-			//print_line("Class is disabled for: " + itos(n.type));
-			//print_line("name: " + String(snames[n.type]));
 		}
 
 		if (node) {
@@ -481,6 +483,13 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	p_node->get_property_list(&plist);
 	StringName type = p_node->get_class();
 
+	Ref<Script> script = p_node->get_script();
+	if (Engine::get_singleton()->is_editor_hint() && script.is_valid()) {
+		// Should be called in the editor only and not at runtime,
+		// otherwise it can cause problems because of missing instance state support.
+		script->update_exports();
+	}
+
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 
 		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
@@ -497,7 +506,6 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
 		}
 
-		Ref<Script> script = p_node->get_script();
 		if (!isdefault && script.is_valid() && script->get_property_default_value(name, default_value)) {
 			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
 		}
@@ -868,7 +876,7 @@ Error SceneState::pack(Node *p_scene) {
 	Map<Node *, int> node_map;
 	Map<Node *, int> nodepath_map;
 
-	//if using scene inheritance, pack the scene it inherits from
+	// If using scene inheritance, pack the scene it inherits from.
 	if (scene->get_scene_inherited_state().is_valid()) {
 		String path = scene->get_scene_inherited_state()->get_path();
 		Ref<PackedScene> instance = ResourceLoader::load(path);
@@ -877,8 +885,8 @@ Error SceneState::pack(Node *p_scene) {
 			base_scene_idx = _vm_get_variant(instance, variant_map);
 		}
 	}
-	//instanced, only direct sub-scnes are supported of course
 
+	// Instanced, only direct sub-scenes are supported of course.
 	Error err = _parse_node(scene, scene, -1, name_map, variant_map, node_map, nodepath_map);
 	if (err) {
 		clear();

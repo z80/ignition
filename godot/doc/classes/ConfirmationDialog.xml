@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConfirmationDialog" inherits="AcceptDialog" version="3.2">
+<class name="ConfirmationDialog" inherits="AcceptDialog" version="3.3">
 	<brief_description>
 		Dialog for confirmation of actions.
 	</brief_description>
@@ -14,8 +14,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_cancel">
-			<return type="Button">
-			</return>
+			<return type="Button" />
 			<description>
 				Returns the cancel button.
 			</description>

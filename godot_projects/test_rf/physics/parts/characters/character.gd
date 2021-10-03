@@ -71,6 +71,7 @@ func get_boarding_mode():
 
 func init():
 	.init()
+	need_super_body = false
 	
 	var PartControlGroups = load( "res://physics/parts/part_control_groups.gd" )
 	control_group = PartControlGroups.ControlGroup._1

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,10 @@ void SkinReference::_bind_methods() {
 
 RID SkinReference::get_skeleton() const {
 	return skeleton;
+}
+
+Skeleton *SkinReference::get_skeleton_node() const {
+	return skeleton_node;
 }
 
 Ref<Skin> SkinReference::get_skin() const {
@@ -239,63 +243,54 @@ void Skeleton::_notification(int p_what) {
 
 				Bone &b = bonesptr[order[i]];
 
-				if (b.global_pose_override_amount >= 0.999) {
-					b.pose_global = b.global_pose_override;
-				} else {
-					if (b.disable_rest) {
-						if (b.enabled) {
-
-							Transform pose = b.pose;
-							if (b.custom_pose_enable) {
-								pose = b.custom_pose * pose;
-							}
-							if (b.parent >= 0) {
-
-								b.pose_global = bonesptr[b.parent].pose_global * pose;
-							} else {
-
-								b.pose_global = pose;
-							}
-						} else {
-
-							if (b.parent >= 0) {
-
-								b.pose_global = bonesptr[b.parent].pose_global;
-							} else {
-
-								b.pose_global = Transform();
-							}
+				if (b.disable_rest) {
+					if (b.enabled) {
+						Transform pose = b.pose;
+						if (b.custom_pose_enable) {
+							pose = b.custom_pose * pose;
 						}
-
+						if (b.parent >= 0) {
+							b.pose_global = bonesptr[b.parent].pose_global * pose;
+							b.pose_global_no_override = bonesptr[b.parent].pose_global_no_override * pose;
+						} else {
+							b.pose_global = pose;
+							b.pose_global_no_override = pose;
+						}
 					} else {
-						if (b.enabled) {
-
-							Transform pose = b.pose;
-							if (b.custom_pose_enable) {
-								pose = b.custom_pose * pose;
-							}
-							if (b.parent >= 0) {
-
-								b.pose_global = bonesptr[b.parent].pose_global * (b.rest * pose);
-							} else {
-
-								b.pose_global = b.rest * pose;
-							}
+						if (b.parent >= 0) {
+							b.pose_global = bonesptr[b.parent].pose_global;
+							b.pose_global_no_override = bonesptr[b.parent].pose_global_no_override;
 						} else {
-
-							if (b.parent >= 0) {
-
-								b.pose_global = bonesptr[b.parent].pose_global * b.rest;
-							} else {
-
-								b.pose_global = b.rest;
-							}
+							b.pose_global = Transform();
+							b.pose_global_no_override = Transform();
 						}
 					}
-
-					if (b.global_pose_override_amount >= CMP_EPSILON) {
-						b.pose_global = b.pose_global.interpolate_with(b.global_pose_override, b.global_pose_override_amount);
+				} else {
+					if (b.enabled) {
+						Transform pose = b.pose;
+						if (b.custom_pose_enable) {
+							pose = b.custom_pose * pose;
+						}
+						if (b.parent >= 0) {
+							b.pose_global = bonesptr[b.parent].pose_global * (b.rest * pose);
+							b.pose_global_no_override = bonesptr[b.parent].pose_global_no_override * (b.rest * pose);
+						} else {
+							b.pose_global = b.rest * pose;
+							b.pose_global_no_override = b.rest * pose;
+						}
+					} else {
+						if (b.parent >= 0) {
+							b.pose_global = bonesptr[b.parent].pose_global * b.rest;
+							b.pose_global_no_override = bonesptr[b.parent].pose_global_no_override * b.rest;
+						} else {
+							b.pose_global = b.rest;
+							b.pose_global_no_override = b.rest;
+						}
 					}
+				}
+
+				if (b.global_pose_override_amount >= CMP_EPSILON) {
+					b.pose_global = b.pose_global.interpolate_with(b.global_pose_override, b.global_pose_override_amount);
 				}
 
 				if (b.global_pose_override_reset) {
@@ -371,6 +366,7 @@ void Skeleton::_notification(int p_what) {
 			}
 
 			dirty = false;
+			emit_signal("skeleton_updated");
 		} break;
 	}
 }
@@ -378,6 +374,7 @@ void Skeleton::_notification(int p_what) {
 void Skeleton::clear_bones_global_pose_override() {
 	for (int i = 0; i < bones.size(); i += 1) {
 		bones.write[i].global_pose_override_amount = 0;
+		bones.write[i].global_pose_override_reset = true;
 	}
 	_make_dirty();
 }
@@ -397,6 +394,13 @@ Transform Skeleton::get_bone_global_pose(int p_bone) const {
 	if (dirty)
 		const_cast<Skeleton *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
 	return bones[p_bone].pose_global;
+}
+
+Transform Skeleton::get_bone_global_pose_no_override(int p_bone) const {
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform());
+	if (dirty)
+		const_cast<Skeleton *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
+	return bones[p_bone].pose_global_no_override;
 }
 
 // skeleton creation api
@@ -456,6 +460,7 @@ void Skeleton::set_bone_parent(int p_bone, int p_parent) {
 
 	ERR_FAIL_INDEX(p_bone, bones.size());
 	ERR_FAIL_COND(p_parent != -1 && (p_parent < 0));
+	ERR_FAIL_COND(p_bone == p_parent);
 
 	bones.write[p_bone].parent = p_parent;
 	process_order_dirty = true;
@@ -684,7 +689,7 @@ void Skeleton::_rebuild_physical_bones_cache() {
 	const int b_size = bones.size();
 	for (int i = 0; i < b_size; ++i) {
 		PhysicalBone *parent_pb = _get_physical_bone_parent(i);
-		if (parent_pb != bones[i].physical_bone) {
+		if (parent_pb != bones[i].cache_parent_physical_bone) {
 			bones.write[i].cache_parent_physical_bone = parent_pb;
 			if (bones[i].physical_bone)
 				bones[i].physical_bone->_on_bone_parent_changed();
@@ -879,6 +884,7 @@ void Skeleton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_bones_global_pose_override"), &Skeleton::clear_bones_global_pose_override);
 	ClassDB::bind_method(D_METHOD("set_bone_global_pose_override", "bone_idx", "pose", "amount", "persistent"), &Skeleton::set_bone_global_pose_override, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_bone_global_pose", "bone_idx"), &Skeleton::get_bone_global_pose);
+	ClassDB::bind_method(D_METHOD("get_bone_global_pose_no_override", "bone_idx"), &Skeleton::get_bone_global_pose_no_override);
 
 	ClassDB::bind_method(D_METHOD("get_bone_custom_pose", "bone_idx"), &Skeleton::get_bone_custom_pose);
 	ClassDB::bind_method(D_METHOD("set_bone_custom_pose", "bone_idx", "custom_pose"), &Skeleton::set_bone_custom_pose);
@@ -891,6 +897,8 @@ void Skeleton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &Skeleton::physical_bones_remove_collision_exception);
 
 #endif // _3D_DISABLED
+
+	ADD_SIGNAL(MethodInfo("skeleton_updated"));
 
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 }

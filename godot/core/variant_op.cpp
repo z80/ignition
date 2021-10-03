@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -400,7 +400,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_EQUAL, NIL) {
 				if (p_b.type == NIL) _RETURN(true);
 				if (p_b.type == OBJECT)
-					_RETURN(_OBJ_PTR(p_b) == NULL);
+					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_b) == NULL);
 
 				_RETURN(false);
 			}
@@ -417,9 +417,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 			CASE_TYPE(math, OP_EQUAL, OBJECT) {
 				if (p_b.type == OBJECT)
-					_RETURN(_OBJ_PTR(p_a) == _OBJ_PTR(p_b));
+					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) == _UNSAFE_OBJ_PROXY_PTR(p_b));
 				if (p_b.type == NIL)
-					_RETURN(_OBJ_PTR(p_a) == NULL);
+					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) == NULL);
 
 				_RETURN_FAIL;
 			}
@@ -487,7 +487,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_NOT_EQUAL, NIL) {
 				if (p_b.type == NIL) _RETURN(false);
 				if (p_b.type == OBJECT)
-					_RETURN(_OBJ_PTR(p_b) != NULL);
+					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_b) != NULL);
 
 				_RETURN(true);
 			}
@@ -505,9 +505,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 			CASE_TYPE(math, OP_NOT_EQUAL, OBJECT) {
 				if (p_b.type == OBJECT)
-					_RETURN((_OBJ_PTR(p_a) != _OBJ_PTR(p_b)));
+					_RETURN((_UNSAFE_OBJ_PROXY_PTR(p_a) != _UNSAFE_OBJ_PROXY_PTR(p_b)));
 				if (p_b.type == NIL)
-					_RETURN(_OBJ_PTR(p_a) != NULL);
+					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) != NULL);
 
 				_RETURN_FAIL;
 			}
@@ -590,7 +590,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN(_OBJ_PTR(p_a) < _OBJ_PTR(p_b));
+				_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) < _UNSAFE_OBJ_PROXY_PTR(p_b));
 			}
 
 			CASE_TYPE(math, OP_LESS, ARRAY) {
@@ -644,7 +644,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS_EQUAL, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN(_OBJ_PTR(p_a) <= _OBJ_PTR(p_b));
+				_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) <= _UNSAFE_OBJ_PROXY_PTR(p_b));
 			}
 
 			DEFAULT_OP_NUM(math, OP_LESS_EQUAL, INT, <=, _int);
@@ -694,7 +694,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN(_OBJ_PTR(p_a) > _OBJ_PTR(p_b));
+				_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) > _UNSAFE_OBJ_PROXY_PTR(p_b));
 			}
 
 			CASE_TYPE(math, OP_GREATER, ARRAY) {
@@ -748,7 +748,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER_EQUAL, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN(_OBJ_PTR(p_a) >= _OBJ_PTR(p_b));
+				_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) >= _UNSAFE_OBJ_PROXY_PTR(p_b));
 			}
 
 			DEFAULT_OP_NUM(math, OP_GREATER_EQUAL, INT, >=, _int);
@@ -1517,7 +1517,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 #ifdef DEBUG_ENABLED
 			if (unlikely(!obj)) {
 				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
-					WARN_PRINT("Attempted set on a deleted object.");
+					ERR_PRINT("Attempted set on a deleted object.");
 				}
 				break;
 			}
@@ -1685,7 +1685,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 				if (r_valid)
 					*r_valid = false;
 				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
-					WARN_PRINT("Attempted get on a deleted object.");
+					ERR_PRINT("Attempted get on a deleted object.");
 				}
 				return Variant();
 			}
@@ -2170,7 +2170,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 #ifdef DEBUG_ENABLED
 				valid = false;
 				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
-					WARN_PRINT("Attempted set on a deleted object.");
+					ERR_PRINT("Attempted set on a deleted object.");
 				}
 #endif
 				return;
@@ -2540,7 +2540,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 #ifdef DEBUG_ENABLED
 				valid = false;
 				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
-					WARN_PRINT("Attempted get on a deleted object.");
+					ERR_PRINT("Attempted get on a deleted object.");
 				}
 #endif
 				return Variant();
@@ -2603,7 +2603,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 					*r_valid = false;
 				}
 				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
-					WARN_PRINT("Attempted 'in' on a deleted object.");
+					ERR_PRINT("Attempted 'in' on a deleted object.");
 				}
 #endif
 				return false;
@@ -2866,7 +2866,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			if (unlikely(!obj)) {
 #ifdef DEBUG_ENABLED
 				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
-					WARN_PRINT("Attempted get property list on a deleted object.");
+					ERR_PRINT("Attempted get property list on a deleted object.");
 				}
 #endif
 				return;
@@ -2944,7 +2944,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			if (unlikely(!obj)) {
 				valid = false;
 				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
-					WARN_PRINT("Attempted iteration start on a deleted object.");
+					ERR_PRINT("Attempted iteration start on a deleted object.");
 				}
 				return false;
 			}
@@ -3111,7 +3111,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			if (unlikely(!obj)) {
 				valid = false;
 				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
-					WARN_PRINT("Attempted iteration check next on a deleted object.");
+					ERR_PRINT("Attempted iteration check next on a deleted object.");
 				}
 				return false;
 			}
@@ -3269,7 +3269,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			if (unlikely(!obj)) {
 				r_valid = false;
 				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
-					WARN_PRINT("Attempted iteration get next on a deleted object.");
+					ERR_PRINT("Attempted iteration get next on a deleted object.");
 				}
 				return Variant();
 			}

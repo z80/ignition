@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -358,7 +358,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	canvas->canvas_begin();
 
 	RID texture = storage->texture_create();
-	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? VS::TEXTURE_FLAG_FILTER : 0);
+	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? (uint32_t)VS::TEXTURE_FLAG_FILTER : 0);
 	storage->texture_set_data(texture, p_image);
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
@@ -407,7 +407,7 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 	RasterizerStorageGLES2::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+	canvas->_set_texture_rect_mode(true);
 
 	canvas->state.canvas_shader.set_custom_shader(0);
 	canvas->state.canvas_shader.bind();
@@ -481,6 +481,48 @@ void RasterizerGLES2::make_current() {
 }
 
 void RasterizerGLES2::register_config() {
+}
+
+bool RasterizerGLES2::gl_check_errors() {
+	bool error_found = false;
+	GLenum error = glGetError();
+	while (error != GL_NO_ERROR) {
+		switch (error) {
+#ifdef DEBUG_ENABLED
+			case GL_INVALID_ENUM: {
+				WARN_PRINT("GL_INVALID_ENUM: An unacceptable value is specified for an enumerated argument.");
+			} break;
+			case GL_INVALID_VALUE: {
+				WARN_PRINT("GL_INVALID_VALUE: A numeric argument is out of range.");
+			} break;
+			case GL_INVALID_OPERATION: {
+				WARN_PRINT("GL_INVALID_OPERATION: The specified operation is not allowed in the current state.");
+			} break;
+			case GL_INVALID_FRAMEBUFFER_OPERATION: {
+				WARN_PRINT("GL_INVALID_FRAMEBUFFER_OPERATION: The framebuffer object is not complete.");
+			} break;
+#endif // DEBUG_ENABLED
+			case GL_OUT_OF_MEMORY: {
+				ERR_PRINT("GL_OUT_OF_MEMORY: There is not enough memory left to execute the command. The state of the GL is undefined.");
+			} break;
+			// GL_STACK_UNDERFLOW and GL_STACK_OVERFLOW are undefined in GLES2/gl2.h, which is used when not using GLAD.
+			//case GL_STACK_UNDERFLOW: {
+			//	ERR_PRINT("GL_STACK_UNDERFLOW: An attempt has been made to perform an operation that would cause an internal stack to underflow.");
+			//} break;
+			//case GL_STACK_OVERFLOW: {
+			//	ERR_PRINT("GL_STACK_OVERFLOW: An attempt has been made to perform an operation that would cause an internal stack to overflow.");
+			//} break;
+			default: {
+#ifdef DEBUG_ENABLED
+				ERR_PRINT("Unrecognized GLError");
+#endif // DEBUG_ENABLED
+			} break;
+		}
+		error_found = true;
+		error = glGetError();
+	}
+
+	return error_found;
 }
 
 RasterizerGLES2::RasterizerGLES2() {

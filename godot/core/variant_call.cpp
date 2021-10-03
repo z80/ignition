@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -237,6 +237,7 @@ struct _VariantCall {
 
 	VCALL_LOCALMEM1R(String, casecmp_to);
 	VCALL_LOCALMEM1R(String, nocasecmp_to);
+	VCALL_LOCALMEM1R(String, naturalnocasecmp_to);
 	VCALL_LOCALMEM0R(String, length);
 	VCALL_LOCALMEM3R(String, count);
 	VCALL_LOCALMEM3R(String, countn);
@@ -299,6 +300,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, json_escape);
 	VCALL_LOCALMEM0R(String, percent_encode);
 	VCALL_LOCALMEM0R(String, percent_decode);
+	VCALL_LOCALMEM0R(String, validate_node_name);
 	VCALL_LOCALMEM0R(String, is_valid_identifier);
 	VCALL_LOCALMEM0R(String, is_valid_integer);
 	VCALL_LOCALMEM0R(String, is_valid_float);
@@ -347,6 +349,24 @@ struct _VariantCall {
 		retval.resize(len);
 		PoolByteArray::Write w = retval.write();
 		copymem(w.ptr(), charstr.ptr(), len);
+		w.release();
+
+		r_ret = retval;
+	}
+
+	static void _call_String_to_wchar(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+
+		String *s = reinterpret_cast<String *>(p_self._data._mem);
+		if (s->empty()) {
+			r_ret = PoolByteArray();
+			return;
+		}
+
+		PoolByteArray retval;
+		size_t len = s->length() * sizeof(wchar_t);
+		retval.resize(len);
+		PoolByteArray::Write w = retval.write();
+		copymem(w.ptr(), s->ptr(), len);
 		w.release();
 
 		r_ret = retval;
@@ -534,6 +554,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Array, pop_back);
 	VCALL_LOCALMEM0R(Array, pop_front);
 	VCALL_LOCALMEM1(Array, append);
+	VCALL_LOCALMEM1(Array, append_array);
 	VCALL_LOCALMEM1(Array, resize);
 	VCALL_LOCALMEM2(Array, insert);
 	VCALL_LOCALMEM1(Array, remove);
@@ -610,6 +631,10 @@ struct _VariantCall {
 		if (buffer_size <= 0) {
 			r_ret = decompressed;
 			ERR_FAIL_MSG("Decompression buffer size must be greater than zero.");
+		}
+		if (ba->size() == 0) {
+			r_ret = decompressed;
+			ERR_FAIL_MSG("Compressed buffer size must be greater than zero.");
 		}
 
 		decompressed.resize(buffer_size);
@@ -845,7 +870,7 @@ struct _VariantCall {
 	VCALL_PTR0R(Basis, get_orthogonal_index);
 	VCALL_PTR0R(Basis, orthonormalized);
 	VCALL_PTR2R(Basis, slerp);
-	VCALL_PTR2R(Basis, is_equal_approx); // TODO: Break compatibility in 4.0 to change this to an instance method (a.is_equal_approx(b) as VCALL_PTR1R) for consistency.
+	VCALL_PTR2R(Basis, is_equal_approx);
 	VCALL_PTR0R(Basis, get_rotation_quat);
 
 	VCALL_PTR0R(Transform, inverse);
@@ -1118,7 +1143,7 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 		if (!obj) {
 #ifdef DEBUG_ENABLED
 			if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
-				WARN_PRINT("Attempted call on a deleted object.");
+				ERR_PRINT("Attempted method call on a deleted object.");
 			}
 #endif
 			r_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
@@ -1220,7 +1245,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 				return (int64_t(*p_args[0]));
 			}
 			case REAL: {
-				return real_t(*p_args[0]);
+				return double(*p_args[0]);
 			}
 			case STRING: {
 				return String(*p_args[0]);
@@ -1297,7 +1322,7 @@ bool Variant::has_method(const StringName &p_method) const {
 		if (!obj) {
 #ifdef DEBUG_ENABLED
 			if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
-				WARN_PRINT("Attempted method check on a deleted object.");
+				ERR_PRINT("Attempted method check on a deleted object.");
 			}
 #endif
 			return false;
@@ -1557,6 +1582,7 @@ void register_variant_methods() {
 	/* STRING */
 	ADDFUNC1R(STRING, INT, String, casecmp_to, STRING, "to", varray());
 	ADDFUNC1R(STRING, INT, String, nocasecmp_to, STRING, "to", varray());
+	ADDFUNC1R(STRING, INT, String, naturalnocasecmp_to, STRING, "to", varray());
 	ADDFUNC0R(STRING, INT, String, length, varray());
 	ADDFUNC2R(STRING, STRING, String, substr, INT, "from", INT, "len", varray(-1));
 
@@ -1625,6 +1651,7 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, STRING, String, json_escape, varray());
 	ADDFUNC0R(STRING, STRING, String, percent_encode, varray());
 	ADDFUNC0R(STRING, STRING, String, percent_decode, varray());
+	ADDFUNC0R(STRING, STRING, String, validate_node_name, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_identifier, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_integer, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_float, varray());
@@ -1642,6 +1669,7 @@ void register_variant_methods() {
 
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_ascii, varray());
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_utf8, varray());
+	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_wchar, varray());
 
 	ADDFUNC0R(VECTOR2, REAL, Vector2, angle, varray());
 	ADDFUNC1R(VECTOR2, REAL, Vector2, angle_to, VECTOR2, "to", varray());
@@ -1657,9 +1685,9 @@ void register_variant_methods() {
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, posmod, REAL, "mod", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, posmodv, VECTOR2, "modv", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, project, VECTOR2, "b", varray());
-	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, linear_interpolate, VECTOR2, "b", REAL, "t", varray());
-	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, slerp, VECTOR2, "b", REAL, "t", varray());
-	ADDFUNC4R(VECTOR2, VECTOR2, Vector2, cubic_interpolate, VECTOR2, "b", VECTOR2, "pre_a", VECTOR2, "post_b", REAL, "t", varray());
+	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, linear_interpolate, VECTOR2, "to", REAL, "weight", varray());
+	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, slerp, VECTOR2, "to", REAL, "weight", varray());
+	ADDFUNC4R(VECTOR2, VECTOR2, Vector2, cubic_interpolate, VECTOR2, "b", VECTOR2, "pre_a", VECTOR2, "post_b", REAL, "weight", varray());
 	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, move_toward, VECTOR2, "to", REAL, "delta", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, rotated, REAL, "phi", varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, tangent, varray());
@@ -1705,9 +1733,9 @@ void register_variant_methods() {
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, inverse, varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, snapped, VECTOR3, "by", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, rotated, VECTOR3, "axis", REAL, "phi", varray());
-	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, linear_interpolate, VECTOR3, "b", REAL, "t", varray());
-	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, slerp, VECTOR3, "b", REAL, "t", varray());
-	ADDFUNC4R(VECTOR3, VECTOR3, Vector3, cubic_interpolate, VECTOR3, "b", VECTOR3, "pre_a", VECTOR3, "post_b", REAL, "t", varray());
+	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, linear_interpolate, VECTOR3, "to", REAL, "weight", varray());
+	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, slerp, VECTOR3, "to", REAL, "weight", varray());
+	ADDFUNC4R(VECTOR3, VECTOR3, Vector3, cubic_interpolate, VECTOR3, "b", VECTOR3, "pre_a", VECTOR3, "post_b", REAL, "weight", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, move_toward, VECTOR3, "to", REAL, "delta", varray());
 	ADDFUNC1R(VECTOR3, REAL, Vector3, dot, VECTOR3, "b", varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, cross, VECTOR3, "b", varray());
@@ -1745,9 +1773,9 @@ void register_variant_methods() {
 	ADDFUNC0R(QUAT, QUAT, Quat, inverse, varray());
 	ADDFUNC1R(QUAT, REAL, Quat, dot, QUAT, "b", varray());
 	ADDFUNC1R(QUAT, VECTOR3, Quat, xform, VECTOR3, "v", varray());
-	ADDFUNC2R(QUAT, QUAT, Quat, slerp, QUAT, "b", REAL, "t", varray());
-	ADDFUNC2R(QUAT, QUAT, Quat, slerpni, QUAT, "b", REAL, "t", varray());
-	ADDFUNC4R(QUAT, QUAT, Quat, cubic_slerp, QUAT, "b", QUAT, "pre_a", QUAT, "post_b", REAL, "t", varray());
+	ADDFUNC2R(QUAT, QUAT, Quat, slerp, QUAT, "to", REAL, "weight", varray());
+	ADDFUNC2R(QUAT, QUAT, Quat, slerpni, QUAT, "to", REAL, "weight", varray());
+	ADDFUNC4R(QUAT, QUAT, Quat, cubic_slerp, QUAT, "b", QUAT, "pre_a", QUAT, "post_b", REAL, "weight", varray());
 	ADDFUNC0R(QUAT, VECTOR3, Quat, get_euler, varray());
 	ADDFUNC1(QUAT, NIL, Quat, set_euler, VECTOR3, "euler", varray());
 	ADDFUNC2(QUAT, NIL, Quat, set_axis_angle, VECTOR3, "axis", REAL, "angle", varray());
@@ -1761,7 +1789,7 @@ void register_variant_methods() {
 	ADDFUNC0R(COLOR, REAL, Color, gray, varray());
 	ADDFUNC0R(COLOR, COLOR, Color, inverted, varray());
 	ADDFUNC0R(COLOR, COLOR, Color, contrasted, varray());
-	ADDFUNC2R(COLOR, COLOR, Color, linear_interpolate, COLOR, "b", REAL, "t", varray());
+	ADDFUNC2R(COLOR, COLOR, Color, linear_interpolate, COLOR, "to", REAL, "weight", varray());
 	ADDFUNC1R(COLOR, COLOR, Color, blend, COLOR, "over", varray());
 	ADDFUNC1R(COLOR, COLOR, Color, lightened, REAL, "amount", varray());
 	ADDFUNC1R(COLOR, COLOR, Color, darkened, REAL, "amount", varray());
@@ -1799,6 +1827,7 @@ void register_variant_methods() {
 	ADDFUNC1NC(ARRAY, NIL, Array, push_back, NIL, "value", varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, push_front, NIL, "value", varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, append, NIL, "value", varray());
+	ADDFUNC1NC(ARRAY, NIL, Array, append_array, ARRAY, "array", varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, resize, INT, "size", varray());
 	ADDFUNC2NC(ARRAY, NIL, Array, insert, INT, "position", NIL, "value", varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, remove, INT, "position", varray());
@@ -1963,8 +1992,9 @@ void register_variant_methods() {
 	ADDFUNC1R(BASIS, VECTOR3, Basis, xform, VECTOR3, "v", varray());
 	ADDFUNC1R(BASIS, VECTOR3, Basis, xform_inv, VECTOR3, "v", varray());
 	ADDFUNC0R(BASIS, INT, Basis, get_orthogonal_index, varray());
-	ADDFUNC2R(BASIS, BASIS, Basis, slerp, BASIS, "b", REAL, "t", varray());
-	ADDFUNC2R(BASIS, BOOL, Basis, is_equal_approx, BASIS, "b", REAL, "epsilon", varray(CMP_EPSILON)); // TODO: Replace in 4.0, see other TODO.
+	ADDFUNC2R(BASIS, BASIS, Basis, slerp, BASIS, "to", REAL, "weight", varray());
+	// For complicated reasons, the epsilon argument is always discarded. See #45062.
+	ADDFUNC2R(BASIS, BOOL, Basis, is_equal_approx, BASIS, "b", REAL, "epsilon", varray(CMP_EPSILON));
 	ADDFUNC0R(BASIS, QUAT, Basis, get_rotation_quat, varray());
 
 	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, inverse, varray());

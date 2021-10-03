@@ -692,7 +692,7 @@ int mbedtls_pk_parse_subpubkey( unsigned char **p, const unsigned char *end,
         ret = MBEDTLS_ERR_PK_UNKNOWN_PK_ALG;
 
     if( ret == 0 && *p != end )
-        ret = MBEDTLS_ERR_PK_INVALID_PUBKEY
+        ret = MBEDTLS_ERR_PK_INVALID_PUBKEY +
               MBEDTLS_ERR_ASN1_LENGTH_MISMATCH;
 
     if( ret != 0 )
@@ -1070,7 +1070,7 @@ static int pk_parse_key_pkcs8_unencrypted_der(
         return( MBEDTLS_ERR_PK_KEY_INVALID_VERSION + ret );
 
     if( ( ret = pk_get_pk_alg( &p, end, &pk_alg, &params ) ) != 0 )
-        return( MBEDTLS_ERR_PK_KEY_INVALID_FORMAT + ret );
+        return( ret );
 
     if( ( ret = mbedtls_asn1_get_tag( &p, end, &len, MBEDTLS_ASN1_OCTET_STRING ) ) != 0 )
         return( MBEDTLS_ERR_PK_KEY_INVALID_FORMAT + ret );

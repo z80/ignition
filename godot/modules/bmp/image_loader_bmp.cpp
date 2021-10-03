@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "image_loader_bmp.h"
+
+#include "core/io/file_access_memory.h"
 
 Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		const uint8_t *p_buffer,
@@ -128,23 +130,19 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 						line_ptr += 1;
 					} break;
 					case 24: {
-						uint32_t color = *((uint32_t *)line_ptr);
-
-						write_buffer[index + 2] = color & 0xff;
-						write_buffer[index + 1] = (color >> 8) & 0xff;
-						write_buffer[index + 0] = (color >> 16) & 0xff;
+						write_buffer[index + 2] = line_ptr[0];
+						write_buffer[index + 1] = line_ptr[1];
+						write_buffer[index + 0] = line_ptr[2];
 						write_buffer[index + 3] = 0xff;
 
 						index += 4;
 						line_ptr += 3;
 					} break;
 					case 32: {
-						uint32_t color = *((uint32_t *)line_ptr);
-
-						write_buffer[index + 2] = color & 0xff;
-						write_buffer[index + 1] = (color >> 8) & 0xff;
-						write_buffer[index + 0] = (color >> 16) & 0xff;
-						write_buffer[index + 3] = color >> 24;
+						write_buffer[index + 2] = line_ptr[0];
+						write_buffer[index + 1] = line_ptr[1];
+						write_buffer[index + 0] = line_ptr[2];
+						write_buffer[index + 3] = line_ptr[3];
 
 						index += 4;
 						line_ptr += 4;
@@ -170,11 +168,9 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			const uint8_t *cb = p_color_buffer;
 
 			for (unsigned int i = 0; i < color_table_size; ++i) {
-				uint32_t color = *((uint32_t *)cb);
-
-				pal[i * 4 + 0] = (color >> 16) & 0xff;
-				pal[i * 4 + 1] = (color >> 8) & 0xff;
-				pal[i * 4 + 2] = (color)&0xff;
+				pal[i * 4 + 0] = cb[2];
+				pal[i * 4 + 1] = cb[1];
+				pal[i * 4 + 2] = cb[0];
 				pal[i * 4 + 3] = 0xff;
 
 				cb += 4;
@@ -294,10 +290,21 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 	return err;
 }
 
-void ImageLoaderBMP::get_recognized_extensions(
-		List<String> *p_extensions) const {
-
+void ImageLoaderBMP::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("bmp");
 }
 
-ImageLoaderBMP::ImageLoaderBMP() {}
+static Ref<Image> _bmp_mem_loader_func(const uint8_t *p_bmp, int p_size) {
+	FileAccessMemory memfile;
+	Error open_memfile_error = memfile.open_custom(p_bmp, p_size);
+	ERR_FAIL_COND_V_MSG(open_memfile_error, Ref<Image>(), "Could not create memfile for BMP image buffer.");
+	Ref<Image> img;
+	img.instance();
+	Error load_error = ImageLoaderBMP().load_image(img, &memfile, false, 1.0f);
+	ERR_FAIL_COND_V_MSG(load_error, Ref<Image>(), "Failed to load BMP image.");
+	return img;
+}
+
+ImageLoaderBMP::ImageLoaderBMP() {
+	Image::_bmp_mem_loader_func = _bmp_mem_loader_func;
+}

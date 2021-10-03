@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -892,7 +892,7 @@ void CylinderMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bottom_radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_bottom_radius", "get_bottom_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_rings", "get_rings");
 }
 
 void CylinderMesh::set_top_radius(const float p_radius) {
@@ -1167,7 +1167,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	Vector3 normal_left, normal_right;
 
 	normal_left = Vector3(-size.y, size.x * left_to_right, 0.0);
-	normal_right = Vector3(size.y, size.x * left_to_right, 0.0);
+	normal_right = Vector3(size.y, size.x * (1.0 - left_to_right), 0.0);
 	normal_left.normalize();
 	normal_right.normalize();
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -867,7 +867,7 @@ bool Image::is_size_po2() const {
 	return uint32_t(width) == next_power_of_2(width) && uint32_t(height) == next_power_of_2(height);
 }
 
-void Image::resize_to_po2(bool p_square) {
+void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
 
@@ -883,7 +883,7 @@ void Image::resize_to_po2(bool p_square) {
 			return; //nothing to do
 	}
 
-	resize(w, h);
+	resize(w, h, p_interpolation);
 }
 
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
@@ -1104,7 +1104,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
 
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot crop in compressed or custom image formats.");
-
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot modify image when it is locked.");
 	ERR_FAIL_COND_MSG(p_x < 0, "Start x position cannot be smaller than 0.");
 	ERR_FAIL_COND_MSG(p_y < 0, "Start y position cannot be smaller than 0.");
 	ERR_FAIL_COND_MSG(p_width <= 0, "Width of image must be greater than 0.");
@@ -1311,8 +1311,8 @@ static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint3
 }
 
 void Image::expand_x2_hq2x() {
-
 	ERR_FAIL_COND(!_can_modify(format));
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot modify image when it is locked.");
 
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
@@ -1351,7 +1351,8 @@ void Image::expand_x2_hq2x() {
 }
 
 void Image::shrink_x2() {
-
+	ERR_FAIL_COND(!_can_modify(format));
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot modify image when it is locked.");
 	ERR_FAIL_COND(data.size() == 0);
 
 	if (mipmaps) {
@@ -1454,6 +1455,8 @@ void Image::normalize() {
 Error Image::generate_mipmaps(bool p_renormalize) {
 
 	ERR_FAIL_COND_V_MSG(!_can_modify(format), ERR_UNAVAILABLE, "Cannot generate mipmaps in compressed or custom image formats.");
+
+	ERR_FAIL_COND_V_MSG(write_lock.ptr(), ERR_UNAVAILABLE, "Cannot modify image when it is locked.");
 
 	ERR_FAIL_COND_V_MSG(format == FORMAT_RGBA4444 || format == FORMAT_RGBA5551, ERR_UNAVAILABLE, "Cannot generate mipmaps in custom image formats.");
 
@@ -1587,6 +1590,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot create image when it is locked.");
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
 
 	int mm = 0;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -1607,6 +1611,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
 
 	int mm;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -2335,6 +2340,7 @@ ImageMemLoadFunc Image::_png_mem_loader_func = NULL;
 ImageMemLoadFunc Image::_jpg_mem_loader_func = NULL;
 ImageMemLoadFunc Image::_webp_mem_loader_func = NULL;
 ImageMemLoadFunc Image::_tga_mem_loader_func = NULL;
+ImageMemLoadFunc Image::_bmp_mem_loader_func = NULL;
 
 void (*Image::_image_compress_bc_func)(Image *, float, Image::CompressSource) = NULL;
 void (*Image::_image_compress_bptc_func)(Image *, float, Image::CompressSource) = NULL;
@@ -2724,7 +2730,7 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_mipmap_offset", "mipmap"), &Image::get_mipmap_offset);
 
-	ClassDB::bind_method(D_METHOD("resize_to_po2", "square"), &Image::resize_to_po2, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("resize_to_po2", "square", "interpolation"), &Image::resize_to_po2, DEFVAL(false), DEFVAL(INTERPOLATE_BILINEAR));
 	ClassDB::bind_method(D_METHOD("resize", "width", "height", "interpolation"), &Image::resize, DEFVAL(INTERPOLATE_BILINEAR));
 	ClassDB::bind_method(D_METHOD("shrink_x2"), &Image::shrink_x2);
 	ClassDB::bind_method(D_METHOD("expand_x2_hq2x"), &Image::expand_x2_hq2x);
@@ -2784,6 +2790,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_jpg_from_buffer", "buffer"), &Image::load_jpg_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_tga_from_buffer", "buffer"), &Image::load_tga_from_buffer);
+	ClassDB::bind_method(D_METHOD("load_bmp_from_buffer", "buffer"), &Image::load_bmp_from_buffer);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
 
@@ -2913,6 +2920,7 @@ Ref<Image> Image::rgbe_to_srgb() {
 
 void Image::bumpmap_to_normalmap(float bump_scale) {
 	ERR_FAIL_COND(!_can_modify(format));
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot modify image when it is locked.");
 	convert(Image::FORMAT_RF);
 
 	PoolVector<uint8_t> result_image; //rgba output
@@ -3015,6 +3023,8 @@ void Image::premultiply_alpha() {
 }
 
 void Image::fix_alpha_edges() {
+	ERR_FAIL_COND(!_can_modify(format));
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot modify image when it is locked.");
 
 	if (data.size() == 0)
 		return;
@@ -3102,6 +3112,14 @@ Error Image::load_webp_from_buffer(const PoolVector<uint8_t> &p_array) {
 Error Image::load_tga_from_buffer(const PoolVector<uint8_t> &p_array) {
 	ERR_FAIL_NULL_V_MSG(_tga_mem_loader_func, ERR_UNAVAILABLE, "TGA module was not installed.");
 	return _load_from_buffer(p_array, _tga_mem_loader_func);
+}
+
+Error Image::load_bmp_from_buffer(const PoolVector<uint8_t> &p_array) {
+	ERR_FAIL_NULL_V_MSG(
+			_bmp_mem_loader_func,
+			ERR_UNAVAILABLE,
+			"The BMP module isn't enabled. Recompile the Godot editor or export template binary with the `module_bmp_enabled=yes` SCons option.");
+	return _load_from_buffer(p_array, _bmp_mem_loader_func);
 }
 
 Error Image::_load_from_buffer(const PoolVector<uint8_t> &p_array, ImageMemLoadFunc p_loader) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "input_map.h"
 
+#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 
@@ -45,6 +46,7 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
 	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
+	ClassDB::bind_method(D_METHOD("action_get_deadzone", "action"), &InputMap::action_get_deadzone);
 	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event"), &InputMap::action_add_event);
 	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event"), &InputMap::action_has_event);
 	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);
@@ -54,9 +56,38 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_from_globals"), &InputMap::load_from_globals);
 }
 
+/**
+ * Returns an nonexistent action error message with a suggestion of the closest
+ * matching action name (if possible).
+ */
+String InputMap::_suggest_actions(const StringName &p_action) const {
+
+	List<StringName> actions = get_actions();
+	StringName closest_action;
+	float closest_similarity = 0.0;
+
+	// Find the most action with the most similar name.
+	for (List<StringName>::Element *E = actions.front(); E; E = E->next()) {
+		const float similarity = String(E->get()).similarity(p_action);
+
+		if (similarity > closest_similarity) {
+			closest_action = E->get();
+			closest_similarity = similarity;
+		}
+	}
+
+	String error_message = vformat("The InputMap action \"%s\" doesn't exist.", p_action);
+
+	if (closest_similarity >= 0.4) {
+		// Only include a suggestion in the error message if it's similar enough.
+		error_message += vformat(" Did you mean \"%s\"?", closest_action);
+	}
+	return error_message;
+}
+
 void InputMap::add_action(const StringName &p_action, float p_deadzone) {
 
-	ERR_FAIL_COND_MSG(input_map.has(p_action), "InputMap already has action '" + String(p_action) + "'.");
+	ERR_FAIL_COND_MSG(input_map.has(p_action), "InputMap already has action \"" + String(p_action) + "\".");
 	input_map[p_action] = Action();
 	static int last_id = 1;
 	input_map[p_action].id = last_id;
@@ -66,7 +97,8 @@ void InputMap::add_action(const StringName &p_action, float p_deadzone) {
 
 void InputMap::erase_action(const StringName &p_action) {
 
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
+
 	input_map.erase(p_action);
 }
 
@@ -100,6 +132,7 @@ List<StringName> InputMap::get_actions() const {
 }
 
 List<Ref<InputEvent> >::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength) const {
+	ERR_FAIL_COND_V(!p_event.is_valid(), NULL);
 
 	for (List<Ref<InputEvent> >::Element *E = p_action.inputs.front(); E; E = E->next()) {
 
@@ -124,9 +157,15 @@ bool InputMap::has_action(const StringName &p_action) const {
 	return input_map.has(p_action);
 }
 
+float InputMap::action_get_deadzone(const StringName &p_action) {
+	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), 0.0f, _suggest_actions(p_action));
+
+	return input_map[p_action].deadzone;
+}
+
 void InputMap::action_set_deadzone(const StringName &p_action, float p_deadzone) {
 
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
 	input_map[p_action].deadzone = p_deadzone;
 }
@@ -134,7 +173,8 @@ void InputMap::action_set_deadzone(const StringName &p_action, float p_deadzone)
 void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
 
 	ERR_FAIL_COND_MSG(p_event.is_null(), "It's not a reference to a valid InputEvent object.");
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
+
 	if (_find_event(input_map[p_action], p_event))
 		return; //already gots
 
@@ -143,22 +183,27 @@ void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent
 
 bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
 
-	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), false, _suggest_actions(p_action));
+
 	return (_find_event(input_map[p_action], p_event) != NULL);
 }
 
 void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
 
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
 	List<Ref<InputEvent> >::Element *E = _find_event(input_map[p_action], p_event);
-	if (E)
+	if (E) {
 		input_map[p_action].inputs.erase(E);
+		if (Input::get_singleton()->is_action_pressed(p_action)) {
+			Input::get_singleton()->action_release(p_action);
+		}
+	}
 }
 
 void InputMap::action_erase_events(const StringName &p_action) {
 
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
 	input_map[p_action].inputs.clear();
 }
@@ -192,7 +237,7 @@ bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName 
 
 bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool *p_pressed, float *p_strength) const {
 	Map<StringName, Action>::Element *E = input_map.find(p_action);
-	ERR_FAIL_COND_V_MSG(!E, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+	ERR_FAIL_COND_V_MSG(!E, false, _suggest_actions(p_action));
 
 	Ref<InputEventAction> input_event_action = p_event;
 	if (input_event_action.is_valid()) {
@@ -327,8 +372,6 @@ void InputMap::load_default() {
 	key.instance();
 	key->set_scancode(KEY_END);
 	action_add_event("ui_end", key);
-
-	//set("display/window/handheld/orientation", "landscape");
 }
 
 InputMap::InputMap() {

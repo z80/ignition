@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DynamicFont" inherits="Font" version="3.2">
+<class name="DynamicFont" inherits="Font" version="3.3">
 	<brief_description>
 		DynamicFont renders vector font files at runtime.
 	</brief_description>
@@ -15,77 +15,62 @@
 		[b]Note:[/b] DynamicFont doesn't support features such as kerning, right-to-left typesetting, ligatures, text shaping, variable fonts and optional font features yet. If you wish to "bake" an optional font feature into a TTF font file, you can use [url=https://fontforge.org/]FontForge[/url] to do so. In FontForge, use [b]File &gt; Generate Fonts[/b], click [b]Options[/b], choose the desired features then generate the font.
 	</description>
 	<tutorials>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 		<method name="add_fallback">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="DynamicFontData">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="data" type="DynamicFontData" />
 			<description>
 				Adds a fallback font.
 			</description>
 		</method>
 		<method name="get_available_chars" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a string containing all the characters available in the main and all the fallback fonts.
 				If a given character is included in more than one font, it appears only once in the returned string.
 			</description>
 		</method>
 		<method name="get_fallback" qualifiers="const">
-			<return type="DynamicFontData">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="DynamicFontData" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the fallback font at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_fallback_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of fallback fonts.
 			</description>
 		</method>
 		<method name="get_spacing" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="type" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="type" type="int" />
 			<description>
 				Returns the spacing for the given [code]type[/code] (see [enum SpacingType]).
 			</description>
 		</method>
 		<method name="remove_fallback">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Removes the fallback font at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_fallback">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="data" type="DynamicFontData">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="data" type="DynamicFontData" />
 			<description>
 				Sets the fallback font at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_spacing">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="type" type="int" />
+			<argument index="1" name="value" type="int" />
 			<description>
 				Sets the spacing for [code]type[/code] (see [enum SpacingType]) to [code]value[/code] in pixels (not relative to the font size).
 			</description>
@@ -96,10 +81,12 @@
 			Extra spacing at the bottom in pixels.
 		</member>
 		<member name="extra_spacing_char" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra character spacing in pixels.
+			Extra spacing for each character in pixels.
+			This can be a negative number to make the distance between characters smaller.
 		</member>
 		<member name="extra_spacing_space" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra space spacing in pixels.
+			Extra spacing for the space character (in addition to [member extra_spacing_char]) in pixels.
+			This can be a negative number to make the distance between words smaller.
 		</member>
 		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra spacing at the top in pixels.
@@ -132,10 +119,10 @@
 			Spacing at the bottom.
 		</constant>
 		<constant name="SPACING_CHAR" value="2" enum="SpacingType">
-			Character spacing.
+			Spacing for each character.
 		</constant>
 		<constant name="SPACING_SPACE" value="3" enum="SpacingType">
-			Space spacing.
+			Spacing for the space character.
 		</constant>
 	</constants>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,7 @@ GJK-EPA collision solver by Nathanael Presson, 2008
 
 /* GJK	*/
 #define GJK_MAX_ITERATIONS	128
-#define GJK_ACCURARY		((real_t)0.0001)
+#define GJK_ACCURACY		((real_t)0.0001)
 #define GJK_MIN_DISTANCE	((real_t)0.0001)
 #define GJK_DUPLICATED_EPS	((real_t)0.0001)
 #define GJK_SIMPLEX2_EPS	((real_t)0.0)
@@ -72,10 +72,13 @@ GJK-EPA collision solver by Nathanael Presson, 2008
 #define GJK_SIMPLEX4_EPS	((real_t)0.0)
 
 /* EPA	*/
-#define EPA_MAX_VERTICES	64
+#define EPA_MAX_VERTICES	128
 #define EPA_MAX_FACES		(EPA_MAX_VERTICES*2)
 #define EPA_MAX_ITERATIONS	255
-#define EPA_ACCURACY		((real_t)0.0001)
+// -- GODOT start --
+//#define EPA_ACCURACY		((real_t)0.0001)
+#define EPA_ACCURACY		((real_t)0.00001)
+// -- GODOT end --
 #define EPA_FALLBACK		(10*EPA_ACCURACY)
 #define EPA_PLANE_EPS		((real_t)0.00001)
 #define EPA_INSIDE_EPS		((real_t)0.01)
@@ -108,25 +111,60 @@ struct	MinkowskiDiff {
 	Transform transform_A;
 	Transform transform_B;
 
+	real_t margin_A = 0.0;
+	real_t margin_B = 0.0;
+
+	Vector3 (*get_support)(const ShapeSW*, const Vector3&, real_t);
+
+	void Initialize(const ShapeSW* shape0, const Transform& wtrs0, const real_t margin0,
+		const ShapeSW* shape1, const Transform& wtrs1, const real_t margin1) {
+		m_shapes[0]		=	shape0;
+		m_shapes[1]		=	shape1;
+		transform_A		=	wtrs0;
+		transform_B		=	wtrs1;
+		margin_A		=	margin0;
+		margin_B		=	margin1;
+
+		if ((margin0 > 0.0) || (margin1 > 0.0)) {
+			get_support = get_support_with_margin;
+		} else {
+			get_support = get_support_without_margin;
+		}
+	}
+
+	static Vector3 get_support_without_margin(const ShapeSW* p_shape, const Vector3& p_dir, real_t p_margin) {
+		return p_shape->get_support(p_dir.normalized());
+	}
+
+	static Vector3 get_support_with_margin(const ShapeSW* p_shape, const Vector3& p_dir, real_t p_margin) {
+		Vector3 local_dir_norm = p_dir;
+		if (local_dir_norm.length_squared() < CMP_EPSILON2) {
+			local_dir_norm = Vector3(-1.0, -1.0, -1.0);
+		}
+		local_dir_norm.normalize();
+
+		return p_shape->get_support(local_dir_norm) + p_margin * local_dir_norm;
+	}
+
 	// i wonder how this could be sped up... if it can
-	_FORCE_INLINE_ Vector3 Support0 ( const Vector3& d ) const {
-		return transform_A.xform( m_shapes[0]->get_support( transform_A.basis.xform_inv(d).normalized() ) );
+	_FORCE_INLINE_ Vector3 Support0(const Vector3& d) const {
+		return transform_A.xform(get_support(m_shapes[0], transform_A.basis.xform_inv(d), margin_A));
 	}
 
-	_FORCE_INLINE_ Vector3 Support1 ( const Vector3& d ) const {
-		return transform_B.xform( m_shapes[1]->get_support( transform_B.basis.xform_inv(d).normalized() ) );
+	_FORCE_INLINE_ Vector3 Support1(const Vector3& d) const {
+		return transform_B.xform(get_support(m_shapes[1], transform_B.basis.xform_inv(d), margin_B));
 	}
 
-	_FORCE_INLINE_ Vector3 Support ( const Vector3& d ) const {
-		return ( Support0 ( d )-Support1 ( -d ) );
+	_FORCE_INLINE_ Vector3 Support (const Vector3& d) const {
+		return (Support0(d) - Support1(-d));
 	}
 
-	_FORCE_INLINE_ Vector3	Support ( const Vector3& d,U index ) const
-	{
-		if ( index )
-			return ( Support1 ( d ) );
-		else
-			return ( Support0 ( d ) );
+	_FORCE_INLINE_ Vector3 Support(const Vector3& d, U index) const {
+		if (index) {
+			return Support1(d);
+		} else {
+			return Support0(d);
+		}
 	}
 };
 
@@ -237,7 +275,7 @@ struct	GJK
 				/* Check for termination				*/
 				const real_t	omega=vec3_dot(m_ray,w)/rl;
 				alpha=MAX(omega,alpha);
-				if(((rl-alpha)-(GJK_ACCURARY*rl))<=0)
+				if(((rl-alpha)-(GJK_ACCURACY*rl))<=0)
 				{/* Return old simplex				*/
 					removevertice(m_simplices[m_current]);
 					break;
@@ -458,7 +496,7 @@ struct	GJK
 			if(ng&&(Math::abs(vl)>GJK_SIMPLEX4_EPS))
 			{
 				real_t	mindist=-1;
-				real_t	subw[3];
+				real_t	subw[3] = {0.f, 0.f, 0.f};
 				U		subm=0;
 				for(U i=0;i<3;++i)
 				{
@@ -504,7 +542,6 @@ struct	GJK
 		{
 			Vector3	n;
 			real_t	d;
-			real_t	p;
 			sSV*		c[3];
 			sFace*		f[3];
 			sFace*		l[2];
@@ -650,7 +687,7 @@ struct	GJK
 										remove(m_hull,best);
 										append(m_stock,best);
 										best=findbest();
-										if(best->p>=outer.p) outer=*best;
+										outer=*best;
 									} else { m_status=eStatus::InvalidHull;break; }
 								} else { m_status=eStatus::AccuraryReached;break; }
 							} else { m_status=eStatus::OutOfVertices;break; }
@@ -689,6 +726,44 @@ struct	GJK
 				m_result.p[0]=1;
 				return(m_status);
 			}
+
+			bool getedgedist(sFace* face, sSV* a, sSV* b, real_t& dist)
+			{
+				const Vector3 ba = b->w - a->w;
+				const Vector3 n_ab = vec3_cross(ba, face->n);   // Outward facing edge normal direction, on triangle plane
+				const real_t a_dot_nab = vec3_dot(a->w, n_ab);  // Only care about the sign to determine inside/outside, so not normalization required
+
+				if (a_dot_nab < 0)
+				{
+					// Outside of edge a->b
+
+					const real_t ba_l2 = ba.length_squared();
+					const real_t a_dot_ba = vec3_dot(a->w, ba);
+					const real_t b_dot_ba = vec3_dot(b->w, ba);
+
+					if (a_dot_ba > 0)
+					{
+						// Pick distance vertex a
+						dist = a->w.length();
+					}
+					else if (b_dot_ba < 0)
+					{
+						// Pick distance vertex b
+						dist = b->w.length();
+					}
+					else
+					{
+						// Pick distance to edge a->b
+						const real_t a_dot_b = vec3_dot(a->w, b->w);
+						dist = Math::sqrt(MAX((a->w.length_squared() * b->w.length_squared() - a_dot_b * a_dot_b) / ba_l2, 0.0));
+					}
+
+					return true;
+				}
+
+				return false;
+			}
+
 			sFace*				newface(sSV* a,sSV* b,sSV* c,bool forced)
 			{
 				if(m_stock.root)
@@ -703,15 +778,16 @@ struct	GJK
 					face->n		=	vec3_cross(b->w-a->w,c->w-a->w);
 					const real_t	l=face->n.length();
 					const bool		v=l>EPA_ACCURACY;
-					face->p		=	MIN(MIN(
-						vec3_dot(a->w,vec3_cross(face->n,a->w-b->w)),
-						vec3_dot(b->w,vec3_cross(face->n,b->w-c->w))),
-						vec3_dot(c->w,vec3_cross(face->n,c->w-a->w)))	/
-						(v?l:1);
-					face->p		=	face->p>=-EPA_INSIDE_EPS?0:face->p;
 					if(v)
 					{
-						face->d		=	vec3_dot(a->w,face->n)/l;
+						if (!(getedgedist(face, a, b, face->d) ||
+							  getedgedist(face, b, c, face->d) ||
+							  getedgedist(face, c, a, face->d)))
+						{
+							// Origin projects to the interior of the triangle
+							// Use distance to triangle plane
+							face->d = vec3_dot(a->w, face->n) / l;
+						}
 						face->n		/=	l;
 						if(forced||(face->d>=-EPA_PLANE_EPS))
 						{
@@ -732,15 +808,13 @@ struct	GJK
 			{
 				sFace*		minf=m_hull.root;
 				real_t	mind=minf->d*minf->d;
-				real_t	maxp=minf->p;
 				for(sFace* f=minf->l[1];f;f=f->l[1])
 				{
 					const real_t	sqd=f->d*f->d;
-					if((f->p>=maxp)&&(sqd<mind))
+					if(sqd<mind)
 					{
 						minf=f;
 						mind=sqd;
-						maxp=f->p;
 					}
 				}
 				return(minf);
@@ -783,21 +857,17 @@ struct	GJK
 	};
 
 	//
-	static void	Initialize(	const ShapeSW* shape0,const Transform& wtrs0,
-		const ShapeSW* shape1,const Transform& wtrs1,
+	static void	Initialize(	const ShapeSW* shape0, const Transform& wtrs0, real_t margin0,
+		const ShapeSW* shape1, const Transform& wtrs1, real_t margin1,
 		sResults& results,
-		tShape& shape,
-		bool withmargins)
+		tShape& shape)
 	{
 		/* Results		*/
-		results.witnesses[0]	=
-			results.witnesses[1]	=	Vector3(0,0,0);
+		results.witnesses[0]	=	Vector3(0,0,0);
+		results.witnesses[1]	=	Vector3(0,0,0);
 		results.status			=	sResults::Separated;
 		/* Shape		*/
-		shape.m_shapes[0]		=	shape0;
-		shape.m_shapes[1]		=	shape1;
-		shape.transform_A		=	wtrs0;
-		shape.transform_B		=	wtrs1;
+		shape.Initialize(shape0, wtrs0, margin0, shape1, wtrs1, margin1);
 
 	}
 
@@ -812,13 +882,15 @@ struct	GJK
 //
 bool Distance(	const ShapeSW*	shape0,
 									  const Transform&		wtrs0,
-									  const ShapeSW*	shape1,
+									  real_t				margin0,
+									  const ShapeSW*		shape1,
 									  const Transform&		wtrs1,
+									  real_t				margin1,
 									  const Vector3&		guess,
 									  sResults&				results)
 {
 	tShape			shape;
-	Initialize(shape0,wtrs0,shape1,wtrs1,results,shape,false);
+	Initialize(shape0, wtrs0, margin0, shape1, wtrs1, margin1, results, shape);
 	GJK				gjk;
 	GJK::eStatus::_	gjk_status=gjk.Evaluate(shape,guess);
 	if(gjk_status==GJK::eStatus::Valid)
@@ -850,14 +922,16 @@ bool Distance(	const ShapeSW*	shape0,
 //
 bool Penetration(	const ShapeSW*	shape0,
 									 const Transform&		wtrs0,
-									 const ShapeSW*	shape1,
+									 real_t					margin0,
+									 const ShapeSW*			shape1,
 									 const Transform&		wtrs1,
-									 const Vector3&		guess,
+									 real_t					margin1,
+									 const Vector3&			guess,
 									 sResults&				results
 									)
 {
 	tShape			shape;
-	Initialize(shape0,wtrs0,shape1,wtrs1,results,shape,false);
+	Initialize(shape0, wtrs0, margin0, shape1, wtrs1, margin1, results, shape);
 	GJK				gjk;
 	GJK::eStatus::_	gjk_status=gjk.Evaluate(shape,-guess);
 	switch(gjk_status)
@@ -918,7 +992,7 @@ bool gjk_epa_calculate_distance(const ShapeSW *p_shape_A, const Transform &p_tra
 
 	GjkEpa2::sResults res;
 
-	if (GjkEpa2::Distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_transform_B.origin - p_transform_A.origin, res)) {
+	if (GjkEpa2::Distance(p_shape_A, p_transform_A, 0.0, p_shape_B, p_transform_B, 0.0, p_transform_B.origin - p_transform_A.origin, res)) {
 
 		r_result_A = res.witnesses[0];
 		r_result_B = res.witnesses[1];
@@ -928,11 +1002,11 @@ bool gjk_epa_calculate_distance(const ShapeSW *p_shape_A, const Transform &p_tra
 	return false;
 }
 
-bool gjk_epa_calculate_penetration(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CollisionSolverSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap) {
+bool gjk_epa_calculate_penetration(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CollisionSolverSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, real_t p_margin_A, real_t p_margin_B) {
 
 	GjkEpa2::sResults res;
 
-	if (GjkEpa2::Penetration(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_transform_B.origin - p_transform_A.origin, res)) {
+	if (GjkEpa2::Penetration(p_shape_A, p_transform_A, p_margin_A, p_shape_B, p_transform_B, p_margin_B, p_transform_B.origin - p_transform_A.origin, res)) {
 		if (p_result_callback) {
 			if (p_swap)
 				p_result_callback(res.witnesses[1], res.witnesses[0], p_userdata);

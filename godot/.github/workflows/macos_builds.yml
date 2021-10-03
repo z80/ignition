@@ -1,9 +1,10 @@
 name: 🍎 macOS Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 env:
-  GODOT_BASE_BRANCH: 3.2
+  GODOT_BASE_BRANCH: 3.x
+  SCONSFLAGS: platform=osx verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
@@ -26,6 +27,7 @@ jobs:
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
+        continue-on-error: true
 
       # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
       - name: Set up Python 3.x
@@ -49,7 +51,14 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=osx tools=yes target=release_debug
+          scons tools=yes target=release_debug
+          ls -l bin/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
 
   macos-template:
     runs-on: "macos-latest"
@@ -69,6 +78,7 @@ jobs:
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
+        continue-on-error: true
 
       # Use python 3.x release (works cross platform)
       - name: Set up Python 3.x
@@ -91,4 +101,11 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=osx target=release tools=no
+          scons target=release tools=no
+          ls -l bin/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14

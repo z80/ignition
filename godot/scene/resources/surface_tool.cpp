@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -266,6 +266,7 @@ void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertices, const Vect
 void SurfaceTool::add_index(int p_index) {
 
 	ERR_FAIL_COND(!begun);
+	ERR_FAIL_COND(p_index < 0);
 
 	format |= Mesh::ARRAY_FORMAT_INDEX;
 	index_array.push_back(p_index);
@@ -525,7 +526,7 @@ void SurfaceTool::deindex() {
 }
 
 void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, List<Vertex> *r_vertex, List<int> *r_index, int &lformat) {
-
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::_create_list() must be a valid object of type Mesh");
 	Array arr = p_existing->surface_get_arrays(p_surface);
 	ERR_FAIL_COND(arr.size() != VS::ARRAY_MAX);
 	_create_list_from_arrays(arr, r_vertex, r_index, lformat);
@@ -762,7 +763,7 @@ void SurfaceTool::create_from_triangle_arrays(const Array &p_arrays) {
 }
 
 void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
-
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::create_from() must be a valid object of type Mesh");
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
 	_create_list(p_existing, p_surface, &vertex_array, &index_array, format);
@@ -770,6 +771,7 @@ void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
 }
 
 void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name) {
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::create_from_blend_shape() must be a valid object of type Mesh");
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
 	Array arr = p_existing->surface_get_blend_shape_arrays(p_surface);
@@ -790,7 +792,7 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 }
 
 void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform) {
-
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::append_from() must be a valid object of type Mesh");
 	if (vertex_array.size() == 0) {
 		primitive = p_existing->surface_get_primitive_type(p_surface);
 		format = 0;

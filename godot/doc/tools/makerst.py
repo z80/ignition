@@ -108,7 +108,10 @@ class ClassDef:
         self.brief_description = None  # type: Optional[str]
         self.description = None  # type: Optional[str]
         self.theme_items = None  # type: Optional[OrderedDict[str, List[ThemeItemDef]]]
-        self.tutorials = []  # type: List[str]
+        self.tutorials = []  # type: List[Tuple[str, str]]
+
+        # Used to match the class with XML source for output filtering purposes.
+        self.filepath = ""  # type: str
 
 
 class State:
@@ -118,11 +121,12 @@ class State:
         self.classes = OrderedDict()  # type: OrderedDict[str, ClassDef]
         self.current_class = ""  # type: str
 
-    def parse_class(self, class_root):  # type: (ET.Element) -> None
+    def parse_class(self, class_root, filepath):  # type: (ET.Element, str) -> None
         class_name = class_root.attrib["name"]
 
         class_def = ClassDef(class_name)
         self.classes[class_name] = class_def
+        class_def.filepath = filepath
 
         inherits = class_root.get("inherits")
         if inherits is not None:
@@ -253,7 +257,7 @@ class State:
                 assert link.tag == "link"
 
                 if link.text is not None:
-                    class_def.tutorials.append(link.text)
+                    class_def.tutorials.append((link.text.strip(), link.get("title", "")))
 
     def sort_classes(self):  # type: () -> None
         self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0]))
@@ -278,6 +282,7 @@ def parse_arguments(root):  # type: (ET.Element) -> List[ParameterDef]
 def main():  # type: () -> None
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="+", help="A path to an XML file or a directory containing XML files to parse.")
+    parser.add_argument("--filter", default="", help="The filepath pattern for XML files to filter.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--output", "-o", default=".", help="The directory to save output .rst files in.")
     group.add_argument(
@@ -333,22 +338,31 @@ def main():  # type: () -> None
             print_error("Duplicate class '{}'".format(name), state)
             continue
 
-        classes[name] = doc
+        classes[name] = (doc, cur_file)
 
     for name, data in classes.items():
         try:
-            state.parse_class(data)
+            state.parse_class(data[0], data[1])
         except Exception as e:
             print_error("Exception while parsing class '{}': {}".format(name, e), state)
 
     state.sort_classes()
 
+    pattern = re.compile(args.filter)
+
+    # Create the output folder recursively if it doesn't already exist.
+    os.makedirs(args.output, exist_ok=True)
+
     for class_name, class_def in state.classes.items():
+        if args.filter and not pattern.search(class_def.filepath):
+            continue
         state.current_class = class_name
         make_rst_class(class_def, state, args.dry_run, args.output)
 
     if not state.errored:
         print("No errors found.")
+        if not args.dry_run:
+            print("Wrote reStructuredText files for each class to: %s" % args.output)
     else:
         print("Errors were found in the class reference XML. Please check the messages above.")
         exit(1)
@@ -417,9 +431,8 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Online tutorials
     if len(class_def.tutorials) > 0:
         f.write(make_heading("Tutorials", "-"))
-        for t in class_def.tutorials:
-            link = t.strip()
-            f.write("- " + make_url(link) + "\n\n")
+        for url, title in class_def.tutorials:
+            f.write("- " + make_link(url, title) + "\n\n")
 
     # Properties overview
     if len(class_def.properties) > 0:
@@ -428,7 +441,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
         for property_def in class_def.properties.values():
             type_rst = property_def.type_name.to_rst(state)
             default = property_def.default_value
-            if property_def.overridden:
+            if default is not None and property_def.overridden:
                 ml.append((type_rst, property_def.name, default + " *(parent override)*"))
             else:
                 ref = ":ref:`{0}<class_{1}_property_{0}>`".format(property_def.name, class_name)
@@ -1012,8 +1025,8 @@ def make_footer():  # type: () -> str
     # fmt: on
 
 
-def make_url(link):  # type: (str) -> str
-    match = GODOT_DOCS_PATTERN.search(link)
+def make_link(url, title):  # type: (str, str) -> str
+    match = GODOT_DOCS_PATTERN.search(url)
     if match:
         groups = match.groups()
         if match.lastindex == 2:
@@ -1030,7 +1043,10 @@ def make_url(link):  # type: (str) -> str
     else:
         # External link, for example:
         # `http://enet.bespin.org/usergroup0.html`
-        return "`" + link + " <" + link + ">`_"
+        if title != "":
+            return "`" + title + " <" + url + ">`_"
+        else:
+            return "`" + url + " <" + url + ">`_"
 
 
 if __name__ == "__main__":

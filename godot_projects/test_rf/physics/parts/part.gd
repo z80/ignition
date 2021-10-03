@@ -308,6 +308,7 @@ func update_physics_from_state():
 
 func init():
 	.init()
+	need_super_body = true
 	_traverse_coupling_nodes()
 
 

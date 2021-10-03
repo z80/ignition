@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -296,6 +296,11 @@ int OS::get_exit_code() const {
 void OS::set_exit_code(int p_code) {
 
 	_exit_code = p_code;
+	_is_custom_exit_code = true;
+}
+
+bool OS::is_custom_exit_code() {
+	return _is_custom_exit_code;
 }
 
 String OS::get_locale() const {
@@ -367,8 +372,7 @@ String OS::get_resource_dir() const {
 }
 
 // Access system-specific dirs like Documents, Downloads, etc.
-String OS::get_system_dir(SystemDir p_dir) const {
-
+String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
 }
 
@@ -460,8 +464,28 @@ OS::ScreenOrientation OS::get_screen_orientation() const {
 	return (OS::ScreenOrientation)_orientation;
 }
 
-void OS::_ensure_user_data_dir() {
+// Internal helper function that returns the screen orientation enum value from a string
+// (generally coming from the Project Settings).
+// This is required to keep compatibility with existing projects.
+OS::ScreenOrientation OS::get_screen_orientation_from_string(const String &p_orientation) const {
+	if (p_orientation == "portrait") {
+		return OS::SCREEN_PORTRAIT;
+	} else if (p_orientation == "reverse_landscape") {
+		return OS::SCREEN_REVERSE_LANDSCAPE;
+	} else if (p_orientation == "reverse_portrait") {
+		return OS::SCREEN_REVERSE_PORTRAIT;
+	} else if (p_orientation == "sensor_landscape") {
+		return OS::SCREEN_SENSOR_LANDSCAPE;
+	} else if (p_orientation == "sensor_portrait") {
+		return OS::SCREEN_SENSOR_PORTRAIT;
+	} else if (p_orientation == "sensor") {
+		return OS::SCREEN_SENSOR;
+	}
 
+	return OS::SCREEN_LANDSCAPE;
+}
+
+void OS::ensure_user_data_dir() {
 	String dd = get_user_data_dir();
 	DirAccess *da = DirAccess::open(dd);
 	if (da) {

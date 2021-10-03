@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,6 +55,7 @@ void ColorPicker::_notification(int p_what) {
 			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
 			bt_add_preset->set_icon(get_icon("add_preset"));
 
+			_update_controls();
 			_update_color();
 
 #ifdef TOOLS_ENABLED
@@ -170,10 +171,13 @@ void ColorPicker::_value_changed(double) {
 		return;
 
 	if (hsv_mode_enabled) {
-		color.set_hsv(scroll[0]->get_value() / 360.0,
-				scroll[1]->get_value() / 100.0,
-				scroll[2]->get_value() / 100.0,
-				scroll[3]->get_value() / 255.0);
+		h = scroll[0]->get_value() / 360.0;
+		s = scroll[1]->get_value() / 100.0;
+		v = scroll[2]->get_value() / 100.0;
+		color.set_hsv(h, s, v, scroll[3]->get_value() / 255.0);
+
+		last_hsv = color;
+
 	} else {
 		for (int i = 0; i < 4; i++) {
 			color.components[i] = scroll[i]->get_value() / (raw_mode_enabled ? 1.0 : 255.0);
@@ -578,6 +582,8 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 }
 
 void ColorPicker::_screen_input(const Ref<InputEvent> &p_event) {
+	if (!is_inside_tree())
+		return;
 
 	Ref<InputEventMouseButton> bev = p_event;
 	if (bev.is_valid() && bev->get_button_index() == BUTTON_LEFT && !bev->is_pressed()) {
@@ -608,6 +614,9 @@ void ColorPicker::_add_preset_pressed() {
 }
 
 void ColorPicker::_screen_pick_pressed() {
+	if (!is_inside_tree())
+		return;
+
 	Viewport *r = get_tree()->get_root();
 	if (!screen) {
 		screen = memnew(Control);
@@ -775,7 +784,7 @@ ColorPicker::ColorPicker() :
 	btn_pick = memnew(ToolButton);
 	hb_smpl->add_child(btn_pick);
 	btn_pick->set_toggle_mode(true);
-	btn_pick->set_tooltip(TTR("Pick a color from the editor window."));
+	btn_pick->set_tooltip(RTR("Pick a color from the editor window."));
 	btn_pick->connect("pressed", this, "_screen_pick_pressed");
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
@@ -822,12 +831,12 @@ ColorPicker::ColorPicker() :
 
 	btn_hsv = memnew(CheckButton);
 	hhb->add_child(btn_hsv);
-	btn_hsv->set_text(TTR("HSV"));
+	btn_hsv->set_text(RTR("HSV"));
 	btn_hsv->connect("toggled", this, "set_hsv_mode");
 
 	btn_raw = memnew(CheckButton);
 	hhb->add_child(btn_raw);
-	btn_raw->set_text(TTR("Raw"));
+	btn_raw->set_text(RTR("Raw"));
 	btn_raw->connect("toggled", this, "set_raw_mode");
 
 	text_type = memnew(Button);
@@ -875,7 +884,7 @@ ColorPicker::ColorPicker() :
 	add_child(preset_container2);
 	bt_add_preset = memnew(Button);
 	preset_container2->add_child(bt_add_preset);
-	bt_add_preset->set_tooltip(TTR("Add current color as a preset."));
+	bt_add_preset->set_tooltip(RTR("Add current color as a preset."));
 	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
 }
 

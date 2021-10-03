@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 
+#include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
 #include <windows.h>
 
@@ -115,10 +116,10 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		path = path + ".tmp";
 	}
 
-	errno_t errcode = _wfopen_s(&f, path.c_str(), mode_string);
+	f = _wfsopen((LPCWSTR)(path.c_str()), mode_string, _SH_DENYNO);
 
-	if (f == NULL) {
-		switch (errcode) {
+	if (f == nullptr) {
+		switch (errno) {
 			case ENOENT: {
 				last_error = ERR_FILE_NOT_FOUND;
 			} break;
@@ -259,7 +260,8 @@ uint8_t FileAccessWindows::get_8() const {
 }
 
 int FileAccessWindows::get_buffer(uint8_t *p_dst, int p_length) const {
-
+	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
+	ERR_FAIL_COND_V(p_length < 0, -1);
 	ERR_FAIL_COND_V(!f, -1);
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == WRITE) {
@@ -301,6 +303,7 @@ void FileAccessWindows::store_8(uint8_t p_dest) {
 
 void FileAccessWindows::store_buffer(const uint8_t *p_src, int p_length) {
 	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND(!p_src && p_length > 0);
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == READ) {
 			if (last_error != ERR_FILE_EOF) {
@@ -313,13 +316,9 @@ void FileAccessWindows::store_buffer(const uint8_t *p_src, int p_length) {
 }
 
 bool FileAccessWindows::file_exists(const String &p_name) {
-
-	FILE *g;
-	//printf("opening file %s\n", p_fname.c_str());
 	String filename = fix_path(p_name);
-	_wfopen_s(&g, filename.c_str(), L"rb");
-	if (g == NULL) {
-
+	FILE *g = _wfsopen((LPCWSTR)(filename.c_str()), L"rb", _SH_DENYNO);
+	if (g == nullptr) {
 		return false;
 	} else {
 

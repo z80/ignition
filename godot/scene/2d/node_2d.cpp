@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -174,10 +174,12 @@ void Node2D::set_scale(const Size2 &p_scale) {
 		((Node2D *)this)->_update_xform_values();
 	_scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
-	if (_scale.x == 0)
+	if (Math::is_zero_approx(_scale.x)) {
 		_scale.x = CMP_EPSILON;
-	if (_scale.y == 0)
+	}
+	if (Math::is_zero_approx(_scale.y)) {
 		_scale.y = CMP_EPSILON;
+	}
 	_update_transform();
 	_change_notify("scale");
 }

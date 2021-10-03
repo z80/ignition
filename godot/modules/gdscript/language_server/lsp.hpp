@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -998,32 +998,32 @@ struct CompletionList {
  * A symbol kind.
  */
 namespace SymbolKind {
-static const int File = 0;
-static const int Module = 1;
-static const int Namespace = 2;
-static const int Package = 3;
-static const int Class = 4;
-static const int Method = 5;
-static const int Property = 6;
-static const int Field = 7;
-static const int Constructor = 8;
-static const int Enum = 9;
-static const int Interface = 10;
-static const int Function = 11;
-static const int Variable = 12;
-static const int Constant = 13;
-static const int String = 14;
-static const int Number = 15;
-static const int Boolean = 16;
-static const int Array = 17;
-static const int Object = 18;
-static const int Key = 19;
-static const int Null = 20;
-static const int EnumMember = 21;
-static const int Struct = 22;
-static const int Event = 23;
-static const int Operator = 24;
-static const int TypeParameter = 25;
+static const int File = 1;
+static const int Module = 2;
+static const int Namespace = 3;
+static const int Package = 4;
+static const int Class = 5;
+static const int Method = 6;
+static const int Property = 7;
+static const int Field = 8;
+static const int Constructor = 9;
+static const int Enum = 10;
+static const int Interface = 11;
+static const int Function = 12;
+static const int Variable = 13;
+static const int Constant = 14;
+static const int String = 15;
+static const int Number = 16;
+static const int Boolean = 17;
+static const int Array = 18;
+static const int Object = 19;
+static const int Key = 20;
+static const int Null = 21;
+static const int EnumMember = 22;
+static const int Struct = 23;
+static const int Event = 24;
+static const int Operator = 25;
+static const int TypeParameter = 26;
 }; // namespace SymbolKind
 
 /**
@@ -1514,6 +1514,114 @@ struct SignatureHelp {
 	}
 };
 
+/**
+ * A pattern to describe in which file operation requests or notifications
+ * the server is interested in.
+ */
+struct FileOperationPattern {
+	/**
+	 * The glob pattern to match.
+	 */
+	String glob = "**/*.gd";
+
+	/**
+	 * Whether to match `file`s or `folder`s with this pattern.
+	 *
+	 * Matches both if undefined.
+	 */
+	String matches = "file";
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["glob"] = glob;
+		dict["matches"] = matches;
+
+		return dict;
+	}
+};
+
+/**
+ * A filter to describe in which file operation requests or notifications
+ * the server is interested in.
+ */
+struct FileOperationFilter {
+	/**
+	 * The actual file operation pattern.
+	 */
+	FileOperationPattern pattern;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["pattern"] = pattern.to_json();
+
+		return dict;
+	}
+};
+
+/**
+ * The options to register for file operations.
+ */
+struct FileOperationRegistrationOptions {
+	/**
+	 * The actual filters.
+	 */
+	Vector<FileOperationFilter> filters;
+
+	FileOperationRegistrationOptions() {
+		filters.push_back(FileOperationFilter());
+	}
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		Array filts;
+		for (int i = 0; i < filters.size(); i++) {
+			filts.push_back(filters[i].to_json());
+		}
+		dict["filters"] = filts;
+
+		return dict;
+	}
+};
+
+/**
+ * The server is interested in file notifications/requests.
+ */
+struct FileOperations {
+	/**
+	 * The server is interested in receiving didDeleteFiles file notifications.
+	 */
+	FileOperationRegistrationOptions didDelete;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["didDelete"] = didDelete.to_json();
+
+		return dict;
+	}
+};
+
+/**
+ * Workspace specific server capabilities
+ */
+struct Workspace {
+	/**
+	 * The server is interested in file notifications/requests.
+	 */
+	FileOperations fileOperations;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["fileOperations"] = fileOperations.to_json();
+
+		return dict;
+	}
+};
+
 struct ServerCapabilities {
 	/**
 	 * Defines how text documents are synced. Is either a detailed structure defining each notification or
@@ -1574,6 +1682,11 @@ struct ServerCapabilities {
 	 * The server provides workspace symbol support.
 	 */
 	bool workspaceSymbolProvider = true;
+
+	/**
+	 * The server supports workspace folder.
+	 */
+	Workspace workspace;
 
 	/**
 	 * The server provides code actions. The `CodeActionOptions` return type is only
@@ -1647,7 +1760,7 @@ struct ServerCapabilities {
 		signatureHelpProvider.triggerCharacters.push_back(",");
 		signatureHelpProvider.triggerCharacters.push_back("(");
 		dict["signatureHelpProvider"] = signatureHelpProvider.to_json();
-		dict["codeLensProvider"] = false; // codeLensProvider.to_json();
+		//dict["codeLensProvider"] = codeLensProvider.to_json();
 		dict["documentOnTypeFormattingProvider"] = documentOnTypeFormattingProvider.to_json();
 		dict["renameProvider"] = renameProvider.to_json();
 		dict["documentLinkProvider"] = documentLinkProvider.to_json();
@@ -1662,6 +1775,7 @@ struct ServerCapabilities {
 		dict["documentHighlightProvider"] = documentHighlightProvider;
 		dict["documentSymbolProvider"] = documentSymbolProvider;
 		dict["workspaceSymbolProvider"] = workspaceSymbolProvider;
+		dict["workspace"] = workspace.to_json();
 		dict["codeActionProvider"] = codeActionProvider;
 		dict["documentFormattingProvider"] = documentFormattingProvider;
 		dict["documentRangeFormattingProvider"] = documentRangeFormattingProvider;

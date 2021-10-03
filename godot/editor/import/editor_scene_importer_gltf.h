@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,8 +115,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Vector<int> children;
 
-		GLTFNodeIndex fake_joint_parent;
-
 		GLTFLightIndex light;
 
 		GLTFNode() :
@@ -129,7 +127,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 				joint(false),
 				translation(0, 0, 0),
 				scale(Vector3(1, 1, 1)),
-				fake_joint_parent(-1),
 				light(-1) {}
 	};
 
@@ -322,6 +319,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<uint8_t> glb_data;
 
 		bool use_named_skin_binds;
+		bool use_legacy_names;
 
 		Vector<GLTFNode *> nodes;
 		Vector<Vector<uint8_t> > buffers;
@@ -342,6 +340,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<GLTFLight> lights;
 
 		Set<String> unique_names;
+		Set<String> unique_animation_names;
 
 		Vector<GLTFSkeleton> skeletons;
 		Vector<GLTFAnimation> animations;
@@ -358,10 +357,14 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		}
 	};
 
-	String _sanitize_scene_name(const String &name);
+	String _sanitize_scene_name(GLTFState &state, const String &p_name);
+	String _legacy_validate_node_name(const String &p_name);
 	String _gen_unique_name(GLTFState &state, const String &p_name);
 
-	String _sanitize_bone_name(const String &name);
+	String _sanitize_animation_name(const String &p_name);
+	String _gen_unique_animation_name(GLTFState &state, const String &p_name);
+
+	String _sanitize_bone_name(GLTFState &state, const String &p_name);
 	String _gen_unique_bone_name(GLTFState &state, const GLTFSkeletonIndex skel_i, const String &p_name);
 
 	Ref<Texture> _get_texture(GLTFState &state, const GLTFTextureIndex p_texture);
@@ -407,7 +410,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	Error _determine_skeletons(GLTFState &state);
 	Error _reparent_non_joint_skeleton_subtrees(GLTFState &state, GLTFSkeleton &skeleton, const Vector<GLTFNodeIndex> &non_joints);
-	Error _reparent_to_fake_joint(GLTFState &state, GLTFSkeleton &skeleton, const GLTFNodeIndex node_index);
 	Error _determine_skeleton_roots(GLTFState &state, const GLTFSkeletonIndex skel_i);
 
 	Error _create_skeletons(GLTFState &state);
@@ -421,13 +423,14 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Error _parse_lights(GLTFState &state);
 	Error _parse_animations(GLTFState &state);
 
-	BoneAttachment *_generate_bone_attachment(GLTFState &state, Skeleton *skeleton, const GLTFNodeIndex node_index);
+	BoneAttachment *_generate_bone_attachment(GLTFState &state, Skeleton *skeleton, const GLTFNodeIndex node_index, const GLTFNodeIndex bone_index);
 	MeshInstance *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Camera *_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
-	Light *_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Spatial *_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Spatial *_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 
 	void _generate_scene_node(GLTFState &state, Node *scene_parent, Spatial *scene_root, const GLTFNodeIndex node_index);
+	void _generate_skeleton_bone_node(GLTFState &state, Node *scene_parent, Spatial *scene_root, const GLTFNodeIndex node_index);
 	Spatial *_generate_scene(GLTFState &state, const int p_bake_fps);
 
 	void _process_mesh_instances(GLTFState &state, Spatial *scene_root);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -158,9 +158,9 @@ public:
 	struct ShapeResult {
 
 		RID rid;
-		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		ObjectID collider_id = 0;
+		Object *collider = nullptr;
+		int shape = 0;
 	};
 
 	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
@@ -170,9 +170,9 @@ public:
 		Vector3 position;
 		Vector3 normal;
 		RID rid;
-		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		ObjectID collider_id = 0;
+		Object *collider = nullptr;
+		int shape = 0;
 	};
 
 	virtual bool intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_ray = false) = 0;
@@ -184,8 +184,8 @@ public:
 		Vector3 point;
 		Vector3 normal;
 		RID rid;
-		ObjectID collider_id;
-		int shape;
+		ObjectID collider_id = 0;
+		int shape = 0;
 		Vector3 linear_velocity; //velocity at contact point
 	};
 
@@ -740,9 +740,6 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) = 0;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) = 0;
 
-	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision) = 0;
-	virtual int generic_6dof_joint_get_precision(RID p_joint) = 0;
-
 	/* QUERY API */
 
 	enum AreaBodyStatus {
@@ -757,7 +754,6 @@ public:
 	virtual void set_active(bool p_active) = 0;
 	virtual void init() = 0;
 	virtual void step(float p_step) = 0;
-	virtual void sync() = 0;
 	virtual void flush_queries() = 0;
 	virtual void finish() = 0;
 

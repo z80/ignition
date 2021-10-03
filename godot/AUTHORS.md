@@ -28,12 +28,15 @@ name is available.
 (in alphabetical order, with over 10 commits excluding merges)
 
     Aaron Franke (aaronfranke)
+    Aaron Record (LightningAA)
     Alexander Holland (AlexHolly)
     Alexey Khoroshavin (allkhor)
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
     Andrii Doroshenko (Xrayez)
     Andy Moss (MillionOstrich)
+    Angad Kambli (angad-k)
+    Anilforextra (AnilBK)
     Anish Bhobe (KidRigger)
     Anton Yabchinskiy (a12n)
     Anutrix
@@ -43,6 +46,7 @@ name is available.
     Ben Brookshire (sheepandshepherd)
     Benjamin Larsson (Nallebeorn)
     Bernard Liebl (poke1024)
+    Bhuvan Vemula (Bhu1-V)
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
     Bruno Lourenço (MadEqua)
@@ -57,11 +61,14 @@ name is available.
     Daniel J. Ramirez (djrm)
     Daniel Rakos (aqnuep)
     dankan1890
+    Danil Alexeev (dalexeev)
     David Sichma (DavidSichma)
+    David Snopek (dsnopek)
     Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
     Dominik Jasiński (dreamsComeTrue)
     DualMatrix
+    Ellen Poe (ellenhp)
     Emmanuel Barroga (codecustard)
     Emmanuel Leblond (touilleMan)
     Eoin O'Neill (Eoin-ONeill-Yokai)
@@ -70,9 +77,14 @@ name is available.
     Eric Rybicki (ericrybick)
     Erik Selecký (rxlecky)
     est31
+    Eveline Jarosz (Marqin)
     Fabian Mathews (supagu)
     Fabio Alessandrelli (Faless)
+    fabriceci
     Ferenc Arn (tagcup)
+    follower
+    foxydevloper
+    François Belair (Razoric480)
     Franklin Sobrinho (TheHX)
     Fredia Huya-Kouadio (m4gr3d)
     Geequlim
@@ -84,9 +96,11 @@ name is available.
     Hanif Bin Ariffin (hbina)
     Haoyu Qiu (timothyqiu)
     Hein-Pieter van Braam-Stewart (hpvb)
+    Hendrik Brucker (Geometror)
+    hilfazer
     Hiroshi Ogawa (hi-ogawa)
     homer666
-    Hubert Jarosz (Marqin)
+    hoontee
     Hugo Locurcio (Calinou)
     Ian Bishop (ianb96)
     Ibrahn Sahir (ibrahn)
@@ -96,21 +110,28 @@ name is available.
     J08nY
     Jakub Grzesik (kubecz3k)
     James Buck (jbuck3)
+    Jean-Michel Bernard (jmb462)
     Jérôme Gully (Nutriz)
     Jia Jun Chai (SkyLucilfer)
     Joan Fons Sanchez (JFonS)
+    Johannes Witt (HaSa1002)
     Johan Manuel (29jm)
     Joshua Grams (JoshuaGrams)
     Juan Linietsky (reduz)
     Julian Murgia (StraToN)
+    Julien Nguyen (Blackiris)
+    Jummit
     Justo Delgado (mrcdk)
     Kelly Thomas (KellyThomas)
+    kleonc
+    Kongfa Waroros (gongpha)
     Kostadin Damyanov (Max-Might)
     K. S. Ernest (iFire) Lee (fire)
     lawnjelly
     Leon Krause (leonkrause)
     Liz Haas (27thLiz)
     Lucien Menassol (Kanabenki)
+    Lyuma
     m4nu3lf
     Maganty Rushyendra (mrushyendra)
     Marcel Admiraal (madmiraal)
@@ -118,7 +139,7 @@ name is available.
     Marc Gilleron (Zylann)
     Marcin Zawiejski (dragmz)
     Marcus Brummer (mbrlabs)
-    Marcus (MCrafterzz)
+    Marcus Elg (MCrafterzz)
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
     Martin Capitanio (capnm)
@@ -127,14 +148,19 @@ name is available.
     marynate
     Masoud BH (masoudbh3)
     Mateo Kuruk Miccino (kuruk-mm)
+    Matthew (skyace65)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
     merumelu
+    Meru Patel (Janglee123)
     Michael Alexsander (YeldhamDev)
     MichiRecRoom (LikeLakers2)
     mrezai
     muiroc
+    Nathan Franke (nathanfranke)
+    Nathan Lovato (NathanLovato)
     Nathan Warden (NathanWarden)
+    Nicholas Huelin (SirQuartz)
     Nils André-Chang (NilsIrl)
     Noah Beard (TwistedTwigleg)
     Nuno Donato (nunodonato)
@@ -156,6 +182,7 @@ name is available.
     Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
     Rhody Lugo (rraallvv)
+    Ricardo Subtil (Ev1lbl0w)
     Roberto F. Arroyo (robfram)
     Robin Hübner (profan)
     romulox-x
@@ -171,12 +198,14 @@ name is available.
     Stijn Hinlopen (hinlopen)
     Swarnim Arun (minraws)
     Thakee Nathees (ThakeeNathees)
+    thebestnom
     Theo Hallenius (TheoXD)
     Thomas Herzog (karroffel)
     Timo Schwarzer (timoschwarzer)
     Timo (toger5)
     Tomasz Chabora (KoBeWi)
     Twarit Waikar (IronicallySerious)
+    Umang Kalra (theoway)
     Vinzenz Feenstra (vinzenz)
     박한얼 (volzhs)
     V. Vamsi Krishna (vkbsb)
@@ -186,6 +215,7 @@ name is available.
     Xavier Cho (mysticfall)
     yg2f (SuperUserNameMan)
     Yuri Roubinsky (Chaosus)
+    Yuri Sizov (pycbouh)
     Zak Stam (zaksnet)
     Zher Huei Lee (leezh)
     ZuBsPaCe

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -149,6 +149,71 @@ void CharString::copy_from(const char *p_cstr) {
 	resize(len + 1); // include terminating null char
 
 	strcpy(ptrw(), p_cstr);
+}
+
+Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path) const {
+	// Splits the URL into scheme, host, port, path. Strip credentials when present.
+	String base = *this;
+	r_scheme = "";
+	r_host = "";
+	r_port = 0;
+	r_path = "";
+	int pos = base.find("://");
+	// Scheme
+	if (pos != -1) {
+		r_scheme = base.substr(0, pos + 3).to_lower();
+		base = base.substr(pos + 3, base.length() - pos - 3);
+	}
+	pos = base.find("/");
+	// Path
+	if (pos != -1) {
+		r_path = base.substr(pos, base.length() - pos);
+		base = base.substr(0, pos);
+	}
+	// Host
+	pos = base.find("@");
+	if (pos != -1) {
+		// Strip credentials
+		base = base.substr(pos + 1, base.length() - pos - 1);
+	}
+	if (base.begins_with("[")) {
+		// Literal IPv6
+		pos = base.rfind("]");
+		if (pos == -1) {
+			return ERR_INVALID_PARAMETER;
+		}
+		r_host = base.substr(1, pos - 1);
+		base = base.substr(pos + 1, base.length() - pos - 1);
+	} else {
+		// Anything else
+		if (base.get_slice_count(":") > 2) {
+			return ERR_INVALID_PARAMETER;
+		}
+		pos = base.rfind(":");
+		if (pos == -1) {
+			r_host = base;
+			base = "";
+		} else {
+			r_host = base.substr(0, pos);
+			base = base.substr(pos, base.length() - pos);
+		}
+	}
+	if (r_host.empty()) {
+		return ERR_INVALID_PARAMETER;
+	}
+	r_host = r_host.to_lower();
+	// Port
+	if (base.begins_with(":")) {
+		base = base.substr(1, base.length() - 1);
+		if (!base.is_valid_integer()) {
+			return ERR_INVALID_PARAMETER;
+		}
+		r_port = base.to_int();
+		if (r_port < 1 || r_port > 65535) {
+			return ERR_INVALID_PARAMETER;
+		}
+	}
+	return OK;
 }
 
 void String::copy_from(const char *p_cstr) {
@@ -535,33 +600,52 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 		}
 
 		while (*this_str) {
-
-			if (!*that_str)
+			if (!*that_str) {
 				return 1;
-			else if (IS_DIGIT(*this_str)) {
-
-				int64_t this_int, that_int;
-
-				if (!IS_DIGIT(*that_str))
+			} else if (IS_DIGIT(*this_str)) {
+				if (!IS_DIGIT(*that_str)) {
 					return -1;
+				}
 
-				/* Compare the numbers */
-				this_int = to_int(this_str);
-				that_int = to_int(that_str);
+				// Keep ptrs to start of numerical sequences
+				const CharType *this_substr = this_str;
+				const CharType *that_substr = that_str;
 
-				if (this_int < that_int)
-					return -1;
-				else if (this_int > that_int)
-					return 1;
-
-				/* Skip */
-				while (IS_DIGIT(*this_str))
+				// Compare lengths of both numerical sequences, ignoring leading zeros
+				while (IS_DIGIT(*this_str)) {
 					this_str++;
-				while (IS_DIGIT(*that_str))
+				}
+				while (IS_DIGIT(*that_str)) {
 					that_str++;
-			} else if (IS_DIGIT(*that_str))
+				}
+				while (*this_substr == '0') {
+					this_substr++;
+				}
+				while (*that_substr == '0') {
+					that_substr++;
+				}
+				int this_len = this_str - this_substr;
+				int that_len = that_str - that_substr;
+
+				if (this_len < that_len) {
+					return -1;
+				} else if (this_len > that_len) {
+					return 1;
+				}
+
+				// If lengths equal, compare lexicographically
+				while (this_substr != this_str && that_substr != that_str) {
+					if (*this_substr < *that_substr) {
+						return -1;
+					} else if (*this_substr > *that_substr) {
+						return 1;
+					}
+					this_substr++;
+					that_substr++;
+				}
+			} else if (IS_DIGIT(*that_str)) {
 				return 1;
-			else {
+			} else {
 				if (_find_upper(*this_str) < _find_upper(*that_str)) //more than
 					return -1;
 				else if (_find_upper(*this_str) > _find_upper(*that_str)) //less than
@@ -1651,9 +1735,10 @@ String::String(const StrRange &p_range) {
 }
 
 int String::hex_to_int(bool p_with_prefix) const {
-
-	if (p_with_prefix && length() < 3)
+	int len = length();
+	if (len == 0 || (p_with_prefix && len < 3)) {
 		return 0;
+	}
 
 	const CharType *s = ptr();
 
@@ -1736,9 +1821,10 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 }
 
 int64_t String::bin_to_int64(bool p_with_prefix) const {
-
-	if (p_with_prefix && length() < 3)
+	int len = length();
+	if (len == 0 || (p_with_prefix && len < 3)) {
 		return 0;
+	}
 
 	const CharType *s = ptr();
 
@@ -2689,35 +2775,49 @@ int String::rfindn(const String &p_str, int p_from) const {
 }
 
 bool String::ends_with(const String &p_string) const {
-
-	int pos = find_last(p_string);
-	if (pos == -1)
+	int l = p_string.length();
+	if (l > length()) {
 		return false;
-	return pos + p_string.length() == length();
+	}
+
+	if (l == 0) {
+		return true;
+	}
+
+	const CharType *p = &p_string[0];
+	const CharType *s = &operator[](length() - l);
+
+	for (int i = 0; i < l; i++) {
+		if (p[i] != s[i]) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool String::begins_with(const String &p_string) const {
-
-	if (p_string.length() > length())
-		return false;
-
 	int l = p_string.length();
-	if (l == 0)
-		return true;
-
-	const CharType *src = &p_string[0];
-	const CharType *str = &operator[](0);
-
-	int i = 0;
-	for (; i < l; i++) {
-
-		if (src[i] != str[i])
-			return false;
+	if (l > length()) {
+		return false;
 	}
 
-	// only if i == l the p_string matches the beginning
-	return i == l;
+	if (l == 0) {
+		return true;
+	}
+
+	const CharType *p = &p_string[0];
+	const CharType *s = &operator[](0);
+
+	for (int i = 0; i < l; i++) {
+		if (p[i] != s[i]) {
+			return false;
+		}
+	}
+
+	return true;
 }
+
 bool String::begins_with(const char *p_string) const {
 
 	int l = length();
@@ -3416,9 +3516,9 @@ String String::http_escape() const {
 		} else {
 			char h_Val[3];
 #if defined(__GNUC__) || defined(_MSC_VER)
-			snprintf(h_Val, 3, "%hhX", ord);
+			snprintf(h_Val, 3, "%02hhX", ord);
 #else
-			sprintf(h_Val, "%hhX", ord);
+			sprintf(h_Val, "%02hhX", ord);
 #endif
 			res += "%";
 			res += h_Val;
@@ -3951,7 +4051,10 @@ bool String::is_rel_path() const {
 
 String String::get_base_dir() const {
 
-	int basepos = find("://");
+	int basepos = find(":/");
+	if (basepos == -1) {
+		basepos = find(":\\");
+	}
 	String rs;
 	String base;
 	if (basepos != -1) {
@@ -4073,6 +4176,18 @@ String String::property_name_encode() const {
 	return *this;
 }
 
+// Changes made to the set of invalid characters must also be reflected in the String documentation.
+const String String::invalid_node_name_characters = ". : @ / \"";
+
+String String::validate_node_name() const {
+	Vector<String> chars = String::invalid_node_name_characters.split(" ");
+	String name = this->replace(chars[0], "");
+	for (int i = 1; i < chars.size(); i++) {
+		name = name.replace(chars[i], "");
+	}
+	return name;
+}
+
 String String::get_basename() const {
 
 	int pos = find_last(".");
@@ -4182,11 +4297,12 @@ String String::sprintf(const Array &values, bool *error) const {
 					int number_len = str.length();
 
 					// Padding.
+					int pad_chars_count = (value < 0 || show_sign) ? min_chars - 1 : min_chars;
 					String pad_char = pad_with_zeroes ? String("0") : String(" ");
 					if (left_justified) {
-						str = str.rpad(min_chars, pad_char);
+						str = str.rpad(pad_chars_count, pad_char);
 					} else {
-						str = str.lpad(min_chars, pad_char);
+						str = str.lpad(pad_chars_count, pad_char);
 					}
 
 					// Sign.

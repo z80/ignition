@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -141,8 +141,9 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 
 			if (p_dst_max_size < 16) {
 				uint8_t dst[16];
-				ret_size = fastlz_decompress(p_src, p_src_size, dst, 16);
+				fastlz_decompress(p_src, p_src_size, dst, 16);
 				copymem(p_dst, dst, p_dst_max_size);
+				ret_size = p_dst_max_size;
 			} else {
 				ret_size = fastlz_decompress(p_src, p_src_size, p_dst, p_dst_max_size);
 			}

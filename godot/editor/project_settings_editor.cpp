@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,7 +59,14 @@ static const char *_button_names[JOY_BUTTON_MAX] = {
 	"D-Pad Up",
 	"D-Pad Down",
 	"D-Pad Left",
-	"D-Pad Right"
+	"D-Pad Right",
+	"Home, DualShock PS, Guide",
+	"Xbox Share, PS5 Microphone, Nintendo Capture",
+	"Xbox Paddle 1",
+	"Xbox Paddle 2",
+	"Xbox Paddle 3",
+	"Xbox Paddle 4",
+	"PS4/5 Touchpad",
 };
 
 static const char *_axis_names[JOY_AXIS_MAX * 2] = {
@@ -192,7 +199,7 @@ void ProjectSettingsEditor::_action_edited() {
 			ti->set_text(0, old_name);
 			add_at = "input/" + old_name;
 
-			message->set_text(TTR("Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
+			message->set_text(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
 			message->popup_centered(Size2(300, 100) * EDSCALE);
 			return;
 		}
@@ -809,6 +816,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 	_update_translations();
 	autoload_settings->update_autoload();
 	plugin_settings->update_plugins();
+	import_defaults_editor->clear();
 	set_process_unhandled_input(true);
 }
 
@@ -821,8 +829,7 @@ void ProjectSettingsEditor::_item_selected(const String &p_path) {
 	const String &selected_path = p_path;
 	if (selected_path == String())
 		return;
-	category->set_text(globals_editor->get_current_section());
-	property->set_text(selected_path);
+	property->set_text(globals_editor->get_current_section().plus_file(selected_path));
 	popup_copy_to_feature->set_disabled(false);
 }
 
@@ -834,22 +841,18 @@ void ProjectSettingsEditor::_item_adds(String) {
 void ProjectSettingsEditor::_item_add() {
 
 	// Initialize the property with the default value for the given type.
-	// The type list starts at 1 (as we exclude Nil), so add 1 to the selected value.
 	Variant::CallError ce;
-	const Variant value = Variant::construct(Variant::Type(type->get_selected() + 1), NULL, 0, ce);
+	const Variant value = Variant::construct(Variant::Type(type->get_selected_id()), NULL, 0, ce);
 
-	String catname = category->get_text().strip_edges();
-	String propname = property->get_text().strip_edges();
+	String name = property->get_text().strip_edges();
 
-	if (propname.empty()) {
+	if (name.empty()) {
 		return;
 	}
 
-	if (catname.empty()) {
-		catname = "global";
+	if (name.find("/") == -1) {
+		name = "global/" + name;
 	}
-
-	String name = catname + "/" + propname;
 
 	undo_redo->create_action(TTR("Add Global Property"));
 
@@ -869,7 +872,7 @@ void ProjectSettingsEditor::_item_add() {
 
 	undo_redo->commit_action();
 
-	globals_editor->set_current_section(catname);
+	globals_editor->set_current_section(name.get_slice("/", 1));
 
 	_settings_changed();
 }
@@ -1697,6 +1700,7 @@ TabContainer *ProjectSettingsEditor::get_tabs() {
 }
 
 void ProjectSettingsEditor::_editor_restart() {
+	ProjectSettings::get_singleton()->save();
 	EditorNode::get_singleton()->save_all_scenes();
 	EditorNode::get_singleton()->restart_editor();
 }
@@ -1803,15 +1807,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	Label *l = memnew(Label);
 	add_prop_bar->add_child(l);
-	l->set_text(TTR("Category:"));
-
-	category = memnew(LineEdit);
-	category->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	add_prop_bar->add_child(category);
-	category->connect("text_entered", this, "_item_adds");
-
-	l = memnew(Label);
-	add_prop_bar->add_child(l);
 	l->set_text(TTR("Property:"));
 
 	property = memnew(LineEdit);
@@ -1824,12 +1819,15 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	l->set_text(TTR("Type:"));
 
 	type = memnew(OptionButton);
-	type->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	type->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	add_prop_bar->add_child(type);
 
-	// Start at 1 to avoid adding "Nil" as an option
-	for (int i = 1; i < Variant::VARIANT_MAX; i++) {
-		type->add_item(Variant::get_type_name(Variant::Type(i)));
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		// There's no point in adding Nil types, and Object types
+		// can't be serialized correctly in the project settings.
+		if (i != Variant::NIL && i != Variant::OBJECT) {
+			type->add_item(Variant::get_type_name(Variant::Type(i)), i);
+		}
 	}
 
 	Button *add = memnew(Button);
@@ -1843,6 +1841,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	search_bar->hide();
 
 	search_box = memnew(LineEdit);
+	search_box->set_placeholder(TTR("Search"));
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_bar->add_child(search_box);
 
@@ -2126,6 +2125,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTR("Plugins"));
 	tab_container->add_child(plugin_settings);
+
+	import_defaults_editor = memnew(ImportDefaultsEditor);
+	import_defaults_editor->set_name(TTR("Import Defaults"));
+	tab_container->add_child(import_defaults_editor);
+	import_defaults_editor->connect("project_settings_changed", this, "_settings_changed");
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);

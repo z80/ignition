@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "core/safe_refcount.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
@@ -70,11 +71,11 @@ class EditorResourcePreview : public Node {
 
 	List<QueueItem> queue;
 
-	Mutex *preview_mutex;
-	Semaphore *preview_sem;
-	Thread *thread;
-	volatile bool exit;
-	volatile bool exited;
+	Mutex preview_mutex;
+	Semaphore preview_sem;
+	Thread thread;
+	SafeFlag exit;
+	SafeFlag exited;
 
 	struct Item {
 		Ref<Texture> preview;
@@ -102,7 +103,8 @@ protected:
 public:
 	static EditorResourcePreview *get_singleton();
 
-	//callback function is callback(String p_path,Ref<Texture> preview,Variant udata) preview null if could not load
+	// p_receiver_func callback has signature (String p_path, Ref<Texture> p_preview, Ref<Texture> p_preview_small, Variant p_userdata)
+	// p_preview will be null if there was an error
 	void queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 	void queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 

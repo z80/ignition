@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -788,7 +788,7 @@ Basis::operator String() const {
 Quat Basis::get_quat() const {
 
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_rotation(), Quat(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quat() or call orthonormalized() instead.");
+	ERR_FAIL_COND_V_MSG(!is_rotation(), Quat(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quat() or call orthonormalized() if the Basis contains linearly independent vectors.");
 #endif
 	/* Allow getting a quaternion from an unnormalized transform */
 	Basis m = *this;
@@ -805,8 +805,8 @@ Quat Basis::get_quat() const {
 		temp[2] = ((m.elements[1][0] - m.elements[0][1]) * s);
 	} else {
 		int i = m.elements[0][0] < m.elements[1][1] ?
-						(m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
-						(m.elements[0][0] < m.elements[2][2] ? 2 : 0);
+						  (m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
+						  (m.elements[0][0] < m.elements[2][2] ? 2 : 0);
 		int j = (i + 1) % 3;
 		int k = (i + 2) % 3;
 
@@ -1033,16 +1033,16 @@ void Basis::set_diagonal(const Vector3 &p_diag) {
 	elements[2][2] = p_diag.z;
 }
 
-Basis Basis::slerp(const Basis &target, const real_t &t) const {
+Basis Basis::slerp(const Basis &p_to, const real_t &p_weight) const {
 
 	//consider scale
 	Quat from(*this);
-	Quat to(target);
+	Quat to(p_to);
 
-	Basis b(from.slerp(to, t));
-	b.elements[0] *= Math::lerp(elements[0].length(), target.elements[0].length(), t);
-	b.elements[1] *= Math::lerp(elements[1].length(), target.elements[1].length(), t);
-	b.elements[2] *= Math::lerp(elements[2].length(), target.elements[2].length(), t);
+	Basis b(from.slerp(to, p_weight));
+	b.elements[0] *= Math::lerp(elements[0].length(), p_to.elements[0].length(), p_weight);
+	b.elements[1] *= Math::lerp(elements[1].length(), p_to.elements[1].length(), p_weight);
+	b.elements[2] *= Math::lerp(elements[2].length(), p_to.elements[2].length(), p_weight);
 
 	return b;
 }

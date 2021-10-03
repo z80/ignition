@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,17 +42,18 @@ class AudioStreamEditor : public ColorRect {
 	GDCLASS(AudioStreamEditor, ColorRect);
 
 	Ref<AudioStream> stream;
-	AudioStreamPlayer *_player;
-	ColorRect *_preview;
-	Control *_indicator;
-	Label *_current_label;
-	Label *_duration_label;
+	AudioStreamPlayer *_player = nullptr;
+	ColorRect *_preview = nullptr;
+	Control *_indicator = nullptr;
+	Label *_current_label = nullptr;
+	Label *_duration_label = nullptr;
 
-	ToolButton *_play_button;
-	ToolButton *_stop_button;
+	ToolButton *_play_button = nullptr;
+	ToolButton *_stop_button = nullptr;
 
-	float _current;
-	bool _dragging;
+	float _current = 0;
+	bool _dragging = false;
+	bool _pausing = false;
 
 protected:
 	void _notification(int p_what);

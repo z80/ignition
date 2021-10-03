@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,16 @@
 
 #include "link_button.h"
 
-void LinkButton::set_text(const String &p_text) {
+#include "core/translation.h"
 
+void LinkButton::set_text(const String &p_text) {
+	if (text == p_text) {
+		return;
+	}
 	text = p_text;
+	xl_text = tr(p_text);
 	update();
+	_change_notify("text");
 	minimum_size_changed();
 }
 
@@ -53,14 +59,17 @@ LinkButton::UnderlineMode LinkButton::get_underline_mode() const {
 }
 
 Size2 LinkButton::get_minimum_size() const {
-
-	return get_font("font")->get_string_size(text);
+	return get_font("font")->get_string_size(xl_text);
 }
 
 void LinkButton::_notification(int p_what) {
 
 	switch (p_what) {
-
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			xl_text = tr(text);
+			minimum_size_changed();
+			update();
+		} break;
 		case NOTIFICATION_DRAW: {
 
 			RID ci = get_canvas_item();
@@ -108,11 +117,11 @@ void LinkButton::_notification(int p_what) {
 
 			Ref<Font> font = get_font("font");
 
-			draw_string(font, Vector2(0, font->get_ascent()), text, color);
+			draw_string(font, Vector2(0, font->get_ascent()), xl_text, color);
 
 			if (do_underline) {
 				int underline_spacing = get_constant("underline_spacing");
-				int width = font->get_string_size(text).width;
+				int width = font->get_string_size(xl_text).width;
 				int y = font->get_ascent() + underline_spacing;
 
 				draw_line(Vector2(0, y), Vector2(width, y), color);
@@ -140,6 +149,6 @@ void LinkButton::_bind_methods() {
 
 LinkButton::LinkButton() {
 	underline_mode = UNDERLINE_MODE_ALWAYS;
-	set_enabled_focus_mode(FOCUS_NONE);
+	set_focus_mode(FOCUS_NONE);
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -149,6 +149,12 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 		Vector3 ra, rb;
 		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = ra[p_idx];
+
+		if (Math::is_nan(d)) {
+			// The handle is perpendicular to the camera.
+			return;
+		}
+
 		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
 		}
@@ -317,26 +323,15 @@ bool CSGShapeSpatialGizmoPlugin::is_selectable_when_hidden() const {
 
 void CSGShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
-	CSGShape *cs = Object::cast_to<CSGShape>(p_gizmo->get_spatial_node());
-
 	p_gizmo->clear();
 
-	Ref<Material> material;
-	switch (cs->get_operation()) {
-		case CSGShape::OPERATION_UNION:
-			material = get_material("shape_union_material", p_gizmo);
-			break;
-		case CSGShape::OPERATION_INTERSECTION:
-			material = get_material("shape_intersection_material", p_gizmo);
-			break;
-		case CSGShape::OPERATION_SUBTRACTION:
-			material = get_material("shape_subtraction_material", p_gizmo);
-			break;
-	}
-
-	Ref<Material> handles_material = get_material("handles");
+	CSGShape *cs = Object::cast_to<CSGShape>(p_gizmo->get_spatial_node());
 
 	PoolVector<Vector3> faces = cs->get_brush_faces();
+
+	if (faces.size() == 0) {
+		return;
+	}
 
 	Vector<Vector3> lines;
 	lines.resize(faces.size() * 2);
@@ -352,6 +347,21 @@ void CSGShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			}
 		}
 	}
+
+	Ref<Material> material;
+	switch (cs->get_operation()) {
+		case CSGShape::OPERATION_UNION:
+			material = get_material("shape_union_material", p_gizmo);
+			break;
+		case CSGShape::OPERATION_INTERSECTION:
+			material = get_material("shape_intersection_material", p_gizmo);
+			break;
+		case CSGShape::OPERATION_SUBTRACTION:
+			material = get_material("shape_subtraction_material", p_gizmo);
+			break;
+	}
+
+	Ref<Material> handles_material = get_material("handles");
 
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_collision_segments(lines);

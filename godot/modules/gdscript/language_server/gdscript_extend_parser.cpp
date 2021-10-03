@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -167,7 +167,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 
 		lsp::DocumentSymbol symbol;
 		symbol.name = m.identifier;
-		symbol.kind = lsp::SymbolKind::Variable;
+		symbol.kind = m.setter == "" && m.getter == "" ? lsp::SymbolKind::Variable : lsp::SymbolKind::Property;
 		symbol.deprecated = false;
 		const int line = LINE_NUMBER_TO_INDEX(m.line);
 		symbol.range.start.line = line;
@@ -294,7 +294,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	const String uri = get_uri();
 
 	r_symbol.name = p_func->name;
-	r_symbol.kind = lsp::SymbolKind::Function;
+	r_symbol.kind = p_func->_static ? lsp::SymbolKind::Function : lsp::SymbolKind::Method;
 	r_symbol.detail = "func " + p_func->name + "(";
 	r_symbol.deprecated = false;
 	const int line = LINE_NUMBER_TO_INDEX(p_func->line);
@@ -346,23 +346,39 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 		r_symbol.detail += " -> " + p_func->return_type.to_string();
 	}
 
-	for (const Map<StringName, LocalVarNode *>::Element *E = p_func->body->variables.front(); E; E = E->next()) {
-		lsp::DocumentSymbol symbol;
-		const GDScriptParser::LocalVarNode *var = E->value();
-		symbol.name = E->key();
-		symbol.kind = lsp::SymbolKind::Variable;
-		symbol.range.start.line = LINE_NUMBER_TO_INDEX(E->get()->line);
-		symbol.range.start.character = E->get()->column;
-		symbol.range.end.line = symbol.range.start.line;
-		symbol.range.end.character = lines[symbol.range.end.line].length();
-		symbol.uri = uri;
-		symbol.script_path = path;
-		symbol.detail = "var " + symbol.name;
-		if (var->datatype.kind != GDScriptParser::DataType::UNRESOLVED) {
-			symbol.detail += ": " + var->datatype.to_string();
+	List<GDScriptParser::BlockNode *> function_blocks;
+	List<GDScriptParser::BlockNode *> block_stack;
+	block_stack.push_back(p_func->body);
+
+	while (!block_stack.empty()) {
+		GDScriptParser::BlockNode *block = block_stack[0];
+		block_stack.pop_front();
+
+		function_blocks.push_back(block);
+		for (const List<GDScriptParser::BlockNode *>::Element *E = block->sub_blocks.front(); E; E = E->next()) {
+			block_stack.push_back(E->get());
 		}
-		symbol.documentation = parse_documentation(line);
-		r_symbol.children.push_back(symbol);
+	}
+
+	for (const List<GDScriptParser::BlockNode *>::Element *B = function_blocks.front(); B; B = B->next()) {
+		for (const Map<StringName, LocalVarNode *>::Element *E = B->get()->variables.front(); E; E = E->next()) {
+			lsp::DocumentSymbol symbol;
+			const GDScriptParser::LocalVarNode *var = E->value();
+			symbol.name = E->key();
+			symbol.kind = lsp::SymbolKind::Variable;
+			symbol.range.start.line = LINE_NUMBER_TO_INDEX(E->get()->line);
+			symbol.range.start.character = E->get()->column;
+			symbol.range.end.line = symbol.range.start.line;
+			symbol.range.end.character = lines[symbol.range.end.line].length();
+			symbol.uri = uri;
+			symbol.script_path = path;
+			symbol.detail = "var " + symbol.name;
+			if (var->datatype.kind != GDScriptParser::DataType::UNRESOLVED) {
+				symbol.detail += ": " + var->datatype.to_string();
+			}
+			symbol.documentation = parse_documentation(line);
+			r_symbol.children.push_back(symbol);
+		}
 	}
 }
 
@@ -397,6 +413,12 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 				doc_lines.push_front(line_comment);
 			}
 		} else {
+			if (i > 0 && i < lines.size() - 1) {
+				String next_line = lines[i + step].strip_edges(true, false);
+				if (next_line.begins_with("#")) {
+					continue;
+				}
+			}
 			break;
 		}
 	}

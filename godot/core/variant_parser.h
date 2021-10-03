@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,11 +76,10 @@ public:
 	typedef Error (*ParseResourceFunc)(void *p_self, Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 
 	struct ResourceParser {
-
-		void *userdata;
-		ParseResourceFunc func;
-		ParseResourceFunc ext_func;
-		ParseResourceFunc sub_func;
+		void *userdata = nullptr;
+		ParseResourceFunc func = nullptr;
+		ParseResourceFunc ext_func = nullptr;
+		ParseResourceFunc sub_func = nullptr;
 	};
 
 	enum TokenType {

@@ -48,6 +48,8 @@ func init():
 	
 	VisualType   = Visual
 	PhysicalType = Physical
+	
+	need_super_body = true
 
 	.init()
 	

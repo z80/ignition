@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -146,6 +146,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	bool updating_members;
 
 	void _update_members();
+	String _sanitized_variant_text(const StringName &property_name);
 
 	StringName selected;
 
@@ -228,7 +229,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _update_node_size(int p_id);
 	void _port_name_focus_out(const Node *p_name_box, int p_id, int p_port, bool is_input);
 
-	Vector2 _get_available_pos(bool centered = true, Vector2 ofs = Vector2()) const;
+	Vector2 _get_pos_in_graph(Vector2 p_point) const;
+	Vector2 _get_available_pos(bool p_centered = true, Vector2 p_pos = Vector2()) const;
 	StringName _get_function_of_node(int p_id) const;
 
 	void _move_nodes_with_rescan(const StringName &p_func_from, const StringName &p_func_to, int p_id);
@@ -295,6 +297,7 @@ public:
 	virtual void apply_code();
 	virtual RES get_edited_resource() const;
 	virtual void set_edited_resource(const RES &p_res);
+	virtual void enable_editor();
 	virtual Vector<String> get_functions();
 	virtual void reload_text();
 	virtual String get_name();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -361,7 +361,7 @@ private:
 		StringName texture_names[TEXTURE_MAX];
 	};
 
-	static Mutex *material_mutex;
+	static Mutex material_mutex;
 	static SelfList<SpatialMaterial>::List *dirty_materials;
 	static ShaderNames *shader_names;
 
@@ -371,6 +371,7 @@ private:
 	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
+	bool is_initialized = false;
 	Color albedo;
 	float specular;
 	float metallic;

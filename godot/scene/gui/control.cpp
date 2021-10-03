@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,7 +70,9 @@ Dictionary Control::_edit_get_state() const {
 }
 
 void Control::_edit_set_state(const Dictionary &p_state) {
-
+	ERR_FAIL_COND((p_state.size() <= 0) ||
+				  !p_state.has("rotation") || !p_state.has("scale") ||
+				  !p_state.has("pivot") || !p_state.has("anchors") || !p_state.has("margins"));
 	Dictionary state = p_state;
 
 	set_rotation(state["rotation"]);
@@ -87,10 +89,15 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 	data.margin[MARGIN_RIGHT] = margins[2];
 	data.margin[MARGIN_BOTTOM] = margins[3];
 	_size_changed();
+	_change_notify("anchor_left");
+	_change_notify("anchor_right");
+	_change_notify("anchor_top");
+	_change_notify("anchor_bottom");
 }
 
 void Control::_edit_set_position(const Point2 &p_position) {
 #ifdef TOOLS_ENABLED
+	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
 	set_position(p_position, CanvasItemEditor::get_singleton()->is_anchors_mode_enabled());
 #else
 	// Unlikely to happen. TODO: enclose all _edit_ functions into TOOLS_ENABLED
@@ -112,6 +119,7 @@ Size2 Control::_edit_get_scale() const {
 
 void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
 #ifdef TOOLS_ENABLED
+	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
 	set_position((get_position() + get_transform().basis_xform(p_edit_rect.position)).snapped(Vector2(1, 1)), CanvasItemEditor::get_singleton()->is_anchors_mode_enabled());
 	set_size(p_edit_rect.size.snapped(Vector2(1, 1)), CanvasItemEditor::get_singleton()->is_anchors_mode_enabled());
 #else
@@ -754,7 +762,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 			return ret;
 	}
 
-	return Variant();
+	return false;
 }
 void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 
@@ -818,16 +826,16 @@ Size2 Control::get_minimum_size() const {
 	return Size2();
 }
 
-Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_type) const {
+Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_node_type) const {
 
-	if (p_type == StringName() || p_type == get_class_name()) {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 
 		const Ref<Texture> *tex = data.icon_override.getptr(p_name);
 		if (tex)
 			return *tex;
 	}
 
-	StringName type = p_type ? p_type : get_class_name();
+	StringName type = p_node_type ? p_node_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -861,15 +869,15 @@ Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_typ
 	return Theme::get_default()->get_icon(p_name, type);
 }
 
-Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_type) const {
-	if (p_type == StringName() || p_type == get_class_name()) {
+Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_node_type) const {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 
 		const Ref<Shader> *sdr = data.shader_override.getptr(p_name);
 		if (sdr)
 			return *sdr;
 	}
 
-	StringName type = p_type ? p_type : get_class_name();
+	StringName type = p_node_type ? p_node_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -903,15 +911,15 @@ Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_ty
 	return Theme::get_default()->get_shader(p_name, type);
 }
 
-Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &p_type) const {
+Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &p_node_type) const {
 
-	if (p_type == StringName() || p_type == get_class_name()) {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		const Ref<StyleBox> *style = data.style_override.getptr(p_name);
 		if (style)
 			return *style;
 	}
 
-	StringName type = p_type ? p_type : get_class_name();
+	StringName type = p_node_type ? p_node_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -949,15 +957,15 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 	}
 	return Theme::get_default()->get_stylebox(p_name, type);
 }
-Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_type) const {
+Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_node_type) const {
 
-	if (p_type == StringName() || p_type == get_class_name()) {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		const Ref<Font> *font = data.font_override.getptr(p_name);
 		if (font)
 			return *font;
 	}
 
-	StringName type = p_type ? p_type : get_class_name();
+	StringName type = p_node_type ? p_node_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -986,15 +994,15 @@ Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_type) 
 
 	return Theme::get_default()->get_font(p_name, type);
 }
-Color Control::get_color(const StringName &p_name, const StringName &p_type) const {
+Color Control::get_color(const StringName &p_name, const StringName &p_node_type) const {
 
-	if (p_type == StringName() || p_type == get_class_name()) {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		const Color *color = data.color_override.getptr(p_name);
 		if (color)
 			return *color;
 	}
 
-	StringName type = p_type ? p_type : get_class_name();
+	StringName type = p_node_type ? p_node_type : get_class_name();
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
 
@@ -1026,15 +1034,15 @@ Color Control::get_color(const StringName &p_name, const StringName &p_type) con
 	return Theme::get_default()->get_color(p_name, type);
 }
 
-int Control::get_constant(const StringName &p_name, const StringName &p_type) const {
+int Control::get_constant(const StringName &p_name, const StringName &p_node_type) const {
 
-	if (p_type == StringName() || p_type == get_class_name()) {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		const int *constant = data.constant_override.getptr(p_name);
 		if (constant)
 			return *constant;
 	}
 
-	StringName type = p_type ? p_type : get_class_name();
+	StringName type = p_node_type ? p_node_type : get_class_name();
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
 
@@ -1102,14 +1110,14 @@ bool Control::has_constant_override(const StringName &p_name) const {
 	return constant != NULL;
 }
 
-bool Control::has_icon(const StringName &p_name, const StringName &p_type) const {
+bool Control::has_icon(const StringName &p_name, const StringName &p_node_type) const {
 
-	if (p_type == StringName() || p_type == get_class_name()) {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		if (has_icon_override(p_name))
 			return true;
 	}
 
-	StringName type = p_type ? p_type : get_class_name();
+	StringName type = p_node_type ? p_node_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -1141,14 +1149,14 @@ bool Control::has_icon(const StringName &p_name, const StringName &p_type) const
 	return Theme::get_default()->has_icon(p_name, type);
 }
 
-bool Control::has_shader(const StringName &p_name, const StringName &p_type) const {
+bool Control::has_shader(const StringName &p_name, const StringName &p_node_type) const {
 
-	if (p_type == StringName() || p_type == get_class_name()) {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		if (has_shader_override(p_name))
 			return true;
 	}
 
-	StringName type = p_type ? p_type : get_class_name();
+	StringName type = p_node_type ? p_node_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -1179,14 +1187,14 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_type) con
 	}
 	return Theme::get_default()->has_shader(p_name, type);
 }
-bool Control::has_stylebox(const StringName &p_name, const StringName &p_type) const {
+bool Control::has_stylebox(const StringName &p_name, const StringName &p_node_type) const {
 
-	if (p_type == StringName() || p_type == get_class_name()) {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		if (has_stylebox_override(p_name))
 			return true;
 	}
 
-	StringName type = p_type ? p_type : get_class_name();
+	StringName type = p_node_type ? p_node_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -1217,14 +1225,14 @@ bool Control::has_stylebox(const StringName &p_name, const StringName &p_type) c
 	}
 	return Theme::get_default()->has_stylebox(p_name, type);
 }
-bool Control::has_font(const StringName &p_name, const StringName &p_type) const {
+bool Control::has_font(const StringName &p_name, const StringName &p_node_type) const {
 
-	if (p_type == StringName() || p_type == get_class_name()) {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		if (has_font_override(p_name))
 			return true;
 	}
 
-	StringName type = p_type ? p_type : get_class_name();
+	StringName type = p_node_type ? p_node_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -1256,14 +1264,14 @@ bool Control::has_font(const StringName &p_name, const StringName &p_type) const
 	return Theme::get_default()->has_font(p_name, type);
 }
 
-bool Control::has_color(const StringName &p_name, const StringName &p_type) const {
+bool Control::has_color(const StringName &p_name, const StringName &p_node_type) const {
 
-	if (p_type == StringName() || p_type == get_class_name()) {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		if (has_color_override(p_name))
 			return true;
 	}
 
-	StringName type = p_type ? p_type : get_class_name();
+	StringName type = p_node_type ? p_node_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -1295,14 +1303,14 @@ bool Control::has_color(const StringName &p_name, const StringName &p_type) cons
 	return Theme::get_default()->has_color(p_name, type);
 }
 
-bool Control::has_constant(const StringName &p_name, const StringName &p_type) const {
+bool Control::has_constant(const StringName &p_name, const StringName &p_node_type) const {
 
-	if (p_type == StringName() || p_type == get_class_name()) {
+	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		if (has_constant_override(p_name))
 			return true;
 	}
 
-	StringName type = p_type ? p_type : get_class_name();
+	StringName type = p_node_type ? p_node_type : get_class_name();
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
@@ -2609,7 +2617,7 @@ void Control::set_pass_on_modal_close_click(bool p_pass_on) {
 	data.pass_on_modal_close_click = p_pass_on;
 }
 
-bool Control::pass_on_modal_close_click() const {
+bool Control::get_pass_on_modal_close_click() const {
 
 	return data.pass_on_modal_close_click;
 }
@@ -2865,6 +2873,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_focus"), &Control::has_focus);
 	ClassDB::bind_method(D_METHOD("grab_focus"), &Control::grab_focus);
 	ClassDB::bind_method(D_METHOD("release_focus"), &Control::release_focus);
+	ClassDB::bind_method(D_METHOD("find_prev_valid_focus"), &Control::find_prev_valid_focus);
+	ClassDB::bind_method(D_METHOD("find_next_valid_focus"), &Control::find_next_valid_focus);
 	ClassDB::bind_method(D_METHOD("get_focus_owner"), &Control::get_focus_owner);
 
 	ClassDB::bind_method(D_METHOD("set_h_size_flags", "flags"), &Control::set_h_size_flags);
@@ -2886,11 +2896,11 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_color_override", "name", "color"), &Control::add_color_override);
 	ClassDB::bind_method(D_METHOD("add_constant_override", "name", "constant"), &Control::add_constant_override);
 
-	ClassDB::bind_method(D_METHOD("get_icon", "name", "type"), &Control::get_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_stylebox", "name", "type"), &Control::get_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_font", "name", "type"), &Control::get_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_color", "name", "type"), &Control::get_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_constant", "name", "type"), &Control::get_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_icon", "name", "node_type"), &Control::get_icon, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_stylebox", "name", "node_type"), &Control::get_stylebox, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_font", "name", "node_type"), &Control::get_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_color", "name", "node_type"), &Control::get_color, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_constant", "name", "node_type"), &Control::get_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("has_icon_override", "name"), &Control::has_icon_override);
 	ClassDB::bind_method(D_METHOD("has_shader_override", "name"), &Control::has_shader_override);
@@ -2899,11 +2909,11 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_color_override", "name"), &Control::has_color_override);
 	ClassDB::bind_method(D_METHOD("has_constant_override", "name"), &Control::has_constant_override);
 
-	ClassDB::bind_method(D_METHOD("has_icon", "name", "type"), &Control::has_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_stylebox", "name", "type"), &Control::has_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_font", "name", "type"), &Control::has_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_color", "name", "type"), &Control::has_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_constant", "name", "type"), &Control::has_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_icon", "name", "node_type"), &Control::has_icon, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_stylebox", "name", "node_type"), &Control::has_stylebox, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_font", "name", "node_type"), &Control::has_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_color", "name", "node_type"), &Control::has_color, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_constant", "name", "node_type"), &Control::has_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("get_parent_control"), &Control::get_parent_control);
 
@@ -2935,6 +2945,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
 
+	ClassDB::bind_method(D_METHOD("set_pass_on_modal_close_click", "enabled"), &Control::set_pass_on_modal_close_click);
+	ClassDB::bind_method(D_METHOD("get_pass_on_modal_close_click"), &Control::get_pass_on_modal_close_click);
+
 	ClassDB::bind_method(D_METHOD("set_clip_contents", "enable"), &Control::set_clip_contents);
 	ClassDB::bind_method(D_METHOD("is_clipping_contents"), &Control::is_clipping_contents);
 
@@ -2960,7 +2973,9 @@ void Control::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "can_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
 	BIND_VMETHOD(MethodInfo("drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "_make_custom_tooltip", PropertyInfo(Variant::STRING, "for_text")));
+	BIND_VMETHOD(MethodInfo(
+			PropertyInfo(Variant::OBJECT, "control", PROPERTY_HINT_RESOURCE_TYPE, "Control"),
+			"_make_custom_tooltip", PropertyInfo(Variant::STRING, "for_text")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_clips_input"));
 
 	ADD_GROUP("Anchor", "anchor_");
@@ -3004,6 +3019,9 @@ void Control::_bind_methods() {
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass,Ignore"), "set_mouse_filter", "get_mouse_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,Ibeam,Pointing hand,Cross,Wait,Busy,Drag,Can drop,Forbidden,Vertical resize,Horizontal resize,Secondary diagonal resize,Main diagonal resize,Move,Vertical split,Horizontal split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
+
+	ADD_GROUP("Input", "input_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_pass_on_modal_close_click"), "set_pass_on_modal_close_click", "get_pass_on_modal_close_click");
 
 	ADD_GROUP("Size Flags", "size_flags_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill,Expand,Shrink Center,Shrink End"), "set_h_size_flags", "get_h_size_flags");

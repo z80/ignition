@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,6 +70,7 @@ public:
 
 	Control *get_editor_viewport();
 	void edit_resource(const Ref<Resource> &p_resource);
+	void edit_node(Node *p_node);
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
 
@@ -88,7 +89,7 @@ public:
 	String get_selected_path() const;
 	String get_current_path() const;
 
-	void inspect_object(Object *p_obj, const String &p_for_property = String());
+	void inspect_object(Object *p_obj, const String &p_for_property = String(), bool p_inspector_only = false);
 
 	EditorSelection *get_selection();
 	//EditorImportExport *get_import_export();
@@ -99,6 +100,7 @@ public:
 	FileSystemDock *get_file_system_dock();
 
 	Control *get_base_control();
+	float get_editor_scale() const;
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;

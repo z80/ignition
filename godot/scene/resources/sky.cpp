@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,8 @@ void Sky::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radiance_size", "size"), &Sky::set_radiance_size);
 	ClassDB::bind_method(D_METHOD("get_radiance_size"), &Sky::get_radiance_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "radiance_size", PROPERTY_HINT_ENUM, "32,64,128,256,512,1024,2048"), "set_radiance_size", "get_radiance_size");
+	// Don't expose 1024 and 2048 in the property hint as these sizes will cause GPU hangs on many systems.
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "radiance_size", PROPERTY_HINT_ENUM, "32,64,128,256,512"), "set_radiance_size", "get_radiance_size");
 
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_32);
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_64);
@@ -390,6 +391,10 @@ ProceduralSky::TextureSize ProceduralSky::get_texture_size() const {
 	return texture_size;
 }
 
+Ref<Image> ProceduralSky::get_data() const {
+	return panorama->duplicate();
+}
+
 RID ProceduralSky::get_rid() const {
 	return sky;
 }
@@ -406,17 +411,17 @@ void ProceduralSky::_update_sky() {
 #endif
 	if (use_thread) {
 
-		if (!sky_thread) {
-			sky_thread = Thread::create(_thread_function, this);
+		if (!sky_thread.is_started()) {
+			sky_thread.start(_thread_function, this);
 			regen_queued = false;
 		} else {
 			regen_queued = true;
 		}
 
 	} else {
-		Ref<Image> image = _generate_sky();
-		VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
-		VS::get_singleton()->texture_set_data(texture, image);
+		panorama = _generate_sky();
+		VS::get_singleton()->texture_allocate(texture, panorama->get_width(), panorama->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
+		VS::get_singleton()->texture_set_data(texture, panorama);
 		_radiance_changed();
 	}
 }
@@ -432,14 +437,13 @@ void ProceduralSky::_queue_update() {
 
 void ProceduralSky::_thread_done(const Ref<Image> &p_image) {
 
-	VS::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
-	VS::get_singleton()->texture_set_data(texture, p_image);
+	panorama = p_image;
+	VS::get_singleton()->texture_allocate(texture, panorama->get_width(), panorama->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
+	VS::get_singleton()->texture_set_data(texture, panorama);
 	_radiance_changed();
-	Thread::wait_to_finish(sky_thread);
-	memdelete(sky_thread);
-	sky_thread = NULL;
+	sky_thread.wait_to_finish();
 	if (regen_queued) {
-		sky_thread = Thread::create(_thread_function, this);
+		sky_thread.start(_thread_function, this);
 		regen_queued = false;
 	}
 }
@@ -567,7 +571,6 @@ ProceduralSky::ProceduralSky(bool p_desaturate) {
 	sun_energy = 1;
 
 	texture_size = TEXTURE_SIZE_1024;
-	sky_thread = NULL;
 	regen_queued = false;
 	first_time = true;
 
@@ -576,10 +579,8 @@ ProceduralSky::ProceduralSky(bool p_desaturate) {
 
 ProceduralSky::~ProceduralSky() {
 
-	if (sky_thread) {
-		Thread::wait_to_finish(sky_thread);
-		memdelete(sky_thread);
-		sky_thread = NULL;
+	if (sky_thread.is_started()) {
+		sky_thread.wait_to_finish();
 	}
 	VS::get_singleton()->free(sky);
 	VS::get_singleton()->free(texture);

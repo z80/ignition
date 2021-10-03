@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptPropertyGet" inherits="VisualScriptNode" version="3.2">
+<class name="VisualScriptPropertyGet" inherits="VisualScriptNode" version="3.3">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -30,6 +30,8 @@
 		<constant name="CALL_MODE_NODE_PATH" value="1" enum="CallMode">
 		</constant>
 		<constant name="CALL_MODE_INSTANCE" value="2" enum="CallMode">
+		</constant>
+		<constant name="CALL_MODE_BASIC_TYPE" value="3" enum="CallMode">
 		</constant>
 	</constants>
 </class>

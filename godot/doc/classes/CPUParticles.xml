@@ -1,107 +1,85 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CPUParticles" inherits="GeometryInstance" version="3.2">
+<class name="CPUParticles" inherits="GeometryInstance" version="3.3">
 	<brief_description>
 		CPU-based 3D particle emitter.
 	</brief_description>
 	<description>
 		CPU-based 3D particle node used to create a variety of particle systems and effects.
 		See also [Particles], which provides the same functionality with hardware acceleration, but may not run on older devices.
+		[b]Note:[/b] Unlike [Particles], the visibility rect is generated on-the-fly and doesn't need to be configured by the user.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="convert_from_particles">
-			<return type="void">
-			</return>
-			<argument index="0" name="particles" type="Node">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="particles" type="Node" />
 			<description>
 				Sets this node's properties to match a given [Particles] node with an assigned [ParticlesMaterial].
 			</description>
 		</method>
 		<method name="get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter" />
 			<description>
 				Returns the base value of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_param_curve" qualifiers="const">
-			<return type="Curve">
-			</return>
-			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
-			</argument>
+			<return type="Curve" />
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter" />
 			<description>
 				Returns the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_param_randomness" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter" />
 			<description>
 				Returns the randomness factor of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_particle_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="CPUParticles.Flags">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="CPUParticles.Flags" />
 			<description>
 				Returns the enabled state of the given flag (see [enum Flags] for options).
 			</description>
 		</method>
 		<method name="restart">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Restarts the particle emitter.
 			</description>
 		</method>
 		<method name="set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter" />
+			<argument index="1" name="value" type="float" />
 			<description>
 				Sets the base value of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_curve">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
-			</argument>
-			<argument index="1" name="curve" type="Curve">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter" />
+			<argument index="1" name="curve" type="Curve" />
 			<description>
 				Sets the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_randomness">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
-			</argument>
-			<argument index="1" name="randomness" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter" />
+			<argument index="1" name="randomness" type="float" />
 			<description>
 				Sets the randomness factor of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_particle_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="CPUParticles.Flags">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="CPUParticles.Flags" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				Enables or disables the given flag (see [enum Flags] for options).
 			</description>
@@ -109,7 +87,8 @@
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
-			Number of particles emitted in one emission cycle.
+			The number of particles emitted in one emission cycle (corresponding to the [member lifetime]).
+			[b]Note:[/b] Changing [member amount] will reset the particle emission, therefore removing all particles that were already emitted before changing [member amount].
 		</member>
 		<member name="angle" type="float" setter="set_param" getter="get_param" default="0.0">
 			Initial rotation applied to each particle, in degrees.
@@ -229,7 +208,7 @@
 			Initial velocity randomness ratio.
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
-			Amount of time each particle will exist.
+			The amount of time each particle will exist (in seconds).
 		</member>
 		<member name="lifetime_randomness" type="float" setter="set_lifetime_randomness" getter="get_lifetime_randomness" default="0.0">
 			Particle lifetime randomness ratio.

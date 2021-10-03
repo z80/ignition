@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -211,6 +211,17 @@ unsigned int ARVRInterfaceGDNative::get_external_texture_for_eye(ARVRInterface::
 
 	if ((interface->version.major > 1) || ((interface->version.major) == 1 && (interface->version.minor >= 1))) {
 		return (unsigned int)interface->get_external_texture_for_eye(data, (godot_int)p_eye);
+	} else {
+		return 0;
+	}
+}
+
+unsigned int ARVRInterfaceGDNative::get_external_depth_for_eye(ARVRInterface::Eyes p_eye) {
+
+	ERR_FAIL_COND_V(interface == NULL, 0);
+
+	if ((interface->version.major > 1) || ((interface->version.major) == 1 && (interface->version.minor >= 2))) {
+		return (unsigned int)interface->get_external_depth_for_eye(data, (godot_int)p_eye);
 	} else {
 		return 0;
 	}
@@ -424,5 +435,22 @@ godot_real GDAPI godot_arvr_get_controller_rumble(godot_int p_controller_id) {
 	}
 
 	return 0.0;
+}
+
+void GDAPI godot_arvr_set_interface(godot_object *p_arvr_interface, const godot_arvr_interface_gdnative *p_gdn_interface) {
+	// If our major version is 0 or bigger then 10, we're likely looking at our constructor pointer from an older plugin
+	ERR_FAIL_COND_MSG((p_gdn_interface->version.major == 0) || (p_gdn_interface->version.major > 10), "GDNative ARVR interfaces build for Godot 3.0 are not supported.");
+
+	ARVRInterfaceGDNative *interface = (ARVRInterfaceGDNative *)p_arvr_interface;
+	interface->set_interface((const godot_arvr_interface_gdnative *)p_gdn_interface);
+}
+
+godot_int GDAPI godot_arvr_get_depthid(godot_rid *p_render_target) {
+	// We also need to access our depth texture for reprojection.
+	RID *render_target = (RID *)p_render_target;
+
+	uint32_t texid = VSG::storage->render_target_get_depth_texture_id(*render_target);
+
+	return texid;
 }
 }

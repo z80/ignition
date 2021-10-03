@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -203,6 +203,8 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 }
 
 int Navigation2D::navpoly_add(const Ref<NavigationPolygon> &p_mesh, const Transform2D &p_xform, Object *p_owner) {
+
+	ERR_FAIL_COND_V(p_mesh.is_null(), -1);
 
 	int id = last_id++;
 	NavMesh nm;

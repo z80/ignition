@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,34 +44,22 @@ Error WebSocketClient::connect_to_url(String p_url, const Vector<String> p_proto
 	_is_multiplayer = gd_mp_api;
 
 	String host = p_url;
-	String path = "/";
-	int p_len = -1;
-	int port = 80;
+	String path;
+	String scheme;
+	int port = 0;
+	Error err = p_url.parse_url(scheme, host, port, path);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Invalid URL: " + p_url);
+
 	bool ssl = false;
-	if (host.begins_with("wss://")) {
-		ssl = true; // we should implement this
-		host = host.substr(6, host.length() - 6);
-		port = 443;
-	} else {
-		ssl = false;
-		if (host.begins_with("ws://"))
-			host = host.substr(5, host.length() - 5);
+	if (scheme == "wss://") {
+		ssl = true;
 	}
-
-	// Path
-	p_len = host.find("/");
-	if (p_len != -1) {
-		path = host.substr(p_len, host.length() - p_len);
-		host = host.substr(0, p_len);
+	if (port == 0) {
+		port = ssl ? 443 : 80;
 	}
-
-	// Port
-	p_len = host.find_last(":");
-	if (p_len != -1 && p_len == host.find(":")) {
-		port = host.substr(p_len, host.length() - p_len).to_int();
-		host = host.substr(0, p_len);
+	if (path.empty()) {
+		path = "/";
 	}
-
 	return connect_to_host(host, path, port, ssl, p_protocols, p_custom_headers);
 }
 

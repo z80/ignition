@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,21 +102,24 @@ void PathFollow::_update_transform(bool p_update_xyz_rot) {
 	if (!c.is_valid())
 		return;
 
-	if (delta_offset == 0) {
-		return;
-	}
-
 	float bl = c->get_baked_length();
 	if (bl == 0.0) {
 		return;
 	}
 	float bi = c->get_bake_interval();
 	float o_next = offset + bi;
+	float o_prev = offset - bi;
 
 	if (loop) {
 		o_next = Math::fposmod(o_next, bl);
-	} else if (rotation_mode == ROTATION_ORIENTED && o_next >= bl) {
-		o_next = bl;
+		o_prev = Math::fposmod(o_prev, bl);
+	} else if (rotation_mode == ROTATION_ORIENTED) {
+		if (o_next >= bl) {
+			o_next = bl;
+		}
+		if (o_prev <= 0) {
+			o_prev = 0;
+		}
 	}
 
 	Vector3 pos = c->interpolate_baked(offset, cubic);
@@ -125,8 +128,12 @@ void PathFollow::_update_transform(bool p_update_xyz_rot) {
 	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
 
 	if (rotation_mode == ROTATION_ORIENTED) {
-
 		Vector3 forward = c->interpolate_baked(o_next, cubic) - pos;
+
+		// Try with the previous position
+		if (forward.length_squared() < CMP_EPSILON2) {
+			forward = pos - c->interpolate_baked(o_prev, cubic);
+		}
 
 		if (forward.length_squared() < CMP_EPSILON2)
 			forward = Vector3(0, 0, 1);
@@ -163,7 +170,7 @@ void PathFollow::_update_transform(bool p_update_xyz_rot) {
 
 		t.origin = pos;
 
-		if (p_update_xyz_rot) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree
+		if (p_update_xyz_rot && delta_offset != 0) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
 			Vector3 t_prev = (pos - c->interpolate_baked(offset - delta_offset, cubic)).normalized();
 			Vector3 t_cur = (c->interpolate_baked(offset + delta_offset, cubic) - pos).normalized();
 
@@ -264,16 +271,23 @@ String PathFollow::get_configuration_warning() const {
 	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
+	String warning = Spatial::get_configuration_warning();
 	if (!Object::cast_to<Path>(get_parent())) {
-		return TTR("PathFollow only works when set as a child of a Path node.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("PathFollow only works when set as a child of a Path node.");
 	} else {
 		Path *path = Object::cast_to<Path>(get_parent());
 		if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
-			return TTR("PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path's Curve resource.");
+			if (warning != String()) {
+				warning += "\n\n";
+			}
+			warning += TTR("PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path's Curve resource.");
 		}
 	}
 
-	return String();
+	return warning;
 }
 
 void PathFollow::_bind_methods() {

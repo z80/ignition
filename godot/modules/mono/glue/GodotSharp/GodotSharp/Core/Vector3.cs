@@ -161,15 +161,16 @@ namespace Godot
         /// <param name="b">The destination vector.</param>
         /// <param name="preA">A vector before this vector.</param>
         /// <param name="postB">A vector after `b`.</param>
-        /// <param name="t">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated vector.</returns>
-        public Vector3 CubicInterpolate(Vector3 b, Vector3 preA, Vector3 postB, real_t t)
+        public Vector3 CubicInterpolate(Vector3 b, Vector3 preA, Vector3 postB, real_t weight)
         {
             Vector3 p0 = preA;
             Vector3 p1 = this;
             Vector3 p2 = b;
             Vector3 p3 = postB;
 
+            real_t t = weight;
             real_t t2 = t * t;
             real_t t3 = t2 * t;
 
@@ -734,49 +735,53 @@ namespace Godot
 
         public static bool operator <(Vector3 left, Vector3 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
-                if (Mathf.IsEqualApprox(left.y, right.y))
+                if (left.y == right.y)
+                {
                     return left.z < right.z;
+                }
                 return left.y < right.y;
             }
-
             return left.x < right.x;
         }
 
         public static bool operator >(Vector3 left, Vector3 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
-                if (Mathf.IsEqualApprox(left.y, right.y))
+                if (left.y == right.y)
+                {
                     return left.z > right.z;
+                }
                 return left.y > right.y;
             }
-
             return left.x > right.x;
         }
 
         public static bool operator <=(Vector3 left, Vector3 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
-                if (Mathf.IsEqualApprox(left.y, right.y))
+                if (left.y == right.y)
+                {
                     return left.z <= right.z;
+                }
                 return left.y < right.y;
             }
-
             return left.x < right.x;
         }
 
         public static bool operator >=(Vector3 left, Vector3 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
-                if (Mathf.IsEqualApprox(left.y, right.y))
+                if (left.y == right.y)
+                {
                     return left.z >= right.z;
+                }
                 return left.y > right.y;
             }
-
             return left.x > right.x;
         }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,6 +75,7 @@ class CSharpScript : public Script {
 
 	bool tool;
 	bool valid;
+	bool reload_invalidated;
 
 	bool builtin;
 
@@ -136,7 +137,8 @@ class CSharpScript : public Script {
 	void load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class);
 	bool _get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params);
 
-	bool _update_exports();
+	bool _update_exports(PlaceHolderScriptInstance *p_instance_to_update = nullptr);
+
 	bool _get_member_export(IMonoClassMember *p_member, bool p_inspect_export, PropertyInfo &r_prop_info, bool &r_exported);
 #ifdef TOOLS_ENABLED
 	static int _try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string);
@@ -307,16 +309,16 @@ class CSharpLanguage : public ScriptLanguage {
 	GDMono *gdmono;
 	SelfList<CSharpScript>::List script_list;
 
-	Mutex *script_instances_mutex;
-	Mutex *script_gchandle_release_mutex;
-	Mutex *language_bind_mutex;
+	Mutex script_instances_mutex;
+	Mutex script_gchandle_release_mutex;
+	Mutex language_bind_mutex;
 
 	Map<Object *, CSharpScriptBinding> script_bindings;
 
 #ifdef DEBUG_ENABLED
 	// List of unsafe object references
 	Map<ObjectID, int> unsafe_object_references;
-	Mutex *unsafe_object_references_lock;
+	Mutex unsafe_object_references_lock;
 #endif
 
 	struct StringNameCache {
@@ -358,7 +360,7 @@ class CSharpLanguage : public ScriptLanguage {
 public:
 	StringNameCache string_names;
 
-	Mutex *get_language_bind_mutex() { return language_bind_mutex; }
+	Mutex &get_language_bind_mutex() { return language_bind_mutex; }
 
 	_FORCE_INLINE_ int get_language_index() { return lang_idx; }
 	void set_language_index(int p_idx);

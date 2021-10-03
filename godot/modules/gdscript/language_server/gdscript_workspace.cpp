@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,7 @@
 #include "scene/resources/packed_scene.h"
 
 void GDScriptWorkspace::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::did_delete_files);
 	ClassDB::bind_method(D_METHOD("symbol"), &GDScriptWorkspace::symbol);
 	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
 	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_local_script);
@@ -48,6 +49,16 @@ void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_file_uri", "path"), &GDScriptWorkspace::get_file_uri);
 	ClassDB::bind_method(D_METHOD("publish_diagnostics", "path"), &GDScriptWorkspace::publish_diagnostics);
 	ClassDB::bind_method(D_METHOD("generate_script_api", "path"), &GDScriptWorkspace::generate_script_api);
+}
+
+void GDScriptWorkspace::did_delete_files(const Dictionary &p_params) {
+	Array files = p_params["files"];
+	for (int i = 0; i < files.size(); ++i) {
+		Dictionary file = files[i];
+		String uri = file["uri"];
+		String path = get_file_path(uri);
+		parse_script(path, "");
+	}
 }
 
 void GDScriptWorkspace::remove_cache_parser(const String &p_path) {
@@ -177,7 +188,9 @@ Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
 			E->get()->get_symbols().symbol_tree_as_list(E->key(), script_symbols);
 			for (int i = 0; i < script_symbols.size(); ++i) {
 				if (query.is_subsequence_ofi(script_symbols[i].name)) {
-					arr.push_back(script_symbols[i].to_json());
+					lsp::DocumentedSymbolInformation symbol = script_symbols[i];
+					symbol.location.uri = get_file_uri(symbol.location.uri);
+					arr.push_back(symbol.to_json());
 				}
 			}
 		}
@@ -429,15 +442,38 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<S
 
 	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
 		Node *owner_scene_node = _get_owner_scene_node(path);
+
+		Array stack;
+		Node *current = nullptr;
+
+		if (owner_scene_node) {
+			stack.push_back(owner_scene_node);
+			while (!stack.empty()) {
+				current = stack.pop_back();
+				Ref<GDScript> script = current->get_script();
+				if (script.is_valid() && script->get_path() == path) {
+					break;
+				}
+				for (int i = 0; i < current->get_child_count(); ++i) {
+					stack.push_back(current->get_child(i));
+				}
+			}
+
+			Ref<GDScript> script = current->get_script();
+			if (!script.is_valid() || script->get_path() != path) {
+				current = owner_scene_node;
+			}
+		}
+
 		String code = parser->get_text_for_completion(p_params.position);
-		GDScriptLanguage::get_singleton()->complete_code(code, path, owner_scene_node, r_options, forced, call_hint);
+		GDScriptLanguage::get_singleton()->complete_code(code, path, current, r_options, forced, call_hint);
 		if (owner_scene_node) {
 			memdelete(owner_scene_node);
 		}
 	}
 }
 
-const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name, bool p_func_requred) {
+const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name, bool p_func_required) {
 
 	const lsp::DocumentSymbol *symbol = NULL;
 
@@ -467,8 +503,10 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 			} else {
 
 				ScriptLanguage::LookupResult ret;
-				if (OK == GDScriptLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_identifier, p_func_requred), symbol_identifier, path, NULL, ret)) {
-
+				if (symbol_identifier == "new" && parser->get_lines()[p_doc_pos.position.line].replace(" ", "").replace("\t", "").find("new(") > -1) {
+					symbol_identifier = "_init";
+				}
+				if (OK == GDScriptLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_identifier, p_func_required), symbol_identifier, path, NULL, ret)) {
 					if (ret.type == ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION) {
 
 						String target_script_path = path;

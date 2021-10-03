@@ -129,9 +129,8 @@ typedef struct {
  */
 #define X509_MAX_VERIFY_CHAIN_SIZE    ( MBEDTLS_X509_MAX_INTERMEDIATE_CA + 2 )
 
-/*
- * Default profile
- */
+/* Default profile. Do not remove items unless there are serious security
+ * concerns. */
 const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_default =
 {
 #if defined(MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_CERTIFICATES)
@@ -1101,6 +1100,7 @@ static int x509_crt_parse_der_core( mbedtls_x509_crt *crt, const unsigned char *
 
     if( crt->sig_oid.len != sig_oid2.len ||
         memcmp( crt->sig_oid.p, sig_oid2.p, crt->sig_oid.len ) != 0 ||
+        sig_params1.tag != sig_params2.tag ||
         sig_params1.len != sig_params2.len ||
         ( sig_params1.len != 0 &&
           memcmp( sig_params1.p, sig_params2.p, sig_params1.len ) != 0 ) )

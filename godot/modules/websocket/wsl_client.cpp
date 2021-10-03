@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -156,6 +156,7 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocols, const Vector<String> p_custom_headers) {
 
 	ERR_FAIL_COND_V(_connection.is_valid(), ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(p_path.empty(), ERR_INVALID_PARAMETER);
 
 	_peer = Ref<WSLPeer>(memnew(WSLPeer));
 	IP_Address addr;

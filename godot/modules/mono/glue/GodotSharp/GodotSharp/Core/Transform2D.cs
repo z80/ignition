@@ -14,7 +14,7 @@ namespace Godot
     /// It consists of a three <see cref="Vector2"/> values: x, y, and the origin.
     ///
     /// For more information, read this documentation article:
-    /// https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html
+    /// https://docs.godotengine.org/en/3.3/tutorials/math/matrices_and_transforms.html
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
@@ -221,8 +221,7 @@ namespace Godot
 
             real_t dot = v1.Dot(v2);
 
-            // Clamp dot to [-1, 1]
-            dot = dot < -1.0f ? -1.0f : (dot > 1.0f ? 1.0f : dot);
+            dot = Mathf.Clamp(dot, -1.0f, 1.0f);
 
             Vector2 v;
 

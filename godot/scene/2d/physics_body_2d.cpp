@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -440,12 +440,8 @@ bool RigidBody2D::_test_motion(const Vector2 &p_motion, bool p_infinite_inertia,
 }
 
 void RigidBody2D::_direct_state_changed(Object *p_state) {
-
-#ifdef DEBUG_ENABLED
 	state = Object::cast_to<Physics2DDirectBodyState>(p_state);
-#else
-	state = (Physics2DDirectBodyState *)p_state; //trust it
-#endif
+	ERR_FAIL_COND_MSG(!state, "Method '_direct_state_changed' must receive a valid Physics2DDirectBodyState object as argument");
 
 	set_block_transform_notify(true); // don't want notify (would feedback loop)
 	if (mode != MODE_KINEMATIC)
@@ -1437,11 +1433,11 @@ bool KinematicBody2D::is_sync_to_physics_enabled() const {
 }
 
 void KinematicBody2D::_direct_state_changed(Object *p_state) {
-
 	if (!sync_to_physics)
 		return;
 
 	Physics2DDirectBodyState *state = Object::cast_to<Physics2DDirectBodyState>(p_state);
+	ERR_FAIL_COND_MSG(!state, "Method '_direct_state_changed' must receive a valid Physics2DDirectBodyState object as argument");
 
 	last_valid_transform = state->get_transform();
 	set_notify_local_transform(false);
@@ -1556,6 +1552,9 @@ ObjectID KinematicCollision2D::get_collider_id() const {
 
 	return collision.collider;
 }
+RID KinematicCollision2D::get_collider_rid() const {
+	return collision.collider_rid;
+}
 Object *KinematicCollision2D::get_collider_shape() const {
 
 	Object *collider = get_collider();
@@ -1591,6 +1590,7 @@ void KinematicCollision2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_shape"), &KinematicCollision2D::get_local_shape);
 	ClassDB::bind_method(D_METHOD("get_collider"), &KinematicCollision2D::get_collider);
 	ClassDB::bind_method(D_METHOD("get_collider_id"), &KinematicCollision2D::get_collider_id);
+	ClassDB::bind_method(D_METHOD("get_collider_rid"), &KinematicCollision2D::get_collider_rid);
 	ClassDB::bind_method(D_METHOD("get_collider_shape"), &KinematicCollision2D::get_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_collider_shape_index"), &KinematicCollision2D::get_collider_shape_index);
 	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &KinematicCollision2D::get_collider_velocity);
@@ -1603,6 +1603,7 @@ void KinematicCollision2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "local_shape"), "", "get_local_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_id"), "", "get_collider_id");
+	ADD_PROPERTY(PropertyInfo(Variant::_RID, "collider_rid"), "", "get_collider_rid");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider_shape"), "", "get_collider_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape_index"), "", "get_collider_shape_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "collider_velocity"), "", "get_collider_velocity");

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@ void TextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 	if (p_highlighter != NULL) {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->get_name()), true);
 	} else {
-		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text("Standard"), true);
+		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(TTR("Standard")), true);
 	}
 
 	// little work around. GDScript highlighter goes through text_edit for colours,
@@ -164,8 +164,7 @@ String TextEditor::get_name() {
 }
 
 Ref<Texture> TextEditor::get_icon() {
-
-	return EditorNode::get_singleton()->get_object_icon(text_file.operator->(), "");
+	return EditorNode::get_singleton()->get_object_icon(text_file.ptr(), "");
 }
 
 RES TextEditor::get_edited_resource() const {
@@ -173,7 +172,8 @@ RES TextEditor::get_edited_resource() const {
 }
 
 void TextEditor::set_edited_resource(const RES &p_res) {
-	ERR_FAIL_COND(!text_file.is_null());
+	ERR_FAIL_COND(text_file.is_valid());
+	ERR_FAIL_COND(p_res.is_null());
 
 	text_file = p_res;
 
@@ -183,6 +183,16 @@ void TextEditor::set_edited_resource(const RES &p_res) {
 
 	emit_signal("name_changed");
 	code_editor->update_line_and_column();
+}
+
+void TextEditor::enable_editor() {
+	if (editor_enabled) {
+		return;
+	}
+
+	editor_enabled = true;
+
+	_load_theme_settings();
 }
 
 void TextEditor::add_callback(const String &p_function, PoolStringArray p_args) {
@@ -282,6 +292,8 @@ void TextEditor::set_edit_state(const Variant &p_state) {
 			_change_syntax_highlighter(idx);
 		}
 	}
+
+	ensure_focus();
 }
 
 void TextEditor::trim_trailing_whitespace() {
@@ -359,15 +371,6 @@ Control *TextEditor::get_edit_menu() {
 
 void TextEditor::clear_edit_menu() {
 	memdelete(edit_hb);
-}
-
-void TextEditor::_notification(int p_what) {
-
-	switch (p_what) {
-		case NOTIFICATION_READY:
-			_load_theme_settings();
-			break;
-	}
 }
 
 void TextEditor::_edit_option(int p_op) {
@@ -624,6 +627,8 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 }
 
 TextEditor::TextEditor() {
+	editor_enabled = false;
+
 	code_editor = memnew(CodeTextEditor);
 	add_child(code_editor);
 	code_editor->add_constant_override("separation", 0);
@@ -695,7 +700,7 @@ TextEditor::TextEditor() {
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize")), EDIT_CAPITALIZE);
 	convert_case->connect("id_pressed", this, "_edit_option");
 
-	highlighters["Standard"] = NULL;
+	highlighters[TTR("Standard")] = NULL;
 	highlighter_menu = memnew(PopupMenu);
 	highlighter_menu->set_name("highlighter_menu");
 	edit_menu->get_popup()->add_child(highlighter_menu);

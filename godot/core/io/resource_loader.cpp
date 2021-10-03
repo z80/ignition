@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -138,18 +138,6 @@ public:
 	ResourceInteractiveLoaderDefault() {}
 };
 
-Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const String &p_path, const String &p_original_path, Error *r_error) {
-
-	//either this
-	Ref<Resource> res = load(p_path, p_original_path, r_error);
-	if (res.is_null())
-		return Ref<ResourceInteractiveLoader>();
-
-	Ref<ResourceInteractiveLoaderDefault> ril = Ref<ResourceInteractiveLoaderDefault>(memnew(ResourceInteractiveLoaderDefault));
-	ril->resource = res;
-	return ril;
-}
-
 bool ResourceFormatLoader::exists(const String &p_path) const {
 	return FileAccess::exists(p_path); //by default just check file
 }
@@ -168,25 +156,41 @@ void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions)
 	}
 }
 
-RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error) {
+// Warning: Derived classes must override either `load` or `load_interactive`. The base code
+// here can trigger an infinite recursion otherwise, since `load` calls `load_interactive`
+// vice versa.
 
+Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const String &p_path, const String &p_original_path, Error *r_error) {
+	// Warning: See previous note about the risk of infinite recursion.
+	Ref<Resource> res = load(p_path, p_original_path, r_error);
+	if (res.is_null()) {
+		return Ref<ResourceInteractiveLoader>();
+	}
+
+	Ref<ResourceInteractiveLoaderDefault> ril = Ref<ResourceInteractiveLoaderDefault>(memnew(ResourceInteractiveLoaderDefault));
+	ril->resource = res;
+	return ril;
+}
+
+RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error) {
+	// Check user-defined loader if there's any. Hard fail if it returns an error.
 	if (get_script_instance() && get_script_instance()->has_method("load")) {
 		Variant res = get_script_instance()->call("load", p_path, p_original_path);
 
-		if (res.get_type() == Variant::INT) {
-
-			if (r_error)
+		if (res.get_type() == Variant::INT) { // Error code, abort.
+			if (r_error) {
 				*r_error = (Error)res.operator int64_t();
-
-		} else {
-
-			if (r_error)
+			}
+			return RES();
+		} else { // Success, pass on result.
+			if (r_error) {
 				*r_error = OK;
+			}
 			return res;
 		}
 	}
 
-	//or this must be implemented
+	// Warning: See previous note about the risk of infinite recursion.
 	Ref<ResourceInteractiveLoader> ril = load_interactive(p_path, p_original_path, r_error);
 	if (!ril.is_valid())
 		return RES();
@@ -289,9 +293,7 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 bool ResourceLoader::_add_to_loading_map(const String &p_path) {
 
 	bool success;
-	if (loading_map_mutex) {
-		loading_map_mutex->lock();
-	}
+	loading_map_mutex.lock();
 
 	LoadingMapKey key;
 	key.path = p_path;
@@ -304,17 +306,13 @@ bool ResourceLoader::_add_to_loading_map(const String &p_path) {
 		success = true;
 	}
 
-	if (loading_map_mutex) {
-		loading_map_mutex->unlock();
-	}
+	loading_map_mutex.unlock();
 
 	return success;
 }
 
 void ResourceLoader::_remove_from_loading_map(const String &p_path) {
-	if (loading_map_mutex) {
-		loading_map_mutex->lock();
-	}
+	loading_map_mutex.lock();
 
 	LoadingMapKey key;
 	key.path = p_path;
@@ -322,15 +320,11 @@ void ResourceLoader::_remove_from_loading_map(const String &p_path) {
 
 	loading_map.erase(key);
 
-	if (loading_map_mutex) {
-		loading_map_mutex->unlock();
-	}
+	loading_map_mutex.unlock();
 }
 
 void ResourceLoader::_remove_from_loading_map_and_thread(const String &p_path, Thread::ID p_thread) {
-	if (loading_map_mutex) {
-		loading_map_mutex->lock();
-	}
+	loading_map_mutex.lock();
 
 	LoadingMapKey key;
 	key.path = p_path;
@@ -338,9 +332,7 @@ void ResourceLoader::_remove_from_loading_map_and_thread(const String &p_path, T
 
 	loading_map.erase(key);
 
-	if (loading_map_mutex) {
-		loading_map_mutex->unlock();
-	}
+	loading_map_mutex.unlock();
 }
 
 RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p_no_cache, Error *r_error) {
@@ -362,9 +354,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		}
 
 		//lock first if possible
-		if (ResourceCache::lock) {
-			ResourceCache::lock->read_lock();
-		}
+		ResourceCache::lock.read_lock();
 
 		//get ptr
 		Resource **rptr = ResourceCache::resources.getptr(local_path);
@@ -376,16 +366,12 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 				//referencing is fine
 				if (r_error)
 					*r_error = OK;
-				if (ResourceCache::lock) {
-					ResourceCache::lock->read_unlock();
-				}
+				ResourceCache::lock.read_unlock();
 				_remove_from_loading_map(local_path);
 				return res;
 			}
 		}
-		if (ResourceCache::lock) {
-			ResourceCache::lock->read_unlock();
-		}
+		ResourceCache::lock.read_unlock();
 	}
 
 	bool xl_remapped = false;
@@ -851,9 +837,7 @@ String ResourceLoader::path_remap(const String &p_path) {
 
 void ResourceLoader::reload_translation_remaps() {
 
-	if (ResourceCache::lock) {
-		ResourceCache::lock->read_lock();
-	}
+	ResourceCache::lock.read_lock();
 
 	List<Resource *> to_reload;
 	SelfList<Resource> *E = remapped_list.first();
@@ -863,9 +847,7 @@ void ResourceLoader::reload_translation_remaps() {
 		E = E->next();
 	}
 
-	if (ResourceCache::lock) {
-		ResourceCache::lock->read_unlock();
-	}
+	ResourceCache::lock.read_unlock();
 
 	//now just make sure to not delete any of these resources while changing locale..
 	while (to_reload.front()) {
@@ -956,7 +938,7 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 
 	ERR_FAIL_COND_V_MSG(obj == NULL, false, "Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt) + ".");
 
-	ResourceFormatLoader *crl = Object::cast_to<ResourceFormatLoader>(obj);
+	Ref<ResourceFormatLoader> crl = Object::cast_to<ResourceFormatLoader>(obj);
 	crl->set_script(s.get_ref_ptr());
 	ResourceLoader::add_resource_format_loader(crl);
 
@@ -1004,14 +986,8 @@ void ResourceLoader::remove_custom_loaders() {
 	}
 }
 
-Mutex *ResourceLoader::loading_map_mutex = NULL;
+Mutex ResourceLoader::loading_map_mutex;
 HashMap<ResourceLoader::LoadingMapKey, int, ResourceLoader::LoadingMapKeyHasher> ResourceLoader::loading_map;
-
-void ResourceLoader::initialize() {
-#ifndef NO_THREADS
-	loading_map_mutex = Mutex::create();
-#endif
-}
 
 void ResourceLoader::finalize() {
 #ifndef NO_THREADS
@@ -1020,8 +996,6 @@ void ResourceLoader::finalize() {
 		ERR_PRINTS("Exited while resource is being loaded: " + K->path);
 	}
 	loading_map.clear();
-	memdelete(loading_map_mutex);
-	loading_map_mutex = NULL;
 #endif
 }
 

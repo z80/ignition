@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody" inherits="PhysicsBody" version="3.2">
+<class name="RigidBody" inherits="PhysicsBody" version="3.3">
 	<brief_description>
 		Physics Body whose position is determined through physics simulation in 3D space.
 	</brief_description>
@@ -11,119 +11,96 @@
 		With Bullet physics (the default), the center of mass is the RigidBody3D center. With GodotPhysics, the center of mass is the average of the [CollisionShape] centers.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
+		<link title="Physics introduction">https://docs.godotengine.org/en/3.3/tutorials/physics/physics_introduction.html</link>
+		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
 	</tutorials>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="state" type="PhysicsDirectBodyState">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="state" type="PhysicsDirectBodyState" />
 			<description>
 				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default, it works in addition to the usual physics behavior, but the [member custom_integrator] property allows you to disable the default behavior and do fully custom force integration for a body.
 			</description>
 		</method>
 		<method name="add_central_force">
-			<return type="void">
-			</return>
-			<argument index="0" name="force" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="force" type="Vector3" />
 			<description>
 				Adds a constant directional force (i.e. acceleration) without affecting rotation.
 				This is equivalent to [code]add_force(force, Vector3(0,0,0))[/code].
 			</description>
 		</method>
 		<method name="add_force">
-			<return type="void">
-			</return>
-			<argument index="0" name="force" type="Vector3">
-			</argument>
-			<argument index="1" name="position" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="force" type="Vector3" />
+			<argument index="1" name="position" type="Vector3" />
 			<description>
 				Adds a constant directional force (i.e. acceleration).
 				The position uses the rotation of the global coordinate system, but is centered at the object's origin.
 			</description>
 		</method>
 		<method name="add_torque">
-			<return type="void">
-			</return>
-			<argument index="0" name="torque" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="torque" type="Vector3" />
 			<description>
 				Adds a constant rotational force (i.e. a motor) without affecting position.
 			</description>
 		</method>
 		<method name="apply_central_impulse">
-			<return type="void">
-			</return>
-			<argument index="0" name="impulse" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="impulse" type="Vector3" />
 			<description>
 				Applies a directional impulse without affecting rotation.
 				This is equivalent to [code]apply_impulse(Vector3(0,0,0), impulse)[/code].
 			</description>
 		</method>
 		<method name="apply_impulse">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector3">
-			</argument>
-			<argument index="1" name="impulse" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector3" />
+			<argument index="1" name="impulse" type="Vector3" />
 			<description>
 				Applies a positioned impulse to the body. An impulse is time independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason it should only be used when simulating one-time impacts. The position uses the rotation of the global coordinate system, but is centered at the object's origin.
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
-			<return type="void">
-			</return>
-			<argument index="0" name="impulse" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="impulse" type="Vector3" />
 			<description>
 				Applies a torque impulse which will be affected by the body mass and shape. This will rotate the body around the [code]impulse[/code] vector passed.
 			</description>
 		</method>
 		<method name="get_axis_lock" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="axis" type="int" enum="PhysicsServer.BodyAxis">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="axis" type="int" enum="PhysicsServer.BodyAxis" />
 			<description>
 				Returns [code]true[/code] if the specified linear or rotational axis is locked.
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns a list of the bodies colliding with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
 				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
 		<method name="get_inverse_inertia_tensor">
-			<return type="Basis">
-			</return>
+			<return type="Basis" />
 			<description>
 				Returns the inverse inertia tensor basis. This is used to calculate the angular acceleration resulting from a torque applied to the RigidBody.
 			</description>
 		</method>
 		<method name="set_axis_lock">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis" type="int" enum="PhysicsServer.BodyAxis">
-			</argument>
-			<argument index="1" name="lock" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="axis" type="int" enum="PhysicsServer.BodyAxis" />
+			<argument index="1" name="lock" type="bool" />
 			<description>
 				Locks the specified linear or rotational axis.
 			</description>
 		</method>
 		<method name="set_axis_velocity">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis_velocity" type="Vector3">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="axis_velocity" type="Vector3" />
 			<description>
 				Sets an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
@@ -132,6 +109,7 @@
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
 			Damps RigidBody's rotational forces.
+			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3( 0, 0, 0 )">
 			RigidBody's rotational velocity.
@@ -185,6 +163,7 @@
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="-1.0">
 			The body's linear damp. Cannot be less than -1.0. If this value is different from -1.0, any linear damp derived from the world or areas will be overridden.
+			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3( 0, 0, 0 )">
 			The body's linear velocity. Can be used sporadically, but [b]don't set this every frame[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
@@ -208,45 +187,45 @@
 	</members>
 	<signals>
 		<signal name="body_entered">
-			<argument index="0" name="body" type="Node">
-			</argument>
+			<argument index="0" name="body" type="Node" />
 			<description>
-				Emitted when a body enters into contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
+				Emitted when a collision with another [PhysicsBody] or [GridMap] occurs. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody] or [GridMap].
 			</description>
 		</signal>
 		<signal name="body_exited">
-			<argument index="0" name="body" type="Node">
-			</argument>
+			<argument index="0" name="body" type="Node" />
 			<description>
-				Emitted when a body shape exits contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
+				Emitted when the collision with another [PhysicsBody] or [GridMap] ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody] or [GridMap].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
-			<argument index="0" name="body_id" type="int">
-			</argument>
-			<argument index="1" name="body" type="Node">
-			</argument>
-			<argument index="2" name="body_shape" type="int">
-			</argument>
-			<argument index="3" name="local_shape" type="int">
-			</argument>
+			<argument index="0" name="body_id" type="int" />
+			<argument index="1" name="body" type="Node" />
+			<argument index="2" name="body_shape" type="int" />
+			<argument index="3" name="local_shape" type="int" />
 			<description>
-				Emitted when a body enters into contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
-				This signal not only receives the body that collided with this one, but also its [RID] ([code]body_id[/code]), the shape index from the colliding body ([code]body_shape[/code]), and the shape index from this body ([code]local_shape[/code]) the other body collided with.
+				Emitted when one of this RigidBody's [Shape]s collides with another [PhysicsBody] or [GridMap]'s [Shape]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
+				[code]body_id[/code] the [RID] of the other [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer].
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody] or [GridMap].
+				[code]body_shape[/code] the index of the [Shape] of the other [PhysicsBody] or [GridMap] used by the [PhysicsServer].
+				[code]local_shape[/code] the index of the [Shape] of this RigidBody used by the [PhysicsServer].
+				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape]. Don't use multiple [CollisionShape]s when using a [ConcavePolygonShape] with Bullet physics if you need shape indices.
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
-			<argument index="0" name="body_id" type="int">
-			</argument>
-			<argument index="1" name="body" type="Node">
-			</argument>
-			<argument index="2" name="body_shape" type="int">
-			</argument>
-			<argument index="3" name="local_shape" type="int">
-			</argument>
+			<argument index="0" name="body_id" type="int" />
+			<argument index="1" name="body" type="Node" />
+			<argument index="2" name="body_shape" type="int" />
+			<argument index="3" name="local_shape" type="int" />
 			<description>
-				Emitted when a body shape exits contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
-				This signal not only receives the body that stopped colliding with this one, but also its [RID] ([code]body_id[/code]), the shape index from the colliding body ([code]body_shape[/code]), and the shape index from this body ([code]local_shape[/code]) the other body stopped colliding with.
+				Emitted when the collision between one of this RigidBody's [Shape]s and another [PhysicsBody] or [GridMap]'s [Shape]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
+				[code]body_id[/code] the [RID] of the other [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer]. [GridMap]s are detected if the Meshes have [Shape]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody] or [GridMap].
+				[code]body_shape[/code] the index of the [Shape] of the other [PhysicsBody] or [GridMap] used by the [PhysicsServer].
+				[code]local_shape[/code] the index of the [Shape] of this RigidBody used by the [PhysicsServer].
+				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape]. Don't use multiple [CollisionShape]s when using a [ConcavePolygonShape] with Bullet physics if you need shape indices.
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,6 +86,9 @@ void PropertySelector::_update_search() {
 	help_bit->set_text("");
 
 	TreeItem *root = search_options->create_item();
+
+	// Allow using spaces in place of underscores in the search string (makes the search more fault-tolerant).
+	const String search_text = search_box->get_text().replace(" ", "_");
 
 	if (properties) {
 
@@ -172,7 +175,7 @@ void PropertySelector::_update_search() {
 			if (!(E->get().usage & PROPERTY_USAGE_EDITOR) && !(E->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE))
 				continue;
 
-			if (search_box->get_text() != String() && E->get().name.find(search_box->get_text()) == -1)
+			if (search_box->get_text() != String() && E->get().name.findn(search_text) == -1)
 				continue;
 
 			if (type_filter.size() && type_filter.find(E->get().type) == -1)
@@ -183,7 +186,7 @@ void PropertySelector::_update_search() {
 			item->set_metadata(0, E->get().name);
 			item->set_icon(0, type_icons[E->get().type]);
 
-			if (!found && search_box->get_text() != String() && E->get().name.find(search_box->get_text()) != -1) {
+			if (!found && search_box->get_text() != String() && E->get().name.findn(search_text) != -1) {
 				item->select(0);
 				found = true;
 			}
@@ -258,7 +261,7 @@ void PropertySelector::_update_search() {
 			if (!virtuals_only && (E->get().flags & METHOD_FLAG_VIRTUAL))
 				continue;
 
-			if (search_box->get_text() != String() && name.find(search_box->get_text()) == -1)
+			if (search_box->get_text() != String() && name.findn(search_text) == -1)
 				continue;
 
 			TreeItem *item = search_options->create_item(category ? category : root);
@@ -269,30 +272,32 @@ void PropertySelector::_update_search() {
 			if (mi.name.find(":") != -1) {
 				desc = mi.name.get_slice(":", 1) + " ";
 				mi.name = mi.name.get_slice(":", 0);
-			} else if (mi.return_val.type != Variant::NIL)
+			} else if (mi.return_val.type != Variant::NIL) {
 				desc = Variant::get_type_name(mi.return_val.type);
-			else
-				desc = "void ";
+			} else {
+				desc = "void";
+			}
 
-			desc += " " + mi.name + " ( ";
+			desc += vformat(" %s(", mi.name);
 
 			for (int i = 0; i < mi.arguments.size(); i++) {
 
 				if (i > 0)
 					desc += ", ";
 
-				if (mi.arguments[i].type == Variant::NIL)
-					desc += "var ";
-				else if (mi.arguments[i].name.find(":") != -1) {
-					desc += mi.arguments[i].name.get_slice(":", 1) + " ";
-					mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
-				} else
-					desc += Variant::get_type_name(mi.arguments[i].type) + " ";
-
 				desc += mi.arguments[i].name;
+
+				if (mi.arguments[i].type == Variant::NIL) {
+					desc += ": Variant";
+				} else if (mi.arguments[i].name.find(":") != -1) {
+					desc += vformat(": %s", mi.arguments[i].name.get_slice(":", 1));
+					mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
+				} else {
+					desc += vformat(": %s", Variant::get_type_name(mi.arguments[i].type));
+				}
 			}
 
-			desc += " )";
+			desc += ")";
 
 			if (E->get().flags & METHOD_FLAG_CONST)
 				desc += " const";
@@ -304,7 +309,7 @@ void PropertySelector::_update_search() {
 			item->set_metadata(0, name);
 			item->set_selectable(0, true);
 
-			if (!found && search_box->get_text() != String() && name.find(search_box->get_text()) != -1) {
+			if (!found && search_box->get_text() != String() && name.findn(search_text) != -1) {
 				item->select(0);
 				found = true;
 			}
@@ -339,54 +344,64 @@ void PropertySelector::_item_selected() {
 	String class_type;
 	if (type != Variant::NIL) {
 		class_type = Variant::get_type_name(type);
-
-	} else {
+	} else if (base_type != String()) {
 		class_type = base_type;
+	} else if (instance) {
+		class_type = instance->get_class();
 	}
 
 	DocData *dd = EditorHelp::get_doc_data();
 	String text;
-
 	if (properties) {
-
-		String at_class = class_type;
-
-		while (at_class != String()) {
-
-			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(at_class);
+		while (class_type != String()) {
+			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
 			if (E) {
 				for (int i = 0; i < E->get().properties.size(); i++) {
 					if (E->get().properties[i].name == name) {
 						text = E->get().properties[i].description;
+						break;
 					}
 				}
 			}
 
-			at_class = ClassDB::get_parent_class(at_class);
+			if (text != String()) {
+				break;
+			}
+
+			// The property may be from a parent class, keep looking.
+			class_type = ClassDB::get_parent_class(class_type);
 		}
 	} else {
-
-		String at_class = class_type;
-
-		while (at_class != String()) {
-
-			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(at_class);
+		while (class_type != String()) {
+			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
 			if (E) {
 				for (int i = 0; i < E->get().methods.size(); i++) {
 					if (E->get().methods[i].name == name) {
 						text = E->get().methods[i].description;
+						break;
 					}
 				}
 			}
 
-			at_class = ClassDB::get_parent_class(at_class);
+			if (text != String()) {
+				break;
+			}
+
+			// The method may be from a parent class, keep looking.
+			class_type = ClassDB::get_parent_class(class_type);
 		}
 	}
 
-	if (text == String())
-		return;
-
-	help_bit->set_text(text);
+	if (text != String()) {
+		// Display both property name and description, since the help bit may be displayed
+		// far away from the location (especially if the dialog was resized to be taller).
+		help_bit->set_text(vformat("[b]%s[/b]: %s", name, text));
+		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
+	} else {
+		// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
+		help_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", name)));
+		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
+	}
 }
 
 void PropertySelector::_notification(int p_what) {

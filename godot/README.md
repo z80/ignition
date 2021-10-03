@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://godotengine.org">
-    <img src="logo.svg" width="400" alt="Godot Engine logo">
+    <img src="logo_outlined.svg" width="400" alt="Godot Engine logo">
   </a>
 </p>
 
@@ -50,8 +50,7 @@ Godot is not only an engine but an ever-growing community of users and engine
 developers. The main community channels are listed [on the homepage](https://godotengine.org/community).
 
 To get in touch with the engine developers, the best way is to join the
-[#godotengine-devel IRC channel](https://webchat.freenode.net/?channels=godotengine-devel)
-on Freenode.
+[Godot Contributors Chat](https://chat.godotengine.org).
 
 To get started contributing to the project, see the [contributing guide](CONTRIBUTING.md).
 

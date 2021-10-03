@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -384,6 +384,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					l.char_count += text->text.length();
 				}
 
+				bool just_breaked_in_middle = false;
 				rchar = 0;
 				FontDrawer drawer(font, Color(1, 1, 1));
 				while (*c) {
@@ -391,6 +392,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					int end = 0;
 					int w = 0;
 					int fw = 0;
+					bool was_separatable = false;
 
 					lh = 0;
 
@@ -409,6 +411,25 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						if (end > 0 && w + cw + begin > p_width) {
 							break; //don't allow lines longer than assigned width
 						}
+
+						// For info about the unicode range, see Label::regenerate_word_cache.
+						const CharType current = c[end];
+						const bool separatable = (current >= 0x2E08 && current <= 0x9FFF) || // CJK scripts and symbols.
+												 (current >= 0xAC00 && current <= 0xD7FF) || // Hangul Syllables and Hangul Jamo Extended-B.
+												 (current >= 0xF900 && current <= 0xFAFF) || // CJK Compatibility Ideographs.
+												 (current >= 0xFE30 && current <= 0xFE4F) || // CJK Compatibility Forms.
+												 (current >= 0xFF65 && current <= 0xFF9F) || // Halfwidth forms of katakana
+												 (current >= 0xFFA0 && current <= 0xFFDC) || // Halfwidth forms of compatibility jamo characters for Hangul
+												 (current >= 0x20000 && current <= 0x2FA1F) || // CJK Unified Ideographs Extension B ~ F and CJK Compatibility Ideographs Supplement.
+												 (current >= 0x30000 && current <= 0x3134F); // CJK Unified Ideographs Extension G.
+						const bool long_separatable = separatable && (wofs - backtrack + w + cw > p_width);
+						const bool separation_changed = end > 0 && was_separatable != separatable;
+						if (!just_breaked_in_middle && (long_separatable || separation_changed)) {
+							just_breaked_in_middle = true;
+							break;
+						}
+						was_separatable = separatable;
+						just_breaked_in_middle = false;
 
 						w += cw;
 						fw += cw;
@@ -822,7 +843,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					row_height = MAX(yofs, row_height);
 					offset.x += table->columns[column].width + hseparation;
 
-					if (column == table->columns.size() - 1) {
+					// Add row height after last column of the row or last cell of the table.
+					if (column == table->columns.size() - 1 || E->next() == NULL) {
 
 						offset.y += row_height + vseparation;
 						offset.x = hseparation;
@@ -964,17 +986,13 @@ void RichTextLabel::_notification(int p_what) {
 			update();
 
 		} break;
+		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 
 			if (bbcode != "")
 				set_bbcode(bbcode);
 
 			main->first_invalid_line = 0; //invalidate ALL
-			update();
-
-		} break;
-		case NOTIFICATION_THEME_CHANGED: {
-
 			update();
 
 		} break;
@@ -1029,10 +1047,11 @@ void RichTextLabel::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			float dt = get_process_delta_time();
-
-			_update_fx(main, dt);
-			update();
+			if (is_visible_in_tree()) {
+				float dt = get_process_delta_time();
+				_update_fx(main, dt);
+				update();
+			}
 		}
 	}
 }
@@ -1678,6 +1697,8 @@ void RichTextLabel::add_image(const Ref<Texture> &p_image, const int p_width, co
 		return;
 
 	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND(p_image->get_width() == 0);
+	ERR_FAIL_COND(p_image->get_height() == 0);
 	ItemImage *item = memnew(ItemImage);
 
 	item->image = p_image;
@@ -2578,10 +2599,10 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 	return false;
 }
 
-void RichTextLabel::selection_copy() {
-
-	if (!selection.active || !selection.enabled)
-		return;
+String RichTextLabel::get_selected_text() {
+	if (!selection.active || !selection.enabled) {
+		return "";
+	}
 
 	String text;
 
@@ -2610,6 +2631,12 @@ void RichTextLabel::selection_copy() {
 
 		item = _get_next_item(item, true);
 	}
+
+	return text;
+}
+
+void RichTextLabel::selection_copy() {
+	String text = get_selected_text();
 
 	if (text != "") {
 		OS::get_singleton()->set_clipboard(text);
@@ -2682,6 +2709,7 @@ void RichTextLabel::set_percent_visible(float p_percent) {
 		visible_characters = get_total_character_count() * p_percent;
 		percent_visible = p_percent;
 	}
+	_change_notify("visible_characters");
 	update();
 }
 
@@ -2696,7 +2724,9 @@ void RichTextLabel::set_effects(const Vector<Variant> &effects) {
 		custom_effects.push_back(effect);
 	}
 
-	parse_bbcode(bbcode);
+	if ((bbcode != "") && use_bbcode) {
+		parse_bbcode(bbcode);
+	}
 }
 
 Vector<Variant> RichTextLabel::get_effects() {
@@ -2713,7 +2743,9 @@ void RichTextLabel::install_effect(const Variant effect) {
 
 	if (rteffect.is_valid()) {
 		custom_effects.push_back(effect);
-		parse_bbcode(bbcode);
+		if ((bbcode != "") && use_bbcode) {
+			parse_bbcode(bbcode);
+		}
 	}
 }
 
@@ -2864,6 +2896,15 @@ void RichTextLabel::_bind_methods() {
 
 void RichTextLabel::set_visible_characters(int p_visible) {
 	visible_characters = p_visible;
+	if (p_visible == -1) {
+		percent_visible = 1;
+	} else {
+		int total_char_count = get_total_character_count();
+		if (total_char_count > 0) {
+			percent_visible = (float)p_visible / (float)total_char_count;
+		}
+	}
+	_change_notify("percent_visible");
 	update();
 }
 

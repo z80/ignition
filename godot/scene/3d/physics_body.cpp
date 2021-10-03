@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -442,12 +442,8 @@ struct _RigidBodyInOut {
 };
 
 void RigidBody::_direct_state_changed(Object *p_state) {
-
-#ifdef DEBUG_ENABLED
 	state = Object::cast_to<PhysicsDirectBodyState>(p_state);
-#else
-	state = (PhysicsDirectBodyState *)p_state; //trust it
-#endif
+	ERR_FAIL_COND_MSG(!state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState object as argument");
 
 	set_ignore_transform_notification(true);
 	set_global_transform(state->get_transform());
@@ -461,6 +457,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 	if (get_script_instance())
 		get_script_instance()->call("_integrate_forces", state);
 	set_ignore_transform_notification(false);
+	_on_transform_changed();
 
 	if (contact_monitor) {
 
@@ -1492,6 +1489,9 @@ ObjectID KinematicCollision::get_collider_id() const {
 
 	return collision.collider;
 }
+RID KinematicCollision::get_collider_rid() const {
+	return collision.collider_rid;
+}
 Object *KinematicCollision::get_collider_shape() const {
 
 	Object *collider = get_collider();
@@ -1527,6 +1527,7 @@ void KinematicCollision::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_shape"), &KinematicCollision::get_local_shape);
 	ClassDB::bind_method(D_METHOD("get_collider"), &KinematicCollision::get_collider);
 	ClassDB::bind_method(D_METHOD("get_collider_id"), &KinematicCollision::get_collider_id);
+	ClassDB::bind_method(D_METHOD("get_collider_rid"), &KinematicCollision::get_collider_rid);
 	ClassDB::bind_method(D_METHOD("get_collider_shape"), &KinematicCollision::get_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_collider_shape_index"), &KinematicCollision::get_collider_shape_index);
 	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &KinematicCollision::get_collider_velocity);
@@ -1539,6 +1540,7 @@ void KinematicCollision::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "local_shape"), "", "get_local_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_id"), "", "get_collider_id");
+	ADD_PROPERTY(PropertyInfo(Variant::_RID, "collider_rid"), "", "get_collider_rid");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider_shape"), "", "get_collider_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape_index"), "", "get_collider_shape_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "collider_velocity"), "", "get_collider_velocity");
@@ -1889,6 +1891,10 @@ bool PhysicalBone::SixDOFJointData::_set(const StringName &p_name, const Variant
 
 	String path = p_name;
 
+	if (!path.begins_with("joint_constraints/")) {
+		return false;
+	}
+
 	Vector3::Axis axis;
 	{
 		const String axis_s = path.get_slicec('/', 1);
@@ -2023,6 +2029,10 @@ bool PhysicalBone::SixDOFJointData::_get(const StringName &p_name, Variant &r_re
 	}
 
 	String path = p_name;
+
+	if (!path.begins_with("joint_constraints/")) {
+		return false;
+	}
 
 	int axis;
 	{
@@ -2187,6 +2197,8 @@ void PhysicalBone::_notification(int p_what) {
 			if (parent_skeleton) {
 				if (-1 != bone_id) {
 					parent_skeleton->unbind_physical_bone_from_bone(bone_id);
+					parent_skeleton->unbind_child_node_from_bone(bone_id, this);
+					bone_id = -1;
 				}
 			}
 			parent_skeleton = NULL;
@@ -2212,19 +2224,15 @@ void PhysicalBone::_direct_state_changed(Object *p_state) {
 
 	/// Update bone transform
 
-	PhysicsDirectBodyState *state;
-
-#ifdef DEBUG_ENABLED
-	state = Object::cast_to<PhysicsDirectBodyState>(p_state);
-#else
-	state = (PhysicsDirectBodyState *)p_state; //trust it
-#endif
+	PhysicsDirectBodyState *state = Object::cast_to<PhysicsDirectBodyState>(p_state);
+	ERR_FAIL_COND_MSG(!state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState object as argument");
 
 	Transform global_transform(state->get_transform());
 
 	set_ignore_transform_notification(true);
 	set_global_transform(global_transform);
 	set_ignore_transform_notification(false);
+	_on_transform_changed();
 
 	// Update skeleton
 	if (parent_skeleton) {

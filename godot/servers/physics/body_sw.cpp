@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,37 +53,47 @@ void BodySW::_update_transform_dependant() {
 
 void BodySW::update_inertias() {
 
-	//update shapes and motions
+	// Update shapes and motions.
 
 	switch (mode) {
 
 		case PhysicsServer::BODY_MODE_RIGID: {
 
-			//update tensor for all shapes, not the best way but should be somehow OK. (inspired from bullet)
+			// Update tensor for all shapes, not the best way but should be somehow OK. (inspired from bullet)
 			real_t total_area = 0;
 
 			for (int i = 0; i < get_shape_count(); i++) {
+				if (is_shape_disabled(i)) {
+					continue;
+				}
 
 				total_area += get_shape_area(i);
 			}
 
-			// We have to recompute the center of mass
+			// We have to recompute the center of mass.
 			center_of_mass_local.zero();
 
-			for (int i = 0; i < get_shape_count(); i++) {
-				real_t area = get_shape_area(i);
+			if (total_area != 0.0) {
+				for (int i = 0; i < get_shape_count(); i++) {
+					if (is_shape_disabled(i)) {
+						continue;
+					}
 
-				real_t mass = area * this->mass / total_area;
+					real_t area = get_shape_area(i);
 
-				// NOTE: we assume that the shape origin is also its center of mass
-				center_of_mass_local += mass * get_shape_transform(i).origin;
+					real_t mass = area * this->mass / total_area;
+
+					// NOTE: we assume that the shape origin is also its center of mass.
+					center_of_mass_local += mass * get_shape_transform(i).origin;
+				}
+
+				center_of_mass_local /= mass;
 			}
 
-			center_of_mass_local /= mass;
-
-			// Recompute the inertia tensor
+			// Recompute the inertia tensor.
 			Basis inertia_tensor;
 			inertia_tensor.set_zero();
+			bool inertia_set = false;
 
 			for (int i = 0; i < get_shape_count(); i++) {
 
@@ -91,9 +101,14 @@ void BodySW::update_inertias() {
 					continue;
 				}
 
-				const ShapeSW *shape = get_shape(i);
-
 				real_t area = get_shape_area(i);
+				if (area == 0.0) {
+					continue;
+				}
+
+				inertia_set = true;
+
+				const ShapeSW *shape = get_shape(i);
 
 				real_t mass = area * this->mass / total_area;
 
@@ -108,7 +123,12 @@ void BodySW::update_inertias() {
 				inertia_tensor += shape_inertia_tensor + (Basis() * shape_origin.dot(shape_origin) - shape_origin.outer(shape_origin)) * mass;
 			}
 
-			// Compute the principal axes of inertia
+			// Set the inertia to a valid value when there are no valid shapes.
+			if (!inertia_set) {
+				inertia_tensor.set_diagonal(Vector3(1.0, 1.0, 1.0));
+			}
+
+			// Compute the principal axes of inertia.
 			principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
 			_inv_inertia = inertia_tensor.get_main_diagonal().inverse();
 
@@ -509,22 +529,19 @@ void BodySW::integrate_forces(real_t p_step) {
 	bool do_motion = false;
 
 	if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
-
 		//compute motion, angular and etc. velocities from prev transform
-		linear_velocity = (new_transform.origin - get_transform().origin) / p_step;
+		motion = new_transform.origin - get_transform().origin;
+		do_motion = true;
+		linear_velocity = motion / p_step;
 
 		//compute a FAKE angular velocity, not so easy
-		Basis rot = new_transform.basis.orthonormalized().transposed() * get_transform().basis.orthonormalized();
+		Basis rot = new_transform.basis.orthonormalized() * get_transform().basis.orthonormalized().transposed();
 		Vector3 axis;
 		real_t angle;
 
 		rot.get_axis_angle(axis, angle);
 		axis.normalize();
-		angular_velocity = axis.normalized() * (angle / p_step);
-
-		motion = new_transform.origin - get_transform().origin;
-		do_motion = true;
-
+		angular_velocity = axis * (angle / p_step);
 	} else {
 		if (!omit_force_integration && !first_integration) {
 			//overridden by direct state query
@@ -612,7 +629,7 @@ void BodySW::integrate_velocities(real_t p_step) {
 	real_t ang_vel = total_angular_velocity.length();
 	Transform transform = get_transform();
 
-	if (ang_vel != 0.0) {
+	if (!Math::is_zero_approx(ang_vel)) {
 		Vector3 ang_vel_axis = total_angular_velocity / ang_vel;
 		Basis rot(ang_vel_axis, ang_vel * p_step);
 		Basis identity3(1, 0, 0, 0, 1, 0, 0, 0, 1);

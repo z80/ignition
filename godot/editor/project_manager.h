@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +56,7 @@ class ProjectManager : public Control {
 
 	ProjectListFilter *project_filter;
 	ProjectListFilter *project_order_filter;
+	Label *loading_label;
 
 	FileDialog *scan_dir;
 	ConfirmationDialog *language_restart_ask;
@@ -74,6 +75,7 @@ class ProjectManager : public Control {
 	TabContainer *tabs;
 	ProjectList *_project_list;
 
+	LinkButton *version_btn;
 	OptionButton *language_btn;
 	Control *gui_base;
 
@@ -114,6 +116,7 @@ class ProjectManager : public Control {
 	void _files_dropped(PoolStringArray p_files, int p_screen);
 	void _scan_multiple_folders(PoolStringArray p_files);
 
+	void _version_button_pressed();
 	void _on_order_option_changed();
 	void _on_filter_option_changed();
 

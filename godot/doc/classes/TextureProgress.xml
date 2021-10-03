@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextureProgress" inherits="Range" version="3.2">
+<class name="TextureProgress" inherits="Range" version="3.3">
 	<brief_description>
 		Texture-based progress bar. Useful for loading screens and life or stamina bars.
 	</brief_description>
@@ -10,20 +10,15 @@
 	</tutorials>
 	<methods>
 		<method name="get_stretch_margin" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
 			<description>
 			</description>
 		</method>
 		<method name="set_stretch_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
+			<argument index="1" name="value" type="int" />
 			<description>
 			</description>
 		</method>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,22 +70,22 @@ struct Vector2 {
 	real_t distance_squared_to(const Vector2 &p_vector2) const;
 	real_t angle_to(const Vector2 &p_vector2) const;
 	real_t angle_to_point(const Vector2 &p_vector2) const;
-	_FORCE_INLINE_ Vector2 direction_to(const Vector2 &p_b) const;
+	_FORCE_INLINE_ Vector2 direction_to(const Vector2 &p_to) const;
 
 	real_t dot(const Vector2 &p_other) const;
 	real_t cross(const Vector2 &p_other) const;
 	Vector2 posmod(const real_t p_mod) const;
 	Vector2 posmodv(const Vector2 &p_modv) const;
-	Vector2 project(const Vector2 &p_b) const;
+	Vector2 project(const Vector2 &p_to) const;
 
 	Vector2 plane_project(real_t p_d, const Vector2 &p_vec) const;
 
 	Vector2 clamped(real_t p_len) const;
 
-	_FORCE_INLINE_ static Vector2 linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_t);
-	_FORCE_INLINE_ Vector2 linear_interpolate(const Vector2 &p_b, real_t p_t) const;
-	_FORCE_INLINE_ Vector2 slerp(const Vector2 &p_b, real_t p_t) const;
-	Vector2 cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const;
+	_FORCE_INLINE_ static Vector2 linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_weight);
+	_FORCE_INLINE_ Vector2 linear_interpolate(const Vector2 &p_to, real_t p_weight) const;
+	_FORCE_INLINE_ Vector2 slerp(const Vector2 &p_to, real_t p_weight) const;
+	Vector2 cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_weight) const;
 	Vector2 move_toward(const Vector2 &p_to, const real_t p_delta) const;
 
 	Vector2 slide(const Vector2 &p_normal) const;
@@ -116,10 +116,10 @@ struct Vector2 {
 	bool operator==(const Vector2 &p_vec2) const;
 	bool operator!=(const Vector2 &p_vec2) const;
 
-	bool operator<(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
-	bool operator>(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y > p_vec2.y) : (x > p_vec2.x); }
-	bool operator<=(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y <= p_vec2.y) : (x < p_vec2.x); }
-	bool operator>=(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y >= p_vec2.y) : (x > p_vec2.x); }
+	bool operator<(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y < p_vec2.y) : (x < p_vec2.x); }
+	bool operator>(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y > p_vec2.y) : (x > p_vec2.x); }
+	bool operator<=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
+	bool operator>=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
 
 	real_t angle() const;
 
@@ -230,36 +230,36 @@ _FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
 	return x != p_vec2.x || y != p_vec2.y;
 }
 
-Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {
+Vector2 Vector2::linear_interpolate(const Vector2 &p_to, real_t p_weight) const {
 
 	Vector2 res = *this;
 
-	res.x += (p_t * (p_b.x - x));
-	res.y += (p_t * (p_b.y - y));
+	res.x += (p_weight * (p_to.x - x));
+	res.y += (p_weight * (p_to.y - y));
 
 	return res;
 }
 
-Vector2 Vector2::slerp(const Vector2 &p_b, real_t p_t) const {
+Vector2 Vector2::slerp(const Vector2 &p_to, real_t p_weight) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector2(), "The start Vector2 must be normalized.");
 #endif
-	real_t theta = angle_to(p_b);
-	return rotated(theta * p_t);
+	real_t theta = angle_to(p_to);
+	return rotated(theta * p_weight);
 }
 
-Vector2 Vector2::direction_to(const Vector2 &p_b) const {
-	Vector2 ret(p_b.x - x, p_b.y - y);
+Vector2 Vector2::direction_to(const Vector2 &p_to) const {
+	Vector2 ret(p_to.x - x, p_to.y - y);
 	ret.normalize();
 	return ret;
 }
 
-Vector2 Vector2::linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_t) {
+Vector2 Vector2::linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_weight) {
 
 	Vector2 res = p_a;
 
-	res.x += (p_t * (p_b.x - p_a.x));
-	res.y += (p_t * (p_b.y - p_a.y));
+	res.x += (p_weight * (p_b.x - p_a.x));
+	res.y += (p_weight * (p_b.y - p_a.y));
 
 	return res;
 }

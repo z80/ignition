@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,14 +93,14 @@ struct Color {
 	Color inverted() const;
 	Color contrasted() const;
 
-	_FORCE_INLINE_ Color linear_interpolate(const Color &p_b, float p_t) const {
+	_FORCE_INLINE_ Color linear_interpolate(const Color &p_to, float p_weight) const {
 
 		Color res = *this;
 
-		res.r += (p_t * (p_b.r - r));
-		res.g += (p_t * (p_b.g - g));
-		res.b += (p_t * (p_b.b - b));
-		res.a += (p_t * (p_b.a - a));
+		res.r += (p_weight * (p_to.r - r));
+		res.g += (p_weight * (p_to.g - g));
+		res.b += (p_weight * (p_to.b - b));
+		res.a += (p_weight * (p_to.a - a));
 
 		return res;
 	}

@@ -1,175 +1,136 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphNode" inherits="Container" version="3.2">
+<class name="GraphNode" inherits="Container" version="3.3">
 	<brief_description>
 		A GraphNode is a container with potentially several input and output slots allowing connections between GraphNodes. Slots can have different, incompatible types.
 	</brief_description>
 	<description>
 		A GraphNode is a container. Each GraphNode can have several input and output slots, sometimes referred to as ports, allowing connections between GraphNodes. To add a slot to GraphNode, add any [Control]-derived child node to it.
 		After adding at least one child to GraphNode new sections will be automatically created in the Inspector called 'Slot'. When 'Slot' is expanded you will see list with index number for each slot. You can click on each of them to expand further.
-		In the Inspector you can enable (show) or disable (hide) slots. By default all slots are disabled so you may not see any slots on your GraphNode initially. You can assign a type to each slot. Only slots of the same type will be able to connect to each other. You can also assign colors to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input connections are on the left and output connections are on the right side of GraphNode. Only enabled slots are counted as connections.
+		In the Inspector you can enable (show) or disable (hide) slots. By default, all slots are disabled so you may not see any slots on your GraphNode initially. You can assign a type to each slot. Only slots of the same type will be able to connect to each other. You can also assign colors to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input connections are on the left and output connections are on the right side of GraphNode. Only enabled slots are counted as connections.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="clear_all_slots">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Disables all input and output slots of the GraphNode.
 			</description>
 		</method>
 		<method name="clear_slot">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Disables input and output slot whose index is [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_input_color">
-			<return type="Color">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the color of the input connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_input_count">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of enabled input slots (connections) to the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_input_position">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the position of the input connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_input_type">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the type of the input connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_output_color">
-			<return type="Color">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the color of the output connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_output_count">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of enabled output slots (connections) of the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_output_position">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the position of the output connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_output_type">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the type of the output connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_slot_color_left" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the color set to [code]idx[/code] left (input) slot.
 			</description>
 		</method>
 		<method name="get_slot_color_right" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the color set to [code]idx[/code] right (output) slot.
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the (integer) type of left (input) [code]idx[/code] slot.
 			</description>
 		</method>
 		<method name="get_slot_type_right" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the (integer) type of right (output) [code]idx[/code] slot.
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if left (input) slot [code]idx[/code] is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if right (output) slot [code]idx[/code] is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="set_slot">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="enable_left" type="bool">
-			</argument>
-			<argument index="2" name="type_left" type="int">
-			</argument>
-			<argument index="3" name="color_left" type="Color">
-			</argument>
-			<argument index="4" name="enable_right" type="bool">
-			</argument>
-			<argument index="5" name="type_right" type="int">
-			</argument>
-			<argument index="6" name="color_right" type="Color">
-			</argument>
-			<argument index="7" name="custom_left" type="Texture" default="null">
-			</argument>
-			<argument index="8" name="custom_right" type="Texture" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="enable_left" type="bool" />
+			<argument index="2" name="type_left" type="int" />
+			<argument index="3" name="color_left" type="Color" />
+			<argument index="4" name="enable_right" type="bool" />
+			<argument index="5" name="type_right" type="int" />
+			<argument index="6" name="color_right" type="Color" />
+			<argument index="7" name="custom_left" type="Texture" default="null" />
+			<argument index="8" name="custom_right" type="Texture" default="null" />
 			<description>
 				Sets properties of the slot with ID [code]idx[/code].
 				If [code]enable_left[/code]/[code]right[/code], a port will appear and the slot will be able to be connected from this side.
@@ -213,10 +174,8 @@
 			</description>
 		</signal>
 		<signal name="dragged">
-			<argument index="0" name="from" type="Vector2">
-			</argument>
-			<argument index="1" name="to" type="Vector2">
-			</argument>
+			<argument index="0" name="from" type="Vector2" />
+			<argument index="1" name="to" type="Vector2" />
 			<description>
 				Emitted when the GraphNode is dragged.
 			</description>
@@ -232,10 +191,15 @@
 			</description>
 		</signal>
 		<signal name="resize_request">
-			<argument index="0" name="new_minsize" type="Vector2">
-			</argument>
+			<argument index="0" name="new_minsize" type="Vector2" />
 			<description>
 				Emitted when the GraphNode is requested to be resized. Happens on dragging the resizer handle (see [member resizable]).
+			</description>
+		</signal>
+		<signal name="slot_updated">
+			<argument index="0" name="idx" type="int" />
+			<description>
+				Emitted when any GraphNode's slot is updated.
 			</description>
 		</signal>
 	</signals>

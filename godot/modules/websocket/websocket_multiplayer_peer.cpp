@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,6 +113,8 @@ Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buff
 		memfree(_current_packet.data);
 		_current_packet.data = NULL;
 	}
+
+	ERR_FAIL_COND_V(_incoming_packets.size() == 0, ERR_UNAVAILABLE);
 
 	_current_packet = _incoming_packets.front()->get();
 	_incoming_packets.pop_front();

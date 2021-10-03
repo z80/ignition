@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,6 +60,7 @@ public:
 		IMPORT_MATERIALS_IN_INSTANCES = 1024,
 		IMPORT_USE_COMPRESSION = 2048,
 		IMPORT_USE_NAMED_SKIN_BINDS = 4096,
+		IMPORT_USE_LEGACY_NAMES = 8192,
 
 	};
 

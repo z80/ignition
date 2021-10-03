@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -222,8 +222,7 @@ float VideoStreamPlaybackWebm::get_playback_position() const {
 	return video_pos;
 }
 void VideoStreamPlaybackWebm::seek(float p_time) {
-
-	//Not implemented
+	WARN_PRINT_ONCE("Seeking in Theora and WebM videos is not implemented yet (it's only supported for GDNative-provided video streams).");
 }
 
 void VideoStreamPlaybackWebm::set_audio_track(int p_idx) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1242,6 +1242,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				if (p_item->cells[i].text.size() > 0) {
 					float icon_width = p_item->cells[i].get_icon_size().width;
+					if (p_item->get_icon_max_width(i) > 0) {
+						icon_width = p_item->get_icon_max_width(i);
+					}
 					r.position.x += icon_width;
 					r.size.x -= icon_width;
 				}
@@ -1279,8 +1282,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			if (drop_mode_flags && drop_mode_over == p_item) {
 
 				Rect2 r = cell_rect;
+				bool has_parent = p_item->get_children() != nullptr;
 
-				if (drop_mode_section == -1 || drop_mode_section == 0) {
+				if (drop_mode_section == -1 || has_parent || drop_mode_section == 0) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), cache.drop_position_color);
 				}
 
@@ -1289,7 +1293,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), cache.drop_position_color);
 				}
 
-				if (drop_mode_section == 1 || drop_mode_section == 0) {
+				if ((drop_mode_section == 1 && !has_parent) || drop_mode_section == 0) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y, r.size.x, 1), cache.drop_position_color);
 				}
 			}
@@ -1493,35 +1497,34 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		int prev_ofs = children_pos.y - cache.offset.y + p_draw_ofs.y;
 
 		while (c) {
-
-			if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
-				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
-				int parent_ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
-				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
-
-				if (c->get_children() != NULL)
-					root_pos -= Point2i(cache.arrow->get_width(), 0);
-
-				float line_width = 1.0;
-#ifdef TOOLS_ENABLED
-				line_width *= EDSCALE;
-#endif
-
-				Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
-
-				if (root_pos.y + line_width >= 0) {
-					VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x - Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
-					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), Point2i(parent_pos.x, prev_ofs), cache.relationship_line_color, line_width);
-				}
-
-				if (htotal < 0) {
-					return -1;
-				}
-				prev_ofs = root_pos.y;
-			}
-
 			if (htotal >= 0) {
 				int child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
+
+				// Draw relationship lines.
+				if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
+					int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
+					int parent_ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
+					Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
+
+					if (c->get_children() != nullptr) {
+						root_pos -= Point2i(cache.arrow->get_width(), 0);
+					}
+
+					float line_width = 1.0;
+#ifdef TOOLS_ENABLED
+					line_width *= EDSCALE;
+#endif
+
+					Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
+
+					if (root_pos.y + line_width >= 0) {
+						// Order of parts on this bend: the horizontal line first, then the vertical line.
+						VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x - Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
+						VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), Point2i(parent_pos.x, prev_ofs), cache.relationship_line_color, line_width);
+					}
+
+					prev_ofs = root_pos.y;
+				}
 
 				if (child_h < 0) {
 					if (cache.draw_relationship_lines == 0) {
@@ -1672,6 +1675,10 @@ void Tree::_range_click_timeout() {
 				range_click_timer->stop();
 				return;
 			}
+		}
+
+		if (!root) {
+			return;
 		}
 
 		click_handled = false;
@@ -3187,6 +3194,9 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 		//emit_signal("multi_selected",p_item,p_column,true); - NO this is for TreeItem::select
 
 		selected_col = p_column;
+		if (!selected_item) {
+			selected_item = p_item;
+		}
 	} else {
 
 		select_single_item(p_item, root, p_column);
@@ -3195,6 +3205,13 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 }
 
 void Tree::item_deselected(int p_column, TreeItem *p_item) {
+	if (selected_item == p_item) {
+		selected_item = nullptr;
+
+		if (selected_col == p_column) {
+			selected_col = -1;
+		}
+	}
 
 	if (select_mode == SELECT_MULTI || select_mode == SELECT_SINGLE) {
 		p_item->cells.write[p_column].selected = false;
@@ -3356,9 +3373,13 @@ int Tree::get_column_width(int p_column) const {
 	if (!columns[p_column].expand)
 		return columns[p_column].min_width;
 
+	int expand_area = get_size().width;
+
 	Ref<StyleBox> bg = cache.bg;
 
-	int expand_area = get_size().width - (bg->get_margin(MARGIN_LEFT) + bg->get_margin(MARGIN_RIGHT));
+	if (bg.is_valid()) {
+		expand_area -= bg->get_margin(MARGIN_LEFT) + bg->get_margin(MARGIN_RIGHT);
+	}
 
 	if (v_scroll->is_visible_in_tree())
 		expand_area -= v_scroll->get_combined_minimum_size().width;
@@ -3999,6 +4020,7 @@ void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_edited"), &Tree::get_edited);
 	ClassDB::bind_method(D_METHOD("get_edited_column"), &Tree::get_edited_column);
+	ClassDB::bind_method(D_METHOD("edit_selected"), &Tree::edit_selected);
 	ClassDB::bind_method(D_METHOD("get_custom_popup_rect"), &Tree::get_custom_popup_rect);
 	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column"), &Tree::_get_item_rect, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position"), &Tree::get_item_at_position);
@@ -4013,6 +4035,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_column_title", "column", "title"), &Tree::set_column_title);
 	ClassDB::bind_method(D_METHOD("get_column_title", "column"), &Tree::get_column_title);
 	ClassDB::bind_method(D_METHOD("get_scroll"), &Tree::get_scroll);
+	ClassDB::bind_method(D_METHOD("scroll_to_item", "item"), &Tree::_scroll_to_item);
 
 	ClassDB::bind_method(D_METHOD("set_hide_folding", "hide"), &Tree::set_hide_folding);
 	ClassDB::bind_method(D_METHOD("is_folding_hidden"), &Tree::is_folding_hidden);
@@ -4156,6 +4179,8 @@ Tree::Tree() {
 
 	allow_reselect = false;
 	propagate_mouse_activated = false;
+
+	update_cache();
 }
 
 Tree::~Tree() {
