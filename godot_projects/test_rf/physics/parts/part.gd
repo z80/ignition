@@ -21,9 +21,11 @@ enum PartMode {
 
 var PartControlGroups = preload( "res://physics/parts/part_control_groups.gd" )
 
-# If estimated acceleration is greater than this, 
-# The part should be destroyed.
-export(float) var destruction_acc = 50.0
+# If instant velocity change is greater than this, 
+# the part should be destroyed.
+export(float) var destruction_dv = 5.0
+var _last_vel: Vector3 = Vector3.ZERO
+var _last_vel_initialized: bool = false
 
 export(PartClass) var part_class = PartClass.THRUSTER
 export(bool) var allows_surface_attachments=true
@@ -86,6 +88,43 @@ func process_inner( _delta ):
 	for i in range(qty):
 		var n: CouplingNodeStacking = stacking_nodes[i]
 		n.process()
+	
+	process_destruction()
+
+
+
+func process_destruction():
+	var se3: Se3Ref = get_se3()
+	if not _last_vel_initialized:
+		_last_vel = se3.v
+		_last_vel_initialized = true
+		return
+	
+	var dv: Vector3 = se3.v - _last_vel
+	var abs_dv: float = dv.length()
+	print( "dv: ", abs_dv )
+	if abs_dv < destruction_dv:
+		_last_vel = se3.v
+		return
+	
+	# Destroying the part and the assembly.
+	var sb: Node = get_super_body_raw()
+	if sb:
+		sb.queue_free()
+	
+	self.queue_free()
+
+
+
+func _parent_jumped():
+	parent_jumped()
+
+
+
+func parent_jumped():
+	_last_vel_initialized = true
+	var se3: Se3Ref = get_se3()
+	_last_vel = se3.v
 
 
 
