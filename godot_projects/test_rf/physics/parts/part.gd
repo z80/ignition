@@ -26,6 +26,7 @@ var PartControlGroups = preload( "res://physics/parts/part_control_groups.gd" )
 export(float) var destruction_dv = 5.0
 var _last_vel: Vector3 = Vector3.ZERO
 var _last_vel_initialized: bool = false
+var _force_destroy: bool = false
 
 export(PartClass) var part_class = PartClass.THRUSTER
 export(bool) var allows_surface_attachments=true
@@ -103,7 +104,7 @@ func process_destruction():
 	var dv: Vector3 = se3.v - _last_vel
 	var abs_dv: float = dv.length()
 	print( "dv: ", abs_dv )
-	if abs_dv < destruction_dv:
+	if (abs_dv < destruction_dv) and (not _force_destroy):
 		_last_vel = se3.v
 		return
 	
@@ -429,6 +430,10 @@ func gui_classes( mode: Array ):
 		# Append with control group selection.
 		var gui_control_group = preload( "res://physics/parts/gui_elements/gui_control_group.tscn" )
 		classes.push_back( gui_control_group )
+		# This is to dorce destruction of the part.
+		# I need it for debugging object destruction.
+		var gui_destroy = preload( "res://physics/parts/gui_elements/gui_destroy.tscn" )
+		classes.push_back( gui_destroy )
 	return classes
 
 
