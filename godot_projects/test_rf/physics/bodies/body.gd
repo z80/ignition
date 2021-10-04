@@ -504,8 +504,8 @@ func _parent_physics_ref_frame():
 func set_super_body( new_super_body ):
 	if _super_body != null:
 		_super_body.remove_sub_body( self )
-	if new_super_body != null:
-		new_super_body.add_sub_body( self )
+	_super_body = new_super_body
+
 
 
 
