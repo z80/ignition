@@ -24,7 +24,7 @@ Here is the battle plan.
 - [x] Adjust camera serialization/deserialization to match its modified scene.
 - [x] A BUG: Assemblies are not destroyed on load. It causes a vehicle to have two assemblies.
 - [x] Make control group #1 selected by default.
-- [ ] Make assemblies created on first request. I.e. implement setter ang getter which would do all the underground work when it is requested first.
+- [x] Make assemblies created on first request. I.e. implement setter ang getter which would do all the underground work when it is requested first.
 - [ ] Make dynamic splits and merges.
 - [ ] A BUG: Fix navball rotations. Icons seem to be correct but navball is not always.
 - [ ] Port over the air friction model using mesh traingles.
