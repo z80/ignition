@@ -200,6 +200,15 @@ func _ready():
 	_init_basis()
 
 
+func _exit_tree():
+	if is_queued_for_deletion():
+		on_delete()
+
+
+func on_delete():
+	print( "Deleting the camera" )
+
+
 func _input( event ):
 	var gained_control: bool = Input.is_action_just_pressed( "ui_rmb" )
 	if gained_control:
