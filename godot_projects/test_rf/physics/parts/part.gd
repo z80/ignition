@@ -359,9 +359,25 @@ func _ready():
 
 
 func on_delete():
+	on_delete_rescue_camera()
 	decouple_all()
 	.on_delete()
 
+
+
+func on_delete_rescue_camera():
+	var cam: RefFrameNode = PhysicsManager.camera
+	if not is_instance_valid( cam ):
+		return
+	
+	var p: Node = cam.get_parent()
+	if p != self:
+		return
+	
+	# This node is being destroyed. If camera is parented to this node, 
+	# parent it to the parent of this node.
+	p = self.get_parent()
+	cam.change_parent( p )
 
 
 # Depth first search for all the parts connected with each other.

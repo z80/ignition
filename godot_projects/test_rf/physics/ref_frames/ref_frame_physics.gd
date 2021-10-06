@@ -687,6 +687,7 @@ func _parent_changed():
 
 
 func on_delete():
+	on_delete_rescue_camera()
 	finit_physics()
 	if (_surface_provider != null) and is_instance_valid(_surface_provider):
 		_surface_provider.queue_free()
@@ -698,6 +699,12 @@ func on_delete():
 	
 	.on_delete()
 
+
+
+func on_delete_rescue_camera():
+	# Here need to reparent camera to something default.
+	# May be construction???
+	pass
 
 
 func is_orbiting():
