@@ -103,7 +103,7 @@ func process_destruction():
 	
 	var dv: Vector3 = se3.v - _last_vel
 	var abs_dv: float = dv.length()
-	print( "dv: ", abs_dv )
+	#print( "dv: ", abs_dv )
 	if (abs_dv < destruction_dv) and (not _force_destroy):
 		_last_vel = se3.v
 		return

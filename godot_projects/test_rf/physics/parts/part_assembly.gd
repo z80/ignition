@@ -30,6 +30,13 @@ func queue_free():
 	.queue_free()
 
 
+
+func _exit_tree():
+	if is_queued_for_deletion():
+		on_delete()
+
+
+
 func _enter_tree():
 	# If physics body is already created it shouldn't hurt 
 	# anything.
@@ -291,6 +298,15 @@ func _update_celestial_motion():
 	# Check out what's the mode.
 	var m: String = motion.movement_type()
 	#print( "movement_type: ", m )
+
+
+
+func on_delete():
+	var bodies: Array = sub_bodies.duplicate()
+	for b in bodies:
+		if is_instance_valid( b ):
+			remove_sub_body( b )
+
 
 
 

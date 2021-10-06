@@ -294,7 +294,7 @@ func create_ref_frame_physics():
 
 func get_player_ref_frame():
 	var body: Body = self.player_control
-	if body == null:
+	if (body == null) or (not is_instance_valid(body)):
 		return null
 	var p: Node = body.get_parent()
 	var rf_p: RefFramePhysics = p as RefFramePhysics

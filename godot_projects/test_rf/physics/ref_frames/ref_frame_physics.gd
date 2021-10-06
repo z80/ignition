@@ -688,7 +688,7 @@ func _parent_changed():
 
 func on_delete():
 	finit_physics()
-	if _surface_provider != null:
+	if (_surface_provider != null) and is_instance_valid(_surface_provider):
 		_surface_provider.queue_free()
 		_surface_provider = null
 	# It's subclassed from a reference.
@@ -696,6 +696,8 @@ func on_delete():
 	# make it released.
 	_subdivide_source_physical = null
 	
+	.on_delete()
+
 
 
 func is_orbiting():
