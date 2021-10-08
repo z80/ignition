@@ -513,6 +513,16 @@ func self_delete_if_unused():
 		var player_rf: RefFramePhysics = PhysicsManager.get_player_ref_frame()
 		if self == player_rf:
 			return false
+		
+		# And don't delete if parenting the camera.
+		var cam: RefFrameNode = PhysicsManager.camera
+		if is_instance_valid( cam ):
+			var p: Node = cam.get_parent()
+			if p == self:
+				# In this case may be at most stop orbiting to not 
+				# fall inside if a planet
+				return false
+		
 		self.queue_free()
 		return true
 	return false
@@ -687,7 +697,6 @@ func _parent_changed():
 
 
 func on_delete():
-	on_delete_rescue_camera()
 	finit_physics()
 	if (_surface_provider != null) and is_instance_valid(_surface_provider):
 		_surface_provider.queue_free()
@@ -701,10 +710,7 @@ func on_delete():
 
 
 
-func on_delete_rescue_camera():
-	# Here need to reparent camera to something default.
-	# May be construction???
-	pass
+
 
 
 func is_orbiting():
