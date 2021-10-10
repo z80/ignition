@@ -2,6 +2,8 @@
 extends Body
 
 
+var panel_parts: Control = null
+
 var t_elapsed: float = 0.0
 var counter: int = 0
 
@@ -18,8 +20,6 @@ var dynamic_blocks: Array = []
 func _ready():
 	init()
 	
-	$PanelParts.construction = self
-	$PanelParts.connect( "create_block", self, "create_block" )
 
 
 
@@ -88,10 +88,15 @@ func set_collision_layer( layer ):
 
 
 func construction_activate():
-	$PanelParts.visible = true
+	#$PanelParts.visible = true
+	var PanelParts = load( "res://physics/bodies/construction/panel_parts/panel_parts.tscn" )
+	panel_parts = PanelParts.instance()
+	panel_parts.construction = self
+	panel_parts.connect( "create_block", self, "create_block" )
+	var panel_parent: Control = RootScene.get_root_for_gui_panels()
+	panel_parent.add_child( panel_parts )
 	
 	activated_mode = "construction_menu"
-	
 	dynamic_blocks = []
 
 
@@ -99,9 +104,12 @@ func construction_activate():
 func construction_deactivate():
 	if activated_mode != null:
 		finish_editing()
-		$PanelParts.visible = false
-		activated_mode = null
 		
+		#$PanelParts.visible = false
+		if (panel_parts != null) and ( is_instance_valid(panel_parts) ):
+			panel_parts.queue_free()
+		
+		activated_mode = null
 		_cleanup_arguments()
 		_create_assembly()
 		dynamic_blocks.clear()

@@ -110,7 +110,7 @@ func process_destruction():
 	
 	# Destroying the part and the assembly.
 	var sb: Node = get_super_body_raw()
-	if sb:
+	if (sb != null) and ( is_instance_valid(sb) ):
 		sb.queue_free()
 	
 	self.queue_free()

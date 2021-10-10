@@ -353,7 +353,7 @@ func _process_interact_icon():
 		return
 	
 	var cam = PhysicsManager.camera
-	if (cam == null) or (_visual == null):
+	if (cam == null) or (_visual == null) or (not is_instance_valid(cam)):
 		return
 	
 	var mouse_mode = Input.get_mouse_mode() 
@@ -406,8 +406,9 @@ func _create_interact_icon():
 		return
 	var Icon = load( "res://physics/interact_icon/interact_icon.tscn" )
 	_icon = Icon.instance()
-	self.add_child( _icon )
+	_icon.body = self
 	_icon.text = hint_text
+	self.add_child( _icon )
 	_icon.visible = true
 
 
@@ -502,7 +503,7 @@ func _parent_physics_ref_frame():
 
 
 func set_super_body( new_super_body ):
-	if _super_body != null:
+	if (_super_body != null) and ( is_instance_valid(_super_body) ):
 		_super_body.remove_sub_body( self )
 	_super_body = new_super_body
 

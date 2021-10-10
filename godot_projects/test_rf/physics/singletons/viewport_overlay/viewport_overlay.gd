@@ -1,5 +1,10 @@
 extends Control
 
+# This one is for visualizing coupling nodes.
+# Or any other 3d objects which are to be drawn on top of everything else.
+
+
+
 var _camera: Camera = null
 var _real_camera: Camera = null
 

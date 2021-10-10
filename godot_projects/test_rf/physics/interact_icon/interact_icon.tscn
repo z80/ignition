@@ -4,10 +4,12 @@
 [ext_resource path="res://physics/interact_icon/interact_icon.gd" type="Script" id=3]
 
 [node name="InteractIcon" type="Control"]
-margin_left = -48.0
-margin_top = -48.0
-margin_right = -3.8147e-06
-margin_bottom = -3.8147e-06
+margin_left = -24.0
+margin_top = -24.0
+margin_right = 24.0
+margin_bottom = 24.0
+rect_pivot_offset = Vector2( 24, 24 )
+mouse_filter = 1
 script = ExtResource( 3 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -16,6 +18,7 @@ __meta__ = {
 [node name="Sprite" type="Sprite" parent="."]
 position = Vector2( 24, 24 )
 texture = ExtResource( 1 )
+
 [connection signal="gui_input" from="." to="." method="_on_mouse_gui_input"]
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]

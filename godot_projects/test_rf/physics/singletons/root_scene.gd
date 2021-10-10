@@ -31,6 +31,22 @@ func set_overlay_visible( en: bool ):
 	vp_container.visible = en
 
 
+# Let's say, this one is for panels
+func get_root_for_gui_panels():
+	var ret: Node = get_node( "gui_panels" )
+	return ret
+
+
+func get_root_for_gui_windows():
+	var ret: Node = get_node( "gui_windows" )
+	return ret
+
+
+func get_root_for_gui_popups():
+	var ret: Node = get_node( "gui_popups" )
+	return ret
+
+
 func get_unique_name_for_bodies( name_template: String ):
 	var section: Node = get_node( "bodies" )
 	var ret: String = _get_unique_name_for( section, name_template )

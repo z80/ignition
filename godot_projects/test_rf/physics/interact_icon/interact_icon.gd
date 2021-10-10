@@ -1,5 +1,8 @@
 extends Control
 
+# Should be set externally.
+var body: Node = null
+
 # Text to visualize when mouse hovers.
 var text: String setget _set_text, _get_text
 
@@ -13,8 +16,10 @@ func _ready():
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func _process(delta):
+	var body_exists: bool = is_instance_valid( body )
+	if not body_exists:
+		self.queue_free()
 
 
 
@@ -55,7 +60,6 @@ func _on_mouse_gui_input(event):
 	print( "here, ", me.pressed )
 	# Open window on release event.
 	if (me.button_index == BUTTON_LEFT) and (not me.pressed):
-		var body: Body = get_parent() as Body
 		if body == null:
 			return
 		
@@ -78,7 +82,8 @@ func _on_mouse_gui_input(event):
 		var gui_classes = body.gui_classes( mode )
 		var GuiClickContainer = load( "res://physics/interact_icon/gui_click_container.tscn" )
 		_window = GuiClickContainer.instance()
-		body.add_child( _window )
+		var parent_for_windows: Control = RootScene.get_root_for_gui_windows()
+		parent_for_windows.add_child( _window )
 		_window.setup_gui( gui_classes, body )
 		
 		var mouse_pos = get_viewport().get_mouse_position()

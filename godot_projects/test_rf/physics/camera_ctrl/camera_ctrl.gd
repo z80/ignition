@@ -547,6 +547,9 @@ func _process_sky():
 	bg.transform = t
 
 
+func root_most_body():
+	return self
+
 
 
 func serialize():
