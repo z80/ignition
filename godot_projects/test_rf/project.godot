@@ -69,6 +69,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/parts/coupling_nodes/coupling_node_surface.gd"
 }, {
+"base": "Part",
+"class": "Decoupler",
+"language": "GDScript",
+"path": "res://physics/parts/decouplers/decoupler.gd"
+}, {
 "base": "Spatial",
 "class": "EntranceNode",
 "language": "GDScript",
@@ -207,6 +212,7 @@ _global_script_class_icons={
 "CouplingNode": "",
 "CouplingNodeStacking": "",
 "CouplingNodeSurface": "",
+"Decoupler": "",
 "EntranceNode": "",
 "Exhaust": "",
 "ExhaustNode": "",
