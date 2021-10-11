@@ -185,14 +185,16 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 			rf.set_surface_vertices( verts, surface_relative_to_rf )
 	
 	# For player ref frame rebuild mesh if needed
-	if (player_rf != null) or true:
-		var need_rebuild_visual: bool = _subdivide_source_visual.need_subdivide( player_rf, planet )
+	# Generate visual appearance based on camera.
+	var camera: RefFrameNode = PhysicsManager.camera
+	if (camera != null) and ( is_instance_valid(camera) ):
+		var need_rebuild_visual: bool = _subdivide_source_visual.need_subdivide( camera, planet )
 		#print( "need_rebuild_visual: ", need_rebuild_visual )
 		if need_rebuild_visual:
-			planet.subdivide_2( player_rf, _subdivide_source_visual )
+			planet.subdivide_2( camera, _subdivide_source_visual )
 			planet.apply_heightmap_2( planet.height_source )
 			#planet.apply_visual_mesh()
-		var camera: RefFrameNode = PhysicsManager.camera
+
 		var distance_scaler: DistanceScalerRef = PhysicsManager.distance_scaler
 		planet.apply_scale_2( camera, null, distance_scaler )
 		planet.apply_visual_mesh()

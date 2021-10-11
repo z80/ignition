@@ -373,7 +373,8 @@ static func print_all_ref_frames():
 	print( "*********************************************************" )
 	print( "All ref frames" )
 	var player_rf = PhysicsManager.get_player_ref_frame()
-	print( "player rf: ", player_rf.name )
+	if (player_rf != null) and ( is_instance_valid(player_rf) ):
+		print( "player rf: ", player_rf.name )
 	var rfs: Array = PhysicsManager.physics_ref_frames()
 	for rf in rfs:
 		var se3: Se3Ref = rf.get_se3()

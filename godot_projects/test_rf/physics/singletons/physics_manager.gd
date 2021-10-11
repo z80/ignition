@@ -58,9 +58,14 @@ func _process(_delta):
 	# It should be applied to planet movement and ref. frames 
 	# moving under gravitational influence of a planet.
 	var orbital_delta: float = _delta * _time_scale_evolution
+
+#	This is for debugging.
+#	var p_rf: RefFrameNode = get_player_ref_frame()
+#	if p_rf == null:
+#		var i: int = 0
 	
-	var player_rf = get_player_ref_frame()
-	if player_rf == null:
+	var camera = PhysicsManager.camera
+	if (camera == null) or ( not is_instance_valid(camera) ):
 		return
 	update_bodies_visual()
 	update_providers()
