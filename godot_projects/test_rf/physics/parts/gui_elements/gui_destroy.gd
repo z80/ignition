@@ -13,7 +13,7 @@ func _ready():
 
 
 func _on_Destroy_pressed():
-	if _target_obj == null:
+	if (_target_obj == null) or ( not is_instance_valid(_target_obj) ):
 		return
 	_target_obj._force_destroy = true
 	_parent_gui.queue_free()
