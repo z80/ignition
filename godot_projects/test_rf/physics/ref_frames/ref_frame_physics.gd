@@ -538,6 +538,8 @@ func child_bodies( including_surf_provider: bool = false ):
 		var include: bool = (b != null)
 		if not including_surf_provider:
 			include = include and (b != _surface_provider)
+		if ch == PhysicsManager.camera:
+			continue
 		if include:
 			bodies.push_back( b )
 	
@@ -552,6 +554,9 @@ func root_most_child_bodies( including_surf_provider: bool = false ):
 		var include: bool = (b != null)
 		if not including_surf_provider:
 			include = include and (b != _surface_provider)
+		# Don't use camera.
+		if ch == PhysicsManager.camera:
+			continue
 		var root_most_body: RefFrameNode = b.root_most_body()
 		include = include and (not (root_most_body in bodies))
 		if include:
@@ -569,12 +574,15 @@ func parent_bodies():
 	var children = pt.get_children()
 	for child in children:
 		var body = child as RefFrameNode
-		if body != null:
-			var cl_name: String = body.get_class()
-			if cl_name == "Body":
-				body = body.root_most_body()
-				if not (body in bodies):
-					bodies.push_back( body )
+		if body == null:
+			continue
+		if body == PhysicsManager.camera:
+			continue
+		var cl_name: String = body.get_class()
+		if (cl_name == "Body") or (cl_name == "Part"):
+			body = body.root_most_body()
+			if not (body in bodies):
+				bodies.push_back( body )
 	
 	if rt == pt:
 		return bodies
@@ -582,12 +590,15 @@ func parent_bodies():
 	children = rt.get_children()
 	for child in children:
 		var body = child as RefFrameNode
-		if body != null:
+		if body == null:
+			continue
+		if body == PhysicsManager.camera:
+			continue
 			body = body.root_most_body()
-			var cl_name: String = body.get_class()
-			if cl_name == "Body":
-				if not (body in bodies):
-					bodies.push_back( body )
+		var cl_name: String = body.get_class()
+		if (cl_name == "Body") or (cl_name == "Part"):
+			if not (body in bodies):
+				bodies.push_back( body )
 	
 	return bodies
 
@@ -608,11 +619,11 @@ func apply_forces():
 
 
 func process_body( force_source_rf: RefFrameNode, body: RefFrameNode, up_defined: bool = false ):
-	force_source_rf.compute_relative_to_root( body )
-	var r: Vector3 = force_source_rf.r_root()
-	var v: Vector3 = force_source_rf.v_root()
-	var q: Quat    = force_source_rf.q_root()
-	var w: Vector3 = force_source_rf.w_root()
+	var se3: Se3Ref = force_source_rf.relative_to( body )
+	var r: Vector3 = se3.r
+	var v: Vector3 = se3.v
+	var q: Quat    = se3.q
+	var w: Vector3 = se3.w
 	
 #	# This "if" statement is for debugging.
 #	if body.name == "Thruster_01":

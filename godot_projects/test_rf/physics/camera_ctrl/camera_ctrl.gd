@@ -548,7 +548,7 @@ func _process_sky():
 
 
 func root_most_body():
-	return self
+	return null
 
 
 func distance( other: RefFrameNode ):
