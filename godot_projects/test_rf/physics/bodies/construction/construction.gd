@@ -187,7 +187,7 @@ func _create_assembly():
 
 func check_if_deactivate():
 	var player = PhysicsManager.player_control
-	if player == null:
+	if (player == null) or ( not is_instance_valid(player) ):
 		return true
 	
 	# Player in this ref. fame in order to easily compute each coordinate.

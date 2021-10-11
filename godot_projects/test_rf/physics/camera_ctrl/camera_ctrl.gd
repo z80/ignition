@@ -551,6 +551,12 @@ func root_most_body():
 	return self
 
 
+func distance( other: RefFrameNode ):
+	var se3: Se3Ref = self.relative_to( other )
+	var v: Vector3 = se3.r
+	var d: float = v.length()
+	return d
+
 
 func serialize():
 	var data: Dictionary = {}
