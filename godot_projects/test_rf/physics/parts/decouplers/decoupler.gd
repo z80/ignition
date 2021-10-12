@@ -31,6 +31,30 @@ func process_user_input_group( input: Dictionary ):
 func decoupler_activate():
 	var decoupling_node: Node = get_node( decoupling_node_path )
 	if (decoupling_node == null) or (not is_instance_valid(decoupling_node)):
-		var has: bool = stacking_nodes.has( decoupling_node )
+		print( "ERROR: decoupling node is not specified" )
+		return
+	
+	var has: bool = stacking_nodes.has( decoupling_node )
+	if not has:
+		print( "ERROR: decoupling node is not listed" )
+		return
+	
+	#decoupling_node.d
+
+
+func serialize():
+	var data: Dictionary = .serialize()
+	data["decoupling_node_path"] = String(decoupling_node_path)
+	return data
+
+
+func deserialize( data: Dictionary ):
+	var ret: bool = .deserialize( data )
+	if not ret:
+		return false
+	
+	decoupling_node_path = data[ "decoupling_node_path" ]
+	
+	return true
 
 
