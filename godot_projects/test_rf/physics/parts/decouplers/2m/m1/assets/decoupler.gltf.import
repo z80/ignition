@@ -2,12 +2,12 @@
 
 importer="scene"
 type="PackedScene"
-path="res://.import/decoupler.gltf-750ef2b456f17b9bf45ca09c0893eed1.scn"
+path="res://.import/decoupler.gltf-b68926c6ba086c4cac67c3f00c49f5b7.scn"
 
 [deps]
 
-source_file="res://physics/parts/decouplers/2m/v1/assets/decoupler.gltf"
-dest_files=[ "res://.import/decoupler.gltf-750ef2b456f17b9bf45ca09c0893eed1.scn" ]
+source_file="res://physics/parts/decouplers/2m/m1/assets/decoupler.gltf"
+dest_files=[ "res://.import/decoupler.gltf-b68926c6ba086c4cac67c3f00c49f5b7.scn" ]
 
 [params]
 

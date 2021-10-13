@@ -39,6 +39,22 @@ func decoupler_activate():
 		print( "ERROR: decoupling node is not listed" )
 		return
 	
+	# Remove assembly.
+	var sb: Node = get_super_body_raw()
+	if (sb != null) and (is_instance_valid(sb)):
+		sb.queue_free()
+	
+	
+	var node_b: CouplingNodeStacking = decoupling_node.node_b
+	if node_b != null:
+		node_b.node_b = null
+		node_b._joint = null
+	decoupling_node.deactivate()
+	decoupling_node.node_b_path = ""
+	decoupling_node.node_b      = null
+	
+	# Remove decoupling node from the list of stacking nodes.
+	stacking_nodes.erase( decoupling_node )
 	#decoupling_node.d
 
 

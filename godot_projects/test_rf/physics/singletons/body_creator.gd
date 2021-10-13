@@ -53,6 +53,9 @@ func create( type_name: String ):
 		"habitat_2m_m1":
 			return habitat_2m_1m()
 		
+		"decoupler_2m_1m":
+			return decoupler_2m_1m()
+		
 		# Characters
 #		"character_simple":
 #			return part_character_simple()
@@ -171,6 +174,11 @@ func habitat_2m_1m():
 	var b = _create( B )
 	return b
 
+
+func decoupler_2m_1m():
+	var B = load( "res://physics/parts/decouplers/2m/m1/m1.tscn" )
+	var b = _create( B )
+	return b
 
 
 

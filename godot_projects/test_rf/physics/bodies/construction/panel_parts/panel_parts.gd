@@ -107,6 +107,11 @@ func _create_buttons_parts():
 	_add_button( parts, "res://physics/parts/habitats/2m/m1/assets/icon.png", 
 						 "habitat_2m_m1", 
 						 "Habitat 2m diameter", true )
+	
+	_add_button( parts, "res://physics/parts/decouplers/2m/m1/assets/icon.png", 
+						 "decoupler_2m_1m", 
+						 "Decoupler 2m diameter", true )
+	
 
 
 
