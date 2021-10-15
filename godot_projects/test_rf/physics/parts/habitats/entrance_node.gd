@@ -49,6 +49,8 @@ func characters_for_boarding():
 		return null
 	
 	var ctrl: Node = PhysicsManager.player_control
+	if (ctrl == null) or (not is_instance_valid(ctrl)):
+		return null
 	
 	# Only characters can board. 
 	var is_character: bool = ctrl.has_method( "is_character" ) and ctrl.is_character()
