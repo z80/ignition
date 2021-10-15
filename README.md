@@ -7,6 +7,8 @@ A game development inspired by Kerbal Space Program (KSP). Making something is m
 
 Updates are posted at [Itch.io](https://litedictteam.itch.io/ignition) site.
 
+Lbry channel with videos: [https://odysee.com/@ignition](https://odysee.com/@ignition)
+
 ## Features
 
 1. One can build rockets of parts and fly to space.
