@@ -19,7 +19,7 @@ Updates are posted at [Itch.io](https://litedictteam.itch.io/ignition) site.
 1. The game is being developed using Godot game engine.
 2. A few binary modules are designed to allow rendering of very far and vary large objects like planets.
 3. So far there are only a few rocket parts available for construction. And the astronaut 3d model is a very coarse one. I spent not more than 15 minutes on it... 
-4. Main development focus at the moment is on implementing the 
+4. Main development focus at the moment is on implementing every single feature needed to have a fully playable game.
 
 ## Screenshots
 ![construction](docs/images/contruction.jpg)
