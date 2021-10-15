@@ -91,9 +91,9 @@ func activate():
 	_joint.set( "nodes/node_a", body_a.get_path() )
 	_joint.set( "nodes/node_b", body_b.get_path() )
 	#_joint.precision = 100
-	_joint.set( "linear_limit_x/softness", 0.0001 )
-	_joint.set( "linear_limit_y/softness", 0.0001 )
-	_joint.set( "linear_limit_z/softness", 0.0001 )
+	_joint.set( "linear_limit_x/softness", 0.00001 )
+	_joint.set( "linear_limit_y/softness", 0.00001 )
+	_joint.set( "linear_limit_z/softness", 0.00001 )
 
 
 
