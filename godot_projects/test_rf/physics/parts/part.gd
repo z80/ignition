@@ -282,8 +282,6 @@ func couple():
 	
 	var parts_qty: int = parts.size()
 	
-	var done: bool = false
-	
 	# Initialize closest nodes with nulls.
 	var closest_own_node: CouplingNodeStacking   = null
 	var closest_other_node: CouplingNodeStacking = null
@@ -313,12 +311,16 @@ func couple():
 				if other_node.connected():
 					continue
 				
+				# If node does not allows connections to it.
+				if not other_node.allows_connections:
+					continue
+				
 				# Mesure the distance between the two nodes.
 				other_node_se3.transform = other_node.relative_to_owner
 				var se3: Se3Ref = self.relative_to_se3( part, other_node_se3 )
 				se3 = se3.mul( own_node_se3 )
 				var current_distance: float = se3.r.length()
-				if (closest_other_node == null) or (closest_distance < current_distance):
+				if (closest_other_node == null) or (current_distance < closest_distance):
 					closest_distance   = current_distance
 					closest_own_node   = own_node
 					closest_other_node = other_node

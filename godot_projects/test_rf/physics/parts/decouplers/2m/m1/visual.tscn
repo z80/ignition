@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://physics/parts/decouplers/2m/m1/assets/material_decoupler.material" type="Material" id=1]
 [ext_resource path="res://physics/parts/coupling_nodes/coupling_node_stacking.gd" type="Script" id=2]
 [ext_resource path="res://physics/parts/decouplers/2m/m1/material_decoupler.tres" type="Material" id=3]
+[ext_resource path="res://physics/parts/decouplers/2m/m1/visual.gd" type="Script" id=4]
 
 [sub_resource type="ArrayMesh" id=1]
 resource_name = "Decoupler"
@@ -22,6 +23,7 @@ surfaces/0 = {
 [node name="Decoupler" type="MeshInstance"]
 mesh = SubResource( 1 )
 material/0 = ExtResource( 3 )
+script = ExtResource( 4 )
 
 [node name="Top" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0 )
@@ -29,6 +31,6 @@ script = ExtResource( 2 )
 allows_connections = false
 
 [node name="Bottom" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0 )
+transform = Transform( 1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, 0, -0.05, 0 )
 script = ExtResource( 2 )
 allows_connecting = false

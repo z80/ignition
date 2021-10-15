@@ -15,7 +15,12 @@ func _ready():
 
 
 func _process( _delta ):
-	$CenterContainer/ProgressBar.value = _target_obj.throttle * 100.0
+	if (_target_obj == null) or (not is_instance_valid(_target_obj)):
+		self.queue_free()
+		return
+	
+	var pb: ProgressBar = get_node( "CenterContainer/ProgressBar" )
+	pb.value = _target_obj.throttle * 100.0
 	#pass
 
 func _on_ControlThis_pressed():

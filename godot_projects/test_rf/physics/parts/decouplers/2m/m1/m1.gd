@@ -12,6 +12,5 @@ func init():
 	.init()
 	
 	# Remember decoupling node.
-	var dn: Node = _visual.get_decoupling_node()
-	decoupling_node_path = dn.get_path()
+	decoupling_node = _visual.get_decoupling_node()
 

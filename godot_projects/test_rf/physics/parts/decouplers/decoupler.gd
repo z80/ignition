@@ -4,17 +4,12 @@ class_name Decoupler
 
 # This one should point to the coupling node wich is iupposed to 
 # be eliminated.
-export(NodePath) var decoupling_node_path
-
+var decoupling_node: Spatial = null
+var decoupled: bool = false
 
 # Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func init():
+	.init()
 
 
 func process_user_input_group( input: Dictionary ):
@@ -29,7 +24,6 @@ func process_user_input_group( input: Dictionary ):
 # Eliminates upper coupling node. It causes two parts of the 
 # rocket to separate.
 func decoupler_activate():
-	var decoupling_node: Node = get_node( decoupling_node_path )
 	if (decoupling_node == null) or (not is_instance_valid(decoupling_node)):
 		print( "ERROR: decoupling node is not specified" )
 		return
@@ -47,20 +41,23 @@ func decoupler_activate():
 	
 	var node_b: CouplingNodeStacking = decoupling_node.node_b
 	if node_b != null:
-		node_b.node_b = null
-		node_b._joint = null
+		node_b.deactivate()
+		node_b.node_b_path = null
+		node_b.node_b      = null
+		node_b.is_parent   = false
 	decoupling_node.deactivate()
-	decoupling_node.node_b_path = ""
+	decoupling_node.node_b_path = null
 	decoupling_node.node_b      = null
+	decoupling_node.is_parent   = false
 	
 	# Remove decoupling node from the list of stacking nodes.
 	stacking_nodes.erase( decoupling_node )
-	#decoupling_node.d
+	decoupled = true
 
 
 func serialize():
 	var data: Dictionary = .serialize()
-	data["decoupling_node_path"] = String(decoupling_node_path)
+	data["decoupled"] = decoupled
 	return data
 
 
@@ -69,7 +66,9 @@ func deserialize( data: Dictionary ):
 	if not ret:
 		return false
 	
-	decoupling_node_path = data[ "decoupling_node_path" ]
+	decoupled = data[ "decoupled" ]
+	if decoupled:
+		stacking_nodes.erase( decoupling_node )
 	
 	return true
 
