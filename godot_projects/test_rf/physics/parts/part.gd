@@ -315,6 +315,12 @@ func couple():
 				if not other_node.allows_connections:
 					continue
 				
+				# If it is already connected to the same part, 
+				# don't connect it again.
+				var already_coupled: bool = self.is_coupled_with( part )
+				if already_coupled:
+					continue
+				
 				# Mesure the distance between the two nodes.
 				other_node_se3.transform = other_node.relative_to_owner
 				var se3: Se3Ref = self.relative_to_se3( part, other_node_se3 )
@@ -354,6 +360,24 @@ func decouple_all():
 	for n in stacking_nodes:
 		var node: CouplingNodeStacking = n
 		node.decouple()
+
+
+# Need this one to not try to couple two times.
+func is_coupled_with( part: Part ):
+	var own_nodes_qty: int = stacking_nodes.size()
+	for own_node_ind in range( own_nodes_qty ):
+		var own_node: CouplingNodeStacking = stacking_nodes[own_node_ind]
+		var connected: bool = own_node.connected()
+		if not connected:
+			continue
+		
+		var node_b: CouplingNodeStacking = own_node.node_b
+		var part_b: Part = node_b.part
+		
+		if part == part_b:
+			return true
+	
+	return false
 
 
 

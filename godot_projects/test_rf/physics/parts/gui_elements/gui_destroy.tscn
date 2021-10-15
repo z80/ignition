@@ -21,11 +21,12 @@ __meta__ = {
 }
 
 [node name="Destroy" type="Button" parent="CenterContainer"]
-margin_left = 457.0
+margin_left = 437.0
 margin_top = 292.0
-margin_right = 567.0
+margin_right = 588.0
 margin_bottom = 308.0
-hint_tooltip = "Destroy block (for debug purposes)."
-text = "Destroy block"
+hint_tooltip = "Destroy block.
+This button is for debug purposes only."
+text = "Force destroy block"
 
 [connection signal="pressed" from="CenterContainer/Destroy" to="." method="_on_Destroy_pressed"]
