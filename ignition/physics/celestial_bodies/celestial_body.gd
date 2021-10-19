@@ -21,6 +21,15 @@ export(float)   var orbital_eccentricity = 0.0
 var initialized: bool = false
 var gm: float = -1.0
 
+# Gravity force source.
+var force_source_gravity = null
+# Centrifugal, Coriolis and Euler forces in rotating ref. frame.
+var force_source_inertial = null
+# Atmosphere friction forces.
+var force_source_atmosphere_drag = null
+
+
+
 func get_class():
 	return "CelestialBody"
 
@@ -33,8 +42,8 @@ func _ready():
 func init_force_source():
 	.init_force_source()
 	
-	force_source = ForceSourceGravity.new()
-	force_source.GM = gm
+	force_source_gravity = ForceSourceGravity.new()
+	force_source_gravity.GM = gm
 
 
 
@@ -77,6 +86,9 @@ func gravitational_influence( se3: Se3Ref ):
 
 
 
+
+
+
 func serialize():
 	var data: Dictionary = .serialize()
 	return data
@@ -88,6 +100,33 @@ func deserialize( data: Dictionary ):
 	return ret
 
 
+
+
+func apply_forces():
+	var ref_frames: Array = ref_frames( self )
+	var physics_bodies: Array = []
+	for rf in ref_frames:
+		var bodies: Array = rf.child_physics_bodies()
+		physics_bodies += bodies
+	
+	var sources: Array = force_sources()
+	# For each body apply all force sources.
+	for b in physics_bodies:
+		for s in sources:
+			var se3: Se3Ref = self.relative_to( b )
+
+
+
+# This one can be overwritten by derivatives.
+func force_sources():
+	var sources: Array = []
+	if force_source_gravity != null:
+		sources.push_back( force_source_gravity )
+	if force_source_inertial != null:
+		sources.push_back( force_source_inertial )
+	if force_source_atmosphere_drag != null:
+		sources.push_back( force_source_atmosphere_drag )
+	return sources
 
 
 

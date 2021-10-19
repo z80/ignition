@@ -4,7 +4,6 @@ class_name RefFrame
 
 var _axes = null
 
-var force_source = null
 
 
 
@@ -29,7 +28,7 @@ func _ready():
 
 
 func ready():
-	init_force_source()
+	pass
 
 
 func _process( _delta ):
@@ -69,11 +68,6 @@ func _update_axes():
 	
 	var t: Transform = self.t_root()
 	_axes.transform = t
-
-
-# Need to be re-defined in subclasses.
-func init_force_source():
-	force_source = null
 
 
 # Closest not in terms of distance. But in terms of graph node distance.

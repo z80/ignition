@@ -529,6 +529,20 @@ func self_delete_if_unused():
 	return false
 
 
+# Only derivatives of "Body" for applying forces.
+func child_physics_bodies():
+	var children = get_children()
+	var bodies: Array = []
+	for ch in children:
+		var b: Body = ch as Body
+		var include: bool = (b != null) and (b != _surface_provider)
+		if not include:
+			continue
+		
+		bodies.push_back( b )
+	
+	return bodies
+
 
 func child_bodies( including_surf_provider: bool = false ):
 	var children = get_children()
