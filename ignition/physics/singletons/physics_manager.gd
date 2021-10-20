@@ -239,16 +239,18 @@ func update_camera():
 	if rf.force_source == null:
 		return
 	
-	var defines_vertical: bool = rf.force_source.defines_vertical()
-	var c: RefFrameNode = PhysicsManager.camera
-	if defines_vertical:
-		if pc == null:
-			return
-		if not c.has_method( "process_basis" ):
-			return
-		var up: Vector3 = rf.force_source.up( rf, pc )
-		up = pc.q().xform( up )
-		c.process_basis( up )
+	
+	# Need to redo it based on purely closest celestial body !!!!!!!!!!!!!!!
+#	var defines_vertical: bool = rf.force_source.defines_vertical()
+#	var c: RefFrameNode = PhysicsManager.camera
+#	if defines_vertical:
+#		if pc == null:
+#			return
+#		if not c.has_method( "process_basis" ):
+#			return
+#		var up: Vector3 = rf.force_source.up( rf, pc )
+#		up = pc.q().xform( up )
+#		c.process_basis( up )
 		
 	# For the body under player control find the closest celestial
 	# body. If found, specify the atmosphere parameters.
