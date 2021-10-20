@@ -22,11 +22,11 @@ var initialized: bool = false
 var gm: float = -1.0
 
 # Gravity force source.
-var force_source_gravity = null
-# Centrifugal, Coriolis and Euler forces in rotating ref. frame.
-var force_source_inertial = null
-# Atmosphere friction forces.
-var force_source_atmosphere_drag = null
+var force_source_gravity: ForceSourceGravity = null
+## Centrifugal, Coriolis and Euler forces in rotating ref. frame.
+#var force_source_inertial = null
+## Atmosphere friction forces.
+#var force_source_atmosphere_drag = null
 
 
 
@@ -63,19 +63,41 @@ func init():
 # This thing is supposed to process physics ref frames which are children of the 
 # celestial body. Need to compute influence and change parent or allow/disallow orbiting.
 func process_ref_frames( celestial_bodies: Array ):
-	pass
-
+	# Apply gravity to physics bodies here.
+	var bodies: Array = get_all_physics_bodies( self, true, false )
+	apply_forces( bodies, self, force_source_gravity, true )
 
 
 # Returns all physics ref frames for a node.
-func ref_frames( n: Node ):
+func get_ref_frames( n: Node, certain_ones: bool = false, orbiting: bool = false ):
 	var children = n.get_children()
 	var rfs = []
 	for ch in children:
 		var rfp: RefFramePhysics = ch as RefFramePhysics
-		if rfp != null:
+		if rfp == null:
+			continue
+		
+		if not certain_ones:
 			rfs.push_back( rfp )
+		
+		else:
+			var rf_orbiting: bool = rfp.is_orbiting()
+			var matches: bool = (rf_orbiting == orbiting)
+			if matches:
+				rfs.push_back( rfp )
+			
 	return rfs
+
+
+func get_all_physics_bodies( n: Node, certain_ones: bool = false, orbiting: bool = false ):
+	var ref_frames: Array = get_ref_frames( n, certain_ones, orbiting )
+	var physics_bodies: Array = []
+	for rf in ref_frames:
+		var bodies: Array = rf.child_physics_bodies()
+		physics_bodies += bodies
+	
+	return physics_bodies
+
 
 
 func gravitational_influence( se3: Se3Ref ):
@@ -102,31 +124,26 @@ func deserialize( data: Dictionary ):
 
 
 
-func apply_forces():
-	var ref_frames: Array = ref_frames( self )
-	var physics_bodies: Array = []
-	for rf in ref_frames:
-		var bodies: Array = rf.child_physics_bodies()
-		physics_bodies += bodies
-	
-	var sources: Array = force_sources()
-	# For each body apply all force sources.
+func apply_forces( physics_bodies: Array, force_origin: RefFrameNode, force_source: ForceSource, set_local_up: bool ):
+	# For each body apply the force source.
 	for b in physics_bodies:
-		for s in sources:
-			var se3: Se3Ref = self.relative_to( b )
+		var se3_rel_to_origin: Se3Ref = self.relative_to( b )
+		var se3_local: Se3Ref = b.get_se3()
+		var q: Quat = se3_local.q
+		var force_torque: Array = force_source.compute_force( b, se3_rel_to_origin )
+		var F: Vector3 = force_torque[0]
+		var P: Vector3 = force_torque[1]
+		F = q.xform( F )
+		P = q.xform( P )
+		b.add_force_torque( F, P )
+		
+		if set_local_up:
+			var r: Vector3 = -se3_rel_to_origin.r
+			r = r.normalized()
+			r = q.xform( r )
+			b.set_local_up( r )
 
 
-
-# This one can be overwritten by derivatives.
-func force_sources():
-	var sources: Array = []
-	if force_source_gravity != null:
-		sources.push_back( force_source_gravity )
-	if force_source_inertial != null:
-		sources.push_back( force_source_inertial )
-	if force_source_atmosphere_drag != null:
-		sources.push_back( force_source_atmosphere_drag )
-	return sources
 
 
 

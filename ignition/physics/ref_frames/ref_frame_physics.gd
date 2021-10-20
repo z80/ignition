@@ -41,7 +41,6 @@ func process_children():
 	#print( "******************** process children" )
 	.process_children()
 	#print( "******************** apply forces" )
-	apply_forces()
 	#if not debug_has_split:
 	#exclude_too_far_bodies()
 	#print( "******************** include close enough bodies" )
@@ -618,71 +617,12 @@ func parent_bodies():
 
 
 
-func apply_forces():
-	var rf: RefFrame = closest_force_source()
-	if rf == null:
-		return
-	
-	var children = self.get_children()
-	for child in children:
-		var body = child as RefFrameNode
-		if body != null:
-			process_body( rf, body )
 
 
 
 
-func process_body( force_source_rf: RefFrameNode, body: RefFrameNode, up_defined: bool = false ):
-	var se3: Se3Ref = force_source_rf.relative_to( body )
-	var r: Vector3 = se3.r
-	var v: Vector3 = se3.v
-	var q: Quat    = se3.q
-	var w: Vector3 = se3.w
-	
-#	# This "if" statement is for debugging.
-#	if body.name == "Thruster_01":
-#		body.compute_relative_to_root( force_source_rf )
-#		var r_rel: Vector3 = body.r_root()
-#		var q_rel: Quat    = body.q_root()
-#		var qq: Quat = q_rel * q
-#		var i = 1
-	
-	var ret: Array = []
-	var fs: ForceSource = force_source_rf.force_source
-	var orbiting: bool = self.is_orbiting()
-	fs.compute_force( body, orbiting, r, v, q, w, ret )
-	if not up_defined:
-		var defines_vertical: bool = fs.defines_vertical()
-		if defines_vertical:
-			up_defined = true
-			var p: Node = body.get_parent()
-			var rfp: RefFramePhysics = p as RefFramePhysics
-			if rfp != null:
-				var up: Vector3 = fs.up( force_source_rf, body )
-				up = body.q().xform( up )
-				if body.has_method( "set_local_up" ):
-					body.set_local_up( up )
-	
-	var F: Vector3 = ret[0]
-	var P: Vector3 = ret[1]
-	# Convert to physics ref. frame.
-	var q_adj: Quat = body.q()
 
-	F = q_adj.xform( F )
-	P = q_adj.xform( P )
 
-	# Apply force and torque to the body.
-	if body.has_method( "add_force_torque" ):
-		body.add_force_torque( F, P )
-
-	# Befor computing own force contribution recursively searches for 
-	# other force sources if recursive search is allowed.
-	if force_source_rf.force_source.recursive():
-		var p_ref_frame: RefFrame = force_source_rf.closest_parent_ref_frame()
-		if p_ref_frame != null:
-			force_source_rf = p_ref_frame.closest_force_source()
-			if force_source_rf != null:
-				process_body( force_source_rf, body, up_defined )
 
 
 

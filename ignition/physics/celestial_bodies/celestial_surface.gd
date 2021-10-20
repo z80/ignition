@@ -49,6 +49,8 @@ export(float) var rescale_angular_distance = 1.1 / 180.0 * PI
 var last_player_rf_r: Vector3 = Vector3.ZERO
 
 
+var _force_source_rotational: ForceSourceRotational = null
+
 
 func get_class():
 	return "CelestialSurface"
@@ -233,6 +235,11 @@ func _set_apply_scale( en ):
 # Here need to switch between orbiting and being on a rotating surface.
 func process_ref_frames( celestial_bodies: Array ):
 	.process_ref_frames( celestial_bodies )
+	
+	# Apply Centrifugal, Coriolis and Euler force
+	# (-2*m * w x v); (-m * w x (w x r)); (-m*e x r)
+	apply_rotational_forces_forces()
+	
 	process_ref_frames_rotating_to_orbiting()
 	process_ref_frames_orbiting_to_rotating()
 	process_ref_frames_orbiting_change_parent( celestial_bodies )
@@ -243,9 +250,21 @@ func process_ref_frames( celestial_bodies: Array ):
 
 
 
+func apply_rotational_forces_forces():
+	var rot: RefFrameNode = rotation_rf()
+	var bodies: Array = get_all_physics_bodies( rot )
+	
+	for b in bodies:
+		var se3_rel_to_body: Se3Ref = rot.relative_to( b )
+		var se3_local: Se3Ref       = b.get_se3()
+
+
+
+
+
 func process_ref_frames_rotating_to_orbiting():
 	var rot: RefFrameNode = rotation_rf()
-	var rfs: Array = ref_frames( rot )
+	var rfs: Array = get_ref_frames( rot )
 	var qty: int = rfs.size()
 	if qty < 1:
 		return
@@ -280,7 +299,7 @@ func process_ref_frames_rotating_to_orbiting():
 
 func process_ref_frames_orbiting_to_rotating():
 	var tr: RefFrameNode = translation_rf()
-	var rfs: Array = ref_frames( tr )
+	var rfs: Array = get_ref_frames( tr )
 	var qty: int = rfs.size()
 	if qty < 1:
 		return
@@ -300,7 +319,7 @@ func process_ref_frames_orbiting_to_rotating():
 
 func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 	var tr: RefFrameNode = translation_rf()
-	var rfs: Array = ref_frames( tr )
+	var rfs: Array = get_ref_frames( tr )
 	var qty: int = rfs.size()
 	if qty < 1:
 		return

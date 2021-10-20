@@ -425,6 +425,12 @@ func _set_hint_text( stri: String ):
 	_icon.text = hint_text
 
 
+func get_mass():
+	if _physical != null:
+		return _physical.mass
+	
+	return 1.0
+
 
 # May need to be overridden in derived classes in the case if 
 # _physical is not a rigid body.
@@ -439,11 +445,9 @@ func add_force_torque( F: Vector3, P: Vector3 ):
 			rb.sleeping = false
 			rb.add_central_force( F )
 			rb.add_torque( P )
-			if force != null:
-				force.set_force( true, F, self.r() )
-	else:
-		if force != null:
-			force.set_force( false, F, self.r() )
+	
+	if force != null:
+		force.set_force( false, F, self.r() )
 
 
 # Body (like a character) might need to know it.
