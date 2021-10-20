@@ -34,7 +34,7 @@ Here is the battle plan.
 
 
 - [x] When moving a few connected parts in assembly and finish not connecting them to anything else, they fall through the ground. And the game fails shortly after that.
-- [ ] When using a decoupler, when thruster is directly below, the part above decoupler extends upwards compared to where it should be. With other nodes (other than thruster) it is ok.
+- [x] When using a decoupler, when thruster is directly below, the part above decoupler extends upwards compared to where it should be. With other nodes (other than thruster) it is ok.
 - [ ] With 3.3.4 Godot joint parameters changed. Don't know right now jow to make it very stiff.
 
 
