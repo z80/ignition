@@ -240,7 +240,8 @@ func _set_apply_scale( en ):
 func process_ref_frames( celestial_bodies: Array ):
 	.process_ref_frames( celestial_bodies )
 	
-	# Apply Centrifugal, Coriolis and Euler force
+	# Apply gravity, centrifugal, Coriolis and Euler force to bodies in 
+	# rotational ref. frame.
 	# (-2*m * w x v); (-m * w x (w x r)); (-m*e x r)
 	_apply_rotational_forces()
 	
@@ -262,9 +263,19 @@ func _apply_rotational_forces():
 		var se3_rel_to_body: Se3Ref = rot.relative_to( b )
 		var se3_local: Se3Ref       = b.get_se3()
 		var q: Quat                 = se3_local.q
-		var force_torque: Array = _force_source_rotational.compute_force( b, se3_rel_to_body )
+		
+		# Apply gravity.
+		var force_torque: Array     = force_source_gravity.compute_force( b, se3_rel_to_body )
 		var F: Vector3 = force_torque[0]
 		var P: Vector3 = force_torque[1]
+		F = q.xform( F )
+		P = q.xform( P )
+		b.add_force_torque( F, P )
+		
+		# Apply rotational forces.
+		force_torque = _force_source_rotational.compute_force( b, se3_rel_to_body )
+		F = force_torque[0]
+		P = force_torque[1]
 		F = q.xform( F )
 		P = q.xform( P )
 		b.add_force_torque( F, P )
