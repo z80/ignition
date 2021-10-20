@@ -109,6 +109,10 @@ func init():
 	rotation = CelestialRotationRef.new()
 	rotation.init( rotation_axis, rotation_period_hrs )
 	
+	# Initialize rotational force source
+	_force_source_rotational = ForceSourceRotational.new()
+	_force_source_rotational.ang_velocity = (1.0/(rotation_period_hrs*3600.0))*rotation_axis
+	
 	# Initialize body geometry
 	var celestial_body: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	var radius: float  = radius_km * 1000.0
@@ -238,7 +242,7 @@ func process_ref_frames( celestial_bodies: Array ):
 	
 	# Apply Centrifugal, Coriolis and Euler force
 	# (-2*m * w x v); (-m * w x (w x r)); (-m*e x r)
-	apply_rotational_forces_forces()
+	_apply_rotational_forces()
 	
 	process_ref_frames_rotating_to_orbiting()
 	process_ref_frames_orbiting_to_rotating()
@@ -250,14 +254,20 @@ func process_ref_frames( celestial_bodies: Array ):
 
 
 
-func apply_rotational_forces_forces():
+func _apply_rotational_forces():
 	var rot: RefFrameNode = rotation_rf()
 	var bodies: Array = get_all_physics_bodies( rot )
 	
 	for b in bodies:
 		var se3_rel_to_body: Se3Ref = rot.relative_to( b )
 		var se3_local: Se3Ref       = b.get_se3()
-
+		var q: Quat                 = se3_local.q
+		var force_torque: Array = _force_source_rotational.compute_force( b, se3_rel_to_body )
+		var F: Vector3 = force_torque[0]
+		var P: Vector3 = force_torque[1]
+		F = q.xform( F )
+		P = q.xform( P )
+		b.add_force_torque( F, P )
 
 
 
