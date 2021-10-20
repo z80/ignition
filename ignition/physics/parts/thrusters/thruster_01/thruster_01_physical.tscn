@@ -12,6 +12,7 @@ height = 0.407099
 
 [sub_resource type="CapsuleShape" id=3]
 radius = 0.399535
+height = 1.6019
 
 [node name="Thruster_01_Physical" type="RigidBody"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.561092, 0 )
@@ -26,5 +27,5 @@ transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 2.26
 shape = SubResource( 2 )
 
 [node name="Capsule_02" type="CollisionShape" parent="."]
-transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 1.62984, 0 )
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 1.01996, 0 )
 shape = SubResource( 3 )
