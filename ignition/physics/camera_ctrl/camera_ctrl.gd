@@ -236,8 +236,28 @@ func _input( event ):
 	#	_cycle_mode()
 
 
+func set_up_vector( celestial_body: RefFrameNode ):
+	var p: RefFrameNode = get_parent()
+	if (p == null) or (not is_instance_valid(p)):
+		return
+	
+	var se3: Se3Ref = celestial_body.relative_to( p )
+	var up: Vector3 = -se3.r.normalized()
+	
+	var current_up: Vector3 = current_horizontal.xform( Vector3.UP )
+	var rot: Vector3 = current_up.cross( up )
+	# Assume a linear approximation.
+	var co2: float = 1.0
+	rot *= 0.025
+	var q: Quat = Quat( rot.x, rot.y, rot.z, 1.0)
+	q = q.normalized()
+	
+	current_horizontal = q * current_horizontal
+	current_horizontal = current_horizontal.normalized()
 
-func _process(_delta):
+
+# It should be called manually
+func process( _delta: float ):
 	var input: Dictionary = UserInput.get_input()
 	var mm: bool = input.has( "ui_map" )
 	_set_map_mode( mm )
@@ -436,19 +456,7 @@ func _init_basis():
 
 
 
-func set_up_vector( celestial_body: RefFrameNode ):
-	var se3: Se3Ref = celestial_body.relative_to( self )
-	var up: Vector3 = -se3.r.normalized()
-	
-	var current_up: Vector3 = current_horizontal.xform( Vector3.UP )
-	var rot: Vector3 = current_up.cross( up )
-	# Assume a linear approximation.
-	var co2: float = 1.0
-	var q: Quat = Quat( rot.x, rot.y, rot.z, 1.0)
-	q = q.normalized()
-	
-	current_horizontal = q * current_horizontal
-	current_horizontal = current_horizontal.normalized()
+
 
 
 func apply_atmosphere( celestial_body: RefFrameNode ):

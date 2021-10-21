@@ -26,8 +26,9 @@ Here is the battle plan.
 - [x] Make control group #1 selected by default.
 - [x] Make assemblies created on first request. I.e. implement setter ang getter which would do all the underground work when it is requested first.
 - [x] Make dynamic splits and merges.
-- [ ] Currently working on.... Implement an ability to use multiple force sources like gravity, rotaional, atmosphere friction, etc...
-- [ ] Fix camera wobling. Make camera up definition more clear and come from the nearest gravity center.
+- [x] Currently working on.... Implement an ability to use multiple force sources like gravity, rotaional, atmosphere friction, etc...
+- [x] Fix camera wobbling. Make camera up definition more clear and come from the nearest gravity center.
+- [ ] Fix the rotational part of the drag-rotate tool.
 - [ ] A BUG: Fix navball rotations. Icons seem to be correct but navball is not always.
 - [ ] Port over the air friction model using mesh traingles.
 - [ ] Make atmosphere mesh per planet.

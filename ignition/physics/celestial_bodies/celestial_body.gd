@@ -40,8 +40,6 @@ func _ready():
 
 
 func init_force_source():
-	.init_force_source()
-	
 	force_source_gravity = ForceSourceGravity.new()
 	force_source_gravity.GM = gm
 

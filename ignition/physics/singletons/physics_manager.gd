@@ -52,7 +52,7 @@ func init():
 
 # Update body visual parts in accordance with what is set to be 
 # player ref. frame. (The ref. frame where the camera is located.)
-func _process(_delta):
+func _process( _delta: float ):
 	#print( "delta: ", _delta )
 	# Celestial body orbital movement time delta.
 	# It should be applied to planet movement and ref. frames 
@@ -85,7 +85,7 @@ func _process(_delta):
 	process_celestial_body_children()
 	
 	# Camera should be updated the last, after all poses are set.
-	update_camera()
+	update_camera( _delta )
 
 
 
@@ -226,18 +226,11 @@ func process_celestial_body_children():
 		cb.process_ref_frames( celestial_bodies )
 
 
-func update_camera():
+func update_camera( delta: float ):
 	var ClosestForceSource = load( "res://physics/utils/closest_force_source.gd" )
 	# Update camera orientation.
 	var pc: Body = PhysicsManager.player_control
 	if pc == null:
-		return
-	
-	var rf: RefFrameNode = ClosestForceSource.closest_force_source( pc )
-	if rf == null:
-		return
-	
-	if rf.force_source == null:
 		return
 	
 	var c: RefFrameNode = PhysicsManager.camera
@@ -268,6 +261,8 @@ func update_camera():
 	if not all_suns.empty():
 		var sun: RefFrameNode = all_suns[0] as RefFrameNode
 		c.apply_sun( p_rf, sun )
+	
+	c.process( delta )
 
 
 
