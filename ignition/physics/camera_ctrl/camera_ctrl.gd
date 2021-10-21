@@ -42,7 +42,7 @@ var _state = {
 }
 
 
-var local_ref_frame: Quat = Quat.IDENTITY
+var current_horizontal: Quat = Quat.IDENTITY
 
 var _target: Spatial = null
 
@@ -302,7 +302,7 @@ func _process_fps(_delta):
 	
 	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
 	var t: Transform = Transform.IDENTITY
-	q = local_ref_frame * q
+	q = current_horizontal * q
 	t.basis = Basis( q )
 	t.origin = _target.global_transform.origin
 	transform = t
@@ -356,7 +356,7 @@ func _process_tps_azimuth( _delta ):
 	var player_ctrl_rotation: Quat = player_ctrl.q()
 	var inv_player_rotation: Quat = player_ctrl_rotation.inverse()
 	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
-	q = local_ref_frame * inv_player_rotation * q
+	q = current_horizontal * inv_player_rotation * q
 	var v_dist: Vector3 = Vector3( 0.0, 0.0, _state.dist )
 	v_dist = q.xform( v_dist )
 	
@@ -431,30 +431,24 @@ func _process_map_mode( _delta: float ):
 
 
 func _init_basis():
-	local_ref_frame = Quat.IDENTITY
+	current_horizontal = Quat.IDENTITY
 
 
 
 
-func process_basis( up: Vector3 ):
-	var current_up: Vector3 = local_ref_frame.xform( Vector3.UP )
-	var rot: Vector3 = current_up.cross( up )
-	var a: float = rot.length()
-	var q: Quat
-	if a < 0.000001:
-		q = Quat.IDENTITY
-	else:
-		var a_2: float = a * 0.5
-		var co2: float = cos( a_2 )
-		var si2: float = sin( a_2 )
-		var k: float = si2 / a
-		q.w = co2
-		q.x = rot.x*k
-		q.y = rot.y*k
-		q.z = rot.z*k
+func set_up_vector( celestial_body: RefFrameNode ):
+	var se3: Se3Ref = celestial_body.relative_to( self )
+	var up: Vector3 = -se3.r.normalized()
 	
-	local_ref_frame = q * local_ref_frame
-	local_ref_frame = local_ref_frame.normalized()
+	var current_up: Vector3 = current_horizontal.xform( Vector3.UP )
+	var rot: Vector3 = current_up.cross( up )
+	# Assume a linear approximation.
+	var co2: float = 1.0
+	var q: Quat = Quat( rot.x, rot.y, rot.z, 1.0)
+	q = q.normalized()
+	
+	current_horizontal = q * current_horizontal
+	current_horizontal = current_horizontal.normalized()
 
 
 func apply_atmosphere( celestial_body: RefFrameNode ):

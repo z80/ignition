@@ -80,11 +80,12 @@ func _process(_delta):
 			continue
 		rf.evolve( orbital_delta )
 	
-	update_camera()
-	
 	# Relocate children of celestial bodies depending on the 
 	# gravitational influence and atmosphere bounds.
 	process_celestial_body_children()
+	
+	# Camera should be updated the last, after all poses are set.
+	update_camera()
 
 
 
@@ -239,10 +240,10 @@ func update_camera():
 	if rf.force_source == null:
 		return
 	
+	var c: RefFrameNode = PhysicsManager.camera
 	
 	# Need to redo it based on purely closest celestial body !!!!!!!!!!!!!!!
 #	var defines_vertical: bool = rf.force_source.defines_vertical()
-#	var c: RefFrameNode = PhysicsManager.camera
 #	if defines_vertical:
 #		if pc == null:
 #			return
@@ -258,6 +259,7 @@ func update_camera():
 	var p_rf: RefFrameNode = camera
 	var celestial_body: Node = ClosestCelestialBody.closest_celestial_body( p_rf )
 	if celestial_body != null:
+		c.set_up_vector( celestial_body )
 		c.apply_atmosphere( celestial_body )
 	
 	# Apply sun.
