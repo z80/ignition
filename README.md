@@ -7,10 +7,12 @@ A game development inspired by Kerbal Space Program (KSP). Making something is m
 
 Updates are posted at [Itch.io](https://litedictteam.itch.io/ignition) site.
 
+Lbry channel with videos: [https://odysee.com/@ignition](https://odysee.com/@ignition)
+
 ## Features
 
 1. One can build rockets of parts and fly to space.
-2. Orbits are idealized Kepler orbits. 
+2. Normally trajectories in space are represented as idealized Kepler orbits. When Kepler equations degenerate, Kunge-Kutta 4-th order numerical solver is used
 3. Physical interaction is computed sumultaneously in all places where rocker parts or players are. No parts disappear if too far from the current vehicle controlled. 
 
 
