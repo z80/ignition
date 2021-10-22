@@ -350,8 +350,8 @@ func _init_rotating( axis: Vector3 ):
 		t = b.t()
 	else:
 		t = target.global_transform
-	var own_r: Vector3 = t.origin
-	var own_a: Vector3 = axis #t.basis.xform( axis )
+	var axis_r: Vector3 = t.origin
+	var axis_a: Vector3 = axis #t.basis.xform( axis )
 	
 	var vp: Viewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
@@ -367,22 +367,22 @@ func _init_rotating( axis: Vector3 ):
 	#cam_r = t.basis.xform( gt.basis.xform_inv( cam_r ) )
 	#cam_a = t.basis.xform( gt.basis.xform_inv( cam_a ) )
 	
-	var drag_a: Vector3 = cam_a.cross( own_a )
+	var drag_a: Vector3 = cam_a.cross( axis_a )
 	drag_a = drag_a.normalized()
 	
 	var q: Quat = t.basis
 	
-	var dist: float = (own_r - cam_r).length()
+	var dist: float = (axis_r - cam_r).length()
 	
 	var viewport_width: float = vp.get_visible_rect().size.x
-	_dragging.origin          = own_r
+	_dragging.origin          = axis_r
 	_dragging.drag_scale      = PI / dist
-	_dragging.axis            = own_a
+	_dragging.axis            = axis_a
 	_dragging.drag_axis       = drag_a
 	_dragging.start_q         = q
-	_dragging.mouse_start = _mouse_on_axis()
+	_dragging.mouse_start     = _mouse_on_axis()
 	#print( "set mouse_start: ", _dragging.mouse_start )
-	var euler: Vector3 = t.basis.get_euler()
+	var euler: Vector3        = t.basis.get_euler()
 	_dragging.euler = euler
 
 
@@ -455,56 +455,63 @@ func _mouse_intersection():
 	cam_a = cam_to_target_parent_tr.basis.xform( cam_a )
 	
 	# Axes origin and unit vector
-	var own_a: Vector3 = _dragging.axis
-	var own_r: Vector3 = _dragging.origin
+	var axis_a: Vector3 = _dragging.axis
+	var axis_r: Vector3 = _dragging.origin
 	
-	var m: Basis
-	m.x.x = 1.0 - own_a.x * own_a.x
-	m.x.y = -own_a.y * own_a.x
-	m.x.z = -own_a.z * own_a.x
-	m.y.x = -own_a.x * own_a.y
-	m.y.y = 1.0 - own_a.y * own_a.y
-	m.y.z = -own_a.z * own_a.y
-	m.z.x = -own_a.x * own_a.z
-	m.z.y = -own_a.y * own_a.z
-	m.z.z = 1.0 - own_a.z * own_a.z
+	var r: Vector3 = _line_crossing_point( cam_r, cam_a, axis_r, axis_a )
 	
-	var own_A: Basis = m
+	#print( "mouse uv: ", mouse_uv, ", ro: ", cam_r, ", a: ", cam_a )
+	return r
 
-	m.x.x = 1.0 - cam_a.x * cam_a.x
-	m.x.y = -cam_a.y * cam_a.x
-	m.x.z = -cam_a.z * cam_a.x
-	m.y.x = -cam_a.x * cam_a.y
-	m.y.y = 1.0 - cam_a.y * cam_a.y
-	m.y.z = -cam_a.z * cam_a.y
-	m.z.x = -cam_a.x * cam_a.z
-	m.z.y = -cam_a.y * cam_a.z
-	m.z.z = 1.0 - cam_a.z * cam_a.z
+
+func _line_crossing_point( r_a: Vector3, a_a: Vector3, r_b: Vector3, a_b: Vector3 ):
+	var m: Basis
+	m.x.x = 1.0 - a_a.x * a_a.x
+	m.x.y = -a_a.y * a_a.x
+	m.x.z = -a_a.z * a_a.x
+	m.y.x = -a_a.x * a_a.y
+	m.y.y = 1.0 - a_a.y * a_a.y
+	m.y.z = -a_a.z * a_a.y
+	m.z.x = -a_a.x * a_a.z
+	m.z.y = -a_a.y * a_a.z
+	m.z.z = 1.0 - a_a.z * a_a.z
 	
-	var cam_A: Basis = m
+	var a_A: Basis = m
+
+	m.x.x = 1.0 - a_b.x * a_b.x
+	m.x.y = -a_b.y * a_b.x
+	m.x.z = -a_b.z * a_b.x
+	m.y.x = -a_b.x * a_b.y
+	m.y.y = 1.0 - a_b.y * a_b.y
+	m.y.z = -a_b.z * a_b.y
+	m.z.x = -a_b.x * a_b.z
+	m.z.y = -a_b.y * a_b.z
+	m.z.z = 1.0 - a_b.z * a_b.z
+	
+	var b_A: Basis = m
 	
 	var A: Basis
-	A.x.x = own_A.x.x + cam_A.x.x
-	A.y.x = own_A.y.x + cam_A.y.x
-	A.z.x = own_A.z.x + cam_A.z.x
-	A.x.y = own_A.x.y + cam_A.x.y
-	A.y.y = own_A.y.y + cam_A.y.y
-	A.z.y = own_A.z.y + cam_A.z.y
-	A.x.z = own_A.x.z + cam_A.x.z
-	A.y.z = own_A.y.z + cam_A.y.z
-	A.z.z = own_A.z.z + cam_A.z.z
+	A.x.x = b_A.x.x + a_A.x.x
+	A.y.x = b_A.y.x + a_A.y.x
+	A.z.x = b_A.z.x + a_A.z.x
+	A.x.y = b_A.x.y + a_A.x.y
+	A.y.y = b_A.y.y + a_A.y.y
+	A.z.y = b_A.z.y + a_A.z.y
+	A.x.z = b_A.x.z + a_A.x.z
+	A.y.z = b_A.y.z + a_A.y.z
+	A.z.z = b_A.z.z + a_A.z.z
 	
 	var inv_A: Basis = A.inverse()
 	
-	var own_p: Vector3 = own_A.xform( own_r )
-	var cam_p: Vector3 = cam_A.xform( cam_r )
-	var p: Vector3 = own_p + cam_p
+	var p_a: Vector3 = a_A.xform( r_a )
+	var p_b: Vector3 = b_A.xform( r_b )
+	var p: Vector3 = p_b + p_a
 	
 	var r: Vector3 = inv_A.xform( p )
 	
 	#print( "mouse uv: ", mouse_uv, ", ro: ", cam_r, ", a: ", cam_a )
-	
 	return r
+
 
 
 func _finit_dragging():
