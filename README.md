@@ -13,7 +13,7 @@ Lbry channel with videos: [https://odysee.com/@ignition](https://odysee.com/@ign
 
 1. One can build rockets of parts and fly to space.
 2. Normally trajectories in space are represented as idealized Kepler orbits. When Kepler equations degenerate, Kunge-Kutta 4-th order numerical solver is used
-3. Physical interaction is computed sumultaneously in all places where rocker parts or players are. No parts disappear if too far from the current vehicle controlled. 
+3. Physical interaction is computed simultaneously in all places where rocker parts or players are. No parts disappear if too far from the current vehicle controlled. 
 
 
 ## A few boring insight details
