@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://physics/bodies/construction/manip_grab/manip_grab.gd" type="Script" id=1]
+[ext_resource path="res://physics/bodies/construction/manip_grab/buttons.tscn" type="PackedScene" id=2]
+
+[node name="ManipGrab" type="Node2D"]
+script = ExtResource( 1 )
+
+[node name="Buttons" parent="." instance=ExtResource( 2 )]

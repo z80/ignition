@@ -142,7 +142,7 @@ _global_script_classes=[ {
 "base": "CanvasItem",
 "class": "ManipulatorGrab",
 "language": "GDScript",
-"path": "res://physics/bodies/construction/manip_grab.gd"
+"path": "res://physics/bodies/construction/manip_grab/manip_grab.gd"
 }, {
 "base": "Reference",
 "class": "Palette",

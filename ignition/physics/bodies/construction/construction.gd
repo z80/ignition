@@ -118,7 +118,7 @@ func construction_deactivate():
 func activate_grab( body ):
 	if not is_instance_valid( body ):
 		return
-	var Grab = load( "res://physics/bodies/construction/manip_grab.tscn" )
+	var Grab = load( "res://physics/bodies/construction/manip_grab/manip_grab.tscn" )
 	var grab = Grab.instance()
 	RootScene.get_root_for_visuals().add_child( grab )
 	edited_target  = body

@@ -65,6 +65,10 @@ func set_path( path ):
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	set_path( target_path )
+	
+	var buttons: Node = get_node( "Buttons" )
+	buttons.connect( "world", self, "_on_world" )
+	buttons.connect( "local", self, "_on_local" )
 
 
 
@@ -576,4 +580,14 @@ func _finit_dragging():
 
 func _finit_rotating():
 	_dragging.rot_enabled = false
+
+
+
+
+func _on_world():
+	use_local_space = false
+
+func _on_local():
+	use_local_space = true
+
 

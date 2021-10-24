@@ -1,0 +1,41 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/bodies/construction/manip_grab/buttons.gd" type="Script" id=1]
+
+[node name="Buttons" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 1.0
+margin_right = -1023.0
+margin_bottom = -600.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="World" type="Button" parent="."]
+margin_left = 447.25
+margin_top = 431.993
+margin_right = 475.25
+margin_bottom = 456.993
+hint_tooltip = "Transform in world reference frame"
+toggle_mode = true
+text = "W"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Local" type="Button" parent="."]
+margin_left = 481.23
+margin_top = 432.465
+margin_right = 509.23
+margin_bottom = 457.465
+hint_tooltip = "Transform in object's local reference frame"
+toggle_mode = true
+text = "L"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="pressed" from="World" to="." method="_on_World_pressed"]
+[connection signal="pressed" from="Local" to="." method="_on_Local_pressed"]
