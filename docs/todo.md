@@ -28,9 +28,9 @@ Here is the battle plan.
 - [x] Make dynamic splits and merges.
 - [x] Currently working on.... Implement an ability to use multiple force sources like gravity, rotaional, atmosphere friction, etc...
 - [x] Fix camera wobbling. Make camera up definition more clear and come from the nearest gravity center.
-- [ ] Fix the rotational part of the drag-rotate tool.
+- [x] Fix the rotational part of the drag-rotate tool.
 - [ ] A BUG: Fix navball rotations. Icons seem to be correct but navball is not always.
-- [ ] Port over the air friction model using mesh traingles.
+- [ ] Port over the air friction model using mesh traingles. May be also allow part connections by touching occupancy trees.
 - [ ] Make atmosphere mesh per planet.
 - [ ] Vegetation and other static assets placement based on surface quad-tree node Ids.
 
