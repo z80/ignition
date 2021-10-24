@@ -5,6 +5,9 @@ class_name ManipulatorGrab
 export(NodePath) var target_path setget set_path
 var target: Node = null
 
+# Use parent's space or local object's space.
+export(bool) var use_local_space = false
+
 # size dimensions.
 export(float) var axis_length = 3.0
 export(float) var origin_dist = 10.0
@@ -26,6 +29,9 @@ var _dragging = {
 	enabled = false, 
 	axis = Vector3.ZERO, 
 	origin = Vector3.ZERO, 
+	axis_x = Vector2.ZERO, 
+	axis_y = Vector2.ZERO, 
+	axis_z = Vector2.ZERO, 
 	mouse_start = Vector3.ZERO, 
 	mouse_at = Vector3.ZERO, 
 	position = Vector3.ZERO, 
@@ -157,9 +163,14 @@ func _draw_rot_circle( center: Vector2, e1: Vector2, e2: Vector2, color: Color )
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
-	var draw = _compute_draw_params()
+	var ret: Array =  _compute_draw_params()
+	var draw: Dictionary = ret[0]
 	if draw == null:
 		return
+	var axes: Dictionary = ret[1]
+	_dragging.axis_x = axes.axis_x
+	_dragging.axis_y = axes.axis_y
+	_dragging.axis_z = axes.axis_z
 	var do_redraw: bool = _need_redraw( draw )
 	
 	if do_redraw:
@@ -177,17 +188,17 @@ func _input( event ):
 		if me.pressed:
 			if not _dragging.enabled:
 				if _draw_params.hover_x:
-					_init_dragging( Vector3.RIGHT )
+					_init_dragging( _dragging.axis_x )
 				elif _draw_params.hover_y:
-					_init_dragging( Vector3.UP )
+					_init_dragging( _dragging.axis_y )
 				elif _draw_params.hover_z:
-					_init_dragging( Vector3.BACK )
+					_init_dragging( _dragging.axis_z )
 				if _draw_params.hover_rot_x:
-					_init_rotating( Vector3.RIGHT )
+					_init_rotating( _dragging.axis_x )
 				elif _draw_params.hover_rot_y:
-					_init_rotating( Vector3.UP )
+					_init_rotating( _dragging.axis_y )
 				elif _draw_params.hover_rot_z:
-					_init_rotating( Vector3.BACK )
+					_init_rotating( _dragging.axis_z )
 		else:
 			if _dragging.enabled:
 				_finit_dragging()
@@ -235,6 +246,9 @@ func _compute_draw_params():
 	var cam_rf_tr: Transform           = cam_rf_se3.transform
 	var target_parent_to_camera_rf_tr: Transform = cam_rf_tr.inverse()
 	var target_rf_to_camera_rf_tr: Transform = target_parent_to_camera_rf_tr * target_rf_tr
+	
+	var target_se3: Se3Ref = target.get_se3()
+	var target_q: Quat     = target_se3.q
 
 	var t_camera: Transform = cam.global_transform
 	
@@ -243,16 +257,25 @@ func _compute_draw_params():
 	var origin_2d: Vector2           = cam.unproject_position( origin_3d )
 	
 	var ox3_w: Vector3 = Vector3( axis_length, 0.0, 0.0 )
+	if use_local_space:
+		ox3_w = target_q.xform( ox3_w )
+	var axis_x_w: Vector3 = ox3_w.normalized()
 	ox3_w = target_parent_to_camera_rf_tr.xform( ox3_w + origin_3d_in_parent )
 	var ox: Vector2 = cam.unproject_position( ox3_w )
 	ox -= origin_2d
 	
 	var oy3_w: Vector3 = Vector3( 0.0, axis_length, 0.0 )
+	if use_local_space:
+		oy3_w = target_q.xform( oy3_w )
+	var axis_y_w: Vector3 = oy3_w.normalized()
 	oy3_w = target_parent_to_camera_rf_tr.xform( oy3_w + origin_3d_in_parent )
 	var oy: Vector2 = cam.unproject_position( oy3_w )
 	oy -= origin_2d
 	
 	var oz3_w: Vector3 = Vector3( 0.0, 0.0, axis_length )
+	if use_local_space:
+		oz3_w = target_q.xform( oz3_w )
+	var axis_z_w: Vector3 = oz3_w.normalized()
 	oz3_w = target_parent_to_camera_rf_tr.xform( oz3_w + origin_3d_in_parent )
 	var oz: Vector2 = cam.unproject_position( oz3_w )
 	oz -= origin_2d
@@ -267,7 +290,7 @@ func _compute_draw_params():
 	var dist_rot_y: float = (origin_2d + 0.7*0.707*(ox+oz) - at).length() - sensitivity_radius
 	var dist_rot_z: float = (origin_2d + 0.7*0.707*(ox+oy) - at).length() - sensitivity_radius
 
-	var draw = {
+	var draw: Dictionary = {
 		origin = origin_2d, 
 		axis_x = ox, 
 		axis_y = oy, 
@@ -280,7 +303,13 @@ func _compute_draw_params():
 		hover_rot_z = (dist_rot_z <= 0.0)
 	}
 	
-	return draw
+	var axes: Dictionary = {
+		axis_x = axis_x_w, 
+		axis_y = axis_y_w, 
+		axis_z = axis_z_w
+	}
+	
+	return [draw, axes]
 
 
 
@@ -302,11 +331,11 @@ func _init_dragging( axis: Vector3 ):
 	_dragging.axis      = own_a
 	_dragging.drag_axis = own_a
 	_dragging.origin    = own_r
-	_dragging.mouse_start = _mouse_on_axis()
+	_dragging.mouse_start = _mouse_on_axis( own_r, own_a )
 
 
 func _process_dragging():
-	_dragging.mouse_at = _mouse_on_axis()
+	_dragging.mouse_at = _mouse_on_axis( _dragging.mouse_start, _dragging.drag_axis )
 	
 	var r: Vector3 = _dragging.mouse_at - _dragging.mouse_start + _dragging.origin
 	
@@ -353,6 +382,13 @@ func _init_rotating( axis: Vector3 ):
 	var axis_r: Vector3 = t.origin
 	var axis_a: Vector3 = axis #t.basis.xform( axis )
 	
+	var mouse_crossing_r: Vector3 = _mouse_intersection_plane( axis_a, axis_r )
+	# Going to drag along the line axis_a x (mouse_crossing_r - aixs_r).
+	var drag_a: Vector3 = axis_a.cross( mouse_crossing_r - axis_r )
+	drag_a = drag_a.normalized()
+	
+	
+	
 	var vp: Viewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
@@ -362,13 +398,7 @@ func _init_rotating( axis: Vector3 ):
 	var cam_r: Vector3 = camera.project_ray_origin(mouse_uv)
 	var cam_a: Vector3 = camera.project_ray_normal(mouse_uv)
 	
-	# Convert to ref. frame. object resides in.
-	#var gt: Transform = target.global_transform
-	#cam_r = t.basis.xform( gt.basis.xform_inv( cam_r ) )
-	#cam_a = t.basis.xform( gt.basis.xform_inv( cam_a ) )
-	
-	var drag_a: Vector3 = cam_a.cross( axis_a )
-	drag_a = drag_a.normalized()
+
 	
 	var q: Quat = t.basis
 	
@@ -380,14 +410,14 @@ func _init_rotating( axis: Vector3 ):
 	_dragging.axis            = axis_a
 	_dragging.drag_axis       = drag_a
 	_dragging.start_q         = q
-	_dragging.mouse_start     = _mouse_on_axis()
+	_dragging.mouse_start     = mouse_crossing_r
 	#print( "set mouse_start: ", _dragging.mouse_start )
 	var euler: Vector3        = t.basis.get_euler()
 	_dragging.euler = euler
 
 
 func _process_rotating():
-	_dragging.mouse_at = _mouse_on_axis()
+	_dragging.mouse_at = _mouse_on_axis( _dragging.mouse_start, _dragging.drag_axis )
 	
 	var dr: Vector3 = _dragging.mouse_at - _dragging.mouse_start
 	var dx = dr.dot( _dragging.drag_axis )
@@ -422,11 +452,11 @@ func _process_rotating():
 
 
 
-func _mouse_on_axis():
-	var r = _mouse_intersection()
+func _mouse_on_axis( mouse_start: Vector3, drag_axis: Vector3 ):
+	var r = _mouse_intersection_line( drag_axis, mouse_start )
 	# Now project this point onto the line.
-	var ro: Vector3 = _dragging.mouse_start
-	var a: Vector3  = _dragging.drag_axis
+	var ro: Vector3 = mouse_start
+	var a: Vector3  = drag_axis
 	
 	var dr: Vector3 = r - ro
 	var proj: float = a.dot( dr )
@@ -436,7 +466,7 @@ func _mouse_on_axis():
 	return p
 
 
-func _mouse_intersection():
+func _mouse_intersection_line( axis_a: Vector3, axis_r: Vector3 ):
 	var vp: Viewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
@@ -454,13 +484,39 @@ func _mouse_intersection():
 	cam_r = cam_to_target_parent_tr.xform( cam_r )
 	cam_a = cam_to_target_parent_tr.basis.xform( cam_a )
 	
-	# Axes origin and unit vector
-	var axis_a: Vector3 = _dragging.axis
-	var axis_r: Vector3 = _dragging.origin
-	
 	var r: Vector3 = _line_crossing_point( cam_r, cam_a, axis_r, axis_a )
 	
 	#print( "mouse uv: ", mouse_uv, ", ro: ", cam_r, ", a: ", cam_a )
+	return r
+
+
+
+func _mouse_intersection_plane( plane_a: Vector3, plane_r: Vector3 ):
+	var vp: Viewport = get_viewport()
+	var mouse_uv = vp.get_mouse_position()
+	
+	var camera: Camera = vp.get_camera()
+	
+	# Camera origin and unit vector.
+	var cam_r: Vector3 = camera.project_ray_origin(mouse_uv)
+	var cam_a: Vector3 = camera.project_ray_normal(mouse_uv)
+	
+	var target_parent_rf: RefFrameNode     = target.get_parent()
+	var cam_rf: RefFrameNode               = PhysicsManager.camera
+	var cam_rf_se3: Se3Ref                 = cam_rf.relative_to( target_parent_rf )
+	var cam_to_target_parent_tr: Transform = cam_rf_se3.transform
+	
+	cam_r = cam_to_target_parent_tr.xform( cam_r )
+	cam_a = cam_to_target_parent_tr.basis.xform( cam_a )
+	
+	# r = plane_a.dot( cam_a * t + cam_r - plane_r ) = 0
+	# t * dot(plane_a, cam_a) = dot(plane_a, plane_r - cam_r)
+	var dot_plane_cam_a: float = plane_a.dot( cam_a )
+	var dot_plane_cam_r: float = plane_a.dot( plane_r - cam_r )
+	var t: float = dot_plane_cam_r / dot_plane_cam_a
+	
+	var r: Vector3 = cam_a * t + cam_r
+	
 	return r
 
 

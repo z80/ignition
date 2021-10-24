@@ -31,14 +31,14 @@ func _process( _delta ):
 
 
 func describe_event( e: String ):
-	var is_pressed: bool = Input.is_action_pressed( e )
-	var is_just_pressed: bool = Input.is_action_just_pressed( e )
+	var is_pressed: bool       = Input.is_action_pressed( e )
+	var is_just_pressed: bool  = Input.is_action_just_pressed( e )
 	var is_just_released: bool = Input.is_action_just_released( e )
 	
 	# Add or replace.
 	if is_pressed or is_just_pressed or is_just_released:
-		var d = { pressed = is_just_pressed, 
-				 released = is_just_released }
+		var d = { pressed  = is_just_pressed, 
+				  released = is_just_released }
 		input[e] = d
 	
 	else:
