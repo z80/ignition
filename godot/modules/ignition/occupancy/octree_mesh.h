@@ -10,8 +10,11 @@
 
 
 /**
-This data structure is for determining empty/filled space only.
-Nonempty leaf node means space is filled. Else means it's empty.
+The idea is to use this for quick search if ray intersects a mesh (a set of meshes).
+I'm going to use it for air drag computation. If forward or backward pointing face
+forward direction intersects with any other meshes, exclude it from forces computation and
+assume it is occluded by something in front.
+But of course, don't intersect with own mesh. As I need all faces to contribute.
 **/
 
 class OctreeMesh
