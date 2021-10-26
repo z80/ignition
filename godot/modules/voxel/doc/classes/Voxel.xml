@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Voxel" inherits="Resource" version="3.4">
+	<brief_description>
+		Model stored in [VoxelLibrary] and used by [VoxelMesherBlocky].
+	</brief_description>
+	<description>
+		Represents a model to be used for voxels of a specific TYPE value. Such models must be contained within a [VoxelLibrary] to be used with [VoxelTerrain] or directly with a [VoxelMesherBlocky].
+		Some other various properties also exist to make it easier to implement games based on this technique (such as Minecraft).
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision_aabbs" type="Array" setter="set_collision_aabbs" getter="get_collision_aabbs" default="[  ]">
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+		</member>
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
+		</member>
+		<member name="custom_mesh" type="Mesh" setter="set_custom_mesh" getter="get_custom_mesh">
+		</member>
+		<member name="geometry_type" type="int" setter="set_geometry_type" getter="get_geometry_type" enum="Voxel.GeometryType" default="0">
+		</member>
+		<member name="material_id" type="int" setter="set_material_id" getter="get_material_id" default="0">
+			ID of the material that will be used. It corresponds to the index of materials found on [VoxelTerrain].
+		</member>
+		<member name="random_tickable" type="bool" setter="set_random_tickable" getter="is_random_tickable" default="false">
+			If enabled, voxels having this ID in the TYPE channel will be used by [method VoxelToolTerrain.run_blocky_random_tick].
+		</member>
+		<member name="transparency_index" type="int" setter="set_transparency_index" getter="get_transparency_index" default="0">
+		</member>
+		<member name="transparent" type="bool" setter="set_transparent" getter="is_transparent" default="false">
+		</member>
+		<member name="voxel_name" type="String" setter="set_voxel_name" getter="get_voxel_name" default="&quot;&quot;">
+			Name that can be used for convenience, when looking up a specific [Voxel] from [VoxelLibrary].
+		</member>
+	</members>
+	<constants>
+		<constant name="GEOMETRY_NONE" value="0" enum="GeometryType">
+			Don't produce any geometry. The voxel will be invisible.
+		</constant>
+		<constant name="GEOMETRY_CUBE" value="1" enum="GeometryType">
+			Use the shape of a generated cube. It is useful for testing and quick configuration.
+		</constant>
+		<constant name="GEOMETRY_CUSTOM_MESH" value="2" enum="GeometryType">
+			Use the mesh specified in the [member mesh] property. This is the most versatile way to create shapes.
+		</constant>
+		<constant name="GEOMETRY_MAX" value="3" enum="GeometryType">
+			How many geometry modes there are.
+		</constant>
+		<constant name="SIDE_NEGATIVE_X" value="1" enum="Side">
+		</constant>
+		<constant name="SIDE_POSITIVE_X" value="0" enum="Side">
+		</constant>
+		<constant name="SIDE_NEGATIVE_Y" value="2" enum="Side">
+		</constant>
+		<constant name="SIDE_POSITIVE_Y" value="3" enum="Side">
+		</constant>
+		<constant name="SIDE_NEGATIVE_Z" value="4" enum="Side">
+		</constant>
+		<constant name="SIDE_POSITIVE_Z" value="5" enum="Side">
+		</constant>
+		<constant name="SIDE_COUNT" value="6" enum="Side">
+		</constant>
+	</constants>
+</class>

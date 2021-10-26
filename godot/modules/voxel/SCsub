@@ -1,0 +1,139 @@
+Import('env')
+Import('env_modules')
+
+# TODO Support is turned off for now because Godot 3 doesn't compile with C++17.
+# FastNoise2 use C++17 features and STL both in its headers and runtime as well.
+# SIMD noise support would have to wait for Godot 4 (or GDNative port, which will only be worth in Godot 4 too)
+FAST_NOISE_2_SRC = False
+FAST_NOISE_2_STATIC = False
+
+RUN_TESTS = False
+if env['target'] == 'debug':
+	RUN_TESTS = True
+
+env_voxel = env_modules.Clone()
+
+voxel_files = [
+	"*.cpp",
+	
+	"constants/*.cpp",
+
+	"meshers/blocky/*.cpp",
+	"meshers/transvoxel/*.cpp",
+	"meshers/dmc/*.cpp",
+	"meshers/cubes/*.cpp",
+	"meshers/*.cpp",
+
+	"streams/*.cpp",
+	"streams/sqlite/*.cpp",
+	"streams/region/*.cpp",
+
+	"storage/*.cpp",
+
+	"generators/*.cpp",
+	"generators/graph/*.cpp",
+	"generators/simple/*.cpp",
+
+	"util/*.cpp",
+	"util/godot/*.cpp",
+	#"util/noise/*.cpp",
+	"util/noise/fast_noise_lite.cpp",
+	"util/noise/fast_noise_lite_gradient.cpp",
+
+	"terrain/*.cpp",
+	"terrain/instancing/*.cpp",
+
+	"server/*.cpp",
+	"edition/*.cpp",
+
+	"thirdparty/lz4/*.c",
+	"thirdparty/sqlite/*.c",
+	"thirdparty/meshoptimizer/*.cpp"
+]
+
+if env["tools"]:
+	# Editor-only stuff
+	voxel_editor_files = [
+		"editor/*.cpp",
+		"editor/graph/*.cpp",
+		"editor/terrain/*.cpp",
+		"editor/fast_noise_lite/*.cpp",
+		"editor/instance_library/*.cpp",
+		"editor/vox/*.cpp",
+	]
+	voxel_files += voxel_editor_files
+
+# See https://github.com/zeux/meshoptimizer/issues/311
+env_voxel.Append(CPPDEFINES=["MESHOPTIMIZER_ZYLANN_NEVER_COLLAPSE_BORDERS"])
+
+if RUN_TESTS:
+	voxel_files += [
+		"tests/*.cpp"
+	]
+	env_voxel.Append(CPPDEFINES={"VOXEL_RUN_TESTS": 0})
+
+if env["platform"] == "windows":
+	# When compiling SQLite with Godot on Windows with MSVC, it produces the following warning:
+	# `sqlite3.c(42754): warning C4996: 'GetVersionExA': was declared deprecated `
+	# To fix it, let's indicate to SQLite it should not use this function, even if it is available.
+	# https://stackoverflow.com/questions/20031597/error-c4996-received-when-compiling-sqlite-c-in-visual-studio-2013
+	env_voxel.Append(CPPDEFINES={"SQLITE_WIN32_GETVERSIONEX": 0})
+
+# ----------------------------------------------------------------------------------------------------------------------
+# FastNoise 2
+
+if FAST_NOISE_2_SRC:
+	# Build from source. Should be the simplest, but requires C++17
+	SConscript('thirdparty/fast_noise_2/SConscript', exports = ["env", "env_voxel"])
+
+if FAST_NOISE_2_STATIC:
+	# Build from a pre-built static lib. This requires to check every build combination (and have them as well),
+	# AND it also requires C++17 due to differences of runtimes.
+	fn2_path = "C:/Projects/FastNoise2/0.7-alpha"
+
+	if env["platform"] == "windows":
+		if env.msvc:
+			if env['bits'] == '64':
+				env_voxel.Append(LIBPATH = [fn2_path + "/lib/win64-msvc"])
+			else:
+				raise RuntimeError("FastNoise2 32-bit builds are not supported yet")
+		else:
+			raise RuntimeError("FastNoise2 can only be built with MSVC at the moment")
+
+		env_voxel.Append(CPPPATH = [fn2_path + '/include'])
+		if env['target'] == 'debug':
+			env_voxel.Append(LIBS = ['FastNoise'])
+		else:
+			env_voxel.Append(LIBS = ['FastNoiseD'])
+	else:
+		raise RuntimeError("FastNoise2 can only be built on Windows at the moment")
+
+	voxel_files += [
+		"util/noise/fast_noise_2.cpp"
+	]
+
+	env_voxel.Append(CPPDEFINES = ["VOXEL_FAST_NOISE_2_SUPPORT"])
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+for f in voxel_files:
+	env_voxel.add_source_files(env.modules_sources, f)
+
+# TODO Check webassembly builds (`env["platform"] == "javascript"`)
+
+# Ignored clang warnings because Godot's codebase is old and isn't using override yet
+if env['platform'] in ['osx', 'android']:
+	env_voxel.Append(CXXFLAGS=['-Wno-inconsistent-missing-override'])
+
+# Doesn't work, because reasons
+#if env.msvc:
+#	env_voxel.Append(CXXFLAGS=['/std:c++17'])
+#else:
+#	env_voxel.Append(CXXFLAGS=['-std=c++17'])
+
+# This also doesn't work, since the rest of Godot doesn't use this, linking fails.
+# No safe STL boundary checks for you.
+#if env['target'] == 'debug':
+#	if env.msvc:
+#		# Enable STL bound checks, Godot's master environment doesn't do it
+#		env_voxel.Append(CXXFLAGS=['/D_DEBUG'])

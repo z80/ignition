@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelLodTerrain" inherits="VoxelNode" version="3.4">
+	<brief_description>
+		Voxel volume using variable level of detail.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="debug_dump_as_scene" qualifiers="const">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="debug_get_data_block_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="debug_get_data_block_info" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="block_pos" type="Vector3">
+			</argument>
+			<argument index="1" name="lod" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="debug_get_mesh_block_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="debug_get_mesh_block_info" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="block_pos" type="Vector3">
+			</argument>
+			<argument index="1" name="lod" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="debug_get_octrees_detailed" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="debug_print_sdf_top_down" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="center" type="Vector3">
+			</argument>
+			<argument index="1" name="extents" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="debug_raycast_mesh_block" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="origin" type="Vector3">
+			</argument>
+			<argument index="1" name="dir" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_data_block_region_extent" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_data_block_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_process_mode" qualifiers="const">
+			<return type="int" enum="VoxelLodTerrain.ProcessMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_statistics" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Gets debug information about how much time is spent processing the terrain.
+				The returned dictionary has the following structure:
+				[codeblock]
+				{
+					"time_detect_required_blocks": int,
+					"time_request_blocks_to_load": int,
+					"time_process_load_responses": int,
+					"time_request_blocks_to_update": int,
+					"time_process_update_responses": int,
+					"remaining_main_thread_blocks": int,
+					"dropped_block_loads": int,
+					"dropped_block_meshs": int,
+					"updated_blocks": int,
+					"blocked_lods": int
+				}
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_voxel_tool">
+			<return type="VoxelTool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="save_modified_blocks">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_process_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="VoxelLodTerrain.ProcessMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="voxel_to_data_block_position" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="lod_index" type="Vector3">
+			</argument>
+			<argument index="1" name="arg1" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="voxel_to_mesh_block_position" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="lod_index" type="Vector3">
+			</argument>
+			<argument index="1" name="arg1" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
+		</member>
+		<member name="collision_lod_count" type="int" setter="set_collision_lod_count" getter="get_collision_lod_count" default="0">
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+		</member>
+		<member name="collision_update_delay" type="int" setter="set_collision_update_delay" getter="get_collision_update_delay" default="0">
+		</member>
+		<member name="generate_collisions" type="bool" setter="set_generate_collisions" getter="get_generate_collisions" default="true">
+		</member>
+		<member name="lod_count" type="int" setter="set_lod_count" getter="get_lod_count" default="4">
+		</member>
+		<member name="lod_distance" type="float" setter="set_lod_distance" getter="get_lod_distance" default="48.0">
+		</member>
+		<member name="lod_fade_duration" type="float" setter="set_lod_fade_duration" getter="get_lod_fade_duration" default="0.0">
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+		</member>
+		<member name="mesh_block_size" type="int" setter="set_mesh_block_size" getter="get_mesh_block_size" default="16">
+		</member>
+		<member name="mesher" type="VoxelMesher" setter="set_mesher" getter="get_mesher" override="true" />
+		<member name="run_stream_in_editor" type="bool" setter="set_run_stream_in_editor" getter="is_stream_running_in_editor" default="true">
+		</member>
+		<member name="view_distance" type="int" setter="set_view_distance" getter="get_view_distance" default="512">
+		</member>
+		<member name="voxel_bounds" type="AABB" setter="set_voxel_bounds" getter="get_voxel_bounds" default="AABB( -5.36871e+08, -5.36871e+08, -5.36871e+08, 1.07374e+09, 1.07374e+09, 1.07374e+09 )">
+		</member>
+	</members>
+	<constants>
+		<constant name="PROCESS_MODE_IDLE" value="0" enum="ProcessMode">
+		</constant>
+		<constant name="PROCESS_MODE_PHYSICS" value="1" enum="ProcessMode">
+		</constant>
+		<constant name="PROCESS_MODE_DISABLED" value="2" enum="ProcessMode">
+		</constant>
+	</constants>
+</class>

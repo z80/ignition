@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelGenerator" inherits="Resource" version="3.4">
+	<brief_description>
+		Base class to all voxel procedural generators. If you want to define a custom one with a script, this is the class you should extend from. All implementations must be thread safe.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="generate_block">
+			<return type="void">
+			</return>
+			<argument index="0" name="out_buffer" type="VoxelBuffer">
+			</argument>
+			<argument index="1" name="origin_in_voxels" type="Vector3">
+			</argument>
+			<argument index="2" name="lod" type="int">
+			</argument>
+			<description>
+				Generates a block of voxels within the specified world area.
+				[code]out_buffer[/code]: Buffer in which voxel data will be generated. It should not be [code]null[/code] and should be given the requested size. Do not keep a reference on it after the call.
+				[code]origin_in_voxels[/code]: Coordinates of the lower corner of the box to generate, relative to LOD0.
+				[code]lod[/code]: Level of detail index to use for this block. Some generators might not support LOD, in which case it can be left 0.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

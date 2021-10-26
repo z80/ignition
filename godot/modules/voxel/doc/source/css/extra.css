@@ -1,0 +1,10 @@
+/* Without this, top-level items in the navigation bar are barely recognizable from second-level */
+.caption {
+    color: #5599ff;
+}
+/* Undo vertical padding on the "Previous Next" fixed box at the bottom of the navigator,
+otherwise it covers the last item? 
+Unfortunately it doesn't work, the CSS sheet `badge_only.css` overrides this...*/
+.rst-versions .rst-current-version {
+    padding: 0px 12px 0px 12px;
+}
