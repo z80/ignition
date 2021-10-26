@@ -27,6 +27,10 @@ def configure_static_build():
     module_env.Append(CPPPATH=["#modules/ignition/celestial"])
     module_env.add_source_files( env.modules_sources, "celestial/*.cpp" )
 
+    # Mesh octree, occupancy grid.
+    module_env.Append(CPPPATH=["#modules/ignition/occupancy"])
+    module_env.add_source_files( env.modules_sources, "occupancy/*.cpp" )
+
     # Also include universal utils.
     module_env.Append(CPPPATH=["#modules/ignition/utils"])
     module_env.add_source_files( env.modules_sources, "utils/*.cpp" )
