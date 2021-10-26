@@ -37,7 +37,6 @@ const OctreeMeshNode & OctreeMeshNode::operator=( const OctreeMeshNode & inst )
         parentAbsIndex = inst.parentAbsIndex;
         indexInParent = inst.indexInParent;
         level = inst.level;
-		value = inst.value;
         absIndex = inst.absIndex;
 
         children[0] = inst.children[0];
@@ -176,7 +175,6 @@ bool OctreeMeshNode::subdivide()
 	for ( int j=0; j<8; j++ )
 	{
 		OctreeMeshNode & ch_n = nn[j];
-		ch_n.value = 0;
 		for ( int i=0; i<qty; i++ )
 		{
 			const int ind = ptInds[i];
@@ -187,7 +185,6 @@ bool OctreeMeshNode::subdivide()
             {
                 ch_n.ptInds.push_back( ind );
                 qtys[j] += 1;
-                ch_n.value += 1;
             }
         }
 		if ( qtys[j] == 0 )
@@ -202,7 +199,6 @@ bool OctreeMeshNode::subdivide()
 				{
 					ch_n.ptInds.push_back( ind );
 					qtys[j] += 1;
-					ch_n.value += 1;
 				}
 			}
 		}
@@ -210,7 +206,6 @@ bool OctreeMeshNode::subdivide()
 
 	// Reset indices and value for a node with children.
     ptInds.clear();
-	value = 0;
 
 	// Subdivide recursively.
     for ( int i=0; i<8; i++ )
@@ -231,44 +226,6 @@ bool OctreeMeshNode::inside( const Face3 & face ) const
 	return intersects;
 }
 
-bool OctreeMeshNode::inside( const Vector3 & pt ) const
-{
-	// If for at least one plane the point is above,
-	// it is outside the node.
-	for ( int i=0; i<6; i++ )
-	{
-		const Plane & p = planes_[i];
-		const bool point_above = p.is_point_over( pt );
-		if ( point_above )
-			return false;
-	}
-
-	return true;
-}
-
-bool OctreeMeshNode::inside( const OctreeMeshNode & n ) const
-{
-	const bool intersects = aabb_.intersects( n.aabb_ );
-	if ( !intersects )
-		return false;
-	const bool has_ch = n.hasChildren();
-	if ( !has_ch )
-	{
-		const bool is_filled = (n.value > 0);
-		return is_filled;
-	}
-
-	for ( int i=0; i<8; i++ )
-	{
-		const int ind = n.children[i];
-		const OctreeMeshNode & ch_n = tree->nodes_.ptr()[ind];
-		const bool ch_intersects = inside( ch_n );
-		if ( ch_intersects )
-			return true;
-	}
-
-	return false;
-}
 
 bool OctreeMeshNode::intersects_ray( const Vector3 origin, const Vector3 dir ) const
 {
@@ -279,8 +236,16 @@ bool OctreeMeshNode::intersects_ray( const Vector3 origin, const Vector3 dir ) c
 	const bool has_ch = hasChildren();
 	if ( !has_ch )
 	{
-		const bool has_value = (value > 0);
-		return has_value;
+		const int qty = ptInds.size();
+		for ( int i=0; i<qty; i++ )
+		{
+			const int face_ind = ptInds.ptr()[i];
+			const Face3 & f = tree->faces_[face_ind];
+			const bool ok = f.intersects_ray( origin, dir );
+			if ( ok )
+				return true;
+		}
+		return false;
 	}
 
 	for ( int i=0; i<8; i++ )

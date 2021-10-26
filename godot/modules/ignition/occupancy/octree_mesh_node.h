@@ -24,8 +24,6 @@ public:
 	// Queries.
 	// Intersection with a triangle.
 	bool inside( const Face3 & face ) const;
-	bool inside( const Vector3 & pt ) const;
-	bool inside( const OctreeMeshNode & n ) const;
 	// Intersects infinite ray.
 	bool intersects_ray( const Vector3 origin, const Vector3 dir ) const;
 
@@ -41,8 +39,7 @@ public:
 	// Child indices in OTree dictionary.
 	int children[8];
 
-	int      value;
-	real_t   size2; // Size over 2.
+	real_t  size2; // Size over 2.
 	Vector3 center;
 
 	// Auxilary numbers. Hold those only to not recompute all the time.

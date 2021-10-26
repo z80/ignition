@@ -9,21 +9,11 @@ OctreeMesh::OctreeMesh()
 {
 	// Initialize counters and parameters.
 	this->max_depth_  = -1;
-	this->node_sz_    = 0.1;
+	this->min_faces_  =  5;
 }
 
 OctreeMesh::~OctreeMesh()
 {
-}
-
-void OctreeMesh::set_node_size( real_t sz )
-{
-	node_sz_ = sz;
-}
-
-real_t OctreeMesh::node_size() const
-{
-	return node_sz_;
 }
 
 void OctreeMesh::clear()
@@ -44,6 +34,9 @@ void OctreeMesh::append( const Transform & t, const Ref<Mesh> mesh )
 
 void OctreeMesh::subdivide()
 {
+	// Compute face properties for future use.
+	compute_face_properties();
+
 	// Get average of all the face points.
 	const int qty = faces_.size();
 	Vector3 c;
@@ -78,19 +71,12 @@ void OctreeMesh::subdivide()
 		}
 	}
 
-	real_t level = Math::log( d / node_sz_) / Math::log( 2.0 );
-	level = Math::ceil( level );
-	const int level_int = static_cast<int>( level );
-	d = node_sz_ * Math::pow( 2.0, level_int );
-	this->max_depth_ = level_int;
-
 	nodes_.clear();
 	OctreeMeshNode root;
 	root.level = 0;
 	root.tree = this;
 	root.center = c;
 	root.size2  = d;
-	root.value  = qty;
 	root.ptInds.clear();
 	for ( int i=0; i<qty; i++ )
 		root.ptInds.push_back( i );
@@ -120,275 +106,11 @@ void OctreeMesh::subdivide()
 	nodes_.ptrw()[ 0 ] = root;
 }
 
-bool OctreeMesh::occupied( const Vector3 & at ) const
-{
-	const OctreeMeshNode & root = nodes_.ptr()[0];
-	const bool pt_inside = point_inside( root, at );
-	return pt_inside;
-}
-
-bool OctreeMesh::point_inside( const OctreeMeshNode & n, const Vector3 & at ) const
-{
-	const bool pt_in = n.inside( at );
-	if ( !pt_in )
-		return false;
-	const bool has_ch = n.hasChildren();
-	if ( !has_ch )
-	{
-		// Check if if occupied.
-		const bool res = ( n.value > 0 );
-		return res;
-	}
-
-	// Check children recursively.
-	for ( int i=0; i<8; i++ )
-	{
-		const int ch_ind = n.children[i];
-		if ( ch_ind < 0 )
-			return false;
-		const OctreeMeshNode & ch_n = nodes_.ptr()[ch_ind];
-		const bool ch_inside = point_inside( ch_n, at );
-		if ( ch_inside )
-			return true;
-	}
-
-	return false;
-}
-
-bool OctreeMesh::point_ajacent( const Vector3 & at ) const
-{
-	Vector3 c( at );
-	const real_t sz = node_sz_ * 2.0;
-	c.x = Math::round( c.x / sz ) * sz;
-	c.y = Math::round( c.y / sz ) * sz;
-	c.z = Math::round( c.z / sz ) * sz;
-	// Test 6 possibilities.
-	{
-		const Vector3 v( c.x, c.y, c.z+sz );
-		const bool inside = occupied( v );
-		if ( inside )
-			return true;
-	}
-	{
-		const Vector3 v( c.x, c.y+sz, c.z );
-		const bool inside = occupied( v );
-		if ( inside )
-			return true;
-	}
-	{
-		const Vector3 v( c.x+sz, c.y, c.z );
-		const bool inside = occupied( v );
-		if ( inside )
-			return true;
-	}
-	{
-		const Vector3 v( c.x, c.y, c.z-sz );
-		const bool inside = occupied( v );
-		if ( inside )
-			return true;
-	}
-	{
-		const Vector3 v( c.x, c.y-sz, c.z );
-		const bool inside = occupied( v );
-		if ( inside )
-			return true;
-	}
-	{
-		const Vector3 v( c.x-sz, c.y, c.z );
-		const bool inside = occupied( v );
-		if ( inside )
-			return true;
-	}
-	return false;
-}
-
-bool OctreeMesh::intersects( const OctreeMesh * tree ) const
-{
-	if ( !tree )
-		return false;
-
-	const OctreeMeshNode & root = nodes_.ptr()[0];
-
-	const bool is_intersecting = node_intersects( root, *tree );
-
-	return is_intersecting;
-}
-
-bool OctreeMesh::node_intersects( const OctreeMeshNode & n, const OctreeMesh & tree ) const
-{
-	const OctreeMeshNode & other_root = tree.nodes_.ptr()[0];
-	const bool is_intersecting = n.inside( other_root );
-	if ( !is_intersecting )
-		return false;
-	const bool has_ch = n.hasChildren();
-	if ( !has_ch )
-	{
-		const bool is_filled = (n.value > 0);
-		return is_filled;
-	}
-
-	for ( int i=0; i<8; i++ )
-	{
-		const int ch_ind = n.children[i];
-		const OctreeMeshNode & ch_n = n.tree->nodes_.ptr()[ch_ind];
-		const bool ch_intersects = node_intersects( ch_n, tree );
-		if ( ch_intersects )
-			return true;
-	}
-	return false;
-}
-
-bool OctreeMesh::touches( const OctreeMesh * tree ) const
-{
-	if ( !tree )
-		return false;
-	const OctreeMesh & g = *tree;
-
-	const int qty = g.nodes_.size();
-	for ( int i=0; i<qty; i++ )
-	{
-		const OctreeMeshNode & n = g.nodes_.ptr()[i];
-		const bool has_ch = n.hasChildren();
-		if ( has_ch )
-			continue;
-		const bool ch_filled = (n.value > 0);
-		if ( !ch_filled )
-			continue;
-		const Vector3 c = n.center;
-		const bool is_touching = point_ajacent( c );
-		if ( is_touching )
-			return true;
-	}
-
-	return false;
-}
-
-Vector3 OctreeMesh::touch_point( const OctreeMesh * tree ) const
-{
-	if ( !tree )
-		return Vector3( 0.0, 0.0, 0.0 );
-	const OctreeMesh & g = *tree;
-
-	Vector3 tp( 0.0, 0.0, 0.0 );
-	const real_t sz = node_sz_ * 2.0;
-
-	const int qty = g.nodes_.size();
-	int touch_qty = 0;
-	for ( int i=0; i<qty; i++ )
-	{
-		const OctreeMeshNode & n = g.nodes_.ptr()[i];
-		const bool has_ch = n.hasChildren();
-		if ( has_ch )
-			continue;
-		const bool ch_filled = (n.value > 0);
-		if ( !ch_filled )
-			continue;
-		const Vector3 c = n.center;
-		// Check 6 possibilities.
-		// Test 6 possibilities.
-		{
-			const Vector3 v( c.x, c.y, c.z+sz );
-			const bool inside = occupied( v );
-			if ( inside )
-			{
-				touch_qty += 1;
-				tp += Vector3( c.x, c.y, c.z+node_sz_ );
-			}
-		}
-		{
-			const Vector3 v( c.x, c.y+sz, c.z );
-			const bool inside = occupied( v );
-			if ( inside )
-			{
-				touch_qty += 1;
-				tp += Vector3( c.x, c.y+node_sz_, c.z );
-			}
-		}
-		{
-			const Vector3 v( c.x+sz, c.y, c.z );
-			const bool inside = occupied( v );
-			if ( inside )
-			{
-				touch_qty += 1;
-				tp += Vector3( c.x+node_sz_, c.y, c.z );
-			}
-		}
-		{
-			const Vector3 v( c.x, c.y, c.z-sz );
-			const bool inside = occupied( v );
-			if ( inside )
-			{
-				touch_qty += 1;
-				tp += Vector3( c.x, c.y, c.z-node_sz_ );
-			}
-		}
-		{
-			const Vector3 v( c.x, c.y-sz, c.z );
-			const bool inside = occupied( v );
-			if ( inside )
-			{
-				touch_qty += 1;
-				tp += Vector3( c.x, c.y-node_sz_, c.z );
-			}
-		}
-		{
-			const Vector3 v( c.x-sz, c.y, c.z );
-			const bool inside = occupied( v );
-			if ( inside )
-			{
-				touch_qty += 1;
-				tp += Vector3( c.x-node_sz_, c.y, c.z );
-			}
-		}
-	}
-
-	if ( touch_qty > 0 )
-	{
-		tp = tp * ( 1.0 / static_cast<real_t>( touch_qty ) );
-	}
-	return tp;
-}
-
 bool OctreeMesh::intersects_ray( const Vector3 p_from, const Vector3 p_to ) const
 {
 	const OctreeMeshNode & root = nodes_.ptr()[0];
 	const bool res = root.intersects_ray( p_from, p_to );
 	return res;
-}
-
-void OctreeMesh::set_position( const Vector3 & at )
-{
-	OctreeMeshNode & root = nodes_.ptrw()[0];
-	set_node_position( root, root.center, at );
-}
-
-Vector3 OctreeMesh::get_position() const
-{
-	const OctreeMeshNode & root = nodes_.ptr()[0];
-	return root.center;
-}
-
-void OctreeMesh::set_node_position( OctreeMeshNode & n, const Vector3 from, const Vector3 to )
-{
-	n.center = n.center - from + to;
-	const real_t sz = node_sz_;
-	n.center.x = Math::round( n.center.x / sz ) * sz;
-	n.center.y = Math::round( n.center.y / sz ) * sz;
-	n.center.z = Math::round( n.center.z / sz ) * sz;
-	n.init();
-
-	const bool has_ch = n.hasChildren();
-	if ( !has_ch )
-		return;
-
-	for ( int i=0; i<8; i++ )
-	{
-		const int ch_ind = n.children[i];
-		if ( ch_ind < 0 )
-			continue;
-		OctreeMeshNode & ch_n = nodes_.ptrw()[ch_ind];
-		set_node_position( ch_n, from, to );
-	}
 }
 
 PoolVector<Vector3> OctreeMesh::lines()
@@ -401,8 +123,8 @@ PoolVector<Vector3> OctreeMesh::lines()
 		const bool has_ch = n.hasChildren();
 		if ( has_ch )
 			continue;
-		const bool occupied = (n.value > 0);
-		if ( !occupied )
+		const bool is_empty = n.ptInds.empty();
+		if ( is_empty )
 			continue;
 
 		const Vector3 * vs = n.verts_;
@@ -485,6 +207,25 @@ int  OctreeMesh::insert_node( OctreeMeshNode & node )
 void OctreeMesh::update_node( const OctreeMeshNode & node )
 {
 	nodes_.ptrw()[ node.absIndex ] = node;
+}
+
+void OctreeMesh::compute_face_properties()
+{
+	face_props_.clear();
+	const int qty = faces_.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		const Face3 & f   = faces_.ptr()[i];
+		const real_t area = f.get_area();
+		const Plane p     = f.get_plane();
+		const Vector3 n   = p.get_normal();
+		const Vector3 r0  = ( f.vertex[0] + f.vertex[1] + f.vertex[2] ) / 3.0;
+		FaceProperties props;
+		props.area     = area;
+		props.normal   = n;
+		props.position = r0;
+		face_props_.push_back( props );
+	}
 }
 
 
