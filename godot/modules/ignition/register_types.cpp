@@ -2,7 +2,7 @@
 
 #include "core/class_db.h"
 
-#include "occupancy_grid.h"
+//#include "occupancy_grid.h"
 
 #include "ref_frame_node.h"
 #include "ref_frame_auto_node.h"
@@ -21,7 +21,7 @@
 
 void register_ignition_types()
 {
-	ClassDB::register_class<OccupancyGrid>();
+	//ClassDB::register_class<OccupancyGrid>();
 
 	ClassDB::register_class<Ign::RefFrameNode>();
 	ClassDB::register_class<Ign::RefFrameAutoNode>();
