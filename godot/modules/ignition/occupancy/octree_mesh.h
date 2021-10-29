@@ -52,6 +52,9 @@ public:
 
 	void compute_face_properties();
 
+	int faces_qty() const;
+	FaceProperties face_properties( int ind ) const;
+
 	Vector<OctreeMeshNode> nodes_;
 	Vector<Face3>          faces_;
 	Vector<FaceProperties> face_props_;

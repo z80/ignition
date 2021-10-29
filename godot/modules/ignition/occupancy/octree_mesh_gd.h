@@ -23,6 +23,7 @@ public:
 
 private:
 	OctreeMesh _octree_mesh;
+	Array     _ret_array;
 };
 
 

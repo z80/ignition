@@ -228,6 +228,19 @@ void OctreeMesh::compute_face_properties()
 	}
 }
 
+int OctreeMesh::faces_qty() const
+{
+	const int ret = faces_.size();
+	return ret;
+}
+
+OctreeMesh::FaceProperties OctreeMesh::face_properties( int ind ) const
+{
+	FaceProperties ret = face_props_.ptr()[ind];
+	return ret;
+}
+
+
 
 
 
@@ -248,14 +261,9 @@ static void faces_from_surface( const Transform & t, const Mesh & mesh, int surf
 	if (mesh.surface_get_primitive_type(surface_idx) != Mesh::PRIMITIVE_TRIANGLES)
 		return;
 
-	if ( mesh.surface_get_format(surface_idx) & Mesh::ARRAY_FORMAT_INDEX )
-	{
-		return parse_mesh_arrays( t, mesh, surface_idx, true, faces );
-	}
-	else
-	{
-		return parse_mesh_arrays( t, mesh, surface_idx, false, faces );
-	}
+	const uint32_t type = mesh.surface_get_format( surface_idx );
+	const bool is_index_array = (type & Mesh::ARRAY_FORMAT_INDEX);
+	parse_mesh_arrays( t, mesh, surface_idx, is_index_array, faces );
 }
 
 static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces )
