@@ -8,6 +8,9 @@
 #include "core/math/plane.h"
 #include "core/math/face3.h"
 
+namespace Ign
+{
+
 class OctreeMesh;
 
 class OctreeMeshNode
@@ -52,6 +55,8 @@ public:
 
 	Vector<int> ptInds;
 };
+
+}
 
 
 #endif

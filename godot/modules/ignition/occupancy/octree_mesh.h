@@ -8,6 +8,10 @@
 #include "scene/3d/mesh_instance.h"
 #include "octree_mesh_node.h"
 
+#include "se3.h"
+
+namespace Ign
+{
 
 /**
 The idea is to use this for quick search if ray intersects a mesh (a set of meshes).
@@ -43,6 +47,8 @@ public:
 	const Vector3 & origin() const;
 	void set_quat( const Quat & q );
 	const Quat & quat() const;
+	void set_se3( const SE3 & se3 );
+	SE3  get_se3() const;
 
 	// Intersects with infinite ray.
 	bool intersects_ray( const Vector3 origin, const Vector3 dir ) const;
@@ -77,7 +83,7 @@ public:
 };
 
 
-
+}
 
 
 

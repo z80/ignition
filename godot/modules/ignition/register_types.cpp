@@ -23,7 +23,7 @@
 void register_ignition_types()
 {
 	//ClassDB::register_class<OccupancyGrid>();
-	ClassDB::register_class<OctreeMeshGd>();
+	ClassDB::register_class<Ign::OctreeMeshGd>();
 
 	ClassDB::register_class<Ign::RefFrameNode>();
 	ClassDB::register_class<Ign::RefFrameAutoNode>();

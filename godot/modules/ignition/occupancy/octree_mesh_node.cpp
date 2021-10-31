@@ -2,6 +2,10 @@
 #include "octree_mesh_node.h"
 #include "octree_mesh.h"
 
+
+namespace Ign
+{
+
 OctreeMeshNode::OctreeMeshNode()
 {
     this->tree = nullptr;
@@ -383,6 +387,10 @@ void OctreeMeshNode::init()
 	const Vector3 sz  = sz2 * 2.0;
 	const Vector3 origin = center - sz2;
 	aabb_ = AABB( origin, sz );
+}
+
+
+
 }
 
 

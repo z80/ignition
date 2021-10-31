@@ -1,6 +1,9 @@
 
 #include "octree_mesh.h"
 
+namespace Ign
+{
+
 static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces );
 static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces );
 
@@ -126,6 +129,23 @@ const Quat & OctreeMesh::quat() const
 	return quat_;
 }
 
+void OctreeMesh::set_se3( const SE3 & se3 )
+{
+	const Vector3 r = se3.r();
+	const Quat    q = se3.q();
+
+	origin_ = r;
+	quat_   = q;
+}
+
+SE3  OctreeMesh::get_se3() const
+{
+	SE3 se3;
+	se3.set_r( origin_ );
+	se3.set_q( quat_ );
+
+	return se3;
+}
 
 bool OctreeMesh::intersects_ray( const Vector3 origin, const Vector3 dir ) const
 {
@@ -390,5 +410,7 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 	}
 }
 
+
+}
 
 
