@@ -39,8 +39,16 @@ public:
 	void append( const Transform & t, const Ref<Mesh> mesh );
 	void subdivide();
 
+	void set_origin( const Vector3 & at );
+	const Vector3 & origin() const;
+	void set_quat( const Quat & q );
+	const Quat & quat() const;
+
 	// Intersects with infinite ray.
 	bool intersects_ray( const Vector3 origin, const Vector3 dir ) const;
+	bool intersects_ray_face( const Vector3 origin, const Vector3 dir, real_t & face_dist, FaceProperties & fp ) const;
+	bool intersects_segment( const Vector3 start, const Vector3 end ) const;
+	bool intersects_segment_face( const Vector3 start, const Vector3 end, real_t & face_dist, FaceProperties & fp ) const;
 
 	// For visualization.
 	PoolVector<Vector3> lines();
@@ -63,6 +71,9 @@ public:
 	real_t node_sz_;
 	int    max_depth_;
 	int    min_faces_;
+
+	Vector3 origin_;
+	Quat    quat_;
 };
 
 

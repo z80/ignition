@@ -26,6 +26,10 @@ public:
 	bool inside( const Face3 & face ) const;
 	// Intersects infinite ray.
 	bool intersects_ray( const Vector3 origin, const Vector3 dir ) const;
+	bool intersects_ray_face( const Vector3 origin, const Vector3 dir, int & face_ind, real_t & dist ) const;
+	// Intersects line segment.
+	bool intersects_segment( const Vector3 start, const Vector3 end ) const;
+	bool intersects_segment_face( const Vector3 start, const Vector3 end, int & face_ind, real_t & dist ) const;
 
 	// Initialize vertices and planes.
 	void init();
@@ -43,7 +47,6 @@ public:
 	Vector3 center;
 
 	// Auxilary numbers. Hold those only to not recompute all the time.
-	Vector3 verts_[8];
 	Plane   planes_[6];
 	AABB    aabb_;
 

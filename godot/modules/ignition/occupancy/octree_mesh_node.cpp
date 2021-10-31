@@ -51,22 +51,6 @@ const OctreeMeshNode & OctreeMeshNode::operator=( const OctreeMeshNode & inst )
         size2 = inst.size2;
         center = inst.center;
 
-		verts_[0] = inst.verts_[0];
-		verts_[1] = inst.verts_[1];
-		verts_[2] = inst.verts_[2];
-		verts_[3] = inst.verts_[3];
-		verts_[4] = inst.verts_[4];
-		verts_[5] = inst.verts_[5];
-		verts_[6] = inst.verts_[6];
-		verts_[7] = inst.verts_[7];
-
-		planes_[0] = inst.planes_[0];
-		planes_[1] = inst.planes_[1];
-		planes_[2] = inst.planes_[2];
-		planes_[3] = inst.planes_[3];
-		planes_[4] = inst.planes_[4];
-		planes_[5] = inst.planes_[5];
-
 		aabb_ = inst.aabb_;
 
         ptInds = inst.ptInds;
@@ -229,8 +213,8 @@ bool OctreeMeshNode::inside( const Face3 & face ) const
 
 bool OctreeMeshNode::intersects_ray( const Vector3 origin, const Vector3 dir ) const
 {
-	const bool intersects = aabb_.intersects_ray( origin, dir );
-	if ( !intersects )
+	const bool intersects_aabb = aabb_.intersects_ray( origin, dir );
+	if ( !intersects_aabb )
 		return false;
 
 	const bool has_ch = hasChildren();
@@ -260,80 +244,145 @@ bool OctreeMeshNode::intersects_ray( const Vector3 origin, const Vector3 dir ) c
 	return false;
 }
 
+bool OctreeMeshNode::intersects_ray_face( const Vector3 origin, const Vector3 dir, int & face_ind, real_t & dist ) const
+{
+	const bool intersects_aabb = aabb_.intersects_ray( origin, dir );
+	if ( !intersects_aabb )
+		return false;
+
+	const bool has_ch = hasChildren();
+	if ( !has_ch )
+	{
+		const int qty = ptInds.size();
+		bool intersects = false;
+		for ( int i=0; i<qty; i++ )
+		{
+			const int child_face_ind = ptInds.ptr()[i];
+			const Face3 & f = tree->faces_[child_face_ind];
+			Vector3 at;
+			const bool ok = f.intersects_ray( origin, dir, &at );
+			if ( ok )
+			{
+				const Vector3 dr = at - origin;
+				const real_t d   = dr.length();
+				if ( (face_ind < 0) || (d < dist) )
+				{
+					face_ind = child_face_ind;
+					dist     = d;
+					intersects = true;
+					// Do not interrupt here.
+					// Need to check all triangles.
+				}
+			}
+		}
+		return intersects;
+	}
+
+	bool intersects = false;
+	for ( int i=0; i<8; i++ )
+	{
+		const int ind = children[i];
+		const OctreeMeshNode & ch_n = tree->nodes_.ptr()[ind];
+		const bool ch_intersects = ch_n.intersects_ray_face( origin, dir, face_ind, dist );
+		if ( ch_intersects )
+			intersects = true;
+			// Again, don't interrupt it here. Need to check all the children.
+	}
+
+	return intersects;
+}
+
+
+
+bool OctreeMeshNode::intersects_segment( const Vector3 start, const Vector3 end ) const
+{
+	const bool intersects_aabb = aabb_.intersects_ray( start, end );
+	if ( !intersects_aabb )
+		return false;
+
+	const bool has_ch = hasChildren();
+	if ( !has_ch )
+	{
+		const int qty = ptInds.size();
+		for ( int i=0; i<qty; i++ )
+		{
+			const int face_ind = ptInds.ptr()[i];
+			const Face3 & f = tree->faces_[face_ind];
+			const bool ok = f.intersects_segment( start, end );
+			if ( ok )
+				return true;
+		}
+		return false;
+	}
+
+	for ( int i=0; i<8; i++ )
+	{
+		const int ind = children[i];
+		const OctreeMeshNode & ch_n = tree->nodes_.ptr()[ind];
+		const bool ch_intersects = ch_n.intersects_ray( start, end );
+		if ( ch_intersects )
+			return true;
+	}
+
+	return false;
+}
+
+bool OctreeMeshNode::intersects_segment_face( const Vector3 start, const Vector3 end, int & face_ind, real_t & dist ) const
+{
+	const bool intersects_aabb = aabb_.intersects_segment( start, end );
+	if ( !intersects_aabb )
+		return false;
+
+	const bool has_ch = hasChildren();
+	if ( !has_ch )
+	{
+		const int qty = ptInds.size();
+		bool intersects = false;
+		for ( int i=0; i<qty; i++ )
+		{
+			const int child_face_ind = ptInds.ptr()[i];
+			const Face3 & f = tree->faces_[child_face_ind];
+			Vector3 at;
+			const bool ok = f.intersects_segment( start, end, &at );
+			if ( ok )
+			{
+				const Vector3 dr = at - start;
+				const real_t d   = dr.length();
+				if ( (face_ind < 0) || (d < dist) )
+				{
+					face_ind = child_face_ind;
+					dist     = d;
+					intersects = true;
+					// Do not interrupt here.
+					// Need to check all triangles.
+				}
+			}
+		}
+		return intersects;
+	}
+
+	bool intersects = false;
+	for ( int i=0; i<8; i++ )
+	{
+		const int ind = children[i];
+		const OctreeMeshNode & ch_n = tree->nodes_.ptr()[ind];
+		const bool ch_intersects = ch_n.intersects_ray_face( start, end, face_ind, dist );
+		if ( ch_intersects )
+			intersects = true;
+		// Again, don't interrupt it here. Need to check all the children.
+	}
+
+	return intersects;
+}
+
+
 void OctreeMeshNode::init()
 {
-	// Vertices.
-	verts_[0].x = center.x - size2;
-	verts_[0].y = center.y - size2;
-	verts_[0].z = center.z - size2;
-
-	verts_[1].x = center.x + size2;
-	verts_[1].y = center.y - size2;
-	verts_[1].z = center.z - size2;
-
-	verts_[2].x = center.x + size2;
-	verts_[2].y = center.y + size2;
-	verts_[2].z = center.z - size2;
-
-	verts_[3].x = center.x - size2;
-	verts_[3].y = center.y + size2;
-	verts_[3].z = center.z - size2;
-
-	verts_[4].x = center.x - size2;
-	verts_[4].y = center.y - size2;
-	verts_[4].z = center.z + size2;
-
-	verts_[5].x = center.x + size2;
-	verts_[5].y = center.y - size2;
-	verts_[5].z = center.z + size2;
-
-	verts_[6].x = center.x + size2;
-	verts_[6].y = center.y + size2;
-	verts_[6].z = center.z + size2;
-
-	verts_[7].x = center.x - size2;
-	verts_[7].y = center.y + size2;
-	verts_[7].z = center.z + size2;
-
-	// Planes.
-	// Front.
-	Vector3 r0 = center;
-	r0.y += size2;
-	planes_[0] = Plane( r0, Vector3(0.0, 1.0, 0.0) );
-
-	// Back
-	r0 = center;
-	r0.y -= size2;
-	planes_[1] = Plane(r0, Vector3(0.0, -1.0, 0.0) );
-
-	// Left
-	r0 = center;
-	r0.x -= size2;
-	planes_[2] = Plane( r0, Vector3(-1.0, 0.0, 0.0) );
-
-	// Right
-	r0 = center;
-	r0.x += size2;
-	planes_[3] = Plane( r0, Vector3(1.0, 0.0, 0.0) );
-
-	// Top
-	r0 = center;
-	r0.z += size2;
-	planes_[4] = Plane( r0, Vector3(0.0, 0.0, 1.0) );
-
-	// Bottom
-	r0 = center;
-	r0.z -= size2;
-	planes_[5] = Plane( r0, Vector3( 0.0, 0.0, -1.0 ) );
-
-
 	// AABB
-	{
-		const Vector3 sz2 = Vector3( size2, size2, size2 );
-		const Vector3 sz  = sz2 * 2.0;
-		const Vector3 origin = center - sz2;
-		aabb_ = AABB( origin, sz );
-	}
+	const Vector3 sz2 = Vector3( size2, size2, size2 );
+	const Vector3 sz  = sz2 * 2.0;
+	const Vector3 origin = center - sz2;
+	aabb_ = AABB( origin, sz );
 }
 
 

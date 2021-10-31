@@ -106,10 +106,86 @@ void OctreeMesh::subdivide()
 	nodes_.ptrw()[ 0 ] = root;
 }
 
-bool OctreeMesh::intersects_ray( const Vector3 p_from, const Vector3 p_to ) const
+void OctreeMesh::set_origin( const Vector3 & at )
 {
+	origin_ = at;
+}
+
+const Vector3 & OctreeMesh::origin() const
+{
+	return origin_;
+}
+
+void OctreeMesh::set_quat( const Quat & q )
+{
+	quat_ = q;
+}
+
+const Quat & OctreeMesh::quat() const
+{
+	return quat_;
+}
+
+
+bool OctreeMesh::intersects_ray( const Vector3 origin, const Vector3 dir ) const
+{
+	const Quat    inv_quat     = quat_.inverse();
+	const Vector3 origin_local = inv_quat.xform( origin - origin_ );
+	const Vector3 dir_local    = inv_quat.xform( dir );
 	const OctreeMeshNode & root = nodes_.ptr()[0];
-	const bool res = root.intersects_ray( p_from, p_to );
+	const bool res = root.intersects_ray( origin_local, dir_local );
+	return res;
+}
+
+bool OctreeMesh::intersects_ray_face( const Vector3 origin, const Vector3 dir, real_t & face_dist, FaceProperties & fp ) const
+{
+	const Quat    inv_quat     = quat_.inverse();
+	const Vector3 origin_local = inv_quat.xform( origin - origin_ );
+	const Vector3 dir_local    = inv_quat.xform( dir );
+	const OctreeMeshNode & root = nodes_.ptr()[0];
+	int face_ind = -1;
+	real_t dist = 0.0;
+	const bool res = root.intersects_ray_face( origin_local, dir_local, face_ind, dist );
+	if ( res )
+	{
+		face_dist = dist;
+
+		fp = face_props_.ptr()[face_ind];
+		fp.position = quat_.xform( fp.position ) + origin_;
+
+		fp.normal = quat_.xform( fp.normal );
+	}
+	return res;
+}
+
+bool OctreeMesh::intersects_segment( const Vector3 start, const Vector3 end ) const
+{
+	const Quat    inv_quat     = quat_.inverse();
+	const Vector3 start_local = inv_quat.xform( start - origin_ );
+	const Vector3 end_local   = inv_quat.xform( end - origin_ );
+	const OctreeMeshNode & root = nodes_.ptr()[0];
+	const bool res = root.intersects_ray( start_local, end_local );
+	return res;
+}
+
+bool OctreeMesh::intersects_segment_face( const Vector3 start, const Vector3 end, real_t & face_dist, FaceProperties & fp ) const
+{
+	const Quat    inv_quat     = quat_.inverse();
+	const Vector3 origin_local = inv_quat.xform( start - origin_ );
+	const Vector3 dir_local    = inv_quat.xform( end - origin_ );
+	const OctreeMeshNode & root = nodes_.ptr()[0];
+	int face_ind = -1;
+	real_t dist = 0.0;
+	const bool res = root.intersects_segment_face( origin_local, dir_local, face_ind, dist );
+	if ( res )
+	{
+		face_dist = dist;
+
+		fp = face_props_.ptr()[face_ind];
+		fp.position = quat_.xform( fp.position ) + origin_;
+
+		fp.normal = quat_.xform( fp.normal );
+	}
 	return res;
 }
 
@@ -127,44 +203,44 @@ PoolVector<Vector3> OctreeMesh::lines()
 		if ( is_empty )
 			continue;
 
-		const Vector3 * vs = n.verts_;
-		ls.push_back( vs[0] );
-		ls.push_back( vs[1] );
+		//const Vector3 * vs = n.verts_;
+		//ls.push_back( vs[0] );
+		//ls.push_back( vs[1] );
 
-		ls.push_back( vs[1] );
-		ls.push_back( vs[2] );
+		//ls.push_back( vs[1] );
+		//ls.push_back( vs[2] );
 
-		ls.push_back( vs[2] );
-		ls.push_back( vs[3] );
+		//ls.push_back( vs[2] );
+		//ls.push_back( vs[3] );
 
-		ls.push_back( vs[3] );
-		ls.push_back( vs[0] );
-
-
-		ls.push_back( vs[4] );
-		ls.push_back( vs[5] );
-
-		ls.push_back( vs[5] );
-		ls.push_back( vs[6] );
-
-		ls.push_back( vs[6] );
-		ls.push_back( vs[7] );
-
-		ls.push_back( vs[7] );
-		ls.push_back( vs[4] );
+		//ls.push_back( vs[3] );
+		//ls.push_back( vs[0] );
 
 
-		ls.push_back( vs[0] );
-		ls.push_back( vs[4] );
+		//ls.push_back( vs[4] );
+		//ls.push_back( vs[5] );
 
-		ls.push_back( vs[1] );
-		ls.push_back( vs[5] );
+		//ls.push_back( vs[5] );
+		//ls.push_back( vs[6] );
 
-		ls.push_back( vs[2] );
-		ls.push_back( vs[6] );
+		//ls.push_back( vs[6] );
+		//ls.push_back( vs[7] );
 
-		ls.push_back( vs[3] );
-		ls.push_back( vs[7] );
+		//ls.push_back( vs[7] );
+		//ls.push_back( vs[4] );
+
+
+		//ls.push_back( vs[0] );
+		//ls.push_back( vs[4] );
+
+		//ls.push_back( vs[1] );
+		//ls.push_back( vs[5] );
+
+		//ls.push_back( vs[2] );
+		//ls.push_back( vs[6] );
+
+		//ls.push_back( vs[3] );
+		//ls.push_back( vs[7] );
 	}
 
 	PoolVector<Vector3> res;
