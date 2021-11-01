@@ -147,6 +147,12 @@ SE3  OctreeMesh::get_se3() const
 	return se3;
 }
 
+real_t OctreeMesh::size2() const
+{
+	const OctreeMeshNode & node = nodes_.ptr()[0];
+	return node.size2;
+}
+
 bool OctreeMesh::intersects_ray( const Vector3 origin, const Vector3 dir ) const
 {
 	const Quat    inv_quat     = quat_.inverse();

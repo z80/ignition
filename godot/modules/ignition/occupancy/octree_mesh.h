@@ -50,6 +50,8 @@ public:
 	void set_se3( const SE3 & se3 );
 	SE3  get_se3() const;
 
+	real_t size2() const;
+
 	// Intersects with infinite ray.
 	bool intersects_ray( const Vector3 origin, const Vector3 dir ) const;
 	bool intersects_ray_face( const Vector3 origin, const Vector3 dir, real_t & face_dist, FaceProperties & fp ) const;
