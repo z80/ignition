@@ -24,6 +24,8 @@ public:
     bool hasChildren() const;
     bool subdivide();
 
+    bool inside( OctreeMesh * om ) const;
+    
     //bool objects_inside( const RigidBody * body, const CollisionObject * co, Float h, Vector<int> & collision_obj_inds ) const;
 
     // Initialize vertices and planes.
