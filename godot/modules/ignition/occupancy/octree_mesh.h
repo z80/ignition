@@ -44,9 +44,9 @@ public:
 	void subdivide();
 
 	void set_origin( const Vector3 & at );
-	const Vector3 & origin() const;
+	const Vector3 & get_origin() const;
 	void set_quat( const Quat & q );
-	const Quat & quat() const;
+	const Quat & get_quat() const;
 	void set_se3( const SE3 & se3 );
 	SE3  get_se3() const;
 

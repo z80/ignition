@@ -49,7 +49,7 @@ void OctreeMeshGd::set_origin( const Vector3 & at )
 
 const Vector3 & OctreeMeshGd::get_origin() const
 {
-	const Vector3 & at = _octree_mesh.origin();
+	const Vector3 & at = _octree_mesh.get_origin();
 	return at;
 }
 
@@ -60,7 +60,7 @@ void OctreeMeshGd::set_quat( const Quat & q )
 
 const Quat & OctreeMeshGd::get_quat() const
 {
-	const Quat & q = _octree_mesh.quat();
+	const Quat & q = _octree_mesh.get_quat();
 	return q;
 }
 
@@ -77,8 +77,8 @@ void OctreeMeshGd::set_se3( const Ref<Se3Ref> & rhs )
 Ref<Se3Ref> OctreeMeshGd::get_se3() const
 {
 	SE3 se3;
-	const Vector3 r = _octree_mesh.origin();
-	const Quat    q = _octree_mesh.quat();
+	const Vector3 r = _octree_mesh.get_origin();
+	const Quat    q = _octree_mesh.get_quat();
 	se3.set_r( r );
 	se3.set_q( q );
 

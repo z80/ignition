@@ -7,12 +7,11 @@
 #include "occupancy_types.h"
 
 
-namespace Pbd
+namespace Ign
 {
 
 class BroadTree;
-class RigidBody;
-class CollisionObject;
+class OctreeMesh;
 
 class BroadTreeNode
 {
@@ -23,9 +22,9 @@ public:
     const BroadTreeNode & operator=( const BroadTreeNode & inst );
 
     bool hasChildren() const;
-    bool subdivide( Float h );
+    bool subdivide();
 
-    bool objects_inside( const RigidBody * body, const CollisionObject * co, Float h, Vector<int> & collision_obj_inds ) const;
+    //bool objects_inside( const RigidBody * body, const CollisionObject * co, Float h, Vector<int> & collision_obj_inds ) const;
 
     // Initialize vertices and planes.
     void init();
@@ -39,8 +38,8 @@ public:
     // Child indices in Octtree list.
     int children[8];
     
-    Float    size2; // Size over 2.
-    Vector3d center;
+    real_t   size2; // Size over 2.
+    Vector3 center;
         
     Vector<int> ptInds;
 };

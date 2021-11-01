@@ -1,15 +1,14 @@
 
-#include "pbd2_broad_node.h"
-#include "pbd2_broad_tree.h"
-#include "pbd2_simulation.h"
-#include "pbd2_rigid_body.h"
-#include "pbd2_collision_object.h"
-#include "matrix3d.h"
+#include "broad_tree_node.h"
+#include "broad_tree.h"
+#include "octree_mesh.h"
+#include "octree_mesh_gd.h"
+//#include "matrix3d.h"
 
 namespace Pbd
 {
 
-static const Float EPS = 0.0001;
+static const real_t EPS = 0.0001;
 
 BroadTreeNode::BroadTreeNode()
 {
@@ -42,11 +41,11 @@ const BroadTreeNode & BroadTreeNode::operator=( const BroadTreeNode & inst )
 {
     if ( this != &inst )
     {
-        tree = inst.tree;
+        tree           = inst.tree;
         parentAbsIndex = inst.parentAbsIndex;
-        indexInParent = inst.indexInParent;
-        level = inst.level;
-        absIndex = inst.absIndex;
+        indexInParent  = inst.indexInParent;
+        level          = inst.level;
+        absIndex       = inst.absIndex;
 
         children[0] = inst.children[0];
         children[1] = inst.children[1];
@@ -57,7 +56,7 @@ const BroadTreeNode & BroadTreeNode::operator=( const BroadTreeNode & inst )
         children[6] = inst.children[6];
         children[7] = inst.children[7];
 
-        size2 = inst.size2;
+        size2  = inst.size2;
         center = inst.center;
         
         ptInds = inst.ptInds;
@@ -86,7 +85,7 @@ bool BroadTreeNode::hasChildren() const
     return false;
 }
 
-bool BroadTreeNode::subdivide( Float h )
+bool BroadTreeNode::subdivide()
 {
     if ( (level >= tree->max_depth_) || (size2 <= tree->min_size_) )
     {
@@ -175,9 +174,9 @@ bool BroadTreeNode::subdivide( Float h )
         for ( int i=0; i<qty; i++ )
         {
             const int ind = ptInds[i];
-            const CollisionObject * co = tree->collision_object(ind);
+            const OctreeMesh * om = tree->get_octree_mesh(ind);
 
-            const bool inside = co->inside( &ch_n, h );
+            const bool inside = om->inside( &ch_n, h );
             if ( inside )
             {
                 ch_n.ptInds.push_back( ind );
@@ -200,6 +199,14 @@ bool BroadTreeNode::subdivide( Float h )
     return true;
 }
 
+bool BroadTreeNode::inside( OctreeMesh * om ) const
+{
+    const Vector3 dr = om->get_origin() - center;
+    const real_t dist = dr.length();
+    const real_t max_dist = size2 + om->size2();
+    const bool in = (dist <= max_dist);
+    return in;
+}
 
 bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObject * co, Float h, Vector<int> & collision_obj_inds ) const
 {

@@ -4,7 +4,7 @@
 
 #include "data_types.h"
 #include "se3.h"
-#include "broad_node.h"
+#include "broad_tree_node.h"
 
 #include "core/variant.h"
 
@@ -41,9 +41,9 @@ public:
     int          get_octree_meshes_qty() const;
     OctreeMesh * get_octree_mesh( int ind );
 
-    Vector<OctreeMeshGd *>    octree_meshes_;
-    SE3                       se3_;
-    Vector<BroadTreeNode>     nodes_;
+    Vector<OctreeMesh *>  octree_meshes_;
+    SE3                   se3_;
+    Vector<BroadTreeNode> nodes_;
 
     RefFrameNode * ref_frame_physics_;
 

@@ -114,7 +114,7 @@ void OctreeMesh::set_origin( const Vector3 & at )
 	origin_ = at;
 }
 
-const Vector3 & OctreeMesh::origin() const
+const Vector3 & OctreeMesh::get_origin() const
 {
 	return origin_;
 }
@@ -124,7 +124,7 @@ void OctreeMesh::set_quat( const Quat & q )
 	quat_ = q;
 }
 
-const Quat & OctreeMesh::quat() const
+const Quat & OctreeMesh::get_quat() const
 {
 	return quat_;
 }
