@@ -41,16 +41,16 @@ public:
     int          get_octree_meshes_qty() const;
     OctreeMesh * get_octree_mesh( int ind );
 
+    bool intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMesh * exclude_mesh );
+    Array intersects_segment_face( const Vector3 & start, const Vector3 & end, OctreeMesh * exclude_mesh );
+
     Vector<OctreeMesh *>  octree_meshes_;
-    SE3                   se3_;
     Vector<BroadTreeNode> nodes_;
 
     RefFrameNode * ref_frame_physics_;
 
     // Maximum subdivision level.
     int   max_depth_;
-    // Minimum size is determined at every iteration by taking the smallest object size.
-    Float min_size_;
 };
 
 

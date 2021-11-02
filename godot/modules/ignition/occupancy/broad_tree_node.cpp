@@ -5,7 +5,7 @@
 #include "octree_mesh_gd.h"
 //#include "matrix3d.h"
 
-namespace Pbd
+namespace Ign
 {
 
 static const real_t EPS = 0.0001;
@@ -58,6 +58,7 @@ const BroadTreeNode & BroadTreeNode::operator=( const BroadTreeNode & inst )
 
         size2  = inst.size2;
         center = inst.center;
+        aabb_  = inst.aabb_;
         
         ptInds = inst.ptInds;
 
@@ -222,9 +223,9 @@ bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObjec
         {
             const int ind = ptInds.ptr()[i];
             const CollisionObject * co_candidate = tree->collision_object( ind );
-			const bool already_processed = co_candidate->is_processed();
-			if ( already_processed )
-				continue;
+            const bool already_processed = co_candidate->is_processed();
+            if ( already_processed )
+                continue;
             const RigidBody * body_candidate = co_candidate->rigid_body;
             if ( ( body != body_candidate ) && ( co != co_candidate ) )
             {
@@ -253,9 +254,94 @@ bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObjec
 
 void BroadTreeNode::init()
 {
+    // AABB
+    const Vector3 sz2 = Vector3( size2, size2, size2 );
+    const Vector3 sz  = sz2 * 2.0;
+    const Vector3 origin = center - sz2;
+    aabb_ = AABB( origin, sz );
 }
 
 
+bool BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & end ) const
+{
+    const bool intersects_aabb = aabb_.intersects_ray( start, end );
+    if ( !intersects_aabb )
+        return false;
+
+    const bool has_ch = hasChildren();
+    if ( !has_ch )
+    {
+        const int qty = ptInds.size();
+        for ( int i=0; i<qty; i++ )
+        {
+            const int face_ind = ptInds.ptr()[i];
+            const Face3 & f = tree->faces_[face_ind];
+            const bool ok = f.intersects_segment( start, end );
+            if ( ok )
+                return true;
+        }
+        return false;
+    }
+
+    for ( int i=0; i<8; i++ )
+    {
+        const int ind = children[i];
+        const BroadTreeNode & ch_n = tree->nodes_.ptr()[ind];
+        const bool ch_intersects = ch_n.intersects_ray( start, end );
+        if ( ch_intersects )
+            return true;
+    }
+
+    return false;
+}
+
+Array BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector3 & end ) const
+{
+    const bool intersects_aabb = aabb_.intersects_segment( start, end );
+    if ( !intersects_aabb )
+        return false;
+
+    const bool has_ch = hasChildren();
+    if ( !has_ch )
+    {
+        const int qty = ptInds.size();
+        bool intersects = false;
+        for ( int i=0; i<qty; i++ )
+        {
+            const int child_face_ind = ptInds.ptr()[i];
+            const Face3 & f = tree->faces_[child_face_ind];
+            Vector3 at;
+            const bool ok = f.intersects_segment( start, end, &at );
+            if ( ok )
+            {
+                const Vector3 dr = at - start;
+                const real_t d   = dr.length();
+                if ( (face_ind < 0) || (d < dist) )
+                {
+                    face_ind = child_face_ind;
+                    dist     = d;
+                    intersects = true;
+                    // Do not interrupt here.
+                    // Need to check all triangles.
+                }
+            }
+        }
+        return intersects;
+    }
+
+    bool intersects = false;
+    for ( int i=0; i<8; i++ )
+    {
+        const int ind = children[i];
+        const BroadTreeNode & ch_n = tree->nodes_.ptr()[ind];
+        const bool ch_intersects = ch_n.intersects_ray_face( start, end, face_ind, dist );
+        if ( ch_intersects )
+            intersects = true;
+        // Again, don't interrupt it here. Need to check all the children.
+    }
+
+    return intersects;
+}
 
 
 

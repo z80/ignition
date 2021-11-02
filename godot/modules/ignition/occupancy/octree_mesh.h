@@ -53,10 +53,10 @@ public:
 	real_t size2() const;
 
 	// Intersects with infinite ray.
-	bool intersects_ray( const Vector3 origin, const Vector3 dir ) const;
-	bool intersects_ray_face( const Vector3 origin, const Vector3 dir, real_t & face_dist, FaceProperties & fp ) const;
-	bool intersects_segment( const Vector3 start, const Vector3 end ) const;
-	bool intersects_segment_face( const Vector3 start, const Vector3 end, real_t & face_dist, FaceProperties & fp ) const;
+	bool intersects_ray( const Vector3 & origin, const Vector3 & dir ) const;
+	bool intersects_ray_face( const Vector3 & origin, const Vector3 & dir, real_t & face_dist, FaceProperties & fp ) const;
+	bool intersects_segment( const Vector3 & start, const Vector3 & end ) const;
+	bool intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & face_dist, FaceProperties & fp ) const;
 
 	// For visualization.
 	PoolVector<Vector3> lines();
