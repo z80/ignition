@@ -1,10 +1,12 @@
 
-#ifndef __PBD_BROAD_NODE_H_
-#define __PBD_BROAD_NODE_H_
+#ifndef __BROAD_TREE_NODE_H_
+#define __BROAD_TREE_NODE_H_
 
 #include "data_types.h"
 #include "se3.h"
 #include "data_types.h"
+
+#include "octree_mesh.h"
 
 #include "core/math/vector3.h"
 
@@ -25,7 +27,7 @@ public:
     bool hasChildren() const;
     bool subdivide();
 
-    bool inside( OctreeMesh * om ) const;
+    bool inside( const OctreeMesh * om ) const;
     
     //bool objects_inside( const RigidBody * body, const CollisionObject * co, Float h, Vector<int> & collision_obj_inds ) const;
 
@@ -33,7 +35,7 @@ public:
     void init();
 
     bool intersects_segment( const Vector3 & start, const Vector3 & end ) const;
-    Array intersects_segment_face( const Vector3 & start, const Vector3 & end ) const;
+    bool intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & ret_dist, OctreeMesh::FaceProperties & ret_face_props ) const;
 
     BroadTree * tree;
     int absIndex;

@@ -258,17 +258,17 @@ OctreeMesh * BroadTree::get_octree_mesh( int ind )
     return mesh;
 }
 
-bool BroadTree::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMesh * exclude_mesh )
+bool BroadTree::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMesh * exclude_mesh ) const
 {
     const BroadTreeNode & root = nodes_.ptr()[0];
     const bool res = root.intersects_segment( start, end );
     return res;
 }
 
-Array BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & end, OctreeMesh * exclude_mesh )
+bool BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, OctreeMesh::FaceProperties & face_props, OctreeMesh * exclude_mesh ) const
 {
     const BroadTreeNode & root = nodes_.ptr()[0];
-    const Array res = root.intersects_segment_face( start, end );
+    const bool res = root.intersects_segment_face( start, end, dist, face_props );
     return res;
 }
 
@@ -294,14 +294,16 @@ static void find_mesh_instances( RefFrameNode * node, Vector<OctreeMesh *> & ins
         for ( int j=0; j<qty; j++ )
         {
             Node * cch = ch->get_child( j );
-            OctreeMeshGd * octree_mesh = Node::cast_to<OctreeMesh>();
+            OctreeMeshGd * octree_mesh = Node::cast_to<OctreeMeshGd>( cch );
             if ( octree_mesh != nullptr )
             {
                 const Vector3 at = ref_frame->r();
                 const Quat    q  = ref_frame->q();
                 octree_mesh->set_origin( at );
                 octree_mesh->set_quat( q );
-                instances.push_back( octree_mesh );
+
+                OctreeMesh * mesh = octree_mesh->octree_mesh();
+                instances.push_back( mesh );
                 break;
             }
         }

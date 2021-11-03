@@ -88,7 +88,7 @@ bool BroadTreeNode::hasChildren() const
 
 bool BroadTreeNode::subdivide()
 {
-    if ( (level >= tree->max_depth_) || (size2 <= tree->min_size_) )
+    if (level >= tree->max_depth_)
     {
         return false;
     }
@@ -125,44 +125,44 @@ bool BroadTreeNode::subdivide()
         qtys[i] = 0;
     }
     nn[0].center = this->center;
-    nn[0].center.x_ -= chSize2;
-    nn[0].center.y_ -= chSize2;
-    nn[0].center.z_ -= chSize2;
+    nn[0].center.x -= chSize2;
+    nn[0].center.y -= chSize2;
+    nn[0].center.z -= chSize2;
 
     nn[1].center = this->center;
-    nn[1].center.x_ += chSize2;
-    nn[1].center.y_ -= chSize2;
-    nn[1].center.z_ -= chSize2;
+    nn[1].center.x += chSize2;
+    nn[1].center.y -= chSize2;
+    nn[1].center.z -= chSize2;
 
     nn[2].center = this->center;
-    nn[2].center.x_ += chSize2;
-    nn[2].center.y_ += chSize2;
-    nn[2].center.z_ -= chSize2;
+    nn[2].center.x += chSize2;
+    nn[2].center.y += chSize2;
+    nn[2].center.z -= chSize2;
 
     nn[3].center = this->center;
-    nn[3].center.x_ -= chSize2;
-    nn[3].center.y_ += chSize2;
-    nn[3].center.z_ -= chSize2;
+    nn[3].center.x -= chSize2;
+    nn[3].center.y += chSize2;
+    nn[3].center.z -= chSize2;
 
     nn[4].center = this->center;
-    nn[4].center.x_ -= chSize2;
-    nn[4].center.y_ -= chSize2;
-    nn[4].center.z_ += chSize2;
+    nn[4].center.x -= chSize2;
+    nn[4].center.y -= chSize2;
+    nn[4].center.z += chSize2;
 
     nn[5].center = this->center;
-    nn[5].center.x_ += chSize2;
-    nn[5].center.y_ -= chSize2;
-    nn[5].center.z_ += chSize2;
+    nn[5].center.x += chSize2;
+    nn[5].center.y -= chSize2;
+    nn[5].center.z += chSize2;
 
     nn[6].center = this->center;
-    nn[6].center.x_ += chSize2;
-    nn[6].center.y_ += chSize2;
-    nn[6].center.z_ += chSize2;
+    nn[6].center.x += chSize2;
+    nn[6].center.y += chSize2;
+    nn[6].center.z += chSize2;
 
     nn[7].center = this->center;
-    nn[7].center.x_ -= chSize2;
-    nn[7].center.y_ += chSize2;
-    nn[7].center.z_ += chSize2;
+    nn[7].center.x -= chSize2;
+    nn[7].center.y += chSize2;
+    nn[7].center.z += chSize2;
 
     for ( int i=0; i<8; i++ )
         nn[i].init();
@@ -177,7 +177,7 @@ bool BroadTreeNode::subdivide()
             const int ind = ptInds[i];
             const OctreeMesh * om = tree->get_octree_mesh(ind);
 
-            const bool inside = om->inside( &ch_n, h );
+            const bool inside = ch_n.inside( om );
             if ( inside )
             {
                 ch_n.ptInds.push_back( ind );
@@ -193,61 +193,20 @@ bool BroadTreeNode::subdivide()
     for ( int i=0; i<8; i++ )
     {
         BroadTreeNode & ch_n = nn[i];
-        ch_n.subdivide( h );
+        ch_n.subdivide();
         tree->update_node( ch_n );
     }
 
     return true;
 }
 
-bool BroadTreeNode::inside( OctreeMesh * om ) const
+bool BroadTreeNode::inside( const OctreeMesh * om ) const
 {
     const Vector3 dr = om->get_origin() - center;
     const real_t dist = dr.length();
     const real_t max_dist = size2 + om->size2();
     const bool in = (dist <= max_dist);
     return in;
-}
-
-bool BroadTreeNode::objects_inside( const RigidBody * body, const CollisionObject * co, Float h, Vector<int> & collision_obj_inds ) const
-{
-    const bool object_inside_this_node = co->inside( this, h );
-    if ( !object_inside_this_node )
-        return false;
-
-    const bool has_children = hasChildren();
-    if ( !has_children )
-    {
-        const int qty = ptInds.size();
-        for ( int i=0; i<qty; i++ )
-        {
-            const int ind = ptInds.ptr()[i];
-            const CollisionObject * co_candidate = tree->collision_object( ind );
-            const bool already_processed = co_candidate->is_processed();
-            if ( already_processed )
-                continue;
-            const RigidBody * body_candidate = co_candidate->rigid_body;
-            if ( ( body != body_candidate ) && ( co != co_candidate ) )
-            {
-                // First check if it is already there.
-                // It is because one and the same object may be in a few different nodes.
-                const int already_ind = collision_obj_inds.find( ind );
-                if ( already_ind < 0 )
-                    collision_obj_inds.push_back( ind );
-            }
-        }
-        return true;
-    }
-
-    bool ret = false;
-    for ( int i=0; i<8; i++ )
-    {
-        const int child_ind = children[i];
-        const BroadTreeNode & child = tree->nodes_.ptr()[child_ind];
-        const bool ok = child.objects_inside( body, co, h, collision_obj_inds );
-        ret = ret || ok;
-    }
-    return ret;
 }
 
 
@@ -274,9 +233,9 @@ bool BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & e
         const int qty = ptInds.size();
         for ( int i=0; i<qty; i++ )
         {
-            const int face_ind = ptInds.ptr()[i];
-            const Face3 & f = tree->faces_[face_ind];
-            const bool ok = f.intersects_segment( start, end );
+            const int mesh_ind = ptInds.ptr()[i];
+            OctreeMesh * om = tree->octree_meshes_.ptr()[mesh_ind];
+            const bool ok = om->intersects_segment( start, end );
             if ( ok )
                 return true;
         }
@@ -287,7 +246,7 @@ bool BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & e
     {
         const int ind = children[i];
         const BroadTreeNode & ch_n = tree->nodes_.ptr()[ind];
-        const bool ch_intersects = ch_n.intersects_ray( start, end );
+        const bool ch_intersects = ch_n.intersects_segment( start, end );
         if ( ch_intersects )
             return true;
     }
@@ -295,61 +254,75 @@ bool BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & e
     return false;
 }
 
-Array BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector3 & end ) const
+bool BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & ret_dist, OctreeMesh::FaceProperties & ret_face_props ) const
 {
     const bool intersects_aabb = aabb_.intersects_segment( start, end );
     if ( !intersects_aabb )
+    {
         return false;
+    }
 
     const bool has_ch = hasChildren();
     if ( !has_ch )
     {
         const int qty = ptInds.size();
         bool intersects = false;
-        real_t         best_face_dist = -1.0;
-        FaceProperties best_face_properties;
+        real_t                     best_face_dist = -1.0;
+        OctreeMesh::FaceProperties best_face_properties;
         for ( int i=0; i<qty; i++ )
         {
             const int child_face_ind = ptInds.ptr()[i];
             const OctreeMesh * f = tree->octree_meshes_[child_face_ind];
-            real_t         face_dist;
-            FaceProperties fp;
-            const bool ok = f->intersects_segment( start, end, face_dist, fp );
+            real_t             face_dist;
+            OctreeMesh::FaceProperties face_props;
+            const bool ok = f->intersects_segment_face( start, end, face_dist, face_props );
             if ( ok )
             {
                 if ( (!intersects) || (face_dist < best_face_dist) )
                 {
-                    best_Face_dist       = face_dist;
-                    best_face_properties = fp;
+                    best_face_dist       = face_dist;
+                    best_face_properties = face_props;
                 }
                 intersects = true;
                 // Do not interrupt here.
                 // Need to check all triangles.
             }
         }
+        if ( intersects )
+        {
+            ret_dist       = best_face_dist;
+            ret_face_props = best_face_properties;
+        }
         return intersects;
     }
 
-    real_t         best_face_dist = -1.0;
-    FaceProperties best_face_properties;
+    real_t                     best_face_dist = -1.0;
+    OctreeMesh::FaceProperties best_face_properties;
     bool           intersects = false;
     for ( int i=0; i<8; i++ )
     {
         const int ind = children[i];
         const BroadTreeNode & ch_n = tree->nodes_.ptr()[ind];
-        const bool ch_intersects = ch_n.intersects_ray_face( start, end, face_ind, dist );
+        real_t                     face_dist;
+        OctreeMesh::FaceProperties face_props;
+        const bool ch_intersects = ch_n.intersects_segment_face( start, end, face_dist, face_props );
         if ( ch_intersects )
         {
             if ( (!intersects) || (face_dist < best_face_dist) )
             {
-                best_Face_dist       = face_dist;
-                best_face_properties = fp;
+                best_face_dist       = face_dist;
+                best_face_properties = face_props;
             }
             intersects = true;
         }
         // Again, don't interrupt it here. Need to check all the children.
     }
 
+    if ( intersects )
+    {
+        ret_dist       = best_face_dist;
+        ret_face_props = best_face_properties;
+    }
     return intersects;
 }
 
