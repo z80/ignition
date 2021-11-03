@@ -306,37 +306,47 @@ Array BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vecto
     {
         const int qty = ptInds.size();
         bool intersects = false;
+        real_t         best_face_dist = -1.0;
+        FaceProperties best_face_properties;
         for ( int i=0; i<qty; i++ )
         {
             const int child_face_ind = ptInds.ptr()[i];
-            const Face3 & f = tree->faces_[child_face_ind];
-            Vector3 at;
-            const bool ok = f.intersects_segment( start, end, &at );
+            const OctreeMesh * f = tree->octree_meshes_[child_face_ind];
+            real_t         face_dist;
+            FaceProperties fp;
+            const bool ok = f->intersects_segment( start, end, face_dist, fp );
             if ( ok )
             {
-                const Vector3 dr = at - start;
-                const real_t d   = dr.length();
-                if ( (face_ind < 0) || (d < dist) )
+                if ( (!intersects) || (face_dist < best_face_dist) )
                 {
-                    face_ind = child_face_ind;
-                    dist     = d;
-                    intersects = true;
-                    // Do not interrupt here.
-                    // Need to check all triangles.
+                    best_Face_dist       = face_dist;
+                    best_face_properties = fp;
                 }
+                intersects = true;
+                // Do not interrupt here.
+                // Need to check all triangles.
             }
         }
         return intersects;
     }
 
-    bool intersects = false;
+    real_t         best_face_dist = -1.0;
+    FaceProperties best_face_properties;
+    bool           intersects = false;
     for ( int i=0; i<8; i++ )
     {
         const int ind = children[i];
         const BroadTreeNode & ch_n = tree->nodes_.ptr()[ind];
         const bool ch_intersects = ch_n.intersects_ray_face( start, end, face_ind, dist );
         if ( ch_intersects )
+        {
+            if ( (!intersects) || (face_dist < best_face_dist) )
+            {
+                best_Face_dist       = face_dist;
+                best_face_properties = fp;
+            }
             intersects = true;
+        }
         // Again, don't interrupt it here. Need to check all the children.
     }
 

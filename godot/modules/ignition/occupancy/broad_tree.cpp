@@ -61,7 +61,7 @@ void BroadTree::subdivide( RefFrameNode * ref_frame_physics )
     {
         OctreeMesh * mesh = octree_meshes_.ptr()[i];
         {
-            const Vector3d c = mesh->origin();
+            const Vector3d c = mesh->get_origin();
             const Float sz = mesh->size2();
             x_min = x_max = c.x_;
             y_min = y_max = c.y_;
@@ -81,10 +81,10 @@ void BroadTree::subdivide( RefFrameNode * ref_frame_physics )
     {
         OctreeMesh * mesh = octree_meshes_.ptr()[i];
         // Determine dimensions.
-        const Vector3d at = mesh->origin();
+        const Vector3d c  = mesh->get_origin();
         const Float    sz = mesh->size2();
-        const Vector3d v_max = center + Vector3d( sz, sz, sz );
-        const Vector3d v_min = center - Vector3d( sz, sz, sz );
+        const Vector3d v_max = c + Vector3d( sz, sz, sz );
+        const Vector3d v_min = c - Vector3d( sz, sz, sz );
         if ( v_min.x_ < x_min )
             x_min = v_min.x_;
         if ( v_max.x_ > x_max )
@@ -99,10 +99,10 @@ void BroadTree::subdivide( RefFrameNode * ref_frame_physics )
             z_max = v_max.z_;
     }
 
-    const Vector3d c( (x_min+x_max)/2.0, (y_min+y_max)/2.0, (z_min+z_max)/2.0 );
-    const Vector3d dims( (x_max-x_min)/2.0, (y_max-y_min)/2.0, (z_max-z_min)/2.0 );
-    Float d = ( dims.x_ > dims.y_ ) ? dims.x_ : dims.y_;
-    d = (d > dims.z_) ? d : dims.z_;
+    const Vector3 c( (x_min+x_max)/2.0, (y_min+y_max)/2.0, (z_min+z_max)/2.0 );
+    const Vector3 dims( (x_max-x_min)/2.0, (y_max-y_min)/2.0, (z_max-z_min)/2.0 );
+    real_t d = ( dims.x > dims.y ) ? dims.x : dims.y;
+    d = (d > dims.z) ? d : dims.z;
 
     // Just to have some gap ???
     // Not sure if it is needed.
@@ -115,7 +115,7 @@ void BroadTree::subdivide( RefFrameNode * ref_frame_physics )
     root.init();
     insert_node( root );
 
-    root.subdivide( h );
+    root.subdivide();
     update_node( root );
 }
 
@@ -124,7 +124,7 @@ void BroadTree::subdivide( RefFrameNode * ref_frame_physics )
 
 
 
-PoolVector3Array BroadTree::lines_nodes( RefFrameNode * camera ) const
+/*PoolVector3Array BroadTree::lines_nodes( RefFrameNode * camera ) const
 {
     const SE3        se3 = this->relative_to( camera );
     const Quat    q_root = se3.q();
@@ -140,8 +140,7 @@ PoolVector3Array BroadTree::lines_nodes( RefFrameNode * camera ) const
             continue;
 
         Vector3 v[8];
-        const Vector3d cd = n.center;
-        const Vector3 c( cd.x_, cd.y_, cd.z_ );
+        const Vector3 c = n.center;
         const real_t sz = n.size2;
         v[0] = c + Vector3( -sz, -sz, -sz );
         v[1] = c + Vector3(  sz, -sz, -sz );
@@ -208,7 +207,7 @@ PoolVector3Array BroadTree::lines_nodes( RefFrameNode * camera ) const
     }
 
     return res;
-}
+}*/
 
 
 bool BroadTree::parent( const BroadTreeNode & node, BroadTreeNode * & parent )
@@ -261,26 +260,15 @@ OctreeMesh * BroadTree::get_octree_mesh( int ind )
 
 bool BroadTree::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMesh * exclude_mesh )
 {
-    const OctreeMeshNode & root = nodes_.ptr()[0];
-    const bool res = root.intersects_ray( start, end );
+    const BroadTreeNode & root = nodes_.ptr()[0];
+    const bool res = root.intersects_segment( start, end );
     return res;
 }
 
 Array BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & end, OctreeMesh * exclude_mesh )
 {
-    const OctreeMeshNode & root = nodes_.ptr()[0];
-    int face_ind = -1;
-    real_t dist = 0.0;
-    const bool res = root.intersects_segment_face( origin, dir, face_ind, dist );
-    if ( res )
-    {
-        face_dist = dist;
-
-        fp = face_props_.ptr()[face_ind];
-        fp.position = quat_.xform( fp.position ) + origin_;
-
-        fp.normal = quat_.xform( fp.normal );
-    }
+    const BroadTreeNode & root = nodes_.ptr()[0];
+    const Array res = root.intersects_segment_face( start, end );
     return res;
 }
 

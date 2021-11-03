@@ -31,7 +31,7 @@ public:
     void subdivide( RefFrameNode * ref_frame_physics );
 
     // For visualization.
-    PoolVector3Array lines_nodes( RefFrameNode * camera ) const;
+    //PoolVector3Array lines_nodes( RefFrameNode * camera ) const;
 
     // These three for tree construction.
     bool parent( const BroadTreeNode & node, BroadTreeNode * & parent );
