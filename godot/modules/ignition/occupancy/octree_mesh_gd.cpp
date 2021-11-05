@@ -179,6 +179,11 @@ OctreeMesh * OctreeMeshGd::octree_mesh()
     return &_octree_mesh;
 }
 
+const OctreeMesh * OctreeMeshGd::octree_mesh() const
+{
+	return &_octree_mesh;
+}
+
 
 
 

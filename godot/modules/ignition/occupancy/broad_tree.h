@@ -22,7 +22,7 @@ public:
 
     // Manipulating filling up the occupancy grid.
     void set_max_depth( int new_level=5 );
-    int  max_depth() const;
+    int  get_max_depth() const;
 
     void clear();
 
@@ -38,14 +38,14 @@ public:
     int  insert_node( BroadTreeNode & node );
     void update_node( const BroadTreeNode & node );
 
-    int          get_octree_meshes_qty() const;
-    OctreeMesh * get_octree_mesh( int ind );
+    int            get_octree_meshes_qty() const;
+    OctreeMeshGd * get_octree_mesh( int ind );
 
-    bool intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMesh * exclude_mesh ) const;
-    bool intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, OctreeMesh::FaceProperties & face_props, OctreeMesh * exclude_mesh ) const;
+    bool intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const;
+    bool intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, OctreeMesh::FaceProperties & face_props, OctreeMeshGd * exclude_mesh ) const;
 
-    Vector<OctreeMesh *>  octree_meshes_;
-    Vector<BroadTreeNode> nodes_;
+    Vector<OctreeMeshGd *> octree_meshes_;
+    Vector<BroadTreeNode>  nodes_;
 
     RefFrameNode * ref_frame_physics_;
 

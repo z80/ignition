@@ -11,7 +11,7 @@ namespace Ign
 static const Float EPS = 0.0001;
 static const Float MIN_CONTACT_DIST = 0.001;
 
-static void find_mesh_instances( RefFrameNode * node, Vector<OctreeMesh *> & instances );
+static void find_mesh_instances( RefFrameNode * node, Vector<OctreeMeshGd *> & instances );
 
 
 BroadTree::BroadTree()
@@ -29,7 +29,7 @@ void BroadTree::set_max_depth( int new_depth )
     max_depth_ = new_depth;
 }
 
-int BroadTree::max_depth() const
+int BroadTree::get_max_depth() const
 {
     return max_depth_;
 }
@@ -59,7 +59,8 @@ void BroadTree::subdivide( RefFrameNode * ref_frame_physics )
     // Initialize with the very first point.
     for ( int i=0; i<meshes_qty; i++ )
     {
-        OctreeMesh * mesh = octree_meshes_.ptr()[i];
+        OctreeMeshGd * mesh_gd = octree_meshes_.ptr()[i];
+		OctreeMesh * mesh = mesh_gd->octree_mesh();
         {
             const Vector3d c = mesh->get_origin();
             const Float sz = mesh->size2();
@@ -79,8 +80,9 @@ void BroadTree::subdivide( RefFrameNode * ref_frame_physics )
 
     for ( int i=0; i<meshes_qty; i++ )
     {
-        OctreeMesh * mesh = octree_meshes_.ptr()[i];
-        // Determine dimensions.
+		OctreeMeshGd * mesh_gd = octree_meshes_.ptr()[i];
+		OctreeMesh * mesh = mesh_gd->octree_mesh();
+		// Determine dimensions.
         const Vector3d c  = mesh->get_origin();
         const Float    sz = mesh->size2();
         const Vector3d v_max = c + Vector3d( sz, sz, sz );
@@ -248,24 +250,24 @@ int BroadTree::get_octree_meshes_qty() const
     return ret;
 }
 
-OctreeMesh * BroadTree::get_octree_mesh( int ind )
+OctreeMeshGd * BroadTree::get_octree_mesh( int ind )
 {
     const int qty = octree_meshes_.size();
     if ( ( ind < 0 ) || ( ind >= qty ) )
         return nullptr;
 
-    OctreeMesh * mesh = octree_meshes_.ptrw()[ind];
-    return mesh;
+    OctreeMeshGd * mesh_gd = octree_meshes_.ptrw()[ind];
+    return mesh_gd;
 }
 
-bool BroadTree::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMesh * exclude_mesh ) const
+bool BroadTree::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const
 {
     const BroadTreeNode & root = nodes_.ptr()[0];
     const bool res = root.intersects_segment( start, end );
     return res;
 }
 
-bool BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, OctreeMesh::FaceProperties & face_props, OctreeMesh * exclude_mesh ) const
+bool BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, OctreeMesh::FaceProperties & face_props, OctreeMeshGd * exclude_mesh ) const
 {
     const BroadTreeNode & root = nodes_.ptr()[0];
     const bool res = root.intersects_segment_face( start, end, dist, face_props );
@@ -281,7 +283,7 @@ bool BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & 
 
 
 
-static void find_mesh_instances( RefFrameNode * node, Vector<OctreeMesh *> & instances )
+static void find_mesh_instances( RefFrameNode * node, Vector<OctreeMeshGd *> & instances )
 {
     const int children_qty = node->get_child_count();
     for ( int i=0; i<children_qty; i++ )
@@ -294,16 +296,15 @@ static void find_mesh_instances( RefFrameNode * node, Vector<OctreeMesh *> & ins
         for ( int j=0; j<qty; j++ )
         {
             Node * cch = ch->get_child( j );
-            OctreeMeshGd * octree_mesh = Node::cast_to<OctreeMeshGd>( cch );
-            if ( octree_mesh != nullptr )
+            OctreeMeshGd * mesh_gd = Node::cast_to<OctreeMeshGd>( cch );
+            if ( mesh_gd != nullptr )
             {
                 const Vector3 at = ref_frame->r();
                 const Quat    q  = ref_frame->q();
-                octree_mesh->set_origin( at );
-                octree_mesh->set_quat( q );
+				mesh_gd->set_origin( at );
+				mesh_gd->set_quat( q );
 
-                OctreeMesh * mesh = octree_mesh->octree_mesh();
-                instances.push_back( mesh );
+                instances.push_back( mesh_gd );
                 break;
             }
         }

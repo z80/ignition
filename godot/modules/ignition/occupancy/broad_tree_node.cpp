@@ -175,9 +175,10 @@ bool BroadTreeNode::subdivide()
         for ( int i=0; i<qty; i++ )
         {
             const int ind = ptInds[i];
-            const OctreeMesh * om = tree->get_octree_mesh(ind);
+            OctreeMeshGd * mesh_gd = tree->get_octree_mesh(ind);
+			OctreeMesh * mesh      = mesh_gd->octree_mesh();
 
-            const bool inside = ch_n.inside( om );
+            const bool inside = ch_n.inside( mesh );
             if ( inside )
             {
                 ch_n.ptInds.push_back( ind );
@@ -234,8 +235,9 @@ bool BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & e
         for ( int i=0; i<qty; i++ )
         {
             const int mesh_ind = ptInds.ptr()[i];
-            OctreeMesh * om = tree->octree_meshes_.ptr()[mesh_ind];
-            const bool ok = om->intersects_segment( start, end );
+            OctreeMeshGd * mesh_gd = tree->octree_meshes_.ptr()[mesh_ind];
+			OctreeMesh   * mesh    = mesh_gd->octree_mesh();
+            const bool ok = mesh->intersects_segment( start, end );
             if ( ok )
                 return true;
         }
@@ -272,10 +274,12 @@ bool BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector
         for ( int i=0; i<qty; i++ )
         {
             const int child_face_ind = ptInds.ptr()[i];
-            const OctreeMesh * f = tree->octree_meshes_[child_face_ind];
+            const OctreeMeshGd * mesh_gd = tree->octree_meshes_[child_face_ind];
+			const OctreeMesh   * mesh    = mesh_gd->octree_mesh();
+
             real_t             face_dist;
             OctreeMesh::FaceProperties face_props;
-            const bool ok = f->intersects_segment_face( start, end, face_dist, face_props );
+            const bool ok = mesh->intersects_segment_face( start, end, face_dist, face_props );
             if ( ok )
             {
                 if ( (!intersects) || (face_dist < best_face_dist) )

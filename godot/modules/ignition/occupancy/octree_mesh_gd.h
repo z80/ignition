@@ -38,6 +38,7 @@ public:
     Array intersects_segment_face( const Vector3 & start, const Vector3 & end );
 
     OctreeMesh * octree_mesh();
+	const OctreeMesh * octree_mesh() const;
 private:
     OctreeMesh _octree_mesh;
     Array      _ret_array;
