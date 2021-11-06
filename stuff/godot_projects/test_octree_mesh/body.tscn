@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="QuadMesh" id=1]
+
+[node name="Body" type="RefFrameNode"]
+
+[node name="OctreeMeshGd" type="OctreeMeshGd" parent="."]
+se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
+
+
+[node name="Plane" type="MeshInstance" parent="OctreeMeshGd"]
+mesh = SubResource( 1 )
+material/0 = null

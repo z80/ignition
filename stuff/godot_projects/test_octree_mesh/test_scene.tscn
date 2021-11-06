@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://body.tscn" type="PackedScene" id=1]
+[ext_resource path="res://test_scene.gd" type="Script" id=2]
+
+[node name="RefFrameNode" type="RefFrameNode"]
+script = ExtResource( 2 )
+
+[node name="Body" parent="." instance=ExtResource( 1 )]
