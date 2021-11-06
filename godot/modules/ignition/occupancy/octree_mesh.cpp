@@ -338,9 +338,18 @@ int OctreeMesh::faces_qty() const
 
 OctreeMesh::FaceProperties OctreeMesh::face_properties( int ind ) const
 {
-    FaceProperties ret = face_props_.ptr()[ind];
+    const FaceProperties & ret = face_props_.ptr()[ind];
     return ret;
 }
+
+OctreeMesh::FaceProperties OctreeMesh::face_properties_world( int ind ) const
+{
+	FaceProperties ret = face_props_.ptr()[ind];
+	ret.normal = quat_.xform( ret.normal );
+	ret.position = quat_.xform( ret.position ) + origin_;
+	return ret;
+}
+
 
 
 

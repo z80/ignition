@@ -19,9 +19,10 @@ void OctreeMeshGd::_bind_methods()
     ClassDB::bind_method( D_METHOD("set_se3", "se3"),   &OctreeMeshGd::set_se3 );
     ClassDB::bind_method( D_METHOD("get_se3"),          &OctreeMeshGd::get_se3, Variant::OBJECT );
 
-    ClassDB::bind_method( D_METHOD("rebuild"),     &OctreeMeshGd::rebuild );
-    ClassDB::bind_method( D_METHOD("faces_qty"),   &OctreeMeshGd::faces_qty, Variant::INT );
-    ClassDB::bind_method( D_METHOD("face", "int"), &OctreeMeshGd::face,      Variant::ARRAY );
+    ClassDB::bind_method( D_METHOD("rebuild"),           &OctreeMeshGd::rebuild );
+    ClassDB::bind_method( D_METHOD("faces_qty"),         &OctreeMeshGd::faces_qty,  Variant::INT );
+    ClassDB::bind_method( D_METHOD("face", "int"),       &OctreeMeshGd::face,       Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("face_world", "int"), &OctreeMeshGd::face_world, Variant::ARRAY );
 
     ClassDB::bind_method( D_METHOD("intersects_ray",          "origin", "dir"), &OctreeMeshGd::intersects_ray,          Variant::BOOL );
     ClassDB::bind_method( D_METHOD("intersects_ray_face",     "origin", "dir"), &OctreeMeshGd::intersects_ray_face,     Variant::ARRAY );
@@ -126,6 +127,17 @@ Array OctreeMeshGd::face( int ind )
     _ret_array.push_back( props.area );
     return _ret_array;
 }
+
+Array OctreeMeshGd::face_world( int ind )
+{
+	_ret_array.clear();
+	const OctreeMesh::FaceProperties props = _octree_mesh.face_properties_world( ind );
+	_ret_array.push_back( props.position );
+	_ret_array.push_back( props.normal );
+	_ret_array.push_back( props.area );
+	return _ret_array;
+}
+
 
 bool OctreeMeshGd::intersects_ray( const Vector3 & origin, const Vector3 & dir )
 {

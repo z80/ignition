@@ -70,6 +70,7 @@ public:
 
     int faces_qty() const;
     FaceProperties face_properties( int ind ) const;
+	FaceProperties face_properties_world( int ind ) const;
 
     Vector<OctreeMeshNode> nodes_;
     Vector<Face3>          faces_;
