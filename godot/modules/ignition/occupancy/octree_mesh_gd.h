@@ -15,7 +15,7 @@ class OctreeMeshGd: public Node
 
 protected:
     static void _bind_methods();
-
+	void _notification(int p_notification);
 public:
     OctreeMeshGd();
     ~OctreeMeshGd();

@@ -34,6 +34,17 @@ void OctreeMeshGd::_bind_methods()
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ), "set_se3",    "get_se3" );
 }
 
+void OctreeMeshGd::_notification( int p_notification )
+{
+	switch (p_notification)
+	{
+	case NOTIFICATION_READY:
+		rebuild();
+		break;
+	}
+
+}
+
 OctreeMeshGd::OctreeMeshGd()
     : Node()
 {
