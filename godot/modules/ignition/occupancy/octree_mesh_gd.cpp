@@ -10,6 +10,11 @@ static void find_mesh_instances( Node * node, const Transform & t, Vector<Transf
 
 void OctreeMeshGd::_bind_methods()
 {
+	ClassDB::bind_method( D_METHOD("set_max_depth", "val"), &OctreeMeshGd::set_max_depth );
+	ClassDB::bind_method( D_METHOD("get_max_depth"),        &OctreeMeshGd::get_max_depth, Variant::INT );
+	ClassDB::bind_method( D_METHOD("set_min_faces", "val"), &OctreeMeshGd::set_min_faces );
+	ClassDB::bind_method( D_METHOD("get_min_faces"),        &OctreeMeshGd::get_min_faces, Variant::INT );
+
     ClassDB::bind_method( D_METHOD("set_origin", "at"), &OctreeMeshGd::set_origin );
     ClassDB::bind_method( D_METHOD("get_origin"),       &OctreeMeshGd::get_origin, Variant::VECTOR3 );
 
@@ -28,6 +33,9 @@ void OctreeMeshGd::_bind_methods()
     ClassDB::bind_method( D_METHOD("intersects_ray_face",     "origin", "dir"), &OctreeMeshGd::intersects_ray_face,     Variant::ARRAY );
     ClassDB::bind_method( D_METHOD("intersects_segment",      "start",  "end"), &OctreeMeshGd::intersects_segment,      Variant::BOOL );
     ClassDB::bind_method( D_METHOD("intersects_segment_face", "start",  "end"), &OctreeMeshGd::intersects_segment_face, Variant::ARRAY );
+
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_depth" ), "set_max_depth", "get_max_depth" );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "min_faces" ), "set_min_faces", "get_min_faces" );
 
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "r" ),   "set_origin", "get_origin" );
     ADD_PROPERTY( PropertyInfo( Variant::QUAT,      "q" ),   "set_quat",   "get_quat" );
@@ -52,6 +60,28 @@ OctreeMeshGd::OctreeMeshGd()
 
 OctreeMeshGd::~OctreeMeshGd()
 {
+}
+
+void OctreeMeshGd::set_max_depth( int val )
+{
+	_octree_mesh.set_max_depth( val );
+}
+
+int OctreeMeshGd::get_max_depth() const
+{
+	const int ret = _octree_mesh.get_max_depth();
+	return ret;
+}
+
+void OctreeMeshGd::set_min_faces( int val )
+{
+	_octree_mesh.set_min_faces( val );
+}
+
+int OctreeMeshGd::get_min_faces() const
+{
+	const int ret = _octree_mesh.get_min_faces();
+	return ret;
 }
 
 void OctreeMeshGd::set_origin( const Vector3 & at )
@@ -120,7 +150,7 @@ void OctreeMeshGd::rebuild()
         _octree_mesh.append( t, m );
     }
 
-    _octree_mesh.compute_face_properties();
+	_octree_mesh.subdivide();
 }
 
 int OctreeMeshGd::faces_qty()

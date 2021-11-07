@@ -11,12 +11,32 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 OctreeMesh::OctreeMesh()
 {
     // Initialize counters and parameters.
-    this->max_depth_  = -1;
-    this->min_faces_  =  5;
+    this->max_depth_ = 5;
+    this->min_faces_ = 5;
 }
 
 OctreeMesh::~OctreeMesh()
 {
+}
+
+void OctreeMesh::set_max_depth( int val )
+{
+	max_depth_ = val;
+}
+
+int OctreeMesh::get_max_depth() const
+{
+	return max_depth_;
+}
+
+void OctreeMesh::set_min_faces( int val )
+{
+	min_faces_ = val;
+}
+
+int OctreeMesh::get_min_faces() const
+{
+	return min_faces_;
 }
 
 void OctreeMesh::clear()
@@ -51,14 +71,8 @@ void OctreeMesh::subdivide()
         c += f.vertex[1];
         c += f.vertex[2];
     }
-    const real_t s = 1.0 / static_cast<real_t>( qty );
-    c *= s;
-
-    // Here adjust it to be multiple of grid size.
-    const real_t sz = node_sz_ * 2.0;
-    c.x = sz * Math::round( c.x / sz );
-    c.y = sz * Math::round( c.y / sz );
-    c.z = sz * Math::round( c.z / sz );
+    const real_t s = 3.0 * static_cast<real_t>( qty );
+    c /= s;
 
     // Here find the largest distance.
     real_t d = 0.0;
@@ -73,6 +87,9 @@ void OctreeMesh::subdivide()
                 d = l;
         }
     }
+
+	// To avoid numerical incertainty.
+	d *= 1.1;
 
     nodes_.clear();
     OctreeMeshNode root;
@@ -149,6 +166,8 @@ SE3  OctreeMesh::get_se3() const
 
 real_t OctreeMesh::size2() const
 {
+	if ( nodes_.empty() )
+		return 0.0;
     const OctreeMeshNode & node = nodes_.ptr()[0];
     return node.size2;
 }

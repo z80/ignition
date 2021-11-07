@@ -222,7 +222,7 @@ void BroadTreeNode::init()
 }
 
 
-bool BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & end ) const
+bool BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const
 {
     const bool intersects_aabb = aabb_.intersects_ray( start, end );
     if ( !intersects_aabb )
@@ -236,6 +236,8 @@ bool BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & e
         {
             const int mesh_ind = ptInds.ptr()[i];
             OctreeMeshGd * mesh_gd = tree->octree_meshes_.ptr()[mesh_ind];
+			if ( mesh_gd == exclude_mesh )
+				continue;
 			OctreeMesh   * mesh    = mesh_gd->octree_mesh();
             const bool ok = mesh->intersects_segment( start, end );
             if ( ok )
@@ -248,7 +250,7 @@ bool BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & e
     {
         const int ind = children[i];
         const BroadTreeNode & ch_n = tree->nodes_.ptr()[ind];
-        const bool ch_intersects = ch_n.intersects_segment( start, end );
+        const bool ch_intersects = ch_n.intersects_segment( start, end, exclude_mesh );
         if ( ch_intersects )
             return true;
     }
@@ -256,7 +258,7 @@ bool BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & e
     return false;
 }
 
-bool BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & ret_dist, OctreeMesh::FaceProperties & ret_face_props ) const
+bool BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & ret_dist, OctreeMesh::FaceProperties & ret_face_props, OctreeMeshGd * exclude_mesh ) const
 {
     const bool intersects_aabb = aabb_.intersects_segment( start, end );
     if ( !intersects_aabb )
@@ -275,6 +277,8 @@ bool BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector
         {
             const int child_face_ind = ptInds.ptr()[i];
             const OctreeMeshGd * mesh_gd = tree->octree_meshes_[child_face_ind];
+			if ( mesh_gd == exclude_mesh )
+				continue;
 			const OctreeMesh   * mesh    = mesh_gd->octree_mesh();
 
             real_t             face_dist;
@@ -309,7 +313,7 @@ bool BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector
         const BroadTreeNode & ch_n = tree->nodes_.ptr()[ind];
         real_t                     face_dist;
         OctreeMesh::FaceProperties face_props;
-        const bool ch_intersects = ch_n.intersects_segment_face( start, end, face_dist, face_props );
+        const bool ch_intersects = ch_n.intersects_segment_face( start, end, face_dist, face_props, exclude_mesh );
         if ( ch_intersects )
         {
             if ( (!intersects) || (face_dist < best_face_dist) )

@@ -115,6 +115,10 @@ void BroadTree::subdivide( RefFrameNode * ref_frame_physics )
     root.center = c;
     root.size2  = d;
     root.init();
+	root.ptInds.clear();
+	for ( int i=0; i<meshes_qty; i++ )
+		root.ptInds.push_back( i );
+
     insert_node( root );
 
     root.subdivide();
@@ -263,14 +267,14 @@ OctreeMeshGd * BroadTree::get_octree_mesh( int ind )
 bool BroadTree::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const
 {
     const BroadTreeNode & root = nodes_.ptr()[0];
-    const bool res = root.intersects_segment( start, end );
+    const bool res = root.intersects_segment( start, end, exclude_mesh );
     return res;
 }
 
 bool BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, OctreeMesh::FaceProperties & face_props, OctreeMeshGd * exclude_mesh ) const
 {
     const BroadTreeNode & root = nodes_.ptr()[0];
-    const bool res = root.intersects_segment_face( start, end, dist, face_props );
+    const bool res = root.intersects_segment_face( start, end, dist, face_props, exclude_mesh );
     return res;
 }
 

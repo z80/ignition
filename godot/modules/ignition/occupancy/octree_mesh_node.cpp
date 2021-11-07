@@ -92,7 +92,8 @@ bool OctreeMeshNode::subdivide()
     if ( ch )
         return false;
 
-    if ( ptInds.empty() )
+	const int pts_qty = ptInds.size();
+    if ( pts_qty <= tree->min_faces_ )
         return false;
 
     const int childLevel = this->level + 1;

@@ -38,6 +38,11 @@ public:
     OctreeMesh();
     ~OctreeMesh();
 
+	void set_max_depth( int val );
+	int get_max_depth() const;
+	void set_min_faces( int val );
+	int get_min_faces() const;
+
     // Manipulating filling up the occupancy grid.
     void clear();
     void append( const Transform & t, const Ref<Mesh> mesh );
@@ -77,7 +82,6 @@ public:
     Vector<FaceProperties> face_props_;
 
     // Maximum subdivision level.
-    real_t node_sz_;
     int    max_depth_;
     int    min_faces_;
 

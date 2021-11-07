@@ -20,6 +20,11 @@ public:
     OctreeMeshGd();
     ~OctreeMeshGd();
 
+	void set_max_depth( int val );
+	int get_max_depth() const;
+	void set_min_faces( int val );
+	int get_min_faces() const;
+
     void set_origin( const Vector3 & at );
     const Vector3 & get_origin() const;
 
