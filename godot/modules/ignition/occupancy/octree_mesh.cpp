@@ -213,7 +213,7 @@ bool OctreeMesh::intersects_segment( const Vector3 & start, const Vector3 & end 
     return res;
 }
 
-bool OctreeMesh::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & face_dist, FaceProperties & fp ) const
+bool OctreeMesh::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & face_dist, Vector3 & face_at, FaceProperties & fp ) const
 {
     const Quat    inv_quat     = quat_.inverse();
     const Vector3 origin_local = inv_quat.xform( start - origin_ );
@@ -221,10 +221,13 @@ bool OctreeMesh::intersects_segment_face( const Vector3 & start, const Vector3 &
     const OctreeMeshNode & root = nodes_.ptr()[0];
     int face_ind = -1;
     real_t dist = 0.0;
-    const bool res = root.intersects_segment_face( origin_local, dir_local, face_ind, dist );
+	Vector3 at;
+    const bool res = root.intersects_segment_face( origin_local, dir_local, face_ind, dist, at );
     if ( res )
     {
         face_dist = dist;
+
+		face_at = quat_.xform( at ) + origin_;
 
         fp = face_props_.ptr()[face_ind];
         fp.position = quat_.xform( fp.position ) + origin_;

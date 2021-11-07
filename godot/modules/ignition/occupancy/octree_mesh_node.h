@@ -32,7 +32,7 @@ public:
     bool intersects_ray_face( const Vector3 & origin, const Vector3 & dir, int & face_ind, real_t & dist ) const;
     // Intersects line segment.
     bool intersects_segment( const Vector3 & start, const Vector3 & end ) const;
-    bool intersects_segment_face( const Vector3 & start, const Vector3 & end, int & face_ind, real_t & dist ) const;
+    bool intersects_segment_face( const Vector3 & start, const Vector3 & end, int & face_ind, real_t & dist, Vector3 & at ) const;
 
     // Initialize vertices and planes.
     void init();

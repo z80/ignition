@@ -78,15 +78,17 @@ bool BroadTreeGd::intersects_segment( const Vector3 & start, const Vector3 & end
 
 Array BroadTreeGd::intersects_segment_face( const Vector3 & start, const Vector3 & end, Node * exclude_mesh ) const
 {
-	real_t dist;
+	real_t  dist;
+	Vector3 at;
 	OctreeMesh::FaceProperties props;
 	OctreeMeshGd * mesh = Node::cast_to<OctreeMeshGd>( exclude_mesh );
-	const bool ok = _broad_tree.intersects_segment_face( start, end, dist, props, mesh );
+	const bool ok = _broad_tree.intersects_segment_face( start, end, dist, at, props, mesh );
 	Array ret;
 	ret.push_back( ok );
 	if ( ok )
 	{
 		ret.push_back( dist );
+		ret.push_back( at );
 		ret.push_back( props.position );
 		ret.push_back( props.normal );
 		ret.push_back( props.area );

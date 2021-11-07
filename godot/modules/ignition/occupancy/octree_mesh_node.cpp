@@ -249,7 +249,7 @@ bool OctreeMeshNode::intersects_ray( const Vector3 & origin, const Vector3 & dir
     return false;
 }
 
-bool OctreeMeshNode::intersects_ray_face( const Vector3 & origin, const Vector3 & dir, int & face_ind, real_t & dist ) const
+bool OctreeMeshNode::intersects_ray_face( const Vector3 & origin, const Vector3 & dir, int & face_ind, real_t & face_dist ) const
 {
     const bool intersects_aabb = aabb_.intersects_ray( origin, dir );
     if ( !intersects_aabb )
@@ -270,10 +270,10 @@ bool OctreeMeshNode::intersects_ray_face( const Vector3 & origin, const Vector3 
             {
                 const Vector3 dr = at - origin;
                 const real_t d   = dr.length();
-                if ( (face_ind < 0) || (d < dist) )
+                if ( (face_ind < 0) || (d < face_dist) )
                 {
-                    face_ind = child_face_ind;
-                    dist     = d;
+                    face_ind   = child_face_ind;
+                    face_dist  = d;
                     intersects = true;
                     // Do not interrupt here.
                     // Need to check all triangles.
@@ -288,11 +288,20 @@ bool OctreeMeshNode::intersects_ray_face( const Vector3 & origin, const Vector3 
     {
         const int ind = children[i];
         const OctreeMeshNode & ch_n = tree->nodes_.ptr()[ind];
-        const bool ch_intersects = ch_n.intersects_ray_face( origin, dir, face_ind, dist );
-        if ( ch_intersects )
-            intersects = true;
-            // Again, don't interrupt it here. Need to check all the children.
-    }
+		
+		int f_ind;
+		real_t f_dist;
+		const bool ch_intersects = ch_n.intersects_ray_face( origin, dir, f_ind, f_dist );
+		if ( ch_intersects )
+		{
+			if ( (!intersects) || (f_dist < face_dist) )
+			{
+				face_ind  = f_ind;
+				face_dist = f_dist;
+				intersects = true;
+			}
+			// Again, don't interrupt it here. Need to check all the children.
+		}    }
 
     return intersects;
 }
@@ -332,7 +341,7 @@ bool OctreeMeshNode::intersects_segment( const Vector3 & start, const Vector3 & 
     return false;
 }
 
-bool OctreeMeshNode::intersects_segment_face( const Vector3 & start, const Vector3 & end, int & face_ind, real_t & dist ) const
+bool OctreeMeshNode::intersects_segment_face( const Vector3 & start, const Vector3 & end, int & face_ind, real_t & face_dist, Vector3 & face_at ) const
 {
     const bool intersects_aabb = aabb_.intersects_segment( start, end );
     if ( !intersects_aabb )
@@ -353,13 +362,14 @@ bool OctreeMeshNode::intersects_segment_face( const Vector3 & start, const Vecto
             {
                 const Vector3 dr = at - start;
                 const real_t d   = dr.length();
-                if ( (face_ind < 0) || (d < dist) )
+                if ( (face_ind < 0) || (d < face_dist) )
                 {
                     face_ind = child_face_ind;
-                    dist     = d;
+                    face_dist     = d;
+					face_at  = at;
                     intersects = true;
                     // Do not interrupt here.
-                    // Need to check all triangles.
+                    // Need to check all triangles in order to find the closest one.
                 }
             }
         }
@@ -371,10 +381,21 @@ bool OctreeMeshNode::intersects_segment_face( const Vector3 & start, const Vecto
     {
         const int ind = children[i];
         const OctreeMeshNode & ch_n = tree->nodes_.ptr()[ind];
-        const bool ch_intersects = ch_n.intersects_ray_face( start, end, face_ind, dist );
+		int f_ind;
+		real_t f_dist;
+		Vector3 f_at;
+        const bool ch_intersects = ch_n.intersects_segment_face( start, end, f_ind, f_dist, f_at );
         if ( ch_intersects )
-            intersects = true;
-        // Again, don't interrupt it here. Need to check all the children.
+		{
+			if ( (!intersects) || (f_dist < face_dist) )
+			{
+				face_ind   = f_ind;
+				face_dist  = f_dist;
+				face_at    = f_at;
+				intersects = true;
+			}
+			// Again, don't interrupt it here. Need to check all the children.
+		}
     }
 
     return intersects;

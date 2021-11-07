@@ -271,10 +271,11 @@ bool BroadTree::intersects_segment( const Vector3 & start, const Vector3 & end, 
     return res;
 }
 
-bool BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, OctreeMesh::FaceProperties & face_props, OctreeMeshGd * exclude_mesh ) const
+bool BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, Vector3 & at, OctreeMesh::FaceProperties & face_props, OctreeMeshGd * exclude_mesh ) const
 {
     const BroadTreeNode & root = nodes_.ptr()[0];
-    const bool res = root.intersects_segment_face( start, end, dist, face_props, exclude_mesh );
+	dist = -1.0;
+    const bool res = root.intersects_segment_face( start, end, dist, at, face_props, exclude_mesh );
     return res;
 }
 

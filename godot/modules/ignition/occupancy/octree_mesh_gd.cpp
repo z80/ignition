@@ -212,13 +212,15 @@ bool OctreeMeshGd::intersects_segment( const Vector3 & start, const Vector3 & en
 Array OctreeMeshGd::intersects_segment_face( const Vector3 & start, const Vector3 & end )
 {
     real_t dist;
+	Vector3 at;
     OctreeMesh::FaceProperties props;
-    const bool ok = _octree_mesh.intersects_segment_face( start, end, dist, props );
+    const bool ok = _octree_mesh.intersects_segment_face( start, end, dist, at, props );
     Array ret;
     ret.push_back( ok );
     if ( ok )
     {
         ret.push_back( dist );
+		ret.push_back( at );
         ret.push_back( props.position );
         ret.push_back( props.normal );
         ret.push_back( props.area );

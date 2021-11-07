@@ -36,7 +36,7 @@ public:
     void init();
 
     bool intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const;
-    bool intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & ret_dist, OctreeMesh::FaceProperties & ret_face_props, OctreeMeshGd * exclude_mesh ) const;
+    bool intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & ret_dist, Vector3 & at, OctreeMesh::FaceProperties & ret_face_props, OctreeMeshGd * exclude_mesh ) const;
 
     BroadTree * tree;
     int absIndex;
