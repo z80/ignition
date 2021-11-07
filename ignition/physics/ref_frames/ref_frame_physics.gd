@@ -19,6 +19,9 @@ var _subdivide_source_physical: SubdivideSourceRef = null
 # It is TODO. Not yet really integrated.
 var motion: CelestialMotionRef = null
 
+# Octree borad phase for mesh queries.
+var broad_tree: BroadTreeGd = null
+
 
 export(bool) var allow_orbiting setget _set_allow_orbiting, _get_allow_orbiting
 
@@ -32,6 +35,11 @@ var debug_has_split: bool = false
 # to be able to identify objects of this class.
 func get_class():
 	return "RefFramePhysics"
+
+
+func _init():
+	broad_tree = BroadTreeGd.new()
+
 
 func _enter_tree():
 	pass
@@ -70,6 +78,10 @@ func evolve( _dt: float ):
 	.evolve( _dt )
 	evolve_motion( _dt )
 	jump_if_needed()
+	
+	var ok: bool = broad_tree.subdivide( self )
+	if not ok:
+		print( "ERROR: failed to subdivide BroadTreeGd" )
 
 
 
