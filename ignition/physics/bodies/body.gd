@@ -33,6 +33,10 @@ export(String) var hint_text = "Default hint text" setget _set_hint_text
 var _super_body: Node = null
 export(bool) var need_super_body = false
 
+
+var _octree_mesh: OctreeMeshGd = null
+
+
 # Force visualizer
 var force: Spatial = null
 
@@ -570,7 +574,19 @@ func deserialize( data: Dictionary ):
 
 
 
-
+func get_octree_mesh():
+	if _octree_mesh != null:
+		return _octree_mesh
+	
+	var qty: int = get_child_count()
+	for i in range(qty):
+		var n: Node = get_child( i )
+		var b: OctreeMeshGd = n as OctreeMeshGd
+		if b != null:
+			_octree_mesh = b
+			return _octree_mesh
+	
+	return null
 
 
 

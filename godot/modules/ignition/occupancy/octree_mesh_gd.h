@@ -36,8 +36,8 @@ public:
 
     void rebuild();
     int faces_qty();
-    Array face( int ind );
-	Array face_world( int ind );
+    Array get_face( int ind );
+	Array get_face_world( int ind );
 	bool intersects_ray( const Vector3 & origin, const Vector3 & dir );
     Array intersects_ray_face( const Vector3 & origin, const Vector3 & dir );
     bool intersects_segment( const Vector3 & start, const Vector3 & end );

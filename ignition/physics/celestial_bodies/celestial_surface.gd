@@ -22,7 +22,8 @@ export(Color) var atmosphere_color_day   = Color(0.65, 0.8, 1.0, 1.0)
 export(Color) var atmosphere_color_night = Color(1.0, 0.43, 0.46, 1.0)
 export(float) var displacement = 0.0
 
-
+export(float) var air_density   = 1.0
+export(float) var air_viscosity = 0.1
 
 var motion: CelestialMotionRef = null
 var rotation: CelestialRotationRef = null
@@ -50,6 +51,7 @@ var last_player_rf_r: Vector3 = Vector3.ZERO
 
 
 var _force_source_rotational: ForceSourceRotational = null
+var _force_source_air_drag: ForceSourceAirDrag      = null
 
 
 func get_class():
@@ -112,6 +114,9 @@ func init():
 	# Initialize rotational force source
 	_force_source_rotational = ForceSourceRotational.new()
 	_force_source_rotational.ang_velocity = (1.0/(rotation_period_hrs*3600.0))*rotation_axis
+	
+	# Initialize force source for air drag forces.
+	_init_force_source_air_drag()
 	
 	# Initialize body geometry
 	var celestial_body: CubeSphereNode = get_node( "Rotation/CelestialBody" )
@@ -243,7 +248,7 @@ func process_ref_frames( celestial_bodies: Array ):
 	# Apply gravity, centrifugal, Coriolis and Euler force to bodies in 
 	# rotational ref. frame.
 	# (-2*m * w x v); (-m * w x (w x r)); (-m*e x r)
-	_apply_rotational_forces()
+	_apply_forces()
 	
 	process_ref_frames_rotating_to_orbiting()
 	process_ref_frames_orbiting_to_rotating()
@@ -255,7 +260,7 @@ func process_ref_frames( celestial_bodies: Array ):
 
 
 
-func _apply_rotational_forces():
+func _apply_forces():
 	var rot: RefFrameNode = rotation_rf()
 	var bodies: Array = get_all_physics_bodies( rot )
 	
@@ -274,6 +279,14 @@ func _apply_rotational_forces():
 		
 		# Apply rotational forces.
 		force_torque = _force_source_rotational.compute_force( b, se3_rel_to_body )
+		F = force_torque[0]
+		P = force_torque[1]
+		F = q.xform( F )
+		P = q.xform( P )
+		b.add_force_torque( F, P )
+		
+		# Apply air drag forces.
+		force_torque = _force_source_air_drag.compute_force( b, se3_rel_to_body )
 		F = force_torque[0]
 		P = force_torque[1]
 		F = q.xform( F )
@@ -418,5 +431,15 @@ func _process_visualize_orbits():
 		self.show_orbit = new_state
 	if show_orbit:
 		orbit_visualizer.draw()
+
+
+
+func _init_force_source_air_drag():
+	_force_source_air_drag = ForceSourceAirDrag.new()
+	_force_source_air_drag.ground_level  = radius_km * 1000.0
+	_force_source_air_drag.atm_height    = (atmosphere_height_inner_km + atmosphere_height_outer_km) * 1000.0
+	_force_source_air_drag.density_gnd   = air_density
+	_force_source_air_drag.viscosity_gnd = air_viscosity
+
 
 
