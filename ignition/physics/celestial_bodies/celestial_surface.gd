@@ -265,7 +265,12 @@ func _apply_forces():
 	var bodies: Array = get_all_physics_bodies( rot )
 	
 	for b in bodies:
+		var debug: bool = (b.name == "fuel_tank_2m_1m")
+		if debug:
+			rot.debug = true
 		var se3_rel_to_body: Se3Ref = rot.relative_to( b )
+		if debug:
+			rot.debug = false
 		var se3_local: Se3Ref       = b.get_se3()
 		var q: Quat                 = se3_local.q
 		

@@ -46,11 +46,14 @@ func compute_force( body: Body, se3: Se3Ref ):
 	if not inside_atmosphere:
 		return [Vector3.ZERO, Vector3.ZERO]
 	
-	# Air density and viscosity at current height.
-	var dens: float = dv[0]
-	var visc: float = dv[1]
-	
 	var mesh: OctreeMeshGd = body.get_octree_mesh()
+	if mesh == null:
+		return [Vector3.ZERO, Vector3.ZERO]
+	
+	# Air density and viscosity at current height.
+	var dens: float = dv[1]
+	var visc: float = dv[2]
+	
 	var qty: int = mesh.faces_qty()
 	
 	var F: Vector3 = Vector3.ZERO
@@ -66,7 +69,7 @@ func compute_force( body: Body, se3: Se3Ref ):
 	forward = body_q.xform( forward )
 	
 	var rf_physics: RefFramePhysics = body.get_parent()
-	var broad_tree: BroadTreeGd = rf_physics.get_borad_tree()
+	var broad_tree: BroadTreeGd = rf_physics.get_broad_tree()
 	
 	for i in range(qty):
 		var face: Array = mesh.get_face( i )
@@ -112,8 +115,8 @@ func compute_force( body: Body, se3: Se3Ref ):
 		P += torque
 	
 	var ret: Array = []
-	ret.push_back( F )
-	ret.push_back( P )
+	ret.push_back( F * 1.0e-6 )
+	ret.push_back( P * 1.0e-6 )
 	return ret
 
 
