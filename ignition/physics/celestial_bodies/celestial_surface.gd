@@ -445,8 +445,8 @@ func _init_force_source_air_drag():
 	_force_source_air_drag = ForceSourceAirDrag.new()
 	_force_source_air_drag.ground_level  = radius_km * 1000.0
 	_force_source_air_drag.atm_height    = (atmosphere_height_inner_km + atmosphere_height_outer_km) * 1000.0
-	_force_source_air_drag.density_gnd   = air_density
-	_force_source_air_drag.viscosity_gnd = air_viscosity
+	_force_source_air_drag.density_gnd   = air_density * 0.001
+	_force_source_air_drag.viscosity_gnd = air_viscosity * 0.001
 
 
 
