@@ -12,8 +12,8 @@ const FORWARD_DIST: float = 1.0
 var ground_level: float    = 100.0
 var atm_height: float      = 10.0
 
-var viscosity_gnd: float   = 0.1
-var density_gnd: float     = 1.0
+var viscosity_gnd: float   = 0.1 * 0.001
+var density_gnd: float     = 1.0 * 0.001
 
 var normal_coef: float     = 0.5
 var antinormal_coef: float = 0.9
