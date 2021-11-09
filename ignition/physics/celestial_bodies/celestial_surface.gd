@@ -268,6 +268,8 @@ func _apply_forces():
 		var debug: bool = (b.name == "fuel_tank_2m_1m")
 		if debug:
 			rot.debug = true
+		var tr: RefFrameNode = translation_rf()
+		var se3_tr: Se3Ref = tr.relative_to( b )
 		var se3_rel_to_body: Se3Ref = rot.relative_to( b )
 		if debug:
 			rot.debug = false

@@ -340,10 +340,12 @@ void OctreeMesh::compute_face_properties()
     for ( int i=0; i<qty; i++ )
     {
         const Face3 & f   = faces_.ptr()[i];
-        const real_t area = f.get_area();
+		// The method actually returns double triangular face area.
+		// Due to that multiply by 0.5.
+        const real_t area = f.get_area() * 0.5;
         const Plane p     = f.get_plane();
         const Vector3 n   = p.get_normal();
-        const Vector3 r0  = ( f.vertex[0] + f.vertex[1] + f.vertex[2] ) / 3.0;
+        const Vector3 r0  = f.get_median_point();
         FaceProperties props;
         props.area     = area;
         props.normal   = n;

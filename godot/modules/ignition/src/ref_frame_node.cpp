@@ -430,19 +430,13 @@ SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const S
 	while ( rf != nullptr )
 	{
 		// Before adding check if this index is already in "queueA_".
-		bool match = false;
-		for ( int i = 0; i < qtyA; i++ )
-		{
-			RefFrameNode * rfA = queueA_.ptr()[i];
-			if ( rfA == rf )
-			{
-				match = true;
-				intersection_ind = i;
-				break;
-			}
-		}
+		const int index_in_a = queueA_.find( rf );
+		const bool match = (index_in_a >= 0);
 		if ( match )
+		{
+			intersection_ind = index_in_a;
 			break;
+		}
 		if ( debug_ )
 			print_line( String("queueB <- \"") + rf->get_name() + String("\"") );
 		queueB_.push_back( rf );

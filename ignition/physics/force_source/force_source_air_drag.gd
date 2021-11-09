@@ -59,7 +59,16 @@ func compute_force( body: Body, se3: Se3Ref ):
 	var F: Vector3 = Vector3.ZERO
 	var P: Vector3 = Vector3.ZERO
 	
-	var v: Vector3 = se3.v
+	# Velocity of placet center with respect to 
+	# The body.
+	var vo: Vector3 = se3.v
+	# Need to compute velocity of the point where the body 
+	# is with respect to the body. In order to do that 
+	# do the following: v = v - w.cross( r ). Subtract because 
+	# body is ar "-r" relative to planet center.
+	var wo: Vector3 = se3.w
+	var ro: Vector3 = se3.r
+	var v: Vector3 = vo - wo.cross( ro )
 	
 	var body_se3: Se3Ref = body.get_se3()
 	# To convert velocity to parent ref. frame in order to query for 
@@ -115,8 +124,8 @@ func compute_force( body: Body, se3: Se3Ref ):
 		P += torque
 	
 	var ret: Array = []
-	ret.push_back( F * 1.0e-6 )
-	ret.push_back( P * 1.0e-6 )
+	ret.push_back( F )
+	ret.push_back( P )
 	return ret
 
 
