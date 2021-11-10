@@ -33,6 +33,9 @@ radius_km = 0.3
 height_km = 0.01
 orbital_period_hrs = 2.0
 height_source_name = "moon"
+atmosphere_height_inner_km = 0.1
+air_density = 0.0
+air_viscosity = 0.0
 orbit_color = Color( 1, 1, 1, 1 )
 
 [node name="Camera" parent="." instance=ExtResource( 3 )]
