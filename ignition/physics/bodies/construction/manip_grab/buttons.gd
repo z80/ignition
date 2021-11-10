@@ -10,8 +10,14 @@ var local_btn: Button = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	var world_btn: Button = get_node( "World" )
-	var local_btn: Button = get_node( "Local" )
+	var qty: int = get_child_count()
+	for i in range(qty):
+		var ch: Node = get_child(i)
+		var name: String = ch.name
+		var path: String = ch.get_path()
+		print( name, ": ", path )
+	world_btn = get_node( "World" )
+	local_btn = get_node( "Local" )
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
