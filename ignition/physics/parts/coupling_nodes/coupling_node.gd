@@ -2,6 +2,13 @@
 extends Spatial
 class_name CouplingNode
 
+# The part can be connected to others via this node.
+export(bool) var allows_connecting = true
+# Other parts can be connected to this node.
+export(bool) var allows_connections = true
+# Allows getting connected to the surface
+export(bool) var allows_surface_coupling = true
+
 enum NodeSize { SMALL=0, MEDIUM=1, LARGE=2 }
 export(NodeSize) var node_size = NodeSize.MEDIUM
 
@@ -10,23 +17,10 @@ export(NodeSize) var node_size = NodeSize.MEDIUM
 # isn't the part itself.
 var part: RefFrameNode = null
 
-# If this part is attached to another one 
-# here it is stored "parent" part path.
-export(NodePath) var node_b_path = null
-# The other s node is is connected to.
-var node_b: CouplingNode = null
-# If it was connected to, it's parent, else it's child.
-var is_parent: bool = false
+# Reference to connection created (or not created).
+var connection: Reference = null
 
 var relative_to_owner: Transform = Transform.IDENTITY
-
-# This one attacheds to the surface.
-# When it happens, some default transform is computed. 
-# This transform is this one.
-#var base_transform: Transform = Transform.IDENTITY
-# If this one is attached to other part 
-# need to remember the rotation angle.
-export(float) var angle: float = 0.0 setget _set_angle, _get_angle
 
 # Angle only transform.
 #var angle_transform: Transform = Transform.IDENTITY
@@ -36,7 +30,6 @@ export(bool) var show_visual = false setget _set_show_visual, _get_show_visual
 var _visual = null
 
 
-var _joint: Generic6DOFJoint = null
 
 
 
@@ -55,11 +48,9 @@ func process():
 		_visual.size = snap_size()
 
 
-
 func connected():
-	var ret: bool = (node_b != null) and is_instance_valid(node_b)
+	var ret: bool = (connection != null)
 	return ret
-
 
 
 func compute_relative_to_owner():
@@ -84,14 +75,6 @@ func _compute_relative_to_owner_recursive( n: Node, t: Transform ):
 	return ret
 
 
-
-func _set_angle( a: float ):
-	angle = a
-
-
-
-func _get_angle():
-	return angle
 
 
 
@@ -125,47 +108,6 @@ func _get_show_visual():
 
 
 
-func _compute_angle_transform():
-	var qx: Quat = Quat( Vector3.RIGHT, PI )
-	var qy: Quat = Quat( Vector3.UP, angle )
-	var q: Quat = qy * qx
-	var t: Transform = Transform.IDENTITY
-	t.basis = q
-	return t
-
-
-func compute_owner_rel_to_parent():
-	node_b = get_node( node_b_path )
-	var t_cnr: Transform = relative_to_owner
-	var inv_t_cnr: Transform = t_cnr.inverse()
-	var t_pnr: Transform
-	if node_b != null:
-		t_pnr = node_b.relative_to_owner
-	else:
-		t_pnr = Transform.IDENTITY
-	var t_a: Transform = _compute_angle_transform()
-	var ret: Transform = t_pnr * t_a * inv_t_cnr
-	return ret
-
-
-# When connected position it's owner correctly with respecto to the parent.
-func position_rel_to_parent():
-	if node_b_path == null:
-		return false
-	node_b = get_node( node_b_path )
-	if node_b == null:
-		return false
-	if is_parent:
-		return false
-	var t_rel: Transform = compute_owner_rel_to_parent()
-	var parent_rf: RefFrameNode = node_b.part
-	if parent_rf == null:
-		return
-	var t_parent: Transform = parent_rf.transform
-	var t: Transform = t_parent * t_rel
-	var rf: RefFrameNode = self.part
-	rf.transform = t
-
 
 func world_transform():
 	var camera: RefFrameNode = PhysicsManager.camera
@@ -185,29 +127,65 @@ func snap_size():
 
 
 
-func update_joint_pose( t_owner: Transform ):
-	if _joint != null:
-		var t: Transform = t_owner * relative_to_owner
-		_joint.transform = t
 
 
 
-func serialize():
-	var data: Dictionary = {}
-	data["node_b_path"] = node_b_path
-	data["is_parent"]   = is_parent
-	data["angle"]       = angle
-	return data
 
-
-func deserialize( data: Dictionary ):
-	node_b_path = data["node_b_path"]
-	is_parent   = data["is_parent"]
-	angle       = data["angle"]
+func couple_with( n: CouplingNode ):
+	if not allows_connecting:
+		return false
 	
-	if node_b_path == null:
-		node_b = null
-	else:
-		node_b = get_node(node_b_path)
+	var node_stacking: CouplingNode = n as CouplingNode
+	if node_stacking == null:
+		return false
+	
+	if not node_stacking.allows_connections:
+		return false
+	
+	# Now measure the distance.
+	var t_w: Transform = world_transform()
+	var n_t_w: Transform = n.world_transform()
+	var r_w: Vector3 = t_w.origin
+	var n_r_w: Vector3 = n_t_w.origin
+	var d: float = (r_w - n_r_w).length()
+	
+	var max_d: float = snap_size() + n.snap_size()
+	if max_d < d:
+		return false
+	
+	# No more excuses, couple these two together.
+	# TODO: need to implement it for newly introduced
+	# connections.
+	assert( false )
+#	node_b_path = n.get_path()
+#	node_b      = n
+#	is_parent   = false
+#
+#	node_b.node_b_path = get_path()
+#	node_b.node_b      = self
+#	node_b.is_parent   = true
+	
 	return true
+
+
+func decouple():
+	# Need to implement all these using newly introduced 
+	# connections.
+	assert( false )
+#	if node_b_path == null:
+#		return
+#	node_b = get_node( node_b_path )
+#	if node_b == null:
+#		node_b_path = null
+#		return
+#
+#	node_b.node_b_path = null
+#	node_b.node_b      = null
+#	node_b.is_parent   = false
+#
+#	node_b_path = null
+#	node_b      = null
+#	is_parent   = false
+	
+
 

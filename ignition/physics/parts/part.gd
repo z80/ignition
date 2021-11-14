@@ -43,6 +43,9 @@ export(float) var mass = 1.0
 
 var stacking_nodes: Array = []
 var surface_nodes: Array  = []
+# Actual connections with other nodes.
+var couplings: Array = []
+
 
 var mode: int = PartMode.CONSTRUCTION
 
@@ -63,20 +66,13 @@ func _traverse_coupling_nodes():
 func _traverse_coupling_nodes_recursive( p: Node ):
 	var s: Spatial = p as Spatial
 	if s != null:
-		var stacking_node: CouplingNodeStacking = s as CouplingNodeStacking
+		var stacking_node: CouplingNode = s as CouplingNode
 		var is_stacking_node: bool = (stacking_node != null)
-		var is_surface_node: bool = false
-		if not is_stacking_node:
-			var surface_node: CouplingNodeSurface = s as CouplingNodeSurface
-			is_surface_node = (surface_node != null)
-		if is_stacking_node or is_surface_node:
+		if is_stacking_node:
 			# Specify the reference to itself.
 			# Not sure if it is 100% needed but just in case.
 			s.part = self
-			if is_stacking_node:
-				stacking_nodes.push_back( s )
-			else:
-				surface_nodes.push_back( s )
+			stacking_nodes.push_back( s )
 	
 	var qty: int = p.get_child_count()
 	for i in range( qty ):
@@ -88,7 +84,7 @@ func process_inner( _delta ):
 	.process_inner( _delta )
 	var qty: int = stacking_nodes.size()
 	for i in range(qty):
-		var n: CouplingNodeStacking = stacking_nodes[i]
+		var n: CouplingNode = stacking_nodes[i]
 		n.process()
 	
 	process_destruction()
@@ -194,18 +190,18 @@ func deactivate( root_call: bool = true ):
 
 func activate_nodes( activate_parts: bool = false ):
 	# Get all connected parts and switch them as well.
-	var nodes_qty: int = stacking_nodes.size()
+	var nodes_qty: int = couplings.size()
 	if activate_parts:
 		for i in range(nodes_qty):
-			var n: CouplingNodeStacking = stacking_nodes[i]
+			var n: CouplingConnection = couplings[i]
 			var c: bool = n.connected()
 			if not c:
 				continue
-			var p: Part = n.node_b.part
+			var p: Part = n.coupling_b.part
 			p.activate( false )
 	
 	for i in range(nodes_qty):
-		var n: CouplingNodeStacking = stacking_nodes[i]
+		var n: CouplingConnection = couplings[i]
 		var c: bool = n.connected()
 		if not c:
 			continue
@@ -216,9 +212,9 @@ func activate_nodes( activate_parts: bool = false ):
 
 func deactivate_nodes( deactivate_parts: bool = false ):
 	# Get all connected parts and switch them as well.
-	var nodes_qty: int = stacking_nodes.size()
+	var nodes_qty: int = couplings.size()
 	for i in range(nodes_qty):
-		var n: CouplingNodeStacking = stacking_nodes[i]
+		var n: CouplingConnection = couplings[i]
 		var c: bool = n.connected()
 		if not c:
 			continue
@@ -228,18 +224,16 @@ func deactivate_nodes( deactivate_parts: bool = false ):
 	
 	if deactivate_parts:
 		for i in range(nodes_qty):
-			var n: CouplingNodeStacking = stacking_nodes[i]
+			var n: CouplingConnection = couplings[i]
 			var c: bool = n.connected()
 			if not c:
 				continue
-			var p: Part = n.part_b.part
+			var p: Part = n.coupling_b.part
 			p.deactivate( false )
 
 
 func set_show_node_visuals( en: bool ):
 	for n in stacking_nodes:
-		n.show_visual = en
-	for n in surface_nodes:
 		n.show_visual = en
 
 
@@ -254,8 +248,8 @@ func remove_physical():
 # Checks all the nodes.
 # If either one is connected and is not a parent return it here.
 func get_coupled_child_node():
-	for node in stacking_nodes:
-		var n: CouplingNodeStacking = node as CouplingNodeStacking
+	for node in couplings:
+		var n: CouplingConnection = node as CouplingConnection
 		var is_connected: bool = n.connected()
 		if not is_connected:
 			continue
