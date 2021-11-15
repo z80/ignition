@@ -1,11 +1,11 @@
 
-extends Reference
-class_name CouplingConnection
+extends Node
+class_name CouplingAttachment
 
 # Which part it belongs to.
 var part: RefFrameNode = null
 # The other node's connection is is connected to.
-var coupling_b: Node = null
+var attachment_b: CouplingAttachment = null
 # If it was connected to, it's parent, else it's child.
 var is_parent: bool = false
 
@@ -35,6 +35,23 @@ func init( own_part: RefFrameNode, base_t: Transform, it_is_parent: bool ):
 func _ready():
 	pass # Replace with function body.
 
+func _exit_tree():
+	var to_be_deleted: bool = is_queued_for_deletion()
+	if to_be_deleted:
+		on_delete()
+
+
+func on_delete():
+	deactivate()
+
+
+
+func get_part():
+	var p: Node = get_parent()
+	var part: RefFrameNode = p as RefFrameNode
+	return part
+
+
 
 func _set_yaw( v: float ):
 	yaw = v
@@ -61,8 +78,6 @@ func _get_roll():
 #		_joint.transform = t
 
 
-func connected():
-	var ret: bool = (coupling_b != null)
 
 
 func get_part_transform():
@@ -95,8 +110,8 @@ func compute_part_rel_to_parent_part():
 	var t_cnr: Transform = base_transform
 	var inv_t_cnr: Transform = t_cnr.inverse()
 	var t_pnr: Transform
-	if coupling_b != null:
-		t_pnr = coupling_b.base_transform
+	if attachment_b != null:
+		t_pnr = attachment_b.base_transform
 	else:
 		t_pnr = Transform.IDENTITY
 	var t_a: Transform = get_angles_transform()
@@ -109,11 +124,9 @@ func compute_part_rel_to_parent_part():
 func position_rel_to_parent():
 	if is_parent:
 		return false
-	if not connected():
-		return false
 	
 	var t_rel: Transform = compute_part_rel_to_parent_part()
-	var parent_part: RefFrameNode = coupling_b.part
+	var parent_part: RefFrameNode = attachment_b.get_part()
 	if not is_instance_valid(parent_part):
 		return
 	var t_parent: Transform = parent_part.get_se3().transform
@@ -124,14 +137,11 @@ func position_rel_to_parent():
 
 
 func activate():
-	var c: bool = connected()
-	if not c:
-		return
 	if not is_parent:
 		return
 	
-	var part_a: RefFrameNode = self.part
-	var part_b: RefFrameNode = coupling_b.part
+	var part_a: RefFrameNode = self.get_part()
+	var part_b: RefFrameNode = attachment_b.get_part()
 	
 	var body_a: RigidBody = part_a._physical
 	var body_b: RigidBody = part_b._physical
@@ -158,8 +168,11 @@ func deactivate():
 	if _joint == null:
 		return
 	
-	_joint.queue_free()
+	if is_parent:
+		_joint.queue_free()
+		attachment_b.deactivate()
 	_joint = null
+
 
 
 
@@ -171,7 +184,7 @@ func serialize():
 	data["roll"]       = roll
 	
 	data["is_parent"]  = is_parent
-	data["coupling_b"] = coupling_b.get_path()
+	data["coupling_b"] = attachment_b.get_path()
 	return data
 
 
@@ -179,7 +192,7 @@ func deserialize( own_part: RefFrameNode, data: Dictionary ):
 	part = own_part
 	
 	var path: String = data["coupling_b"]
-	coupling_b = part.get_node( path )
+	attachment_b = part.get_node( path )
 	is_parent  = data["is_parent"]
 	
 	yaw       = data["yaw"]

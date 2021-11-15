@@ -176,9 +176,9 @@ static func find_liquid_fuel_tanks_recursive( part: Part, visited: Array, found:
 		return
 
 	for node in part.stacking_nodes:
-		var n: CouplingNodeStacking = node
+		var n: CouplingAttachment = node
 		var connected: bool = n.connected()
-		var other_part: Part = n.node_b.part
+		var other_part: Part = n.attachment_b.part
 		find_liquid_fuel_tanks_recursive( other_part, visited, found )
 
 
@@ -214,9 +214,9 @@ static func find_liquid_oxidizer_tanks_recursive( part: Part, visited: Array, fo
 		return
 
 	for node in part.stacking_nodes:
-		var n: CouplingNodeStacking = node
+		var n: CouplingAttachment = node
 		var connected: bool = n.connected()
-		var other_part: Part = n.node_b.part
+		var other_part: Part = n.attachment_b.part
 		find_liquid_oxidizer_tanks_recursive( other_part, visited, found )
 
 
@@ -253,9 +253,9 @@ static func find_solid_fuel_tanks_recursive( part: Part, visited: Array, found: 
 		return
 
 	for node in part.stacking_nodes:
-		var n: CouplingNodeStacking = node
+		var n: CouplingAttachment = node
 		var connected: bool = n.connected()
-		var other_part: Part = n.node_b.part
+		var other_part: Part = n.attachment_b.part
 		find_solid_fuel_tanks_recursive( other_part, visited, found )
 
 

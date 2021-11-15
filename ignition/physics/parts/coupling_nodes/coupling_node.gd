@@ -12,10 +12,6 @@ export(bool) var allows_surface_coupling = true
 enum NodeSize { SMALL=0, MEDIUM=1, LARGE=2 }
 export(NodeSize) var node_size = NodeSize.MEDIUM
 
-# Reference to the part.
-# Can't use "owner" field as it shows the Visual's root which 
-# isn't the part itself.
-var part: RefFrameNode = null
 
 # Reference to connection created (or not created).
 var connection: Reference = null
@@ -38,6 +34,14 @@ func _ready():
 	relative_to_owner = compute_relative_to_owner()
 
 
+
+
+func get_part():
+	var p: Node = get_parent()
+	var part: RefFrameNode = p as RefFrameNode
+	return part
+
+
 # This thing should be called when in kinematic mode.
 # Is should position child parts relatie to parent parts in the right way.
 # Should be overwritten in derived classes.
@@ -48,9 +52,6 @@ func process():
 		_visual.size = snap_size()
 
 
-func connected():
-	var ret: bool = (connection != null)
-	return ret
 
 
 func compute_relative_to_owner():
@@ -81,11 +82,6 @@ func _compute_relative_to_owner_recursive( n: Node, t: Transform ):
 func _set_show_visual( en: bool ):
 	show_visual = en
 	if show_visual:
-		# Don't show ones which are already connected.
-		var c: bool = connected()
-		if c:
-			return
-		
 		if _visual == null:
 			var Visual = preload( "res://physics/parts/coupling_nodes/coupling_node_visual.tscn" )
 			_visual = Visual.instance()
@@ -111,6 +107,7 @@ func _get_show_visual():
 
 func world_transform():
 	var camera: RefFrameNode = PhysicsManager.camera
+	var part: RefFrameNode = get_part()
 	var se3: Se3Ref = part.relative_to( camera )
 	var t_parent: Transform = se3.transform
 	var t: Transform = t_parent * relative_to_owner
@@ -154,38 +151,24 @@ func couple_with( n: CouplingNode ):
 		return false
 	
 	# No more excuses, couple these two together.
-	# TODO: need to implement it for newly introduced
-	# connections.
-	assert( false )
-#	node_b_path = n.get_path()
-#	node_b      = n
-#	is_parent   = false
-#
-#	node_b.node_b_path = get_path()
-#	node_b.node_b      = self
-#	node_b.is_parent   = true
+	var coupling_self: CouplingAttachment  = CouplingAttachment.new()
+	var coupling_other: CouplingAttachment = CouplingAttachment.new()
+	
+	self.part.add_child( coupling_self )
+	coupling_self.base_transform = self.relative_to_owner
+	coupling_self.attachment_b = coupling_other
+	coupling_self.is_parent = false
+	
+	var other_part: RefFrameNode = n.part
+	other_part.add_child( coupling_other )
+	coupling_other.base_transform = n.relative_to_owner
+	coupling_other.attachment_b = coupling_self
+	coupling_other.is_parent = true
 	
 	return true
 
 
-func decouple():
-	# Need to implement all these using newly introduced 
-	# connections.
-	assert( false )
-#	if node_b_path == null:
-#		return
-#	node_b = get_node( node_b_path )
-#	if node_b == null:
-#		node_b_path = null
-#		return
-#
-#	node_b.node_b_path = null
-#	node_b.node_b      = null
-#	node_b.is_parent   = false
-#
-#	node_b_path = null
-#	node_b      = null
-#	is_parent   = false
-	
+
+
 
 

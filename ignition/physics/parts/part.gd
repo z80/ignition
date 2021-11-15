@@ -190,18 +190,19 @@ func deactivate( root_call: bool = true ):
 
 func activate_nodes( activate_parts: bool = false ):
 	# Get all connected parts and switch them as well.
-	var nodes_qty: int = couplings.size()
+	var atts: Array = get_attachments()
+	var nodes_qty: int = atts.size()
 	if activate_parts:
 		for i in range(nodes_qty):
-			var n: CouplingConnection = couplings[i]
+			var n: CouplingAttachment = atts[i]
 			var c: bool = n.connected()
 			if not c:
 				continue
-			var p: Part = n.coupling_b.part
+			var p: Part = n.attachment_b.get_part()
 			p.activate( false )
 	
 	for i in range(nodes_qty):
-		var n: CouplingConnection = couplings[i]
+		var n: CouplingAttachment = atts[i]
 		var c: bool = n.connected()
 		if not c:
 			continue
@@ -212,9 +213,10 @@ func activate_nodes( activate_parts: bool = false ):
 
 func deactivate_nodes( deactivate_parts: bool = false ):
 	# Get all connected parts and switch them as well.
-	var nodes_qty: int = couplings.size()
+	var atts: Array = get_attachments()
+	var nodes_qty: int = atts.size()
 	for i in range(nodes_qty):
-		var n: CouplingConnection = couplings[i]
+		var n: CouplingAttachment = atts[i]
 		var c: bool = n.connected()
 		if not c:
 			continue
@@ -224,11 +226,11 @@ func deactivate_nodes( deactivate_parts: bool = false ):
 	
 	if deactivate_parts:
 		for i in range(nodes_qty):
-			var n: CouplingConnection = couplings[i]
+			var n: CouplingAttachment = atts[i]
 			var c: bool = n.connected()
 			if not c:
 				continue
-			var p: Part = n.coupling_b.part
+			var p: Part = n.attachment_b.part
 			p.deactivate( false )
 
 
@@ -248,11 +250,9 @@ func remove_physical():
 # Checks all the nodes.
 # If either one is connected and is not a parent return it here.
 func get_coupled_child_node():
-	for node in couplings:
-		var n: CouplingConnection = node as CouplingConnection
-		var is_connected: bool = n.connected()
-		if not is_connected:
-			continue
+	var atts: Array = get_attachments()
+	for node in atts:
+		var n: CouplingAttachment = node as CouplingAttachment
 		var is_parent: bool = n.is_parent
 		if is_parent:
 			continue
@@ -262,7 +262,7 @@ func get_coupled_child_node():
 
 
 
-
+# Couple with other node.
 func couple():
 	# Get parent ref frame, get all parts in it.
 	var rf: RefFrameNode = get_parent()
@@ -315,7 +315,7 @@ func couple():
 				if already_coupled:
 					continue
 				
-				# Mesure the distance between the two nodes.
+				# Measure the distance between the two nodes.
 				other_node_se3.transform = other_node.relative_to_owner
 				var se3: Se3Ref = self.relative_to_se3( part, other_node_se3 )
 				se3 = se3.mul( own_node_se3 )
@@ -333,16 +333,19 @@ func couple():
 	return false
 
 
-
+# Removes child connection(s).
+# There actually should be just one such connection.
 func decouple():
-	var own_nodes_qty: int = stacking_nodes.size()
-	for own_node_ind in range( own_nodes_qty ):
-		var own_node: CouplingNodeStacking = stacking_nodes[own_node_ind]
+	var atts: Array = get_attachments()
+	var couplings_qty: int = atts.size()
+	for coupling_ind in range( couplings_qty ):
+		var conn: CouplingAttachment = atts[coupling_ind]
 		# Don't disconnect child nodes.
 		# Only disconnect from a parent.
-		if (own_node.node_b != null) and (own_node.is_parent):
+		if conn.is_parent:
 			continue
-		own_node.decouple()
+		conn.deactivate()
+		conn.queue_free()
 		return true
 	return false
 
@@ -351,22 +354,26 @@ func decouple():
 func decouple_all():
 	# Decouple all the nodes if the thing is deleted.
 	# Well, it is assumed that Part is added to the 
-	for n in stacking_nodes:
-		var node: CouplingNodeStacking = n
-		node.decouple()
+	var atts: Array = get_attachments()
+	for n in atts:
+		var conn: CouplingAttachment = n
+		conn.decouple()
+		conn.queue_free()
+
 
 
 # Need this one to not try to couple two times.
 func is_coupled_with( part: Part ):
-	var own_nodes_qty: int = stacking_nodes.size()
-	for own_node_ind in range( own_nodes_qty ):
-		var own_node: CouplingNodeStacking = stacking_nodes[own_node_ind]
+	var atts: Array = get_attachments()
+	var couplings_qty: int = atts.size()
+	for coupling_ind in range(couplings_qty):
+		var own_node: CouplingAttachment = atts[coupling_ind]
 		var connected: bool = own_node.connected()
 		if not connected:
 			continue
 		
-		var node_b: CouplingNodeStacking = own_node.node_b
-		var part_b: Part = node_b.part
+		var attachment_b: CouplingAttachment = own_node.attachment_b
+		var part_b: Part = attachment_b.part
 		
 		if part == part_b:
 			return true
@@ -381,7 +388,7 @@ func update_physics_from_state():
 	var t: Transform = self.transform
 	var qty: int = stacking_nodes.size()
 	for i in range( qty ):
-		var n: CouplingNodeStacking = stacking_nodes[i]
+		var n: CouplingNode = stacking_nodes[i]
 		n.update_joint_pose( t )
 
 
@@ -458,6 +465,17 @@ static func _find_root( p: Part ):
 	return p
 
 
+func get_attachments():
+	var qty: int = get_child_count()
+	var atts: Array = []
+	for i in range(qty):
+		var c: Node = get_child(i)
+		var ca: CouplingAttachment = c as CouplingAttachment
+		if ca != null:
+			atts.push_back( ca )
+	
+	return atts
+
 
 static func _dfs( part: Part, parts: Array ):
 	var already_there: bool = parts.has( part )
@@ -466,9 +484,10 @@ static func _dfs( part: Part, parts: Array ):
 	
 	parts.push_back( part )
 	
-	var qty: int = part.stacking_nodes.size()
+	var atts: Array = part.get_attachments()
+	var qty: int = atts.size()
 	for i in range(qty):
-		var n: CouplingNodeStacking = part.stacking_nodes[i]
+		var n: CouplingAttachment = atts[i]
 		var connected: bool = n.connected()
 		if not connected:
 			continue
@@ -476,7 +495,7 @@ static func _dfs( part: Part, parts: Array ):
 		if not is_parent:
 			continue
 		
-		var p: Part = n.node_b.part
+		var p: Part = n.attachment_b.get_part()
 		_dfs( p, parts )
 
 
@@ -555,13 +574,14 @@ func serialize():
 	data["mode"]          = int(mode)
 	data["control_group"] = int(control_group)
 	
+	var atts: Array = get_attachments()
 	# Need to serialize all the nodes.
-	var stacking_nodes_data: Array = []
-	for n in stacking_nodes:
-		var node: CouplingNodeStacking = n
+	var coupling_nodes_data: Array = []
+	for n in atts:
+		var node: CouplingAttachment = n
 		var node_data: Dictionary = node.serialize()
-		stacking_nodes_data.push_back( node_data )
-	data["stacking_nodes"] = stacking_nodes_data
+		coupling_nodes_data.push_back( node_data )
+	data["coupling_nodes"] = coupling_nodes_data
 	
 	return data
 
@@ -575,14 +595,18 @@ func deserialize( data: Dictionary ):
 	#var new_mode: int = data["mode"]
 	control_group = data["control_group"]
 	
-	#init()
+	for c in couplings:
+		c.decouple()
+	couplings.clear()
 	# Need to deserialize all the nodes.
-	var stacking_nodes_data: Array = data["stacking_nodes"]
-	var qty: int = stacking_nodes.size()
+	var coupling_nodes_data: Array = data["coupling_nodes"]
+	var qty: int = coupling_nodes_data.size()
 	for i in range( qty ):
-		var node_data: Dictionary = stacking_nodes_data[i]
-		var n = stacking_nodes[i]
-		n.deserialize( node_data )
+		var node_data: Dictionary = coupling_nodes_data[i]
+		var n: CouplingAttachment = CouplingAttachment.new()
+		self.add_child( n )
+		n.deserialize( self, node_data )
+		couplings.push_back( n )
 	
 	var ret: bool = .deserialize( data )
 	if not ret:

@@ -54,10 +54,10 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/bodies/construction/construction_super_body.gd"
 }, {
-"base": "Reference",
-"class": "CouplingConnection",
+"base": "Node",
+"class": "CouplingAttachment",
 "language": "GDScript",
-"path": "res://physics/parts/coupling_nodes/coupling_connection.gd"
+"path": "res://physics/parts/coupling_nodes/coupling_attachment.gd"
 }, {
 "base": "Spatial",
 "class": "CouplingNode",
@@ -224,7 +224,7 @@ _global_script_class_icons={
 "CharacterVisualBase": "",
 "ColorTile": "",
 "ConstructionSuperBody": "",
-"CouplingConnection": "",
+"CouplingAttachment": "",
 "CouplingNode": "",
 "CouplingNodeStacking": "",
 "CouplingNodeSurface": "",
