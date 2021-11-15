@@ -333,6 +333,29 @@ func couple():
 	return false
 
 
+func couple_surface():
+	# Get parent ref frame, get all parts in it.
+	var rf: RefFrameNode = get_parent()
+	var parts: Array = []
+	var qty: int = rf.get_child_count()
+	for i in range(qty):
+		var ch: Node = rf.get_child( i )
+		var p: Part = ch as Part
+		if (p != null) and (p != self):
+			parts.push_back( p )
+	
+	var parts_qty: int = parts.size()
+	
+	# Initialize closest nodes with nulls.
+	var closest_own_node: CouplingNodeStacking   = null
+	var closest_other_node: CouplingNodeStacking = null
+	var closest_distance: float = -1.0
+	var other_node_se3: Se3Ref = Se3Ref.new()
+	var own_node_se3: Se3Ref   = Se3Ref.new()
+
+
+
+
 # Removes child connection(s).
 # There actually should be just one such connection.
 func decouple():
