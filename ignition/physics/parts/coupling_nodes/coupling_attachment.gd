@@ -184,14 +184,14 @@ func serialize():
 	data["roll"]       = roll
 	
 	data["is_parent"]  = is_parent
-	data["coupling_b"] = attachment_b.get_path()
+	data["attachment_b"] = attachment_b.get_path()
 	return data
 
 
 func deserialize( own_part: RefFrameNode, data: Dictionary ):
 	part = own_part
 	
-	var path: String = data["coupling_b"]
+	var path: String = data["attachment_b"]
 	attachment_b = part.get_node( path )
 	is_parent  = data["is_parent"]
 	
