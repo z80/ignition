@@ -292,17 +292,17 @@ func couple():
 	var parts_qty: int = parts.size()
 	
 	# Initialize closest nodes with nulls.
-	var closest_own_node: CouplingNodeStacking   = null
-	var closest_other_node: CouplingNodeStacking = null
+	var closest_own_node: CouplingNode   = null
+	var closest_other_node: CouplingNode = null
 	var closest_distance: float = -1.0
 	var other_node_se3: Se3Ref = Se3Ref.new()
 	var own_node_se3: Se3Ref   = Se3Ref.new()
 	
 	var own_nodes_qty: int = stacking_nodes.size()
 	for own_node_ind in range(own_nodes_qty):
-		var own_node: CouplingNodeStacking = stacking_nodes[own_node_ind]
-		# Skip the already coupled ones.
-		if own_node.connected():
+		var own_node: CouplingNode = stacking_nodes[own_node_ind]
+		
+		if not own_node.allows_connecting:
 			continue
 		
 		# Assign own SE3.
@@ -315,10 +315,7 @@ func couple():
 			
 			var other_nodes_qty: int = part.stacking_nodes.size()
 			for other_node_ind in range(other_nodes_qty):
-				var other_node: CouplingNodeStacking = part.stacking_nodes[other_node_ind]
-				# If already coupled, skip it.
-				if other_node.connected():
-					continue
+				var other_node: CouplingNode = part.stacking_nodes[other_node_ind]
 				
 				# If node does not allows connections to it.
 				if not other_node.allows_connections:

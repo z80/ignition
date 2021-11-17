@@ -12,6 +12,7 @@ export(bool) var allows_surface_coupling = true
 enum NodeSize { SMALL=0, MEDIUM=1, LARGE=2 }
 export(NodeSize) var node_size = NodeSize.MEDIUM
 
+var part: RefFrameNode = null
 
 # Reference to connection created (or not created).
 var connection: Reference = null
@@ -36,10 +37,6 @@ func _ready():
 
 
 
-func get_part():
-	var p: Node = get_parent()
-	var part: RefFrameNode = p as RefFrameNode
-	return part
 
 
 # This thing should be called when in kinematic mode.
@@ -107,7 +104,6 @@ func _get_show_visual():
 
 func world_transform():
 	var camera: RefFrameNode = PhysicsManager.camera
-	var part: RefFrameNode = get_part()
 	var se3: Se3Ref = part.relative_to( camera )
 	var t_parent: Transform = se3.transform
 	var t: Transform = t_parent * relative_to_owner
@@ -156,14 +152,16 @@ func couple_with( n: CouplingNode ):
 	
 	self.part.add_child( coupling_self )
 	coupling_self.base_transform = self.relative_to_owner
-	coupling_self.attachment_b = coupling_other
-	coupling_self.is_parent = false
+	coupling_self.attachment_b   = coupling_other
+	coupling_self.is_parent      = false
+	coupling_self.part           = self.part
 	
 	var other_part: RefFrameNode = n.part
 	other_part.add_child( coupling_other )
 	coupling_other.base_transform = n.relative_to_owner
-	coupling_other.attachment_b = coupling_self
-	coupling_other.is_parent = true
+	coupling_other.attachment_b   = coupling_self
+	coupling_other.is_parent      = true
+	coupling_other.part           = n.part
 	
 	return true
 
