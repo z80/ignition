@@ -35,6 +35,7 @@ func init( own_part: RefFrameNode, base_t: Transform, it_is_parent: bool ):
 func _ready():
 	pass # Replace with function body.
 
+
 func _exit_tree():
 	var to_be_deleted: bool = is_queued_for_deletion()
 	if to_be_deleted:
@@ -78,6 +79,9 @@ func _get_roll():
 #		_joint.transform = t
 
 
+func process():
+	_position_rel_to_parent()
+
 
 
 func get_part_transform():
@@ -106,7 +110,7 @@ func world_transform():
 
 
 
-func compute_part_rel_to_parent_part():
+func _compute_part_rel_to_parent_part():
 	var t_cnr: Transform = base_transform
 	var inv_t_cnr: Transform = t_cnr.inverse()
 	var t_pnr: Transform
@@ -120,12 +124,12 @@ func compute_part_rel_to_parent_part():
 
 
 
-# When connected position it's owner correctly with respecto to the parent.
-func position_rel_to_parent():
+# When connected position it's owner correctly with respect to the parent.
+func _position_rel_to_parent():
 	if is_parent:
 		return false
 	
-	var t_rel: Transform = compute_part_rel_to_parent_part()
+	var t_rel: Transform = _compute_part_rel_to_parent_part()
 	var parent_part: RefFrameNode = attachment_b.get_part()
 	if not is_instance_valid(parent_part):
 		return

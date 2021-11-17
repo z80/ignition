@@ -82,16 +82,31 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 
 func process_inner( _delta ):
 	.process_inner( _delta )
+	
+	if mode == PartMode.CONSTRUCTION:
+		_process_coupling_nodes()
+		_process_attachments()
+	
+	_process_destruction()
+
+
+func _process_coupling_nodes():
 	var qty: int = stacking_nodes.size()
 	for i in range(qty):
 		var n: CouplingNode = stacking_nodes[i]
 		n.process()
+
+
+func _process_attachments():
 	
-	process_destruction()
+	var atts: Array = get_attachments()
+	var qty: int = atts.size()
+	for i in range(qty):
+		var n: CouplingAttachment = atts[i]
+		n.process()
 
 
-
-func process_destruction():
+func _process_destruction():
 	var se3: Se3Ref = get_se3()
 	if not _last_vel_initialized:
 		_last_vel = se3.v
