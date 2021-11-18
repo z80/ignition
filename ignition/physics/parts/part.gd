@@ -420,11 +420,12 @@ func is_coupled_with( part: Part ):
 func update_physics_from_state():
 	.update_physics_from_state()
 	
-	var t: Transform = self.transform
-	var qty: int = stacking_nodes.size()
-	for i in range( qty ):
-		var n: CouplingNode = stacking_nodes[i]
-		n.update_joint_pose( t )
+#	var t: Transform = self.transform
+#	var atts: Array = get_attachments()
+#	var qty: int = atts.size()
+#	for i in range( qty ):
+#		var n: CouplingAttachment = atts[i]
+#		n.update_joint_pose( t )
 
 
 
