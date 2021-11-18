@@ -93,7 +93,9 @@ func get_part_transform():
 
 
 func get_angles_transform():
-	var yaw_q: Quat   = Quat( Vector3.RIGHT, yaw )
+	# + PI because need to rotate 180 degrees around X to 
+	# make coupling nodes face ieach other.
+	var yaw_q: Quat   = Quat( Vector3.RIGHT, yaw + PI )
 	var pitch_q: Quat = Quat( Vector3.UP, yaw )
 	var roll_q: Quat  = Quat( Vector3.BACK, yaw )
 	var q: Quat = yaw_q * pitch_q * roll_q

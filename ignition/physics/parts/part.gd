@@ -210,17 +210,11 @@ func activate_nodes( activate_parts: bool = false ):
 	if activate_parts:
 		for i in range(nodes_qty):
 			var n: CouplingAttachment = atts[i]
-			var c: bool = n.connected()
-			if not c:
-				continue
 			var p: Part = n.attachment_b.get_part()
 			p.activate( false )
 	
 	for i in range(nodes_qty):
 		var n: CouplingAttachment = atts[i]
-		var c: bool = n.connected()
-		if not c:
-			continue
 		if not n.is_parent:
 			continue
 		n.activate()
@@ -403,9 +397,6 @@ func is_coupled_with( part: Part ):
 	var couplings_qty: int = atts.size()
 	for coupling_ind in range(couplings_qty):
 		var own_node: CouplingAttachment = atts[coupling_ind]
-		var connected: bool = own_node.connected()
-		if not connected:
-			continue
 		
 		var attachment_b: CouplingAttachment = own_node.attachment_b
 		var part_b: Part = attachment_b.part
@@ -524,9 +515,6 @@ static func _dfs( part: Part, parts: Array ):
 	var qty: int = atts.size()
 	for i in range(qty):
 		var n: CouplingAttachment = atts[i]
-		var connected: bool = n.connected()
-		if not connected:
-			continue
 		var is_parent: bool = n.is_parent
 		if not is_parent:
 			continue
