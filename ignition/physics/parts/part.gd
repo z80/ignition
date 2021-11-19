@@ -619,6 +619,9 @@ func deserialize( data: Dictionary ):
 	#var new_mode: int = data["mode"]
 	control_group = data["control_group"]
 	
+	# It's here. Need to move coupling attachments creation to bodies creation place.
+	# The thing is whenever a coupling attachment is deserialized, its mate 
+	# might not exist yet.
 	for c in couplings:
 		c.decouple()
 	couplings.clear()
@@ -637,6 +640,11 @@ func deserialize( data: Dictionary ):
 		return false
 	
 	return true
+
+
+
+static func create_body_and_attachments( parent: Node, data: Dictionary ):
+	pass
 
 
 func is_character():
