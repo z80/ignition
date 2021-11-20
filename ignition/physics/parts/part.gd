@@ -43,8 +43,6 @@ export(float) var mass = 1.0
 
 var stacking_nodes: Array = []
 var surface_nodes: Array  = []
-# Actual connections with other nodes.
-var couplings: Array = []
 
 
 var mode: int = PartMode.CONSTRUCTION
@@ -600,12 +598,13 @@ func serialize():
 	
 	var atts: Array = get_attachments()
 	# Need to serialize all the nodes.
-	var coupling_nodes_data: Array = []
+	var coupling_nodes_data: Dictionary = {}
 	for n in atts:
 		var node: CouplingAttachment = n
 		var node_data: Dictionary = node.serialize()
-		coupling_nodes_data.push_back( node_data )
-	data["coupling_nodes"] = coupling_nodes_data
+		var name: String = node.name
+		coupling_nodes_data[name] = node_data
+	data["coupling_attachments"] = coupling_nodes_data
 	
 	return data
 
@@ -622,18 +621,14 @@ func deserialize( data: Dictionary ):
 	# It's here. Need to move coupling attachments creation to bodies creation place.
 	# The thing is whenever a coupling attachment is deserialized, its mate 
 	# might not exist yet.
-	for c in couplings:
-		c.decouple()
-	couplings.clear()
 	# Need to deserialize all the nodes.
-	var coupling_nodes_data: Array = data["coupling_nodes"]
-	var qty: int = coupling_nodes_data.size()
-	for i in range( qty ):
-		var node_data: Dictionary = coupling_nodes_data[i]
-		var n: CouplingAttachment = CouplingAttachment.new()
-		self.add_child( n )
-		n.deserialize( self, node_data )
-		couplings.push_back( n )
+	var coupling_nodes_data: Dictionary = data["coupling_attachments"]
+	for name in coupling_nodes_data:
+		var att: CouplingAttachment = get_node( name )
+		if att == null:
+			continue
+		var att_data: Dictionary = coupling_nodes_data[name]
+		att.deserialize( self, att_data )
 	
 	var ret: bool = .deserialize( data )
 	if not ret:
@@ -643,12 +638,21 @@ func deserialize( data: Dictionary ):
 
 
 
-static func create_body_and_attachments( parent: Node, data: Dictionary ):
-	pass
+static func create_attachments( part: Part, data: Dictionary ):
+	# Need to deserialize all the nodes.
+	var coupling_nodes_data: Dictionary = data["coupling_attachments"]
+	for name in coupling_nodes_data:
+		var node_data: Dictionary = coupling_nodes_data[name]
+		var n: CouplingAttachment = CouplingAttachment.new()
+		n.name = name
+		part.add_child( n )
+
 
 
 func is_character():
 	var ret: bool = (part_class == PartClass.CHARACTER)
 	return ret
+
+
 
 

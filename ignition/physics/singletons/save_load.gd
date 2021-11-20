@@ -267,6 +267,13 @@ static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 		if data.has("visual_name"):
 			var visual_name: String = data["visual_name"]
 			b._visual.name = visual_name
+		
+		# Parts hame attachments.
+		# Need to create attachments before they are initialized.
+		var part: Part = b as Part
+		if part != null:
+			Part.create_attachments( b, data )
+		
 		bodies.push_back( b )
 	
 	for name in bodies_data:

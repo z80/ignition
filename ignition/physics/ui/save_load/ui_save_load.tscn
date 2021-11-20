@@ -28,5 +28,6 @@ text = "Load"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
 [connection signal="pressed" from="Save" to="." method="_on_Save_pressed"]
 [connection signal="pressed" from="Load" to="." method="_on_Load_pressed"]

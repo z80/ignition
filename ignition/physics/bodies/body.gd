@@ -590,4 +590,18 @@ func get_octree_mesh():
 
 
 
+static func unique_child_name( n: Node, name: String ):
+	var c: Node = n.get_node_or_null( name )
+	if c == null:
+		return name
+	var index: int = 0
+	while true:
+		var full_name: String = name + "_" + str( index )
+		c = n.get_node_or_null( full_name )
+		if c == null:
+			return full_name
+		index += 1
+
+
+
 
