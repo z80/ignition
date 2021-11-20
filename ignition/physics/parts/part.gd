@@ -224,9 +224,6 @@ func deactivate_nodes( deactivate_parts: bool = false ):
 	var nodes_qty: int = atts.size()
 	for i in range(nodes_qty):
 		var n: CouplingAttachment = atts[i]
-		var c: bool = n.connected()
-		if not c:
-			continue
 		if not n.is_parent:
 			continue
 		n.deactivate()
@@ -234,9 +231,6 @@ func deactivate_nodes( deactivate_parts: bool = false ):
 	if deactivate_parts:
 		for i in range(nodes_qty):
 			var n: CouplingAttachment = atts[i]
-			var c: bool = n.connected()
-			if not c:
-				continue
 			var p: Part = n.attachment_b.part
 			p.deactivate( false )
 
