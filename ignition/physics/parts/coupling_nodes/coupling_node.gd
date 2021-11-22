@@ -151,8 +151,8 @@ func couple_with( n: CouplingNode ):
 		return false
 	
 	# Now measure the distance.
-	var t_w: Transform = world_transform()
-	var n_t_w: Transform = n.world_transform()
+	var t_w: Transform = ref_frame_transform()
+	var n_t_w: Transform = n.ref_frame_transform()
 	var r_w: Vector3 = t_w.origin
 	var n_r_w: Vector3 = n_t_w.origin
 	var d: float = (r_w - n_r_w).length()
@@ -185,8 +185,24 @@ func couple_with( n: CouplingNode ):
 
 
 
-func couple_with_surface( other_part: RefFrameNode ):
-	return false
-
+func couple_with_surface( other_part: RefFrameNode, transform: Transform ):
+	var coupling_self: CouplingAttachment  = CouplingAttachment.new()
+	var coupling_other: CouplingAttachment = CouplingAttachment.new()
+	
+	coupling_self.name = Body.unique_child_name( self.part, "Attachment" )
+	self.part.add_child( coupling_self )
+	coupling_self.base_transform = self.relative_to_owner
+	coupling_self.attachment_b   = coupling_other
+	coupling_self.is_parent      = false
+	coupling_self.part           = self.part
+	
+	coupling_other.name = Body.unique_child_name( other_part, "Attachment" )
+	other_part.add_child( coupling_other )
+	coupling_other.base_transform = transform
+	coupling_other.attachment_b   = coupling_self
+	coupling_other.is_parent      = true
+	coupling_other.part           = other_part
+	
+	return true
 
 

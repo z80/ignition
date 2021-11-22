@@ -346,6 +346,7 @@ func couple_surface():
 	# Let's find the closest distance.
 	var closest_node_ind: int    = -1
 	var closest_part_dist: float = -1.0
+	var closest_result: Array = []
 	
 	var own_nodes_qty: int = stacking_nodes.size()
 	for own_node_ind in range(own_nodes_qty):
@@ -369,7 +370,8 @@ func couple_surface():
 		#   intersection_point: Vector3, 
 		#   face_center_position: Vector3, 
 		#   face_normal: Vector3, 
-		#   face_area: float ]
+		#   face_area: float, 
+		#   octree_mesh_gd: OctreeMeshGd ]
 		var ret: Array = broad_t.intersects_segment_face( start_r, end_r, own_octree )
 		var ok: bool = ret[0]
 		if not ok:
@@ -378,13 +380,40 @@ func couple_surface():
 		var distance: float = ret[1]
 		if (closest_node_ind < 0) or (distance < closest_part_dist):
 			closest_part_dist = distance
+			closest_node_ind  = own_node_ind
+			closest_result    = ret
+	
+	if closest_node_ind < 0:
+		return false
+	
+	
+	# Here there is a own_node_index and also 
+	# there is a part it is the closest to.
+	var at: Vector3   = closest_result[2]
+	var norm: Vector3 = closest_result[4]
+	var other_octree_mesh: OctreeMeshGd = closest_result[6]
+	var other_part: Part = other_octree_mesh.get_parent()
+	
+	var se3: Se3Ref = other_part.get_se3()
+	var inv_q0: Quat = se3.q.inverse()
+	var r0: Vector3  = se3.r
+	at   = inv_q0.xform( at - r0 )
+	norm = inv_q0.xform( norm )
+	
+	var si: float = sqrt(norm.x*norm.x + norm.z*norm.z)
+	var angle_2: float = asin( si ) * 0.5
+	var si_2: float = sin( angle_2 )
+	var co_2: float = cos( angle_2 )
+	var q: Quat = Quat( norm.x*si_2, norm.y*si_2, norm.z*si_2, co_2 )
+	var t: Transform = Transform.IDENTITY
+	t.basis  = q
+	t.origin = at
+	
+	var closest_own_node: CouplingNode = stacking_nodes[closest_node_ind]
+	
+	var ret: bool = closest_own_node.couple_with_surface( other_part, t )
+	return ret
 
-	# Initialize closest nodes with nulls.
-	var closest_own_node: CouplingNodeStacking   = null
-	var closest_other_node: CouplingNodeStacking = null
-	var closest_distance: float = -1.0
-	var other_node_se3: Se3Ref = Se3Ref.new()
-	var own_node_se3: Se3Ref   = Se3Ref.new()
 
 
 
