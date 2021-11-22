@@ -332,18 +332,53 @@ func couple():
 
 
 func couple_surface():
-	# Get parent ref frame, get all parts in it.
-	var rf: RefFrameNode = get_parent()
-	var parts: Array = []
-	var qty: int = rf.get_child_count()
-	for i in range(qty):
-		var ch: Node = rf.get_child( i )
-		var p: Part = ch as Part
-		if (p != null) and (p != self):
-			parts.push_back( p )
+	var rf: RefFramePhysics = parent_physics_ref_frame()
+	if rf == null:
+		return false
 	
-	var parts_qty: int = parts.size()
+	var broad_t: BroadTreeGd = rf.get_broad_tree()
+	if broad_t == null:
+		return false
 	
+	# This one can be null. It's ok.
+	var own_octree: OctreeMeshGd = self.get_octree_mesh()
+	
+	# Let's find the closest distance.
+	var closest_node_ind: int    = -1
+	var closest_part_dist: float = -1.0
+	
+	var own_nodes_qty: int = stacking_nodes.size()
+	for own_node_ind in range(own_nodes_qty):
+		var own_node: CouplingNode = stacking_nodes[own_node_ind]
+		
+		if not own_node.allows_surface_coupling:
+			continue
+		
+		var se3: Se3Ref = own_node.ref_frame_transform()
+		var start_r: Vector3 = se3.r
+		# x2 because of sphere diameter is x2 of its radius. 
+		var sz: float   = own_node.snap_size * 2.0
+		var a: Vector3  = Vector3( 0.0, sz, 0.0 )
+		var q: Quat     = se3.q
+		a = q.xform( a )
+		var end_r: Vector3 = start_r + a
+		
+		# Returns the closest intersection in the format: 
+		# [ ok: bool, 
+		#   distance: float, 
+		#   intersection_point: Vector3, 
+		#   face_center_position: Vector3, 
+		#   face_normal: Vector3, 
+		#   face_area: float ]
+		var ret: Array = broad_t.intersects_segment_face( start_r, end_r, own_octree )
+		var ok: bool = ret[0]
+		if not ok:
+			continue
+		
+		var distance: float = ret[1]
+		if (closest_node_ind < 0) or (distance < closest_part_dist):
+			closest_part_dist = distance
+
 	# Initialize closest nodes with nulls.
 	var closest_own_node: CouplingNodeStacking   = null
 	var closest_other_node: CouplingNodeStacking = null

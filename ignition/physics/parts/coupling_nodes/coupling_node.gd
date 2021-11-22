@@ -110,6 +110,21 @@ func world_transform():
 	return t
 
 
+func ref_frame_transform():
+	if part == null:
+		return Transform.IDENTITY
+	
+	var se3: Se3Ref = Se3Ref.new()
+	se3.transform = relative_to_owner
+	
+	var part_se3: Se3Ref = part.get_se3()
+	
+	se3 = part_se3.mul( se3 )
+	return se3
+
+
+
+
 func snap_size():
 	if node_size == NodeSize.SMALL:
 		return Constants.NODE_SIZE_SMALL
@@ -169,6 +184,9 @@ func couple_with( n: CouplingNode ):
 
 
 
+
+func couple_with_surface( other_part: RefFrameNode ):
+	return false
 
 
 
