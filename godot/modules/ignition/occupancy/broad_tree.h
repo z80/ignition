@@ -41,8 +41,8 @@ public:
     int            get_octree_meshes_qty() const;
     OctreeMeshGd * get_octree_mesh( int ind );
 
-    bool intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const;
-    bool intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, Vector3 & at, OctreeMesh::FaceProperties & face_props, OctreeMeshGd * exclude_mesh ) const;
+	OctreeMeshGd * intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const;
+	OctreeMeshGd * intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, Vector3 & at, OctreeMesh::FaceProperties & face_props, OctreeMeshGd * exclude_mesh ) const;
 
     Vector<OctreeMeshGd *> octree_meshes_;
     Vector<BroadTreeNode>  nodes_;

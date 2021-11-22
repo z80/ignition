@@ -264,19 +264,19 @@ OctreeMeshGd * BroadTree::get_octree_mesh( int ind )
     return mesh_gd;
 }
 
-bool BroadTree::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const
+OctreeMeshGd * BroadTree::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const
 {
     const BroadTreeNode & root = nodes_.ptr()[0];
-    const bool res = root.intersects_segment( start, end, exclude_mesh );
-    return res;
+	OctreeMeshGd * mesh_gd = root.intersects_segment( start, end, exclude_mesh );
+    return mesh_gd;
 }
 
-bool BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, Vector3 & at, OctreeMesh::FaceProperties & face_props, OctreeMeshGd * exclude_mesh ) const
+OctreeMeshGd * BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, Vector3 & at, OctreeMesh::FaceProperties & face_props, OctreeMeshGd * exclude_mesh ) const
 {
     const BroadTreeNode & root = nodes_.ptr()[0];
 	dist = -1.0;
-    const bool res = root.intersects_segment_face( start, end, dist, at, face_props, exclude_mesh );
-    return res;
+	OctreeMeshGd * mesh_gd = root.intersects_segment_face( start, end, dist, at, face_props, exclude_mesh );
+    return mesh_gd;
 }
 
 

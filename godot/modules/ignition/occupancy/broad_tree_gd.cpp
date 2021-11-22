@@ -72,8 +72,9 @@ Node * BroadTreeGd::get_octree_mesh( int ind )
 bool BroadTreeGd::intersects_segment( const Vector3 & start, const Vector3 & end, Node * exclude_mesh ) const
 {
 	OctreeMeshGd * mesh = Node::cast_to<OctreeMeshGd>( exclude_mesh );
-	const bool ret = _broad_tree.intersects_segment( start, end, mesh );
-	return ret;
+	OctreeMeshGd * mesh_gd = _broad_tree.intersects_segment( start, end, mesh );
+	const bool ok = (mesh_gd != nullptr);
+	return ok;
 }
 
 Array BroadTreeGd::intersects_segment_face( const Vector3 & start, const Vector3 & end, Node * exclude_mesh ) const
@@ -82,16 +83,19 @@ Array BroadTreeGd::intersects_segment_face( const Vector3 & start, const Vector3
 	Vector3 at;
 	OctreeMesh::FaceProperties props;
 	OctreeMeshGd * mesh = Node::cast_to<OctreeMeshGd>( exclude_mesh );
-	const bool ok = _broad_tree.intersects_segment_face( start, end, dist, at, props, mesh );
+	OctreeMeshGd * mesh_gd = _broad_tree.intersects_segment_face( start, end, dist, at, props, mesh );
+	const bool ok = (mesh_gd != nullptr);
 	Array ret;
 	ret.push_back( ok );
 	if ( ok )
 	{
+		Node * node = Node::cast_to<Node>(mesh_gd);
 		ret.push_back( dist );
 		ret.push_back( at );
 		ret.push_back( props.position );
 		ret.push_back( props.normal );
 		ret.push_back( props.area );
+		ret.push_back( node );
 	}
 	return ret;
 }

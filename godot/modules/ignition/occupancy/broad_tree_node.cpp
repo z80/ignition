@@ -222,11 +222,11 @@ void BroadTreeNode::init()
 }
 
 
-bool BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const
+OctreeMeshGd * BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const
 {
     const bool intersects_aabb = aabb_.intersects_ray( start, end );
     if ( !intersects_aabb )
-        return false;
+        return nullptr;
 
     const bool has_ch = hasChildren();
     if ( !has_ch )
@@ -241,29 +241,29 @@ bool BroadTreeNode::intersects_segment( const Vector3 & start, const Vector3 & e
 			OctreeMesh   * mesh    = mesh_gd->octree_mesh();
             const bool ok = mesh->intersects_segment( start, end );
             if ( ok )
-                return true;
+                return mesh_gd;
         }
-        return false;
+        return nullptr;
     }
 
     for ( int i=0; i<8; i++ )
     {
         const int ind = children[i];
         const BroadTreeNode & ch_n = tree->nodes_.ptr()[ind];
-        const bool ch_intersects = ch_n.intersects_segment( start, end, exclude_mesh );
-        if ( ch_intersects )
-            return true;
+        OctreeMeshGd * mesh_gd = ch_n.intersects_segment( start, end, exclude_mesh );
+        if ( mesh_gd != nullptr )
+            return mesh_gd;
     }
 
-    return false;
+    return nullptr;
 }
 
-bool BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & ret_dist, Vector3 & ret_at, OctreeMesh::FaceProperties & ret_face_props, OctreeMeshGd * exclude_mesh ) const
+OctreeMeshGd *  BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & ret_dist, Vector3 & ret_at, OctreeMesh::FaceProperties & ret_face_props, OctreeMeshGd * exclude_mesh ) const
 {
     const bool intersects_aabb = aabb_.intersects_segment( start, end );
     if ( !intersects_aabb )
     {
-        return false;
+        return nullptr;
     }
 
     const bool has_ch = hasChildren();
@@ -274,10 +274,11 @@ bool BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector
         real_t                     best_face_dist = -1.0;
 		Vector3                    best_face_at;
         OctreeMesh::FaceProperties best_face_properties;
+		OctreeMeshGd             * best_octree_mesh = nullptr;
         for ( int i=0; i<qty; i++ )
         {
             const int child_face_ind = ptInds.ptr()[i];
-            const OctreeMeshGd * mesh_gd = tree->octree_meshes_[child_face_ind];
+            OctreeMeshGd * mesh_gd = tree->octree_meshes_[child_face_ind];
 			if ( mesh_gd == exclude_mesh )
 				continue;
 			const OctreeMesh   * mesh    = mesh_gd->octree_mesh();
@@ -293,6 +294,7 @@ bool BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector
                     best_face_dist       = face_dist;
 					best_face_at         = face_at;
                     best_face_properties = face_props;
+					best_octree_mesh     = mesh_gd;
                 }
                 intersects = true;
                 // Do not interrupt here.
@@ -305,12 +307,13 @@ bool BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector
 			ret_at         = best_face_at;
             ret_face_props = best_face_properties;
         }
-        return intersects;
+        return best_octree_mesh;
     }
 
     real_t                     best_face_dist = -1.0;
 	Vector3                    best_face_at;
     OctreeMesh::FaceProperties best_face_properties;
+	OctreeMeshGd             * best_octree_mesh = nullptr;
     bool           intersects = false;
     for ( int i=0; i<8; i++ )
     {
@@ -319,14 +322,15 @@ bool BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector
         real_t                     face_dist;
 		Vector3                    face_at;
         OctreeMesh::FaceProperties face_props;
-        const bool ch_intersects = ch_n.intersects_segment_face( start, end, face_dist, face_at, face_props, exclude_mesh );
-        if ( ch_intersects )
+        OctreeMeshGd * mesh_gd = ch_n.intersects_segment_face( start, end, face_dist, face_at, face_props, exclude_mesh );
+        if ( mesh_gd )
         {
             if ( (!intersects) || (face_dist < best_face_dist) )
             {
                 best_face_dist       = face_dist;
 				best_face_at         = face_at;
                 best_face_properties = face_props;
+				best_octree_mesh     = mesh_gd;
             }
             intersects = true;
         }
@@ -339,7 +343,7 @@ bool BroadTreeNode::intersects_segment_face( const Vector3 & start, const Vector
 		ret_at         = best_face_at;
         ret_face_props = best_face_properties;
     }
-    return intersects;
+    return best_octree_mesh;
 }
 
 
