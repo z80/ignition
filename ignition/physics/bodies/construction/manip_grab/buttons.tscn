@@ -3,21 +3,28 @@
 [ext_resource path="res://physics/bodies/construction/manip_grab/buttons.gd" type="Script" id=1]
 
 [node name="Buttons" type="Control"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = 1.0
-margin_right = -1023.0
-margin_bottom = -600.0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -25.9763
+margin_top = 29.4611
+margin_right = -25.9763
+margin_bottom = 29.4611
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="World" type="Button" parent="."]
-margin_left = 447.25
-margin_top = 431.993
-margin_right = 475.25
-margin_bottom = 456.993
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -14.2287
+margin_top = 76.8942
+margin_right = 13.7713
+margin_bottom = 101.894
 hint_tooltip = "Transform in world reference frame"
 toggle_mode = true
 text = "W"
@@ -26,10 +33,14 @@ __meta__ = {
 }
 
 [node name="Local" type="Button" parent="."]
-margin_left = 481.23
-margin_top = 432.465
-margin_right = 509.23
-margin_bottom = 457.465
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = 19.7513
+margin_top = 77.3662
+margin_right = 47.7513
+margin_bottom = 102.366
 hint_tooltip = "Transform in object's local reference frame"
 toggle_mode = true
 text = "L"

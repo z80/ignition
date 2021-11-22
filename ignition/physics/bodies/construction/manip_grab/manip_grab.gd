@@ -1,6 +1,9 @@
 extends CanvasItem
 class_name ManipulatorGrab
 
+signal drag_started
+signal drag_finished
+
 
 export(NodePath) var target_path setget set_path
 var target: Node = null
@@ -336,6 +339,8 @@ func _init_dragging( axis: Vector3 ):
 	_dragging.drag_axis = own_a
 	_dragging.origin    = own_r
 	_dragging.mouse_start = _mouse_on_axis( own_r, own_a )
+	
+	emit_signal( "drag_started", self )
 
 
 func _process_dragging():
@@ -418,6 +423,9 @@ func _init_rotating( axis: Vector3 ):
 	#print( "set mouse_start: ", _dragging.mouse_start )
 	var euler: Vector3        = t.basis.get_euler()
 	_dragging.euler = euler
+	
+	emit_signal( "drag_started", self )
+
 
 
 func _process_rotating():
@@ -576,10 +584,13 @@ func _line_crossing_point( r_a: Vector3, a_a: Vector3, r_b: Vector3, a_b: Vector
 
 func _finit_dragging():
 	_dragging.enabled = false
+	emit_signal( "drag_finished", self )
+
 
 
 func _finit_rotating():
 	_dragging.rot_enabled = false
+	emit_signal( "drag_finished", self )
 
 
 

@@ -124,20 +124,27 @@ func activate_grab( body ):
 	edited_target  = body
 	editing_widget = grab
 	grab.target = body
+	activated_mode = "construction_editing"
+	
+	grab.connect( "drag_started",  self, "_on_drag_started" )
+	grab.connect( "drag_finished", self, "_on_drag_finished" )
+
+
+func _on_grab_started( grab: Node ):
+	var target: Part = grab.target
 	edited_target.decouple()
 	set_show_coupling_nodes( true )
-	activated_mode = "construction_editing"
 
 
-
+func _on_grab_finished( grab: Node ):
+	var target: Part = grab.target
+	target.couple()
+	set_show_coupling_nodes( false )
 
 
 func finish_editing():
 	if is_instance_valid( editing_widget ):
 		editing_widget.queue_free()
-		
-		edited_target.couple()
-		set_show_coupling_nodes( false )
 		edited_target  = null
 	
 	activated_mode = "construction_menu"

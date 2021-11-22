@@ -6,26 +6,29 @@
 [node name="Transform" type="HBoxContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+alignment = 1
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="Grab" type="Button" parent="."]
-margin_right = 76.0
+margin_left = 424.0
+margin_right = 500.0
 margin_bottom = 70.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
 icon = ExtResource( 2 )
 
 [node name="Label" type="Label" parent="."]
-margin_left = 80.0
+margin_left = 504.0
 margin_top = 268.0
-margin_right = 176.0
+margin_right = 600.0
 margin_bottom = 332.0
 rect_min_size = Vector2( 96, 64 )
 text = "Object placement"
 valign = 1
 autowrap = true
 clip_text = true
+
 [connection signal="pressed" from="Grab" to="." method="_on_Grab_pressed"]
