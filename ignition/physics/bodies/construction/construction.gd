@@ -130,16 +130,18 @@ func activate_grab( body ):
 	grab.connect( "drag_finished", self, "_on_drag_finished" )
 
 
-func _on_grab_started( grab: Node ):
+func _on_drag_started( grab: Node ):
 	var target: Part = grab.target
 	edited_target.decouple()
 	set_show_coupling_nodes( true )
 
 
-func _on_grab_finished( grab: Node ):
+func _on_drag_finished( grab: Node ):
 	var target: Part = grab.target
-	target.couple()
 	set_show_coupling_nodes( false )
+	var ok: bool = target.couple()
+	if not ok:
+		target.couple_surface()
 
 
 func finish_editing():

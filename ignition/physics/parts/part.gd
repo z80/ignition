@@ -358,7 +358,7 @@ func couple_surface():
 		var se3: Se3Ref = own_node.ref_frame_transform()
 		var start_r: Vector3 = se3.r
 		# x2 because of sphere diameter is x2 of its radius. 
-		var sz: float   = own_node.snap_size * 2.0
+		var sz: float   = own_node.snap_size() * 2.0
 		var a: Vector3  = Vector3( 0.0, sz, 0.0 )
 		var q: Quat     = se3.q
 		a = q.xform( a )
@@ -404,7 +404,12 @@ func couple_surface():
 	var angle_2: float = asin( si ) * 0.5
 	var si_2: float = sin( angle_2 )
 	var co_2: float = cos( angle_2 )
-	var q: Quat = Quat( norm.x*si_2, norm.y*si_2, norm.z*si_2, co_2 )
+	
+	# Rotation axis is (0, 1, 0).cross( norm )
+	var rot_axis: Vector3 = Vector3( -norm.x, 0.0, norm.z )
+	rot_axis = rot_axis.normalized()
+	
+	var q: Quat = Quat( rot_axis.x*si_2, rot_axis.y*si_2, rot_axis.z*si_2, co_2 )
 	var t: Transform = Transform.IDENTITY
 	t.basis  = q
 	t.origin = at

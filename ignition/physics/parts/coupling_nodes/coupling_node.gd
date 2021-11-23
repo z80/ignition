@@ -151,10 +151,10 @@ func couple_with( n: CouplingNode ):
 		return false
 	
 	# Now measure the distance.
-	var t_w: Transform = ref_frame_transform()
-	var n_t_w: Transform = n.ref_frame_transform()
-	var r_w: Vector3 = t_w.origin
-	var n_r_w: Vector3 = n_t_w.origin
+	var t_w: Se3Ref = ref_frame_transform()
+	var n_t_w: Se3Ref = n.ref_frame_transform()
+	var r_w: Vector3 = t_w.r
+	var n_r_w: Vector3 = n_t_w.r
 	var d: float = (r_w - n_r_w).length()
 	
 	var max_d: float = snap_size() + n.snap_size()

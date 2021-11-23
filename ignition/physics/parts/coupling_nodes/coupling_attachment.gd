@@ -182,6 +182,14 @@ func deactivate():
 
 
 
+func decouple():
+	deactivate()
+	var other: CouplingAttachment = attachment_b
+	other.attachment_b = null
+	attachment_b = null
+	
+
+
 
 func serialize():
 	var data: Dictionary = {}

@@ -24,12 +24,13 @@ material/0 = null
 [node name="Entrance" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.880334, -0.0631745, 0 )
 script = ExtResource( 1 )
-node_size = 2
 
 [node name="Top" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
 script = ExtResource( 2 )
+node_size = 0
 
 [node name="Bottom" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, -1, 3.25841e-07, 0, -3.25841e-07, -1, 0, -1, 0 )
 script = ExtResource( 2 )
+node_size = 0
