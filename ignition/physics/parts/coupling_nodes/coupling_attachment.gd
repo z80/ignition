@@ -182,7 +182,8 @@ func deactivate():
 func decouple():
 	deactivate()
 	var other: CouplingAttachment = attachment_b
-	other.attachment_b = null
+	if other != null:
+		other.attachment_b = null
 	attachment_b = null
 	
 
