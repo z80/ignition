@@ -132,7 +132,7 @@ func activate_grab( body ):
 
 func _on_drag_started( grab: Node ):
 	var target: Part = grab.target
-	edited_target.decouple()
+	target.decouple()
 	set_show_coupling_nodes( true )
 
 

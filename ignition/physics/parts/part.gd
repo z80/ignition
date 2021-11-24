@@ -349,6 +349,8 @@ func couple_surface():
 	var closest_result: Array = []
 	
 	var own_nodes_qty: int = stacking_nodes.size()
+	print( "surface coupling attempt" )
+	print( "nodes qty: ", own_nodes_qty )
 	for own_node_ind in range(own_nodes_qty):
 		var own_node: CouplingNode = stacking_nodes[own_node_ind]
 		
@@ -373,6 +375,7 @@ func couple_surface():
 		#   face_area: float, 
 		#   octree_mesh_gd: OctreeMeshGd ]
 		var ret: Array = broad_t.intersects_segment_face( start_r, end_r, own_octree )
+		print( own_node_ind, " result: ", ret )
 		var ok: bool = ret[0]
 		if not ok:
 			continue
@@ -406,7 +409,7 @@ func couple_surface():
 	var co_2: float = cos( angle_2 )
 	
 	# Rotation axis is (0, 1, 0).cross( norm )
-	var rot_axis: Vector3 = Vector3( -norm.x, 0.0, norm.z )
+	var rot_axis: Vector3 = Vector3( norm.z, 0.0, -norm.x )
 	rot_axis = rot_axis.normalized()
 	
 	var q: Quat = Quat( rot_axis.x*si_2, rot_axis.y*si_2, rot_axis.z*si_2, co_2 )
@@ -434,8 +437,11 @@ func decouple():
 		# Only disconnect from a parent.
 		if conn.is_parent:
 			continue
-		conn.deactivate()
+		var other_conn: CouplingAttachment = conn.attachment_b
+		conn.decouple()
 		conn.queue_free()
+		if other_conn != null:
+			other_conn.queue_free()
 		return true
 	return false
 
@@ -447,8 +453,11 @@ func decouple_all():
 	var atts: Array = get_attachments()
 	for n in atts:
 		var conn: CouplingAttachment = n
+		var other_conn: CouplingAttachment = conn.attachment_b
 		conn.decouple()
 		conn.queue_free()
+		if other_conn != null:
+			other_conn.queue_free()
 
 
 
@@ -691,7 +700,7 @@ func deserialize( data: Dictionary ):
 		if att == null:
 			continue
 		var att_data: Dictionary = coupling_nodes_data[name]
-		att.deserialize( self, att_data )
+		att.deserialize( att_data )
 	
 	var ret: bool = .deserialize( data )
 	if not ret:

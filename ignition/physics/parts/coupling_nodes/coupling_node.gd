@@ -170,7 +170,6 @@ func couple_with( n: CouplingNode ):
 	coupling_self.base_transform = self.relative_to_owner
 	coupling_self.attachment_b   = coupling_other
 	coupling_self.is_parent      = false
-	coupling_self.part           = self.part
 	
 	var other_part: RefFrameNode = n.part
 	coupling_other.name = Body.unique_child_name( other_part, "Attachment" )
@@ -178,7 +177,6 @@ func couple_with( n: CouplingNode ):
 	coupling_other.base_transform = n.relative_to_owner
 	coupling_other.attachment_b   = coupling_self
 	coupling_other.is_parent      = true
-	coupling_other.part           = n.part
 	
 	return true
 
@@ -194,14 +192,12 @@ func couple_with_surface( other_part: RefFrameNode, transform: Transform ):
 	coupling_self.base_transform = self.relative_to_owner
 	coupling_self.attachment_b   = coupling_other
 	coupling_self.is_parent      = false
-	coupling_self.part           = self.part
 	
 	coupling_other.name = Body.unique_child_name( other_part, "Attachment" )
 	other_part.add_child( coupling_other )
 	coupling_other.base_transform = transform
 	coupling_other.attachment_b   = coupling_self
 	coupling_other.is_parent      = true
-	coupling_other.part           = other_part
 	
 	return true
 

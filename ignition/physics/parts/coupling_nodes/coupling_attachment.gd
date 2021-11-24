@@ -2,8 +2,6 @@
 extends Node
 class_name CouplingAttachment
 
-# Which part it belongs to.
-var part: RefFrameNode = null
 # The other node's connection is is connected to.
 var attachment_b: CouplingAttachment = null
 # If it was connected to, it's parent, else it's child.
@@ -26,7 +24,6 @@ var _joint: Generic6DOFJoint = null
 
 
 func init( own_part: RefFrameNode, base_t: Transform, it_is_parent: bool ):
-	part           = own_part
 	base_transform = base_t
 	is_parent      = it_is_parent
 
@@ -85,8 +82,7 @@ func process():
 
 
 func get_part_transform():
-	if part == null:
-		return Transform.IDENTITY
+	var part: RefFrameNode = get_part()
 	var se3: Se3Ref = part.get_se3()
 	var t: Transform = se3.transform
 	return t
@@ -137,6 +133,7 @@ func _position_rel_to_parent():
 		return
 	var t_parent: Transform = parent_part.get_se3().transform
 	var t: Transform = t_parent * t_rel
+	var part: RefFrameNode = get_part()
 	part.transform = t
 
 
@@ -202,8 +199,8 @@ func serialize():
 	return data
 
 
-func deserialize( own_part: RefFrameNode, data: Dictionary ):
-	part = own_part
+func deserialize( data: Dictionary ):
+	var part: RefFrameNode = get_part()
 	
 	var path: String = data["attachment_b"]
 	attachment_b = part.get_node( path )
