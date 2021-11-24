@@ -379,3 +379,8 @@ func deserialize( data: Dictionary ):
 
 
 
+func is_character():
+	return true
+
+
+
