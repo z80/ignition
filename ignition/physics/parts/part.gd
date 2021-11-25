@@ -404,6 +404,10 @@ func couple_surface():
 	norm = inv_q0.xform( norm )
 	
 	var si: float = sqrt(norm.x*norm.x + norm.z*norm.z)
+	if si > 1.0:
+		si = 1.0
+	elif si < -1.0:
+		si = -1.0
 	var angle_2: float = asin( si ) * 0.5
 	var si_2: float = sin( angle_2 )
 	var co_2: float = cos( angle_2 )
@@ -469,7 +473,7 @@ func is_coupled_with( part: Part ):
 		var own_node: CouplingAttachment = atts[coupling_ind]
 		
 		var attachment_b: CouplingAttachment = own_node.attachment_b
-		var part_b: Part = attachment_b.part
+		var part_b: Part = attachment_b.get_part()
 		
 		if part == part_b:
 			return true

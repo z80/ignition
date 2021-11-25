@@ -266,6 +266,8 @@ OctreeMeshGd * BroadTree::get_octree_mesh( int ind )
 
 OctreeMeshGd * BroadTree::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const
 {
+	if ( nodes_.empty() )
+		return nullptr;
     const BroadTreeNode & root = nodes_.ptr()[0];
 	OctreeMeshGd * mesh_gd = root.intersects_segment( start, end, exclude_mesh );
     return mesh_gd;
@@ -273,7 +275,9 @@ OctreeMeshGd * BroadTree::intersects_segment( const Vector3 & start, const Vecto
 
 OctreeMeshGd * BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, Vector3 & at, OctreeMesh::FaceProperties & face_props, OctreeMeshGd * exclude_mesh ) const
 {
-    const BroadTreeNode & root = nodes_.ptr()[0];
+	if ( nodes_.empty() )
+		return nullptr;
+	const BroadTreeNode & root = nodes_.ptr()[0];
 	dist = -1.0;
 	OctreeMeshGd * mesh_gd = root.intersects_segment_face( start, end, dist, at, face_props, exclude_mesh );
     return mesh_gd;

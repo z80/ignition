@@ -83,6 +83,7 @@ func _set_show_visual( en: bool ):
 			var Visual = preload( "res://physics/parts/coupling_nodes/coupling_node_visual.tscn" )
 			_visual = Visual.instance()
 			_visual.size = snap_size()
+			_visual.surface = allows_surface_coupling
 			var vp: Viewport = RootScene.get_overlay_viewport()
 			vp.add_child( _visual )
 		_visual.visible = true
