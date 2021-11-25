@@ -7,7 +7,7 @@ export(bool) var allows_connecting = true
 # Other parts can be connected to this node.
 export(bool) var allows_connections = true
 # Allows getting connected to the surface
-export(bool) var allows_surface_coupling = true
+export(bool) var allows_surface_coupling = false
 
 enum NodeSize { SMALL=0, MEDIUM=1, LARGE=2 }
 export(NodeSize) var node_size = NodeSize.MEDIUM
