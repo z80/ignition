@@ -173,7 +173,8 @@ func deactivate():
 	
 	if is_parent:
 		_joint.queue_free()
-		attachment_b.deactivate()
+		if attachment_b != null:
+			attachment_b.deactivate()
 	_joint = null
 
 
