@@ -74,10 +74,11 @@ public:
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
 	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult &rayResult, bool normalInWorldSpace) {
-		if (rayResult.m_localShapeInfo)
+		if (rayResult.m_localShapeInfo) {
 			m_shapeId = rayResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
-		else
+		} else {
 			m_shapeId = 0;
+		}
 		return btCollisionWorld::ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
 	}
 };
@@ -104,11 +105,13 @@ public:
 struct GodotKinClosestConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback {
 public:
 	const RigidBodyBullet *m_self_object;
+	const Set<RID> *m_exclude;
 	const bool m_infinite_inertia;
 
-	GodotKinClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RigidBodyBullet *p_self_object, bool p_infinite_inertia) :
+	GodotKinClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RigidBodyBullet *p_self_object, bool p_infinite_inertia, const Set<RID> *p_exclude) :
 			btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld),
 			m_self_object(p_self_object),
+			m_exclude(p_exclude),
 			m_infinite_inertia(p_infinite_inertia) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;

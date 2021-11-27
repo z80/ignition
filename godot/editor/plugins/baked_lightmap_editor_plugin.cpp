@@ -39,8 +39,6 @@ void BakedLightmapEditorPlugin::_bake_select_file(const String &p_file) {
 			err = lightmap->bake(lightmap->get_parent(), p_file);
 		}
 
-		bake_func_end();
-
 		switch (err) {
 			case BakedLightmap::BAKE_ERROR_NO_SAVE_PATH: {
 				String scene_path = lightmap->get_filename();
@@ -83,31 +81,28 @@ void BakedLightmapEditorPlugin::_bake() {
 }
 
 void BakedLightmapEditorPlugin::edit(Object *p_object) {
-
 	BakedLightmap *s = Object::cast_to<BakedLightmap>(p_object);
-	if (!s)
+	if (!s) {
 		return;
+	}
 
 	lightmap = s;
 }
 
 bool BakedLightmapEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("BakedLightmap");
 }
 
 void BakedLightmapEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		bake->show();
 	} else {
-
 		bake->hide();
 	}
 }
 
-EditorProgress *BakedLightmapEditorPlugin::tmp_progress = NULL;
-EditorProgress *BakedLightmapEditorPlugin::tmp_subprogress = NULL;
+EditorProgress *BakedLightmapEditorPlugin::tmp_progress = nullptr;
+EditorProgress *BakedLightmapEditorPlugin::tmp_subprogress = nullptr;
 
 bool BakedLightmapEditorPlugin::bake_func_step(float p_progress, const String &p_description, void *, bool p_force_refresh) {
 	if (!tmp_progress) {
@@ -125,7 +120,7 @@ bool BakedLightmapEditorPlugin::bake_func_substep(float p_progress, const String
 	return tmp_subprogress->step(p_description, p_progress * 1000, p_force_refresh);
 }
 
-void BakedLightmapEditorPlugin::bake_func_end() {
+void BakedLightmapEditorPlugin::bake_func_end(uint32_t p_time_started) {
 	if (tmp_progress != nullptr) {
 		memdelete(tmp_progress);
 		tmp_progress = nullptr;
@@ -135,16 +130,27 @@ void BakedLightmapEditorPlugin::bake_func_end() {
 		memdelete(tmp_subprogress);
 		tmp_subprogress = nullptr;
 	}
+
+	const int time_taken = (OS::get_singleton()->get_ticks_msec() - p_time_started) * 0.001;
+	if (time_taken >= 1) {
+		// Only print a message and request attention if baking lightmaps took at least 1 second.
+		// Otherwise, attempting to bake in an erroneous situation (e.g. no meshes to bake)
+		// would print the "done baking lightmaps" message and request attention for no good reason.
+		print_line(vformat("Done baking lightmaps in %02d:%02d:%02d.", time_taken / 3600, (time_taken % 3600) / 60, time_taken % 60));
+
+		// Request attention in case the user was doing something else.
+		// Baking lightmaps is likely the editor task that can take the most time,
+		// so only request the attention for baking lightmaps.
+		OS::get_singleton()->request_attention();
+	}
 }
 
 void BakedLightmapEditorPlugin::_bind_methods() {
-
 	ClassDB::bind_method("_bake", &BakedLightmapEditorPlugin::_bake);
 	ClassDB::bind_method("_bake_select_file", &BakedLightmapEditorPlugin::_bake_select_file);
 }
 
 BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	bake = memnew(ToolButton);
 	bake->set_icon(editor->get_gui_base()->get_icon("Bake", "EditorIcons"));
@@ -160,10 +166,11 @@ BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
 	bake->add_child(file_dialog);
 
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake);
-	lightmap = NULL;
+	lightmap = nullptr;
 
 	BakedLightmap::bake_step_function = bake_func_step;
 	BakedLightmap::bake_substep_function = bake_func_substep;
+	BakedLightmap::bake_end_function = bake_func_end;
 }
 
 BakedLightmapEditorPlugin::~BakedLightmapEditorPlugin() {

@@ -35,7 +35,6 @@ Vector<Vector3> HeightMapShape::get_debug_mesh_lines() {
 	Vector<Vector3> points;
 
 	if ((map_width != 0) && (map_depth != 0)) {
-
 		// This will be slow for large maps...
 		// also we'll have to figure out how well bullet centers this shape...
 
@@ -45,7 +44,7 @@ Vector<Vector3> HeightMapShape::get_debug_mesh_lines() {
 		PoolRealArray::Read r = map_data.read();
 
 		// reserve some memory for our points..
-		points.resize(((map_width - 1) * map_depth * 2) + (map_width * (map_depth - 1) * 2));
+		points.resize(((map_width - 1) * map_depth * 2) + (map_width * (map_depth - 1) * 2) + (map_width - 1) * (map_depth - 1) * 2);
 
 		// now set our points
 		int r_offset = 0;
@@ -66,6 +65,11 @@ Vector<Vector3> HeightMapShape::get_debug_mesh_lines() {
 					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
 				}
 
+				if ((w != map_width - 1) && (d != map_depth - 1)) {
+					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
+					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
+				}
+
 				height.x += 1.0;
 			}
 
@@ -77,7 +81,6 @@ Vector<Vector3> HeightMapShape::get_debug_mesh_lines() {
 }
 
 void HeightMapShape::_update_shape() {
-
 	Dictionary d;
 	d["width"] = map_width;
 	d["depth"] = map_depth;
@@ -157,11 +160,13 @@ void HeightMapShape::set_map_data(PoolRealArray p_new) {
 			min_height = val;
 			max_height = val;
 		} else {
-			if (min_height > val)
+			if (min_height > val) {
 				min_height = val;
+			}
 
-			if (max_height < val)
+			if (max_height < val) {
 				max_height = val;
+			}
 		}
 	}
 
@@ -189,7 +194,6 @@ void HeightMapShape::_bind_methods() {
 
 HeightMapShape::HeightMapShape() :
 		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_HEIGHTMAP)) {
-
 	map_width = 2;
 	map_depth = 2;
 	map_data.resize(map_width * map_depth);

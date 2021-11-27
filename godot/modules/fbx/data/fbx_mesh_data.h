@@ -50,7 +50,7 @@ struct VertexWeightMapping {
 	Vector<int> bones;
 	// This extra vector is used because the bone id is computed in a second step.
 	// TODO Get rid of this extra step is a good idea.
-	Vector<Ref<FBXBone> > bones_ref;
+	Vector<Ref<FBXBone>> bones_ref;
 };
 
 template <class T>
@@ -80,7 +80,7 @@ struct FBXMeshData : Reference {
 	// translate fbx mesh data from document context to FBX Mesh Geometry Context
 	bool valid_weight_indexes = false;
 
-	MeshInstance *create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression);
+	MeshInstance *create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, uint32_t p_compress_flags);
 
 	void gen_weight_info(Ref<SurfaceTool> st, int vertex_id) const;
 
@@ -107,10 +107,10 @@ private:
 			HashMap<int, Vector2> &r_uv_2,
 			HashMap<int, Color> &r_color,
 			HashMap<String, MorphVertexData> &r_morphs,
-			HashMap<int, HashMap<int, Vector3> > &r_normals_raw,
-			HashMap<int, HashMap<int, Color> > &r_colors_raw,
-			HashMap<int, HashMap<int, Vector2> > &r_uv_1_raw,
-			HashMap<int, HashMap<int, Vector2> > &r_uv_2_raw);
+			HashMap<int, HashMap<int, Vector3>> &r_normals_raw,
+			HashMap<int, HashMap<int, Color>> &r_colors_raw,
+			HashMap<int, HashMap<int, Vector2>> &r_uv_1_raw,
+			HashMap<int, HashMap<int, Vector2>> &r_uv_2_raw);
 
 	void add_vertex(
 			const ImportState &state,
@@ -160,7 +160,7 @@ private:
 			const std::vector<FBXDocParser::MeshGeometry::Edge> &p_edges,
 			const std::vector<int> &p_mesh_indices,
 			const FBXDocParser::MeshGeometry::MappingData<T> &p_mapping_data,
-			R (*collector_function)(const Vector<VertexData<T> > *p_vertex_data, R p_fall_back),
+			R (*collector_function)(const Vector<VertexData<T>> *p_vertex_data, R p_fall_back),
 			R p_fall_back) const;
 
 	/// Used to extract data from the `MappingData` organized per polygon.

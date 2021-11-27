@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class NinePatchRect : public Control {
-
 	GDCLASS(NinePatchRect, Control);
 
 public:
@@ -74,6 +73,8 @@ public:
 
 	void set_v_axis_stretch_mode(AxisStretchMode p_mode);
 	AxisStretchMode get_v_axis_stretch_mode() const;
+
+	String get_configuration_warning() const;
 
 	NinePatchRect();
 	~NinePatchRect();

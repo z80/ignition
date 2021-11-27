@@ -38,7 +38,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.graphics.Point;
-import android.media.*;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -64,8 +63,6 @@ public class GodotIO {
 	private final String uniqueId;
 	GodotEditText edit;
 
-	MediaPlayer mediaPlayer;
-
 	final int SCREEN_LANDSCAPE = 0;
 	final int SCREEN_PORTRAIT = 1;
 	final int SCREEN_REVERSE_LANDSCAPE = 2;
@@ -78,8 +75,7 @@ public class GodotIO {
 	/// DIRECTORIES
 	/////////////////////////
 
-	class AssetDir {
-
+	static class AssetDir {
 		public String[] files;
 		public int current;
 		public String path;
@@ -90,7 +86,6 @@ public class GodotIO {
 	private final SparseArray<AssetDir> dirs;
 
 	public int dir_open(String path) {
-
 		AssetDir ad = new AssetDir();
 		ad.current = 0;
 		ad.path = path;
@@ -103,7 +98,6 @@ public class GodotIO {
 				return -1;
 			}
 		} catch (IOException e) {
-
 			System.out.printf("Exception on dir_open: %s\n", e);
 			return -1;
 		}
@@ -141,7 +135,6 @@ public class GodotIO {
 	}
 
 	public String dir_next(int id) {
-
 		if (dirs.get(id) == null) {
 			System.out.printf("dir_next: invalid dir id: %d\n", id);
 			return "";
@@ -160,7 +153,6 @@ public class GodotIO {
 	}
 
 	public void dir_close(int id) {
-
 		if (dirs.get(id) == null) {
 			System.out.printf("dir_close: invalid dir id: %d\n", id);
 			return;
@@ -170,10 +162,8 @@ public class GodotIO {
 	}
 
 	GodotIO(Activity p_activity) {
-
 		am = p_activity.getAssets();
 		activity = p_activity;
-
 		dirs = new SparseArray<>();
 		String androidId = Settings.Secure.getString(activity.getContentResolver(),
 				Settings.Secure.ANDROID_ID);
@@ -185,101 +175,10 @@ public class GodotIO {
 	}
 
 	/////////////////////////
-	// AUDIO
-	/////////////////////////
-
-	private Object buf;
-	private Thread mAudioThread;
-	private AudioTrack mAudioTrack;
-
-	public Object audioInit(int sampleRate, int desiredFrames) {
-		int channelConfig = AudioFormat.CHANNEL_OUT_STEREO;
-		int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
-		int frameSize = 4;
-
-		System.out.printf("audioInit: initializing audio:\n");
-
-		//Log.v("Godot", "Godot audio: wanted " + (isStereo ? "stereo" : "mono") + " " + (is16Bit ? "16-bit" : "8-bit") + " " + ((float)sampleRate / 1000f) + "kHz, " + desiredFrames + " frames buffer");
-
-		// Let the user pick a larger buffer if they really want -- but ye
-		// gods they probably shouldn't, the minimums are horrifyingly high
-		// latency already
-		desiredFrames = Math.max(desiredFrames, (AudioTrack.getMinBufferSize(sampleRate, channelConfig, audioFormat) + frameSize - 1) / frameSize);
-
-		mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate,
-				channelConfig, audioFormat, desiredFrames * frameSize, AudioTrack.MODE_STREAM);
-
-		audioStartThread();
-
-		//Log.v("Godot", "Godot audio: got " + ((mAudioTrack.getChannelCount() >= 2) ? "stereo" : "mono") + " " + ((mAudioTrack.getAudioFormat() == AudioFormat.ENCODING_PCM_16BIT) ? "16-bit" : "8-bit") + " " + ((float)mAudioTrack.getSampleRate() / 1000f) + "kHz, " + desiredFrames + " frames buffer");
-
-		buf = new short[desiredFrames * 2];
-		return buf;
-	}
-
-	public void audioStartThread() {
-		mAudioThread = new Thread(new Runnable() {
-			public void run() {
-				mAudioTrack.play();
-				GodotLib.audio();
-			}
-		});
-
-		// I'd take REALTIME if I could get it!
-		mAudioThread.setPriority(Thread.MAX_PRIORITY);
-		mAudioThread.start();
-	}
-
-	public void audioWriteShortBuffer(short[] buffer) {
-		for (int i = 0; i < buffer.length;) {
-			int result = mAudioTrack.write(buffer, i, buffer.length - i);
-			if (result > 0) {
-				i += result;
-			} else if (result == 0) {
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					// Nom nom
-				}
-			} else {
-				Log.w("Godot", "Godot audio: error return from write(short)");
-				return;
-			}
-		}
-	}
-
-	public void audioQuit() {
-		if (mAudioThread != null) {
-			try {
-				mAudioThread.join();
-			} catch (Exception e) {
-				Log.v("Godot", "Problem stopping audio thread: " + e);
-			}
-			mAudioThread = null;
-
-			//Log.v("Godot", "Finished waiting for audio thread");
-		}
-
-		if (mAudioTrack != null) {
-			mAudioTrack.stop();
-			mAudioTrack = null;
-		}
-	}
-
-	public void audioPause(boolean p_pause) {
-
-		if (p_pause)
-			mAudioTrack.pause();
-		else
-			mAudioTrack.play();
-	}
-
-	/////////////////////////
 	// MISCELLANEOUS OS IO
 	/////////////////////////
 
 	public int openURI(String p_uri) {
-
 		try {
 			String path = p_uri;
 			String type = "";
@@ -287,7 +186,6 @@ public class GodotIO {
 				//absolute path to filesystem, prepend file://
 				path = "file://" + path;
 				if (p_uri.endsWith(".png") || p_uri.endsWith(".jpg") || p_uri.endsWith(".gif") || p_uri.endsWith(".webp")) {
-
 					type = "image/*";
 				}
 			}
@@ -303,7 +201,6 @@ public class GodotIO {
 			activity.startActivity(intent);
 			return 0;
 		} catch (ActivityNotFoundException e) {
-
 			return 1;
 		}
 	}
@@ -317,7 +214,6 @@ public class GodotIO {
 	}
 
 	public String getLocale() {
-
 		return Locale.getDefault().toString();
 	}
 
@@ -336,7 +232,7 @@ public class GodotIO {
 		Point size = new Point();
 		display.getRealSize(size);
 
-		int result[] = { 0, 0, size.x, size.y };
+		int[] result = { 0, 0, size.x, size.y };
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 			WindowInsets insets = activity.getWindow().getDecorView().getRootWindowInsets();
 			DisplayCutout cutout = insets.getDisplayCutout();
@@ -358,17 +254,15 @@ public class GodotIO {
 
 		//InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
 		//inputMgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-	};
+	}
 
 	public void hideKeyboard() {
 		if (edit != null)
 			edit.hideKeyboard();
-	};
+	}
 
 	public void setScreenOrientation(int p_orientation) {
-
 		switch (p_orientation) {
-
 			case SCREEN_LANDSCAPE: {
 				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 			} break;
@@ -399,40 +293,6 @@ public class GodotIO {
 
 	public void setEdit(GodotEditText _edit) {
 		edit = _edit;
-	}
-
-	public void playVideo(String p_path) {
-		Uri filePath = Uri.parse(p_path);
-		mediaPlayer = new MediaPlayer();
-
-		try {
-			mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			mediaPlayer.setDataSource(activity.getApplicationContext(), filePath);
-			mediaPlayer.prepare();
-			mediaPlayer.start();
-		} catch (IOException e) {
-			System.out.println("IOError while playing video");
-		}
-	}
-
-	public boolean isVideoPlaying() {
-		if (mediaPlayer != null) {
-			return mediaPlayer.isPlaying();
-		}
-		return false;
-	}
-
-	public void pauseVideo() {
-		if (mediaPlayer != null) {
-			mediaPlayer.pause();
-		}
-	}
-
-	public void stopVideo() {
-		if (mediaPlayer != null) {
-			mediaPlayer.release();
-			mediaPlayer = null;
-		}
 	}
 
 	public static final int SYSTEM_DIR_DESKTOP = 0;

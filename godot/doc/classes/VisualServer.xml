@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualServer" inherits="Object" version="3.3">
+<class name="VisualServer" inherits="Object" version="3.4">
 	<brief_description>
 		Server for anything visible.
 	</brief_description>
@@ -15,7 +15,7 @@
 		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.3/tutorials/optimization/using_servers.html</link>
+		<link>https://docs.godotengine.org/en/3.4/tutorials/optimization/using_servers.html</link>
 	</tutorials>
 	<methods>
 		<method name="black_bars_set_images">
@@ -861,6 +861,7 @@
 			<argument index="8" name="hdr_bleed_scale" type="float" />
 			<argument index="9" name="hdr_luminance_cap" type="float" />
 			<argument index="10" name="bicubic_upscale" type="bool" />
+			<argument index="11" name="high_quality" type="bool" />
 			<description>
 				Sets the variables to be used with the "glow" post-process effect. See [Environment] for more details.
 			</description>
@@ -1807,7 +1808,7 @@
 			<argument index="1" name="primitive" type="int" enum="VisualServer.PrimitiveType" />
 			<argument index="2" name="arrays" type="Array" />
 			<argument index="3" name="blend_shapes" type="Array" default="[  ]" />
-			<argument index="4" name="compress_format" type="int" default="97280" />
+			<argument index="4" name="compress_format" type="int" default="2194432" />
 			<description>
 				Adds a surface generated from the Arrays to a mesh. See [enum PrimitiveType] constants for types.
 			</description>
@@ -1958,8 +1959,8 @@
 			<argument index="0" name="format" type="int" />
 			<argument index="1" name="vertex_len" type="int" />
 			<argument index="2" name="index_len" type="int" />
+			<argument index="3" name="array_index" type="int" />
 			<description>
-				Function is unused in Godot 3.x.
 			</description>
 		</method>
 		<method name="mesh_surface_get_index_array" qualifiers="const">
@@ -2317,7 +2318,8 @@
 			<argument index="0" name="particles" type="RID" />
 			<argument index="1" name="material" type="RID" />
 			<description>
-				Sets the material for processing the particles. Note: this is not the material used to draw the materials. Equivalent to [member Particles.process_material].
+				Sets the material for processing the particles.
+				[b]Note:[/b] This is not the material used to draw the materials. Equivalent to [member Particles.process_material].
 			</description>
 		</method>
 		<method name="particles_set_randomness_ratio">
@@ -2529,6 +2531,13 @@
 			<description>
 				Sets the scale to apply to the passage of time for the shaders' [code]TIME[/code] builtin.
 				The default value is [code]1.0[/code], which means [code]TIME[/code] will count the real time as it goes by, without narrowing or stretching it.
+			</description>
+		</method>
+		<method name="set_use_occlusion_culling">
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
+			<description>
+				Enables or disables occlusion culling.
 			</description>
 		</method>
 		<method name="shader_create">
@@ -3046,6 +3055,14 @@
 				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
 			</description>
 		</method>
+		<method name="viewport_set_sharpen_intensity">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="intensity" type="float" />
+			<description>
+				Sets the sharpening [code]intensity[/code] for the [code]viewport[/code]. If set to a value greater than [code]0.0[/code], contrast-adaptive sharpening will be applied to the 3D viewport. This has a low performance cost and can be used to recover some of the sharpness lost from using FXAA. Values around [code]0.5[/code] generally give the best results. See also [method viewport_set_use_fxaa].
+			</description>
+		</method>
 		<method name="viewport_set_size">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
@@ -3101,7 +3118,7 @@
 			<argument index="0" name="viewport" type="RID" />
 			<argument index="1" name="fxaa" type="bool" />
 			<description>
-				Enables fast approximate antialiasing for this viewport. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
+				Enables fast approximate antialiasing for this viewport. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K. Some of the lost sharpness can be recovered by enabling contrast-adaptive sharpening (see [method viewport_set_sharpen_intensity]).
 			</description>
 		</method>
 		<method name="viewport_set_vflip">
@@ -3312,8 +3329,11 @@
 		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288" enum="ArrayFormat">
 			Flag used to mark that the array uses 16-bit bones instead of 8-bit.
 		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="97280" enum="ArrayFormat">
-			Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV], [constant ARRAY_COMPRESS_TEX_UV2] and [constant ARRAY_COMPRESS_WEIGHTS] quickly.
+		<constant name="ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION" value="2097152" enum="ArrayFormat">
+			Flag used to mark that the array uses an octahedral representation of normal and tangent vectors rather than cartesian.
+		</constant>
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="2194432" enum="ArrayFormat">
+			Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV], [constant ARRAY_COMPRESS_TEX_UV2], [constant ARRAY_COMPRESS_WEIGHTS], and [constant ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION] quickly.
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Primitive to draw consists of points.
@@ -3357,46 +3377,52 @@
 		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
 			The light's energy.
 		</constant>
-		<constant name="LIGHT_PARAM_SPECULAR" value="2" enum="LightParam">
+		<constant name="LIGHT_PARAM_INDIRECT_ENERGY" value="1" enum="LightParam">
+			Secondary multiplier used with indirect light (light bounces).
+		</constant>
+		<constant name="LIGHT_PARAM_SIZE" value="2" enum="LightParam">
+			The light's size, currently only used for soft shadows in baked lightmaps.
+		</constant>
+		<constant name="LIGHT_PARAM_SPECULAR" value="3" enum="LightParam">
 			The light's influence on specularity.
 		</constant>
-		<constant name="LIGHT_PARAM_RANGE" value="3" enum="LightParam">
+		<constant name="LIGHT_PARAM_RANGE" value="4" enum="LightParam">
 			The light's range.
 		</constant>
-		<constant name="LIGHT_PARAM_ATTENUATION" value="4" enum="LightParam">
+		<constant name="LIGHT_PARAM_ATTENUATION" value="5" enum="LightParam">
 			The light's attenuation.
 		</constant>
-		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="5" enum="LightParam">
+		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="6" enum="LightParam">
 			The spotlight's angle.
 		</constant>
-		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="6" enum="LightParam">
+		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="7" enum="LightParam">
 			The spotlight's attenuation.
 		</constant>
-		<constant name="LIGHT_PARAM_CONTACT_SHADOW_SIZE" value="7" enum="LightParam">
+		<constant name="LIGHT_PARAM_CONTACT_SHADOW_SIZE" value="8" enum="LightParam">
 			Scales the shadow color.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="8" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="9" enum="LightParam">
 			Max distance that shadows will be rendered.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="9" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="10" enum="LightParam">
 			Proportion of shadow atlas occupied by the first split.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="10" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="11" enum="LightParam">
 			Proportion of shadow atlas occupied by the second split.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="11" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="12" enum="LightParam">
 			Proportion of shadow atlas occupied by the third split. The fourth split occupies the rest.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="12" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="13" enum="LightParam">
 			Normal bias used to offset shadow lookup by object normal. Can be used to fix self-shadowing artifacts.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="13" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="14" enum="LightParam">
 			Bias the shadow lookup to fix self-shadowing artifacts.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="15" enum="LightParam">
 			Increases bias on further splits to fix self-shadowing that only occurs far away from the camera.
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="15" enum="LightParam">
+		<constant name="LIGHT_PARAM_MAX" value="16" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
@@ -3773,6 +3799,9 @@
 		</constant>
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
 			Use the ACES tonemapper.
+		</constant>
+		<constant name="ENV_TONE_MAPPER_ACES_FITTED" value="4" enum="EnvironmentToneMapper">
+			Use the ACES Fitted tonemapper.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_LOW" value="0" enum="EnvironmentSSAOQuality">
 			Lowest quality of screen space ambient occlusion.

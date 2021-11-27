@@ -37,7 +37,6 @@
 #include "core/reference.h"
 
 class HTTPClient : public Reference {
-
 	GDCLASS(HTTPClient, Reference);
 
 public:
@@ -160,6 +159,7 @@ private:
 #ifndef JAVASCRIPT_ENABLED
 	Status status;
 	IP::ResolverID resolving;
+	Array ip_candidates;
 	int conn_port;
 	String conn_host;
 	bool ssl;

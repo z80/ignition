@@ -37,6 +37,7 @@
 struct Vector2i;
 
 struct Vector2 {
+	static const int AXIS_COUNT = 2;
 
 	enum Axis {
 		AXIS_X,
@@ -44,12 +45,18 @@ struct Vector2 {
 	};
 
 	union {
-		real_t x;
-		real_t width;
-	};
-	union {
-		real_t y;
-		real_t height;
+		struct {
+			union {
+				real_t x;
+				real_t width;
+			};
+			union {
+				real_t y;
+				real_t height;
+			};
+		};
+
+		real_t coord[2];
 	};
 
 	_FORCE_INLINE_ real_t &operator[](int p_idx) {
@@ -57,6 +64,18 @@ struct Vector2 {
 	}
 	_FORCE_INLINE_ const real_t &operator[](int p_idx) const {
 		return p_idx ? y : x;
+	}
+
+	_FORCE_INLINE_ void set_all(real_t p_value) {
+		x = y = p_value;
+	}
+
+	_FORCE_INLINE_ int min_axis() const {
+		return x < y ? 0 : 1;
+	}
+
+	_FORCE_INLINE_ int max_axis() const {
+		return x < y ? 1 : 0;
 	}
 
 	void normalize();
@@ -124,19 +143,16 @@ struct Vector2 {
 	real_t angle() const;
 
 	void set_rotation(real_t p_radians) {
-
 		x = Math::cos(p_radians);
 		y = Math::sin(p_radians);
 	}
 
 	_FORCE_INLINE_ Vector2 abs() const {
-
 		return Vector2(Math::abs(x), Math::abs(y));
 	}
 
 	Vector2 rotated(real_t p_by) const;
 	Vector2 tangent() const {
-
 		return Vector2(y, -x);
 	}
 
@@ -157,81 +173,65 @@ struct Vector2 {
 };
 
 _FORCE_INLINE_ Vector2 Vector2::plane_project(real_t p_d, const Vector2 &p_vec) const {
-
 	return p_vec - *this * (dot(p_vec) - p_d);
 }
 
 _FORCE_INLINE_ Vector2 operator*(real_t p_scalar, const Vector2 &p_vec) {
-
 	return p_vec * p_scalar;
 }
 
 _FORCE_INLINE_ Vector2 Vector2::operator+(const Vector2 &p_v) const {
-
 	return Vector2(x + p_v.x, y + p_v.y);
 }
 _FORCE_INLINE_ void Vector2::operator+=(const Vector2 &p_v) {
-
 	x += p_v.x;
 	y += p_v.y;
 }
 _FORCE_INLINE_ Vector2 Vector2::operator-(const Vector2 &p_v) const {
-
 	return Vector2(x - p_v.x, y - p_v.y);
 }
 _FORCE_INLINE_ void Vector2::operator-=(const Vector2 &p_v) {
-
 	x -= p_v.x;
 	y -= p_v.y;
 }
 
 _FORCE_INLINE_ Vector2 Vector2::operator*(const Vector2 &p_v1) const {
-
 	return Vector2(x * p_v1.x, y * p_v1.y);
 };
 
 _FORCE_INLINE_ Vector2 Vector2::operator*(const real_t &rvalue) const {
-
 	return Vector2(x * rvalue, y * rvalue);
 };
 _FORCE_INLINE_ void Vector2::operator*=(const real_t &rvalue) {
-
 	x *= rvalue;
 	y *= rvalue;
 };
 
 _FORCE_INLINE_ Vector2 Vector2::operator/(const Vector2 &p_v1) const {
-
 	return Vector2(x / p_v1.x, y / p_v1.y);
 };
 
 _FORCE_INLINE_ Vector2 Vector2::operator/(const real_t &rvalue) const {
-
 	return Vector2(x / rvalue, y / rvalue);
 };
 
 _FORCE_INLINE_ void Vector2::operator/=(const real_t &rvalue) {
-
 	x /= rvalue;
 	y /= rvalue;
 };
 
 _FORCE_INLINE_ Vector2 Vector2::operator-() const {
-
 	return Vector2(-x, -y);
 }
 
 _FORCE_INLINE_ bool Vector2::operator==(const Vector2 &p_vec2) const {
-
 	return x == p_vec2.x && y == p_vec2.y;
 }
 _FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
-
 	return x != p_vec2.x || y != p_vec2.y;
 }
 
 Vector2 Vector2::linear_interpolate(const Vector2 &p_to, real_t p_weight) const {
-
 	Vector2 res = *this;
 
 	res.x += (p_weight * (p_to.x - x));
@@ -255,7 +255,6 @@ Vector2 Vector2::direction_to(const Vector2 &p_to) const {
 }
 
 Vector2 Vector2::linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_weight) {
-
 	Vector2 res = p_a;
 
 	res.x += (p_weight * (p_b.x - p_a.x));
@@ -270,7 +269,6 @@ typedef Vector2 Point2;
 /* INTEGER STUFF */
 
 struct Vector2i {
-
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,

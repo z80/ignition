@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptLists" inherits="VisualScriptNode" version="3.3">
+<class name="VisualScriptLists" inherits="VisualScriptNode" version="3.4">
 	<brief_description>
 		A Visual Script virtual class for in-graph editable nodes.
 	</brief_description>
@@ -15,6 +15,7 @@
 			<argument index="1" name="name" type="String" />
 			<argument index="2" name="index" type="int" />
 			<description>
+				Adds an input port to the Visual Script node.
 			</description>
 		</method>
 		<method name="add_output_data_port">
@@ -23,18 +24,21 @@
 			<argument index="1" name="name" type="String" />
 			<argument index="2" name="index" type="int" />
 			<description>
+				Adds an output port to the Visual Script node.
 			</description>
 		</method>
 		<method name="remove_input_data_port">
 			<return type="void" />
 			<argument index="0" name="index" type="int" />
 			<description>
+				Removes an input port from the Visual Script node.
 			</description>
 		</method>
 		<method name="remove_output_data_port">
 			<return type="void" />
 			<argument index="0" name="index" type="int" />
 			<description>
+				Removes an output port from the Visual Script node.
 			</description>
 		</method>
 		<method name="set_input_data_port_name">
@@ -42,6 +46,7 @@
 			<argument index="0" name="index" type="int" />
 			<argument index="1" name="name" type="String" />
 			<description>
+				Sets the name of an input port.
 			</description>
 		</method>
 		<method name="set_input_data_port_type">
@@ -49,6 +54,7 @@
 			<argument index="0" name="index" type="int" />
 			<argument index="1" name="type" type="int" enum="Variant.Type" />
 			<description>
+				Sets the type of an input port.
 			</description>
 		</method>
 		<method name="set_output_data_port_name">
@@ -56,6 +62,7 @@
 			<argument index="0" name="index" type="int" />
 			<argument index="1" name="name" type="String" />
 			<description>
+				Sets the name of an output port.
 			</description>
 		</method>
 		<method name="set_output_data_port_type">
@@ -63,6 +70,7 @@
 			<argument index="0" name="index" type="int" />
 			<argument index="1" name="type" type="int" enum="Variant.Type" />
 			<description>
+				Sets the type of an output port.
 			</description>
 		</method>
 	</methods>

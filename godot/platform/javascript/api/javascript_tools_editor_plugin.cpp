@@ -41,7 +41,7 @@
 
 // JavaScript functions defined in library_godot_editor_tools.js
 extern "C" {
-extern void godot_js_editor_download_file(const char *p_path, const char *p_name, const char *p_mime);
+extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
 }
 
 static void _javascript_editor_init_callback() {
@@ -70,7 +70,12 @@ void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
 	String base_path = resource_path.substr(0, resource_path.rfind("/")) + "/";
 	_zip_recursive(resource_path, base_path, zip);
 	zipClose(zip, NULL);
-	godot_js_editor_download_file("/tmp/project.zip", "project.zip", "application/zip");
+	FileAccess *f = FileAccess::open("/tmp/project.zip", FileAccess::READ);
+	ERR_FAIL_COND_MSG(!f, "Unable to create zip file");
+	Vector<uint8_t> buf;
+	buf.resize(f->get_len());
+	f->get_buffer(buf.ptrw(), buf.size());
+	godot_js_os_download_buffer(buf.ptr(), buf.size(), "project.zip", "application/zip");
 }
 
 void JavaScriptToolsEditorPlugin::_bind_methods() {
@@ -84,7 +89,7 @@ void JavaScriptToolsEditorPlugin::_zip_file(String p_path, String p_base_path, z
 		return;
 	}
 	Vector<uint8_t> data;
-	int len = f->get_len();
+	uint64_t len = f->get_len();
 	data.resize(len);
 	f->get_buffer(data.ptrw(), len);
 	f->close();
@@ -113,9 +118,10 @@ void JavaScriptToolsEditorPlugin::_zip_recursive(String p_path, String p_base_pa
 	}
 	dir->list_dir_begin();
 	String cur = dir->get_next();
+	String project_data_dir_name = ProjectSettings::get_singleton()->get_project_data_dir_name();
 	while (!cur.empty()) {
 		String cs = p_path.plus_file(cur);
-		if (cur == "." || cur == ".." || cur == ".import") {
+		if (cur == "." || cur == ".." || cur == project_data_dir_name) {
 			// Skip
 		} else if (dir->current_is_dir()) {
 			String path = cs.replace_first(p_base_path, "") + "/";

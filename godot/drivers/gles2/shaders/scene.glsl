@@ -6,6 +6,9 @@
 #define mediump
 #define highp
 #else
+// Default to high precision variables for the vertex shader.
+// Note that the fragment shader however may default to mediump on mobile for performance,
+// and thus shared uniforms should use a specifier to be consistent in both shaders.
 precision highp float;
 precision highp int;
 #endif
@@ -22,17 +25,24 @@ precision highp int;
 
 #define M_PI 3.14159265359
 
-
 //
 // attributes
 //
 
 attribute highp vec4 vertex_attrib; // attrib:0
 /* clang-format on */
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+attribute vec4 normal_tangent_attrib; // attrib:1
+#else
 attribute vec3 normal_attrib; // attrib:1
+#endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+// packed into normal_attrib zw component
+#else
 attribute vec4 tangent_attrib; // attrib:2
+#endif
 #endif
 
 #if defined(ENABLE_COLOR_INTERP)
@@ -96,6 +106,17 @@ uniform highp vec2 viewport_size;
 #ifdef RENDER_DEPTH
 uniform float light_bias;
 uniform float light_normal_bias;
+#endif
+
+uniform highp int view_index;
+
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+vec3 oct_to_vec3(vec2 e) {
+	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
+	float t = max(-v.z, 0.0);
+	v.xy += t * -sign(v.xy);
+	return normalize(v);
+}
 #endif
 
 //
@@ -185,6 +206,15 @@ uniform highp float light_spot_attenuation;
 uniform highp float light_spot_range;
 uniform highp float light_spot_angle;
 
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+
 void light_compute(
 		vec3 N,
 		vec3 L,
@@ -192,7 +222,6 @@ void light_compute(
 		vec3 light_color,
 		vec3 attenuation,
 		float roughness) {
-
 //this makes lights behave closer to linear, but then addition of lights looks bad
 //better left disabled
 
@@ -247,7 +276,6 @@ void light_compute(
 	diffuse_interp += light_color * diffuse_brdf_NL * attenuation;
 
 	if (roughness > 0.0) {
-
 		// D
 		float specular_brdf_NL = 0.0;
 
@@ -256,13 +284,13 @@ void light_compute(
 		vec3 H = normalize(V + L);
 		float cNdotH = max(dot(N, H), 0.0);
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess) * cNdotL;
-		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
+		float blinn = pow(cNdotH, shininess);
+		blinn *= (shininess + 2.0) * (1.0 / (8.0 * M_PI));
 		specular_brdf_NL = blinn;
 #endif
 
 		SRGB_APPROX(specular_brdf_NL)
-		specular_interp += specular_brdf_NL * light_color * attenuation * (1.0 / M_PI);
+		specular_interp += specular_brdf_NL * light_color * attenuation;
 	}
 }
 
@@ -323,7 +351,6 @@ uniform mediump float fog_height_curve;
 #endif //fog
 
 void main() {
-
 	highp vec4 vertex = vertex_attrib;
 
 	mat4 world_matrix = world_transform;
@@ -340,11 +367,20 @@ void main() {
 
 #endif
 
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+	vec3 normal = oct_to_vec3(normal_tangent_attrib.xy);
+#else
 	vec3 normal = normal_attrib;
+#endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+	vec3 tangent = oct_to_vec3(vec2(normal_tangent_attrib.z, abs(normal_tangent_attrib.w) * 2.0 - 1.0));
+	float binormalf = sign(normal_tangent_attrib.w);
+#else
 	vec3 tangent = tangent_attrib.xyz;
 	float binormalf = tangent_attrib.a;
+#endif
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
 
@@ -397,7 +433,6 @@ void main() {
 #else
 	// look up transform from the "pose texture"
 	{
-
 		for (int i = 0; i < 4; i++) {
 			ivec2 tex_ofs = ivec2(int(bone_ids[i]) * 3, 0);
 
@@ -520,10 +555,12 @@ VERTEX_SHADER_CODE
 	float normalized_distance = light_length / light_range;
 
 	if (normalized_distance < 1.0) {
-
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+		float omni_attenuation = get_omni_attenuation(light_length, 1.0 / light_range, light_attenuation);
+#else
 		float omni_attenuation = pow(1.0 - normalized_distance, light_attenuation);
+#endif
 
-		vec3 attenuation = vec3(omni_attenuation);
 		light_att = vec3(omni_attenuation);
 	} else {
 		light_att = vec3(0.0);
@@ -540,8 +577,12 @@ VERTEX_SHADER_CODE
 	float normalized_distance = light_length / light_range;
 
 	if (normalized_distance < 1.0) {
-
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+		float spot_attenuation = get_omni_attenuation(light_length, 1.0 / light_range, light_attenuation);
+#else
 		float spot_attenuation = pow(1.0 - normalized_distance, light_attenuation);
+#endif
+
 		vec3 spot_dir = light_direction;
 
 		float spot_cutoff = light_spot_angle;
@@ -549,7 +590,6 @@ VERTEX_SHADER_CODE
 		float angle = dot(-normalize(light_rel_vec), spot_dir);
 
 		if (angle > spot_cutoff) {
-
 			float scos = max(angle, spot_cutoff);
 			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_cutoff));
 
@@ -653,7 +693,6 @@ VERTEX_SHADER_CODE
 #ifdef FOG_DEPTH_ENABLED
 
 	{
-
 		float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
 
 		fog_amount = pow(fog_z, fog_depth_curve) * fog_color_base.a;
@@ -710,6 +749,7 @@ VERTEX_SHADER_CODE
 #define mediump
 #define highp
 #else
+// On mobile devices we want to default to medium precision to increase performance in the fragment shader.
 #if defined(USE_HIGHP_PRECISION)
 precision highp float;
 precision highp int;
@@ -737,6 +777,7 @@ uniform highp mat4 projection_inverse_matrix;
 uniform highp mat4 world_transform;
 
 uniform highp float time;
+uniform highp int view_index;
 
 uniform highp vec2 viewport_size;
 
@@ -963,7 +1004,7 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv) {
 	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5)) * texel_size;
 
 	return (g0(fuv.y) * (g0x * texture2D(tex, p0) + g1x * texture2D(tex, p1))) +
-		   (g1(fuv.y) * (g0x * texture2D(tex, p2) + g1x * texture2D(tex, p3)));
+			(g1(fuv.y) * (g0x * texture2D(tex, p2) + g1x * texture2D(tex, p3)));
 }
 #endif //USE_LIGHTMAP_FILTER_BICUBIC
 #endif
@@ -1191,11 +1232,23 @@ float SchlickFresnel(float u) {
 }
 
 float GTR1(float NdotH, float a) {
-	if (a >= 1.0) return 1.0 / M_PI;
+	if (a >= 1.0)
+		return 1.0 / M_PI;
 	float a2 = a * a;
 	float t = 1.0 + (a2 - 1.0) * NdotH * NdotH;
 	return (a2 - 1.0) / (M_PI * log(a2) * t);
 }
+
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+#endif
 
 void light_compute(
 		vec3 N,
@@ -1219,7 +1272,6 @@ void light_compute(
 		inout vec3 diffuse_light,
 		inout vec3 specular_light,
 		inout float alpha) {
-
 //this makes lights behave closer to linear, but then addition of lights looks bad
 //better left disabled
 
@@ -1253,6 +1305,11 @@ LIGHT_SHADER_CODE
 	float cNdotL = max(NdotL, 0.0); // clamped NdotL
 	float NdotV = dot(N, V);
 	float cNdotV = max(abs(NdotV), 1e-6);
+
+/* Make a default specular mode SPECULAR_SCHLICK_GGX. */
+#if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN) && !defined(SPECULAR_PHONG) && !defined(SPECULAR_TOON)
+#define SPECULAR_SCHLICK_GGX
+#endif
 
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
 	vec3 H = normalize(V + L);
@@ -1336,7 +1393,7 @@ LIGHT_SHADER_CODE
 
 	if (roughness > 0.0) {
 
-#if defined(SPECULAR_SCHLICK_GGX)
+#if defined(SPECULAR_SCHLICK_GGX) || defined(SPECULAR_BLINN) || defined(SPECULAR_PHONG)
 		vec3 specular_brdf_NL = vec3(0.0);
 #else
 		float specular_brdf_NL = 0.0;
@@ -1346,9 +1403,10 @@ LIGHT_SHADER_CODE
 
 		//normalized blinn
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess) * cNdotL;
-		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-		specular_brdf_NL = blinn;
+		float blinn = pow(cNdotH, shininess);
+		blinn *= (shininess + 2.0) * (1.0 / (8.0 * M_PI));
+
+		specular_brdf_NL = blinn * diffuse_color * specular;
 
 #elif defined(SPECULAR_PHONG)
 
@@ -1356,8 +1414,9 @@ LIGHT_SHADER_CODE
 		float cRdotV = max(0.0, dot(R, V));
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float phong = pow(cRdotV, shininess);
-		phong *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-		specular_brdf_NL = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
+		phong *= (shininess + 1.0) * (1.0 / (8.0 * M_PI));
+
+		specular_brdf_NL = phong * diffuse_color * specular;
 
 #elif defined(SPECULAR_TOON)
 
@@ -1443,7 +1502,6 @@ LIGHT_SHADER_CODE
 #define SAMPLE_SHADOW_TEXEL_PROJ(p_shadow, p_pos) step(p_pos.z, SHADOW_DEPTH(texture2DProj(p_shadow, p_pos)))
 
 float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
-
 #ifdef SHADOW_MODE_PCF_13
 
 	// Soft PCF filter adapted from three.js:
@@ -1486,7 +1544,7 @@ float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 								   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * shadow_pixel_size.x, 2.0 * shadow_pixel_size.y), depth),
 								   f.x),
 						   f.y)) *
-		   (1.0 / 9.0);
+			(1.0 / 9.0);
 #endif
 
 #ifdef SHADOW_MODE_PCF_5
@@ -1543,7 +1601,6 @@ uniform mediump float fog_height_curve;
 #endif //fog
 
 void main() {
-
 #ifdef RENDER_DEPTH_DUAL_PARABOLOID
 
 	if (dp_clip > 0.0)
@@ -1659,11 +1716,13 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_RADIANCE_MAP
 
 	vec3 ref_vec = reflect(-eye_position, N);
+	float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 	ref_vec = normalize((radiance_inverse_xform * vec4(ref_vec, 0.0)).xyz);
 
 	ref_vec.z *= -1.0;
 
 	specular_light = textureCubeLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).xyz * bg_energy;
+	specular_light *= horizon * horizon;
 #ifndef USE_LIGHTMAP
 	{
 		vec3 ambient_dir = normalize((radiance_inverse_xform * vec4(normal, 0.0)).xyz);
@@ -1738,7 +1797,6 @@ FRAGMENT_SHADER_CODE
 
 	// environment BRDF approximation
 	{
-
 #if defined(DIFFUSE_TOON)
 		//simplify for toon, as
 		specular_light *= specular * metallic * albedo * 2.0;
@@ -1822,8 +1880,11 @@ FRAGMENT_SHADER_CODE
 
 	float normalized_distance = light_length / light_range;
 	if (normalized_distance < 1.0) {
-
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+		float omni_attenuation = get_omni_attenuation(light_length, 1.0 / light_range, light_attenuation);
+#else
 		float omni_attenuation = pow(1.0 - normalized_distance, light_attenuation);
+#endif
 
 		light_att = vec3(omni_attenuation);
 	} else {
@@ -1919,7 +1980,6 @@ FRAGMENT_SHADER_CODE
 			}
 		} else {
 			if (depth_z < light_split_offsets.z) {
-
 				shadow_att = shadow3;
 
 #if defined(LIGHT_USE_PSSM_BLEND)
@@ -1928,7 +1988,6 @@ FRAGMENT_SHADER_CODE
 #endif
 
 			} else {
-
 				shadow_att = shadow4;
 				pssm_fade = smoothstep(light_split_offsets.z, light_split_offsets.w, depth_z);
 
@@ -1971,7 +2030,6 @@ FRAGMENT_SHADER_CODE
 			pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
 #endif
 		} else {
-
 			shadow_att = shadow2;
 			pssm_fade = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
 #ifdef LIGHT_USE_PSSM_BLEND
@@ -2035,7 +2093,6 @@ FRAGMENT_SHADER_CODE
 				}
 			} else {
 				if (depth_z < light_split_offsets.z) {
-
 					pssm_coord = shadow_coord3;
 
 #if defined(LIGHT_USE_PSSM_BLEND)
@@ -2044,7 +2101,6 @@ FRAGMENT_SHADER_CODE
 #endif
 
 				} else {
-
 					pssm_coord = shadow_coord4;
 					pssm_fade = smoothstep(light_split_offsets.z, light_split_offsets.w, depth_z);
 
@@ -2058,7 +2114,6 @@ FRAGMENT_SHADER_CODE
 
 #ifdef LIGHT_USE_PSSM2
 			if (depth_z < light_split_offsets.x) {
-
 				pssm_coord = shadow_coord;
 
 #ifdef LIGHT_USE_PSSM_BLEND
@@ -2066,7 +2121,6 @@ FRAGMENT_SHADER_CODE
 				pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
 #endif
 			} else {
-
 				pssm_coord = shadow_coord2;
 				pssm_fade = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
 #ifdef LIGHT_USE_PSSM_BLEND
@@ -2112,7 +2166,12 @@ FRAGMENT_SHADER_CODE
 	float normalized_distance = light_length / light_range;
 
 	if (normalized_distance < 1.0) {
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+		float spot_attenuation = get_omni_attenuation(light_length, 1.0 / light_range, light_attenuation);
+#else
 		float spot_attenuation = pow(1.0 - normalized_distance, light_attenuation);
+#endif
+
 		vec3 spot_dir = light_direction;
 
 		float spot_cutoff = light_spot_angle;
@@ -2152,8 +2211,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_VERTEX_LIGHTING
 	//vertex lighting
-
-	specular_light += specular_interp * specular_blob_intensity * light_att;
+	specular_light += specular_interp * albedo * specular * specular_blob_intensity * light_att;
 	diffuse_light += diffuse_interp * albedo * light_att;
 
 #else
@@ -2255,7 +2313,6 @@ FRAGMENT_SHADER_CODE
 #ifdef FOG_DEPTH_ENABLED
 
 	{
-
 		float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
 
 		fog_amount = pow(fog_z, fog_depth_curve) * fog_color_base.a;
@@ -2286,6 +2343,11 @@ FRAGMENT_SHADER_CODE
 #endif // defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
 #endif //unshaded
+
+#ifdef OUTPUT_LINEAR
+	// sRGB -> linear
+	gl_FragColor.rgb = mix(pow((gl_FragColor.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), gl_FragColor.rgb * (1.0 / 12.92), vec3(lessThan(gl_FragColor.rgb, vec3(0.04045))));
+#endif
 
 #else // not RENDER_DEPTH
 //depth render

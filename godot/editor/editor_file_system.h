@@ -42,7 +42,6 @@ class FileAccess;
 
 struct EditorProgressBG;
 class EditorFileSystemDirectory : public Object {
-
 	GDCLASS(EditorFileSystemDirectory, Object);
 
 	String name;
@@ -92,6 +91,7 @@ public:
 	StringName get_file_type(int p_idx) const;
 	Vector<String> get_file_deps(int p_idx) const;
 	bool get_file_import_is_valid(int p_idx) const;
+	uint64_t get_file_modified_time(int p_idx) const;
 	String get_file_script_class_name(int p_idx) const; //used for scripts
 	String get_file_script_class_extends(int p_idx) const; //used for scripts
 	String get_file_script_class_icon_path(int p_idx) const; //used for scripts
@@ -101,18 +101,18 @@ public:
 	int find_file_index(const String &p_file) const;
 	int find_dir_index(const String &p_dir) const;
 
+	void force_update();
+
 	EditorFileSystemDirectory();
 	~EditorFileSystemDirectory();
 };
 
 class EditorFileSystem : public Node {
-
 	GDCLASS(EditorFileSystem, Node);
 
 	_THREAD_SAFE_CLASS_
 
 	struct ItemAction {
-
 		enum Action {
 			ACTION_NONE,
 			ACTION_DIR_ADD,
@@ -131,9 +131,9 @@ class EditorFileSystem : public Node {
 
 		ItemAction() {
 			action = ACTION_NONE;
-			dir = NULL;
-			new_dir = NULL;
-			new_file = NULL;
+			dir = nullptr;
+			new_dir = nullptr;
+			new_file = nullptr;
 		}
 	};
 
@@ -165,7 +165,6 @@ class EditorFileSystem : public Node {
 
 	/* Used for reading the filesystem cache file */
 	struct FileCache {
-
 		String type;
 		uint64_t modification_time;
 		uint64_t import_modification_time;
@@ -180,7 +179,6 @@ class EditorFileSystem : public Node {
 	HashMap<String, FileCache> file_cache;
 
 	struct ScanProgress {
-
 		float low;
 		float hi;
 		mutable EditorProgressBG *progress;
@@ -195,6 +193,7 @@ class EditorFileSystem : public Node {
 
 	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress);
 
+	void _create_project_data_dir_if_necessary();
 	void _delete_internal_files(String p_file);
 
 	Set<String> valid_extensions;
@@ -242,7 +241,7 @@ class EditorFileSystem : public Node {
 
 	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
 
-	void _find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String> > &group_files, Set<String> &groups_to_reimport);
+	void _find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String>> &group_files, Set<String> &groups_to_reimport);
 
 	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
 

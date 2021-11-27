@@ -146,7 +146,6 @@ VERTEX_SHADER_GLOBALS
 /* clang-format on */
 
 void main() {
-
 	vec4 color = color_attrib;
 
 #ifdef USE_INSTANCING
@@ -254,28 +253,28 @@ VERTEX_SHADER_CODE
 		m = mat2x4(
 					texelFetch(skeleton_texture, tex_ofs, 0),
 					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0)) *
-			bone_weights.x;
+				bone_weights.x;
 
 		tex_ofs = ivec2(bone_indicesi.y % 256, (bone_indicesi.y / 256) * 2);
 
 		m += mat2x4(
 					 texelFetch(skeleton_texture, tex_ofs, 0),
 					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0)) *
-			 bone_weights.y;
+				bone_weights.y;
 
 		tex_ofs = ivec2(bone_indicesi.z % 256, (bone_indicesi.z / 256) * 2);
 
 		m += mat2x4(
 					 texelFetch(skeleton_texture, tex_ofs, 0),
 					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0)) *
-			 bone_weights.z;
+				bone_weights.z;
 
 		tex_ofs = ivec2(bone_indicesi.w % 256, (bone_indicesi.w / 256) * 2);
 
 		m += mat2x4(
 					 texelFetch(skeleton_texture, tex_ofs, 0),
 					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0)) *
-			 bone_weights.w;
+				bone_weights.w;
 
 		mat4 bone_matrix = skeleton_transform * transpose(mat4(m[0], m[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))) * skeleton_transform_inverse;
 
@@ -358,7 +357,6 @@ uniform vec2 screen_pixel_size;
 #endif
 
 layout(std140) uniform CanvasItemData {
-
 	highp mat4 projection_matrix;
 	highp float time;
 };
@@ -366,7 +364,6 @@ layout(std140) uniform CanvasItemData {
 #ifdef USE_LIGHTING
 
 layout(std140) uniform LightData {
-
 	highp mat4 light_matrix;
 	highp mat4 light_local_matrix;
 	highp mat4 shadow_matrix;
@@ -465,7 +462,6 @@ uniform vec4 np_margins;
 // there are two ninepatch modes, and we don't want to waste a conditional
 #if defined USE_NINEPATCH_SCALING
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, float s_ratio, int np_repeat, inout int draw_center) {
-
 	float tex_size = 1.0 / tex_pixel_size;
 
 	float screen_margin_begin = margin_begin / s_ratio;
@@ -504,7 +500,6 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 }
 #else
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, int np_repeat, inout int draw_center) {
-
 	float tex_size = 1.0 / tex_pixel_size;
 
 	if (pixel < margin_begin) {
@@ -550,7 +545,6 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 uniform bool use_default_normal;
 
 void main() {
-
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
 
@@ -582,7 +576,6 @@ void main() {
 #endif
 
 	if (clip_rect_uv) {
-
 		uv = clamp(uv, src_rect.xy, src_rect.xy + abs(src_rect.zw));
 	}
 
@@ -738,11 +731,9 @@ FRAGMENT_SHADER_CODE
 			point = -shadow_vec;
 			sh = 0.5 + (1.0 / 8.0);
 		} else if (angle_to_light > 0.0) {
-
 			point = vec2(shadow_vec.y, -shadow_vec.x);
 			sh = 0.25 + (1.0 / 8.0);
 		} else {
-
 			point = vec2(-shadow_vec.y, shadow_vec.x);
 			sh = 0.75 + (1.0 / 8.0);
 		}
@@ -864,6 +855,13 @@ FRAGMENT_SHADER_CODE
 
 //use lighting
 #endif
+
+#ifdef LINEAR_TO_SRGB
+	// regular Linear -> SRGB conversion
+	vec3 a = vec3(0.055);
+	color.rgb = mix((vec3(1.0) + a) * pow(color.rgb, vec3(1.0 / 2.4)) - a, 12.92 * color.rgb, lessThan(color.rgb, vec3(0.0031308)));
+#endif
+
 	//color.rgb *= color.a;
 	frag_color = color;
 }

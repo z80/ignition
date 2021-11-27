@@ -52,7 +52,9 @@
 #include <dwmapi.h>
 #include <fcntl.h>
 #include <io.h>
+#include <shellapi.h>
 #include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
 // WinTab API
@@ -285,7 +287,6 @@ class OS_Windows : public OS {
 #endif
 
 	struct KeyEvent {
-
 		bool alt, shift, control, meta;
 		UINT uMsg;
 		WPARAM wParam;
@@ -335,6 +336,7 @@ class OS_Windows : public OS {
 	Vector2 im_position;
 
 	MouseMode mouse_mode;
+	int restore_mouse_trails;
 	bool alt_mem;
 	bool gr_mem;
 	bool shift_mem;
@@ -348,7 +350,7 @@ class OS_Windows : public OS {
 
 	HCURSOR cursors[CURSOR_MAX] = { NULL };
 	CursorShape cursor_shape;
-	Map<CursorShape, Vector<Variant> > cursors_cache;
+	Map<CursorShape, Vector<Variant>> cursors_cache;
 
 	InputDefault *input;
 	JoypadWindows *joypad;
@@ -396,7 +398,6 @@ protected:
 	String _quote_command_line_argument(const String &p_text) const;
 
 	struct ProcessInfo {
-
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
 	};

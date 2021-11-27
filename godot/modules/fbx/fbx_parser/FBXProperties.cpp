@@ -114,12 +114,12 @@ PropertyPtr ReadTypedProperty(const ElementPtr element) {
 	} else if (!strcmp(cs, "KTime")) {
 		return new TypedProperty<int64_t>(ParseTokenAsInt64(tok[4]));
 	} else if (!strcmp(cs, "Vector3D") ||
-			   !strcmp(cs, "ColorRGB") ||
-			   !strcmp(cs, "Vector") ||
-			   !strcmp(cs, "Color") ||
-			   !strcmp(cs, "Lcl Translation") ||
-			   !strcmp(cs, "Lcl Rotation") ||
-			   !strcmp(cs, "Lcl Scaling")) {
+			!strcmp(cs, "ColorRGB") ||
+			!strcmp(cs, "Vector") ||
+			!strcmp(cs, "Color") ||
+			!strcmp(cs, "Lcl Translation") ||
+			!strcmp(cs, "Lcl Rotation") ||
+			!strcmp(cs, "Lcl Scaling")) {
 		return new TypedProperty<Vector3>(Vector3(
 				ParseTokenAsFloat(tok[4]),
 				ParseTokenAsFloat(tok[5]),
@@ -221,9 +221,10 @@ DirectPropertyMap PropertyTable::GetUnparsedProperties() const {
 
 	// Loop through all the lazy properties (which is all the properties)
 	for (const LazyPropertyMap::value_type &element : lazyProps) {
-
 		// Skip parsed properties
-		if (props.end() != props.find(element.first)) continue;
+		if (props.end() != props.find(element.first)) {
+			continue;
+		}
 
 		// Read the element's value.
 		// Wrap the naked pointer (since the call site is required to acquire ownership)
@@ -231,7 +232,9 @@ DirectPropertyMap PropertyTable::GetUnparsedProperties() const {
 		Property *prop = ReadTypedProperty(element.second);
 
 		// Element could not be read. Skip it.
-		if (!prop) continue;
+		if (!prop) {
+			continue;
+		}
 
 		// Add to result
 		result[element.first] = prop;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Physics2DDirectBodyState" inherits="Object" version="3.3">
+<class name="Physics2DDirectBodyState" inherits="Object" version="3.4">
 	<brief_description>
 		Direct access object to a physics body in the [Physics2DServer].
 	</brief_description>
@@ -7,8 +7,8 @@
 		Provides direct access to a physics body in the [Physics2DServer], allowing safe changes to physics properties. This object is passed via the direct state callback of rigid/character bodies, and is intended for changing the direct state of that body. See [method RigidBody2D._integrate_forces].
 	</description>
 	<tutorials>
-		<link title="Physics introduction">https://docs.godotengine.org/en/3.3/tutorials/physics/physics_introduction.html</link>
-		<link title="Ray-casting">https://docs.godotengine.org/en/3.3/tutorials/physics/ray-casting.html</link>
+		<link title="Physics introduction">https://docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction.html</link>
+		<link title="Ray-casting">https://docs.godotengine.org/en/3.4/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_central_force">
@@ -136,6 +136,13 @@
 			<return type="Physics2DDirectSpaceState" />
 			<description>
 				Returns the current state of the space, useful for queries.
+			</description>
+		</method>
+		<method name="get_velocity_at_local_position" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="local_position" type="Vector2" />
+			<description>
+				Returns the body's velocity at the given relative position, including both translation and rotation.
 			</description>
 		</method>
 		<method name="integrate_forces">

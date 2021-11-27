@@ -29,13 +29,12 @@ import java.util.Map;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public class InputManagerV16 implements InputManagerCompat {
-
 	private final InputManager mInputManager;
 	private final Map<InputManagerCompat.InputDeviceListener, V16InputDeviceListener> mListeners;
 
 	public InputManagerV16(Context context) {
 		mInputManager = (InputManager)context.getSystemService(Context.INPUT_SERVICE);
-		mListeners = new HashMap<InputManagerCompat.InputDeviceListener, V16InputDeviceListener>();
+		mListeners = new HashMap<>();
 	}
 
 	@Override

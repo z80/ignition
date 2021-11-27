@@ -41,7 +41,6 @@
 #include "scene/main/timer.h"
 
 class GotoLineDialog : public ConfirmationDialog {
-
 	GDCLASS(GotoLineDialog, ConfirmationDialog);
 
 	Label *line_label;
@@ -60,7 +59,6 @@ public:
 };
 
 class FindReplaceBar : public HBoxContainer {
-
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
 	LineEdit *search_text;
@@ -138,7 +136,6 @@ public:
 typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_forced);
 
 class CodeTextEditor : public VBoxContainer {
-
 	GDCLASS(CodeTextEditor, VBoxContainer);
 
 	TextEdit *text_editor;
@@ -220,7 +217,7 @@ public:
 	void move_lines_up();
 	void move_lines_down();
 	void delete_lines();
-	void clone_lines_down();
+	void duplicate_selection();
 
 	/// Toggle inline comment on currently selected lines, or on current line if nothing is selected,
 	/// by adding or removing comment delimiter

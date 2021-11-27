@@ -54,7 +54,6 @@ extern void godot_js_websocket_destroy(int p_id);
 }
 
 class EMWSPeer : public WebSocketPeer {
-
 	GDCIIMPL(EMWSPeer, WebSocketPeer);
 
 private:

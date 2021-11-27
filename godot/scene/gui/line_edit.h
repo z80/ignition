@@ -35,7 +35,6 @@
 #include "scene/gui/popup_menu.h"
 
 class LineEdit : public Control {
-
 	GDCLASS(LineEdit, Control);
 
 public:
@@ -96,7 +95,6 @@ private:
 	Ref<Texture> right_icon;
 
 	struct Selection {
-
 		int begin;
 		int end;
 		int cursor_start;
@@ -210,6 +208,8 @@ public:
 	void copy_text();
 	void cut_text();
 	void paste_text();
+	bool has_undo() const;
+	bool has_redo() const;
 	void undo();
 	void redo();
 

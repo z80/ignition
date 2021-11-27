@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Circular dependency between Vector3 and Basis :/
-#include "core/math/vector3.h"
-
 #ifndef QUAT_H
 #define QUAT_H
 
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
+#include "core/math/vector3.h"
 #include "core/ustring.h"
 
 class Quat {
@@ -50,6 +48,7 @@ public:
 	bool is_normalized() const;
 	Quat inverse() const;
 	_FORCE_INLINE_ real_t dot(const Quat &p_q) const;
+	real_t angle_to(const Quat &p_to) const;
 
 	void set_euler_xyz(const Vector3 &p_euler);
 	Vector3 get_euler_xyz() const;
@@ -147,7 +146,6 @@ public:
 			z = 0;
 			w = 0;
 		} else {
-
 			real_t s = Math::sqrt((1.0 + d) * 2.0);
 			real_t rs = 1.0 / s;
 
@@ -196,7 +194,6 @@ void Quat::operator*=(const real_t &s) {
 }
 
 void Quat::operator/=(const real_t &s) {
-
 	*this *= 1.0 / s;
 }
 

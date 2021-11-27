@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="UndoRedo" inherits="Object" version="3.3">
+<class name="UndoRedo" inherits="Object" version="3.4">
 	<brief_description>
 		Helper to manage undo/redo operations in the editor or custom tools.
 	</brief_description>
@@ -115,13 +115,13 @@
 				This is useful mostly to check if something changed from a saved version.
 			</description>
 		</method>
-		<method name="has_redo">
+		<method name="has_redo" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if a "redo" action is available.
 			</description>
 		</method>
-		<method name="has_undo">
+		<method name="has_undo" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if an "undo" action is available.

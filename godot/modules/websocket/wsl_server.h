@@ -40,15 +40,11 @@
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
 
-#define WSL_SERVER_TIMEOUT 1000
-
 class WSLServer : public WebSocketServer {
-
 	GDCIIMPL(WSLServer, WebSocketServer);
 
 private:
 	class PendingPeer : public Reference {
-
 	private:
 		bool _parse_request(const Vector<String> p_protocols);
 
@@ -57,7 +53,7 @@ private:
 		Ref<StreamPeer> connection;
 		bool use_ssl;
 
-		int time;
+		uint64_t time;
 		uint8_t req_buf[WSL_MAX_HEADER_SIZE];
 		int req_pos;
 		String key;
@@ -68,7 +64,7 @@ private:
 
 		PendingPeer();
 
-		Error do_handshake(const Vector<String> p_protocols);
+		Error do_handshake(const Vector<String> p_protocols, uint64_t p_timeout);
 	};
 
 	int _in_buf_size;
@@ -76,7 +72,7 @@ private:
 	int _out_buf_size;
 	int _out_pkt_size;
 
-	List<Ref<PendingPeer> > _pending;
+	List<Ref<PendingPeer>> _pending;
 	Ref<TCP_Server> _server;
 	Vector<String> _protocols;
 

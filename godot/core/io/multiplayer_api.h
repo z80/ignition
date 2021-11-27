@@ -35,7 +35,6 @@
 #include "core/reference.h"
 
 class MultiplayerAPI : public Reference {
-
 	GDCLASS(MultiplayerAPI, Reference);
 
 public:
@@ -67,7 +66,7 @@ private:
 
 #ifdef DEBUG_ENABLED
 	struct BandwidthFrame {
-		uint32_t timestamp;
+		uint64_t timestamp;
 		int packet_size;
 	};
 

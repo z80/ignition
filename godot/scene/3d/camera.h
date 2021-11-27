@@ -37,7 +37,6 @@
 #include "scene/resources/environment.h"
 
 class Camera : public Spatial {
-
 	GDCLASS(Camera, Spatial);
 
 public:
@@ -82,8 +81,6 @@ private:
 	uint32_t layers;
 
 	Ref<Environment> environment;
-
-	virtual bool _can_gizmo_scale() const;
 
 	//void _camera_make_current(Node *p_camera);
 	friend class Viewport;
@@ -180,7 +177,6 @@ VARIANT_ENUM_CAST(Camera::KeepAspect);
 VARIANT_ENUM_CAST(Camera::DopplerTracking);
 
 class ClippedCamera : public Camera {
-
 	GDCLASS(ClippedCamera, Camera);
 
 public:

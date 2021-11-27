@@ -120,7 +120,7 @@ PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC glFramebufferTexture2DMultisampleEXT
 
 void RasterizerStorageGLES2::bind_quad_array() const {
 	glBindBuffer(GL_ARRAY_BUFFER, resources.quadie);
-	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 	glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, CAST_INT_TO_UCHAR_PTR(8));
 
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
@@ -128,7 +128,6 @@ void RasterizerStorageGLES2::bind_quad_array() const {
 }
 
 Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const {
-
 	r_gl_format = 0;
 	Ref<Image> image = p_image;
 	r_compressed = false;
@@ -137,9 +136,7 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 	bool need_decompress = false;
 
 	switch (p_format) {
-
 		case Image::FORMAT_L8: {
-
 			r_gl_internal_format = GL_LUMINANCE;
 			r_gl_format = GL_LUMINANCE;
 			r_gl_type = GL_UNSIGNED_BYTE;
@@ -150,7 +147,6 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 			r_gl_type = GL_UNSIGNED_BYTE;
 		} break;
 		case Image::FORMAT_R8: {
-
 			r_gl_internal_format = GL_ALPHA;
 			r_gl_format = GL_ALPHA;
 			r_gl_type = GL_UNSIGNED_BYTE;
@@ -158,8 +154,9 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		} break;
 		case Image::FORMAT_RG8: {
 			ERR_PRINT("RG texture not supported, converting to RGB8.");
-			if (image.is_valid())
+			if (image.is_valid()) {
 				image->convert(Image::FORMAT_RGB8);
+			}
 			r_real_format = Image::FORMAT_RGB8;
 			r_gl_internal_format = GL_RGB;
 			r_gl_format = GL_RGB;
@@ -167,28 +164,24 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 
 		} break;
 		case Image::FORMAT_RGB8: {
-
 			r_gl_internal_format = GL_RGB;
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_BYTE;
 
 		} break;
 		case Image::FORMAT_RGBA8: {
-
 			r_gl_format = GL_RGBA;
 			r_gl_internal_format = GL_RGBA;
 			r_gl_type = GL_UNSIGNED_BYTE;
 
 		} break;
 		case Image::FORMAT_RGBA4444: {
-
 			r_gl_internal_format = GL_RGBA;
 			r_gl_format = GL_RGBA;
 			r_gl_type = GL_UNSIGNED_SHORT_4_4_4_4;
 
 		} break;
 		case Image::FORMAT_RGBA5551: {
-
 			r_gl_internal_format = GL_RGB5_A1;
 			r_gl_format = GL_RGBA;
 			r_gl_type = GL_UNSIGNED_SHORT_5_5_5_1;
@@ -197,8 +190,9 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		case Image::FORMAT_RF: {
 			if (!config.float_texture_supported) {
 				ERR_PRINT("R float texture not supported, converting to RGB8.");
-				if (image.is_valid())
+				if (image.is_valid()) {
 					image->convert(Image::FORMAT_RGB8);
+				}
 				r_real_format = Image::FORMAT_RGB8;
 				r_gl_internal_format = GL_RGB;
 				r_gl_format = GL_RGB;
@@ -211,8 +205,9 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		} break;
 		case Image::FORMAT_RGF: {
 			ERR_PRINT("RG float texture not supported, converting to RGB8.");
-			if (image.is_valid())
+			if (image.is_valid()) {
 				image->convert(Image::FORMAT_RGB8);
+			}
 			r_real_format = Image::FORMAT_RGB8;
 			r_gl_internal_format = GL_RGB;
 			r_gl_format = GL_RGB;
@@ -221,8 +216,9 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		case Image::FORMAT_RGBF: {
 			if (!config.float_texture_supported) {
 				ERR_PRINT("RGB float texture not supported, converting to RGB8.");
-				if (image.is_valid())
+				if (image.is_valid()) {
 					image->convert(Image::FORMAT_RGB8);
+				}
 				r_real_format = Image::FORMAT_RGB8;
 				r_gl_internal_format = GL_RGB;
 				r_gl_format = GL_RGB;
@@ -236,8 +232,9 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		case Image::FORMAT_RGBAF: {
 			if (!config.float_texture_supported) {
 				ERR_PRINT("RGBA float texture not supported, converting to RGBA8.");
-				if (image.is_valid())
+				if (image.is_valid()) {
 					image->convert(Image::FORMAT_RGBA8);
+				}
 				r_real_format = Image::FORMAT_RGBA8;
 				r_gl_internal_format = GL_RGBA;
 				r_gl_format = GL_RGBA;
@@ -265,15 +262,14 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_BYTE;
 
-			if (image.is_valid())
-
+			if (image.is_valid()) {
 				image = image->rgbe_to_srgb();
+			}
 
 			return image;
 
 		} break;
 		case Image::FORMAT_DXT1: {
-
 			if (config.s3tc_supported) {
 				r_gl_internal_format = _EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 				r_gl_format = GL_RGBA;
@@ -285,7 +281,6 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 
 		} break;
 		case Image::FORMAT_DXT3: {
-
 			if (config.s3tc_supported) {
 				r_gl_internal_format = _EXT_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 				r_gl_format = GL_RGBA;
@@ -297,7 +292,6 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 
 		} break;
 		case Image::FORMAT_DXT5: {
-
 			if (config.s3tc_supported) {
 				r_gl_internal_format = _EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 				r_gl_format = GL_RGBA;
@@ -309,134 +303,107 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 
 		} break;
 		case Image::FORMAT_RGTC_R: {
-
 			if (config.rgtc_supported) {
-
 				r_gl_internal_format = _EXT_COMPRESSED_RED_RGTC1_EXT;
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
 
 			} else {
-
 				need_decompress = true;
 			}
 
 		} break;
 		case Image::FORMAT_RGTC_RG: {
-
 			if (config.rgtc_supported) {
-
 				r_gl_internal_format = _EXT_COMPRESSED_RED_GREEN_RGTC2_EXT;
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
 			} else {
-
 				need_decompress = true;
 			}
 
 		} break;
 		case Image::FORMAT_BPTC_RGBA: {
-
 			if (config.bptc_supported) {
-
 				r_gl_internal_format = _EXT_COMPRESSED_RGBA_BPTC_UNORM;
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
 
 			} else {
-
 				need_decompress = true;
 			}
 		} break;
 		case Image::FORMAT_BPTC_RGBF: {
-
 			if (config.bptc_supported) {
-
 				r_gl_internal_format = _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT;
 				r_gl_format = GL_RGB;
 				r_gl_type = GL_FLOAT;
 				r_compressed = true;
 			} else {
-
 				need_decompress = true;
 			}
 		} break;
 		case Image::FORMAT_BPTC_RGBFU: {
 			if (config.bptc_supported) {
-
 				r_gl_internal_format = _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
 				r_gl_format = GL_RGB;
 				r_gl_type = GL_FLOAT;
 				r_compressed = true;
 			} else {
-
 				need_decompress = true;
 			}
 		} break;
 		case Image::FORMAT_PVRTC2: {
-
 			if (config.pvrtc_supported) {
-
 				r_gl_internal_format = _EXT_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
 
 			} else {
-
 				need_decompress = true;
 			}
 		} break;
 		case Image::FORMAT_PVRTC2A: {
-
 			if (config.pvrtc_supported) {
-
 				r_gl_internal_format = _EXT_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
 
 			} else {
-
 				need_decompress = true;
 			}
 
 		} break;
 		case Image::FORMAT_PVRTC4: {
-
 			if (config.pvrtc_supported) {
-
 				r_gl_internal_format = _EXT_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
 
 			} else {
-
 				need_decompress = true;
 			}
 
 		} break;
 		case Image::FORMAT_PVRTC4A: {
-
 			if (config.pvrtc_supported) {
-
 				r_gl_internal_format = _EXT_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
 
 			} else {
-
 				need_decompress = true;
 			}
 
 		} break;
 		case Image::FORMAT_ETC: {
-
 			if (config.etc1_supported) {
 				r_gl_internal_format = _EXT_ETC1_RGB8_OES;
 				r_gl_format = GL_RGBA;
@@ -447,43 +414,33 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 			}
 		} break;
 		case Image::FORMAT_ETC2_R11: {
-
 			need_decompress = true;
 		} break;
 		case Image::FORMAT_ETC2_R11S: {
-
 			need_decompress = true;
 		} break;
 		case Image::FORMAT_ETC2_RG11: {
-
 			need_decompress = true;
 		} break;
 		case Image::FORMAT_ETC2_RG11S: {
-
 			need_decompress = true;
 		} break;
 		case Image::FORMAT_ETC2_RGB8: {
-
 			need_decompress = true;
 		} break;
 		case Image::FORMAT_ETC2_RGBA8: {
-
 			need_decompress = true;
 		} break;
 		case Image::FORMAT_ETC2_RGB8A1: {
-
 			need_decompress = true;
 		} break;
 		default: {
-
 			ERR_FAIL_V(Ref<Image>());
 		}
 	}
 
 	if (need_decompress || p_force_decompress) {
-
 		if (!image.is_null()) {
-
 			image = image->duplicate();
 			image->decompress();
 			ERR_FAIL_COND_V(image->is_compressed(), image);
@@ -532,7 +489,6 @@ static const GLenum _cube_side_enum[6] = {
 };
 
 RID RasterizerStorageGLES2::texture_create() {
-
 	Texture *texture = memnew(Texture);
 	ERR_FAIL_COND_V(!texture, RID());
 	glGenTextures(1, &texture->tex_id);
@@ -560,7 +516,7 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 	texture->format = p_format;
 
 	if (texture->width > config.max_texture_size || texture->height > config.max_texture_size) {
-		WARN_PRINTS("Cannot create texture larger than maximum hardware supported size of " + itos(config.max_texture_size) + ". Setting size to maximum.");
+		WARN_PRINT("Cannot create texture larger than maximum hardware supported size of " + itos(config.max_texture_size) + ". Setting size to maximum.");
 		texture->width = MIN(texture->width, config.max_texture_size);
 		texture->height = MIN(texture->height, config.max_texture_size);
 	}
@@ -609,7 +565,6 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 			bool is_po2 = p_width == po2_width && p_height == po2_height;
 
 			if (!is_po2 && (p_flags & VS::TEXTURE_FLAG_REPEAT || p_flags & VS::TEXTURE_FLAG_MIPMAPS)) {
-
 				if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 					//not supported
 					ERR_PRINT("Streaming texture for non power of 2 or has mipmaps on this hardware: " + texture->path + "'. Mipmaps and repeat disabled.");
@@ -652,7 +607,7 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 		glTexParameteri(texture->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	} else if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 		//prealloc if video
-		glTexImage2D(texture->target, 0, internal_format, texture->alloc_width, texture->alloc_height, 0, format, type, NULL);
+		glTexImage2D(texture->target, 0, internal_format, texture->alloc_width, texture->alloc_height, 0, format, type, nullptr);
 	}
 
 	texture->active = true;
@@ -686,7 +641,7 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	if (texture->resize_to_po2) {
 		if (p_image->is_compressed()) {
-			ERR_PRINTS("Texture '" + texture->path + "' is required to be a power of 2 because it uses either mipmaps or repeat, so it was decompressed. This will hurt performance and memory usage.");
+			ERR_PRINT("Texture '" + texture->path + "' is required to be a power of 2 because it uses either mipmaps or repeat, so it was decompressed. This will hurt performance and memory usage.");
 		}
 
 		if (img == p_image) {
@@ -696,15 +651,12 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 	}
 
 	if (config.shrink_textures_x2 && (p_image->has_mipmaps() || !p_image->is_compressed()) && !(texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
-
 		texture->alloc_height = MAX(1, texture->alloc_height / 2);
 		texture->alloc_width = MAX(1, texture->alloc_width / 2);
 
 		if (texture->alloc_width == img->get_width() / 2 && texture->alloc_height == img->get_height() / 2) {
-
 			img->shrink_x2();
 		} else if (img->get_format() <= Image::FORMAT_RGBA8) {
-
 			img->resize(texture->alloc_width, texture->alloc_height, Image::INTERPOLATE_BILINEAR);
 		}
 	}
@@ -720,13 +672,13 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	texture->ignore_mipmaps = compressed && !img->has_mipmaps();
 
-	if ((texture->flags & VS::TEXTURE_FLAG_MIPMAPS) && !texture->ignore_mipmaps)
+	if ((texture->flags & VS::TEXTURE_FLAG_MIPMAPS) && !texture->ignore_mipmaps) {
 		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
 			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
 		} else {
 			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_LINEAR);
 		}
-	else {
+	} else {
 		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
 			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		} else {
@@ -735,16 +687,13 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 	}
 
 	if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
-
 		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Linear Filtering
 
 	} else {
-
 		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // raw Filtering
 	}
 
 	if (((texture->flags & VS::TEXTURE_FLAG_REPEAT) || (texture->flags & VS::TEXTURE_FLAG_MIRRORED_REPEAT)) && texture->target != GL_TEXTURE_CUBE_MAP) {
-
 		if (texture->flags & VS::TEXTURE_FLAG_MIRRORED_REPEAT) {
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
@@ -753,16 +702,13 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
 	} else {
-
 		//glTexParameterf( texture->target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 		glTexParameterf(texture->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(texture->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 
 	if (config.use_anisotropic_filter) {
-
 		if (texture->flags & VS::TEXTURE_FLAG_ANISOTROPIC_FILTER) {
-
 			glTexParameterf(texture->target, _GL_TEXTURE_MAX_ANISOTROPY_EXT, config.anisotropic_level);
 		} else {
 			glTexParameterf(texture->target, _GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
@@ -777,7 +723,6 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 	int tsize = 0;
 
 	for (int i = 0; i < mipmaps; i++) {
-
 		int size, ofs;
 		img->get_mipmap_offset_and_size(i, ofs, size);
 
@@ -789,7 +734,6 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 
 			glCompressedTexImage2D(blit_target, i, internal_format, bw, bh, 0, size, &read[ofs]);
 		} else {
-
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			if (texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 				glTexSubImage2D(blit_target, i, 0, 0, w, h, format, type, &read[ofs]);
@@ -826,7 +770,6 @@ void RasterizerStorageGLES2::texture_set_data_partial(RID p_texture, const Ref<I
 }
 
 Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) const {
-
 	Texture *texture = texture_owner.getornull(p_texture);
 
 	ERR_FAIL_COND_V(!texture, Ref<Image>());
@@ -860,7 +803,6 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
 	for (int i = 0; i < texture->mipmaps; i++) {
-
 		int ofs = Image::get_image_mipmap_offset(texture->alloc_width, texture->alloc_height, real_format, i);
 
 		if (texture->compressed) {
@@ -951,7 +893,6 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 }
 
 void RasterizerStorageGLES2::texture_set_flags(RID p_texture, uint32_t p_flags) {
-
 	Texture *texture = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!texture);
 
@@ -963,7 +904,6 @@ void RasterizerStorageGLES2::texture_set_flags(RID p_texture, uint32_t p_flags) 
 	glBindTexture(texture->target, texture->tex_id);
 
 	if (((texture->flags & VS::TEXTURE_FLAG_REPEAT) || (texture->flags & VS::TEXTURE_FLAG_MIRRORED_REPEAT)) && texture->target != GL_TEXTURE_CUBE_MAP) {
-
 		if (texture->flags & VS::TEXTURE_FLAG_MIRRORED_REPEAT) {
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
@@ -978,9 +918,7 @@ void RasterizerStorageGLES2::texture_set_flags(RID p_texture, uint32_t p_flags) 
 	}
 
 	if (config.use_anisotropic_filter) {
-
 		if (texture->flags & VS::TEXTURE_FLAG_ANISOTROPIC_FILTER) {
-
 			glTexParameterf(texture->target, _GL_TEXTURE_MAX_ANISOTROPY_EXT, config.anisotropic_level);
 		} else {
 			glTexParameterf(texture->target, _GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
@@ -1006,11 +944,9 @@ void RasterizerStorageGLES2::texture_set_flags(RID p_texture, uint32_t p_flags) 
 	}
 
 	if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
-
 		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Linear Filtering
 
 	} else {
-
 		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // raw Filtering
 	}
 }
@@ -1112,10 +1048,10 @@ void RasterizerStorageGLES2::texture_debug_usage(List<VS::TextureInfo> *r_info) 
 	texture_owner.get_owned_list(&textures);
 
 	for (List<RID>::Element *E = textures.front(); E; E = E->next()) {
-
 		Texture *t = texture_owner.getornull(E->get());
-		if (!t)
+		if (!t) {
 			continue;
+		}
 		VS::TextureInfo tinfo;
 		tinfo.texture = E->get();
 		tinfo.path = t->path;
@@ -1137,7 +1073,6 @@ void RasterizerStorageGLES2::textures_keep_original(bool p_enable) {
 }
 
 Size2 RasterizerStorageGLES2::texture_size_with_proxy(RID p_texture) const {
-
 	const Texture *texture = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND_V(!texture, Size2());
 	if (texture->proxy) {
@@ -1153,7 +1088,7 @@ void RasterizerStorageGLES2::texture_set_proxy(RID p_texture, RID p_proxy) {
 
 	if (texture->proxy) {
 		texture->proxy->proxy_owners.erase(texture);
-		texture->proxy = NULL;
+		texture->proxy = nullptr;
 	}
 
 	if (p_proxy.is_valid()) {
@@ -1166,7 +1101,6 @@ void RasterizerStorageGLES2::texture_set_proxy(RID p_texture, RID p_proxy) {
 }
 
 void RasterizerStorageGLES2::texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {
-
 	Texture *texture = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!texture);
 
@@ -1198,7 +1132,6 @@ void RasterizerStorageGLES2::texture_set_detect_normal_callback(RID p_texture, V
 }
 
 RID RasterizerStorageGLES2::texture_create_radiance_cubemap(RID p_source, int p_resolution) const {
-
 	return RID();
 }
 
@@ -1276,7 +1209,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	// Mobile hardware (PowerVR specially) prefers this approach,
 	// the previous approach with manual lod levels kills the game.
 	for (int i = 0; i < 6; i++) {
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, size, size, 0, format, type, NULL);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, size, size, 0, format, type, nullptr);
 	}
 
 	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
@@ -1301,11 +1234,10 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 	// third, render to the framebuffer using separate textures, then copy to mipmaps
 	while (size >= 1) {
-
 		//make framebuffer size the texture size, need to use a separate texture for compatibility
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, resources.mipmap_blur_color);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size, size, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size, size, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, resources.mipmap_blur_color, 0);
 
 		if (lod == 1) {
@@ -1320,7 +1252,6 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		glActiveTexture(GL_TEXTURE2); //back to panorama
 
 		for (int i = 0; i < 6; i++) {
-
 			shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES2::FACE_ID, i);
 
 			float roughness = mm_level >= 0 ? lod / (float)(mipmaps - 1) : 1;
@@ -1370,7 +1301,6 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 /* SHADER API */
 
 RID RasterizerStorageGLES2::shader_create() {
-
 	Shader *shader = memnew(Shader);
 	shader->mode = VS::SHADER_SPATIAL;
 	shader->shader = &scene->state.scene_shader;
@@ -1382,14 +1312,14 @@ RID RasterizerStorageGLES2::shader_create() {
 }
 
 void RasterizerStorageGLES2::_shader_make_dirty(Shader *p_shader) {
-	if (p_shader->dirty_list.in_list())
+	if (p_shader->dirty_list.in_list()) {
 		return;
+	}
 
 	_shader_dirty_list.add(&p_shader->dirty_list);
 }
 
 void RasterizerStorageGLES2::shader_set_code(RID p_shader, const String &p_code) {
-
 	Shader *shader = shader_owner.getornull(p_shader);
 	ERR_FAIL_COND(!shader);
 
@@ -1398,12 +1328,13 @@ void RasterizerStorageGLES2::shader_set_code(RID p_shader, const String &p_code)
 	String mode_string = ShaderLanguage::get_shader_type(p_code);
 	VS::ShaderMode mode;
 
-	if (mode_string == "canvas_item")
+	if (mode_string == "canvas_item") {
 		mode = VS::SHADER_CANVAS_ITEM;
-	else if (mode_string == "particles")
+	} else if (mode_string == "particles") {
 		mode = VS::SHADER_PARTICLES;
-	else
+	} else {
 		mode = VS::SHADER_SPATIAL;
+	}
 
 	if (shader->custom_code_id && mode != shader->mode) {
 		shader->shader->free_custom_shader(shader->custom_code_id);
@@ -1430,7 +1361,6 @@ void RasterizerStorageGLES2::shader_set_code(RID p_shader, const String &p_code)
 }
 
 String RasterizerStorageGLES2::shader_get_code(RID p_shader) const {
-
 	const Shader *shader = shader_owner.get(p_shader);
 	ERR_FAIL_COND_V(!shader, "");
 
@@ -1438,7 +1368,6 @@ String RasterizerStorageGLES2::shader_get_code(RID p_shader) const {
 }
 
 void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
-
 	_shader_dirty_list.remove(&p_shader->dirty_list);
 
 	p_shader->valid = false;
@@ -1450,12 +1379,10 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 	}
 
 	ShaderCompilerGLES2::GeneratedCode gen_code;
-	ShaderCompilerGLES2::IdentifierActions *actions = NULL;
+	ShaderCompilerGLES2::IdentifierActions *actions = nullptr;
 
 	switch (p_shader->mode) {
-
 		case VS::SHADER_CANVAS_ITEM: {
-
 			p_shader->canvas_item.light_mode = Shader::CanvasItem::LIGHT_MODE_NORMAL;
 			p_shader->canvas_item.blend_mode = Shader::CanvasItem::BLEND_MODE_MIX;
 
@@ -1623,7 +1550,6 @@ void RasterizerStorageGLES2::update_dirty_shaders() {
 }
 
 void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const {
-
 	Shader *shader = shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 
@@ -1634,7 +1560,6 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 	Map<int, StringName> order;
 
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = shader->uniforms.front(); E; E = E->next()) {
-
 		if (E->get().texture_order >= 0) {
 			order[E->get().texture_order + 100000] = E->key();
 		} else {
@@ -1643,13 +1568,15 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 	}
 
 	for (Map<int, StringName>::Element *E = order.front(); E; E = E->next()) {
-
 		PropertyInfo pi;
 		ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[E->get()];
 
 		pi.name = E->get();
 
 		switch (u.type) {
+			case ShaderLanguage::TYPE_STRUCT: {
+				pi.type = Variant::ARRAY;
+			} break;
 			case ShaderLanguage::TYPE_VOID: {
 				pi.type = Variant::NIL;
 			} break;
@@ -1760,7 +1687,6 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 }
 
 void RasterizerStorageGLES2::shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) {
-
 	Shader *shader = shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 	ERR_FAIL_COND(p_texture.is_valid() && !texture_owner.owns(p_texture));
@@ -1775,7 +1701,6 @@ void RasterizerStorageGLES2::shader_set_default_texture_param(RID p_shader, cons
 }
 
 RID RasterizerStorageGLES2::shader_get_default_texture_param(RID p_shader, const StringName &p_name) const {
-
 	const Shader *shader = shader_owner.get(p_shader);
 	ERR_FAIL_COND_V(!shader, RID());
 
@@ -1789,7 +1714,6 @@ RID RasterizerStorageGLES2::shader_get_default_texture_param(RID p_shader, const
 }
 
 void RasterizerStorageGLES2::shader_add_custom_define(RID p_shader, const String &p_define) {
-
 	Shader *shader = shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 
@@ -1799,7 +1723,6 @@ void RasterizerStorageGLES2::shader_add_custom_define(RID p_shader, const String
 }
 
 void RasterizerStorageGLES2::shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const {
-
 	Shader *shader = shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 
@@ -1807,7 +1730,6 @@ void RasterizerStorageGLES2::shader_get_custom_defines(RID p_shader, Vector<Stri
 }
 
 void RasterizerStorageGLES2::shader_remove_custom_define(RID p_shader, const String &p_define) {
-
 	Shader *shader = shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 
@@ -1819,22 +1741,20 @@ void RasterizerStorageGLES2::shader_remove_custom_define(RID p_shader, const Str
 /* COMMON MATERIAL API */
 
 void RasterizerStorageGLES2::_material_make_dirty(Material *p_material) const {
-
-	if (p_material->dirty_list.in_list())
+	if (p_material->dirty_list.in_list()) {
 		return;
+	}
 
 	_material_dirty_list.add(&p_material->dirty_list);
 }
 
 RID RasterizerStorageGLES2::material_create() {
-
 	Material *material = memnew(Material);
 
 	return material_owner.make_rid(material);
 }
 
 void RasterizerStorageGLES2::material_set_shader(RID p_material, RID p_shader) {
-
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
 
@@ -1855,7 +1775,6 @@ void RasterizerStorageGLES2::material_set_shader(RID p_material, RID p_shader) {
 }
 
 RID RasterizerStorageGLES2::material_get_shader(RID p_material) const {
-
 	const Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!material, RID());
 
@@ -1867,7 +1786,6 @@ RID RasterizerStorageGLES2::material_get_shader(RID p_material) const {
 }
 
 void RasterizerStorageGLES2::material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {
-
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
 
@@ -1881,7 +1799,6 @@ void RasterizerStorageGLES2::material_set_param(RID p_material, const StringName
 }
 
 Variant RasterizerStorageGLES2::material_get_param(RID p_material, const StringName &p_param) const {
-
 	const Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!material, RID());
 
@@ -1981,7 +1898,6 @@ bool RasterizerStorageGLES2::material_uses_ensure_correct_normals(RID p_material
 }
 
 void RasterizerStorageGLES2::material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) {
-
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND(!material);
 
@@ -1994,7 +1910,6 @@ void RasterizerStorageGLES2::material_add_instance_owner(RID p_material, Rasteri
 }
 
 void RasterizerStorageGLES2::material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) {
-
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND(!material);
 
@@ -2036,7 +1951,6 @@ void RasterizerStorageGLES2::_update_material(Material *p_material) {
 		bool is_animated = false;
 
 		if (p_material->shader && p_material->shader->mode == VS::SHADER_SPATIAL) {
-
 			if (p_material->shader->spatial.blend_mode == Shader::Spatial::BLEND_MODE_MIX &&
 					(!p_material->shader->spatial.uses_alpha || p_material->shader->spatial.depth_draw_mode == Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS)) {
 				can_cast_shadow = true;
@@ -2068,12 +1982,12 @@ void RasterizerStorageGLES2::_update_material(Material *p_material) {
 	// uniforms and other things will be set in the use_material method in ShaderGLES2
 
 	if (p_material->shader && p_material->shader->texture_count > 0) {
-
 		p_material->textures.resize(p_material->shader->texture_count);
 
 		for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = p_material->shader->uniforms.front(); E; E = E->next()) {
-			if (E->get().texture_order < 0)
+			if (E->get().texture_order < 0) {
 				continue; // not a texture, does not go here
+			}
 
 			RID texture;
 
@@ -2112,7 +2026,6 @@ void RasterizerStorageGLES2::_material_add_geometry(RID p_material, Geometry *p_
 }
 
 void RasterizerStorageGLES2::_material_remove_geometry(RID p_material, Geometry *p_geometry) {
-
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND(!material);
 
@@ -2128,7 +2041,6 @@ void RasterizerStorageGLES2::_material_remove_geometry(RID p_material, Geometry 
 
 void RasterizerStorageGLES2::update_dirty_materials() {
 	while (_material_dirty_list.first()) {
-
 		Material *material = _material_dirty_list.first()->self();
 		_update_material(material);
 	}
@@ -2137,14 +2049,12 @@ void RasterizerStorageGLES2::update_dirty_materials() {
 /* MESH API */
 
 RID RasterizerStorageGLES2::mesh_create() {
-
 	Mesh *mesh = memnew(Mesh);
 
 	return mesh_owner.make_rid(mesh);
 }
 
 static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array, uint32_t &format, int p_vertices) {
-
 	uint32_t p_format = format;
 
 	static int src_size[VS::ARRAY_MAX];
@@ -2155,7 +2065,6 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 	int dst_stride = 0;
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
-
 		to_convert[i] = 0;
 		if (!(p_format & (1 << i))) {
 			src_size[i] = 0;
@@ -2164,11 +2073,8 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 		}
 
 		switch (i) {
-
 			case VS::ARRAY_VERTEX: {
-
 				if (p_format & VS::ARRAY_COMPRESS_VERTEX) {
-
 					if (p_format & VS::ARRAY_FLAG_USE_2D_VERTICES) {
 						src_size[i] = 4;
 						dst_size[i] = 8;
@@ -2181,7 +2087,6 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 
 					format &= ~VS::ARRAY_COMPRESS_VERTEX;
 				} else {
-
 					if (p_format & VS::ARRAY_FLAG_USE_2D_VERTICES) {
 						src_size[i] = 8;
 						dst_size[i] = 8;
@@ -2193,29 +2098,40 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 
 			} break;
 			case VS::ARRAY_NORMAL: {
-
-				if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
 					src_size[i] = 4;
 					dst_size[i] = 4;
 				} else {
-					src_size[i] = 12;
-					dst_size[i] = 12;
+					if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
+						src_size[i] = 4;
+						dst_size[i] = 4;
+					} else {
+						src_size[i] = 12;
+						dst_size[i] = 12;
+					}
 				}
 
 			} break;
 			case VS::ARRAY_TANGENT: {
-
-				if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
-					src_size[i] = 4;
-					dst_size[i] = 4;
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					if (!(p_format & VS::ARRAY_COMPRESS_TANGENT && p_format & VS::ARRAY_COMPRESS_NORMAL)) {
+						src_size[VS::ARRAY_NORMAL] = 8;
+						dst_size[VS::ARRAY_NORMAL] = 8;
+					}
+					src_size[i] = 0;
+					dst_size[i] = 0;
 				} else {
-					src_size[i] = 16;
-					dst_size[i] = 16;
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
+						src_size[i] = 4;
+						dst_size[i] = 4;
+					} else {
+						src_size[i] = 16;
+						dst_size[i] = 16;
+					}
 				}
 
 			} break;
 			case VS::ARRAY_COLOR: {
-
 				if (p_format & VS::ARRAY_COMPRESS_COLOR) {
 					src_size[i] = 4;
 					dst_size[i] = 4;
@@ -2226,7 +2142,6 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 
 			} break;
 			case VS::ARRAY_TEX_UV: {
-
 				if (p_format & VS::ARRAY_COMPRESS_TEX_UV) {
 					src_size[i] = 4;
 					to_convert[i] = 2;
@@ -2239,7 +2154,6 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 
 			} break;
 			case VS::ARRAY_TEX_UV2: {
-
 				if (p_format & VS::ARRAY_COMPRESS_TEX_UV2) {
 					src_size[i] = 4;
 					to_convert[i] = 2;
@@ -2252,7 +2166,6 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 
 			} break;
 			case VS::ARRAY_BONES: {
-
 				if (p_format & VS::ARRAY_FLAG_USE_16_BIT_BONES) {
 					src_size[i] = 8;
 					dst_size[i] = 8;
@@ -2263,7 +2176,6 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 
 			} break;
 			case VS::ARRAY_WEIGHTS: {
-
 				if (p_format & VS::ARRAY_COMPRESS_WEIGHTS) {
 					src_size[i] = 8;
 					dst_size[i] = 8;
@@ -2274,7 +2186,6 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 
 			} break;
 			case VS::ARRAY_INDEX: {
-
 				src_size[i] = 0;
 				dst_size[i] = 0;
 
@@ -2295,7 +2206,6 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 	int dst_offset = 0;
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
-
 		if (src_size[i] == 0) {
 			continue; //no go
 		}
@@ -2308,7 +2218,6 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 				float *dst = (float *)&wptr[dst_stride * j + dst_offset];
 
 				for (int k = 0; k < to_convert[i]; k++) {
-
 					dst[k] = Math::half_to_float(src[k]);
 				}
 			}
@@ -2332,8 +2241,7 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 	return ret;
 }
 
-void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes, const Vector<AABB> &p_bone_aabbs) {
-
+void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes, const Vector<AABB> &p_bone_aabbs) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 
@@ -2346,14 +2254,16 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	}
 
 	//bool has_morph = p_blend_shapes.size();
+	bool use_split_stream = GLOBAL_GET("rendering/misc/mesh_storage/split_stream") && !(p_format & VS::ARRAY_FLAG_USE_DYNAMIC_UPDATE);
 
 	Surface::Attrib attribs[VS::ARRAY_MAX];
 
-	int stride = 0;
+	int attributes_base_offset = 0;
+	int attributes_stride = 0;
+	int positions_stride = 0;
 	bool uses_half_float = false;
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
-
 		attribs[i].index = i;
 
 		if (!(p_format & (1 << i))) {
@@ -2363,13 +2273,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		}
 
 		attribs[i].enabled = true;
-		attribs[i].offset = stride;
+		attribs[i].offset = attributes_base_offset + attributes_stride;
 		attribs[i].integer = false;
 
 		switch (i) {
-
 			case VS::ARRAY_VERTEX: {
-
 				if (p_format & VS::ARRAY_FLAG_USE_2D_VERTICES) {
 					attribs[i].size = 2;
 				} else {
@@ -2378,102 +2286,126 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_VERTEX) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
-					stride += attribs[i].size * 2;
-					uses_half_float = true;
+					positions_stride += attribs[i].size * 2;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += attribs[i].size * 4;
+					positions_stride += attribs[i].size * 4;
 				}
 
 				attribs[i].normalized = GL_FALSE;
 
+				if (use_split_stream) {
+					attributes_base_offset = positions_stride * p_vertex_count;
+				} else {
+					attributes_base_offset = positions_stride;
+				}
+
 			} break;
 			case VS::ARRAY_NORMAL: {
-
-				attribs[i].size = 3;
-
-				if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
-					attribs[i].type = GL_BYTE;
-					stride += 4; //pad extra byte
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					// Always pack normal and tangent into vec4
+					// normal will be xy tangent will be zw
+					// normal will always be oct32 encoded
+					// UNLESS tangent exists and is also compressed
+					// then it will be oct16 encoded along with tangent
 					attribs[i].normalized = GL_TRUE;
+					attribs[i].size = 4;
+					attribs[i].type = GL_SHORT;
+					attributes_stride += 4;
 				} else {
-					attribs[i].type = GL_FLOAT;
-					stride += 12;
-					attribs[i].normalized = GL_FALSE;
+					attribs[i].size = 3;
+
+					if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
+						attribs[i].type = GL_BYTE;
+						attributes_stride += 4; //pad extra byte
+						attribs[i].normalized = GL_TRUE;
+					} else {
+						attribs[i].type = GL_FLOAT;
+						attributes_stride += 12;
+						attribs[i].normalized = GL_FALSE;
+					}
 				}
 
 			} break;
 			case VS::ARRAY_TANGENT: {
-
-				attribs[i].size = 4;
-
-				if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
-					attribs[i].type = GL_BYTE;
-					stride += 4;
-					attribs[i].normalized = GL_TRUE;
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					attribs[i].enabled = false;
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT && p_format & VS::ARRAY_COMPRESS_NORMAL) {
+						// normal and tangent will each be oct16 (2 bytes each)
+						// pack into single vec4<GL_BYTE> for memory bandwidth
+						// savings while keeping 4 byte alignment
+						attribs[VS::ARRAY_NORMAL].type = GL_BYTE;
+					} else {
+						// normal and tangent will each be oct32 (4 bytes each)
+						attributes_stride += 4;
+					}
 				} else {
-					attribs[i].type = GL_FLOAT;
-					stride += 16;
-					attribs[i].normalized = GL_FALSE;
+					attribs[i].size = 4;
+
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
+						attribs[i].type = GL_BYTE;
+						attributes_stride += 4;
+						attribs[i].normalized = GL_TRUE;
+					} else {
+						attribs[i].type = GL_FLOAT;
+						attributes_stride += 16;
+						attribs[i].normalized = GL_FALSE;
+					}
 				}
 
 			} break;
 			case VS::ARRAY_COLOR: {
-
 				attribs[i].size = 4;
 
 				if (p_format & VS::ARRAY_COMPRESS_COLOR) {
 					attribs[i].type = GL_UNSIGNED_BYTE;
-					stride += 4;
+					attributes_stride += 4;
 					attribs[i].normalized = GL_TRUE;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 16;
+					attributes_stride += 16;
 					attribs[i].normalized = GL_FALSE;
 				}
 
 			} break;
 			case VS::ARRAY_TEX_UV: {
-
 				attribs[i].size = 2;
 
 				if (p_format & VS::ARRAY_COMPRESS_TEX_UV) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
-					stride += 4;
+					attributes_stride += 4;
 					uses_half_float = true;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 8;
+					attributes_stride += 8;
 				}
 
 				attribs[i].normalized = GL_FALSE;
 
 			} break;
 			case VS::ARRAY_TEX_UV2: {
-
 				attribs[i].size = 2;
 
 				if (p_format & VS::ARRAY_COMPRESS_TEX_UV2) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
-					stride += 4;
+					attributes_stride += 4;
 					uses_half_float = true;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 8;
+					attributes_stride += 8;
 				}
 				attribs[i].normalized = GL_FALSE;
 
 			} break;
 			case VS::ARRAY_BONES: {
-
 				attribs[i].size = 4;
 
 				if (p_format & VS::ARRAY_FLAG_USE_16_BIT_BONES) {
 					attribs[i].type = GL_UNSIGNED_SHORT;
-					stride += 8;
+					attributes_stride += 8;
 				} else {
 					attribs[i].type = GL_UNSIGNED_BYTE;
-					stride += 4;
+					attributes_stride += 4;
 				}
 
 				attribs[i].normalized = GL_FALSE;
@@ -2481,23 +2413,20 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 			} break;
 			case VS::ARRAY_WEIGHTS: {
-
 				attribs[i].size = 4;
 
 				if (p_format & VS::ARRAY_COMPRESS_WEIGHTS) {
-
 					attribs[i].type = GL_UNSIGNED_SHORT;
-					stride += 8;
+					attributes_stride += 8;
 					attribs[i].normalized = GL_TRUE;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 16;
+					attributes_stride += 16;
 					attribs[i].normalized = GL_FALSE;
 				}
 
 			} break;
 			case VS::ARRAY_INDEX: {
-
 				attribs[i].size = 1;
 
 				if (p_vertex_count >= (1 << 16)) {
@@ -2514,13 +2443,21 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		}
 	}
 
-	for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
-		attribs[i].stride = stride;
+	if (use_split_stream) {
+		attribs[VS::ARRAY_VERTEX].stride = positions_stride;
+		for (int i = 1; i < VS::ARRAY_MAX - 1; i++) {
+			attribs[i].stride = attributes_stride;
+		}
+	} else {
+		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+			attribs[i].stride = positions_stride + attributes_stride;
+		}
 	}
 
 	//validate sizes
 	PoolVector<uint8_t> array = p_array;
 
+	int stride = positions_stride + attributes_stride;
 	int array_size = stride * p_vertex_count;
 	int index_array_size = 0;
 	if (array.size() != array_size && array.size() + p_vertex_count * 2 == array_size) {
@@ -2538,7 +2475,6 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		uint16_t one = Math::make_half_float(1);
 
 		for (int i = 0; i < p_vertex_count; i++) {
-
 			*w16++ = *r16++;
 			*w16++ = *r16++;
 			*w16++ = *r16++;
@@ -2552,7 +2488,6 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	ERR_FAIL_COND(array.size() != array_size);
 
 	if (!config.support_half_float_vertices && uses_half_float) {
-
 		uint32_t new_format = p_format;
 		PoolVector<uint8_t> unpacked_array = _unpack_half_floats(array, new_format, p_vertex_count);
 
@@ -2561,7 +2496,6 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	}
 
 	if (p_format & VS::ARRAY_FORMAT_INDEX) {
-
 		index_array_size = attribs[VS::ARRAY_INDEX].stride * p_index_count;
 	}
 
@@ -2590,12 +2524,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 	surface->aabb = p_aabb;
 	surface->max_bone = p_bone_aabbs.size();
-#ifdef TOOLS_ENABLED
 	surface->blend_shape_data = p_blend_shapes;
-	if (surface->blend_shape_data.size()) {
-		ERR_PRINT_ONCE("Blend shapes are not supported in OpenGL ES 2.0");
-	}
-#endif
 
 	surface->data = array;
 	surface->index_data = p_index_array;
@@ -2631,25 +2560,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		}
 
 		// TODO generate wireframes
-	}
 
-	{
-		// blend shapes
-
-		for (int i = 0; i < p_blend_shapes.size(); i++) {
-
-			Surface::BlendShape mt;
-
-			PoolVector<uint8_t>::Read vr = p_blend_shapes[i].read();
-
-			surface->total_data_size += array_size;
-
-			glGenBuffers(1, &mt.vertex_id);
-			glBindBuffer(GL_ARRAY_BUFFER, mt.vertex_id);
-			glBufferData(GL_ARRAY_BUFFER, array_size, vr.ptr(), GL_STATIC_DRAW);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-			surface->blend_shapes.push_back(mt);
+		// Make one blend shape buffer per surface
+		{
+			surface->blend_shape_buffer_size = 0;
+			glGenBuffers(1, &surface->blend_shape_buffer_id);
 		}
 	}
 
@@ -2668,6 +2583,9 @@ void RasterizerStorageGLES2::mesh_set_blend_shape_count(RID p_mesh, int p_amount
 
 	mesh->blend_shape_count = p_amount;
 	mesh->instance_change_notify(true, false);
+	if (!mesh->update_list.in_list()) {
+		blend_shapes_update_list.add(&mesh->update_list);
+	}
 }
 
 int RasterizerStorageGLES2::mesh_get_blend_shape_count(RID p_mesh) const {
@@ -2681,6 +2599,9 @@ void RasterizerStorageGLES2::mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShap
 	ERR_FAIL_COND(!mesh);
 
 	mesh->blend_shape_mode = p_mode;
+	if (!mesh->update_list.in_list()) {
+		blend_shapes_update_list.add(&mesh->update_list);
+	}
 }
 
 VS::BlendShapeMode RasterizerStorageGLES2::mesh_get_blend_shape_mode(RID p_mesh) const {
@@ -2688,6 +2609,23 @@ VS::BlendShapeMode RasterizerStorageGLES2::mesh_get_blend_shape_mode(RID p_mesh)
 	ERR_FAIL_COND_V(!mesh, VS::BLEND_SHAPE_MODE_NORMALIZED);
 
 	return mesh->blend_shape_mode;
+}
+
+void RasterizerStorageGLES2::mesh_set_blend_shape_values(RID p_mesh, PoolVector<float> p_values) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	mesh->blend_shape_values = p_values;
+	if (!mesh->update_list.in_list()) {
+		blend_shapes_update_list.add(&mesh->update_list);
+	}
+}
+
+PoolVector<float> RasterizerStorageGLES2::mesh_get_blend_shape_values(RID p_mesh) const {
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, PoolVector<float>());
+
+	return mesh->blend_shape_values;
 }
 
 void RasterizerStorageGLES2::mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
@@ -2711,8 +2649,9 @@ void RasterizerStorageGLES2::mesh_surface_set_material(RID p_mesh, int p_surface
 	ERR_FAIL_COND(!mesh);
 	ERR_FAIL_INDEX(p_surface, mesh->surfaces.size());
 
-	if (mesh->surfaces[p_surface]->material == p_material)
+	if (mesh->surfaces[p_surface]->material == p_material) {
 		return;
+	}
 
 	if (mesh->surfaces[p_surface]->material.is_valid()) {
 		_material_remove_geometry(mesh->surfaces[p_surface]->material, mesh->surfaces[p_surface]);
@@ -2752,7 +2691,6 @@ int RasterizerStorageGLES2::mesh_surface_get_array_index_len(RID p_mesh, int p_s
 }
 
 PoolVector<uint8_t> RasterizerStorageGLES2::mesh_surface_get_array(RID p_mesh, int p_surface) const {
-
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, PoolVector<uint8_t>());
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), PoolVector<uint8_t>());
@@ -2797,13 +2735,10 @@ AABB RasterizerStorageGLES2::mesh_surface_get_aabb(RID p_mesh, int p_surface) co
 	return mesh->surfaces[p_surface]->aabb;
 }
 
-Vector<PoolVector<uint8_t> > RasterizerStorageGLES2::mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
+Vector<PoolVector<uint8_t>> RasterizerStorageGLES2::mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh, Vector<PoolVector<uint8_t> >());
-	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), Vector<PoolVector<uint8_t> >());
-#ifndef TOOLS_ENABLED
-	ERR_PRINT("OpenGL ES 2.0 does not allow retrieving blend shape data");
-#endif
+	ERR_FAIL_COND_V(!mesh, Vector<PoolVector<uint8_t>>());
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), Vector<PoolVector<uint8_t>>());
 
 	return mesh->surfaces[p_surface]->blend_shape_data;
 }
@@ -2816,7 +2751,6 @@ Vector<AABB> RasterizerStorageGLES2::mesh_surface_get_skeleton_aabb(RID p_mesh, 
 }
 
 void RasterizerStorageGLES2::mesh_remove_surface(RID p_mesh, int p_surface) {
-
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	ERR_FAIL_INDEX(p_surface, mesh->surfaces.size());
@@ -2832,9 +2766,7 @@ void RasterizerStorageGLES2::mesh_remove_surface(RID p_mesh, int p_surface) {
 		glDeleteBuffers(1, &surface->index_id);
 	}
 
-	for (int i = 0; i < surface->blend_shapes.size(); i++) {
-		glDeleteBuffers(1, &surface->blend_shapes[i].vertex_id);
-	}
+	glDeleteBuffers(1, &surface->blend_shape_buffer_id);
 
 	info.vertex_mem -= surface->total_data_size;
 
@@ -2870,10 +2802,11 @@ AABB RasterizerStorageGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 	Mesh *mesh = mesh_owner.get(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());
 
-	if (mesh->custom_aabb != AABB())
+	if (mesh->custom_aabb != AABB()) {
 		return mesh->custom_aabb;
+	}
 
-	Skeleton *sk = NULL;
+	Skeleton *sk = nullptr;
 	if (p_skeleton.is_valid()) {
 		sk = skeleton_owner.get(p_skeleton);
 	}
@@ -2881,12 +2814,9 @@ AABB RasterizerStorageGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 	AABB aabb;
 
 	if (sk && sk->size != 0) {
-
 		for (int i = 0; i < mesh->surfaces.size(); i++) {
-
 			AABB laabb;
 			if ((mesh->surfaces[i]->format & VS::ARRAY_FORMAT_BONES) && mesh->surfaces[i]->skeleton_bone_aabb.size()) {
-
 				int bs = mesh->surfaces[i]->skeleton_bone_aabb.size();
 				const AABB *skbones = mesh->surfaces[i]->skeleton_bone_aabb.ptr();
 				const bool *skused = mesh->surfaces[i]->skeleton_bone_used.ptr();
@@ -2898,9 +2828,9 @@ AABB RasterizerStorageGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 				bool first = true;
 				if (sk->use_2d) {
 					for (int j = 0; j < bs; j++) {
-
-						if (!skused[j])
+						if (!skused[j]) {
 							continue;
+						}
 
 						int base_ofs = j * 2 * 4;
 
@@ -2925,9 +2855,9 @@ AABB RasterizerStorageGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 					}
 				} else {
 					for (int j = 0; j < bs; j++) {
-
-						if (!skused[j])
+						if (!skused[j]) {
 							continue;
+						}
 
 						int base_ofs = j * 3 * 4;
 
@@ -2959,23 +2889,22 @@ AABB RasterizerStorageGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 				}
 
 			} else {
-
 				laabb = mesh->surfaces[i]->aabb;
 			}
 
-			if (i == 0)
+			if (i == 0) {
 				aabb = laabb;
-			else
+			} else {
 				aabb.merge_with(laabb);
+			}
 		}
 	} else {
-
 		for (int i = 0; i < mesh->surfaces.size(); i++) {
-
-			if (i == 0)
+			if (i == 0) {
 				aabb = mesh->surfaces[i]->aabb;
-			else
+			} else {
 				aabb.merge_with(mesh->surfaces[i]->aabb);
+			}
 		}
 	}
 
@@ -3216,7 +3145,6 @@ void RasterizerStorageGLES2::multimesh_instance_set_color(RID p_multimesh, int p
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats];
 
 	if (multimesh->color_format == VS::MULTIMESH_COLOR_8BIT) {
-
 		uint8_t *data8 = (uint8_t *)dataptr;
 		data8[0] = CLAMP(p_color.r * 255.0, 0, 255);
 		data8[1] = CLAMP(p_color.g * 255.0, 0, 255);
@@ -3249,7 +3177,6 @@ void RasterizerStorageGLES2::multimesh_instance_set_custom_data(RID p_multimesh,
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats + multimesh->color_floats];
 
 	if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_8BIT) {
-
 		uint8_t *data8 = (uint8_t *)dataptr;
 		data8[0] = CLAMP(p_custom_data.r * 255.0, 0, 255);
 		data8[1] = CLAMP(p_custom_data.g * 255.0, 0, 255);
@@ -3403,7 +3330,7 @@ void RasterizerStorageGLES2::multimesh_set_as_bulk_array(RID p_multimesh, const 
 
 	PoolVector<float>::Read r = p_array.read();
 	ERR_FAIL_COND(!r.ptr());
-	copymem(multimesh->data.ptrw(), r.ptr(), dsize * sizeof(float));
+	memcpy(multimesh->data.ptrw(), r.ptr(), dsize * sizeof(float));
 
 	multimesh->dirty_data = true;
 	multimesh->dirty_aabb = true;
@@ -3437,13 +3364,10 @@ AABB RasterizerStorageGLES2::multimesh_get_aabb(RID p_multimesh) const {
 }
 
 void RasterizerStorageGLES2::update_dirty_multimeshes() {
-
 	while (multimesh_update_list.first()) {
-
 		MultiMesh *multimesh = multimesh_update_list.first()->self();
 
 		if (multimesh->size && multimesh->dirty_aabb) {
-
 			AABB mesh_aabb;
 
 			if (multimesh->mesh.is_valid()) {
@@ -3459,9 +3383,7 @@ void RasterizerStorageGLES2::update_dirty_multimeshes() {
 			AABB aabb;
 
 			if (multimesh->transform_format == VS::MULTIMESH_TRANSFORM_2D) {
-
 				for (int i = 0; i < count; i += stride) {
-
 					float *dataptr = &data[i];
 
 					Transform xform;
@@ -3482,9 +3404,7 @@ void RasterizerStorageGLES2::update_dirty_multimeshes() {
 				}
 
 			} else {
-
 				for (int i = 0; i < count; i += stride) {
-
 					float *dataptr = &data[i];
 
 					Transform xform;
@@ -3557,16 +3477,21 @@ void RasterizerStorageGLES2::immediate_vertex(RID p_immediate, const Vector3 &p_
 		im->aabb.expand_to(p_vertex);
 	}
 
-	if (im->mask & VS::ARRAY_FORMAT_NORMAL)
+	if (im->mask & VS::ARRAY_FORMAT_NORMAL) {
 		c->normals.push_back(chunk_normal);
-	if (im->mask & VS::ARRAY_FORMAT_TANGENT)
+	}
+	if (im->mask & VS::ARRAY_FORMAT_TANGENT) {
 		c->tangents.push_back(chunk_tangent);
-	if (im->mask & VS::ARRAY_FORMAT_COLOR)
+	}
+	if (im->mask & VS::ARRAY_FORMAT_COLOR) {
 		c->colors.push_back(chunk_color);
-	if (im->mask & VS::ARRAY_FORMAT_TEX_UV)
+	}
+	if (im->mask & VS::ARRAY_FORMAT_TEX_UV) {
 		c->uvs.push_back(chunk_uv);
-	if (im->mask & VS::ARRAY_FORMAT_TEX_UV2)
+	}
+	if (im->mask & VS::ARRAY_FORMAT_TEX_UV2) {
 		c->uv2s.push_back(chunk_uv2);
+	}
 	im->mask |= VS::ARRAY_FORMAT_VERTEX;
 	c->vertices.push_back(p_vertex);
 }
@@ -3657,7 +3582,6 @@ RID RasterizerStorageGLES2::immediate_get_material(RID p_immediate) const {
 /* SKELETON API */
 
 RID RasterizerStorageGLES2::skeleton_create() {
-
 	Skeleton *skeleton = memnew(Skeleton);
 
 	glGenTextures(1, &skeleton->tex_id);
@@ -3666,7 +3590,6 @@ RID RasterizerStorageGLES2::skeleton_create() {
 }
 
 void RasterizerStorageGLES2::skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton) {
-
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 	ERR_FAIL_COND(!skeleton);
 	ERR_FAIL_COND(p_bones < 0);
@@ -3679,12 +3602,11 @@ void RasterizerStorageGLES2::skeleton_allocate(RID p_skeleton, int p_bones, bool
 	skeleton->use_2d = p_2d_skeleton;
 
 	if (!config.use_skeleton_software) {
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, skeleton->tex_id);
 
 #ifdef GLES_OVER_GL
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, p_bones * (skeleton->use_2d ? 2 : 3), 1, 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, p_bones * (skeleton->use_2d ? 2 : 3), 1, 0, GL_RGBA, GL_FLOAT, nullptr);
 #else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, p_bones * (skeleton->use_2d ? 2 : 3), 1, 0, GL_RGBA, GL_FLOAT, NULL);
 #endif
@@ -3820,15 +3742,242 @@ Transform2D RasterizerStorageGLES2::skeleton_bone_get_transform_2d(RID p_skeleto
 }
 
 void RasterizerStorageGLES2::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
-
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 	ERR_FAIL_COND(!skeleton);
 
 	skeleton->base_transform_2d = p_base_transform;
 }
 
-void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<float> &p_data, size_t p_size) {
+void RasterizerStorageGLES2::update_dirty_blend_shapes() {
+	while (blend_shapes_update_list.first()) {
+		Mesh *mesh = blend_shapes_update_list.first()->self();
+		for (int is = 0; is < mesh->surfaces.size(); is++) {
+			RasterizerStorageGLES2::Surface *s = mesh->surfaces[is];
+			if (!s->blend_shape_data.empty()) {
+				PoolVector<float> &transform_buffer = resources.blend_shape_transform_cpu_buffer;
+				size_t buffer_size = s->array_len * 8 * 4;
+				if (resources.blend_shape_transform_cpu_buffer_size < buffer_size) {
+					resources.blend_shape_transform_cpu_buffer_size = buffer_size;
+					transform_buffer.resize(buffer_size);
+				}
 
+				PoolVector<uint8_t>::Read read = s->data.read();
+				PoolVector<float>::Write write = transform_buffer.write();
+				float base_weight = 1.0;
+
+				if (s->mesh->blend_shape_mode == VS::BLEND_SHAPE_MODE_NORMALIZED) {
+					for (int ti = 0; ti < mesh->blend_shape_values.size(); ti++) {
+						base_weight -= mesh->blend_shape_values.get(ti);
+					}
+				}
+
+				for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+					if (s->attribs[i].enabled) {
+						// Read all attributes
+						for (int j = 0; j < s->array_len; j++) {
+							size_t offset = s->attribs[i].offset + (j * s->attribs[i].stride);
+							const float *rd = (const float *)(read.ptr() + offset);
+
+							size_t offset_write = i * 4 + (j * 8 * 4);
+							float *wr = (float *)(write.ptr() + offset_write);
+
+							// Set the base
+							switch (i) {
+								case VS::ARRAY_VERTEX: {
+									if (s->format & VS::ARRAY_COMPRESS_VERTEX) {
+										wr[0] = Math::halfptr_to_float(&((uint16_t *)rd)[0]) * base_weight;
+										wr[1] = Math::halfptr_to_float(&((uint16_t *)rd)[1]) * base_weight;
+										wr[2] = Math::halfptr_to_float(&((uint16_t *)rd)[2]) * base_weight;
+									} else {
+										float a[3] = { 0 };
+										a[0] = wr[0] = rd[0] * base_weight;
+										a[1] = wr[1] = rd[1] * base_weight;
+										a[2] = wr[2] = rd[2] * base_weight;
+										memcpy(&write[offset_write], a, sizeof(float) * s->attribs[i].size);
+									}
+								} break;
+								case VS::ARRAY_NORMAL: {
+									if (s->format & VS::ARRAY_COMPRESS_NORMAL) {
+										wr[0] = (((int8_t *)rd)[0] / 127.0) * base_weight;
+										wr[1] = (((int8_t *)rd)[1] / 127.0) * base_weight;
+										wr[2] = (((int8_t *)rd)[2] / 127.0) * base_weight;
+									} else {
+										wr[0] = rd[0] * base_weight;
+										wr[1] = rd[1] * base_weight;
+										wr[2] = rd[2] * base_weight;
+									}
+								} break;
+								case VS::ARRAY_TANGENT: {
+									if (s->format & VS::ARRAY_COMPRESS_TANGENT) {
+										wr[0] = (((int8_t *)rd)[0] / 127.0) * base_weight;
+										wr[1] = (((int8_t *)rd)[1] / 127.0) * base_weight;
+										wr[2] = (((int8_t *)rd)[2] / 127.0) * base_weight;
+										wr[3] = (((int8_t *)rd)[3] / 127.0) * base_weight;
+									} else {
+										wr[0] = rd[0] * base_weight;
+										wr[1] = rd[1] * base_weight;
+										wr[2] = rd[2] * base_weight;
+										wr[3] = rd[3] * base_weight;
+									}
+								} break;
+								case VS::ARRAY_COLOR: {
+									if (s->format & VS::ARRAY_COMPRESS_COLOR) {
+										wr[0] = (((uint8_t *)rd)[0] / 255.0) * base_weight;
+										wr[1] = (((uint8_t *)rd)[1] / 255.0) * base_weight;
+										wr[2] = (((uint8_t *)rd)[2] / 255.0) * base_weight;
+										wr[3] = (((uint8_t *)rd)[3] / 255.0) * base_weight;
+									} else {
+										wr[0] = rd[0] * base_weight;
+										wr[1] = rd[1] * base_weight;
+										wr[2] = rd[2] * base_weight;
+										wr[3] = rd[3] * base_weight;
+									}
+								} break;
+								case VS::ARRAY_TEX_UV: {
+									if (s->format & VS::ARRAY_COMPRESS_TEX_UV) {
+										wr[0] = Math::halfptr_to_float(&((uint16_t *)rd)[0]) * base_weight;
+										wr[1] = Math::halfptr_to_float(&((uint16_t *)rd)[1]) * base_weight;
+									} else {
+										wr[0] = rd[0] * base_weight;
+										wr[1] = rd[1] * base_weight;
+									}
+								} break;
+								case VS::ARRAY_TEX_UV2: {
+									if (s->format & VS::ARRAY_COMPRESS_TEX_UV2) {
+										wr[0] = Math::halfptr_to_float(&((uint16_t *)rd)[0]) * base_weight;
+										wr[1] = Math::halfptr_to_float(&((uint16_t *)rd)[1]) * base_weight;
+									} else {
+										wr[0] = rd[0] * base_weight;
+										wr[1] = rd[1] * base_weight;
+									}
+								} break;
+								case VS::ARRAY_WEIGHTS: {
+									if (s->format & VS::ARRAY_COMPRESS_WEIGHTS) {
+										wr[0] = (((uint16_t *)rd)[0] / 65535.0) * base_weight;
+										wr[1] = (((uint16_t *)rd)[1] / 65535.0) * base_weight;
+										wr[2] = (((uint16_t *)rd)[2] / 65535.0) * base_weight;
+										wr[3] = (((uint16_t *)rd)[3] / 65535.0) * base_weight;
+									} else {
+										wr[0] = rd[0] * base_weight;
+										wr[1] = rd[1] * base_weight;
+										wr[2] = rd[2] * base_weight;
+										wr[3] = rd[3] * base_weight;
+									}
+								} break;
+							}
+
+							// Add all blend shapes
+							for (int ti = 0; ti < mesh->blend_shape_values.size(); ti++) {
+								PoolVector<uint8_t>::Read blend = s->blend_shape_data[ti].read();
+								const float *br = (const float *)(blend.ptr() + offset);
+
+								float weight = mesh->blend_shape_values.get(ti);
+								if (Math::is_zero_approx(weight)) {
+									continue;
+								}
+
+								switch (i) {
+									case VS::ARRAY_VERTEX: {
+										if (s->format & VS::ARRAY_COMPRESS_VERTEX) {
+											wr[0] += Math::halfptr_to_float(&((uint16_t *)br)[0]) * weight;
+											wr[1] += Math::halfptr_to_float(&((uint16_t *)br)[1]) * weight;
+											wr[2] += Math::halfptr_to_float(&((uint16_t *)br)[2]) * weight;
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+											wr[2] += br[2] * weight;
+										}
+									} break;
+									case VS::ARRAY_NORMAL: {
+										if (s->format & VS::ARRAY_COMPRESS_NORMAL) {
+											wr[0] += (float(((int8_t *)br)[0]) / 127.0) * weight;
+											wr[1] += (float(((int8_t *)br)[1]) / 127.0) * weight;
+											wr[2] += (float(((int8_t *)br)[2]) / 127.0) * weight;
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+											wr[2] += br[2] * weight;
+										}
+									} break;
+									case VS::ARRAY_TANGENT: {
+										if (s->format & VS::ARRAY_COMPRESS_TANGENT) {
+											wr[0] += (float(((int8_t *)br)[0]) / 127.0) * weight;
+											wr[1] += (float(((int8_t *)br)[1]) / 127.0) * weight;
+											wr[2] += (float(((int8_t *)br)[2]) / 127.0) * weight;
+											wr[3] = (float(((int8_t *)br)[3]) / 127.0);
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+											wr[2] += br[2] * weight;
+											wr[3] = br[3];
+										}
+									} break;
+									case VS::ARRAY_COLOR: {
+										if (s->format & VS::ARRAY_COMPRESS_COLOR) {
+											wr[0] += (((uint8_t *)br)[0] / 255.0) * weight;
+											wr[1] += (((uint8_t *)br)[1] / 255.0) * weight;
+											wr[2] += (((uint8_t *)br)[2] / 255.0) * weight;
+											wr[3] += (((uint8_t *)br)[3] / 255.0) * weight;
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+											wr[2] += br[2] * weight;
+											wr[3] += br[3] * weight;
+										}
+									} break;
+									case VS::ARRAY_TEX_UV: {
+										if (s->format & VS::ARRAY_COMPRESS_TEX_UV) {
+											wr[0] += Math::halfptr_to_float(&((uint16_t *)br)[0]) * weight;
+											wr[1] += Math::halfptr_to_float(&((uint16_t *)br)[1]) * weight;
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+										}
+									} break;
+									case VS::ARRAY_TEX_UV2: {
+										if (s->format & VS::ARRAY_COMPRESS_TEX_UV2) {
+											wr[0] += Math::halfptr_to_float(&((uint16_t *)br)[0]) * weight;
+											wr[1] += Math::halfptr_to_float(&((uint16_t *)br)[1]) * weight;
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+										}
+									} break;
+									case VS::ARRAY_WEIGHTS: {
+										if (s->format & VS::ARRAY_COMPRESS_WEIGHTS) {
+											wr[0] += (((uint16_t *)br)[0] / 65535.0) * weight;
+											wr[1] += (((uint16_t *)br)[1] / 65535.0) * weight;
+											wr[2] += (((uint16_t *)br)[2] / 65535.0) * weight;
+											wr[3] += (((uint16_t *)br)[3] / 65535.0) * weight;
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+											wr[2] += br[2] * weight;
+											wr[3] += br[3] * weight;
+										}
+									} break;
+								}
+							}
+						}
+					}
+				}
+
+				// Store size and send changed blend shape render to GL
+				glBindBuffer(GL_ARRAY_BUFFER, s->blend_shape_buffer_id);
+				if (buffer_size > s->blend_shape_buffer_size) {
+					s->blend_shape_buffer_size = buffer_size;
+					glBufferData(GL_ARRAY_BUFFER, buffer_size * sizeof(float), transform_buffer.read().ptr(), GL_DYNAMIC_DRAW);
+				} else {
+					buffer_orphan_and_upload(s->blend_shape_buffer_size, 0, buffer_size * sizeof(float), transform_buffer.read().ptr(), GL_ARRAY_BUFFER, true);
+				}
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
+		}
+		blend_shapes_update_list.remove(blend_shapes_update_list.first());
+	}
+}
+
+void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<float> &p_data, size_t p_size) {
 	glBindBuffer(GL_ARRAY_BUFFER, resources.skeleton_transform_buffer);
 
 	uint32_t buffer_size = p_size * sizeof(float);
@@ -3848,9 +3997,9 @@ void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<
 }
 
 void RasterizerStorageGLES2::update_dirty_skeletons() {
-
-	if (config.use_skeleton_software)
+	if (config.use_skeleton_software) {
 		return;
+	}
 
 	glActiveTexture(GL_TEXTURE0);
 
@@ -3874,13 +4023,13 @@ void RasterizerStorageGLES2::update_dirty_skeletons() {
 /* Light API */
 
 RID RasterizerStorageGLES2::light_create(VS::LightType p_type) {
-
 	Light *light = memnew(Light);
 
 	light->type = p_type;
 
 	light->param[VS::LIGHT_PARAM_ENERGY] = 1.0;
 	light->param[VS::LIGHT_PARAM_INDIRECT_ENERGY] = 1.0;
+	light->param[VS::LIGHT_PARAM_SIZE] = 0.0;
 	light->param[VS::LIGHT_PARAM_SPECULAR] = 0.5;
 	light->param[VS::LIGHT_PARAM_RANGE] = 1.0;
 	light->param[VS::LIGHT_PARAM_SPOT_ANGLE] = 45;
@@ -4130,7 +4279,6 @@ AABB RasterizerStorageGLES2::light_get_aabb(RID p_light) const {
 	ERR_FAIL_COND_V(!light, AABB());
 
 	switch (light->type) {
-
 		case VS::LIGHT_SPOT: {
 			float len = light->param[VS::LIGHT_PARAM_RANGE];
 			float size = Math::tan(Math::deg2rad(light->param[VS::LIGHT_PARAM_SPOT_ANGLE])) * len;
@@ -4153,7 +4301,6 @@ AABB RasterizerStorageGLES2::light_get_aabb(RID p_light) const {
 /* PROBE API */
 
 RID RasterizerStorageGLES2::reflection_probe_create() {
-
 	ReflectionProbe *reflection_probe = memnew(ReflectionProbe);
 
 	reflection_probe->intensity = 1.0;
@@ -4174,7 +4321,6 @@ RID RasterizerStorageGLES2::reflection_probe_create() {
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_update_mode(RID p_probe, VS::ReflectionProbeUpdateMode p_mode) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4183,7 +4329,6 @@ void RasterizerStorageGLES2::reflection_probe_set_update_mode(RID p_probe, VS::R
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_intensity(RID p_probe, float p_intensity) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4191,7 +4336,6 @@ void RasterizerStorageGLES2::reflection_probe_set_intensity(RID p_probe, float p
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_interior_ambient(RID p_probe, const Color &p_ambient) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4199,7 +4343,6 @@ void RasterizerStorageGLES2::reflection_probe_set_interior_ambient(RID p_probe, 
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_interior_ambient_energy(RID p_probe, float p_energy) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4207,7 +4350,6 @@ void RasterizerStorageGLES2::reflection_probe_set_interior_ambient_energy(RID p_
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_interior_ambient_probe_contribution(RID p_probe, float p_contrib) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4215,7 +4357,6 @@ void RasterizerStorageGLES2::reflection_probe_set_interior_ambient_probe_contrib
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_max_distance(RID p_probe, float p_distance) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4223,7 +4364,6 @@ void RasterizerStorageGLES2::reflection_probe_set_max_distance(RID p_probe, floa
 	reflection_probe->instance_change_notify(true, false);
 }
 void RasterizerStorageGLES2::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4231,7 +4371,6 @@ void RasterizerStorageGLES2::reflection_probe_set_extents(RID p_probe, const Vec
 	reflection_probe->instance_change_notify(true, false);
 }
 void RasterizerStorageGLES2::reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4240,7 +4379,6 @@ void RasterizerStorageGLES2::reflection_probe_set_origin_offset(RID p_probe, con
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_as_interior(RID p_probe, bool p_enable) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4248,7 +4386,6 @@ void RasterizerStorageGLES2::reflection_probe_set_as_interior(RID p_probe, bool 
 	reflection_probe->instance_change_notify(true, false);
 }
 void RasterizerStorageGLES2::reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4256,7 +4393,6 @@ void RasterizerStorageGLES2::reflection_probe_set_enable_box_projection(RID p_pr
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4264,7 +4400,6 @@ void RasterizerStorageGLES2::reflection_probe_set_enable_shadows(RID p_probe, bo
 	reflection_probe->instance_change_notify(true, false);
 }
 void RasterizerStorageGLES2::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4273,7 +4408,6 @@ void RasterizerStorageGLES2::reflection_probe_set_cull_mask(RID p_probe, uint32_
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
-
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
@@ -4291,7 +4425,6 @@ AABB RasterizerStorageGLES2::reflection_probe_get_aabb(RID p_probe) const {
 	return aabb;
 }
 VS::ReflectionProbeUpdateMode RasterizerStorageGLES2::reflection_probe_get_update_mode(RID p_probe) const {
-
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, VS::REFLECTION_PROBE_UPDATE_ALWAYS);
 
@@ -4299,7 +4432,6 @@ VS::ReflectionProbeUpdateMode RasterizerStorageGLES2::reflection_probe_get_updat
 }
 
 uint32_t RasterizerStorageGLES2::reflection_probe_get_cull_mask(RID p_probe) const {
-
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
@@ -4307,14 +4439,12 @@ uint32_t RasterizerStorageGLES2::reflection_probe_get_cull_mask(RID p_probe) con
 }
 
 Vector3 RasterizerStorageGLES2::reflection_probe_get_extents(RID p_probe) const {
-
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, Vector3());
 
 	return reflection_probe->extents;
 }
 Vector3 RasterizerStorageGLES2::reflection_probe_get_origin_offset(RID p_probe) const {
-
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, Vector3());
 
@@ -4322,7 +4452,6 @@ Vector3 RasterizerStorageGLES2::reflection_probe_get_origin_offset(RID p_probe) 
 }
 
 bool RasterizerStorageGLES2::reflection_probe_renders_shadows(RID p_probe) const {
-
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, false);
 
@@ -4330,7 +4459,6 @@ bool RasterizerStorageGLES2::reflection_probe_renders_shadows(RID p_probe) const
 }
 
 float RasterizerStorageGLES2::reflection_probe_get_origin_max_distance(RID p_probe) const {
-
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
@@ -4338,7 +4466,6 @@ float RasterizerStorageGLES2::reflection_probe_get_origin_max_distance(RID p_pro
 }
 
 int RasterizerStorageGLES2::reflection_probe_get_resolution(RID p_probe) const {
-
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
@@ -4429,10 +4556,6 @@ uint32_t RasterizerStorageGLES2::gi_probe_get_version(RID p_probe) {
 	return 0;
 }
 
-RasterizerStorage::GIProbeCompression RasterizerStorageGLES2::gi_probe_get_dynamic_data_get_preferred_compression() const {
-	return GI_PROBE_UNCOMPRESSED;
-}
-
 RID RasterizerStorageGLES2::gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression) {
 	return RID();
 }
@@ -4443,26 +4566,22 @@ void RasterizerStorageGLES2::gi_probe_dynamic_data_update(RID p_gi_probe_data, i
 ///////
 
 RID RasterizerStorageGLES2::lightmap_capture_create() {
-
 	LightmapCapture *capture = memnew(LightmapCapture);
 	return lightmap_capture_data_owner.make_rid(capture);
 }
 
 void RasterizerStorageGLES2::lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) {
-
 	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND(!capture);
 	capture->bounds = p_bounds;
 	capture->instance_change_notify(true, false);
 }
 AABB RasterizerStorageGLES2::lightmap_capture_get_bounds(RID p_capture) const {
-
 	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND_V(!capture, AABB());
 	return capture->bounds;
 }
 void RasterizerStorageGLES2::lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree) {
-
 	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND(!capture);
 
@@ -4472,24 +4591,24 @@ void RasterizerStorageGLES2::lightmap_capture_set_octree(RID p_capture, const Po
 	if (p_octree.size()) {
 		PoolVector<LightmapCaptureOctree>::Write w = capture->octree.write();
 		PoolVector<uint8_t>::Read r = p_octree.read();
-		copymem(w.ptr(), r.ptr(), p_octree.size());
+		memcpy(w.ptr(), r.ptr(), p_octree.size());
 	}
 	capture->instance_change_notify(true, false);
 }
 PoolVector<uint8_t> RasterizerStorageGLES2::lightmap_capture_get_octree(RID p_capture) const {
-
 	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND_V(!capture, PoolVector<uint8_t>());
 
-	if (capture->octree.size() == 0)
+	if (capture->octree.size() == 0) {
 		return PoolVector<uint8_t>();
+	}
 
 	PoolVector<uint8_t> ret;
 	ret.resize(capture->octree.size() * sizeof(LightmapCaptureOctree));
 	{
 		PoolVector<LightmapCaptureOctree>::Read r = capture->octree.read();
 		PoolVector<uint8_t>::Write w = ret.write();
-		copymem(w.ptr(), r.ptr(), ret.size());
+		memcpy(w.ptr(), r.ptr(), ret.size());
 	}
 
 	return ret;
@@ -4520,7 +4639,6 @@ int RasterizerStorageGLES2::lightmap_capture_get_octree_cell_subdiv(RID p_captur
 }
 
 void RasterizerStorageGLES2::lightmap_capture_set_energy(RID p_capture, float p_energy) {
-
 	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND(!capture);
 	capture->energy = p_energy;
@@ -4531,7 +4649,6 @@ void RasterizerStorageGLES2::lightmap_capture_set_energy(RID p_capture, float p_
 }
 
 float RasterizerStorageGLES2::lightmap_capture_get_energy(RID p_capture) const {
-
 	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND_V(!capture, 0);
 	return capture->energy;
@@ -4563,7 +4680,7 @@ void RasterizerStorageGLES2::update_dirty_captures() {
 
 const PoolVector<RasterizerStorage::LightmapCaptureOctree> *RasterizerStorageGLES2::lightmap_capture_get_octree_ptr(RID p_capture) const {
 	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
-	ERR_FAIL_COND_V(!capture, NULL);
+	ERR_FAIL_COND_V(!capture, nullptr);
 	return &capture->octree;
 }
 
@@ -4660,7 +4777,6 @@ bool RasterizerStorageGLES2::particles_is_inactive(RID p_particles) const {
 ////////
 
 void RasterizerStorageGLES2::instance_add_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {
-
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 	ERR_FAIL_COND(!skeleton);
 
@@ -4668,7 +4784,6 @@ void RasterizerStorageGLES2::instance_add_skeleton(RID p_skeleton, RasterizerSce
 }
 
 void RasterizerStorageGLES2::instance_remove_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {
-
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 	ERR_FAIL_COND(!skeleton);
 
@@ -4676,8 +4791,7 @@ void RasterizerStorageGLES2::instance_remove_skeleton(RID p_skeleton, Rasterizer
 }
 
 void RasterizerStorageGLES2::instance_add_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {
-
-	Instantiable *inst = NULL;
+	Instantiable *inst = nullptr;
 	switch (p_instance->base_type) {
 		case VS::INSTANCE_MESH: {
 			inst = mesh_owner.getornull(p_base);
@@ -4720,8 +4834,7 @@ void RasterizerStorageGLES2::instance_add_dependency(RID p_base, RasterizerScene
 }
 
 void RasterizerStorageGLES2::instance_remove_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {
-
-	Instantiable *inst = NULL;
+	Instantiable *inst = nullptr;
 
 	switch (p_instance->base_type) {
 		case VS::INSTANCE_MESH: {
@@ -4767,10 +4880,10 @@ void RasterizerStorageGLES2::instance_remove_dependency(RID p_base, RasterizerSc
 /* RENDER TARGET */
 
 void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
-
 	// do not allocate a render target with no size
-	if (rt->width <= 0 || rt->height <= 0)
+	if (rt->width <= 0 || rt->height <= 0) {
 		return;
+	}
 
 	// do not allocate a render target that is attached to the screen
 	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN]) {
@@ -4779,7 +4892,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 	}
 
 	if (rt->width > config.max_viewport_dimensions[0] || rt->height > config.max_viewport_dimensions[1]) {
-		WARN_PRINTS("Cannot create render target larger than maximum hardware supported size of (" + itos(config.max_viewport_dimensions[0]) + ", " + itos(config.max_viewport_dimensions[1]) + "). Setting size to maximum.");
+		WARN_PRINT("Cannot create render target larger than maximum hardware supported size of (" + itos(config.max_viewport_dimensions[0]) + ", " + itos(config.max_viewport_dimensions[1]) + "). Setting size to maximum.");
 		rt->width = MIN(rt->width, config.max_viewport_dimensions[0]);
 		rt->height = MIN(rt->height, config.max_viewport_dimensions[1]);
 	}
@@ -4811,7 +4924,6 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 	rt->mip_maps_allocated = false;
 
 	{
-
 		/* Front FBO */
 
 		Texture *texture = texture_owner.getornull(rt->texture);
@@ -4825,14 +4937,12 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		glGenTextures(1, &rt->color);
 		glBindTexture(GL_TEXTURE_2D, rt->color);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, nullptr);
 
 		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
-
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		} else {
-
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		}
@@ -4845,10 +4955,9 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		// depth
 
 		if (config.support_depth_texture) {
-
 			glGenTextures(1, &rt->depth);
 			glBindTexture(GL_TEXTURE_2D, rt->depth);
-			glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, rt->width, rt->height, 0, GL_DEPTH_COMPONENT, config.depth_type, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, rt->width, rt->height, 0, GL_DEPTH_COMPONENT, config.depth_type, nullptr);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -4857,7 +4966,6 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
 		} else {
-
 			glGenRenderbuffers(1, &rt->depth);
 			glBindRenderbuffer(GL_RENDERBUFFER, rt->depth);
 
@@ -4869,13 +4977,10 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
-
 			glDeleteFramebuffers(1, &rt->fbo);
 			if (config.support_depth_texture) {
-
 				glDeleteTextures(1, &rt->depth);
 			} else {
-
 				glDeleteRenderbuffers(1, &rt->depth);
 			}
 
@@ -4910,7 +5015,6 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 #ifndef JAVASCRIPT_ENABLED
 	if (rt->msaa >= VS::VIEWPORT_MSAA_2X && rt->msaa <= VS::VIEWPORT_MSAA_16X && config.multisample_supported) {
-
 		rt->multisample_active = true;
 
 		static const int msaa_value[] = { 0, 2, 4, 8, 16 };
@@ -4919,7 +5023,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		int max_samples = 0;
 		glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
 		if (msaa > max_samples) {
-			WARN_PRINTS("MSAA must be <= GL_MAX_SAMPLES, falling-back to GL_MAX_SAMPLES = " + itos(max_samples));
+			WARN_PRINT("MSAA must be <= GL_MAX_SAMPLES, falling-back to GL_MAX_SAMPLES = " + itos(max_samples));
 			msaa = max_samples;
 		}
 
@@ -4993,14 +5097,13 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 	// copy texscreen buffers
 	if (!(rt->flags[RasterizerStorage::RENDER_TARGET_NO_SAMPLING])) {
-
 		glGenTextures(1, &rt->copy_screen_effect.color);
 		glBindTexture(GL_TEXTURE_2D, rt->copy_screen_effect.color);
 
 		if (rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rt->width, rt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rt->width, rt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 		} else {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, rt->width, rt->height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, rt->width, rt->height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 		}
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -5024,9 +5127,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 	// Allocate mipmap chains for post_process effects
 	if (!rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D] && rt->width >= 2 && rt->height >= 2) {
-
 		for (int i = 0; i < 2; i++) {
-
 			ERR_FAIL_COND(rt->mip_maps[i].sizes.size());
 			int w = rt->width;
 			int h = rt->height;
@@ -5041,7 +5142,6 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 			int fb_h = h;
 
 			while (true) {
-
 				RenderTarget::MipMaps::Size mm;
 				mm.width = w;
 				mm.height = h;
@@ -5050,8 +5150,9 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 				w >>= 1;
 				h >>= 1;
 
-				if (w < 2 || h < 2)
+				if (w < 2 || h < 2) {
 					break;
+				}
 
 				level++;
 			}
@@ -5060,12 +5161,11 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 			GLsizei height = fb_h;
 
 			if (config.render_to_mipmap_supported) {
-
 				glGenTextures(1, &rt->mip_maps[i].color);
 				glBindTexture(GL_TEXTURE_2D, rt->mip_maps[i].color);
 
 				for (int l = 0; l < level + 1; l++) {
-					glTexImage2D(GL_TEXTURE_2D, l, color_internal_format, width, height, 0, color_format, color_type, NULL);
+					glTexImage2D(GL_TEXTURE_2D, l, color_internal_format, width, height, 0, color_format, color_type, nullptr);
 					width = MAX(1, (width / 2));
 					height = MAX(1, (height / 2));
 				}
@@ -5074,12 +5174,11 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
 #endif
 			} else {
-
 				// Can't render to specific levels of a mipmap in ES 2.0 or Webgl so create a texture for each level
 				for (int l = 0; l < level + 1; l++) {
 					glGenTextures(1, &rt->mip_maps[i].sizes.write[l].color);
 					glBindTexture(GL_TEXTURE_2D, rt->mip_maps[i].sizes[l].color);
-					glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, width, height, 0, color_format, color_type, NULL);
+					glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, width, height, 0, color_format, color_type, nullptr);
 					width = MAX(1, (width / 2));
 					height = MAX(1, (height / 2));
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -5094,17 +5193,14 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 			glDepthMask(GL_TRUE);
 
 			for (int j = 0; j < rt->mip_maps[i].sizes.size(); j++) {
-
 				RenderTarget::MipMaps::Size &mm = rt->mip_maps[i].sizes.write[j];
 
 				glGenFramebuffers(1, &mm.fbo);
 				glBindFramebuffer(GL_FRAMEBUFFER, mm.fbo);
 
 				if (config.render_to_mipmap_supported) {
-
 					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->mip_maps[i].color, j);
 				} else {
-
 					glBindTexture(GL_TEXTURE_2D, rt->mip_maps[i].sizes[j].color);
 					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->mip_maps[i].sizes[j].color, 0);
 				}
@@ -5150,10 +5246,10 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 }
 
 void RasterizerStorageGLES2::_render_target_clear(RenderTarget *rt) {
-
 	// there is nothing to clear when DIRECT_TO_SCREEN is used
-	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN])
+	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN]) {
 		return;
+	}
 
 	if (rt->fbo) {
 		glDeleteFramebuffers(1, &rt->fbo);
@@ -5240,7 +5336,6 @@ void RasterizerStorageGLES2::_render_target_clear(RenderTarget *rt) {
 }
 
 RID RasterizerStorageGLES2::render_target_create() {
-
 	RenderTarget *rt = memnew(RenderTarget);
 
 	Texture *t = memnew(Texture);
@@ -5271,7 +5366,6 @@ RID RasterizerStorageGLES2::render_target_create() {
 }
 
 void RasterizerStorageGLES2::render_target_set_position(RID p_render_target, int p_x, int p_y) {
-
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
@@ -5280,12 +5374,12 @@ void RasterizerStorageGLES2::render_target_set_position(RID p_render_target, int
 }
 
 void RasterizerStorageGLES2::render_target_set_size(RID p_render_target, int p_width, int p_height) {
-
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	if (p_width == rt->width && p_height == rt->height)
+	if (p_width == rt->width && p_height == rt->height) {
 		return;
+	}
 
 	_render_target_clear(rt);
 
@@ -5296,7 +5390,6 @@ void RasterizerStorageGLES2::render_target_set_size(RID p_render_target, int p_w
 }
 
 RID RasterizerStorageGLES2::render_target_get_texture(RID p_render_target) const {
-
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
@@ -5308,7 +5401,6 @@ RID RasterizerStorageGLES2::render_target_get_texture(RID p_render_target) const
 }
 
 uint32_t RasterizerStorageGLES2::render_target_get_depth_texture_id(RID p_render_target) const {
-
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, 0);
 
@@ -5522,8 +5614,9 @@ void RasterizerStorageGLES2::render_target_set_msaa(RID p_render_target, VS::Vie
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	if (rt->msaa == p_msaa)
+	if (rt->msaa == p_msaa) {
 		return;
+	}
 
 	if (!config.multisample_supported) {
 		ERR_PRINT("MSAA not supported on this hardware.");
@@ -5547,20 +5640,31 @@ void RasterizerStorageGLES2::render_target_set_use_debanding(RID p_render_target
 	ERR_FAIL_COND(!rt);
 
 	if (p_debanding) {
-		WARN_PRINT_ONCE("Debanding is not supported in the GLES2 backend. Switch to the GLES3 backend and make sure HDR is enabled.");
+		WARN_PRINT_ONCE("Debanding is not supported in the GLES2 backend. To use debanding, switch to the GLES3 backend and make sure HDR is enabled.");
 	}
 
 	rt->use_debanding = p_debanding;
 }
 
+void RasterizerStorageGLES2::render_target_set_sharpen_intensity(RID p_render_target, float p_intensity) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	if (p_intensity >= 0.001) {
+		WARN_PRINT_ONCE("Sharpening is not supported in the GLES2 backend. To use sharpening, switch to the GLES3 backend.");
+	}
+
+	rt->sharpen_intensity = p_intensity;
+}
+
 /* CANVAS SHADOW */
 
 RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
-
 	CanvasLightShadow *cls = memnew(CanvasLightShadow);
 
-	if (p_width > config.max_texture_size)
+	if (p_width > config.max_texture_size) {
 		p_width = config.max_texture_size;
+	}
 
 	cls->size = p_width;
 	cls->height = 16;
@@ -5578,10 +5682,10 @@ RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
 	glGenTextures(1, &cls->distance);
 	glBindTexture(GL_TEXTURE_2D, cls->distance);
 	if (config.use_rgba_2d_shadows) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cls->size, cls->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cls->size, cls->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	} else {
 #ifdef GLES_OVER_GL
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, cls->size, cls->height, 0, _RED_OES, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, cls->size, cls->height, 0, _RED_OES, GL_FLOAT, nullptr);
 #else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_FLOAT, cls->size, cls->height, 0, _RED_OES, GL_FLOAT, NULL);
 #endif
@@ -5608,7 +5712,6 @@ RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
 /* LIGHT SHADOW MAPPING */
 
 RID RasterizerStorageGLES2::canvas_light_occluder_create() {
-
 	CanvasOccluder *co = memnew(CanvasOccluder);
 	co->index_id = 0;
 	co->vertex_id = 0;
@@ -5618,18 +5721,18 @@ RID RasterizerStorageGLES2::canvas_light_occluder_create() {
 }
 
 void RasterizerStorageGLES2::canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) {
-
 	CanvasOccluder *co = canvas_occluder_owner.get(p_occluder);
 	ERR_FAIL_COND(!co);
 
 	co->lines = p_lines;
 
 	if (p_lines.size() != co->len) {
-
-		if (co->index_id)
+		if (co->index_id) {
 			glDeleteBuffers(1, &co->index_id);
-		if (co->vertex_id)
+		}
+		if (co->vertex_id) {
 			glDeleteBuffers(1, &co->vertex_id);
+		}
 
 		co->index_id = 0;
 		co->vertex_id = 0;
@@ -5637,7 +5740,6 @@ void RasterizerStorageGLES2::canvas_light_occluder_set_polylines(RID p_occluder,
 	}
 
 	if (p_lines.size()) {
-
 		PoolVector<float> geometry;
 		PoolVector<uint16_t> indices;
 		int lc = p_lines.size();
@@ -5653,7 +5755,6 @@ void RasterizerStorageGLES2::canvas_light_occluder_set_polylines(RID p_occluder,
 		const int POLY_HEIGHT = 16384;
 
 		for (int i = 0; i < lc / 2; i++) {
-
 			vw[i * 12 + 0] = lr[i * 2 + 0].x;
 			vw[i * 12 + 1] = lr[i * 2 + 0].y;
 			vw[i * 12 + 2] = POLY_HEIGHT;
@@ -5686,7 +5787,6 @@ void RasterizerStorageGLES2::canvas_light_occluder_set_polylines(RID p_occluder,
 			glBindBuffer(GL_ARRAY_BUFFER, co->vertex_id);
 			glBufferData(GL_ARRAY_BUFFER, lc * 6 * sizeof(real_t), vw.ptr(), GL_STATIC_DRAW);
 		} else {
-
 			glBindBuffer(GL_ARRAY_BUFFER, co->vertex_id);
 			glBufferSubData(GL_ARRAY_BUFFER, 0, lc * 6 * sizeof(real_t), vw.ptr());
 		}
@@ -5694,12 +5794,10 @@ void RasterizerStorageGLES2::canvas_light_occluder_set_polylines(RID p_occluder,
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 
 		if (!co->index_id) {
-
 			glGenBuffers(1, &co->index_id);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, co->index_id);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, lc * 3 * sizeof(uint16_t), iw.ptr(), GL_DYNAMIC_DRAW);
 		} else {
-
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, co->index_id);
 			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, lc * 3 * sizeof(uint16_t), iw.ptr());
 		}
@@ -5711,7 +5809,6 @@ void RasterizerStorageGLES2::canvas_light_occluder_set_polylines(RID p_occluder,
 }
 
 VS::InstanceType RasterizerStorageGLES2::get_base_type(RID p_rid) const {
-
 	if (mesh_owner.owns(p_rid)) {
 		return VS::INSTANCE_MESH;
 	} else if (light_owner.owns(p_rid)) {
@@ -5730,9 +5827,7 @@ VS::InstanceType RasterizerStorageGLES2::get_base_type(RID p_rid) const {
 }
 
 bool RasterizerStorageGLES2::free(RID p_rid) {
-
 	if (render_target_owner.owns(p_rid)) {
-
 		RenderTarget *rt = render_target_owner.getornull(p_rid);
 		_render_target_clear(rt);
 
@@ -5744,7 +5839,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		return true;
 	} else if (texture_owner.owns(p_rid)) {
-
 		Texture *t = texture_owner.get(p_rid);
 		// can't free a render target texture
 		ERR_FAIL_COND_V(t->render_target, true);
@@ -5755,7 +5849,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		return true;
 	} else if (sky_owner.owns(p_rid)) {
-
 		Sky *sky = sky_owner.get(p_rid);
 		sky_set_texture(p_rid, RID(), 256);
 		sky_owner.free(p_rid);
@@ -5763,7 +5856,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		return true;
 	} else if (shader_owner.owns(p_rid)) {
-
 		Shader *shader = shader_owner.get(p_rid);
 
 		if (shader->shader && shader->custom_code_id) {
@@ -5777,7 +5869,7 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 		while (shader->materials.first()) {
 			Material *m = shader->materials.first()->self();
 
-			m->shader = NULL;
+			m->shader = nullptr;
 			_material_make_dirty(m);
 
 			shader->materials.remove(shader->materials.first());
@@ -5788,7 +5880,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		return true;
 	} else if (material_owner.owns(p_rid)) {
-
 		Material *m = material_owner.get(p_rid);
 
 		if (m->shader) {
@@ -5801,7 +5892,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 		}
 
 		for (Map<RasterizerScene::InstanceBase *, int>::Element *E = m->instance_owners.front(); E; E = E->next()) {
-
 			RasterizerScene::InstanceBase *ins = E->key();
 
 			if (ins->material_override == p_rid) {
@@ -5820,7 +5910,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		return true;
 	} else if (skeleton_owner.owns(p_rid)) {
-
 		Skeleton *s = skeleton_owner.get(p_rid);
 
 		if (s->update_list.in_list()) {
@@ -5842,7 +5931,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		return true;
 	} else if (mesh_owner.owns(p_rid)) {
-
 		Mesh *mesh = mesh_owner.get(p_rid);
 
 		mesh->instance_remove_deps();
@@ -5865,7 +5953,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		return true;
 	} else if (multimesh_owner.owns(p_rid)) {
-
 		MultiMesh *multimesh = multimesh_owner.get(p_rid);
 		multimesh->instance_remove_deps();
 
@@ -5893,7 +5980,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		return true;
 	} else if (light_owner.owns(p_rid)) {
-
 		Light *light = light_owner.get(p_rid);
 		light->instance_remove_deps();
 
@@ -5902,7 +5988,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		return true;
 	} else if (reflection_probe_owner.owns(p_rid)) {
-
 		// delete the texture
 		ReflectionProbe *reflection_probe = reflection_probe_owner.get(p_rid);
 		reflection_probe->instance_remove_deps();
@@ -5912,7 +5997,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		return true;
 	} else if (lightmap_capture_data_owner.owns(p_rid)) {
-
 		// delete the texture
 		LightmapCapture *lightmap_capture = lightmap_capture_data_owner.get(p_rid);
 		lightmap_capture->instance_remove_deps();
@@ -5922,12 +6006,13 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 		return true;
 
 	} else if (canvas_occluder_owner.owns(p_rid)) {
-
 		CanvasOccluder *co = canvas_occluder_owner.get(p_rid);
-		if (co->index_id)
+		if (co->index_id) {
 			glDeleteBuffers(1, &co->index_id);
-		if (co->vertex_id)
+		}
+		if (co->vertex_id) {
 			glDeleteBuffers(1, &co->vertex_id);
+		}
 
 		canvas_occluder_owner.free(p_rid);
 		memdelete(co);
@@ -5935,7 +6020,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 		return true;
 
 	} else if (canvas_light_shadow_owner.owns(p_rid)) {
-
 		CanvasLightShadow *cls = canvas_light_shadow_owner.get(p_rid);
 		glDeleteFramebuffers(1, &cls->fbo);
 		glDeleteRenderbuffers(1, &cls->depth);
@@ -5950,18 +6034,21 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 }
 
 bool RasterizerStorageGLES2::has_os_feature(const String &p_feature) const {
-
-	if (p_feature == "pvrtc")
+	if (p_feature == "pvrtc") {
 		return config.pvrtc_supported;
+	}
 
-	if (p_feature == "s3tc")
+	if (p_feature == "s3tc") {
 		return config.s3tc_supported;
+	}
 
-	if (p_feature == "etc")
+	if (p_feature == "etc") {
 		return config.etc1_supported;
+	}
 
-	if (p_feature == "skinning_fallback")
+	if (p_feature == "skinning_fallback") {
 		return config.use_skeleton_software;
+	}
 
 	return false;
 }
@@ -5972,12 +6059,10 @@ void RasterizerStorageGLES2::set_debug_generate_wireframes(bool p_generate) {
 }
 
 void RasterizerStorageGLES2::render_info_begin_capture() {
-
 	info.snap = info.render;
 }
 
 void RasterizerStorageGLES2::render_info_end_capture() {
-
 	info.snap.object_count = info.render.object_count - info.snap.object_count;
 	info.snap.draw_call_count = info.render.draw_call_count - info.snap.draw_call_count;
 	info.snap.material_switch_count = info.render.material_switch_count - info.snap.material_switch_count;
@@ -5989,7 +6074,6 @@ void RasterizerStorageGLES2::render_info_end_capture() {
 }
 
 int RasterizerStorageGLES2::get_captured_render_info(VS::RenderInfo p_info) {
-
 	switch (p_info) {
 		case VS::INFO_OBJECTS_IN_FRAME: {
 			return info.snap.object_count;
@@ -6053,12 +6137,10 @@ uint64_t RasterizerStorageGLES2::get_render_info(VS::RenderInfo p_info) {
 }
 
 String RasterizerStorageGLES2::get_video_adapter_name() const {
-
 	return (const char *)glGetString(GL_RENDERER);
 }
 
 String RasterizerStorageGLES2::get_video_adapter_vendor() const {
-
 	return (const char *)glGetString(GL_VENDOR);
 }
 
@@ -6066,7 +6148,6 @@ void RasterizerStorageGLES2::initialize() {
 	RasterizerStorageGLES2::system_fbo = 0;
 
 	{
-
 		const GLubyte *extension_string = glGetString(GL_EXTENSIONS);
 
 		Vector<String> extensions = String((const char *)extension_string).split(" ");
@@ -6198,7 +6279,7 @@ void RasterizerStorageGLES2::initialize() {
 		GLuint depth;
 		glGenTextures(1, &depth);
 		glBindTexture(GL_TEXTURE_2D, depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, config.depth_type, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, config.depth_type, nullptr);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -6230,7 +6311,7 @@ void RasterizerStorageGLES2::initialize() {
 
 			glGenTextures(1, &depth);
 			glBindTexture(GL_TEXTURE_2D, depth);
-			glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -6258,7 +6339,7 @@ void RasterizerStorageGLES2::initialize() {
 
 	frame.count = 0;
 	frame.delta = 0;
-	frame.current_rt = NULL;
+	frame.current_rt = nullptr;
 	frame.clear_request = false;
 
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &config.max_vertex_texture_image_units);
@@ -6369,6 +6450,11 @@ void RasterizerStorageGLES2::initialize() {
 		glGenBuffers(1, &resources.skeleton_transform_buffer);
 	}
 
+	// blend buffer
+	{
+		resources.blend_shape_transform_cpu_buffer_size = 0;
+	}
+
 	// radical inverse vdc cache texture
 	// used for cubemap filtering
 	if (true /*||config.float_texture_supported*/) { //uint8 is similar and works everywhere
@@ -6402,7 +6488,6 @@ void RasterizerStorageGLES2::initialize() {
 	}
 
 	{
-
 		glGenFramebuffers(1, &resources.mipmap_blur_fbo);
 		glGenTextures(1, &resources.mipmap_blur_color);
 	}
@@ -6422,6 +6507,8 @@ void RasterizerStorageGLES2::initialize() {
 	GLOBAL_DEF_RST("rendering/quality/lightmapping/use_bicubic_sampling", true);
 	GLOBAL_DEF_RST("rendering/quality/lightmapping/use_bicubic_sampling.mobile", false);
 	config.use_lightmap_filter_bicubic = GLOBAL_GET("rendering/quality/lightmapping/use_bicubic_sampling");
+
+	config.use_physical_light_attenuation = GLOBAL_GET("rendering/quality/shading/use_physical_light_attenuation");
 
 	int orphan_mode = GLOBAL_GET("rendering/2d/opengl/legacy_orphan_buffers");
 	switch (orphan_mode) {
@@ -6448,6 +6535,7 @@ void RasterizerStorageGLES2::_copy_screen() {
 void RasterizerStorageGLES2::update_dirty_resources() {
 	update_dirty_shaders();
 	update_dirty_materials();
+	update_dirty_blend_shapes();
 	update_dirty_skeletons();
 	update_dirty_multimeshes();
 	update_dirty_captures();

@@ -38,7 +38,6 @@
 #include <enet/enet.h>
 
 class NetworkedMultiplayerENet : public NetworkedMultiplayerPeer {
-
 	GDCLASS(NetworkedMultiplayerENet, NetworkedMultiplayerPeer);
 
 public:
@@ -86,7 +85,6 @@ private:
 	Map<int, ENetPeer *> peer_map;
 
 	struct Packet {
-
 		ENetPacket *packet;
 		int from;
 		int channel;
@@ -116,6 +114,7 @@ private:
 	Ref<CryptoKey> dtls_key;
 	Ref<X509Certificate> dtls_cert;
 	bool dtls_verify;
+	String dtls_hostname;
 
 protected:
 	static void _bind_methods();
@@ -179,6 +178,8 @@ public:
 	bool is_dtls_verify_enabled() const;
 	void set_dtls_key(Ref<CryptoKey> p_key);
 	void set_dtls_certificate(Ref<X509Certificate> p_cert);
+	void set_dtls_hostname(const String &p_hostname);
+	String get_dtls_hostname() const;
 };
 
 VARIANT_ENUM_CAST(NetworkedMultiplayerENet::CompressionMode);

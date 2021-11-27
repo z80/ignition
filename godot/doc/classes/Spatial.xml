@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Spatial" inherits="Node" version="3.3">
+<class name="Spatial" inherits="Node" version="3.4">
 	<brief_description>
 		Most basic 3D game object, parent of all 3D-related nodes.
 	</brief_description>
@@ -9,7 +9,7 @@
 		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GDScript.deg2rad].
 	</description>
 	<tutorials>
-		<link title="Introduction to 3D">https://docs.godotengine.org/en/3.3/tutorials/3d/introduction_to_3d.html</link>
+		<link title="Introduction to 3D">https://docs.godotengine.org/en/3.4/tutorials/3d/introduction_to_3d.html</link>
 		<link title="All 3D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/3d</link>
 	</tutorials>
 	<methods>
@@ -269,6 +269,16 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="gameplay_entered">
+			<description>
+				Emitted by portal system gameplay monitor when a node enters the gameplay area.
+			</description>
+		</signal>
+		<signal name="gameplay_exited">
+			<description>
+				Emitted by portal system gameplay monitor when a node exits the gameplay area.
+			</description>
+		</signal>
 		<signal name="visibility_changed">
 			<description>
 				Emitted when node visibility changes.
@@ -288,6 +298,12 @@
 		</constant>
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="43">
 			Spatial nodes receives this notification when their visibility changes.
+		</constant>
+		<constant name="NOTIFICATION_ENTER_GAMEPLAY" value="45">
+			Spatial nodes receives this notification if the portal system gameplay monitor detects they have entered the gameplay area.
+		</constant>
+		<constant name="NOTIFICATION_EXIT_GAMEPLAY" value="46">
+			Spatial nodes receives this notification if the portal system gameplay monitor detects they have exited the gameplay area.
 		</constant>
 	</constants>
 </class>

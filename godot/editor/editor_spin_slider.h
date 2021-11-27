@@ -69,6 +69,7 @@ class EditorSpinSlider : public Range {
 	void _value_input_closed();
 	void _value_input_entered(const String &);
 	void _value_focus_exited();
+	void _value_input_gui_input(const Ref<InputEvent> &p_event);
 	bool hide_slider;
 	bool flat;
 
@@ -76,6 +77,8 @@ class EditorSpinSlider : public Range {
 	Color custom_label_color;
 
 	void _evaluate_input_text();
+
+	void _draw_spin_slider();
 
 protected:
 	void _notification(int p_what);

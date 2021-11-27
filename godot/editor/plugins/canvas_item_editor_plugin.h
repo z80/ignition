@@ -43,7 +43,6 @@
 class CanvasItemEditorViewport;
 
 class CanvasItemEditorSelectedItem : public Object {
-
 	GDCLASS(CanvasItemEditorSelectedItem, Object);
 
 public:
@@ -68,7 +67,6 @@ public:
 };
 
 class CanvasItemEditor : public VBoxContainer {
-
 	GDCLASS(CanvasItemEditor, VBoxContainer);
 
 public:
@@ -82,6 +80,11 @@ public:
 		TOOL_PAN,
 		TOOL_RULER,
 		TOOL_MAX
+	};
+
+	enum AddNodeOption {
+		ADD_NODE,
+		ADD_INSTANCE,
 	};
 
 private:
@@ -208,6 +211,7 @@ private:
 		DRAG_ANCHOR_BOTTOM_RIGHT,
 		DRAG_ANCHOR_BOTTOM_LEFT,
 		DRAG_ANCHOR_ALL,
+		DRAG_QUEUED,
 		DRAG_MOVE,
 		DRAG_SCALE_X,
 		DRAG_SCALE_Y,
@@ -230,6 +234,10 @@ private:
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
 	HBoxContainer *hb;
+	// Used for secondary menu items which are displayed depending on the currently selected node
+	// (such as MeshInstance's "Mesh" menu).
+	PanelContainer *context_menu_container;
+	HBoxContainer *hbc_context_menu;
 
 	ToolButton *zoom_minus;
 	ToolButton *zoom_reset;
@@ -285,11 +293,11 @@ private:
 
 	bool ruler_tool_active;
 	Point2 ruler_tool_origin;
+	Point2 node_create_position;
 
 	MenuOption last_option;
 
 	struct _SelectResult {
-
 		CanvasItem *item;
 		float z_index;
 		bool has_z;
@@ -300,7 +308,6 @@ private:
 	Vector<_SelectResult> selection_results;
 
 	struct _HoverResult {
-
 		Point2 position;
 		Ref<Texture> icon;
 		String name;
@@ -308,7 +315,6 @@ private:
 	Vector<_HoverResult> hovering_results;
 
 	struct BoneList {
-
 		Transform2D xform;
 		float length;
 		uint64_t last_pass;
@@ -324,10 +330,11 @@ private:
 		ObjectID from;
 		ObjectID to;
 		_FORCE_INLINE_ bool operator<(const BoneKey &p_key) const {
-			if (from == p_key.from)
+			if (from == p_key.from) {
 				return to < p_key.to;
-			else
+			} else {
 				return from < p_key.from;
+			}
 		}
 	};
 
@@ -383,10 +390,12 @@ private:
 	Button *key_auto_insert_button;
 
 	PopupMenu *selection_menu;
+	PopupMenu *add_node_menu;
 
 	Control *top_ruler;
 	Control *left_ruler;
 
+	Point2 drag_start_origin;
 	DragType drag_type;
 	Point2 drag_from;
 	Point2 drag_to;
@@ -414,7 +423,7 @@ private:
 	bool _is_node_locked(const Node *p_node);
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
 	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
+	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked = false);
 	void _get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
 
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
@@ -443,6 +452,9 @@ private:
 	void _snap_changed();
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
+	void _add_node_pressed(int p_result);
+	void _node_created(Node *p_node);
+	void _reset_create_position();
 
 	UndoRedo *undo_redo;
 	bool _build_bones_list(Node *p_node);
@@ -533,12 +545,13 @@ private:
 
 	VBoxContainer *controls_vb;
 	HBoxContainer *zoom_hb;
-	float _get_next_zoom_value(int p_increment_count) const;
+	float _get_next_zoom_value(int p_increment_count, bool p_integer_only = false) const;
 	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
 	void _update_zoom_label();
 	void _button_zoom_minus();
 	void _button_zoom_reset();
 	void _button_zoom_plus();
+	void _shortcut_zoom_set(float p_zoom);
 	void _button_toggle_smart_snap(bool p_status);
 	void _button_toggle_grid_snap(bool p_status);
 	void _button_override_camera(bool p_pressed);
@@ -554,6 +567,7 @@ private:
 	void _update_bone_list();
 	void _tree_changed(Node *);
 
+	void _update_context_menu_stylebox();
 	void _popup_warning_temporarily(Control *p_control, const float p_duration);
 	void _popup_warning_depop(Control *p_control);
 
@@ -610,7 +624,7 @@ public:
 		SNAP_DEFAULT = SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL,
 	};
 
-	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = NULL, List<CanvasItem *> p_other_nodes_exceptions = List<CanvasItem *>());
+	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = nullptr, List<CanvasItem *> p_other_nodes_exceptions = List<CanvasItem *>());
 	float snap_angle(float p_target, float p_start = 0) const;
 
 	Transform2D get_canvas_transform() const { return transform; }
@@ -648,7 +662,6 @@ public:
 };
 
 class CanvasItemEditorPlugin : public EditorPlugin {
-
 	GDCLASS(CanvasItemEditorPlugin, EditorPlugin);
 
 	CanvasItemEditor *canvas_item_editor;

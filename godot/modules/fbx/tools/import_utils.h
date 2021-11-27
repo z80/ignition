@@ -43,7 +43,7 @@
 /**
  * Import Utils
  * Conversion tools / glue code to convert from FBX to Godot
-*/
+ */
 class ImportUtils {
 public:
 	///	Convert a vector from degrees to radians.
@@ -201,24 +201,39 @@ public:
 	};
 
 	/** Get fbx fps for time mode meta data
-     */
+	 */
 	static float get_fbx_fps(int32_t time_mode) {
 		switch (time_mode) {
-			case AssetImportFbx::TIME_MODE_DEFAULT: return 24;
-			case AssetImportFbx::TIME_MODE_120: return 120;
-			case AssetImportFbx::TIME_MODE_100: return 100;
-			case AssetImportFbx::TIME_MODE_60: return 60;
-			case AssetImportFbx::TIME_MODE_50: return 50;
-			case AssetImportFbx::TIME_MODE_48: return 48;
-			case AssetImportFbx::TIME_MODE_30: return 30;
-			case AssetImportFbx::TIME_MODE_30_DROP: return 30;
-			case AssetImportFbx::TIME_MODE_NTSC_DROP_FRAME: return 29.9700262f;
-			case AssetImportFbx::TIME_MODE_NTSC_FULL_FRAME: return 29.9700262f;
-			case AssetImportFbx::TIME_MODE_PAL: return 25;
-			case AssetImportFbx::TIME_MODE_CINEMA: return 24;
-			case AssetImportFbx::TIME_MODE_1000: return 1000;
-			case AssetImportFbx::TIME_MODE_CINEMA_ND: return 23.976f;
-			case AssetImportFbx::TIME_MODE_CUSTOM: return -1;
+			case AssetImportFbx::TIME_MODE_DEFAULT:
+				return 24;
+			case AssetImportFbx::TIME_MODE_120:
+				return 120;
+			case AssetImportFbx::TIME_MODE_100:
+				return 100;
+			case AssetImportFbx::TIME_MODE_60:
+				return 60;
+			case AssetImportFbx::TIME_MODE_50:
+				return 50;
+			case AssetImportFbx::TIME_MODE_48:
+				return 48;
+			case AssetImportFbx::TIME_MODE_30:
+				return 30;
+			case AssetImportFbx::TIME_MODE_30_DROP:
+				return 30;
+			case AssetImportFbx::TIME_MODE_NTSC_DROP_FRAME:
+				return 29.9700262f;
+			case AssetImportFbx::TIME_MODE_NTSC_FULL_FRAME:
+				return 29.9700262f;
+			case AssetImportFbx::TIME_MODE_PAL:
+				return 25;
+			case AssetImportFbx::TIME_MODE_CINEMA:
+				return 24;
+			case AssetImportFbx::TIME_MODE_1000:
+				return 1000;
+			case AssetImportFbx::TIME_MODE_CINEMA_ND:
+				return 23.976f;
+			case AssetImportFbx::TIME_MODE_CUSTOM:
+				return -1;
 		}
 		return 0;
 	}
@@ -243,13 +258,13 @@ public:
 	}
 
 	/**
-	  * Find hardcoded textures from assimp which could be in many different directories
-	  */
+	 * Find hardcoded textures from assimp which could be in many different directories
+	 */
 
 	/**
-	  * set_texture_mapping_mode
-	  * Helper to check the mapping mode of the texture (repeat, clamp and mirror)
-	  */
+	 * set_texture_mapping_mode
+	 * Helper to check the mapping mode of the texture (repeat, clamp and mirror)
+	 */
 	// static void set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<ImageTexture> texture) {
 	// 	ERR_FAIL_COND(texture.is_null());
 	// 	ERR_FAIL_COND(map_mode == NULL);
@@ -267,9 +282,9 @@ public:
 	// }
 
 	/**
-	  * Load or load from cache image :)
-	  * We need to upgrade this in the later version :) should not be hard
-	  */
+	 * Load or load from cache image :)
+	 * We need to upgrade this in the later version :) should not be hard
+	 */
 	//static Ref<Image> load_image(ImportState &state, const aiScene *p_scene, String p_path){
 
 	// Map<String, Ref<Image> >::Element *match = state.path_to_image_cache.find(p_path);

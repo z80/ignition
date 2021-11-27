@@ -30,10 +30,10 @@
 
 package org.godotengine.godot;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.KeyEvent;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
@@ -87,6 +87,26 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 	}
 
 	@Override
+	public final void onGodotRestartRequested(Godot instance) {
+		if (instance == godotFragment) {
+			// HACK:
+			//
+			// Currently it's very hard to properly deinitialize Godot on Android to restart the game
+			// from scratch. Therefore, we need to kill the whole app process and relaunch it.
+			//
+			// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
+			// releasing and reloading native libs or resetting their state somehow and clearing statics).
+			//
+			// Using instrumentation is a way of making the whole app process restart, because Android
+			// will kill any process of the same package which was already running.
+			//
+			Bundle args = new Bundle();
+			args.putParcelable("intent", getIntent());
+			startInstrumentation(new ComponentName(this, GodotInstrumentation.class), null, args);
+		}
+	}
+
+	@Override
 	public void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 		if (godotFragment != null) {
@@ -119,14 +139,6 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 		} else {
 			super.onBackPressed();
 		}
-	}
-
-	@Override
-	public boolean onKeyMultiple(final int inKeyCode, int repeatCount, KeyEvent event) {
-		if (godotFragment != null && godotFragment.onKeyMultiple(inKeyCode, repeatCount, event)) {
-			return true;
-		}
-		return super.onKeyMultiple(inKeyCode, repeatCount, event);
 	}
 
 	/**

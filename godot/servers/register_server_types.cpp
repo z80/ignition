@@ -67,12 +67,10 @@
 #include "visual_server.h"
 
 static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage> *r_usage) {
-
 	List<VS::TextureInfo> tinfo;
 	VS::get_singleton()->texture_debug_usage(&tinfo);
 
 	for (List<VS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
-
 		ScriptDebuggerRemote::ResourceUsage usage;
 		usage.path = E->get().path;
 		usage.vram = E->get().bytes;
@@ -87,7 +85,7 @@ static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsag
 	}
 }
 
-ShaderTypes *shader_types = NULL;
+ShaderTypes *shader_types = nullptr;
 
 PhysicsServer *_createGodotPhysicsCallback() {
 	return memnew(PhysicsServerSW);
@@ -98,7 +96,6 @@ Physics2DServer *_createGodotPhysics2DCallback() {
 }
 
 static bool has_server_feature_callback(const String &p_feature) {
-
 	if (VisualServer::get_singleton()) {
 		if (VisualServer::get_singleton()->has_os_feature(p_feature)) {
 			return true;
@@ -109,7 +106,6 @@ static bool has_server_feature_callback(const String &p_feature) {
 }
 
 void register_server_types() {
-
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
 	ClassDB::register_virtual_class<VisualServer>();
@@ -179,14 +175,13 @@ void register_server_types() {
 
 	ClassDB::register_virtual_class<Physics2DDirectBodyState>();
 	ClassDB::register_virtual_class<Physics2DDirectSpaceState>();
-	ClassDB::register_virtual_class<Physics2DShapeQueryResult>();
 	ClassDB::register_class<Physics2DTestMotionResult>();
 	ClassDB::register_class<Physics2DShapeQueryParameters>();
 
 	ClassDB::register_class<PhysicsShapeQueryParameters>();
 	ClassDB::register_virtual_class<PhysicsDirectBodyState>();
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState>();
-	ClassDB::register_virtual_class<PhysicsShapeQueryResult>();
+	ClassDB::register_class<PhysicsTestMotionResult>();
 
 	ScriptDebuggerRemote::resource_usage_func = _debugger_get_resource_usage;
 
@@ -206,7 +201,6 @@ void register_server_types() {
 }
 
 void unregister_server_types() {
-
 	memdelete(shader_types);
 }
 

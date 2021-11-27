@@ -47,7 +47,6 @@
 class EditorNode;
 
 class InspectorDock : public VBoxContainer {
-
 	GDCLASS(InspectorDock, VBoxContainer);
 
 	enum MenuOptions {
@@ -83,9 +82,11 @@ class InspectorDock : public VBoxContainer {
 	ToolButton *resource_new_button;
 	ToolButton *resource_load_button;
 	MenuButton *resource_save_button;
+	MenuButton *resource_extra_button;
 	MenuButton *history_menu;
 	LineEdit *search;
 
+	Button *open_docs_button;
 	MenuButton *object_menu;
 	EditorPath *editor_path;
 
@@ -102,6 +103,7 @@ class InspectorDock : public VBoxContainer {
 	void _unref_resource() const;
 	void _copy_resource() const;
 	void _paste_resource() const;
+	void _prepare_resource_extra_popup();
 
 	void _warning_pressed();
 	void _resource_created() const;

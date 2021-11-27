@@ -49,7 +49,6 @@
 #include "scene/resources/text_file.h"
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
-
 	GDCLASS(ScriptEditorQuickOpen, ConfirmationDialog);
 
 	LineEdit *search_box;
@@ -76,7 +75,6 @@ public:
 class ScriptEditorDebugger;
 
 class ScriptEditorBase : public VBoxContainer {
-
 	GDCLASS(ScriptEditorBase, VBoxContainer);
 
 protected:
@@ -132,7 +130,6 @@ class FindInFilesDialog;
 class FindInFilesPanel;
 
 class ScriptEditor : public PanelContainer {
-
 	GDCLASS(ScriptEditor, PanelContainer);
 
 	EditorNode *editor;
@@ -257,7 +254,6 @@ class ScriptEditor : public PanelContainer {
 	static CreateSyntaxHighlighterFunc syntax_highlighters_funcs[SYNTAX_HIGHLIGHTER_FUNC_MAX];
 
 	struct ScriptHistory {
-
 		Control *control;
 		Variant state;
 	};
@@ -266,6 +262,7 @@ class ScriptEditor : public PanelContainer {
 	int history_pos;
 
 	List<String> previous_scripts;
+	List<int> script_close_queue;
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_option);
@@ -298,6 +295,7 @@ class ScriptEditor : public PanelContainer {
 	void _close_docs_tab();
 	void _close_other_tabs();
 	void _close_all_tabs();
+	void _queue_close_tabs();
 
 	void _copy_script_path();
 
@@ -307,6 +305,7 @@ class ScriptEditor : public PanelContainer {
 
 	bool pending_auto_reload;
 	bool auto_reload_running_scripts;
+	void _trigger_live_script_reload();
 	void _live_auto_reload_running_scripts();
 
 	void _update_selected_editor_menu();
@@ -360,7 +359,7 @@ class ScriptEditor : public PanelContainer {
 	void _update_help_overview();
 	void _help_overview_selected(int p_idx);
 
-	void _find_scripts(Node *p_base, Node *p_current, Set<Ref<Script> > &used);
+	void _find_scripts(Node *p_base, Node *p_current, Set<Ref<Script>> &used);
 
 	void _tree_changed();
 
@@ -370,6 +369,7 @@ class ScriptEditor : public PanelContainer {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	void _input(const Ref<InputEvent> &p_event);
 	void _unhandled_input(const Ref<InputEvent> &p_event);
 
 	void _script_list_gui_input(const Ref<InputEvent> &ev);
@@ -431,13 +431,14 @@ public:
 
 	void get_breakpoints(List<String> *p_breakpoints);
 
+	void save_current_script();
 	void save_all_scripts();
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
 
 	void set_scene_root_script(Ref<Script> p_script);
-	Vector<Ref<Script> > get_open_scripts() const;
+	Vector<Ref<Script>> get_open_scripts() const;
 
 	bool script_goto_method(Ref<Script> p_script, const String &p_method);
 
@@ -465,7 +466,6 @@ public:
 };
 
 class ScriptEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ScriptEditorPlugin, EditorPlugin);
 
 	ScriptEditor *script_editor;

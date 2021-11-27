@@ -39,11 +39,7 @@
 class KinematicCollision2D;
 
 class PhysicsBody2D : public CollisionObject2D {
-
 	GDCLASS(PhysicsBody2D, CollisionObject2D);
-
-	uint32_t collision_layer;
-	uint32_t collision_mask;
 
 	void _set_layers(uint32_t p_mask);
 	uint32_t _get_layers() const;
@@ -55,18 +51,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_collision_layer(uint32_t p_layer);
-	uint32_t get_collision_layer() const;
-
-	void set_collision_mask(uint32_t p_mask);
-	uint32_t get_collision_mask() const;
-
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
-
-	void set_collision_layer_bit(int p_bit, bool p_value);
-	bool get_collision_layer_bit(int p_bit) const;
-
 	Array get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
@@ -75,7 +59,6 @@ public:
 };
 
 class StaticBody2D : public PhysicsBody2D {
-
 	GDCLASS(StaticBody2D, PhysicsBody2D);
 
 	Vector2 constant_linear_velocity;
@@ -111,7 +94,6 @@ private:
 };
 
 class RigidBody2D : public PhysicsBody2D {
-
 	GDCLASS(RigidBody2D, PhysicsBody2D);
 
 public:
@@ -150,13 +132,13 @@ private:
 	CCDMode ccd_mode;
 
 	struct ShapePair {
-
 		int body_shape;
 		int local_shape;
 		bool tagged;
 		bool operator<(const ShapePair &p_sp) const {
-			if (body_shape == p_sp.body_shape)
+			if (body_shape == p_sp.body_shape) {
 				return local_shape < p_sp.local_shape;
+			}
 
 			return body_shape < p_sp.body_shape;
 		}
@@ -168,19 +150,17 @@ private:
 		}
 	};
 	struct RigidBody2D_RemoveAction {
-
+		RID rid;
 		ObjectID body_id;
 		ShapePair pair;
 	};
 	struct BodyState {
-
-		//int rc;
+		RID rid;
 		bool in_scene;
 		VSet<ShapePair> shapes;
 	};
 
 	struct ContactMonitor {
-
 		bool locked;
 		Map<ObjectID, BodyState> body_map;
 	};
@@ -189,7 +169,7 @@ private:
 	void _body_enter_tree(ObjectID p_id);
 	void _body_exit_tree(ObjectID p_id);
 
-	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape, int p_local_shape);
+	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
 	void _direct_state_changed(Object *p_state);
 
 	bool _test_motion(const Vector2 &p_motion, bool p_infinite_inertia = true, float p_margin = 0.08, const Ref<Physics2DTestMotionResult> &p_result = Ref<Physics2DTestMotionResult>());
@@ -286,7 +266,6 @@ VARIANT_ENUM_CAST(RigidBody2D::Mode);
 VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
 
 class KinematicBody2D : public PhysicsBody2D {
-
 	GDCLASS(KinematicBody2D, PhysicsBody2D);
 
 public:
@@ -301,6 +280,10 @@ public:
 		Vector2 remainder;
 		Vector2 travel;
 		int local_shape;
+
+		real_t get_angle(const Vector2 &p_up_direction) const {
+			return Math::acos(normal.dot(p_up_direction));
+		}
 	};
 
 private:
@@ -315,23 +298,24 @@ private:
 	bool sync_to_physics;
 
 	Vector<Collision> colliders;
-	Vector<Ref<KinematicCollision2D> > slide_colliders;
+	Vector<Ref<KinematicCollision2D>> slide_colliders;
 	Ref<KinematicCollision2D> motion_cache;
-
-	_FORCE_INLINE_ bool _ignores_mode(Physics2DServer::BodyMode) const;
 
 	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
+	Ref<KinematicCollision2D> _get_last_slide_collision();
 
 	Transform2D last_valid_transform;
 	void _direct_state_changed(Object *p_state);
+	Vector2 _move_and_slide_internal(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_up_direction = Vector2(0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
+	void _set_collision_direction(const Collision &p_collision, const Vector2 &p_up_direction, float p_floor_max_angle);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
+	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false, bool p_cancel_sliding = true, const Set<RID> &p_exclude = Set<RID>());
 
 	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia = true);
 
@@ -346,6 +330,7 @@ public:
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;
 	Vector2 get_floor_normal() const;
+	real_t get_floor_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
 	Vector2 get_floor_velocity() const;
 
 	int get_slide_count() const;
@@ -359,7 +344,6 @@ public:
 };
 
 class KinematicCollision2D : public Reference {
-
 	GDCLASS(KinematicCollision2D, Reference);
 
 	KinematicBody2D *owner;
@@ -374,6 +358,7 @@ public:
 	Vector2 get_normal() const;
 	Vector2 get_travel() const;
 	Vector2 get_remainder() const;
+	real_t get_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
 	Object *get_local_shape() const;
 	Object *get_collider() const;
 	ObjectID get_collider_id() const;

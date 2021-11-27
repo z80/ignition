@@ -41,7 +41,6 @@ import android.view.MotionEvent;
  * https://developer.android.com/reference/android/view/GestureDetector.SimpleOnGestureListener
  */
 public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener {
-
 	private final GodotView godotView;
 
 	public GodotGestureHandler(GodotView godotView) {
@@ -76,12 +75,7 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 		final int x = Math.round(event.getX());
 		final int y = Math.round(event.getY());
 		final int buttonMask = event.getButtonState();
-		queueEvent(new Runnable() {
-			@Override
-			public void run() {
-				GodotLib.doubleTap(buttonMask, x, y);
-			}
-		});
+		GodotLib.doubleTap(buttonMask, x, y);
 		return true;
 	}
 
@@ -90,12 +84,7 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 		//Log.i("GodotGesture", "onScroll");
 		final int x = Math.round(distanceX);
 		final int y = Math.round(distanceY);
-		queueEvent(new Runnable() {
-			@Override
-			public void run() {
-				GodotLib.scroll(x, y);
-			}
-		});
+		GodotLib.scroll(x, y);
 		return true;
 	}
 

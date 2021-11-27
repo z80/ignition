@@ -1,12 +1,12 @@
 public:
-BVHHandle item_add(T *p_userdata, bool p_active, const AABB &p_aabb, int32_t p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_invisible = false) {
+BVHHandle item_add(T *p_userdata, bool p_active, const Bounds &p_aabb, int32_t p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_invisible = false) {
 #ifdef BVH_VERBOSE_TREE
 	VERBOSE_PRINT("\nitem_add BEFORE");
 	_debug_recursive_print_tree(0);
 	VERBOSE_PRINT("\n");
 #endif
 
-	BVH_ABB abb;
+	BVHABB_CLASS abb;
 	abb.from(p_aabb);
 
 	// handle to be filled with the new item ref
@@ -103,7 +103,7 @@ void _debug_print_refs() {
 }
 
 // returns false if noop
-bool item_move(BVHHandle p_handle, const AABB &p_aabb) {
+bool item_move(BVHHandle p_handle, const Bounds &p_aabb) {
 	uint32_t ref_id = p_handle.id();
 
 	// get the reference
@@ -112,7 +112,7 @@ bool item_move(BVHHandle p_handle, const AABB &p_aabb) {
 		return false;
 	}
 
-	BVH_ABB abb;
+	BVHABB_CLASS abb;
 	abb.from(p_aabb);
 
 	BVH_ASSERT(ref.tnode_id != BVHCommon::INVALID);
@@ -126,7 +126,7 @@ bool item_move(BVHHandle p_handle, const AABB &p_aabb) {
 		// for accurate collision detection
 		TLeaf &leaf = _node_get_leaf(tnode);
 
-		BVH_ABB &leaf_abb = leaf.get_aabb(ref.item_id);
+		BVHABB_CLASS &leaf_abb = leaf.get_aabb(ref.item_id);
 
 		// no change?
 		if (leaf_abb == abb) {
@@ -154,9 +154,10 @@ bool item_move(BVHHandle p_handle, const AABB &p_aabb) {
 	if (needs_refit) {
 		// only need to refit from the parent
 		const TNode &add_node = _nodes[ref.tnode_id];
-		if (add_node.parent_id != BVHCommon::INVALID)
+		if (add_node.parent_id != BVHCommon::INVALID) {
 			// not sure we need to rebalance all the time, this can be done less often
 			refit_upward(add_node.parent_id);
+		}
 		//refit_upward_and_balance(add_node.parent_id);
 	}
 
@@ -205,7 +206,7 @@ void item_remove(BVHHandle p_handle) {
 }
 
 // returns success
-bool item_activate(BVHHandle p_handle, const AABB &p_aabb) {
+bool item_activate(BVHHandle p_handle, const Bounds &p_aabb) {
 	uint32_t ref_id = p_handle.id();
 	ItemRef &ref = _refs[ref_id];
 	if (ref.is_active()) {
@@ -214,7 +215,7 @@ bool item_activate(BVHHandle p_handle, const AABB &p_aabb) {
 	}
 
 	// add to tree
-	BVH_ABB abb;
+	BVHABB_CLASS abb;
 	abb.from(p_aabb);
 
 	uint32_t tree_id = _handle_get_tree_id(p_handle);
@@ -240,7 +241,7 @@ bool item_deactivate(BVHHandle p_handle) {
 	uint32_t tree_id = _handle_get_tree_id(p_handle);
 
 	// remove from tree
-	BVH_ABB abb;
+	BVHABB_CLASS abb;
 	node_remove_item(ref_id, tree_id, &abb);
 
 	// mark as inactive
@@ -273,7 +274,7 @@ bool item_is_pairable(const BVHHandle &p_handle) {
 	return extra.pairable != 0;
 }
 
-void item_get_ABB(const BVHHandle &p_handle, BVH_ABB &r_abb) {
+void item_get_ABB(const BVHHandle &p_handle, BVHABB_CLASS &r_abb) {
 	// change tree?
 	uint32_t ref_id = p_handle.id();
 	const ItemRef &ref = _refs[ref_id];
@@ -284,24 +285,25 @@ void item_get_ABB(const BVHHandle &p_handle, BVH_ABB &r_abb) {
 	r_abb = leaf.get_aabb(ref.item_id);
 }
 
-void item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
 	// change tree?
 	uint32_t ref_id = p_handle.id();
 
 	ItemExtra &ex = _extra[ref_id];
 	ItemRef &ref = _refs[ref_id];
 
-	ex.pairable_type = p_pairable_type;
-	ex.pairable_mask = p_pairable_mask;
-
 	bool active = ref.is_active();
 	bool pairable_changed = (ex.pairable != 0) != p_pairable;
+	bool state_changed = pairable_changed || (ex.pairable_type != p_pairable_type) || (ex.pairable_mask != p_pairable_mask);
+
+	ex.pairable_type = p_pairable_type;
+	ex.pairable_mask = p_pairable_mask;
 
 	if (active && pairable_changed) {
 		// record abb
 		TNode &tnode = _nodes[ref.tnode_id];
 		TLeaf &leaf = _node_get_leaf(tnode);
-		BVH_ABB abb = leaf.get_aabb(ref.item_id);
+		BVHABB_CLASS abb = leaf.get_aabb(ref.item_id);
 
 		// make sure current tree is correct prior to changing
 		uint32_t tree_id = _handle_get_tree_id(p_handle);
@@ -333,6 +335,8 @@ void item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 		// always keep this up to date
 		ex.pairable = p_pairable;
 	}
+
+	return state_changed;
 }
 
 void incremental_optimize() {
@@ -340,8 +344,9 @@ void incremental_optimize() {
 	// this is cheaper than doing it on each move as each leaf may get touched multiple times
 	// in a frame.
 	for (int n = 0; n < NUM_TREES; n++) {
-		if (_root_node_id[n] != BVHCommon::INVALID)
+		if (_root_node_id[n] != BVHCommon::INVALID) {
 			refit_branch(_root_node_id[n]);
+		}
 	}
 
 	// now do small section reinserting to get things moving
@@ -351,8 +356,9 @@ void incremental_optimize() {
 	}
 
 	// special case
-	if (!_active_refs.size())
+	if (!_active_refs.size()) {
 		return;
+	}
 
 	uint32_t ref_id = _active_refs[_current_active_ref++];
 
@@ -382,7 +388,7 @@ void update() {
 //#define BVH_ALLOW_AUTO_EXPANSION
 #ifdef BVH_ALLOW_AUTO_EXPANSION
 	if (_auto_node_expansion || _auto_pairing_expansion) {
-		BVH_ABB world_bound;
+		BVHABB_CLASS world_bound;
 		world_bound.set_to_max_opposite_extents();
 
 		bool bound_valid = false;
@@ -397,7 +403,7 @@ void update() {
 
 		// if there are no nodes, do nothing, but if there are...
 		if (bound_valid) {
-			AABB bb;
+			Bounds bb;
 			world_bound.to(bb);
 			real_t size = bb.get_longest_axis_size();
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImageTexture" inherits="Texture" version="3.3">
+<class name="ImageTexture" inherits="Texture" version="3.4">
 	<brief_description>
 		A [Texture] based on an [Image].
 	</brief_description>
@@ -28,7 +28,7 @@
 		[b]Note:[/b] The maximum texture size is 16384×16384 pixels due to graphics hardware limitations.
 	</description>
 	<tutorials>
-		<link title="Importing images">https://docs.godotengine.org/en/3.3/getting_started/workflow/assets/importing_images.html</link>
+		<link title="Importing images">https://docs.godotengine.org/en/3.4/getting_started/workflow/assets/importing_images.html</link>
 	</tutorials>
 	<methods>
 		<method name="create">
@@ -61,7 +61,7 @@
 			<argument index="0" name="path" type="String" />
 			<description>
 				Loads an image from a file path and creates a texture from it.
-				[b]Note:[/b] the method is deprecated and will be removed in Godot 4.0, use [method Image.load] and [method create_from_image] instead.
+				[b]Note:[/b] This method is deprecated and will be removed in Godot 4.0, use [method Image.load] and [method create_from_image] instead.
 			</description>
 		</method>
 		<method name="set_data">

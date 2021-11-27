@@ -39,7 +39,6 @@
 #include "scene/main/timer.h"
 
 class HTTPRequest : public Node {
-
 	GDCLASS(HTTPRequest, Node);
 
 public:
@@ -70,7 +69,7 @@ private:
 	bool validate_ssl;
 	bool use_ssl;
 	HTTPClient::Method method;
-	String request_data;
+	PoolVector<uint8_t> request_data;
 
 	bool request_sent;
 	Ref<HTTPClient> client;
@@ -109,7 +108,7 @@ private:
 
 	Thread thread;
 
-	void _request_done(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
+	void _request_done(int p_status, int p_code, const PoolStringArray &p_headers, const PoolByteArray &p_data);
 	static void _thread_func(void *p_userdata);
 
 protected:
@@ -118,6 +117,7 @@ protected:
 
 public:
 	Error request(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = ""); //connects to a full url and perform request
+	Error request_raw(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const PoolVector<uint8_t> &p_request_data_raw = PoolVector<uint8_t>()); //connects to a full url and perform request
 	void cancel_request();
 	HTTPClient::Status get_http_client_status() const;
 

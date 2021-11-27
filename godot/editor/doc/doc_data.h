@@ -38,7 +38,6 @@
 class DocData {
 public:
 	struct ArgumentDoc {
-
 		String name;
 		String type;
 		String enumeration;
@@ -46,7 +45,6 @@ public:
 	};
 
 	struct MethodDoc {
-
 		String name;
 		String return_type;
 		String return_enum;
@@ -59,15 +57,14 @@ public:
 	};
 
 	struct ConstantDoc {
-
 		String name;
 		String value;
+		bool is_value_valid;
 		String enumeration;
 		String description;
 	};
 
 	struct PropertyDoc {
-
 		String name;
 		String type;
 		String enumeration;
@@ -83,13 +80,23 @@ public:
 		}
 	};
 
+	struct ThemeItemDoc {
+		String name;
+		String type;
+		String data_type;
+		String description;
+		String default_value;
+		bool operator<(const ThemeItemDoc &p_theme_item) const {
+			return name < p_theme_item.name;
+		}
+	};
+
 	struct TutorialDoc {
 		String link;
 		String title;
 	};
 
 	struct ClassDoc {
-
 		String name;
 		String inherits;
 		String category;
@@ -100,7 +107,7 @@ public:
 		Vector<MethodDoc> signals;
 		Vector<ConstantDoc> constants;
 		Vector<PropertyDoc> properties;
-		Vector<PropertyDoc> theme_properties;
+		Vector<ThemeItemDoc> theme_properties;
 	};
 
 	String version;

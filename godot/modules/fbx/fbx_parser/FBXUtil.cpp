@@ -122,8 +122,9 @@ static const uint8_t base64DecodeTable[128] = {
 
 uint8_t DecodeBase64(char ch) {
 	const auto idx = static_cast<uint8_t>(ch);
-	if (idx > 127)
+	if (idx > 127) {
 		return 255;
+	}
 	return base64DecodeTable[idx];
 }
 
@@ -168,10 +169,10 @@ char EncodeBase64(char byte) {
 }
 
 /** Encodes a block of 4 bytes to base64 encoding
-*  @param bytes Bytes to encode.
-*  @param out_string String to write encoded values to.
-*  @param string_pos Position in out_string.
-*/
+ *  @param bytes Bytes to encode.
+ *  @param out_string String to write encoded values to.
+ *  @param string_pos Position in out_string.
+ */
 void EncodeByteBlock(const char *bytes, std::string &out_string, size_t string_pos) {
 	char b0 = (bytes[0] & 0xFC) >> 2;
 	char b1 = (bytes[0] & 0x03) << 4 | ((bytes[1] & 0xF0) >> 4);
@@ -211,8 +212,9 @@ std::string EncodeBase64(const char *data, size_t length) {
 		EncodeByteBlock(&finalBytes[0], encoded_string, iEncodedByte);
 
 		// add '=' at the end
-		for (size_t i = 0; i < 4 * extraBytes / 3; i++)
+		for (size_t i = 0; i < 4 * extraBytes / 3; i++) {
 			encoded_string[encodedBytes - i - 1] = '=';
+		}
 	}
 	return encoded_string;
 }

@@ -8,13 +8,15 @@ readability.
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: 2.89 (830f0a9565b1829a07e21e2f16be2aa9966bd28c, 2019)
+- Version: 3.17 (ebe1916b90acae8b13cd8c6b637d8327cdc64e94, 2021)
 - License: zlib
 
 Files extracted from upstream source:
 
-- src/* apart from CMakeLists.txt and premake4.lua files
-- LICENSE.txt
+- `src/*` apart from CMakeLists.txt and premake4.lua files
+- `LICENSE.txt`, and `VERSION` as `VERSION.txt`
+
+Includes some patches in the `patches` folder which have been sent upstream.
 
 
 ## certs
@@ -34,10 +36,11 @@ Files extracted from upstream source:
 
 - all .cpp, .h, and .txt files in ConvectionKernels/
 
+
 ## embree
 
-- Upstream: https://github.com/lighttransport/embree-aarch64
-- Version: 3.12.1 (6ef362f99af80c9dfe8dd2bfc582d9067897edc6, 2020)
+- Upstream: https://github.com/embree/embree
+- Version: 3.13.0 (7c53133eb21424f7f0ae1e25bf357e358feaf6ab, 2021)
 - License: Apache 2.0
 
 Files extracted from upstream:
@@ -45,8 +48,8 @@ Files extracted from upstream:
 - All cpp files listed in `modules/raycast/godot_update_embree.py`
 - All header files in the directories listed in `modules/raycast/godot_update_embree.py`
 
-The `modules/raycast/godot_update_embree.py`script can be used to pull the 
-relevant files from the latest Embree-aarch64 release and apply some automatic changes.
+The `modules/raycast/godot_update_embree.py` script can be used to pull the
+relevant files from the latest Embree release and apply some automatic changes.
 
 Some changes have been made in order to remove exceptions and fix minor build errors.
 They are marked with `// -- GODOT start --` and `// -- GODOT end --`
@@ -267,11 +270,16 @@ File extracted from upstream release tarball:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`.
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`.
 - `LICENSE` and `apache-2.0.txt` files.
-- Applied the patch in `thirdparty/mbedtls/patches/1453.diff` (upstream PR:
+- Applied the patch in `patches/1453.diff` (upstream PR:
   https://github.com/ARMmbed/mbedtls/pull/1453).
-- Applied the patch in `thirdparty/mbedtls/patches/padlock.diff`. This disables
-  VIA padlock support which defines a symbol `unsupported` which clashes with
-  a pre-defined symbol.
+- Applied the patch in `patches/padlock.diff`. This disables VIA padlock
+  support which defines a symbol `unsupported` which clashes with a
+  pre-defined symbol.
+- Applied the patch in `patches/pr4948-fix-clang12-opt.patch`. Upstream bugfix
+  from PR 4948 to fix a bug caused by Clang 12 optimizations.
+- Applied the patch in `patches/pr4819-faster-base64.patch`. This fixes a certs
+  parsing speed regression since 2.16.10 (upstream PR:
+  https://github.com/ARMmbed/mbedtls/pull/4819).
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
 

@@ -31,11 +31,9 @@
 #ifndef UNDO_REDO_H
 #define UNDO_REDO_H
 
-#include "core/object.h"
-#include "core/resource.h"
+#include "core/reference.h"
 
 class UndoRedo : public Object {
-
 	GDCLASS(UndoRedo, Object);
 	OBJ_SAVE_TYPE(UndoRedo);
 
@@ -55,7 +53,6 @@ public:
 
 private:
 	struct Operation {
-
 		enum Type {
 			TYPE_METHOD,
 			TYPE_PROPERTY,
@@ -63,7 +60,7 @@ private:
 		};
 
 		Type type;
-		Ref<Resource> resref;
+		Ref<Reference> ref;
 		ObjectID object;
 		String name;
 		Variant args[VARIANT_ARG_MAX];
@@ -118,8 +115,8 @@ public:
 	String get_current_action_name() const;
 	void clear_history(bool p_increase_version = true);
 
-	bool has_undo();
-	bool has_redo();
+	bool has_undo() const;
+	bool has_redo() const;
 
 	uint64_t get_version() const;
 

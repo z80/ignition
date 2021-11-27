@@ -73,22 +73,12 @@ typedef PoolVector<Color> PoolColorArray;
 #define GCC_ALIGNED_8
 #endif
 
-// With DEBUG_ENABLED, the pointer to a deleted object stored in ObjectRC is set to nullptr,
-// so _OBJ_PTR is not useful for checks in which we want to act as if we still believed the
-// object is alive; e.g., comparing a Variant that points to a deleted object with NIL,
-// should return false regardless DEBUG_ENABLED is defined or not.
-// So in cases like that we use _UNSAFE_OBJ_PROXY_PTR, which serves that purpose. With DEBUG_ENABLED
-// it won't be the real pointer to the object for non-Reference types, but that's fine.
-// We just need it to be unique for each object, to be comparable and not to be forced to NULL
-// when the object is freed.
-#ifdef DEBUG_ENABLED
 #define _REF_OBJ_PTR(m_variant) (reinterpret_cast<Ref<Reference> *>((m_variant)._get_obj().ref.get_data())->ptr())
 #define _OBJ_PTR(m_variant) ((m_variant)._get_obj().rc ? (m_variant)._get_obj().rc->get_ptr() : _REF_OBJ_PTR(m_variant))
+// _UNSAFE_OBJ_PROXY_PTR is needed for comparing an object Variant against NIL or compare two object Variants.
+// It's guaranteed to be unique per object, in contrast to the pointer stored in the RC structure,
+// which is set to null when the object is destroyed.
 #define _UNSAFE_OBJ_PROXY_PTR(m_variant) ((m_variant)._get_obj().rc ? reinterpret_cast<uint8_t *>((m_variant)._get_obj().rc) : reinterpret_cast<uint8_t *>(_REF_OBJ_PTR(m_variant)))
-#else
-#define _OBJ_PTR(m_variant) ((m_variant)._get_obj().obj)
-#define _UNSAFE_OBJ_PROXY_PTR(m_variant) _OBJ_PTR(m_variant)
-#endif
 
 class Variant {
 public:
@@ -136,6 +126,11 @@ public:
 
 	};
 
+	enum {
+		// Maximum recursion depth allowed when serializing variants.
+		MAX_RECURSION_DEPTH = 1024,
+	};
+
 private:
 	friend struct _VariantCall;
 	// Variant takes 20 bytes when real_t is float, and 36 if double
@@ -144,14 +139,9 @@ private:
 	Type type;
 
 	struct ObjData {
-
-#ifdef DEBUG_ENABLED
 		// Will be null for every type deriving from Reference as they have their
 		// own reference count mechanism
 		ObjectRC *rc;
-#else
-		Object *obj;
-#endif
 		// Always initialized, but will be null if the Ref<> assigned was null
 		// or this Variant is not even holding a Reference-derived object
 		RefPtr ref;
@@ -187,6 +177,9 @@ public:
 	bool is_shared() const;
 	bool is_zero() const;
 	bool is_one() const;
+
+	ObjectID get_object_instance_id() const;
+	bool is_invalid_object() const;
 
 	operator bool() const;
 	operator signed int() const;
@@ -359,7 +352,6 @@ public:
 	static String get_operator_name(Operator p_op);
 	static void evaluate(const Operator &p_op, const Variant &p_a, const Variant &p_b, Variant &r_ret, bool &r_valid);
 	static _FORCE_INLINE_ Variant evaluate(const Operator &p_op, const Variant &p_a, const Variant &p_b) {
-
 		bool valid = true;
 		Variant res;
 		evaluate(p_op, p_a, p_b, res, valid);
@@ -397,16 +389,16 @@ public:
 	bool has_method(const StringName &p_method) const;
 	static Vector<Variant::Type> get_method_argument_types(Variant::Type p_type, const StringName &p_method);
 	static Vector<Variant> get_method_default_arguments(Variant::Type p_type, const StringName &p_method);
-	static Variant::Type get_method_return_type(Variant::Type p_type, const StringName &p_method, bool *r_has_return = NULL);
+	static Variant::Type get_method_return_type(Variant::Type p_type, const StringName &p_method, bool *r_has_return = nullptr);
 	static Vector<StringName> get_method_argument_names(Variant::Type p_type, const StringName &p_method);
 	static bool is_method_const(Variant::Type p_type, const StringName &p_method);
 
-	void set_named(const StringName &p_index, const Variant &p_value, bool *r_valid = NULL);
-	Variant get_named(const StringName &p_index, bool *r_valid = NULL) const;
+	void set_named(const StringName &p_index, const Variant &p_value, bool *r_valid = nullptr);
+	Variant get_named(const StringName &p_index, bool *r_valid = nullptr) const;
 
-	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = NULL);
-	Variant get(const Variant &p_index, bool *r_valid = NULL) const;
-	bool in(const Variant &p_index, bool *r_valid = NULL) const;
+	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr);
+	Variant get(const Variant &p_index, bool *r_valid = nullptr) const;
+	bool in(const Variant &p_index, bool *r_valid = nullptr) const;
 
 	bool iter_init(Variant &r_iter, bool &r_valid) const;
 	bool iter_next(Variant &r_iter, bool &r_valid) const;
@@ -429,19 +421,21 @@ public:
 	static void get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_list);
 	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
 	static bool has_constant(Variant::Type p_type, const StringName &p_value);
-	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = NULL);
+	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);
 
 	String get_construct_string() const;
-	static void construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct = NULL, void *p_construct_ud = NULL);
+	static void construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct = nullptr, void *p_construct_ud = nullptr);
 
 	void operator=(const Variant &p_variant); // only this is enough for all the other types
 	Variant(const Variant &p_variant);
 	_FORCE_INLINE_ Variant() { type = NIL; }
 	_FORCE_INLINE_ ~Variant() {
-		if (type != Variant::NIL) clear();
+		if (type != Variant::NIL) {
+			clear();
+		}
 	}
 };
 
@@ -456,22 +450,18 @@ Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Varia
 Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5);
 
 struct VariantHasher {
-
 	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }
 };
 
 struct VariantComparator {
-
 	static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
 };
 
 Variant::ObjData &Variant::_get_obj() {
-
 	return *reinterpret_cast<ObjData *>(&_data._mem[0]);
 }
 
 const Variant::ObjData &Variant::_get_obj() const {
-
 	return *reinterpret_cast<const ObjData *>(&_data._mem[0]);
 }
 

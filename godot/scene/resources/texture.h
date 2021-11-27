@@ -43,7 +43,6 @@
 #include "servers/visual_server.h"
 
 class Texture : public Resource {
-
 	GDCLASS(Texture, Resource);
 	OBJ_SAVE_TYPE(Texture); // Saves derived classes with common type so they can be interchanged.
 
@@ -89,7 +88,6 @@ VARIANT_ENUM_CAST(Texture::Flags);
 class BitMap;
 
 class ImageTexture : public Texture {
-
 	GDCLASS(ImageTexture, Texture);
 	RES_BASE_EXTENSION("tex");
 
@@ -163,20 +161,13 @@ public:
 };
 
 class StreamTexture : public Texture {
-
 	GDCLASS(StreamTexture, Texture);
 
 public:
-	enum DataFormat {
-		DATA_FORMAT_IMAGE,
-		DATA_FORMAT_LOSSLESS,
-		DATA_FORMAT_LOSSY
-	};
-
 	enum FormatBits {
 		FORMAT_MASK_IMAGE_FORMAT = (1 << 20) - 1,
-		FORMAT_BIT_LOSSLESS = 1 << 20,
-		FORMAT_BIT_LOSSY = 1 << 21,
+		FORMAT_BIT_PNG = 1 << 20,
+		FORMAT_BIT_WEBP = 1 << 21,
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 		FORMAT_BIT_DETECT_3D = 1 << 24,
@@ -237,7 +228,7 @@ public:
 
 class ResourceFormatLoaderStreamTexture : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
@@ -246,7 +237,6 @@ public:
 VARIANT_ENUM_CAST(ImageTexture::Storage);
 
 class AtlasTexture : public Texture {
-
 	GDCLASS(AtlasTexture, Texture);
 	RES_BASE_EXTENSION("atlastex");
 
@@ -280,6 +270,8 @@ public:
 	void set_filter_clip(const bool p_enable);
 	bool has_filter_clip() const;
 
+	virtual Ref<Image> get_data() const;
+
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const;
 	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const;
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>(), bool p_clip_uv = true) const;
@@ -293,7 +285,6 @@ public:
 class Mesh;
 
 class MeshTexture : public Texture {
-
 	GDCLASS(MeshTexture, Texture);
 	RES_BASE_EXTENSION("meshtex");
 
@@ -334,13 +325,11 @@ public:
 };
 
 class LargeTexture : public Texture {
-
 	GDCLASS(LargeTexture, Texture);
 	RES_BASE_EXTENSION("largetex");
 
 protected:
 	struct Piece {
-
 		Point2 offset;
 		Ref<Texture> texture;
 	};
@@ -384,7 +373,6 @@ public:
 };
 
 class CubeMap : public Resource {
-
 	GDCLASS(CubeMap, Resource);
 	RES_BASE_EXTENSION("cubemap");
 
@@ -424,7 +412,9 @@ private:
 
 	_FORCE_INLINE_ bool _is_valid() const {
 		for (int i = 0; i < 6; i++) {
-			if (valid[i]) return true;
+			if (valid[i]) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -465,7 +455,6 @@ VARIANT_ENUM_CAST(CubeMap::Side)
 VARIANT_ENUM_CAST(CubeMap::Storage)
 
 class TextureLayered : public Resource {
-
 	GDCLASS(TextureLayered, Resource);
 
 public:
@@ -473,8 +462,10 @@ public:
 		FLAG_MIPMAPS = VisualServer::TEXTURE_FLAG_MIPMAPS,
 		FLAG_REPEAT = VisualServer::TEXTURE_FLAG_REPEAT,
 		FLAG_FILTER = VisualServer::TEXTURE_FLAG_FILTER,
+		FLAG_ANISOTROPIC_FILTER = VisualServer::TEXTURE_FLAG_ANISOTROPIC_FILTER,
 		FLAG_CONVERT_TO_LINEAR = VisualServer::TEXTURE_FLAG_CONVERT_TO_LINEAR,
-		FLAGS_DEFAULT = FLAG_FILTER,
+		FLAGS_DEFAULT_TEXTURE_ARRAY = FLAG_MIPMAPS | FLAG_REPEAT | FLAG_FILTER,
+		FLAGS_DEFAULT_TEXTURE_3D = FLAG_FILTER,
 	};
 
 	enum CompressMode {
@@ -514,7 +505,7 @@ public:
 	uint32_t get_height() const;
 	uint32_t get_depth() const;
 
-	void create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT);
+	void create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT_TEXTURE_ARRAY);
 	void set_layer_data(const Ref<Image> &p_image, int p_layer);
 	Ref<Image> get_layer_data(int p_layer) const;
 	void set_data_partial(const Ref<Image> &p_image, int p_x_ofs, int p_y_ofs, int p_z, int p_mipmap = 0);
@@ -529,33 +520,44 @@ public:
 VARIANT_ENUM_CAST(TextureLayered::Flags)
 
 class Texture3D : public TextureLayered {
-
 	GDCLASS(Texture3D, TextureLayered);
 
+protected:
+	static void _bind_methods();
+
 public:
+	void create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT_TEXTURE_3D) {
+		TextureLayered::create(p_width, p_height, p_depth, p_format, p_flags);
+	}
+
 	Texture3D() :
 			TextureLayered(true) {}
 };
 
 class TextureArray : public TextureLayered {
-
 	GDCLASS(TextureArray, TextureLayered);
 
+protected:
+	static void _bind_methods();
+
 public:
+	void create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT_TEXTURE_ARRAY) {
+		TextureLayered::create(p_width, p_height, p_depth, p_format, p_flags);
+	}
+
 	TextureArray() :
 			TextureLayered(false) {}
 };
 
 class ResourceFormatLoaderTextureLayered : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
 
 class CurveTexture : public Texture {
-
 	GDCLASS(CurveTexture, Texture);
 	RES_BASE_EXTENSION("curvetex")
 
@@ -608,7 +610,6 @@ class GradientTexture : public Texture {
 
 public:
 	struct Point {
-
 		float offset;
 		Color color;
 		bool operator<(const Point &p_ponit) const {
@@ -690,7 +691,6 @@ private:
 	RID proxy;
 
 	struct Frame {
-
 		Ref<Texture> texture;
 		float delay_sec;
 

@@ -281,6 +281,16 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				break;
 			}
 
+			if (array_type->eklass == CACHED_CLASS_RAW(NodePath)) {
+				SET_FROM_ARRAY(Array);
+				break;
+			}
+
+			if (array_type->eklass == CACHED_CLASS_RAW(RID)) {
+				SET_FROM_ARRAY(Array);
+				break;
+			}
+
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class)) {
 				MonoArray *managed = GDMonoMarshal::Array_to_mono_array(p_value.operator ::Array(), array_type_class);
@@ -428,7 +438,8 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				case Variant::POOL_COLOR_ARRAY: {
 					SET_FROM_ARRAY(PoolColorArray);
 				} break;
-				default: break;
+				default:
+					break;
 			}
 		} break;
 
@@ -492,10 +503,17 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				mono_field_set_value(p_object, mono_field, managed);
 				break;
 			}
+
+			// GodotObject
+			GDMonoClass *type_class = type.type_class;
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
+				MonoObject *managed = GDMonoUtils::unmanaged_get_managed(p_value.operator Object *());
+				mono_field_set_value(p_object, mono_field, managed);
+			}
 		} break;
 
 		default: {
-			ERR_PRINTS("Attempted to set the value of a field of unexpected type encoding: " + itos(type.type_encoding) + ".");
+			ERR_PRINT("Attempted to set the value of a field of unexpected type encoding: " + itos(type.type_encoding) + ".");
 		} break;
 	}
 

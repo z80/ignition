@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Input" inherits="Object" version="3.3">
+<class name="Input" inherits="Object" version="3.4">
 	<brief_description>
 		A singleton that deals with inputs.
 	</brief_description>
@@ -7,7 +7,7 @@
 		A singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions. Actions and their events can be set in the [b]Input Map[/b] tab in the [b]Project &gt; Project Settings[/b], or with the [InputMap] class.
 	</description>
 	<tutorials>
-		<link title="Inputs tutorial index">https://docs.godotengine.org/en/3.3/tutorials/inputs/index.html</link>
+		<link title="Inputs tutorial index">https://docs.godotengine.org/en/3.4/tutorials/inputs/index.html</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
@@ -37,6 +37,13 @@
 				Adds a new mapping entry (in SDL2 format) to the mapping database. Optionally update already connected devices.
 			</description>
 		</method>
+		<method name="flush_buffered_events">
+			<return type="void" />
+			<description>
+				Sends all input events which are in the current buffer to the game loop. These events may have been buffered as a result of accumulated input ([method set_use_accumulated_input]) or agile input flushing ([member ProjectSettings.input_devices/buffering/agile_event_flushing]).
+				The engine will already do this itself at key execution points (at least once per frame). However, this can be useful in advanced cases where you want precise control over the timing of event handling.
+			</description>
+		</method>
 		<method name="get_accelerometer" qualifiers="const">
 			<return type="Vector3" />
 			<description>
@@ -45,11 +52,31 @@
 				[b]Note:[/b] This method only works on iOS, Android, and UWP. On other platforms, it always returns [constant Vector3.ZERO]. On Android the unit of measurement for each axis is m/s² while on iOS and UWP it's a multiple of the Earth's gravitational acceleration [code]g[/code] (~9.81 m/s²).
 			</description>
 		</method>
+		<method name="get_action_raw_strength" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="action" type="String" />
+			<argument index="1" name="exact" type="bool" default="false" />
+			<description>
+				Returns a value between 0 and 1 representing the raw intensity of the given action, ignoring the action's deadzone. In most cases, you should use [method get_action_strength] instead.
+				If [code]exact[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+			</description>
+		</method>
 		<method name="get_action_strength" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="action" type="String" />
+			<argument index="1" name="exact" type="bool" default="false" />
 			<description>
 				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis as the keyboard, the value returned will be 0 or 1.
+				If [code]exact[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+			</description>
+		</method>
+		<method name="get_axis" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="negative_action" type="String" />
+			<argument index="1" name="positive_action" type="String" />
+			<description>
+				Get axis input by specifying two actions, one negative and one positive.
+				This is a shorthand for writing [code]Input.get_action_strength("positive_action") - Input.get_action_strength("negative_action")[/code].
 			</description>
 		</method>
 		<method name="get_connected_joypads">
@@ -167,26 +194,45 @@
 				Returns the mouse mode. See the constants for more information.
 			</description>
 		</method>
+		<method name="get_vector" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="negative_x" type="String" />
+			<argument index="1" name="positive_x" type="String" />
+			<argument index="2" name="negative_y" type="String" />
+			<argument index="3" name="positive_y" type="String" />
+			<argument index="4" name="deadzone" type="float" default="-1.0" />
+			<description>
+				Gets an input vector by specifying four actions for the positive and negative X and Y axes.
+				This method is useful when getting vector input, such as from a joystick, directional pad, arrows, or WASD. The vector has its length limited to 1 and has a circular deadzone, which is useful for using vector input as movement.
+				By default, the deadzone is automatically calculated from the average of the action deadzones. However, you can override the deadzone to be whatever you want (on the range of 0 to 1).
+			</description>
+		</method>
 		<method name="is_action_just_pressed" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="action" type="String" />
+			<argument index="1" name="exact" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] when the user starts pressing the action event, meaning it's [code]true[/code] only on the frame that the user pressed down the button.
 				This is useful for code that needs to run only once when an action is pressed, instead of every frame while it's pressed.
+				If [code]exact[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="is_action_just_released" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="action" type="String" />
+			<argument index="1" name="exact" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] when the user stops pressing the action event, meaning it's [code]true[/code] only on the frame that the user released the button.
+				If [code]exact[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="action" type="String" />
+			<argument index="1" name="exact" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] if you are pressing the action event. Note that if an action has multiple buttons assigned and more than one of them is pressed, releasing one button will release the action, even if some other button assigned to this action is still pressed.
+				If [code]exact[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="is_joy_button_pressed" qualifiers="const">
@@ -250,6 +296,14 @@
 				Removes all mappings from the internal database that match the given GUID.
 			</description>
 		</method>
+		<method name="set_accelerometer">
+			<return type="void" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Sets the acceleration value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
 		<method name="set_custom_mouse_cursor">
 			<return type="void" />
 			<argument index="0" name="image" type="Resource" />
@@ -270,6 +324,30 @@
 				Sets the default cursor shape to be used in the viewport instead of [constant CURSOR_ARROW].
 				[b]Note:[/b] If you want to change the default cursor shape for [Control]'s nodes, use [member Control.mouse_default_cursor_shape] instead.
 				[b]Note:[/b] This method generates an [InputEventMouseMotion] to update cursor immediately.
+			</description>
+		</method>
+		<method name="set_gravity">
+			<return type="void" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Sets the gravity value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
+		<method name="set_gyroscope">
+			<return type="void" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Sets the value of the rotation rate of the gyroscope sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
+		<method name="set_magnetometer">
+			<return type="void" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Sets the value of the magnetic field of the magnetometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
 			</description>
 		</method>
 		<method name="set_mouse_mode">

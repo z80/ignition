@@ -34,6 +34,7 @@
 #define CSGJS_HEADER_ONLY
 
 #include "csg.h"
+#include "scene/3d/path.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/concave_polygon_shape.h"
 #include "thirdparty/misc/mikktspace.h"
@@ -119,6 +120,8 @@ protected:
 public:
 	Array get_meshes() const;
 
+	void force_update_shape();
+
 	void set_operation(Operation p_operation);
 	Operation get_operation() const;
 
@@ -168,11 +171,9 @@ public:
 class CSGPrimitive : public CSGShape {
 	GDCLASS(CSGPrimitive, CSGShape);
 
-private:
-	bool invert_faces;
-
 protected:
-	CSGBrush *_create_brush_from_arrays(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uv, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material> > &p_materials);
+	bool invert_faces;
+	CSGBrush *_create_brush_from_arrays(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uv, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material>> &p_materials);
 	static void _bind_methods();
 
 public:
@@ -204,7 +205,6 @@ public:
 };
 
 class CSGSphere : public CSGPrimitive {
-
 	GDCLASS(CSGSphere, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
@@ -237,7 +237,6 @@ public:
 };
 
 class CSGBox : public CSGPrimitive {
-
 	GDCLASS(CSGBox, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
@@ -266,7 +265,6 @@ public:
 };
 
 class CSGCylinder : public CSGPrimitive {
-
 	GDCLASS(CSGCylinder, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
@@ -303,7 +301,6 @@ public:
 };
 
 class CSGTorus : public CSGPrimitive {
-
 	GDCLASS(CSGTorus, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
@@ -340,7 +337,6 @@ public:
 };
 
 class CSGPolygon : public CSGPrimitive {
-
 	GDCLASS(CSGPolygon, CSGPrimitive);
 
 public:
@@ -348,6 +344,11 @@ public:
 		MODE_DEPTH,
 		MODE_SPIN,
 		MODE_PATH
+	};
+
+	enum PathIntervalType {
+		PATH_INTERVAL_DISTANCE,
+		PATH_INTERVAL_SUBDIVIDE
 	};
 
 	enum PathRotation {
@@ -370,14 +371,17 @@ private:
 	int spin_sides;
 
 	NodePath path_node;
+	PathIntervalType path_interval_type;
 	float path_interval;
+	float path_simplify_angle;
 	PathRotation path_rotation;
 	bool path_local;
 
-	Node *path_cache;
+	Path *path;
 
 	bool smooth_faces;
 	bool path_continuous_u;
+	real_t path_u_distance;
 	bool path_joined;
 
 	bool _is_editable_3d_polygon() const;
@@ -410,8 +414,14 @@ public:
 	void set_path_node(const NodePath &p_path);
 	NodePath get_path_node() const;
 
+	void set_path_interval_type(PathIntervalType p_interval_type);
+	PathIntervalType get_path_interval_type() const;
+
 	void set_path_interval(float p_interval);
 	float get_path_interval() const;
+
+	void set_path_simplify_angle(float p_angle);
+	float get_path_simplify_angle() const;
 
 	void set_path_rotation(PathRotation p_rotation);
 	PathRotation get_path_rotation() const;
@@ -421,6 +431,9 @@ public:
 
 	void set_path_continuous_u(bool p_enable);
 	bool is_path_continuous_u() const;
+
+	void set_path_u_distance(real_t p_path_u_distance);
+	real_t get_path_u_distance() const;
 
 	void set_path_joined(bool p_enable);
 	bool is_path_joined() const;
@@ -436,5 +449,6 @@ public:
 
 VARIANT_ENUM_CAST(CSGPolygon::Mode)
 VARIANT_ENUM_CAST(CSGPolygon::PathRotation)
+VARIANT_ENUM_CAST(CSGPolygon::PathIntervalType)
 
 #endif // CSG_SHAPE_H

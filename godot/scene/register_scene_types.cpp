@@ -47,6 +47,7 @@
 #include "scene/2d/light_2d.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/line_2d.h"
+#include "scene/2d/listener_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
 #include "scene/2d/navigation_2d.h"
@@ -191,15 +192,20 @@
 #include "scene/3d/multimesh_instance.h"
 #include "scene/3d/navigation.h"
 #include "scene/3d/navigation_mesh.h"
+#include "scene/3d/occluder.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/path.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/physics_joint.h"
+#include "scene/3d/portal.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/proximity_group.h"
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/remote_transform.h"
+#include "scene/3d/room.h"
+#include "scene/3d/room_group.h"
+#include "scene/3d/room_manager.h"
 #include "scene/3d/skeleton.h"
 #include "scene/3d/soft_body.h"
 #include "scene/3d/spring_arm.h"
@@ -209,12 +215,15 @@
 #include "scene/animation/skeleton_ik.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/mesh_library.h"
+#include "scene/resources/occluder_shape.h"
 #endif
 
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
 
+#ifdef MODULE_FREETYPE_ENABLED
 static Ref<ResourceFormatLoaderDynamicFont> resource_loader_dynamic_font;
+#endif // MODULE_FREETYPE_ENABLED
 
 static Ref<ResourceFormatLoaderStreamTexture> resource_loader_stream_texture;
 static Ref<ResourceFormatLoaderTextureLayered> resource_loader_texture_layered;
@@ -225,15 +234,16 @@ static Ref<ResourceFormatSaverShader> resource_saver_shader;
 static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 
 void register_scene_types() {
-
 	SceneStringNames::create();
 
 	OS::get_singleton()->yield(); //may take time to init
 
 	Node::init_node_hrcr();
 
+#ifdef MODULE_FREETYPE_ENABLED
 	resource_loader_dynamic_font.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_dynamic_font);
+#endif // MODULE_FREETYPE_ENABLED
 
 	resource_loader_stream_texture.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
@@ -398,6 +408,7 @@ void register_scene_types() {
 
 #ifndef _3D_DISABLED
 	ClassDB::register_virtual_class<VisualInstance>();
+	ClassDB::register_virtual_class<CullInstance>();
 	ClassDB::register_virtual_class<GeometryInstance>();
 	ClassDB::register_class<Camera>();
 	ClassDB::register_class<ClippedCamera>();
@@ -427,6 +438,11 @@ void register_scene_types() {
 	ClassDB::register_class<NavigationMeshInstance>();
 	ClassDB::register_class<NavigationMesh>();
 	ClassDB::register_class<Navigation>();
+	ClassDB::register_class<Room>();
+	ClassDB::register_class<RoomGroup>();
+	ClassDB::register_class<RoomManager>();
+	ClassDB::register_class<Occluder>();
+	ClassDB::register_class<Portal>();
 
 	ClassDB::register_class<RootMotionView>();
 	ClassDB::set_class_enabled("RootMotionView", false); //disabled by default, enabled by editor
@@ -475,7 +491,7 @@ void register_scene_types() {
 
 #endif
 
-	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(OS::get_singleton()->get_swap_ok_cancel())));
+	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF_NOVAL("gui/common/swap_ok_cancel", bool(OS::get_singleton()->get_swap_ok_cancel())));
 
 	ClassDB::register_class<Shader>();
 	ClassDB::register_class<VisualShader>();
@@ -582,6 +598,7 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<Camera2D>();
+	ClassDB::register_class<Listener2D>();
 	ClassDB::register_virtual_class<Joint2D>();
 	ClassDB::register_class<PinJoint2D>();
 	ClassDB::register_class<GrooveJoint2D>();
@@ -637,6 +654,8 @@ void register_scene_types() {
 	ClassDB::register_class<PlaneShape>();
 	ClassDB::register_class<ConvexPolygonShape>();
 	ClassDB::register_class<ConcavePolygonShape>();
+	ClassDB::register_virtual_class<OccluderShape>();
+	ClassDB::register_class<OccluderShapeSphere>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -673,10 +692,12 @@ void register_scene_types() {
 
 	ClassDB::register_class<TextFile>();
 
+#ifdef MODULE_FREETYPE_ENABLED
 	ClassDB::register_class<DynamicFontData>();
 	ClassDB::register_class<DynamicFont>();
 
 	DynamicFont::initialize_dynamic_fonts();
+#endif // MODULE_FREETYPE_ENABLED
 
 	ClassDB::register_virtual_class<StyleBox>();
 	ClassDB::register_class<StyleBoxEmpty>();
@@ -737,8 +758,11 @@ void register_scene_types() {
 
 	for (int i = 0; i < 20; i++) {
 		GLOBAL_DEF("layer_names/2d_render/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/2d_physics/layer_" + itos(i + 1), "");
 		GLOBAL_DEF("layer_names/3d_render/layer_" + itos(i + 1), "");
+	}
+
+	for (int i = 0; i < 32; i++) {
+		GLOBAL_DEF("layer_names/2d_physics/layer_" + itos(i + 1), "");
 		GLOBAL_DEF("layer_names/3d_physics/layer_" + itos(i + 1), "");
 	}
 
@@ -753,7 +777,7 @@ void register_scene_types() {
 	if (font_path != String()) {
 		font = ResourceLoader::load(font_path);
 		if (!font.is_valid()) {
-			ERR_PRINTS("Error loading custom font '" + font_path + "'");
+			ERR_PRINT("Error loading custom font '" + font_path + "'");
 		}
 	}
 
@@ -768,25 +792,26 @@ void register_scene_types() {
 				Theme::set_default_font(font);
 			}
 		} else {
-			ERR_PRINTS("Error loading custom theme '" + theme_path + "'");
+			ERR_PRINT("Error loading custom theme '" + theme_path + "'");
 		}
 	}
 }
 
 void unregister_scene_types() {
-
 	clear_default_theme();
 
+#ifdef MODULE_FREETYPE_ENABLED
 	ResourceLoader::remove_resource_format_loader(resource_loader_dynamic_font);
 	resource_loader_dynamic_font.unref();
+
+	DynamicFont::finish_dynamic_fonts();
+#endif // MODULE_FREETYPE_ENABLED
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);
 	resource_loader_texture_layered.unref();
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
 	resource_loader_stream_texture.unref();
-
-	DynamicFont::finish_dynamic_fonts();
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_text);
 	resource_saver_text.unref();

@@ -53,12 +53,12 @@ public:
 	static GLuint system_fbo;
 
 	struct Config {
-
 		bool shrink_textures_x2;
 		bool use_fast_texture_filter;
 		bool use_anisotropic_filter;
 		bool use_skeleton_software;
 		bool use_lightmap_filter_bicubic;
+		bool use_physical_light_attenuation;
 
 		int max_vertex_texture_image_units;
 		int max_texture_image_units;
@@ -109,7 +109,6 @@ public:
 	} config;
 
 	struct Resources {
-
 		GLuint white_tex;
 		GLuint black_tex;
 		GLuint normal_tex;
@@ -127,10 +126,11 @@ public:
 		GLuint skeleton_transform_buffer;
 		PoolVector<float> skeleton_transform_cpu_buffer;
 
+		size_t blend_shape_transform_cpu_buffer_size;
+		PoolVector<float> blend_shape_transform_cpu_buffer;
 	} resources;
 
 	mutable struct Shaders {
-
 		ShaderCompilerGLES2 compiler;
 
 		CopyShaderGLES2 copy;
@@ -143,7 +143,6 @@ public:
 	} shaders;
 
 	struct Info {
-
 		uint64_t texture_mem;
 		uint64_t vertex_mem;
 
@@ -188,10 +187,8 @@ public:
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
 		_FORCE_INLINE_ void instance_change_notify(bool p_aabb, bool p_materials) {
-
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
 			while (instances) {
-
 				instances->self()->base_changed(p_aabb, p_materials);
 				instances = instances->next();
 			}
@@ -215,7 +212,6 @@ public:
 	};
 
 	struct Geometry : public Instantiable {
-
 		enum Type {
 			GEOMETRY_INVALID,
 			GEOMETRY_SURFACE,
@@ -245,7 +241,6 @@ public:
 	struct RenderTarget;
 
 	struct Texture : RID_Data {
-
 		Texture *proxy;
 		Set<Texture *> proxy_owners;
 
@@ -280,7 +275,7 @@ public:
 
 		RenderTarget *render_target;
 
-		Vector<Ref<Image> > images;
+		Vector<Ref<Image>> images;
 
 		bool redraw_if_visible;
 
@@ -294,7 +289,7 @@ public:
 		void *detect_normal_ud;
 
 		Texture() :
-				proxy(NULL),
+				proxy(nullptr),
 				flags(0),
 				width(0),
 				height(0),
@@ -312,14 +307,14 @@ public:
 				active(false),
 				tex_id(0),
 				stored_cube_sides(0),
-				render_target(NULL),
+				render_target(nullptr),
 				redraw_if_visible(false),
-				detect_3d(NULL),
-				detect_3d_ud(NULL),
-				detect_srgb(NULL),
-				detect_srgb_ud(NULL),
-				detect_normal(NULL),
-				detect_normal_ud(NULL) {
+				detect_3d(nullptr),
+				detect_3d_ud(nullptr),
+				detect_srgb(nullptr),
+				detect_srgb_ud(nullptr),
+				detect_normal(nullptr),
+				detect_normal_ud(nullptr) {
 		}
 
 		_ALWAYS_INLINE_ Texture *get_ptr() {
@@ -336,7 +331,7 @@ public:
 			}
 
 			for (Set<Texture *>::Element *E = proxy_owners.front(); E; E = E->next()) {
-				E->get()->proxy = NULL;
+				E->get()->proxy = nullptr;
 			}
 
 			if (proxy) {
@@ -388,7 +383,6 @@ public:
 	/* SKY API */
 
 	struct Sky : public RID_Data {
-
 		RID panorama;
 		GLuint radiance;
 		int radiance_size;
@@ -404,7 +398,6 @@ public:
 	struct Material;
 
 	struct Shader : public RID_Data {
-
 		RID self;
 
 		VS::ShaderMode mode;
@@ -433,7 +426,6 @@ public:
 		uint64_t last_pass;
 
 		struct CanvasItem {
-
 			enum BlendMode {
 				BLEND_MODE_MIX,
 				BLEND_MODE_ADD,
@@ -474,7 +466,6 @@ public:
 		} canvas_item;
 
 		struct Spatial {
-
 			enum BlendMode {
 				BLEND_MODE_MIX,
 				BLEND_MODE_ADD,
@@ -520,7 +511,6 @@ public:
 		} spatial;
 
 		struct Particles {
-
 		} particles;
 
 		bool uses_vertex_time;
@@ -528,8 +518,7 @@ public:
 
 		Shader() :
 				dirty_list(this) {
-
-			shader = NULL;
+			shader = nullptr;
 			valid = false;
 			custom_code_id = 0;
 			version = 1;
@@ -561,12 +550,11 @@ public:
 	/* COMMON MATERIAL API */
 
 	struct Material : public RID_Data {
-
 		Shader *shader;
 		Map<StringName, Variant> params;
 		SelfList<Material> list;
 		SelfList<Material> dirty_list;
-		Vector<Pair<StringName, RID> > textures;
+		Vector<Pair<StringName, RID>> textures;
 		float line_width;
 		int render_priority;
 
@@ -586,7 +574,7 @@ public:
 				dirty_list(this) {
 			can_cast_shadow_cache = false;
 			is_animated_cache = false;
-			shader = NULL;
+			shader = nullptr;
 			line_width = 1.0;
 			last_pass = 0;
 			render_priority = 0;
@@ -632,7 +620,6 @@ public:
 	struct Mesh;
 
 	struct Surface : public Geometry {
-
 		struct Attrib {
 			bool enabled;
 			bool integer;
@@ -652,13 +639,6 @@ public:
 		GLuint vertex_id;
 		GLuint index_id;
 
-		struct BlendShape {
-			GLuint vertex_id;
-			GLuint array_id;
-		};
-
-		Vector<BlendShape> blend_shapes;
-
 		AABB aabb;
 
 		int array_len;
@@ -677,12 +657,16 @@ public:
 
 		PoolVector<uint8_t> data;
 		PoolVector<uint8_t> index_data;
-		Vector<PoolVector<uint8_t> > blend_shape_data;
+
+		Vector<PoolVector<uint8_t>> blend_shape_data;
+
+		GLuint blend_shape_buffer_id;
+		size_t blend_shape_buffer_size;
 
 		int total_data_size;
 
 		Surface() :
-				mesh(NULL),
+				mesh(nullptr),
 				array_len(0),
 				index_array_len(0),
 				array_byte_size(0),
@@ -696,13 +680,15 @@ public:
 	struct MultiMesh;
 
 	struct Mesh : public GeometryOwner {
-
 		bool active;
 
 		Vector<Surface *> surfaces;
 
 		int blend_shape_count;
 		VS::BlendShapeMode blend_shape_mode;
+		PoolRealArray blend_shape_values;
+
+		SelfList<Mesh> update_list;
 
 		AABB custom_aabb;
 
@@ -721,21 +707,27 @@ public:
 
 		Mesh() :
 				blend_shape_count(0),
-				blend_shape_mode(VS::BLEND_SHAPE_MODE_NORMALIZED) {
+				blend_shape_mode(VS::BLEND_SHAPE_MODE_NORMALIZED),
+				blend_shape_values(PoolRealArray()),
+				update_list(this) {
 		}
 	};
 
 	mutable RID_Owner<Mesh> mesh_owner;
+	SelfList<Mesh>::List blend_shapes_update_list;
 
 	virtual RID mesh_create();
 
-	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>());
+	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes = Vector<PoolVector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>());
 
 	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_amount);
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const;
 
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode);
 	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
+
+	virtual void mesh_set_blend_shape_values(RID p_mesh, PoolVector<float> p_values);
+	virtual PoolVector<float> mesh_get_blend_shape_values(RID p_mesh) const;
 
 	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
 
@@ -752,7 +744,7 @@ public:
 	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
 
 	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
-	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const;
+	virtual Vector<PoolVector<uint8_t>> mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const;
 	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const;
 
 	virtual void mesh_remove_surface(RID p_mesh, int p_surface);
@@ -764,10 +756,11 @@ public:
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const;
 	virtual void mesh_clear(RID p_mesh);
 
+	void update_dirty_blend_shapes();
+
 	/* MULTIMESH API */
 
 	struct MultiMesh : public GeometryOwner {
-
 		RID mesh;
 		int size;
 
@@ -841,7 +834,6 @@ public:
 	/* IMMEDIATE API */
 
 	struct Immediate : public Geometry {
-
 		struct Chunk {
 			RID texture;
 			VS::PrimitiveType primitive;
@@ -889,7 +881,6 @@ public:
 	/* SKELETON API */
 
 	struct Skeleton : RID_Data {
-
 		bool use_2d;
 
 		int size;
@@ -1001,7 +992,6 @@ public:
 	/* PROBE API */
 
 	struct ReflectionProbe : Instantiable {
-
 		VS::ReflectionProbeUpdateMode update_mode;
 		float intensity;
 		Color interior_ambient;
@@ -1084,14 +1074,12 @@ public:
 
 	virtual uint32_t gi_probe_get_version(RID p_probe);
 
-	virtual GIProbeCompression gi_probe_get_dynamic_data_get_preferred_compression() const;
 	virtual RID gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression);
 	virtual void gi_probe_dynamic_data_update(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data);
 
 	/* LIGHTMAP */
 
 	struct LightmapCapture : public Instantiable {
-
 		PoolVector<LightmapCaptureOctree> octree;
 		AABB bounds;
 		Transform cell_xform;
@@ -1207,7 +1195,6 @@ public:
 		Effect copy_screen_effect;
 
 		struct MipMaps {
-
 			struct Size {
 				GLuint fbo;
 				GLuint color;
@@ -1251,6 +1238,7 @@ public:
 
 		bool use_fxaa;
 		bool use_debanding;
+		float sharpen_intensity;
 
 		RID texture;
 
@@ -1273,6 +1261,7 @@ public:
 				msaa(VS::VIEWPORT_MSAA_DISABLED),
 				use_fxaa(false),
 				use_debanding(false),
+				sharpen_intensity(0.0),
 				used_dof_blur_near(false),
 				mip_maps_allocated(false) {
 			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; ++i) {
@@ -1300,11 +1289,11 @@ public:
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
 	virtual void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa);
 	virtual void render_target_set_use_debanding(RID p_render_target, bool p_debanding);
+	virtual void render_target_set_sharpen_intensity(RID p_render_target, float p_intensity);
 
 	/* CANVAS SHADOW */
 
 	struct CanvasLightShadow : public RID_Data {
-
 		int size;
 		int height;
 		GLuint fbo;
@@ -1319,7 +1308,6 @@ public:
 	/* LIGHT SHADOW MAPPING */
 
 	struct CanvasOccluder : public RID_Data {
-
 		GLuint vertex_id; // 0 means, unconfigured
 		GLuint index_id; // 0 means, unconfigured
 		PoolVector<Vector2> lines;
@@ -1336,7 +1324,6 @@ public:
 	virtual bool free(RID p_rid);
 
 	struct Frame {
-
 		RenderTarget *current_rt;
 
 		bool clear_request;
@@ -1376,8 +1363,9 @@ inline bool RasterizerStorageGLES2::safe_buffer_sub_data(unsigned int p_total_bu
 	r_offset_after = p_offset + p_data_size;
 #ifdef DEBUG_ENABLED
 	// we are trying to write across the edge of the buffer
-	if (r_offset_after > p_total_buffer_size)
+	if (r_offset_after > p_total_buffer_size) {
 		return false;
+	}
 #endif
 	glBufferSubData(p_target, p_offset, p_data_size, p_data);
 	return true;
@@ -1389,7 +1377,7 @@ inline void RasterizerStorageGLES2::buffer_orphan_and_upload(unsigned int p_buff
 	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
 	// Was previously #ifndef GLES_OVER_GL however this causes stalls on desktop mac also (and possibly other)
 	if (!p_optional_orphan || (config.should_orphan)) {
-		glBufferData(p_target, p_buffer_size, NULL, p_usage);
+		glBufferData(p_target, p_buffer_size, nullptr, p_usage);
 #ifdef RASTERIZER_EXTRA_CHECKS
 		// fill with garbage off the end of the array
 		if (p_buffer_size) {
@@ -1405,7 +1393,7 @@ inline void RasterizerStorageGLES2::buffer_orphan_and_upload(unsigned int p_buff
 		}
 #endif
 	}
-	RAST_DEV_DEBUG_ASSERT((p_offset + p_data_size) <= p_buffer_size);
+	DEV_ASSERT((p_offset + p_data_size) <= p_buffer_size);
 	glBufferSubData(p_target, p_offset, p_data_size, p_data);
 }
 

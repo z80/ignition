@@ -36,7 +36,6 @@
 class SoftBody;
 
 class SoftBodyVisualServerHandler {
-
 	friend class SoftBody;
 
 	RID mesh;
@@ -50,7 +49,7 @@ class SoftBodyVisualServerHandler {
 
 private:
 	SoftBodyVisualServerHandler();
-	bool is_ready() { return mesh.is_valid(); }
+	bool is_ready(RID p_mesh_rid) const { return mesh.is_valid() && mesh == p_mesh_rid; }
 	void prepare(RID p_mesh_rid, int p_surface);
 	void clear();
 	void open();
@@ -82,6 +81,8 @@ private:
 	SoftBodyVisualServerHandler visual_server_handler;
 
 	RID physics_rid;
+
+	bool physics_enabled = true;
 
 	bool mesh_owner;
 	uint32_t collision_mask;
@@ -137,6 +138,9 @@ public:
 
 	void set_parent_collision_ignore(const NodePath &p_parent_collision_ignore);
 	const NodePath &get_parent_collision_ignore() const;
+
+	void set_physics_enabled(bool p_enabled);
+	bool is_physics_enabled() const;
 
 	void set_pinned_points_indices(PoolVector<PinnedPoint> p_pinned_points_indices);
 	PoolVector<PinnedPoint> get_pinned_points_indices();

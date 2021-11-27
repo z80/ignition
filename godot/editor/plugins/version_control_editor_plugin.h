@@ -39,7 +39,6 @@
 #include "scene/gui/tree.h"
 
 class VersionControlEditorPlugin : public EditorPlugin {
-
 	GDCLASS(VersionControlEditorPlugin, EditorPlugin)
 
 public:
@@ -113,6 +112,7 @@ private:
 	void _update_stage_status();
 	void _update_commit_status();
 	void _update_commit_button();
+	void _commit_message_gui_input(const Ref<InputEvent> &p_event);
 
 	friend class EditorVCSInterface;
 

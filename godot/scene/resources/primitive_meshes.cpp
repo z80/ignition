@@ -35,7 +35,6 @@
   PrimitiveMesh
 */
 void PrimitiveMesh::_update() const {
-
 	Array arr;
 	arr.resize(VS::ARRAY_MAX);
 	_create_mesh_array(arr);
@@ -47,13 +46,13 @@ void PrimitiveMesh::_update() const {
 	int pc = points.size();
 	ERR_FAIL_COND(pc == 0);
 	{
-
 		PoolVector<Vector3>::Read r = points.read();
 		for (int i = 0; i < pc; i++) {
-			if (i == 0)
+			if (i == 0) {
 				aabb.position = r[i];
-			else
+			} else {
 				aabb.expand_to(r[i]);
+			}
 		}
 	}
 
@@ -61,7 +60,6 @@ void PrimitiveMesh::_update() const {
 		PoolVector<Vector3> normals = arr[VS::ARRAY_NORMAL];
 		PoolVector<int> indices = arr[VS::ARRAY_INDEX];
 		if (normals.size() && indices.size()) {
-
 			{
 				int nc = normals.size();
 				PoolVector<Vector3>::Write w = normals.write();
@@ -95,9 +93,9 @@ void PrimitiveMesh::_update() const {
 }
 
 void PrimitiveMesh::_request_update() {
-
-	if (pending_request)
+	if (pending_request) {
 		return;
+	}
 	_update();
 }
 
@@ -164,7 +162,7 @@ void PrimitiveMesh::surface_set_material(int p_idx, const Ref<Material> &p_mater
 }
 
 Ref<Material> PrimitiveMesh::surface_get_material(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, 1, NULL);
+	ERR_FAIL_INDEX_V(p_idx, 1, nullptr);
 
 	return material;
 }
@@ -175,6 +173,9 @@ int PrimitiveMesh::get_blend_shape_count() const {
 
 StringName PrimitiveMesh::get_blend_shape_name(int p_index) const {
 	return StringName();
+}
+
+void PrimitiveMesh::set_blend_shape_name(int p_index, const StringName &p_name) {
 }
 
 AABB PrimitiveMesh::get_aabb() const {
@@ -230,14 +231,12 @@ Array PrimitiveMesh::get_mesh_arrays() const {
 }
 
 void PrimitiveMesh::set_custom_aabb(const AABB &p_custom) {
-
 	custom_aabb = p_custom;
 	VS::get_singleton()->mesh_set_custom_aabb(mesh, custom_aabb);
 	emit_changed();
 }
 
 AABB PrimitiveMesh::get_custom_aabb() const {
-
 	return custom_aabb;
 }
 
@@ -251,7 +250,6 @@ bool PrimitiveMesh::get_flip_faces() const {
 }
 
 PrimitiveMesh::PrimitiveMesh() {
-
 	flip_faces = false;
 	// defaults
 	mesh = VisualServer::get_singleton()->mesh_create();
@@ -268,7 +266,7 @@ PrimitiveMesh::~PrimitiveMesh() {
 }
 
 /**
-	CapsuleMesh
+  CapsuleMesh
 */
 
 void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
@@ -888,9 +886,9 @@ void CylinderMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rings", "rings"), &CylinderMesh::set_rings);
 	ClassDB::bind_method(D_METHOD("get_rings"), &CylinderMesh::get_rings);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "top_radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_top_radius", "get_top_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bottom_radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_bottom_radius", "get_bottom_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "top_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_top_radius", "get_top_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bottom_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_bottom_radius", "get_bottom_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_rings", "get_rings");
 }
@@ -984,7 +982,7 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 			u /= (subdivide_w + 1.0);
 			v /= (subdivide_d + 1.0);
 
-			points.push_back(Vector3(-x, 0.0, -z));
+			points.push_back(Vector3(-x, 0.0, -z) + center_offset);
 			normals.push_back(Vector3(0.0, 1.0, 0.0));
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(1.0 - u, 1.0 - v)); /* 1.0 - uv to match orientation with Quad */
@@ -1022,10 +1020,13 @@ void PlaneMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_subdivide_width"), &PlaneMesh::get_subdivide_width);
 	ClassDB::bind_method(D_METHOD("set_subdivide_depth", "subdivide"), &PlaneMesh::set_subdivide_depth);
 	ClassDB::bind_method(D_METHOD("get_subdivide_depth"), &PlaneMesh::get_subdivide_depth);
+	ClassDB::bind_method(D_METHOD("set_center_offset", "offset"), &PlaneMesh::set_center_offset);
+	ClassDB::bind_method(D_METHOD("get_center_offset"), &PlaneMesh::get_center_offset);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdivide_width", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_subdivide_width", "get_subdivide_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdivide_depth", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_subdivide_depth", "get_subdivide_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_offset"), "set_center_offset", "get_center_offset");
 }
 
 void PlaneMesh::set_size(const Size2 &p_size) {
@@ -1055,11 +1056,21 @@ int PlaneMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
+void PlaneMesh::set_center_offset(const Vector3 p_offset) {
+	center_offset = p_offset;
+	_request_update();
+}
+
+Vector3 PlaneMesh::get_center_offset() const {
+	return center_offset;
+}
+
 PlaneMesh::PlaneMesh() {
 	// defaults
 	size = Size2(2.0, 2.0);
 	subdivide_w = 0;
 	subdivide_d = 0;
+	center_offset = Vector3(0.0, 0.0, 0.0);
 }
 
 /**
@@ -1367,10 +1378,10 @@ void QuadMesh::_create_mesh_array(Array &p_arr) const {
 	Vector2 _size = Vector2(size.x / 2.0f, size.y / 2.0f);
 
 	Vector3 quad_faces[4] = {
-		Vector3(-_size.x, -_size.y, 0),
-		Vector3(-_size.x, _size.y, 0),
-		Vector3(_size.x, _size.y, 0),
-		Vector3(_size.x, -_size.y, 0),
+		Vector3(-_size.x, -_size.y, 0) + center_offset,
+		Vector3(-_size.x, _size.y, 0) + center_offset,
+		Vector3(_size.x, _size.y, 0) + center_offset,
+		Vector3(_size.x, -_size.y, 0) + center_offset,
 	};
 
 	static const int indices[6] = {
@@ -1379,7 +1390,6 @@ void QuadMesh::_create_mesh_array(Array &p_arr) const {
 	};
 
 	for (int i = 0; i < 6; i++) {
-
 		int j = indices[i];
 		faces.set(i, quad_faces[j]);
 		normals.set(i, Vector3(0, 0, 1));
@@ -1407,12 +1417,17 @@ void QuadMesh::_create_mesh_array(Array &p_arr) const {
 void QuadMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &QuadMesh::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &QuadMesh::get_size);
+	ClassDB::bind_method(D_METHOD("set_center_offset", "center_offset"), &QuadMesh::set_center_offset);
+	ClassDB::bind_method(D_METHOD("get_center_offset"), &QuadMesh::get_center_offset);
+
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_offset"), "set_center_offset", "get_center_offset");
 }
 
 QuadMesh::QuadMesh() {
 	primitive_type = PRIMITIVE_TRIANGLES;
 	size = Size2(1.0, 1.0);
+	center_offset = Vector3(0.0, 0.0, 0.0);
 }
 
 void QuadMesh::set_size(const Size2 &p_size) {
@@ -1424,6 +1439,15 @@ Size2 QuadMesh::get_size() const {
 	return size;
 }
 
+void QuadMesh::set_center_offset(Vector3 p_center_offset) {
+	center_offset = p_center_offset;
+	_request_update();
+}
+
+Vector3 QuadMesh::get_center_offset() const {
+	return center_offset;
+}
+
 /**
   SphereMesh
 */
@@ -1431,6 +1455,8 @@ Size2 QuadMesh::get_size() const {
 void SphereMesh::_create_mesh_array(Array &p_arr) const {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
+
+	float scale = height * (is_hemisphere ? 1.0 : 0.5);
 
 	// set our bounding box
 
@@ -1455,7 +1481,7 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 
 		v /= (rings + 1);
 		w = sin(Math_PI * v);
-		y = height * (is_hemisphere ? 1.0 : 0.5) * cos(Math_PI * v);
+		y = scale * cos(Math_PI * v);
 
 		for (i = 0; i <= radial_segments; i++) {
 			float u = i;
@@ -1470,7 +1496,8 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 			} else {
 				Vector3 p = Vector3(x * radius * w, y, z * radius * w);
 				points.push_back(p);
-				normals.push_back(p.normalized());
+				Vector3 normal = Vector3(x * w * scale, radius * (y / scale), z * w * scale);
+				normals.push_back(normal.normalized());
 			};
 			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v));

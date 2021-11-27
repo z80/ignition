@@ -49,7 +49,6 @@ class BakedLightmapData : public Resource {
 	Transform cell_space_xform;
 
 	struct User {
-
 		NodePath path;
 		struct {
 			Ref<Texture> single;
@@ -121,8 +120,8 @@ public:
 		BAKE_ERROR_LIGHTMAP_SIZE,
 		BAKE_ERROR_INVALID_MESH,
 		BAKE_ERROR_USER_ABORTED,
-		BAKE_ERROR_NO_LIGHTMAPPER
-
+		BAKE_ERROR_NO_LIGHTMAPPER,
+		BAKE_ERROR_NO_ROOT,
 	};
 
 	enum EnvironmentMode {
@@ -150,7 +149,7 @@ public:
 		int32_t subindex;
 		Ref<Mesh> mesh;
 		int32_t lightmap_scale;
-		Vector<Ref<Material> > overrides;
+		Vector<Ref<Material>> overrides;
 		bool cast_shadows;
 		bool generate_lightmap;
 	};
@@ -164,6 +163,7 @@ private:
 	int max_atlas_size;
 	bool capture_enabled;
 	int bounces;
+	float bounce_indirect_energy;
 	bool use_denoiser;
 	bool use_hdr;
 	bool use_color;
@@ -186,7 +186,7 @@ private:
 	void _assign_lightmaps();
 	void _clear_lightmaps();
 
-	void _get_material_images(const MeshesFound &p_found_mesh, Lightmapper::MeshData &r_mesh_data, Vector<Ref<Texture> > &r_albedo_textures, Vector<Ref<Texture> > &r_emission_textures);
+	void _get_material_images(const MeshesFound &p_found_mesh, Lightmapper::MeshData &r_mesh_data, Vector<Ref<Texture>> &r_albedo_textures, Vector<Ref<Texture>> &r_emission_textures);
 	Ref<Image> _get_irradiance_from_sky(Ref<Sky> p_sky, float p_energy, Vector2i p_size);
 	Ref<Image> _get_irradiance_map(Ref<Environment> p_env, Vector2i p_size);
 	void _find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &meshes, Vector<LightsFound> &lights);
@@ -203,6 +203,7 @@ protected:
 public:
 	static Lightmapper::BakeStepFunc bake_step_function;
 	static Lightmapper::BakeStepFunc bake_substep_function;
+	static Lightmapper::BakeEndFunc bake_end_function;
 
 	void set_light_data(const Ref<BakedLightmapData> &p_data);
 	Ref<BakedLightmapData> get_light_data() const;
@@ -266,6 +267,9 @@ public:
 
 	void set_bounces(int p_bounces);
 	int get_bounces() const;
+
+	void set_bounce_indirect_energy(float p_indirect_energy);
+	float get_bounce_indirect_energy() const;
 
 	void set_bias(float p_bias);
 	float get_bias() const;

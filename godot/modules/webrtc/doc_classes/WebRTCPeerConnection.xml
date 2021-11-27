@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebRTCPeerConnection" inherits="Reference" version="3.3">
+<class name="WebRTCPeerConnection" inherits="Reference" version="3.4">
 	<brief_description>
 		Interface to a WebRTC peer connection.
 	</brief_description>
@@ -26,7 +26,8 @@
 		<method name="close">
 			<return type="void" />
 			<description>
-				Close the peer connection and all data channels associated with it. Note, you cannot reuse this object for a new connection unless you call [method initialize].
+				Close the peer connection and all data channels associated with it.
+				[b]Note:[/b] You cannot reuse this object for a new connection unless you call [method initialize].
 			</description>
 		</method>
 		<method name="create_data_channel">

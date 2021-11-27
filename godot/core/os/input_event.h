@@ -32,7 +32,6 @@
 #define INPUT_EVENT_H
 
 #include "core/math/transform_2d.h"
-#include "core/os/copymem.h"
 #include "core/resource.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"
@@ -199,10 +198,11 @@ public:
 	void set_device(int p_device);
 	int get_device() const;
 
-	bool is_action(const StringName &p_action) const;
-	bool is_action_pressed(const StringName &p_action, bool p_allow_echo = false) const;
-	bool is_action_released(const StringName &p_action) const;
-	float get_action_strength(const StringName &p_action) const;
+	bool is_action(const StringName &p_action, bool p_exact_match = false) const;
+	bool is_action_pressed(const StringName &p_action, bool p_allow_echo = false, bool p_exact_match = false) const;
+	bool is_action_released(const StringName &p_action, bool p_exact_match = false) const;
+	float get_action_strength(const StringName &p_action, bool p_exact_match = false) const;
+	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false) const;
 
 	// To be removed someday, since they do not make sense for all events
 	virtual bool is_pressed() const;
@@ -213,8 +213,8 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 	virtual bool is_action_type() const;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
@@ -263,16 +263,18 @@ public:
 
 	void set_modifiers_from_event(const InputEventWithModifiers *event);
 
+	uint32_t get_modifiers_mask() const;
+
 	InputEventWithModifiers();
 };
 
 class InputEventKey : public InputEventWithModifiers {
-
 	GDCLASS(InputEventKey, InputEventWithModifiers);
 
 	bool pressed; /// otherwise release
 
 	uint32_t scancode; ///< check keyboard.h , KeyCode enum, without modifier masks
+	uint32_t physical_scancode;
 	uint32_t unicode; ///unicode
 
 	bool echo; /// true if this is an echo key
@@ -287,6 +289,9 @@ public:
 	void set_scancode(uint32_t p_scancode);
 	uint32_t get_scancode() const;
 
+	void set_physical_scancode(uint32_t p_scancode);
+	uint32_t get_physical_scancode() const;
+
 	void set_unicode(uint32_t p_unicode);
 	uint32_t get_unicode() const;
 
@@ -294,9 +299,10 @@ public:
 	virtual bool is_echo() const;
 
 	uint32_t get_scancode_with_modifiers() const;
+	uint32_t get_physical_scancode_with_modifiers() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
 
@@ -306,7 +312,6 @@ public:
 };
 
 class InputEventMouse : public InputEventWithModifiers {
-
 	GDCLASS(InputEventMouse, InputEventWithModifiers);
 
 	int button_mask;
@@ -331,7 +336,6 @@ public:
 };
 
 class InputEventMouseButton : public InputEventMouse {
-
 	GDCLASS(InputEventMouseButton, InputEventMouse);
 
 	float factor;
@@ -356,7 +360,8 @@ public:
 	bool is_doubleclick() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
@@ -365,7 +370,6 @@ public:
 };
 
 class InputEventMouseMotion : public InputEventMouse {
-
 	GDCLASS(InputEventMouseMotion, InputEventMouse);
 
 	Vector2 tilt;
@@ -398,7 +402,6 @@ public:
 };
 
 class InputEventJoypadMotion : public InputEvent {
-
 	GDCLASS(InputEventJoypadMotion, InputEvent);
 	int axis; ///< Joypad axis
 	float axis_value; ///< -1 to 1
@@ -415,7 +418,8 @@ public:
 
 	virtual bool is_pressed() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
@@ -442,8 +446,8 @@ public:
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
@@ -477,7 +481,6 @@ public:
 };
 
 class InputEventScreenDrag : public InputEvent {
-
 	GDCLASS(InputEventScreenDrag, InputEvent);
 	int index;
 	Vector2 pos;
@@ -503,11 +506,12 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
 
+	virtual bool accumulate(const Ref<InputEvent> &p_event);
+
 	InputEventScreenDrag();
 };
 
 class InputEventAction : public InputEvent {
-
 	GDCLASS(InputEventAction, InputEvent);
 
 	StringName action;
@@ -529,9 +533,9 @@ public:
 
 	virtual bool is_action(const StringName &p_action) const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
 
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
 
@@ -539,7 +543,6 @@ public:
 };
 
 class InputEventGesture : public InputEventWithModifiers {
-
 	GDCLASS(InputEventGesture, InputEventWithModifiers);
 
 	Vector2 pos;
@@ -553,7 +556,6 @@ public:
 };
 
 class InputEventMagnifyGesture : public InputEventGesture {
-
 	GDCLASS(InputEventMagnifyGesture, InputEventGesture);
 	real_t factor;
 
@@ -571,7 +573,6 @@ public:
 };
 
 class InputEventPanGesture : public InputEventGesture {
-
 	GDCLASS(InputEventPanGesture, InputEventGesture);
 	Vector2 delta;
 

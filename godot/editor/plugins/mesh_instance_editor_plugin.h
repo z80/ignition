@@ -37,7 +37,6 @@
 #include "scene/gui/spin_box.h"
 
 class MeshInstanceEditor : public Control {
-
 	GDCLASS(MeshInstanceEditor, Control);
 
 	enum Menu {
@@ -45,6 +44,7 @@ class MeshInstanceEditor : public Control {
 		MENU_OPTION_CREATE_STATIC_TRIMESH_BODY,
 		MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE,
 		MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE,
+		MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE,
 		MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES,
 		MENU_OPTION_CREATE_NAVMESH,
 		MENU_OPTION_CREATE_OUTLINE_MESH,
@@ -84,7 +84,6 @@ public:
 };
 
 class MeshInstanceEditorPlugin : public EditorPlugin {
-
 	GDCLASS(MeshInstanceEditorPlugin, EditorPlugin);
 
 	MeshInstanceEditor *mesh_editor;

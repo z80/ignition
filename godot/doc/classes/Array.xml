@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Array" version="3.3">
+<class name="Array" version="3.4">
 	<brief_description>
 		A generic array datatype.
 	</brief_description>
@@ -251,6 +251,14 @@
 				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
+		<method name="pop_at">
+			<return type="Variant" />
+			<argument index="0" name="position" type="int" />
+			<description>
+				Removes and returns the element of the array at index [code]position[/code]. If negative, [code]position[/code] is considered relative to the end of the array. Leaves the array untouched and returns [code]null[/code] if the array is empty or if it's accessed out of bounds. An error message is printed when the array is accessed out of bounds, but not when the array is empty.
+				[b]Note:[/b] On large arrays, this method can be slower than [method pop_back] as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower [method pop_at] will be.
+			</description>
+		</method>
 		<method name="pop_back">
 			<return type="Variant" />
 			<description>
@@ -337,7 +345,7 @@
 			<description>
 				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code].
 				For two elements [code]a[/code] and [code]b[/code], if the given method returns [code]true[/code], element [code]b[/code] will be after element [code]a[/code] in the array.
-				[b]Note:[/b] you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
+				[b]Note:[/b] You cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
 				[codeblock]
 				class MyCustomSorter:
 				    static func sort_ascending(a, b):

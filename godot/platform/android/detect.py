@@ -202,12 +202,10 @@ def configure(env):
         env.Append(CPPDEFINES=["NDEBUG"])
         if can_vectorize:
             env.Append(CCFLAGS=["-ftree-vectorize"])
-        if env["target"] == "release_debug":
-            env.Append(CPPDEFINES=["DEBUG_ENABLED"])
     elif env["target"] == "debug":
         env.Append(LINKFLAGS=["-O0"])
         env.Append(CCFLAGS=["-O0", "-g", "-fno-limit-debug-info"])
-        env.Append(CPPDEFINES=["_DEBUG", "DEBUG_ENABLED"])
+        env.Append(CPPDEFINES=["_DEBUG"])
         env.Append(CPPFLAGS=["-UNDEBUG"])
 
     # Compiler configuration
@@ -277,6 +275,9 @@ def configure(env):
         CCFLAGS="-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing".split()
     )
     env.Append(CPPDEFINES=["NO_STATVFS", "GLES_ENABLED"])
+
+    if get_platform(env["ndk_platform"]) >= 24:
+        env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
 
     env["neon_enabled"] = False
     if env["android_arch"] == "x86":

@@ -62,6 +62,7 @@ public:
 		bool echo;
 		bool raw;
 		uint32_t scancode;
+		uint32_t physical_scancode;
 		uint32_t unicode;
 	};
 
@@ -120,7 +121,7 @@ public:
 
 	CursorShape cursor_shape;
 	NSCursor *cursors[CURSOR_MAX];
-	Map<CursorShape, Vector<Variant> > cursors_cache;
+	Map<CursorShape, Vector<Variant>> cursors_cache;
 	MouseMode mouse_mode;
 
 	String title;
@@ -169,7 +170,7 @@ public:
 		}
 	};
 
-	Map<String, Vector<GlobalMenuItem> > global_menus;
+	Map<String, Vector<GlobalMenuItem>> global_menus;
 	List<String> global_menus_order;
 
 	void _update_global_menu();
@@ -224,6 +225,7 @@ public:
 	virtual String get_data_path() const;
 	virtual String get_cache_path() const;
 	virtual String get_bundle_resource_dir() const;
+	virtual String get_bundle_icon_path() const;
 	virtual String get_godot_dir_name() const;
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
@@ -247,6 +249,7 @@ public:
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
 	virtual String get_executable_path() const;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr);
 
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 	virtual int keyboard_get_layout_count() const;

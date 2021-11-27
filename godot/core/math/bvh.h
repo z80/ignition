@@ -47,21 +47,29 @@
 // implemented in GLES3 but not GLES2. Layer masks are not yet implemented for directional lights.
 
 #include "bvh_tree.h"
+#include "core/os/mutex.h"
 
-#define BVHTREE_CLASS BVH_Tree<T, 2, MAX_ITEMS, USE_PAIRS>
+#define BVHTREE_CLASS BVH_Tree<T, 2, MAX_ITEMS, USE_PAIRS, Bounds, Point>
+#define BVH_LOCKED_FUNCTION BVHLockedFunction(&_mutex, BVH_THREAD_SAFE &&_thread_safe);
 
-template <class T, bool USE_PAIRS = false, int MAX_ITEMS = 32>
+template <class T, bool USE_PAIRS = false, int MAX_ITEMS = 32, class Bounds = AABB, class Point = Vector3, bool BVH_THREAD_SAFE = true>
 class BVH_Manager {
-
 public:
 	// note we are using uint32_t instead of BVHHandle, losing type safety, but this
 	// is for compatibility with octree
 	typedef void *(*PairCallback)(void *, uint32_t, T *, int, uint32_t, T *, int);
 	typedef void (*UnpairCallback)(void *, uint32_t, T *, int, uint32_t, T *, int, void *);
+	typedef void *(*CheckPairCallback)(void *, uint32_t, T *, int, uint32_t, T *, int, void *);
+
+	// allow locally toggling thread safety if the template has been compiled with BVH_THREAD_SAFE
+	void params_set_thread_safe(bool p_enable) {
+		_thread_safe = p_enable;
+	}
 
 	// these 2 are crucial for fine tuning, and can be applied manually
 	// see the variable declarations for more info.
 	void params_set_node_expansion(real_t p_value) {
+		BVH_LOCKED_FUNCTION
 		if (p_value >= 0.0) {
 			tree._node_expansion = p_value;
 			tree._auto_node_expansion = false;
@@ -71,6 +79,7 @@ public:
 	}
 
 	void params_set_pairing_expansion(real_t p_value) {
+		BVH_LOCKED_FUNCTION
 		if (p_value >= 0.0) {
 			tree._pairing_expansion = p_value;
 			tree._auto_pairing_expansion = false;
@@ -80,15 +89,23 @@ public:
 	}
 
 	void set_pair_callback(PairCallback p_callback, void *p_userdata) {
+		BVH_LOCKED_FUNCTION
 		pair_callback = p_callback;
 		pair_callback_userdata = p_userdata;
 	}
 	void set_unpair_callback(UnpairCallback p_callback, void *p_userdata) {
+		BVH_LOCKED_FUNCTION
 		unpair_callback = p_callback;
 		unpair_callback_userdata = p_userdata;
 	}
+	void set_check_pair_callback(CheckPairCallback p_callback, void *p_userdata) {
+		BVH_LOCKED_FUNCTION
+		check_pair_callback = p_callback;
+		check_pair_callback_userdata = p_userdata;
+	}
 
-	BVHHandle create(T *p_userdata, bool p_active, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1) {
+	BVHHandle create(T *p_userdata, bool p_active, const Bounds &p_aabb = Bounds(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1) {
+		BVH_LOCKED_FUNCTION
 
 		// not sure if absolutely necessary to flush collisions here. It will cost performance to, instead
 		// of waiting for update, so only uncomment this if there are bugs.
@@ -108,7 +125,7 @@ public:
 
 		if (USE_PAIRS) {
 			// for safety initialize the expanded AABB
-			AABB &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
+			Bounds &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
 			expanded_aabb = p_aabb;
 			expanded_aabb.grow_by(tree._pairing_expansion);
 
@@ -125,10 +142,16 @@ public:
 	////////////////////////////////////////////////////
 	// wrapper versions that use uint32_t instead of handle
 	// for backward compatibility. Less type safe
-	void move(uint32_t p_handle, const AABB &p_aabb) {
+	void move(uint32_t p_handle, const Bounds &p_aabb) {
 		BVHHandle h;
 		h.set(p_handle);
 		move(h, p_aabb);
+	}
+
+	void recheck_pairs(uint32_t p_handle) {
+		BVHHandle h;
+		h.set(p_handle);
+		recheck_pairs(h);
 	}
 
 	void erase(uint32_t p_handle) {
@@ -143,7 +166,7 @@ public:
 		force_collision_check(h);
 	}
 
-	bool activate(uint32_t p_handle, const AABB &p_aabb, bool p_delay_collision_check = false) {
+	bool activate(uint32_t p_handle, const Bounds &p_aabb, bool p_delay_collision_check = false) {
 		BVHHandle h;
 		h.set(p_handle);
 		return activate(h, p_aabb, p_delay_collision_check);
@@ -155,10 +178,10 @@ public:
 		return deactivate(h);
 	}
 
-	void set_pairable(uint32_t p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+	void set_pairable(uint32_t p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_force_collision_check = true) {
 		BVHHandle h;
 		h.set(p_handle);
-		set_pairable(h, p_pairable, p_pairable_type, p_pairable_mask);
+		set_pairable(h, p_pairable, p_pairable_type, p_pairable_mask, p_force_collision_check);
 	}
 
 	bool is_pairable(uint32_t p_handle) const {
@@ -180,8 +203,8 @@ public:
 
 	////////////////////////////////////////////////////
 
-	void move(BVHHandle p_handle, const AABB &p_aabb) {
-
+	void move(BVHHandle p_handle, const Bounds &p_aabb) {
+		BVH_LOCKED_FUNCTION
 		if (tree.item_move(p_handle, p_aabb)) {
 			if (USE_PAIRS) {
 				_add_changed_item(p_handle, p_aabb);
@@ -189,7 +212,15 @@ public:
 		}
 	}
 
+	void recheck_pairs(BVHHandle p_handle) {
+		BVH_LOCKED_FUNCTION
+		if (USE_PAIRS) {
+			_recheck_pairs(p_handle);
+		}
+	}
+
 	void erase(BVHHandle p_handle) {
+		BVH_LOCKED_FUNCTION
 		// call unpair and remove all references to the item
 		// before deleting from the tree
 		if (USE_PAIRS) {
@@ -205,9 +236,10 @@ public:
 	// set pairable has never been called.
 	// (deferred collision checks are a workaround for visual server for historical reasons)
 	void force_collision_check(BVHHandle p_handle) {
+		BVH_LOCKED_FUNCTION
 		if (USE_PAIRS) {
 			// the aabb should already be up to date in the BVH
-			AABB aabb;
+			Bounds aabb;
 			item_get_AABB(p_handle, aabb);
 
 			// add it as changed even if aabb not different
@@ -221,13 +253,13 @@ public:
 	// these should be read as set_visible for render trees,
 	// but generically this makes items add or remove from the
 	// tree internally, to speed things up by ignoring inactive items
-	bool activate(BVHHandle p_handle, const AABB &p_aabb, bool p_delay_collision_check = false) {
+	bool activate(BVHHandle p_handle, const Bounds &p_aabb, bool p_delay_collision_check = false) {
+		BVH_LOCKED_FUNCTION
 		// sending the aabb here prevents the need for the BVH to maintain
 		// a redundant copy of the aabb.
 		// returns success
 		if (tree.item_activate(p_handle, p_aabb)) {
 			if (USE_PAIRS) {
-
 				// in the special case of the render tree, when setting visibility we are using the combination of
 				// activate then set_pairable. This would case 2 sets of collision checks. For efficiency here we allow
 				// deferring to have a single collision check at the set_pairable call.
@@ -246,6 +278,7 @@ public:
 	}
 
 	bool deactivate(BVHHandle p_handle) {
+		BVH_LOCKED_FUNCTION
 		// returns success
 		if (tree.item_deactivate(p_handle)) {
 			// call unpair and remove all references to the item
@@ -262,12 +295,14 @@ public:
 		return false;
 	}
 
-	bool get_active(BVHHandle p_handle) const {
+	bool get_active(BVHHandle p_handle) {
+		BVH_LOCKED_FUNCTION
 		return tree.item_get_active(p_handle);
 	}
 
 	// call e.g. once per frame (this does a trickle optimize)
 	void update() {
+		BVH_LOCKED_FUNCTION
 		tree.update();
 		_check_for_collisions();
 #ifdef BVH_INTEGRITY_CHECKS
@@ -277,24 +312,26 @@ public:
 
 	// this can be called more frequently than per frame if necessary
 	void update_collisions() {
+		BVH_LOCKED_FUNCTION
 		_check_for_collisions();
 	}
 
 	// prefer calling this directly as type safe
-	void set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
-		tree.item_set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
+	void set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_force_collision_check = true) {
+		BVH_LOCKED_FUNCTION
+		// Returns true if the pairing state has changed.
+		bool state_changed = tree.item_set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
 
 		if (USE_PAIRS) {
-
 			// not sure if absolutely necessary to flush collisions here. It will cost performance to, instead
 			// of waiting for update, so only uncomment this if there are bugs.
 			//_check_for_collisions();
 
-			if (get_active(p_handle)) {
+			if ((p_force_collision_check || state_changed) && tree.item_get_active(p_handle)) {
 				// when the pairable state changes, we need to force a collision check because newly pairable
 				// items may be in collision, and unpairable items might move out of collision.
 				// We cannot depend on waiting for the next update, because that may come much later.
-				AABB aabb;
+				Bounds aabb;
 				item_get_AABB(p_handle, aabb);
 
 				// passing false disables the optimization which prevents collision checks if
@@ -311,7 +348,8 @@ public:
 	}
 
 	// cull tests
-	int cull_aabb(const AABB &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+	int cull_aabb(const Bounds &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+		BVH_LOCKED_FUNCTION
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
@@ -328,7 +366,8 @@ public:
 		return params.result_count_overall;
 	}
 
-	int cull_segment(const Vector3 &p_from, const Vector3 &p_to, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+	int cull_segment(const Point &p_from, const Point &p_to, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+		BVH_LOCKED_FUNCTION
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
@@ -346,7 +385,8 @@ public:
 		return params.result_count_overall;
 	}
 
-	int cull_point(const Vector3 &p_point, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+	int cull_point(const Point &p_point, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+		BVH_LOCKED_FUNCTION
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
@@ -363,12 +403,15 @@ public:
 	}
 
 	int cull_convex(const Vector<Plane> &p_convex, T **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF) {
-		if (!p_convex.size())
+		BVH_LOCKED_FUNCTION
+		if (!p_convex.size()) {
 			return 0;
+		}
 
 		Vector<Vector3> convex_points = Geometry::compute_convex_mesh_points(&p_convex[0], p_convex.size());
-		if (convex_points.size() == 0)
+		if (convex_points.size() == 0) {
 			return 0;
+		}
 
 		typename BVHTREE_CLASS::CullParams params;
 		params.result_count_overall = 0;
@@ -396,7 +439,7 @@ private:
 			return;
 		}
 
-		AABB bb;
+		Bounds bb;
 
 		typename BVHTREE_CLASS::CullParams params;
 
@@ -411,8 +454,8 @@ private:
 			const BVHHandle &h = changed_items[n];
 
 			// use the expanded aabb for pairing
-			const AABB &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
-			BVH_ABB abb;
+			const Bounds &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
+			BVHABB_CLASS abb;
 			abb.from(expanded_aabb);
 
 			// find all the existing paired aabbs that are no longer
@@ -435,8 +478,9 @@ private:
 				uint32_t ref_id = tree._cull_hits[i];
 
 				// don't collide against ourself
-				if (ref_id == changed_item_ref_id)
+				if (ref_id == changed_item_ref_id) {
 					continue;
+				}
 
 #ifdef BVH_CHECKS
 				// if neither are pairable, they should ignore each other
@@ -457,8 +501,8 @@ private:
 	}
 
 public:
-	void item_get_AABB(BVHHandle p_handle, AABB &r_aabb) {
-		BVH_ABB abb;
+	void item_get_AABB(BVHHandle p_handle, Bounds &r_aabb) {
+		BVHABB_CLASS abb;
 		tree.item_get_ABB(p_handle, abb);
 		abb.to(r_aabb);
 	}
@@ -488,14 +532,32 @@ private:
 
 		// callback
 		if (unpair_callback) {
-
 			unpair_callback(pair_callback_userdata, p_from, exa.userdata, exa.subindex, p_to, exb.userdata, exb.subindex, ud_from);
 		}
 	}
 
+	void *_recheck_pair(BVHHandle p_from, BVHHandle p_to, void *p_pair_data) {
+		tree._handle_sort(p_from, p_to);
+
+		typename BVHTREE_CLASS::ItemExtra &exa = tree._extra[p_from.id()];
+		typename BVHTREE_CLASS::ItemExtra &exb = tree._extra[p_to.id()];
+
+		// if the userdata is the same, no collisions should occur
+		if ((exa.userdata == exb.userdata) && exa.userdata) {
+			return p_pair_data;
+		}
+
+		// callback
+		if (check_pair_callback) {
+			return check_pair_callback(check_pair_callback_userdata, p_from, exa.userdata, exa.subindex, p_to, exb.userdata, exb.subindex, p_pair_data);
+		}
+
+		return p_pair_data;
+	}
+
 	// returns true if unpair
-	bool _find_leavers_process_pair(typename BVHTREE_CLASS::ItemPairs &p_pairs_from, const BVH_ABB &p_abb_from, BVHHandle p_from, BVHHandle p_to, bool p_full_check) {
-		BVH_ABB abb_to;
+	bool _find_leavers_process_pair(typename BVHTREE_CLASS::ItemPairs &p_pairs_from, const BVHABB_CLASS &p_abb_from, BVHHandle p_from, BVHHandle p_to, bool p_full_check) {
+		BVHABB_CLASS abb_to;
 		tree.item_get_ABB(p_to, abb_to);
 
 		// do they overlap?
@@ -526,10 +588,10 @@ private:
 
 	// find all the existing paired aabbs that are no longer
 	// paired, and send callbacks
-	void _find_leavers(BVHHandle p_handle, const BVH_ABB &expanded_abb_from, bool p_full_check) {
+	void _find_leavers(BVHHandle p_handle, const BVHABB_CLASS &expanded_abb_from, bool p_full_check) {
 		typename BVHTREE_CLASS::ItemPairs &p_from = tree._pairs[p_handle.id()];
 
-		BVH_ABB abb_from = expanded_abb_from;
+		BVHABB_CLASS abb_from = expanded_abb_from;
 
 		// remove from pairing list for every partner
 		for (unsigned int n = 0; n < p_from.extended_pairs.size(); n++) {
@@ -563,11 +625,13 @@ private:
 		// does this pair exist already?
 		// or only check the one with lower number of pairs for greater speed
 		if (p_from.num_pairs <= p_to.num_pairs) {
-			if (p_from.contains_pair_to(p_hb))
+			if (p_from.contains_pair_to(p_hb)) {
 				return;
+			}
 		} else {
-			if (p_to.contains_pair_to(p_ha))
+			if (p_to.contains_pair_to(p_ha)) {
 				return;
+			}
 		}
 
 		// callback
@@ -584,7 +648,6 @@ private:
 
 	// if we remove an item, we need to immediately remove the pairs, to prevent reading the pair after deletion
 	void _remove_pairs_containing(BVHHandle p_handle) {
-
 		typename BVHTREE_CLASS::ItemPairs &p_from = tree._pairs[p_handle.id()];
 
 		// remove from pairing list for every partner.
@@ -592,6 +655,32 @@ private:
 		while (p_from.extended_pairs.size()) {
 			BVHHandle h_to = p_from.extended_pairs[0].handle;
 			_unpair(p_handle, h_to);
+		}
+	}
+
+	// Send pair callbacks again for all existing pairs for the given handle.
+	void _recheck_pairs(BVHHandle p_handle) {
+		typename BVHTREE_CLASS::ItemPairs &from = tree._pairs[p_handle.id()];
+
+		// checking pair for every partner.
+		for (unsigned int n = 0; n < from.extended_pairs.size(); n++) {
+			typename BVHTREE_CLASS::ItemPairs::Link &pair = from.extended_pairs[n];
+			BVHHandle h_to = pair.handle;
+			void *new_pair_data = _recheck_pair(p_handle, h_to, pair.userdata);
+
+			if (new_pair_data != pair.userdata) {
+				pair.userdata = new_pair_data;
+
+				// Update pair data for the second item.
+				typename BVHTREE_CLASS::ItemPairs &to = tree._pairs[h_to.id()];
+				for (unsigned int to_index = 0; to_index < to.extended_pairs.size(); to_index++) {
+					typename BVHTREE_CLASS::ItemPairs::Link &to_pair = to.extended_pairs[to_index];
+					if (to_pair.handle == p_handle) {
+						to_pair.userdata = new_pair_data;
+						break;
+					}
+				}
+			}
 		}
 	}
 
@@ -608,21 +697,21 @@ private:
 		_tick++;
 	}
 
-	void _add_changed_item(BVHHandle p_handle, const AABB &aabb, bool p_check_aabb = true) {
-
+	void _add_changed_item(BVHHandle p_handle, const Bounds &aabb, bool p_check_aabb = true) {
 		// Note that non pairable items can pair with pairable,
 		// so all types must be added to the list
 
 		// aabb check with expanded aabb. This greatly decreases processing
 		// at the cost of slightly less accurate pairing checks
 		// Note this pairing AABB is separate from the AABB in the actual tree
-		AABB &expanded_aabb = tree._pairs[p_handle.id()].expanded_aabb;
+		Bounds &expanded_aabb = tree._pairs[p_handle.id()].expanded_aabb;
 
 		// passing p_check_aabb false disables the optimization which prevents collision checks if
 		// the aabb hasn't changed. This is needed where set_pairable has been called, but the position
 		// has not changed.
-		if (p_check_aabb && expanded_aabb.encloses(aabb))
+		if (p_check_aabb && expanded_aabb.encloses(aabb)) {
 			return;
+		}
 
 		// ALWAYS update the new expanded aabb, even if already changed once
 		// this tick, because it is vital that the AABB is kept up to date
@@ -633,8 +722,9 @@ private:
 		// collision checking them multiple times is not needed, and repeats the same thing
 		uint32_t &last_updated_tick = tree._extra[p_handle.id()].last_updated_tick;
 
-		if (last_updated_tick == _tick)
+		if (last_updated_tick == _tick) {
 			return; // already on changed list
+		}
 
 		// mark as on list
 		last_updated_tick = _tick;
@@ -644,7 +734,6 @@ private:
 	}
 
 	void _remove_changed_item(BVHHandle p_handle) {
-
 		// Care has to be taken here for items that are deleted. The ref ID
 		// could be reused on the same tick for new items. This is probably
 		// rare but should be taken into consideration
@@ -671,8 +760,10 @@ private:
 
 	PairCallback pair_callback;
 	UnpairCallback unpair_callback;
+	CheckPairCallback check_pair_callback;
 	void *pair_callback_userdata;
 	void *unpair_callback_userdata;
+	void *check_pair_callback_userdata;
 
 	BVHTREE_CLASS tree;
 
@@ -681,6 +772,38 @@ private:
 	LocalVector<BVHHandle, uint32_t, true> changed_items;
 	uint32_t _tick;
 
+	class BVHLockedFunction {
+	public:
+		BVHLockedFunction(Mutex *p_mutex, bool p_thread_safe) {
+			// will be compiled out if not set in template
+			if (p_thread_safe) {
+				_mutex = p_mutex;
+
+				if (_mutex->try_lock() != OK) {
+					WARN_PRINT("Info : multithread BVH access detected (benign)");
+					_mutex->lock();
+				}
+
+			} else {
+				_mutex = nullptr;
+			}
+		}
+		~BVHLockedFunction() {
+			// will be compiled out if not set in template
+			if (_mutex) {
+				_mutex->unlock();
+			}
+		}
+
+	private:
+		Mutex *_mutex;
+	};
+
+	Mutex _mutex;
+
+	// local toggle for turning on and off thread safety in project settings
+	bool _thread_safe;
+
 public:
 	BVH_Manager() {
 		_tick = 1; // start from 1 so items with 0 indicate never updated
@@ -688,6 +811,7 @@ public:
 		unpair_callback = nullptr;
 		pair_callback_userdata = nullptr;
 		unpair_callback_userdata = nullptr;
+		_thread_safe = BVH_THREAD_SAFE;
 	}
 };
 

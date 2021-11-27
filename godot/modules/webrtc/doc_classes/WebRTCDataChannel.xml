@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebRTCDataChannel" inherits="PacketPeer" version="3.3">
+<class name="WebRTCDataChannel" inherits="PacketPeer" version="3.4">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -11,6 +11,12 @@
 			<return type="void" />
 			<description>
 				Closes this data channel, notifying the other peer.
+			</description>
+		</method>
+		<method name="get_buffered_amount" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of bytes currently queued to be sent over this channel.
 			</description>
 		</method>
 		<method name="get_id" qualifiers="const">

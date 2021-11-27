@@ -37,11 +37,11 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		const uint8_t *p_color_buffer,
 		const uint32_t color_table_size,
 		const bmp_header_s &p_header) {
-
 	Error err = OK;
 
-	if (p_buffer == NULL)
+	if (p_buffer == nullptr) {
 		err = FAILED;
+	}
 
 	if (err == OK) {
 		size_t index = 0;
@@ -91,11 +91,13 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		// the data width in case of 8/4/1 bit images
 		const uint32_t w = bits_per_pixel >= 24 ? width : width_bytes;
 		const uint8_t *line = p_buffer + (line_width * (height - 1));
+		const uint8_t *end_buffer = p_buffer + p_header.bmp_file_header.bmp_file_size - p_header.bmp_file_header.bmp_file_offset;
 
 		for (uint64_t i = 0; i < height; i++) {
 			const uint8_t *line_ptr = line;
 
 			for (unsigned int j = 0; j < w; j++) {
+				ERR_FAIL_COND_V(line_ptr >= end_buffer, ERR_FILE_CORRUPT);
 				switch (bits_per_pixel) {
 					case 1: {
 						uint8_t color_index = *line_ptr;
@@ -152,9 +154,9 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			line -= line_width;
 		}
 
-		if (p_color_buffer == NULL || color_table_size == 0) { // regular pixels
+		if (p_color_buffer == nullptr || color_table_size == 0) { // regular pixels
 
-			p_image->create(width, height, 0, Image::FORMAT_RGBA8, data);
+			p_image->create(width, height, false, Image::FORMAT_RGBA8, data);
 
 		} else { // data is in indexed format, extend it
 
@@ -192,7 +194,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 				dest += 4;
 			}
-			p_image->create(width, height, 0, Image::FORMAT_RGBA8, extended_data);
+			p_image->create(width, height, false, Image::FORMAT_RGBA8, extended_data);
 		}
 	}
 	return err;
@@ -200,7 +202,6 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 		bool p_force_linear, float p_scale) {
-
 	bmp_header_s bmp_header;
 	Error err = ERR_INVALID_DATA;
 
@@ -247,8 +248,7 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 			}
 			// Don't rely on sizeof(bmp_file_header) as structure padding
 			// adds 2 bytes offset leading to misaligned color table reading
-			uint32_t ct_offset = BITMAP_FILE_HEADER_SIZE +
-								 bmp_header.bmp_info_header.bmp_header_size;
+			uint32_t ct_offset = BITMAP_FILE_HEADER_SIZE + bmp_header.bmp_info_header.bmp_header_size;
 			f->seek(ct_offset);
 
 			uint32_t color_table_size = 0;
@@ -270,8 +270,7 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 
 			f->seek(bmp_header.bmp_file_header.bmp_file_offset);
 
-			uint32_t bmp_buffer_size = (bmp_header.bmp_file_header.bmp_file_size -
-										bmp_header.bmp_file_header.bmp_file_offset);
+			uint32_t bmp_buffer_size = (bmp_header.bmp_file_header.bmp_file_size - bmp_header.bmp_file_header.bmp_file_offset);
 
 			PoolVector<uint8_t> bmp_buffer;
 			err = bmp_buffer.resize(bmp_buffer_size);

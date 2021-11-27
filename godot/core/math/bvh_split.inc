@@ -11,7 +11,7 @@ void _split_inform_references(uint32_t p_node_id) {
 	}
 }
 
-void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, uint16_t *group_b, const BVH_ABB *temp_bounds, const BVH_ABB full_bound) {
+void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, uint16_t *group_b, const BVHABB_CLASS *temp_bounds, const BVHABB_CLASS full_bound) {
 	// special case for low leaf sizes .. should static compile out
 	if (MAX_ITEMS < 4) {
 		uint32_t ind = group_a[0];
@@ -25,14 +25,18 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 		return;
 	}
 
-	Vector3 centre = full_bound.calculate_centre();
-	Vector3 size = full_bound.calculate_size();
+	Point centre = full_bound.calculate_centre();
+	Point size = full_bound.calculate_size();
 
-	int order[3];
+	int order[Point::AXIS_COUNT];
 
 	order[0] = size.min_axis();
-	order[2] = size.max_axis();
-	order[1] = 3 - (order[0] + order[2]);
+	order[Point::AXIS_COUNT - 1] = size.max_axis();
+
+	static_assert(Point::AXIS_COUNT <= 3, "BVH Point::AXIS_COUNT has unexpected size");
+	if (Point::AXIS_COUNT == 3) {
+		order[1] = 3 - (order[0] + order[2]);
+	}
 
 	// simplest case, split on the longest axis
 	int split_axis = order[0];
@@ -54,7 +58,7 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 
 	// detect when split on longest axis failed
 	int min_threshold = MAX_ITEMS / 4;
-	int min_group_size[3];
+	int min_group_size[Point::AXIS_COUNT];
 	min_group_size[0] = MIN(num_a, num_b);
 	if (min_group_size[0] < min_threshold) {
 		// slow but sure .. first move everything back into a
@@ -64,7 +68,7 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 		num_b = 0;
 
 		// now calculate the best split
-		for (int axis = 1; axis < 3; axis++) {
+		for (int axis = 1; axis < Point::AXIS_COUNT; axis++) {
 			split_axis = order[axis];
 			int count = 0;
 
@@ -82,7 +86,7 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 		// best axis
 		int best_axis = 0;
 		int best_min = min_group_size[0];
-		for (int axis = 1; axis < 3; axis++) {
+		for (int axis = 1; axis < Point::AXIS_COUNT; axis++) {
 			if (min_group_size[axis] > best_min) {
 				best_min = min_group_size[axis];
 				best_axis = axis;
@@ -135,16 +139,16 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 	}
 }
 
-void _split_leaf_sort_groups(int &num_a, int &num_b, uint16_t *group_a, uint16_t *group_b, const BVH_ABB *temp_bounds) {
-	BVH_ABB groupb_aabb;
+void _split_leaf_sort_groups(int &num_a, int &num_b, uint16_t *group_a, uint16_t *group_b, const BVHABB_CLASS *temp_bounds) {
+	BVHABB_CLASS groupb_aabb;
 	groupb_aabb.set_to_max_opposite_extents();
 	for (int n = 0; n < num_b; n++) {
 		int which = group_b[n];
 		groupb_aabb.merge(temp_bounds[which]);
 	}
-	BVH_ABB groupb_aabb_new;
+	BVHABB_CLASS groupb_aabb_new;
 
-	BVH_ABB rest_aabb;
+	BVHABB_CLASS rest_aabb;
 
 	float best_size = FLT_MAX;
 	int best_candidate = -1;
@@ -156,8 +160,9 @@ void _split_leaf_sort_groups(int &num_a, int &num_b, uint16_t *group_a, uint16_t
 
 		// find aabb of all the rest
 		for (int rest = 0; rest < num_a; rest++) {
-			if (rest == check)
+			if (rest == check) {
 				continue;
+			}
 
 			int which = group_a[rest];
 			rest_aabb.merge(temp_bounds[which]);
@@ -181,12 +186,12 @@ void _split_leaf_sort_groups(int &num_a, int &num_b, uint16_t *group_a, uint16_t
 	group_a[best_candidate] = group_a[num_a];
 }
 
-uint32_t split_leaf(uint32_t p_node_id, const BVH_ABB &p_added_item_aabb) {
+uint32_t split_leaf(uint32_t p_node_id, const BVHABB_CLASS &p_added_item_aabb) {
 	return split_leaf_complex(p_node_id, p_added_item_aabb);
 }
 
 // aabb is the new inserted node
-uint32_t split_leaf_complex(uint32_t p_node_id, const BVH_ABB &p_added_item_aabb) {
+uint32_t split_leaf_complex(uint32_t p_node_id, const BVHABB_CLASS &p_added_item_aabb) {
 	VERBOSE_PRINT("split_leaf");
 
 	// note the tnode before and AFTER splitting may be a different address
@@ -231,7 +236,7 @@ uint32_t split_leaf_complex(uint32_t p_node_id, const BVH_ABB &p_added_item_aabb
 	uint16_t *group_b = (uint16_t *)alloca(sizeof(uint16_t) * max_children);
 
 	// we are copying the ABBs. This is ugly, but we need one extra for the inserted item...
-	BVH_ABB *temp_bounds = (BVH_ABB *)alloca(sizeof(BVH_ABB) * max_children);
+	BVHABB_CLASS *temp_bounds = (BVHABB_CLASS *)alloca(sizeof(BVHABB_CLASS) * max_children);
 
 	int num_a = max_children;
 	int num_b = 0;
@@ -257,7 +262,7 @@ uint32_t split_leaf_complex(uint32_t p_node_id, const BVH_ABB &p_added_item_aabb
 		int which = group_a[n];
 
 		if (which != wildcard) {
-			const BVH_ABB &source_item_aabb = orig_leaf.get_aabb(which);
+			const BVHABB_CLASS &source_item_aabb = orig_leaf.get_aabb(which);
 			uint32_t source_item_ref_id = orig_leaf.get_item_ref_id(which);
 			//const Item &source_item = orig_leaf.get_item(which);
 			_node_add_item(tnode.children[0], source_item_ref_id, source_item_aabb);
@@ -269,7 +274,7 @@ uint32_t split_leaf_complex(uint32_t p_node_id, const BVH_ABB &p_added_item_aabb
 		int which = group_b[n];
 
 		if (which != wildcard) {
-			const BVH_ABB &source_item_aabb = orig_leaf.get_aabb(which);
+			const BVHABB_CLASS &source_item_aabb = orig_leaf.get_aabb(which);
 			uint32_t source_item_ref_id = orig_leaf.get_item_ref_id(which);
 			//const Item &source_item = orig_leaf.get_item(which);
 			_node_add_item(tnode.children[1], source_item_ref_id, source_item_aabb);

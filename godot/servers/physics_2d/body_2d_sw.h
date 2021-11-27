@@ -38,7 +38,6 @@
 class Constraint2DSW;
 
 class Body2DSW : public CollisionObject2DSW {
-
 	Physics2DServer::BodyMode mode;
 
 	Vector2 biased_linear_velocity;
@@ -87,7 +86,6 @@ class Body2DSW : public CollisionObject2DSW {
 	Map<Constraint2DSW *, int> constraint_map;
 
 	struct AreaCMP {
-
 		Area2DSW *area;
 		int refCount;
 		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
@@ -102,7 +100,6 @@ class Body2DSW : public CollisionObject2DSW {
 	Vector<AreaCMP> areas;
 
 	struct Contact {
-
 		Vector2 local_pos;
 		Vector2 local_normal;
 		real_t depth;
@@ -118,7 +115,6 @@ class Body2DSW : public CollisionObject2DSW {
 	int contact_count;
 
 	struct ForceIntegrationCallback {
-
 		ObjectID id;
 		StringName method;
 		Variant callback_udata;
@@ -150,15 +146,18 @@ public:
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
 			areas.write[index].refCount -= 1;
-			if (areas[index].refCount < 1)
+			if (areas[index].refCount < 1) {
 				areas.remove(index);
+			}
 		}
 	}
 
 	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) {
 		contacts.resize(p_size);
 		contact_count = 0;
-		if (mode == Physics2DServer::BODY_MODE_KINEMATIC && p_size) set_active(true);
+		if (mode == Physics2DServer::BODY_MODE_KINEMATIC && p_size) {
+			set_active(true);
+		}
 	}
 
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
@@ -205,7 +204,6 @@ public:
 	}
 
 	_FORCE_INLINE_ void apply_impulse(const Vector2 &p_offset, const Vector2 &p_impulse) {
-
 		linear_velocity += p_impulse * _inv_mass;
 		angular_velocity += _inv_inertia * p_offset.cross(p_impulse);
 	}
@@ -215,7 +213,6 @@ public:
 	}
 
 	_FORCE_INLINE_ void apply_bias_impulse(const Vector2 &p_pos, const Vector2 &p_j) {
-
 		biased_linear_velocity += p_j * _inv_mass;
 		biased_angular_velocity += _inv_inertia * p_pos.cross(p_j);
 	}
@@ -224,8 +221,9 @@ public:
 	_FORCE_INLINE_ bool is_active() const { return active; }
 
 	_FORCE_INLINE_ void wakeup() {
-		if ((!get_space()) || mode == Physics2DServer::BODY_MODE_STATIC || mode == Physics2DServer::BODY_MODE_KINEMATIC)
+		if ((!get_space()) || mode == Physics2DServer::BODY_MODE_STATIC || mode == Physics2DServer::BODY_MODE_KINEMATIC) {
 			return;
+		}
 		set_active(true);
 	}
 
@@ -249,7 +247,6 @@ public:
 	}
 
 	_FORCE_INLINE_ void add_force(const Vector2 &p_offset, const Vector2 &p_force) {
-
 		applied_force += p_force;
 		applied_torque += p_offset.cross(p_force);
 	}
@@ -276,8 +273,11 @@ public:
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);
 
-	_FORCE_INLINE_ Vector2 get_motion() const {
+	_FORCE_INLINE_ Vector2 get_velocity_in_local_point(const Vector2 &rel_pos) const {
+		return linear_velocity + Vector2(-angular_velocity * rel_pos.y, angular_velocity * rel_pos.x);
+	}
 
+	_FORCE_INLINE_ Vector2 get_motion() const {
 		if (mode > Physics2DServer::BODY_MODE_KINEMATIC) {
 			return new_transform.get_origin() - get_transform().get_origin();
 		} else if (mode == Physics2DServer::BODY_MODE_KINEMATIC) {
@@ -298,11 +298,11 @@ public:
 //add contact inline
 
 void Body2DSW::add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_normal, real_t p_depth, int p_local_shape, const Vector2 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector2 &p_collider_velocity_at_pos) {
-
 	int c_max = contacts.size();
 
-	if (c_max == 0)
+	if (c_max == 0) {
 		return;
+	}
 
 	Contact *c = contacts.ptrw();
 
@@ -311,11 +311,9 @@ void Body2DSW::add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_no
 	if (contact_count < c_max) {
 		idx = contact_count++;
 	} else {
-
 		real_t least_depth = 1e20;
 		int least_deep = -1;
 		for (int i = 0; i < c_max; i++) {
-
 			if (i == 0 || c[i].depth < least_depth) {
 				least_deep = i;
 				least_depth = c[i].depth;
@@ -323,11 +321,11 @@ void Body2DSW::add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_no
 		}
 
 		if (least_deep >= 0 && least_depth < p_depth) {
-
 			idx = least_deep;
 		}
-		if (idx == -1)
+		if (idx == -1) {
 			return; //none least deepe than this
+		}
 	}
 
 	c[idx].local_pos = p_local_pos;
@@ -342,7 +340,6 @@ void Body2DSW::add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_no
 }
 
 class Physics2DDirectBodyStateSW : public Physics2DDirectBodyState {
-
 	GDCLASS(Physics2DDirectBodyStateSW, Physics2DDirectBodyState);
 
 public:
@@ -357,21 +354,47 @@ public:
 	virtual real_t get_inverse_mass() const { return body->get_inv_mass(); } // get the mass
 	virtual real_t get_inverse_inertia() const { return body->get_inv_inertia(); } // get density of this body space
 
-	virtual void set_linear_velocity(const Vector2 &p_velocity) { body->set_linear_velocity(p_velocity); }
+	virtual void set_linear_velocity(const Vector2 &p_velocity) {
+		body->wakeup();
+		body->set_linear_velocity(p_velocity);
+	}
 	virtual Vector2 get_linear_velocity() const { return body->get_linear_velocity(); }
 
-	virtual void set_angular_velocity(real_t p_velocity) { body->set_angular_velocity(p_velocity); }
+	virtual void set_angular_velocity(real_t p_velocity) {
+		body->wakeup();
+		body->set_angular_velocity(p_velocity);
+	}
 	virtual real_t get_angular_velocity() const { return body->get_angular_velocity(); }
 
 	virtual void set_transform(const Transform2D &p_transform) { body->set_state(Physics2DServer::BODY_STATE_TRANSFORM, p_transform); }
 	virtual Transform2D get_transform() const { return body->get_transform(); }
 
-	virtual void add_central_force(const Vector2 &p_force) { body->add_central_force(p_force); }
-	virtual void add_force(const Vector2 &p_offset, const Vector2 &p_force) { body->add_force(p_offset, p_force); }
-	virtual void add_torque(real_t p_torque) { body->add_torque(p_torque); }
-	virtual void apply_central_impulse(const Vector2 &p_impulse) { body->apply_central_impulse(p_impulse); }
-	virtual void apply_impulse(const Vector2 &p_offset, const Vector2 &p_force) { body->apply_impulse(p_offset, p_force); }
-	virtual void apply_torque_impulse(real_t p_torque) { body->apply_torque_impulse(p_torque); }
+	virtual Vector2 get_velocity_at_local_position(const Vector2 &p_position) const { return body->get_velocity_in_local_point(p_position); }
+
+	virtual void add_central_force(const Vector2 &p_force) {
+		body->wakeup();
+		body->add_central_force(p_force);
+	}
+	virtual void add_force(const Vector2 &p_offset, const Vector2 &p_force) {
+		body->wakeup();
+		body->add_force(p_offset, p_force);
+	}
+	virtual void add_torque(real_t p_torque) {
+		body->wakeup();
+		body->add_torque(p_torque);
+	}
+	virtual void apply_central_impulse(const Vector2 &p_impulse) {
+		body->wakeup();
+		body->apply_central_impulse(p_impulse);
+	}
+	virtual void apply_impulse(const Vector2 &p_offset, const Vector2 &p_force) {
+		body->wakeup();
+		body->apply_impulse(p_offset, p_force);
+	}
+	virtual void apply_torque_impulse(real_t p_torque) {
+		body->wakeup();
+		body->apply_torque_impulse(p_torque);
+	}
 
 	virtual void set_sleep_state(bool p_enable) { body->set_active(!p_enable); }
 	virtual bool is_sleeping() const { return !body->is_active(); }
@@ -419,7 +442,7 @@ public:
 	virtual real_t get_step() const { return step; }
 	Physics2DDirectBodyStateSW() {
 		singleton = this;
-		body = NULL;
+		body = nullptr;
 	}
 };
 

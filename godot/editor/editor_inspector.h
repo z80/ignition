@@ -40,14 +40,15 @@ class UndoRedo;
 class EditorPropertyRevert {
 public:
 	static bool may_node_be_in_instance(Node *p_node);
-	static bool get_instanced_node_original_property(Node *p_node, const StringName &p_prop, Variant &value);
+	static bool get_instanced_node_original_property(Node *p_node, const StringName &p_prop, Variant &value, bool p_check_class_default = true);
 	static bool is_node_property_different(Node *p_node, const Variant &p_current, const Variant &p_orig);
+	static bool is_property_value_different(const Variant &p_a, const Variant &p_b);
+	static Variant get_property_revert_value(Object *p_object, const StringName &p_property);
 
 	static bool can_property_revert(Object *p_object, const StringName &p_property);
 };
 
 class EditorProperty : public Container {
-
 	GDCLASS(EditorProperty, Container);
 
 private:
@@ -261,7 +262,7 @@ class EditorInspector : public ScrollContainer {
 	VBoxContainer *main_vbox;
 
 	//map use to cache the instanced editors
-	Map<StringName, List<EditorProperty *> > editor_property_map;
+	Map<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
 	Set<StringName> pending;
 
@@ -291,7 +292,7 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
-	Map<StringName, Map<StringName, String> > descr_cache;
+	Map<StringName, Map<StringName, String>> descr_cache;
 	Map<StringName, String> class_descr_cache;
 	Set<StringName> restart_request_props;
 

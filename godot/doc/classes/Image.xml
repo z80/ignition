@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Image" inherits="Resource" version="3.3">
+<class name="Image" inherits="Resource" version="3.4">
 	<brief_description>
 		Image datatype.
 	</brief_description>
@@ -9,7 +9,7 @@
 		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images may fail to import.
 	</description>
 	<tutorials>
-		<link title="Importing images">https://docs.godotengine.org/en/3.3/getting_started/workflow/assets/importing_images.html</link>
+		<link title="Importing images">https://docs.godotengine.org/en/3.4/getting_started/workflow/assets/importing_images.html</link>
 	</tutorials>
 	<methods>
 		<method name="blend_rect">
@@ -259,7 +259,7 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Loads an image from file [code]path[/code]. See [url=https://docs.godotengine.org/en/3.3/getting_started/workflow/assets/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
+				Loads an image from file [code]path[/code]. See [url=https://docs.godotengine.org/en/3.4/getting_started/workflow/assets/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
 				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external images at run-time, such as images located at the [code]user://[/code] directory, and may not work in exported projects.
 				See also [ImageTexture] description for usage examples.
 			</description>
@@ -434,6 +434,7 @@
 		</constant>
 		<constant name="FORMAT_R8" value="2" enum="Format">
 			OpenGL texture format [code]RED[/code] with a single component and a bitdepth of 8.
+			[b]Note:[/b] When using the GLES2 backend, this uses the alpha channel instead of the red channel for storage.
 		</constant>
 		<constant name="FORMAT_RG8" value="3" enum="Format">
 			OpenGL texture format [code]RG[/code] with two components and a bitdepth of 8 for each.

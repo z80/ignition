@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ARVRServer" inherits="Object" version="3.3">
+<class name="ARVRServer" inherits="Object" version="3.4">
 	<brief_description>
 		Server for AR and VR features.
 	</brief_description>
@@ -7,9 +7,23 @@
 		The AR/VR server is the heart of our Advanced and Virtual Reality solution and handles all the processing.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.3/tutorials/vr/index.html</link>
+		<link>https://docs.godotengine.org/en/3.4/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
+		<method name="add_interface">
+			<return type="void" />
+			<argument index="0" name="interface" type="ARVRInterface" />
+			<description>
+				Registers an [ARVRInterface] object.
+			</description>
+		</method>
+		<method name="add_tracker">
+			<return type="void" />
+			<argument index="0" name="tracker" type="ARVRPositionalTracker" />
+			<description>
+				Registers a new [ARVRPositionalTracker] that tracks a spatial location in real space.
+			</description>
+		</method>
 		<method name="center_on_hmd">
 			<return type="void" />
 			<argument index="0" name="rotation_mode" type="int" enum="ARVRServer.RotationMode" />
@@ -21,6 +35,13 @@
 				This method allows you to center your tracker on the location of the HMD. It will take the current location of the HMD and use that to adjust all your tracking data; in essence, realigning the real world to your player's current position in the game world.
 				For this method to produce usable results, tracking information must be available. This often takes a few frames after starting your game.
 				You should call this method after a few seconds have passed. For instance, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, or when implementing a teleport mechanism.
+			</description>
+		</method>
+		<method name="clear_primary_interface_if">
+			<return type="void" />
+			<argument index="0" name="interface" type="ARVRInterface" />
+			<description>
+				Clears our current primary interface if it is set to the provided interface.
 			</description>
 		</method>
 		<method name="find_interface" qualifiers="const">
@@ -90,6 +111,20 @@
 			<return type="int" />
 			<description>
 				Returns the number of trackers currently registered.
+			</description>
+		</method>
+		<method name="remove_interface">
+			<return type="void" />
+			<argument index="0" name="interface" type="ARVRInterface" />
+			<description>
+				Removes this interface.
+			</description>
+		</method>
+		<method name="remove_tracker">
+			<return type="void" />
+			<argument index="0" name="tracker" type="ARVRPositionalTracker" />
+			<description>
+				Removes this positional tracker.
 			</description>
 		</method>
 	</methods>

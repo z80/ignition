@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef PLATFORM_THREAD_OVERRIDE // See details in thread.h
+
 #include "thread.h"
 
 #include "core/script_language.h"
@@ -134,3 +136,4 @@ Thread::ID Thread::get_caller_id() {
 	}
 }
 #endif
+#endif // PLATFORM_THREAD_OVERRIDE

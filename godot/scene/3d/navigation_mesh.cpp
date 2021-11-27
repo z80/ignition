@@ -39,14 +39,15 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	clear_polygons();
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
-
-		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue;
+		}
 		Array arr = p_mesh->surface_get_arrays(i);
 		PoolVector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
 		PoolVector<int> iarr = arr[Mesh::ARRAY_INDEX];
-		if (varr.size() == 0 || iarr.size() == 0)
+		if (varr.size() == 0 || iarr.size() == 0) {
 			continue;
+		}
 
 		int from = vertices.size();
 		vertices.append_array(varr);
@@ -65,57 +66,56 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	}
 }
 
-void NavigationMesh::set_sample_partition_type(int p_value) {
-	ERR_FAIL_COND(p_value >= SAMPLE_PARTITION_MAX);
-	partition_type = static_cast<SamplePartitionType>(p_value);
+void NavigationMesh::set_sample_partition_type(SamplePartitionType p_value) {
+	ERR_FAIL_INDEX(p_value, SAMPLE_PARTITION_MAX);
+	partition_type = p_value;
 }
 
-int NavigationMesh::get_sample_partition_type() const {
-	return static_cast<int>(partition_type);
+NavigationMesh::SamplePartitionType NavigationMesh::get_sample_partition_type() const {
+	return partition_type;
 }
 
-void NavigationMesh::set_parsed_geometry_type(int p_value) {
-	ERR_FAIL_COND(p_value >= PARSED_GEOMETRY_MAX);
-	parsed_geometry_type = static_cast<ParsedGeometryType>(p_value);
+void NavigationMesh::set_parsed_geometry_type(ParsedGeometryType p_value) {
+	ERR_FAIL_INDEX(p_value, PARSED_GEOMETRY_MAX);
+	parsed_geometry_type = p_value;
 	_change_notify();
 }
 
-int NavigationMesh::get_parsed_geometry_type() const {
+NavigationMesh::ParsedGeometryType NavigationMesh::get_parsed_geometry_type() const {
 	return parsed_geometry_type;
 }
 
 void NavigationMesh::set_collision_mask(uint32_t p_mask) {
-
 	collision_mask = p_mask;
 }
 
 uint32_t NavigationMesh::get_collision_mask() const {
-
 	return collision_mask;
 }
 
 void NavigationMesh::set_collision_mask_bit(int p_bit, bool p_value) {
-
+	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
 	uint32_t mask = get_collision_mask();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_mask(mask);
 }
 
 bool NavigationMesh::get_collision_mask_bit(int p_bit) const {
-
+	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
 	return get_collision_mask() & (1 << p_bit);
 }
 
-void NavigationMesh::set_source_geometry_mode(int p_geometry_mode) {
+void NavigationMesh::set_source_geometry_mode(SourceGeometryMode p_geometry_mode) {
 	ERR_FAIL_INDEX(p_geometry_mode, SOURCE_GEOMETRY_MAX);
-	source_geometry_mode = static_cast<SourceGeometryMode>(p_geometry_mode);
+	source_geometry_mode = p_geometry_mode;
 	_change_notify();
 }
 
-int NavigationMesh::get_source_geometry_mode() const {
+NavigationMesh::SourceGeometryMode NavigationMesh::get_source_geometry_mode() const {
 	return source_geometry_mode;
 }
 
@@ -128,6 +128,7 @@ StringName NavigationMesh::get_source_group_name() const {
 }
 
 void NavigationMesh::set_cell_size(float p_value) {
+	ERR_FAIL_COND(p_value <= 0);
 	cell_size = p_value;
 }
 
@@ -136,6 +137,7 @@ float NavigationMesh::get_cell_size() const {
 }
 
 void NavigationMesh::set_cell_height(float p_value) {
+	ERR_FAIL_COND(p_value <= 0);
 	cell_height = p_value;
 }
 
@@ -144,6 +146,7 @@ float NavigationMesh::get_cell_height() const {
 }
 
 void NavigationMesh::set_agent_height(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	agent_height = p_value;
 }
 
@@ -152,6 +155,7 @@ float NavigationMesh::get_agent_height() const {
 }
 
 void NavigationMesh::set_agent_radius(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	agent_radius = p_value;
 }
 
@@ -160,6 +164,7 @@ float NavigationMesh::get_agent_radius() {
 }
 
 void NavigationMesh::set_agent_max_climb(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	agent_max_climb = p_value;
 }
 
@@ -168,6 +173,7 @@ float NavigationMesh::get_agent_max_climb() const {
 }
 
 void NavigationMesh::set_agent_max_slope(float p_value) {
+	ERR_FAIL_COND(p_value < 0 || p_value > 90);
 	agent_max_slope = p_value;
 }
 
@@ -176,6 +182,7 @@ float NavigationMesh::get_agent_max_slope() const {
 }
 
 void NavigationMesh::set_region_min_size(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	region_min_size = p_value;
 }
 
@@ -184,6 +191,7 @@ float NavigationMesh::get_region_min_size() const {
 }
 
 void NavigationMesh::set_region_merge_size(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	region_merge_size = p_value;
 }
 
@@ -192,6 +200,7 @@ float NavigationMesh::get_region_merge_size() const {
 }
 
 void NavigationMesh::set_edge_max_length(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	edge_max_length = p_value;
 }
 
@@ -200,6 +209,7 @@ float NavigationMesh::get_edge_max_length() const {
 }
 
 void NavigationMesh::set_edge_max_error(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	edge_max_error = p_value;
 }
 
@@ -208,6 +218,7 @@ float NavigationMesh::get_edge_max_error() const {
 }
 
 void NavigationMesh::set_verts_per_poly(float p_value) {
+	ERR_FAIL_COND(p_value < 3);
 	verts_per_poly = p_value;
 }
 
@@ -216,6 +227,7 @@ float NavigationMesh::get_verts_per_poly() const {
 }
 
 void NavigationMesh::set_detail_sample_distance(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	detail_sample_distance = p_value;
 }
 
@@ -224,6 +236,7 @@ float NavigationMesh::get_detail_sample_distance() const {
 }
 
 void NavigationMesh::set_detail_sample_max_error(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
 	detail_sample_max_error = p_value;
 }
 
@@ -256,18 +269,15 @@ bool NavigationMesh::get_filter_walkable_low_height_spans() const {
 }
 
 void NavigationMesh::set_vertices(const PoolVector<Vector3> &p_vertices) {
-
 	vertices = p_vertices;
 	_change_notify();
 }
 
 PoolVector<Vector3> NavigationMesh::get_vertices() const {
-
 	return vertices;
 }
 
 void NavigationMesh::_set_polygons(const Array &p_array) {
-
 	polygons.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
 		polygons.write[i].indices = p_array[i];
@@ -276,7 +286,6 @@ void NavigationMesh::_set_polygons(const Array &p_array) {
 }
 
 Array NavigationMesh::_get_polygons() const {
-
 	Array ret;
 	ret.resize(polygons.size());
 	for (int i = 0; i < ret.size(); i++) {
@@ -287,30 +296,26 @@ Array NavigationMesh::_get_polygons() const {
 }
 
 void NavigationMesh::add_polygon(const Vector<int> &p_polygon) {
-
 	Polygon polygon;
 	polygon.indices = p_polygon;
 	polygons.push_back(polygon);
 	_change_notify();
 }
 int NavigationMesh::get_polygon_count() const {
-
 	return polygons.size();
 }
 Vector<int> NavigationMesh::get_polygon(int p_idx) {
-
 	ERR_FAIL_INDEX_V(p_idx, polygons.size(), Vector<int>());
 	return polygons[p_idx].indices;
 }
 void NavigationMesh::clear_polygons() {
-
 	polygons.clear();
 }
 
 Ref<Mesh> NavigationMesh::get_debug_mesh() {
-
-	if (debug_mesh.is_valid())
+	if (debug_mesh.is_valid()) {
 		return debug_mesh;
+	}
 
 	PoolVector<Vector3> vertices = get_vertices();
 	PoolVector<Vector3>::Read vr = vertices.read();
@@ -337,26 +342,23 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 		int tidx = 0;
 
 		for (List<Face3>::Element *E = faces.front(); E; E = E->next()) {
-
 			const Face3 &f = E->get();
 
 			for (int j = 0; j < 3; j++) {
-
 				tw[tidx++] = f.vertex[j];
 				_EdgeKey ek;
 				ek.from = f.vertex[j].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
 				ek.to = f.vertex[(j + 1) % 3].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
-				if (ek.from < ek.to)
+				if (ek.from < ek.to) {
 					SWAP(ek.from, ek.to);
+				}
 
 				Map<_EdgeKey, bool>::Element *F = edge_map.find(ek);
 
 				if (F) {
-
 					F->get() = false;
 
 				} else {
-
 					edge_map[ek] = true;
 				}
 			}
@@ -365,7 +367,6 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 	List<Vector3> lines;
 
 	for (Map<_EdgeKey, bool>::Element *E = edge_map.front(); E; E = E->next()) {
-
 		if (E->get()) {
 			lines.push_back(E->key().from);
 			lines.push_back(E->key().to);
@@ -473,14 +474,6 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_polygons", "polygons"), &NavigationMesh::_set_polygons);
 	ClassDB::bind_method(D_METHOD("_get_polygons"), &NavigationMesh::_get_polygons);
 
-	BIND_CONSTANT(SAMPLE_PARTITION_WATERSHED);
-	BIND_CONSTANT(SAMPLE_PARTITION_MONOTONE);
-	BIND_CONSTANT(SAMPLE_PARTITION_LAYERS);
-
-	BIND_CONSTANT(PARSED_GEOMETRY_MESH_INSTANCES);
-	BIND_CONSTANT(PARSED_GEOMETRY_STATIC_COLLIDERS);
-	BIND_CONSTANT(PARSED_GEOMETRY_BOTH);
-
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 
@@ -507,6 +500,21 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter/low_hanging_obstacles"), "set_filter_low_hanging_obstacles", "get_filter_low_hanging_obstacles");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter/ledge_spans"), "set_filter_ledge_spans", "get_filter_ledge_spans");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter/filter_walkable_low_height_spans"), "set_filter_walkable_low_height_spans", "get_filter_walkable_low_height_spans");
+
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_WATERSHED);
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_MONOTONE);
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_LAYERS);
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_MAX);
+
+	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_MESH_INSTANCES);
+	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_STATIC_COLLIDERS);
+	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_BOTH);
+	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_MAX);
+
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_NAVMESH_CHILDREN);
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN);
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_GROUPS_EXPLICIT);
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_MAX);
 }
 
 void NavigationMesh::_validate_property(PropertyInfo &property) const {
@@ -551,26 +559,23 @@ NavigationMesh::NavigationMesh() {
 }
 
 void NavigationMeshInstance::set_enabled(bool p_enabled) {
-
-	if (enabled == p_enabled)
+	if (enabled == p_enabled) {
 		return;
+	}
 	enabled = p_enabled;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (!enabled) {
-
 		if (nav_id != -1) {
 			navigation->navmesh_remove(nav_id);
 			nav_id = -1;
 		}
 	} else {
-
 		if (navigation) {
-
 			if (navmesh.is_valid()) {
-
 				nav_id = navigation->navmesh_add(navmesh, get_relative_transform(navigation), this);
 			}
 		}
@@ -589,25 +594,19 @@ void NavigationMeshInstance::set_enabled(bool p_enabled) {
 }
 
 bool NavigationMeshInstance::is_enabled() const {
-
 	return enabled;
 }
 
 /////////////////////////////
 
 void NavigationMeshInstance::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-
 			Spatial *c = this;
 			while (c) {
-
 				navigation = Object::cast_to<Navigation>(c);
 				if (navigation) {
-
 					if (enabled && navmesh.is_valid()) {
-
 						nav_id = navigation->navmesh_add(navmesh, get_relative_transform(navigation), this);
 					}
 					break;
@@ -617,7 +616,6 @@ void NavigationMeshInstance::_notification(int p_what) {
 			}
 
 			if (navmesh.is_valid() && get_tree()->is_debugging_navigation_hint()) {
-
 				MeshInstance *dm = memnew(MeshInstance);
 				dm->set_mesh(navmesh->get_debug_mesh());
 				if (is_enabled()) {
@@ -631,16 +629,13 @@ void NavigationMeshInstance::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-
 			if (navigation && nav_id != -1) {
 				navigation->navmesh_set_transform(nav_id, get_relative_transform(navigation));
 			}
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			if (navigation) {
-
 				if (nav_id != -1) {
 					navigation->navmesh_remove(nav_id);
 					nav_id = -1;
@@ -649,17 +644,17 @@ void NavigationMeshInstance::_notification(int p_what) {
 
 			if (debug_view) {
 				debug_view->queue_delete();
-				debug_view = NULL;
+				debug_view = nullptr;
 			}
-			navigation = NULL;
+			navigation = nullptr;
 		} break;
 	}
 }
 
 void NavigationMeshInstance::set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh) {
-
-	if (p_navmesh == navmesh)
+	if (p_navmesh == navmesh) {
 		return;
+	}
 
 	if (navigation && nav_id != -1) {
 		navigation->navmesh_remove(nav_id);
@@ -689,14 +684,13 @@ void NavigationMeshInstance::set_navigation_mesh(const Ref<NavigationMesh> &p_na
 }
 
 Ref<NavigationMesh> NavigationMeshInstance::get_navigation_mesh() const {
-
 	return navmesh;
 }
 
 String NavigationMeshInstance::get_configuration_warning() const {
-
-	if (!is_visible_in_tree() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree()) {
 		return String();
+	}
 
 	String warning = Spatial::get_configuration_warning();
 	if (!navmesh.is_valid()) {
@@ -708,9 +702,9 @@ String NavigationMeshInstance::get_configuration_warning() const {
 	}
 	const Spatial *c = this;
 	while (c) {
-
-		if (Object::cast_to<Navigation>(c))
+		if (Object::cast_to<Navigation>(c)) {
 			return warning;
+		}
 
 		c = Object::cast_to<Spatial>(c->get_parent());
 	}
@@ -723,7 +717,6 @@ String NavigationMeshInstance::get_configuration_warning() const {
 }
 
 void NavigationMeshInstance::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_navigation_mesh", "navmesh"), &NavigationMeshInstance::set_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("get_navigation_mesh"), &NavigationMeshInstance::get_navigation_mesh);
 
@@ -740,15 +733,15 @@ void NavigationMeshInstance::_changed_callback(Object *p_changed, const char *p_
 }
 
 NavigationMeshInstance::NavigationMeshInstance() {
-
-	debug_view = NULL;
-	navigation = NULL;
+	debug_view = nullptr;
+	navigation = nullptr;
 	nav_id = -1;
 	enabled = true;
 	set_notify_transform(true);
 }
 
 NavigationMeshInstance::~NavigationMeshInstance() {
-	if (navmesh.is_valid())
+	if (navmesh.is_valid()) {
 		navmesh->remove_change_receptor(this);
+	}
 }

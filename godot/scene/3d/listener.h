@@ -35,7 +35,6 @@
 #include "scene/main/viewport.h"
 
 class Listener : public Spatial {
-
 	GDCLASS(Listener, Spatial);
 
 private:
@@ -43,9 +42,6 @@ private:
 	bool current;
 
 	RID scenario_id;
-
-	virtual bool _can_gizmo_scale() const;
-	virtual RES _get_gizmo_geometry() const;
 
 	friend class Viewport;
 	void _update_audio_listener_state();

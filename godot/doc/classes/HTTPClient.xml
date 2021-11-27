@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPClient" inherits="Reference" version="3.3">
+<class name="HTTPClient" inherits="Reference" version="3.4">
 	<brief_description>
 		Low-level hyper-text transfer protocol client.
 	</brief_description>
@@ -13,8 +13,8 @@
 		[b]Warning:[/b] SSL/TLS certificate revocation and certificate pinning are currently not supported. Revoked certificates are accepted as long as they are otherwise valid. If this is a concern, you may want to use automatically managed certificates with a short validity period.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.3/tutorials/networking/http_client_class.html</link>
-		<link>https://docs.godotengine.org/en/3.3/tutorials/networking/ssl_certificates.html</link>
+		<link>https://docs.godotengine.org/en/3.4/tutorials/networking/http_client_class.html</link>
+		<link>https://docs.godotengine.org/en/3.4/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="close">

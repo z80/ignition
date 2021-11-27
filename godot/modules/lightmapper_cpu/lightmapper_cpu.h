@@ -62,6 +62,7 @@ class LightmapperCPU : public Lightmapper {
 		float attenuation;
 		float spot_angle;
 		float spot_attenuation;
+		float size;
 		bool bake_direct;
 	};
 
@@ -81,8 +82,10 @@ class LightmapperCPU : public Lightmapper {
 	struct BakeParams {
 		float bias;
 		int bounces;
+		float bounce_indirect_energy;
 		int samples;
 		bool use_denoiser = true;
+		bool use_physical_light_attenuation = false;
 		Ref<Image> environment_panorama;
 		Basis environment_transform;
 	};
@@ -121,15 +124,15 @@ class LightmapperCPU : public Lightmapper {
 
 	BakeParams parameters;
 
-	LocalVector<Ref<Image> > bake_textures;
-	Map<RID, Ref<Image> > albedo_textures;
-	Map<RID, Ref<Image> > emission_textures;
+	LocalVector<Ref<Image>> bake_textures;
+	Map<RID, Ref<Image>> albedo_textures;
+	Map<RID, Ref<Image>> emission_textures;
 
 	LocalVector<MeshInstance> mesh_instances;
 	LocalVector<Light> lights;
 
-	LocalVector<LocalVector<LightmapTexel> > scene_lightmaps;
-	LocalVector<LocalVector<int> > scene_lightmap_indices;
+	LocalVector<LocalVector<LightmapTexel>> scene_lightmaps;
+	LocalVector<LocalVector<int>> scene_lightmap_indices;
 	Set<int> no_shadow_meshes;
 
 	std::atomic<uint32_t> thread_progress;
@@ -144,10 +147,12 @@ class LightmapperCPU : public Lightmapper {
 	bool _parallel_run(int p_count, const String &p_description, BakeThreadFunc p_thread_func, void *p_userdata, BakeStepFunc p_substep_func = nullptr);
 
 	void _generate_buffer(uint32_t p_idx, void *p_unused);
-	Ref<Image> _init_bake_texture(const MeshData::TextureDef &p_texture_def, const Map<RID, Ref<Image> > &p_tex_cache, Image::Format p_default_format);
+	Ref<Image> _init_bake_texture(const MeshData::TextureDef &p_texture_def, const Map<RID, Ref<Image>> &p_tex_cache, Image::Format p_default_format);
 	Color _bilinear_sample(const Ref<Image> &p_img, const Vector2 &p_uv, bool p_clamp_x = false, bool p_clamp_y = false);
 	Vector3 _fix_sample_position(const Vector3 &p_position, const Vector3 &p_texel_center, const Vector3 &p_normal, const Vector3 &p_tangent, const Vector3 &p_bitangent, const Vector2 &p_texel_size);
 	void _plot_triangle(const Vector2 *p_vertices, const Vector3 *p_positions, const Vector3 *p_normals, const Vector2 *p_uvs, const Ref<Image> &p_albedo_texture, const Ref<Image> &p_emission_texture, Vector2i p_size, LocalVector<LightmapTexel> &r_texels, LocalVector<int> &r_lightmap_indices);
+
+	float _get_omni_attenuation(float distance, float inv_range, float decay) const;
 
 	void _compute_direct_light(uint32_t p_idx, void *r_lightmap);
 
@@ -165,10 +170,10 @@ public:
 	virtual void add_albedo_texture(Ref<Texture> p_texture);
 	virtual void add_emission_texture(Ref<Texture> p_texture);
 	virtual void add_mesh(const MeshData &p_mesh, Vector2i p_size);
-	virtual void add_directional_light(bool p_bake_direct, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier);
-	virtual void add_omni_light(bool p_bake_direct, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation);
-	virtual void add_spot_light(bool p_bake_direct, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation);
-	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, bool p_generate_atlas, int p_max_texture_size, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr, BakeStepFunc p_substep_function = nullptr);
+	virtual void add_directional_light(bool p_bake_direct, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_size);
+	virtual void add_omni_light(bool p_bake_direct, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_size);
+	virtual void add_spot_light(bool p_bake_direct, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size);
+	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bounce_energy, float p_bias, bool p_generate_atlas, int p_max_texture_size, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr, BakeStepFunc p_substep_function = nullptr);
 
 	int get_bake_texture_count() const;
 	Ref<Image> get_bake_texture(int p_index) const;

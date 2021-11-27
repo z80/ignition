@@ -47,7 +47,7 @@ class GDNative;
 class GDNativeLibrary : public Resource {
 	GDCLASS(GDNativeLibrary, Resource);
 
-	static Map<String, Vector<Ref<GDNative> > > loaded_libraries;
+	static Map<String, Vector<Ref<GDNative>>> loaded_libraries;
 
 	friend class GDNativeLibraryResourceLoader;
 	friend class GDNative;
@@ -76,7 +76,7 @@ public:
 
 	// things that change per-platform
 	// so there are no setters for this
-	_FORCE_INLINE_ String get_current_library_path() const {
+	_FORCE_INLINE_ const String &get_current_library_path() const {
 		return current_library_path;
 	}
 	_FORCE_INLINE_ Vector<String> get_current_dependencies() const {
