@@ -1,15 +1,16 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://physics/ui/navigation/navball.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/ui/navigation/assets/level_indicator.png" type="Texture" id=2]
 [ext_resource path="res://physics/ui/navigation/font_digital.tres" type="DynamicFont" id=3]
 [ext_resource path="res://physics/ui/navigation/navigation.gd" type="Script" id=4]
+[ext_resource path="res://physics/ui/map_mode/map_mode.tscn" type="PackedScene" id=5]
 
-[sub_resource type="Environment" id=1]
+[sub_resource type="Environment" id=2]
 ambient_light_color = Color( 1, 1, 1, 1 )
 
-[sub_resource type="World" id=2]
-environment = SubResource( 1 )
+[sub_resource type="World" id=1]
+environment = SubResource( 2 )
 
 [node name="Navigation" type="Control"]
 anchor_left = 1.0
@@ -24,6 +25,16 @@ script = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="MapMode" parent="." instance=ExtResource( 5 )]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -259.333
+margin_top = -116.454
+margin_right = -210.333
+margin_bottom = -97.4543
 
 [node name="ViewportContainer" type="ViewportContainer" parent="."]
 anchor_left = 1.0
@@ -40,7 +51,7 @@ __meta__ = {
 
 [node name="Viewport" type="Viewport" parent="ViewportContainer"]
 size = Vector2( 192, 192 )
-world = SubResource( 2 )
+world = SubResource( 1 )
 transparent_bg = true
 handle_input_locally = false
 render_target_update_mode = 3
@@ -58,10 +69,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -184.253
-margin_top = -242.467
-margin_right = -73.2534
-margin_bottom = -218.467
+margin_left = -133.284
+margin_top = -241.523
+margin_right = -22.2842
+margin_bottom = -217.523
 custom_fonts/font = ExtResource( 3 )
 text = "mode: surface"
 __meta__ = {
@@ -73,10 +84,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -184.131
-margin_top = -216.858
-margin_right = -73.1309
-margin_bottom = -192.858
+margin_left = -133.162
+margin_top = -215.914
+margin_right = -22.1617
+margin_bottom = -191.914
 custom_fonts/font = ExtResource( 3 )
 text = "Speed: 0 m/s"
 __meta__ = {
@@ -149,10 +160,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -191.2
-margin_top = -284.816
-margin_right = -126.2
-margin_bottom = -260.816
+margin_left = -265.766
+margin_top = -208.362
+margin_right = -200.766
+margin_bottom = -184.362
 hint_tooltip = "Stability Augmentation System (S.A.S.)
 When vehicle rotation is not under control actively zeroes angular velocity. "
 focus_mode = 0
@@ -167,10 +178,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -191.2
-margin_top = -266.703
-margin_right = -84.2002
-margin_bottom = -242.703
+margin_left = -265.766
+margin_top = -190.249
+margin_right = -158.766
+margin_bottom = -166.249
 hint_tooltip = "Visualize orbits"
 focus_mode = 0
 enabled_focus_mode = 0
@@ -178,6 +189,7 @@ text = "Show orbits"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
 [connection signal="pressed" from="ModeOrbit" to="." method="_on_ModeOrbit_pressed"]
 [connection signal="pressed" from="ModeSurface" to="." method="_on_ModeSurface_pressed"]

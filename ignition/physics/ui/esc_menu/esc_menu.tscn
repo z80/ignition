@@ -1,0 +1,62 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/ui/esc_menu/esc_menu.gd" type="Script" id=1]
+
+[node name="EscMenu" type="Panel"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -83.0
+margin_top = -113.0
+margin_right = 91.0
+margin_bottom = 124.0
+grow_horizontal = 2
+grow_vertical = 2
+rect_clip_content = true
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Save" type="Button" parent="."]
+margin_left = 18.5135
+margin_top = 17.7525
+margin_right = 156.514
+margin_bottom = 45.7525
+text = "Save game"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="QuickSave" type="Button" parent="."]
+margin_left = 18.1986
+margin_top = 53.0303
+margin_right = 156.199
+margin_bottom = 81.0303
+text = "Quick save"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Load" type="Button" parent="."]
+margin_left = 18.959
+margin_top = 124.307
+margin_right = 156.959
+margin_bottom = 152.307
+text = "Load game"
+
+[node name="Quit" type="Button" parent="."]
+margin_left = 19.1425
+margin_top = 193.085
+margin_right = 157.143
+margin_bottom = 221.085
+text = "Quit game"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="pressed" from="Save" to="." method="_on_Save_pressed"]
+[connection signal="pressed" from="QuickSave" to="." method="_on_QuickSave_pressed"]
+[connection signal="pressed" from="Load" to="." method="_on_Load_pressed"]
+[connection signal="pressed" from="Quit" to="." method="_on_Quit_pressed"]

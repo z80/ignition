@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/ui/edge_buttons/edge_buttons.gd" type="Script" id=1]
+
+[node name="Control" type="Control"]
+anchor_right = 1.0
+margin_right = 1.0
+margin_bottom = 32.0
+mouse_filter = 2
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CtrlGroups" type="Button" parent="."]
+margin_left = 106.526
+margin_top = 5.41895
+margin_right = 201.526
+margin_bottom = 30.4189
+hint_tooltip = "Toggle control groups visibility."
+toggle_mode = true
+pressed = true
+text = "Ctrl groups"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="NavBall" type="Button" parent="."]
+margin_left = 209.454
+margin_top = 4.94166
+margin_right = 304.454
+margin_bottom = 29.9417
+hint_tooltip = "Toggle nav. ball visibility on/off."
+toggle_mode = true
+pressed = true
+text = "Nav ball"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TrajParams" type="Button" parent="."]
+margin_left = 3.65462
+margin_top = 4.63229
+margin_right = 99.6546
+margin_bottom = 29.6323
+hint_tooltip = "Trajectory parameters on/off."
+toggle_mode = true
+pressed = true
+text = "Traj params"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="pressed" from="CtrlGroups" to="." method="_on_CtrlGroups_pressed"]
+[connection signal="pressed" from="NavBall" to="." method="_on_NavBall_pressed"]
+[connection signal="pressed" from="TrajParams" to="." method="_on_TrajParams_pressed"]
