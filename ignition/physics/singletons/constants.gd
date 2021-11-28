@@ -53,7 +53,7 @@ const NODE_SIZE_LARGE: float  = 1.0
 
 
 # File structure.
-const SAVE_DIR_NAME: String = "./save_files"
+const SAVE_DIR_NAME: String = "res://save_files"
 
 
 

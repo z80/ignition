@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://physics/ui/esc_menu/save_menu.gd" type="Script" id=1]
+[ext_resource path="res://physics/ui/esc_menu/load_menu.gd" type="Script" id=1]
 
 [node name="Control" type="Panel"]
 anchor_left = 0.5
@@ -16,24 +16,12 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="FileName" type="LineEdit" parent="."]
-margin_left = 8.0
+[node name="Load" type="Button" parent="."]
+margin_left = 9.0
 margin_top = 8.0
-margin_right = 176.0
+margin_right = 232.0
 margin_bottom = 32.0
-caret_blink = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Save" type="Button" parent="."]
-anchor_left = 1.0
-anchor_right = 1.0
-margin_left = -120.0
-margin_top = 8.0
-margin_right = -72.0
-margin_bottom = 32.0
-text = "Save"
+text = "Load"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -60,8 +48,10 @@ __meta__ = {
 }
 
 [node name="List" type="ItemList" parent="Scroll"]
+anchor_right = 1.0
+anchor_bottom = 1.0
 focus_mode = 0
 same_column_width = true
 
-[connection signal="pressed" from="Save" to="." method="_on_Save_pressed"]
+[connection signal="pressed" from="Load" to="." method="_on_Load_pressed"]
 [connection signal="pressed" from="Cancel" to="." method="_on_Cancel_pressed"]

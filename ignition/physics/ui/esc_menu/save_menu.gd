@@ -38,7 +38,7 @@ func _get_file_list_node():
 
 func _default_file_name():
 	var d: Dictionary = OS.get_datetime()
-	var name: String = "./{year}_{month}_{day}_{hour}_{minute}_{second}".format( d )
+	var name: String = "{year}_{month}_{day}_{hour}_{minute}_{second}".format( d )
 	return name
 
 
@@ -46,13 +46,14 @@ func _default_file_name():
 func _on_Save_pressed():
 	var file_node: LineEdit = _get_file_name_node()
 	var file_name: String = file_node.text
+	var full_name: String = SaveLoad.full_file_path( file_name )
 	
 	var S = load( "res://physics/singletons/save_load.gd" )
 	var root: Node = BodyCreator.root_node
 	var data: Dictionary = S.serialize_all( root )
 	#var stri: String = JSON.print( data )
 	var file = File.new()
-	file.open( file_name, File.WRITE )
+	file.open( full_name, File.WRITE )
 	file.store_var( data, true )
 	file.close()
 	

@@ -8,16 +8,15 @@ func push( NewMenu: PackedScene = null ):
 	# Make sure that "self" presents in the stack.
 	if menu_stack.empty():
 		menu_stack.push_back( self )
-		return
 	
 	var top: Control = menu_stack.back()
 	if top != self:
 		menu_stack.push_back( self )
 	
-	# Hide "self"
+	# Hide "self" menu.
 	self.visible = false
 	
-	# Create new menu and hide current one.
+	# Create new menu.
 	var new_menu: Control = NewMenu.instance()
 	var p: Control = self.get_parent()
 	menu_stack.push_back( new_menu )
@@ -45,7 +44,7 @@ func return_back():
 func is_current():
 	if menu_stack.empty():
 		menu_stack.push_back( self )
-		return
+		return true
 	
 	var top: Control = menu_stack.back()
 	var ret: bool = (top == self)
@@ -70,6 +69,11 @@ func on_user_input( event: InputEvent ):
 		if event.scancode == KEY_ESCAPE:
 			var current: bool = is_current()
 			if current:
+				# Prevent "esc" press to be processed by the menu 
+				# which is going to be activated.
+				accept_event()
 				pop()
 
-
+func timeout():
+	print( "inside timeout" )
+	pop()

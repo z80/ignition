@@ -4,12 +4,9 @@ extends MenuBase
 # By defaut
 var _time_scale_save: int = PhysicsManager.TimeScale.X_1
 
-var _menu_stack: Array = []
-
-
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	_menu_stack = []
+	pass
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -27,7 +24,8 @@ func _on_QuickSave_pressed():
 
 
 func _on_Load_pressed():
-	pass # Replace with function body.
+	var LoadMenu: PackedScene = preload( "res://physics/ui/esc_menu/load_menu.tscn" )
+	self.push( LoadMenu )
 
 
 func _on_Quit_pressed():
@@ -43,17 +41,16 @@ func on_user_input( event: InputEvent ):
 		if key_pressed:
 			return
 		if event.scancode == KEY_ESCAPE:
-			if _menu_stack.empty():
-				_menu_stack.push_back( self )
-			
-			var top: Control = _menu_stack.back()
-			if top == self:
-				var v: bool = self.visible
-				if not v:
+			var v: bool = self.visible
+			var current: bool = is_current()
+			if current:
+				if v:
+					PhysicsManager.set_time_scale( _time_scale_save )
+					
+				else:
 					_time_scale_save = PhysicsManager.get_time_scale()
 					PhysicsManager.set_time_scale_0()
 				
-				else:
-					PhysicsManager.set_time_scale( _time_scale_save )
+				self.visible = not v
 
 

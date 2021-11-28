@@ -19,7 +19,14 @@ static func saved_files():
 static func ensure_save_folder_exists( dir: Directory ):
 	var exists: bool = dir.dir_exists( Constants.SAVE_DIR_NAME )
 	if not exists:
-		dir.make_dir( Constants.SAVE_DIR_NAME )
+		var err: int = dir.make_dir( Constants.SAVE_DIR_NAME )
+		print( "save folder creation error code: ", err )
+
+
+
+static func full_file_path( fname: String ):
+	var ret: String = Constants.SAVE_DIR_NAME + "/" + fname
+	return ret
 
 
 
