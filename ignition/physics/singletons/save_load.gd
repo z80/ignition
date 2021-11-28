@@ -1,5 +1,26 @@
 
 
+static func saved_files():
+	var dir = Directory.new()
+	ensure_save_folder_exists( dir )
+	dir.change_dir( Constants.SAVE_DIR_NAME )
+	
+	var ret: Array = []
+	dir.list_dir_begin( true, true )
+	var file_name: String = dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir():
+			ret.push_back( file_name )
+		file_name = dir.get_next()
+	
+	return ret
+
+
+static func ensure_save_folder_exists( dir: Directory ):
+	var exists: bool = dir.dir_exists( Constants.SAVE_DIR_NAME )
+	if not exists:
+		dir.make_dir( Constants.SAVE_DIR_NAME )
+
 
 
 static func serialize_all( n: Node ):

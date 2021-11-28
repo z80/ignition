@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/ui/esc_menu/file_item.gd" type="Script" id=1]
+
+[node name="FileItem" type="Label"]
+anchor_left = 0.5
+anchor_top = 0.547
+anchor_right = 0.5
+anchor_bottom = 0.547
+margin_left = -56.0
+margin_top = -8.20004
+margin_right = 56.0
+margin_bottom = 14.8
+text = "File
+"
+valign = 1
+clip_text = true
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
