@@ -93,8 +93,8 @@ func evolve_motion( _dt: float ):
 	if motion == null:
 		return
 	# SE3 is assigned internally.
-	if _dt > 0.1:
-		_dt = 0.1
+#	if _dt > 0.1:
+#		_dt = 0.1
 	motion.process_rf( _dt, self )
 	
 #	var n: String = self.name
