@@ -382,15 +382,15 @@ func set_time_scale( acc: int ):
 			_time_scale_string    = "paused"
 		TimeScale.X_1_10:
 			_time_scale_physics   = 0.1
-			_time_scale_evolution = 1.0
+			_time_scale_evolution = 0.1
 			_time_scale_string    = "0.1"
 		TimeScale.X_1_4:
 			_time_scale_physics   = 0.25
-			_time_scale_evolution = 1.0
+			_time_scale_evolution = 0.25
 			_time_scale_string    = "0.25"
 		TimeScale.X_1_2:
 			_time_scale_physics   = 0.5
-			_time_scale_evolution = 1.0
+			_time_scale_evolution = 0.5
 			_time_scale_string    = "0.5"
 		TimeScale.X_1:
 			_time_scale_physics   = 1.0
