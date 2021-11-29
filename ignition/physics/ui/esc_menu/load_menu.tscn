@@ -38,20 +38,18 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Scroll" type="ScrollContainer" parent="."]
+[node name="List" type="ItemList" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
 margin_top = 40.0
-margin_right = 304.0
-margin_bottom = 280.0
-scroll_horizontal_enabled = false
+margin_bottom = 40.0
+focus_mode = 0
+select_mode = 1
+allow_reselect = true
+same_column_width = true
 __meta__ = {
 "_edit_use_anchors_": false
 }
-
-[node name="List" type="ItemList" parent="Scroll"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-focus_mode = 0
-same_column_width = true
 
 [connection signal="pressed" from="Load" to="." method="_on_Load_pressed"]
 [connection signal="pressed" from="Cancel" to="." method="_on_Cancel_pressed"]

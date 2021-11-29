@@ -21,7 +21,7 @@ func _fill_files_node():
 	var files: Array = SaveLoad.saved_files()
 	var list: ItemList = _get_file_list_node()
 	for name in files:
-		list.add_item( name, null, false )
+		list.add_item( name, null, true )
 
 
 

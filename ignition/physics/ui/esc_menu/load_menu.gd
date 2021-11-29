@@ -17,13 +17,15 @@ func _fill_files_node():
 	var files: Array = SaveLoad.saved_files()
 	var list: ItemList = _get_file_list_node()
 	for name in files:
-		list.add_item( name, null, false )
+		list.add_item( name, null, true )
+	
+	list.select( 0 )
 
 
 
 
 func _get_file_list_node():
-	var l: ItemList = get_node( "Scroll/List" )
+	var l: ItemList = get_node( "List" )
 	return l
 
 
@@ -32,7 +34,7 @@ func _get_selected_file_name():
 	var l: ItemList = _get_file_list_node()
 	var items: PoolIntArray = l.get_selected_items()
 	if items.size() < 1:
-		return
+		return ""
 	var index: int = items[0]
 	var file_name: String = l.get_item_text( index )
 	var full_name: String = SaveLoad.full_file_path( file_name )
@@ -45,7 +47,10 @@ func _on_Load_pressed():
 	var root: Node = BodyCreator.root_node
 	
 	var file = File.new()
-	file.open( fname, File.READ )
+	var err: int = file.open( fname, File.READ )
+	if err != OK:
+		return
+	
 	var data: Dictionary = file.get_var( true )
 	file.close()
 	
@@ -57,6 +62,9 @@ func _on_Load_pressed():
 func _on_Cancel_pressed():
 	self.pop()
 
+
+func on_user_input( event: InputEvent ):
+	pass
 
 
 
