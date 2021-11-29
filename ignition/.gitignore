@@ -2,4 +2,5 @@ addons/godot-sqlite
 *.sqlite3
 *.db
 bone_*
+.save_files
 
