@@ -16,6 +16,8 @@ func _get_root_ui():
 
 
 func _on_TrajParams_pressed():
+	UiSound.play( "res://physics/singletons/sound/assets/button_click.ogg" )
+
 	var b: Button = get_node( "TrajParams" )
 	var v: bool = b.pressed
 	
@@ -25,6 +27,8 @@ func _on_TrajParams_pressed():
 
 
 func _on_CtrlGroups_pressed():
+	UiSound.play( "res://physics/singletons/sound/assets/button_click.ogg" )
+
 	var b: Button = get_node( "CtrlGroups" )
 	var v: bool = b.pressed
 	
@@ -34,6 +38,8 @@ func _on_CtrlGroups_pressed():
 
 
 func _on_NavBall_pressed():
+	UiSound.play( "res://physics/singletons/sound/assets/button_click.ogg" )
+
 	var b: Button = get_node( "NavBall" )
 	var v: bool = b.pressed
 	
