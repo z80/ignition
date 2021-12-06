@@ -44,6 +44,7 @@ func _default_file_name():
 
 
 func _on_Save_pressed():
+	UiSound.play( Constants.ButtonClick )
 	var file_node: LineEdit = _get_file_name_node()
 	var file_name: String = file_node.text
 	var full_name: String = SaveLoad.full_file_path( file_name )
@@ -61,6 +62,7 @@ func _on_Save_pressed():
 
 
 func _on_Cancel_pressed():
+	UiSound.play( Constants.ButtonClick )
 	self.pop()
 
 

@@ -17,6 +17,8 @@ func _ready():
 func _on_Save_pressed():
 	var SaveMenu: PackedScene = preload( "res://physics/ui/esc_menu/save_menu.tscn" )
 	self.push( SaveMenu )
+	UiSound.play( Constants.ButtonClick )
+
 
 
 func _on_QuickSave_pressed():
@@ -26,11 +28,13 @@ func _on_QuickSave_pressed():
 func _on_Load_pressed():
 	var LoadMenu: PackedScene = preload( "res://physics/ui/esc_menu/load_menu.tscn" )
 	self.push( LoadMenu )
+	UiSound.play( Constants.ButtonClick )
 
 
 func _on_Quit_pressed():
 	var t: SceneTree = get_tree()
 	t.quit()
+	UiSound.play( Constants.ButtonClick )
 
 
 

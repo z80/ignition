@@ -6,11 +6,11 @@
 [ext_resource path="res://physics/ui/navigation/navigation.gd" type="Script" id=4]
 [ext_resource path="res://physics/ui/map_mode/map_mode.tscn" type="PackedScene" id=5]
 
-[sub_resource type="Environment" id=2]
+[sub_resource type="Environment" id=1]
 ambient_light_color = Color( 1, 1, 1, 1 )
 
-[sub_resource type="World" id=1]
-environment = SubResource( 2 )
+[sub_resource type="World" id=2]
+environment = SubResource( 1 )
 
 [node name="Navigation" type="Control"]
 anchor_left = 1.0
@@ -51,7 +51,7 @@ __meta__ = {
 
 [node name="Viewport" type="Viewport" parent="ViewportContainer"]
 size = Vector2( 192, 192 )
-world = SubResource( 1 )
+world = SubResource( 2 )
 transparent_bg = true
 handle_input_locally = false
 render_target_update_mode = 3

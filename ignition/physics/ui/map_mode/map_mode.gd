@@ -13,6 +13,7 @@ func _ready():
 
 
 func _on_Map_pressed():
+	UiSound.play( Constants.ButtonClick )
 	var btn: Button = get_node( "Map" )
 	var pressed: bool = btn.pressed
 	UserInput.gui_control_bool( "ui_map", pressed, pressed, not pressed )
@@ -26,6 +27,7 @@ func _input(event):
 		if not key_pressed:
 			return
 		if event.scancode == KEY_M:
+			UiSound.play( Constants.ButtonClick )
 			var btn: Button = get_node( "Map" )
 			var pressed: bool = btn.pressed
 			pressed = not pressed

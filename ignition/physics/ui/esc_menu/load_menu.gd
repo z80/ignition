@@ -42,6 +42,8 @@ func _get_selected_file_name():
 
 
 func _on_Load_pressed():
+	UiSound.play( Constants.ButtonClick )
+	
 	var fname: String = _get_selected_file_name()
 	
 	var root: Node = BodyCreator.root_node
@@ -60,6 +62,7 @@ func _on_Load_pressed():
 
 
 func _on_Cancel_pressed():
+	UiSound.play( Constants.ButtonClick )
 	self.pop()
 
 

@@ -34,6 +34,7 @@ func _input(event):
 				var gui_input_stri: String = msg[1]
 				UserInput.gui_control_bool( gui_input_stri, pressed, pressed, not pressed )
 				check.pressed = pressed
+				UiSound.play( Constants.ButtonClick )
 
 
 
@@ -44,6 +45,7 @@ func _on_group_pressed():
 		var pressed: bool = check.pressed
 		var gui_input_stri: String = msg[1]
 		UserInput.gui_control_bool( gui_input_stri, pressed, pressed, not pressed )
+		UiSound.play( Constants.ButtonClick )
 
 
 

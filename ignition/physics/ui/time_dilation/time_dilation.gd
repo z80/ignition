@@ -37,22 +37,26 @@ func _input(event):
 
 
 func set_time_scale_0():
+	UiSound.play( Constants.ButtonClick )
 	PhysicsManager.set_time_scale_0()
 	_set_time_scale_text()
 
 
 func set_time_scale_lower():
+	UiSound.play( Constants.ButtonClick )
 	PhysicsManager.decrease_time_scale()
 	_set_time_scale_text()
 
 
 func set_time_scale_1():
+	UiSound.play( Constants.ButtonClick )
 	PhysicsManager.set_time_scale_1()
 
 	_set_time_scale_text()
 
 
 func set_time_scale_higher():
+	UiSound.play( Constants.ButtonClick )
 	PhysicsManager.increase_time_scale()
 	_set_time_scale_text()
 

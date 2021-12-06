@@ -57,3 +57,12 @@ const SAVE_DIR_NAME: String = "res://.save_files"
 
 
 
+
+
+# UI sounds
+const ButtonClick: String = "res://physics/singletons/sound/assets/button_click.ogg"
+
+
+
+
+

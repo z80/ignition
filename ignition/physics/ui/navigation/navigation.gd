@@ -231,18 +231,22 @@ func set_mode_target():
 
 
 func _on_ModeSurface_pressed():
+	UiSound.play( Constants.ButtonClick )
 	set_mode_surface()
 
 
 func _on_ModeOrbit_pressed():
+	UiSound.play( Constants.ButtonClick )
 	set_mode_orbit()
 
 
 func _on_ModeTarget_pressed():
+	UiSound.play( Constants.ButtonClick )
 	set_mode_target()
 
 
 func _on_Sas_pressed():
+	UiSound.play( Constants.ButtonClick )
 	var check = get_node( "Sas" )
 	var down: bool = check.pressed
 	UserInput.gui_control_bool( "gui_sas", true, down, not down )
@@ -254,6 +258,7 @@ func _on_Sas_pressed():
 
 
 func _on_ShowOrbits_pressed():
+	UiSound.play( Constants.ButtonClick )
 	var check = get_node( "ShowOrbits" )
 	var down: bool = check.pressed
 	PhysicsManager.visualize_orbits = down
