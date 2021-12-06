@@ -35,6 +35,3 @@ environment = SubResource( 2 )
 transform = Transform( 10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0 )
 mesh = SubResource( 3 )
 material/0 = ExtResource( 5 )
-
-[node name="Listener" type="Listener" parent="Camera"]
-current = true
