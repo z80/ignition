@@ -51,6 +51,10 @@ var mode: int = PartMode.CONSTRUCTION
 var control_group: int = PartControlGroups.ControlGroup.NONE
 
 
+
+var _sound_source: SoundSource = null
+
+
 # If contains Spatial with prefix "stacking_node" it's position and Y axis direction 
 # define the stacking node. Stackig nodes can be coupled with each other.
 # If it contains Spatial with prefix "surface_node" defines a surface coupling node. 
@@ -505,6 +509,7 @@ func init():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	._ready()
+	_create_sound_source()
 
 
 func on_delete():
@@ -728,6 +733,46 @@ static func create_attachments( part: Part, data: Dictionary ):
 func is_character():
 	var ret: bool = (part_class == PartClass.CHARACTER)
 	return ret
+
+
+
+func _create_sound_source():
+	var s: SoundSource = SoundSource.new()
+	add_child( s )
+	# Make sure that the displacement is Identity.
+	var se3: Se3Ref = Se3Ref.new()
+	s.set_se3( se3 )
+
+
+func _get_sound_source():
+	if _sound_source == null:
+		var qty: int = get_child_count()
+		for i in range(qty):
+			var c: Node = get_child( i )
+			var ss: SoundSource = c as SoundSource
+			if ss != null:
+				_sound_source = ss
+				break
+	
+	return _sound_source
+
+
+
+func play_sound( main: String, start: String, stop: String ):
+	var ss: SoundSource = _get_sound_source()
+	ss.play( main, start, stop )
+
+
+
+func stop_sound( sound: String ):
+	var ss: SoundSource = _get_sound_source()
+	ss.stop( sound )
+
+
+
+func stop_all_sounds():
+	var ss: SoundSource = _get_sound_source()
+	ss.stop_all()
 
 
 

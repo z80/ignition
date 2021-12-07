@@ -204,6 +204,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/ref_frames/ref_frame_res_provider.gd"
 }, {
+"base": "RefFrameNode",
+"class": "SoundSource",
+"language": "GDScript",
+"path": "res://physics/sound_source/sound_source.gd"
+}, {
 "base": "CelestialBody",
 "class": "Sun",
 "language": "GDScript",
@@ -259,6 +264,7 @@ _global_script_class_icons={
 "RefFrame": "",
 "RefFramePhysics": "",
 "RefFrameResourceProvider": "",
+"SoundSource": "",
 "Sun": "",
 "Thruster": "",
 "TileBase": ""
