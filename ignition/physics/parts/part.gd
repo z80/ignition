@@ -759,7 +759,7 @@ func _get_sound_source():
 
 
 func play_sound( main: String, start: String, stop: String ):
-	var ss: SoundSource = _get_sound_source()
+	var ss: SoundSource = _get_sound_source() 
 	ss.play( main, start, stop )
 
 

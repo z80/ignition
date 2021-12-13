@@ -20,6 +20,12 @@ export(float) var thrust_max_vac = 2.0
 export(float) var fuel_consumption_min = 0.2
 export(float) var fuel_consumption_max = 0.5
 
+# Sounds.
+export(String) var sound_start = ""
+export(String) var sound_loop  = ""
+export(String) var sound_stop  = ""
+
+
 var _exhaust_node: ExhaustNode = null
 
 var _ignited: bool = false
@@ -142,15 +148,22 @@ func set_ignited( en: bool ):
 					return
 	
 	
+	if not en and _ignited:
+		stop_sound( sound_loop )
 	
-	_ignited = en
+	var started: bool = (not _ignited) and en and (throttle > 0.0)
+	_ignited = en and (throttle > 0.0)
 	if _exhaust_node != null:
 		var t: float = throttle
 		if not _ignited:
 			t = 0.0
+		
 		_exhaust_node.set_exhaust( t, 1.0 )
 	
 	_setup_thrust()
+	
+	if started:
+		play_sound( sound_loop, sound_start, sound_stop )
 
 
 
@@ -194,10 +207,14 @@ func _process_fuel( _delta: float ):
 func _process_liquid_fuel( _delta: float ):
 	if _liquid_fuel_tank == null:
 		_ignited = false
+		stop_sound( sound_loop )
+		set_throttle( 0.0 )
 		return
 
 	if _liquid_oxidizer_tank == null:
 		_ignited = false
+		stop_sound( sound_loop )
+		set_throttle( 0.0 )
 		return
 	
 	var v: float = throttle * (fuel_consumption_max - fuel_consumption_min) + fuel_consumption_min
@@ -206,6 +223,7 @@ func _process_liquid_fuel( _delta: float ):
 	if fuel_left <= 0.0:
 		_liquid_fuel_tank._fuel_left = 0.0
 		_ignited = false
+		stop_sound( sound_loop )
 		set_throttle( 0.0 )
 	_liquid_fuel_tank._fuel_left = fuel_left
 	_liquid_fuel_tank._mass_changed = true
@@ -214,6 +232,7 @@ func _process_liquid_fuel( _delta: float ):
 	if fuel_left <= 0.0:
 		_liquid_oxidizer_tank._fuel_left = 0.0
 		_ignited = false
+		stop_sound( sound_loop )
 		set_throttle( 0.0 )
 	_liquid_oxidizer_tank._fuel_left = fuel_left
 	_liquid_oxidizer_tank._mass_changed = true
@@ -223,6 +242,8 @@ func _process_liquid_fuel( _delta: float ):
 func _process_solid_fuel( _delta: float ):
 	if _solid_fuel_tank == null:
 		_ignited = false
+		stop_sound( sound_loop )
+		set_throttle( 0.0 )
 		return
 	
 	var v: float = throttle * (fuel_consumption_max - fuel_consumption_min) + fuel_consumption_min
@@ -231,6 +252,8 @@ func _process_solid_fuel( _delta: float ):
 	if fuel_left <= 0.0:
 		_solid_fuel_tank._fuel_left = 0.0
 		_ignited = false
+		stop_sound( sound_loop )
+		set_throttle( 0.0 )
 	_solid_fuel_tank._fuel_left = fuel_left
 	_solid_fuel_tank._mass_changed = true
 
@@ -275,7 +298,7 @@ func _check_solid_fuel_available():
 func _setup_thrust():
 	if _physical != null:
 		var p: float
-		if _ignited:
+		if _ignited and (throttle > 0.0):
 			p = (thrust_max_atm - thrust_min_atm)*throttle + thrust_min_atm
 		else:
 			p = 0.0

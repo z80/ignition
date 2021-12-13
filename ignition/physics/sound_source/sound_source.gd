@@ -22,7 +22,10 @@ func play( main_sound_path: String, start_sound_path: String, stop_sound_path: S
 	var stop_sound: AudioStream  = _get_sound_resource( stop_sound_path )
 	
 	var p: AudioStreamPlayer3D = _get_stream_player()
-	p.stream = main_sound
+	if start_sound != null:
+		p.stream = start_sound
+	else:
+		p.stream = main_sound
 	p.play()
 	
 	var data: Array = [ main_sound, start_sound, stop_sound ]
@@ -110,6 +113,7 @@ func _get_stream_player():
 	
 	else:
 		var p: AudioStreamPlayer3D = AudioStreamPlayer3D.new()
+		p.attenuation_model = AudioStreamPlayer3D.ATTENUATION_DISABLED
 		var name: String = _get_unique_name()
 		p.name = name
 		add_child( p )

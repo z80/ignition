@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/loop.ogg-4cd164a93d45843ae0dfc3f819a172b7.oggstr"
+
+[deps]
+
+source_file="res://physics/parts/thrusters/thruster_01/assets/loop.ogg"
+dest_files=[ "res://.import/loop.ogg-4cd164a93d45843ae0dfc3f819a172b7.oggstr" ]
+
+[params]
+
+loop=true
+loop_offset=0
