@@ -36,6 +36,7 @@ margin_right = -5.37842
 margin_bottom = 317.344
 
 [node name="UiSaveLoad" parent="." instance=ExtResource( 4 )]
+visible = false
 anchor_left = 0.182
 anchor_top = 1.0
 anchor_right = 0.182
