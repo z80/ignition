@@ -10,6 +10,9 @@ var _user_input: Dictionary = {}
 var _w_normalized: Vector3 = Vector3.ZERO
 var _torque: Vector3       = Vector3.ZERO
 
+var _control_applied: bool = false
+export(String) var sound: String = ""
+
 
 func init():
 	.init()
@@ -44,8 +47,8 @@ func apply_control( dt: float ):
 	var u: bool   = _user_input.has( "ui_u" )
 	var o: bool   = _user_input.has( "ui_o" )
 	var sas: bool = _user_input.has( "gui_sas" )
-
-	var control_applied: bool = false
+	
+	var apply_ctrl: bool = false
 	if i:
 		w += Vector3.LEFT
 	if k:
@@ -61,9 +64,16 @@ func apply_control( dt: float ):
 	
 	if w.length_squared() > 0.0:
 		w = w.normalized()
-		control_applied = true
+		apply_ctrl = true
 	
-	if (not sas) and (not control_applied):
+	if apply_ctrl and (not _control_applied):
+		play_sound( sound )
+	elif (not apply_ctrl) and _control_applied:
+		stop_sound( sound )
+	
+	_control_applied = apply_ctrl
+	
+	if (not sas) and (not _control_applied):
 		return
 	
 	_w_normalized = w

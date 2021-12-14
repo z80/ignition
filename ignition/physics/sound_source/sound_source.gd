@@ -48,8 +48,10 @@ func stop( sound_path: String, immediately: bool = false ):
 				_sources.push_back( p )
 			
 			else:
-				p.stream = data[2]
-				p.play()
+				p.stop()
+				_sources.push_back( p )
+				_sounds_played.erase( p )
+
 
 
 

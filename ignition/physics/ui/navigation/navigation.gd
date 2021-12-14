@@ -33,6 +33,9 @@ func _on_Timer_timeout():
 
 
 func _recompute_mode_surface():
+	if not is_instance_valid(PhysicsManager.player_control):
+		return
+	
 	var ctrl: Body = PhysicsManager.player_control as Body
 	if ctrl == null:
 		return

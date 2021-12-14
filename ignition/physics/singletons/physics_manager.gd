@@ -136,6 +136,9 @@ func physics_ref_frames():
 func process_user_input( input: Dictionary ):
 	#print( "user_input: ", input )
 	
+	if not is_instance_valid( player_control ):
+		return
+	
 	var body: Body = player_control as Body
 	if body == null:
 		return
@@ -253,7 +256,9 @@ func update_camera( delta: float ):
 	var celestial_body: Node = ClosestCelestialBody.closest_celestial_body( p_rf )
 	if celestial_body != null:
 		c.set_up_vector( celestial_body )
-		c.apply_atmosphere( celestial_body )
+		var celestial_surface: CelestialSurface = celestial_body as CelestialSurface
+		if CelestialSurface != null:
+			c.apply_atmosphere( celestial_body )
 	
 	# Apply sun.
 	var group: String = Constants.SUN_GROUP_NAME
