@@ -269,6 +269,10 @@ func get_coupled_child_node():
 
 # Couple with other node.
 func couple():
+	# First find all bodies attached directly or indirectly to this body 
+	# and ignore them in search.
+	var direct_bodies: Array = dfs_search( self )
+	direct_bodies = direct_bodies[1]
 	# Get parent ref frame, get all parts in it.
 	var rf: RefFrameNode = get_parent()
 	var parts: Array = []
@@ -276,7 +280,7 @@ func couple():
 	for i in range(qty):
 		var ch: Node = rf.get_child( i )
 		var p: Part = ch as Part
-		if (p != null) and (p != self):
+		if (p != null) and ( not direct_bodies.has(p) ):
 			parts.push_back( p )
 	
 	var parts_qty: int = parts.size()
