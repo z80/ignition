@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://blender_scene_00/scene_00.blend" type="PackedScene" id=1]
+
+[node name="scene_00" instance=ExtResource( 1 )]
