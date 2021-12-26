@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/air_wrench_tightening.ogg-a9351238eb18ad49c2260b1f361519ec.oggstr"
+
+[deps]
+
+source_file="res://physics/bodies/construction/assets/air_wrench_tightening.ogg"
+dest_files=[ "res://.import/air_wrench_tightening.ogg-a9351238eb18ad49c2260b1f361519ec.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

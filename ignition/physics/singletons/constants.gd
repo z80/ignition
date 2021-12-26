@@ -62,7 +62,9 @@ const SAVE_DIR_NAME: String = "res://.save_files"
 # UI sounds
 const ButtonClick: String = "res://physics/singletons/sound/assets/button_click.ogg"
 
-
+# Sounds for coupling/decoupling during construction
+const ConstructionCoupling: String   = "res://physics/bodies/construction/assets/air_wrench_tightening.ogg"
+const ConstructionDecoupling: String = "res://physics/bodies/construction/assets/air_wrench_loosening.ogg"
 
 
 

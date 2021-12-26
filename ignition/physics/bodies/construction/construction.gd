@@ -132,7 +132,9 @@ func activate_grab( body ):
 
 func _on_drag_started( grab: Node ):
 	var target: Part = grab.target
-	target.decouple()
+	var ok: bool = target.decouple()
+	if ok:
+		target.play_sound( Constants.ConstructionDecoupling )
 	set_show_coupling_nodes( true )
 
 
@@ -140,8 +142,13 @@ func _on_drag_finished( grab: Node ):
 	var target: Part = grab.target
 	set_show_coupling_nodes( false )
 	var ok: bool = target.couple()
-	if not ok:
-		target.couple_surface()
+	if ok:
+		target.play_sound( Constants.ConstructionCoupling )
+	
+	else:
+		ok = target.couple_surface()
+		if ok:
+			target.play_sound( Constants.ConstructionCoupling )
 
 
 func finish_editing():
