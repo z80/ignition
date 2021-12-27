@@ -340,6 +340,11 @@ func couple():
 
 
 func couple_surface():
+	# First find all bodies attached directly or indirectly to this body 
+	# and ignore them in search.
+	var direct_bodies: Array = dfs_search( self )
+	direct_bodies = direct_bodies[1]
+	
 	var rf: RefFramePhysics = parent_physics_ref_frame()
 	if rf == null:
 		return false
@@ -386,6 +391,13 @@ func couple_surface():
 		print( own_node_ind, " result: ", ret )
 		var ok: bool = ret[0]
 		if not ok:
+			continue
+		
+		# If intersects with something it is direcrly or indirectly 
+		# already connected with, ignore this result.
+		var octree_mesh: OctreeMeshGd = ret[6]
+		var intersected_part: Part = octree_mesh.get_parent()
+		if direct_bodies.has( intersected_part ):
 			continue
 		
 		var distance: float = ret[1]
