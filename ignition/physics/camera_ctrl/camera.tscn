@@ -33,5 +33,6 @@ environment = SubResource( 2 )
 
 [node name="BackgroundSky" type="MeshInstance" parent="Camera"]
 transform = Transform( 10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0 )
+cast_shadow = 0
 mesh = SubResource( 3 )
 material/0 = ExtResource( 5 )
