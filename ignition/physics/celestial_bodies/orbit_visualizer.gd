@@ -2,7 +2,7 @@ extends ImmediateGeometry
 
 
 export(Color) var color = Color( 1.0, 0.0, 0.0, 1.0 )
-export(Resource) var material
+export(Material) var material
 export(int) var pts_qty = 128
 
 # Need to specify these two in order to draw.
@@ -11,13 +11,14 @@ var motion: CelestialMotionRef = null
 
 
 # Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
+#func _ready():
+#	self.material_override = material
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func _process(delta):
+	self.material_override = material
+
 
 
 func draw():
