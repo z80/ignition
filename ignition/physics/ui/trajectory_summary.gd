@@ -30,7 +30,7 @@ func _on_Timer_timeout():
 func _update_celestial_motion():
 #	return
 	
-	var ctrl: Body = PhysicsManager.player_control as Body
+	var ctrl: Body = PhysicsManager.camera.get_parent() as Body
 	if ctrl == null:
 		_do_show = false
 		return
