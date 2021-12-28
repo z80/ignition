@@ -11,6 +11,8 @@ var target: Node = null
 # Use parent's space or local object's space.
 export(bool) var use_local_space = false
 
+var _buttons: Control = null
+
 # size dimensions.
 export(float) var axis_length = 3.0
 export(float) var origin_dist = 10.0
@@ -68,10 +70,28 @@ func set_path( path ):
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	set_path( target_path )
-	
-	var buttons: Node = get_node( "Buttons" )
-	buttons.connect( "world", self, "_on_world" )
-	buttons.connect( "local", self, "_on_local" )
+	var root: Control = RootScene.get_root_for_gui_popups()
+	var Buttons: PackedScene = load( "res://physics/bodies/construction/manip_grab/buttons.tscn" )
+	_buttons = Buttons.instance()
+	root.add_child( _buttons )
+	_buttons.connect( "world", self, "_on_world" )
+	_buttons.connect( "local", self, "_on_local" )
+
+#	root.visible = true
+#	_buttons.visible = true
+
+
+
+func _exit_tree():
+	var to_be_deleted: bool = is_queued_for_deletion()
+	if to_be_deleted:
+		on_delete()
+
+
+func on_delete():
+	if is_instance_valid( _buttons ):
+		_buttons.queue_free()
+		_buttons = null
 
 
 
