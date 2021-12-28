@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://physics/rf_test.gd" type="Script" id=1]
-[ext_resource path="res://physics/camera_ctrl/camera_ctrl.gd" type="Script" id=3]
+[ext_resource path="res://physics/camera_ctrl/camera.gd" type="Script" id=2]
 [ext_resource path="res://physics/axes_visualization.tscn" type="PackedScene" id=4]
 [ext_resource path="res://physics/landscape/provider.tscn" type="PackedScene" id=5]
 
@@ -14,6 +14,6 @@ script = ExtResource( 1 )
 transform = Transform( 1, 0, 0, 0, 0.897405, 0.441208, 0, -0.441208, 0.897405, 0, 2.33134, 4.60433 )
 near = 0.1
 far = 1000.0
-script = ExtResource( 3 )
+script = ExtResource( 2 )
 
 [node name="AxesVis" parent="." instance=ExtResource( 4 )]

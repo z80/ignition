@@ -255,7 +255,6 @@ func update_camera( delta: float ):
 	var p_rf: RefFrameNode = camera
 	var celestial_body: Node = ClosestCelestialBody.closest_celestial_body( p_rf )
 	if celestial_body != null:
-		c.set_up_vector( celestial_body )
 		var celestial_surface: CelestialSurface = celestial_body as CelestialSurface
 		if CelestialSurface != null:
 			c.apply_atmosphere( celestial_body )

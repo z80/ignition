@@ -44,7 +44,7 @@ var _state = {
 }
 
 
-var current_horizontal: Quat = Quat.IDENTITY
+var current_orientation: Quat = Quat.IDENTITY
 
 var _target: Spatial = null
 
@@ -239,6 +239,8 @@ func _input( event ):
 
 
 func set_up_vector( celestial_body: RefFrameNode ):
+	return
+	
 	var p: RefFrameNode = get_parent()
 	if not is_instance_valid(p):
 		return
@@ -246,7 +248,7 @@ func set_up_vector( celestial_body: RefFrameNode ):
 	var se3: Se3Ref = celestial_body.relative_to( p )
 	var up: Vector3 = -se3.r.normalized()
 	
-	var current_up: Vector3 = current_horizontal.xform( Vector3.UP )
+	var current_up: Vector3 = current_orientation.xform( Vector3.UP )
 	var rot: Vector3 = current_up.cross( up )
 	# Assume a linear approximation.
 	var co2: float = 1.0
@@ -254,8 +256,8 @@ func set_up_vector( celestial_body: RefFrameNode ):
 	var q: Quat = Quat( rot.x, rot.y, rot.z, 1.0)
 	q = q.normalized()
 	
-	current_horizontal = q * current_horizontal
-	current_horizontal = current_horizontal.normalized()
+	current_orientation = q * current_orientation
+	current_orientation = current_orientation.normalized()
 
 
 # It should be called manually
@@ -324,10 +326,8 @@ func _process_fps(_delta):
 	
 	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
 	var t: Transform = Transform.IDENTITY
-	q = current_horizontal * q
-	t.basis = Basis( q )
-	t.origin = _target.global_transform.origin
-	transform = t
+	self.set_q( q )
+	self.set_r( _target.transform.origin )
 	
 	# Zero mouse displacement as this thing is continuously accumulated.
 	_mouse_displacement = Vector2.ZERO
@@ -374,28 +374,48 @@ func _process_tps_azimuth( _delta ):
 	
 	
 	# Player relative to the nearest celestial body.
-	var cb: RefFrameNode = ClosestCelestialBody.closest_celestial_body( self )
-	if not is_instance_valid( cb ):
+	var celestial_body: RefFrameNode = ClosestCelestialBody.closest_celestial_body( player_ctrl )
+	if not is_instance_valid( celestial_body ):
 		return
 	
+	# Adjust current orientation.
+	var se3_rel: Se3Ref = player_ctrl.relative_to( celestial_body )
+	var wanted_up: Vector3 = se3_rel.r.normalized()
+	var actual_up: Vector3  = current_orientation.xform( Vector3.UP )
+	var rot_vector: Vector3 = actual_up.cross( wanted_up ) * 0.5
+	var adj_quat: Quat = Quat( rot_vector.x, rot_vector.y, rot_vector.z, 1.0 )
+	adj_quat = adj_quat.normalized()
+	current_orientation = adj_quat * current_orientation
 	
-	var player_ctrl_rotation: Quat = player_ctrl.q()
-	var inv_player_rotation: Quat = player_ctrl_rotation.inverse()
+	# q_player_relative_to_celestial_body = current_orientation * something_unwanted
+	# something_unwanted = inverse(current_orientation) * q_player_relative_to_celestial_body
+	
+	# q_camera_relative_to_celestial_body = q_player_relative_to_celestial_body * q
+	# We want it to be equal to "current_orientation"
+	# I.e.
+	# q_camera_relative_to_celestial_body = current_orientation
+	# q = inverse(q_player_relative_to_celestial_body) * current_orientation
+	
+	var q_player_relative_to_celestial_body: Quat = se3_rel.q
+	var inv_q_player_relative_to_celestial_body: Quat = q_player_relative_to_celestial_body.inverse()
+	var q_camera_base: Quat = inv_q_player_relative_to_celestial_body * current_orientation
+	
+	
 	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
-	q = current_horizontal * inv_player_rotation * q
+	q = q_camera_base * q
+	self.set_q( q )
+	
+	
 	var v_dist: Vector3 = Vector3( 0.0, 0.0, _state.dist )
 	v_dist = q.xform( v_dist )
 	
-	var t: Transform = Transform.IDENTITY
-	t.basis = Basis( q )
 	var target_origin: Vector3
 	if is_instance_valid(_target):
 		target_origin = _target.transform.origin
 	else:
 		target_origin = Vector3.ZERO
 	
-	t.origin += v_dist + target_origin
-	self.transform = t
+	self.set_r( v_dist + target_origin )
 	
 	# Zero mouse displacement as this thing is continuously accumulated.
 	_mouse_displacement = Vector2.ZERO
@@ -460,7 +480,7 @@ func _process_map_mode( _delta: float ):
 
 
 func _init_basis():
-	current_horizontal = Quat.IDENTITY
+	current_orientation = Quat.IDENTITY
 
 
 

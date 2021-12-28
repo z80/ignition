@@ -182,7 +182,7 @@ _global_script_classes=[ {
 "base": "RefFrameNode",
 "class": "PlayerCamera",
 "language": "GDScript",
-"path": "res://physics/camera_ctrl/camera_ctrl_fixing.gd"
+"path": "res://physics/camera_ctrl/camera.gd"
 }, {
 "base": "Part",
 "class": "ReactionControlWheels",
