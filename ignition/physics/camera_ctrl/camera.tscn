@@ -12,6 +12,8 @@ panorama = ExtResource( 4 )
 background_mode = 2
 background_sky = SubResource( 1 )
 background_energy = 7.01
+ambient_light_energy = 0.3
+ambient_light_sky_contribution = 0.3
 
 [sub_resource type="SphereMesh" id=3]
 flip_faces = true
@@ -28,7 +30,6 @@ far = 1000.0
 
 [node name="Atmosphere" parent="Camera" instance=ExtResource( 1 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
-visible = false
 cast_shadow = 0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="Camera"]
