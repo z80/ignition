@@ -22,6 +22,10 @@ var _ctrl_enabled: bool = false
 var _mouse_displacement: Vector2 = Vector2.ZERO
 var _zoom_displacement: int = 0
 
+
+var _sun_light: OmniLight = null
+
+
 export(float) var sensitivity = 0.01 setget _set_sensitivity
 export(float) var sensitivity_dist = 0.2
 export(float) var map_distance_multiplier = 100.0
@@ -543,6 +547,13 @@ func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 	var se3: Se3Ref = sun.relative_to( self )
 	var dist: float = se3.r.length()
 	var light_dir: Vector3 = se3.r.normalized()
+	
+	# Place light to the right place
+	var light: OmniLight = _get_sun_light()
+	var light_r: Vector3 = se3.r #.normalized() * 20.0
+	light_r = PhysicsManager.distance_scaler.scale_v( light_r )
+	light.transform.origin = light_r
+	
 	# Determine sun angular radius.
 	var sz: float = sun.radius_km / dist * 1000.0
 	
@@ -576,6 +587,17 @@ func _process_sky():
 	t.basis = t.basis.scaled( Vector3( far, far, far ) )
 	
 	bg.transform = t
+
+
+
+func _get_sun_light():
+	if _sun_light == null:
+		_sun_light = get_node( "SunLight" )
+#		if _sun_light != null:
+#			_sun_light.omni_attenuation = 0.0
+#			_sun_light.omni_range       = 100.0
+	
+	return _sun_light
 
 
 func root_most_body():

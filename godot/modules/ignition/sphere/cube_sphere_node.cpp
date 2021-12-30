@@ -455,7 +455,7 @@ void CubeSphereNode::apply_visual_mesh()
 		// Vertex position and normal are supposed to be relative to point of interest.
 		// They are converted to that ref. frame in scaling methods.
 		const Vector3d at = v.atScaled;
-		const Vector3d n  = v.norm;
+		const Vector3d n  = v.normScaled;
 		const Vector3 at_f( at.x_, at.y_, at.z_ );
 		const Vector3 n_f( n.x_, n.y_, n.z_ );
 		const Vector3 t   = compute_tangent( n_f );
@@ -732,14 +732,13 @@ void CubeSphereNode::_apply_scale_2( RefFrameNode * player_rf, Node * camera_nod
 		if ( s != nullptr )
 		{
 			const Float d = r.Length();
-			const Float z = s->scale( d );
-			r = r * (z / d);
+			r = s->scale( r );
 		}
 		// Convert to player ref. frame.
-		r = (camera_se3.q_ * r) + camera_se3.r_;
+		//r = (camera_se3.q_ * r) + camera_se3.r_;
 		v.atScaled = r;
 		// Rotate normal.
-		//v.norm = center_to_poi.q_ * v.norm;
+		v.normScaled = to_camera_rf.q_ * v.norm;
 	}
 }
 

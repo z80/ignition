@@ -49,6 +49,21 @@ Float DistanceScaler::scale( Float dist ) const
 	return scaled_dist;
 }
 
+Vector3d DistanceScaler::scale( const Vector3d & v ) const
+{
+	const Float d = v.Length();
+	const Float scaled_d = scale( d );
+	if ( d > 0.0 )
+	{
+		const Float rel_d = scaled_d / d;
+		const Vector3d scaled_v = rel_d * v;
+		return scaled_v;
+	}
+
+	return v;
+}
+
+
 }
 
 

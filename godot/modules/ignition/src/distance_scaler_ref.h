@@ -27,6 +27,7 @@ public:
 	real_t get_log_scale() const;
 
 	real_t scale( real_t d ) const;
+	Vector3 scale_v( const Vector3 & v ) const;
 
 public:
 	DistanceScaler scaler;

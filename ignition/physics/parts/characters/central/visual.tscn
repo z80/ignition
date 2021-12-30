@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://physics/bodies/character_simple/assets/Material.material" type="Material" id=1]
 [ext_resource path="res://physics/parts/characters/central/visual.gd" type="Script" id=2]
@@ -537,6 +537,8 @@ blend_point_0/pos = 0.0
 blend_point_1/node = SubResource( 6 )
 blend_point_1/pos = 1.0
 
+[sub_resource type="CapsuleMesh" id=8]
+
 [node name="CharacterCentralVisual" type="Spatial"]
 script = ExtResource( 2 )
 
@@ -714,3 +716,15 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.55732, -0.135631 )
 
 [node name="target_tps" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7566, 0.0344489 )
+
+[node name="OmniLight" type="OmniLight" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.12377, -1.95088 )
+visible = false
+light_energy = 0.807
+omni_range = 4096.0
+omni_attenuation = 3.75717e-05
+
+[node name="MeshInstance" type="MeshInstance" parent="OmniLight"]
+transform = Transform( 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, -0.0179739, -1.07953 )
+mesh = SubResource( 8 )
+material/0 = null

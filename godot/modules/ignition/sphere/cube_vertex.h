@@ -13,7 +13,7 @@ struct CubeVertex
 public:
     Vector3d at, atFlat, atUnit, atScaled;
     Float heightUnit_;
-    Vector3d norm;
+    Vector3d norm, normScaled;
     Color    color;
 
     int  a, b;
