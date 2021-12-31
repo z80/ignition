@@ -240,6 +240,8 @@ func _input( event ):
 	#var change_mode: bool = Input.is_action_just_pressed( "ui_v" )
 	#if change_mode:
 	#	_cycle_mode()
+	
+	print( "mouse displacement: ", _mouse_displacement )
 
 
 func set_up_vector( celestial_body: RefFrameNode ):
@@ -433,7 +435,7 @@ func _process_tps_free( _delta: float ):
 
 
 func _process_map_mode( _delta: float ):
-	var player_ctrl: RefFrameNode = PhysicsManager.player_control
+	var player_ctrl: RefFrameNode = get_parent()
 	
 	if not is_instance_valid( player_ctrl ):
 		return
@@ -539,6 +541,14 @@ func apply_atmosphere( celestial_body: RefFrameNode ):
 
 
 
+func place_light( se3: Se3Ref ):
+	# Place light to the right place
+	var light: OmniLight = _get_sun_light()
+	var light_r: Vector3 = se3.r #.normalized() * 20.0
+	light_r = PhysicsManager.distance_scaler.scale_v( light_r )
+	light.transform.origin = light_r
+
+
 func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 	var sky: MeshInstance = get_node( "Camera/BackgroundSky" ) as MeshInstance
 	if sky == null:
@@ -548,11 +558,7 @@ func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 	var dist: float = se3.r.length()
 	var light_dir: Vector3 = se3.r.normalized()
 	
-	# Place light to the right place
-	var light: OmniLight = _get_sun_light()
-	var light_r: Vector3 = se3.r #.normalized() * 20.0
-	light_r = PhysicsManager.distance_scaler.scale_v( light_r )
-	light.transform.origin = light_r
+	place_light( se3 )
 	
 	# Determine sun angular radius.
 	var sz: float = sun.radius_km / dist * 1000.0

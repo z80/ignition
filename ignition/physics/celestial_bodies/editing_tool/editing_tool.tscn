@@ -2,35 +2,34 @@
 
 [ext_resource path="res://physics/celestial_bodies/celestial_surface.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/celestial_bodies/editing_tool/editing_tool.gd" type="Script" id=2]
-[ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=3]
+[ext_resource path="res://physics/camera_ctrl/camera.tscn" type="PackedScene" id=3]
 
 [sub_resource type="CubeMesh" id=1]
 
-[node name="Node" type="Node"]
+[node name="EditingTool" type="Node"]
 script = ExtResource( 2 )
 
-[node name="Sun" parent="." instance=ExtResource( 1 )]
-rotation_period_hrs = 0.001
-radius_km = 0.01
-height_km = 0.001
-orbital_period_hrs = 0.1
+[node name="SunPosition" type="RefFrameNode" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1e+07 )
+
+[node name="Planet" parent="." instance=ExtResource( 1 )]
+radius_km = 10000.0
+height_km = 100.0
 orbital_eccentricity = 0.5
 height_source_name = "moon"
-detail_size_0 = 0.1
-detail_dist_0 = 1.0
-detail_size_1 = 0.5
-detail_dist_1 = 3.0
-atmosphere_height_km = 0.01
+detail_size_0 = 0.01
+detail_dist_0 = 0.1
+detail_size_1 = 0.05
+detail_dist_1 = 0.3
+detail_size_2 = 0.1
 convert_to_global = true
 apply_scale = false
 
-[node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 13.0221 )
-script = ExtResource( 3 )
-max_speed = Vector3( 5, 5, 5 )
+[node name="Camera" parent="Planet" instance=ExtResource( 3 )]
+map_mode = true
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
 mesh = SubResource( 1 )
 material/0 = null
 
-[editable path="Sun"]
+[editable path="Planet"]

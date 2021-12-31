@@ -2,9 +2,10 @@
 extends Node
 
 
-var _camera: Camera = null
+var _camera: RefFrameNode = null
+var _sun_position: RefFrameNode = null
 
-var _rf: RefFrame = null
+var _rf: RefFrameNode = null
 
 func _init():
 	# Make creator know where to add visual and physical objects.
@@ -12,10 +13,15 @@ func _init():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	_camera = get_node( "Camera" )
-	var sun = get_node( "Sun" )
-	sun.convert_to_global = false
-	sun.apply_scale = false
+	_sun_position = get_node( "SunPosition" )
+	_camera = get_node( "Planet/Camera" )
+	_camera.map_mode = true
+	var atm = _camera.get_node( "Camera/Atmosphere" )
+	atm.visible = false
+
+	#var planet = get_node( "Planet" )
+	#sun.convert_to_global = false
+	#sun.apply_scale = true
 	_rf = RefFrame.new()
 	
 	_rf.change_parent( get_node( "Node" ) )
@@ -36,6 +42,11 @@ func _process(delta):
 	var t: Transform = _camera.transform
 	_rf.set_t( t )
 	
-	var sun = get_node( "Sun" )
-	sun.process( delta, _rf )
-	#sun.process( delta, null )
+	var se3: Se3Ref = _sun_position.relative_to( _camera )
+	
+	var planet = get_node( "Planet" )
+	#planet.process( delta, _rf )
+	planet.process( delta, null )
+	UserInput.gui_control_bool( "ui_map", true, false, false )
+	_camera.place_light( se3 )
+	_camera.process( delta )
