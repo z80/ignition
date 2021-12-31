@@ -48,5 +48,6 @@ directional_shadow_mode = 0
 
 [node name="MeshInstance" type="MeshInstance" parent="SunLight"]
 transform = Transform( 0.1, 0, 0, 0, 0.0771069, -0.0636751, 0, 0.0636751, 0.0771069, -0.787738, 0, -0.338168 )
+visible = false
 mesh = SubResource( 4 )
 material/0 = null
