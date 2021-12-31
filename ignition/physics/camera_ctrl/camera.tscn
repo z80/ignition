@@ -41,11 +41,10 @@ cast_shadow = 0
 mesh = SubResource( 3 )
 material/0 = ExtResource( 5 )
 
-[node name="SunLight" type="OmniLight" parent="."]
+[node name="SunLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.11571, 0, -4 )
 light_color = Color( 0.996078, 1, 0.733333, 1 )
-omni_range = 4096.0
-omni_attenuation = 0.295322
+directional_shadow_mode = 0
 
 [node name="MeshInstance" type="MeshInstance" parent="SunLight"]
 transform = Transform( 0.1, 0, 0, 0, 0.0771069, -0.0636751, 0, 0.0636751, 0.0771069, -0.787738, 0, -0.338168 )

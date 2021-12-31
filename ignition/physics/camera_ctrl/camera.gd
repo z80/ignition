@@ -23,7 +23,7 @@ var _mouse_displacement: Vector2 = Vector2.ZERO
 var _zoom_displacement: int = 0
 
 
-var _sun_light: OmniLight = null
+var _sun_light: DirectionalLight = null
 
 
 export(float) var sensitivity = 0.01 setget _set_sensitivity
@@ -541,12 +541,32 @@ func apply_atmosphere( celestial_body: RefFrameNode ):
 
 
 
-func place_light( se3: Se3Ref ):
+func place_light( sun: RefFrameNode ):
+	var se3: Se3Ref = sun.relative_to( self )
+	#var inv_se3: Se3Ref = se3.inverse()
+	
+	var current_dir: Vector3 = Vector3( 0.0, 0.0, 1.0 )
+	var wanted_dir: Vector3  = se3.r.normalized()
+	var rot: Vector3 = current_dir.cross( wanted_dir )
+	var si: float = rot.length()
+	var co: float = current_dir.dot( wanted_dir )
+	var angle: float = atan2( si, co )
+	var q: Quat
+	if si < 0.001:
+		q = Quat.IDENTITY
+	else:
+		var n: Vector3 = rot / si
+		var a_2: float = angle * 0.5
+		var si_2: float = sin( a_2 )
+		var co_2: float = cos( a_2 )
+		n *= si_2
+		q = Quat( n.x, n.y, n.z, co_2 )
+	
 	# Place light to the right place
-	var light: OmniLight = _get_sun_light()
-	var light_r: Vector3 = se3.r #.normalized() * 20.0
-	light_r = PhysicsManager.distance_scaler.scale_v( light_r )
-	light.transform.origin = light_r
+	var light: DirectionalLight = _get_sun_light()
+	var t: Transform = light.transform
+	t.basis = q
+	light.transform = t
 
 
 func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
@@ -554,12 +574,13 @@ func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 	if sky == null:
 		return
 	# Determine relative position.
-	var se3: Se3Ref = sun.relative_to( self )
+	var se3: Se3Ref = self.relative_to( sun )
+	place_light( sun )
+	
+	se3 = sun.relative_to( self )
 	var dist: float = se3.r.length()
 	var light_dir: Vector3 = se3.r.normalized()
-	
-	place_light( se3 )
-	
+
 	# Determine sun angular radius.
 	var sz: float = sun.radius_km / dist * 1000.0
 	

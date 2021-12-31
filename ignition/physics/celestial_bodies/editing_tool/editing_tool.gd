@@ -48,5 +48,5 @@ func _process(delta):
 	#planet.process( delta, _rf )
 	planet.process( delta, null )
 	UserInput.gui_control_bool( "ui_map", true, false, false )
-	_camera.place_light( se3 )
+	_camera.place_light( _sun_position )
 	_camera.process( delta )

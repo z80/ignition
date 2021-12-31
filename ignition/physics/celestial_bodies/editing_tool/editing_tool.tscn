@@ -10,7 +10,7 @@
 script = ExtResource( 2 )
 
 [node name="SunPosition" type="RefFrameNode" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1e+07 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1e+09 )
 
 [node name="Planet" parent="." instance=ExtResource( 1 )]
 radius_km = 10000.0
@@ -25,10 +25,15 @@ detail_size_2 = 0.1
 convert_to_global = true
 apply_scale = false
 
+[node name="CelestialBody" parent="Planet/Rotation" index="0"]
+apply_scale = false
+convert_to_global = false
+
 [node name="Camera" parent="Planet" instance=ExtResource( 3 )]
 map_mode = true
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
+visible = false
 mesh = SubResource( 1 )
 material/0 = null
 
