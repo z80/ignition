@@ -249,6 +249,7 @@ func _create_orbit_visualizer():
 	orbit_visualizer.ref_frame = self
 	orbit_visualizer.motion    = motion
 	orbit_visualizer.color     = orbit_color
+	_set_show_orbit( false )
 
 
 
