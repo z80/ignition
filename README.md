@@ -1,6 +1,8 @@
 
 # Ignition
 
+![sunset_on_the_moon](docs/images/sunset_on_the_moon.jpg)
+
 A game development inspired by Kerbal Space Program (KSP). Making something is more interesting than just playing a ready to use one, right?
 
 **The game is still under heavy development!** 
@@ -19,8 +21,8 @@ Lbry channel with videos: [https://odysee.com/@ignition](https://odysee.com/@ign
 ## A few boring insight details
 
 1. The game is being developed using Godot game engine.
-2. A few binary modules are designed to allow rendering of very far and vary large objects like planets.
-3. So far there are only a few rocket parts available for construction. And the astronaut 3d model is a very coarse one. I spent not more than 15 minutes on it... 
+2. A few binary modules are designed to allow rendering of very far and very large objects like planets.
+3. So far there are only a few rocket parts available for construction. And the astronaut 3d model is a very coarse one. I spent no more than 15 minutes on it... 
 4. Main development focus at the moment is on implementing every single feature needed to have a fully playable game.
 
 ## Screenshots
