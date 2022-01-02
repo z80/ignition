@@ -62,7 +62,7 @@ func _create_construction():
 	# It is suppsed to be picked up when close enough.
 	var construction: Body = BodyCreator.create( "construction" )
 	
-	var celestial_body: RefFrameNode = get_node( "Sun/Planet" ) as RefFrameNode
+	var celestial_body: RefFrameNode = get_node( "Sun/Home" ) as RefFrameNode
 	var surf: CubeSphereNode = celestial_body.surface_node()
 	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.0, -0.002 ), 1.0 )
 	
@@ -77,7 +77,7 @@ func _create_construction():
 func _create_character( name: String = "MyCharacter", at: Vector3 = Vector3(1.0, 0.0, 0.0), height: float = 1.0 ):
 	var rf = PhysicsManager.create_ref_frame_physics()
 	rf.name = "rf_p for " + name
-	var celestial_body = get_node( "Sun/Planet" ) as RefFrameNode
+	var celestial_body = get_node( "Sun/Home" ) as RefFrameNode
 	var rot = celestial_body.rotation_rf()
 	rf.change_parent( rot )
 	

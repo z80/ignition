@@ -42,12 +42,14 @@
 static func height_source( name: String, radius: float, height: float ):
 	if name == "home":
 		return height_source_home( radius, height )
-	if name == "moon":
+	elif name == "moon":
 		return height_source_moon( radius, height )
-	if name == "01":
+	elif name == "rust":
+		return height_source_rust( radius, height )
+	elif name == "01":
 		return height_source_01( radius, height )
 	
-	return height_source_home( radius, height )
+	return height_source_01( radius, height )
 
 
 
@@ -65,6 +67,15 @@ static func height_source_moon( radius: float, height: float ):
 	hs.set_script( script )
 	hs.init( radius, height )
 	return hs
+
+
+static func height_source_rust( radius: float, height: float ):
+	var hs: HeightSourceGdRef = HeightSourceGdRef.new()
+	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_rust.gd" )
+	hs.set_script( script )
+	hs.init( radius, height )
+	return hs
+
 
 
 static func height_source_01( radius: float, height: float ):
