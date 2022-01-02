@@ -16,12 +16,13 @@ glow_size = 0.3
 
 [node name="Planet" parent="Sun" instance=ExtResource( 1 )]
 rotation_period_hrs = 1.0
-surface_orbital_vel_kms = 0.03
+surface_orbital_vel_kms = 0.1
+radius_km = 1.95
 orbital_period_hrs = 100.0
 detail_dist_0 = 0.1
 detail_dist_1 = 0.4
-atmosphere_height_inner_km = 0.05
-atmosphere_height_outer_km = 0.05
+atmosphere_height_inner_km = 0.5
+atmosphere_height_outer_km = 0.5
 transparency_dist_inner_km = 3.0
 displacement = -0.3
 orbit_color = Color( 0, 0.52549, 1, 1 )

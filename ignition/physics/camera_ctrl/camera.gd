@@ -496,16 +496,15 @@ func _init_basis():
 
 func apply_atmosphere( celestial_body: RefFrameNode ):
 	var planet_radius: float = celestial_body.radius_km * 1000.0
-	var camera_rf: RefFrameNode = PhysicsManager.camera
-	var se3: Se3Ref = celestial_body.relative_to( camera_rf )
-	var sphere_r: Vector3 = se3.r
+	var se3: Se3Ref = celestial_body.relative_to( self )
+	var sphere_center: Vector3 = se3.r
 	
 	# Relative to the Sun.
-	se3 = camera_rf.relative_to( null )
+	se3 = self.relative_to( null )
 	se3 = se3.inverse()
 	var light_dir: Vector3 = se3.r.normalized()
 	
-	var player_parent = camera_rf.get_parent()
+	var player_parent: Node = self.get_parent()
 	#print( "planet origin: ", r, ", player parent: ", player_parent.name )
 	
 	var atm: MeshInstance = get_node( "Camera/Atmosphere" ) as MeshInstance
@@ -528,9 +527,9 @@ func apply_atmosphere( celestial_body: RefFrameNode ):
 	var displacement: float = celestial_body.displacement
 	
 	var m = atm.get_surface_material( 0 )
-	m.set_shader_param( "sphere_center",               sphere_r )
-	m.set_shader_param( "light_dir",                   light_dir )
+	m.set_shader_param( "sphere_center",               sphere_center )
 	m.set_shader_param( "sphere_radius",               planet_radius )
+	m.set_shader_param( "light_dir",                   light_dir )
 	m.set_shader_param( "inner_height",                inner_height )
 	m.set_shader_param( "outer_height",                outer_height )
 	m.set_shader_param( "inner_transparency_distance", inner_dist )
