@@ -40,28 +40,20 @@
 
 
 static func height_source( name: String, radius: float, height: float ):
-	if name == "00":
-		return height_source_00( radius, height )
-	if name == "01":
-		return height_source_01( radius, height )
+	if name == "home":
+		return height_source_home( radius, height )
 	if name == "moon":
 		return height_source_moon( radius, height )
+	if name == "01":
+		return height_source_01( radius, height )
 	
-	return height_source_00( radius, height )
+	return height_source_home( radius, height )
 
 
 
-static func height_source_00( radius: float, height: float ):
+static func height_source_home( radius: float, height: float ):
 	var hs: HeightSourceGdRef = HeightSourceGdRef.new()
-	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_00.gd" )
-	hs.set_script( script )
-	hs.init( radius, height )
-	return hs
-
-
-static func height_source_01( radius: float, height: float ):
-	var hs: HeightSourceGdRef = HeightSourceGdRef.new()
-	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_01.gd" )
+	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_home.gd" )
 	hs.set_script( script )
 	hs.init( radius, height )
 	return hs
@@ -70,6 +62,14 @@ static func height_source_01( radius: float, height: float ):
 static func height_source_moon( radius: float, height: float ):
 	var hs: HeightSourceGdRef = HeightSourceGdRef.new()
 	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_moon.gd" )
+	hs.set_script( script )
+	hs.init( radius, height )
+	return hs
+
+
+static func height_source_01( radius: float, height: float ):
+	var hs: HeightSourceGdRef = HeightSourceGdRef.new()
+	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_01.gd" )
 	hs.set_script( script )
 	hs.init( radius, height )
 	return hs

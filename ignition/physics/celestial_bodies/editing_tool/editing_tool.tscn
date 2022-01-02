@@ -13,10 +13,10 @@ script = ExtResource( 2 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1e+09 )
 
 [node name="Planet" parent="." instance=ExtResource( 1 )]
-radius_km = 10000.0
-height_km = 100.0
+radius_km = 100.0
+height_km = 2.0
 orbital_eccentricity = 0.5
-height_source_name = "moon"
+height_source_name = "01"
 detail_size_0 = 0.01
 detail_dist_0 = 0.1
 detail_size_1 = 0.05
