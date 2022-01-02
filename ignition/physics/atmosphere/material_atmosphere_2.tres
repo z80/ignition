@@ -15,7 +15,7 @@ uniform float outer_transparency_distance = 10.0;
 // From camera towards the light in camera ref. frame.
 uniform vec3  light_dir     = vec3(0.0, 1.0, 0.0);
 // Planet center in camera ref. frame.
-uniform vec3  sphere_center = vec3(0.0, -950.0, -433.0);
+uniform vec3  planet_center = vec3(0.0, -950.0, -433.0);
 uniform float displacement: hint_range(-5.0, 5.0);
 
 
@@ -23,8 +23,8 @@ uniform float displacement: hint_range(-5.0, 5.0);
 // Otherwise returns \"false\".
 bool ray_atmosphere_intersection_length( vec3 ray, float sphere_radius, out float out_length, out float out_closest_distance, out bool out_inside )
 {
-	float origin_distance_2    = dot( sphere_center, sphere_center );
-	float d_to_closest_point   = dot( sphere_center, ray );
+	float origin_distance_2    = dot( planet_center, planet_center );
+	float d_to_closest_point   = dot( planet_center, ray );
 	float d_to_closest_point_2 = d_to_closest_point * d_to_closest_point;
 	// Pithagorous theorem.
 	float closest_distance_2   = origin_distance_2 - d_to_closest_point_2;
@@ -92,10 +92,20 @@ vec4 compute_atmosphere_color( vec3 ray )
 		vec4 c = vec4( color_day.xyz, 0.0 );
 		return c;
 	}
+	// This is for debugging in order to understand what are actual dimensions.
+//	vec4 dbg_c = vec4( color_day.xyz, 0.0 );
+//	if ( intersects_outer && (through_length_outer > 0.0) )
+//		dbg_c.a = 1.0;
 	
 	// At this point it intersects the very outer surface. 
 	// Check if intersects opaque.
 	bool intersects_inner = ray_atmosphere_intersection_length( ray, inner_radius, through_length_inner, closest_distance, inside_inner );
+	// This is debug code.
+//	if ( intersects_inner && (through_length_inner > 0.0) )
+//		dbg_c = vec4( color_night.xyz, 1.0 );
+//	return dbg_c;
+	
+	
 	float alpha;
 	if ( intersects_inner )
 	{
@@ -153,5 +163,5 @@ shader_param/outer_height = 10.0
 shader_param/inner_transparency_distance = 10.0
 shader_param/outer_transparency_distance = 10.0
 shader_param/light_dir = Vector3( 0, 0, -1 )
-shader_param/sphere_center = Vector3( 0, -950, -433 )
+shader_param/planet_center = Vector3( 0, -950, -433 )
 shader_param/displacement = -0.101

@@ -13,6 +13,7 @@ detail_size_2 = 0.15
 [node name="Rotation" type="RefFrameNode" parent="."]
 
 [node name="CelestialBody" type="CubeSphereNode" parent="Rotation"]
+apply_scale = false
 target_mesh = NodePath("Mesh")
 
 [node name="Mesh" type="MeshInstance" parent="Rotation/CelestialBody"]

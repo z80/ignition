@@ -17,7 +17,8 @@ glow_size = 0.3
 [node name="Planet" parent="Sun" instance=ExtResource( 1 )]
 rotation_period_hrs = 1.0
 surface_orbital_vel_kms = 0.1
-radius_km = 1.95
+radius_km = 50.0
+height_km = 1.0
 orbital_period_hrs = 100.0
 detail_dist_0 = 0.1
 detail_dist_1 = 0.4
