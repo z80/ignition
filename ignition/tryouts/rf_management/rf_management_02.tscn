@@ -10,30 +10,32 @@
 script = ExtResource( 2 )
 
 [node name="Sun" parent="." instance=ExtResource( 4 )]
-surface_orbital_vel_kms = 1.0
-radius_km = 100.0
+surface_orbital_vel_kms = 30.0
+radius_km = 5000.0
+height_km = 0.01
 glow_size = 0.3
 
 [node name="Planet" parent="Sun" instance=ExtResource( 1 )]
-rotation_period_hrs = 1.0
-surface_orbital_vel_kms = 0.1
+rotation_period_hrs = 5.0
+surface_orbital_vel_kms = 0.5
 radius_km = 50.0
-height_km = 1.0
+height_km = 0.5
 orbital_period_hrs = 100.0
 detail_dist_0 = 0.1
 detail_dist_1 = 0.4
 atmosphere_height_inner_km = 0.5
-atmosphere_height_outer_km = 0.5
+atmosphere_height_outer_km = 2.0
 transparency_dist_inner_km = 3.0
+transparency_dist_outer_km = 25.0
 displacement = -0.3
 orbit_color = Color( 0, 0.52549, 1, 1 )
 
 [node name="Moon" parent="Sun/Planet" instance=ExtResource( 1 )]
-rotation_period_hrs = 0.3
-surface_orbital_vel_kms = 0.015
-radius_km = 0.3
-height_km = 0.01
-orbital_period_hrs = 2.0
+rotation_period_hrs = 5.0
+surface_orbital_vel_kms = 0.2
+radius_km = 5.0
+height_km = 0.05
+orbital_period_hrs = 5.0
 height_source_name = "moon"
 atmosphere_height_inner_km = 0.1
 air_density = 0.0

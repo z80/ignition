@@ -106,16 +106,18 @@ vec4 compute_atmosphere_color( vec3 ray )
 //	return dbg_c;
 	
 	
-	float alpha;
+	float alpha = 1.0;
 	if ( intersects_inner )
 	{
-		alpha = through_length_inner / inner_transparency_distance;
+		alpha *= pow( 2.0, through_length_inner / inner_transparency_distance );
 		through_length_outer -= through_length_inner;
-		alpha += through_length_outer / outer_transparency_distance;
+		alpha *= pow( 2.0, through_length_outer / outer_transparency_distance );
+		alpha = 1.0 - 1.0/alpha;
 	}
 	else
 	{
-		alpha = through_length_outer / outer_transparency_distance;
+		alpha = pow( 2.0, through_length_outer / outer_transparency_distance );
+		alpha = 1.0 - 1.0/alpha;
 	}
 	//float alpha = through_length_outer / outer_transparency_distance;
 	alpha = clamp( alpha, 0.0, 1.0 );
