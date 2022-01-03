@@ -26,6 +26,8 @@ func play_loop():
 	$Loop.play()
 	$Click.visible = false
 	$Click.stop()
+	UiSound.play( "res://physics/singletons/sound/assets/music_01.ogg" )
+	
 	
 func play_click():
 	$Intro.visible = false
