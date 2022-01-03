@@ -77,7 +77,7 @@ func noise( v: Vector3 ):
 	var n: OpenSimplexNoise = _noise
 	var f: float = 0.0
 	
-	f = v.x*v.x + v.y*v.y/16.0 + v.z*v.z
+	f = v.x*v.x + v.y*v.y/16.0 + v.z*v.z/15.0
 
 	var mag: Array = [ 1.0, 0.3, 0.2, 0.1 ]
 	var lac: Array = [ 0.3, 2.03, 2.07, 2.11 ]

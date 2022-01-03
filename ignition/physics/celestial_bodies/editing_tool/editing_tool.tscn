@@ -14,9 +14,9 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1e+09 )
 
 [node name="Planet" parent="." instance=ExtResource( 1 )]
 rotation_period_hrs = 5.0
-height_km = 0.02
+height_km = 0.5
 orbital_eccentricity = 0.5
-height_source_name = "01"
+height_source_name = "blob"
 detail_size_0 = 0.01
 detail_dist_0 = 0.1
 detail_size_1 = 0.05
@@ -24,6 +24,9 @@ detail_dist_1 = 0.3
 detail_size_2 = 0.1
 convert_to_global = true
 apply_scale = false
+
+[node name="CelestialBody" parent="Planet/Rotation" index="0"]
+convert_to_global = false
 
 [node name="Camera" parent="Planet" instance=ExtResource( 3 )]
 map_mode = true
