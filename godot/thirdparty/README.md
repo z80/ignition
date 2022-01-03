@@ -153,14 +153,14 @@ Files extracted from upstream source:
 ## libogg
 
 - Upstream: https://www.xiph.org/ogg
-- Version: git (c8fca6b4a02d695b1ceea39b330d4406001c03ed, 2019)
+- Version: 1.3.5 (e1774cd77f471443541596e09078e78fdc342e4f, 2021)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
 - `src/*.{c,h}`
-- `include/ogg/*.h` in ogg/
-- COPYING
+- `include/ogg/*.h` in `ogg/` (run `configure` to generate `config_types.h`)
+- `COPYING`
 
 
 ## libpng
@@ -216,14 +216,14 @@ on top of the 1.1.1 source (not included in any stable release yet).
 ## libvorbis
 
 - Upstream: https://www.xiph.org/vorbis
-- Version: 1.3.6 (2018)
+- Version: 1.3.7 (0657aee69dec8508a0011f47f3b69d7538e9d262, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- `src/*` except from: `lookups.pl`, `Makefile.*`
-- `include/vorbis/*.h` as vorbis/
-- COPYING
+- `lib/*` except from: `lookups.pl`, `Makefile.*`
+- `include/vorbis/*.h` as `vorbis/`
+- `COPYING`
 
 
 ## libvpx
@@ -262,7 +262,7 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.11 (aa1d4e097342af799ba80dfb13640efef498227c, 2021)
+- Version: 2.16.12 (cf4667126010c665341f9e50ef691b7ef8294188, 2021)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -275,13 +275,21 @@ File extracted from upstream release tarball:
 - Applied the patch in `patches/padlock.diff`. This disables VIA padlock
   support which defines a symbol `unsupported` which clashes with a
   pre-defined symbol.
-- Applied the patch in `patches/pr4948-fix-clang12-opt.patch`. Upstream bugfix
-  from PR 4948 to fix a bug caused by Clang 12 optimizations.
-- Applied the patch in `patches/pr4819-faster-base64.patch`. This fixes a certs
-  parsing speed regression since 2.16.10 (upstream PR:
-  https://github.com/ARMmbed/mbedtls/pull/4819).
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
+
+
+## minimp3
+
+- Upstream: https://github.com/lieff/minimp3
+- Version: git (afb604c06bc8beb145fecd42c0ceb5bda8795144, 2021)
+- License: CC0 1.0
+
+Files extracted from upstream repository:
+
+- `minimp3.h`
+- `minimp3_ex.h`
+- `LICENSE`
 
 
 ## miniupnpc

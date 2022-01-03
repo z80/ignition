@@ -389,7 +389,8 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 		CGLEnable((CGLContextObj)[OS_OSX::singleton->context CGLContextObj], kCGLCESurfaceBackingSize);
 	}
 
-	if (OS_OSX::singleton->main_loop) {
+	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates triggered by window view resize.
+	if (OS_OSX::singleton->main_loop && (OS_OSX::singleton->get_render_thread_mode() != OS::RENDER_SEPARATE_THREAD)) {
 		Main::force_redraw();
 		//Event retrieval blocks until resize is over. Call Main::iteration() directly.
 		if (!Main::is_iterating()) { //avoid cyclic loop
@@ -2898,11 +2899,12 @@ void OS_OSX::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 			layered_window = false;
 		}
 		[context update];
-		NSRect frame = [window_object frame];
 
 		if (!is_no_window_mode_enabled()) {
-			[window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, 1, 1) display:YES];
-			[window_object setFrame:frame display:YES];
+			// Force resize window frame to update OpenGL context.
+			NSRect frameRect = [window_object frame];
+			[window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
+			[window_object setFrame:frameRect display:YES];
 		}
 	}
 }

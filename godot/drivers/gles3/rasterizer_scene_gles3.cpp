@@ -5256,18 +5256,28 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 }
 
 RasterizerSceneGLES3::~RasterizerSceneGLES3() {
-	memdelete(default_material.get_data());
-	memdelete(default_material_twosided.get_data());
-	memdelete(default_shader.get_data());
-	memdelete(default_shader_twosided.get_data());
+	storage->free(default_material);
+	default_material = RID();
+	storage->free(default_material_twosided);
+	default_material_twosided = RID();
+	storage->free(default_shader);
+	default_shader = RID();
+	storage->free(default_shader_twosided);
+	default_shader_twosided = RID();
 
-	memdelete(default_worldcoord_material.get_data());
-	memdelete(default_worldcoord_material_twosided.get_data());
-	memdelete(default_worldcoord_shader.get_data());
-	memdelete(default_worldcoord_shader_twosided.get_data());
+	storage->free(default_worldcoord_material);
+	default_worldcoord_material = RID();
+	storage->free(default_worldcoord_material_twosided);
+	default_worldcoord_material_twosided = RID();
+	storage->free(default_worldcoord_shader);
+	default_worldcoord_shader = RID();
+	storage->free(default_worldcoord_shader_twosided);
+	default_worldcoord_shader_twosided = RID();
 
-	memdelete(default_overdraw_material.get_data());
-	memdelete(default_overdraw_shader.get_data());
+	storage->free(default_overdraw_material);
+	default_overdraw_material = RID();
+	storage->free(default_overdraw_shader);
+	default_overdraw_shader = RID();
 
 	memfree(state.spot_array_tmp);
 	memfree(state.omni_array_tmp);

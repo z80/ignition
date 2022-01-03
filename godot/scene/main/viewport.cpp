@@ -333,7 +333,6 @@ void Viewport::_notification(int p_what) {
 #endif
 
 			// Enable processing for tooltips, collision debugging, physics object picking, etc.
-			set_process_internal(true);
 			set_physics_process_internal(true);
 
 		} break;
@@ -361,16 +360,6 @@ void Viewport::_notification(int p_what) {
 			remove_from_group("_viewports");
 
 			VS::get_singleton()->viewport_set_active(viewport, false);
-
-		} break;
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (gui.tooltip_timer >= 0) {
-				gui.tooltip_timer -= get_process_delta_time();
-				if (gui.tooltip_timer < 0) {
-					_gui_show_tooltip();
-				}
-			}
-
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (get_tree()->is_debugging_collisions_hint() && contact_2d_debug.is_valid()) {
@@ -1499,7 +1488,10 @@ void Viewport::_gui_sort_roots() {
 
 void Viewport::_gui_cancel_tooltip() {
 	gui.tooltip_control = nullptr;
-	gui.tooltip_timer = -1;
+	if (gui.tooltip_timer.is_valid()) {
+		gui.tooltip_timer->release_connections();
+		gui.tooltip_timer = Ref<SceneTreeTimer>();
+	}
 	if (gui.tooltip_popup) {
 		gui.tooltip_popup->queue_delete();
 		gui.tooltip_popup = nullptr;
@@ -2239,10 +2231,16 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 			}
 
-			if (can_tooltip && !is_tooltip_shown) {
+			if (can_tooltip && !is_tooltip_shown && over->can_process()) {
+				if (gui.tooltip_timer.is_valid()) {
+					gui.tooltip_timer->release_connections();
+					gui.tooltip_timer = Ref<SceneTreeTimer>();
+				}
 				gui.tooltip_control = over;
 				gui.tooltip_pos = mpos;
-				gui.tooltip_timer = gui.tooltip_delay;
+				gui.tooltip_timer = get_tree()->create_timer(gui.tooltip_delay);
+				gui.tooltip_timer->set_ignore_time_scale(true);
+				gui.tooltip_timer->connect("timeout", this, "_gui_show_tooltip");
 			}
 		}
 
@@ -2428,28 +2426,57 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (from && p_event->is_pressed()) {
 			Control *next = nullptr;
 
-			if (p_event->is_action_pressed("ui_focus_next", true)) {
-				next = from->find_next_valid_focus();
-			}
+			Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
+			if (joypadmotion_event.is_valid()) {
+				Input *input = Input::get_singleton();
 
-			if (p_event->is_action_pressed("ui_focus_prev", true)) {
-				next = from->find_prev_valid_focus();
-			}
+				if (p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
+					next = from->find_next_valid_focus();
+				}
 
-			if (!mods && p_event->is_action_pressed("ui_up", true)) {
-				next = from->_get_focus_neighbour(MARGIN_TOP);
-			}
+				if (p_event->is_action_pressed("ui_focus_prev") && input->is_action_just_pressed("ui_focus_prev")) {
+					next = from->find_prev_valid_focus();
+				}
 
-			if (!mods && p_event->is_action_pressed("ui_left", true)) {
-				next = from->_get_focus_neighbour(MARGIN_LEFT);
-			}
+				if (!mods && p_event->is_action_pressed("ui_up") && input->is_action_just_pressed("ui_up")) {
+					next = from->_get_focus_neighbour(MARGIN_TOP);
+				}
 
-			if (!mods && p_event->is_action_pressed("ui_right", true)) {
-				next = from->_get_focus_neighbour(MARGIN_RIGHT);
-			}
+				if (!mods && p_event->is_action_pressed("ui_left") && input->is_action_just_pressed("ui_left")) {
+					next = from->_get_focus_neighbour(MARGIN_LEFT);
+				}
 
-			if (!mods && p_event->is_action_pressed("ui_down", true)) {
-				next = from->_get_focus_neighbour(MARGIN_BOTTOM);
+				if (!mods && p_event->is_action_pressed("ui_right") && input->is_action_just_pressed("ui_right")) {
+					next = from->_get_focus_neighbour(MARGIN_RIGHT);
+				}
+
+				if (!mods && p_event->is_action_pressed("ui_down") && input->is_action_just_pressed("ui_down")) {
+					next = from->_get_focus_neighbour(MARGIN_BOTTOM);
+				}
+			} else {
+				if (p_event->is_action_pressed("ui_focus_next", true)) {
+					next = from->find_next_valid_focus();
+				}
+
+				if (p_event->is_action_pressed("ui_focus_prev", true)) {
+					next = from->find_prev_valid_focus();
+				}
+
+				if (!mods && p_event->is_action_pressed("ui_up", true)) {
+					next = from->_get_focus_neighbour(MARGIN_TOP);
+				}
+
+				if (!mods && p_event->is_action_pressed("ui_left", true)) {
+					next = from->_get_focus_neighbour(MARGIN_LEFT);
+				}
+
+				if (!mods && p_event->is_action_pressed("ui_right", true)) {
+					next = from->_get_focus_neighbour(MARGIN_RIGHT);
+				}
+
+				if (!mods && p_event->is_action_pressed("ui_down", true)) {
+					next = from->_get_focus_neighbour(MARGIN_BOTTOM);
+				}
 			}
 
 			if (next) {

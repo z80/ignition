@@ -325,14 +325,13 @@
 			<argument index="0" name="body" type="RID" />
 			<description>
 				Returns the physics layer or layers a body can collide with.
--
 			</description>
 		</method>
 		<method name="body_get_direct_state">
 			<return type="PhysicsDirectBodyState" />
 			<argument index="0" name="body" type="RID" />
 			<description>
-				Returns the [PhysicsDirectBodyState] of the body.
+				Returns the [PhysicsDirectBodyState] of the body. Returns [code]null[/code] if the body is destroyed or removed from the physics space.
 			</description>
 		</method>
 		<method name="body_get_kinematic_safe_margin" qualifiers="const">

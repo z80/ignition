@@ -35,13 +35,13 @@
 #include "core/os/os.h"
 #include "scene/scene_string_names.h"
 
-#include "modules/modules_enabled.gen.h"
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
-#endif
-
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"
+#endif
+
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
 #endif
 
 RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) {
@@ -222,7 +222,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 			if (align != ALIGN_FILL)                                                                                                                                        \
 				wofs += line_ofs;                                                                                                                                           \
 		} else {                                                                                                                                                            \
-			int used = wofs - margin;                                                                                                                                       \
+			float used = wofs - margin;                                                                                                                                     \
 			switch (align) {                                                                                                                                                \
 				case ALIGN_LEFT:                                                                                                                                            \
 					l.offset_caches.push_back(0);                                                                                                                           \
@@ -271,8 +271,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 #define ENSURE_WIDTH(m_width)                                                                                                                      \
 	if (p_mode == PROCESS_CACHE) {                                                                                                                 \
-		l.maximum_width = MAX(l.maximum_width, MIN(p_width, wofs + m_width));                                                                      \
-		l.minimum_width = MAX(l.minimum_width, m_width);                                                                                           \
+		l.maximum_width = MAX(l.maximum_width, MIN(p_width, Math::ceil(wofs + m_width)));                                                          \
+		l.minimum_width = MAX(l.minimum_width, Math::ceil(m_width));                                                                               \
 	}                                                                                                                                              \
 	if (wofs - backtrack + m_width > p_width) {                                                                                                    \
 		line_wrapped = true;                                                                                                                       \

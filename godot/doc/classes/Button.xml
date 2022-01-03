@@ -41,6 +41,7 @@
 		</member>
 		<member name="icon" type="Texture" setter="set_button_icon" getter="get_button_icon">
 			Button's icon, if text is present the icon will be placed before the text.
+			To edit margin and spacing of the icon, use [code]hseparation[/code] theme property of [Button] and [code]content_margin_*[/code] properties of the used [StyleBox]es.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The button's text that will be displayed inside the button's area.
@@ -58,15 +59,6 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="disabled" data_type="style" type="StyleBox">
-			[StyleBox] used when the [Button] is disabled.
-		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			[StyleBox] used when the [Button] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			[Font] of the [Button]'s text.
-		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Default text [Color] of the [Button].
 		</theme_item>
@@ -82,11 +74,20 @@
 		<theme_item name="font_color_pressed" data_type="color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the [Button] is being pressed.
 		</theme_item>
-		<theme_item name="hover" data_type="style" type="StyleBox">
-			[StyleBox] used when the [Button] is being hovered.
-		</theme_item>
 		<theme_item name="hseparation" data_type="constant" type="int" default="2">
 			The horizontal space between [Button]'s icon and text.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] of the [Button]'s text.
+		</theme_item>
+		<theme_item name="disabled" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is disabled.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
+		</theme_item>
+		<theme_item name="hover" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is being hovered.
 		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			Default [StyleBox] for the [Button].

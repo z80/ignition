@@ -3854,6 +3854,7 @@ bool RasterizerSceneGLES2::free(RID p_rid) {
 		shadow_atlas_set_size(p_rid, 0);
 		shadow_atlas_owner.free(p_rid);
 		memdelete(shadow_atlas);
+
 	} else if (reflection_probe_instance_owner.owns(p_rid)) {
 		ReflectionProbeInstance *reflection_instance = reflection_probe_instance_owner.get(p_rid);
 
@@ -3870,6 +3871,12 @@ bool RasterizerSceneGLES2::free(RID p_rid) {
 		reflection_probe_release_atlas_index(p_rid);
 		reflection_probe_instance_owner.free(p_rid);
 		memdelete(reflection_instance);
+
+	} else if (environment_owner.owns(p_rid)) {
+		Environment *environment = environment_owner.get(p_rid);
+
+		environment_owner.free(p_rid);
+		memdelete(environment);
 
 	} else {
 		return false;
@@ -4055,4 +4062,29 @@ void RasterizerSceneGLES2::finalize() {
 
 RasterizerSceneGLES2::RasterizerSceneGLES2() {
 	_light_counter = 0;
+}
+
+RasterizerSceneGLES2::~RasterizerSceneGLES2() {
+	storage->free(default_material);
+	default_material = RID();
+	storage->free(default_material_twosided);
+	default_material_twosided = RID();
+	storage->free(default_shader);
+	default_shader = RID();
+	storage->free(default_shader_twosided);
+	default_shader_twosided = RID();
+
+	storage->free(default_worldcoord_material);
+	default_worldcoord_material = RID();
+	storage->free(default_worldcoord_material_twosided);
+	default_worldcoord_material_twosided = RID();
+	storage->free(default_worldcoord_shader);
+	default_worldcoord_shader = RID();
+	storage->free(default_worldcoord_shader_twosided);
+	default_worldcoord_shader_twosided = RID();
+
+	storage->free(default_overdraw_material);
+	default_overdraw_material = RID();
+	storage->free(default_overdraw_shader);
+	default_overdraw_shader = RID();
 }
