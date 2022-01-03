@@ -272,7 +272,6 @@ func couple():
 	# First find all bodies attached directly or indirectly to this body 
 	# and ignore them in search.
 	var direct_bodies: Array = dfs_search( self )
-	direct_bodies = direct_bodies[1]
 	# Get parent ref frame, get all parts in it.
 	var rf: RefFrameNode = get_parent()
 	var parts: Array = []
@@ -343,7 +342,6 @@ func couple_surface():
 	# First find all bodies attached directly or indirectly to this body 
 	# and ignore them in search.
 	var direct_bodies: Array = dfs_search( self )
-	direct_bodies = direct_bodies[1]
 	
 	var rf: RefFramePhysics = parent_physics_ref_frame()
 	if rf == null:
@@ -552,39 +550,13 @@ func on_delete_rescue_camera():
 
 # Depth first search for all the parts connected with each other.
 static func dfs_search( p: Part ):
-	var root_part: Part = _find_root( p )
 	var parts: Array = []
-	_dfs( root_part, parts )
+	_dfs( p, parts )
 	
-	var ret: Array = [ root_part, parts ]
+	var ret: Array = parts
 	return ret
 
 
-
-
-# Called when the node enters the scene tree for the first time.
-# It's not formally needed to start with root.
-# It is only done for extra convenience to know what part is the root.
-static func _find_root( p: Part ):
-	var part: Part = p
-	var again: bool = true
-	while again:
-		again = false
-		# Check all the connected nodes.
-		var qty: int = part.surface_nodes.size()
-		for i in range(qty):
-			var n: CouplingNodeSurface = part.surface_nodes[i]
-			var connected: bool = n.connected()
-			if not connected:
-				continue
-			var is_parent: bool = n.is_parent
-			if is_parent:
-				continue
-			# Switch to this node's part.
-			part = n.part
-			again = true
-			break
-	return p
 
 
 func get_attachments():
@@ -610,9 +582,6 @@ static func _dfs( part: Part, parts: Array ):
 	var qty: int = atts.size()
 	for i in range(qty):
 		var n: CouplingAttachment = atts[i]
-		var is_parent: bool = n.is_parent
-		if not is_parent:
-			continue
 		
 		var p: Part = n.attachment_b.get_part()
 		_dfs( p, parts )
@@ -679,8 +648,7 @@ func create_super_body():
 	sb.set_se3( se3 )
 	
 	# Add all bodies to this super body.
-	var ret: Array = dfs_search( self )
-	var bodies: Array = ret[1]
+	var bodies: Array = dfs_search( self )
 	for body in bodies:
 		sb.add_sub_body( body )
 	

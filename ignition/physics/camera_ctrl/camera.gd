@@ -388,9 +388,20 @@ func _process_tps_azimuth( _delta ):
 	var se3_rel: Se3Ref = player_ctrl.relative_to( celestial_body )
 	var wanted_up: Vector3 = se3_rel.r.normalized()
 	var actual_up: Vector3  = current_orientation.xform( Vector3.UP )
-	var rot_vector: Vector3 = actual_up.cross( wanted_up ) * 0.5
-	var adj_quat: Quat = Quat( rot_vector.x, rot_vector.y, rot_vector.z, 1.0 )
-	adj_quat = adj_quat.normalized()
+	var rot_vector: Vector3 = actual_up.cross( wanted_up )
+	var co: float = actual_up.dot( wanted_up )
+	var si: float = rot_vector.length()
+	var adj_quat: Quat
+	if si < 0.0001:
+		adj_quat = Quat.IDENTITY
+	else:
+		var angle: float = atan2( si, co )
+		var a_2: float = angle * 0.5
+		var co_2: float = cos( a_2 )
+		var si_2: float = sin( a_2 )
+		rot_vector = rot_vector * (si_2 / si)
+		adj_quat = Quat( rot_vector.x, rot_vector.y, rot_vector.z, co_2 )
+		adj_quat = adj_quat.normalized()
 	current_orientation = adj_quat * current_orientation
 	
 	# q_player_relative_to_celestial_body = current_orientation * something_unwanted

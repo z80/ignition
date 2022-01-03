@@ -20,7 +20,9 @@ rotation_period_hrs = 5.0
 surface_orbital_vel_kms = 0.5
 radius_km = 50.0
 height_km = 0.5
+perigee_dir = Vector3( -1, 0, 1 )
 orbital_period_hrs = 100.0
+height_source_name = "home"
 detail_size_0 = 0.003
 detail_dist_0 = 0.005
 detail_size_1 = 0.01
@@ -52,6 +54,50 @@ orbital_period_hrs = 197.0
 orbital_eccentricity = 0.07
 height_source_name = "rust"
 detail_size_0 = 0.003
+atmosphere_height_inner_km = 0.5
+atmosphere_height_outer_km = 1.5
+transparency_dist_inner_km = 3.0
+transparency_dist_outer_km = 25.0
+atmosphere_color_day = Color( 0.937255, 0.52549, 0, 1 )
+atmosphere_color_night = Color( 0.6, 0.352941, 0, 1 )
+displacement = -0.6
+air_density = 0.2
+air_viscosity = 0.02
+
+[node name="Bolt" parent="Sun/Rust" instance=ExtResource( 1 )]
+rotation_period_hrs = 2.0
+surface_orbital_vel_kms = 0.001
+height_km = 1.0
+perigee_dir = Vector3( 0.2, 0.1, 1 )
+orbital_period_hrs = 30.0
+orbital_eccentricity = 0.5
+height_source_name = "bolt"
+orbit_color = Color( 0.870588, 0.890196, 0, 1 )
+
+[node name="Nut" parent="Sun/Rust" instance=ExtResource( 1 )]
+perigee_dir = Vector3( 1, -0.2, -1 )
+orbital_period_hrs = 56.0
+orbital_eccentricity = 0.2
+height_source_name = "nut"
+orbit_color = Color( 1, 0.580392, 0.243137, 1 )
+
+[node name="Blob" parent="Sun" instance=ExtResource( 1 )]
+rotation_period_hrs = 20.0
+surface_orbital_vel_kms = 4.0
+radius_km = 300.0
+height_km = 30.0
+perigee_dir = Vector3( 0.3, 0.02, -0.68 )
+orbital_period_hrs = 857.0
+orbital_eccentricity = 0.02
+height_source_name = "blob"
+atmosphere_height_inner_km = 5.0
+atmosphere_height_outer_km = 15.0
+transparency_dist_inner_km = 3.0
+transparency_dist_outer_km = 30.0
+atmosphere_color_day = Color( 0.784314, 1, 0.364706, 1 )
+atmosphere_color_night = Color( 0.988235, 0.764706, 0, 1 )
+displacement = -2.0
+orbit_color = Color( 0.592157, 0.878431, 0, 1 )
 
 [node name="Camera" parent="." instance=ExtResource( 3 )]
 

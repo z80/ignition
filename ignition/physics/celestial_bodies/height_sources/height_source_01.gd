@@ -66,16 +66,9 @@ func height( at: Vector3 ):
 
 
 func color( at: Vector3, norm: Vector3, height: float ):
-	var c: Color
-	if abs(at.y) > POLAR_CAP:
-		c = Color( 0.95, 0.95, 0.95, 1.0 )
-		return c
-	if height <= 0.0:
-		c = Color( 0.2, 0.05, 0.02, 1.0 )
-	elif height < 0.2:
-		c = Color( 0.3, 0.1, 0.03, 1.0 )
-	else:
-		c = Color( 0.5, 0.25, 0.35, 1.0 )
+	var ca: Color = Color( 0.2, 0.2, 0.2, 1.0 )
+	var cb: Color = Color( 0.75, 0.75, 0.75, 1.0 )
+	var c: Color = ca + (cb - ca) * clamp( height / 0.2, 0.0, 1.0 )
 	return c
 
 
@@ -84,24 +77,17 @@ func noise( v: Vector3 ):
 	var n: OpenSimplexNoise = _noise
 	var f: float = 0.0
 	
-	if abs(v.y) > POLAR_CAP:
-		var a: Vector3 = v
-		var mag: Array = [0.2, 0.1, 0.2, 0.1]
-		var lac: Array = [ 1.5, 1.03, 1.07, 1.11 ]
-		for i in range(4):
-			v *= lac[i]
-			var t: float = mag[i] * abs( n.get_noise_3dv( v ) )
-			f += t
-	
-	var mag: Array = [1.0, 0.3, 0.2, 0.1]
-	var lac: Array = [ 0.75, 2.03, 2.07, 2.11 ]
+	f = v.x*v.x + v.y*v.y/16.0 + v.z*v.z
+
+	var mag: Array = [ 1.0, 0.3, 0.2, 0.1 ]
+	var lac: Array = [ 0.3, 2.03, 2.07, 2.11 ]
 	for i in range(2):
 		v *= lac[i]
 		var t: float = mag[i] * n.get_noise_3dv( v )
 		f += t
 
-	mag = [1.0, 0.3, 0.2, 0.1]
-	lac = [ 5.0, 2.03, 2.07, 2.11 ]
+	mag = [ 1.0, 0.3, 0.2, 0.1]
+	lac = [ 0.6, 2.03, 2.07, 2.11 ]
 	for i in range(4):
 		v *= lac[i]
 		var r: float = n.get_noise_3dv( v )

@@ -64,7 +64,7 @@ func _create_construction():
 	
 	var celestial_body: RefFrameNode = get_node( "Sun/Home" ) as RefFrameNode
 	var surf: CubeSphereNode = celestial_body.surface_node()
-	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.0, -0.002 ), 1.0 )
+	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.0, -0.00002 ), 1.0 )
 	
 	var rot = celestial_body.rotation_rf()
 	construction.change_parent( rot )

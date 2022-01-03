@@ -172,10 +172,26 @@ func _create_assembly():
 		# Pick any one.
 		var part: Part = dynamic_blocks[0]
 		# And call Dfs to find the root one.
-		var ret: Array = Part.dfs_search( part )
-		part = ret[0]
-		var parts: Array = ret[1]
-		# Remove ConstructionSuperBody.
+		var parts: Array = Part.dfs_search( part )
+		part = parts[0]
+		
+		
+		# For dubuggin check the size of the DFS result and if 
+		# it is smaller than 3, repeat the process in order to see why.
+		var dbg_qty: int = parts.size()
+		if dbg_qty < 3:
+			parts = Part.dfs_search( part )
+		
+		
+		
+		# Destroy parts which are not a part of the assembly.
+		for i in range(qty):
+			var p: Part = dynamic_blocks[i]
+			var has: bool = parts.has( p )
+			if not has:
+				p.queue_free()
+		
+		# Assign null as a superbody.
 		# Own super body will be created on the first request.
 		for pt in parts:
 			pt.set_super_body( null )

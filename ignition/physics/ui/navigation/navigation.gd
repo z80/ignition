@@ -92,7 +92,7 @@ func _recompute_mode_surface():
 
 
 func _recompute_mode_orbit():
-	var ctrl: Body = PhysicsManager.player_control as Body
+	var ctrl: Body = PhysicsManager.camera.get_parent() as Body
 	if ctrl == null:
 		return
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
