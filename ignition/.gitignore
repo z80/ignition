@@ -3,4 +3,4 @@ addons/godot-sqlite
 *.db
 bone_*
 .save_files
-
+_temp
