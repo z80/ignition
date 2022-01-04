@@ -40,7 +40,8 @@ func _ready():
 	var se3: Se3Ref = character.relative_to( construction )
 	DDD.print( "And this se3 is computed for debug purposes!" )
 	
-	UiSound.play( "res://physics/singletons/sound/assets/music_01.ogg" )
+	if not UiSound.is_playing( "res://physics/singletons/sound/assets/music_01.ogg" ):
+		UiSound.play( "res://physics/singletons/sound/assets/music_01.ogg" )
 
 	
 	

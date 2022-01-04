@@ -20,6 +20,31 @@ func play( sound_path: String ):
 	return p
 
 
+func is_playing( sound_path: String ) -> bool:
+	var has: bool = _sounds.has( sound_path )
+	var sound: AudioStream
+	if has:
+		sound = _sounds[sound_path]
+	else:
+		sound = load( sound_path )
+		_sounds[sound_path] = sound
+	
+	# Get all players and see if is playing and if stream matches.
+	var qty: int = get_child_count()
+	for i in range(qty):
+		var c: Node = get_child( i )
+		var p: AudioStreamPlayer = c as AudioStreamPlayer
+		if p != null:
+			var playing: bool = p.playing
+			if not playing:
+				continue
+			var stream: AudioStream = p.stream
+			if stream == sound:
+				return true
+	
+	return false
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_find_all_players()
@@ -64,6 +89,6 @@ func _get_unique_name( base: String = "Player_" ):
 
 func _on_playback_finished( player ):
 	_players_pool.push_back( player )
-	print( "released player" )
+	DDD.print( "released player" )
 
 
