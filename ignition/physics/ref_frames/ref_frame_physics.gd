@@ -219,14 +219,15 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	var dbg: bool = false
 	self.debug = dbg
 	if dbg:
-		print( "" )
-		print( "jump with debug output:" )
+		DDD.important()
+		DDD.print( "jump with debug output:" )
 	
 	var elliptic_motion: bool = (motion != null) and (motion.movement_type() == "elliptic")
 	if elliptic_motion:
 		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
 		var se3: Se3Ref = self.relative_to( n )
-		print( "relative_to_planet before jump: ", se3.r, ", v: ", se3.v )
+		DDD.important()
+		DDD.print( "relative_to_planet before jump: " + str(se3.r) + ", v: " + str(se3.v) )
 	
 	t.basis = Basis.IDENTITY
 	self.set_jump_t( t )
@@ -236,18 +237,19 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	if elliptic_motion:
 		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
 		var se3: Se3Ref = self.relative_to( n )
-		print( "relative_to_planet after jump: ", se3.r, ", v: ", se3.v )
+		DDD.important()
+		DDD.print( "relative_to_planet after jump: " + str(se3.r) + ", v: " + str(se3.v) )
 
 	# Update SE3 in orbital motion.
 	var se3: Se3Ref = self.get_se3()
 	if elliptic_motion:
-		print( "motion type just before assigning se3 to motion: ", motion.movement_type() )
+		DDD.print( "motion type just before assigning se3 to motion: " + motion.movement_type() )
 	motion.se3 = se3
 	
 	if elliptic_motion:
-		print( "motion type after assigning se3 to motion: ", motion.movement_type() )
+		DDD.print( "motion type after assigning se3 to motion: " + motion.movement_type() )
 		se3 = motion.se3
-		print( "se3 right after assigning se3 to motion: ", se3.r, " v: ", se3.v )
+		DDD.print( "se3 right after assigning se3 to motion: " + str(se3.r) + " v: " + str(se3.v) )
 
 
 	# Turn debug off and keep with debug output.
@@ -259,10 +261,10 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	var r: Vector3 = se3.r
 	v = se3.v
 	var l: float = motion.specific_angular_momentum()
-	print( "movement type: ", tp )
-	print( "spec ang mom:  ", l )
-	print( "r:             ", r )
-	print( "v:             ", v )
+	DDD.print( "movement type: " + str(tp) )
+	DDD.print( "spec ang mom:  " + str(l) )
+	DDD.print( "r:             " + str(r) )
+	DDD.print( "v:             " + str(v) )
 
 #	var v_accum: Vector3 = Vector3.ZERO
 #	var bodies: Array = child_bodies( false )
@@ -271,8 +273,6 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 #		var vv: Vector3 = b.v()
 #		v_accum += vv
 #	v_accum /= float( qty )
-
-	print( "" )
 
 	#var after_t: Transform = self.t()
 
@@ -385,23 +385,22 @@ func include_close_enough_bodies():
 
 
 static func print_all_ref_frames():
-	print( "*********************************************************" )
-	print( "All ref frames" )
+	DDD.important()
+	DDD.print( "All ref frames" )
 	var player_rf = PhysicsManager.get_player_ref_frame()
 	if (player_rf != null) and ( is_instance_valid(player_rf) ):
-		print( "player rf: ", player_rf.name )
+		DDD.print( "player rf: " + player_rf.name )
 	var rfs: Array = PhysicsManager.physics_ref_frames()
 	for rf in rfs:
 		var se3: Se3Ref = rf.get_se3()
-		print( "rf name: ", rf.name, " r: ", se3.r )
-		print( "bodies: " )
+		DDD.important()
+		DDD.print( "rf name: " + rf.name + " r: " + str(se3.r) )
+		DDD.print( "bodies: " )
 		var bodies: Array = rf.child_bodies( false )
 		for body in bodies:
 			var name: String = body.name
 			se3 = body.get_se3()
-			print( name, ": ", se3.r )
-	
-	print( "" )
+			DDD.print( name + ": " + str(se3.r) )
 
 
 func split_if_needed():
@@ -421,8 +420,8 @@ func split_if_needed():
 	if ( split_ind < 1 ) or ( split_ind >= qty ):
 		return false
 	
-	print( "\n\n\n" )
-	print( "splitting ref frame ", self.name )
+	DDD.important()
+	DDD.print( "splitting ref frame " + self.name )
 	print( "just before split: " )
 	print_all_ref_frames()
 	#_debug_distances( bodies )
@@ -466,10 +465,10 @@ func split_if_needed():
 	for body in bodies_b:
 		body.change_parent( rf )
 	
-	print( "new rf created ", rf. name )
-	print( "after split: " )
+	DDD.important()
+	DDD.print( "new rf created " + rf. name )
+	DDD.print( "after split: " )
 	print_all_ref_frames()
-	print( "" )
 	
 	#For debugging compute distance as if we wanted to merge ref frames.
 	#var dist_2: float = distance( rf )
@@ -492,10 +491,10 @@ func merge_if_needed():
 		var dist: float = distance( rf )
 		if dist < Constants.RF_MERGE_DISTANCE:
 			
-			print( "\n\n\n" )
 			dist = distance( rf )
-			print( "merging ", rf.name, " with ", self.name )
-			print( "info before" )
+			DDD.important()
+			DDD.print( "merging " + rf.name + " with " + self.name )
+			DDD.print( "info before" )
 			print_all_ref_frames()
 			
 			var bodies: Array = rf.root_most_child_bodies( false )
@@ -503,17 +502,17 @@ func merge_if_needed():
 				body.change_parent( self )
 			
 			
-			print( "merged ", rf.name, " with ", self.name )
+			DDD.print( "merged " + rf.name + " with " + self.name )
 			# Also check if it is player's ref frame.
 			# If it is, change it to the one everything is merged to.
 			var player_rf: RefFramePhysics = PhysicsManager.get_player_ref_frame()
 			if rf == player_rf:
-				print( "player ref frame changed to ", rf.name )
+				DDD.print( "player ref frame changed to " + rf.name )
 			
 			# Queue for deletion.
 			rf.queue_free()
 			
-			print( "info after" )
+			DDD.print( "info after" )
 			print_all_ref_frames()
 			
 			return true
@@ -742,14 +741,14 @@ static func _debug_distances( bodies: Array ):
 	var vp: Viewport = tree.root
 	var root_node: Node = vp.get_node( "Root" ).get_node( "Sun" )
 	var ass: Body = root_node.find_node( "Construction", true, false )
-	print( "" )
-	print( "                All relative to assembly:" )
+	DDD.important()
+	DDD.print( "                All relative to assembly:" )
 	for b in bodies:
 		var body = b as RefFrameNode
 		if body == null:
 			continue
 		var se3: Se3Ref = body.relative_to( ass )
-		print( body.name, ": ", se3.r )
+		DDD.print( body.name + ": " + str(se3.r) )
 	pass
 
 

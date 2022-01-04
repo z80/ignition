@@ -14,6 +14,8 @@ func _set_thrust( th ):
 
 func _integrate_forces( state ):
 	var l: float = thrust.length()
+	DDD.important()
+	DDD.print( "thrust_used:     " + str(l), -1.0, "thrust_used" )
 	if l > 0.0:
 		state.add_central_force( thrust );
 

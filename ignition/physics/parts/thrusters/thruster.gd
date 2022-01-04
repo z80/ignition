@@ -54,6 +54,10 @@ func init():
 func process_inner( _delta: float ):
 	.process_inner( _delta )
 	_process_fuel( _delta )
+	# Need to do it all the time because when 
+	# RF switch/jump happens physical object is destroyed and 
+	# created again. Due to that need to continuoulsy assign it.
+	_setup_thrust()
 
 
 
@@ -308,6 +312,8 @@ func _setup_thrust():
 		n = q.xform( n )
 		var thrust: Vector3 = n * p
 		_physical.thrust = thrust
+		DDD.important()
+		DDD.print( "thrust_assigned: " + str(thrust), -1.0, "thrust_assigned" )
 
 
 

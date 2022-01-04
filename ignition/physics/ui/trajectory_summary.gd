@@ -79,6 +79,7 @@ func _visualize_celestial_motion():
 		t = abs( _cm.time_after_periapsis() )
 		t = T*0.5 - t
 		stri = Time.seconds_to_str( t )
+		l.text = stri
 	else:
 		l.text = "--:--"
 	var v: float = _cm.max_velocity()
@@ -122,7 +123,7 @@ func _visualize_none():
 	
 	l = get_node( "VPerigee" )
 	l.text = "--:--"
-	l = get_node( "VPerigee" )
+	l = get_node( "VApogee" )
 	l.text = "--:--"
 	l = get_node( "Period" )
 	l.text = "--:--"

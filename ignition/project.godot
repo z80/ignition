@@ -284,6 +284,7 @@ Constants="*res://physics/singletons/constants.gd"
 UserInput="*res://physics/user_unput/user_input.gd"
 RootScene="*res://physics/singletons/root_scene.tscn"
 UiSound="*res://physics/singletons/sound/ui_sound.tscn"
+DDD="*res://debug/ddd.gd"
 
 [display]
 
@@ -296,7 +297,7 @@ enabled=PoolStringArray( "gut" )
 
 [gui]
 
-theme/custom_font="res://physics/ui/navigation/font_digital.tres"
+theme/custom_font="res://assets/font_digital.tres"
 
 [input]
 

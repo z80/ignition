@@ -11,14 +11,19 @@ func _enter_tree():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	
+	DDD.print( "Hello!" )
+	
 	var camera: RefFrameNode = get_node( "Camera" )
 	camera.set_mode( PlayerCamera.Mode.TPS_AZIMUTH )
+	DDD.print( "Setup camera!" )
 #	var cp = camera.get_parent()
 #	if cp != null:
 #		cp.remove_child( camera )
 #	RootScene.get_root_for_visuals().add_child( camera )
 	
 	var character = _create_character( "my_character", Vector3( 1.0, 0.0, 0.0 ), 1.0 )
+	DDD.print( "Created a character!" )
 	
 	# Initial set of select and focus object.
 	PhysicsManager.camera           = camera
@@ -30,9 +35,13 @@ func _ready():
 	#var character2 = _create_character( "my_character", Vector3( 1.0, 0.0, -0.02 ), 1.0 )
 	#_create_other_body()
 	var construction = _create_construction()
+	DDD.print( "Created a construction!", 1.0, "important" )
 	
 	var se3: Se3Ref = character.relative_to( construction )
+	DDD.print( "And this se3 is computed for debug purposes!" )
 	
+	UiSound.play( "res://physics/singletons/sound/assets/music_01.ogg" )
+
 	
 	
 	

@@ -13,11 +13,13 @@ __meta__ = {
 }
 
 [node name="TargetLbl" type="RichTextLabel" parent="."]
-margin_right = 49.0
+margin_right = 101.0
 margin_bottom = 15.0
 bbcode_enabled = true
 bbcode_text = "[b]Center:[/b]"
+meta_underlined = false
 text = "Center:"
+scroll_active = false
 
 [node name="Target" type="Label" parent="."]
 margin_left = 105.452
@@ -35,7 +37,9 @@ margin_right = 102.0
 margin_bottom = 31.0
 bbcode_enabled = true
 bbcode_text = "[b]Traj. type:[/b]"
+meta_underlined = false
 text = "Traj. type:"
+scroll_active = false
 
 [node name="TrajectoryType" type="Label" parent="."]
 margin_left = 105.119
@@ -53,7 +57,9 @@ margin_right = 102.0
 margin_bottom = 48.0
 bbcode_enabled = true
 bbcode_text = "[b]Apogee:[/b]"
+meta_underlined = false
 text = "Apogee:"
+scroll_active = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -74,7 +80,9 @@ margin_right = 102.0
 margin_bottom = 65.0
 bbcode_enabled = true
 bbcode_text = "[b]Perigee:[/b]"
+meta_underlined = false
 text = "Perigee:"
+scroll_active = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -95,7 +103,9 @@ margin_right = 102.0
 margin_bottom = 80.0
 bbcode_enabled = true
 bbcode_text = "[b]T to perigee:[/b]"
+meta_underlined = false
 text = "T to perigee:"
+scroll_active = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -116,7 +126,9 @@ margin_right = 102.0
 margin_bottom = 95.0
 bbcode_enabled = true
 bbcode_text = "[b]T to apogee:[/b]"
+meta_underlined = false
 text = "T to apogee:"
+scroll_active = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -137,7 +149,9 @@ margin_right = 102.0
 margin_bottom = 110.0
 bbcode_enabled = true
 bbcode_text = "[b]V apogee:[/b]"
+meta_underlined = false
 text = "V apogee:"
+scroll_active = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -159,7 +173,9 @@ margin_right = 102.749
 margin_bottom = 125.0
 bbcode_enabled = true
 bbcode_text = "[b]V perigee:[/b]"
+meta_underlined = false
 text = "V perigee:"
+scroll_active = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -180,7 +196,9 @@ margin_right = 102.0
 margin_bottom = 139.0
 bbcode_enabled = true
 bbcode_text = "[b]Period:[/b]"
+meta_underlined = false
 text = "Period:"
+scroll_active = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -201,7 +219,9 @@ margin_right = 102.0
 margin_bottom = 153.0
 bbcode_enabled = true
 bbcode_text = "[b]Velocity:[/b]"
+meta_underlined = false
 text = "Velocity:"
+scroll_active = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -223,7 +243,9 @@ margin_right = 103.001
 margin_bottom = 167.683
 bbcode_enabled = true
 bbcode_text = "[b]Distance:[/b]"
+meta_underlined = false
 text = "Distance:"
+scroll_active = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -240,4 +262,5 @@ __meta__ = {
 
 [node name="Timer" type="Timer" parent="."]
 autostart = true
+
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
