@@ -13,6 +13,8 @@ var _texts: Array = []
 var _font : Font = null
 var _color: Color = TEXT_COLOR
 
+export(bool) var debug = false
+
 func _ready():
 	# Get default font
 	# Meh
@@ -36,6 +38,9 @@ func important():
 
 
 func print( stri: String, timeout: float = 5.0, key: String = "" ):
+	if not debug:
+		return
+	
 	if not key.empty():
 		var qty: int = _texts.size()
 		for i in range(qty):
