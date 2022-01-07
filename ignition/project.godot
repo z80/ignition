@@ -449,11 +449,12 @@ name_num_separator=2
 [physics]
 
 common/physics_fps=240
+3d/active_soft_world=false
 2d/default_gravity=981
 2d/default_linear_damp=0.02
 2d/default_angular_damp=0.3
 3d/default_gravity=0.0
-3d/default_linear_damp=0.01
+3d/default_linear_damp=0.0
 3d/default_angular_damp=0.01
 
 [rendering]
