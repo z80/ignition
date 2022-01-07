@@ -258,7 +258,7 @@ func update_camera( delta: float ):
 		var celestial_surface: CelestialSurface = celestial_body as CelestialSurface
 		# For Sun "celestial_surface" is null because it's of a different type.
 		# Camera should make atmosphere invisible in this case.
-		c.apply_atmosphere( celestial_body )
+		c.apply_atmosphere( celestial_surface )
 	
 	# Apply sun.
 	var group: String = Constants.SUN_GROUP_NAME
