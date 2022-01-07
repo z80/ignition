@@ -3,7 +3,6 @@
 [resource]
 resource_name = "Construction"
 length = 2.0
-loop = true
 tracks/0/type = "transform"
 tracks/0/path = NodePath("Armature/Skeleton:Hand_L")
 tracks/0/interp = 1
