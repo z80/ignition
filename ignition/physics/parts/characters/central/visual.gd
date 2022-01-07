@@ -12,7 +12,8 @@ func _ready():
 
 
 func set_speed_normalized( s: float, v: Vector3 ):
-	s = clamp( s, 0.0, 1.0 )
+	v.x = clamp( v.x, -1.0, 1.0 )
+	v.z = clamp( v.z, -1.0, 1.0 )
 	var at: AnimationTree = get_node( "AnimationTree" )
-	at.set( "parameters/blend_position", s )
+	at.set( "parameters/blend_position", Vector2( v.x, -v.z ) )
 

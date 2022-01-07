@@ -43,7 +43,7 @@ material/0 = ExtResource( 5 )
 
 [node name="SunLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.11571, 0, -4 )
-light_color = Color( 0.996078, 1, 0.733333, 1 )
+light_color = Color( 0.996078, 1, 0.843137, 1 )
 directional_shadow_mode = 0
 
 [node name="MeshInstance" type="MeshInstance" parent="SunLight"]
