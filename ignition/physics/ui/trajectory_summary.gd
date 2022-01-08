@@ -36,7 +36,7 @@ func _update_celestial_motion():
 		return
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
 	var p: Node = ctrl.get_parent()
-	var cb: CelestialSurface = ClosestCelestialBody.closest_celestial_body( p )
+	var cb: CelestialBody = ClosestCelestialBody.closest_celestial_body( p )
 	if cb == null:
 		_do_show = false
 		return

@@ -506,6 +506,14 @@ func _init_basis():
 
 
 func apply_atmosphere( celestial_body: RefFrameNode ):
+	var atm: MeshInstance = get_node( "Camera/Atmosphere" ) as MeshInstance
+	if atm == null:
+		return
+	var visible: bool = (celestial_body != null)
+	atm.visible = visible
+	if not visible:
+		return
+	
 	var se3: Se3Ref = celestial_body.relative_to( self )
 	var planet_center: Vector3 = se3.r
 	
@@ -517,9 +525,6 @@ func apply_atmosphere( celestial_body: RefFrameNode ):
 	var player_parent: Node = self.get_parent()
 	#print( "planet origin: ", r, ", player parent: ", player_parent.name )
 	
-	var atm: MeshInstance = get_node( "Camera/Atmosphere" ) as MeshInstance
-	if atm == null:
-		return
 	
 	var f: float = self.far
 	var far: float = f * 0.5
