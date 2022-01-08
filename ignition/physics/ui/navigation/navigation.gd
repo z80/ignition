@@ -41,7 +41,7 @@ func _recompute_mode_surface():
 		return
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
 	var p: Node = ctrl.get_parent()
-	var cb: CelestialSurface = ClosestCelestialBody.closest_celestial_body( p )
+	var cb: CelestialSurface = ClosestCelestialBody.closest_celestial_body( p ) as CelestialSurface
 	if cb == null:
 		return
 	var rot: RefFrameNode = cb.rotation_rf()
@@ -97,10 +97,10 @@ func _recompute_mode_orbit():
 		return
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
 	var p: Node = ctrl.get_parent()
-	var cb: CelestialSurface = ClosestCelestialBody.closest_celestial_body( p )
+	var cb: CelestialBody = ClosestCelestialBody.closest_celestial_body( p )
 	if cb == null:
 		return
-	var tran: RefFrameNode = cb.translation_rf()
+	var tran: RefFrameNode = cb
 	
 	var se3: Se3Ref = ctrl.relative_to( tran )
 	var LocalRefFrame = preload( "res://physics/utils/rotation_to.gd" )

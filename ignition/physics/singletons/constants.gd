@@ -10,9 +10,9 @@ const PLANETS_GROUP_NAME: String   = "spheres"
 const SUN_GROUP_NAME: String       = "sun"
 
 const DEBUG: bool = true
-const RF_JUMP_DISTANCE: float  = 50.0
-const RF_SPLIT_DISTANCE: float = 100.0
-const RF_MERGE_DISTANCE: float = 80.0
+const RF_JUMP_DISTANCE: float  = 500.0
+const RF_SPLIT_DISTANCE: float = 1000.0
+const RF_MERGE_DISTANCE: float = 800.0
 # Switching ref frames.
 # Switches to orbiting with atmosphere height+rf_change_DELTA. 
 # And back to surface rf with atmosphere height-rf_change_DELTA.
@@ -20,8 +20,8 @@ const RF_CHANGE_DELTA = 5.0
 
 
 
-const BODY_EXCLUDE_DIST: float = 100.0
-const BODY_INCLUDE_DIST: float = 80.0
+const BODY_EXCLUDE_DIST: float = 1000.0
+const BODY_INCLUDE_DIST: float = 800.0
 
 # Icon shows up only if closer than this distance
 const INTERACT_ICON_DIST: float = 30.0
@@ -63,7 +63,7 @@ const SAVE_DIR_NAME: String = "res://.save_files"
 const ButtonClick: String = "res://physics/singletons/sound/assets/button_click.ogg"
 
 # Sounds for coupling/decoupling during construction
-const ConstructionCoupling: String   = "res://physics/bodies/construction/assets/air_wrench_tightening.ogg"
+const ConstructionCoupling : String   = "res://physics/bodies/construction/assets/air_wrench_tightening.ogg"
 const ConstructionDecoupling: String = "res://physics/bodies/construction/assets/air_wrench_loosening.ogg"
 
 
