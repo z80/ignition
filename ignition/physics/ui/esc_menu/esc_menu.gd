@@ -32,8 +32,8 @@ func _on_Load_pressed():
 
 
 func _on_Quit_pressed():
-	var t: SceneTree = get_tree()
-	t.quit()
+	var QuitMenu: PackedScene = preload( "res://physics/ui/esc_menu/quit_menu.tscn" )
+	self.push( QuitMenu )
 	UiSound.play( Constants.ButtonClick )
 
 
