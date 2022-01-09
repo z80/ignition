@@ -4,20 +4,18 @@
 [ext_resource path="res://assets/font_digital.tres" type="DynamicFont" id=2]
 [ext_resource path="res://wiki_handler/wiki.tscn" type="PackedScene" id=3]
 [ext_resource path="res://wiki_handler/assets/close_20.png" type="Texture" id=4]
+[ext_resource path="res://wiki_handler/assets/drag_corner.png" type="Texture" id=5]
 
 [sub_resource type="StyleBoxFlat" id=1]
 bg_color = Color( 0.25098, 0.588235, 0.717647, 1 )
 
-[sub_resource type="StyleBoxFlat" id=2]
-bg_color = Color( 0.27451, 0.27451, 0.27451, 1 )
-
 [node name="GuiClickContainer" type="Panel"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 238.0
-margin_top = 92.0
-margin_right = -193.0
-margin_bottom = -103.0
+margin_left = 48.0
+margin_top = 48.0
+margin_right = -593.0
+margin_bottom = -72.0
 rect_min_size = Vector2( 180, 120 )
 script = ExtResource( 1 )
 __meta__ = {
@@ -32,7 +30,7 @@ __meta__ = {
 }
 
 [node name="TitleBar" type="Panel" parent="VBox"]
-margin_right = 593.0
+margin_right = 383.0
 margin_bottom = 32.0
 rect_min_size = Vector2( 0, 32 )
 size_flags_horizontal = 3
@@ -73,17 +71,20 @@ __meta__ = {
 anchor_right = 0.0
 anchor_bottom = 0.0
 margin_top = 36.0
-margin_right = 593.0
-margin_bottom = 381.0
+margin_right = 383.0
+margin_bottom = 480.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="ResizeHandle" type="Panel" parent="VBox"]
-margin_top = 385.0
-margin_right = 593.0
-margin_bottom = 405.0
+[node name="ResizeHandle" type="TextureRect" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -20.0
+margin_top = -20.0
 rect_min_size = Vector2( 20, 20 )
-custom_styles/panel = SubResource( 2 )
+texture = ExtResource( 5 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -92,5 +93,5 @@ __meta__ = {
 [connection signal="mouse_exited" from="VBox/TitleBar" to="." method="_on_TitleBar_mouse_exited"]
 [connection signal="pressed" from="VBox/TitleBar/Close" to="." method="_on_Close_pressed"]
 [connection signal="wiki_page" from="VBox/Wiki" to="." method="_on_wiki_page"]
-[connection signal="mouse_entered" from="VBox/ResizeHandle" to="." method="_on_ResizeHandle_mouse_entered"]
-[connection signal="mouse_exited" from="VBox/ResizeHandle" to="." method="_on_ResizeHandle_mouse_exited"]
+[connection signal="mouse_entered" from="ResizeHandle" to="." method="_on_ResizeHandle_mouse_entered"]
+[connection signal="mouse_exited" from="ResizeHandle" to="." method="_on_ResizeHandle_mouse_exited"]

@@ -46,3 +46,9 @@ func _on_NavBall_pressed():
 	var r: Node = _get_root_ui()
 	var tp: Node = r.get_node( "NavBall" )
 	tp.visible = v
+
+
+
+
+
+

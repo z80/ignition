@@ -1,0 +1,30 @@
+[center][b]Game controls[/b][/center]
+
+The main one is [color=yellow][b][i]F1[/i][/b][/color] key. It opens up this help window!
+
+Different rocket parts allow different controls. For example, rocket engine supports on/off and trottling only. Whereas an astronaut is able to walk, strafe and turn. Due to that mileage may vary depending on what you are trying to control.
+
+In general, the game is controlled via keyboard and mouse.
+
+Key bindings are the following.
+
+[color=yellow][b][i]W, S, A, D, Q, E[/i][/b][/color] keys are used for translational movements. Astronaut walks when you press either button while controlling him.
+
+[color=yellow][b][i]I, K, J, L, U, O[/i][/b][/color] control rotations. Astronayt only rotates around his veertical axis. It can be achieved by pressing [color=yellow][b][i]U, O[/i][/b][/color]. Whereas reaction control wheels rocket part supports all 3 spatial rotational axes.
+
+[color=yellow][b][i]Z, X[/i][/b][/color] keys change rocket engine thrust (if engine under control supports throttling).
+
+[color=yellow][b][i]Space key[/i][/b][/color] is a trigger button. It controlls binary actions. For rocket engine it turns it on/off (again if relites are supported by a particular engine).
+
+[color=yellow][b][i]1, 2, 3, 4, 5[/i][/b][/color] numerical keys toggle control groups.
+
+[color=yellow][b][i]F5[/i][/b][/color] stops game time. It makes everything freeze. While game dynamics is frozen, controls are not. You still can select objects and apply controls. Of course, the actions taken will take an effect as soon as time is unfrozen.
+
+[color=yellow][b][i]F6[/i][/b][/color] reduces game time flow rate.
+
+[color=yellow][b][i]F7[/i][/b][/color] makes game time rate to be 1 to 1 with real time.
+
+[color=yellow][b][i]F8[/i][/b][/color] increases game time flow rate.
+
+
+

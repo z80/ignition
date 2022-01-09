@@ -1,6 +1,8 @@
 
 extends Panel
 
+export(String) var start_page = "root" setget _set_start_page
+
 
 var _mouse = {
 	down = false,
@@ -12,7 +14,14 @@ var _pre_maximize_rect = get_rect()
 
 
 func set_title( stri: String ):
-	$TitleBar/Title.text = stri
+	var title: Label = get_node( "VBox/TitleBar/Title" )
+	title.text = stri
+
+
+func _set_start_page( path: String ):
+	var wiki: Node = get_node( "VBox/Wiki" )
+	wiki.start_file = path
+
 
 
 # List of classes to instantiate objects.
@@ -25,11 +34,11 @@ func setup_gui( classes, target_object ):
 		if has_init:
 			inst.init( target_object, self )
 	
-	var sz = $Container.rect_size
-	print( "Container size: ", sz )
-	for ch in $Container.get_children():
-		sz = ch.rect_size
-		print( "child size: ", sz )
+#	var sz = $Container.rect_size
+#	print( "Container size: ", sz )
+#	for ch in $Container.get_children():
+#		sz = ch.rect_size
+#		print( "child size: ", sz )
 
 
 
@@ -86,7 +95,6 @@ func _on_Close_pressed():
 
 
 func _on_wiki_page( path: String ):
-	var title: Label = get_node( "VBox/TitleBar/Title" )
-	title.text = path
+	set_title( path )
 
 

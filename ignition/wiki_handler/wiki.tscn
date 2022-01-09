@@ -1,12 +1,32 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://wiki_handler/wiki.gd" type="Script" id=1]
 [ext_resource path="res://wiki_handler/assets/forward.png" type="Texture" id=2]
 [ext_resource path="res://wiki_handler/assets/back.png" type="Texture" id=3]
 [ext_resource path="res://wiki_handler/assets/home.png" type="Texture" id=4]
+[ext_resource path="res://assets/fonts/AnonymousPro-Italic.ttf" type="DynamicFontData" id=5]
+[ext_resource path="res://assets/fonts/AnonymousPro-Bold.ttf" type="DynamicFontData" id=6]
+[ext_resource path="res://assets/fonts/AnonymousPro-BoldItalic.ttf" type="DynamicFontData" id=7]
+[ext_resource path="res://assets/fonts/AnonymousPro-Regular.ttf" type="DynamicFontData" id=8]
 
 [sub_resource type="Theme" id=1]
 RichTextLabel/colors/selection_color = Color( 1, 0.647059, 0.101961, 0.8 )
+
+[sub_resource type="DynamicFont" id=2]
+font_data = ExtResource( 8 )
+
+[sub_resource type="DynamicFont" id=3]
+font_data = ExtResource( 7 )
+
+[sub_resource type="DynamicFont" id=4]
+font_data = ExtResource( 5 )
+
+[sub_resource type="DynamicFont" id=5]
+size = 32
+font_data = ExtResource( 6 )
+
+[sub_resource type="DynamicFont" id=6]
+font_data = ExtResource( 8 )
 
 [node name="Wiki" type="VBoxContainer"]
 anchor_right = 1.0
@@ -61,6 +81,11 @@ focus_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme = SubResource( 1 )
+custom_fonts/mono_font = SubResource( 2 )
+custom_fonts/bold_italics_font = SubResource( 3 )
+custom_fonts/italics_font = SubResource( 4 )
+custom_fonts/bold_font = SubResource( 5 )
+custom_fonts/normal_font = SubResource( 6 )
 bbcode_enabled = true
 selection_enabled = true
 __meta__ = {

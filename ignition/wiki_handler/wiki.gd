@@ -6,6 +6,7 @@ const SUFFIX: String = ".wiki"
 
 export(String) var root_folder = "res://wiki"
 export(String) var root_file   = "root"
+export(String) var start_file  = "root"
 
 
 var _text_area: RichTextLabel = null
@@ -17,7 +18,7 @@ var _history_index: int = -1
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	open( root_file )
+	open( start_file )
 
 
 func open( path: String, update_history: bool = true ):

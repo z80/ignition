@@ -1,16 +1,30 @@
-Let's go to another page: [url]another_page[/url].
+[center][b]Ignition[/b][/center]
+[center][img]res://wiki/images/root/cover.jpg[/img][/center]
 
-ITCH.io page: [color=blue][url]https://litedictteam.itch.io/ignition[/url][/color]
-Project source code: [url]https://github.com/z80/ignition[/url]
+Ignition is a space flight simulation game. It is inspired by Kerbal Space Program. It is a hobby project initiated in attempt to learn something new like space flight dynamics.
 
-[img]res://wiki/images/image.jpg[/img]
+The game is a sandbox game and is open ended. As a player you are expected to build rockets and explore the solar system.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-sed do eiusmod tempor incididunt ut labore et dolore magna 
-aliqua. Ut enim ad minim veniam, quis nostrud exercitation 
-ullamco laboris nisi ut aliquip ex ea commodo consequat. 
-Duis aute irure dolor in reprehenderit in voluptate velit 
-esse cillum dolore eu fugiat nulla pariatur. Excepteur sint 
-occaecat cupidatat non proident, sunt in culpa qui officia 
-deserunt mollit anim id est laborum.
+The game itself is capable of simulating real size planets and solar systems. However, in order to make it easier to play, planets and solar system are reduced in size to make space flight times more manageable. Typical planet orbital periods are days instead of years like in our real solar system.
+
+In the game planets and moons follow perfect Kepler orbits. When in space your rocket normally flies along elliptic, parabolic or hyperbolic orbit. It is assumed that only the closest planet (moon or star) affects the orbit, influences from distant planets are ignored (for now). 
+
+In special cases, when Kepler equations degenerate, rocket trajectory is computed using [i]Kunge-Kutta 4-th order[/i] numerical integration.
+
+
+[center][b]Useful pages to explore[/b][/center]
+[color=red][url=controls]Controls[/url][/color]
+[color=red][url=control_groups]Control groups[/url][/color]
+[color=red][url=navigation]Navigation[/url][/color]
+[color=red][url=parts]Available parts description[/url][/color]
+
+[center][b]External links[/b][/center]
+ITCH.io page: [color=green][url]https://litedictteam.itch.io/ignition[/url][/color] Please consider leaving a feedback!
+Project source code: [color=green][url]https://github.com/z80/ignition[/url][/color]
+
+
+[center][b]How to play[/b][/center]
+
+You start your jorney controlling an astronaut nearby a rocket launch pad. You can use the launch pad to build a rocket. As soon as it is ready, you can take your astronaut on board and fly to space.
+
 
