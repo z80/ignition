@@ -1,0 +1,33 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "Spatial",
+"class": "GlowBorderEffectObject",
+"language": "GDScript",
+"path": "res://addons/glow_border_effect/glow_border_effect_object.gd"
+} ]
+_global_script_class_icons={
+"GlowBorderEffectObject": "res://addons/glow_border_effect/glow_border_effect_renderer_icon.png"
+}
+
+[application]
+
+config/name="test_wiki"
+run/main_scene="res://wiki.tscn"
+config/icon="res://icon.png"
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+environment/default_environment="res://default_env.tres"

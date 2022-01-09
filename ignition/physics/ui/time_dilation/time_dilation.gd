@@ -7,10 +7,10 @@ var _controls: Dictionary = {}
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_controls = {}
-	_controls[KEY_F1] = { node=get_node( "Pause" ),  method="set_time_scale_0" }
-	_controls[KEY_F2] = { node=get_node( "Lower" ),  method="set_time_scale_lower" }
-	_controls[KEY_F3] = { node=get_node( "Normal" ), method="set_time_scale_1" }
-	_controls[KEY_F4] = { node=get_node( "Higher" ), method="set_time_scale_higher" }
+	_controls[KEY_F5] = { node=get_node( "Pause" ),  method="set_time_scale_0" }
+	_controls[KEY_F6] = { node=get_node( "Lower" ),  method="set_time_scale_lower" }
+	_controls[KEY_F7] = { node=get_node( "Normal" ), method="set_time_scale_1" }
+	_controls[KEY_F8] = { node=get_node( "Higher" ), method="set_time_scale_higher" }
 	
 	# Connect to methods.
 	for key in _controls:

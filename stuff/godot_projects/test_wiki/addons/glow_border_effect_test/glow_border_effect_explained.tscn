@@ -1,0 +1,185 @@
+[gd_scene load_steps=13 format=2]
+
+[ext_resource path="res://addons/glow_border_effect/glow_border_effect_renderer.tscn" type="PackedScene" id=1]
+[ext_resource path="res://addons/glow_border_effect/glow_border_effect_object.gd" type="Script" id=2]
+
+[sub_resource type="GDScript" id=11]
+script/source = "extends Node
+# Setup for displaying internal shader results in different view
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	$ViewportContainerPrepass.material.set_shader_param(\"view\", $GlowBorderEffectRenderer.find_node(\"ViewportPrepass\").get_texture())
+	$ViewportContainerBlur.material.set_shader_param(\"view\", $GlowBorderEffectRenderer.find_node(\"ViewportBlure\").get_texture())
+	$ViewportContainerGlow.material.set_shader_param(\"view_prepass\", $GlowBorderEffectRenderer.find_node(\"ViewportBlure\").get_texture())
+	$ViewportContainerGlow.material.set_shader_param(\"view_blure\", $GlowBorderEffectRenderer.find_node(\"ViewportPrepass\").get_texture())
+"
+
+[sub_resource type="Shader" id=7]
+code = "shader_type canvas_item;
+
+uniform sampler2D view;
+
+void fragment() {
+	COLOR.xyz = texture(view,UV).xyz;
+}"
+
+[sub_resource type="ViewportTexture" id=14]
+viewport_path = NodePath("ViewportContainerPrepass/Viewport")
+
+[sub_resource type="ShaderMaterial" id=6]
+resource_local_to_scene = true
+shader = SubResource( 7 )
+shader_param/view = SubResource( 14 )
+
+[sub_resource type="ViewportTexture" id=15]
+viewport_path = NodePath("ViewportContainerBlur/Viewport")
+
+[sub_resource type="ShaderMaterial" id=9]
+resource_local_to_scene = true
+shader = SubResource( 7 )
+shader_param/view = SubResource( 15 )
+
+[sub_resource type="Shader" id=10]
+code = "shader_type canvas_item;
+
+uniform sampler2D view_prepass;
+uniform sampler2D view_blure;
+uniform float intensity : hint_range(0, 5);
+
+void fragment() {
+	vec3 prepass = texture(view_prepass, UV).xyz; // prepass
+	vec3 blurred = texture(view_blure, UV).xyz; // blurred
+	vec3 glow = min(vec3(1,1,1), max(vec3(0,0,0), blurred - prepass)*intensity);
+	COLOR.xyz = glow;
+}"
+
+[sub_resource type="ShaderMaterial" id=8]
+shader = SubResource( 10 )
+shader_param/intensity = 3.104
+
+[sub_resource type="CubeMesh" id=12]
+
+[sub_resource type="SpatialMaterial" id=13]
+albedo_color = Color( 0.298039, 0.87451, 0.0666667, 1 )
+
+[node name="GlowBorderEffectExplained" type="Node"]
+script = SubResource( 11 )
+__meta__ = {
+"_editor_description_": ""
+}
+
+[node name="GlowBorderEffectRenderer" parent="." instance=ExtResource( 1 )]
+anchor_left = 1.0
+anchor_top = 1.0
+margin_left = -512.0
+margin_top = -300.0
+
+[node name="ViewportContainerPrepass" type="ViewportContainer" parent="."]
+material = SubResource( 6 )
+margin_right = 512.0
+margin_bottom = 300.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Viewport" type="Viewport" parent="ViewportContainerPrepass"]
+size = Vector2( 512, 300 )
+transparent_bg = true
+handle_input_locally = false
+render_target_update_mode = 3
+
+[node name="ViewportContainerBlur" type="ViewportContainer" parent="."]
+material = SubResource( 9 )
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -512.0
+margin_bottom = 300.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Viewport" type="Viewport" parent="ViewportContainerBlur"]
+size = Vector2( 512, 300 )
+transparent_bg = true
+handle_input_locally = false
+render_target_update_mode = 3
+
+[node name="ViewportContainerGlow" type="ViewportContainer" parent="."]
+material = SubResource( 8 )
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_top = -300.0
+margin_right = 512.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Viewport" type="Viewport" parent="ViewportContainerGlow"]
+size = Vector2( 512, 300 )
+handle_input_locally = false
+render_target_update_mode = 3
+
+[node name="GridContainer" type="GridContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+columns = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="GridContainer"]
+margin_top = 284.0
+margin_right = 510.0
+margin_bottom = 298.0
+size_flags_horizontal = 3
+size_flags_vertical = 6
+text = "Prepass draw shadow VisualInstances with glow color"
+align = 1
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label2" type="Label" parent="GridContainer"]
+margin_left = 514.0
+margin_top = 284.0
+margin_right = 1024.0
+margin_bottom = 298.0
+size_flags_horizontal = 3
+text = "Apply blure shader to the prepass"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label3" type="Label" parent="GridContainer"]
+margin_top = 586.0
+margin_right = 510.0
+margin_bottom = 600.0
+text = "Blure - Prepass = Glowing border :)"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label4" type="Label" parent="GridContainer"]
+margin_left = 514.0
+margin_top = 586.0
+margin_right = 1024.0
+margin_bottom = 600.0
+text = "Glowing border applied on top of sceen"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Spatial" type="Spatial" parent="."]
+script = ExtResource( 2 )
+glow_border_effect = true
+
+[node name="MeshInstance" type="MeshInstance" parent="Spatial"]
+mesh = SubResource( 12 )
+skeleton = NodePath("../..")
+material/0 = SubResource( 13 )

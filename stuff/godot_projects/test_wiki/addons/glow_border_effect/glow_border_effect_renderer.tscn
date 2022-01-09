@@ -1,0 +1,122 @@
+[gd_scene load_steps=11 format=2]
+
+[ext_resource path="res://addons/glow_border_effect/glow_border_effect_rederer.gd" type="Script" id=1]
+[ext_resource path="res://addons/glow_border_effect/glow_camera_environment.tres" type="Environment" id=5]
+
+[sub_resource type="Shader" id=14]
+code = "shader_type canvas_item;
+
+uniform sampler2D view_prepass;
+uniform sampler2D view_blure;
+uniform sampler2D view_scene;
+uniform float intensity : hint_range(0, 5);
+
+void fragment() {
+	vec3 prepass = texture(view_prepass, UV).xyz; // prepass
+	vec3 blure = texture(view_blure, UV).xyz; // blurred
+	vec3 col = texture(view_scene, UV).xyz; // col
+	vec3 glow = min(vec3(1,1,1), max(vec3(0,0,0), blure - prepass)*intensity);
+	float luminance = glow.r * 0.299 + glow.g * 0.587 + glow.b * 0.114;
+	vec3 glow_inv = vec3(1.0,1.0,1.0) - vec3(luminance,luminance,luminance);
+	COLOR.xyz = col*glow_inv + glow;
+}"
+
+[sub_resource type="ShaderMaterial" id=15]
+shader = SubResource( 14 )
+shader_param/intensity = 3.0
+
+[sub_resource type="Shader" id=16]
+code = "shader_type canvas_item;
+
+// Blurs the screen in the X-direction.
+void fragment() {
+    vec3 col = texture(TEXTURE, UV).xyz * 0.18;
+    col += texture(TEXTURE, UV + vec2(SCREEN_PIXEL_SIZE.x, 0.0)).xyz * 0.14;
+    col += texture(TEXTURE, UV + vec2(-SCREEN_PIXEL_SIZE.x, 0.0)).xyz * 0.14;
+    col += texture(TEXTURE, UV + vec2(2.0 * SCREEN_PIXEL_SIZE.x, 0.0)).xyz * 0.11;
+    col += texture(TEXTURE, UV + vec2(2.0 * -SCREEN_PIXEL_SIZE.x, 0.0)).xyz * 0.11;
+    col += texture(TEXTURE, UV + vec2(3.0 * SCREEN_PIXEL_SIZE.x, 0.0)).xyz * 0.08;
+    col += texture(TEXTURE, UV + vec2(3.0 * -SCREEN_PIXEL_SIZE.x, 0.0)).xyz * 0.08;
+    col += texture(TEXTURE, UV + vec2(4.0 * SCREEN_PIXEL_SIZE.x, 0.0)).xyz * 0.06;
+    col += texture(TEXTURE, UV + vec2(4.0 * -SCREEN_PIXEL_SIZE.x, 0.0)).xyz * 0.06;
+    col += texture(TEXTURE, UV + vec2(5.0 * SCREEN_PIXEL_SIZE.x, 0.0)).xyz * 0.02;
+    col += texture(TEXTURE, UV + vec2(5.0 * -SCREEN_PIXEL_SIZE.x, 0.0)).xyz * 0.02;   
+    COLOR.xyz = col;
+}"
+
+[sub_resource type="ShaderMaterial" id=17]
+shader = SubResource( 16 )
+
+[sub_resource type="Shader" id=18]
+code = "shader_type canvas_item;
+
+// Blurs the screen in the Y-direction.
+void fragment() {
+    vec3 col = texture(TEXTURE, UV).xyz * 0.18;
+    col += texture(TEXTURE, UV + vec2(0.0, SCREEN_PIXEL_SIZE.y)).xyz * 0.14;
+    col += texture(TEXTURE, UV + vec2(0.0, -SCREEN_PIXEL_SIZE.y)).xyz * 0.14;
+    col += texture(TEXTURE, UV + vec2(0.0, 2.0 * SCREEN_PIXEL_SIZE.y)).xyz * 0.11;
+    col += texture(TEXTURE, UV + vec2(0.0, 2.0 * -SCREEN_PIXEL_SIZE.y)).xyz * 0.11;
+    col += texture(TEXTURE, UV + vec2(0.0, 3.0 * SCREEN_PIXEL_SIZE.y)).xyz * 0.08;
+    col += texture(TEXTURE, UV + vec2(0.0, 3.0 * -SCREEN_PIXEL_SIZE.y)).xyz * 0.08;
+    col += texture(TEXTURE, UV + vec2(0.0, 4.0 * SCREEN_PIXEL_SIZE.y)).xyz * 0.06;
+    col += texture(TEXTURE, UV + vec2(0.0, 4.0 * -SCREEN_PIXEL_SIZE.y)).xyz * 0.06;
+    col += texture(TEXTURE, UV + vec2(0.0, 5.0 * SCREEN_PIXEL_SIZE.y)).xyz * 0.02;
+    col += texture(TEXTURE, UV + vec2(0.0, 5.0 * -SCREEN_PIXEL_SIZE.y)).xyz * 0.02;
+    COLOR.xyz = col;
+}"
+
+[sub_resource type="ShaderMaterial" id=19]
+shader = SubResource( 18 )
+
+[sub_resource type="ProceduralSky" id=9]
+
+[sub_resource type="Environment" id=13]
+background_mode = 2
+background_sky = SubResource( 9 )
+
+[node name="GlowBorderEffectRenderer" type="ViewportContainer"]
+material = SubResource( 15 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": "The GlowBorderEffectRender configure the needed viewports and ViewportContainers to create the glowing border effect.
+To align the internal cameras with the current camera of your  sceen call the camera_transform_changed."
+}
+
+[node name="ViewportBlure" type="Viewport" parent="."]
+handle_input_locally = false
+render_target_update_mode = 3
+
+[node name="ViewportContainerBlureX" type="ViewportContainer" parent="ViewportBlure"]
+material = SubResource( 17 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ViewportHalfBlure" type="Viewport" parent="ViewportBlure/ViewportContainerBlureX"]
+handle_input_locally = false
+render_target_update_mode = 3
+
+[node name="ViewportContainerBlureY" type="ViewportContainer" parent="ViewportBlure/ViewportContainerBlureX/ViewportHalfBlure"]
+material = SubResource( 19 )
+
+[node name="ViewportPrepass" type="Viewport" parent="ViewportBlure/ViewportContainerBlureX/ViewportHalfBlure/ViewportContainerBlureY"]
+handle_input_locally = false
+render_target_update_mode = 3
+
+[node name="Camera" type="Camera" parent="ViewportBlure/ViewportContainerBlureX/ViewportHalfBlure/ViewportContainerBlureY/ViewportPrepass"]
+transform = Transform( 0.877582, -0.229849, 0.420736, 0, 0.877582, 0.479426, -0.479426, -0.420736, 0.770151, 1.68294, 1.9177, 3.0806 )
+cull_mask = 2
+environment = ExtResource( 5 )
+
+[node name="ViewportScene" type="Viewport" parent="."]
+handle_input_locally = false
+render_target_update_mode = 3
+
+[node name="Camera" type="Camera" parent="ViewportScene"]
+transform = Transform( 0.877582, -0.229849, 0.420736, 0, 0.877582, 0.479426, -0.479426, -0.420736, 0.770151, 1.68294, 1.9177, 3.0806 )
+cull_mask = 1048573
+environment = SubResource( 13 )

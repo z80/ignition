@@ -1,0 +1,96 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://wiki_handler/wiki_window.gd" type="Script" id=1]
+[ext_resource path="res://assets/font_digital.tres" type="DynamicFont" id=2]
+[ext_resource path="res://wiki_handler/wiki.tscn" type="PackedScene" id=3]
+[ext_resource path="res://wiki_handler/assets/close_20.png" type="Texture" id=4]
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0.25098, 0.588235, 0.717647, 1 )
+
+[sub_resource type="StyleBoxFlat" id=2]
+bg_color = Color( 0.27451, 0.27451, 0.27451, 1 )
+
+[node name="GuiClickContainer" type="Panel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 238.0
+margin_top = 92.0
+margin_right = -193.0
+margin_bottom = -103.0
+rect_min_size = Vector2( 180, 120 )
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TitleBar" type="Panel" parent="VBox"]
+margin_right = 593.0
+margin_bottom = 32.0
+rect_min_size = Vector2( 0, 32 )
+size_flags_horizontal = 3
+custom_styles/panel = SubResource( 1 )
+
+[node name="Title" type="Label" parent="VBox/TitleBar"]
+margin_left = 8.0
+margin_top = 6.34955
+margin_right = 97.3811
+margin_bottom = 20.3495
+size_flags_horizontal = 3
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_fonts/font = ExtResource( 2 )
+text = "WIKI root"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Close" type="TextureButton" parent="VBox/TitleBar"]
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -24.0
+margin_top = 5.0
+margin_right = -6.0
+margin_bottom = 28.0
+rect_min_size = Vector2( 20, 20 )
+hint_tooltip = "Close WIKI window"
+texture_normal = ExtResource( 4 )
+texture_pressed = ExtResource( 4 )
+texture_hover = ExtResource( 4 )
+texture_disabled = ExtResource( 4 )
+texture_focused = ExtResource( 4 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Wiki" parent="VBox" instance=ExtResource( 3 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 36.0
+margin_right = 593.0
+margin_bottom = 381.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ResizeHandle" type="Panel" parent="VBox"]
+margin_top = 385.0
+margin_right = 593.0
+margin_bottom = 405.0
+rect_min_size = Vector2( 20, 20 )
+custom_styles/panel = SubResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="mouse_entered" from="VBox/TitleBar" to="." method="_on_TitleBar_mouse_entered"]
+[connection signal="mouse_exited" from="VBox/TitleBar" to="." method="_on_TitleBar_mouse_exited"]
+[connection signal="pressed" from="VBox/TitleBar/Close" to="." method="_on_Close_pressed"]
+[connection signal="wiki_page" from="VBox/Wiki" to="." method="_on_wiki_page"]
+[connection signal="mouse_entered" from="VBox/ResizeHandle" to="." method="_on_ResizeHandle_mouse_entered"]
+[connection signal="mouse_exited" from="VBox/ResizeHandle" to="." method="_on_ResizeHandle_mouse_exited"]
