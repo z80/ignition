@@ -1,0 +1,20 @@
+
+[center][b]How to play[/b][/center]
+
+
+[center][b]Introduction[/b][/center]
+
+You start your jorney controlling an astronaut nearby a rocket launch pad. You can use the launch pad to build a rocket. As soon as it is ready, you can take your astronaut on board and fly to space.
+Have a look at [color=red][url=controls]controls[/url][/color] page for key mapping reference.
+
+
+[center][b]Interacting with game objects[/b][/center]
+
+When moving mouse pointer around, and icon [img]res://wiki/images/root/icon.jpg[/img] appears when it close to objects. If clicked an object control window shows up. It allows you to interact with objects in different ways. The most important one is called [b][i]"control this"[/i][/b]. It makes the object actively controlled by the user.
+
+In order to start building a rocket, it is necessary to [b][i]activate[/i][/b] it first. A parts panel shows up.
+
+
+
+[b]I'm sorry, that's all I've done so far! To be appended...... Stay tuned...[/b]
+
