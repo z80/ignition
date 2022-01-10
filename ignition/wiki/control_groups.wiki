@@ -1,5 +1,13 @@
 
-To be done...
+[center][b]Control groups[/b][/center]
+
+When you click [b][i]"control this"[/i][/b] in part's interaction menu, the camera switches focus on this part and all key presses are sent to this part and all parts connected to it. Sometimes it is not desired to control all parts at once. For example, it is not desired to start second stage engine altogether with the first stage's one. This is what control groups are used for.
+
+Each part can be assigned one of control groups, any control group or none. At the same time player can select which control groups are currently active.
+
+[center][img]res://wiki/images/control_groups/control_groups.jpg[/img][/center]
+
+Active control groups can be toggled by mouse or using keyboard shortcuts, see [color=red][url=controls]controls[/url][/color].
 
 
 

@@ -10,11 +10,49 @@ Have a look at [color=red][url=controls]controls[/url][/color] page for key mapp
 
 [center][b]Interacting with game objects[/b][/center]
 
-When moving mouse pointer around, and icon [img]res://wiki/images/root/icon.jpg[/img] appears when it close to objects. If clicked an object control window shows up. It allows you to interact with objects in different ways. The most important one is called [b][i]"control this"[/i][/b]. It makes the object actively controlled by the user.
+When moving mouse pointer around, an icon [img]res://wiki/images/root/icon.jpg[/img] appears when it is close to objects. If clicked, an object control menu shows up. It allows you to interact with objects in different ways. The most important one is called [b][i]"control this"[/i][/b]. It makes the object actively controlled by the user.
 
-In order to start building a rocket, it is necessary to [b][i]activate[/i][/b] it first. A parts panel shows up.
+In order to start building a rocket, it is necessary to [b][i]activate[/i][/b] a launch pad. A parts panel shows up. One can click parts to make them show up. Each part can be dragged and rotated via interaction ([img]res://wiki/images/root/icon.jpg[/img]) icon menu.
+
+
+[center][b]Building rockets[/b][/center]
+
+Rocket parts can be attached to each other in several ways. First, each parts has connection nodes. They become visible when a parts is dragged around. A connection node shows up as a sphere, which may be either [color=yellow][b][i]yellow[/i][/b][/color] or [color=blue][b][i]blue[/i][/b][/color].
+
+A [color=yellow][b][i]yellow[/i][/b][/color] connection node can only be attached to another connection node. Depending on which parts it belongs to and where it is located on the part, it may allow other nodes to be attached to it, be ttached to other nodes, or both. So if your part doesn't want to stick to another parts it might be the nodes pair you are trying to use does not allow mutual connections.
+
+A [color=blue][b][i]blue[/i][/b][/color] connection node additionally allows being connected to other part's surface in any point.
+
+As soon as rocket design is ready, it is necessary to correctly assign control groups among rocket parts, see [color=red][url=control_groups]control groups[/url][/color] for reference.
+
+When everything is done one can bring the rocket to life by leaving the construction mode in an interaction menu of any part.
+
+At this point it is ready for flight.
 
 
 
-[b]I'm sorry, that's all I've done so far! To be appended...... Stay tuned...[/b]
+[center][b]Atmosphere flight[/b][/center]
+
+When taking off the launch pad rocket flies through the atmosphere. It causes drag forces which slow the rocket down. The faster it flies, the greater drag forces are. At the same time, the lower in the atmosphere, the greater air pressure and air density are. Bigger air density also causes greater drag forces. Because of that it usually makes sense to start flying vertically and not gain much speed when air density is high and wait till the rocket gets to the altitude where air density and drag forces are low enough to allow accelerating efficiently.
+
+
+[center][b]Space flight[/b][/center]
+
+When in space there is nothing to slow the rocket down. Depending on current velocity and position relative to home planet there might be a few different scenarios.
+
+If speed is not very high, the rocket might fall back to the planet. It is necessary to check perigee height and make sure it is not below planet's surface or in atmosphere, unless it is intentional, of course.
+
+If speed is high enough and perigee is above the atmosphere level, the rocket is safe from fallin back to the ground and should stay in orbit for a long time.
+
+If rocket speed exceeds escape velocity, trajectoy changes to hyperbolic. And the rocket will eventually fly to infinity.
+
+When performing orbital maneuvers it is worth to keep in mind [color=green][url=https://en.wikipedia.org/wiki/Oberth_effect]Oberth effect[/url][/color]. In short, the most effective fuel usage for gaining speed is at perigee.
+
+And the opposite is true, if it is necessary to get to the planet, it is necessary to lower the perigee height down. And the most suitable point for that is apogee.
+
+
+
+
+
+[b]I'm sorry, that's it for now...... Stay tuned...[/b]
 

@@ -8,6 +8,8 @@ The game itself is capable of simulating real size planets and solar systems. Ho
 
 In the game planets and moons follow perfect Kepler orbits. When in space your rocket normally flies along elliptic, parabolic or hyperbolic orbit. It is assumed that only the closest planet (moon or star) affects the orbit, influences from distant planets are ignored (for now). 
 
-In special cases, when Kepler equations degenerate, rocket trajectory is computed using [i]Kunge-Kutta 4-th order[/i] numerical integration.
+In special cases, when Kepler equations degenerate, rocket trajectory is computed using [i]Kunge-Kutta 4-th order[/i] numerical integration method.
+
+The game is at early development stage and may be buggy. Also, for now all models are very low polygon count ones as most efforts are spent on the game's logic itself.
 
 

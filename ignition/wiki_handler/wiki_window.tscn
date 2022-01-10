@@ -10,12 +10,10 @@
 bg_color = Color( 0.25098, 0.588235, 0.717647, 1 )
 
 [node name="GuiClickContainer" type="Panel"]
-anchor_right = 1.0
-anchor_bottom = 1.0
 margin_left = 48.0
 margin_top = 48.0
-margin_right = -593.0
-margin_bottom = -72.0
+margin_right = 431.0
+margin_bottom = 528.0
 rect_min_size = Vector2( 180, 120 )
 script = ExtResource( 1 )
 __meta__ = {

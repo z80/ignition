@@ -33,6 +33,7 @@ func open( path: String, update_history: bool = true ):
 	
 	var l: RichTextLabel = _get_text_area()
 	l.bbcode_text = text
+	l.scroll_to_line( 0 )
 	emit_signal( "wiki_page", path )
 	
 	if update_history:
