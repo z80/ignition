@@ -2,12 +2,12 @@ extends Control
 
 
 enum NavigationMode { SURFACE=0, ORBIT=1, TARGET=2 }
-var mode = NavigationMode.SURFACE
+var mode: int = NavigationMode.ORBIT
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	set_mode_surface()
+	set_mode_orbit()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -97,7 +97,11 @@ func _recompute_mode_surface():
 
 
 func _recompute_mode_orbit():
-	var ctrl: Body = PhysicsManager.camera.get_parent() as Body
+	var camera: RefFrameNode = PhysicsManager.camera
+	if not is_instance_valid(camera):
+		return
+	
+	var ctrl: Body = camera.get_parent() as Body
 	if ctrl == null:
 		return
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )

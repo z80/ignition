@@ -24,7 +24,7 @@ export(float) var displacement = 0.0
 
 export(float) var air_density          = 1.0
 export(float) var air_viscosity        = 0.1
-export(float) var air_pressure_surface = 10000.0
+export(float) var air_pressure_surface = 101000.0
 
 var motion: CelestialMotionRef = null
 var rotation: CelestialRotationRef = null
@@ -461,7 +461,7 @@ func air_pressure( se3_rel: Se3Ref ):
 	if d > atm_height_km:
 		return 0.0
 	
-	var p: float = air_pressure_surface * d / atm_height_km
+	var p: float = air_pressure_surface * ( 1.0 - (d / atm_height_km) )
 	return p
 
 

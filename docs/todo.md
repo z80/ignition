@@ -29,7 +29,7 @@ Here is the battle plan.
 - [x] Currently working on.... Implement an ability to use multiple force sources like gravity, rotaional, atmosphere friction, etc...
 - [x] Fix camera wobbling. Make camera up definition more clear and come from the nearest gravity center.
 - [x] Fix the rotational part of the drag-rotate tool.
-- [ ] A BUG: Fix navball rotations. Icons seem to be correct but navball is not always.
+- [x] A BUG: Fix navball rotations. Icons seem to be correct but navball is not always.
 - [x] Port over the air friction model using mesh traingles. May be also allow part connections by touching occupancy trees.
 - [x] Make "esc" menu with save/load/quit options and sub menus.
 - [ ] Make atmosphere mesh per planet.
@@ -39,11 +39,11 @@ Here is the battle plan.
 - [x] When using a decoupler, when thruster is directly below, the part above decoupler extends upwards compared to where it should be. With other nodes (other than thruster) it is ok.
 - [x] With 3.3.4 Godot joint parameters changed. Don't know right now jow to make it very stiff.
 
-- [ ] Make a distance to the geoid indication.
+- [x] Make a distance to the geoid indication.
 - [ ] Make atmospheric pressure indication.
+- [ ] Check default scaler distance. Make sure it is not too small.
 - [ ] Make sure thrusters do use atmospheric pressure.
 - [ ] Fix the interaction menu window. Make content expand the window or slider show up. Add "x" icon as close button and "L" for resize place.
-
 
 
 
