@@ -38,16 +38,13 @@ script = ExtResource( 3 )
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 1 )
 
-[node name="SpotLight" type="SpotLight" parent="."]
-transform = Transform( 0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 10, 10, 10 )
+[node name="SpotLight" type="DirectionalLight" parent="."]
+transform = Transform( 0.0319479, -0.824254, 0.565318, -0.865144, 0.260429, 0.428606, -0.500505, -0.502775, -0.704778, 10, 10, -10.7613 )
 light_color = Color( 1, 0.992157, 0.886275, 1 )
-spot_range = 73.5
-spot_angle = 32.5
 
 [node name="navball" type="Spatial" parent="."]
 
 [node name="navball_uv" type="MeshInstance" parent="navball"]
-transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, 0, 0, 0 )
 mesh = SubResource( 2 )
 material/0 = SubResource( 3 )
 

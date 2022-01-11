@@ -48,13 +48,8 @@ func _recompute_mode_surface():
 	var rot: RefFrameNode = cb.rotation_rf()
 	
 	var se3: Se3Ref = ctrl.relative_to( rot )
-	var LocalRefFrame = preload( "res://physics/utils/rotation_to.gd" )
-	var local_up: Vector3 = se3.r.normalized()
-	var q_rf: Quat = LocalRefFrame.rotation_to( Vector3.UP, local_up )
-	var q_rel: Quat = q_rf.inverse() * se3.q
-	var angles: Array = _compute_yaw_pitch_roll( q_rel )
 	var navball = get_node( "ViewportContainer/Viewport/Navball" )
-	navball.set_orientation( angles[0], angles[1], angles[2] )
+	navball.set_orientation_surface( se3 )
 	
 	# Compute prograde/retrograde.
 	var v: Vector3 = se3.v
@@ -86,11 +81,18 @@ func _recompute_mode_surface():
 
 	var speed: float = se3_in_pt.v.length()
 	var speed_lbl: Label = get_node( "Speed" )
-	speed_lbl.text = "air speed:  " + str( speed ) + "m/s"
+	speed_lbl.text = "Air speed:  " + str( speed ) + "m/s"
 	
 	var dist_km: float = se3.r.length()* 0.001 - cb.radius_km
 	var dist_lbl: Label = get_node( "GeoidDist" )
-	dist_lbl.text  = "geoid dist: " + str(dist_km) + "km"
+	dist_lbl.text  = "Geoid dist: " + str(dist_km) + "km"
+
+	var cs: CelestialSurface = cb as CelestialSurface
+	if cs != null:
+		var P: float = cs.air_pressure( se3 ) * 0.001
+		var air_pressure_lbl: Label = get_node( "AirPressure" )
+		air_pressure_lbl.text  = "Air pressure: " + str(P) + "kPa"
+
 
 
 
@@ -106,18 +108,22 @@ func _recompute_mode_orbit():
 	var tran: RefFrameNode = cb
 	
 	var se3: Se3Ref = ctrl.relative_to( tran )
-	var LocalRefFrame = preload( "res://physics/utils/rotation_to.gd" )
-	var local_up: Vector3 = se3.r.normalized()
-	var q_rf: Quat = LocalRefFrame.rotation_to( Vector3.UP, local_up )
-	var q_rel: Quat = q_rf.inverse() * se3.q
-	var angles: Array = _compute_yaw_pitch_roll( q_rel )
+	
+	var cs: CelestialSurface = cb as CelestialSurface
+	var se3_rot: Se3Ref
+	if cs != null:
+		se3_rot = ctrl.relative_to( cs.rotation_rf() )
+	
+	else:
+		se3_rot = se3
+
 	var navball = get_node( "ViewportContainer/Viewport/Navball" )
-	navball.set_orientation( angles[0], angles[1], angles[2] )
+	navball.set_orientation_orbit( se3_rot )
 	
 	# Compute prograde/retrograde.
 	var v: Vector3 = se3.v
 	var q_inv: Quat = se3.q.inverse()
-	var q_i: Quat = Quat.IDENTITY
+	#var q_i: Quat = Quat.IDENTITY
 	v = q_inv.xform( v )
 	
 	var r: Vector3 = se3.r.normalized()
@@ -138,56 +144,29 @@ func _recompute_mode_orbit():
 	
 	var speed: float = se3.v.length()
 	var speed_lbl = get_node( "Speed" )
-	speed_lbl.text = "speed: " + str( speed ) + "m/s"
+	speed_lbl.text = "Speed: " + str( speed ) + "m/s"
 	
 	var dist_km: float = se3.r.length()* 0.001 - cb.radius_km
 	var dist_lbl: Label = get_node( "GeoidDist" )
-	dist_lbl.text  = "geoid dist: " + str(dist_km) + "km"
+	dist_lbl.text  = "Geoid dist: " + str(dist_km) + "km"
+	
+	var P: float
+	if cs != null:
+		P = cs.air_pressure( se3 ) * 0.001
+	
+	else:
+		P = 0.0
+		
+	var air_pressure_lbl: Label = get_node( "AirPressure" )
+	air_pressure_lbl.text  = "Air pressure: " + str(P) + "kPa"
+
 
 
 func _recompute_mode_target():
 	var ctrl: Body = PhysicsManager.player_control as Body
 	if ctrl == null:
 		return
-	# For now Use celestial body as a target.
-	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
-	var p: Node = ctrl.get_parent()
-	var cb: CelestialSurface = ClosestCelestialBody.closest_celestial_body( p )
-	if cb == null:
-		return
-	var tran: RefFrameNode = cb.translation_rf()
-	
-	var se3: Se3Ref = ctrl.relative_to( tran )
-	var LocalRefFrame = preload( "res://physics/utils/rotation_to.gd" )
-	var local_up: Vector3 = se3.r.normalized()
-	var q_rf: Quat = LocalRefFrame.rotation_to( Vector3.UP, local_up )
-	var q_rel: Quat = q_rf.inverse() * se3.q
-	var angles: Array = _compute_yaw_pitch_roll( q_rel )
-	var navball = get_node( "ViewportContainer/Viewport/Navball" )
-	navball.set_orientation( angles[0], angles[1], angles[2] )
-	
-	# Compute prograde/retrograde.
-	var r: Vector3 = se3.r
-	var q_inv: Quat = se3.q.inverse()
-	var q_i: Quat = Quat.IDENTITY
-	r = q_inv.xform( r )
-	r = r.normalized()
-	
-	navball.set_prograde( r )
-	navball.set_retrograde( -r )
-	navball.set_normal( r, false )
-	navball.set_anti_normal( r, false )
-	navball.set_radial_out( r, false )
-	navball.set_radial_in( r, false )
-	
-	var speed: float = se3.v.length()
-	var speed_lbl = get_node( "Speed" )
-	speed_lbl.text = "speed: " + str( speed ) + "m/s"
-
-	var dist_m: float   = se3.r.length()
-	var dist_lbl: Label = get_node( "GeoidDist" )
-	dist_lbl.text = "distance: " + str(dist_m) + "m"
-
+	# TODO: need to implement target first.
 
 
 # https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
@@ -225,21 +204,21 @@ func _compute_yaw_pitch_roll( q: Quat ):
 func set_mode_surface():
 	mode = NavigationMode.SURFACE
 	var l: Label = get_node( "Mode" )
-	l.text = "surface"
+	l.text = "Mode: surface"
 	_recompute_mode_surface()
 
 
 func set_mode_orbit():
 	mode = NavigationMode.ORBIT
 	var l: Label = get_node( "Mode" )
-	l.text = "orbit"
+	l.text = "Mode: orbit"
 	_recompute_mode_orbit()
 
 
 func set_mode_target():
 	mode = NavigationMode.TARGET
 	var l: Label = get_node( "Mode" )
-	l.text = "target"
+	l.text = "Mode: target"
 	_recompute_mode_target()
 
 

@@ -22,8 +22,9 @@ export(Color) var atmosphere_color_day   = Color(0.65, 0.8, 1.0, 1.0)
 export(Color) var atmosphere_color_night = Color(1.0, 0.43, 0.46, 1.0)
 export(float) var displacement = 0.0
 
-export(float) var air_density   = 1.0
-export(float) var air_viscosity = 0.1
+export(float) var air_density          = 1.0
+export(float) var air_viscosity        = 0.1
+export(float) var air_pressure_surface = 10000.0
 
 var motion: CelestialMotionRef = null
 var rotation: CelestialRotationRef = null
@@ -447,6 +448,21 @@ func _init_force_source_air_drag():
 	_force_source_air_drag.atm_height    = (atmosphere_height_inner_km + atmosphere_height_outer_km) * 1000.0
 	_force_source_air_drag.density_gnd   = air_density * 0.001
 	_force_source_air_drag.viscosity_gnd = air_viscosity * 0.001
+
+
+
+
+func air_pressure( se3_rel: Se3Ref ):
+	var d: float = se3_rel.r.length() * 0.001 - radius_km
+	if d <= 0.0:
+		return air_pressure_surface
+	
+	var atm_height_km: float = atmosphere_height_inner_km + atmosphere_height_outer_km
+	if d > atm_height_km:
+		return 0.0
+	
+	var p: float = air_pressure_surface * d / atm_height_km
+	return p
 
 
 

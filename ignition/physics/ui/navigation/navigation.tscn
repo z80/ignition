@@ -58,10 +58,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -133.284
-margin_top = -274.523
-margin_right = -22.2842
-margin_bottom = -250.523
+margin_left = -158.284
+margin_top = -285.523
+margin_right = -47.2842
+margin_bottom = -261.523
 custom_fonts/font = ExtResource( 3 )
 text = "mode: surface"
 __meta__ = {
@@ -73,10 +73,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -133.162
-margin_top = -248.914
-margin_right = -22.1617
-margin_bottom = -224.914
+margin_left = -158.162
+margin_top = -260.914
+margin_right = -47.1617
+margin_bottom = -236.914
 custom_fonts/font = ExtResource( 3 )
 text = "Speed: 0 m/s"
 __meta__ = {
@@ -88,12 +88,27 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -133.162
-margin_top = -226.914
-margin_right = -22.1617
-margin_bottom = -202.914
+margin_left = -158.162
+margin_top = -238.914
+margin_right = -47.1617
+margin_bottom = -214.914
 custom_fonts/font = ExtResource( 3 )
-text = "Speed: 0 m/s"
+text = "Distance: 0 km"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="AirPressure" type="Label" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -158.162
+margin_top = -218.914
+margin_right = -47.1617
+margin_bottom = -194.914
+custom_fonts/font = ExtResource( 3 )
+text = "Air pressure: 0 kPa"
 __meta__ = {
 "_edit_use_anchors_": false
 }
