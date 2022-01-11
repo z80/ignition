@@ -33,10 +33,11 @@ func _on_Timer_timeout():
 
 
 func _recompute_mode_surface():
-	if not is_instance_valid(PhysicsManager.player_control):
+	var camera: RefFrameNode = PhysicsManager.camera
+	if not camera:
 		return
 	
-	var ctrl: Body = PhysicsManager.player_control as Body
+	var ctrl: Body = camera.get_parent()
 	if ctrl == null:
 		return
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
@@ -84,10 +85,12 @@ func _recompute_mode_surface():
 	var se3_in_pt: Se3Ref = ctrl.relative_to_se3( rot, se3 )
 
 	var speed: float = se3_in_pt.v.length()
-	var speed_lbl = get_node( "Speed" )
-	speed_lbl.text = "air speed: " + str( speed ) + "m/s"
+	var speed_lbl: Label = get_node( "Speed" )
+	speed_lbl.text = "air speed:  " + str( speed ) + "m/s"
 	
-	
+	var dist_km: float = se3.r.length()* 0.001 - cb.radius_km
+	var dist_lbl: Label = get_node( "GeoidDist" )
+	dist_lbl.text  = "geoid dist: " + str(dist_km) + "km"
 
 
 
@@ -136,7 +139,10 @@ func _recompute_mode_orbit():
 	var speed: float = se3.v.length()
 	var speed_lbl = get_node( "Speed" )
 	speed_lbl.text = "speed: " + str( speed ) + "m/s"
-
+	
+	var dist_km: float = se3.r.length()* 0.001 - cb.radius_km
+	var dist_lbl: Label = get_node( "GeoidDist" )
+	dist_lbl.text  = "geoid dist: " + str(dist_km) + "km"
 
 
 func _recompute_mode_target():
@@ -177,6 +183,10 @@ func _recompute_mode_target():
 	var speed: float = se3.v.length()
 	var speed_lbl = get_node( "Speed" )
 	speed_lbl.text = "speed: " + str( speed ) + "m/s"
+
+	var dist_m: float   = se3.r.length()
+	var dist_lbl: Label = get_node( "GeoidDist" )
+	dist_lbl.text = "distance: " + str(dist_m) + "m"
 
 
 
@@ -266,5 +276,28 @@ func _on_ShowOrbits_pressed():
 	var down: bool = check.pressed
 	PhysicsManager.visualize_orbits = down
 
+
+
+func _on_Map_pressed():
+	UiSound.play( Constants.ButtonClick )
+	var btn: Button = get_node( "Map" )
+	var pressed: bool = btn.pressed
+	UserInput.gui_control_bool( "ui_map", pressed, pressed, not pressed )
+
+
+
+func _input(event):
+	if (event is InputEventKey) and (not event.echo):
+		var key_pressed: bool = event.pressed
+		#print( "pressed: ", pressed )
+		if not key_pressed:
+			return
+		if event.scancode == KEY_M:
+			UiSound.play( Constants.ButtonClick )
+			var btn: Button = get_node( "Map" )
+			var pressed: bool = btn.pressed
+			pressed = not pressed
+			btn.pressed = pressed
+			UserInput.gui_control_bool( "ui_map", pressed, pressed, not pressed )
 
 

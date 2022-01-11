@@ -1,10 +1,9 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://physics/ui/navigation/navball.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/ui/navigation/assets/level_indicator.png" type="Texture" id=2]
 [ext_resource path="res://assets/font_digital.tres" type="DynamicFont" id=3]
 [ext_resource path="res://physics/ui/navigation/navigation.gd" type="Script" id=4]
-[ext_resource path="res://physics/ui/map_mode/map_mode.tscn" type="PackedScene" id=5]
 
 [sub_resource type="Environment" id=1]
 ambient_light_color = Color( 1, 1, 1, 1 )
@@ -25,16 +24,6 @@ script = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
-
-[node name="MapMode" parent="." instance=ExtResource( 5 )]
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = -259.333
-margin_top = -116.454
-margin_right = -210.333
-margin_bottom = -97.4543
 
 [node name="ViewportContainer" type="ViewportContainer" parent="."]
 anchor_left = 1.0
@@ -70,9 +59,9 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = -133.284
-margin_top = -241.523
+margin_top = -274.523
 margin_right = -22.2842
-margin_bottom = -217.523
+margin_bottom = -250.523
 custom_fonts/font = ExtResource( 3 )
 text = "mode: surface"
 __meta__ = {
@@ -85,9 +74,24 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = -133.162
-margin_top = -215.914
+margin_top = -248.914
 margin_right = -22.1617
-margin_bottom = -191.914
+margin_bottom = -224.914
+custom_fonts/font = ExtResource( 3 )
+text = "Speed: 0 m/s"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="GeoidDist" type="Label" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -133.162
+margin_top = -226.914
+margin_right = -22.1617
+margin_bottom = -202.914
 custom_fonts/font = ExtResource( 3 )
 text = "Speed: 0 m/s"
 __meta__ = {
@@ -97,6 +101,25 @@ __meta__ = {
 [node name="Timer" type="Timer" parent="."]
 wait_time = 0.2
 autostart = true
+
+[node name="ModeMap" type="Button" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -259.646
+margin_top = -114.538
+margin_right = -194.646
+margin_bottom = -91.5383
+hint_tooltip = "Toggles camera map mode. In map mode it is possible to zoom out to see an entire solar system."
+focus_mode = 0
+custom_fonts/font = ExtResource( 3 )
+toggle_mode = true
+enabled_focus_mode = 0
+text = "map"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="ModeOrbit" type="Button" parent="."]
 anchor_left = 1.0
@@ -191,6 +214,7 @@ __meta__ = {
 }
 
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
+[connection signal="pressed" from="ModeMap" to="." method="_on_Map_pressed"]
 [connection signal="pressed" from="ModeOrbit" to="." method="_on_ModeOrbit_pressed"]
 [connection signal="pressed" from="ModeSurface" to="." method="_on_ModeSurface_pressed"]
 [connection signal="pressed" from="ModeTarget" to="." method="_on_ModeTarget_pressed"]
