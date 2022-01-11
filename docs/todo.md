@@ -35,16 +35,16 @@ Here is the battle plan.
 - [ ] Make atmosphere mesh per planet.
 - [ ] Vegetation and other static assets placement based on surface quad-tree node Ids.
 
+- [x] When moving a few connected parts in assembly and finish not connecting them to anything else, they fall through the ground. And the game fails shortly after that.
+- [x] When using a decoupler, when thruster is directly below, the part above decoupler extends upwards compared to where it should be. With other nodes (other than thruster) it is ok.
+- [x] With 3.3.4 Godot joint parameters changed. Don't know right now jow to make it very stiff.
+
 - [ ] Make a distance to the geoid indication.
 - [ ] Make atmospheric pressure indication.
 - [ ] Make sure thrusters do use atmospheric pressure.
 - [ ] Fix the interaction menu window. Make content expand the window or slider show up. Add "x" icon as close button and "L" for resize place.
 
 
-
-- [x] When moving a few connected parts in assembly and finish not connecting them to anything else, they fall through the ground. And the game fails shortly after that.
-- [x] When using a decoupler, when thruster is directly below, the part above decoupler extends upwards compared to where it should be. With other nodes (other than thruster) it is ok.
-- [x] With 3.3.4 Godot joint parameters changed. Don't know right now jow to make it very stiff.
 
 
 
