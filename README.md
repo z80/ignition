@@ -26,19 +26,19 @@ Lbry channel with videos: [https://odysee.com/@ignition](https://odysee.com/@ign
 4. Main development focus at the moment is on implementing every single feature needed to have a fully playable game.
 
 ## Screenshots
-![007_surface_coupling](docs/images/007_surface_coupling.jpg]
-![005_ignition_vehicle_orbit_visualization_small](docs/images/005_ignition_vehicle_orbit_visualization_small.jpg]
-![008_touching_the_sun](docs/images/008_touching_the_sun.jpg]
-![009_touching_the_sun_zoom_out](docs/images/009_touching_the_sun_zoom_out009_touching_the_sun_zoom_out.jpg]
-![010_new_astronaut_model](docs/images/010_new_astronaut_model010_new_astronaut_model
-![011_in_game_wiki](docs/images/010_new_astronaut_model.jpg]
-![dawn_over_the_moon_surface](docs/images/dawn_over_the_moon_surface.jpg]
-![earth_rise_over_the_moon_surface](docs/images/earth_rise_over_the_moon_surface.jpg]
-![orbits](docs/images/orbits.jpg]
-![orbits_visualization_map_mode](docs/images/orbits_visualization_map_mode.jpg]
-![sunset_on_the_moon](docs/images/sunset_on_the_moon.jpg]
-![take_off](docs/images/take_off.jpg]
-![towards_the_moon](docs/images/towards_the_moon.jpg]
+![007_surface_coupling](docs/images/007_surface_coupling.jpg)
+![005_ignition_vehicle_orbit_visualization_small](docs/images/005_ignition_vehicle_orbit_visualization_small.jpg)
+![008_touching_the_sun](docs/images/008_touching_the_sun.jpg)
+![009_touching_the_sun_zoom_out](docs/images/009_touching_the_sun_zoom_out009_touching_the_sun_zoom_out.jpg)
+![010_new_astronaut_model](docs/images/010_new_astronaut_model010_new_astronaut_model.jpg)
+![011_in_game_wiki](docs/images/010_new_astronaut_model.jpg)
+![dawn_over_the_moon_surface](docs/images/dawn_over_the_moon_surface.jpg)
+![earth_rise_over_the_moon_surface](docs/images/earth_rise_over_the_moon_surface.jpg)
+![orbits](docs/images/orbits.jpg)
+![orbits_visualization_map_mode](docs/images/orbits_visualization_map_mode.jpg)
+![sunset_on_the_moon](docs/images/sunset_on_the_moon.jpg)
+![take_off](docs/images/take_off.jpg)
+![towards_the_moon](docs/images/towards_the_moon.jpg)
 
 
 
