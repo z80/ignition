@@ -17,7 +17,7 @@ Here is the battle plan.
 - [x] A BUG: The issue is with split/merge. Shortest distance after split is smaller than the clustering distance just before split. It shouldn't be the case !!!!!
 - [x] A BUG: Fix the uncontrollable ref. frame axes spawning. Make sure it either doesn't spawn or gets destroyed.
 - [x] A BUG: When switches to orbiting ref. frame engine thrust seems to get rest to 0. And have to reastart the engine in order to make it non zero again.
-- [ ] A BUG: "A body with joints is destroyed" warning message is displayed sometimes.
+- [x] Not a thing anymore. A BUG: "A body with joints is destroyed" warning message is displayed sometimes.
 - [x] Fix picking control group from the object when initilizing control group menu.
 - [x] IN PROCESS: Make zooming by attaching camera to a separate ref. frame which is a child of a physics ref. frame in which simulation happens.
 - [x] Make vehicle orbits visualization.
@@ -34,6 +34,11 @@ Here is the battle plan.
 - [x] Make "esc" menu with save/load/quit options and sub menus.
 - [ ] Make atmosphere mesh per planet.
 - [ ] Vegetation and other static assets placement based on surface quad-tree node Ids.
+
+- [ ] Make a distance to the geoid indication.
+- [ ] Make atmospheric pressure indication.
+- [ ] Make sure thrusters do use atmospheric pressure.
+- [ ] Fix the interaction menu window. Make content expand the window or slider show up. Add "x" icon as close button and "L" for resize place.
 
 
 
