@@ -43,7 +43,7 @@ Here is the battle plan.
 - [x] Make atmospheric pressure indication.
 - [ ] Check default scaler distance. Make sure it is not too small.
 - [ ] Make sure thrusters do use atmospheric pressure.
-- [ ] Fix the interaction menu window. Make content expand the window or slider show up. Add "x" icon as close button and "L" for resize place.
+- [x] Fix the interaction menu window. Make content expand the window or slider show up. Add "x" icon as close button and "L" for resize place.
 - [ ] Make static bodies to remember their initial parent planet and restore relative position on every ref. frame change.
 
 
