@@ -1,74 +1,104 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://physics/interact_icon/gui_click_container.gd" type="Script" id=1]
 [ext_resource path="res://assets/font_digital.tres" type="DynamicFont" id=2]
+[ext_resource path="res://physics/interact_icon/assets/drag_corner.png" type="Texture" id=3]
+[ext_resource path="res://physics/interact_icon/assets/close_20.png" type="Texture" id=4]
 
-[node name="GuiClickContainer" type="Panel"]
-anchor_left = -0.024
-anchor_top = -0.017
-anchor_right = -0.024
-anchor_bottom = -0.017
-margin_left = -0.424
-margin_top = 0.200001
-margin_right = 171.576
-margin_bottom = 188.2
+[sub_resource type="StyleBoxFlat" id=2]
+bg_color = Color( 0.192157, 0.192157, 0.192157, 1 )
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0.329412, 0.596078, 0.654902, 1 )
+
+[node name="GuiClickContainer" type="PanelContainer"]
+margin_right = 180.0
+margin_bottom = 226.0
 rect_min_size = Vector2( 180, 120 )
+custom_styles/panel = SubResource( 2 )
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="TitleBar" type="ColorRect" parent="."]
-anchor_right = 1.0
-margin_bottom = 23.408
-color = Color( 0.431373, 0.545098, 0.596078, 1 )
+[node name="VBox" type="VBoxContainer" parent="."]
+margin_right = 180.0
+margin_bottom = 226.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Title" type="Label" parent="TitleBar"]
-margin_left = 2.3811
-margin_top = 6.34955
-margin_right = 97.3811
-margin_bottom = 20.3495
-custom_fonts/font = ExtResource( 2 )
+[node name="TitleBar" type="Panel" parent="VBox"]
+margin_right = 180.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+custom_styles/panel = SubResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Title" type="Label" parent="VBox/TitleBar"]
+margin_left = 4.3811
+margin_top = 3.34955
+margin_right = 99.3811
+margin_bottom = 20.3496
 custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_fonts/font = ExtResource( 2 )
 text = "Title goes here"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Close" type="Button" parent="TitleBar"]
+[node name="Close" type="TextureButton" parent="VBox/TitleBar"]
 anchor_left = 1.0
 anchor_right = 1.0
-margin_left = -19.9326
-margin_top = 3.0
-margin_right = -2.33258
-margin_bottom = 21.176
+margin_left = -21.9326
+margin_top = 2.0
+margin_right = -1.9326
+margin_bottom = 22.0
+texture_normal = ExtResource( 4 )
+texture_pressed = ExtResource( 4 )
+texture_hover = ExtResource( 4 )
+texture_disabled = ExtResource( 4 )
+texture_focused = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="ResizeHandle" type="Panel" parent="."]
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = -24.6254
-margin_top = -25.0
-margin_right = -0.625427
-
-[node name="Container" type="VBoxContainer" parent="."]
-anchor_right = 1.0
-anchor_bottom = 0.835
-margin_top = 26.0
-margin_right = -2.0
-margin_bottom = 0.019989
+[node name="Container" type="VBoxContainer" parent="VBox"]
+margin_top = 28.0
+margin_right = 180.0
+margin_bottom = 202.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
 __meta__ = {
 "_edit_use_anchors_": false
 }
-[connection signal="mouse_entered" from="TitleBar" to="." method="_on_TitleBar_mouse_entered"]
-[connection signal="mouse_exited" from="TitleBar" to="." method="_on_TitleBar_mouse_exited"]
-[connection signal="pressed" from="TitleBar/Close" to="." method="_on_Close_pressed"]
-[connection signal="mouse_entered" from="ResizeHandle" to="." method="_on_ResizeHandle_mouse_entered"]
-[connection signal="mouse_exited" from="ResizeHandle" to="." method="_on_ResizeHandle_mouse_exited"]
+
+[node name="HBox" type="HBoxContainer" parent="VBox"]
+margin_top = 206.0
+margin_right = 180.0
+margin_bottom = 226.0
+
+[node name="EmptySpace" type="Control" parent="VBox/HBox"]
+margin_right = 156.0
+margin_bottom = 20.0
+size_flags_horizontal = 3
+
+[node name="ResizeHandle" type="TextureRect" parent="VBox/HBox"]
+margin_left = 160.0
+margin_right = 180.0
+margin_bottom = 20.0
+rect_min_size = Vector2( 20, 20 )
+rect_pivot_offset = Vector2( 1, 1 )
+texture = ExtResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="mouse_entered" from="VBox/TitleBar" to="." method="_on_TitleBar_mouse_entered"]
+[connection signal="mouse_exited" from="VBox/TitleBar" to="." method="_on_TitleBar_mouse_exited"]
+[connection signal="pressed" from="VBox/TitleBar/Close" to="." method="_on_Close_pressed"]
+[connection signal="mouse_entered" from="VBox/HBox/ResizeHandle" to="." method="_on_ResizeHandle_mouse_entered"]
+[connection signal="mouse_exited" from="VBox/HBox/ResizeHandle" to="." method="_on_ResizeHandle_mouse_exited"]

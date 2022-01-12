@@ -1,5 +1,5 @@
 
-extends Panel
+extends PanelContainer
 
 
 var _mouse = {
@@ -12,24 +12,26 @@ var _pre_maximize_rect = get_rect()
 
 
 func set_title( stri: String ):
-	$TitleBar/Title.text = stri
+	var title_lbl: Label = get_node( "VBox/TitleBar/Title" )
+	title_lbl.text = stri
 
 
 # List of classes to instantiate objects.
 func setup_gui( classes, target_object ):
+	set_title( target_object.name )
+	var c: VBoxContainer = get_node( "VBox/Container" )
 	for C in classes:
 		var inst = C.instance()
-		var c = get_node( "Container" )
 		c.add_child( inst )
 		var has_init: bool = inst.has_method( "init" )
 		if has_init:
 			inst.init( target_object, self )
 	
-	var sz = $Container.rect_size
-	print( "Container size: ", sz )
-	for ch in $Container.get_children():
-		sz = ch.rect_size
-		print( "child size: ", sz )
+#	var sz = $Container.rect_size
+#	print( "Container size: ", sz )
+#	for ch in $Container.get_children():
+#		sz = ch.rect_size
+#		print( "child size: ", sz )
 
 
 

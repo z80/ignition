@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/icon.png-f6a887e262511de406faf90a1e579155.stex"
+path="res://.import/icon.png-b9b560bf30c417c50bfe4ff3ef027409.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://physics/interact_icon/icon.png"
-dest_files=[ "res://.import/icon.png-f6a887e262511de406faf90a1e579155.stex" ]
+source_file="res://physics/interact_icon/assets/icon.png"
+dest_files=[ "res://.import/icon.png-b9b560bf30c417c50bfe4ff3ef027409.stex" ]
 
 [params]
 
@@ -28,6 +28,7 @@ process/fix_alpha_border=true
 process/premult_alpha=false
 process/HDR_as_SRGB=false
 process/invert_color=false
+process/normal_map_invert_y=false
 stream=false
 size_limit=0
 detect_3d=true
