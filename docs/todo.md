@@ -44,6 +44,7 @@ Here is the battle plan.
 - [x] Check default scaler distance. Make sure it is not too small.
 - [ ] Make sure thrusters do use atmospheric pressure.
 - [ ] Draw proper launch pad.
+- [ ] Improve sphere subdivision algorithm. Currently it doesn't look like a piece of art.
 - [x] Fix the interaction menu window. Make content expand the window or slider show up. Add "x" icon as close button and "L" for resize place.
 - [ ] Make static bodies to remember their initial parent planet and restore relative position on every ref. frame change.
 - [ ] Camera shakiness issue. Probably something related the order in which object transforms are updated.
