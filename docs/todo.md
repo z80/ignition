@@ -32,7 +32,7 @@ Here is the battle plan.
 - [x] A BUG: Fix navball rotations. Icons seem to be correct but navball is not always.
 - [x] Port over the air friction model using mesh traingles. May be also allow part connections by touching occupancy trees.
 - [x] Make "esc" menu with save/load/quit options and sub menus.
-- [ ] Make atmosphere mesh per planet.
+- [ ] This might not be needed. Make atmosphere mesh per planet.
 - [ ] Vegetation and other static assets placement based on surface quad-tree node Ids.
 
 - [x] When moving a few connected parts in assembly and finish not connecting them to anything else, they fall through the ground. And the game fails shortly after that.
@@ -41,7 +41,7 @@ Here is the battle plan.
 
 - [x] Make a distance to the geoid indication.
 - [x] Make atmospheric pressure indication.
-- [ ] Check default scaler distance. Make sure it is not too small.
+- [x] Check default scaler distance. Make sure it is not too small.
 - [ ] Make sure thrusters do use atmospheric pressure.
 - [x] Fix the interaction menu window. Make content expand the window or slider show up. Add "x" icon as close button and "L" for resize place.
 - [ ] Make static bodies to remember their initial parent planet and restore relative position on every ref. frame change.
