@@ -26,7 +26,7 @@ rings = 8
 script = ExtResource( 2 )
 
 [node name="Camera" type="Camera" parent="."]
-far = 1000.0
+far = 8192.0
 
 [node name="Atmosphere" parent="Camera" instance=ExtResource( 1 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )

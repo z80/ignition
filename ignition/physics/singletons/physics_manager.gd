@@ -46,7 +46,7 @@ func _ready():
 
 
 func init():
-	distance_scaler.plain_distance = 100.0
+	distance_scaler.plain_distance = 2000.0
 	distance_scaler.log_scale      = 1.0
 
 
