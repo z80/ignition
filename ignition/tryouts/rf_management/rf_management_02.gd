@@ -22,7 +22,7 @@ func _ready():
 #		cp.remove_child( camera )
 #	RootScene.get_root_for_visuals().add_child( camera )
 	
-	var character = _create_character( "my_character", Vector3( 1.0, 0.0, 0.0 ), 1.0 )
+	var character = _create_character( "my_character", Vector3( 1.0, 0.0, 0.0 ), 3.0 )
 	DDD.print( "Created a character!" )
 	
 	# Initial set of select and focus object.
@@ -74,7 +74,7 @@ func _create_construction():
 	
 	var celestial_body: RefFrameNode = get_node( "Sun/Home" ) as RefFrameNode
 	var surf: CubeSphereNode = celestial_body.surface_node()
-	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.0, -0.00002 ), 1.0 )
+	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.0, -0.00002 ), -0.5 )
 	
 	var rot = celestial_body.rotation_rf()
 	construction.change_parent( rot )
