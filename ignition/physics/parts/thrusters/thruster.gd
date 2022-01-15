@@ -2,6 +2,8 @@
 extends Part
 class_name Thruster
 
+var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
+
 export(bool) var debug_mode = false
 
 enum FuelType {LIQUID_FUEL=0, SOLID_FUEL=1}
@@ -57,6 +59,7 @@ func process_inner( _delta: float ):
 	# Need to do it all the time because when 
 	# RF switch/jump happens physical object is destroyed and 
 	# created again. Due to that need to continuoulsy assign it.
+	# Also, atmospheric pressure changes.
 	_setup_thrust()
 
 
@@ -303,6 +306,10 @@ func _setup_thrust():
 	if _physical != null:
 		var p: float
 		if _ignited and (throttle > 0.0):
+			var pressure: float = 0.0
+			var cb: CelestialBody = ClosestCelestialBody.closest_celestial_body( self )
+			if cb != null:
+				var cs: CelestialSurface = cb as CelestialSurface
 			p = (thrust_max_atm - thrust_min_atm)*throttle + thrust_min_atm
 		else:
 			p = 0.0
