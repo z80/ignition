@@ -17,6 +17,18 @@ export(Vector3) var perigee_vel = Vector3( 0.0, 0.0, -1.0 )
 export(float)   var orbital_period_hrs   = 0.1
 export(float)   var orbital_eccentricity = 0.0
 
+# If solar system is not constructed very carefully, 
+# sometimes the body of the biggest influence can be current body's 
+# parent even if currently moving within local moon system (within moon orbit).
+# This situation would not be possible in reality, because the moon would 
+# escape he planet in this situation. But, due to idealized Kepler orbits are 
+# used, here it is possible.
+# To tolerate this problem, artificially extend thpere of influence of 
+# current body to the most distant moon semimajor axis x1.5 when considering 
+# switching to current body's parent.
+var _min_sphere_of_influence_to_parent: float = -1.0
+var _all_parents: Array = []
+
 
 var initialized: bool = false
 var gm: float = -1.0
@@ -143,5 +155,29 @@ func apply_forces( physics_bodies: Array, force_origin: RefFrameNode, force_sour
 
 
 
-
+func compute_min_shpere_of_influence_to_parent( force_recompute: bool = false ):
+	#_min_sphere_of_influence_to_parent
+	if (_min_sphere_of_influence_to_parent > 0.0) and (not force_recompute):
+		return [_min_sphere_of_influence_to_parent, _all_parents]
+	
+	var parent: CelestialBody = get_parent() as CelestialBody
+	if parent == null:
+		_min_sphere_of_influence_to_parent = 0.0
+		_all_parents = []
+		return
+	
+	while parent != null:
+		_all_parents.push_back( parent )
+		parent = parent.get_parent() as CelestialBody
+	
+	# Get all children.
+	var child_bodies: Array = []
+	var child_qty: int = get_child_count()
+	for i in range(child_qty):
+		var child_body: CelestialBody = get_child(i) as CelestialBody
+		if child_body == null:
+			continue
+		# For now only celestial surface has motion.
+		if "motion" in child_body:
+			var m: CelestialMotionRef = child_body.motion
 
