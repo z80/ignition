@@ -3,7 +3,7 @@ extends RigidBody
 class_name CharacterPhysicalBase
 
 
-var body: Body = null
+var body: PhysicsBodyBase = null
 
 
 

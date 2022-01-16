@@ -112,7 +112,7 @@ func _physics_process( delta ):
 func _input( event ):
 	return
 	
-	#var body: Body = player_focus as Body
+	#var body: PhysicsBodyBase = player_focus as PhysicsBodyBase
 	#if body == null:
 	#	return
 	
@@ -139,7 +139,7 @@ func process_user_input( input: Dictionary ):
 	if not is_instance_valid( player_control ):
 		return
 	
-	var body: Body = player_control as Body
+	var body: PhysicsBodyBase = player_control as PhysicsBodyBase
 	if body == null:
 		return
 	
@@ -232,7 +232,7 @@ func process_celestial_body_children():
 func update_camera( delta: float ):
 	var ClosestForceSource = load( "res://physics/utils/closest_force_source.gd" )
 	# Update camera orientation.
-	var pc: Body = PhysicsManager.player_control
+	var pc: PhysicsBodyBase = PhysicsManager.player_control
 	if pc == null:
 		return
 	
@@ -294,7 +294,7 @@ func create_ref_frame_physics():
 #
 #func _get_player_ref_frame():
 #	#return player_ref_frame
-#	var body: Body = self.player_control
+#	var body: PhysicsBodyBase = self.player_control
 #	var p: Node = body.get_parent()
 #	var rf_p: RefFramePhysics = p as RefFramePhysics
 #
@@ -302,7 +302,7 @@ func create_ref_frame_physics():
 
 
 func get_player_ref_frame():
-	var body: Body = self.player_control
+	var body: PhysicsBodyBase = self.player_control
 	if (body == null) or (not is_instance_valid(body)):
 		return null
 	var p: Node = body.get_parent()

@@ -1,5 +1,5 @@
 
-extends Body
+extends PhysicsBodyBase
 class_name Part
 
 enum PartClass {

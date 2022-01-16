@@ -548,7 +548,7 @@ func child_physics_bodies():
 	var children = get_children()
 	var bodies: Array = []
 	for ch in children:
-		var b: Body = ch as Body
+		var b: PhysicsBodyBase = ch as PhysicsBodyBase
 		var include: bool = (b != null) and (b != _surface_provider)
 		if not include:
 			continue
@@ -740,7 +740,7 @@ static func _debug_distances( bodies: Array ):
 	var tree: SceneTree = bodies_node.get_tree()
 	var vp: Viewport = tree.root
 	var root_node: Node = vp.get_node( "Root" ).get_node( "Sun" )
-	var ass: Body = root_node.find_node( "Construction", true, false )
+	var ass: PhysicsBodyBase = root_node.find_node( "Construction", true, false )
 	DDD.important()
 	DDD.print( "                All relative to assembly:" )
 	for b in bodies:

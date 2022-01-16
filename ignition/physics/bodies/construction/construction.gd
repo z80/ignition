@@ -1,5 +1,5 @@
 
-extends Body
+extends PhysicsBodyBase
 
 
 var panel_parts: Control = null
@@ -162,7 +162,7 @@ func finish_editing():
 
 func _cleanup_arguments():
 	for b in dynamic_blocks:
-		var body: Body = b
+		var body: PhysicsBodyBase = b
 
 
 
@@ -237,7 +237,7 @@ func check_if_deactivate():
 
 
 func create_block( block_name, dynamic: bool = false ):
-	var block: Body = BodyCreator.create( block_name )
+	var block: PhysicsBodyBase = BodyCreator.create( block_name )
 	if block == null:
 		return
 	
@@ -276,7 +276,7 @@ func create_block( block_name, dynamic: bool = false ):
 	sb.add_sub_body( block )
 
 
-func delete_block( block: Body ):
+func delete_block( block: PhysicsBodyBase ):
 	dynamic_blocks.erase( block )
 	var sb: Node = get_super_body()
 	sb.remove_sub_body( block )

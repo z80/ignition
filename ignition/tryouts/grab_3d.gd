@@ -152,7 +152,7 @@ func _process_dragging():
 	# first as all vectors are in global ref frame
 	self.translation = Vector3( x, y, z )
 	if target != null:
-		var b: Body = target as Body
+		var b: PhysicsBodyBase = target as PhysicsBodyBase
 		if b != null:
 			b.set_r( self.translation )
 			b.update_physical_state_from_rf()

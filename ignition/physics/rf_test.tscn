@@ -1,19 +1,76 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://physics/rf_test.gd" type="Script" id=1]
 [ext_resource path="res://physics/camera_ctrl/camera.gd" type="Script" id=2]
 [ext_resource path="res://physics/axes_visualization.tscn" type="PackedScene" id=4]
 [ext_resource path="res://physics/landscape/provider.tscn" type="PackedScene" id=5]
 
+[sub_resource type="GDScript" id=1]
+script/source = "
+extends Node
+
+
+
+
+func _enter_tree():
+	# In order to assign in before everything else.
+	BodyCreator.root_node = self
+
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	var rf = PhysicsManager.create_ref_frame_physics()
+	rf.remove_parent()
+	rf.change_parent( get_node( \"Landscape\" ) )
+	
+	PhysicsManager.camera = $Camera
+	
+	var capsule: Body = BodyCreator.create( \"character_simple\" )
+	# Call add body to process inclusion and initialization properly.
+	rf.add_body( capsule )
+	PhysicsManager.player_control  = capsule
+	PhysicsManager.player_select = capsule
+	
+		# for debugging purposes
+	#var tree = get_tree()
+	#var bodies = tree.get_nodes_in_group( Constants.BODIES_GROUP_NAME )
+	#print( \"bodies: \", bodies )
+	
+	# Add construction to null ref. frame. 
+	# It is suppsed to be picked up when close enough.
+	var construction: Body = BodyCreator.create( \"construction\" )
+	
+		# for debugging purposes
+	#bodies = tree.get_nodes_in_group( Constants.BODIES_GROUP_NAME )
+	#print( \"bodies: \", bodies )
+
+	
+	#var privot: Spatial = capsule._visual
+	#$Camera.privot = privot
+	$Camera.set_mode( $Camera.Mode.TPS_AZIMUTH )
+	
+	# Initial set of select and focus object.
+	PhysicsManager.player_select  = capsule
+	PhysicsManager.player_control = capsule
+
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process( delta ):
+	#var group: String = Body.GROUP_NAME
+	#var player_rf = PhysicsManager.player_ref_frame
+	#for body in get_tree().get_nodes_in_group( group ):
+	#	body.update_visual( player_rf )
+	pass
+"
+
 [node name="RfTest" type="Node"]
-script = ExtResource( 1 )
+script = SubResource( 1 )
 
 [node name="Landscape" parent="." instance=ExtResource( 5 )]
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.897405, 0.441208, 0, -0.441208, 0.897405, 0, 2.33134, 4.60433 )
-near = 0.1
-far = 1000.0
 script = ExtResource( 2 )
 
 [node name="AxesVis" parent="." instance=ExtResource( 4 )]

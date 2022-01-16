@@ -403,7 +403,7 @@ func _init_rotating( axis: Vector3 ):
 	
 	# Own origin and unit vector.
 	var t: Transform 
-	var b: Body = target as Body
+	var b: PhysicsBodyBase = target as PhysicsBodyBase
 	if b != null:
 		t = b.t()
 	else:

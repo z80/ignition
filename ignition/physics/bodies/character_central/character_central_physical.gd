@@ -1,7 +1,7 @@
 
 extends RigidBody
 
-var body: Body = null
+var body: PhysicsBodyBase = null
 
 
 const SPEED = 3.0

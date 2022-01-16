@@ -53,7 +53,7 @@ func _create_other_body():
 	var surf: CubeSphereNode = celestial_body.surface_node()
 	var se3: Se3Ref = surf.surface_se3( Vector3( 1.0, 0.2, -0.2 ), 2.0 )
 
-	var body: Body = BodyCreator.create( "cube" )
+	var body: PhysicsBodyBase = BodyCreator.create( "cube" )
 	body.name = "MyCylinder"
 	
 	var rf: RefFrameNode = PhysicsManager.create_ref_frame_physics()
@@ -70,7 +70,7 @@ func _create_other_body():
 func _create_construction():
 	# Add construction to null ref. frame. 
 	# It is suppsed to be picked up when close enough.
-	var construction: Body = BodyCreator.create( "construction" )
+	var construction: PhysicsBodyBase = BodyCreator.create( "construction" )
 	
 	var celestial_body: RefFrameNode = get_node( "Sun/Home" ) as RefFrameNode
 	var surf: CubeSphereNode = celestial_body.surface_node()
@@ -91,7 +91,7 @@ func _create_character( name: String = "MyCharacter", at: Vector3 = Vector3(1.0,
 	var rot = celestial_body.rotation_rf()
 	rf.change_parent( rot )
 	
-	var character: Body = BodyCreator.create( "character_central" )
+	var character: PhysicsBodyBase = BodyCreator.create( "character_central" )
 	character.name = name
 	# Call add body to process inclusion and initialization properly.
 	character.change_parent( rf )

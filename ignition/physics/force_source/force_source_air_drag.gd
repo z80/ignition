@@ -40,7 +40,7 @@ func density_viscosity( se3: Se3Ref ):
 
 export(Vector3) var ang_velocity = Vector3.ZERO
 
-func compute_force( body: Body, se3: Se3Ref ):
+func compute_force( body: PhysicsBodyBase, se3: Se3Ref ):
 	var dv: Array = density_viscosity( se3 )
 	var inside_atmosphere: bool = dv[0]
 	if not inside_atmosphere:

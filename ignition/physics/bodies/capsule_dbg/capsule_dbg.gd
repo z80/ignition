@@ -1,5 +1,5 @@
 
-extends Body
+extends PhysicsBodyBase
 
 const FORCE_H: float = 30.0
 const FORCE_V: float = 100.0

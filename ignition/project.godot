@@ -169,7 +169,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/color-palette/PaletteImporter.gd"
 }, {
-"base": "Body",
+"base": "PhysicsBodyBase",
 "class": "Part",
 "language": "GDScript",
 "path": "res://physics/parts/part.gd"
@@ -178,6 +178,11 @@ _global_script_classes=[ {
 "class": "PartAssembly",
 "language": "GDScript",
 "path": "res://physics/parts/part_assembly.gd"
+}, {
+"base": "RefFrameNode",
+"class": "PhysicsBodyBase",
+"language": "GDScript",
+"path": "res://physics/ref_frames/physics_body_base.gd"
 }, {
 "base": "RefFrameNode",
 "class": "PlayerCamera",
@@ -259,6 +264,7 @@ _global_script_class_icons={
 "PaletteImporter": "",
 "Part": "",
 "PartAssembly": "",
+"PhysicsBodyBase": "",
 "PlayerCamera": "",
 "ReactionControlWheels": "",
 "RefFrame": "",

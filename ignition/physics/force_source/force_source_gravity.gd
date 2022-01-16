@@ -5,7 +5,7 @@ class_name ForceSourceGravity
 export(float) var GM = 1.0
 
 
-func compute_force( body: Body, se3: Se3Ref ):
+func compute_force( body: PhysicsBodyBase, se3: Se3Ref ):
 	# Later need to add body's mass to the formula.
 	# For now it comuted free fall acceleration.
 	var r: Vector3 = se3.r

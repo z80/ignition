@@ -188,7 +188,7 @@ func _process_dragging():
 	
 	
 	if target != null:
-		var body: Body = target as Body
+		var body: PhysicsBodyBase = target as PhysicsBodyBase
 		if body != null:
 			body.set_q( q )
 			body.update_physical_state_from_rf()

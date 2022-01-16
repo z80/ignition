@@ -17,14 +17,14 @@ func _ready():
 	var rot = celestial_body.rotation_rf()
 	rf.change_parent( rot )
 	
-	var character: Body = BodyCreator.create( "character_central" )
+	var character: PhysicsBodyBase = BodyCreator.create( "character_central" )
 	character.name = "MyCharacter"
 	# Call add body to process inclusion and initialization properly.
 	rf.add_body( character )
 	
 	# Add construction to null ref. frame. 
 	# It is suppsed to be picked up when close enough.
-	#var construction: Body = BodyCreator.create( "construction" )
+	#var construction: PhysicsBodyBase = BodyCreator.create( "construction" )
 	
 	var camera: Camera = get_node( "Camera" )
 	camera.set_mode( PlayerCamera.Mode.TPS_AZIMUTH )

@@ -6,7 +6,7 @@ var linear_velocity: Vector3 setget set_linear_velocity, get_linear_velocity
 var angular_velocity: Vector3 setget set_angular_velocity, get_angular_velocity
 var collision_layer: int setget set_collision_layer, get_collision_layer
 
-var body: Body = null
+var body: PhysicsBodyBase = null
 
 func _init():
 	pass

@@ -1,5 +1,5 @@
 
-extends Body
+extends PhysicsBodyBase
 
 func _ready():
 	init()

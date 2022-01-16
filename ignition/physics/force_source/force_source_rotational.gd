@@ -4,7 +4,7 @@ class_name ForceSourceRotational
 
 export(Vector3) var ang_velocity = Vector3.ZERO
 
-func compute_force( body: Body, se3: Se3Ref ):
+func compute_force( body: PhysicsBodyBase, se3: Se3Ref ):
 	var m: float    = body.get_mass()
 	var inv_q: Quat =  se3.q.inverse()
 	var r: Vector3  = -se3.r

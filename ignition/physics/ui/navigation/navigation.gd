@@ -37,7 +37,7 @@ func _recompute_mode_surface():
 	if not camera:
 		return
 	
-	var ctrl: Body = camera.get_parent()
+	var ctrl: PhysicsBodyBase = camera.get_parent()
 	if ctrl == null:
 		return
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
@@ -101,7 +101,7 @@ func _recompute_mode_orbit():
 	if not is_instance_valid(camera):
 		return
 	
-	var ctrl: Body = camera.get_parent() as Body
+	var ctrl: PhysicsBodyBase = camera.get_parent() as PhysicsBodyBase
 	if ctrl == null:
 		return
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
@@ -167,7 +167,7 @@ func _recompute_mode_orbit():
 
 
 func _recompute_mode_target():
-	var ctrl: Body = PhysicsManager.player_control as Body
+	var ctrl: PhysicsBodyBase = PhysicsManager.player_control as PhysicsBodyBase
 	if ctrl == null:
 		return
 	# TODO: need to implement target first.

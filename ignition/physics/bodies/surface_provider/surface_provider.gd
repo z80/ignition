@@ -1,5 +1,5 @@
 
-extends Body
+extends PhysicsBodyBase
 
 var inv_surface_relative_to_rf: Se3Ref = null
 
