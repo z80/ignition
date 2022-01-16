@@ -42,7 +42,7 @@ Here is the battle plan.
 - [x] Make a distance to the geoid indication.
 - [x] Make atmospheric pressure indication.
 - [x] Check default scaler distance. Make sure it is not too small.
-- [ ] Make sure thrusters do use atmospheric pressure.
+- [x] Make sure thrusters do use atmospheric pressure.
 - [x] Draw proper launch pad.
 - [ ] Draw more realistic thrust.
 - [ ] Improve sphere subdivision algorithm. Currently it doesn't look like a piece of art.
