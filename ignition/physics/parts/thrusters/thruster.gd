@@ -14,10 +14,12 @@ export(bool) var can_shut_down = true
 export(int) var restarts_qty = -1
 var restarts_left: int = -1
 
-export(float) var thrust_min_atm = 1.0
-export(float) var thrust_max_atm = 2.0
-export(float) var thrust_min_vac = 1.0
-export(float) var thrust_max_vac = 2.0
+export(float) var optimal_thrust_air_pressure = 0.8e5
+export(float) var bad_thrust_air_pressure     = 0.4e5
+export(float) var thrust_min_optimal = 1.0
+export(float) var thrust_max_optimal = 2.0
+export(float) var thrust_min_bad = 1.0
+export(float) var thrust_max_bad = 2.0
 # Units of volume per second.
 export(float) var fuel_consumption_min = 0.2
 export(float) var fuel_consumption_max = 0.5
@@ -310,7 +312,19 @@ func _setup_thrust():
 			var cb: CelestialBody = ClosestCelestialBody.closest_celestial_body( self )
 			if cb != null:
 				var cs: CelestialSurface = cb as CelestialSurface
-			p = (thrust_max_atm - thrust_min_atm)*throttle + thrust_min_atm
+				if cs != null:
+					var se3: Se3Ref = self.relative_to( cs )
+					pressure = cs.air_pressure( se3 )
+			
+			var d_pressure_relative: float = (pressure - optimal_thrust_air_pressure)/(bad_thrust_air_pressure - optimal_thrust_air_pressure)
+			var abs_dpressure_relative: float = abs( d_pressure_relative )
+			# Min and max thrust based on ambient air pressure.
+			var thrust_max: float = thrust_max_optimal + (thrust_max_bad - thrust_max_optimal)*abs_dpressure_relative
+			var thrust_min: float = thrust_min_optimal + (thrust_min_bad - thrust_min_optimal)*abs_dpressure_relative
+			# Thrust based on throttle level.
+			p = (thrust_max - thrust_min)*throttle + thrust_min
+			if p < 0.0:
+				p = 0.0
 		else:
 			p = 0.0
 		var n: Vector3 = _exhaust_node.thrust_direction()
