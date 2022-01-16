@@ -53,6 +53,7 @@ public:
 
 	Ref<Se3Ref> relative_to( Node * origin );
 	Ref<Se3Ref> relative_to_se3( Node * origin, const Ref<Se3Ref> & origin_se3 );
+	Ref<Se3Ref> se3_relative_to( const Ref<Se3Ref> & object_se3, Node * origin );
 
 	/// Change origin without changing absolute position in space.
 	void change_parent( Node * origin );

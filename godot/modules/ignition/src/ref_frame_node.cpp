@@ -32,7 +32,7 @@ void RefFrameNode::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("relative_to", "origin"), &RefFrameNode::relative_to, Variant::OBJECT );
 	ClassDB::bind_method( D_METHOD("relative_to_se3", "origin", "origin_se3"), &RefFrameNode::relative_to_se3, Variant::OBJECT );
-
+	ClassDB::bind_method( D_METHOD("se3_relative_to", "object_se3", "origin"), &RefFrameNode::se3_relative_to, Variant::OBJECT );
 
 	ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent, Variant::NIL );
 
@@ -217,6 +217,19 @@ Ref<Se3Ref> RefFrameNode::relative_to_se3( Node * origin, const Ref<Se3Ref> & or
 	//	return se3;
 
 	se3->se3 = relative_( rf, SE3(), origin_se3->se3 );
+	return se3;
+}
+
+Ref<Se3Ref> RefFrameNode::se3_relative_to( const Ref<Se3Ref> & object_se3, Node * origin )
+{
+	Ref<Se3Ref> se3;
+	se3.instance();
+
+	RefFrameNode * rf = Node::cast_to<RefFrameNode>( origin );
+	//if (!rf)
+	//	return se3;
+
+	se3->se3 = relative_( rf, object_se3->se3 );
 	return se3;
 }
 
