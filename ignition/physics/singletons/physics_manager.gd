@@ -313,7 +313,7 @@ func get_player_ref_frame():
 
 func _set_player_select( rf ):
 	if is_instance_valid( player_select ):
-		var b = player_select as Body
+		var b = player_select as PhysicsBodyBase
 		if b:
 			b.process_user_input_2( {} )
 	player_select = rf
@@ -325,7 +325,7 @@ func _get_player_select():
 
 func _set_player_control( rf ):
 	if is_instance_valid( player_control ):
-		var b = player_control as Body
+		var b = player_control as PhysicsBodyBase
 		if b:
 			b.process_user_input_2( {} )
 	player_control = rf
