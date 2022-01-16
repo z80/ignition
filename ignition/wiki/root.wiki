@@ -9,6 +9,7 @@
 [color=red][url=parts]Available parts description[/url][/color]
 
 [center][b]External links[/b][/center]
+Gameplay videos: [color=green][url]https://odysee.com/@ignition:0[/url][/color]
 ITCH.io page: [color=green][url]https://litedictteam.itch.io/ignition[/url][/color] Please consider leaving a feedback!
 Project source code: [color=green][url]https://github.com/z80/ignition[/url][/color]
 
