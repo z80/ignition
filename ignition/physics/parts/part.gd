@@ -637,7 +637,7 @@ func process_user_input_group( input: Dictionary ):
 
 
 # This one is supposed to override the dummy one 
-# declared in "Body".
+# declared in "PhysicsBodyBase".
 func create_super_body():
 	var p = self.get_parent()
 	var sb = PartAssembly.new()

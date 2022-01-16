@@ -42,14 +42,14 @@ var force: Spatial = null
 
 
 func get_class():
-	return "Body"
+	return "PhysicsBodyBase"
 
 
 
 
 
 func _enter_tree():
-	print( "_enter_tree called on Body" )
+	print( "_enter_tree called on PhysicsBodyBase" )
 	create_physical()
 
 

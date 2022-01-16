@@ -543,7 +543,7 @@ func self_delete_if_unused():
 	return false
 
 
-# Only derivatives of "Body" for applying forces.
+# Only derivatives of "PhysicsBodyBase" for applying forces.
 func child_physics_bodies():
 	var children = get_children()
 	var bodies: Array = []
@@ -607,7 +607,7 @@ func parent_bodies():
 		if body == PhysicsManager.camera:
 			continue
 		var cl_name: String = body.get_class()
-		if (cl_name == "Body") or (cl_name == "Part"):
+		if (cl_name == "PhysicsBodyBase") or (cl_name == "Part"):
 			body = body.root_most_body()
 			if not (body in bodies):
 				bodies.push_back( body )
@@ -624,7 +624,7 @@ func parent_bodies():
 			continue
 			body = body.root_most_body()
 		var cl_name: String = body.get_class()
-		if (cl_name == "Body") or (cl_name == "Part"):
+		if (cl_name == "PhysicsBodyBase") or (cl_name == "Part"):
 			if not (body in bodies):
 				bodies.push_back( body )
 	

@@ -14,11 +14,6 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://tryouts/atmosphere/atmosphere_canvas_item.gd"
 }, {
-"base": "RefFrameNode",
-"class": "Body",
-"language": "GDScript",
-"path": "res://physics/bodies/body.gd"
-}, {
 "base": "RefFrame",
 "class": "CelestialBody",
 "language": "GDScript",
@@ -214,6 +209,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/sound_source/sound_source.gd"
 }, {
+"base": "PhysicsBodyBase",
+"class": "StaticPhysicsBody",
+"language": "GDScript",
+"path": "res://physics/bodies/static_body.gd"
+}, {
 "base": "CelestialBody",
 "class": "Sun",
 "language": "GDScript",
@@ -231,7 +231,6 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "AtmosphereCanvasItem": "",
-"Body": "",
 "CelestialBody": "",
 "CelestialSurface": "",
 "Character": "",
@@ -271,6 +270,7 @@ _global_script_class_icons={
 "RefFramePhysics": "",
 "RefFrameResourceProvider": "",
 "SoundSource": "",
+"StaticPhysicsBody": "",
 "Sun": "",
 "Thruster": "",
 "TileBase": ""
