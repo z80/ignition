@@ -166,14 +166,14 @@ func couple_with( n: CouplingNode ):
 	var coupling_self: CouplingAttachment  = CouplingAttachment.new()
 	var coupling_other: CouplingAttachment = CouplingAttachment.new()
 	
-	coupling_self.name = Body.unique_child_name( self.part, "Attachment" )
+	coupling_self.name = PhysicsBodyBase.unique_child_name( self.part, "Attachment" )
 	self.part.add_child( coupling_self )
 	coupling_self.base_transform = self.relative_to_owner
 	coupling_self.attachment_b   = coupling_other
 	coupling_self.is_parent      = false
 	
 	var other_part: RefFrameNode = n.part
-	coupling_other.name = Body.unique_child_name( other_part, "Attachment" )
+	coupling_other.name = PhysicsBodyBase.unique_child_name( other_part, "Attachment" )
 	other_part.add_child( coupling_other )
 	coupling_other.base_transform = n.relative_to_owner
 	coupling_other.attachment_b   = coupling_self
@@ -188,13 +188,13 @@ func couple_with_surface( other_part: RefFrameNode, transform: Transform ):
 	var coupling_self: CouplingAttachment  = CouplingAttachment.new()
 	var coupling_other: CouplingAttachment = CouplingAttachment.new()
 	
-	coupling_self.name = Body.unique_child_name( self.part, "Attachment" )
+	coupling_self.name = PhysicsBodyBase.unique_child_name( self.part, "Attachment" )
 	self.part.add_child( coupling_self )
 	coupling_self.base_transform = self.relative_to_owner
 	coupling_self.attachment_b   = coupling_other
 	coupling_self.is_parent      = false
 	
-	coupling_other.name = Body.unique_child_name( other_part, "Attachment" )
+	coupling_other.name = PhysicsBodyBase.unique_child_name( other_part, "Attachment" )
 	other_part.add_child( coupling_other )
 	coupling_other.base_transform = transform
 	coupling_other.attachment_b   = coupling_self
