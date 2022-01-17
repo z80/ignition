@@ -2,8 +2,8 @@
 extends Node
 
 ## @brief Color of the text drawn as HUD
-const TEXT_COLOR: Color           = Color(0.0, 0.7, 0.0 )
-const TEXT_COLOR_IMPORTANT: Color = Color(0.9, 0.0, 0.0 )
+const TEXT_COLOR: Color           = Color(0.0, 0.3, 0.0 )
+const TEXT_COLOR_IMPORTANT: Color = Color(0.5, 0.0, 0.0 )
 const TEXT_COLOR_PERMANENT: Color = Color(0.58, 0.0, 0.64)
 ## @brief Background color of the text drawn as HUD
 const TEXT_BG_COLOR = Color(0.3, 0.3, 0.3, 0.2)
@@ -13,7 +13,7 @@ var _texts: Array = []
 var _font : Font = null
 var _color: Color = TEXT_COLOR
 
-export(bool) var debug = false
+export(bool) var debug = true
 
 func _ready():
 	# Get default font
