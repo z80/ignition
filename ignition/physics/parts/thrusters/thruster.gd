@@ -318,13 +318,14 @@ func _setup_thrust():
 			
 			var d_pressure_relative: float = (pressure - optimal_thrust_air_pressure)/(bad_thrust_air_pressure - optimal_thrust_air_pressure)
 			var abs_dpressure_relative: float = abs( d_pressure_relative )
+			abs_dpressure_relative = clamp( abs_dpressure_relative, 0.0, 1.0 )
 			# Min and max thrust based on ambient air pressure.
 			var thrust_max: float = thrust_max_optimal + (thrust_max_bad - thrust_max_optimal)*abs_dpressure_relative
 			var thrust_min: float = thrust_min_optimal + (thrust_min_bad - thrust_min_optimal)*abs_dpressure_relative
 			# Thrust based on throttle level.
 			p = (thrust_max - thrust_min)*throttle + thrust_min
-			if p < 0.0:
-				p = 0.0
+			if p < thrust_min:
+				p = thrust_min
 		else:
 			p = 0.0
 		var n: Vector3 = _exhaust_node.thrust_direction()
