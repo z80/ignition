@@ -186,7 +186,8 @@ func compute_min_shpere_of_influence_to_parent( force_recompute: bool = false ):
 			if max_dist < a:
 				max_dist = a
 	
-	_min_sphere_of_influence_to_parent = max_dist
+	# Slightly larget. 1.3 looks like a decent number.
+	_min_sphere_of_influence_to_parent = max_dist * 1.3
 	
 	return [_min_sphere_of_influence_to_parent, _all_parents]
 
