@@ -25,7 +25,7 @@ func _fill_files_node():
 
 
 func _get_file_list_node():
-	var l: ItemList = get_node( "List" )
+	var l: ItemList = get_node( "Scroll/List" )
 	return l
 
 
