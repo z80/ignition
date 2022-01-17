@@ -5,7 +5,6 @@
 [node name="Thruster_01" type="RefFrameNode"]
 script = ExtResource( 1 )
 conducts_solid_fuel = false
-debug_mode = true
 thrust_min_optimal = 12.0
 thrust_max_optimal = 20.0
 thrust_min_bad = 12.0

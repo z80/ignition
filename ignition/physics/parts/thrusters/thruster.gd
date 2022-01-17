@@ -28,6 +28,7 @@ export(float) var fuel_consumption_max = 0.5
 export(String) var sound_start = ""
 export(String) var sound_loop  = ""
 export(String) var sound_stop  = ""
+export(String) var sound_failed_start = ""
 
 
 var _exhaust_node: ExhaustNode = null
@@ -147,6 +148,7 @@ func set_ignited( en: bool ):
 		# If fuel is not available, just return.
 		var ok: bool = _check_fuel_available()
 		if not ok:
+			play_sound( sound_failed_start )
 			return
 		
 		if not debug_mode:
