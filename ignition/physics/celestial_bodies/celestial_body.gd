@@ -166,13 +166,15 @@ func compute_min_shpere_of_influence_to_parent( force_recompute: bool = false ):
 		_all_parents = []
 		return
 	
+	# Fill in all parents.
 	while parent != null:
 		_all_parents.push_back( parent )
 		parent = parent.get_parent() as CelestialBody
 	
-	# Get all children.
+	# Get all children. And compute the furthest apogee.
 	var child_bodies: Array = []
 	var child_qty: int = get_child_count()
+	var max_dist: float = 0.0
 	for i in range(child_qty):
 		var child_body: CelestialBody = get_child(i) as CelestialBody
 		if child_body == null:
@@ -180,4 +182,18 @@ func compute_min_shpere_of_influence_to_parent( force_recompute: bool = false ):
 		# For now only celestial surface has motion.
 		if "motion" in child_body:
 			var m: CelestialMotionRef = child_body.motion
+			var a: float = m.apogee()
+			if max_dist < a:
+				max_dist = a
+	
+	_min_sphere_of_influence_to_parent = max_dist
+	
+	return [_min_sphere_of_influence_to_parent, _all_parents]
+
+
+
+
+
+
+
 

@@ -369,6 +369,14 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 		ref_frame_to_check_orbiting_index = 0
 	
 	var rf: RefFramePhysics = rfs[ref_frame_to_check_orbiting_index]
+	# First, compute distance to own center.
+	var se3_self: Se3Ref = rf.relative_to( self )
+	var own_distance: float = se3_self.r.length()
+	
+	# If not already computed it will be computed here.
+	compute_min_shpere_of_influence_to_parent()
+	var not_too_far: bool = (own_distance < _min_sphere_of_influence_to_parent)
+	
 	# Determine distance to all bodies.
 	var celestial_bodies_qty: int = celestial_bodies.size()
 	var biggest_influence: float = -1.0
@@ -376,17 +384,25 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 	for i in range( celestial_bodies_qty ):
 		var cb: CelestialBody = celestial_bodies[i]
 		var se3: Se3Ref = rf.relative_to( cb )
+		# Check if the body is in parents list.
+		# And don't try to switch to it if it's one of parents 
+		# and we are not far enough yet.
+		if _all_parents.has( cb ) and not_too_far:
+			# Don't even compute influence of this body.
+			continue
+		
 		var infl: float = cb.gravitational_influence( se3 )
-		if is_nan(infl) or is_inf(infl):
-			var iii: int = 0
-			rf.debug = true
-			var motion_se3: Se3Ref = rf.motion.se3
-			var rf_se3: Se3Ref     = rf.get_se3()
-			var stri: String = rf.motion.movement_type()
-			se3 = rf.relative_to( cb )
-			rf.debug = false
+#		if is_nan(infl) or is_inf(infl):
+#			var iii: int = 0
+#			rf.debug = true
+#			var motion_se3: Se3Ref = rf.motion.se3
+#			var rf_se3: Se3Ref     = rf.get_se3()
+#			var stri: String = rf.motion.movement_type()
+#			se3 = rf.relative_to( cb )
+#			rf.debug = false
 		
 		if (biggest_influence_body == null) or (biggest_influence < infl):
+				
 			biggest_influence = infl
 			biggest_influence_body = cb
 	
