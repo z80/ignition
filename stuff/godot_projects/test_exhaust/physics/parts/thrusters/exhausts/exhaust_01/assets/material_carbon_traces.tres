@@ -1,0 +1,136 @@
+[gd_resource type="ShaderMaterial" load_steps=8 format=2]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type spatial;
+render_mode unshaded, cull_disabled;
+
+uniform float size_y        = 15.0;
+
+// Color related.
+uniform float decay         = 0.05;
+uniform float power         = 0.0;
+uniform float exhaust_speed = 150.0;
+uniform vec2  texture_scale = vec2( 2.0, 0.2 );
+
+// Geometry related.
+uniform float displacement_gain = 5.0;
+
+uniform sampler2D noise;
+uniform sampler2D displacement_x;
+uniform sampler2D displacement_z;
+
+uniform vec4 color_bright: hint_color = vec4( 0.6471, 0.8039, 1.0, 1.0 );
+uniform vec4 color_dark:   hint_color = vec4( 0.0, 0.0, 0.0, 1.0 );
+
+varying float time;
+varying vec3 point3d;
+varying vec3 normal3d;
+varying vec2 tex_coords;
+
+
+
+vec4 compute_color( sampler2D tex, float t, vec3 r )
+{
+	float v = exhaust_speed / size_y;
+	vec2 uv = tex_coords * texture_scale;
+	uv.y -= v*t;
+	uv.y = mod( uv.y, 1.0 );
+	vec4 c = texture( tex, uv );
+	float coef = c.x;
+	vec3 color = color_bright.rgb * coef + color_dark.rgb * (1.0-coef);
+	
+	// Compute mask. Everything below mask 100% transparent.
+	float mask = 0.45 - coef;
+	mask = (mask > 0.0) ? 1.0 : 0.0;
+	
+	float sz = size_y * (1.0 + power);
+	float y = 1.0 - pow( abs(r.y/sz), decay );
+	float a = y * mask;
+	
+	if (a < 0.0)
+		a = 0.0;
+	
+	return vec4(color.rgb, a);
+}
+
+vec2 compute_displacement( float t, float v, vec3 r, vec3 n )
+{
+	v /= size_y;
+	vec2 uv = tex_coords;
+	uv.y -= v*t;
+	uv.y = mod( uv.y, 1.0 );
+
+	float gain = abs(r.y/size_y) * displacement_gain;
+	
+	float dx = texture( displacement_x, uv ).r - 0.5;
+	float dz = texture( displacement_z, uv ).r - 0.5;
+	
+	dx *= gain;
+	dz *= gain;
+	return vec2( dx, dz );
+}
+
+
+void vertex()
+{
+	time       = TIME;
+	point3d    = VERTEX;
+	normal3d   = NORMAL;
+	tex_coords = UV;
+	
+	vec2 d = compute_displacement( time, exhaust_speed, point3d, normal3d );
+	float x = VERTEX.x + d.x;
+	float z = VERTEX.z + d.y;
+	VERTEX.x = x;
+	VERTEX.z = z;
+}
+
+void fragment() {
+	vec4 c = compute_color( noise, time, point3d );
+	ALBEDO = c.rgb;
+	ALPHA  = c.a;
+}
+"
+
+[sub_resource type="OpenSimplexNoise" id=2]
+seed = 1
+period = 15.0
+
+[sub_resource type="NoiseTexture" id=3]
+width = 128
+height = 128
+seamless = true
+noise = SubResource( 2 )
+
+[sub_resource type="OpenSimplexNoise" id=4]
+seed = 2
+period = 15.0
+
+[sub_resource type="NoiseTexture" id=5]
+width = 128
+height = 128
+seamless = true
+noise = SubResource( 4 )
+
+[sub_resource type="OpenSimplexNoise" id=6]
+period = 15.0
+
+[sub_resource type="NoiseTexture" id=7]
+width = 128
+height = 128
+seamless = true
+noise = SubResource( 6 )
+
+[resource]
+shader = SubResource( 1 )
+shader_param/size_y = 15.0
+shader_param/decay = 0.05
+shader_param/power = 0.0
+shader_param/exhaust_speed = 30.0
+shader_param/texture_scale = Vector2( 2, 0.2 )
+shader_param/displacement_gain = 5.0
+shader_param/color_bright = Color( 0.6471, 0.8039, 0, 1 )
+shader_param/color_dark = Color( 0, 0, 0, 1 )
+shader_param/noise = SubResource( 7 )
+shader_param/displacement_x = SubResource( 3 )
+shader_param/displacement_z = SubResource( 5 )

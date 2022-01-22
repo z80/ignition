@@ -1,9 +1,10 @@
 extends Exhaust
 
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
+export(float) var pressure_optimal = 0.8e5
+export(float) var pressure_low     = 0.0
+export(float) var pressure_high    = 1.0e5
+
 
 
 # Called when the node enters the scene tree for the first time.

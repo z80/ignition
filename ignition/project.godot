@@ -80,11 +80,6 @@ _global_script_classes=[ {
 "path": "res://physics/parts/habitats/entrance_node.gd"
 }, {
 "base": "Spatial",
-"class": "Exhaust",
-"language": "GDScript",
-"path": "res://physics/parts/thrusters/exhausts/exhaust.gd"
-}, {
-"base": "Spatial",
 "class": "ExhaustNode",
 "language": "GDScript",
 "path": "res://physics/parts/thrusters/exhaust_node.gd"
@@ -244,7 +239,6 @@ _global_script_class_icons={
 "CouplingNodeSurface": "",
 "Decoupler": "",
 "EntranceNode": "",
-"Exhaust": "",
 "ExhaustNode": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
 "ForceSource": "",

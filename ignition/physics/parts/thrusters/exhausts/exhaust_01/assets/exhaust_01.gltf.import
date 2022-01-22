@@ -2,12 +2,12 @@
 
 importer="scene"
 type="PackedScene"
-path="res://.import/exhaust_01.gltf-484e360b3af05141e66362b5e5f109ad.scn"
+path="res://.import/exhaust_01.gltf-11102f7ee98fedc92effe580a7dae52a.scn"
 
 [deps]
 
-source_file="res://exhaust/assets/exhaust_01.gltf"
-dest_files=[ "res://.import/exhaust_01.gltf-484e360b3af05141e66362b5e5f109ad.scn" ]
+source_file="res://physics/parts/thrusters/exhausts/exhaust_01/assets/exhaust_01.gltf"
+dest_files=[ "res://.import/exhaust_01.gltf-11102f7ee98fedc92effe580a7dae52a.scn" ]
 
 [params]
 

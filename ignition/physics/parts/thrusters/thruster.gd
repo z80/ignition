@@ -162,14 +162,8 @@ func set_ignited( en: bool ):
 	if not en and _ignited:
 		stop_sound( sound_loop )
 	
-	var started: bool = (not _ignited) and en and (throttle > 0.0)
-	_ignited = en and (throttle > 0.0)
-	if _exhaust_node != null:
-		var t: float = throttle
-		if not _ignited:
-			t = 0.0
-		
-		_exhaust_node.set_exhaust( t, 1.0 )
+	var started: bool = (not _ignited) and en
+	_ignited = en
 	
 	_setup_thrust()
 	
@@ -185,11 +179,6 @@ func get_ignited():
 
 func set_throttle( th: float ):
 	throttle = th
-	if (_exhaust_node != null):
-		var t: float = throttle
-		if not _ignited:
-			t = 0.0
-		_exhaust_node.set_exhaust( t, 1.0 )
 	
 	_setup_thrust()
 
@@ -309,7 +298,7 @@ func _check_solid_fuel_available():
 func _setup_thrust():
 	if _physical != null:
 		var p: float
-		if _ignited and (throttle > 0.0):
+		if _ignited:
 			var pressure: float = 0.0
 			var cb: CelestialBody = ClosestCelestialBody.closest_celestial_body( self )
 			if cb != null:
@@ -318,6 +307,15 @@ func _setup_thrust():
 					var se3: Se3Ref = self.relative_to( cs )
 					pressure = cs.air_pressure( se3 )
 			
+			var thrust: float
+			if _ignited:
+				thrust = throttle
+			
+			else:
+				thrust = 0.0
+			
+			_exhaust_node.set_exhaust( _ignited, thrust, pressure )
+			
 			var d_pressure_relative: float = (pressure - optimal_thrust_air_pressure)/(bad_thrust_air_pressure - optimal_thrust_air_pressure)
 			var abs_dpressure_relative: float = abs( d_pressure_relative )
 			abs_dpressure_relative = clamp( abs_dpressure_relative, 0.0, 1.0 )
@@ -325,11 +323,14 @@ func _setup_thrust():
 			var thrust_max: float = thrust_max_optimal + (thrust_max_bad - thrust_max_optimal)*abs_dpressure_relative
 			var thrust_min: float = thrust_min_optimal + (thrust_min_bad - thrust_min_optimal)*abs_dpressure_relative
 			# Thrust based on throttle level.
-			p = (thrust_max - thrust_min)*throttle + thrust_min
+			p = (thrust_max - thrust_min)*thrust + thrust_min
 			if p < thrust_min:
 				p = thrust_min
+		
 		else:
 			p = 0.0
+			_exhaust_node.set_exhaust( _ignited, 0.0, 0.0 )
+		
 		var n: Vector3 = _exhaust_node.thrust_direction()
 		var se3: Se3Ref = self.get_se3()
 		var q: Quat = se3.q

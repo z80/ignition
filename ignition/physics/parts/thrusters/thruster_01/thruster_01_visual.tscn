@@ -55,3 +55,4 @@ allows_connecting = false
 [node name="ExhaustNode" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.00242, 0 )
 script = ExtResource( 4 )
+exhaust_type = 1

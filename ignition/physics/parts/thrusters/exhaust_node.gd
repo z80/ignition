@@ -11,6 +11,9 @@ enum ExhaustType {
 
 export(ExhaustType) var exhaust_type = ExhaustType.A
 export(float) var exhaust_radius = 1.0
+export(float) var pressure_low: float     = 0.0
+export(float) var pressure_optimal: float = 0.8e5
+export(float) var pressure_high: float    = 1.0e5
 
 var _relative_to_owner: Transform = Transform.IDENTITY
 
@@ -56,15 +59,18 @@ func _create_exhaust():
 	_exhaust = Exhaust.instance()
 	add_child( _exhaust )
 	_exhaust.scale = Vector3( exhaust_radius, 1.0, exhaust_radius )
+	_exhaust.pressure_low     = pressure_low
+	_exhaust.pressure_optimal = pressure_optimal
+	_exhaust.pressure_high    = pressure_high
 	_exhaust.visible = false
 
 
 
-func set_exhaust( power: float, pressure: float ):
+func set_exhaust( enabled: bool, power: float, pressure: float ):
 	if _exhaust == null:
 		return
+	var visible: bool = enabled
 	_exhaust.set_exhaust( power, pressure )
-	var visible: bool = (power > 0.0)
 	_exhaust.visible = visible
 
 
