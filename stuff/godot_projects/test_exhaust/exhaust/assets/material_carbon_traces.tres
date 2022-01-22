@@ -2,67 +2,67 @@
 
 [sub_resource type="Shader" id=1]
 code = "shader_type spatial;
-render_mode unshaded;
+render_mode unshaded, cull_disabled;
 
-const float DISPLACEMENT = 0.005;
+uniform float size_y        = 15.0;
 
-const float displacement_gain = 3.0;
+// Color related.
+uniform float decay         = 0.05;
+uniform float power         = 0.0;
+uniform float exhaust_speed = 150.0;
+uniform vec2  texture_scale = vec2( 2.0, 0.2 );
 
-uniform float color_solid_size               = 1.6;
-uniform float color_attenuation_size         = 1.5;
-uniform float exhaust_speed            = 30.0;
-uniform float texture_scale_horizontal = 0.5;
-uniform float texture_scale_vertical   = 0.1;
+// Geometry related.
+uniform float displacement_gain = 5.0;
+
 uniform sampler2D noise;
 uniform sampler2D displacement_x;
 uniform sampler2D displacement_z;
 
-uniform vec4 color_bright: hint_color = vec4( 0.6471, 0.6039, 0.0, 1.0 );
+uniform vec4 color_bright: hint_color = vec4( 0.6471, 0.8039, 1.0, 1.0 );
 uniform vec4 color_dark:   hint_color = vec4( 0.0, 0.0, 0.0, 1.0 );
-uniform float dark_ratio = 0.4;
 
 varying float time;
 varying vec3 point3d;
 varying vec3 normal3d;
+varying vec2 tex_coords;
 
 
 
-
-
-vec4 compute_color( sampler2D tex, float t, vec3 r, vec3 n )
+vec4 compute_color( sampler2D tex, float t, vec3 r )
 {
-	float y = r.y + exhaust_speed * t;
-	vec2 uv = vec2( r.x*texture_scale_horizontal, y*texture_scale_vertical );
-	float c_xy = texture( tex, uv ).x;
-	uv = vec2( r.x*texture_scale_horizontal, r.z*texture_scale_horizontal );
-	float c_xz = texture( tex, uv ).x;
-	uv = vec2( y*texture_scale_vertical, r.z*texture_scale_horizontal );
-	float c_yz = texture( tex, uv ).x;
-	vec3 an = abs(n);
-	float c = c_xy*an.z + c_xz*an.y + c_yz*an.x;
-	c = 0.6 - c;
-	float alpha = (c < 0.0) ? 0.0 : 1.0;
-	alpha *= clamp( color_solid_size + r.y/color_attenuation_size, 0.0, 1.0 );
+	float v = exhaust_speed / size_y;
+	vec2 uv = tex_coords * texture_scale;
+	uv.y -= v*t;
+	uv.y = mod( uv.y, 1.0 );
+	vec4 c = texture( tex, uv );
+	float coef = c.x;
+	vec3 color = color_bright.rgb * coef + color_dark.rgb * (1.0-coef);
 	
-	float coef = clamp(c*10.0, 0.0, 1.0 );
+	// Compute mask. Everything below mask 100% transparent.
+	float mask = 0.45 - coef;
+	mask = (mask > 0.0) ? 1.0 : 0.0;
 	
-	vec4 color;
-	color.a   = alpha;
-	color.rgb = color_bright.rgb * (1.0-coef) + color_dark.rgb * (coef);
+	float sz = size_y * (1.0 + power);
+	float y = 1.0 - pow( abs(r.y/sz), decay );
+	float a = y * mask;
 	
-	return color;
+	if (a < 0.0)
+		a = 0.0;
+	
+	return vec4(color.rgb, a);
 }
 
-vec2 compute_displacement( float t, vec3 r, vec3 n )
+vec2 compute_displacement( float t, float v, vec3 r, vec3 n )
 {
-	float gain = abs(r.y/displacement_gain) * DISPLACEMENT;
-	float y = r.y + exhaust_speed * t;
-	y = mod( y/displacement_gain, 1.0 );
+	v /= size_y;
+	vec2 uv = tex_coords;
+	uv.y -= v*t;
+	uv.y = mod( uv.y, 1.0 );
 
-	vec2 uv = vec2( r.x, y );
+	float gain = abs(r.y/size_y) * displacement_gain;
+	
 	float dx = texture( displacement_x, uv ).r - 0.5;
-
-	uv = vec2( r.z, y );
 	float dz = texture( displacement_z, uv ).r - 0.5;
 	
 	dx *= gain;
@@ -71,26 +71,24 @@ vec2 compute_displacement( float t, vec3 r, vec3 n )
 }
 
 
-
 void vertex()
 {
-	time     = TIME;
-	point3d  = VERTEX;
-	normal3d = NORMAL;
+	time       = TIME;
+	point3d    = VERTEX;
+	normal3d   = NORMAL;
+	tex_coords = UV;
 	
-//	vec2 d = compute_displacement( time, point3d, normal3d );
-//	float x = VERTEX.x + d.x;
-//	float z = VERTEX.z + d.y;
-//	VERTEX.x = x;
-//	VERTEX.z = z;
+	vec2 d = compute_displacement( time, exhaust_speed, point3d, normal3d );
+	float x = VERTEX.x + d.x;
+	float z = VERTEX.z + d.y;
+	VERTEX.x = x;
+	VERTEX.z = z;
 }
 
-void fragment()
-{
-	vec4 color;
-	color = compute_color( noise, time, point3d, normal3d );
-	ALBEDO = color.rgb;
-	ALPHA  = color.a;
+void fragment() {
+	vec4 c = compute_color( noise, time, point3d );
+	ALBEDO = c.rgb;
+	ALPHA  = c.a;
 }
 "
 
@@ -125,14 +123,14 @@ noise = SubResource( 6 )
 
 [resource]
 shader = SubResource( 1 )
-shader_param/color_solid_size = 1.6
-shader_param/color_attenuation_size = 1.5
+shader_param/size_y = 15.0
+shader_param/decay = 0.05
+shader_param/power = 0.0
 shader_param/exhaust_speed = 30.0
-shader_param/texture_scale_horizontal = 0.5
-shader_param/texture_scale_vertical = 0.1
+shader_param/texture_scale = Vector2( 2, 0.2 )
+shader_param/displacement_gain = 5.0
 shader_param/color_bright = Color( 0.6471, 0.8039, 0, 1 )
-shader_param/color_dark = Color( 0.1, 0.1, 0.1, 1 )
-shader_param/dark_ratio = 0.4
+shader_param/color_dark = Color( 0, 0, 0, 1 )
 shader_param/noise = SubResource( 7 )
 shader_param/displacement_x = SubResource( 3 )
 shader_param/displacement_z = SubResource( 5 )

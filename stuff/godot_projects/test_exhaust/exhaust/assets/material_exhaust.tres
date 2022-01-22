@@ -2,14 +2,19 @@
 
 [sub_resource type="Shader" id=1]
 code = "shader_type spatial;
-render_mode unshaded;
+render_mode unshaded, cull_disabled;
 
-const float SIZE_Y = 25.0;
+uniform float size_y        = 15.0;
 
-uniform float pressure;
-uniform float power;
-uniform float exhaust_speed;
-uniform float texture_scale;
+// Color related.
+uniform float decay         = 0.05;
+uniform float power         = 0.0;
+uniform float exhaust_speed = 150.0;
+uniform vec2  texture_scale = vec2( 2.0, 0.2 );
+
+// Geometry related.
+uniform float displacement_gain = 5.0;
+
 uniform sampler2D noise;
 uniform sampler2D displacement_x;
 uniform sampler2D displacement_z;
@@ -20,46 +25,39 @@ uniform vec4 color_dark:   hint_color = vec4( 0.3529, 0.3529, 0.3529, 1.0 );
 varying float time;
 varying vec3 point3d;
 varying vec3 normal3d;
+varying vec2 tex_coords;
 
 
 
-float scale( float z, float p )
+vec4 compute_color( sampler2D tex, float t, vec3 r )
 {
-	float u = abs(z)/SIZE_Y;
-	u = sqrt( u );
-	float s = 1.0 + (u)*SIZE_Y*p;
-	return s;
-}
-
-vec3 compute_color( sampler2D tex, float tex_scale, float t, float v, vec3 r, vec3 n )
-{
-	float y = r.y + v * t;
-	y = mod( y/SIZE_Y, 1.0 );
-	vec2 uv = vec2( r.x*tex_scale, y*tex_scale );
-	vec4 c_xy = texture( tex, uv );
-	uv = vec2( r.x*tex_scale, r.z*tex_scale );
-	vec4 c_xz = texture( tex, uv );
-	uv = vec2( y*tex_scale, r.z*tex_scale );
-	vec4 c_yz = texture( tex, uv );
-	vec3 an = abs(n);
-	vec4 c = c_xy*an.z + c_xz*an.y + c_yz*an.x;
-	float coef = (c.x + c.y + c.z) / 3.0;
+	float v = exhaust_speed / size_y;
+	vec2 uv = tex_coords * texture_scale;
+	uv.y -= v*t;
+	uv.y = mod( uv.y, 1.0 );
+	vec4 c = texture( tex, uv );
+	float coef = c.x;
 	vec3 color = color_bright.rgb * coef + color_dark.rgb * (1.0-coef);
-	//float a = texture( noise, vec2(r.x*tex_scale, y*tex_scale) ).g;
-	//vec3 color = vec3(a, a, a);
-	return color;
+	
+	float sz = size_y * (1.0 + power);
+	float a = 1.0 - pow( abs(r.y/sz), decay );
+	
+	if (a < 0.0)
+		a = 0.0;
+	
+	return vec4(color.rgb, a);
 }
 
 vec2 compute_displacement( float t, float v, vec3 r, vec3 n )
 {
-	float gain = abs(r.y/SIZE_Y) * 5.0;
-	float y = r.y + v * t;
-	y = mod( y/SIZE_Y, 1.0 );
+	v /= size_y;
+	vec2 uv = tex_coords;
+	uv.y -= v*t;
+	uv.y = mod( uv.y, 1.0 );
 
-	vec2 uv = vec2( r.x, y );
+	float gain = abs(r.y/size_y) * displacement_gain;
+	
 	float dx = texture( displacement_x, uv ).r - 0.5;
-
-	uv = vec2( r.z, y );
 	float dz = texture( displacement_z, uv ).r - 0.5;
 	
 	dx *= gain;
@@ -67,23 +65,13 @@ vec2 compute_displacement( float t, float v, vec3 r, vec3 n )
 	return vec2( dx, dz );
 }
 
-float compute_alpha( float pwr, vec3 r )
-{
-	float at = pwr;
-	float y = at - abs(r.y/SIZE_Y);
-	float a = y / (1.0 + abs(y)) ;
-	
-	if (a < 0.0)
-		a = 0.0;
-	
-	return a;
-}
 
 void vertex()
 {
-	time = TIME;
-	point3d = VERTEX;
-	normal3d = NORMAL;
+	time       = TIME;
+	point3d    = VERTEX;
+	normal3d   = NORMAL;
+	tex_coords = UV;
 	
 	vec2 d = compute_displacement( time, exhaust_speed, point3d, normal3d );
 	float x = VERTEX.x + d.x;
@@ -93,8 +81,9 @@ void vertex()
 }
 
 void fragment() {
-	ALBEDO = compute_color( noise, texture_scale, time, exhaust_speed, point3d, normal3d );
-	ALPHA  = compute_alpha( power, point3d );
+	vec4 c = compute_color( noise, time, point3d );
+	ALBEDO = c.rgb;
+	ALPHA  = c.a;
 }
 "
 
@@ -129,12 +118,14 @@ noise = SubResource( 6 )
 
 [resource]
 shader = SubResource( 1 )
-shader_param/pressure = 0.5
-shader_param/power = 0.8
-shader_param/exhaust_speed = 150.0
-shader_param/texture_scale = 0.2
-shader_param/color_bright = Color( 0.6471, 0.8039, 1, 1 )
-shader_param/color_dark = Color( 0.3529, 0.3529, 0.3529, 1 )
+shader_param/size_y = 12.0
+shader_param/decay = 0.02
+shader_param/power = 1.0
+shader_param/exhaust_speed = 5.0
+shader_param/texture_scale = Vector2( 2, 1 )
+shader_param/displacement_gain = 1.0
+shader_param/color_bright = Color( 3, 3, 3, 1 )
+shader_param/color_dark = Color( 0, 0, 0, 1 )
 shader_param/noise = SubResource( 7 )
 shader_param/displacement_x = SubResource( 3 )
 shader_param/displacement_z = SubResource( 5 )
