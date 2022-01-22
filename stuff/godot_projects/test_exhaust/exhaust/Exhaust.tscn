@@ -1,10 +1,11 @@
-[gd_scene load_steps=25 format=2]
+[gd_scene load_steps=26 format=2]
 
-[ext_resource path="res://exhaust/assets/exhaust_01/exhaust_01_Glow.mesh" type="ArrayMesh" id=1]
-[ext_resource path="res://exhaust/assets/exhaust_01/exhaust_01_ShockDiamonds.mesh" type="ArrayMesh" id=2]
-[ext_resource path="res://exhaust/assets/exhaust_01/exhaust_01_InnerTube.mesh" type="ArrayMesh" id=3]
-[ext_resource path="res://exhaust/assets/exhaust_01/exhaust_01_CarbonTraces.mesh" type="ArrayMesh" id=4]
+[ext_resource path="res://exhaust/assets/exhaust_01/exhaust_01_InnerTube.mesh" type="ArrayMesh" id=1]
+[ext_resource path="res://exhaust/assets/exhaust_01/exhaust_01_CarbonTraces.mesh" type="ArrayMesh" id=2]
+[ext_resource path="res://exhaust/assets/exhaust_01/exhaust_01_Glow.mesh" type="ArrayMesh" id=3]
+[ext_resource path="res://exhaust/assets/exhaust_01/exhaust_01_ShockDiamonds.mesh" type="ArrayMesh" id=4]
 [ext_resource path="res://exhaust/assets/exhaust_01/exhaust_01_OuterLayer.mesh" type="ArrayMesh" id=5]
+[ext_resource path="res://exhaust/exhaust.gd" type="Script" id=6]
 
 [sub_resource type="SpatialMaterial" id=8]
 flags_transparent = true
@@ -182,9 +183,8 @@ varying vec2 tex_coords;
 
 vec4 compute_color( sampler2D tex, float t, vec3 r )
 {
-	float v = exhaust_speed / size_y;
 	vec2 uv = tex_coords * texture_scale;
-	uv.y -= v*t;
+	uv.y -= exhaust_speed*t;
 	uv.y = mod( uv.y, 1.0 );
 	vec4 c = texture( tex, uv );
 	float coef = c.x;
@@ -199,11 +199,10 @@ vec4 compute_color( sampler2D tex, float t, vec3 r )
 	return vec4(color.rgb, a);
 }
 
-vec2 compute_displacement( float t, float v, vec3 r, vec3 n )
+vec2 compute_displacement( float t, vec3 r, vec3 n )
 {
-	v /= size_y;
 	vec2 uv = tex_coords;
-	uv.y -= v*t;
+	uv.y -= exhaust_speed*t;
 	uv.y = mod( uv.y, 1.0 );
 
 	float gain = abs(r.y/size_y) * displacement_gain;
@@ -224,7 +223,7 @@ void vertex()
 	normal3d   = NORMAL;
 	tex_coords = UV;
 	
-	vec2 d = compute_displacement( time, exhaust_speed, point3d, normal3d );
+	vec2 d = compute_displacement( time, point3d, normal3d );
 	float x = VERTEX.x + d.x;
 	float z = VERTEX.z + d.y;
 	VERTEX.x = x;
@@ -269,7 +268,7 @@ noise = SubResource( 15 )
 
 [sub_resource type="ShaderMaterial" id=17]
 shader = SubResource( 10 )
-shader_param/size_y = 12.0
+shader_param/size_y = 14.7
 shader_param/decay = 0.02
 shader_param/power = 1.0
 shader_param/exhaust_speed = 150.0
@@ -283,7 +282,7 @@ shader_param/displacement_z = SubResource( 14 )
 
 [sub_resource type="ShaderMaterial" id=18]
 shader = SubResource( 10 )
-shader_param/size_y = 12.0
+shader_param/size_y = 14.7
 shader_param/decay = 0.02
 shader_param/power = 1.0
 shader_param/exhaust_speed = 5.0
@@ -297,48 +296,53 @@ shader_param/displacement_z = SubResource( 14 )
 
 [sub_resource type="ShaderMaterial" id=19]
 shader = SubResource( 10 )
-shader_param/size_y = 12.0
+shader_param/size_y = 22.14
 shader_param/decay = 0.02
-shader_param/power = 1.0
+shader_param/power = 1.004
 shader_param/exhaust_speed = 5.0
 shader_param/texture_scale = Vector2( 2, 1 )
 shader_param/displacement_gain = 1.0
-shader_param/color_bright = Color( 3, 3, 3, 1 )
+shader_param/color_bright = Color( 5, 4.5, 2.5, 1 )
 shader_param/color_dark = Color( 0, 0, 0, 1 )
 shader_param/noise = SubResource( 16 )
 shader_param/displacement_x = SubResource( 12 )
 shader_param/displacement_z = SubResource( 14 )
 
 [node name="Exhaust" type="Spatial"]
+script = ExtResource( 6 )
+pressure_optimal = 0.8
+pressure_high = 1.0
+thrust = 1.0
+pressure = 0.769
 
 [node name="Glow" type="MeshInstance" parent="."]
-mesh = ExtResource( 1 )
+mesh = ExtResource( 3 )
 material/0 = SubResource( 8 )
 
 [node name="CarbonTraces" type="MeshInstance" parent="."]
-mesh = ExtResource( 4 )
+mesh = ExtResource( 2 )
 blend_shapes/Overexpanded = 0.0
-blend_shapes/Thrust = 0.0
-blend_shapes/Underexpanded = 0.0
+blend_shapes/Thrust = 1.0
+blend_shapes/Underexpanded = 0.03875
 material/0 = SubResource( 9 )
 
 [node name="ShockDiamonds" type="MeshInstance" parent="."]
-mesh = ExtResource( 2 )
+mesh = ExtResource( 4 )
 blend_shapes/Overexpanded = 0.0
-blend_shapes/Thrust = 0.0
-blend_shapes/Underexpanded = 0.0
+blend_shapes/Thrust = 1.0
+blend_shapes/Underexpanded = 0.03875
 material/0 = SubResource( 17 )
 
 [node name="InnerTube" type="MeshInstance" parent="."]
-mesh = ExtResource( 3 )
+mesh = ExtResource( 1 )
 blend_shapes/Overexpanded = 0.0
-blend_shapes/Thrust = 0.0
-blend_shapes/Underexpanded = 0.0
+blend_shapes/Thrust = 1.0
+blend_shapes/Underexpanded = 0.03875
 material/0 = SubResource( 18 )
 
 [node name="OuterLayer" type="MeshInstance" parent="."]
 mesh = ExtResource( 5 )
 blend_shapes/Overexpanded = 0.0
-blend_shapes/Thrust = 0.0
-blend_shapes/Underexpanded = 0.0
+blend_shapes/Thrust = 1.0
+blend_shapes/Underexpanded = 0.03875
 material/0 = SubResource( 19 )

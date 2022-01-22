@@ -11,7 +11,7 @@ config_version=4
 [application]
 
 config/name="test_exhaust"
-run/main_scene="res://exhaust/Exhaust.tscn"
+run/main_scene="res://exhaust/exhaust.tscn"
 config/icon="res://icon.png"
 
 [physics]
