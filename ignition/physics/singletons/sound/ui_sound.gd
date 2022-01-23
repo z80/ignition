@@ -5,7 +5,7 @@ var _players_pool: Array = []
 var _sounds: Dictionary  = {}
 
 
-func play( sound_path: String ):
+func play( sound_path: String, var music: bool = false ):
 	var has: bool = _sounds.has( sound_path )
 	var sound: AudioStream
 	if has:
@@ -15,6 +15,12 @@ func play( sound_path: String ):
 		_sounds[sound_path] = sound
 	
 	var p: AudioStreamPlayer = _get_player()
+	if music:
+		p.bus = "Music"
+	
+	else:
+		p.bus = "Sounds"
+	
 	p.stream = sound
 	p.play()
 	return p

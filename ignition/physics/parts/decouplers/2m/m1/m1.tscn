@@ -8,3 +8,4 @@ part_class = 6
 allows_surface_attachments = false
 conducts_liquid_fuel = false
 conducts_solid_fuel = false
+decouple_sound = "res://physics/parts/decouplers/2m/m1/assets/pop.ogg"

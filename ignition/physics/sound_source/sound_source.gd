@@ -118,6 +118,7 @@ func _get_stream_player():
 		p.attenuation_model = AudioStreamPlayer3D.ATTENUATION_DISABLED
 		var name: String = _get_unique_name()
 		p.name = name
+		p.bus  = "Sounds"
 		add_child( p )
 		p.connect( "finished", self, "_on_playback_finished", [p] )
 		return p

@@ -2,6 +2,8 @@
 extends Part
 class_name Decoupler
 
+export(String) var decouple_sound = ""
+
 # This one should point to the coupling node wich is iupposed to 
 # be eliminated.
 var decoupled: bool = false
@@ -30,6 +32,9 @@ func decoupler_activate():
 	var sb: Node = get_super_body_raw()
 	if (sb != null) and (is_instance_valid(sb)):
 		sb.queue_free()
+	
+	if (not decoupled):
+		play_sound( decouple_sound )
 	
 	decoupled = true
 

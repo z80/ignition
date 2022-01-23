@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/pop.ogg-382b85cade73c6263d13f962b18ecc82.oggstr"
+
+[deps]
+
+source_file="res://physics/parts/decouplers/2m/m1/assets/pop.ogg"
+dest_files=[ "res://.import/pop.ogg-382b85cade73c6263d13f962b18ecc82.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0
