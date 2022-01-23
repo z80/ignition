@@ -45,11 +45,13 @@ Here is the battle plan.
 - [x] Make sure thrusters do use atmospheric pressure.
 - [x] Draw proper launch pad.
 - [x] Implement smarter decision making on changing sphere of influence. Should not happen within planet system. Only beyond the most distant moon.
-- [ ] Draw more realistic thrust.
+- [x] Draw more realistic thrust.
 - [ ] Improve sphere subdivision algorithm. Currently it doesn't look like a piece of art.
 - [x] Fix the interaction menu window. Make content expand the window or slider show up. Add "x" icon as close button and "L" for resize place.
 - [ ] Make static bodies to remember their initial parent planet and restore relative position on every ref. frame change.
 - [ ] Camera shakiness issue. Probably something related the order in which object transforms are updated.
+- [ ] Trajectory change nodes on a current trajectory.
+- [ ] Predictor of what's going to happen in future. Let's say, a target is specified, and it computes if there will be an entry to its sphere of influence.
 
 
 
