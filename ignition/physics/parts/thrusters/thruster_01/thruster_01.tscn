@@ -10,5 +10,5 @@ thrust_min_optimal = 144.0
 thrust_max_optimal = 240.0
 thrust_min_bad = 72.0
 thrust_max_bad = 120.0
-fuel_consumption_min = 0.15
+fuel_consumption_min = 0.12
 fuel_consumption_max = 0.35
