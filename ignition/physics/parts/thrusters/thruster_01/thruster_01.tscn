@@ -5,9 +5,10 @@
 [node name="Thruster_01" type="RefFrameNode"]
 script = ExtResource( 1 )
 conducts_solid_fuel = false
-thrust_min_optimal = 72.0
-thrust_max_optimal = 120.0
-thrust_min_bad = 36.0
-thrust_max_bad = 60.0
+bad_thrust_air_pressure = 20000.0
+thrust_min_optimal = 144.0
+thrust_max_optimal = 240.0
+thrust_min_bad = 72.0
+thrust_max_bad = 120.0
 fuel_consumption_min = 0.15
 fuel_consumption_max = 0.35

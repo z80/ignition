@@ -24,6 +24,7 @@ part_class = 1
 conducts_solid_fuel = false
 conducts_air = false
 mass = 0.15
+height = 2.0
 
 [node name="OctreeMeshGd" type="OctreeMeshGd" parent="."]
 se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
