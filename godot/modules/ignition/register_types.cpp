@@ -16,6 +16,8 @@
 #include "height_source_test_ref.h"
 #include "height_source_gd_ref.h"
 #include "cube_sphere_node.h"
+#include "subdivide_source_ref.h"
+#include "subdivide_source_dist_ref.h"
 
 // Celestial motion.
 #include "celestial_motion_ref.h"
@@ -37,6 +39,7 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::HeightSourceGdRef>();
 
 	ClassDB::register_class<Ign::SubdivideSourceRef>();
+	ClassDB::register_class<Ign::SubdivideSourceDistRef>();
 	ClassDB::register_class<Ign::CubeSphereNode>();
 
 	ClassDB::register_class<Ign::CelestialMotionRef>();

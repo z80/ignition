@@ -10,7 +10,7 @@ SubdivideSourceDist::SubdivideSourceDist()
     : SubdivideSource()
 {
     _min_size  = 10.0;
-    _min_angle = 0.1;
+    _min_angle = 0.3;
 }
 
 SubdivideSourceDist::~SubdivideSourceDist()
