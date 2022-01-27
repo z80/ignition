@@ -25,9 +25,6 @@ detail_size_2 = 0.1
 convert_to_global = true
 apply_scale = false
 
-[node name="CelestialBody" parent="Planet/Rotation" index="0"]
-convert_to_global = false
-
 [node name="Camera" parent="Planet" instance=ExtResource( 3 )]
 map_mode = true
 

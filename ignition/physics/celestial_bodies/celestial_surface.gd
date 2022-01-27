@@ -229,6 +229,7 @@ func height_source( name: String, radius: float, height: float ):
 
 
 func _set_convert_to_global( en ):
+	var n: Node = get_node( "Rotation/CelestialBody" )
 	var celestial_body: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	celestial_body.convert_to_global = en
 

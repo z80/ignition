@@ -10,14 +10,14 @@ namespace Ign
 
 class SubdivideSourceDistRef: public SubdivideSourceRef
 {
-    GDCLASS(SubdivideSourceDistRef, Reference);
+    GDCLASS(SubdivideSourceDistRef, SubdivideSourceRef);
     OBJ_CATEGORY("Ignition");
 protected:
     static void _bind_methods();
 
 public:
     SubdivideSourceDistRef();
-    ~SubdivideSourceDistRef();
+    virtual ~SubdivideSourceDistRef();
 
 	void set_min_size( real_t sz );
 	real_t get_min_size() const;

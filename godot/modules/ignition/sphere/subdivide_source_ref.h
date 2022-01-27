@@ -17,7 +17,7 @@ protected:
 
 public:
     SubdivideSourceRef();
-    ~SubdivideSourceRef();
+    virtual ~SubdivideSourceRef();
 
     bool need_subdivide( Node * ref_frame, Node * cubesphere_node );
 	void force_subdivide();
