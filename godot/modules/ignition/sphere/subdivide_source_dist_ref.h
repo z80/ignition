@@ -2,13 +2,13 @@
 #ifndef __SUBDIVIDE_SOURCE_DIST_REF_H_
 #define __SUBDIVIDE_SOURCE_DIST_REF_H_
 
+#include "subdivide_source_ref.h"
 #include "subdivide_source_dist.h"
-#include "core/reference.h"
 
 namespace Ign
 {
 
-class SubdivideSourceDistRef: public Reference
+class SubdivideSourceDistRef: public SubdivideSourceRef
 {
     GDCLASS(SubdivideSourceDistRef, Reference);
     OBJ_CATEGORY("Ignition");
@@ -19,12 +19,14 @@ public:
     SubdivideSourceDistRef();
     ~SubdivideSourceDistRef();
 
-    bool need_subdivide( Node * ref_frame, Node * cubesphere_node );
-	void force_subdivide();
+	void set_min_size( real_t sz );
+	real_t get_min_size() const;
+
+	void set_min_angle( real_t angle );
+	real_t get_min_angle() const;
 
 public:
-    SubdivideSourceDist subdivide_source;
-    Vector<Vector3d>    subdivide_points;
+    SubdivideSourceDist subdivide_source_dist;
 };
 
 

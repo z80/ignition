@@ -5,15 +5,41 @@
 
 [node name="Translation" type="RefFrameNode"]
 script = ExtResource( 1 )
+rotation_period_hrs = null
+rotation_axis = null
+surface_orbital_vel_kms = null
+radius_km = null
+height_km = null
+perigee_dir = null
+perigee_vel = null
+orbital_period_hrs = null
+orbital_eccentricity = null
 height_source_name = "00"
 detail_size_0 = 0.03
+detail_dist_0 = null
 detail_size_1 = 0.1
+detail_dist_1 = null
 detail_size_2 = 0.15
+detail_dist_2 = null
+atmosphere_height_inner_km = null
+atmosphere_height_outer_km = null
+transparency_dist_inner_km = null
+transparency_dist_outer_km = null
+atmosphere_color_day = null
+atmosphere_color_night = null
+displacement = null
+air_density = null
+air_viscosity = null
+air_pressure_surface = null
+orbit_color = null
+show_orbit = null
+convert_to_global = null
+apply_scale = null
+rescale_angular_distance = null
 
 [node name="Rotation" type="RefFrameNode" parent="."]
 
 [node name="CelestialBody" type="CubeSphereNode" parent="Rotation"]
-apply_scale = false
 target_mesh = NodePath("Mesh")
 
 [node name="Mesh" type="MeshInstance" parent="Rotation/CelestialBody"]

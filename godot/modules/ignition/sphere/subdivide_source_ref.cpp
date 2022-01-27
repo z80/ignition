@@ -16,6 +16,7 @@ void SubdivideSourceRef::_bind_methods()
 SubdivideSourceRef::SubdivideSourceRef()
     : Reference()
 {
+	source = &subdivide_source;
 }
 
 SubdivideSourceRef::~SubdivideSourceRef()
@@ -39,7 +40,7 @@ bool SubdivideSourceRef::need_subdivide( Node * ref_frame, Node * cubesphere_nod
 
         subdivide_points.clear();
         subdivide_points.push_back( sp );
-        const bool ret = subdivide_source.need_subdivide( &(csn->sphere), subdivide_points );
+        const bool ret = source->need_subdivide( &(csn->sphere), subdivide_points );
         return ret;
     }
 
@@ -47,14 +48,14 @@ bool SubdivideSourceRef::need_subdivide( Node * ref_frame, Node * cubesphere_nod
     subdivide_points.clear();
     subdivide_points.push_back( se3.r_ );
 
-    const bool ret = subdivide_source.need_subdivide( &(csn->sphere), subdivide_points );
+    const bool ret = source->need_subdivide( &(csn->sphere), subdivide_points );
      
     return ret;
 }
 
 void SubdivideSourceRef::force_subdivide()
 {
-	subdivide_source.force_subdivide();
+	source->force_subdivide();
 }
 
 

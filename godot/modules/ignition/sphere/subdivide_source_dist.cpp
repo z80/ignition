@@ -9,8 +9,8 @@ namespace Ign
 SubdivideSourceDist::SubdivideSourceDist()
     : SubdivideSource()
 {
-    _min_size  = 10.0;
-    _min_angle = 0.3;
+    min_size  = 10.0;
+    min_angle = 0.3;
 }
 
 SubdivideSourceDist::~SubdivideSourceDist()
@@ -33,7 +33,7 @@ bool SubdivideSourceDist::need_subdivide( const CubeSphere * s, const CubeQuadNo
     const CubeVertex & cv2 = verts.ptr()[ind2];
     const Vector3d dr = cv2.at - cv0.at;
     const Float sz = dr.Length();
-    const bool smaller_than_min = (sz < _min_size);
+    const bool smaller_than_min = (sz < min_size);
     if ( smaller_than_min )
         return false;
 
@@ -45,10 +45,10 @@ bool SubdivideSourceDist::need_subdivide( const CubeSphere * s, const CubeQuadNo
         const Vector3d & a = pts_.ptr()[i];
         const Vector3d d = center - a;
         const Float dist = d.Length();
-        if (dist < _min_size)
+        if (dist < min_size)
             return false;
         const Float angle = sz / dist;
-        const bool divide = (angle > _min_angle);
+        const bool divide = (angle > min_angle);
         if ( divide )
             return true;
     }

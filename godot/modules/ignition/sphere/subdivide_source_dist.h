@@ -24,8 +24,8 @@ public:
     virtual bool need_subdivide( const CubeSphere * s, const CubeQuadNode * f ) const override;
 
 public:
-    Float _min_size;
-    Float _min_angle;
+    Float min_size;
+    Float min_angle;
 };
 
 

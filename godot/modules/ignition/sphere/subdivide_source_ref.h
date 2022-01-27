@@ -23,6 +23,7 @@ public:
 	void force_subdivide();
 
 public:
+	SubdivideSource * source;
     SubdivideSource subdivide_source;
     Vector<Vector3d> subdivide_points;
 };

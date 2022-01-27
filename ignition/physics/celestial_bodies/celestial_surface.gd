@@ -36,7 +36,7 @@ export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
 # As currently there is just one player
 # And even if many one player per PC need just one 
 # subdivide source per visual sphere.
-var _subdivide_source_visual: SubdivideSourceRef = null
+var _subdivide_source_visual: SubdivideSourceDistRef = null
 
 
 export(bool) var convert_to_global = false setget _set_convert_to_global
@@ -89,7 +89,7 @@ func init():
 	
 	add_to_group( Constants.PLANETS_GROUP_NAME )
 	
-	_subdivide_source_visual = SubdivideSourceRef.new()
+	_subdivide_source_visual = SubdivideSourceDistRef.new()
 	
 	motion = CelestialMotionRef.new()
 
