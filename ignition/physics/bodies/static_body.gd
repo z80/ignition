@@ -20,7 +20,11 @@ func _notification( what ):
 
 
 func _init_first_parent():
-	pass
+	if _first_parent != null:
+		return
+	var ClosestCb = preload( "res://physics/utils/closest_celestial_body.gd" )
+	var cb: CelestialBody = ClosestCb.closest_celestial_body( self )
+	var cs: CelestialSurface = cb as CelestialSurface
 
 
 func _update_position():
