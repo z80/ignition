@@ -26,6 +26,7 @@ public:
 public:
     Float min_size;
     Float min_angle;
+	int   min_level;
 };
 
 

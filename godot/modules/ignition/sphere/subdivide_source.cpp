@@ -31,13 +31,14 @@ bool SubdivideSource::need_subdivide( const CubeSphere * s, const Vector<Vector3
 
     if ( s->levels_.empty() )
     {
-        pts_ = ptsNew_;
+        pts_     = ptsNew_;
+		ptsOrig_ = pts;
         flatten_pts( s );
         return true;
     }
 
     // Sort and normalize all levels.
-    // LEvels are sorted in increasing size order.
+    // Levels are sorted in increasing size order.
     const int levels_qty = s->levelsUnit_.size();
     const CubeSphere::Level lvl_close = s->levelsUnit_.ptr()[0];
     const Float d_close = lvl_close.dist * 0.5;
@@ -78,7 +79,8 @@ bool SubdivideSource::need_subdivide( const CubeSphere * s, const Vector<Vector3
 
     if ( needSubdrive )
     {
-        pts_ = ptsNew_;
+        pts_     = ptsNew_;
+		ptsOrig_ = pts;
         flatten_pts( s );
     }
 

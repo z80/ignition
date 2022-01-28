@@ -322,6 +322,8 @@ void CubeSphere::init()
     v.atFlat = Vector3d(  1.0,  1.0, -1.0 );
     verts.push_back( v );
 
+	scale_to_sphere();
+
     CubeQuadNode f;
     f.leaf  = true;
     f.level = 0;

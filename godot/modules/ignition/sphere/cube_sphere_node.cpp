@@ -689,7 +689,7 @@ void CubeSphereNode::_subdivide_2( RefFrameNode * player_rf, Ref<SubdivideSource
 {
 	if ( subdivide_source_ref.ptr() == nullptr )
 		return;
-	SubdivideSource * ss = &(subdivide_source_ref->subdivide_source);
+	SubdivideSource * ss = subdivide_source_ref->source;
 	sphere.subdivide( ss );
 }
 

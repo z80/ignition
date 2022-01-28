@@ -101,8 +101,10 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdivideSource * src )
             const CubeVertex & vb = s->verts[vertIndB];
             // Create new vertex;
             const Vector3d atFlat( (va.atFlat + vb.atFlat) * 0.5 );
+			const Vector3d atUnit( (va.atUnit + vb.atUnit) * 0.5 );
             CubeVertex v;
             v.atFlat = atFlat;
+			v.atUnit = atUnit.Normalized();
             v.a = vertIndA;
             v.b = vertIndB;
             const int newInd = (int)s->verts.size();
@@ -124,8 +126,10 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdivideSource * src )
     const CubeVertex & d = s->verts[newVertInds[3]];
 
     const Vector3d atFlat( (a.atFlat + b.atFlat + c.atFlat + d.atFlat)*0.25 );
-    CubeVertex v;
+	const Vector3d atUnit( (a.atUnit + b.atUnit + c.atUnit + d.atUnit)*0.25 );
+	CubeVertex v;
     v.atFlat = atFlat;
+	v.atUnit = atUnit.Normalized();
     v.a = -1;
     v.b = -1;
     const int fifthVertInd = (int)s->verts.size();
