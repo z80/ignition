@@ -17,3 +17,4 @@ target_mesh = NodePath("Mesh")
 
 [node name="Mesh" type="MeshInstance" parent="Rotation/CelestialBody"]
 material_override = ExtResource( 2 )
+generate_lightmap = false
