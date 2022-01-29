@@ -7,8 +7,12 @@ func init( target_obj, parent_gui ):
 	_target_obj = target_obj
 	_parent_gui = parent_gui
 	
+	if not _target_obj.has_method( "get_coupled_child_node" ):
+		return
+
 	var s: Control = get_node( "RotateContainer/Angle" )
 	var label: Label = get_node( "RotateContainer/Label" )
+	
 	var n: CouplingAttachment = _target_obj.get_coupled_child_node()
 	if n != null:
 		var angle: float = n.pitch * 180.0 / PI

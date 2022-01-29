@@ -62,6 +62,9 @@ func _traverse_coupling_nodes():
 
 
 func _traverse_coupling_nodes_recursive( p: Node ):
+	if p == null:
+		return
+	
 	var s: Spatial = p as Spatial
 	if s != null:
 		var stacking_node: CouplingNode = s as CouplingNode

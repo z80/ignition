@@ -131,24 +131,26 @@ func activate_grab( body ):
 
 
 func _on_drag_started( grab: Node ):
-	var target: Part = grab.target
-	var ok: bool = target.decouple()
-	if ok:
-		target.play_sound( Constants.ConstructionDecoupling )
+	var target: Part = grab.target as Part
+	if target != null:
+		var ok: bool = target.decouple()
+		if ok:
+			target.play_sound( Constants.ConstructionDecoupling )
 	set_show_coupling_nodes( true )
 
 
 func _on_drag_finished( grab: Node ):
-	var target: Part = grab.target
-	set_show_coupling_nodes( false )
-	var ok: bool = target.couple()
-	if ok:
-		target.play_sound( Constants.ConstructionCoupling )
-	
-	else:
-		ok = target.couple_surface()
+	var target: Part = grab.target as Part
+	if target != null:
+		set_show_coupling_nodes( false )
+		var ok: bool = target.couple()
 		if ok:
 			target.play_sound( Constants.ConstructionCoupling )
+		
+		else:
+			ok = target.couple_surface()
+			if ok:
+				target.play_sound( Constants.ConstructionCoupling )
 
 
 func finish_editing():
@@ -255,9 +257,11 @@ func create_block( block_name, dynamic: bool = false ):
 	block.set_w( Vector3.ZERO )
 	
 	var p: Node = self.get_parent()
+	var se3: Se3Ref = block.relative_to( p )
 	block.change_parent( p )
 	block.set_v( Vector3.ZERO )
 	block.set_w( Vector3.ZERO )
+	block.set_se3( se3 )
 	
 	# Make it selected to be able to move it.
 	PhysicsManager.player_select = block

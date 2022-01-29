@@ -48,6 +48,23 @@ func _update_position():
 
 
 
+func activate( root_call: bool = true ):
+	body_state = BodyState.KINEMATIC
 
+	update_physics_from_state()
+	if _physical != null:
+		_physical.sleeping = false
+	
+
+
+
+
+
+
+
+func deactivate( root_call: bool = true ):
+	body_state = BodyState.KINEMATIC
+	
+	remove_physical()
 
 
