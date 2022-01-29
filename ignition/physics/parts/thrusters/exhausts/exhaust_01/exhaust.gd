@@ -47,11 +47,11 @@ func _update_look():
 	var size_y: float = 12.0 * (1.0 + thrust)
 	var size: float = size_y
 	if pressure < pressure_optimal:
-		print( "below optimal" )
+		#print( "below optimal" )
 		var expansion_interval: float = 0.5 * (pressure_optimal - pressure_low)
 		var low_point: float = pressure_optimal - expansion_interval
 		var scale: float = (pressure - low_point) / expansion_interval
-		print( "expansion_interval: ", expansion_interval, ", low_point: ", low_point, ", scale: ", scale )
+		#print( "expansion_interval: ", expansion_interval, ", low_point: ", low_point, ", scale: ", scale )
 		scale = clamp( scale, 0.3, 1.0 )
 		size *= scale
 	_setup_material( ol, thrust, pressure, size )
@@ -60,14 +60,14 @@ func _update_look():
 	var sd: MeshInstance = _get_shock_diamonds()
 	size = size_y
 	if pressure < pressure_optimal:
-		print( "below optimal" )
+		#print( "below optimal" )
 		var expansion_interval: float = 0.1 * (pressure_optimal - pressure_low)
 		var low_point: float = pressure_optimal - expansion_interval
 		var scale: float = (pressure - low_point) / expansion_interval
-		print( "expansion_interval: ", expansion_interval, ", low_point: ", low_point, ", scale: ", scale )
+		#print( "expansion_interval: ", expansion_interval, ", low_point: ", low_point, ", scale: ", scale )
 		scale = clamp( scale, 0.0, 1.0 )
 		size *= scale
-	print( "y: ", size )
+	#print( "y: ", size )
 	_setup_material( it, thrust, pressure, size )
 	_setup_material( sd, thrust, pressure, size )
 
@@ -91,7 +91,7 @@ func _setup_material( mesh: MeshInstance, thrust: float, pressure: float, size_y
 	if size_y >= 0.0:
 		mat.set_shader_param( "size_y", size_y )
 	
-	print( "overexpanded: ", overexpanded, "; underexpanded: ", underexpanded )
+	#print( "overexpanded: ", overexpanded, "; underexpanded: ", underexpanded )
 
 
 
