@@ -242,8 +242,8 @@ func create_block( block_name, dynamic: bool = false ):
 		return
 	
 	# This one makes it not delete superbosy on activation.
-	block.mode = Part.PartMode.CONSTRUCTION
-	block.body_state = PhysicsBodyBase.BodyState.KINEMATIC
+	block.construction_state = PhysicsBodyBase.ConstructionState.CONSTRUCTION
+	block.body_state         = PhysicsBodyBase.BodyState.KINEMATIC
 	
 	var player = PhysicsManager.player_control
 	block.change_parent( player )

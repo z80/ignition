@@ -1,5 +1,5 @@
 
-extends Part
+extends StaticPhysicsBody
 
 
 func init():
@@ -14,10 +14,6 @@ func init():
 
 
 
-func set_collision_layer( layer ):
-	if _physical:
-		var rb = _physical.get_child( 0 )
-		rb.set_collision_layer( layer )
 
 
 

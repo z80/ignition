@@ -15,10 +15,7 @@ enum PartClass {
 }
 
 
-enum PartMode {
-	CONSTRUCTION=0, 
-	SIMULATION=1
-}
+
 
 var PartControlGroups = preload( "res://physics/parts/part_control_groups.gd" )
 
@@ -45,7 +42,6 @@ var stacking_nodes: Array = []
 var surface_nodes: Array  = []
 
 
-var mode: int = PartMode.CONSTRUCTION
 
 # 0 = any, <0 = none.
 var control_group: int = PartControlGroups.ControlGroup.NONE
@@ -85,7 +81,7 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 func process_inner( _delta ):
 	.process_inner( _delta )
 	
-	if mode == PartMode.CONSTRUCTION:
+	if construction_state == ConstructionState.CONSTRUCTION:
 		_process_coupling_nodes()
 		_process_attachments()
 	
@@ -149,7 +145,7 @@ func parent_jumped():
 # being dynamic.
 # These two should be overwritten.
 func activate( root_call: bool = true ):
-	var is_activated: bool = (mode == PartMode.SIMULATION)
+	var is_activated: bool = (construction_state == ConstructionState.SIMULATION)
 	if is_activated:
 		return
 	
@@ -160,7 +156,7 @@ func activate( root_call: bool = true ):
 		_physical.mass = mass
 	
 	# If activated, not in construction anymore.
-	mode = PartMode.SIMULATION
+	construction_state = ConstructionState.SIMULATION
 	
 	activate_nodes( true )
 	
@@ -196,7 +192,7 @@ func deactivate( root_call: bool = true ):
 	# Need to make sure that not in a construction mode.
 	# In construction mode super body is provided externally 
 	# And provides additional context menu GUIs.
-	if root_call and (mode != PartMode.CONSTRUCTION):
+	if root_call and (construction_state != ConstructionState.CONSTRUCTION):
 		var sb: Node = get_super_body_raw()
 		if sb != null:
 			sb.queue_free()
@@ -658,7 +654,6 @@ func create_super_body():
 
 func serialize():
 	var data: Dictionary = .serialize()
-	data["mode"]          = int(mode)
 	data["control_group"] = int(control_group)
 	
 	var atts: Array = get_attachments()

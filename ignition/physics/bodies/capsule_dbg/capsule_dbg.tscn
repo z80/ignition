@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=2]
-
-[ext_resource path="res://physics/bodies/capsule_dbg/capsule_dbg.gd" type="Script" id=1]
-
-[node name="CapsuleDbg" type="RefFrameNode"]
-script = ExtResource( 1 )

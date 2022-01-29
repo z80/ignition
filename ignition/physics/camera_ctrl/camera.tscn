@@ -46,6 +46,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.11571, 0, -4 )
 light_color = Color( 0.996078, 1, 0.843137, 1 )
 shadow_enabled = true
 directional_shadow_mode = 0
+directional_shadow_max_distance = 50.0
 
 [node name="MeshInstance" type="MeshInstance" parent="SunLight"]
 transform = Transform( 0.1, 0, 0, 0, 0.0771069, -0.0636751, 0, 0.0636751, 0.0771069, -0.787738, 0, -0.338168 )

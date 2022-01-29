@@ -6,7 +6,15 @@ enum BodyState {
 	KINEMATIC=0, 
 	DYNAMIC=1
 }
-export(BodyState) var body_state = BodyState.DYNAMIC
+
+enum ConstructionState {
+	CONSTRUCTION=0, 
+	SIMULATION=1
+}
+
+export(BodyState)         var body_state         = BodyState.DYNAMIC
+export(ConstructionState) var construction_state = ConstructionState.CONSTRUCTION
+
 # When "load" is called nonpermanent objects are destroyed.
 # Permanent objects are not destroyed, they only search for their 
 # saved data. Probably, celestial bodies are permanent objects.
@@ -117,7 +125,7 @@ func on_delete():
 
 
 func update_visual( origin: RefFrameNode = null ):
-	if _visual:
+	if _visual != null:
 		var se3: Se3Ref = self.relative_to( origin )
 		var t: Transform = se3.transform
 		_visual.transform = t
@@ -472,7 +480,6 @@ func activate( root_call: bool = true ):
 	body_state = BodyState.DYNAMIC
 
 	update_physics_from_state()
-	#_physical.mode = RigidBody.MODE_RIGID
 	if _physical != null:
 		_physical.sleeping = false
 	
@@ -544,10 +551,12 @@ func serialize():
 	var se3_data: Dictionary = se3.serialize()
 	data["se3"] = se3_data
 	
-	data["body_state"] = int(body_state)
+	data["body_state"]         = int(body_state)
+	data["construction_state"] = int(construction_state)
 	
 	# Need to save this in order to restore it correctly.
-	data["visual_name"] = _visual.name
+	if _visual != null:
+		data["visual_name"] = _visual.name
 	
 	return data
 
@@ -563,7 +572,8 @@ func deserialize( data: Dictionary ):
 		return false
 	self.set_se3( se3 )
 	
-	body_state = data["body_state"]
+	body_state         = data["body_state"]
+	construction_state = data["construction_state"]
 	
 #	if restored_body_state == BodyState.DYNAMIC:
 #		activate()

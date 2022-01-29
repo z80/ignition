@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=2]
-
-[ext_resource path="res://physics/bodies/character_simple/character_simple.gd" type="Script" id=1]
-
-[node name="CharacterSimple" type="RefFrameNode"]
-script = ExtResource( 1 )

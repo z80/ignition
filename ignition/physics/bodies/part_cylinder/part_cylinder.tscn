@@ -1,8 +1,0 @@
-[gd_scene load_steps=2 format=2]
-
-[ext_resource path="res://physics/parts/fuel_tanks/part_cylinder/part_cylinder.gd" type="Script" id=1]
-
-
-
-[node name="PartCylinder" type="RefFrameNode"]
-script = ExtResource( 1 )

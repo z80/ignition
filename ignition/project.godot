@@ -273,7 +273,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Ignition"
-run/main_scene="res://physics/celestial_bodies/editing_tool/editing_tool.tscn"
+run/main_scene="res://tryouts/rf_management/rf_management_02.tscn"
 config/icon="res://icon.png"
 
 [autoload]

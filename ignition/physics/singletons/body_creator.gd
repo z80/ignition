@@ -18,10 +18,6 @@ func create( type_name: String ):
 	match type_name:
 		"cube":
 			return cube()
-		"plane":
-			return plane()
-		"capsule_dbg":
-			return capsule_dbg()
 		"construction":
 			return construction()
 		"frame_box":
@@ -78,17 +74,6 @@ func cube():
 	var b = _create( B )
 	return b
 
-
-func plane():
-	var B = load( "res://physics/bodies/plane/plane.tscn" )
-	var b = _create( B )
-	return b
-
-
-func capsule_dbg():
-	var B = load( "res://physics/bodies/capsule_dbg/capsule_dbg.tscn" )
-	var b = _create( B )
-	return b
 
 
 func construction():

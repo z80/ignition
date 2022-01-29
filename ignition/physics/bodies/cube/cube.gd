@@ -1,5 +1,5 @@
 
-extends PhysicsBodyBase
+extends StaticPhysicsBody
 
 
 func init():
