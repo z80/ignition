@@ -14,11 +14,6 @@ func init():
 
 
 
-func set_collision_layer( layer ):
-	if _physical:
-		var rb = _physical
-		rb.set_collision_layer( layer )
-
 
 
 func create_physical():

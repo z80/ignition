@@ -245,7 +245,7 @@ func create_block( block_name, dynamic: bool = false ):
 	block.construction_state = PhysicsBodyBase.ConstructionState.CONSTRUCTION
 	block.body_state         = PhysicsBodyBase.BodyState.KINEMATIC
 	
-	var player = PhysicsManager.player_control
+	var player = PhysicsManager.camera.get_parent()
 	block.change_parent( player )
 	
 	var t: Transform = Transform.IDENTITY
