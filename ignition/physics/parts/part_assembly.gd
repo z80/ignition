@@ -105,7 +105,7 @@ func has_sub_body( body: RefFrameNode ):
 
 
 func has_player_control():
-	var pc = PhysicsManager.player_control
+	var pc = PhysicsManager.camera.get_parent()
 	for body in sub_bodies:
 		if body == pc:
 			return true

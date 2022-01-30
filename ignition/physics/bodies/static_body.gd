@@ -49,7 +49,7 @@ func _update_position():
 
 
 func activate( root_call: bool = true ):
-	body_state = BodyState.KINEMATIC
+	body_state = BodyState.DYNAMIC
 
 	update_physics_from_state()
 	if _physical != null:

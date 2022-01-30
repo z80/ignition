@@ -16,6 +16,7 @@ var edited_target: RefFrameNode = null
 var editing_widget = null
 
 var dynamic_blocks: Array = []
+var static_blocks: Array  = []
 
 func _ready():
 	init()
@@ -110,9 +111,12 @@ func construction_deactivate():
 			panel_parts.queue_free()
 		
 		activated_mode = null
-		_cleanup_arguments()
+		
 		_create_assembly()
 		dynamic_blocks.clear()
+		
+		_activate_static_blocks()
+		static_blocks.clear()
 
 
 func activate_grab( body ):
@@ -162,9 +166,6 @@ func finish_editing():
 
 
 
-func _cleanup_arguments():
-	for b in dynamic_blocks:
-		var body: PhysicsBodyBase = b
 
 
 
@@ -218,16 +219,22 @@ func _create_assembly():
 	#		body.activate()
 
 
+func _activate_static_blocks():
+	for b in static_blocks:
+		var block: StaticPhysicsBody = b
+		block.activate()
+
+
+
 
 func check_if_deactivate():
-	var player = PhysicsManager.player_control
+	var player = PhysicsManager.camera.get_parent()
 	if (player == null) or ( not is_instance_valid(player) ):
 		return true
 	
 	# Player in this ref. fame in order to easily compute each coordinate.
-	player.compute_relative_to_root( self )
-	var t: Transform = player.t_root()
-	var r: Vector3 = t.origin
+	var se3: Se3Ref = player.relative_to( self )
+	var r: Vector3 = se3.r
 	var dx: float = abs( r.x )
 	var dz: float = abs( r.z )
 	if dx >= Constants.CONSTRUCTION_DEACTIVATE_DIST:
@@ -269,6 +276,9 @@ func create_block( block_name, dynamic: bool = false ):
 	if dynamic:
 		dynamic_blocks.push_back( block )
 	
+	else:
+		static_blocks.push_back( block )
+	
 	
 	# Disable physics to prevent blocks from flying around.
 	block.deactivate()
@@ -282,6 +292,7 @@ func create_block( block_name, dynamic: bool = false ):
 
 func delete_block( block: PhysicsBodyBase ):
 	dynamic_blocks.erase( block )
+	static_blocks.erase( block )
 	var sb: Node = get_super_body()
 	sb.remove_sub_body( block )
 	block.queue_free()
