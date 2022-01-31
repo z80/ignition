@@ -46,12 +46,13 @@ Here is the battle plan.
 - [x] Draw proper launch pad.
 - [x] Implement smarter decision making on changing sphere of influence. Should not happen within planet system. Only beyond the most distant moon.
 - [x] Draw more realistic thrust.
-- [ ] Improve sphere subdivision algorithm. Currently it doesn't look like a piece of art.
+- [x] Improve sphere subdivision algorithm. Currently it doesn't look like a piece of art.
 - [x] Fix the interaction menu window. Make content expand the window or slider show up. Add "x" icon as close button and "L" for resize place.
-- [ ] Make static bodies to remember their initial parent planet and restore relative position on every ref. frame change.
+- [x] Make static bodies to remember their initial parent planet and restore relative position on every ref. frame change.
 - [ ] Camera shakiness issue. Probably something related the order in which object transforms are updated.
 - [ ] Trajectory change nodes on a current trajectory.
 - [ ] Predictor of what's going to happen in future. Let's say, a target is specified, and it computes if there will be an entry to its sphere of influence.
+- [ ] Separate spatial node for "interact" icon. This way it will be possible to attach it to anything. Or not have it at all. The plan is to add it to Visual object.
 
 
 
