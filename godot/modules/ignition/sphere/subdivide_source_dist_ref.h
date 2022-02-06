@@ -19,6 +19,9 @@ public:
     SubdivideSourceDistRef();
     virtual ~SubdivideSourceDistRef();
 
+	void set_min_level( int lvl );
+	int get_min_level() const;
+
 	void set_min_size( real_t sz );
 	real_t get_min_size() const;
 
