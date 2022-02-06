@@ -89,6 +89,15 @@ func _create_buttons_parts():
 	_add_button( parts, "res://physics/parts/fuel_tanks/2m/2m_oxidizer/assets/icon.png", 
 						 "oxidizer_tank_2m_2m", 
 						 "Oxidizer tank 2m diameter, 2m height", true )
+
+
+	_add_button( parts, "res://physics/parts/fuel_tanks/2m/3m_fuel/assets/icon.png", 
+						 "fuel_tank_2m_3m", 
+						 "OSP Fuel tank 2m diameter, 3m height", true )
+	
+	_add_button( parts, "res://physics/parts/fuel_tanks/2m/3m_oxidizer/assets/icon.png", 
+						 "oxidizer_tank_2m_3m", 
+						 "OSP oxidizer tank 2m diameter, 3m height", true )
 	
 	
 #	_add_button( parts, "res://physics/parts/2m/reaction_wheels/assets/icon.png", 

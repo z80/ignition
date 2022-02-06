@@ -168,5 +168,6 @@ margin_right = 262.0
 margin_bottom = 72.0
 icon = ExtResource( 4 )
 description = "Confirm new part pose. It only works for a valid pose. It should not be too far form other parts and shouldn't occupy the same volume with any other part."
+
 [connection signal="pressed" from="Panel/VBoxContainer2/HBoxContainer/VBoxContainer/Frames" to="." method="_on_Frames_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer2/HBoxContainer/VBoxContainer/Parts" to="." method="_on_Parts_pressed"]
