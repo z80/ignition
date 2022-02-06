@@ -357,6 +357,7 @@ func process_ref_frames_orbiting_to_rotating():
 	if dist <= inclusion_dist:
 		rf.change_parent( rot )
 		rf.allow_orbiting = false
+		rf.set_se3( se3 )
 		print( "orbiting -> rotating" )
 
 

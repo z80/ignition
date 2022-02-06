@@ -355,14 +355,20 @@ func _find_fuel_tanks():
 func _find_liquid_fuel_tank():
 	var visited: Array = []
 	_liquid_fuel_tank = _find_closest_liquid_fuel_tank( self, visited )
+	if _liquid_fuel_tank != null:
+		FuelTank.find_liquid_fuel_tanks( _liquid_fuel_tank )
 	visited = []
 	_liquid_oxidizer_tank = _find_closest_liquid_oxidizer_tank( self, visited )
+	if _liquid_oxidizer_tank != null:
+		FuelTank.find_liquid_oxidizer_tanks( _liquid_oxidizer_tank )
 
 
 
 func _find_solid_fuel_tank():
 	var visited: Array = []
 	_solid_fuel_tank = _find_closest_solid_fuel_tank( self, visited )
+	if _solid_fuel_tank != null:
+		FuelTank.find_solid_fuel_tanks( _solid_fuel_tank )
 
 
 

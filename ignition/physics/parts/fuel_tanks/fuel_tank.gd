@@ -117,8 +117,8 @@ func _equalize_volumes():
 	var consumed_enough: bool = (consumed >= fuel_params.delta_volume)
 	if not consumed_enough:
 		return false
-	var this_percent: float = fill_relative()
-
+	var this_percent: float = fill_relative ()
+	
 	for tank in accessible_fuel_tanks:
 		if tank == self:
 			continue
@@ -146,10 +146,13 @@ func _equalize_volumes():
 
 
 
-static func find_liquid_fuel_tanks( part: Part ):
+static func find_liquid_fuel_tanks( part: Part, set_connections: bool=true ):
 	var visited: Array = []
 	var found: Array = []
-	#find_liquid_fuel_tanks_recursive( part, visited, found )
+	find_liquid_fuel_tanks_recursive( part, visited, found )
+	if set_connections:
+		for t in found:
+			t.accessible_fuel_tanks = found
 	return found
 
 
@@ -175,19 +178,23 @@ static func find_liquid_fuel_tanks_recursive( part: Part, visited: Array, found:
 	if not conducts:
 		return
 
-	for node in part.stacking_nodes:
-		var n: CouplingAttachment = node
-		var connected: bool = n.connected()
-		var other_part: Part = n.attachment_b.part
+	var atts: Array = part.get_attachments()
+	var qty: int = atts.size()
+	for i in range(qty):
+		var n: CouplingAttachment = atts[i]
+		var other_part: Part = n.attachment_b.get_part()
 		find_liquid_fuel_tanks_recursive( other_part, visited, found )
 
 
 
 
-static func find_liquid_oxidizer_tanks( part: Part ):
+static func find_liquid_oxidizer_tanks( part: Part, set_connections: bool = true ):
 	var visited: Array = []
 	var found: Array = []
 	find_liquid_oxidizer_tanks_recursive( part, visited, found )
+	if set_connections:
+		for t in found:
+			t.accessible_fuel_tanks = found
 	return found
 
 
@@ -213,20 +220,24 @@ static func find_liquid_oxidizer_tanks_recursive( part: Part, visited: Array, fo
 	if not conducts:
 		return
 
-	for node in part.stacking_nodes:
-		var n: CouplingAttachment = node
-		var connected: bool = n.connected()
-		var other_part: Part = n.attachment_b.part
+	var atts: Array = part.get_attachments()
+	var qty: int = atts.size()
+	for i in range(qty):
+		var n: CouplingAttachment = atts[i]
+		var other_part: Part = n.attachment_b.get_part()
 		find_liquid_oxidizer_tanks_recursive( other_part, visited, found )
 
 
 
 
 
-static func find_solid_fuel_tanks( part: Part ):
+static func find_solid_fuel_tanks( part: Part, set_connections: bool = true ):
 	var visited: Array = []
 	var found: Array = []
 	find_solid_fuel_tanks_recursive( part, visited, found )
+	if set_connections:
+		for t in found:
+			t.accessible_fuel_tanks = found
 	return found
 
 
@@ -252,10 +263,11 @@ static func find_solid_fuel_tanks_recursive( part: Part, visited: Array, found: 
 	if not conducts:
 		return
 
-	for node in part.stacking_nodes:
-		var n: CouplingAttachment = node
-		var connected: bool = n.connected()
-		var other_part: Part = n.attachment_b.part
+	var atts: Array = part.get_attachments()
+	var qty: int = atts.size()
+	for i in range(qty):
+		var n: CouplingAttachment = atts[i]
+		var other_part: Part = n.attachment_b.get_part()
 		find_solid_fuel_tanks_recursive( other_part, visited, found )
 
 
