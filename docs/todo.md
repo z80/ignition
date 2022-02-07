@@ -51,6 +51,7 @@ Here is the battle plan.
 - [x] Make static bodies to remember their initial parent planet and restore relative position on every ref. frame change.
 - [x] Attached fuel tanks don't exchange fuel. Fixed.
 - [ ] When switching to rotating rf change_parent() doesn't preserve velocity for some reason. Fixed by assigning se3 computed just before.
+- [ ] Just experienced it today. When returning back from the Moon, perigee suddenly has changed from 38km to up to 53km. Which prevented me from getting home.
 - [ ] Camera shakiness issue. Probably something related the order in which object transforms are updated.
 - [ ] Trajectory change nodes on a current trajectory.
 - [ ] Predictor of what's going to happen in future. Let's say, a target is specified, and it computes if there will be an entry to its sphere of influence.
