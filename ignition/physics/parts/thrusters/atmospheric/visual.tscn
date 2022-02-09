@@ -24,9 +24,10 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.8, 0 )
 script = ExtResource( 3 )
 exhaust_type = 1
 exhaust_radius = 0.7
+pressure_low = 40000.0
 
 [node name="ExhaustNodeTurbopump" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.976141, 0.217138, 0, -0.217138, 0.976141, 0, -0.416327, 0.860973 )
+transform = Transform( 1, 0, 0, 0, 0.976141, 0.217138, 0, -0.217138, 0.976141, 0, -0.502869, 0.880224 )
 script = ExtResource( 3 )
 exhaust_type = 1
 exhaust_radius = 0.2
