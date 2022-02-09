@@ -1,10 +1,11 @@
 [gd_scene load_steps=4 format=2]
 
 [sub_resource type="CylinderShape" id=2]
+radius = 0.921958
 height = 0.417854
 
 [sub_resource type="CylinderShape" id=3]
-radius = 0.823781
+radius = 0.614428
 height = 0.526474
 
 [sub_resource type="CapsuleShape" id=4]
@@ -14,11 +15,11 @@ height = 0.435992
 [node name="Physical" type="RigidBody"]
 
 [node name="ShapeA" type="CollisionShape" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.769396, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.368946, 0 )
 shape = SubResource( 2 )
 
 [node name="ShapeB" type="CollisionShape" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.304781, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.135473, 0 )
 shape = SubResource( 3 )
 
 [node name="ShapeC" type="CollisionShape" parent="."]

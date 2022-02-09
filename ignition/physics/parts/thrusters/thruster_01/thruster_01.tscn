@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://physics/parts/thrusters/thruster_01/thruster_01.gd" type="Script" id=1]
+[ext_resource path="res://physics/parts/thrusters/vacuum/assets/air_drag_mesh/air_drag_mesh_Cube.mesh" type="ArrayMesh" id=2]
 
 [node name="Thruster_01" type="RefFrameNode"]
 script = ExtResource( 1 )
@@ -12,3 +13,12 @@ thrust_min_bad = 72.0
 thrust_max_bad = 120.0
 fuel_consumption_min = 0.12
 fuel_consumption_max = 0.35
+
+[node name="OctreeMeshGd" type="OctreeMeshGd" parent="."]
+se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
+
+
+[node name="AirDragMesh" type="MeshInstance" parent="OctreeMeshGd"]
+visible = false
+mesh = ExtResource( 2 )
+material/0 = null

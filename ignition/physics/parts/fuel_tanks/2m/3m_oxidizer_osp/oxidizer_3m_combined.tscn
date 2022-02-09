@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://physics/parts/fuel_tanks/2m/3m_oxidizer_osp/physical.tscn" type="PackedScene" id=1]
+[ext_resource path="res://physics/parts/fuel_tanks/2m/3m_oxidizer_osp/visual.tscn" type="PackedScene" id=2]
+
+[node name="2m_combined" type="Spatial"]
+
+[node name="visual" parent="." instance=ExtResource( 2 )]
+
+[node name="physical" parent="." instance=ExtResource( 1 )]

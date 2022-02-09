@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://physics/parts/fuel_tanks/2m/3m_oxidizer/oxidizer_tank_2m_3m.gd" type="Script" id=1]
+[ext_resource path="res://physics/parts/fuel_tanks/2m/3m_oxidizer/assets/air_drag_mesh/air_drag_mesh_Cylinder021.mesh" type="ArrayMesh" id=2]
+
+[node name="oxidizer_2m_1m" type="RefFrameNode"]
+script = ExtResource( 1 )
+part_class = 1
+conducts_solid_fuel = false
+conducts_air = false
+mass = 0.15
+fuel_type = 1
+height = 2.0
+
+[node name="OctreeMeshGd" type="OctreeMeshGd" parent="."]
+se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
+
+
+[node name="1m" type="MeshInstance" parent="OctreeMeshGd"]
+visible = false
+mesh = ExtResource( 2 )
+material/0 = null

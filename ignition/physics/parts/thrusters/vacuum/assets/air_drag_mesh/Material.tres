@@ -1,0 +1,13 @@
+[gd_resource type="SpatialMaterial" format=2]
+
+[resource]
+resource_name = "Material"
+vertex_color_use_as_albedo = true
+params_cull_mode = 2
+albedo_color = Color( 0.417107, 0.417107, 0.417107, 1 )
+roughness = 0.4
+emission_enabled = true
+emission = Color( 0, 0, 0, 1 )
+emission_energy = 1.0
+emission_operator = 0
+emission_on_uv2 = false

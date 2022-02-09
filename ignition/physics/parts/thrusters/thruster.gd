@@ -31,7 +31,7 @@ export(String) var sound_stop  = ""
 export(String) var sound_failed_start = ""
 
 
-var _exhaust_node: ExhaustNode = null
+var _exhaust_nodes: Array = []
 
 var _ignited: bool = false
 
@@ -78,17 +78,13 @@ func _traverse_exhaust_nodes_recursive( p: Node ):
 	if s != null:
 		var exhaust_node: ExhaustNode = s as ExhaustNode
 		if exhaust_node != null:
-			_exhaust_node = exhaust_node
-			return true
+			_exhaust_nodes.push_back( exhaust_node )
 	
 	var qty: int = p.get_child_count()
 	for i in range( qty ):
 		var ch: Node = p.get_child( i )
-		var ret: bool = _traverse_exhaust_nodes_recursive( ch )
-		if ret:
-			return true
+		_traverse_exhaust_nodes_recursive( ch )
 	
-	return false
 
 
 
@@ -314,7 +310,8 @@ func _setup_thrust():
 			else:
 				thrust = 0.0
 			
-			_exhaust_node.set_exhaust( _ignited, thrust, pressure )
+			for en in _exhaust_nodes:
+				en.set_exhaust( _ignited, thrust, pressure )
 			
 			var d_pressure_relative: float = (pressure - optimal_thrust_air_pressure)/(bad_thrust_air_pressure - optimal_thrust_air_pressure)
 			var abs_dpressure_relative: float = abs( d_pressure_relative )
@@ -329,16 +326,19 @@ func _setup_thrust():
 		
 		else:
 			p = 0.0
-			_exhaust_node.set_exhaust( _ignited, 0.0, 0.0 )
+			for en in _exhaust_nodes:
+				en.set_exhaust( _ignited, 0.0, 0.0 )
 		
-		var n: Vector3 = _exhaust_node.thrust_direction()
-		var se3: Se3Ref = self.get_se3()
-		var q: Quat = se3.q
-		n = q.xform( n )
-		var thrust: Vector3 = n * p
-		_physical.thrust = thrust
-		DDD.important()
-		DDD.print( "thrust_assigned: " + str(thrust), -1.0, "thrust_assigned" )
+		if not _exhaust_nodes.empty():
+			var ex_node: ExhaustNode = _exhaust_nodes[0]
+			var n: Vector3 = ex_node.thrust_direction()
+			var se3: Se3Ref = self.get_se3()
+			var q: Quat = se3.q
+			n = q.xform( n )
+			var thrust: Vector3 = n * p
+			_physical.thrust = thrust
+			DDD.important()
+			DDD.print( "thrust_assigned: " + str(thrust), -1.0, "thrust_assigned" )
 
 
 

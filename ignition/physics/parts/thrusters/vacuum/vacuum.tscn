@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/parts/thrusters/vacuum/vacuum.gd" type="Script" id=1]
+
+[node name="Thruster" type="RefFrameNode"]
+script = ExtResource( 1 )
+hint_text = "High altitude thruster optimuzed for vacuum"
+allows_surface_attachments = false
+conducts_solid_fuel = false
+conducts_electricity = false
+conducts_air = false
+optimal_thrust_air_pressure = 5000.0
+bad_thrust_air_pressure = 20000.0
+thrust_min_optimal = 140.0
+thrust_max_optimal = 240.0
+thrust_min_bad = 72.0
+thrust_max_bad = 120.0
+fuel_consumption_min = 0.1
+fuel_consumption_max = 0.2

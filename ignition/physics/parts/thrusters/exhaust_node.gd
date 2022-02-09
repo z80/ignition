@@ -58,7 +58,7 @@ func _create_exhaust():
 		return
 	_exhaust = Exhaust.instance()
 	add_child( _exhaust )
-	_exhaust.scale = Vector3( exhaust_radius, 1.0, exhaust_radius )
+	_exhaust.scale = Vector3( exhaust_radius, exhaust_radius, exhaust_radius )
 	_exhaust.pressure_low     = pressure_low
 	_exhaust.pressure_optimal = pressure_optimal
 	_exhaust.pressure_high    = pressure_high
