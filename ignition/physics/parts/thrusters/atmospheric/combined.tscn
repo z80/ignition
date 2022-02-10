@@ -7,4 +7,10 @@
 
 [node name="Visual" parent="." instance=ExtResource( 1 )]
 
+[node name="ExhaustNodeTurbopump" parent="Visual" index="4"]
+pressure_low = -10000.0
+pressure_optimal = 0.0
+
 [node name="Physical" parent="." instance=ExtResource( 2 )]
+
+[editable path="Visual"]

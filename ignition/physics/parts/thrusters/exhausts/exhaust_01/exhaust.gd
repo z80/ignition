@@ -1,3 +1,4 @@
+tool
 extends Spatial
 
 export(float) var pressure_optimal = 0.8e5
@@ -31,7 +32,7 @@ func _get_thrust():
 
 
 func _set_pressure( v: float ):
-	pressure = clamp( v, pressure_low, pressure_high )
+	pressure = v
 	_update_look()
 
 
@@ -40,50 +41,55 @@ func _get_pressure():
 
 
 func _update_look():
+	if not visible:
+		return
+	
+	var clamped_pressure: float = clamp( pressure, pressure_low, pressure_high )
+
 	var ct: MeshInstance = _get_carbon_traces()
-	_setup_material( ct, thrust, pressure )
+	_setup_material( ct, thrust, clamped_pressure )
 	
 	var ol: MeshInstance = _get_outer_layer()
 	var size_y: float = 12.0 * (1.0 + thrust)
 	var size: float = size_y
-	if pressure < pressure_optimal:
+	if clamped_pressure < pressure_optimal:
 		#print( "below optimal" )
 		var expansion_interval: float = 0.5 * (pressure_optimal - pressure_low)
 		var low_point: float = pressure_optimal - expansion_interval
-		var scale: float = (pressure - low_point) / expansion_interval
+		var scale: float = (clamped_pressure - low_point) / expansion_interval
 		#print( "expansion_interval: ", expansion_interval, ", low_point: ", low_point, ", scale: ", scale )
 		scale = clamp( scale, 0.3, 1.0 )
 		size *= scale
-	_setup_material( ol, thrust, pressure, size )
+	_setup_material( ol, thrust, clamped_pressure, size )
 	
 	var it: MeshInstance = _get_inner_tube()
 	var sd: MeshInstance = _get_shock_diamonds()
 	size = size_y
-	if pressure < pressure_optimal:
+	if clamped_pressure < pressure_optimal:
 		#print( "below optimal" )
 		var expansion_interval: float = 0.1 * (pressure_optimal - pressure_low)
 		var low_point: float = pressure_optimal - expansion_interval
-		var scale: float = (pressure - low_point) / expansion_interval
+		var scale: float = (clamped_pressure - low_point) / expansion_interval
 		#print( "expansion_interval: ", expansion_interval, ", low_point: ", low_point, ", scale: ", scale )
 		scale = clamp( scale, 0.0, 1.0 )
 		size *= scale
 	#print( "y: ", size )
-	_setup_material( it, thrust, pressure, size )
-	_setup_material( sd, thrust, pressure, size )
+	_setup_material( it, thrust, clamped_pressure, size )
+	_setup_material( sd, thrust, clamped_pressure, size )
 
 
 
-func _setup_material( mesh: MeshInstance, thrust: float, pressure: float, size_y: float = -1.0 ):
+func _setup_material( mesh: MeshInstance, thrust: float, pressure_clamped: float, size_y: float = -1.0 ):
 	if mesh == null:
 		return
 	
 	mesh.set( "blend_shapes/Thrust", thrust )
 	
-	var overexpanded: float = (pressure - pressure_optimal)/(pressure_high - pressure_optimal)
+	var overexpanded: float = (pressure_clamped - pressure_optimal)/(pressure_high - pressure_optimal)
 	overexpanded = clamp( overexpanded, 0.0, 1.0 )
 	mesh.set( "blend_shapes/Overexpanded", overexpanded )
 	
-	var underexpanded: float = (pressure_optimal - pressure)/(pressure_optimal - pressure_low)
+	var underexpanded: float = (pressure_optimal - pressure_clamped)/(pressure_optimal - pressure_low)
 	underexpanded = clamp( underexpanded, 0.0, 1.0 )
 	mesh.set( "blend_shapes/Underexpanded", underexpanded )
 	
