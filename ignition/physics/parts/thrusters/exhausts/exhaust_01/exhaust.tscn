@@ -7,7 +7,7 @@
 [ext_resource path="res://physics/parts/thrusters/exhausts/exhaust_01/assets/exhaust_01/exhaust_01_OuterLayer.mesh" type="ArrayMesh" id=5]
 [ext_resource path="res://physics/parts/thrusters/exhausts/exhaust_01/assets/exhaust_01/exhaust_01_Glow.mesh" type="ArrayMesh" id=6]
 
-[sub_resource type="SpatialMaterial" id=22]
+[sub_resource type="SpatialMaterial" id=17]
 flags_transparent = true
 flags_do_not_receive_shadows = true
 albedo_color = Color( 1, 1, 1, 0.164706 )
@@ -316,7 +316,7 @@ pressure = 70000.0
 
 [node name="Glow" type="MeshInstance" parent="."]
 mesh = ExtResource( 6 )
-material/0 = SubResource( 22 )
+material/0 = SubResource( 17 )
 
 [node name="CarbonTraces" type="MeshInstance" parent="."]
 mesh = ExtResource( 4 )

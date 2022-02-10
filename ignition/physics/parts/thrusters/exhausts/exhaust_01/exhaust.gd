@@ -1,4 +1,3 @@
-tool
 extends Spatial
 
 export(float) var pressure_optimal = 0.8e5
