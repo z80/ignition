@@ -12,14 +12,14 @@ dest_files=[ "res://.import/air_drag_mesh.gltf-6b5f8c1f3649d1b0704587b75e8e6a3f.
 [params]
 
 nodes/root_type="Spatial"
-nodes/root_name="Scene Root"
+nodes/root_name="AirDrag"
 nodes/root_scale=1.0
 nodes/custom_script=""
 nodes/storage=0
 nodes/use_legacy_names=false
 materials/location=1
-materials/storage=1
-materials/keep_on_reimport=false
+materials/storage=2
+materials/keep_on_reimport=true
 meshes/octahedral_compression=true
 meshes/compress=4286
 meshes/ensure_tangents=true

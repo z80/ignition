@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://physics/parts/decouplers/2m/m1/m1.gd" type="Script" id=1]
+[ext_resource path="res://physics/parts/decouplers/2m/m1/assets/air_mesh/air_mesh_Cylinder021.tres" type="ArrayMesh" id=2]
 
 [node name="Decoupler" type="RefFrameNode"]
 script = ExtResource( 1 )
@@ -9,3 +10,12 @@ allows_surface_attachments = false
 conducts_liquid_fuel = false
 conducts_solid_fuel = false
 decouple_sound = "res://physics/parts/decouplers/2m/m1/assets/pop.ogg"
+
+[node name="OctreeMeshGd" type="OctreeMeshGd" parent="."]
+se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
+
+
+[node name="AirDragMesh" type="MeshInstance" parent="OctreeMeshGd"]
+visible = false
+mesh = ExtResource( 2 )
+material/0 = null

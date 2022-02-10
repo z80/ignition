@@ -678,6 +678,8 @@ func _parent_changed():
 
 
 func on_delete():
+	# Just in case if camera is parented to this rf directly.
+	on_delete_rescue_camera()
 	finit_physics()
 	if (_surface_provider != null) and is_instance_valid(_surface_provider):
 		_surface_provider.queue_free()
@@ -690,6 +692,22 @@ func on_delete():
 	.on_delete()
 
 
+
+
+
+func on_delete_rescue_camera():
+	var cam: RefFrameNode = PhysicsManager.camera
+	if not is_instance_valid( cam ):
+		return
+	
+	var p: Node = cam.get_parent()
+	if p != self:
+		return
+	
+	# This node is being destroyed. If camera is parented to this node, 
+	# parent it to the parent of this node.
+	p = self.get_parent()
+	cam.change_parent( p )
 
 
 

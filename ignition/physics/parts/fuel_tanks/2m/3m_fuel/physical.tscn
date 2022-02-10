@@ -1,9 +1,9 @@
 [gd_scene load_steps=2 format=2]
 
 [sub_resource type="CylinderShape" id=2]
-height = 3.00916
+height = 0.99812
 
 [node name="physical" type="RigidBody"]
 
-[node name="CollisionShape" type="CollisionShape" parent="."]
+[node name="shape" type="CollisionShape" parent="."]
 shape = SubResource( 2 )

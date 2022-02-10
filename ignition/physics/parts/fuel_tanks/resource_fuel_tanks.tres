@@ -7,4 +7,4 @@ script = ExtResource( 1 )
 liquid_fuel_density = 1.0
 liquid_oxidizer_density = 2.0
 solid_fuel_density = 3.0
-delta_volume = 1.0
+delta_volume = 0.1
