@@ -8,11 +8,12 @@ anchor_bottom = 1.0
 script = ExtResource( 1 )
 
 [node name="Leave" type="Button" parent="."]
-margin_left = 440.0
-margin_top = 290.0
-margin_right = 583.0
-margin_bottom = 310.0
+margin_left = 486.0
+margin_top = 288.0
+margin_right = 538.0
+margin_bottom = 311.0
 rect_min_size = Vector2( 0, 20 )
-hint_tooltip = "Leave construction mode and proceed with the game."
-text = "Leave construction"
+hint_tooltip = "Leave construction mode and launch the vehicle"
+text = "Launch"
+
 [connection signal="pressed" from="Leave" to="." method="_on_Leave_pressed"]
