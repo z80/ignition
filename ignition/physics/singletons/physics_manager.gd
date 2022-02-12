@@ -30,7 +30,10 @@ enum TimeScale {
 	X_1000 = 9, 
 	X_10000 = 10, 
 	X_100000 = 11, 
-	X_MAX = 12
+	X_1000000 = 12, 
+	X_10000000 = 13, 
+	X_100000000 = 14, 
+	X_MAX = 15
 }
 
 var _time_scale: int = TimeScale.X_1
@@ -421,6 +424,22 @@ func set_time_scale( acc: int ):
 			_time_scale_physics   = 1.0
 			_time_scale_evolution = 1000.0
 			_time_scale_string    = "1000.0"
+		TimeScale.X_10000:
+			_time_scale_physics   = 1.0
+			_time_scale_evolution = 10000.0
+			_time_scale_string    = "10000.0"
+		TimeScale.X_100000:
+			_time_scale_physics   = 1.0
+			_time_scale_evolution = 100000.0
+			_time_scale_string    = "100000.0"
+		TimeScale.X_1000000:
+			_time_scale_physics   = 1.0
+			_time_scale_evolution = 1000000.0
+			_time_scale_string    = "1000000.0"
+		TimeScale.X_10000000:
+			_time_scale_physics   = 1.0
+			_time_scale_evolution = 10000000.0
+			_time_scale_string    = "10000000.0"
 	
 	_time_scale = acc
 	
