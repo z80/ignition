@@ -572,13 +572,9 @@ func deserialize( data: Dictionary ):
 		return false
 	self.set_se3( se3 )
 	
-	body_state         = data["body_state"]
+	# This is done in "activate()/deactivate()".
+	#body_state         = data["body_state"]
 	construction_state = data["construction_state"]
-	
-#	if restored_body_state == BodyState.DYNAMIC:
-#		activate()
-#	else:
-#		deactivate()
 	
 	return true
 

@@ -148,7 +148,7 @@ func parent_jumped():
 # being dynamic.
 # These two should be overwritten.
 func activate( root_call: bool = true ):
-	var is_activated: bool = (construction_state == ConstructionState.SIMULATION)
+	var is_activated: bool = (body_state == BodyState.DYNAMIC)
 	if is_activated:
 		return
 	
@@ -158,8 +158,8 @@ func activate( root_call: bool = true ):
 	if _physical != null:
 		_physical.mass = mass
 	
-	# If activated, not in construction anymore.
-	construction_state = ConstructionState.SIMULATION
+	# If activated, body state should be dynamic.
+	body_state = BodyState.DYNAMIC
 	
 	activate_nodes( true )
 	
