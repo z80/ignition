@@ -1,13 +1,13 @@
 
 extends Node
 
-const BODIES_GROUP_NAME: String    = "bodies"
-const SUPER_BODIES_GROUP_NAME: String    = "super_bodies"
-const REF_FRAME_PHYSICS_GROUP_NAME: String = "ref_frame_physics"
-const PROVIDERS_GROUP_NAME: String = "providers"
-const CELESTIAL_BODIES_NAME: String = "celestial_bodies"
-const PLANETS_GROUP_NAME: String   = "spheres"
-const SUN_GROUP_NAME: String       = "sun"
+const BODIES_GROUP_NAME: String             = "bodies"
+const BODY_ASSEMBLIES_GROUP_NAME: String    = "body_assemblies"
+const REF_FRAME_PHYSICS_GROUP_NAME: String  = "ref_frame_physics"
+const PROVIDERS_GROUP_NAME: String          = "providers"
+const CELESTIAL_BODIES_NAME: String         = "celestial_bodies"
+const PLANETS_GROUP_NAME: String            = "spheres"
+const SUN_GROUP_NAME: String                = "sun"
 
 const DEBUG: bool = true
 const RF_JUMP_DISTANCE: float  = 500.0

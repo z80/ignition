@@ -95,7 +95,7 @@ func _process( _delta: float ):
 
 func _physics_process( delta ):
 	# Need to have all super body poses up to date.
-	update_super_bodies()
+	#update_super_bodies()
 	
 	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
 	var ref_frames: Array = get_tree().get_nodes_in_group( group )
@@ -161,7 +161,7 @@ func process_user_input( input: Dictionary ):
 
 
 func update_super_bodies():
-	var group: String = Constants.SUPER_BODIES_GROUP_NAME
+	var group: String = Constants.BODY_ASSEMBLIES_GROUP_NAME
 	var all_bodies: Array = get_tree().get_nodes_in_group( group )
 	for body in all_bodies:
 			body.update_pose()
@@ -190,7 +190,7 @@ func update_bodies_physical( delta: float ):
 		body.update_physical( delta )
 	
 	# And update super body poses.
-	group = Constants.SUPER_BODIES_GROUP_NAME
+	group = Constants.BODY_ASSEMBLIES_GROUP_NAME
 	bodies = get_tree().get_nodes_in_group( group )
 	for body in bodies:
 		body.update_pose()
