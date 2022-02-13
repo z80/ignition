@@ -28,7 +28,7 @@ const BODY_INCLUDE_DIST: float = 800.0
 const INTERACT_ICON_DIST: float = 30.0
 # It shows up if mouse is closer than this distance on screen.
 # It is in screen heights.
-const INTERACT_ICON_SCREEN_DIST: float = 0.2
+const INTERACT_ICON_SCREEN_DIST: float = 0.1
 
 # Positional grid size.
 const CONSTRUCTION_GRID_SZ: float = 0.1

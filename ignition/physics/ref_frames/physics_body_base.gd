@@ -20,15 +20,6 @@ export(ConstructionState) var construction_state = ConstructionState.CONSTRUCTIO
 # saved data. Probably, celestial bodies are permanent objects.
 export(bool) var is_permanent = false
 
-# Should have an interaction icon onit or not.
-# For example, for collision mesh it is not needed.
-export(bool) var use_interact_icon = true
-# Icon showing up when it is relatively close to the camera.
-var _icon = null
-export(String) var hint_text = "Default hint text" setget _set_hint_text
-
-
-
 # When inheriting need to redefine these two.
 var VisualType   = null
 var PhysicalType = null
@@ -222,7 +213,7 @@ func _process( delta ):
 # This one to be able to rederive it in derived classes.
 # The problem is _process(delta) can't be redefined in derived classes.
 func process_inner( _delta ):
-	_process_interact_icon()
+	pass
 
 
 
@@ -388,81 +379,6 @@ func show_click_container():
 	return true
 
 
-func _process_interact_icon():
-	if not use_interact_icon:
-		return
-	
-	var cam = PhysicsManager.camera
-	if (cam == null) or (_visual == null) or (not is_instance_valid(cam)):
-		return
-	
-	var mouse_mode = Input.get_mouse_mode() 
-	if (mouse_mode == Input.MOUSE_MODE_HIDDEN) or \
-	   (mouse_mode == Input.MOUSE_MODE_CAPTURED):
-		if _icon:
-			_icon.queue_free()
-			_icon = null
-		return
-	
-	var cam_at = cam.translation
-	var obj_at = _visual.translation
-	var dr = obj_at - cam_at
-	var dist = dr.length()
-	if dist > Constants.INTERACT_ICON_DIST:
-		if _icon:
-			_icon.queue_free()
-			_icon = null
-		return
-	
-	var vp = get_viewport()
-	var rect = vp.get_visible_rect()
-	var sz = rect.size
-	
-	var mouse_at = vp.get_mouse_position()
-	var icon_at  =  cam.unproject_position( obj_at )
-	var dr2: Vector2 = icon_at - mouse_at
-	var height: float = rect.size.y
-	var dist2: float = dr2.length() / height
-	
-	if dist2 > Constants.INTERACT_ICON_SCREEN_DIST:
-		if _icon != null:
-			_icon.visible = false
-			return
-	
-	if icon_at.x < 0.0 or icon_at.y < 0.0:
-		return
-	if icon_at.x >= sz.x or icon_at.y >= sz.y:
-		return
-	
-	_create_interact_icon()
-	_icon.rect_position = icon_at
-
-
-
-
-func _create_interact_icon():
-	if _icon != null:
-		_icon.visible = true
-		return
-	var Icon = load( "res://physics/interact_icon/interact_icon.tscn" )
-	_icon = Icon.instance()
-	_icon.body = self
-	_icon.text = hint_text
-	self.add_child( _icon )
-	_icon.visible = true
-
-
-func _remove_interact_icon():
-	if _icon == null:
-		return
-	_icon.queue_free()
-
-
-func _set_hint_text( stri: String ):
-	hint_text = stri
-	if _icon == null:
-		return
-	_icon.text = hint_text
 
 
 func get_mass():

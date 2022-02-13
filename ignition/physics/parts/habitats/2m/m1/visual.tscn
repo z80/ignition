@@ -25,5 +25,5 @@ script = ExtResource( 2 )
 allows_surface_coupling = true
 
 [node name="InteractionNode" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.60714, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.58, 0 )
 script = ExtResource( 4 )

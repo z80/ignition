@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://physics/parts/decouplers/2m/m1/assets/decoupler/decoupler_Cylinder020.mesh" type="ArrayMesh" id=1]
 [ext_resource path="res://physics/parts/coupling_nodes/coupling_node_stacking.gd" type="Script" id=2]
+[ext_resource path="res://physics/interact_icon/new/interaction_node.gd" type="Script" id=3]
 
 [node name="Decoupler" type="MeshInstance"]
 mesh = ExtResource( 1 )
@@ -16,3 +17,7 @@ allows_connections = false
 transform = Transform( 1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, 0, -0.05, 0 )
 script = ExtResource( 2 )
 allows_connecting = false
+
+[node name="InteractionNode" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0983147, 0 )
+script = ExtResource( 3 )
