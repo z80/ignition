@@ -78,6 +78,11 @@ func _create_icon():
 	var root_node: Node = RootScene.get_root_for_gui_popups()
 	root_node.add_child( _icon )
 	
+	_icon.title = target.name
+	
+	# In order to position it properly immediately.
+	_process(0.0)
+	
 	_icon.connect( "icon_clicked", self, "_on_clicked" )
 	
 	return _icon

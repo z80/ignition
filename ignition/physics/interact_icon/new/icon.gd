@@ -4,6 +4,9 @@ extends TextureButton
 signal icon_clicked
 
 
+export(String) var title: String = "" setget _set_title, _get_title
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 #	var B: PackedScene = load( "res://physics/interact_icon/new/b.tscn" )
@@ -15,6 +18,15 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass
+
+
+func _set_title( t: String ):
+	self.hint_tooltip = t
+
+
+func _get_title():
+	return title
+
 
 
 func _on_pressed():
