@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://physics/interact_icon/new/interact_node.gd" type="Script" id=1]
+[ext_resource path="res://physics/interact_icon/new/interaction_node.gd" type="Script" id=1]
 
-[node name="InteractNode" type="Spatial"]
+[node name="InteractionNode" type="Spatial"]
 script = ExtResource( 1 )

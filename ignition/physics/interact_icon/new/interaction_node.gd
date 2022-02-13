@@ -1,4 +1,6 @@
+
 extends Spatial
+class_name InteractionNode
 
 var target: Node = null setget _set_target, _get_target
 var icon_visible: bool = false setget _set_icon_visible, _get_icon_visible

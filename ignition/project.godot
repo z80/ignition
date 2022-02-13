@@ -125,6 +125,11 @@ _global_script_classes=[ {
 "path": "res://physics/parts/habitats/habitat.gd"
 }, {
 "base": "Spatial",
+"class": "InteractionNode",
+"language": "GDScript",
+"path": "res://physics/interact_icon/new/interaction_node.gd"
+}, {
+"base": "Spatial",
 "class": "LandscapeBase",
 "language": "GDScript",
 "path": "res://physics/landscape/landscape_base.gd"
@@ -248,6 +253,7 @@ _global_script_class_icons={
 "ForceSourceRotational": "",
 "FuelTank": "",
 "Habitat": "",
+"InteractionNode": "",
 "LandscapeBase": "",
 "LandscapeFunc": "",
 "LandscapeHeightFunc": "",
