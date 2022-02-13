@@ -17,4 +17,4 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[connection signal="clicked" from="." to="." method="_on_clicked"]
+[connection signal="pressed" from="." to="." method="_on_pressed"]

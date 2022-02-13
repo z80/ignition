@@ -23,17 +23,20 @@ export(bool) var is_permanent = false
 # Should have an interaction icon onit or not.
 # For example, for collision mesh it is not needed.
 export(bool) var use_interact_icon = true
+# Icon showing up when it is relatively close to the camera.
+var _icon = null
+export(String) var hint_text = "Default hint text" setget _set_hint_text
+
+
 
 # When inheriting need to redefine these two.
 var VisualType   = null
 var PhysicalType = null
 
+
 var _visual    = null
 var _physical  = null
 
-# Icon showing up when it is relatively close to the camera.
-var _icon = null
-export(String) var hint_text = "Default hint text" setget _set_hint_text
 
 # Body which contains this one and other bodies.
 # When setter and getter are allowed simultaneously it falls into infinite recursion which 
@@ -94,6 +97,28 @@ func _parent_jumped():
 func init():
 	create_visual()
 
+
+
+func _traverse_interaction_nodes():
+	_traverse_interation_nodes_recursive( _visual )
+
+
+
+func _traverse_interation_nodes_recursive( p: Node ):
+	if p == null:
+		return
+	
+	var s: Spatial = p as Spatial
+	if s != null:
+		var node: InteractionNode = s as InteractionNode
+		if node != null:
+			# Specify the reference to itself.
+			node.target = self
+	
+	var qty: int = p.get_child_count()
+	for i in range( qty ):
+		var ch: Node = p.get_child( i )
+		_traverse_interation_nodes_recursive( ch )
 
 
 # The overrideable version without "_" prefix.
@@ -263,6 +288,9 @@ func _create_visual( Visual ):
 	root.add_child( v )
 	
 	_visual = v
+	
+	# For all visual interaction nodes specify self.
+	_traverse_interaction_nodes()
 	
 	# Own ref. frame visualizer
 	if Constants.DEBUG and (get_class() != "SurfaceProvider"):

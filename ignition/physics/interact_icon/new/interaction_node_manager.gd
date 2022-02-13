@@ -17,7 +17,7 @@ func _process(delta):
 		if dist < 0.0:
 			continue
 		
-		if (dist < closest_dist) or (closest_dist == 0.0):
+		if (dist < closest_dist) or (closest_dist <= 0.0):
 			closest_dist = dist
 			closest_node = node
 	

@@ -11,17 +11,13 @@ var _mouse = {
 var _pre_maximize_rect = get_rect()
 
 
-func set_title( stri: String ):
-	var title_lbl: Label = get_node( "VBox/TitleBar/Title" )
-	title_lbl.text = stri
-
 
 # List of classes to instantiate objects.
 func setup_gui( target_object: Node ):
 	var mode: Array = target_object.gui_mode()
 	var classes = target_object.gui_classes( mode )
 	
-	set_title( target_object.name )
+	_set_title( target_object.name )
 	var c: VBoxContainer = get_node( "VBox/Container" )
 	for C in classes:
 		var inst = C.instance()
@@ -36,6 +32,10 @@ func setup_gui( target_object: Node ):
 #		sz = ch.rect_size
 #		print( "child size: ", sz )
 
+
+func _set_title( stri: String ):
+	var title_lbl: Label = get_node( "VBox/TitleBar/Title" )
+	title_lbl.text = stri
 
 
 

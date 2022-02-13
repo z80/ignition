@@ -42,6 +42,14 @@ func _process( delta ):
 
 
 func _set_icon_visible( en: bool ):
+	if icon_visible:
+		var under_window: bool = _icon_under_window()
+		if under_window:
+			_icon.queue_free()
+			_icon = null
+			icon_visible = false
+			return
+	
 	if icon_visible and (not en):
 		if (_icon != null) and is_instance_valid(_icon):
 			_icon.queue_free()
@@ -69,6 +77,8 @@ func _create_icon():
 	_icon = Icon.instance()
 	var root_node: Node = RootScene.get_root_for_gui_popups()
 	root_node.add_child( _icon )
+	
+	_icon.connect( "icon_clicked", self, "_on_clicked" )
 	
 	return _icon
 
@@ -99,6 +109,10 @@ func distance_to_camera_ray():
 	var dr2: Vector2 = icon_at - mouse_at
 	var height: float = rect.size.y
 	var dist2: float = dr2.length() / height
+	print( "dist: ", dist2 )
+	
+	if dist2 > Constants.INTERACT_ICON_SCREEN_DIST:
+		return -1.0
 	
 	return dist2
 
@@ -113,6 +127,9 @@ func _position_on_screen() -> Vector2:
 
 func _icon_under_window() -> bool:
 	if _container_window == null:
+		return false
+	elif not is_instance_valid(_container_window):
+		_container_window = null
 		return false
 	
 	var at: Vector2 = _position_on_screen()
@@ -131,8 +148,10 @@ func _on_clicked():
 
 	var parent_for_windows: Control = RootScene.get_root_for_gui_windows()
 	parent_for_windows.add_child( _container_window )
+	var at: Vector2 = get_viewport().get_mouse_position()
+	_container_window.rect_position = at
 	
-	_container_window
+	_container_window.setup_gui( target )
 
 
 

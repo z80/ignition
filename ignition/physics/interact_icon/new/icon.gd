@@ -1,7 +1,7 @@
 extends TextureButton
 
 
-signal clicked
+signal icon_clicked
 
 
 # Called when the node enters the scene tree for the first time.
@@ -17,8 +17,8 @@ func _ready():
 #	pass
 
 
-func _on_clicked():
-	emit_signal( "clicked" )
+func _on_pressed():
+	emit_signal( "icon_clicked" )
 
 
 
