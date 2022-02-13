@@ -8,6 +8,7 @@ const PROVIDERS_GROUP_NAME: String          = "providers"
 const CELESTIAL_BODIES_NAME: String         = "celestial_bodies"
 const PLANETS_GROUP_NAME: String            = "spheres"
 const SUN_GROUP_NAME: String                = "sun"
+const INTERACT_NODES_GROUP_NAME: String     = "interact_nodes_group_name"
 
 const DEBUG: bool = true
 const RF_JUMP_DISTANCE: float  = 500.0
