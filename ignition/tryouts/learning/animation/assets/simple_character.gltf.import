@@ -2,12 +2,12 @@
 
 importer="scene"
 type="PackedScene"
-path="res://.import/simple_character.dae-1ef01fcdb0554ff8a422a04c0851dd7a.scn"
+path="res://.import/simple_character.gltf-7f2642154580ad65bbd0b6c5846ff655.scn"
 
 [deps]
 
-source_file="res://learning/animation/assets/simple_character.dae"
-dest_files=[ "res://.import/simple_character.dae-1ef01fcdb0554ff8a422a04c0851dd7a.scn" ]
+source_file="res://tryouts/learning/animation/assets/simple_character.gltf"
+dest_files=[ "res://.import/simple_character.gltf-7f2642154580ad65bbd0b6c5846ff655.scn" ]
 
 [params]
 
@@ -16,9 +16,11 @@ nodes/root_name="Scene Root"
 nodes/root_scale=1.0
 nodes/custom_script=""
 nodes/storage=0
+nodes/use_legacy_names=true
 materials/location=1
 materials/storage=1
 materials/keep_on_reimport=true
+meshes/octahedral_compression=true
 meshes/compress=true
 meshes/ensure_tangents=true
 meshes/storage=0

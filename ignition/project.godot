@@ -132,7 +132,7 @@ _global_script_classes=[ {
 "base": "Reference",
 "class": "LandscapeFunc",
 "language": "GDScript",
-"path": "res://learning/landscape_funcs.gd"
+"path": "res://tryouts/learning/landscape_funcs.gd"
 }, {
 "base": "Reference",
 "class": "LandscapeHeightFunc",
