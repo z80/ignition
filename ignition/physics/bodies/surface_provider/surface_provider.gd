@@ -8,8 +8,7 @@ func get_class():
 	return "SurfaceProvider"
 
 func _init():
-	# Do not use interact icon on this invisible object.
-	use_interact_icon = false
+	pass
 
 
 func init():

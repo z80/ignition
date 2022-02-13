@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://physics/singletons/root_scene.gd" type="Script" id=1]
 [ext_resource path="res://physics/singletons/viewport_overlay/viewport_overlay.tscn" type="PackedScene" id=2]
+[ext_resource path="res://physics/interact_icon/new/interaction_node_manager.tscn" type="PackedScene" id=3]
 
 [node name="Root_global" type="Node"]
 script = ExtResource( 1 )
@@ -37,3 +38,5 @@ mouse_filter = 2
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="InteractionNodeManager" parent="." instance=ExtResource( 3 )]

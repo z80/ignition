@@ -1,7 +1,8 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://physics/parts/characters/central/assets/astronaut_02/astronaut.gltf" type="PackedScene" id=1]
 [ext_resource path="res://physics/parts/characters/central/visual.gd" type="Script" id=2]
+[ext_resource path="res://physics/interact_icon/new/interaction_node.gd" type="Script" id=3]
 
 [sub_resource type="AnimationNodeAnimation" id=2]
 animation = "Idle"
@@ -54,3 +55,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15116, -0.599606 )
 
 [node name="target_tps" type="Spatial" parent="." index="5"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.38217, -0.0942358 )
+
+[node name="InteractionNode" type="Spatial" parent="." index="6"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.839893, -0.0666171 )
+script = ExtResource( 3 )

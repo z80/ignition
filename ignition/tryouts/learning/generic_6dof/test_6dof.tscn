@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://learning/generic_6dof/material.tres" type="Material" id=1]
+[ext_resource path="res://tryouts/learning/generic_6dof/material.tres" type="Material" id=1]
 
 [sub_resource type="CubeMesh" id=1]
 

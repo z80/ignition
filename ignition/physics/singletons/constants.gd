@@ -1,13 +1,14 @@
 
 extends Node
 
-const BODIES_GROUP_NAME: String    = "bodies"
-const SUPER_BODIES_GROUP_NAME: String    = "super_bodies"
-const REF_FRAME_PHYSICS_GROUP_NAME: String = "ref_frame_physics"
-const PROVIDERS_GROUP_NAME: String = "providers"
-const CELESTIAL_BODIES_NAME: String = "celestial_bodies"
-const PLANETS_GROUP_NAME: String   = "spheres"
-const SUN_GROUP_NAME: String       = "sun"
+const BODIES_GROUP_NAME: String             = "bodies"
+const BODY_ASSEMBLIES_GROUP_NAME: String    = "body_assemblies"
+const REF_FRAME_PHYSICS_GROUP_NAME: String  = "ref_frame_physics"
+const PROVIDERS_GROUP_NAME: String          = "providers"
+const CELESTIAL_BODIES_NAME: String         = "celestial_bodies"
+const PLANETS_GROUP_NAME: String            = "spheres"
+const SUN_GROUP_NAME: String                = "sun"
+const INTERACT_NODES_GROUP_NAME: String     = "interact_nodes_group_name"
 
 const DEBUG: bool = true
 const RF_JUMP_DISTANCE: float  = 500.0
@@ -27,7 +28,7 @@ const BODY_INCLUDE_DIST: float = 800.0
 const INTERACT_ICON_DIST: float = 30.0
 # It shows up if mouse is closer than this distance on screen.
 # It is in screen heights.
-const INTERACT_ICON_SCREEN_DIST: float = 0.2
+const INTERACT_ICON_SCREEN_DIST: float = 0.1
 
 # Positional grid size.
 const CONSTRUCTION_GRID_SZ: float = 0.1

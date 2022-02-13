@@ -57,7 +57,7 @@ func _enter_tree():
 
 
 func _ready():
-	add_to_group( Constants.SUPER_BODIES_GROUP_NAME )
+	add_to_group( Constants.BODY_ASSEMBLIES_GROUP_NAME )
 	_create_orbit_visualizer()
 
 

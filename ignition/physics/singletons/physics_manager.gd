@@ -30,7 +30,10 @@ enum TimeScale {
 	X_1000 = 9, 
 	X_10000 = 10, 
 	X_100000 = 11, 
-	X_MAX = 12
+	X_1000000 = 12, 
+	X_10000000 = 13, 
+	X_100000000 = 14, 
+	X_MAX = 15
 }
 
 var _time_scale: int = TimeScale.X_1
@@ -92,7 +95,7 @@ func _process( _delta: float ):
 
 func _physics_process( delta ):
 	# Need to have all super body poses up to date.
-	update_super_bodies()
+	#update_super_bodies()
 	
 	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
 	var ref_frames: Array = get_tree().get_nodes_in_group( group )
@@ -158,7 +161,7 @@ func process_user_input( input: Dictionary ):
 
 
 func update_super_bodies():
-	var group: String = Constants.SUPER_BODIES_GROUP_NAME
+	var group: String = Constants.BODY_ASSEMBLIES_GROUP_NAME
 	var all_bodies: Array = get_tree().get_nodes_in_group( group )
 	for body in all_bodies:
 			body.update_pose()
@@ -187,7 +190,7 @@ func update_bodies_physical( delta: float ):
 		body.update_physical( delta )
 	
 	# And update super body poses.
-	group = Constants.SUPER_BODIES_GROUP_NAME
+	group = Constants.BODY_ASSEMBLIES_GROUP_NAME
 	bodies = get_tree().get_nodes_in_group( group )
 	for body in bodies:
 		body.update_pose()
@@ -421,6 +424,22 @@ func set_time_scale( acc: int ):
 			_time_scale_physics   = 1.0
 			_time_scale_evolution = 1000.0
 			_time_scale_string    = "1000.0"
+		TimeScale.X_10000:
+			_time_scale_physics   = 1.0
+			_time_scale_evolution = 10000.0
+			_time_scale_string    = "10000.0"
+		TimeScale.X_100000:
+			_time_scale_physics   = 1.0
+			_time_scale_evolution = 100000.0
+			_time_scale_string    = "100000.0"
+		TimeScale.X_1000000:
+			_time_scale_physics   = 1.0
+			_time_scale_evolution = 1000000.0
+			_time_scale_string    = "1000000.0"
+		TimeScale.X_10000000:
+			_time_scale_physics   = 1.0
+			_time_scale_evolution = 10000000.0
+			_time_scale_string    = "10000000.0"
 	
 	_time_scale = acc
 	

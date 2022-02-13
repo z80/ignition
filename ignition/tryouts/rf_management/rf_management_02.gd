@@ -22,7 +22,7 @@ func _ready():
 #		cp.remove_child( camera )
 #	RootScene.get_root_for_visuals().add_child( camera )
 	
-	var character = _create_character( "my_character", Vector3( 1.0, 0.0, 0.0 ), 3.0 )
+	var character = _create_character( "Astronaut", Vector3( 1.0, 0.0, 0.0 ), 3.0 )
 	DDD.print( "Created a character!" )
 	
 	# Initial set of select and focus object.
@@ -84,7 +84,7 @@ func _create_construction():
 
 
 
-func _create_character( name: String = "MyCharacter", at: Vector3 = Vector3(1.0, 0.0, 0.0), height: float = 1.0 ):
+func _create_character( name: String = "Astronaut", at: Vector3 = Vector3(1.0, 0.0, 0.0), height: float = 1.0 ):
 	var rf = PhysicsManager.create_ref_frame_physics()
 	rf.name = "rf_p for " + name
 	var celestial_body = get_node( "Sun/Home" ) as RefFrameNode

@@ -1,8 +1,8 @@
 [gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=1]
-[ext_resource path="res://learning/integrate_forces/integrate_forces.gd" type="Script" id=2]
-[ext_resource path="res://learning/integrate_forces/Cube.gd" type="Script" id=3]
+[ext_resource path="res://tryouts/learning/integrate_forces/integrate_forces.gd" type="Script" id=2]
+[ext_resource path="res://tryouts/learning/integrate_forces/Cube.gd" type="Script" id=3]
 [ext_resource path="res://physics/axes_visualization.tscn" type="PackedScene" id=4]
 
 [sub_resource type="BoxShape" id=1]
