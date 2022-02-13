@@ -33,9 +33,7 @@ func set_orientation_surface( se3_rel: Se3Ref ):
 	#var q_debug: Quat = q_total.inverse() * se3_rel.q
 	var q_rel: Quat = se3_rel.q.inverse() * q_total
 	orientation = q_rel
-	
-	DDD.important()
-	DDD.print( "set_orientation_surface( " + str(orientation) + " )", 5.0, "set_orientation_surface" )
+
 
 
 func set_orientation_orbit( se3_rel: Se3Ref ):
@@ -45,8 +43,6 @@ func set_orientation_orbit( se3_rel: Se3Ref ):
 	# And we want the opposite: planet relative to the object.
 	orientation = se3_rel.q.inverse()
 
-	DDD.important()
-	DDD.print( "set_orientation_orbit( " + str(orientation) + " )", 5.0, "set_orientation_orbit" )
 
 
 
@@ -100,10 +96,8 @@ func _update_orientation():
 #	var q: Quat = q_yaw * q_pitch * q_roll
 	var n: Spatial = get_node( "navball" )
 	n.transform.basis = Basis( orientation )
-	
-	var read_back: Quat = Quat(n.transform.basis)
-	
-	DDD.print( "update_orientation: " + str(orientation) + ", read_back: " + str(read_back) )
+
+
 
 
 
