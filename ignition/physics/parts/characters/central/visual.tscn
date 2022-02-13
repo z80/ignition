@@ -57,5 +57,5 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15116, -0.599606 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.38217, -0.0942358 )
 
 [node name="InteractionNode" type="Spatial" parent="." index="6"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.51062, -0.0666171 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.839893, -0.0666171 )
 script = ExtResource( 3 )
