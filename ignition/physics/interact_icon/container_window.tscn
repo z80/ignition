@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=2]
 
-[ext_resource path="res://physics/interact_icon/new/container_window.gd" type="Script" id=1]
+[ext_resource path="res://physics/interact_icon/container_window.gd" type="Script" id=1]
 [ext_resource path="res://assets/font_digital.tres" type="DynamicFont" id=2]
 [ext_resource path="res://physics/interact_icon/assets/drag_corner.png" type="Texture" id=3]
 [ext_resource path="res://physics/interact_icon/assets/close_20.png" type="Texture" id=4]

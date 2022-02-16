@@ -3,7 +3,7 @@
 [ext_resource path="res://physics/parts/thrusters/vacuum/assets/thruster/thruster_Cube004.mesh" type="ArrayMesh" id=1]
 [ext_resource path="res://physics/parts/coupling_nodes/coupling_node_stacking.gd" type="Script" id=2]
 [ext_resource path="res://physics/parts/thrusters/exhaust_node.gd" type="Script" id=3]
-[ext_resource path="res://physics/interact_icon/new/interaction_node.gd" type="Script" id=4]
+[ext_resource path="res://physics/interact_icon/interaction_node.gd" type="Script" id=4]
 
 [sub_resource type="GDScript" id=1]
 script/source = "

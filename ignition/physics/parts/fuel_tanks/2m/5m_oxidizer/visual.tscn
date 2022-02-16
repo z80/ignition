@@ -2,7 +2,7 @@
 
 [ext_resource path="res://physics/parts/coupling_nodes/coupling_node_stacking.gd" type="Script" id=1]
 [ext_resource path="res://physics/parts/fuel_tanks/2m/5m_oxidizer/assets/tank/tank_Cylinder018.tres" type="ArrayMesh" id=2]
-[ext_resource path="res://physics/interact_icon/new/interaction_node.gd" type="Script" id=3]
+[ext_resource path="res://physics/interact_icon/interaction_node.gd" type="Script" id=3]
 
 [node name="visual" type="Spatial"]
 

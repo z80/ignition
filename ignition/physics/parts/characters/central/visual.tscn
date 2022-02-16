@@ -2,7 +2,7 @@
 
 [ext_resource path="res://physics/parts/characters/central/assets/astronaut_02/astronaut.gltf" type="PackedScene" id=1]
 [ext_resource path="res://physics/parts/characters/central/visual.gd" type="Script" id=2]
-[ext_resource path="res://physics/interact_icon/new/interaction_node.gd" type="Script" id=3]
+[ext_resource path="res://physics/interact_icon/interaction_node.gd" type="Script" id=3]
 
 [sub_resource type="AnimationNodeAnimation" id=2]
 animation = "Idle"

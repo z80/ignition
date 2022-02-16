@@ -11,12 +11,12 @@ var _container_window: Control = null
 
 # Can be overwritten in order to show different icon.
 func get_icon_scene():
-	return load( "res://physics/interact_icon/new/icon.tscn" )
+	return load( "res://physics/interact_icon/icon.tscn" )
 
 
 # Can be overwritten in order to show different container window.
 func get_container_scene():
-	return load( "res://physics/interact_icon/new/container_window.tscn" )
+	return load( "res://physics/interact_icon/container_window.tscn" )
 
 
 
