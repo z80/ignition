@@ -11,8 +11,8 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 OctreeMesh::OctreeMesh()
 {
     // Initialize counters and parameters.
-    this->max_depth_ = 5;
-    this->min_faces_ = 5;
+    this->max_depth_ = 1;
+    this->min_faces_ = 20;
 }
 
 OctreeMesh::~OctreeMesh()

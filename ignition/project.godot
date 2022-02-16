@@ -285,7 +285,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Ignition"
-run/main_scene="res://tryouts/rf_management/rf_management_02.tscn"
+run/main_scene="res://physics/parts/shock_wave/tryouts/contact_detection.tscn"
 config/icon="res://icon.png"
 
 [autoload]
