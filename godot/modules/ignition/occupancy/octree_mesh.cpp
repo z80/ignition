@@ -12,7 +12,7 @@ OctreeMesh::OctreeMesh()
 {
     // Initialize counters and parameters.
     this->max_depth_ = 1;
-    this->min_faces_ = 20;
+    this->min_faces_ = 5;
 }
 
 OctreeMesh::~OctreeMesh()

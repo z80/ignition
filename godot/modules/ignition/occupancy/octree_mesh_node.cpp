@@ -361,12 +361,12 @@ bool OctreeMeshNode::intersects_segment_face( const Vector3 & start, const Vecto
             if ( ok )
             {
                 const Vector3 dr = at - start;
-                const real_t d   = dr.length();
+                const real_t  d  = dr.length();
                 if ( (face_ind < 0) || (d < face_dist) )
                 {
-                    face_ind = child_face_ind;
-                    face_dist     = d;
-					face_at  = at;
+                    face_ind   = child_face_ind;
+                    face_dist  = d;
+					face_at    = at;
                     intersects = true;
                     // Do not interrupt here.
                     // Need to check all triangles in order to find the closest one.
@@ -381,8 +381,8 @@ bool OctreeMeshNode::intersects_segment_face( const Vector3 & start, const Vecto
     {
         const int ind = children[i];
         const OctreeMeshNode & ch_n = tree->nodes_.ptr()[ind];
-		int f_ind;
-		real_t f_dist;
+		int     f_ind  = -1;
+		real_t  f_dist = -1.0;
 		Vector3 f_at;
         const bool ch_intersects = ch_n.intersects_segment_face( start, end, f_ind, f_dist, f_at );
         if ( ch_intersects )

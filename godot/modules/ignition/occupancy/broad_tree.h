@@ -50,7 +50,7 @@ public:
     RefFrameNode * ref_frame_physics_;
 
     // Maximum subdivision level.
-    int   max_depth_;
+    int    max_depth_;
 };
 
 

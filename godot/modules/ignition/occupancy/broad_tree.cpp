@@ -17,7 +17,7 @@ static void find_mesh_instances( RefFrameNode * node, Vector<OctreeMeshGd *> & i
 BroadTree::BroadTree()
 {
     ref_frame_physics_ = nullptr;
-    max_depth_         = 2;
+    max_depth_         = 1;
 }
 
 BroadTree::~BroadTree()
