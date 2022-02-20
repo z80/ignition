@@ -31,8 +31,17 @@ func _process(delta):
 	# First detect central collision.
 	var ret: Array = broad_tree.intersects_segment_face( body_se3.r, velocity * 10.0, null )
 	
-	print( ret )
+	#print( ret )
 	
+	draw_shock_wave()
+
+
+
+
+func draw_shock_wave():
+	var shock: Node = get_node( "ShockWave" )
+	var otree_mesh: OctreeMeshGd = get_node( "RefFrame/Body/OctreeMeshGd" )
+	shock.apply( velocity, broad_tree, [otree_mesh] )
 
 
 
