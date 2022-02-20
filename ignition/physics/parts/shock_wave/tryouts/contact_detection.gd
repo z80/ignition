@@ -8,6 +8,8 @@ export(float)   var side_step = 0.2
 
 var broad_tree: BroadTreeGd = null
 
+var shock_stripes: Array = []
+
 
 func _init():
 	broad_tree = BroadTreeGd.new()
@@ -18,6 +20,16 @@ func _ready():
 	var body: RefFrameNode = get_node( "RefFrame/Body" )
 	var otree_mesh: OctreeMeshGd = get_node( "RefFrame/Body/OctreeMeshGd" )
 	otree_mesh.rebuild()
+	
+	shock_stripes.push_back( get_node( "ShockStripe" ) )
+	shock_stripes.push_back( get_node( "ShockStripe_2" ) )
+	shock_stripes.push_back( get_node( "ShockStripe_3" ) )
+	shock_stripes.push_back( get_node( "ShockStripe_4" ) )
+	shock_stripes.push_back( get_node( "ShockStripe_5" ) )
+	shock_stripes.push_back( get_node( "ShockStripe_6" ) )
+	shock_stripes.push_back( get_node( "ShockStripe_7" ) )
+	shock_stripes.push_back( get_node( "ShockStripe_8" ) )
+	shock_stripes.push_back( get_node( "ShockStripe_9" ) )
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -39,10 +51,15 @@ func _process(delta):
 
 
 func draw_shock_wave():
+#	for ss in shock_stripes:
+#		var shock: Node = ss
+#		var otree_mesh: OctreeMeshGd = get_node( "RefFrame/Body/OctreeMeshGd" )
+#		shock.apply( velocity, broad_tree, [otree_mesh] )
+
+
 	var shock: Node = get_node( "ShockWave" )
 	var otree_mesh: OctreeMeshGd = get_node( "RefFrame/Body/OctreeMeshGd" )
 	shock.apply( velocity, broad_tree, [otree_mesh] )
-
 
 
 

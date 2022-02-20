@@ -1,0 +1,14 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://physics/parts/shock_wave/assets/shock_stripe.gltf" type="PackedScene" id=1]
+[ext_resource path="res://physics/parts/shock_wave/tryouts/material_shock_stripe.tres" type="Material" id=2]
+[ext_resource path="res://physics/parts/shock_wave/tryouts/shock_stripe.gd" type="Script" id=3]
+
+[node name="ShockStripe" instance=ExtResource( 1 )]
+script = ExtResource( 3 )
+
+[node name="Armature" parent="." index="0"]
+transform = Transform( 1, 0, 0, 0, 5, 0, 0, 0, 1, 0, 0, 0 )
+
+[node name="Circle" parent="Armature/Skeleton" index="0"]
+material/0 = ExtResource( 2 )

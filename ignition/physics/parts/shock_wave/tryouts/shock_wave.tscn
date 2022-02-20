@@ -1,100 +1,11 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://physics/parts/shock_wave/assets/shock_wave.gltf" type="PackedScene" id=1]
 [ext_resource path="res://physics/parts/shock_wave/tryouts/shock_wave.gd" type="Script" id=2]
-
-[sub_resource type="Shader" id=1]
-code = "shader_type spatial;
-render_mode unshaded, cull_disabled;
-
-uniform float speed  = 1.0;
-uniform vec2  texture_scale = vec2( 2.0, 0.2 );
-
-
-uniform vec4 color_bright: hint_color = vec4( 0.6471, 0.8039, 1.0, 1.0 );
-uniform vec4 color_dark:   hint_color = vec4( 0.3529, 0.3529, 0.3529, 1.0 );
-
-varying float time;
-varying vec3 point3d;
-varying vec3 normal3d;
-varying vec2 tex_coords;
-
-
-
-vec4 compute_color( float t, vec3 r )
-{
-	float sz = 1.0;
-	float a = 1.0 - pow( abs( (-r.z-1.0)/sz), 4.0 );
-	
-	if (a < 0.0)
-		a = 0.0;
-
-	return vec4(color_bright.rgb, a);
-	
-	/*vec2 uv = tex_coords * texture_scale;
-	uv.y -= exhaust_speed*t;
-	uv.y = mod( uv.y, 1.0 );
-	vec4 c = texture( tex, uv );
-	float coef = c.y;
-	vec3 color = color_bright.rgb * coef + color_dark.rgb * (1.0-coef);
-	
-	float sz = size_x * (1.0 + power);
-	float a = 1.0 - pow( abs(r.x/sz), decay );
-	
-	if (a < 0.0)
-		a = 0.0;
-	
-	return vec4(color.rgb, a);*/
-}
-
-vec2 compute_displacement( float t, vec3 r, vec3 n )
-{
-	return vec2( 0.0, 0.0 );
-	/*vec2 uv = tex_coords;
-	uv.x += exhaust_speed*t;
-	uv.x = mod( uv.x, 1.0 );
-
-	float gain = abs(r.x/size_x) * displacement_gain;
-	
-	float dy = 0.5 - texture( displacement_y, uv ).r;
-	float dz = 0.5 - texture( displacement_z, uv ).r;
-	
-	dy *= gain;
-	dz *= gain;
-	return vec2( dy, dz );*/
-}
-
-
-void vertex()
-{
-	time       = TIME;
-	point3d    = VERTEX;
-	normal3d   = NORMAL;
-	tex_coords = UV;
-	
-	vec2 d = compute_displacement( time, point3d, normal3d );
-	float x = VERTEX.x + d.x;
-	float z = VERTEX.z + d.y;
-	VERTEX.x = x;
-	VERTEX.z = z;
-}
-
-void fragment() {
-	vec4 c = compute_color( time, point3d );
-	ALBEDO = c.rgb;
-	ALPHA  = c.a;
-}
-"
-
-[sub_resource type="ShaderMaterial" id=2]
-shader = SubResource( 1 )
-shader_param/speed = 1.0
-shader_param/texture_scale = Vector2( 2, 0.2 )
-shader_param/color_bright = Color( 1, 1, 1, 0.631373 )
-shader_param/color_dark = Color( 1, 0.305882, 0.145098, 0.556863 )
+[ext_resource path="res://physics/parts/shock_wave/tryouts/material_shock_wave.tres" type="Material" id=3]
 
 [node name="ShockWave" instance=ExtResource( 1 )]
 script = ExtResource( 2 )
 
 [node name="Icosphere" parent="Armature/Skeleton" index="0"]
-material/0 = SubResource( 2 )
+material/0 = ExtResource( 3 )

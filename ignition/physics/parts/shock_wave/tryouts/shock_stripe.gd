@@ -1,8 +1,12 @@
+
 extends Spatial
 
 const EPS: float = 0.0001
 
 const PROBE_DIST: float = 100.0
+
+export(bool) var random_angle = false
+export(float) var angle = 0.0
 
 var Ortho = preload( "res://physics/utils/orthogonalize.gd" )
 var _skeleton: Skeleton = null
@@ -12,17 +16,22 @@ var _global_bone_local_positions: Array = []
 var _global_to_local_bone: Array        = []
 var _global_bone_to_global: Transform
 
+var _initial_transform: Transform
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	_initial_transform = self.transform
 	_compute_forward_vector()
 	_compute_bone_transforms()
 
 
 func apply( v: Vector3, broad_tree: BroadTreeGd, meshes: Array ):
 	# Orient along velocity.
-	var adjustment_t: Transform = _compute_orientation( v )
-	var own_t: Transform = self.transform
+	if random_angle:
+		angle = randf() * 6.29
+	
+	var adjustment_t: Transform = _compute_orientation( v, angle )
+	var own_t: Transform = _initial_transform
 	own_t = adjustment_t * own_t
 	self.transform = own_t
 	
@@ -54,7 +63,7 @@ func apply( v: Vector3, broad_tree: BroadTreeGd, meshes: Array ):
 		else:
 			var bone_at: Vector3 = ret[2]
 			var dr: Vector3 = bone_at - finish
-			at = finish + dr * 1.5
+			at = finish + dr * 1.0
 			var to_local_t: Transform = _global_to_local_bone[i]
 			to_local_t = to_local_t * global_to_global_bone
 			at = to_local_t.xform( at )
@@ -111,8 +120,8 @@ func _compute_bone_transforms():
 		_global_to_local_bone.push_back( global_to_bone )
 
 
-func _compute_orientation( var v: Vector3 ):
-	var t: Transform = self.transform
+func _compute_orientation( var v: Vector3, roll_angle: float = 0.0 ):
+	var t: Transform = _initial_transform
 	var forward: Vector3 = t.basis.xform( _forward_vector )
 	# compute rotation converting "forward" to "v".
 	var a: Vector3 = forward.cross( v.normalized() )
@@ -131,6 +140,10 @@ func _compute_orientation( var v: Vector3 ):
 		q.y = a.y*si2
 		q.z = a.z*si2
 		q.w = co2
+	
+	# Additional rotation around forward vector.
+	var roll_q: Quat = Quat( _forward_vector, roll_angle )
+	q = q * roll_q
 	
 	var b: Basis = Basis(q)
 	var tr: Transform = Transform( b, Vector3.ZERO )

@@ -1,0 +1,136 @@
+[gd_resource type="ShaderMaterial" load_steps=6 format=2]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type spatial;
+render_mode unshaded, cull_disabled;
+
+const float   WIDTH        = 0.05;
+uniform float total_length = 2.0;
+
+uniform float     speed  = 10.0;
+uniform sampler2D irregularities;
+uniform vec2      irregularities_scale = vec2( 0.2, 1.0 );
+
+uniform sampler2D color_transition;
+uniform float     color_speed = 0.5;
+
+varying float time;
+varying vec3 point3d;
+varying vec3 normal3d;
+varying vec2 tex_coords;
+
+
+
+vec4 compute_color( float t, vec3 r, vec3 n )
+{
+	float sz = 1.0;
+	float a_length = 1.0 - pow( abs( (r.x-1.0)/total_length), 1.5 );
+	float a_width  = 1.0 - pow( abs(r.y)/WIDTH, 0.5 );
+	
+	// Irregularities caused by movement.
+	vec2 front_uv = vec2( (r.z + speed*t)/total_length, r.y );
+	vec2 side_uv  = vec2( (r.x + speed*t)/total_length, r.y );
+	front_uv = front_uv * irregularities_scale;
+	side_uv  = side_uv * irregularities_scale;
+	
+	float front_alpha = texture( irregularities, front_uv ).x;
+	float side_alpha  = texture( irregularities, side_uv ).x;
+	//float front_alpha = sin(front_uv.x / total_length);
+	//float side_alpha  = sin(side_uv.x / total_length);
+	float front_coef = abs(n.x);
+	float side_coef  = abs(n.z);
+	float sum = front_coef + side_coef;
+	front_coef /= sum;
+	side_coef  /= sum;
+	float irreg_alpha = front_alpha*front_coef + side_alpha*side_coef;
+	irreg_alpha = clamp( (irreg_alpha - 0.45)*5.0, 0.0, 1.0 );
+	
+	float a = a_length * a_width * irreg_alpha;
+	
+	if (a < 0.0)
+		a = 0.0;
+
+	vec4 color = texture( color_transition, vec2(color_speed, 0.5) );
+
+	return vec4(color.rgb, a);
+	
+	/*vec2 uv = tex_coords * texture_scale;
+	uv.y -= exhaust_speed*t;
+	uv.y = mod( uv.y, 1.0 );
+	vec4 c = texture( tex, uv );
+	float coef = c.y;
+	vec3 color = color_bright.rgb * coef + color_dark.rgb * (1.0-coef);
+	
+	float sz = size_x * (1.0 + power);
+	float a = 1.0 - pow( abs(r.x/sz), decay );
+	
+	if (a < 0.0)
+		a = 0.0;
+	
+	return vec4(color.rgb, a);*/
+}
+
+vec2 compute_displacement( float t, vec3 r, vec3 n )
+{
+	return vec2( 0.0, 0.0 );
+	/*vec2 uv = tex_coords;
+	uv.x += exhaust_speed*t;
+	uv.x = mod( uv.x, 1.0 );
+
+	float gain = abs(r.x/size_x) * displacement_gain;
+	
+	float dy = 0.5 - texture( displacement_y, uv ).r;
+	float dz = 0.5 - texture( displacement_z, uv ).r;
+	
+	dy *= gain;
+	dz *= gain;
+	return vec2( dy, dz );*/
+}
+
+
+void vertex()
+{
+	time       = TIME;
+	point3d    = VERTEX;
+	normal3d   = NORMAL;
+	tex_coords = UV;
+	
+//	vec2 d = compute_displacement( time, point3d, normal3d );
+//	float x = VERTEX.x + d.x;
+//	float z = VERTEX.z + d.y;
+//	VERTEX.x = x;
+//	VERTEX.z = z;
+}
+
+void fragment() {
+	vec4 c = compute_color( time, point3d, normal3d );
+	ALBEDO = c.rgb;
+	ALPHA  = c.a;
+}
+"
+
+[sub_resource type="Gradient" id=2]
+offsets = PoolRealArray( 0, 0.182482, 0.367397, 0.596107, 0.800487, 1 )
+colors = PoolColorArray( 1, 1, 1, 0.47451, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.332031, 0.332031, 1, 1, 0.712097, 0.304688, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=3]
+gradient = SubResource( 2 )
+width = 64
+
+[sub_resource type="OpenSimplexNoise" id=4]
+period = 1.0
+
+[sub_resource type="NoiseTexture" id=5]
+width = 64
+height = 64
+seamless = true
+noise = SubResource( 4 )
+
+[resource]
+shader = SubResource( 1 )
+shader_param/total_length = 2.0
+shader_param/speed = 10.0
+shader_param/irregularities_scale = Vector2( 0.2, 1 )
+shader_param/color_speed = 0.0
+shader_param/irregularities = SubResource( 5 )
+shader_param/color_transition = SubResource( 3 )
