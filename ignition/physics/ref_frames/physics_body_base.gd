@@ -25,8 +25,9 @@ var VisualType   = null
 var PhysicalType = null
 
 
-var _visual    = null
-var _physical  = null
+var _visual: Node    = null
+var _physical: Node  = null
+var _shock_wave_visual: Node = null
 
 
 # Body which contains this one and other bodies.
@@ -112,6 +113,34 @@ func _traverse_interation_nodes_recursive( p: Node ):
 		_traverse_interation_nodes_recursive( ch )
 
 
+
+func _traverse_shock_wave_visuals():
+	_traverse_shock_wave_visuals_recursive( _visual )
+
+
+func _traverse_shock_wave_visuals_recursive( node: Node ):
+	if node == null:
+		return
+	
+	var s: Spatial = node as Spatial
+	if s != null:
+		var swv: ShockWaveVisual = s as ShockWaveVisual
+		if swv != null:
+			# Specify the reference to itself.
+			_shock_wave_visual = swv
+			return true
+	
+	var qty: int = node.get_child_count()
+	for i in range( qty ):
+		var ch: Node = node.get_child( i )
+		var ret: bool = _traverse_shock_wave_visuals_recursive( ch )
+		if ret:
+			return true
+	
+	return false
+
+
+
 # The overrideable version without "_" prefix.
 func on_delete():
 	var sb: Node = get_super_body_raw()
@@ -150,6 +179,17 @@ func update_visual( origin: RefFrameNode = null ):
 # Need to overload this in order to apply controls
 func update_physical( delta: float ):
 	pass
+
+
+
+# Should be called by a planet if this thing is in the atmosphere.
+func update_shock_wave_visual( velocity: Vector3, broad_tree: BroadTreeGd, octree_meshes: Array ):
+	if _shock_wave_visual == null:
+		return
+	
+	_shock_wave_visual.draw_shock_wave( velocity, broad_tree, octree_meshes )
+
+
 
 
 # Should return a list of GUI classes to instantiate in a container window which is opened 

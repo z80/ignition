@@ -209,6 +209,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/ref_frames/ref_frame_res_provider.gd"
 }, {
+"base": "Spatial",
+"class": "ShockStripe",
+"language": "GDScript",
+"path": "res://physics/shock_wave/shock_stripe.gd"
+}, {
+"base": "Spatial",
+"class": "ShockWaveVisual",
+"language": "GDScript",
+"path": "res://physics/shock_wave/shock_wave_visual.gd"
+}, {
 "base": "RefFrameNode",
 "class": "SoundSource",
 "language": "GDScript",
@@ -275,6 +285,8 @@ _global_script_class_icons={
 "RefFrame": "",
 "RefFramePhysics": "",
 "RefFrameResourceProvider": "",
+"ShockStripe": "",
+"ShockWaveVisual": "",
 "SoundSource": "",
 "StaticPhysicsBody": "",
 "Sun": "",
@@ -285,7 +297,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Ignition"
-run/main_scene="res://physics/parts/shock_wave/tryouts/contact_detection.tscn"
+run/main_scene="res://physics/shock_wave/tryouts/contact_detection.tscn"
 config/icon="res://icon.png"
 
 [autoload]

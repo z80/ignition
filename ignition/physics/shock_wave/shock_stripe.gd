@@ -1,5 +1,6 @@
 
 extends Spatial
+class_name ShockStripe
 
 const EPS: float = 0.0001
 
@@ -7,6 +8,8 @@ const PROBE_DIST: float = 100.0
 
 export(bool) var random_angle = false
 export(float) var angle = 0.0
+
+var _material: ShaderMaterial = null
 
 var Ortho = preload( "res://physics/utils/orthogonalize.gd" )
 var _skeleton: Skeleton = null
@@ -23,6 +26,9 @@ func _ready():
 	_initial_transform = self.transform
 	_compute_forward_vector()
 	_compute_bone_transforms()
+	
+	var mesh: MeshInstance = get_node( "Armature/Skeleton/Circle" )
+	_material = mesh.material_override
 
 
 func apply( v: Vector3, broad_tree: BroadTreeGd, meshes: Array ):
@@ -149,4 +155,14 @@ func _compute_orientation( var v: Vector3, roll_angle: float = 0.0 ):
 	var tr: Transform = Transform( b, Vector3.ZERO )
 	
 	return tr
+
+
+func setup_material( speed: float, color_speed: float ):
+	# This one defines how quickly noise texture is moving.
+	_material.set_shader_param( "speed",       speed )
+	# This one defines color. Its valid range is [0, 1].
+	_material.set_shader_param( "color_speed", color_speed )
+
+
+
 

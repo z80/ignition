@@ -2,12 +2,12 @@
 
 importer="scene"
 type="PackedScene"
-path="res://.import/shock_wave.gltf-995af0c0c77623be51a0762d70b63178.scn"
+path="res://.import/shock_wave.gltf-d94a063b7013584a0654dcf5eb42501d.scn"
 
 [deps]
 
-source_file="res://physics/parts/shock_wave/assets/shock_wave.gltf"
-dest_files=[ "res://.import/shock_wave.gltf-995af0c0c77623be51a0762d70b63178.scn" ]
+source_file="res://physics/shock_wave/assets/shock_wave.gltf"
+dest_files=[ "res://.import/shock_wave.gltf-d94a063b7013584a0654dcf5eb42501d.scn" ]
 
 [params]
 

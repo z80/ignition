@@ -51,15 +51,15 @@ func _process(delta):
 
 
 func draw_shock_wave():
-#	for ss in shock_stripes:
-#		var shock: Node = ss
-#		var otree_mesh: OctreeMeshGd = get_node( "RefFrame/Body/OctreeMeshGd" )
-#		shock.apply( velocity, broad_tree, [otree_mesh] )
+	for ss in shock_stripes:
+		var shock: Node = ss
+		var otree_mesh: OctreeMeshGd = get_node( "RefFrame/Body/OctreeMeshGd" )
+		shock.apply( velocity, broad_tree, [otree_mesh] )
 
 
-	var shock: Node = get_node( "ShockWave" )
-	var otree_mesh: OctreeMeshGd = get_node( "RefFrame/Body/OctreeMeshGd" )
-	shock.apply( velocity, broad_tree, [otree_mesh] )
+#	var shock: Node = get_node( "ShockWave" )
+#	var otree_mesh: OctreeMeshGd = get_node( "RefFrame/Body/OctreeMeshGd" )
+#	shock.apply( velocity, broad_tree, [otree_mesh] )
 
 
 

@@ -267,9 +267,9 @@ func _apply_forces():
 	var bodies: Array = get_all_physics_bodies( rot )
 	
 	for b in bodies:
-		var debug: bool = (b.name == "fuel_tank_2m_1m")
-		if debug:
-			rot.debug = true
+#		var debug: bool = (b.name == "fuel_tank_2m_1m")
+#		if debug:
+#			rot.debug = true
 		var tr: RefFrameNode = translation_rf()
 		var se3_tr: Se3Ref = tr.relative_to( b )
 		var se3_rel_to_body: Se3Ref = rot.relative_to( b )
@@ -301,6 +301,14 @@ func _apply_forces():
 		F = q.xform( F )
 		P = q.xform( P )
 		b.add_force_torque( F, P )
+
+
+
+func _draw_shock_waves():
+	var rot: RefFrameNode = rotation_rf()
+	var all_bodies: Array = get_all_physics_bodies( rot )
+	
+	#for b in bodies:
 
 
 

@@ -1,10 +1,8 @@
+extends Resource
 
-extends RefFrameNode
-
-
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
+# These define color and transparency.
+export(float) var speed_min = 50.0
+export(float) var speed_max = 200.0
 
 
 # Called when the node enters the scene tree for the first time.
