@@ -25,44 +25,51 @@ velocity = Vector3( 0, 1, 0 )
 se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
 
 
-[node name="MeshInstance" type="MeshInstance" parent="RefFrame/Body/OctreeMeshGd"]
+[node name="CollisionMesh" type="MeshInstance" parent="RefFrame/Body/OctreeMeshGd"]
 mesh = ExtResource( 5 )
 material/0 = null
 
-[node name="ShockWave" parent="." instance=ExtResource( 2 )]
+[node name="VisualMesh" type="MeshInstance" parent="RefFrame/Body"]
+mesh = ExtResource( 5 )
+skeleton = NodePath("../OctreeMeshGd")
+material/0 = null
+
+[node name="ShockWave" parent="RefFrame/Body/VisualMesh" instance=ExtResource( 2 )]
 visible = false
 
-[node name="ShockStripe" parent="." instance=ExtResource( 4 )]
+[node name="ShockStripe" parent="RefFrame/Body/VisualMesh" instance=ExtResource( 4 )]
 random_angle = true
 
-[node name="ShockStripe_2" parent="." instance=ExtResource( 4 )]
+[node name="ShockStripe_2" parent="RefFrame/Body/VisualMesh" instance=ExtResource( 4 )]
 random_angle = true
 
-[node name="ShockStripe_3" parent="." instance=ExtResource( 4 )]
+[node name="ShockStripe_3" parent="RefFrame/Body/VisualMesh" instance=ExtResource( 4 )]
 random_angle = true
 
-[node name="ShockStripe_4" parent="." instance=ExtResource( 4 )]
+[node name="ShockStripe_4" parent="RefFrame/Body/VisualMesh" instance=ExtResource( 4 )]
 random_angle = true
 
-[node name="ShockStripe_5" parent="." instance=ExtResource( 4 )]
+[node name="ShockStripe_5" parent="RefFrame/Body/VisualMesh" instance=ExtResource( 4 )]
 random_angle = true
 
-[node name="ShockStripe_6" parent="." instance=ExtResource( 4 )]
+[node name="ShockStripe_6" parent="RefFrame/Body/VisualMesh" instance=ExtResource( 4 )]
 random_angle = true
 
-[node name="ShockStripe_7" parent="." instance=ExtResource( 4 )]
+[node name="ShockStripe_7" parent="RefFrame/Body/VisualMesh" instance=ExtResource( 4 )]
 random_angle = true
 
-[node name="ShockStripe_8" parent="." instance=ExtResource( 4 )]
+[node name="ShockStripe_8" parent="RefFrame/Body/VisualMesh" instance=ExtResource( 4 )]
 random_angle = true
 
-[node name="ShockStripe_9" parent="." instance=ExtResource( 4 )]
+[node name="ShockStripe_9" parent="RefFrame/Body/VisualMesh" instance=ExtResource( 4 )]
 random_angle = true
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 0.119548, 0, 0.992828, 0, 1, 0, -0.992828, 0, 0.119548, 13.6782, 0, 0.212684 )
 script = ExtResource( 3 )
 max_speed = Vector3( 5, 5, 5 )
+
+[node name="CameraRefFrameNode" type="RefFrameNode" parent="."]
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
 transform = Transform( 100, 0, 0, 0, 1, 0, 0, 0, 100, 0, -5.1372, 0 )

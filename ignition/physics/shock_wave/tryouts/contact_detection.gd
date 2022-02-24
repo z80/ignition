@@ -11,6 +11,11 @@ var broad_tree: BroadTreeGd = null
 var shock_stripes: Array = []
 
 
+
+var pose_angle: float = 0.0
+var pose_r: Vector3   = Vector3.ZERO
+
+
 func _init():
 	broad_tree = BroadTreeGd.new()
 
@@ -62,6 +67,30 @@ func draw_shock_wave():
 #	shock.apply( velocity, broad_tree, [otree_mesh] )
 
 
+func copy_camera_ref_frame_pose():
+	var c: Camera = get_node( "Camera" )
+	var crf: RefFrameNode = get_node( "CameraRefFrameNode" )
+	crf.transform = c.transform
 
+
+func visual_with_respect_to_camera():
+	var crf: RefFrameNode = get_node( "CameraRefFrameNode" )
+	
+
+
+func set_body_pose( dt: float ):
+	pose_angle += dt * 0.05
+	var si: float = sin( pose_angle )
+	var co: float = cos( pose_angle )
+	var R: float = 5.0
+	
+	var x: float = R * co
+	var z: float = R * si
+	pose_r = Vector3( x, 0.0, z )
+	
+	var body: RefFrameNode = get_node( "RefFrame/Body" )
+	var se3: Se3Ref = body.get_se3()
+	se3.r = pose_r
+	body.set_se3( se3 )
 
 
