@@ -183,13 +183,18 @@ func update_physical( delta: float ):
 
 
 # Should be called by a planet if this thing is in the atmosphere.
-func update_shock_wave_visual( velocity: Vector3, broad_tree: BroadTreeGd, octree_meshes: Array ):
+func update_shock_wave_visual( density: float, velocity: Vector3, broad_tree: BroadTreeGd, octree_meshes: Array ):
 	if _shock_wave_visual == null:
 		return
 	
-	_shock_wave_visual.draw_shock_wave( velocity, broad_tree, octree_meshes )
+	_shock_wave_visual.draw_shock_wave( density, velocity, broad_tree, octree_meshes )
 
 
+func hide_shock_wave_visual():
+	if _shock_wave_visual == null:
+		return
+	
+	_shock_wave_visual.visible = false
 
 
 # Should return a list of GUI classes to instantiate in a container window which is opened 
@@ -322,6 +327,9 @@ func _create_visual( Visual ):
 	
 	# For all visual interaction nodes specify self.
 	_traverse_interaction_nodes()
+	
+	# Searching for shock wave visual.
+	_traverse_shock_wave_visuals()
 	
 	# Own ref. frame visualizer
 	if Constants.DEBUG and (get_class() != "SurfaceProvider"):

@@ -4,5 +4,6 @@
 
 [resource]
 script = ExtResource( 1 )
-speed_min = 50.0
+speed_min = 0.0
 speed_max = 200.0
+density_min = 0.0

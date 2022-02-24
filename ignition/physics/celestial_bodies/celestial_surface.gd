@@ -251,6 +251,7 @@ func process_ref_frames( celestial_bodies: Array ):
 	# rotational ref. frame.
 	# (-2*m * w x v); (-m * w x (w x r)); (-m*e x r)
 	_apply_forces()
+	_draw_shock_waves()
 	
 	process_ref_frames_rotating_to_orbiting()
 	process_ref_frames_orbiting_to_rotating()
@@ -307,8 +308,74 @@ func _apply_forces():
 func _draw_shock_waves():
 	var rot: RefFrameNode = rotation_rf()
 	var all_bodies: Array = get_all_physics_bodies( rot )
+	# All assemblies.
+	var assemblies: Array = []
+	for body in all_bodies:
+		var p: PhysicsBodyBase = body as PhysicsBodyBase
+		if p == null:
+			continue
+		var a: PartAssembly = p.get_super_body()
+		if a == null:
+			continue
+		var has: bool = assemblies.has( a )
+		if has:
+			continue
+		
+		assemblies.push_back( a )
 	
-	#for b in bodies:
+	# For each assembly
+	for ass in assemblies:
+		var a: PartAssembly = ass as PartAssembly
+		var p: Node = a.get_parent()
+		var ref_frame: RefFramePhysics = p as RefFramePhysics
+		if ref_frame == null:
+			continue
+		
+		var bodies: Array = a.sub_bodies
+		var octree_meshes: Array = []
+		for b in bodies:
+			var body: PhysicsBodyBase = b as PhysicsBodyBase
+			var om: OctreeMeshGd = body.get_octree_mesh()
+			if om == null:
+				continue
+			octree_meshes.push_back( om )
+		
+		var broad_tree: BroadTreeGd = ref_frame.get_broad_tree()
+		
+		# For each body compute velocity with respect to self.
+		if not octree_meshes.empty():
+			for b in bodies:
+				var body: PhysicsBodyBase = b as PhysicsBodyBase
+				
+				var se3: Se3Ref = body.relative_to( self )
+				
+				var distance: float = se3.r.length()
+				# Compute air density in the point.
+				var ret: Array = _force_source_air_drag.density_viscosity( se3 )
+				var density: float = ret[1]
+				
+				var v: Vector3 = se3.v
+				var q: Quat    = se3.q
+				var inv_q: Quat = q.inverse()
+				# Convert this velocity to body's ref. frame.
+				v = inv_q.xform( v )
+				# And convert to body's parent's ref. frame.
+				se3 = body.get_se3()
+				q = se3.q
+				v = q.xform( v )
+				
+				body.update_shock_wave_visual( density, v, broad_tree, octree_meshes )
+
+
+
+func _hide_shock_waves():
+	var rot: RefFrameNode = rotation_rf()
+	var all_bodies: Array = get_all_physics_bodies( rot )
+	# All assemblies.
+	var assemblies: Array = []
+	for body in all_bodies:
+		var p: PhysicsBodyBase = body as PhysicsBodyBase
+		p.hide_shock_wave_visual()
 
 
 

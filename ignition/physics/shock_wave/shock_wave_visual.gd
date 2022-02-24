@@ -7,7 +7,7 @@ export(Resource) var shock_wave_config = null
 var shock_stripes: Array = []
 var speed_min: float = 1.0
 var speed_max: float = 100.0
-
+var density_min: float = 0.01
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -19,8 +19,9 @@ func _ready():
 	shock_stripes.push_back( get_node( "ShockStripe_6" ) )
 	
 	if shock_wave_config != null:
-		speed_min = shock_wave_config.speed_min
-		speed_max = shock_wave_config.speed_max
+		speed_min   = shock_wave_config.speed_min
+		speed_max   = shock_wave_config.speed_max
+		density_min = shock_wave_config.density_min
 
 
 
@@ -29,9 +30,9 @@ func _ready():
 #	pass
 
 # Velocity need to be relative to air.
-func draw_shock_wave( velocity: Vector3, broad_tree: BroadTreeGd, otree_meshes: Array ):
+func draw_shock_wave( density: float, velocity: Vector3, broad_tree: BroadTreeGd, otree_meshes: Array ):
 	var speed: float = velocity.length()
-	if speed < speed_min:
+	if (speed < speed_min) or (density < density_min):
 		# it is invisible.
 		for ss in shock_stripes:
 			var shock: Node = ss

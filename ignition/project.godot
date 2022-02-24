@@ -297,7 +297,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Ignition"
-run/main_scene="res://physics/shock_wave/tryouts/contact_detection.tscn"
+run/main_scene="res://tryouts/rf_management/rf_management_02.tscn"
 config/icon="res://icon.png"
 
 [autoload]
@@ -312,7 +312,6 @@ DDD="*res://debug/ddd.gd"
 
 [display]
 
-window/size/fullscreen=true
 mouse_cursor/custom_image="res://cursor.png"
 mouse_cursor/tooltip_position_offset=Vector2( 32, 10 )
 

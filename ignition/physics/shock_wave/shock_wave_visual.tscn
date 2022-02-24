@@ -9,13 +9,19 @@ script = ExtResource( 1 )
 shock_wave_config = ExtResource( 3 )
 
 [node name="ShockStripe_1" parent="." instance=ExtResource( 2 )]
+random_angle = true
 
 [node name="ShockStripe_2" parent="." instance=ExtResource( 2 )]
+random_angle = true
 
 [node name="ShockStripe_3" parent="." instance=ExtResource( 2 )]
+random_angle = true
 
 [node name="ShockStripe_4" parent="." instance=ExtResource( 2 )]
+random_angle = true
 
 [node name="ShockStripe_5" parent="." instance=ExtResource( 2 )]
+random_angle = true
 
 [node name="ShockStripe_6" parent="." instance=ExtResource( 2 )]
+random_angle = true

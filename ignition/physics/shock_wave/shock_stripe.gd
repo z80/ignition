@@ -28,7 +28,7 @@ func _ready():
 	_compute_bone_transforms()
 	
 	var mesh: MeshInstance = get_node( "Armature/Skeleton/Circle" )
-	_material = mesh.material_override
+	_material = mesh.get_surface_material( 0 )
 
 
 func apply( v: Vector3, broad_tree: BroadTreeGd, meshes: Array ):
@@ -69,7 +69,7 @@ func apply( v: Vector3, broad_tree: BroadTreeGd, meshes: Array ):
 		else:
 			var bone_at: Vector3 = ret[2]
 			var dr: Vector3 = bone_at - finish
-			at = finish + dr * 1.0
+			at = finish + dr * 0.1
 			var to_local_t: Transform = _global_to_local_bone[i]
 			to_local_t = to_local_t * global_to_global_bone
 			at = to_local_t.xform( at )
