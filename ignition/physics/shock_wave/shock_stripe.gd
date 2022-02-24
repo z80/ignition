@@ -36,10 +36,13 @@ func apply( v: Vector3, broad_tree: BroadTreeGd, meshes: Array ):
 	if random_angle:
 		angle = randf() * 6.29
 	
+	
 	var adjustment_t: Transform = _compute_orientation( v, angle )
 	var own_t: Transform = _initial_transform
 	own_t = adjustment_t * own_t
 	self.transform = own_t
+	
+	#var global_t: Transform = self.global_transform
 	
 	var finish: Vector3 = own_t.origin
 	
@@ -53,7 +56,7 @@ func apply( v: Vector3, broad_tree: BroadTreeGd, meshes: Array ):
 	
 	for i in range(qty):
 		var at: Vector3 = _global_bone_local_positions[i]
-		var start: Vector3 = global_bone_to_global.xform( PROBE_DIST * at )
+		var start: Vector3 = finish + global_bone_to_global.xform( PROBE_DIST * at )
 		var ret: Array = broad_tree.intersects_segment_face( start, finish, null )
 		var intersects: bool = ret[0]
 		
@@ -69,7 +72,7 @@ func apply( v: Vector3, broad_tree: BroadTreeGd, meshes: Array ):
 		else:
 			var bone_at: Vector3 = ret[2]
 			var dr: Vector3 = bone_at - finish
-			at = finish + dr * 0.1
+			at = finish + dr * 1.0
 			var to_local_t: Transform = _global_to_local_bone[i]
 			to_local_t = to_local_t * global_to_global_bone
 			at = to_local_t.xform( at )
