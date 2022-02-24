@@ -114,7 +114,7 @@ func distance_to_camera_ray():
 	var dr2: Vector2 = icon_at - mouse_at
 	var height: float = rect.size.y
 	var dist2: float = dr2.length() / height
-	print( "dist: ", dist2 )
+	#print( "dist: ", dist2 )
 	
 	if dist2 > Constants.INTERACT_ICON_SCREEN_DIST:
 		return -1.0
