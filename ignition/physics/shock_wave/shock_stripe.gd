@@ -15,8 +15,8 @@ var Ortho = preload( "res://physics/utils/orthogonalize.gd" )
 var _skeleton: Skeleton = null
 var _forward_vector: Vector3 = Vector3.FORWARD
 
-var _global_bone_local_positions: Array = []
-var _global_to_local_bone: Array        = []
+var _bone_skeleton_positions: Array = []
+var _mesh_to_local_bone: Array        = []
 var _global_bone_to_global: Transform
 
 var _initial_transform: Transform
@@ -31,33 +31,42 @@ func _ready():
 	_material = mesh.get_surface_material( 0 )
 
 
-func apply( v: Vector3, broad_tree: BroadTreeGd, meshes: Array ):
+
+
+
+func apply( broad_tree: BroadTreeGd, meshes: Array, vel_in_mesh: Vector3, se3_mesh_to_rf: Se3Ref, se3_rf_to_mesh: Se3Ref ):
 	# Orient along velocity.
 	if random_angle:
 		angle = randf() * 6.29
 	
-	
-	var adjustment_t: Transform = _compute_orientation( v, angle )
+	var adjustment_t: Transform = _compute_orientation( vel_in_mesh, angle )
 	var own_t: Transform = _initial_transform
 	own_t = adjustment_t * own_t
 	self.transform = own_t
 	
 	#var global_t: Transform = self.global_transform
 	
-	var finish: Vector3 = own_t.origin
+	var finish_in_local: Vector3 = own_t.origin
+	var t_mesh_to_rf: Transform = se3_mesh_to_rf.transform
+	var finish_in_rf: Vector3    = t_mesh_to_rf.xform( finish_in_local )
+	
+	var t_rf_to_mesh: Transform = se3_rf_to_mesh.transform
 	
 	var global_bone_to_global: Transform = own_t * _global_bone_to_global
 	var global_to_global_bone: Transform = global_bone_to_global.inverse()
 	
 	var s: Skeleton = _get_skeleton()
-	var qty: int = _global_bone_local_positions.size()
+	var qty: int = _bone_skeleton_positions.size()
 	
+	# This one is for debugging.
 	var global_poses: Array = []
 	
 	for i in range(qty):
-		var at: Vector3 = _global_bone_local_positions[i]
-		var start: Vector3 = finish + global_bone_to_global.xform( PROBE_DIST * at )
-		var ret: Array = broad_tree.intersects_segment_face( start, finish, null )
+		var bone_at: Vector3 = _bone_skeleton_positions[i]
+		var bone_at_in_mesh: Vector3 = global_bone_to_global.xform( PROBE_DIST * bone_at )
+		var bone_at_in_rf: Vector3 = t_mesh_to_rf.xform( bone_at_in_mesh )
+		var start_in_rf: Vector3 = finish_in_rf + bone_at_in_rf
+		var ret: Array = broad_tree.intersects_segment_face( start_in_rf, finish_in_rf, null )
 		var intersects: bool = ret[0]
 		
 		if intersects:
@@ -67,16 +76,16 @@ func apply( v: Vector3, broad_tree: BroadTreeGd, meshes: Array ):
 		
 		var bone_t: Transform = s.get_bone_pose( i )
 		if not intersects:
-			bone_t.origin = at
+			bone_t.origin = bone_at
 		
 		else:
-			var bone_at: Vector3 = ret[2]
-			var dr: Vector3 = bone_at - finish
-			at = finish + dr * 1.0
-			var to_local_t: Transform = _global_to_local_bone[i]
-			to_local_t = to_local_t * global_to_global_bone
-			at = to_local_t.xform( at )
-			bone_t.origin = at
+			var intersection_in_rf: Vector3 = ret[2]
+			var dr: Vector3 = intersection_in_rf - finish_in_rf
+			var at_in_rf: Vector3 = finish_in_rf + dr * 1.0
+			var to_local_t: Transform = _mesh_to_local_bone[i]
+			to_local_t = to_local_t * global_to_global_bone * t_rf_to_mesh
+			var in_bone_at: Vector3 = to_local_t.xform( at_in_rf )
+			bone_t.origin = in_bone_at
 		
 		s.set_bone_pose( i, bone_t )
 		
@@ -109,24 +118,24 @@ func _compute_forward_vector():
 
 func _compute_bone_transforms():
 	var s: Skeleton = _get_skeleton()
-	var qty: int = s.get_bone_count()
+	var qty: int    = s.get_bone_count()
 
 	var skeleton_t: Transform = s.transform
 	var armature_t: Transform = get_node( "Armature" ).transform
-	var total_t: Transform = armature_t * skeleton_t
+	var total_t: Transform    = armature_t * skeleton_t
 
-	_global_bone_to_global = total_t
-	_global_bone_local_positions = []
-	_global_to_local_bone = []
+	_global_bone_to_global   = total_t
+	_bone_skeleton_positions = []
+	_mesh_to_local_bone      = []
 	for i in range(qty):
 		var bone_t: Transform = s.get_bone_global_pose( i )
-		_global_bone_local_positions.push_back( bone_t.origin )
+		_bone_skeleton_positions.push_back( bone_t.origin )
 		
-		var rest_t: Transform   = s.get_bone_rest( i )
-		var custom_t: Transform = s.get_bone_custom_pose( i )
+		var rest_t: Transform         = s.get_bone_rest( i )
+		var custom_t: Transform       = s.get_bone_custom_pose( i )
 		var bone_to_global: Transform = total_t * rest_t * custom_t
 		var global_to_bone: Transform = bone_to_global.inverse()
-		_global_to_local_bone.push_back( global_to_bone )
+		_mesh_to_local_bone.push_back( global_to_bone )
 
 
 func _compute_orientation( var v: Vector3, roll_angle: float = 0.0 ):
