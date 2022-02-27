@@ -183,11 +183,11 @@ func update_physical( delta: float ):
 
 
 # Should be called by a planet if this thing is in the atmosphere.
-func update_shock_wave_visual( density: float, velocity: Vector3, broad_tree: BroadTreeGd, octree_meshes: Array ):
+func update_shock_wave_visual( broad_tree: BroadTreeGd, otree_meshes: Array, density: float, vel_in_mesh: Vector3, se3_mesh_to_rf: Se3Ref, se3_rf_to_mesh: Se3Ref ):
 	if _shock_wave_visual == null:
 		return
 	
-	_shock_wave_visual.draw_shock_wave( density, velocity, broad_tree, octree_meshes )
+	_shock_wave_visual.draw_shock_wave( broad_tree, otree_meshes, density, vel_in_mesh, se3_mesh_to_rf, se3_rf_to_mesh )
 
 
 func hide_shock_wave_visual():

@@ -354,17 +354,18 @@ func _draw_shock_waves():
 				var ret: Array = _force_source_air_drag.density_viscosity( se3 )
 				var density: float = ret[1]
 				
-				var v: Vector3 = se3.v
-				var q: Quat    = se3.q
+				var v_in_rotation: Vector3 = se3.v
+				var q: Quat     = se3.q
 				var inv_q: Quat = q.inverse()
 				# Convert this velocity to body's ref. frame.
-				v = inv_q.xform( v )
-				# And convert to body's parent's ref. frame.
-				se3 = body.get_se3()
-				q = se3.q
-				v = q.xform( v )
+				var v_in_mesh: Vector3 = inv_q.xform( v_in_rotation )
 				
-				body.update_shock_wave_visual( density, v, broad_tree, octree_meshes )
+				# Body in physics ref. frame.
+				var se3_mesh_to_rf: Se3Ref = body.relative_to( ref_frame )
+				var se3_rf_to_mesh: Se3Ref = se3_mesh_to_rf.inverse()
+				
+				# broad_tree, otree_meshes, density, vel_in_mesh, se3_mesh_to_rf, se3_rf_to_mesh
+				body.update_shock_wave_visual( broad_tree, octree_meshes, density, v_in_mesh, se3_mesh_to_rf, se3_rf_to_mesh )
 
 
 

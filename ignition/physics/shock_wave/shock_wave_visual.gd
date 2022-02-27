@@ -5,9 +5,9 @@ class_name ShockWaveVisual
 export(Resource) var shock_wave_config = null
 
 var shock_stripes: Array = []
-var speed_min: float = 1.0
-var speed_max: float = 100.0
-var density_min: float = 0.01
+var speed_min: float     = 1.0
+var speed_max: float     = 100.0
+var density_min: float   = 0.01
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -30,8 +30,8 @@ func _ready():
 #	pass
 
 # Velocity need to be relative to air.
-func draw_shock_wave( density: float, velocity: Vector3, broad_tree: BroadTreeGd, otree_meshes: Array ):
-	var speed: float = velocity.length()
+func draw_shock_wave( broad_tree: BroadTreeGd, otree_meshes: Array, density: float, vel_in_mesh: Vector3, se3_mesh_to_rf: Se3Ref, se3_rf_to_mesh: Se3Ref ):
+	var speed: float = vel_in_mesh.length()
 	if (speed < speed_min) or (density < density_min):
 		# it is invisible.
 		for ss in shock_stripes:
@@ -42,7 +42,8 @@ func draw_shock_wave( density: float, velocity: Vector3, broad_tree: BroadTreeGd
 		for ss in shock_stripes:
 			var shock: Node = ss
 			shock.visible = true
-			shock.apply( velocity, broad_tree, otree_meshes )
+			# shock.apply( broad_tree: BroadTreeGd, meshes: Array, vel_in_mesh: Vector3, se3_mesh_to_rf: Se3Ref, se3_rf_to_mesh: Se3Ref ):
+			shock.apply( broad_tree, otree_meshes, vel_in_mesh, se3_mesh_to_rf, se3_rf_to_mesh )
 		
 		_setup_material( speed )
 
