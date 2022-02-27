@@ -17,6 +17,8 @@ void BroadTreeGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("intersects_segment", "start", "end", "exclude_mesh"), &BroadTreeGd::intersects_segment, Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("intersects_segment_face", "start", "end", "exclude_mesh"), &BroadTreeGd::intersects_segment_face, Variant::ARRAY );
 
+	ClassDB::bind_method( D_METHOD("face_lines"), &BroadTreeGd::face_lines, Variant::POOL_VECTOR3_ARRAY );
+
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_depth" ), "set_max_depth", "get_max_depth" );
 }
 
@@ -97,6 +99,27 @@ Array BroadTreeGd::intersects_segment_face( const Vector3 & start, const Vector3
 		ret.push_back( props.area );
 		ret.push_back( node );
 	}
+	return ret;
+}
+
+
+
+PoolVector3Array BroadTreeGd::face_lines() const
+{
+	Vector<Vector3> lines;
+	_broad_tree.face_lines( lines );
+
+	const int qty = lines.size();
+
+	PoolVector3Array ret;
+	ret.resize( qty );
+
+	for ( int i=0; i<qty; i++ )
+	{
+		const Vector3 & at = lines.ptr()[i];
+		ret[i] = at;
+	}
+
 	return ret;
 }
 

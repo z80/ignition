@@ -32,6 +32,7 @@ public:
 
     // For visualization.
     //PoolVector3Array lines_nodes( RefFrameNode * camera ) const;
+	void face_lines( Vector<Vector3> & ret ) const;
 
     // These three for tree construction.
     bool parent( const BroadTreeNode & node, BroadTreeNode * & parent );

@@ -305,6 +305,22 @@ PoolVector<Vector3> OctreeMesh::lines()
 }
 
 
+void OctreeMesh::face_lines( Vector<Vector3> & ret ) const
+{
+	const int qty = faces_.size();
+	for (int i=0; i<qty; i++)
+	{
+		const Face3 & f = faces_.ptr()[i];
+		const Vector3 r0 = quat_.xform( f.vertex[0] ) + origin_;
+		const Vector3 r1 = quat_.xform( f.vertex[1] ) + origin_;
+		const Vector3 r2 = quat_.xform( f.vertex[2] ) + origin_;
+		ret.push_back( r0 );
+		ret.push_back( r1 );
+		ret.push_back( r2 );
+	}
+}
+
+
 bool OctreeMesh::parent( const OctreeMeshNode & node, OctreeMeshNode * & parent )
 {
     if ( node.parentAbsIndex < 0 )

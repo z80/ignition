@@ -129,6 +129,19 @@ void BroadTree::subdivide( RefFrameNode * ref_frame_physics )
 
 
 
+void BroadTree::face_lines( Vector<Vector3> & ret ) const
+{
+	const int qty = octree_meshes_.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		const OctreeMeshGd * mesh_gd = octree_meshes_.ptr()[i];
+		const OctreeMesh * mesh = mesh_gd->octree_mesh();
+		mesh->face_lines( ret );
+	}
+}
+
+
+
 
 /*PoolVector3Array BroadTree::lines_nodes( RefFrameNode * camera ) const
 {

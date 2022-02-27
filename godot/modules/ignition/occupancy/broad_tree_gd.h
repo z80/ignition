@@ -41,6 +41,7 @@ public:
 	bool intersects_segment( const Vector3 & start, const Vector3 & end, Node * exclude_mesh ) const;
 	Array intersects_segment_face( const Vector3 & start, const Vector3 & end, Node * exclude_mesh ) const;
 
+	PoolVector3Array face_lines() const;
 public:
 	BroadTree _broad_tree;
 };

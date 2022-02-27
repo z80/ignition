@@ -45,6 +45,7 @@ public:
 
     OctreeMesh * octree_mesh();
 	const OctreeMesh * octree_mesh() const;
+
 private:
     OctreeMesh _octree_mesh;
     Array      _ret_array;
