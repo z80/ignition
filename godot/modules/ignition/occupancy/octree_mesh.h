@@ -65,7 +65,7 @@ public:
 
     // For visualization.
     PoolVector<Vector3> lines();
-	void face_lines( Vector<Vector3> & ret ) const;
+	void face_lines( Vector<Vector3> & ret, const Transform & t_to_camera ) const;
 
     bool parent( const OctreeMeshNode & node, OctreeMeshNode * & parent );
 

@@ -305,7 +305,7 @@ PoolVector<Vector3> OctreeMesh::lines()
 }
 
 
-void OctreeMesh::face_lines( Vector<Vector3> & ret ) const
+void OctreeMesh::face_lines( Vector<Vector3> & ret, const Transform & t_to_camera ) const
 {
 	const int qty = faces_.size();
 	for (int i=0; i<qty; i++)
@@ -314,9 +314,13 @@ void OctreeMesh::face_lines( Vector<Vector3> & ret ) const
 		const Vector3 r0 = quat_.xform( f.vertex[0] ) + origin_;
 		const Vector3 r1 = quat_.xform( f.vertex[1] ) + origin_;
 		const Vector3 r2 = quat_.xform( f.vertex[2] ) + origin_;
-		ret.push_back( r0 );
-		ret.push_back( r1 );
-		ret.push_back( r2 );
+
+		const Vector3 at0 = t_to_camera.xform( r0 );
+		const Vector3 at1 = t_to_camera.xform( r1 );
+		const Vector3 at2 = t_to_camera.xform( r2 );
+		ret.push_back( at0 );
+		ret.push_back( at1 );
+		ret.push_back( at2 );
 	}
 }
 
