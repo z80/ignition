@@ -143,7 +143,8 @@ func _compute_orientation( var v: Vector3, roll_angle: float = 0.0 ):
 	var t: Transform = _initial_transform
 	var forward: Vector3 = t.basis.xform( _forward_vector )
 	# compute rotation converting "forward" to "v".
-	var a: Vector3 = forward.cross( v.normalized() )
+	var v_norm: Vector3 = v.normalized()
+	var a: Vector3 = forward.cross( v_norm )
 	var si: float = a.length()
 	var q: Quat
 	
@@ -151,7 +152,8 @@ func _compute_orientation( var v: Vector3, roll_angle: float = 0.0 ):
 		q = Quat.IDENTITY
 	
 	else:
-		var angle_2: float = asin(si) * 0.5
+		var co: float      = forward.dot( v_norm )
+		var angle_2: float = atan2( si, co ) * 0.5
 		var si2: float = sin(angle_2)
 		var co2: float = cos(angle_2)
 		a   = a.normalized()
