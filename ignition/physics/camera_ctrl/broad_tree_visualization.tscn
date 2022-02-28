@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://physics/camera_ctrl/broad_tree_visualization.gd" type="Script" id=1]
+
+[sub_resource type="SpatialMaterial" id=1]
+flags_unshaded = true
+albedo_color = Color( 1, 0, 0, 1 )
+
+[node name="BroadTreeVisualization" type="ImmediateGeometry"]
+material_override = SubResource( 1 )
+script = ExtResource( 1 )

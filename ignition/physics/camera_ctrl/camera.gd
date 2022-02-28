@@ -288,6 +288,8 @@ func process( _delta: float ):
 			_process_tps_free(_delta)
 	
 	_process_sky()
+	
+	_draw_broad_tree_faces()
 
 
 
@@ -646,6 +648,24 @@ func _get_sun_light():
 #			_sun_light.omni_range       = 100.0
 	
 	return _sun_light
+
+
+
+func _draw_broad_tree_faces():
+	var body: PhysicsBodyBase = get_parent() as PhysicsBodyBase
+	if body == null:
+		return
+	
+	var rf: RefFramePhysics = body.get_parent() as RefFramePhysics
+	if rf == null:
+		return
+	
+	var broad_tree: BroadTreeGd = rf.get_broad_tree()
+	
+	var visualization: Node = get_node( "BroadTreeVisualization" )
+	visualization.draw_faces( broad_tree, self, rf )
+
+
 
 
 func root_most_body():
