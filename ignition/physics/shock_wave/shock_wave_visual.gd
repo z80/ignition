@@ -43,6 +43,7 @@ func draw_shock_wave( broad_tree: BroadTreeGd, otree_meshes: Array, density: flo
 			var shock: Node = ss
 			shock.visible = true
 			# shock.apply( broad_tree: BroadTreeGd, meshes: Array, vel_in_mesh: Vector3, se3_mesh_to_rf: Se3Ref, se3_rf_to_mesh: Se3Ref ):
+			#shock.apply( broad_tree, otree_meshes, vel_in_mesh, se3_mesh_to_rf, se3_rf_to_mesh )
 			shock.apply( broad_tree, otree_meshes, vel_in_mesh, se3_mesh_to_rf, se3_rf_to_mesh )
 		
 		_setup_material( speed )

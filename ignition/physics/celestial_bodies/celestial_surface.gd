@@ -359,6 +359,7 @@ func _draw_shock_waves():
 				var inv_q: Quat = q.inverse()
 				# Convert this velocity to body's ref. frame.
 				var v_in_mesh: Vector3 = inv_q.xform( v_in_rotation )
+				#var v_in_mesh: Vector3 = q.xform( v_in_rotation )
 				
 				# Body in physics ref. frame.
 				var se3_mesh_to_rf: Se3Ref = body.relative_to( ref_frame )
