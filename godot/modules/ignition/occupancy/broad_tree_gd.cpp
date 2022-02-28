@@ -117,7 +117,7 @@ PoolVector3Array BroadTreeGd::face_lines( const Transform & t_to_cam ) const
 	for ( int i=0; i<qty; i++ )
 	{
 		const Vector3 & at = lines.ptr()[i];
-		ret[i] = at;
+		ret.set( i, at );
 	}
 
 	return ret;
