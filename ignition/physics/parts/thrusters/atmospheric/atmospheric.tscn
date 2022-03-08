@@ -5,7 +5,6 @@
 
 [node name="Thruster" type="RefFrameNode"]
 script = ExtResource( 1 )
-hint_text = "Atmospheric low altitude thruster"
 allows_surface_attachments = false
 conducts_solid_fuel = false
 conducts_air = false
@@ -22,6 +21,7 @@ se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0
 
 
 [node name="MeshInstance" type="MeshInstance" parent="OctreeMeshGd"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.953052, 0 )
 visible = false
 mesh = ExtResource( 2 )
 material/0 = null

@@ -1,6 +1,6 @@
 extends ImmediateGeometry
 
-
+export(bool) var enabled = false
 
 var _m: Material = null
 
@@ -19,6 +19,9 @@ func _process( delta: float ):
 
 
 func draw_faces( broad_tree: BroadTreeGd, camera: RefFrameNode, ref_frame: RefFrameNode ):
+	if not enabled:
+		return
+	
 	#var se3: Se3Ref = camera.relative_to( ref_frame )
 	var se3: Se3Ref = ref_frame.relative_to( camera )
 	var t: Transform = se3.transform

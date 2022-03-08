@@ -241,7 +241,7 @@ func _input( event ):
 	#if change_mode:
 	#	_cycle_mode()
 	
-	print( "mouse displacement: ", _mouse_displacement )
+	#print( "mouse displacement: ", _mouse_displacement )
 
 
 func set_up_vector( celestial_body: RefFrameNode ):

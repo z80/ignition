@@ -18,7 +18,6 @@ surfaces/0 = {
 
 [node name="Habitat" type="RefFrameNode"]
 script = ExtResource( 1 )
-hint_text = "Habitat 2m diameter"
 part_class = 5
 conducts_liquid_fuel = false
 conducts_solid_fuel = false
@@ -29,6 +28,5 @@ se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0
 
 
 [node name="2m" type="MeshInstance" parent="OctreeMeshGd"]
-visible = false
 mesh = SubResource( 1 )
 material/0 = null

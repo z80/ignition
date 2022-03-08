@@ -20,7 +20,6 @@ surfaces/0 = {
 
 [node name="ReactionControlWheels" type="RefFrameNode"]
 script = ExtResource( 1 )
-hint_text = "Reaction control wheels M1"
 part_class = 3
 conducts_liquid_fuel = false
 conducts_solid_fuel = false
