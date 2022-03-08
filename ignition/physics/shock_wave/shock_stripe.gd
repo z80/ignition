@@ -38,6 +38,7 @@ func apply( broad_tree: BroadTreeGd, meshes: Array, vel_in_mesh: Vector3, se3_me
 	# Orient along velocity.
 	if random_angle:
 		angle = randf() * 6.29
+		#angle = 0.0
 	
 	var adjustment_t: Transform = _compute_orientation( vel_in_mesh, angle )
 	#adjustment_t                = Transform.IDENTITY

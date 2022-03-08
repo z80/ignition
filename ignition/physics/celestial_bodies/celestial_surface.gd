@@ -353,7 +353,7 @@ func _draw_shock_waves( bodies_ref_frame: RefFrameNode, rot: RefFrameNode ):
 				var ret: Array = _force_source_air_drag.density_viscosity( se3 )
 				var density: float = ret[1]
 				
-				var v_in_rotation: Vector3 = se3.v
+				var v_in_rotation: Vector3 = Vector3(60.0, 0.0, 0.0) #se3.v
 				var q: Quat     = se3.q
 				var inv_q: Quat = q.inverse()
 				# Convert this velocity to body's ref. frame.
