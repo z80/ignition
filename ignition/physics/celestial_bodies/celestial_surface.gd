@@ -251,7 +251,7 @@ func process_ref_frames( celestial_bodies: Array ):
 	# rotational ref. frame.
 	# (-2*m * w x v); (-m * w x (w x r)); (-m*e x r)
 	_apply_forces()
-	_draw_shock_waves()
+	_draw_all_shock_waves()
 	
 	process_ref_frames_rotating_to_orbiting()
 	process_ref_frames_orbiting_to_rotating()
@@ -305,9 +305,8 @@ func _apply_forces():
 
 
 
-func _draw_shock_waves():
-	var rot: RefFrameNode = rotation_rf()
-	var all_bodies: Array = get_all_physics_bodies( rot )
+func _draw_shock_waves( bodies_ref_frame: RefFrameNode, rot: RefFrameNode ):
+	var all_bodies: Array = get_all_physics_bodies( bodies_ref_frame )
 	# All assemblies.
 	var assemblies: Array = []
 	for body in all_bodies:
@@ -347,7 +346,7 @@ func _draw_shock_waves():
 			for b in bodies:
 				var body: PhysicsBodyBase = b as PhysicsBodyBase
 				
-				var se3: Se3Ref = body.relative_to( self )
+				var se3: Se3Ref = body.relative_to( rot )
 				
 				var distance: float = se3.r.length()
 				# Compute air density in the point.
@@ -367,6 +366,16 @@ func _draw_shock_waves():
 				
 				# broad_tree, otree_meshes, density, vel_in_mesh, se3_mesh_to_rf, se3_rf_to_mesh
 				body.update_shock_wave_visual( broad_tree, octree_meshes, density, v_in_mesh, se3_mesh_to_rf, se3_rf_to_mesh )
+
+
+
+
+func _draw_all_shock_waves():
+	var rot: RefFrameNode = rotation_rf()
+	var tran: RefFrameNode = translation_rf()
+	var all_bodies: Array = get_all_physics_bodies( rot )
+	_draw_shock_waves( rot,  rot )
+	_draw_shock_waves( tran, rot )
 
 
 
