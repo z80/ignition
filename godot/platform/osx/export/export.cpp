@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -645,6 +645,24 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
 	}
 
+	Vector<String> translations = ProjectSettings::get_singleton()->get("locale/translations");
+	if (translations.size() > 0) {
+		{
+			String fname = tmp_app_path_name + "/Contents/Resources/en.lproj";
+			tmp_app_dir->make_dir_recursive(fname);
+			FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+		}
+
+		for (int i = 0; i < translations.size(); i++) {
+			Ref<Translation> tr = ResourceLoader::load(translations[i]);
+			if (tr.is_valid()) {
+				String fname = tmp_app_path_name + "/Contents/Resources/" + tr->get_locale() + ".lproj";
+				tmp_app_dir->make_dir_recursive(fname);
+				FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			}
+		}
+	}
+
 	// Now process our template.
 	bool found_binary = false;
 	Vector<String> dylibs_found;
@@ -657,7 +675,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String file = fname;
+		String file = String::utf8(fname);
 
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);

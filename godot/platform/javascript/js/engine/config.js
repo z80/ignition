@@ -225,6 +225,8 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 	 */
 	Config.prototype.update = function (opts) {
 		const config = opts || {};
+		// NOTE: We must explicitly pass the default, accessing it via
+		// the key will fail due to closure compiler renames.
 		function parse(key, def) {
 			if (typeof (config[key]) === 'undefined') {
 				return def;

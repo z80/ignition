@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -256,6 +256,13 @@ void RayCast::remove_exception(const Object *p_object) {
 
 void RayCast::clear_exceptions() {
 	exclude.clear();
+
+	if (exclude_parent_body && is_inside_tree()) {
+		CollisionObject *parent = Object::cast_to<CollisionObject>(get_parent());
+		if (parent) {
+			exclude.insert(parent->get_rid());
+		}
+	}
 }
 
 void RayCast::set_collide_with_areas(bool p_clip) {
@@ -332,7 +339,7 @@ void RayCast::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_shape_thickness", PROPERTY_HINT_RANGE, "1,5"), "set_debug_shape_thickness", "get_debug_shape_thickness");
 }
 
-float RayCast::get_debug_shape_thickness() const {
+int RayCast::get_debug_shape_thickness() const {
 	return debug_shape_thickness;
 }
 
@@ -361,7 +368,7 @@ void RayCast::_update_debug_shape_vertices() {
 	}
 }
 
-void RayCast::set_debug_shape_thickness(const float p_debug_shape_thickness) {
+void RayCast::set_debug_shape_thickness(const int p_debug_shape_thickness) {
 	debug_shape_thickness = p_debug_shape_thickness;
 	update_gizmo();
 
@@ -429,10 +436,10 @@ void RayCast::_update_debug_shape_material(bool p_check_collision) {
 
 	if (p_check_collision && collided) {
 		if ((color.get_h() < 0.055 || color.get_h() > 0.945) && color.get_s() > 0.5 && color.get_v() > 0.5) {
-			// If base color is already quite reddish, hightlight collision with green color
+			// If base color is already quite reddish, highlight collision with green color
 			color = Color(0.0, 1.0, 0.0, color.a);
 		} else {
-			// Else, hightlight collision with red color
+			// Else, highlight collision with red color
 			color = Color(1.0, 0, 0, color.a);
 		}
 	}

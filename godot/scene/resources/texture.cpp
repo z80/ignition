@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -463,7 +463,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
 	uint8_t header[4];
 	f->get_buffer(header, 4);
@@ -2353,6 +2353,9 @@ void TextureLayered::create(uint32_t p_width, uint32_t p_height, uint32_t p_dept
 void TextureLayered::set_layer_data(const Ref<Image> &p_image, int p_layer) {
 	ERR_FAIL_COND(!texture.is_valid());
 	ERR_FAIL_COND(!p_image.is_valid());
+	ERR_FAIL_COND_MSG(
+			p_image->get_width() > width || p_image->get_height() > height,
+			vformat("Image size(%dx%d) is bigger than texture size (%dx%d).", p_image->get_width(), p_image->get_height(), width, height));
 	VS::get_singleton()->texture_set_data(texture, p_image, p_layer);
 }
 

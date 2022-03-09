@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -176,7 +176,7 @@ void GraphNode::_resort() {
 	}
 
 	stretch_avail += stretch_diff - sb->get_margin(MARGIN_BOTTOM) - sb->get_margin(MARGIN_TOP); //available stretch space.
-	/** Second, pass sucessively to discard elements that can't be stretched, this will run while stretchable
+	/** Second, pass successively to discard elements that can't be stretched, this will run while stretchable
 		elements exist */
 
 	while (stretch_ratio_total > 0) { // first of all, don't even be here if no stretchable objects exist

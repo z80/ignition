@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,7 +85,7 @@ enum JoystickList {
 	JOY_BUTTON_20 = 20,
 	JOY_BUTTON_21 = 21,
 	JOY_BUTTON_22 = 22,
-	JOY_BUTTON_MAX = 23,
+	JOY_BUTTON_MAX = 128, // Android supports up to 36 buttons. DirectInput supports up to 128 buttons.
 
 	JOY_L = JOY_BUTTON_4,
 	JOY_R = JOY_BUTTON_5,

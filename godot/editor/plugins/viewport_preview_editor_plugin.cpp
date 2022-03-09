@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,8 +38,6 @@ void EditorInspectorPluginViewportPreview::parse_begin(Object *p_object) {
 	Viewport *viewport = Object::cast_to<Viewport>(p_object);
 
 	TexturePreview *viewport_preview = memnew(TexturePreview(viewport->get_texture(), false));
-	viewport_preview->get_texture_display()->set_flip_v(true); // flip as ViewportTexture in 3.x is upside-down.
-
 	// Otherwise `viewport_preview`'s `texture_display` doesn't update properly when `viewport`'s size changes.
 	viewport->connect("size_changed", viewport_preview->get_texture_display(), "update");
 	add_custom_control(viewport_preview);

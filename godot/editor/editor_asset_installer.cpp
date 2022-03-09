@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -124,7 +124,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String name = fname;
+		String name = String::utf8(fname);
 		files_sorted.insert(name);
 
 		ret = unzGoToNextFile(pkg);
@@ -140,7 +140,6 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		extension_guess["jpeg"] = tree->get_icon("ImageTexture", "EditorIcons");
 		extension_guess["png"] = tree->get_icon("ImageTexture", "EditorIcons");
 		extension_guess["svg"] = tree->get_icon("ImageTexture", "EditorIcons");
-		extension_guess["svgz"] = tree->get_icon("ImageTexture", "EditorIcons");
 		extension_guess["tga"] = tree->get_icon("ImageTexture", "EditorIcons");
 		extension_guess["webp"] = tree->get_icon("ImageTexture", "EditorIcons");
 
@@ -304,7 +303,7 @@ void EditorAssetInstaller::ok_pressed() {
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String name = fname;
+		String name = String::utf8(fname);
 
 		if (status_map.has(name) && status_map[name]->is_checked(0)) {
 			String path = status_map[name]->get_metadata(0);

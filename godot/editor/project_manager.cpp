@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -203,7 +203,7 @@ private:
 						char fname[16384];
 						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-						if (String(fname).ends_with("project.godot")) {
+						if (String::utf8(fname).ends_with("project.godot")) {
 							break;
 						}
 
@@ -513,7 +513,7 @@ private:
 						char fname[16384];
 						unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-						String name = fname;
+						String name = String::utf8(fname);
 						if (name.ends_with("project.godot")) {
 							zip_root = name.substr(0, name.rfind("project.godot"));
 							break;
@@ -533,7 +533,7 @@ private:
 						char fname[16384];
 						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-						String path = fname;
+						String path = String::utf8(fname);
 
 						if (path == String() || path == zip_root || !zip_root.is_subsequence_of(path)) {
 							//

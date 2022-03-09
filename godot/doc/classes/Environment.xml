@@ -9,7 +9,11 @@
 		- Glow
 		- Tonemap (Auto Exposure)
 		- Adjustments
-		These effects will only apply when the [Viewport]'s intended usage is "3D" or "3D Without Effects". This can be configured for the root Viewport with [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation], or for specific Viewports via the [member Viewport.usage] property.
+		If the target [Viewport] is set to "2D Without Sampling", all post-processing effects will be unavailable. With "3D Without Effects", the following options will be unavailable:
+		- Ssao
+		- Ss Reflections
+		This can be configured for the root Viewport with [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation], or for specific Viewports via the [member Viewport.usage] property.
+		Note that [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation] has a mobile platform override to use "3D Without Effects" by default. It improves the performance on mobile devices, but at the same time affects the screen display on mobile devices.
 	</description>
 	<tutorials>
 		<link title="Environment and post-processing">https://docs.godotengine.org/en/3.4/tutorials/3d/environment_and_post_processing.html</link>
@@ -58,7 +62,8 @@
 			The ambient light's energy. The higher the value, the stronger the light.
 		</member>
 		<member name="ambient_light_sky_contribution" type="float" setter="set_ambient_light_sky_contribution" getter="get_ambient_light_sky_contribution" default="1.0">
-			Defines the amount of light that the sky brings on the scene. A value of 0 means that the sky's light emission has no effect on the scene illumination, thus all ambient illumination is provided by the ambient light. On the contrary, a value of 1 means that all the light that affects the scene is provided by the sky, thus the ambient light parameter has no effect on the scene.
+			Defines the amount of light that the sky brings on the scene. A value of [code]0.0[/code] means that the sky's light emission has no effect on the scene illumination, thus all ambient illumination is provided by the ambient light. On the contrary, a value of [code]1.0[/code] means that [i]all[/i] the light that affects the scene is provided by the sky, thus the ambient light parameter has no effect on the scene.
+			[b]Note:[/b] [member ambient_light_sky_contribution] is internally clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 		</member>
 		<member name="auto_exposure_enabled" type="bool" setter="set_tonemap_auto_exposure" getter="get_tonemap_auto_exposure" default="false">
 			If [code]true[/code], enables the tonemapping auto exposure mode of the scene renderer. If [code]true[/code], the renderer will automatically determine the exposure setting to adapt to the scene's illumination and the observed light.
@@ -189,6 +194,8 @@
 		</member>
 		<member name="glow_enabled" type="bool" setter="set_glow_enabled" getter="is_glow_enabled" default="false">
 			If [code]true[/code], the glow effect is enabled.
+			[b]Note:[/b] Only effective if [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation] is [b]3D[/b] ([i]not[/i] [b]3D Without Effects[/b]). On mobile, [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation] defaults to [b]3D Without Effects[/b] by default, so its [code].mobile[/code] override needs to be changed to [b]3D[/b].
+			[b]Note:[/b] When using GLES3 on mobile, HDR rendering is disabled by default for performance reasons. This means glow will only be visible if [member glow_hdr_threshold] is decreased below [code]1.0[/code] or if [member glow_bloom] is increased above [code]0.0[/code]. Also consider increasing [member glow_intensity] to [code]1.5[/code]. If you want glow to behave on mobile like it does on desktop (at a performance cost), enable [member ProjectSettings.rendering/quality/depth/hdr]'s [code].mobile[/code] override.
 		</member>
 		<member name="glow_hdr_luminance_cap" type="float" setter="set_glow_hdr_luminance_cap" getter="get_glow_hdr_luminance_cap" default="12.0">
 			The higher threshold of the HDR glow. Areas brighter than this threshold will be clamped for the purposes of the glow effect.
@@ -340,7 +347,7 @@
 			Filmic tonemapper operator.
 		</constant>
 		<constant name="TONE_MAPPER_ACES" value="3" enum="ToneMapper">
-			Academy Color Encoding System tonemapper operator. Performs an aproximation of the ACES tonemapping curve.
+			Academy Color Encoding System tonemapper operator. Performs an approximation of the ACES tonemapping curve.
 		</constant>
 		<constant name="TONE_MAPPER_ACES_FITTED" value="4" enum="ToneMapper">
 			High quality Academy Color Encoding System tonemapper operator that matches the industry standard. Performs a more physically accurate curve fit which better simulates how light works in the real world. The color of lights and emissive materials will become lighter as the emissive energy increases, and will eventually become white if the light is bright enough to saturate the camera sensor.

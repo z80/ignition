@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +56,8 @@ void load_editor_translations(const String &p_locale) {
 		if (etl->lang == p_locale) {
 			Vector<uint8_t> data;
 			data.resize(etl->uncomp_size);
-			Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
+			int ret = Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
+			ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
 
 			FileAccessMemory *fa = memnew(FileAccessMemory);
 			fa->open_custom(data.ptr(), data.size());
@@ -80,7 +81,8 @@ void load_doc_translations(const String &p_locale) {
 		if (dtl->lang == p_locale) {
 			Vector<uint8_t> data;
 			data.resize(dtl->uncomp_size);
-			Compression::decompress(data.ptrw(), dtl->uncomp_size, dtl->data, dtl->comp_size, Compression::MODE_DEFLATE);
+			int ret = Compression::decompress(data.ptrw(), dtl->uncomp_size, dtl->data, dtl->comp_size, Compression::MODE_DEFLATE);
+			ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
 
 			FileAccessMemory *fa = memnew(FileAccessMemory);
 			fa->open_custom(data.ptr(), data.size());

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1666,10 +1666,7 @@ public:
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 		bool valid;
-		// *p_output[0] points to the same place as *p_inputs[2] so we need a temp to store the value before the change in the next line
-		Variant temp = *p_inputs[2];
-		*p_outputs[0] = *p_inputs[0];
-		p_outputs[0]->set(*p_inputs[1], temp, &valid);
+		((Variant *)p_inputs[0])->set(*p_inputs[1], *p_inputs[2], &valid);
 
 		if (!valid) {
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;

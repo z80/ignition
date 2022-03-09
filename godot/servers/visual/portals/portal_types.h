@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -227,7 +227,7 @@ struct VSRoomGroup {
 	}
 
 	// used for calculating gameplay notifications
-	uint32_t last_gameplay_tick_hit = 0;
+	uint32_t last_room_tick_hit = 0;
 
 	ObjectID _godot_instance_ID = 0;
 
@@ -257,6 +257,7 @@ struct VSRoom {
 		_secondary_pvs_size = 0;
 		_priority = 0;
 		_contains_internal_rooms = false;
+		last_room_tick_hit = 0;
 	}
 
 	void cleanup_after_conversion() {
@@ -353,7 +354,7 @@ struct VSRoom {
 	uint16_t _secondary_pvs_size = 0;
 
 	// used for calculating gameplay notifications
-	uint32_t last_gameplay_tick_hit = 0;
+	uint32_t last_room_tick_hit = 0;
 
 	// convex hull of the room, either determined by geometry or manual bound
 	LocalVector<Plane, int32_t> _planes;

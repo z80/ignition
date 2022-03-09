@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -3391,30 +3391,33 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			tex.instance();
 			{
 				Ref<Texture> normal_texture = material->get_texture(SpatialMaterial::TEXTURE_NORMAL);
-				// Code for uncompressing RG normal maps
-				Ref<Image> img = normal_texture->get_data();
-				Ref<ImageTexture> img_tex = img;
-				if (img_tex.is_valid()) {
-					img = img_tex->get_data();
-				}
-				img->decompress();
-				img->convert(Image::FORMAT_RGBA8);
-				img->lock();
-				for (int32_t y = 0; y < img->get_height(); y++) {
-					for (int32_t x = 0; x < img->get_width(); x++) {
-						Color c = img->get_pixel(x, y);
-						Vector2 red_green = Vector2(c.r, c.g);
-						red_green = red_green * Vector2(2.0f, 2.0f) - Vector2(1.0f, 1.0f);
-						float blue = 1.0f - red_green.dot(red_green);
-						blue = MAX(0.0f, blue);
-						c.b = Math::sqrt(blue);
-						img->set_pixel(x, y, c);
+				if (normal_texture.is_valid()) {
+					// Code for uncompressing RG normal maps
+					Ref<Image> img = normal_texture->get_data();
+					if (img.is_valid()) {
+						Ref<ImageTexture> img_tex = img;
+						if (img_tex.is_valid()) {
+							img = img_tex->get_data();
+						}
+						img->decompress();
+						img->convert(Image::FORMAT_RGBA8);
+						img->lock();
+						for (int32_t y = 0; y < img->get_height(); y++) {
+							for (int32_t x = 0; x < img->get_width(); x++) {
+								Color c = img->get_pixel(x, y);
+								Vector2 red_green = Vector2(c.r, c.g);
+								red_green = red_green * Vector2(2.0f, 2.0f) - Vector2(1.0f, 1.0f);
+								float blue = 1.0f - red_green.dot(red_green);
+								blue = MAX(0.0f, blue);
+								c.b = Math::sqrt(blue);
+								img->set_pixel(x, y, c);
+							}
+						}
+						img->unlock();
+						tex->create_from_image(img);
 					}
 				}
-				img->unlock();
-				tex->create_from_image(img);
 			}
-			Ref<Texture> normal_texture = material->get_texture(SpatialMaterial::TEXTURE_NORMAL);
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (tex.is_valid() && tex->get_data().is_valid()) {
 				tex->set_name(material->get_name() + "_normal");
@@ -6592,103 +6595,110 @@ Error GLTFDocument::parse(Ref<GLTFState> state, String p_path, bool p_read_binar
 	state->major_version = version.get_slice(".", 0).to_int();
 	state->minor_version = version.get_slice(".", 1).to_int();
 
-	/* STEP 0 PARSE SCENE */
+	/* PARSE EXTENSIONS */
+
+	err = _parse_gltf_extensions(state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* PARSE SCENE */
 	err = _parse_scenes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 1 PARSE NODES */
+	/* PARSE NODES */
 	err = _parse_nodes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 2 PARSE BUFFERS */
+	/* PARSE BUFFERS */
 	err = _parse_buffers(state, p_path.get_base_dir());
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 3 PARSE BUFFER VIEWS */
+	/* PARSE BUFFER VIEWS */
 	err = _parse_buffer_views(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 4 PARSE ACCESSORS */
+	/* PARSE ACCESSORS */
 	err = _parse_accessors(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 5 PARSE IMAGES */
+	/* PARSE IMAGES */
 	err = _parse_images(state, p_path.get_base_dir());
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 6 PARSE TEXTURES */
+	/* PARSE TEXTURES */
 	err = _parse_textures(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 7 PARSE TEXTURES */
+	/* PARSE TEXTURES */
 	err = _parse_materials(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 9 PARSE SKINS */
+	/* PARSE SKINS */
 	err = _parse_skins(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 10 DETERMINE SKELETONS */
+	/* DETERMINE SKELETONS */
 	err = _determine_skeletons(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 11 CREATE SKELETONS */
+	/* CREATE SKELETONS */
 	err = _create_skeletons(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 12 CREATE SKINS */
+	/* CREATE SKINS */
 	err = _create_skins(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 13 PARSE MESHES (we have enough info now) */
+	/* PARSE MESHES (we have enough info now) */
 	err = _parse_meshes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 14 PARSE LIGHTS */
+	/* PARSE LIGHTS */
 	err = _parse_lights(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 15 PARSE CAMERAS */
+	/* PARSE CAMERAS */
 	err = _parse_cameras(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 16 PARSE ANIMATIONS */
+	/* PARSE ANIMATIONS */
 	err = _parse_animations(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 17 ASSIGN SCENE NAMES */
+	/* ASSIGN SCENE NAMES */
 	_assign_scene_names(state);
 
 	return OK;
@@ -6807,4 +6817,16 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 		f->close();
 	}
 	return err;
+}
+
+Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> state) {
+	ERR_FAIL_COND_V(!state.is_valid(), ERR_PARSE_ERROR);
+	if (state->json.has("extensionsRequired") && state->json["extensionsRequired"].get_type() == Variant::ARRAY) {
+		Array extensions_required = state->json["extensionsRequired"];
+		if (extensions_required.find("KHR_draco_mesh_compression") != -1) {
+			ERR_PRINT("glTF2 extension KHR_draco_mesh_compression is not supported.");
+			return ERR_UNAVAILABLE;
+		}
+	}
+	return OK;
 }

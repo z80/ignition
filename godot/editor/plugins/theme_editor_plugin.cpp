@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -714,7 +714,7 @@ void ThemeItemImportTree::_import_selected() {
 		return;
 	}
 
-	// Prevent changes from immediatelly being reported while the operation is still ongoing.
+	// Prevent changes from immediately being reported while the operation is still ongoing.
 	edited_theme->_freeze_change_propagation();
 	ProgressDialog::get_singleton()->add_task("import_theme_items", TTR("Importing Theme Items"), selected_items.size() + 2);
 
@@ -1444,7 +1444,7 @@ void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String 
 void ThemeItemEditorDialog::_remove_data_type_items(Theme::DataType p_data_type, String p_item_type) {
 	List<StringName> names;
 
-	// Prevent changes from immediatelly being reported while the operation is still ongoing.
+	// Prevent changes from immediately being reported while the operation is still ongoing.
 	edited_theme->_freeze_change_propagation();
 
 	edited_theme->get_theme_item_list(p_data_type, p_item_type, &names);
@@ -1459,7 +1459,7 @@ void ThemeItemEditorDialog::_remove_data_type_items(Theme::DataType p_data_type,
 void ThemeItemEditorDialog::_remove_class_items() {
 	List<StringName> names;
 
-	// Prevent changes from immediatelly being reported while the operation is still ongoing.
+	// Prevent changes from immediately being reported while the operation is still ongoing.
 	edited_theme->_freeze_change_propagation();
 
 	for (int dt = 0; dt < Theme::DATA_TYPE_MAX; dt++) {
@@ -1483,7 +1483,7 @@ void ThemeItemEditorDialog::_remove_class_items() {
 void ThemeItemEditorDialog::_remove_custom_items() {
 	List<StringName> names;
 
-	// Prevent changes from immediatelly being reported while the operation is still ongoing.
+	// Prevent changes from immediately being reported while the operation is still ongoing.
 	edited_theme->_freeze_change_propagation();
 
 	for (int dt = 0; dt < Theme::DATA_TYPE_MAX; dt++) {
@@ -1507,7 +1507,7 @@ void ThemeItemEditorDialog::_remove_custom_items() {
 void ThemeItemEditorDialog::_remove_all_items() {
 	List<StringName> names;
 
-	// Prevent changes from immediatelly being reported while the operation is still ongoing.
+	// Prevent changes from immediately being reported while the operation is still ongoing.
 	edited_theme->_freeze_change_propagation();
 
 	for (int dt = 0; dt < Theme::DATA_TYPE_MAX; dt++) {
@@ -2398,7 +2398,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	List<StringName> names;
 
 	updating = true;
-	// Prevent changes from immediatelly being reported while the operation is still ongoing.
+	// Prevent changes from immediately being reported while the operation is still ongoing.
 	edited_theme->_freeze_change_propagation();
 
 	{
@@ -2675,7 +2675,7 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 		return;
 	}
 
-	// Prevent changes from immediatelly being reported while the operation is still ongoing.
+	// Prevent changes from immediately being reported while the operation is still ongoing.
 	edited_theme->_freeze_change_propagation();
 
 	List<StringName> names;

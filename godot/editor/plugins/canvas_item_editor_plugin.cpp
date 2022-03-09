@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -4513,9 +4513,13 @@ void CanvasItemEditor::_set_anchors_and_margins_to_keep_ratio() {
 			undo_redo->add_do_method(control, "set_anchor", MARGIN_BOTTOM, bottom_right_anchor.y, false, true);
 			undo_redo->add_do_method(control, "set_meta", "_edit_use_anchors_", true);
 
-			bool use_anchors = control->has_meta("_edit_use_anchors_") && control->get_meta("_edit_use_anchors_");
+			const bool use_anchors = control->has_meta("_edit_use_anchors_") && control->get_meta("_edit_use_anchors_");
 			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
-			undo_redo->add_undo_method(control, "set_meta", "_edit_use_anchors_", use_anchors);
+			if (use_anchors) {
+				undo_redo->add_undo_method(control, "set_meta", "_edit_use_anchors_", true);
+			} else {
+				undo_redo->add_undo_method(control, "remove_meta", "_edit_use_anchors_");
+			}
 
 			anchors_mode = true;
 			anchor_mode_button->set_pressed(anchors_mode);
@@ -4787,7 +4791,11 @@ void CanvasItemEditor::_button_toggle_anchor_mode(bool p_status) {
 			continue;
 		}
 
-		control->set_meta("_edit_use_anchors_", p_status);
+		if (p_status) {
+			control->set_meta("_edit_use_anchors_", true);
+		} else {
+			control->remove_meta("_edit_use_anchors_");
+		}
 	}
 
 	anchors_mode = p_status;

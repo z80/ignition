@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -158,7 +158,7 @@ void JoypadIPhone::start_processing() {
 	};
 
 	// tell Godot about our new controller
-	OSIPhone::get_singleton()->joy_connection_changed(joy_id, true, [controller.vendorName UTF8String]);
+	OSIPhone::get_singleton()->joy_connection_changed(joy_id, true, String::utf8([controller.vendorName UTF8String]));
 
 	// add it to our dictionary, this will retain our controllers
 	[self.connectedJoypads setObject:controller forKey:[NSNumber numberWithInt:joy_id]];

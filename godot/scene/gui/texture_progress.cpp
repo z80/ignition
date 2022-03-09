@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -387,7 +387,6 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 }
 
 void TextureProgress::_notification(int p_what) {
-	const float corners[12] = { -0.125, -0.375, -0.625, -0.875, 0.125, 0.375, 0.625, 0.875, 1.125, 1.375, 1.625, 1.875 };
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			if (nine_patch_stretch && (mode == FILL_LEFT_TO_RIGHT || mode == FILL_RIGHT_TO_LEFT || mode == FILL_TOP_TO_BOTTOM || mode == FILL_BOTTOM_TO_TOP || mode == FILL_BILINEAR_LEFT_AND_RIGHT || mode == FILL_BILINEAR_TOP_AND_BOTTOM)) {
@@ -452,7 +451,7 @@ void TextureProgress::_notification(int p_what) {
 							float val = get_as_ratio() * rad_max_degrees / 360;
 							if (val == 1) {
 								Rect2 region = Rect2(progress_offset, s);
-								Rect2 source = Rect2(Point2(), s);
+								Rect2 source = Rect2(Point2(), progress->get_size());
 								draw_texture_rect_region(progress, region, source, tint_progress);
 							} else if (val != 0) {
 								Array pts;
@@ -466,16 +465,14 @@ void TextureProgress::_notification(int p_what) {
 								}
 
 								float end = start + direction * val;
-								pts.append(start);
-								pts.append(end);
 								float from = MIN(start, end);
 								float to = MAX(start, end);
-								for (int i = 0; i < 12; i++) {
-									if (corners[i] > from && corners[i] < to) {
-										pts.append(corners[i]);
-									}
+								pts.append(from);
+								for (float corner = Math::floor(from * 4 + 0.5) * 0.25 + 0.125; corner < to; corner += 0.25) {
+									pts.append(corner);
 								}
-								pts.sort();
+								pts.append(to);
+
 								Vector<Point2> uvs;
 								Vector<Point2> points;
 								uvs.push_back(get_relative_center());
@@ -492,6 +489,8 @@ void TextureProgress::_notification(int p_what) {
 								colors.push_back(tint_progress);
 								draw_polygon(points, colors, uvs, progress);
 							}
+
+							// Draw a reference cross.
 							if (Engine::get_singleton()->is_editor_hint()) {
 								Point2 p;
 

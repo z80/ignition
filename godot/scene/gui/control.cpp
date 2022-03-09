@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -472,7 +472,7 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_FAIL_COND(!get_viewport());
-
+			release_focus();
 			get_viewport()->_gui_remove_control(this);
 
 		} break;
@@ -581,7 +581,7 @@ void Control::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
-			// some parents need to know the order of the childrens to draw (like TabContainer)
+			// some parents need to know the order of the children to draw (like TabContainer)
 			// update if necessary
 			if (data.parent) {
 				data.parent->update();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2790,13 +2790,8 @@ void GIProbeGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 				continue;
 			}
 
-			Vector2 dir;
-			dir[j] = 1.0;
-			Vector2 ta, tb;
 			int j_n1 = (j + 1) % 3;
 			int j_n2 = (j + 2) % 3;
-			ta[j_n1] = 1.0;
-			tb[j_n2] = 1.0;
 
 			for (int k = 0; k < 4; k++) {
 				Vector3 from = aabb.position, to = aabb.position;

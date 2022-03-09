@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1570,9 +1570,19 @@ void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Va
 
 		ManagedType managedType;
 
-		GDMonoField *field = script->script_class->get_field(state_pair.first);
-		if (!field)
+		GDMonoField *field = nullptr;
+		GDMonoClass *top = script->script_class;
+		while (top && top != script->native) {
+			field = top->get_field(state_pair.first);
+			if (field) {
+				break;
+			}
+
+			top = top->get_parent_class();
+		}
+		if (!field) {
 			continue; // Properties ignored. We get the property baking fields instead.
+		}
 
 		managedType = field->get_type();
 
@@ -3022,6 +3032,8 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 	CRASH_COND(!valid);
 #endif
 
+	GD_MONO_SCOPE_THREAD_ATTACH;
+
 	if (native) {
 		String native_name = NATIVE_GDMONOCLASS_NAME(native);
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
@@ -3031,8 +3043,6 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 			ERR_FAIL_V_MSG(NULL, "Script inherits from native type '" + native_name + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'.");
 		}
 	}
-
-	GD_MONO_SCOPE_THREAD_ATTACH;
 
 	Variant::CallError unchecked_error;
 	return _create_instance(NULL, 0, p_this, Object::cast_to<Reference>(p_this) != NULL, unchecked_error);

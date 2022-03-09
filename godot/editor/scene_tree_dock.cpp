@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -945,6 +945,18 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (tocopy != editor_data->get_edited_scene_root() && tocopy->get_filename() != "") {
 				accept->set_text(TTR("Can't save the branch of an already instanced scene.\nTo create a variation of a scene, you can make an inherited scene based on the instanced scene using Scene > New Inherited Scene... instead."));
 				accept->popup_centered_minsize();
+				break;
+			}
+
+			if (tocopy->get_owner() != scene) {
+				accept->set_text(TTR("Can't save a branch which is a child of an already instantiated scene.\nTo save this branch into its own scene, open the original scene, right click on this branch, and select \"Save Branch as Scene\"."));
+				accept->popup_centered();
+				break;
+			}
+
+			if (scene->get_scene_inherited_state().is_valid() && scene->get_scene_inherited_state()->find_node_by_path(scene->get_path_to(tocopy)) >= 0) {
+				accept->set_text(TTR("Can't save a branch which is part of an inherited scene.\nTo save this branch into its own scene, open the original scene, right click on this branch, and select \"Save Branch as Scene\"."));
+				accept->popup_centered();
 				break;
 			}
 

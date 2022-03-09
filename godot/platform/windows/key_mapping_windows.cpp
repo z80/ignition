@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -217,9 +217,9 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ KEY_SLASH, VK_OEM_2 }, // (0xBF) //Windows 2000/XP: For the US standard keyboard, the '/?' key
 
 	{ KEY_QUOTELEFT, VK_OEM_3 }, // (0xC0)
-	{ KEY_BRACELEFT, VK_OEM_4 }, // (0xDB)
+	{ KEY_BRACKETLEFT, VK_OEM_4 }, // (0xDB)
 	{ KEY_BACKSLASH, VK_OEM_5 }, // (0xDC)
-	{ KEY_BRACERIGHT, VK_OEM_6 }, // (0xDD)
+	{ KEY_BRACKETRIGHT, VK_OEM_6 }, // (0xDD)
 	{ KEY_APOSTROPHE, VK_OEM_7 }, // (0xDE)
 	/*
 {VK_OEM_8 (0xDF)

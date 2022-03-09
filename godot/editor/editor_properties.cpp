@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2616,18 +2616,20 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				int min = 0, max = 65535, step = 1;
 				bool greater = true, lesser = true;
 
-				if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-					greater = false; //if using ranged, assume false by default
+				Vector<String> slices = p_hint_text.split(",");
+				if (p_hint == PROPERTY_HINT_RANGE && slices.size() >= 2) {
+					greater = false; // If using ranged, assume false by default.
 					lesser = false;
-					min = p_hint_text.get_slice(",", 0).to_int();
-					max = p_hint_text.get_slice(",", 1).to_int();
+					min = slices[0].to_int();
+					max = slices[1].to_int();
 
-					if (p_hint_text.get_slice_count(",") >= 3) {
-						step = p_hint_text.get_slice(",", 2).to_int();
+					if (slices.size() >= 3 && slices[2].is_valid_integer()) {
+						// Step is optional, could be something else if not a number.
+						step = slices[2].to_int();
 					}
 
-					for (int i = 2; i < p_hint_text.get_slice_count(","); i++) {
-						String slice = p_hint_text.get_slice(",", i).strip_edges();
+					for (int i = 2; i < slices.size(); i++) {
+						String slice = slices[i].strip_edges();
 						if (slice == "or_greater") {
 							greater = true;
 						}
@@ -2668,18 +2670,23 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				bool exp_range = false;
 				bool greater = true, lesser = true;
 
-				if ((p_hint == PROPERTY_HINT_RANGE || p_hint == PROPERTY_HINT_EXP_RANGE) && p_hint_text.get_slice_count(",") >= 2) {
-					greater = false; //if using ranged, assume false by default
+				Vector<String> slices = p_hint_text.split(",");
+				if ((p_hint == PROPERTY_HINT_RANGE || p_hint == PROPERTY_HINT_EXP_RANGE) && slices.size() >= 2) {
+					greater = false; // If using ranged, assume false by default.
 					lesser = false;
-					min = p_hint_text.get_slice(",", 0).to_double();
-					max = p_hint_text.get_slice(",", 1).to_double();
-					if (p_hint_text.get_slice_count(",") >= 3) {
-						step = p_hint_text.get_slice(",", 2).to_double();
+					min = slices[0].to_double();
+					max = slices[1].to_double();
+
+					if (slices.size() >= 3 && slices[2].is_valid_float()) {
+						// Step is optional, could be something else if not a number.
+						step = slices[2].to_double();
 					}
+
 					hide_slider = false;
 					exp_range = p_hint == PROPERTY_HINT_EXP_RANGE;
-					for (int i = 2; i < p_hint_text.get_slice_count(","); i++) {
-						String slice = p_hint_text.get_slice(",", i).strip_edges();
+
+					for (int i = 2; i < slices.size(); i++) {
+						String slice = slices[i].strip_edges();
 						if (slice == "or_greater") {
 							greater = true;
 						}
