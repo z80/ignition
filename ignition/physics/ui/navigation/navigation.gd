@@ -37,7 +37,7 @@ func _recompute_mode_surface():
 	if not camera:
 		return
 	
-	var ctrl: PhysicsBodyBase = camera.get_parent()
+	var ctrl: PhysicsBodyBase = camera.get_parent() as PhysicsBodyBase
 	if ctrl == null:
 		return
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
