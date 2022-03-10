@@ -4,3 +4,7 @@
 
 [resource]
 script = ExtResource( 1 )
+category = "dynamic_parts"
+required_tech = ""
+brief_description = ""
+wiki_file = ""

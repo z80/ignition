@@ -11,17 +11,43 @@ class_name CreatableDescBase
 # match the folder name in which they reside.
 
 
+export(String) var category      = "dynamic_parts"
+export(String) var required_tech = ""
+
+export(Resource) var icon              = null
+export(String)   var brief_description = ""
+export(String)   var wiki_file         = ""
+
 func _init():
-	# Probably here load WIKI description from a file.
+	# Probably here load/fill brief description and an icon.
 	pass
 
 
-func get_brief_description():
-	return "Physics body base type. Here it should be a description shown when its icon is hovered."
+# Might want to repload something asynchronously.
+func preload_resources( loader: ResourceInteractiveLoader ):
+	pass
 
-func get_wiki_description():
-	return "Here it should be full description shown when WIKI page is opened."
 
-func get_group_name():
-	return "dynamic_parts"
+# This one should call "create_internal()" with appropriate scene resource.
+func create( parent: RefFrameNode, se3: Se3Ref ):
+	return null
+
+
+# This one should be used unchanged by create() method.
+func create_internal( scene: PackedScene, parent: RefFrameNode, se3: Se3Ref ):
+	var inst: Node = scene.instance()
+	if parent == null:
+		parent = RootScene.get_root_for_bodies()
+	inst.init()
+	inst.change_parent( parent )
+	return inst
+
+
+
+
+
+
+
+
+
 
