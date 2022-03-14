@@ -70,9 +70,19 @@ _global_script_classes=[ {
 "path": "res://physics/parts/coupling_nodes/coupling_node_surface.gd"
 }, {
 "base": "Resource",
-"class": "CreatableDescBase",
+"class": "CreatableCategory",
 "language": "GDScript",
-"path": "res://physics/interact_icon/new/example_part/desc.gd"
+"path": "res://physics/resource_management/category.gd"
+}, {
+"base": "Resource",
+"class": "CreatableDesc",
+"language": "GDScript",
+"path": "res://physics/resource_management/desc.gd"
+}, {
+"base": "Resource",
+"class": "CreatableTechnology",
+"language": "GDScript",
+"path": "res://physics/resource_management/tech.gd"
 }, {
 "base": "Part",
 "class": "Decoupler",
@@ -123,6 +133,11 @@ _global_script_classes=[ {
 "class": "FuelTank",
 "language": "GDScript",
 "path": "res://physics/parts/fuel_tanks/fuel_tank.gd"
+}, {
+"base": "Node",
+"class": "Game",
+"language": "GDScript",
+"path": "res://physics/singletons/game/game.gd"
 }, {
 "base": "Part",
 "class": "Habitat",
@@ -234,11 +249,6 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/celestial_bodies/sun.gd"
 }, {
-"base": "Resource",
-"class": "TechBase",
-"language": "GDScript",
-"path": "res://physics/interact_icon/new/example_part/tech.gd"
-}, {
 "base": "Part",
 "class": "Thruster",
 "language": "GDScript",
@@ -262,7 +272,9 @@ _global_script_class_icons={
 "CouplingNode": "",
 "CouplingNodeStacking": "",
 "CouplingNodeSurface": "",
-"CreatableDescBase": "",
+"CreatableCategory": "",
+"CreatableDesc": "",
+"CreatableTechnology": "",
 "Decoupler": "",
 "EntranceNode": "",
 "ExhaustNode": "",
@@ -273,6 +285,7 @@ _global_script_class_icons={
 "ForceSourceGravityDown": "",
 "ForceSourceRotational": "",
 "FuelTank": "",
+"Game": "",
 "Habitat": "",
 "InteractionNode": "",
 "LandscapeBase": "",
@@ -295,7 +308,6 @@ _global_script_class_icons={
 "SoundSource": "",
 "StaticPhysicsBody": "",
 "Sun": "",
-"TechBase": "",
 "Thruster": "",
 "TileBase": ""
 }

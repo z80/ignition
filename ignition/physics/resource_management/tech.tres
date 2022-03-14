@@ -1,6 +1,6 @@
 [gd_resource type="Resource" load_steps=2 format=2]
 
-[ext_resource path="res://physics/interact_icon/new/example_part/tech.gd" type="Script" id=1]
+[ext_resource path="res://physics/resource_management/tech.gd" type="Script" id=1]
 
 [resource]
 script = ExtResource( 1 )

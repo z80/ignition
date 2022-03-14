@@ -32,7 +32,7 @@ static func _find_descs_recursive( path: String, ret: Array ):
 		if (file_name != ".") and (file_name != ".."):
 			
 			if dir.current_is_dir():
-				print("Found directory: " + file_name)
+				#print("Found directory: " + file_name)
 				var new_path: String = path
 				if not path.ends_with( '/' ):
 					new_path = new_path + "/"
@@ -40,7 +40,7 @@ static func _find_descs_recursive( path: String, ret: Array ):
 				_find_descs_recursive( new_path, ret )
 			
 			else:
-				print("Found file: " + file_name)
+				#print("Found file: " + file_name)
 				var is_desc: bool = _is_desc( file_name )
 				if is_desc:
 					var full_path: String = path
@@ -66,7 +66,7 @@ static func _find_techs_recursive( path: String, ret: Array ):
 		if (file_name != ".") and (file_name != ".."):
 			
 			if dir.current_is_dir():
-				print("Found directory: " + file_name)
+				#print("Found directory: " + file_name)
 				var new_path: String = path
 				if not path.ends_with( '/' ):
 					new_path = new_path + "/"
@@ -74,7 +74,7 @@ static func _find_techs_recursive( path: String, ret: Array ):
 				_find_techs_recursive( new_path, ret )
 			
 			else:
-				print("Found file: " + file_name)
+				#print("Found file: " + file_name)
 				var is_desc: bool = _is_tech( file_name )
 				if is_desc:
 					var full_path: String = path
@@ -100,7 +100,7 @@ static func _find_categories_recursive( path: String, ret: Array ):
 		if (file_name != ".") and (file_name != ".."):
 			
 			if dir.current_is_dir():
-				print("Found directory: " + file_name)
+				#print("Found directory: " + file_name)
 				var new_path: String = path
 				if not path.ends_with( '/' ):
 					new_path = new_path + "/"
@@ -108,7 +108,7 @@ static func _find_categories_recursive( path: String, ret: Array ):
 				_find_categories_recursive( new_path, ret )
 			
 			else:
-				print("Found file: " + file_name)
+				#print("Found file: " + file_name)
 				var is_desc: bool = _is_category( file_name )
 				if is_desc:
 					var full_path: String = path

@@ -1,6 +1,6 @@
 
 extends Resource
-class_name CreatableDescBase
+class_name CreatableDesc
 
 # A base class for all creatable objects.
 # The idea is that folders are parsed automatically.
@@ -40,6 +40,7 @@ func create_internal( scene: PackedScene, parent: RefFrameNode, se3: Se3Ref ):
 		parent = RootScene.get_root_for_bodies()
 	inst.init()
 	inst.change_parent( parent )
+	inst.set_se3( se3 )
 	return inst
 
 

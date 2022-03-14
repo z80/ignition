@@ -1,6 +1,6 @@
 
 extends Resource
-class_name TechBase
+class_name CreatableTechnology
 
 
 export(String) var tech_name = ""
