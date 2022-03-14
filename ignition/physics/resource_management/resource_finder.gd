@@ -136,7 +136,30 @@ static func _is_category( file_name: String ):
 
 
 
+static func get_package_files():
+	var path: String = OS.get_executable_path()
 
 
 
+static func load_package_files():
+	var path: String = 'res://'
+	var dir: Directory = Directory.new()
+	var ok: bool = (dir.open( path ) == OK)
+	if not ok:
+		return
+	
+	dir.list_dir_begin()
+	var file_name: String = dir.get_next()
+	
+	while (file_name != ""):
+		var is_pck: bool = file_name.ends_with( "pck" )
+		if not is_pck:
+			continue
+		
+		var new_path: String = path
+		if not path.ends_with( '/' ):
+			new_path = new_path + "/"
+		new_path = new_path + file_name
+
+		ProjectSettings.load_resource_pack( new_path )
 
