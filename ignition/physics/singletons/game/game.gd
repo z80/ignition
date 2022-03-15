@@ -1,6 +1,6 @@
 
 extends Node
-class_name Game
+
 
 export(bool) var all_available = true
 
