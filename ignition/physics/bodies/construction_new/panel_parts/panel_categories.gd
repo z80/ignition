@@ -1,5 +1,5 @@
 
-extends Control
+extends Panel
 
 signal category_picked( category )
 
