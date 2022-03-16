@@ -1,6 +1,8 @@
 
 extends Control
 
+signal category_picked( category )
+
 export(PackedScene) var button_scene = null
 
 var _vbox: VBoxContainer = null
@@ -8,7 +10,7 @@ var _vbox: VBoxContainer = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	_fill_categories()
 
 
 func _get_container():
@@ -39,7 +41,9 @@ func _create_button( category: Resource ):
 	var btn: Control      = button_scene.instance()
 	btn.category = category
 	vb.add_child( btn )
-
+	btn.connect( "category_picked", self, "category_picked" )
+	
+	
 
 
 

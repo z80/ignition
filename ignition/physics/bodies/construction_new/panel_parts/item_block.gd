@@ -1,22 +1,22 @@
 
 extends TextureButton
 
-export(Resource) var category = null setget _set_category
+export(Resource) var block_desc = null setget _set_block_desc
 
-signal category_picked( cat )
+signal block_picked( desc )
 
 
-func _set_category( c: Resource ):
-	category = c
+func _set_block_desc( c: Resource ):
+	block_desc = c
 	
-	var icon: Resource    = category.icon
+	var icon: Resource    = block_desc.icon
 	self.texture_normal   = icon
 	self.texture_pressed  = icon
 	self.texture_hover    = icon
 	self.texture_disabled = icon
 	self.texture_focused  = icon
 	
-	var hint: String = category.category_visual
+	var hint: String = block_desc.category_visual
 	self.hint = hint
 
 
@@ -28,4 +28,4 @@ func _ready():
 
 
 func _on_ItemButton_pressed():
-	emit_signal( "category_picked", category )
+	emit_signal( "block_picked", block_desc )

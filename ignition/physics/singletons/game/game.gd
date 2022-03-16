@@ -5,7 +5,7 @@ extends Node
 export(bool) var all_available = true
 
 
-var _descs: Array            = []
+var _block_descs: Array      = []
 var _categories: Array       = []
 var _techs_all: Array        = []
 # Here are just names.
@@ -18,10 +18,10 @@ func get_categories():
 
 
 
-func get_parts( category: Resource ):
+func get_blocks( category: Resource ):
 	var ret: Array = []
 	var category_name: String = category.category
-	for desc in _descs:
+	for desc in _block_descs:
 		var desc_category: String = desc.category
 		if desc_category != category_name:
 			continue
@@ -67,12 +67,12 @@ func _is_accessible( desc: Resource ):
 
 func _parse_resources():
 	var Finder  = preload( "res://physics/resource_management/resource_finder.gd" )
-	_descs      = Finder.find_descs( 'res://' )
-	_categories = Finder.find_categories( 'res://' )
-	_techs_all  = Finder.find_techs( 'res://' )
+	_block_descs = Finder.find_descs( 'res://' )
+	_categories  = Finder.find_categories( 'res://' )
+	_techs_all   = Finder.find_techs( 'res://' )
 	
 	_sort_categories()
-	print( "descs: ", _descs )
+	print( "Block descs: ", _block_descs )
 
 
 func _sort_categories():
