@@ -10,5 +10,5 @@ block_scene = ExtResource( 3 )
 category = "fuel_tanks"
 required_tech = "root"
 icon = ExtResource( 2 )
-brief_description = "2m diameter, 3m height oxidiser tank"
+brief_description = "2m diameter, 3m height oxidizer tank"
 wiki_file = "res://wiki/root.wiki"
