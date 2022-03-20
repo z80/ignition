@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource( 1 )
 block_scene = ExtResource( 2 )
-category = "habitats"
+category = "characters"
 required_tech = "root"
 brief_description = "Astronaut"
 wiki_file = "res://wiki/root.wiki"

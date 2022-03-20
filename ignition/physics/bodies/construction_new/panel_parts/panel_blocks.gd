@@ -50,7 +50,7 @@ func _get_container():
 
 
 func _create_button( block_desc: Resource ):
-	var vb: VBoxContainer = _get_container()
+	var vb: GridContainer = _get_container()
 	var btn: Control      = button_scene.instance()
 	btn.block_desc        = block_desc
 	vb.add_child( btn )

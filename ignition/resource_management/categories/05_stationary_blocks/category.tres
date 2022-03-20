@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource( 1 )
 icon = ExtResource( 2 )
-category = "stationary_blocks"
+category = "static_blocks"
 category_visual = "Stationary blocks"
 index = 5

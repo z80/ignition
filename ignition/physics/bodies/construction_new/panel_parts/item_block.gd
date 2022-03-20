@@ -16,7 +16,7 @@ func _set_block_desc( c: Resource ):
 	self.texture_disabled = icon
 	self.texture_focused  = icon
 	
-	var hint: String  = block_desc.category_visual
+	var hint: String  = block_desc.brief_description
 	self.hint_tooltip = hint
 
 

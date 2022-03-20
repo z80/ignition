@@ -10,5 +10,5 @@ block_scene = ExtResource( 3 )
 category = "habitats"
 required_tech = "root"
 icon = ExtResource( 2 )
-brief_description = "Command module"
+brief_description = "2m diameter command module"
 wiki_file = "res://wiki/root.wiki"
