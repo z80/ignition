@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=4 format=2]
+
+[ext_resource path="res://resource_management/block.gd" type="Script" id=1]
+[ext_resource path="res://physics/parts/fuel_tanks/2m/5m_fuel/assets/icon.png" type="Texture" id=2]
+[ext_resource path="res://physics/parts/fuel_tanks/2m/5m_fuel/fuel_tank_2m_5m.tscn" type="PackedScene" id=3]
+
+[resource]
+script = ExtResource( 1 )
+block_scene = ExtResource( 3 )
+category = "fuel_tanks"
+required_tech = "root"
+icon = ExtResource( 2 )
+brief_description = "2m diameter, 5m height fuel tank"
+wiki_file = "res://wiki/root.wiki"

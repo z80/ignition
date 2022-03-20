@@ -66,8 +66,8 @@ func _is_accessible( desc: Resource ):
 
 
 func _parse_resources():
-	var Finder  = preload( "res://resource_management/resource_finder.gd" )
-	_block_descs = Finder.find_descs( 'res://' )
+	var Finder   = preload( "res://resource_management/resource_finder.gd" )
+	_block_descs = Finder.find_blocks( 'res://' )
 	_categories  = Finder.find_categories( 'res://' )
 	_techs_all   = Finder.find_techs( 'res://' )
 	

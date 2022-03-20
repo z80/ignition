@@ -1,8 +1,8 @@
 
 
-static func find_descs( path: String ):
+static func find_blocks( path: String ):
 	var ret: Array = []
-	_find_descs_recursive( path, ret )
+	_find_blocks_recursive( path, ret )
 	return ret
 
 static func find_techs( path: String ):
@@ -18,7 +18,7 @@ static func find_categories( path: String ):
 
 
 
-static func _find_descs_recursive( path: String, ret: Array ):
+static func _find_blocks_recursive( path: String, ret: Array ):
 	var dir: Directory = Directory.new()
 	var ok: bool = (dir.open( path ) == OK)
 	if not ok:
@@ -37,7 +37,7 @@ static func _find_descs_recursive( path: String, ret: Array ):
 				if not path.ends_with( '/' ):
 					new_path = new_path + "/"
 				new_path = new_path + file_name
-				_find_descs_recursive( new_path, ret )
+				_find_blocks_recursive( new_path, ret )
 			
 			else:
 				#print("Found file: " + file_name)

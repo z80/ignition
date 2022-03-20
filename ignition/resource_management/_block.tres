@@ -1,0 +1,10 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://resource_management/block.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+category = "static_blocks"
+required_tech = "root"
+brief_description = ""
+wiki_file = "res://wiki/root.wiki"

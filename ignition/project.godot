@@ -75,14 +75,14 @@ _global_script_classes=[ {
 "path": "res://physics/parts/coupling_nodes/coupling_node_surface.gd"
 }, {
 "base": "Resource",
+"class": "CreatableBlockDesc",
+"language": "GDScript",
+"path": "res://resource_management/block.gd"
+}, {
+"base": "Resource",
 "class": "CreatableCategory",
 "language": "GDScript",
 "path": "res://resource_management/category.gd"
-}, {
-"base": "Resource",
-"class": "CreatableDesc",
-"language": "GDScript",
-"path": "res://resource_management/desc.gd"
 }, {
 "base": "Resource",
 "class": "CreatableTechnology",
@@ -278,8 +278,8 @@ _global_script_class_icons={
 "CouplingNode": "",
 "CouplingNodeStacking": "",
 "CouplingNodeSurface": "",
+"CreatableBlockDesc": "",
 "CreatableCategory": "",
-"CreatableDesc": "",
 "CreatableTechnology": "",
 "Decoupler": "",
 "EntranceNode": "",
@@ -339,10 +339,6 @@ DDD="*res://debug/ddd.gd"
 
 mouse_cursor/custom_image="res://cursor.png"
 mouse_cursor/tooltip_position_offset=Vector2( 32, 10 )
-
-[editor_plugins]
-
-enabled=PoolStringArray( "gut" )
 
 [gui]
 

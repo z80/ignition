@@ -1,0 +1,12 @@
+[gd_resource type="Resource" load_steps=3 format=2]
+
+[ext_resource path="res://resource_management/block.gd" type="Script" id=1]
+[ext_resource path="res://physics/parts/characters/central/central.tscn" type="PackedScene" id=2]
+
+[resource]
+script = ExtResource( 1 )
+block_scene = ExtResource( 2 )
+category = "habitats"
+required_tech = "root"
+brief_description = "Astronaut"
+wiki_file = "res://wiki/root.wiki"
