@@ -66,7 +66,7 @@ func _is_accessible( desc: Resource ):
 
 
 func _parse_resources():
-	var Finder  = preload( "res://physics/resource_management/resource_finder.gd" )
+	var Finder  = preload( "res://resource_management/resource_finder.gd" )
 	_block_descs = Finder.find_descs( 'res://' )
 	_categories  = Finder.find_categories( 'res://' )
 	_techs_all   = Finder.find_techs( 'res://' )
@@ -87,7 +87,7 @@ func _sort_categories():
 				cat_a = cat_b
 				continue
 			
-			if cat_b.name < cat_a.name:
+			elif (cat_b.index == cat_a.index) and (cat_b.category < cat_a.category):
 				_categories[i] = cat_b
 				_categories[j] = cat_a
 				cat_a = cat_b

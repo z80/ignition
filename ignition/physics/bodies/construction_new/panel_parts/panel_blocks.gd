@@ -8,7 +8,7 @@ export(PackedScene) var button_scene = null
 var _container: GridContainer = null
 
 
-func on_category_selected( category: Resource ):
+func fill_blocks( category: Resource ):
 	_clear()
 	_fill_blocks( category )
 

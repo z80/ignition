@@ -47,7 +47,8 @@ static func _find_descs_recursive( path: String, ret: Array ):
 					if not path.ends_with( '/' ):
 						full_path = full_path + "/"
 					full_path = full_path + file_name
-					ret.push_back( full_path )
+					var res: Resource = load( full_path )
+					ret.push_back( res )
 			
 		file_name = dir.get_next()
 
@@ -81,7 +82,8 @@ static func _find_techs_recursive( path: String, ret: Array ):
 					if not path.ends_with( '/' ):
 						full_path = full_path + "/"
 					full_path = full_path + file_name
-					ret.push_back( full_path )
+					var res: Resource = load( full_path )
+					ret.push_back( res )
 			
 		file_name = dir.get_next()
 
@@ -115,7 +117,8 @@ static func _find_categories_recursive( path: String, ret: Array ):
 					if not path.ends_with( '/' ):
 						full_path = full_path + "/"
 					full_path = full_path + file_name
-					ret.push_back( full_path )
+					var res: Resource = load( full_path )
+					ret.push_back( res )
 			
 		file_name = dir.get_next()
 

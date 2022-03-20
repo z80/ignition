@@ -15,7 +15,7 @@ func _ready():
 
 func _get_container():
 	if _vbox == null:
-		_vbox = get_node( "Panel/Scroll/VBox" )
+		_vbox = get_node( "Scroll/Container" )
 	
 	return _vbox
 
@@ -41,11 +41,12 @@ func _create_button( category: Resource ):
 	var btn: Control      = button_scene.instance()
 	btn.category = category
 	vb.add_child( btn )
-	btn.connect( "category_picked", self, "category_picked" )
+	btn.connect( "category_picked", self, "on_category_picked" )
 	
 	
 
-
+func on_category_picked( category: Resource ):
+	emit_signal( "category_picked", category )
 
 
 

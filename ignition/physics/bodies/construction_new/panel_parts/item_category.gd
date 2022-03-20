@@ -16,8 +16,8 @@ func _set_category( c: Resource ):
 	self.texture_disabled = icon
 	self.texture_focused  = icon
 	
-	var hint: String = category.category_visual
-	self.hint = hint
+	var hint: String  = category.category_visual
+	self.hint_tooltip = hint
 
 
 # Called when the node enters the scene tree for the first time.
