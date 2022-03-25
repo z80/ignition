@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://physics/bodies/construction_new/panel_parts/panel_categories.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/bodies/construction_new/panel_parts/panel_blocks.tscn" type="PackedScene" id=2]
 [ext_resource path="res://physics/bodies/construction_new/panel_parts/panel_combined.gd" type="Script" id=3]
+[ext_resource path="res://physics/bodies/construction_new/panel_parts/panel_commands.tscn" type="PackedScene" id=4]
 
 [node name="Control" type="Control"]
 anchor_bottom = 1.0
@@ -10,16 +11,37 @@ margin_right = 288.0
 margin_bottom = 5.0
 script = ExtResource( 3 )
 
-[node name="HBox" type="HBoxContainer" parent="."]
-anchor_right = 1.0
+[node name="VBox" type="VBoxContainer" parent="."]
 anchor_bottom = 1.0
+margin_right = 288.0
+margin_bottom = 5.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
-[node name="PanelCategories" parent="HBox" instance=ExtResource( 1 )]
-margin_bottom = 605.0
+[node name="PanelCommands" parent="VBox" instance=ExtResource( 4 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 288.0
+margin_bottom = 72.0
 
-[node name="PanelBlocks" parent="HBox" instance=ExtResource( 2 )]
+[node name="HBox" type="HBoxContainer" parent="VBox"]
+margin_top = 76.0
+margin_right = 288.0
+margin_bottom = 610.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="PanelCategories" parent="VBox/HBox" instance=ExtResource( 1 )]
+margin_bottom = 534.0
+
+[node name="PanelBlocks" parent="VBox/HBox" instance=ExtResource( 2 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
 margin_left = 76.0
 margin_right = 288.0
-margin_bottom = 605.0
+margin_bottom = 534.0
+
+[connection signal="abort" from="." to="." method="_on_Control_abort"]
+[connection signal="launch" from="VBox/PanelCommands" to="." method="_on_PanelCommands_launch"]
+[connection signal="category_picked" from="VBox/HBox/PanelCategories" to="." method="_on_PanelCategories_category_picked"]
+[connection signal="block_picked" from="VBox/HBox/PanelBlocks" to="." method="_on_PanelBlocks_block_picked"]
