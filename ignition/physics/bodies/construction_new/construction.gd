@@ -89,10 +89,12 @@ func set_collision_layer( layer ):
 
 func construction_activate():
 	#$PanelParts.visible = true
-	var PanelParts = load( "res://physics/bodies/construction_new/panel_parts/panel_parts.tscn" )
+	var PanelParts = load( "res://physics/bodies/construction_new/panel_parts/panel_combined.tscn" )
 	panel_parts = PanelParts.instance()
-	panel_parts.construction = self
-	panel_parts.connect( "create_block", self, "create_block" )
+	#panel_parts.construction = self
+	panel_parts.connect( "block_picked", self, "on_create_block" )
+	panel_parts.connect( "launch",       self, "on_launch" )
+	panel_parts.connect( "abort",        self, "on_abort" )
 	var panel_parent: Control = RootScene.get_root_for_gui_panels()
 	panel_parent.add_child( panel_parts )
 	
@@ -244,35 +246,32 @@ func check_if_deactivate():
 	return false
 
 
-func create_block( block_name, dynamic: bool = false ):
-	var block: PhysicsBodyBase = BodyCreator.create( block_name )
-	if block == null:
-		return
-	
-	# This one makes it not delete superbosy on activation.
-	block.construction_state = PhysicsBodyBase.ConstructionState.CONSTRUCTION
-	block.body_state         = PhysicsBodyBase.BodyState.KINEMATIC
-	
+func create_block( block_desc: Resource ):
 	var player = PhysicsManager.camera.get_parent()
-	block.change_parent( player )
 	
 	var t: Transform = Transform.IDENTITY
 	t.origin = Constants.CONSTRUCTION_CREATE_AT
-	block.set_t( t )
-	block.set_v( Vector3.ZERO )
-	block.set_w( Vector3.ZERO )
+	var se3: Se3Ref = Se3Ref.new()
+	se3.transform = t
+	se3.v = Vector3.ZERO
+	se3.w = Vector3.ZERO
 	
 	var p: Node = self.get_parent()
-	var se3: Se3Ref = block.relative_to( p )
-	block.change_parent( p )
-	block.set_v( Vector3.ZERO )
-	block.set_w( Vector3.ZERO )
+
+	var block: PhysicsBodyBase = block_desc.create( p, se3 )
+	if block == null:
+		return
+	
+	# This one makes it not delete superbody on activation.
+	block.construction_state = PhysicsBodyBase.ConstructionState.CONSTRUCTION
+	block.body_state         = PhysicsBodyBase.BodyState.KINEMATIC
+	
 	block.set_se3( se3 )
 	
 	# Make it selected to be able to move it.
 	PhysicsManager.player_select = block
 	
-	if dynamic:
+	if true: #dynamic:
 		dynamic_blocks.push_back( block )
 	
 	else:
@@ -307,7 +306,7 @@ func set_show_coupling_nodes( en: bool ):
 
 
 func create_super_body():
-	var sb = ConstructionSuperBody.new()
+	var sb = ConstructionSuperBodyNew.new()
 	var p = get_parent()
 	sb.change_parent( p )
 	# Place own reference there.
@@ -316,6 +315,27 @@ func create_super_body():
 	sb.add_sub_body( self )
 	
 	return sb
+
+
+
+
+
+func on_create_block( block_desc: Resource ):
+	create_block( block_desc )
+
+
+
+func on_launch():
+	construction_deactivate()
+
+
+
+
+func on_abort():
+	# Need to delete all blocks.
+	construction_deactivate()
+
+
 
 
 

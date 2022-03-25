@@ -113,7 +113,7 @@ func _create_character( name: String = "Astronaut", at: Vector3 = Vector3(1.0, 0
 
 func _parse_resources():
 	var Finder = preload( "res://resource_management/resource_finder.gd" )
-	var descs: Array = Finder.find_descs( 'res://' )
+	var descs: Array = Finder.find_blocks( 'res://' )
 	var cats: Array  = Finder.find_categories( 'res://' )
 	var techs: Array = Finder.find_techs( 'res://' )
 	print( "descs: ", descs )

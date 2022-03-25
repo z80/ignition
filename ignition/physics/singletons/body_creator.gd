@@ -87,7 +87,7 @@ func cube():
 
 
 func construction():
-	var B = load( "res://physics/bodies/construction/construction.tscn" )
+	var B = load( "res://physics/bodies/construction_new/construction.tscn" )
 	var b = _create( B )
 	return b
 
