@@ -56,3 +56,4 @@ mesh = SubResource( 4 )
 material/0 = null
 
 [node name="BroadTreeVisualization" parent="." instance=ExtResource( 3 )]
+enabled = true

@@ -72,6 +72,7 @@ func _ready():
 		_air_drag_scene = AirDragScene.instance()
 		_octree_mesh.add_child( _air_drag_scene )
 		_air_drag_scene.visible = false
+		_octree_mesh.rebuild()
 	
 	# Force visualizer. This is purely for debugging purposes.
 	if Constants.DEBUG and (force == null):
