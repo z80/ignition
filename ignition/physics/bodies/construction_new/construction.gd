@@ -254,7 +254,7 @@ func create_block( block_desc: Resource ):
 	if block == null:
 		return
 	
-	var is_static_block: bool = block.is_static()
+	var is_static_block: bool = block_desc.is_static()
 	
 	# This one makes it not delete superbody on activation.
 	block.construction_state = PhysicsBodyBase.ConstructionState.CONSTRUCTION

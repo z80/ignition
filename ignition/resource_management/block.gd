@@ -56,6 +56,7 @@ func is_static():
 		return false
 	
 	var ret: bool = cat.is_static
+	return ret
 
 
 
