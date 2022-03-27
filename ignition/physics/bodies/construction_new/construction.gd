@@ -239,7 +239,7 @@ func check_if_deactivate():
 
 
 func create_block( block_desc: Resource ):
-	var player = PhysicsManager.camera.get_parent()
+	var player: RefFrameNode = PhysicsManager.camera.get_parent()
 	
 	var t: Transform = Transform.IDENTITY
 	t.origin = Constants.CONSTRUCTION_CREATE_AT
@@ -249,6 +249,9 @@ func create_block( block_desc: Resource ):
 	se3.w = Vector3.ZERO
 	
 	var p: Node = self.get_parent()
+	
+	se3 = p.relative_to_se3( player, se3 )
+	se3 = se3.inverse()
 
 	var block: PhysicsBodyBase = block_desc.create( p, se3 )
 	if block == null:
