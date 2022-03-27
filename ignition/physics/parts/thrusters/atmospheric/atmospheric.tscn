@@ -1,10 +1,14 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://physics/parts/thrusters/atmospheric/atmospheric.gd" type="Script" id=1]
 [ext_resource path="res://physics/parts/thrusters/atmospheric/assets/air_drag_mesh/air_drag_mesh_Cube.mesh" type="ArrayMesh" id=2]
+[ext_resource path="res://physics/parts/thrusters/atmospheric/physical.tscn" type="PackedScene" id=3]
+[ext_resource path="res://physics/parts/thrusters/atmospheric/visual.tscn" type="PackedScene" id=4]
 
 [node name="Thruster" type="RefFrameNode"]
 script = ExtResource( 1 )
+VisualScene = ExtResource( 4 )
+PhysicalScene = ExtResource( 3 )
 allows_surface_attachments = false
 conducts_solid_fuel = false
 conducts_air = false

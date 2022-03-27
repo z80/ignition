@@ -3,13 +3,6 @@ extends StaticPhysicsBody
 
 
 func init():
-	hint_text = "Construction light source."
-	var Visual   = load( "res://physics/parts/frames/frame_light/frame_light_visual.tscn")
-	var Physical = load( "res://physics/parts/frames/frame_light/frame_light_physical.tscn" )
-	
-	VisualType   = Visual
-	PhysicalType = Physical
-
 	.init()
 
 

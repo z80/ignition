@@ -3,12 +3,6 @@ extends StaticPhysicsBody
 
 
 func init():
-	var Visual   = load( "res://physics/bodies/cube/visual.tscn")
-	var Physical = load( "res://physics/bodies/cube/physical.tscn" )
-	
-	VisualType   = Visual
-	PhysicalType = Physical
-
 	.init()
 
 

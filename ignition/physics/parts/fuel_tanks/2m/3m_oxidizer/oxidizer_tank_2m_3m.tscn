@@ -1,10 +1,14 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://physics/parts/fuel_tanks/2m/3m_oxidizer/oxidizer_tank_2m_3m.gd" type="Script" id=1]
 [ext_resource path="res://physics/parts/fuel_tanks/2m/3m_oxidizer/assets/air_drag_mesh/air_drag_mesh_Cylinder021.mesh" type="ArrayMesh" id=2]
+[ext_resource path="res://physics/parts/fuel_tanks/2m/3m_oxidizer/physical.tscn" type="PackedScene" id=3]
+[ext_resource path="res://physics/parts/fuel_tanks/2m/3m_oxidizer/visual.tscn" type="PackedScene" id=4]
 
 [node name="oxidizer_2m_1m" type="RefFrameNode"]
 script = ExtResource( 1 )
+VisualScene = ExtResource( 4 )
+PhysicalScene = ExtResource( 3 )
 part_class = 1
 conducts_solid_fuel = false
 conducts_air = false

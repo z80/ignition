@@ -43,14 +43,6 @@ func process_inner(delta):
 
 
 func init():
-	var Visual   = load( "res://physics/bodies/construction_new/visual.tscn")
-	var Physical = load( "res://physics/bodies/construction_new/physical.tscn" )
-	
-	VisualType   = Visual
-	PhysicalType = Physical
-	
-	need_super_body = true
-
 	.init()
 	
 	#var t: Transform = Transform.IDENTITY

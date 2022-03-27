@@ -7,8 +7,8 @@ func init():
 	var Visual   = load( "res://physics/parts/frames/frame_box/frame_box_visual.tscn")
 	var Physical = load( "res://physics/parts/frames/frame_box/frame_box_physical.tscn" )
 	
-	VisualType   = Visual
-	PhysicalType = Physical
+	VisualScene   = Visual
+	PhysicalScene = Physical
 
 	.init()
 

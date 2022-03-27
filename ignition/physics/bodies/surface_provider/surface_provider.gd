@@ -12,14 +12,6 @@ func _init():
 
 
 func init():
-	# Visual here contains ref frame axes. IT is used un debugging.
-	# Normally it is invisible.
-	var Visual   = load( "res://physics/bodies/surface_provider/surface_provider_visual.tscn")
-	var Physical = load( "res://physics/bodies/surface_provider/surface_provider_physical.tscn" )
-	
-	VisualType   = Visual
-	PhysicalType = Physical
-
 	.init()
 
 
