@@ -172,7 +172,7 @@ func _create_assembly():
 		part = parts[0]
 		
 		
-		# For dubuggin check the size of the DFS result and if 
+		# For debugging check the size of the DFS result and if 
 		# it is smaller than 3, repeat the process in order to see why.
 		var dbg_qty: int = parts.size()
 		if dbg_qty < 3:
@@ -254,6 +254,8 @@ func create_block( block_desc: Resource ):
 	if block == null:
 		return
 	
+	var is_static_block: bool = block.is_static()
+	
 	# This one makes it not delete superbody on activation.
 	block.construction_state = PhysicsBodyBase.ConstructionState.CONSTRUCTION
 	block.body_state         = PhysicsBodyBase.BodyState.KINEMATIC
@@ -263,11 +265,11 @@ func create_block( block_desc: Resource ):
 	# Make it selected to be able to move it.
 	PhysicsManager.player_select = block
 	
-	if true: #dynamic:
-		dynamic_blocks.push_back( block )
+	if is_static_block:
+		static_blocks.push_back( block )
 	
 	else:
-		static_blocks.push_back( block )
+		dynamic_blocks.push_back( block )
 	
 	
 	# Disable physics to prevent blocks from flying around.
@@ -293,7 +295,8 @@ func set_show_coupling_nodes( en: bool ):
 	var qty: int = dynamic_blocks.size()
 	for i in range(qty):
 		var p: RefFrameNode = dynamic_blocks[i]
-		p.set_show_node_visuals( en )
+		if p.has_method( "set_show_node_visuals" ):
+			p.set_show_node_visuals( en )
 
 
 

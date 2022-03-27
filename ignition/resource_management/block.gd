@@ -50,7 +50,12 @@ func create_internal( scene: PackedScene, parent: RefFrameNode, se3: Se3Ref ):
 	return inst
 
 
-
+func is_static():
+	var cat: Resource = Game.find_category( category )
+	if cat == null:
+		return false
+	
+	var ret: bool = cat.is_static
 
 
 

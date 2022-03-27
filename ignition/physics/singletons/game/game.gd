@@ -17,6 +17,14 @@ func get_categories():
 	return _categories
 
 
+func find_category( category_name: String ):
+	for cat in _categories:
+		var name: String = cat.category
+		if name == category_name:
+			return cat
+	
+	return null
+
 
 func get_blocks( category: Resource ):
 	var ret: Array = []

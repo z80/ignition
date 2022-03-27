@@ -8,4 +8,5 @@ script = ExtResource( 1 )
 icon = ExtResource( 2 )
 category = "static_blocks"
 category_visual = "Stationary blocks"
+is_static = true
 index = 5
