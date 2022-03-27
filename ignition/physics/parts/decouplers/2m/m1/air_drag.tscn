@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/parts/decouplers/2m/m1/assets/air_mesh/air_mesh_Cylinder021.tres" type="ArrayMesh" id=1]
+
+[node name="AirDrag" type="MeshInstance"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
+mesh = ExtResource( 1 )
+material/0 = null

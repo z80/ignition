@@ -18,10 +18,13 @@ export(ConstructionState) var construction_state = ConstructionState.CONSTRUCTIO
 # When inheriting need to redefine these two.
 export(PackedScene) var VisualScene   = null
 export(PackedScene) var PhysicalScene = null
+export(PackedScene) var AirDragScene  = null
 
 
-var _visual: Node    = null
-var _physical: Node  = null
+
+var _visual: Node            = null
+var _physical: Node          = null
+var _air_drag_scene: Node    = null
 var _shock_wave_visual: Node = null
 
 
@@ -63,6 +66,14 @@ func _exit_tree():
 func _ready():
 	add_to_group( Constants.BODIES_GROUP_NAME )
 	
+	if AirDragScene != null:
+		_create_octree_mesh()
+		# Create air drag mesh(es).
+		_air_drag_scene = AirDragScene.instance()
+		_octree_mesh.add_child( _air_drag_scene )
+		_air_drag_scene.visible = false
+	
+	# Force visualizer. This is purely for debugging purposes.
 	if Constants.DEBUG and (force == null):
 		var Force = preload( "res://physics/force_source/force_visualizer.tscn" )
 		force = Force.instance()
@@ -563,6 +574,15 @@ func deserialize( data: Dictionary ):
 	construction_state = data["construction_state"]
 	
 	return true
+
+
+
+func _create_octree_mesh():
+	var otm: OctreeMeshGd = get_octree_mesh()
+	if otm == null:
+		otm = OctreeMeshGd.new()
+		add_child( otm )
+		_octree_mesh = otm
 
 
 
