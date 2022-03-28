@@ -1,0 +1,14 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://physics/bodies/construction_new/construction.gd" type="Script" id=1]
+[ext_resource path="res://physics/bodies/construction/panel_parts/panel_parts.tscn" type="PackedScene" id=2]
+[ext_resource path="res://physics/bodies/construction_new/visual.tscn" type="PackedScene" id=3]
+[ext_resource path="res://physics/bodies/construction_new/physical.tscn" type="PackedScene" id=4]
+
+[node name="Construction" type="RefFrameNode"]
+script = ExtResource( 1 )
+VisualScene = ExtResource( 3 )
+PhysicalScene = ExtResource( 4 )
+
+[node name="PanelParts" parent="." instance=ExtResource( 2 )]
+visible = false

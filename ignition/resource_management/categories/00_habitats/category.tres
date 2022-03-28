@@ -1,0 +1,11 @@
+[gd_resource type="Resource" load_steps=3 format=2]
+
+[ext_resource path="res://resource_management/category.gd" type="Script" id=1]
+[ext_resource path="res://resource_management/categories/assets/habitats.png" type="Texture" id=2]
+
+[resource]
+script = ExtResource( 1 )
+icon = ExtResource( 2 )
+category = "habitats"
+category_visual = "Habitats"
+index = 0

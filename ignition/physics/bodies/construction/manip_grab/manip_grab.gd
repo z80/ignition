@@ -1,5 +1,5 @@
 extends CanvasItem
-class_name ManipulatorGrab
+class_name ManipulatorGrabNew
 
 signal drag_started
 signal drag_finished

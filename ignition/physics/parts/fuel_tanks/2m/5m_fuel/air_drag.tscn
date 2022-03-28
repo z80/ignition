@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/parts/fuel_tanks/2m/5m_fuel/assets/air_drag_mesh/air_drag_mesh_Cylinder021.tres" type="ArrayMesh" id=1]
+
+[node name="AirDrag" type="MeshInstance"]
+mesh = ExtResource( 1 )
+material/0 = null

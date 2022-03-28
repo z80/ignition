@@ -49,6 +49,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/bodies/construction/construction_super_body.gd"
 }, {
+"base": "PartAssembly",
+"class": "ConstructionSuperBodyNew",
+"language": "GDScript",
+"path": "res://physics/bodies/construction_new/construction_super_body.gd"
+}, {
 "base": "Node",
 "class": "CouplingAttachment",
 "language": "GDScript",
@@ -70,9 +75,19 @@ _global_script_classes=[ {
 "path": "res://physics/parts/coupling_nodes/coupling_node_surface.gd"
 }, {
 "base": "Resource",
-"class": "CreatableDescBase",
+"class": "CreatableBlockDesc",
 "language": "GDScript",
-"path": "res://physics/interact_icon/new/example_part/desc.gd"
+"path": "res://resource_management/block.gd"
+}, {
+"base": "Resource",
+"class": "CreatableCategory",
+"language": "GDScript",
+"path": "res://resource_management/category.gd"
+}, {
+"base": "Resource",
+"class": "CreatableTechnology",
+"language": "GDScript",
+"path": "res://resource_management/tech.gd"
 }, {
 "base": "Part",
 "class": "Decoupler",
@@ -151,6 +166,11 @@ _global_script_classes=[ {
 }, {
 "base": "CanvasItem",
 "class": "ManipulatorGrab",
+"language": "GDScript",
+"path": "res://physics/bodies/construction_new/manip_grab/manip_grab.gd"
+}, {
+"base": "CanvasItem",
+"class": "ManipulatorGrabNew",
 "language": "GDScript",
 "path": "res://physics/bodies/construction/manip_grab/manip_grab.gd"
 }, {
@@ -253,11 +273,14 @@ _global_script_class_icons={
 "CharacterVisualBase": "",
 "ColorTile": "",
 "ConstructionSuperBody": "",
+"ConstructionSuperBodyNew": "",
 "CouplingAttachment": "",
 "CouplingNode": "",
 "CouplingNodeStacking": "",
 "CouplingNodeSurface": "",
-"CreatableDescBase": "",
+"CreatableBlockDesc": "",
+"CreatableCategory": "",
+"CreatableTechnology": "",
 "Decoupler": "",
 "EntranceNode": "",
 "ExhaustNode": "",
@@ -274,6 +297,7 @@ _global_script_class_icons={
 "LandscapeFunc": "",
 "LandscapeHeightFunc": "",
 "ManipulatorGrab": "",
+"ManipulatorGrabNew": "",
 "MenuBase": "",
 "Palette": "",
 "PaletteImporter": "",
@@ -302,11 +326,12 @@ config/icon="res://icon.png"
 
 [autoload]
 
+RootScene="*res://physics/singletons/root_scene.tscn"
+Game="*res://physics/singletons/game/game.tscn"
 PhysicsManager="*res://physics/singletons/physics_manager.gd"
 BodyCreator="*res://physics/singletons/body_creator.gd"
 Constants="*res://physics/singletons/constants.gd"
 UserInput="*res://physics/user_unput/user_input.gd"
-RootScene="*res://physics/singletons/root_scene.tscn"
 UiSound="*res://physics/singletons/sound/ui_sound.tscn"
 DDD="*res://debug/ddd.gd"
 
@@ -315,10 +340,6 @@ DDD="*res://debug/ddd.gd"
 window/size/fullscreen=true
 mouse_cursor/custom_image="res://cursor.png"
 mouse_cursor/tooltip_position_offset=Vector2( 32, 10 )
-
-[editor_plugins]
-
-enabled=PoolStringArray( "gut" )
 
 [gui]
 

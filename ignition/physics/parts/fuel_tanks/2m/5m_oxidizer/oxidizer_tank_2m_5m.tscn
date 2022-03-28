@@ -1,21 +1,17 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://physics/parts/fuel_tanks/2m/5m_oxidizer/oxidizer_tank_2m_5m.gd" type="Script" id=1]
-[ext_resource path="res://physics/parts/fuel_tanks/2m/5m_oxidizer/assets/air_drag_mesh/air_drag_mesh_Cylinder021.tres" type="ArrayMesh" id=2]
+[ext_resource path="res://physics/parts/fuel_tanks/2m/5m_oxidizer/physical.tscn" type="PackedScene" id=3]
+[ext_resource path="res://physics/parts/fuel_tanks/2m/5m_oxidizer/visual.tscn" type="PackedScene" id=4]
+[ext_resource path="res://physics/parts/fuel_tanks/2m/5m_oxidizer/air_drag.tscn" type="PackedScene" id=5]
 
 [node name="oxidizer_tank_2m_2m" type="RefFrameNode"]
 script = ExtResource( 1 )
+VisualScene = ExtResource( 4 )
+PhysicalScene = ExtResource( 3 )
+AirDragScene = ExtResource( 5 )
 part_class = 1
 conducts_solid_fuel = false
 conducts_air = false
 mass = 0.2
 fuel_type = 1
-
-[node name="OctreeMeshGd" type="OctreeMeshGd" parent="."]
-se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
-
-
-[node name="2m" type="MeshInstance" parent="OctreeMeshGd"]
-visible = false
-mesh = ExtResource( 2 )
-material/0 = null

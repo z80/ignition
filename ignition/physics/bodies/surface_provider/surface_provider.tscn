@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://physics/bodies/surface_provider/surface_provider.gd" type="Script" id=1]
+[ext_resource path="res://physics/bodies/surface_provider/surface_provider_visual.tscn" type="PackedScene" id=2]
+[ext_resource path="res://physics/bodies/surface_provider/surface_provider_physical.tscn" type="PackedScene" id=3]
 
 [node name="SurfaceProvider" type="RefFrameNode"]
 script = ExtResource( 1 )
+VisualScene = ExtResource( 2 )
+PhysicalScene = ExtResource( 3 )

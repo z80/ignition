@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=4 format=2]
+
+[ext_resource path="res://resource_management/block.gd" type="Script" id=1]
+[ext_resource path="res://physics/parts/decouplers/2m/m1/assets/icon.png" type="Texture" id=2]
+[ext_resource path="res://physics/parts/decouplers/2m/m1/m1.tscn" type="PackedScene" id=3]
+
+[resource]
+script = ExtResource( 1 )
+block_scene = ExtResource( 3 )
+category = "dynamic_connections"
+required_tech = "root"
+icon = ExtResource( 2 )
+brief_description = "2m diameter pyrotechnic decoupler"
+wiki_file = "res://wiki/root.wiki"

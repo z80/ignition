@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://physics/bodies/construction/panel_parts/panel_parts_theme.tres" type="Theme" id=1]
+[ext_resource path="res://physics/bodies/construction_new/panel_parts/item_category.gd" type="Script" id=2]
+
+[node name="ItemButton" type="TextureButton"]
+margin_right = 60.0
+margin_bottom = 60.0
+rect_min_size = Vector2( 60, 60 )
+theme = ExtResource( 1 )
+shortcut_in_tooltip = false
+script = ExtResource( 2 )
+
+[connection signal="mouse_entered" from="." to="." method="_on_ItemButton_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_ItemButton_mouse_exited"]
+[connection signal="pressed" from="." to="." method="_on_ItemButton_pressed"]

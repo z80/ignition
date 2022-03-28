@@ -1,10 +1,15 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://physics/parts/thrusters/vacuum/vacuum.gd" type="Script" id=1]
-[ext_resource path="res://physics/parts/thrusters/vacuum/assets/air_drag_mesh/air_drag_mesh_Cube.mesh" type="ArrayMesh" id=2]
+[ext_resource path="res://physics/parts/thrusters/vacuum/air_drag.tscn" type="PackedScene" id=2]
+[ext_resource path="res://physics/parts/thrusters/vacuum/physical.tscn" type="PackedScene" id=3]
+[ext_resource path="res://physics/parts/thrusters/vacuum/visual.tscn" type="PackedScene" id=4]
 
 [node name="Thruster" type="RefFrameNode"]
 script = ExtResource( 1 )
+VisualScene = ExtResource( 4 )
+PhysicalScene = ExtResource( 3 )
+AirDragScene = ExtResource( 2 )
 allows_surface_attachments = false
 conducts_solid_fuel = false
 conducts_electricity = false
@@ -17,13 +22,3 @@ thrust_min_bad = 72.0
 thrust_max_bad = 120.0
 fuel_consumption_min = 0.1
 fuel_consumption_max = 0.2
-
-[node name="OctreeMeshGd" type="OctreeMeshGd" parent="."]
-se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
-
-
-[node name="MeshInstance" type="MeshInstance" parent="OctreeMeshGd"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.910354, 0 )
-visible = false
-mesh = ExtResource( 2 )
-material/0 = null

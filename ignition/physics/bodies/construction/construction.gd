@@ -43,14 +43,6 @@ func process_inner(delta):
 
 
 func init():
-	var Visual   = load( "res://physics/bodies/construction/visual.tscn")
-	var Physical = load( "res://physics/bodies/construction/physical.tscn" )
-	
-	VisualType   = Visual
-	PhysicalType = Physical
-	
-	need_super_body = true
-
 	.init()
 	
 	#var t: Transform = Transform.IDENTITY
@@ -89,7 +81,7 @@ func set_collision_layer( layer ):
 
 func construction_activate():
 	#$PanelParts.visible = true
-	var PanelParts = load( "res://physics/bodies/construction/panel_parts/panel_parts.tscn" )
+	var PanelParts = load( "res://physics/bodies/construction_new/panel_parts/panel_parts.tscn" )
 	panel_parts = PanelParts.instance()
 	panel_parts.construction = self
 	panel_parts.connect( "create_block", self, "create_block" )
@@ -121,7 +113,7 @@ func construction_deactivate():
 func activate_grab( body ):
 	if not is_instance_valid( body ):
 		return
-	var Grab = load( "res://physics/bodies/construction/manip_grab/manip_grab.tscn" )
+	var Grab = load( "res://physics/bodies/construction_new/manip_grab/manip_grab.tscn" )
 	var grab = Grab.instance()
 	RootScene.get_root_for_visuals().add_child( grab )
 	edited_target  = body

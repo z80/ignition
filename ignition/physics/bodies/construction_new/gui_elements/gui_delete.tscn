@@ -1,0 +1,30 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/bodies/construction/gui_elements/gui_delete.gd" type="Script" id=1]
+
+[node name="Delete" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_min_size = Vector2( 80, 32 )
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 1.0
+rect_min_size = Vector2( 80, 32 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Delete" type="Button" parent="CenterContainer"]
+margin_left = 462.0
+margin_top = 292.0
+margin_right = 562.0
+margin_bottom = 308.0
+hint_tooltip = "Delete a block from construction."
+text = "Delete block"
+[connection signal="pressed" from="CenterContainer/Delete" to="." method="_on_Delete_pressed"]

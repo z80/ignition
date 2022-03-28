@@ -11,6 +11,7 @@ func _enter_tree():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	_parse_resources()
 	
 	DDD.print( "Hello!" )
 	
@@ -106,3 +107,21 @@ func _create_character( name: String = "Astronaut", at: Vector3 = Vector3(1.0, 0
 	character.set_se3( se3 )
 	
 	return character
+
+
+
+
+func _parse_resources():
+	var Finder = preload( "res://resource_management/resource_finder.gd" )
+	var descs: Array = Finder.find_blocks( 'res://' )
+	var cats: Array  = Finder.find_categories( 'res://' )
+	var techs: Array = Finder.find_techs( 'res://' )
+	print( "descs: ", descs )
+
+
+
+
+
+
+
+

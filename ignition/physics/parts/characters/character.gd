@@ -74,7 +74,6 @@ func get_boarding_mode():
 
 func init():
 	.init()
-	need_super_body = false
 	
 	var PartControlGroups = load( "res://physics/parts/part_control_groups.gd" )
 	control_group = PartControlGroups.ControlGroup._1
@@ -129,7 +128,7 @@ func create_physical():
 	if boarding_mode == BoardingMode.INSIDE:
 		return
 	
-	var ph: Node =  _create_physical( PhysicalType )
+	var ph: Node =  _create_physical( PhysicalScene )
 	# Physics body calls "integrate_forces" method from this instance.
 	# Becasue of that it is necesary to provide the reference to "self".
 	# Check for "null" beacuse when there is no parent ref. frame, 

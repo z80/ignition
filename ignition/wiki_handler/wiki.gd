@@ -23,9 +23,18 @@ func _ready():
 
 func open( path: String, update_history: bool = true ):
 	path = clean_path( path )
-	var file_name: String = root_folder + '/' + path + SUFFIX
+	var full_path: String = root_folder + '/' + path + SUFFIX
+	open_internal( full_path, path, update_history )
+
+
+# For opening files not under "res://wiki" path.
+func open_global( full_path: String, title_path: String ):
+	open_internal( full_path, title_path )
+
+
+func open_internal( full_path: String, path: String, update_history: bool = true ):
 	var file: File = File.new()
-	var ret: int = file.open( file_name, File.READ )
+	var ret: int = file.open( full_path, File.READ )
 	if ret != OK:
 		return
 	
@@ -37,19 +46,19 @@ func open( path: String, update_history: bool = true ):
 	emit_signal( "wiki_page", path )
 	
 	if update_history:
-		_update_history( path )
+		_update_history( full_path, path )
 
 
-
-func _update_history( path: String ):
+func _update_history( full_path: String, path: String ):
 	var qty: int = _history.size()
+	var entry: Array = [ full_path, path ]
 	if (_history_index < 0) or (_history_index >= qty):
-		_history.push_back( path )
+		_history.push_back( entry )
 		_history_index = qty
 	
 	else:
 		_history_index += 1
-		_history.insert( _history_index, path )
+		_history.insert( _history_index, entry )
 
 
 
@@ -61,16 +70,16 @@ func _go_back():
 	var qty: int = _history.size()
 	if (qty > 0) and (_history_index > 0):
 		_history_index -= 1
-		var path: String = _history[_history_index]
-		open( path, false )
+		var entry: Array = _history[_history_index]
+		open_internal( entry[0], entry[1], false )
 
 
 func _go_forward():
 	var last_index: int = _history.size() - 1
 	if _history_index < last_index:
 		_history_index += 1
-		var path: String = _history[_history_index]
-		open( path, false )
+		var entry: Array = _history[_history_index]
+		open_internal( entry[0], entry[1], false )
 
 
 

@@ -15,18 +15,16 @@ enum ConstructionState {
 export(BodyState)         var body_state         = BodyState.DYNAMIC
 export(ConstructionState) var construction_state = ConstructionState.CONSTRUCTION
 
-# When "load" is called nonpermanent objects are destroyed.
-# Permanent objects are not destroyed, they only search for their 
-# saved data. Probably, celestial bodies are permanent objects.
-export(bool) var is_permanent = false
-
 # When inheriting need to redefine these two.
-var VisualType   = null
-var PhysicalType = null
+export(PackedScene) var VisualScene   = null
+export(PackedScene) var PhysicalScene = null
+export(PackedScene) var AirDragScene  = null
 
 
-var _visual: Node    = null
-var _physical: Node  = null
+
+var _visual: Node            = null
+var _physical: Node          = null
+var _air_drag_scene: Node    = null
 var _shock_wave_visual: Node = null
 
 
@@ -34,7 +32,6 @@ var _shock_wave_visual: Node = null
 # When setter and getter are allowed simultaneously it falls into infinite recursion which 
 # can not be stopped even by the debugger.
 var _super_body: Node = null
-export(bool) var need_super_body = false
 
 
 var _octree_mesh: OctreeMeshGd = null
@@ -69,6 +66,15 @@ func _exit_tree():
 func _ready():
 	add_to_group( Constants.BODIES_GROUP_NAME )
 	
+	if AirDragScene != null:
+		_create_octree_mesh()
+		# Create air drag mesh(es).
+		_air_drag_scene = AirDragScene.instance()
+		_octree_mesh.add_child( _air_drag_scene )
+		_air_drag_scene.visible = false
+		_octree_mesh.rebuild()
+	
+	# Force visualizer. This is purely for debugging purposes.
 	if Constants.DEBUG and (force == null):
 		var Force = preload( "res://physics/force_source/force_visualizer.tscn" )
 		force = Force.instance()
@@ -300,11 +306,11 @@ func update_physics_from_state():
 
 
 func create_visual():
-	return _create_visual( VisualType )
+	return _create_visual( VisualScene )
 
 
 func create_physical():
-	return _create_physical( PhysicalType )
+	return _create_physical( PhysicalScene )
 
 
 func _create_visual( Visual ):
@@ -519,7 +525,7 @@ func set_super_body( new_super_body ):
 
 
 func get_super_body():
-	if (_super_body == null) and need_super_body:
+	if _super_body == null:
 		_super_body = create_super_body()
 	return _super_body
 
@@ -569,6 +575,15 @@ func deserialize( data: Dictionary ):
 	construction_state = data["construction_state"]
 	
 	return true
+
+
+
+func _create_octree_mesh():
+	var otm: OctreeMeshGd = get_octree_mesh()
+	if otm == null:
+		otm = OctreeMeshGd.new()
+		add_child( otm )
+		_octree_mesh = otm
 
 
 
