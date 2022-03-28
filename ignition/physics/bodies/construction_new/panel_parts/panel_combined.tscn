@@ -42,6 +42,7 @@ margin_right = 288.0
 margin_bottom = 534.0
 
 [connection signal="abort" from="." to="." method="_on_Control_abort"]
+[connection signal="abort" from="VBox/PanelCommands" to="." method="_on_PanelCommands_abort"]
 [connection signal="launch" from="VBox/PanelCommands" to="." method="_on_PanelCommands_launch"]
 [connection signal="category_picked" from="VBox/HBox/PanelCategories" to="." method="_on_PanelCategories_category_picked"]
 [connection signal="block_picked" from="VBox/HBox/PanelBlocks" to="." method="_on_PanelBlocks_block_picked"]

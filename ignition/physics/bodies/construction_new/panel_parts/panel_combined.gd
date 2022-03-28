@@ -42,11 +42,6 @@ func _on_PanelCommands_launch():
 
 
 
-func _on_Control_abort():
+
+func _on_PanelCommands_abort():
 	emit_signal( "abort" )
-
-
-
-
-
-

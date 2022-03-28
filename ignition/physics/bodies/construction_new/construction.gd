@@ -331,6 +331,19 @@ func on_launch():
 
 func on_abort():
 	# Need to delete all blocks.
+	var sb: Node = get_super_body()
+	for b in static_blocks:
+		sb.remove_sub_body( b )
+		b.queue_free()
+	
+	static_blocks.clear()
+	
+	for b in dynamic_blocks:
+		sb.remove_sub_body( b )
+		b.queue_free()
+	
+	dynamic_blocks.clear()
+
 	construction_deactivate()
 
 
