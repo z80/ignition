@@ -35,6 +35,10 @@ def configure_static_build():
     module_env.Append(CPPPATH=["#modules/ignition/utils"])
     module_env.add_source_files( env.modules_sources, "utils/*.cpp" )
 
+    # Also include marching cubes
+    module_env.Append(CPPPATH=["#modules/ignition/cubes"])
+    module_env.add_source_files( env.modules_sources, "cubes/*.cpp" )
+
 
 
 configure_static_build()
