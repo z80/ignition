@@ -1,7 +1,10 @@
 
 #include "data_types.h"
 #include "vector3d.h"
-#include "hashfuncs.h"
+//#include "hashfuncs.h"
+
+#include <vector>
+#include <set>
 
 namespace Ign
 {
@@ -101,7 +104,7 @@ public:
     }
 };
 
-struct MarchingNodeHasher
+/*struct MarchingNodeHasher
 {
     static _FORCE_INLINE_ uint32_t hash( const MarchingNode & n )
     {
@@ -118,6 +121,23 @@ struct MarchingNodeHasher
         h = hash_djb2_buffer( c, sizeof(int), h );
 
         return p_string.hash();
+    }
+}*/
+
+struct MarchingNodeCompare
+{
+    bool operator()( const MarchingNode & a, const MarchingNode & b )
+    {
+        if ( a.at.x < b.at.x )
+            return true;
+        else if ( a.at.y < b.at.y )
+            return true;
+        else if ( a.at.z < b.at.z )
+            return true;
+        else if ( a.size < b.size )
+            return true;
+
+        return false;
     }
 }
 
@@ -158,6 +178,20 @@ public:
     SE3 source_se3;
 private:
     Vector3d interpolate( const Vector3d & v0, const Vector3d & v1, const Float val0, const Float val1 ) const;
+
+    // For BFS search.
+    // 26 Node neighbors.
+    void add_node_neighbors( const MarchingNode & node, VolumeSource * source, DistanceScaler * scaler );
+
+    // Create faces.
+    void create_faces( const MarchingNode & node,  )
+    
+    typedef MarchingSet         std::set<MarchingNode, MarchingNodeCompare>;
+    typedef MarchingSetIterator std::set<MarchingNode, MarchingNodeCompare>::iterator;
+
+    MarchingSet _all_nodes;
+    MarchingSet _recently_added_nodes;
+    MarchingSet _new_candidates;
 };
 
 

@@ -47,13 +47,35 @@ bool MarchingCubes::find_surface( VolumeSource * source, DistanceScaler * scaler
     return false;
 }
 
-bool MarchingCubes::subdivide_source( VolumeSource * source, DistanceScaler * scaler = nullptr )
+bool MarchingCubes::subdivide_source( VolumeSource * source, DistanceScaler * scaler )
 {
     find_subdivision_levels( source, scaler );
     MarchingNodeInt surface_node;
     const bool ok = find_surface( source, scaler, surface_node );
     if (!ok)
         return false;
+
+    _all_nodes.clear();
+    _recently_added_nodes.clear();
+    _new_candidates.clear();
+    _all_nodes.insert( surface_node );
+    _recently_added_nodes.push_back( surface_node );
+
+    for ( ;; )
+    {
+        for ( MarchingSetIterator it=_recently_added_nodes.begin(); it!=_recently_added_nodes.end(); it++ )
+        {
+            const MarchingNode & node = *it;
+            const bool on_surface = node.has_surface();
+            if ( on_surface )
+                add_node_neighbors( node, source, scaler );
+        }
+        if ( _new_candidates.empty() )
+            break;
+        
+        _recently_added_nodes = _new_candidates;
+        _new_candidates.clear();
+    }
 
     return true;
 }
@@ -182,6 +204,38 @@ Vector3d MarchingCubes::interpolate( const Vector3d & v0, const Vector3d & v1, c
     }
 
     return ret;
+}
+
+
+void MarchingCubes::add_node_neighbors( const MarchingNode & node, VolumeSource * source, DistanceScaler * scaler )
+{
+
+    for ( int ix=0; ix<3; ix++ )
+    {
+        const int x = node.at.x + node.size * (ix-1);
+        for ( int iy=0; iy<3; iy++ )
+        {
+            const int y = node.at.y + node.size * (iy-1);
+            for ( int iz=0; iz<3; iz++ )
+            {
+                if ( (ix==1) && (iy==1) && (iz==1) )
+                    continue;
+                const int z = node.at.z + node.size * (iz-1);
+                MarchingNode candidate;
+                candidate.at = VectorInt( x, y, z );
+                candidate.size = node.size;
+
+                compute_node_values( candidate, source, scaler );
+
+                std::set<MarchingNode, MarchingNodeCompare>::iterator it = _all_nodes.find( candidate );
+                if ( it != _all_nodes.end() )
+                {
+                    _all_nodes.insert( candidate );
+                    _new_candidates.insert( candidate );
+                }
+            }
+        }
+    }
 }
 
 
