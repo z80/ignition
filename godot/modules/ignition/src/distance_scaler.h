@@ -23,7 +23,7 @@ public:
 	Float scale( Float dist ) const;
 	Vector3d scale( const Vector3d & v ) const;
 
-        Vcetor3d unscale( const Vector3d & v ) const;
+    Vector3d unscale( const Vector3d & v ) const;
 
 public:
 	Float plain_dist_;

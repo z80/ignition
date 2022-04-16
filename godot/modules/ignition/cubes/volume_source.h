@@ -1,6 +1,7 @@
 
 #include "data_types.h"
 #include "vector3d.h"
+#include "se3.h"
 
 namespace Ign
 {

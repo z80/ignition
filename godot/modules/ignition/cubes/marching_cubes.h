@@ -2,6 +2,11 @@
 #include "data_types.h"
 #include "vector3d.h"
 //#include "hashfuncs.h"
+#include "core/vector.h"
+#include "core/math/face3.h"
+
+#include "se3.h"
+
 
 #include <vector>
 #include <set>
@@ -30,15 +35,15 @@ public:
         }
         return *this;
     }
-    VectorInt( const & inst )
+    VectorInt( const VectorInt & inst )
     {
         *this = inst;
     }
     VectorInt( int x, int y, int z )
     {
-        self.x = x;
-        self.y = y;
-        self.z = z;
+        this->x = x;
+		this->y = y;
+		this->z = z;
     }
 
 };
@@ -49,6 +54,7 @@ class MarchingNode
 public:
     VectorInt at;
     int       size;
+	VectorInt vertices_int[8];
     Vector3d  vertices[8];
     Float     values[8];
 
@@ -68,12 +74,13 @@ public:
     {
         if ( this != &inst )
         {
-            at   = inst.qt;
+            at   = inst.at;
             size = inst.size;
             for ( int i=0; i<8; i++ )
             {
-                vertices[i] = inst.vertices[i];
-                alues[i]    = inst.values[i];
+				vertices_int[i] = inst.vertices_int[i];
+                vertices[i]     = inst.vertices[i];
+                values[i]       = inst.values[i];
             }
         }
         return * this;
@@ -88,7 +95,7 @@ public:
     {
         int above_qty = 0;
         int below_qty = 0;
-        for ( int i=0; i<qty; i++ )
+        for ( int i=0; i<8; i++ )
         {
             const Float v = values[i];
             if (v > 0.0)
@@ -126,7 +133,7 @@ public:
 
 struct MarchingNodeCompare
 {
-    bool operator()( const MarchingNode & a, const MarchingNode & b )
+    bool operator()( const MarchingNode & a, const MarchingNode & b ) const
     {
         if ( a.at.x < b.at.x )
             return true;
@@ -139,7 +146,7 @@ struct MarchingNodeCompare
 
         return false;
     }
-}
+};
 
 
 
@@ -151,16 +158,11 @@ public:
 
     void set_source_transform( const SE3 & se3 );
     
-
-    void find_subdivision_levels( VolumeSource * source, DistanceScaler * scaler = nullptr );
-    bool find_surface( VolumeSource * source, DistanceScaler * scaler, MarchingNode & surface_node );
     bool subdivide_source( VolumeSource * source, DistanceScaler * scaler = nullptr );
 
-    Float node_size( int level ) const;
+    Float    node_size( int level ) const;
     Vector3d at( const VectorInt & at_i, DistanceScaler * scaler=nullptr ) const;
 
-    void compute_node_values( MarchingNode & node, VolumeSource * source, DistanceScaler * scaler ) const;
-    MarchingNode step_towards_surface( const MarchingNode & node, VolumeSource * source, DistanceScaler * scaler ) const;
 
     
 
@@ -171,27 +173,35 @@ public:
     // This is the smallest cube size.
     Float step;
     // Number of scale up levels.
-    int  levels_qty;
+    int   levels_qty;
 
     // Source transform.
     // Points to probe first are sent through this transformation.
     SE3 source_se3;
 private:
-    Vector3d interpolate( const Vector3d & v0, const Vector3d & v1, const Float val0, const Float val1 ) const;
+	void find_subdivision_levels( VolumeSource * source );
+	bool find_surface( VolumeSource * source, DistanceScaler * scaler, MarchingNode & surface_node );
+	void compute_node_values( MarchingNode & node, VolumeSource * source, DistanceScaler * scaler ) const;
+	MarchingNode step_towards_surface( const MarchingNode & node, VolumeSource * source, DistanceScaler * scaler ) const;
+
+	Vector3d interpolate( const Vector3d & v0, const Vector3d & v1, const Float val0, const Float val1 ) const;
 
     // For BFS search.
     // 26 Node neighbors.
     void add_node_neighbors( const MarchingNode & node, VolumeSource * source, DistanceScaler * scaler );
 
     // Create faces.
-    void create_faces( const MarchingNode & node,  )
+    void create_faces( const MarchingNode & node );
     
-    typedef MarchingSet         std::set<MarchingNode, MarchingNodeCompare>;
-    typedef MarchingSetIterator std::set<MarchingNode, MarchingNodeCompare>::iterator;
+    typedef std::set<MarchingNode, MarchingNodeCompare>           MarchingSet;
+    typedef std::set<MarchingNode, MarchingNodeCompare>::iterator MarchingSetIterator;
+
 
     MarchingSet _all_nodes;
     MarchingSet _recently_added_nodes;
     MarchingSet _new_candidates;
+
+	Vector<Face3> _all_faces;
 };
 
 

@@ -1,56 +1,42 @@
 
 #include "marching_cubes.h"
+#include "volume_source.h"
+#include "cube_tables.h"
+#include "vector3d.h"
+#include "distance_scaler.h"
+
+#include <cmath>
+
 
 namespace Ign
 {
 
 
 MarchingCubes::MarchingCubes()
-{}
+{
+	iso_level  = 0.0;
+	eps        = 1.0e-4;
+	step       = 1.0;
+	levels_qty = 1;
+}
+
 
 MarchingCubes::~MarchingCubes()
 {}
 
+
 void MarchingCubes::set_source_transform( const SE3 & se3 )
 {
-    source_transform = se3;
+	source_se3 = se3;
 }
 
-void MarchingCubes::find_subdivision_levels( VolumeSource * source )
-{
-    step = source->min_node_size();
-    const Float max_sz = source->max_node_size();
-    
-    levels_qty = 1;
-    Float sz = step;
-    while (sz < max_sz)
-    {
-        sz *= 2.0;
-        levels_qty += 1;
-    }
-}
 
-bool MarchingCubes::find_surface( VolumeSource * source, DistanceScaler * scaler, MarchingNode & surface_node )
-{
-    MarchingNodeInt node;
-    for ( int i=0; i<100000; i++ )
-    {
-        compute_node_values( node, source, scaler );
-        const bool has_surface = node.has_surface();
-        if ( has_surface )
-        {
-            surface_node = node;
-            return true;
-        }
-    }
-
-    return false;
-}
 
 bool MarchingCubes::subdivide_source( VolumeSource * source, DistanceScaler * scaler )
 {
-    find_subdivision_levels( source, scaler );
-    MarchingNodeInt surface_node;
+    find_subdivision_levels( source );
+    MarchingNode     surface_node;
+
     const bool ok = find_surface( source, scaler, surface_node );
     if (!ok)
         return false;
@@ -59,7 +45,7 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, DistanceScaler * sc
     _recently_added_nodes.clear();
     _new_candidates.clear();
     _all_nodes.insert( surface_node );
-    _recently_added_nodes.push_back( surface_node );
+    _recently_added_nodes.insert( surface_node );
 
     for ( ;; )
     {
@@ -77,14 +63,23 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, DistanceScaler * sc
         _new_candidates.clear();
     }
 
+	_all_faces.clear();
+	for ( MarchingSetIterator it=_all_nodes.begin(); it!=_all_nodes.end(); it++ )
+	{
+		const MarchingNode node = *it;
+		create_faces( node );
+	}
+
     return true;
 }
 
+
 Float MarchingCubes::node_size( int level ) const
 {
-    const Float sz = math:pow( 2.0, level ) * step;
+    const Float sz = std::pow( 2.0, level ) * step;
     return sz;
 }
+
 
 Vector3d MarchingCubes::at( const VectorInt & at_i, DistanceScaler * scaler ) const
 {
@@ -94,23 +89,55 @@ Vector3d MarchingCubes::at( const VectorInt & at_i, DistanceScaler * scaler ) co
     // Apply transform.
     if (scaler == nullptr)
     {
-        const Vector3d at_in_source = se3.q * at_d + se3.r;
+        const Vector3d at_in_source = source_se3.q_ * at + source_se3.r_;
         return at_in_source;
     }
 
-    const Vector3d at_real = scaler->unscale( at );
-    const Vector3d at_in_source = se3.q * at_real + se3.r;
+    const Vector3d at_real      = scaler->unscale( at );
+    const Vector3d at_in_source = source_se3.q_ * at_real + source_se3.r_;
     return at_in_source;
+}
+
+void MarchingCubes::find_subdivision_levels( VolumeSource * source )
+{
+	step = source->min_node_size();
+	const Float max_sz = source->max_node_size();
+
+	levels_qty = 1;
+	Float sz = step;
+	while (sz < max_sz)
+	{
+		sz *= 2.0;
+		levels_qty += 1;
+	}
+}
+
+
+bool MarchingCubes::find_surface( VolumeSource * source, DistanceScaler * scaler, MarchingNode & surface_node )
+{
+	MarchingNode node;
+	for ( int i=0; i<100000; i++ )
+	{
+		compute_node_values( node, source, scaler );
+		const bool has_surface = node.has_surface();
+		if ( has_surface )
+		{
+			surface_node = node;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 
 void MarchingCubes::compute_node_values( MarchingNode & node, VolumeSource * source, DistanceScaler * scaler ) const
 {
     VectorInt verts[8];
-    const int x  = node_int.at.x;
-    const int y  = node_int.at.y;
-    const int z  = node_int.at.z;
-    const int sz = node_int.size;
+    const int x  = node.at.x;
+    const int y  = node.at.y;
+    const int z  = node.at.z;
+    const int sz = node.size;
     verts[0] = VectorInt( x,      y,      z );
     verts[1] = VectorInt( x + sz, y,      z );
     verts[2] = VectorInt( x + sz, y,      z + sz );
@@ -122,6 +149,7 @@ void MarchingCubes::compute_node_values( MarchingNode & node, VolumeSource * sou
 
     for ( int i=0; i<8; i++ )
     {
+		node.vertices_int[i] = verts[i];
         // Value at warped position.
         const Vector3d vert_d = at( verts[i], scaler );
         const Float    value  = source->value( vert_d );
@@ -141,7 +169,7 @@ MarchingNode MarchingCubes::step_towards_surface( const MarchingNode & node, Vol
                      (node.values[0] + node.values[1] + node.values[2] + node.values[3]);
     const Float dz = (node.values[3] + node.values[7] + node.values[6] + node.values[2]) - 
                      (node.values[0] + node.values[4] + node.values[5] + node.values[1]);
-    const Float abs_vals[3] = { std::abs(dx), std::abs(dy, std::abs(dz) };
+    const Float abs_vals[3] = { std::abs(dx), std::abs(dy), std::abs(dz) };
     Float max_val = -1.0;
     int   max_ind = -1;
     for ( int i=0; i<3; i++ )
@@ -154,27 +182,27 @@ MarchingNode MarchingCubes::step_towards_surface( const MarchingNode & node, Vol
         }
     }
 
-    MarchingNodeInt next_node( node_int );
+    MarchingNode next_node( node );
     if ( max_ind == 0 )
     {
         if (dx > 0.0)
-            next_node.at.x += node_int.size;
+            next_node.at.x += node.size;
         else
-            next_node.at.x -= node_int.size;
+            next_node.at.x -= node.size;
     }
     else if ( max_ind == 1 )
     {
         if (dy > 0.0)
-            next_node.at.y += node_int.size;
+            next_node.at.y += node.size;
         else
-            next_node.at.y -= node_int.size;
+            next_node.at.y -= node.size;
     }
     else
     {
         if (dz > 0.0)
-            next_node.at.z += node_int.size;
+            next_node.at.z += node.size;
         else
-            next_node.at.z -= node_int.size;
+            next_node.at.z -= node.size;
     }
 
     // Compute node values.
@@ -236,6 +264,59 @@ void MarchingCubes::add_node_neighbors( const MarchingNode & node, VolumeSource 
             }
         }
     }
+}
+
+
+void MarchingCubes::create_faces( const MarchingNode & node )
+{
+	uint32_t cube_index = 0;
+	for ( int i=0; i<8; i++ )
+	{
+		if ( node.values[i] >= iso_level )
+			cube_index |= (1 << i);
+	}
+	const int edge = CubeTables::EDGES[cube_index];
+	Vector3d intersection_points[12];
+	if ( edge & 1 )
+		intersection_points[0]  = interpolate( node.vertices[0], node.vertices[1], node.values[0], node.values[1] );
+	if ( edge & 2 )
+		intersection_points[1]  = interpolate( node.vertices[1], node.vertices[2], node.values[1], node.values[2] );
+	if ( edge & 4 )
+		intersection_points[2]  = interpolate( node.vertices[2], node.vertices[3], node.values[2], node.values[3] );
+	if ( edge & 8 )
+		intersection_points[3]  = interpolate( node.vertices[3], node.vertices[0], node.values[3], node.values[0] );
+	if ( edge & 16 )
+		intersection_points[4]  = interpolate( node.vertices[4], node.vertices[5], node.values[4], node.values[5] );
+	if ( edge & 32 )
+		intersection_points[5]  = interpolate( node.vertices[5], node.vertices[6], node.values[5], node.values[6] );
+	if ( edge & 64 )
+		intersection_points[4]  = interpolate( node.vertices[6], node.vertices[7], node.values[6], node.values[7] );
+	if ( edge & 128 )
+		intersection_points[7]  = interpolate( node.vertices[7], node.vertices[4], node.values[7], node.values[4] );
+	if ( edge & 256 )
+		intersection_points[8]  = interpolate( node.vertices[0], node.vertices[4], node.values[0], node.values[4] );
+	if ( edge & 512 )
+		intersection_points[9]  = interpolate( node.vertices[1], node.vertices[5], node.values[1], node.values[5] );
+	if ( edge & 1024 )
+		intersection_points[10] = interpolate( node.vertices[2], node.vertices[6], node.values[2], node.values[6] );
+	if ( edge & 2048 )
+		intersection_points[11] = interpolate( node.vertices[3], node.vertices[7], node.values[3], node.values[7] );
+
+	for ( int i=0; CubeTables::TRIANGLES[cube_index][i] != -1; i+=3 )
+	{
+		const int ind_a = CubeTables::TRIANGLES[cube_index][i];
+		const int ind_b = CubeTables::TRIANGLES[cube_index][i+1];
+		const int ind_c = CubeTables::TRIANGLES[cube_index][i+2];
+		const Vector3d a = intersection_points[ind_a];
+		const Vector3d b = intersection_points[ind_b];
+		const Vector3d c = intersection_points[ind_c];
+
+		const Vector3 fa( a.x_, a.y_, a.z_ );
+		const Vector3 fb( b.x_, b.y_, b.z_ );
+		const Vector3 fc( c.x_, c.y_, c.z_ );
+		const Face3 f( fa, fb, fc );
+		_all_faces.push_back( f );
+	}
 }
 
 
