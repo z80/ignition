@@ -1,4 +1,9 @@
 
+#ifndef __VOLUME_SOURCE_H_
+#define __VOLUME_SOURCE_H_
+
+
+
 #include "data_types.h"
 #include "vector3d.h"
 #include "se3.h"
@@ -22,7 +27,7 @@ public:
 
     virtual Float max_node_size() const;
     virtual Float min_node_size() const;
-    virtual Float max_node_size( const Vector3d & at ) const;
+    virtual Float max_node_size_at( const Vector3d & at ) const;
 
     SE3  se3;
     bool inverted;
@@ -31,6 +36,11 @@ public:
 
 }
 
+
+
+
+
+#endif
 
 
 

@@ -49,7 +49,7 @@ Float VolumeSource::min_node_size() const
     return 1.0;
 }
 
-Float VolumeSource::max_node_size( const Vector3d & at ) const
+Float VolumeSource::max_node_size_at( const Vector3d & at ) const
 {
     return 1.0;
 }

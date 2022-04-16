@@ -23,6 +23,11 @@
 #include "celestial_motion_ref.h"
 #include "celestial_rotation_ref.h"
 
+
+// Volume.
+#include "volume_source_gd.h"
+#include "volume_source_script_gd.h"
+
 void register_ignition_types()
 {
 	//ClassDB::register_class<OccupancyGrid>();
@@ -44,6 +49,9 @@ void register_ignition_types()
 
 	ClassDB::register_class<Ign::CelestialMotionRef>();
 	ClassDB::register_class<Ign::CelestialRotationRef>();
+
+	ClassDB::register_class<Ign::VolumeSourceGd>();
+	ClassDB::register_class<Ign::VolumeSourceScriptGd>();
 }
 
 void unregister_ignition_types()

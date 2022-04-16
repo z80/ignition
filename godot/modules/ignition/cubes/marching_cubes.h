@@ -1,4 +1,10 @@
 
+#ifndef __MARCHING_CUBES_H_
+#define __MARCHING_CUBES_H_
+
+
+
+
 #include "data_types.h"
 #include "vector3d.h"
 //#include "hashfuncs.h"
@@ -157,8 +163,8 @@ public:
     ~MarchingCubes();
 
     void set_source_transform( const SE3 & se3 );
-    
     bool subdivide_source( VolumeSource * source, DistanceScaler * scaler = nullptr );
+	const Vector<Face3> & faces() const;
 
     Float    node_size( int level ) const;
     Vector3d at( const VectorInt & at_i, DistanceScaler * scaler=nullptr ) const;
@@ -207,6 +213,15 @@ private:
 
 
 }
+
+
+
+
+
+
+
+
+#endif
 
 
 

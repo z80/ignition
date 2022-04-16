@@ -73,6 +73,11 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, DistanceScaler * sc
     return true;
 }
 
+const Vector<Face3> & MarchingCubes::faces() const
+{
+	return _all_faces;
+}
+
 
 Float MarchingCubes::node_size( int level ) const
 {
