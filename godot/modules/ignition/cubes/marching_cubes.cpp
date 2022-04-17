@@ -32,7 +32,7 @@ void MarchingCubes::set_source_transform( const SE3 & se3 )
 
 
 
-bool MarchingCubes::subdivide_source( VolumeSource * source, DistanceScaler * scaler )
+bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScaler * scaler )
 {
     find_subdivision_levels( source );
     MarchingNode     surface_node;
@@ -86,7 +86,7 @@ Float MarchingCubes::node_size( int level ) const
 }
 
 
-Vector3d MarchingCubes::at( const VectorInt & at_i, DistanceScaler * scaler ) const
+Vector3d MarchingCubes::at( const VectorInt & at_i, const DistanceScaler * scaler ) const
 {
     const Vector3d at( static_cast<Float>(at_i.x)*step, 
                        static_cast<Float>(at_i.y)*step, 
@@ -118,7 +118,7 @@ void MarchingCubes::find_subdivision_levels( VolumeSource * source )
 }
 
 
-bool MarchingCubes::find_surface( VolumeSource * source, DistanceScaler * scaler, MarchingNode & surface_node )
+bool MarchingCubes::find_surface( VolumeSource * source, const DistanceScaler * scaler, MarchingNode & surface_node )
 {
 	MarchingNode node;
 	for ( int i=0; i<100000; i++ )
@@ -136,7 +136,7 @@ bool MarchingCubes::find_surface( VolumeSource * source, DistanceScaler * scaler
 }
 
 
-void MarchingCubes::compute_node_values( MarchingNode & node, VolumeSource * source, DistanceScaler * scaler ) const
+void MarchingCubes::compute_node_values( MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler ) const
 {
     VectorInt verts[8];
     const int x  = node.at.x;
@@ -166,7 +166,7 @@ void MarchingCubes::compute_node_values( MarchingNode & node, VolumeSource * sou
 }
 
 
-MarchingNode MarchingCubes::step_towards_surface( const MarchingNode & node, VolumeSource * source, DistanceScaler * scaler ) const
+MarchingNode MarchingCubes::step_towards_surface( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler ) const
 {
     const Float dx = (node.values[1] + node.values[2] + node.values[6] + node.values[5]) - 
                      (node.values[0] + node.values[3] + node.values[7] + node.values[4]);
@@ -240,7 +240,7 @@ Vector3d MarchingCubes::interpolate( const Vector3d & v0, const Vector3d & v1, c
 }
 
 
-void MarchingCubes::add_node_neighbors( const MarchingNode & node, VolumeSource * source, DistanceScaler * scaler )
+void MarchingCubes::add_node_neighbors( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler )
 {
 
     for ( int ix=0; ix<3; ix++ )

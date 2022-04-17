@@ -163,11 +163,11 @@ public:
     ~MarchingCubes();
 
     void set_source_transform( const SE3 & se3 );
-    bool subdivide_source( VolumeSource * source, DistanceScaler * scaler = nullptr );
+    bool subdivide_source( VolumeSource * source, const DistanceScaler * scaler = nullptr );
 	const Vector<Face3> & faces() const;
 
     Float    node_size( int level ) const;
-    Vector3d at( const VectorInt & at_i, DistanceScaler * scaler=nullptr ) const;
+    Vector3d at( const VectorInt & at_i, const DistanceScaler * scaler=nullptr ) const;
 
 
     
@@ -186,15 +186,15 @@ public:
     SE3 source_se3;
 private:
 	void find_subdivision_levels( VolumeSource * source );
-	bool find_surface( VolumeSource * source, DistanceScaler * scaler, MarchingNode & surface_node );
-	void compute_node_values( MarchingNode & node, VolumeSource * source, DistanceScaler * scaler ) const;
-	MarchingNode step_towards_surface( const MarchingNode & node, VolumeSource * source, DistanceScaler * scaler ) const;
+	bool find_surface( VolumeSource * source, const DistanceScaler * scaler, MarchingNode & surface_node );
+	void compute_node_values( MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler ) const;
+	MarchingNode step_towards_surface( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler ) const;
 
 	Vector3d interpolate( const Vector3d & v0, const Vector3d & v1, const Float val0, const Float val1 ) const;
 
     // For BFS search.
     // 26 Node neighbors.
-    void add_node_neighbors( const MarchingNode & node, VolumeSource * source, DistanceScaler * scaler );
+    void add_node_neighbors( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler );
 
     // Create faces.
     void create_faces( const MarchingNode & node );

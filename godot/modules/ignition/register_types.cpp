@@ -27,6 +27,7 @@
 // Volume.
 #include "volume_source_gd.h"
 #include "volume_source_script_gd.h"
+#include "marching_cubes_gd.h"
 
 void register_ignition_types()
 {
@@ -52,6 +53,7 @@ void register_ignition_types()
 
 	ClassDB::register_class<Ign::VolumeSourceGd>();
 	ClassDB::register_class<Ign::VolumeSourceScriptGd>();
+	ClassDB::register_class<Ign::MarchingCubesGd>();
 }
 
 void unregister_ignition_types()
