@@ -52,7 +52,7 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
         for ( MarchingSetIterator it=_recently_added_nodes.begin(); it!=_recently_added_nodes.end(); it++ )
         {
             const MarchingNode & node = *it;
-            const bool on_surface = node.has_surface();
+            const bool on_surface = node.has_surface( iso_level );
             if ( on_surface )
                 add_node_neighbors( node, source, scaler );
         }
@@ -67,7 +67,9 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
 	for ( MarchingSetIterator it=_all_nodes.begin(); it!=_all_nodes.end(); it++ )
 	{
 		const MarchingNode node = *it;
-		create_faces( node );
+		const bool on_surface = node.has_surface( iso_level );
+		if ( on_surface )
+			create_faces( node );
 	}
 
     return true;
@@ -121,15 +123,16 @@ void MarchingCubes::find_subdivision_levels( VolumeSource * source )
 bool MarchingCubes::find_surface( VolumeSource * source, const DistanceScaler * scaler, MarchingNode & surface_node )
 {
 	MarchingNode node;
+	compute_node_values( node, source, scaler );
 	for ( int i=0; i<100000; i++ )
 	{
-		compute_node_values( node, source, scaler );
-		const bool has_surface = node.has_surface();
+		const bool has_surface = node.has_surface( iso_level );
 		if ( has_surface )
 		{
 			surface_node = node;
 			return true;
 		}
+		node = step_towards_surface( node, source, scaler );
 	}
 
 	return false;
@@ -260,9 +263,22 @@ void MarchingCubes::add_node_neighbors( const MarchingNode & node, VolumeSource 
 
                 compute_node_values( candidate, source, scaler );
 
-                std::set<MarchingNode, MarchingNodeCompare>::iterator it = _all_nodes.find( candidate );
-                if ( it != _all_nodes.end() )
+				MarchingSetConstIterator it = _all_nodes.find( candidate );
+                if ( it == _all_nodes.end() )
                 {
+					/*{
+						for ( MarchingSetConstIterator it2=_all_nodes.begin(); it2!=_all_nodes.end(); it2++ )
+						{
+							const MarchingNode & n = *it2;
+							const bool equal = (n == candidate);
+							if ( equal )
+							{
+								const bool equal2 = (n == candidate);
+								MarchingSetConstIterator it3 = _all_nodes.find( candidate );
+								int iii = 0;
+							}
+						}
+					}*/
                     _all_nodes.insert( candidate );
                     _new_candidates.insert( candidate );
                 }
@@ -277,7 +293,8 @@ void MarchingCubes::create_faces( const MarchingNode & node )
 	uint32_t cube_index = 0;
 	for ( int i=0; i<8; i++ )
 	{
-		if ( node.values[i] >= iso_level )
+		const Float value = node.values[i];
+		if ( value >= iso_level )
 			cube_index |= (1 << i);
 	}
 	const int edge = CubeTables::EDGES[cube_index];
@@ -295,7 +312,7 @@ void MarchingCubes::create_faces( const MarchingNode & node )
 	if ( edge & 32 )
 		intersection_points[5]  = interpolate( node.vertices[5], node.vertices[6], node.values[5], node.values[6] );
 	if ( edge & 64 )
-		intersection_points[4]  = interpolate( node.vertices[6], node.vertices[7], node.values[6], node.values[7] );
+		intersection_points[6]  = interpolate( node.vertices[6], node.vertices[7], node.values[6], node.values[7] );
 	if ( edge & 128 )
 		intersection_points[7]  = interpolate( node.vertices[7], node.vertices[4], node.values[7], node.values[4] );
 	if ( edge & 256 )

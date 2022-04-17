@@ -49,9 +49,9 @@ PoolVector3Array MarchingCubesGd::faces() const
 	for ( int i=0; i<qty; i++ )
 	{
 		const Face3 & face = f.ptr()[i];
-		ret[ind]   = face.vertex[0];
-		ret[ind+1] = face.vertex[1];
-		ret[ind+2] = face.vertex[2];
+		ret.set( ind,   face.vertex[0] );
+		ret.set( ind+1, face.vertex[1] );
+		ret.set( ind+2, face.vertex[2] );
 		ind += 3;
 	}
 

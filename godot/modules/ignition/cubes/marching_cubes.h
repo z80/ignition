@@ -41,6 +41,23 @@ public:
         }
         return *this;
     }
+	bool operator==( const VectorInt & inst ) const
+	{
+		if ( this == &inst )
+			return true;
+		if (x != inst.x)
+			return false;
+		if (y != inst.y)
+			return false;
+		if (z != inst.z)
+			return false;
+		return true;
+	}
+	bool operator!=( const VectorInt & inst ) const
+	{
+		const bool ret = !(*this == inst);
+		return ret;
+	}
     VectorInt( const VectorInt & inst )
     {
         *this = inst;
@@ -92,21 +109,57 @@ public:
         return * this;
     }
 
+	bool operator==( const MarchingNode & inst ) const
+	{
+		if (this == &inst)
+			return true;
+		if (at != inst.at)
+			return false;
+		if (size != inst.size)
+			return false;
+		return true;
+	}
+
+	bool operator<( const MarchingNode & inst ) const
+	{
+		if ( at.x < inst.at.x )
+			return true;
+		else if ( at.x > inst.at.x )
+			return false;
+
+		if ( at.y < inst.at.y )
+			return true;
+		else if ( at.y > inst.at.y )
+			return false;
+
+		if ( at.z < inst.at.z )
+			return true;
+		else if ( at.z > inst.at.z )
+			return false;
+
+		if ( size < inst.size )
+			return true;
+		else if ( size > inst.size )
+			return false;
+
+		return false;
+	}
+
     MarchingNode( const MarchingNode & inst )
     {
         *this = inst;
     }
 
-    bool has_surface() const
+    bool has_surface( const Float iso_level ) const
     {
         int above_qty = 0;
         int below_qty = 0;
         for ( int i=0; i<8; i++ )
         {
             const Float v = values[i];
-            if (v > 0.0)
+            if (v > iso_level)
                 above_qty += 1;
-            else
+            else if (v < iso_level)
                 below_qty += 1;
 
             if ( (above_qty > 0) && (below_qty > 0) )
@@ -137,9 +190,9 @@ public:
     }
 }*/
 
-struct MarchingNodeCompare
+/*struct MarchingNodeCompare
 {
-    bool operator()( const MarchingNode & a, const MarchingNode & b ) const
+    static bool operator<( const MarchingNode & a, const MarchingNode & b ) const
     {
         if ( a.at.x < b.at.x )
             return true;
@@ -152,7 +205,21 @@ struct MarchingNodeCompare
 
         return false;
     }
-};
+
+	static bool operator==( const MarchingNode & a, const MarchingNode & b ) const
+	{
+		if ( a.at.x != b.at.x )
+			return false;
+		else if ( a.at.y != b.at.y )
+			return false;
+		else if ( a.at.z != b.at.z )
+			return false;
+		else if ( a.size != b.size )
+			return false;
+
+		return true;
+	}
+};*/
 
 
 
@@ -199,8 +266,9 @@ private:
     // Create faces.
     void create_faces( const MarchingNode & node );
     
-    typedef std::set<MarchingNode, MarchingNodeCompare>           MarchingSet;
-    typedef std::set<MarchingNode, MarchingNodeCompare>::iterator MarchingSetIterator;
+    typedef std::set<MarchingNode>           MarchingSet;
+    typedef std::set<MarchingNode>::iterator MarchingSetIterator;
+	typedef std::set<MarchingNode>::const_iterator MarchingSetConstIterator;
 
 
     MarchingSet _all_nodes;
