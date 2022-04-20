@@ -9,6 +9,8 @@
 #include "distance_scaler_ref.h"
 
 
+class Node;
+
 namespace Ign
 {
 
@@ -25,9 +27,13 @@ public:
 	void set_source_transform( const Ref<Se3Ref> & se3 );
 	bool subdivide_source( const Ref<VolumeSourceGd> & source, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 	PoolVector3Array faces() const;
+	void apply_to_mesh( Node * mesh_instance );
 
 public:
 	MarchingCubes cubes;
+
+	PoolVector3Array vertices, normals;
+	PoolRealArray    tangents;
 };
 
 
