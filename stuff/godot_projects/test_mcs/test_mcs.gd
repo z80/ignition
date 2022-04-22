@@ -12,10 +12,14 @@ func _ready():
 	source.set_script( script )
 	
 	cubes = MarchingCubesGd.new()
+	cubes.max_nodes_qty = 10000
 	cubes.subdivide_source( source )
 	
 	var faces: PoolVector3Array = cubes.faces()
 	print( faces.size() )
+	
+	var mi: MeshInstance = get_node( "MeshInstance" )
+	cubes.apply_to_mesh( mi )
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

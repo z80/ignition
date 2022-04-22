@@ -15,6 +15,11 @@ void MarchingCubesGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("subdivide_source", "source", "scaler"), &MarchingCubesGd::subdivide_source, Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("faces"),                                &MarchingCubesGd::faces,            Variant::POOL_VECTOR3_ARRAY );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh", "mesh_instance"),       &MarchingCubesGd::apply_to_mesh );
+
+	ClassDB::bind_method( D_METHOD("set_max_nodes_qty", "qty"),             &MarchingCubesGd::set_max_nodes_qty );
+	ClassDB::bind_method( D_METHOD("get_max_nodes_qty"),                    &MarchingCubesGd::get_max_nodes_qty, Variant::INT );
+
+	ADD_PROPERTY( PropertyInfo( Variant::INT,   "max_nodes_qty" ),         "set_max_nodes_qty", "get_max_nodes_qty" );
 }
 
 MarchingCubesGd::MarchingCubesGd()
@@ -85,6 +90,8 @@ void MarchingCubesGd::apply_to_mesh( Node * mesh_instance )
 	//uvs.resize( verts_qty );
 	//uvs2.resize( qty );
 
+	int vert_ind = 0;
+	int tang_ind = 0;
 	for ( int i=0; i<tris_qty; i++ )
 	{
 		const Face3 & face = f.ptr()[i];
@@ -94,13 +101,14 @@ void MarchingCubesGd::apply_to_mesh( Node * mesh_instance )
 		{
 			const Vector3 & v = face.vertex[j];
 
-			vertices.set( i, v );
-			normals.set( i, norm );
-			int ind = i*4;
-			tangents.set( ind++, tangent.x );
-			tangents.set( ind++, tangent.y );
-			tangents.set( ind++, tangent.z );
-			tangents.set( ind, 1.0 );
+			vertices.set( vert_ind, v );
+			normals.set( vert_ind, norm );
+			vert_ind += 1;
+			
+			tangents.set( tang_ind++, tangent.x );
+			tangents.set( tang_ind++, tangent.y );
+			tangents.set( tang_ind++, tangent.z );
+			tangents.set( tang_ind++, 1.0 );
 			//const Color c = v.color;
 			//colors.set( i, c );
 			//uvs.set( i, uv );
@@ -122,6 +130,17 @@ void MarchingCubesGd::apply_to_mesh( Node * mesh_instance )
 
 	mi->set_mesh( am );
 }
+
+void MarchingCubesGd::set_max_nodes_qty( int qty )
+{
+	cubes.max_nodes_qty = qty;
+}
+
+int MarchingCubesGd::get_max_nodes_qty() const
+{
+	return cubes.max_nodes_qty;
+}
+
 
 
 

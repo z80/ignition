@@ -14,10 +14,11 @@ namespace Ign
 
 MarchingCubes::MarchingCubes()
 {
-	iso_level  = 0.0;
-	eps        = 1.0e-4;
-	step       = 1.0;
-	levels_qty = 1;
+	iso_level     = 0.0;
+	eps           = 1.0e-4;
+	step          = 1.0;
+	levels_qty    = 1;
+	max_nodes_qty = -1;
 }
 
 
@@ -47,6 +48,7 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
     _all_nodes.insert( surface_node );
     _recently_added_nodes.insert( surface_node );
 
+	int nodes_qty = 1;
     for ( ;; )
     {
         for ( MarchingSetIterator it=_recently_added_nodes.begin(); it!=_recently_added_nodes.end(); it++ )
@@ -54,14 +56,17 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
             const MarchingNode & node = *it;
             const bool on_surface = node.has_surface( iso_level );
             if ( on_surface )
-                add_node_neighbors( node, source, scaler );
+                add_node_neighbors( node, source, scaler, nodes_qty );
         }
         if ( _new_candidates.empty() )
             break;
         
         _recently_added_nodes = _new_candidates;
         _new_candidates.clear();
-    }
+
+		if ( (max_nodes_qty > 0) && (nodes_qty >= max_nodes_qty) )
+			break;
+	}
 
 	_all_faces.clear();
 	for ( MarchingSetIterator it=_all_nodes.begin(); it!=_all_nodes.end(); it++ )
@@ -243,7 +248,7 @@ Vector3d MarchingCubes::interpolate( const Vector3d & v0, const Vector3d & v1, c
 }
 
 
-void MarchingCubes::add_node_neighbors( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler )
+void MarchingCubes::add_node_neighbors( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler, int & nodes_qty )
 {
 
     for ( int ix=0; ix<3; ix++ )
@@ -281,6 +286,7 @@ void MarchingCubes::add_node_neighbors( const MarchingNode & node, VolumeSource 
 					}*/
                     _all_nodes.insert( candidate );
                     _new_candidates.insert( candidate );
+					nodes_qty += 1;
                 }
             }
         }

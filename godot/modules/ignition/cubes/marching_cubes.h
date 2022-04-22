@@ -247,6 +247,8 @@ public:
     Float step;
     // Number of scale up levels.
     int   levels_qty;
+	// Max allowed number of nodes.
+	int   max_nodes_qty;
 
     // Source transform.
     // Points to probe first are sent through this transformation.
@@ -261,7 +263,7 @@ private:
 
     // For BFS search.
     // 26 Node neighbors.
-    void add_node_neighbors( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler );
+    void add_node_neighbors( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler, int & nodes_qty );
 
     // Create faces.
     void create_faces( const MarchingNode & node );

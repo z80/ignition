@@ -29,6 +29,9 @@ public:
 	PoolVector3Array faces() const;
 	void apply_to_mesh( Node * mesh_instance );
 
+	void set_max_nodes_qty( int qty );
+	int get_max_nodes_qty() const;
+
 public:
 	MarchingCubes cubes;
 
