@@ -35,13 +35,13 @@ func value( at: Vector3=Vector3() ):
 
 
 func max_node_size():
-	return 0.5
+	return 0.25
 
 func min_node_size():
-	return 0.5
+	return 0.25
 
 func max_node_size_at( at: Vector3 ):
-	return 0.5
+	return 0.25
 
 
 
