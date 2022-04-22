@@ -199,23 +199,23 @@ MarchingNode MarchingCubes::step_towards_surface( const MarchingNode & node, Vol
     if ( max_ind == 0 )
     {
         if (dx > 0.0)
-            next_node.at.x += node.size;
-        else
             next_node.at.x -= node.size;
+        else
+            next_node.at.x += node.size;
     }
     else if ( max_ind == 1 )
     {
         if (dy > 0.0)
-            next_node.at.y += node.size;
-        else
             next_node.at.y -= node.size;
+        else
+            next_node.at.y += node.size;
     }
     else
     {
         if (dz > 0.0)
-            next_node.at.z += node.size;
-        else
             next_node.at.z -= node.size;
+        else
+            next_node.at.z += node.size;
     }
 
     // Compute node values.
