@@ -144,7 +144,7 @@ bool MarchingCubes::find_surface( VolumeSource * source, const DistanceScaler * 
 }
 
 
-void MarchingCubes::compute_node_values( MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler ) const
+void MarchingCubes::compute_node_values( MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler )
 {
     VectorInt verts[8];
     const int x  = node.at.x;
@@ -164,17 +164,18 @@ void MarchingCubes::compute_node_values( MarchingNode & node, VolumeSource * sou
     {
 		node.vertices_int[i] = verts[i];
         // Value at warped position.
+		const VectorInt & vert_int = verts[i];
         const Vector3d vert_d = at( verts[i], scaler );
-        const Float    value  = source->value( vert_d );
+        const Float    value  = value_at( source, vert_int, vert_d );
         // Store unwarped position.
-        const Vector3d vert   = at( verts[i], nullptr );
-        node.vertices[i] = vert;
-        node.values[i]   = value;
+        const Vector3d vert = at( verts[i], nullptr );
+        node.vertices[i]    = vert;
+        node.values[i]      = value;
     }
 }
 
 
-MarchingNode MarchingCubes::step_towards_surface( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler ) const
+MarchingNode MarchingCubes::step_towards_surface( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler )
 {
     const Float dx = (node.values[1] + node.values[2] + node.values[6] + node.values[5]) - 
                      (node.values[0] + node.values[3] + node.values[7] + node.values[4]);
@@ -346,6 +347,25 @@ void MarchingCubes::create_faces( const MarchingNode & node )
 		_all_faces.push_back( f );
 	}
 }
+
+
+
+Float MarchingCubes::value_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at )
+{
+	ValuesMapConstIterator it = _values_map.find( vector_int );
+	if ( it != _values_map.end() )
+	{
+		const Float v = it->second;
+		return v;
+	}
+
+	const Float v = source->value( at );
+	_values_map[vector_int] = v;
+
+	return v;
+}
+
+
 
 
 }

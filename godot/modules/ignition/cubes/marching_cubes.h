@@ -16,6 +16,7 @@
 
 #include <vector>
 #include <set>
+#include <map>
 
 namespace Ign
 {
@@ -57,6 +58,25 @@ public:
 	{
 		const bool ret = !(*this == inst);
 		return ret;
+	}
+	bool operator<( const VectorInt & inst ) const
+	{
+		if ( x < inst.x )
+			return true;
+		else if ( x > inst.x )
+			return false;
+
+		if ( y < inst.y )
+			return true;
+		else if ( y > inst.y )
+			return false;
+
+		if ( z < inst.z )
+			return true;
+		else if ( z > inst.z )
+			return false;
+
+		return false;
 	}
     VectorInt( const VectorInt & inst )
     {
@@ -256,8 +276,8 @@ public:
 private:
 	void find_subdivision_levels( VolumeSource * source );
 	bool find_surface( VolumeSource * source, const DistanceScaler * scaler, MarchingNode & surface_node );
-	void compute_node_values( MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler ) const;
-	MarchingNode step_towards_surface( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler ) const;
+	void compute_node_values( MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler );
+	MarchingNode step_towards_surface( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler );
 
 	Vector3d interpolate( const Vector3d & v0, const Vector3d & v1, const Float val0, const Float val1 ) const;
 
@@ -267,10 +287,17 @@ private:
 
     // Create faces.
     void create_faces( const MarchingNode & node );
+
+	// Compute value with reusing pre-computed values.
+	Float value_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at );
     
-    typedef std::set<MarchingNode>           MarchingSet;
-    typedef std::set<MarchingNode>::iterator MarchingSetIterator;
+    typedef std::set<MarchingNode>                 MarchingSet;
+    typedef std::set<MarchingNode>::iterator       MarchingSetIterator;
 	typedef std::set<MarchingNode>::const_iterator MarchingSetConstIterator;
+
+	typedef std::map<VectorInt, Float>                 ValuesMap;
+	typedef std::map<VectorInt, Float>::iterator       ValuesMapIterator;
+	typedef std::map<VectorInt, Float>::const_iterator ValuesMapConstIterator;
 
 
     MarchingSet _all_nodes;
@@ -278,6 +305,9 @@ private:
     MarchingSet _new_candidates;
 
 	Vector<Face3> _all_faces;
+
+	// In order to not compute values a few times.
+	ValuesMap     _values_map;
 };
 
 
