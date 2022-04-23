@@ -198,6 +198,12 @@ public:
 
 	NodeEdgeInt()
 	{}
+	NodeEdgeInt( const VectorInt & aa, const VectorInt & bb )
+	{
+		a = aa;
+		b = bb;
+	}
+	{}
 	~NodeEdgeInt()
 	{}
 	const NodeEdgeInt & operator=( const NodeEdgeInt & inst )
@@ -252,6 +258,47 @@ public:
 };
 
 
+
+class NodeFace
+{
+public:
+	Face3       face;
+	// Node edges on which face vertices lay.
+	NodeEdgeInt node_edges[3];
+
+	NodeFace()
+	{}
+	NodeFace( const Face3 & f, const NodeEdgeInt & na, const NodeEdgeInt & nb, const EdgeInt & nc )
+	{
+		face = f;
+		node_edges[0] = na;
+		node_edges[1] = na;
+		node_edges[2] = na;
+	}
+	~NodeFace()
+	{}
+	const NodeFace & operator=( const NodeFace & inst )
+	{
+		if ( this != &inst )
+		{
+			face = inst.face;
+			for ( int i=0; i<3; i++ )
+			{
+				node_edges[i] = inst.node_edges[i];
+			}
+		}
+
+		return *this;
+	}
+	NodeFace( const NodeFace & inst )
+	{
+		*this = inst;
+	}
+};
+
+
+
+
 class NormalsAndQty
 {
 public:
@@ -262,6 +309,11 @@ public:
 	{
 		norms = Vector3d::ZERO;
 		qty   = 0;
+	}
+	NormalsAndQty( const Vector3d & n )
+	{
+		norms = n;
+		qty   = 1;
 	}
 	~NormalsAndQty()
 	{}
@@ -344,7 +396,7 @@ public:
 
     void set_source_transform( const SE3 & se3 );
     bool subdivide_source( VolumeSource * source, const DistanceScaler * scaler = nullptr );
-	const Vector<Face3> & faces() const;
+	
 
     Float    node_size( int level ) const;
     Vector3d at( const VectorInt & at_i, const DistanceScaler * scaler=nullptr ) const;
@@ -383,6 +435,9 @@ private:
 
 	// Compute value with reusing pre-computed values.
 	Float value_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at );
+
+	// Store face normal for node edge.
+	void append_normal( const NodeEdgeInt & edge, const Vector3d & n );
     
     typedef std::set<MarchingNode>                 MarchingSet;
     typedef std::set<MarchingNode>::iterator       MarchingSetIterator;
@@ -401,7 +456,11 @@ private:
     MarchingSet _recently_added_nodes;
     MarchingSet _new_candidates;
 
-	Vector<Face3> _all_faces;
+	Vector<NodeFace> _all_faces;
+	// Results for applying to mesh.
+	Vector<Vector3>  _verts;
+	Vector<Vector3>  _norms;
+	Vector<real_t>   _tangs;
 
 	// In order to not compute values a few times.
 	ValuesMap     _values_map;

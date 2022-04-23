@@ -26,7 +26,6 @@ public:
 
 	void set_source_transform( const Ref<Se3Ref> & se3 );
 	bool subdivide_source( const Ref<VolumeSourceGd> & source, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
-	PoolVector3Array faces() const;
 	void apply_to_mesh( Node * mesh_instance );
 
 	void set_max_nodes_qty( int qty );

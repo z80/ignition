@@ -35,6 +35,9 @@ void MarchingCubes::set_source_transform( const SE3 & se3 )
 
 bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScaler * scaler )
 {
+	_values_map.clear();
+	_normals_map.clear();
+
     find_subdivision_levels( source );
     MarchingNode     surface_node;
 
@@ -77,13 +80,15 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
 			create_faces( node );
 	}
 
+	// Normalize normals.
+	for ( NormalsMapIterator it=_normals_map.begin(); it!=_normals_map.end(); it++ )
+	{
+		NormalsAndQty & norms = it->second;
+	}
+
     return true;
 }
 
-const Vector<Face3> & MarchingCubes::faces() const
-{
-	return _all_faces;
-}
 
 
 Float MarchingCubes::node_size( int level ) const
@@ -308,29 +313,65 @@ void MarchingCubes::create_faces( const MarchingNode & node )
 	Vector3d intersection_points[12];
 	NodeEdgeInt edges_int[12];
 	if ( edge & 1 )
+	{
 		intersection_points[0]  = interpolate( node.vertices[0], node.vertices[1], node.values[0], node.values[1] );
+		edges_int[0] = NodeEdgeInt( node.vertices_int[0], node.vertices_int[1] );
+	}
 	if ( edge & 2 )
+	{
 		intersection_points[1]  = interpolate( node.vertices[1], node.vertices[2], node.values[1], node.values[2] );
+		edges_int[1] = NodeEdgeInt( node.vertices_int[1], node.vertices_int[2] );
+	}
 	if ( edge & 4 )
+	{
 		intersection_points[2]  = interpolate( node.vertices[2], node.vertices[3], node.values[2], node.values[3] );
+		edges_int[2] = NodeEdgeInt( node.vertices_int[2], node.vertices_int[3] );
+	}
 	if ( edge & 8 )
+	{
 		intersection_points[3]  = interpolate( node.vertices[3], node.vertices[0], node.values[3], node.values[0] );
+		edges_int[3] = NodeEdgeInt( node.vertices_int[3], node.vertices_int[0] );
+	}
 	if ( edge & 16 )
+	{
 		intersection_points[4]  = interpolate( node.vertices[4], node.vertices[5], node.values[4], node.values[5] );
+		edges_int[4] = NodeEdgeInt( node.vertices_int[4], node.vertices_int[5] );
+	}
 	if ( edge & 32 )
+	{
 		intersection_points[5]  = interpolate( node.vertices[5], node.vertices[6], node.values[5], node.values[6] );
+		edges_int[5] = NodeEdgeInt( node.vertices_int[5], node.vertices_int[6] );
+	}
 	if ( edge & 64 )
+	{
 		intersection_points[6]  = interpolate( node.vertices[6], node.vertices[7], node.values[6], node.values[7] );
+		edges_int[6] = NodeEdgeInt( node.vertices_int[6], node.vertices_int[7] );
+	}
 	if ( edge & 128 )
+	{
 		intersection_points[7]  = interpolate( node.vertices[7], node.vertices[4], node.values[7], node.values[4] );
+		edges_int[7] = NodeEdgeInt( node.vertices_int[7], node.vertices_int[4] );
+	}
 	if ( edge & 256 )
+	{
 		intersection_points[8]  = interpolate( node.vertices[0], node.vertices[4], node.values[0], node.values[4] );
+		edges_int[8] = NodeEdgeInt( node.vertices_int[0], node.vertices_int[4] );
+	}
 	if ( edge & 512 )
+	{
 		intersection_points[9]  = interpolate( node.vertices[1], node.vertices[5], node.values[1], node.values[5] );
+		edges_int[9] = NodeEdgeInt( node.vertices_int[1], node.vertices_int[5] );
+	}
 	if ( edge & 1024 )
+	{
 		intersection_points[10] = interpolate( node.vertices[2], node.vertices[6], node.values[2], node.values[6] );
+		edges_int[10] = NodeEdgeInt( node.vertices_int[2], node.vertices_int[6] );
+	}
 	if ( edge & 2048 )
+	{
 		intersection_points[11] = interpolate( node.vertices[3], node.vertices[7], node.values[3], node.values[7] );
+		edges_int[11] = NodeEdgeInt( node.vertices_int[3], node.vertices_int[7] );
+	}
 
 	const int * indices = CubeTables::TRIANGLES[cube_index];
 	for ( int i=0; indices[i] != -1; i+=3 )
@@ -338,15 +379,27 @@ void MarchingCubes::create_faces( const MarchingNode & node )
 		const int ind_a = indices[i];
 		const int ind_b = indices[i+1];
 		const int ind_c = indices[i+2];
-		const Vector3d a = intersection_points[ind_a];
-		const Vector3d b = intersection_points[ind_b];
-		const Vector3d c = intersection_points[ind_c];
+
+		const Vector3d & a = intersection_points[ind_a];
+		const Vector3d & b = intersection_points[ind_b];
+		const Vector3d & c = intersection_points[ind_c];
+
+		const NodeEdgeInt & edge_a = edges_int[ind_a];
+		const NodeEdgeInt & edge_b = edges_int[ind_b];
+		const NodeEdgeInt & edge_c = edges_int[ind_c];
 
 		const Vector3 fa( a.x_, a.y_, a.z_ );
 		const Vector3 fb( b.x_, b.y_, b.z_ );
 		const Vector3 fc( c.x_, c.y_, c.z_ );
 		const Face3 f( fa, fb, fc );
-		_all_faces.push_back( f );
+
+		const NodeFace face( f, edge_a, edge_b, edge_c );
+		_all_faces.push_back( face );
+
+		const Vector3 norm = f.get_plane().normal;
+		append_normal( edge_a, norm );
+		append_normal( edge_b, norm );
+		append_normal( edge_c, norm );
 	}
 }
 
@@ -365,6 +418,23 @@ Float MarchingCubes::value_at( VolumeSource * source, const VectorInt & vector_i
 	_values_map[vector_int] = v;
 
 	return v;
+}
+
+
+
+void MarchingCubes::append_normal( const NodeEdgeInt & edge, const Vector3d & n )
+{
+	NormalsMap it = _normals_map.find( edge );
+	if ( it != _normals_map.end() )
+	{
+		NormalsAndQty & norms = it->second;
+		norms.qty   += 1;
+		norms.norms += n;
+		return;
+	}
+
+	const NormalsAndQty norms( n );
+	_normals_map[edge] = norms;
 }
 
 
