@@ -306,6 +306,7 @@ void MarchingCubes::create_faces( const MarchingNode & node )
 	}
 	const int edge = CubeTables::EDGES[cube_index];
 	Vector3d intersection_points[12];
+	NodeEdgeInt edges_int[12];
 	if ( edge & 1 )
 		intersection_points[0]  = interpolate( node.vertices[0], node.vertices[1], node.values[0], node.values[1] );
 	if ( edge & 2 )
@@ -331,11 +332,12 @@ void MarchingCubes::create_faces( const MarchingNode & node )
 	if ( edge & 2048 )
 		intersection_points[11] = interpolate( node.vertices[3], node.vertices[7], node.values[3], node.values[7] );
 
-	for ( int i=0; CubeTables::TRIANGLES[cube_index][i] != -1; i+=3 )
+	const int * indices = CubeTables::TRIANGLES[cube_index];
+	for ( int i=0; indices[i] != -1; i+=3 )
 	{
-		const int ind_a = CubeTables::TRIANGLES[cube_index][i];
-		const int ind_b = CubeTables::TRIANGLES[cube_index][i+1];
-		const int ind_c = CubeTables::TRIANGLES[cube_index][i+2];
+		const int ind_a = indices[i];
+		const int ind_b = indices[i+1];
+		const int ind_c = indices[i+2];
 		const Vector3d a = intersection_points[ind_a];
 		const Vector3d b = intersection_points[ind_b];
 		const Vector3d c = intersection_points[ind_c];
@@ -359,7 +361,7 @@ Float MarchingCubes::value_at( VolumeSource * source, const VectorInt & vector_i
 		return v;
 	}
 
-	const Float v = source->value( at );
+	const Float v = source->value_global( at );
 	_values_map[vector_int] = v;
 
 	return v;

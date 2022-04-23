@@ -190,6 +190,99 @@ public:
     }
 };
 
+
+class NodeEdgeInt
+{
+public:
+	VectorInt a, b;
+
+	NodeEdgeInt()
+	{}
+	~NodeEdgeInt()
+	{}
+	const NodeEdgeInt & operator=( const NodeEdgeInt & inst )
+	{
+		if ( this != &inst )
+		{
+			a = inst.a;
+			b = inst.b;
+		}
+		return *this;
+	}
+	NodeEdgeInt( const NodeEdgeInt & inst )
+	{
+		*this = inst;
+	}
+
+	bool operator<( const NodeEdgeInt & other )
+	{
+		if ( a.x < other.a.x )
+			return true;
+		else if ( a.x > other.a.x )
+			return false;
+
+		if ( a.y < other.a.y )
+			return true;
+		else if ( a.y > other.a.y )
+			return false;
+
+		if ( a.z < other.a.z )
+			return true;
+		else if ( a.z > other.a.z )
+			return false;
+
+
+		if ( b.x < other.b.x )
+			return true;
+		else if ( b.x > other.b.x )
+			return false;
+
+		if ( b.y < other.b.y )
+			return true;
+		else if ( b.y > other.b.y )
+			return false;
+
+		if ( b.z < other.b.z )
+			return true;
+		else if ( b.z > other.b.z )
+			return false;
+
+		return false;
+	}
+};
+
+
+class NormalsAndQty
+{
+public:
+	Vector3d norms;
+	int      qty;
+
+	NormalsAndQty()
+	{
+		norms = Vector3d::ZERO;
+		qty   = 0;
+	}
+	~NormalsAndQty()
+	{}
+	const NormalsAndQty & operator=( const NormalsAndQty & inst )
+	{
+		if ( this != &inst )
+		{
+			norms = inst.norms;
+			qty   = inst.qty;
+		}
+		return *this;
+	}
+	NormalsAndQty( const NormalsAndQty & inst )
+	{
+		*this = inst;
+	}
+};
+
+
+
+
 /*struct MarchingNodeHasher
 {
     static _FORCE_INLINE_ uint32_t hash( const MarchingNode & n )
@@ -299,6 +392,10 @@ private:
 	typedef std::map<VectorInt, Float>::iterator       ValuesMapIterator;
 	typedef std::map<VectorInt, Float>::const_iterator ValuesMapConstIterator;
 
+	typedef std::map<NodeEdgeInt, NormalsAndQty>                 NormalsMap;
+	typedef std::map<NodeEdgeInt, NormalsAndQty>::iterator       NormalsMapIterator;
+	typedef std::map<NodeEdgeInt, NormalsAndQty>::const_iterator NormalsMapConstIterator;
+
 
     MarchingSet _all_nodes;
     MarchingSet _recently_added_nodes;
@@ -308,6 +405,9 @@ private:
 
 	// In order to not compute values a few times.
 	ValuesMap     _values_map;
+
+	// In order to compute normals.
+	NormalsMap    _normals_map;
 };
 
 

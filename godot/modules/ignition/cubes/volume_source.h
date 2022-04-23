@@ -17,7 +17,11 @@ public:
     VolumeSource();
     virtual ~VolumeSource();
 
-    virtual Float value( const Vector3d & at ) const;
+	// This one computes value in global space.
+	Float value_global( const Vector3d & at ) const;
+
+	// This one is computing in local space.
+	virtual Float value( const Vector3d & at ) const;
 
     void set_se3( const SE3 & se3 );
     const SE3 & get_se3() const;
@@ -30,6 +34,7 @@ public:
     virtual Float max_node_size_at( const Vector3d & at ) const;
 
     SE3  se3;
+	SE3  se3_inverted;
     bool inverted;
 };
 
