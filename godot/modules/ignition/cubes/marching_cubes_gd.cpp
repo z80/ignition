@@ -59,9 +59,10 @@ void MarchingCubesGd::apply_to_mesh( Node * mesh_instance )
 		return;
 	}
 
-	const Vector<Face3> & f = cubes.faces();
-	const int tris_qty  = f.size();
-	const int verts_qty = tris_qty * 3;
+	const Vector<Vector3> & verts = cubes.vertices();
+	const Vector<Vector3> & norms = cubes.normals();
+	const Vector<real_t> & tangs = cubes.tangents();
+	const int verts_qty = verts.size();
 	// Fill in arrays.
 	vertices.resize( verts_qty );
 	normals.resize( verts_qty );
@@ -72,29 +73,24 @@ void MarchingCubesGd::apply_to_mesh( Node * mesh_instance )
 
 	int vert_ind = 0;
 	int tang_ind = 0;
-	for ( int i=0; i<tris_qty; i++ )
+	for ( int i=0; i<verts_qty; i++ )
 	{
-		const Face3 & face = f.ptr()[i];
-		const Vector3 norm = face.get_plane().normal;
-		const Vector3 tangent = norm.cross( face.vertex[2] - face.vertex[0] ).normalized();
-		for ( int j=0; j<3; j++ )
-		{
-			const Vector3 & v = face.vertex[j];
-
-			vertices.set( vert_ind, v );
-			normals.set( vert_ind, norm );
-			vert_ind += 1;
-			
-			tangents.set( tang_ind++, tangent.x );
-			tangents.set( tang_ind++, tangent.y );
-			tangents.set( tang_ind++, tangent.z );
-			tangents.set( tang_ind++, 1.0 );
-			//const Color c = v.color;
-			//colors.set( i, c );
-			//uvs.set( i, uv );
-			//uvs2.set( i, uv2 );
-		}
+		const Vector3 vert = verts.ptr()[i];
+		const Vector3 norm = norms.ptr()[i];
+		vertices.set( i, vert );
+		normals.set( i, norm );
 	}
+
+	const int tangs_qty = tangs.size();
+	for ( int i=0; i<tangs_qty; i++ )
+	{
+		const real_t tang = tangs.ptr()[i];
+		tangents.set( i, tang );
+	}
+	//const Color c = v.color;
+	//colors.set( i, c );
+	//uvs.set( i, uv );
+	//uvs2.set( i, uv2 );
 
 	Array arrays;
 	arrays.resize( ArrayMesh::ARRAY_MAX );

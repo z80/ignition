@@ -15,8 +15,8 @@ func _ready():
 	cubes.max_nodes_qty = 20000
 	cubes.subdivide_source( source )
 	
-	var faces: PoolVector3Array = cubes.faces()
-	print( faces.size() )
+#	var faces: PoolVector3Array = cubes.faces()
+#	print( faces.size() )
 	
 	var mi: MeshInstance = get_node( "MeshInstance" )
 	cubes.apply_to_mesh( mi )

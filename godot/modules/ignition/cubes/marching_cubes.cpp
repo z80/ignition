@@ -71,6 +71,7 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
 			break;
 	}
 
+	// Create faces.
 	_all_faces.clear();
 	for ( MarchingSetIterator it=_all_nodes.begin(); it!=_all_nodes.end(); it++ )
 	{
@@ -84,10 +85,58 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
 	for ( NormalsMapIterator it=_normals_map.begin(); it!=_normals_map.end(); it++ )
 	{
 		NormalsAndQty & norms = it->second;
+		const Vector3d norm = norms.norms / static_cast<Float>(norms.qty);
+		norms.norms = norm;
+	}
+
+	// Assign vertex positions, normals, and tangents.
+	_verts.clear();
+	_norms.clear();
+	_tangs.clear();
+	const int faces_qty = _all_faces.size();
+	for ( int i=0; i<faces_qty; i++ )
+	{
+		const NodeFace & face = _all_faces.ptr()[i];
+		const Face3 & f = face.face;
+		const Vector3 norm = f.get_plane().normal;
+		const Vector3 tangent = norm.cross( f.vertex[2] - f.vertex[0] ).normalized();
+		for ( int j=0; j<3; j++ )
+		{
+			const Vector3 vert          = f.vertex[j];
+			const NodeEdgeInt & edge    = face.node_edges[j];
+			NormalsMapConstIterator it  = _normals_map.find( edge );
+			const NormalsAndQty & n_qty = it->second;
+			const Vector3d & n          = n_qty.norms;
+
+			const Vector3 norm( n.x_, n.y_, n.z_ );
+
+			_verts.push_back( vert );
+			_norms.push_back( norm );
+			_tangs.push_back( tangent.x );
+			_tangs.push_back( tangent.y );
+			_tangs.push_back( tangent.z );
+			_tangs.push_back( 1.0 );
+		}
 	}
 
     return true;
 }
+
+const Vector<Vector3> & MarchingCubes::vertices() const
+{
+	return _verts;
+}
+
+const Vector<Vector3> & MarchingCubes::normals() const
+{
+	return _norms;
+}
+
+const Vector<real_t>  & MarchingCubes::tangents() const
+{
+	return _tangs;
+}
+
 
 
 
@@ -424,7 +473,7 @@ Float MarchingCubes::value_at( VolumeSource * source, const VectorInt & vector_i
 
 void MarchingCubes::append_normal( const NodeEdgeInt & edge, const Vector3d & n )
 {
-	NormalsMap it = _normals_map.find( edge );
+	NormalsMapIterator it = _normals_map.find( edge );
 	if ( it != _normals_map.end() )
 	{
 		NormalsAndQty & norms = it->second;

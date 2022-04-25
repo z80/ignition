@@ -203,7 +203,6 @@ public:
 		a = aa;
 		b = bb;
 	}
-	{}
 	~NodeEdgeInt()
 	{}
 	const NodeEdgeInt & operator=( const NodeEdgeInt & inst )
@@ -220,7 +219,7 @@ public:
 		*this = inst;
 	}
 
-	bool operator<( const NodeEdgeInt & other )
+	bool operator<( const NodeEdgeInt & other ) const
 	{
 		if ( a.x < other.a.x )
 			return true;
@@ -268,12 +267,12 @@ public:
 
 	NodeFace()
 	{}
-	NodeFace( const Face3 & f, const NodeEdgeInt & na, const NodeEdgeInt & nb, const EdgeInt & nc )
+	NodeFace( const Face3 & f, const NodeEdgeInt & na, const NodeEdgeInt & nb, const NodeEdgeInt & nc )
 	{
 		face = f;
 		node_edges[0] = na;
-		node_edges[1] = na;
-		node_edges[2] = na;
+		node_edges[1] = nb;
+		node_edges[2] = nc;
 	}
 	~NodeFace()
 	{}
@@ -396,7 +395,13 @@ public:
 
     void set_source_transform( const SE3 & se3 );
     bool subdivide_source( VolumeSource * source, const DistanceScaler * scaler = nullptr );
-	
+
+	const Vector<Vector3> & vertices() const;
+	const Vector<Vector3> & normals() const;
+	const Vector<real_t>  & tangents() const;
+
+
+
 
     Float    node_size( int level ) const;
     Vector3d at( const VectorInt & at_i, const DistanceScaler * scaler=nullptr ) const;
