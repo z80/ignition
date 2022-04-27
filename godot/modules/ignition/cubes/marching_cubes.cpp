@@ -159,9 +159,9 @@ Vector3d MarchingCubes::at( const VectorInt & at_i, const DistanceScaler * scale
         return at_in_source;
     }
 
-    const Vector3d at_real      = scaler->unscale( at );
-    const Vector3d at_in_source = source_se3.q_ * at_real + source_se3.r_;
-    return at_in_source;
+    const Vector3d at_in_source = source_se3.q_ * at + source_se3.r_;
+	const Vector3d at_scaled    = scaler->unscale( at_in_source );
+	return at_in_source;
 }
 
 void MarchingCubes::find_subdivision_levels( VolumeSource * source )
