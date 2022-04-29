@@ -22,6 +22,7 @@ namespace Ign
 {
 
 class VolumeSource;
+class MaterialSource;
 class DistanceScaler;
 
 class VectorInt
@@ -265,14 +266,17 @@ public:
 	// Node edges on which face vertices lay.
 	NodeEdgeInt node_edges[3];
 
+	int material_index;
+
 	NodeFace()
 	{}
-	NodeFace( const Face3 & f, const NodeEdgeInt & na, const NodeEdgeInt & nb, const NodeEdgeInt & nc )
+	NodeFace( const Face3 & f, const NodeEdgeInt & na, const NodeEdgeInt & nb, const NodeEdgeInt & nc, int material = -1 )
 	{
 		face = f;
 		node_edges[0] = na;
 		node_edges[1] = nb;
 		node_edges[2] = nc;
+		material_index = material;
 	}
 	~NodeFace()
 	{}
@@ -285,6 +289,8 @@ public:
 			{
 				node_edges[i] = inst.node_edges[i];
 			}
+
+			material_index = inst.material_index;
 		}
 
 		return *this;
@@ -394,18 +400,19 @@ public:
     ~MarchingCubes();
 
     void set_source_transform( const SE3 & se3 );
-    bool subdivide_source( VolumeSource * source, const DistanceScaler * scaler = nullptr );
+    bool subdivide_source( VolumeSource * source, MaterialSource * material_source = nullptr, const DistanceScaler * scaler = nullptr );
 
-	const Vector<Vector3> & vertices() const;
-	const Vector<Vector3> & normals() const;
-	const Vector<real_t>  & tangents() const;
+	const std::set<int>        & materials() const;
+	const std::vector<Vector3> & vertices( int material_ind );
+	const std::vector<Vector3> & normals( int material_ind );
+	const std::vector<real_t>  & tangents( int material_ind );
 
-
+	const Transform source_transform( const DistanceScaler * scaler = nullptr) const;
 
 
     Float    node_size( int level ) const;
     Vector3d at( const VectorInt & at_i, const DistanceScaler * scaler=nullptr ) const;
-
+	Vector3d node_center( const MarchingNode & node, const DistanceScaler * scaler=nullptr ) const;
 
     
 
@@ -423,6 +430,7 @@ public:
     // Source transform.
     // Points to probe first are sent through this transformation.
     SE3 source_se3;
+	SE3 inverted_source_se3;
 private:
 	void find_subdivision_levels( VolumeSource * source );
 	bool find_surface( VolumeSource * source, const DistanceScaler * scaler, MarchingNode & surface_node );
@@ -436,7 +444,7 @@ private:
     void add_node_neighbors( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler, int & nodes_qty );
 
     // Create faces.
-    void create_faces( const MarchingNode & node );
+    void create_faces( const MarchingNode & node, int material_index = -1 );
 
 	// Compute value with reusing pre-computed values.
 	Float value_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at );
@@ -456,22 +464,35 @@ private:
 	typedef std::map<NodeEdgeInt, NormalsAndQty>::iterator       NormalsMapIterator;
 	typedef std::map<NodeEdgeInt, NormalsAndQty>::const_iterator NormalsMapConstIterator;
 
+	typedef std::set<int>                 MaterialsSet;
+	typedef std::set<int>::iterator       MaterialsSetIterator;
+	typedef std::set<int>::const_iterator MaterialsSetConstIterator;
 
     MarchingSet _all_nodes;
     MarchingSet _recently_added_nodes;
     MarchingSet _new_candidates;
 
-	Vector<NodeFace> _all_faces;
-	// Results for applying to mesh.
-	Vector<Vector3>  _verts;
-	Vector<Vector3>  _norms;
-	Vector<real_t>   _tangs;
+	std::vector<NodeFace> _all_faces;
+	// Results for applying to meshes.
+	std::vector<Vector3>  _verts;
+	std::vector<Vector3>  _norms;
+	std::vector<real_t>   _tangs;
+	std::vector<int>      _materials;
+
+	// For returning results.
+	std::vector<Vector3>  _ret_verts;
+	std::vector<Vector3>  _ret_norms;
+	std::vector<real_t>   _ret_tangs;
+	std::vector<int>      _ret_materials;
 
 	// In order to not compute values a few times.
 	ValuesMap     _values_map;
 
 	// In order to compute normals.
 	NormalsMap    _normals_map;
+
+	// Materials set in order to know how many materials in total actually are involved.
+	MaterialsSet _materials_set;
 };
 
 

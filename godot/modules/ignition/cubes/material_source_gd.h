@@ -16,7 +16,7 @@ protected:
 	static void _bind_methods();
 public:
 	MaterialSourceGd();
-	~MaterialSourceGd();
+	virtual ~MaterialSourceGd();
 
 	virtual int material( const Vector3 & at );
 

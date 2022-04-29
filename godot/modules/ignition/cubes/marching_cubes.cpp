@@ -1,6 +1,7 @@
 
 #include "marching_cubes.h"
 #include "volume_source.h"
+#include "material_source.h"
 #include "cube_tables.h"
 #include "vector3d.h"
 #include "distance_scaler.h"
@@ -28,12 +29,13 @@ MarchingCubes::~MarchingCubes()
 
 void MarchingCubes::set_source_transform( const SE3 & se3 )
 {
-	source_se3 = se3;
+	source_se3          = se3;
+	inverted_source_se3 = se3.inverse();
 }
 
 
 
-bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScaler * scaler )
+bool MarchingCubes::subdivide_source( VolumeSource * source, MaterialSource * material_source, const DistanceScaler * scaler )
 {
 	_values_map.clear();
 	_normals_map.clear();
@@ -71,14 +73,27 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
 			break;
 	}
 
-	// Create faces.
+	// Create faces and assign material.
 	_all_faces.clear();
+	_materials_set.clear();
 	for ( MarchingSetIterator it=_all_nodes.begin(); it!=_all_nodes.end(); it++ )
 	{
 		const MarchingNode node = *it;
 		const bool on_surface = node.has_surface( iso_level );
 		if ( on_surface )
-			create_faces( node );
+		{
+			int material_index;
+			if (material_source != nullptr)
+			{
+				const Vector3d center_at = node_center( node, scaler );
+				material_index = material_source->material( center_at );
+			}
+			else
+				material_index = 0;
+
+			create_faces( node, material_index );
+			_materials_set.insert( material_index );
+		}
 	}
 
 	// Normalize normals.
@@ -96,7 +111,7 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
 	const int faces_qty = _all_faces.size();
 	for ( int i=0; i<faces_qty; i++ )
 	{
-		const NodeFace & face = _all_faces.ptr()[i];
+		const NodeFace & face = _all_faces[i];
 		const Face3 & f = face.face;
 		const Vector3 norm = f.get_plane().normal;
 		const Vector3 tangent = norm.cross( f.vertex[2] - f.vertex[0] ).normalized();
@@ -122,20 +137,80 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
     return true;
 }
 
-const Vector<Vector3> & MarchingCubes::vertices() const
+const std::set<int> & MarchingCubes::materials() const
 {
-	return _verts;
+	return _materials_set;
 }
 
-const Vector<Vector3> & MarchingCubes::normals() const
+const std::vector<Vector3> & MarchingCubes::vertices( int material_ind )
 {
-	return _norms;
+	const unsigned int qty = _materials.size();
+	_ret_verts.clear();
+	_ret_verts.reserve(qty);
+	for ( unsigned int i=0; i<qty; i++ )
+	{
+		const int ind = _materials[i];
+		if (ind != material_ind)
+			continue;
+		const Vector3 & v = _verts[i];
+		_ret_verts.push_back( v );
+	}
+	return _ret_verts;
 }
 
-const Vector<real_t>  & MarchingCubes::tangents() const
+const std::vector<Vector3> & MarchingCubes::normals( int material_ind )
 {
-	return _tangs;
+	const unsigned int qty = _materials.size();
+	_ret_norms.clear();
+	_ret_norms.reserve(qty);
+	for ( unsigned int i=0; i<qty; i++ )
+	{
+		const int ind = _materials[i];
+		if (ind != material_ind)
+			continue;
+		const Vector3 & v = _norms[i];
+		_ret_norms.push_back( v );
+	}
+	return _ret_norms;
 }
+
+const std::vector<real_t>  & MarchingCubes::tangents( int material_ind )
+{
+	const unsigned int qty = _materials.size();
+	_ret_tangs.clear();
+	_ret_verts.reserve(4*qty);
+	for ( unsigned int i=0; i<qty; i++ )
+	{
+		const int ind = _materials[i];
+		if (ind != material_ind)
+			continue;
+
+		for ( int j=0; j<4; j++ )
+		{
+			const int ind = 4*i + j;
+			const real_t tang = _tangs[ind];
+			_ret_tangs.push_back( tang );
+		}
+	}
+	return _ret_tangs;
+}
+
+
+
+const Transform MarchingCubes::source_transform( const DistanceScaler * scaler ) const
+{
+	Vector3d o;
+	if (scaler == nullptr)
+		o = source_se3.r_;
+	else
+		o = scaler->scale( source_se3.r_ );
+
+	SE3 se3( source_se3 );
+	se3.r_ = o;
+	const Transform ret = se3.transform();
+	return ret;
+}
+
 
 
 
@@ -155,12 +230,29 @@ Vector3d MarchingCubes::at( const VectorInt & at_i, const DistanceScaler * scale
     // Apply transform.
     if (scaler == nullptr)
     {
-        const Vector3d at_in_source = source_se3.q_ * at + source_se3.r_;
+        const Vector3d at_in_source = inverted_source_se3.q_ * at + inverted_source_se3.r_;
         return at_in_source;
     }
 
-    const Vector3d at_in_source = source_se3.q_ * at + source_se3.r_;
-	const Vector3d at_scaled    = scaler->unscale( at_in_source );
+    const Vector3d at_in_source = scaler->unscale( at );
+	const Vector3d at_scaled    = inverted_source_se3.q_ * at_in_source + inverted_source_se3.r_;
+	return at_in_source;
+}
+
+Vector3d MarchingCubes::node_center( const MarchingNode & node, const DistanceScaler * scaler ) const
+{
+	const VectorInt & at_i = node.at;
+	const Vector3d at( (static_cast<Float>(at_i.x) + 0.5)*step, 
+          		       (static_cast<Float>(at_i.y) + 0.5)*step, 
+		               (static_cast<Float>(at_i.z) + 0.5)*step );
+	if (scaler == nullptr)
+	{
+		const Vector3d at_in_source = inverted_source_se3.q_ * at + inverted_source_se3.r_;
+		return at_in_source;
+	}
+
+	const Vector3d at_in_source = scaler->unscale( at );
+	const Vector3d at_scaled    = inverted_source_se3.q_ * at_in_source + inverted_source_se3.r_;
 	return at_in_source;
 }
 
@@ -349,7 +441,7 @@ void MarchingCubes::add_node_neighbors( const MarchingNode & node, VolumeSource 
 }
 
 
-void MarchingCubes::create_faces( const MarchingNode & node )
+void MarchingCubes::create_faces( const MarchingNode & node, int material_index )
 {
 	uint32_t cube_index = 0;
 	for ( int i=0; i<8; i++ )
@@ -442,8 +534,9 @@ void MarchingCubes::create_faces( const MarchingNode & node )
 		const Vector3 fc( c.x_, c.y_, c.z_ );
 		const Face3 f( fa, fb, fc );
 
-		const NodeFace face( f, edge_a, edge_b, edge_c );
+		const NodeFace face( f, edge_a, edge_b, edge_c, material_index );
 		_all_faces.push_back( face );
+		_materials.push_back( material_index );
 
 		const Vector3 norm = f.get_plane().normal;
 		append_normal( edge_a, norm );

@@ -6,7 +6,7 @@ namespace Ign
 
 void MaterialSourceGd::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("material", "at"), &MaterialSourceGd::material, Variant::int );
+	ClassDB::bind_method( D_METHOD("material", "at"), &MaterialSourceGd::material, Variant::INT );
 }
 
 MaterialSourceGd::MaterialSourceGd()

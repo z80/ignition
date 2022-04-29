@@ -6,6 +6,7 @@
 #include "core/reference.h"
 #include "se3_ref.h"
 #include "volume_source_gd.h"
+#include "material_source_gd.h"
 #include "distance_scaler_ref.h"
 
 
@@ -25,8 +26,9 @@ public:
 	~MarchingCubesGd();
 
 	void set_source_transform( const Ref<Se3Ref> & se3 );
-	bool subdivide_source( const Ref<VolumeSourceGd> & source, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
-	void apply_to_mesh( Node * mesh_instance );
+	bool subdivide_source( const Ref<VolumeSourceGd> & volume, const Ref<MaterialSourceGd> & material=Ref<MaterialSourceGd>(), const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
+	Array materials_used() const;
+	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 
 	void set_max_nodes_qty( int qty );
 	int get_max_nodes_qty() const;
