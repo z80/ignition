@@ -313,7 +313,7 @@ void MarchingCubes::compute_node_values( MarchingNode & node, VolumeSource * sou
     verts[4] = VectorInt( x,      y + sz, z );
     verts[5] = VectorInt( x + sz, y + sz, z );
     verts[6] = VectorInt( x + sz, y + sz, z + sz );
-    verts[7] = VectorInt( x     , y + sz, z + sz );
+    verts[7] = VectorInt( x,      y + sz, z + sz );
 
     for ( int i=0; i<8; i++ )
     {
