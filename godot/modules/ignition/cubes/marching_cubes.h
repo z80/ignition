@@ -266,17 +266,14 @@ public:
 	// Node edges on which face vertices lay.
 	NodeEdgeInt node_edges[3];
 
-	int material_index;
-
 	NodeFace()
 	{}
-	NodeFace( const Face3 & f, const NodeEdgeInt & na, const NodeEdgeInt & nb, const NodeEdgeInt & nc, int material = -1 )
+	NodeFace( const Face3 & f, const NodeEdgeInt & na, const NodeEdgeInt & nb, const NodeEdgeInt & nc )
 	{
 		face = f;
 		node_edges[0] = na;
 		node_edges[1] = nb;
 		node_edges[2] = nc;
-		material_index = material;
 	}
 	~NodeFace()
 	{}
@@ -289,8 +286,6 @@ public:
 			{
 				node_edges[i] = inst.node_edges[i];
 			}
-
-			material_index = inst.material_index;
 		}
 
 		return *this;
@@ -483,7 +478,6 @@ private:
 	std::vector<Vector3>  _ret_verts;
 	std::vector<Vector3>  _ret_norms;
 	std::vector<real_t>   _ret_tangs;
-	std::vector<int>      _ret_materials;
 
 	// In order to not compute values a few times.
 	ValuesMap     _values_map;

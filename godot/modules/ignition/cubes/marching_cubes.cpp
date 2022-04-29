@@ -75,6 +75,7 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, MaterialSource * ma
 
 	// Create faces and assign material.
 	_all_faces.clear();
+	_materials.clear();
 	_materials_set.clear();
 	for ( MarchingSetIterator it=_all_nodes.begin(); it!=_all_nodes.end(); it++ )
 	{
@@ -146,14 +147,18 @@ const std::vector<Vector3> & MarchingCubes::vertices( int material_ind )
 {
 	const unsigned int qty = _materials.size();
 	_ret_verts.clear();
-	_ret_verts.reserve(qty);
+	_ret_verts.reserve(3*qty);
 	for ( unsigned int i=0; i<qty; i++ )
 	{
 		const int ind = _materials[i];
 		if (ind != material_ind)
 			continue;
-		const Vector3 & v = _verts[i];
-		_ret_verts.push_back( v );
+		for ( int j=0; j<3; j++ )
+		{
+			const int ind = 3*i + j;
+			const Vector3 & v = _verts[ind];
+			_ret_verts.push_back( v );
+		}
 	}
 	return _ret_verts;
 }
@@ -162,14 +167,18 @@ const std::vector<Vector3> & MarchingCubes::normals( int material_ind )
 {
 	const unsigned int qty = _materials.size();
 	_ret_norms.clear();
-	_ret_norms.reserve(qty);
+	_ret_norms.reserve(3*qty);
 	for ( unsigned int i=0; i<qty; i++ )
 	{
 		const int ind = _materials[i];
 		if (ind != material_ind)
 			continue;
-		const Vector3 & v = _norms[i];
-		_ret_norms.push_back( v );
+		for ( int j=0; j<3; j++ )
+		{
+			const int ind = 3*i + j;
+			const Vector3 & v = _norms[ind];
+			_ret_norms.push_back( v );
+		}
 	}
 	return _ret_norms;
 }
@@ -534,7 +543,7 @@ void MarchingCubes::create_faces( const MarchingNode & node, int material_index 
 		const Vector3 fc( c.x_, c.y_, c.z_ );
 		const Face3 f( fa, fb, fc );
 
-		const NodeFace face( f, edge_a, edge_b, edge_c, material_index );
+		const NodeFace face( f, edge_a, edge_b, edge_c );
 		_all_faces.push_back( face );
 		_materials.push_back( material_index );
 
