@@ -36,6 +36,14 @@ void CubeTree::subdivide( CubeTreeNode * ref_frame_physics )
 
 bool CubeTree::parent( const CubeTreeNode & node, CubeTreeNode * & parent )
 {
+	if ( node.parentAbsIndex < 0 )
+	{
+		parent = nullptr;
+		return false;
+	}
+
+	parent = &( _nodes[ node.parentAbsIndex ] );
+	return true;
 }
 
 int  CubeTree::insert_node( CubeTreeNode & node )
