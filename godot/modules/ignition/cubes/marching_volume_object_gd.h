@@ -29,7 +29,7 @@ public:
     real_t get_bounding_radius() const;
 
 public:
-    MarchingCubeObject * object;
+    MarchingVolumeObject * object;
 };
 
 

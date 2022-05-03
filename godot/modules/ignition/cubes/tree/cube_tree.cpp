@@ -109,7 +109,7 @@ void CubeTree::subdivide( Float total_max_size )
 
 	root.corner = VectorInt( -at, -at, -at );
 	root.size  = at * 2;
-	root.init();
+	root.init( this );
 	root.source_inds.clear();
 	for ( int i=0; i<sources_qty; i++ )
 		root.source_inds.push_back( i );
