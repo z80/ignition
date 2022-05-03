@@ -26,7 +26,7 @@ public:
 	virtual void fill_source_references();
 
 	// Manipulating filling up the occupancy grid.
-	void compute_levels( Float total_max_size ) const;
+	void compute_levels( Float total_max_size );
 
 	// These three are supposed to be used in simulation loop.
 	// "subdivide" should be called once.

@@ -18,7 +18,7 @@ CubeTree::~CubeTree()
 
 void CubeTree::set_se3( const SE3 & se3 )
 {
-	this->get_se3 = se3;
+	this->se3 = se3;
 	this->se3_inverted = se3.inverse();
 }
 
@@ -32,14 +32,14 @@ void CubeTree::fill_source_references()
 	sources.clear();
 }
 
-void CubeTree::compute_levels( Float total_max_size ) const
+void CubeTree::compute_levels( Float total_max_size )
 {
 	Float max_sz = -1.0;
 	for ( std::vector<MarchingVolumeObject *>::const_iterator it=sources.begin(); it!=sources.end(); it++ )
 	{
 		const MarchingVolumeObject * obj = *it;
-		const Vector3 at = obj->at();
-		const Float   sz = obj->bounding_radius();
+		const Vector3d at = obj->at();
+		const Float    sz = obj->get_bounding_radius();
 		// If object doesn't have bounding radius like
 		// a plane, ignore it.
 		if ( sz <= 0.0 )
@@ -84,14 +84,14 @@ void CubeTree::compute_levels( Float total_max_size ) const
 			max_sz = total_max_size;
 	}
 	const Float ratio = std::pow( 2.0, static_cast<Float>(max_depth) );
-	step      = max_size / ratio;
+	step      = max_sz / ratio;
 }
 
 void CubeTree::subdivide( Float total_max_size )
 {
 	// Cleanup everything.
-	nodes_.clear();
-	octree_meshes_.clear();
+	nodes.clear();
+	sources.clear();
 
 	// Search for all occurences of OctreeMeshGd instances.
 	fill_source_references();
@@ -102,10 +102,11 @@ void CubeTree::subdivide( Float total_max_size )
 
 	compute_levels( total_max_size );
 	int at = 1;
-	for ( int i=0; i<(max_levels-1); i++ )
+	for ( int i=0; i<(max_depth-1); i++ )
 		at *= 2;
 
-	root.level  = 0;
+	CubeTreeNode root;
+
 	root.corner = VectorInt( -at, -at, -at );
 	root.size  = at * 2;
 	root.init();

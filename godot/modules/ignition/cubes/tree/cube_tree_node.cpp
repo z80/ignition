@@ -150,7 +150,7 @@ bool CubeTreeNode::subdivide( CubeTree * tree )
 			const int ind = source_inds[i];
 			MarchingVolumeObject * source = tree->sources[ind];
 
-			const bool inside = source->inside( ch_n );
+			const bool inside = source->inside( &ch_n );
 			if ( inside )
 			{
 				ch_n.source_inds.push_back( ind );
