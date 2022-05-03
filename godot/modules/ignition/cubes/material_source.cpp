@@ -3,6 +3,7 @@
 
 namespace Ign
 {
+
 MaterialSource::MaterialSource()
 {
 }
@@ -13,7 +14,7 @@ MaterialSource::~MaterialSource()
 
 int MaterialSource::material( const Vector3d & at ) const
 {
-	return 0;
+    return 0;
 }
 
 }

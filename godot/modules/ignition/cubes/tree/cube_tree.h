@@ -11,33 +11,45 @@
 namespace Ign
 {
 
-class VolumeSource;
+class MarchingVolumeObject;
 
 class CubeTree
 {
 public:
 	CubeTree();
-	~CubeTree();
+	virtual ~CubeTree();
 
-	void clear();
+	void set_se3( const SE3 & se3 );
+	const SE3 & get_se3() const;
+
+
+	virtual void fill_source_references();
 
 	// Manipulating filling up the occupancy grid.
-	void compute_levels( Float size, VolumeSource * source ) const;
+	void compute_levels( Float total_max_size ) const;
 
 	// These three are supposed to be used in simulation loop.
 	// "subdivide" should be called once.
-	void subdivide( CubeTreeNode * ref_frame_physics );
+	void subdivide( Float total_max_size=-1.0 );
 
 	// These three for tree construction.
 	bool parent( const CubeTreeNode & node, CubeTreeNode * & parent );
 	int  insert_node( CubeTreeNode & node );
 	void update_node( const CubeTreeNode & node );
 
-	std::vector<CubeTreeNode>  _nodes;
+	Vector3d at( const VectorInt & at_i ) const;
+
+
+	SE3 se3;
+	SE3 se3_inverted;
+
+
+	std::vector<MarchingVolumeObject *> sources;
+	std::vector<CubeTreeNode>           nodes;
 
 	// Maximum subdivision level.
-	int   _max_depth;
-	Float _step;
+	int   max_depth;
+	Float step;
 };
 
 

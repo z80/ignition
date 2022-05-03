@@ -3,7 +3,8 @@
 #define __CUBE_TYPES_H_
 
 #include "data_types.h"
-
+#include "vector3d.h"
+#include "core/math/face3.h"
 
 
 namespace Ign
