@@ -8,9 +8,6 @@ void VolumeSourceGd::_bind_methods()
 {
     ClassDB::bind_method( D_METHOD("value", "at"), &VolumeSourceGd::value, Variant::REAL );
 
-    ClassDB::bind_method( D_METHOD("set_se3", "se3"), &VolumeSourceGd::set_se3 );
-    ClassDB::bind_method( D_METHOD("get_se3"),        &VolumeSourceGd::get_se3, Variant::OBJECT );
-
     ClassDB::bind_method( D_METHOD("set_inverted", "en"), &VolumeSourceGd::set_inverted );
     ClassDB::bind_method( D_METHOD("get_inverted"),       &VolumeSourceGd::get_inverted, Variant::BOOL );
 
@@ -23,7 +20,7 @@ void VolumeSourceGd::_bind_methods()
 }
 
 VolumeSourceGd::VolumeSourceGd()
-    : Reference()
+    : MarchingVolumeObjectGd()
 {
     source = nullptr;
 }
@@ -35,19 +32,6 @@ VolumeSourceGd::~VolumeSourceGd()
 real_t VolumeSourceGd::value( const Vector3 & at ) const
 {
     const Float ret = source->value( Vector3d( at.x, at.y, at.z ) );
-    return ret;
-}
-
-void VolumeSourceGd::set_se3( const Ref<Se3Ref> & se3 )
-{
-    source->set_se3( se3.ptr()->se3 );
-}
-
-Ref<Se3Ref> VolumeSourceGd::get_se3() const
-{
-    Ref<Se3Ref> ret;
-    ret.instance();
-    ret.ptr()->se3 = source->get_se3();
     return ret;
 }
 

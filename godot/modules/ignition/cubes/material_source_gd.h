@@ -2,16 +2,16 @@
 #ifndef __MATERIAL_SOURCE_GD_H_
 #define __MATERIAL_SOURCE_GD_H_
 
-#include "core/reference.h"
+#include "marching_Volume_object_gd.h"
 #include "material_source.h"
 
 
 namespace Ign
 {
 
-class MaterialSourceGd: public Reference
+class MaterialSourceGd: public MarchingVolumeObjectGd
 {
-	GDCLASS(MaterialSourceGd, Reference);
+	GDCLASS(MaterialSourceGd, MarchingVolumeObjectGd);
 protected:
 	static void _bind_methods();
 public:

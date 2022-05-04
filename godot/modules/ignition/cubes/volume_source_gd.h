@@ -3,15 +3,15 @@
 #define __VOLUME_SOURCE_GD_H_
 
 #include "volume_source.h"
-#include "core/reference.h"
+#include "marching_volume_object_gd.h"
 #include "se3_ref.h"
 
 namespace Ign
 {
 
-class VolumeSourceGd: public Reference
+class VolumeSourceGd: public MarchingVolumeObjectGd
 {
-	GDCLASS(VolumeSourceGd, Reference);
+	GDCLASS(VolumeSourceGd, MarchingVolumeObjectGd);
 protected:
 	static void _bind_methods();
 
@@ -20,9 +20,6 @@ public:
 	virtual ~VolumeSourceGd();
 
 	real_t value( const Vector3 & at ) const;
-
-	void set_se3( const Ref<Se3Ref> & se3 );
-	Ref<Se3Ref> get_se3() const;
 
 	void set_inverted( bool en );
 	bool get_inverted() const;

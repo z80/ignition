@@ -13,6 +13,7 @@ MaterialSourceScriptGd::MaterialSourceScriptGd()
 	: MaterialSourceGd()
 {
 	this->source = &material_source;
+	this->object = &material_source;
 	material_source.object = Ref<MaterialSourceScriptGd>( this );
 
 }

@@ -22,15 +22,16 @@ public:
 	void set_se3( const SE3 & se3 );
 	const SE3 & get_se3() const;
 
-
 	virtual void fill_source_references();
 
-	// Manipulating filling up the occupancy grid.
-	void compute_levels( Float total_max_size );
+	const std::vector<MarchingVolumeObject *> & pick_objects( const Vector3d & at );
 
 	// These three are supposed to be used in simulation loop.
 	// "subdivide" should be called once.
 	void subdivide( Float total_max_size=-1.0 );
+
+	// Manipulating filling up the occupancy grid.
+	void compute_levels( Float total_max_size );
 
 	// These three for tree construction.
 	bool parent( const CubeTreeNode & node, CubeTreeNode * & parent );
@@ -45,6 +46,8 @@ public:
 
 
 	std::vector<MarchingVolumeObject *> sources;
+	std::vector<int>                    query_result_inds;
+	std::vector<MarchingVolumeObject *> query_result;
 	std::vector<CubeTreeNode>           nodes;
 
 	// Maximum subdivision level.

@@ -26,6 +26,9 @@ public:
 	// Initialize vertices and planes.
 	void init( CubeTree * tree );
 
+	bool contains_point( const Vector3d & at ) const;
+	void pick_objects( CubeTree * tree, std::vector<int> & query );
+
 public:
 	int abs_index;
 	int parent_abs_index;

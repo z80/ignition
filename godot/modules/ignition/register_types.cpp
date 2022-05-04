@@ -25,6 +25,7 @@
 
 
 // Volume.
+#include "marching_volume_object_gd.h"
 #include "volume_source_gd.h"
 #include "volume_source_script_gd.h"
 #include "material_source_gd.h"
@@ -53,6 +54,7 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::CelestialMotionRef>();
 	ClassDB::register_class<Ign::CelestialRotationRef>();
 
+	ClassDB::register_class<Ign::MarchingVolumeObjectGd>();
 	ClassDB::register_class<Ign::VolumeSourceGd>();
 	ClassDB::register_class<Ign::VolumeSourceScriptGd>();
 	ClassDB::register_class<Ign::MaterialSourceGd>();

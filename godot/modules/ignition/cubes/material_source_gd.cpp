@@ -10,6 +10,7 @@ void MaterialSourceGd::_bind_methods()
 }
 
 MaterialSourceGd::MaterialSourceGd()
+	: MarchingVolumeObjectGd()
 {
 	source = nullptr;
 }

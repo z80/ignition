@@ -3,6 +3,7 @@
 #include "cube_tree.h"
 #include "marching_volume_object.h"
 
+#include <algorithm>
 
 namespace Ign
 {
@@ -180,6 +181,49 @@ void CubeTreeNode::init( CubeTree * tree )
 	corner_max = tree->at( VectorInt( corner.x + size, corner.y + size, corner.z + size ) );
 }
 
+
+bool CubeTreeNode::contains_point( const Vector3d & at ) const
+{
+	if ( at.x_ < corner_min.x_ )
+		return false;
+	if ( at.y_ < corner_min.y_ )
+		return false;
+	if ( at.z_ < corner_min.z_ )
+		return false;
+
+	if ( at.x_ > corner_max.x_ )
+		return false;
+	if ( at.y_ > corner_max.y_ )
+		return false;
+	if ( at.z_ > corner_max.z_ )
+		return false;
+
+	return true;
+}
+
+void CubeTreeNode::pick_objects( CubeTree * tree, std::vector<int> & query )
+{
+	const bool is_leaf = has_children();
+	if ( is_leaf )
+	{
+		const int qty = source_inds.size();
+		for ( int i=0; i<qty; i++ )
+		{
+			const int ind = source_inds[i];
+			const bool unique = ( std::find( query.begin(), query.end(), ind ) == query.end() );
+			if ( unique )
+				query.push_back( ind );
+		}
+		return;
+	}
+
+	for ( int i=0; i<8; i++ )
+	{
+		const int child_ind = children[i];
+		CubeTreeNode & child_node = tree->nodes[child_ind];
+		child_node.pick_objects( tree, query );
+	}
+}
 
 
 

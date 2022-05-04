@@ -14,6 +14,7 @@ VolumeSourceScriptGd::VolumeSourceScriptGd()
 	: VolumeSourceGd()
 {
 	this->source = &source_script;
+	this->object = &source_script;
 	source_script.object = Ref<VolumeSourceScriptGd>( this );
 }
 
