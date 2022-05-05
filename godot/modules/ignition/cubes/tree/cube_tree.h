@@ -44,7 +44,7 @@ public:
     Vector3d at( const VectorInt & at_i ) const;
 
     void clear();
-    void add_source( MarchingVolumeSource * source );
+    void add_source( MarchingVolumeObject * source );
 
 
     std::vector<MarchingVolumeObject *> sources;

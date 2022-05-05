@@ -196,7 +196,7 @@ void CubeTree::clear()
     sources.clear();
 }
 
-void CubeTree::add_source( MarchingVolumeSource * source )
+void CubeTree::add_source( MarchingVolumeObject * source )
 {
     sources.push_back( source );
 }

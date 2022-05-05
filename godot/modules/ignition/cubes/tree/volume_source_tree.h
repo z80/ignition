@@ -22,7 +22,7 @@ public:
     void set_max_items_per_node( int qty );
     int  get_max_items_per_node() const;
 
-    virtual Float value( const Vector3d & at ) const;
+    virtual Float value( const Vector3d & at );
 
     void clear();
     void add_source( Src & source );
