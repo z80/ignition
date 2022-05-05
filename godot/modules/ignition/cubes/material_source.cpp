@@ -7,7 +7,7 @@ namespace Ign
 MaterialSource::MaterialSource()
 	: MarchingVolumeObject()
 {
-	strong = true;
+	weak = true;
 }
 
 MaterialSource::~MaterialSource()
@@ -19,14 +19,14 @@ int MaterialSource::material( const Vector3d & at ) const
     return 0;
 }
 
-void MaterialSource::set_strong( bool strong )
+void MaterialSource::set_weak( bool weak )
 {
 	this->strong = strong;
 }
 
-bool MaterialSource::get_strong() const
+bool MaterialSource::get_weak() const
 {
-	return strong;
+	return weak;
 }
 
 

@@ -20,6 +20,9 @@ public:
 
 	virtual int material( const Vector3 & at );
 
+	void set_weak( bool en );
+	bool get_weak() const;
+
 public:
 	MaterialSource * source;
 };
