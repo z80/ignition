@@ -15,36 +15,36 @@ class MarchingVolumeObject;
 class CubeTreeNode
 {
 public:
-	CubeTreeNode();
-	~CubeTreeNode();
-	CubeTreeNode( const CubeTreeNode & inst );
-	const CubeTreeNode & operator=( const CubeTreeNode & inst );
+    CubeTreeNode();
+    ~CubeTreeNode();
+    CubeTreeNode( const CubeTreeNode & inst );
+    const CubeTreeNode & operator=( const CubeTreeNode & inst );
 
-	bool has_children() const;
-	bool subdivide( CubeTree * tree );
+    bool has_children() const;
+    bool subdivide( CubeTree * tree );
 
-	// Initialize vertices and planes.
-	void init( CubeTree * tree );
+    // Initialize vertices and planes.
+    void init( CubeTree * tree );
 
-	bool contains_point( const Vector3d & at ) const;
-	void pick_objects( CubeTree * tree, std::vector<int> & query );
+    bool contains_point( const Vector3d & at ) const;
+    void pick_objects( CubeTree * tree, std::vector<int> & query );
 
 public:
-	int abs_index;
-	int parent_abs_index;
-	int index_in_parent;
+    int abs_index;
+    int parent_abs_index;
+    int index_in_parent;
 
-	// Child indices in Octtree list.
-	int children[8];
+    // Child indices in Octtree list.
+    int children[8];
 
-	int       size; // Size.
-	VectorInt corner;
+    int       size; // Size.
+    VectorInt corner;
 
-	// For quick computations.
-	Vector3d corner_min;
-	Vector3d corner_max;
+    // For quick computations.
+    Vector3d corner_min;
+    Vector3d corner_max;
 
-	std::vector<int> source_inds;
+    std::vector<int> source_inds;
 };
 
 

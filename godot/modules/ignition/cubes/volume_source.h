@@ -22,6 +22,7 @@ public:
     void set_inverted( bool en );
     bool get_inverted() const;
 
+public:
     bool inverted;
 };
 

@@ -7,6 +7,7 @@ namespace Ign
 VolumeSource::VolumeSource()
     : MarchingVolumeObject() 
 {
+	inverted = false;
 }
 
 VolumeSource::~VolumeSource()

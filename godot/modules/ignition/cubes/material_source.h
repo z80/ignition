@@ -15,6 +15,12 @@ public:
 
     // This one computes value in global space.
     virtual int material( const Vector3d & at ) const;
+
+	void set_strong( bool strong );
+	bool get_strong() const;
+
+public:
+	bool strong;
 };
 
 
