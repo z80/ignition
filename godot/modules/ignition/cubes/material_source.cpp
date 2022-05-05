@@ -21,7 +21,7 @@ int MaterialSource::material( const Vector3d & at ) const
 
 void MaterialSource::set_weak( bool weak )
 {
-	this->strong = strong;
+	this->weak = weak;
 }
 
 bool MaterialSource::get_weak() const
