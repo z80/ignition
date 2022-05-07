@@ -25,7 +25,7 @@ public:
     virtual Float value( const Vector3d & at );
 
     void clear();
-    void add_source( Src & source );
+    void add_source( const Src & source );
 
     void subdivide( Float total_max_size=-1.0 );
     int nodes_qty() const;

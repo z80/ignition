@@ -67,7 +67,7 @@ void VolumeSourceTree::clear()
     tree.clear();
 }
 
-void VolumeSourceTree::add_source( Src & source )
+void VolumeSourceTree::add_source( const Src & source )
 {
     VolumeSource * src = source.ptr()->source;
     sources.push_back( source );
