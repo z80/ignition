@@ -6,15 +6,15 @@ namespace Ign
 
 void VolumeSourceGd::_bind_methods()
 {
-    //ClassDB::bind_method( D_METHOD("value", "at"), &VolumeSourceGd::value, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("value", "at"), &VolumeSourceGd::value, Variant::REAL );
 
-    //ClassDB::bind_method( D_METHOD("set_inverted", "en"), &VolumeSourceGd::set_inverted );
-    //ClassDB::bind_method( D_METHOD("get_inverted"),       &VolumeSourceGd::get_inverted, Variant::BOOL );
+    ClassDB::bind_method( D_METHOD("set_inverted", "en"), &VolumeSourceGd::set_inverted );
+    ClassDB::bind_method( D_METHOD("get_inverted"),       &VolumeSourceGd::get_inverted, Variant::BOOL );
 
-    //ClassDB::bind_method( D_METHOD("max_node_size"),      &VolumeSourceGd::max_node_size, Variant::REAL );
-    //ClassDB::bind_method( D_METHOD("min_node_size"),      &VolumeSourceGd::min_node_size, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("max_node_size"),      &VolumeSourceGd::max_node_size, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("min_node_size"),      &VolumeSourceGd::min_node_size, Variant::REAL );
 
-    //ClassDB::bind_method( D_METHOD("max_node_size_at", "at"), &VolumeSourceGd::max_node_size_at, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("max_node_size_at", "at"), &VolumeSourceGd::max_node_size_at, Variant::REAL );
 }
 
 VolumeSourceGd::VolumeSourceGd()
