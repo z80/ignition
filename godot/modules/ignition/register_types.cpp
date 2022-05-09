@@ -28,6 +28,7 @@
 #include "marching_volume_object_gd.h"
 #include "volume_source_gd.h"
 #include "volume_source_script_gd.h"
+#include "volume_source_tree_gd.h"
 #include "material_source_gd.h"
 #include "material_source_script_gd.h"
 #include "marching_cubes_gd.h"
@@ -55,11 +56,12 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::CelestialRotationRef>();
 
 	ClassDB::register_class<Ign::MarchingVolumeObjectGd>();
-	ClassDB::register_class<Ign::VolumeSourceGd>();
-	ClassDB::register_class<Ign::VolumeSourceScriptGd>();
-	ClassDB::register_class<Ign::MaterialSourceGd>();
-	ClassDB::register_class<Ign::MaterialSourceScriptGd>();
-	ClassDB::register_class<Ign::MarchingCubesGd>();
+	//ClassDB::register_class<Ign::VolumeSourceGd>();
+	//ClassDB::register_class<Ign::VolumeSourceScriptGd>();
+	//ClassDB::register_class<Ign::VolumeSourceTreeGd>();
+	//ClassDB::register_class<Ign::MaterialSourceGd>();
+	//ClassDB::register_class<Ign::MaterialSourceScriptGd>();
+	//ClassDB::register_class<Ign::MarchingCubesGd>();
 }
 
 void unregister_ignition_types()

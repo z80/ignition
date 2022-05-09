@@ -54,7 +54,8 @@ void MarchingVolumeObject::set_bounding_radius( Float r )
 
 Float MarchingVolumeObject::get_bounding_radius() const
 {
-    return bounding_radius;
+    //return bounding_radius;
+	return 10.0;
 }
 
 Float MarchingVolumeObject::max_node_size() const

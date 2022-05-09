@@ -29,6 +29,8 @@ MarchingVolumeObjectGd::~MarchingVolumeObjectGd()
 
 void MarchingVolumeObjectGd::set_se3( const Ref<Se3Ref> & se3 )
 {
+	if ( object == nullptr )
+		return;
     object->set_se3( se3.ptr()->se3 );
 }
 
@@ -42,18 +44,24 @@ Ref<Se3Ref> MarchingVolumeObjectGd::get_se3() const
 
 Vector3 MarchingVolumeObjectGd::at() const
 {
-    const Vector3d v = object->at();
+	if ( object == nullptr )
+		return Vector3();
+	const Vector3d v = object->at();
     const Vector3 ret( v.x_, v.y_, v.z_ );
     return ret;
 }
 
 void MarchingVolumeObjectGd::set_bounding_radius( real_t r )
 {
-    object->set_bounding_radius( r );
+	if ( object == nullptr )
+		return;
+	object->set_bounding_radius( r );
 }
 
 real_t MarchingVolumeObjectGd::get_bounding_radius() const
 {
+	if ( object == nullptr )
+		return -1.0;
     const real_t ret = object->get_bounding_radius();
     return ret;
 }
