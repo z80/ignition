@@ -13,8 +13,8 @@ void VolumeSourceScriptGd::_bind_methods()
 VolumeSourceScriptGd::VolumeSourceScriptGd()
 	: VolumeSourceGd()
 {
-	this->source = &source_script;
 	this->object = &source_script;
+	this->source = &source_script;
 	source_script.object = Ref<VolumeSourceScriptGd>( this );
 }
 
