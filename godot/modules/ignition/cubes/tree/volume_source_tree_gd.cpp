@@ -25,8 +25,8 @@ void VolumeSourceTreeGd::_bind_methods()
 VolumeSourceTreeGd::VolumeSourceTreeGd()
     : VolumeSourceGd()
 {
-    //source = &tree;
-    //object = &tree;
+    source = &tree;
+    object = &tree;
 }
 
 VolumeSourceTreeGd::~VolumeSourceTreeGd()

@@ -12,9 +12,9 @@ void MaterialSourceScriptGd::_bind_methods()
 MaterialSourceScriptGd::MaterialSourceScriptGd()
 	: MaterialSourceGd()
 {
-	//this->source = &material_source;
-	//this->object = &material_source;
-	//material_source.object = Ref<MaterialSourceScriptGd>( this );
+	material_source.reference = this;
+	this->source = &material_source;
+	this->object = &material_source;
 }
 
 MaterialSourceScriptGd::~MaterialSourceScriptGd()

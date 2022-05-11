@@ -10,7 +10,7 @@ void MaterialSourceGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_weak", "en"), &MaterialSourceGd::set_weak );
 	ClassDB::bind_method( D_METHOD("get_weak"),       &MaterialSourceGd::get_weak, Variant::BOOL );
 
-	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "weak" ), "set_weak", "get_weak" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "weak" ), "set_weak", "get_weak" );
 }
 
 MaterialSourceGd::MaterialSourceGd()

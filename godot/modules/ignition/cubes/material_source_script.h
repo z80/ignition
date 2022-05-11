@@ -18,7 +18,7 @@ public:
 
 	int material( const Vector3d & at ) const;
 public:
-	Ref<Reference> object;
+	Reference * reference;
 };
 
 

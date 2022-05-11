@@ -19,7 +19,7 @@ public:
 	virtual ~MaterialSourceScriptGd();
 
 public:
-	//MaterialSourceScript material_source;
+	MaterialSourceScript material_source;
 };
 
 }
