@@ -9,7 +9,6 @@ var meshes: Array = []
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	return
 	meshes = [ get_node("Mesh_0" ), get_node("Mesh_1") ]
 	source = VolumeSourceScriptGd.new()
 	var script: Resource = preload( "res://volume_source_sphere.gd" )
