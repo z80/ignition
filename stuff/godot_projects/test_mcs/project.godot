@@ -11,7 +11,7 @@ config_version=4
 [application]
 
 config/name="test_mcs"
-run/main_scene="res://test_mcs.tscn"
+run/main_scene="res://test_mcs_tree.tscn"
 config/icon="res://icon.png"
 
 [physics]

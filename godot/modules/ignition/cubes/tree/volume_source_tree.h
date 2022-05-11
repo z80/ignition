@@ -32,7 +32,7 @@ public:
 
 public:
     CubeTree    tree;
-    Vector<Src> sources;
+    std::vector<Src> sources;
 };
 
 }

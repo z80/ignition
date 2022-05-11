@@ -70,10 +70,10 @@ void CubeTree::subdivide( Float total_max_size )
 {
     // Cleanup everything.
     nodes.clear();
-    sources.clear();
+    //sources.clear();
 
     // Search for all occurences of OctreeMeshGd instances.
-    fill_source_references();
+    //fill_source_references();
 
     const int sources_qty = sources.size();
     if ( sources_qty < 1 )
