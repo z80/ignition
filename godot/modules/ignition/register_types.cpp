@@ -58,9 +58,9 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::MarchingVolumeObjectGd>();
 	ClassDB::register_class<Ign::VolumeSourceGd>();
 	ClassDB::register_class<Ign::VolumeSourceScriptGd>();
-	//ClassDB::register_class<Ign::VolumeSourceTreeGd>();
-	//ClassDB::register_class<Ign::MaterialSourceGd>();
-	//ClassDB::register_class<Ign::MaterialSourceScriptGd>();
+	ClassDB::register_class<Ign::VolumeSourceTreeGd>();
+	ClassDB::register_class<Ign::MaterialSourceGd>();
+	ClassDB::register_class<Ign::MaterialSourceScriptGd>();
 	ClassDB::register_class<Ign::MarchingCubesGd>();
 }
 

@@ -12,7 +12,7 @@ class MaterialSourceScript: public MaterialSource
 {
 public:
 	MaterialSourceScript();
-	~MaterialSourceScript();
+	virtual ~MaterialSourceScript();
 
 	bool has_script() const;
 

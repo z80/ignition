@@ -13,7 +13,7 @@ class VolumeSourceScript: public VolumeSource
 {
 public:
 	VolumeSourceScript();
-	~VolumeSourceScript();
+	virtual ~VolumeSourceScript();
 
 	bool has_script() const;
 
@@ -27,7 +27,7 @@ public:
 	Float max_node_size_at( const Vector3d & at ) const;
 
 public:
-	Ref<Reference> object;
+	Reference * reference;
 };
 
 

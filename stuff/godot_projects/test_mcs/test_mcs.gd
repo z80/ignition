@@ -1,9 +1,9 @@
 extends Spatial
 
 
-#var source: VolumeSourceScriptGd     = null
-#var material: MaterialSourceScriptGd = null
-#var cubes: MarchingCubesGd = null
+var source: VolumeSourceScriptGd     = null
+var material: MaterialSourceScriptGd = null
+var cubes: MarchingCubesGd = null
 
 var meshes: Array = []
 

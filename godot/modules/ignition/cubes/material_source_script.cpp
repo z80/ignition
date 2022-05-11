@@ -17,6 +17,8 @@ MaterialSourceScript::~MaterialSourceScript()
 
 bool MaterialSourceScript::has_script() const
 {
+	return false;
+
 	if ( object.ptr() == nullptr )
 		return false;
 	const bool has = (object.ptr()->get_script_instance() != nullptr);

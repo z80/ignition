@@ -10,6 +10,7 @@ namespace Ign
 VolumeSourceScript::VolumeSourceScript()
 	: VolumeSource()
 {
+	reference = nullptr;
 }
 
 VolumeSourceScript::~VolumeSourceScript()
@@ -18,9 +19,9 @@ VolumeSourceScript::~VolumeSourceScript()
 
 bool VolumeSourceScript::has_script() const
 {
-	if ( object.ptr() == nullptr )
+	if ( reference == nullptr )
 		return false;
-	const bool has = (object.ptr()->get_script_instance() != nullptr);
+	const bool has = (reference->get_script_instance() != nullptr);
 	return has;
 }
 
@@ -32,7 +33,7 @@ Float VolumeSourceScript::value( const Vector3d & at ) const
 		return 0.0;
 	}
 
-	ScriptInstance * si = object.ptr()->get_script_instance();
+	ScriptInstance * si = reference->get_script_instance();
 	Variant v_at = Vector3( at.x_, at.y_, at.z_ );
 	const Variant *ptr[1] = { &v_at };
 	Variant::CallError ce;
@@ -55,7 +56,7 @@ Float VolumeSourceScript::max_node_size() const
 		return 0.0;
 	}
 
-	ScriptInstance * si = object.ptr()->get_script_instance();
+	ScriptInstance * si = reference->get_script_instance();
 	const Variant *ptr[1] = { 0 };
 	Variant::CallError ce;
 	const Variant v_ret = si->call( "max_node_size", ptr, 0, ce );
@@ -76,7 +77,7 @@ Float VolumeSourceScript::min_node_size() const
 		return 0.0;
 	}
 
-	ScriptInstance * si = object.ptr()->get_script_instance();
+	ScriptInstance * si = reference->get_script_instance();
 	const Variant *ptr[1] = { 0 };
 	Variant::CallError ce;
 	const Variant v_ret = si->call( "min_node_size", ptr, 0, ce );
@@ -97,7 +98,7 @@ Float VolumeSourceScript::max_node_size_at( const Vector3d & at ) const
 		return 0.0;
 	}
 
-	ScriptInstance * si = object.ptr()->get_script_instance();
+	ScriptInstance * si = reference->get_script_instance();
 	Variant v_at = Vector3( at.x_, at.y_, at.z_ );
 	const Variant *ptr[1] = { &v_at };
 	Variant::CallError ce;

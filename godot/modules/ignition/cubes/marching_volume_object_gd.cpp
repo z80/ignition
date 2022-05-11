@@ -42,7 +42,7 @@ Ref<Se3Ref> MarchingVolumeObjectGd::get_se3() const
     ret.instance();
 
 	if ( object == nullptr )
-		ret;
+		return ret;
 
 	ret.ptr()->se3 = object->get_se3();
     return ret;
