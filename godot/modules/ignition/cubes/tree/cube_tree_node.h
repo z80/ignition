@@ -27,7 +27,7 @@ public:
     void init( CubeTree * tree );
 
     bool contains_point( const Vector3d & at ) const;
-    void pick_objects( CubeTree * tree, std::vector<int> & query );
+    void pick_objects( const Vector3d & at, CubeTree * tree, std::vector<int> & query );
 
 public:
     int abs_index;

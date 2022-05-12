@@ -17,14 +17,14 @@ public:
 
 	bool has_script() const;
 
-	Float value( const Vector3d & at ) const;
+	Float value( const Vector3d & at );
 
 	void set_inverted( bool en );
 	bool get_inverted() const;
 
 	Float max_node_size() const;
 	Float min_node_size() const;
-	Float max_node_size_at( const Vector3d & at ) const;
+	Float max_node_size_at( const Vector3d & at );
 
 public:
 	Reference * reference;

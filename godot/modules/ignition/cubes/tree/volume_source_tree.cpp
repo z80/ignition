@@ -9,6 +9,8 @@ namespace Ign
 VolumeSourceTree::VolumeSourceTree()
     : VolumeSource()
 {
+	_max_node_size = 1.0;
+	_min_node_size = 1.0;
 }
 
 VolumeSourceTree::~VolumeSourceTree()
@@ -61,8 +63,40 @@ Float VolumeSourceTree::value( const Vector3d & at )
     return dist;
 }
 
+Float VolumeSourceTree::max_node_size() const
+{
+	return _max_node_size;
+}
+
+Float VolumeSourceTree::min_node_size() const
+{
+	return _min_node_size;
+}
+
+Float VolumeSourceTree::max_node_size_local( const Vector3d & at )
+{
+	const std::vector<MarchingVolumeObject *> & objs = tree.pick_objects( at );
+	const int qty = objs.size();
+	Float max_sz = _max_node_size;
+	if (qty < 1)
+		return max_sz;
+	for ( int i=0; i<qty; i++ )
+	{
+		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[i] );
+		const Float sz = vs->max_node_size_at( at );
+		if (sz < max_sz)
+			max_sz = sz;
+	}
+
+	return max_sz;
+}
+
+
 void VolumeSourceTree::clear()
 {
+	_max_node_size = -1.0;
+	_min_node_size = -1.0;
+
     sources.clear();
     tree.clear();
 }
@@ -72,6 +106,14 @@ void VolumeSourceTree::add_source( const Src & source )
     VolumeSource * src = source.ptr()->source;
     sources.push_back( source );
     tree.add_source( src );
+
+	// Update min and max node sizes.
+	const Float min_sz = src->min_node_size();
+	const Float max_sz = src->max_node_size();
+	if ( ( _min_node_size < 0.0 ) || ( min_sz < _min_node_size ) )
+		_min_node_size = min_sz;
+	if ( (_max_node_size < 0.0) || (max_sz > _max_node_size) )
+		_max_node_size = max_sz;
 }
 
 void VolumeSourceTree::subdivide( Float total_max_size )

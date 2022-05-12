@@ -22,7 +22,12 @@ public:
     void set_max_items_per_node( int qty );
     int  get_max_items_per_node() const;
 
-    virtual Float value( const Vector3d & at );
+	virtual Float value( const Vector3d & at );
+
+	virtual Float max_node_size() const;
+	virtual Float min_node_size() const;
+	virtual Float max_node_size_local( const Vector3d & at );
+
 
     void clear();
     void add_source( const Src & source );
@@ -33,6 +38,8 @@ public:
 public:
     CubeTree    tree;
     std::vector<Src> sources;
+	Float _max_node_size;
+	Float _min_node_size;
 };
 
 }

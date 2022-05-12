@@ -48,7 +48,7 @@ const std::vector<MarchingVolumeObject *> & CubeTree::pick_objects( const Vector
     query_result.clear();
     query_result_inds.clear();
     CubeTreeNode & node = nodes[0];
-    node.pick_objects( this, query_result_inds );
+    node.pick_objects( at, this, query_result_inds );
 
     // Need to be sorted so that objects added later (with bigger indices)
     // override objects added earler (with smaller indices).
@@ -56,11 +56,18 @@ const std::vector<MarchingVolumeObject *> & CubeTree::pick_objects( const Vector
 
     const int qty = query_result_inds.size();
     query_result.reserve( qty );
+	// Indices are sorted. So each next one should not be the same as
+	// the previous one.
+	int prev_ind = -1;
     for ( int i=0; i<qty; i++ )
     {
         const int ind = query_result_inds[i];
-        MarchingVolumeObject * o = sources[ind];
-        query_result.push_back(o);
+		if ( ind != prev_ind )
+		{
+			MarchingVolumeObject * o = sources[ind];
+			query_result.push_back(o);
+			prev_ind = ind;
+		}
     }
 
     return query_result;

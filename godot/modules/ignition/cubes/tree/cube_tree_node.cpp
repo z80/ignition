@@ -201,18 +201,20 @@ bool CubeTreeNode::contains_point( const Vector3d & at ) const
     return true;
 }
 
-void CubeTreeNode::pick_objects( CubeTree * tree, std::vector<int> & query )
+void CubeTreeNode::pick_objects( const Vector3d & at, CubeTree * tree, std::vector<int> & query )
 {
-    const bool is_leaf = has_children();
+	const bool contains_the_point = contains_point( at );
+	if (!contains_the_point)
+		return;
+
+    const bool is_leaf = !has_children();
     if ( is_leaf )
     {
         const int qty = source_inds.size();
         for ( int i=0; i<qty; i++ )
         {
             const int ind = source_inds[i];
-            const bool unique = ( std::find( query.begin(), query.end(), ind ) == query.end() );
-            if ( unique )
-                query.push_back( ind );
+            query.push_back( ind );
         }
         return;
     }
@@ -221,7 +223,7 @@ void CubeTreeNode::pick_objects( CubeTree * tree, std::vector<int> & query )
     {
         const int child_ind = children[i];
         CubeTreeNode & child_node = tree->nodes[child_ind];
-        child_node.pick_objects( tree, query );
+        child_node.pick_objects( at, tree, query );
     }
 }
 

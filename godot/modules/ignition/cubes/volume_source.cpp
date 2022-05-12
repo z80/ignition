@@ -14,14 +14,14 @@ VolumeSource::~VolumeSource()
 {
 }
 
-Float VolumeSource::value_global( const Vector3d & at ) const
+Float VolumeSource::value_global( const Vector3d & at )
 {
     const Vector3d local_at = se3_inverted * at;
     const Float v = value( local_at );
     return v;
 }
 
-Float VolumeSource::value( const Vector3d & at ) const
+Float VolumeSource::value( const Vector3d & at )
 {
     const Float d = at.LengthSquared() - 5.0;
     return d;

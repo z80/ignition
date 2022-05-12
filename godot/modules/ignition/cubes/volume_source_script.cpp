@@ -25,7 +25,7 @@ bool VolumeSourceScript::has_script() const
 	return has;
 }
 
-Float VolumeSourceScript::value( const Vector3d & at ) const
+Float VolumeSourceScript::value( const Vector3d & at )
 {
 	if ( !has_script() )
 	{
@@ -90,7 +90,7 @@ Float VolumeSourceScript::min_node_size() const
 	return ret;
 }
 
-Float VolumeSourceScript::max_node_size_at( const Vector3d & at ) const
+Float VolumeSourceScript::max_node_size_at( const Vector3d & at )
 {
 	if ( !has_script() )
 	{

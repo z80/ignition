@@ -14,10 +14,10 @@ public:
     virtual ~VolumeSource();
 
     // This one computes value in global space.
-    Float value_global( const Vector3d & at ) const;
+    Float value_global( const Vector3d & at );
 
     // This one is computing in local space.
-    virtual Float value( const Vector3d & at ) const;
+    virtual Float value( const Vector3d & at );
 
     void set_inverted( bool en );
     bool get_inverted() const;

@@ -16,6 +16,7 @@ func _ready():
 	source = VolumeSourceScriptGd.new()
 	var script: Resource = preload( "res://volume_source_sphere.gd" )
 	source.set_script( script )
+	source.bounding_radius = 15.0
 	
 	source_tree.add_source( source )
 	source_tree.subdivide( 100.0 )
