@@ -27,6 +27,7 @@ public:
 	virtual Float max_node_size() const;
 	virtual Float min_node_size() const;
 	virtual Float max_node_size_local( const Vector3d & at );
+	virtual Float min_node_size_local( const Vector3d & at );
 
 
     void clear();

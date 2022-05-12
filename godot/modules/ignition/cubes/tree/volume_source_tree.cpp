@@ -84,16 +84,51 @@ Float VolumeSourceTree::max_node_size_local( const Vector3d & at )
 	Float max_sz = _max_node_size;
 	if (qty < 1)
 		return max_sz;
+
+	max_sz = -1.0;
 	for ( int i=0; i<qty; i++ )
 	{
 		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[i] );
+
+		const Float dist = (at - vs->se3.r_).Length();
+		const Float r = vs->get_bounding_radius();
+		if ( dist > r )
+			continue;
+
 		const Float sz = vs->max_node_size_at( at );
-		if (sz < max_sz)
+		if (sz > max_sz)
 			max_sz = sz;
 	}
 
 	return max_sz;
 }
+
+Float VolumeSourceTree::min_node_size_local( const Vector3d & at )
+{
+	const std::vector<MarchingVolumeObject *> & objs = tree.pick_objects( at );
+	const int qty = objs.size();
+	Float min_sz = _min_node_size;
+	if (qty < 1)
+		return min_sz;
+
+	min_sz = _max_node_size;
+	for ( int i=0; i<qty; i++ )
+	{
+		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[i] );
+
+		const Float dist = (at - vs->se3.r_).Length();
+		const Float r = vs->get_bounding_radius();
+		if ( dist > r )
+			continue;
+
+		const Float sz = vs->max_node_size_at( at );
+		if (sz < min_sz)
+			min_sz = sz;
+	}
+
+	return min_sz;
+}
+
 
 
 void VolumeSourceTree::clear()
