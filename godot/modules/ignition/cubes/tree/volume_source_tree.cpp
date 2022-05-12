@@ -46,7 +46,11 @@ Float VolumeSourceTree::value( const Vector3d & at )
     const std::vector<MarchingVolumeObject *> & objs = tree.pick_objects( at );
     const int qty = objs.size();
     if (qty < 1)
-        return -1.0;
+	{
+		const Float dist = at.Length();
+		return dist;
+	}
+
     VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[0] );
     Float dist = vs->value_global( at );
     for ( int i=1; i<qty; i++ )
