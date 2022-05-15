@@ -15,6 +15,8 @@ void VolumeSourceGd::_bind_methods()
     ClassDB::bind_method( D_METHOD("min_node_size"),      &VolumeSourceGd::min_node_size, Variant::REAL );
 
     ClassDB::bind_method( D_METHOD("max_node_size_at", "at"), &VolumeSourceGd::max_node_size_at, Variant::REAL );
+
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "inverted" ), "set_inverted", "get_inverted" );
 }
 
 VolumeSourceGd::VolumeSourceGd()

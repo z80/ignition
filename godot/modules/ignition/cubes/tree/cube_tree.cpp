@@ -119,36 +119,23 @@ void CubeTree::compute_levels( Float total_max_size )
         if ( sz <= 0.0 )
                 continue;
         {
-            const Float v = std::abs(at.x_ + sz);
+            const Float v = std::abs(at.x_) + sz;
             if ( (max_sz < 0.0) || (max_sz < v) )
                     max_sz = v;
         }
         {
-            const Float v = std::abs(at.x_ - sz);
+            const Float v = std::abs(at.y_) + sz;
             if ( (max_sz < 0.0) || (max_sz < v) )
                     max_sz = v;
         }
         {
-            const Float v = std::abs(at.y_ + sz);
-            if ( (max_sz < 0.0) || (max_sz < v) )
-                    max_sz = v;
-        }
-        {
-            const Float v = std::abs(at.y_ - sz);
-            if ( (max_sz < 0.0) || (max_sz < v) )
-                    max_sz = v;
-        }
-        {
-            const Float v = std::abs(at.z_ + sz);
-            if ( (max_sz < 0.0) || (max_sz < v) )
-                    max_sz = v;
-        }
-        {
-            const Float v = std::abs(at.z_ - sz);
+            const Float v = std::abs(at.z_) + sz;
             if ( (max_sz < 0.0) || (max_sz < v) )
                     max_sz = v;
         }
     }
+	if (max_sz > 0.0)
+		max_sz *= 2.0;
 
     if (total_max_size > 0.0)
     {

@@ -51,11 +51,31 @@ Float VolumeSourceTree::value( const Vector3d & at )
 		return dist;
 	}
 
-    VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[0] );
-    Float dist = vs->value_global( at );
-    for ( int i=1; i<qty; i++ )
+	bool initiated = false;
+	Float dist;
+	int ind = 0;
+	for ( ; ind<qty; ind++ )
+	{
+		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[ind] );
+		const bool is_inverted = vs->get_inverted();
+		if ( !is_inverted )
+		{
+			initiated = true;
+			dist = vs->value_global( at );
+			break;
+		}
+	}
+
+	if ( !initiated )
+	{
+		const Float dist = at.Length();
+		return dist;
+	}
+
+	ind += 1;
+    for ( int i=ind; i<qty; i++ )
     {
-        vs = reinterpret_cast<VolumeSource *>( objs[i] );
+		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[i] );
         const bool is_inverted = vs->get_inverted();
         const Float dist_i = vs->value_global( at );
         if ( is_inverted )

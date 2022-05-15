@@ -332,12 +332,15 @@ void MarchingCubes::compute_node_values( MarchingNode & node, VolumeSource * sou
 
 MarchingNode MarchingCubes::step_towards_surface( const MarchingNode & node, VolumeSource * source, const DistanceScaler * scaler )
 {
-    const Float dx = (node.values[1] + node.values[2] + node.values[6] + node.values[5]) - 
-                     (node.values[0] + node.values[3] + node.values[7] + node.values[4]);
-    const Float dy = (node.values[4] + node.values[5] + node.values[6] + node.values[7]) - 
-                     (node.values[0] + node.values[1] + node.values[2] + node.values[3]);
-    const Float dz = (node.values[3] + node.values[7] + node.values[6] + node.values[2]) - 
-                     (node.values[0] + node.values[4] + node.values[5] + node.values[1]);
+	const Float center = node.values[1] + node.values[2] + node.values[6] + node.values[5] + 
+					     node.values[0] + node.values[3] + node.values[7] + node.values[4];
+	const Float sign = (center >= 0.0) ? 1.0 : -1.0;
+    const Float dx = ( (node.values[1] + node.values[2] + node.values[6] + node.values[5]) - 
+                       (node.values[0] + node.values[3] + node.values[7] + node.values[4]) ) * sign;
+    const Float dy = ( (node.values[4] + node.values[5] + node.values[6] + node.values[7]) - 
+                       (node.values[0] + node.values[1] + node.values[2] + node.values[3]) ) * sign;
+    const Float dz = ( (node.values[3] + node.values[7] + node.values[6] + node.values[2]) - 
+                       (node.values[0] + node.values[4] + node.values[5] + node.values[1]) ) * sign;
     const Float abs_vals[3] = { std::abs(dx), std::abs(dy), std::abs(dz) };
     Float max_val = -1.0;
     int   max_ind = -1;

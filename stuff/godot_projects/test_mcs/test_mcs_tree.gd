@@ -16,13 +16,52 @@ func _ready():
 	source = VolumeSourceScriptGd.new()
 	var script: Resource = preload( "res://volume_source_sphere.gd" )
 	source.set_script( script )
-	source.bounding_radius = 15.0
+	source.bounding_radius = 3.5
+	
+	var se3: Se3Ref = Se3Ref.new()
+	se3.r = Vector3.ZERO
+	source.se3 = se3
 	
 	source_tree.add_source( source )
+
+
+
+	source = VolumeSourceScriptGd.new()
+	script = preload( "res://volume_source_sphere.gd" )
+	source.set_script( script )
+	source.bounding_radius = 5.0
+	source.inverted = false
+
+	se3.r = Vector3( 3.0, 1.5, 0.0 )
+	source.se3 = se3
+
+	source_tree.add_source( source )
+
+
+
+
+	
+	source = VolumeSourceScriptGd.new()
+	script = preload( "res://volume_source_sphere.gd" )
+	source.set_script( script )
+	source.bounding_radius = 5.0
+
+	se3.r = Vector3( 0.0, 2.5, 0.0 )
+	source.se3 = se3
+	
+	source.inverted = true
+
+	source_tree.add_source( source )
+
+
+
+
+
 	source_tree.subdivide( 100.0 )
 	
+	
 	material = MaterialSourceScriptGd.new()
-	script = preload( "res://material_source_sphere.gd" )
+	script = preload( "res://material_source_unified.gd" )
 	material.set_script( script )
 	
 	cubes = MarchingCubesGd.new()
