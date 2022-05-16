@@ -26,7 +26,7 @@ public:
 	~MarchingCubesGd();
 
 	void set_source_transform( const Ref<Se3Ref> & se3 );
-	bool subdivide_source( const Ref<VolumeSourceGd> & volume, const Ref<MaterialSourceGd> & material=Ref<MaterialSourceGd>(), const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
+	bool subdivide_source( const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 	Array materials_used() const;
 	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 

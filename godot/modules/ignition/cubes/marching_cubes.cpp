@@ -35,7 +35,7 @@ void MarchingCubes::set_source_transform( const SE3 & se3 )
 
 
 
-bool MarchingCubes::subdivide_source( VolumeSource * source, MaterialSource * material_source, const DistanceScaler * scaler )
+bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScaler * scaler )
 {
 	_values_map.clear();
 	_normals_map.clear();
@@ -83,14 +83,8 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, MaterialSource * ma
 		const bool on_surface = node.has_surface( iso_level );
 		if ( on_surface )
 		{
-			int material_index;
-			if (material_source != nullptr)
-			{
-				const Vector3d center_at = node_center( node, scaler );
-				material_index = material_source->material( center_at );
-			}
-			else
-				material_index = 0;
+			const Vector3d center_at = node_center( node, scaler );
+			const int material_index = material_at( center_at );
 
 			create_faces( node, material_index );
 			_materials_set.insert( material_index );
@@ -573,6 +567,22 @@ Float MarchingCubes::value_at( VolumeSource * source, const VectorInt & vector_i
 
 	return v;
 }
+
+int MarchingCubes::material_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at )
+{
+	MaterialsMapConstIterator it = _materials_map.find( vector_int );
+	if ( it != _materials_map.end() )
+	{
+		const Float v = it->second;
+		return v;
+	}
+
+	const Float v = source->material_global( at );
+	_materials_map[vector_int] = v;
+
+	return v;
+}
+
 
 
 

@@ -151,6 +151,38 @@ Float VolumeSourceTree::min_node_size_local( const Vector3d & at )
 
 
 
+int VolumeSourceTree::material( const Vector3d & at )
+{
+	// Here "at" is in local ref. frame with respect to 
+	// this tree object.
+	const std::vector<MarchingVolumeObject *> & objs = tree.pick_objects( at );
+	const int qty = objs.size();
+	if (qty < 1)
+	{
+		const Float dist = at.Length();
+		return dist;
+	}
+
+	bool initiated = false;
+	VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[0] );
+	int material_ind = vs->material_global( at );
+
+	for ( int i=1; i<qty; i++ )
+	{
+		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[i] );
+		const bool is_weak = vs->get_weak_material();
+		if ( !is_weak )
+		{
+			const int material_ind_i = vs->material_global( at );
+			material_ind = material_ind_i;
+		}
+	}
+
+	return material_ind;
+}
+
+
+
 void VolumeSourceTree::clear()
 {
 	_max_node_size = -1.0;

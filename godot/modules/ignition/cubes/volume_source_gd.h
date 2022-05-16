@@ -28,6 +28,16 @@ public:
 	real_t min_node_size() const;
 	real_t max_node_size_at( const Vector3 & at ) const;
 
+
+	int material( const Vector3 & at );
+
+	void set_material_only( bool only );
+	bool get_material_only() const;
+
+	void set_weak_material( bool weak );
+	bool get_weak_material() const;
+
+
 public:
 	VolumeSource * source;
 };

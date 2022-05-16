@@ -16,7 +16,19 @@ void VolumeSourceGd::_bind_methods()
 
     ClassDB::bind_method( D_METHOD("max_node_size_at", "at"), &VolumeSourceGd::max_node_size_at, Variant::REAL );
 
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "inverted" ), "set_inverted", "get_inverted" );
+
+	ClassDB::bind_method( D_METHOD("material", "at"), &VolumeSourceGd::material, Variant::INT );
+
+	ClassDB::bind_method( D_METHOD("set_material_only", "only"), &VolumeSourceGd::set_material_only );
+	ClassDB::bind_method( D_METHOD("get_material_only"),         &VolumeSourceGd::get_material_only, Variant::BOOL );
+
+	ClassDB::bind_method( D_METHOD("set_weak_material", "weak"), &VolumeSourceGd::set_weak_material );
+	ClassDB::bind_method( D_METHOD("get_weak_material")			 &VolumeSourceGd::get_weak_material, Variant::BOOL );
+
+
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "inverted" ),      "set_inverted",      "get_inverted" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "material_only" ), "set_material_only", "get_material_only" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "weak_material" ), "set_weak_material", "get_weak_material" );
 }
 
 VolumeSourceGd::VolumeSourceGd()
@@ -81,6 +93,50 @@ real_t VolumeSourceGd::max_node_size_at( const Vector3 & at ) const
 	const Float ret = source->max_node_size_at( Vector3d( at.x, at.y, at.z ) );
     return ret;
 }
+
+int VolumeSourceGd::material( const Vector3 & at )
+{
+	if ( source == nullptr )
+		return -1;
+
+	const int ret = source->material( at );
+	return ret;
+}
+
+void VolumeSourceGd::set_material_only( bool only )
+{
+	if ( source == nullptr )
+		return;
+
+	source->set_material_only( only );
+}
+
+bool VolumeSourceGd::get_material_only() const
+{
+	if ( source == nullptr )
+		return false;
+
+	const bool ret = source->get_material_only();
+	return ret;
+}
+
+void VolumeSourceGd::set_weak_material( bool weak )
+{
+	if ( source == nullptr )
+		return;
+
+	source->set_weak_material( weak );
+}
+
+bool VolumeSourceGd::get_weak_material() const
+{
+	if ( source == nullptr )
+		return false;
+
+	const bool ret = source->get_weak_material();
+	return ret;
+}
+
 
 
 

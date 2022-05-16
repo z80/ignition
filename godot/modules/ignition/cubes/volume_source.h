@@ -22,8 +22,19 @@ public:
     void set_inverted( bool en );
     bool get_inverted() const;
 
+	int material_global( const Vector3d & at );
+	virtual int material( const Vector3d & at );
+
+	void set_material_only( bool only );
+	bool get_material_only() const;
+
+	void set_weak_material( bool weak );
+	bool get_weak_material() const;
+
 public:
     bool inverted;
+	bool material_only;
+	bool weak_material;
 };
 
 

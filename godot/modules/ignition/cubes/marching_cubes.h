@@ -91,7 +91,7 @@ public:
     ~MarchingCubes();
 
     void set_source_transform( const SE3 & se3 );
-    bool subdivide_source( VolumeSource * source, MaterialSource * material_source = nullptr, const DistanceScaler * scaler = nullptr );
+    bool subdivide_source( VolumeSource * source, const DistanceScaler * scaler = nullptr );
 
 	const std::set<int>        & materials() const;
 	const std::vector<Vector3> & vertices( int material_ind );
@@ -139,6 +139,7 @@ private:
 
 	// Compute value with reusing pre-computed values.
 	Float value_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at );
+	int   material_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at );
 
 	// Store face normal for node edge.
 	void append_normal( const NodeEdgeInt & edge, const Vector3d & n );
@@ -150,6 +151,10 @@ private:
 	typedef std::map<VectorInt, Float>                 ValuesMap;
 	typedef std::map<VectorInt, Float>::iterator       ValuesMapIterator;
 	typedef std::map<VectorInt, Float>::const_iterator ValuesMapConstIterator;
+
+	typedef std::map<VectorInt, int>                   MaterialsMap;
+	typedef std::map<VectorInt, int>::iterator         MaterialsMapIterator;
+	typedef std::map<VectorInt, int>::const_iterator   MaterialsMapConstIterator;
 
 	typedef std::map<NodeEdgeInt, NormalsAndQty>                 NormalsMap;
 	typedef std::map<NodeEdgeInt, NormalsAndQty>::iterator       NormalsMapIterator;
@@ -177,6 +182,7 @@ private:
 
 	// In order to not compute values a few times.
 	ValuesMap     _values_map;
+	MaterialsMap  _materials_map;
 
 	// In order to compute normals.
 	NormalsMap    _normals_map;

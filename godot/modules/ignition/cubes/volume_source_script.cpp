@@ -112,6 +112,29 @@ Float VolumeSourceScript::max_node_size_at( const Vector3d & at )
 	return ret;
 }
 
+int VolumeSourceScript::material( const Vector3d & at )
+{
+	if ( !has_script() )
+	{
+		print_error( "VolumeSourceScript error: no script assigned" );
+		return 0.0;
+	}
+
+	ScriptInstance * si = reference->get_script_instance();
+	Variant v_at = Vector3( at.x_, at.y_, at.z_ );
+	const Variant *ptr[1] = { &v_at };
+	Variant::CallError ce;
+	const Variant v_ret = si->call( "material", ptr, 1, ce );
+	if ( ce.error != Variant::CallError::CALL_OK )
+	{
+		print_error( "VolumeSourceScript error: expected Vector3 as an argument" );
+		return 0;
+	}
+	const int ret = v_ret;
+	return ret;
+}
+
+
 
 
 

@@ -12,7 +12,7 @@ namespace Ign
 void MarchingCubesGd::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_source_transform", "se3"),                              &MarchingCubesGd::set_source_transform );
-	ClassDB::bind_method( D_METHOD("subdivide_source", "volume", "material", "scaler"),         &MarchingCubesGd::subdivide_source, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("subdivide_source", "volume", "scaler"),                     &MarchingCubesGd::subdivide_source, Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesGd::materials_used,   Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesGd::apply_to_mesh );
 
@@ -37,14 +37,13 @@ void MarchingCubesGd::set_source_transform( const Ref<Se3Ref> & se3 )
 	cubes.set_source_transform( se3_inst );
 }
 
-bool MarchingCubesGd::subdivide_source( const Ref<VolumeSourceGd> & volume, const Ref<MaterialSourceGd> & material, const Ref<DistanceScalerRef> & scaler )
+bool MarchingCubesGd::subdivide_source( const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler )
 {
 	VolumeSource   * volume_source   = volume.ptr()->source;
-	MaterialSource * material_source = material.ptr()->source;
 	const DistanceScalerRef * distance_scaler_ref = scaler.ptr();
 	const DistanceScaler * distance_scaler = (distance_scaler_ref != nullptr) ? &(distance_scaler_ref->scaler) : nullptr;
 
-	const bool ret = cubes.subdivide_source( volume_source, material_source, distance_scaler );
+	const bool ret = cubes.subdivide_source( volume_source, distance_scaler );
 	return ret;
 }
 
