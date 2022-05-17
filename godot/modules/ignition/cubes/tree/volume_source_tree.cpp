@@ -164,10 +164,24 @@ int VolumeSourceTree::material( const Vector3d & at )
 	}
 
 	bool initiated = false;
-	VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[0] );
-	int material_ind = vs->material_global( at );
+	int start_ind = 0;
+	int material_ind = -1;
+	for ( start_ind=0; start_ind<qty; start_ind++ )
+	{
+		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[start_ind] );
+		const Float value = vs->value_global( at );
+		if ( value > 0.0 )
+			continue;
+		const int material_ind_i = vs->material_global( at );
+		material_ind = material_ind_i;
+	}
 
-	for ( int i=1; i<qty; i++ )
+	// If not initialized, return failure.
+	if ( material_ind < 0 )
+		return -1;
+
+	start_ind += 1;
+	for ( int i=start_ind; i<qty; i++ )
 	{
 		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[i] );
 		const bool is_weak = vs->get_weak_material();

@@ -31,7 +31,7 @@ func max_node_size_at( at: Vector3 ):
 
 
 func material( at: Vector3 ):
-	return 0
+	return 1
 
 
 

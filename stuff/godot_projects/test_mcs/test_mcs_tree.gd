@@ -55,18 +55,15 @@ func _ready():
 
 
 
-
-
 	source_tree.subdivide( 100.0 )
+
+
 	
 	
-	material = MaterialSourceScriptGd.new()
-	script = preload( "res://material_source_unified.gd" )
-	material.set_script( script )
 	
 	cubes = MarchingCubesGd.new()
 	cubes.max_nodes_qty = 20000
-	cubes.subdivide_source( source_tree, material )
+	cubes.subdivide_source( source_tree )
 	
 	var material_inds: Array = cubes.materials_used()
 	
@@ -74,6 +71,8 @@ func _ready():
 		mi.visible = false
 	
 	for ind in material_inds:
+		if ind < 0:
+			ind = 0
 		var m: MeshInstance = meshes[ind]
 		m.visible = true
 		cubes.apply_to_mesh( ind, m, null )
