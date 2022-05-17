@@ -84,7 +84,7 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
 		if ( on_surface )
 		{
 			const Vector3d center_at = node_center( node, scaler );
-			const int material_index = material_at( center_at );
+			const int material_index = material_at( source, node.at, center_at );
 
 			create_faces( node, material_index );
 			_materials_set.insert( material_index );

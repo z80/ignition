@@ -23,7 +23,7 @@ void VolumeSourceGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_material_only"),         &VolumeSourceGd::get_material_only, Variant::BOOL );
 
 	ClassDB::bind_method( D_METHOD("set_weak_material", "weak"), &VolumeSourceGd::set_weak_material );
-	ClassDB::bind_method( D_METHOD("get_weak_material")			 &VolumeSourceGd::get_weak_material, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("get_weak_material"),		 &VolumeSourceGd::get_weak_material, Variant::BOOL );
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "inverted" ),      "set_inverted",      "get_inverted" );
