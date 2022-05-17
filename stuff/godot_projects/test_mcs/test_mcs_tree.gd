@@ -58,9 +58,9 @@ func _ready():
 	source_tree.subdivide( 100.0 )
 
 
-	
-	
-	
+
+
+
 	cubes = MarchingCubesGd.new()
 	cubes.max_nodes_qty = 20000
 	cubes.subdivide_source( source_tree )
