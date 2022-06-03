@@ -568,6 +568,18 @@ Float MarchingCubes::value_at( VolumeSource * source, const VectorInt & vector_i
 	return v;
 }
 
+int MarchingCubes::node_material( VolumeSource* source, const MarchingNode & node, const DistanceScaler * scaler )
+{
+	int max_obj_ind = -1;
+	for ( int i=0; i<8; i++ )
+	{
+		const VectorInt & at_i = node.vertices_int[i];
+		const Vector3d    at_d = at( at_i, scaler );
+		const int mat_ind_i = material_at( source, at_i, at );
+	}
+}
+
+
 int MarchingCubes::material_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at )
 {
 	MaterialsMapConstIterator it = _materials_map.find( vector_int );

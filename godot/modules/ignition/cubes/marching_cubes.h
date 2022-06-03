@@ -139,6 +139,7 @@ private:
 
 	// Compute value with reusing pre-computed values.
 	Float value_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at );
+	int   node_material( VolumeSource* source, const MarchingNode & node, const DistanceScaler * scaler );
 	int   material_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at );
 
 	// Store face normal for node edge.

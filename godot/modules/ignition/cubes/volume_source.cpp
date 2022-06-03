@@ -37,15 +37,17 @@ bool VolumeSource::get_inverted() const
     return inverted;
 }
 
-int VolumeSource::material_global( const Vector3d & at )
+int VolumeSource::material_global( const Vector3d & at, int * priority )
 {
 	const Vector3d local_at = se3_inverted * at;
-	const int m = material( local_at );
+	const int m = material( local_at, priority );
 	return m;
 }
 
-int VolumeSource::material( const Vector3d & at )
+int VolumeSource::material( const Vector3d & at, int * priority )
 {
+	if ( priority != nullptr )
+		*priority = 0;
 	return 0;
 }
 

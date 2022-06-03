@@ -29,7 +29,7 @@ public:
 	virtual Float max_node_size_local( const Vector3d & at );
 	virtual Float min_node_size_local( const Vector3d & at );
 
-	virtual int material( const Vector3d & at );
+	virtual int material( const Vector3d & at, int * priority = nullptr );
 
     void clear();
     void add_source( const Src & source );
