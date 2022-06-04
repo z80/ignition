@@ -34,8 +34,7 @@ public:
 	void set_material_only( bool only );
 	bool get_material_only() const;
 
-	void set_weak_material( bool weak );
-	bool get_weak_material() const;
+
 
 
 public:

@@ -142,7 +142,7 @@ Float VolumeSourceTree::min_node_size_local( const Vector3d & at )
 			continue;
 
 		const Float sz = vs->max_node_size_at( at );
-		if (sz < min_sz)
+		if ( sz < min_sz )
 			min_sz = sz;
 	}
 
@@ -151,7 +151,7 @@ Float VolumeSourceTree::min_node_size_local( const Vector3d & at )
 
 
 
-int VolumeSourceTree::material( const Vector3d & at )
+int VolumeSourceTree::material( const Vector3d & at, int * priority )
 {
 	// Here "at" is in local ref. frame with respect to 
 	// this tree object.
@@ -159,39 +159,60 @@ int VolumeSourceTree::material( const Vector3d & at )
 	const int qty = objs.size();
 	if (qty < 1)
 	{
-		const Float dist = at.Length();
-		return dist;
+		if ( priority != nullptr )
+			*priority = -1;
+		return -1;
 	}
 
 	bool initiated = false;
 	int start_ind = 0;
 	int material_ind = -1;
+	int priority_ind = -1;
 	for ( start_ind=0; start_ind<qty; start_ind++ )
 	{
 		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[start_ind] );
 		const Float value = vs->value_global( at );
 		if ( value > 0.0 )
 			continue;
-		const int material_ind_i = vs->material_global( at );
+		int priority_ind_i;
+		const int material_ind_i = vs->material_global( at, &priority_ind_i );
 		material_ind = material_ind_i;
+		if ( material_ind_i >= 0 )
+		{
+			material_ind = material_ind_i;
+			priority_ind = priority_ind_i;
+			break;
+		}
 	}
 
 	// If not initialized, return failure.
 	if ( material_ind < 0 )
+	{
+		if ( priority != nullptr )
+			*priority = -1;
 		return -1;
+	}
 
 	start_ind += 1;
 	for ( int i=start_ind; i<qty; i++ )
 	{
 		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[i] );
-		const bool is_weak = vs->get_weak_material();
-		if ( !is_weak )
+		const Float value = vs->value_global( at );
+		if ( value > 0.0 )
+			continue;
+		int priority_ind_i;
+		const int material_ind_i = vs->material_global( at, &priority_ind_i );
+		material_ind = material_ind_i;
+		if ( (material_ind_i >= 0) && ( priority_ind_i >= priority_ind ) )
 		{
-			const int material_ind_i = vs->material_global( at );
 			material_ind = material_ind_i;
+			priority_ind = priority_ind_i;
+			break;
 		}
 	}
 
+	if ( priority != nullptr )
+		*priority = priority_ind;
 	return material_ind;
 }
 

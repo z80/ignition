@@ -61,15 +61,6 @@ bool VolumeSource::get_material_only() const
 	return material_only;
 }
 
-void VolumeSource::set_weak_material( bool weak )
-{
-	weak_material = weak;
-}
-
-bool VolumeSource::get_weak_material() const
-{
-	return weak_material;
-}
 
 
 

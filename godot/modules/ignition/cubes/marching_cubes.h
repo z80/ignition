@@ -27,60 +27,11 @@ class VolumeSource;
 class MaterialSource;
 class DistanceScaler;
 
-
-
-
-
-/*struct MarchingNodeHasher
+struct MaterialWithPriority
 {
-    static _FORCE_INLINE_ uint32_t hash( const MarchingNode & n )
-    {
-        const uint8_t * c = reinterpret_cast<const uint8_t *>( &(n.at.x) );
-        uint32_t h = hash_djb2_buffer( c, sizeof(int) );
-
-        c = reinterpret_cast<const uint8_t *>( &(n.at.y) );
-        h = hash_djb2_buffer( c, sizeof(int), h );
-
-        c = reinterpret_cast<const uint8_t *>( &(n.at.z) );
-        h = hash_djb2_buffer( c, sizeof(int), h );
-
-        c = reinterpret_cast<const uint8_t *>( &(n.size) );
-        h = hash_djb2_buffer( c, sizeof(int), h );
-
-        return p_string.hash();
-    }
-}*/
-
-/*struct MarchingNodeCompare
-{
-    static bool operator<( const MarchingNode & a, const MarchingNode & b ) const
-    {
-        if ( a.at.x < b.at.x )
-            return true;
-        else if ( a.at.y < b.at.y )
-            return true;
-        else if ( a.at.z < b.at.z )
-            return true;
-        else if ( a.size < b.size )
-            return true;
-
-        return false;
-    }
-
-	static bool operator==( const MarchingNode & a, const MarchingNode & b ) const
-	{
-		if ( a.at.x != b.at.x )
-			return false;
-		else if ( a.at.y != b.at.y )
-			return false;
-		else if ( a.at.z != b.at.z )
-			return false;
-		else if ( a.size != b.size )
-			return false;
-
-		return true;
-	}
-};*/
+	int material;
+	int priority;
+};
 
 
 
@@ -140,7 +91,7 @@ private:
 	// Compute value with reusing pre-computed values.
 	Float value_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at );
 	int   node_material( VolumeSource* source, const MarchingNode & node, const DistanceScaler * scaler );
-	int   material_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at );
+	int   material_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at, int * priority );
 
 	// Store face normal for node edge.
 	void append_normal( const NodeEdgeInt & edge, const Vector3d & n );
@@ -153,9 +104,9 @@ private:
 	typedef std::map<VectorInt, Float>::iterator       ValuesMapIterator;
 	typedef std::map<VectorInt, Float>::const_iterator ValuesMapConstIterator;
 
-	typedef std::map<VectorInt, int>                   MaterialsMap;
-	typedef std::map<VectorInt, int>::iterator         MaterialsMapIterator;
-	typedef std::map<VectorInt, int>::const_iterator   MaterialsMapConstIterator;
+	typedef std::map<VectorInt, MaterialWithPriority>                 MaterialsMap;
+	typedef std::map<VectorInt, MaterialWithPriority>::iterator       MaterialsMapIterator;
+	typedef std::map<VectorInt, MaterialWithPriority>::const_iterator MaterialsMapConstIterator;
 
 	typedef std::map<NodeEdgeInt, NormalsAndQty>                 NormalsMap;
 	typedef std::map<NodeEdgeInt, NormalsAndQty>::iterator       NormalsMapIterator;

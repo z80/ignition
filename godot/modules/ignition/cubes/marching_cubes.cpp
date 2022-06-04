@@ -83,8 +83,7 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
 		const bool on_surface = node.has_surface( iso_level );
 		if ( on_surface )
 		{
-			const Vector3d center_at = node_center( node, scaler );
-			const int material_index = material_at( source, node.at, center_at );
+			const int material_index = node_material( source, node, scaler );
 
 			create_faces( node, material_index );
 			_materials_set.insert( material_index );
@@ -568,31 +567,46 @@ Float MarchingCubes::value_at( VolumeSource * source, const VectorInt & vector_i
 	return v;
 }
 
-int MarchingCubes::node_material( VolumeSource* source, const MarchingNode & node, const DistanceScaler * scaler )
+int MarchingCubes::node_material( VolumeSource * source, const MarchingNode & node, const DistanceScaler * scaler )
 {
-	int max_obj_ind = -1;
+	int max_priority = -1;
+	int max_material = -1;
 	for ( int i=0; i<8; i++ )
 	{
 		const VectorInt & at_i = node.vertices_int[i];
 		const Vector3d    at_d = at( at_i, scaler );
-		const int mat_ind_i = material_at( source, at_i, at );
+		int priority;
+		const int material = material_at( source, at_i, at_d, &priority );
+		if ( (max_priority < 0) || (max_priority <= priority) )
+			max_material = material;
 	}
+
+	return max_material;
 }
 
 
-int MarchingCubes::material_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at )
+int MarchingCubes::material_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at, int * priority )
 {
 	MaterialsMapConstIterator it = _materials_map.find( vector_int );
 	if ( it != _materials_map.end() )
 	{
-		const Float v = it->second;
-		return v;
+		const MaterialWithPriority mp = it->second;
+		if ( priority != nullptr )
+			*priority = mp.priority;
+		return mp.material;
 	}
 
-	const Float v = source->material_global( at );
-	_materials_map[vector_int] = v;
+	int priority_index;
+	const int material_index = source->material_global( at, &priority_index );
+	MaterialWithPriority mp;
+	mp.material = material_index;
+	mp.priority = priority_index;
+	_materials_map[vector_int] = mp;
 
-	return v;
+	if ( priority != nullptr )
+		*priority = priority_index;
+
+	return material_index;
 }
 
 

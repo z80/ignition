@@ -22,13 +22,9 @@ void VolumeSourceGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_material_only", "only"), &VolumeSourceGd::set_material_only );
 	ClassDB::bind_method( D_METHOD("get_material_only"),         &VolumeSourceGd::get_material_only, Variant::BOOL );
 
-	ClassDB::bind_method( D_METHOD("set_weak_material", "weak"), &VolumeSourceGd::set_weak_material );
-	ClassDB::bind_method( D_METHOD("get_weak_material"),		 &VolumeSourceGd::get_weak_material, Variant::BOOL );
-
 
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "inverted" ),      "set_inverted",      "get_inverted" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "material_only" ), "set_material_only", "get_material_only" );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "weak_material" ), "set_weak_material", "get_weak_material" );
 }
 
 VolumeSourceGd::VolumeSourceGd()
@@ -120,22 +116,7 @@ bool VolumeSourceGd::get_material_only() const
 	return ret;
 }
 
-void VolumeSourceGd::set_weak_material( bool weak )
-{
-	if ( source == nullptr )
-		return;
 
-	source->set_weak_material( weak );
-}
-
-bool VolumeSourceGd::get_weak_material() const
-{
-	if ( source == nullptr )
-		return false;
-
-	const bool ret = source->get_weak_material();
-	return ret;
-}
 
 
 
