@@ -1,7 +1,6 @@
 
 #include "marching_cubes.h"
 #include "volume_source.h"
-#include "material_source.h"
 #include "cube_tables.h"
 #include "vector3d.h"
 #include "distance_scaler.h"

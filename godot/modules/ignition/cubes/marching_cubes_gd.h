@@ -6,7 +6,6 @@
 #include "core/reference.h"
 #include "se3_ref.h"
 #include "volume_source_gd.h"
-#include "material_source_gd.h"
 #include "distance_scaler_ref.h"
 
 
