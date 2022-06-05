@@ -223,7 +223,15 @@ Float MarchingCubes::node_size( int level ) const
 }
 
 
-Vector3d MarchingCubes::at( const VectorInt & at_i, const DistanceScaler * scaler ) const
+Vector3d MarchingCubes::at_in_source( const VectorInt & at_i ) const
+{
+	const Vector3d at( static_cast<Float>(at_i.x)*step, 
+		               static_cast<Float>(at_i.y)*step, 
+		               static_cast<Float>(at_i.z)*step );
+	return at;
+}
+
+Vector3d MarchingCubes::at_in_source_unscaled( const VectorInt & at_i, const DistanceScaler * scaler ) const
 {
     const Vector3d at( static_cast<Float>(at_i.x)*step, 
                        static_cast<Float>(at_i.y)*step, 
@@ -231,30 +239,17 @@ Vector3d MarchingCubes::at( const VectorInt & at_i, const DistanceScaler * scale
     // Apply transform.
     if (scaler == nullptr)
     {
-        const Vector3d at_in_source = inverted_source_se3.q_ * at + inverted_source_se3.r_;
+        const Vector3d at_in_source = at;
         return at_in_source;
     }
 
-    const Vector3d at_in_source = scaler->unscale( at );
-	const Vector3d at_scaled    = inverted_source_se3.q_ * at_in_source + inverted_source_se3.r_;
-	return at_in_source;
-}
-
-Vector3d MarchingCubes::node_center( const MarchingNode & node, const DistanceScaler * scaler ) const
-{
-	const VectorInt & at_i = node.at;
-	const Vector3d at( (static_cast<Float>(at_i.x) + 0.5)*step, 
-          		       (static_cast<Float>(at_i.y) + 0.5)*step, 
-		               (static_cast<Float>(at_i.z) + 0.5)*step );
-	if (scaler == nullptr)
-	{
-		const Vector3d at_in_source = inverted_source_se3.q_ * at + inverted_source_se3.r_;
-		return at_in_source;
-	}
-
-	const Vector3d at_in_source = scaler->unscale( at );
-	const Vector3d at_scaled    = inverted_source_se3.q_ * at_in_source + inverted_source_se3.r_;
-	return at_in_source;
+	const Vector3d origin_in_world_scaled = scaler->scale( source_se3.r_ );
+	const Vector3d at_in_world = source_se3.q_ * at + origin_in_world_scaled;
+	const Vector3d at_in_world_unscaled     = scaler->unscale( at );
+	const Vector3d origin_in_world_unscaled = source_se3.r_;
+	const Vector3d at_in_world_unscaled_relative_to_origin = at_in_world_unscaled - origin_in_world_unscaled;
+	const Vector3d at_in_source_unscaled_ret = inverted_source_se3.q_ * at_in_world_unscaled_relative_to_origin;
+	return at_in_source_unscaled_ret;
 }
 
 void MarchingCubes::find_subdivision_levels( VolumeSource * source )
@@ -312,10 +307,10 @@ void MarchingCubes::compute_node_values( MarchingNode & node, VolumeSource * sou
 		node.vertices_int[i] = verts[i];
         // Value at warped position.
 		const VectorInt & vert_int = verts[i];
-        const Vector3d vert_d = at( verts[i], scaler );
+        const Vector3d vert_d = at_in_source_unscaled( verts[i], scaler );
         const Float    value  = value_at( source, vert_int, vert_d );
         // Store unwarped position.
-        const Vector3d vert = at( verts[i], nullptr );
+        const Vector3d vert = at_in_source( verts[i] );
         node.vertices[i]    = vert;
         node.values[i]      = value;
     }
@@ -573,7 +568,7 @@ int MarchingCubes::node_material( VolumeSource * source, const MarchingNode & no
 	for ( int i=0; i<8; i++ )
 	{
 		const VectorInt & at_i = node.vertices_int[i];
-		const Vector3d    at_d = at( at_i, scaler );
+		const Vector3d    at_d = at_in_source_unscaled( at_i, scaler );
 		int priority;
 		const int material = material_at( source, at_i, at_d, &priority );
 		// It is critical that it is "<=" and not just "<". It is because

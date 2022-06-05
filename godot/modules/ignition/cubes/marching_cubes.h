@@ -53,8 +53,8 @@ public:
 
 
     Float    node_size( int level ) const;
-    Vector3d at( const VectorInt & at_i, const DistanceScaler * scaler=nullptr ) const;
-	Vector3d node_center( const MarchingNode & node, const DistanceScaler * scaler=nullptr ) const;
+	Vector3d at_in_source( const VectorInt & at_i ) const;
+    Vector3d at_in_source_unscaled( const VectorInt & at_i, const DistanceScaler * scaler=nullptr ) const;
 
     
 
@@ -71,8 +71,8 @@ public:
 
     // Source transform.
     // Points to probe first are sent through this transformation.
-    SE3 source_se3;
-	SE3 inverted_source_se3;
+    SE3      source_se3;
+	SE3      inverted_source_se3;
 private:
 	void find_subdivision_levels( VolumeSource * source );
 	bool find_surface( VolumeSource * source, const DistanceScaler * scaler, MarchingNode & surface_node );
