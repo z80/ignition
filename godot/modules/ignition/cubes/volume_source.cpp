@@ -51,15 +51,7 @@ int VolumeSource::material( const Vector3d & at, int * priority )
 	return 0;
 }
 
-void VolumeSource::set_material_only( bool only )
-{
-	material_only = only;
-}
 
-bool VolumeSource::get_material_only() const
-{
-	return material_only;
-}
 
 
 

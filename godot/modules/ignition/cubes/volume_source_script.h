@@ -26,7 +26,7 @@ public:
 	Float min_node_size() const;
 	Float max_node_size_at( const Vector3d & at );
 
-	int material( const Vector3d & at );
+	int material( const Vector3d & at, int * priority = nullptr );
 
 
 public:

@@ -112,7 +112,7 @@ Float VolumeSourceScript::max_node_size_at( const Vector3d & at )
 	return ret;
 }
 
-int VolumeSourceScript::material( const Vector3d & at )
+int VolumeSourceScript::material( const Vector3d & at, int * priority )
 {
 	if ( !has_script() )
 	{
@@ -131,8 +131,25 @@ int VolumeSourceScript::material( const Vector3d & at )
 		return 0;
 	}
 	const int ret = v_ret;
+
+	if ( priority != nullptr )
+	{
+		ScriptInstance * si = reference->get_script_instance();
+		const Variant *ptr[1] = { 0 };
+		Variant::CallError ce;
+		const Variant v_ret = si->call( "priority", ptr, 0, ce );
+		if ( ce.error != Variant::CallError::CALL_OK )
+		{
+			print_error( "VolumeSourceScript error: probably not method \'material\' has been defined" );
+			return 0;
+		}
+		const int p_ret = v_ret;
+		*priority = p_ret;
+	}
+
 	return ret;
 }
+
 
 
 

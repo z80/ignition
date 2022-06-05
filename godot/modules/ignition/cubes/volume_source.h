@@ -25,9 +25,6 @@ public:
 	int material_global( const Vector3d & at, int * priority = nullptr );
 	virtual int material( const Vector3d & at, int * priority = nullptr );
 
-	void set_material_only( bool only );
-	bool get_material_only() const;
-
 public:
     bool inverted;
 	bool material_only;

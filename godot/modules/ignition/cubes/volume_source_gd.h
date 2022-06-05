@@ -28,17 +28,14 @@ public:
 	real_t min_node_size() const;
 	real_t max_node_size_at( const Vector3 & at ) const;
 
-
+	int material_global( const Vector3 & at );
 	int material( const Vector3 & at );
 
-	void set_material_only( bool only );
-	bool get_material_only() const;
-
-
-
+	int priority() const;
 
 public:
 	VolumeSource * source;
+	int last_priority;
 };
 
 

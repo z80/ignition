@@ -576,8 +576,11 @@ int MarchingCubes::node_material( VolumeSource * source, const MarchingNode & no
 		const Vector3d    at_d = at( at_i, scaler );
 		int priority;
 		const int material = material_at( source, at_i, at_d, &priority );
-		if ( (max_priority < 0) || (max_priority <= priority) )
+		if ( (max_priority < 0) || (max_priority < priority) )
+		{
 			max_material = material;
+			max_priority = priority;
+		}
 	}
 
 	return max_material;

@@ -16,21 +16,19 @@ void VolumeSourceGd::_bind_methods()
 
     ClassDB::bind_method( D_METHOD("max_node_size_at", "at"), &VolumeSourceGd::max_node_size_at, Variant::REAL );
 
+	ClassDB::bind_method( D_METHOD("material_global", "at"), &VolumeSourceGd::material_global, Variant::INT );
+	ClassDB::bind_method( D_METHOD("material", "at"),        &VolumeSourceGd::material,        Variant::INT );
 
-	ClassDB::bind_method( D_METHOD("material", "at"), &VolumeSourceGd::material, Variant::INT );
-
-	ClassDB::bind_method( D_METHOD("set_material_only", "only"), &VolumeSourceGd::set_material_only );
-	ClassDB::bind_method( D_METHOD("get_material_only"),         &VolumeSourceGd::get_material_only, Variant::BOOL );
-
+	ClassDB::bind_method( D_METHOD("priority"),              &VolumeSourceGd::priority,        Variant::INT );
 
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "inverted" ),      "set_inverted",      "get_inverted" );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "material_only" ), "set_material_only", "get_material_only" );
 }
 
 VolumeSourceGd::VolumeSourceGd()
     : MarchingVolumeObjectGd()
 {
     source = nullptr;
+	last_priority = -1;
 }
 
 VolumeSourceGd::~VolumeSourceGd()
@@ -90,33 +88,29 @@ real_t VolumeSourceGd::max_node_size_at( const Vector3 & at ) const
     return ret;
 }
 
+int VolumeSourceGd::material_global( const Vector3 & at )
+{
+	if ( source == nullptr )
+		return -1;
+
+	const int ret = source->material_global( at, &last_priority );
+	return ret;
+}
+
 int VolumeSourceGd::material( const Vector3 & at )
 {
 	if ( source == nullptr )
 		return -1;
 
-	const int ret = source->material( at );
+	const int ret = source->material( at, &last_priority );
 	return ret;
 }
 
-void VolumeSourceGd::set_material_only( bool only )
+int VolumeSourceGd::priority() const
 {
-	if ( source == nullptr )
-		return;
-
-	source->set_material_only( only );
-}
-
-bool VolumeSourceGd::get_material_only() const
-{
-	if ( source == nullptr )
-		return false;
-
-	const bool ret = source->get_material_only();
+	const int ret = last_priority;
 	return ret;
 }
-
-
 
 
 
