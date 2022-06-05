@@ -202,7 +202,6 @@ int VolumeSourceTree::material( const Vector3d & at, int * priority )
 			continue;
 		int priority_ind_i;
 		const int material_ind_i = vs->material_global( at, &priority_ind_i );
-		material_ind = material_ind_i;
 		if ( (material_ind_i >= 0) && ( priority_ind_i >= priority_ind ) )
 		{
 			material_ind = material_ind_i;

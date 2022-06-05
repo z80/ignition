@@ -576,7 +576,9 @@ int MarchingCubes::node_material( VolumeSource * source, const MarchingNode & no
 		const Vector3d    at_d = at( at_i, scaler );
 		int priority;
 		const int material = material_at( source, at_i, at_d, &priority );
-		if ( (max_priority < 0) || (max_priority < priority) )
+		// It is critical that it is "<=" and not just "<". It is because
+		// next object should overwrite previous object unless priority is smaller.
+		if ( (max_priority < 0) || (max_priority <= priority) )
 		{
 			max_material = material;
 			max_priority = priority;

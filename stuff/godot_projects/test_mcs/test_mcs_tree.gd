@@ -21,6 +21,8 @@ func _ready():
 	se3.r = Vector3.ZERO
 	source.se3 = se3
 	
+	source.material_index = 0
+	
 	source_tree.add_source( source )
 
 
@@ -34,23 +36,28 @@ func _ready():
 #	se3.r = Vector3( 3.0, 1.5, 0.0 )
 #	source.se3 = se3
 #
-#	source_tree.add_source( source )
-#
-#
-#
-#
-#
-#	source = VolumeSourceScriptGd.new()
-#	script = preload( "res://volume_source_sphere.gd" )
-#	source.set_script( script )
-#	source.bounding_radius = 5.0
-#
-#	se3.r = Vector3( 0.0, 2.5, 0.0 )
-#	source.se3 = se3
-#
-#	source.inverted = true
+#	source.material_index = 0
 #
 #	source_tree.add_source( source )
+
+
+
+
+
+	source = VolumeSourceScriptGd.new()
+	script = preload( "res://volume_source_sphere.gd" )
+	source.set_script( script )
+	source.bounding_radius = 5.0
+
+	se3.r = Vector3( 0.0, 2.5, 0.0 )
+	source.se3 = se3
+
+	source.inverted = true
+
+	source.material_index = 1
+	source.material_priority = 1
+
+	source_tree.add_source( source )
 
 
 
