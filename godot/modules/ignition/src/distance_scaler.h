@@ -11,23 +11,23 @@ namespace Ign
 class DistanceScaler
 {
 public:
-	DistanceScaler();
-	virtual ~DistanceScaler();
+    DistanceScaler();
+    virtual ~DistanceScaler();
 
-	void set_plain_distance( Float dist );
-	Float plain_distance() const;
+    void set_plain_distance( Float dist );
+    Float plain_distance() const;
 
-	void set_log_scale( Float scale );
-	Float log_scale() const;
+    void set_log_scale( Float scale );
+    Float log_scale() const;
 
-	Float scale( Float dist ) const;
-	Vector3d scale( const Vector3d & v ) const;
+    Float scale( Float dist ) const;
+    Vector3d scale( const Vector3d & v ) const;
 
     Vector3d unscale( const Vector3d & v ) const;
 
 public:
-	Float plain_dist_;
-	Float log_scale_;
+    Float plain_dist_;
+    Float log_scale_;
 };
 
 
