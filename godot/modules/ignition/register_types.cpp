@@ -33,6 +33,9 @@
 //#include "material_source_script_gd.h"
 #include "marching_cubes_gd.h"
 
+#include "marching_cubes_rebuild_strategy_gd.h"
+#include "marching_cubes_spherical_rebuild_strategy_gd.h"
+
 void register_ignition_types()
 {
 	//ClassDB::register_class<OccupancyGrid>();
@@ -62,6 +65,9 @@ void register_ignition_types()
 	//ClassDB::register_class<Ign::MaterialSourceGd>();
 	//ClassDB::register_class<Ign::MaterialSourceScriptGd>();
 	ClassDB::register_class<Ign::MarchingCubesGd>();
+
+	ClassDB::register_class<Ign::MarchingCubesRebuildStrategyGd>();
+	ClassDB::register_class<Ign::MarchingCubesSphericalRebuildStrategyGd>();
 }
 
 void unregister_ignition_types()
