@@ -4,10 +4,17 @@ extends Reference
 const cylinder_r: Vector3 = Vector3.ZERO
 const cylinder_a: Vector3 = Vector3.FORWARD
 
+var material_index: int    = 0
+var material_priority: int = 0
+
+var radius: float  = 300.0
+var node_sz: float = 1.5
+
+
 
 func value_a( at: Vector3 ):
 	var d: float = at.length()
-	var r: float = 3.0
+	var r: float = radius
 	var ret: float = d - r
 	return ret
 
@@ -17,21 +24,26 @@ func value( at: Vector3=Vector3() ):
 	return c
 
 
-
 func max_node_size():
-	return 0.25
+	return node_sz
 
 
 func min_node_size():
-	return 0.25
+	return node_sz
 
 
 func max_node_size_at( at: Vector3 ):
-	return 0.25
+	return node_sz
 
 
 func material( at: Vector3 ):
-	return 1
+	return material_index
+
+
+func priority():
+	return material_priority
+
+
 
 
 

@@ -9,8 +9,8 @@ namespace Ign
 VolumeSourceTree::VolumeSourceTree()
     : VolumeSource()
 {
-	_max_node_size = 1.0;
-	_min_node_size = 1.0;
+	_max_node_size = -1.0;
+	_min_node_size = -1.0;
 }
 
 VolumeSourceTree::~VolumeSourceTree()
