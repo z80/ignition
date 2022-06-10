@@ -139,10 +139,11 @@ void CubeTree::compute_levels( Float total_max_size )
 
     if (total_max_size > 0.0)
     {
+		const Float total_max_size_2 = total_max_size * 2.0;
         if (max_sz < 0.0)
-                max_sz = total_max_size;
-        else if ( (max_sz > 0.0) && (total_max_size < max_sz) )
-                max_sz = total_max_size;
+                max_sz = total_max_size_2;
+        else if ( (max_sz > 0.0) && (total_max_size_2 < max_sz) )
+                max_sz = total_max_size_2;
     }
     const Float ratio = std::pow( 2.0, static_cast<Float>(max_depth) );
     step      = max_sz / ratio;
