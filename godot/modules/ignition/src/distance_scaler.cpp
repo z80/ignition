@@ -65,15 +65,15 @@ Vector3d DistanceScaler::scale( const Vector3d & v ) const
 
 Vector3d DistanceScaler::unscale( const Vector3d & v ) const
 {
-    // scaled_r = plain_dist + log(r - plain_dist) * log_scale;
-    // log(r - plain_dist) * scale = scaled_r - plain_dist;
-    // r = plain_dist + exp( (scaled_r - plain_dist) / log_scale );
+    // scaled_r = plain_dist + log(1.0 + r - plain_dist) * log_scale;
+    // log(1.0 + r - plain_dist) * scale = scaled_r - plain_dist;
+    // r = plain_dist - 1.0 + exp( (scaled_r - plain_dist) / log_scale );
 
     const Float dist = v.Length();
     if (dist <= plain_dist_)
         return v;
     
-    const Float scaled_dist = plain_dist_ + std::exp( (dist - plain_dist_) / log_scale_ );
+    const Float scaled_dist = plain_dist_ - 1.0 + std::exp( (dist - plain_dist_) / log_scale_ );
     const Float scale       = scaled_dist / dist;
     const Vector3d scaled_v    = v * scale;
 

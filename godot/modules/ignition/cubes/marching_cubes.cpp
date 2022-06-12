@@ -243,9 +243,9 @@ Vector3d MarchingCubes::at_in_source_unscaled( const VectorInt & at_i, const Dis
         return at_in_source;
     }
 
-	const Vector3d origin_in_world_scaled = scaler->scale( source_se3.r_ );
-	const Vector3d at_in_world = source_se3.q_ * at + origin_in_world_scaled;
-	const Vector3d at_in_world_unscaled     = scaler->unscale( at );
+	const Vector3d origin_in_world_scaled   = scaler->scale( source_se3.r_ );
+	const Vector3d at_in_world_scaled       = source_se3.q_ * at + origin_in_world_scaled;
+	const Vector3d at_in_world_unscaled     = scaler->unscale( at_in_world_scaled );
 	const Vector3d origin_in_world_unscaled = source_se3.r_;
 	const Vector3d at_in_world_unscaled_relative_to_origin = at_in_world_unscaled - origin_in_world_unscaled;
 	const Vector3d at_in_source_unscaled_ret = inverted_source_se3.q_ * at_in_world_unscaled_relative_to_origin;

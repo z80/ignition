@@ -81,7 +81,8 @@ func _ready():
 			ind = 0
 		var m: MeshInstance = meshes[ind]
 		m.visible = true
-		cubes.apply_to_mesh( ind, m, null )
+		#cubes.apply_to_mesh( ind, m, null )
+		cubes.apply_to_mesh( ind, m, scaler )
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
