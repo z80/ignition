@@ -15,6 +15,7 @@ void MarchingCubesGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("subdivide_source", "volume", "scaler"),                     &MarchingCubesGd::subdivide_source, Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesGd::materials_used,   Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesGd::apply_to_mesh );
+	ClassDB::bind_method( D_METHOD("collision_faces", "dist", "scaler"),                        &MarchingCubesGd::collision_faces );
 
 	ClassDB::bind_method( D_METHOD("set_max_nodes_qty", "qty"),             &MarchingCubesGd::set_max_nodes_qty );
 	ClassDB::bind_method( D_METHOD("get_max_nodes_qty"),                    &MarchingCubesGd::get_max_nodes_qty, Variant::INT );
@@ -135,6 +136,25 @@ void MarchingCubesGd::apply_to_mesh( int material_index, Node * mesh_instance, c
 		s = &(scaler_ref->scaler);
 	const Transform transform = cubes.source_transform( s );
 	mi->set_transform( transform );
+}
+
+PoolVector3Array MarchingCubesGd::collision_faces( real_t dist, const Ref<DistanceScalerRef> & scaler_ref )
+{
+	const DistanceScaler * s;
+	if ( scaler_ref == nullptr )
+		s = nullptr;
+	else
+		s = &(scaler_ref->scaler);
+	const std::vector<Vector3> & verts = cubes.collision_faces( dist, s );
+	const int qty = verts.size();
+	vertices.resize( qty );
+	for ( int i=0; i<qty; i++ )
+	{
+		const Vector3 v = verts[i];
+		vertices.set( i, v );
+	}
+
+	return vertices;
 }
 
 void MarchingCubesGd::set_max_nodes_qty( int qty )

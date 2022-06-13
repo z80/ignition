@@ -28,6 +28,7 @@ public:
 	bool subdivide_source( const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 	Array materials_used() const;
 	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
+	PoolVector3Array collision_faces( real_t dist, const Ref<DistanceScalerRef> & scaler_ref = Ref<DistanceScalerRef>() );
 
 	void set_max_nodes_qty( int qty );
 	int get_max_nodes_qty() const;

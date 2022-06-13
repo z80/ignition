@@ -85,6 +85,7 @@ public:
 	int       size;
 	VectorInt vertices_int[8];
 	Vector3d  vertices[8];
+	Vector3d  vertices_unscaled[8];
 	Float     values[8];
 
 
@@ -107,9 +108,10 @@ public:
 			size = inst.size;
 			for ( int i=0; i<8; i++ )
 			{
-				vertices_int[i] = inst.vertices_int[i];
-				vertices[i]     = inst.vertices[i];
-				values[i]       = inst.values[i];
+				vertices_int[i]      = inst.vertices_int[i];
+				vertices[i]          = inst.vertices[i];
+				vertices_unscaled[i] = inst.vertices_unscaled[i];
+				values[i]            = inst.values[i];
 			}
 		}
 		return * this;

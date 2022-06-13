@@ -196,6 +196,32 @@ const std::vector<real_t>  & MarchingCubes::tangents( int material_ind )
 	return _ret_tangs;
 }
 
+const std::vector<Vector3> & MarchingCubes::collision_faces( const Float dist, const DistanceScaler * scaler )
+{
+	const int qty = _all_faces.size();
+	const Transform t = source_transform( scaler );
+	const Vector3 o = Vector3(0.0, 0.0, 0.0);
+	_ret_verts.clear();
+
+	for ( int i=0; i<qty; i++ )
+	{
+		const NodeFace & nf = _all_faces[i];
+		Face3 f = nf.face;
+		f.vertex[0] = t.xform( f.vertex[0] );
+		f.vertex[1] = t.xform( f.vertex[1] );
+		f.vertex[2] = t.xform( f.vertex[2] );
+		const Float d = f.get_closest_point_to( o ).length();
+		if ( d <= dist )
+		{
+			_ret_verts.push_back( f.vertex[0] );
+			_ret_verts.push_back( f.vertex[1] );
+			_ret_verts.push_back( f.vertex[2] );
+		}
+	}
+
+	return _ret_verts;
+}
+
 
 
 const Transform MarchingCubes::source_transform( const DistanceScaler * scaler ) const
@@ -305,11 +331,13 @@ void MarchingCubes::compute_node_values( MarchingNode & node, VolumeSource * sou
     for ( int i=0; i<8; i++ )
     {
 		node.vertices_int[i] = verts[i];
-        // Value at warped position.
+        // Value at unwarped position.
 		const VectorInt & vert_int = verts[i];
         const Vector3d vert_d = at_in_source_unscaled( verts[i], scaler );
         const Float    value  = value_at( source, vert_int, vert_d );
-        // Store unwarped position.
+		// Store unwarped position.
+		node.vertices_unscaled[i] = vert_d;
+        // Store warped position.
         const Vector3d vert = at_in_source( verts[i] );
         node.vertices[i]    = vert;
         node.values[i]      = value;

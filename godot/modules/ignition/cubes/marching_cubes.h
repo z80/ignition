@@ -49,6 +49,8 @@ public:
 	const std::vector<Vector3> & normals( int material_ind );
 	const std::vector<real_t>  & tangents( int material_ind );
 
+	const std::vector<Vector3> & collision_faces( const Float dist, const DistanceScaler * scaler = nullptr );
+
 	const Transform source_transform( const DistanceScaler * scaler = nullptr) const;
 
 
