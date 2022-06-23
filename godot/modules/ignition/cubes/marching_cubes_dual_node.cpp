@@ -13,6 +13,9 @@ MarchingCubesDualNode::MarchingCubesDualNode()
 	for ( int i=0; i<8; i++ )
 		child_nodes[i] = nullptr;
 	size   = -1;
+
+	for ( int i=0; i<8; i++ )
+		values[i] = 0.0;
 }
 
 MarchingCubesDualNode::~MarchingCubesDualNode()
@@ -34,7 +37,7 @@ const MarchingCubesDualNode & MarchingCubesDualNode::operator=( const MarchingCu
 		for ( int i=0; i<8; i++ )
 			child_nodes[i] = inst.child_nodes[i];
 		size   = inst.size;
-		at = inst.at;
+		at     = inst.at;
 
 		for ( int i=0; i<8; i++ )
 		{
@@ -60,13 +63,16 @@ bool MarchingCubesDualNode::has_children() const
 	return false;
 }
 
-bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree )
+bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * source, const DistanceScalerBase * scaler )
 {
-	const bool should_split = tree->should_split( this, tree );
+	if ( size <= 2 )
+		return false;
+
+	const bool should_split = tree->should_split( this, source, scaler );
 	if ( !should_split )
 		return false;
 
-	const int size_2       = size / 2;
+	const int size_2 = size / 2;
 
 	for ( int i=0; i<8; i++ )
 	{
@@ -86,7 +92,7 @@ bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree )
 	child_nodes[7]->at = this->at + VectorInt(      0, size_2, size_2 );
 
 	for ( int i=0; i<8; i++ )
-		child_nodes[i]->subdivide( tree );
+		child_nodes[i]->subdivide( tree, source, scaler );
 
 	return true;
 }
@@ -121,6 +127,54 @@ bool MarchingCubesDualNode::has_surface() const
 
 	return false;
 }
+
+bool MarchingCubesDualNode::at_left( const MarchingCubesDualNode * root ) const
+{
+	const bool ret = (at.x <= root->at.x);
+	return ret;
+}
+
+bool MarchingCubesDualNode::at_right( const MarchingCubesDualNode * root ) const
+{
+	const bool ret = ((at.x+size) >= (root->at.x+root->size));
+	return ret;
+}
+
+bool MarchingCubesDualNode::at_bottom( const MarchingCubesDualNode * root ) const
+{
+	const bool ret = (at.y <= root->at.y);
+	return ret;
+}
+
+bool MarchingCubesDualNode::at_top( const MarchingCubesDualNode * root ) const
+{
+	const bool ret = ((at.x+size) >= (root->at.x+root->size));
+	return ret;
+}
+
+bool MarchingCubesDualNode::at_back( const MarchingCubesDualNode * root ) const
+{
+	const bool ret = (at.z <= root->at.z);
+	return ret;
+}
+
+bool MarchingCubesDualNode::at_front( const MarchingCubesDualNode * root ) const
+{
+	const bool ret = ((at.z+size) >= (root->at.z+root->size));
+	return ret;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

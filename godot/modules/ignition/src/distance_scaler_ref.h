@@ -3,14 +3,15 @@
 #define __DISTANCE_SCALER_REF_H_
 
 #include "core/reference.h"
+#include "distance_scaler_base_ref.h"
 #include "distance_scaler.h"
 
 namespace Ign
 {
 
-class DistanceScalerRef: public Reference
+class DistanceScalerRef: public DistanceScalerBaseRef
 {
-	GDCLASS( DistanceScalerRef, Reference );
+	GDCLASS( DistanceScalerRef, DistanceScalerBaseRef );
 	OBJ_CATEGORY("Ignition");
 
 protected:
@@ -20,14 +21,8 @@ public:
 	DistanceScalerRef();
 	virtual ~DistanceScalerRef();
 
-	void set_plain_distance( real_t dist );
-	real_t get_plain_distance() const;
-
 	void set_log_scale( real_t scale );
 	real_t get_log_scale() const;
-
-	real_t scale( real_t d ) const;
-	Vector3 scale_v( const Vector3 & v ) const;
 
 public:
 	DistanceScaler scaler;

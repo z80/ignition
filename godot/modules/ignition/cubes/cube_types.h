@@ -82,6 +82,9 @@ public:
 
 };
 
+VectorInt operator+( const VectorInt & a, const VectorInt & b );
+
+
 
 class MarchingNode
 {

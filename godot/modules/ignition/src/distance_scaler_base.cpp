@@ -17,12 +17,12 @@ DistanceScalerBase::~DistanceScalerBase()
 
 void DistanceScalerBase::set_plain_distance( Float dist )
 {
-    plain_dist_ = dist;
+    plain_dist = dist;
 }
 
 Float DistanceScalerBase::plain_distance() const
 {
-    return plain_dist_;
+    return plain_dist;
 }
 
 Float DistanceScalerBase::scale( Float dist ) const
@@ -37,7 +37,7 @@ Vector3d DistanceScalerBase::scale( const Vector3d & v ) const
 
 Vector3d DistanceScalerBase::unscale( const Vector3d & v ) const
 {
-    return scaled_v;
+    return v;
 }
 
 
