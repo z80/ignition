@@ -28,6 +28,7 @@ class MaterialSource;
 class DistanceScalerBase;
 
 class MarchingCubesDualNode;
+class MarchingCubesDualCell;
 
 struct MaterialWithPriorityDual
 {
@@ -49,6 +50,8 @@ public:
 	// These two are called by nodes.
 	bool should_split( MarchingCubesDualNode * node, VolumeSource * source, const DistanceScalerBase * scaler );
 	MarchingCubesDualNode * create_node();
+	MarchingCubesDualCell * create_dual_cell();
+
 
     const std::set<int>        & materials() const;
     const std::vector<Vector3> & vertices( int material_ind );
@@ -58,7 +61,6 @@ public:
     const std::vector<Vector3> & collision_faces( const Float dist, const DistanceScalerBase * scaler = nullptr );
 
     const Transform source_transform( const DistanceScalerBase * scaler = nullptr) const;
-
 
     Float    node_size( int size ) const;
     Vector3d at_in_source( const VectorInt & at_i ) const;
@@ -90,19 +92,19 @@ private:
 
 
 	// Dual grid generation methods.
-	void node_proc( const MarchingCubesDualNode * n );
-	void face_proc_xy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1 );
-	void face_proc_zy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1 );
-	void face_proc_xz( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1 );
-	void edge_proc_x( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3 );
-	void edge_proc_y( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3 );
-	void edge_proc_z( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3 );
+	void node_proc( const MarchingCubesDualNode * n, VolumeSource * source, const DistanceScalerBase * scaler );
+	void face_proc_xy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source, const DistanceScalerBase * scaler );
+	void face_proc_zy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source, const DistanceScalerBase * scaler );
+	void face_proc_xz( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source, const DistanceScalerBase * scaler );
+	void edge_proc_x( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, const DistanceScalerBase * scaler );
+	void edge_proc_y( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, const DistanceScalerBase * scaler );
+	void edge_proc_z( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, const DistanceScalerBase * scaler );
 	void vert_proc( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3,
-		            const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7 );
+		            const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source, const DistanceScalerBase * scaler );
 	void create_border_cells( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3,
-		                      const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7 );
+		                      const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source, const DistanceScalerBase * scaler );
 	void add_dual_cell( const VectorInt & c0, const VectorInt & c1, const VectorInt & c2, const VectorInt & c3, 
-		                const VectorInt & c4, const VectorInt & c5, const VectorInt & c6, const VectorInt & c7 );
+		                const VectorInt & c4, const VectorInt & c5, const VectorInt & c6, const VectorInt & c7, VolumeSource * source, const DistanceScalerBase * scaler );
 
 
 
@@ -125,6 +127,7 @@ private:
     void append_normal( const NodeEdgeInt & edge, const Vector3d & n );
 
 	std::vector<MarchingCubesDualNode *>           _octree_nodes;
+	std::vector<MarchingCubesDualNode *>           _octree_dual_cells;
 
     typedef std::set<MarchingNode>                 MarchingSet;
     typedef std::set<MarchingNode>::iterator       MarchingSetIterator;

@@ -5,6 +5,7 @@
 #include "vector3d.h"
 #include "distance_scaler_base.h"
 #include "marching_cubes_dual_node.h"
+#include "marching_cubes_dual_cell.h"
 
 #include <cmath>
 
@@ -52,40 +53,12 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 
 	root_node->subdivide( this, source, scaler );
 
-    //const bool ok = find_surface( source, scaler, surface_node );
-    //if (!ok)
-    //    return false;
-
- //   _all_nodes.clear();
- //   _recently_added_nodes.clear();
- //   _new_candidates.clear();
- //   _all_nodes.insert( surface_node );
- //   _recently_added_nodes.insert( surface_node );
-
-	//int nodes_qty = 1;
- //   for ( ;; )
- //   {
- //       for ( MarchingSetIterator it=_recently_added_nodes.begin(); it!=_recently_added_nodes.end(); it++ )
- //       {
- //           const MarchingCubesDualNode & node = *it;
- //           const bool on_surface = node.has_surface( iso_level );
- //           if ( on_surface )
- //               add_node_neighbors( node, source, scaler, nodes_qty );
- //       }
- //       if ( _new_candidates.empty() )
- //           break;
- //       
- //       _recently_added_nodes = _new_candidates;
- //       _new_candidates.clear();
-
-	//	if ( (max_nodes_qty > 0) && (nodes_qty >= max_nodes_qty) )
-	//		break;
-	//}
+	node_proc( root_node, source, scaler );
 
 	//// Create faces and assign material.
-	//_all_faces.clear();
-	//_materials.clear();
-	//_materials_set.clear();
+	_all_faces.clear();
+	_materials.clear();
+	_materials_set.clear();
 	//for ( MarchingSetIterator it=_all_nodes.begin(); it!=_all_nodes.end(); it++ )
 	//{
 	//	const MarchingNode node = *it;
@@ -215,6 +188,14 @@ MarchingCubesDualNode * MarchingCubesDual::create_node()
 	MarchingCubesDualNode * node = memnew( MarchingCubesDualNode );
 	_octree_nodes.push_back( node );
 	return node;
+}
+
+
+MarchingCubesDualCell * MarchingCubesDual::create_dual_cell()
+{
+	MarchingCubesDualCell * cell = memnew( MarchingCubesDualCell );
+	_octree_dual_sells.push_back( cell );
+	return cell;
 }
 
 
@@ -449,7 +430,7 @@ void MarchingCubesDual::compute_node_values( MarchingCubesDualNode & node, Volum
 
 
 
-void MarchingCubesDual::node_proc( const MarchingCubesDualNode * n )
+void MarchingCubesDual::node_proc( const MarchingCubesDualNode * n, VolumeSource * source, const DistanceScalerBase * scaler )
 {
 	if (n->has_children())
 	{
@@ -463,45 +444,45 @@ void MarchingCubesDual::node_proc( const MarchingCubesDualNode * n )
 		const MarchingCubesDualNode *c6 = n->child_nodes[6];
 		const MarchingCubesDualNode *c7 = n->child_nodes[7];
 
-		node_proc( c0 );
-		node_proc( c1 );
-		node_proc( c2 );
-		node_proc( c3 );
-		node_proc( c4 );
-		node_proc( c5 );
-		node_proc( c6 );
-		node_proc( c7 );
+		node_proc( c0, source, scaler );
+		node_proc( c1, source, scaler );
+		node_proc( c2, source, scaler );
+		node_proc( c3, source, scaler );
+		node_proc( c4, source, scaler );
+		node_proc( c5, source, scaler );
+		node_proc( c6, source, scaler );
+		node_proc( c7, source, scaler );
 
-		face_proc_xy(c0, c3);
-		face_proc_xy(c1, c2);
-		face_proc_xy(c4, c7);
-		face_proc_xy(c5, c6);
+		face_proc_xy(c0, c3, source, scaler);
+		face_proc_xy(c1, c2, source, scaler);
+		face_proc_xy(c4, c7, source, scaler);
+		face_proc_xy(c5, c6, source, scaler);
 
-		face_proc_zy(c0, c1);
-		face_proc_zy(c3, c2);
-		face_proc_zy(c4, c5);
-		face_proc_zy(c7, c6);
+		face_proc_zy(c0, c1, source, scaler);
+		face_proc_zy(c3, c2, source, scaler);
+		face_proc_zy(c4, c5, source, scaler);
+		face_proc_zy(c7, c6, source, scaler);
 
-		face_proc_xz(c4, c0);
-		face_proc_xz(c5, c1);
-		face_proc_xz(c7, c3);
-		face_proc_xz(c6, c2);
+		face_proc_xz(c4, c0, source, scaler);
+		face_proc_xz(c5, c1, source, scaler);
+		face_proc_xz(c7, c3, source, scaler);
+		face_proc_xz(c6, c2, source, scaler);
 
-		edge_proc_x(c0, c3, c7, c4);
-		edge_proc_x(c1, c2, c6, c5);
+		edge_proc_x(c0, c3, c7, c4, source, scaler);
+		edge_proc_x(c1, c2, c6, c5, source, scaler);
 
-		edge_proc_y(c0, c1, c2, c3);
-		edge_proc_y(c4, c5, c6, c7);
+		edge_proc_y(c0, c1, c2, c3, source, scaler);
+		edge_proc_y(c4, c5, c6, c7, source, scaler);
 
-		edge_proc_z(c7, c6, c2, c3);
-		edge_proc_z(c4, c5, c1, c0);
+		edge_proc_z(c7, c6, c2, c3, source, scaler);
+		edge_proc_z(c4, c5, c1, c0, source, scaler);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
 	}
 }
 
 
-void MarchingCubesDual::face_proc_xy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1 )
+void MarchingCubesDual::face_proc_xy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source, const DistanceScalerBase * scaler )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -518,21 +499,21 @@ void MarchingCubesDual::face_proc_xy( const MarchingCubesDualNode * n0, const Ma
 		const MarchingCubesDualNode *c6 = n1Subdivided ? n1->child_nodes[5] : n1;
 		const MarchingCubesDualNode *c7 = n1Subdivided ? n1->child_nodes[4] : n1;
 
-		face_proc_xy(c0, c3);
-		face_proc_xy(c1, c2);
-		face_proc_xy(c4, c7);
-		face_proc_xy(c5, c6);
+		face_proc_xy(c0, c3, source, scaler);
+		face_proc_xy(c1, c2, source, scaler);
+		face_proc_xy(c4, c7, source, scaler);
+		face_proc_xy(c5, c6, source, scaler);
 
-		edge_proc_x(c0, c3, c7, c4);
-		edge_proc_x(c1, c2, c6, c5);
-		edge_proc_y(c0, c1, c2, c3);
-		edge_proc_y(c4, c5, c6, c7);
+		edge_proc_x(c0, c3, c7, c4, source, scaler);
+		edge_proc_x(c1, c2, c6, c5, source, scaler);
+		edge_proc_y(c0, c1, c2, c3, source, scaler);
+		edge_proc_y(c4, c5, c6, c7, source, scaler);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scacler);
 	}
 }
 
-void MarchingCubesDual::face_proc_zy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1 )
+void MarchingCubesDual::face_proc_zy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source, const DistanceScalerBase * scaler )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -549,21 +530,21 @@ void MarchingCubesDual::face_proc_zy( const MarchingCubesDualNode * n0, const Ma
 		const MarchingCubesDualNode *c6 = n1Subdivided ? n1->child_nodes[7] : n1;
 		const MarchingCubesDualNode *c7 = n0Subdivided ? n0->child_nodes[6] : n0;
 
-		face_proc_zy(c0, c1);
-		face_proc_zy(c3, c2);
-		face_proc_zy(c4, c5);
-		face_proc_zy(c7, c6);
+		face_proc_zy(c0, c1, source, scaler);
+		face_proc_zy(c3, c2, source, scaler);
+		face_proc_zy(c4, c5, source, scaler);
+		face_proc_zy(c7, c6, source, scaler);
 
-		edge_proc_y(c0, c1, c2, c3);
-		edge_proc_y(c4, c5, c6, c7);
-		edge_proc_z(c7, c6, c2, c3);
-		edge_proc_z(c4, c5, c1, c0);
+		edge_proc_y(c0, c1, c2, c3, source, scaler);
+		edge_proc_y(c4, c5, c6, c7, source, scaler);
+		edge_proc_z(c7, c6, c2, c3, source, scaler);
+		edge_proc_z(c4, c5, c1, c0, source, scaler);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
 	}
 }
 
-void MarchingCubesDual::face_proc_xz( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1 )
+void MarchingCubesDual::face_proc_xz( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source, const DistanceScalerBase * scaler )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -580,22 +561,22 @@ void MarchingCubesDual::face_proc_xz( const MarchingCubesDualNode * n0, const Ma
 		const MarchingCubesDualNode *c6 = n0Subdivided ? n0->child_nodes[2] : n0;
 		const MarchingCubesDualNode *c7 = n0Subdivided ? n0->child_nodes[3] : n0;
 
-		face_proc_xz(c4, c0);
-		face_proc_xz(c5, c1);
-		face_proc_xz(c7, c3);
-		face_proc_xz(c6, c2);
+		face_proc_xz(c4, c0, source, scaler);
+		face_proc_xz(c5, c1, source, scaler);
+		face_proc_xz(c7, c3, source, scaler);
+		face_proc_xz(c6, c2, source, scaler);
 
-		edge_proc_x(c0, c3, c7, c4);
-		edge_proc_x(c1, c2, c6, c5);
-		edge_proc_z(c7, c6, c2, c3);
-		edge_proc_z(c4, c5, c1, c0);
+		edge_proc_x(c0, c3, c7, c4, source, scaler);
+		edge_proc_x(c1, c2, c6, c5, source, scaler);
+		edge_proc_z(c7, c6, c2, c3, source, scaler);
+		edge_proc_z(c4, c5, c1, c0, source, scaler);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
 	}
 }
 
 
-void MarchingCubesDual::edge_proc_x( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3 )
+void MarchingCubesDual::edge_proc_x( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source, const DistanceScalerBase * scaler )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -613,14 +594,14 @@ void MarchingCubesDual::edge_proc_x( const MarchingCubesDualNode * n0, const Mar
 		const MarchingCubesDualNode *c6 = n2Subdivided ? n2->child_nodes[1] : n2;
 		const MarchingCubesDualNode *c7 = n2Subdivided ? n2->child_nodes[0] : n2;
 
-		edge_proc_x(c0, c3, c7, c4);
-		edge_proc_x(c1, c2, c6, c5);
+		edge_proc_x(c0, c3, c7, c4, source, scaler);
+		edge_proc_x(c1, c2, c6, c5, source, scaler);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
 	}
 }
 
-void MarchingCubesDual::edge_proc_y( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3 )
+void MarchingCubesDual::edge_proc_y( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, const DistanceScalerBase * scaler )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -638,14 +619,14 @@ void MarchingCubesDual::edge_proc_y( const MarchingCubesDualNode * n0, const Mar
 		const MarchingCubesDualNode *c6 = n2Subdivided ? n2->child_nodes[4] : n2;
 		const MarchingCubesDualNode *c7 = n3Subdivided ? n3->child_nodes[5] : n3;
 
-		edge_proc_y(c0, c1, c2, c3);
-		edge_proc_y(c4, c5, c6, c7);
+		edge_proc_y(c0, c1, c2, c3, source, scaler);
+		edge_proc_y(c4, c5, c6, c7, source, scaler);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
 	}
 }
 
-void MarchingCubesDual::edge_proc_z( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3 )
+void MarchingCubesDual::edge_proc_z( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source, const DistanceScalerBase * scaler )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -663,16 +644,16 @@ void MarchingCubesDual::edge_proc_z( const MarchingCubesDualNode * n0, const Mar
 		const MarchingCubesDualNode *c6 = n1Subdivided ? n1->child_nodes[3] : n1;
 		const MarchingCubesDualNode *c7 = n0Subdivided ? n0->child_nodes[2] : n0;
 
-		edge_proc_z(c7, c6, c2, c3);
-		edge_proc_z(c4, c5, c1, c0);
+		edge_proc_z(c7, c6, c2, c3, source, scaler);
+		edge_proc_z(c4, c5, c1, c0, source, scaler);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
 	}
 }
 
 
 void MarchingCubesDual::vert_proc( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3,
-	const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7 )
+	                               const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source, const DistanceScalerBase * scaler )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -695,7 +676,7 @@ void MarchingCubesDual::vert_proc( const MarchingCubesDualNode * n0, const March
 		const MarchingCubesDualNode *c6 = n6Subdivided ? n6->child_nodes[0] : n6;
 		const MarchingCubesDualNode *c7 = n7Subdivided ? n7->child_nodes[1] : n7;
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
 	}
 	else
 	{
@@ -706,168 +687,212 @@ void MarchingCubesDual::vert_proc( const MarchingCubesDualNode * n0, const March
 		//	return;
 		//}
 
-		//Vector4 values[8];
-		//values[0] = n0->getCenterValue();
-		//values[1] = n1->getCenterValue();
-		//values[2] = n2->getCenterValue();
-		//values[3] = n3->getCenterValue();
-		//values[4] = n4->getCenterValue();
-		//values[5] = n5->getCenterValue();
-		//values[6] = n6->getCenterValue();
-		//values[7] = n7->getCenterValue();
-		//addDualCell(n0->getCenter(), n1->getCenter(), n2->getCenter(), n3->getCenter(),
-		//	n4->getCenter(), n5->getCenter(), n6->getCenter(), n7->getCenter(), values);
+		VectorInt corners[8];
+		corners[0] = n0->center();
+		corners[1] = n1->center();
+		corners[2] = n2->center();
+		corners[3] = n3->center();
 
-		create_border_cells(n0, n1, n2, n3, n4, n5, n6, n7);
+		corners[4] = n4->center();
+		corners[5] = n5->center();
+		corners[6] = n6->center();
+		corners[7] = n7->center();
+
+		MarchingCubesDualCell * cell = create_dual_cell();
+		for ( int i=0; i<8; i++ )
+		{
+			const VectorInt & at_int   = corners[i];
+			const Vector3d at_scaled   = at_in_source( at_int );
+			const Vector3d at_unscaled = at_in_source_unscaled( at_int, scaler );
+			const Float value          = value_at( source, at_int, at_unscaled );
+			cell->corners[i]           = at_int;
+			cell->vertices[i]          = at_scaled;
+			cell->vertices_unscaled[i] = at_unscaled;
+		}
+
+		//add_dual_cell( n0->getCenter(), n1->getCenter(), n2->getCenter(), n3->getCenter(),
+			           //n4->getCenter(), n5->getCenter(), n6->getCenter(), n7->getCenter(), values );
+
+		create_border_cells(n0, n1, n2, n3, n4, n5, n6, n7, source, scaler );
 	}
 }
 
 
 void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3,
-										     const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7 )
+										     const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source, const DistanceScalerBase * scaler )
 {
 	const MarchingCubesDualNode * root = _octree_nodes[0];
 
 	if (n0->at_back( root ) && n1->at_back( root ) && n4->at_back( root ) && n5->at_back( root ))
 	{
-		addDualCell(n0->center_back(), n1->center_back(), n1->center(), n0->center(),
-			n4->center_back(), n5->center_back(), n5->center(), n4->center());
+		add_dual_cell(n0->center_back(), n1->center_back(), n1->center(), n0->center(),
+			n4->center_back(), n5->center_back(), n5->center(), n4->center(), source, scaler);
 		// Generate back edge border cells
 		if (n4->at_top( root ) && n5->at_top( root ))
 		{
-			addDualCell(n4->center_back(), n5->center_back(), n5->center(), n4->center(),
-				n4->center_back_top(), n5->center_back_top(), n5->center_top(), n4->center_top());
+			add_dual_cell(n4->center_back(), n5->center_back(), n5->center(), n4->center(),
+				n4->center_back_top(), n5->center_back_top(), n5->center_top(), n4->center_top(), source, scaler);
 			// Generate back top corner cells
 			if (n4->at_left( root ))
 			{
-				addDualCell(n4->center_back_left(), n4->center_back(), n4->center(), n4->center_left(),
-					n4->corner_4(), n4->center_back_top(), n4->center_top(), n4->center_left_top());
+				add_dual_cell(n4->center_back_left(), n4->center_back(), n4->center(), n4->center_left(),
+					n4->corner_4(), n4->center_back_top(), n4->center_top(), n4->center_left_top(), source, scaler);
 			}
 			if (n5->at_right( root ))
 			{
-				addDualCell(n5->center_back(), n5->center_back_right(), n5->center_right(), n5->center(),
-					n5->center_back_top(), n5->corner_5(), n5->center_right_top(), n5->center_top());
+				add_dual_cell(n5->center_back(), n5->center_back_right(), n5->center_right(), n5->center(),
+					n5->center_back_top(), n5->corner_5(), n5->center_right_top(), n5->center_top(), source, scaler);
 			}
 		}
 		if (n0->at_bottom( root ) && n1->at_bottom( root ))
 		{
-			addDualCell(n0->center_back_bottom(), n1->center_back_bottom(), n1->center_bottom(), n0->center_bottom(),
-				n0->center_back(), n1->center_back(), n1->center(), n0->center());
+			add_dual_cell(n0->center_back_bottom(), n1->center_back_bottom(), n1->center_bottom(), n0->center_bottom(),
+				n0->center_back(), n1->center_back(), n1->center(), n0->center(), source, scaler);
 			// Generate back bottom corner cells
 			if (n0->at_left( root ))
 			{
-				addDualCell(n0->corner_0(), n0->center_back_bottom(), n0->center_bottom(), n0->center_left_bottom(),
-					n0->center_back_left(), n0->center_back(), n0->center(), n0->center_left());
+				add_dual_cell(n0->corner_0(), n0->center_back_bottom(), n0->center_bottom(), n0->center_left_bottom(),
+					n0->center_back_left(), n0->center_back(), n0->center(), n0->center_left(), source, scaler);
 			}
 			if (n1->at_right( root ))
 			{
-				addDualCell(n1->center_back_bottom(), n1->corner_1(), n1->center_right_bottom(), n1->center_bottom(),
-					n1->center_back(), n1->center_back_right(), n1->center_right(), n1->center());
+				add_dual_cell(n1->center_back_bottom(), n1->corner_1(), n1->center_right_bottom(), n1->center_bottom(),
+					n1->center_back(), n1->center_back_right(), n1->center_right(), n1->center(), source, scaler);
 			}
 		}
 	}
 	if (n2->at_front( root ) && n3->at_front( root ) && n6->at_front( root ) && n7->at_front( root ))
 	{
-		addDualCell(n3->center(), n2->center(), n2->center_front(), n3->center_front(),
-			n7->center(), n6->center(), n6->center_front(), n7->center_front());
+		add_dual_cell(n3->center(), n2->center(), n2->center_front(), n3->center_front(),
+			n7->center(), n6->center(), n6->center_front(), n7->center_front(), source, scaler);
 		// Generate front edge border cells
 		if (n6->at_top( root ) && n7->at_top( root ))
 		{
-			addDualCell(n7->center(), n6->center(), n6->center_front(), n7->center_front(),
-				n7->center_top(), n6->center_top(), n6->center_front_top(), n7->center_front_top());
+			add_dual_cell(n7->center(), n6->center(), n6->center_front(), n7->center_front(),
+				n7->center_top(), n6->center_top(), n6->center_front_top(), n7->center_front_top(), source, scaler);
 			// Generate back bottom corner cells
 			if (n7->at_left( root ))
 			{
-				addDualCell(n7->center_left(), n7->center(), n7->center_front(), n7->center_front_left(),
-					n7->center_left_top(), n7->center_top(), n7->center_front_top(), n7->corner_7());
+				add_dual_cell(n7->center_left(), n7->center(), n7->center_front(), n7->center_front_left(),
+					n7->center_left_top(), n7->center_top(), n7->center_front_top(), n7->corner_7(), source, scaler);
 			}
 			if (n6->at_right( root ))
 			{
-				addDualCell(n6->center(), n6->center_right(), n6->center_front_right(), n6->center_front(),
-					n6->center_top(), n6->center_right_top(), n6->corner_6(), n6->center_front_top());
+				add_dual_cell(n6->center(), n6->center_right(), n6->center_front_right(), n6->center_front(),
+					n6->center_top(), n6->center_right_top(), n6->corner_6(), n6->center_front_top(), source, scaler);
 			}
 		}
 		if (n3->at_bottom( root ) && n2->at_bottom( root ))
 		{
-			addDualCell(n3->center_bottom(), n2->center_bottom(), n2->center_front_bottom(), n3->center_front_bottom(), 
-				n3->center(), n2->center(), n2->center_front(), n3->center_front());
+			add_dual_cell(n3->center_bottom(), n2->center_bottom(), n2->center_front_bottom(), n3->center_front_bottom(), 
+				n3->center(), n2->center(), n2->center_front(), n3->center_front(), source, scaler);
 			// Generate back bottom corner cells
 			if (n3->at_left( root ))
 			{
-				addDualCell(n3->center_left_bottom(), n3->center_bottom(), n3->center_front_bottom(), n3->corner_3(),
-					n3->center_left(), n3->center(), n3->center_front(), n3->center_front_left());
+				add_dual_cell(n3->center_left_bottom(), n3->center_bottom(), n3->center_front_bottom(), n3->corner_3(),
+					n3->center_left(), n3->center(), n3->center_front(), n3->center_front_left(), source, scaler);
 			}
 			if (n2->at_right( root ))
 			{
-				addDualCell(n2->center_bottom(), n2->center_right_bottom(), n2->corner_2(), n2->center_front_bottom(),
-					n2->center(), n2->center_right(), n2->center_front_right(), n2->center_front());
+				add_dual_cell(n2->center_bottom(), n2->center_right_bottom(), n2->corner_2(), n2->center_front_bottom(),
+					n2->center(), n2->center_right(), n2->center_front_right(), n2->center_front(), source, scaler);
 			}
 		}
 	}
 	if (n0->at_left( root ) && n3->at_left( root ) && n4->at_left( root ) && n7->at_left( root ))
 	{
-		addDualCell(n0->center_left(), n0->center(), n3->center(), n3->center_left(),
-			n4->center_left(), n4->center(), n7->center(), n7->center_left());
+		add_dual_cell(n0->center_left(), n0->center(), n3->center(), n3->center_left(),
+			n4->center_left(), n4->center(), n7->center(), n7->center_left(), source, scaler);
 		// Generate left edge border cells
 		if (n4->at_top( root ) && n7->at_top( root ))
 		{
-			addDualCell(n4->center_left(), n4->center(), n7->center(), n7->center_left(),
-				n4->center_left_top(), n4->center_top(), n7->center_top(), n7->center_left_top());
+			add_dual_cell(n4->center_left(), n4->center(), n7->center(), n7->center_left(),
+				n4->center_left_top(), n4->center_top(), n7->center_top(), n7->center_left_top(), source, scaler);
 		}
 		if (n0->at_bottom( root ) && n3->at_bottom( root ))
 		{
-			addDualCell(n0->center_left_bottom(), n0->center_bottom(), n3->center_bottom(), n3->center_left_bottom(),
-				n0->center_left(), n0->center(), n3->center(), n3->center_left());
+			add_dual_cell(n0->center_left_bottom(), n0->center_bottom(), n3->center_bottom(), n3->center_left_bottom(),
+				n0->center_left(), n0->center(), n3->center(), n3->center_left(), source, scaler);
 		}
 		if (n0->at_back( root ) && n4->at_back( root ))
 		{
-			addDualCell(n0->center_back_left(), n0->center_back(), n0->center(), n0->center_left(),
-				n4->center_back_left(), n4->center_back(), n4->center(), n4->center_left());
+			add_dual_cell(n0->center_back_left(), n0->center_back(), n0->center(), n0->center_left(),
+				n4->center_back_left(), n4->center_back(), n4->center(), n4->center_left(), source, scaler);
 		}
 		if (n3->at_front( root ) && n7->at_front( root ))
 		{
-			addDualCell(n3->center_left(), n3->center(), n3->center_front(), n3->center_front_left(),
-				n7->center_left(), n7->center(), n7->center_front(), n7->center_front_left());
+			add_dual_cell(n3->center_left(), n3->center(), n3->center_front(), n3->center_front_left(),
+				n7->center_left(), n7->center(), n7->center_front(), n7->center_front_left(),source, scaler);
 		}
 	}
 	if (n1->at_right( root ) && n2->at_right( root ) && n5->at_right( root ) && n6->at_right( root ))
 	{
-		addDualCell(n1->center(), n1->center_right(), n2->center_right(), n2->center(),
-			n5->center(), n5->center_right(), n6->center_right(), n6->center());
+		add_dual_cell(n1->center(), n1->center_right(), n2->center_right(), n2->center(),
+			n5->center(), n5->center_right(), n6->center_right(), n6->center(), source, scaler);
 		// Generate right edge border cells
 		if (n5->at_top( root ) && n6->at_top( root ))
 		{
-			addDualCell(n5->center(), n5->center_right(), n6->center_right(), n6->center(),
-				n5->center_top(), n5->center_right_top(), n6->center_right_top(), n6->center_top());
+			add_dual_cell(n5->center(), n5->center_right(), n6->center_right(), n6->center(),
+				n5->center_top(), n5->center_right_top(), n6->center_right_top(), n6->center_top(), source, scaler);
 		}
 		if (n1->at_bottom( root ) && n2->at_bottom( root ))
 		{
-			addDualCell(n1->center_bottom(), n1->center_right_bottom(), n2->center_right_bottom(), n2->center_bottom(),
-				n1->center(), n1->center_right(), n2->center_right(), n2->center());
+			add_dual_cell(n1->center_bottom(), n1->center_right_bottom(), n2->center_right_bottom(), n2->center_bottom(),
+				n1->center(), n1->center_right(), n2->center_right(), n2->center(), source, scaler);
 		}
 		if (n1->at_back( root ) && n5->at_back( root ))
 		{
-			addDualCell(n1->center_back(), n1->center_back_right(), n1->center_right(), n1->center(),
-				n5->center_back(), n5->center_back_right(), n5->center_right(), n5->center());
+			add_dual_cell(n1->center_back(), n1->center_back_right(), n1->center_right(), n1->center(),
+				n5->center_back(), n5->center_back_right(), n5->center_right(), n5->center(), source, scaler);
 		}
 		if (n2->at_front( root ) && n6->at_front( root ))
 		{
-			addDualCell(n2->center(), n2->center_right(), n2->center_front_right(), n2->center_front(),
-				n6->center(), n6->center_right(), n6->center_front_right(), n6->center_front());
+			add_dual_cell(n2->center(), n2->center_right(), n2->center_front_right(), n2->center_front(),
+				n6->center(), n6->center_right(), n6->center_front_right(), n6->center_front(), source, scaler);
 		}
 	}
 	if (n4->at_top( root ) && n5->at_top( root ) && n6->at_top( root ) && n7->at_top( root ))
 	{
-		addDualCell(n4->center(), n5->center(), n6->center(), n7->center(),
-			n4->center_top(), n5->center_top(), n6->center_top(), n7->center_top());
+		add_dual_cell(n4->center(), n5->center(), n6->center(), n7->center(),
+			n4->center_top(), n5->center_top(), n6->center_top(), n7->center_top(), source, scaler);
 	}
 	if (n0->at_bottom( root ) && n1->at_bottom( root ) && n2->at_bottom( root ) && n3->at_bottom( root ))
 	{
-		addDualCell(n0->center_bottom(), n1->center_bottom(), n2->center_bottom(), n3->center_bottom(),
-			n0->center(), n1->center(), n2->center(), n3->center());
+		add_dual_cell(n0->center_bottom(), n1->center_bottom(), n2->center_bottom(), n3->center_bottom(),
+			n0->center(), n1->center(), n2->center(), n3->center(), source, scaler);
 	}
-
 }
+
+
+void MarchingCubesDual::add_dual_cell( const VectorInt & c0, const VectorInt & c1, const VectorInt & c2, const VectorInt & c3, 
+	                                   const VectorInt & c4, const VectorInt & c5, const VectorInt & c6, const VectorInt & c7, VolumeSource * source, const DistanceScalerBase * scaler )
+{
+	MarchingCubesDualCell * cell = create_dual_cell();
+
+	VectorInt corners[8];
+	corners[0] = c0;
+	corners[1] = c1;
+	corners[2] = c2;
+	corners[3] = c3;
+
+	corners[4] = c4;
+	corners[5] = c5;
+	corners[6] = c6;
+	corners[7] = c7;
+
+	MarchingCubesDualCell * cell = create_dual_cell();
+	for ( int i=0; i<8; i++ )
+	{
+		const VectorInt & at_int   = corners[i];
+		const Vector3d at_scaled   = at_in_source( at_int, scaler );
+		const Vector3d at_unscaled = at_in_source_unscaled( at_int, scaler );
+		const Float value          = value_at( source, at_int, at_unscaled );
+		cell->corners[i]           = at_int;
+		cell->vertices[i]          = at_scaled;
+		cell->vertices_unscaled[i] = at_unscaled;
+	}
+}
+
 
 
 
