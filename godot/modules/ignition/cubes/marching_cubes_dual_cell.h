@@ -39,7 +39,7 @@ public:
 
 
 public:
-    VectorInt corners[8];
+    VectorInt vertices_int[8];
 	Float     values[8];
 	Vector3d  vertices[8];
 	Vector3d  vertices_unscaled[8];
