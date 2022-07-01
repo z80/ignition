@@ -1,5 +1,5 @@
 
-#include "marching_cubes_gd.h"
+#include "marching_cubes_dual_gd.h"
 
 #include "scene/3d/mesh_instance.h"
 #include "scene/resources/mesh.h"
@@ -9,46 +9,46 @@
 namespace Ign
 {
 
-void MarchingCubesGd::_bind_methods()
+void MarchingCubesDualGd::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("set_source_transform", "se3"),                              &MarchingCubesGd::set_source_transform );
-	ClassDB::bind_method( D_METHOD("subdivide_source", "volume", "scaler"),                     &MarchingCubesGd::subdivide_source, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesGd::materials_used,   Variant::ARRAY );
-	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesGd::apply_to_mesh );
-	ClassDB::bind_method( D_METHOD("collision_faces", "dist", "scaler"),                        &MarchingCubesGd::collision_faces );
+	ClassDB::bind_method( D_METHOD("set_source_transform", "se3"),                              &MarchingCubesDualGd::set_source_transform );
+	ClassDB::bind_method( D_METHOD("subdivide_source", "radius", "volume", "scaler"),                     &MarchingCubesDualGd::subdivide_source, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
+	ClassDB::bind_method( D_METHOD("collision_faces", "dist", "scaler"),                        &MarchingCubesDualGd::collision_faces );
 
-	ClassDB::bind_method( D_METHOD("set_max_nodes_qty", "qty"),             &MarchingCubesGd::set_max_nodes_qty );
-	ClassDB::bind_method( D_METHOD("get_max_nodes_qty"),                    &MarchingCubesGd::get_max_nodes_qty, Variant::INT );
+	ClassDB::bind_method( D_METHOD("set_max_nodes_qty", "qty"),             &MarchingCubesDualGd::set_max_nodes_qty );
+	ClassDB::bind_method( D_METHOD("get_max_nodes_qty"),                    &MarchingCubesDualGd::get_max_nodes_qty, Variant::INT );
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT,   "max_nodes_qty" ),         "set_max_nodes_qty", "get_max_nodes_qty" );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_nodes_qty" ), "set_max_nodes_qty", "get_max_nodes_qty" );
 }
 
-MarchingCubesGd::MarchingCubesGd()
+MarchingCubesDualGd::MarchingCubesDualGd()
 	: Reference()
 {
 }
 
-MarchingCubesGd::~MarchingCubesGd()
+MarchingCubesDualGd::~MarchingCubesDualGd()
 {
 }
 
-void MarchingCubesGd::set_source_transform( const Ref<Se3Ref> & se3 )
+void MarchingCubesDualGd::set_source_transform( const Ref<Se3Ref> & se3 )
 {
 	const SE3 & se3_inst = se3.ptr()->se3;
 	cubes.set_source_transform( se3_inst );
 }
 
-bool MarchingCubesGd::subdivide_source( const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler )
+bool MarchingCubesDualGd::subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler )
 {
 	VolumeSource   * volume_source   = volume.ptr()->source;
 	const DistanceScalerRef * distance_scaler_ref = scaler.ptr();
 	const DistanceScaler * distance_scaler = (distance_scaler_ref != nullptr) ? &(distance_scaler_ref->scaler) : nullptr;
 
-	const bool ret = cubes.subdivide_source( volume_source, distance_scaler );
+	const bool ret = cubes.subdivide_source( bounding_radius, volume_source, distance_scaler );
 	return ret;
 }
 
-Array MarchingCubesGd::materials_used() const
+Array MarchingCubesDualGd::materials_used() const
 {
 	Array ret;
 	const std::set<int> mats = cubes.materials();
@@ -72,7 +72,7 @@ Array MarchingCubesGd::materials_used() const
 
 
 
-void MarchingCubesGd::apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler )
+void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler )
 {
 	MeshInstance * mi = Object::cast_to<MeshInstance>(mesh_instance);
 	if (mi == nullptr)
@@ -138,7 +138,7 @@ void MarchingCubesGd::apply_to_mesh( int material_index, Node * mesh_instance, c
 	mi->set_transform( transform );
 }
 
-PoolVector3Array MarchingCubesGd::collision_faces( real_t dist, const Ref<DistanceScalerRef> & scaler_ref )
+PoolVector3Array MarchingCubesDualGd::collision_faces( real_t dist, const Ref<DistanceScalerRef> & scaler_ref )
 {
 	const DistanceScaler * s;
 	if ( scaler_ref == nullptr )
@@ -157,12 +157,12 @@ PoolVector3Array MarchingCubesGd::collision_faces( real_t dist, const Ref<Distan
 	return vertices;
 }
 
-void MarchingCubesGd::set_max_nodes_qty( int qty )
+void MarchingCubesDualGd::set_max_nodes_qty( int qty )
 {
 	cubes.max_nodes_qty = qty;
 }
 
-int MarchingCubesGd::get_max_nodes_qty() const
+int MarchingCubesDualGd::get_max_nodes_qty() const
 {
 	return cubes.max_nodes_qty;
 }

@@ -46,9 +46,11 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 
     const int root_size_int = find_subdivision_levels( bounding_radius, source );
 	const int root_size_int_2 = root_size_int / 2;
+
 	MarchingCubesDualNode * root_node = create_node();
 	root_node->size = root_size_int;
 	root_node->at   = VectorInt( -root_size_int_2, -root_size_int_2, -root_size_int_2 );
+	compute_node_values( *root_node, source, scaler );
 
 	root_node->subdivide( this, source, scaler );
 
@@ -105,9 +107,9 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource * source, const DistanceScalerBase * scaler )
 {
 	const VectorInt center_int = node->center();
-	const Vector3d center = at_in_source_unscaled( center_int, scaler );
-	const Float max_sz = source->max_node_size_at( center );
-	const Float node_sz = node_size( node->size );
+	const Vector3d center      = at_in_source( center_int );
+	const Float max_sz         = source->max_node_size_at( center );
+	const Float node_sz        = node_size( node );
 	// If bigger than maximum allowed, subdivide.
 	if ( node_sz > max_sz )
 		return true;
@@ -163,7 +165,7 @@ bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource
 		interpolated_value += node->values[i];
 	interpolated_value /= 8.0;
 
-	const Vector3d  center_float = at_in_source_unscaled( center_int, scaler );
+	const Vector3d  center_float = at_in_source( center_int );
 	const Float actual_value     = value_at( source, center_int, center_float );
 
 	const Float rel_diff = std::abs( actual_value - interpolated_value ) / node_sz;
@@ -300,40 +302,82 @@ const Transform MarchingCubesDual::source_transform( const DistanceScalerBase * 
 
 
 
-Float MarchingCubesDual::node_size( int size ) const
+Float MarchingCubesDual::node_size( const MarchingCubesDualNode * node ) const
 {
-    const Float sz = static_cast<Float>( size ) * step;
-    return sz;
+	 Float max_sz = (node->vertices[0] - node->vertices[1]).Length();
+
+	 const Float sz_12 = (node->vertices[1] - node->vertices[2]).Length();
+	 if ( max_sz < sz_12 )
+		 max_sz = sz_12;
+
+	 const Float sz_23 = (node->vertices[2] - node->vertices[3]).Length();
+	 if ( max_sz < sz_23 )
+		 max_sz = sz_23;
+
+	 const Float sz_30 = (node->vertices[3] - node->vertices[0]).Length();
+	 if ( max_sz < sz_30 )
+		 max_sz = sz_30;
+
+	 const Float sz_04 = (node->vertices[0] - node->vertices[4]).Length();
+	 if ( max_sz < sz_04 )
+		 max_sz = sz_04;
+
+	 const Float sz_15 = (node->vertices[1] - node->vertices[5]).Length();
+	 if ( max_sz < sz_15 )
+		 max_sz = sz_15;
+
+	 const Float sz_26 = (node->vertices[2] - node->vertices[6]).Length();
+	 if ( max_sz < sz_26 )
+		 max_sz = sz_26;
+
+	 const Float sz_37 = (node->vertices[3] - node->vertices[7]).Length();
+	 if ( max_sz < sz_37 )
+		 max_sz = sz_37;
+
+	 const Float sz_45 = (node->vertices[4] - node->vertices[5]).Length();
+	 if ( max_sz < sz_45 )
+		 max_sz = sz_45;
+
+	 const Float sz_56 = (node->vertices[5] - node->vertices[6]).Length();
+	 if ( max_sz < sz_56 )
+		 max_sz = sz_56;
+
+	 const Float sz_67 = (node->vertices[6] - node->vertices[7]).Length();
+	 if ( max_sz < sz_67 )
+		 max_sz = sz_67;
+
+	 const Float sz_74 = (node->vertices[7] - node->vertices[4]).Length();
+	 if ( max_sz < sz_74 )
+		 max_sz = sz_74;
+
+	 return max_sz;
 }
 
 
-Vector3d MarchingCubesDual::at_in_source( const VectorInt & at_i ) const
+Vector3d MarchingCubesDual::at_in_source_scaled( const VectorInt & at_i, const DistanceScalerBase * scaler ) const
 {
 	const Vector3d at( static_cast<Float>(at_i.x)*step, 
 		               static_cast<Float>(at_i.y)*step, 
 		               static_cast<Float>(at_i.z)*step );
-	return at;
+
+	if ( scaler == nullptr )
+		return at;
+
+	const Vector3d at_in_world            = source_se3.q_ * at + source_se3.r_;
+	const Vector3d at_in_world_scaled     = scaler->scale( at_in_world );
+	const Vector3d origin_in_world_scaled = scaler->scale( source_se3.r_ );
+	const Vector3d rel_to_origin_scaled   = at_in_world_scaled - origin_in_world_scaled;
+	const Vector3d at_scaled              = inverted_source_se3.q_ * rel_to_origin_scaled;
+
+	return at_scaled;
 }
 
-Vector3d MarchingCubesDual::at_in_source_unscaled( const VectorInt & at_i, const DistanceScalerBase * scaler ) const
+Vector3d MarchingCubesDual::at_in_source( const VectorInt & at_i ) const
 {
     const Vector3d at( static_cast<Float>(at_i.x)*step, 
                        static_cast<Float>(at_i.y)*step, 
                        static_cast<Float>(at_i.z)*step );
-    // Apply transform.
-    if (scaler == nullptr)
-    {
-        const Vector3d at_in_source = at;
-        return at_in_source;
-    }
-
-	const Vector3d origin_in_world_scaled   = scaler->scale( source_se3.r_ );
-	const Vector3d at_in_world_scaled       = source_se3.q_ * at + origin_in_world_scaled;
-	const Vector3d at_in_world_unscaled     = scaler->unscale( at_in_world_scaled );
-	const Vector3d origin_in_world_unscaled = source_se3.r_;
-	const Vector3d at_in_world_unscaled_relative_to_origin = at_in_world_unscaled - origin_in_world_unscaled;
-	const Vector3d at_in_source_unscaled_ret = inverted_source_se3.q_ * at_in_world_unscaled_relative_to_origin;
-	return at_in_source_unscaled_ret;
+    return at;
 }
 
 void MarchingCubesDual::cleanup_nodes()
@@ -406,14 +450,14 @@ void MarchingCubesDual::compute_node_values( MarchingCubesDualNode & node, Volum
 		node.vertices_int[i] = verts[i];
         // Value at unwarped position.
 		const VectorInt & vert_int = verts[i];
-        const Vector3d vert_d = at_in_source_unscaled( verts[i], scaler );
-        const Float    value  = value_at( source, vert_int, vert_d );
+        const Vector3d vert_d      = at_in_source( verts[i] );
+        const Float    value       = value_at( source, vert_int, vert_d );
 		// Store unwarped position.
-		node.vertices_unscaled[i] = vert_d;
+		node.vertices_unscaled[i]  = vert_d;
         // Store warped position.
-        const Vector3d vert = at_in_source( verts[i] );
-        node.vertices[i]    = vert;
-        node.values[i]      = value;
+        const Vector3d vert        = at_in_source_scaled( verts[i], scaler );
+        node.vertices[i]           = vert;
+        node.values[i]             = value;
     }
 }
 
@@ -691,10 +735,10 @@ void MarchingCubesDual::vert_proc( const MarchingCubesDualNode * n0, const March
 		for ( int i=0; i<8; i++ )
 		{
 			const VectorInt & at_int   = corners[i];
-			const Vector3d at_scaled   = at_in_source( at_int );
-			const Vector3d at_unscaled = at_in_source_unscaled( at_int, scaler );
+			const Vector3d at_scaled   = at_in_source_scaled( at_int, scaler );
+			const Vector3d at_unscaled = at_in_source( at_int );
 			const Float value          = value_at( source, at_int, at_unscaled );
-			cell->vertices_int[i]           = at_int;
+			cell->vertices_int[i]      = at_int;
 			cell->vertices[i]          = at_scaled;
 			cell->vertices_unscaled[i] = at_unscaled;
 		}
@@ -871,8 +915,8 @@ void MarchingCubesDual::add_dual_cell( const VectorInt & c0, const VectorInt & c
 	for ( int i=0; i<8; i++ )
 	{
 		const VectorInt & at_int   = corners[i];
-		const Vector3d at_scaled   = at_in_source( at_int );
-		const Vector3d at_unscaled = at_in_source_unscaled( at_int, scaler );
+		const Vector3d at_scaled   = at_in_source_scaled( at_int, scaler );
+		const Vector3d at_unscaled = at_in_source( at_int );
 		const Float value          = value_at( source, at_int, at_unscaled );
 		cell->vertices_int[i]      = at_int;
 		cell->vertices[i]          = at_scaled;
@@ -881,7 +925,7 @@ void MarchingCubesDual::add_dual_cell( const VectorInt & c0, const VectorInt & c
 }
 
 
-bool MarchingCubesDual::create_faces_in_dual_grid( VolumeSource * source, const DistanceScalerBase * scaler )
+void MarchingCubesDual::create_faces_in_dual_grid( VolumeSource * source, const DistanceScalerBase * scaler )
 {
 	const int qty = _octree_dual_cells.size();
 	for ( int i=0; i<qty; i++ )

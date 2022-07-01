@@ -92,7 +92,10 @@ bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * 
     child_nodes[7]->at = this->at + VectorInt(      0, size_2, size_2 );
 
     for ( int i=0; i<8; i++ )
-        child_nodes[i]->subdivide( tree, source, scaler );
+	{
+		tree->compute_node_values( *(child_nodes[i]), source, scaler );
+		child_nodes[i]->subdivide( tree, source, scaler );
+	}
 
     return true;
 }

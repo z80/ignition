@@ -1,8 +1,8 @@
 
-#ifndef __MARCHING_CUBES_GD_H_
-#define __MARCHING_CUBES_GD_H_
+#ifndef __MARCHING_CUBES_DUAL_GD_H_
+#define __MARCHING_CUBES_DUAL_GD_H_
 
-#include "marching_cubes.h"
+#include "marching_cubes_dual.h"
 #include "core/reference.h"
 #include "se3_ref.h"
 #include "volume_source_gd.h"
@@ -14,18 +14,18 @@ class Node;
 namespace Ign
 {
 
-class MarchingCubesGd: public Reference
+class MarchingCubesDualGd: public Reference
 {
-	GDCLASS(MarchingCubesGd, Reference);
+	GDCLASS(MarchingCubesDualGd, Reference);
 protected:
 	static void _bind_methods();
 
 public:
-	MarchingCubesGd();
-	~MarchingCubesGd();
+	MarchingCubesDualGd();
+	~MarchingCubesDualGd();
 
 	void set_source_transform( const Ref<Se3Ref> & se3 );
-	bool subdivide_source( const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
+	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 	Array materials_used() const;
 	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 	PoolVector3Array collision_faces( real_t dist, const Ref<DistanceScalerRef> & scaler_ref = Ref<DistanceScalerRef>() );
@@ -34,7 +34,7 @@ public:
 	int get_max_nodes_qty() const;
 
 public:
-	MarchingCubes cubes;
+	MarchingCubesDual cubes;
 
 	PoolVector3Array vertices, normals;
 	PoolRealArray    tangents;

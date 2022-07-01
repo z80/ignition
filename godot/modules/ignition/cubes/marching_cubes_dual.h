@@ -62,9 +62,9 @@ public:
 
     const Transform source_transform( const DistanceScalerBase * scaler = nullptr) const;
 
-    Float    node_size( int size ) const;
+    Float    node_size( const MarchingCubesDualNode * node ) const;
+    Vector3d at_in_source_scaled( const VectorInt & at_i, const DistanceScalerBase * scaler=nullptr ) const;
     Vector3d at_in_source( const VectorInt & at_i ) const;
-    Vector3d at_in_source_unscaled( const VectorInt & at_i, const DistanceScalerBase * scaler=nullptr ) const;
 
     
 
@@ -82,7 +82,8 @@ public:
     // Points to probe first are sent through this transformation.
     SE3      source_se3;
     SE3      inverted_source_se3;
-private:
+
+public:
 	void cleanup_nodes();
 
     int find_subdivision_levels( Float bounding_radius, VolumeSource * source );
@@ -107,7 +108,7 @@ private:
 		                const VectorInt & c4, const VectorInt & c5, const VectorInt & c6, const VectorInt & c7, VolumeSource * source, const DistanceScalerBase * scaler );
 
 
-	bool create_faces_in_dual_grid( VolumeSource * source, const DistanceScalerBase * scaler );
+	void create_faces_in_dual_grid( VolumeSource * source, const DistanceScalerBase * scaler );
 
     Vector3d interpolate( const Vector3d & v0, const Vector3d & v1, const Float val0, const Float val1 ) const;
 
