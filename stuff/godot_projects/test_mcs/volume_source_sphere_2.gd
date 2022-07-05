@@ -32,7 +32,11 @@ func min_node_size():
 	return node_sz
 
 
-func max_node_size_at( at: Vector3 ):
+func max_node_size_local( at: Vector3 ):
+	return node_sz
+
+
+func min_node_size_local( at: Vector3 ):
 	return node_sz
 
 

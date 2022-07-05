@@ -43,7 +43,7 @@ const MarchingCubesDualCell & MarchingCubesDualCell::operator=( const MarchingCu
 			vertices_int[i]      = inst.vertices_int[i];
 			values[i]            = inst.values[i];
 			vertices[i]          = inst.vertices[i];
-			vertices_unscaled[i] = inst.vertices_unscaled[i];
+			vertices_scaled[i]   = inst.vertices_scaled[i];
 		}
 	}
 

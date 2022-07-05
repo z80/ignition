@@ -22,9 +22,10 @@ public:
 	void set_inverted( bool en );
 	bool get_inverted() const;
 
-	Float max_node_size() const;
-	Float min_node_size() const;
-	Float max_node_size_at( const Vector3d & at );
+	Float max_node_size() const override;
+	Float min_node_size() const override;
+	Float max_node_size_local( const Vector3d & at ) const override;
+	Float min_node_size_local( const Vector3d & at ) const override;
 
 	int material( const Vector3d & at, int * priority = nullptr );
 

@@ -67,12 +67,12 @@ Float MarchingVolumeObject::min_node_size() const
     return 1.0;
 }
 
-Float MarchingVolumeObject::max_node_size_local( const Vector3d & at )
+Float MarchingVolumeObject::max_node_size_local( const Vector3d & at ) const
 {
     return 1.0;
 }
 
-Float MarchingVolumeObject::min_node_size_local( const Vector3d & at )
+Float MarchingVolumeObject::min_node_size_local( const Vector3d & at ) const
 {
 	return 1.0;
 }

@@ -121,7 +121,7 @@ public:
 
     // Compute value with reusing pre-computed values.
     Float value_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at );
-    int   node_material( const MarchingCubesDualCell & node, VolumeSource * source, const DistanceScalerBase * scaler );
+    int   cell_material( const MarchingCubesDualCell & cell, VolumeSource * source, const DistanceScalerBase * scaler );
     int   material_at( VolumeSource * source, const VectorInt & vector_int, const Vector3d & at, int * priority );
 
     // Store face normal for node edge.

@@ -26,7 +26,8 @@ public:
 
 	real_t max_node_size() const;
 	real_t min_node_size() const;
-	real_t max_node_size_at( const Vector3 & at ) const;
+	real_t max_node_size_local( const Vector3 & at ) const;
+	real_t min_node_size_local( const Vector3 & at ) const;
 
 	int material_global( const Vector3 & at );
 	int material( const Vector3 & at );

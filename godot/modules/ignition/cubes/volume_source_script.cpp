@@ -90,7 +90,7 @@ Float VolumeSourceScript::min_node_size() const
 	return ret;
 }
 
-Float VolumeSourceScript::max_node_size_at( const Vector3d & at )
+Float VolumeSourceScript::max_node_size_local( const Vector3d & at ) const
 {
 	if ( !has_script() )
 	{
@@ -102,10 +102,32 @@ Float VolumeSourceScript::max_node_size_at( const Vector3d & at )
 	Variant v_at = Vector3( at.x_, at.y_, at.z_ );
 	const Variant *ptr[1] = { &v_at };
 	Variant::CallError ce;
-	const Variant v_ret = si->call( "max_node_size_at", ptr, 1, ce );
+	const Variant v_ret = si->call( "max_node_size_local", ptr, 1, ce );
 	if ( ce.error != Variant::CallError::CALL_OK )
 	{
-		print_error( "VolumeSourceScript error: max_node_size_at expected Vector3 as an argument" );
+		print_error( "VolumeSourceScript error: max_node_size_local expected Vector3 as an argument" );
+		return 0.0;
+	}
+	const real_t ret = v_ret;
+	return ret;
+}
+
+Float VolumeSourceScript::min_node_size_local( const Vector3d & at ) const
+{
+	if ( !has_script() )
+	{
+		print_error( "VolumeSourceScript error: no script assigned" );
+		return 0.0;
+	}
+
+	ScriptInstance * si = reference->get_script_instance();
+	Variant v_at = Vector3( at.x_, at.y_, at.z_ );
+	const Variant *ptr[1] = { &v_at };
+	Variant::CallError ce;
+	const Variant v_ret = si->call( "min_node_size_local", ptr, 1, ce );
+	if ( ce.error != Variant::CallError::CALL_OK )
+	{
+		print_error( "VolumeSourceScript error: max_node_size_local expected Vector3 as an argument" );
 		return 0.0;
 	}
 	const real_t ret = v_ret;

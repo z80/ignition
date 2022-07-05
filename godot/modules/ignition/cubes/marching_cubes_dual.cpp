@@ -403,7 +403,7 @@ int MarchingCubesDual::find_subdivision_levels( Float bounding_radius, VolumeSou
 	while (sz <= max_sz)
 	{
 		sz *= 2.0;
-		size_int += 1;
+		size_int *= 2;
 	}
 
 	return size_int;
@@ -731,20 +731,8 @@ void MarchingCubesDual::vert_proc( const MarchingCubesDualNode * n0, const March
 		corners[6] = n6->center();
 		corners[7] = n7->center();
 
-		MarchingCubesDualCell * cell = create_dual_cell();
-		for ( int i=0; i<8; i++ )
-		{
-			const VectorInt & at_int   = corners[i];
-			const Vector3d at_scaled   = at_in_source_scaled( at_int, scaler );
-			const Vector3d at_unscaled = at_in_source( at_int );
-			const Float value          = value_at( source, at_int, at_unscaled );
-			cell->vertices_int[i]      = at_int;
-			cell->vertices[i]          = at_scaled;
-			cell->vertices_unscaled[i] = at_unscaled;
-		}
-
-		//add_dual_cell( n0->getCenter(), n1->getCenter(), n2->getCenter(), n3->getCenter(),
-			           //n4->getCenter(), n5->getCenter(), n6->getCenter(), n7->getCenter(), values );
+		add_dual_cell( corners[0], corners[1], corners[2], corners[3],
+			           corners[4], corners[5], corners[6], corners[7], source, scaler );
 
 		create_border_cells(n0, n1, n2, n3, n4, n5, n6, n7, source, scaler );
 	}
@@ -914,13 +902,14 @@ void MarchingCubesDual::add_dual_cell( const VectorInt & c0, const VectorInt & c
 	MarchingCubesDualCell * cell = create_dual_cell();
 	for ( int i=0; i<8; i++ )
 	{
-		const VectorInt & at_int   = corners[i];
-		const Vector3d at_scaled   = at_in_source_scaled( at_int, scaler );
-		const Vector3d at_unscaled = at_in_source( at_int );
-		const Float value          = value_at( source, at_int, at_unscaled );
-		cell->vertices_int[i]      = at_int;
-		cell->vertices[i]          = at_scaled;
-		cell->vertices_unscaled[i] = at_unscaled;
+		const VectorInt & at_int = corners[i];
+		const Vector3d at        = at_in_source( at_int );
+		const Vector3d at_scaled = at_in_source_scaled( at_int, scaler );
+		const Float value        = value_at( source, at_int, at );
+		cell->values[i]          = value;
+		cell->vertices_int[i]    = at_int;
+		cell->vertices[i]        = at;
+		cell->vertices_scaled[i] = at_scaled;
 	}
 }
 
@@ -931,8 +920,9 @@ void MarchingCubesDual::create_faces_in_dual_grid( VolumeSource * source, const 
 	for ( int i=0; i<qty; i++ )
 	{
 		MarchingCubesDualCell * cell = _octree_dual_cells[i];
-		const int material_index = node_material( *cell, source, scaler );
+		const int material_index = cell_material( *cell, source, scaler );
 		create_faces( *cell, material_index );
+		_materials_set.insert( material_index );
 	}
 }
 
@@ -1085,84 +1075,84 @@ void MarchingCubesDual::create_faces( const MarchingCubesDualCell & cell, int ma
 	{
 		if ( cell.vertices_int[0] == cell.vertices_int[1] )
 			return;
-		intersection_points[0]  = interpolate( cell.vertices[0], cell.vertices[1], cell.values[0], cell.values[1] );
+		intersection_points[0]  = interpolate( cell.vertices_scaled[0], cell.vertices_scaled[1], cell.values[0], cell.values[1] );
 		edges_int[0] = NodeEdgeInt( cell.vertices_int[0], cell.vertices_int[1] );
 	}
 	if ( edge & 2 )
 	{
 		if ( cell.vertices_int[1] == cell.vertices_int[2] )
 			return;
-		intersection_points[1]  = interpolate( cell.vertices[1], cell.vertices[2], cell.values[1], cell.values[2] );
+		intersection_points[1]  = interpolate( cell.vertices_scaled[1], cell.vertices_scaled[2], cell.values[1], cell.values[2] );
 		edges_int[1] = NodeEdgeInt( cell.vertices_int[1], cell.vertices_int[2] );
 	}
 	if ( edge & 4 )
 	{
 		if ( cell.vertices_int[2] == cell.vertices_int[3] )
 			return;
-		intersection_points[2]  = interpolate( cell.vertices[2], cell.vertices[3], cell.values[2], cell.values[3] );
+		intersection_points[2]  = interpolate( cell.vertices_scaled[2], cell.vertices_scaled[3], cell.values[2], cell.values[3] );
 		edges_int[2] = NodeEdgeInt( cell.vertices_int[2], cell.vertices_int[3] );
 	}
 	if ( edge & 8 )
 	{
 		if ( cell.vertices_int[3] == cell.vertices_int[0] )
 			return;
-		intersection_points[3]  = interpolate( cell.vertices[3], cell.vertices[0], cell.values[3], cell.values[0] );
+		intersection_points[3]  = interpolate( cell.vertices_scaled[3], cell.vertices_scaled[0], cell.values[3], cell.values[0] );
 		edges_int[3] = NodeEdgeInt( cell.vertices_int[3], cell.vertices_int[0] );
 	}
 	if ( edge & 16 )
 	{
 		if ( cell.vertices_int[4] == cell.vertices_int[5] )
 			return;
-		intersection_points[4]  = interpolate( cell.vertices[4], cell.vertices[5], cell.values[4], cell.values[5] );
+		intersection_points[4]  = interpolate( cell.vertices_scaled[4], cell.vertices_scaled[5], cell.values[4], cell.values[5] );
 		edges_int[4] = NodeEdgeInt( cell.vertices_int[4], cell.vertices_int[5] );
 	}
 	if ( edge & 32 )
 	{
 		if ( cell.vertices_int[5] == cell.vertices_int[6] )
 			return;
-		intersection_points[5]  = interpolate( cell.vertices[5], cell.vertices[6], cell.values[5], cell.values[6] );
+		intersection_points[5]  = interpolate( cell.vertices_scaled[5], cell.vertices_scaled[6], cell.values[5], cell.values[6] );
 		edges_int[5] = NodeEdgeInt( cell.vertices_int[5], cell.vertices_int[6] );
 	}
 	if ( edge & 64 )
 	{
 		if ( cell.vertices_int[6] == cell.vertices_int[7] )
 			return;
-		intersection_points[6]  = interpolate( cell.vertices[6], cell.vertices[7], cell.values[6], cell.values[7] );
+		intersection_points[6]  = interpolate( cell.vertices_scaled[6], cell.vertices_scaled[7], cell.values[6], cell.values[7] );
 		edges_int[6] = NodeEdgeInt( cell.vertices_int[6], cell.vertices_int[7] );
 	}
 	if ( edge & 128 )
 	{
 		if ( cell.vertices_int[7] == cell.vertices_int[7] )
 			return;
-		intersection_points[7]  = interpolate( cell.vertices[7], cell.vertices[4], cell.values[7], cell.values[4] );
+		intersection_points[7]  = interpolate( cell.vertices_scaled[7], cell.vertices_scaled[4], cell.values[7], cell.values[4] );
 		edges_int[7] = NodeEdgeInt( cell.vertices_int[7], cell.vertices_int[4] );
 	}
 	if ( edge & 256 )
 	{
 		if ( cell.vertices_int[0] == cell.vertices_int[4] )
 			return;
-		intersection_points[8]  = interpolate( cell.vertices[0], cell.vertices[4], cell.values[0], cell.values[4] );
+		intersection_points[8]  = interpolate( cell.vertices_scaled[0], cell.vertices_scaled[4], cell.values[0], cell.values[4] );
 		edges_int[8] = NodeEdgeInt( cell.vertices_int[0], cell.vertices_int[4] );
 	}
 	if ( edge & 512 )
 	{
 		if ( cell.vertices_int[1] == cell.vertices_int[5] )
 			return;
-		intersection_points[9]  = interpolate( cell.vertices[1], cell.vertices[5], cell.values[1], cell.values[5] );
+		intersection_points[9]  = interpolate( cell.vertices_scaled[1], cell.vertices_scaled[5], cell.values[1], cell.values[5] );
 		edges_int[9] = NodeEdgeInt( cell.vertices_int[1], cell.vertices_int[5] );
 	}
 	if ( edge & 1024 )
 	{
 		if ( cell.vertices_int[2] == cell.vertices_int[6] )
 			return;
-		intersection_points[10] = interpolate( cell.vertices[2], cell.vertices[6], cell.values[2], cell.values[6] );
+		intersection_points[10] = interpolate( cell.vertices_scaled[2], cell.vertices_scaled[6], cell.values[2], cell.values[6] );
 		edges_int[10] = NodeEdgeInt( cell.vertices_int[2], cell.vertices_int[6] );
 	}
 	if ( edge & 2048 )
 	{
 		if ( cell.vertices_int[3] == cell.vertices_int[7] )
 			return;
-		intersection_points[11] = interpolate( cell.vertices[3], cell.vertices[7], cell.values[3], cell.values[7] );
+		intersection_points[11] = interpolate( cell.vertices_scaled[3], cell.vertices_scaled[7], cell.values[3], cell.values[7] );
 		edges_int[11] = NodeEdgeInt( cell.vertices_int[3], cell.vertices_int[7] );
 	}
 
@@ -1214,14 +1204,14 @@ Float MarchingCubesDual::value_at( VolumeSource * source, const VectorInt & vect
 	return v;
 }
 
-int MarchingCubesDual::node_material( const MarchingCubesDualCell & node, VolumeSource * source, const DistanceScalerBase * scaler )
+int MarchingCubesDual::cell_material( const MarchingCubesDualCell & cell, VolumeSource * source, const DistanceScalerBase * scaler )
 {
 	int max_priority = -1;
 	int max_material = -1;
 	for ( int i=0; i<8; i++ )
 	{
-		const VectorInt & at_i = node.vertices_int[i];
-		const Vector3d    at_d = node.vertices_unscaled[i];
+		const VectorInt & at_i = cell.vertices_int[i];
+		const Vector3d    at_d = cell.vertices[i];
 		int priority;
 		const int material = material_at( source, at_i, at_d, &priority );
 		// It is critical that it is "<=" and not just "<". It is because
