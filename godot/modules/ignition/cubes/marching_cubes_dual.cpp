@@ -8,6 +8,7 @@
 #include "marching_cubes_dual_cell.h"
 
 #include <cmath>
+#include <algorithm>
 
 
 
@@ -304,49 +305,49 @@ const Transform MarchingCubesDual::source_transform( const DistanceScalerBase * 
 
 Float MarchingCubesDual::node_size( const MarchingCubesDualNode * node ) const
 {
-	 Float max_sz = (node->vertices[0] - node->vertices[1]).Length();
+	 Float max_sz = (node->vertices_scaled[0] - node->vertices_scaled[1]).Length();
 
-	 const Float sz_12 = (node->vertices[1] - node->vertices[2]).Length();
+	 const Float sz_12 = (node->vertices_scaled[1] - node->vertices_scaled[2]).Length();
 	 if ( max_sz < sz_12 )
 		 max_sz = sz_12;
 
-	 const Float sz_23 = (node->vertices[2] - node->vertices[3]).Length();
+	 const Float sz_23 = (node->vertices_scaled[2] - node->vertices_scaled[3]).Length();
 	 if ( max_sz < sz_23 )
 		 max_sz = sz_23;
 
-	 const Float sz_30 = (node->vertices[3] - node->vertices[0]).Length();
+	 const Float sz_30 = (node->vertices_scaled[3] - node->vertices_scaled[0]).Length();
 	 if ( max_sz < sz_30 )
 		 max_sz = sz_30;
 
-	 const Float sz_04 = (node->vertices[0] - node->vertices[4]).Length();
+	 const Float sz_04 = (node->vertices_scaled[0] - node->vertices_scaled[4]).Length();
 	 if ( max_sz < sz_04 )
 		 max_sz = sz_04;
 
-	 const Float sz_15 = (node->vertices[1] - node->vertices[5]).Length();
+	 const Float sz_15 = (node->vertices_scaled[1] - node->vertices_scaled[5]).Length();
 	 if ( max_sz < sz_15 )
 		 max_sz = sz_15;
 
-	 const Float sz_26 = (node->vertices[2] - node->vertices[6]).Length();
+	 const Float sz_26 = (node->vertices_scaled[2] - node->vertices_scaled[6]).Length();
 	 if ( max_sz < sz_26 )
 		 max_sz = sz_26;
 
-	 const Float sz_37 = (node->vertices[3] - node->vertices[7]).Length();
+	 const Float sz_37 = (node->vertices_scaled[3] - node->vertices_scaled[7]).Length();
 	 if ( max_sz < sz_37 )
 		 max_sz = sz_37;
 
-	 const Float sz_45 = (node->vertices[4] - node->vertices[5]).Length();
+	 const Float sz_45 = (node->vertices_scaled[4] - node->vertices_scaled[5]).Length();
 	 if ( max_sz < sz_45 )
 		 max_sz = sz_45;
 
-	 const Float sz_56 = (node->vertices[5] - node->vertices[6]).Length();
+	 const Float sz_56 = (node->vertices_scaled[5] - node->vertices_scaled[6]).Length();
 	 if ( max_sz < sz_56 )
 		 max_sz = sz_56;
 
-	 const Float sz_67 = (node->vertices[6] - node->vertices[7]).Length();
+	 const Float sz_67 = (node->vertices_scaled[6] - node->vertices_scaled[7]).Length();
 	 if ( max_sz < sz_67 )
 		 max_sz = sz_67;
 
-	 const Float sz_74 = (node->vertices[7] - node->vertices[4]).Length();
+	 const Float sz_74 = (node->vertices_scaled[7] - node->vertices_scaled[4]).Length();
 	 if ( max_sz < sz_74 )
 		 max_sz = sz_74;
 
@@ -380,6 +381,47 @@ Vector3d MarchingCubesDual::at_in_source( const VectorInt & at_i ) const
     return at;
 }
 
+int  MarchingCubesDual::get_nodes_qty() const
+{
+	const int qty = _octree_nodes.size();
+	return qty;
+}
+
+void MarchingCubesDual::get_node( int node_ind, Vector3d * corners ) const
+{
+	const MarchingCubesDualNode * node = _octree_nodes[node_ind];
+	for ( int i=0; i<8; i++ )
+	{
+		corners[i] = node->vertices[i];
+	}
+}
+
+int  MarchingCubesDual::get_node_parent( int node_ind ) const
+{
+	const MarchingCubesDualNode * node = _octree_nodes[node_ind];
+	const MarchingCubesDualNode * parent_node = node->parent_node;
+	std::vector<MarchingCubesDualNode *>::const_iterator it = std::find( _octree_nodes.begin(), _octree_nodes.end(), parent_node );
+	if ( it == _octree_nodes.end() )
+		return -1;
+	const int ind = std::distance( _octree_nodes.begin(), it );
+	return ind;
+}
+
+int  MarchingCubesDual::get_dual_cells_qty() const
+{
+	const int qty = _octree_dual_cells.size();
+	return qty;
+}
+
+void MarchingCubesDual::get_dual_cell( int cell_ind, Vector3d * corners ) const
+{
+	const MarchingCubesDualCell * cell = _octree_dual_cells[cell_ind];
+	for ( int i=0; i<8; i++ )
+	{
+		corners[i] = cell->vertices[i];
+	}
+}
+
 void MarchingCubesDual::cleanup_nodes()
 {
 	{
@@ -396,7 +438,7 @@ void MarchingCubesDual::cleanup_nodes()
 int MarchingCubesDual::find_subdivision_levels( Float bounding_radius, VolumeSource * source )
 {
 	step = source->min_node_size();
-	const Float max_sz = bounding_radius * 2.0;
+	const Float max_sz = bounding_radius; // * 2.0;
 
 	int size_int = 2;
 	Float sz = step;
@@ -453,10 +495,10 @@ void MarchingCubesDual::compute_node_values( MarchingCubesDualNode & node, Volum
         const Vector3d vert_d      = at_in_source( verts[i] );
         const Float    value       = value_at( source, vert_int, vert_d );
 		// Store unwarped position.
-		node.vertices_unscaled[i]  = vert_d;
+		node.vertices[i]  = vert_d;
         // Store warped position.
         const Vector3d vert        = at_in_source_scaled( verts[i], scaler );
-        node.vertices[i]           = vert;
+        node.vertices_scaled[i]           = vert;
         node.values[i]             = value;
     }
 }
@@ -1122,7 +1164,7 @@ void MarchingCubesDual::create_faces( const MarchingCubesDualCell & cell, int ma
 	}
 	if ( edge & 128 )
 	{
-		if ( cell.vertices_int[7] == cell.vertices_int[7] )
+		if ( cell.vertices_int[7] == cell.vertices_int[4] )
 			return;
 		intersection_points[7]  = interpolate( cell.vertices_scaled[7], cell.vertices_scaled[4], cell.values[7], cell.values[4] );
 		edges_int[7] = NodeEdgeInt( cell.vertices_int[7], cell.vertices_int[4] );

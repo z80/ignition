@@ -67,7 +67,14 @@ public:
     Vector3d at_in_source( const VectorInt & at_i ) const;
 
     
+	// Debug methods.
+	int  get_nodes_qty() const;
+	void get_node( int node_ind, Vector3d * corners ) const;
+	int  get_node_parent( int node_ind ) const;
 
+	int  get_dual_cells_qty() const;
+	void get_dual_cell( int cell_ind, Vector3d * corners ) const;
+	
 
 
     Float iso_level;

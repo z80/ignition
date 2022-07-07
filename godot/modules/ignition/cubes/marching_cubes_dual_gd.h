@@ -33,6 +33,15 @@ public:
 	void set_max_nodes_qty( int qty );
 	int get_max_nodes_qty() const;
 
+	// Debug methods.
+	int  get_nodes_qty() const;
+	Array get_node( int node_ind ) const;
+	int  get_node_parent( int node_ind ) const;
+
+	int  get_dual_cells_qty() const;
+	Array get_dual_cell( int cell_ind ) const;
+
+
 public:
 	MarchingCubesDual cubes;
 

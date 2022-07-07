@@ -42,8 +42,8 @@ const MarchingCubesDualNode & MarchingCubesDualNode::operator=( const MarchingCu
         for ( int i=0; i<8; i++ )
         {
             vertices_int[i] = inst.vertices_int[i];
-            vertices[i]     = inst.vertices[i];
-            vertices_unscaled[i] = inst.vertices_unscaled[i];
+            vertices_scaled[i]     = inst.vertices_scaled[i];
+            vertices[i] = inst.vertices[i];
             values[i]       = inst.values[i];
         }
     }

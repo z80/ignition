@@ -20,6 +20,14 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_max_nodes_qty", "qty"),             &MarchingCubesDualGd::set_max_nodes_qty );
 	ClassDB::bind_method( D_METHOD("get_max_nodes_qty"),                    &MarchingCubesDualGd::get_max_nodes_qty, Variant::INT );
 
+	ClassDB::bind_method( D_METHOD("get_nodes_qty"),               &MarchingCubesDualGd::get_nodes_qty,   Variant::INT );
+	ClassDB::bind_method( D_METHOD("get_node", "node_ind"),        &MarchingCubesDualGd::get_node,        Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("get_node_parent", "node_ind"), &MarchingCubesDualGd::get_node_parent, Variant::INT );
+
+	ClassDB::bind_method( D_METHOD("get_dual_cells_qty"),          &MarchingCubesDualGd::get_dual_cells_qty, Variant::INT );
+	ClassDB::bind_method( D_METHOD("get_dual_cell", "cell_ind"),   &MarchingCubesDualGd::get_dual_cell,      Variant::ARRAY );
+
+
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_nodes_qty" ), "set_max_nodes_qty", "get_max_nodes_qty" );
 }
 
@@ -165,6 +173,54 @@ void MarchingCubesDualGd::set_max_nodes_qty( int qty )
 int MarchingCubesDualGd::get_max_nodes_qty() const
 {
 	return cubes.max_nodes_qty;
+}
+
+int  MarchingCubesDualGd::get_nodes_qty() const
+{
+	const int ret = cubes.get_nodes_qty();
+	return ret;
+}
+
+Array MarchingCubesDualGd::get_node( int node_ind ) const
+{
+	Array ret;
+	ret.resize(8);
+	Vector3d verts[8];
+	cubes.get_node( node_ind, verts );
+	for ( int i=0; i<8; i++ )
+	{
+		const Vector3d & v = verts[i];
+		const Vector3 at( v.x_, v.y_, v.z_ );
+		ret[i] = at;
+	}
+	return ret;
+}
+
+int  MarchingCubesDualGd::get_node_parent( int node_ind ) const
+{
+	const int ret = cubes.get_node_parent( node_ind );
+	return ret;
+}
+
+int  MarchingCubesDualGd::get_dual_cells_qty() const
+{
+	const int qty = cubes.get_dual_cells_qty();
+	return qty;
+}
+
+Array MarchingCubesDualGd::get_dual_cell( int cell_ind ) const
+{
+	Array ret;
+	ret.resize(8);
+	Vector3d verts[8];
+	cubes.get_dual_cell( cell_ind, verts );
+	for ( int i=0; i<8; i++ )
+	{
+		const Vector3d & v = verts[i];
+		const Vector3 at( v.x_, v.y_, v.z_ );
+		ret[i] = at;
+	}
+	return ret;
 }
 
 

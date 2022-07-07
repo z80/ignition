@@ -43,7 +43,7 @@ script = ExtResource( 1 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.52145 )
 far = 5000.0
 script = ExtResource( 2 )
-max_speed = Vector3( 50, 50, 50 )
+max_speed = Vector3( 5, 5, 5 )
 
 [node name="Mesh_0" type="MeshInstance" parent="."]
 material_override = SubResource( 4 )
