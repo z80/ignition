@@ -12,6 +12,10 @@ namespace Ign
 void MarchingCubesDualGd::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_source_transform", "se3"),                              &MarchingCubesDualGd::set_source_transform );
+
+	ClassDB::bind_method( D_METHOD("set_split_precision", "rel_diff"),                          &MarchingCubesDualGd::set_split_precision );
+	ClassDB::bind_method( D_METHOD("get_split_precision"),                                      &MarchingCubesDualGd::get_split_precision, Variant::REAL );
+
 	ClassDB::bind_method( D_METHOD("subdivide_source", "radius", "volume", "scaler"),                     &MarchingCubesDualGd::subdivide_source, Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
@@ -28,7 +32,8 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_dual_cell", "cell_ind"),   &MarchingCubesDualGd::get_dual_cell,      Variant::ARRAY );
 
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_nodes_qty" ), "set_max_nodes_qty", "get_max_nodes_qty" );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "split_precision" ), "set_split_precision", "get_split_precision" );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_nodes_qty" ),   "set_max_nodes_qty",   "get_max_nodes_qty" );
 }
 
 MarchingCubesDualGd::MarchingCubesDualGd()
@@ -45,6 +50,18 @@ void MarchingCubesDualGd::set_source_transform( const Ref<Se3Ref> & se3 )
 	const SE3 & se3_inst = se3.ptr()->se3;
 	cubes.set_source_transform( se3_inst );
 }
+
+void MarchingCubesDualGd::set_split_precision( real_t rel_diff )
+{
+	cubes.set_split_precision( rel_diff );
+}
+
+real_t MarchingCubesDualGd::get_split_precision() const
+{
+	const real_t ret = cubes.get_split_precision();
+	return ret;
+}
+
 
 bool MarchingCubesDualGd::subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler )
 {

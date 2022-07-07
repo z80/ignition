@@ -25,6 +25,10 @@ public:
 	~MarchingCubesDualGd();
 
 	void set_source_transform( const Ref<Se3Ref> & se3 );
+
+	void set_split_precision( real_t rel_diff );
+	real_t get_split_precision() const;
+
 	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 	Array materials_used() const;
 	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );

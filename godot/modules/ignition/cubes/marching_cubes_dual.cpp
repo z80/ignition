@@ -105,6 +105,16 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
     return true;
 }
 
+void MarchingCubesDual::set_split_precision( Float rel_diff )
+{
+	max_rel_diff = rel_diff;
+}
+
+Float MarchingCubesDual::get_split_precision() const
+{
+	return max_rel_diff;
+}
+
 bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource * source, const DistanceScalerBase * scaler )
 {
 	const VectorInt center_int = node->center();

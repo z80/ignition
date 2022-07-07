@@ -17,19 +17,62 @@ func _ready():
 	
 	
 	
-	#source_tree = VolumeSourceTreeGd.new()
+	source_tree = VolumeSourceTreeGd.new()
 	
 	source = VolumeSourceScriptGd.new()
-	var script: Resource = preload( "res://volume_source_sphere_3.gd" )
+	var script: Resource = preload( "res://volume_source_sphere.gd" )
 	source.set_script( script )
-	source.bounding_radius = 11.0
-	source.radius          = 10.0
-	source.node_sz         = 1.0
-	source.material_index  = 0
+	source.bounding_radius = 4.5
+	source.radius = 4.0
+	source.node_sz = 1.0
 	
 	var se3: Se3Ref = Se3Ref.new()
 	se3.r = Vector3.ZERO
 	source.se3 = se3
+	
+	source.material_index = 0
+	
+	source_tree.add_source( source )
+
+
+
+#	source = VolumeSourceScriptGd.new()
+#	script = preload( "res://volume_source_sphere.gd" )
+#	source.set_script( script )
+#	source.bounding_radius = 5.0
+#	source.inverted = false
+#
+#	se3.r = Vector3( 3.0, 1.5, 0.0 )
+#	source.se3 = se3
+#
+#	source.material_index = 0
+#
+#	source_tree.add_source( source )
+
+
+
+
+
+	source = VolumeSourceScriptGd.new()
+	script = preload( "res://volume_source_sphere.gd" )
+	source.set_script( script )
+	source.bounding_radius = 2.5
+	source.radius = 2.0
+	source.node_sz = 0.05
+
+	se3.r = Vector3( 0.0, 2.5, 0.0 )
+	source.se3 = se3
+
+	source.inverted = true
+
+	source.material_index = 1
+	source.material_priority = 1
+
+	source_tree.add_source( source )
+
+
+
+	source_tree.subdivide( 100.0 )
 	
 	
 
@@ -39,9 +82,10 @@ func _ready():
 	se3.r = Vector3( 0.0, 0.0, 0.0 )
 	cubes.set_source_transform( se3 )
 
-	cubes.subdivide_source( 11.0, source, scaler )
+	cubes.split_precision = 0.0001
+	cubes.subdivide_source( 11.0, source_tree, scaler )
 	
-	_draw_octree_nodes()
+	#_draw_octree_nodes()
 	_draw_dual_cells()
 	
 	var material_inds: Array = cubes.materials_used()
