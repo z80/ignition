@@ -24,7 +24,7 @@ func _ready():
 	source.set_script( script )
 	source.bounding_radius = 11.0
 	source.radius          = 10.0
-	source.node_sz         = 3.0
+	source.node_sz         = 1.0
 	source.material_index  = 0
 	
 	var se3: Se3Ref = Se3Ref.new()
@@ -41,6 +41,8 @@ func _ready():
 
 	cubes.subdivide_source( 11.0, source, scaler )
 	
+	_draw_octree_nodes()
+	_draw_dual_cells()
 	
 	var material_inds: Array = cubes.materials_used()
 	
@@ -56,6 +58,37 @@ func _ready():
 		cubes.apply_to_mesh( ind, m, scaler )
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+
+
+
+func _draw_octree_nodes():
+	var drawer: NodeDrawer = get_node("OctreeNodes")
+	
+	drawer.clear_nodes()
+	
+	var qty: int = cubes.get_nodes_qty()
+	for i in range(qty):
+		var n: Array = cubes.get_node( i )
+		drawer.add_node( n )
+	
+	drawer.draw()
+
+
+
+func _draw_dual_cells():
+	var drawer: NodeDrawer = get_node("DualCells")
+	
+	drawer.clear_nodes()
+	
+	var qty: int = cubes.get_dual_cells_qty()
+	for i in range(qty):
+		var n: Array = cubes.get_dual_cell( i )
+		drawer.add_node( n )
+	
+	drawer.draw()
+
+
+
+
+
+

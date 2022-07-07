@@ -8,6 +8,16 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "ImmediateGeometry",
+"class": "NodeDrawer",
+"language": "GDScript",
+"path": "res://node_drawer/node_drawer.gd"
+} ]
+_global_script_class_icons={
+"NodeDrawer": ""
+}
+
 [application]
 
 config/name="test_mcs"

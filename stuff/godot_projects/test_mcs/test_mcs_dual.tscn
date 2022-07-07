@@ -1,7 +1,8 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://test_mcs_dual.gd" type="Script" id=1]
 [ext_resource path="res://maujoe.camera_control/scripts/camera_control.gd" type="Script" id=2]
+[ext_resource path="res://node_drawer/node_drawer.gd" type="Script" id=3]
 
 [sub_resource type="OpenSimplexNoise" id=2]
 
@@ -36,6 +37,14 @@ uv2_triplanar = true
 
 [sub_resource type="SphereMesh" id=1]
 
+[sub_resource type="SpatialMaterial" id=8]
+flags_unshaded = true
+albedo_color = Color( 0, 0.788235, 1, 1 )
+
+[sub_resource type="SpatialMaterial" id=9]
+flags_unshaded = true
+albedo_color = Color( 1, 0, 0.211765, 1 )
+
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 1 )
 
@@ -55,3 +64,11 @@ material_override = SubResource( 7 )
 transform = Transform( 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0 )
 mesh = SubResource( 1 )
 material/0 = null
+
+[node name="OctreeNodes" type="ImmediateGeometry" parent="."]
+script = ExtResource( 3 )
+material = SubResource( 8 )
+
+[node name="DualCells" type="ImmediateGeometry" parent="."]
+script = ExtResource( 3 )
+material = SubResource( 9 )

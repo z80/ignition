@@ -151,7 +151,7 @@ bool MarchingCubesDualNode::at_bottom( const MarchingCubesDualNode * root ) cons
 
 bool MarchingCubesDualNode::at_top( const MarchingCubesDualNode * root ) const
 {
-    const bool ret = ((at.x+size) >= (root->at.x+root->size));
+    const bool ret = ((at.y+size) >= (root->at.y+root->size));
     return ret;
 }
 
