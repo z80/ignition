@@ -941,16 +941,30 @@ void MarchingCubesDual::add_dual_cell( const VectorInt & c0, const VectorInt & c
 	corners[6] = c6;
 	corners[7] = c7;
 
+	Vector3d ats[8];
+	Float values[8];
+	int pos_qty = 0;
+	int neg_qty = 0;
+	for ( int i=0; i<8; i++ )
+	{
+		ats[i]     = at_in_source( corners[i] );
+		values[i]  = value_at( source, corners[i], ats[i] );
+		if ( values[i] > iso_level )
+			pos_qty += 1;
+		else if ( values[i] < iso_level )
+			neg_qty += 1;
+	}
+	const bool create = ( (pos_qty > 0) && (neg_qty > 0) );
+	if ( !create )
+		return;
+
 	MarchingCubesDualCell * cell = create_dual_cell();
 	for ( int i=0; i<8; i++ )
 	{
-		const VectorInt & at_int = corners[i];
-		const Vector3d at        = at_in_source( at_int );
-		const Vector3d at_scaled = at_in_source_scaled( at_int, scaler );
-		const Float value        = value_at( source, at_int, at );
-		cell->values[i]          = value;
-		cell->vertices_int[i]    = at_int;
-		cell->vertices[i]        = at;
+		const Vector3d at_scaled = at_in_source_scaled( corners[i], scaler );
+		cell->values[i]          = values[i];
+		cell->vertices_int[i]    = corners[i];
+		cell->vertices[i]        = ats[i];
 		cell->vertices_scaled[i] = at_scaled;
 	}
 }
