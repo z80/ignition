@@ -11,9 +11,9 @@ var meshes: Array = []
 func _ready():
 	meshes = [ get_node("Mesh_0" ), get_node("Mesh_1") ]
 	
-#	scaler = DistanceScalerRef.new()
-#	scaler.plain_distance = 150.0
-#	scaler.log_scale      = 10.0
+	scaler = DistanceScalerRef.new()
+	scaler.plain_distance = 150.0
+	scaler.log_scale      = 10.0
 	
 	
 	
@@ -22,9 +22,10 @@ func _ready():
 	source = VolumeSourceScriptGd.new()
 	var script: Resource = preload( "res://volume_source_sphere.gd" )
 	source.set_script( script )
-	source.bounding_radius = 45.0
-	source.radius = 40.0
-	source.node_sz = 20.0
+	source.bounding_radius = 450.0
+	source.radius = 400.0
+	source.node_sz_max = 200.0
+	source.node_sz_min = 20.0
 	
 	var se3: Se3Ref = Se3Ref.new()
 	se3.r = Vector3.ZERO
@@ -56,11 +57,12 @@ func _ready():
 	source = VolumeSourceScriptGd.new()
 	script = preload( "res://volume_source_sphere.gd" )
 	source.set_script( script )
-	source.bounding_radius = 25.0
-	source.radius = 20.0
-	source.node_sz = 1.0
+	source.bounding_radius = 250.0
+	source.radius = 200.0
+	source.node_sz_max = 100.0
+	source.node_sz_min = 10.0
 
-	se3.r = Vector3( 0.0, 25.0, 0.0 )
+	se3.r = Vector3( 0.0, 250.0, 0.0 )
 	source.se3 = se3
 
 	source.inverted = true
@@ -72,18 +74,18 @@ func _ready():
 
 
 
-	source_tree.subdivide( 100.0 )
+	source_tree.subdivide( 1000.0 )
 	
 	
 
 
 	cubes = MarchingCubesDualGd.new()
 	cubes.max_nodes_qty = 200000
-	se3.r = Vector3( 0.0, 0.0, -40.0 )
+	se3.r = Vector3( 0.0, 0.0, -400.0 )
 	cubes.set_source_transform( se3 )
 
 	cubes.split_precision = 0.01
-	cubes.subdivide_source( 44.0, source_tree, scaler )
+	cubes.subdivide_source( 440.0, source_tree, scaler )
 	
 	#_draw_octree_nodes()
 	_draw_dual_cells()

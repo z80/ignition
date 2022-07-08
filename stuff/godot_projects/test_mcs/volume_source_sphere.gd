@@ -6,7 +6,8 @@ const cylinder_a: Vector3 = Vector3.FORWARD
 
 var material_index: int    = 0
 var material_priority: int = 0
-var node_sz: float = 0.25
+var node_sz_max: float = 1.25
+var node_sz_min: float = 0.25
 var radius: float  = 3.0
 
 
@@ -23,19 +24,19 @@ func value( at: Vector3=Vector3() ):
 
 
 func max_node_size():
-	return node_sz
+	return node_sz_max
 
 
 func min_node_size():
-	return node_sz
+	return node_sz_min
 
 
 func max_node_size_local( at: Vector3 ):
-	return node_sz
+	return node_sz_max
 
 
 func min_node_size_local( at: Vector3 ):
-	return node_sz
+	return node_sz_min
 
 
 func material( at: Vector3 ):
