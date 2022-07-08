@@ -402,7 +402,8 @@ void MarchingCubesDual::get_node( int node_ind, Vector3d * corners ) const
 	const MarchingCubesDualNode * node = _octree_nodes[node_ind];
 	for ( int i=0; i<8; i++ )
 	{
-		corners[i] = node->vertices[i];
+		const Vector3d v = source_se3.q_ * node->vertices[i] + source_se3.r_;
+		corners[i] = v;
 	}
 }
 
@@ -428,7 +429,8 @@ void MarchingCubesDual::get_dual_cell( int cell_ind, Vector3d * corners ) const
 	const MarchingCubesDualCell * cell = _octree_dual_cells[cell_ind];
 	for ( int i=0; i<8; i++ )
 	{
-		corners[i] = cell->vertices[i];
+		const Vector3d v = source_se3.q_ * cell->vertices[i] + source_se3.r_;
+		corners[i] = v;
 	}
 }
 
