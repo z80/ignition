@@ -27,7 +27,7 @@ public:
 
     virtual void fill_source_references();
 
-    const std::vector<MarchingVolumeObject *> & pick_objects( const Vector3d & at );
+    const std::vector<const MarchingVolumeObject *> & pick_objects( const Vector3d & at );
 
     // These three are supposed to be used in simulation loop.
     // "subdivide" should be called once.
@@ -49,7 +49,7 @@ public:
 
     std::vector<MarchingVolumeObject *> sources;
     std::vector<int>                    query_result_inds;
-    std::vector<MarchingVolumeObject *> query_result;
+    std::vector<const MarchingVolumeObject *> query_result;
     std::vector<CubeTreeNode>           nodes;
 
     // Maximum subdivision level.

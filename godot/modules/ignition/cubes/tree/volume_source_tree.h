@@ -24,10 +24,10 @@ public:
 
 	virtual Float value( const Vector3d & at );
 
-	virtual Float max_node_size() const;
-	virtual Float min_node_size() const;
-	virtual Float max_node_size_local( const Vector3d & at );
-	virtual Float min_node_size_local( const Vector3d & at );
+	virtual Float max_node_size() const override;
+	virtual Float min_node_size() const override;
+	virtual Float max_node_size_local( const Vector3d & at ) const override;
+	virtual Float min_node_size_local( const Vector3d & at ) const override;
 
 	virtual int material( const Vector3d & at, int * priority = nullptr );
 

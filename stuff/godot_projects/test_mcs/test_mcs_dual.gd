@@ -24,7 +24,7 @@ func _ready():
 	source.set_script( script )
 	source.bounding_radius = 4.5
 	source.radius = 4.0
-	source.node_sz = 1.0
+	source.node_sz = 2.0
 	
 	var se3: Se3Ref = Se3Ref.new()
 	se3.r = Vector3.ZERO
