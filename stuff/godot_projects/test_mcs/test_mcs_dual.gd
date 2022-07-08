@@ -22,9 +22,9 @@ func _ready():
 	source = VolumeSourceScriptGd.new()
 	var script: Resource = preload( "res://volume_source_sphere.gd" )
 	source.set_script( script )
-	source.bounding_radius = 4.5
-	source.radius = 4.0
-	source.node_sz = 2.0
+	source.bounding_radius = 45.0
+	source.radius = 40.0
+	source.node_sz = 20.0
 	
 	var se3: Se3Ref = Se3Ref.new()
 	se3.r = Vector3.ZERO
@@ -56,11 +56,11 @@ func _ready():
 	source = VolumeSourceScriptGd.new()
 	script = preload( "res://volume_source_sphere.gd" )
 	source.set_script( script )
-	source.bounding_radius = 2.5
-	source.radius = 2.0
-	source.node_sz = 0.1
+	source.bounding_radius = 25.0
+	source.radius = 20.0
+	source.node_sz = 1.0
 
-	se3.r = Vector3( 0.0, 2.5, 0.0 )
+	se3.r = Vector3( 0.0, 25.0, 0.0 )
 	source.se3 = se3
 
 	source.inverted = true
@@ -79,11 +79,11 @@ func _ready():
 
 	cubes = MarchingCubesDualGd.new()
 	cubes.max_nodes_qty = 200000
-	se3.r = Vector3( 0.0, 0.0, 0.0 )
+	se3.r = Vector3( 0.0, 0.0, -40.0 )
 	cubes.set_source_transform( se3 )
 
 	cubes.split_precision = 0.01
-	cubes.subdivide_source( 11.0, source_tree, scaler )
+	cubes.subdivide_source( 44.0, source_tree, scaler )
 	
 	#_draw_octree_nodes()
 	_draw_dual_cells()
