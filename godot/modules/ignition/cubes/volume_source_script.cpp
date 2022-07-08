@@ -90,7 +90,7 @@ Float VolumeSourceScript::min_node_size() const
 	return ret;
 }
 
-Float VolumeSourceScript::max_node_size_local( const Vector3d & at ) const
+Float VolumeSourceScript::max_node_size_local( const Vector3d & at )
 {
 	if ( !has_script() )
 	{
@@ -112,7 +112,7 @@ Float VolumeSourceScript::max_node_size_local( const Vector3d & at ) const
 	return ret;
 }
 
-Float VolumeSourceScript::min_node_size_local( const Vector3d & at ) const
+Float VolumeSourceScript::min_node_size_local( const Vector3d & at )
 {
 	if ( !has_script() )
 	{

@@ -24,8 +24,8 @@ public:
 
 	Float max_node_size() const override;
 	Float min_node_size() const override;
-	Float max_node_size_local( const Vector3d & at ) const override;
-	Float min_node_size_local( const Vector3d & at ) const override;
+	Float max_node_size_local( const Vector3d & at ) override;
+	Float min_node_size_local( const Vector3d & at ) override;
 
 	int material( const Vector3d & at, int * priority = nullptr );
 

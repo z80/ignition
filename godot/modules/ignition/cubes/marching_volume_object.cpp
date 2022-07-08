@@ -67,24 +67,24 @@ Float MarchingVolumeObject::min_node_size() const
     return 1.0;
 }
 
-Float MarchingVolumeObject::max_node_size_local( const Vector3d & at ) const
+Float MarchingVolumeObject::max_node_size_local( const Vector3d & at )
 {
     return 1.0;
 }
 
-Float MarchingVolumeObject::min_node_size_local( const Vector3d & at ) const
+Float MarchingVolumeObject::min_node_size_local( const Vector3d & at )
 {
 	return 1.0;
 }
 
-Float MarchingVolumeObject::max_node_size_at( const Vector3d & at ) const
+Float MarchingVolumeObject::max_node_size_at( const Vector3d & at )
 {
     const Vector3d l_at = local_at( at );
     const Float ret = max_node_size_local( l_at );
     return ret;
 }
 
-Float MarchingVolumeObject::min_node_size_at( const Vector3d & at ) const
+Float MarchingVolumeObject::min_node_size_at( const Vector3d & at )
 {
 	const Vector3d l_at = local_at( at );
 	const Float ret = min_node_size_local( l_at );

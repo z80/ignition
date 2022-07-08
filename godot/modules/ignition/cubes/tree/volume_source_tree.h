@@ -22,12 +22,12 @@ public:
     void set_max_items_per_node( int qty );
     int  get_max_items_per_node() const;
 
-	virtual Float value( const Vector3d & at );
+	virtual Float value( const Vector3d & at ) override;
 
 	virtual Float max_node_size() const override;
 	virtual Float min_node_size() const override;
-	virtual Float max_node_size_local( const Vector3d & at ) const override;
-	virtual Float min_node_size_local( const Vector3d & at ) const override;
+	virtual Float max_node_size_local( const Vector3d & at ) override;
+	virtual Float min_node_size_local( const Vector3d & at ) override;
 
 	virtual int material( const Vector3d & at, int * priority = nullptr );
 

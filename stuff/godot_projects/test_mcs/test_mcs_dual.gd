@@ -58,7 +58,7 @@ func _ready():
 	source.set_script( script )
 	source.bounding_radius = 2.5
 	source.radius = 2.0
-	source.node_sz = 0.05
+	source.node_sz = 0.1
 
 	se3.r = Vector3( 0.0, 2.5, 0.0 )
 	source.se3 = se3
@@ -82,7 +82,7 @@ func _ready():
 	se3.r = Vector3( 0.0, 0.0, 0.0 )
 	cubes.set_source_transform( se3 )
 
-	cubes.split_precision = 0.0001
+	cubes.split_precision = 0.01
 	cubes.subdivide_source( 11.0, source_tree, scaler )
 	
 	#_draw_octree_nodes()

@@ -43,7 +43,7 @@ void CubeTree::fill_source_references()
     sources.clear();
 }
 
-const std::vector<const MarchingVolumeObject *> & CubeTree::pick_objects( const Vector3d & at )
+const std::vector<MarchingVolumeObject *> & CubeTree::pick_objects( const Vector3d & at )
 {
     query_result.clear();
     query_result_inds.clear();

@@ -29,10 +29,10 @@ public:
 
     virtual Float max_node_size() const;
     virtual Float min_node_size() const;
-    virtual Float max_node_size_local( const Vector3d & at ) const;
-	virtual Float min_node_size_local( const Vector3d & at ) const;
-	Float max_node_size_at( const Vector3d & at ) const;
-	Float min_node_size_at( const Vector3d & at ) const;
+    virtual Float max_node_size_local( const Vector3d & at );
+	virtual Float min_node_size_local( const Vector3d & at );
+	Float max_node_size_at( const Vector3d & at );
+	Float min_node_size_at( const Vector3d & at );
 
     Vector3d local_at( const Vector3d & global_at ) const;
 
