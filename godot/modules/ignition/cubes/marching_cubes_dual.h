@@ -64,8 +64,9 @@ public:
 
     const Transform source_transform( const DistanceScalerBase * scaler = nullptr) const;
 
-    Float    node_size( const MarchingCubesDualNode * node ) const;
-    Vector3d at_in_source_scaled( const VectorInt & at_i, const DistanceScalerBase * scaler=nullptr ) const;
+    Float    node_size_min( const MarchingCubesDualNode * node ) const;
+	Float    node_size_max( const MarchingCubesDualNode * node ) const;
+	Vector3d at_in_source_scaled( const VectorInt & at_i, const DistanceScalerBase * scaler=nullptr ) const;
     Vector3d at_in_source( const VectorInt & at_i ) const;
 
     

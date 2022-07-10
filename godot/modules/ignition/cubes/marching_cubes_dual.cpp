@@ -45,8 +45,8 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 	_values_map.clear();
 	_normals_map.clear();
 
-    const int root_size_int = find_subdivision_levels( bounding_radius, source );
-	const int root_size_int_2 = root_size_int / 2;
+    const int root_size_int_2 = find_subdivision_levels( bounding_radius, source );
+	const int root_size_int = root_size_int_2 * 2;
 
 	MarchingCubesDualNode * root_node = create_node();
 	root_node->size = root_size_int;
@@ -120,14 +120,14 @@ bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource
 	const VectorInt center_int = node->center();
 	const Vector3d center      = at_in_source( center_int );
 	const Float max_sz         = source->max_node_size_at( center );
-	const Float node_sz        = node_size( node );
+	const Float node_sz_min    = node_size_min( node );
 	// If bigger than maximum allowed, subdivide.
-	if ( node_sz > max_sz )
+	if ( node_sz_min > max_sz )
 		return true;
 
 	// If smaller than minimum allowed, don't subdivide.
 	const Float min_sz = source->min_node_size_at( center );
-	if ( node_sz <= min_sz )
+	if ( node_sz_min <= min_sz )
 		return false;
 
 	// The size is in between. Use a heuristic.
@@ -160,13 +160,9 @@ bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource
 	//};
 	//const int qty = 19;
 
-	// Compute the distance to the source in these points.
-	// And compare with interpolated values.
-	compute_node_values( *node, source, scaler );
-
 	// But first check if the node has the surface.
 	// If not, there is no point subdividing.
-	const bool has_surface = node->has_surface();
+	const bool has_surface = node->has_surface( iso_level );
 	if ( !has_surface )
 		return false;
 
@@ -176,12 +172,17 @@ bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource
 		interpolated_value += node->values[i];
 	interpolated_value /= 8.0;
 
-	const Vector3d  center_float = at_in_source( center_int );
-	const Float actual_value     = value_at( source, center_int, center_float );
+	const Vector3d center_float = at_in_source( center_int );
+	const Float    actual_value = value_at( source, center_int, center_float );
 
-	const Float rel_diff = std::abs( actual_value - interpolated_value ) / node_sz;
+	const Float node_sz_max = node_size_max( node );
+	const Float rel_diff    = std::abs( actual_value - interpolated_value ) / node_sz_max;
 	// Compare this difference per unit node size with the threshold.
 	const bool do_split = ( rel_diff > max_rel_diff );
+
+	if ( !do_split )
+		int iii = 0;
+
 	return do_split;
 }
 
@@ -313,56 +314,107 @@ const Transform MarchingCubesDual::source_transform( const DistanceScalerBase * 
 
 
 
-Float MarchingCubesDual::node_size( const MarchingCubesDualNode * node ) const
+Float MarchingCubesDual::node_size_min( const MarchingCubesDualNode * node ) const
 {
 	 Float max_sz = (node->vertices_scaled[0] - node->vertices_scaled[1]).Length();
 
 	 const Float sz_12 = (node->vertices_scaled[1] - node->vertices_scaled[2]).Length();
-	 if ( max_sz < sz_12 )
+	 if ( max_sz > sz_12 )
 		 max_sz = sz_12;
 
 	 const Float sz_23 = (node->vertices_scaled[2] - node->vertices_scaled[3]).Length();
-	 if ( max_sz < sz_23 )
+	 if ( max_sz > sz_23 )
 		 max_sz = sz_23;
 
 	 const Float sz_30 = (node->vertices_scaled[3] - node->vertices_scaled[0]).Length();
-	 if ( max_sz < sz_30 )
+	 if ( max_sz > sz_30 )
 		 max_sz = sz_30;
 
 	 const Float sz_04 = (node->vertices_scaled[0] - node->vertices_scaled[4]).Length();
-	 if ( max_sz < sz_04 )
+	 if ( max_sz > sz_04 )
 		 max_sz = sz_04;
 
 	 const Float sz_15 = (node->vertices_scaled[1] - node->vertices_scaled[5]).Length();
-	 if ( max_sz < sz_15 )
+	 if ( max_sz > sz_15 )
 		 max_sz = sz_15;
 
 	 const Float sz_26 = (node->vertices_scaled[2] - node->vertices_scaled[6]).Length();
-	 if ( max_sz < sz_26 )
+	 if ( max_sz > sz_26 )
 		 max_sz = sz_26;
 
 	 const Float sz_37 = (node->vertices_scaled[3] - node->vertices_scaled[7]).Length();
-	 if ( max_sz < sz_37 )
+	 if ( max_sz > sz_37 )
 		 max_sz = sz_37;
 
 	 const Float sz_45 = (node->vertices_scaled[4] - node->vertices_scaled[5]).Length();
-	 if ( max_sz < sz_45 )
+	 if ( max_sz > sz_45 )
 		 max_sz = sz_45;
 
 	 const Float sz_56 = (node->vertices_scaled[5] - node->vertices_scaled[6]).Length();
-	 if ( max_sz < sz_56 )
+	 if ( max_sz > sz_56 )
 		 max_sz = sz_56;
 
 	 const Float sz_67 = (node->vertices_scaled[6] - node->vertices_scaled[7]).Length();
-	 if ( max_sz < sz_67 )
+	 if ( max_sz > sz_67 )
 		 max_sz = sz_67;
 
 	 const Float sz_74 = (node->vertices_scaled[7] - node->vertices_scaled[4]).Length();
-	 if ( max_sz < sz_74 )
+	 if ( max_sz > sz_74 )
 		 max_sz = sz_74;
 
 	 return max_sz;
 }
+
+Float MarchingCubesDual::node_size_max( const MarchingCubesDualNode * node ) const
+{
+	Float max_sz = (node->vertices_scaled[0] - node->vertices_scaled[1]).Length();
+
+	const Float sz_12 = (node->vertices_scaled[1] - node->vertices_scaled[2]).Length();
+	if ( max_sz < sz_12 )
+		max_sz = sz_12;
+
+	const Float sz_23 = (node->vertices_scaled[2] - node->vertices_scaled[3]).Length();
+	if ( max_sz < sz_23 )
+		max_sz = sz_23;
+
+	const Float sz_30 = (node->vertices_scaled[3] - node->vertices_scaled[0]).Length();
+	if ( max_sz < sz_30 )
+		max_sz = sz_30;
+
+	const Float sz_04 = (node->vertices_scaled[0] - node->vertices_scaled[4]).Length();
+	if ( max_sz < sz_04 )
+		max_sz = sz_04;
+
+	const Float sz_15 = (node->vertices_scaled[1] - node->vertices_scaled[5]).Length();
+	if ( max_sz < sz_15 )
+		max_sz = sz_15;
+
+	const Float sz_26 = (node->vertices_scaled[2] - node->vertices_scaled[6]).Length();
+	if ( max_sz < sz_26 )
+		max_sz = sz_26;
+
+	const Float sz_37 = (node->vertices_scaled[3] - node->vertices_scaled[7]).Length();
+	if ( max_sz < sz_37 )
+		max_sz = sz_37;
+
+	const Float sz_45 = (node->vertices_scaled[4] - node->vertices_scaled[5]).Length();
+	if ( max_sz < sz_45 )
+		max_sz = sz_45;
+
+	const Float sz_56 = (node->vertices_scaled[5] - node->vertices_scaled[6]).Length();
+	if ( max_sz < sz_56 )
+		max_sz = sz_56;
+
+	const Float sz_67 = (node->vertices_scaled[6] - node->vertices_scaled[7]).Length();
+	if ( max_sz < sz_67 )
+		max_sz = sz_67;
+
+	const Float sz_74 = (node->vertices_scaled[7] - node->vertices_scaled[4]).Length();
+	if ( max_sz < sz_74 )
+		max_sz = sz_74;
+
+	return max_sz;}
+
 
 
 Vector3d MarchingCubesDual::at_in_source_scaled( const VectorInt & at_i, const DistanceScalerBase * scaler ) const
@@ -449,10 +501,12 @@ void MarchingCubesDual::cleanup_nodes()
 
 int MarchingCubesDual::find_subdivision_levels( Float bounding_radius, VolumeSource * source )
 {
-	step = source->min_node_size();
+	// Minimum node size should correspond to integer size of 2.
+	step = source->min_node_size() * 0.5;
 	const Float max_sz = bounding_radius; // * 2.0;
 
-	int size_int = 2;
+	// Integer size of the half of minimum size should be 1.
+	int size_int = 1;
 	Float sz = step;
 	while (sz <= max_sz)
 	{
@@ -510,7 +564,7 @@ void MarchingCubesDual::compute_node_values( MarchingCubesDualNode & node, Volum
 		node.vertices[i]  = vert_d;
         // Store warped position.
         const Vector3d vert        = at_in_source_scaled( verts[i], scaler );
-        node.vertices_scaled[i]           = vert;
+        node.vertices_scaled[i]    = vert;
         node.values[i]             = value;
     }
 }

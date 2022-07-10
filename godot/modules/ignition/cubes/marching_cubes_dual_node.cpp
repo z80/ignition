@@ -66,7 +66,12 @@ bool MarchingCubesDualNode::has_children() const
 bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * source, const DistanceScalerBase * scaler )
 {
     if ( size <= 2 )
+	{
+		const bool has_surface = this->has_surface( tree->iso_level );
+		MarchingCubesDualNode * parent = this->parent_node;
+		const bool parent_split = tree->should_split( parent, source, scaler );
         return false;
+	}
 
     const bool should_split = tree->should_split( this, source, scaler );
     if ( !should_split )
@@ -112,16 +117,16 @@ const VectorInt MarchingCubesDualNode::center() const
     return c;
 }
 
-bool MarchingCubesDualNode::has_surface() const
+bool MarchingCubesDualNode::has_surface( Float iso_level ) const
 {
     int above_qty = 0;
     int below_qty = 0;
     for ( int i=0; i<8; i++ )
     {
         const Float v = values[i];
-        if ( v > 0.0 )
+        if ( v > iso_level )
             above_qty += 1;
-        else //if ( v <= 0.0 )
+        else if ( v < iso_level )
             below_qty += 1;
 
         if ( (above_qty > 0) && (below_qty > 0) )

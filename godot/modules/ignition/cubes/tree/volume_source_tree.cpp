@@ -119,6 +119,8 @@ Float VolumeSourceTree::max_node_size_local( const Vector3d & at )
 		if (sz > max_sz)
 			max_sz = sz;
 	}
+	if ( max_sz < 0.0 )
+		max_sz = _max_node_size;
 
 	return max_sz;
 }
@@ -131,7 +133,7 @@ Float VolumeSourceTree::min_node_size_local( const Vector3d & at )
 	if (qty < 1)
 		return min_sz;
 
-	min_sz = _max_node_size;
+	min_sz = -1.0;
 	for ( int i=0; i<qty; i++ )
 	{
 		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[i] );
@@ -142,9 +144,11 @@ Float VolumeSourceTree::min_node_size_local( const Vector3d & at )
 			continue;
 
 		const Float sz = vs->max_node_size_at( at );
-		if ( sz < min_sz )
+		if ( (min_sz < 0.0) || ( sz < min_sz ) )
 			min_sz = sz;
 	}
+	if (min_sz < 0.0)
+		min_sz = _min_node_size;
 
 	return min_sz;
 }

@@ -42,7 +42,7 @@ public:
 
     const VectorInt center() const;
 
-    bool has_surface() const;
+    bool has_surface( Float iso_level ) const;
 
     bool at_left( const MarchingCubesDualNode * root ) const;
     bool at_right( const MarchingCubesDualNode * root ) const;
