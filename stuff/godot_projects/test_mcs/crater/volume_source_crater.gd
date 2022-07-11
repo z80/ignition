@@ -4,7 +4,7 @@ extends Reference
 var planet_r: float = 10.0
 var crater_r: float = 1.0
 var crater_h: float = 1.0
-var neg_shift: float = 0.2
+var neg_shift: float = 0.8
 
 var node_sz_max: float = 10.0
 var node_sz_min: float = 1.0

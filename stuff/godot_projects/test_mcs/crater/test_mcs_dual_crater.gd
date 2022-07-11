@@ -11,9 +11,9 @@ var meshes: Array = []
 func _ready():
 	meshes = [ get_node("Mesh_0" ), get_node("Mesh_1") ]
 	
-	scaler = DistanceScalerRef.new()
-	scaler.plain_distance = 150.0
-	scaler.log_scale      = 10.0
+#	scaler = DistanceScalerRef.new()
+#	scaler.plain_distance = 150.0
+#	scaler.log_scale      = 10.0
 	
 	
 	
@@ -38,22 +38,16 @@ func _ready():
 
 
 	source = VolumeSourceScriptGd.new()
-	script = preload( "res://volume_source_sphere.gd" )
+	script = preload( "res://crater/volume_source_crater.gd" )
 	source.set_script( script )
-	source.bounding_radius = 250.0
-	source.radius = 200.0
-	source.node_sz_max = 200.0
-	source.node_sz_min = 10.0
-
-	se3.r = Vector3( 0.0, 550.0, 0.0 )
-	source.se3 = se3
-
-	source.inverted = true
-
-	source.material_index    = 1
-	source.material_priority = 1
-	source.material_only     = false
-
+	source.planet_r = 400.0
+	source.crater_r = 50.0
+	source.crater_h = 20.0
+	source.node_sz_max = 1.0
+	source.node_sz_min = 0.2
+#	source.material_index    = 1
+#	source.material_priority = 1
+#	source.material_only     = false
 	source_tree.add_source( source )
 
 

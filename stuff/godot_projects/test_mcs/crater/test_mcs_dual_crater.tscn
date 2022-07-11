@@ -72,3 +72,6 @@ material = SubResource( 8 )
 [node name="DualCells" type="ImmediateGeometry" parent="."]
 script = ExtResource( 2 )
 material = SubResource( 9 )
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.918743, 0.394856, 0, -0.394856, 0.918743, 0, 2.07626, 0 )
