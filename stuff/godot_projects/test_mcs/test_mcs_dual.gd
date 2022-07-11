@@ -11,9 +11,9 @@ var meshes: Array = []
 func _ready():
 	meshes = [ get_node("Mesh_0" ), get_node("Mesh_1") ]
 	
-#	scaler = DistanceScalerRef.new()
-#	scaler.plain_distance = 150.0
-#	scaler.log_scale      = 10.0
+	scaler = DistanceScalerRef.new()
+	scaler.plain_distance = 150.0
+	scaler.log_scale      = 10.0
 	
 	
 	
@@ -48,11 +48,11 @@ func _ready():
 	se3.r = Vector3( 0.0, 550.0, 0.0 )
 	source.se3 = se3
 
-	source.inverted = false #true
+	source.inverted = true
 
 	source.material_index    = 1
 	source.material_priority = 1
-	source.material_only     = true
+	source.material_only     = false
 
 	source_tree.add_source( source )
 
