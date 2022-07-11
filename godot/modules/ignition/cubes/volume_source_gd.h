@@ -24,6 +24,9 @@ public:
 	void set_inverted( bool en );
 	bool get_inverted() const;
 
+	void set_material_only( bool en );
+	bool get_material_only() const;
+
 	real_t max_node_size() const;
 	real_t min_node_size() const;
 	real_t max_node_size_local( const Vector3 & at ) const;

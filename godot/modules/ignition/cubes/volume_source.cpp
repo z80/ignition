@@ -7,7 +7,8 @@ namespace Ign
 VolumeSource::VolumeSource()
     : MarchingVolumeObject() 
 {
-	inverted = false;
+	inverted      = false;
+	material_only = false;
 }
 
 VolumeSource::~VolumeSource()
@@ -35,6 +36,16 @@ void VolumeSource::set_inverted( bool en )
 bool VolumeSource::get_inverted() const
 {
     return inverted;
+}
+
+void VolumeSource::set_material_ony( bool en )
+{
+	material_only = en;
+}
+
+bool VolumeSource::get_material_only() const
+{
+	return material_only;
 }
 
 int VolumeSource::material_global( const Vector3d & at, int * priority )

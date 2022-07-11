@@ -22,6 +22,9 @@ public:
     void set_inverted( bool en );
     bool get_inverted() const;
 
+	void set_material_ony( bool en );
+	bool get_material_only() const;
+
 	int material_global( const Vector3d & at, int * priority = nullptr );
 	virtual int material( const Vector3d & at, int * priority = nullptr );
 

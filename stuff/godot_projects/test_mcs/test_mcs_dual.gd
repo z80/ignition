@@ -50,8 +50,9 @@ func _ready():
 
 	source.inverted = false #true
 
-	source.material_index = 0
+	source.material_index    = 1
 	source.material_priority = 1
+	source.material_only     = true
 
 	source_tree.add_source( source )
 

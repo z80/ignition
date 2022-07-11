@@ -11,6 +11,9 @@ void VolumeSourceGd::_bind_methods()
     ClassDB::bind_method( D_METHOD("set_inverted", "en"), &VolumeSourceGd::set_inverted );
     ClassDB::bind_method( D_METHOD("get_inverted"),       &VolumeSourceGd::get_inverted, Variant::BOOL );
 
+	ClassDB::bind_method( D_METHOD("set_material_only", "en"), &VolumeSourceGd::set_material_only );
+	ClassDB::bind_method( D_METHOD("get_material_only"),       &VolumeSourceGd::get_material_only, Variant::BOOL );
+
     ClassDB::bind_method( D_METHOD("max_node_size"),      &VolumeSourceGd::max_node_size, Variant::REAL );
     ClassDB::bind_method( D_METHOD("min_node_size"),      &VolumeSourceGd::min_node_size, Variant::REAL );
 
@@ -23,6 +26,7 @@ void VolumeSourceGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("priority"),              &VolumeSourceGd::priority,        Variant::INT );
 
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "inverted" ),      "set_inverted",      "get_inverted" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "material_only" ), "set_material_only", "get_material_only" );
 }
 
 VolumeSourceGd::VolumeSourceGd()
@@ -60,6 +64,23 @@ bool VolumeSourceGd::get_inverted() const
 
 	const bool ret = source->get_inverted();
     return ret;
+}
+
+void VolumeSourceGd::set_material_only( bool en )
+{
+	if ( source == nullptr )
+		return;
+
+	source->set_material_ony( en );
+}
+
+bool VolumeSourceGd::get_material_only() const
+{
+	if ( source == nullptr )
+		return false;
+
+	const bool ret = source->get_material_only();
+	return ret;
 }
 
 real_t VolumeSourceGd::max_node_size() const

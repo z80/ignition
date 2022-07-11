@@ -57,6 +57,9 @@ Float VolumeSourceTree::value( const Vector3d & at )
 	for ( ; ind<qty; ind++ )
 	{
 		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[ind] );
+		const bool is_material_only = vs->get_material_only();
+		if ( is_material_only )
+			continue;
 		const bool is_inverted = vs->get_inverted();
 		if ( !is_inverted )
 		{
@@ -76,7 +79,10 @@ Float VolumeSourceTree::value( const Vector3d & at )
     for ( int i=ind; i<qty; i++ )
     {
 		VolumeSource * vs = reinterpret_cast<VolumeSource *>( objs[i] );
-        const bool is_inverted = vs->get_inverted();
+		const bool is_material_only = vs->get_material_only();
+		if ( is_material_only )
+			continue;
+		const bool is_inverted = vs->get_inverted();
         const Float dist_i = vs->value_global( at );
         if ( is_inverted )
             dist = std::max( dist, -dist_i );
