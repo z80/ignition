@@ -25,7 +25,7 @@ func _ready():
 	source.bounding_radius = 450.0
 	source.radius = 400.0
 	source.node_sz_max = 200.0
-	source.node_sz_min = 1.0
+	source.node_sz_min = 10.0
 	
 	var se3: Se3Ref = Se3Ref.new()
 	se3.r = Vector3.ZERO
@@ -37,23 +37,23 @@ func _ready():
 
 
 
-#	source = VolumeSourceScriptGd.new()
-#	script = preload( "res://volume_source_sphere.gd" )
-#	source.set_script( script )
-#	source.bounding_radius = 250.0
-#	source.radius = 200.0
-#	source.node_sz_max = 200.0
-#	source.node_sz_min = 50.0
-#
-#	se3.r = Vector3( 0.0, 250.0, 0.0 )
-#	source.se3 = se3
-#
-#	source.inverted = true
-#
-#	source.material_index = 1
-#	source.material_priority = 1
-#
-#	source_tree.add_source( source )
+	source = VolumeSourceScriptGd.new()
+	script = preload( "res://volume_source_sphere.gd" )
+	source.set_script( script )
+	source.bounding_radius = 250.0
+	source.radius = 200.0
+	source.node_sz_max = 200.0
+	source.node_sz_min = 10.0
+
+	se3.r = Vector3( 0.0, 550.0, 0.0 )
+	source.se3 = se3
+
+	source.inverted = false #true
+
+	source.material_index = 0
+	source.material_priority = 1
+
+	source_tree.add_source( source )
 
 
 
@@ -67,8 +67,8 @@ func _ready():
 	se3.r = Vector3( 0.0, 0.0, -400.0 )
 	cubes.set_source_transform( se3 )
 
-	cubes.split_precision = 0.00
-	cubes.subdivide_source( 440.0, source_tree, scaler )
+	cubes.split_precision = 0.02
+	cubes.subdivide_source( 1200.0, source_tree, scaler )
 	
 	var nodes_qty: int = cubes.get_nodes_qty()
 	var cells_qty: int = cubes.get_dual_cells_qty()

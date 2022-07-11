@@ -67,9 +67,9 @@ bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * 
 {
     if ( size <= 2 )
 	{
-		const bool has_surface = this->has_surface( tree->iso_level );
-		MarchingCubesDualNode * parent = this->parent_node;
-		const bool parent_split = tree->should_split( parent, source, scaler );
+		//const bool has_surface = this->has_surface( tree->iso_level );
+		//MarchingCubesDualNode * parent = this->parent_node;
+		//const bool parent_split = tree->should_split( parent, source, scaler );
         return false;
 	}
 

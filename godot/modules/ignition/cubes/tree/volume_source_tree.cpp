@@ -143,7 +143,7 @@ Float VolumeSourceTree::min_node_size_local( const Vector3d & at )
 		if ( dist > r )
 			continue;
 
-		const Float sz = vs->max_node_size_at( at );
+		const Float sz = vs->min_node_size_at( at );
 		if ( (min_sz < 0.0) || ( sz < min_sz ) )
 			min_sz = sz;
 	}

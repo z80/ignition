@@ -180,8 +180,8 @@ bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource
 	// Compare this difference per unit node size with the threshold.
 	const bool do_split = ( rel_diff > max_rel_diff );
 
-	if ( !do_split )
-		int iii = 0;
+	//if ( !do_split )
+	//	int iii = 0;
 
 	return do_split;
 }
