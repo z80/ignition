@@ -21,6 +21,12 @@ bool operator<( const DualCellOctreeNodePair & a, const DualCellOctreeNodePair &
 	return ret;
 }
 
+bool operator<( const OctreeNodeFaceInd & a, const OctreeNodeFaceInd & b )
+{
+	const bool ret = ( a.node < b.node );
+	return ret;
+}
+
 
 
 MarchingCubesDual::MarchingCubesDual()

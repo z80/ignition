@@ -83,6 +83,47 @@ bool operator<( const DualCellOctreeNodePair & a, const DualCellOctreeNodePair &
 
 
 
+
+// And this one is for holding references where
+// in all faces array are faces belonging to this octreenode.
+
+class OctreeNodeFaceInd
+{
+public:
+	MarchingCubesDualNode * node;
+	int                     face_ind;
+
+	OctreeNodeFaceInd()
+	{
+		node = nullptr;
+		face_ind = -1;
+	}
+
+	~OctreeNodeFaceInd()
+	{
+	}
+
+	OctreeNodeFaceInd( const OctreeNodeFaceInd & inst )
+	{
+		*this = inst;
+	}
+
+	const OctreeNodeFaceInd & operator=( const OctreeNodeFaceInd & inst )
+	{
+		if ( this != &inst )
+		{
+			node     = inst.node;
+			face_ind = inst.face_ind;
+		}
+
+		return *this;
+	}
+};
+
+bool operator<( const OctreeNodeFaceInd & a, const OctreeNodeFaceInd & b );
+
+
+
 class MarchingCubesDual
 {
 public:
