@@ -37,6 +37,51 @@ struct MaterialWithPriorityDual
 };
 
 
+// This one is for holding the correspondinces of
+// which octreenodes have contributed to dual cell creation.
+// After creating faces it is easier to determine what faces are inside
+// of what octree nodes.
+class DualCellOctreeNodePair
+{
+public:
+	MarchingCubesDualNode * node;
+	MarchingCubesDualCell * cell;
+
+	DualCellOctreeNodePair()
+	{
+		node = nullptr;
+		cell = nullptr;
+	}
+
+	~DualCellOctreeNodePair()
+	{
+	}
+
+	DualCellOctreeNodePair( const DualCellOctreeNodePair & inst )
+	{
+		*this = inst;
+	}
+
+	const DualCellOctreeNodePair & operator=( const DualCellOctreeNodePair & inst )
+	{
+		if ( this != &inst )
+		{
+			node = inst.node;
+			cell = inst.cell;
+		}
+		return *this;
+	}
+
+	DualCellOctreeNodePair( MarchingCubesDualCell * c, MarchingCubesDualNode * n )
+	{
+		cell = c;
+		node = n;
+	}
+};
+
+bool operator<( const DualCellOctreeNodePair & a, const DualCellOctreeNodePair & b );
+
+
 
 class MarchingCubesDual
 {

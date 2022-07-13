@@ -15,6 +15,13 @@
 namespace Ign
 {
 
+bool operator<( const DualCellOctreeNodePair & a, const DualCellOctreeNodePair & b )
+{
+	const bool ret = ( a.cell < b.cell );
+	return ret;
+}
+
+
 
 MarchingCubesDual::MarchingCubesDual()
 {
