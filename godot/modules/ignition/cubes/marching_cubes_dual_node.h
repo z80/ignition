@@ -10,6 +10,7 @@
 #include "core/math/face3.h"
 
 #include "se3.h"
+#include "cube_hash.h"
 
 
 #include <vector>
@@ -36,6 +37,7 @@ public:
 
     bool has_children() const;
     bool subdivide( MarchingCubesDual * tree, VolumeSource * source, const DistanceScalerBase * scaler );
+	void compute_hashes();
 
     // Initialize vertices and planes.
     void init( MarchingCubesDual * tree );
@@ -199,6 +201,9 @@ public:
     Vector3d  vertices_scaled[8];
     Vector3d  vertices[8];
     Float     values[8];
+
+	// Hash for setting assets (in future).
+	CubeHash hash;
 };
 
 }

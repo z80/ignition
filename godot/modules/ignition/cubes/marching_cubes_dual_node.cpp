@@ -46,6 +46,8 @@ const MarchingCubesDualNode & MarchingCubesDualNode::operator=( const MarchingCu
             vertices[i] = inst.vertices[i];
             values[i]       = inst.values[i];
         }
+
+		hash = inst.hash;
     }
 
     return *this;
@@ -103,6 +105,29 @@ bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * 
 		child_nodes[i]->subdivide( tree, source, scaler );
 
     return true;
+}
+
+void MarchingCubesDualNode::compute_hashes()
+{
+	if ( parent_node != nullptr )
+		hash = parent_node->hash;
+
+	else
+		hash.reset();
+
+	hash << at.x;
+	hash << at.y;
+	hash << at.z;
+
+	const bool has_children = this->has_children();
+	if ( has_children )
+	{
+		for ( int i=0; i<8; i++ )
+		{
+			MarchingCubesDualNode * ch = child_nodes[i];
+			ch->compute_hashes();
+		}
+	}
 }
 
 void MarchingCubesDualNode::init( MarchingCubesDual * tree )

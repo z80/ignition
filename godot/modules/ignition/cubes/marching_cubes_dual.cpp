@@ -54,6 +54,7 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 	compute_node_values( *root_node, source, scaler );
 
 	root_node->subdivide( this, source, scaler );
+	root_node->compute_hashes();
 
 	node_proc( root_node, source, scaler );
 
