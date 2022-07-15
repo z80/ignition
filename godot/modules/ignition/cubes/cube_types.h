@@ -253,6 +253,7 @@ public:
 };
 
 
+class MarchingCubesDualCell;
 
 class NodeFace
 {
@@ -260,6 +261,8 @@ public:
 	Face3       face;
 	// Node edges on which face vertices lay.
 	NodeEdgeInt node_edges[3];
+	// Cell this face has been created with.
+	MarchingCubesDualCell * cell;
 
 	NodeFace()
 	{}
@@ -269,6 +272,7 @@ public:
 		node_edges[0] = na;
 		node_edges[1] = nb;
 		node_edges[2] = nc;
+		cell = nullptr;
 	}
 	~NodeFace()
 	{}
@@ -281,6 +285,7 @@ public:
 			{
 				node_edges[i] = inst.node_edges[i];
 			}
+			cell = inst.cell;
 		}
 
 		return *this;
@@ -290,6 +295,8 @@ public:
 		*this = inst;
 	}
 };
+
+bool operator<( const NodeFace & a, const NodeFace & b );
 
 
 

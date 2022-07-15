@@ -11,6 +11,11 @@ VectorInt operator+( const VectorInt & a, const VectorInt & b )
 	return ret;
 }
 
+bool operator<( const NodeFace & a, const NodeFace & b )
+{
+	const bool ret = (a.cell < b.cell);
+	return ret;
+}
 
 
 

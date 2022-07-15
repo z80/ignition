@@ -72,10 +72,10 @@ public:
 		return *this;
 	}
 
-	DualCellOctreeNodePair( MarchingCubesDualCell * c, MarchingCubesDualNode * n )
+	DualCellOctreeNodePair( const MarchingCubesDualCell * c, const MarchingCubesDualNode * n )
 	{
-		cell = c;
-		node = n;
+		cell = const_cast<MarchingCubesDualCell *>( c );
+		node = const_cast<MarchingCubesDualNode *>( n );
 	}
 };
 
@@ -84,43 +84,6 @@ bool operator<( const DualCellOctreeNodePair & a, const DualCellOctreeNodePair &
 
 
 
-// And this one is for holding references where
-// in all faces array are faces belonging to this octreenode.
-
-class OctreeNodeFaceInd
-{
-public:
-	MarchingCubesDualNode * node;
-	int                     face_ind;
-
-	OctreeNodeFaceInd()
-	{
-		node = nullptr;
-		face_ind = -1;
-	}
-
-	~OctreeNodeFaceInd()
-	{
-	}
-
-	OctreeNodeFaceInd( const OctreeNodeFaceInd & inst )
-	{
-		*this = inst;
-	}
-
-	const OctreeNodeFaceInd & operator=( const OctreeNodeFaceInd & inst )
-	{
-		if ( this != &inst )
-		{
-			node     = inst.node;
-			face_ind = inst.face_ind;
-		}
-
-		return *this;
-	}
-};
-
-bool operator<( const OctreeNodeFaceInd & a, const OctreeNodeFaceInd & b );
 
 
 
@@ -200,8 +163,8 @@ public:
 		            const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source, const DistanceScalerBase * scaler );
 	void create_border_cells( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3,
 		                      const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source, const DistanceScalerBase * scaler );
-	void add_dual_cell( const VectorInt & c0, const VectorInt & c1, const VectorInt & c2, const VectorInt & c3, 
-		                const VectorInt & c4, const VectorInt & c5, const VectorInt & c6, const VectorInt & c7, VolumeSource * source, const DistanceScalerBase * scaler );
+	MarchingCubesDualCell * add_dual_cell( const VectorInt & c0, const VectorInt & c1, const VectorInt & c2, const VectorInt & c3, 
+		                                   const VectorInt & c4, const VectorInt & c5, const VectorInt & c6, const VectorInt & c7, VolumeSource * source, const DistanceScalerBase * scaler );
 
 
 	void create_faces_in_dual_grid( VolumeSource * source, const DistanceScalerBase * scaler );
@@ -225,6 +188,7 @@ public:
 
 	std::vector<MarchingCubesDualNode *>           _octree_nodes;
 	std::vector<MarchingCubesDualCell *>           _octree_dual_cells;
+	std::vector<DualCellOctreeNodePair>            _dual_cell_octree_node_pairs;
 
     typedef std::set<MarchingNode>                 MarchingSet;
     typedef std::set<MarchingNode>::iterator       MarchingSetIterator;
