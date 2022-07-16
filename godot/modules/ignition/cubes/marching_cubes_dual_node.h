@@ -204,6 +204,10 @@ public:
 
 	// Hash for setting assets (in future).
 	CubeHash hash;
+
+	// Faces.
+	int face_base_index;
+	int faces_qty;
 };
 
 }

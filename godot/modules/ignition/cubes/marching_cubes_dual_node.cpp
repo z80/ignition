@@ -16,6 +16,9 @@ MarchingCubesDualNode::MarchingCubesDualNode()
 
     for ( int i=0; i<8; i++ )
         values[i] = 0.0;
+
+	face_base_index = -1;
+	faces_qty       = 0;
 }
 
 MarchingCubesDualNode::~MarchingCubesDualNode()
@@ -48,6 +51,9 @@ const MarchingCubesDualNode & MarchingCubesDualNode::operator=( const MarchingCu
         }
 
 		hash = inst.hash;
+
+		face_base_index = inst.face_base_index;
+		faces_qty       = inst.faces_qty;
     }
 
     return *this;

@@ -83,6 +83,50 @@ bool operator<( const DualCellOctreeNodePair & a, const DualCellOctreeNodePair &
 
 
 
+class OctreeNodeFaceIndexPair
+{
+public:
+	MarchingCubesDualNode * node;
+	int                     face_index;
+
+	OctreeNodeFaceIndexPair()
+	{
+		node       = nullptr;
+		face_index = -1;
+	}
+
+	~OctreeNodeFaceIndexPair()
+	{
+	}
+
+	OctreeNodeFaceIndexPair( const MarchingCubesDualNode * n, int face_ind )
+	{
+		node       = const_cast<MarchingCubesDualNode *>( n );
+		face_index = face_ind;
+	}
+
+	OctreeNodeFaceIndexPair( const OctreeNodeFaceIndexPair & inst )
+	{
+		*this = inst;
+	}
+
+	const OctreeNodeFaceIndexPair & operator=( const OctreeNodeFaceIndexPair & inst )
+	{
+		if ( this != &inst )
+		{
+			node       = inst.node;
+			face_index = inst.face_index;
+		}
+
+		return *this;
+	}
+};
+
+bool operator<( const OctreeNodeFaceIndexPair & a, const OctreeNodeFaceIndexPair & b );
+
+
+
+
 
 
 
@@ -168,6 +212,7 @@ public:
 
 
 	void create_faces_in_dual_grid( VolumeSource * source, const DistanceScalerBase * scaler );
+	void assign_faces_to_octree_nodes();
 
     Vector3d interpolate( const Vector3d & v0, const Vector3d & v1, const Float val0, const Float val1 ) const;
 
@@ -189,6 +234,7 @@ public:
 	std::vector<MarchingCubesDualNode *>           _octree_nodes;
 	std::vector<MarchingCubesDualCell *>           _octree_dual_cells;
 	std::vector<DualCellOctreeNodePair>            _dual_cell_octree_node_pairs;
+	std::vector<OctreeNodeFaceIndexPair>           _octree_node_face_indices;
 
     typedef std::set<MarchingNode>                 MarchingSet;
     typedef std::set<MarchingNode>::iterator       MarchingSetIterator;

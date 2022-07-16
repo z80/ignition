@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <algorithm>
+#include <iterator>
 
 
 
@@ -17,7 +18,13 @@ namespace Ign
 
 bool operator<( const DualCellOctreeNodePair & a, const DualCellOctreeNodePair & b )
 {
-	const bool ret = ( a.cell < b.cell );
+	const bool ret = ( a.node < b.node );
+	return ret;
+}
+
+bool operator<( const OctreeNodeFaceIndexPair & a, const OctreeNodeFaceIndexPair & b )
+{
+	const bool ret = ( a.node < b.node );
 	return ret;
 }
 
@@ -69,9 +76,6 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 	// Creating dual grid cells.
 	node_proc( root_node, source, scaler );
 
-	// Sorting dual cell to octree node.
-	std::sort( _dual_cell_octree_node_pairs.begin(), _dual_cell_octree_node_pairs.end() );
-
 	// Cleanup.
 	_all_faces.clear();
 	_materials.clear();
@@ -79,6 +83,9 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 
 	// Create faces and assign material.
 	create_faces_in_dual_grid( source, scaler );
+
+	// Go over all nodes and assign faces.
+	assign_faces_to_octree_nodes();
 
 	// Normalize normals.
 	for ( NormalsMapIterator it=_normals_map.begin(); it!=_normals_map.end(); it++ )
@@ -1131,6 +1138,78 @@ void MarchingCubesDual::create_faces_in_dual_grid( VolumeSource * source, const 
 		const int material_index = cell_material( *cell, source, scaler );
 		create_faces( *cell, material_index );
 		_materials_set.insert( material_index );
+	}
+}
+
+
+void MarchingCubesDual::assign_faces_to_octree_nodes()
+{
+	// Cleanup face index assignments.
+	_octree_node_face_indices.clear();
+
+	// Sorting by octree node.
+	std::sort( _dual_cell_octree_node_pairs.begin(), _dual_cell_octree_node_pairs.end() );
+	// Sort faces by dual cell.
+	std::sort( _all_faces.begin(), _all_faces.end() );
+
+	const int faces_qty = _all_faces.size();
+	const int qty = _dual_cell_octree_node_pairs.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		DualCellOctreeNodePair & pair = _dual_cell_octree_node_pairs[i];
+		MarchingCubesDualCell * cell = pair.cell;
+		MarchingCubesDualNode * node = pair.node;
+
+		NodeFace nf;
+		nf.cell = cell;
+
+		std::vector<NodeFace>::const_iterator it = std::lower_bound( _all_faces.begin(), _all_faces.end(), nf );
+		if ( it == _all_faces.end() )
+			continue;
+
+		int face_ind = std::distance<>( _all_faces.cbegin(), it );
+
+		NodeFace & node_face = _all_faces[face_ind];
+		while ( node_face.cell == cell)
+		{
+			const OctreeNodeFaceIndexPair node_face_ind( node, face_ind );
+			_octree_node_face_indices.push_back( node_face_ind );
+
+			face_ind += 1;
+			if ( face_ind >= faces_qty )
+				break;
+			node_face = _all_faces[face_ind];
+		}
+	}
+
+	// Sort by node pointer.
+	std::sort( _octree_node_face_indices.begin(), _octree_node_face_indices.end() );
+
+	// Walk over all nodes. For leaf nodes search for lower bound and count how maby the same entries exist.
+	MarchingCubesDualNode * current_node = nullptr;
+	int faces_per_node = 0;
+	const int face_references_qty = _octree_node_face_indices.size();
+	for ( int i=0; i<face_references_qty; i++ )
+	{
+		OctreeNodeFaceIndexPair & pair = _octree_node_face_indices[i];
+		MarchingCubesDualNode * node = pair.node;
+		if ( node != current_node )
+		{
+			if ( current_node != nullptr )
+			{
+				current_node->faces_qty = faces_per_node;
+			}
+			current_node                  = node;
+			current_node->face_base_index = i;
+			faces_per_node                = 1;
+		}
+		else
+			faces_per_node += 1;
+	}
+	// After iterated over all array entries nned to assign.
+	if ( current_node != nullptr )
+	{
+		current_node->faces_qty = faces_per_node;
 	}
 }
 
