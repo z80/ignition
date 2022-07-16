@@ -54,6 +54,7 @@ const MarchingCubesDualNode & MarchingCubesDualNode::operator=( const MarchingCu
 
 		face_base_index = inst.face_base_index;
 		faces_qty       = inst.faces_qty;
+		aabb            = inst.aabb;
     }
 
     return *this;
@@ -73,6 +74,9 @@ bool MarchingCubesDualNode::has_children() const
 
 bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * source, const DistanceScalerBase * scaler )
 {
+	// Initialize AABB. It is for computing intersections.
+	this->init_aabb( tree );
+
     if ( size <= 2 )
 	{
 		//const bool has_surface = this->has_surface( tree->iso_level );
@@ -136,8 +140,12 @@ void MarchingCubesDualNode::compute_hashes()
 	}
 }
 
-void MarchingCubesDualNode::init( MarchingCubesDual * tree )
+void MarchingCubesDualNode::init_aabb( MarchingCubesDual * tree )
 {
+	const Vector3d v_at = tree->at_in_source( at );
+	const Vector3d v_to = tree->at_in_source( VectorInt( at.x+size, at.y+size, at.z+size ) );
+	const Vector3d sz = v_to - v_at;
+	aabb = AABB( Vector3(v_at.x_, v_at.y_, v_at.z_), Vector3(sz.x_, sz.y_, sz.z_) );
 }
 
 

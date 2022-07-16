@@ -7,7 +7,8 @@
 #include "data_types.h"
 #include "vector3d.h"
 #include "core/vector.h"
-#include "core/math/face3.h"
+//#include "core/math/face3.h"
+#include "core/math/aabb.h"
 
 #include "se3.h"
 #include "cube_hash.h"
@@ -40,7 +41,7 @@ public:
 	void compute_hashes();
 
     // Initialize vertices and planes.
-    void init( MarchingCubesDual * tree );
+    void init_aabb( MarchingCubesDual * tree );
 
     const VectorInt center() const;
 
@@ -208,6 +209,9 @@ public:
 	// Faces.
 	int face_base_index;
 	int faces_qty;
+
+	// AABB for computing intersections.
+	AABB aabb;
 };
 
 }

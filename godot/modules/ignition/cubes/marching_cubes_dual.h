@@ -140,6 +140,10 @@ public:
     void set_source_transform( const SE3 & se3 );
     bool subdivide_source( Float bounding_radius, VolumeSource * source, const DistanceScalerBase * scaler = nullptr );
 
+	bool intersect_with_node( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm );
+
+
+
 	// These two are called by nodes.
 	void set_split_precision( Float rel_diff );
 	Float get_split_precision() const;

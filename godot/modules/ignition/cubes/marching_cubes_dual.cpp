@@ -128,6 +128,14 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
     return true;
 }
 
+bool MarchingCubesDual::intersect_with_node( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm )
+{
+	const Vector3d local_start = inverted_source_se3.q_ * start + inverted_source_se3.r_;
+	const Vector3d local_end   = inverted_source_se3.q_ * end   + inverted_source_se3.r_;
+
+	return false;
+}
+
 void MarchingCubesDual::set_split_precision( Float rel_diff )
 {
 	max_rel_diff = rel_diff;
