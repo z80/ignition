@@ -36,12 +36,19 @@ public:
     MarchingCubesDualNode( const MarchingCubesDualNode & inst );
     const MarchingCubesDualNode & operator=( const MarchingCubesDualNode & inst );
 
+	void query_nodes( const MarchingCubesDualNode & node, int sz, std::vector<MarchingCubesDualNode *> & ret );
+
+	bool intersect_with_segment( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm );
+	bool intersect_with_ray( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & dir, Vector3d & at, Vector3d & norm );
+
     bool has_children() const;
     bool subdivide( MarchingCubesDual * tree, VolumeSource * source, const DistanceScalerBase * scaler );
 	void compute_hashes();
 
     // Initialize vertices and planes.
     void init_aabb( MarchingCubesDual * tree );
+
+	bool intersects( const MarchingCubesDualNode & other ) const;
 
     const VectorInt center() const;
 

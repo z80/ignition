@@ -60,6 +60,113 @@ const MarchingCubesDualNode & MarchingCubesDualNode::operator=( const MarchingCu
     return *this;
 }
 
+void MarchingCubesDualNode::query_nodes( const MarchingCubesDualNode & node, int sz, std::vector<MarchingCubesDualNode *> & ret )
+{
+	const bool intersects = this->intersects( node );
+	if ( !intersects )
+		return;
+
+	if ( size == sz )
+	{
+		ret.push_back( this );
+		return;
+	}
+
+	const bool has_ch = this->has_children();
+	if ( has_ch )
+	{
+		for ( int i=0; i<8; i++ )
+		{
+			MarchingCubesDualNode * ch = child_nodes[i];
+			ch->query_nodes( node, sz, ret );
+		}
+	}
+}
+
+bool MarchingCubesDualNode::intersect_with_segment( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm )
+{
+	const bool has_ch = this->has_children();
+	if ( has_ch )
+	{
+		for ( int i=0; i<8; i++ )
+		{
+			MarchingCubesDualNode * ch = child_nodes[i];
+			const bool ret = ch->intersect_with_segment( tree, start, end, at, norm );
+			if ( ret )
+				return true;
+		}
+		return false;
+	}
+
+	const Vector3 a( start.x_, start.y_, start.z_ );
+	const Vector3 b( end.x_, end.y_, end.z_ );
+
+	const bool intersects = this->aabb.intersects_segment( a, b );
+	if ( !intersects )
+		return false;
+
+	const int qty = faces_qty;
+	for ( int i=0; i<qty; i++ )
+	{
+		const int ind = face_base_index + i;
+		const NodeFace & f = tree->get_face_by_index( ind );
+
+		Vector3 pt;
+		const bool ret = f.face.intersects_segment( a, b, &pt );
+		if ( ret )
+		{
+			at = Vector3d( pt.x, pt.y, pt.z );
+			const Vector3 n = f.face.get_plane().get_normal();
+			norm = Vector3d( n.x, n.y, n.z );
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool MarchingCubesDualNode::intersect_with_ray( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & dir, Vector3d & at, Vector3d & norm )
+{
+	const bool has_ch = this->has_children();
+	if ( has_ch )
+	{
+		for ( int i=0; i<8; i++ )
+		{
+			MarchingCubesDualNode * ch = child_nodes[i];
+			const bool ret = ch->intersect_with_ray( tree, start, dir, at, norm );
+			if ( ret )
+				return true;
+		}
+		return false;
+	}
+
+	const Vector3 a( start.x_, start.y_, start.z_ );
+	const Vector3 b( dir.x_, dir.y_, dir.z_ );
+
+	const bool intersects = this->aabb.intersects_ray( a, b );
+	if ( !intersects )
+		return false;
+
+	const int qty = faces_qty;
+	for ( int i=0; i<qty; i++ )
+	{
+		const int ind = face_base_index + i;
+		const NodeFace & f = tree->get_face_by_index( ind );
+
+		Vector3 pt;
+		const bool ret = f.face.intersects_ray( a, b, &pt );
+		if ( ret )
+		{
+			at = Vector3d( pt.x, pt.y, pt.z );
+			const Vector3 n = f.face.get_plane().get_normal();
+			norm = Vector3d( n.x, n.y, n.z );
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool MarchingCubesDualNode::has_children() const
 {
     for ( int i=0; i<8; i++ )
@@ -146,6 +253,51 @@ void MarchingCubesDualNode::init_aabb( MarchingCubesDual * tree )
 	const Vector3d v_to = tree->at_in_source( VectorInt( at.x+size, at.y+size, at.z+size ) );
 	const Vector3d sz = v_to - v_at;
 	aabb = AABB( Vector3(v_at.x_, v_at.y_, v_at.z_), Vector3(sz.x_, sz.y_, sz.z_) );
+}
+
+
+bool MarchingCubesDualNode::intersects( const MarchingCubesDualNode & other ) const
+{
+	{
+		const int a = at.x;
+		const int b = other.at.x + other.size;
+		if ( a > b )
+			return false;
+	}
+	{
+		const int a = at.x + size;
+		const int b = other.at.x;
+		if ( a < b )
+			return false;
+	}
+
+	{
+		const int a = at.y;
+		const int b = other.at.y + other.size;
+		if ( a > b )
+			return false;
+	}
+	{
+		const int a = at.y + size;
+		const int b = other.at.y;
+		if ( a < b )
+			return false;
+	}
+
+	{
+		const int a = at.z;
+		const int b = other.at.z + other.size;
+		if ( a > b )
+			return false;
+	}
+	{
+		const int a = at.z + size;
+		const int b = other.at.z;
+		if ( a < b )
+			return false;
+	}
+
+	return true;
 }
 
 

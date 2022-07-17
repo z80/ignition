@@ -128,13 +128,129 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
     return true;
 }
 
-bool MarchingCubesDual::intersect_with_node( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm )
+int MarchingCubesDual::query_close_nodes( Float dist, Float max_size )
 {
+	const bool empty = _octree_nodes.empty();
+	if ( empty )
+		return false;
+
+	MarchingCubesDualNode * root = _octree_nodes[0];
+
+	int   sz_int = 1;
+	Float sz = step;
+	while ( sz < max_size )
+	{
+		const Float sz_2 = sz * 2.0;
+		if ( sz_2 > max_size )
+			break;
+
+		sz = sz_2;
+		sz_int *= 2;
+	}
+
+	int dist_int = 1;
+	sz = step;
+	while ( sz < max_size )
+	{
+		const Float sz_2 = sz * 2.0;
+		if ( sz_2 > max_size )
+			break;
+
+		sz = sz_2;
+		dist_int *= 2;
+	}
+
+	_octree_nodes_result.clear();
+
+	const Vector3d center = inverted_source_se3.r_;
+
+	const VectorInt center_int = VectorInt( static_cast<int>( center.x_ / step ),
+		                                    static_cast<int>( center.y_ / step ),
+		                                    static_cast<int>( center.z_ / step ) );
+	const int size_int         = static_cast<int>( dist / step ) * 2;
+
+	MarchingCubesDualNode node;
+	node.at   = center_int;
+	node.size = size_int;
+
+	root->query_nodes( node, sz, _octree_nodes_result );
+	const int results_qty = _octree_nodes_result.size();
+	return results_qty;
+}
+
+Vector3d MarchingCubesDual::center_direction() const
+{
+	return source_se3.r_;
+}
+
+MarchingCubesDualNode * MarchingCubesDual::get_close_node( int ind, Vector3d * center )
+{
+	if ( ind < 0 )
+		return nullptr;
+
+	if ( ind >= _octree_nodes_result.size() )
+		return nullptr;
+
+	MarchingCubesDualNode * ret = _octree_nodes_result[ind];
+	if ( center != nullptr )
+	{
+		const VectorInt ci = ret->center();
+		const Vector3d  c  = at_in_source( ci );
+		*center = c;
+	}
+	return ret;
+}
+
+bool MarchingCubesDual::intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm )
+{
+	if ( node == nullptr )
+	{
+		const bool empty = _octree_nodes.empty();
+		if ( empty )
+			return false;
+
+		node = _octree_nodes[0];
+	}
+
 	const Vector3d local_start = inverted_source_se3.q_ * start + inverted_source_se3.r_;
 	const Vector3d local_end   = inverted_source_se3.q_ * end   + inverted_source_se3.r_;
 
-	return false;
+	const bool ret = node->intersect_with_segment( this, local_start, local_end, at, norm );
+
+	if ( ret )
+	{
+		at   = source_se3.q_ * at + source_se3.r_;
+		norm = source_se3.q_ * norm;
+	}
+
+	return ret;
 }
+
+bool MarchingCubesDual::intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, Vector3d & at, Vector3d & norm )
+{
+	if ( node == nullptr )
+	{
+		const bool empty = _octree_nodes.empty();
+		if ( empty )
+			return false;
+
+		node = _octree_nodes[0];
+	}
+
+	const Vector3d local_start = inverted_source_se3.q_ * start + inverted_source_se3.r_;
+	const Vector3d local_dir   = inverted_source_se3.q_ * dir;
+
+	const bool ret = node->intersect_with_ray( this, local_start, local_dir, at, norm );
+
+	if ( ret )
+	{
+		at   = source_se3.q_ * at + source_se3.r_;
+		norm = source_se3.q_ * norm;
+	}
+
+	return ret;
+}
+
 
 void MarchingCubesDual::set_split_precision( Float rel_diff )
 {
@@ -1563,6 +1679,14 @@ void MarchingCubesDual::append_normal( const NodeEdgeInt & edge, const Vector3d 
 
 	const NormalsAndQty norms( n );
 	_normals_map[edge] = norms;
+}
+
+const NodeFace & MarchingCubesDual::get_face_by_index( int ind )
+{
+	const OctreeNodeFaceIndexPair & p = _octree_node_face_indices[ind];
+	const int ind_in_all_faces = p.face_index;
+	const NodeFace & ret = _all_faces[ind_in_all_faces];
+	return ret;
 }
 
 

@@ -140,9 +140,12 @@ public:
     void set_source_transform( const SE3 & se3 );
     bool subdivide_source( Float bounding_radius, VolumeSource * source, const DistanceScalerBase * scaler = nullptr );
 
-	bool intersect_with_node( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm );
+	int query_close_nodes( Float dist, Float max_size );
+	Vector3d center_direction() const;
+	MarchingCubesDualNode * get_close_node( int ind, Vector3d * center=nullptr );
 
-
+	bool intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm );
+	bool intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, Vector3d & at, Vector3d & norm );
 
 	// These two are called by nodes.
 	void set_split_precision( Float rel_diff );
@@ -235,7 +238,10 @@ public:
     // Store face normal for node edge.
     void append_normal( const NodeEdgeInt & edge, const Vector3d & n );
 
-	std::vector<MarchingCubesDualNode *>           _octree_nodes;
+	const NodeFace & get_face_by_index( int ind );
+
+	std::vector<MarchingCubesDualNode *>           _octree_nodes,
+		                                           _octree_nodes_result;
 	std::vector<MarchingCubesDualCell *>           _octree_dual_cells;
 	std::vector<DualCellOctreeNodePair>            _dual_cell_octree_node_pairs;
 	std::vector<OctreeNodeFaceIndexPair>           _octree_node_face_indices;
