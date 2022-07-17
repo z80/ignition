@@ -1,6 +1,8 @@
 
 #include "marching_cubes_dual_gd.h"
 
+#include "marching_cubes_dual_node.h"
+
 #include "scene/3d/mesh_instance.h"
 #include "scene/resources/mesh.h"
 #include "core/reference.h"
@@ -17,6 +19,14 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_split_precision"),                                      &MarchingCubesDualGd::get_split_precision, Variant::REAL );
 
 	ClassDB::bind_method( D_METHOD("subdivide_source", "radius", "volume", "scaler"),                     &MarchingCubesDualGd::subdivide_source, Variant::BOOL );
+
+	ClassDB::bind_method( D_METHOD("query_close_nodes", "dist", "max_size"), &MarchingCubesDualGd::query_close_nodes, Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("center_direction"),                      &MarchingCubesDualGd::center_direction,  Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("get_close_node", "ind"),                 &MarchingCubesDualGd::get_close_node,    Variant::ARRAY );
+
+	ClassDB::bind_method( D_METHOD("intersect_with_segment", "node_ind", "start", "end"), &MarchingCubesDualGd::intersect_with_segment, Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("intersect_with_ray", "node_ind", "start", "dir"),     &MarchingCubesDualGd::intersect_with_ray,     Variant::ARRAY );
+
 	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
 	ClassDB::bind_method( D_METHOD("collision_faces", "dist", "scaler"),                        &MarchingCubesDualGd::collision_faces );
@@ -71,6 +81,90 @@ bool MarchingCubesDualGd::subdivide_source( real_t bounding_radius, const Ref<Vo
 
 	const bool ret = cubes.subdivide_source( bounding_radius, volume_source, distance_scaler );
 	return ret;
+}
+
+Array MarchingCubesDualGd::query_close_nodes( real_t dist, real_t max_size )
+{
+	ret_array.clear();
+	const int qty = cubes.query_close_nodes( dist, max_size );
+	for ( int i=0; i<qty; i++ )
+	{
+		MarchingCubesDualNode * node = cubes.get_close_node( i, nullptr );
+		const uint64_t hash = node->hash.state();
+		const String s_hash = uitos( hash );
+		ret_array.push_back( s_hash );
+	}
+
+	return ret_array;
+}
+
+Vector3 MarchingCubesDualGd::center_direction() const
+{
+	const Vector3d c = cubes.center_direction();
+	const Vector3 ret( c.x_, c.y_, c.z_ );
+	return ret;
+}
+
+Array MarchingCubesDualGd::get_close_node( int ind )
+{
+	ret_array.clear();
+	Vector3d center;
+	MarchingCubesDualNode * node = cubes.get_close_node( ind, &center );
+	if ( node == nullptr )
+		return ret_array;
+
+	const Vector3 node_center( center.x_, center.y_, center.z_ );
+	ret_array.push_back( node_center );
+
+	const uint64_t hash = node->hash.state();
+	const String s_hash = uitos( hash );
+	ret_array.push_back( s_hash );
+
+	return ret_array;
+}
+
+Array MarchingCubesDualGd::intersect_with_segment( int node_ind, const Vector3 & start, const Vector3 & end )
+{
+	MarchingCubesDualNode * node = cubes.get_close_node( node_ind, nullptr );
+
+	const Vector3d d_start( start.x, start.y, start.z );
+	const Vector3d d_end( end.x, end.y, end.z );
+	Vector3d d_at, d_norm;
+	const bool intersects = cubes.intersect_with_segment( node, d_start, d_end, d_at, d_norm );
+
+	ret_array.push_back( intersects );
+
+	if ( intersects )
+	{
+		const Vector3 at( d_at.x_, d_at.y_, d_at.z_ );
+		const Vector3 norm( d_norm.x_, d_norm.y_, d_norm.z_ );
+		ret_array.push_back( at );
+		ret_array.push_back( norm );
+	}
+
+	return ret_array;
+}
+
+Array MarchingCubesDualGd::intersect_with_ray( int node_ind, const Vector3 & start, const Vector3 & dir )
+{
+	MarchingCubesDualNode * node = cubes.get_close_node( node_ind, nullptr );
+
+	const Vector3d d_start( start.x, start.y, start.z );
+	const Vector3d d_dir( dir.x, dir.y, dir.z );
+	Vector3d d_at, d_norm;
+	const bool intersects = cubes.intersect_with_ray( node, d_start, d_dir, d_at, d_norm );
+
+	ret_array.push_back( intersects );
+
+	if ( intersects )
+	{
+		const Vector3 at( d_at.x_, d_at.y_, d_at.z_ );
+		const Vector3 norm( d_norm.x_, d_norm.y_, d_norm.z_ );
+		ret_array.push_back( at );
+		ret_array.push_back( norm );
+	}
+
+	return ret_array;
 }
 
 Array MarchingCubesDualGd::materials_used() const

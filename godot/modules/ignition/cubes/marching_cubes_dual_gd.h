@@ -30,6 +30,15 @@ public:
 	real_t get_split_precision() const;
 
 	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
+
+	Array query_close_nodes( real_t dist, real_t max_size );
+	Vector3 center_direction() const;
+	Array get_close_node( int ind );
+
+	Array intersect_with_segment( int node_ind, const Vector3 & start, const Vector3 & end );
+	Array intersect_with_ray( int node_ind, const Vector3 & start, const Vector3 & dir );
+
+
 	Array materials_used() const;
 	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 	PoolVector3Array collision_faces( real_t dist, const Ref<DistanceScalerRef> & scaler_ref = Ref<DistanceScalerRef>() );
@@ -51,6 +60,7 @@ public:
 
 	PoolVector3Array vertices, normals;
 	PoolRealArray    tangents;
+	Array            ret_array;
 };
 
 
