@@ -263,9 +263,13 @@ public:
 	NodeEdgeInt node_edges[3];
 	// Cell this face has been created with.
 	MarchingCubesDualCell * cell;
+	// Materials index.
+	int material_ind;
 
 	NodeFace()
-	{}
+	{
+		material_ind = 0;
+	}
 	NodeFace( const Face3 & f, const NodeEdgeInt & na, const NodeEdgeInt & nb, const NodeEdgeInt & nc )
 	{
 		face = f;
@@ -273,6 +277,7 @@ public:
 		node_edges[1] = nb;
 		node_edges[2] = nc;
 		cell = nullptr;
+		material_ind = 0;
 	}
 	~NodeFace()
 	{}
@@ -286,6 +291,7 @@ public:
 				node_edges[i] = inst.node_edges[i];
 			}
 			cell = inst.cell;
+			material_ind = inst.material_ind;
 		}
 
 		return *this;

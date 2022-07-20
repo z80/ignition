@@ -78,7 +78,6 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 
 	// Cleanup.
 	_all_faces.clear();
-	_materials.clear();
 	_materials_set.clear();
 
 	// Create faces and assign material.
@@ -356,12 +355,13 @@ const std::set<int> & MarchingCubesDual::materials() const
 
 const std::vector<Vector3> & MarchingCubesDual::vertices( int material_ind )
 {
-	const unsigned int qty = _materials.size();
+	const unsigned int qty = _all_faces.size();
 	_ret_verts.clear();
 	_ret_verts.reserve(3*qty);
 	for ( unsigned int i=0; i<qty; i++ )
 	{
-		const int ind = _materials[i];
+		const NodeFace & f = _all_faces[i];
+		const int ind = f.material_ind;
 		if (ind != material_ind)
 			continue;
 		for ( int j=0; j<3; j++ )
@@ -376,12 +376,13 @@ const std::vector<Vector3> & MarchingCubesDual::vertices( int material_ind )
 
 const std::vector<Vector3> & MarchingCubesDual::normals( int material_ind )
 {
-	const unsigned int qty = _materials.size();
+	const unsigned int qty = _all_faces.size();
 	_ret_norms.clear();
 	_ret_norms.reserve(3*qty);
 	for ( unsigned int i=0; i<qty; i++ )
 	{
-		const int ind = _materials[i];
+		const NodeFace & f = _all_faces[i];
+		const int ind = f.material_ind;
 		if (ind != material_ind)
 			continue;
 		for ( int j=0; j<3; j++ )
@@ -396,12 +397,13 @@ const std::vector<Vector3> & MarchingCubesDual::normals( int material_ind )
 
 const std::vector<real_t>  & MarchingCubesDual::tangents( int material_ind )
 {
-	const unsigned int qty = _materials.size();
+	const unsigned int qty = _all_faces.size();
 	_ret_tangs.clear();
 	_ret_verts.reserve(4*qty);
 	for ( unsigned int i=0; i<qty; i++ )
 	{
-		const int ind = _materials[i];
+		const NodeFace & f = _all_faces[i];
+		const int ind = f.material_ind;
 		if (ind != material_ind)
 			continue;
 
@@ -1293,7 +1295,7 @@ void MarchingCubesDual::assign_faces_to_octree_nodes()
 
 		int face_ind = std::distance<>( _all_faces.cbegin(), it );
 
-		NodeFace & node_face = _all_faces[face_ind];
+		NodeFace node_face = _all_faces[face_ind];
 		while ( node_face.cell == cell)
 		{
 			const OctreeNodeFaceIndexPair node_face_ind( node, face_ind );
@@ -1306,10 +1308,12 @@ void MarchingCubesDual::assign_faces_to_octree_nodes()
 		}
 	}
 
+	//return;
+
 	// Sort by node pointer.
 	std::sort( _octree_node_face_indices.begin(), _octree_node_face_indices.end() );
 
-	// Walk over all nodes. For leaf nodes search for lower bound and count how maby the same entries exist.
+	// Walk over all nodes. For leaf nodes search for lower bound and count how many the same entries exist.
 	MarchingCubesDualNode * current_node = nullptr;
 	int faces_per_node = 0;
 	const int face_references_qty = _octree_node_face_indices.size();
@@ -1330,7 +1334,7 @@ void MarchingCubesDual::assign_faces_to_octree_nodes()
 		else
 			faces_per_node += 1;
 	}
-	// After iterated over all array entries nned to assign.
+	// After iterated over all array entries need to assign the last one's qty.
 	if ( current_node != nullptr )
 	{
 		current_node->faces_qty = faces_per_node;
@@ -1589,8 +1593,8 @@ void MarchingCubesDual::create_faces( const MarchingCubesDualCell & cell, int ma
 
 		NodeFace face( f, edge_a, edge_b, edge_c );
 		face.cell = const_cast<MarchingCubesDualCell *>( &cell );
+		face.material_ind = material_index;
 		_all_faces.push_back( face );
-		_materials.push_back( material_index );
 
 		const Vector3 norm = f.get_plane().normal;
 		append_normal( edge_a, norm );

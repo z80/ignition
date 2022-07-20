@@ -275,7 +275,6 @@ public:
     std::vector<Vector3>  _verts;
     std::vector<Vector3>  _norms;
     std::vector<real_t>   _tangs;
-    std::vector<int>      _materials;
 
     // For returning results.
     std::vector<Vector3>  _ret_verts;
