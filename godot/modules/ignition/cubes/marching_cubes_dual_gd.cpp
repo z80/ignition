@@ -21,7 +21,7 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("subdivide_source", "radius", "volume", "scaler"),                     &MarchingCubesDualGd::subdivide_source, Variant::BOOL );
 
 	ClassDB::bind_method( D_METHOD("query_close_nodes", "dist", "max_size"), &MarchingCubesDualGd::query_close_nodes, Variant::ARRAY );
-	ClassDB::bind_method( D_METHOD("center_direction"),                      &MarchingCubesDualGd::center_direction,  Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("center_direction", "at"),                &MarchingCubesDualGd::center_direction,  Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("get_tree_node", "ind"),                  &MarchingCubesDualGd::get_tree_node,     Variant::ARRAY );
 
 	ClassDB::bind_method( D_METHOD("intersect_with_segment", "node_ind", "start", "end"), &MarchingCubesDualGd::intersect_with_segment, Variant::ARRAY );
@@ -96,9 +96,9 @@ Array MarchingCubesDualGd::query_close_nodes( real_t dist, real_t max_size )
 	return ret_array;
 }
 
-Vector3 MarchingCubesDualGd::center_direction() const
+Vector3 MarchingCubesDualGd::center_direction( const Vector3 & at ) const
 {
-	const Vector3d c = cubes.center_direction();
+	const Vector3d c = cubes.center_direction( Vector3d( at.x, at.y, at.z ) );
 	const Vector3 ret( c.x_, c.y_, c.z_ );
 	return ret;
 }

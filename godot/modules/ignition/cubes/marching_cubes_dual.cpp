@@ -177,9 +177,13 @@ int MarchingCubesDual::query_close_nodes( Float dist, Float max_size )
 	return results_qty;
 }
 
-Vector3d MarchingCubesDual::center_direction() const
+Vector3d MarchingCubesDual::center_direction( const Vector3d & at ) const
 {
-	return source_se3.r_;
+	const Vector3d full = (source_se3.r_ - at);
+	const Float    L    = full.Length();
+
+	const Vector3d a = ( L > 0.00001 ) ? full/L : full;
+	return a;
 }
 
 MarchingCubesDualNode * MarchingCubesDual::get_tree_node( int ind, Vector3d * center )

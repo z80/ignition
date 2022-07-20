@@ -141,7 +141,7 @@ public:
     bool subdivide_source( Float bounding_radius, VolumeSource * source, const DistanceScalerBase * scaler = nullptr );
 
 	int query_close_nodes( Float dist, Float max_size );
-	Vector3d center_direction() const;
+	Vector3d center_direction( const Vector3d & at ) const;
 	MarchingCubesDualNode * get_tree_node( int ind, Vector3d * center=nullptr );
 	bool point_inside_node( int node_ind, const Vector3d & at );
 
