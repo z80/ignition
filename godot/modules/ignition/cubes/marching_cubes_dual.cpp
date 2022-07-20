@@ -603,6 +603,12 @@ Vector3d MarchingCubesDual::at_in_source( const VectorInt & at_i ) const
     return at;
 }
 
+Float MarchingCubesDual::node_size( const MarchingCubesDualNode * node ) const
+{
+	const Float ret = step * static_cast<Float>( node->size );
+	return ret;
+}
+
 int  MarchingCubesDual::get_nodes_qty() const
 {
 	const int qty = _octree_nodes.size();

@@ -170,6 +170,8 @@ public:
 	Vector3d at_in_source_scaled( const VectorInt & at_i, const DistanceScalerBase * scaler=nullptr ) const;
     Vector3d at_in_source( const VectorInt & at_i ) const;
 
+	Float node_size( const MarchingCubesDualNode * node ) const;
+
     
 	// Debug methods.
 	int  get_nodes_qty() const;

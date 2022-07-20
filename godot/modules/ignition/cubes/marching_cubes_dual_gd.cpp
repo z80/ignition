@@ -90,9 +90,7 @@ Array MarchingCubesDualGd::query_close_nodes( real_t dist, real_t max_size )
 	for ( int i=0; i<qty; i++ )
 	{
 		MarchingCubesDualNode * node = cubes.get_tree_node( i, nullptr );
-		const uint64_t hash = node->hash.state();
-		const String s_hash = uitos( hash );
-		ret_array.push_back( s_hash );
+		ret_array.push_back( i );
 	}
 
 	return ret_array;
@@ -112,6 +110,9 @@ Array MarchingCubesDualGd::get_tree_node( int ind )
 	MarchingCubesDualNode * node = cubes.get_tree_node( ind, &center );
 	if ( node == nullptr )
 		return ret_array;
+
+	const real_t node_size = cubes.node_size( node ) * 0.5;
+	ret_array.push_back( node_size );
 
 	const Vector3 node_center( center.x_, center.y_, center.z_ );
 	ret_array.push_back( node_center );
