@@ -22,7 +22,7 @@ void MarchingCubesDualGd::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("query_close_nodes", "dist", "max_size"), &MarchingCubesDualGd::query_close_nodes, Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("center_direction"),                      &MarchingCubesDualGd::center_direction,  Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("get_close_node", "ind"),                 &MarchingCubesDualGd::get_close_node,    Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("get_tree_node", "ind"),                  &MarchingCubesDualGd::get_tree_node,     Variant::ARRAY );
 
 	ClassDB::bind_method( D_METHOD("intersect_with_segment", "node_ind", "start", "end"), &MarchingCubesDualGd::intersect_with_segment, Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("intersect_with_ray", "node_ind", "start", "dir"),     &MarchingCubesDualGd::intersect_with_ray,     Variant::ARRAY );
@@ -89,7 +89,7 @@ Array MarchingCubesDualGd::query_close_nodes( real_t dist, real_t max_size )
 	const int qty = cubes.query_close_nodes( dist, max_size );
 	for ( int i=0; i<qty; i++ )
 	{
-		MarchingCubesDualNode * node = cubes.get_close_node( i, nullptr );
+		MarchingCubesDualNode * node = cubes.get_tree_node( i, nullptr );
 		const uint64_t hash = node->hash.state();
 		const String s_hash = uitos( hash );
 		ret_array.push_back( s_hash );
@@ -105,11 +105,11 @@ Vector3 MarchingCubesDualGd::center_direction() const
 	return ret;
 }
 
-Array MarchingCubesDualGd::get_close_node( int ind )
+Array MarchingCubesDualGd::get_tree_node( int ind )
 {
 	ret_array.clear();
 	Vector3d center;
-	MarchingCubesDualNode * node = cubes.get_close_node( ind, &center );
+	MarchingCubesDualNode * node = cubes.get_tree_node( ind, &center );
 	if ( node == nullptr )
 		return ret_array;
 
@@ -125,7 +125,7 @@ Array MarchingCubesDualGd::get_close_node( int ind )
 
 Array MarchingCubesDualGd::intersect_with_segment( int node_ind, const Vector3 & start, const Vector3 & end )
 {
-	MarchingCubesDualNode * node = cubes.get_close_node( node_ind, nullptr );
+	MarchingCubesDualNode * node = cubes.get_tree_node( node_ind, nullptr );
 
 	const Vector3d d_start( start.x, start.y, start.z );
 	const Vector3d d_end( end.x, end.y, end.z );
@@ -147,7 +147,7 @@ Array MarchingCubesDualGd::intersect_with_segment( int node_ind, const Vector3 &
 
 Array MarchingCubesDualGd::intersect_with_ray( int node_ind, const Vector3 & start, const Vector3 & dir )
 {
-	MarchingCubesDualNode * node = cubes.get_close_node( node_ind, nullptr );
+	MarchingCubesDualNode * node = cubes.get_tree_node( node_ind, nullptr );
 
 	const Vector3d d_start( start.x, start.y, start.z );
 	const Vector3d d_dir( dir.x, dir.y, dir.z );

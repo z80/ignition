@@ -182,7 +182,7 @@ Vector3d MarchingCubesDual::center_direction() const
 	return source_se3.r_;
 }
 
-MarchingCubesDualNode * MarchingCubesDual::get_close_node( int ind, Vector3d * center )
+MarchingCubesDualNode * MarchingCubesDual::get_tree_node( int ind, Vector3d * center )
 {
 	if ( ind < 0 )
 		return nullptr;
@@ -197,6 +197,17 @@ MarchingCubesDualNode * MarchingCubesDual::get_close_node( int ind, Vector3d * c
 		const Vector3d  c  = at_in_source( ci );
 		*center = c;
 	}
+	return ret;
+}
+
+bool MarchingCubesDual::point_inside_node( int node_ind, const Vector3d & at )
+{
+	Vector3d center;
+	MarchingCubesDualNode * node = get_tree_node( node_ind, &center );
+
+	const Vector3d local_at = inverted_source_se3.q_ * at + inverted_source_se3.r_;
+
+	const bool ret = node->contains_point( local_at );
 	return ret;
 }
 
@@ -991,15 +1002,18 @@ void MarchingCubesDual::vert_proc( const MarchingCubesDualNode * n0, const March
 		MarchingCubesDualCell * c = add_dual_cell( corners[0], corners[1], corners[2], corners[3],
 			                                       corners[4], corners[5], corners[6], corners[7], source, scaler );
 		//DualCellOctreeNodePair ccc = DualCellOctreeNodePair( c, const_cast<MarchingCubesDualNode *>(n0) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
+		if ( c != nullptr )
+		{
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
 
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+		}
 
 		create_border_cells(n0, n1, n2, n3, n4, n5, n6, n7, source, scaler );
 	}
@@ -1015,51 +1029,72 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 	{
 		MarchingCubesDualCell * c = add_dual_cell(n0->center_back(), n1->center_back(), n1->center(), n0->center(),
 			                                      n4->center_back(), n5->center_back(), n5->center(), n4->center(), source, scaler);
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
+		if ( c != nullptr )
+		{
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
+		}
 
 		// Generate back edge border cells
 		if (n4->at_top( root ) && n5->at_top( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n4->center_back(), n5->center_back(), n5->center(), n4->center(),
 				                                      n4->center_back_top(), n5->center_back_top(), n5->center_top(), n4->center_top(), source, scaler);
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
+			if ( c != nullptr )
+			{
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
+			}
 			// Generate back top corner cells
 			if (n4->at_left( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n4->center_back_left(), n4->center_back(), n4->center(), n4->center_left(),
 					                                      n4->corner_4(), n4->center_back_top(), n4->center_top(), n4->center_left_top(), source, scaler);
-				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
+				if ( c != nullptr )
+				{
+					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
+				}
 			}
 			if (n5->at_right( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n5->center_back(), n5->center_back_right(), n5->center_right(), n5->center(),
 					                                      n5->center_back_top(), n5->corner_5(), n5->center_right_top(), n5->center_top(), source, scaler);
-				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
+				if ( c != nullptr )
+				{
+					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
+				}
 			}
 		}
 		if (n0->at_bottom( root ) && n1->at_bottom( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n0->center_back_bottom(), n1->center_back_bottom(), n1->center_bottom(), n0->center_bottom(),
 				                                      n0->center_back(), n1->center_back(), n1->center(), n0->center(), source, scaler);
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
+			if ( c != nullptr )
+			{
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
+			}
 
 			// Generate back bottom corner cells
 			if (n0->at_left( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n0->corner_0(), n0->center_back_bottom(), n0->center_bottom(), n0->center_left_bottom(),
 					                                      n0->center_back_left(), n0->center_back(), n0->center(), n0->center_left(), source, scaler);
-				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
+				if ( c != nullptr )
+				{
+					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
+				}
 			}
 			if (n1->at_right( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n1->center_back_bottom(), n1->corner_1(), n1->center_right_bottom(), n1->center_bottom(),
 					                                      n1->center_back(), n1->center_back_right(), n1->center_right(), n1->center(), source, scaler);
-				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
+				if ( c != nullptr )
+				{
+					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
+				}
 			}
 		}
 	}
@@ -1067,49 +1102,70 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 	{
 		MarchingCubesDualCell * c = add_dual_cell(n3->center(), n2->center(), n2->center_front(), n3->center_front(),
 			                                      n7->center(), n6->center(), n6->center_front(), n7->center_front(), source, scaler);
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+		if ( c != nullptr )
+		{
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+		}
 		// Generate front edge border cells
 		if (n6->at_top( root ) && n7->at_top( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n7->center(), n6->center(), n6->center_front(), n7->center_front(),
 				                                      n7->center_top(), n6->center_top(), n6->center_front_top(), n7->center_front_top(), source, scaler);
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+			if ( c != nullptr )
+			{
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+			}
 			// Generate back bottom corner cells
 			if (n7->at_left( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n7->center_left(), n7->center(), n7->center_front(), n7->center_front_left(),
 					                                      n7->center_left_top(), n7->center_top(), n7->center_front_top(), n7->corner_7(), source, scaler);
-				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+				if ( c != nullptr )
+				{
+					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+				}
 			}
 			if (n6->at_right( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n6->center(), n6->center_right(), n6->center_front_right(), n6->center_front(),
 					                                      n6->center_top(), n6->center_right_top(), n6->corner_6(), n6->center_front_top(), source, scaler);
-				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
+				if ( c != nullptr )
+				{
+					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
+				}
 			}
 		}
 		if (n3->at_bottom( root ) && n2->at_bottom( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n3->center_bottom(), n2->center_bottom(), n2->center_front_bottom(), n3->center_front_bottom(), 
 				                                      n3->center(), n2->center(), n2->center_front(), n3->center_front(), source, scaler);
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
+			if ( c != nullptr )
+			{
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
+			}
 			// Generate back bottom corner cells
 			if (n3->at_left( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n3->center_left_bottom(), n3->center_bottom(), n3->center_front_bottom(), n3->corner_3(),
 					                                      n3->center_left(), n3->center(), n3->center_front(), n3->center_front_left(), source, scaler);
-				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
+				if ( c != nullptr )
+				{
+					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
+				}
 			}
 			if (n2->at_right( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n2->center_bottom(), n2->center_right_bottom(), n2->corner_2(), n2->center_front_bottom(),
 					                                      n2->center(), n2->center_right(), n2->center_front_right(), n2->center_front(), source, scaler);
-				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
+				if ( c != nullptr )
+				{
+					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
+				}
 			}
 		}
 	}
@@ -1117,95 +1173,131 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 	{
 		MarchingCubesDualCell * c = add_dual_cell(n0->center_left(), n0->center(), n3->center(), n3->center_left(),
 			                                      n4->center_left(), n4->center(), n7->center(), n7->center_left(), source, scaler);
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+		if ( c != nullptr )
+		{
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+		}
 		// Generate left edge border cells
 		if (n4->at_top( root ) && n7->at_top( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n4->center_left(), n4->center(), n7->center(), n7->center_left(),
 				                                      n4->center_left_top(), n4->center_top(), n7->center_top(), n7->center_left_top(), source, scaler);
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+			if ( c != nullptr )
+			{
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+			}
 		}
 		if (n0->at_bottom( root ) && n3->at_bottom( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n0->center_left_bottom(), n0->center_bottom(), n3->center_bottom(), n3->center_left_bottom(),
 				                                      n0->center_left(), n0->center(), n3->center(), n3->center_left(), source, scaler);
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
+			if ( c != nullptr )
+			{
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
+			}
 		}
 		if (n0->at_back( root ) && n4->at_back( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n0->center_back_left(), n0->center_back(), n0->center(), n0->center_left(),
 				                                      n4->center_back_left(), n4->center_back(), n4->center(), n4->center_left(), source, scaler);
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
+			if ( c != nullptr )
+			{
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
+			}
 		}
 		if (n3->at_front( root ) && n7->at_front( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n3->center_left(), n3->center(), n3->center_front(), n3->center_front_left(),
 				                                      n7->center_left(), n7->center(), n7->center_front(), n7->center_front_left(),source, scaler);
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+			if ( c != nullptr )
+			{
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+			}
 		}
 	}
 	if (n1->at_right( root ) && n2->at_right( root ) && n5->at_right( root ) && n6->at_right( root ))
 	{
 		MarchingCubesDualCell * c = add_dual_cell(n1->center(), n1->center_right(), n2->center_right(), n2->center(),
 			                                      n5->center(), n5->center_right(), n6->center_right(), n6->center(), source, scaler);
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
+		if ( c != nullptr )
+		{
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
+		}
 		// Generate right edge border cells
 		if (n5->at_top( root ) && n6->at_top( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n5->center(), n5->center_right(), n6->center_right(), n6->center(),
 				                                      n5->center_top(), n5->center_right_top(), n6->center_right_top(), n6->center_top(), source, scaler);
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
+			if ( c != nullptr )
+			{
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
+			}
 		}
 		if (n1->at_bottom( root ) && n2->at_bottom( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n1->center_bottom(), n1->center_right_bottom(), n2->center_right_bottom(), n2->center_bottom(),
 				                                      n1->center(), n1->center_right(), n2->center_right(), n2->center(), source, scaler);
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
+			if ( c != nullptr )
+			{
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
+			}
 		}
 		if (n1->at_back( root ) && n5->at_back( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n1->center_back(), n1->center_back_right(), n1->center_right(), n1->center(),
 				                                      n5->center_back(), n5->center_back_right(), n5->center_right(), n5->center(), source, scaler);
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
+			if ( c != nullptr )
+			{
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
+			}
 		}
 		if (n2->at_front( root ) && n6->at_front( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n2->center(), n2->center_right(), n2->center_front_right(), n2->center_front(),
 				                                      n6->center(), n6->center_right(), n6->center_front_right(), n6->center_front(), source, scaler);
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
-			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
+			if ( c != nullptr )
+			{
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
+				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
+			}
 		}
 	}
 	if (n4->at_top( root ) && n5->at_top( root ) && n6->at_top( root ) && n7->at_top( root ))
 	{
 		MarchingCubesDualCell * c = add_dual_cell(n4->center(), n5->center(), n6->center(), n7->center(),
 			                                      n4->center_top(), n5->center_top(), n6->center_top(), n7->center_top(), source, scaler);
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+		if ( c != nullptr )
+		{
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
+		}
 	}
 	if (n0->at_bottom( root ) && n1->at_bottom( root ) && n2->at_bottom( root ) && n3->at_bottom( root ))
 	{
 		MarchingCubesDualCell * c = add_dual_cell(n0->center_bottom(), n1->center_bottom(), n2->center_bottom(), n3->center_bottom(),
 			                                      n0->center(), n1->center(), n2->center(), n3->center(), source, scaler);
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
-		_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
+		if ( c != nullptr )
+		{
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
+			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
+		}
 	}
 }
 

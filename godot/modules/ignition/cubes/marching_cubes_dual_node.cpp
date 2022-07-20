@@ -300,6 +300,13 @@ bool MarchingCubesDualNode::intersects( const MarchingCubesDualNode & other ) co
 	return true;
 }
 
+bool MarchingCubesDualNode::contains_point( const Vector3d & at ) const
+{
+	const bool ret = aabb.has_point( Vector3( at.x_, at.y_, at.z_ ) );
+	return ret;
+}
+
+
 
 const VectorInt MarchingCubesDualNode::center() const
 {

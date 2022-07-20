@@ -50,6 +50,8 @@ public:
 
 	bool intersects( const MarchingCubesDualNode & other ) const;
 
+	bool contains_point( const Vector3d & at ) const;
+
     const VectorInt center() const;
 
     bool has_surface( Float iso_level ) const;

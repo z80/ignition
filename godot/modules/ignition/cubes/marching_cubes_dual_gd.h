@@ -33,7 +33,7 @@ public:
 
 	Array query_close_nodes( real_t dist, real_t max_size );
 	Vector3 center_direction() const;
-	Array get_close_node( int ind );
+	Array get_tree_node( int ind );
 
 	Array intersect_with_segment( int node_ind, const Vector3 & start, const Vector3 & end );
 	Array intersect_with_ray( int node_ind, const Vector3 & start, const Vector3 & dir );

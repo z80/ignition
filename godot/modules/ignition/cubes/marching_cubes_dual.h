@@ -142,7 +142,8 @@ public:
 
 	int query_close_nodes( Float dist, Float max_size );
 	Vector3d center_direction() const;
-	MarchingCubesDualNode * get_close_node( int ind, Vector3d * center=nullptr );
+	MarchingCubesDualNode * get_tree_node( int ind, Vector3d * center=nullptr );
+	bool point_inside_node( int node_ind, const Vector3d & at );
 
 	bool intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm );
 	bool intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, Vector3d & at, Vector3d & norm );
