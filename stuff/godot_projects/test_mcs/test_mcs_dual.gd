@@ -11,9 +11,9 @@ var meshes: Array = []
 func _ready():
 	meshes = [ get_node("Mesh_0" ), get_node("Mesh_1") ]
 	
-	scaler = DistanceScalerRef.new()
-	scaler.plain_distance = 150.0
-	scaler.log_scale      = 10.0
+#	scaler = DistanceScalerRef.new()
+#	scaler.plain_distance = 150.0
+#	scaler.log_scale      = 10.0
 	
 	
 	
