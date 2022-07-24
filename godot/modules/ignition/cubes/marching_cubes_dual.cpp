@@ -177,13 +177,17 @@ int MarchingCubesDual::query_close_nodes( Float dist, Float max_size )
 	return results_qty;
 }
 
-Vector3d MarchingCubesDual::center_direction( const Vector3d & at ) const
+Vector3d MarchingCubesDual::center_direction( const Vector3d & at, bool in_source ) const
 {
 	const Vector3d full = (source_se3.r_ - at);
 	const Float    L    = full.Length();
 
 	const Vector3d a = ( L > 0.00001 ) ? full/L : full;
-	return a;
+	if ( in_source )
+		return a;
+
+	const Vector3d aw = inverted_source_se3.q_ * a;
+	return aw;
 }
 
 MarchingCubesDualNode * MarchingCubesDual::get_tree_node( int ind, Vector3d * center )
@@ -211,11 +215,11 @@ bool MarchingCubesDual::point_inside_node( int node_ind, const Vector3d & at )
 
 	const Vector3d local_at = inverted_source_se3.q_ * at + inverted_source_se3.r_;
 
-	const bool ret = node->contains_point( local_at );
+	const bool ret = node->contains_point( this, local_at );
 	return ret;
 }
 
-bool MarchingCubesDual::intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm )
+bool MarchingCubesDual::intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm )
 {
 	if ( node == nullptr )
 	{
@@ -229,7 +233,7 @@ bool MarchingCubesDual::intersect_with_segment( MarchingCubesDualNode * node, co
 	const Vector3d local_start = inverted_source_se3.q_ * start + inverted_source_se3.r_;
 	const Vector3d local_end   = inverted_source_se3.q_ * end   + inverted_source_se3.r_;
 
-	const bool ret = node->intersect_with_segment( this, local_start, local_end, at, norm );
+	const bool ret = node->intersect_with_segment( this, local_start, local_end, in_source, at, norm );
 
 	if ( ret )
 	{
@@ -240,7 +244,7 @@ bool MarchingCubesDual::intersect_with_segment( MarchingCubesDualNode * node, co
 	return ret;
 }
 
-bool MarchingCubesDual::intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, Vector3d & at, Vector3d & norm )
+bool MarchingCubesDual::intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm )
 {
 	if ( node == nullptr )
 	{
@@ -254,7 +258,7 @@ bool MarchingCubesDual::intersect_with_ray( MarchingCubesDualNode * node, const 
 	const Vector3d local_start = inverted_source_se3.q_ * start + inverted_source_se3.r_;
 	const Vector3d local_dir   = inverted_source_se3.q_ * dir;
 
-	const bool ret = node->intersect_with_ray( this, local_start, local_dir, at, norm );
+	const bool ret = node->intersect_with_ray( this, local_start, local_dir, in_source, at, norm );
 
 	if ( ret )
 	{

@@ -38,8 +38,8 @@ public:
 
 	void query_nodes( const MarchingCubesDualNode & node, int sz, std::vector<MarchingCubesDualNode *> & ret );
 
-	bool intersect_with_segment( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm );
-	bool intersect_with_ray( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & dir, Vector3d & at, Vector3d & norm );
+	bool intersect_with_segment( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm );
+	bool intersect_with_ray( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm );
 
     bool has_children() const;
     bool subdivide( MarchingCubesDual * tree, VolumeSource * source, const DistanceScalerBase * scaler );
@@ -50,7 +50,9 @@ public:
 
 	bool intersects( const MarchingCubesDualNode & other ) const;
 
-	bool contains_point( const Vector3d & at ) const;
+	bool contains_point( MarchingCubesDual * tree, const Vector3d & at ) const;
+	Vector3d center_vector( MarchingCubesDual * tree, bool in_source ) const;
+	SE3      se3_in_point( MarchingCubesDual * tree, const Vector3d & at, bool in_source ) const;
 
     const VectorInt center() const;
 

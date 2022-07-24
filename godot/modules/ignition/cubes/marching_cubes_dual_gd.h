@@ -7,7 +7,7 @@
 #include "se3_ref.h"
 #include "volume_source_gd.h"
 #include "distance_scaler_ref.h"
-
+#include "marching_cubes_dual_node_gd.h"
 
 class Node;
 
@@ -32,11 +32,8 @@ public:
 	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 
 	Array query_close_nodes( real_t dist, real_t max_size );
-	Vector3 center_direction( const Vector3 & at ) const;
-	Array get_tree_node( int ind );
-
-	Array intersect_with_segment( int node_ind, const Vector3 & start, const Vector3 & end );
-	Array intersect_with_ray( int node_ind, const Vector3 & start, const Vector3 & dir );
+	Vector3 center_direction( const Vector3 & at, bool in_source ) const;
+	Ref<MarchingCubesDualNodeGd> get_tree_node( int ind );
 
 
 	Array materials_used() const;

@@ -141,12 +141,12 @@ public:
     bool subdivide_source( Float bounding_radius, VolumeSource * source, const DistanceScalerBase * scaler = nullptr );
 
 	int query_close_nodes( Float dist, Float max_size );
-	Vector3d center_direction( const Vector3d & at ) const;
+	Vector3d center_direction( const Vector3d & at, bool in_source ) const;
 	MarchingCubesDualNode * get_tree_node( int ind, Vector3d * center=nullptr );
 	bool point_inside_node( int node_ind, const Vector3d & at );
 
-	bool intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm );
-	bool intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, Vector3d & at, Vector3d & norm );
+	bool intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm );
+	bool intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm );
 
 	// These two are called by nodes.
 	void set_split_precision( Float rel_diff );
