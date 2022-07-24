@@ -26,7 +26,7 @@ void MarchingCubesDualGd::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
-	ClassDB::bind_method( D_METHOD("collision_faces", "dist", "scaler"),                        &MarchingCubesDualGd::collision_faces );
+	ClassDB::bind_method( D_METHOD("collision_faces", "at", "dist", "in_source"),               &MarchingCubesDualGd::collision_faces, Variant::ARRAY );
 
 	ClassDB::bind_method( D_METHOD("set_max_nodes_qty", "qty"),             &MarchingCubesDualGd::set_max_nodes_qty );
 	ClassDB::bind_method( D_METHOD("get_max_nodes_qty"),                    &MarchingCubesDualGd::get_max_nodes_qty, Variant::INT );
@@ -208,23 +208,20 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 	mi->set_transform( transform );
 }
 
-PoolVector3Array MarchingCubesDualGd::collision_faces( real_t dist, const Ref<DistanceScalerRef> & scaler_ref )
+Array MarchingCubesDualGd::collision_faces( const Vector3 & at, real_t dist, bool in_source )
 {
-	const DistanceScaler * s;
-	if ( scaler_ref == nullptr )
-		s = nullptr;
-	else
-		s = &(scaler_ref->scaler);
-	const std::vector<Vector3> & verts = cubes.collision_faces( dist, s );
-	const int qty = verts.size();
-	vertices.resize( qty );
+	const Vector3d at_d = Vector3d( at.x, at.y, at.z );
+	const std::vector<Face3> & faces = cubes.collision_faces( at_d, dist, in_source );
+	const int qty = faces.size();
+	ret_array.clear();
 	for ( int i=0; i<qty; i++ )
 	{
-		const Vector3 v = verts[i];
-		vertices.set( i, v );
+		const Face3 f = faces[i];
+		for ( int j=0; j<3; j++ )
+			ret_array.push_back( f.vertex[j] );
 	}
 
-	return vertices;
+	return ret_array;
 }
 
 void MarchingCubesDualGd::set_max_nodes_qty( int qty )

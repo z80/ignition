@@ -152,10 +152,10 @@ const std::vector<int> & MarchingCubesDual::query_close_nodes( Float dist, Float
 
 	int dist_int = 1;
 	sz = step;
-	while ( sz < max_size )
+	while ( sz < dist )
 	{
 		const Float sz_2 = sz * 2.0;
-		if ( sz_2 > max_size )
+		if ( sz_2 > dist )
 			break;
 
 		sz = sz_2;
@@ -430,30 +430,65 @@ const std::vector<real_t>  & MarchingCubesDual::tangents( int material_ind )
 	return _ret_tangs;
 }
 
-const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Float dist, const DistanceScalerBase * scaler )
+const std::vector<Face3> & MarchingCubesDual::collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler )
 {
-	const int qty = _all_faces.size();
-	const Transform t = source_transform( scaler );
-	const Vector3 o = Vector3(0.0, 0.0, 0.0);
-	_ret_verts.clear();
+	_face_indices_set.clear();
+	_faces_ret.clear();
 
-	for ( int i=0; i<qty; i++ )
+	const bool empty = _octree_nodes.empty();
+	if ( empty )
+		return _faces_ret;
+
+	MarchingCubesDualNode * root = _octree_nodes[0];
+
+	int dist_int = 1;
+	Float sz = step;
+	while ( sz < dist )
 	{
-		const NodeFace & nf = _all_faces[i];
-		Face3 f = nf.face;
-		f.vertex[0] = t.xform( f.vertex[0] );
-		f.vertex[1] = t.xform( f.vertex[1] );
-		f.vertex[2] = t.xform( f.vertex[2] );
-		const Float d = f.get_closest_point_to( o ).length();
-		if ( d <= dist )
+		const Float sz_2 = sz * 2.0;
+		if ( sz_2 > dist )
+			break;
+
+		sz = sz_2;
+		dist_int *= 2;
+	}
+
+	const Vector3d center = inverted_source_se3.r_;
+
+	const VectorInt center_int = VectorInt( static_cast<int>( center.x_ / step ),
+		static_cast<int>( center.y_ / step ),
+		static_cast<int>( center.z_ / step ) );
+	const int size_int         = static_cast<int>( dist / step ) * 2;
+
+	MarchingCubesDualNode node;
+	node.at   = center_int;
+	node.size = size_int;
+
+	root->query_faces( this, node, _face_indices_set );
+	for ( MaterialsSet::const_iterator it=_face_indices_set.begin(); it!=_face_indices_set.end(); it++ )
+	{
+		const int face_ind = *it;
+		const NodeFace & nf = _all_faces[face_ind];
+
+		if ( in_source )
 		{
-			_ret_verts.push_back( f.vertex[0] );
-			_ret_verts.push_back( f.vertex[1] );
-			_ret_verts.push_back( f.vertex[2] );
+			_faces_ret.push_back( nf.face );
+		}
+		else
+		{
+			Face3 f = nf.face;
+			for ( int i=0; i<3; i++ )
+			{
+				Vector3 & rf = f.vertex[i];
+				const Vector3d r = Vector3d( rf.x, rf.y, rf.z );
+				const Vector3d rw = source_se3.q_ * r + source_se3.r_;
+				rf = Vector3( rw.x_, rw.y_, rw.z_ );
+			}
+			_faces_ret.push_back( f );
 		}
 	}
 
-	return _ret_verts;
+	return _faces_ret;
 }
 
 

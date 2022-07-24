@@ -86,6 +86,32 @@ void MarchingCubesDualNode::query_nodes( const MarchingCubesDualNode & node, int
 	}
 }
 
+void MarchingCubesDualNode::query_faces( MarchingCubesDual * tree, const MarchingCubesDualNode & node, std::set<int> & face_inds )
+{
+	const bool intersects = this->intersects( node );
+	if ( !intersects )
+		return;
+
+	const bool has_ch = this->has_children();
+	if ( has_ch )
+	{
+		for ( int i=0; i<8; i++ )
+		{
+			MarchingCubesDualNode * ch = child_nodes[i];
+			ch->query_faces( tree, node, face_inds );
+		}
+		return;
+	}
+
+	for ( int i=0; i<faces_qty; i++ )
+	{
+		const int ind = i + face_base_index;
+		const OctreeNodeFaceIndexPair & p = tree->_octree_node_face_indices[ind];
+		const int face_ind = p.face_index;
+		face_inds.insert( face_ind );
+	}
+}
+
 bool MarchingCubesDualNode::intersect_with_segment( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm )
 {
 	const bool has_ch = this->has_children();

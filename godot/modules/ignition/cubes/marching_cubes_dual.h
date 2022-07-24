@@ -161,7 +161,7 @@ public:
     const std::vector<Vector3> & normals( int material_ind );
     const std::vector<real_t>  & tangents( int material_ind );
 
-    const std::vector<Vector3> & collision_faces( const Float dist, const DistanceScalerBase * scaler = nullptr );
+    const std::vector<Face3> & collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler = nullptr );
 
     const Transform source_transform( const DistanceScalerBase * scaler = nullptr) const;
 
@@ -294,6 +294,10 @@ public:
 
     // Materials set in order to know how many materials in total actually are involved.
     MaterialsSet _materials_set;
+
+	// Face indisce set. Used to query all faces.
+	MaterialsSet _face_indices_set;
+	std::vector<Face3> _faces_ret;
 };
 
 

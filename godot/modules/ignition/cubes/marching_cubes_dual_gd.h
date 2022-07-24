@@ -38,7 +38,7 @@ public:
 
 	Array materials_used() const;
 	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
-	PoolVector3Array collision_faces( real_t dist, const Ref<DistanceScalerRef> & scaler_ref = Ref<DistanceScalerRef>() );
+	Array collision_faces( const Vector3 & at, real_t dist, bool in_source );
 
 	void set_max_nodes_qty( int qty );
 	int get_max_nodes_qty() const;
@@ -55,7 +55,8 @@ public:
 public:
 	MarchingCubesDual cubes;
 
-	PoolVector3Array vertices, normals;
+	PoolVector3Array vertices,
+		             normals;
 	PoolRealArray    tangents;
 	Array            ret_array;
 };
