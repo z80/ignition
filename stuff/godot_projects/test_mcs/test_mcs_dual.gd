@@ -92,6 +92,8 @@ func _ready():
 		#cubes.apply_to_mesh( ind, m, null )
 		cubes.apply_to_mesh( ind, m, scaler )
 
+	
+	_query_close_nodes()
 
 
 
@@ -121,6 +123,18 @@ func _draw_dual_cells():
 		drawer.add_node( n )
 	
 	drawer.draw()
+
+
+
+
+func _query_close_nodes():
+	var inds: Array = cubes.query_close_nodes( 50.0, 20 )
+	print( "close indices: ", inds )
+	return
+	
+	for ind in inds:
+		var n: MarchingCubesDualNodeGd = cubes.get_tree_node( ind )
+		pass
 
 
 
