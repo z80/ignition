@@ -36,7 +36,7 @@ public:
     MarchingCubesDualNode( const MarchingCubesDualNode & inst );
     const MarchingCubesDualNode & operator=( const MarchingCubesDualNode & inst );
 
-	void query_nodes( const MarchingCubesDualNode & node, int sz, std::vector<MarchingCubesDualNode *> & ret );
+	void query_nodes( const MarchingCubesDualNode & node, int sz, std::vector<int> & ret );
 
 	bool intersect_with_segment( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm );
 	bool intersect_with_ray( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm );

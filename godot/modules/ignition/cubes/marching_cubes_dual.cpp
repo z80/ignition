@@ -68,6 +68,7 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 	compute_node_values( *root_node, source, scaler );
 
 	root_node->subdivide( this, source, scaler );
+	assign_node_indices();
 	root_node->compute_hashes();
 
 	// Cleanup 
@@ -127,11 +128,13 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
     return true;
 }
 
-int MarchingCubesDual::query_close_nodes( Float dist, Float max_size )
+const std::vector<int> & MarchingCubesDual::query_close_nodes( Float dist, Float max_size )
 {
+	_octree_node_indices_result.clear();
+
 	const bool empty = _octree_nodes.empty();
 	if ( empty )
-		return false;
+		return _octree_node_indices_result;
 
 	MarchingCubesDualNode * root = _octree_nodes[0];
 
@@ -159,8 +162,6 @@ int MarchingCubesDual::query_close_nodes( Float dist, Float max_size )
 		dist_int *= 2;
 	}
 
-	_octree_nodes_result.clear();
-
 	const Vector3d center = inverted_source_se3.r_;
 
 	const VectorInt center_int = VectorInt( static_cast<int>( center.x_ / step ),
@@ -172,9 +173,8 @@ int MarchingCubesDual::query_close_nodes( Float dist, Float max_size )
 	node.at   = center_int;
 	node.size = size_int;
 
-	root->query_nodes( node, sz, _octree_nodes_result );
-	const int results_qty = _octree_nodes_result.size();
-	return results_qty;
+	root->query_nodes( node, sz, _octree_node_indices_result );
+	return _octree_node_indices_result;
 }
 
 Vector3d MarchingCubesDual::center_direction( const Vector3d & at, bool in_source ) const
@@ -190,28 +190,22 @@ Vector3d MarchingCubesDual::center_direction( const Vector3d & at, bool in_sourc
 	return aw;
 }
 
-MarchingCubesDualNode * MarchingCubesDual::get_tree_node( int ind, Vector3d * center )
+MarchingCubesDualNode * MarchingCubesDual::get_tree_node( int ind )
 {
 	if ( ind < 0 )
 		return nullptr;
 
-	if ( ind >= _octree_nodes_result.size() )
+	if ( ind >= _octree_nodes.size() )
 		return nullptr;
 
-	MarchingCubesDualNode * ret = _octree_nodes_result[ind];
-	if ( center != nullptr )
-	{
-		const VectorInt ci = ret->center();
-		const Vector3d  c  = at_in_source( ci );
-		*center = c;
-	}
+	MarchingCubesDualNode * ret = _octree_nodes[ind];
 	return ret;
 }
 
 bool MarchingCubesDual::point_inside_node( int node_ind, const Vector3d & at )
 {
 	Vector3d center;
-	MarchingCubesDualNode * node = get_tree_node( node_ind, &center );
+	MarchingCubesDualNode * node = get_tree_node( node_ind );
 
 	const Vector3d local_at = inverted_source_se3.q_ * at + inverted_source_se3.r_;
 
@@ -741,6 +735,16 @@ void MarchingCubesDual::compute_node_values( MarchingCubesDualNode & node, Volum
         node.vertices_scaled[i]    = vert;
         node.values[i]             = value;
     }
+}
+
+void MarchingCubesDual::assign_node_indices()
+{
+	const int qty = _octree_nodes.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		MarchingCubesDualNode * n = _octree_nodes[i];
+		n->self_index = i;
+	}
 }
 
 

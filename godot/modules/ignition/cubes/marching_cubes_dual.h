@@ -140,9 +140,9 @@ public:
     void set_source_transform( const SE3 & se3 );
     bool subdivide_source( Float bounding_radius, VolumeSource * source, const DistanceScalerBase * scaler = nullptr );
 
-	int query_close_nodes( Float dist, Float max_size );
+	const std::vector<int> & query_close_nodes( Float dist, Float max_size );
 	Vector3d center_direction( const Vector3d & at, bool in_source ) const;
-	MarchingCubesDualNode * get_tree_node( int ind, Vector3d * center=nullptr );
+	MarchingCubesDualNode * get_tree_node( int ind );
 	bool point_inside_node( int node_ind, const Vector3d & at );
 
 	bool intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm );
@@ -203,6 +203,7 @@ public:
     //bool find_surface( VolumeSource * source, const DistanceScalerBase * scaler, MarchingNode & surface_node );
     void compute_node_values( MarchingCubesDualNode & node, VolumeSource * source, const DistanceScalerBase * scaler );
     //MarchingNode step_towards_surface( const MarchingCubesDualNode & node, VolumeSource * source, const DistanceScalerBase * scaler );
+	void assign_node_indices();
 
 
 	// Dual grid generation methods.
@@ -243,8 +244,8 @@ public:
 
 	const NodeFace & get_face_by_index( int ind );
 
-	std::vector<MarchingCubesDualNode *>           _octree_nodes,
-		                                           _octree_nodes_result;
+	std::vector<MarchingCubesDualNode *>           _octree_nodes;
+	std::vector<int>	                           _octree_node_indices_result;
 	std::vector<MarchingCubesDualCell *>           _octree_dual_cells;
 	std::vector<DualCellOctreeNodePair>            _dual_cell_octree_node_pairs;
 	std::vector<OctreeNodeFaceIndexPair>           _octree_node_face_indices;

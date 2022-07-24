@@ -83,11 +83,12 @@ bool MarchingCubesDualGd::subdivide_source( real_t bounding_radius, const Ref<Vo
 Array MarchingCubesDualGd::query_close_nodes( real_t dist, real_t max_size )
 {
 	ret_array.clear();
-	const int qty = cubes.query_close_nodes( dist, max_size );
+	const std::vector<int> indices = cubes.query_close_nodes( dist, max_size );
+	const int qty = indices.size();
 	for ( int i=0; i<qty; i++ )
 	{
-		MarchingCubesDualNode * node = cubes.get_tree_node( i, nullptr );
-		ret_array.push_back( i );
+		const int ind = indices[i];
+		ret_array.push_back( ind );
 	}
 
 	return ret_array;

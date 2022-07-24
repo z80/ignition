@@ -60,7 +60,7 @@ const MarchingCubesDualNode & MarchingCubesDualNode::operator=( const MarchingCu
     return *this;
 }
 
-void MarchingCubesDualNode::query_nodes( const MarchingCubesDualNode & node, int sz, std::vector<MarchingCubesDualNode *> & ret )
+void MarchingCubesDualNode::query_nodes( const MarchingCubesDualNode & node, int sz, std::vector<int> & ret )
 {
 	const bool intersects = this->intersects( node );
 	if ( !intersects )
@@ -71,7 +71,7 @@ void MarchingCubesDualNode::query_nodes( const MarchingCubesDualNode & node, int
 		// Also make sure node is not empty.
 		const bool not_empty = this->has_children() || (this->faces_qty > 0);
 		if ( not_empty )
-			ret.push_back( this );
+			ret.push_back( this->self_index );
 		return;
 	}
 
