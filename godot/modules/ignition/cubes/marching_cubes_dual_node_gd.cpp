@@ -110,7 +110,7 @@ real_t MarchingCubesDualNodeGd::node_size() const
 		return 0.0;
 	}
 
-	const real_t ret = node->node_size();
+	const real_t ret = node->node_size( cubes );
 	return ret;
 }
 
