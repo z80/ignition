@@ -31,7 +31,7 @@ public:
 
 	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 
-	Array query_close_nodes( real_t dist, real_t max_size );
+	Array query_close_nodes( const Vector3 & at, real_t dist, real_t max_size );
 	Vector3 center_direction( const Vector3 & at, bool in_source ) const;
 	Ref<MarchingCubesDualNodeGd> get_tree_node( int ind );
 

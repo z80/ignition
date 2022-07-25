@@ -1,5 +1,6 @@
 extends Spatial
 
+var source_tree: VolumeSourceTreeGd  = null
 var source: VolumeSourceScriptGd     = null
 var cubes: MarchingCubesDualGd = null
 var scaler: DistanceScalerRef = null
@@ -16,8 +17,10 @@ func _ready():
 	
 	
 	
+	source_tree = VolumeSourceTreeGd.new()
+	
 	source = VolumeSourceScriptGd.new()
-	var script: Resource = preload( "res://filling_nodes/volume_source_sphere.gd" )
+	var script: Resource = preload( "res://volume_source_sphere.gd" )
 	source.set_script( script )
 	source.bounding_radius = 450.0
 	source.radius = 400.0
@@ -29,11 +32,33 @@ func _ready():
 	source.se3 = se3
 	
 	source.material_index = 0
+	
+	source_tree.add_source( source )
+
+
+
+	source = VolumeSourceScriptGd.new()
+	script = preload( "res://volume_source_sphere.gd" )
+	source.set_script( script )
+	source.bounding_radius = 250.0
+	source.radius = 200.0
+	source.node_sz_max = 200.0
+	source.node_sz_min = 10.0
+
+	se3.r = Vector3( 0.0, 550.0, 0.0 )
+	source.se3 = se3
+
+	source.inverted = true
 
 	source.material_index    = 1
 	source.material_priority = 1
 	source.material_only     = false
 
+	source_tree.add_source( source )
+
+
+
+	source_tree.subdivide( 2000.0 )
 	
 	
 
@@ -44,7 +69,7 @@ func _ready():
 	cubes.set_source_transform( se3 )
 
 	cubes.split_precision = 0.02
-	cubes.subdivide_source( 1200.0, source, scaler )
+	cubes.subdivide_source( 1200.0, source_tree, scaler )
 	
 	var nodes_qty: int = cubes.get_nodes_qty()
 	var cells_qty: int = cubes.get_dual_cells_qty()

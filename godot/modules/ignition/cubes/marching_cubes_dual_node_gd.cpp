@@ -16,6 +16,8 @@ void MarchingCubesDualNodeGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("center_vector", "in_source"),                          &MarchingCubesDualNodeGd::center_vector,          Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("se3_in_point", "at", "in_source"),                     &MarchingCubesDualNodeGd::se3_in_point,           Variant::OBJECT );
 	ClassDB::bind_method( D_METHOD("hash"),                                                &MarchingCubesDualNodeGd::hash,                   Variant::STRING );
+	ClassDB::bind_method( D_METHOD("at"),                                                  &MarchingCubesDualNodeGd::at,                     Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("size"),                                                &MarchingCubesDualNodeGd::size,                   Variant::INT );
 }
 
 MarchingCubesDualNodeGd::MarchingCubesDualNodeGd()
@@ -128,6 +130,33 @@ String MarchingCubesDualNodeGd::hash() const
 	const String s_hash = uitos( h );
 	return s_hash;
 }
+
+Array MarchingCubesDualNodeGd::at()
+{
+	ret_array.clear();
+	if ( ( cubes == nullptr ) || ( node == nullptr ) )
+	{
+		return ret_array;
+	}
+
+	ret_array.push_back( node->at.x );
+	ret_array.push_back( node->at.y );
+	ret_array.push_back( node->at.z );
+
+	return ret_array;
+}
+
+int MarchingCubesDualNodeGd::size() const
+{
+	if ( ( cubes == nullptr ) || ( node == nullptr ) )
+	{
+		return 0;
+	}
+
+	const int ret = node->size;
+	return ret;
+}
+
 
 
 

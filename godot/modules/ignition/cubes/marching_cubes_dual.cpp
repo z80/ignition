@@ -150,14 +150,7 @@ const std::vector<int> & MarchingCubesDual::query_close_nodes( const Vector3d & 
 		sz_int *= 2;
 	}
 
-	int dist_int = 1;
-	sz = step;
-	const Float dist_2 = dist * 2.0;
-	while ( sz < dist_2 )
-	{
-		sz *= 2.0;
-		dist_int *= 2;
-	}
+	const int dist_2 = static_cast<int>( std::ceil( dist / step ) ) * 2;
 
 	const Vector3d center = inverted_source_se3.q_ * at + inverted_source_se3.r_;
 	const Float sz_2 = sz * 0.5;
@@ -166,10 +159,10 @@ const std::vector<int> & MarchingCubesDual::query_close_nodes( const Vector3d & 
 		                                static_cast<int>( (center.z_ - sz_2) / step ) );
 
 	MarchingCubesDualNode node;
-	node.at   = center_int;
-	node.size = dist_ind;
+	node.at   = at_int;
+	node.size = dist_2;
 
-	root->query_nodes( node, sz, _octree_node_indices_result );
+	root->query_nodes( node, sz_int, _octree_node_indices_result );
 	return _octree_node_indices_result;
 }
 

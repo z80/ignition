@@ -29,6 +29,9 @@ public:
 	Transform transform_in_point( const Vector3 & at, bool in_source ) const;
 	String hash() const;
 
+	Array at();
+	int   size() const;
+
 
 public:
 	MarchingCubesDual     * cubes;

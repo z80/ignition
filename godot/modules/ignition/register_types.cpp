@@ -47,6 +47,7 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::RefFrameNode>();
 	ClassDB::register_class<Ign::RefFrameAutoNode>();
 	ClassDB::register_class<Ign::Se3Ref>();
+	ClassDB::register_class<Ign::DistanceScalerBaseRef>();
 	ClassDB::register_class<Ign::DistanceScalerRef>();
 
 	ClassDB::register_class<Ign::HeightSourceRef>();
@@ -64,8 +65,7 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::VolumeSourceGd>();
 	ClassDB::register_class<Ign::VolumeSourceScriptGd>();
 	ClassDB::register_class<Ign::VolumeSourceTreeGd>();
-	//ClassDB::register_class<Ign::MaterialSourceGd>();
-	//ClassDB::register_class<Ign::MaterialSourceScriptGd>();
+	
 	ClassDB::register_class<Ign::MarchingCubesGd>();
 	ClassDB::register_class<Ign::MarchingCubesDualGd>();
 	ClassDB::register_class<Ign::MarchingCubesDualNodeGd>();
