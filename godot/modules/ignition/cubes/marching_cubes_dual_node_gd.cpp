@@ -16,6 +16,8 @@ void MarchingCubesDualNodeGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("center_vector", "in_source"),                          &MarchingCubesDualNodeGd::center_vector,          Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("se3_in_point", "at", "in_source"),                     &MarchingCubesDualNodeGd::se3_in_point,           Variant::OBJECT );
 	ClassDB::bind_method( D_METHOD("hash"),                                                &MarchingCubesDualNodeGd::hash,                   Variant::STRING );
+	ClassDB::bind_method( D_METHOD("asset_transform", "se3", "asset_in_source", "result_in_source", "scaler"),
+		                                                                                   &MarchingCubesDualNodeGd::asset_transform,        Variant::TRANSFORM );
 	ClassDB::bind_method( D_METHOD("at"),                                                  &MarchingCubesDualNodeGd::at,                     Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("size"),                                                &MarchingCubesDualNodeGd::size,                   Variant::INT );
 }
@@ -129,6 +131,21 @@ String MarchingCubesDualNodeGd::hash() const
 	const uint64_t h = node->hash.state();
 	const String s_hash = uitos( h );
 	return s_hash;
+}
+
+Transform MarchingCubesDualNodeGd::asset_transform( const Ref<Se3Ref> & se3, bool asset_in_source, bool result_in_source, const Ref<DistanceScalerRef> & scaler ) const
+{
+	if ( ( cubes == nullptr ) || ( node == nullptr ) )
+	{
+		return Transform();
+	}
+
+	const SE3 asset_se3 = se3->se3;
+	const DistanceScalerBase * s = &(scaler->scaler);
+	const SE3 ret_se3 = node->asset_se3( cubes, asset_se3, asset_in_source, result_in_source, s );
+	const Transform t = ret_se3.transform();
+
+	return t;
 }
 
 Array MarchingCubesDualNodeGd::at()

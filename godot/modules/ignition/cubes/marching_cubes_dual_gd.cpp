@@ -221,7 +221,7 @@ Transform MarchingCubesDualGd::mesh_transform( const Ref<DistanceScalerRef> & sc
 		s = nullptr;
 	else
 		s = &(scaler_ref->scaler);
-	const Transform transform = cubes.source_transform( s );
+	const Transform transform = cubes.compute_source_transform( s );
 	return transform;
 }
 

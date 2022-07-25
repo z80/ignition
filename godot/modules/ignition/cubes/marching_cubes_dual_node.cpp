@@ -394,6 +394,31 @@ SE3 MarchingCubesDualNode::se3_in_point( MarchingCubesDual * tree, const Vector3
 	return ret;
 }
 
+SE3 MarchingCubesDualNode::asset_se3( MarchingCubesDual * tree, const SE3 & asset_at, bool asset_in_source, bool result_in_source, const DistanceScalerBase * scaler ) const
+{
+	SE3 asset_at_world;
+	if ( asset_in_source )
+	{
+		const SE3 & source_se3 = tree->source_se3;
+		asset_at_world = source_se3 * asset_at;
+	}
+	else
+	{
+		asset_at_world = asset_at;
+	}
+
+	if ( !result_in_source )
+	{
+		return asset_at_world;
+	}
+
+	const SE3 source_se3 = tree->compute_source_se3( scaler );
+	const SE3 inv_source_se3 = source_se3.inverse();
+	const SE3 asset_at_source = inv_source_se3 * asset_at_world;
+
+	return asset_at_source;
+}
+
 
 const VectorInt MarchingCubesDualNode::center() const
 {

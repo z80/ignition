@@ -164,7 +164,8 @@ public:
 
     const std::vector<Face3> & collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler = nullptr );
 
-    const Transform source_transform( const DistanceScalerBase * scaler = nullptr) const;
+    Transform compute_source_transform( const DistanceScalerBase * scaler = nullptr) const;
+	SE3 compute_source_se3( const DistanceScalerBase * scaler = nullptr) const;
 
     Float    node_size_min( const MarchingCubesDualNode * node ) const;
 	Float    node_size_max( const MarchingCubesDualNode * node ) const;

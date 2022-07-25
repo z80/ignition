@@ -486,7 +486,14 @@ const std::vector<Face3> & MarchingCubesDual::collision_faces( const Vector3d & 
 
 
 
-const Transform MarchingCubesDual::source_transform( const DistanceScalerBase * scaler ) const
+Transform MarchingCubesDual::compute_source_transform( const DistanceScalerBase * scaler ) const
+{
+	const SE3 se3 = compute_source_se3( scaler );
+	const Transform ret = se3.transform();
+	return ret;
+}
+
+SE3 MarchingCubesDual::compute_source_se3( const DistanceScalerBase * scaler ) const
 {
 	Vector3d o;
 	if (scaler == nullptr)
@@ -496,8 +503,8 @@ const Transform MarchingCubesDual::source_transform( const DistanceScalerBase * 
 
 	SE3 se3( source_se3 );
 	se3.r_ = o;
-	const Transform ret = se3.transform();
-	return ret;
+
+	return se3;
 }
 
 
