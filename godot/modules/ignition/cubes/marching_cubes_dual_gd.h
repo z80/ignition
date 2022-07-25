@@ -38,7 +38,8 @@ public:
 
 
 	Array materials_used() const;
-	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
+	void apply_to_mesh( int material_index, Node * mesh_instance );
+	Transform mesh_transform( const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 	Array collision_faces( const Vector3 & at, real_t dist, bool in_source );
 
 	void set_max_nodes_qty( int qty );

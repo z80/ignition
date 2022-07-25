@@ -26,7 +26,8 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_tree_node", "ind"),                  &MarchingCubesDualGd::get_tree_node,     Variant::OBJECT );
 
 	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
-	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
+	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance"),           &MarchingCubesDualGd::apply_to_mesh );
+	ClassDB::bind_method( D_METHOD("mesh_transform", "scaler"),                                 &MarchingCubesDualGd::mesh_transform, Variant::TRANSFORM );
 	ClassDB::bind_method( D_METHOD("collision_faces", "at", "dist", "in_source"),               &MarchingCubesDualGd::collision_faces, Variant::ARRAY );
 
 	ClassDB::bind_method( D_METHOD("set_max_nodes_qty", "qty"),             &MarchingCubesDualGd::set_max_nodes_qty );
@@ -155,7 +156,7 @@ Array MarchingCubesDualGd::materials_used() const
 
 
 
-void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler )
+void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instance )
 {
 	MeshInstance * mi = Object::cast_to<MeshInstance>(mesh_instance);
 	if (mi == nullptr)
@@ -210,7 +211,10 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 	am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );
 
 	mi->set_mesh( am );
+}
 
+Transform MarchingCubesDualGd::mesh_transform( const Ref<DistanceScalerRef> & scaler )
+{
 	const DistanceScalerRef * scaler_ref = scaler.ptr();
 	const DistanceScaler * s;
 	if ( scaler_ref == nullptr )
@@ -218,8 +222,9 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 	else
 		s = &(scaler_ref->scaler);
 	const Transform transform = cubes.source_transform( s );
-	mi->set_transform( transform );
+	return transform;
 }
+
 
 Array MarchingCubesDualGd::collision_faces( const Vector3 & at, real_t dist, bool in_source )
 {

@@ -5,11 +5,13 @@ var source: VolumeSourceScriptGd     = null
 var cubes: MarchingCubesDualGd = null
 var scaler: DistanceScalerRef = null
 
+var spatial: Spatial = null
 var meshes: Array = []
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	meshes = [ get_node("Mesh_0" ), get_node("Mesh_1") ]
+	spatial = get_node( "Spatial" )
+	meshes  = [ get_node("Spatial/Mesh_0" ), get_node("Spatial/Mesh_1") ]
 	
 #	scaler = DistanceScalerRef.new()
 #	scaler.plain_distance = 150.0
@@ -65,8 +67,9 @@ func _ready():
 			ind = 0
 		var m: MeshInstance = meshes[ind]
 		m.visible = true
-		#cubes.apply_to_mesh( ind, m, null )
-		cubes.apply_to_mesh( ind, m, scaler )
+		cubes.apply_to_mesh( ind, m )
+	
+	spatial.transform = cubes.mesh_transform( scaler )
 
 	
 	_query_close_nodes()
