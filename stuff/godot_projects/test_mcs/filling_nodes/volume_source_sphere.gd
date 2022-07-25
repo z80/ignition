@@ -4,13 +4,13 @@ extends Reference
 const cylinder_r: Vector3 = Vector3.ZERO
 const cylinder_a: Vector3 = Vector3.FORWARD
 
-var material_index: int    = 0
-var material_priority: int = 0
-var node_sz_max: float = 1.25
-var node_sz_min: float = 0.25
-var radius: float  = 3.0
+var material_index: int     = 0
+var material_priority: int  = 0
+var node_sz_max: float      = 1.25
+var node_sz_min: float      = 0.25
+var radius: float           = 3.0
 var noise: OpenSimplexNoise = null
-var height: float = 20.0
+var height: float           = 20.0
 
 
 func _init():
@@ -27,13 +27,14 @@ func init_seed( v ):
 
 func value_a( at: Vector3 ):
 	var unit: Vector3 = at / radius
-	var n: float = noise.get_noise_3dv( unit )
-	n *= height/radius
+	var n: float      = noise.get_noise_3dv( unit )
+	n  *= height/radius
 	at *= 1.0 - n
 	
-	var d: float = at.length()
-	var r: float = radius
+	var d: float   = at.length()
+	var r: float   = radius
 	var ret: float = d - r
+	
 	return ret
 
 
