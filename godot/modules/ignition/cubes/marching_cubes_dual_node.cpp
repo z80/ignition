@@ -377,6 +377,12 @@ Vector3d MarchingCubesDualNode::center_vector( MarchingCubesDual * tree, bool in
 	return cw;
 }
 
+Float MarchingCubesDualNode::node_size( MarchingCubesDual * tree ) const
+{
+	const Float ret = tree->node_size( this );
+	return ret;
+}
+
 SE3 MarchingCubesDualNode::se3_in_point( MarchingCubesDual * tree, const Vector3d & at, bool in_source ) const
 {
 	const SE3 & se3     = tree->source_se3;

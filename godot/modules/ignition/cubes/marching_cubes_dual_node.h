@@ -53,6 +53,7 @@ public:
 
 	bool contains_point( MarchingCubesDual * tree, const Vector3d & at ) const;
 	Vector3d center_vector( MarchingCubesDual * tree, bool in_source ) const;
+	Float    node_size( MarchingCubesDual * tree ) const;
 	SE3      se3_in_point( MarchingCubesDual * tree, const Vector3d & at, bool in_source ) const;
 	SE3      asset_se3( MarchingCubesDual * tree, const SE3 & asset_at, bool asset_in_source, bool result_in_source, const DistanceScalerBase * scaler ) const;
 

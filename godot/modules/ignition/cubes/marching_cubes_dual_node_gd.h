@@ -26,6 +26,7 @@ public:
 	Array intersect_with_ray( const Vector3 & start, const Vector3 & dir, bool in_source );
 	bool contains_point( const Vector3 & at ) const;
 	Vector3 center_vector( bool in_source ) const;
+	real_t node_size() const;
 	Ref<Se3Ref> se3_in_point( const Vector3 & at, bool in_source ) const;
 	Transform transform_in_point( const Vector3 & at, bool in_source ) const;
 	String hash() const;

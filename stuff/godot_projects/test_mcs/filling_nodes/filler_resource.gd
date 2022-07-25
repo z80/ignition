@@ -1,5 +1,5 @@
 
-extends Node
+extends Resource
 
 export(PackedScene) var scene = null
 export(float) var min_distance = 10.0
@@ -15,7 +15,7 @@ func create( parent: Spatial, node: MarchingCubesDualNodeGd, se3: Se3Ref, scaler
 	var t: Transform = node.asset_transform( se3, false, true, scaler )
 
 
-func probability( se3: Se3Ref ):
+func probability( se3_in_source: Se3Ref ):
 	return 1.0
 
 
