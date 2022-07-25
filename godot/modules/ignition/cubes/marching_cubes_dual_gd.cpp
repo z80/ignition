@@ -14,13 +14,14 @@ namespace Ign
 void MarchingCubesDualGd::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_source_transform", "se3"),                              &MarchingCubesDualGd::set_source_transform );
+	ClassDB::bind_method( D_METHOD("get_source_transform"),                                     &MarchingCubesDualGd::get_source_transform, Variant::OBJECT );
 
 	ClassDB::bind_method( D_METHOD("set_split_precision", "rel_diff"),                          &MarchingCubesDualGd::set_split_precision );
 	ClassDB::bind_method( D_METHOD("get_split_precision"),                                      &MarchingCubesDualGd::get_split_precision, Variant::REAL );
 
-	ClassDB::bind_method( D_METHOD("subdivide_source", "radius", "volume", "scaler"),                     &MarchingCubesDualGd::subdivide_source, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("subdivide_source", "radius", "volume", "scaler"),           &MarchingCubesDualGd::subdivide_source, Variant::BOOL );
 
-	ClassDB::bind_method( D_METHOD("query_close_nodes", "dist", "max_size"), &MarchingCubesDualGd::query_close_nodes, Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("query_close_nodes", "at", "dist", "max_size"), &MarchingCubesDualGd::query_close_nodes, Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("center_direction", "at", "in_source"),   &MarchingCubesDualGd::center_direction,  Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("get_tree_node", "ind"),                  &MarchingCubesDualGd::get_tree_node,     Variant::OBJECT );
 
@@ -39,8 +40,9 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_dual_cell", "cell_ind"),   &MarchingCubesDualGd::get_dual_cell,      Variant::ARRAY );
 
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "split_precision" ), "set_split_precision", "get_split_precision" );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_nodes_qty" ),   "set_max_nodes_qty",   "get_max_nodes_qty" );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "source_se3" ),   "set_source_transform", "get_source_transform" );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "split_precision" ), "set_split_precision",  "get_split_precision" );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_nodes_qty" ),   "set_max_nodes_qty",    "get_max_nodes_qty" );
 }
 
 MarchingCubesDualGd::MarchingCubesDualGd()
@@ -56,6 +58,16 @@ void MarchingCubesDualGd::set_source_transform( const Ref<Se3Ref> & se3 )
 {
 	const SE3 & se3_inst = se3.ptr()->se3;
 	cubes.set_source_transform( se3_inst );
+}
+
+Ref<Se3Ref> MarchingCubesDualGd::get_source_transform() const
+{
+	Ref<Se3Ref> se3;
+	se3.instance();
+
+	se3->se3 = cubes.get_source_transform();
+
+	return se3;
 }
 
 void MarchingCubesDualGd::set_split_precision( real_t rel_diff )

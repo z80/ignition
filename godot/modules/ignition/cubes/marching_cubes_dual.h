@@ -138,6 +138,7 @@ public:
     ~MarchingCubesDual();
 
     void set_source_transform( const SE3 & se3 );
+	const SE3 & get_source_transform() const;
     bool subdivide_source( Float bounding_radius, VolumeSource * source, const DistanceScalerBase * scaler = nullptr );
 
 	const std::vector<int> & query_close_nodes( const Vector3d & at, Float dist, Float max_size );

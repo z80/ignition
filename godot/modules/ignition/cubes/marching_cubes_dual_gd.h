@@ -25,6 +25,7 @@ public:
 	~MarchingCubesDualGd();
 
 	void set_source_transform( const Ref<Se3Ref> & se3 );
+	Ref<Se3Ref> get_source_transform() const;
 
 	void set_split_precision( real_t rel_diff );
 	real_t get_split_precision() const;

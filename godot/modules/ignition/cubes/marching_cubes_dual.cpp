@@ -52,6 +52,10 @@ void MarchingCubesDual::set_source_transform( const SE3 & se3 )
 	inverted_source_se3 = se3.inverse();
 }
 
+const SE3 & MarchingCubesDual::get_source_transform() const
+{
+	return source_se3;
+}
 
 
 bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * source, const DistanceScalerBase * scaler )
