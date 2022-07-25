@@ -294,6 +294,7 @@ void MarchingCubesDualNode::compute_hashes()
 	hash << at.x;
 	hash << at.y;
 	hash << at.z;
+	hash << size;
 
 	const bool has_children = this->has_children();
 	if ( has_children )
