@@ -9,13 +9,15 @@ func create( parent: Spatial, node: MarchingCubesDualNodeGd, se3: Se3Ref, scaler
 	if scene == null:
 		return null
 	
-	var m: Spatial = scene.instance()
-	parent.add_child( m )
+	var instance: Spatial = scene.instance()
+	parent.add_child( instance )
 	
 	var t: Transform = node.asset_transform( se3, false, true, scaler )
+	instance.transform = t
+	
 
 
-func probability( se3_in_source: Se3Ref ):
+func probability( se3_in_source: Se3Ref, norm: Vector3 ):
 	return 1.0
 
 
