@@ -1,6 +1,6 @@
 
 tool
-extends Spatial
+extends Node
 
 export(Array) var creators = []
 export(Resource) var creator = null setget _set_creator, _get_creator
@@ -10,10 +10,17 @@ export(float) var fill_node_size = 100.0
 var _currently_populated_nodes: Array = []
 var _created_instances: Array = []
 
-func update( cubes: MarchingCubesDualGd, se3: Se3Ref ):
-	var at: Vector3  = se3.r
-	var nodes: Array = cubes.query_close_nodes( at, fill_dist, fill_node_size )
 
+func update( parent: Spatial, cubes: MarchingCubesDualGd, se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+	clear()
+	
+	var at: Vector3  = se3.r
+	var node_indices: Array = cubes.query_close_nodes( at, fill_dist, fill_node_size )
+	for node_ind in node_indices:
+		var node: MarchingCubesDualNodeGd = cubes.get_tree_node( node_ind )
+		for creator in creators:
+			var created_instances: Array = _populate_node( parent, cubes, node, creator, scaler )
+			_created_instances += created_instances
 
 
 
@@ -35,10 +42,11 @@ func _ready():
 
 
 
-func _fill_node( parent: Spatial, cubes: MarchingCubesDualGd, node: MarchingCubesDualNodeGd, creator: Resource, scaler: DistanceScalerBaseRef ):
+func _populate_node( parent: Spatial, cubes: MarchingCubesDualGd, node: MarchingCubesDualNodeGd, creator: Resource, scaler: DistanceScalerBaseRef ):
 	var center: Vector3 = node.center_vector( true )
 	var sz: float       = node.node_size()
 	
+	var created_instances: Array = []
 	
 	var dist: float = creator.min_distance
 	var v: float  = sz / dist
@@ -67,6 +75,9 @@ func _fill_node( parent: Spatial, cubes: MarchingCubesDualGd, node: MarchingCube
 			continue
 		
 		var instance: Spatial = creator.create( parent, node, se3, scaler )
+		created_instances.push_back( instance )
+	
+	return created_instances
 
 
 

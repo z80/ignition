@@ -12,7 +12,7 @@ func create( parent: Spatial, node: MarchingCubesDualNodeGd, se3: Se3Ref, scaler
 	var instance: Spatial = scene.instance()
 	parent.add_child( instance )
 	
-	var t: Transform = node.asset_transform( se3, false, true, scaler )
+	var t: Transform = node.asset_transform( se3, true, true, scaler )
 	instance.transform = t
 	
 

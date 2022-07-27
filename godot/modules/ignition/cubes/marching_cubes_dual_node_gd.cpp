@@ -155,7 +155,11 @@ Transform MarchingCubesDualNodeGd::asset_transform( const Ref<Se3Ref> & se3, boo
 	}
 
 	const SE3 asset_se3 = se3->se3;
-	const DistanceScalerBase * s = &(scaler->scaler);
+	const DistanceScalerBase * s;
+	if ( scaler.ptr() != nullptr )
+		s = &(scaler->scaler);
+	else
+		s = nullptr;
 	const SE3 ret_se3 = node->asset_se3( cubes, asset_se3, asset_in_source, result_in_source, s );
 	const Transform t = ret_se3.transform();
 

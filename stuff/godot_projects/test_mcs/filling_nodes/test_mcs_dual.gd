@@ -70,9 +70,13 @@ func _ready():
 		cubes.apply_to_mesh( ind, m )
 	
 	spatial.transform = cubes.mesh_transform( scaler )
-
 	
-	_query_close_nodes()
+	
+	#_query_close_nodes()
+	
+	var populator: Node = get_node( "Populator" )
+	se3 = Se3Ref.new()
+	populator.update( spatial, cubes, se3, scaler )
 
 
 

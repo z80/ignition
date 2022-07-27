@@ -1,8 +1,9 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://filling_nodes/test_mcs_dual.gd" type="Script" id=1]
 [ext_resource path="res://maujoe.camera_control/scripts/camera_control.gd" type="Script" id=2]
 [ext_resource path="res://node_drawer/node_drawer.gd" type="Script" id=3]
+[ext_resource path="res://filling_nodes/populator.tscn" type="PackedScene" id=4]
 
 [sub_resource type="OpenSimplexNoise" id=2]
 
@@ -76,3 +77,5 @@ material = SubResource( 8 )
 [node name="DualCells" type="ImmediateGeometry" parent="."]
 script = ExtResource( 3 )
 material = SubResource( 9 )
+
+[node name="Populator" parent="." instance=ExtResource( 4 )]

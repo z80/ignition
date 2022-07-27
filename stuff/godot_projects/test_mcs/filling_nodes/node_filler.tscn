@@ -1,8 +1,0 @@
-[gd_scene load_steps=3 format=2]
-
-[ext_resource path="res://filling_nodes/node_filler.gd" type="Script" id=1]
-[ext_resource path="res://filling_nodes/creator_resource.tres" type="Resource" id=2]
-
-[node name="NodeFiller" type="Spatial"]
-script = ExtResource( 1 )
-fillers = [ ExtResource( 2 ) ]
