@@ -68,7 +68,6 @@ skeleton = NodePath("../..")
 [node name="MeshInstance2" type="MeshInstance" parent="."]
 transform = Transform( 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0 )
 mesh = SubResource( 1 )
-material/0 = null
 
 [node name="OctreeNodes" type="ImmediateGeometry" parent="."]
 script = ExtResource( 3 )
