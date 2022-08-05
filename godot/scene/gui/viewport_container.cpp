@@ -54,6 +54,7 @@ Size2 ViewportContainer::get_minimum_size() const {
 
 void ViewportContainer::set_stretch(bool p_enable) {
 	stretch = p_enable;
+	minimum_size_changed();
 	queue_sort();
 	update();
 }
@@ -146,7 +147,7 @@ void ViewportContainer::_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Transform2D xform = get_global_transform();
+	Transform2D xform = get_global_transform_with_canvas();
 
 	if (stretch) {
 		Transform2D scale_xf;
@@ -173,7 +174,7 @@ void ViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Transform2D xform = get_global_transform();
+	Transform2D xform = get_global_transform_with_canvas();
 
 	if (stretch) {
 		Transform2D scale_xf;

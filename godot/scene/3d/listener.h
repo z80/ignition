@@ -64,11 +64,8 @@ public:
 
 	virtual Transform get_listener_transform() const;
 
-	void set_visible_layers(uint32_t p_layers);
-	uint32_t get_visible_layers() const;
-
 	Listener();
 	~Listener();
 };
 
-#endif
+#endif // LISTENER_H

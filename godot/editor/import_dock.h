@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMPORTDOCK_H
-#define IMPORTDOCK_H
+#ifndef IMPORT_DOCK_H
+#define IMPORT_DOCK_H
 
 #include "core/io/config_file.h"
 #include "core/io/resource_importer.h"
@@ -58,6 +58,9 @@ class ImportDock : public VBoxContainer {
 	Button *import;
 
 	ImportDockParameters *params;
+
+	VBoxContainer *content;
+	Label *select_a_resource;
 
 	void _preset_selected(int p_idx);
 	void _importer_selected(int i_idx);
@@ -92,4 +95,4 @@ public:
 	~ImportDock();
 };
 
-#endif // IMPORTDOCK_H
+#endif // IMPORT_DOCK_H

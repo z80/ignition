@@ -64,6 +64,13 @@ static String _prestr(SL::DataPrecision p_pres) {
 	return "";
 }
 
+static String _constr(bool p_is_const) {
+	if (p_is_const) {
+		return "const ";
+	}
+	return "";
+}
+
 static String _qualstr(SL::ArgumentQualifier p_qual) {
 	switch (p_qual) {
 		case SL::ARGUMENT_QUALIFIER_IN:
@@ -254,6 +261,8 @@ void ShaderCompilerGLES2::_dump_function_deps(const SL::ShaderNode *p_node, cons
 				header += ", ";
 			}
 
+			header += _constr(fnode->arguments[i].is_const);
+
 			if (fnode->arguments[i].type == SL::TYPE_STRUCT) {
 				header += _qualstr(fnode->arguments[i].qualifier) + _mkid(fnode->arguments[i].type_str) + " " + _mkid(fnode->arguments[i].name);
 			} else {
@@ -295,8 +304,8 @@ String ShaderCompilerGLES2::_dump_node_code(const SL::Node *p_node, int p_level,
 			int max_texture_uniforms = 0;
 			int max_uniforms = 0;
 
-			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = snode->uniforms.front(); E; E = E->next()) {
-				if (SL::is_sampler_type(E->get().type)) {
+			for (OrderedHashMap<StringName, SL::ShaderNode::Uniform>::Element E = snode->uniforms.front(); E; E = E.next()) {
+				if (SL::is_sampler_type(E.get().type)) {
 					max_texture_uniforms++;
 				} else {
 					max_uniforms++;
@@ -347,55 +356,55 @@ String ShaderCompilerGLES2::_dump_node_code(const SL::Node *p_node, int p_level,
 
 			// uniforms
 
-			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = snode->uniforms.front(); E; E = E->next()) {
+			for (OrderedHashMap<StringName, SL::ShaderNode::Uniform>::Element E = snode->uniforms.front(); E; E = E.next()) {
 				StringBuffer<> uniform_code;
 
 				// use highp if no precision is specified to prevent different default values in fragment and vertex shader
-				SL::DataPrecision precision = E->get().precision;
-				if (precision == SL::PRECISION_DEFAULT && E->get().type != SL::TYPE_BOOL) {
+				SL::DataPrecision precision = E.get().precision;
+				if (precision == SL::PRECISION_DEFAULT && E.get().type != SL::TYPE_BOOL) {
 					precision = SL::PRECISION_HIGHP;
 				}
 
 				uniform_code += "uniform ";
 				uniform_code += _prestr(precision);
-				uniform_code += _typestr(E->get().type);
+				uniform_code += _typestr(E.get().type);
 				uniform_code += " ";
-				uniform_code += _mkid(E->key());
+				uniform_code += _mkid(E.key());
 				uniform_code += ";\n";
 
-				if (SL::is_sampler_type(E->get().type)) {
-					r_gen_code.texture_uniforms.write[E->get().texture_order] = E->key();
-					r_gen_code.texture_hints.write[E->get().texture_order] = E->get().hint;
+				if (SL::is_sampler_type(E.get().type)) {
+					r_gen_code.texture_uniforms.write[E.get().texture_order] = E.key();
+					r_gen_code.texture_hints.write[E.get().texture_order] = E.get().hint;
 				} else {
-					r_gen_code.uniforms.write[E->get().order] = E->key();
+					r_gen_code.uniforms.write[E.get().order] = E.key();
 				}
 
 				vertex_global += uniform_code.as_string();
 				fragment_global += uniform_code.as_string();
 
-				p_actions.uniforms->insert(E->key(), E->get());
+				p_actions.uniforms->insert(E.key(), E.get());
 			}
 
 			// varyings
 
 			List<Pair<StringName, SL::ShaderNode::Varying>> var_frag_to_light;
 
-			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = snode->varyings.front(); E; E = E->next()) {
-				if (E->get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT || E->get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
-					var_frag_to_light.push_back(Pair<StringName, SL::ShaderNode::Varying>(E->key(), E->get()));
-					fragment_varyings.insert(E->key());
+			for (OrderedHashMap<StringName, SL::ShaderNode::Varying>::Element E = snode->varyings.front(); E; E = E.next()) {
+				if (E.get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT || E.get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
+					var_frag_to_light.push_back(Pair<StringName, SL::ShaderNode::Varying>(E.key(), E.get()));
+					fragment_varyings.insert(E.key());
 					continue;
 				}
 				StringBuffer<> varying_code;
 
 				varying_code += "varying ";
-				varying_code += _prestr(E->get().precision);
-				varying_code += _typestr(E->get().type);
+				varying_code += _prestr(E.get().precision);
+				varying_code += _typestr(E.get().type);
 				varying_code += " ";
-				varying_code += _mkid(E->key());
-				if (E->get().array_size > 0) {
+				varying_code += _mkid(E.key());
+				if (E.get().array_size > 0) {
 					varying_code += "[";
-					varying_code += itos(E->get().array_size);
+					varying_code += itos(E.get().array_size);
 					varying_code += "]";
 				}
 				varying_code += ";\n";
@@ -425,7 +434,7 @@ String ShaderCompilerGLES2::_dump_node_code(const SL::Node *p_node, int p_level,
 
 			for (int i = 0; i < snode->vconstants.size(); i++) {
 				String gcode;
-				gcode += "const ";
+				gcode += _constr(true);
 				if (snode->vconstants[i].type == SL::TYPE_STRUCT) {
 					gcode += _mkid(snode->vconstants[i].type_str);
 				} else {
@@ -517,9 +526,7 @@ String ShaderCompilerGLES2::_dump_node_code(const SL::Node *p_node, int p_level,
 			SL::VariableDeclarationNode *var_dec_node = (SL::VariableDeclarationNode *)p_node;
 
 			StringBuffer<> declaration;
-			if (var_dec_node->is_const) {
-				declaration += "const ";
-			}
+			declaration += _constr(var_dec_node->is_const);
 			if (var_dec_node->datatype == SL::TYPE_STRUCT) {
 				declaration += _mkid(var_dec_node->struct_name);
 			} else {
@@ -1051,6 +1058,8 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["SCREEN_PIXEL_SIZE"] = "screen_pixel_size";
 	actions[VS::SHADER_CANVAS_ITEM].renames["FRAGCOORD"] = "gl_FragCoord";
 	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_COORD"] = "gl_PointCoord";
+	actions[VS::SHADER_CANVAS_ITEM].renames["INSTANCE_ID"] = "0";
+	actions[VS::SHADER_CANVAS_ITEM].renames["VERTEX_ID"] = "0";
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_VEC"] = "light_vec";
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_HEIGHT"] = "light_height";
@@ -1111,8 +1120,9 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].renames["UV2"] = "uv2_interp";
 	actions[VS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
 	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "point_size";
-	// gl_InstanceID is not available in OpenGL ES 2.0
+	// gl_InstanceID and VERTEX_ID is not available in OpenGL ES 2.0
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "0";
+	actions[VS::SHADER_SPATIAL].renames["VERTEX_ID"] = "0";
 
 	//builtins
 

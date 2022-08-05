@@ -2943,9 +2943,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
 					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
 						lv->datatype = DataType();
-#ifdef DEBUG_ENABLED
 						lv->datatype.infer_type = true;
-#endif
 						tokenizer->advance();
 					} else if (!_parse_type(lv->datatype)) {
 						_set_error("Expected a type for the variable.");
@@ -4306,6 +4304,16 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 										break;
 									}
 
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_2D_NAVIGATION") {
+										_ADVANCE_AND_CONSUME_NEWLINES;
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected \")\" in the layers 2D navigation hint.");
+											return;
+										}
+										current_export.hint = PROPERTY_HINT_LAYERS_2D_PHYSICS;
+										break;
+									}
+
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_3D_RENDER") {
 										_ADVANCE_AND_CONSUME_NEWLINES;
 										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
@@ -4323,6 +4331,16 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 											return;
 										}
 										current_export.hint = PROPERTY_HINT_LAYERS_3D_PHYSICS;
+										break;
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_3D_NAVIGATION") {
+										_ADVANCE_AND_CONSUME_NEWLINES;
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected \")\" in the layers 3D navigation hint.");
+											return;
+										}
+										current_export.hint = PROPERTY_HINT_LAYERS_3D_NAVIGATION;
 										break;
 									}
 
@@ -4905,9 +4923,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
 					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
 						member.data_type = DataType();
-#ifdef DEBUG_ENABLED
 						member.data_type.infer_type = true;
-#endif
 						tokenizer->advance();
 					} else if (!_parse_type(member.data_type)) {
 						_set_error("Expected a type for the class variable.");
@@ -4918,6 +4934,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				if (autoexport && member.data_type.has_type) {
 					if (member.data_type.kind == DataType::BUILTIN) {
 						member._export.type = member.data_type.builtin_type;
+						member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 					} else if (member.data_type.kind == DataType::NATIVE) {
 						if (ClassDB::is_parent_class(member.data_type.native_type, "Resource")) {
 							member._export.type = Variant::OBJECT;
@@ -4999,21 +5016,21 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						}
 					}
 #ifdef TOOLS_ENABLED
+					// Warn if the default value set is not the same as the export type, since it won't be coerced and
+					// may create wrong expectations.
 					if (subexpr->type == Node::TYPE_CONSTANT && (member._export.type != Variant::NIL || member.data_type.has_type)) {
 						ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
 						if (cn->value.get_type() != Variant::NIL) {
 							if (member._export.type != Variant::NIL && cn->value.get_type() != member._export.type) {
-								if (Variant::can_convert(cn->value.get_type(), member._export.type)) {
-									Variant::CallError err;
-									const Variant *args = &cn->value;
-									cn->value = Variant::construct(member._export.type, &args, 1, err);
-								} else {
+								if (!Variant::can_convert(cn->value.get_type(), member._export.type)) {
 									_set_error("Can't convert the provided value to the export type.");
 									return;
+								} else if (!member.data_type.has_type) {
+									_add_warning(GDScriptWarning::EXPORT_HINT_TYPE_MISTMATCH, member.line, Variant::get_type_name(cn->value.get_type()), Variant::get_type_name(member._export.type));
 								}
 							}
-							member.default_value = cn->value;
 						}
+						member.default_value = cn->value;
 					}
 #endif
 
@@ -5149,9 +5166,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
 					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
 						constant.type = DataType();
-#ifdef DEBUG_ENABLED
 						constant.type.infer_type = true;
-#endif
 						tokenizer->advance();
 					} else if (!_parse_type(constant.type)) {
 						_set_error("Expected a type for the class constant.");
@@ -6989,8 +7004,6 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 		return false;
 	}
 
-#ifdef DEBUG_METHODS_ENABLED
-
 	// Only native remains
 	if (!ClassDB::class_exists(native)) {
 		native = "_" + native.operator String();
@@ -7064,9 +7077,6 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 		r_arg_types.push_back(_type_from_property(method->get_argument_info(i)));
 	}
 	return true;
-#else
-	return false;
-#endif
 }
 
 GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const OperatorNode *p_call) {
@@ -7567,16 +7577,12 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 				StringName getter_name = ClassDB::get_property_getter(native, p_member);
 				if (getter_name != StringName()) {
 					// Use the getter return type
-#ifdef DEBUG_METHODS_ENABLED
 					MethodBind *getter_method = ClassDB::get_method(native, getter_name);
 					if (getter_method) {
 						r_member_type = _type_from_property(getter_method->get_return_info());
 					} else {
 						r_member_type = DataType();
 					}
-#else
-					r_member_type = DataType();
-#endif
 				} else {
 					r_member_type = _type_from_property(E->get());
 				}
@@ -7607,16 +7613,12 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 				StringName getter_name = ClassDB::get_property_getter(native, p_member);
 				if (getter_name != StringName()) {
 					// Use the getter return type
-#ifdef DEBUG_METHODS_ENABLED
 					MethodBind *getter_method = ClassDB::get_method(native, getter_name);
 					if (getter_method) {
 						r_member_type = _type_from_property(getter_method->get_return_info());
 					} else {
 						r_member_type = DataType();
 					}
-#else
-					r_member_type = DataType();
-#endif
 				} else {
 					r_member_type = _type_from_property(E->get());
 				}

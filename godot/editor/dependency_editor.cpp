@@ -52,6 +52,9 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 
 	search->set_title(TTR("Search Replacement For:") + " " + replacing.get_file());
 
+	// Set directory to closest existing directory.
+	search->set_current_dir(replacing.get_base_dir());
+
 	search->clear_filters();
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(0), &ext);
@@ -331,7 +334,7 @@ void DependencyEditorOwners::show(const String &p_path) {
 	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
 	popup_centered_ratio();
 
-	set_title(TTR("Owners Of:") + " " + p_path.get_file());
+	set_title(vformat(TTR("Owners of: %s (Total: %d)"), p_path.get_file(), owners->get_item_count()));
 }
 
 DependencyEditorOwners::DependencyEditorOwners(EditorNode *p_editor) {

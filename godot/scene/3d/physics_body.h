@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS_BODY__H
-#define PHYSICS_BODY__H
+#ifndef PHYSICS_BODY_H
+#define PHYSICS_BODY_H
 
 #include "core/vset.h"
 #include "scene/3d/collision_object.h"
@@ -56,8 +56,6 @@ public:
 	Array get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
-
-	PhysicsBody();
 };
 
 class StaticBody : public PhysicsBody {
@@ -264,6 +262,11 @@ class KinematicBody : public PhysicsBody {
 	GDCLASS(KinematicBody, PhysicsBody);
 
 public:
+	enum MovingPlatformApplyVelocityOnLeave {
+		PLATFORM_VEL_ON_LEAVE_ALWAYS,
+		PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY,
+		PLATFORM_VEL_ON_LEAVE_NEVER,
+	};
 	struct Collision {
 		Vector3 collision;
 		Vector3 normal;
@@ -275,6 +278,7 @@ public:
 		Vector3 remainder;
 		Vector3 travel;
 		int local_shape;
+		real_t collision_safe_fraction;
 
 		real_t get_angle(const Vector3 &p_up_direction) const {
 			return Math::acos(normal.dot(p_up_direction));
@@ -293,6 +297,8 @@ private:
 	bool on_ceiling;
 	bool on_wall;
 	bool sync_to_physics = false;
+	MovingPlatformApplyVelocityOnLeave moving_platform_apply_velocity_on_leave = PLATFORM_VEL_ON_LEAVE_ALWAYS;
+
 	Vector<Collision> colliders;
 	Vector<Ref<KinematicCollision>> slide_colliders;
 	Ref<KinematicCollision> motion_cache;
@@ -306,6 +312,8 @@ private:
 
 	Vector3 _move_and_slide_internal(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
 	void _set_collision_direction(const Collision &p_collision, const Vector3 &p_up_direction, float p_floor_max_angle);
+	void set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_velocity);
+	MovingPlatformApplyVelocityOnLeave get_moving_platform_apply_velocity_on_leave() const;
 
 protected:
 	void _notification(int p_what);
@@ -341,6 +349,8 @@ public:
 	KinematicBody();
 	~KinematicBody();
 };
+
+VARIANT_ENUM_CAST(KinematicBody::MovingPlatformApplyVelocityOnLeave);
 
 class KinematicCollision : public Reference {
 	GDCLASS(KinematicCollision, Reference);
@@ -654,4 +664,4 @@ private:
 
 VARIANT_ENUM_CAST(PhysicalBone::JointType);
 
-#endif // PHYSICS_BODY__H
+#endif // PHYSICS_BODY_H

@@ -33,9 +33,6 @@ const GodotWebXR = {
 	$GodotWebXR: {
 		gl: null,
 
-		texture_ids: [null, null],
-		textures: [null, null],
-
 		session: null,
 		space: null,
 		frame: null,
@@ -189,7 +186,7 @@ const GodotWebXR = {
 		// the first element, and the right hand is the second element, and any
 		// others placed at the 3rd position and up.
 		sampleControllers: () => {
-			if (!GodotWebXR.session || !GodotWebXR.frame) {
+			if (!GodotWebXR.session) {
 				return;
 			}
 
@@ -282,11 +279,12 @@ const GodotWebXR = {
 				}
 			});
 
-			['selectstart', 'select', 'selectend', 'squeezestart', 'squeeze', 'squeezeend'].forEach((input_event) => {
+			['selectstart', 'selectend', 'select', 'squeezestart', 'squeezeend', 'squeeze'].forEach((input_event, index) => {
 				session.addEventListener(input_event, function (evt) {
-					const c_str = GodotRuntime.allocString(input_event);
-					oninputevent(c_str, GodotWebXR.getControllerId(evt.inputSource));
-					GodotRuntime.free(c_str);
+					// Some controllers won't exist until an event occurs,
+					// for example, with "screen" input sources (touch).
+					GodotWebXR.sampleControllers();
+					oninputevent(index, GodotWebXR.getControllerId(evt.inputSource));
 				});
 			});
 
@@ -371,22 +369,6 @@ const GodotWebXR = {
 				.catch((e) => { });
 		}
 
-		// Clean-up the textures we allocated for each view.
-		const gl = GodotWebXR.gl;
-		for (let i = 0; i < GodotWebXR.textures.length; i++) {
-			const texture = GodotWebXR.textures[i];
-			if (texture !== null) {
-				gl.deleteTexture(texture);
-			}
-			GodotWebXR.textures[i] = null;
-
-			const texture_id = GodotWebXR.texture_ids[i];
-			if (texture_id !== null) {
-				GL.textures[texture_id] = null;
-			}
-			GodotWebXR.texture_ids[i] = null;
-		}
-
 		GodotWebXR.session = null;
 		GodotWebXR.space = null;
 		GodotWebXR.frame = null;
@@ -461,50 +443,9 @@ const GodotWebXR = {
 		return buf;
 	},
 
-	godot_webxr_get_external_texture_for_eye__proxy: 'sync',
-	godot_webxr_get_external_texture_for_eye__sig: 'ii',
-	godot_webxr_get_external_texture_for_eye: function (p_eye) {
-		if (!GodotWebXR.session) {
-			return 0;
-		}
-
-		const view_index = (p_eye === 2 /* ARVRInterface::EYE_RIGHT */) ? 1 : 0;
-		if (GodotWebXR.texture_ids[view_index]) {
-			return GodotWebXR.texture_ids[view_index];
-		}
-
-		// Check pose separately and after returning the cached texture id,
-		// because we won't get a pose in some cases if we lose tracking, and
-		// we don't want to return 0 just because tracking was lost.
-		if (!GodotWebXR.pose) {
-			return 0;
-		}
-
-		const glLayer = GodotWebXR.session.renderState.baseLayer;
-		const view = GodotWebXR.pose.views[view_index];
-		const viewport = glLayer.getViewport(view);
-		const gl = GodotWebXR.gl;
-
-		const texture = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, viewport.width, viewport.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.bindTexture(gl.TEXTURE_2D, null);
-
-		const texture_id = GL.getNewId(GL.textures);
-		GL.textures[texture_id] = texture;
-		GodotWebXR.textures[view_index] = texture;
-		GodotWebXR.texture_ids[view_index] = texture_id;
-		return texture_id;
-	},
-
 	godot_webxr_commit_for_eye__proxy: 'sync',
-	godot_webxr_commit_for_eye__sig: 'vi',
-	godot_webxr_commit_for_eye: function (p_eye) {
+	godot_webxr_commit_for_eye__sig: 'vii',
+	godot_webxr_commit_for_eye: function (p_eye, p_texture_id) {
 		if (!GodotWebXR.session || !GodotWebXR.pose) {
 			return;
 		}
@@ -522,7 +463,7 @@ const GodotWebXR = {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, glLayer.framebuffer);
 		gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
 
-		GodotWebXR.blitTexture(gl, GodotWebXR.textures[view_index]);
+		GodotWebXR.blitTexture(gl, GL.textures[p_texture_id]);
 
 		// Restore state.
 		gl.bindFramebuffer(gl.FRAMEBUFFER, orig_framebuffer);
@@ -583,8 +524,8 @@ const GodotWebXR = {
 	},
 
 	godot_webxr_get_controller_buttons__proxy: 'sync',
-	godot_webxr_get_controller_buttons__sig: 'ii',
-	godot_webxr_get_controller_buttons: function (p_controller) {
+	godot_webxr_get_controller_buttons__sig: 'iii',
+	godot_webxr_get_controller_buttons: function (p_controller, p_xr_standard_mapping) {
 		if (GodotWebXR.controllers.length === 0) {
 			return 0;
 		}
@@ -594,19 +535,55 @@ const GodotWebXR = {
 			return 0;
 		}
 
-		const button_count = controller.gamepad.buttons.length;
+		let buttons = controller.gamepad.buttons;
+		if (controller.gamepad.mapping === 'xr-standard' && p_xr_standard_mapping) {
+			buttons = [
+				// 0 = unused,
+				0,
+				// 1 = B/Y
+				buttons[5],
+				// 2 = Grip
+				buttons[1],
+				// 3
+				buttons[3],
+				// 4
+				buttons[6],
+				// 5
+				buttons[7],
+				// 6
+				buttons[8],
+				// 7 = A/X
+				buttons[4],
+				// 8
+				buttons[9],
+				// 9
+				buttons[10],
+				// 10
+				buttons[11],
+				// 11
+				buttons[12],
+				// 12
+				buttons[13],
+				// 13
+				buttons[14],
+				// 14 = Pad
+				buttons[2],
+				// 15 = Trigger
+				buttons[0],
+			];
+		}
 
-		const buf = GodotRuntime.malloc((button_count + 1) * 4);
-		GodotRuntime.setHeapValue(buf, button_count, 'i32');
-		for (let i = 0; i < button_count; i++) {
-			GodotRuntime.setHeapValue(buf + 4 + (i * 4), controller.gamepad.buttons[i].value, 'float');
+		const buf = GodotRuntime.malloc((buttons.length + 1) * 4);
+		GodotRuntime.setHeapValue(buf, buttons.length, 'i32');
+		for (let i = 0; i < buttons.length; i++) {
+			GodotRuntime.setHeapValue(buf + 4 + (i * 4), (buttons[i] ? buttons[i].value : 0.0), 'float');
 		}
 		return buf;
 	},
 
 	godot_webxr_get_controller_axes__proxy: 'sync',
-	godot_webxr_get_controller_axes__sig: 'ii',
-	godot_webxr_get_controller_axes: function (p_controller) {
+	godot_webxr_get_controller_axes__sig: 'iii',
+	godot_webxr_get_controller_axes: function (p_controller, p_xr_standard_mapping) {
 		if (GodotWebXR.controllers.length === 0) {
 			return 0;
 		}
@@ -616,20 +593,72 @@ const GodotWebXR = {
 			return 0;
 		}
 
-		const axes_count = controller.gamepad.axes.length;
-
-		const buf = GodotRuntime.malloc((axes_count + 1) * 4);
-		GodotRuntime.setHeapValue(buf, axes_count, 'i32');
-		for (let i = 0; i < axes_count; i++) {
-			let value = controller.gamepad.axes[i];
-			if (i === 1 || i === 3) {
+		let axes = controller.gamepad.axes;
+		if (controller.gamepad.mapping === 'xr-standard') {
+			if (p_xr_standard_mapping) {
+				const trigger_axis = controller.gamepad.buttons[0].value;
+				const grip_axis = controller.gamepad.buttons[1].value;
+				axes = [
+					// 0 = Thumbstick X
+					axes[2],
+					// 1 = Thumbstick Y
+					axes[3] * -1.0,
+					// 2 = Trigger
+					trigger_axis,
+					// 3 = Grip (to match mistake in Oculus mobile plugin).
+					grip_axis,
+					// 4 = Grip
+					grip_axis,
+					// 5 = unused
+					0,
+					// 6 = Trackpad X
+					axes[0],
+					// 7 = Trackpad Y
+					axes[1] * -1.0,
+				];
+			} else {
 				// Invert the Y-axis on thumbsticks and trackpads, in order to
 				// match OpenXR and other XR platform SDKs.
-				value *= -1.0;
+				axes[1] *= -1.0;
+				axes[3] *= -1.0;
 			}
-			GodotRuntime.setHeapValue(buf + 4 + (i * 4), value, 'float');
+		}
+
+		const buf = GodotRuntime.malloc((axes.length + 1) * 4);
+		GodotRuntime.setHeapValue(buf, axes.length, 'i32');
+		for (let i = 0; i < axes.length; i++) {
+			GodotRuntime.setHeapValue(buf + 4 + (i * 4), axes[i], 'float');
 		}
 		return buf;
+	},
+
+	godot_webxr_get_controller_target_ray_mode__proxy: 'sync',
+	godot_webxr_get_controller_target_ray_mode__sig: 'ii',
+	godot_webxr_get_controller_target_ray_mode: function (p_controller) {
+		if (p_controller < 0 || p_controller >= GodotWebXR.controllers.length) {
+			return 0;
+		}
+
+		const controller = GodotWebXR.controllers[p_controller];
+		if (!controller) {
+			return 0;
+		}
+
+		switch (controller.targetRayMode) {
+		case 'gaze':
+			return 1;
+
+		case 'tracked-pointer':
+			return 2;
+
+		case 'screen':
+			return 3;
+
+		default:
+			break;
+		}
+
+		return 0;
 	},
 
 	godot_webxr_get_visibility_state__proxy: 'sync',

@@ -34,7 +34,7 @@
 #include "core/math/rect2.h" // also includes vector2, math_funcs, and ustring
 #include "core/pool_vector.h"
 
-struct Transform2D {
+struct _NO_DISCARD_CLASS_ Transform2D {
 	// Warning #1: basis of Transform2D is stored differently from Basis. In terms of elements array, the basis matrix looks like "on paper":
 	// M = (elements[0][0] elements[1][0])
 	//     (elements[0][1] elements[1][1])
@@ -72,7 +72,7 @@ struct Transform2D {
 	void set_rotation(real_t p_rot);
 	real_t get_rotation() const;
 	_FORCE_INLINE_ void set_rotation_and_scale(real_t p_rot, const Size2 &p_scale);
-	void rotate(real_t p_phi);
+	void rotate(real_t p_angle);
 
 	void scale(const Size2 &p_scale);
 	void scale_basis(const Size2 &p_scale);
@@ -90,7 +90,7 @@ struct Transform2D {
 	Transform2D scaled(const Size2 &p_scale) const;
 	Transform2D basis_scaled(const Size2 &p_scale) const;
 	Transform2D translated(const Vector2 &p_offset) const;
-	Transform2D rotated(real_t p_phi) const;
+	Transform2D rotated(real_t p_angle) const;
 
 	Transform2D untranslated() const;
 

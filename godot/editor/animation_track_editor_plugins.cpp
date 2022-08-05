@@ -326,11 +326,11 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
 		Color color = get_color("font_color", "Label");
-		draw_rect(rect, color);
+		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
 			Color accent = get_color("accent_color", "Editor");
-			draw_rect(rect, accent, false);
+			draw_rect_clipped(rect, accent, false);
 		}
 	}
 }
@@ -689,11 +689,11 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
 		Color color = get_color("font_color", "Label");
-		draw_rect(rect, color);
+		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
 			Color accent = get_color("accent_color", "Editor");
-			draw_rect(rect, accent, false);
+			draw_rect_clipped(rect, accent, false);
 		}
 	}
 }
@@ -1051,12 +1051,7 @@ void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
 				len_resizing_index = i;
 			}
 		}
-
-		if (use_hsize_cursor) {
-			set_default_cursor_shape(CURSOR_HSIZE);
-		} else {
-			set_default_cursor_shape(CURSOR_ARROW);
-		}
+		over_drag_position = use_hsize_cursor;
 	}
 
 	if (len_resizing && mm.is_valid()) {
@@ -1068,7 +1063,7 @@ void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && get_default_cursor_shape() == CURSOR_HSIZE) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && over_drag_position) {
 		len_resizing = true;
 		len_resizing_start = mb->get_shift();
 		len_resizing_from_px = mb->get_position().x;
@@ -1103,6 +1098,14 @@ void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	AnimationTrackEdit::_gui_input(p_event);
+}
+
+Control::CursorShape AnimationTrackEditTypeAudio::get_cursor_shape(const Point2 &p_pos) const {
+	if (over_drag_position || len_resizing) {
+		return Control::CURSOR_HSIZE;
+	} else {
+		return get_default_cursor_shape();
+	}
 }
 
 ////////////////////
@@ -1250,11 +1253,11 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
 		Color color = get_color("font_color", "Label");
-		draw_rect(rect, color);
+		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
 			Color accent = get_color("accent_color", "Editor");
-			draw_rect(rect, accent, false);
+			draw_rect_clipped(rect, accent, false);
 		}
 	}
 }

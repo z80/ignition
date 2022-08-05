@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef USTRING_H
-#define USTRING_H
+#ifndef USTRING_GODOT_H
+#define USTRING_GODOT_H
 
 #include "core/array.h"
 #include "core/cowdata.h"
@@ -45,11 +45,15 @@ class CharProxy {
 	CowData<T> &_cowdata;
 	static const T _null = 0;
 
-	_FORCE_INLINE_ CharProxy(const int &p_index, CowData<T> &cowdata) :
+	_FORCE_INLINE_ CharProxy(const int &p_index, CowData<T> &p_cowdata) :
 			_index(p_index),
-			_cowdata(cowdata) {}
+			_cowdata(p_cowdata) {}
 
 public:
+	_FORCE_INLINE_ CharProxy(const CharProxy<T> &p_other) :
+			_index(p_other._index),
+			_cowdata(p_other._cowdata) {}
+
 	_FORCE_INLINE_ operator T() const {
 		if (unlikely(_index == _cowdata.size())) {
 			return _null;
@@ -62,12 +66,12 @@ public:
 		return _cowdata.ptr() + _index;
 	}
 
-	_FORCE_INLINE_ void operator=(const T &other) const {
-		_cowdata.set(_index, other);
+	_FORCE_INLINE_ void operator=(const T &p_other) const {
+		_cowdata.set(_index, p_other);
 	}
 
-	_FORCE_INLINE_ void operator=(const CharProxy<T> &other) const {
-		_cowdata.set(_index, other.operator T());
+	_FORCE_INLINE_ void operator=(const CharProxy<T> &p_other) const {
+		_cowdata.set(_index, p_other.operator T());
 	}
 };
 
@@ -270,7 +274,7 @@ public:
 	Vector<int> split_ints(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<int> split_ints_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 
-	String join(Vector<String> parts);
+	String join(const Vector<String> &parts) const;
 
 	static CharType char_uppercase(CharType p_char);
 	static CharType char_lowercase(CharType p_char);
@@ -297,7 +301,7 @@ public:
 
 	CharString ascii(bool p_allow_extended = false) const;
 	CharString utf8() const;
-	bool parse_utf8(const char *p_utf8, int p_len = -1); //return true on error
+	bool parse_utf8(const char *p_utf8, int p_len = -1, bool p_skip_cr = false); //return true on error
 	static String utf8(const char *p_utf8, int p_len = -1);
 
 	static uint32_t hash(const CharType *p_cstr, int p_len); /* hash the string */
@@ -325,6 +329,7 @@ public:
 	String get_file() const;
 	static String humanize_size(uint64_t p_size);
 	String simplify_path() const;
+	bool is_network_share_path() const;
 
 	String xml_escape(bool p_escape_quotes = false) const;
 	String xml_unescape() const;
@@ -345,6 +350,7 @@ public:
 	// node functions
 	static const String invalid_node_name_characters;
 	String validate_node_name() const;
+	String validate_identifier() const;
 
 	bool is_valid_identifier() const;
 	bool is_valid_integer() const;
@@ -419,7 +425,7 @@ _FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
 // and doc translate for the class reference (DTR).
 #ifdef TOOLS_ENABLED
 // Gets parsed.
-String TTR(const String &);
+String TTR(const String &p_text, const String &p_context = "");
 String DTR(const String &);
 // Use for C strings.
 #define TTRC(m_value) (m_value)
@@ -433,10 +439,20 @@ String DTR(const String &);
 #define TTRGET(m_value) (m_value)
 #endif
 
+// Use this to mark property names for editor translation.
+// Often for dynamic properties defined in _get_property_list().
+// Property names defined directly inside EDITOR_DEF, GLOBAL_DEF, and ADD_PROPERTY macros don't need this.
+#define PNAME(m_value) (m_value)
+
+// Similar to PNAME, but to mark groups, i.e. properties with PROPERTY_USAGE_GROUP.
+// Groups defined directly inside ADD_GROUP macros don't need this.
+// The arguments are the same as ADD_GROUP. m_prefix is only used for extraction.
+#define GNAME(m_value, m_prefix) (m_value)
+
 // Runtime translate for the public node API.
 String RTR(const String &);
 
 bool is_symbol(CharType c);
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
 
-#endif // USTRING_H
+#endif // USTRING_GODOT_H

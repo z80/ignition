@@ -28,16 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLOBAL_CONFIG_H
-#define GLOBAL_CONFIG_H
+#ifndef PROJECT_SETTINGS_H
+#define PROJECT_SETTINGS_H
 
 #include "core/object.h"
 #include "core/os/thread_safe.h"
 #include "core/set.h"
 
+// Querying ProjectSettings is usually done at startup.
+// Additionally, in order to keep track of changes to ProjectSettings,
+// instead of Querying all the strings every frame just in case of changes,
+// there is a signal "project_settings_changed" which objects can subscribe to.
+
+// E.g. (from another Godot object)
+// // Call your user written object function to Query the project settings once at creation,
+// perhaps in an ENTER_TREE notification:
+// _project_settings_changed()
+// // Then connect your function to the signal so it is called every time something changes in future:
+// ProjectSettings::get_singleton()->connect("project_settings_changed", this, "_project_settings_changed");
+
+// Where for example your function may take the form:
+// void _project_settings_changed() {
+// _shadowmap_size = GLOBAL_GET("rendering/quality/shadow_atlas/size");
+// }
+
+// You may want to also disconnect from the signal in EXIT_TREE notification, if your object may be deleted
+// before ProjectSettings:
+// ProjectSettings::get_singleton()->disconnect("project_settings_changed", this, "_project_settings_changed");
+
+// Additionally, for objects that are not regular Godot objects capable of subscribing to signals (e.g. Rasterizers),
+// you can also query the function "has_changes()" each frame,
+// and update your local settings whenever this is set.
+
 class ProjectSettings : public Object {
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
+
+	int _dirty_this_frame = 2;
 
 public:
 	typedef Map<String, Variant> CustomMap;
@@ -115,7 +142,7 @@ protected:
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
-	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
+	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);
 
 	static void _bind_methods();
 
@@ -131,9 +158,9 @@ public:
 
 	void set_initial_value(const String &p_name, const Variant &p_value);
 	void set_restart_if_changed(const String &p_name, bool p_restart);
+	void set_hide_from_editor(const String &p_name, bool p_hide_from_editor);
 	void set_ignore_value_in_docs(const String &p_name, bool p_ignore);
 	bool get_ignore_value_in_docs(const String &p_name) const;
-
 	bool property_can_revert(const String &p_name);
 	Variant property_get_revert(const String &p_name);
 
@@ -148,7 +175,7 @@ public:
 	void set_order(const String &p_name, int p_order);
 	void set_builtin_order(const String &p_name);
 
-	Error setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
+	Error setup(const String &p_path, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);
 
 	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>(), bool p_merge_with_current = true);
 	Error save();
@@ -168,6 +195,14 @@ public:
 
 	bool has_custom_feature(const String &p_feature) const;
 
+	// Either use the signal `project_settings_changed` or query this function.
+	// N.B. _dirty_this_frame is set initially to 2.
+	// This is to cope with the situation where a project setting is changed in the iteration AFTER it is read.
+	// There is therefore the potential for a change to be missed. Persisting the counter
+	// for two frames avoids this, at the cost of a frame delay.
+	bool has_changes() const { return _dirty_this_frame == 1; }
+	void update();
+
 	ProjectSettings();
 	~ProjectSettings();
 };
@@ -183,4 +218,4 @@ Variant _GLOBAL_DEF_ALIAS(const String &p_var, const String &p_old_name, const V
 #define GLOBAL_DEF_ALIAS_RST(m_var, m_old_name, m_value) _GLOBAL_DEF(m_var, m_old_name, m_value, true)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
 
-#endif
+#endif // PROJECT_SETTINGS_H

@@ -269,7 +269,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	text_edit->add_color_override("search_result_border_color", search_result_border_color);
 	text_edit->add_color_override("symbol_color", symbol_color);
 
-	text_edit->add_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 6));
+	text_edit->add_constant_override("line_spacing", EDITOR_GET("text_editor/theme/line_spacing"));
 
 	colors_cache.symbol_color = symbol_color;
 	colors_cache.keyword_color = keyword_color;
@@ -524,15 +524,21 @@ void ScriptTextEditor::ensure_focus() {
 String ScriptTextEditor::get_name() {
 	String name;
 
-	if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
-		name = script->get_path().get_file();
-		if (is_unsaved()) {
-			name += "(*)";
+	name = script->get_path().get_file();
+	if (name.empty()) {
+		// This appears for newly created built-in scripts before saving the scene.
+		name = TTR("[unsaved]");
+	} else if (script->get_path().find("local://") == -1 || script->get_path().find("::") == -1) {
+		const String &script_name = script->get_name();
+		if (script_name != "") {
+			// If the built-in script has a custom resource name defined,
+			// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
+			name = vformat("%s (%s)", script_name, name.get_slice("::", 0));
 		}
-	} else if (script->get_name() != "") {
-		name = script->get_name();
-	} else {
-		name = script->get_class() + "(" + itos(script->get_instance_id()) + ")";
+	}
+
+	if (is_unsaved()) {
+		name += "(*)";
 	}
 
 	return name;
@@ -1235,6 +1241,11 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			// So this will be delegated to the ScriptEditor.
 			emit_signal("search_in_files_requested", selected_text);
 		} break;
+		case REPLACE_IN_FILES: {
+			String selected_text = code_editor->get_text_edit()->get_selection_text();
+
+			emit_signal("replace_in_files_requested", selected_text);
+		} break;
 		case SEARCH_LOCATE_FUNCTION: {
 			quick_open->popup_dialog(get_functions());
 			quick_open->set_title(TTR("Go to Function"));
@@ -1486,6 +1497,8 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 }
 
 void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
+
 	Dictionary d = p_data;
 
 	TextEdit *te = code_editor->get_text_edit();
@@ -1509,7 +1522,6 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
-		const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 		Array files = d["files"];
 
 		String text_to_drop;
@@ -1541,19 +1553,64 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		Array nodes = d["nodes"];
 		String text_to_drop;
-		for (int i = 0; i < nodes.size(); i++) {
-			if (i > 0) {
-				text_to_drop += ",";
-			}
 
-			NodePath np = nodes[i];
-			Node *node = get_node(np);
-			if (!node) {
-				continue;
-			}
+		if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
+			for (int i = 0; i < nodes.size(); i++) {
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
 
-			String path = sn->get_path_to(node);
-			text_to_drop += "\"" + path.c_escape() + "\"";
+				String path;
+				if (node->is_unique_name_in_owner()) {
+					path = "%" + node->get_name();
+				} else {
+					path = sn->get_path_to(node);
+				}
+				Vector<String> segments = path.split("/");
+				for (int j = 0; j < segments.size(); j++) {
+					if (!segments[j].is_valid_identifier()) {
+						path = path.c_escape().quote(quote_style);
+						break;
+					}
+				}
+
+				String variable_name = String(node->get_name()).camelcase_to_underscore(true).validate_identifier();
+				if (use_type) {
+					text_to_drop += vformat("onready var %s: %s = $%s\n", variable_name, node->get_class_name(), path);
+				} else {
+					text_to_drop += vformat("onready var %s = $%s\n", variable_name, path);
+				}
+			}
+		} else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if (i > 0) {
+					text_to_drop += ", ";
+				}
+
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
+
+				String path;
+				if (node->is_unique_name_in_owner()) {
+					path = "%" + node->get_name();
+				} else {
+					path = sn->get_path_to(node);
+				}
+				Vector<String> segments = path.split("/");
+				for (int j = 0; j < segments.size(); j++) {
+					if (!segments[j].is_valid_identifier()) {
+						path = path.c_escape().quote(quote_style);
+						break;
+					}
+				}
+				text_to_drop += "$" + path;
+			}
 		}
 
 		te->cursor_set_line(row);
@@ -1562,7 +1619,6 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && String(d["type"]) == "obj_property") {
-		const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 		const String text_to_drop = String(d["property"]).c_escape().quote(quote_style);
 
 		te->cursor_set_line(row);
@@ -1805,6 +1861,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/contextual_help"), HELP_CONTEXTUAL);
 	search_menu->get_popup()->connect("id_pressed", this, "_edit_option");
@@ -2020,6 +2077,7 @@ void ScriptTextEditor::register_editor() {
 #endif
 
 	ED_SHORTCUT("script_text_editor/find_in_files", TTR("Find in Files..."), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F);
+	ED_SHORTCUT("script_text_editor/replace_in_files", TTR("Replace in Files..."), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R);
 
 #ifdef OSX_ENABLED
 	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_SPACE);

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_DICTIONARY_H
-#define GODOT_DICTIONARY_H
+#ifndef GDNATIVE_DICTIONARY_H
+#define GDNATIVE_DICTIONARY_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -102,8 +102,12 @@ godot_bool GDAPI godot_dictionary_erase_with_return(godot_dictionary *p_self, co
 
 godot_variant GDAPI godot_dictionary_get_with_default(const godot_dictionary *p_self, const godot_variant *p_key, const godot_variant *p_default);
 
+// GDNative core 1.3
+
+void GDAPI godot_dictionary_merge(godot_dictionary *p_self, const godot_dictionary *p_dictionary, const godot_bool p_overwrite);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif // GODOT_DICTIONARY_H
+#endif // GDNATIVE_DICTIONARY_H

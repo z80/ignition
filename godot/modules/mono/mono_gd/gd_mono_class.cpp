@@ -187,7 +187,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 
 #ifdef DEBUG_ENABLED
 		// For debug builds, we also fetched from native base classes as well before if this is not a native base class.
-		// This allows us to warn the user here if he is using snake_case by mistake.
+		// This allows us to warn the user here if they are using snake_case by mistake.
 
 		if (p_native_base != this) {
 			GDMonoClass *native_top = p_native_base;
@@ -278,7 +278,7 @@ bool GDMonoClass::has_public_parameterless_ctor() {
 	return ctor && ctor->get_visibility() == IMonoClassMember::PUBLIC;
 }
 
-GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_count) {
+GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, uint16_t p_params_count) {
 	MethodKey key = MethodKey(p_name, p_params_count);
 
 	GDMonoMethod **match = methods.getptr(key);
@@ -316,7 +316,7 @@ GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method, const StringName
 	return get_method(p_raw_method, p_name, params_count);
 }
 
-GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method, const StringName &p_name, int p_params_count) {
+GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method, const StringName &p_name, uint16_t p_params_count) {
 	ERR_FAIL_NULL_V(p_raw_method, NULL);
 
 	MethodKey key = MethodKey(p_name, p_params_count);
@@ -438,12 +438,22 @@ const Vector<GDMonoProperty *> &GDMonoClass::get_all_properties() {
 }
 
 const Vector<GDMonoClass *> &GDMonoClass::get_all_delegates() {
-	if (delegates_fetched)
+	if (delegates_fetched) {
 		return delegates_list;
+	}
+
+	// If the class is generic we must use the generic type definition.
+	MonoClass *klass = mono_class;
+	if (mono_type_get_type(get_mono_type()) == MONO_TYPE_GENERICINST) {
+		MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), get_mono_type());
+		GDMonoUtils::Marshal::get_generic_type_definition(reftype, &reftype);
+		MonoType *type = mono_reflection_type_get_type(reftype);
+		klass = mono_class_from_mono_type(type);
+	}
 
 	void *iter = NULL;
 	MonoClass *raw_class = NULL;
-	while ((raw_class = mono_class_get_nested_types(mono_class, &iter)) != NULL) {
+	while ((raw_class = mono_class_get_nested_types(klass, &iter)) != NULL) {
 		if (mono_class_is_delegate(raw_class)) {
 			StringName name = String::utf8(mono_class_get_name(raw_class));
 

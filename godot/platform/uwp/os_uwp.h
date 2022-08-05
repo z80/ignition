@@ -121,11 +121,6 @@ private:
 
 	Windows::System::Display::DisplayRequest ^ display_request;
 
-	void _post_dpad(DWORD p_dpad, int p_device, bool p_pressed);
-
-	void _drag_event(int idx, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	void _touch_event(int idx, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 	ref class ManagedType {
 	public:
 		property bool alert_close_handle;
@@ -205,8 +200,9 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const;
 	virtual uint64_t get_ticks_usec() const;
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL, bool p_open_console = false);
 	virtual Error kill(const ProcessID &p_pid);
+	virtual bool is_process_running(const ProcessID &p_pid) const;
 
 	virtual bool has_environment(const String &p_var) const;
 	virtual String get_environment(const String &p_var) const;
@@ -264,4 +260,4 @@ public:
 	~OS_UWP();
 };
 
-#endif
+#endif // OS_UWP_H

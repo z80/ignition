@@ -43,8 +43,11 @@ void WebXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_requested_reference_space_types", "requested_reference_space_types"), &WebXRInterface::set_requested_reference_space_types);
 	ClassDB::bind_method(D_METHOD("get_requested_reference_space_types"), &WebXRInterface::get_requested_reference_space_types);
 	ClassDB::bind_method(D_METHOD("get_controller", "controller_id"), &WebXRInterface::get_controller);
+	ClassDB::bind_method(D_METHOD("get_controller_target_ray_mode", "controller_id"), &WebXRInterface::get_controller_target_ray_mode);
 	ClassDB::bind_method(D_METHOD("get_visibility_state"), &WebXRInterface::get_visibility_state);
 	ClassDB::bind_method(D_METHOD("get_bounds_geometry"), &WebXRInterface::get_bounds_geometry);
+	ClassDB::bind_method(D_METHOD("set_xr_standard_mapping"), &WebXRInterface::set_xr_standard_mapping);
+	ClassDB::bind_method(D_METHOD("get_xr_standard_mapping"), &WebXRInterface::get_xr_standard_mapping);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "session_mode", PROPERTY_HINT_NONE), "set_session_mode", "get_session_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "required_features", PROPERTY_HINT_NONE), "set_required_features", "get_required_features");
@@ -53,6 +56,7 @@ void WebXRInterface::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "reference_space_type", PROPERTY_HINT_NONE), "", "get_reference_space_type");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "visibility_state", PROPERTY_HINT_NONE), "", "get_visibility_state");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "bounds_geometry", PROPERTY_HINT_NONE), "", "get_bounds_geometry");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "xr_standard_mapping", PROPERTY_HINT_NONE), "set_xr_standard_mapping", "get_xr_standard_mapping");
 
 	ADD_SIGNAL(MethodInfo("session_supported", PropertyInfo(Variant::STRING, "session_mode"), PropertyInfo(Variant::BOOL, "supported")));
 	ADD_SIGNAL(MethodInfo("session_started"));
@@ -68,4 +72,9 @@ void WebXRInterface::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("visibility_state_changed"));
 	ADD_SIGNAL(MethodInfo("reference_space_reset"));
+
+	BIND_ENUM_CONSTANT(TARGET_RAY_MODE_UNKNOWN);
+	BIND_ENUM_CONSTANT(TARGET_RAY_MODE_GAZE);
+	BIND_ENUM_CONSTANT(TARGET_RAY_MODE_TRACKED_POINTER);
+	BIND_ENUM_CONSTANT(TARGET_RAY_MODE_SCREEN);
 }

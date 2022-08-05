@@ -363,7 +363,21 @@ bool CanvasItem::is_visible_in_tree() const {
 		p = p->get_parent_item();
 	}
 
+	if (canvas_layer) {
+		return canvas_layer->is_visible();
+	}
+
 	return true;
+}
+
+void CanvasItem::_toplevel_visibility_changed(bool p_visible) {
+	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, visible && p_visible);
+
+	if (visible) {
+		_propagate_visibility_changed(p_visible);
+	} else {
+		notification(NOTIFICATION_VISIBILITY_CHANGED);
+	}
 }
 
 void CanvasItem::_propagate_visibility_changed(bool p_visible) {
@@ -373,7 +387,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
 	if (p_visible) {
-		update(); //todo optimize
+		update(); // Todo optimize.
 	} else {
 		emit_signal(SceneStringNames::get_singleton()->hide);
 	}
@@ -382,7 +396,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	for (int i = 0; i < get_child_count(); i++) {
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
 
-		if (c && c->visible) { //should the toplevels stop propagation? i think so but..
+		if (c && c->visible && !c->toplevel) {
 			c->_propagate_visibility_changed(p_visible);
 		}
 	}
@@ -390,36 +404,32 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	_unblock();
 }
 
-void CanvasItem::show() {
-	if (visible) {
+void CanvasItem::set_visible(bool p_visible) {
+	if (visible == p_visible) {
 		return;
 	}
 
-	visible = true;
-	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, true);
+	visible = p_visible;
+	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, p_visible);
 
 	if (!is_inside_tree()) {
 		return;
 	}
 
-	_propagate_visibility_changed(true);
+	_propagate_visibility_changed(p_visible);
 	_change_notify("visible");
 }
 
+void CanvasItem::show() {
+	set_visible(true);
+}
+
 void CanvasItem::hide() {
-	if (!visible) {
-		return;
-	}
+	set_visible(false);
+}
 
-	visible = false;
-	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, false);
-
-	if (!is_inside_tree()) {
-		return;
-	}
-
-	_propagate_visibility_changed(false);
-	_change_notify("visible");
+bool CanvasItem::is_visible() const {
+	return visible;
 }
 
 CanvasItem *CanvasItem::current_item_drawn = nullptr;
@@ -435,7 +445,7 @@ void CanvasItem::_update_callback() {
 
 	VisualServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
-	if (is_visible_in_tree()) { //todo optimize this!!
+	if (is_visible_in_tree()) { // Todo optimize this!!
 		if (first_draw) {
 			notification(NOTIFICATION_VISIBILITY_CHANGED);
 			first_draw = false;
@@ -520,16 +530,16 @@ void CanvasItem::_enter_canvas() {
 
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 
-		group = "root_canvas" + itos(canvas.get_id());
+		canvas_group = "root_canvas" + itos(canvas.get_id());
 
-		add_to_group(group);
+		add_to_group(canvas_group);
 		if (canvas_layer) {
 			canvas_layer->reset_sort_index();
 		} else {
 			get_viewport()->gui_reset_canvas_sort_index();
 		}
 
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_toplevel_raise_self");
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, canvas_group, "_toplevel_raise_self");
 
 	} else {
 		CanvasItem *parent = get_parent_item();
@@ -548,15 +558,21 @@ void CanvasItem::_exit_canvas() {
 	notification(NOTIFICATION_EXIT_CANVAS, true); //reverse the notification
 	VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, RID());
 	canvas_layer = nullptr;
-	group = "";
+	if (canvas_group != "") {
+		remove_from_group(canvas_group);
+		canvas_group = "";
+	}
 }
 
 void CanvasItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			ERR_FAIL_COND(!is_inside_tree());
 			first_draw = true;
-			if (get_parent()) {
-				CanvasItem *ci = Object::cast_to<CanvasItem>(get_parent());
+
+			Node *parent = get_parent();
+			if (parent) {
+				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
 				if (ci) {
 					C = ci->children_items.push_back(this);
 				}
@@ -571,8 +587,8 @@ void CanvasItem::_notification(int p_what) {
 				break;
 			}
 
-			if (group != "") {
-				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_toplevel_raise_self");
+			if (canvas_group != "") {
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, canvas_group, "_toplevel_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
 				ERR_FAIL_COND(!p);
@@ -598,17 +614,6 @@ void CanvasItem::_notification(int p_what) {
 			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 		} break;
 	}
-}
-
-void CanvasItem::set_visible(bool p_visible) {
-	if (p_visible) {
-		show();
-	} else {
-		hide();
-	}
-}
-bool CanvasItem::is_visible() const {
-	return visible;
 }
 
 void CanvasItem::update() {
@@ -1065,6 +1070,7 @@ void CanvasItem::force_update_transform() {
 }
 
 void CanvasItem::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_toplevel_visibility_changed", "visible"), &CanvasItem::_toplevel_visibility_changed);
 	ClassDB::bind_method(D_METHOD("_toplevel_raise_self"), &CanvasItem::_toplevel_raise_self);
 	ClassDB::bind_method(D_METHOD("_update_callback"), &CanvasItem::_update_callback);
 
@@ -1196,6 +1202,7 @@ void CanvasItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISABLED);
 
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_DRAW);
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_ENTER_CANVAS);
@@ -1246,7 +1253,7 @@ void CanvasItem::set_notify_transform(bool p_enable) {
 
 	if (notify_transform && is_inside_tree()) {
 		//this ensures that invalid globals get resolved, so notifications can be received
-		get_global_transform();
+		_ALLOW_DISCARD_ get_global_transform();
 	}
 }
 
@@ -1264,7 +1271,7 @@ int CanvasItem::get_canvas_layer() const {
 
 CanvasItem::CanvasItem() :
 		xform_change(this) {
-	canvas_item = VisualServer::get_singleton()->canvas_item_create();
+	canvas_item = RID_PRIME(VisualServer::get_singleton()->canvas_item_create());
 	visible = true;
 	pending_update = false;
 	modulate = Color(1, 1, 1, 1);

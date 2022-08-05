@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SOFT_PHYSICS_BODY_H
-#define SOFT_PHYSICS_BODY_H
+#ifndef SOFT_BODY_H
+#define SOFT_BODY_H
 
 #include "scene/3d/mesh_instance.h"
 
@@ -84,7 +84,7 @@ private:
 
 	bool physics_enabled = true;
 
-	bool mesh_owner;
+	RID owned_mesh;
 	uint32_t collision_mask;
 	uint32_t collision_layer;
 	NodePath parent_collision_ignore;
@@ -99,6 +99,12 @@ private:
 	bool ray_pickable;
 
 	void _update_pickable();
+
+	void _update_physics_server();
+	void _draw_soft_mesh();
+
+	void _prepare_physics_server();
+	void _become_mesh_owner();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -116,14 +122,7 @@ protected:
 
 	virtual String get_configuration_warning() const;
 
-protected:
-	void _update_physics_server();
-	void _draw_soft_mesh();
-
 public:
-	void prepare_physics_server();
-	void become_mesh_owner();
-
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
@@ -203,4 +202,4 @@ private:
 	int _has_pinned_point(int p_point_index) const;
 };
 
-#endif // SOFT_PHYSICS_BODY_H
+#endif // SOFT_BODY_H

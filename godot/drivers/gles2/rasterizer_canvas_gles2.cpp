@@ -1659,7 +1659,7 @@ void RasterizerCanvasGLES2::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 
 			if (shader_ptr != r_ris.shader_cache) {
 				if (shader_ptr->canvas_item.uses_time) {
-					VisualServerRaster::redraw_request();
+					VisualServerRaster::redraw_request(false);
 				}
 
 				state.canvas_shader.set_custom_shader(shader_ptr->custom_code_id);
@@ -1697,7 +1697,7 @@ void RasterizerCanvasGLES2::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 				}
 
 				if (t->redraw_if_visible) {
-					VisualServerRaster::redraw_request();
+					VisualServerRaster::redraw_request(false);
 				}
 
 				t = t->get_ptr();
@@ -2021,7 +2021,7 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 
 			if (shader_ptr != r_ris.shader_cache) {
 				if (shader_ptr->canvas_item.uses_time) {
-					VisualServerRaster::redraw_request();
+					VisualServerRaster::redraw_request(false);
 				}
 
 				state.canvas_shader.set_custom_shader(shader_ptr->custom_code_id);
@@ -2059,7 +2059,7 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 				}
 
 				if (t->redraw_if_visible) {
-					VisualServerRaster::redraw_request();
+					VisualServerRaster::redraw_request(false);
 				}
 
 				t = t->get_ptr();

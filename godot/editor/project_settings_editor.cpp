@@ -143,7 +143,16 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			restart_icon->set_texture(get_icon("StatusWarning", "EditorIcons"));
 			restart_label->add_color_override("font_color", get_color("warning_color", "Editor"));
 
+			// The ImportDefaultsEditor changes settings which must be read by this object when changed
+			ProjectSettings::get_singleton()->connect("project_settings_changed", this, "_settings_changed");
+
 		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (ProjectSettings::get_singleton()) {
+				ProjectSettings::get_singleton()->disconnect("project_settings_changed", this, "_settings_changed");
+			}
+		} break;
+
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", get_rect());
 			set_process_unhandled_input(false);
@@ -159,6 +168,10 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			popup_add->set_item_icon(popup_add->get_item_index(INPUT_JOY_MOTION), get_icon("JoyAxis", "EditorIcons"));
 			popup_add->set_item_icon(popup_add->get_item_index(INPUT_MOUSE_BUTTON), get_icon("Mouse", "EditorIcons"));
 			_update_actions();
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_theme();
 		} break;
 	}
 }
@@ -871,7 +884,7 @@ void ProjectSettingsEditor::_item_adds(String) {
 void ProjectSettingsEditor::_item_add() {
 	// Initialize the property with the default value for the given type.
 	Variant::CallError ce;
-	const Variant value = Variant::construct(Variant::Type(type->get_selected_id()), nullptr, 0, ce);
+	const Variant value = Variant::construct(Variant::Type(type_box->get_selected_id()), nullptr, 0, ce);
 
 	String name = property->get_text().strip_edges();
 
@@ -1092,7 +1105,7 @@ Variant ProjectSettingsEditor::get_drag_data_fw(const Point2 &p_point, Control *
 	set_drag_preview(vb);
 
 	Dictionary drag_data;
-	drag_data["type"] = "nodes";
+	drag_data["type"] = "input_map";
 
 	input_editor->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
 
@@ -1101,7 +1114,7 @@ Variant ProjectSettingsEditor::get_drag_data_fw(const Point2 &p_point, Control *
 
 bool ProjectSettingsEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	Dictionary d = p_data;
-	if (!d.has("type") || d["type"] != "nodes") {
+	if (!d.has("type") || d["type"] != "input_map") {
 		return false;
 	}
 
@@ -1577,7 +1590,7 @@ void ProjectSettingsEditor::_update_translations() {
 
 			TreeItem *t = translation_filter->create_item(root);
 			t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-			t->set_text(0, n);
+			t->set_text(0, vformat("[%s] %s", l, n));
 			t->set_editable(0, true);
 			t->set_tooltip(0, l);
 			t->set_checked(0, is_checked);
@@ -1618,7 +1631,7 @@ void ProjectSettingsEditor::_update_translations() {
 					if (langnames.length() > 0) {
 						langnames += ",";
 					}
-					langnames += names[i];
+					langnames += vformat("[%s] %s", langs[i], names[i]);
 					translation_locales_idxs_remap.write[l_idx] = i;
 					l_idx++;
 				}
@@ -1627,7 +1640,7 @@ void ProjectSettingsEditor::_update_translations() {
 			if (i > 0) {
 				langnames += ",";
 			}
-			langnames += names[i];
+			langnames += vformat("[%s] %s", langs[i], names[i]);
 		}
 	}
 
@@ -1655,7 +1668,7 @@ void ProjectSettingsEditor::_update_translations() {
 				PoolStringArray selected = remaps[keys[i]];
 				for (int j = 0; j < selected.size(); j++) {
 					String s2 = selected[j];
-					int qp = s2.find_last(":");
+					int qp = s2.rfind(":");
 					String path = s2.substr(0, qp);
 					String locale = s2.substr(qp + 1, s2.length());
 
@@ -1723,6 +1736,18 @@ void ProjectSettingsEditor::_editor_restart_request() {
 
 void ProjectSettingsEditor::_editor_restart_close() {
 	restart_container->hide();
+}
+
+void ProjectSettingsEditor::_update_theme() {
+	type_box->clear();
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		// There's no point in adding Nil types, and Object types
+		// can't be serialized correctly in the project settings.
+		if (i != Variant::NIL && i != Variant::OBJECT) {
+			const String type = Variant::get_type_name(Variant::Type(i));
+			type_box->add_icon_item(get_icon(type, "EditorIcons"), type, i);
+		}
+	}
 }
 
 void ProjectSettingsEditor::_bind_methods() {
@@ -1828,17 +1853,9 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_prop_bar->add_child(l);
 	l->set_text(TTR("Type:"));
 
-	type = memnew(OptionButton);
-	type->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
-	add_prop_bar->add_child(type);
-
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		// There's no point in adding Nil types, and Object types
-		// can't be serialized correctly in the project settings.
-		if (i != Variant::NIL && i != Variant::OBJECT) {
-			type->add_item(Variant::get_type_name(Variant::Type(i)), i);
-		}
-	}
+	type_box = memnew(OptionButton);
+	type_box->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
+	add_prop_bar->add_child(type_box);
 
 	Button *add = memnew(Button);
 	add_prop_bar->add_child(add);
@@ -2141,7 +2158,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	import_defaults_editor = memnew(ImportDefaultsEditor);
 	import_defaults_editor->set_name(TTR("Import Defaults"));
 	tab_container->add_child(import_defaults_editor);
-	import_defaults_editor->connect("project_settings_changed", this, "_settings_changed");
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);

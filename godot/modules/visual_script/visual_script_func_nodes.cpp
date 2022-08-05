@@ -32,6 +32,7 @@
 
 #include "core/engine.h"
 #include "core/io/resource_loader.h"
+#include "core/local_vector.h"
 #include "core/os/os.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
@@ -261,13 +262,13 @@ String VisualScriptFunctionCall::get_text() const {
 	String text;
 
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-		text = String("On ") + Variant::get_type_name(basic_type);
+		text = vformat(RTR("On %s"), Variant::get_type_name(basic_type));
 	} else if (call_mode == CALL_MODE_INSTANCE) {
-		text = String("On ") + base_type;
+		text = vformat(RTR("On %s"), base_type);
 	} else if (call_mode == CALL_MODE_NODE_PATH) {
 		text = "[" + String(base_path.simplified()) + "]";
 	} else if (call_mode == CALL_MODE_SELF) {
-		text = "On Self";
+		text = RTR("On Self");
 	} else if (call_mode == CALL_MODE_SINGLETON) {
 		text = String(singleton) + ":" + String(function) + "()";
 	}
@@ -282,6 +283,7 @@ String VisualScriptFunctionCall::get_text() const {
 }
 
 void VisualScriptFunctionCall::set_basic_type(Variant::Type p_type) {
+	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 	if (basic_type == p_type) {
 		return;
 	}
@@ -1027,16 +1029,27 @@ PropertyInfo VisualScriptPropertySet::get_output_value_port_info(int p_idx) cons
 }
 
 String VisualScriptPropertySet::get_caption() const {
-	static const char *opname[ASSIGN_OP_MAX] = {
-		"Set", "Add", "Subtract", "Multiply", "Divide", "Mod", "ShiftLeft", "ShiftRight", "BitAnd", "BitOr", "BitXor"
-	};
+	static LocalVector<String> opname;
+	if (opname.empty()) {
+		opname.push_back(RTR("Set %s"));
+		opname.push_back(RTR("Add %s"));
+		opname.push_back(RTR("Subtract %s"));
+		opname.push_back(RTR("Multiply %s"));
+		opname.push_back(RTR("Divide %s"));
+		opname.push_back(RTR("Mod %s"));
+		opname.push_back(RTR("ShiftLeft %s"));
+		opname.push_back(RTR("ShiftRight %s"));
+		opname.push_back(RTR("BitAnd %s"));
+		opname.push_back(RTR("BitOr %s"));
+		opname.push_back(RTR("BitXor %s"));
+	}
 
-	String prop = String(opname[assign_op]) + " " + property;
+	String prop = property;
 	if (index != StringName()) {
 		prop += "." + String(index);
 	}
 
-	return prop;
+	return vformat(opname[assign_op], prop);
 }
 
 String VisualScriptPropertySet::get_text() const {
@@ -1044,13 +1057,13 @@ String VisualScriptPropertySet::get_text() const {
 		return "";
 	}
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-		return String("On ") + Variant::get_type_name(basic_type);
+		return vformat(RTR("On %s"), Variant::get_type_name(basic_type));
 	} else if (call_mode == CALL_MODE_INSTANCE) {
-		return String("On ") + base_type;
+		return vformat(RTR("On %s"), base_type);
 	} else if (call_mode == CALL_MODE_NODE_PATH) {
 		return " [" + String(base_path.simplified()) + "]";
 	} else {
-		return "On Self";
+		return RTR("On Self");
 	}
 }
 
@@ -1068,6 +1081,7 @@ void VisualScriptPropertySet::_update_base_type() {
 	}
 }
 void VisualScriptPropertySet::set_basic_type(Variant::Type p_type) {
+	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 	if (basic_type == p_type) {
 		return;
 	}
@@ -1742,23 +1756,23 @@ PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) cons
 }
 
 String VisualScriptPropertyGet::get_caption() const {
-	String prop = String("Get ") + property;
+	String prop = property;
 	if (index != StringName()) {
 		prop += "." + String(index);
 	}
 
-	return prop;
+	return vformat(RTR("Get %s"), prop);
 }
 
 String VisualScriptPropertyGet::get_text() const {
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-		return String("On ") + Variant::get_type_name(basic_type);
+		return vformat(RTR("On %s"), Variant::get_type_name(basic_type));
 	} else if (call_mode == CALL_MODE_INSTANCE) {
-		return String("On ") + base_type;
+		return vformat(RTR("On %s"), base_type);
 	} else if (call_mode == CALL_MODE_NODE_PATH) {
 		return " [" + String(base_path.simplified()) + "]";
 	} else {
-		return "On Self";
+		return RTR("On Self");
 	}
 }
 
@@ -1916,6 +1930,7 @@ VisualScriptPropertyGet::CallMode VisualScriptPropertyGet::get_call_mode() const
 }
 
 void VisualScriptPropertyGet::set_basic_type(Variant::Type p_type) {
+	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 	if (basic_type == p_type) {
 		return;
 	}
@@ -2151,7 +2166,7 @@ public:
 				Node *another = node->get_node(node_path);
 				if (!another) {
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
-					r_error_str = RTR("Path does not lead Node!");
+					r_error_str = RTR("Path does not lead to Node!");
 					return 0;
 				}
 
@@ -2268,7 +2283,7 @@ PropertyInfo VisualScriptEmitSignal::get_output_value_port_info(int p_idx) const
 }
 
 String VisualScriptEmitSignal::get_caption() const {
-	return "Emit " + String(name);
+	return vformat(RTR("Emit %s"), name);
 }
 
 void VisualScriptEmitSignal::set_signal(const StringName &p_type) {

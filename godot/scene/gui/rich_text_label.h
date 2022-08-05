@@ -46,6 +46,14 @@ public:
 		ALIGN_FILL
 	};
 
+	enum InlineAlign {
+
+		INLINE_ALIGN_TOP,
+		INLINE_ALIGN_CENTER,
+		INLINE_ALIGN_BASELINE,
+		INLINE_ALIGN_BOTTOM
+	};
+
 	enum ListType {
 
 		LIST_NUMBERS,
@@ -147,7 +155,11 @@ private:
 	struct ItemImage : public Item {
 		Ref<Texture> image;
 		Size2 size;
-		ItemImage() { type = ITEM_IMAGE; }
+		InlineAlign align;
+		ItemImage() {
+			type = ITEM_IMAGE;
+			align = INLINE_ALIGN_BASELINE;
+		}
 	};
 
 	struct ItemFont : public Item {
@@ -358,13 +370,16 @@ private:
 
 		bool active; // anything selected? i.e. from, to, etc. valid?
 		bool enabled; // allow selections?
+		bool drag_attempt;
 	};
 
 	Selection selection;
+	bool deselect_on_focus_loss_enabled;
 
 	int visible_characters;
 	float percent_visible;
 
+	bool _is_click_inside_selection() const;
 	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, int p_char_count = 0);
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
 
@@ -394,8 +409,6 @@ private:
 	bool use_bbcode;
 	String bbcode;
 
-	void _update_all_lines();
-
 	int fixed_width;
 
 	bool fit_content_height;
@@ -406,7 +419,7 @@ protected:
 public:
 	String get_text();
 	void add_text(const String &p_text);
-	void add_image(const Ref<Texture> &p_image, const int p_width = 0, const int p_height = 0);
+	void add_image(const Ref<Texture> &p_image, const int p_width = 0, const int p_height = 0, RichTextLabel::InlineAlign p_align = INLINE_ALIGN_BASELINE);
 	void add_newline();
 	bool remove_line(const int p_line);
 	void push_font(const Ref<Font> &p_font);
@@ -467,11 +480,15 @@ public:
 	VScrollBar *get_v_scroll() { return vscroll; }
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
+	virtual Variant get_drag_data(const Point2 &p_point);
 
 	void set_selection_enabled(bool p_enabled);
 	bool is_selection_enabled() const;
 	String get_selected_text();
 	void selection_copy();
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
+	void deselect();
 
 	Error parse_bbcode(const String &p_bbcode);
 	Error append_bbcode(const String &p_bbcode);
@@ -504,6 +521,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(RichTextLabel::Align);
+VARIANT_ENUM_CAST(RichTextLabel::InlineAlign);
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::ItemType);
 

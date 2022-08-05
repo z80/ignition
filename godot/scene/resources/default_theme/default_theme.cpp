@@ -256,24 +256,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("underline_spacing", "LinkButton", 2 * scale);
 
-	// ColorPickerButton
-
-	theme->set_stylebox("normal", "ColorPickerButton", sb_button_normal);
-	theme->set_stylebox("pressed", "ColorPickerButton", sb_button_pressed);
-	theme->set_stylebox("hover", "ColorPickerButton", sb_button_hover);
-	theme->set_stylebox("disabled", "ColorPickerButton", sb_button_disabled);
-	theme->set_stylebox("focus", "ColorPickerButton", sb_button_focus);
-
-	theme->set_font("font", "ColorPickerButton", default_font);
-
-	theme->set_color("font_color", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_color_pressed", "ColorPickerButton", Color(0.8, 0.8, 0.8, 1));
-	theme->set_color("font_color_hover", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_color_focus", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_color_disabled", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
-
-	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
-
 	// ToolButton
 
 	theme->set_stylebox("normal", "ToolButton", make_empty_stylebox(6, 4, 6, 4));
@@ -471,7 +453,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("completion_background_color", "TextEdit", Color(0.17, 0.16, 0.2));
 	theme->set_color("completion_selected_color", "TextEdit", Color(0.26, 0.26, 0.27));
 	theme->set_color("completion_existing_color", "TextEdit", Color(0.87, 0.87, 0.87, 0.13));
-	theme->set_color("completion_scroll_color", "TextEdit", control_font_color_pressed);
+	theme->set_color("completion_scroll_color", "TextEdit", control_font_color_pressed * Color(1, 1, 1, 0.29));
 	theme->set_color("completion_font_color", "TextEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "TextEdit", control_font_color);
 	theme->set_color("font_color_selected", "TextEdit", Color(0, 0, 0));
@@ -496,7 +478,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("completion_lines", "TextEdit", 7);
 	theme->set_constant("completion_max_width", "TextEdit", 50);
-	theme->set_constant("completion_scroll_width", "TextEdit", 3);
+	theme->set_constant("completion_scroll_width", "TextEdit", 6 * scale);
 	theme->set_constant("line_spacing", "TextEdit", 4 * scale);
 
 	Ref<Texture> empty_icon = memnew(ImageTexture);
@@ -587,9 +569,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxTexture> style_pp = sb_expand(make_stylebox(popup_bg_png, 5, 5, 5, 5, 4, 4, 4, 4), 2, 2, 2, 2);
 
 	Ref<StyleBoxTexture> selected = make_stylebox(selection_png, 6, 6, 6, 6);
-	for (int i = 0; i < 4; i++) {
-		selected->set_expand_margin_size(Margin(i), 2 * scale);
-	}
+	selected->set_expand_margin_size(MARGIN_TOP, 2 * scale);
+	selected->set_expand_margin_size(MARGIN_BOTTOM, 2 * scale);
+	selected->set_expand_margin_size(MARGIN_LEFT, 6 * scale);
+	selected->set_expand_margin_size(MARGIN_RIGHT, 6 * scale);
 
 	theme->set_stylebox("panel", "PopupPanel", style_pp);
 
@@ -614,6 +597,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("submenu", "PopupMenu", make_icon(submenu_png));
 
 	theme->set_font("font", "PopupMenu", default_font);
+	theme->set_font("font_separator", "PopupMenu", default_font);
 
 	theme->set_color("font_color", "PopupMenu", control_font_color);
 	theme->set_color("font_color_accel", "PopupMenu", Color(0.7, 0.7, 0.7, 0.8));
@@ -730,8 +714,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	tc_sb->set_default_margin(MARGIN_TOP, 8 * scale);
 
 	theme->set_stylebox("tab_fg", "TabContainer", sb_expand(make_stylebox(tab_current_png, 4, 4, 4, 1, 16, 4, 16, 4), 2, 2, 2, 2));
-	theme->set_stylebox("tab_bg", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
-	theme->set_stylebox("tab_disabled", "TabContainer", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
+	theme->set_stylebox("tab_bg", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 0));
+	theme->set_stylebox("tab_disabled", "TabContainer", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 0));
 	theme->set_stylebox("panel", "TabContainer", tc_sb);
 
 	theme->set_icon("increment", "TabContainer", make_icon(scroll_button_right_png));
@@ -801,7 +785,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("file", "FileDialog", make_icon(icon_file_png));
 	theme->set_color("folder_icon_modulate", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_icon_modulate", "FileDialog", Color(1, 1, 1));
-	theme->set_color("files_disabled", "FileDialog", Color(0, 0, 0, 0.7));
+	theme->set_color("files_disabled", "FileDialog", Color(1, 1, 1, 0.25));
 
 	// ColorPicker
 
@@ -818,7 +802,33 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("preset_bg", "ColorPicker", make_icon(mini_checkerboard_png));
 	theme->set_icon("overbright_indicator", "ColorPicker", make_icon(overbright_indicator_png));
 
+	// ColorPickerButton
+
 	theme->set_icon("bg", "ColorPickerButton", make_icon(mini_checkerboard_png));
+	theme->set_stylebox("normal", "ColorPickerButton", sb_button_normal);
+	theme->set_stylebox("pressed", "ColorPickerButton", sb_button_pressed);
+	theme->set_stylebox("hover", "ColorPickerButton", sb_button_hover);
+	theme->set_stylebox("disabled", "ColorPickerButton", sb_button_disabled);
+	theme->set_stylebox("focus", "ColorPickerButton", sb_button_focus);
+
+	theme->set_font("font", "ColorPickerButton", default_font);
+
+	theme->set_color("font_color", "ColorPickerButton", Color(1, 1, 1, 1));
+	theme->set_color("font_color_pressed", "ColorPickerButton", Color(0.8, 0.8, 0.8, 1));
+	theme->set_color("font_color_hover", "ColorPickerButton", Color(1, 1, 1, 1));
+	theme->set_color("font_color_focus", "ColorPickerButton", Color(1, 1, 1, 1));
+	theme->set_color("font_color_disabled", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
+
+	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
+
+	// ColorPresetButton
+
+	Ref<StyleBoxFlat> preset_sb = make_flat_stylebox(Color(1, 1, 1), 2, 2, 2, 2);
+	preset_sb->set_anti_aliased(false);
+
+	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
+	theme->set_icon("preset_bg_icon", "ColorPresetButton", make_icon(mini_checkerboard_png));
+	theme->set_icon("overbright_indicator", "ColorPresetButton", make_icon(overbright_indicator_png));
 
 	// TooltipPanel
 
@@ -882,6 +892,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("separation", "VSplitContainer", 12 * scale);
 	theme->set_constant("autohide", "HSplitContainer", 1 * scale);
 	theme->set_constant("autohide", "VSplitContainer", 1 * scale);
+	theme->set_constant("hseparation", "HFlowContainer", 4 * scale);
+	theme->set_constant("vseparation", "HFlowContainer", 4 * scale);
+	theme->set_constant("hseparation", "VFlowContainer", 4 * scale);
+	theme->set_constant("vseparation", "VFlowContainer", 4 * scale);
 
 	Ref<StyleBoxTexture> sb_pc = make_stylebox(tab_container_bg_png, 4, 4, 4, 4, 7, 7, 7, 7);
 	theme->set_stylebox("panel", "PanelContainer", sb_pc);

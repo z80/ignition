@@ -117,6 +117,7 @@ class GDScript : public Script {
 	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
 
 	void _set_subclass_path(Ref<GDScript> &p_sc, const String &p_path);
+	String _get_debug_path() const;
 
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
@@ -264,8 +265,6 @@ public:
 
 	virtual ScriptLanguage *get_language();
 
-	void set_path(const String &p_path);
-
 	void reload_members();
 
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
@@ -305,6 +304,7 @@ struct GDScriptWarning {
 		UNSAFE_CALL_ARGUMENT, // Function call argument is of a supertype of the require argument
 		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced
 		STANDALONE_TERNARY, // Return value of ternary expression is discarded
+		EXPORT_HINT_TYPE_MISTMATCH, // The type of the variable's default value doesn't match its export hint
 		WARNING_MAX,
 	} code;
 	Vector<String> symbols;

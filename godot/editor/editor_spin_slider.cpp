@@ -230,7 +230,8 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 					set_value(last_value + real_step);
 				}
 
-				value_input->set_text(get_text_value());
+				value_input_dirty = true;
+				set_process_internal(true);
 			} break;
 			case KEY_DOWN: {
 				_evaluate_input_text();
@@ -243,7 +244,8 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 					set_value(last_value - real_step);
 				}
 
-				value_input->set_text(get_text_value());
+				value_input_dirty = true;
+				set_process_internal(true);
 			} break;
 		}
 	}
@@ -308,17 +310,24 @@ void EditorSpinSlider::_draw_spin_slider() {
 			grabber->hide();
 		}
 	} else if (!hide_slider) {
-		int grabber_w = 4 * EDSCALE;
-		int width = get_size().width - sb->get_minimum_size().width - grabber_w;
-		int ofs = sb->get_offset().x;
-		int svofs = (get_size().height + vofs) / 2 - 1;
+		const int grabber_w = 4 * EDSCALE;
+		const int width = get_size().width - sb->get_minimum_size().width - grabber_w;
+		const int ofs = sb->get_offset().x;
+		const int svofs = (get_size().height + vofs) / 2 - 1;
 		Color c = fc;
-		c.a = 0.2;
 
+		// Draw the horizontal slider's background.
+		c.a = 0.2;
 		draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
-		int gofs = get_as_ratio() * width;
+
+		// Draw the horizontal slider's filled part on the left.
+		const int gofs = get_as_ratio() * width;
+		c.a = 0.45;
+		draw_rect(Rect2(ofs, svofs + 1, gofs, 2 * EDSCALE), c);
+
+		// Draw the horizontal slider's grabber.
 		c.a = 0.9;
-		Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
+		const Rect2 grabber_rect = Rect2(ofs + gofs, svofs, grabber_w, 4 * EDSCALE);
 		draw_rect(grabber_rect, c);
 
 		bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !value_input->is_visible();
@@ -371,6 +380,14 @@ void EditorSpinSlider::_notification(int p_what) {
 			value_input->add_style_override("normal", stylebox);
 		} break;
 
+		case NOTIFICATION_INTERNAL_PROCESS:
+			if (value_input_dirty) {
+				value_input_dirty = false;
+				value_input->set_text(get_text_value());
+			}
+			set_process_internal(false);
+			break;
+
 		case NOTIFICATION_DRAW:
 			_draw_spin_slider();
 			break;
@@ -381,6 +398,7 @@ void EditorSpinSlider::_notification(int p_what) {
 			if (grabbing_spinner) {
 				grabber->hide();
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+				Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
 				grabbing_spinner = false;
 				grabbing_spinner_attempt = false;
 			}
@@ -545,6 +563,9 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flat", "flat"), &EditorSpinSlider::set_flat);
 	ClassDB::bind_method(D_METHOD("is_flat"), &EditorSpinSlider::is_flat);
 
+	ClassDB::bind_method(D_METHOD("set_hide_slider", "hide_slider"), &EditorSpinSlider::set_hide_slider);
+	ClassDB::bind_method(D_METHOD("is_hiding_slider"), &EditorSpinSlider::is_hiding_slider);
+
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorSpinSlider::_gui_input);
 	ClassDB::bind_method(D_METHOD("_value_input_gui_input", "event"), &EditorSpinSlider::_value_input_gui_input);
 	ClassDB::bind_method(D_METHOD("_grabber_mouse_entered"), &EditorSpinSlider::_grabber_mouse_entered);
@@ -557,6 +578,7 @@ void EditorSpinSlider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
 }
 
 EditorSpinSlider::EditorSpinSlider() {
@@ -590,6 +612,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	value_input->connect("focus_exited", this, "_value_focus_exited");
 	value_input->connect("gui_input", this, "_value_input_gui_input");
 	value_input_just_closed = false;
+	value_input_dirty = false;
 	hide_slider = false;
 	read_only = false;
 	use_custom_label_color = false;

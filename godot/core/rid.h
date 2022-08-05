@@ -33,9 +33,12 @@
 
 #include "core/list.h"
 #include "core/os/memory.h"
+#include "core/rid_handle.h"
 #include "core/safe_refcount.h"
 #include "core/set.h"
 #include "core/typedefs.h"
+
+#ifndef RID_HANDLES_ENABLED
 
 class RID_OwnerBase;
 
@@ -65,13 +68,13 @@ public:
 		return _data == p_rid._data;
 	}
 	_FORCE_INLINE_ bool operator<(const RID &p_rid) const {
-		return _data < p_rid._data;
+		return get_id() < p_rid.get_id();
 	}
 	_FORCE_INLINE_ bool operator<=(const RID &p_rid) const {
-		return _data <= p_rid._data;
+		return get_id() <= p_rid.get_id();
 	}
 	_FORCE_INLINE_ bool operator>(const RID &p_rid) const {
-		return _data > p_rid._data;
+		return get_id() > p_rid.get_id();
 	}
 	_FORCE_INLINE_ bool operator!=(const RID &p_rid) const {
 		return _data != p_rid._data;
@@ -90,8 +93,7 @@ protected:
 	static SafeRefCount refcount;
 	_FORCE_INLINE_ void _set_data(RID &p_rid, RID_Data *p_data) {
 		p_rid._data = p_data;
-		refcount.ref();
-		p_data->_id = refcount.get();
+		p_data->_id = refcount.refval();
 #ifndef DEBUG_ENABLED
 		p_data->_owner = this;
 #endif
@@ -187,4 +189,6 @@ public:
 	}
 };
 
-#endif
+#endif // not handles
+
+#endif // RID_H

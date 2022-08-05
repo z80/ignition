@@ -43,10 +43,6 @@ class ResourceImporterLayeredTexture : public ResourceImporter {
 	static const char *compression_formats[];
 
 protected:
-	static void _texture_reimport_srgb(const Ref<StreamTexture> &p_tex);
-	static void _texture_reimport_3d(const Ref<StreamTexture> &p_tex);
-	static void _texture_reimport_normal(const Ref<StreamTexture> &p_tex);
-
 	static ResourceImporterLayeredTexture *singleton;
 
 public:
@@ -79,8 +75,6 @@ public:
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr);
 
-	void update_imports();
-
 	virtual bool are_import_settings_valid(const String &p_path) const;
 	virtual String get_import_settings_string() const;
 
@@ -88,4 +82,5 @@ public:
 	ResourceImporterLayeredTexture();
 	~ResourceImporterLayeredTexture();
 };
+
 #endif // RESOURCE_IMPORTER_LAYERED_TEXTURE_H

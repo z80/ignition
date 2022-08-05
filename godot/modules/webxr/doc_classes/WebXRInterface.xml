@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebXRInterface" inherits="ARVRInterface" version="3.4">
+<class name="WebXRInterface" inherits="ARVRInterface" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		AR/VR interface using WebXR.
 	</brief_description>
@@ -22,6 +22,9 @@
 
 		    webxr_interface = ARVRServer.find_interface("WebXR")
 		    if webxr_interface:
+		        # Map to the standard button/axis ids when possible.
+		        webxr_interface.xr_standard_mapping = true
+
 		        # WebXR uses a lot of asynchronous callbacks, so we connect to various
 		        # signals in order to receive them.
 		        webxr_interface.connect("session_supported", self, "_webxr_session_supported")
@@ -88,7 +91,7 @@
 		- Using [ARVRController] nodes and their [signal ARVRController.button_pressed] and [signal ARVRController.button_release] signals. This is how controllers are typically handled in AR/VR apps in Godot, however, this will only work with advanced VR controllers like the Oculus Touch or Index controllers, for example. The buttons codes are defined by [url=https://immersive-web.github.io/webxr-gamepads-module/#xr-standard-gamepad-mapping]Section 3.3 of the WebXR Gamepads Module[/url].
 		- Using [method Node._unhandled_input] and [InputEventJoypadButton] or [InputEventJoypadMotion]. This works the same as normal joypads, except the [member InputEvent.device] starts at 100, so the left controller is 100 and the right controller is 101, and the button codes are also defined by [url=https://immersive-web.github.io/webxr-gamepads-module/#xr-standard-gamepad-mapping]Section 3.3 of the WebXR Gamepads Module[/url].
 		- Using the [signal select], [signal squeeze] and related signals. This method will work for both advanced VR controllers, and non-traditional "controllers" like a tap on the screen, a spoken voice command or a button press on the device itself. The [code]controller_id[/code] passed to these signals is the same id as used in [member ARVRController.controller_id].
-		You can use one or all of these methods to allow your game or app to support a wider or narrower set of devices and input methods, or to allow more advanced interations with more advanced devices.
+		You can use one or all of these methods to allow your game or app to support a wider or narrower set of devices and input methods, or to allow more advanced interactions with more advanced devices.
 	</description>
 	<tutorials>
 		<link title="How to make a VR game for WebXR with Godot">https://www.snopekgames.com/blog/2020/how-make-vr-game-webxr-godot</link>
@@ -107,6 +110,14 @@
 				- [signal squeezestart]
 				- [signal squeeze]
 				- [signal squeezestart]
+			</description>
+		</method>
+		<method name="get_controller_target_ray_mode" qualifiers="const">
+			<return type="int" enum="WebXRInterface.TargetRayMode" />
+			<argument index="0" name="controller_id" type="int" />
+			<description>
+				Returns the target ray mode for the given [code]controller_id[/code].
+				This can help interpret the input coming from that controller. See [url=https://developer.mozilla.org/en-US/docs/Web/API/XRInputSource/targetRayMode]XRInputSource.targetRayMode[/url] for more information.
 			</description>
 		</method>
 		<method name="is_session_supported">
@@ -155,6 +166,10 @@
 		<member name="visibility_state" type="String" setter="" getter="get_visibility_state">
 			Indicates if the WebXR session's imagery is visible to the user.
 			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRVisibilityState]WebXR's XRVisibilityState[/url], including [code]"hidden"[/code], [code]"visible"[/code], and [code]"visible-blurred"[/code].
+		</member>
+		<member name="xr_standard_mapping" type="bool" setter="set_xr_standard_mapping" getter="get_xr_standard_mapping">
+			If set to true, the button and axes ids will be converted to match the standard ids used by other AR/VR interfaces, when possible.
+			Otherwise, the ids will be passed through unaltered from WebXR.
 		</member>
 	</members>
 	<signals>
@@ -240,5 +255,17 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="TARGET_RAY_MODE_UNKNOWN" value="0" enum="TargetRayMode">
+			We don't know the target ray mode.
+		</constant>
+		<constant name="TARGET_RAY_MODE_GAZE" value="1" enum="TargetRayMode">
+			Target ray originates at the viewer's eyes and points in the direction they are looking.
+		</constant>
+		<constant name="TARGET_RAY_MODE_TRACKED_POINTER" value="2" enum="TargetRayMode">
+			Target ray from a handheld pointer, most likely a VR touch controller.
+		</constant>
+		<constant name="TARGET_RAY_MODE_SCREEN" value="3" enum="TargetRayMode">
+			Target ray from touch screen, mouse or other tactile input device.
+		</constant>
 	</constants>
 </class>

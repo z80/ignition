@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBSOCKET_H
-#define WEBSOCKET_H
+#ifndef WEBSOCKET_SERVER_H
+#define WEBSOCKET_SERVER_H
 
 #include "core/crypto/crypto.h"
 #include "core/reference.h"
@@ -52,6 +52,7 @@ protected:
 
 public:
 	virtual void poll() = 0;
+	virtual void set_extra_headers(const Vector<String> &p_headers) = 0;
 	virtual Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false) = 0;
 	virtual void stop() = 0;
 	virtual bool is_listening() const = 0;
@@ -90,4 +91,4 @@ public:
 	~WebSocketServer();
 };
 
-#endif // WEBSOCKET_H
+#endif // WEBSOCKET_SERVER_H

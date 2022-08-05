@@ -49,6 +49,8 @@ class VisualInstance : public CullInstance {
 protected:
 	void _update_visibility();
 	virtual void _refresh_portal_mode();
+	virtual void _physics_interpolated_changed();
+	void set_instance_use_identity_transform(bool p_enable);
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -110,6 +112,7 @@ private:
 	LightmapScale lightmap_scale;
 	ShadowCastingSetting shadow_casting_setting;
 	Ref<Material> material_override;
+	Ref<Material> material_overlay;
 	float lod_min_distance;
 	float lod_max_distance;
 	float lod_min_hysteresis;
@@ -127,9 +130,6 @@ public:
 
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
-
-	void set_bake_cast_shadows(bool p_enabled);
-	bool get_bake_cast_shadows();
 
 	void set_generate_lightmap(bool p_enabled);
 	bool get_generate_lightmap();
@@ -152,6 +152,9 @@ public:
 	virtual void set_material_override(const Ref<Material> &p_material);
 	Ref<Material> get_material_override() const;
 
+	virtual void set_material_overlay(const Ref<Material> &p_material);
+	Ref<Material> get_material_overlay() const;
+
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;
 
@@ -164,4 +167,4 @@ VARIANT_ENUM_CAST(GeometryInstance::Flags);
 VARIANT_ENUM_CAST(GeometryInstance::LightmapScale);
 VARIANT_ENUM_CAST(GeometryInstance::ShadowCastingSetting);
 
-#endif
+#endif // VISUAL_INSTANCE_H

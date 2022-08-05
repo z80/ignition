@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NATIVE_SCRIPT_H
-#define NATIVE_SCRIPT_H
+#ifndef NATIVESCRIPT_H
+#define NATIVESCRIPT_H
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -269,7 +269,6 @@ private:
 	};
 
 	Map<StringName, ProfileData> profile_data;
-	bool profiling;
 
 public:
 	// These two maps must only be touched on the main thread
@@ -294,8 +293,6 @@ public:
 	inline static NativeScriptLanguage *get_singleton() {
 		return singleton;
 	}
-
-	void _hacky_api_anchor();
 
 	_FORCE_INLINE_ void set_language_index(int p_idx) { lang_idx = p_idx; }
 
@@ -394,4 +391,4 @@ class ResourceFormatSaverNativeScript : public ResourceFormatSaver {
 	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
 };
 
-#endif // GDNATIVE_H
+#endif // NATIVESCRIPT_H

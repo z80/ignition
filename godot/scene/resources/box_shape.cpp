@@ -47,6 +47,10 @@ Vector<Vector3> BoxShape::get_debug_mesh_lines() {
 	return lines;
 }
 
+real_t BoxShape::get_enclosing_radius() const {
+	return extents.length();
+}
+
 void BoxShape::_update_shape() {
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), extents);
 	Shape::_update_shape();
@@ -71,6 +75,6 @@ void BoxShape::_bind_methods() {
 }
 
 BoxShape::BoxShape() :
-		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_BOX)) {
+		Shape(RID_PRIME(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_BOX))) {
 	set_extents(Vector3(1, 1, 1));
 }

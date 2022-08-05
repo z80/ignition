@@ -176,6 +176,17 @@ enum MidiMessageList {
 	MIDI_MESSAGE_PROGRAM_CHANGE = 0xC,
 	MIDI_MESSAGE_CHANNEL_PRESSURE = 0xD,
 	MIDI_MESSAGE_PITCH_BEND = 0xE,
+	MIDI_MESSAGE_SYSTEM_EXCLUSIVE = 0xF0,
+	MIDI_MESSAGE_QUARTER_FRAME = 0xF1,
+	MIDI_MESSAGE_SONG_POSITION_POINTER = 0xF2,
+	MIDI_MESSAGE_SONG_SELECT = 0xF3,
+	MIDI_MESSAGE_TUNE_REQUEST = 0xF6,
+	MIDI_MESSAGE_TIMING_CLOCK = 0xF8,
+	MIDI_MESSAGE_START = 0xFA,
+	MIDI_MESSAGE_CONTINUE = 0xFB,
+	MIDI_MESSAGE_STOP = 0xFC,
+	MIDI_MESSAGE_ACTIVE_SENSING = 0xFE,
+	MIDI_MESSAGE_SYSTEM_RESET = 0xFF,
 };
 
 /**
@@ -213,7 +224,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 	virtual bool is_action_type() const;
 
@@ -301,7 +312,7 @@ public:
 	uint32_t get_scancode_with_modifiers() const;
 	uint32_t get_physical_scancode_with_modifiers() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
@@ -360,7 +371,7 @@ public:
 	bool is_doubleclick() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
@@ -376,6 +387,7 @@ class InputEventMouseMotion : public InputEventMouse {
 	float pressure;
 	Vector2 relative;
 	Vector2 speed;
+	bool pen_inverted;
 
 protected:
 	static void _bind_methods();
@@ -386,6 +398,9 @@ public:
 
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
+
+	void set_pen_inverted(bool p_inverted);
+	bool get_pen_inverted() const;
 
 	void set_relative(const Vector2 &p_relative);
 	Vector2 get_relative() const;
@@ -418,7 +433,7 @@ public:
 
 	virtual bool is_pressed() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
@@ -446,7 +461,7 @@ public:
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
@@ -533,9 +548,9 @@ public:
 
 	virtual bool is_action(const StringName &p_action) const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
-
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
+
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
 
@@ -634,4 +649,4 @@ public:
 	InputEventMIDI();
 };
 
-#endif
+#endif // INPUT_EVENT_H

@@ -40,12 +40,14 @@
 #include "core/project_settings.h"
 #include "main/input_default.h"
 #include "node.h"
+#include "scene/animation/scene_tree_tween.h"
 #include "scene/debugger/script_debugger_remote.h"
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
+#include "servers/navigation_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "viewport.h"
@@ -101,6 +103,27 @@ void SceneTreeTimer::release_connections() {
 SceneTreeTimer::SceneTreeTimer() {
 	time_left = 0;
 	process_pause = true;
+}
+
+// This should be called once per physics tick, to make sure the transform previous and current
+// is kept up to date on the few spatials that are using client side physics interpolation
+void SceneTree::ClientPhysicsInterpolation::physics_process() {
+	for (SelfList<Spatial> *E = _spatials_list.first(); E;) {
+		Spatial *spatial = E->self();
+
+		SelfList<Spatial> *current = E;
+
+		// get the next element here BEFORE we potentially delete one
+		E = E->next();
+
+		// This will return false if the spatial has timed out ..
+		// i.e. If get_global_transform_interpolated() has not been called
+		// for a few seconds, we can delete from the list to keep processing
+		// to a minimum.
+		if (!spatial->update_client_physics_interpolation_data()) {
+			_spatials_list.remove(current);
+		}
+	}
 }
 
 void SceneTree::tree_changed() {
@@ -178,7 +201,8 @@ void SceneTree::_flush_ugc() {
 			v[i] = E->get()[i];
 		}
 
-		call_group_flags(GROUP_CALL_REALTIME, E->key().group, E->key().call, v[0], v[1], v[2], v[3], v[4]);
+		static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+		call_group_flags(GROUP_CALL_REALTIME, E->key().group, E->key().call, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 
 		unique_group_calls.erase(E);
 	}
@@ -473,10 +497,55 @@ void SceneTree::init() {
 	MainLoop::init();
 }
 
+void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
+	// disallow interpolation in editor
+	if (Engine::get_singleton()->is_editor_hint()) {
+		p_enabled = false;
+	}
+
+	if (p_enabled == _physics_interpolation_enabled) {
+		return;
+	}
+
+	_physics_interpolation_enabled = p_enabled;
+	VisualServer::get_singleton()->set_physics_interpolation_enabled(p_enabled);
+}
+
+bool SceneTree::is_physics_interpolation_enabled() const {
+	return _physics_interpolation_enabled;
+}
+
+void SceneTree::client_physics_interpolation_add_spatial(SelfList<Spatial> *p_elem) {
+	// This ensures that _update_physics_interpolation_data() will be called at least once every
+	// physics tick, to ensure the previous and current transforms are kept up to date.
+	_client_physics_interpolation._spatials_list.add(p_elem);
+}
+
+void SceneTree::client_physics_interpolation_remove_spatial(SelfList<Spatial> *p_elem) {
+	_client_physics_interpolation._spatials_list.remove(p_elem);
+}
+
+void SceneTree::iteration_end() {
+	// When physics interpolation is active, we want all pending transforms
+	// to be flushed to the VisualServer before finishing a physics tick.
+	if (_physics_interpolation_enabled) {
+		flush_transform_notifications();
+	}
+}
+
 bool SceneTree::iteration(float p_time) {
 	root_lock++;
 
 	current_frame++;
+
+	if (_physics_interpolation_enabled) {
+		VisualServer::get_singleton()->tick();
+	}
+
+	// Any objects performing client physics interpolation
+	// should be given an opportunity to keep their previous transforms
+	// up to take before each new physics tick.
+	_client_physics_interpolation.physics_process();
 
 	flush_transform_notifications();
 
@@ -492,6 +561,9 @@ bool SceneTree::iteration(float p_time) {
 	_notify_group_pause("physics_process", Node::NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
+
+	process_tweens(p_time, true);
+
 	flush_transform_notifications();
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "update_worlds");
 	root_lock--;
@@ -535,7 +607,7 @@ bool SceneTree::idle(float p_time) {
 	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
 	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
 
-	Size2 win_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+	Size2 win_size = OS::get_singleton()->get_window_size();
 
 	if (win_size != last_screen_size) {
 		last_screen_size = win_size;
@@ -584,9 +656,13 @@ bool SceneTree::idle(float p_time) {
 		E = N;
 	}
 
+	process_tweens(p_time, false);
+
 	flush_transform_notifications(); //additional transforms after timers update
 
 	_call_idle_callbacks();
+
+	ProjectSettings::get_singleton()->update();
 
 #ifdef TOOLS_ENABLED
 
@@ -615,7 +691,37 @@ bool SceneTree::idle(float p_time) {
 
 #endif
 
+	if (_physics_interpolation_enabled) {
+		VisualServer::get_singleton()->pre_draw(true);
+	}
+
 	return _quit;
+}
+
+void SceneTree::process_tweens(float p_delta, bool p_physics) {
+	// This methods works similarly to how SceneTreeTimers are handled.
+	List<Ref<SceneTreeTween>>::Element *L = tweens.back();
+
+	for (List<Ref<SceneTreeTween>>::Element *E = tweens.front(); E;) {
+		List<Ref<SceneTreeTween>>::Element *N = E->next();
+		// Don't process if paused or process mode doesn't match.
+		if (!E->get()->can_process(pause) || (p_physics == (E->get()->get_process_mode() == Tween::TWEEN_PROCESS_IDLE))) {
+			if (E == L) {
+				break;
+			}
+			E = N;
+			continue;
+		}
+
+		if (!E->get()->step(p_delta)) {
+			E->get()->clear();
+			tweens.erase(E);
+		}
+		if (E == L) {
+			break;
+		}
+		E = N;
+	}
 }
 
 void SceneTree::finish() {
@@ -629,7 +735,7 @@ void SceneTree::finish() {
 
 	if (root) {
 		root->_set_tree(nullptr);
-		root->_propagate_after_exit_tree();
+		root->_propagate_after_exit_branch(true);
 		memdelete(root); //delete root
 		root = nullptr;
 	}
@@ -717,8 +823,16 @@ void SceneTree::_notification(int p_notification) {
 	};
 };
 
+bool SceneTree::is_auto_accept_quit() const {
+	return accept_quit;
+}
+
 void SceneTree::set_auto_accept_quit(bool p_enable) {
 	accept_quit = p_enable;
+}
+
+bool SceneTree::is_quit_on_go_back() const {
+	return quit_on_go_back;
 }
 
 void SceneTree::set_quit_on_go_back(bool p_enable) {
@@ -894,6 +1008,7 @@ void SceneTree::set_pause(bool p_enabled) {
 		return;
 	}
 	pause = p_enabled;
+	NavigationServer::get_singleton()->set_active(!p_enabled);
 	PhysicsServer::get_singleton()->set_active(!p_enabled);
 	Physics2DServer::get_singleton()->set_active(!p_enabled);
 	if (get_root()) {
@@ -1021,11 +1136,12 @@ Variant SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Var
 	StringName method = *p_args[2];
 	Variant v[VARIANT_ARG_MAX];
 
-	for (int i = 0; i < MIN(p_argcount - 3, 5); i++) {
+	for (int i = 0; i < MIN(p_argcount - 3, VARIANT_ARG_MAX); i++) {
 		v[i] = *p_args[i + 3];
 	}
 
-	call_group_flags(flags, group, method, v[0], v[1], v[2], v[3], v[4]);
+	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+	call_group_flags(flags, group, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 	return Variant();
 }
 
@@ -1133,7 +1249,7 @@ void SceneTree::_update_root_rect() {
 	}
 
 	//actual screen video mode
-	Size2 video_mode = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+	Size2 video_mode = OS::get_singleton()->get_window_size();
 	Size2 desired_res = stretch_min;
 
 	Size2 viewport_size;
@@ -1719,6 +1835,23 @@ Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec, bool p_process_pa
 	return stt;
 }
 
+Ref<SceneTreeTween> SceneTree::create_tween() {
+	Ref<SceneTreeTween> tween = memnew(SceneTreeTween(true));
+	tweens.push_back(tween);
+	return tween;
+}
+
+Array SceneTree::get_processed_tweens() {
+	Array ret;
+	ret.resize(tweens.size());
+
+	for (int i = 0; i < tweens.size(); i++) {
+		ret[i] = tweens[i];
+	}
+
+	return ret;
+}
+
 void SceneTree::_network_peer_connected(int p_id) {
 	emit_signal("network_peer_connected", p_id);
 }
@@ -1812,7 +1945,9 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root"), &SceneTree::get_root);
 	ClassDB::bind_method(D_METHOD("has_group", "name"), &SceneTree::has_group);
 
+	ClassDB::bind_method(D_METHOD("is_auto_accept_quit"), &SceneTree::is_auto_accept_quit);
 	ClassDB::bind_method(D_METHOD("set_auto_accept_quit", "enabled"), &SceneTree::set_auto_accept_quit);
+	ClassDB::bind_method(D_METHOD("is_quit_on_go_back"), &SceneTree::is_quit_on_go_back);
 	ClassDB::bind_method(D_METHOD("set_quit_on_go_back", "enabled"), &SceneTree::set_quit_on_go_back);
 
 	ClassDB::bind_method(D_METHOD("set_debug_collisions_hint", "enable"), &SceneTree::set_debug_collisions_hint);
@@ -1829,12 +1964,17 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_input_handled"), &SceneTree::is_input_handled);
 
 	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "pause_mode_process"), &SceneTree::create_timer, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("create_tween"), &SceneTree::create_tween);
+	ClassDB::bind_method(D_METHOD("get_processed_tweens"), &SceneTree::get_processed_tweens);
 
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneTree::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);
 	ClassDB::bind_method(D_METHOD("quit", "exit_code"), &SceneTree::quit, DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("set_screen_stretch", "mode", "aspect", "minsize", "scale"), &SceneTree::set_screen_stretch, DEFVAL(1));
+
+	ClassDB::bind_method(D_METHOD("set_physics_interpolation_enabled", "enabled"), &SceneTree::set_physics_interpolation_enabled);
+	ClassDB::bind_method(D_METHOD("is_physics_interpolation_enabled"), &SceneTree::is_physics_interpolation_enabled);
 
 	ClassDB::bind_method(D_METHOD("queue_delete", "obj"), &SceneTree::queue_delete);
 
@@ -1893,6 +2033,8 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &SceneTree::set_use_font_oversampling);
 	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &SceneTree::is_using_font_oversampling);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_accept_quit"), "set_auto_accept_quit", "is_auto_accept_quit");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "quit_on_go_back"), "set_quit_on_go_back", "is_quit_on_go_back");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_collisions_hint"), "set_debug_collisions_hint", "is_debugging_collisions_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_navigation_hint"), "set_debug_navigation_hint", "is_debugging_navigation_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");
@@ -1905,6 +2047,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "", "get_root");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_multiplayer", "get_multiplayer");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multiplayer_poll"), "set_multiplayer_poll_enabled", "is_multiplayer_poll_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolation"), "set_physics_interpolation_enabled", "is_physics_interpolation_enabled");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
@@ -2025,8 +2168,8 @@ SceneTree::SceneTree() {
 	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
 
 	tree_version = 1;
-	physics_process_time = 1;
-	idle_process_time = 1;
+	physics_process_time = 0.f;
+	idle_process_time = 0.f;
 
 	root = nullptr;
 	input_handled = false;
@@ -2041,6 +2184,7 @@ SceneTree::SceneTree() {
 	call_lock = 0;
 	root_lock = 0;
 	node_count = 0;
+	_physics_interpolation_enabled = false;
 
 	//create with mainloop
 
@@ -2049,6 +2193,14 @@ SceneTree::SceneTree() {
 	root->set_handle_input_locally(false);
 	if (!root->get_world().is_valid()) {
 		root->set_world(Ref<World>(memnew(World)));
+	}
+
+	set_physics_interpolation_enabled(GLOBAL_DEF("physics/common/physics_interpolation", false));
+	// Always disable jitter fix if physics interpolation is enabled -
+	// Jitter fix will interfere with interpolation, and is not necessary
+	// when interpolation is active.
+	if (is_physics_interpolation_enabled()) {
+		Engine::get_singleton()->set_physics_jitter_fix(0);
 	}
 
 	// Initialize network state
@@ -2076,11 +2228,16 @@ SceneTree::SceneTree() {
 	const float sharpen_intensity = GLOBAL_GET("rendering/quality/filters/sharpen_intensity");
 	root->set_sharpen_intensity(sharpen_intensity);
 
-	GLOBAL_DEF_RST("rendering/quality/depth/hdr", true);
+	GLOBAL_DEF("rendering/quality/depth/hdr", true);
 	GLOBAL_DEF("rendering/quality/depth/hdr.mobile", false);
 
-	bool hdr = GLOBAL_GET("rendering/quality/depth/hdr");
+	const bool hdr = GLOBAL_GET("rendering/quality/depth/hdr");
 	root->set_hdr(hdr);
+
+	GLOBAL_DEF("rendering/quality/depth/use_32_bpc_depth", false);
+
+	const bool use_32_bpc_depth = GLOBAL_GET("rendering/quality/depth/use_32_bpc_depth");
+	root->set_use_32_bpc_depth(use_32_bpc_depth);
 
 	VS::get_singleton()->scenario_set_reflection_atlas_size(root->get_world()->get_scenario(), ref_atlas_size, ref_atlas_subdiv);
 
@@ -2120,7 +2277,7 @@ SceneTree::SceneTree() {
 	stretch_aspect = STRETCH_ASPECT_IGNORE;
 	stretch_scale = 1.0;
 
-	last_screen_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+	last_screen_size = OS::get_singleton()->get_window_size();
 	_update_root_rect();
 
 	if (ScriptDebugger::get_singleton()) {
@@ -2148,7 +2305,7 @@ SceneTree::SceneTree() {
 SceneTree::~SceneTree() {
 	if (root) {
 		root->_set_tree(nullptr);
-		root->_propagate_after_exit_tree();
+		root->_propagate_after_exit_branch(true);
 		memdelete(root);
 	}
 

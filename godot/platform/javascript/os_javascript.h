@@ -78,6 +78,7 @@ private:
 	bool idb_available;
 	bool idb_needs_sync;
 	bool idb_is_syncing;
+	bool pwa_is_waiting;
 
 	static void fullscreen_change_callback(int p_fullscreen);
 	static int mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
@@ -98,6 +99,7 @@ private:
 	static void send_notification_callback(int p_notification);
 	static void fs_sync_callback();
 	static void update_clipboard_callback(const char *p_text);
+	static void update_pwa_state_callback();
 
 protected:
 	void resume_audio();
@@ -116,6 +118,8 @@ protected:
 
 public:
 	bool check_size_force_redraw();
+	bool pwa_needs_update() const { return pwa_is_waiting; }
+	Error pwa_update();
 
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
@@ -168,9 +172,10 @@ public:
 	virtual MainLoop *get_main_loop() const;
 	bool main_loop_iterate();
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL, bool p_open_console = false);
 	virtual Error kill(const ProcessID &p_pid);
 	virtual int get_process_id() const;
+	bool is_process_running(const ProcessID &p_pid) const;
 	int get_processor_count() const;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
@@ -181,6 +186,7 @@ public:
 	virtual String get_name() const;
 	virtual void add_frame_delay(bool p_can_draw) {}
 	virtual bool can_draw() const;
+	virtual void vibrate_handheld(int p_duration_ms);
 
 	virtual String get_cache_path() const;
 	virtual String get_config_path() const;
@@ -196,4 +202,4 @@ public:
 	OS_JavaScript();
 };
 
-#endif
+#endif // OS_JAVASCRIPT_H

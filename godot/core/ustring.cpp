@@ -39,9 +39,11 @@
 #include "core/math/math_funcs.h"
 #include "core/os/memory.h"
 #include "core/print_string.h"
+#include "core/string_name.h"
 #include "core/translation.h"
 #include "core/ucaps.h"
 #include "core/variant.h"
+#include "core/version_generated.gen.h"
 
 #include <wchar.h>
 #include <cstdint>
@@ -107,9 +109,12 @@ bool CharString::operator<(const CharString &p_right) const {
 }
 
 CharString &CharString::operator+=(char p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+
+	char *dst = ptrw();
+	dst[lhs_len] = p_char;
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
@@ -216,11 +221,7 @@ void String::copy_from(const char *p_cstr) {
 		return;
 	}
 
-	int len = 0;
-	const char *ptr = p_cstr;
-	while (*(ptr++) != 0) {
-		len++;
-	}
+	const size_t len = strlen(p_cstr);
 
 	if (len == 0) {
 		resize(0);
@@ -231,7 +232,7 @@ void String::copy_from(const char *p_cstr) {
 
 	CharType *dst = this->ptrw();
 
-	for (int i = 0; i < len + 1; i++) {
+	for (size_t i = 0; i <= len; i++) {
 		dst[i] = p_cstr[i];
 	}
 }
@@ -262,19 +263,17 @@ void String::copy_from(const CharType *p_cstr, const int p_clip_to) {
 // p_length <= p_char strlen
 void String::copy_from_unchecked(const CharType *p_char, const int p_length) {
 	resize(p_length + 1);
-	set(p_length, 0);
 
 	CharType *dst = ptrw();
-
-	for (int i = 0; i < p_length; i++) {
-		dst[i] = p_char[i];
-	}
+	memcpy(dst, p_char, p_length * sizeof(CharType));
+	dst[p_length] = 0;
 }
 
 void String::copy_from(const CharType &p_char) {
 	resize(2);
-	set(0, p_char);
-	set(1, 0);
+	CharType *dst = ptrw();
+	dst[0] = p_char;
+	dst[1] = 0;
 }
 
 bool String::operator==(const String &p_str) const {
@@ -311,27 +310,23 @@ String String::operator+(const String &p_str) const {
 }
 
 String &String::operator+=(const String &p_str) {
-	if (empty()) {
+	const int lhs_len = length();
+	if (lhs_len == 0) {
 		*this = p_str;
 		return *this;
 	}
 
-	if (p_str.empty()) {
+	const int rhs_len = p_str.length();
+	if (rhs_len == 0) {
 		return *this;
 	}
 
-	int from = length();
-
-	resize(length() + p_str.size());
+	resize(lhs_len + rhs_len + 1);
 
 	const CharType *src = p_str.c_str();
-	CharType *dst = ptrw();
+	CharType *dst = ptrw() + lhs_len;
 
-	set(length(), 0);
-
-	for (int i = 0; i < p_str.length(); i++) {
-		dst[from + i] = src[i];
-	}
+	memcpy(dst, src, (rhs_len + 1) * sizeof(CharType));
 
 	return *this;
 }
@@ -342,9 +337,12 @@ String &String::operator+=(const CharType *p_str) {
 }
 
 String &String::operator+=(CharType p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+
+	CharType *dst = ptrw();
+	dst[lhs_len] = p_char;
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
@@ -354,22 +352,15 @@ String &String::operator+=(const char *p_str) {
 		return *this;
 	}
 
-	int src_len = 0;
-	const char *ptr = p_str;
-	while (*(ptr++) != 0) {
-		src_len++;
-	}
+	const size_t rhs_len = strlen(p_str);
+	const int lhs_len = length();
 
-	int from = length();
+	resize(lhs_len + rhs_len + 1);
 
-	resize(from + src_len + 1);
+	CharType *dst = ptrw() + lhs_len;
 
-	CharType *dst = ptrw();
-
-	set(length(), 0);
-
-	for (int i = 0; i < src_len; i++) {
-		dst[from + i] = p_str[i];
+	for (size_t i = 0; i <= rhs_len; i++) {
+		dst[i] = p_str[i];
 	}
 
 	return *this;
@@ -1014,7 +1005,7 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	return ret;
 }
 
-String String::join(Vector<String> parts) {
+String String::join(const Vector<String> &parts) const {
 	String ret;
 	for (int i = 0; i < parts.size(); ++i) {
 		if (i > 0) {
@@ -1439,7 +1430,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 	return ret;
 };
 
-bool String::parse_utf8(const char *p_utf8, int p_len) {
+bool String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 #define _UNICERROR(m_err) print_line("Unicode error: " + String(m_err));
 
 	if (!p_utf8) {
@@ -1471,6 +1462,11 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 			if (skip == 0) {
 				uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
 
+				if (p_skip_cr && c == '\r') {
+					ptrtmp++;
+					continue;
+				}
+
 				/* Determine the number of characters in sequence */
 				if ((c & 0x80) == 0) {
 					skip = 0;
@@ -1480,10 +1476,15 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 					skip = 2;
 				} else if ((c & 0xF8) == 0xF0) {
 					skip = 3;
+					if (sizeof(wchar_t) == 2) {
+						str_size++; // encode as surrogate pair.
+					}
 				} else if ((c & 0xFC) == 0xF8) {
 					skip = 4;
+					// invalid character, too long to encode as surrogates.
 				} else if ((c & 0xFE) == 0xFC) {
 					skip = 5;
+					// invalid character, too long to encode as surrogates.
 				} else {
 					_UNICERROR("invalid skip");
 					return true; //invalid utf8
@@ -1522,6 +1523,11 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 	while (cstr_size) {
 		int len = 0;
+
+		if (p_skip_cr && *p_utf8 == '\r') {
+			p_utf8++;
+			continue;
+		}
 
 		/* Determine the number of characters in sequence */
 		if ((*p_utf8 & 0x80) == 0) {
@@ -1575,12 +1581,14 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 			}
 		}
 
-		//printf("char %i, len %i\n",unichar,len);
-		if (sizeof(wchar_t) == 2 && unichar > 0xFFFF) {
-			unichar = ' '; //too long for windows
+		if (sizeof(wchar_t) == 2 && unichar > 0x10FFFF) {
+			unichar = ' '; // invalid character, too long to encode as surrogates.
+		} else if (sizeof(wchar_t) == 2 && unichar > 0xFFFF) {
+			*(dst++) = uint32_t((unichar >> 10) + 0xD7C0); // lead surrogate.
+			*(dst++) = uint32_t((unichar & 0x3FF) | 0xDC00); // trail surrogate.
+		} else {
+			*(dst++) = unichar;
 		}
-
-		*(dst++) = unichar;
 		cstr_size -= len;
 		p_utf8 += len;
 	}
@@ -1598,6 +1606,18 @@ CharString String::utf8() const {
 	int fl = 0;
 	for (int i = 0; i < l; i++) {
 		uint32_t c = d[i];
+		if ((c & 0xfffffc00) == 0xd800) { // decode surrogate pair.
+			if ((i < l - 1) && (d[i + 1] & 0xfffffc00) == 0xdc00) {
+				c = (c << 10UL) + d[i + 1] - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+				i++; // skip trail surrogate.
+			} else {
+				fl += 1;
+				continue;
+			}
+		} else if ((c & 0xfffffc00) == 0xdc00) {
+			fl += 1;
+			continue;
+		}
 		if (c <= 0x7f) { // 7 bits.
 			fl += 1;
 		} else if (c <= 0x7ff) { // 11 bits
@@ -1606,7 +1626,6 @@ CharString String::utf8() const {
 			fl += 3;
 		} else if (c <= 0x001fffff) { // 21 bits
 			fl += 4;
-
 		} else if (c <= 0x03ffffff) { // 26 bits
 			fl += 5;
 		} else if (c <= 0x7fffffff) { // 31 bits
@@ -1626,6 +1645,18 @@ CharString String::utf8() const {
 
 	for (int i = 0; i < l; i++) {
 		uint32_t c = d[i];
+		if ((c & 0xfffffc00) == 0xd800) { // decode surrogate pair.
+			if ((i < l - 1) && (d[i + 1] & 0xfffffc00) == 0xdc00) {
+				c = (c << 10UL) + d[i + 1] - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+				i++; // skip trail surrogate.
+			} else {
+				APPEND_CHAR(' ');
+				continue;
+			}
+		} else if ((c & 0xfffffc00) == 0xdc00) {
+			APPEND_CHAR(' ');
+			continue;
+		}
 
 		if (c <= 0x7f) { // 7 bits.
 			APPEND_CHAR(c);
@@ -1685,9 +1716,7 @@ String::String(const StrRange &p_range) {
 
 int String::hex_to_int(bool p_with_prefix) const {
 	int len = length();
-	if (len == 0 || (p_with_prefix && len < 3)) {
-		return 0;
-	}
+	ERR_FAIL_COND_V_MSG(p_with_prefix ? len < 3 : len == 0, 0, String("Invalid hexadecimal notation length in string ") + (p_with_prefix ? "with" : "without") + " prefix \"" + *this + "\".");
 
 	const CharType *s = ptr();
 
@@ -1698,9 +1727,7 @@ int String::hex_to_int(bool p_with_prefix) const {
 	}
 
 	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x') {
-			return 0;
-		}
+		ERR_FAIL_COND_V_MSG(s[0] != '0' || LOWERCASE(s[1]) != 'x', 0, "Invalid hexadecimal notation prefix in string \"" + *this + "\".");
 		s += 2;
 	}
 
@@ -1714,11 +1741,11 @@ int String::hex_to_int(bool p_with_prefix) const {
 		} else if (c >= 'a' && c <= 'f') {
 			n = (c - 'a') + 10;
 		} else {
-			return 0;
+			ERR_FAIL_V_MSG(0, "Invalid hexadecimal notation character \"" + chr(*s) + "\" in string \"" + *this + "\".");
 		}
 		// Check for overflow/underflow, with special case to ensure INT32_MIN does not result in error
 		bool overflow = ((hex > INT32_MAX / 16) && (sign == 1 || (sign == -1 && hex != (INT32_MAX >> 4) + 1))) || (sign == -1 && hex == (INT32_MAX >> 4) + 1 && c > '0');
-		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as a 32-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 		hex *= 16;
 		hex += n;
 		s++;
@@ -1728,9 +1755,8 @@ int String::hex_to_int(bool p_with_prefix) const {
 }
 
 int64_t String::hex_to_int64(bool p_with_prefix) const {
-	if (p_with_prefix && length() < 3) {
-		return 0;
-	}
+	int len = length();
+	ERR_FAIL_COND_V_MSG(p_with_prefix ? len < 3 : len == 0, 0, String("Invalid hexadecimal notation length in string ") + (p_with_prefix ? "with" : "without") + " prefix \"" + *this + "\".");
 
 	const CharType *s = ptr();
 
@@ -1741,9 +1767,7 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 	}
 
 	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x') {
-			return 0;
-		}
+		ERR_FAIL_COND_V_MSG(s[0] != '0' || LOWERCASE(s[1]) != 'x', 0, "Invalid hexadecimal notation prefix in string \"" + *this + "\".");
 		s += 2;
 	}
 
@@ -1757,10 +1781,10 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 		} else if (c >= 'a' && c <= 'f') {
 			n = (c - 'a') + 10;
 		} else {
-			return 0;
+			ERR_FAIL_V_MSG(0, "Invalid hexadecimal notation character \"" + chr(*s) + "\" in string \"" + *this + "\".");
 		}
 		bool overflow = ((hex > INT64_MAX / 16) && (sign == 1 || (sign == -1 && hex != (INT64_MAX >> 4) + 1))) || (sign == -1 && hex == (INT64_MAX >> 4) + 1 && c > '0');
-		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 		hex *= 16;
 		hex += n;
 		s++;
@@ -1771,9 +1795,7 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 
 int64_t String::bin_to_int64(bool p_with_prefix) const {
 	int len = length();
-	if (len == 0 || (p_with_prefix && len < 3)) {
-		return 0;
-	}
+	ERR_FAIL_COND_V_MSG(p_with_prefix ? len < 3 : len == 0, 0, String("Invalid binary notation length in string ") + (p_with_prefix ? "with" : "without") + " prefix \"" + *this + "\".");
 
 	const CharType *s = ptr();
 
@@ -1784,9 +1806,7 @@ int64_t String::bin_to_int64(bool p_with_prefix) const {
 	}
 
 	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'b') {
-			return 0;
-		}
+		ERR_FAIL_COND_V_MSG(s[0] != '0' || LOWERCASE(s[1]) != 'b', 0, "Invalid binary notation prefix in string \"" + *this + "\".");
 		s += 2;
 	}
 
@@ -1798,11 +1818,11 @@ int64_t String::bin_to_int64(bool p_with_prefix) const {
 		if (c == '0' || c == '1') {
 			n = c - '0';
 		} else {
-			return 0;
+			ERR_FAIL_V_MSG(0, "Invalid binary notation character \"" + chr(*s) + "\" in string \"" + *this + "\".");
 		}
 		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
 		bool overflow = ((binary > INT64_MAX / 2) && (sign == 1 || (sign == -1 && binary != (INT64_MAX >> 1) + 1))) || (sign == -1 && binary == (INT64_MAX >> 1) + 1 && c > '0');
-		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 		binary *= 2;
 		binary += n;
 		s++;
@@ -1825,7 +1845,7 @@ int String::to_int() const {
 		CharType c = operator[](i);
 		if (c >= '0' && c <= '9') {
 			bool overflow = (integer > INT32_MAX / 10) || (integer == INT32_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
-			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as a 32-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -1851,7 +1871,7 @@ int64_t String::to_int64() const {
 		CharType c = operator[](i);
 		if (c >= '0' && c <= '9') {
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
-			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -1880,7 +1900,7 @@ int String::to_int(const char *p_str, int p_len) {
 		char c = p_str[i];
 		if (c >= '0' && c <= '9') {
 			bool overflow = (integer > INT32_MAX / 10) || (integer == INT32_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
-			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as a 32-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -2199,7 +2219,7 @@ int64_t String::to_int(const CharType *p_str, int p_len) {
 						while (*str && str != limit) {
 							number += *(str++);
 						}
-						ERR_FAIL_V_MSG(sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + number + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+						ERR_FAIL_V_MSG(sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + number + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 					}
 					integer *= 10;
 					integer += c - '0';
@@ -2412,15 +2432,7 @@ String String::substr(int p_from, int p_chars) const {
 }
 
 int String::find_last(const String &p_str) const {
-	int pos = -1;
-	int findfrom = 0;
-	int findres = -1;
-	while ((findres = find(p_str, findfrom)) != -1) {
-		pos = findres;
-		findfrom = pos + 1;
-	}
-
-	return pos;
+	return rfind(p_str);
 }
 
 int String::find(const String &p_str, int p_from) const {
@@ -3255,6 +3267,10 @@ String String::rstrip(const String &p_chars) const {
 	return substr(0, end + 1);
 }
 
+bool String::is_network_share_path() const {
+	return begins_with("//") || begins_with("\\\\");
+}
+
 String String::simplify_path() const {
 	String s = *this;
 	String drive;
@@ -3267,6 +3283,9 @@ String String::simplify_path() const {
 	} else if (s.begins_with("user://")) {
 		drive = "user://";
 		s = s.substr(7, s.length());
+	} else if (is_network_share_path()) {
+		drive = s.substr(0, 2);
+		s = s.substr(2, s.length() - 2);
 	} else if (s.begins_with("/") || s.begins_with("\\")) {
 		drive = s.substr(0, 1);
 		s = s.substr(1, s.length() - 1);
@@ -3364,6 +3383,31 @@ bool String::is_abs_path() const {
 	}
 }
 
+static _FORCE_INLINE_ bool _is_valid_identifier_bit(int p_index, CharType p_char) {
+	if (p_index == 0 && p_char >= '0' && p_char <= '9') {
+		return false; // No start with number plz.
+	}
+	return (p_char >= '0' && p_char <= '9') || (p_char >= 'a' && p_char <= 'z') || (p_char >= 'A' && p_char <= 'Z') || p_char == '_';
+}
+
+String String::validate_identifier() const {
+	if (empty()) {
+		return "_"; // Empty string is not a valid identifier.
+	}
+
+	String result = *this;
+	int len = result.length();
+	wchar_t *buffer = result.ptrw();
+
+	for (int i = 0; i < len; i++) {
+		if (!_is_valid_identifier_bit(i, buffer[i])) {
+			buffer[i] = '_';
+		}
+	}
+
+	return result;
+}
+
 bool String::is_valid_identifier() const {
 	int len = length();
 
@@ -3374,15 +3418,7 @@ bool String::is_valid_identifier() const {
 	const wchar_t *str = &operator[](0);
 
 	for (int i = 0; i < len; i++) {
-		if (i == 0) {
-			if (str[0] >= '0' && str[0] <= '9') {
-				return false; // no start with number plz
-			}
-		}
-
-		bool valid_char = (str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') || str[i] == '_';
-
-		if (!valid_char) {
+		if (!_is_valid_identifier_bit(i, str[i])) {
 			return false;
 		}
 	}
@@ -3426,21 +3462,19 @@ String String::http_escape() const {
 	const CharString temp = utf8();
 	String res;
 	for (int i = 0; i < temp.length(); ++i) {
-		char ord = temp[i];
+		uint8_t ord = temp[i];
 		if (ord == '.' || ord == '-' || ord == '_' || ord == '~' ||
 				(ord >= 'a' && ord <= 'z') ||
 				(ord >= 'A' && ord <= 'Z') ||
 				(ord >= '0' && ord <= '9')) {
 			res += ord;
 		} else {
-			char h_Val[3];
-#if defined(__GNUC__) || defined(_MSC_VER)
-			snprintf(h_Val, 3, "%02hhX", ord);
-#else
-			sprintf(h_Val, "%02hhX", ord);
-#endif
-			res += "%";
-			res += h_Val;
+			char p[4] = { '%', 0, 0, 0 };
+			static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+			p[1] = hex[ord >> 4];
+			p[2] = hex[ord & 0xF];
+			res += p;
 		}
 	}
 	return res;
@@ -3989,13 +4023,13 @@ bool String::is_rel_path() const {
 String String::get_base_dir() const {
 	int end = 0;
 
-	// url scheme style base
+	// URL scheme style base.
 	int basepos = find("://");
 	if (basepos != -1) {
 		end = basepos + 3;
 	}
 
-	// windows top level directory base
+	// Windows top level directory base.
 	if (end == 0) {
 		basepos = find(":/");
 		if (basepos == -1) {
@@ -4006,7 +4040,24 @@ String String::get_base_dir() const {
 		}
 	}
 
-	// unix root directory base
+	// Windows UNC network share path.
+	if (end == 0) {
+		if (is_network_share_path()) {
+			basepos = find("/", 2);
+			if (basepos == -1) {
+				basepos = find("\\", 2);
+			}
+			int servpos = find("/", basepos + 1);
+			if (servpos == -1) {
+				servpos = find("\\", basepos + 1);
+			}
+			if (servpos != -1) {
+				end = servpos + 1;
+			}
+		}
+	}
+
+	// Unix root directory base.
 	if (end == 0) {
 		if (begins_with("/")) {
 			end = 1;
@@ -4031,7 +4082,7 @@ String String::get_base_dir() const {
 }
 
 String String::get_file() const {
-	int sep = MAX(find_last("/"), find_last("\\"));
+	int sep = MAX(rfind("/"), rfind("\\"));
 	if (sep == -1) {
 		return *this;
 	}
@@ -4040,8 +4091,8 @@ String String::get_file() const {
 }
 
 String String::get_extension() const {
-	int pos = find_last(".");
-	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\"))) {
+	int pos = rfind(".");
+	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
 		return "";
 	}
 
@@ -4119,7 +4170,7 @@ String String::property_name_encode() const {
 	// as well as '"', '=' or ' ' (32)
 	const CharType *cstr = c_str();
 	for (int i = 0; cstr[i]; i++) {
-		if (cstr[i] == '=' || cstr[i] == '"' || cstr[i] < 33 || cstr[i] > 126) {
+		if (cstr[i] == '=' || cstr[i] == '"' || cstr[i] == ';' || cstr[i] == '[' || cstr[i] == ']' || cstr[i] < 33 || cstr[i] > 126) {
 			return "\"" + c_escape_multiline() + "\"";
 		}
 	}
@@ -4128,7 +4179,8 @@ String String::property_name_encode() const {
 }
 
 // Changes made to the set of invalid characters must also be reflected in the String documentation.
-const String String::invalid_node_name_characters = ". : @ / \"";
+const String String::invalid_node_name_characters = ". : @ / \" " UNIQUE_NODE_PREFIX;
+;
 
 String String::validate_node_name() const {
 	Vector<String> chars = String::invalid_node_name_characters.split(" ");
@@ -4140,8 +4192,8 @@ String String::validate_node_name() const {
 }
 
 String String::get_basename() const {
-	int pos = find_last(".");
-	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\"))) {
+	int pos = rfind(".");
+	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
 		return *this;
 	}
 
@@ -4201,7 +4253,7 @@ String String::sprintf(const Array &values, bool *error) const {
 	int min_chars = 0;
 	int min_decimals = 0;
 	bool in_decimals = false;
-	bool pad_with_zeroes = false;
+	bool pad_with_zeros = false;
 	bool left_justified = false;
 	bool show_sign = false;
 
@@ -4252,7 +4304,7 @@ String String::sprintf(const Array &values, bool *error) const {
 
 					// Padding.
 					int pad_chars_count = (value < 0 || show_sign) ? min_chars - 1 : min_chars;
-					String pad_char = pad_with_zeroes ? String("0") : String(" ");
+					String pad_char = pad_with_zeros ? String("0") : String(" ");
 					if (left_justified) {
 						str = str.rpad(pad_chars_count, pad_char);
 					} else {
@@ -4260,10 +4312,13 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 
 					// Sign.
-					if (show_sign && value >= 0) {
-						str = str.insert(pad_with_zeroes ? 0 : str.length() - number_len, "+");
-					} else if (value < 0) {
-						str = str.insert(pad_with_zeroes ? 0 : str.length() - number_len, "-");
+					if (show_sign || value < 0) {
+						String sign_char = value < 0 ? "-" : "+";
+						if (left_justified) {
+							str = str.insert(0, sign_char);
+						} else {
+							str = str.insert(pad_with_zeros ? 0 : str.length() - number_len, sign_char);
+						}
 					}
 
 					formatted += str;
@@ -4292,13 +4347,9 @@ String String::sprintf(const Array &values, bool *error) const {
 
 					// Padding. Leave room for sign later if required.
 					int pad_chars_count = (is_negative || show_sign) ? min_chars - 1 : min_chars;
-					String pad_char = pad_with_zeroes ? String("0") : String(" ");
+					String pad_char = pad_with_zeros ? String("0") : String(" ");
 					if (left_justified) {
-						if (pad_with_zeroes) {
-							return "left justification cannot be used with zeros as the padding";
-						} else {
-							str = str.rpad(pad_chars_count, pad_char);
-						}
+						str = str.rpad(pad_chars_count, pad_char);
 					} else {
 						str = str.lpad(pad_chars_count, pad_char);
 					}
@@ -4309,7 +4360,7 @@ String String::sprintf(const Array &values, bool *error) const {
 						if (left_justified) {
 							str = str.insert(0, sign_char);
 						} else {
-							str = str.insert(pad_with_zeroes ? 0 : str.length() - initial_len, sign_char);
+							str = str.insert(pad_with_zeros ? 0 : str.length() - initial_len, sign_char);
 						}
 					}
 
@@ -4396,7 +4447,11 @@ String String::sprintf(const Array &values, bool *error) const {
 						min_decimals += n;
 					} else {
 						if (c == '0' && min_chars == 0) {
-							pad_with_zeroes = true;
+							if (left_justified) {
+								WARN_PRINT("'0' flag ignored with '-' flag in string format");
+							} else {
+								pad_with_zeros = true;
+							}
 						} else {
 							min_chars *= 10;
 							min_chars += n;
@@ -4445,7 +4500,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					// Back to defaults:
 					min_chars = 0;
 					min_decimals = 6;
-					pad_with_zeroes = false;
+					pad_with_zeros = false;
 					left_justified = false;
 					show_sign = false;
 					in_decimals = false;
@@ -4481,29 +4536,33 @@ String String::unquote() const {
 }
 
 #ifdef TOOLS_ENABLED
-String TTR(const String &p_text) {
+String TTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->tool_translate(p_text);
+		return TranslationServer::get_singleton()->tool_translate(p_text, p_context);
 	}
 
 	return p_text;
 }
 
+/* DTR is used for the documentation, handling descriptions extracted from the XML.
+ * It also replaces `$DOCS_URL` with the actual URL to the documentation's branch,
+ * to allow dehardcoding it in the XML and doing proper substitutions everywhere.
+ */
 String DTR(const String &p_text) {
 	// Comes straight from the XML, so remove indentation and any trailing whitespace.
 	const String text = p_text.dedent().strip_edges();
 
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->doc_translate(text);
+		return String(TranslationServer::get_singleton()->doc_translate(text)).replace("$DOCS_URL", VERSION_DOCS_URL);
 	}
 
-	return text;
+	return text.replace("$DOCS_URL", VERSION_DOCS_URL);
 }
 #endif
 
 String RTR(const String &p_text) {
 	if (TranslationServer::get_singleton()) {
-		String rtr = TranslationServer::get_singleton()->tool_translate(p_text);
+		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, StringName());
 		if (rtr == String() || rtr == p_text) {
 			return TranslationServer::get_singleton()->translate(p_text);
 		} else {

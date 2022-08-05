@@ -41,27 +41,21 @@
 void OccluderShape::_bind_methods() {
 }
 
-OccluderShape::OccluderShape(RID p_shape) {
-	_shape = p_shape;
+OccluderShape::OccluderShape() {
+	_shape = RID_PRIME(VisualServer::get_singleton()->occluder_resource_create());
 }
 
 OccluderShape::~OccluderShape() {
-	if (_shape != RID()) {
+	if (_shape.is_valid()) {
 		VisualServer::get_singleton()->free(_shape);
 	}
 }
 
-void OccluderShape::update_transform_to_visual_server(const Transform &p_global_xform) {
-	VisualServer::get_singleton()->occluder_set_transform(get_shape(), p_global_xform);
+#ifdef TOOLS_ENABLED
+AABB OccluderShape::get_fallback_gizmo_aabb() const {
+	return AABB(Vector3(-0.5, -0.5, -0.5), Vector3(1, 1, 1));
 }
-
-void OccluderShape::update_active_to_visual_server(bool p_active) {
-	VisualServer::get_singleton()->occluder_set_active(get_shape(), p_active);
-}
-
-void OccluderShape::notification_exit_world() {
-	VisualServer::get_singleton()->occluder_set_scenario(_shape, RID(), VisualServer::OCCLUDER_TYPE_UNDEFINED);
-}
+#endif
 
 //////////////////////////////////////////////
 
@@ -75,8 +69,31 @@ void OccluderShapeSphere::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "spheres", PROPERTY_HINT_NONE, itos(Variant::PLANE) + ":"), "set_spheres", "get_spheres");
 }
 
+#ifdef TOOLS_ENABLED
+void OccluderShapeSphere::_update_aabb() {
+	_aabb_local = AABB();
+
+	if (!_spheres.size()) {
+		return;
+	}
+
+	_aabb_local.position = _spheres[0].normal;
+
+	for (int n = 0; n < _spheres.size(); n++) {
+		AABB bb(_spheres[n].normal, Vector3(0, 0, 0));
+		bb.grow_by(_spheres[n].d);
+		_aabb_local.merge_with(bb);
+	}
+}
+
+AABB OccluderShapeSphere::get_fallback_gizmo_aabb() const {
+	return _aabb_local;
+}
+
+#endif
+
 void OccluderShapeSphere::update_shape_to_visual_server() {
-	VisualServer::get_singleton()->occluder_spheres_update(get_shape(), _spheres);
+	VisualServer::get_singleton()->occluder_resource_spheres_update(get_shape(), _spheres);
 }
 
 Transform OccluderShapeSphere::center_node(const Transform &p_global_xform, const Transform &p_parent_xform, real_t p_snap) {
@@ -160,10 +177,6 @@ Transform OccluderShapeSphere::center_node(const Transform &p_global_xform, cons
 	return new_local_xform;
 }
 
-void OccluderShapeSphere::notification_enter_world(RID p_scenario) {
-	VisualServer::get_singleton()->occluder_set_scenario(get_shape(), p_scenario, VisualServer::OCCLUDER_TYPE_SPHERE);
-}
-
 void OccluderShapeSphere::set_spheres(const Vector<Plane> &p_spheres) {
 #ifdef TOOLS_ENABLED
 	// try and detect special circumstance of adding a new sphere in the editor
@@ -188,8 +201,11 @@ void OccluderShapeSphere::set_spheres(const Vector<Plane> &p_spheres) {
 	if (adding_in_editor) {
 		_spheres.set(_spheres.size() - 1, Plane(Vector3(), 1.0));
 	}
+
+	_update_aabb();
 #endif
 
+	update_shape_to_visual_server();
 	notify_change_to_owners();
 }
 
@@ -198,6 +214,10 @@ void OccluderShapeSphere::set_sphere_position(int p_idx, const Vector3 &p_positi
 		Plane p = _spheres[p_idx];
 		p.normal = p_position;
 		_spheres.set(p_idx, p);
+#ifdef TOOLS_ENABLED
+		_update_aabb();
+#endif
+		update_shape_to_visual_server();
 		notify_change_to_owners();
 	}
 }
@@ -207,10 +227,21 @@ void OccluderShapeSphere::set_sphere_radius(int p_idx, real_t p_radius) {
 		Plane p = _spheres[p_idx];
 		p.d = MAX(p_radius, _min_radius);
 		_spheres.set(p_idx, p);
+#ifdef TOOLS_ENABLED
+		_update_aabb();
+#endif
+		update_shape_to_visual_server();
 		notify_change_to_owners();
 	}
 }
 
-OccluderShapeSphere::OccluderShapeSphere() :
-		OccluderShape(VisualServer::get_singleton()->occluder_create()) {
+OccluderShapeSphere::OccluderShapeSphere() {
+	if (get_shape().is_valid()) {
+		VisualServer::get_singleton()->occluder_resource_prepare(get_shape(), VisualServer::OCCLUDER_TYPE_SPHERE);
+	}
+
+	// Create a default sphere
+	Vector<Plane> planes;
+	planes.push_back(Plane(Vector3(0, 0, 0), 1));
+	set_spheres(planes);
 }

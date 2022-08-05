@@ -36,7 +36,7 @@
 
 struct Vector2i;
 
-struct Vector2 {
+struct _NO_DISCARD_CLASS_ Vector2 {
 	static const int AXIS_COUNT = 2;
 
 	enum Axis {
@@ -60,10 +60,12 @@ struct Vector2 {
 	};
 
 	_FORCE_INLINE_ real_t &operator[](int p_idx) {
-		return p_idx ? y : x;
+		DEV_ASSERT((unsigned int)p_idx < 2);
+		return coord[p_idx];
 	}
 	_FORCE_INLINE_ const real_t &operator[](int p_idx) const {
-		return p_idx ? y : x;
+		DEV_ASSERT((unsigned int)p_idx < 2);
+		return coord[p_idx];
 	}
 
 	_FORCE_INLINE_ void set_all(real_t p_value) {
@@ -100,6 +102,7 @@ struct Vector2 {
 	Vector2 plane_project(real_t p_d, const Vector2 &p_vec) const;
 
 	Vector2 clamped(real_t p_len) const;
+	Vector2 limit_length(const real_t p_len = 1.0) const;
 
 	_FORCE_INLINE_ static Vector2 linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_weight);
 	_FORCE_INLINE_ Vector2 linear_interpolate(const Vector2 &p_to, real_t p_weight) const;
@@ -268,26 +271,34 @@ typedef Vector2 Point2;
 
 /* INTEGER STUFF */
 
-struct Vector2i {
+struct _NO_DISCARD_CLASS_ Vector2i {
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,
 	};
 
 	union {
-		int x;
-		int width;
-	};
-	union {
-		int y;
-		int height;
+		struct {
+			union {
+				int x;
+				int width;
+			};
+			union {
+				int y;
+				int height;
+			};
+		};
+
+		int coord[2];
 	};
 
 	_FORCE_INLINE_ int &operator[](int p_idx) {
-		return p_idx ? y : x;
+		DEV_ASSERT((unsigned int)p_idx < 2);
+		return coord[p_idx];
 	}
 	_FORCE_INLINE_ const int &operator[](int p_idx) const {
-		return p_idx ? y : x;
+		DEV_ASSERT((unsigned int)p_idx < 2);
+		return coord[p_idx];
 	}
 
 	Vector2i operator+(const Vector2i &p_v) const;

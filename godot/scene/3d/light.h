@@ -81,6 +81,8 @@ private:
 
 	// bind helpers
 
+	virtual void owner_changed_notify();
+
 protected:
 	RID light;
 
@@ -152,6 +154,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
 	void set_shadow_mode(ShadowMode p_mode);
@@ -218,4 +221,4 @@ public:
 			Light(VisualServer::LIGHT_SPOT) {}
 };
 
-#endif
+#endif // LIGHT_H

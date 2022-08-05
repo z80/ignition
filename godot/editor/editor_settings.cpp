@@ -317,11 +317,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/editor/font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/font_hinting", PROPERTY_HINT_ENUM, "Auto (Light),None,Light,Normal", PROPERTY_USAGE_DEFAULT);
 #endif
 	_initial_set("interface/editor/main_font", "");
-	hints["interface/editor/main_font"] = PropertyInfo(Variant::STRING, "interface/editor/main_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf,*.woff", PROPERTY_USAGE_DEFAULT);
+	hints["interface/editor/main_font"] = PropertyInfo(Variant::STRING, "interface/editor/main_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf,*.woff,*.woff2", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/main_font_bold", "");
-	hints["interface/editor/main_font_bold"] = PropertyInfo(Variant::STRING, "interface/editor/main_font_bold", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf,*.woff", PROPERTY_USAGE_DEFAULT);
+	hints["interface/editor/main_font_bold"] = PropertyInfo(Variant::STRING, "interface/editor/main_font_bold", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf,*.woff,*.woff2", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/code_font", "");
-	hints["interface/editor/code_font"] = PropertyInfo(Variant::STRING, "interface/editor/code_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf,*.woff", PROPERTY_USAGE_DEFAULT);
+	hints["interface/editor/code_font"] = PropertyInfo(Variant::STRING, "interface/editor/code_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf,*.woff,*.woff2", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/dim_editor_on_dialog_popup", true);
 	_initial_set("interface/editor/low_processor_mode_sleep_usec", 6900); // ~144 FPS
 	hints["interface/editor/low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
@@ -335,7 +335,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/editor/unfocused_low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/unfocused_low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,1000000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/separate_distraction_mode", false);
 	_initial_set("interface/editor/automatically_open_screenshots", true);
-	_initial_set("interface/editor/hide_console_window", false);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
 	_initial_set("interface/editor/quit_confirmation", true);
 
@@ -439,6 +438,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/navigation/minimap_width", 80);
 	hints["text_editor/navigation/minimap_width"] = PropertyInfo(Variant::INT, "text_editor/navigation/minimap_width", PROPERTY_HINT_RANGE, "50,250,1");
 	_initial_set("text_editor/navigation/mouse_extra_buttons_navigate_history", true);
+	_initial_set("text_editor/navigation/drag_and_drop_selection", true);
+	_initial_set("text_editor/navigation/stay_in_script_editor_on_node_selected", true);
 
 	// Appearance
 	_initial_set("text_editor/appearance/show_line_numbers", true);
@@ -461,6 +462,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/files/trim_trailing_whitespace_on_save", false);
 	_initial_set("text_editor/files/autosave_interval_secs", 0);
 	_initial_set("text_editor/files/restore_scripts_on_load", true);
+	_initial_set("text_editor/files/auto_reload_and_parse_scripts_on_save", true);
+	_initial_set("text_editor/files/auto_reload_scripts_on_external_change", false);
 
 	// Tools
 	_initial_set("text_editor/tools/create_signal_callbacks", true);
@@ -499,6 +502,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// GridMap
 	_initial_set("editors/grid_map/pick_distance", 5000.0);
+	_initial_set("editors/grid_map/preview_size", 64);
 
 	// 3D
 	_initial_set("editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56, 0.5));
@@ -507,6 +511,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Use a similar color to the 2D editor selection.
 	_initial_set("editors/3d/selection_box_color", Color(1.0, 0.5, 0));
 	hints["editors/3d/selection_box_color"] = PropertyInfo(Variant::COLOR, "editors/3d/selection_box_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	_initial_set("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.6));
+	_initial_set("editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1));
+	_initial_set("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 
 	// If a line is a multiple of this, it uses the primary grid color.
 	// Use a power of 2 value by default as it's more common to use powers of 2 in level design.
@@ -574,6 +581,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// 3D: Freelook
 	_initial_set("editors/3d/freelook/freelook_navigation_scheme", false);
 	hints["editors/3d/freelook/freelook_navigation_scheme"] = PropertyInfo(Variant::INT, "editors/3d/freelook/freelook_navigation_scheme", PROPERTY_HINT_ENUM, "Default,Partially Axis-Locked (id Tech),Fully Axis-Locked (Minecraft)");
+	_initial_set("editors/3d/freelook/freelook_sensitivity", 0.25);
+	hints["editors/3d/freelook/freelook_sensitivity"] = PropertyInfo(Variant::REAL, "editors/3d/freelook/freelook_sensitivity", PROPERTY_HINT_RANGE, "0.01, 2, 0.001");
 	_initial_set("editors/3d/freelook/freelook_inertia", 0.0);
 	hints["editors/3d/freelook/freelook_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/freelook/freelook_inertia", PROPERTY_HINT_RANGE, "0, 1, 0.001");
 	_initial_set("editors/3d/freelook/freelook_base_speed", 5.0);
@@ -649,10 +658,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// SSL
 	_initial_set("network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH);
-	hints["network/ssl/editor_ssl_certificates"] = PropertyInfo(Variant::STRING, "network/ssl/editor_ssl_certificates", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem");
+	hints["network/ssl/editor_ssl_certificates"] = PropertyInfo(Variant::STRING, "network/ssl/editor_ssl_certificates", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+
+	// HTTP Proxy
+	_initial_set("network/http_proxy/host", "");
+	_initial_set("network/http_proxy/port", 8080);
+	hints["network/http_proxy/port"] = PropertyInfo(Variant::INT, "network/http_proxy/port", PROPERTY_HINT_RANGE, "1,65535,1");
 
 	/* Extra config */
 
+	// TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 	_initial_set("project_manager/sorting_order", 0);
 	hints["project_manager/sorting_order"] = PropertyInfo(Variant::INT, "project_manager/sorting_order", PROPERTY_HINT_ENUM, "Name,Path,Last Modified");
 
@@ -693,7 +708,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/completion_background_color", Color(0.17, 0.16, 0.2));
 	_initial_set("text_editor/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
 	_initial_set("text_editor/highlighting/completion_existing_color", Color(0.13, 0.87, 0.87, 0.87));
-	_initial_set("text_editor/highlighting/completion_scroll_color", Color(1, 1, 1));
+	_initial_set("text_editor/highlighting/completion_scroll_color", Color(1, 1, 1, 0.29));
 	_initial_set("text_editor/highlighting/completion_font_color", Color(0.67, 0.67, 0.67));
 	_initial_set("text_editor/highlighting/text_color", Color(0.67, 0.67, 0.67));
 	_initial_set("text_editor/highlighting/line_number_color", Color(0.67, 0.67, 0.67, 0.4));
@@ -1291,12 +1306,25 @@ void EditorSettings::load_favorites() {
 	}
 }
 
+// The logic for this is rather convoluted as it takes into account whether
+// vital updates only is selected.
+bool EditorSettings::is_caret_blink_active() const {
+	bool blink = get("text_editor/cursor/caret_blink");
+	bool vital_only = get("interface/editor/update_vital_only");
+	bool continuous = get("interface/editor/update_continuously");
+
+	if (vital_only && !continuous) {
+		blink = false;
+	}
+	return blink;
+}
+
 bool EditorSettings::is_dark_theme() {
 	int AUTO_COLOR = 0;
 	int LIGHT_COLOR = 2;
 	Color base_color = get("interface/theme/base_color");
 	int icon_font_color_setting = get("interface/theme/icon_and_font_color");
-	return (icon_font_color_setting == AUTO_COLOR && ((base_color.r + base_color.g + base_color.b) / 3.0) < 0.5) || icon_font_color_setting == LIGHT_COLOR;
+	return (icon_font_color_setting == AUTO_COLOR && base_color.get_luminance() < 0.5) || icon_font_color_setting == LIGHT_COLOR;
 }
 
 void EditorSettings::list_text_editor_themes() {
@@ -1444,7 +1472,7 @@ String EditorSettings::get_editor_layouts_config() const {
 }
 
 float EditorSettings::get_auto_display_scale() const {
-#ifdef OSX_ENABLED
+#if defined(OSX_ENABLED) || defined(ANDROID_ENABLED)
 	return OS::get_singleton()->get_screen_max_scale();
 #else
 	const int screen = OS::get_singleton()->get_current_screen();

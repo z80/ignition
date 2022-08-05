@@ -42,24 +42,18 @@
 #include "gltf_state.h"
 #include "gltf_texture.h"
 
-#include "core/bind/core_bind.h"
+#include "core/bind/core_bind.h" // FIXME: Shouldn't use _Directory but DirAccess.
 #include "core/crypto/crypto_core.h"
-#include "core/error_list.h"
-#include "core/error_macros.h"
 #include "core/io/json.h"
 #include "core/math/disjoint_set.h"
 #include "core/os/file_access.h"
 #include "core/variant.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "drivers/png/png_driver_common.h"
-#include "editor/import/resource_importer_scene.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment.h"
-#include "scene/3d/camera.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/multimesh_instance.h"
-#include "scene/3d/skeleton.h"
 #include "scene/3d/spatial.h"
 #include "scene/animation/animation_player.h"
 #include "scene/main/node.h"
@@ -77,9 +71,27 @@
 #include "modules/regex/regex.h"
 #endif // MODULE_REGEX_ENABLED
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits>
+Ref<ArrayMesh> _mesh_to_array_mesh(Ref<Mesh> p_mesh) {
+	Ref<ArrayMesh> array_mesh = p_mesh;
+	if (array_mesh.is_valid()) {
+		return array_mesh;
+	}
+	array_mesh.instance();
+	if (p_mesh.is_null()) {
+		return array_mesh;
+	}
+
+	for (int32_t surface_i = 0; surface_i < p_mesh->get_surface_count(); surface_i++) {
+		Mesh::PrimitiveType primitive_type = p_mesh->surface_get_primitive_type(surface_i);
+		Array arrays = p_mesh->surface_get_arrays(surface_i);
+		Ref<Material> mat = p_mesh->surface_get_material(surface_i);
+		int32_t mat_idx = array_mesh->get_surface_count();
+		array_mesh->add_surface_from_arrays(primitive_type, arrays);
+		array_mesh->surface_set_material(mat_idx, mat);
+	}
+
+	return array_mesh;
+}
 
 Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &p_path) {
 	uint64_t begin_time = OS::get_singleton()->get_ticks_usec();
@@ -806,6 +818,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> state, const String &p_base_pa
 					}
 					buffer_data = _parse_base64_uri(uri);
 				} else { // Relative path to an external image file.
+					uri = uri.http_unescape();
 					uri = p_base_path.plus_file(uri).replace("\\", "/"); // Fix for Windows.
 					buffer_data = FileAccess::get_file_as_array(uri);
 					ERR_FAIL_COND_V_MSG(buffer.size() == 0, ERR_PARSE_ERROR, "glTF: Couldn't load binary file as an array: " + uri);
@@ -2608,6 +2621,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		return OK;
 	}
 
+	bool has_warned = false;
 	Array meshes = state->json["meshes"];
 	for (GLTFMeshIndex i = 0; i < meshes.size(); i++) {
 		print_verbose("glTF: Parsing mesh: " + itos(i));
@@ -2680,11 +2694,16 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(state, a["COLOR_0"], true);
 				has_vertex_color = true;
 			}
-			if (a.has("JOINTS_0") && !a.has("JOINTS_1")) {
+			if (a.has("JOINTS_0")) {
 				array[Mesh::ARRAY_BONES] = _decode_accessor_as_ints(state, a["JOINTS_0"], true);
 			}
-			ERR_CONTINUE(a.has("JOINTS_0") && a.has("JOINTS_1"));
-			if (a.has("WEIGHTS_0") && !a.has("WEIGHTS_1")) {
+			if (a.has("WEIGHTS_1") && a.has("JOINTS_1")) {
+				if (!has_warned) {
+					WARN_PRINT("glTF: Meshes use more than 4 bone joints");
+					has_warned = true;
+				}
+			}
+			if (a.has("WEIGHTS_0")) {
 				Vector<float> weights = _decode_accessor_as_floats(state, a["WEIGHTS_0"], true);
 				{ //gltf does not seem to normalize the weights for some reason..
 					int wc = weights.size();
@@ -2706,7 +2725,6 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				}
 				array[Mesh::ARRAY_WEIGHTS] = weights;
 			}
-			ERR_CONTINUE(a.has("WEIGHTS_0") && a.has("WEIGHTS_1"));
 
 			if (p.has("indices")) {
 				Vector<int> indices = _decode_accessor_as_ints(state, p["indices"], false);
@@ -3011,9 +3029,9 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 
 		// We'll assume that we use either URI or bufferView, so let's warn the user
 		// if their image somehow uses both. And fail if it has neither.
-		ERR_CONTINUE_MSG(!d.has("uri") && !d.has("bufferView"), "Invalid image definition in glTF file, it should specific an 'uri' or 'bufferView'.");
+		ERR_CONTINUE_MSG(!d.has("uri") && !d.has("bufferView"), "Invalid image definition in glTF file, it should specify an 'uri' or 'bufferView'.");
 		if (d.has("uri") && d.has("bufferView")) {
-			WARN_PRINT("Invalid image definition in glTF file using both 'uri' and 'bufferView'. 'bufferView' will take precedence.");
+			WARN_PRINT("Invalid image definition in glTF file using both 'uri' and 'bufferView'. 'uri' will take precedence.");
 		}
 
 		String mimetype;
@@ -3051,6 +3069,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 					}
 				}
 			} else { // Relative path to an external image file.
+				uri = uri.http_unescape();
 				uri = p_base_path.plus_file(uri).replace("\\", "/"); // Fix for Windows.
 				// ResourceLoader will rely on the file extension to use the relevant loader.
 				// The spec says that if mimeType is defined, it should take precedence (e.g.
@@ -5075,11 +5094,6 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> state, MeshInst
 			Mesh::PrimitiveType primitive_type = godot_mesh->surface_get_primitive_type(surface_i);
 			Array arrays = godot_mesh->surface_get_arrays(surface_i);
 			Ref<Material> mat = godot_mesh->surface_get_material(surface_i);
-			Ref<ArrayMesh> godot_array_mesh = godot_mesh;
-			String surface_name;
-			if (godot_array_mesh.is_valid()) {
-				surface_name = godot_array_mesh->surface_get_name(surface_i);
-			}
 			if (p_mesh_instance->get_surface_material(surface_i).is_valid()) {
 				mat = p_mesh_instance->get_surface_material(surface_i);
 			}
@@ -5163,19 +5177,16 @@ Spatial *GLTFDocument::_generate_light(Ref<GLTFState> state, Node *scene_parent,
 	}
 
 	const float range = CLAMP(l->range, 0, 4096);
-	// Doubling the range will double the effective brightness, so we need double attenuation (half brightness).
-	// We want to have double intensity give double brightness, so we need half the attenuation.
-	const float attenuation = range / intensity;
 	if (l->type == "point") {
 		OmniLight *light = memnew(OmniLight);
-		light->set_param(OmniLight::PARAM_ATTENUATION, attenuation);
+		light->set_param(OmniLight::PARAM_ENERGY, intensity);
 		light->set_param(OmniLight::PARAM_RANGE, range);
 		light->set_color(l->color);
 		return light;
 	}
 	if (l->type == "spot") {
 		SpotLight *light = memnew(SpotLight);
-		light->set_param(SpotLight::PARAM_ATTENUATION, attenuation);
+		light->set_param(SpotLight::PARAM_ENERGY, intensity);
 		light->set_param(SpotLight::PARAM_RANGE, range);
 		light->set_param(SpotLight::PARAM_SPOT_ANGLE, Math::rad2deg(l->outer_cone_angle));
 		light->set_color(l->color);
@@ -5244,14 +5255,12 @@ GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> state, Light *p_light
 		l->type = "point";
 		OmniLight *light = cast_to<OmniLight>(p_light);
 		l->range = light->get_param(OmniLight::PARAM_RANGE);
-		float attenuation = p_light->get_param(OmniLight::PARAM_ATTENUATION);
-		l->intensity = l->range / attenuation;
+		l->intensity = light->get_param(OmniLight::PARAM_ENERGY);
 	} else if (cast_to<SpotLight>(p_light)) {
 		l->type = "spot";
 		SpotLight *light = cast_to<SpotLight>(p_light);
 		l->range = light->get_param(SpotLight::PARAM_RANGE);
-		float attenuation = light->get_param(SpotLight::PARAM_ATTENUATION);
-		l->intensity = l->range / attenuation;
+		l->intensity = light->get_param(SpotLight::PARAM_ENERGY);
 		l->outer_cone_angle = Math::deg2rad(light->get_param(SpotLight::PARAM_SPOT_ANGLE));
 
 		// This equation is the inverse of the import equation (which has a desmos link).
@@ -5430,8 +5439,6 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		Vector3 cell_location = cells[k];
 		int32_t cell = p_grid_map->get_cell_item(
 				cell_location.x, cell_location.y, cell_location.z);
-		MeshInstance *import_mesh_node = memnew(MeshInstance);
-		import_mesh_node->set_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell));
 		Transform cell_xform;
 		cell_xform.basis.set_orthogonal_index(
 				p_grid_map->get_cell_item_orientation(
@@ -5443,7 +5450,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 				cell_location.x, cell_location.y, cell_location.z));
 		Ref<GLTFMesh> gltf_mesh;
 		gltf_mesh.instance();
-		gltf_mesh = import_mesh_node;
+		gltf_mesh->set_mesh(_mesh_to_array_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
 		new_gltf_node->mesh = state->meshes.size();
 		state->meshes.push_back(gltf_mesh);
 		new_gltf_node->xform = cell_xform * p_grid_map->get_transform();
@@ -6752,8 +6759,8 @@ Error GLTFDocument::_serialize_version(Ref<GLTFState> state) {
 	Dictionary asset;
 	asset["version"] = version;
 
-	String hash = VERSION_HASH;
-	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.length() == 0 ? String("unknown") : hash);
+	String hash = String(VERSION_HASH);
+	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.empty() ? String("unknown") : hash);
 	state->json["asset"] = asset;
 	ERR_FAIL_COND_V(!asset.has("version"), Error::FAILED);
 	ERR_FAIL_COND_V(!state->json.has("asset"), Error::FAILED);

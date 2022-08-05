@@ -219,6 +219,20 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	favorites->set_collapsed(p_uncollapsed_paths.find("Favorites") < 0);
 
 	Vector<String> favorite_paths = EditorSettings::get_singleton()->get_favorites();
+
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	bool fav_changed = false;
+	for (int i = favorite_paths.size() - 1; i >= 0; i--) {
+		if (da->dir_exists(favorite_paths[i]) || da->file_exists(favorite_paths[i])) {
+			continue;
+		}
+		favorite_paths.remove(i);
+		fav_changed = true;
+	}
+	if (fav_changed) {
+		EditorSettings::get_singleton()->set_favorites(favorite_paths);
+	}
+
 	for (int i = 0; i < favorite_paths.size(); i++) {
 		String fave = favorite_paths[i];
 		if (!fave.begins_with("res://")) {
@@ -1825,7 +1839,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 						String name = to_rename.path.get_file();
 						rename_dialog->set_title(TTR("Renaming file:") + " " + name);
 						rename_dialog_text->set_text(name);
-						rename_dialog_text->select(0, name.find_last("."));
+						rename_dialog_text->select(0, name.rfind("."));
 					} else {
 						String name = to_rename.path.substr(0, to_rename.path.length() - 1).get_file();
 						rename_dialog->set_title(TTR("Renaming folder:") + " " + name);
@@ -1869,7 +1883,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					String name = to_duplicate.path.get_file();
 					duplicate_dialog->set_title(TTR("Duplicating file:") + " " + name);
 					duplicate_dialog_text->set_text(name);
-					duplicate_dialog_text->select(0, name.find_last("."));
+					duplicate_dialog_text->select(0, name.rfind("."));
 				} else {
 					String name = to_duplicate.path.substr(0, to_duplicate.path.length() - 1).get_file();
 					duplicate_dialog->set_title(TTR("Duplicating folder:") + " " + name);
@@ -2456,6 +2470,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		String fpath = p_paths[0];
 		String item_text = fpath.ends_with("/") ? TTR("Open in File Manager") : TTR("Show in File Manager");
 		p_popup->add_icon_item(get_icon("Filesystem", "EditorIcons"), item_text, FILE_SHOW_IN_EXPLORER);
+		path = fpath;
 	}
 }
 
@@ -2490,6 +2505,9 @@ void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
 	tree_popup->add_icon_item(get_icon("PackedScene", "EditorIcons"), TTR("New Scene..."), FILE_NEW_SCENE);
 	tree_popup->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script..."), FILE_NEW_SCRIPT);
 	tree_popup->add_icon_item(get_icon("Object", "EditorIcons"), TTR("New Resource..."), FILE_NEW_RESOURCE);
+	tree_popup->add_separator();
+	tree_popup->add_icon_item(get_icon("Filesystem", "EditorIcons"), TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
+
 	tree_popup->set_position(tree->get_global_position() + p_pos);
 	tree_popup->popup();
 }
@@ -2527,6 +2545,8 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	if (searched_string.length() > 0) {
 		return;
 	}
+
+	path = current_path->get_text();
 
 	file_list_popup->clear();
 	file_list_popup->set_size(Size2(1, 1));
@@ -2795,7 +2815,11 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_C);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), KEY_DELETE);
+#ifdef OSX_ENABLED
+	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), KEY_ENTER);
+#else
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), KEY_F2);
+#endif
 	ED_SHORTCUT("filesystem_dock/open_search", TTR("Focus the search box"), KEY_MASK_CMD | KEY_F);
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);

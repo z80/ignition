@@ -35,7 +35,17 @@
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
 #include "scene/2d/area_2d.h"
+#include "servers/navigation_2d_server.h"
 #include "servers/physics_2d_server.h"
+
+void TileMap::Quadrant::clear_navpoly() {
+	for (Map<PosKey, Quadrant::NavPoly>::Element *E = navpoly_ids.front(); E; E = E->next()) {
+		RID region = E->get().region;
+		Navigation2DServer::get_singleton()->region_set_map(region, RID());
+		Navigation2DServer::get_singleton()->free(region);
+	}
+	navpoly_ids.clear();
+}
 
 int TileMap::_get_quadrant_size() const {
 	if (y_sort_mode) {
@@ -52,6 +62,8 @@ void TileMap::_notification(int p_what) {
 			while (c) {
 				navigation = Object::cast_to<Navigation2D>(c);
 				if (navigation) {
+					// only for <3.5 backward compatibility
+					bake_navigation = true;
 					break;
 				}
 
@@ -77,11 +89,8 @@ void TileMap::_notification(int p_what) {
 			_update_quadrant_space(RID());
 			for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 				Quadrant &q = E->get();
-				if (navigation) {
-					for (Map<PosKey, Quadrant::NavPoly>::Element *F = q.navpoly_ids.front(); F; F = F->next()) {
-						navigation->navpoly_remove(F->get().id);
-					}
-					q.navpoly_ids.clear();
+				if (bake_navigation) {
+					q.clear_navpoly();
 				}
 
 				if (collision_parent) {
@@ -147,7 +156,7 @@ void TileMap::_update_quadrant_transform() {
 	}
 
 	Transform2D nav_rel;
-	if (navigation) {
+	if (bake_navigation) {
 		nav_rel = get_relative_transform_to_parent(navigation);
 	}
 
@@ -161,9 +170,9 @@ void TileMap::_update_quadrant_transform() {
 			Physics2DServer::get_singleton()->body_set_state(q.body, Physics2DServer::BODY_STATE_TRANSFORM, xform);
 		}
 
-		if (navigation) {
+		if (bake_navigation) {
 			for (Map<PosKey, Quadrant::NavPoly>::Element *F = q.navpoly_ids.front(); F; F = F->next()) {
-				navigation->navpoly_set_transform(F->get().id, nav_rel * F->get().xform);
+				Navigation2DServer::get_singleton()->region_set_transform(F->get().region, nav_rel * F->get().xform);
 			}
 		}
 
@@ -329,7 +338,7 @@ void TileMap::update_dirty_quadrants() {
 	Physics2DServer *ps = Physics2DServer::get_singleton();
 	Vector2 tofs = get_cell_draw_offset();
 	Transform2D nav_rel;
-	if (navigation) {
+	if (bake_navigation) {
 		nav_rel = get_relative_transform_to_parent(navigation);
 	}
 
@@ -374,11 +383,8 @@ void TileMap::update_dirty_quadrants() {
 		}
 		int shape_idx = 0;
 
-		if (navigation) {
-			for (Map<PosKey, Quadrant::NavPoly>::Element *E = q.navpoly_ids.front(); E; E = E->next()) {
-				navigation->navpoly_remove(E->get().id);
-			}
-			q.navpoly_ids.clear();
+		if (bake_navigation) {
+			q.clear_navpoly();
 		}
 
 		for (Map<PosKey, Quadrant::Occluder>::Element *E = q.occluder_instances.front(); E; E = E->next()) {
@@ -420,7 +426,7 @@ void TileMap::update_dirty_quadrants() {
 			RID debug_canvas_item;
 
 			if (prev_canvas_item == RID() || prev_material != mat || prev_z_index != z_index) {
-				canvas_item = vs->canvas_item_create();
+				canvas_item = RID_PRIME(vs->canvas_item_create());
 				if (mat.is_valid()) {
 					vs->canvas_item_set_material(canvas_item, mat->get_rid());
 				}
@@ -435,7 +441,7 @@ void TileMap::update_dirty_quadrants() {
 				q.canvas_items.push_back(canvas_item);
 
 				if (debug_shapes) {
-					debug_canvas_item = vs->canvas_item_create();
+					debug_canvas_item = RID_PRIME(vs->canvas_item_create());
 					vs->canvas_item_set_parent(debug_canvas_item, canvas_item);
 					vs->canvas_item_set_z_as_relative_to_parent(debug_canvas_item, false);
 					vs->canvas_item_set_z_index(debug_canvas_item, VS::CANVAS_ITEM_Z_MAX - 1);
@@ -564,7 +570,7 @@ void TileMap::update_dirty_quadrants() {
 				if (shape.is_valid()) {
 					if (tile_set->tile_get_tile_mode(c.id) == TileSet::SINGLE_TILE || (shapes[j].autotile_coord.x == c.autotile_coord_x && shapes[j].autotile_coord.y == c.autotile_coord_y)) {
 						Transform2D xform;
-						xform.set_origin(offset.floor());
+						xform.set_origin(offset.floor() + tile_ofs);
 
 						Vector2 shape_ofs = shapes[j].shape_transform.get_origin();
 
@@ -600,7 +606,7 @@ void TileMap::update_dirty_quadrants() {
 				vs->canvas_item_add_set_transform(debug_canvas_item, Transform2D());
 			}
 
-			if (navigation) {
+			if (bake_navigation) {
 				Ref<NavigationPolygon> navpoly;
 				Vector2 npoly_ofs;
 				if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
@@ -613,18 +619,26 @@ void TileMap::update_dirty_quadrants() {
 
 				if (navpoly.is_valid()) {
 					Transform2D xform;
-					xform.set_origin(offset.floor() + q.pos);
+					xform.set_origin(offset.floor() + q.pos + tile_ofs);
 					_fix_cell_transform(xform, c, npoly_ofs, s);
 
-					int pid = navigation->navpoly_add(navpoly, nav_rel * xform);
+					RID region = Navigation2DServer::get_singleton()->region_create();
+					if (navigation) {
+						Navigation2DServer::get_singleton()->region_set_map(region, navigation->get_rid());
+					} else {
+						Navigation2DServer::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
+					}
+					Navigation2DServer::get_singleton()->region_set_navigation_layers(region, navigation_layers);
+					Navigation2DServer::get_singleton()->region_set_transform(region, nav_rel * xform);
+					Navigation2DServer::get_singleton()->region_set_navpoly(region, navpoly);
 
 					Quadrant::NavPoly np;
-					np.id = pid;
+					np.region = region;
 					np.xform = xform;
 					q.navpoly_ids[E->key()] = np;
 
 					if (debug_navigation) {
-						RID debug_navigation_item = vs->canvas_item_create();
+						RID debug_navigation_item = RID_PRIME(vs->canvas_item_create());
 						vs->canvas_item_set_parent(debug_navigation_item, canvas_item);
 						vs->canvas_item_set_z_as_relative_to_parent(debug_navigation_item, false);
 						vs->canvas_item_set_z_index(debug_navigation_item, VS::CANVAS_ITEM_Z_MAX - 2); // Display one below collision debug
@@ -661,7 +675,7 @@ void TileMap::update_dirty_quadrants() {
 									}
 								}
 								Transform2D navxform;
-								navxform.set_origin(offset.floor());
+								navxform.set_origin(offset.floor() + tile_ofs);
 								_fix_cell_transform(navxform, c, npoly_ofs, s);
 
 								vs->canvas_item_set_transform(debug_navigation_item, navxform);
@@ -684,7 +698,7 @@ void TileMap::update_dirty_quadrants() {
 				xform.set_origin(offset.floor() + q.pos);
 				_fix_cell_transform(xform, c, occluder_ofs, s);
 
-				RID orid = VS::get_singleton()->canvas_light_occluder_create();
+				RID orid = RID_PRIME(VS::get_singleton()->canvas_light_occluder_create());
 				VS::get_singleton()->canvas_light_occluder_set_transform(orid, get_global_transform() * xform);
 				VS::get_singleton()->canvas_light_occluder_set_polygon(orid, occluder->get_rid());
 				VS::get_singleton()->canvas_light_occluder_attach_to_canvas(orid, get_canvas());
@@ -762,7 +776,7 @@ Map<TileMap::PosKey, TileMap::Quadrant>::Element *TileMap::_create_quadrant(cons
 	xform.set_origin(q.pos);
 	//q.canvas_item = VisualServer::get_singleton()->canvas_item_create();
 	if (!use_parent) {
-		q.body = Physics2DServer::get_singleton()->body_create();
+		q.body = RID_PRIME(Physics2DServer::get_singleton()->body_create());
 		Physics2DServer::get_singleton()->body_set_mode(q.body, use_kinematic ? Physics2DServer::BODY_MODE_KINEMATIC : Physics2DServer::BODY_MODE_STATIC);
 
 		Physics2DServer::get_singleton()->body_attach_object_instance_id(q.body, get_instance_id());
@@ -811,11 +825,8 @@ void TileMap::_erase_quadrant(Map<PosKey, Quadrant>::Element *Q) {
 		dirty_quadrant_list.remove(&q.dirty_list);
 	}
 
-	if (navigation) {
-		for (Map<PosKey, Quadrant::NavPoly>::Element *E = q.navpoly_ids.front(); E; E = E->next()) {
-			navigation->navpoly_remove(E->get().id);
-		}
-		q.navpoly_ids.clear();
+	if (bake_navigation) {
+		q.clear_navpoly();
 	}
 
 	for (Map<PosKey, Quadrant::Occluder>::Element *E = q.occluder_instances.front(); E; E = E->next()) {
@@ -848,7 +859,7 @@ void TileMap::_make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q, bool updat
 	}
 }
 
-void TileMap::set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose, Vector2 p_autotile_coord) {
+void TileMap::set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose, const Vector2 &p_autotile_coord) {
 	set_cell(p_pos.x, p_pos.y, p_tile, p_flip_x, p_flip_y, p_transpose, p_autotile_coord);
 }
 
@@ -859,7 +870,7 @@ void TileMap::_set_celld(const Vector2 &p_pos, const Dictionary &p_data) {
 	call("set_cell", args, 7, ce);
 }
 
-void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose, Vector2 p_autotile_coord) {
+void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose, const Vector2 &p_autotile_coord) {
 	PosKey pk(p_x, p_y);
 
 	Map<PosKey, Cell>::Element *E = tile_map.find(pk);
@@ -1390,6 +1401,28 @@ float TileMap::get_collision_bounce() const {
 	return bounce;
 }
 
+void TileMap::set_bake_navigation(bool p_bake_navigation) {
+	bake_navigation = p_bake_navigation;
+	for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
+		_make_quadrant_dirty(E);
+	}
+}
+
+bool TileMap::is_baking_navigation() {
+	return bake_navigation;
+}
+
+void TileMap::set_navigation_layers(uint32_t p_navigation_layers) {
+	navigation_layers = p_navigation_layers;
+	for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
+		_make_quadrant_dirty(E);
+	}
+}
+
+uint32_t TileMap::get_navigation_layers() {
+	return navigation_layers;
+}
+
 uint32_t TileMap::get_collision_layer() const {
 	return collision_layer;
 }
@@ -1807,6 +1840,12 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_bounce", "value"), &TileMap::set_collision_bounce);
 	ClassDB::bind_method(D_METHOD("get_collision_bounce"), &TileMap::get_collision_bounce);
 
+	ClassDB::bind_method(D_METHOD("set_bake_navigation", "bake_navigation"), &TileMap::set_bake_navigation);
+	ClassDB::bind_method(D_METHOD("is_baking_navigation"), &TileMap::is_baking_navigation);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &TileMap::set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &TileMap::get_navigation_layers);
+
 	ClassDB::bind_method(D_METHOD("set_occluder_light_mask", "mask"), &TileMap::set_occluder_light_mask);
 	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"), &TileMap::get_occluder_light_mask);
 
@@ -1863,6 +1902,10 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision_bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_bounce", "get_collision_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
+
+	ADD_GROUP("Navigation", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 
 	ADD_GROUP("Occluder", "occluder_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "occluder_light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_occluder_light_mask", "get_occluder_light_mask");

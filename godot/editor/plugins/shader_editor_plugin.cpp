@@ -34,6 +34,7 @@
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/version_generated.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -171,8 +172,10 @@ void ShaderTextEditor::_load_theme_settings() {
 		}
 	}
 
+	const Color user_type_color = EDITOR_GET("text_editor/highlighting/user_type_color");
+
 	for (List<String>::Element *E = built_ins.front(); E; E = E->next()) {
-		get_text_edit()->add_keyword_color(E->get(), member_variable_color);
+		get_text_edit()->add_keyword_color(E->get(), user_type_color);
 	}
 
 	// Colorize comments.
@@ -337,7 +340,7 @@ void ShaderEditor::_menu_option(int p_option) {
 			shader_editor->remove_all_bookmarks();
 		} break;
 		case HELP_DOCS: {
-			OS::get_singleton()->shell_open("https://docs.godotengine.org/en/3.4/tutorials/shading/shading_reference/index.html");
+			OS::get_singleton()->shell_open(vformat("%s/tutorials/shaders/shader_reference/index.html", VERSION_DOCS_URL));
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
@@ -346,8 +349,16 @@ void ShaderEditor::_menu_option(int p_option) {
 }
 
 void ShaderEditor::_notification(int p_what) {
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
-		_check_for_external_edit();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			PopupMenu *popup = help_menu->get_popup();
+			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_icon("ExternalLink", "EditorIcons"));
+		} break;
+
+		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+			_check_for_external_edit();
+		} break;
 	}
 }
 
@@ -367,7 +378,7 @@ void ShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/highlighting/syntax_highlighting"));
 	shader_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_all_occurrences"));
 	shader_editor->get_text_edit()->set_highlight_current_line(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line"));
-	shader_editor->get_text_edit()->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
+	shader_editor->get_text_edit()->cursor_set_blink_enabled(EditorSettings::get_singleton()->is_caret_blink_active());
 	shader_editor->get_text_edit()->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
 	shader_editor->get_text_edit()->add_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/theme/line_spacing"));
 	shader_editor->get_text_edit()->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/cursor/block_caret"));
@@ -421,7 +432,7 @@ void ShaderEditor::_check_for_external_edit() {
 		return;
 	}
 
-	bool use_autoreload = bool(EDITOR_DEF("text_editor/files/auto_reload_scripts_on_external_change", false));
+	bool use_autoreload = EDITOR_GET("text_editor/files/auto_reload_scripts_on_external_change");
 	if (shader->get_last_modified_time() != FileAccess::get_modified_time(shader->get_path())) {
 		if (use_autoreload) {
 			_reload_shader_from_disk();
@@ -661,7 +672,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
-	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_DOCS);
+	help_menu->get_popup()->add_item(TTR("Online Docs"), HELP_DOCS);
 	help_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
 	add_child(main_container);

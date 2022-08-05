@@ -325,18 +325,18 @@ struct LoadingScreenInfo {
 };
 
 static const LoadingScreenInfo loading_screen_infos[] = {
-	{ "landscape_launch_screens/iphone_2436x1125", "Default-Landscape-X.png", 2436, 1125, false },
-	{ "landscape_launch_screens/iphone_2208x1242", "Default-Landscape-736h@3x.png", 2208, 1242, false },
-	{ "landscape_launch_screens/ipad_1024x768", "Default-Landscape.png", 1024, 768, false },
-	{ "landscape_launch_screens/ipad_2048x1536", "Default-Landscape@2x.png", 2048, 1536, false },
+	{ PNAME("landscape_launch_screens/iphone_2436x1125"), "Default-Landscape-X.png", 2436, 1125, false },
+	{ PNAME("landscape_launch_screens/iphone_2208x1242"), "Default-Landscape-736h@3x.png", 2208, 1242, false },
+	{ PNAME("landscape_launch_screens/ipad_1024x768"), "Default-Landscape.png", 1024, 768, false },
+	{ PNAME("landscape_launch_screens/ipad_2048x1536"), "Default-Landscape@2x.png", 2048, 1536, false },
 
-	{ "portrait_launch_screens/iphone_640x960", "Default-480h@2x.png", 640, 960, true },
-	{ "portrait_launch_screens/iphone_640x1136", "Default-568h@2x.png", 640, 1136, true },
-	{ "portrait_launch_screens/iphone_750x1334", "Default-667h@2x.png", 750, 1334, true },
-	{ "portrait_launch_screens/iphone_1125x2436", "Default-Portrait-X.png", 1125, 2436, true },
-	{ "portrait_launch_screens/ipad_768x1024", "Default-Portrait.png", 768, 1024, true },
-	{ "portrait_launch_screens/ipad_1536x2048", "Default-Portrait@2x.png", 1536, 2048, true },
-	{ "portrait_launch_screens/iphone_1242x2208", "Default-Portrait-736h@3x.png", 1242, 2208, true }
+	{ PNAME("portrait_launch_screens/iphone_640x960"), "Default-480h@2x.png", 640, 960, true },
+	{ PNAME("portrait_launch_screens/iphone_640x1136"), "Default-568h@2x.png", 640, 1136, true },
+	{ PNAME("portrait_launch_screens/iphone_750x1334"), "Default-667h@2x.png", 750, 1334, true },
+	{ PNAME("portrait_launch_screens/iphone_1125x2436"), "Default-Portrait-X.png", 1125, 2436, true },
+	{ PNAME("portrait_launch_screens/ipad_768x1024"), "Default-Portrait.png", 768, 1024, true },
+	{ PNAME("portrait_launch_screens/ipad_1536x2048"), "Default-Portrait@2x.png", 1536, 2048, true },
+	{ PNAME("portrait_launch_screens/iphone_1242x2208"), "Default-Portrait-736h@3x.png", 1242, 2208, true }
 };
 
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) {
@@ -345,7 +345,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	Vector<ExportArchitecture> architectures = _get_supported_architectures();
 	for (int i = 0; i < architectures.size(); ++i) {
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "architectures/" + architectures[i].name), architectures[i].is_default));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("architectures"), architectures[i].name)), architectures[i].is_default));
 	}
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_store_team_id"), ""));
@@ -369,7 +369,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + found_plugins[i].name), false));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("plugins"), found_plugins[i].name)), false));
 	}
 
 	Set<String> plist_keys;
@@ -409,17 +409,17 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/microphone_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the microphone"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need access to the photo library"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "icons/generate_missing"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/iphone_120x120", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone/iPod Touch with Retina display
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/iphone_180x180", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone with Retina HD display
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/iphone_120x120", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone/iPod Touch with retina display
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/ipad_76x76", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/app_store_1024x1024", PROPERTY_HINT_FILE, "*.png"), "")); // App Store
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/ipad_76x76", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/ipad_152x152", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad with Retina display
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/ipad_167x167", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad Pro
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/iphone_180x180", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone with retina HD display
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/ipad_152x152", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad with retina display
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/ipad_167x167", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad Pro
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_40x40", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_80x80", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight on devices with retina display
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/app_store_1024x1024", PROPERTY_HINT_FILE, "*.png"), "")); // App Store
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/spotlight_40x40", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/spotlight_80x80", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight on devices with Retina display
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_launch_screen_storyboard"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale to Fit,Scale to Fill,Scale"), 0));
@@ -427,8 +427,6 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@3x", PROPERTY_HINT_FILE, "*.png"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_custom_bg_color"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "storyboard/custom_bg_color"), Color()));
-
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "launch_screens/generate_missing"), false));
 
 	for (uint64_t i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, loading_screen_infos[i].preset_key, PROPERTY_HINT_FILE, "*.png"), ""));
@@ -658,6 +656,32 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			String value = value_format.format(value_dictionary, "$_");
 
 			strnew += lines[i].replace("$launch_screen_background_color", value) + "\n";
+		} else if (lines[i].find("$pbx_locale_file_reference") != -1) {
+			String locale_files;
+			Vector<String> translations = ProjectSettings::get_singleton()->get("locale/translations");
+			if (translations.size() > 0) {
+				for (int j = 0; j < translations.size(); j++) {
+					Ref<Translation> tr = ResourceLoader::load(translations[j]);
+					if (tr.is_valid()) {
+						String lang = tr->get_locale();
+						locale_files += "D0BCFE4518AEBDA2004A" + itos(j).pad_zeros(4) + " /* " + lang + " */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = " + lang + "; path = " + lang + ".lproj/InfoPlist.strings; sourceTree = \"<group>\"; };";
+					}
+				}
+			}
+			strnew += lines[i].replace("$pbx_locale_file_reference", locale_files);
+		} else if (lines[i].find("$pbx_locale_build_reference") != -1) {
+			String locale_files;
+			Vector<String> translations = ProjectSettings::get_singleton()->get("locale/translations");
+			if (translations.size() > 0) {
+				for (int j = 0; j < translations.size(); j++) {
+					Ref<Translation> tr = ResourceLoader::load(translations[j]);
+					if (tr.is_valid()) {
+						String lang = tr->get_locale();
+						locale_files += "D0BCFE4518AEBDA2004A" + itos(j).pad_zeros(4) + " /* " + lang + " */,";
+					}
+				}
+			}
+			strnew += lines[i].replace("$pbx_locale_build_reference", locale_files);
 		} else {
 			strnew += lines[i] + "\n";
 		}
@@ -753,27 +777,26 @@ struct IconInfo {
 	const char *actual_size_side;
 	const char *scale;
 	const char *unscaled_size;
-	bool is_required;
 };
 
 static const IconInfo icon_infos[] = {
-	{ "required_icons/iphone_120x120", "iphone", "Icon-120.png", "120", "2x", "60x60", true },
-	{ "required_icons/iphone_120x120", "iphone", "Icon-120.png", "120", "3x", "40x40", true },
+	// Home screen on iPhone
+	{ "icons/iphone_120x120", "iphone", "Icon-120.png", "120", "2x", "60x60" },
+	{ "icons/iphone_120x120", "iphone", "Icon-120.png", "120", "3x", "40x40" },
+	{ "icons/iphone_180x180", "iphone", "Icon-180.png", "180", "3x", "60x60" },
 
-	{ "required_icons/ipad_76x76", "ipad", "Icon-76.png", "76", "1x", "76x76", true },
-	{ "required_icons/app_store_1024x1024", "ios-marketing", "Icon-1024.png", "1024", "1x", "1024x1024", true },
+	// Home screen on iPad
+	{ "icons/ipad_76x76", "ipad", "Icon-76.png", "76", "1x", "76x76" },
+	{ "icons/ipad_152x152", "ipad", "Icon-152.png", "152", "2x", "76x76" },
+	{ "icons/ipad_167x167", "ipad", "Icon-167.png", "167", "2x", "83.5x83.5" },
 
-	{ "optional_icons/iphone_180x180", "iphone", "Icon-180.png", "180", "3x", "60x60", false },
+	// App Store
+	{ "icons/app_store_1024x1024", "ios-marketing", "Icon-1024.png", "1024", "1x", "1024x1024" },
 
-	{ "optional_icons/ipad_152x152", "ipad", "Icon-152.png", "152", "2x", "76x76", false },
-
-	{ "optional_icons/ipad_167x167", "ipad", "Icon-167.png", "167", "2x", "83.5x83.5", false },
-
-	{ "optional_icons/spotlight_40x40", "ipad", "Icon-40.png", "40", "1x", "40x40", false },
-
-	{ "optional_icons/spotlight_80x80", "iphone", "Icon-80.png", "80", "2x", "40x40", false },
-	{ "optional_icons/spotlight_80x80", "ipad", "Icon-80.png", "80", "2x", "40x40", false }
-
+	// Spotlight
+	{ "icons/spotlight_40x40", "ipad", "Icon-40.png", "40", "1x", "40x40" },
+	{ "icons/spotlight_80x80", "iphone", "Icon-80.png", "80", "2x", "40x40" },
+	{ "icons/spotlight_80x80", "ipad", "Icon-80.png", "80", "2x", "40x40" }
 };
 
 Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir) {
@@ -788,35 +811,23 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 		int side_size = String(info.actual_size_side).to_int();
 		String icon_path = p_preset->get(info.preset_key);
 		if (icon_path.length() == 0) {
-			if ((bool)p_preset->get("icons/generate_missing")) {
-				// Resize main app icon
-				icon_path = ProjectSettings::get_singleton()->get("application/config/icon");
-				Ref<Image> img = memnew(Image);
-				Error err = ImageLoader::load_image(icon_path, img);
-				if (err != OK) {
-					ERR_PRINT("Invalid icon (" + String(info.preset_key) + "): '" + icon_path + "'.");
-					return ERR_UNCONFIGURED;
-				}
-				img->resize(side_size, side_size);
-				err = img->save_png(p_iconset_dir + info.export_name);
-				if (err) {
-					String err_str = String("Failed to export icon(" + String(info.preset_key) + "): '" + icon_path + "'.");
-					ERR_PRINT(err_str.utf8().get_data());
-					return err;
-				}
-			} else {
-				if (info.is_required) {
-					String err_str = String("Required icon (") + info.preset_key + ") is not specified in the preset.";
-					ERR_PRINT(err_str);
-					return ERR_UNCONFIGURED;
-				} else {
-					String err_str = String("Icon (") + info.preset_key + ") is not specified in the preset.";
-					WARN_PRINT(err_str);
-				}
-				continue;
+			// Resize main app icon
+			icon_path = ProjectSettings::get_singleton()->get("application/config/icon");
+			Ref<Image> img = memnew(Image);
+			Error err = ImageLoader::load_image(icon_path, img);
+			if (err != OK) {
+				ERR_PRINT("Invalid icon (" + String(info.preset_key) + "): '" + icon_path + "'.");
+				return ERR_UNCONFIGURED;
+			}
+			img->resize(side_size, side_size);
+			err = img->save_png(p_iconset_dir + info.export_name);
+			if (err) {
+				String err_str = String("Failed to export icon(" + String(info.preset_key) + "): '" + icon_path + "'.");
+				ERR_PRINT(err_str.utf8().get_data());
+				return err;
 			}
 		} else {
-			// Load custom icon
+			// Load custom icon and resize if required
 			Ref<Image> img = memnew(Image);
 			Error err = ImageLoader::load_image(icon_path, img);
 			if (err != OK) {
@@ -824,11 +835,13 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 				return ERR_UNCONFIGURED;
 			}
 			if (img->get_width() != side_size || img->get_height() != side_size) {
-				ERR_PRINT("Invalid icon size (" + String(info.preset_key) + "): '" + icon_path + "'.");
-				return ERR_UNCONFIGURED;
+				WARN_PRINT("Icon (" + String(info.preset_key) + "): '" + icon_path + "' has incorrect size (" + String::num_int64(img->get_width()) + "x" + String::num_int64(img->get_height()) + ") and was automatically resized to " + String::num_int64(side_size) + "x" + String::num_int64(side_size) + ".");
+				img->resize(side_size, side_size);
+				err = img->save_png(p_iconset_dir + info.export_name);
+			} else {
+				err = da->copy(icon_path, p_iconset_dir + info.export_name);
 			}
 
-			err = da->copy(icon_path, p_iconset_dir + info.export_name);
 			if (err) {
 				memdelete(da);
 				String err_str = String("Failed to export icon(" + String(info.preset_key) + "): '" + icon_path + "'.");
@@ -940,8 +953,13 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 	for (uint64_t i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
 		LoadingScreenInfo info = loading_screen_infos[i];
 		String loading_screen_file = p_preset->get(info.preset_key);
+
+		Color boot_bg_color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color");
+		String boot_logo_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+		bool boot_logo_scale = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
+
 		if (loading_screen_file.size() > 0) {
-			// Load custom loading screens
+			// Load custom loading screens, and resize if required.
 			Ref<Image> img = memnew(Image);
 			Error err = ImageLoader::load_image(loading_screen_file, img);
 			if (err != OK) {
@@ -949,22 +967,31 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 				return ERR_UNCONFIGURED;
 			}
 			if (img->get_width() != info.width || img->get_height() != info.height) {
-				ERR_PRINT("Invalid loading screen size (" + String(info.preset_key) + "): '" + loading_screen_file + "'.");
-				return ERR_UNCONFIGURED;
+				WARN_PRINT("Loading screen (" + String(info.preset_key) + "): '" + loading_screen_file + "' has incorrect size (" + String::num_int64(img->get_width()) + "x" + String::num_int64(img->get_height()) + ") and was automatically resized to " + String::num_int64(info.width) + "x" + String::num_int64(info.height) + ".");
+				float aspect_ratio = (float)img->get_width() / (float)img->get_height();
+				if (boot_logo_scale) {
+					if (info.height * aspect_ratio <= info.width) {
+						img->resize(info.height * aspect_ratio, info.height);
+					} else {
+						img->resize(info.width, info.width / aspect_ratio);
+					}
+				}
+				Ref<Image> new_img = memnew(Image);
+				new_img->create(info.width, info.height, false, Image::FORMAT_RGBA8);
+				new_img->fill(boot_bg_color);
+				_blend_and_rotate(new_img, img, false);
+				err = new_img->save_png(p_dest_dir + info.export_name);
+			} else {
+				err = da->copy(loading_screen_file, p_dest_dir + info.export_name);
 			}
-			err = da->copy(loading_screen_file, p_dest_dir + info.export_name);
 			if (err) {
 				memdelete(da);
 				String err_str = String("Failed to export loading screen (") + info.preset_key + ") from path '" + loading_screen_file + "'.";
 				ERR_PRINT(err_str.utf8().get_data());
 				return err;
 			}
-		} else if ((bool)p_preset->get("launch_screens/generate_missing")) {
+		} else {
 			// Generate loading screen from the splash screen
-			Color boot_bg_color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color");
-			String boot_logo_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
-			bool boot_logo_scale = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
-
 			Ref<Image> img = memnew(Image);
 			img->create(info.width, info.height, false, Image::FORMAT_RGBA8);
 			img->fill(boot_bg_color);
@@ -1004,9 +1031,6 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 				String err_str = String("Failed to export loading screen (") + info.preset_key + ") from splash screen.";
 				WARN_PRINT(err_str.utf8().get_data());
 			}
-		} else {
-			String err_str = String("No loading screen (") + info.preset_key + ") specified.";
-			WARN_PRINT(err_str.utf8().get_data());
 		}
 	}
 	memdelete(da);
@@ -1074,7 +1098,12 @@ Error EditorExportPlatformIOS::_codesign(String p_file, void *p_userdata) {
 		codesign_args.push_back("-s");
 		codesign_args.push_back(sign_id);
 		codesign_args.push_back(p_file);
-		return OS::get_singleton()->execute("codesign", codesign_args, true);
+
+		String str;
+		Error err = OS::get_singleton()->execute("codesign", codesign_args, true, NULL, &str, NULL, true);
+		print_verbose("codesign (" + p_file + "):\n" + str);
+
+		return err;
 	}
 	return OK;
 }
@@ -1662,7 +1691,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		String err;
 		src_pkg_name = find_export_template("iphone.zip", &err);
 		if (src_pkg_name == "") {
-			EditorNode::add_io_error(err);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found."));
 			return ERR_FILE_NOT_FOUND;
 		}
 	}
@@ -1759,7 +1788,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
-		EditorNode::add_io_error("Could not open export template (not a zip file?):\n" + src_pkg_name);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Could not open export template (not a zip file?): \"%s\".", src_pkg_name));
 		return ERR_CANT_OPEN;
 	}
 
@@ -1865,6 +1894,29 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		ERR_PRINT("Requested template library '" + library_to_use + "' not found. It might be missing from your template archive.");
 		memdelete(tmp_app_path);
 		return ERR_FILE_NOT_FOUND;
+	}
+
+	Vector<String> translations = ProjectSettings::get_singleton()->get("locale/translations");
+	if (translations.size() > 0) {
+		{
+			String fname = dest_dir + binary_name + "/en.lproj";
+			tmp_app_path->make_dir_recursive(fname);
+			FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
+		}
+
+		for (int i = 0; i < translations.size(); i++) {
+			Ref<Translation> tr = ResourceLoader::load(translations[i]);
+			if (tr.is_valid()) {
+				String fname = dest_dir + binary_name + "/" + tr->get_locale() + ".lproj";
+				tmp_app_path->make_dir_recursive(fname);
+				FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+				String prop = "application/config/name_" + tr->get_locale();
+				if (ProjectSettings::get_singleton()->has_setting(prop)) {
+					f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get(prop).operator String() + "\";");
+				}
+			}
+		}
 	}
 
 	// Copy project static libs to the project
@@ -2050,18 +2102,6 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 	if (!is_package_name_valid(identifier, &pn_err)) {
 		err += TTR("Invalid Identifier:") + " " + pn_err + "\n";
 		valid = false;
-	}
-
-	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
-		IconInfo info = icon_infos[i];
-		String icon_path = p_preset->get(info.preset_key);
-		if (icon_path.length() == 0) {
-			if (info.is_required) {
-				err += TTR("Required icon is not specified in the preset.") + "\n";
-				valid = false;
-			}
-			break;
-		}
 	}
 
 	String etc_error = test_etc2_or_pvrtc();

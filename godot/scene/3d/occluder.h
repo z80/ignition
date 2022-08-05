@@ -40,6 +40,7 @@ class Occluder : public Spatial {
 	friend class OccluderSpatialGizmo;
 	friend class OccluderEditorPlugin;
 
+	RID _occluder_instance;
 	Ref<OccluderShape> _shape;
 
 	void resource_changed(RES res);
@@ -53,6 +54,11 @@ public:
 	Ref<OccluderShape> get_shape() const;
 
 	String get_configuration_warning() const;
+
+#ifdef TOOLS_ENABLED
+	// for editor gizmo
+	virtual AABB get_fallback_gizmo_aabb() const;
+#endif
 
 	Occluder();
 	~Occluder();

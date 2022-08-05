@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef CONTEXT_GL_WINDOWS_H
+#define CONTEXT_GL_WINDOWS_H
+
 #if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
-
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
-
-#ifndef CONTEXT_GL_WIN_H
-#define CONTEXT_GL_WIN_H
 
 #include "core/error_list.h"
 #include "core/os/os.h"
@@ -47,6 +45,7 @@ typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 class ContextGL_Windows {
 	HDC hDC;
 	HGLRC hRC;
+	HGLRC hRC_offscreen;
 	unsigned int pixel_format;
 	HWND hWnd;
 	bool opengl_3_context;
@@ -62,6 +61,10 @@ public:
 	void release_current();
 
 	void make_current();
+
+	bool is_offscreen_available() const;
+	void make_offscreen_current();
+	void release_offscreen_current();
 
 	HDC get_hdc();
 	HGLRC get_hglrc();
@@ -80,4 +83,5 @@ public:
 };
 
 #endif
-#endif
+
+#endif // CONTEXT_GL_WINDOWS_H

@@ -260,7 +260,7 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	return longtime;
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_JavaScript.
@@ -363,6 +363,15 @@ int OS_Unix::get_process_id() const {
 	return getpid();
 };
 
+bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
+	int status = 0;
+	if (waitpid(p_pid, &status, WNOHANG) != 0) {
+		return false;
+	}
+
+	return true;
+}
+
 bool OS_Unix::has_environment(const String &p_var) const {
 	return getenv(p_var.utf8().get_data()) != nullptr;
 }
@@ -464,7 +473,7 @@ String OS_Unix::get_user_data_dir() const {
 		}
 	}
 
-	return ProjectSettings::get_singleton()->get_resource_path();
+	return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file("[unnamed project]");
 }
 
 String OS_Unix::get_executable_path() const {

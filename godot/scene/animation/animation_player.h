@@ -320,7 +320,6 @@ public:
 	void set_current_animation(const String &p_anim);
 	String get_assigned_animation() const;
 	void set_assigned_animation(const String &p_anim);
-	void stop_all();
 	void set_active(bool p_active);
 	bool is_active() const;
 	bool is_valid() const;
@@ -368,4 +367,4 @@ public:
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessMode);
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationMethodCallMode);
 
-#endif
+#endif // ANIMATION_PLAYER_H

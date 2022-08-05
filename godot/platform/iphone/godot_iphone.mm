@@ -70,7 +70,7 @@ int add_cmdline(int p_argc, char **p_args) {
 	return p_argc;
 }
 
-int iphone_main(int argc, char **argv, String data_dir) {
+int iphone_main(int argc, char **argv, String data_dir, String cache_dir) {
 	size_t len = strlen(argv[0]);
 
 	while (len--) {
@@ -90,7 +90,7 @@ int iphone_main(int argc, char **argv, String data_dir) {
 	char cwd[512];
 	getcwd(cwd, sizeof(cwd));
 	printf("cwd %s\n", cwd);
-	os = new OSIPhone(data_dir);
+	os = new OSIPhone(data_dir, cache_dir);
 
 	char *fargv[64];
 	for (int i = 0; i < argc; i++) {
@@ -103,7 +103,10 @@ int iphone_main(int argc, char **argv, String data_dir) {
 	printf("os created\n");
 	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
 	printf("setup %i\n", err);
-	if (err != OK) {
+
+	if (err == ERR_HELP) { // Returned by --help and --version, so success.
+		return 0;
+	} else if (err != OK) {
 		return 255;
 	}
 

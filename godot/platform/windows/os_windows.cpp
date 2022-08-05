@@ -73,6 +73,12 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 typedef struct {
 	int count;
 	int screen;
+	HMONITOR monitor;
+} EnumScreenData;
+
+typedef struct {
+	int count;
+	int screen;
 	Size2 size;
 } EnumSizeData;
 
@@ -81,6 +87,16 @@ typedef struct {
 	int screen;
 	Point2 pos;
 } EnumPosData;
+
+static BOOL CALLBACK _MonitorEnumProcScreen(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumScreenData *data = (EnumScreenData *)dwData;
+	if (data->monitor == hMonitor) {
+		data->screen = data->count;
+	}
+
+	data->count++;
+	return TRUE;
+}
 
 static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 	EnumSizeData *data = (EnumSizeData *)dwData;
@@ -107,70 +123,26 @@ static String format_error_message(DWORD id) {
 
 extern HINSTANCE godot_hinstance;
 
+void RedirectStream(const char *p_file_name, const char *p_mode, FILE *p_cpp_stream, const DWORD p_std_handle) {
+	const HANDLE h_existing = GetStdHandle(p_std_handle);
+	if (h_existing != INVALID_HANDLE_VALUE) { // Redirect only if attached console have a valid handle.
+		const HANDLE h_cpp = reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(p_cpp_stream)));
+		if (h_cpp == INVALID_HANDLE_VALUE) { // Redirect only if it's not already redirected to the pipe or file.
+			FILE *fp = p_cpp_stream;
+			freopen_s(&fp, p_file_name, p_mode, p_cpp_stream); // Redirect stream.
+			setvbuf(p_cpp_stream, nullptr, _IONBF, 0); // Disable stream buffering.
+		}
+	}
+}
+
 void RedirectIOToConsole() {
-	int hConHandle;
+	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+		RedirectStream("CONIN$", "r", stdin, STD_INPUT_HANDLE);
+		RedirectStream("CONOUT$", "w", stdout, STD_OUTPUT_HANDLE);
+		RedirectStream("CONOUT$", "w", stderr, STD_ERROR_HANDLE);
 
-	intptr_t lStdHandle;
-
-	CONSOLE_SCREEN_BUFFER_INFO coninfo;
-
-	FILE *fp;
-
-	// allocate a console for this app
-
-	AllocConsole();
-
-	// set the screen buffer to be big enough to let us scroll text
-
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),
-
-			&coninfo);
-
-	coninfo.dwSize.Y = MAX_CONSOLE_LINES;
-
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),
-
-			coninfo.dwSize);
-
-	// redirect unbuffered STDOUT to the console
-
-	lStdHandle = (intptr_t)GetStdHandle(STD_OUTPUT_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen(hConHandle, "w");
-
-	*stdout = *fp;
-
-	setvbuf(stdout, NULL, _IONBF, 0);
-
-	// redirect unbuffered STDIN to the console
-
-	lStdHandle = (intptr_t)GetStdHandle(STD_INPUT_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen(hConHandle, "r");
-
-	*stdin = *fp;
-
-	setvbuf(stdin, NULL, _IONBF, 0);
-
-	// redirect unbuffered STDERR to the console
-
-	lStdHandle = (intptr_t)GetStdHandle(STD_ERROR_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen(hConHandle, "w");
-
-	*stderr = *fp;
-
-	setvbuf(stderr, NULL, _IONBF, 0);
-
-	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
-
-	// point to console as well
+		printf("\n"); // Make sure our output is starting from the new line.
+	}
 }
 
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
@@ -210,7 +182,10 @@ void OS_Windows::initialize_core() {
 	last_button_state = 0;
 	restore_mouse_trails = 0;
 
-	//RedirectIOToConsole();
+#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+	RedirectIOToConsole();
+#endif
+
 	maximized = false;
 	minimized = false;
 	borderless = false;
@@ -225,12 +200,8 @@ void OS_Windows::initialize_core() {
 	NetSocketPosix::make_default();
 
 	// We need to know how often the clock is updated
-	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second))
-		ticks_per_second = 1000;
-	// If timeAtGameStart is 0 then we get the time since
-	// the start of the computer when we call GetGameTime()
-	ticks_start = 0;
-	ticks_start = get_ticks_usec();
+	QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second);
+	QueryPerformanceCounter((LARGE_INTEGER *)&ticks_start);
 
 	// set minimum resolution for periodic timers, otherwise Sleep(n) may wait at least as
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
@@ -452,7 +423,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 				mm->set_position(c);
 				mm->set_global_position(c);
-				input->set_mouse_position(c);
 				mm->set_speed(Vector2(0, 0));
 
 				if (raw->data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
@@ -520,6 +490,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 						last_tilt = Vector2();
 					}
 
+					last_pen_inverted = packet.pkStatus & TPS_INVERT;
+
 					POINT coords;
 					GetCursorPos(&coords);
 					ScreenToClient(hWnd, &coords);
@@ -534,6 +506,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					mm->set_shift(GetKeyState(VK_SHIFT) < 0);
 					mm->set_alt(alt_mem);
 
+					mm->set_pen_inverted(last_pen_inverted);
 					mm->set_pressure(last_pressure);
 					mm->set_tilt(last_tilt);
 
@@ -559,7 +532,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 						SetCursorPos(pos.x, pos.y);
 					}
 
-					input->set_mouse_position(mm->get_position());
 					mm->set_speed(input->get_last_mouse_speed());
 
 					if (old_invalid) {
@@ -662,6 +634,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			Ref<InputEventMouseMotion> mm;
 			mm.instance();
 
+			mm->set_pen_inverted(pen_info.penFlags & (PEN_FLAG_INVERTED | PEN_FLAG_ERASER));
+
 			if (pen_info.penMask & PEN_MASK_PRESSURE) {
 				mm->set_pressure((float)pen_info.pressure / 1024);
 			} else {
@@ -703,7 +677,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				SetCursorPos(pos.x, pos.y);
 			}
 
-			input->set_mouse_position(mm->get_position());
 			mm->set_speed(input->get_last_mouse_speed());
 
 			if (old_invalid) {
@@ -774,14 +747,17 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				} else {
 					last_tilt = Vector2();
 					last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+					last_pen_inverted = false;
 				}
 			} else {
 				last_tilt = Vector2();
 				last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+				last_pen_inverted = false;
 			}
 
 			mm->set_pressure(last_pressure);
 			mm->set_tilt(last_tilt);
+			mm->set_pen_inverted(last_pen_inverted);
 
 			mm->set_button_mask(last_button_state);
 
@@ -805,7 +781,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				SetCursorPos(pos.x, pos.y);
 			}
 
-			input->set_mouse_position(mm->get_position());
 			mm->set_speed(input->get_last_mouse_speed());
 
 			if (old_invalid) {
@@ -1403,7 +1378,13 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 		*/
 
-		EnumSizeData data = { 0, 0, Size2() };
+		// Get the primary monitor without providing hwnd
+		// Solution from https://devblogs.microsoft.com/oldnewthing/20070809-00/?p=25643
+		const POINT ptZero = { 0, 0 };
+		EnumScreenData primary_data = { 0, 0, MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY) };
+		EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcScreen, (LPARAM)&primary_data);
+
+		EnumSizeData data = { 0, primary_data.screen, Size2() };
 		EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcSize, (LPARAM)&data);
 
 		WindowRect.right = data.size.width;
@@ -1505,8 +1486,8 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	if ((get_current_tablet_driver() == "wintab") && wintab_available) {
 		wintab_WTInfo(WTI_DEFSYSCTX, 0, &wtlc);
 		wtlc.lcOptions |= CXO_MESSAGES;
-		wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
-		wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
+		wtlc.lcPktData = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+		wtlc.lcMoveMask = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
 		wtlc.lcPktMode = 0;
 		wtlc.lcOutOrgX = 0;
 		wtlc.lcOutExtX = wtlc.lcInExtX;
@@ -1534,6 +1515,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	last_pressure = 0;
 	last_pressure_update = 0;
 	last_tilt = Vector2();
+	last_pen_inverted = false;
 
 #if defined(OPENGL_ENABLED)
 
@@ -1654,8 +1636,11 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	set_ime_active(false);
 
-	if (!OS::get_singleton()->is_in_low_processor_usage_mode()) {
-		//SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+	if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->is_in_low_processor_usage_mode()) {
+		// Increase priority for projects that are not in low-processor mode (typically games)
+		// to reduce the risk of frame stuttering.
+		// This is not done for the editor to prevent importers or resource bakers
+		// from making the system unresponsive.
 		SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 		DWORD index = 0;
 		HANDLE handle = AvSetMmThreadCharacteristics("Games", &index);
@@ -1670,6 +1655,24 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	update_real_mouse_position();
 
 	return OK;
+}
+
+bool OS_Windows::is_offscreen_gl_available() const {
+#if defined(OPENGL_ENABLED)
+	return gl_context->is_offscreen_available();
+#else
+	return false;
+#endif
+}
+
+void OS_Windows::set_offscreen_gl_current(bool p_current) {
+#if defined(OPENGL_ENABLED)
+	if (p_current) {
+		return gl_context->make_offscreen_current();
+	} else {
+		return gl_context->release_offscreen_current();
+	}
+#endif
 }
 
 void OS_Windows::set_clipboard(const String &p_text) {
@@ -1763,6 +1766,7 @@ void OS_Windows::finalize() {
 	memdelete(input);
 	touch_state.clear();
 
+	icon.unref();
 	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
@@ -1929,22 +1933,6 @@ int OS_Windows::get_screen_count() const {
 	return data;
 }
 
-typedef struct {
-	int count;
-	int screen;
-	HMONITOR monitor;
-} EnumScreenData;
-
-static BOOL CALLBACK _MonitorEnumProcScreen(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
-	EnumScreenData *data = (EnumScreenData *)dwData;
-	if (data->monitor == hMonitor) {
-		data->screen = data->count;
-	}
-
-	data->count++;
-	return TRUE;
-}
-
 int OS_Windows::get_current_screen() const {
 	EnumScreenData data = { 0, 0, MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST) };
 	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcScreen, (LPARAM)&data);
@@ -1952,8 +1940,19 @@ int OS_Windows::get_current_screen() const {
 }
 
 void OS_Windows::set_current_screen(int p_screen) {
-	Vector2 ofs = get_window_position() - get_screen_position(get_current_screen());
-	set_window_position(ofs + get_screen_position(p_screen));
+	if (video_mode.fullscreen) {
+		int cs = get_current_screen();
+		if (cs == p_screen) {
+			return;
+		}
+		Point2 pos = get_screen_position(p_screen);
+		Size2 size = get_screen_size(p_screen);
+
+		MoveWindow(hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+	} else {
+		Vector2 ofs = get_window_position() - get_screen_position(get_current_screen());
+		set_window_position(ofs + get_screen_position(p_screen));
+	}
 }
 
 static BOOL CALLBACK _MonitorEnumProcPos(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
@@ -1985,6 +1984,12 @@ typedef struct {
 	int dpi;
 } EnumDpiData;
 
+typedef struct {
+	int count;
+	int screen;
+	float rate;
+} EnumRefreshRateData;
+
 static BOOL CALLBACK _MonitorEnumProcDpi(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 	EnumDpiData *data = (EnumDpiData *)dwData;
 	if (data->count == data->screen) {
@@ -1995,10 +2000,44 @@ static BOOL CALLBACK _MonitorEnumProcDpi(HMONITOR hMonitor, HDC hdcMonitor, LPRE
 	return TRUE;
 }
 
+static BOOL CALLBACK _MonitorEnumProcRefreshRate(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumRefreshRateData *data = (EnumRefreshRateData *)dwData;
+	if (data->count == data->screen) {
+		MONITORINFOEXW minfo;
+		memset(&minfo, 0, sizeof(minfo));
+		minfo.cbSize = sizeof(minfo);
+		GetMonitorInfoW(hMonitor, &minfo);
+
+		DEVMODEW dm;
+		memset(&dm, 0, sizeof(dm));
+		dm.dmSize = sizeof(dm);
+		EnumDisplaySettingsW(minfo.szDevice, ENUM_CURRENT_SETTINGS, &dm);
+
+		data->rate = dm.dmDisplayFrequency;
+	}
+
+	data->count++;
+	return TRUE;
+}
+
 int OS_Windows::get_screen_dpi(int p_screen) const {
-	EnumDpiData data = { 0, p_screen == -1 ? get_current_screen() : p_screen, 72 };
+	EnumDpiData data = {
+		0,
+		p_screen == -1 ? get_current_screen() : p_screen,
+		72,
+	};
 	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
+}
+
+float OS_Windows::get_screen_refresh_rate(int p_screen) const {
+	EnumRefreshRateData data = {
+		0,
+		p_screen == -1 ? get_current_screen() : p_screen,
+		OS::get_singleton()->SCREEN_REFRESH_RATE_FALLBACK,
+	};
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcRefreshRate, (LPARAM)&data);
+	return data.rate;
 }
 
 Point2 OS_Windows::get_window_position() const {
@@ -2229,31 +2268,6 @@ bool OS_Windows::is_window_focused() const {
 	return window_focused;
 }
 
-bool OS_Windows::_is_win11_terminal() const {
-	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	DWORD dwMode = 0;
-	if (GetConsoleMode(hStdOut, &dwMode)) {
-		return ((dwMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) == ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-	} else {
-		return false;
-	}
-}
-
-void OS_Windows::set_console_visible(bool p_enabled) {
-	if (console_visible == p_enabled)
-		return;
-
-	if (!_is_win11_terminal()) {
-		// GetConsoleWindow is not supported by the Windows Terminal.
-		ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
-		console_visible = p_enabled;
-	}
-}
-
-bool OS_Windows::is_console_visible() const {
-	return console_visible;
-}
-
 bool OS_Windows::get_window_per_pixel_transparency_enabled() const {
 	if (!is_layered_allowed())
 		return false;
@@ -2317,6 +2331,10 @@ void OS_Windows::_update_window_style(bool p_repaint, bool p_maximized) {
 		} else {
 			SetWindowLongPtr(hWnd, GWL_STYLE, WS_CAPTION | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_VISIBLE);
 		}
+	}
+
+	if (icon.is_valid()) {
+		set_icon(icon);
 	}
 
 	SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
@@ -2416,12 +2434,19 @@ OS::Date OS_Windows::get_date(bool utc) const {
 	else
 		GetLocalTime(&systemtime);
 
+	// Get DST information from Windows, but only if utc is false.
+	TIME_ZONE_INFORMATION info;
+	bool daylight = false;
+	if (!utc && GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
+		daylight = true;
+	}
+
 	Date date;
 	date.day = systemtime.wDay;
 	date.month = Month(systemtime.wMonth);
 	date.weekday = Weekday(systemtime.wDayOfWeek);
 	date.year = systemtime.wYear;
-	date.dst = false;
+	date.dst = daylight;
 	return date;
 }
 OS::Time OS_Windows::get_time(bool utc) const {
@@ -2444,16 +2469,19 @@ OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
 		daylight = true;
 
+	// Daylight Bias needs to be added to the bias if DST is in effect, or else it will not properly update.
 	TimeZoneInfo ret;
 	if (daylight) {
 		ret.name = info.DaylightName;
+		ret.bias = info.Bias + info.DaylightBias;
 	} else {
 		ret.name = info.StandardName;
+		ret.bias = info.Bias + info.StandardBias;
 	}
 
 	// Bias value returned by GetTimeZoneInformation is inverted of what we expect
-	// For example on GMT-3 GetTimeZoneInformation return a Bias of 180, so invert the value to get -180
-	ret.bias = -info.Bias;
+	// For example, on GMT-3 GetTimeZoneInformation return a Bias of 180, so invert the value to get -180
+	ret.bias = -ret.bias;
 	return ret;
 }
 
@@ -2518,8 +2546,10 @@ uint64_t OS_Windows::get_ticks_usec() const {
 	uint64_t ticks;
 
 	// This is the number of clock ticks since start
-	if (!QueryPerformanceCounter((LARGE_INTEGER *)&ticks))
-		ticks = (UINT64)timeGetTime();
+	QueryPerformanceCounter((LARGE_INTEGER *)&ticks);
+	// Subtract the ticks at game start to get
+	// the ticks since the game started
+	ticks -= ticks_start;
 
 	// Divide by frequency to get the time in seconds
 	// original calculation shown below is subject to overflow
@@ -2539,9 +2569,6 @@ uint64_t OS_Windows::get_ticks_usec() const {
 	// seconds
 	time += seconds * 1000000L;
 
-	// Subtract the time at game start to get
-	// the time since the game started
-	time -= ticks_start;
 	return time;
 }
 
@@ -2797,42 +2824,33 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	return p_text;
 }
 
-Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
-	String path = p_path.replace("/", "\\");
-
-	if (p_blocking && r_pipe) {
-		String argss = _quote_command_line_argument(path);
-		for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-			argss += " " + _quote_command_line_argument(E->get());
+static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_pipe_mutex) {
+	// Try to convert from default ANSI code page to Unicode.
+	LocalVector<wchar_t> wchars;
+	int total_wchars = MultiByteToWideChar(CP_ACP, 0, p_bytes, p_size, nullptr, 0);
+	if (total_wchars > 0) {
+		wchars.resize(total_wchars);
+		if (MultiByteToWideChar(CP_ACP, 0, p_bytes, p_size, wchars.ptr(), total_wchars) == 0) {
+			wchars.clear();
 		}
-
-		if (read_stderr) {
-			argss += " 2>&1"; // Read stderr too
-		}
-		// Note: _wpopen is calling command as "cmd.exe /c argss", instead of executing it directly, add extra quotes around full command, to prevent it from stripping quotes in the command.
-		argss = _quote_command_line_argument(argss);
-
-		FILE *f = _wpopen(argss.c_str(), L"r");
-		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
-
-		char buf[65535];
-		while (fgets(buf, 65535, f)) {
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
-			}
-			(*r_pipe) += String::utf8(buf);
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
-			}
-		}
-
-		int rv = _pclose(f);
-		if (r_exitcode) {
-			*r_exitcode = rv;
-		}
-
-		return OK;
 	}
+
+	if (p_pipe_mutex) {
+		p_pipe_mutex->lock();
+	}
+	if (wchars.empty()) {
+		// Let's hope it's compatible with UTF-8.
+		(*r_pipe) += String::utf8(p_bytes, p_size);
+	} else {
+		(*r_pipe) += String(wchars.ptr(), total_wchars);
+	}
+	if (p_pipe_mutex) {
+		p_pipe_mutex->unlock();
+	}
+}
+
+Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+	String path = p_path.replace("/", "\\");
 
 	String cmdline = _quote_command_line_argument(path);
 	const List<String>::Element *I = p_arguments.front();
@@ -2853,17 +2871,85 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		modstr.write[i] = cmdline[i];
 	}
 
-	DWORD creation_flags = NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW;
-	if (p_path == get_executable_path() && GetConsoleWindow() != NULL && _is_win11_terminal()) {
-		// Open a new terminal as a workaround for Windows Terminal bug.
-		creation_flags |= CREATE_NEW_CONSOLE;
+	bool inherit_handles = false;
+	HANDLE pipe[2] = { NULL, NULL };
+	if (p_blocking && r_pipe) {
+		// Create pipe for StdOut and StdErr.
+		SECURITY_ATTRIBUTES sa;
+		sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+		sa.bInheritHandle = true;
+		sa.lpSecurityDescriptor = NULL;
+
+		ERR_FAIL_COND_V(!CreatePipe(&pipe[0], &pipe[1], &sa, 0), ERR_CANT_FORK);
+		ERR_FAIL_COND_V(!SetHandleInformation(pipe[0], HANDLE_FLAG_INHERIT, 0), ERR_CANT_FORK); // Read handle is for host process only and should not be inherited.
+
+		pi.si.dwFlags |= STARTF_USESTDHANDLES;
+		pi.si.hStdOutput = pipe[1];
+		if (read_stderr) {
+			pi.si.hStdError = pipe[1];
+		}
+		inherit_handles = true;
+	}
+	DWORD creaton_flags = NORMAL_PRIORITY_CLASS;
+	if (p_open_console) {
+		creaton_flags |= CREATE_NEW_CONSOLE;
+	} else {
+		creaton_flags |= CREATE_NO_WINDOW;
 	}
 
-	int ret = CreateProcessW(NULL, modstr.ptrw(), NULL, NULL, 0, creation_flags, NULL, NULL, si_w, &pi.pi);
+	int ret = CreateProcessW(NULL, modstr.ptrw(), NULL, NULL, inherit_handles, creaton_flags, NULL, NULL, si_w, &pi.pi);
+	if (!ret && r_pipe) {
+		CloseHandle(pipe[0]); // Cleanup pipe handles.
+		CloseHandle(pipe[1]);
+	}
 	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
 
 	if (p_blocking) {
-		WaitForSingleObject(pi.pi.hProcess, INFINITE);
+		if (r_pipe) {
+			CloseHandle(pipe[1]); // Close pipe write handle (only child process is writing).
+
+			LocalVector<char> bytes;
+			int bytes_in_buffer = 0;
+
+			const int CHUNK_SIZE = 4096;
+			DWORD read = 0;
+			for (;;) { // Read StdOut and StdErr from pipe.
+				bytes.resize(bytes_in_buffer + CHUNK_SIZE);
+				const bool success = ReadFile(pipe[0], bytes.ptr() + bytes_in_buffer, CHUNK_SIZE, &read, NULL);
+				if (!success || read == 0) {
+					break;
+				}
+				// Assume that all possible encodings are ASCII-compatible.
+				// Break at newline to allow receiving long output in portions.
+				int newline_index = -1;
+				for (int i = read - 1; i >= 0; i--) {
+					if (bytes[bytes_in_buffer + i] == '\n') {
+						newline_index = i;
+						break;
+					}
+				}
+
+				if (newline_index == -1) {
+					bytes_in_buffer += read;
+					continue;
+				}
+
+				const int bytes_to_convert = bytes_in_buffer + (newline_index + 1);
+				_append_to_pipe(bytes.ptr(), bytes_to_convert, r_pipe, p_pipe_mutex);
+
+				bytes_in_buffer = read - (newline_index + 1);
+				memmove(bytes.ptr(), bytes.ptr() + bytes_to_convert, bytes_in_buffer);
+			}
+
+			if (bytes_in_buffer > 0) {
+				_append_to_pipe(bytes.ptr(), bytes_in_buffer, r_pipe, p_pipe_mutex);
+			}
+
+			CloseHandle(pipe[0]); // Close pipe read handle.
+		} else {
+			WaitForSingleObject(pi.pi.hProcess, INFINITE);
+		}
+
 		if (r_exitcode) {
 			DWORD ret2;
 			GetExitCodeProcess(pi.pi.hProcess, &ret2);
@@ -2880,7 +2966,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		process_map->insert(pid, pi);
 	}
 	return OK;
-};
+}
 
 Error OS_Windows::kill(const ProcessID &p_pid) {
 	ERR_FAIL_COND_V(!process_map->has(p_pid), FAILED);
@@ -2898,6 +2984,25 @@ Error OS_Windows::kill(const ProcessID &p_pid) {
 
 int OS_Windows::get_process_id() const {
 	return _getpid();
+}
+
+bool OS_Windows::is_process_running(const ProcessID &p_pid) const {
+	if (!process_map->has(p_pid)) {
+		return false;
+	}
+
+	const PROCESS_INFORMATION &pi = (*process_map)[p_pid].pi;
+
+	DWORD dw_exit_code = 0;
+	if (!GetExitCodeProcess(pi.hProcess, &dw_exit_code)) {
+		return false;
+	}
+
+	if (dw_exit_code != STILL_ACTIVE) {
+		return false;
+	}
+
+	return true;
 }
 
 Error OS_Windows::set_cwd(const String &p_cwd) {
@@ -3008,9 +3113,12 @@ void OS_Windows::set_native_icon(const String &p_filename) {
 
 void OS_Windows::set_icon(const Ref<Image> &p_icon) {
 	ERR_FAIL_COND(!p_icon.is_valid());
-	Ref<Image> icon = p_icon->duplicate();
-	if (icon->get_format() != Image::FORMAT_RGBA8)
-		icon->convert(Image::FORMAT_RGBA8);
+	if (icon != p_icon) {
+		icon = p_icon->duplicate();
+		if (icon->get_format() != Image::FORMAT_RGBA8) {
+			icon->convert(Image::FORMAT_RGBA8);
+		}
+	}
 	int w = icon->get_width();
 	int h = icon->get_height();
 
@@ -3176,6 +3284,26 @@ int OS_Windows::get_processor_count() const {
 	return sysinfo.dwNumberOfProcessors;
 }
 
+String OS_Windows::get_processor_name() const {
+	const String id = "Hardware\\Description\\System\\CentralProcessor\\0";
+
+	HKEY hkey;
+	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)(id.c_str()), 0, KEY_QUERY_VALUE, &hkey) != ERROR_SUCCESS) {
+		ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+	}
+
+	WCHAR buffer[256];
+	DWORD buffer_len = 256;
+	DWORD vtype = REG_SZ;
+	if (RegQueryValueExW(hkey, L"ProcessorNameString", NULL, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS) {
+		RegCloseKey(hkey);
+		return String((const wchar_t *)buffer, buffer_len).strip_edges();
+	} else {
+		RegCloseKey(hkey);
+		ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+	}
+}
+
 OS::LatinKeyboardVariant OS_Windows::get_latin_keyboard_variant() const {
 	unsigned long azerty[] = {
 		0x00020401, // Arabic (102) AZERTY
@@ -3289,6 +3417,42 @@ String OS_Windows::keyboard_get_layout_language(int p_index) const {
 	return String(buf).substr(0, 2);
 }
 
+uint32_t OS_Windows::keyboard_get_scancode_from_physical(uint32_t p_scancode) const {
+	unsigned int modifiers = p_scancode & KEY_MODIFIER_MASK;
+	uint32_t scancode_no_mod = (uint32_t)(p_scancode & KEY_CODE_MASK);
+
+	if (scancode_no_mod == KEY_PRINT ||
+			scancode_no_mod == KEY_KP_ADD ||
+			scancode_no_mod == KEY_KP_5 ||
+			(scancode_no_mod >= KEY_0 && scancode_no_mod <= KEY_9)) {
+		return p_scancode;
+	}
+
+	unsigned int scancode = KeyMappingWindows::get_scancode(scancode_no_mod);
+	if (scancode == 0) {
+		return p_scancode;
+	}
+
+	HKL current_layout = GetKeyboardLayout(0);
+	UINT vk = MapVirtualKeyEx(scancode, MAPVK_VSC_TO_VK, current_layout);
+	if (vk == 0) {
+		return p_scancode;
+	}
+
+	UINT char_code = MapVirtualKeyEx(vk, MAPVK_VK_TO_CHAR, current_layout) & 0x7FFF;
+	// Unlike a similar Linux/BSD check which matches full Latin-1 range,
+	// we limit these to ASCII to fix some layouts, including Arabic ones
+	if (char_code >= 32 && char_code <= 127) {
+		// Godot uses 'braces' instead of 'brackets'
+		if (char_code == KEY_BRACKETLEFT || char_code == KEY_BRACKETRIGHT) {
+			char_code += 32;
+		}
+		return (uint32_t)(char_code | modifiers);
+	}
+
+	return (uint32_t)(KeyMappingWindows::get_keysym(vk) | modifiers);
+}
+
 String _get_full_layout_name_from_registry(HKL p_layout) {
 	String id = "SYSTEM\\CurrentControlSet\\Control\\Keyboard Layouts\\" + String::num_int64((int64_t)p_layout, 16, false).lpad(8, "0");
 	String ret;
@@ -3370,6 +3534,58 @@ MainLoop *OS_Windows::get_main_loop() const {
 	return main_loop;
 }
 
+uint64_t OS_Windows::get_embedded_pck_offset() const {
+	FileAccessRef f = FileAccess::open(get_executable_path(), FileAccess::READ);
+	if (!f) {
+		return 0;
+	}
+
+	// Process header.
+	{
+		f->seek(0x3c);
+		uint32_t pe_pos = f->get_32();
+
+		f->seek(pe_pos);
+		uint32_t magic = f->get_32();
+		if (magic != 0x00004550) {
+			return 0;
+		}
+	}
+
+	int num_sections;
+	{
+		int64_t header_pos = f->get_position();
+
+		f->seek(header_pos + 2);
+		num_sections = f->get_16();
+		f->seek(header_pos + 16);
+		uint16_t opt_header_size = f->get_16();
+
+		// Skip rest of header + optional header to go to the section headers.
+		f->seek(f->get_position() + 2 + opt_header_size);
+	}
+	int64_t section_table_pos = f->get_position();
+
+	// Search for the "pck" section.
+	int64_t off = 0;
+	for (int i = 0; i < num_sections; ++i) {
+		int64_t section_header_pos = section_table_pos + i * 40;
+		f->seek(section_header_pos);
+
+		uint8_t section_name[9];
+		f->get_buffer(section_name, 8);
+		section_name[8] = '\0';
+
+		if (strcmp((char *)section_name, "pck") == 0) {
+			f->seek(section_header_pos + 20);
+			off = f->get_32();
+			break;
+		}
+	}
+
+	return off;
+}
+
 String OS_Windows::get_config_path() const {
 	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
 	if (has_environment("XDG_CONFIG_HOME")) {
@@ -3398,18 +3614,27 @@ String OS_Windows::get_data_path() const {
 }
 
 String OS_Windows::get_cache_path() const {
-	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
-	if (has_environment("XDG_CACHE_HOME")) {
-		if (get_environment("XDG_CACHE_HOME").is_abs_path()) {
-			return get_environment("XDG_CACHE_HOME").replace("\\", "/");
-		} else {
-			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `%TEMP%` or `get_config_path()` per the XDG Base Directory specification.");
+	static String cache_path_cache;
+	if (cache_path_cache == String()) {
+		// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
+		if (has_environment("XDG_CACHE_HOME")) {
+			if (get_environment("XDG_CACHE_HOME").is_abs_path()) {
+				cache_path_cache = get_environment("XDG_CACHE_HOME").replace("\\", "/");
+			} else {
+				WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `%LOCALAPPDATA%\\cache`, `%TEMP%` or `get_config_path()` per the XDG Base Directory specification.");
+			}
+		}
+		if (cache_path_cache == String() && has_environment("LOCALAPPDATA")) {
+			cache_path_cache = get_environment("LOCALAPPDATA").replace("\\", "/");
+		}
+		if (cache_path_cache == String() && has_environment("TEMP")) {
+			cache_path_cache = get_environment("TEMP").replace("\\", "/");
+		}
+		if (cache_path_cache == String()) {
+			cache_path_cache = get_config_path();
 		}
 	}
-	if (has_environment("TEMP")) {
-		return get_environment("TEMP").replace("\\", "/");
-	}
-	return get_config_path();
+	return cache_path_cache;
 }
 
 // Get properly capitalized engine name for system paths
@@ -3470,7 +3695,7 @@ String OS_Windows::get_user_data_dir() const {
 		}
 	}
 
-	return ProjectSettings::get_singleton()->get_resource_path();
+	return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file("[unnamed project]");
 }
 
 String OS_Windows::get_unique_id() const {
@@ -3618,8 +3843,8 @@ void OS_Windows::set_current_tablet_driver(const String &p_driver) {
 			if ((p_driver == "wintab") && wintab_available) {
 				wintab_WTInfo(WTI_DEFSYSCTX, 0, &wtlc);
 				wtlc.lcOptions |= CXO_MESSAGES;
-				wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
-				wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
+				wtlc.lcPktData = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+				wtlc.lcMoveMask = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
 				wtlc.lcPktMode = 0;
 				wtlc.lcOutOrgX = 0;
 				wtlc.lcOutExtX = wtlc.lcInExtX;
@@ -3662,7 +3887,6 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	minimized = false;
 	was_maximized = false;
 	window_focused = true;
-	console_visible = IsWindowVisible(GetConsoleWindow());
 
 	//Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSCRIPT_EDITOR_H
-#define VISUALSCRIPT_EDITOR_H
+#ifndef VISUAL_SCRIPT_EDITOR_H
+#define VISUAL_SCRIPT_EDITOR_H
 
 #include "editor/create_dialog.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -255,7 +255,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _node_item_selected();
 	void _node_item_unselected();
 
-	void _on_nodes_delete();
+	void _on_nodes_copy();
+	void _on_nodes_paste();
+	void _on_nodes_delete(const Array &p_nodes);
 	void _on_nodes_duplicate();
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
@@ -360,4 +362,4 @@ public:
 };
 #endif
 
-#endif // VISUALSCRIPT_EDITOR_H
+#endif // VISUAL_SCRIPT_EDITOR_H

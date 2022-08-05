@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ToolButton" inherits="Button" version="3.4">
+<class name="ToolButton" inherits="Button" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Flat button helper class.
 	</brief_description>
@@ -15,7 +15,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="flat" type="bool" setter="set_flat" getter="is_flat" override="true" default="true" />
+		<member name="flat" type="bool" setter="set_flat" getter="is_flat" overrides="Button" default="true" />
 	</members>
 	<constants>
 	</constants>

@@ -39,6 +39,8 @@
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
 //should scale better with hardware that supports instancing
 
+class PhysicsMaterial;
+
 class GridMap : public Spatial {
 	GDCLASS(GridMap, Spatial);
 
@@ -86,8 +88,9 @@ class GridMap : public Spatial {
 	 */
 	struct Octant {
 		struct NavMesh {
-			int id;
+			RID region;
 			Transform xform;
+			RID navmesh_debug_instance;
 		};
 
 		struct MultimeshInstance {
@@ -132,6 +135,9 @@ class GridMap : public Spatial {
 
 	uint32_t collision_layer;
 	uint32_t collision_mask;
+	Ref<PhysicsMaterial> physics_material;
+	bool bake_navigation = false;
+	uint32_t navigation_layers = 1;
 
 	Transform last_transform;
 
@@ -219,6 +225,17 @@ public:
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
 
+	void set_physics_material(Ref<PhysicsMaterial> p_material);
+	Ref<PhysicsMaterial> get_physics_material() const;
+
+	Array get_collision_shapes() const;
+
+	void set_bake_navigation(bool p_bake_navigation);
+	bool is_baking_navigation();
+
+	void set_navigation_layers(uint32_t p_navigation_layers);
+	uint32_t get_navigation_layers();
+
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;
 
@@ -251,8 +268,9 @@ public:
 	float get_cell_scale() const;
 
 	Array get_used_cells() const;
+	Array get_used_cells_by_item(int p_item) const;
 
-	Array get_meshes();
+	Array get_meshes() const;
 
 	void clear_baked_meshes();
 	void make_baked_meshes(bool p_gen_lightmap_uv = false, float p_lightmap_uv_texel_size = 0.1);

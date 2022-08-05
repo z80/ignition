@@ -30,6 +30,7 @@
 
 #include "cpu_particles_2d.h"
 #include "core/core_string_names.h"
+#include "core/os/os.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/2d/particles_2d.h"
 #include "scene/resources/particles_material.h"
@@ -393,6 +394,14 @@ Ref<Gradient> CPUParticles2D::get_color_ramp() const {
 	return color_ramp;
 }
 
+void CPUParticles2D::set_color_initial_ramp(const Ref<Gradient> &p_ramp) {
+	color_initial_ramp = p_ramp;
+}
+
+Ref<Gradient> CPUParticles2D::get_color_initial_ramp() const {
+	return color_initial_ramp;
+}
+
 void CPUParticles2D::set_particle_flag(Flags p_flag, bool p_enable) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags[p_flag] = p_enable;
@@ -690,6 +699,12 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			p.hue_rot_rand = Math::randf();
 			p.anim_offset_rand = Math::randf();
 
+			if (color_initial_ramp.is_valid()) {
+				p.start_color_rand = color_initial_ramp->get_color_at_offset(Math::randf());
+			} else {
+				p.start_color_rand = Color(1, 1, 1, 1);
+			}
+
 			float angle1_rad = Math::atan2(direction.y, direction.x) + (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
 			Vector2 rot = Vector2(Math::cos(angle1_rad), Math::sin(angle1_rad));
 			p.velocity = rot * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp(1.0f, float(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);
@@ -853,7 +868,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			float base_angle = (parameters[PARAM_ANGLE] + tex_angle) * Math::lerp(1.0f, p.angle_rand, randomness[PARAM_ANGLE]);
 			base_angle += p.custom[1] * lifetime * (parameters[PARAM_ANGULAR_VELOCITY] + tex_angular_velocity) * Math::lerp(1.0f, rand_from_seed(alt_seed) * 2.0f - 1.0f, randomness[PARAM_ANGULAR_VELOCITY]);
 			p.rotation = Math::deg2rad(base_angle); //angle
-			float animation_phase = (parameters[PARAM_ANIM_OFFSET] + tex_anim_offset) * Math::lerp(1.0f, p.anim_offset_rand, randomness[PARAM_ANIM_OFFSET]) + p.custom[1] * (parameters[PARAM_ANIM_SPEED] + tex_anim_speed) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_ANIM_SPEED]);
+			float animation_phase = (parameters[PARAM_ANIM_OFFSET] + tex_anim_offset) * Math::lerp(1.0f, p.anim_offset_rand, randomness[PARAM_ANIM_OFFSET]) + tv * (parameters[PARAM_ANIM_SPEED] + tex_anim_speed) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_ANIM_SPEED]);
 			p.custom[2] = animation_phase;
 		}
 		//apply color
@@ -895,7 +910,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 		p.color.g = color_rgb.y;
 		p.color.b = color_rgb.z;
 
-		p.color *= p.base_color;
+		p.color *= p.base_color * p.start_color_rand;
 
 		if (flags[FLAG_ALIGN_Y_TO_VELOCITY]) {
 			if (p.velocity.length() > 0.0) {
@@ -1014,9 +1029,11 @@ void CPUParticles2D::_set_redraw(bool p_redraw) {
 }
 
 void CPUParticles2D::_update_render_thread() {
-	update_mutex.lock();
-	VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
-	update_mutex.unlock();
+	if (OS::get_singleton()->is_update_pending(true)) {
+		update_mutex.lock();
+		VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
+		update_mutex.unlock();
+	}
 }
 
 void CPUParticles2D::_notification(int p_what) {
@@ -1125,6 +1142,11 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	Ref<GradientTexture> gt = material->get_color_ramp();
 	if (gt.is_valid()) {
 		set_color_ramp(gt->get_gradient());
+	}
+
+	Ref<GradientTexture> gti = material->get_color_initial_ramp();
+	if (gti.is_valid()) {
+		set_color_initial_ramp(gti->get_gradient());
 	}
 
 	set_particle_flag(FLAG_ALIGN_Y_TO_VELOCITY, material->get_flag(ParticlesMaterial::FLAG_ALIGN_Y_TO_VELOCITY));
@@ -1247,6 +1269,9 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color_ramp", "ramp"), &CPUParticles2D::set_color_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_ramp"), &CPUParticles2D::get_color_ramp);
 
+	ClassDB::bind_method(D_METHOD("set_color_initial_ramp", "ramp"), &CPUParticles2D::set_color_initial_ramp);
+	ClassDB::bind_method(D_METHOD("get_color_initial_ramp"), &CPUParticles2D::get_color_initial_ramp);
+
 	ClassDB::bind_method(D_METHOD("set_particle_flag", "flag", "enable"), &CPUParticles2D::set_particle_flag);
 	ClassDB::bind_method(D_METHOD("get_particle_flag", "flag"), &CPUParticles2D::get_particle_flag);
 
@@ -1277,7 +1302,7 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_texture_changed"), &CPUParticles2D::_texture_changed);
 
 	ADD_GROUP("Emission Shape", "emission_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Rectangle,Points,Directed Points", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01,or_greater"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "emission_rect_extents"), "set_emission_rect_extents", "get_emission_rect_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
@@ -1328,6 +1353,7 @@ void CPUParticles2D::_bind_methods() {
 	ADD_GROUP("Color", "");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_initial_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_initial_ramp", "get_color_initial_ramp");
 
 	ADD_GROUP("Hue Variation", "hue_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "hue_variation", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_param", "get_param", PARAM_HUE_VARIATION);
@@ -1376,8 +1402,8 @@ CPUParticles2D::CPUParticles2D() {
 	redraw = false;
 	emitting = false;
 
-	mesh = VisualServer::get_singleton()->mesh_create();
-	multimesh = VisualServer::get_singleton()->multimesh_create();
+	mesh = RID_PRIME(VisualServer::get_singleton()->mesh_create());
+	multimesh = RID_PRIME(VisualServer::get_singleton()->multimesh_create());
 	VisualServer::get_singleton()->multimesh_set_mesh(multimesh, mesh);
 
 	set_emitting(true);

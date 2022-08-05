@@ -48,8 +48,6 @@
 	@author AndreaCatania
 */
 
-BulletPhysicsDirectBodyState *BulletPhysicsDirectBodyState::singleton = nullptr;
-
 Vector3 BulletPhysicsDirectBodyState::get_total_gravity() const {
 	Vector3 gVec;
 	B_TO_G(body->btBody->getGravity(), gVec);
@@ -204,6 +202,10 @@ Vector3 BulletPhysicsDirectBodyState::get_contact_collider_velocity_at_position(
 	return velocityAtPoint;
 }
 
+real_t BulletPhysicsDirectBodyState::get_step() const {
+	return body->get_space()->get_delta_time();
+}
+
 PhysicsDirectSpaceState *BulletPhysicsDirectBodyState::get_space_state() {
 	return body->get_space()->get_direct_state();
 }
@@ -250,7 +252,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 				shapes.write[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
 			} break;
 			default:
-				WARN_PRINT("This shape is not supported to be kinematic!");
+				WARN_PRINT("RigidBody in 3D only supports primitive shapes or convex polygon shapes. Concave (trimesh) polygon shapes are not supported.");
 				shapes.write[i].shape = nullptr;
 		}
 	}
@@ -306,11 +308,14 @@ RigidBodyBullet::RigidBodyBullet() :
 
 	prev_collision_traces = &collision_traces_1;
 	curr_collision_traces = &collision_traces_2;
+
+	direct_access = memnew(BulletPhysicsDirectBodyState);
+	direct_access->body = this;
 }
 
 RigidBodyBullet::~RigidBodyBullet() {
 	bulletdelete(godotMotionState);
-
+	memdelete(direct_access);
 	if (force_integration_callback) {
 		memdelete(force_integration_callback);
 	}
@@ -370,9 +375,7 @@ void RigidBodyBullet::dispatch_callbacks() {
 			btBody->clearForces();
 		}
 
-		BulletPhysicsDirectBodyState *bodyDirect = BulletPhysicsDirectBodyState::get_singleton(this);
-
-		Variant variantBodyDirect = bodyDirect;
+		Variant variantBodyDirect = direct_access;
 
 		Object *obj = ObjectDB::get_instance(force_integration_callback->id);
 		if (!obj) {
@@ -437,7 +440,7 @@ void RigidBodyBullet::on_collision_checker_start() {
 
 void RigidBodyBullet::on_collision_checker_end() {
 	// Always true if active and not a static or kinematic body
-	isTransformChanged = btBody->isActive() && !btBody->isStaticOrKinematicObject();
+	updated = btBody->isActive() && !btBody->isStaticOrKinematicObject();
 }
 
 bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {
@@ -763,7 +766,7 @@ void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {
 		}
 		btBody->setCcdSweptSphereRadius(radius * 0.2);
 	} else {
-		btBody->setCcdMotionThreshold(10000.0);
+		btBody->setCcdMotionThreshold(0.);
 		btBody->setCcdSweptSphereRadius(0.);
 	}
 }
@@ -843,7 +846,7 @@ void RigidBodyBullet::reload_shapes() {
 	btBody->updateInertiaTensor();
 
 	reload_kinematic_shapes();
-	set_continuous_collision_detection(btBody->getCcdMotionThreshold() < 9998.0);
+	set_continuous_collision_detection(is_continuous_collision_detection_enabled());
 	reload_body();
 }
 
@@ -911,6 +914,13 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 
 void RigidBodyBullet::reload_space_override_modificator() {
 	if (mode == PhysicsServer::BODY_MODE_STATIC) {
+		return;
+	}
+
+	if (omit_forces_integration) {
+		// Custom behaviour.
+		btBody->setGravity(btVector3(0, 0, 0));
+		btBody->setDamping(0, 0);
 		return;
 	}
 

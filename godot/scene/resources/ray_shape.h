@@ -30,6 +30,7 @@
 
 #ifndef RAY_SHAPE_H
 #define RAY_SHAPE_H
+
 #include "scene/resources/shape.h"
 
 class RayShape : public Shape {
@@ -49,7 +50,9 @@ public:
 	bool get_slips_on_slope() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines();
+	virtual real_t get_enclosing_radius() const;
 
 	RayShape();
 };
+
 #endif // RAY_SHAPE_H

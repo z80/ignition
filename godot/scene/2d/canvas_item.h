@@ -162,6 +162,8 @@ VARIANT_ENUM_CAST(CanvasItemMaterial::LightMode)
 class CanvasItem : public Node {
 	GDCLASS(CanvasItem, Node);
 
+	friend class CanvasLayer;
+
 public:
 	enum BlendMode {
 
@@ -177,7 +179,7 @@ private:
 	mutable SelfList<Node> xform_change;
 
 	RID canvas_item;
-	String group;
+	String canvas_group;
 
 	CanvasLayer *canvas_layer;
 
@@ -206,6 +208,7 @@ private:
 	mutable bool global_invalid;
 
 	void _toplevel_raise_self();
+	void _toplevel_visibility_changed(bool p_visible);
 
 	void _propagate_visibility_changed(bool p_visible);
 

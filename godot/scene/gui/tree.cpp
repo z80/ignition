@@ -776,9 +776,11 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_as_button", "column", "enable"), &TreeItem::set_custom_as_button);
 	ClassDB::bind_method(D_METHOD("is_custom_set_as_button", "column"), &TreeItem::is_custom_set_as_button);
 
-	ClassDB::bind_method(D_METHOD("add_button", "column", "button", "button_idx", "disabled", "tooltip"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("add_button", "column", "button", "id", "disabled", "tooltip"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_button_count", "column"), &TreeItem::get_button_count);
 	ClassDB::bind_method(D_METHOD("get_button_tooltip", "column", "button_idx"), &TreeItem::get_button_tooltip);
+	ClassDB::bind_method(D_METHOD("get_button_id", "column", "button_idx"), &TreeItem::get_button_id);
+	ClassDB::bind_method(D_METHOD("get_button_by_id", "column", "id"), &TreeItem::get_button_by_id);
 	ClassDB::bind_method(D_METHOD("get_button", "column", "button_idx"), &TreeItem::get_button);
 	ClassDB::bind_method(D_METHOD("set_button", "column", "button_idx", "button"), &TreeItem::set_button);
 	ClassDB::bind_method(D_METHOD("erase_button", "column", "button_idx"), &TreeItem::erase_button);
@@ -1122,15 +1124,12 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			for (int j = p_item->cells[i].buttons.size() - 1; j >= 0; j--) {
 				Ref<Texture> b = p_item->cells[i].buttons[j].texture;
 				Size2 s = b->get_size() + cache.button_pressed->get_minimum_size();
-				if (s.height < label_h) {
-					s.height = label_h;
-				}
 
 				Point2i o = Point2i(ofs + w - s.width, p_pos.y) - cache.offset + p_draw_ofs;
 
 				if (cache.click_type == Cache::CLICK_BUTTON && cache.click_item == p_item && cache.click_column == i && cache.click_index == j && !p_item->cells[i].buttons[j].disabled) {
-					//being pressed
-					cache.button_pressed->draw(get_canvas_item(), Rect2(o, s));
+					// Being pressed.
+					cache.button_pressed->draw(get_canvas_item(), Rect2(o.x, o.y, s.width, MAX(s.height, label_h)));
 				}
 
 				o.y += (label_h - s.height) / 2;
@@ -1420,52 +1419,58 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 	}
 
 	if (!p_item->collapsed) { /* if not collapsed, check the children */
-
 		TreeItem *c = p_item->children;
 
 		int prev_ofs = children_pos.y - cache.offset.y + p_draw_ofs.y;
 
 		while (c) {
+			int child_h = -1;
 			if (htotal >= 0) {
-				int child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
+				child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
+			}
 
-				// Draw relationship lines.
-				if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
-					int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
-					int parent_ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
-					Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
+			// Draw relationship lines.
+			if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
+				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
+				int parent_ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
+				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
 
-					if (c->get_children() != nullptr) {
-						root_pos -= Point2i(cache.arrow->get_width(), 0);
-					}
+				if (c->get_children() != nullptr) {
+					root_pos -= Point2i(cache.arrow->get_width(), 0);
+				}
 
-					float line_width = 1.0;
+				float line_width = 1.0;
 #ifdef TOOLS_ENABLED
-					line_width *= EDSCALE;
+				line_width *= EDSCALE;
 #endif
 
-					Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
+				Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
 
-					if (root_pos.y + line_width >= 0) {
-						// Order of parts on this bend: the horizontal line first, then the vertical line.
+				if (root_pos.y + line_width >= 0) {
+					// Order of parts on this bend: the horizontal line first, then the vertical line.
+					if (htotal >= 0) {
 						VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x - Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
-						VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), Point2i(parent_pos.x, prev_ofs), cache.relationship_line_color, line_width);
 					}
-
-					prev_ofs = root_pos.y;
+					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), Point2i(parent_pos.x, prev_ofs), cache.relationship_line_color, line_width);
 				}
 
-				if (child_h < 0) {
-					if (cache.draw_relationship_lines == 0) {
-						return -1; // break, stop drawing, no need to anymore
-					} else {
-						htotal = -1;
-						children_pos.y = cache.offset.y + p_draw_size.height;
-					}
-				} else {
-					htotal += child_h;
-					children_pos.y += child_h;
+				prev_ofs = root_pos.y;
+			}
+
+			if (child_h < 0) {
+				if (htotal == -1) {
+					break; // Last loop done, stop.
 				}
+
+				if (cache.draw_relationship_lines == 0) {
+					return -1; // No need to draw anymore, full stop.
+				}
+
+				htotal = -1;
+				children_pos.y = cache.offset.y + p_draw_size.height;
+			} else {
+				htotal += child_h;
+				children_pos.y += child_h;
 			}
 
 			c = c->next;
@@ -1526,8 +1531,10 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 					*/
 
 			} else if (c.selected) {
-				c.selected = false;
-				//p_current->deselected_signal.call(p_col);
+				if (p_selected != p_current) {
+					// Deselect other rows.
+					c.selected = false;
+				}
 			}
 		} else if (select_mode == SELECT_SINGLE || select_mode == SELECT_MULTI) {
 			if (!r_in_range && &selected_cell == &c) {
@@ -3842,6 +3849,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position"), &Tree::get_item_at_position);
 	ClassDB::bind_method(D_METHOD("get_column_at_position", "position"), &Tree::get_column_at_position);
 	ClassDB::bind_method(D_METHOD("get_drop_section_at_position", "position"), &Tree::get_drop_section_at_position);
+	ClassDB::bind_method(D_METHOD("get_button_id_at_position", "position"), &Tree::get_button_id_at_position);
 
 	ClassDB::bind_method(D_METHOD("ensure_cursor_is_visible"), &Tree::ensure_cursor_is_visible);
 
@@ -3866,6 +3874,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &Tree::get_allow_reselect);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "columns"), "set_columns", "get_columns");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "column_titles_visible"), "set_column_titles_visible", "are_column_titles_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_folding"), "set_hide_folding", "is_folding_hidden");

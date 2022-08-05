@@ -35,7 +35,7 @@
 
 struct Transform2D;
 
-struct Rect2 {
+struct _NO_DISCARD_CLASS_ Rect2 {
 	Point2 position;
 	Size2 size;
 
@@ -45,6 +45,8 @@ struct Rect2 {
 	void set_size(const Vector2 &p_size) { size = p_size; }
 
 	real_t get_area() const { return size.width * size.height; }
+
+	_FORCE_INLINE_ Vector2 get_center() const { return position + (size * 0.5f); }
 
 	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
 		if (p_include_borders) {
@@ -257,7 +259,7 @@ struct Rect2 {
 	}
 };
 
-struct Rect2i {
+struct _NO_DISCARD_CLASS_ Rect2i {
 	Point2i position;
 	Size2i size;
 
@@ -267,6 +269,8 @@ struct Rect2i {
 	void set_size(const Size2i &p_size) { size = p_size; }
 
 	int get_area() const { return size.width * size.height; }
+
+	_FORCE_INLINE_ Vector2i get_center() const { return position + (size / 2); }
 
 	inline bool intersects(const Rect2i &p_rect) const {
 		if (position.x > (p_rect.position.x + p_rect.size.width)) {

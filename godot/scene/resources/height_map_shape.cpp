@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "height_map_shape.h"
+
 #include "servers/physics_server.h"
 
 Vector<Vector3> HeightMapShape::get_debug_mesh_lines() {
@@ -78,6 +79,10 @@ Vector<Vector3> HeightMapShape::get_debug_mesh_lines() {
 	}
 
 	return points;
+}
+
+real_t HeightMapShape::get_enclosing_radius() const {
+	return Vector3(real_t(map_width), max_height - min_height, real_t(map_depth)).length();
 }
 
 void HeightMapShape::_update_shape() {
@@ -187,13 +192,13 @@ void HeightMapShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_map_data", "data"), &HeightMapShape::set_map_data);
 	ClassDB::bind_method(D_METHOD("get_map_data"), &HeightMapShape::get_map_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "1,4096,1"), "set_map_width", "get_map_width");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "1,4096,1"), "set_map_depth", "get_map_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_width", "get_map_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_depth", "get_map_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_REAL_ARRAY, "map_data"), "set_map_data", "get_map_data");
 }
 
 HeightMapShape::HeightMapShape() :
-		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_HEIGHTMAP)) {
+		Shape(RID_PRIME(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_HEIGHTMAP))) {
 	map_width = 2;
 	map_depth = 2;
 	map_data.resize(map_width * map_depth);

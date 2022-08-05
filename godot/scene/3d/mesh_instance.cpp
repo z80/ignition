@@ -103,7 +103,7 @@ void MeshInstance::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	if (mesh.is_valid()) {
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "material/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("%s/%d", PNAME("material"), i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"));
 		}
 	}
 }
@@ -733,6 +733,14 @@ void MeshInstance::set_material_override(const Ref<Material> &p_material) {
 	}
 }
 
+void MeshInstance::set_material_overlay(const Ref<Material> &p_material) {
+	if (p_material == get_material_overlay()) {
+		return;
+	}
+
+	GeometryInstance::set_material_overlay(p_material);
+}
+
 void MeshInstance::set_software_skinning_transform_normals(bool p_enabled) {
 	if (p_enabled == is_software_skinning_transform_normals_enabled()) {
 		return;
@@ -839,8 +847,59 @@ void MeshInstance::create_debug_tangents() {
 	}
 }
 
-bool MeshInstance::is_mergeable_with(const MeshInstance &p_other) {
+bool MeshInstance::merge_meshes(Vector<Variant> p_list, bool p_use_global_space, bool p_check_compatibility) {
+	// bound function only support variants, so we need to convert to a list of MeshInstances
+	Vector<MeshInstance *> mis;
+
+	for (int n = 0; n < p_list.size(); n++) {
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_list[n]);
+		if (mi) {
+			if (mi != this) {
+				mis.push_back(mi);
+			} else {
+				ERR_PRINT("Destination MeshInstance cannot be a source.");
+			}
+		} else {
+			ERR_PRINT("Only MeshInstances can be merged.");
+		}
+	}
+
+	ERR_FAIL_COND_V(!mis.size(), "Array contains no MeshInstances");
+	return _merge_meshes(mis, p_use_global_space, p_check_compatibility);
+}
+
+bool MeshInstance::is_mergeable_with(Node *p_other) const {
+	const MeshInstance *mi = Object::cast_to<MeshInstance>(p_other);
+
+	if (mi) {
+		return _is_mergeable_with(*mi);
+	}
+
+	return false;
+}
+
+bool MeshInstance::_is_mergeable_with(const MeshInstance &p_other) const {
 	if (!get_mesh().is_valid() || !p_other.get_mesh().is_valid()) {
+		return false;
+	}
+	if (!get_allow_merging() || !p_other.get_allow_merging()) {
+		return false;
+	}
+
+	// various settings that must match
+	if (get_material_overlay() != p_other.get_material_overlay()) {
+		return false;
+	}
+	if (get_material_override() != p_other.get_material_override()) {
+		return false;
+	}
+	if (get_cast_shadows_setting() != p_other.get_cast_shadows_setting()) {
+		return false;
+	}
+	if (get_flag(FLAG_USE_BAKED_LIGHT) != p_other.get_flag(FLAG_USE_BAKED_LIGHT)) {
+		return false;
+	}
+	if (is_visible() != p_other.is_visible()) {
 		return false;
 	}
 
@@ -890,7 +949,7 @@ bool MeshInstance::is_mergeable_with(const MeshInstance &p_other) {
 	return true;
 }
 
-void MeshInstance::_merge_into_mesh_data(const MeshInstance &p_mi, int p_surface_id, PoolVector<Vector3> &r_verts, PoolVector<Vector3> &r_norms, PoolVector<real_t> &r_tangents, PoolVector<Color> &r_colors, PoolVector<Vector2> &r_uvs, PoolVector<Vector2> &r_uv2s, PoolVector<int> &r_inds) {
+void MeshInstance::_merge_into_mesh_data(const MeshInstance &p_mi, const Transform &p_dest_tr_inv, int p_surface_id, LocalVector<Vector3> &r_verts, LocalVector<Vector3> &r_norms, LocalVector<real_t> &r_tangents, LocalVector<Color> &r_colors, LocalVector<Vector2> &r_uvs, LocalVector<Vector2> &r_uv2s, LocalVector<int> &r_inds) {
 	_merge_log("\t\t\tmesh data from " + p_mi.get_name());
 
 	// get the mesh verts in local space
@@ -902,15 +961,45 @@ void MeshInstance::_merge_into_mesh_data(const MeshInstance &p_mi, int p_surface
 
 	Array arrays = rmesh->surface_get_arrays(p_surface_id);
 
-	PoolVector<Vector3> verts = arrays[VS::ARRAY_VERTEX];
-	PoolVector<Vector3> normals = arrays[VS::ARRAY_NORMAL];
-	PoolVector<real_t> tangents = arrays[VS::ARRAY_TANGENT];
-	PoolVector<Color> colors = arrays[VS::ARRAY_COLOR];
-	PoolVector<Vector2> uvs = arrays[VS::ARRAY_TEX_UV];
-	PoolVector<Vector2> uv2s = arrays[VS::ARRAY_TEX_UV2];
-	PoolVector<int> indices = arrays[VS::ARRAY_INDEX];
+	LocalVector<Vector3> verts = PoolVector<Vector3>(arrays[VS::ARRAY_VERTEX]);
+	if (!verts.size()) {
+		// early out if there are no vertices, no point in doing anything else
+		return;
+	}
 
-	// NEW .. the checking for valid triangles should be on WORLD SPACE vertices,
+	LocalVector<Vector3> normals = PoolVector<Vector3>(arrays[VS::ARRAY_NORMAL]);
+	LocalVector<real_t> tangents = PoolVector<real_t>(arrays[VS::ARRAY_TANGENT]);
+	LocalVector<Color> colors = PoolVector<Color>(arrays[VS::ARRAY_COLOR]);
+	LocalVector<Vector2> uvs = PoolVector<Vector2>(arrays[VS::ARRAY_TEX_UV]);
+	LocalVector<Vector2> uv2s = PoolVector<Vector2>(arrays[VS::ARRAY_TEX_UV2]);
+	LocalVector<int> indices = PoolVector<int>(arrays[VS::ARRAY_INDEX]);
+
+	// The attributes present must match the first mesh for the attributes
+	// to remain in sync. Here we reject meshes with different attributes.
+	// We could alternatively invent missing attributes.
+	// This should hopefully be already caught by the mesh_format, but is included just in case here.
+
+	// Don't perform these checks on the first Mesh, the first Mesh is a master
+	// and determines the attributes we want to be present.
+	if (r_verts.size() != 0) {
+		if ((bool)r_norms.size() != (bool)normals.size()) {
+			ERR_FAIL_MSG("Attribute mismatch with first Mesh (Normals), ignoring surface.");
+		}
+		if ((bool)r_tangents.size() != (bool)tangents.size()) {
+			ERR_FAIL_MSG("Attribute mismatch with first Mesh (Tangents), ignoring surface.");
+		}
+		if ((bool)r_colors.size() != (bool)colors.size()) {
+			ERR_FAIL_MSG("Attribute mismatch with first Mesh (Colors), ignoring surface.");
+		}
+		if ((bool)r_uvs.size() != (bool)uvs.size()) {
+			ERR_FAIL_MSG("Attribute mismatch with first Mesh (UVs), ignoring surface.");
+		}
+		if ((bool)r_uv2s.size() != (bool)uv2s.size()) {
+			ERR_FAIL_MSG("Attribute mismatch with first Mesh (UV2s), ignoring surface.");
+		}
+	}
+
+	// The checking for valid triangles should be on WORLD SPACE vertices,
 	// NOT model space
 
 	// special case, if no indices, create some
@@ -920,87 +1009,131 @@ void MeshInstance::_merge_into_mesh_data(const MeshInstance &p_mi, int p_surface
 	}
 
 	// the first index of this mesh is offset from the verts we already have stored in the merged mesh
-	int first_index = r_verts.size();
+	int starting_index = r_verts.size();
 
 	// transform verts to world space
 	Transform tr = p_mi.get_global_transform();
+
+	// But relative to the destination transform.
+	// This can either be identity (when the destination is global space),
+	// or the global transform of the owner MeshInstance (if using local space is selected).
+	tr = p_dest_tr_inv * tr;
 
 	// to transform normals
 	Basis normal_basis = tr.basis.inverse();
 	normal_basis.transpose();
 
-	for (int n = 0; n < verts.size(); n++) {
-		Vector3 pt_world = tr.xform(verts[n]);
-		r_verts.push_back(pt_world);
+	int num_verts = verts.size();
 
-		if (normals.size()) {
+	// verts
+	DEV_ASSERT(num_verts > 0);
+	int first_vert = r_verts.size();
+	r_verts.resize(first_vert + num_verts);
+	Vector3 *dest_verts = &r_verts[first_vert];
+
+	for (int n = 0; n < num_verts; n++) {
+		Vector3 pt_world = tr.xform(verts[n]);
+		*dest_verts++ = pt_world;
+	}
+
+	// normals
+	if (normals.size()) {
+		int first_norm = r_norms.size();
+		r_norms.resize(first_norm + num_verts);
+		Vector3 *dest_norms = &r_norms[first_norm];
+		for (int n = 0; n < num_verts; n++) {
 			Vector3 pt_norm = normal_basis.xform(normals[n]);
 			pt_norm.normalize();
-			r_norms.push_back(pt_norm);
+			*dest_norms++ = pt_norm;
 		}
+	}
 
-		if (tangents.size()) {
+	// tangents
+	if (tangents.size()) {
+		int first_tang = r_tangents.size();
+		r_tangents.resize(first_tang + (num_verts * 4));
+		real_t *dest_tangents = &r_tangents[first_tang];
+
+		for (int n = 0; n < num_verts; n++) {
 			int tstart = n * 4;
 			Vector3 pt_tangent = Vector3(tangents[tstart], tangents[tstart + 1], tangents[tstart + 2]);
 			real_t fourth = tangents[tstart + 3];
 
 			pt_tangent = normal_basis.xform(pt_tangent);
 			pt_tangent.normalize();
-			r_tangents.push_back(pt_tangent.x);
-			r_tangents.push_back(pt_tangent.y);
-			r_tangents.push_back(pt_tangent.z);
-			r_tangents.push_back(fourth);
+			*dest_tangents++ = pt_tangent.x;
+			*dest_tangents++ = pt_tangent.y;
+			*dest_tangents++ = pt_tangent.z;
+			*dest_tangents++ = fourth;
 		}
+	}
 
-		if (colors.size()) {
-			r_colors.push_back(colors[n]);
+	// colors
+	if (colors.size()) {
+		int first_col = r_colors.size();
+		r_colors.resize(first_col + num_verts);
+		Color *dest_colors = &r_colors[first_col];
+
+		for (int n = 0; n < num_verts; n++) {
+			*dest_colors++ = colors[n];
 		}
+	}
 
-		if (uvs.size()) {
-			r_uvs.push_back(uvs[n]);
+	// uvs
+	if (uvs.size()) {
+		int first_uv = r_uvs.size();
+		r_uvs.resize(first_uv + num_verts);
+		Vector2 *dest_uvs = &r_uvs[first_uv];
+
+		for (int n = 0; n < num_verts; n++) {
+			*dest_uvs++ = uvs[n];
 		}
+	}
 
-		if (uv2s.size()) {
-			r_uv2s.push_back(uv2s[n]);
+	// uv2s
+	if (uv2s.size()) {
+		int first_uv2 = r_uv2s.size();
+		r_uv2s.resize(first_uv2 + num_verts);
+		Vector2 *dest_uv2s = &r_uv2s[first_uv2];
+
+		for (int n = 0; n < num_verts; n++) {
+			*dest_uv2s++ = uv2s[n];
 		}
 	}
 
 	// indices
-	for (int n = 0; n < indices.size(); n++) {
-		int ind = indices[n] + first_index;
-		r_inds.push_back(ind);
+	if (indices.size()) {
+		int first_ind = r_inds.size();
+		r_inds.resize(first_ind + indices.size());
+		int *dest_inds = &r_inds[first_ind];
+
+		for (unsigned int n = 0; n < indices.size(); n++) {
+			int ind = indices[n] + starting_index;
+			*dest_inds++ = ind;
+		}
 	}
 }
 
-bool MeshInstance::_ensure_indices_valid(PoolVector<int> &r_indices, const PoolVector<Vector3> &p_verts) {
+bool MeshInstance::_ensure_indices_valid(LocalVector<int> &r_indices, const PoolVector<Vector3> &p_verts) const {
 	// no indices? create some
 	if (!r_indices.size()) {
 		_merge_log("\t\t\t\tindices are blank, creating...");
 
 		// indices are blank!! let's create some, assuming the mesh is using triangles
 		r_indices.resize(p_verts.size());
-		PoolVector<int>::Write write = r_indices.write();
-		int *pi = write.ptr();
 
 		// this is assuming each triangle vertex is unique
-		for (int n = 0; n < p_verts.size(); n++) {
-			*pi = n;
-			pi++;
+		for (unsigned int n = 0; n < r_indices.size(); n++) {
+			r_indices[n] = n;
 		}
 	}
 
 	if (!_check_for_valid_indices(r_indices, p_verts, nullptr)) {
-		LocalVector<int, int32_t> new_inds;
+		LocalVector<int> new_inds;
 		_check_for_valid_indices(r_indices, p_verts, &new_inds);
 
 		// copy the new indices
-		r_indices.resize(new_inds.size());
-		PoolVector<int>::Write write = r_indices.write();
-		int *pi = write.ptr();
-
-		for (int n = 0; n < new_inds.size(); n++) {
-			pi[n] = new_inds[n];
-		}
+		r_indices = new_inds;
 
 		return false;
 	}
@@ -1009,7 +1142,7 @@ bool MeshInstance::_ensure_indices_valid(PoolVector<int> &r_indices, const PoolV
 }
 
 // check for invalid tris, or make a list of the valid triangles, depending on whether r_inds is set
-bool MeshInstance::_check_for_valid_indices(const PoolVector<int> &p_inds, const PoolVector<Vector3> &p_verts, LocalVector<int, int32_t> *r_inds) {
+bool MeshInstance::_check_for_valid_indices(const LocalVector<int> &p_inds, const PoolVector<Vector3> &p_verts, LocalVector<int> *r_inds) const {
 	int nTris = p_inds.size();
 	nTris /= 3;
 	int indCount = 0;
@@ -1064,7 +1197,7 @@ bool MeshInstance::_check_for_valid_indices(const PoolVector<int> &p_inds, const
 	return true;
 }
 
-bool MeshInstance::_triangle_is_degenerate(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c, real_t p_epsilon) {
+bool MeshInstance::_triangle_is_degenerate(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c, real_t p_epsilon) const {
 	// not interested in the actual area, but numerical stability
 	Vector3 edge1 = p_b - p_a;
 	Vector3 edge2 = p_c - p_a;
@@ -1083,9 +1216,10 @@ bool MeshInstance::_triangle_is_degenerate(const Vector3 &p_a, const Vector3 &p_
 	return false;
 }
 
-bool MeshInstance::create_by_merging(Vector<MeshInstance *> p_list) {
-	// must be at least 2 meshes to merge
-	if (p_list.size() < 2) {
+// If p_check_compatibility is set to false you MUST have performed a prior check using
+// is_mergeable_with, otherwise you could get mismatching surface formats leading to graphical errors etc.
+bool MeshInstance::_merge_meshes(Vector<MeshInstance *> p_list, bool p_use_global_space, bool p_check_compatibility) {
+	if (p_list.size() < 1) {
 		// should not happen but just in case
 		return false;
 	}
@@ -1093,20 +1227,58 @@ bool MeshInstance::create_by_merging(Vector<MeshInstance *> p_list) {
 	// use the first mesh instance to get common data like number of surfaces
 	const MeshInstance *first = p_list[0];
 
+	// Mesh compatibility checking. This is relatively expensive, so if done already (e.g. in Room system)
+	// this step can be avoided.
+	LocalVector<bool> compat_list;
+	if (p_check_compatibility) {
+		compat_list.resize(p_list.size());
+
+		for (int n = 0; n < p_list.size(); n++) {
+			compat_list[n] = false;
+		}
+
+		compat_list[0] = true;
+
+		for (uint32_t n = 1; n < compat_list.size(); n++) {
+			compat_list[n] = first->_is_mergeable_with(*p_list[n]);
+
+			if (compat_list[n] == false) {
+				WARN_PRINT("MeshInstance " + p_list[n]->get_name() + " is incompatible for merging with " + first->get_name() + ", ignoring.");
+			}
+		}
+	}
+
 	Ref<ArrayMesh> am;
 	am.instance();
 
+	// If we want a local space result, we need the world space transform of this MeshInstance
+	// available to back transform verts from world space.
+	Transform dest_tr_inv;
+	if (!p_use_global_space) {
+		if (is_inside_tree()) {
+			dest_tr_inv = get_global_transform();
+			dest_tr_inv.affine_invert();
+		} else {
+			WARN_PRINT("MeshInstance must be inside tree to merge using local space, falling back to global space.");
+		}
+	}
+
 	for (int s = 0; s < first->get_mesh()->get_surface_count(); s++) {
-		PoolVector<Vector3> verts;
-		PoolVector<Vector3> normals;
-		PoolVector<real_t> tangents;
-		PoolVector<Color> colors;
-		PoolVector<Vector2> uvs;
-		PoolVector<Vector2> uv2s;
-		PoolVector<int> inds;
+		LocalVector<Vector3> verts;
+		LocalVector<Vector3> normals;
+		LocalVector<real_t> tangents;
+		LocalVector<Color> colors;
+		LocalVector<Vector2> uvs;
+		LocalVector<Vector2> uv2s;
+		LocalVector<int> inds;
 
 		for (int n = 0; n < p_list.size(); n++) {
-			_merge_into_mesh_data(*p_list[n], s, verts, normals, tangents, colors, uvs, uv2s, inds);
+			// Ignore if the mesh is incompatible
+			if (p_check_compatibility && (!compat_list[n])) {
+				continue;
+			}
+
+			_merge_into_mesh_data(*p_list[n], dest_tr_inv, s, verts, normals, tangents, colors, uvs, uv2s, inds);
 		} // for n through source meshes
 
 		if (!verts.size()) {
@@ -1114,9 +1286,9 @@ bool MeshInstance::create_by_merging(Vector<MeshInstance *> p_list) {
 		}
 
 		// sanity check on the indices
-		for (int n = 0; n < inds.size(); n++) {
+		for (unsigned int n = 0; n < inds.size(); n++) {
 			int i = inds[n];
-			if (i >= verts.size()) {
+			if ((unsigned int)i >= verts.size()) {
 				WARN_PRINT_ONCE("Mesh index out of range, invalid mesh, aborting");
 				return false;
 			}
@@ -1124,23 +1296,23 @@ bool MeshInstance::create_by_merging(Vector<MeshInstance *> p_list) {
 
 		Array arr;
 		arr.resize(Mesh::ARRAY_MAX);
-		arr[Mesh::ARRAY_VERTEX] = verts;
+		arr[Mesh::ARRAY_VERTEX] = PoolVector<Vector3>(verts);
 		if (normals.size()) {
-			arr[Mesh::ARRAY_NORMAL] = normals;
+			arr[Mesh::ARRAY_NORMAL] = PoolVector<Vector3>(normals);
 		}
 		if (tangents.size()) {
-			arr[Mesh::ARRAY_TANGENT] = tangents;
+			arr[Mesh::ARRAY_TANGENT] = PoolVector<real_t>(tangents);
 		}
 		if (colors.size()) {
-			arr[Mesh::ARRAY_COLOR] = colors;
+			arr[Mesh::ARRAY_COLOR] = PoolVector<Color>(colors);
 		}
 		if (uvs.size()) {
-			arr[Mesh::ARRAY_TEX_UV] = uvs;
+			arr[Mesh::ARRAY_TEX_UV] = PoolVector<Vector2>(uvs);
 		}
 		if (uv2s.size()) {
-			arr[Mesh::ARRAY_TEX_UV2] = uv2s;
+			arr[Mesh::ARRAY_TEX_UV2] = PoolVector<Vector2>(uv2s);
 		}
-		arr[Mesh::ARRAY_INDEX] = inds;
+		arr[Mesh::ARRAY_INDEX] = PoolVector<int>(inds);
 
 		am->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr, Array(), Mesh::ARRAY_COMPRESS_DEFAULT);
 	} // for s through surfaces
@@ -1154,10 +1326,16 @@ bool MeshInstance::create_by_merging(Vector<MeshInstance *> p_list) {
 		set_surface_material(n, first->get_active_material(n));
 	}
 
+	// set some properties to match the merged meshes
+	set_material_overlay(first->get_material_overlay());
+	set_material_override(first->get_material_override());
+	set_cast_shadows_setting(first->get_cast_shadows_setting());
+	set_flag(FLAG_USE_BAKED_LIGHT, first->get_flag(FLAG_USE_BAKED_LIGHT));
+
 	return true;
 }
 
-void MeshInstance::_merge_log(String p_string) {
+void MeshInstance::_merge_log(String p_string) const {
 	print_verbose(p_string);
 }
 
@@ -1188,6 +1366,10 @@ void MeshInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_debug_tangents"), &MeshInstance::create_debug_tangents);
 	ClassDB::set_method_flags("MeshInstance", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+
+	ClassDB::bind_method(D_METHOD("is_mergeable_with", "other_mesh_instance"), &MeshInstance::is_mergeable_with);
+	ClassDB::bind_method(D_METHOD("merge_meshes", "mesh_instances", "use_global_space", "check_compatibility"), &MeshInstance::merge_meshes, DEFVAL(Vector<Variant>()), DEFVAL(false), DEFVAL(true));
+	ClassDB::set_method_flags("MeshInstance", "merge_meshes", METHOD_FLAGS_DEFAULT);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, "Skin"), "set_skin", "get_skin");

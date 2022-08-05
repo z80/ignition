@@ -33,6 +33,10 @@
 #include "core/os/os.h"
 #include "scene/scene_string_names.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 #define NORMAL_SUFFIX "_normal"
 
 #ifdef TOOLS_ENABLED
@@ -235,14 +239,20 @@ Array SpriteFrames::_get_frames() const {
 
 Array SpriteFrames::_get_animations() const {
 	Array anims;
-	for (Map<StringName, Anim>::Element *E = animations.front(); E; E = E->next()) {
+
+	List<StringName> sorted_names;
+	get_animation_list(&sorted_names);
+	sorted_names.sort_custom<StringName::AlphCompare>();
+
+	for (List<StringName>::Element *E = sorted_names.front(); E; E = E->next()) {
+		const Anim &anim = animations[E->get()];
 		Dictionary d;
-		d["name"] = E->key();
-		d["speed"] = E->get().speed;
-		d["loop"] = E->get().loop;
+		d["name"] = E->get();
+		d["speed"] = anim.speed;
+		d["loop"] = anim.loop;
 		Array frames;
-		for (int i = 0; i < E->get().frames.size(); i++) {
-			frames.push_back(E->get().frames[i]);
+		for (int i = 0; i < anim.frames.size(); i++) {
+			frames.push_back(anim.frames[i]);
 		}
 		d["frames"] = frames;
 		anims.push_back(d);
@@ -250,6 +260,7 @@ Array SpriteFrames::_get_animations() const {
 
 	return anims;
 }
+
 void SpriteFrames::_set_animations(const Array &p_animations) {
 	animations.clear();
 	for (int i = 0; i < p_animations.size(); i++) {
@@ -298,12 +309,12 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_frames"), &SpriteFrames::_set_frames);
 	ClassDB::bind_method(D_METHOD("_get_frames"), &SpriteFrames::_get_frames);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", 0), "_set_frames", "_get_frames"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", 0), "_set_frames", "_get_frames"); // Compatibility with Godot 2.1.
 
 	ClassDB::bind_method(D_METHOD("_set_animations"), &SpriteFrames::_set_animations);
 	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations");
 }
 
 SpriteFrames::SpriteFrames() {
@@ -364,14 +375,14 @@ void AnimatedSprite::_notification(int p_what) {
 				return;
 			}
 
-			float speed = frames->get_animation_speed(animation) * speed_scale;
-			if (speed == 0) {
-				return; //do nothing
-			}
-
 			float remaining = get_process_delta_time();
 
 			while (remaining) {
+				float speed = frames->get_animation_speed(animation) * speed_scale;
+				if (speed == 0) {
+					return; //do nothing
+				}
+
 				if (timeout <= 0) {
 					timeout = _get_frame_duration();
 
@@ -572,7 +583,7 @@ void AnimatedSprite::_res_changed() {
 	update();
 }
 
-void AnimatedSprite::_set_playing(bool p_playing) {
+void AnimatedSprite::set_playing(bool p_playing) {
 	if (playing == p_playing) {
 		return;
 	}
@@ -581,7 +592,7 @@ void AnimatedSprite::_set_playing(bool p_playing) {
 	set_process_internal(playing);
 }
 
-bool AnimatedSprite::_is_playing() const {
+bool AnimatedSprite::is_playing() const {
 	return playing;
 }
 
@@ -595,15 +606,12 @@ void AnimatedSprite::play(const StringName &p_animation, const bool p_backwards)
 		}
 	}
 
-	_set_playing(true);
+	is_over = false;
+	set_playing(true);
 }
 
 void AnimatedSprite::stop() {
-	_set_playing(false);
-}
-
-bool AnimatedSprite::is_playing() const {
-	return playing;
+	set_playing(false);
 }
 
 float AnimatedSprite::_get_frame_duration() {
@@ -655,6 +663,23 @@ String AnimatedSprite::get_configuration_warning() const {
 	return warning;
 }
 
+void AnimatedSprite::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+#ifdef TOOLS_ENABLED
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
+#else
+	const String quote_style = "\"";
+#endif
+
+	if (p_idx == 0 && p_function == "play" && frames.is_valid()) {
+		List<StringName> al;
+		frames->get_animation_list(&al);
+		for (List<StringName>::Element *E = al.front(); E; E = E->next()) {
+			r_options->push_back(quote_style + String(E->get()) + quote_style);
+		}
+	}
+	Node::get_argument_options(p_function, p_idx, r_options);
+}
+
 void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite::set_sprite_frames);
 	ClassDB::bind_method(D_METHOD("get_sprite_frames"), &AnimatedSprite::get_sprite_frames);
@@ -662,12 +687,11 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation", "animation"), &AnimatedSprite::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimatedSprite::get_animation);
 
-	ClassDB::bind_method(D_METHOD("_set_playing", "playing"), &AnimatedSprite::_set_playing);
-	ClassDB::bind_method(D_METHOD("_is_playing"), &AnimatedSprite::_is_playing);
+	ClassDB::bind_method(D_METHOD("set_playing", "playing"), &AnimatedSprite::set_playing);
+	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite::is_playing);
 
 	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite::play, DEFVAL(StringName()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite::stop);
-	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite::is_playing);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &AnimatedSprite::is_centered);
@@ -696,7 +720,7 @@ void AnimatedSprite::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale"), "set_speed_scale", "get_speed_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");

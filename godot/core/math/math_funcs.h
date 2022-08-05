@@ -64,7 +64,7 @@ public:
 	static _ALWAYS_INLINE_ float sinc(float p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
 	static _ALWAYS_INLINE_ double sinc(double p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
 
-	static _ALWAYS_INLINE_ float sincn(float p_x) { return sinc(Math_PI * p_x); }
+	static _ALWAYS_INLINE_ float sincn(float p_x) { return sinc((float)Math_PI * p_x); }
 	static _ALWAYS_INLINE_ double sincn(double p_x) { return sinc(Math_PI * p_x); }
 
 	static _ALWAYS_INLINE_ double cosh(double p_x) { return ::cosh(p_x); }
@@ -181,10 +181,11 @@ public:
 	static _ALWAYS_INLINE_ double abs(double g) { return absd(g); }
 	static _ALWAYS_INLINE_ float abs(float g) { return absf(g); }
 	static _ALWAYS_INLINE_ int abs(int g) { return g > 0 ? g : -g; }
+	static _ALWAYS_INLINE_ int64_t abs(int64_t g) { return g > 0 ? g : -g; }
 
 	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
 		double value = Math::fmod(p_x, p_y);
-		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+		if (((value < 0) && (p_y > 0)) || ((value > 0) && (p_y < 0))) {
 			value += p_y;
 		}
 		value += 0.0;
@@ -192,25 +193,25 @@ public:
 	}
 	static _ALWAYS_INLINE_ float fposmod(float p_x, float p_y) {
 		float value = Math::fmod(p_x, p_y);
-		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+		if (((value < 0) && (p_y > 0)) || ((value > 0) && (p_y < 0))) {
 			value += p_y;
 		}
-		value += 0.0;
+		value += 0.0f;
 		return value;
 	}
 	static _ALWAYS_INLINE_ int64_t posmod(int64_t p_x, int64_t p_y) {
 		int64_t value = p_x % p_y;
-		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+		if (((value < 0) && (p_y > 0)) || ((value > 0) && (p_y < 0))) {
 			value += p_y;
 		}
 		return value;
 	}
 
 	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * Math_PI / 180.0; }
-	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * Math_PI / 180.0; }
+	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * (float)(Math_PI / 180.0); }
 
 	static _ALWAYS_INLINE_ double rad2deg(double p_y) { return p_y * 180.0 / Math_PI; }
-	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * 180.0 / Math_PI; }
+	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * (float)(180.0 / Math_PI); }
 
 	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) { return p_from + (p_to - p_from) * p_weight; }
 	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }
@@ -250,10 +251,10 @@ public:
 	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
 
 	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
-	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
+	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * (float)8.6858896380650365530225783783321; }
 
 	static _ALWAYS_INLINE_ double db2linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
-	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
+	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * (float)0.11512925464970228420089957273422); }
 
 	static _ALWAYS_INLINE_ double round(double p_val) { return ::round(p_val); }
 	static _ALWAYS_INLINE_ float round(float p_val) { return ::roundf(p_val); }
@@ -264,11 +265,19 @@ public:
 	}
 	static _ALWAYS_INLINE_ double wrapf(double value, double min, double max) {
 		double range = max - min;
-		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		double result = is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		if (is_equal_approx(result, max)) {
+			return min;
+		}
+		return result;
 	}
 	static _ALWAYS_INLINE_ float wrapf(float value, float min, float max) {
 		float range = max - min;
-		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		float result = is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		if (is_equal_approx(result, max)) {
+			return min;
+		}
+		return result;
 	}
 
 	// double only, as these functions are mainly used by the editor and not performance-critical,
@@ -295,10 +304,10 @@ public:
 		// this is an approximate way to check that numbers are close, as a ratio of their average size
 		// helps compare approximate numbers that may be very big or very small
 		real_t diff = abs(a - b);
-		if (diff == 0.0 || diff < min_epsilon) {
+		if (diff == 0 || diff < min_epsilon) {
 			return true;
 		}
-		real_t avg_size = (abs(a) + abs(b)) / 2.0;
+		real_t avg_size = (abs(a) + abs(b)) / 2;
 		diff /= avg_size;
 		return diff < epsilon;
 	}
@@ -309,9 +318,9 @@ public:
 			return true;
 		}
 		// Then check for approximate equality.
-		float tolerance = CMP_EPSILON * abs(a);
-		if (tolerance < CMP_EPSILON) {
-			tolerance = CMP_EPSILON;
+		float tolerance = (float)CMP_EPSILON * abs(a);
+		if (tolerance < (float)CMP_EPSILON) {
+			tolerance = (float)CMP_EPSILON;
 		}
 		return abs(a - b) < tolerance;
 	}
@@ -326,7 +335,7 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ bool is_zero_approx(float s) {
-		return abs(s) < CMP_EPSILON;
+		return abs(s) < (float)CMP_EPSILON;
 	}
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(double a, double b) {

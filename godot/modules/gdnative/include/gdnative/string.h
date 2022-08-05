@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_STRING_H
-#define GODOT_STRING_H
+#ifndef GDNATIVE_STRING_H
+#define GDNATIVE_STRING_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -129,6 +129,8 @@ godot_string GDAPI godot_string_md5(const uint8_t *p_md5);
 godot_string GDAPI godot_string_num(double p_num);
 godot_string GDAPI godot_string_num_int64(int64_t p_num, godot_int p_base);
 godot_string GDAPI godot_string_num_int64_capitalized(int64_t p_num, godot_int p_base, godot_bool p_capitalize_hex);
+godot_string GDAPI godot_string_num_uint64(uint64_t p_num, godot_int p_base);
+godot_string GDAPI godot_string_num_uint64_capitalized(uint64_t p_num, godot_int p_base, godot_bool p_capitalize_hex);
 godot_string GDAPI godot_string_num_real(double p_num);
 godot_string GDAPI godot_string_num_scientific(double p_num);
 godot_string GDAPI godot_string_num_with_decimals(double p_num, godot_int p_decimals);
@@ -178,6 +180,8 @@ godot_array GDAPI godot_string_split_ints_allows_empty(const godot_string *p_sel
 godot_array GDAPI godot_string_split_ints_mk(const godot_string *p_self, const godot_array *p_splitters);
 godot_array GDAPI godot_string_split_ints_mk_allows_empty(const godot_string *p_self, const godot_array *p_splitters);
 godot_array GDAPI godot_string_split_spaces(const godot_string *p_self);
+
+godot_string GDAPI godot_string_join(const godot_string *p_self, const godot_array *p_parts);
 
 wchar_t GDAPI godot_string_char_lowercase(wchar_t p_char);
 wchar_t GDAPI godot_string_char_uppercase(wchar_t p_char);
@@ -260,4 +264,4 @@ void GDAPI godot_string_destroy(godot_string *p_self);
 }
 #endif
 
-#endif // GODOT_STRING_H
+#endif // GDNATIVE_STRING_H

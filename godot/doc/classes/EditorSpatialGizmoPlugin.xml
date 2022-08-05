@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSpatialGizmoPlugin" inherits="Resource" version="3.4">
+<class name="EditorSpatialGizmoPlugin" inherits="Resource" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Used by the editor to define Spatial gizmo types.
 	</brief_description>
@@ -8,7 +8,7 @@
 		To use [EditorSpatialGizmoPlugin], register it using the [method EditorPlugin.add_spatial_gizmo_plugin] method first.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/plugins/editor/spatial_gizmos.html</link>
+		<link>$DOCS_URL/tutorials/plugins/editor/spatial_gizmos.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_material">

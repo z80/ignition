@@ -42,33 +42,32 @@ class GodotJavaWrapper;
 class GodotIOJavaWrapper;
 
 class OS_Android : public OS_Unix {
-	bool use_gl2;
 	bool use_apk_expansion;
-
-	bool use_16bits_fbo;
+	bool secondary_gl_available = false;
 
 	VisualServer *visual_server;
 
 	mutable String data_dir_cache;
+	mutable String cache_dir_cache;
 
 	AudioDriverOpenSL audio_driver_android;
 
-	const char *gl_extensions;
+	const char *gl_extensions = nullptr;
 
 	InputDefault *input;
 	VideoMode default_videomode;
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
 	GodotJavaWrapper *godot_java;
 	GodotIOJavaWrapper *godot_io_java;
-
-	//PowerAndroid *power_manager_func;
 
 	int video_driver_index;
 
 	bool transparency_enabled = false;
 
 public:
+	static const char *ANDROID_EXEC_PATH;
+
 	// functions used by main to initialize/deinitialize the OS
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
@@ -88,7 +87,6 @@ public:
 
 	typedef int64_t ProcessID;
 
-	static OS *get_singleton();
 	GodotJavaWrapper *get_godot_java();
 	GodotIOJavaWrapper *get_godot_io_java();
 
@@ -114,6 +112,7 @@ public:
 
 	virtual Size2 get_window_size() const;
 	virtual Rect2 get_window_safe_area() const;
+	virtual Array get_display_cutouts() const;
 
 	virtual String get_name() const;
 	virtual MainLoop *get_main_loop() const;
@@ -121,7 +120,7 @@ public:
 	virtual bool can_draw() const;
 
 	void main_loop_begin();
-	bool main_loop_iterate();
+	bool main_loop_iterate(bool *r_should_swap_buffers = nullptr);
 	void main_loop_end();
 	void main_loop_focusout();
 	void main_loop_focusin();
@@ -136,12 +135,15 @@ public:
 	void set_opengl_extensions(const char *p_gl_extensions);
 	void set_display_size(Size2 p_size);
 
-	void set_context_is_16_bits(bool p_is_16);
+	void set_offscreen_gl_available(bool p_available);
+	virtual bool is_offscreen_gl_available() const;
+	virtual void set_offscreen_gl_current(bool p_current);
 
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);
 	virtual ScreenOrientation get_screen_orientation() const;
 
 	virtual Error shell_open(String p_uri);
+	virtual String get_executable_path() const;
 	virtual String get_user_data_dir() const;
 	virtual String get_data_path() const;
 	virtual String get_cache_path() const;
@@ -149,8 +151,12 @@ public:
 	virtual String get_locale() const;
 	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
+	virtual bool has_clipboard() const;
 	virtual String get_model_name() const;
 	virtual int get_screen_dpi(int p_screen = 0) const;
+	virtual float get_screen_scale(int p_screen = -1) const;
+	virtual float get_screen_max_scale() const;
+	virtual float get_screen_refresh_rate(int p_screen = 0) const;
 
 	virtual bool get_window_per_pixel_transparency_enabled() const { return transparency_enabled; }
 	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled) { ERR_FAIL_MSG("Setting per-pixel transparency is not supported at runtime, please set it in project settings instead."); }
@@ -159,19 +165,27 @@ public:
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
+	virtual Error move_to_trash(const String &p_path);
+
 	void process_accelerometer(const Vector3 &p_accelerometer);
 	void process_gravity(const Vector3 &p_gravity);
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
-	void init_video_mode(int p_video_width, int p_video_height);
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;
 	void vibrate_handheld(int p_duration_ms);
 
+	virtual String get_config_path() const;
+
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false);
+
 	virtual bool _check_internal_feature_support(const String &p_feature);
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
 	~OS_Android();
+
+private:
+	Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id);
 };
 
-#endif
+#endif // OS_ANDROID_H

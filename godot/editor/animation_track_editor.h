@@ -119,6 +119,8 @@ public:
 
 	void set_hscroll(HScrollBar *p_hscroll);
 
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
+
 	AnimationTimelineEdit();
 };
 
@@ -139,6 +141,7 @@ class AnimationTrackEdit : public Control {
 		MENU_LOOP_CLAMP,
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
+		MENU_KEY_ADD_RESET,
 		MENU_KEY_DELETE
 	};
 	AnimationTimelineEdit *timeline;
@@ -178,6 +181,8 @@ class AnimationTrackEdit : public Control {
 	void _path_entered(const String &p_text);
 	void _play_position_draw();
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
+
+	Ref<Texture> _get_key_type_icon() const;
 
 	mutable int dropping_at;
 	float insert_at_pos;
@@ -371,7 +376,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	TrackIndices _confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_create_reset, Ref<Animation> p_reset_anim, bool p_create_beziers);
 	void _insert_delay(bool p_create_reset, bool p_create_beziers);
 
-	void _root_removed(Node *p_root);
+	void _root_removed();
 
 	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val = nullptr);
 
@@ -501,6 +506,7 @@ public:
 		EDIT_SCALE_CONFIRM,
 		EDIT_DUPLICATE_SELECTION,
 		EDIT_DUPLICATE_TRANSPOSED,
+		EDIT_ADD_RESET_KEY,
 		EDIT_DELETE_SELECTION,
 		EDIT_GOTO_NEXT_STEP,
 		EDIT_GOTO_PREV_STEP,

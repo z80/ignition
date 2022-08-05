@@ -29,7 +29,10 @@
 /*************************************************************************/
 
 #include "option_button.h"
+#include "core/os/input.h"
 #include "core/print_string.h"
+
+static const int NONE_SELECTED = -1;
 
 Size2 OptionButton::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
@@ -109,6 +112,14 @@ void OptionButton::pressed() {
 	popup->set_global_position(get_global_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
 	popup->set_scale(get_global_transform().get_scale());
+
+	// If not triggered by the mouse, start the popup with its first item selected.
+	if (popup->get_item_count() > 0 &&
+			((get_action_mode() == ActionMode::ACTION_MODE_BUTTON_PRESS && Input::get_singleton()->is_action_just_pressed("ui_accept")) ||
+					(get_action_mode() == ActionMode::ACTION_MODE_BUTTON_RELEASE && Input::get_singleton()->is_action_just_released("ui_accept")))) {
+		popup->set_current_index(0);
+	}
+
 	popup->popup();
 }
 
@@ -147,6 +158,10 @@ void OptionButton::set_item_metadata(int p_idx, const Variant &p_metadata) {
 	popup->set_item_metadata(p_idx, p_metadata);
 }
 
+void OptionButton::set_item_tooltip(int p_idx, const String &p_tooltip) {
+	popup->set_item_tooltip(p_idx, p_tooltip);
+}
+
 void OptionButton::set_item_disabled(int p_idx, bool p_disabled) {
 	popup->set_item_disabled(p_idx, p_disabled);
 }
@@ -160,6 +175,10 @@ Ref<Texture> OptionButton::get_item_icon(int p_idx) const {
 }
 
 int OptionButton::get_item_id(int p_idx) const {
+	if (p_idx == NONE_SELECTED) {
+		return NONE_SELECTED;
+	}
+
 	return popup->get_item_id(p_idx);
 }
 
@@ -169,6 +188,10 @@ int OptionButton::get_item_index(int p_id) const {
 
 Variant OptionButton::get_item_metadata(int p_idx) const {
 	return popup->get_item_metadata(p_idx);
+}
+
+String OptionButton::get_item_tooltip(int p_idx) const {
+	return popup->get_item_tooltip(p_idx);
 }
 
 bool OptionButton::is_item_disabled(int p_idx) const {
@@ -186,26 +209,33 @@ void OptionButton::add_separator() {
 void OptionButton::clear() {
 	popup->clear();
 	set_text("");
-	current = -1;
+	current = NONE_SELECTED;
 }
 
 void OptionButton::_select(int p_which, bool p_emit) {
-	if (p_which < 0) {
-		return;
-	}
 	if (p_which == current) {
 		return;
 	}
 
-	ERR_FAIL_INDEX(p_which, popup->get_item_count());
+	if (p_which == NONE_SELECTED) {
+		for (int i = 0; i < popup->get_item_count(); i++) {
+			popup->set_item_checked(i, false);
+		}
 
-	for (int i = 0; i < popup->get_item_count(); i++) {
-		popup->set_item_checked(i, i == p_which);
+		current = NONE_SELECTED;
+		set_text("");
+		set_icon(NULL);
+	} else {
+		ERR_FAIL_INDEX(p_which, popup->get_item_count());
+
+		for (int i = 0; i < popup->get_item_count(); i++) {
+			popup->set_item_checked(i, i == p_which);
+		}
+
+		current = p_which;
+		set_text(popup->get_item_text(current));
+		set_icon(popup->get_item_icon(current));
 	}
-
-	current = p_which;
-	set_text(popup->get_item_text(current));
-	set_icon(popup->get_item_icon(current));
 
 	if (is_inside_tree() && p_emit) {
 		emit_signal("item_selected", current);
@@ -213,7 +243,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 }
 
 void OptionButton::_select_int(int p_which) {
-	if (p_which < 0 || p_which >= popup->get_item_count()) {
+	if (p_which < NONE_SELECTED || p_which >= popup->get_item_count()) {
 		return;
 	}
 	_select(p_which, false);
@@ -228,12 +258,9 @@ int OptionButton::get_selected() const {
 }
 
 int OptionButton::get_selected_id() const {
-	int idx = get_selected();
-	if (idx < 0) {
-		return 0;
-	}
 	return get_item_id(current);
 }
+
 Variant OptionButton::get_selected_metadata() const {
 	int idx = get_selected();
 	if (idx < 0) {
@@ -244,6 +271,9 @@ Variant OptionButton::get_selected_metadata() const {
 
 void OptionButton::remove_item(int p_idx) {
 	popup->remove_item(p_idx);
+	if (current == p_idx) {
+		_select(NONE_SELECTED);
+	}
 }
 
 PopupMenu *OptionButton::get_popup() const {
@@ -296,11 +326,13 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_disabled", "idx", "disabled"), &OptionButton::set_item_disabled);
 	ClassDB::bind_method(D_METHOD("set_item_id", "idx", "id"), &OptionButton::set_item_id);
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &OptionButton::set_item_metadata);
+	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &OptionButton::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &OptionButton::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &OptionButton::get_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &OptionButton::get_item_id);
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &OptionButton::get_item_index);
 	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &OptionButton::get_item_metadata);
+	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &OptionButton::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &OptionButton::get_item_count);
 	ClassDB::bind_method(D_METHOD("add_separator"), &OptionButton::add_separator);

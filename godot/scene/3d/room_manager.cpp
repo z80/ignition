@@ -41,6 +41,7 @@
 #include "room_group.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/light.h"
+#include "scene/3d/particles.h"
 #include "scene/3d/sprite_3d.h"
 #include "visibility_notifier.h"
 
@@ -462,23 +463,18 @@ bool RoomManager::get_merge_meshes() const {
 	return _settings_merge_meshes;
 }
 
-void RoomManager::show_warning(const String &p_string, const String &p_extra_string, bool p_alert) {
-	if (p_extra_string != "") {
-		WARN_PRINT(p_string + " " + p_extra_string);
-#ifdef TOOLS_ENABLED
-		if (p_alert && Engine::get_singleton()->is_editor_hint()) {
-			EditorNode::get_singleton()->show_warning(TTRGET(p_string) + "\n" + TTRGET(p_extra_string));
-		}
-#endif
-	} else {
-		WARN_PRINT(p_string);
-		// OS::get_singleton()->alert(p_string, p_title);
-#ifdef TOOLS_ENABLED
-		if (p_alert && Engine::get_singleton()->is_editor_hint()) {
-			EditorNode::get_singleton()->show_warning(TTRGET(p_string));
-		}
-#endif
+void RoomManager::show_warning(const String &p_string, bool p_skippable, bool p_alert) {
+	if (p_skippable && !Engine::get_singleton()->is_editor_hint() && !_show_debug) {
+		return;
 	}
+
+	WARN_PRINT(p_string);
+	// OS::get_singleton()->alert(p_string, p_title);
+#ifdef TOOLS_ENABLED
+	if (p_alert && Engine::get_singleton()->is_editor_hint()) {
+		EditorNode::get_singleton()->show_warning(TTRGET(p_string));
+	}
+#endif
 }
 
 void RoomManager::debug_print_line(String p_string, int p_priority) {
@@ -656,15 +652,15 @@ void RoomManager::rooms_convert() {
 	}
 
 	if (_warning_portal_link_room_not_found) {
-		show_warning(TTR("Portal link room not found, check output log for details."));
+		show_warning(TTR("Portal link room not found, check output log for details."), true);
 	}
 
 	if (_warning_portal_autolink_failed) {
-		show_warning(TTR("Portal autolink failed, check output log for details.\nCheck the portal is facing outwards from the source room."));
+		show_warning(TTR("Portal autolink failed, check output log for details.\nCheck the portal is facing outwards from the source room."), true);
 	}
 
 	if (_warning_room_overlap_detected) {
-		show_warning(TTR("Room overlap detected, cameras may work incorrectly in overlapping area.\nCheck output log for details."));
+		show_warning(TTR("Room overlap detected, cameras may work incorrectly in overlapping area.\nCheck output log for details."), true);
 	}
 }
 
@@ -1025,7 +1021,9 @@ void RoomManager::_autolink_portals(Spatial *p_roomlist, LocalVector<Portal *> &
 
 		// error condition
 		if (!autolink_found) {
-			WARN_PRINT("Portal AUTOLINK failed for " + portal->get_name() + " from " + source_room->get_name());
+			if (_show_debug) {
+				WARN_PRINT("Portal AUTOLINK failed for " + portal->get_name() + " from " + source_room->get_name());
+			}
 			_warning_portal_autolink_failed = true;
 
 #ifdef TOOLS_ENABLED
@@ -1325,9 +1323,7 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 			// MeshInstance is the most interesting type for portalling, so we handle this explicitly
 			MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 			if (mi) {
-				if (p_add_to_portal_renderer) {
-					convert_log("\t\t\tMESH\t" + mi->get_name());
-				}
+				bool added = false;
 
 				Vector<Vector3> object_pts;
 				AABB aabb;
@@ -1344,17 +1340,26 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 					}
 
 					if (p_add_to_portal_renderer) {
-						VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, mi->get_instance(), mi->get_transformed_aabb(), object_pts);
+						// We are sending the VisualInstance AABB rather than the manually calced AABB, maybe we don't need to calc the AABB.
+						// If this works okay we can maybe later remove the manual AABB calculation in _bound_findpoints_mesh_instance().
+						VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, mi->get_instance(), mi->get_transformed_aabb().grow(mi->get_extra_cull_margin()), object_pts);
+						added = true;
 					}
 				} // if bound found points
+
+				if (p_add_to_portal_renderer) {
+					String msg = "\t\t\tMESH\t" + mi->get_name();
+					if (!added) {
+						msg += "\t(unrecognized)";
+					}
+					convert_log(msg);
+				}
 			} else {
 				// geometry instance but not a mesh instance ..
-				if (p_add_to_portal_renderer) {
-					convert_log("\t\t\tGEOM\t" + gi->get_name());
-				}
-
 				Vector<Vector3> object_pts;
 				AABB aabb;
+
+				bool added = false;
 
 				// attempt to recognise this GeometryInstance and read back the geometry
 				// Note: never attempt to add dynamics to the room aabb
@@ -1368,9 +1373,24 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 					}
 
 					if (p_add_to_portal_renderer) {
-						VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, gi->get_instance(), gi->get_transformed_aabb(), object_pts);
+						// if dynamic, we won't have properly calculated the aabb yet
+						if (is_dynamic) {
+							aabb = gi->get_transformed_aabb();
+						}
+
+						aabb.grow_by(gi->get_extra_cull_margin());
+						VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, gi->get_instance(), aabb, object_pts);
+						added = true;
 					}
 				} // if bound found points
+
+				if (p_add_to_portal_renderer) {
+					String msg = "\t\t\tGEOM\t" + gi->get_name();
+					if (!added) {
+						msg += "\t(unrecognized)";
+					}
+					convert_log(msg);
+				}
 			}
 		} // if gi
 
@@ -1832,7 +1852,17 @@ bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector
 		return true;
 	}
 
-	return false;
+	// Particles have a "visibility aabb" we can use for this
+	Particles *particles = Object::cast_to<Particles>(p_gi);
+	if (particles) {
+		r_aabb = particles->get_global_transform().xform(particles->get_visibility_aabb());
+		return true;
+	}
+
+	// Fallback path for geometry that is not recognised
+	// (including CPUParticles, which will need to rely on an expansion margin)
+	r_aabb = p_gi->get_transformed_aabb();
+	return true;
 }
 
 bool RoomManager::_bound_findpoints_mesh_instance(MeshInstance *p_mi, Vector<Vector3> &r_room_pts, AABB &r_aabb) {
@@ -2040,9 +2070,10 @@ void RoomManager::_flip_portals_recursive(Spatial *p_node) {
 }
 
 void RoomManager::_set_owner_recursive(Node *p_node, Node *p_owner) {
-	if (p_node != p_owner) {
+	if (!p_node->get_owner() && (p_node != p_owner)) {
 		p_node->set_owner(p_owner);
 	}
+
 	for (int n = 0; n < p_node->get_child_count(); n++) {
 		_set_owner_recursive(p_node->get_child(n), p_owner);
 	}
@@ -2139,8 +2170,7 @@ void RoomManager::_merge_meshes_in_room(Room *p_room) {
 			if (!bf.get_bit(c)) {
 				MeshInstance *b = source_meshes[c];
 
-				//				if (_are_meshes_mergeable(a, b)) {
-				if (a->is_mergeable_with(*b)) {
+				if (a->is_mergeable_with(b)) {
 					merge_list.push_back(b);
 					bf.set_bit(c, true);
 				}
@@ -2157,7 +2187,14 @@ void RoomManager::_merge_meshes_in_room(Room *p_room) {
 
 			_merge_log("\t\t" + merged->get_name());
 
-			if (merged->create_by_merging(merge_list)) {
+			// merge function takes a vector of variants
+			Vector<Variant> variant_merge_list;
+			variant_merge_list.resize(merge_list.size());
+			for (int i = 0; i < merge_list.size(); i++) {
+				variant_merge_list.set(i, merge_list[i]);
+			}
+
+			if (merged->merge_meshes(variant_merge_list, true, false)) {
 				// set all the source meshes to portal mode ignore so not shown
 				for (int i = 0; i < merge_list.size(); i++) {
 					merge_list[i]->set_portal_mode(CullInstance::PORTAL_MODE_IGNORE);

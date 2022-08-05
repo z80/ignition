@@ -34,6 +34,7 @@
 #include "core/project_settings.h"
 #include "physics_server_sw.h"
 
+#define TEST_MOTION_MARGIN_MIN_VALUE 0.0001
 #define TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR 0.05
 
 _FORCE_INLINE_ static bool _can_collide_with(CollisionObjectSW *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
@@ -434,10 +435,12 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_
 	ShapeSW *shape = static_cast<PhysicsServerSW *>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
-	real_t min_contact_depth = p_margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
+	real_t margin = MAX(p_margin, TEST_MOTION_MARGIN_MIN_VALUE);
+
+	real_t min_contact_depth = margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
 
 	AABB aabb = p_shape_xform.xform(shape->get_aabb());
-	aabb = aabb.grow(p_margin);
+	aabb = aabb.grow(margin);
 
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, SpaceSW::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
@@ -461,7 +464,7 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_
 
 		rcd.object = col_obj;
 		rcd.shape = shape_idx;
-		bool sc = CollisionSolverSW::solve_static(shape, p_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, p_margin);
+		bool sc = CollisionSolverSW::solve_static(shape, p_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, margin);
 		if (!sc) {
 			continue;
 		}
@@ -730,6 +733,7 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 		r_result->collider_id = 0;
 		r_result->collider_shape = 0;
 	}
+
 	AABB body_aabb;
 	bool shapes_found = false;
 
@@ -755,11 +759,13 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 		return false;
 	}
 
+	real_t margin = MAX(p_margin, TEST_MOTION_MARGIN_MIN_VALUE);
+
 	// Undo the currently transform the physics server is aware of and apply the provided one
 	body_aabb = p_from.xform(p_body->get_inv_transform().xform(body_aabb));
-	body_aabb = body_aabb.grow(p_margin);
+	body_aabb = body_aabb.grow(margin);
 
-	real_t min_contact_depth = p_margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
+	real_t min_contact_depth = margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
 
 	float motion_length = p_motion.length();
 	Vector3 motion_normal = p_motion / motion_length;
@@ -813,7 +819,7 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 						}
 					}
 
-					if (CollisionSolverSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, nullptr, p_margin)) {
+					if (CollisionSolverSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, nullptr, margin)) {
 						collided = cbk.amount > 0;
 					}
 				}
@@ -1035,7 +1041,7 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 				rcd.object = col_obj;
 				rcd.shape = shape_idx;
 				rcd.local_shape = j;
-				bool sc = CollisionSolverSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, p_margin);
+				bool sc = CollisionSolverSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, margin);
 				if (!sc) {
 					continue;
 				}
@@ -1078,25 +1084,14 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 	return collided;
 }
 
+// Assumes a valid collision pair, this should have been checked beforehand in the BVH or octree.
 void *SpaceSW::_broadphase_pair(CollisionObjectSW *p_object_A, int p_subindex_A, CollisionObjectSW *p_object_B, int p_subindex_B, void *p_pair_data, void *p_self) {
-	bool valid_collision_pair = p_object_A->test_collision_mask(p_object_B);
-
+	// An existing pair - nothing to do, pair is still valid.
 	if (p_pair_data) {
-		// Checking an existing pair.
-		if (valid_collision_pair) {
-			// Nothing to do, pair is still valid.
-			return p_pair_data;
-		} else {
-			// Logical collision not valid anymore, unpair.
-			_broadphase_unpair(p_object_A, p_subindex_A, p_object_B, p_subindex_B, p_pair_data, p_self);
-			return nullptr;
-		}
+		return p_pair_data;
 	}
 
-	if (!valid_collision_pair) {
-		return nullptr;
-	}
-
+	// New pair
 	CollisionObjectSW::Type type_A = p_object_A->get_type();
 	CollisionObjectSW::Type type_B = p_object_B->get_type();
 	if (type_A > type_B) {

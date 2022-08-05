@@ -37,12 +37,21 @@ extern "C" {
 
 #include "stddef.h"
 
+enum WebXRInputEvent {
+	WEBXR_INPUT_EVENT_SELECTSTART,
+	WEBXR_INPUT_EVENT_SELECTEND,
+	WEBXR_INPUT_EVENT_SELECT,
+	WEBXR_INPUT_EVENT_SQUEEZESTART,
+	WEBXR_INPUT_EVENT_SQUEEZEEND,
+	WEBXR_INPUT_EVENT_SQUEEZE,
+};
+
 typedef void (*GodotWebXRSupportedCallback)(char *p_session_mode, int p_supported);
 typedef void (*GodotWebXRStartedCallback)(char *p_reference_space_type);
 typedef void (*GodotWebXREndedCallback)();
 typedef void (*GodotWebXRFailedCallback)(char *p_message);
 typedef void (*GodotWebXRControllerCallback)();
-typedef void (*GodotWebXRInputEventCallback)(char *p_signal_name, int p_controller_id);
+typedef void (*GodotWebXRInputEventCallback)(int p_event_type, int p_controller_id);
 typedef void (*GodotWebXRSimpleEventCallback)(char *p_signal_name);
 
 extern int godot_webxr_is_supported();
@@ -65,15 +74,15 @@ extern int godot_webxr_get_view_count();
 extern int *godot_webxr_get_render_targetsize();
 extern float *godot_webxr_get_transform_for_eye(int p_eye);
 extern float *godot_webxr_get_projection_for_eye(int p_eye);
-extern int godot_webxr_get_external_texture_for_eye(int p_eye);
-extern void godot_webxr_commit_for_eye(int p_eye);
+extern void godot_webxr_commit_for_eye(int p_eye, unsigned int p_texture_id);
 
 extern void godot_webxr_sample_controller_data();
 extern int godot_webxr_get_controller_count();
 extern int godot_webxr_is_controller_connected(int p_controller);
 extern float *godot_webxr_get_controller_transform(int p_controller);
-extern int *godot_webxr_get_controller_buttons(int p_controller);
-extern int *godot_webxr_get_controller_axes(int p_controller);
+extern int *godot_webxr_get_controller_buttons(int p_controller, bool p_xr_standard_mapping);
+extern int *godot_webxr_get_controller_axes(int p_controller, bool p_xr_standard_mapping);
+extern int godot_webxr_get_controller_target_ray_mode(int p_controller);
 
 extern char *godot_webxr_get_visibility_state();
 extern int *godot_webxr_get_bounds_geometry();
@@ -82,4 +91,4 @@ extern int *godot_webxr_get_bounds_geometry();
 }
 #endif
 
-#endif /* GODOT_WEBXR_H */
+#endif // GODOT_WEBXR_H

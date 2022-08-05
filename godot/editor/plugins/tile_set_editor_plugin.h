@@ -173,11 +173,9 @@ class TileSetEditor : public HSplitContainer {
 	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
 	void _undo_redo_import_scene(Node *p_scene, bool p_merge);
 
-	bool _is_drop_valid(const Dictionary &p_drag_data, const Dictionary &p_item_data) const;
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-	void _file_load_request(const PoolVector<String> &p_path, int p_at_pos = -1);
 
 protected:
 	static void _bind_methods();
@@ -232,6 +230,7 @@ private:
 	void _zoom_in();
 	void _zoom_out();
 	void _zoom_reset();
+	void _zoom_on_position(float p_zoom, const Vector2 &p_position);
 
 	void draw_highlight_current_tile();
 	void draw_highlight_subtile(Vector2 coord, const Vector<Vector2> &other_highlighted = Vector<Vector2>());

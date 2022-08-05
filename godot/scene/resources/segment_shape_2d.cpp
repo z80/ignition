@@ -74,6 +74,10 @@ Rect2 SegmentShape2D::get_rect() const {
 	return rect;
 }
 
+real_t SegmentShape2D::get_enclosing_radius() const {
+	return (a + b).length();
+}
+
 void SegmentShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_a", "a"), &SegmentShape2D::set_a);
 	ClassDB::bind_method(D_METHOD("get_a"), &SegmentShape2D::get_a);
@@ -126,6 +130,10 @@ Rect2 RayShape2D::get_rect() const {
 	return rect;
 }
 
+real_t RayShape2D::get_enclosing_radius() const {
+	return length;
+}
+
 void RayShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &RayShape2D::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &RayShape2D::get_length);
@@ -133,7 +141,7 @@ void RayShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slips_on_slope", "active"), &RayShape2D::set_slips_on_slope);
 	ClassDB::bind_method(D_METHOD("get_slips_on_slope"), &RayShape2D::get_slips_on_slope);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "length"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "length", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slips_on_slope"), "set_slips_on_slope", "get_slips_on_slope");
 }
 

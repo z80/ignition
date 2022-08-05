@@ -81,6 +81,11 @@ Rect2 Light2D::get_anchorable_rect() const {
 	return Rect2(texture_offset - s / 2.0, s);
 }
 
+void Light2D::owner_changed_notify() {
+	// For cases where owner changes _after_ entering tree (as example, editor editing).
+	_update_light_visibility();
+}
+
 void Light2D::_update_light_visibility() {
 	if (!is_inside_tree()) {
 		return;
@@ -435,7 +440,7 @@ void Light2D::_bind_methods() {
 }
 
 Light2D::Light2D() {
-	canvas_light = VisualServer::get_singleton()->canvas_light_create();
+	canvas_light = RID_PRIME(VisualServer::get_singleton()->canvas_light_create());
 	enabled = true;
 	editor_only = false;
 	shadow = false;

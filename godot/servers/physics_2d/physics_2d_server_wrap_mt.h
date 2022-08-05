@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS2DSERVERWRAPMT_H
-#define PHYSICS2DSERVERWRAPMT_H
+#ifndef PHYSICS_2D_SERVER_WRAP_MT_H
+#define PHYSICS_2D_SERVER_WRAP_MT_H
 
 #include "core/command_queue_mt.h"
 #include "core/os/thread.h"
@@ -59,9 +59,7 @@ class Physics2DServerWrapMT : public Physics2DServer {
 	bool create_thread;
 
 	Semaphore step_sem;
-	int step_pending;
 	void thread_step(real_t p_delta);
-	void thread_flush();
 
 	void thread_exit();
 
@@ -336,4 +334,4 @@ public:
 #endif
 #undef SYNC_DEBUG
 
-#endif // PHYSICS2DSERVERWRAPMT_H
+#endif // PHYSICS_2D_SERVER_WRAP_MT_H

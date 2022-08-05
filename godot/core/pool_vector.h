@@ -373,10 +373,62 @@ public:
 		resize(s - 1);
 	}
 
+	int find(const T &p_val, int p_from = 0) const {
+		const int s = size();
+		const Read r = read();
+
+		if (p_from < 0) {
+			return -1;
+		}
+
+		for (int i = p_from; i < s; i++) {
+			if (r[i] == p_val) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	int rfind(const T &p_val, int p_from = -1) const {
+		const int s = size();
+		const Read r = read();
+
+		if (p_from < 0) {
+			p_from = s + p_from;
+		}
+		if (p_from < 0 || p_from >= s) {
+			p_from = s - 1;
+		}
+
+		for (int i = p_from; i >= 0; i--) {
+			if (r[i] == p_val) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	int count(const T &p_val) const {
+		const int s = size();
+		const Read r = read();
+		int amount = 0;
+		for (int i = 0; i < s; i++) {
+			if (r[i] == p_val) {
+				amount++;
+			}
+		}
+		return amount;
+	}
+
+	bool has(const T &p_val) const {
+		return find(p_val) != -1;
+	}
+
 	inline int size() const;
 	inline bool empty() const;
 	T get(int p_index) const;
 	void set(int p_index, const T &p_val);
+	void fill(const T &p_val);
 	void push_back(const T &p_val);
 	void append(const T &p_val) { push_back(p_val); }
 	void append_array(const PoolVector<T> &p_arr) {
@@ -431,7 +483,7 @@ public:
 		return OK;
 	}
 
-	String join(String delimiter) {
+	String join(String delimiter) const {
 		String rs = "";
 		int s = size();
 		Read r = read();
@@ -449,6 +501,7 @@ public:
 	Error resize(int p_size);
 
 	void invert();
+	void sort();
 
 	void operator=(const PoolVector &p_pool_vector) { _reference(p_pool_vector); }
 	PoolVector() { alloc = nullptr; }
@@ -480,6 +533,14 @@ void PoolVector<T>::set(int p_index, const T &p_val) {
 
 	Write w = write();
 	w[p_index] = p_val;
+}
+
+template <class T>
+void PoolVector<T>::fill(const T &p_val) {
+	Write w = write();
+	for (int i = 0; i < size(); i++) {
+		w[i] = p_val;
+	}
 }
 
 template <class T>
@@ -620,6 +681,18 @@ void PoolVector<T>::invert() {
 		w[i] = w[s - i - 1];
 		w[s - i - 1] = temp;
 	}
+}
+
+template <class T>
+void PoolVector<T>::sort() {
+	int len = size();
+	if (len == 0) {
+		return;
+	}
+
+	Write w = write();
+	SortArray<T> sorter;
+	sorter.sort(w.ptr(), len);
 }
 
 #endif // POOL_VECTOR_H

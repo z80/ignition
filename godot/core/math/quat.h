@@ -36,7 +36,7 @@
 #include "core/math/vector3.h"
 #include "core/ustring.h"
 
-class Quat {
+class _NO_DISCARD_CLASS_ Quat {
 public:
 	real_t x, y, z, w;
 
@@ -127,7 +127,7 @@ public:
 			w(p_q.w) {
 	}
 
-	Quat operator=(const Quat &p_q) {
+	Quat &operator=(const Quat &p_q) {
 		x = p_q.x;
 		y = p_q.y;
 		z = p_q.z;
@@ -140,19 +140,19 @@ public:
 		Vector3 c = v0.cross(v1);
 		real_t d = v0.dot(v1);
 
-		if (d < -1.0 + CMP_EPSILON) {
+		if (d < -1 + (real_t)CMP_EPSILON) {
 			x = 0;
 			y = 1;
 			z = 0;
 			w = 0;
 		} else {
-			real_t s = Math::sqrt((1.0 + d) * 2.0);
-			real_t rs = 1.0 / s;
+			real_t s = Math::sqrt((1 + d) * 2);
+			real_t rs = 1 / s;
 
 			x = c.x * rs;
 			y = c.y * rs;
 			z = c.z * rs;
-			w = s * 0.5;
+			w = s * 0.5f;
 		}
 	}
 
@@ -194,7 +194,7 @@ void Quat::operator*=(const real_t &s) {
 }
 
 void Quat::operator/=(const real_t &s) {
-	*this *= 1.0 / s;
+	*this *= 1 / s;
 }
 
 Quat Quat::operator+(const Quat &q2) const {
@@ -217,7 +217,7 @@ Quat Quat::operator*(const real_t &s) const {
 }
 
 Quat Quat::operator/(const real_t &s) const {
-	return *this * (1.0 / s);
+	return *this * (1 / s);
 }
 
 bool Quat::operator==(const Quat &p_quat) const {
@@ -228,4 +228,4 @@ bool Quat::operator!=(const Quat &p_quat) const {
 	return x != p_quat.x || y != p_quat.y || z != p_quat.z || w != p_quat.w;
 }
 
-#endif
+#endif // QUAT_H

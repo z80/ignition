@@ -76,6 +76,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 	EditorLineEditFileChooser *autoload_add_path;
 	LineEdit *autoload_add_name;
 	Button *add_autoload;
+	Label *error_message;
 
 	bool _autoload_name_is_valid(const String &p_name, String *r_error = nullptr);
 
@@ -108,4 +109,4 @@ public:
 	~EditorAutoloadSettings();
 };
 
-#endif
+#endif // EDITOR_AUTOLOAD_SETTINGS_H

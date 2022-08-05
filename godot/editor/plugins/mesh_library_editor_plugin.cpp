@@ -34,7 +34,7 @@
 #include "editor/editor_settings.h"
 #include "main/main.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/3d/navigation_mesh.h"
+#include "scene/3d/navigation_mesh_instance.h"
 #include "scene/3d/physics_body.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
@@ -274,7 +274,7 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	menu = memnew(MenuButton);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(menu);
 	menu->set_position(Point2(1, 1));
-	menu->set_text(TTR("Mesh Library"));
+	menu->set_text(TTR("MeshLibrary"));
 	menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MeshLibrary", "EditorIcons"));
 	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
@@ -292,9 +292,9 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	cd_remove->get_ok()->connect("pressed", this, "_menu_remove_confirm");
 	cd_update = memnew(ConfirmationDialog);
 	add_child(cd_update);
-	cd_update->get_ok()->set_text("Apply without Transforms");
+	cd_update->get_ok()->set_text(TTR("Apply without Transforms"));
 	cd_update->get_ok()->connect("pressed", this, "_menu_update_confirm", varray(false));
-	cd_update->add_button("Apply with Transforms")->connect("pressed", this, "_menu_update_confirm", varray(true));
+	cd_update->add_button(TTR("Apply with Transforms"))->connect("pressed", this, "_menu_update_confirm", varray(true));
 }
 
 void MeshLibraryEditorPlugin::edit(Object *p_node) {
@@ -321,7 +321,6 @@ void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
 }
 
 MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
-	EDITOR_DEF("editors/grid_map/preview_size", 64);
 	mesh_library_editor = memnew(MeshLibraryEditor(p_node));
 
 	p_node->get_viewport()->add_child(mesh_library_editor);

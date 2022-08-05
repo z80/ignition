@@ -36,7 +36,7 @@
 
 class Basis;
 
-struct Vector3 {
+struct _NO_DISCARD_CLASS_ Vector3 {
 	static const int AXIS_COUNT = 3;
 
 	enum Axis {
@@ -56,10 +56,12 @@ struct Vector3 {
 	};
 
 	_FORCE_INLINE_ const real_t &operator[](int p_axis) const {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
 	_FORCE_INLINE_ real_t &operator[](int p_axis) {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
@@ -85,14 +87,15 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 normalized() const;
 	_FORCE_INLINE_ bool is_normalized() const;
 	_FORCE_INLINE_ Vector3 inverse() const;
+	Vector3 limit_length(const real_t p_len = 1.0) const;
 
 	_FORCE_INLINE_ void zero();
 
 	void snap(Vector3 p_val);
 	Vector3 snapped(Vector3 p_val) const;
 
-	void rotate(const Vector3 &p_axis, real_t p_phi);
-	Vector3 rotated(const Vector3 &p_axis, real_t p_phi) const;
+	void rotate(const Vector3 &p_axis, real_t p_angle);
+	Vector3 rotated(const Vector3 &p_axis, real_t p_angle) const;
 
 	/* Static Methods between 2 vector3s */
 
@@ -426,7 +429,7 @@ bool Vector3::is_normalized() const {
 }
 
 Vector3 Vector3::inverse() const {
-	return Vector3(1.0 / x, 1.0 / y, 1.0 / z);
+	return Vector3(1 / x, 1 / y, 1 / z);
 }
 
 void Vector3::zero() {
@@ -449,7 +452,7 @@ Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 must be normalized.");
 #endif
-	return 2.0 * p_normal * this->dot(p_normal) - *this;
+	return 2 * p_normal * this->dot(p_normal) - *this;
 }
 
 bool Vector3::is_equal_approx(const Vector3 &p_v, real_t p_tolerance) const {

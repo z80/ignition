@@ -929,6 +929,7 @@ void AudioServer::init_channels_and_buffers() {
 		for (int j = 0; j < channel_count; j++) {
 			buses.write[i]->channels.write[j].buffer.resize(buffer_size);
 		}
+		_update_bus_effects(i);
 	}
 }
 
@@ -1325,6 +1326,10 @@ void AudioServer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_count"), "set_bus_count", "get_bus_count");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "device"), "set_device", "get_device");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "capture_device"), "capture_set_device", "capture_get_device");
+	// The default value may be set to an empty string by the platform-specific audio driver.
+	// Override for class reference generation purposes.
+	ADD_PROPERTY_DEFAULT("capture_device", "Default");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_rate_scale"), "set_global_rate_scale", "get_global_rate_scale");
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));

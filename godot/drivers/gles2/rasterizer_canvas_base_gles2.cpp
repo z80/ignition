@@ -196,7 +196,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture
 
 		} else {
 			if (texture->redraw_if_visible) {
-				VisualServerRaster::redraw_request();
+				VisualServerRaster::redraw_request(false);
 			}
 
 			texture = texture->get_ptr();
@@ -236,7 +236,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture
 
 		} else {
 			if (normal_map->redraw_if_visible) { //check before proxy, because this is usually used with proxies
-				VisualServerRaster::redraw_request();
+				VisualServerRaster::redraw_request(false);
 			}
 
 			normal_map = normal_map->get_ptr();
@@ -672,7 +672,7 @@ void RasterizerCanvasBaseGLES2::_draw_gui_primitive(int p_points, const Vector2 
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
-	storage->buffer_orphan_and_upload(data.polygon_buffer_size, 0, p_points * stride * 4 * sizeof(float), buffer_data, GL_ARRAY_BUFFER, _buffer_upload_usage_flag, true);
+	storage->buffer_orphan_and_upload(data.polygon_buffer_size, 0, p_points * stride * sizeof(float), buffer_data, GL_ARRAY_BUFFER, _buffer_upload_usage_flag, true);
 
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, stride * sizeof(float), nullptr);
 

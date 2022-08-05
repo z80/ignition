@@ -132,11 +132,6 @@ public:
 		JOYPADS_MAX = 16,
 	};
 
-	struct JoyAxis {
-		int min;
-		float value;
-	};
-
 private:
 	enum JoyType {
 		TYPE_BUTTON,
@@ -202,7 +197,6 @@ private:
 	JoystickList _get_output_axis(String output);
 	void _button_event(int p_device, int p_index, bool p_pressed);
 	void _axis_event(int p_device, int p_axis, float p_value);
-	float _handle_deadzone(int p_device, int p_axis, float p_value);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
@@ -238,7 +232,6 @@ public:
 	virtual float get_joy_vibration_duration(int p_device);
 	virtual uint64_t get_joy_vibration_timestamp(int p_device);
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
-	void parse_joypad_mapping(String p_mapping, bool p_update_existing);
 
 	virtual Vector3 get_gravity() const;
 	virtual Vector3 get_accelerometer() const;
@@ -286,7 +279,7 @@ public:
 
 	void parse_mapping(String p_mapping);
 	void joy_button(int p_device, int p_button, bool p_pressed);
-	void joy_axis(int p_device, int p_axis, const JoyAxis &p_value);
+	void joy_axis(int p_device, int p_axis, float p_value);
 	void joy_hat(int p_device, int p_val);
 
 	virtual void add_joy_mapping(String p_mapping, bool p_update_existing = false);
@@ -308,6 +301,7 @@ public:
 	virtual void flush_buffered_events();
 	virtual bool is_using_input_buffering();
 	virtual void set_use_input_buffering(bool p_enable);
+	virtual bool is_using_accumulated_input();
 	virtual void set_use_accumulated_input(bool p_enable);
 
 	virtual void release_pressed_events();

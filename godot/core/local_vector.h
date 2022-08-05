@@ -33,12 +33,15 @@
 
 #include "core/error_macros.h"
 #include "core/os/memory.h"
+#include "core/pool_vector.h"
 #include "core/sort_array.h"
 #include "core/vector.h"
 
+#include <type_traits>
+
 template <class T, class U = uint32_t, bool force_trivial = false>
 class LocalVector {
-private:
+protected:
 	U count = 0;
 	U capacity = 0;
 	T *data = nullptr;
@@ -63,7 +66,7 @@ public:
 			CRASH_COND_MSG(!data, "Out of memory");
 		}
 
-		if (!__has_trivial_constructor(T) && !force_trivial) {
+		if (!std::is_trivially_constructible<T>::value && !force_trivial) {
 			memnew_placement(&data[count++], T(p_elem));
 		} else {
 			data[count++] = p_elem;
@@ -76,7 +79,7 @@ public:
 		for (U i = p_index; i < count; i++) {
 			data[i] = data[i + 1];
 		}
-		if (!__has_trivial_destructor(T) && !force_trivial) {
+		if (!std::is_trivially_destructible<T>::value && !force_trivial) {
 			data[count].~T();
 		}
 	}
@@ -89,7 +92,7 @@ public:
 		if (count > p_index) {
 			data[p_index] = data[count];
 		}
-		if (!__has_trivial_destructor(T) && !force_trivial) {
+		if (!std::is_trivially_destructible<T>::value && !force_trivial) {
 			data[count].~T();
 		}
 	}
@@ -99,6 +102,22 @@ public:
 		if (idx >= 0) {
 			remove(idx);
 		}
+	}
+
+	U erase_multiple_unordered(const T &p_val) {
+		U from = 0;
+		U count = 0;
+		while (true) {
+			int64_t idx = find(p_val, from);
+
+			if (idx == -1) {
+				break;
+			}
+			remove_unordered(idx);
+			from = idx;
+			count++;
+		}
+		return count;
 	}
 
 	void invert() {
@@ -129,7 +148,7 @@ public:
 	_FORCE_INLINE_ U size() const { return count; }
 	void resize(U p_size) {
 		if (p_size < count) {
-			if (!__has_trivial_destructor(T) && !force_trivial) {
+			if (!std::is_trivially_destructible<T>::value && !force_trivial) {
 				for (U i = p_size; i < count; i++) {
 					data[i].~T();
 				}
@@ -146,7 +165,7 @@ public:
 				data = (T *)memrealloc(data, capacity * sizeof(T));
 				CRASH_COND_MSG(!data, "Out of memory");
 			}
-			if (!__has_trivial_constructor(T) && !force_trivial) {
+			if (!std::is_trivially_constructible<T>::value && !force_trivial) {
 				for (U i = count; i < p_size; i++) {
 					memnew_placement(&data[i], T);
 				}
@@ -161,6 +180,12 @@ public:
 	_FORCE_INLINE_ T &operator[](U p_index) {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
 		return data[p_index];
+	}
+
+	void fill(T p_val) {
+		for (U i = 0; i < count; i++) {
+			data[i] = p_val;
+		}
 	}
 
 	void insert(U p_pos, T p_val) {
@@ -218,6 +243,17 @@ public:
 		return ret;
 	}
 
+	operator PoolVector<T>() const {
+		PoolVector<T> pl;
+		if (size()) {
+			pl.resize(size());
+			typename PoolVector<T>::Write w = pl.write();
+			T *dest = w.ptr();
+			memcpy(dest, data, sizeof(T) * count);
+		}
+		return pl;
+	}
+
 	Vector<uint8_t> to_byte_array() const { //useful to pass stuff to gpu or variant
 		Vector<uint8_t> ret;
 		ret.resize(count * sizeof(T));
@@ -231,6 +267,19 @@ public:
 		resize(p_from.size());
 		for (U i = 0; i < p_from.count; i++) {
 			data[i] = p_from.data[i];
+		}
+	}
+	LocalVector(const Vector<T> &p_from) {
+		resize(p_from.size());
+		for (U i = 0; i < count; i++) {
+			data[i] = p_from[i];
+		}
+	}
+	LocalVector(const PoolVector<T> &p_from) {
+		resize(p_from.size());
+		typename PoolVector<T>::Read r = p_from.read();
+		for (U i = 0; i < count; i++) {
+			data[i] = r[i];
 		}
 	}
 	inline LocalVector &operator=(const LocalVector &p_from) {
@@ -247,12 +296,25 @@ public:
 		}
 		return *this;
 	}
+	inline LocalVector &operator=(const PoolVector<T> &p_from) {
+		resize(p_from.size());
+		typename PoolVector<T>::Read r = p_from.read();
+		for (U i = 0; i < count; i++) {
+			data[i] = r[i];
+		}
+		return *this;
+	}
 
 	_FORCE_INLINE_ ~LocalVector() {
 		if (data) {
 			reset();
 		}
 	}
+};
+
+// Integer default version
+template <class T, class I = int32_t, bool force_trivial = false>
+class LocalVectori : public LocalVector<T, I, force_trivial> {
 };
 
 #endif // LOCAL_VECTOR_H

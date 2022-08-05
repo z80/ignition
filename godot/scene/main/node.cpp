@@ -35,6 +35,7 @@
 #include "core/message_queue.h"
 #include "core/print_string.h"
 #include "instance_placeholder.h"
+#include "scene/animation/scene_tree_tween.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 #include "viewport.h"
@@ -44,6 +45,7 @@
 #endif
 
 VARIANT_ENUM_CAST(Node::PauseMode);
+VARIANT_ENUM_CAST(Node::PhysicsInterpolationMode);
 
 int Node::orphan_node_count = 0;
 
@@ -76,6 +78,14 @@ void Node::_notification(int p_notification) {
 				}
 			} else {
 				data.pause_owner = this;
+			}
+
+			if (data.physics_interpolation_mode == PHYSICS_INTERPOLATION_MODE_INHERIT) {
+				bool interpolate = true; // Root node default is for interpolation to be on
+				if (data.parent) {
+					interpolate = data.parent->is_physics_interpolated();
+				}
+				_propagate_physics_interpolated(interpolate);
 			}
 
 			if (data.input) {
@@ -151,12 +161,6 @@ void Node::_notification(int p_notification) {
 			data.in_constructor = false;
 		} break;
 		case NOTIFICATION_PREDELETE: {
-			set_owner(nullptr);
-
-			while (data.owned.size()) {
-				data.owned.front()->get()->set_owner(nullptr);
-			}
-
 			if (data.parent) {
 				data.parent->remove_child(this);
 			}
@@ -164,10 +168,8 @@ void Node::_notification(int p_notification) {
 			// kill children as cleanly as possible
 			while (data.children.size()) {
 				Node *child = data.children[data.children.size() - 1]; //begin from the end because its faster and more consistent with creation
-				remove_child(child);
 				memdelete(child);
 			}
-
 		} break;
 	}
 }
@@ -187,6 +189,48 @@ void Node::_propagate_ready() {
 		notification(NOTIFICATION_READY);
 		emit_signal(SceneStringNames::get_singleton()->ready);
 	}
+}
+
+void Node::_propagate_physics_interpolated(bool p_interpolated) {
+	switch (data.physics_interpolation_mode) {
+		case PHYSICS_INTERPOLATION_MODE_INHERIT:
+			// keep the parent p_interpolated
+			break;
+		case PHYSICS_INTERPOLATION_MODE_OFF: {
+			p_interpolated = false;
+		} break;
+		case PHYSICS_INTERPOLATION_MODE_ON: {
+			p_interpolated = true;
+		} break;
+	}
+
+	// no change? no need to propagate further
+	if (data.physics_interpolated == p_interpolated) {
+		return;
+	}
+
+	data.physics_interpolated = p_interpolated;
+
+	// allow a call to the VisualServer etc in derived classes
+	_physics_interpolated_changed();
+
+	data.blocked++;
+	for (int i = 0; i < data.children.size(); i++) {
+		data.children[i]->_propagate_physics_interpolated(p_interpolated);
+	}
+	data.blocked--;
+}
+
+void Node::_propagate_physics_interpolation_reset_requested() {
+	if (is_physics_interpolated()) {
+		data.physics_interpolation_reset_requested = true;
+	}
+
+	data.blocked++;
+	for (int i = 0; i < data.children.size(); i++) {
+		data.children[i]->_propagate_physics_interpolation_reset_requested();
+	}
+	data.blocked--;
 }
 
 void Node::_propagate_enter_tree() {
@@ -220,6 +264,12 @@ void Node::_propagate_enter_tree() {
 
 	data.tree->node_added(this);
 
+	if (data.parent) {
+		Variant c = this;
+		const Variant *cptr = &c;
+		data.parent->emit_signal(SceneStringNames::get_singleton()->child_entered_tree, &cptr, 1);
+	}
+
 	data.blocked++;
 	//block while adding children
 
@@ -241,13 +291,39 @@ void Node::_propagate_enter_tree() {
 	// enter groups
 }
 
-void Node::_propagate_after_exit_tree() {
+void Node::_propagate_after_exit_branch(bool p_exiting_tree) {
+	// Clear owner if it was not part of the pruned branch
+	if (data.owner) {
+		bool found = false;
+		Node *parent = data.parent;
+
+		while (parent) {
+			if (parent == data.owner) {
+				found = true;
+				break;
+			}
+
+			parent = parent->data.parent;
+		}
+
+		if (!found) {
+			if (data.unique_name_in_owner) {
+				_release_unique_name_in_owner();
+			}
+			data.owner->data.owned.erase(data.OW);
+			data.owner = nullptr;
+		}
+	}
+
 	data.blocked++;
 	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->_propagate_after_exit_tree();
+		data.children[i]->_propagate_after_exit_branch(p_exiting_tree);
 	}
 	data.blocked--;
-	emit_signal(SceneStringNames::get_singleton()->tree_exited);
+
+	if (p_exiting_tree) {
+		emit_signal(SceneStringNames::get_singleton()->tree_exited);
+	}
 }
 
 void Node::_propagate_exit_tree() {
@@ -290,6 +366,12 @@ void Node::_propagate_exit_tree() {
 	notification(NOTIFICATION_EXIT_TREE, true);
 	if (data.tree) {
 		data.tree->node_removed(this);
+	}
+
+	if (data.parent) {
+		Variant c = this;
+		const Variant *cptr = &c;
+		data.parent->emit_signal(SceneStringNames::get_singleton()->child_exiting_tree, &cptr, 1);
 	}
 
 	// exit groups
@@ -375,6 +457,11 @@ void Node::remove_child_notify(Node *p_child) {
 void Node::move_child_notify(Node *p_child) {
 	// to be used when not wanted
 }
+
+void Node::owner_changed_notify() {
+}
+
+void Node::_physics_interpolated_changed() {}
 
 void Node::set_physics_process(bool p_process) {
 	if (data.physics_process == p_process) {
@@ -754,6 +841,44 @@ bool Node::can_process() const {
 	return true;
 }
 
+void Node::set_physics_interpolation_mode(PhysicsInterpolationMode p_mode) {
+	if (data.physics_interpolation_mode == p_mode) {
+		return;
+	}
+
+	data.physics_interpolation_mode = p_mode;
+
+	bool interpolate = true; // default for root node
+
+	switch (p_mode) {
+		case PHYSICS_INTERPOLATION_MODE_INHERIT: {
+			if (is_inside_tree() && data.parent) {
+				interpolate = data.parent->is_physics_interpolated();
+			}
+		} break;
+		case PHYSICS_INTERPOLATION_MODE_OFF: {
+			interpolate = false;
+		} break;
+		case PHYSICS_INTERPOLATION_MODE_ON: {
+			interpolate = true;
+		} break;
+	}
+
+	// if swapping from interpolated to non-interpolated, use this as
+	// an extra means to cause a reset
+	if (is_physics_interpolated() && !interpolate) {
+		reset_physics_interpolation();
+	}
+
+	_propagate_physics_interpolated(interpolate);
+}
+
+void Node::reset_physics_interpolation() {
+	if (is_physics_interpolated_and_enabled()) {
+		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+	}
+}
+
 float Node::get_physics_process_delta_time() const {
 	if (data.tree) {
 		return data.tree->get_physics_process_time();
@@ -900,6 +1025,18 @@ bool Node::is_processing_unhandled_key_input() const {
 	return data.unhandled_key_input;
 }
 
+void Node::_set_physics_interpolated_client_side(bool p_enable) {
+	data.physics_interpolated_client_side = p_enable;
+}
+
+void Node::_set_physics_interpolation_reset_requested(bool p_enable) {
+	data.physics_interpolation_reset_requested = p_enable;
+}
+
+void Node::_set_use_identity_transform(bool p_enable) {
+	data.use_identity_transform = p_enable;
+}
+
 StringName Node::get_name() const {
 	return data.name;
 }
@@ -912,10 +1049,18 @@ void Node::set_name(const String &p_name) {
 	String name = p_name.validate_node_name();
 
 	ERR_FAIL_COND(name == "");
+
+	if (data.unique_name_in_owner && data.owner) {
+		_release_unique_name_in_owner();
+	}
 	data.name = name;
 
 	if (data.parent) {
 		data.parent->_validate_child_name(this);
+	}
+
+	if (data.unique_name_in_owner && data.owner) {
+		_acquire_unique_name_in_owner();
 	}
 
 	propagate_notification(NOTIFICATION_PATH_CHANGED);
@@ -1123,6 +1268,12 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	//recognize children created in this node constructor
 	p_child->data.parent_owned = data.in_constructor;
 	add_child_notify(p_child);
+
+	// Allow physics interpolated nodes to automatically reset when added to the tree
+	// (this is to save the user doing this manually each time)
+	if (is_inside_tree() && get_tree()->is_physics_interpolation_enabled()) {
+		p_child->_propagate_physics_interpolation_reset_requested();
+	}
 }
 
 void Node::add_child(Node *p_child, bool p_legible_unique_name) {
@@ -1150,31 +1301,6 @@ void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_uniq
 		move_child(p_child, p_node->get_position_in_parent() + 1);
 	} else {
 		WARN_PRINT("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent.");
-	}
-}
-
-void Node::_propagate_validate_owner() {
-	if (data.owner) {
-		bool found = false;
-		Node *parent = data.parent;
-
-		while (parent) {
-			if (parent == data.owner) {
-				found = true;
-				break;
-			}
-
-			parent = parent->data.parent;
-		}
-
-		if (!found) {
-			data.owner->data.owned.erase(data.OW);
-			data.owner = nullptr;
-		}
-	}
-
-	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->_propagate_validate_owner();
 	}
 }
 
@@ -1226,12 +1352,7 @@ void Node::remove_child(Node *p_child) {
 	p_child->data.parent = nullptr;
 	p_child->data.pos = -1;
 
-	// validate owner
-	p_child->_propagate_validate_owner();
-
-	if (data.inside_tree) {
-		p_child->_propagate_after_exit_tree();
-	}
+	p_child->_propagate_after_exit_branch(data.inside_tree);
 }
 
 int Node::get_child_count() const {
@@ -1295,6 +1416,24 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 				next = root;
 			}
 
+		} else if (name.is_node_unique_name()) {
+			if (current->data.owned_unique_nodes.size()) {
+				// Has unique nodes in ownership
+				Node **unique = current->data.owned_unique_nodes.getptr(name);
+				if (!unique) {
+					return nullptr;
+				}
+				next = *unique;
+			} else if (current->data.owner) {
+				Node **unique = current->data.owner->data.owned_unique_nodes.getptr(name);
+				if (!unique) {
+					return nullptr;
+				}
+				next = *unique;
+			} else {
+				return nullptr;
+			}
+
 		} else {
 			next = nullptr;
 
@@ -1318,12 +1457,14 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 
 Node *Node::get_node(const NodePath &p_path) const {
 	Node *node = get_node_or_null(p_path);
-	if (p_path.is_absolute()) {
-		ERR_FAIL_COND_V_MSG(!node, nullptr,
-				vformat("(Node not found: \"%s\" (absolute path attempted from \"%s\").)", p_path, get_path()));
-	} else {
-		ERR_FAIL_COND_V_MSG(!node, nullptr,
-				vformat("(Node not found: \"%s\" (relative to \"%s\").)", p_path, get_path()));
+	if (unlikely(!node)) {
+		if (p_path.is_absolute()) {
+			ERR_FAIL_V_MSG(nullptr,
+					vformat("(Node not found: \"%s\" (absolute path attempted from \"%s\").)", p_path, get_path()));
+		} else {
+			ERR_FAIL_V_MSG(nullptr,
+					vformat("(Node not found: \"%s\" (relative to \"%s\").)", p_path, get_path()));
+		}
 	}
 
 	return node;
@@ -1467,10 +1608,58 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 	data.owner = p_owner;
 	data.owner->data.owned.push_back(this);
 	data.OW = data.owner->data.owned.back();
+
+	owner_changed_notify();
+}
+
+void Node::_release_unique_name_in_owner() {
+	ERR_FAIL_NULL(data.owner); // Sanity check.
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
+	if (which == nullptr || *which != this) {
+		return; // Ignore.
+	}
+	data.owner->data.owned_unique_nodes.erase(key);
+}
+
+void Node::_acquire_unique_name_in_owner() {
+	ERR_FAIL_NULL(data.owner); // Sanity check.
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
+	if (which != nullptr && *which != this) {
+		WARN_PRINT(vformat(RTR("Setting node name '%s' to be unique within scene for '%s', but it's already claimed by '%s'. This node is no longer set unique."), get_name(), is_inside_tree() ? get_path() : data.owner->get_path_to(this), is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which)));
+		data.unique_name_in_owner = false;
+		return;
+	}
+	data.owner->data.owned_unique_nodes[key] = this;
+}
+
+void Node::set_unique_name_in_owner(bool p_enabled) {
+	if (data.unique_name_in_owner == p_enabled) {
+		return;
+	}
+
+	if (data.unique_name_in_owner && data.owner != nullptr) {
+		_release_unique_name_in_owner();
+	}
+	data.unique_name_in_owner = p_enabled;
+
+	if (data.unique_name_in_owner && data.owner != nullptr) {
+		_acquire_unique_name_in_owner();
+	}
+
+	update_configuration_warning();
+}
+
+bool Node::is_unique_name_in_owner() const {
+	return data.unique_name_in_owner;
 }
 
 void Node::set_owner(Node *p_owner) {
 	if (data.owner) {
+		if (data.unique_name_in_owner) {
+			_release_unique_name_in_owner();
+		}
 		data.owner->data.owned.erase(data.OW);
 		data.OW = nullptr;
 		data.owner = nullptr;
@@ -1497,6 +1686,10 @@ void Node::set_owner(Node *p_owner) {
 	ERR_FAIL_COND(!owner_valid);
 
 	_set_owner_nocheck(p_owner);
+
+	if (data.unique_name_in_owner) {
+		_acquire_unique_name_in_owner();
+	}
 }
 Node *Node::get_owner() const {
 	return data.owner;
@@ -1772,6 +1965,14 @@ void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 int Node::get_index() const {
 	return data.pos;
 }
+
+Ref<SceneTreeTween> Node::create_tween() {
+	ERR_FAIL_COND_V_MSG(!data.tree, nullptr, "Can't create SceneTreeTween when not inside scene tree.");
+	Ref<SceneTreeTween> tween = get_tree()->create_tween();
+	tween->bind_node(this);
+	return tween;
+}
+
 void Node::remove_and_skip() {
 	ERR_FAIL_COND(!data.parent);
 
@@ -1864,6 +2065,56 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	}
 
 	return node;
+}
+
+#ifdef TOOLS_ENABLED
+void Node::set_property_pinned(const StringName &p_property, bool p_pinned) {
+	bool current_pinned = false;
+	bool has_pinned = has_meta("_edit_pinned_properties_");
+	Array pinned;
+	String psa = get_property_store_alias(p_property);
+	if (has_pinned) {
+		pinned = get_meta("_edit_pinned_properties_");
+		current_pinned = pinned.has(psa);
+	}
+
+	if (current_pinned != p_pinned) {
+		if (p_pinned) {
+			pinned.append(psa);
+			if (!has_pinned) {
+				set_meta("_edit_pinned_properties_", pinned);
+			}
+		} else {
+			pinned.erase(psa);
+			if (pinned.empty()) {
+				remove_meta("_edit_pinned_properties_");
+			}
+		}
+	}
+}
+
+bool Node::is_property_pinned(const StringName &p_property) const {
+	if (!has_meta("_edit_pinned_properties_")) {
+		return false;
+	}
+	Array pinned = get_meta("_edit_pinned_properties_");
+	String psa = get_property_store_alias(p_property);
+	return pinned.has(psa);
+}
+
+StringName Node::get_property_store_alias(const StringName &p_property) const {
+	return p_property;
+}
+#endif
+
+void Node::get_storable_properties(Set<StringName> &r_storable_properties) const {
+	List<PropertyInfo> pi;
+	get_property_list(&pi);
+	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
+		if ((E->get().usage & PROPERTY_USAGE_STORAGE)) {
+			r_storable_properties.insert(E->get().name);
+		}
+	}
 }
 
 String Node::to_string() {
@@ -2591,7 +2842,16 @@ static void _Node_debug_sn(Object *p_obj) {
 	} else {
 		path = String(p->get_name()) + "/" + p->get_path_to(n);
 	}
-	print_line(itos(p_obj->get_instance_id()) + " - Stray Node: " + path + " (Type: " + n->get_class() + ")");
+
+	String script_file_string;
+	if (!n->get_script().is_null()) {
+		Ref<Script> script = n->get_script();
+		if (script.is_valid()) {
+			script_file_string = ", Script: " + script->get_path();
+		}
+	}
+
+	print_line(itos(p_obj->get_instance_id()) + " - Stray Node: " + path + " (Type: " + n->get_class() + script_file_string + ")");
 }
 #endif // DEBUG_ENABLED
 
@@ -2640,7 +2900,7 @@ NodePath Node::get_import_path() const {
 
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 #ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 #else
 	const String quote_style = "\"";
 #endif
@@ -2779,7 +3039,14 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_process_internal", "enable"), &Node::set_physics_process_internal);
 	ClassDB::bind_method(D_METHOD("is_physics_processing_internal"), &Node::is_physics_processing_internal);
 
+	ClassDB::bind_method(D_METHOD("set_physics_interpolation_mode", "mode"), &Node::set_physics_interpolation_mode);
+	ClassDB::bind_method(D_METHOD("get_physics_interpolation_mode"), &Node::get_physics_interpolation_mode);
+	ClassDB::bind_method(D_METHOD("is_physics_interpolated"), &Node::is_physics_interpolated);
+	ClassDB::bind_method(D_METHOD("is_physics_interpolated_and_enabled"), &Node::is_physics_interpolated_and_enabled);
+	ClassDB::bind_method(D_METHOD("reset_physics_interpolation"), &Node::reset_physics_interpolation);
+
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
+	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_USE_INSTANCING | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
 	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_data"), &Node::replace_by, DEFVAL(false));
@@ -2811,6 +3078,12 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
+
+#ifdef TOOLS_ENABLED
+	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
+#endif
+	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
+	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
 
 	{
 		MethodInfo mi;
@@ -2854,6 +3127,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
+	BIND_CONSTANT(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 
 	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_EXIT);
@@ -2874,6 +3148,10 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(PAUSE_MODE_STOP);
 	BIND_ENUM_CONSTANT(PAUSE_MODE_PROCESS);
 
+	BIND_ENUM_CONSTANT(PHYSICS_INTERPOLATION_MODE_INHERIT);
+	BIND_ENUM_CONSTANT(PHYSICS_INTERPOLATION_MODE_OFF);
+	BIND_ENUM_CONSTANT(PHYSICS_INTERPOLATION_MODE_ON);
+
 	BIND_ENUM_CONSTANT(DUPLICATE_SIGNALS);
 	BIND_ENUM_CONSTANT(DUPLICATE_GROUPS);
 	BIND_ENUM_CONSTANT(DUPLICATE_SCRIPTS);
@@ -2884,8 +3162,12 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_entered"));
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
+	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("child_exiting_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_mode", PROPERTY_HINT_ENUM, "Inherit,Off,On"), "set_physics_interpolation_mode", "get_physics_interpolation_mode");
 
 #ifdef ENABLE_DEPRECATED
 	//no longer exists, but remains for compatibility (keep previous scenes folded
@@ -2893,6 +3175,7 @@ void Node::_bind_methods() {
 #endif
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "filename", PROPERTY_HINT_NONE, "", 0), "set_filename", "get_filename");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer");
@@ -2937,6 +3220,10 @@ Node::Node() {
 	data.idle_process_internal = false;
 	data.inside_tree = false;
 	data.ready_notified = false;
+	data.physics_interpolated = true;
+	data.physics_interpolation_reset_requested = false;
+	data.physics_interpolated_client_side = false;
+	data.use_identity_transform = false;
 
 	data.owner = nullptr;
 	data.OW = nullptr;
@@ -2944,6 +3231,7 @@ Node::Node() {
 	data.unhandled_input = false;
 	data.unhandled_key_input = false;
 	data.pause_mode = PAUSE_MODE_INHERIT;
+	data.physics_interpolation_mode = PHYSICS_INTERPOLATION_MODE_INHERIT;
 	data.pause_owner = nullptr;
 	data.network_master = 1; //server by default
 	data.path_cache = nullptr;

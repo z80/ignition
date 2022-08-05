@@ -243,6 +243,7 @@ public:
 
 private:
 	int index;
+	bool _project_settings_change_pending;
 	ViewType view_type;
 	void _menu_option(int p_option);
 	void _set_auto_orthogonal();
@@ -284,6 +285,7 @@ private:
 
 	VBoxContainer *top_right_vbox;
 	ViewportRotationControl *rotation_control;
+	Gradient *frame_time_gradient;
 	Label *fps_label;
 
 	struct _RayResult {
@@ -326,6 +328,7 @@ private:
 	Vector<_RayResult> selection_results;
 	bool clicked_includes_current;
 	bool clicked_wants_append;
+	bool selection_in_progress = false;
 
 	PopupMenu *selection_menu;
 
@@ -378,7 +381,7 @@ private:
 
 	struct Cursor {
 		Vector3 pos;
-		float x_rot, y_rot, distance;
+		float x_rot, y_rot, distance, fov_scale;
 		Vector3 eye_pos; // Used in freelook mode
 		bool region_select;
 		Point2 region_begin, region_end;
@@ -388,6 +391,7 @@ private:
 			x_rot = 0.5;
 			y_rot = -0.5;
 			distance = 4;
+			fov_scale = 1.0;
 			region_select = false;
 		}
 	};
@@ -396,6 +400,8 @@ private:
 	Cursor cursor; // Immediate cursor
 	Cursor camera_cursor; // That one may be interpolated (don't modify this one except for smoothing purposes)
 
+	void scale_fov(real_t p_fov_offset);
+	void reset_fov();
 	void scale_cursor_distance(real_t scale);
 
 	void set_freelook_active(bool active_now);
@@ -412,7 +418,7 @@ private:
 
 	void set_message(String p_message, float p_time = 5);
 
-	//
+	void _view_settings_confirmed(float p_interp_delta);
 	void _update_camera(float p_interp_delta);
 	Transform to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
@@ -455,6 +461,8 @@ private:
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	void _project_settings_changed();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -480,6 +488,7 @@ public:
 	Camera *get_camera() { return camera; } // return the default camera object.
 
 	SpatialEditorViewport(SpatialEditor *p_spatial_editor, EditorNode *p_editor, int p_index);
+	~SpatialEditorViewport();
 };
 
 class SpatialEditorSelectedItem : public Object {
@@ -581,7 +590,8 @@ private:
 	SpatialEditorViewportContainer *viewport_base;
 	SpatialEditorViewport *viewports[VIEWPORTS_COUNT];
 	VSplitContainer *shader_split;
-	HSplitContainer *palette_split;
+	HSplitContainer *left_panel_split;
+	HSplitContainer *right_panel_split;
 
 	/////
 
@@ -741,8 +751,6 @@ private:
 
 	void _register_all_gizmos();
 
-	SpatialEditor();
-
 	bool is_any_freelook_active() const;
 
 	void _refresh_menu_icons();
@@ -800,8 +808,16 @@ public:
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);
 
+	void add_control_to_left_panel(Control *p_control);
+	void remove_control_from_left_panel(Control *p_control);
+
+	void add_control_to_right_panel(Control *p_control);
+	void remove_control_from_right_panel(Control *p_control);
+
+	void move_control_to_left_panel(Control *p_control);
+	void move_control_to_right_panel(Control *p_control);
+
 	VSplitContainer *get_shader_split();
-	HSplitContainer *get_palette_split();
 
 	Spatial *get_selected() { return selected; }
 
@@ -901,4 +917,4 @@ public:
 	virtual ~EditorSpatialGizmoPlugin();
 };
 
-#endif
+#endif // SPATIAL_EDITOR_PLUGIN_H

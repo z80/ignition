@@ -60,6 +60,16 @@ Vector<Vector3> ConcavePolygonShape::get_debug_mesh_lines() {
 	return points;
 }
 
+real_t ConcavePolygonShape::get_enclosing_radius() const {
+	PoolVector<Vector3> data = get_faces();
+	PoolVector<Vector3>::Read read = data.read();
+	real_t r = 0;
+	for (int i(0); i < data.size(); i++) {
+		r = MAX(read[i].length_squared(), r);
+	}
+	return Math::sqrt(r);
+}
+
 void ConcavePolygonShape::_update_shape() {
 	Shape::_update_shape();
 }
@@ -81,6 +91,6 @@ void ConcavePolygonShape::_bind_methods() {
 }
 
 ConcavePolygonShape::ConcavePolygonShape() :
-		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONCAVE_POLYGON)) {
+		Shape(RID_PRIME(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONCAVE_POLYGON))) {
 	//set_planes(Vector3(1,1,1));
 }

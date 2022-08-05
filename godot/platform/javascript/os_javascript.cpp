@@ -46,6 +46,7 @@
 #include <png.h>
 #include <stdlib.h>
 
+#include "api/javascript_singleton.h"
 #include "dom_keys.inc"
 #include "godot_js.h"
 
@@ -133,7 +134,6 @@ Size2 OS_JavaScript::get_window_size() const {
 }
 
 void OS_JavaScript::set_window_maximized(bool p_enabled) {
-	WARN_PRINT_ONCE("Maximizing windows is not supported for the HTML5 platform.");
 }
 
 bool OS_JavaScript::is_window_maximized() const {
@@ -316,7 +316,6 @@ void OS_JavaScript::mouse_move_callback(double p_x, double p_y, double p_rel_x, 
 	ev->set_global_position(ev->get_position());
 
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
-	os->input->set_mouse_position(ev->get_position());
 	ev->set_speed(os->input->get_last_mouse_speed());
 
 	os->input->parse_input_event(ev);
@@ -326,7 +325,7 @@ static const char *godot2dom_cursor(OS::CursorShape p_shape) {
 	switch (p_shape) {
 		case OS::CURSOR_ARROW:
 		default:
-			return "auto";
+			return "default";
 		case OS::CURSOR_IBEAM:
 			return "text";
 		case OS::CURSOR_POINTING_HAND:
@@ -334,9 +333,9 @@ static const char *godot2dom_cursor(OS::CursorShape p_shape) {
 		case OS::CURSOR_CROSS:
 			return "crosshair";
 		case OS::CURSOR_WAIT:
-			return "progress";
-		case OS::CURSOR_BUSY:
 			return "wait";
+		case OS::CURSOR_BUSY:
+			return "progress";
 		case OS::CURSOR_DRAG:
 			return "grab";
 		case OS::CURSOR_CAN_DROP:
@@ -597,24 +596,16 @@ void OS_JavaScript::process_joypads() {
 			continue;
 		}
 		for (int b = 0; b < s_btns_num; b++) {
-			float value = s_btns[b];
 			// Buttons 6 and 7 in the standard mapping need to be
 			// axis to be handled as JOY_ANALOG by Godot.
 			if (s_standard && (b == 6 || b == 7)) {
-				InputDefault::JoyAxis joy_axis;
-				joy_axis.min = 0;
-				joy_axis.value = value;
-				int a = b == 6 ? JOY_ANALOG_L2 : JOY_ANALOG_R2;
-				input->joy_axis(idx, a, joy_axis);
+				input->joy_axis(idx, b, s_btns[b]);
 			} else {
-				input->joy_button(idx, b, value);
+				input->joy_button(idx, b, s_btns[b]);
 			}
 		}
 		for (int a = 0; a < s_axes_num; a++) {
-			InputDefault::JoyAxis joy_axis;
-			joy_axis.min = -1;
-			joy_axis.value = s_axes[a];
-			input->joy_axis(idx, a, joy_axis);
+			input->joy_axis(idx, a, s_axes[a]);
 		}
 	}
 }
@@ -890,7 +881,7 @@ void OS_JavaScript::finalize() {
 
 // Miscellaneous
 
-Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	Array args;
 	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
 		args.push_back(E->get());
@@ -907,6 +898,10 @@ Error OS_JavaScript::kill(const ProcessID &p_pid) {
 
 int OS_JavaScript::get_process_id() const {
 	ERR_FAIL_V_MSG(0, "OS::get_process_id() is not available on the HTML5 platform.");
+}
+
+bool OS_JavaScript::is_process_running(const ProcessID &p_pid) const {
+	return false;
 }
 
 int OS_JavaScript::get_processor_count() const {
@@ -997,6 +992,10 @@ bool OS_JavaScript::can_draw() const {
 	return true; // Always?
 }
 
+void OS_JavaScript::vibrate_handheld(int p_duration_ms) {
+	godot_js_input_vibrate_handheld(p_duration_ms);
+}
+
 String OS_JavaScript::get_user_data_dir() const {
 	return "/userfs";
 };
@@ -1044,6 +1043,19 @@ void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags
 	}
 }
 
+void OS_JavaScript::update_pwa_state_callback() {
+	if (OS_JavaScript::get_singleton()) {
+		OS_JavaScript::get_singleton()->pwa_is_waiting = true;
+	}
+	if (JavaScript::get_singleton()) {
+		JavaScript::get_singleton()->emit_signal("pwa_update_available");
+	}
+}
+
+Error OS_JavaScript::pwa_update() {
+	return godot_js_pwa_update() ? FAILED : OK;
+}
+
 bool OS_JavaScript::is_userfs_persistent() const {
 	return idb_available;
 }
@@ -1081,6 +1093,8 @@ OS_JavaScript::OS_JavaScript() {
 	idb_available = godot_js_os_fs_is_persistent() != 0;
 	idb_needs_sync = false;
 	idb_is_syncing = false;
+	pwa_is_waiting = false;
+	godot_js_pwa_cb(&OS_JavaScript::update_pwa_state_callback);
 
 	if (AudioDriverJavaScript::is_available()) {
 #ifdef NO_THREADS

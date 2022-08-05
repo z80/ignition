@@ -687,7 +687,7 @@ void EditorResourcePicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editable"), &EditorResourcePicker::is_editable);
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_create_options", PropertyInfo(Variant::OBJECT, "menu_node")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("handle_menu_selected", PropertyInfo(Variant::INT, "id")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "handle_menu_selected", PropertyInfo(Variant::INT, "id")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type"), "set_base_type", "get_base_type");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource", 0), "set_edited_resource", "get_edited_resource");
@@ -864,6 +864,8 @@ EditorResourcePicker::EditorResourcePicker() {
 	add_child(edit_menu);
 	edit_menu->connect("id_pressed", this, "_edit_menu_cbk");
 	edit_menu->connect("popup_hide", edit_button, "set_pressed", varray(false));
+
+	add_constant_override("separation", 0);
 }
 
 void EditorScriptPicker::set_create_options(Object *p_menu_node) {
@@ -873,7 +875,12 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 	}
 
 	menu_node->add_icon_item(get_icon("ScriptCreate", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
-	menu_node->add_icon_item(get_icon("ScriptExtend", "EditorIcons"), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
+	if (script_owner) {
+		Ref<Script> script = script_owner->get_script();
+		if (script.is_valid()) {
+			menu_node->add_icon_item(get_icon("ScriptExtend", "EditorIcons"), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
+		}
+	}
 	menu_node->add_separator();
 }
 

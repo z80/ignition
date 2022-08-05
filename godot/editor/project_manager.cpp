@@ -40,7 +40,6 @@
 #include "core/os/os.h"
 #include "core/translation.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
@@ -51,6 +50,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
+#include "servers/navigation_server.h"
 
 // Used to test for GLES3 support.
 #ifndef SERVER_ENABLED
@@ -298,7 +298,7 @@ private:
 			// If the project name is empty or default, infer the project name from the selected folder name
 			if (project_name->get_text().strip_edges() == "" || project_name->get_text().strip_edges() == TTR("New Game Project")) {
 				sp = sp.replace("\\", "/");
-				int lidx = sp.find_last("/");
+				int lidx = sp.rfind("/");
 
 				if (lidx != -1) {
 					sp = sp.substr(lidx + 1, sp.length()).capitalize();
@@ -470,6 +470,7 @@ private:
 					initial_settings["application/config/icon"] = "res://icon.png";
 					initial_settings["rendering/environment/default_environment"] = "res://default_env.tres";
 					initial_settings["physics/common/enable_pause_aware_picking"] = true;
+					initial_settings["gui/common/drop_mouse_on_gui_input_disabled"] = true;
 
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
@@ -481,7 +482,9 @@ private:
 							set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 						} else {
 							f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
+							f->store_line("");
 							f->store_line("[sub_resource type=\"ProceduralSky\" id=1]");
+							f->store_line("");
 							f->store_line("[resource]");
 							f->store_line("background_mode = 2");
 							f->store_line("background_sky = SubResource( 1 )");
@@ -1019,6 +1022,8 @@ public:
 		}
 	};
 
+	bool project_opening_initiated;
+
 	ProjectList();
 	~ProjectList();
 
@@ -1096,6 +1101,7 @@ ProjectList::ProjectList() {
 	add_child(_scroll_children);
 
 	_icon_load_index = 0;
+	project_opening_initiated = false;
 }
 
 ProjectList::~ProjectList() {
@@ -1704,7 +1710,9 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 
 		emit_signal(SIGNAL_SELECTION_CHANGED);
 
-		if (!mb->get_control() && mb->is_doubleclick()) {
+		// Do not allow opening a project more than once using a single project manager instance.
+		// Opening the same project in several editor instances at once can lead to various issues.
+		if (!mb->get_control() && mb->is_doubleclick() && !project_opening_initiated) {
 			emit_signal(SIGNAL_PROJECT_ASK_OPEN);
 		}
 	}
@@ -1766,19 +1774,33 @@ void ProjectManager::_notification(int p_what) {
 			Engine::get_singleton()->set_editor_hint(false);
 		} break;
 		case NOTIFICATION_RESIZED: {
-			if (open_templates->is_visible()) {
+			if (open_templates && open_templates->is_visible()) {
 				open_templates->popup_centered_minsize();
+			}
+			if (asset_library) {
+				real_t size = get_size().x / EDSCALE;
+				// Adjust names of tabs to fit the new size.
+				if (size < 650) {
+					local_projects_hb->set_name(TTR("Local"));
+					asset_library->set_name(TTR("Asset Library"));
+				} else {
+					local_projects_hb->set_name(TTR("Local Projects"));
+					asset_library->set_name(TTR("Asset Library Projects"));
+				}
 			}
 		} break;
 		case NOTIFICATION_READY: {
-			if (_project_list->get_project_count() == 0 && StreamPeerSSL::is_available()) {
-				open_templates->popup_centered_minsize();
-			}
-
 			if (_project_list->get_project_count() >= 1) {
 				// Focus on the search box immediately to allow the user
 				// to search without having to reach for their mouse
 				project_filter->search_box->grab_focus();
+			}
+
+			if (asset_library) {
+				// Suggest browsing asset library to get templates/demos.
+				if (open_templates && _project_list->get_project_count() == 0) {
+					open_templates->popup_centered_minsize();
+				}
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1974,7 +1996,7 @@ void ProjectManager::_global_menu_action(const Variant &p_id, const Variant &p_m
 void ProjectManager::_open_selected_projects() {
 	// Show loading text to tell the user that the project manager is busy loading.
 	// This is especially important for the HTML5 project manager.
-	loading_label->set_modulate(Color(1, 1, 1));
+	loading_label->show();
 
 	const Set<String> &selected_list = _project_list->get_selected_project_keys();
 
@@ -2016,6 +2038,8 @@ void ProjectManager::_open_selected_projects() {
 		Error err = OS::get_singleton()->execute(exec, args, false, &pid);
 		ERR_FAIL_COND(err);
 	}
+
+	_project_list->project_opening_initiated = true;
 
 	_dim_window();
 	get_tree()->quit();
@@ -2374,11 +2398,15 @@ ProjectManager::ProjectManager() {
 		EditorSettings::create();
 	}
 
+	// Turn off some servers we aren't going to be using in the Project Manager.
+	NavigationServer::get_singleton()->set_active(false);
+	PhysicsServer::get_singleton()->set_active(false);
+	Physics2DServer::get_singleton()->set_active(false);
+
 	EditorSettings::get_singleton()->set_optimize_save(false); //just write settings as they came
 
 	{
 		int display_scale = EditorSettings::get_singleton()->get("interface/editor/display_scale");
-		float custom_display_scale = EditorSettings::get_singleton()->get("interface/editor/custom_display_scale");
 
 		switch (display_scale) {
 			case 0:
@@ -2404,15 +2432,9 @@ ProjectManager::ProjectManager() {
 				editor_set_scale(2.0);
 				break;
 			default:
-				editor_set_scale(custom_display_scale);
+				editor_set_scale(EditorSettings::get_singleton()->get("interface/editor/custom_display_scale"));
 				break;
 		}
-
-		// Define a minimum window size to prevent UI elements from overlapping or being cut off
-		OS::get_singleton()->set_min_window_size(Size2(750, 420) * EDSCALE);
-
-		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the line below
-		OS::get_singleton()->set_window_size(OS::get_singleton()->get_window_size() * MAX(1, EDSCALE));
 	}
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
@@ -2436,7 +2458,7 @@ ProjectManager::ProjectManager() {
 	String cp;
 	cp += 0xA9;
 	// TRANSLATORS: This refers to the application where users manage their Godot projects.
-	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager"));
+	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -2448,24 +2470,21 @@ ProjectManager::ProjectManager() {
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
 	tabs->connect("tab_changed", this, "_on_tab_changed");
 
-	HBoxContainer *tree_hb = memnew(HBoxContainer);
-	projects_hb = tree_hb;
-
-	projects_hb->set_name(TTR("Local Projects"));
-
-	tabs->add_child(tree_hb);
+	local_projects_hb = memnew(HBoxContainer);
+	local_projects_hb->set_name(TTR("Local Projects"));
+	tabs->add_child(local_projects_hb);
 
 	VBoxContainer *search_tree_vb = memnew(VBoxContainer);
-	tree_hb->add_child(search_tree_vb);
+	local_projects_hb->add_child(search_tree_vb);
 	search_tree_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	HBoxContainer *sort_filters = memnew(HBoxContainer);
-	loading_label = memnew(Label(TTR("Loading, please wait...")));
-	loading_label->add_font_override("font", get_font("bold", "EditorFonts"));
-	loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	sort_filters->add_child(loading_label);
-	// Hide the label but make it still take up space. This prevents reflows when showing the label.
-	loading_label->set_modulate(Color(0, 0, 0, 0));
+
+	project_filter = memnew(ProjectListFilter);
+	project_filter->add_search_box();
+	project_filter->connect("filter_changed", this, "_on_filter_option_changed");
+	project_filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	sort_filters->add_child(project_filter);
 
 	Label *sort_label = memnew(Label);
 	sort_label->set_text(TTR("Sort:"));
@@ -2477,21 +2496,20 @@ ProjectManager::ProjectManager() {
 	project_order_filter = memnew(ProjectListFilter);
 	project_order_filter->add_filter_option();
 	project_order_filter->_setup_filters(sort_filter_titles);
-	project_order_filter->set_filter_size(150);
+	project_order_filter->set_filter_size(180);
 	sort_filters->add_child(project_order_filter);
 	project_order_filter->connect("filter_changed", this, "_on_order_option_changed");
-	project_order_filter->set_custom_minimum_size(Size2(180, 10) * EDSCALE);
-
-	int projects_sorting_order = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
+	const int projects_sorting_order = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
 	project_order_filter->set_filter_option((ProjectListFilter::FilterOption)projects_sorting_order);
 
-	project_filter = memnew(ProjectListFilter);
-	project_filter->add_search_box();
-	project_filter->connect("filter_changed", this, "_on_filter_option_changed");
-	project_filter->set_custom_minimum_size(Size2(280, 10) * EDSCALE);
-	sort_filters->add_child(project_filter);
-
 	search_tree_vb->add_child(sort_filters);
+
+	loading_label = memnew(Label(TTR("Loading, please wait...")));
+	loading_label->add_font_override("font", get_font("bold", "EditorFonts"));
+	loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	sort_filters->add_child(loading_label);
+	// The loading label is shown later.
+	loading_label->hide();
 
 	PanelContainer *pc = memnew(PanelContainer);
 	pc->add_style_override("panel", gui_base->get_stylebox("bg", "Tree"));
@@ -2506,7 +2524,7 @@ ProjectManager::ProjectManager() {
 
 	VBoxContainer *tree_vb = memnew(VBoxContainer);
 	tree_vb->set_custom_minimum_size(Size2(120, 120));
-	tree_hb->add_child(tree_vb);
+	local_projects_hb->add_child(tree_vb);
 
 	Button *open = memnew(Button);
 	open->set_text(TTR("Edit"));
@@ -2554,6 +2572,7 @@ ProjectManager::ProjectManager() {
 
 	Button *rename = memnew(Button);
 	rename->set_text(TTR("Rename"));
+	// The F2 shortcut isn't overridden with Enter on macOS as Enter is already used to edit a project.
 	rename->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), KEY_F2));
 	tree_vb->add_child(rename);
 	rename->connect("pressed", this, "_rename_project");
@@ -2579,13 +2598,13 @@ ProjectManager::ProjectManager() {
 	about_btn->connect("pressed", this, "_show_about");
 	tree_vb->add_child(about_btn);
 
-	if (StreamPeerSSL::is_available()) {
+	if (AssetLibraryEditorPlugin::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
 		asset_library->set_name(TTR("Asset Library Projects"));
 		tabs->add_child(asset_library);
 		asset_library->connect("install_asset", this, "_install_project");
 	} else {
-		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
+		print_verbose("Asset Library not available (due to using Web editor, or SSL support disabled).");
 	}
 
 	HBoxContainer *settings_hb = memnew(HBoxContainer);
@@ -2620,6 +2639,12 @@ ProjectManager::ProjectManager() {
 	language_btn = memnew(OptionButton);
 	language_btn->set_flat(true);
 	language_btn->set_focus_mode(Control::FOCUS_NONE);
+#ifdef ANDROID_ENABLED
+	// The language selection dropdown doesn't work on Android (as the setting isn't saved), see GH-60353.
+	// Also, the dropdown it spawns is very tall and can't be scrolled without a hardware mouse.
+	// Hiding the language selection dropdown also leaves more space for the version label to display.
+	language_btn->hide();
+#endif
 
 	Vector<String> editor_languages;
 	List<PropertyInfo> editor_settings_properties;
@@ -2634,7 +2659,7 @@ ProjectManager::ProjectManager() {
 	for (int i = 0; i < editor_languages.size(); i++) {
 		String lang = editor_languages[i];
 		String lang_name = TranslationServer::get_singleton()->get_locale_name(lang);
-		language_btn->add_item(lang_name + " [" + lang + "]", i);
+		language_btn->add_item(vformat("[%s] %s", lang, lang_name), i);
 		language_btn->set_item_metadata(i, lang);
 		if (current_lang == lang) {
 			language_btn->select(i);
@@ -2695,6 +2720,20 @@ ProjectManager::ProjectManager() {
 	ask_update_settings->get_ok()->connect("pressed", this, "_confirm_update_settings");
 	gui_base->add_child(ask_update_settings);
 
+	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
+	OS::get_singleton()->set_min_window_size(Size2(520, 350) * EDSCALE);
+
+	// Resize the bootsplash window based on editor display scale.
+	const float scale_factor = MAX(1, EDSCALE);
+	if (scale_factor > 1.0 + CMP_EPSILON) {
+		const Vector2 window_size = OS::get_singleton()->get_window_size() * scale_factor;
+		const Vector2 screen_size = OS::get_singleton()->get_screen_size();
+		const Vector2 window_position = Vector2(screen_size.x - window_size.x, screen_size.y - window_size.y) * 0.5;
+		// Handle multi-monitor setups correctly by moving the window relative to the current screen.
+		OS::get_singleton()->set_window_position(OS::get_singleton()->get_screen_position() + window_position);
+		OS::get_singleton()->set_window_size(window_size);
+	}
+
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 
 	npdialog = memnew(ProjectDialog);
@@ -2737,11 +2776,13 @@ ProjectManager::ProjectManager() {
 	dialog_error = memnew(AcceptDialog);
 	gui_base->add_child(dialog_error);
 
-	open_templates = memnew(ConfirmationDialog);
-	open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
-	open_templates->get_ok()->set_text(TTR("Open Asset Library"));
-	open_templates->connect("confirmed", this, "_open_asset_library");
-	add_child(open_templates);
+	if (asset_library) {
+		open_templates = memnew(ConfirmationDialog);
+		open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
+		open_templates->get_ok()->set_text(TTR("Open Asset Library"));
+		open_templates->connect("confirmed", this, "_open_asset_library");
+		add_child(open_templates);
+	}
 
 	about = memnew(EditorAbout);
 	add_child(about);

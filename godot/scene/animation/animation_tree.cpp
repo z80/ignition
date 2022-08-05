@@ -981,6 +981,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 							int s = params.size();
 
+							static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
 							ERR_CONTINUE(s > VARIANT_ARG_MAX);
 							if (can_call) {
 								t->object->call_deferred(
@@ -989,7 +990,10 @@ void AnimationTree::_process_graph(float p_delta) {
 										s >= 2 ? params[1] : Variant(),
 										s >= 3 ? params[2] : Variant(),
 										s >= 4 ? params[3] : Variant(),
-										s >= 5 ? params[4] : Variant());
+										s >= 5 ? params[4] : Variant(),
+										s >= 6 ? params[5] : Variant(),
+										s >= 7 ? params[6] : Variant(),
+										s >= 8 ? params[7] : Variant());
 							}
 						}
 
@@ -1011,7 +1015,7 @@ void AnimationTree::_process_graph(float p_delta) {
 						TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
 
 						if (seeked) {
-							//find whathever should be playing
+							//find whatever should be playing
 							int idx = a->track_find_key(i, time);
 							if (idx < 0) {
 								continue;
@@ -1236,12 +1240,14 @@ void AnimationTree::advance(float p_time) {
 }
 
 void AnimationTree::_notification(int p_what) {
-	if (active && p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS && process_mode == ANIMATION_PROCESS_PHYSICS) {
-		_process_graph(get_physics_process_delta_time());
-	}
+	if (active && OS::get_singleton()->is_update_pending()) {
+		if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS && process_mode == ANIMATION_PROCESS_PHYSICS) {
+			_process_graph(get_physics_process_delta_time());
+		}
 
-	if (active && p_what == NOTIFICATION_INTERNAL_PROCESS && process_mode == ANIMATION_PROCESS_IDLE) {
-		_process_graph(get_process_delta_time());
+		if (p_what == NOTIFICATION_INTERNAL_PROCESS && process_mode == ANIMATION_PROCESS_IDLE) {
+			_process_graph(get_process_delta_time());
+		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {

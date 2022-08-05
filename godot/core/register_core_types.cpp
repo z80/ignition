@@ -46,6 +46,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/multiplayer_api.h"
+#include "core/io/networked_multiplayer_custom.h"
 #include "core/io/networked_multiplayer_peer.h"
 #include "core/io/packet_peer.h"
 #include "core/io/packet_peer_dtls.h"
@@ -65,6 +66,7 @@
 #include "core/math/triangle_mesh.h"
 #include "core/os/input.h"
 #include "core/os/main_loop.h"
+#include "core/os/time.h"
 #include "core/packed_data_container.h"
 #include "core/path_remap.h"
 #include "core/project_settings.h"
@@ -175,6 +177,7 @@ void register_core_types() {
 	ClassDB::register_virtual_class<PacketPeer>();
 	ClassDB::register_class<PacketPeerStream>();
 	ClassDB::register_virtual_class<NetworkedMultiplayerPeer>();
+	ClassDB::register_class<NetworkedMultiplayerCustom>();
 	ClassDB::register_class<MultiplayerAPI>();
 	ClassDB::register_class<MainLoop>();
 	ClassDB::register_class<Translation>();
@@ -250,6 +253,7 @@ void register_core_singletons() {
 	ClassDB::register_class<InputMap>();
 	ClassDB::register_class<_JSON>();
 	ClassDB::register_class<Expression>();
+	ClassDB::register_class<Time>();
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
@@ -264,6 +268,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JSON", _JSON::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 }
 
 void unregister_core_types() {

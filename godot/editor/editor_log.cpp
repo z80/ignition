@@ -45,9 +45,9 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 
 	String err_str;
 	if (p_errorexp && p_errorexp[0]) {
-		err_str = p_errorexp;
+		err_str = String::utf8(p_errorexp);
 	} else {
-		err_str = String(p_file) + ":" + itos(p_line) + " - " + String(p_error);
+		err_str = String::utf8(p_file) + ":" + itos(p_line) + " - " + String::utf8(p_error);
 	}
 
 	if (p_type == ERR_HANDLER_WARNING) {
@@ -176,6 +176,7 @@ EditorLog::EditorLog() {
 	log->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
+	log->set_deselect_on_focus_loss_enabled(false);
 	vb->add_child(log);
 	add_message(VERSION_FULL_NAME " (c) 2007-2022 Juan Linietsky, Ariel Manzur & Godot Contributors.");
 

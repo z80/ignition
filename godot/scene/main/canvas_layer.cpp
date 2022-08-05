@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "canvas_layer.h"
+#include "scene/2d/canvas_item.h"
 #include "viewport.h"
 
 void CanvasLayer::set_layer(int p_xform) {
@@ -40,6 +41,33 @@ void CanvasLayer::set_layer(int p_xform) {
 
 int CanvasLayer::get_layer() const {
 	return layer;
+}
+
+void CanvasLayer::set_visible(bool p_visible) {
+	if (p_visible == visible) {
+		return;
+	}
+
+	visible = p_visible;
+	emit_signal("visibility_changed");
+
+	// For CanvasItems that is explicitly top level or has non-CanvasItem parents.
+	if (is_inside_tree()) {
+		const String group = "root_canvas" + itos(canvas.get_id());
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_toplevel_visibility_changed", p_visible);
+	}
+}
+
+void CanvasLayer::show() {
+	set_visible(true);
+}
+
+void CanvasLayer::hide() {
+	set_visible(false);
+}
+
+bool CanvasLayer::is_visible() const {
+	return visible;
 }
 
 void CanvasLayer::set_transform(const Transform2D &p_xform) {
@@ -265,6 +293,11 @@ void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_layer", "layer"), &CanvasLayer::set_layer);
 	ClassDB::bind_method(D_METHOD("get_layer"), &CanvasLayer::get_layer);
 
+	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &CanvasLayer::set_visible);
+	ClassDB::bind_method(D_METHOD("is_visible"), &CanvasLayer::is_visible);
+	ClassDB::bind_method(D_METHOD("show"), &CanvasLayer::show);
+	ClassDB::bind_method(D_METHOD("hide"), &CanvasLayer::hide);
+
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &CanvasLayer::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasLayer::get_transform);
 
@@ -293,6 +326,7 @@ void CanvasLayer::_bind_methods() {
 
 	ADD_GROUP("Layer", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, "-128,128,1"), "set_layer", "get_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rotation_degrees", PROPERTY_HINT_RANGE, "-1080,1080,0.1,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
@@ -304,7 +338,19 @@ void CanvasLayer::_bind_methods() {
 	ADD_GROUP("Follow Viewport", "follow_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport_enable"), "set_follow_viewport", "is_following_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "follow_viewport_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,or_lesser"), "set_follow_viewport_scale", "get_follow_viewport_scale");
+
+	ADD_SIGNAL(MethodInfo("visibility_changed"));
 }
+
+#ifdef TOOLS_ENABLED
+StringName CanvasLayer::get_property_store_alias(const StringName &p_property) const {
+	if (p_property == "rotation_degrees") {
+		return "rotation";
+	} else {
+		return Node::get_property_store_alias(p_property);
+	}
+}
+#endif
 
 CanvasLayer::CanvasLayer() {
 	vp = nullptr;
@@ -312,10 +358,11 @@ CanvasLayer::CanvasLayer() {
 	rot = 0;
 	locrotscale_dirty = false;
 	layer = 1;
-	canvas = VS::get_singleton()->canvas_create();
+	canvas = RID_PRIME(VS::get_singleton()->canvas_create());
 	custom_viewport = nullptr;
 	custom_viewport_id = 0;
 	sort_index = 0;
+	visible = true;
 	follow_viewport = false;
 	follow_viewport_scale = 1.0;
 }

@@ -923,6 +923,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/navigation/v_scroll_speed"));
 	text_editor->set_draw_minimap(EditorSettings::get_singleton()->get("text_editor/navigation/show_minimap"));
 	text_editor->set_minimap_width((int)EditorSettings::get_singleton()->get("text_editor/navigation/minimap_width") * EDSCALE);
+	text_editor->set_drag_and_drop_selection_enabled(EditorSettings::get_singleton()->get("text_editor/navigation/drag_and_drop_selection"));
 	text_editor->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_numbers"));
 	text_editor->set_line_numbers_zero_padded(EditorSettings::get_singleton()->get("text_editor/appearance/line_numbers_zero_padded"));
 	text_editor->set_bookmark_gutter_enabled(EditorSettings::get_singleton()->get("text_editor/appearance/show_bookmark_gutter"));
@@ -936,7 +937,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_line_length_guideline_hard_column(EditorSettings::get_singleton()->get("text_editor/appearance/line_length_guideline_hard_column"));
 	text_editor->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/cursor/scroll_past_end_of_file"));
 	text_editor->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/cursor/block_caret"));
-	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
+	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->is_caret_blink_active());
 	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
 	text_editor->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
 }
@@ -1710,6 +1711,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_show_line_numbers(true);
 	text_editor->set_brace_matching(true);
 	text_editor->set_auto_indent(true);
+	text_editor->set_deselect_on_focus_loss_enabled(false);
 
 	status_bar = memnew(HBoxContainer);
 	add_child(status_bar);

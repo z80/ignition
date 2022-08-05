@@ -56,6 +56,7 @@ protected:
 	String _get_root_path() const;
 	String _get_root_string() const;
 
+	AccessType get_access_type() const;
 	String fix_path(String p_path) const;
 	bool next_is_dir;
 
@@ -145,6 +146,10 @@ struct DirAccessRef {
 	operator bool() const { return f != nullptr; }
 	DirAccess *f;
 	DirAccessRef(DirAccess *fa) { f = fa; }
+	DirAccessRef(DirAccessRef &&other) {
+		f = other.f;
+		other.f = nullptr;
+	}
 	~DirAccessRef() {
 		if (f) {
 			memdelete(f);
@@ -152,4 +157,4 @@ struct DirAccessRef {
 	}
 };
 
-#endif
+#endif // DIR_ACCESS_H

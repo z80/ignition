@@ -53,7 +53,7 @@ class ProjectManager : public Control {
 	Button *run_btn;
 	Button *about_btn;
 
-	EditorAssetLibrary *asset_library;
+	EditorAssetLibrary *asset_library = nullptr;
 
 	ProjectListFilter *project_filter;
 	ProjectListFilter *project_order_filter;
@@ -71,13 +71,13 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_run_ask;
 	ConfirmationDialog *multi_scan_ask;
 	ConfirmationDialog *ask_update_settings;
-	ConfirmationDialog *open_templates;
+	ConfirmationDialog *open_templates = nullptr;
 	EditorAbout *about;
 	AcceptDialog *run_error_diag;
 	AcceptDialog *dialog_error;
 	ProjectDialog *npdialog;
 
-	HBoxContainer *projects_hb;
+	HBoxContainer *local_projects_hb;
 	TabContainer *tabs;
 	ProjectList *_project_list;
 
@@ -104,7 +104,6 @@ class ProjectManager : public Control {
 	void _update_project_buttons();
 	void _language_selected(int p_id);
 	void _restart_confirm();
-	void _exit_dialog();
 	void _scan_begin(const String &p_base);
 	void _global_menu_action(const Variant &p_id, const Variant &p_meta);
 
@@ -113,7 +112,6 @@ class ProjectManager : public Control {
 	void _load_recent_projects();
 	void _on_project_created(const String &dir);
 	void _on_projects_updated();
-	void _update_scroll_position(const String &dir);
 	void _scan_dir(const String &path, List<String> *r_projects);
 
 	void _install_project(const String &p_zip_path, const String &p_title);

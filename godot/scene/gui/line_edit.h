@@ -75,6 +75,8 @@ private:
 	Point2 ime_selection;
 
 	bool selecting_enabled;
+	bool deselect_on_focus_loss_enabled;
+	bool popup_show = false;
 
 	bool context_menu_enabled;
 	PopupMenu *menu;
@@ -91,6 +93,10 @@ private:
 	bool shortcut_keys_enabled;
 
 	bool virtual_keyboard_enabled = true;
+
+	bool drag_action = false;
+	bool drag_caret_force_displayed = false;
+	bool middle_mouse_paste_enabled;
 
 	Ref<Texture> right_icon;
 
@@ -154,7 +160,6 @@ private:
 	void _toggle_draw_caret();
 
 	void clear_internal();
-	void changed_internal();
 
 	void _editor_settings_changed();
 
@@ -183,6 +188,9 @@ public:
 	void select_all();
 	void selection_delete();
 	void deselect();
+	bool has_selection() const;
+	int get_selection_from_column() const;
+	int get_selection_to_column() const;
 
 	void delete_char();
 	void delete_text(int p_from_column, int p_to_column);
@@ -236,8 +244,14 @@ public:
 	void set_virtual_keyboard_enabled(bool p_enable);
 	bool is_virtual_keyboard_enabled() const;
 
+	void set_middle_mouse_paste_enabled(bool p_enabled);
+	bool is_middle_mouse_paste_enabled() const;
+
 	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
+
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
 
 	void set_right_icon(const Ref<Texture> &p_icon);
 	Ref<Texture> get_right_icon();
@@ -253,4 +267,4 @@ public:
 VARIANT_ENUM_CAST(LineEdit::Align);
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
 
-#endif
+#endif // LINE_EDIT_H

@@ -56,6 +56,7 @@ public:
 	bool empty() const;
 	void clear();
 
+	bool deep_equal(const Array &p_array, int p_recursion_count = 0) const;
 	bool operator==(const Array &p_array) const;
 
 	uint32_t hash() const;
@@ -68,6 +69,7 @@ public:
 
 	void insert(int p_pos, const Variant &p_value);
 	void remove(int p_pos);
+	void fill(const Variant &p_value);
 
 	Variant front() const;
 	Variant back() const;

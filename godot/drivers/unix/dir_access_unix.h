@@ -43,13 +43,11 @@
 class DirAccessUnix : public DirAccess {
 	DIR *dir_stream;
 
-	static DirAccess *create_fs();
-
-	String current_dir;
 	bool _cisdir;
 	bool _cishidden;
 
 protected:
+	String current_dir;
 	virtual String fix_unicode_name(const char *p_name) const { return String::utf8(p_name); }
 	virtual bool is_hidden(const String &p_name);
 
@@ -63,6 +61,7 @@ public:
 
 	virtual int get_drive_count();
 	virtual String get_drive(int p_drive);
+	virtual int get_current_drive();
 	virtual bool drives_are_shortcuts();
 
 	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
@@ -89,5 +88,6 @@ public:
 	~DirAccessUnix();
 };
 
-#endif //UNIX ENABLED
-#endif
+#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED
+
+#endif // DIR_ACCESS_UNIX_H

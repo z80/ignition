@@ -62,12 +62,14 @@ public:
 	int size() const;
 	bool empty() const;
 	void clear();
+	void merge(const Dictionary &p_dictionary, bool p_overwrite = false);
 
 	bool has(const Variant &p_key) const;
 	bool has_all(const Array &p_keys) const;
 
 	bool erase(const Variant &p_key);
 
+	bool deep_equal(const Dictionary &p_dictionary, int p_recursion_count = 0) const;
 	bool operator==(const Dictionary &p_dictionary) const;
 	bool operator!=(const Dictionary &p_dictionary) const;
 

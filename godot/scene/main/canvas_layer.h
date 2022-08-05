@@ -53,6 +53,7 @@ class CanvasLayer : public Node {
 	Viewport *vp;
 
 	int sort_index;
+	bool visible;
 
 	bool follow_viewport;
 	float follow_viewport_scale;
@@ -68,6 +69,11 @@ protected:
 public:
 	void set_layer(int p_xform);
 	int get_layer() const;
+
+	void set_visible(bool p_visible);
+	bool is_visible() const;
+	void show();
+	void hide();
 
 	void set_transform(const Transform2D &p_xform);
 	Transform2D get_transform() const;
@@ -101,6 +107,10 @@ public:
 	float get_follow_viewport_scale() const;
 
 	RID get_canvas() const;
+
+#ifdef TOOLS_ENABLED
+	StringName get_property_store_alias(const StringName &p_property) const;
+#endif
 
 	CanvasLayer();
 	~CanvasLayer();

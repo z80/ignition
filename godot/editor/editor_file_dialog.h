@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORFILEDIALOG_H
-#define EDITORFILEDIALOG_H
+#ifndef EDITOR_FILE_DIALOG_H
+#define EDITOR_FILE_DIALOG_H
 
 #include "core/os/dir_access.h"
 #include "scene/gui/box_container.h"
@@ -179,7 +179,7 @@ private:
 
 	void _delete_items();
 
-	void _update_drives();
+	void _update_drives(bool p_select = true);
 
 	void _go_up();
 	void _go_back();
@@ -268,4 +268,4 @@ VARIANT_ENUM_CAST(EditorFileDialog::Mode);
 VARIANT_ENUM_CAST(EditorFileDialog::Access);
 VARIANT_ENUM_CAST(EditorFileDialog::DisplayMode);
 
-#endif // EDITORFILEDIALOG_H
+#endif // EDITOR_FILE_DIALOG_H

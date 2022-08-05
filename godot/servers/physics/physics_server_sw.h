@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS_SERVER_SW
-#define PHYSICS_SERVER_SW
+#ifndef PHYSICS_SERVER_SW_H
+#define PHYSICS_SERVER_SW_H
 
 #include "joints_sw.h"
 #include "servers/physics_server.h"
@@ -43,7 +43,6 @@ class PhysicsServerSW : public PhysicsServer {
 	friend class PhysicsDirectSpaceStateSW;
 	bool active;
 	int iterations;
-	real_t last_step;
 
 	int island_count;
 	int active_objects;
@@ -53,8 +52,6 @@ class PhysicsServerSW : public PhysicsServer {
 
 	StepSW *stepper;
 	Set<const SpaceSW *> active_spaces;
-
-	PhysicsDirectBodyStateSW *direct_state;
 
 	mutable RID_Owner<ShapeSW> shape_owner;
 	mutable RID_Owner<SpaceSW> space_owner;
@@ -373,4 +370,4 @@ public:
 	~PhysicsServerSW();
 };
 
-#endif
+#endif // PHYSICS_SERVER_SW_H

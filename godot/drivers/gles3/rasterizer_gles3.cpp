@@ -213,6 +213,9 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 
 	storage->info.render_final = storage->info.render;
 	storage->info.render.reset();
+	storage->info.render.shader_compiles_in_progress_count = ShaderGLES3::active_compiles_count;
+
+	ShaderGLES3::current_frame = storage->frame.count;
 
 	scene->iteration();
 }
@@ -288,7 +291,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	glClear(GL_COLOR_BUFFER_BIT);
 	canvas->canvas_begin();
 
-	RID texture = storage->texture_create();
+	RID texture = RID_PRIME(storage->texture_create());
 	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? (uint32_t)VS::TEXTURE_FLAG_FILTER : 0);
 	storage->texture_set_data(texture, p_image);
 
@@ -410,6 +413,8 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 		}
 	}
 
+	ShaderGLES3::advance_async_shaders_compilation();
+
 	if (p_swap_buffers) {
 		OS::get_singleton()->swap_buffers();
 	} else {
@@ -487,6 +492,9 @@ RasterizerGLES3::RasterizerGLES3() {
 
 	time_total = 0;
 	time_scale = 1;
+
+	ShaderGLES3::compiles_started_this_frame = &storage->info.render.shader_compiles_started_count;
+	ShaderGLES3::max_frame_compiles_in_progress = &storage->info.render.shader_compiles_in_progress_count;
 }
 
 RasterizerGLES3::~RasterizerGLES3() {

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WSLSERVER_H
-#define WSLSERVER_H
+#ifndef WSL_SERVER_H
+#define WSL_SERVER_H
 
 #ifndef JAVASCRIPT_ENABLED
 
@@ -64,7 +64,7 @@ private:
 
 		PendingPeer();
 
-		Error do_handshake(const Vector<String> p_protocols, uint64_t p_timeout);
+		Error do_handshake(const Vector<String> p_protocols, uint64_t p_timeout, const Vector<String> &p_extra_headers);
 	};
 
 	int _in_buf_size;
@@ -75,9 +75,11 @@ private:
 	List<Ref<PendingPeer>> _pending;
 	Ref<TCP_Server> _server;
 	Vector<String> _protocols;
+	Vector<String> _extra_headers;
 
 public:
 	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
+	void set_extra_headers(const Vector<String> &p_headers);
 	Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false);
 	void stop();
 	bool is_listening() const;
@@ -95,4 +97,4 @@ public:
 
 #endif // JAVASCRIPT_ENABLED
 
-#endif // WSLSERVER_H
+#endif // WSL_SERVER_H

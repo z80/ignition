@@ -379,7 +379,7 @@ public:
 
 	void call_ptr(const StringName &p_method, const Variant **p_args, int p_argcount, Variant *r_ret, CallError &r_error);
 	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, CallError &r_error);
-	Variant call(const StringName &p_method, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant());
+	Variant call(const StringName &p_method, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant(), const Variant &p_arg6 = Variant(), const Variant &p_arg7 = Variant(), const Variant &p_arg8 = Variant());
 
 	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Variant::CallError &ce);
 
@@ -408,6 +408,7 @@ public:
 
 	//argsVariant call()
 
+	bool deep_equal(const Variant &p_variant, int p_recursion_count = 0) const;
 	bool operator==(const Variant &p_variant) const;
 	bool operator!=(const Variant &p_variant) const;
 	bool operator<(const Variant &p_variant) const;
@@ -466,4 +467,5 @@ const Variant::ObjData &Variant::_get_obj() const {
 }
 
 String vformat(const String &p_text, const Variant &p1 = Variant(), const Variant &p2 = Variant(), const Variant &p3 = Variant(), const Variant &p4 = Variant(), const Variant &p5 = Variant());
-#endif
+
+#endif // VARIANT_H

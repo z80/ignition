@@ -1174,7 +1174,8 @@ void ThemeItemEditorDialog::_update_edit_types() {
 
 	bool item_reselected = false;
 	edit_type_list->clear();
-	int e_idx = 0;
+	TreeItem *list_root = edit_type_list->create_item();
+
 	for (List<StringName>::Element *E = theme_types.front(); E; E = E->next()) {
 		Ref<Texture> item_icon;
 		if (E->get() == "") {
@@ -1182,19 +1183,22 @@ void ThemeItemEditorDialog::_update_edit_types() {
 		} else {
 			item_icon = EditorNode::get_singleton()->get_class_icon(E->get(), "NodeDisabled");
 		}
-		edit_type_list->add_item(E->get(), item_icon);
+		TreeItem *list_item = edit_type_list->create_item(list_root);
+		list_item->set_text(0, E->get());
+		list_item->set_icon(0, item_icon);
+		list_item->add_button(0, get_icon("Remove", "EditorIcons"), TYPES_TREE_REMOVE_ITEM, false, TTR("Remove Type"));
 
 		if (E->get() == edited_item_type) {
-			edit_type_list->select(e_idx);
+			list_item->select(0);
 			item_reselected = true;
 		}
-		e_idx++;
 	}
 	if (!item_reselected) {
 		edited_item_type = "";
 
-		if (edit_type_list->get_item_count() > 0) {
-			edit_type_list->select(0);
+		TreeItem *ci = list_root->get_children();
+		if (ci) {
+			ci->select(0);
 		}
 	}
 
@@ -1203,9 +1207,9 @@ void ThemeItemEditorDialog::_update_edit_types() {
 	default_types.sort_custom<StringName::AlphCompare>();
 
 	String selected_type = "";
-	Vector<int> selected_ids = edit_type_list->get_selected_items();
-	if (selected_ids.size() > 0) {
-		selected_type = edit_type_list->get_item_text(selected_ids[0]);
+	TreeItem *selected_item = edit_type_list->get_selected();
+	if (selected_item) {
+		selected_type = selected_item->get_text(0);
 
 		edit_items_add_color->set_disabled(false);
 		edit_items_add_constant->set_disabled(false);
@@ -1236,9 +1240,24 @@ void ThemeItemEditorDialog::_update_edit_types() {
 	_update_edit_item_tree(selected_type);
 }
 
-void ThemeItemEditorDialog::_edited_type_selected(int p_item_idx) {
-	String selected_type = edit_type_list->get_item_text(p_item_idx);
+void ThemeItemEditorDialog::_edited_type_selected() {
+	TreeItem *selected_item = edit_type_list->get_selected();
+	String selected_type = selected_item->get_text(0);
 	_update_edit_item_tree(selected_type);
+}
+
+void ThemeItemEditorDialog::_edited_type_button_pressed(Object *p_item, int p_column, int p_id) {
+	TreeItem *item = Object::cast_to<TreeItem>(p_item);
+	if (!item) {
+		return;
+	}
+
+	switch (p_id) {
+		case TYPES_TREE_REMOVE_ITEM: {
+			String type_name = item->get_text(0);
+			_remove_theme_type(type_name);
+		} break;
+	}
 }
 
 void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
@@ -1366,8 +1385,8 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 	}
 
 	// If some type is selected, but it doesn't seem to have any items, show a guiding message.
-	Vector<int> selected_ids = edit_type_list->get_selected_items();
-	if (selected_ids.size() > 0) {
+	TreeItem *selected_item = edit_type_list->get_selected();
+	if (selected_item) {
 		if (!has_any_items) {
 			edit_items_message->set_text(TTR("This theme type is empty.\nAdd more items to it manually or by importing from another theme."));
 			edit_items_message->show();
@@ -1408,15 +1427,36 @@ void ThemeItemEditorDialog::_add_theme_type(const String &p_new_text) {
 	const String new_type = edit_add_type_value->get_text().strip_edges();
 	edit_add_type_value->clear();
 
-	edited_theme->add_icon_type(new_type);
-	edited_theme->add_stylebox_type(new_type);
-	edited_theme->add_font_type(new_type);
-	edited_theme->add_color_type(new_type);
-	edited_theme->add_constant_type(new_type);
-	_update_edit_types();
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
-	// Force emit a change so that other parts of the editor can update.
-	edited_theme->emit_changed();
+	ur->create_action(TTR("Add Theme Type"));
+	ur->add_do_method(*edited_theme, "add_type", new_type);
+	ur->add_undo_method(*edited_theme, "remove_type", new_type);
+	ur->add_do_method(this, "_update_edit_types");
+	ur->add_undo_method(this, "_update_edit_types");
+
+	ur->commit_action();
+}
+
+void ThemeItemEditorDialog::_remove_theme_type(const String &p_theme_type) {
+	Ref<Theme> old_snapshot = edited_theme->duplicate();
+	Ref<Theme> new_snapshot = edited_theme->duplicate();
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Remove Theme Type"));
+
+	new_snapshot->remove_type(p_theme_type);
+
+	ur->add_do_method(*edited_theme, "clear");
+	ur->add_do_method(*edited_theme, "merge_with", new_snapshot);
+	// If the type was empty, it cannot be restored with merge, but thankfully we can fake it.
+	ur->add_undo_method(*edited_theme, "add_type", p_theme_type);
+	ur->add_undo_method(*edited_theme, "merge_with", old_snapshot);
+
+	ur->add_do_method(this, "_update_edit_types");
+	ur->add_undo_method(this, "_update_edit_types");
+
+	ur->commit_action();
 }
 
 void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String p_item_name, String p_item_type) {
@@ -1677,6 +1717,7 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 void ThemeItemEditorDialog::_bind_methods() {
 	// Internal binds.
 	ClassDB::bind_method("_edited_type_selected", &ThemeItemEditorDialog::_edited_type_selected);
+	ClassDB::bind_method("_edited_type_button_pressed", &ThemeItemEditorDialog::_edited_type_button_pressed);
 	ClassDB::bind_method("_add_theme_type", &ThemeItemEditorDialog::_add_theme_type);
 	ClassDB::bind_method("_open_add_theme_item_dialog", &ThemeItemEditorDialog::_open_add_theme_item_dialog);
 	ClassDB::bind_method("_remove_class_items", &ThemeItemEditorDialog::_remove_class_items);
@@ -1718,10 +1759,14 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	edit_type_label->set_text(TTR("Types:"));
 	edit_dialog_side_vb->add_child(edit_type_label);
 
-	edit_type_list = memnew(ItemList);
+	edit_type_list = memnew(Tree);
+	edit_type_list->set_hide_root(true);
+	edit_type_list->set_hide_folding(true);
+	edit_type_list->set_columns(1);
 	edit_type_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	edit_dialog_side_vb->add_child(edit_type_list);
 	edit_type_list->connect("item_selected", this, "_edited_type_selected");
+	edit_type_list->connect("button_pressed", this, "_edited_type_button_pressed");
 
 	Label *edit_add_type_label = memnew(Label);
 	edit_add_type_label->set_text(TTR("Add Type:"));
@@ -1881,7 +1926,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("Theme", &ext);
 	for (List<String>::Element *E = ext.front(); E; E = E->next()) {
-		import_another_theme_dialog->add_filter("*." + E->get() + "; Theme Resource");
+		import_another_theme_dialog->add_filter(vformat("*.%s; %s", E->get(), TTR("Theme Resource")));
 	}
 	import_another_file_hb->add_child(import_another_theme_dialog);
 	import_another_theme_dialog->connect("file_selected", this, "_select_another_theme_cbk");
@@ -1898,6 +1943,151 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	confirm_closing_dialog->set_autowrap(true);
 	add_child(confirm_closing_dialog);
 	confirm_closing_dialog->connect("confirmed", this, "_close_dialog");
+}
+
+void ThemeTypeDialog::_dialog_about_to_show() {
+	add_type_filter->set_text("");
+
+	_update_add_type_options();
+}
+
+void ThemeTypeDialog::ok_pressed() {
+	_add_type_selected(add_type_filter->get_text().strip_edges());
+}
+
+void ThemeTypeDialog::_update_add_type_options(const String &p_filter) {
+	add_type_options->clear();
+
+	List<StringName> names;
+	Theme::get_default()->get_type_list(&names);
+	if (include_own_types) {
+		edited_theme->get_type_list(&names);
+	}
+	names.sort_custom<StringName::AlphCompare>();
+
+	Vector<StringName> unique_names;
+	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
+		// Filter out undesired values.
+		if (!p_filter.is_subsequence_ofi(String(E->get()))) {
+			continue;
+		}
+
+		// Skip duplicate values.
+		if (unique_names.find(E->get()) >= 0) {
+			continue;
+		}
+		unique_names.push_back(E->get());
+
+		Ref<Texture> item_icon;
+		if (E->get() == "") {
+			item_icon = get_icon("NodeDisabled", "EditorIcons");
+		} else {
+			item_icon = EditorNode::get_singleton()->get_class_icon(E->get(), "NodeDisabled");
+		}
+
+		add_type_options->add_item(E->get(), item_icon);
+	}
+}
+
+void ThemeTypeDialog::_add_type_filter_cbk(const String &p_value) {
+	_update_add_type_options(p_value);
+}
+
+void ThemeTypeDialog::_add_type_options_cbk(int p_index) {
+	add_type_filter->set_text(add_type_options->get_item_text(p_index));
+}
+
+void ThemeTypeDialog::_add_type_dialog_entered(const String &p_value) {
+	_add_type_selected(p_value.strip_edges());
+}
+
+void ThemeTypeDialog::_add_type_dialog_activated(int p_index) {
+	_add_type_selected(add_type_options->get_item_text(p_index));
+}
+
+void ThemeTypeDialog::_add_type_selected(const String &p_type_name) {
+	pre_submitted_value = p_type_name;
+	if (p_type_name.empty()) {
+		add_type_confirmation->popup_centered();
+		return;
+	}
+
+	_add_type_confirmed();
+}
+
+void ThemeTypeDialog::_add_type_confirmed() {
+	emit_signal("type_selected", pre_submitted_value);
+	hide();
+}
+
+void ThemeTypeDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("about_to_show", this, "_dialog_about_to_show");
+			FALLTHROUGH;
+		}
+
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_add_type_options();
+		} break;
+
+		case NOTIFICATION_POST_POPUP: {
+			add_type_filter->grab_focus();
+		} break;
+	}
+}
+
+void ThemeTypeDialog::_bind_methods() {
+	ClassDB::bind_method("_dialog_about_to_show", &ThemeTypeDialog::_dialog_about_to_show);
+
+	ClassDB::bind_method("_add_type_filter_cbk", &ThemeTypeDialog::_add_type_filter_cbk);
+	ClassDB::bind_method("_add_type_dialog_entered", &ThemeTypeDialog::_add_type_dialog_entered);
+	ClassDB::bind_method("_add_type_options_cbk", &ThemeTypeDialog::_add_type_options_cbk);
+	ClassDB::bind_method("_add_type_dialog_activated", &ThemeTypeDialog::_add_type_dialog_activated);
+	ClassDB::bind_method("_add_type_confirmed", &ThemeTypeDialog::_add_type_confirmed);
+
+	ADD_SIGNAL(MethodInfo("type_selected", PropertyInfo(Variant::STRING, "type_name")));
+}
+
+void ThemeTypeDialog::set_edited_theme(const Ref<Theme> &p_theme) {
+	edited_theme = p_theme;
+}
+
+void ThemeTypeDialog::set_include_own_types(bool p_enable) {
+	include_own_types = p_enable;
+}
+
+ThemeTypeDialog::ThemeTypeDialog() {
+	get_ok()->set_text(TTR("Add Type"));
+	set_hide_on_ok(false);
+
+	VBoxContainer *add_type_vb = memnew(VBoxContainer);
+	add_child(add_type_vb);
+
+	Label *add_type_filter_label = memnew(Label);
+	add_type_filter_label->set_text(TTR("Filter the list of types or create a new custom type:"));
+	add_type_vb->add_child(add_type_filter_label);
+
+	add_type_filter = memnew(LineEdit);
+	add_type_vb->add_child(add_type_filter);
+	add_type_filter->connect("text_changed", this, "_add_type_filter_cbk");
+	add_type_filter->connect("text_entered", this, "_add_type_dialog_entered");
+
+	Label *add_type_options_label = memnew(Label);
+	add_type_options_label->set_text(TTR("Available Node-based types:"));
+	add_type_vb->add_child(add_type_options_label);
+
+	add_type_options = memnew(ItemList);
+	add_type_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	add_type_vb->add_child(add_type_options);
+	add_type_options->connect("item_selected", this, "_add_type_options_cbk");
+	add_type_options->connect("item_activated", this, "_add_type_dialog_activated");
+
+	add_type_confirmation = memnew(ConfirmationDialog);
+	add_type_confirmation->set_title(TTR("Type name is empty!"));
+	add_type_confirmation->set_text(TTR("Are you sure you want to create an empty type?"));
+	add_type_confirmation->connect("confirmed", this, "_add_type_confirmed");
+	add_child(add_type_confirmation);
 }
 
 VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
@@ -2005,36 +2195,18 @@ void ThemeTypeEditor::_update_type_list_debounced() {
 	update_debounce_timer->start();
 }
 
-void ThemeTypeEditor::_update_add_type_options(const String &p_filter) {
-	add_type_options->clear();
-
-	List<StringName> names;
-	Theme::get_default()->get_type_list(&names);
-	names.sort_custom<StringName::AlphCompare>();
-
-	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-		if (!p_filter.is_subsequence_ofi(String(E->get()))) {
-			continue;
-		}
-
-		Ref<Texture> item_icon;
-		if (E->get() == "") {
-			item_icon = get_icon("NodeDisabled", "EditorIcons");
-		} else {
-			item_icon = EditorNode::get_singleton()->get_class_icon(E->get(), "NodeDisabled");
-		}
-
-		add_type_options->add_item(E->get(), item_icon);
-	}
-}
-
 OrderedHashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, void (Theme::*get_list_func)(StringName, List<StringName> *) const, bool include_default) {
 	OrderedHashMap<StringName, bool> items;
 	List<StringName> names;
 
 	if (include_default) {
 		names.clear();
-		(Theme::get_default().operator->()->*get_list_func)(p_type_name, &names);
+		String default_type = p_type_name;
+		if (edited_theme->get_type_variation_base(p_type_name) != StringName()) {
+			default_type = edited_theme->get_type_variation_base(p_type_name);
+		}
+
+		(Theme::get_default().operator->()->*get_list_func)(default_type, &names);
 		names.sort_custom<StringName::AlphCompare>();
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			items[E->get()] = false;
@@ -2359,6 +2531,20 @@ void ThemeTypeEditor::_update_type_items() {
 			stylebox_items_list->add_child(item_control);
 		}
 	}
+
+	// Various type settings.
+	if (edited_type.empty() || ClassDB::class_exists(edited_type)) {
+		type_variation_edit->set_editable(false);
+		type_variation_edit->set_text("");
+		type_variation_button->hide();
+		type_variation_locked->set_visible(!edited_type.empty());
+	} else {
+		type_variation_edit->set_editable(true);
+		type_variation_edit->set_text(edited_theme->get_type_variation_base(edited_type));
+		_add_focusable(type_variation_edit);
+		type_variation_button->show();
+		type_variation_locked->hide();
+	}
 }
 
 void ThemeTypeEditor::_list_type_selected(int p_index) {
@@ -2367,35 +2553,19 @@ void ThemeTypeEditor::_list_type_selected(int p_index) {
 }
 
 void ThemeTypeEditor::_add_type_button_cbk() {
-	add_type_filter->clear();
+	add_type_mode = ADD_THEME_TYPE;
+	add_type_dialog->set_title(TTR("Add Item Type"));
+	add_type_dialog->get_ok()->set_text(TTR("Add Type"));
+	add_type_dialog->set_include_own_types(false);
 	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
-	add_type_filter->grab_focus();
-}
-
-void ThemeTypeEditor::_add_type_filter_cbk(const String &p_value) {
-	_update_add_type_options(p_value);
-}
-
-void ThemeTypeEditor::_add_type_options_cbk(int p_index) {
-	add_type_filter->set_text(add_type_options->get_item_text(p_index));
-}
-
-void ThemeTypeEditor::_add_type_dialog_confirmed() {
-	select_type(add_type_filter->get_text().strip_edges());
-}
-
-void ThemeTypeEditor::_add_type_dialog_entered(const String &p_value) {
-	select_type(p_value.strip_edges());
-	add_type_dialog->hide();
-}
-
-void ThemeTypeEditor::_add_type_dialog_activated(int p_index) {
-	select_type(add_type_options->get_item_text(p_index));
-	add_type_dialog->hide();
 }
 
 void ThemeTypeEditor::_add_default_type_items() {
 	List<StringName> names;
+	String default_type = edited_type;
+	if (edited_theme->get_type_variation_base(edited_type) != StringName()) {
+		default_type = edited_theme->get_type_variation_base(edited_type);
+	}
 
 	updating = true;
 	// Prevent changes from immediately being reported while the operation is still ongoing.
@@ -2403,7 +2573,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 
 	{
 		names.clear();
-		Theme::get_default()->get_icon_list(edited_type, &names);
+		Theme::get_default()->get_icon_list(default_type, &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			if (!edited_theme->has_icon(E->get(), edited_type)) {
 				edited_theme->set_icon(E->get(), edited_type, Ref<Texture>());
@@ -2412,7 +2582,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_stylebox_list(edited_type, &names);
+		Theme::get_default()->get_stylebox_list(default_type, &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			if (!edited_theme->has_stylebox(E->get(), edited_type)) {
 				edited_theme->set_stylebox(E->get(), edited_type, Ref<StyleBox>());
@@ -2421,7 +2591,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_font_list(edited_type, &names);
+		Theme::get_default()->get_font_list(default_type, &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			if (!edited_theme->has_font(E->get(), edited_type)) {
 				edited_theme->set_font(E->get(), edited_type, Ref<Font>());
@@ -2430,7 +2600,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_color_list(edited_type, &names);
+		Theme::get_default()->get_color_list(default_type, &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			if (!edited_theme->has_color(E->get(), edited_type)) {
 				edited_theme->set_color(E->get(), edited_type, Theme::get_default()->get_color(E->get(), edited_type));
@@ -2439,7 +2609,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_constant_list(edited_type, &names);
+		Theme::get_default()->get_constant_list(default_type, &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			if (!edited_theme->has_constant(E->get(), edited_type)) {
 				edited_theme->set_constant(E->get(), edited_type, Theme::get_default()->get_constant(E->get(), edited_type));
@@ -2682,11 +2852,13 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 	edited_theme->get_stylebox_list(edited_type, &names);
 	List<Ref<StyleBox>> styleboxes;
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-		if (E->get() == leading_stylebox.item_name) {
+		Ref<StyleBox> sb = edited_theme->get_stylebox(E->get(), edited_type);
+
+		// Avoid itself, stylebox can be shared between items.
+		if (sb == leading_stylebox.stylebox) {
 			continue;
 		}
 
-		Ref<StyleBox> sb = edited_theme->get_stylebox(E->get(), edited_type);
 		if (sb->get_class() == leading_stylebox.stylebox->get_class()) {
 			styleboxes.push_back(sb);
 		}
@@ -2717,6 +2889,30 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 	edited_theme->_unfreeze_and_propagate_changes();
 }
 
+void ThemeTypeEditor::_type_variation_changed(const String p_value) {
+	if (p_value.empty()) {
+		edited_theme->clear_type_variation(edited_type);
+	} else {
+		edited_theme->set_type_variation(edited_type, StringName(p_value));
+	}
+}
+
+void ThemeTypeEditor::_add_type_variation_cbk() {
+	add_type_mode = ADD_VARIATION_BASE;
+	add_type_dialog->set_title(TTR("Set Variation Base Type"));
+	add_type_dialog->get_ok()->set_text(TTR("Set Base Type"));
+	add_type_dialog->set_include_own_types(true);
+	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
+}
+
+void ThemeTypeEditor::_add_type_dialog_selected(const String p_type_name) {
+	if (add_type_mode == ADD_THEME_TYPE) {
+		select_type(p_type_name);
+	} else if (add_type_mode == ADD_VARIATION_BASE) {
+		_type_variation_changed(p_type_name);
+	}
+}
+
 void ThemeTypeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -2728,11 +2924,12 @@ void ThemeTypeEditor::_notification(int p_what) {
 			data_type_tabs->set_tab_icon(2, get_icon("Font", "EditorIcons"));
 			data_type_tabs->set_tab_icon(3, get_icon("ImageTexture", "EditorIcons"));
 			data_type_tabs->set_tab_icon(4, get_icon("StyleBoxFlat", "EditorIcons"));
+			data_type_tabs->set_tab_icon(5, get_icon("Tools", "EditorIcons"));
 
 			data_type_tabs->add_style_override("tab_selected", get_stylebox("tab_selected_odd", "TabContainer"));
 			data_type_tabs->add_style_override("panel", get_stylebox("panel_odd", "TabContainer"));
 
-			_update_add_type_options();
+			type_variation_button->set_icon(get_icon("Add", "EditorIcons"));
 		} break;
 	}
 }
@@ -2745,11 +2942,8 @@ void ThemeTypeEditor::_bind_methods() {
 	ClassDB::bind_method("_list_type_selected", &ThemeTypeEditor::_list_type_selected);
 
 	ClassDB::bind_method("_add_type_button_cbk", &ThemeTypeEditor::_add_type_button_cbk);
-	ClassDB::bind_method("_add_type_dialog_confirmed", &ThemeTypeEditor::_add_type_dialog_confirmed);
-	ClassDB::bind_method("_add_type_filter_cbk", &ThemeTypeEditor::_add_type_filter_cbk);
-	ClassDB::bind_method("_add_type_dialog_entered", &ThemeTypeEditor::_add_type_dialog_entered);
-	ClassDB::bind_method("_add_type_options_cbk", &ThemeTypeEditor::_add_type_options_cbk);
-	ClassDB::bind_method("_add_type_dialog_activated", &ThemeTypeEditor::_add_type_dialog_activated);
+	ClassDB::bind_method("_add_type_variation_cbk", &ThemeTypeEditor::_add_type_variation_cbk);
+	ClassDB::bind_method("_add_type_dialog_selected", &ThemeTypeEditor::_add_type_dialog_selected);
 	ClassDB::bind_method("_add_default_type_items", &ThemeTypeEditor::_add_default_type_items);
 
 	ClassDB::bind_method("_item_add_lineedit_cbk", &ThemeTypeEditor::_item_add_lineedit_cbk);
@@ -2770,6 +2964,7 @@ void ThemeTypeEditor::_bind_methods() {
 	ClassDB::bind_method("_pin_leading_stylebox", &ThemeTypeEditor::_pin_leading_stylebox);
 	ClassDB::bind_method("_unpin_leading_stylebox", &ThemeTypeEditor::_unpin_leading_stylebox);
 	ClassDB::bind_method("_update_stylebox_from_leading", &ThemeTypeEditor::_update_stylebox_from_leading);
+	ClassDB::bind_method("_type_variation_changed", &ThemeTypeEditor::_type_variation_changed);
 }
 
 void ThemeTypeEditor::set_edited_theme(const Ref<Theme> &p_theme) {
@@ -2780,6 +2975,8 @@ void ThemeTypeEditor::set_edited_theme(const Ref<Theme> &p_theme) {
 	edited_theme = p_theme;
 	edited_theme->connect("changed", this, "_update_type_list_debounced");
 	_update_type_list();
+
+	add_type_dialog->set_edited_theme(edited_theme);
 }
 
 void ThemeTypeEditor::select_type(String p_type_name) {
@@ -2829,30 +3026,6 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_list_hb->add_child(add_type_button);
 	add_type_button->connect("pressed", this, "_add_type_button_cbk");
 
-	add_type_dialog = memnew(ConfirmationDialog);
-	add_type_dialog->set_title(TTR("Add Item Type"));
-	type_list_hb->add_child(add_type_dialog);
-	add_type_dialog->connect("confirmed", this, "_add_type_dialog_confirmed");
-
-	VBoxContainer *add_type_vb = memnew(VBoxContainer);
-	add_type_dialog->add_child(add_type_vb);
-
-	Label *add_type_filter_label = memnew(Label);
-	add_type_filter_label->set_text(TTR("Name:"));
-	add_type_vb->add_child(add_type_filter_label);
-	add_type_filter = memnew(LineEdit);
-	add_type_vb->add_child(add_type_filter);
-	add_type_filter->connect("text_changed", this, "_add_type_filter_cbk");
-	add_type_filter->connect("text_entered", this, "_add_type_dialog_entered");
-	Label *add_type_options_label = memnew(Label);
-	add_type_options_label->set_text(TTR("Node Types:"));
-	add_type_vb->add_child(add_type_options_label);
-	add_type_options = memnew(ItemList);
-	add_type_options->set_v_size_flags(SIZE_EXPAND_FILL);
-	add_type_vb->add_child(add_type_options);
-	add_type_options->connect("item_selected", this, "_add_type_options_cbk");
-	add_type_options->connect("item_activated", this, "_add_type_dialog_activated");
-
 	HBoxContainer *type_controls = memnew(HBoxContainer);
 	main_vb->add_child(type_controls);
 
@@ -2881,6 +3054,50 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	font_items_list = _create_item_list(Theme::DATA_TYPE_FONT);
 	icon_items_list = _create_item_list(Theme::DATA_TYPE_ICON);
 	stylebox_items_list = _create_item_list(Theme::DATA_TYPE_STYLEBOX);
+
+	VBoxContainer *type_settings_tab = memnew(VBoxContainer);
+	type_settings_tab->set_custom_minimum_size(Size2(0, 160) * EDSCALE);
+	data_type_tabs->add_child(type_settings_tab);
+	data_type_tabs->set_tab_title(data_type_tabs->get_tab_count() - 1, "");
+
+	ScrollContainer *type_settings_sc = memnew(ScrollContainer);
+	type_settings_sc->set_v_size_flags(SIZE_EXPAND_FILL);
+	type_settings_sc->set_enable_h_scroll(false);
+	type_settings_tab->add_child(type_settings_sc);
+	VBoxContainer *type_settings_list = memnew(VBoxContainer);
+	type_settings_list->set_h_size_flags(SIZE_EXPAND_FILL);
+	type_settings_sc->add_child(type_settings_list);
+
+	VBoxContainer *type_variation_vb = memnew(VBoxContainer);
+	type_settings_list->add_child(type_variation_vb);
+
+	HBoxContainer *type_variation_hb = memnew(HBoxContainer);
+	type_variation_vb->add_child(type_variation_hb);
+	Label *type_variation_label = memnew(Label);
+	type_variation_hb->add_child(type_variation_label);
+	type_variation_label->set_text(TTR("Base Type"));
+	type_variation_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	type_variation_edit = memnew(LineEdit);
+	type_variation_hb->add_child(type_variation_edit);
+	type_variation_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	type_variation_edit->connect("text_changed", this, "_type_variation_changed");
+	type_variation_edit->connect("focus_exited", this, "_update_type_items");
+	type_variation_button = memnew(Button);
+	type_variation_hb->add_child(type_variation_button);
+	type_variation_button->set_tooltip(TTR("Select the variation base type from a list of available types."));
+	type_variation_button->connect("pressed", this, "_add_type_variation_cbk");
+
+	type_variation_locked = memnew(Label);
+	type_variation_vb->add_child(type_variation_locked);
+	type_variation_locked->set_align(Label::ALIGN_CENTER);
+	type_variation_locked->set_autowrap(true);
+	type_variation_locked->set_text(TTR("A type associated with a built-in class cannot be marked as a variation of another type."));
+	type_variation_locked->hide();
+
+	add_type_dialog = memnew(ThemeTypeDialog);
+	add_type_dialog->set_title(TTR("Add Item Type"));
+	add_child(add_type_dialog);
+	add_type_dialog->connect("type_selected", this, "_add_type_dialog_selected");
 
 	update_debounce_timer = memnew(Timer);
 	update_debounce_timer->set_one_shot(true);
@@ -3109,7 +3326,7 @@ ThemeEditor::ThemeEditor() {
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &ext);
 	for (List<String>::Element *E = ext.front(); E; E = E->next()) {
-		preview_scene_dialog->add_filter("*." + E->get() + "; Scene");
+		preview_scene_dialog->add_filter(vformat("*.%s; %s", E->get(), TTR("Scene")));
 	}
 	main_hs->add_child(preview_scene_dialog);
 	preview_scene_dialog->connect("file_selected", this, "_preview_scene_dialog_cbk");

@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef IPHONE_ENABLED
-
 #ifndef OS_IPHONE_H
 #define OS_IPHONE_H
+
+#ifdef IPHONE_ENABLED
 
 #include "core/os/input.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
@@ -61,6 +61,8 @@ private:
 
 	VideoMode video_mode;
 
+	EAGLContext *offscreen_gl_context;
+
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
 
@@ -81,6 +83,7 @@ private:
 	void set_data_dir(String p_dir);
 
 	String data_dir;
+	String cache_dir;
 
 	InputDefault *input;
 
@@ -93,7 +96,7 @@ private:
 public:
 	static OSIPhone *get_singleton();
 
-	OSIPhone(String p_data_dir);
+	OSIPhone(String p_data_dir, String p_cache_dir);
 	~OSIPhone();
 
 	bool iterate();
@@ -115,16 +118,19 @@ public:
 	Error shell_open(String p_uri);
 
 	String get_user_data_dir() const;
+	String get_cache_path() const;
 
 	String get_locale() const;
 
 	String get_unique_id() const;
+	virtual String get_processor_name() const;
 
 	virtual void vibrate_handheld(int p_duration_ms = 500);
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 
 	virtual int get_screen_dpi(int p_screen = -1) const;
+	virtual float get_screen_refresh_rate(int p_screen = -1) const;
 
 	void pencil_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick);
 	void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick);
@@ -145,7 +151,7 @@ public:
 	int get_unused_joy_id();
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name);
 	void joy_button(int p_device, int p_button, bool p_pressed);
-	void joy_axis(int p_device, int p_axis, const InputDefault::JoyAxis &p_value);
+	void joy_axis(int p_device, int p_axis, float p_value);
 
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);
@@ -159,6 +165,10 @@ public:
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
+
+	void set_offscreen_gl_context(EAGLContext *p_context);
+	virtual bool is_offscreen_gl_available() const;
+	virtual void set_offscreen_gl_current(bool p_current);
 
 	virtual void set_keep_screen_on(bool p_enabled);
 
@@ -185,6 +195,6 @@ public:
 	void on_focus_in();
 };
 
-#endif // OS_IPHONE_H
+#endif // IPHONE_ENABLED
 
-#endif
+#endif // OS_IPHONE_H

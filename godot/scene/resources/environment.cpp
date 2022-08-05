@@ -156,6 +156,7 @@ int Environment::get_camera_feed_id() const {
 void Environment::set_tonemapper(ToneMapper p_tone_mapper) {
 	tone_mapper = p_tone_mapper;
 	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
+	_change_notify();
 }
 
 Environment::ToneMapper Environment::get_tonemapper() const {
@@ -284,6 +285,12 @@ void Environment::_validate_property(PropertyInfo &property) const {
 	if (property.name == "background_camera_feed_id") {
 		if (bg_mode != BG_CAMERA_FEED) {
 			property.usage = PROPERTY_USAGE_NOEDITOR;
+		}
+	}
+
+	if (property.name == "tonemap_white") {
+		if (tone_mapper == TONE_MAPPER_LINEAR) {
+			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
@@ -1177,7 +1184,7 @@ Environment::Environment() :
 		glow_blend_mode(GLOW_BLEND_MODE_ADDITIVE),
 		dof_blur_far_quality(DOF_BLUR_QUALITY_LOW),
 		dof_blur_near_quality(DOF_BLUR_QUALITY_LOW) {
-	environment = VS::get_singleton()->environment_create();
+	environment = RID_PRIME(VS::get_singleton()->environment_create());
 
 	bg_mode = BG_CLEAR_COLOR;
 	bg_sky_custom_fov = 0;

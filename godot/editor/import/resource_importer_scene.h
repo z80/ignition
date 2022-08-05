@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCEIMPORTERSCENE_H
-#define RESOURCEIMPORTERSCENE_H
+#ifndef RESOURCE_IMPORTER_SCENE_H
+#define RESOURCE_IMPORTER_SCENE_H
 
 #include "core/io/resource_importer.h"
 #include "scene/resources/animation.h"
@@ -147,7 +147,7 @@ public:
 
 	void _make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_animations_as_text, bool p_keep_animations, bool p_make_materials, bool p_materials_as_text, bool p_keep_materials, bool p_make_meshes, bool p_meshes_as_text, Map<Ref<Animation>, Ref<Animation>> &p_animations, Map<Ref<Material>, Ref<Material>> &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh>> &p_meshes);
 
-	Node *_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape>>> &collision_map, LightBakeMode p_light_bake_mode);
+	Node *_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape>>> &collision_map, LightBakeMode p_light_bake_mode, List<Pair<NodePath, Node *>> &r_node_renames);
 
 	void _create_clips(Node *scene, const Array &p_clips, bool p_bake_all);
 	void _filter_anim_tracks(Ref<Animation> anim, Set<String> &keep);
@@ -172,4 +172,4 @@ public:
 	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
 };
 
-#endif // RESOURCEIMPORTERSCENE_H
+#endif // RESOURCE_IMPORTER_SCENE_H

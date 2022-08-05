@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTROL_EDITOR_PLUGIN_H
-#define CONTROL_EDITOR_PLUGIN_H
+#ifndef CANVAS_ITEM_EDITOR_PLUGIN_H
+#define CANVAS_ITEM_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -115,7 +115,6 @@ private:
 		SNAP_RELATIVE,
 		SNAP_CONFIGURE,
 		SNAP_USE_PIXEL,
-		SHOW_GRID,
 		SHOW_HELPERS,
 		SHOW_RULERS,
 		SHOW_GUIDES,
@@ -224,6 +223,12 @@ private:
 		DRAG_KEY_MOVE
 	};
 
+	enum GridVisibility {
+		GRID_VISIBILITY_SHOW,
+		GRID_VISIBILITY_SHOW_WHEN_SNAPPING,
+		GRID_VISIBILITY_HIDE,
+	};
+
 	EditorSelection *editor_selection;
 	bool selection_menu_additive_selection;
 
@@ -249,7 +254,7 @@ private:
 	VBoxContainer *info_overlay;
 
 	Transform2D transform;
-	bool show_grid;
+	GridVisibility grid_visibility;
 	bool show_rulers;
 	bool show_guides;
 	bool show_origin;
@@ -374,6 +379,7 @@ private:
 	MenuButton *skeleton_menu;
 	ToolButton *override_camera_button;
 	MenuButton *view_menu;
+	PopupMenu *grid_menu;
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
 
@@ -433,8 +439,6 @@ private:
 
 	CanvasItem *ref_item;
 
-	void _add_canvas_item(CanvasItem *p_canvas_item);
-
 	void _save_canvas_item_ik_chain(const CanvasItem *p_canvas_item, List<float> *p_bones_length, List<Dictionary> *p_bones_state);
 	void _save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones = false);
 	void _restore_canvas_item_ik_chain(CanvasItem *p_canvas_item, const List<Dictionary> *p_bones_state);
@@ -448,13 +452,15 @@ private:
 	bool updating_scroll;
 	void _update_scroll(float);
 	void _update_scrollbars();
-	void _append_canvas_item(CanvasItem *p_item);
 	void _snap_changed();
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
 	void _add_node_pressed(int p_result);
 	void _node_created(Node *p_node);
 	void _reset_create_position();
+	bool _is_grid_visible() const;
+	void _prepare_grid_menu();
+	void _on_grid_menu_id_pressed(int p_id);
 
 	UndoRedo *undo_redo;
 	bool _build_bones_list(Node *p_node);
@@ -537,7 +543,6 @@ private:
 			const Node *p_current);
 
 	void _set_anchors_preset(Control::LayoutPreset p_preset);
-	void _set_margins_preset(Control::LayoutPreset p_preset);
 	void _set_anchors_and_margins_preset(Control::LayoutPreset p_preset);
 	void _set_anchors_and_margins_to_keep_ratio();
 
@@ -559,7 +564,8 @@ private:
 
 	void _update_override_camera_button(bool p_game_running);
 
-	HSplitContainer *palette_split;
+	HSplitContainer *left_panel_split;
+	HSplitContainer *right_panel_split;
 	VSplitContainer *bottom_split;
 
 	bool bone_list_dirty;
@@ -577,9 +583,6 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-	void end_drag();
-	void box_selection_start(Point2 &click);
-	bool box_selection_end();
 
 	HBoxContainer *get_panel_hb() { return hb; }
 
@@ -604,9 +607,6 @@ protected:
 		float get(const Vector2 &v) { return v.y; }
 		void set(Vector2 &v, float f) { v.y = f; }
 	};
-
-	template <class P, class C>
-	void space_selected_items();
 
 	static CanvasItemEditor *singleton;
 
@@ -639,7 +639,15 @@ public:
 	void add_control_to_info_overlay(Control *p_control);
 	void remove_control_from_info_overlay(Control *p_control);
 
-	HSplitContainer *get_palette_split();
+	void add_control_to_left_panel(Control *p_control);
+	void remove_control_from_left_panel(Control *p_control);
+
+	void add_control_to_right_panel(Control *p_control);
+	void remove_control_from_right_panel(Control *p_control);
+
+	void move_control_to_left_panel(Control *p_control);
+	void move_control_to_right_panel(Control *p_control);
+
 	VSplitContainer *get_bottom_split();
 
 	Control *get_viewport_control() { return viewport; }
@@ -732,4 +740,4 @@ public:
 	~CanvasItemEditorViewport();
 };
 
-#endif
+#endif // CANVAS_ITEM_EDITOR_PLUGIN_H

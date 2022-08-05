@@ -34,7 +34,7 @@
 #include "core/math/math_funcs.h"
 #include "core/ustring.h"
 
-struct Color {
+struct _NO_DISCARD_CLASS_ Color {
 	union {
 		struct {
 			float r;
@@ -90,6 +90,10 @@ struct Color {
 	void contrast();
 	Color inverted() const;
 	Color contrasted() const;
+
+	_FORCE_INLINE_ float get_luminance() const {
+		return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+	}
 
 	_FORCE_INLINE_ Color linear_interpolate(const Color &p_to, float p_weight) const {
 		Color res = *this;
@@ -228,4 +232,4 @@ bool Color::operator<(const Color &p_color) const {
 	}
 }
 
-#endif
+#endif // COLOR_H
