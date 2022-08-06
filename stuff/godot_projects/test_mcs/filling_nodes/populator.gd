@@ -3,6 +3,8 @@ tool
 extends Node
 
 export(Array) var creators = []
+
+### Drag instance creators here.
 export(Resource) var creator = null setget _set_creator, _get_creator
 
 export(float) var fill_dist      = 120.0
@@ -50,7 +52,7 @@ func _populate_node( parent: Spatial, cubes: MarchingCubesDualGd, node: Marching
 	
 	var dist: float = creator.min_distance
 	var v: float  = sz / dist
-	v = v * v
+	v = v * v * 50
 	var qty: int = int(v)
 	
 	for i in range(qty):

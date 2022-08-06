@@ -13,9 +13,9 @@ func _ready():
 	spatial = get_node( "Spatial" )
 	meshes  = [ get_node("Spatial/Mesh_0" ), get_node("Spatial/Mesh_1") ]
 	
-#	scaler = DistanceScalerRef.new()
-#	scaler.plain_distance = 150.0
-#	scaler.log_scale      = 10.0
+	scaler = DistanceScalerRef.new()
+	scaler.plain_distance = 150.0
+	scaler.log_scale      = 10.0
 	
 	
 	
@@ -47,7 +47,7 @@ func _ready():
 	cubes.set_source_transform( se3 )
 
 	cubes.split_precision = 0.02
-	cubes.subdivide_source( 1200.0, source, scaler )
+	var _ok: bool = cubes.subdivide_source( 1200.0, source, scaler )
 	
 	var nodes_qty: int = cubes.get_nodes_qty()
 	var cells_qty: int = cubes.get_dual_cells_qty()
@@ -55,7 +55,7 @@ func _ready():
 	print( "nodes: ", nodes_qty, "; cells: ", cells_qty )
 	
 #	_draw_octree_nodes()
-	_draw_dual_cells()
+	#_draw_dual_cells()
 	
 	var material_inds: Array = cubes.materials_used()
 	

@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://filling_nodes/test_mcs_dual.gd" type="Script" id=1]
 [ext_resource path="res://maujoe.camera_control/scripts/camera_control.gd" type="Script" id=2]
@@ -36,7 +36,12 @@ emission_on_uv2 = false
 uv1_triplanar = true
 uv2_triplanar = true
 
+[sub_resource type="SpatialMaterial" id=10]
+flags_unshaded = true
+albedo_color = Color( 1, 0, 0, 1 )
+
 [sub_resource type="SphereMesh" id=1]
+material = SubResource( 10 )
 
 [sub_resource type="SpatialMaterial" id=8]
 flags_unshaded = true

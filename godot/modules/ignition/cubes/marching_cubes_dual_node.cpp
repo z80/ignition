@@ -388,10 +388,10 @@ SE3 MarchingCubesDualNode::se3_in_point( MarchingCubesDual * tree, const Vector3
 	const SE3 & se3     = tree->source_se3;
 	const SE3 & inv_se3 = tree->inverted_source_se3;
 
-	const Vector3d at_s = se3.q_ * at + se3.r_;
-	const Vector3d up = in_source ? ( at_s / at_s.Length() ) : inv_se3.q_ * ( at_s / at_s.Length() );
+	const Vector3d at_s       = in_source ? at : (se3.q_ * at + se3.r_);
+	const Vector3d up         = in_source ? ( at_s / at_s.Length() ) : inv_se3.q_ * ( at_s / at_s.Length() );
 	const Vector3d up_default = in_source ? Vector3d( 0.0, 1.0, 0.0 ) : inv_se3.q_ * Vector3d( 0.0, 1.0, 0.0 );
-	const Quaterniond q = Quaterniond( up_default, up );
+	const Quaterniond q       = Quaterniond( up_default, up );
 
 	SE3 ret;
 	ret.q_ = q;

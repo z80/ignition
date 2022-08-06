@@ -1,11 +1,16 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
-[sub_resource type="SphereMesh" id=1]
-radial_segments = 16
-rings = 8
+[sub_resource type="CubeMesh" id=1]
+size = Vector3( 0.5, 2, 0.5 )
+
+[sub_resource type="SpatialMaterial" id=2]
+albedo_color = Color( 0.243137, 1, 0, 1 )
+metallic_specular = 0.06
+roughness = 0.81
 
 [node name="Spatial" type="Spatial"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
 mesh = SubResource( 1 )
-material/0 = null
+material/0 = SubResource( 2 )
