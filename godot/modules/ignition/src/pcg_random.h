@@ -26,15 +26,15 @@ class PcgRandom
 {
 public:
     PcgRandom();
-    ~PcgRandom();
+    virtual ~PcgRandom();
 
     PcgRandom( const PcgRandom & inst );
     const PcgRandom & operator=( const PcgRandom & inst );
 
     void seed( uint64_t s=0 );
 
-	void setState( uint64_t st );
-	uint64_t state() const;
+    void set_state( uint64_t st );
+    uint64_t state() const;
 
     uint32_t uint();
     uint32_t uint( uint32_t bound );

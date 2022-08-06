@@ -38,6 +38,8 @@
 #include "marching_cubes_rebuild_strategy_gd.h"
 #include "marching_cubes_spherical_rebuild_strategy_gd.h"
 
+#include "ign_random_gd.h"
+
 void register_ignition_types()
 {
 	//ClassDB::register_class<OccupancyGrid>();
@@ -72,6 +74,8 @@ void register_ignition_types()
 
 	ClassDB::register_class<Ign::MarchingCubesRebuildStrategyGd>();
 	ClassDB::register_class<Ign::MarchingCubesSphericalRebuildStrategyGd>();
+
+	ClassDB::register_class<Ign::IgnRandomGd>();
 }
 
 void unregister_ignition_types()
