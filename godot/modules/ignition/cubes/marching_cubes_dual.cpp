@@ -100,32 +100,23 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 	}
 
 	// Assign vertex positions, normals, and tangents.
-	_verts.clear();
-	_norms.clear();
-	_tangs.clear();
 	const int faces_qty = _all_faces.size();
 	for ( int i=0; i<faces_qty; i++ )
 	{
-		const NodeFace & face = _all_faces[i];
-		const Face3 & f = face.face;
-		const Vector3 norm = f.get_plane().normal;
-		const Vector3 tangent = norm.cross( f.vertex[2] - f.vertex[0] ).normalized();
+		NodeFace & face = _all_faces[i];
+		//const Face3 & f = face.face;
+		const Vector3d norm = face.normal();
+		const Vector3d tangent = norm.CrossProduct( face.vertices[2] - face.vertices[0] ).Normalized();
+		face.tangent = tangent;
 		for ( int j=0; j<3; j++ )
 		{
-			const Vector3 vert          = f.vertex[j];
+			const Vector3d vert         = face.vertices[j];
 			const NodeEdgeInt & edge    = face.node_edges[j];
 			NormalsMapConstIterator it  = _normals_map.find( edge );
 			const NormalsAndQty & n_qty = it->second;
 			const Vector3d & n          = n_qty.norms;
 
-			const Vector3 norm( n.x_, n.y_, n.z_ );
-
-			_verts.push_back( vert );
-			_norms.push_back( norm );
-			_tangs.push_back( tangent.x );
-			_tangs.push_back( tangent.y );
-			_tangs.push_back( tangent.z );
-			_tangs.push_back( 1.0 );
+			face.normals[j] = n;
 		}
 	}
 
@@ -358,22 +349,33 @@ const std::set<int> & MarchingCubesDual::materials() const
 	return _materials_set;
 }
 
-const std::vector<Vector3> & MarchingCubesDual::vertices( int material_ind )
+const std::vector<Vector3> & MarchingCubesDual::vertices( int material_ind, const DistanceScalerBase * scaler )
 {
 	const unsigned int qty = _all_faces.size();
 	_ret_verts.clear();
 	_ret_verts.reserve(3*qty);
+
+	const SE3 scaled_source_se3 = compute_source_se3( scaler );
+	const SE3 inv_scaled_source_se3 = scaled_source_se3.inverse();
+
 	for ( unsigned int i=0; i<qty; i++ )
 	{
 		const NodeFace & f = _all_faces[i];
-		const int ind = f.material_ind;
-		if (ind != material_ind)
+		const int face_material_ind = f.material_ind;
+		if ( face_material_ind != material_ind )
 			continue;
 		for ( int j=0; j<3; j++ )
 		{
-			const int ind = 3*i + j;
-			const Vector3 & v = _verts[ind];
-			_ret_verts.push_back( v );
+			const Vector3d source_v = f.vertices[j];
+			// Convert to world.
+			Vector3d world_v = source_se3 * source_v;
+			// Convert to scaled world.
+			if ( scaler != nullptr )
+				world_v = scaler->scale( world_v );
+			// Convert relative to scaled origin.
+			const Vector3d rel_to_scaled_v = inv_scaled_source_se3 * world_v;
+			
+			_ret_verts.push_back( Vector3( rel_to_scaled_v.x_, rel_to_scaled_v.y_, rel_to_scaled_v.z_ ) );
 		}
 	}
 	return _ret_verts;
@@ -392,9 +394,8 @@ const std::vector<Vector3> & MarchingCubesDual::normals( int material_ind )
 			continue;
 		for ( int j=0; j<3; j++ )
 		{
-			const int ind = 3*i + j;
-			const Vector3 & v = _norms[ind];
-			_ret_norms.push_back( v );
+			const Vector3d & v = f.normals[j];
+			_ret_norms.push_back( Vector3( v.x_, v.y_, v.z_ ) );
 		}
 	}
 	return _ret_norms;
@@ -412,12 +413,11 @@ const std::vector<real_t>  & MarchingCubesDual::tangents( int material_ind )
 		if (ind != material_ind)
 			continue;
 
-		for ( int j=0; j<4; j++ )
-		{
-			const int ind = 4*i + j;
-			const real_t tang = _tangs[ind];
-			_ret_tangs.push_back( tang );
-		}
+		const Vector3d & t = f.tangent;
+		_ret_tangs.push_back( t.x_ );
+		_ret_tangs.push_back( t.y_ );
+		_ret_tangs.push_back( t.z_ );
+		_ret_tangs.push_back( 1.0 );
 	}
 	return _ret_tangs;
 }
@@ -448,13 +448,16 @@ const std::vector<Face3> & MarchingCubesDual::collision_faces( const Vector3d & 
 	const Vector3d center = inverted_source_se3.r_;
 
 	const VectorInt center_int = VectorInt( static_cast<int>( center.x_ / step ),
-		static_cast<int>( center.y_ / step ),
-		static_cast<int>( center.z_ / step ) );
+		                                    static_cast<int>( center.y_ / step ),
+		                                    static_cast<int>( center.z_ / step ) );
 	const int size_int         = static_cast<int>( dist / step ) * 2;
 
 	MarchingCubesDualNode node;
 	node.at   = center_int;
 	node.size = size_int;
+
+	const SE3 scaled_source_se3 = compute_source_se3( scaler );
+	const SE3 inv_scaled_source_se3 = scaled_source_se3.inverse();
 
 	root->query_faces( this, node, _face_indices_set );
 	for ( MaterialsSet::const_iterator it=_face_indices_set.begin(); it!=_face_indices_set.end(); it++ )
@@ -464,17 +467,26 @@ const std::vector<Face3> & MarchingCubesDual::collision_faces( const Vector3d & 
 
 		if ( in_source )
 		{
-			_faces_ret.push_back( nf.face );
+			Face3 f;
+			for ( int i=0; i<3; i++ )
+			{
+				const Vector3d & source_v = nf.vertices[i];
+				const Vector3d world_v  = source_se3 * source_v;
+				const Vector3d scaled_world_v = (scaler != nullptr) ? scaler->scale(world_v) : world_v;
+				const Vector3d scaled_source_v = inv_scaled_source_se3 * scaled_world_v;
+				f.vertex[i] = Vector3( scaled_source_v.x_, scaled_source_v.y_, scaled_source_v.z_ );
+			}
+			_faces_ret.push_back( f );
 		}
 		else
 		{
-			Face3 f = nf.face;
+			Face3 f;
 			for ( int i=0; i<3; i++ )
 			{
-				Vector3 & rf = f.vertex[i];
-				const Vector3d r = Vector3d( rf.x, rf.y, rf.z );
-				const Vector3d rw = source_se3.q_ * r + source_se3.r_;
-				rf = Vector3( rw.x_, rw.y_, rw.z_ );
+				const Vector3d & source_v = f.vertex[i];
+				const Vector3d world_v  = source_se3 * source_v;
+				const Vector3d scaled_world_v = (scaler != nullptr) ? scaler->scale(world_v) : world_v;
+				f.vertex[i] = Vector3( scaled_world_v.x_, scaled_world_v.y_, scaled_world_v.z_ );
 			}
 			_faces_ret.push_back( f );
 		}
@@ -1634,84 +1646,84 @@ void MarchingCubesDual::create_faces( const MarchingCubesDualCell & cell, int ma
 	{
 		if ( cell.vertices_int[0] == cell.vertices_int[1] )
 			return;
-		intersection_points[0]  = interpolate( cell.vertices_scaled[0], cell.vertices_scaled[1], cell.values[0], cell.values[1] );
+		intersection_points[0]  = interpolate( cell.vertices[0], cell.vertices[1], cell.values[0], cell.values[1] );
 		edges_int[0] = NodeEdgeInt( cell.vertices_int[0], cell.vertices_int[1] );
 	}
 	if ( edge & 2 )
 	{
 		if ( cell.vertices_int[1] == cell.vertices_int[2] )
 			return;
-		intersection_points[1]  = interpolate( cell.vertices_scaled[1], cell.vertices_scaled[2], cell.values[1], cell.values[2] );
+		intersection_points[1]  = interpolate( cell.vertices[1], cell.vertices[2], cell.values[1], cell.values[2] );
 		edges_int[1] = NodeEdgeInt( cell.vertices_int[1], cell.vertices_int[2] );
 	}
 	if ( edge & 4 )
 	{
 		if ( cell.vertices_int[2] == cell.vertices_int[3] )
 			return;
-		intersection_points[2]  = interpolate( cell.vertices_scaled[2], cell.vertices_scaled[3], cell.values[2], cell.values[3] );
+		intersection_points[2]  = interpolate( cell.vertices[2], cell.vertices[3], cell.values[2], cell.values[3] );
 		edges_int[2] = NodeEdgeInt( cell.vertices_int[2], cell.vertices_int[3] );
 	}
 	if ( edge & 8 )
 	{
 		if ( cell.vertices_int[3] == cell.vertices_int[0] )
 			return;
-		intersection_points[3]  = interpolate( cell.vertices_scaled[3], cell.vertices_scaled[0], cell.values[3], cell.values[0] );
+		intersection_points[3]  = interpolate( cell.vertices[3], cell.vertices[0], cell.values[3], cell.values[0] );
 		edges_int[3] = NodeEdgeInt( cell.vertices_int[3], cell.vertices_int[0] );
 	}
 	if ( edge & 16 )
 	{
 		if ( cell.vertices_int[4] == cell.vertices_int[5] )
 			return;
-		intersection_points[4]  = interpolate( cell.vertices_scaled[4], cell.vertices_scaled[5], cell.values[4], cell.values[5] );
+		intersection_points[4]  = interpolate( cell.vertices[4], cell.vertices[5], cell.values[4], cell.values[5] );
 		edges_int[4] = NodeEdgeInt( cell.vertices_int[4], cell.vertices_int[5] );
 	}
 	if ( edge & 32 )
 	{
 		if ( cell.vertices_int[5] == cell.vertices_int[6] )
 			return;
-		intersection_points[5]  = interpolate( cell.vertices_scaled[5], cell.vertices_scaled[6], cell.values[5], cell.values[6] );
+		intersection_points[5]  = interpolate( cell.vertices[5], cell.vertices[6], cell.values[5], cell.values[6] );
 		edges_int[5] = NodeEdgeInt( cell.vertices_int[5], cell.vertices_int[6] );
 	}
 	if ( edge & 64 )
 	{
 		if ( cell.vertices_int[6] == cell.vertices_int[7] )
 			return;
-		intersection_points[6]  = interpolate( cell.vertices_scaled[6], cell.vertices_scaled[7], cell.values[6], cell.values[7] );
+		intersection_points[6]  = interpolate( cell.vertices[6], cell.vertices[7], cell.values[6], cell.values[7] );
 		edges_int[6] = NodeEdgeInt( cell.vertices_int[6], cell.vertices_int[7] );
 	}
 	if ( edge & 128 )
 	{
 		if ( cell.vertices_int[7] == cell.vertices_int[4] )
 			return;
-		intersection_points[7]  = interpolate( cell.vertices_scaled[7], cell.vertices_scaled[4], cell.values[7], cell.values[4] );
+		intersection_points[7]  = interpolate( cell.vertices[7], cell.vertices[4], cell.values[7], cell.values[4] );
 		edges_int[7] = NodeEdgeInt( cell.vertices_int[7], cell.vertices_int[4] );
 	}
 	if ( edge & 256 )
 	{
 		if ( cell.vertices_int[0] == cell.vertices_int[4] )
 			return;
-		intersection_points[8]  = interpolate( cell.vertices_scaled[0], cell.vertices_scaled[4], cell.values[0], cell.values[4] );
+		intersection_points[8]  = interpolate( cell.vertices[0], cell.vertices[4], cell.values[0], cell.values[4] );
 		edges_int[8] = NodeEdgeInt( cell.vertices_int[0], cell.vertices_int[4] );
 	}
 	if ( edge & 512 )
 	{
 		if ( cell.vertices_int[1] == cell.vertices_int[5] )
 			return;
-		intersection_points[9]  = interpolate( cell.vertices_scaled[1], cell.vertices_scaled[5], cell.values[1], cell.values[5] );
+		intersection_points[9]  = interpolate( cell.vertices[1], cell.vertices[5], cell.values[1], cell.values[5] );
 		edges_int[9] = NodeEdgeInt( cell.vertices_int[1], cell.vertices_int[5] );
 	}
 	if ( edge & 1024 )
 	{
 		if ( cell.vertices_int[2] == cell.vertices_int[6] )
 			return;
-		intersection_points[10] = interpolate( cell.vertices_scaled[2], cell.vertices_scaled[6], cell.values[2], cell.values[6] );
+		intersection_points[10] = interpolate( cell.vertices[2], cell.vertices[6], cell.values[2], cell.values[6] );
 		edges_int[10] = NodeEdgeInt( cell.vertices_int[2], cell.vertices_int[6] );
 	}
 	if ( edge & 2048 )
 	{
 		if ( cell.vertices_int[3] == cell.vertices_int[7] )
 			return;
-		intersection_points[11] = interpolate( cell.vertices_scaled[3], cell.vertices_scaled[7], cell.values[3], cell.values[7] );
+		intersection_points[11] = interpolate( cell.vertices[3], cell.vertices[7], cell.values[3], cell.values[7] );
 		edges_int[11] = NodeEdgeInt( cell.vertices_int[3], cell.vertices_int[7] );
 	}
 
@@ -1730,17 +1742,17 @@ void MarchingCubesDual::create_faces( const MarchingCubesDualCell & cell, int ma
 		const NodeEdgeInt & edge_b = edges_int[ind_b];
 		const NodeEdgeInt & edge_c = edges_int[ind_c];
 
-		const Vector3 fa( a.x_, a.y_, a.z_ );
-		const Vector3 fb( b.x_, b.y_, b.z_ );
-		const Vector3 fc( c.x_, c.y_, c.z_ );
-		const Face3 f( fa, fb, fc );
+		//const Vector3 fa( a.x_, a.y_, a.z_ );
+		//const Vector3 fb( b.x_, b.y_, b.z_ );
+		//const Vector3 fc( c.x_, c.y_, c.z_ );
+		//const Face3 f( fa, fb, fc );
 
-		NodeFace face( f, edge_a, edge_b, edge_c );
+		NodeFace face( a, b, c, edge_a, edge_b, edge_c );
 		face.cell = const_cast<MarchingCubesDualCell *>( &cell );
 		face.material_ind = material_index;
 		_all_faces.push_back( face );
 
-		const Vector3 norm = f.get_plane().normal;
+		const Vector3d norm = face.normal();
 		append_normal( edge_a, norm );
 		append_normal( edge_b, norm );
 		append_normal( edge_c, norm );

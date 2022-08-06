@@ -258,7 +258,10 @@ class MarchingCubesDualCell;
 class NodeFace
 {
 public:
-	Face3       face;
+	//Face3       face;
+	Vector3d    vertices[3];
+	Vector3d    normals[3];
+	Vector3d    tangent;
 	// Node edges on which face vertices lay.
 	NodeEdgeInt node_edges[3];
 	// Cell this face has been created with.
@@ -270,12 +273,17 @@ public:
 	{
 		material_ind = 0;
 	}
-	NodeFace( const Face3 & f, const NodeEdgeInt & na, const NodeEdgeInt & nb, const NodeEdgeInt & nc )
+	NodeFace( const Vector3d & va, const Vector3d & vb, const Vector3d & vc, const NodeEdgeInt & na, const NodeEdgeInt & nb, const NodeEdgeInt & nc )
 	{
-		face = f;
+		//face = f;
+		vertices[0]   = va;
+		vertices[1]   = vb;
+		vertices[2]   = vc;
+
 		node_edges[0] = na;
 		node_edges[1] = nb;
 		node_edges[2] = nc;
+
 		cell = nullptr;
 		material_ind = 0;
 	}
@@ -285,12 +293,15 @@ public:
 	{
 		if ( this != &inst )
 		{
-			face = inst.face;
+			//face = inst.face;
 			for ( int i=0; i<3; i++ )
 			{
+				vertices[i]   = inst.vertices[i];
+				normals[i]    = inst.normals[i];
 				node_edges[i] = inst.node_edges[i];
 			}
-			cell = inst.cell;
+			tangent      = inst.tangent;
+			cell         = inst.cell;
 			material_ind = inst.material_ind;
 		}
 
@@ -300,6 +311,16 @@ public:
 	{
 		*this = inst;
 	}
+	Vector3d normal() const
+	{
+		const Vector3d a = vertices[0] - vertices[2];
+		const Vector3d b = vertices[0] - vertices[1];
+		const Vector3d c = a.CrossProduct( b );
+		const Vector3d n = c.Normalized();
+		return n;
+	}
+	bool intersects_ray(const Vector3d & p_from, const Vector3d &p_dir, Vector3d *p_intersection = nullptr) const;
+	bool intersects_segment(const Vector3d & p_from, const Vector3d &p_to, Vector3d *p_intersection = nullptr) const;
 };
 
 bool operator<( const NodeFace & a, const NodeFace & b );
@@ -340,6 +361,57 @@ public:
 	}
 };
 
+
+
+
+
+
+
+
+
+
+
+
+class Aabb
+{
+public:
+	Vector3d position;
+	Vector3d size;
+
+	Aabb()
+	{
+	}
+
+	~Aabb()
+	{}
+
+	Aabb( const Vector3d & at, const Vector3d & sz )
+	{
+		position = at;
+		size     = sz;
+	}
+
+	const Aabb & operator=( const Aabb & inst )
+	{
+		if ( this != &inst )
+		{
+			position = inst.position;
+			size     = inst.size;
+		}
+
+		return * this;
+	}
+
+	Aabb( const Aabb & inst )
+	{
+		*this = inst;
+	}
+
+	bool has_point( const Vector3d & p_point ) const;
+	bool intersects_segment( const Vector3d & p_from, const Vector3d & p_to, Vector3d * r_clip = nullptr, Vector3d *r_normal = nullptr) const;
+	bool intersects_ray( const Vector3d & p_from, const Vector3d & p_dir, Vector3d * r_clip = nullptr, Vector3d *r_normal = nullptr) const;
+
+};
 
 
 

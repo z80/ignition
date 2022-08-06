@@ -26,7 +26,7 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_tree_node", "ind"),                  &MarchingCubesDualGd::get_tree_node,     Variant::OBJECT );
 
 	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
-	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance"),           &MarchingCubesDualGd::apply_to_mesh );
+	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
 	ClassDB::bind_method( D_METHOD("mesh_transform", "scaler"),                                 &MarchingCubesDualGd::mesh_transform, Variant::TRANSFORM );
 	ClassDB::bind_method( D_METHOD("collision_faces", "at", "dist", "in_source"),               &MarchingCubesDualGd::collision_faces, Variant::ARRAY );
 
@@ -156,7 +156,7 @@ Array MarchingCubesDualGd::materials_used() const
 
 
 
-void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instance )
+void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler )
 {
 	MeshInstance * mi = Object::cast_to<MeshInstance>(mesh_instance);
 	if (mi == nullptr)
@@ -165,7 +165,14 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 		return;
 	}
 
-	const std::vector<Vector3> & verts = cubes.vertices( material_index );
+	const DistanceScalerRef * scaler_ref = scaler.ptr();
+	const DistanceScaler * s;
+	if ( scaler_ref == nullptr )
+		s = nullptr;
+	else
+		s = &(scaler_ref->scaler);
+
+	const std::vector<Vector3> & verts = cubes.vertices( material_index, s );
 	const std::vector<Vector3> & norms = cubes.normals( material_index );
 	const std::vector<real_t> & tangs = cubes.tangents( material_index );
 	const int verts_qty = verts.size();

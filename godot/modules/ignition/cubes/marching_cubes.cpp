@@ -105,7 +105,10 @@ bool MarchingCubes::subdivide_source( VolumeSource * source, const DistanceScale
 	for ( int i=0; i<faces_qty; i++ )
 	{
 		const NodeFace & face = _all_faces[i];
-		const Face3 & f = face.face;
+		const Vector3 a( face.vertices[0].x_, face.vertices[0].y_, face.vertices[0].z_ );
+		const Vector3 b( face.vertices[1].x_, face.vertices[1].y_, face.vertices[1].z_ );
+		const Vector3 c( face.vertices[2].x_, face.vertices[2].y_, face.vertices[2].z_ );
+		const Face3 f( a, b, c );
 		const Vector3 norm = f.get_plane().normal;
 		const Vector3 tangent = norm.cross( f.vertex[2] - f.vertex[0] ).normalized();
 		for ( int j=0; j<3; j++ )
@@ -205,8 +208,11 @@ const std::vector<Vector3> & MarchingCubes::collision_faces( const Float dist, c
 
 	for ( int i=0; i<qty; i++ )
 	{
-		const NodeFace & nf = _all_faces[i];
-		Face3 f = nf.face;
+		const NodeFace & face = _all_faces[i];
+		const Vector3 a( face.vertices[0].x_, face.vertices[0].y_, face.vertices[0].z_ );
+		const Vector3 b( face.vertices[1].x_, face.vertices[1].y_, face.vertices[1].z_ );
+		const Vector3 c( face.vertices[2].x_, face.vertices[2].y_, face.vertices[2].z_ );
+		Face3 f( a, b, c );
 		f.vertex[0] = t.xform( f.vertex[0] );
 		f.vertex[1] = t.xform( f.vertex[1] );
 		f.vertex[2] = t.xform( f.vertex[2] );
@@ -556,16 +562,16 @@ void MarchingCubes::create_faces( const MarchingNode & node, int material_index 
 		const NodeEdgeInt & edge_b = edges_int[ind_b];
 		const NodeEdgeInt & edge_c = edges_int[ind_c];
 
-		const Vector3 fa( a.x_, a.y_, a.z_ );
-		const Vector3 fb( b.x_, b.y_, b.z_ );
-		const Vector3 fc( c.x_, c.y_, c.z_ );
-		const Face3 f( fa, fb, fc );
+		//const Vector3 fa( a.x_, a.y_, a.z_ );
+		//const Vector3 fb( b.x_, b.y_, b.z_ );
+		//const Vector3 fc( c.x_, c.y_, c.z_ );
+		//const Face3 f( fa, fb, fc );
 
-		const NodeFace face( f, edge_a, edge_b, edge_c );
+		const NodeFace face( a, b, c, edge_a, edge_b, edge_c );
 		_all_faces.push_back( face );
 		_materials.push_back( material_index );
 
-		const Vector3 norm = f.get_plane().normal;
+		const Vector3d norm = face.normal();
 		append_normal( edge_a, norm );
 		append_normal( edge_b, norm );
 		append_normal( edge_c, norm );

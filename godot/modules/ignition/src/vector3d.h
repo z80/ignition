@@ -187,6 +187,32 @@ public:
         return *this;
     }
 
+	const Float & operator[]( int i ) const
+	{
+		switch (i)
+		{
+			case 1:
+				return y_;
+			case 2:
+				return z_;
+			default:
+				return x_;
+		}
+	}
+
+	Float & operator[]( int i )
+	{
+		switch (i)
+		{
+			case 1:
+				return y_;
+			case 2:
+				return z_;
+			default:
+				return x_;
+		}
+	}
+
     /// Normalize to unit length.
     void Normalize()
     {

@@ -225,7 +225,7 @@ public:
 	int faces_qty;
 
 	// AABB for computing intersections.
-	AABB aabb;
+	Aabb aabb;
 };
 
 }

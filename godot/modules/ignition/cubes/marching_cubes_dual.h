@@ -158,7 +158,7 @@ public:
 
 
     const std::set<int>        & materials() const;
-    const std::vector<Vector3> & vertices( int material_ind );
+    const std::vector<Vector3> & vertices( int material_ind, const DistanceScalerBase * scaler );
     const std::vector<Vector3> & normals( int material_ind );
     const std::vector<real_t>  & tangents( int material_ind );
 
@@ -278,9 +278,10 @@ public:
 
     std::vector<NodeFace> _all_faces;
     // Results for applying to meshes.
-    std::vector<Vector3>  _verts;
-    std::vector<Vector3>  _norms;
-    std::vector<real_t>   _tangs;
+	// These are unscaled.
+    //std::vector<Vector3d>  _verts;
+    //std::vector<Vector3d>  _norms;
+    //std::vector<real_t>    _tangs;
 
     // For returning results.
     std::vector<Vector3>  _ret_verts;

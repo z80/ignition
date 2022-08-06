@@ -67,7 +67,7 @@ func _ready():
 			ind = 0
 		var m: MeshInstance = meshes[ind]
 		m.visible = true
-		cubes.apply_to_mesh( ind, m )
+		cubes.apply_to_mesh( ind, m, scaler )
 	
 	spatial.transform = cubes.mesh_transform( scaler )
 	

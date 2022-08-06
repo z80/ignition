@@ -127,10 +127,7 @@ bool MarchingCubesDualNode::intersect_with_segment( MarchingCubesDual * tree, co
 		return false;
 	}
 
-	const Vector3 a( start.x_, start.y_, start.z_ );
-	const Vector3 b( end.x_, end.y_, end.z_ );
-
-	const bool intersects = this->aabb.intersects_segment( a, b );
+	const bool intersects = this->aabb.intersects_segment( start, end );
 	if ( !intersects )
 		return false;
 
@@ -140,8 +137,8 @@ bool MarchingCubesDualNode::intersect_with_segment( MarchingCubesDual * tree, co
 		const int ind = face_base_index + i;
 		const NodeFace & f = tree->get_face_by_index( ind );
 
-		Vector3 pt;
-		const bool ret = f.face.intersects_segment( a, b, &pt );
+		Vector3d pt;
+		const bool ret = f.intersects_segment( start, end, &pt );
 		if ( ret )
 		{
 			// Check if intersection point is inside the node.
@@ -149,15 +146,17 @@ bool MarchingCubesDualNode::intersect_with_segment( MarchingCubesDual * tree, co
 			if ( !inside )
 				return false;
 
-			at = Vector3d( pt.x, pt.y, pt.z );
-			const Vector3 n = f.face.get_plane().get_normal();
-			norm = Vector3d( n.x, n.y, n.z );
-
-			if ( !in_source )
+			const Vector3d n = f.normal();
+			if ( in_source )
 			{
-				const SE3 & inv_se3 = tree->inverted_source_se3;
-				at = inv_se3.q_ * at + inv_se3.r_;
-				norm = inv_se3.q_ * norm;
+				at   = pt;
+				norm = n;
+			}
+			else
+			{
+				const SE3 & se3 = tree->source_se3;
+				pt   = se3 * pt;
+				norm = se3.q_ * n;
 			}
 
 			return true;
@@ -182,10 +181,7 @@ bool MarchingCubesDualNode::intersect_with_ray( MarchingCubesDual * tree, const 
 		return false;
 	}
 
-	const Vector3 a( start.x_, start.y_, start.z_ );
-	const Vector3 b( dir.x_, dir.y_, dir.z_ );
-
-	const bool intersects = this->aabb.intersects_ray( a, b );
+	const bool intersects = this->aabb.intersects_ray( start, dir );
 	if ( !intersects )
 		return false;
 
@@ -195,8 +191,8 @@ bool MarchingCubesDualNode::intersect_with_ray( MarchingCubesDual * tree, const 
 		const int ind = face_base_index + i;
 		const NodeFace & f = tree->get_face_by_index( ind );
 
-		Vector3 pt;
-		const bool ret = f.face.intersects_ray( a, b, &pt );
+		Vector3d pt;
+		const bool ret = f.intersects_ray( start, dir, &pt );
 		if ( ret )
 		{
 			// Check if intersection point is inside the node.
@@ -204,19 +200,17 @@ bool MarchingCubesDualNode::intersect_with_ray( MarchingCubesDual * tree, const 
 			if ( !inside )
 				return false;
 
-			at = Vector3d( pt.x, pt.y, pt.z );
-			const Vector3 n = f.face.get_plane().get_normal();
-			norm = Vector3d( n.x, n.y, n.z );
-
-			const SE3 & inv_se3 = tree->inverted_source_se3;
-			at = inv_se3.q_ * at + inv_se3.r_;
-			norm = inv_se3.q_ * norm;
-
-			if ( !in_source )
+			const Vector3d n = f.normal();
+			if ( in_source )
 			{
-				const SE3 & inv_se3 = tree->inverted_source_se3;
-				at = inv_se3.q_ * at + inv_se3.r_;
-				norm = inv_se3.q_ * norm;
+				norm = n;
+				at   = pt;
+			}
+			else
+			{
+				const SE3 & se3 = tree->source_se3;
+				at   = se3 * pt;
+				norm = se3.q_ * n;
 			}
 
 			return true;
@@ -312,7 +306,7 @@ void MarchingCubesDualNode::init_aabb( MarchingCubesDual * tree )
 	const Vector3d v_at = tree->at_in_source( at );
 	const Vector3d v_to = tree->at_in_source( VectorInt( at.x+size, at.y+size, at.z+size ) );
 	const Vector3d sz = v_to - v_at;
-	aabb = AABB( Vector3(v_at.x_, v_at.y_, v_at.z_), Vector3(sz.x_, sz.y_, sz.z_) );
+	aabb = Aabb( v_at, sz );
 }
 
 
@@ -364,7 +358,7 @@ bool MarchingCubesDualNode::contains_point( MarchingCubesDual * tree, const Vect
 {
 	const SE3 & se3 = tree->source_se3;
 	const Vector3d at_s = se3.q_ * at + se3.r_;
-	const bool ret = aabb.has_point( Vector3( at_s.x_, at_s.y_, at_s.z_ ) );
+	const bool ret = aabb.has_point( at_s );
 	return ret;
 }
 
