@@ -27,7 +27,7 @@ func _ready():
 	source.bounding_radius = 450.0
 	source.radius = 400.0
 	source.node_sz_max = 200.0
-	source.node_sz_min = 1.0
+	source.node_sz_min = 10.0
 	
 	var se3: Se3Ref = Se3Ref.new()
 	se3.r = Vector3.ZERO
