@@ -162,7 +162,7 @@ public:
     const std::vector<Vector3> & normals( int material_ind );
     const std::vector<real_t>  & tangents( int material_ind );
 
-    const std::vector<Face3> & collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler = nullptr );
+    const std::vector<Vector3> & collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler = nullptr );
 
     Transform compute_source_transform( const DistanceScalerBase * scaler = nullptr) const;
 	SE3 compute_source_se3( const DistanceScalerBase * scaler = nullptr) const;
@@ -299,8 +299,8 @@ public:
     MaterialsSet _materials_set;
 
 	// Face indisce set. Used to query all faces.
-	MaterialsSet _face_indices_set;
-	std::vector<Face3> _faces_ret;
+    MaterialsSet _face_indices_set;
+    std::vector<Vector3> _faces_ret;
 };
 
 

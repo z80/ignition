@@ -422,7 +422,7 @@ const std::vector<real_t>  & MarchingCubesDual::tangents( int material_ind )
 	return _ret_tangs;
 }
 
-const std::vector<Face3> & MarchingCubesDual::collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler )
+const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler )
 {
 	_face_indices_set.clear();
 	_faces_ret.clear();
@@ -433,7 +433,7 @@ const std::vector<Face3> & MarchingCubesDual::collision_faces( const Vector3d & 
 
 	MarchingCubesDualNode * root = _octree_nodes[0];
 
-	int dist_int = 1;
+	int dist_int = static_cast<int>( dist / step );
 	Float sz = step;
 	while ( sz < dist )
 	{
@@ -445,7 +445,7 @@ const std::vector<Face3> & MarchingCubesDual::collision_faces( const Vector3d & 
 		dist_int *= 2;
 	}
 
-	const Vector3d center = inverted_source_se3.r_;
+	const Vector3d center = inverted_source_se3 * at;
 
 	const VectorInt center_int = VectorInt( static_cast<int>( center.x_ / step ),
 		                                    static_cast<int>( center.y_ / step ),
@@ -467,28 +467,24 @@ const std::vector<Face3> & MarchingCubesDual::collision_faces( const Vector3d & 
 
 		if ( in_source )
 		{
-			Face3 f;
 			for ( int i=0; i<3; i++ )
 			{
 				const Vector3d & source_v = nf.vertices[i];
 				const Vector3d world_v  = source_se3 * source_v;
 				const Vector3d scaled_world_v = (scaler != nullptr) ? scaler->scale(world_v) : world_v;
 				const Vector3d scaled_source_v = inv_scaled_source_se3 * scaled_world_v;
-				f.vertex[i] = Vector3( scaled_source_v.x_, scaled_source_v.y_, scaled_source_v.z_ );
+				_faces_ret.push_back( Vector3( scaled_source_v.x_, scaled_source_v.y_, scaled_source_v.z_ ) );
 			}
-			_faces_ret.push_back( f );
 		}
 		else
 		{
-			Face3 f;
 			for ( int i=0; i<3; i++ )
 			{
-				const Vector3d & source_v = f.vertex[i];
+				const Vector3d & source_v = nf.vertices[i];
 				const Vector3d world_v  = source_se3 * source_v;
 				const Vector3d scaled_world_v = (scaler != nullptr) ? scaler->scale(world_v) : world_v;
-				f.vertex[i] = Vector3( scaled_world_v.x_, scaled_world_v.y_, scaled_world_v.z_ );
+				_faces_ret.push_back(  Vector3( scaled_world_v.x_, scaled_world_v.y_, scaled_world_v.z_ ) );
 			}
-			_faces_ret.push_back( f );
 		}
 	}
 

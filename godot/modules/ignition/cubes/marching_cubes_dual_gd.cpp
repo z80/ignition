@@ -233,20 +233,19 @@ Transform MarchingCubesDualGd::mesh_transform( const Ref<DistanceScalerRef> & sc
 }
 
 
-Array MarchingCubesDualGd::collision_faces( const Vector3 & at, real_t dist, bool in_source )
+const PoolVector3Array & MarchingCubesDualGd::collision_faces( const Vector3 & at, real_t dist, bool in_source )
 {
 	const Vector3d at_d = Vector3d( at.x, at.y, at.z );
-	const std::vector<Face3> & faces = cubes.collision_faces( at_d, dist, in_source );
+	const std::vector<Vector3> & faces = cubes.collision_faces( at_d, dist, in_source );
 	const int qty = faces.size();
-	ret_array.clear();
+	ret_pool_array.resize( qty );
 	for ( int i=0; i<qty; i++ )
 	{
-		const Face3 f = faces[i];
-		for ( int j=0; j<3; j++ )
-			ret_array.push_back( f.vertex[j] );
+		const Vector3 & v = faces[i];
+		ret_pool_array.set( i, v );
 	}
 
-	return ret_array;
+	return ret_pool_array;
 }
 
 void MarchingCubesDualGd::set_max_nodes_qty( int qty )
