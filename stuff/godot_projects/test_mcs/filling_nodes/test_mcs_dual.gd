@@ -13,9 +13,9 @@ func _ready():
 	spatial = get_node( "Spatial" )
 	meshes  = [ get_node("Spatial/Mesh_0" ), get_node("Spatial/Mesh_1") ]
 	
-	scaler = DistanceScalerRef.new()
-	scaler.plain_distance = 150.0
-	scaler.log_scale      = 10.0
+#	scaler = DistanceScalerRef.new()
+#	scaler.plain_distance = 150.0
+#	scaler.log_scale      = 10.0
 	
 	
 	

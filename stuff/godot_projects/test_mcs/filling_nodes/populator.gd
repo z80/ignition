@@ -11,6 +11,11 @@ export(float) var fill_dist      = 120.0
 export(float) var fill_node_size = 100.0
 var _currently_populated_nodes: Array = []
 var _created_instances: Array = []
+var _rand: IgnRandomGd = null
+
+
+func _init():
+	_rand = IgnRandomGd.new()
 
 
 func update( parent: Spatial, cubes: MarchingCubesDualGd, se3: Se3Ref, scaler: DistanceScalerBaseRef ):
@@ -45,6 +50,9 @@ func _ready():
 
 
 func _populate_node( parent: Spatial, cubes: MarchingCubesDualGd, node: MarchingCubesDualNodeGd, creator: Resource, scaler: DistanceScalerBaseRef ):
+	var s: String = node.hash()
+	_rand.seed = s
+	
 	var center: Vector3 = node.center_vector( true )
 	var sz: float       = node.node_size()
 	
@@ -56,10 +64,8 @@ func _populate_node( parent: Spatial, cubes: MarchingCubesDualGd, node: Marching
 	var qty: int = int(v)
 	
 	for i in range(qty):
-		var dx: float = (randf() - 0.5) * sz
-		var dy: float = (randf() - 0.5) * sz
-		var dz: float = (randf() - 0.5) * sz
-		var c: Vector3 = Vector3( dx, dy, dz ) + center
+		var dr: Vector3 = _rand.random_vector( sz )
+		var c: Vector3 = dr + center
 		var ret: Array = node.intersect_with_segment( c, Vector3.ZERO, true )
 		var intersects: bool = ret[0]
 		if ( not intersects ):
@@ -71,12 +77,12 @@ func _populate_node( parent: Spatial, cubes: MarchingCubesDualGd, node: Marching
 		var se3: Se3Ref = node.se3_in_point( at, true )
 		
 		var p: float = creator.probability( se3, norm )
-		var rand_p: float = randf()
+		var rand_p: float = _rand.floating_point_closed()
 		var create: bool = (rand_p < p)
 		if not create:
 			continue
 		
-		var instance: Spatial = creator.create( parent, node, se3, scaler )
+		var instance: Spatial = creator.create( parent, node, se3, _rand, scaler )
 		created_instances.push_back( instance )
 	
 	return created_instances

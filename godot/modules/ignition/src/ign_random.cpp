@@ -123,7 +123,7 @@ Quaterniond IgnRandom::random_rotation( const Vector3d & axis, Float angle_varia
 			                    floating_point_interval_closed(-axis_variation, axis_variation) );
 	}
 	axis_final.Normalize();
-	Quaterniond q( angle, axis_final );
+	Quaterniond q( angle*M_RADTODEG, axis_final );
 
 	return q;
 }
