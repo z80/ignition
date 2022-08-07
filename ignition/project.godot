@@ -337,7 +337,6 @@ DDD="*res://debug/ddd.gd"
 
 [display]
 
-window/size/fullscreen=true
 mouse_cursor/custom_image="res://cursor.png"
 mouse_cursor/tooltip_position_offset=Vector2( 32, 10 )
 
