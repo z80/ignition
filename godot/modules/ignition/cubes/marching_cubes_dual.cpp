@@ -524,53 +524,53 @@ SE3 MarchingCubesDual::compute_source_se3( const DistanceScalerBase * scaler ) c
 
 Float MarchingCubesDual::node_size_min( const MarchingCubesDualNode * node ) const
 {
-	 Float max_sz = (node->vertices_scaled[0] - node->vertices_scaled[1]).Length();
+	 Float min_sz = (node->vertices_scaled[0] - node->vertices_scaled[1]).Length();
 
 	 const Float sz_12 = (node->vertices_scaled[1] - node->vertices_scaled[2]).Length();
-	 if ( max_sz > sz_12 )
-		 max_sz = sz_12;
+	 if ( min_sz > sz_12 )
+		 min_sz = sz_12;
 
 	 const Float sz_23 = (node->vertices_scaled[2] - node->vertices_scaled[3]).Length();
-	 if ( max_sz > sz_23 )
-		 max_sz = sz_23;
+	 if ( min_sz > sz_23 )
+		 min_sz = sz_23;
 
 	 const Float sz_30 = (node->vertices_scaled[3] - node->vertices_scaled[0]).Length();
-	 if ( max_sz > sz_30 )
-		 max_sz = sz_30;
+	 if ( min_sz > sz_30 )
+		 min_sz = sz_30;
 
 	 const Float sz_04 = (node->vertices_scaled[0] - node->vertices_scaled[4]).Length();
-	 if ( max_sz > sz_04 )
-		 max_sz = sz_04;
+	 if ( min_sz > sz_04 )
+		 min_sz = sz_04;
 
 	 const Float sz_15 = (node->vertices_scaled[1] - node->vertices_scaled[5]).Length();
-	 if ( max_sz > sz_15 )
-		 max_sz = sz_15;
+	 if ( min_sz > sz_15 )
+		 min_sz = sz_15;
 
 	 const Float sz_26 = (node->vertices_scaled[2] - node->vertices_scaled[6]).Length();
-	 if ( max_sz > sz_26 )
-		 max_sz = sz_26;
+	 if ( min_sz > sz_26 )
+		 min_sz = sz_26;
 
 	 const Float sz_37 = (node->vertices_scaled[3] - node->vertices_scaled[7]).Length();
-	 if ( max_sz > sz_37 )
-		 max_sz = sz_37;
+	 if ( min_sz > sz_37 )
+		 min_sz = sz_37;
 
 	 const Float sz_45 = (node->vertices_scaled[4] - node->vertices_scaled[5]).Length();
-	 if ( max_sz > sz_45 )
-		 max_sz = sz_45;
+	 if ( min_sz > sz_45 )
+		 min_sz = sz_45;
 
 	 const Float sz_56 = (node->vertices_scaled[5] - node->vertices_scaled[6]).Length();
-	 if ( max_sz > sz_56 )
-		 max_sz = sz_56;
+	 if ( min_sz > sz_56 )
+		 min_sz = sz_56;
 
 	 const Float sz_67 = (node->vertices_scaled[6] - node->vertices_scaled[7]).Length();
-	 if ( max_sz > sz_67 )
-		 max_sz = sz_67;
+	 if ( min_sz > sz_67 )
+		 min_sz = sz_67;
 
 	 const Float sz_74 = (node->vertices_scaled[7] - node->vertices_scaled[4]).Length();
-	 if ( max_sz > sz_74 )
-		 max_sz = sz_74;
+	 if ( min_sz > sz_74 )
+		 min_sz = sz_74;
 
-	 return max_sz;
+	 return min_sz;
 }
 
 Float MarchingCubesDual::node_size_max( const MarchingCubesDualNode * node ) const
@@ -621,7 +621,8 @@ Float MarchingCubesDual::node_size_max( const MarchingCubesDualNode * node ) con
 	if ( max_sz < sz_74 )
 		max_sz = sz_74;
 
-	return max_sz;}
+	return max_sz;
+}
 
 
 

@@ -1,6 +1,6 @@
 
 #include "marching_cubes_spherical_rebuild_strategy.h"
-#include "distance_scaler.h"
+#include "distance_scaler_base.h"
 
 namespace Ign
 {
@@ -15,7 +15,7 @@ MarchingCubesSphericalRebuildStrategy::~MarchingCubesSphericalRebuildStrategy()
 {
 }
 
-void MarchingCubesSphericalRebuildStrategy::initialize( Float radius, DistanceScaler * scaler )
+void MarchingCubesSphericalRebuildStrategy::initialize( Float radius, const DistanceScalerBase * scaler )
 {
     const Float plain_dist = scaler->plain_distance() * 0.3;
     rebuild_angle = plain_dist / rebuild_angle;

@@ -24,6 +24,7 @@ public:
 
 	Array intersect_with_segment( const Vector3 & start, const Vector3 & end, bool in_source );
 	Array intersect_with_ray( const Vector3 & start, const Vector3 & dir, bool in_source );
+	String hierarchy_path() const;
 	bool contains_point( const Vector3 & at ) const;
 	Vector3 center_vector( bool in_source ) const;
 	real_t node_size() const;

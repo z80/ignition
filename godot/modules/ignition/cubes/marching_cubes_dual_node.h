@@ -49,6 +49,8 @@ public:
     // Initialize vertices and planes.
     void init_aabb( MarchingCubesDual * tree );
 
+	String hierarchy_path() const;
+
 	bool intersects( const MarchingCubesDualNode & other ) const;
 
 	bool contains_point( MarchingCubesDual * tree, const Vector3d & at ) const;

@@ -9,7 +9,7 @@
 namespace Ign
 {
 
-class DistanceScaler;
+class DistanceScalerBase;
 
 class MarchingCubesSphericalRebuildStrategy: public MarchingCubesRebuildStrategy
 {
@@ -17,7 +17,7 @@ public:
     MarchingCubesSphericalRebuildStrategy();
     virtual ~MarchingCubesSphericalRebuildStrategy();
     
-    void initialize( Float radius, DistanceScaler * scaler );
+    void initialize( Float radius, const DistanceScalerBase * scaler );
 
     virtual bool need_rebuild( const SE3 & view_point_se3 ) override;
 

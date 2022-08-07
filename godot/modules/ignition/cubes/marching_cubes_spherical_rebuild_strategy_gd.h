@@ -5,7 +5,7 @@
 #include "marching_cubes_rebuild_strategy_gd.h"
 #include "marching_cubes_spherical_rebuild_strategy.h"
 
-#include "distance_scaler_ref.h"
+#include "distance_scaler_base_ref.h"
 
 namespace Ign
 {
@@ -19,7 +19,7 @@ public:
 	MarchingCubesSphericalRebuildStrategyGd();
 	virtual ~MarchingCubesSphericalRebuildStrategyGd();
 	
-	void initialize( real_t radius, const Ref<DistanceScalerRef> & scaler );
+	void initialize( real_t radius, const Ref<DistanceScalerBaseRef> & scaler );
 
 public:
 	MarchingCubesSphericalRebuildStrategy spherical_strategy;

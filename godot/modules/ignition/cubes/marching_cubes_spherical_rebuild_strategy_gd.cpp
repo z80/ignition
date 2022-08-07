@@ -19,9 +19,13 @@ MarchingCubesSphericalRebuildStrategyGd::~MarchingCubesSphericalRebuildStrategyG
 {
 }
 
-void MarchingCubesSphericalRebuildStrategyGd::initialize( real_t radius, const Ref<DistanceScalerRef> & scaler )
+void MarchingCubesSphericalRebuildStrategyGd::initialize( real_t radius, const Ref<DistanceScalerBaseRef> & scaler )
 {
-	DistanceScaler * s = const_cast<DistanceScaler *>( &(scaler.ptr()->scaler) );
+	const DistanceScalerBase * s;
+	if ( scaler.ptr() != nullptr )
+		s = scaler->scaler;
+	else
+		s = nullptr;
 	spherical_strategy.initialize( radius, s );
 }
 

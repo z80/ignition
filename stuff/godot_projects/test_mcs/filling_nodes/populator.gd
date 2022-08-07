@@ -9,8 +9,7 @@ export(Resource) var creator = null setget _set_creator, _get_creator
 
 export(float) var fill_dist      = 120.0
 export(float) var fill_node_size = 100.0
-var _currently_populated_nodes: Array = []
-var _created_instances: Array = []
+var _created_instances: Dictionary = {}
 var _rand: IgnRandomGd = null
 
 
@@ -18,22 +17,58 @@ func _init():
 	_rand = IgnRandomGd.new()
 
 
-func update( parent: Spatial, cubes: MarchingCubesDualGd, se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+func _exit_tree():
 	clear()
+
+
+func update( parent: Spatial, cubes: MarchingCubesDualGd, se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+	
+	var all_node_keys: Dictionary = {}
+	for key in _created_instances:
+		all_node_keys[key] = true
 	
 	var at: Vector3  = se3.r
 	var node_indices: Array = cubes.query_close_nodes( at, fill_dist, fill_node_size )
 	for node_ind in node_indices:
 		var node: MarchingCubesDualNodeGd = cubes.get_tree_node( node_ind )
-		for creator in creators:
-			var created_instances: Array = _populate_node( parent, cubes, node, creator, scaler )
-			_created_instances += created_instances
+		var h_path: String = node.hierarchy_path()
+		var has: bool = _created_instances.has( h_path )
+		if not has:
+			for creator in creators:
+				var created_instances: Array = _populate_node( parent, cubes, node, creator, scaler )
+				has = _created_instances.has( h_path )
+				if not has:
+					_created_instances[h_path] = created_instances
+				else:
+					var insts: Array = _created_instances[h_path]
+					insts += created_instances
+					_created_instances[h_path] = insts
+		
+		# Remove from the list of all populated nodes.
+		# There should be only node paths which should be eliminated in the end.
+		has = all_node_keys.has( h_path )
+		if has:
+			all_node_keys.erase( h_path )
+	
+	# Remove node content which are now beyond the range and 
+	# should not be populated anymore.
+	for key in all_node_keys:
+		var has: bool = _created_instances.has( key )
+		if has:
+			var insts: Array = _created_instances[key]
+			for inst in insts:
+				if is_instance_valid(inst):
+					inst.queue_free()
+
 
 
 
 func clear():
-	for inst in _created_instances:
-		inst.queue_free()
+	for key in _created_instances:
+		var insts: Array = _created_instances[key]
+		for inst in insts:
+			if is_instance_valid(inst):
+				inst.queue_free()
 	
 	_created_instances.clear()
 

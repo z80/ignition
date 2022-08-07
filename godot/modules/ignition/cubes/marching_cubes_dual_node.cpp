@@ -310,6 +310,18 @@ void MarchingCubesDualNode::init_aabb( MarchingCubesDual * tree )
 }
 
 
+String MarchingCubesDualNode::hierarchy_path() const
+{
+	if ( parent_node != nullptr )
+	{
+		const String parent_path = parent_node->hierarchy_path();
+		const String ret = parent_path + String::num_uint64( index_in_parent );
+		return ret;
+	}
+
+	return String();
+}
+
 bool MarchingCubesDualNode::intersects( const MarchingCubesDualNode & other ) const
 {
 	{
