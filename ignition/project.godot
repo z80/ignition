@@ -99,6 +99,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/parts/habitats/entrance_node.gd"
 }, {
+"base": "Node",
+"class": "ExecPool",
+"language": "GDScript",
+"path": "res://addons/exec_pool/exec_pool.gd"
+}, {
+"base": "Resource",
+"class": "ExecPoolSettings",
+"language": "GDScript",
+"path": "res://addons/exec_pool/exec_pool_settings.gd"
+}, {
 "base": "Spatial",
 "class": "ExhaustNode",
 "language": "GDScript",
@@ -254,6 +264,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/celestial_bodies/sun.gd"
 }, {
+"base": "Resource",
+"class": "SurfaceSourceBase",
+"language": "GDScript",
+"path": "res://tryouts/celestial_bodies_voxel/surface_source_base.gd"
+}, {
 "base": "Part",
 "class": "Thruster",
 "language": "GDScript",
@@ -283,6 +298,8 @@ _global_script_class_icons={
 "CreatableTechnology": "",
 "Decoupler": "",
 "EntranceNode": "",
+"ExecPool": "",
+"ExecPoolSettings": "",
 "ExhaustNode": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
 "ForceSource": "",
@@ -314,6 +331,7 @@ _global_script_class_icons={
 "SoundSource": "",
 "StaticPhysicsBody": "",
 "Sun": "",
+"SurfaceSourceBase": "",
 "Thruster": "",
 "TileBase": ""
 }
@@ -334,6 +352,7 @@ Constants="*res://physics/singletons/constants.gd"
 UserInput="*res://physics/user_unput/user_input.gd"
 UiSound="*res://physics/singletons/sound/ui_sound.tscn"
 DDD="*res://debug/ddd.gd"
+WorkersPool="*res://addons/exec_pool/exec_pool.tscn"
 
 [display]
 

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://addons/exec_pool/exec_pool_settings.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+max_threads_qty = 1
