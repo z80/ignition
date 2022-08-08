@@ -321,7 +321,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Ignition"
-run/main_scene="res://physics/menu/root_menu/test_menu_items.tscn"
+run/main_scene="res://physics/menu/root_menu/start_menu.tscn"
 config/icon="res://icon.png"
 
 [autoload]
