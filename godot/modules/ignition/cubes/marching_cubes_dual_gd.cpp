@@ -175,23 +175,32 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 	const std::vector<Vector3> & verts = cubes.vertices( material_index, s );
 	const std::vector<Vector3> & norms = cubes.normals( material_index );
 	const std::vector<real_t> & tangs = cubes.tangents( material_index );
+	const std::vector<Vector2> * p_uvs;
+	const std::vector<Vector2> * p_uv2s;
+	cubes.uvs( material_index, p_uvs, p_uv2s );
+
 	const int verts_qty = verts.size();
 	// Fill in arrays.
 	vertices.resize( verts_qty );
 	normals.resize( verts_qty );
 	tangents.resize( verts_qty*4 );
 	//colors.resize( verts_qty );
-	//uvs.resize( verts_qty );
-	//uvs2.resize( qty );
+	uvs.resize( verts_qty );
+	uv2s.resize( verts_qty );
 
 	int vert_ind = 0;
 	int tang_ind = 0;
 	for ( int i=0; i<verts_qty; i++ )
 	{
-		const Vector3 vert = verts[i];
-		const Vector3 norm = norms[i];
+		const Vector3 & vert = verts[i];
+		const Vector3 & norm = norms[i];
 		vertices.set( i, vert );
 		normals.set( i, norm );
+
+		const Vector2 & uv  = (*p_uvs)[i];
+		const Vector2 & uv2 = (*p_uv2s)[i];
+		uvs.set( i, uv );
+		uv2s.set( i, uv2 );
 	}
 
 	const int tangs_qty = tangs.size();
@@ -211,8 +220,8 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 	arrays.set( ArrayMesh::ARRAY_NORMAL,  normals );
 	arrays.set( ArrayMesh::ARRAY_TANGENT, tangents );
 	//arrays.set( ArrayMesh::ARRAY_COLOR,   colors );
-	//arrays.set( ArrayMesh::ARRAY_TEX_UV,  uvs );
-	//arrays.set( ArrayMesh::ARRAY_TEX_UV2, uvs2 );
+	arrays.set( ArrayMesh::ARRAY_TEX_UV,  uvs );
+	arrays.set( ArrayMesh::ARRAY_TEX_UV2, uv2s );
 
 	Ref<ArrayMesh> am = memnew(ArrayMesh);
 	am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );

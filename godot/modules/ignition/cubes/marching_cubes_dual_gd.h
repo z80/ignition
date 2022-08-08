@@ -60,6 +60,9 @@ public:
 	PoolVector3Array vertices,
 		             normals;
 	PoolRealArray    tangents;
+	PoolVector2Array uvs,
+		             uv2s;
+
 	PoolVector3Array ret_pool_array;
 	Array            ret_array;
 };

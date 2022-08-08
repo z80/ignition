@@ -10,6 +10,7 @@
 //#include "hashfuncs.h"
 #include "core/vector.h"
 #include "core/math/face3.h"
+#include "core/math/vector2.h"
 
 #include "se3.h"
 
@@ -161,6 +162,7 @@ public:
     const std::vector<Vector3> & vertices( int material_ind, const DistanceScalerBase * scaler );
     const std::vector<Vector3> & normals( int material_ind );
     const std::vector<real_t>  & tangents( int material_ind );
+	void uvs( int material_ind, const std::vector<Vector2> * & uvs, const std::vector<Vector2> * & uv2s );
 
     const std::vector<Vector3> & collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler = nullptr );
 
@@ -287,6 +289,7 @@ public:
     std::vector<Vector3>  _ret_verts;
     std::vector<Vector3>  _ret_norms;
     std::vector<real_t>   _ret_tangs;
+	std::vector<Vector2>  _ret_uvs, _ret_uv2s;
 
     // In order to not compute values a few times.
     ValuesMap     _values_map;

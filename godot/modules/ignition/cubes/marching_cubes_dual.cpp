@@ -422,6 +422,32 @@ const std::vector<real_t>  & MarchingCubesDual::tangents( int material_ind )
 	return _ret_tangs;
 }
 
+
+void MarchingCubesDual::uvs( int material_ind, const std::vector<Vector2> * & ret_uvs, const std::vector<Vector2> * & ret_uv2s )
+{
+	const unsigned int qty = _all_faces.size();
+	_ret_uvs.clear();
+	_ret_uv2s.clear();
+	_ret_uvs.reserve(3*qty);
+	_ret_uv2s.reserve(3*qty);
+	for ( unsigned int i=0; i<qty; i++ )
+	{
+		const NodeFace & f = _all_faces[i];
+		const int ind = f.material_ind;
+		if (ind != material_ind)
+			continue;
+		for ( int j=0; j<3; j++ )
+		{
+			const Vector3d & v = f.normals[j];
+			_ret_uvs.push_back( Vector2( v.x_, v.y_ ) );
+			_ret_uv2s.push_back( Vector2( v.y_, v.z_ ) );
+		}
+	}
+	ret_uvs  = &_ret_uvs;
+	ret_uv2s = &_ret_uv2s;
+}
+
+
 const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler )
 {
 	_face_indices_set.clear();
