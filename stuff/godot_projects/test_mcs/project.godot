@@ -51,8 +51,12 @@ _global_script_class_icons={
 [application]
 
 config/name="test_mcs"
-run/main_scene="res://filling_nodes/test_mcs_dual.tscn"
+run/main_scene="res://node_populator/test_mcs_dual.tscn"
 config/icon="res://icon.png"
+
+[autoload]
+
+WorkersPool="*res://addons/exec_pool/exec_pool.tscn"
 
 [physics]
 

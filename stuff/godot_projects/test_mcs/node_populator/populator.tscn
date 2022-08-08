@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://node_populator/populator.gd" type="Script" id=1]
+[ext_resource path="res://node_populator/creator_resource.tres" type="Resource" id=2]
+
+[node name="Populator" type="Node"]
+script = ExtResource( 1 )
+creators = [ ExtResource( 2 ) ]
+fill_dist = 60.0
+fill_node_size = 80.0

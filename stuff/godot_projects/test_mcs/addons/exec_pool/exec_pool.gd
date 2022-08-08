@@ -4,15 +4,15 @@ class_name ExecPool
 
 export(Resource) var settings = null setget _set_settings, _get_settings
 
-signal _task_finished
-
 var _mutex: Mutex = null
 var _finished: bool = false
 var _tasks: Array = []
+var _finished_tasks: Array = []
 var _threads_available: Array = []
 var _threads_in_work: Array   = []
 
 var _max_threads_qty: int = -1
+
 
 
 func start( instance: Object, method: String, callback: String ) -> void:
@@ -40,10 +40,9 @@ func _ready():
 	_mutex    = Mutex.new()
 	_finished = false
 	_tasks    = []
+	_finished_tasks = []
 	_threads_available = []
 	_threads_in_work   = []
-	
-	connect( "_task_finished", self, "_on_task_finished" )
 	
 	if settings != null:
 		_max_threads_qty = settings.max_threads_qty
@@ -52,6 +51,25 @@ func _ready():
 		if qty > 1:
 			qty -= 1
 		_max_threads_qty = qty
+
+
+func _process( _delta ):
+	_mutex.lock()
+	var task: Task
+	var empty: bool = _finished_tasks.empty()
+	
+	if empty:
+		task = null
+	
+	else:
+		task = _finished_tasks.back()
+		_finished_tasks.pop_back()
+	_mutex.unlock()
+	
+	if task != null:
+		task.call_callback()
+	
+#	_print_stats()
 
 
 func _notification(what: int):
@@ -64,7 +82,7 @@ func queue_free() -> void:
 	_mutex.lock()
 	_finished = true
 	_mutex.unlock()
-	
+
 	.queue_free()
 
 
@@ -117,7 +135,9 @@ func _process_tasks( thread: Thread ):
 		if finished:
 			return
 		
-		emit_signal( "_task_finished", task )
+		_mutex.lock()
+		_finished_tasks.push_front( task )
+		_mutex.unlock()
 
 
 
@@ -143,6 +163,7 @@ func _get_worker_thread():
 
 func _wait_for_workers_to_finish():
 	_mutex.lock()
+	_finished = true
 	var threads: Array = _threads_in_work.duplicate()
 	_mutex.unlock()
 	
@@ -154,14 +175,10 @@ func _wait_for_workers_to_finish():
 
 
 
-func _on_task_finished( task: Task ):
-	task.call_callback()
-
-
 func _print_stats():
 	_mutex.lock()
-	var tasks_in_queue: int = _tasks.size()
-	var workers_running: int = _threads_in_work.size()
+	var tasks_in_queue: int    = _tasks.size()
+	var workers_running: int   = _threads_in_work.size()
 	var workers_available: int = _threads_available.size()
 	_mutex.unlock()
 	
@@ -175,8 +192,8 @@ class Task:
 	var target_argument
 	var callback_name: String
 	var result
-	var __no_argument: bool
-	var __array_argument: bool
+	var _no_argument: bool
+	var _array_argument: bool
 	
 	
 	func _init(instance: Object, method: String, callback_method: String, parameter, no_argument: bool, array_argument: bool):
@@ -185,14 +202,14 @@ class Task:
 		callback_name   = callback_method
 		target_argument = parameter
 		result          = null
-		__no_argument = no_argument
-		__array_argument = array_argument
+		_no_argument = no_argument
+		_array_argument = array_argument
 
 
 	func execute_task():
-		if __no_argument:
+		if _no_argument:
 			result = object.call(method_name)
-		elif __array_argument:
+		elif _array_argument:
 			result = object.callv(method_name, target_argument)
 		else:
 			result = object.call(method_name, target_argument)

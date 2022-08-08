@@ -22,7 +22,7 @@ func _ready():
 	source_tree = VolumeSourceTreeGd.new()
 	
 	source = VolumeSourceScriptGd.new()
-	var script: Resource = preload( "res://filling_nodes/volume_source_sphere.gd" )
+	var script: Resource = preload( "res://node_populator/volume_source_sphere.gd" )
 	source.set_script( script )
 	source.bounding_radius = 450.0
 	source.radius = 400.0

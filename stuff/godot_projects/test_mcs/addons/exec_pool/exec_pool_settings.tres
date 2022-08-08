@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource( 1 )
-max_threads_qty = 4
+max_threads_qty = 1
