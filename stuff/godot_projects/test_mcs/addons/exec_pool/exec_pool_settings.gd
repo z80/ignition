@@ -1,5 +1,6 @@
 
 extends Resource
+class_name ExecPoolSettings
 
 export(int) var max_threads_qty = 4
 

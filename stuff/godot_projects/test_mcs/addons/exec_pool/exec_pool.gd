@@ -19,11 +19,11 @@ func start( instance: Object, method: String, callback: String ) -> void:
 	_add_task( instance, method, callback, null, true, false )
 
 
-func start_arg( instance: Object, method: String, callback: String, parameter ) -> void:
+func start_with_arg( instance: Object, method: String, callback: String, parameter ) -> void:
 	_add_task( instance, method, callback, parameter, false, false )
 
 
-func start_arg_array( instance: Object, method: String, callback: String, parameter: Array ) -> void:
+func start_with_args( instance: Object, method: String, callback: String, parameter: Array ) -> void:
 	_add_task( instance, method, callback, parameter, callback, false, true )
 
 

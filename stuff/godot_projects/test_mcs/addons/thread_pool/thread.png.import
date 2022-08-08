@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/thread.png-26c194a14985997240548f515e9a1020.stex"
+path="res://.import/thread.png-a8c2a33aab16e470fb95550c56d782fe.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://thread_pool/addons/thread_pool/thread.png"
-dest_files=[ "res://.import/thread.png-26c194a14985997240548f515e9a1020.stex" ]
+source_file="res://addons/thread_pool/thread.png"
+dest_files=[ "res://.import/thread.png-a8c2a33aab16e470fb95550c56d782fe.stex" ]
 
 [params]
 
