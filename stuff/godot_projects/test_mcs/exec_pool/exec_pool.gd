@@ -1,5 +1,8 @@
+
 extends Node
 class_name ExecPool
+
+export(Resource) var settings = null setget _set_settings, _get_settings
 
 signal _task_finished
 
@@ -9,33 +12,41 @@ var _tasks: Array = []
 var _threads_available: Array = []
 var _threads_in_work: Array   = []
 
-const MAX_THREADS_QTY: int = 4
 var _max_threads_qty: int = -1
 
 
-func run( instance: Object, method: String, callback: String ) -> void:
-	_add_task(instance, method, callback, null, true, false)
+func start( instance: Object, method: String, callback: String ) -> void:
+	_add_task( instance, method, callback, null, true, false )
 
 
-func submit_task(instance: Object, method: String, callback: String, parameter ) -> void:
-	_add_task(instance, method, callback, parameter, false, false)
+func start_arg( instance: Object, method: String, callback: String, parameter ) -> void:
+	_add_task( instance, method, callback, parameter, false, false )
 
 
-func submit_task_array_parameterized(instance: Object, method: String, callback: String, parameter: Array ) -> void:
-	_add_task(instance, method, callback, parameter, callback, false, true)
+func start_arg_array( instance: Object, method: String, callback: String, parameter: Array ) -> void:
+	_add_task( instance, method, callback, parameter, callback, false, true )
 
 
+func _set_settings( s: Resource ):
+	settings = s
+	#property_list_changed_notify()
+	#print( "settings: ", _settings )
+
+func _get_settings():
+	return settings
 
 
-func _init():
+func _ready():
 	_mutex    = Mutex.new()
 	_finished = false
 	_tasks    = []
 	_threads_available = []
 	_threads_in_work   = []
 	
-	if MAX_THREADS_QTY > 0:
-		_max_threads_qty = MAX_THREADS_QTY
+	connect( "_task_finished", self, "_on_task_finished" )
+	
+	if settings != null:
+		_max_threads_qty = settings.max_threads_qty
 	else:
 		var qty: int = OS.get_processor_count()
 		if qty > 1:
@@ -43,15 +54,10 @@ func _init():
 		_max_threads_qty = qty
 
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
-
-
 func _notification(what: int):
 	if what == NOTIFICATION_PREDELETE:
-		#_wait_for_workers_to_finish()
-		pass
+		_wait_for_workers_to_finish()
+
 
 
 func queue_free() -> void:
@@ -72,33 +78,37 @@ func _add_task(instance: Object, method: String, callback: String, parameter = n
 	var t: Thread = _get_worker_thread()
 
 	_mutex.unlock()
+	
+	#_print_stats()
 
 	if t != null:
-		t.start( self, "_process_tasks" )
+		t.start( self, "_process_tasks", t )
 
 
 
-func _process_tasks():
+func _process_tasks( thread: Thread ):
 	
 	while true:
 		_mutex.lock()
-		var t: Task
+		var task: Task
+		var qty: int = _tasks.size()
+		#print( "tasks in queue: ", qty )
 		if _tasks.empty():
-			t = null
-			var ind: int = _threads_in_work.find( self )
+			task = null
+			var ind: int = _threads_in_work.find( thread )
 			if ind >= 0:
 				_threads_in_work.pop_at( ind )
-				_threads_available.push_back( self )
+				_threads_available.push_back( thread )
 		else:
-			t = _tasks.back()
+			task = _tasks.back()
 			_tasks.pop_back()
 		
 		_mutex.unlock()
 		
-		if t == null:
+		if task == null:
 			return
 		
-		t.execute_task()
+		task.execute_task()
 		
 		_mutex.lock()
 		var finished: bool = _finished
@@ -107,7 +117,7 @@ func _process_tasks():
 		if finished:
 			return
 		
-		emit_signal( "_task_finished", t )
+		emit_signal( "_task_finished", task )
 
 
 
@@ -132,11 +142,31 @@ func _get_worker_thread():
 
 
 func _wait_for_workers_to_finish():
-	pass
+	_mutex.lock()
+	var threads: Array = _threads_in_work.duplicate()
+	_mutex.unlock()
+	
+	for t in threads:
+		var valid: bool = is_instance_valid( t )
+		if valid:
+			if t.is_active():
+				t.wait_to_finish()
+
 
 
 func _on_task_finished( task: Task ):
-	pass
+	task.call_callback()
+
+
+func _print_stats():
+	_mutex.lock()
+	var tasks_in_queue: int = _tasks.size()
+	var workers_running: int = _threads_in_work.size()
+	var workers_available: int = _threads_available.size()
+	_mutex.unlock()
+	
+	print( "tasks in queue: ", tasks_in_queue, "; running qty: ", workers_running, "; available qty: ", workers_available )
+
 
 
 class Task:
@@ -147,7 +177,8 @@ class Task:
 	var result
 	var __no_argument: bool
 	var __array_argument: bool
-
+	
+	
 	func _init(instance: Object, method: String, callback_method: String, parameter, no_argument: bool, array_argument: bool):
 		object          = instance
 		method_name     = method
@@ -165,4 +196,14 @@ class Task:
 			result = object.callv(method_name, target_argument)
 		else:
 			result = object.call(method_name, target_argument)
+	
+	
+	func call_callback():
+		var still_valid: bool = is_instance_valid( object )
+		if still_valid:
+			object.call( callback_name, result )
+
+
+
+
 
