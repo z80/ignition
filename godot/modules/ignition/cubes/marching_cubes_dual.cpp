@@ -740,7 +740,7 @@ int MarchingCubesDual::find_subdivision_levels( Float bounding_radius, VolumeSou
 {
 	// Minimum node size should correspond to integer size of 2.
 	step = source->min_node_size() * 0.5;
-	const Float max_sz = bounding_radius; // * 2.0;
+	const Float max_sz = bounding_radius;
 
 	// Integer size of the half of minimum size should be 1.
 	int size_int = 1;
