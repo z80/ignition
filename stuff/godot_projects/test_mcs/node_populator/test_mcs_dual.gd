@@ -47,7 +47,7 @@ func _ready():
 	cubes.set_source_transform( se3 )
 
 	cubes.split_precision = 0.01
-	var _ok: bool = cubes.subdivide_source( 1200.0, source, scaler )
+	var _ok: bool = cubes.subdivide_source( 190.0, source, scaler )
 	
 	var nodes_qty: int = cubes.get_nodes_qty()
 	var cells_qty: int = cubes.get_dual_cells_qty()
