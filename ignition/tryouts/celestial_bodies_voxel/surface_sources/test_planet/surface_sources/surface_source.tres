@@ -5,5 +5,5 @@
 
 [resource]
 script = ExtResource( 2 )
-source_dimensions = 100.0
+source_dimensions = 1000.0
 materials = [ ExtResource( 1 ) ]

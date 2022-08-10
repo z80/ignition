@@ -39,7 +39,7 @@ func _get_surface_mesh( ind: int ):
 
 func update( source_se3: Se3Ref, scaler: DistanceScalerBaseRef, synchronous: bool ):
 	var dimensions: float      = surface_source.source_dimensions
-	var source: VolumeSourceGd = surface_source.source
+	var source: VolumeSourceGd = surface_source.get_source()
 	
 	self.transform = Transform.IDENTITY
 	
@@ -98,6 +98,14 @@ func apply_meshes( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 		mi.visible = true
 		_voxel_surface.apply_to_mesh( material_ind, mi, scaler )
 		mi.material_override = materials[material_ind]
+
+
+func apply_root_se3( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+	_voxel_surface.source_se3 = source_se3
+	var t: Transform = _voxel_surface.mesh_transform( scaler )
+	return t
+
+
 
 # This is used by FoliageSource
 func get_voxel_surface():

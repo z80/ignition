@@ -55,7 +55,11 @@ func update( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: bool ):
 			for creator in creators:
 				total_qty += 1
 				var args: Array = [self, cubes, node, creator, scaler, populated_node_paths]
-				WorkersPool.start_with_args( self, "_populate_node", "_populate_node_callback", args )
+				if false:
+					WorkersPool.start_with_args( self, "_populate_node", "_populate_node_callback", args )
+				else:
+					var ret: Array = _populate_node( self, cubes, node, creator, scaler, populated_node_paths )
+					_populate_node_callback( ret )
 	
 	_total_qty_left = total_qty
 	
@@ -136,7 +140,7 @@ func _populate_node( parent: Spatial, cubes: MarchingCubesDualGd, node: Marching
 		if not create:
 			continue
 		
-		var instance: Spatial = creator.create( node, se3, rand, scaler )
+		var instance: Spatial = creator.create( node, se3, norm, rand, scaler )
 		#print( "created ", instance )
 		created_instances.push_back( instance )
 	

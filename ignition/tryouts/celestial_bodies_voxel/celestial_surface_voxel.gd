@@ -158,21 +158,21 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 		
 		var subdiv: SubdivideSourceRef = rf.get_subdivide_source()
 		var need_rebuild: bool = subdiv.need_subdivide( rf, planet )
-		if need_rebuild:
-			# Build the surface for this particular ref frame physics.
-			planet.subdivide_2( rf, subdiv )
-			planet.apply_heightmap_2( planet.height_source )
-			var collision_dist = Constants.RF_MERGE_DISTANCE
-			var surface_relative_to_rf: Se3Ref = planet.relative_to( rf )
-			var verts: PoolVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
-			rf.set_surface_vertices( verts, surface_relative_to_rf )
+#		if need_rebuild:
+#			# Build the surface for this particular ref frame physics.
+#			planet.subdivide_2( rf, subdiv )
+#			planet.apply_heightmap_2( planet.height_source )
+#			var collision_dist = Constants.RF_MERGE_DISTANCE
+#			var surface_relative_to_rf: Se3Ref = planet.relative_to( rf )
+#			var verts: PoolVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
+#			rf.set_surface_vertices( verts, surface_relative_to_rf )
 	
 	# For player ref frame rebuild mesh if needed
 	# Generate visual appearance based on camera.
 	var camera: RefFrameNode = PhysicsManager.camera
 	if (camera != null) and ( is_instance_valid(camera) ):
 		var rot: RefFrameNode = rotation_rf()
-		var source_se3: Se3Ref = rot.relative_to_se3( camera )
+		var source_se3: Se3Ref = rot.relative_to( camera )
 		var surfaces: Node = surfaces_node()
 		surfaces.update_source_se3( source_se3 )
 

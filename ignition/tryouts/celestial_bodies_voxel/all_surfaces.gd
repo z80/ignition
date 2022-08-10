@@ -1,7 +1,7 @@
 
 extends Spatial
 
-export(bool) var synchronous_update = false
+export(bool) var synchronous_update = true
 
 var _strategy_initialized: bool = false
 var _rebuild_strategy: MarchingCubesSphericalRebuildStrategyGd = null
@@ -31,13 +31,18 @@ func _enumerate_surfaces():
 
 
 func update_source_se3( source_se3: Se3Ref ):
+	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
+	var surface: Node = _surfaces[0]
+
 	if not _strategy_initialized:
-		var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
-		var surface: Node = _surfaces[0]
 		var radius: float = surface.get_surface_radius()
 		_rebuild_strategy.initialize( radius, scaler )
+		_strategy_initialized = true
 	
-	var need_rebuild: bool = _rebuild_strategy.need_rebuild( source_se3 )
+	var camera_se3: Se3Ref = source_se3.inverse()
+	var r: Vector3 = source_se3.r
+	print( "r: ", r )
+	var need_rebuild: bool = _rebuild_strategy.need_rebuild( camera_se3 )
 	
 	if need_rebuild:
 		# If needed rebuild, rebuild voxel surface and apply to meshes.
@@ -47,6 +52,11 @@ func update_source_se3( source_se3: Se3Ref ):
 	else:
 		# Else only apply to meshes without applying to the surface.
 		_update_view_point( source_se3 )
+	
+	var t: Transform = surface.apply_root_se3( source_se3, scaler )
+	transform = t
+
+
 
 
 # Rebuild voxel representation and reapply to meshes.
