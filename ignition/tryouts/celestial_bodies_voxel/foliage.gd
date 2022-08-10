@@ -6,7 +6,7 @@ class_name FoliageSource
 export(Array) var creators = []
 
 ### Drag instance creators here.
-export(Resource) var creator = null setget _set_creator, _get_creator
+export(Resource) var drop_creators_here = null setget _set_creator, _get_creator
 
 export(float) var fill_dist      = 120.0
 export(float) var fill_node_size = 100.0
@@ -182,7 +182,7 @@ func _populate_node_callback( data: Array ):
 func _set_creator( c: Resource ):
 	if c != null:
 		creators.push_back( c )
-	creator = null
+	drop_creators_here = null
 	property_list_changed_notify()
 
 

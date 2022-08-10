@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel/surface.gd" type="Script" id=1]
-[ext_resource path="res://tryouts/celestial_bodies_voxel/surface_source.tres" type="Resource" id=2]
+[ext_resource path="res://tryouts/celestial_bodies_voxel/surface_sources/test_planet/surface_sources/surface_source.tres" type="Resource" id=2]
 
 [node name="Surface" type="Spatial"]
 script = ExtResource( 1 )

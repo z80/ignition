@@ -20,7 +20,7 @@ func _ready():
 
 
 func get_source_dimensions():
-	return 0.0
+	return source_dimensions
 
 
 
