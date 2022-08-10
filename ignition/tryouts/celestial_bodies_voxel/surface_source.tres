@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource( 1 )
-clear_materials = false
+source_dimensions = 0.0
 materials = [  ]

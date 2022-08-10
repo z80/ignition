@@ -6,7 +6,6 @@ var source: VolumeSourceGd = null
 export(float) var source_dimensions = 0.0 setget , get_source_dimensions
 
 export(Material) var drop_materials_here = null setget _set_drop_materials_here
-export(bool) var clear_materials = false setget _set_clear_materials
 export(Array) var materials: Array = []
 
 func _set_drop_materials_here( m: Material ):
@@ -14,11 +13,6 @@ func _set_drop_materials_here( m: Material ):
 	materials.push_back( m )
 	property_list_changed_notify()
 
-
-func _set_clear_materials( en: bool ):
-	materials       = []
-	clear_materials = false
-	property_list_changed_notify()
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

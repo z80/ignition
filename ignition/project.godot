@@ -24,6 +24,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/celestial_bodies/celestial_surface.gd"
 }, {
+"base": "CelestialBody",
+"class": "CelestialSurfaceVoxel",
+"language": "GDScript",
+"path": "res://tryouts/celestial_bodies_voxel/celestial_surface_voxel.gd"
+}, {
 "base": "Part",
 "class": "Character",
 "language": "GDScript",
@@ -118,6 +123,11 @@ _global_script_classes=[ {
 "class": "FlexGridContainer",
 "language": "GDScript",
 "path": "res://addons/color-palette/utilities/FlexGridContainer.gd"
+}, {
+"base": "Spatial",
+"class": "FoliageSource",
+"language": "GDScript",
+"path": "res://tryouts/celestial_bodies_voxel/foliage.gd"
 }, {
 "base": "Reference",
 "class": "ForceSource",
@@ -283,6 +293,7 @@ _global_script_class_icons={
 "AtmosphereCanvasItem": "",
 "CelestialBody": "",
 "CelestialSurface": "",
+"CelestialSurfaceVoxel": "",
 "Character": "",
 "CharacterPhysicalBase": "",
 "CharacterVisualBase": "",
@@ -302,6 +313,7 @@ _global_script_class_icons={
 "ExecPoolSettings": "",
 "ExhaustNode": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
+"FoliageSource": "",
 "ForceSource": "",
 "ForceSourceAirDrag": "",
 "ForceSourceGravity": "",
