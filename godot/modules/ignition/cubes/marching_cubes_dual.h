@@ -157,6 +157,9 @@ public:
 	MarchingCubesDualNode * create_node();
 	MarchingCubesDualCell * create_dual_cell();
 
+	SE3 se3_in_point( const Vector3d & at, bool in_source ) const;
+	SE3 asset_se3( const SE3 & asset_at, bool asset_in_source, bool result_in_source, const DistanceScalerBase * scaler ) const;
+
 
     const std::set<int>        & materials() const;
     const std::vector<Vector3> & vertices( int material_ind, const DistanceScalerBase * scaler );

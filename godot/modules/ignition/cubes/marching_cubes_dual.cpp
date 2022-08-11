@@ -343,6 +343,47 @@ MarchingCubesDualCell * MarchingCubesDual::create_dual_cell()
 	return cell;
 }
 
+SE3 MarchingCubesDual::se3_in_point( const Vector3d & at, bool in_source ) const
+{
+	const SE3 & se3     = this->source_se3;
+	const SE3 & inv_se3 = this->inverted_source_se3;
+
+	const Vector3d at_s       = in_source ? at : (se3.q_ * at + se3.r_);
+	const Vector3d up         = in_source ? ( at_s / at_s.Length() ) : inv_se3.q_ * ( at_s / at_s.Length() );
+	const Vector3d up_default = in_source ? Vector3d( 0.0, 1.0, 0.0 ) : inv_se3.q_ * Vector3d( 0.0, 1.0, 0.0 );
+	const Quaterniond q       = Quaterniond( up_default, up );
+
+	SE3 ret;
+	ret.q_ = q;
+	ret.r_ = at;
+
+	return ret;
+}
+
+SE3 MarchingCubesDual::asset_se3( const SE3 & asset_at, bool asset_in_source, bool result_in_source, const DistanceScalerBase * scaler ) const
+{
+	SE3 asset_in_world_se3;
+	if ( asset_in_source )
+	{
+		const SE3 & source_se3 = this->source_se3;
+		asset_in_world_se3 = source_se3 * asset_at;
+	}
+	else
+	{
+		asset_in_world_se3 = asset_at;
+	}
+
+	if ( !result_in_source )
+	{
+		return asset_in_world_se3;
+	}
+
+	const SE3 source_se3 = this->compute_source_se3( scaler );
+	const SE3 inv_source_se3 = source_se3.inverse();
+	const SE3 asset_in_source_se3 = inv_source_se3 * asset_in_world_se3;
+
+	return asset_in_source_se3;
+}
 
 const std::set<int> & MarchingCubesDual::materials() const
 {

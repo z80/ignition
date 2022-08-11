@@ -36,6 +36,8 @@ public:
 	Vector3 center_direction( const Vector3 & at, bool in_source ) const;
 	Ref<MarchingCubesDualNodeGd> get_tree_node( int ind );
 
+	Ref<Se3Ref> se3_in_point( const Vector3 & at, bool in_source ) const;
+	Ref<Se3Ref> asset_se3( const Ref<Se3Ref> & asset_at, bool asset_in_source, bool result_in_source, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
 
 	Array materials_used() const;
 	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );

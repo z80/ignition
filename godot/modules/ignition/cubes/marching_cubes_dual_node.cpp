@@ -391,44 +391,16 @@ Float MarchingCubesDualNode::node_size( MarchingCubesDual * tree ) const
 
 SE3 MarchingCubesDualNode::se3_in_point( MarchingCubesDual * tree, const Vector3d & at, bool in_source ) const
 {
-	const SE3 & se3     = tree->source_se3;
-	const SE3 & inv_se3 = tree->inverted_source_se3;
-
-	const Vector3d at_s       = in_source ? at : (se3.q_ * at + se3.r_);
-	const Vector3d up         = in_source ? ( at_s / at_s.Length() ) : inv_se3.q_ * ( at_s / at_s.Length() );
-	const Vector3d up_default = in_source ? Vector3d( 0.0, 1.0, 0.0 ) : inv_se3.q_ * Vector3d( 0.0, 1.0, 0.0 );
-	const Quaterniond q       = Quaterniond( up_default, up );
-
-	SE3 ret;
-	ret.q_ = q;
-	ret.r_ = at;
+	SE3 ret = tree->se3_in_point( at, in_source );
 
 	return ret;
 }
 
 SE3 MarchingCubesDualNode::asset_se3( MarchingCubesDual * tree, const SE3 & asset_at, bool asset_in_source, bool result_in_source, const DistanceScalerBase * scaler ) const
 {
-	SE3 asset_at_world;
-	if ( asset_in_source )
-	{
-		const SE3 & source_se3 = tree->source_se3;
-		asset_at_world = source_se3 * asset_at;
-	}
-	else
-	{
-		asset_at_world = asset_at;
-	}
+	const SE3 asset_in_source_se3 = tree->asset_se3( asset_at, asset_in_source, result_in_source, scaler );
 
-	if ( !result_in_source )
-	{
-		return asset_at_world;
-	}
-
-	const SE3 source_se3 = tree->compute_source_se3( scaler );
-	const SE3 inv_source_se3 = source_se3.inverse();
-	const SE3 asset_at_source = inv_source_se3 * asset_at_world;
-
-	return asset_at_source;
+	return asset_in_source_se3;
 }
 
 

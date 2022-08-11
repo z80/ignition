@@ -25,6 +25,9 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("center_direction", "at", "in_source"),   &MarchingCubesDualGd::center_direction,  Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("get_tree_node", "ind"),                  &MarchingCubesDualGd::get_tree_node,     Variant::OBJECT );
 
+	ClassDB::bind_method( D_METHOD("se3_in_point", "at", "in_source"),                                        &MarchingCubesDualGd::se3_in_point, Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("asset_se3", "asset_at", "asset_in_source", "result_in_source", "scaler"), &MarchingCubesDualGd::asset_se3,    Variant::OBJECT );
+
 	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
 	ClassDB::bind_method( D_METHOD("mesh_transform", "scaler"),                                 &MarchingCubesDualGd::mesh_transform, Variant::TRANSFORM );
@@ -131,6 +134,31 @@ Ref<MarchingCubesDualNodeGd> MarchingCubesDualGd::get_tree_node( int ind )
 	return ret;
 }
 
+Ref<Se3Ref> MarchingCubesDualGd::se3_in_point( const Vector3 & at, bool in_source ) const
+{
+	Ref<Se3Ref> se3;
+	se3.instance();
+	const Vector3d at_d( at.x, at.y, at.z );
+	se3->se3 = cubes.se3_in_point( at_d, in_source );
+	return se3;
+}
+
+Ref<Se3Ref> MarchingCubesDualGd::asset_se3( const Ref<Se3Ref> & asset_at, bool asset_in_source, bool result_in_source, const Ref<DistanceScalerBaseRef> & scaler ) const
+{
+	const SE3 & se3 = asset_at->se3;
+	Ref<Se3Ref> ret_se3;
+	ret_se3.instance();
+
+	const DistanceScalerBaseRef * scaler_ref = scaler.ptr();
+	const DistanceScalerBase * s;
+	if ( scaler_ref == nullptr )
+		s = nullptr;
+	else
+		s = scaler_ref->scaler_base;
+
+	ret_se3->se3 = cubes.asset_se3( se3, asset_in_source, result_in_source, s );
+	return ret_se3;
+}
 
 Array MarchingCubesDualGd::materials_used() const
 {
@@ -151,9 +179,6 @@ Array MarchingCubesDualGd::materials_used() const
 	}
 	return ret;
 }
-
-
-
 
 
 void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerBaseRef> & scaler )
