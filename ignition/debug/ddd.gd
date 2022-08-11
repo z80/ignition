@@ -13,7 +13,7 @@ var _texts: Array = []
 var _font : Font = null
 var _color: Color = TEXT_COLOR
 
-export(bool) var debug = false
+export(bool) var debug = true
 
 func _ready():
 	# Get default font

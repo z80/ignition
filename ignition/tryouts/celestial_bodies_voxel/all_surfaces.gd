@@ -40,9 +40,11 @@ func update_source_se3( source_se3: Se3Ref ):
 		_strategy_initialized = true
 	
 	var camera_se3: Se3Ref = source_se3.inverse()
-	var r: Vector3 = source_se3.r
-	print( "r: ", r )
 	var need_rebuild: bool = _rebuild_strategy.need_rebuild( camera_se3 )
+	var r: Vector3 = camera_se3.r
+	DDD.print( "r: " + str( r ), 5.0, "aaa" )
+	if need_rebuild:
+		DDD.print( "need rebuild: " + str( need_rebuild ) )
 	
 	if need_rebuild:
 		# If needed rebuild, rebuild voxel surface and apply to meshes.
@@ -51,7 +53,8 @@ func update_source_se3( source_se3: Se3Ref ):
 	
 	else:
 		# Else only apply to meshes without applying to the surface.
-		_update_view_point( source_se3 )
+		#_update_view_point( source_se3 )
+		pass
 	
 	var t: Transform = surface.apply_root_se3( source_se3, scaler )
 	transform = t
