@@ -15,7 +15,7 @@ void DistanceScalerRef::_bind_methods()
 DistanceScalerRef::DistanceScalerRef()
 	: DistanceScalerBaseRef()
 {
-	DistanceScalerBaseRef::scaler = &scaler;
+	DistanceScalerBaseRef::scaler_base = &scaler;
 }
 
 DistanceScalerRef::~DistanceScalerRef()

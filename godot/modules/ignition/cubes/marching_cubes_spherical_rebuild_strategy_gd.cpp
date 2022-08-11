@@ -23,7 +23,7 @@ void MarchingCubesSphericalRebuildStrategyGd::initialize( real_t radius, const R
 {
 	const DistanceScalerBase * s;
 	if ( scaler.ptr() != nullptr )
-		s = scaler->scaler;
+		s = scaler->scaler_base;
 	else
 		s = nullptr;
 	spherical_strategy.initialize( radius, s );

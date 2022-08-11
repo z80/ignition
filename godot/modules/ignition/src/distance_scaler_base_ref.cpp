@@ -19,7 +19,7 @@ void DistanceScalerBaseRef::_bind_methods()
 DistanceScalerBaseRef::DistanceScalerBaseRef()
     : Reference()
 {
-    scaler = nullptr;
+	scaler_base = nullptr;
 }
 
 DistanceScalerBaseRef::~DistanceScalerBaseRef()
@@ -28,41 +28,41 @@ DistanceScalerBaseRef::~DistanceScalerBaseRef()
 
 void DistanceScalerBaseRef::set_plain_distance( real_t dist )
 {
-    if (scaler == nullptr)
+    if (scaler_base == nullptr)
         return;
-    scaler->set_plain_distance( dist );
+	scaler_base->set_plain_distance( dist );
 }
 
 real_t DistanceScalerBaseRef::get_plain_distance() const
 {
-    if (scaler == nullptr)
+    if (scaler_base == nullptr)
         return 0.0;
-    return scaler->plain_distance();
+    return scaler_base->plain_distance();
 }
 
 real_t DistanceScalerBaseRef::scale( real_t d ) const
 {
-    if (scaler == nullptr)
+    if (scaler_base == nullptr)
         return d;
-    return scaler->scale( d );
+    return scaler_base->scale( d );
 }
 
 Vector3 DistanceScalerBaseRef::scale_v( const Vector3 & v ) const
 {
-    if (scaler == nullptr)
+    if (scaler_base == nullptr)
         return v;
     const Vector3d vd( v.x, v.y, v.z );
-    const Vector3d scaled_vd = scaler->scale( vd );
+    const Vector3d scaled_vd = scaler_base->scale( vd );
     const Vector3 ret( scaled_vd.x_, scaled_vd.y_, scaled_vd.z_ );
     return ret;
 }
 
 Vector3 DistanceScalerBaseRef::unscale_v( const Vector3 & v ) const
 {
-    if (scaler == nullptr)
+    if (scaler_base == nullptr)
         return v;
     const Vector3d vd( v.x, v.y, v.z );
-    const Vector3d scaled_vd = scaler->unscale( vd );
+    const Vector3d scaled_vd = scaler_base->unscale( vd );
     const Vector3 ret( scaled_vd.x_, scaled_vd.y_, scaled_vd.z_ );
     return ret;
 }

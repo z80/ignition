@@ -83,11 +83,11 @@ real_t MarchingCubesDualGd::get_split_precision() const
 }
 
 
-bool MarchingCubesDualGd::subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler )
+bool MarchingCubesDualGd::subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerBaseRef> & scaler )
 {
 	VolumeSource   * volume_source   = volume.ptr()->source;
-	const DistanceScalerRef * distance_scaler_ref = scaler.ptr();
-	const DistanceScaler * distance_scaler = (distance_scaler_ref != nullptr) ? &(distance_scaler_ref->scaler) : nullptr;
+	const DistanceScalerBaseRef * distance_scaler_ref = scaler.ptr();
+	const DistanceScalerBase * distance_scaler = (distance_scaler_ref != nullptr) ? (distance_scaler_ref->scaler_base) : nullptr;
 
 	const bool ret = cubes.subdivide_source( bounding_radius, volume_source, distance_scaler );
 	return ret;
@@ -156,7 +156,7 @@ Array MarchingCubesDualGd::materials_used() const
 
 
 
-void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler )
+void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerBaseRef> & scaler )
 {
 	MeshInstance * mi = Object::cast_to<MeshInstance>(mesh_instance);
 	if (mi == nullptr)
@@ -165,12 +165,12 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 		return;
 	}
 
-	const DistanceScalerRef * scaler_ref = scaler.ptr();
-	const DistanceScaler * s;
+	const DistanceScalerBaseRef * scaler_ref = scaler.ptr();
+	const DistanceScalerBase * s;
 	if ( scaler_ref == nullptr )
 		s = nullptr;
 	else
-		s = &(scaler_ref->scaler);
+		s = scaler_ref->scaler_base;
 
 	const std::vector<Vector3> & verts = cubes.vertices( material_index, s );
 	const std::vector<Vector3> & norms = cubes.normals( material_index );
@@ -229,14 +229,14 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 	mi->set_mesh( am );
 }
 
-Transform MarchingCubesDualGd::mesh_transform( const Ref<DistanceScalerRef> & scaler )
+Transform MarchingCubesDualGd::mesh_transform( const Ref<DistanceScalerBaseRef> & scaler )
 {
-	const DistanceScalerRef * scaler_ref = scaler.ptr();
-	const DistanceScaler * s;
+	const DistanceScalerBaseRef * scaler_ref = scaler.ptr();
+	const DistanceScalerBase * s;
 	if ( scaler_ref == nullptr )
 		s = nullptr;
 	else
-		s = &(scaler_ref->scaler);
+		s = scaler_ref->scaler_base;
 	const Transform transform = cubes.compute_source_transform( s );
 	return transform;
 }

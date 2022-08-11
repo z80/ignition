@@ -29,7 +29,7 @@ public:
     Vector3 unscale_v( const Vector3 & v ) const;
 
 public:
-    DistanceScalerBase * scaler;
+    DistanceScalerBase * scaler_base;
 };
 
 }

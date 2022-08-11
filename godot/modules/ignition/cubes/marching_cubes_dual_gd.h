@@ -30,7 +30,7 @@ public:
 	void set_split_precision( real_t rel_diff );
 	real_t get_split_precision() const;
 
-	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
+	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 
 	Array query_close_nodes( const Vector3 & at, real_t dist, real_t max_size );
 	Vector3 center_direction( const Vector3 & at, bool in_source ) const;
@@ -38,8 +38,8 @@ public:
 
 
 	Array materials_used() const;
-	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
-	Transform mesh_transform( const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
+	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	Transform mesh_transform( const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	const PoolVector3Array & collision_faces( const Vector3 & at, real_t dist, bool in_source );
 
 	void set_max_nodes_qty( int qty );
