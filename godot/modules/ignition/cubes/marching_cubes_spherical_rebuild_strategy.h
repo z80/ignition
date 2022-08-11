@@ -19,6 +19,9 @@ public:
     
     void initialize( Float radius, const DistanceScalerBase * scaler );
 
+	void set_rebuild_angle( Float ang );
+	Float get_rebuild_angle() const;
+
     virtual bool need_rebuild( const SE3 & view_point_se3 ) override;
 
 

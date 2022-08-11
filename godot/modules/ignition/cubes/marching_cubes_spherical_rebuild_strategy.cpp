@@ -18,9 +18,18 @@ MarchingCubesSphericalRebuildStrategy::~MarchingCubesSphericalRebuildStrategy()
 void MarchingCubesSphericalRebuildStrategy::initialize( Float radius, const DistanceScalerBase * scaler )
 {
     const Float plain_dist = scaler->plain_distance() * 0.3;
-    rebuild_angle = plain_dist / rebuild_angle;
+    rebuild_angle = plain_dist / radius;
 }
 
+void MarchingCubesSphericalRebuildStrategy::set_rebuild_angle( Float ang )
+{
+	rebuild_angle = ang;
+}
+
+Float MarchingCubesSphericalRebuildStrategy::get_rebuild_angle() const
+{
+	return rebuild_angle;
+}
 
 bool MarchingCubesSphericalRebuildStrategy::need_rebuild( const SE3 & view_point_se3 )
 {

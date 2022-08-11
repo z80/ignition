@@ -24,7 +24,6 @@ public:
 	virtual Vector3d unscale( const Vector3d & v ) const override;
 
 public:
-    Float plain_dist_;
     Float log_scale_;
 };
 

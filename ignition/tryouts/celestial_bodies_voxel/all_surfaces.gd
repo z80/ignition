@@ -37,6 +37,7 @@ func update_source_se3( source_se3: Se3Ref ):
 	if not _strategy_initialized:
 		var radius: float = surface.get_surface_radius()
 		_rebuild_strategy.initialize( radius, scaler )
+		_rebuild_strategy.rebuild_angle = 0.2
 		_strategy_initialized = true
 	
 	var camera_se3: Se3Ref = source_se3.inverse()

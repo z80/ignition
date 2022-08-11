@@ -21,6 +21,9 @@ public:
 	
 	void initialize( real_t radius, const Ref<DistanceScalerBaseRef> & scaler );
 
+	void set_rebuild_angle( real_t ang );
+	real_t get_rebuild_angle() const;
+
 public:
 	MarchingCubesSphericalRebuildStrategy spherical_strategy;
 };
