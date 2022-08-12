@@ -30,6 +30,10 @@ void MarchingCubesDualGd::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
+
+	ClassDB::bind_method( D_METHOD("precompute_scaled_values", "material_index", "scaler"),     &MarchingCubesDualGd::precompute_scaled_values );
+	ClassDB::bind_method( D_METHOD("apply_to_mesh_only", "mesh_instance"),                      &MarchingCubesDualGd::apply_to_mesh_only );
+
 	ClassDB::bind_method( D_METHOD("mesh_transform", "scaler"),                                 &MarchingCubesDualGd::mesh_transform, Variant::TRANSFORM );
 	ClassDB::bind_method( D_METHOD("collision_faces", "at", "dist", "in_source"),               &MarchingCubesDualGd::collision_faces, Variant::ARRAY );
 
@@ -224,6 +228,83 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 
 		const Vector2 & uv  = (*p_uvs)[i];
 		const Vector2 & uv2 = (*p_uv2s)[i];
+		uvs.set( i, uv );
+		uv2s.set( i, uv2 );
+	}
+
+	const int tangs_qty = tangs.size();
+	for ( int i=0; i<tangs_qty; i++ )
+	{
+		const real_t tang = tangs[i];
+		tangents.set( i, tang );
+	}
+	//const Color c = v.color;
+	//colors.set( i, c );
+	//uvs.set( i, uv );
+	//uvs2.set( i, uv2 );
+
+	Array arrays;
+	arrays.resize( ArrayMesh::ARRAY_MAX );
+	arrays.set( ArrayMesh::ARRAY_VERTEX,  vertices );
+	arrays.set( ArrayMesh::ARRAY_NORMAL,  normals );
+	arrays.set( ArrayMesh::ARRAY_TANGENT, tangents );
+	//arrays.set( ArrayMesh::ARRAY_COLOR,   colors );
+	arrays.set( ArrayMesh::ARRAY_TEX_UV,  uvs );
+	arrays.set( ArrayMesh::ARRAY_TEX_UV2, uv2s );
+
+	Ref<ArrayMesh> am = memnew(ArrayMesh);
+	am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );
+
+	mi->set_mesh( am );
+}
+
+void MarchingCubesDualGd::precompute_scaled_values( int material_index, const Ref<DistanceScalerBaseRef> & scaler )
+{
+	const DistanceScalerBaseRef * scaler_ref = scaler.ptr();
+	const DistanceScalerBase * s;
+	if ( scaler_ref == nullptr )
+		s = nullptr;
+	else
+		s = scaler_ref->scaler_base;
+
+	cubes.precompute_scaled_values( material_index, s );
+}
+
+void MarchingCubesDualGd::apply_to_mesh_only( Node * mesh_instance )
+{
+	MeshInstance * mi = Object::cast_to<MeshInstance>(mesh_instance);
+	if (mi == nullptr)
+	{
+		print_line( String( "ERROR: expects mesh instance as an argument, got something else." ) );
+		return;
+	}
+
+	const std::vector<Vector3> & verts = cubes.vertices();
+	const std::vector<Vector3> & norms = cubes.normals();
+	const std::vector<real_t> & tangs  = cubes.tangents();
+	const std::vector<Vector2> & uv_s   = cubes.uvs();
+	const std::vector<Vector2> & uv2_s  = cubes.uv2s();
+
+	const int verts_qty = verts.size();
+	// Fill in arrays.
+	vertices.resize( verts_qty );
+	normals.resize( verts_qty );
+	tangents.resize( verts_qty*4 );
+	//colors.resize( verts_qty );
+	uvs.resize( verts_qty );
+	uv2s.resize( verts_qty );
+
+	int vert_ind = 0;
+	int tang_ind = 0;
+	for ( int i=0; i<verts_qty; i++ )
+	{
+		const Vector3 & vert = verts[i];
+		const Vector3 & norm = norms[i];
+		vertices.set( i, vert );
+		normals.set( i, norm );
+
+		const Vector2 & uv  = uv_s[i];
+		const Vector2 & uv2 = uv2_s[i];
 		uvs.set( i, uv );
 		uv2s.set( i, uv2 );
 	}

@@ -24,7 +24,7 @@ func _exit_tree():
 	clear()
 
 
-func update( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: bool ):
+func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: bool ):
 	self.transform = Transform.IDENTITY
 
 	var populated_node_paths: Dictionary = {}
@@ -55,16 +55,28 @@ func update( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: bool ):
 			for creator in creators:
 				total_qty += 1
 				var args: Array = [self, cubes, node, creator, scaler, populated_node_paths]
-				if false:
+				if true:
 					WorkersPool.start_with_args( self, "_populate_node", "_populate_node_callback", args )
 				else:
 					var ret: Array = _populate_node( self, cubes, node, creator, scaler, populated_node_paths )
 					_populate_node_callback( ret )
 	
 	_total_qty_left = total_qty
+
+
+func update_item_positions( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+	var parent: Spatial = get_parent()
+	var voxels: MarchingCubesDualGd = parent.get_voxel_surface()
+	voxels.source_se3 = source_se3
 	
-
-
+	for h_path in _created_instances:
+		var items: Array = _created_instances[h_path]
+		var args: Array = [ items, voxels, source_se3, scaler ]
+		if true:
+			WorkersPool.start_with_args( self, "_update_node_item_positions", "_update_node_item_positions_callback", args )
+		else:
+			var ret: Array = _update_node_item_positions( items, voxels, source_se3, scaler )
+			_populate_node_callback( ret )
 
 
 
@@ -141,6 +153,7 @@ func _populate_node( parent: Spatial, cubes: MarchingCubesDualGd, node: Marching
 			continue
 		
 		var instance: Spatial = creator.create( node, se3, norm, rand, scaler )
+		instance.set_meta( "se3", se3 )
 		#print( "created ", instance )
 		created_instances.push_back( instance )
 	
@@ -179,6 +192,25 @@ func _populate_node_callback( data: Array ):
 				for inst in insts:
 					if is_instance_valid(inst):
 						inst.queue_free()
+
+
+
+
+func _update_node_item_positions( items: Array, voxels: MarchingCubesDualGd, source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+	for item in items:
+		var s: Spatial   = item as Spatial
+		var se3: Se3Ref  = s.get_meta( "se3" )
+		var t: Transform = voxels.asset_transform( se3, true, true, scaler )
+		s.set_meta( "new_transform", t )
+	
+	return items
+
+
+
+func _update_node_item_positions_callback( items: Array ):
+	for item in items:
+		var t: Transform = item.get_meta( "new_transform" )
+		item.transform = t
 
 
 

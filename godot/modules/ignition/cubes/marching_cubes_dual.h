@@ -167,6 +167,16 @@ public:
     const std::vector<real_t>  & tangents( int material_ind );
 	void uvs( int material_ind, const std::vector<Vector2> * & uvs, const std::vector<Vector2> * & uv2s );
 
+	// For asynchronous computations.
+	void precompute_scaled_values( int material_ind, const DistanceScalerBase * scaler );
+	const std::vector<Vector3> & vertices() const;
+	const std::vector<Vector3> & normals() const;
+	const std::vector<real_t>  & tangents() const;
+	const std::vector<Vector2> & uvs() const;
+	const std::vector<Vector2> & uv2s() const;
+
+
+
     const std::vector<Vector3> & collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler = nullptr );
 
     Transform compute_source_transform( const DistanceScalerBase * scaler = nullptr) const;
