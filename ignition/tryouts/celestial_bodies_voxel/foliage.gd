@@ -64,7 +64,7 @@ func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: b
 	_total_qty_left = total_qty
 
 
-func update_item_positions( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+func update_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	var parent: Spatial = get_parent()
 	var voxels: MarchingCubesDualGd = parent.get_voxel_surface()
 	voxels.source_se3 = source_se3
@@ -73,10 +73,10 @@ func update_item_positions( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 		var items: Array = _created_instances[h_path]
 		var args: Array = [ items, voxels, source_se3, scaler ]
 		if true:
-			WorkersPool.start_with_args( self, "_update_node_item_positions", "_update_node_item_positions_callback", args )
+			WorkersPool.start_with_args( self, "_update_view_point", "_update_view_point_finished", args )
 		else:
-			var ret: Array = _update_node_item_positions( items, voxels, source_se3, scaler )
-			_populate_node_callback( ret )
+			var ret: Array = _update_view_point( items, voxels, source_se3, scaler )
+			_update_view_point_finished( ret )
 
 
 
@@ -196,7 +196,7 @@ func _populate_node_callback( data: Array ):
 
 
 
-func _update_node_item_positions( items: Array, voxels: MarchingCubesDualGd, source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+func _update_view_point( items: Array, voxels: MarchingCubesDualGd, source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	for item in items:
 		var s: Spatial   = item as Spatial
 		var se3: Se3Ref  = s.get_meta( "se3" )
@@ -207,7 +207,7 @@ func _update_node_item_positions( items: Array, voxels: MarchingCubesDualGd, sou
 
 
 
-func _update_node_item_positions_callback( items: Array ):
+func _update_view_point_finished( items: Array ):
 	for item in items:
 		var t: Transform = item.get_meta( "new_transform" )
 		item.transform = t

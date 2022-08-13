@@ -37,21 +37,21 @@ func _get_surface_mesh( ind: int ):
 	
 
 
-func update( source_se3: Se3Ref, scaler: DistanceScalerBaseRef, synchronous: bool ):
+func rebuild_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef, synchronous: bool ):
 	var dimensions: float      = surface_source.source_dimensions
 	var source: VolumeSourceGd = surface_source.get_source()
 	
 	self.transform = Transform.IDENTITY
 	
 	if synchronous:
-		var ret: Array = _update_worker( source_se3, dimensions, source, scaler )
-		_update_finished( ret )
+		var ret: Array = _rebuild_surface_worker( source_se3, dimensions, source, scaler )
+		_rebuild_surface_worker_finished( ret )
 	
 	else:
-		WorkersPool.start_with_args( self, "_update_worker", "_update_finished", [source_se3, dimensions, source, scaler] )
+		WorkersPool.start_with_args( self, "_rebuild_surface_worker", "_rebuild_surface_worker_finished", [source_se3, dimensions, source, scaler] )
 
 
-func _update_worker( source_se3: Se3Ref, dimensions: float, source: VolumeSourceGd, scaler: DistanceScalerBaseRef ):
+func _rebuild_surface_worker( source_se3: Se3Ref, dimensions: float, source: VolumeSourceGd, scaler: DistanceScalerBaseRef ):
 	_voxel_surface.max_nodes_qty   = 20000000
 	_voxel_surface.source_se3      = source_se3
 	_voxel_surface.split_precision = 0.01
@@ -60,20 +60,20 @@ func _update_worker( source_se3: Se3Ref, dimensions: float, source: VolumeSource
 	return ret
 
 
-func _update_finished( data: Array ):
+func _rebuild_surface_worker_finished( data: Array ):
 	var ok: bool = data[0]
 	if not ok:
 		return
 	
 	var source_se3: Se3Ref = data[1]
 	var scaler: DistanceScalerBaseRef = data[2]
-	apply_meshes( source_se3, scaler )
-	
+	apply_view_point( source_se3, scaler )
 
 
 
 
-func apply_meshes( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+
+func apply_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	# Once again apply source_se3
 	_voxel_surface.source_se3      = source_se3
 	# If succeeded apply to meshes.
@@ -94,13 +94,32 @@ func apply_meshes( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 		var material_ind: int = material_inds[i]
 		if material_ind < 0:
 			material_ind = 0
-		var mi: MeshInstance = meshes[i]
-		mi.visible = true
-		_voxel_surface.apply_to_mesh( material_ind, mi, scaler )
-		mi.material_override = materials[material_ind]
+		var mesh_inst: MeshInstance = meshes[i]
+		mesh_inst.visible = true
+		mesh_inst.material_override = materials[material_ind]
+		if false:
+			var args: Array = [mesh_inst, material_ind, scaler]
+			WorkersPool.start_with_args( self, "_adjust_view_point_worker", "_adjust_view_point_worker_finished", args )
+		else:
+			_adjust_view_point_worker( mesh_inst, material_ind, scaler )
+			_adjust_view_point_worker_finished( mesh_inst )
 
 
-func apply_root_se3( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+
+
+func _adjust_view_point_worker( mesh_inst: MeshInstance, material_ind: int, scaler: DistanceScalerBaseRef ):
+	_voxel_surface.precompute_scaled_values( material_ind, scaler )
+	return mesh_inst
+
+
+
+func _adjust_view_point_worker_finished( mesh_inst: MeshInstance ):
+	_voxel_surface.apply_to_mesh_only( mesh_inst )
+
+
+
+
+func get_root_se3( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	_voxel_surface.source_se3 = source_se3
 	var t: Transform = _voxel_surface.mesh_transform( scaler )
 	return t

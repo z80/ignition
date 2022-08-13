@@ -54,10 +54,10 @@ func update_source_se3( source_se3: Se3Ref ):
 	
 	else:
 		# Else only apply to meshes without applying to the surface.
-		#_update_view_point( source_se3 )
-		pass
+		_update_view_point( source_se3 )
 	
-	var t: Transform = surface.apply_root_se3( source_se3, scaler )
+	
+	var t: Transform = surface.get_root_se3( source_se3, scaler )
 	transform = t
 
 
@@ -69,10 +69,10 @@ func _rebuild( source_se3: Se3Ref, synch: bool ):
 	var qty: int = _surfaces.size()
 	for i in range(qty):
 		var surf: Node = _surfaces[i]
-		surf.update( source_se3, scaler, synch )
+		surf.rebuild_surface( source_se3, scaler, synch )
 	
 	var point_se3: Se3Ref = source_se3.inverse()
-	_foliage.update( point_se3, scaler, true )
+	_foliage.update_population( point_se3, scaler, true )
 
 
 # Just re-apply to meshes without rebuilding voxel surface.
@@ -81,7 +81,9 @@ func _update_view_point( source_se3: Se3Ref ):
 	var qty: int = _surfaces.size()
 	for i in range(qty):
 		var surf: Node = _surfaces[i]
-		surf.apply_meshes( source_se3, scaler )
+		surf.apply_view_point( source_se3, scaler )
+
+	_foliage.update_view_point( source_se3, scaler )
 
 
 
