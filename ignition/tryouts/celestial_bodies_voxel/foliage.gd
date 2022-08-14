@@ -61,7 +61,7 @@ func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: b
 				total_qty += 1
 				_busy_qty += 1
 				var args: Array = [self, cubes, node, creator, scaler, populated_node_paths]
-				if true:
+				if false:
 					WorkersPool.start_with_args( self, "_populate_node", "_populate_node_callback", args )
 				else:
 					var ret: Array = _populate_node( self, cubes, node, creator, scaler, populated_node_paths )
@@ -84,7 +84,7 @@ func update_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 		var items: Array = _created_instances[h_path]
 		var args: Array = [ items, voxels, source_se3, scaler ]
 		_busy_qty += 1
-		if true:
+		if false:
 			WorkersPool.start_with_args( self, "_update_view_point", "_update_view_point_finished", args )
 		else:
 			var ret: Array = _update_view_point( items, voxels, source_se3, scaler )

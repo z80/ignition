@@ -15,7 +15,7 @@ func get_source():
 	print( "source_dimensions: ", source_dimensions )
 	_source.radius = source_dimensions - 10.0
 	_source.node_sz_max = 100.0
-	_source.node_sz_min = 10.0
+	_source.node_sz_min = 50.0
 	
 	var se3: Se3Ref = Se3Ref.new()
 	se3.r = Vector3.ZERO

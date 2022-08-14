@@ -38,6 +38,7 @@ public:
 
 	Ref<Se3Ref> se3_in_point( const Vector3 & at, bool in_source ) const;
 	Ref<Se3Ref> asset_se3( const Ref<Se3Ref> & asset_at, bool asset_in_source, bool result_in_source, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
+	Transform   asset_transform( const Ref<Se3Ref> & asset_at, bool asset_in_source, bool result_in_source, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
 
 	Array materials_used() const;
 	// This one computes and applies synchronously.

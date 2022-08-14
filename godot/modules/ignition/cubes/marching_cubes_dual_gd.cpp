@@ -27,6 +27,7 @@ void MarchingCubesDualGd::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("se3_in_point", "at", "in_source"),                                        &MarchingCubesDualGd::se3_in_point, Variant::OBJECT );
 	ClassDB::bind_method( D_METHOD("asset_se3", "asset_at", "asset_in_source", "result_in_source", "scaler"), &MarchingCubesDualGd::asset_se3,    Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("asset_transform", "asset_at", "asset_in_source", "result_in_source", "scaler"), &MarchingCubesDualGd::asset_transform,    Variant::TRANSFORM );
 
 	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
@@ -163,6 +164,23 @@ Ref<Se3Ref> MarchingCubesDualGd::asset_se3( const Ref<Se3Ref> & asset_at, bool a
 	ret_se3->se3 = cubes.asset_se3( se3, asset_in_source, result_in_source, s );
 	return ret_se3;
 }
+
+Transform MarchingCubesDualGd::asset_transform( const Ref<Se3Ref> & asset_at, bool asset_in_source, bool result_in_source, const Ref<DistanceScalerBaseRef> & scaler ) const
+{
+	const SE3 & se3 = asset_at->se3;
+
+	const DistanceScalerBaseRef * scaler_ref = scaler.ptr();
+	const DistanceScalerBase * s;
+	if ( scaler_ref == nullptr )
+		s = nullptr;
+	else
+		s = scaler_ref->scaler_base;
+
+	const SE3 ret_se3 = cubes.asset_se3( se3, asset_in_source, result_in_source, s );
+	const Transform t = ret_se3.transform();
+	return t;
+}
+
 
 Array MarchingCubesDualGd::materials_used() const
 {

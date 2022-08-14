@@ -6,3 +6,4 @@
 [node name="Foliage" type="Spatial"]
 script = ExtResource( 1 )
 creators = [ ExtResource( 2 ) ]
+fill_dist = 500.0

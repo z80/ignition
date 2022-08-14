@@ -73,8 +73,8 @@ func _rebuild( source_se3: Se3Ref, synch: bool ):
 		var surf: Node = _surfaces[i]
 		surf.rebuild_surface( source_se3, scaler, synch )
 	
-#	var point_se3: Se3Ref = source_se3.inverse()
-#	_foliage.update_population( point_se3, scaler, true )
+	var point_se3: Se3Ref = source_se3.inverse()
+	_foliage.update_population( point_se3, scaler, true )
 
 
 # Just re-apply to meshes without rebuilding voxel surface.
@@ -85,7 +85,7 @@ func _update_view_point( source_se3: Se3Ref ):
 		var surf: Node = _surfaces[i]
 		surf.adjust_view_point( source_se3, scaler )
 
-#	_foliage.update_view_point( source_se3, scaler )
+	_foliage.update_view_point( source_se3, scaler )
 
 
 
