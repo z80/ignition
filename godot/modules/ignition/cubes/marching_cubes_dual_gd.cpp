@@ -182,24 +182,23 @@ Transform MarchingCubesDualGd::asset_transform( const Ref<Se3Ref> & asset_at, bo
 }
 
 
-Array MarchingCubesDualGd::materials_used() const
+Array MarchingCubesDualGd::materials_used()
 {
-	Array ret;
 	const std::set<int> mats = cubes.materials();
 	int qty = 0;
 	for ( std::set<int>::const_iterator it=mats.begin(); it!=mats.end(); it++ )
 	{
 		qty += 1;
 	}
-	ret.resize( qty );
+	ret_array.resize( qty );
 	int ind = 0;
 	for ( std::set<int>::const_iterator it=mats.begin(); it!=mats.end(); it++ )
 	{
 		const int mat = *it;
-		ret.set( ind, mat );
+		ret_array.set( ind, mat );
 		ind += 1;
 	}
-	return ret;
+	return ret_array;
 }
 
 

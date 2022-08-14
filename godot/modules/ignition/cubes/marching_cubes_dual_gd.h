@@ -40,7 +40,7 @@ public:
 	Ref<Se3Ref> asset_se3( const Ref<Se3Ref> & asset_at, bool asset_in_source, bool result_in_source, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
 	Transform   asset_transform( const Ref<Se3Ref> & asset_at, bool asset_in_source, bool result_in_source, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
 
-	Array materials_used() const;
+	Array materials_used();
 	// This one computes and applies synchronously.
 	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	// And this one computes and applies in tow different methods.
