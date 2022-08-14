@@ -55,7 +55,7 @@ func update_source_se3( source_se3: Se3Ref ):
 	
 	else:
 		# Else only apply to meshes without applying to the surface.
-		#_update_view_point( source_se3 )
+		_update_view_point( source_se3 )
 		pass
 	
 	

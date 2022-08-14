@@ -60,6 +60,8 @@ const SE3 & MarchingCubesDual::get_source_transform() const
 
 bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * source, const DistanceScalerBase * scaler )
 {
+	cleanup_nodes();
+
 	_values_map.clear();
 	_normals_map.clear();
 
@@ -828,6 +830,16 @@ void MarchingCubesDual::cleanup_nodes()
 			memfree( n );
 		}
 		_octree_nodes.clear();
+	}
+
+	{
+		const int qty = _octree_dual_cells.size();
+		for ( int i=0; i<qty; i++ )
+		{
+			MarchingCubesDualCell * c = _octree_dual_cells[i];
+			memfree( c );
+		}
+		_octree_dual_cells.clear();
 	}
 }
 

@@ -50,12 +50,14 @@ func rebuild_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef, synchro
 	self.transform = Transform.IDENTITY
 	
 	_rebuild_tasks_qty += 1
+	var se3: Se3Ref = Se3Ref.new()
+	se3.copy_from( source_se3 )
 	if synchronous:
-		var ret: Array = _rebuild_surface_worker( source_se3, dimensions, source, scaler )
+		var ret: Array = _rebuild_surface_worker( se3, dimensions, source, scaler )
 		_rebuild_surface_worker_finished( ret )
 	
 	else:
-		WorkersPool.start_with_args( self, "_rebuild_surface_worker", "_rebuild_surface_worker_finished", [source_se3, dimensions, source, scaler] )
+		WorkersPool.start_with_args( self, "_rebuild_surface_worker", "_rebuild_surface_worker_finished", [se3, dimensions, source, scaler] )
 	
 	return true
 
@@ -101,6 +103,9 @@ func adjust_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	
 	var materials: Array = surface_source.materials
 	
+	var se3: Se3Ref = Se3Ref.new()
+	se3.copy_from( source_se3 )
+	
 	var qty: int = material_inds.size()
 	for i in range(qty):
 		var material_ind: int = material_inds[i]
@@ -110,11 +115,11 @@ func adjust_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 		mesh_inst.visible = true
 		mesh_inst.material_override = materials[material_ind]
 		_adjust_tasks_qty += 1
-		if true:
-			var args: Array = [source_se3, mesh_inst, material_ind, scaler]
+		if false:
+			var args: Array = [se3, mesh_inst, material_ind, scaler]
 			WorkersPool.start_with_args( self, "_adjust_view_point_worker", "_adjust_view_point_worker_finished", args )
 		else:
-			_adjust_view_point_worker( source_se3, mesh_inst, material_ind, scaler )
+			_adjust_view_point_worker( se3, mesh_inst, material_ind, scaler )
 			_adjust_view_point_worker_finished( mesh_inst )
 	
 	return true
