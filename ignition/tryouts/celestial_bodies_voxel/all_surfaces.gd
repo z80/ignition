@@ -51,7 +51,7 @@ func update_source_se3( source_se3: Se3Ref ):
 	if need_rebuild:
 		# If needed rebuild, rebuild voxel surface and apply to meshes.
 		_rebuild( source_se3, synchronous_update )
-		synchronous_update = false
+#		synchronous_update = false
 	
 	else:
 		# Else only apply to meshes without applying to the surface.

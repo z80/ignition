@@ -15,8 +15,6 @@ var _rand: IgnRandomGd = null
 var _mc_mutex: Mutex = null
 var _total_qty_left: int = 0
 
-var _busy_qty: int = 0
-
 func _init():
 	_rand = IgnRandomGd.new()
 	_mc_mutex = Mutex.new()
@@ -27,8 +25,7 @@ func _exit_tree():
 
 
 func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: bool ):
-	if _busy_qty != 0:
-		return false
+	clear()
 	
 	self.transform = Transform.IDENTITY
 
@@ -39,6 +36,7 @@ func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: b
 	var parent: Spatial = get_parent()
 	var cubes: MarchingCubesDualGd = parent.get_voxel_surface()
 	
+	cubes.source_se3 = Se3Ref.new()
 	var at: Vector3  = se3.r
 	var node_indices: Array = cubes.query_close_nodes( at, fill_dist, fill_node_size )
 	var total_qty: int = 0
@@ -58,8 +56,8 @@ func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: b
 		
 		else:
 			for creator in creators:
-				total_qty += 1
-				_busy_qty += 1
+				#total_qty += 1
+				#_busy_qty += 1
 				var args: Array = [self, cubes, node, creator, scaler, populated_node_paths]
 				if false:
 					WorkersPool.start_with_args( self, "_populate_node", "_populate_node_callback", args )
@@ -73,8 +71,8 @@ func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: b
 
 
 func update_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
-	if _busy_qty != 0:
-		return false
+	#if _busy_qty != 0:
+	#	return false
 	
 	var parent: Spatial = get_parent()
 	var voxels: MarchingCubesDualGd = parent.get_voxel_surface()
@@ -83,7 +81,7 @@ func update_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	for h_path in _created_instances:
 		var items: Array = _created_instances[h_path]
 		var args: Array = [ items, voxels, source_se3, scaler ]
-		_busy_qty += 1
+		#_busy_qty += 1
 		if false:
 			WorkersPool.start_with_args( self, "_update_view_point", "_update_view_point_finished", args )
 		else:
@@ -95,9 +93,6 @@ func update_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 
 
 func clear():
-	if _total_qty_left > 0:
-		return false
-	
 	for key in _created_instances:
 		var insts: Array = _created_instances[key]
 		for inst in insts:
@@ -138,7 +133,7 @@ func _populate_node( parent: Spatial, cubes: MarchingCubesDualGd, node: Marching
 	
 	var dist: float = creator.min_distance
 	var v: float  = sz / dist
-	v = v * v * 50
+	v = v * v / 2
 	var qty: int = int(v)
 	
 	for i in range(qty):
@@ -206,8 +201,10 @@ func _populate_node_callback( data: Array ):
 				for inst in insts:
 					if is_instance_valid(inst):
 						inst.queue_free()
-						
-	_busy_qty -= 1
+				# Also delete this array from the dictionaty of populated nodes.
+				_created_instances.erase( key )
+				
+	#_busy_qty -= 1
 
 
 
@@ -228,7 +225,7 @@ func _update_view_point_finished( items: Array ):
 		var t: Transform = item.get_meta( "new_transform" )
 		item.transform = t
 	
-	_busy_qty -= 1
+	#_busy_qty -= 1
 
 
 
