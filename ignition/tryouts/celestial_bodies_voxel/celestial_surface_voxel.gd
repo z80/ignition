@@ -145,8 +145,8 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 	var physics_ref_frames: Array  = PhysicsManager.physics_ref_frames()
 	
 	var translation: RefFrameNode = self
-	var rotation: RefFrameNode    = get_node( "Rotation" )
-	var planet: CubeSphereNode = get_node( "Rotation/CelestialBody" )
+	var rotation: RefFrameNode    = rotation_rf()
+	var planet: Spatial           = surfaces_node()
 	
 	var paths: Array = []
 	for rf in physics_ref_frames:
@@ -156,8 +156,8 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 		if not is_child:
 			continue
 		
-		var subdiv: SubdivideSourceRef = rf.get_subdivide_source()
-		var need_rebuild: bool = subdiv.need_subdivide( rf, planet )
+#		var subdiv: SubdivideSourceRef = rf.get_subdivide_source()
+#		var need_rebuild: bool = subdiv.need_subdivide( rf, planet )
 #		if need_rebuild:
 #			# Build the surface for this particular ref frame physics.
 #			planet.subdivide_2( rf, subdiv )

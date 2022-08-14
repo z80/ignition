@@ -5,6 +5,8 @@ class_name ExecPool
 export(Resource) var settings = null setget _set_settings, _get_settings
 
 var _mutex: Mutex = null
+var _semaphore: Semaphore = null
+
 var _finished: bool = false
 var _tasks: Array = []
 var _finished_tasks: Array = []
@@ -37,7 +39,9 @@ func _get_settings():
 
 
 func _ready():
-	_mutex    = Mutex.new()
+	_mutex     = Mutex.new()
+	_semaphore = Semaphore.new()
+	
 	_finished = false
 	_tasks    = []
 	_finished_tasks = []
@@ -94,13 +98,16 @@ func _add_task(instance: Object, method: String, callback: String, parameter = n
 	
 	_tasks.push_front( Task.new(instance, method, callback, parameter, no_argument, array_argument) )
 	var t: Thread = _get_worker_thread()
+	
+	_semaphore.post()
 
 	_mutex.unlock()
 	
 	#_print_stats()
 
-	if t != null:
-		t.start( self, "_process_tasks", t )
+#	if t != null:
+#		var ret: int = t.start( self, "_process_tasks", t )
+#		print( "task creation err code: ", ret )
 
 
 
@@ -108,6 +115,7 @@ func _process_tasks( thread: Thread ):
 	
 	while true:
 		_mutex.lock()
+		
 		var task: Task
 		var qty: int = _tasks.size()
 		#print( "tasks in queue: ", qty )
@@ -123,10 +131,16 @@ func _process_tasks( thread: Thread ):
 		
 		_mutex.unlock()
 		
-		if task == null:
-			return
+		if task != null:
+			task.execute_task()
+			
+			_mutex.lock()
+			if task != null:
+				_finished_tasks.push_front( task )
+			_mutex.unlock()
 		
-		task.execute_task()
+		
+		_semaphore.wait()
 		
 		_mutex.lock()
 		var finished: bool = _finished
@@ -134,11 +148,6 @@ func _process_tasks( thread: Thread ):
 		
 		if finished:
 			return
-		
-		_mutex.lock()
-		_finished_tasks.push_front( task )
-		_mutex.unlock()
-
 
 
 func _get_worker_thread():
@@ -152,6 +161,8 @@ func _get_worker_thread():
 		else:
 			t = Thread.new()
 			_threads_in_work.push_back( t )
+			var ret: int = t.start( self, "_process_tasks", t )
+			print( "task creation err code: ", ret )
 	
 	else:
 		t = _threads_available.back()
@@ -165,6 +176,7 @@ func _wait_for_workers_to_finish():
 	_mutex.lock()
 	_finished = true
 	var threads: Array = _threads_in_work.duplicate()
+	_semaphore.post()
 	_mutex.unlock()
 	
 	for t in threads:

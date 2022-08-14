@@ -15,6 +15,8 @@ var _rand: IgnRandomGd = null
 var _mc_mutex: Mutex = null
 var _total_qty_left: int = 0
 
+var _busy_qty: int = 0
+
 func _init():
 	_rand = IgnRandomGd.new()
 	_mc_mutex = Mutex.new()
@@ -25,6 +27,9 @@ func _exit_tree():
 
 
 func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: bool ):
+	if _busy_qty != 0:
+		return false
+	
 	self.transform = Transform.IDENTITY
 
 	var populated_node_paths: Dictionary = {}
@@ -54,6 +59,7 @@ func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: b
 		else:
 			for creator in creators:
 				total_qty += 1
+				_busy_qty += 1
 				var args: Array = [self, cubes, node, creator, scaler, populated_node_paths]
 				if true:
 					WorkersPool.start_with_args( self, "_populate_node", "_populate_node_callback", args )
@@ -62,9 +68,14 @@ func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: b
 					_populate_node_callback( ret )
 	
 	_total_qty_left = total_qty
+	
+	return true
 
 
 func update_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+	if _busy_qty != 0:
+		return false
+	
 	var parent: Spatial = get_parent()
 	var voxels: MarchingCubesDualGd = parent.get_voxel_surface()
 	voxels.source_se3 = source_se3
@@ -72,11 +83,14 @@ func update_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	for h_path in _created_instances:
 		var items: Array = _created_instances[h_path]
 		var args: Array = [ items, voxels, source_se3, scaler ]
+		_busy_qty += 1
 		if true:
 			WorkersPool.start_with_args( self, "_update_view_point", "_update_view_point_finished", args )
 		else:
 			var ret: Array = _update_view_point( items, voxels, source_se3, scaler )
 			_update_view_point_finished( ret )
+	
+	return true
 
 
 
@@ -192,6 +206,8 @@ func _populate_node_callback( data: Array ):
 				for inst in insts:
 					if is_instance_valid(inst):
 						inst.queue_free()
+						
+	_busy_qty -= 1
 
 
 
@@ -211,6 +227,8 @@ func _update_view_point_finished( items: Array ):
 	for item in items:
 		var t: Transform = item.get_meta( "new_transform" )
 		item.transform = t
+	
+	_busy_qty -= 1
 
 
 
