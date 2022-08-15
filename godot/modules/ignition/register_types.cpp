@@ -35,6 +35,8 @@
 #include "marching_cubes_dual_gd.h"
 #include "marching_cubes_dual_node_gd.h"
 
+#include "volume_mesh_gd.h"
+
 #include "marching_cubes_rebuild_strategy_gd.h"
 #include "marching_cubes_spherical_rebuild_strategy_gd.h"
 
@@ -71,6 +73,8 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::MarchingCubesGd>();
 	ClassDB::register_class<Ign::MarchingCubesDualGd>();
 	ClassDB::register_class<Ign::MarchingCubesDualNodeGd>();
+
+	ClassDB::register_class<Ign::VolumeMeshGd>();
 
 	ClassDB::register_class<Ign::MarchingCubesRebuildStrategyGd>();
 	ClassDB::register_class<Ign::MarchingCubesSphericalRebuildStrategyGd>();
