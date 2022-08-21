@@ -152,6 +152,17 @@ const std::vector<Vector2> & VolumeMesh::uv2s() const
 	return _ret_uv2s;
 }
 
+std::vector<NodeFace> & VolumeMesh::node_faces()
+{
+	return _all_faces;
+}
+
+std::vector<int> & VolumeMesh::materials()
+{
+	return _material_inds;
+}
+
+
 
 
 }

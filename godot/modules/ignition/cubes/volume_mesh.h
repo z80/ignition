@@ -39,6 +39,9 @@ public:
 	const std::vector<Vector2> & uvs() const;
 	const std::vector<Vector2> & uv2s() const;
 
+	// Needed for filling it with data.
+	std::vector<NodeFace> & node_faces();
+	std::vector<int> & materials();
 public:
 	// Source transform.
 	// Points to probe first are sent through this transformation.
