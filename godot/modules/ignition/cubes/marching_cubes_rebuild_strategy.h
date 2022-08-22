@@ -14,7 +14,7 @@ public:
     MarchingCubesRebuildStrategy();
     virtual ~MarchingCubesRebuildStrategy();
 
-	void init( Float height, Float planet_radius, Float rescale_dist, Float rebuild_dist );
+	void init( Float planet_radius, Float height, Float rescale_dist, Float rebuild_dist );
 
     virtual bool need_rebuild( const SE3 & view_point_se3 );
     virtual bool need_rescale( const SE3 & view_point_se3 );

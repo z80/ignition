@@ -19,10 +19,10 @@ MarchingCubesRebuildStrategy::~MarchingCubesRebuildStrategy()
 }
 
 
-void MarchingCubesRebuildStrategy::init( Float height, Float planet_radius, Float rescale_dist, Float rebuild_dist )
+void MarchingCubesRebuildStrategy::init( Float planet_radius, Float height, Float rescale_dist, Float rebuild_dist )
 {
-	this->height        = height;
 	this->planet_radius = planet_radius;
+	this->height        = height;
 	this->rescale_dist  = rescale_dist;
 	this->rebuild_dist  = rebuild_dist;
 }
