@@ -232,7 +232,7 @@ bool MarchingCubesDualNode::has_children() const
     return false;
 }
 
-bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * source, const DistanceScalerBase * scaler )
+bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * source, MarchingCubesRebuildStrategy * strategy, const DistanceScalerBase * scaler )
 {
 	// Initialize AABB. It is for computing intersections.
 	this->init_aabb( tree );
@@ -245,7 +245,7 @@ bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * 
         return false;
 	}
 
-    const bool should_split = tree->should_split( this, source, scaler );
+    const bool should_split = tree->should_split( this, source, strategy, scaler );
     if ( !should_split )
         return false;
 
@@ -272,7 +272,7 @@ bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * 
 		tree->compute_node_values( *(child_nodes[i]), source, scaler );
 
 	for ( int i=0; i<8; i++ )
-		child_nodes[i]->subdivide( tree, source, scaler );
+		child_nodes[i]->subdivide( tree, source, strategy, scaler );
 
     return true;
 }

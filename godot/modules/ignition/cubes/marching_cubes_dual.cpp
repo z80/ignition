@@ -6,6 +6,7 @@
 #include "distance_scaler_base.h"
 #include "marching_cubes_dual_node.h"
 #include "marching_cubes_dual_cell.h"
+#include "marching_cubes_rebuild_strategy.h"
 
 #include <cmath>
 #include <algorithm>
@@ -58,7 +59,7 @@ const SE3 & MarchingCubesDual::get_source_transform() const
 }
 
 
-bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * source, const DistanceScalerBase * scaler )
+bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * source, MarchingCubesRebuildStrategy * strategy, const DistanceScalerBase * scaler )
 {
 	cleanup_nodes();
 
@@ -73,7 +74,7 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 	root_node->at   = VectorInt( -root_size_int_2, -root_size_int_2, -root_size_int_2 );
 	compute_node_values( *root_node, source, scaler );
 
-	root_node->subdivide( this, source, scaler );
+	root_node->subdivide( this, source, strategy, scaler );
 	assign_node_indices();
 	root_node->compute_hashes();
 
@@ -259,19 +260,23 @@ Float MarchingCubesDual::get_split_precision() const
 	return max_rel_diff;
 }
 
-bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource * source, const DistanceScalerBase * scaler )
+bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource * source, MarchingCubesRebuildStrategy * strategy, const DistanceScalerBase * scaler )
 {
 	const VectorInt center_int = node->center();
 	const Vector3d center      = at_in_source( center_int );
 	const Float max_sz         = source->max_node_size_at( center );
-	const Float node_sz_min    = node_size_min( node );
+	//const Float node_sz_min    = node_size_min( node );
+
+	const Float node_size_default = node_size( node );
+	const Float node_size_scaled   = (strategy != nullptr) ? strategy->local_node_size( center, node_size_default ) : node_size_default;
+
 	// If bigger than maximum allowed, subdivide.
-	if ( node_sz_min > max_sz )
+	if ( node_size_scaled > max_sz )
 		return true;
 
 	// If smaller than minimum allowed, don't subdivide.
 	const Float min_sz = source->min_node_size_at( center );
-	if ( node_sz_min <= min_sz )
+	if ( node_size_scaled <= min_sz )
 		return false;
 
 	// The size is in between. Use a heuristic.

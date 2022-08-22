@@ -8,6 +8,7 @@
 #include "volume_source_gd.h"
 #include "distance_scaler_ref.h"
 #include "marching_cubes_dual_node_gd.h"
+#include "marching_cubes_rebuild_strategy_gd.h"
 
 class Node;
 
@@ -30,7 +31,7 @@ public:
 	void set_split_precision( real_t rel_diff );
 	real_t get_split_precision() const;
 
-	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<MarchingCubesRebuildStrategyGd> & strategy = Ref<MarchingCubesRebuildStrategyGd>(), const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 
 	Array query_close_nodes( const Vector3 & at, real_t dist, real_t max_size );
 	Vector3 center_direction( const Vector3 & at, bool in_source ) const;

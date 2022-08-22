@@ -19,7 +19,7 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_split_precision", "rel_diff"),                          &MarchingCubesDualGd::set_split_precision );
 	ClassDB::bind_method( D_METHOD("get_split_precision"),                                      &MarchingCubesDualGd::get_split_precision, Variant::REAL );
 
-	ClassDB::bind_method( D_METHOD("subdivide_source", "radius", "volume", "scaler"),           &MarchingCubesDualGd::subdivide_source, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("subdivide_source", "radius", "volume", "strategy", "scaler"),           &MarchingCubesDualGd::subdivide_source, Variant::BOOL );
 
 	ClassDB::bind_method( D_METHOD("query_close_nodes", "at", "dist", "max_size"), &MarchingCubesDualGd::query_close_nodes, Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("center_direction", "at", "in_source"),   &MarchingCubesDualGd::center_direction,  Variant::VECTOR3 );
@@ -91,13 +91,17 @@ real_t MarchingCubesDualGd::get_split_precision() const
 }
 
 
-bool MarchingCubesDualGd::subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerBaseRef> & scaler )
+bool MarchingCubesDualGd::subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<MarchingCubesRebuildStrategyGd> & strategy, const Ref<DistanceScalerBaseRef> & scaler )
 {
 	VolumeSource   * volume_source   = volume.ptr()->source;
+	const MarchingCubesRebuildStrategyGd * strategy_gd_c = strategy.ptr();
+	MarchingCubesRebuildStrategyGd * strategy_gd = const_cast<MarchingCubesRebuildStrategyGd *>(strategy_gd_c);
+	MarchingCubesRebuildStrategy * rebuild_strategy = (strategy_gd != nullptr) ? (&(strategy_gd->strategy)) : nullptr;
+
 	const DistanceScalerBaseRef * distance_scaler_ref = scaler.ptr();
 	const DistanceScalerBase * distance_scaler = (distance_scaler_ref != nullptr) ? (distance_scaler_ref->scaler_base) : nullptr;
 
-	const bool ret = cubes.subdivide_source( bounding_radius, volume_source, distance_scaler );
+	const bool ret = cubes.subdivide_source( bounding_radius, volume_source, rebuild_strategy, distance_scaler );
 	return ret;
 }
 

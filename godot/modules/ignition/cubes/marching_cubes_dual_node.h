@@ -27,6 +27,7 @@ namespace Ign
 class MarchingCubesDual;
 class VolumeSource;
 class DistanceScalerBase;
+class MarchingCubesRebuildStrategy;
 
 class MarchingCubesDualNode
 {
@@ -43,7 +44,7 @@ public:
 	bool intersect_with_ray( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm );
 
     bool has_children() const;
-    bool subdivide( MarchingCubesDual * tree, VolumeSource * source, const DistanceScalerBase * scaler );
+    bool subdivide( MarchingCubesDual * tree, VolumeSource * source, MarchingCubesRebuildStrategy * strategy, const DistanceScalerBase * scaler );
 	void compute_hashes();
 
     // Initialize vertices and planes.

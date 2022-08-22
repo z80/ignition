@@ -1,6 +1,5 @@
 
 #include "marching_cubes_dual_node_gd.h"
-
 #include "marching_cubes_dual.h"
 #include "marching_cubes_dual_node.h"
 
