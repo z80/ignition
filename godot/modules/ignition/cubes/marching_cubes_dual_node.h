@@ -40,11 +40,11 @@ public:
 	void query_nodes( const MarchingCubesDualNode & node, int sz, std::vector<int> & ret );
 	void query_faces( MarchingCubesDual * tree, const MarchingCubesDualNode & node, std::set<int> & face_inds );
 
-	bool intersect_with_segment( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm );
-	bool intersect_with_ray( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm );
+	bool intersect_with_segment( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & end, const SE3 & source_se3, Vector3d & at, Vector3d & norm );
+	bool intersect_with_ray( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & dir, const SE3 & source_se3, Vector3d & at, Vector3d & norm );
 
     bool has_children() const;
-    bool subdivide( MarchingCubesDual * tree, VolumeSource * source, MarchingCubesRebuildStrategy * strategy, const DistanceScalerBase * scaler );
+    bool subdivide( MarchingCubesDual * tree, VolumeSource * source, MarchingCubesRebuildStrategy * strategy );
 	void compute_hashes();
 
     // Initialize vertices and planes.
@@ -54,11 +54,11 @@ public:
 
 	bool intersects( const MarchingCubesDualNode & other ) const;
 
-	bool contains_point( MarchingCubesDual * tree, const Vector3d & at ) const;
-	Vector3d center_vector( MarchingCubesDual * tree, bool in_source ) const;
+	bool contains_point( const SE3 & source_se3, MarchingCubesDual * tree, const Vector3d & at ) const;
+	Vector3d center_vector( MarchingCubesDual * tree, const SE3 & inv_source_se3 ) const;
 	Float    node_size( MarchingCubesDual * tree ) const;
-	SE3      se3_in_point( MarchingCubesDual * tree, const Vector3d & at, bool in_source ) const;
-	SE3      asset_se3( MarchingCubesDual * tree, const SE3 & asset_at, bool asset_in_source, bool result_in_source, const DistanceScalerBase * scaler ) const;
+	//SE3      se3_in_point( MarchingCubesDual * tree, const Vector3d & at, bool in_source ) const;
+	//SE3      asset_se3( MarchingCubesDual * tree, const SE3 & asset_at, bool asset_in_source, bool result_in_source, const DistanceScalerBase * scaler ) const;
 
     const VectorInt center() const;
 
@@ -216,7 +216,6 @@ public:
 
     // Store these for convenience.
     VectorInt vertices_int[8];
-    Vector3d  vertices_scaled[8];
     Vector3d  vertices[8];
     Float     values[8];
 

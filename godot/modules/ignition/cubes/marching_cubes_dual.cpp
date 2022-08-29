@@ -47,19 +47,19 @@ MarchingCubesDual::~MarchingCubesDual()
 }
 
 
-void MarchingCubesDual::set_source_transform( const SE3 & se3 )
-{
-	source_se3          = se3;
-	inverted_source_se3 = se3.inverse();
-}
+//void MarchingCubesDual::set_source_transform( const SE3 & se3 )
+//{
+//	source_se3          = se3;
+//	inverted_source_se3 = se3.inverse();
+//}
+//
+//const SE3 & MarchingCubesDual::get_source_transform() const
+//{
+//	return source_se3;
+//}
 
-const SE3 & MarchingCubesDual::get_source_transform() const
-{
-	return source_se3;
-}
 
-
-bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * source, MarchingCubesRebuildStrategy * strategy, const DistanceScalerBase * scaler )
+bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * source, MarchingCubesRebuildStrategy * strategy )
 {
 	cleanup_nodes();
 
@@ -72,9 +72,9 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 	MarchingCubesDualNode * root_node = create_node();
 	root_node->size = root_size_int;
 	root_node->at   = VectorInt( -root_size_int_2, -root_size_int_2, -root_size_int_2 );
-	compute_node_values( *root_node, source, scaler );
+	compute_node_values( *root_node, source );
 
-	root_node->subdivide( this, source, strategy, scaler );
+	root_node->subdivide( this, source, strategy );
 	assign_node_indices();
 	root_node->compute_hashes();
 
@@ -82,14 +82,14 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 	_dual_cell_octree_node_pairs.clear();
 
 	// Creating dual grid cells.
-	node_proc( root_node, source, scaler );
+	node_proc( root_node, source );
 
 	// Cleanup.
 	_all_faces.clear();
 	_materials_set.clear();
 
 	// Create faces and assign material.
-	create_faces_in_dual_grid( source, scaler );
+	create_faces_in_dual_grid( source );
 
 	// Go over all nodes and assign faces.
 	assign_faces_to_octree_nodes();
@@ -126,7 +126,7 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
     return true;
 }
 
-const std::vector<int> & MarchingCubesDual::query_close_nodes( const Vector3d & at, Float dist, Float max_size )
+const std::vector<int> & MarchingCubesDual::query_close_nodes( const SE3 & inverted_source_se3, const Vector3d & at, Float dist, Float max_size )
 {
 	_octree_node_indices_result.clear();
 
@@ -163,7 +163,7 @@ const std::vector<int> & MarchingCubesDual::query_close_nodes( const Vector3d & 
 	return _octree_node_indices_result;
 }
 
-Vector3d MarchingCubesDual::center_direction( const Vector3d & at, bool in_source ) const
+Vector3d MarchingCubesDual::center_direction( const SE3 & source_se3, const SE3 & inverted_source_se3, const Vector3d & at, bool in_source ) const
 {
 	const Vector3d full = (source_se3.r_ - at);
 	const Float    L    = full.Length();
@@ -188,18 +188,18 @@ MarchingCubesDualNode * MarchingCubesDual::get_tree_node( int ind )
 	return ret;
 }
 
-bool MarchingCubesDual::point_inside_node( int node_ind, const Vector3d & at )
+bool MarchingCubesDual::point_inside_node( const SE3 & source_se3, const SE3 & inverted_source_se3, int node_ind, const Vector3d & at )
 {
 	Vector3d center;
 	MarchingCubesDualNode * node = get_tree_node( node_ind );
 
 	const Vector3d local_at = inverted_source_se3.q_ * at + inverted_source_se3.r_;
 
-	const bool ret = node->contains_point( this, local_at );
+	const bool ret = node->contains_point( source_se3, this, local_at );
 	return ret;
 }
 
-bool MarchingCubesDual::intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm )
+bool MarchingCubesDual::intersect_with_segment( const SE3 & source_se3, const SE3 & inverted_source_se3, MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm )
 {
 	if ( node == nullptr )
 	{
@@ -213,7 +213,7 @@ bool MarchingCubesDual::intersect_with_segment( MarchingCubesDualNode * node, co
 	const Vector3d local_start = inverted_source_se3.q_ * start + inverted_source_se3.r_;
 	const Vector3d local_end   = inverted_source_se3.q_ * end   + inverted_source_se3.r_;
 
-	const bool ret = node->intersect_with_segment( this, local_start, local_end, in_source, at, norm );
+	const bool ret = node->intersect_with_segment( this, local_start, local_end, source_se3, at, norm );
 
 	if ( ret )
 	{
@@ -224,7 +224,7 @@ bool MarchingCubesDual::intersect_with_segment( MarchingCubesDualNode * node, co
 	return ret;
 }
 
-bool MarchingCubesDual::intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm )
+bool MarchingCubesDual::intersect_with_ray( const SE3 & source_se3, const SE3 & inverted_source_se3, MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm )
 {
 	if ( node == nullptr )
 	{
@@ -238,7 +238,7 @@ bool MarchingCubesDual::intersect_with_ray( MarchingCubesDualNode * node, const 
 	const Vector3d local_start = inverted_source_se3.q_ * start + inverted_source_se3.r_;
 	const Vector3d local_dir   = inverted_source_se3.q_ * dir;
 
-	const bool ret = node->intersect_with_ray( this, local_start, local_dir, in_source, at, norm );
+	const bool ret = node->intersect_with_ray( this, local_start, local_dir, source_se3, at, norm );
 
 	if ( ret )
 	{
@@ -260,7 +260,7 @@ Float MarchingCubesDual::get_split_precision() const
 	return max_rel_diff;
 }
 
-bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource * source, MarchingCubesRebuildStrategy * strategy, const DistanceScalerBase * scaler )
+bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource * source, MarchingCubesRebuildStrategy * strategy )
 {
 	const VectorInt center_int = node->center();
 	const Vector3d center      = at_in_source( center_int );
@@ -350,10 +350,10 @@ MarchingCubesDualCell * MarchingCubesDual::create_dual_cell()
 	return cell;
 }
 
-SE3 MarchingCubesDual::se3_in_point( const Vector3d & at, bool in_source ) const
+SE3 MarchingCubesDual::se3_in_point( const SE3 & source_se3, const SE3 & inv_source_se3, const Vector3d & at, bool in_source ) const
 {
-	const SE3 & se3     = this->source_se3;
-	const SE3 & inv_se3 = this->inverted_source_se3;
+	const SE3 & se3     = source_se3;
+	const SE3 & inv_se3 = inv_source_se3;
 
 	const Vector3d at_s       = in_source ? at : (se3.q_ * at + se3.r_);
 	const Vector3d up         = in_source ? ( at_s / at_s.Length() ) : inv_se3.q_ * ( at_s / at_s.Length() );
@@ -367,26 +367,17 @@ SE3 MarchingCubesDual::se3_in_point( const Vector3d & at, bool in_source ) const
 	return ret;
 }
 
-SE3 MarchingCubesDual::asset_se3( const SE3 & asset_at, bool asset_in_source, bool result_in_source, const DistanceScalerBase * scaler ) const
+SE3 MarchingCubesDual::asset_se3( const SE3 & source_se3, const SE3 & asset_at, bool result_in_source, const DistanceScalerBase * scaler ) const
 {
-	SE3 asset_in_world_se3;
-	if ( asset_in_source )
-	{
-		const SE3 & source_se3 = this->source_se3;
-		asset_in_world_se3 = source_se3 * asset_at;
-	}
-	else
-	{
-		asset_in_world_se3 = asset_at;
-	}
+	const SE3 asset_in_world_se3 = source_se3 * asset_at;
 
 	if ( !result_in_source )
 	{
 		return asset_in_world_se3;
 	}
 
-	const SE3 source_se3 = this->compute_source_se3( scaler );
-	const SE3 inv_source_se3 = source_se3.inverse();
+	const SE3 pt_se3_in_source = this->compute_source_se3( source_se3, scaler );
+	const SE3 inv_source_se3 = pt_se3_in_source.inverse();
 	const SE3 asset_in_source_se3 = inv_source_se3 * asset_in_world_se3;
 
 	return asset_in_source_se3;
@@ -397,13 +388,13 @@ const std::set<int> & MarchingCubesDual::materials() const
 	return _materials_set;
 }
 
-const std::vector<Vector3> & MarchingCubesDual::vertices( int material_ind, const DistanceScalerBase * scaler )
+const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & source_se3, int material_ind, const DistanceScalerBase * scaler )
 {
 	const unsigned int qty = _all_faces.size();
 	_ret_verts.clear();
 	_ret_verts.reserve(3*qty);
 
-	const SE3 scaled_source_se3 = compute_source_se3( scaler );
+	const SE3 scaled_source_se3 = compute_source_se3( source_se3, scaler );
 	const SE3 inv_scaled_source_se3 = scaled_source_se3.inverse();
 
 	for ( unsigned int i=0; i<qty; i++ )
@@ -550,7 +541,7 @@ const std::vector<Vector2> & MarchingCubesDual::uv2s() const
 	return _ret_uv2s;
 }
 
-const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler )
+const std::vector<Vector3> & MarchingCubesDual::collision_faces( const SE3 & source_se3, const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler )
 {
 	_face_indices_set.clear();
 	_faces_ret.clear();
@@ -573,7 +564,8 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d 
 		dist_int *= 2;
 	}
 
-	const Vector3d center = inverted_source_se3 * at;
+	const SE3 inverted_source_se3 = source_se3.inverse();
+	const Vector3d center         = inverted_source_se3 * at;
 
 	const VectorInt center_int = VectorInt( static_cast<int>( center.x_ / step ),
 		                                    static_cast<int>( center.y_ / step ),
@@ -584,7 +576,7 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d 
 	node.at   = center_int;
 	node.size = size_int;
 
-	const SE3 scaled_source_se3 = compute_source_se3( scaler );
+	const SE3 scaled_source_se3 = compute_source_se3( source_se3, scaler );
 	const SE3 inv_scaled_source_se3 = scaled_source_se3.inverse();
 
 	root->query_faces( this, node, _face_indices_set );
@@ -621,14 +613,14 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d 
 
 
 
-Transform MarchingCubesDual::compute_source_transform( const DistanceScalerBase * scaler ) const
+Transform MarchingCubesDual::compute_source_transform( const SE3 & source_se3, const DistanceScalerBase * scaler ) const
 {
-	const SE3 se3 = compute_source_se3( scaler );
+	const SE3 se3 = compute_source_se3( source_se3, scaler );
 	const Transform ret = se3.transform();
 	return ret;
 }
 
-SE3 MarchingCubesDual::compute_source_se3( const DistanceScalerBase * scaler ) const
+SE3 MarchingCubesDual::compute_source_se3( const SE3 & source_se3, const DistanceScalerBase * scaler ) const
 {
 	Vector3d o;
 	if (scaler == nullptr)
@@ -648,49 +640,49 @@ SE3 MarchingCubesDual::compute_source_se3( const DistanceScalerBase * scaler ) c
 
 Float MarchingCubesDual::node_size_min( const MarchingCubesDualNode * node ) const
 {
-	 Float min_sz = (node->vertices_scaled[0] - node->vertices_scaled[1]).Length();
+	 Float min_sz = (node->vertices[0] - node->vertices[1]).Length();
 
-	 const Float sz_12 = (node->vertices_scaled[1] - node->vertices_scaled[2]).Length();
+	 const Float sz_12 = (node->vertices[1] - node->vertices[2]).Length();
 	 if ( min_sz > sz_12 )
 		 min_sz = sz_12;
 
-	 const Float sz_23 = (node->vertices_scaled[2] - node->vertices_scaled[3]).Length();
+	 const Float sz_23 = (node->vertices[2] - node->vertices[3]).Length();
 	 if ( min_sz > sz_23 )
 		 min_sz = sz_23;
 
-	 const Float sz_30 = (node->vertices_scaled[3] - node->vertices_scaled[0]).Length();
+	 const Float sz_30 = (node->vertices[3] - node->vertices[0]).Length();
 	 if ( min_sz > sz_30 )
 		 min_sz = sz_30;
 
-	 const Float sz_04 = (node->vertices_scaled[0] - node->vertices_scaled[4]).Length();
+	 const Float sz_04 = (node->vertices[0] - node->vertices[4]).Length();
 	 if ( min_sz > sz_04 )
 		 min_sz = sz_04;
 
-	 const Float sz_15 = (node->vertices_scaled[1] - node->vertices_scaled[5]).Length();
+	 const Float sz_15 = (node->vertices[1] - node->vertices[5]).Length();
 	 if ( min_sz > sz_15 )
 		 min_sz = sz_15;
 
-	 const Float sz_26 = (node->vertices_scaled[2] - node->vertices_scaled[6]).Length();
+	 const Float sz_26 = (node->vertices[2] - node->vertices[6]).Length();
 	 if ( min_sz > sz_26 )
 		 min_sz = sz_26;
 
-	 const Float sz_37 = (node->vertices_scaled[3] - node->vertices_scaled[7]).Length();
+	 const Float sz_37 = (node->vertices[3] - node->vertices[7]).Length();
 	 if ( min_sz > sz_37 )
 		 min_sz = sz_37;
 
-	 const Float sz_45 = (node->vertices_scaled[4] - node->vertices_scaled[5]).Length();
+	 const Float sz_45 = (node->vertices[4] - node->vertices[5]).Length();
 	 if ( min_sz > sz_45 )
 		 min_sz = sz_45;
 
-	 const Float sz_56 = (node->vertices_scaled[5] - node->vertices_scaled[6]).Length();
+	 const Float sz_56 = (node->vertices[5] - node->vertices[6]).Length();
 	 if ( min_sz > sz_56 )
 		 min_sz = sz_56;
 
-	 const Float sz_67 = (node->vertices_scaled[6] - node->vertices_scaled[7]).Length();
+	 const Float sz_67 = (node->vertices[6] - node->vertices[7]).Length();
 	 if ( min_sz > sz_67 )
 		 min_sz = sz_67;
 
-	 const Float sz_74 = (node->vertices_scaled[7] - node->vertices_scaled[4]).Length();
+	 const Float sz_74 = (node->vertices[7] - node->vertices[4]).Length();
 	 if ( min_sz > sz_74 )
 		 min_sz = sz_74;
 
@@ -699,49 +691,49 @@ Float MarchingCubesDual::node_size_min( const MarchingCubesDualNode * node ) con
 
 Float MarchingCubesDual::node_size_max( const MarchingCubesDualNode * node ) const
 {
-	Float max_sz = (node->vertices_scaled[0] - node->vertices_scaled[1]).Length();
+	Float max_sz = (node->vertices[0] - node->vertices[1]).Length();
 
-	const Float sz_12 = (node->vertices_scaled[1] - node->vertices_scaled[2]).Length();
+	const Float sz_12 = (node->vertices[1] - node->vertices[2]).Length();
 	if ( max_sz < sz_12 )
 		max_sz = sz_12;
 
-	const Float sz_23 = (node->vertices_scaled[2] - node->vertices_scaled[3]).Length();
+	const Float sz_23 = (node->vertices[2] - node->vertices[3]).Length();
 	if ( max_sz < sz_23 )
 		max_sz = sz_23;
 
-	const Float sz_30 = (node->vertices_scaled[3] - node->vertices_scaled[0]).Length();
+	const Float sz_30 = (node->vertices[3] - node->vertices[0]).Length();
 	if ( max_sz < sz_30 )
 		max_sz = sz_30;
 
-	const Float sz_04 = (node->vertices_scaled[0] - node->vertices_scaled[4]).Length();
+	const Float sz_04 = (node->vertices[0] - node->vertices[4]).Length();
 	if ( max_sz < sz_04 )
 		max_sz = sz_04;
 
-	const Float sz_15 = (node->vertices_scaled[1] - node->vertices_scaled[5]).Length();
+	const Float sz_15 = (node->vertices[1] - node->vertices[5]).Length();
 	if ( max_sz < sz_15 )
 		max_sz = sz_15;
 
-	const Float sz_26 = (node->vertices_scaled[2] - node->vertices_scaled[6]).Length();
+	const Float sz_26 = (node->vertices[2] - node->vertices[6]).Length();
 	if ( max_sz < sz_26 )
 		max_sz = sz_26;
 
-	const Float sz_37 = (node->vertices_scaled[3] - node->vertices_scaled[7]).Length();
+	const Float sz_37 = (node->vertices[3] - node->vertices[7]).Length();
 	if ( max_sz < sz_37 )
 		max_sz = sz_37;
 
-	const Float sz_45 = (node->vertices_scaled[4] - node->vertices_scaled[5]).Length();
+	const Float sz_45 = (node->vertices[4] - node->vertices[5]).Length();
 	if ( max_sz < sz_45 )
 		max_sz = sz_45;
 
-	const Float sz_56 = (node->vertices_scaled[5] - node->vertices_scaled[6]).Length();
+	const Float sz_56 = (node->vertices[5] - node->vertices[6]).Length();
 	if ( max_sz < sz_56 )
 		max_sz = sz_56;
 
-	const Float sz_67 = (node->vertices_scaled[6] - node->vertices_scaled[7]).Length();
+	const Float sz_67 = (node->vertices[6] - node->vertices[7]).Length();
 	if ( max_sz < sz_67 )
 		max_sz = sz_67;
 
-	const Float sz_74 = (node->vertices_scaled[7] - node->vertices_scaled[4]).Length();
+	const Float sz_74 = (node->vertices[7] - node->vertices[4]).Length();
 	if ( max_sz < sz_74 )
 		max_sz = sz_74;
 
@@ -750,23 +742,23 @@ Float MarchingCubesDual::node_size_max( const MarchingCubesDualNode * node ) con
 
 
 
-Vector3d MarchingCubesDual::at_in_source_scaled( const VectorInt & at_i, const DistanceScalerBase * scaler ) const
-{
-	const Vector3d at( static_cast<Float>(at_i.x)*step, 
-		               static_cast<Float>(at_i.y)*step, 
-		               static_cast<Float>(at_i.z)*step );
-
-	if ( scaler == nullptr )
-		return at;
-
-	const Vector3d at_in_world            = source_se3.q_ * at + source_se3.r_;
-	const Vector3d at_in_world_scaled     = scaler->scale( at_in_world );
-	const Vector3d origin_in_world_scaled = scaler->scale( source_se3.r_ );
-	const Vector3d rel_to_origin_scaled   = at_in_world_scaled - origin_in_world_scaled;
-	const Vector3d at_scaled              = inverted_source_se3.q_ * rel_to_origin_scaled;
-
-	return at_scaled;
-}
+//Vector3d MarchingCubesDual::at_in_source_scaled( const VectorInt & at_i, const DistanceScalerBase * scaler ) const
+//{
+//	const Vector3d at( static_cast<Float>(at_i.x)*step, 
+//		               static_cast<Float>(at_i.y)*step, 
+//		               static_cast<Float>(at_i.z)*step );
+//
+//	if ( scaler == nullptr )
+//		return at;
+//
+//	const Vector3d at_in_world            = source_se3.q_ * at + source_se3.r_;
+//	const Vector3d at_in_world_scaled     = scaler->scale( at_in_world );
+//	const Vector3d origin_in_world_scaled = scaler->scale( source_se3.r_ );
+//	const Vector3d rel_to_origin_scaled   = at_in_world_scaled - origin_in_world_scaled;
+//	const Vector3d at_scaled              = inverted_source_se3.q_ * rel_to_origin_scaled;
+//
+//	return at_scaled;
+//}
 
 Vector3d MarchingCubesDual::at_in_source( const VectorInt & at_i ) const
 {
@@ -886,7 +878,7 @@ int MarchingCubesDual::find_subdivision_levels( Float bounding_radius, VolumeSou
 //}
 
 
-void MarchingCubesDual::compute_node_values( MarchingCubesDualNode & node, VolumeSource * source, const DistanceScalerBase * scaler )
+void MarchingCubesDual::compute_node_values( MarchingCubesDualNode & node, VolumeSource * source )
 {
     VectorInt verts[8];
     const int x  = node.at.x;
@@ -904,17 +896,14 @@ void MarchingCubesDual::compute_node_values( MarchingCubesDualNode & node, Volum
 
     for ( int i=0; i<8; i++ )
     {
+		const VectorInt & vert_int = verts[i];
 		node.vertices_int[i] = verts[i];
         // Value at unwarped position.
-		const VectorInt & vert_int = verts[i];
-        const Vector3d vert_d      = at_in_source( verts[i] );
-        const Float    value       = value_at( source, vert_int, vert_d );
+		const Float    value       = value_at( source, vert_int, vert_d );
+		node.values[i]             = value;
 		// Store unwarped position.
+		const Vector3d vert_d      = at_in_source( verts[i] );
 		node.vertices[i]  = vert_d;
-        // Store warped position.
-        const Vector3d vert        = at_in_source_scaled( verts[i], scaler );
-        node.vertices_scaled[i]    = vert;
-        node.values[i]             = value;
     }
 }
 
@@ -930,7 +919,7 @@ void MarchingCubesDual::assign_node_indices()
 
 
 
-void MarchingCubesDual::node_proc( const MarchingCubesDualNode * n, VolumeSource * source, const DistanceScalerBase * scaler )
+void MarchingCubesDual::node_proc( const MarchingCubesDualNode * n, VolumeSource * source )
 {
 	if (n->has_children())
 	{
@@ -944,45 +933,45 @@ void MarchingCubesDual::node_proc( const MarchingCubesDualNode * n, VolumeSource
 		const MarchingCubesDualNode *c6 = n->child_nodes[6];
 		const MarchingCubesDualNode *c7 = n->child_nodes[7];
 
-		node_proc( c0, source, scaler );
-		node_proc( c1, source, scaler );
-		node_proc( c2, source, scaler );
-		node_proc( c3, source, scaler );
-		node_proc( c4, source, scaler );
-		node_proc( c5, source, scaler );
-		node_proc( c6, source, scaler );
-		node_proc( c7, source, scaler );
+		node_proc( c0, source );
+		node_proc( c1, source );
+		node_proc( c2, source );
+		node_proc( c3, source );
+		node_proc( c4, source );
+		node_proc( c5, source );
+		node_proc( c6, source );
+		node_proc( c7, source );
 
-		face_proc_xy(c0, c3, source, scaler);
-		face_proc_xy(c1, c2, source, scaler);
-		face_proc_xy(c4, c7, source, scaler);
-		face_proc_xy(c5, c6, source, scaler);
+		face_proc_xy(c0, c3, source);
+		face_proc_xy(c1, c2, source);
+		face_proc_xy(c4, c7, source);
+		face_proc_xy(c5, c6, source);
 
-		face_proc_zy(c0, c1, source, scaler);
-		face_proc_zy(c3, c2, source, scaler);
-		face_proc_zy(c4, c5, source, scaler);
-		face_proc_zy(c7, c6, source, scaler);
+		face_proc_zy(c0, c1, source);
+		face_proc_zy(c3, c2, source);
+		face_proc_zy(c4, c5, source);
+		face_proc_zy(c7, c6, source);
 
-		face_proc_xz(c4, c0, source, scaler);
-		face_proc_xz(c5, c1, source, scaler);
-		face_proc_xz(c7, c3, source, scaler);
-		face_proc_xz(c6, c2, source, scaler);
+		face_proc_xz(c4, c0, source);
+		face_proc_xz(c5, c1, source);
+		face_proc_xz(c7, c3, source);
+		face_proc_xz(c6, c2, source);
 
-		edge_proc_x(c0, c3, c7, c4, source, scaler);
-		edge_proc_x(c1, c2, c6, c5, source, scaler);
+		edge_proc_x(c0, c3, c7, c4, source);
+		edge_proc_x(c1, c2, c6, c5, source);
 
-		edge_proc_y(c0, c1, c2, c3, source, scaler);
-		edge_proc_y(c4, c5, c6, c7, source, scaler);
+		edge_proc_y(c0, c1, c2, c3, source);
+		edge_proc_y(c4, c5, c6, c7, source);
 
-		edge_proc_z(c7, c6, c2, c3, source, scaler);
-		edge_proc_z(c4, c5, c1, c0, source, scaler);
+		edge_proc_z(c7, c6, c2, c3, source);
+		edge_proc_z(c4, c5, c1, c0, source);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source);
 	}
 }
 
 
-void MarchingCubesDual::face_proc_xy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source, const DistanceScalerBase * scaler )
+void MarchingCubesDual::face_proc_xy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -999,21 +988,21 @@ void MarchingCubesDual::face_proc_xy( const MarchingCubesDualNode * n0, const Ma
 		const MarchingCubesDualNode *c6 = n1Subdivided ? n1->child_nodes[5] : n1;
 		const MarchingCubesDualNode *c7 = n1Subdivided ? n1->child_nodes[4] : n1;
 
-		face_proc_xy(c0, c3, source, scaler);
-		face_proc_xy(c1, c2, source, scaler);
-		face_proc_xy(c4, c7, source, scaler);
-		face_proc_xy(c5, c6, source, scaler);
+		face_proc_xy(c0, c3, source);
+		face_proc_xy(c1, c2, source);
+		face_proc_xy(c4, c7, source);
+		face_proc_xy(c5, c6, source);
 
-		edge_proc_x(c0, c3, c7, c4, source, scaler);
-		edge_proc_x(c1, c2, c6, c5, source, scaler);
-		edge_proc_y(c0, c1, c2, c3, source, scaler);
-		edge_proc_y(c4, c5, c6, c7, source, scaler);
+		edge_proc_x(c0, c3, c7, c4, source);
+		edge_proc_x(c1, c2, c6, c5, source);
+		edge_proc_y(c0, c1, c2, c3, source);
+		edge_proc_y(c4, c5, c6, c7, source);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source);
 	}
 }
 
-void MarchingCubesDual::face_proc_zy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source, const DistanceScalerBase * scaler )
+void MarchingCubesDual::face_proc_zy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -1030,21 +1019,21 @@ void MarchingCubesDual::face_proc_zy( const MarchingCubesDualNode * n0, const Ma
 		const MarchingCubesDualNode *c6 = n1Subdivided ? n1->child_nodes[7] : n1;
 		const MarchingCubesDualNode *c7 = n0Subdivided ? n0->child_nodes[6] : n0;
 
-		face_proc_zy(c0, c1, source, scaler);
-		face_proc_zy(c3, c2, source, scaler);
-		face_proc_zy(c4, c5, source, scaler);
-		face_proc_zy(c7, c6, source, scaler);
+		face_proc_zy(c0, c1, source);
+		face_proc_zy(c3, c2, source);
+		face_proc_zy(c4, c5, source);
+		face_proc_zy(c7, c6, source);
 
-		edge_proc_y(c0, c1, c2, c3, source, scaler);
-		edge_proc_y(c4, c5, c6, c7, source, scaler);
-		edge_proc_z(c7, c6, c2, c3, source, scaler);
-		edge_proc_z(c4, c5, c1, c0, source, scaler);
+		edge_proc_y(c0, c1, c2, c3, source);
+		edge_proc_y(c4, c5, c6, c7, source);
+		edge_proc_z(c7, c6, c2, c3, source);
+		edge_proc_z(c4, c5, c1, c0, source);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source);
 	}
 }
 
-void MarchingCubesDual::face_proc_xz( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source, const DistanceScalerBase * scaler )
+void MarchingCubesDual::face_proc_xz( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -1061,22 +1050,22 @@ void MarchingCubesDual::face_proc_xz( const MarchingCubesDualNode * n0, const Ma
 		const MarchingCubesDualNode *c6 = n0Subdivided ? n0->child_nodes[2] : n0;
 		const MarchingCubesDualNode *c7 = n0Subdivided ? n0->child_nodes[3] : n0;
 
-		face_proc_xz(c4, c0, source, scaler);
-		face_proc_xz(c5, c1, source, scaler);
-		face_proc_xz(c7, c3, source, scaler);
-		face_proc_xz(c6, c2, source, scaler);
+		face_proc_xz(c4, c0, source);
+		face_proc_xz(c5, c1, source);
+		face_proc_xz(c7, c3, source);
+		face_proc_xz(c6, c2, source);
 
-		edge_proc_x(c0, c3, c7, c4, source, scaler);
-		edge_proc_x(c1, c2, c6, c5, source, scaler);
-		edge_proc_z(c7, c6, c2, c3, source, scaler);
-		edge_proc_z(c4, c5, c1, c0, source, scaler);
+		edge_proc_x(c0, c3, c7, c4, source);
+		edge_proc_x(c1, c2, c6, c5, source);
+		edge_proc_z(c7, c6, c2, c3, source);
+		edge_proc_z(c4, c5, c1, c0, source);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source);
 	}
 }
 
 
-void MarchingCubesDual::edge_proc_x( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source, const DistanceScalerBase * scaler )
+void MarchingCubesDual::edge_proc_x( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -1094,14 +1083,14 @@ void MarchingCubesDual::edge_proc_x( const MarchingCubesDualNode * n0, const Mar
 		const MarchingCubesDualNode *c6 = n2Subdivided ? n2->child_nodes[1] : n2;
 		const MarchingCubesDualNode *c7 = n2Subdivided ? n2->child_nodes[0] : n2;
 
-		edge_proc_x(c0, c3, c7, c4, source, scaler);
-		edge_proc_x(c1, c2, c6, c5, source, scaler);
+		edge_proc_x(c0, c3, c7, c4, source);
+		edge_proc_x(c1, c2, c6, c5, source);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source);
 	}
 }
 
-void MarchingCubesDual::edge_proc_y( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source, const DistanceScalerBase * scaler )
+void MarchingCubesDual::edge_proc_y( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -1119,14 +1108,14 @@ void MarchingCubesDual::edge_proc_y( const MarchingCubesDualNode * n0, const Mar
 		const MarchingCubesDualNode *c6 = n2Subdivided ? n2->child_nodes[4] : n2;
 		const MarchingCubesDualNode *c7 = n3Subdivided ? n3->child_nodes[5] : n3;
 
-		edge_proc_y(c0, c1, c2, c3, source, scaler);
-		edge_proc_y(c4, c5, c6, c7, source, scaler);
+		edge_proc_y(c0, c1, c2, c3, source);
+		edge_proc_y(c4, c5, c6, c7, source);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source);
 	}
 }
 
-void MarchingCubesDual::edge_proc_z( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source, const DistanceScalerBase * scaler )
+void MarchingCubesDual::edge_proc_z( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -1144,16 +1133,16 @@ void MarchingCubesDual::edge_proc_z( const MarchingCubesDualNode * n0, const Mar
 		const MarchingCubesDualNode *c6 = n1Subdivided ? n1->child_nodes[3] : n1;
 		const MarchingCubesDualNode *c7 = n0Subdivided ? n0->child_nodes[2] : n0;
 
-		edge_proc_z(c7, c6, c2, c3, source, scaler);
-		edge_proc_z(c4, c5, c1, c0, source, scaler);
+		edge_proc_z(c7, c6, c2, c3, source);
+		edge_proc_z(c4, c5, c1, c0, source);
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source);
 	}
 }
 
 
 void MarchingCubesDual::vert_proc( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3,
-	                               const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source, const DistanceScalerBase * scaler )
+	                               const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source )
 {
 	const bool n0Subdivided = n0->has_children();
 	const bool n1Subdivided = n1->has_children();
@@ -1176,7 +1165,7 @@ void MarchingCubesDual::vert_proc( const MarchingCubesDualNode * n0, const March
 		const MarchingCubesDualNode *c6 = n6Subdivided ? n6->child_nodes[0] : n6;
 		const MarchingCubesDualNode *c7 = n7Subdivided ? n7->child_nodes[1] : n7;
 
-		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source, scaler);
+		vert_proc(c0, c1, c2, c3, c4, c5, c6, c7, source);
 	}
 	else
 	{
@@ -1199,7 +1188,7 @@ void MarchingCubesDual::vert_proc( const MarchingCubesDualNode * n0, const March
 		corners[7] = n7->center();
 
 		MarchingCubesDualCell * c = add_dual_cell( corners[0], corners[1], corners[2], corners[3],
-			                                       corners[4], corners[5], corners[6], corners[7], source, scaler );
+			                                       corners[4], corners[5], corners[6], corners[7], source );
 		//DualCellOctreeNodePair ccc = DualCellOctreeNodePair( c, const_cast<MarchingCubesDualNode *>(n0) );
 		if ( c != nullptr )
 		{
@@ -1214,20 +1203,20 @@ void MarchingCubesDual::vert_proc( const MarchingCubesDualNode * n0, const March
 			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
 		}
 
-		create_border_cells(n0, n1, n2, n3, n4, n5, n6, n7, source, scaler );
+		create_border_cells(n0, n1, n2, n3, n4, n5, n6, n7, source );
 	}
 }
 
 
 void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3,
-										     const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source, const DistanceScalerBase * scaler )
+										     const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source )
 {
 	const MarchingCubesDualNode * root = _octree_nodes[0];
 
 	if (n0->at_back( root ) && n1->at_back( root ) && n4->at_back( root ) && n5->at_back( root ))
 	{
 		MarchingCubesDualCell * c = add_dual_cell(n0->center_back(), n1->center_back(), n1->center(), n0->center(),
-			                                      n4->center_back(), n5->center_back(), n5->center(), n4->center(), source, scaler);
+			                                      n4->center_back(), n5->center_back(), n5->center(), n4->center(), source);
 		if ( c != nullptr )
 		{
 			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
@@ -1240,7 +1229,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 		if (n4->at_top( root ) && n5->at_top( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n4->center_back(), n5->center_back(), n5->center(), n4->center(),
-				                                      n4->center_back_top(), n5->center_back_top(), n5->center_top(), n4->center_top(), source, scaler);
+				                                      n4->center_back_top(), n5->center_back_top(), n5->center_top(), n4->center_top(), source);
 			if ( c != nullptr )
 			{
 				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
@@ -1250,7 +1239,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 			if (n4->at_left( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n4->center_back_left(), n4->center_back(), n4->center(), n4->center_left(),
-					                                      n4->corner_4(), n4->center_back_top(), n4->center_top(), n4->center_left_top(), source, scaler);
+					                                      n4->corner_4(), n4->center_back_top(), n4->center_top(), n4->center_left_top(), source);
 				if ( c != nullptr )
 				{
 					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
@@ -1259,7 +1248,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 			if (n5->at_right( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n5->center_back(), n5->center_back_right(), n5->center_right(), n5->center(),
-					                                      n5->center_back_top(), n5->corner_5(), n5->center_right_top(), n5->center_top(), source, scaler);
+					                                      n5->center_back_top(), n5->corner_5(), n5->center_right_top(), n5->center_top(), source);
 				if ( c != nullptr )
 				{
 					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
@@ -1269,7 +1258,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 		if (n0->at_bottom( root ) && n1->at_bottom( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n0->center_back_bottom(), n1->center_back_bottom(), n1->center_bottom(), n0->center_bottom(),
-				                                      n0->center_back(), n1->center_back(), n1->center(), n0->center(), source, scaler);
+				                                      n0->center_back(), n1->center_back(), n1->center(), n0->center(), source);
 			if ( c != nullptr )
 			{
 				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
@@ -1280,7 +1269,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 			if (n0->at_left( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n0->corner_0(), n0->center_back_bottom(), n0->center_bottom(), n0->center_left_bottom(),
-					                                      n0->center_back_left(), n0->center_back(), n0->center(), n0->center_left(), source, scaler);
+					                                      n0->center_back_left(), n0->center_back(), n0->center(), n0->center_left(), source);
 				if ( c != nullptr )
 				{
 					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
@@ -1289,7 +1278,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 			if (n1->at_right( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n1->center_back_bottom(), n1->corner_1(), n1->center_right_bottom(), n1->center_bottom(),
-					                                      n1->center_back(), n1->center_back_right(), n1->center_right(), n1->center(), source, scaler);
+					                                      n1->center_back(), n1->center_back_right(), n1->center_right(), n1->center(), source);
 				if ( c != nullptr )
 				{
 					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
@@ -1300,7 +1289,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 	if (n2->at_front( root ) && n3->at_front( root ) && n6->at_front( root ) && n7->at_front( root ))
 	{
 		MarchingCubesDualCell * c = add_dual_cell(n3->center(), n2->center(), n2->center_front(), n3->center_front(),
-			                                      n7->center(), n6->center(), n6->center_front(), n7->center_front(), source, scaler);
+			                                      n7->center(), n6->center(), n6->center_front(), n7->center_front(), source);
 		if ( c != nullptr )
 		{
 			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
@@ -1312,7 +1301,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 		if (n6->at_top( root ) && n7->at_top( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n7->center(), n6->center(), n6->center_front(), n7->center_front(),
-				                                      n7->center_top(), n6->center_top(), n6->center_front_top(), n7->center_front_top(), source, scaler);
+				                                      n7->center_top(), n6->center_top(), n6->center_front_top(), n7->center_front_top(), source);
 			if ( c != nullptr )
 			{
 				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
@@ -1322,7 +1311,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 			if (n7->at_left( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n7->center_left(), n7->center(), n7->center_front(), n7->center_front_left(),
-					                                      n7->center_left_top(), n7->center_top(), n7->center_front_top(), n7->corner_7(), source, scaler);
+					                                      n7->center_left_top(), n7->center_top(), n7->center_front_top(), n7->corner_7(), source);
 				if ( c != nullptr )
 				{
 					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n7 ) );
@@ -1331,7 +1320,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 			if (n6->at_right( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n6->center(), n6->center_right(), n6->center_front_right(), n6->center_front(),
-					                                      n6->center_top(), n6->center_right_top(), n6->corner_6(), n6->center_front_top(), source, scaler);
+					                                      n6->center_top(), n6->center_right_top(), n6->corner_6(), n6->center_front_top(), source);
 				if ( c != nullptr )
 				{
 					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n6 ) );
@@ -1341,7 +1330,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 		if (n3->at_bottom( root ) && n2->at_bottom( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n3->center_bottom(), n2->center_bottom(), n2->center_front_bottom(), n3->center_front_bottom(), 
-				                                      n3->center(), n2->center(), n2->center_front(), n3->center_front(), source, scaler);
+				                                      n3->center(), n2->center(), n2->center_front(), n3->center_front(), source);
 			if ( c != nullptr )
 			{
 				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
@@ -1351,7 +1340,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 			if (n3->at_left( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n3->center_left_bottom(), n3->center_bottom(), n3->center_front_bottom(), n3->corner_3(),
-					                                      n3->center_left(), n3->center(), n3->center_front(), n3->center_front_left(), source, scaler);
+					                                      n3->center_left(), n3->center(), n3->center_front(), n3->center_front_left(), source);
 				if ( c != nullptr )
 				{
 					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
@@ -1360,7 +1349,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 			if (n2->at_right( root ))
 			{
 				MarchingCubesDualCell * c = add_dual_cell(n2->center_bottom(), n2->center_right_bottom(), n2->corner_2(), n2->center_front_bottom(),
-					                                      n2->center(), n2->center_right(), n2->center_front_right(), n2->center_front(), source, scaler);
+					                                      n2->center(), n2->center_right(), n2->center_front_right(), n2->center_front(), source);
 				if ( c != nullptr )
 				{
 					_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
@@ -1371,7 +1360,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 	if (n0->at_left( root ) && n3->at_left( root ) && n4->at_left( root ) && n7->at_left( root ))
 	{
 		MarchingCubesDualCell * c = add_dual_cell(n0->center_left(), n0->center(), n3->center(), n3->center_left(),
-			                                      n4->center_left(), n4->center(), n7->center(), n7->center_left(), source, scaler);
+			                                      n4->center_left(), n4->center(), n7->center(), n7->center_left(), source);
 		if ( c != nullptr )
 		{
 			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
@@ -1383,7 +1372,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 		if (n4->at_top( root ) && n7->at_top( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n4->center_left(), n4->center(), n7->center(), n7->center_left(),
-				                                      n4->center_left_top(), n4->center_top(), n7->center_top(), n7->center_left_top(), source, scaler);
+				                                      n4->center_left_top(), n4->center_top(), n7->center_top(), n7->center_left_top(), source);
 			if ( c != nullptr )
 			{
 				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
@@ -1393,7 +1382,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 		if (n0->at_bottom( root ) && n3->at_bottom( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n0->center_left_bottom(), n0->center_bottom(), n3->center_bottom(), n3->center_left_bottom(),
-				                                      n0->center_left(), n0->center(), n3->center(), n3->center_left(), source, scaler);
+				                                      n0->center_left(), n0->center(), n3->center(), n3->center_left(), source);
 			if ( c != nullptr )
 			{
 				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
@@ -1403,7 +1392,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 		if (n0->at_back( root ) && n4->at_back( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n0->center_back_left(), n0->center_back(), n0->center(), n0->center_left(),
-				                                      n4->center_back_left(), n4->center_back(), n4->center(), n4->center_left(), source, scaler);
+				                                      n4->center_back_left(), n4->center_back(), n4->center(), n4->center_left(), source);
 			if ( c != nullptr )
 			{
 				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
@@ -1413,7 +1402,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 		if (n3->at_front( root ) && n7->at_front( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n3->center_left(), n3->center(), n3->center_front(), n3->center_front_left(),
-				                                      n7->center_left(), n7->center(), n7->center_front(), n7->center_front_left(),source, scaler);
+				                                      n7->center_left(), n7->center(), n7->center_front(), n7->center_front_left(), source);
 			if ( c != nullptr )
 			{
 				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n3 ) );
@@ -1424,7 +1413,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 	if (n1->at_right( root ) && n2->at_right( root ) && n5->at_right( root ) && n6->at_right( root ))
 	{
 		MarchingCubesDualCell * c = add_dual_cell(n1->center(), n1->center_right(), n2->center_right(), n2->center(),
-			                                      n5->center(), n5->center_right(), n6->center_right(), n6->center(), source, scaler);
+			                                      n5->center(), n5->center_right(), n6->center_right(), n6->center(), source);
 		if ( c != nullptr )
 		{
 			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
@@ -1436,7 +1425,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 		if (n5->at_top( root ) && n6->at_top( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n5->center(), n5->center_right(), n6->center_right(), n6->center(),
-				                                      n5->center_top(), n5->center_right_top(), n6->center_right_top(), n6->center_top(), source, scaler);
+				                                      n5->center_top(), n5->center_right_top(), n6->center_right_top(), n6->center_top(), source);
 			if ( c != nullptr )
 			{
 				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n5 ) );
@@ -1446,7 +1435,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 		if (n1->at_bottom( root ) && n2->at_bottom( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n1->center_bottom(), n1->center_right_bottom(), n2->center_right_bottom(), n2->center_bottom(),
-				                                      n1->center(), n1->center_right(), n2->center_right(), n2->center(), source, scaler);
+				                                      n1->center(), n1->center_right(), n2->center_right(), n2->center(), source);
 			if ( c != nullptr )
 			{
 				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
@@ -1456,7 +1445,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 		if (n1->at_back( root ) && n5->at_back( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n1->center_back(), n1->center_back_right(), n1->center_right(), n1->center(),
-				                                      n5->center_back(), n5->center_back_right(), n5->center_right(), n5->center(), source, scaler);
+				                                      n5->center_back(), n5->center_back_right(), n5->center_right(), n5->center(), source);
 			if ( c != nullptr )
 			{
 				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n1 ) );
@@ -1466,7 +1455,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 		if (n2->at_front( root ) && n6->at_front( root ))
 		{
 			MarchingCubesDualCell * c = add_dual_cell(n2->center(), n2->center_right(), n2->center_front_right(), n2->center_front(),
-				                                      n6->center(), n6->center_right(), n6->center_front_right(), n6->center_front(), source, scaler);
+				                                      n6->center(), n6->center_right(), n6->center_front_right(), n6->center_front(), source);
 			if ( c != nullptr )
 			{
 				_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n2 ) );
@@ -1477,7 +1466,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 	if (n4->at_top( root ) && n5->at_top( root ) && n6->at_top( root ) && n7->at_top( root ))
 	{
 		MarchingCubesDualCell * c = add_dual_cell(n4->center(), n5->center(), n6->center(), n7->center(),
-			                                      n4->center_top(), n5->center_top(), n6->center_top(), n7->center_top(), source, scaler);
+			                                      n4->center_top(), n5->center_top(), n6->center_top(), n7->center_top(), source);
 		if ( c != nullptr )
 		{
 			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n4 ) );
@@ -1489,7 +1478,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 	if (n0->at_bottom( root ) && n1->at_bottom( root ) && n2->at_bottom( root ) && n3->at_bottom( root ))
 	{
 		MarchingCubesDualCell * c = add_dual_cell(n0->center_bottom(), n1->center_bottom(), n2->center_bottom(), n3->center_bottom(),
-			                                      n0->center(), n1->center(), n2->center(), n3->center(), source, scaler);
+			                                      n0->center(), n1->center(), n2->center(), n3->center(), source);
 		if ( c != nullptr )
 		{
 			_dual_cell_octree_node_pairs.push_back( DualCellOctreeNodePair( c, n0 ) );
@@ -1502,7 +1491,7 @@ void MarchingCubesDual::create_border_cells( const MarchingCubesDualNode * n0, c
 
 
 MarchingCubesDualCell * MarchingCubesDual::add_dual_cell( const VectorInt & c0, const VectorInt & c1, const VectorInt & c2, const VectorInt & c3, 
-	                                                      const VectorInt & c4, const VectorInt & c5, const VectorInt & c6, const VectorInt & c7, VolumeSource * source, const DistanceScalerBase * scaler )
+	                                                      const VectorInt & c4, const VectorInt & c5, const VectorInt & c6, const VectorInt & c7, VolumeSource * source )
 {
 	VectorInt corners[8];
 	corners[0] = c0;
@@ -1535,24 +1524,22 @@ MarchingCubesDualCell * MarchingCubesDual::add_dual_cell( const VectorInt & c0, 
 	MarchingCubesDualCell * cell = create_dual_cell();
 	for ( int i=0; i<8; i++ )
 	{
-		const Vector3d at_scaled = at_in_source_scaled( corners[i], scaler );
 		cell->values[i]          = values[i];
 		cell->vertices_int[i]    = corners[i];
 		cell->vertices[i]        = ats[i];
-		cell->vertices_scaled[i] = at_scaled;
 	}
 
 	return cell;
 }
 
 
-void MarchingCubesDual::create_faces_in_dual_grid( VolumeSource * source, const DistanceScalerBase * scaler )
+void MarchingCubesDual::create_faces_in_dual_grid( VolumeSource * source )
 {
 	const int qty = _octree_dual_cells.size();
 	for ( int i=0; i<qty; i++ )
 	{
 		MarchingCubesDualCell * cell = _octree_dual_cells[i];
-		const int material_index = cell_material( *cell, source, scaler );
+		const int material_index = cell_material( *cell, source );
 		create_faces( *cell, material_index );
 		_materials_set.insert( material_index );
 	}
@@ -1911,7 +1898,7 @@ Float MarchingCubesDual::value_at( VolumeSource * source, const VectorInt & vect
 	return v;
 }
 
-int MarchingCubesDual::cell_material( const MarchingCubesDualCell & cell, VolumeSource * source, const DistanceScalerBase * scaler )
+int MarchingCubesDual::cell_material( const MarchingCubesDualCell & cell, VolumeSource * source )
 {
 	int max_priority = -1;
 	int max_material = -1;

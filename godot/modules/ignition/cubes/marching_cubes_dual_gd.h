@@ -31,13 +31,13 @@ public:
 	void set_split_precision( real_t rel_diff );
 	real_t get_split_precision() const;
 
-	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<MarchingCubesRebuildStrategyGd> & strategy = Ref<MarchingCubesRebuildStrategyGd>(), const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<MarchingCubesRebuildStrategyGd> & strategy = Ref<MarchingCubesRebuildStrategyGd>() );
 
 	Array query_close_nodes( const Vector3 & at, real_t dist, real_t max_size );
 	Vector3 center_direction( const Vector3 & at, bool in_source ) const;
 	Ref<MarchingCubesDualNodeGd> get_tree_node( int ind );
 
-	Ref<Se3Ref> se3_in_point( const Vector3 & at, bool in_source ) const;
+	Ref<Se3Ref> se3_in_point( const Ref<Se3Ref> & inv_source_se3, const Vector3 & at, bool in_source ) const;
 	Ref<Se3Ref> asset_se3( const Ref<Se3Ref> & asset_at, bool asset_in_source, bool result_in_source, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
 	Transform   asset_transform( const Ref<Se3Ref> & asset_at, bool asset_in_source, bool result_in_source, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
 

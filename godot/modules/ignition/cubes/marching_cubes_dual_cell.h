@@ -41,7 +41,6 @@ public:
 public:
     VectorInt vertices_int[8];
 	Float     values[8];
-	Vector3d  vertices_scaled[8];
 	Vector3d  vertices[8];
 };
 

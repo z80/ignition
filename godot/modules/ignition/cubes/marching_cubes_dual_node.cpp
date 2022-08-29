@@ -45,8 +45,7 @@ const MarchingCubesDualNode & MarchingCubesDualNode::operator=( const MarchingCu
         for ( int i=0; i<8; i++ )
         {
             vertices_int[i] = inst.vertices_int[i];
-            vertices_scaled[i]     = inst.vertices_scaled[i];
-            vertices[i] = inst.vertices[i];
+            vertices[i]     = inst.vertices[i];
             values[i]       = inst.values[i];
         }
 
@@ -112,7 +111,7 @@ void MarchingCubesDualNode::query_faces( MarchingCubesDual * tree, const Marchin
 	}
 }
 
-bool MarchingCubesDualNode::intersect_with_segment( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm )
+bool MarchingCubesDualNode::intersect_with_segment( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & end, const SE3 & source_se3, Vector3d & at, Vector3d & norm )
 {
 	const bool has_ch = this->has_children();
 	if ( has_ch )
@@ -120,7 +119,7 @@ bool MarchingCubesDualNode::intersect_with_segment( MarchingCubesDual * tree, co
 		for ( int i=0; i<8; i++ )
 		{
 			MarchingCubesDualNode * ch = child_nodes[i];
-			const bool ret = ch->intersect_with_segment( tree, start, end, in_source, at, norm );
+			const bool ret = ch->intersect_with_segment( tree, start, end, source_se3, at, norm );
 			if ( ret )
 				return true;
 		}
@@ -147,17 +146,8 @@ bool MarchingCubesDualNode::intersect_with_segment( MarchingCubesDual * tree, co
 				return false;
 
 			const Vector3d n = f.normal();
-			if ( in_source )
-			{
-				at   = pt;
-				norm = n;
-			}
-			else
-			{
-				const SE3 & se3 = tree->source_se3;
-				pt   = se3 * pt;
-				norm = se3.q_ * n;
-			}
+			pt   = source_se3 * pt;
+			norm = source_se3.q_ * n;
 
 			return true;
 		}
@@ -166,7 +156,7 @@ bool MarchingCubesDualNode::intersect_with_segment( MarchingCubesDual * tree, co
 	return false;
 }
 
-bool MarchingCubesDualNode::intersect_with_ray( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm )
+bool MarchingCubesDualNode::intersect_with_ray( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & dir, const SE3 & source_se3, Vector3d & at, Vector3d & norm )
 {
 	const bool has_ch = this->has_children();
 	if ( has_ch )
@@ -174,7 +164,7 @@ bool MarchingCubesDualNode::intersect_with_ray( MarchingCubesDual * tree, const 
 		for ( int i=0; i<8; i++ )
 		{
 			MarchingCubesDualNode * ch = child_nodes[i];
-			const bool ret = ch->intersect_with_ray( tree, start, dir, in_source, at, norm );
+			const bool ret = ch->intersect_with_ray( tree, start, dir, source_se3, at, norm );
 			if ( ret )
 				return true;
 		}
@@ -201,17 +191,8 @@ bool MarchingCubesDualNode::intersect_with_ray( MarchingCubesDual * tree, const 
 				return false;
 
 			const Vector3d n = f.normal();
-			if ( in_source )
-			{
-				norm = n;
-				at   = pt;
-			}
-			else
-			{
-				const SE3 & se3 = tree->source_se3;
-				at   = se3 * pt;
-				norm = se3.q_ * n;
-			}
+			at   = source_se3 * pt;
+			norm = source_se3.q_ * n;
 
 			return true;
 		}
@@ -232,7 +213,7 @@ bool MarchingCubesDualNode::has_children() const
     return false;
 }
 
-bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * source, MarchingCubesRebuildStrategy * strategy, const DistanceScalerBase * scaler )
+bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * source, MarchingCubesRebuildStrategy * strategy )
 {
 	// Initialize AABB. It is for computing intersections.
 	this->init_aabb( tree );
@@ -245,7 +226,7 @@ bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * 
         return false;
 	}
 
-    const bool should_split = tree->should_split( this, source, strategy, scaler );
+    const bool should_split = tree->should_split( this, source, strategy );
     if ( !should_split )
         return false;
 
@@ -269,10 +250,10 @@ bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * 
     child_nodes[7]->at = this->at + VectorInt(      0, size_2, size_2 );
 
     for ( int i=0; i<8; i++ )
-		tree->compute_node_values( *(child_nodes[i]), source, scaler );
+		tree->compute_node_values( *(child_nodes[i]), source );
 
 	for ( int i=0; i<8; i++ )
-		child_nodes[i]->subdivide( tree, source, strategy, scaler );
+		child_nodes[i]->subdivide( tree, source, strategy );
 
     return true;
 }
@@ -366,20 +347,18 @@ bool MarchingCubesDualNode::intersects( const MarchingCubesDualNode & other ) co
 	return true;
 }
 
-bool MarchingCubesDualNode::contains_point( MarchingCubesDual * tree, const Vector3d & at ) const
+bool MarchingCubesDualNode::contains_point( const SE3 & source_se3, MarchingCubesDual * tree, const Vector3d & at ) const
 {
-	const SE3 & se3 = tree->source_se3;
-	const Vector3d at_s = se3.q_ * at + se3.r_;
+	const Vector3d at_s = source_se3 * at;
 	const bool ret = aabb.has_point( at_s );
 	return ret;
 }
 
-Vector3d MarchingCubesDualNode::center_vector( MarchingCubesDual * tree, bool in_source ) const
+Vector3d MarchingCubesDualNode::center_vector( MarchingCubesDual * tree, const SE3 & inv_source_se3 ) const
 {
 	const VectorInt c = center();
 	const Vector3d cs = tree->at_in_source( c );
-	const SE3 & se3 = tree->inverted_source_se3;
-	const Vector3d cw = in_source ? cs : (se3.q_ * cs + se3.r_);
+	const Vector3d cw = inv_source_se3 * cs;
 	return cw;
 }
 
@@ -389,19 +368,19 @@ Float MarchingCubesDualNode::node_size( MarchingCubesDual * tree ) const
 	return ret;
 }
 
-SE3 MarchingCubesDualNode::se3_in_point( MarchingCubesDual * tree, const Vector3d & at, bool in_source ) const
-{
-	SE3 ret = tree->se3_in_point( at, in_source );
-
-	return ret;
-}
-
-SE3 MarchingCubesDualNode::asset_se3( MarchingCubesDual * tree, const SE3 & asset_at, bool asset_in_source, bool result_in_source, const DistanceScalerBase * scaler ) const
-{
-	const SE3 asset_in_source_se3 = tree->asset_se3( asset_at, asset_in_source, result_in_source, scaler );
-
-	return asset_in_source_se3;
-}
+//SE3 MarchingCubesDualNode::se3_in_point( MarchingCubesDual * tree, const Vector3d & at, bool in_source ) const
+//{
+//	SE3 ret = tree->se3_in_point( at, in_source );
+//
+//	return ret;
+//}
+//
+//SE3 MarchingCubesDualNode::asset_se3( MarchingCubesDual * tree, const SE3 & asset_at, bool asset_in_source, bool result_in_source, const DistanceScalerBase * scaler ) const
+//{
+//	const SE3 asset_in_source_se3 = tree->asset_se3( asset_at, asset_in_source, result_in_source, scaler );
+//
+//	return asset_in_source_se3;
+//}
 
 
 const VectorInt MarchingCubesDualNode::center() const

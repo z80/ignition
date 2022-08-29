@@ -9,18 +9,18 @@ namespace Ign
 
 void MarchingCubesDualNodeGd::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("intersect_with_segment", "start", "end", "in_source"), &MarchingCubesDualNodeGd::intersect_with_segment, Variant::ARRAY );
-	ClassDB::bind_method( D_METHOD("intersect_with_ray", "start", "dir", "in_source"),     &MarchingCubesDualNodeGd::intersect_with_ray,     Variant::ARRAY );
-	ClassDB::bind_method( D_METHOD("hierarchy_path"),                                      &MarchingCubesDualNodeGd::hierarchy_path,         Variant::STRING );
-	ClassDB::bind_method( D_METHOD("contains_point", "at"),                                &MarchingCubesDualNodeGd::contains_point,         Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("center_vector", "in_source"),                          &MarchingCubesDualNodeGd::center_vector,          Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("node_size"),                                           &MarchingCubesDualNodeGd::node_size,              Variant::REAL );
-	ClassDB::bind_method( D_METHOD("se3_in_point", "at", "in_source"),                     &MarchingCubesDualNodeGd::se3_in_point,           Variant::OBJECT );
-	ClassDB::bind_method( D_METHOD("hash"),                                                &MarchingCubesDualNodeGd::hash,                   Variant::STRING );
-	ClassDB::bind_method( D_METHOD("asset_transform", "se3", "asset_in_source", "result_in_source", "scaler"),
-		                                                                                   &MarchingCubesDualNodeGd::asset_transform,        Variant::TRANSFORM );
-	ClassDB::bind_method( D_METHOD("at"),                                                  &MarchingCubesDualNodeGd::at,                     Variant::ARRAY );
-	ClassDB::bind_method( D_METHOD("size"),                                                &MarchingCubesDualNodeGd::size,                   Variant::INT );
+	//ClassDB::bind_method( D_METHOD("intersect_with_segment", "start", "end", "in_source"), &MarchingCubesDualNodeGd::intersect_with_segment, Variant::ARRAY );
+	//ClassDB::bind_method( D_METHOD("intersect_with_ray", "start", "dir", "in_source"),     &MarchingCubesDualNodeGd::intersect_with_ray,     Variant::ARRAY );
+	//ClassDB::bind_method( D_METHOD("hierarchy_path"),                                      &MarchingCubesDualNodeGd::hierarchy_path,         Variant::STRING );
+	//ClassDB::bind_method( D_METHOD("contains_point", "at"),                                &MarchingCubesDualNodeGd::contains_point,         Variant::BOOL );
+	//ClassDB::bind_method( D_METHOD("center_vector", "in_source"),                          &MarchingCubesDualNodeGd::center_vector,          Variant::VECTOR3 );
+	//ClassDB::bind_method( D_METHOD("node_size"),                                           &MarchingCubesDualNodeGd::node_size,              Variant::REAL );
+	//ClassDB::bind_method( D_METHOD("se3_in_point", "at", "in_source"),                     &MarchingCubesDualNodeGd::se3_in_point,           Variant::OBJECT );
+	//ClassDB::bind_method( D_METHOD("hash"),                                                &MarchingCubesDualNodeGd::hash,                   Variant::STRING );
+	//ClassDB::bind_method( D_METHOD("asset_transform", "se3", "asset_in_source", "result_in_source", "scaler"),
+	//	                                                                                   &MarchingCubesDualNodeGd::asset_transform,        Variant::TRANSFORM );
+	//ClassDB::bind_method( D_METHOD("at"),                                                  &MarchingCubesDualNodeGd::at,                     Variant::ARRAY );
+	//ClassDB::bind_method( D_METHOD("size"),                                                &MarchingCubesDualNodeGd::size,                   Variant::INT );
 }
 
 MarchingCubesDualNodeGd::MarchingCubesDualNodeGd()
