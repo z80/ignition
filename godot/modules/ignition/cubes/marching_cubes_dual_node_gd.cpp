@@ -33,7 +33,7 @@ MarchingCubesDualNodeGd::~MarchingCubesDualNodeGd()
 {
 }
 
-Array MarchingCubesDualNodeGd::intersect_with_segment( const Vector3 & start, const Vector3 & end, bool in_source )
+Array MarchingCubesDualNodeGd::intersect_with_segment( const Vector3 & start, const Vector3 & end, const Ref<Se3Ref> & se3 )
 {
 	ret_array.clear();
 
@@ -43,10 +43,12 @@ Array MarchingCubesDualNodeGd::intersect_with_segment( const Vector3 & start, co
 		return ret_array;
 	}
 
+	const SE3 source_se3 = (se3.ptr() == nullptr) ? SE3() : se3->se3; 
+
 	const Vector3d s( start.x, start.y, start.z );
 	const Vector3d e( end.x, end.y, end.z );
 	Vector3d at, norm;
-	const bool ok = node->intersect_with_segment( cubes, s, e, in_source, at, norm );
+	const bool ok = node->intersect_with_segment( cubes, s, e, source_se3, at, norm );
 	ret_array.push_back( ok );
 	if ( ok )
 	{
@@ -56,7 +58,7 @@ Array MarchingCubesDualNodeGd::intersect_with_segment( const Vector3 & start, co
 	return ret_array;
 }
 
-Array MarchingCubesDualNodeGd::intersect_with_ray( const Vector3 & start, const Vector3 & dir, bool in_source )
+Array MarchingCubesDualNodeGd::intersect_with_ray( const Vector3 & start, const Vector3 & dir, const Ref<Se3Ref> & se3 )
 {
 	ret_array.clear();
 
@@ -66,10 +68,12 @@ Array MarchingCubesDualNodeGd::intersect_with_ray( const Vector3 & start, const 
 		return ret_array;
 	}
 
+	const SE3 source_se3 = (se3.ptr() == nullptr) ? SE3() : se3->se3; 
+
 	const Vector3d s( start.x, start.y, start.z );
 	const Vector3d d( dir.x, dir.y, dir.z );
 	Vector3d at, norm;
-	const bool ok = node->intersect_with_ray( cubes, s, d, in_source, at, norm );
+	const bool ok = node->intersect_with_ray( cubes, s, d, source_se3, at, norm );
 	ret_array.push_back( ok );
 	if ( ok )
 	{
@@ -90,26 +94,30 @@ String MarchingCubesDualNodeGd::hierarchy_path() const
 	return ret;
 }
 
-bool MarchingCubesDualNodeGd::contains_point( const Vector3 & at ) const
+bool MarchingCubesDualNodeGd::contains_point( const Vector3 & at, const Ref<Se3Ref> & se3 ) const
 {
 	if ( ( cubes == nullptr ) || ( node == nullptr ) )
 	{
 		return false;
 	}
 
+	const SE3 source_se3 = (se3.ptr() == nullptr) ? SE3() : se3->se3; 
+
 	const Vector3d v( at.x, at.y, at.z );
-	const bool ret = node->contains_point( cubes, v );
+	const bool ret = node->contains_point( source_se3, cubes, v );
 	return ret;
 }
 
-Vector3 MarchingCubesDualNodeGd::center_vector( bool in_source ) const
+Vector3 MarchingCubesDualNodeGd::center_vector( const Ref<Se3Ref> & se3 ) const
 {
 	if ( ( cubes == nullptr ) || ( node == nullptr ) )
 	{
 		return Vector3();
 	}
 
-	const Vector3d v = node->center_vector( cubes, in_source );
+	const SE3 source_se3 = (se3.ptr() == nullptr) ? SE3() : se3->se3; 
+
+	const Vector3d v = node->center_vector( cubes, source_se3 );
 	const Vector3 ret( v.x_, v.y_, v.z_ );
 	return ret;
 }
@@ -125,7 +133,7 @@ real_t MarchingCubesDualNodeGd::node_size() const
 	return ret;
 }
 
-Ref<Se3Ref> MarchingCubesDualNodeGd::se3_in_point( const Vector3 & at, bool in_source ) const
+Ref<Se3Ref> MarchingCubesDualNodeGd::se3_in_point( const Vector3 & at, bool in_source, const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & inv_src_se3 ) const
 {
 	Ref<Se3Ref> se3;
 	se3.instance();
@@ -135,18 +143,26 @@ Ref<Se3Ref> MarchingCubesDualNodeGd::se3_in_point( const Vector3 & at, bool in_s
 		return se3;
 	}
 
-	se3->se3 = node->se3_in_point( cubes, at, in_source );
+	const SE3 source_se3     = (src_se3.ptr() == nullptr)     ? SE3() : src_se3->se3; 
+	const SE3 inv_source_se3 = (inv_src_se3.ptr() == nullptr) ? SE3() : inv_src_se3->se3; 
+	const Vector3d at_d( at.x, at.y, at.z );
+
+	se3->se3 = cubes->se3_in_point( source_se3, inv_source_se3, at_d, in_source );
 	return se3;
 }
 
-Transform MarchingCubesDualNodeGd::transform_in_point( const Vector3 & at, bool in_source ) const
+Transform MarchingCubesDualNodeGd::transform_in_point( const Vector3 & at, bool in_source, const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & inv_src_se3 ) const
 {
 	if ( ( cubes == nullptr ) || ( node == nullptr ) )
 	{
 		return Transform();
 	}
 
-	const SE3 se3 = node->se3_in_point( cubes, at, in_source );
+	const SE3 source_se3     = (src_se3.ptr() == nullptr)     ? SE3() : src_se3->se3; 
+	const SE3 inv_source_se3 = (inv_src_se3.ptr() == nullptr) ? SE3() : inv_src_se3->se3; 
+	const Vector3d at_d( at.x, at.y, at.z );
+
+	const SE3 se3 = cubes->se3_in_point( source_se3, inv_source_se3, at_d, in_source );
 	const Transform t( Basis( Quat( se3.q_.x_, se3.q_.y_, se3.q_.z_, se3.q_.w_ ) ), Vector3( se3.r_.x_, se3.r_.y_, se3.r_.z_ ) );
 	return t;
 }
@@ -158,20 +174,21 @@ String MarchingCubesDualNodeGd::hash() const
 	return s_hash;
 }
 
-Transform MarchingCubesDualNodeGd::asset_transform( const Ref<Se3Ref> & se3, bool asset_in_source, bool result_in_source, const Ref<DistanceScalerRef> & scaler ) const
+Transform MarchingCubesDualNodeGd::asset_transform( const Ref<Se3Ref> & asset_se3, bool result_in_source, const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerRef> & scaler ) const
 {
 	if ( ( cubes == nullptr ) || ( node == nullptr ) )
 	{
 		return Transform();
 	}
 
-	const SE3 asset_se3 = se3->se3;
+	const SE3 se3        = (asset_se3.ptr() == nullptr) ? SE3() : asset_se3->se3;
+	const SE3 source_se3 = (src_se3.ptr() == nullptr)   ? SE3() : src_se3->se3;
 	const DistanceScalerBase * s;
 	if ( scaler.ptr() != nullptr )
 		s = &(scaler->scaler);
 	else
 		s = nullptr;
-	const SE3 ret_se3 = node->asset_se3( cubes, asset_se3, asset_in_source, result_in_source, s );
+	const SE3 ret_se3 = cubes->asset_se3( source_se3, se3, result_in_source, s );
 	const Transform t = ret_se3.transform();
 
 	return t;

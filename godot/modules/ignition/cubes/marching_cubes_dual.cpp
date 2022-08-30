@@ -488,9 +488,9 @@ void MarchingCubesDual::uvs( int material_ind, const std::vector<Vector2> * & re
 		ret_uv2s = &_ret_uv2s;
 }
 
-void MarchingCubesDual::precompute_scaled_values( int material_ind, const DistanceScalerBase * scaler )
+void MarchingCubesDual::precompute_scaled_values( const SE3 & source_se3, int material_ind, const DistanceScalerBase * scaler )
 {
-	vertices( material_ind, scaler );
+	vertices( source_se3, material_ind, scaler );
 	normals( material_ind );
 	tangents( material_ind );
 
@@ -780,12 +780,12 @@ int  MarchingCubesDual::get_nodes_qty() const
 	return qty;
 }
 
-void MarchingCubesDual::get_node( int node_ind, Vector3d * corners ) const
+void MarchingCubesDual::get_node( const SE3 & source_se3, int node_ind, Vector3d * corners ) const
 {
 	const MarchingCubesDualNode * node = _octree_nodes[node_ind];
 	for ( int i=0; i<8; i++ )
 	{
-		const Vector3d v = source_se3.q_ * node->vertices[i] + source_se3.r_;
+		const Vector3d v = source_se3 * node->vertices[i];
 		corners[i] = v;
 	}
 }
@@ -807,7 +807,7 @@ int  MarchingCubesDual::get_dual_cells_qty() const
 	return qty;
 }
 
-void MarchingCubesDual::get_dual_cell( int cell_ind, Vector3d * corners ) const
+void MarchingCubesDual::get_dual_cell( const SE3 & source_se3, int cell_ind, Vector3d * corners ) const
 {
 	const MarchingCubesDualCell * cell = _octree_dual_cells[cell_ind];
 	for ( int i=0; i<8; i++ )
@@ -897,12 +897,12 @@ void MarchingCubesDual::compute_node_values( MarchingCubesDualNode & node, Volum
     for ( int i=0; i<8; i++ )
     {
 		const VectorInt & vert_int = verts[i];
-		node.vertices_int[i] = verts[i];
+		node.vertices_int[i]       = verts[i];
         // Value at unwarped position.
+		const Vector3d vert_d      = at_in_source( verts[i] );
 		const Float    value       = value_at( source, vert_int, vert_d );
 		node.values[i]             = value;
 		// Store unwarped position.
-		const Vector3d vert_d      = at_in_source( verts[i] );
 		node.vertices[i]  = vert_d;
     }
 }
