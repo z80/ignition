@@ -13,45 +13,45 @@ namespace Ign
 
 void MarchingCubesDualGd::_bind_methods()
 {
-	//ClassDB::bind_method( D_METHOD("set_source_transform", "se3"),                              &MarchingCubesDualGd::set_source_transform );
-	//ClassDB::bind_method( D_METHOD("get_source_transform"),                                     &MarchingCubesDualGd::get_source_transform, Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("set_source_se3", "se3"),                              &MarchingCubesDualGd::set_source_se3 );
+	ClassDB::bind_method( D_METHOD("get_source_se3"),                                     &MarchingCubesDualGd::get_source_se3, Variant::OBJECT );
 
-	//ClassDB::bind_method( D_METHOD("set_split_precision", "rel_diff"),                          &MarchingCubesDualGd::set_split_precision );
-	//ClassDB::bind_method( D_METHOD("get_split_precision"),                                      &MarchingCubesDualGd::get_split_precision, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("set_split_precision", "rel_diff"),                          &MarchingCubesDualGd::set_split_precision );
+	ClassDB::bind_method( D_METHOD("get_split_precision"),                                      &MarchingCubesDualGd::get_split_precision, Variant::REAL );
 
-	//ClassDB::bind_method( D_METHOD("subdivide_source", "radius", "volume", "strategy"),         &MarchingCubesDualGd::subdivide_source, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("subdivide_source", "radius", "volume", "strategy"),         &MarchingCubesDualGd::subdivide_source, Variant::BOOL );
 
-	//ClassDB::bind_method( D_METHOD("query_close_nodes", "at", "dist", "max_size"), &MarchingCubesDualGd::query_close_nodes, Variant::ARRAY );
-	//ClassDB::bind_method( D_METHOD("center_direction", "at", "in_source"),   &MarchingCubesDualGd::center_direction,  Variant::VECTOR3 );
-	//ClassDB::bind_method( D_METHOD("get_tree_node", "ind"),                  &MarchingCubesDualGd::get_tree_node,     Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("query_close_nodes", "at", "dist", "max_size"), &MarchingCubesDualGd::query_close_nodes, Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("center_direction", "at", "in_source"),   &MarchingCubesDualGd::center_direction,  Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("get_tree_node", "ind"),                  &MarchingCubesDualGd::get_tree_node,     Variant::OBJECT );
 
-	//ClassDB::bind_method( D_METHOD("se3_in_point", "at", "in_source"),                                        &MarchingCubesDualGd::se3_in_point, Variant::OBJECT );
-	//ClassDB::bind_method( D_METHOD("asset_se3", "asset_at", "asset_in_source", "result_in_source", "scaler"), &MarchingCubesDualGd::asset_se3,    Variant::OBJECT );
-	//ClassDB::bind_method( D_METHOD("asset_transform", "asset_at", "asset_in_source", "result_in_source", "scaler"), &MarchingCubesDualGd::asset_transform,    Variant::TRANSFORM );
+	ClassDB::bind_method( D_METHOD("se3_in_point", "at", "in_source"),                                        &MarchingCubesDualGd::se3_in_point, Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("asset_se3", "asset_at", "asset_in_source", "result_in_source", "scaler"), &MarchingCubesDualGd::asset_se3,    Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("asset_transform", "asset_at", "asset_in_source", "result_in_source", "scaler"), &MarchingCubesDualGd::asset_transform,    Variant::TRANSFORM );
 
-	//ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
-	//ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
+	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
 
-	//ClassDB::bind_method( D_METHOD("precompute_scaled_values", "material_index", "scaler"),     &MarchingCubesDualGd::precompute_scaled_values );
-	//ClassDB::bind_method( D_METHOD("apply_to_mesh_only", "mesh_instance"),                      &MarchingCubesDualGd::apply_to_mesh_only );
+	ClassDB::bind_method( D_METHOD("precompute_scaled_values", "material_index", "scaler"),     &MarchingCubesDualGd::precompute_scaled_values );
+	ClassDB::bind_method( D_METHOD("apply_to_mesh_only", "mesh_instance"),                      &MarchingCubesDualGd::apply_to_mesh_only );
 
-	//ClassDB::bind_method( D_METHOD("mesh_transform", "scaler"),                                 &MarchingCubesDualGd::mesh_transform, Variant::TRANSFORM );
-	//ClassDB::bind_method( D_METHOD("collision_faces", "at", "dist", "in_source"),               &MarchingCubesDualGd::collision_faces, Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("mesh_transform", "scaler"),                                 &MarchingCubesDualGd::mesh_transform, Variant::TRANSFORM );
+	ClassDB::bind_method( D_METHOD("collision_faces", "at", "dist", "in_source"),               &MarchingCubesDualGd::collision_faces, Variant::ARRAY );
 
-	//ClassDB::bind_method( D_METHOD("set_max_nodes_qty", "qty"),             &MarchingCubesDualGd::set_max_nodes_qty );
-	//ClassDB::bind_method( D_METHOD("get_max_nodes_qty"),                    &MarchingCubesDualGd::get_max_nodes_qty, Variant::INT );
+	ClassDB::bind_method( D_METHOD("set_max_nodes_qty", "qty"),             &MarchingCubesDualGd::set_max_nodes_qty );
+	ClassDB::bind_method( D_METHOD("get_max_nodes_qty"),                    &MarchingCubesDualGd::get_max_nodes_qty, Variant::INT );
 
-	//ClassDB::bind_method( D_METHOD("get_nodes_qty"),               &MarchingCubesDualGd::get_nodes_qty,   Variant::INT );
-	//ClassDB::bind_method( D_METHOD("get_node", "node_ind"),        &MarchingCubesDualGd::get_node,        Variant::ARRAY );
-	//ClassDB::bind_method( D_METHOD("get_node_parent", "node_ind"), &MarchingCubesDualGd::get_node_parent, Variant::INT );
+	ClassDB::bind_method( D_METHOD("get_nodes_qty"),               &MarchingCubesDualGd::get_nodes_qty,   Variant::INT );
+	ClassDB::bind_method( D_METHOD("get_node", "node_ind"),        &MarchingCubesDualGd::get_node,        Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("get_node_parent", "node_ind"), &MarchingCubesDualGd::get_node_parent, Variant::INT );
 
-	//ClassDB::bind_method( D_METHOD("get_dual_cells_qty"),          &MarchingCubesDualGd::get_dual_cells_qty, Variant::INT );
-	//ClassDB::bind_method( D_METHOD("get_dual_cell", "cell_ind"),   &MarchingCubesDualGd::get_dual_cell,      Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("get_dual_cells_qty"),          &MarchingCubesDualGd::get_dual_cells_qty, Variant::INT );
+	ClassDB::bind_method( D_METHOD("get_dual_cell", "cell_ind"),   &MarchingCubesDualGd::get_dual_cell,      Variant::ARRAY );
 
 
-	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "source_se3" ),   "set_source_transform", "get_source_transform" );
-	//ADD_PROPERTY( PropertyInfo( Variant::INT, "split_precision" ), "set_split_precision",  "get_split_precision" );
-	//ADD_PROPERTY( PropertyInfo( Variant::INT, "max_nodes_qty" ),   "set_max_nodes_qty",    "get_max_nodes_qty" );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "source_se3" ),   "set_source_se3",       "get_source_se3" );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "split_precision" ), "set_split_precision",  "get_split_precision" );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_nodes_qty" ),   "set_max_nodes_qty",    "get_max_nodes_qty" );
 }
 
 MarchingCubesDualGd::MarchingCubesDualGd()
@@ -63,21 +63,21 @@ MarchingCubesDualGd::~MarchingCubesDualGd()
 {
 }
 
-//void MarchingCubesDualGd::set_source_transform( const Ref<Se3Ref> & se3 )
-//{
-//	const SE3 & se3_inst = se3.ptr()->se3;
-//	cubes.set_source_transform( se3_inst );
-//}
-//
-//Ref<Se3Ref> MarchingCubesDualGd::get_source_transform() const
-//{
-//	Ref<Se3Ref> se3;
-//	se3.instance();
-//
-//	se3->se3 = cubes.get_source_transform();
-//
-//	return se3;
-//}
+void MarchingCubesDualGd::set_source_se3( const Ref<Se3Ref> & se3 )
+{
+	const SE3 & se3_inst = se3.ptr()->se3;
+	cubes.set_source_se3( se3_inst );
+}
+
+Ref<Se3Ref> MarchingCubesDualGd::get_source_se3() const
+{
+	Ref<Se3Ref> se3;
+	se3.instance();
+
+	se3->se3 = cubes.get_source_se3();
+
+	return se3;
+}
 
 void MarchingCubesDualGd::set_split_precision( real_t rel_diff )
 {
@@ -107,7 +107,7 @@ Array MarchingCubesDualGd::query_close_nodes( const Vector3 & at, real_t dist, r
 	ret_array.clear();
 	const Vector3d at_d = Vector3d( at.x, at.y, at.z );
 	const SE3 inv_source_se3 = (inv_src_se3.ptr() == nullptr ) ? SE3() : inv_src_se3->se3;
-	const std::vector<int> indices = cubes.query_close_nodes( inv_source_se3, at, dist, max_size );
+	const std::vector<int> indices = cubes.query_close_nodes( at, dist, max_size );
 	const int qty = indices.size();
 	for ( int i=0; i<qty; i++ )
 	{
@@ -122,7 +122,7 @@ Vector3 MarchingCubesDualGd::center_direction( const Vector3 & at, bool in_sourc
 {
 	const SE3 source_se3     = (src_se3.ptr() == nullptr)     ? SE3() : src_se3->se3;
 	const SE3 inv_source_se3 = (inv_src_se3.ptr() == nullptr) ? SE3() : inv_src_se3->se3;
-	const Vector3d c = cubes.center_direction( source_se3, inv_source_se3, Vector3d( at.x, at.y, at.z ), in_source );
+	const Vector3d c = cubes.center_direction( Vector3d( at.x, at.y, at.z ), in_source );
 	const Vector3 ret( c.x_, c.y_, c.z_ );
 	return ret;
 }
@@ -148,17 +148,16 @@ Ref<Se3Ref> MarchingCubesDualGd::se3_in_point( const Vector3 & at, bool in_sourc
 	Ref<Se3Ref> se3;
 	se3.instance();
 	const Vector3d at_d( at.x, at.y, at.z );
-	const SE3 source_se3     = (src_se3.ptr() == nullptr)     ? SE3() : src_se3->se3;
-	const SE3 inv_source_se3 = (inv_src_se3.ptr() == nullptr) ? SE3() : inv_src_se3->se3;
-	se3->se3 = cubes.se3_in_point( source_se3, inv_source_se3, at_d, in_source );
+	se3->se3 = cubes.se3_in_point( at_d, in_source );
 	return se3;
 }
 
 Ref<Se3Ref> MarchingCubesDualGd::asset_se3( const Ref<Se3Ref> & asset_at, bool result_in_source, const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler ) const
 {
-	const SE3 & se3 = asset_at->se3;
 	Ref<Se3Ref> ret_se3;
 	ret_se3.instance();
+
+	const SE3 & se3 = asset_at->se3;
 
 	const DistanceScalerBaseRef * scaler_ref = scaler.ptr();
 	const DistanceScalerBase * s;
@@ -166,9 +165,8 @@ Ref<Se3Ref> MarchingCubesDualGd::asset_se3( const Ref<Se3Ref> & asset_at, bool r
 		s = nullptr;
 	else
 		s = scaler_ref->scaler_base;
-	const SE3 source_se3 = (src_se3.ptr() == nullptr) ? SE3() : src_se3->se3;
 
-	ret_se3->se3 = cubes.asset_se3( source_se3, se3, result_in_source, s );
+	ret_se3->se3 = cubes.asset_se3( se3, result_in_source, s );
 	return ret_se3;
 }
 
@@ -183,9 +181,7 @@ Transform MarchingCubesDualGd::asset_transform( const Ref<Se3Ref> & asset_at, bo
 	else
 		s = scaler_ref->scaler_base;
 
-	const SE3 source_se3 = (src_se3.ptr() == nullptr) ? SE3() : src_se3->se3;
-
-	const SE3 ret_se3 = cubes.asset_se3( source_se3, se3, result_in_source, s );
+	const SE3 ret_se3 = cubes.asset_se3( se3, result_in_source, s );
 	const Transform t = ret_se3.transform();
 	return t;
 }
@@ -211,7 +207,7 @@ Array MarchingCubesDualGd::materials_used()
 }
 
 
-void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instance, const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler )
+void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerBaseRef> & scaler )
 {
 	MeshInstance * mi = Object::cast_to<MeshInstance>(mesh_instance);
 	if (mi == nullptr)
@@ -227,9 +223,7 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 	else
 		s = scaler_ref->scaler_base;
 
-	const SE3 source_se3 = (src_se3.ptr() == nullptr) ? SE3() : src_se3->se3;
-
-	const std::vector<Vector3> & verts = cubes.vertices( source_se3, material_index, s );
+	const std::vector<Vector3> & verts = cubes.vertices( material_index, s );
 	const std::vector<Vector3> & norms = cubes.normals( material_index );
 	const std::vector<real_t> & tangs = cubes.tangents( material_index );
 	const std::vector<Vector2> * p_uvs;
@@ -286,7 +280,7 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 	mi->set_mesh( am );
 }
 
-void MarchingCubesDualGd::precompute_scaled_values( int material_index, const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler )
+void MarchingCubesDualGd::precompute_scaled_values( int material_index, const Ref<DistanceScalerBaseRef> & scaler )
 {
 	const DistanceScalerBaseRef * scaler_ref = scaler.ptr();
 	const DistanceScalerBase * s;
@@ -295,9 +289,7 @@ void MarchingCubesDualGd::precompute_scaled_values( int material_index, const Re
 	else
 		s = scaler_ref->scaler_base;
 
-	const SE3 source_se3 = (src_se3.ptr() == nullptr) ? SE3() : src_se3->se3;
-
-	cubes.precompute_scaled_values( source_se3, material_index, s );
+	cubes.precompute_scaled_values( material_index, s );
 }
 
 void MarchingCubesDualGd::apply_to_mesh_only( Node * mesh_instance )
@@ -365,7 +357,7 @@ void MarchingCubesDualGd::apply_to_mesh_only( Node * mesh_instance )
 	mi->set_mesh( am );
 }
 
-Transform MarchingCubesDualGd::mesh_transform( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler )
+Transform MarchingCubesDualGd::mesh_transform( const Ref<DistanceScalerBaseRef> & scaler )
 {
 	const DistanceScalerBaseRef * scaler_ref = scaler.ptr();
 	const DistanceScalerBase * s;
@@ -374,19 +366,16 @@ Transform MarchingCubesDualGd::mesh_transform( const Ref<Se3Ref> & src_se3, cons
 	else
 		s = scaler_ref->scaler_base;
 
-	const SE3 source_se3 = (src_se3.ptr() == nullptr) ? SE3() : src_se3->se3;
-
-	const Transform transform = cubes.compute_source_transform( source_se3, s );
+	const Transform transform = cubes.compute_source_transform( s );
 	return transform;
 }
 
 
-const PoolVector3Array & MarchingCubesDualGd::collision_faces( const Vector3 & at, real_t dist, bool in_source, const Ref<Se3Ref> & src_se3 )
+const PoolVector3Array & MarchingCubesDualGd::collision_faces( const Vector3 & at, real_t dist, bool in_source )
 {
 	const Vector3d at_d = Vector3d( at.x, at.y, at.z );
-	const SE3 source_se3 = (src_se3.ptr() == nullptr) ? SE3() : src_se3->se3;
 
-	const std::vector<Vector3> & faces = cubes.collision_faces( source_se3, at_d, dist, in_source );
+	const std::vector<Vector3> & faces = cubes.collision_faces( at_d, dist, in_source );
 
 	const int qty = faces.size();
 	ret_pool_array.resize( qty );
@@ -415,15 +404,13 @@ int  MarchingCubesDualGd::get_nodes_qty() const
 	return ret;
 }
 
-Array MarchingCubesDualGd::get_node( int node_ind, const Ref<Se3Ref> & src_se3 ) const
+Array MarchingCubesDualGd::get_node( int node_ind ) const
 {
 	Array ret;
 	ret.resize(8);
 	Vector3d verts[8];
 
-	const SE3 source_se3 = (src_se3.ptr() == nullptr) ? SE3() : src_se3->se3;
-
-	cubes.get_node( source_se3, node_ind, verts );
+	cubes.get_node( node_ind, verts );
 	for ( int i=0; i<8; i++ )
 	{
 		const Vector3d & v = verts[i];
@@ -445,15 +432,13 @@ int  MarchingCubesDualGd::get_dual_cells_qty() const
 	return qty;
 }
 
-Array MarchingCubesDualGd::get_dual_cell( int cell_ind, const Ref<Se3Ref> & src_se3 ) const
+Array MarchingCubesDualGd::get_dual_cell( int cell_ind ) const
 {
 	Array ret;
 	ret.resize(8);
 	Vector3d verts[8];
 
-	const SE3 source_se3 = (src_se3.ptr() == nullptr) ? SE3() : src_se3->se3;
-
-	cubes.get_dual_cell( source_se3, cell_ind, verts );
+	cubes.get_dual_cell( cell_ind, verts );
 	for ( int i=0; i<8; i++ )
 	{
 		const Vector3d & v = verts[i];

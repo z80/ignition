@@ -25,8 +25,8 @@ public:
 	MarchingCubesDualGd();
 	~MarchingCubesDualGd();
 
-	//void set_source_transform( const Ref<Se3Ref> & se3 );
-	//Ref<Se3Ref> get_source_transform() const;
+	void set_source_se3( const Ref<Se3Ref> & se3 );
+	Ref<Se3Ref> get_source_se3() const;
 
 	void set_split_precision( real_t rel_diff );
 	real_t get_split_precision() const;
@@ -43,24 +43,24 @@ public:
 
 	Array materials_used();
 	// This one computes and applies synchronously.
-	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<Se3Ref> & src_se3=Ref<Se3Ref>(), const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	// And this one computes and applies in tow different methods.
-	void precompute_scaled_values( int material_index, const Ref<Se3Ref> & src_se3=Ref<Se3Ref>(), const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	void precompute_scaled_values( int material_index, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	void apply_to_mesh_only( Node * mesh_instance );
 
-	Transform mesh_transform( const Ref<Se3Ref> & src_se3=Ref<Se3Ref>(), const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
-	const PoolVector3Array & collision_faces( const Vector3 & at, real_t dist, bool in_source, const Ref<Se3Ref> & src_se3=Ref<Se3Ref>() );
+	Transform mesh_transform( const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	const PoolVector3Array & collision_faces( const Vector3 & at, real_t dist, bool in_source );
 
 	void set_max_nodes_qty( int qty );
 	int get_max_nodes_qty() const;
 
 	// Debug methods.
 	int  get_nodes_qty() const;
-	Array get_node( int node_ind, const Ref<Se3Ref> & src_se3=Ref<Se3Ref>() ) const;
+	Array get_node( int node_ind ) const;
 	int  get_node_parent( int node_ind ) const;
 
 	int  get_dual_cells_qty() const;
-	Array get_dual_cell( int cell_ind, const Ref<Se3Ref> & src_se3=Ref<Se3Ref>() ) const;
+	Array get_dual_cell( int cell_ind ) const;
 
 
 public:

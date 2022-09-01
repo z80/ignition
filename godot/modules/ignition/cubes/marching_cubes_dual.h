@@ -140,17 +140,18 @@ public:
     MarchingCubesDual();
     ~MarchingCubesDual();
 
- //   void set_source_transform( const SE3 & se3 );
-	//const SE3 & get_source_transform() const;
+    void set_source_se3( const SE3 & se3 );
+	const SE3 & get_source_se3() const;
+
     bool subdivide_source( Float bounding_radius, VolumeSource * source, MarchingCubesRebuildStrategy * strategy = nullptr );
 
-	const std::vector<int> & query_close_nodes( const SE3 & inverted_source_se3, const Vector3d & at, Float dist, Float max_size );
-	Vector3d center_direction( const SE3 & source_se3, const SE3 & inverted_source_se3, const Vector3d & at, bool in_source ) const;
+	const std::vector<int> & query_close_nodes( const Vector3d & at, Float dist, Float max_size );
+	Vector3d center_direction( const Vector3d & at, bool in_source ) const;
 	MarchingCubesDualNode * get_tree_node( int ind );
-	bool point_inside_node( const SE3 & source_se3, const SE3 & inverted_source_se3, int node_ind, const Vector3d & at );
+	bool point_inside_node( int node_ind, const Vector3d & at );
 
-	bool intersect_with_segment( const SE3 & source_se3, const SE3 & inverted_source_se3, MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm );
-	bool intersect_with_ray( const SE3 & source_se3, const SE3 & inverted_source_se3, MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm );
+	bool intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm );
+	bool intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm );
 
 	// These two are called by nodes.
 	void set_split_precision( Float rel_diff );
@@ -159,18 +160,18 @@ public:
 	MarchingCubesDualNode * create_node();
 	MarchingCubesDualCell * create_dual_cell();
 
-	SE3 se3_in_point( const SE3 & source_se3, const SE3 & inv_source_se3, const Vector3d & at, bool in_source ) const;
-	SE3 asset_se3( const SE3 & source_se3, const SE3 & asset_at, bool result_in_source, const DistanceScalerBase * scaler ) const;
+	SE3 se3_in_point( const Vector3d & at, bool in_source ) const;
+	SE3 asset_se3( const SE3 & asset_at, bool result_in_source, const DistanceScalerBase * scaler ) const;
 
 
     const std::set<int>        & materials() const;
-    const std::vector<Vector3> & vertices( const SE3 & source_se3, int material_ind, const DistanceScalerBase * scaler );
+    const std::vector<Vector3> & vertices( int material_ind, const DistanceScalerBase * scaler );
     const std::vector<Vector3> & normals( int material_ind );
     const std::vector<real_t>  & tangents( int material_ind );
 	void uvs( int material_ind, const std::vector<Vector2> * & uvs, const std::vector<Vector2> * & uv2s );
 
 	// For asynchronous computations.
-	void precompute_scaled_values( const SE3 & source_se3, int material_ind, const DistanceScalerBase * scaler );
+	void precompute_scaled_values( int material_ind, const DistanceScalerBase * scaler );
 	const std::vector<Vector3> & vertices() const;
 	const std::vector<Vector3> & normals() const;
 	const std::vector<real_t>  & tangents() const;
@@ -179,10 +180,10 @@ public:
 
 
 
-    const std::vector<Vector3> & collision_faces( const SE3 & source_se3, const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler = nullptr );
+    const std::vector<Vector3> & collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler = nullptr );
 
-    Transform compute_source_transform( const SE3 & source_se3, const DistanceScalerBase * scaler = nullptr) const;
-	SE3 compute_source_se3( const SE3 & source_se3, const DistanceScalerBase * scaler = nullptr) const;
+    Transform compute_source_transform( const DistanceScalerBase * scaler = nullptr) const;
+	SE3 compute_source_se3( const DistanceScalerBase * scaler = nullptr) const;
 
     Float    node_size_min( const MarchingCubesDualNode * node ) const;
 	Float    node_size_max( const MarchingCubesDualNode * node ) const;
@@ -194,11 +195,11 @@ public:
     
 	// Debug methods.
 	int  get_nodes_qty() const;
-	void get_node( const SE3 & source_se3, int node_ind, Vector3d * corners ) const;
+	void get_node( int node_ind, Vector3d * corners ) const;
 	int  get_node_parent( int node_ind ) const;
 
 	int  get_dual_cells_qty() const;
-	void get_dual_cell( const SE3 & source_se3, int cell_ind, Vector3d * corners ) const;
+	void get_dual_cell( int cell_ind, Vector3d * corners ) const;
 	
 
 
@@ -212,8 +213,8 @@ public:
 
     // Source transform.
     // Points to probe first are sent through this transformation.
-    //SE3      source_se3;
-    //SE3      inverted_source_se3;
+    SE3   source_se3;
+    SE3   inverted_source_se3;
 
 public:
 	void cleanup_nodes();
