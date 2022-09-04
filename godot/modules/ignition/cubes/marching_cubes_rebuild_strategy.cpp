@@ -31,10 +31,11 @@ void MarchingCubesRebuildStrategy::init( Float planet_radius, Float height, Floa
 bool MarchingCubesRebuildStrategy::need_rebuild( const SE3 & view_point_se3 )
 {
     const Vector3d camera_r = view_point_se3.r();
-	const Float camera_dist = camera_r.Length();
+	Float camera_dist = camera_r.Length();
+	camera_dist = (camera_dist < planet_radius) ? camera_dist : planet_radius;
 	const Float d_dist      = camera_dist - planet_radius;
 	const Float d_dist_2    = d_dist*d_dist;
-	const Float focal_dist = planet_radius / ( 1.0 + d_dist_2 );
+	const Float focal_dist = (planet_radius - height) / ( 1.0 + d_dist_2 );
 
 	const Vector3d focal_point = camera_r * (focal_dist / camera_dist);
 	const Vector3d d_focal_point = focal_point - focus;
@@ -55,10 +56,11 @@ bool MarchingCubesRebuildStrategy::need_rebuild( const SE3 & view_point_se3 )
 bool MarchingCubesRebuildStrategy::need_rescale( const SE3 & view_point_se3 )
 {
 	const Vector3d camera_r = view_point_se3.r();
-	const Float camera_dist = camera_r.Length();
+	Float camera_dist = camera_r.Length();
+	camera_dist = (camera_dist < planet_radius) ? camera_dist : planet_radius;
 	const Float d_dist      = camera_dist - planet_radius;
 	const Float d_dist_2    = d_dist*d_dist;
-	const Float focal_dist = planet_radius / ( 1.0 + d_dist_2 );
+	const Float focal_dist = (planet_radius - height) / ( 1.0 + d_dist_2 );
 
 	const Vector3d focal_point = camera_r * (focal_dist / camera_dist);
 	const Vector3d d_focal_point = focal_point - focus;
@@ -79,17 +81,19 @@ Float MarchingCubesRebuildStrategy::local_node_size( const Vector3d & node_at, c
 	const Float EPS   = 0.0001;
 	const Vector3d a  = node_at - focus;
 	const Float abs_a = a.Length();
+	if (abs_a < EPS)
+		return node_size;
 
 	// Compute intersection point.
 	const Float b = a.DotProduct( focus );
 	const Float abs_node_at_2 = node_at.LengthSquared();
 	const Float focal_point_2 = focus.LengthSquared();
-	const Float D_1 = b*b + (abs_node_at_2 - focal_point_2)*(planet_radius - focal_point_2);
 	const Float abs_a_2 = abs_a * abs_a;
-	const Float t = ( std::sqrt( D_1 ) - b ) / abs_a_2;
-	const Float surface_dist = t / abs_a;
+	const Float D_4 = b*b + abs_a_2*(planet_radius*planet_radius - focal_point_2);
+	const Float t = ( std::sqrt( D_4 ) - b*0.5 ) / abs_a_2;
+	const Float surface_dist = t * abs_a;
 
-	Float scale = surface_dist / height;
+	Float scale = surface_dist / (height * 1.41);
 	if (scale < 1.0)
 		scale = 1.0;
 

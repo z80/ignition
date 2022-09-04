@@ -13,9 +13,9 @@ func _ready():
 	spatial = get_node( "Spatial" )
 	meshes  = [ get_node("Spatial/Mesh_0" ), get_node("Spatial/Mesh_1") ]
 	
-	scaler = DistanceScalerRef.new()
-	scaler.plain_distance = 150.0
-	scaler.log_scale      = 10.0
+#	scaler = DistanceScalerRef.new()
+#	scaler.plain_distance = 150.0
+#	scaler.log_scale      = 10.0
 	
 	
 	
@@ -26,8 +26,8 @@ func _ready():
 	source.set_script( script )
 	source.bounding_radius = 450.0
 	source.radius = 400.0
-	source.node_sz_max = 200.0
-	source.node_sz_min = 10.0
+	source.node_sz_max = 10.0
+	source.node_sz_min = 5.0
 	
 	var se3: Se3Ref = Se3Ref.new()
 	se3.r = Vector3.ZERO
@@ -44,18 +44,22 @@ func _ready():
 	cubes = MarchingCubesDualGd.new()
 	cubes.max_nodes_qty = 20000000
 	se3.r = Vector3( 0.0, 0.0, -400.0 )
-	cubes.set_source_transform( se3 )
+	cubes.source_se3 = se3
 
 	cubes.split_precision = 0.01
-	var _ok: bool = cubes.subdivide_source( 190.0, source, scaler )
+	
+	var strategy: MarchingCubesRebuildStrategyGd = MarchingCubesRebuildStrategyGd.new()
+	strategy.init( 400.0, 10.0, 10.0, 50.0 )
+	strategy.need_rebuild( se3.inverse() )
+	var _ok: bool = cubes.subdivide_source( 450.0, source, strategy )
 	
 	var nodes_qty: int = cubes.get_nodes_qty()
 	var cells_qty: int = cubes.get_dual_cells_qty()
 	
 	print( "nodes: ", nodes_qty, "; cells: ", cells_qty )
 	
-#	_draw_octree_nodes()
-	#_draw_dual_cells()
+	_draw_octree_nodes()
+	_draw_dual_cells()
 	
 	var material_inds: Array = cubes.materials_used()
 	

@@ -482,10 +482,8 @@ void MarchingCubesDual::uvs( int material_ind, const std::vector<Vector2> * & re
 			_ret_uv2s.push_back( Vector2( v.y_, v.z_ ) );
 		}
 	}
-	if ( ret_uvs != nullptr )
-		ret_uvs  = &_ret_uvs;
-	if ( ret_uv2s != nullptr )
-		ret_uv2s = &_ret_uv2s;
+	ret_uvs  = &_ret_uvs;
+	ret_uv2s = &_ret_uv2s;
 }
 
 void MarchingCubesDual::precompute_scaled_values( int material_ind, const DistanceScalerBase * scaler )
