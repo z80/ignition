@@ -6,7 +6,7 @@
 #include "distance_scaler_base.h"
 #include "marching_cubes_dual_node.h"
 #include "marching_cubes_dual_cell.h"
-#include "marching_cubes_rebuild_strategy.h"
+#include "volume_node_size_strategy.h"
 
 #include <cmath>
 #include <algorithm>
@@ -59,7 +59,7 @@ const SE3 & MarchingCubesDual::get_source_se3() const
 }
 
 
-bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * source, MarchingCubesRebuildStrategy * strategy )
+bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * source, VolumeNodeSizeStrategy * strategy )
 {
 	cleanup_nodes();
 
@@ -260,7 +260,7 @@ Float MarchingCubesDual::get_split_precision() const
 	return max_rel_diff;
 }
 
-bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource * source, MarchingCubesRebuildStrategy * strategy )
+bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource * source, VolumeNodeSizeStrategy * strategy )
 {
 	const VectorInt center_int = node->center();
 	const Vector3d center      = at_in_source( center_int );

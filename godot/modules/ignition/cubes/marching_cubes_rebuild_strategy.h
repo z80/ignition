@@ -14,12 +14,23 @@ public:
     MarchingCubesRebuildStrategy();
     virtual ~MarchingCubesRebuildStrategy();
 
-	void init( Float planet_radius, Float height, Float rescale_dist, Float rebuild_dist );
-
     virtual bool need_rebuild( const SE3 & view_point_se3 );
     virtual bool need_rescale( const SE3 & view_point_se3 );
-	virtual Float local_node_size( const Vector3d & node_at, const Float node_size ) const;
 
+	Vector3d get_focal_point_rebuild() const;
+	Vector3d get_focal_point_rescale() const;
+
+	void     set_radius( Float radius );
+	Float    get_radius() const;
+
+	void     set_height( Float height );
+	Float    get_height() const;
+
+	void     set_rescale_dist( Float dist );
+	Float    get_rescale_dist() const;
+
+	void     set_rebuild_dist( Float dist );
+	Float    get_rebuild_dist() const;
 
 public:
     Vector3d focal_point_rebuild;

@@ -1,15 +1,30 @@
 
-#include "marching_Cubes_rebuild_strategy_gd.h"
+#include "marching_cubes_rebuild_strategy_gd.h"
 
 namespace Ign
 {
 
 void MarchingCubesRebuildStrategyGd::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("init", "planet_radius", "height", "rescale_dist", "rebuild_dist"), &MarchingCubesRebuildStrategyGd::init );
 	ClassDB::bind_method( D_METHOD("need_rebuild", "view_point_se3"),          &MarchingCubesRebuildStrategyGd::need_rebuild,    Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("need_rescale", "view_point_se3"),          &MarchingCubesRebuildStrategyGd::need_rescale,    Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("local_node_size", "node_at", "node_size"), &MarchingCubesRebuildStrategyGd::local_node_size, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD("set_radius", "radius"), &MarchingCubesRebuildStrategyGd::set_radius );
+	ClassDB::bind_method( D_METHOD("get_radius"),           &MarchingCubesRebuildStrategyGd::get_radius, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD("set_height", "height"), &MarchingCubesRebuildStrategyGd::set_height );
+	ClassDB::bind_method( D_METHOD("get_height"),           &MarchingCubesRebuildStrategyGd::get_height, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD("set_rescale_dist", "dist"), &MarchingCubesRebuildStrategyGd::set_rescale_dist );
+	ClassDB::bind_method( D_METHOD("get_rescale_dist"),         &MarchingCubesRebuildStrategyGd::get_rescale_dist, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD("set_rebuild_dist", "dist"), &MarchingCubesRebuildStrategyGd::set_rebuild_dist );
+	ClassDB::bind_method( D_METHOD("get_rebuild_dist"),         &MarchingCubesRebuildStrategyGd::get_rebuild_dist, Variant::REAL );
+
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ),       "set_radius",       "get_radius" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ),       "set_height",       "get_height" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rescale_dist" ), "set_rescale_dist", "get_rescale_dist" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rebuild_dist" ), "set_rebuild_dist", "get_rebuild_dist" );
 }
 
 MarchingCubesRebuildStrategyGd::MarchingCubesRebuildStrategyGd()
@@ -19,11 +34,6 @@ MarchingCubesRebuildStrategyGd::MarchingCubesRebuildStrategyGd()
 
 MarchingCubesRebuildStrategyGd::~MarchingCubesRebuildStrategyGd()
 {
-}
-
-void MarchingCubesRebuildStrategyGd::init( real_t planet_radius, real_t height, real_t rescale_dist, real_t rebuild_dist )
-{
-	strategy.init( planet_radius, height, rescale_dist, rebuild_dist );
 }
 
 bool MarchingCubesRebuildStrategyGd::need_rebuild( const Ref<Se3Ref> & view_point_se3 )
@@ -40,11 +50,52 @@ bool MarchingCubesRebuildStrategyGd::need_rescale( const Ref<Se3Ref> & view_poin
 	return res;
 }
 
-real_t MarchingCubesRebuildStrategyGd::local_node_size( const Vector3 & node_at, const real_t node_size )
+void MarchingCubesRebuildStrategyGd::set_radius( real_t radius )
 {
-	const real_t ret = strategy.local_node_size( Vector3d( node_at.x, node_at.y, node_at.z ), node_size );
+	strategy.set_radius( radius );
+}
+
+real_t MarchingCubesRebuildStrategyGd::get_radius() const
+{
+	const real_t ret = strategy.get_radius();
 	return ret;
 }
+
+
+void MarchingCubesRebuildStrategyGd::set_height( real_t height )
+{
+	strategy.set_height( height );
+}
+
+real_t MarchingCubesRebuildStrategyGd::get_height() const
+{
+	const real_t ret = strategy.get_height();
+	return ret;
+}
+
+
+void MarchingCubesRebuildStrategyGd::set_rescale_dist( real_t dist )
+{
+	strategy.set_rescale_dist( dist );
+}
+
+real_t MarchingCubesRebuildStrategyGd::get_rescale_dist() const
+{
+	const real_t ret = strategy.get_rescale_dist();
+	return ret;
+}
+
+void MarchingCubesRebuildStrategyGd::set_rebuild_dist( real_t dist )
+{
+	strategy.set_rebuild_dist( dist );
+}
+
+real_t MarchingCubesRebuildStrategyGd::get_rebuild_dist() const
+{
+	const real_t ret = strategy.get_rebuild_dist();
+	return ret;
+}
+
 
 
 

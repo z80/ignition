@@ -91,12 +91,12 @@ real_t MarchingCubesDualGd::get_split_precision() const
 }
 
 
-bool MarchingCubesDualGd::subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<MarchingCubesRebuildStrategyGd> & strategy )
+bool MarchingCubesDualGd::subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<VolumeNodeSizeStrategyGd> & strategy )
 {
 	VolumeSource   * volume_source   = volume.ptr()->source;
-	const MarchingCubesRebuildStrategyGd * strategy_gd_c = strategy.ptr();
-	MarchingCubesRebuildStrategyGd * strategy_gd = const_cast<MarchingCubesRebuildStrategyGd *>(strategy_gd_c);
-	MarchingCubesRebuildStrategy * rebuild_strategy = (strategy_gd != nullptr) ? (&(strategy_gd->strategy)) : nullptr;
+	const VolumeNodeSizeStrategyGd * strategy_gd_c = strategy.ptr();
+	VolumeNodeSizeStrategyGd * strategy_gd = const_cast<VolumeNodeSizeStrategyGd *>(strategy_gd_c);
+	VolumeNodeSizeStrategy   * rebuild_strategy = (strategy_gd != nullptr) ? (&(strategy_gd->strategy)) : nullptr;
 
 	const bool ret = cubes.subdivide_source( bounding_radius, volume_source, rebuild_strategy );
 	return ret;

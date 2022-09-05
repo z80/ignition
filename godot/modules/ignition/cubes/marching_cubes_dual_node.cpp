@@ -215,7 +215,7 @@ bool MarchingCubesDualNode::has_children() const
     return false;
 }
 
-bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * source, MarchingCubesRebuildStrategy * strategy )
+bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * source, VolumeNodeSizeStrategy * strategy )
 {
 	// Initialize AABB. It is for computing intersections.
 	this->init_aabb( tree );

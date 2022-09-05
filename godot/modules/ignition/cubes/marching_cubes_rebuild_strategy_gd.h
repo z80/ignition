@@ -18,10 +18,20 @@ public:
 	MarchingCubesRebuildStrategyGd();
 	virtual ~MarchingCubesRebuildStrategyGd();
 
-	void init( real_t planet_radius, real_t height, real_t rescale_dist, real_t rebuild_dist );
 	bool need_rebuild( const Ref<Se3Ref> & view_point_se3 );
 	bool need_rescale( const Ref<Se3Ref> & view_point_se3 );
-	real_t local_node_size( const Vector3 & node_at, const real_t node_size );
+
+	void     set_radius( real_t radius );
+	real_t   get_radius() const;
+
+	void     set_height( real_t height );
+	real_t   get_height() const;
+
+	void     set_rescale_dist( real_t dist );
+	real_t   get_rescale_dist() const;
+
+	void     set_rebuild_dist( real_t dist );
+	real_t   get_rebuild_dist() const;
 
 public:
 	MarchingCubesRebuildStrategy strategy;

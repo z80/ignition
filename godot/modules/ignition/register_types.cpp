@@ -38,6 +38,7 @@
 #include "volume_mesh_gd.h"
 
 #include "marching_cubes_rebuild_strategy_gd.h"
+#include "volume_node_size_strategy_gd.h"
 
 #include "ign_random_gd.h"
 
@@ -76,6 +77,7 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::VolumeMeshGd>();
 
 	ClassDB::register_class<Ign::MarchingCubesRebuildStrategyGd>();
+	ClassDB::register_class<Ign::VolumeNodeSizeStrategyGd>();
 
 	ClassDB::register_class<Ign::IgnRandomGd>();
 }

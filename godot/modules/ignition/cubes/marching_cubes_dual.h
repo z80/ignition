@@ -31,7 +31,7 @@ class DistanceScalerBase;
 class MarchingCubesDualNode;
 class MarchingCubesDualCell;
 
-class MarchingCubesRebuildStrategy;
+class VolumeNodeSizeStrategy;
 
 struct MaterialWithPriorityDual
 {
@@ -143,7 +143,7 @@ public:
     void set_source_se3( const SE3 & se3 );
 	const SE3 & get_source_se3() const;
 
-    bool subdivide_source( Float bounding_radius, VolumeSource * source, MarchingCubesRebuildStrategy * strategy = nullptr );
+    bool subdivide_source( Float bounding_radius, VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );
 
 	const std::vector<int> & query_close_nodes( const Vector3d & at, Float dist, Float max_size );
 	Vector3d center_direction( const Vector3d & at, bool in_source ) const;
@@ -156,7 +156,7 @@ public:
 	// These two are called by nodes.
 	void set_split_precision( Float rel_diff );
 	Float get_split_precision() const;
-	bool should_split( MarchingCubesDualNode * node, VolumeSource * source, MarchingCubesRebuildStrategy * strategy );
+	bool should_split( MarchingCubesDualNode * node, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
 	MarchingCubesDualNode * create_node();
 	MarchingCubesDualCell * create_dual_cell();
 
