@@ -11,6 +11,7 @@ export(float) var rescale_dist = 10.0
 
 var _strategy_initialized: bool = false
 var _rebuild_strategy: MarchingCubesRebuildStrategyGd = null
+var _node_size_strategy: VolumeNodeSizeStrategyGd
 
 var _surfaces: Array = []
 var _foliage: Spatial = null
@@ -24,10 +25,18 @@ func _ready():
 	_strategy_initialized = true
 	
 	_rebuild_strategy = MarchingCubesRebuildStrategyGd.new()
+	_node_size_strategy = VolumeNodeSizeStrategyGd.new()
 	var surf: Node = _surfaces[0]
 	var radius: float = surf.get_surface_radius()
 	
-	_rebuild_strategy.init( radius, focus_depth, rescale_dist, rebuild_dist )
+	_rebuild_strategy.radius = radius
+	_rebuild_strategy.height = focus_depth
+	_rebuild_strategy.rescale_dist = rescale_dist
+	_rebuild_strategy.rebuild_dist = rebuild_dist
+	
+	_node_size_strategy.radius = radius
+	_node_size_strategy.height = focus_depth
+
 
 
 func _enumerate_surfaces():
@@ -58,6 +67,7 @@ func update_source_se3( source_se3: Se3Ref ):
 	DDD.print( "r: " + str( r ), 5.0, "aaa" )
 	if need_rebuild:
 		DDD.print( "need rebuild: " + str( view_point_se3.r ) )
+		_node_size_strategy.focal_point = _rebuild_strategy.get_re
 	
 	var need_rescale: bool
 	if need_rebuild:
@@ -67,7 +77,7 @@ func update_source_se3( source_se3: Se3Ref ):
 	
 	if need_rebuild:
 		# If needed rebuild, rebuild voxel surface and apply to meshes.
-		var data: Array = _rebuild( source_se3, synchronous_update )
+		var data: Array = _rebuild( source_se3 )
 		_rebuild_finished( data )
 	
 	# Else only apply to meshes without applying to the surface.
@@ -83,7 +93,7 @@ func update_source_se3( source_se3: Se3Ref ):
 
 
 # Rebuild voxel representation and reapply to meshes.
-func _rebuild( source_se3: Se3Ref, synch: bool ):
+func _rebuild( source_se3: Se3Ref ):
 	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
 	var qty: int = _surfaces.size()
 	var data: Array = []

@@ -9,6 +9,9 @@ void MarchingCubesRebuildStrategyGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("need_rebuild", "view_point_se3"),          &MarchingCubesRebuildStrategyGd::need_rebuild,    Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("need_rescale", "view_point_se3"),          &MarchingCubesRebuildStrategyGd::need_rescale,    Variant::BOOL );
 
+	ClassDB::bind_method( D_METHOD("get_focal_point_rebuild"), &MarchingCubesRebuildStrategyGd::get_focal_point_rebuild, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("get_focal_point_rescale"), &MarchingCubesRebuildStrategyGd::get_focal_point_rescale, Variant::VECTOR3 );
+
 	ClassDB::bind_method( D_METHOD("set_radius", "radius"), &MarchingCubesRebuildStrategyGd::set_radius );
 	ClassDB::bind_method( D_METHOD("get_radius"),           &MarchingCubesRebuildStrategyGd::get_radius, Variant::REAL );
 
@@ -48,6 +51,20 @@ bool MarchingCubesRebuildStrategyGd::need_rescale( const Ref<Se3Ref> & view_poin
 	const SE3 & se3 = view_point_se3.ptr()->se3;
 	const bool res = strategy.need_rescale( se3 );
 	return res;
+}
+
+Vector3 MarchingCubesRebuildStrategyGd::get_focal_point_rebuild() const
+{
+	const Vector3d v = strategy.get_focal_point_rebuild();
+	const Vector3 ret( v.x_, v.y_, v.z_ );
+	return ret;
+}
+
+Vector3 MarchingCubesRebuildStrategyGd::get_focal_point_rescale() const
+{
+	const Vector3d v = strategy.get_focal_point_rescale();
+	const Vector3 ret( v.x_, v.y_, v.z_ );
+	return ret;
 }
 
 void MarchingCubesRebuildStrategyGd::set_radius( real_t radius )

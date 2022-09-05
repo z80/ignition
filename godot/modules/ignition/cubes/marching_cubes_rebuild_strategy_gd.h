@@ -21,6 +21,9 @@ public:
 	bool need_rebuild( const Ref<Se3Ref> & view_point_se3 );
 	bool need_rescale( const Ref<Se3Ref> & view_point_se3 );
 
+	Vector3 get_focal_point_rebuild() const;
+	Vector3 get_focal_point_rescale() const;
+
 	void     set_radius( real_t radius );
 	real_t   get_radius() const;
 
