@@ -42,7 +42,7 @@ var _rotation: RefFrameNode    = null
 var _all_surfaces: Node        = null
 
 func get_class():
-	return "CelestialSurface"
+	return "CelestialSurfaceVoxel"
 
 
 func translation_rf():

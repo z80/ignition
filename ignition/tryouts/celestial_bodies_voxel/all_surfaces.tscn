@@ -6,6 +6,8 @@
 
 [node name="All_Surfaces" type="Spatial"]
 script = ExtResource( 3 )
+focus_depth = 20.0
+rebuild_dist = 50.0
 
 [node name="Surface" parent="." instance=ExtResource( 2 )]
 

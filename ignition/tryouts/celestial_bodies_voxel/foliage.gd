@@ -141,7 +141,7 @@ func _populate_node( parent: Spatial, cubes: MarchingCubesDualGd, node: Marching
 		var c: Vector3 = dr + center
 		
 		_mc_mutex.lock()
-		var ret: Array = node.intersect_with_segment( c, Vector3.ZERO, true )
+		var ret: Array = node.intersect_with_segment( c, Vector3.ZERO )
 		_mc_mutex.unlock()
 		
 		var intersects: bool = ret[0]
@@ -213,7 +213,7 @@ func _update_view_point( items: Array, voxels: MarchingCubesDualGd, source_se3: 
 	for item in items:
 		var s: Spatial   = item as Spatial
 		var se3: Se3Ref  = s.get_meta( "se3" )
-		var t: Transform = voxels.asset_transform( se3, true, true, scaler )
+		var t: Transform = Transform.IDENTITY #voxels.asset_transform( se3, true, true, scaler )
 		s.set_meta( "new_transform", t )
 	
 	return items

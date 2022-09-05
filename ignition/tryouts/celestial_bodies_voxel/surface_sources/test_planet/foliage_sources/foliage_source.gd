@@ -11,7 +11,7 @@ func create( node: MarchingCubesDualNodeGd, se3: Se3Ref, normal: Vector3, rand: 
 	
 	var instance: Spatial = scene.instance()
 	
-	var t: Transform = node.asset_transform( se3, true, true, scaler )
+	var t: Transform = Transform.IDENTITY #node.asset_transform( se3, true, true, scaler )
 
 	var q: Quat = rand.random_rotation( Vector3.UP, PI, 0.05 )
 	t.basis = t.basis * Basis( q )

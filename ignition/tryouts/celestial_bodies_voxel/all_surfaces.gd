@@ -3,20 +3,31 @@ extends Spatial
 
 export(bool) var synchronous_update = true
 
+# Properties used to initialize strategies.
+export(float) var focus_depth  = 50.0
+export(float) var rebuild_dist = 30.0
+export(float) var rescale_dist = 10.0
+
+
 var _strategy_initialized: bool = false
-var _rebuild_strategy: MarchingCubesSphericalRebuildStrategyGd = null
+var _rebuild_strategy: MarchingCubesRebuildStrategyGd = null
 
 var _surfaces: Array = []
 var _foliage: Spatial = null
 
 
-func _init():
-	_strategy_initialized = false
-	_rebuild_strategy = MarchingCubesSphericalRebuildStrategyGd.new()
 
 
 func _ready():
 	_enumerate_surfaces()
+	
+	_strategy_initialized = true
+	
+	_rebuild_strategy = MarchingCubesRebuildStrategyGd.new()
+	var surf: Node = _surfaces[0]
+	var radius: float = surf.get_surface_radius()
+	
+	_rebuild_strategy.init( radius, focus_depth, rescale_dist, rebuild_dist )
 
 
 func _enumerate_surfaces():
@@ -40,23 +51,29 @@ func update_source_se3( source_se3: Se3Ref ):
 		_rebuild_strategy.rebuild_angle = 0.2
 		_strategy_initialized = true
 	
-	var camera_se3: Se3Ref = source_se3.inverse()
-	var need_rebuild: bool = _rebuild_strategy.need_rebuild( camera_se3 )
-	var r: Vector3 = camera_se3.r
+	var view_point_se3: Se3Ref = source_se3.inverse()
+	var need_rebuild: bool = _rebuild_strategy.need_rebuild( view_point_se3 )
+	var r: Vector3 = view_point_se3.r
 	DDD.important()
 	DDD.print( "r: " + str( r ), 5.0, "aaa" )
 	if need_rebuild:
-		DDD.print( "need rebuild: " + str( need_rebuild ) )
+		DDD.print( "need rebuild: " + str( view_point_se3.r ) )
+	
+	var need_rescale: bool
+	if need_rebuild:
+		need_rescale = false
+	else:
+		need_rescale = _rebuild_strategy.need_rescale( view_point_se3 )
 	
 	if need_rebuild:
 		# If needed rebuild, rebuild voxel surface and apply to meshes.
-		_rebuild( source_se3, synchronous_update )
-#		synchronous_update = false
+		var data: Array = _rebuild( source_se3, synchronous_update )
+		_rebuild_finished( data )
 	
-	else:
-		# Else only apply to meshes without applying to the surface.
-		_update_view_point( source_se3 )
-		pass
+	# Else only apply to meshes without applying to the surface.
+	if need_rebuild or need_rescale:
+		_rescale( source_se3 )
+		_rescale_finished()
 	
 	
 	var t: Transform = surface.get_root_se3( source_se3, scaler )
@@ -69,23 +86,41 @@ func update_source_se3( source_se3: Se3Ref ):
 func _rebuild( source_se3: Se3Ref, synch: bool ):
 	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
 	var qty: int = _surfaces.size()
+	var data: Array = []
 	for i in range(qty):
 		var surf: Node = _surfaces[i]
-		surf.rebuild_surface( source_se3, scaler, synch )
+		var ret: Array = surf.rebuild_surface( source_se3, scaler, synch )
+		data.push_back( ret )
 	
-	var point_se3: Se3Ref = source_se3.inverse()
-	_foliage.update_population( point_se3, scaler, true )
+#	var point_se3: Se3Ref = source_se3.inverse()
+#	_foliage.update_population( point_se3, scaler, true )
+	return data
+
+
+func _rebuild_finished( data: Array ):
+	var qty: int = _surfaces.size()
+	for i in range(qty):
+		var surf: Node = _surfaces[i]
+		var args: Array = data[i]
+		surf.rebuild_surface_finished( args )
+	
 
 
 # Just re-apply to meshes without rebuilding voxel surface.
-func _update_view_point( source_se3: Se3Ref ):
+func _rescale( source_se3: Se3Ref ):
 	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
 	var qty: int = _surfaces.size()
 	for i in range(qty):
 		var surf: Node = _surfaces[i]
-		surf.adjust_view_point( source_se3, scaler )
+		surf.rescale_surface( source_se3, scaler )
+#	_foliage.update_view_point( source_se3, scaler )
 
-	_foliage.update_view_point( source_se3, scaler )
+
+func _rescale_finished():
+	var qty: int = _surfaces.size()
+	for i in range(qty):
+		var surf: Node = _surfaces[i]
+		surf.rescale_surface_finished()
 
 
 

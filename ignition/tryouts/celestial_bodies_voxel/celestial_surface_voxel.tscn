@@ -5,6 +5,7 @@
 
 [node name="Translation" type="RefFrameNode"]
 script = ExtResource( 1 )
+rotation_period_hrs = 1.0
 
 [node name="Rotation" type="RefFrameNode" parent="."]
 

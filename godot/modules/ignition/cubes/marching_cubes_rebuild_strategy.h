@@ -22,7 +22,8 @@ public:
 
 
 public:
-    Vector3d focus;
+    Vector3d focal_point_rebuild;
+	Vector3d focal_point_rescale;
 	Float    height, planet_radius;
 	Float    rescale_dist, rebuild_dist;
 };
