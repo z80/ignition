@@ -37,7 +37,7 @@ func _get_surface_mesh( ind: int ):
 	
 
 
-func rebuild_surface( source_se3: Se3Ref, strategy: MarchingCubesRebuildStrategyGd, scaler: DistanceScalerBaseRef ):
+func rebuild_surface( source_se3: Se3Ref, strategy: VolumeNodeSizeStrategyGd, scaler: DistanceScalerBaseRef ):
 	var source_radius: float   = surface_source.source_radius
 	var source: VolumeSourceGd = surface_source.get_source()
 	
@@ -50,7 +50,7 @@ func rebuild_surface_finished( data: Array ):
 	_rebuild_surface_worker_finished( data )
 
 
-func _rebuild_surface_worker( source_se3: Se3Ref, strategy: MarchingCubesRebuildStrategyGd, source: VolumeSourceGd, scaler: DistanceScalerBaseRef ):
+func _rebuild_surface_worker( source_se3: Se3Ref, strategy: VolumeNodeSizeStrategyGd, source: VolumeSourceGd, scaler: DistanceScalerBaseRef ):
 	_voxel_surface.max_nodes_qty   = 20000000
 	_voxel_surface.source_se3      = source_se3
 	_voxel_surface.split_precision = 0.01
@@ -80,9 +80,7 @@ func rescale_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 		mi.visible = false
 	
 	var materials: Array = surface_source.materials
-	
-	var se3: Se3Ref = Se3Ref.new()
-	se3.copy_from( source_se3 )
+
 	
 	var qty: int = material_inds.size()
 	for i in range(qty):
@@ -93,7 +91,7 @@ func rescale_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 		mesh_inst.visible = true
 		mesh_inst.material_override = materials[material_ind]
 
-		_rescale_surface_worker( se3, mesh_inst, material_ind, scaler )
+		_rescale_surface_worker( source_se3, mesh_inst, material_ind, scaler )
 	
 	return true
 

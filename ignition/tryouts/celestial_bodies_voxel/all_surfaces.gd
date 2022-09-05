@@ -67,13 +67,15 @@ func update_source_se3( source_se3: Se3Ref ):
 	DDD.print( "r: " + str( r ), 5.0, "aaa" )
 	if need_rebuild:
 		DDD.print( "need rebuild: " + str( view_point_se3.r ) )
-		_node_size_strategy.focal_point = _rebuild_strategy.get_re
+		_node_size_strategy.focal_point = _rebuild_strategy.get_focal_point_rebuild()
 	
 	var need_rescale: bool
 	if need_rebuild:
 		need_rescale = false
 	else:
 		need_rescale = _rebuild_strategy.need_rescale( view_point_se3 )
+		if need_rescale:
+			_node_size_strategy.focal_point = _rebuild_strategy.get_focal_point_rescale()
 	
 	if need_rebuild:
 		# If needed rebuild, rebuild voxel surface and apply to meshes.
@@ -99,7 +101,7 @@ func _rebuild( source_se3: Se3Ref ):
 	var data: Array = []
 	for i in range(qty):
 		var surf: Node = _surfaces[i]
-		var ret: Array = surf.rebuild_surface( source_se3, scaler, synch )
+		var ret: Array = surf.rebuild_surface( source_se3, _node_size_strategy, scaler )
 		data.push_back( ret )
 	
 #	var point_se3: Se3Ref = source_se3.inverse()

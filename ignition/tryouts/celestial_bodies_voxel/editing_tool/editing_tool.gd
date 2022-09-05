@@ -33,6 +33,8 @@ func _ready():
 	_camera.transform = t
 	
 	#sun.set_origin( rf )
+	
+	#PhysicsManager.distance_scaler = null
 
 
 
