@@ -22,18 +22,25 @@ MarchingCubesRebuildStrategy::~MarchingCubesRebuildStrategy()
 
 bool MarchingCubesRebuildStrategy::need_rebuild( const SE3 & view_point_se3 )
 {
-    const Vector3d camera_r = view_point_se3.r();
+    Vector3d camera_r = view_point_se3.r();
 	Float camera_dist = camera_r.Length();
-	camera_dist = (camera_dist < planet_radius) ? camera_dist : planet_radius;
-	const Float d_dist      = camera_dist - planet_radius;
-	const Float d_dist_2    = d_dist*d_dist;
-	const Float focal_dist = (planet_radius - height) / ( 1.0 + d_dist_2 );
+	if (camera_dist > planet_radius)
+	{
+		camera_r    = camera_r / camera_dist * planet_radius;
+		camera_dist = planet_radius;
+	}
+
+	const Float d_dist_rel      = (camera_dist - planet_radius)/planet_radius;
+	const Float d_dist_rel_2    = d_dist_rel*d_dist_rel;
+	const Float focal_dist = (planet_radius - height) / ( 1.0 + d_dist_rel_2 );
 
 	const Vector3d focal_point = camera_r * (focal_dist / camera_dist);
 	const Vector3d d_focal_point = focal_point - focal_point_rebuild;
 	const Float    d_focus = d_focal_point.Length();
 
-	const bool ret = (d_focus >= rebuild_dist);
+	const Float scaled_rebuild_dist = rebuild_dist * std::sqrt( planet_radius / camera_dist );
+
+	const bool ret = (d_focus >= scaled_rebuild_dist);
 
 	if ( ret )
 	{
@@ -48,18 +55,25 @@ bool MarchingCubesRebuildStrategy::need_rebuild( const SE3 & view_point_se3 )
 
 bool MarchingCubesRebuildStrategy::need_rescale( const SE3 & view_point_se3 )
 {
-	const Vector3d camera_r = view_point_se3.r();
+	Vector3d camera_r = view_point_se3.r();
 	Float camera_dist = camera_r.Length();
-	camera_dist = (camera_dist < planet_radius) ? camera_dist : planet_radius;
-	const Float d_dist      = camera_dist - planet_radius;
-	const Float d_dist_2    = d_dist*d_dist;
-	const Float focal_dist = (planet_radius - height) / ( 1.0 + d_dist_2 );
+	if (camera_dist > planet_radius)
+	{
+		camera_r    = camera_r / camera_dist * planet_radius;
+		camera_dist = planet_radius;
+	}
+
+	const Float d_dist_rel      = (camera_dist - planet_radius)/planet_radius;
+	const Float d_dist_rel_2    = d_dist_rel*d_dist_rel;
+	const Float focal_dist = (planet_radius - height) / ( 1.0 + d_dist_rel_2 );
 
 	const Vector3d focal_point = camera_r * (focal_dist / camera_dist);
 	const Vector3d d_focal_point = focal_point - focal_point_rescale;
 	const Float    d_focus = d_focal_point.Length();
 
-	const bool ret = (d_focus >= rescale_dist);
+	const Float scaled_rescale_dist = rescale_dist * std::sqrt( planet_radius / camera_dist );
+
+	const bool ret = (d_focus >= scaled_rescale_dist);
 
 	if ( ret )
 	{

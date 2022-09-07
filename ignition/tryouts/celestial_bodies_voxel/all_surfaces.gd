@@ -4,9 +4,9 @@ extends Spatial
 export(bool) var synchronous_update = true
 
 # Properties used to initialize strategies.
-export(float) var focus_depth  = 50.0
-export(float) var rebuild_dist = 30.0
-export(float) var rescale_dist = 10.0
+export(float) var focus_depth  = 40.0
+export(float) var rebuild_dist = 25.0
+export(float) var rescale_dist = 1.0
 
 
 var _strategy_initialized: bool = false
