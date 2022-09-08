@@ -29,7 +29,7 @@ func _ready():
 	PhysicsManager.camera = _camera
 	
 	var t: Transform = Transform.IDENTITY
-	t.origin = Vector3( 0.0, 0.0, 500.0 )
+	t.origin = Vector3( 0.0, 0.0, 15000000.0 )
 	_camera.transform = t
 	
 	#sun.set_origin( rf )

@@ -24,7 +24,7 @@ bool MarchingCubesRebuildStrategy::need_rebuild( const SE3 & view_point_se3 )
 {
     Vector3d camera_r = view_point_se3.r();
 	Float camera_dist = camera_r.Length();
-	if (camera_dist > planet_radius)
+	if (camera_dist < planet_radius)
 	{
 		camera_r    = camera_r / camera_dist * planet_radius;
 		camera_dist = planet_radius;
@@ -57,7 +57,7 @@ bool MarchingCubesRebuildStrategy::need_rescale( const SE3 & view_point_se3 )
 {
 	Vector3d camera_r = view_point_se3.r();
 	Float camera_dist = camera_r.Length();
-	if (camera_dist > planet_radius)
+	if (camera_dist < planet_radius)
 	{
 		camera_r    = camera_r / camera_dist * planet_radius;
 		camera_dist = planet_radius;

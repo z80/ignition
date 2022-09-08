@@ -42,6 +42,8 @@
 
 #include "ign_random_gd.h"
 
+#include "iir2.h"
+
 void register_ignition_types()
 {
 	//ClassDB::register_class<OccupancyGrid>();
@@ -80,6 +82,9 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::VolumeNodeSizeStrategyGd>();
 
 	ClassDB::register_class<Ign::IgnRandomGd>();
+
+
+	ClassDB::register_class<Iir2::Iir2sRef>();
 }
 
 void unregister_ignition_types()
