@@ -4,12 +4,13 @@ extends Spatial
 export(bool) var synchronous_update = true
 
 # Properties used to initialize strategies.
-export(float) var focus_depth  = 40.0
-export(float) var rebuild_dist = 25.0
-export(float) var rescale_dist = 1.0
+export(float) var focus_depth               = 40.0
+export(float) var rebuild_dist              = 100.0
+export(float) var rescale_close_dist        = 10.0
+export(float) var rescale_far_tangent       = 10.0 / 180.0 * 3.14
+export(float) var rescale_depth_rel_tangent = 1.0 / 180.0 * 3.14
 
 
-var _strategy_initialized: bool = false
 var _rebuild_strategy: MarchingCubesRebuildStrategyGd = null
 var _node_size_strategy: VolumeNodeSizeStrategyGd
 
@@ -22,8 +23,6 @@ var _foliage: Spatial = null
 func _ready():
 	_enumerate_surfaces()
 	
-	_strategy_initialized = true
-	
 	_rebuild_strategy = MarchingCubesRebuildStrategyGd.new()
 	_node_size_strategy = VolumeNodeSizeStrategyGd.new()
 	var surf: Node = _surfaces[0]
@@ -31,8 +30,12 @@ func _ready():
 	
 	_rebuild_strategy.radius = radius
 	_rebuild_strategy.height = focus_depth
-	_rebuild_strategy.rescale_dist = rescale_dist
+
 	_rebuild_strategy.rebuild_dist = rebuild_dist
+
+	_rebuild_strategy.rescale_close_dist        = rescale_close_dist
+	_rebuild_strategy.rescale_far_tangent       = rescale_far_tangent
+	_rebuild_strategy.rescale_depth_rel_tangent = rescale_depth_rel_tangent
 	
 	_node_size_strategy.radius = radius
 	_node_size_strategy.height = focus_depth
@@ -54,12 +57,6 @@ func update_source_se3( source_se3: Se3Ref ):
 	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
 	var surface: Node = _surfaces[0]
 
-	if not _strategy_initialized:
-		var radius: float = surface.get_surface_radius()
-		_rebuild_strategy.initialize( radius, scaler )
-		_rebuild_strategy.rebuild_angle = 0.2
-		_strategy_initialized = true
-	
 	var view_point_se3: Se3Ref = source_se3.inverse()
 	var need_rebuild: bool = _rebuild_strategy.need_rebuild( view_point_se3 )
 	var r: Vector3 = view_point_se3.r

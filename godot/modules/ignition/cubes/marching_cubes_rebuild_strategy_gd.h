@@ -30,11 +30,17 @@ public:
 	void     set_height( real_t height );
 	real_t   get_height() const;
 
-	void     set_rescale_dist( real_t dist );
-	real_t   get_rescale_dist() const;
-
 	void     set_rebuild_dist( real_t dist );
 	real_t   get_rebuild_dist() const;
+
+	void     set_rescale_close_dist( real_t dist );
+	real_t   get_rescale_close_dist() const;
+
+	void     set_rescale_far_tangent( real_t dist );
+	real_t   get_rescale_far_tangent() const;
+
+	void     set_rescale_depth_rel_tangent( real_t dist );
+	real_t   get_rescale_depth_rel_tangent() const;
 
 public:
 	MarchingCubesRebuildStrategy strategy;

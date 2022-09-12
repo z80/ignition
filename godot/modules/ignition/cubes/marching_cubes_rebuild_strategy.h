@@ -26,17 +26,29 @@ public:
 	void     set_height( Float height );
 	Float    get_height() const;
 
-	void     set_rescale_dist( Float dist );
-	Float    get_rescale_dist() const;
-
 	void     set_rebuild_dist( Float dist );
 	Float    get_rebuild_dist() const;
+
+	void     set_rescale_close_dist( Float dist );
+	Float    get_rescale_close_dist() const;
+
+	void     set_rescale_far_tangent( Float dist );
+	Float    get_rescale_far_tangent() const;
+
+	void     set_rescale_depth_rel_tangent( Float dist );
+	Float    get_rescale_depth_rel_tangent() const;
 
 public:
     Vector3d focal_point_rebuild;
 	Vector3d focal_point_rescale;
+
 	Float    height, planet_radius;
-	Float    rescale_dist, rebuild_dist;
+
+	Float    rebuild_dist,
+
+		     rescale_close_dist,
+		     rescale_far_tangent,
+		     rescale_rel_tangent;
 };
 
 

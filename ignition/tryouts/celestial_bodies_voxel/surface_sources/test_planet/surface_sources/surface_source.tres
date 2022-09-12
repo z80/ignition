@@ -5,5 +5,5 @@
 
 [resource]
 script = ExtResource( 2 )
-source_radius = 1e+07
+source_radius = 1000.0
 materials = [ ExtResource( 1 ) ]

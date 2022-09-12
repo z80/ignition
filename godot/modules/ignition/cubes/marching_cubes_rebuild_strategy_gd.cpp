@@ -18,16 +18,24 @@ void MarchingCubesRebuildStrategyGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_height", "height"), &MarchingCubesRebuildStrategyGd::set_height );
 	ClassDB::bind_method( D_METHOD("get_height"),           &MarchingCubesRebuildStrategyGd::get_height, Variant::REAL );
 
-	ClassDB::bind_method( D_METHOD("set_rescale_dist", "dist"), &MarchingCubesRebuildStrategyGd::set_rescale_dist );
-	ClassDB::bind_method( D_METHOD("get_rescale_dist"),         &MarchingCubesRebuildStrategyGd::get_rescale_dist, Variant::REAL );
-
 	ClassDB::bind_method( D_METHOD("set_rebuild_dist", "dist"), &MarchingCubesRebuildStrategyGd::set_rebuild_dist );
 	ClassDB::bind_method( D_METHOD("get_rebuild_dist"),         &MarchingCubesRebuildStrategyGd::get_rebuild_dist, Variant::REAL );
 
+	ClassDB::bind_method( D_METHOD("set_rescale_close_dist", "dist"), &MarchingCubesRebuildStrategyGd::set_rescale_close_dist );
+	ClassDB::bind_method( D_METHOD("get_rescale_close_dist"),         &MarchingCubesRebuildStrategyGd::get_rescale_close_dist, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD("set_rescale_far_tangent", "dist"), &MarchingCubesRebuildStrategyGd::set_rescale_far_tangent );
+	ClassDB::bind_method( D_METHOD("get_rescale_far_tangent"),         &MarchingCubesRebuildStrategyGd::get_rescale_far_tangent, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD("set_rescale_depth_rel_tangent", "dist"), &MarchingCubesRebuildStrategyGd::set_rescale_depth_rel_tangent );
+	ClassDB::bind_method( D_METHOD("get_rescale_depth_rel_tangent"),         &MarchingCubesRebuildStrategyGd::get_rescale_depth_rel_tangent, Variant::REAL );
+
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ),       "set_radius",       "get_radius" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ),       "set_height",       "get_height" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rescale_dist" ), "set_rescale_dist", "get_rescale_dist" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rebuild_dist" ), "set_rebuild_dist", "get_rebuild_dist" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rescale_close_dist" ),        "set_rescale_close_dist",        "get_rescale_close_dist" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rescale_far_tangent" ),       "set_rescale_far_tangent",       "get_rescale_far_tangent" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rescale_depth_rel_tangent" ), "set_rescale_depth_rel_tangent", "get_rescale_depth_rel_tangent" );
 }
 
 MarchingCubesRebuildStrategyGd::MarchingCubesRebuildStrategyGd()
@@ -90,18 +98,6 @@ real_t MarchingCubesRebuildStrategyGd::get_height() const
 	return ret;
 }
 
-
-void MarchingCubesRebuildStrategyGd::set_rescale_dist( real_t dist )
-{
-	strategy.set_rescale_dist( dist );
-}
-
-real_t MarchingCubesRebuildStrategyGd::get_rescale_dist() const
-{
-	const real_t ret = strategy.get_rescale_dist();
-	return ret;
-}
-
 void MarchingCubesRebuildStrategyGd::set_rebuild_dist( real_t dist )
 {
 	strategy.set_rebuild_dist( dist );
@@ -110,6 +106,39 @@ void MarchingCubesRebuildStrategyGd::set_rebuild_dist( real_t dist )
 real_t MarchingCubesRebuildStrategyGd::get_rebuild_dist() const
 {
 	const real_t ret = strategy.get_rebuild_dist();
+	return ret;
+}
+
+void MarchingCubesRebuildStrategyGd::set_rescale_close_dist( real_t dist )
+{
+	strategy.set_rescale_close_dist( dist );
+}
+
+real_t MarchingCubesRebuildStrategyGd::get_rescale_close_dist() const
+{
+	const real_t ret = strategy.get_rescale_close_dist();
+	return ret;
+}
+
+void MarchingCubesRebuildStrategyGd::set_rescale_far_tangent( real_t dist )
+{
+	strategy.set_rescale_far_tangent( dist );
+}
+
+real_t MarchingCubesRebuildStrategyGd::get_rescale_far_tangent() const
+{
+	const real_t ret = strategy.get_rescale_far_tangent();
+	return ret;
+}
+
+void MarchingCubesRebuildStrategyGd::set_rescale_depth_rel_tangent( real_t dist )
+{
+	strategy.set_rescale_depth_rel_tangent( dist );
+}
+
+real_t MarchingCubesRebuildStrategyGd::get_rescale_depth_rel_tangent() const
+{
+	const real_t ret = strategy.get_rescale_depth_rel_tangent();
 	return ret;
 }
 
