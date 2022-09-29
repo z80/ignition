@@ -1,5 +1,6 @@
 
 #include "volume_node_size_strategy.h"
+#include <iostream>
 
 namespace Ign
 {
@@ -58,7 +59,11 @@ Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const F
 	const Float focal_point_2 = focal_point.LengthSquared();
 	const Float abs_a_2 = abs_a * abs_a;
 	const Float D_4 = b*b + abs_a_2*(radius*radius - focal_point_2);
-	const Float t = ( std::sqrt( D_4 ) - b*0.5 ) / abs_a_2;
+	const Float t = ( std::sqrt( D_4 ) - b ) / abs_a_2;
+	//std::cout << "t: " << t << std::endl;
+	//if ( t > 1.0 )
+	//	t *= 10.0;
+	//const Float surface_dist = std::sqrt( std::sqrt(t) ) * abs_a;
 	const Float surface_dist = t * abs_a;
 
 	Float scale = surface_dist / (height * 1.41);

@@ -19,12 +19,12 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/exec_pool/exec_pool_settings.gd"
 }, {
-"base": "Reference",
+"base": "Node",
 "class": "FakeThreadPool",
 "language": "GDScript",
 "path": "res://addons/thread_pool/fake_thread_pool.gd"
 }, {
-"base": "Reference",
+"base": "Node",
 "class": "FutureThreadPool",
 "language": "GDScript",
 "path": "res://addons/thread_pool/future_thread_pool.gd"
@@ -34,7 +34,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://node_drawer/node_drawer.gd"
 }, {
-"base": "Reference",
+"base": "Node",
 "class": "ThreadPool",
 "language": "GDScript",
 "path": "res://addons/thread_pool/thread_pool.gd"
