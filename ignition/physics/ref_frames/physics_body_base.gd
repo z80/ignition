@@ -183,7 +183,7 @@ func update_visual( origin: RefFrameNode = null ):
 
 
 # Need to overload this in order to apply controls
-func update_physical( delta: float ):
+func update_physical( _delta: float ):
 	pass
 
 

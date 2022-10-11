@@ -107,7 +107,7 @@ func distance_to_camera_ray():
 		return -1.0
 	
 	var rect: Rect2 = vp.get_visible_rect()
-	var sz: Vector2 = rect.size
+#	var sz: Vector2 = rect.size
 	
 	var mouse_at: Vector2 = vp.get_mouse_position()
 	var icon_at: Vector2  =  cam.unproject_position( self_at )

@@ -17,16 +17,25 @@ var _max_threads_qty: int = -1
 
 
 
-func start( instance: Object, method: String, callback: String ) -> void:
+func push_back( instance: Object, method: String, callback: String ) -> void:
 	_add_task( instance, method, callback, null, true, false )
 
+func push_front( instance: Object, method: String, callback: String ) -> void:
+	_add_task( instance, method, callback, null, true, false, true )
 
-func start_with_arg( instance: Object, method: String, callback: String, parameter ) -> void:
+
+func push_back_with_arg( instance: Object, method: String, callback: String, parameter ) -> void:
 	_add_task( instance, method, callback, parameter, false, false )
 
+func push_front_with_arg( instance: Object, method: String, callback: String, parameter ) -> void:
+	_add_task( instance, method, callback, parameter, false, false, true )
 
-func start_with_args( instance: Object, method: String, callback: String, parameter: Array ) -> void:
+
+func push_back_with_args( instance: Object, method: String, callback: String, parameter: Array ) -> void:
 	_add_task( instance, method, callback, parameter, callback, false, true )
+
+func push_front_with_args( instance: Object, method: String, callback: String, parameter: Array ) -> void:
+	_add_task( instance, method, callback, parameter, callback, false, true, true )
 
 
 func _set_settings( s: Resource ):
@@ -90,13 +99,17 @@ func queue_free() -> void:
 	.queue_free()
 
 
-func _add_task(instance: Object, method: String, callback: String, parameter = null, task_tag = null, no_argument = false, array_argument = false) -> void:
+func _add_task(instance: Object, method: String, callback: String, parameter = null, task_tag = null, no_argument = false, array_argument = false, prioritized=false) -> void:
 	if _finished:
 		return
 	
 	_mutex.lock()
 	
-	_tasks.push_front( Task.new(instance, method, callback, parameter, no_argument, array_argument) )
+	var task: Task = Task.new(instance, method, callback, parameter, no_argument, array_argument)
+	if prioritized:
+		_tasks.push_back( task )
+	else:
+		_tasks.push_front( task )
 	var t: Thread = _get_worker_thread()
 	
 	_semaphore.post()
