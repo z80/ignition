@@ -10,7 +10,6 @@ var _semaphore: Semaphore = null
 var _finished: bool = false
 var _tasks: Array = []
 var _finished_tasks: Array = []
-var _threads_available: Array = []
 var _threads_in_work: Array   = []
 
 var _max_threads_qty: int = -1
@@ -54,7 +53,6 @@ func _ready():
 	_finished = false
 	_tasks    = []
 	_finished_tasks = []
-	_threads_available = []
 	_threads_in_work   = []
 	
 	if settings != null:
@@ -64,6 +62,10 @@ func _ready():
 		if qty > 1:
 			qty -= 1
 		_max_threads_qty = qty
+	
+	for i in range( _max_threads_qty ):
+		_create_worker_thread()
+
 
 
 func _process( _delta ):
@@ -110,7 +112,6 @@ func _add_task(instance: Object, method: String, callback: String, parameter = n
 		_tasks.push_back( task )
 	else:
 		_tasks.push_front( task )
-	var t: Thread = _get_worker_thread()
 	
 	_semaphore.post()
 
@@ -134,10 +135,7 @@ func _process_tasks( thread: Thread ):
 		#print( "tasks in queue: ", qty )
 		if _tasks.empty():
 			task = null
-			var ind: int = _threads_in_work.find( thread )
-			if ind >= 0:
-				_threads_in_work.pop_at( ind )
-				_threads_available.push_back( thread )
+
 		else:
 			task = _tasks.back()
 			_tasks.pop_back()
@@ -163,24 +161,13 @@ func _process_tasks( thread: Thread ):
 			return
 
 
-func _get_worker_thread():
+func _create_worker_thread():
 	var t: Thread
 	
-	if _threads_available.empty():
-		var qty: int = _threads_in_work.size()
-		if qty >= _max_threads_qty:
-			t = null
-		
-		else:
-			t = Thread.new()
-			_threads_in_work.push_back( t )
-			var ret: int = t.start( self, "_process_tasks", t )
-			print( "task creation err code: ", ret )
-	
-	else:
-		t = _threads_available.back()
-		_threads_available.pop_back()
-		_threads_in_work.push_back( t )
+	t = Thread.new()
+	_threads_in_work.push_back( t )
+	var ret: int = t.start( self, "_process_tasks", t )
+	print( "task creation err code: ", ret )
 	
 	return t
 
@@ -204,10 +191,9 @@ func _print_stats():
 	_mutex.lock()
 	var tasks_in_queue: int    = _tasks.size()
 	var workers_running: int   = _threads_in_work.size()
-	var workers_available: int = _threads_available.size()
 	_mutex.unlock()
 	
-	print( "tasks in queue: ", tasks_in_queue, "; running qty: ", workers_running, "; available qty: ", workers_available )
+	print( "tasks in queue: ", tasks_in_queue, "; running qty: ", workers_running )
 
 
 
