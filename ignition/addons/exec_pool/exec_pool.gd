@@ -31,10 +31,10 @@ func push_front_with_arg( instance: Object, method: String, callback: String, pa
 
 
 func push_back_with_args( instance: Object, method: String, callback: String, parameter: Array ) -> void:
-	_add_task( instance, method, callback, parameter, callback, false, true )
+	_add_task( instance, method, callback, parameter, false, true )
 
 func push_front_with_args( instance: Object, method: String, callback: String, parameter: Array ) -> void:
-	_add_task( instance, method, callback, parameter, callback, false, true, true )
+	_add_task( instance, method, callback, parameter, false, true, true )
 
 
 func _set_settings( s: Resource ):
@@ -82,6 +82,7 @@ func _process( _delta ):
 	_mutex.unlock()
 	
 	if task != null:
+		print( "finished tasks not empty, calling callback" )
 		task.call_callback()
 	
 #	_print_stats()
@@ -101,7 +102,7 @@ func queue_free() -> void:
 	.queue_free()
 
 
-func _add_task(instance: Object, method: String, callback: String, parameter = null, task_tag = null, no_argument = false, array_argument = false, prioritized=false) -> void:
+func _add_task(instance: Object, method: String, callback: String, parameter = null, no_argument = false, array_argument = false, prioritized=false) -> void:
 	if _finished:
 		return
 	
@@ -143,10 +144,13 @@ func _process_tasks( thread: Thread ):
 		_mutex.unlock()
 		
 		if task != null:
+			print( "executing task" )
 			task.execute_task()
+			print( "executing task done" )
 			
 			_mutex.lock()
 			if task != null:
+				print( "adding to finished tasks" )
 				_finished_tasks.push_front( task )
 			_mutex.unlock()
 		
