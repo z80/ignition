@@ -58,7 +58,7 @@ func _ready():
 	if settings != null:
 		_max_threads_qty = settings.max_threads_qty
 	else:
-		var qty: int = OS.get_processor_count()
+		var qty: int = 1 #OS.get_processor_count()
 		if qty > 1:
 			qty -= 1
 		_max_threads_qty = qty
@@ -180,7 +180,9 @@ func _wait_for_workers_to_finish():
 	_mutex.lock()
 	_finished = true
 	var threads: Array = _threads_in_work.duplicate()
-	_semaphore.post()
+	var qty: int = _threads_in_work.size()
+	for i in range(qty):
+		_semaphore.post()
 	_mutex.unlock()
 	
 	for t in threads:
