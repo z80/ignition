@@ -125,7 +125,7 @@ func _populate_node( parent: Spatial, cubes: MarchingCubesDualGd, node: Marching
 	print( "entered node ", h_path )
 	
 	_mc_mutex.lock()
-	var center: Vector3 = node.center_vector( true )
+	var center: Vector3 = node.center_vector()
 	var sz: float       = node.node_size()
 	_mc_mutex.unlock()
 	

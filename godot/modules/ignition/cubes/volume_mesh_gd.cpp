@@ -21,7 +21,7 @@ void VolumeMeshGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("uvs"),      &VolumeMeshGd::uvs,      Variant::POOL_VECTOR2_ARRAY );
 	ClassDB::bind_method( D_METHOD("uv2s"),     &VolumeMeshGd::uv2s,     Variant::POOL_VECTOR2_ARRAY );
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "source_se3" ),   "set_source_transform", "get_source_transform" );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "source_se3" ),   "set_source_se3", "get_source_se3" );
 
 }
 
