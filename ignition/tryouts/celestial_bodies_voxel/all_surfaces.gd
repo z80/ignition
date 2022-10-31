@@ -17,10 +17,18 @@ var _node_size_strategy: VolumeNodeSizeStrategyGd
 var _surfaces: Array = []
 var _foliage: Spatial = null
 
-
+# For async run count how many workers running and 
+# if zero, re-run with the new se3.
+var _async_requested_rebuild: bool = false
+var _async_requested_rescale: bool = false
+var _async_se3: Se3Ref     = null
+var _async_workers_qty: int = 0
 
 
 func _ready():
+	_async_se3 = Se3Ref.new()
+	_async_workers_qty = 0
+
 	_enumerate_surfaces()
 	
 	_rebuild_strategy = MarchingCubesRebuildStrategyGd.new()
@@ -41,6 +49,11 @@ func _ready():
 	_node_size_strategy.height = focus_depth
 
 
+func _process( delta: float ):
+	if not synchronous_update:
+		_async_process()
+
+
 
 func _enumerate_surfaces():
 	_surfaces = []
@@ -54,6 +67,20 @@ func _enumerate_surfaces():
 
 
 func update_source_se3( source_se3: Se3Ref ):
+	if synchronous_update:
+		_sync_update_source_se3( source_se3 )
+	
+	else:
+		_async_update_source_se3( source_se3 )
+	
+	var surface: Node = _surfaces[0]
+	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
+	var t: Transform = surface.get_root_se3( source_se3, scaler )
+	transform = t
+
+
+
+func _sync_update_source_se3( source_se3: Se3Ref ):
 	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
 	var surface: Node = _surfaces[0]
 
@@ -74,20 +101,17 @@ func update_source_se3( source_se3: Se3Ref ):
 		if need_rescale:
 			_node_size_strategy.focal_point = _rebuild_strategy.get_focal_point_rescale()
 	
-	if need_rebuild:
-		# If needed rebuild, rebuild voxel surface and apply to meshes.
-		var data: Array = _rebuild( source_se3 )
-		_rebuild_finished( data )
+	if synchronous_update:
+		if need_rebuild:
+			# If needed rebuild, rebuild voxel surface and apply to meshes.
+			var data: Array = _rebuild( source_se3 )
+			_rebuild_finished( data )
+		
+		# Else only apply to meshes without applying to the surface.
+		if need_rebuild or need_rescale:
+			_rescale( source_se3 )
+			_rescale_finished()
 	
-	# Else only apply to meshes without applying to the surface.
-	if need_rebuild or need_rescale:
-		_rescale( source_se3 )
-		_rescale_finished()
-	
-	
-	var t: Transform = surface.get_root_se3( source_se3, scaler )
-	transform = t
-
 
 
 
@@ -112,7 +136,7 @@ func _rebuild_finished( data: Array ):
 		var surf: Node = _surfaces[i]
 		var args: Array = data[i]
 		surf.rebuild_surface_finished( args )
-	
+
 
 
 # Just re-apply to meshes without rebuilding voxel surface.
@@ -130,6 +154,144 @@ func _rescale_finished():
 	for i in range(qty):
 		var surf: Node = _surfaces[i]
 		surf.rescale_surface_finished()
+
+
+
+
+func _async_update_source_se3( se3: Se3Ref ):
+	var view_point_se3: Se3Ref = se3.inverse()
+	_async_se3.copy_from( se3 )
+	var need_rebuild: bool = _rebuild_strategy.need_rebuild( view_point_se3 )
+	if need_rebuild and (not _async_requested_rebuild):
+		_async_requested_rebuild = true
+		_async_rebuild_start( _async_se3 )
+	
+	if not _async_requested_rebuild:
+		var need_rescale: bool = _rebuild_strategy.need_rescale( view_point_se3 )
+		if need_rescale and (not _async_requested_rescale):
+			_async_requested_rescale = need_rescale
+			_async_rescale_start( _async_se3 )
+
+
+
+func _async_process():
+	if synchronous_update or (_async_workers_qty != 0):
+		return
+	
+	if _async_requested_rebuild:
+		_async_rebuild_start( _async_se3 )
+	
+	elif _async_requested_rescale:
+		_async_rescale_start( _async_se3 )
+
+
+
+func _async_rebuild_start( source_se3: Se3Ref ):
+	if not _async_requested_rebuild:
+		return
+	
+	if _async_workers_qty != 0:
+		return
+	
+	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
+	var qty: int = _surfaces.size()
+	
+	_async_requested_rebuild = false
+	_async_workers_qty = qty
+
+
+	var data: Array = []
+	for i in range(qty):
+		var surf: Node = _surfaces[i]
+		var ad: AsyncData = AsyncData.new( source_se3, _node_size_strategy, scaler, surf )
+		WorkersPool.push_back_with_arg( self, "_async_rebuild_worker", "_async_rebuild_worker_finished", ad )
+
+
+
+func _async_rebuild_worker( ad: AsyncData ):
+	var surf: Node = ad.surface
+	var source_se3: Se3Ref = ad.se3
+	var node_size_strategy: VolumeNodeSizeStrategyGd = ad.node_size_strategy
+	var scaler: DistanceScalerBaseRef = ad.scaler
+	ad.callback_data = surf.rebuild_surface( source_se3, node_size_strategy, scaler )
+	return ad
+
+
+
+func _async_rebuild_worker_finished( ad: AsyncData ):
+	var surf: Node = ad.surface
+	var args: Array = ad.callback_data
+	surf.rebuild_surface_finished( args )
+	_async_workers_qty -= 1
+	
+	if _async_workers_qty == 0:
+		_async_requested_rescale = true
+
+
+
+
+func _async_rescale_start( source_se3: Se3Ref ):
+	if not _async_requested_rescale:
+		return
+	
+	if _async_workers_qty != 0:
+		return
+
+	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
+	var qty: int = _surfaces.size()
+	
+	_async_requested_rescale = false
+	_async_workers_qty = qty
+
+
+	var data: Array = []
+	for i in range(qty):
+		var surf: Node = _surfaces[i]
+		var ad: AsyncData = AsyncData.new( source_se3, _node_size_strategy, scaler, surf )
+		WorkersPool.push_back_with_arg( self, "_async_rescale_worker", "_async_rescale_worker_finished", ad )
+
+
+
+
+func _async_rescale_worker( ad: AsyncData ):
+	var surf: Node = ad.surface
+	var source_se3: Se3Ref = ad.se3
+	var scaler: DistanceScalerBaseRef = ad.scaler
+	surf.rescale_surface( source_se3, scaler )
+	return ad
+
+
+
+func _async_rescale_worker_finished( ad: AsyncData ):
+	var surf: Node = ad.surface
+	surf.rescale_surface_finished()
+
+	_async_workers_qty -= 1
+
+
+
+
+
+
+
+class AsyncData:
+	var se3: Se3Ref
+	var node_size_strategy: VolumeNodeSizeStrategyGd
+	var scaler: DistanceScalerBaseRef
+	
+	var surface: Node
+	var callback_data: Array
+	
+	func _init( source_se3: Se3Ref, st: VolumeNodeSizeStrategyGd, s: DistanceScalerBaseRef, surf: Node ):
+		se3     = Se3Ref.new()
+		se3.copy_from( source_se3 )
+
+		node_size_strategy = st
+
+		scaler = s
+
+		surface = surf
+		
 
 
 
