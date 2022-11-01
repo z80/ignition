@@ -126,7 +126,7 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
     return true;
 }
 
-const std::vector<int> & MarchingCubesDual::query_close_nodes( const Vector3d & at, Float dist, Float max_size )
+const std::vector<int> & MarchingCubesDual::query_close_nodes( const Vector3d & at_in_source, Float dist, Float max_size )
 {
 	_octree_node_indices_result.clear();
 
@@ -150,7 +150,8 @@ const std::vector<int> & MarchingCubesDual::query_close_nodes( const Vector3d & 
 
 	const int sz_2 = static_cast<int>( std::ceil( dist / step ) ) * 2;
 
-	const Vector3d center = inverted_source_se3.q_ * at + inverted_source_se3.r_;
+	//const Vector3d center = inverted_source_se3.q_ * at + inverted_source_se3.r_;
+	const Vector3d center = at_in_source;
 	const VectorInt at_int = VectorInt( static_cast<int>( (center.x_ - dist) / step ),
 		                                static_cast<int>( (center.y_ - dist) / step ),
 		                                static_cast<int>( (center.z_ - dist) / step ) );

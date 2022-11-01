@@ -145,7 +145,7 @@ public:
 
     bool subdivide_source( Float bounding_radius, VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );
 
-	const std::vector<int> & query_close_nodes( const Vector3d & at, Float dist, Float max_size );
+	const std::vector<int> & query_close_nodes( const Vector3d & at_in_source, Float dist, Float max_size );
 	Vector3d center_direction( const Vector3d & at, bool in_source ) const;
 	MarchingCubesDualNode * get_tree_node( int ind );
 	bool point_inside_node( int node_ind, const Vector3d & at );
