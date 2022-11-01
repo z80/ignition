@@ -32,6 +32,42 @@ func _exit_tree():
 	clear()
 
 
+
+
+func async_request_population_update( at_in_source: Vector3, scaler: DistanceScalerBaseRef ):
+	clear()
+	
+	var force_all: bool = true
+
+	var populated_node_paths: Dictionary = {}
+	for key in _created_instances:
+		populated_node_paths[key] = true
+	
+	#_voxel_surface.source_se3 = Se3Ref.new()
+	var node_indices: Array = _voxel_surface.query_close_nodes( at_in_source, fill_dist, fill_node_size )
+	var total_qty: int = 0
+
+	for node_ind in node_indices:
+		var node: MarchingCubesDualNodeGd = _voxel_surface.get_tree_node( node_ind )
+		var h_path: String = node.hierarchy_path()
+		
+		var already_populated: bool
+		if force_all:
+			already_populated = false
+		
+		else:
+			already_populated = _created_instances.has( h_path )
+		
+		if already_populated:
+			populated_node_paths.erase( h_path )
+		
+		else:
+			for creator in creators:
+				#total_qty += 1
+				#_busy_qty += 1
+				var args: Array = [self, _voxel_surface, node, creator, scaler, populated_node_paths]
+
+
 func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: bool ):
 	clear()
 	
@@ -49,14 +85,14 @@ func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: b
 		var node: MarchingCubesDualNodeGd = _voxel_surface.get_tree_node( node_ind )
 		var h_path: String = node.hierarchy_path()
 		
-		var has: bool
+		var already_populated: bool
 		if force_all:
-			has = false
+			already_populated = false
 		
 		else:
-			has = _created_instances.has( h_path )
+			already_populated = _created_instances.has( h_path )
 		
-		if has:
+		if already_populated:
 			populated_node_paths.erase( h_path )
 		
 		else:
@@ -241,3 +277,31 @@ func _set_creator( c: Resource ):
 
 func _get_creator():
 	return null
+
+
+
+
+
+
+class AsyncArgsPopulate:
+	var voxel_surface: MarchingCubesDualGd
+	var voxel_node: MarchingCubesDualNodeGd
+	var creator: Resource 
+	var scaler: DistanceScalerBaseRef
+	var populated_node_paths: Dictionary
+	
+	func _init( surf, node, crtr, sc, node_paths ):
+		voxel_surface = surf
+		voxel_node    = node
+		creator       = crtr
+		scaler        = sc
+		populated_node_paths = node_paths
+
+
+
+
+
+
+
+
+
