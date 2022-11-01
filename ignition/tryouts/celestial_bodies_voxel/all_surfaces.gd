@@ -101,16 +101,15 @@ func _sync_update_source_se3( source_se3: Se3Ref ):
 		if need_rescale:
 			_node_size_strategy.focal_point = _rebuild_strategy.get_focal_point_rescale()
 	
-	if synchronous_update:
-		if need_rebuild:
-			# If needed rebuild, rebuild voxel surface and apply to meshes.
-			var data: Array = _rebuild( source_se3 )
-			_rebuild_finished( data )
-		
-		# Else only apply to meshes without applying to the surface.
-		if need_rebuild or need_rescale:
-			_rescale( source_se3 )
-			_rescale_finished()
+	if need_rebuild:
+		# If needed rebuild, rebuild voxel surface and apply to meshes.
+		var data: Array = _rebuild( source_se3 )
+		_rebuild_finished( data )
+	
+	# Else only apply to meshes without applying to the surface.
+	if need_rebuild or need_rescale:
+		_rescale( source_se3 )
+		_rescale_finished()
 	
 
 

@@ -15,9 +15,17 @@ var _rand: IgnRandomGd = null
 var _mc_mutex: Mutex = null
 var _total_qty_left: int = 0
 
+# Need to set this one up in _ready().
+var _voxel_surface: MarchingCubesDualGd = null
+
 func _init():
 	_rand = IgnRandomGd.new()
 	_mc_mutex = Mutex.new()
+
+
+func _ready():
+	var parent: Spatial = get_parent()
+	_voxel_surface = parent.get_voxel_surface()
 
 
 func _exit_tree():
@@ -33,15 +41,12 @@ func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: b
 	for key in _created_instances:
 		populated_node_paths[key] = true
 	
-	var parent: Spatial = get_parent()
-	var cubes: MarchingCubesDualGd = parent.get_voxel_surface()
-	
-	cubes.source_se3 = Se3Ref.new()
+	#_voxel_surface.source_se3 = Se3Ref.new()
 	var at: Vector3  = se3.r
-	var node_indices: Array = cubes.query_close_nodes( at, fill_dist, fill_node_size )
+	var node_indices: Array = _voxel_surface.query_close_nodes( at, fill_dist, fill_node_size )
 	var total_qty: int = 0
 	for node_ind in node_indices:
-		var node: MarchingCubesDualNodeGd = cubes.get_tree_node( node_ind )
+		var node: MarchingCubesDualNodeGd = _voxel_surface.get_tree_node( node_ind )
 		var h_path: String = node.hierarchy_path()
 		
 		var has: bool
@@ -58,12 +63,12 @@ func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: b
 			for creator in creators:
 				#total_qty += 1
 				#_busy_qty += 1
-				var args: Array = [self, cubes, node, creator, scaler, populated_node_paths]
+				var args: Array = [self, _voxel_surface, node, creator, scaler, populated_node_paths]
 				if false:
-					WorkersPool.start_with_args( self, "_populate_node", "_populate_node_callback", args )
+					WorkersPool.start_with_args( self, "_async_populate_node_worker", "_async_populate_node_worker_finished", args )
 				else:
-					var ret: Array = _populate_node( self, cubes, node, creator, scaler, populated_node_paths )
-					_populate_node_callback( ret )
+					var ret: Array = _async_populate_node_worker( self, _voxel_surface, node, creator, scaler, populated_node_paths )
+					_async_populate_node_worker_finished( ret )
 	
 	_total_qty_left = total_qty
 	
@@ -83,10 +88,10 @@ func update_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 		var args: Array = [ items, voxels, source_se3, scaler ]
 		#_busy_qty += 1
 		if false:
-			WorkersPool.start_with_args( self, "_update_view_point", "_update_view_point_finished", args )
+			WorkersPool.start_with_args( self, "_async_update_view_point_worker", "_async_update_view_point_worker_finished", args )
 		else:
-			var ret: Array = _update_view_point( items, voxels, source_se3, scaler )
-			_update_view_point_finished( ret )
+			var ret: Array = _async_update_view_point_worker( items, voxels, source_se3, scaler )
+			_async_update_view_point_worker_finished( ret )
 	
 	return true
 
@@ -104,9 +109,6 @@ func clear():
 	return true
 
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
 
 
 
@@ -114,7 +116,7 @@ func _ready():
 
 
 
-func _populate_node( parent: Spatial, cubes: MarchingCubesDualGd, node: MarchingCubesDualNodeGd, creator: Resource, scaler: DistanceScalerBaseRef, populated_node_paths: Dictionary ):
+func _async_populate_node_worker( parent: Spatial, cubes: MarchingCubesDualGd, node: MarchingCubesDualNodeGd, creator: Resource, scaler: DistanceScalerBaseRef, populated_node_paths: Dictionary ):
 	_mc_mutex.lock()
 	var s: String = node.hash()
 	_mc_mutex.unlock()
@@ -170,7 +172,7 @@ func _populate_node( parent: Spatial, cubes: MarchingCubesDualGd, node: Marching
 	return [ parent, created_instances, node, populated_node_paths ]
 
 
-func _populate_node_callback( data: Array ):
+func _async_populate_node_worker_finished( data: Array ):
 	var parent: Spatial                  = data[0]
 	var created_instances: Array         = data[1]
 	var node: MarchingCubesDualNodeGd    = data[2]
@@ -209,7 +211,7 @@ func _populate_node_callback( data: Array ):
 
 
 
-func _update_view_point( items: Array, voxels: MarchingCubesDualGd, source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+func _async_update_view_point_worker( items: Array, voxels: MarchingCubesDualGd, source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	for item in items:
 		var s: Spatial   = item as Spatial
 		var se3: Se3Ref  = s.get_meta( "se3" )
@@ -220,7 +222,7 @@ func _update_view_point( items: Array, voxels: MarchingCubesDualGd, source_se3: 
 
 
 
-func _update_view_point_finished( items: Array ):
+func _async_update_view_point_worker_finished( items: Array ):
 	for item in items:
 		var t: Transform = item.get_meta( "new_transform" )
 		item.transform = t
