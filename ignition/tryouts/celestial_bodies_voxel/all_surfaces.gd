@@ -24,10 +24,13 @@ var _async_requested_rescale: bool = false
 var _async_se3: Se3Ref     = null
 var _async_workers_qty: int = 0
 
+var async_foliage_ready: bool = true
+
 
 func _ready():
 	_async_se3 = Se3Ref.new()
-	_async_workers_qty = 0
+	_async_workers_qty  = 0
+	async_foliage_ready = true
 
 	_enumerate_surfaces()
 	

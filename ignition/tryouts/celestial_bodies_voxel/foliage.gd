@@ -13,14 +13,17 @@ export(float) var fill_node_size = 100.0
 var _created_instances: Dictionary = {}
 var _rand: IgnRandomGd = null
 var _mc_mutex: Mutex = null
-var _total_qty_left: int = 0
+var _async_workers_qty: int = 0
 
 # Need to set this one up in _ready().
 var _voxel_surface: MarchingCubesDualGd = null
 
+var all_surfaces: Spatial = null
+
 func _init():
-	_rand = IgnRandomGd.new()
-	_mc_mutex = Mutex.new()
+	_rand        = IgnRandomGd.new()
+	_mc_mutex    = Mutex.new()
+	all_surfaces = null
 
 
 func _ready():
@@ -34,19 +37,21 @@ func _exit_tree():
 
 
 
-func async_request_population_update( at_in_source: Vector3, scaler: DistanceScalerBaseRef ):
+func async_update_population( all_surfaces: Node, at_in_source: Vector3, scaler: DistanceScalerBaseRef ):
 	clear()
 	
 	var force_all: bool = true
-
+	
 	var populated_node_paths: Dictionary = {}
 	for key in _created_instances:
 		populated_node_paths[key] = true
 	
 	#_voxel_surface.source_se3 = Se3Ref.new()
 	var node_indices: Array = _voxel_surface.query_close_nodes( at_in_source, fill_dist, fill_node_size )
-	var total_qty: int = 0
-
+	
+	all_surfaces.async_foliage_ready = false
+	_async_workers_qty               = 0
+	
 	for node_ind in node_indices:
 		var node: MarchingCubesDualNodeGd = _voxel_surface.get_tree_node( node_ind )
 		var h_path: String = node.hierarchy_path()
@@ -58,60 +63,50 @@ func async_request_population_update( at_in_source: Vector3, scaler: DistanceSca
 		else:
 			already_populated = _created_instances.has( h_path )
 		
-		if already_populated:
-			populated_node_paths.erase( h_path )
-		
-		else:
-			for creator in creators:
-				#total_qty += 1
-				#_busy_qty += 1
-				var args: Array = [self, _voxel_surface, node, creator, scaler, populated_node_paths]
-
-
-func update_population( se3: Se3Ref, scaler: DistanceScalerBaseRef, force_all: bool ):
-	clear()
-	
-	self.transform = Transform.IDENTITY
-
-	var populated_node_paths: Dictionary = {}
-	for key in _created_instances:
-		populated_node_paths[key] = true
-	
-	#_voxel_surface.source_se3 = Se3Ref.new()
-	var at: Vector3  = se3.r
-	var node_indices: Array = _voxel_surface.query_close_nodes( at, fill_dist, fill_node_size )
-	var total_qty: int = 0
-	for node_ind in node_indices:
-		var node: MarchingCubesDualNodeGd = _voxel_surface.get_tree_node( node_ind )
-		var h_path: String = node.hierarchy_path()
-		
-		var already_populated: bool
-		if force_all:
-			already_populated = false
-		
-		else:
-			already_populated = _created_instances.has( h_path )
 		
 		if already_populated:
 			populated_node_paths.erase( h_path )
 		
 		else:
 			for creator in creators:
-				#total_qty += 1
-				#_busy_qty += 1
-				var args: Array = [self, _voxel_surface, node, creator, scaler, populated_node_paths]
-				if false:
-					WorkersPool.start_with_args( self, "_async_populate_node_worker", "_async_populate_node_worker_finished", args )
-				else:
-					var ret: Array = _async_populate_node_worker( self, _voxel_surface, node, creator, scaler, populated_node_paths )
-					_async_populate_node_worker_finished( ret )
-	
-	_total_qty_left = total_qty
-	
-	return true
+				#var args: Array = [self, _voxel_surface, node, creator, scaler, populated_node_paths]
+				var data: AsyncPopulationUpdataData = AsyncPopulationUpdataData.new()
+				data.foliage       = self
+				data.voxel_surface = _voxel_surface
+				data.voxel_node    = node
+				data.asset_creator = creator
+				data.scaler        = scaler
+				data.populated_node_paths = populated_node_paths
+				
+				WorkersPool.start_with_arg( self, "_async_populate_node_worker", "_async_populate_node_worker_finished", data )
+				_async_workers_qty += 1
 
 
-func update_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+
+
+class AsyncPopulationUpdataData:
+	var all_surfaces: Node
+	var foliage: Spatial
+	var voxel_surface: MarchingCubesDualGd
+	var voxel_node: MarchingCubesDualNodeGd
+	var asset_creator: Resource
+	var scaler: DistanceScalerBaseRef
+	var populated_node_paths: Dictionary
+	
+	var created_instances: Array
+
+
+
+class AsyncViewPointData:
+	var source_se3: Se3Ref
+	var scaler: DistanceScalerBaseRef
+	var voxel_surface: MarchingCubesDualGd
+	var items: Array
+
+
+
+
+func async_update_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	#if _busy_qty != 0:
 	#	return false
 	
@@ -119,15 +114,25 @@ func update_view_point( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	var voxels: MarchingCubesDualGd = parent.get_voxel_surface()
 	voxels.source_se3 = source_se3
 	
+	all_surfaces.async_foliage_ready = false
+	_async_workers_qty = 0
+	
 	for h_path in _created_instances:
+		_async_workers_qty += 1
+
 		var items: Array = _created_instances[h_path]
 		var args: Array = [ items, voxels, source_se3, scaler ]
-		#_busy_qty += 1
-		if false:
-			WorkersPool.start_with_args( self, "_async_update_view_point_worker", "_async_update_view_point_worker_finished", args )
+		var data: AsyncViewPointData = AsyncViewPointData.new()
+		data.voxel_surface = _voxel_surface
+		data.items         = items
+		data.source_se3    = source_se3
+		data.scaler        = scaler
+		
+		if true:
+			WorkersPool.start_with_arg( self, "_async_update_view_point_worker", "_async_update_view_point_worker_finished", data )
 		else:
-			var ret: Array = _async_update_view_point_worker( items, voxels, source_se3, scaler )
-			_async_update_view_point_worker_finished( ret )
+			var ret: Array = _async_update_view_point_worker( data )
+			_async_update_view_point_worker_finished( data )
 	
 	return true
 
@@ -152,19 +157,23 @@ func clear():
 
 
 
-func _async_populate_node_worker( parent: Spatial, cubes: MarchingCubesDualGd, node: MarchingCubesDualNodeGd, creator: Resource, scaler: DistanceScalerBaseRef, populated_node_paths: Dictionary ):
+func _async_populate_node_worker( data: AsyncPopulationUpdataData ):
+	var creator: Resource                   = data.asset_creator
+	var scaler: DistanceScalerBaseRef       = data.scaler
+	var voxel_node: MarchingCubesDualNodeGd = data.voxel_node
+	
 	_mc_mutex.lock()
-	var s: String = node.hash()
+	var s: String = voxel_node.hash()
 	_mc_mutex.unlock()
 	var rand: IgnRandomGd = IgnRandomGd.new()
 	rand.seed = s
 	
-	var h_path: String = node.hierarchy_path()
+	var h_path: String = voxel_node.hierarchy_path()
 	print( "entered node ", h_path )
 	
 	_mc_mutex.lock()
-	var center: Vector3 = node.center_vector()
-	var sz: float       = node.node_size()
+	var center: Vector3 = voxel_node.center_vector()
+	var sz: float       = voxel_node.node_size()
 	_mc_mutex.unlock()
 	
 	var created_instances: Array = []
@@ -179,7 +188,7 @@ func _async_populate_node_worker( parent: Spatial, cubes: MarchingCubesDualGd, n
 		var c: Vector3 = dr + center
 		
 		_mc_mutex.lock()
-		var ret: Array = node.intersect_with_segment( c, Vector3.ZERO )
+		var ret: Array = voxel_node.intersect_with_segment( c, Vector3.ZERO )
 		_mc_mutex.unlock()
 		
 		var intersects: bool = ret[0]
@@ -190,36 +199,38 @@ func _async_populate_node_worker( parent: Spatial, cubes: MarchingCubesDualGd, n
 		var norm: Vector3 = ret[2]
 		
 		_mc_mutex.lock()
-		var se3: Se3Ref = node.se3_in_point( at, true )
+		var se3: Se3Ref = voxel_node.se3_in_point( at, true )
 		_mc_mutex.unlock()
 		
 		var p: float = creator.probability( se3, norm )
-		var rand_p: float = rand.floating_point_closed()
+		var rand_p: float = voxel_node.floating_point_closed()
 		var create: bool = (rand_p < p)
 		if not create:
 			continue
 		
-		var instance: Spatial = creator.create( node, se3, norm, rand, scaler )
+		var instance: Spatial = creator.create( voxel_node, se3, norm, rand, scaler )
 		instance.set_meta( "se3", se3 )
 		#print( "created ", instance )
 		created_instances.push_back( instance )
 	
 	print( "left node ", h_path )
-	return [ parent, created_instances, node, populated_node_paths ]
+	return data
 
 
-func _async_populate_node_worker_finished( data: Array ):
-	var parent: Spatial                  = data[0]
-	var created_instances: Array         = data[1]
-	var node: MarchingCubesDualNodeGd    = data[2]
-	var populated_node_paths: Dictionary = data[3]
+#AsyncPopulationUpdataData
+#func _async_populate_node_worker_finished( data: Array ):
+func _async_populate_node_worker_finished( data: AsyncPopulationUpdataData ):
+	var foliage: Spatial                    = data.foliage
+	var created_instances: Array            = data.created_instances
+	var voxel_node: MarchingCubesDualNodeGd = data.voxel_node
+	var populated_node_paths: Dictionary    = data.populated_node_paths
 	
-	var h_path: String = node.hierarchy_path()
+	var h_path: String = voxel_node.hierarchy_path()
 	print( "callback for node ", h_path )
 	
 	for inst in created_instances:
 		var t: Transform = inst.transform
-		parent.add_child( inst )
+		foliage.add_child( inst )
 		inst.transform = t
 
 	var has: bool = _created_instances.has( h_path )
@@ -230,8 +241,8 @@ func _async_populate_node_worker_finished( data: Array ):
 		insts += created_instances
 		_created_instances[h_path] = insts
 	
-	_total_qty_left -= 1
-	if _total_qty_left <= 0:
+	_async_workers_qty -= 1
+	if _async_workers_qty <= 0:
 		for key in populated_node_paths:
 			has = _created_instances.has( key )
 			if has:
@@ -241,13 +252,16 @@ func _async_populate_node_worker_finished( data: Array ):
 						inst.queue_free()
 				# Also delete this array from the dictionaty of populated nodes.
 				_created_instances.erase( key )
-				
+		
+		all_surfaces.async_foliage_ready = true
 	#_busy_qty -= 1
 
 
 
 
-func _async_update_view_point_worker( items: Array, voxels: MarchingCubesDualGd, source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+func _async_update_view_point_worker( data: AsyncViewPointData ):
+	var items: Array = data.items
+	
 	for item in items:
 		var s: Spatial   = item as Spatial
 		var se3: Se3Ref  = s.get_meta( "se3" )
@@ -258,12 +272,17 @@ func _async_update_view_point_worker( items: Array, voxels: MarchingCubesDualGd,
 
 
 
-func _async_update_view_point_worker_finished( items: Array ):
+func _async_update_view_point_worker_finished( data: AsyncViewPointData ):
+	var items: Array = data.items
+	
 	for item in items:
 		var t: Transform = item.get_meta( "new_transform" )
 		item.transform = t
 	
-	#_busy_qty -= 1
+	_async_workers_qty -= 1
+	if _async_workers_qty <= 0:
+		all_surfaces.async_foliage_ready = true
+
 
 
 
@@ -282,20 +301,6 @@ func _get_creator():
 
 
 
-
-class AsyncArgsPopulate:
-	var voxel_surface: MarchingCubesDualGd
-	var voxel_node: MarchingCubesDualNodeGd
-	var creator: Resource 
-	var scaler: DistanceScalerBaseRef
-	var populated_node_paths: Dictionary
-	
-	func _init( surf, node, crtr, sc, node_paths ):
-		voxel_surface = surf
-		voxel_node    = node
-		creator       = crtr
-		scaler        = sc
-		populated_node_paths = node_paths
 
 
 
