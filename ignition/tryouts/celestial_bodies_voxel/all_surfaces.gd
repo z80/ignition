@@ -16,6 +16,7 @@ var _node_size_strategy: VolumeNodeSizeStrategyGd
 
 var _surfaces: Array = []
 var _foliage: Spatial = null
+var _foliage_surface_index: int = -1
 
 # For async run count how many workers running and 
 # if zero, re-run with the new se3.
@@ -67,6 +68,7 @@ func _enumerate_surfaces():
 		var ch_qty: int = ch.get_child_count()
 		if ch_qty > 0:
 			_foliage = ch.get_child( 0 )
+			_foliage_surface_index = i
 
 
 func update_source_se3( source_se3: Se3Ref ):
@@ -201,12 +203,20 @@ func _async_rebuild_start( source_se3: Se3Ref ):
 	_async_requested_rebuild = false
 	_async_workers_qty = qty
 
-
 	var data: Array = []
 	for i in range(qty):
 		var surf: Node = _surfaces[i]
 		var ad: AsyncData = AsyncData.new( source_se3, _node_size_strategy, scaler, surf )
+		ad.surface_index = i
+		
+#		if i == _foliage_surface_index:
+#			var se3_at_in_source: Se3Ref = source_se3.inverse()
+#			var at_in_source: Vector3 = se3_at_in_source.r
+#			var foliage_data = _foliage.async_update_population_prepare( self, at_in_source, scaler )
+#			ad.foliage_data = foliage_data
+		
 		WorkersPool.push_back_with_arg( self, "_async_rebuild_worker", "_async_rebuild_worker_finished", ad )
+	
 
 
 
@@ -216,6 +226,11 @@ func _async_rebuild_worker( ad: AsyncData ):
 	var node_size_strategy: VolumeNodeSizeStrategyGd = ad.node_size_strategy
 	var scaler: DistanceScalerBaseRef = ad.scaler
 	ad.callback_data = surf.rebuild_surface( source_se3, node_size_strategy, scaler )
+	
+#	var worker_index: int = ad.surface_index
+#	if worker_index == _foliage_surface_index:
+#		var foliage_data = ad.foliage_data
+#		_foliage.async_populate_node_worker( foliage_data )
 	return ad
 
 
@@ -225,6 +240,19 @@ func _async_rebuild_worker_finished( ad: AsyncData ):
 	var args: Array = ad.callback_data
 	surf.rebuild_surface_finished( args )
 	_async_workers_qty -= 1
+	
+	var worker_index: int = ad.surface_index
+	if worker_index == _foliage_surface_index:
+		var source_se3: Se3Ref = ad.se3
+		var scaler: DistanceScalerBaseRef = ad.scaler
+		var se3_at_in_source: Se3Ref = source_se3.inverse()
+		var at_in_source: Vector3 = se3_at_in_source.r
+		var foliage_data = _foliage.async_update_population_prepare( self, at_in_source, scaler )
+		ad.foliage_data = foliage_data
+		
+		_foliage.async_populate_node_worker( foliage_data )
+		
+		_foliage.async_populate_node_worker_finished( foliage_data )
 	
 	if _async_workers_qty == 0:
 		_async_requested_rescale = true
@@ -250,6 +278,11 @@ func _async_rescale_start( source_se3: Se3Ref ):
 	for i in range(qty):
 		var surf: Node = _surfaces[i]
 		var ad: AsyncData = AsyncData.new( source_se3, _node_size_strategy, scaler, surf )
+		ad.surface_index = i
+#		if i == _foliage_surface_index:
+#			var foliage_data = _foliage.async_update_view_point_prepare( source_se3, scaler )
+#			ad.foliage_data = foliage_data
+
 		WorkersPool.push_back_with_arg( self, "_async_rescale_worker", "_async_rescale_worker_finished", ad )
 
 
@@ -260,6 +293,12 @@ func _async_rescale_worker( ad: AsyncData ):
 	var source_se3: Se3Ref = ad.se3
 	var scaler: DistanceScalerBaseRef = ad.scaler
 	surf.rescale_surface( source_se3, scaler )
+	
+#	var surface_index: int = ad.surface_index
+#	if surface_index == _foliage_surface_index:
+#		var foliage_data = ad.foliage_data
+#		_foliage.async_update_view_point_worker( foliage_data )
+	
 	return ad
 
 
@@ -267,6 +306,15 @@ func _async_rescale_worker( ad: AsyncData ):
 func _async_rescale_worker_finished( ad: AsyncData ):
 	var surf: Node = ad.surface
 	surf.rescale_surface_finished()
+
+	var surface_index: int = ad.surface_index
+	if surface_index == _foliage_surface_index:
+		var source_se3: Se3Ref            = ad.se3
+		var scaler: DistanceScalerBaseRef = ad.scaler
+		var foliage_data = _foliage.async_update_view_point_prepare( source_se3, scaler )
+		_foliage.async_update_view_point_worker( foliage_data )
+#		var foliage_data = ad.foliage_data
+		_foliage.async_update_view_point_worker( foliage_data )
 
 	_async_workers_qty -= 1
 
@@ -283,6 +331,9 @@ class AsyncData:
 	
 	var surface: Node
 	var callback_data: Array
+	
+	var surface_index: int
+	var foliage_data
 	
 	func _init( source_se3: Se3Ref, st: VolumeNodeSizeStrategyGd, s: DistanceScalerBaseRef, surf: Node ):
 		se3     = Se3Ref.new()
