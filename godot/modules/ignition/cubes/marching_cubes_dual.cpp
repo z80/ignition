@@ -471,7 +471,7 @@ void MarchingCubesDual::uvs( int material_ind, const std::vector<Vector2> * & re
 		{
 			const Vector3d & v = f.vertices[j];
 			_ret_uvs.push_back( Vector2( v.x_, v.y_ ) );
-			_ret_uv2s.push_back( Vector2( v.y_, v.z_ ) );
+			_ret_uv2s.push_back( Vector2( v.z_, v.z_ ) );
 		}
 	}
 	ret_uvs  = &_ret_uvs;
@@ -500,7 +500,7 @@ void MarchingCubesDual::precompute_scaled_values( int material_ind, const Distan
 			{
 				const Vector3d & v = f.normals[j];
 				_ret_uvs.push_back( Vector2( v.x_, v.y_ ) );
-				_ret_uv2s.push_back( Vector2( v.y_, v.z_ ) );
+				_ret_uv2s.push_back( Vector2( v.z_, v.z_ ) );
 			}
 		}
 	}
@@ -531,7 +531,7 @@ const std::vector<Vector2> & MarchingCubesDual::uv2s() const
 	return _ret_uv2s;
 }
 
-const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler )
+const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d & at, const Float dist, bool in_source )
 {
 	_face_indices_set.clear();
 	_faces_ret.clear();
@@ -565,9 +565,6 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d 
 	node.at   = center_int;
 	node.size = size_int;
 
-	const SE3 scaled_source_se3     = compute_source_se3( scaler );
-	const SE3 inv_scaled_source_se3 = scaled_source_se3.inverse();
-
 	root->query_faces( this, node, _face_indices_set );
 	for ( MaterialsSet::const_iterator it=_face_indices_set.begin(); it!=_face_indices_set.end(); it++ )
 	{
@@ -579,10 +576,7 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d 
 			for ( int i=0; i<3; i++ )
 			{
 				const Vector3d & source_v = nf.vertices[i];
-				const Vector3d world_v  = source_se3 * source_v;
-				const Vector3d scaled_world_v = (scaler != nullptr) ? scaler->scale(world_v) : world_v;
-				const Vector3d scaled_source_v = inv_scaled_source_se3 * scaled_world_v;
-				_faces_ret.push_back( Vector3( scaled_source_v.x_, scaled_source_v.y_, scaled_source_v.z_ ) );
+				_faces_ret.push_back( Vector3( source_v.x_, source_v.y_, source_v.z_ ) );
 			}
 		}
 		else
@@ -591,8 +585,7 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d 
 			{
 				const Vector3d & source_v = nf.vertices[i];
 				const Vector3d world_v  = source_se3 * source_v;
-				const Vector3d scaled_world_v = (scaler != nullptr) ? scaler->scale(world_v) : world_v;
-				_faces_ret.push_back(  Vector3( scaled_world_v.x_, scaled_world_v.y_, scaled_world_v.z_ ) );
+				_faces_ret.push_back(  Vector3( world_v.x_, world_v.y_, world_v.z_ ) );
 			}
 		}
 	}

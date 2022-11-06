@@ -180,7 +180,7 @@ public:
 
 
 
-    const std::vector<Vector3> & collision_faces( const Vector3d & at, const Float dist, bool in_source, const DistanceScalerBase * scaler = nullptr );
+    const std::vector<Vector3> & collision_faces( const Vector3d & at, const Float dist, bool in_source );
 
     Transform compute_source_transform( const DistanceScalerBase * scaler = nullptr) const;
 	SE3 compute_source_se3( const DistanceScalerBase * scaler = nullptr) const;
