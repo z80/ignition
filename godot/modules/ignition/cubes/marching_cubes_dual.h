@@ -146,7 +146,7 @@ public:
     bool subdivide_source( Float bounding_radius, VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );
 
 	const std::vector<int> & query_close_nodes( const Vector3d & at_in_source, Float dist, Float max_size );
-	Vector3d center_direction( const Vector3d & at, bool in_source ) const;
+	Vector3d center_direction( const Vector3d & at ) const;
 	MarchingCubesDualNode * get_tree_node( int ind );
 	bool point_inside_node( int node_ind, const Vector3d & at );
 
@@ -160,8 +160,8 @@ public:
 	MarchingCubesDualNode * create_node();
 	MarchingCubesDualCell * create_dual_cell();
 
-	SE3 se3_in_point( const Vector3d & at, bool in_source ) const;
-	SE3 asset_se3( const SE3 & asset_at, bool result_in_source, const DistanceScalerBase * scaler ) const;
+	SE3 se3_in_point( const Vector3d & at ) const;
+	SE3 asset_se3( const SE3 & asset_at, const DistanceScalerBase * scaler ) const;
 
 
     const std::set<int>        & materials() const;

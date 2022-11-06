@@ -15,10 +15,10 @@ void MarchingCubesDualNodeGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("contains_point", "at"),                   &MarchingCubesDualNodeGd::contains_point,         Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("center_vector"),                          &MarchingCubesDualNodeGd::center_vector,          Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("node_size"),                              &MarchingCubesDualNodeGd::node_size,              Variant::REAL );
-	ClassDB::bind_method( D_METHOD("se3_in_point", "at", "in_source"),        &MarchingCubesDualNodeGd::se3_in_point,           Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("se3_in_point", "at"),                     &MarchingCubesDualNodeGd::se3_in_point,           Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("transform_in_point", "at"),               &MarchingCubesDualNodeGd::transform_in_point,     Variant::TRANSFORM );
 	ClassDB::bind_method( D_METHOD("hash"),                                   &MarchingCubesDualNodeGd::hash,                   Variant::STRING );
-	ClassDB::bind_method( D_METHOD("asset_transform", "se3", "result_in_source", "scaler"),
-		                                                                      &MarchingCubesDualNodeGd::asset_transform,        Variant::TRANSFORM );
+	ClassDB::bind_method( D_METHOD("asset_transform", "se3", "scaler"),       &MarchingCubesDualNodeGd::asset_transform,        Variant::TRANSFORM );
 	ClassDB::bind_method( D_METHOD("at"),                                     &MarchingCubesDualNodeGd::at,                     Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("size"),                                   &MarchingCubesDualNodeGd::size,                   Variant::INT );
 }
@@ -125,7 +125,7 @@ real_t MarchingCubesDualNodeGd::node_size() const
 	return ret;
 }
 
-Ref<Se3Ref> MarchingCubesDualNodeGd::se3_in_point( const Vector3 & at, bool in_source ) const
+Ref<Se3Ref> MarchingCubesDualNodeGd::se3_in_point( const Vector3 & at ) const
 {
 	Ref<Se3Ref> se3;
 	se3.instance();
@@ -136,11 +136,11 @@ Ref<Se3Ref> MarchingCubesDualNodeGd::se3_in_point( const Vector3 & at, bool in_s
 	}
 
 	const Vector3d at_d( at.x, at.y, at.z );
-	se3->se3 = cubes->se3_in_point( at_d, in_source );
+	se3->se3 = cubes->se3_in_point( at_d );
 	return se3;
 }
 
-Transform MarchingCubesDualNodeGd::transform_in_point( const Vector3 & at, bool in_source ) const
+Transform MarchingCubesDualNodeGd::transform_in_point( const Vector3 & at ) const
 {
 	if ( ( cubes == nullptr ) || ( node == nullptr ) )
 	{
@@ -148,7 +148,7 @@ Transform MarchingCubesDualNodeGd::transform_in_point( const Vector3 & at, bool 
 	}
 
 	const Vector3d at_d( at.x, at.y, at.z );
-	const SE3 se3 = cubes->se3_in_point( at_d, in_source );
+	const SE3 se3 = cubes->se3_in_point( at_d );
 	const Transform t( Basis( Quat( se3.q_.x_, se3.q_.y_, se3.q_.z_, se3.q_.w_ ) ), Vector3( se3.r_.x_, se3.r_.y_, se3.r_.z_ ) );
 	return t;
 }
@@ -160,7 +160,7 @@ String MarchingCubesDualNodeGd::hash() const
 	return s_hash;
 }
 
-Transform MarchingCubesDualNodeGd::asset_transform( const Ref<Se3Ref> & asset_se3, bool result_in_source, const Ref<DistanceScalerRef> & scaler ) const
+Transform MarchingCubesDualNodeGd::asset_transform( const Ref<Se3Ref> & asset_se3, const Ref<DistanceScalerRef> & scaler ) const
 {
 	if ( ( cubes == nullptr ) || ( node == nullptr ) )
 	{
@@ -173,7 +173,7 @@ Transform MarchingCubesDualNodeGd::asset_transform( const Ref<Se3Ref> & asset_se
 		s = &(scaler->scaler);
 	else
 		s = nullptr;
-	const SE3 ret_se3 = cubes->asset_se3( se3, result_in_source, s );
+	const SE3 ret_se3 = cubes->asset_se3( se3, s );
 	const Transform t = ret_se3.transform();
 
 	return t;

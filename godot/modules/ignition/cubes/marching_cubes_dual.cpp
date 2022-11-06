@@ -164,17 +164,13 @@ const std::vector<int> & MarchingCubesDual::query_close_nodes( const Vector3d & 
 	return _octree_node_indices_result;
 }
 
-Vector3d MarchingCubesDual::center_direction( const Vector3d & at, bool in_source ) const
+Vector3d MarchingCubesDual::center_direction( const Vector3d & at ) const
 {
 	const Vector3d full = (source_se3.r_ - at);
 	const Float    L    = full.Length();
 
 	const Vector3d a = ( L > 0.00001 ) ? full/L : full;
-	if ( in_source )
-		return a;
-
-	const Vector3d aw = inverted_source_se3.q_ * a;
-	return aw;
+	return a;
 }
 
 MarchingCubesDualNode * MarchingCubesDual::get_tree_node( int ind )
@@ -354,14 +350,11 @@ MarchingCubesDualCell * MarchingCubesDual::create_dual_cell()
 	return cell;
 }
 
-SE3 MarchingCubesDual::se3_in_point( const Vector3d & at, bool in_source ) const
+SE3 MarchingCubesDual::se3_in_point( const Vector3d & at ) const
 {
-	const SE3 & se3     = source_se3;
-	const SE3 & inv_se3 = inverted_source_se3;
-
-	const Vector3d at_s       = in_source ? at : (se3.q_ * at + se3.r_);
-	const Vector3d up         = in_source ? ( at_s / at_s.Length() ) : inv_se3.q_ * ( at_s / at_s.Length() );
-	const Vector3d up_default = in_source ? Vector3d( 0.0, 1.0, 0.0 ) : inv_se3.q_ * Vector3d( 0.0, 1.0, 0.0 );
+	const Vector3d at_s       = at;
+	const Vector3d up         = ( at_s / at_s.Length() );
+	const Vector3d up_default = Vector3d( 0.0, 1.0, 0.0 );
 	const Quaterniond q       = Quaterniond( up_default, up );
 
 	SE3 ret;
@@ -371,14 +364,9 @@ SE3 MarchingCubesDual::se3_in_point( const Vector3d & at, bool in_source ) const
 	return ret;
 }
 
-SE3 MarchingCubesDual::asset_se3( const SE3 & asset_at, bool result_in_source, const DistanceScalerBase * scaler ) const
+SE3 MarchingCubesDual::asset_se3( const SE3 & asset_at, const DistanceScalerBase * scaler ) const
 {
 	const SE3 asset_in_world_se3 = source_se3 * asset_at;
-
-	if ( !result_in_source )
-	{
-		return asset_in_world_se3;
-	}
 
 	const SE3 pt_se3_in_source = this->compute_source_se3( scaler );
 	const SE3 inv_source_se3 = pt_se3_in_source.inverse();

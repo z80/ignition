@@ -35,10 +35,10 @@ func _exit_tree():
 
 
 func async_update_population_prepare( all_surfaces: Node, at_in_source: Vector3, scaler: DistanceScalerBaseRef ):
-	clear()
+	#clear()
 	_get_voxel_surface()
 	
-	var force_all: bool = true
+	var force_all: bool = false
 	
 	var populated_node_paths: Dictionary = {}
 	for key in _created_instances:
@@ -168,7 +168,7 @@ func async_populate_node_worker( data: AsyncPopulationUpdataData ):
 				var norm: Vector3 = ret[2]
 				
 				_mc_mutex.lock()
-				var se3: Se3Ref = voxel_node.se3_in_point( at, true )
+				var se3: Se3Ref = voxel_node.se3_in_point( at )
 				_mc_mutex.unlock()
 				
 				var p: float = creator.probability( se3, norm )
@@ -232,14 +232,16 @@ func async_populate_node_worker_finished( data: AsyncPopulationUpdataData ):
 
 
 func async_update_view_point_worker( data: AsyncViewPointData ):
-	var all_items: Dictionary = data.items
+	var all_items: Dictionary              = data.items
+	var scaler: DistanceScalerBaseRef      = data.scaler
+	var voxel_surface: MarchingCubesDualGd = data.voxel_surface
 	
 	for h_path in all_items:
 		var items: Array = all_items[h_path]
 		for item in items:
 			var s: Spatial   = item as Spatial
 			var se3: Se3Ref  = s.get_meta( "se3" )
-			var t: Transform = Transform.IDENTITY #voxels.asset_transform( se3, true, true, scaler )
+			var t: Transform = voxel_surface.asset_transform( se3, scaler )
 			s.set_meta( "new_transform", t )
 
 

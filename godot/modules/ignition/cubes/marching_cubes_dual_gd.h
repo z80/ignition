@@ -34,12 +34,12 @@ public:
 	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<VolumeNodeSizeStrategyGd> & strategy = Ref<VolumeNodeSizeStrategyGd>() );
 
 	Array query_close_nodes( const Vector3 & at_in_source, real_t dist, real_t max_size );
-	Vector3 center_direction( const Vector3 & at, bool in_source, const Ref<Se3Ref> & src_se3=Ref<Se3Ref>(), const Ref<Se3Ref> & inv_src_se3=Ref<Se3Ref>() ) const;
+	Vector3 center_direction( const Vector3 & at, const Ref<Se3Ref> & src_se3=Ref<Se3Ref>(), const Ref<Se3Ref> & inv_src_se3=Ref<Se3Ref>() ) const;
 	Ref<MarchingCubesDualNodeGd> get_tree_node( int ind );
 
-	Ref<Se3Ref> se3_in_point( const Vector3 & at, bool in_source, const Ref<Se3Ref> & src_se3=Ref<Se3Ref>(), const Ref<Se3Ref> & inv_source_se3=Ref<Se3Ref>() ) const;
-	Ref<Se3Ref> asset_se3( const Ref<Se3Ref> & asset_at, bool result_in_source, const Ref<Se3Ref> & src_se3=Ref<Se3Ref>(), const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
-	Transform   asset_transform( const Ref<Se3Ref> & asset_at, bool result_in_source, const Ref<Se3Ref> & src_se3=Ref<Se3Ref>(), const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
+	Ref<Se3Ref> se3_in_point( const Vector3 & at, const Ref<Se3Ref> & inv_source_se3=Ref<Se3Ref>() ) const;
+	Ref<Se3Ref> asset_se3( const Ref<Se3Ref> & asset_at, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
+	Transform   asset_transform( const Ref<Se3Ref> & asset_at, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
 
 	Array materials_used();
 	// This one computes and applies synchronously.

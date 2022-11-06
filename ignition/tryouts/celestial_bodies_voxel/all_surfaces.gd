@@ -315,6 +315,8 @@ func _async_rescale_worker_finished( ad: AsyncData ):
 		_foliage.async_update_view_point_worker( foliage_data )
 #		var foliage_data = ad.foliage_data
 		_foliage.async_update_view_point_worker( foliage_data )
+		
+		_foliage.async_update_view_point_worker_finished( foliage_data )
 
 	_async_workers_qty -= 1
 
