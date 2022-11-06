@@ -12,3 +12,4 @@ focus_depth = 60.0
 [node name="Surface" parent="." instance=ExtResource( 2 )]
 
 [node name="Foliage" parent="Surface" instance=ExtResource( 1 )]
+fill_node_size = 200.0
