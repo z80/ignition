@@ -12,7 +12,7 @@ export(float) var rescale_depth_rel_tangent = 1.0 / 180.0 * 3.14
 
 
 var _rebuild_strategy: MarchingCubesRebuildStrategyGd = null
-var _node_size_strategy: VolumeNodeSizeStrategyGd
+var _node_size_strategy: VolumeNodeSizeStrategyGd = null
 
 var _surfaces: Array = []
 var _foliage: Spatial = null
@@ -182,11 +182,12 @@ func _async_process():
 	if synchronous_update or (_async_workers_qty != 0):
 		return
 	
-	if _async_requested_rebuild:
+	if _async_requested_rescale:
+		_async_rescale_start( _async_se3 )
+
+	elif _async_requested_rebuild:
 		_async_rebuild_start( _async_se3 )
 	
-	elif _async_requested_rescale:
-		_async_rescale_start( _async_se3 )
 
 
 

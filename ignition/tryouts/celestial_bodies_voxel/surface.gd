@@ -15,6 +15,7 @@ var _voxel_surface: MarchingCubesDualGd   = null
 func _ready():
 	_surface_meshes = []
 	_voxel_surface = MarchingCubesDualGd.new()
+	_voxel_surface.split_precision = 0.001
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
