@@ -203,6 +203,10 @@ func _async_rebuild_start( source_se3: Se3Ref ):
 	
 	_async_requested_rebuild = false
 	_async_workers_qty = qty
+	
+	# Set the focal point.
+	var focal_point_rebuild: Vector3 = _rebuild_strategy.get_focal_point_rebuild()
+	_node_size_strategy.focal_point = focal_point_rebuild
 
 	var data: Array = []
 	for i in range(qty):
@@ -274,6 +278,9 @@ func _async_rescale_start( source_se3: Se3Ref ):
 	_async_requested_rescale = false
 	_async_workers_qty = qty
 
+	# Set the focal point.
+	var focal_point_rescale: Vector3 = _rebuild_strategy.get_focal_point_rescale()
+	_node_size_strategy.focal_point = focal_point_rescale
 
 	var data: Array = []
 	for i in range(qty):
