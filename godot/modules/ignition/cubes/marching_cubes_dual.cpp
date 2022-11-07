@@ -498,7 +498,7 @@ void MarchingCubesDual::precompute_scaled_values( int material_ind, const Distan
 				continue;
 			for ( int j=0; j<3; j++ )
 			{
-				const Vector3d & v = f.normals[j];
+				const Vector3d & v = f.vertices[j];
 				_ret_uvs.push_back( Vector2( v.x_, v.y_ ) );
 				_ret_uv2s.push_back( Vector2( v.z_, v.z_ ) );
 			}
