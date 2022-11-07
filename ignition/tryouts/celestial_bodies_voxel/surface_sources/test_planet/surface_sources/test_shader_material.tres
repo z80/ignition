@@ -17,7 +17,8 @@ varying vec3 norm;
 varying vec3 weight;
 
 void vertex() {
-	vert = vec3(UV.x, UV.y, UV2.y); // * uv_scale;
+	vert = vec3(UV.x, UV.y, UV2.x) * uv_scale;
+	//VERTEX = vec3( UV.x, UV.y, UV2.x ) * 100.0;
 	//vert = VERTEX;
 	float len = length(vert);
 	weight = abs(NORMAL);
@@ -55,5 +56,5 @@ shader_param/albedo = Color( 1, 1, 1, 1 )
 shader_param/specular = 0.5
 shader_param/metallic = 0.0
 shader_param/roughness = 1.0
-shader_param/uv_scale = null
+shader_param/uv_scale = 0.002
 shader_param/texture_albedo = SubResource( 7 )
