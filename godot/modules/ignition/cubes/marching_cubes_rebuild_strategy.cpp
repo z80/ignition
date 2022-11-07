@@ -1,6 +1,8 @@
 
 #include "marching_cubes_rebuild_strategy.h"
 
+// This one is only to make "print_line" available.
+//#include "core/reference.h"
 
 namespace Ign
 {
@@ -37,6 +39,8 @@ bool MarchingCubesRebuildStrategy::need_rebuild( const SE3 & view_point_se3 )
 	const Float d_dist_rel   = camera_dist/planet_radius;
 	const Float d_dist_rel_2 = d_dist_rel*d_dist_rel;
 	const Float focal_dist   = 2.0*(planet_radius - height) / ( 1.0 + d_dist_rel_2 );
+
+	//print_line( String( "focal depth: " ) + itos( planet_radius - focal_dist ) );
 
 	const Vector3d focal_point   = camera_r * (focal_dist / camera_dist);
 	const Vector3d d_focal_point = focal_point - focal_point_rebuild;

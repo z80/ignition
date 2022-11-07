@@ -199,7 +199,7 @@ func async_populate_node_worker_finished( data: AsyncPopulationUpdataData ):
 	
 	for voxel_node in voxel_nodes:
 		var h_path: String = voxel_node.hierarchy_path()
-		print( "callback for node ", h_path )
+		#print( "callback for node ", h_path )
 		
 		var created_instances: Array = all_created_instances[h_path]
 		for inst in created_instances:
