@@ -1,6 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=5 format=2]
-
-[ext_resource path="res://tryouts/celestial_bodies_voxel/surface_sources/test_planet/surface_sources/shader_material_scaler.tres" type="Material" id=1]
+[gd_resource type="ShaderMaterial" load_steps=4 format=2]
 
 [sub_resource type="Shader" id=8]
 code = "// NOTE: Shader automatically converted from Godot Engine 3.5.stable's SpatialMaterial.
@@ -14,17 +12,57 @@ uniform float metallic;
 uniform float roughness : hint_range(0,1);
 uniform float uv_scale;
 
+
+
+
+uniform mat4 source_tr;
+uniform mat4 inv_scaled_source_tr;
+uniform float plain_dist = 100.0;
+uniform float log_scale  = 1.0;
+
+
+vec3 scale_mesh( vec2 uv, vec2 uv2 )
+{
+	// Scaling in real time.
+	vec3 v = vec3(uv.x + 0.0, uv.y, uv2.x);
+	v = (source_tr * vec4( v, 1.0 ) ).xyz;
+
+	float l = length( v );
+	float extra_dist = l - plain_dist;
+	if ( extra_dist > 0.0 )
+	{
+		float log_dist = log( 1.0 + extra_dist ) * log_scale;
+		float scaled_dist = plain_dist + log_dist;
+		v = v * (scaled_dist / l);
+	}
+
+	v = ( inv_scaled_source_tr * vec4( v, 1.0 ) ).xyz;
+	return v;
+}
+
+
 varying vec3 vert;
 varying vec3 norm;
 varying vec3 weight;
 
-void vertex() {
+void vertex()
+{
+//	vec3 v = VERTEX;
+//	vec3 vert = vec3(v.x + 100.0, v.y, v.z);
+	
+	VERTEX = scale_mesh( UV, UV2 );
+	
+	// Texture weights for assigning materials.
 	vert = vec3(UV.x, UV.y, UV2.x) * uv_scale;
 	//VERTEX = vec3( UV.x, UV.y, UV2.x ) * 100.0;
 	//vert = VERTEX;
 	float len = length(vert);
 	weight = abs(NORMAL);
 }
+
+
+
+
 
 
 
@@ -53,11 +91,14 @@ seamless = true
 noise = SubResource( 6 )
 
 [resource]
-next_pass = ExtResource( 1 )
 shader = SubResource( 8 )
 shader_param/albedo = Color( 1, 1, 1, 1 )
 shader_param/specular = 0.5
 shader_param/metallic = 0.0
 shader_param/roughness = 1.0
 shader_param/uv_scale = 0.002
+shader_param/source_tr = null
+shader_param/inv_scaled_source_tr = null
+shader_param/plain_dist = 100.0
+shader_param/log_scale = 1.0
 shader_param/texture_albedo = SubResource( 7 )

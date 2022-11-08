@@ -80,7 +80,18 @@ func rescale_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	for mi in meshes:
 		mi.visible = false
 	
+	var s: DistanceScalerRef = scaler
+	var plain_dist: float = s.plain_distance
+	var log_scale: float  = s.log_scale
+	var source_tr: Transform = source_se3.transform
+	_voxel_surface.mesh_transform( scaler )
 	var materials: Array = surface_source.materials
+	for m in materials:
+		var sm: ShaderMaterial = m
+		sm.set_shader_param( "plain_dist", plain_dist )
+		sm.set_shader_param( "log_scale", log_scale )
+		sm.set_shader_param( "source_tr", source_tr )
+		sm.set_shader_param( "inv_scaled_source_tr", inv_scaled_source_tr )
 
 	
 	var qty: int = material_inds.size()
