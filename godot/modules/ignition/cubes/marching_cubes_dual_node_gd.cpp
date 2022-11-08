@@ -18,7 +18,7 @@ void MarchingCubesDualNodeGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("se3_in_point", "at"),                     &MarchingCubesDualNodeGd::se3_in_point,           Variant::OBJECT );
 	ClassDB::bind_method( D_METHOD("transform_in_point", "at"),               &MarchingCubesDualNodeGd::transform_in_point,     Variant::TRANSFORM );
 	ClassDB::bind_method( D_METHOD("hash"),                                   &MarchingCubesDualNodeGd::hash,                   Variant::STRING );
-	ClassDB::bind_method( D_METHOD("asset_transform", "se3", "scaler"),       &MarchingCubesDualNodeGd::asset_transform,        Variant::TRANSFORM );
+	ClassDB::bind_method( D_METHOD("asset_transform", "source_se3", "se3", "scaler"), &MarchingCubesDualNodeGd::asset_transform,        Variant::TRANSFORM );
 	ClassDB::bind_method( D_METHOD("at"),                                     &MarchingCubesDualNodeGd::at,                     Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("size"),                                   &MarchingCubesDualNodeGd::size,                   Variant::INT );
 }
@@ -160,20 +160,21 @@ String MarchingCubesDualNodeGd::hash() const
 	return s_hash;
 }
 
-Transform MarchingCubesDualNodeGd::asset_transform( const Ref<Se3Ref> & asset_se3, const Ref<DistanceScalerRef> & scaler ) const
+Transform MarchingCubesDualNodeGd::asset_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_se3, const Ref<DistanceScalerRef> & scaler ) const
 {
 	if ( ( cubes == nullptr ) || ( node == nullptr ) )
 	{
 		return Transform();
 	}
 
-	const SE3 se3 = (asset_se3.ptr() == nullptr) ? SE3() : asset_se3->se3;
+	const SE3 source_se3 = (src_se3.ptr() == nullptr) ? SE3() : src_se3->se3;
+	const SE3 se3        = (asset_se3.ptr() == nullptr) ? SE3() : asset_se3->se3;
 	const DistanceScalerBase * s;
 	if ( scaler.ptr() != nullptr )
 		s = &(scaler->scaler);
 	else
 		s = nullptr;
-	const SE3 ret_se3 = cubes->asset_se3( se3, s );
+	const SE3 ret_se3 = cubes->asset_se3( source_se3, se3, s );
 	const Transform t = ret_se3.transform();
 
 	return t;

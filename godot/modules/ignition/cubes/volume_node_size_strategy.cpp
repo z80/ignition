@@ -47,10 +47,10 @@ Float VolumeNodeSizeStrategy::get_height() const
 
 Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const Float node_size ) const
 {
-	const Float EPS   = 0.0001;
+	const Float min_distance = height * 1.41;
 	const Vector3d a  = node_at - focal_point;
 	const Float abs_a = a.Length();
-	if (abs_a < EPS)
+	if (abs_a <= min_distance)
 		return node_size;
 
 	// Compute intersection point.
@@ -66,7 +66,7 @@ Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const F
 	//const Float surface_dist = std::sqrt( std::sqrt(t) ) * abs_a;
 	const Float surface_dist = t * abs_a;
 
-	Float scale = surface_dist / (height * 1.41);
+	Float scale = surface_dist / min_distance;
 	if (scale < 1.0)
 		scale = 1.0;
 

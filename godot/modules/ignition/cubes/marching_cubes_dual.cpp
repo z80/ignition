@@ -364,11 +364,11 @@ SE3 MarchingCubesDual::se3_in_point( const Vector3d & at ) const
 	return ret;
 }
 
-SE3 MarchingCubesDual::asset_se3( const SE3 & asset_at, const DistanceScalerBase * scaler ) const
+SE3 MarchingCubesDual::asset_se3( const SE3 & src_se3, const SE3 & asset_at, const DistanceScalerBase * scaler ) const
 {
-	const SE3 asset_in_world_se3 = source_se3 * asset_at;
+	const SE3 asset_in_world_se3 = src_se3 * asset_at;
 
-	const SE3 pt_se3_in_source = this->compute_source_se3( scaler );
+	const SE3 pt_se3_in_source = this->compute_source_se3( src_se3, scaler );
 	const SE3 inv_source_se3 = pt_se3_in_source.inverse();
 	const SE3 asset_in_source_se3 = inv_source_se3 * asset_in_world_se3;
 
@@ -386,7 +386,7 @@ const std::vector<Vector3> & MarchingCubesDual::vertices( int material_ind, cons
 	_ret_verts.clear();
 	_ret_verts.reserve(3*qty);
 
-	const SE3 scaled_source_se3 = compute_source_se3( scaler );
+	const SE3 scaled_source_se3 = compute_source_se3( source_se3, scaler );
 	const SE3 inv_scaled_source_se3 = scaled_source_se3.inverse();
 
 	for ( unsigned int i=0; i<qty; i++ )
@@ -595,22 +595,22 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d 
 
 
 
-Transform MarchingCubesDual::compute_source_transform( const DistanceScalerBase * scaler ) const
+Transform MarchingCubesDual::compute_source_transform( const SE3 & src_se3, const DistanceScalerBase * scaler ) const
 {
-	const SE3 se3 = compute_source_se3( scaler );
+	const SE3 se3 = compute_source_se3( src_se3, scaler );
 	const Transform ret = se3.transform();
 	return ret;
 }
 
-SE3 MarchingCubesDual::compute_source_se3( const DistanceScalerBase * scaler ) const
+SE3 MarchingCubesDual::compute_source_se3( const SE3 & src_se3, const DistanceScalerBase * scaler ) const
 {
 	Vector3d o;
 	if (scaler == nullptr)
-		o = source_se3.r_;
+		o = src_se3.r_;
 	else
-		o = scaler->scale( source_se3.r_ );
+		o = scaler->scale( src_se3.r_ );
 
-	SE3 se3( source_se3 );
+	SE3 se3( src_se3 );
 	se3.r_ = o;
 
 	return se3;

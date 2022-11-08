@@ -38,8 +38,8 @@ public:
 	Ref<MarchingCubesDualNodeGd> get_tree_node( int ind );
 
 	Ref<Se3Ref> se3_in_point( const Vector3 & at, const Ref<Se3Ref> & inv_source_se3=Ref<Se3Ref>() ) const;
-	Ref<Se3Ref> asset_se3( const Ref<Se3Ref> & asset_at, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
-	Transform   asset_transform( const Ref<Se3Ref> & asset_at, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
+	Ref<Se3Ref> asset_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
+	Transform   asset_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
 
 	Array materials_used();
 	// This one computes and applies synchronously.
@@ -48,7 +48,7 @@ public:
 	void precompute_scaled_values( int material_index, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	void apply_to_mesh_only( Node * mesh_instance );
 
-	Transform mesh_transform( const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	Transform mesh_transform( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	const PoolVector3Array & collision_faces( const Vector3 & at, real_t dist, bool in_source );
 
 	void set_max_nodes_qty( int qty );

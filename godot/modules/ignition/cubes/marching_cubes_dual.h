@@ -161,7 +161,7 @@ public:
 	MarchingCubesDualCell * create_dual_cell();
 
 	SE3 se3_in_point( const Vector3d & at ) const;
-	SE3 asset_se3( const SE3 & asset_at, const DistanceScalerBase * scaler ) const;
+	SE3 asset_se3( const SE3 & src_se3, const SE3 & asset_at, const DistanceScalerBase * scaler ) const;
 
 
     const std::set<int>        & materials() const;
@@ -182,8 +182,8 @@ public:
 
     const std::vector<Vector3> & collision_faces( const Vector3d & at, const Float dist, bool in_source );
 
-    Transform compute_source_transform( const DistanceScalerBase * scaler = nullptr) const;
-	SE3 compute_source_se3( const DistanceScalerBase * scaler = nullptr) const;
+    Transform compute_source_transform( const SE3 & src_se3, const DistanceScalerBase * scaler = nullptr) const;
+	SE3 compute_source_se3( const SE3 & src_se3, const DistanceScalerBase * scaler = nullptr) const;
 
     Float    node_size_min( const MarchingCubesDualNode * node ) const;
 	Float    node_size_max( const MarchingCubesDualNode * node ) const;
