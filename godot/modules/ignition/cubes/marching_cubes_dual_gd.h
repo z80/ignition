@@ -48,7 +48,8 @@ public:
 	void precompute_scaled_values( int material_index, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	void apply_to_mesh_only( Node * mesh_instance );
 
-	Transform mesh_transform( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	Ref<Se3Ref> compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	Transform compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	const PoolVector3Array & collision_faces( const Vector3 & at, real_t dist, bool in_source );
 
 	void set_max_nodes_qty( int qty );
