@@ -232,6 +232,7 @@ func async_populate_node_worker_finished( data: AsyncPopulationUpdataData ):
 
 
 func async_update_view_point_worker( data: AsyncViewPointData ):
+	var source_se3: Se3Ref                 = data.source_se3
 	var all_items: Dictionary              = data.items
 	var scaler: DistanceScalerBaseRef      = data.scaler
 	var voxel_surface: MarchingCubesDualGd = data.voxel_surface
@@ -241,7 +242,7 @@ func async_update_view_point_worker( data: AsyncViewPointData ):
 		for item in items:
 			var s: Spatial   = item as Spatial
 			var se3: Se3Ref  = s.get_meta( "se3" )
-			var t: Transform = voxel_surface.asset_transform( se3, scaler )
+			var t: Transform = voxel_surface.asset_transform( source_se3, se3, scaler )
 			s.set_meta( "new_transform", t )
 
 
