@@ -80,9 +80,19 @@ func update_source_se3( source_se3: Se3Ref ):
 	
 	var surface: Node = _surfaces[0]
 	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
+	
+	_update_material_properties( source_se3, scaler )
+	
 	var t: Transform = surface.get_root_se3( source_se3, scaler )
 	transform = t
 
+
+func _update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+	var qty: int = _surfaces.size()
+	var data: Array = []
+	for i in range(qty):
+		var surf: Node = _surfaces[i]
+		surf.update_material_properties( source_se3, scaler)
 
 
 func _sync_update_source_se3( source_se3: Se3Ref ):

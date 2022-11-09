@@ -39,33 +39,55 @@ func _get_surface_mesh( ind: int ):
 
 
 func rebuild_surface( source_se3: Se3Ref, strategy: VolumeNodeSizeStrategyGd, scaler: DistanceScalerBaseRef ):
-	var source_radius: float   = surface_source.source_radius
+	var source_radius: float = get_surface_radius()
 	var source: VolumeSourceGd = surface_source.get_source()
 	
-	var ret: Array = _rebuild_surface_worker( source_se3, strategy, source, scaler )
-	
+	_voxel_surface.max_nodes_qty   = 20000000
+	_voxel_surface.source_se3      = source_se3
+	_voxel_surface.split_precision = 0.01
+	var ok: bool = _voxel_surface.subdivide_source( source_radius, source, strategy )
+	var ret: Array = [ok, source_se3, scaler]
+
 	return ret
 
 
 func rebuild_surface_finished( data: Array ):
-	_rebuild_surface_worker_finished( data )
-
-
-func _rebuild_surface_worker( source_se3: Se3Ref, strategy: VolumeNodeSizeStrategyGd, source: VolumeSourceGd, scaler: DistanceScalerBaseRef ):
-	_voxel_surface.max_nodes_qty   = 20000000
-	_voxel_surface.source_se3      = source_se3
-	_voxel_surface.split_precision = 0.01
-	var source_radius: float = get_surface_radius()
-	var ok: bool = _voxel_surface.subdivide_source( source_radius, source, strategy )
-	var ret: Array = [ok, source_se3, scaler]
-	return ret
-
-
-func _rebuild_surface_worker_finished( data: Array ):
 	pass
 
 
 
+func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+	var material_inds: Array = _voxel_surface.materials_used()
+	
+	var meshes: Array = []
+	for ind in material_inds:
+		var mi: MeshInstance = _get_surface_mesh( ind )
+		meshes.push_back( mi )
+	
+	var materials: Array = surface_source.materials
+	
+	var s: DistanceScalerRef = scaler
+	var plain_dist: float = s.plain_distance
+	var log_scale: float  = s.log_scale
+	var source_tr: Transform = source_se3.transform
+	var scaled_source_se3: Se3Ref = _voxel_surface.compute_source_se3( source_se3, scaler )
+	var inv_scaled_source_se3: Se3Ref = scaled_source_se3.inverse()
+	var inv_scaled_source_tr: Transform = inv_scaled_source_se3.transform
+
+	
+	var qty: int = material_inds.size()
+	for i in range(qty):
+		var material_ind: int = material_inds[i]
+		if material_ind < 0:
+			material_ind = 0
+		var mesh_inst: MeshInstance = meshes[i]
+		var sm: ShaderMaterial = mesh_inst.material_override as ShaderMaterial
+		if sm == null:
+			continue
+		sm.set_shader_param( "plain_dist", plain_dist )
+		sm.set_shader_param( "log_scale", log_scale )
+		sm.set_shader_param( "source_tr", source_tr )
+		sm.set_shader_param( "inv_scaled_source_tr", inv_scaled_source_tr )
 
 
 func rescale_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
@@ -83,19 +105,6 @@ func rescale_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	
 	var materials: Array = surface_source.materials
 	
-#	var s: DistanceScalerRef = scaler
-#	var plain_dist: float = s.plain_distance
-#	var log_scale: float  = s.log_scale
-#	var source_tr: Transform = source_se3.transform
-#	_voxel_surface.mesh_transform( scaler )
-#	for m in materials:
-#		var sm: ShaderMaterial = m
-#		sm.set_shader_param( "plain_dist", plain_dist )
-#		sm.set_shader_param( "log_scale", log_scale )
-#		sm.set_shader_param( "source_tr", source_tr )
-#		sm.set_shader_param( "inv_scaled_source_tr", inv_scaled_source_tr )
-
-	
 	var qty: int = material_inds.size()
 	for i in range(qty):
 		var material_ind: int = material_inds[i]
@@ -104,8 +113,9 @@ func rescale_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 		var mesh_inst: MeshInstance = meshes[i]
 		mesh_inst.visible = true
 		mesh_inst.material_override = materials[material_ind]
-
-		_rescale_surface_worker( source_se3, mesh_inst, material_ind, scaler )
+		
+		_voxel_surface.source_se3 = source_se3
+		_voxel_surface.precompute_scaled_values( material_ind, scaler )
 	
 	return true
 
@@ -124,21 +134,11 @@ func rescale_surface_finished():
 		if material_ind < 0:
 			material_ind = 0
 		var mesh_inst: MeshInstance = meshes[i]
-		_rescale_surface_worker_finished( mesh_inst )
+		_voxel_surface.apply_to_mesh_only( mesh_inst )
 
 
 
-func _rescale_surface_worker( source_se3: Se3Ref, mesh_inst: MeshInstance, material_ind: int, scaler: DistanceScalerBaseRef ):
-	print( "_rescale_surface_worker entered" )
-	_voxel_surface.source_se3 = source_se3
-	_voxel_surface.precompute_scaled_values( material_ind, scaler )
-	print( "_rescale_surface_worker left" )
-	return mesh_inst
 
-
-
-func _rescale_surface_worker_finished( mesh_inst: MeshInstance ):
-	_voxel_surface.apply_to_mesh_only( mesh_inst )
 
 
 
