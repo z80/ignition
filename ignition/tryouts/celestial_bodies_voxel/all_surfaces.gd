@@ -72,11 +72,7 @@ func _enumerate_surfaces():
 
 
 func update_source_se3( source_se3: Se3Ref ):
-	if synchronous_update:
-		_sync_update_source_se3( source_se3 )
-	
-	else:
-		_async_update_source_se3( source_se3 )
+	_async_update_source_se3( source_se3 )
 	
 	var surface: Node = _surfaces[0]
 	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
@@ -95,79 +91,6 @@ func _update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBase
 		surf.update_material_properties( source_se3, scaler)
 
 
-func _sync_update_source_se3( source_se3: Se3Ref ):
-	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
-	var surface: Node = _surfaces[0]
-
-	var view_point_se3: Se3Ref = source_se3.inverse()
-	var need_rebuild: bool = _rebuild_strategy.need_rebuild( view_point_se3 )
-	var r: Vector3 = view_point_se3.r
-	DDD.important()
-	DDD.print( "r: " + str( r ), 5.0, "aaa" )
-	if need_rebuild:
-		DDD.print( "need rebuild: " + str( view_point_se3.r ) )
-		_node_size_strategy.focal_point = _rebuild_strategy.get_focal_point_rebuild()
-	
-	var need_rescale: bool
-	if need_rebuild:
-		need_rescale = false
-	else:
-		need_rescale = _rebuild_strategy.need_rescale( view_point_se3 )
-		if need_rescale:
-			_node_size_strategy.focal_point = _rebuild_strategy.get_focal_point_rescale()
-	
-	if need_rebuild:
-		# If needed rebuild, rebuild voxel surface and apply to meshes.
-		var data: Array = _rebuild( source_se3 )
-		_rebuild_finished( data )
-	
-	# Else only apply to meshes without applying to the surface.
-	if need_rebuild or need_rescale:
-		_rescale( source_se3 )
-		_rescale_finished()
-	
-
-
-
-# Rebuild voxel representation and reapply to meshes.
-func _rebuild( source_se3: Se3Ref ):
-	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
-	var qty: int = _surfaces.size()
-	var data: Array = []
-	for i in range(qty):
-		var surf: Node = _surfaces[i]
-		var ret: Array = surf.rebuild_surface( source_se3, _node_size_strategy, scaler )
-		data.push_back( ret )
-	
-#	var point_se3: Se3Ref = source_se3.inverse()
-#	_foliage.update_population( point_se3, scaler, true )
-	return data
-
-
-func _rebuild_finished( data: Array ):
-	var qty: int = _surfaces.size()
-	for i in range(qty):
-		var surf: Node = _surfaces[i]
-		var args: Array = data[i]
-		surf.rebuild_surface_finished( args )
-
-
-
-# Just re-apply to meshes without rebuilding voxel surface.
-func _rescale( source_se3: Se3Ref ):
-	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
-	var qty: int = _surfaces.size()
-	for i in range(qty):
-		var surf: Node = _surfaces[i]
-		surf.rescale_surface( source_se3, scaler )
-#	_foliage.update_view_point( source_se3, scaler )
-
-
-func _rescale_finished():
-	var qty: int = _surfaces.size()
-	for i in range(qty):
-		var surf: Node = _surfaces[i]
-		surf.rescale_surface_finished()
 
 
 
@@ -180,11 +103,11 @@ func _async_update_source_se3( se3: Se3Ref ):
 		_async_requested_rebuild = true
 		_async_rebuild_start( _async_se3 )
 	
-	if not _async_requested_rebuild:
-		var need_rescale: bool = _rebuild_strategy.need_rescale( view_point_se3 )
-		if need_rescale and (not _async_requested_rescale):
-			_async_requested_rescale = need_rescale
-			_async_rescale_start( _async_se3 )
+#	if not _async_requested_rebuild:
+#		var need_rescale: bool = _rebuild_strategy.need_rescale( view_point_se3 )
+#		if need_rescale and (not _async_requested_rescale):
+#			_async_requested_rescale = need_rescale
+#			_async_rescale_start( _async_se3 )
 
 
 
