@@ -7,8 +7,11 @@ namespace Ign
 
 VolumeNodeSizeStrategy::VolumeNodeSizeStrategy()
 {
-	radius      = 1000.0;
-	focal_point = Vector3d( 0.0, 0.0, 0.0 );
+	radius        = 1000.0;
+	focal_point   = Vector3d( 0.0, 0.0, 0.0 );
+
+	max_distance  = 500.0;
+	max_node_size = 100.0;
 }
 
 VolumeNodeSizeStrategy::~VolumeNodeSizeStrategy()
@@ -45,6 +48,26 @@ Float VolumeNodeSizeStrategy::get_height() const
 	return height;
 }
 
+void VolumeNodeSizeStrategy::set_max_distance( Float dist )
+{
+	max_distance = dist;
+}
+
+Float VolumeNodeSizeStrategy::get_max_distance() const
+{
+	return max_distance;
+}
+
+void VolumeNodeSizeStrategy::set_max_node_size( Float sz )
+{
+	max_node_size = sz;
+}
+
+Float VolumeNodeSizeStrategy::get_max_node_size() const
+{
+	return max_node_size;
+}
+
 Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const Float node_size ) const
 {
 	const Float min_distance = height * 1.41;
@@ -60,19 +83,26 @@ Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const F
 	const Float abs_a_2 = abs_a * abs_a;
 	const Float D_4 = b*b + abs_a_2*(radius*radius - focal_point_2);
 	const Float t = ( std::sqrt( D_4 ) - b ) / abs_a_2;
-	//std::cout << "t: " << t << std::endl;
-	//if ( t > 1.0 )
-	//	t *= 10.0;
-	//const Float surface_dist = std::sqrt( std::sqrt(t) ) * abs_a;
+	
+	// Distance from focal point to the projection
+	// point of the node center onto the sphere surface.
 	const Float surface_dist = t * abs_a;
+	if ( surface_dist < min_distance )
+		return node_size;
+	else if ( surface_dist > max_distance )
+	{
+		const Float scale = node_size / max_node_size;
+		const Float scaled_node_size = node_size * scale;
+		return scaled_node_size;
+	}
 
-	Float scale = surface_dist / min_distance;
-	if (scale < 1.0)
-		scale = 1.0;
+	//Float scale = surface_dist / min_distance;
+	//if (scale < 1.0)
+	//	scale = 1.0;
 
-	const Float scaled_node_size = node_size / scale;
+	//const Float scaled_node_size = node_size / scale;
 
-	return scaled_node_size;
+	//return scaled_node_size;
 }
 
 
