@@ -114,8 +114,7 @@ func rescale_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 		mesh_inst.visible = true
 		mesh_inst.material_override = materials[material_ind]
 		
-		_voxel_surface.source_se3 = source_se3
-		_voxel_surface.precompute_scaled_values( material_ind, scaler )
+		_voxel_surface.precompute_scaled_values( source_se3, material_ind, scaler )
 	
 	return true
 

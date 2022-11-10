@@ -27,6 +27,12 @@ public:
 	void set_height( real_t h );
 	real_t get_height() const;
 
+	void set_max_distance( real_t dist );
+	real_t get_max_distance() const;
+
+	void set_max_node_size( real_t sz );
+	real_t get_max_node_size() const;
+
 	real_t local_node_size( const Vector3 & node_at, const real_t node_size ) const;
 
 public:

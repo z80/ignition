@@ -10,6 +10,8 @@ export(float) var rescale_close_dist        = 10.0
 export(float) var rescale_far_tangent       = 10.0 / 180.0 * 3.14
 export(float) var rescale_depth_rel_tangent = 1.0 / 180.0 * 3.14
 
+export(float) var max_node_size = 200.0
+export(float) var max_distance  = 500.0
 
 var _rebuild_strategy: MarchingCubesRebuildStrategyGd = null
 var _node_size_strategy: VolumeNodeSizeStrategyGd = null
@@ -51,6 +53,8 @@ func _ready():
 	
 	_node_size_strategy.radius = radius
 	_node_size_strategy.height = focus_depth
+	_node_size_strategy.max_distance = max_distance
+	_node_size_strategy.max_node_size = max_node_size
 
 
 func _process( delta: float ):

@@ -88,7 +88,9 @@ Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const F
 	// point of the node center onto the sphere surface.
 	const Float surface_dist = t * abs_a;
 	if ( surface_dist < min_distance )
+	{
 		return node_size;
+	}
 	else if ( surface_dist > max_distance )
 	{
 		const Float scale = node_size / max_node_size;
@@ -96,13 +98,10 @@ Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const F
 		return scaled_node_size;
 	}
 
-	//Float scale = surface_dist / min_distance;
-	//if (scale < 1.0)
-	//	scale = 1.0;
-
-	//const Float scaled_node_size = node_size / scale;
-
-	//return scaled_node_size;
+	const Float distant_node_size = node_size + (max_node_size - node_size) * (surface_dist - min_distance) / (max_distance - min_distance);
+	const Float scale             = node_size / distant_node_size;
+	const Float scaled_node_size  = node_size * scale;
+	return scaled_node_size;
 }
 
 
