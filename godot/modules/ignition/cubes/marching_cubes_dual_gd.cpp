@@ -30,9 +30,9 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("asset_transform", "source_se3", "asset_at", "scaler"), &MarchingCubesDualGd::asset_transform,    Variant::TRANSFORM );
 
 	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
-	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
+	ClassDB::bind_method( D_METHOD("apply_to_mesh", "source_se3", "material_ind", "mesh_instance", "scaler"), &MarchingCubesDualGd::apply_to_mesh );
 
-	ClassDB::bind_method( D_METHOD("precompute_scaled_values", "material_index", "scaler"),     &MarchingCubesDualGd::precompute_scaled_values );
+	ClassDB::bind_method( D_METHOD("precompute_scaled_values", "source_se3", "material_index", "scaler"),     &MarchingCubesDualGd::precompute_scaled_values );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh_only", "mesh_instance"),                      &MarchingCubesDualGd::apply_to_mesh_only );
 
 	ClassDB::bind_method( D_METHOD("compute_source_se3", "source_se3", "scaler"),               &MarchingCubesDualGd::compute_source_se3, Variant::TRANSFORM );
@@ -209,8 +209,9 @@ Array MarchingCubesDualGd::materials_used()
 }
 
 
-void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerBaseRef> & scaler )
+void MarchingCubesDualGd::apply_to_mesh( const Ref<Se3Ref> & src_se3, int material_index, Node * mesh_instance, const Ref<DistanceScalerBaseRef> & scaler )
 {
+	const SE3 & source_se3 = src_se3->se3;
 	MeshInstance * mi = Object::cast_to<MeshInstance>(mesh_instance);
 	if (mi == nullptr)
 	{
@@ -225,7 +226,7 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 	else
 		s = scaler_ref->scaler_base;
 
-	const std::vector<Vector3> & verts = cubes.vertices( material_index, s );
+	const std::vector<Vector3> & verts = cubes.vertices( source_se3, material_index, s );
 	const std::vector<Vector3> & norms = cubes.normals( material_index );
 	const std::vector<real_t> & tangs = cubes.tangents( material_index );
 	const std::vector<Vector2> * p_uvs;
@@ -282,8 +283,9 @@ void MarchingCubesDualGd::apply_to_mesh( int material_index, Node * mesh_instanc
 	mi->set_mesh( am );
 }
 
-void MarchingCubesDualGd::precompute_scaled_values( int material_index, const Ref<DistanceScalerBaseRef> & scaler )
+void MarchingCubesDualGd::precompute_scaled_values( const Ref<Se3Ref> & src_se3, int material_index, const Ref<DistanceScalerBaseRef> & scaler )
 {
+	const SE3 & source_se3 = src_se3->se3;
 	const DistanceScalerBaseRef * scaler_ref = scaler.ptr();
 	const DistanceScalerBase * s;
 	if ( scaler_ref == nullptr )
@@ -291,7 +293,7 @@ void MarchingCubesDualGd::precompute_scaled_values( int material_index, const Re
 	else
 		s = scaler_ref->scaler_base;
 
-	cubes.precompute_scaled_values( material_index, s );
+	cubes.precompute_scaled_values( source_se3, material_index, s );
 }
 
 void MarchingCubesDualGd::apply_to_mesh_only( Node * mesh_instance )

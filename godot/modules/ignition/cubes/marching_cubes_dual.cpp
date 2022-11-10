@@ -380,13 +380,13 @@ const std::set<int> & MarchingCubesDual::materials() const
 	return _materials_set;
 }
 
-const std::vector<Vector3> & MarchingCubesDual::vertices( int material_ind, const DistanceScalerBase * scaler )
+const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, int material_ind, const DistanceScalerBase * scaler )
 {
 	const unsigned int qty = _all_faces.size();
 	_ret_verts.clear();
 	_ret_verts.reserve(3*qty);
 
-	const SE3 scaled_source_se3 = compute_source_se3( source_se3, scaler );
+	const SE3 scaled_source_se3 = compute_source_se3( src_se3, scaler );
 	const SE3 inv_scaled_source_se3 = scaled_source_se3.inverse();
 
 	for ( unsigned int i=0; i<qty; i++ )
@@ -478,9 +478,9 @@ void MarchingCubesDual::uvs( int material_ind, const std::vector<Vector2> * & re
 	ret_uv2s = &_ret_uv2s;
 }
 
-void MarchingCubesDual::precompute_scaled_values( int material_ind, const DistanceScalerBase * scaler )
+void MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, int material_ind, const DistanceScalerBase * scaler )
 {
-	vertices( material_ind, scaler );
+	vertices( src_se3, material_ind, scaler );
 	normals( material_ind );
 	tangents( material_ind );
 
