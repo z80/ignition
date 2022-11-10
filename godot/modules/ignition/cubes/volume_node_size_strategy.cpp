@@ -98,8 +98,8 @@ Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const F
 		return scaled_node_size;
 	}
 
-	const Float distant_node_size = node_size + (max_node_size - node_size) * (surface_dist - min_distance) / (max_distance - min_distance);
-	const Float scale             = node_size / distant_node_size;
+	const Float max_scale         = node_size / max_node_size;
+	const Float scale             = 1.0 + (max_scale - 1.0) * (surface_dist - min_distance) / (max_distance - min_distance);
 	const Float scaled_node_size  = node_size * scale;
 	return scaled_node_size;
 }
