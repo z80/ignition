@@ -1,7 +1,7 @@
 
 extends Spatial
 
-export(bool) var synchronous_update = true
+export(bool) var update_disabled = false
 
 # Properties used to initialize strategies.
 export(float) var focus_depth               = 40.0
@@ -11,7 +11,6 @@ export(float) var rescale_far_tangent       = 10.0 / 180.0 * 3.14
 export(float) var rescale_depth_rel_tangent = 1.0 / 180.0 * 3.14
 
 export(float) var max_node_size = 200.0
-export(float) var max_distance  = 500.0
 
 var _rebuild_strategy: MarchingCubesRebuildStrategyGd = null
 var _node_size_strategy: VolumeNodeSizeStrategyGd = null
@@ -53,12 +52,11 @@ func _ready():
 	
 	_node_size_strategy.radius = radius
 	_node_size_strategy.height = focus_depth
-	_node_size_strategy.max_distance = max_distance
 	_node_size_strategy.max_node_size = max_node_size
 
 
 func _process( delta: float ):
-	if not synchronous_update:
+	if not update_disabled:
 		_async_process()
 
 
@@ -100,23 +98,21 @@ func _update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBase
 
 
 func _async_update_source_se3( se3: Se3Ref ):
+	if update_disabled:
+		return
+	
 	var view_point_se3: Se3Ref = se3.inverse()
 	_async_se3.copy_from( se3 )
 	var need_rebuild: bool = _rebuild_strategy.need_rebuild( view_point_se3 )
 	if need_rebuild and (not _async_requested_rebuild):
 		_async_requested_rebuild = true
 		_async_rebuild_start( _async_se3 )
-	
-#	if not _async_requested_rebuild:
-#		var need_rescale: bool = _rebuild_strategy.need_rescale( view_point_se3 )
-#		if need_rescale and (not _async_requested_rescale):
-#			_async_requested_rescale = need_rescale
-#			_async_rescale_start( _async_se3 )
+
 
 
 
 func _async_process():
-	if synchronous_update or (_async_workers_qty != 0):
+	if update_disabled or (_async_workers_qty != 0):
 		return
 	
 	if _async_requested_rescale:

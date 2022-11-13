@@ -47,6 +47,7 @@ public:
 	// And this one computes and applies in tow different methods.
 	void precompute_scaled_values( const Ref<Se3Ref> & src_se3, int material_index, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	void apply_to_mesh_only( Node * mesh_instance );
+	void apply_to_mesh_only_wireframe( Node * mesh_instance );
 
 	Ref<Se3Ref> compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	Transform compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );

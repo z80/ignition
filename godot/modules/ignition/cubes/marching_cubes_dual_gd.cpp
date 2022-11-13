@@ -34,6 +34,7 @@ void MarchingCubesDualGd::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("precompute_scaled_values", "source_se3", "material_index", "scaler"),     &MarchingCubesDualGd::precompute_scaled_values );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh_only", "mesh_instance"),                      &MarchingCubesDualGd::apply_to_mesh_only );
+	ClassDB::bind_method( D_METHOD("apply_to_mesh_only_wireframe", "mesh_instance"),            &MarchingCubesDualGd::apply_to_mesh_only_wireframe );
 
 	ClassDB::bind_method( D_METHOD("compute_source_se3", "source_se3", "scaler"),               &MarchingCubesDualGd::compute_source_se3, Variant::TRANSFORM );
 	ClassDB::bind_method( D_METHOD("compute_source_transform", "source_se3", "scaler"),         &MarchingCubesDualGd::compute_source_transform, Variant::TRANSFORM );
@@ -357,6 +358,90 @@ void MarchingCubesDualGd::apply_to_mesh_only( Node * mesh_instance )
 
 	Ref<ArrayMesh> am = memnew(ArrayMesh);
 	am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );
+	//am->add_surface_from_arrays( Mesh::PRIMITIVE_LINE_LOOP, arrays );
+	//am->add_surface_from_arrays( Mesh::PRIMITIVE_LINE_STRIP, arrays );
+	//am->add_surface_from_arrays( Mesh::PRIMITIVE_LINES, arrays );
+
+	mi->set_mesh( am );
+}
+
+void MarchingCubesDualGd::apply_to_mesh_only_wireframe( Node * mesh_instance )
+{
+	MeshInstance * mi = Object::cast_to<MeshInstance>(mesh_instance);
+	if (mi == nullptr)
+	{
+		print_line( String( "ERROR: expects mesh instance as an argument, got something else." ) );
+		return;
+	}
+
+	const std::vector<Vector3> & verts = cubes.vertices();
+	const std::vector<Vector3> & norms = cubes.normals();
+	const std::vector<real_t> & tangs  = cubes.tangents();
+	const std::vector<Vector2> & uv_s   = cubes.uvs();
+	const std::vector<Vector2> & uv2_s  = cubes.uv2s();
+
+	const int verts_qty = verts.size();
+
+	// Fill in arrays.
+	vertices.resize( verts_qty*2 );
+	normals.resize( verts_qty*2 );
+	uvs.resize( verts_qty*2 );
+	uv2s.resize( verts_qty*2 );
+
+	int vert_ind = 0;
+	int tang_ind = 0;
+	for ( int i=0; i<verts_qty; i+=3 )
+	{
+		const Vector3 & vert_a = verts[i];
+		const Vector3 & vert_b = verts[i+1];
+		const Vector3 & vert_c = verts[i+2];
+		vertices.set( 2*i,   vert_a );
+		vertices.set( 2*i+1, vert_b );
+		vertices.set( 2*i+2, vert_b );
+		vertices.set( 2*i+3, vert_c );
+		vertices.set( 2*i+4, vert_c );
+		vertices.set( 2*i+5, vert_a );
+
+		const Vector3 & norm_a = norms[i];
+		const Vector3 & norm_b = norms[i+1];
+		const Vector3 & norm_c = norms[i+2];
+		normals.set( 2*i,   norm_a );
+		normals.set( 2*i+1, norm_b );
+		normals.set( 2*i+2, norm_b );
+		normals.set( 2*i+3, norm_c );
+		normals.set( 2*i+4, norm_c );
+		normals.set( 2*i+5, norm_a );
+
+		const Vector2 & uv_a  = uv_s[i];
+		const Vector2 & uv_b  = uv_s[i+1];
+		const Vector2 & uv_c  = uv_s[i+2];
+		uvs.set( 2*i,   uv_a );
+		uvs.set( 2*i+1, uv_b );
+		uvs.set( 2*i+2, uv_b );
+		uvs.set( 2*i+3, uv_c );
+		uvs.set( 2*i+4, uv_c );
+		uvs.set( 2*i+5, uv_a );
+
+		const Vector2 & uv2_a = uv2_s[i];
+		const Vector2 & uv2_b = uv2_s[i+1];
+		const Vector2 & uv2_c = uv2_s[i+2];
+		uv2s.set( 2*i,   uv2_a );
+		uv2s.set( 2*i+1, uv2_b );
+		uv2s.set( 2*i+2, uv2_b );
+		uv2s.set( 2*i+3, uv2_c );
+		uv2s.set( 2*i+4, uv2_c );
+		uv2s.set( 2*i+5, uv2_a );
+	}
+
+	Array arrays;
+	arrays.resize( ArrayMesh::ARRAY_MAX );
+	arrays.set( ArrayMesh::ARRAY_VERTEX,  vertices );
+	arrays.set( ArrayMesh::ARRAY_NORMAL,  normals );
+	arrays.set( ArrayMesh::ARRAY_TEX_UV,  uvs );
+	arrays.set( ArrayMesh::ARRAY_TEX_UV2, uv2s );
+
+	Ref<ArrayMesh> am = memnew(ArrayMesh);
+	am->add_surface_from_arrays( Mesh::PRIMITIVE_LINES, arrays );
 
 	mi->set_mesh( am );
 }

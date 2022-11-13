@@ -57,7 +57,7 @@ Float VolumeNodeSizeStrategy::get_max_node_size() const
 	return max_node_size;
 }
 
-Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const Float node_size, const Float min_node_size ) const
+Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const Float node_size ) const
 {
 	const Float min_distance = height * 1.41;
 	const Vector3d a  = node_at - focal_point;
@@ -80,18 +80,7 @@ Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const F
 	{
 		return node_size;
 	}
-	const Float scaled_node_size = node_size * surface_dist / min_distance;
-	if (scaled_node_size > max_node_size)
-	{
-		const Float result_size = min_node_size * scaled_node_size / max_node_size;
-		return result_size;
-	}
 
-	// min_node_size / min_distance = current_node_size / current_distance;
-	// current_node_size = current_distance /min_distance * min_node_size;
-	// scale = min_node_size / current_node_size;
-	// result_size = node_size * min_node_size * min_distance / (current_distance * min_node_size);
-	// result_size = node_size * min_distance / current_distance;
 	const Float result_size  = node_size * min_distance / surface_dist;
 	return result_size;
 }

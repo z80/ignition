@@ -133,7 +133,8 @@ func rescale_surface_finished():
 		if material_ind < 0:
 			material_ind = 0
 		var mesh_inst: MeshInstance = meshes[i]
-		_voxel_surface.apply_to_mesh_only( mesh_inst )
+		#_voxel_surface.apply_to_mesh_only( mesh_inst )
+		_voxel_surface.apply_to_mesh_only_wireframe( mesh_inst )
 
 
 

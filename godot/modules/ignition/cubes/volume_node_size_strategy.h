@@ -27,7 +27,7 @@ public:
 	void set_max_node_size( Float sz );
 	Float get_max_node_size() const;
 
-	virtual Float local_node_size( const Vector3d & node_at, const Float node_size, const Float min_node_size ) const;
+	virtual Float local_node_size( const Vector3d & node_at, const Float node_size ) const;
 
 public:
 	Vector3d focal_point;
