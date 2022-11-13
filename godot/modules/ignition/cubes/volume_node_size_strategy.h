@@ -24,20 +24,16 @@ public:
 	void set_height( Float h );
 	Float get_height() const;
 
-	void set_max_distance( Float dist );
-	Float get_max_distance() const;
-
 	void set_max_node_size( Float sz );
 	Float get_max_node_size() const;
 
-	virtual Float local_node_size( const Vector3d & node_at, const Float node_size ) const;
+	virtual Float local_node_size( const Vector3d & node_at, const Float node_size, const Float min_node_size ) const;
 
 public:
 	Vector3d focal_point;
 	Float    radius;
 	Float    height;
 
-	Float    max_distance;
 	Float    max_node_size;
 };
 
