@@ -41,6 +41,10 @@ func value( at: Vector3 ):
 	
 	ret = max(ret, -d2)
 	
+	var small_radius: float = radius * 0.4
+	d2 = max( max( abs(at.x), abs(at.y) ), abs(at.z) ) - small_radius
+	ret = max(ret, -d2)
+	
 	return ret
 
 

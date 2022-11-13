@@ -265,7 +265,7 @@ bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource
 	const Float min_sz         = source->min_node_size_at( center );
 
 	const Float node_size_default = node_size( node );
-	const Float node_size_scaled   = (strategy != nullptr) ? strategy->local_node_size( center, node_size_default, min_sz ) : node_size_default;
+	const Float node_size_scaled   = (strategy != nullptr) ? strategy->local_node_size( center, node_size_default ) : node_size_default;
 
 	if ( _octree_nodes.size() < 6 )
 		return true;

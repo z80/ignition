@@ -2,6 +2,7 @@
 extends Spatial
 
 export(bool) var update_disabled = false
+export(bool) var wireframe = false
 
 # Properties used to initialize strategies.
 export(float) var focus_depth               = 40.0
@@ -145,6 +146,7 @@ func _async_rebuild_start( source_se3: Se3Ref ):
 	for i in range(qty):
 		var surf: Node = _surfaces[i]
 		var ad: AsyncData = AsyncData.new( source_se3, _node_size_strategy, scaler, surf )
+		ad.wireframe     = wireframe
 		ad.surface_index = i
 		
 #		if i == _foliage_surface_index:
@@ -219,6 +221,7 @@ func _async_rescale_start( source_se3: Se3Ref ):
 	for i in range(qty):
 		var surf: Node = _surfaces[i]
 		var ad: AsyncData = AsyncData.new( source_se3, _node_size_strategy, scaler, surf )
+		ad.wireframe = wireframe
 		ad.surface_index = i
 #		if i == _foliage_surface_index:
 #			var foliage_data = _foliage.async_update_view_point_prepare( source_se3, scaler )
@@ -246,7 +249,8 @@ func _async_rescale_worker( ad: AsyncData ):
 
 func _async_rescale_worker_finished( ad: AsyncData ):
 	var surf: Node = ad.surface
-	surf.rescale_surface_finished()
+	var wireframe: bool = ad.wireframe
+	surf.rescale_surface_finished( wireframe )
 
 	var surface_index: int = ad.surface_index
 	if surface_index == _foliage_surface_index:
@@ -268,6 +272,7 @@ func _async_rescale_worker_finished( ad: AsyncData ):
 
 
 class AsyncData:
+	var wireframe: bool
 	var se3: Se3Ref
 	var node_size_strategy: VolumeNodeSizeStrategyGd
 	var scaler: DistanceScalerBaseRef

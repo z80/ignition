@@ -119,7 +119,7 @@ func rescale_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	return true
 
 
-func rescale_surface_finished():
+func rescale_surface_finished( wireframe: bool = false ):
 	var material_inds: Array = _voxel_surface.materials_used()
 
 	var meshes: Array = []
@@ -133,8 +133,10 @@ func rescale_surface_finished():
 		if material_ind < 0:
 			material_ind = 0
 		var mesh_inst: MeshInstance = meshes[i]
-		#_voxel_surface.apply_to_mesh_only( mesh_inst )
-		_voxel_surface.apply_to_mesh_only_wireframe( mesh_inst )
+		if wireframe:
+			_voxel_surface.apply_to_mesh_only_wireframe( mesh_inst )
+		else:
+			_voxel_surface.apply_to_mesh_only( mesh_inst )
 
 
 

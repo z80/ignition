@@ -72,16 +72,25 @@ Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const F
 	const Float abs_a_2 = abs_a * abs_a;
 	const Float D_4 = b*b + abs_a_2*(radius*radius - focal_point_2);
 	const Float t = ( std::sqrt( D_4 ) - b ) / abs_a_2;
+
+	// Let's compute distance along the sphere surface.
+	// Position on the surface.
+	const Vector3d node_surface_pt  = ( focal_point + a*t ) / radius;
+	const Vector3d focus_surface_pt = focal_point * ( 1.0 / focal_point.Length() );
+	const Float dot_product  = node_surface_pt.DotProduct( focus_surface_pt );
+	const Float angle        = std::acos( dot_product );
+	const Float geodesic_dist = angle * radius;
 	
 	// Distance from focal point to the projection
 	// point of the node center onto the sphere surface.
 	const Float surface_dist = t * abs_a;
-	if ( surface_dist < min_distance )
+	const Float total_dist = geodesic_dist + surface_dist;
+	if ( total_dist < min_distance )
 	{
 		return node_size;
 	}
 
-	const Float result_size  = node_size * min_distance / surface_dist;
+	const Float result_size  = node_size * min_distance / total_dist;
 	return result_size;
 }
 

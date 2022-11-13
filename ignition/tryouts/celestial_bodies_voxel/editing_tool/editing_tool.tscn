@@ -1,10 +1,14 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel/editing_tool/editing_tool.gd" type="Script" id=1]
 [ext_resource path="res://tryouts/celestial_bodies_voxel/celestial_surface_voxel.tscn" type="PackedScene" id=2]
 [ext_resource path="res://physics/camera_ctrl/camera.tscn" type="PackedScene" id=3]
 
 [sub_resource type="CubeMesh" id=1]
+
+[sub_resource type="Environment" id=2]
+ambient_light_color = Color( 1, 1, 1, 1 )
+ambient_light_energy = 0.5
 
 [node name="EditingTool" type="Node"]
 script = ExtResource( 1 )
@@ -19,3 +23,6 @@ map_mode = true
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
 mesh = SubResource( 1 )
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( 2 )
