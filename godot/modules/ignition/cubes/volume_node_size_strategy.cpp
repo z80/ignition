@@ -8,7 +8,7 @@ namespace Ign
 VolumeNodeSizeStrategy::VolumeNodeSizeStrategy()
 {
 	radius        = 1000.0;
-	height        = 60.0;
+	min_distance  = 60.0;
 	focal_point   = Vector3d( 0.0, 0.0, 0.0 );
 }
 
@@ -38,12 +38,12 @@ Vector3d VolumeNodeSizeStrategy::get_focal_point() const
 
 void VolumeNodeSizeStrategy::set_height( Float h )
 {
-	height = h;
+	min_distance = h;
 }
 
 Float VolumeNodeSizeStrategy::get_height() const
 {
-	return height;
+	return min_distance;
 }
 
 void VolumeNodeSizeStrategy::clear_node_sizes()
@@ -61,10 +61,10 @@ void VolumeNodeSizeStrategy::append_node_size( Float distance, Float node_size )
 
 Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const Float node_size ) const
 {
-	const Float min_distance = height * 1.41;
+	const Float min_dist = min_distance;
 	const Vector3d a  = node_at - focal_point;
 	const Float abs_a = a.Length();
-	if (abs_a <= min_distance)
+	if (abs_a <= min_dist)
 		return node_size;
 
 	//// Compute intersection point.
@@ -94,20 +94,20 @@ Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const F
 
 	//const Float result_size  = node_size * min_distance / total_dist;
 
-	const Float result_size = node_size * min_distance / abs_a;
+	const Float result_size = node_size * min_dist / abs_a;
 	return result_size;
 }
 
 bool VolumeNodeSizeStrategy::can_subdivide( const Vector3d & node_at, const Float node_size, const Float min_node_size ) const
 {
-	const Float min_distance = height * 1.41;
+	const Float min_dist = min_distance;
 	const Vector3d a  = node_at - focal_point;
 	const Float abs_a = a.Length();
-	if (abs_a <= min_distance)
+	if (abs_a <= min_dist)
 		return node_size;
 
 	// Min node size at current distance.
-	const Float min_size_at_distance = min_node_size * abs_a / min_distance;
+	const Float min_size_at_distance = min_node_size * abs_a / min_dist;
 	bool can_subdivide_node = (node_size < min_size_at_distance);
 
 	// Piecewise sizes.

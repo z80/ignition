@@ -5,7 +5,6 @@ export(bool) var update_disabled = false
 export(bool) var wireframe = false
 
 # Properties used to initialize strategies.
-export(float) var focus_depth               = 40.0
 export(float) var rebuild_dist              = 100.0
 export(float) var rescale_close_dist        = 10.0
 export(float) var rescale_far_tangent       = 10.0 / 180.0 * 3.14
@@ -38,7 +37,11 @@ func _ready():
 	_rebuild_strategy = MarchingCubesRebuildStrategyGd.new()
 	_node_size_strategy = VolumeNodeSizeStrategyGd.new()
 	var surf: Node = _surfaces[0]
-	var radius: float = surf.get_surface_radius()
+
+	var radius: float      = surf.get_surface_radius()
+	var focus_depth: float = surf.get_focus_depth()
+	var identity_dist: float = surf.get_identity_distance()
+	var node_sizes: Array  = surf.get_node_sizes()
 	
 	_rebuild_strategy.radius = radius
 	_rebuild_strategy.height = focus_depth
@@ -50,7 +53,8 @@ func _ready():
 	_rebuild_strategy.rescale_depth_rel_tangent = rescale_depth_rel_tangent
 	
 	_node_size_strategy.radius = radius
-	_node_size_strategy.height = focus_depth
+	_node_size_strategy.height = identity_dist
+	_node_size_strategy.set_node_sizes( node_sizes[0], node_sizes[1] )
 
 
 func _process( delta: float ):

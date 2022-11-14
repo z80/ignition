@@ -161,5 +161,30 @@ func get_surface_radius():
 	return r
 
 
+func get_focus_depth():
+	var d: float = surface_source.focus_depth
+	return d
+
+
+func get_identity_distance():
+	var d: float = surface_source.identity_distance
+	return d
+
+
+func get_node_sizes():
+	var pairs: Array = surface_source.node_sizes
+	var qty: int = pairs.size()
+	var distances: Array  = []
+	var node_sizes: Array = []
+	for i in range(qty):
+		var d: Dictionary    = pairs[i]
+		var dist: float      = d.distance
+		var node_size: float = d.node_size
+		distances.push_back( dist )
+		node_sizes.push_back( node_size )
+	return [ distances, node_sizes ]
+
+
+
 
 

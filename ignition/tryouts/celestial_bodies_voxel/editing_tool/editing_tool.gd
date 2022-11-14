@@ -32,9 +32,11 @@ func _ready():
 	t.origin = Vector3( 0.0, 0.0, 15000000.0 )
 	_camera.transform = t
 	
-	#sun.set_origin( rf )
 	
-	#PhysicsManager.distance_scaler = null
+	var planet: Node = get_node( "Planet" )
+	var surfaces: Node = planet.surfaces_node()
+	var ui: Node = get_node( "Ui" )
+	ui.surfaces = surfaces
 
 
 

@@ -34,7 +34,7 @@ public:
 public:
 	Vector3d focal_point;
 	Float    radius;
-	Float    height;
+	Float    min_distance;
 
 	struct NodeSizeAtDistance
 	{

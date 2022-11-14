@@ -264,18 +264,21 @@ bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource
 	const Float max_sz         = source->max_node_size_at( center );
 	const Float min_sz         = source->min_node_size_at( center );
 
-	const Float node_size_default = node_size( node );
-	const Float node_size_scaled   = (strategy != nullptr) ? strategy->local_node_size( center, node_size_default ) : node_size_default;
+	const Float node_sz = node_size( node );
+	const bool can_split  = strategy->can_subdivide( center, node_sz, min_sz );
+
+	if ( !can_split )
+		return false;
 
 	if ( _octree_nodes.size() < 6 )
 		return true;
 
 	// If bigger than maximum allowed, subdivide.
-	if ( node_size_scaled > max_sz )
+	if ( node_sz > max_sz )
 		return true;
 
 	// If smaller than minimum allowed, don't subdivide.
-	if ( node_size_scaled <= min_sz )
+	if ( node_sz <= min_sz )
 		return false;
 
 	// The size is in between. Use a heuristic.
@@ -323,8 +326,9 @@ bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource
 	const Vector3d center_float = at_in_source( center_int );
 	const Float    actual_value = value_at( source, center_int, center_float );
 
-	const Float node_sz_max = node_size_max( node );
-	const Float rel_diff    = std::abs( actual_value - interpolated_value ) / node_sz_max;
+	//const Float node_sz_max = node_size_max( node );
+	//const Float rel_diff    = std::abs( actual_value - interpolated_value ) / node_sz_max;
+	const Float rel_diff    = std::abs( actual_value - interpolated_value ) / node_sz;
 	// Compare this difference per unit node size with the threshold.
 	const bool do_split = ( rel_diff > max_rel_diff );
 
