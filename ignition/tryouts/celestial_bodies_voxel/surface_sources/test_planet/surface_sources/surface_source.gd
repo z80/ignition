@@ -14,7 +14,7 @@ func get_source():
 	_source.bounding_radius = source_radius
 	print( "source_radius: ", source_radius )
 	_source.radius = source_radius - 10.0
-	_source.node_sz_max = 50.0
+	_source.node_sz_max = 20.0
 	_source.node_sz_min = 10.0
 	
 	var se3: Se3Ref = Se3Ref.new()

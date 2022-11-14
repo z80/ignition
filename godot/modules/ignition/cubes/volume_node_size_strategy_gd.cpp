@@ -16,13 +16,9 @@ void VolumeNodeSizeStrategyGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_height", "h"), &VolumeNodeSizeStrategyGd::set_height );
 	ClassDB::bind_method( D_METHOD("get_height"),      &VolumeNodeSizeStrategyGd::get_height, Variant::REAL );
 
-	ClassDB::bind_method( D_METHOD("set_max_node_size", "dist"), &VolumeNodeSizeStrategyGd::set_max_node_size );
-	ClassDB::bind_method( D_METHOD("get_max_node_size"),         &VolumeNodeSizeStrategyGd::get_max_node_size, Variant::REAL );
-
 	ADD_PROPERTY( PropertyInfo( Variant::REAL,    "radius" ),        "set_radius",        "get_radius" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "focal_point" ),   "set_focal_point",   "get_focal_point" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL,    "height" ),        "set_height",        "get_height" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL,    "max_node_size" ), "set_max_node_size", "get_max_node_size" );
 }
 
 VolumeNodeSizeStrategyGd::VolumeNodeSizeStrategyGd()
@@ -66,17 +62,6 @@ real_t VolumeNodeSizeStrategyGd::get_height() const
 {
 	const real_t ret = strategy.get_height();
 	return ret;
-}
-
-void VolumeNodeSizeStrategyGd::set_max_node_size( real_t sz )
-{
-	strategy.set_max_node_size( sz );
-}
-
-real_t VolumeNodeSizeStrategyGd::get_max_node_size() const
-{
-	const real_t sz = strategy.get_max_node_size();
-	return sz;
 }
 
 

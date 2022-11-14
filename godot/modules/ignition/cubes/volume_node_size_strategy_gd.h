@@ -27,9 +27,6 @@ public:
 	void set_height( real_t h );
 	real_t get_height() const;
 
-	void set_max_node_size( real_t sz );
-	real_t get_max_node_size() const;
-
 public:
 	VolumeNodeSizeStrategy strategy;
 };

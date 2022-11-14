@@ -33,8 +33,6 @@ public:
 	Vector3d focal_point;
 	Float    radius;
 	Float    height;
-
-	Float    max_node_size;
 };
 
 
