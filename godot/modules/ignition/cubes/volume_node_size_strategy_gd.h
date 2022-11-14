@@ -27,6 +27,9 @@ public:
 	void set_height( real_t h );
 	real_t get_height() const;
 
+	void clear_node_sizes();
+	void set_node_sizes( const Array & distances, const Array & node_sizes );
+
 public:
 	VolumeNodeSizeStrategy strategy;
 };

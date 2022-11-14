@@ -46,6 +46,19 @@ Float VolumeNodeSizeStrategy::get_height() const
 	return height;
 }
 
+void VolumeNodeSizeStrategy::clear_node_sizes()
+{
+	node_size_of_distance.clear();
+}
+
+void VolumeNodeSizeStrategy::append_node_size( Float distance, Float node_size )
+{
+	NodeSizeAtDistance d;
+	d.distance  = distance;
+	d.node_size = node_size;
+	node_size_of_distance.push_back( d );
+}
+
 Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const Float node_size ) const
 {
 	const Float min_distance = height * 1.41;
@@ -84,6 +97,44 @@ Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const F
 	const Float result_size = node_size * min_distance / abs_a;
 	return result_size;
 }
+
+bool VolumeNodeSizeStrategy::can_subdivide( const Vector3d & node_at, const Float node_size, const Float min_node_size ) const
+{
+	const Float min_distance = height * 1.41;
+	const Vector3d a  = node_at - focal_point;
+	const Float abs_a = a.Length();
+	if (abs_a <= min_distance)
+		return node_size;
+
+	// Min node size at current distance.
+	const Float min_size_at_distance = min_node_size * abs_a / min_distance;
+	bool can_subdivide_node = (node_size < min_size_at_distance);
+
+	// Piecewise sizes.
+	const int qty = node_size_of_distance.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		const NodeSizeAtDistance & size_dist = node_size_of_distance[i];
+		const Float distance = size_dist.distance;
+		if ( abs_a >= distance )
+		{
+			const Float local_node_size = size_dist.node_size;
+			const bool should_not_subdivide = (node_size <= local_node_size);
+			if ( should_not_subdivide )
+			{
+				can_subdivide_node = false;
+				break;
+			}
+			else
+			{
+				can_subdivide_node = true;
+			}
+		}
+	}
+
+	return can_subdivide_node;
+}
+
 
 
 }

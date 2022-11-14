@@ -16,6 +16,9 @@ void VolumeNodeSizeStrategyGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_height", "h"), &VolumeNodeSizeStrategyGd::set_height );
 	ClassDB::bind_method( D_METHOD("get_height"),      &VolumeNodeSizeStrategyGd::get_height, Variant::REAL );
 
+	ClassDB::bind_method( D_METHOD("clear_node_sizes"), &VolumeNodeSizeStrategyGd::clear_node_sizes );
+	ClassDB::bind_method( D_METHOD("set_node_sizes", "distances", "node_sizes"), &VolumeNodeSizeStrategyGd::set_node_sizes );
+
 	ADD_PROPERTY( PropertyInfo( Variant::REAL,    "radius" ),        "set_radius",        "get_radius" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "focal_point" ),   "set_focal_point",   "get_focal_point" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL,    "height" ),        "set_height",        "get_height" );
@@ -62,6 +65,26 @@ real_t VolumeNodeSizeStrategyGd::get_height() const
 {
 	const real_t ret = strategy.get_height();
 	return ret;
+}
+
+void VolumeNodeSizeStrategyGd::clear_node_sizes()
+{
+	strategy.clear_node_sizes();
+}
+
+void VolumeNodeSizeStrategyGd::set_node_sizes( const Array & distances, const Array & node_sizes )
+{
+	clear_node_sizes();
+
+	const int distances_qty  = distances.size();
+	const int node_sizes_qty = node_sizes.size();
+	const int qty = (distances_qty < node_sizes_qty) ? distances_qty : node_sizes_qty;
+	for (int i=0; i<qty; i++)
+	{
+		real_t distance = distances[i];
+		real_t node_size = node_sizes[i];
+		strategy.append_node_size( distance, node_size );
+	}
 }
 
 

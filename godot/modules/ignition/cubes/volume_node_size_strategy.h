@@ -5,6 +5,7 @@
 #include "cube_types.h"
 #include "se3.h"
 
+#include <vector>
 
 namespace Ign
 {
@@ -24,15 +25,23 @@ public:
 	void set_height( Float h );
 	Float get_height() const;
 
-	void set_max_node_size( Float sz );
-	Float get_max_node_size() const;
+	void clear_node_sizes();
+	void append_node_size( Float distance, Float node_size );
 
 	virtual Float local_node_size( const Vector3d & node_at, const Float node_size ) const;
+	virtual bool can_subdivide( const Vector3d & node_at, const Float node_size, const Float min_node_size ) const;
 
 public:
 	Vector3d focal_point;
 	Float    radius;
 	Float    height;
+
+	struct NodeSizeAtDistance
+	{
+		Float distance;
+		Float node_size;
+	};
+	std::vector<NodeSizeAtDistance> node_size_of_distance;
 };
 
 
