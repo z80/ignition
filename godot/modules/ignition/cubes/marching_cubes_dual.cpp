@@ -47,18 +47,6 @@ MarchingCubesDual::~MarchingCubesDual()
 }
 
 
-void MarchingCubesDual::set_source_se3( const SE3 & se3 )
-{
-	source_se3          = se3;
-	inverted_source_se3 = se3.inverse();
-}
-
-const SE3 & MarchingCubesDual::get_source_se3() const
-{
-	return source_se3;
-}
-
-
 bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * source, VolumeNodeSizeStrategy * strategy )
 {
 	cleanup_nodes();
@@ -164,7 +152,7 @@ const std::vector<int> & MarchingCubesDual::query_close_nodes( const Vector3d & 
 	return _octree_node_indices_result;
 }
 
-Vector3d MarchingCubesDual::center_direction( const Vector3d & at ) const
+Vector3d MarchingCubesDual::center_direction( const SE3 & source_se3, const Vector3d & at ) const
 {
 	const Vector3d full = (source_se3.r_ - at);
 	const Float    L    = full.Length();
@@ -185,18 +173,16 @@ MarchingCubesDualNode * MarchingCubesDual::get_tree_node( int ind )
 	return ret;
 }
 
-bool MarchingCubesDual::point_inside_node( int node_ind, const Vector3d & at )
+bool MarchingCubesDual::point_inside_node( int node_ind, const Vector3d & at_in_source )
 {
 	Vector3d center;
 	MarchingCubesDualNode * node = get_tree_node( node_ind );
 
-	const Vector3d local_at = inverted_source_se3.q_ * at + inverted_source_se3.r_;
-
-	const bool ret = node->contains_point( this, local_at );
+	const bool ret = node->contains_point( this, at_in_source );
 	return ret;
 }
 
-bool MarchingCubesDual::intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm )
+bool MarchingCubesDual::intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm )
 {
 	if ( node == nullptr )
 	{
@@ -207,21 +193,15 @@ bool MarchingCubesDual::intersect_with_segment( MarchingCubesDualNode * node, co
 		node = _octree_nodes[0];
 	}
 
-	const Vector3d local_start = inverted_source_se3.q_ * start + inverted_source_se3.r_;
-	const Vector3d local_end   = inverted_source_se3.q_ * end   + inverted_source_se3.r_;
+	const Vector3d local_start = start;
+	const Vector3d local_end   = end;
 
 	const bool ret = node->intersect_with_segment( this, local_start, local_end, at, norm );
 
-	if ( ret )
-	{
-		at   = source_se3.q_ * at + source_se3.r_;
-		norm = source_se3.q_ * norm;
-	}
-
 	return ret;
 }
 
-bool MarchingCubesDual::intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm )
+bool MarchingCubesDual::intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, Vector3d & at, Vector3d & norm )
 {
 	if ( node == nullptr )
 	{
@@ -232,16 +212,10 @@ bool MarchingCubesDual::intersect_with_ray( MarchingCubesDualNode * node, const 
 		node = _octree_nodes[0];
 	}
 
-	const Vector3d local_start = inverted_source_se3.q_ * start + inverted_source_se3.r_;
-	const Vector3d local_dir   = inverted_source_se3.q_ * dir;
+	const Vector3d local_start = start;
+	const Vector3d local_dir   = dir;
 
 	const bool ret = node->intersect_with_ray( this, local_start, local_dir, at, norm );
-
-	if ( ret )
-	{
-		at   = source_se3.q_ * at + source_se3.r_;
-		norm = source_se3.q_ * norm;
-	}
 
 	return ret;
 }
@@ -402,7 +376,7 @@ const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, i
 		{
 			const Vector3d source_v = f.vertices[j];
 			// Convert to world.
-			Vector3d world_v = source_se3 * source_v;
+			Vector3d world_v = src_se3 * source_v;
 			// Convert to scaled world.
 			if ( scaler != nullptr )
 				world_v = scaler->scale( world_v );
@@ -534,7 +508,7 @@ const std::vector<Vector2> & MarchingCubesDual::uv2s() const
 	return _ret_uv2s;
 }
 
-const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d & at, const Float dist, bool in_source )
+const std::vector<Vector3> & MarchingCubesDual::collision_faces( const SE3 & src_se3, const Vector3d & at_in_source, const Float dist )
 {
 	_face_indices_set.clear();
 	_faces_ret.clear();
@@ -557,8 +531,7 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d 
 		dist_int *= 2;
 	}
 
-	const Vector3d center      = inverted_source_se3 * at;
-
+	const Vector3d center      = at_in_source;
 	const VectorInt center_int = VectorInt( static_cast<int>( center.x_ / step ),
 		                                    static_cast<int>( center.y_ / step ),
 		                                    static_cast<int>( center.z_ / step ) );
@@ -574,22 +547,11 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const Vector3d 
 		const int face_ind = *it;
 		const NodeFace & nf = _all_faces[face_ind];
 
-		if ( in_source )
+		for ( int i=0; i<3; i++ )
 		{
-			for ( int i=0; i<3; i++ )
-			{
-				const Vector3d & source_v = nf.vertices[i];
-				_faces_ret.push_back( Vector3( source_v.x_, source_v.y_, source_v.z_ ) );
-			}
-		}
-		else
-		{
-			for ( int i=0; i<3; i++ )
-			{
-				const Vector3d & source_v = nf.vertices[i];
-				const Vector3d world_v  = source_se3 * source_v;
-				_faces_ret.push_back(  Vector3( world_v.x_, world_v.y_, world_v.z_ ) );
-			}
+			const Vector3d & source_v = nf.vertices[i];
+			const Vector3d world_v    = src_se3 * source_v;
+			_faces_ret.push_back(  Vector3( world_v.x_, world_v.y_, world_v.z_ ) );
 		}
 	}
 
@@ -770,7 +732,7 @@ void MarchingCubesDual::get_node( int node_ind, Vector3d * corners ) const
 	const MarchingCubesDualNode * node = _octree_nodes[node_ind];
 	for ( int i=0; i<8; i++ )
 	{
-		const Vector3d v = source_se3 * node->vertices[i];
+		const Vector3d v = node->vertices[i];
 		corners[i] = v;
 	}
 }
@@ -797,7 +759,7 @@ void MarchingCubesDual::get_dual_cell( int cell_ind, Vector3d * corners ) const
 	const MarchingCubesDualCell * cell = _octree_dual_cells[cell_ind];
 	for ( int i=0; i<8; i++ )
 	{
-		const Vector3d v = source_se3.q_ * cell->vertices[i] + source_se3.r_;
+		const Vector3d v = cell->vertices[i];
 		corners[i] = v;
 	}
 }

@@ -25,16 +25,13 @@ public:
 	MarchingCubesDualGd();
 	~MarchingCubesDualGd();
 
-	void set_source_se3( const Ref<Se3Ref> & se3 );
-	Ref<Se3Ref> get_source_se3() const;
-
 	void set_split_precision( real_t rel_diff );
 	real_t get_split_precision() const;
 
 	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<VolumeNodeSizeStrategyGd> & strategy = Ref<VolumeNodeSizeStrategyGd>() );
 
 	Array query_close_nodes( const Vector3 & at_in_source, real_t dist, real_t max_size );
-	Vector3 center_direction( const Vector3 & at, const Ref<Se3Ref> & src_se3=Ref<Se3Ref>(), const Ref<Se3Ref> & inv_src_se3=Ref<Se3Ref>() ) const;
+	Vector3 center_direction( const Ref<Se3Ref> & src_se3, const Vector3 & at ) const;
 	Ref<MarchingCubesDualNodeGd> get_tree_node( int ind );
 
 	Ref<Se3Ref> se3_in_point( const Vector3 & at, const Ref<Se3Ref> & inv_source_se3=Ref<Se3Ref>() ) const;
@@ -51,7 +48,7 @@ public:
 
 	Ref<Se3Ref> compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	Transform compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
-	const PoolVector3Array & collision_faces( const Vector3 & at, real_t dist, bool in_source );
+	const PoolVector3Array & collision_faces( const Ref<Se3Ref> & src_se3, const Vector3 & at, real_t dist );
 
 	void set_max_nodes_qty( int qty );
 	int get_max_nodes_qty() const;

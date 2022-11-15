@@ -140,18 +140,15 @@ public:
     MarchingCubesDual();
     ~MarchingCubesDual();
 
-    void set_source_se3( const SE3 & se3 );
-	const SE3 & get_source_se3() const;
-
     bool subdivide_source( Float bounding_radius, VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );
 
 	const std::vector<int> & query_close_nodes( const Vector3d & at_in_source, Float dist, Float max_size );
-	Vector3d center_direction( const Vector3d & at ) const;
+	Vector3d center_direction( const SE3 & source_se3, const Vector3d & at ) const;
 	MarchingCubesDualNode * get_tree_node( int ind );
-	bool point_inside_node( int node_ind, const Vector3d & at );
+	bool point_inside_node( int node_ind, const Vector3d & at_in_source );
 
-	bool intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, bool in_source, Vector3d & at, Vector3d & norm );
-	bool intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, bool in_source, Vector3d & at, Vector3d & norm );
+	bool intersect_with_segment( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & end, Vector3d & at, Vector3d & norm );
+	bool intersect_with_ray( MarchingCubesDualNode * node, const Vector3d & start, const Vector3d & dir, Vector3d & at, Vector3d & norm );
 
 	// These two are called by nodes.
 	void set_split_precision( Float rel_diff );
@@ -180,7 +177,7 @@ public:
 
 
 
-    const std::vector<Vector3> & collision_faces( const Vector3d & at, const Float dist, bool in_source );
+    const std::vector<Vector3> & collision_faces( const SE3 & src_se3, const Vector3d & at_in_source, const Float dist );
 
     Transform compute_source_transform( const SE3 & src_se3, const DistanceScalerBase * scaler = nullptr) const;
 	SE3 compute_source_se3( const SE3 & src_se3, const DistanceScalerBase * scaler = nullptr) const;
@@ -210,11 +207,6 @@ public:
     Float step;
     // Max allowed number of nodes.
     int   max_nodes_qty;
-
-    // Source transform.
-    // Points to probe first are sent through this transformation.
-    SE3   source_se3;
-    SE3   inverted_source_se3;
 
 public:
 	void cleanup_nodes();
