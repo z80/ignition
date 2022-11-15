@@ -39,14 +39,18 @@ func _get_surface_mesh( ind: int ):
 
 
 func rebuild_surface( source_se3: Se3Ref, strategy: VolumeNodeSizeStrategyGd, scaler: DistanceScalerBaseRef ):
+	print( "a" )
 	var source_radius: float = get_surface_radius()
 	var source: VolumeSourceGd = surface_source.get_source()
+	print( "b" )
 	
 	_voxel_surface.max_nodes_qty   = 20000000
-	_voxel_surface.source_se3      = source_se3
 	_voxel_surface.split_precision = 0.01
+	print( "c" )
 	var ok: bool = _voxel_surface.subdivide_source( source_radius, source, strategy )
+	print( "d" )
 	var ret: Array = [ok, source_se3, scaler]
+	print( "e" )
 
 	return ret
 
