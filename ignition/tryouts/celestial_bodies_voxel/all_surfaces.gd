@@ -34,14 +34,14 @@ func _ready():
 
 	_enumerate_surfaces()
 	
-	_rebuild_strategy = MarchingCubesRebuildStrategyGd.new()
+	_rebuild_strategy   = MarchingCubesRebuildStrategyGd.new()
 	_node_size_strategy = VolumeNodeSizeStrategyGd.new()
-	var surf: Node = _surfaces[0]
+	var surf: Node      = _surfaces[0]
 
-	var radius: float      = surf.get_surface_radius()
-	var focus_depth: float = surf.get_focus_depth()
+	var radius: float        = surf.get_surface_radius()
+	var focus_depth: float   = surf.get_focus_depth()
 	var identity_dist: float = surf.get_identity_distance()
-	var node_sizes: Array  = surf.get_node_sizes()
+	var node_sizes: Array    = surf.get_node_sizes()
 	
 	_rebuild_strategy.radius = radius
 	_rebuild_strategy.height = focus_depth
