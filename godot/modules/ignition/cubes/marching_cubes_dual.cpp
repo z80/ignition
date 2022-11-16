@@ -508,7 +508,7 @@ const std::vector<Vector2> & MarchingCubesDual::uv2s() const
 	return _ret_uv2s;
 }
 
-const std::vector<Vector3> & MarchingCubesDual::collision_faces( const SE3 & src_se3, const Vector3d & at_in_source, const Float dist )
+const std::vector<Vector3> & MarchingCubesDual::collision_faces( const SE3 & src_se3, const Float dist )
 {
 	_face_indices_set.clear();
 	_faces_ret.clear();
@@ -531,7 +531,8 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const SE3 & src
 		dist_int *= 2;
 	}
 
-	const Vector3d center      = at_in_source;
+	const SE3 view_point_se3   = src_se3.inverse();
+	const Vector3d center      = view_point_se3.r_;
 	const VectorInt center_int = VectorInt( static_cast<int>( center.x_ / step ),
 		                                    static_cast<int>( center.y_ / step ),
 		                                    static_cast<int>( center.z_ / step ) );

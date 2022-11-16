@@ -48,7 +48,7 @@ public:
 
 	Ref<Se3Ref> compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	Transform compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
-	const PoolVector3Array & collision_faces( const Ref<Se3Ref> & src_se3, const Vector3 & at, real_t dist );
+	const PoolVector3Array & collision_faces( const Ref<Se3Ref> & src_se3, real_t dist );
 
 	void set_max_nodes_qty( int qty );
 	int get_max_nodes_qty() const;
