@@ -58,50 +58,65 @@ func rebuild_surface( ref_frame: RefFrameNode, planet: RefFrameNode, surface_sou
 	var need_rebuild: bool = _rebuild_strategy.need_rebuild( view_point_se3 )
 	if need_rebuild and (not _is_busy):
 		_is_busy = true
-		pass
-
-
-func _rebuild_surface_start( surface_source: Resource, source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
-	var source_radius: float     = surface_source.source_radius
-	var identity_distance: float = surface_source.identity_distance
-	var source: VolumeSourceGd   = surface_source.get_source()
+		
+		var node_dicts: Array = surface_source.node_sizes
+		var qty: int = node_dicts.size()
+		var distances: Array  = []
+		var node_sizes: Array = []
+		for i in range(qty):
+			var vv: Dictionary = node_dicts[i]
+			var dist: float = vv.distance
+			var sz: float   = vv.node_size
+			distances.push_back( dist )
+			node_sizes.push_back( sz )
+		
+		var source_radius: float     = surface_source.source_radius
+		var identity_distance: float = surface_source.identity_distance
+		var r: Vector3 = view_point_se3.r
+		_node_size_strategy.focal_point = r
+		_node_size_strategy.radius      = source_radius
+		_node_size_strategy.height      = identity_distance
+		_node_size_strategy.set_node_sizes( distances, node_sizes )
 	
-	var node_dicts: Array = surface_source.node_sizes
-	var qty: int = node_dicts.size()
-	var distances: Array  = []
-	var node_sizes: Array = []
-	for i in range(qty):
-		var vv: Dictionary = node_dicts[i]
-		var dist: float = vv.distance
-		var sz: float   = vv.node_size
-		distances.push_back( dist )
-		node_sizes.push_back( sz )
+	var data: RebuildData = RebuildData.new()
+	data.source_se3     = view_point_se3.inverse()
+	data.surface_source = surface_source
 	
-	var inv_source_se3: Se3Ref = source_se3.inverse()
-	var r: Vector3 = inv_source_se3.r
-	_node_size_strategy.focal_point = r
-	_node_size_strategy.radius      = source_radius
-	_node_size_strategy.height      = identity_distance
-	_node_size_strategy.set_node_sizes( distances, node_sizes )
+	# Always update surface synchronously.
+	# It is needed if ref frame has teleported.
+	# If there is a surface computed and at the same time 
+	# there are no asynchronous operations with the 
+	# surface builder.
+	if _is_ready and (not _is_busy):
+		_rebuild_surface_finished( data )
+	
+	# And now if we have initiate asynchronous surface build.
+	if need_rebuild:
+		WorkersPool.push_back_with_arg( self, "_rebuild_surface_worker", "_rebuild_surface_finished", data )
 
+
+
+
+
+func _rebuild_surface_worker( data: RebuildData ):
+	var surface_source: Resource = data.surface_source
+	
+	var source_radius: float = surface_source.source_radius
+	var source: VolumeSourceGd = surface_source.get_source()
 	
 	_voxel_surface.max_nodes_qty   = 20000000
 	_voxel_surface.split_precision = 0.01
 	var ok: bool = _voxel_surface.subdivide_source( source_radius, source, _node_size_strategy )
-	var ret: Array = [ok, source_se3, scaler]
-
-	return ret
+	return data
 
 
-func _rebuild_surface_worker_process( source_radius: float, surface_source: Resource ):
-	var source: VolumeSourceGd   = surface_source.get_source()
-	var ok: bool = _voxel_surface.subdivide_source( source_radius, source, _node_size_strategy )
-
-
-func rebuild_surface_finished( data: Array ):
-	_is_busy = false
-	_is_ready = true
-	var collision_triangles: PoolVector3Array = _voxel_surface.collision_faces()
+func _rebuild_surface_finished( data: RebuildData ):
+	var surface_source: Resource = data.surface_source
+	var identity_distance: float = surface_source.identity_distance
+	var source_se3: Se3Ref       = data.source_se3
+	
+	var collision_triangles: PoolVector3Array = _voxel_surface.collision_faces( source_se3, identity_distance )
+	
 	var shape: ConcavePolygonShape = _collision_shape.shape
 	shape.set_faces(  collision_triangles )
 	_is_busy = false
@@ -113,6 +128,7 @@ func rebuild_surface_finished( data: Array ):
 class RebuildData:
 	var surface_source: Resource
 	var source_se3: Se3Ref
+	var needs_rebuild: bool
 
 
 
