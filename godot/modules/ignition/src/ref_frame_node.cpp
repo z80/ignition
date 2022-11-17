@@ -100,6 +100,20 @@ void RefFrameNode::_child_jumped( RefFrameNode * child_ref_frame )
 		print_line( "child jumped" );
 }
 
+void RefFrameNode::_child_left( RefFrameNode * child_ref_frame )
+{
+	ScriptInstance * si = get_script_instance();
+	if ( si != nullptr )
+	{
+		const Variant arg( child_ref_frame );
+		const Variant *ptr[1] = { &arg };
+		get_script_instance()->call_multilevel( "_child_left", ptr, 1 );
+	}
+	if ( debug_ )
+		print_line( "child left" );
+}
+
+
 RefFrameNode::RefFrameNode()
 	: Node(),
 	  debug_( false )
@@ -418,7 +432,17 @@ void RefFrameNode::jump_to_( Node * destination, const SE3 & dest_se3 )
 
 	// Call child jumped in parent.
 	if ( dest_rf != nullptr )
+	{
 		dest_rf->_child_jumped( this );
+		if ( p != dest_rf )
+		{
+			RefFrameNode * parent_rf = Object::cast_to<RefFrameNode>( p );
+			if (parent_rf != nullptr)
+			{
+				parent_rf->_child_left( this );
+			}
+		}
+	}
 }
 
 
