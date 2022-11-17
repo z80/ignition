@@ -50,13 +50,15 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_debug", "en"), &RefFrameNode::set_debug );
 	ClassDB::bind_method( D_METHOD("get_debug"), &RefFrameNode::get_debug, Variant::BOOL );
 
-
+	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform" ),        "set_t", "t" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "linear_velocity" ),  "set_v", "v" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "angular_velocity" ), "set_w", "w" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL,      "debug" ), "set_debug", "get_debug" );
 	//Otherwise continuously requests "SE3" in editor.
-	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ),              "set_se3", "get_se3" );
+	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),      "set_se3", "get_se3" );
+
+	ADD_SIGNAL( MethodInfo( "jumped", PropertyInfo(Variant::OBJECT, "sender") ) );
 }
 
 
@@ -66,8 +68,8 @@ void RefFrameNode::_jumped()
 	ScriptInstance * si = get_script_instance();
 	if ( si != nullptr )
 	{
-		const Variant *ptr[1] = {};
-		get_script_instance()->call_multilevel( "_jumped", ptr, 0 );
+		//const Variant *ptr[1] = {};
+		get_script_instance()->call_multilevel( "_jumped", nullptr, 0 );
 	}
 	if ( debug_ )
 		print_line( "jumped" );
@@ -78,11 +80,24 @@ void RefFrameNode::_parent_jumped()
 	ScriptInstance * si = get_script_instance();
 	if ( si != nullptr )
 	{
-		const Variant *ptr[1] = {};
-		get_script_instance()->call_multilevel( "_parent_jumped", ptr, 0 );
+		//const Variant *ptr[1] = {};
+		get_script_instance()->call_multilevel( "_parent_jumped", nullptr, 0 );
 	}
 	if ( debug_ )
 		print_line( "parent jumped" );
+}
+
+void RefFrameNode::_child_jumped( RefFrameNode * child_ref_frame )
+{
+	ScriptInstance * si = get_script_instance();
+	if ( si != nullptr )
+	{
+		const Variant arg( child_ref_frame );
+		const Variant *ptr[1] = { &arg };
+		get_script_instance()->call_multilevel( "_child_jumped", ptr, 1 );
+	}
+	if ( debug_ )
+		print_line( "child jumped" );
 }
 
 RefFrameNode::RefFrameNode()
@@ -317,22 +332,14 @@ void RefFrameNode::jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 )
 	jump_to_( dest, dest_se3->se3 );
 }
 
-void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
+void RefFrameNode::jump_to_( Node * destination, const SE3 & dest_se3 )
 {
 	const int qty = get_child_count();
-	RefFrameNode * dest_rf;
 	Node * p = get_parent();
-	if ( dest == nullptr )
-	{
-		dest_rf = nullptr;
-	}
-	else
-	{
-		if ( dest != this )
-			dest_rf = Object::cast_to<RefFrameNode>( dest );
-		else
-			dest_rf = Object::cast_to<RefFrameNode>( p );
-	}
+	Node * dest = ( destination == nullptr ) ? p : destination;
+	RefFrameNode * dest_rf = ( dest == nullptr ) ?
+									nullptr :
+									Object::cast_to<RefFrameNode>( dest );
 
 	SE3 dest_se3_adjusted;
 	if ( dest != this )
@@ -380,7 +387,7 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 		ch->se3_ = se3_child_to;
 	}
 
-	if ( dest != this )
+	if ( (dest != this) && (p != dest) )
 	{
 		if ( p != nullptr )
 		{
@@ -388,9 +395,9 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 			p->remove_child( this );
 		}
 
-		if ( dest_rf )
+		if ( dest )
 		{
-			dest_rf->add_child( this );
+			dest->add_child( this );
 		}
 	}
 
@@ -408,6 +415,10 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 			continue;
 		ch->_parent_jumped();
 	}
+
+	// Call child jumped in parent.
+	if ( dest_rf != nullptr )
+		dest_rf->_child_jumped( this );
 }
 
 

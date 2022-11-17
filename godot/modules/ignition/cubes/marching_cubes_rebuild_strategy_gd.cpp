@@ -30,6 +30,7 @@ void MarchingCubesRebuildStrategyGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_rescale_depth_rel_tangent", "dist"), &MarchingCubesRebuildStrategyGd::set_rescale_depth_rel_tangent );
 	ClassDB::bind_method( D_METHOD("get_rescale_depth_rel_tangent"),         &MarchingCubesRebuildStrategyGd::get_rescale_depth_rel_tangent, Variant::REAL );
 
+	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ),       "set_radius",       "get_radius" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ),       "set_height",       "get_height" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rebuild_dist" ), "set_rebuild_dist", "get_rebuild_dist" );

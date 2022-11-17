@@ -19,6 +19,7 @@ void VolumeNodeSizeStrategyGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("clear_node_sizes"), &VolumeNodeSizeStrategyGd::clear_node_sizes );
 	ClassDB::bind_method( D_METHOD("set_node_sizes", "distances", "node_sizes"), &VolumeNodeSizeStrategyGd::set_node_sizes );
 
+	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL,    "radius" ),        "set_radius",        "get_radius" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "focal_point" ),   "set_focal_point",   "get_focal_point" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL,    "height" ),        "set_height",        "get_height" );

@@ -71,10 +71,11 @@ public:
 	void apply_jump();
 	void jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 );
 	// This is actual implementation.
-	void jump_to_( Node * dest, const SE3 & dest_se3 );
+	void jump_to_( Node * destination, const SE3 & dest_se3 );
 	// Callbacks for script notification.
 	void _jumped();
 	void _parent_jumped();
+	void _child_jumped( RefFrameNode * child_ref_frame );
 
 	/// Compute relative state in the most generic way.
 	/// Provide two points in local and in root frames.

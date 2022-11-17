@@ -49,6 +49,7 @@ void CelestialMotionRef::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_debug", "en"), &CelestialMotionRef::set_debug );
 	ClassDB::bind_method( D_METHOD("get_debug"), &CelestialMotionRef::get_debug, Variant::BOOL );
 
+	ADD_GROUP( "Ignition", "" );
     ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "allow_orbiting" ),       "set_allow_orbiting",       "get_allow_orbiting" );
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),                  "set_se3",                  "get_se3" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "force_numerical" ),      "set_force_numerical",      "get_force_numerical" );

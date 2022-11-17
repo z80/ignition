@@ -13,7 +13,8 @@ void MarchingVolumeObjectGd::_bind_methods()
 
     ClassDB::bind_method( D_METHOD("set_bounding_radius", "r"), &MarchingVolumeObjectGd::set_bounding_radius );
     ClassDB::bind_method( D_METHOD("get_bounding_radius"),      &MarchingVolumeObjectGd::get_bounding_radius, Variant::REAL );
-    
+
+	ADD_GROUP( "Ignition", "" );
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ), "set_se3", "get_se3" );
     ADD_PROPERTY( PropertyInfo( Variant::REAL, "bounding_radius" ), "set_bounding_radius", "get_bounding_radius" );
 }
