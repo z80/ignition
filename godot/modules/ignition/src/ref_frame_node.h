@@ -76,6 +76,7 @@ public:
 	void _jumped();
 	void _parent_jumped();
 	void _child_jumped( RefFrameNode * child_ref_frame );
+	void _child_entered( RefFrameNode * child_ref_frame );
 	void _child_left( RefFrameNode * child_ref_frame );
 
 	/// Compute relative state in the most generic way.

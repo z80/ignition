@@ -100,6 +100,19 @@ void RefFrameNode::_child_jumped( RefFrameNode * child_ref_frame )
 		print_line( "child jumped" );
 }
 
+void RefFrameNode::_child_entered( RefFrameNode * child_ref_frame )
+{
+	ScriptInstance * si = get_script_instance();
+	if ( si != nullptr )
+	{
+		const Variant arg( child_ref_frame );
+		const Variant *ptr[1] = { &arg };
+		get_script_instance()->call_multilevel( "_child_entered", ptr, 1 );
+	}
+	if ( debug_ )
+		print_line( "child entered" );
+}
+
 void RefFrameNode::_child_left( RefFrameNode * child_ref_frame )
 {
 	ScriptInstance * si = get_script_instance();
@@ -425,23 +438,26 @@ void RefFrameNode::jump_to_( Node * destination, const SE3 & dest_se3 )
 	{
 		Node * n = get_child( i );
 		RefFrameNode * ch = Object::cast_to<RefFrameNode>( n );
-		if ( !ch )
+		if ( ch == nullptr )
 			continue;
 		ch->_parent_jumped();
 	}
 
 	// Call child jumped in parent.
-	if ( dest_rf != nullptr )
+	if ( p != dest_rf )
 	{
-		dest_rf->_child_jumped( this );
-		if ( p != dest_rf )
+		if ( dest_rf != nullptr )
+			dest_rf->_child_entered( this );
+		if ( p != nullptr )
 		{
 			RefFrameNode * parent_rf = Object::cast_to<RefFrameNode>( p );
-			if (parent_rf != nullptr)
-			{
-				parent_rf->_child_left( this );
-			}
+			parent_rf->_child_left( this );
 		}
+	}
+	else
+	{
+		if ( dest_rf != nullptr )
+			dest_rf->_child_jumped( this );
 	}
 }
 
