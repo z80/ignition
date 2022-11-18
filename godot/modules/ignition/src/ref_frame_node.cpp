@@ -56,9 +56,7 @@ void RefFrameNode::_bind_methods()
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "angular_velocity" ), "set_w", "w" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL,      "debug" ), "set_debug", "get_debug" );
 	//Otherwise continuously requests "SE3" in editor.
-	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),      "set_se3", "get_se3" );
-
-	ADD_SIGNAL( MethodInfo( "jumped", PropertyInfo(Variant::OBJECT, "sender") ) );
+	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ),              "set_se3", "get_se3" );
 }
 
 
@@ -359,14 +357,22 @@ void RefFrameNode::jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 )
 	jump_to_( dest, dest_se3->se3 );
 }
 
-void RefFrameNode::jump_to_( Node * destination, const SE3 & dest_se3 )
+void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 {
 	const int qty = get_child_count();
+	RefFrameNode * dest_rf;
 	Node * p = get_parent();
-	Node * dest = ( destination == nullptr ) ? p : destination;
-	RefFrameNode * dest_rf = ( dest == nullptr ) ?
-									nullptr :
-									Object::cast_to<RefFrameNode>( dest );
+	if ( dest == nullptr )
+	{
+		dest_rf = nullptr;
+	}
+	else
+	{
+		if ( dest != this )
+			dest_rf = Object::cast_to<RefFrameNode>( dest );
+		else
+			dest_rf = Object::cast_to<RefFrameNode>( p );
+	}
 
 	SE3 dest_se3_adjusted;
 	if ( dest != this )
@@ -414,7 +420,7 @@ void RefFrameNode::jump_to_( Node * destination, const SE3 & dest_se3 )
 		ch->se3_ = se3_child_to;
 	}
 
-	if ( (dest != this) && (p != dest) )
+	if ( dest != this )
 	{
 		if ( p != nullptr )
 		{
@@ -451,7 +457,8 @@ void RefFrameNode::jump_to_( Node * destination, const SE3 & dest_se3 )
 		if ( p != nullptr )
 		{
 			RefFrameNode * parent_rf = Object::cast_to<RefFrameNode>( p );
-			parent_rf->_child_left( this );
+			if ( parent_rf != nullptr )
+				parent_rf->_child_left( this );
 		}
 	}
 	else
