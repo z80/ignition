@@ -148,6 +148,12 @@ func _create_physics_environment():
 	_physics_env = env
 
 
+
+func get_physics_environment():
+	return _physics_env
+
+
+
 func _destroy_physics_environment():
 	if _physics_env != null:
 		_physics_env.queue_free()

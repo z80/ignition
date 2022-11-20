@@ -269,6 +269,13 @@ func _async_rescale_worker_finished( ad: AsyncData ):
 
 
 
+func get_surface_source():
+	var surf: Node = _surfaces[0]
+	var ret: Resource = surf.get_surface_source()
+	return ret
+
+
+
 
 
 
@@ -294,6 +301,11 @@ class AsyncData:
 
 		surface = surf
 		
+
+
+
+
+
 
 
 

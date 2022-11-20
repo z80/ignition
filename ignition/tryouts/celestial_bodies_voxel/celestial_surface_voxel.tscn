@@ -1,12 +1,14 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel/celestial_surface_voxel.gd" type="Script" id=1]
 [ext_resource path="res://tryouts/celestial_bodies_voxel/all_surfaces.tscn" type="PackedScene" id=2]
+[ext_resource path="res://tryouts/celestial_bodies_voxel/rotation.gd" type="Script" id=3]
 
 [node name="Translation" type="RefFrameNode"]
 script = ExtResource( 1 )
 rotation_period_hrs = 1.0
 
 [node name="Rotation" type="RefFrameNode" parent="."]
+script = ExtResource( 3 )
 
 [node name="All_Surfaces" parent="Rotation" instance=ExtResource( 2 )]

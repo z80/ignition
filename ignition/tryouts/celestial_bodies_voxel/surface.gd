@@ -170,6 +170,10 @@ func get_identity_distance():
 	return d
 
 
+func get_surface_source():
+	return surface_source
+
+
 func get_node_sizes():
 	var pairs: Array = surface_source.node_sizes
 	var qty: int = pairs.size()

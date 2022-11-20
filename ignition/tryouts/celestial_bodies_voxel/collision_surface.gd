@@ -33,8 +33,7 @@ func _set_rebuild_dist( d: float ):
 		_rebuild_strategy.rebuild_dist = rebuild_dist
 
 
-func rebuild_surface( ref_frame: RefFrameNode, planet: RefFrameNode, surface_source: Resource ):
-	var rotation: RefFrameNode = planet.rotation_rf()
+func rebuild_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_source: Resource ):
 	var p: RefFrameNode = ref_frame.get_parent()
 	if (rotation != p):
 		if _is_ready:
@@ -54,7 +53,7 @@ func rebuild_surface( ref_frame: RefFrameNode, planet: RefFrameNode, surface_sou
 		var focus_depth: float = surface_source.focus_depth
 		_rebuild_strategy.height = focus_depth
 	
-	var view_point_se3: Se3Ref = ref_frame.relative_to( planet )
+	var view_point_se3: Se3Ref = ref_frame.relative_to( rotation )
 	var need_rebuild: bool = _rebuild_strategy.need_rebuild( view_point_se3 )
 	if need_rebuild and (not _is_busy):
 		_is_busy = true
@@ -88,7 +87,7 @@ func rebuild_surface( ref_frame: RefFrameNode, planet: RefFrameNode, surface_sou
 	# there are no asynchronous operations with the 
 	# surface builder.
 	if _is_ready and (not _is_busy):
-		_rebuild_surface_finished( data )
+		_update_surface_worker( data )
 	
 	# And now if we have initiate asynchronous surface build.
 	if need_rebuild:
@@ -111,16 +110,8 @@ func _rebuild_surface_worker( data: RebuildData ):
 
 
 func _rebuild_surface_finished( data: RebuildData ):
-	var surface_source: Resource = data.surface_source
-	var identity_distance: float = surface_source.identity_distance
-	var source_se3: Se3Ref       = data.source_se3
-	
-	var collision_triangles: PoolVector3Array = _voxel_surface.collision_faces( source_se3, identity_distance )
-	
-	var shape: ConcavePolygonShape = _collision_shape.shape
-	shape.set_faces(  collision_triangles )
+	_update_surface_worker( data )
 	_is_busy = false
-	_is_ready = true
 
 
 
@@ -134,6 +125,29 @@ class RebuildData:
 
 
 
+# This one queries triangles closest to the ref. frame center.
+func update_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_source: Resource ):
+	var source_se3: Se3Ref = rotation.relative_to( ref_frame )
+
+	var data: RebuildData = RebuildData.new()
+	data.source_se3     = source_se3
+	data.surface_source = surface_source
+	
+	_update_surface_worker( data )
+
+
+
+
+func _update_surface_worker( data: RebuildData ):
+	var surface_source: Resource = data.surface_source
+	var identity_distance: float = surface_source.identity_distance
+	var source_se3: Se3Ref       = data.source_se3
+	
+	var collision_triangles: PoolVector3Array = _voxel_surface.collision_faces( source_se3, identity_distance )
+	
+	var shape: ConcavePolygonShape = _collision_shape.shape
+	shape.set_faces(  collision_triangles )
+	_is_ready = true
 
 
 
