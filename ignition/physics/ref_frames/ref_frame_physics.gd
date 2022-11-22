@@ -6,15 +6,6 @@ var _physics_env = null
 
 var Clustering = preload( "res://physics/ref_frames/clustering.gd" )
 
-# Surface collision.
-var SurfaceProvider = preload( "res://physics/bodies/surface_provider/surface_provider.tscn" )
-var _surface_provider = null
-
-# Subdividion source reference in order to determine 
-# if it's time to rebuild the sphere visual and collision surface.
-# Can collide with just one.
-var _subdivide_source_physical: SubdivideSourceRef = null
-
 # This is the thing which computes celestial orbits.
 # It is TODO. Not yet really integrated.
 var motion: CelestialMotionRef = null
@@ -128,8 +119,6 @@ func ready():
 	.ready()
 	_create_physics_environment()
 	_create_motion()
-	_create_surface_provider()
-	_create_subdivide_source()
 	
 	add_to_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
 
@@ -160,37 +149,12 @@ func _destroy_physics_environment():
 		_physics_env = null
 
 
-func _create_surface_provider():
-	if _surface_provider != null:
-		return
-	_surface_provider = SurfaceProvider.instance()
-	_surface_provider.init()
-	_surface_provider.change_parent( self )
-
-
-func _create_subdivide_source():
-	if _subdivide_source_physical != null:
-		return
-	
-	_subdivide_source_physical = SubdivideSourceRef.new()
-
-
 # This one is called by Bodies in order to enable physics. 
 func add_physics_body( body: RigidBody ):
 	if _physics_env != null:
 		_physics_env.add_physics_body( body )
 
 
-
-func set_surface_vertices( verts: PoolVector3Array, se3: Se3Ref ):
-	print( "surface provides is given ", verts.size(), " vertices" )
-	if _surface_provider != null:
-		_surface_provider.set_vertices( verts, se3 )
-
-
-func update_surface_vertices( se3: Se3Ref ):
-	if _surface_provider != null:
-		_surface_provider.update_vertices( se3 )
 
 
 func init_physics():
@@ -307,7 +271,7 @@ func jump_if_needed():
 	#	return
 	
 	# Compute center of all bodies in the ref frame.
-	var bodies: Array = child_bodies( false )
+	var bodies: Array = child_bodies()
 	var qty: int =  bodies.size()
 	if qty < 1:
 		return
@@ -334,14 +298,6 @@ func jump_if_needed():
 	t.origin = r
 	jump( t, v )
 	
-	# Enforce collision layer and visual subdivide.
-	_subdivide_source_physical.force_subdivide()
-#	var player_rf: RefFrameNode = PhysicsManager.get_player_ref_frame()
-#	if self == player_rf:
-#		PhysicsManager.force_rebuild_visual_spheres()
-	#_jumps_left -= 1
-
-
 # Trying to override the default one in order to take into account
 # orbital motion.
 func set_se3( se3: Se3Ref ):
@@ -555,7 +511,7 @@ func child_physics_bodies():
 	var bodies: Array = []
 	for ch in children:
 		var b: PhysicsBodyBase = ch as PhysicsBodyBase
-		var include: bool = (b != null) and (b != _surface_provider)
+		var include: bool = (b != null)
 		if not include:
 			continue
 		
@@ -564,14 +520,12 @@ func child_physics_bodies():
 	return bodies
 
 
-func child_bodies( including_surf_provider: bool = false ):
+func child_bodies():
 	var children = get_children()
 	var bodies = []
 	for ch in children:
 		var b = ch as RefFrameNode
 		var include: bool = (b != null)
-		if not including_surf_provider:
-			include = include and (b != _surface_provider)
 		if ch == PhysicsManager.camera:
 			continue
 		if include:
@@ -580,14 +534,12 @@ func child_bodies( including_surf_provider: bool = false ):
 	return bodies
 
 
-func root_most_child_bodies( including_surf_provider: bool = false ):
+func root_most_child_bodies():
 	var children = get_children()
 	var bodies = []
 	for ch in children:
 		var b = ch as RefFrameNode
 		var include: bool = (b != null)
-		if not including_surf_provider:
-			include = include and (b != _surface_provider)
 		# Don't use camera.
 		if ch == PhysicsManager.camera:
 			continue
@@ -647,11 +599,6 @@ func parent_bodies():
 
 
 
-func get_subdivide_source():
-	return _subdivide_source_physical
-
-
-
 func distance( b: RefFramePhysics ):
 	var bodies_a: Array = root_most_child_bodies()
 	var bodies_b: Array = b.root_most_child_bodies()
@@ -687,13 +634,6 @@ func on_delete():
 	# Just in case if camera is parented to this rf directly.
 	on_delete_rescue_camera()
 	finit_physics()
-	if (_surface_provider != null) and is_instance_valid(_surface_provider):
-		_surface_provider.queue_free()
-		_surface_provider = null
-	# It's subclassed from a reference.
-	# Should be enough to just remove all references to 
-	# make it released.
-	_subdivide_source_physical = null
 	
 	.on_delete()
 
