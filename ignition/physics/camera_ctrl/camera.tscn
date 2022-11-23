@@ -23,7 +23,7 @@ rings = 8
 
 [sub_resource type="CapsuleMesh" id=4]
 
-[node name="Root" type="RefFrameNode"]
+[node name="PlayerCamera" type="RefFrameNode"]
 script = ExtResource( 2 )
 
 [node name="Camera" type="Camera" parent="."]
@@ -53,6 +53,5 @@ directional_shadow_max_distance = 50.0
 transform = Transform( 0.1, 0, 0, 0, 0.0771069, -0.0636751, 0, 0.0636751, 0.0771069, -0.787738, 0, -0.338168 )
 visible = false
 mesh = SubResource( 4 )
-material/0 = null
 
 [node name="BroadTreeVisualization" parent="." instance=ExtResource( 3 )]
