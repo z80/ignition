@@ -48,6 +48,7 @@ func rebuild_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_s
 	
 	# Find if subdivision is needed.
 	if not _initialized_strategy:
+		_initialized_strategy = true
 		var r: float = surface_source.source_radius
 		_rebuild_strategy.radius = r
 		var focus_depth: float = surface_source.focus_depth
@@ -106,6 +107,7 @@ func _rebuild_surface_worker( data: RebuildData ):
 	_voxel_surface.max_nodes_qty   = 20000000
 	_voxel_surface.split_precision = 0.01
 	var ok: bool = _voxel_surface.subdivide_source( source_radius, source, _node_size_strategy )
+	_voxel_surface.b
 	return data
 
 
@@ -140,9 +142,10 @@ func update_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_so
 
 func _update_surface_worker( data: RebuildData ):
 	var surface_source: Resource = data.surface_source
-	var identity_distance: float = surface_source.identity_distance
+	var identity_distance: float = 1000.0 #surface_source.identity_distance
 	var source_se3: Se3Ref       = data.source_se3
 	
+	var qty: int = _voxel_surface.get_nodes_qty()
 	var collision_triangles: PoolVector3Array = _voxel_surface.collision_faces( source_se3, identity_distance )
 	
 	var shape: ConcavePolygonShape = _collision_shape.shape

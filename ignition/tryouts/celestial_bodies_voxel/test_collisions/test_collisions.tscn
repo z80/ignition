@@ -4,14 +4,12 @@
 [ext_resource path="res://physics/ref_frames/ref_frame_physics.gd" type="Script" id=2]
 [ext_resource path="res://physics/camera_ctrl/camera.tscn" type="PackedScene" id=3]
 [ext_resource path="res://physics/parts/characters/character.gd" type="Script" id=4]
-[ext_resource path="res://tryouts/celestial_bodies_voxel/collision_surface.tscn" type="PackedScene" id=5]
+[ext_resource path="res://tryouts/celestial_bodies_voxel/test_collisions/test_collisions.gd" type="Script" id=5]
 
 [node name="RefFrameRoot" type="RefFrameNode"]
+script = ExtResource( 5 )
 
 [node name="Planet" parent="." instance=ExtResource( 1 )]
-
-[node name="Rotation" parent="Planet" index="0"]
-collision_surface_scene = ExtResource( 5 )
 
 [node name="RefFramePhysics" type="RefFrameNode" parent="Planet/Rotation" index="1"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1050, 0, 0 )
