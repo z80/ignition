@@ -369,9 +369,13 @@ const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, i
 	for ( unsigned int i=0; i<qty; i++ )
 	{
 		const NodeFace & f = _all_faces[i];
-		const int face_material_ind = f.material_ind;
-		if ( face_material_ind != material_ind )
-			continue;
+		if (material_ind >= 0)
+		{
+			const int face_material_ind = f.material_ind;
+			if (face_material_ind != material_ind)
+				continue;
+		}
+
 		for ( int j=0; j<3; j++ )
 		{
 			const Vector3d source_v = f.vertices[j];
@@ -397,9 +401,13 @@ const std::vector<Vector3> & MarchingCubesDual::normals( int material_ind )
 	for ( unsigned int i=0; i<qty; i++ )
 	{
 		const NodeFace & f = _all_faces[i];
-		const int ind = f.material_ind;
-		if (ind != material_ind)
-			continue;
+		if (material_ind >= 0)
+		{
+			const int face_material_ind = f.material_ind;
+			if (face_material_ind != material_ind)
+				continue;
+		}
+
 		for ( int j=0; j<3; j++ )
 		{
 			const Vector3d & v = f.normals[j];
@@ -417,9 +425,12 @@ const std::vector<real_t>  & MarchingCubesDual::tangents( int material_ind )
 	for ( unsigned int i=0; i<qty; i++ )
 	{
 		const NodeFace & f = _all_faces[i];
-		const int ind = f.material_ind;
-		if (ind != material_ind)
-			continue;
+		if (material_ind >= 0)
+		{
+			const int face_material_ind = f.material_ind;
+			if (face_material_ind != material_ind)
+				continue;
+		}
 
 		const Vector3d & t = f.tangent;
 		_ret_tangs.push_back( t.x_ );
@@ -441,9 +452,13 @@ void MarchingCubesDual::uvs( int material_ind, const std::vector<Vector2> * & re
 	for ( unsigned int i=0; i<qty; i++ )
 	{
 		const NodeFace & f = _all_faces[i];
-		const int ind = f.material_ind;
-		if (ind != material_ind)
-			continue;
+		if (material_ind >= 0)
+		{
+			const int face_material_ind = f.material_ind;
+			if (face_material_ind != material_ind)
+				continue;
+		}
+
 		for ( int j=0; j<3; j++ )
 		{
 			const Vector3d & v = f.vertices[j];
@@ -470,9 +485,12 @@ void MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, int mater
 		for ( unsigned int i=0; i<qty; i++ )
 		{
 			const NodeFace & f = _all_faces[i];
-			const int ind = f.material_ind;
-			if (ind != material_ind)
-				continue;
+			if (material_ind >= 0)
+			{
+				const int ind = f.material_ind;
+				if (ind != material_ind)
+					continue;
+			}
 			for ( int j=0; j<3; j++ )
 			{
 				const Vector3d & v = f.vertices[j];
