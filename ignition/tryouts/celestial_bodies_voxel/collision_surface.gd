@@ -91,8 +91,10 @@ func rebuild_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_s
 		_update_surface_worker( data )
 	
 	# And now if we have initiate asynchronous surface build.
-	if need_rebuild:
-		WorkersPool.push_back_with_arg( self, "_rebuild_surface_worker", "_rebuild_surface_finished", data )
+	#if need_rebuild:
+	#	WorkersPool.push_back_with_arg( self, "_rebuild_surface_worker", "_rebuild_surface_finished", data )
+	_rebuild_surface_worker( data )
+	_rebuild_surface_finished( data )
 
 
 
@@ -100,6 +102,7 @@ func rebuild_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_s
 
 func _rebuild_surface_worker( data: RebuildData ):
 	var surface_source: Resource = data.surface_source
+	var source_se3: Se3Ref = data.source_se3
 	
 	var source_radius: float = surface_source.source_radius
 	var source: VolumeSourceGd = surface_source.get_source()
@@ -107,7 +110,7 @@ func _rebuild_surface_worker( data: RebuildData ):
 	_voxel_surface.max_nodes_qty   = 20000000
 	_voxel_surface.split_precision = 0.01
 	var ok: bool = _voxel_surface.subdivide_source( source_radius, source, _node_size_strategy )
-	_voxel_surface.b
+	_voxel_surface.precompute_scaled_values( source_se3, -1, null )
 	return data
 
 
@@ -142,7 +145,7 @@ func update_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_so
 
 func _update_surface_worker( data: RebuildData ):
 	var surface_source: Resource = data.surface_source
-	var identity_distance: float = 1000.0 #surface_source.identity_distance
+	var identity_distance: float = 10000.0 #surface_source.identity_distance
 	var source_se3: Se3Ref       = data.source_se3
 	
 	var qty: int = _voxel_surface.get_nodes_qty()

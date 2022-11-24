@@ -89,7 +89,10 @@ void MarchingCubesDualNode::query_faces( MarchingCubesDual * tree, const Marchin
 {
 	const bool intersects = this->intersects( node );
 	if ( !intersects )
+	{
+		this->intersects( node );
 		return;
+	}
 
 	const bool has_ch = this->has_children();
 	if ( has_ch )

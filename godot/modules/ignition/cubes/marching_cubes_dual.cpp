@@ -551,14 +551,29 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const SE3 & src
 
 	const SE3 view_point_se3   = src_se3.inverse();
 	const Vector3d center      = view_point_se3.r_;
-	const VectorInt center_int = VectorInt( static_cast<int>( center.x_ / step ),
-		                                    static_cast<int>( center.y_ / step ),
-		                                    static_cast<int>( center.z_ / step ) );
-	const int size_int         = static_cast<int>( dist / step ) * 2;
+	const int size_int         = static_cast<int>( dist / step );
+	const VectorInt center_int = VectorInt( static_cast<int>( center.x_ / step ) - size_int,
+		                                    static_cast<int>( center.y_ / step ) - size_int,
+		                                    static_cast<int>( center.z_ / step ) - size_int );
 
 	MarchingCubesDualNode node;
 	node.at   = center_int;
-	node.size = size_int;
+	node.size = size_int*2;
+
+	{
+		int faces_qty_total = 0;
+		const int qty = _octree_nodes.size();
+		for ( int i=0; i<qty; i++ )
+		{
+			MarchingCubesDualNode * n = _octree_nodes[i];
+			const int faces_qty = n->faces_qty;
+			faces_qty_total += faces_qty;
+			if ( faces_qty > 0 )
+			{
+				int j=0;
+			}
+		}
+	}
 
 	root->query_faces( this, node, _face_indices_set );
 	for ( MaterialsSet::const_iterator it=_face_indices_set.begin(); it!=_face_indices_set.end(); it++ )
