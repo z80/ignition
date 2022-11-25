@@ -19,5 +19,6 @@ script = ExtResource( 2 )
 script = ExtResource( 4 )
 
 [node name="PlayerCamera" parent="Planet/Rotation/RefFramePhysics/Character" instance=ExtResource( 3 )]
+map_mode = true
 
 [editable path="Planet"]

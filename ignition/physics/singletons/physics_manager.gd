@@ -235,9 +235,9 @@ func process_celestial_body_children():
 func update_camera( delta: float ):
 	var ClosestForceSource = load( "res://physics/utils/closest_force_source.gd" )
 	# Update camera orientation.
-	var pc: PhysicsBodyBase = PhysicsManager.player_control
-	if pc == null:
-		return
+#	var pc: PhysicsBodyBase = PhysicsManager.player_control
+#	if pc == null:
+#		return
 	
 	var c: RefFrameNode = PhysicsManager.camera
 	

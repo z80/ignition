@@ -8,7 +8,8 @@ extends RefFrameNode
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	var cam: Node = get_node( "Planet/Rotation/RefFramePhysics/Character/PlayerCamera" )
+	PhysicsManager.camera = cam
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
