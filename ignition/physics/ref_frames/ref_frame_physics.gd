@@ -86,7 +86,20 @@ func evolve_motion( _dt: float ):
 	# SE3 is assigned internally.
 #	if _dt > 0.1:
 #		_dt = 0.1
+
+	# This is for debugging.
+#	var root = get_node( "/root/RefFrameRoot" )
+#	PhysicsManager.camera.debug = true
+#	var se3 = PhysicsManager.camera.relative_to( root )
+#	PhysicsManager.camera.debug = false
+	
 	motion.process_rf( _dt, self )
+
+	# This is for debugging.
+#	root = get_node( "/root/RefFrameRoot" )
+#	PhysicsManager.camera.debug = true
+#	se3 = PhysicsManager.camera.relative_to( root )
+#	PhysicsManager.camera.debug = false
 	
 #	var n: String = self.name
 #	if n != "rf_p for my_character":
@@ -127,6 +140,7 @@ func ready():
 func _create_motion():
 	motion = CelestialMotionRef.new()
 	motion.allow_orbiting = false
+	motion.se3 = self.get_se3()
 
 
 func _create_physics_environment():

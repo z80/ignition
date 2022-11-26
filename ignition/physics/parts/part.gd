@@ -645,6 +645,13 @@ func create_super_body():
 	var se3: Se3Ref = self.get_se3()
 	sb.set_se3( se3 )
 	
+#	var cam = PhysicsManager.camera
+#	if cam != null:
+#		var root = get_node( "/root/RefFrameRoot" )
+#		cam.debug = true
+#		se3 = cam.relative_to( root )
+#		cam.debug = false
+	
 	# Add all bodies to this super body.
 	var bodies: Array = dfs_search( self )
 	for body in bodies:

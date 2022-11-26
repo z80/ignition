@@ -387,10 +387,20 @@ func _process_tps_azimuth( _delta ):
 		return
 	
 	# Adjust current orientation.
+#	player_ctrl.debug = true
+#	celestial_body.debug = true
+#	self.debug = true
+#	var se3_rel__: Se3Ref = PhysicsManager.camera.relative_to( celestial_body )
+	
 	var se3_rel: Se3Ref = player_ctrl.relative_to( celestial_body )
 	var wanted_up: Vector3 = se3_rel.r.normalized()
 	var actual_up: Vector3  = current_orientation.xform( Vector3.UP )
 	var rot_vector: Vector3 = actual_up.cross( wanted_up )
+
+	player_ctrl.debug = false
+	celestial_body.debug = false
+	self.debug = false
+
 	var co: float = actual_up.dot( wanted_up )
 	var si: float = rot_vector.length()
 	var adj_quat: Quat

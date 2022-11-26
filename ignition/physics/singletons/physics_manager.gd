@@ -62,17 +62,31 @@ func _process( _delta: float ):
 	# moving under gravitational influence of a planet.
 	var orbital_delta: float = _delta * _time_scale_evolution
 
-#	This is for debugging.
-#	var p_rf: RefFrameNode = get_player_ref_frame()
-#	if p_rf == null:
-#		var i: int = 0
+	# This is for debugging.
+#	var root = get_node( "/root/RefFrameRoot" )
+#	PhysicsManager.camera.debug = true
+#	var se3: Se3Ref = PhysicsManager.camera.relative_to( root )
+#	PhysicsManager.camera.debug = false
 	
 	var camera = PhysicsManager.camera
 	if (camera == null) or ( not is_instance_valid(camera) ):
 		return
 	update_bodies_visual()
 	update_providers()
+	
+	# This is for debugging.
+#	root = get_node( "/root/RefFrameRoot" )
+#	PhysicsManager.camera.debug = true
+#	se3 = PhysicsManager.camera.relative_to( root )
+#	PhysicsManager.camera.debug = false
+	
 	update_planets( orbital_delta )
+	
+	# This is for debugging.
+#	root = get_node( "/root/RefFrameRoot" )
+#	PhysicsManager.camera.debug = true
+#	se3 = PhysicsManager.camera.relative_to( root )
+#	PhysicsManager.camera.debug = false
 	
 	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
 	var ref_frames: Array = get_tree().get_nodes_in_group( group )
@@ -83,9 +97,21 @@ func _process( _delta: float ):
 			continue
 		rf.evolve( orbital_delta )
 	
+	# This is for debugging.
+#	root = get_node( "/root/RefFrameRoot" )
+#	PhysicsManager.camera.debug = true
+#	se3 = PhysicsManager.camera.relative_to( root )
+#	PhysicsManager.camera.debug = false
+	
 	# Relocate children of celestial bodies depending on the 
 	# gravitational influence and atmosphere bounds.
 	process_celestial_body_children()
+	
+	# This is for debugging.
+#	root = get_node( "/root/RefFrameRoot" )
+#	PhysicsManager.camera.debug = true
+#	se3 = PhysicsManager.camera.relative_to( root )
+#	PhysicsManager.camera.debug = false
 	
 	# Camera should be updated the last, after all poses are set.
 	update_camera( _delta )

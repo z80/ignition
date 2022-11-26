@@ -483,7 +483,18 @@ SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const S
 	while (rf != nullptr)
 	{
 		if ( debug_ )
-			print_line( String("queueA <- \"") + rf->get_name() + String("\"") );
+		{
+			const SE3 & se3 = rf->se3_;
+			print_line( String("queueA <- \"") + rf->get_name() + String("\", r: (") +
+			            rtos(se3.r_.x_) + String( ", ") +
+						rtos(se3.r_.y_) + String( ", ") +
+						rtos(se3.r_.z_) + String( "); q: (") +
+						rtos(se3.q_.w_) + String( ", ") +
+						rtos(se3.q_.x_) + String( ", ") +
+						rtos(se3.q_.y_) + String( ", ") +
+						rtos(se3.q_.z_) + String( ")")
+			);
+		}
 		queueA_.push_back( rf );
 		rf = rf->parent_rf_();
 	}
@@ -509,8 +520,20 @@ SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const S
 			break;
 		}
 		if ( debug_ )
-			print_line( String("queueB <- \"") + rf->get_name() + String("\"") );
-		queueB_.push_back( rf );
+		{
+			const SE3 & se3 = rf->se3_;
+			print_line( String("queueB <- \"") + rf->get_name() + String("\", r: (") + 
+						rtos(se3.r_.x_) + String( ", ") +
+						rtos(se3.r_.y_) + String( ", ") +
+						rtos(se3.r_.z_) + String( "); q: (") +
+						rtos(se3.q_.w_) + String( ", ") +
+						rtos(se3.q_.x_) + String( ", ") +
+						rtos(se3.q_.y_) + String( ", ") +
+						rtos(se3.q_.z_) + String( ")")
+			);
+		}
+
+			queueB_.push_back( rf );
 		rf = rf->parent_rf_();
 	}
 
@@ -541,6 +564,38 @@ SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const S
 	}
 
 	const SE3 se3_rel = se3A / se3B;
+
+	if ( debug_ )
+	{
+		print_line( String("SE3(A): r: (") + 
+			rtos(se3A.r_.x_) + String( ", ") +
+			rtos(se3A.r_.y_) + String( ", ") +
+			rtos(se3A.r_.z_) + String( "); q: (") +
+			rtos(se3A.q_.w_) + String( ", ") +
+			rtos(se3A.q_.x_) + String( ", ") +
+			rtos(se3A.q_.y_) + String( ", ") +
+			rtos(se3A.q_.z_) + String( ")")
+		);
+		print_line( String("SE3(B): r: (") + 
+			rtos(se3B.r_.x_) + String( ", ") +
+			rtos(se3B.r_.y_) + String( ", ") +
+			rtos(se3B.r_.z_) + String( "); q: (") +
+			rtos(se3B.q_.w_) + String( ", ") +
+			rtos(se3B.q_.x_) + String( ", ") +
+			rtos(se3B.q_.y_) + String( ", ") +
+			rtos(se3B.q_.z_) + String( ")")
+		);
+		print_line( String("SE3(A/B): r: (") + 
+			rtos(se3_rel.r_.x_) + String( ", ") +
+			rtos(se3_rel.r_.y_) + String( ", ") +
+			rtos(se3_rel.r_.z_) + String( "); q: (") +
+			rtos(se3_rel.q_.w_) + String( ", ") +
+			rtos(se3_rel.q_.x_) + String( ", ") +
+			rtos(se3_rel.q_.y_) + String( ", ") +
+			rtos(se3_rel.q_.z_) + String( ")")
+		);
+	}
+
 	return se3_rel;
 }
 
