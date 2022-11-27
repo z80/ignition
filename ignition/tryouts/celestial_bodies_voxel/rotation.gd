@@ -76,7 +76,7 @@ func _create_collision_surfaces():
 		var env: Node = phys.get_physics_environment()
 		var collision_surf: Node = collision_surface_scene.instance()
 		
-		env.add_child( collision_surf )
+		env.add_physics_body( collision_surf )
 		collision_surf.rebuild_surface( phys, self, surface_source )
 		
 		_collision_surfaces[phys] = collision_surf

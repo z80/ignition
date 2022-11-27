@@ -44,7 +44,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://physics/parts/characters/character_visual_base.gd"
 }, {
-"base": "Node",
+"base": "StaticBody",
 "class": "CollisionSurface",
 "language": "GDScript",
 "path": "res://tryouts/celestial_bodies_voxel/collision_surface.gd"

@@ -79,6 +79,9 @@ func _ready():
 		var Force = preload( "res://physics/force_source/force_visualizer.tscn" )
 		force = Force.instance()
 		RootScene.get_root_for_visuals().add_child( force )
+	
+	if _visual == null:
+		init()
 
 
 
@@ -314,7 +317,7 @@ func create_physical():
 
 
 func _create_visual( Visual ):
-	if _visual:
+	if _visual != null:
 		return _visual
 	
 	if Visual == null:

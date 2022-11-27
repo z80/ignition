@@ -1,5 +1,5 @@
 
-extends Node
+extends StaticBody
 class_name CollisionSurface
 
 export(float) var rebuild_dist = 100.0 setget _set_rebuild_dist

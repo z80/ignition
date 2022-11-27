@@ -144,11 +144,14 @@ func _create_motion():
 
 
 func _create_physics_environment():
+	if (_physics_env != null) and is_instance_valid(_physics_env):
+		return
 	var Env = preload( "res://physics/ref_frames/physics_env/physics_env.tscn" )
 	var env = Env.instance()
 	var root: Node = RootScene.get_root_for_physics_envs()
 	root.add_child( env )
 	_physics_env = env
+	_physics_env.set_ref_frame( self )
 
 
 
@@ -165,8 +168,11 @@ func _destroy_physics_environment():
 
 # This one is called by Bodies in order to enable physics. 
 func add_physics_body( body: RigidBody ):
-	if _physics_env != null:
-		_physics_env.add_physics_body( body )
+	if _physics_env == null:
+		_create_physics_environment()
+	
+	# It should exist by now. If it doesn't, I want it to fail right here.
+	_physics_env.add_physics_body( body )
 
 
 
