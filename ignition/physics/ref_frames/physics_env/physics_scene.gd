@@ -14,7 +14,7 @@ func _process(_delta):
 	_align_camera()
 
 
-func add_physics_body( body: RigidBody ):
+func add_physics_body( body: PhysicsBody ):
 	var p: Node = body.get_parent()
 	if p != null:
 		p.remove_child( body )

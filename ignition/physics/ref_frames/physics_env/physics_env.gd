@@ -9,9 +9,8 @@ func _init():
 	_physics_scene = get_node( "Vp/PhysicsScene" )
 
 
-func add_physics_body( body: RigidBody ):
-	var s = get_node( "Vp/PhysicsScene" )
-	s.add_physics_body( body )
+func add_physics_body( body: PhysicsBody ):
+	_physics_scene.add_physics_body( body )
 
 
 func set_ref_frame( ref_frame: RefFrameNode ):

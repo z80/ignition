@@ -8,6 +8,7 @@
 script = ExtResource( 1 )
 VisualScene = ExtResource( 2 )
 PhysicalScene = ExtResource( 3 )
+destruction_dv = 500.0
 part_class = 6
 allows_surface_attachments = false
 allows_y_radial_symmetry = false

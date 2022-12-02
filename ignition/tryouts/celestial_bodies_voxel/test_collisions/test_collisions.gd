@@ -8,6 +8,8 @@ extends RefFrameNode
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	UserInput.gui_control_bool( "gui_group_1", true, true, false )
+	
 	var cam: Node = get_node( "Planet/Rotation/RefFramePhysics/Character/PlayerCamera" )
 	PhysicsManager.camera = cam
 
