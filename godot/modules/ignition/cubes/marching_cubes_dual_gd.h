@@ -40,9 +40,9 @@ public:
 
 	Array materials_used();
 	// This one computes and applies synchronously.
-	void apply_to_mesh( const Ref<Se3Ref> & src_se3, int material_index, Node * mesh_instance, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	void apply_to_mesh( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & central_point_se3, int material_index, Node * mesh_instance, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	// And this one computes and applies in tow different methods.
-	void precompute_scaled_values( const Ref<Se3Ref> & src_se3, int material_index, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	void precompute_scaled_values( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & central_point_se3, int material_index, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	void apply_to_mesh_only( Node * mesh_instance );
 	void apply_to_mesh_only_wireframe( Node * mesh_instance );
 
