@@ -13,7 +13,6 @@ background_sky = SubResource( 1 )
 environment = SubResource( 2 )
 
 [node name="PhysicsEnv" type="ViewportContainer"]
-visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_right = -1.0
@@ -28,8 +27,9 @@ __meta__ = {
 size = Vector2( 1023, 599 )
 own_world = true
 world = SubResource( 3 )
+transparent_bg = true
 handle_input_locally = false
-render_target_update_mode = 0
+render_target_update_mode = 3
 gui_disable_input = true
 
 [node name="PhysicsScene" parent="Vp" instance=ExtResource( 1 )]

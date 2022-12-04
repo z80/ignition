@@ -27,7 +27,7 @@ func init_seed( v ):
 
 
 func value( at: Vector3 ):
-	var SCALE: float = 1000.0
+	var SCALE: float = 300.0
 	var unit: Vector3 = at / SCALE
 	var n: float      = noise.get_noise_3dv( unit )
 	n  *= height/SCALE

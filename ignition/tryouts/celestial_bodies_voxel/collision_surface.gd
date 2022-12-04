@@ -145,7 +145,7 @@ func update_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_so
 
 func _update_surface_worker( data: RebuildData ):
 	var surface_source: Resource = data.surface_source
-	var identity_distance: float = 10000.0 #surface_source.identity_distance
+	var identity_distance: float = 20 #surface_source.identity_distance
 	var source_se3: Se3Ref       = data.source_se3
 	
 	var qty: int = _voxel_surface.get_nodes_qty()

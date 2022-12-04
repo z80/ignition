@@ -11,7 +11,7 @@ const SUN_GROUP_NAME: String                = "sun"
 const INTERACT_NODES_GROUP_NAME: String     = "interact_nodes_group_name"
 
 const DEBUG: bool = true
-const RF_JUMP_DISTANCE: float  = 500.0
+const RF_JUMP_DISTANCE: float  = 10.0
 const RF_SPLIT_DISTANCE: float = 1000.0
 const RF_MERGE_DISTANCE: float = 800.0
 # Switching ref frames.
