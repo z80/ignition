@@ -46,8 +46,8 @@ public:
 	void apply_to_mesh_only( Node * mesh_instance );
 	void apply_to_mesh_only_wireframe( Node * mesh_instance );
 
-	Ref<Se3Ref> compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
-	Transform compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	Ref<Se3Ref> compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	Transform compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
 	const PoolVector3Array & collision_faces( const Ref<Se3Ref> & src_se3, real_t dist );
 
 	void set_max_nodes_qty( int qty );

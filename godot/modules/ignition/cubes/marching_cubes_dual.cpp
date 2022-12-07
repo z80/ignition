@@ -345,9 +345,9 @@ SE3 MarchingCubesDual::asset_se3( const SE3 & src_se3, const SE3 & asset_at, con
 {
 	const SE3 asset_in_world_se3 = src_se3 * asset_at;
 
-	const SE3 pt_se3_in_source = this->compute_source_se3( src_se3, scaler );
-	const SE3 inv_source_se3 = pt_se3_in_source.inverse();
-	const SE3 asset_in_source_se3 = inv_source_se3 * asset_in_world_se3;
+	const SE3 scaled_source_se3     = this->compute_source_se3( src_se3, Vector3d::ZERO, scaler );
+	const SE3 inv_scaled_source_se3 = scaled_source_se3.inverse();
+	const SE3 asset_in_source_se3   = inv_scaled_source_se3 * asset_in_world_se3;
 
 	return asset_in_source_se3;
 }
@@ -367,9 +367,7 @@ const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, c
 	_ret_verts.clear();
 	_ret_verts.reserve(3*qty);
 
-	SE3 central_point_se3 = src_se3;
-	central_point_se3.r_ = central_point;
-	const SE3 scaled_central_point_se3 = compute_source_se3( central_point_se3, scaler );
+	const SE3 scaled_central_point_se3 = compute_source_se3( src_se3, central_point, scaler );
 	const SE3 inv_scaled_central_point_se3 = scaled_central_point_se3.inverse();
 
 	for ( unsigned int i=0; i<qty; i++ )
@@ -600,20 +598,18 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const SE3 & src
 
 
 
-Transform MarchingCubesDual::compute_source_transform( const SE3 & src_se3, const DistanceScalerBase * scaler ) const
+Transform MarchingCubesDual::compute_source_transform( const SE3 & src_se3, const Vector3d & pt_in_source, const DistanceScalerBase * scaler ) const
 {
-	const SE3 se3 = compute_source_se3( src_se3, scaler );
+	const SE3 se3 = compute_source_se3( src_se3, pt_in_source, scaler );
 	const Transform ret = se3.transform();
 	return ret;
 }
 
-SE3 MarchingCubesDual::compute_source_se3( const SE3 & src_se3, const DistanceScalerBase * scaler ) const
+SE3 MarchingCubesDual::compute_source_se3( const SE3 & src_se3, const Vector3d & pt_in_source, const DistanceScalerBase * scaler ) const
 {
-	Vector3d o;
-	if (scaler == nullptr)
-		o = src_se3.r_;
-	else
-		o = scaler->scale( src_se3.r_ );
+	Vector3d o = src_se3 * pt_in_source;
+	if (scaler != nullptr)
+		o = scaler->scale( o );
 
 	SE3 se3( src_se3 );
 	se3.r_ = o;
