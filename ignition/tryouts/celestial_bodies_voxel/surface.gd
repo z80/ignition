@@ -11,11 +11,20 @@ var _surface_meshes: Array = []
 var _voxel_surface: MarchingCubesDualGd   = null
 #var _physical_surface: MarchingCubesDualGd = null
 
+# Here we store the point in source ref. frame with respect to which all 
+# triangles are computed.
+var _local_point_se3: Se3Ref = null
+var _new_local_point_se3: Se3Ref = null
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_surface_meshes = []
 	_voxel_surface = MarchingCubesDualGd.new()
 	_voxel_surface.split_precision = 0.001
+	
+	_local_point_se3 = Se3Ref.new()
+	_new_local_point_se3       = Se3Ref.new()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -65,11 +74,13 @@ func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseR
 	
 	var materials: Array = surface_source.materials
 	
+	var ref_point_transform: Se3Ref = source_se3.mul( _local_point_se3 )
+	
 	var s: DistanceScalerRef = scaler
 	var plain_dist: float = s.plain_distance
 	var log_scale: float  = s.log_scale
-	var source_tr: Transform = source_se3.transform
-	var scaled_source_se3: Se3Ref = _voxel_surface.compute_source_se3( source_se3, scaler )
+	var source_tr: Transform = ref_point_transform.transform
+	var scaled_source_se3: Se3Ref = _voxel_surface.compute_source_se3( source_se3, _local_point_se3, scaler )
 	var inv_scaled_source_se3: Se3Ref = scaled_source_se3.inverse()
 	var inv_scaled_source_tr: Transform = inv_scaled_source_se3.transform
 
@@ -89,7 +100,7 @@ func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseR
 		sm.set_shader_param( "inv_scaled_source_tr", inv_scaled_source_tr )
 
 
-func rescale_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+func rescale_surface( source_se3: Se3Ref, local_point_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	# If succeeded apply to meshes.
 	var material_inds: Array = _voxel_surface.materials_used()
 	
@@ -101,6 +112,8 @@ func rescale_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 	for mi in meshes:
 		mi.visible = false
 	
+	# Remember the new reference point.
+	_new_local_point_se3.copy_from( local_point_se3 )
 	
 	var materials: Array = surface_source.materials
 	
@@ -113,12 +126,15 @@ func rescale_surface( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
 		mesh_inst.visible = true
 		mesh_inst.material_override = materials[material_ind]
 		
-		_voxel_surface.precompute_scaled_values( source_se3, material_ind, scaler )
+		_voxel_surface.precompute_scaled_values( source_se3, local_point_se3, material_ind, scaler )
 	
 	return true
 
 
-func rescale_surface_finished( wireframe: bool = false ):
+func rescale_surface_finished( local_point_se3: Se3Ref, wireframe: bool = false ):
+	# Copy the new reference point.
+	_local_point_se3.copy_from( _new_local_point_se3 )
+	
 	var material_inds: Array = _voxel_surface.materials_used()
 
 	var meshes: Array = []
@@ -145,7 +161,7 @@ func rescale_surface_finished( wireframe: bool = false ):
 
 
 func get_root_se3( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
-	var t: Transform = _voxel_surface.compute_source_transform( source_se3, scaler )
+	var t: Transform = _voxel_surface.compute_source_transform( source_se3, _local_point_se3, scaler )
 	return t
 
 

@@ -31,7 +31,7 @@ func _ready():
 	_async_se3 = Se3Ref.new()
 	_async_workers_qty  = 0
 	async_foliage_ready = true
-
+	
 	_enumerate_surfaces()
 	
 	_rebuild_strategy   = MarchingCubesRebuildStrategyGd.new()
@@ -92,7 +92,7 @@ func _update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBase
 	var data: Array = []
 	for i in range(qty):
 		var surf: Node = _surfaces[i]
-		surf.update_material_properties( source_se3, scaler)
+		surf.update_material_properties( source_se3, scaler )
 
 
 
@@ -217,13 +217,30 @@ func _async_rescale_start( source_se3: Se3Ref ):
 	# Set the focal point.
 	var focal_point_rescale: Vector3 = _rebuild_strategy.get_focal_point_rescale()
 	_node_size_strategy.focal_point = focal_point_rescale
+	
+	
+	# Conpute point on the surface (or under the surface) with respect to which 
+	# vertices should be computed.
+	var surf0: Node   = _surfaces[0]
+	var radius: float = surf0.get_surface_radius()
+	var local_point_se3: Se3Ref = source_se3.inverse()
+	
+	# Shouldn't have any rotation.
+	local_point_se3.q = Quat.IDENTITY
+	
+	var dist: float = local_point_se3.r.length()
+	if dist > radius:
+		local_point_se3.r = local_point_se3.r * (radius / dist)
+
 
 	var data: Array = []
 	for i in range(qty):
 		var surf: Node = _surfaces[i]
 		var ad: AsyncData = AsyncData.new( source_se3, _node_size_strategy, scaler, surf )
-		ad.wireframe = wireframe
-		ad.surface_index = i
+		
+		ad.wireframe       = wireframe
+		ad.surface_index   = i
+		ad.local_point_se3 = local_point_se3
 #		if i == _foliage_surface_index:
 #			var foliage_data = _foliage.async_update_view_point_prepare( source_se3, scaler )
 #			ad.foliage_data = foliage_data
@@ -236,8 +253,9 @@ func _async_rescale_start( source_se3: Se3Ref ):
 func _async_rescale_worker( ad: AsyncData ):
 	var surf: Node = ad.surface
 	var source_se3: Se3Ref = ad.se3
+	var local_point_se3: Se3Ref = ad.local_point_se3
 	var scaler: DistanceScalerBaseRef = ad.scaler
-	surf.rescale_surface( source_se3, scaler )
+	surf.rescale_surface( source_se3, local_point_se3, scaler )
 	
 #	var surface_index: int = ad.surface_index
 #	if surface_index == _foliage_surface_index:
@@ -269,6 +287,7 @@ func _async_rescale_worker_finished( ad: AsyncData ):
 
 
 
+
 func get_surface_source():
 	var surf: Node = _surfaces[0]
 	var ret: Resource = surf.get_surface_source()
@@ -284,6 +303,8 @@ class AsyncData:
 	var se3: Se3Ref
 	var node_size_strategy: VolumeNodeSizeStrategyGd
 	var scaler: DistanceScalerBaseRef
+	
+	var local_point_se3: Se3Ref
 	
 	var surface: Node
 	var callback_data: Array
