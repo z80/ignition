@@ -1,9 +1,6 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=2 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel/foliage.gd" type="Script" id=1]
-[ext_resource path="res://tryouts/celestial_bodies_voxel/surface_sources/test_planet/foliage_sources/foliage_source.tres" type="Resource" id=2]
 
-[node name="Foliage" type="Spatial"]
+[node name="Foliage" type="Node"]
 script = ExtResource( 1 )
-creators = [ ExtResource( 2 ) ]
-fill_dist = 500.0

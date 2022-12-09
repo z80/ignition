@@ -32,7 +32,18 @@ func _exit_tree():
 	clear()
 
 
-
+func _find_planet_surface():
+	var n: Node = self
+	while true:
+		var rf: RefFrameNode = n as RefFrameNode
+		if rf != null:
+			return rf
+		
+		n = n.get_parent()
+		if n == null:
+			break
+	
+	return null
 
 func async_update_population_prepare( all_surfaces: Node, at_in_source: Vector3, scaler: DistanceScalerBaseRef ):
 	#clear()
@@ -48,7 +59,7 @@ func async_update_population_prepare( all_surfaces: Node, at_in_source: Vector3,
 	var node_indices: Array = _voxel_surface.query_close_nodes( at_in_source, fill_dist, fill_node_size )
 	
 	var data: AsyncPopulationUpdataData = AsyncPopulationUpdataData.new()
-	data.foliage        = self
+	data.foliage_parent = _find_planet_surface() # This one should be planet.get_rotation()
 	data.voxel_surface  = _voxel_surface
 	data.voxel_nodes    = []
 	data.asset_creators = creators.duplicate()
@@ -286,7 +297,7 @@ func _get_creator():
 
 class AsyncPopulationUpdataData:
 	var all_surfaces: Node
-	var foliage: Spatial
+	var foliage_parent: Node
 	var voxel_surface: MarchingCubesDualGd
 	var voxel_nodes: Array
 	var asset_creators: Array

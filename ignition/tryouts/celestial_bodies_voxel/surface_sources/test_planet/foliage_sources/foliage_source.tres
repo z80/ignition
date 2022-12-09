@@ -1,7 +1,7 @@
 [gd_resource type="Resource" load_steps=3 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel/surface_sources/test_planet/foliage_sources/foliage_source.gd" type="Script" id=1]
-[ext_resource path="res://tryouts/celestial_bodies_voxel/surface_sources/test_planet/foliage_sources/tree_leaves/tree_leaves.tscn" type="PackedScene" id=2]
+[ext_resource path="res://tryouts/celestial_bodies_voxel/surface_sources/test_planet/foliage_sources/tree_leaves/foliage_inst_tree_leaves.tscn" type="PackedScene" id=2]
 
 [resource]
 script = ExtResource( 1 )
