@@ -14,7 +14,7 @@ var _rebuild_strategy: MarchingCubesRebuildStrategyGd = null
 var _node_size_strategy: VolumeNodeSizeStrategyGd = null
 
 var _surfaces: Array = []
-var _foliage: Spatial = null
+var _foliage: Node = null
 var _foliage_surface_index: int = -1
 
 # For async run count how many workers running and 
@@ -192,7 +192,6 @@ func _async_rebuild_worker_finished( ad: AsyncData ):
 		ad.foliage_data = foliage_data
 		
 		_foliage.async_populate_node_worker( foliage_data )
-		
 		_foliage.async_populate_node_worker_finished( foliage_data )
 	
 	if _async_workers_qty == 0:
@@ -276,10 +275,8 @@ func _async_rescale_worker_finished( ad: AsyncData ):
 		var source_se3: Se3Ref            = ad.se3
 		var scaler: DistanceScalerBaseRef = ad.scaler
 		var foliage_data = _foliage.async_update_view_point_prepare( source_se3, scaler )
-		_foliage.async_update_view_point_worker( foliage_data )
-#		var foliage_data = ad.foliage_data
-		_foliage.async_update_view_point_worker( foliage_data )
 		
+		_foliage.async_update_view_point_worker( foliage_data )
 		_foliage.async_update_view_point_worker_finished( foliage_data )
 
 	_async_workers_qty -= 1

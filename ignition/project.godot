@@ -134,7 +134,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://tryouts/celestial_bodies_voxel/foliage_instance_base.gd"
 }, {
-"base": "Spatial",
+"base": "Node",
 "class": "FoliageSource",
 "language": "GDScript",
 "path": "res://tryouts/celestial_bodies_voxel/foliage.gd"
@@ -380,7 +380,6 @@ WorkersPool="*res://addons/exec_pool/exec_pool.tscn"
 
 [display]
 
-window/size/fullscreen=true
 mouse_cursor/custom_image="res://cursor.png"
 mouse_cursor/tooltip_position_offset=Vector2( 32, 10 )
 

@@ -9,7 +9,7 @@ func create( node: MarchingCubesDualNodeGd, se3: Se3Ref, normal: Vector3, rand: 
 	if scene == null:
 		return null
 	
-	var instance: Spatial = scene.instance()
+	var instance: RefFrameNode = scene.instance()
 	
 	var t: Transform = Transform.IDENTITY #node.asset_transform( se3, true, true, scaler )
 

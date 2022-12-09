@@ -16,21 +16,28 @@ var _parent: RefFrameNode = null
 
 func place( parent: RefFrameNode, se3: Se3Ref ):
 	_parent = parent
-	
-	var p: Node = get_parent()
-	if p != parent:
-		p.change_parent( parent )
-	
+	if _se3 == null:
+		_se3 = Se3Ref.new()
 	_se3.copy_from( se3 )
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	_visual = VisualScene.instance()
-	var root_for_visuals: Node = RootScene.get_root_for_visuals()
-	root_for_visuals.add_child( _visual )
+	_create_objects()
+
+func _enter_tree():
+	_create_objects()
+	set_se3( _se3 )
+
+
+func _create_objects():
+	if _visual == null:
+		_visual = VisualScene.instance()
+		var root_for_visuals: Node = RootScene.get_root_for_visuals()
+		root_for_visuals.add_child( _visual )
 	
-	_se3 = Se3Ref.new()
+	if _se3 == null:
+		_se3 = Se3Ref.new()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

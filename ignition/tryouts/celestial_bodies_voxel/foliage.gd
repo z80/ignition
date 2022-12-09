@@ -1,6 +1,6 @@
 
 tool
-extends Spatial
+extends Node
 class_name FoliageSource
 
 export(Array) var creators = []
@@ -136,6 +136,7 @@ func async_populate_node_worker( data: AsyncPopulationUpdataData ):
 	var asset_creators: Array = data.asset_creators
 	var scaler: DistanceScalerBaseRef = data.scaler
 	var voxel_nodes: Array = data.voxel_nodes
+	var foliage_parent: RefFrameNode = data.foliage_parent
 	
 	var all_created_instances: Dictionary = {}
 	
@@ -188,8 +189,8 @@ func async_populate_node_worker( data: AsyncPopulationUpdataData ):
 				if not create:
 					continue
 				
-				var instance: Spatial = creator.create( voxel_node, se3, norm, rand, scaler )
-				instance.set_meta( "se3", se3 )
+				var instance: RefFrameNode = creator.create( voxel_node, se3, norm, rand, scaler )
+				instance.place( foliage_parent, se3 )
 				#print( "created ", instance )
 				created_instances.push_back( instance )
 		
@@ -203,10 +204,11 @@ func async_populate_node_worker( data: AsyncPopulationUpdataData ):
 #AsyncPopulationUpdataData
 #func _async_populate_node_worker_finished( data: Array ):
 func async_populate_node_worker_finished( data: AsyncPopulationUpdataData ):
-	var foliage: Spatial                    = data.foliage
+	#var foliage: Spatial                    = data.foliage
 	var all_created_instances: Dictionary   = data.created_instances
 	var voxel_nodes: Array                  = data.voxel_nodes
 	var populated_node_paths: Dictionary    = data.populated_node_paths
+	var foliage_parent: RefFrameNode        = data.foliage_parent
 	
 	for voxel_node in voxel_nodes:
 		var h_path: String = voxel_node.hierarchy_path()
@@ -214,9 +216,7 @@ func async_populate_node_worker_finished( data: AsyncPopulationUpdataData ):
 		
 		var created_instances: Array = all_created_instances[h_path]
 		for inst in created_instances:
-			var t: Transform = inst.transform
-			foliage.add_child( inst )
-			inst.transform = t
+			inst.change_parent( foliage_parent )
 
 		var has: bool = _created_instances.has( h_path )
 		if not has:
@@ -243,30 +243,13 @@ func async_populate_node_worker_finished( data: AsyncPopulationUpdataData ):
 
 
 func async_update_view_point_worker( data: AsyncViewPointData ):
-	var source_se3: Se3Ref                 = data.source_se3
-	var all_items: Dictionary              = data.items
-	var scaler: DistanceScalerBaseRef      = data.scaler
-	var voxel_surface: MarchingCubesDualGd = data.voxel_surface
-	
-	for h_path in all_items:
-		var items: Array = all_items[h_path]
-		for item in items:
-			var s: Spatial   = item as Spatial
-			var se3: Se3Ref  = s.get_meta( "se3" )
-			var t: Transform = voxel_surface.asset_transform( source_se3, se3, scaler )
-			s.set_meta( "new_transform", t )
+	pass
 
 
 
 
 func async_update_view_point_worker_finished( data: AsyncViewPointData ):
-	var all_items: Dictionary = data.items
-	
-	for h_path in all_items:
-		var items: Array = all_items[h_path]
-		for item in items:
-			var t: Transform = item.get_meta( "new_transform" )
-			item.transform = t
+	pass
 	
 
 
