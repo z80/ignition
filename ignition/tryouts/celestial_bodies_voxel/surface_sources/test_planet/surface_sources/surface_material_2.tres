@@ -14,11 +14,11 @@ uniform float uv_scale;
 
 
 
-
-uniform mat4 source_tr;
-uniform mat4 inv_scaled_source_tr;
-uniform float plain_dist = 100.0;
-uniform float log_scale  = 1.0;
+uniform highp vec3  displacement;
+uniform highp mat4  source_tr;
+uniform highp mat4  inv_scaled_source_tr;
+uniform highp float plain_dist = 100.0;
+uniform highp float log_scale  = 1.0;
 
 
 highp vec3 scale_mesh( highp vec2 uv, highp vec2 uv2 )
@@ -53,7 +53,8 @@ void vertex()
 	VERTEX = scale_mesh( UV, UV2 );
 	
 	// Texture weights for assigning materials.
-	vert = vec3(UV.x, UV.y, UV2.x) * uv_scale;
+	highp vec3 true_r = vec3( UV.x, UV.y, UV2.x ) + displacement;
+	vert = true_r * uv_scale;
 	//VERTEX = vec3( UV.x, UV.y, UV2.x ) * 100.0;
 	//vert = VERTEX;
 	float len = length(vert);
@@ -97,6 +98,7 @@ shader_param/specular = 0.5
 shader_param/metallic = 0.0
 shader_param/roughness = 1.0
 shader_param/uv_scale = 0.1
+shader_param/displacement = null
 shader_param/source_tr = Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )
 shader_param/inv_scaled_source_tr = Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )
 shader_param/plain_dist = 100.0

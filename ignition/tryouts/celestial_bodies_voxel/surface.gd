@@ -83,6 +83,10 @@ func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseR
 	var scaled_source_se3: Se3Ref = _voxel_surface.compute_source_se3( source_se3, _local_point_se3, scaler )
 	var inv_scaled_source_se3: Se3Ref = scaled_source_se3.inverse()
 	var inv_scaled_source_tr: Transform = inv_scaled_source_se3.transform
+	
+	# How much change vertex position to get true displacement with respect to 
+	# source origin in origin ref. frame.
+	var displacement: Vector3 = _local_point_se3.r
 
 	
 	var qty: int = material_inds.size()
@@ -98,6 +102,7 @@ func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseR
 		sm.set_shader_param( "log_scale", log_scale )
 		sm.set_shader_param( "source_tr", source_tr )
 		sm.set_shader_param( "inv_scaled_source_tr", inv_scaled_source_tr )
+		sm.set_shader_param( "displacement", displacement )
 
 
 func rescale_surface( source_se3: Se3Ref, local_point_se3: Se3Ref, scaler: DistanceScalerBaseRef ):

@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource( 2 )
-source_radius = 1000.0
+source_radius = 10000.0
 focus_depth = 40.0
 identity_distance = 100.0
 materials = [ ExtResource( 1 ) ]
