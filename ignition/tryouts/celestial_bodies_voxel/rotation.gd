@@ -22,6 +22,10 @@ func _child_jumped( child_ref_frame: RefFrameNode ):
 	var collision_surface: Node = _collision_surfaces[phys]
 	var all_surfs: Node = get_child(0)
 	var surface_source: Resource = all_surfs.get_surface_source()
+	
+	# Immediately query faces using old subdivision.
+	collision_surface.update_surface( phys, self, surface_source )
+	# Asynchronously rebuild surface.
 	collision_surface.rebuild_surface( phys, self, surface_source )
 
 
