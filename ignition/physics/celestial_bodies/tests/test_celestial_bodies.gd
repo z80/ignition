@@ -27,9 +27,9 @@ func _ready():
 	var player_control: RefFrame = RefFrame.new()
 	rf.init_physics()
 	player_control.change_parent( rf )
-	PhysicsManager.player_control = player_control
+	RootScene.ref_frame_root.player_control = player_control
 	
-	PhysicsManager.camera = camera
+	#RootScene.ref_frame_root.player_camera = camera
 	
 	
 	var t: Transform = Transform.IDENTITY

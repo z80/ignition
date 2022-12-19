@@ -532,7 +532,7 @@ func on_delete():
 
 
 func on_delete_rescue_camera():
-	var cam: RefFrameNode = PhysicsManager.camera
+	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
 	if not is_instance_valid( cam ):
 		return
 	
@@ -645,7 +645,7 @@ func create_super_body():
 	var se3: Se3Ref = self.get_se3()
 	sb.set_se3( se3 )
 	
-#	var cam = PhysicsManager.camera
+#	var cam = RootScene.ref_frame_root.player_camera
 #	if cam != null:
 #		var root = get_node( "/root/RefFrameRoot" )
 #		cam.debug = true

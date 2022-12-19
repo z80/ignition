@@ -163,7 +163,7 @@ func set_mode_tps():
 
 
 func apply_target():
-	var p: RefFrameNode = PhysicsManager.player_control
+	var p: RefFrameNode = RootScene.ref_frame_root.player_control
 	self.change_parent( p )
 	if is_instance_valid( p ):
 		if mode == Mode.FPS:
@@ -343,7 +343,7 @@ func _process_fps(_delta):
 
 
 func _process_tps_azimuth( _delta ):
-	#var player_ctrl: RefFrameNode = PhysicsManager.player_control
+	#var player_ctrl: RefFrameNode = RootScene.ref_frame_root.player_control
 	var player_ctrl: RefFrameNode = get_parent()
 	if not is_instance_valid( player_ctrl ):
 		return
@@ -390,7 +390,7 @@ func _process_tps_azimuth( _delta ):
 #	player_ctrl.debug = true
 #	celestial_body.debug = true
 #	self.debug = true
-#	var se3_rel__: Se3Ref = PhysicsManager.camera.relative_to( celestial_body )
+#	var se3_rel__: Se3Ref = RootScene.ref_frame_root.player_camera.relative_to( celestial_body )
 	
 	var se3_rel: Se3Ref = player_ctrl.relative_to( celestial_body )
 	var wanted_up: Vector3 = se3_rel.r.normalized()

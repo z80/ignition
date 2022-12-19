@@ -3,6 +3,8 @@ extends Node
 
 var vp_container: Node = null
 
+var ref_frame_root: RefFrameRoot = null
+
 
 func get_root_for_bodies():
 	var ret = get_node( "bodies" )

@@ -2,7 +2,7 @@
 extends RefFrameNode
 class_name RefFrame
 
-var _axes = null
+var _axes: Spatial = null
 
 
 
@@ -126,6 +126,19 @@ func on_delete():
 	if _axes != null:
 		_axes.queue_free()
 
+
+
+func get_ref_frame_root():
+	var rf: RefFrameNode = self
+	
+	while rf != null:
+		var root: RefFrameRoot = rf as RefFrameRoot
+		if root != null:
+			return root
+		
+		rf = rf.get_parent() as RefFrameNode
+	
+	return null
 
 
 

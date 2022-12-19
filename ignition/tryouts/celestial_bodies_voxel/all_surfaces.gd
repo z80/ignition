@@ -79,7 +79,7 @@ func update_source_se3( source_se3: Se3Ref ):
 	_async_update_source_se3( source_se3 )
 	
 	var surface: Node = _surfaces[0]
-	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
+	var scaler: DistanceScalerBaseRef = RootScene.ref_frame_root.distance_scaler
 	
 	_update_material_properties( source_se3, scaler )
 	
@@ -133,7 +133,7 @@ func _async_rebuild_start( source_se3: Se3Ref ):
 	if _async_workers_qty != 0:
 		return
 	
-	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
+	var scaler: DistanceScalerBaseRef = RootScene.ref_frame_root.distance_scaler
 	var qty: int = _surfaces.size()
 	
 	_async_requested_rebuild = false
@@ -150,13 +150,9 @@ func _async_rebuild_start( source_se3: Se3Ref ):
 		ad.wireframe     = wireframe
 		ad.surface_index = i
 		
-#		if i == _foliage_surface_index:
-#			var se3_at_in_source: Se3Ref = source_se3.inverse()
-#			var at_in_source: Vector3 = se3_at_in_source.r
-#			var foliage_data = _foliage.async_update_population_prepare( self, at_in_source, scaler )
-#			ad.foliage_data = foliage_data
-		
 		WorkersPool.push_back_with_arg( self, "_async_rebuild_worker", "_async_rebuild_worker_finished", ad )
+		#var ret = _async_rebuild_worker( ad )
+		#_async_rebuild_worker_finished( ret )
 	
 
 
@@ -207,7 +203,7 @@ func _async_rescale_start( source_se3: Se3Ref ):
 	if _async_workers_qty != 0:
 		return
 
-	var scaler: DistanceScalerBaseRef = PhysicsManager.distance_scaler
+	var scaler: DistanceScalerBaseRef = RootScene.ref_frame_root.distance_scaler
 	var qty: int = _surfaces.size()
 	
 	_async_requested_rescale = false

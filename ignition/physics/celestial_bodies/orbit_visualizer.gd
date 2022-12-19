@@ -31,8 +31,8 @@ func draw():
 	m.albedo_color = color
 	
 	var orbiting_center_rf: RefFrameNode = ref_frame
-	var camera_rf: RefFrameNode          = PhysicsManager.camera
-	var scaler: DistanceScalerRef        = PhysicsManager.distance_scaler
+	var camera_rf: RefFrameNode          = RootScene.ref_frame_root.player_camera
+	var scaler: DistanceScalerRef        = RootScene.ref_frame_root.distance_scaler
 	
 	var pts: PoolVector3Array = motion.orbit_points( orbiting_center_rf, camera_rf, null, scaler, pts_qty )
 	

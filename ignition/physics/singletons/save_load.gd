@@ -97,12 +97,12 @@ static func deserialize_all( n: Node, data: Dictionary ):
 
 
 static func serialize_physics_manager():
-	var data: Dictionary = PhysicsManager.serialize()
+	var data: Dictionary = RootScene.ref_frame_root.serialize()
 	return data
 
 
 static func deserialize_physics_manager( data: Dictionary ):
-	var ret: bool = PhysicsManager.deserialize( data )
+	var ret: bool = RootScene.ref_frame_root.deserialize( data )
 	return ret
 
 
@@ -213,7 +213,7 @@ static func deserialize_ref_frames_physics( n: Node, rf_data: Dictionary ):
 	for name in rf_data:
 		var all_data: Dictionary = rf_data[name]
 		var parentpath: String = all_data.parentpath
-		var rf: Node = PhysicsManager.create_ref_frame_physics()
+		var rf: Node = RootScene.ref_frame_root.create_ref_frame_physics()
 		rf.name = name
 		var parent: Node = n.get_node( parentpath )
 		if parent != null:
@@ -329,7 +329,7 @@ static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 # And the remaining object currently existing is the camera.
 # It is not destroyable. So no need to save name.
 static func serialize_camera():
-	var c: RefFrameNode = PhysicsManager.camera
+	var c: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var data: Dictionary = c.serialize()
 	var name: String = c.name
 	var filename: String = c.filename
@@ -344,7 +344,7 @@ static func serialize_camera():
 
 
 static func deserialize_camera( camera_data: Dictionary ):
-	var c: RefFrameNode = PhysicsManager.camera
+	var c: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var parentpath: String = camera_data.parentpath
 	var data: Dictionary = camera_data.data
 	var ret: bool = c.deserialize( data )

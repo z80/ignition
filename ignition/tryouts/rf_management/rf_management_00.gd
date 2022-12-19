@@ -11,7 +11,7 @@ func _enter_tree():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	var rf = PhysicsManager.create_ref_frame_physics()
+	var rf = RootScene.ref_frame_root.create_ref_frame_physics()
 	rf.name = "MyRefFramePhysics"
 	var celestial_body = get_node( "CelestialBody" ) as CelestialBody
 	var rot = celestial_body.rotation_rf()
@@ -30,9 +30,9 @@ func _ready():
 	camera.set_mode( PlayerCamera.Mode.TPS_AZIMUTH )
 	
 	# Initial set of select and focus object.
-	PhysicsManager.camera           = camera
-	PhysicsManager.player_control   = character
-	PhysicsManager.player_select    = character
+	#RootScene.ref_frame_root.player_camera           = camera
+	RootScene.ref_frame_root.player_control   = character
+	RootScene.ref_frame_root.player_select    = character
 	
 	camera.apply_target()
 

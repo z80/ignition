@@ -4,13 +4,13 @@ extends RefFrameRoot
 # All visualization meshes/or other types are with respect to the ref frame 
 # where controlled object is.
 # Ref frame is selected when player clicks the icon.
-var player_select = null setget _set_player_select, _get_player_select
+var player_select: Node = null setget _set_player_select, _get_player_select
 # Ref frame gets focus when explicitly pressed "c" (center) on a selected ref. frame.
-var player_control = null setget _set_player_control, _get_player_control
+var player_control: Node = null setget _set_player_control, _get_player_control
 # Camera. It is supposed to be the only one.
 var player_camera: RefFrameNode = null setget ,_get_camera
 # Scaler for large distances.
-var distance_scaler = DistanceScalerRef.new()
+var distance_scaler: DistanceScalerRef = DistanceScalerRef.new()
 
 var visualize_orbits: bool = false
 
@@ -41,10 +41,16 @@ var _time_scale_evolution: float = 1.0
 var _time_scale_string: String = "1"
 
 
+func _init():
+	# Nodes which are not children of RefFrameRoot 
+	# Need to know its instance.
+	RootScene.ref_frame_root = self
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	init()
+	
+	player_camera = _find_camera( self )
 
 
 func init():
@@ -96,38 +102,38 @@ func _process( _delta: float ):
 	pass
 	# This is for debugging.
 #	var root = get_node( "/root/RefFrameRoot" )
-#	PhysicsManager.camera.debug = true
-#	var se3: Se3Ref = PhysicsManager.camera.relative_to( root )
-#	PhysicsManager.camera.debug = false
+#	RootScene.ref_frame_root.player_camera.debug = true
+#	var se3: Se3Ref = RootScene.ref_frame_root.player_camera.relative_to( root )
+#	RootScene.ref_frame_root.player_camera.debug = false
 	
 	#update_providers()
 	
 	# This is for debugging.
 #	root = get_node( "/root/RefFrameRoot" )
-#	PhysicsManager.camera.debug = true
-#	se3 = PhysicsManager.camera.relative_to( root )
-#	PhysicsManager.camera.debug = false
+#	RootScene.ref_frame_root.player_camera.debug = true
+#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
+#	RootScene.ref_frame_root.player_camera.debug = false
 	
 	
 	# This is for debugging.
 #	root = get_node( "/root/RefFrameRoot" )
-#	PhysicsManager.camera.debug = true
-#	se3 = PhysicsManager.camera.relative_to( root )
-#	PhysicsManager.camera.debug = false
+#	RootScene.ref_frame_root.player_camera.debug = true
+#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
+#	RootScene.ref_frame_root.player_camera.debug = false
 	
 	
 	# This is for debugging.
 #	root = get_node( "/root/RefFrameRoot" )
-#	PhysicsManager.camera.debug = true
-#	se3 = PhysicsManager.camera.relative_to( root )
-#	PhysicsManager.camera.debug = false
+#	RootScene.ref_frame_root.player_camera.debug = true
+#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
+#	RootScene.ref_frame_root.player_camera.debug = false
 	
 	
 	# This is for debugging.
 #	root = get_node( "/root/RefFrameRoot" )
-#	PhysicsManager.camera.debug = true
-#	se3 = PhysicsManager.camera.relative_to( root )
-#	PhysicsManager.camera.debug = false
+#	RootScene.ref_frame_root.player_camera.debug = true
+#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
+#	RootScene.ref_frame_root.player_camera.debug = false
 	
 
 
@@ -208,7 +214,7 @@ func update_super_bodies():
 
 
 func update_bodies_visual():
-	var player_rf: RefFrameNode = self.camera
+	var player_rf: RefFrameNode = _get_camera()
 	
 	# Update visuals for all the physical-visual objects.
 	var group: String = Constants.BODIES_GROUP_NAME
@@ -275,7 +281,7 @@ func process_celestial_body_children():
 func update_camera( delta: float ):
 	var ClosestForceSource = load( "res://physics/utils/closest_force_source.gd" )
 	# Update camera orientation.
-#	var pc: PhysicsBodyBase = PhysicsManager.player_control
+#	var pc: PhysicsBodyBase = RootScene.ref_frame_root.player_control
 #	if pc == null:
 #		return
 	
@@ -298,10 +304,10 @@ func update_camera( delta: float ):
 	var p_rf: RefFrameNode = player_camera
 	var celestial_body: Node = ClosestCelestialBody.closest_celestial_body( p_rf )
 	if celestial_body != null:
-		var celestial_surface: CelestialSurface = celestial_body as CelestialSurface
-		# For Sun "celestial_surface" is null because it's of a different type.
-		# Camera should make atmosphere invisible in this case.
-		c.apply_atmosphere( celestial_surface )
+		if celestial_body.get_class() == "CelestialSurface":
+			# For Sun "celestial_surface" is null because it's of a different type.
+			# Camera should make atmosphere invisible in this case.
+			c.apply_atmosphere( celestial_body )
 	
 	# Apply sun.
 	var group: String = Constants.SUN_GROUP_NAME
@@ -380,21 +386,21 @@ func _get_player_control():
 
 func _get_camera():
 	if ( player_camera == null ) or ( not is_instance_valid(player_camera) ):
-		_find_camera( self )
+		player_camera = _find_camera( self )
 	
 	return player_camera
 
 
 
-func _find_camera( node: Node ):
+static func _find_camera( node: Node ):
 	var cam: Camera = node as Camera
 	if cam != null:
 		var p: Node = cam.get_parent()
 		return p
 	
-	var qty: int = get_child_count()
+	var qty: int = node.get_child_count()
 	for i in range(qty):
-		var ch: Node = get_child(i)
+		var ch: Node = node.get_child(i)
 		var ret: Node = _find_camera(ch)
 		if ret != null:
 			return ret

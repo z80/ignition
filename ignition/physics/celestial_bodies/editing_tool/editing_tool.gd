@@ -26,7 +26,7 @@ func _ready():
 	
 	_rf.change_parent( get_node( "Node" ) )
 	
-	PhysicsManager.camera = _camera
+	#RootScene.ref_frame_root.player_camera = _camera
 	
 	var t: Transform = Transform.IDENTITY
 	t.origin = Vector3( 0.0, 0.0, 50.0 )

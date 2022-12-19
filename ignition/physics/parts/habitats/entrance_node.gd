@@ -48,7 +48,7 @@ func characters_for_boarding():
 	if part == null:
 		return null
 	
-	var ctrl: Node = PhysicsManager.player_control
+	var ctrl: Node = RootScene.ref_frame_root.player_control
 	if (ctrl == null) or (not is_instance_valid(ctrl)):
 		return null
 	

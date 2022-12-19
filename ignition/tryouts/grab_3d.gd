@@ -182,7 +182,7 @@ func _mouse_intersection():
 	var vp: Viewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
-	var camera: Camera = PhysicsManager.camera
+	var camera: Camera = RootScene.ref_frame_root.player_camera
 	
 	# Camera origin and unit vector.
 	var cam_r: Vector3 = camera.project_ray_origin(mouse_uv)

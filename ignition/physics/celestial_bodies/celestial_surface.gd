@@ -126,7 +126,7 @@ func init():
 	celestial_body.radius = radius
 	celestial_body.height = height
 	celestial_body.height_source   = height_source( height_source_name, radius, height )
-#	celestial_body.distance_scaler = PhysicsManager.distance_scaler
+#	celestial_body.distance_scaler = RootScene.ref_frame_root.distance_scaler
 	
 	celestial_body.apply_scale         = true
 	celestial_body.convert_to_global   = false
@@ -163,15 +163,16 @@ func process_motion( delta ):
 
 
 func process_geometry( force_player_rf: RefFrameNode = null ):
+	var root: RefFrameRoot = RootScene.ref_frame_root
 	var player_rf: RefFrameNode
 	var player_ctrl: RefFrameNode
 	if force_player_rf != null:
 		player_rf = force_player_rf
 	else:
-		player_rf = PhysicsManager.get_player_ref_frame()
-	player_ctrl = PhysicsManager.player_control
+		player_rf = root.get_player_ref_frame()
+	player_ctrl = root.player_control
 	
-	var physics_ref_frames: Array  = PhysicsManager.physics_ref_frames()
+	var physics_ref_frames: Array  = root.physics_ref_frames()
 	
 	var translation: RefFrameNode = self
 	var rotation: RefFrameNode    = get_node( "Rotation" )
@@ -198,7 +199,7 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 	
 	# For player ref frame rebuild mesh if needed
 	# Generate visual appearance based on camera.
-	var camera: RefFrameNode = PhysicsManager.camera
+	var camera: RefFrameNode = root.player_camera
 	if (camera != null) and ( is_instance_valid(camera) ):
 		var need_rebuild_visual: bool = _subdivide_source_visual.need_subdivide( camera, planet )
 		#print( "need_rebuild_visual: ", need_rebuild_visual )
@@ -207,7 +208,7 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 			planet.apply_heightmap_2( planet.height_source )
 			#planet.apply_visual_mesh()
 
-		var distance_scaler: DistanceScalerRef = PhysicsManager.distance_scaler
+		var distance_scaler: DistanceScalerRef = root.distance_scaler
 		planet.apply_scale_2( camera, null, distance_scaler )
 		planet.apply_visual_mesh()
 
@@ -538,7 +539,8 @@ func _get_show_orbit():
 
 
 func _process_visualize_orbits():
-	var new_state: bool = PhysicsManager.visualize_orbits
+	var root: RefFrameRoot = get_ref_frame_root()
+	var new_state: bool = root.visualize_orbits
 	var current_state: bool = self.show_orbit
 	if current_state != new_state:
 		self.show_orbit = new_state

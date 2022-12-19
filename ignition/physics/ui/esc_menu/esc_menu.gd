@@ -2,7 +2,7 @@
 extends MenuBase
 
 # By defaut
-var _time_scale_save: int = PhysicsManager.TimeScale.X_1
+var _time_scale_save: int = RootScene.ref_frame_root.TimeScale.X_1
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -49,11 +49,11 @@ func on_user_input( event: InputEvent ):
 			var current: bool = is_current()
 			if current:
 				if v:
-					PhysicsManager.set_time_scale( _time_scale_save )
+					RootScene.ref_frame_root.set_time_scale( _time_scale_save )
 					
 				else:
-					_time_scale_save = PhysicsManager.get_time_scale()
-					PhysicsManager.set_time_scale_0()
+					_time_scale_save = RootScene.ref_frame_root.get_time_scale()
+					RootScene.ref_frame_root.set_time_scale_0()
 				
 				self.visible = not v
 

@@ -89,17 +89,17 @@ func evolve_motion( _dt: float ):
 
 	# This is for debugging.
 #	var root = get_node( "/root/RefFrameRoot" )
-#	PhysicsManager.camera.debug = true
-#	var se3 = PhysicsManager.camera.relative_to( root )
-#	PhysicsManager.camera.debug = false
+#	RootScene.ref_frame_root.player_camera.debug = true
+#	var se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
+#	RootScene.ref_frame_root.player_camera.debug = false
 	
 	motion.process_rf( _dt, self )
 
 	# This is for debugging.
 #	root = get_node( "/root/RefFrameRoot" )
-#	PhysicsManager.camera.debug = true
-#	se3 = PhysicsManager.camera.relative_to( root )
-#	PhysicsManager.camera.debug = false
+#	RootScene.ref_frame_root.player_camera.debug = true
+#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
+#	RootScene.ref_frame_root.player_camera.debug = false
 	
 #	var n: String = self.name
 #	if n != "rf_p for my_character":
@@ -332,8 +332,9 @@ func set_se3( se3: Se3Ref ):
 # It should split ref frame into two. So this one is probably not used now...
 func exclude_too_far_bodies():
 	var max_dist: float = Constants.BODY_EXCLUDE_DIST
-	var bodies = root_most_child_bodies()
-	var player_control = PhysicsManager.player_control
+	var bodies: Array = root_most_child_bodies()
+	var root: RefFrameRoot = get_ref_frame_root()
+	var player_control = root.player_control
 	var pt = self.get_parent()
 	
 	for body in bodies:
@@ -366,13 +367,14 @@ func include_close_enough_bodies():
 
 
 
-static func print_all_ref_frames():
+func print_all_ref_frames():
 	DDD.important()
 	DDD.print( "All ref frames" )
-	var player_rf = PhysicsManager.get_player_ref_frame()
+	var root: RefFrameRoot = self.get_ref_frame_root()
+	var player_rf: RefFrameNode = root.get_player_ref_frame()
 	if (player_rf != null) and ( is_instance_valid(player_rf) ):
 		DDD.print( "player rf: " + player_rf.name )
-	var rfs: Array = PhysicsManager.physics_ref_frames()
+	var rfs: Array = root.physics_ref_frames()
 	for rf in rfs:
 		var se3: Se3Ref = rf.get_se3()
 		DDD.important()
@@ -430,8 +432,9 @@ func split_if_needed():
 	
 	# At this point both arrays are not empty and if player ref frame is here, 
 	# it is in bodies_a.
-	var p = get_parent()
-	var rf: RefFrame = PhysicsManager.create_ref_frame_physics()
+	var p: Node = get_parent()
+	var root: RefFrameRoot = get_ref_frame_root()
+	var rf: RefFrame = root.create_ref_frame_physics()
 	rf.change_parent( p )
 	var se3: Se3Ref = self.get_se3()
 	
@@ -462,7 +465,8 @@ func split_if_needed():
 
 
 func merge_if_needed():
-	var ref_frames: Array = PhysicsManager.physics_ref_frames()
+	var root: RefFrameRoot = get_ref_frame_root()
+	var ref_frames: Array = root.physics_ref_frames()
 	for rf in ref_frames:
 		if rf == self:
 			continue
@@ -487,7 +491,7 @@ func merge_if_needed():
 			DDD.print( "merged " + rf.name + " with " + self.name )
 			# Also check if it is player's ref frame.
 			# If it is, change it to the one everything is merged to.
-			var player_rf: RefFramePhysics = PhysicsManager.get_player_ref_frame()
+			var player_rf: RefFramePhysics = root.get_player_ref_frame()
 			if rf == player_rf:
 				DDD.print( "player ref frame changed to " + rf.name )
 			
@@ -507,12 +511,12 @@ func self_delete_if_unused():
 	var qty: int = bodies.size()
 	if ( qty < 1 ):
 		# Also don't delete player ref. frame.
-		var player_rf: RefFramePhysics = PhysicsManager.get_player_ref_frame()
+		var player_rf: RefFramePhysics = RootScene.ref_frame_root.get_player_ref_frame()
 		if self == player_rf:
 			return false
 		
 		# And don't delete if parenting the camera.
-		var cam: RefFrameNode = PhysicsManager.camera
+		var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
 		if is_instance_valid( cam ):
 			var p: Node = cam.get_parent()
 			if p == self:
@@ -541,12 +545,12 @@ func child_physics_bodies():
 
 
 func child_bodies():
-	var children = get_children()
-	var bodies = []
+	var children: Array = get_children()
+	var bodies: Array = []
 	for ch in children:
 		var b = ch as RefFrameNode
 		var include: bool = (b != null)
-		if ch == PhysicsManager.camera:
+		if ch == RootScene.ref_frame_root.player_camera:
 			continue
 		if include:
 			bodies.push_back( b )
@@ -561,7 +565,7 @@ func root_most_child_bodies():
 		var b = ch as RefFrameNode
 		var include: bool = (b != null)
 		# Don't use camera.
-		if ch == PhysicsManager.camera:
+		if ch == RootScene.ref_frame_root.player_camera:
 			continue
 		var root_most_body: RefFrameNode = b.root_most_body()
 		include = include and (not (root_most_body in bodies))
@@ -582,7 +586,7 @@ func parent_bodies():
 		var body = child as RefFrameNode
 		if body == null:
 			continue
-		if body == PhysicsManager.camera:
+		if body == RootScene.ref_frame_root.player_camera:
 			continue
 		var cl_name: String = body.get_class()
 		if (cl_name == "PhysicsBodyBase") or (cl_name == "Part"):
@@ -598,7 +602,7 @@ func parent_bodies():
 		var body = child as RefFrameNode
 		if body == null:
 			continue
-		if body == PhysicsManager.camera:
+		if body == RootScene.ref_frame_root.player_camera:
 			continue
 			body = body.root_most_body()
 		var cl_name: String = body.get_class()
@@ -662,7 +666,7 @@ func on_delete():
 
 
 func on_delete_rescue_camera():
-	var cam: RefFrameNode = PhysicsManager.camera
+	var cam: RefFrameNode  = RootScene.ref_frame_root.player_camera
 	if not is_instance_valid( cam ):
 		return
 	

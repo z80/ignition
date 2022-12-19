@@ -25,8 +25,8 @@ func _process( _delta ):
 	_process_gui_controls()
 	
 	# Sending to all the recipients.
-	#PhysicsManager.rpc( "user_input" )
-	PhysicsManager.process_user_input( input )
+	#RootScene.ref_frame_root.rpc( "user_input" )
+	RootScene.ref_frame_root.process_user_input( input )
 	#print( "input: ", input )
 
 

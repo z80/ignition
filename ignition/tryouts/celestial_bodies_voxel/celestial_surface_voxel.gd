@@ -134,15 +134,16 @@ func process_motion( delta ):
 
 
 func process_geometry( force_player_rf: RefFrameNode = null ):
+	var root: RefFrameRoot = RootScene.ref_frame_root
 	var player_rf: RefFrameNode
 	var player_ctrl: RefFrameNode
 	if force_player_rf != null:
 		player_rf = force_player_rf
 	else:
-		player_rf = PhysicsManager.get_player_ref_frame()
-	player_ctrl = PhysicsManager.player_control
+		player_rf = root.get_player_ref_frame()
+	player_ctrl = root.player_control
 	
-	var physics_ref_frames: Array  = PhysicsManager.physics_ref_frames()
+	var physics_ref_frames: Array  = root.physics_ref_frames()
 	
 	var translation: RefFrameNode = self
 	var rotation: RefFrameNode    = rotation_rf()
@@ -169,7 +170,7 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 	
 	# For player ref frame rebuild mesh if needed
 	# Generate visual appearance based on camera.
-	var camera: RefFrameNode = PhysicsManager.camera
+	var camera: RefFrameNode = root.player_camera
 	if (camera != null) and ( is_instance_valid(camera) ):
 		var rot: RefFrameNode = rotation_rf()
 		var source_se3: Se3Ref = rot.relative_to( camera )
@@ -503,7 +504,7 @@ func _get_show_orbit():
 
 
 func _process_visualize_orbits():
-	var new_state: bool = PhysicsManager.visualize_orbits
+	var new_state: bool = RootScene.ref_frame_root.visualize_orbits
 	var current_state: bool = self.show_orbit
 	if current_state != new_state:
 		self.show_orbit = new_state

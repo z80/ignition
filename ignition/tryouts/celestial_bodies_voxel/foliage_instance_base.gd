@@ -42,7 +42,7 @@ func _create_objects():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	var cam: RefFrameNode = PhysicsManager.camera
+	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var se3: Se3Ref = self.relative_to( cam )
 	
 	var t: Transform = se3.transform

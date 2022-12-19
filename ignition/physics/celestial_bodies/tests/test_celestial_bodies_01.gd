@@ -19,7 +19,7 @@ func _ready():
 	rf.change_parent( sun )
 	RootScene.get_root_for_visuals().add_child( camera )
 	
-	PhysicsManager.camera = camera
+	RootScene.ref_frame_root.player_camera = camera
 	
 	rf.init_physics()
 	

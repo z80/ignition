@@ -18,7 +18,6 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10020, 0, 0 )
 script = ExtResource( 2 )
 
 [node name="Character" parent="Planet/Rotation/RefFramePhysics" instance=ExtResource( 4 )]
-max_force = 30.0
 
 [node name="PlayerCamera" parent="Planet/Rotation/RefFramePhysics/Character" instance=ExtResource( 3 )]
 map_mode = true

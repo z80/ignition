@@ -221,7 +221,7 @@ func _activate_static_blocks():
 
 
 func check_if_deactivate():
-	var player = PhysicsManager.camera.get_parent()
+	var player = RootScene.ref_frame_root.player_camera.get_parent()
 	if (player == null) or ( not is_instance_valid(player) ):
 		return true
 	
@@ -239,7 +239,7 @@ func check_if_deactivate():
 
 
 func create_block( block_desc: Resource ):
-	var player: RefFrameNode = PhysicsManager.camera.get_parent()
+	var player: RefFrameNode = RootScene.ref_frame_root.player_camera.get_parent()
 	
 	var t: Transform = Transform.IDENTITY
 	t.origin = Constants.CONSTRUCTION_CREATE_AT
@@ -266,7 +266,7 @@ func create_block( block_desc: Resource ):
 	block.set_se3( se3 )
 	
 	# Make it selected to be able to move it.
-	PhysicsManager.player_select = block
+	RootScene.ref_frame_root.player_select = block
 	
 	if is_static_block:
 		static_blocks.push_back( block )

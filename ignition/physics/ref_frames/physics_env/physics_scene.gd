@@ -27,7 +27,7 @@ func _align_camera():
 	if ref_frame == null:
 		return
 	
-	var c: RefFrameNode = PhysicsManager.camera
+	var c: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var se3: Se3Ref     = c.relative_to( ref_frame )
 	var t: Transform    = se3.transform
 	_camera.transform   = t

@@ -18,7 +18,7 @@ func _process( _delta: float ):
 	if _camera == null:
 		_camera = get_node( "Container/Viewport/Camera" )
 	if _real_camera == null:
-		var cam_rf: RefFrameNode = PhysicsManager.camera
+		var cam_rf: RefFrameNode = RootScene.ref_frame_root.player_camera
 		if cam_rf == null:
 			return
 		_real_camera = cam_rf.get_camera()

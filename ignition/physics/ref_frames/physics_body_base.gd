@@ -247,7 +247,8 @@ func root_most_body():
 
 
 func has_player_control():
-	var pc = PhysicsManager.player_control
+	var root: RefFrameRoot = get_ref_frame_root()
+	var pc = root.player_control
 	var ret: bool = (self == pc)
 	return ret
 
@@ -617,6 +618,19 @@ static func unique_child_name( n: Node, name: String ):
 		if c == null:
 			return full_name
 		index += 1
+
+
+
+func get_ref_frame_root():
+	var rf: RefFrameNode = self
+	while rf != null:
+		var root: RefFrameRoot = rf as RefFrameRoot
+		if root != null:
+			return root
+		
+		rf = rf.get_parent() as RefFrameNode
+	
+	return null
 
 
 

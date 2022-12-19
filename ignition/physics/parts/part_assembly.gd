@@ -1,5 +1,5 @@
 
-extends RefFrameNode
+extends RefFrame
 class_name PartAssembly
 
 # This class handles dynamic body group.
@@ -105,7 +105,7 @@ func has_sub_body( body: RefFrameNode ):
 
 
 func has_player_control():
-	var pc = PhysicsManager.camera.get_parent()
+	var pc = RootScene.ref_frame_root.player_camera.get_parent()
 	for body in sub_bodies:
 		if body == pc:
 			return true
@@ -272,7 +272,8 @@ func _get_show_orbit():
 
 
 func _process_visualize_orbits():
-	var new_state: bool = PhysicsManager.visualize_orbits
+	var root: RefFrameRoot = get_ref_frame_root()
+	var new_state: bool = root.visualize_orbits
 	var current_state: bool = self.show_orbit
 	if current_state != new_state:
 		self.show_orbit = new_state

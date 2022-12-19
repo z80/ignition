@@ -17,9 +17,9 @@ func _ready():
 	var character = _create_character( "my_character", Vector3( 1.0, 0.0, 0.0 ), 1.0 )
 	
 	# Initial set of select and focus object.
-	PhysicsManager.camera           = camera
-	PhysicsManager.player_control   = character
-	PhysicsManager.player_select    = character
+	#RootScene.ref_frame_root.camera           = camera
+	RootScene.ref_frame_root.player_control   = character
+	RootScene.ref_frame_root.player_select    = character
 	
 	camera.apply_target()
 	
@@ -44,7 +44,7 @@ func _create_other_body():
 	#body.change_parent( rf )
 	#body.set_se3( se3 )
 	
-	var rf = PhysicsManager.create_ref_frame_physics()
+	var rf = RootScene.ref_frame_root.create_ref_frame_physics()
 	rf.name = "OtherRefFramePhysics"
 	body.change_parent( rf )
 	var rot = celestial_body.rotation_rf()
@@ -69,7 +69,7 @@ func _create_construction():
 
 
 func _create_character( name: String = "MyCharacter", at: Vector3 = Vector3(1.0, 0.0, 0.0), height: float = 1.0 ):
-	var rf = PhysicsManager.create_ref_frame_physics()
+	var rf = RootScene.ref_frame_root.create_ref_frame_physics()
 	rf.name = "rf_p for " + name
 	var celestial_body = get_node( "CelestialBody" ) as CelestialBody
 	var rot = celestial_body.rotation_rf()

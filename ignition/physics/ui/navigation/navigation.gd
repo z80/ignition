@@ -33,7 +33,7 @@ func _on_Timer_timeout():
 
 
 func _recompute_mode_surface():
-	var camera: RefFrameNode = PhysicsManager.camera
+	var camera: RefFrameNode = RootScene.ref_frame_root.player_camera
 	if not camera:
 		return
 	
@@ -97,7 +97,7 @@ func _recompute_mode_surface():
 
 
 func _recompute_mode_orbit():
-	var camera: RefFrameNode = PhysicsManager.camera
+	var camera: RefFrameNode = RootScene.ref_frame_root.player_camera
 	if not is_instance_valid(camera):
 		return
 	
@@ -167,7 +167,7 @@ func _recompute_mode_orbit():
 
 
 func _recompute_mode_target():
-	var ctrl: PhysicsBodyBase = PhysicsManager.player_control as PhysicsBodyBase
+	var ctrl: PhysicsBodyBase = RootScene.ref_frame_root.player_control as PhysicsBodyBase
 	if ctrl == null:
 		return
 	# TODO: need to implement target first.
@@ -257,7 +257,7 @@ func _on_ShowOrbits_pressed():
 	UiSound.play( Constants.ButtonClick )
 	var check = get_node( "ShowOrbits" )
 	var down: bool = check.pressed
-	PhysicsManager.visualize_orbits = down
+	RootScene.ref_frame_root.visualize_orbits = down
 
 
 

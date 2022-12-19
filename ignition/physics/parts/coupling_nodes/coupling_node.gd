@@ -104,7 +104,7 @@ func _get_show_visual():
 
 
 func world_transform():
-	var camera: RefFrameNode = PhysicsManager.camera
+	var camera: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var se3: Se3Ref = part.relative_to( camera )
 	var t_parent: Transform = se3.transform
 	var t: Transform = t_parent * relative_to_owner
