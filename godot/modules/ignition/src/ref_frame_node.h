@@ -103,6 +103,14 @@ public:
 	Vector<RefFrameNode * > queueA_, queueB_;
 
 	bool debug_;
+
+
+	// Compute forces, integrate dynamics.
+	virtual void _ign_pre_process( real_t delta );
+	// Set positions, place visuals.
+	virtual void _ign_process( real_t delta );
+	// Place camera.
+	virtual void _ign_post_process( real_t delta );
 };
 
 }

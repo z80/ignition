@@ -642,6 +642,41 @@ String RefFrameNode::_unique_name( const String & name_base, Node * parent )
 }
 
 
+void RefFrameNode::_ign_pre_process( real_t delta )
+{
+	ScriptInstance * inst = get_script_instance();
+	if (inst != nullptr)
+	{
+		Variant time = delta;
+		const Variant * ptr[1] = { &time };
+		get_script_instance()->call_multilevel( "_ign_pre_process", ptr, 1 );
+	}
+}
+
+void RefFrameNode::_ign_process( real_t delta )
+{
+	ScriptInstance * inst = get_script_instance();
+	if (inst != nullptr)
+	{
+		Variant time = delta;
+		const Variant * ptr[1] = { &time };
+		get_script_instance()->call_multilevel( "_ign_process", ptr, 1 );
+	}
+}
+
+void RefFrameNode::_ign_post_process( real_t delta )
+{
+	ScriptInstance * inst = get_script_instance();
+	if (inst != nullptr)
+	{
+		Variant time = delta;
+		const Variant * ptr[1] = { &time };
+		get_script_instance()->call_multilevel( "_ign_post_process", ptr, 1 );
+	}
+}
+
+
+
 }
 
 
