@@ -36,14 +36,14 @@ func value( at: Vector3 ):
 	var d: float   = at.length()
 	var ret: float = d - r
 	
-	# Add an empty cylinder
-	var d2: float = sqrt(at.y*at.y + at.x*at.x) - 100.0
-	
-	ret = max(ret, -d2)
-	
-	var small_radius: float = radius * 0.4
-	d2 = max( max( abs(at.x), abs(at.y) ), abs(at.z) ) - small_radius
-	ret = max(ret, -d2)
+#	# Add an empty cylinder
+#	var d2: float = sqrt(at.y*at.y + at.x*at.x) - 100.0
+#
+#	ret = max(ret, -d2)
+#
+#	var small_radius: float = radius * 0.4
+#	d2 = max( max( abs(at.x), abs(at.y) ), abs(at.z) ) - small_radius
+#	ret = max(ret, -d2)
 	
 	return ret
 
