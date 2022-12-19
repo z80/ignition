@@ -237,7 +237,7 @@ _global_script_classes=[ {
 "base": "RefFrameNode",
 "class": "PlayerCamera",
 "language": "GDScript",
-"path": "res://physics/camera_ctrl/camera.gd"
+"path": "res://physics/camera_ctrl/player_camera.gd"
 }, {
 "base": "Part",
 "class": "ReactionControlWheels",
@@ -370,7 +370,6 @@ config/icon="res://icon.png"
 
 RootScene="*res://physics/singletons/root_scene.tscn"
 Game="*res://physics/singletons/game/game.tscn"
-PhysicsManager="*res://physics/singletons/physics_manager.gd"
 BodyCreator="*res://physics/singletons/body_creator.gd"
 Constants="*res://physics/singletons/constants.gd"
 UserInput="*res://physics/user_unput/user_input.gd"

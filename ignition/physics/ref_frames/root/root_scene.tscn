@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://physics/ref_frames/root/ref_frame_root.gd" type="Script" id=1]
+
+[node name="RefFrameRoot" type="RefFrameRoot"]
+script = ExtResource( 1 )

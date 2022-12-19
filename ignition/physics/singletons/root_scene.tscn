@@ -4,7 +4,7 @@
 [ext_resource path="res://physics/singletons/viewport_overlay/viewport_overlay.tscn" type="PackedScene" id=2]
 [ext_resource path="res://physics/interact_icon/interaction_node_manager.tscn" type="PackedScene" id=3]
 
-[node name="Root_global" type="Node"]
+[node name="RootGlobal" type="Node"]
 script = ExtResource( 1 )
 
 [node name="physics_envs" type="Node" parent="."]

@@ -2,7 +2,7 @@
 
 [ext_resource path="res://physics/celestial_bodies/celestial_surface.tscn" type="PackedScene" id=1]
 [ext_resource path="res://tryouts/rf_management/rf_management_02.gd" type="Script" id=2]
-[ext_resource path="res://physics/camera_ctrl/camera.tscn" type="PackedScene" id=3]
+[ext_resource path="res://physics/camera_ctrl/player_camera.tscn" type="PackedScene" id=3]
 [ext_resource path="res://physics/celestial_bodies/sun.tscn" type="PackedScene" id=4]
 [ext_resource path="res://physics/ui/root_ui.tscn" type="PackedScene" id=5]
 
