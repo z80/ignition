@@ -92,9 +92,9 @@ func rebuild_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_s
 	
 	# And now if we have initiate asynchronous surface build.
 	if need_rebuild:
-		#WorkersPool.push_back_with_arg( self, "_rebuild_surface_worker", "_rebuild_surface_finished", data )
-		_rebuild_surface_worker( data )
-		_rebuild_surface_finished( data )
+		WorkersPool.push_back_with_arg( self, "_rebuild_surface_worker", "_rebuild_surface_finished", data )
+		#_rebuild_surface_worker( data )
+		#_rebuild_surface_finished( data )
 
 
 
@@ -145,7 +145,7 @@ func update_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_so
 
 func _update_surface_worker( data: RebuildData ):
 	var surface_source: Resource = data.surface_source
-	var identity_distance: float = 20 #surface_source.identity_distance
+	var identity_distance: float = surface_source.identity_distance
 	var source_se3: Se3Ref       = data.source_se3
 	
 	var qty: int = _voxel_surface.get_nodes_qty()
