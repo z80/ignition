@@ -82,7 +82,7 @@ func _process( _delta ):
 	_mutex.unlock()
 	
 	if task != null:
-		print( "finished tasks not empty, calling callback" )
+		#print( "finished tasks not empty, calling callback" )
 		task.call_callback()
 	
 #	_print_stats()
@@ -144,13 +144,13 @@ func _process_tasks( thread: Thread ):
 		_mutex.unlock()
 		
 		if task != null:
-			print( "executing task" )
+			#print( "executing task" )
 			task.execute_task()
-			print( "executing task done" )
+			#print( "executing task done" )
 			
 			_mutex.lock()
 			if task != null:
-				print( "adding to finished tasks" )
+				#print( "adding to finished tasks" )
 				_finished_tasks.push_front( task )
 			_mutex.unlock()
 		

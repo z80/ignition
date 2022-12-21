@@ -31,6 +31,7 @@ far = 8192.0
 
 [node name="Atmosphere" parent="Camera" instance=ExtResource( 1 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+visible = false
 cast_shadow = 0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="Camera"]

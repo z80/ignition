@@ -44,7 +44,7 @@ func rebuild_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_s
 			_is_ready = false
 			_initialized_strategy = false
 
-		return
+#		return
 	
 	# Find if subdivision is needed.
 	if not _initialized_strategy:
@@ -57,8 +57,6 @@ func rebuild_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_s
 	var view_point_se3: Se3Ref = ref_frame.relative_to( rotation )
 	var need_rebuild: bool = _rebuild_strategy.need_rebuild( view_point_se3 )
 	if need_rebuild and (not _is_busy):
-		_is_busy = true
-		
 		var node_dicts: Array = surface_source.node_sizes
 		var qty: int = node_dicts.size()
 		var distances: Array  = []
@@ -92,6 +90,7 @@ func rebuild_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_s
 	
 	# And now if we have initiate asynchronous surface build.
 	if need_rebuild:
+		_is_busy = true
 		WorkersPool.push_back_with_arg( self, "_rebuild_surface_worker", "_rebuild_surface_finished", data )
 		#_rebuild_surface_worker( data )
 		#_rebuild_surface_finished( data )
@@ -101,6 +100,7 @@ func rebuild_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_s
 
 
 func _rebuild_surface_worker( data: RebuildData ):
+	print( "_rebuild_surface_worker entered" )
 	var surface_source: Resource = data.surface_source
 	var source_se3: Se3Ref = data.source_se3
 	
@@ -111,6 +111,7 @@ func _rebuild_surface_worker( data: RebuildData ):
 	_voxel_surface.split_precision = 0.01
 	var ok: bool = _voxel_surface.subdivide_source( source_radius, source, _node_size_strategy )
 	#_voxel_surface.precompute_scaled_values( source_se3, -1, null )
+	print( "_rebuild_surface_worker left" )
 	return data
 
 
@@ -132,6 +133,9 @@ class RebuildData:
 
 # This one queries triangles closest to the ref. frame center.
 func update_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_source: Resource ):
+	if (not _is_ready) or _is_busy:
+		return
+	
 	var source_se3: Se3Ref = rotation.relative_to( ref_frame )
 
 	var data: RebuildData = RebuildData.new()
@@ -150,6 +154,8 @@ func _update_surface_worker( data: RebuildData ):
 	
 	var qty: int = _voxel_surface.get_nodes_qty()
 	var collision_triangles: PoolVector3Array = _voxel_surface.collision_faces( source_se3, identity_distance )
+	
+	print( "Updated surface. Triangles qty: ", collision_triangles.size() )
 	
 	var shape: ConcavePolygonShape = _collision_shape.shape
 	shape.set_faces(  collision_triangles )
