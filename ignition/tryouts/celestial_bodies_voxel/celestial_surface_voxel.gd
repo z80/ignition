@@ -2,6 +2,10 @@
 extends CelestialBody
 class_name CelestialSurfaceVoxel
 
+# Radius is taken from
+var radius_km = 1.0
+export(float) var height_km = 1.0
+
 export(float) var atmosphere_height_inner_km = 1.0
 export(float) var atmosphere_height_outer_km = 0.1
 export(float) var transparency_dist_inner_km = 30.0
@@ -66,7 +70,12 @@ func surfaces_node():
 
 
 func _ready():
-	._ready()
+	var sn: Node = surfaces_node()
+	var src: Resource = sn.get_surface_source()
+	radius_km = src.source_radius * 0.001
+
+	init()
+	
 	# It should be created only when the thing is in the tree.
 	_create_orbit_visualizer()
 	

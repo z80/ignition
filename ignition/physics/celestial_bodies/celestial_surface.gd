@@ -5,6 +5,9 @@ class_name CelestialSurface
 # Defining geometry and GM based on surface orbiting velocity.
 export(String) var height_source_name = "test"
 
+# Radius is taken from
+var radius_km = 1.0
+export(float) var height_km = 1.0
 
 # Subdivision levels.
 export(float) var detail_size_0 = 0.01

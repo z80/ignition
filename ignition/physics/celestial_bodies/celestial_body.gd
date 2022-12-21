@@ -8,8 +8,6 @@ export(Vector3) var rotation_axis       = Vector3( 0.0, 1.0, 0.0 )
 
 # Defining geometry and GM based on surface orbiting velocity.
 export(float)  var surface_orbital_vel_kms = 0.3
-export(float)  var radius_km    = 1.0
-export(float)  var height_km    = 0.1
 
 # Planet's orbit parameters.
 export(Vector3) var perigee_dir = Vector3( 1.0, 0.0, 0.0 )
@@ -48,7 +46,8 @@ func get_class():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	add_to_group( Constants.CELESTIAL_BODIES_NAME )
-	init()
+	# This must be called in the derived classes.
+	#init()
 
 
 func init_force_source():
