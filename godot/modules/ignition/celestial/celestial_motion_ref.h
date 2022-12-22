@@ -44,7 +44,8 @@ public:
     real_t max_velocity() const;
     real_t excess_velocity() const;
     real_t deflection_angle() const;
-    // Orbit orientation.
+	Vector3 acceleration() const;
+	// Orbit orientation.
     // From focus towards perigee.
     Vector3 ex() const;
     // Along velocity at perigee.
@@ -70,6 +71,7 @@ public:
 
 	void set_force_numerical( bool en );
 	bool get_force_numerical() const;
+
 
 	void set_debug( bool en );
 	bool get_debug() const;

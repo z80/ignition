@@ -26,7 +26,8 @@ void CelestialMotionRef::_bind_methods()
     ClassDB::bind_method( D_METHOD("max_velocity"), &CelestialMotionRef::max_velocity, Variant::REAL );
     ClassDB::bind_method( D_METHOD("excess_velocity"), &CelestialMotionRef::excess_velocity, Variant::REAL );
     ClassDB::bind_method( D_METHOD("deflection_angle"), &CelestialMotionRef::deflection_angle, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("ex"), &CelestialMotionRef::ex, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("acceleration"),       &CelestialMotionRef::acceleration, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("ex"), &CelestialMotionRef::ex, Variant::VECTOR3 );
     ClassDB::bind_method( D_METHOD("ey"), &CelestialMotionRef::ey, Variant::VECTOR3 );
 
     ClassDB::bind_method( D_METHOD("set_se3", "se3"), &CelestialMotionRef::set_se3 );
@@ -183,6 +184,13 @@ real_t CelestialMotionRef::deflection_angle() const
 {
     const real_t ret = cm.deflection_angle();
     return ret;
+}
+
+Vector3 CelestialMotionRef::acceleration() const
+{
+	const Vector3d acc_d = cm.acceleration();
+	const Vector3 acc( acc_d.x_, acc_d.y_, acc_d.z_ );
+	return acc;
 }
 
 Vector3 CelestialMotionRef::ex() const

@@ -217,6 +217,15 @@ Float CelestialMotion::deflection_angle() const
 	return ret;
 }
 
+Vector3d CelestialMotion::acceleration() const
+{
+	const Float abs_r = se3_local.r_.Length();
+	const Float acc_r = gm/(abs_r*abs_r*abs_r);
+	const Vector3d acc_local = -se3_local.r_ * acc_r;
+	const Vector3d acc_global = A * acc_local;
+	return acc_global;
+}
+
 Vector3d CelestialMotion::ex() const
 {
 	const Vector3d ret( A.m00_, A.m10_, A.m20_ );
@@ -591,8 +600,11 @@ void CelestialMotion::process_numeric( Float dt )
 	//se3_global.r_ += se3_global.v_ * dt;
 
 	rk4_step( se3_global, gm, dt );
-	print_line( String("numerical integration: x: (" )  + rtos(se3_global.r_.x_) + String(", ") +
-		rtos(se3_global.r_.y_) + String(", ") + rtos(se3_global.r_.z_) + String(")") );
+	if (_debug)
+	{
+		print_line( String("numerical integration: x: (" )  + rtos(se3_global.r_.x_) + String(", ") +
+			rtos(se3_global.r_.y_) + String(", ") + rtos(se3_global.r_.z_) + String(")") );
+	}
 }
 
 void CelestialMotion::process_parabolic( Float dt )
@@ -824,6 +836,7 @@ void CelestialMotion::orbit_points( RefFrameNode * orbiting_center_node, RefFram
 		pts.push_back( r_in_player_rf );
 	}
 }
+
 
 
 
