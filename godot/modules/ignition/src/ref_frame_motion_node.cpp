@@ -31,8 +31,8 @@ void RefFrameMotionNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("ex"), &RefFrameMotionNode::ex, Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("ey"), &RefFrameMotionNode::ey, Variant::VECTOR3 );
 
-	ClassDB::bind_method( D_METHOD("set_own_gm", "gm"), &RefFrameMotionNode::get_gm, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("get_own_gm"),       &RefFrameMotionNode::get_gm, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("set_own_gm", "gm"), &RefFrameMotionNode::set_own_gm, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_own_gm"),       &RefFrameMotionNode::get_own_gm, Variant::REAL );
 
 	ClassDB::bind_method( D_METHOD("get_gm"),        &RefFrameMotionNode::get_gm, Variant::REAL );
 

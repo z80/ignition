@@ -1,5 +1,5 @@
 
-extends RefFrame
+extends RefFrameMotionNode
 class_name CelestialBody
 
 # Planet rotation.
@@ -29,7 +29,6 @@ var _all_parents: Array = []
 
 
 var initialized: bool = false
-var gm: float = -1.0
 
 # Gravity force source.
 var force_source_gravity: ForceSourceGravity = null
@@ -52,6 +51,7 @@ func _ready():
 
 func init_force_source():
 	force_source_gravity = ForceSourceGravity.new()
+	var gm: float = get_own_gm()
 	force_source_gravity.GM = gm
 
 
@@ -59,7 +59,7 @@ func init_force_source():
 
 
 
-func init():
+func init_forces():
 #	if initialized:
 #		return
 #	initialized = true
@@ -112,6 +112,7 @@ func get_all_physics_bodies( n: Node, certain_ones: bool = false, orbiting: bool
 func gravitational_influence( se3: Se3Ref ):
 	var r: Vector3 = se3.r
 	var dist2 = r.length_squared()
+	var gm: float = get_own_gm()
 	var ret: float = gm/dist2
 	return ret
 

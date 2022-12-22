@@ -74,7 +74,7 @@ func _ready():
 	var src: Resource = sn.get_surface_source()
 	radius_km = src.source_radius * 0.001
 
-	init()
+	init_forces()
 	
 	# It should be created only when the thing is in the tree.
 	_create_orbit_visualizer()
@@ -82,17 +82,17 @@ func _ready():
 
 
 
-func init():
+func init_forces():
 	if initialized:
 		return
 	initialized = true
 	
 	add_to_group( Constants.PLANETS_GROUP_NAME )
 	
-	motion = CelestialMotionRef.new()
-
 	# Initialize GM.
-	gm = motion.init_gm_speed( radius_km, surface_orbital_vel_kms )
+	var gm: float = self.init_gm_speed( radius_km, surface_orbital_vel_kms )
+	self.get_own_gm()
+	self.set_own_gm( gm )
 	
 	# Initialize orbital movement.
 	perigee_dir = perigee_dir.normalized()
@@ -117,7 +117,7 @@ func init():
 	# Initialize force source for air drag forces.
 	_init_force_source_air_drag()
 	
-	.init()
+	.init_forces()
 
 
 

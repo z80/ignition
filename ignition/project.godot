@@ -14,7 +14,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://tryouts/atmosphere/atmosphere_canvas_item.gd"
 }, {
-"base": "RefFrame",
+"base": "RefFrameMotionNode",
 "class": "CelestialBody",
 "language": "GDScript",
 "path": "res://physics/celestial_bodies/celestial_body.gd"
