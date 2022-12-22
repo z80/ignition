@@ -111,6 +111,10 @@ public:
 	virtual void _ign_process( real_t delta );
 	// Place camera.
 	virtual void _ign_post_process( real_t delta );
+
+
+	virtual Dictionary serialize() const;
+	virtual bool deserialize( const Dictionary & data );
 };
 
 }

@@ -31,10 +31,14 @@ void RefFrameMotionNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("ex"), &RefFrameMotionNode::ex, Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("ey"), &RefFrameMotionNode::ey, Variant::VECTOR3 );
 
+	ClassDB::bind_method( D_METHOD("set_own_gm", "gm"), &RefFrameMotionNode::get_gm, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_own_gm"),       &RefFrameMotionNode::get_gm, Variant::REAL );
+
 	ClassDB::bind_method( D_METHOD("get_gm"),        &RefFrameMotionNode::get_gm, Variant::REAL );
 
 	ClassDB::bind_method( D_METHOD("init", "gm", "se3"), &RefFrameMotionNode::init );
-	ClassDB::bind_method( D_METHOD("init_gm", "radius_km", "suface_orbit_velocity_kms"), &RefFrameMotionNode::init_gm );
+	ClassDB::bind_method( D_METHOD("init_gm_speed",  "radius_km", "suface_orbit_velocity_kms"), &RefFrameMotionNode::init_gm_speed, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("init_gm_period", "radius_km", "period_kms"),                &RefFrameMotionNode::init_gm_period, Variant::REAL );
 	ClassDB::bind_method( D_METHOD("launch_elliptic", "gm", "unit_r", "unit_v", "period_hrs", "eccentricity"), &RefFrameMotionNode::launch_elliptic );
 
 	ClassDB::bind_method( D_METHOD("serialize"),          &RefFrameMotionNode::serialize, Variant::DICTIONARY );
@@ -49,10 +53,11 @@ void RefFrameMotionNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_debug"),       &RefFrameMotionNode::get_debug, Variant::BOOL );
 
 	ADD_GROUP( "Ignition", "" );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "allow_orbiting" ),       "set_allow_orbiting",       "get_allow_orbiting" );
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),                  "set_se3",                  "get_se3" );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "force_numerical" ),      "set_force_numerical",      "get_force_numerical" );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "debug" ),                "set_debug",                "get_debug" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL,   "own_gm" ),          "set_own_gm",          "get_own_gm" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "allow_orbiting" ),  "set_allow_orbiting",  "get_allow_orbiting" );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),             "set_se3",             "get_se3" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "force_numerical" ), "set_force_numerical", "get_force_numerical" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "debug" ),           "set_debug",           "get_debug" );
 }
 
 RefFrameMotionNode::RefFrameMotionNode()
@@ -205,6 +210,16 @@ Vector3 RefFrameMotionNode::ey() const
 	return ret;
 }
 
+void RefFrameMotionNode::set_own_gm( real_t gm )
+{
+	cm.own_gm = gm;
+}
+
+real_t RefFrameMotionNode::get_own_gm() const
+{
+	return cm.own_gm;
+}
+
 real_t RefFrameMotionNode::get_gm() const
 {
 	return cm.gm;
@@ -215,9 +230,15 @@ void RefFrameMotionNode::init( real_t gm, const Ref<Se3Ref> & se3 )
 	cm.init( gm, se3->se3 );
 }
 
-real_t RefFrameMotionNode::init_gm( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const
+real_t RefFrameMotionNode::init_gm_speed( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const
 {
-	const Float gm = cm.init_gm( radius_km, wanted_surface_orbit_velocity_kms );
+	const Float gm = cm.init_gm_speed( radius_km, wanted_surface_orbit_velocity_kms );
+	return gm;
+}
+
+real_t RefFrameMotionNode::init_gm_period( real_t radius_km, real_t wanted_period_hrs ) const
+{
+	const Float gm = cm.init_gm_period( radius_km, wanted_period_hrs );
 	return gm;
 }
 
@@ -228,7 +249,8 @@ void RefFrameMotionNode::launch_elliptic( real_t gm, const Vector3 & unit_r, con
 
 Dictionary RefFrameMotionNode::serialize() const
 {
-	Dictionary data;
+	Dictionary data = RefFrameNode::serialize();
+	
 	data["type"]           = static_cast<int>( cm.type );
 	data["allow_orbiting"] = cm.allow_orbiting;
 	serialize_vector( cm.h, "h", data );
@@ -251,6 +273,10 @@ Dictionary RefFrameMotionNode::serialize() const
 
 bool RefFrameMotionNode::deserialize( const Dictionary & data )
 {
+	const bool ok = RefFrameNode::deserialize( data );
+	if ( !ok )
+		return false;
+
 	const int t = data["type"];
 	cm.type           = static_cast<CelestialMotion::Type>( t );
 	cm.allow_orbiting = data["allow_orbiting"];
@@ -364,14 +390,17 @@ bool RefFrameMotionNode::get_debug() const
 void RefFrameMotionNode::_ign_pre_process( real_t delta )
 {
 	this->se3_ = cm.process( delta );
+	RefFrameNode::_ign_pre_process( delta );
 }
 
 void RefFrameMotionNode::_ign_process( real_t delta )
 {
+	RefFrameNode::_ign_process( delta );
 }
 
 void RefFrameMotionNode::_ign_post_process( real_t delta )
 {
+	RefFrameNode::_ign_post_process( delta );
 }
 
 

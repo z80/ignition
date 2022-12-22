@@ -57,8 +57,9 @@ public:
     real_t get_gm() const;
 
     void init( real_t gm, const Ref<Se3Ref> & se3 );
-    real_t init_gm( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const;
-    void launch_elliptic( real_t gm, const Vector3 & unit_r, const Vector3 & unit_v, real_t period_hrs, real_t eccentricity );
+    real_t init_gm_speed( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const;
+	real_t init_gm_period( real_t radius_km, real_t wanted_period_kms ) const;
+	void launch_elliptic( real_t gm, const Vector3 & unit_r, const Vector3 & unit_v, real_t period_hrs, real_t eccentricity );
     Ref<Se3Ref> process( real_t dt );
     void process_rf( real_t dt, Node * rf );
 

@@ -35,7 +35,7 @@ public:
 	virtual void _ign_post_process( real_t delta ) override;
 
 public:
-	CelestialRotation celestial_rotation;
+	CelestialRotation cr;
 };
 
 

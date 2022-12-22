@@ -46,14 +46,18 @@ public:
 	// Along velocity at perigee.
 	Vector3 ey() const;
 
+	void set_own_gm( real_t gm );
+	real_t get_own_gm() const;
+
 	real_t get_gm() const;
 
 	void init( real_t gm, const Ref<Se3Ref> & se3 );
-	real_t init_gm( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const;
+	real_t init_gm_speed( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const;
+	real_t init_gm_period( real_t radius_km, real_t wanted_period_hrs ) const;
 	void launch_elliptic( real_t gm, const Vector3 & unit_r, const Vector3 & unit_v, real_t period_hrs, real_t eccentricity );
 
-	Dictionary serialize() const;
-	bool deserialize( const Dictionary & data );
+	virtual Dictionary serialize() const override;
+	virtual bool deserialize( const Dictionary & data ) override;
 
 	PoolVector3Array orbit_points( Node * orbiting_center, Node * player_viewpoint, Node * camera_node, Ref<DistanceScalerBaseRef> scaler, int qty );
 

@@ -50,6 +50,9 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_debug", "en"), &RefFrameNode::set_debug );
 	ClassDB::bind_method( D_METHOD("get_debug"), &RefFrameNode::get_debug, Variant::BOOL );
 
+	ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
+	ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize, Variant::BOOL );
+
 	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform" ),        "set_t", "t" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "linear_velocity" ),  "set_v", "v" );
@@ -675,6 +678,30 @@ void RefFrameNode::_ign_post_process( real_t delta )
 	}
 }
 
+
+Dictionary RefFrameNode::serialize() const
+{
+	Dictionary data;
+	const Dictionary se3_data = se3_.serialize();
+	data["se3"] = data;
+	return data;
+}
+
+bool RefFrameNode::deserialize( const Dictionary & data )
+{
+	const bool ok = data.has( "se3" );
+	if ( !ok )
+		return false;
+
+	{
+		const Dictionary se3_data = data["se3"];
+		const bool ok = se3_.deserialize( se3_data );
+		if ( !ok )
+			return false;
+	}
+
+	return true;
+}
 
 
 }

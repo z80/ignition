@@ -18,7 +18,9 @@ CelestialMotion::CelestialMotion()
     type = STATIONARY;
 	force_numerical = false;
     allow_orbiting = true;
- 
+
+	own_gm = 0.0;
+
     gm = -1.0;
     abs_e = 0.0;
     a = 1.0;
@@ -366,12 +368,21 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     }
 }
 
-Float CelestialMotion::init_gm( Float radius_km, Float wanted_surface_orbit_velocity_kms )
+Float CelestialMotion::init_gm_speed( Float radius_km, Float wanted_surface_orbit_velocity_kms )
 {
     const Float v = wanted_surface_orbit_velocity_kms * 1000.0;
     const Float r = radius_km * 1000.0;
     const Float gm = v*v*r;
     return gm;
+}
+
+Float CelestialMotion::init_gm_period( Float radius_km, Float wanted_period_hrs )
+{
+	const Float circumference_km = 2.0*3.1415926535*radius_km;
+	const Float period_sec = wanted_period_hrs*3600.0;
+	const Float speed_kms = circumference_km / period_sec;
+	const Float gm = init_gm_speed( radius_km, speed_kms );
+	return gm;
 }
 
 void CelestialMotion::launch_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity )

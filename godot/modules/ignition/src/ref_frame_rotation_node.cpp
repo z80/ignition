@@ -24,43 +24,46 @@ RefFrameRotationNode::~RefFrameRotationNode()
 
 void RefFrameRotationNode::init( const Vector3 & up, real_t period_hrs )
 {
-	celestial_rotation.init( Vector3d( up.x, up.y, up.z ), period_hrs );
+	cr.init( Vector3d( up.x, up.y, up.z ), period_hrs );
 }
 
 Dictionary RefFrameRotationNode::serialize() const
 {
 	Dictionary data;
-	data["spinning"] = celestial_rotation.spinning;
-	data["period"]   = celestial_rotation.period;
-	data["time"]     = celestial_rotation.time;
-	serialize_quat( celestial_rotation.axis_orientation, "axis_orientation", data );
-	data["se3"] = celestial_rotation.se3.serialize();
+	data["spinning"] = cr.spinning;
+	data["period"]   = cr.period;
+	data["time"]     = cr.time;
+	serialize_quat( cr.axis_orientation, "axis_orientation", data );
+	data["se3"] = cr.se3.serialize();
 
 	return data;
 }
 
 bool RefFrameRotationNode::deserialize( const Dictionary & data )
 {
-	celestial_rotation.spinning = data["spinning"];
-	celestial_rotation.period = data["period"];
-	celestial_rotation.time = data["time"];
-	celestial_rotation.axis_orientation = deserialize_quat( "axis_orientation", data );
-	celestial_rotation.se3.deserialize( data["se3"] );
+	cr.spinning = data["spinning"];
+	cr.period = data["period"];
+	cr.time = data["time"];
+	cr.axis_orientation = deserialize_quat( "axis_orientation", data );
+	cr.se3.deserialize( data["se3"] );
 
 	return true;
 }
 
 void RefFrameRotationNode::_ign_pre_process( real_t delta )
 {
-	this->se3_ = celestial_rotation.process( delta );
+	this->se3_ = cr.process( delta );
+	RefFrameNode::_ign_pre_process( delta );
 }
 
 void RefFrameRotationNode::_ign_process( real_t delta )
 {
+	RefFrameNode::_ign_process( delta );
 }
 
 void RefFrameRotationNode::_ign_post_process( real_t delta )
 {
+	RefFrameNode::_ign_post_process( delta );
 }
 
 
