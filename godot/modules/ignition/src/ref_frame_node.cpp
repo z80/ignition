@@ -50,8 +50,10 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_debug", "en"), &RefFrameNode::set_debug );
 	ClassDB::bind_method( D_METHOD("get_debug"), &RefFrameNode::get_debug, Variant::BOOL );
 
-	ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
-	ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize, Variant::BOOL );
+	//ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
+	//ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize );
+	ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize );
 
 	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform" ),        "set_t", "t" );
@@ -679,7 +681,7 @@ void RefFrameNode::_ign_post_process( real_t delta )
 }
 
 
-Dictionary RefFrameNode::serialize() const
+Dictionary RefFrameNode::serialize()
 {
 	Dictionary data;
 	const Dictionary se3_data = se3_.serialize();

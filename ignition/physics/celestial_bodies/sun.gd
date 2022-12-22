@@ -27,7 +27,7 @@ func init():
 	
 	# Initialize GM.
 	var motion: CelestialMotionRef = CelestialMotionRef.new()
-	gm = motion.init_gm( radius_km, surface_orbital_vel_kms )
+	gm = motion.init_gm_speed( radius_km, surface_orbital_vel_kms )
 	
 	.init()
 

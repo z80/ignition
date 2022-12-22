@@ -97,7 +97,7 @@ func init():
 	motion = CelestialMotionRef.new()
 
 	# Initialize GM.
-	gm = motion.init_gm( radius_km, surface_orbital_vel_kms )
+	gm = motion.init_gm_speed( radius_km, surface_orbital_vel_kms )
 	
 	# Initialize orbital movement.
 	perigee_dir = perigee_dir.normalized()

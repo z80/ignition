@@ -1,6 +1,6 @@
 
-#ifndef __REF_FRAME_MOTION_NODE_H_
-#define __REF_FRAME_MOTION_NODE_H_
+#ifndef __REF_FRAME_NON_INERTIAL_NODE_H_
+#define __REF_FRAME_NON_INERTIAL_NODE_H_
 
 #include "ref_frame_node.h"
 #include "celestial_motion.h"
@@ -9,18 +9,17 @@
 namespace Ign
 {
 
-class RefFrameMotionNode: public RefFrameNode
+class RefFrameNonInertialNode: public RefFrameNode
 {
-	GDCLASS(RefFrameMotionNode, RefFrameNode);
+	GDCLASS(RefFrameNonInertialNode, RefFrameNode);
 	OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();
-	void _notification( int p_notification );
 
 public:
-	RefFrameMotionNode();
-	virtual ~RefFrameMotionNode();
+	RefFrameNonInertialNode();
+	virtual ~RefFrameNonInertialNode();
 
 	void set_allow_orbiting( bool en );
 	bool get_allow_orbiting() const;

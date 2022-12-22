@@ -709,13 +709,14 @@ func _get_allow_orbiting():
 
 func serialize():
 	var data: Dictionary = .serialize()
-	data.allow_orbiting = self.allow_orbiting
+	data.allow_orbiting  = allow_orbiting
 	return data
 
 
 
 func deserialize( data: Dictionary ):
-	var ret: bool = .deserialize( data )
+	var ret: bool  = .deserialize( data )
+	allow_orbiting = data.allow_orbiting
 	if not ret:
 		return false
 	

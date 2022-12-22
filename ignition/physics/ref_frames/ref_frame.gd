@@ -147,26 +147,15 @@ func get_ref_frame_root():
 
 
 func serialize():
-	var data: Dictionary = {}
-	var se3: Se3Ref = self.get_se3()
-	var se3_data: Dictionary = se3.serialize()
-	data.se3 = se3_data
+	var data: Dictionary = .serialize()
 	return data
 
 
 
 
 func deserialize( data: Dictionary ):
-	var has_se3: bool = data.has("se3")
-	if not has_se3:
-		return false
-	
-	var se3_data: Dictionary = data.se3
-	var se3: Se3Ref = self.get_se3()
-	se3.deserialize( se3_data )
-	self.set_se3( se3 )
-	
-	return true
+	var ret: bool = .deserialize( data )
+	return ret
 
 
 

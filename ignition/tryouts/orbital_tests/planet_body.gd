@@ -23,14 +23,14 @@ func init():
 	if initialized:
 		return
 	initialized = true
-	init_gm( r, v )
+	init_gm_speed( r, v )
 	init_orbit()
 	var mesh = get_node( "Sphere" )
 	mesh.scale = Vector3( r, r ,r )
 	
 
-func init_gm( r: float, v: float ):
-	gm = Motion.init_gm( r, v )
+func init_gm_speed( r: float, v: float ):
+	gm = Motion.init_gm_speed( r, v )
 
 func init_orbit():
 	var p = get_node( parent )

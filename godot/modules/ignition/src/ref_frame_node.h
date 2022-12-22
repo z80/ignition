@@ -113,7 +113,7 @@ public:
 	virtual void _ign_post_process( real_t delta );
 
 
-	virtual Dictionary serialize() const;
+	virtual Dictionary serialize();
 	virtual bool deserialize( const Dictionary & data );
 };
 
