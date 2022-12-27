@@ -22,14 +22,8 @@ public:
 protected:
 	void _notification( int p_notification );
 
-	//// Compute forces, integrate dynamics.
-	//virtual void _ign_pre_process( real_t delta );
-	//// Set positions, place visuals.
-	//virtual void _ign_process( real_t delta );
-	//// Place camera.
-	//virtual void _ign_post_process( real_t delta );
-
 	void _process_children( RefFrameNode * ref_frame, real_t delta );
+	void _physics_process_children( RefFrameNode * ref_frame, real_t delta );
 };
 
 }

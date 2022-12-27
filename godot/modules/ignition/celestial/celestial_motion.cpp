@@ -221,6 +221,9 @@ Float CelestialMotion::deflection_angle() const
 
 Vector3d CelestialMotion::acceleration() const
 {
+	const bool orbiting = is_orbiting();
+	if ( !orbiting )
+		return Vector3d::ZERO;
 	const Float abs_r = se3_local.r_.Length();
 	const Float acc_r = gm/(abs_r*abs_r*abs_r);
 	const Vector3d acc_local = -se3_local.r_ * acc_r;
@@ -552,7 +555,7 @@ struct RK4_Vector6
 	Float x[6];
 };
 
-void rk4_f( const RK4_Vector6 & x, Float gm, Float h, RK4_Vector6 & f )
+static void rk4_f( const RK4_Vector6 & x, Float gm, Float h, RK4_Vector6 & f )
 {
 	const Vector3d r( x.x[0], x.x[1], x.x[2] );
 	const Float abs_r = r.Length();
@@ -607,7 +610,7 @@ static void rk4_step( SE3 & se3, Float gm, Float h )
 
 
 
-void rk4_f_acc( const RK4_Vector6 & x, const Vector3d & acc, Float h, RK4_Vector6 & f )
+static void rk4_f_acc( const RK4_Vector6 & x, const Vector3d & acc, Float h, RK4_Vector6 & f )
 {
 	const Vector3d r( x.x[0], x.x[1], x.x[2] );
 	const Float abs_r = r.Length();

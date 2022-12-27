@@ -113,6 +113,14 @@ public:
 	virtual void _ign_post_process( real_t delta );
 
 
+	// Compute forces, integrate dynamics.
+	virtual void _ign_physics_pre_process( real_t delta );
+	// Set positions, place visuals.
+	virtual void _ign_physics_process( real_t delta );
+	// Place camera.
+	virtual void _ign_physics_post_process( real_t delta );
+
+
 	virtual Dictionary serialize();
 	virtual bool deserialize( const Dictionary & data );
 };
