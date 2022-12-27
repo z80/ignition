@@ -35,9 +35,9 @@ void CelestialMotionRef::_bind_methods()
 
     ClassDB::bind_method( D_METHOD("get_gm"),        &CelestialMotionRef::get_gm, Variant::REAL );
 
-    ClassDB::bind_method( D_METHOD("init", "gm", "se3"), &CelestialMotionRef::init );
-    ClassDB::bind_method( D_METHOD("init_gm_speed",  "radius_km", "suface_orbit_velocity_kms"), &CelestialMotionRef::init_gm_speed, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("init_gm_period", "radius_km", "period_kms"), &CelestialMotionRef::init_gm_period, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("launch", "gm", "se3"), &CelestialMotionRef::launch, Variant::BOOL );
+    ClassDB::bind_method( D_METHOD("compute_gm_by_speed",  "radius_km", "suface_orbit_velocity_kms"), &CelestialMotionRef::compute_gm_by_speed, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("compute_gm_by_period", "radius_km", "period_kms"), &CelestialMotionRef::compute_gm_by_period, Variant::REAL );
 	ClassDB::bind_method( D_METHOD("launch_elliptic", "gm", "unit_r", "unit_v", "period_hrs", "eccentricity"), &CelestialMotionRef::launch_elliptic );
     ClassDB::bind_method( D_METHOD("process", "dt"), &CelestialMotionRef::process, Variant::OBJECT );
     ClassDB::bind_method( D_METHOD("process_rf", "dt", "rf"), &CelestialMotionRef::process_rf );
@@ -233,20 +233,21 @@ real_t CelestialMotionRef::get_gm() const
 
 
 
-void CelestialMotionRef::init( real_t gm, const Ref<Se3Ref> & se3 )
+bool CelestialMotionRef::launch( real_t gm, const Ref<Se3Ref> & se3 )
 {
-    cm.init( gm, se3->se3 );
+    const bool ret = cm.launch( gm, se3->se3 );
+	return ret;
 }
 
-real_t CelestialMotionRef::init_gm_speed( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const
+real_t CelestialMotionRef::compute_gm_by_speed( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const
 {
-    const Float gm = cm.init_gm_speed( radius_km, wanted_surface_orbit_velocity_kms );
+    const Float gm = cm.compute_gm_by_speed( radius_km, wanted_surface_orbit_velocity_kms );
     return gm;
 }
 
-real_t CelestialMotionRef::init_gm_period( real_t radius_km, real_t wanted_period_kms ) const
+real_t CelestialMotionRef::compute_gm_by_period( real_t radius_km, real_t wanted_period_kms ) const
 {
-	const Float gm = cm.init_gm_period( radius_km, wanted_period_kms );
+	const Float gm = cm.compute_gm_by_period( radius_km, wanted_period_kms );
 	return gm;
 }
 

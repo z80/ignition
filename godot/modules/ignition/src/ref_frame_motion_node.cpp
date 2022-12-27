@@ -36,9 +36,9 @@ void RefFrameMotionNode::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("get_gm"),        &RefFrameMotionNode::get_gm, Variant::REAL );
 
-	ClassDB::bind_method( D_METHOD("init", "gm", "se3"), &RefFrameMotionNode::init );
-	ClassDB::bind_method( D_METHOD("init_gm_speed",  "radius_km", "suface_orbit_velocity_kms"), &RefFrameMotionNode::init_gm_speed, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("init_gm_period", "radius_km", "period_kms"),                &RefFrameMotionNode::init_gm_period, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("launch"), &RefFrameMotionNode::launch, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("compute_gm_by_speed",  "radius_km", "suface_orbit_velocity_kms"),          &RefFrameMotionNode::compute_gm_by_speed, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("compute_gm_by_period", "radius_km", "period_kms"),                         &RefFrameMotionNode::compute_gm_by_period, Variant::REAL );
 	ClassDB::bind_method( D_METHOD("launch_elliptic", "gm", "unit_r", "unit_v", "period_hrs", "eccentricity"), &RefFrameMotionNode::launch_elliptic );
 
 	ClassDB::bind_method( D_METHOD("serialize"),          &RefFrameMotionNode::serialize, Variant::DICTIONARY );
@@ -243,20 +243,31 @@ real_t RefFrameMotionNode::get_gm() const
 	return cm.gm;
 }
 
-void RefFrameMotionNode::init( real_t gm, const Ref<Se3Ref> & se3 )
+bool RefFrameMotionNode::launch()
 {
-	cm.init( gm, se3->se3 );
+	Node * p = get_parent();
+	if ( p == nullptr )
+		return false;
+	RefFrameMotionNode * pm = Object::cast_to<RefFrameMotionNode>( p );
+	if ( pm == nullptr )
+		return false;
+
+	const Float gm  = pm->cm.own_gm;
+	const SE3   se3 = this->se3_;
+	const bool ret  = cm.launch( gm, se3 );
+
+	return ret;
 }
 
-real_t RefFrameMotionNode::init_gm_speed( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const
+real_t RefFrameMotionNode::compute_gm_by_speed( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const
 {
-	const Float gm = cm.init_gm_speed( radius_km, wanted_surface_orbit_velocity_kms );
+	const Float gm = cm.compute_gm_by_speed( radius_km, wanted_surface_orbit_velocity_kms );
 	return gm;
 }
 
-real_t RefFrameMotionNode::init_gm_period( real_t radius_km, real_t wanted_period_hrs ) const
+real_t RefFrameMotionNode::compute_gm_by_period( real_t radius_km, real_t wanted_period_hrs ) const
 {
-	const Float gm = cm.init_gm_period( radius_km, wanted_period_hrs );
+	const Float gm = cm.compute_gm_by_period( radius_km, wanted_period_hrs );
 	return gm;
 }
 

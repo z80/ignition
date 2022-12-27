@@ -244,7 +244,7 @@ Vector3d CelestialMotion::ey() const
 
 
 
-void CelestialMotion::init( Float gm_, const SE3 & se3_ )
+bool CelestialMotion::launch( Float gm_, const SE3 & se3_ )
 {
 	_last_init_gm  = gm_;
 	_last_init_se3 = se3_;
@@ -262,14 +262,14 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
 	{
 		type = STATIONARY;
 		print_line( String("gm < 0.0: ") + rtos(gm) + String(", switching to idle") );
-		return;
+		return false;
 	}
 
     if ( !allow_orbiting )
     {
         type = STATIONARY;
 		print_line( String("allow_orbiting == false, switching to idle") );
-		return;
+		return false;
     }
 
 
@@ -285,7 +285,7 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     {
         type = NUMERICAL;
         init_numeric();
-        return;
+        return true;
     }
 
     const Float abs_r = r.Length();
@@ -366,9 +366,11 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
         type = PARABOLIC;
         init_parabolic();
     }
+
+	return true;
 }
 
-Float CelestialMotion::init_gm_speed( Float radius_km, Float wanted_surface_orbit_velocity_kms )
+Float CelestialMotion::compute_gm_by_speed( Float radius_km, Float wanted_surface_orbit_velocity_kms )
 {
     const Float v = wanted_surface_orbit_velocity_kms * 1000.0;
     const Float r = radius_km * 1000.0;
@@ -376,12 +378,12 @@ Float CelestialMotion::init_gm_speed( Float radius_km, Float wanted_surface_orbi
     return gm;
 }
 
-Float CelestialMotion::init_gm_period( Float radius_km, Float wanted_period_hrs )
+Float CelestialMotion::compute_gm_by_period( Float radius_km, Float wanted_period_hrs )
 {
 	const Float circumference_km = 2.0*3.1415926535*radius_km;
 	const Float period_sec = wanted_period_hrs*3600.0;
 	const Float speed_kms = circumference_km / period_sec;
-	const Float gm = init_gm_speed( radius_km, speed_kms );
+	const Float gm = compute_gm_by_speed( radius_km, speed_kms );
 	return gm;
 }
 
@@ -407,7 +409,7 @@ void CelestialMotion::launch_elliptic( Float gm, const Vector3d & unit_r, const 
     SE3 se3;
     se3.r_ = v_r;
     se3.v_ = v_v;
-    init( gm, se3 );
+    launch( gm, se3 );
 }
 
 const SE3 & CelestialMotion::process( Float dt )
@@ -455,7 +457,7 @@ const SE3 & CelestialMotion::get_se3() const
 
 void CelestialMotion::set_se3( const SE3 & se3 )
 {
-	init( gm, se3 );
+	launch( gm, se3 );
 }
 
 

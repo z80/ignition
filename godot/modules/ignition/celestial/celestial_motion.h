@@ -51,9 +51,9 @@ public:
 
 
     // Functionality needed for processing.
-    void init( Float gm, const SE3 & se3 );
-	static Float init_gm_speed( Float radius_km, Float wanted_surface_orbit_velocity_kms );
-	static Float init_gm_period( Float radius_km, Float wanted_period_hrs );
+    bool launch( Float gm, const SE3 & se3 );
+	static Float compute_gm_by_speed( Float radius_km, Float wanted_surface_orbit_velocity_kms );
+	static Float compute_gm_by_period( Float radius_km, Float wanted_period_hrs );
 	void launch_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity );
     const SE3 & process( Float dt );
 
