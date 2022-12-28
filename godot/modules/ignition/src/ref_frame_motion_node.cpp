@@ -66,7 +66,7 @@ void RefFrameMotionNode::_notification( int p_notification )
 	{
 		case NOTIFICATION_READY:
 		{
-			const StringName name = get_class_name();
+			const StringName name = get_class_static();
 			const bool in_group = is_in_group( name );
 			if ( !in_group )
 			{

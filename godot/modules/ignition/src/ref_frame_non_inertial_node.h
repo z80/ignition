@@ -2,7 +2,7 @@
 #ifndef __REF_FRAME_NON_INERTIAL_NODE_H_
 #define __REF_FRAME_NON_INERTIAL_NODE_H_
 
-#include "ref_frame_node.h"
+#include "ref_frame_motion_node.h"
 #include "numerical_motion.h"
 #include "distance_scaler_base_ref.h"
 
@@ -13,13 +13,30 @@ class RefFrameMotionNode;
 class RefFrameRotationNode;
 class RefFrameBodyNode;
 
-class RefFrameNonInertialNode: public RefFrameNode
+struct MotionPair
 {
-	GDCLASS(RefFrameNonInertialNode, RefFrameNode);
+	// Motion node orbiting its parent.
+	RefFrameMotionNode * node;
+	// SE3 of this nore relative to 'this' node.
+	SE3                  se3;
+};
+
+struct RotationPair
+{
+	// Rotating ref. frame.
+	RefFrameRotationNode * node;
+	// SE3 of this node relative to 'this' node.
+	SE3                    se3;
+};
+
+class RefFrameNonInertialNode: public RefFrameMotionNode
+{
+	GDCLASS(RefFrameNonInertialNode, RefFrameMotionNode);
 	OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();
+	void _notification( int p_notification );
 
 public:
 	RefFrameNonInertialNode();
@@ -40,18 +57,25 @@ public:
 	bool physics_mode;
 
 	// Parent gravitational bodies. For computing centrifugal acceleration.
-	Vector<RefFrameMotionNode *> parent_gms;
+	Vector<MotionPair> parent_gms;
 	// Rotational ref. frames. This is for computing non-inertial forces caused by rotational motion.
-	Vector<RefFrameRotationNode *> parent_rots;
+	Vector<RotationPair> parent_rots;
 	// All gravitational bodies. For computing gravitational forces.
-	Vector<RefFrameMotionNode * > all_gms;
+	Vector<MotionPair> all_gms;
 	// All child ref. frames to either apply forces or evolve.
 	// If forcess are applied, these are real physicsl bodies.
 	// If evolving, it should be an array of super bodies (assemblies).
 	Vector<RefFrameBodyNode *> all_bodies;
 
-	Vector3d        centrifugal_acc;
+	Vector3d        _combined_orbital_acc;
 	NumericalMotion nm;
+
+	List<Node *> nodes;
+	void _refresh_force_source_nodes();
+	void _compute_relative_se3s();
+	void _compute_combined_acc();
+	void _compute_all_accelerations();
+	void _compute_one_accelearation( RefFrameBodyNode * body );
 };
 
 

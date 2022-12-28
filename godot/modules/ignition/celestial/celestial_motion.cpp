@@ -19,7 +19,7 @@ CelestialMotion::CelestialMotion()
 	force_numerical = false;
     allow_orbiting = true;
 
-	own_gm = 0.0;
+	own_gm = -1.0;
 
     gm = -1.0;
     abs_e = 0.0;

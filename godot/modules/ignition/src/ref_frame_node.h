@@ -58,17 +58,7 @@ public:
 	/// Change origin without changing absolute position in space.
 	void change_parent( Node * origin );
 
-	/// Compute state relative to the "root_" specified.
-	void compute_relative_to_root( Node * root );
-
 	/// Related to jump.
-	void set_jump_r( const Vector3 & r );
-	void set_jump_q( const Quat & q );
-	void set_jump_v( const Vector3 & v );
-	void set_jump_w( const Vector3 & w );
-	void set_jump_t( const Transform & t );
-
-	void apply_jump();
 	void jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 );
 	// This is actual implementation.
 	void jump_to_( Node * dest, const SE3 & dest_se3 );
@@ -93,8 +83,6 @@ public:
 	bool get_debug() const;
 
 	SE3    se3_;
-	SE3    se3_root_;
-	SE3    se3_jump_to_;
 
 	//SE3    se3_obj_cur_;
 	//SE3    se3_obj_rel_to_root_;

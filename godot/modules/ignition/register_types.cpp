@@ -11,7 +11,7 @@
 #include "ref_frame_motion_node.h"
 #include "ref_frame_rotation_node.h"
 #include "ref_frame_non_inertial_node.h"
-#include "ref_frame_auto_node.h"
+//#include "ref_frame_auto_node.h"
 #include "se3_ref.h"
 #include "distance_scaler_ref.h"
 
@@ -57,7 +57,7 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::RefFrameMotionNode>();
 	ClassDB::register_class<Ign::RefFrameRotationNode>();
 	ClassDB::register_class<Ign::RefFrameNonInertialNode>();
-	ClassDB::register_class<Ign::RefFrameAutoNode>();
+	//ClassDB::register_class<Ign::RefFrameAutoNode>();
 	ClassDB::register_class<Ign::Se3Ref>();
 	ClassDB::register_class<Ign::DistanceScalerBaseRef>();
 	ClassDB::register_class<Ign::DistanceScalerRef>();

@@ -21,12 +21,6 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("v"),      &RefFrameNode::v, Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("w"),      &RefFrameNode::w, Variant::VECTOR3 );
 
-	ClassDB::bind_method( D_METHOD("r_root"), &RefFrameNode::r_root, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("q_root"), &RefFrameNode::q_root, Variant::QUAT );
-	ClassDB::bind_method( D_METHOD("v_root"), &RefFrameNode::v_root, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("w_root"), &RefFrameNode::w_root, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("t_root"), &RefFrameNode::t_root, Variant::TRANSFORM );
-
 	ClassDB::bind_method( D_METHOD("set_se3"), &RefFrameNode::set_se3 );
 	ClassDB::bind_method( D_METHOD("get_se3"), &RefFrameNode::get_se3, Variant::OBJECT );
 
@@ -36,15 +30,6 @@ void RefFrameNode::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent, Variant::NIL );
 
-	ClassDB::bind_method( D_METHOD("compute_relative_to_root", "node"), &RefFrameNode::compute_relative_to_root, Variant::NIL );
-
-	ClassDB::bind_method( D_METHOD("set_jump_r", "vector3"),   &RefFrameNode::set_jump_r, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_jump_q", "quat"),      &RefFrameNode::set_jump_q, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_jump_v", "vector3"),   &RefFrameNode::set_jump_v, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_jump_w", "vector3"),   &RefFrameNode::set_jump_w, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_jump_t", "transform"), &RefFrameNode::set_jump_t, Variant::NIL );
-
-	ClassDB::bind_method( D_METHOD("apply_jump"),              &RefFrameNode::apply_jump, Variant::NIL );
 	ClassDB::bind_method( D_METHOD("jump_to", "dest", "dest_se3"), &RefFrameNode::jump_to );
 
 	ClassDB::bind_method( D_METHOD("set_debug", "en"), &RefFrameNode::set_debug );
@@ -195,36 +180,6 @@ Vector3 RefFrameNode::w() const
 	return w;
 }
 
-Vector3 RefFrameNode::r_root() const
-{
-	const Vector3 res = se3_root_.r();
-	return res;
-}
-
-Quat    RefFrameNode::q_root() const
-{
-	const Quat res = se3_root_.q();
-	return res;
-}
-
-Vector3 RefFrameNode::v_root() const
-{
-	const Vector3 res = se3_root_.v();
-	return res;
-}
-
-Vector3 RefFrameNode::w_root() const
-{
-	const Vector3 res = se3_root_.w();
-	return res;
-}
-
-Transform RefFrameNode::t_root() const
-{
-	const Transform res = se3_root_.transform();
-	return res;
-}
-
 void RefFrameNode::set_se3( const Ref<Se3Ref> & se3 )
 {
 	se3_ = se3.ptr()->se3;
@@ -307,54 +262,6 @@ void RefFrameNode::change_parent( Node * parent )
 		this->set_name( unique_name );
 		parent->add_child( this );
 	}
-}
-
-void RefFrameNode::compute_relative_to_root( Node * root )
-{
-	RefFrameNode * root_rf;
-	if ( !root )
-	{
-		root_rf = nullptr;
-	}
-	else
-	{
-		RefFrameNode * new_r = Object::cast_to<RefFrameNode>( root );
-		if ( !new_r )
-			root_rf = nullptr;
-		else
-			root_rf = new_r;
-	}
-	se3_root_ = relative_( root_rf );
-}
-
-void RefFrameNode::set_jump_r( const Vector3 & r )
-{
-	se3_jump_to_.set_r( r );
-}
-
-void RefFrameNode::set_jump_q( const Quat & q )
-{
-	se3_jump_to_.set_q( q );
-}
-
-void RefFrameNode::set_jump_v( const Vector3 & v )
-{
-	se3_jump_to_.set_v( v );
-}
-
-void RefFrameNode::set_jump_w( const Vector3 & w )
-{
-	se3_jump_to_.set_w( w );
-}
-
-void RefFrameNode::set_jump_t( const Transform & t )
-{
-	se3_jump_to_.set_transform( t );
-}
-
-void RefFrameNode::apply_jump()
-{
-	jump_to_( this, se3_jump_to_ );
 }
 
 void RefFrameNode::jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 )

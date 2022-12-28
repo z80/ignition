@@ -90,7 +90,7 @@ func init_forces():
 	add_to_group( Constants.PLANETS_GROUP_NAME )
 	
 	# Initialize GM.
-	var gm: float = self.init_gm_speed( radius_km, surface_orbital_vel_kms )
+	var gm: float = self.compute_gm_by_speed( radius_km, surface_orbital_vel_kms )
 	self.get_own_gm()
 	self.set_own_gm( gm )
 	
