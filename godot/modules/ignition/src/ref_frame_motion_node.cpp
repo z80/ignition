@@ -55,7 +55,7 @@ void RefFrameMotionNode::_bind_methods()
 	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL,   "own_gm" ),          "set_own_gm",          "get_own_gm" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "allow_orbiting" ),  "set_allow_orbiting",  "get_allow_orbiting" );
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),             "set_se3",             "get_se3" );
+	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),             "set_se3",             "get_se3" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "force_numerical" ), "set_force_numerical", "get_force_numerical" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "debug" ),           "set_debug",           "get_debug" );
 }

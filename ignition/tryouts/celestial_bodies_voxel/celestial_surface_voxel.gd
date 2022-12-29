@@ -91,7 +91,6 @@ func init_forces():
 	
 	# Initialize GM.
 	var gm: float = self.compute_gm_by_speed( radius_km, surface_orbital_vel_kms )
-	self.get_own_gm()
 	self.set_own_gm( gm )
 	
 	# Initialize orbital movement.
@@ -103,7 +102,7 @@ func init_forces():
 	var parent_body: CelestialBody = p as CelestialBody
 	if parent_body != null:
 		parent_body.init()
-		var parent_gm: float = parent_body.gm
+		var parent_gm: float = parent_body.own_gm
 		motion.launch_elliptic( parent_gm, perigee_dir, perigee_vel, orbital_period_hrs, orbital_eccentricity )
 	
 	# Initialize rotation.
@@ -385,8 +384,8 @@ func process_ref_frames_rotating_to_orbiting():
 		rf.change_parent( tr )
 		#rf.jump_to( tr, se3 )
 		rf.allow_orbiting = true
-		se3 = rf.get_se3()
-		rf.launch( gm, se3 )
+		rf.set_se3( se3 )
+		rf.launch()
 		print( "rotating -> orbiting" )
 		
 		var m: CelestialMotionRef = rf.motion
@@ -475,11 +474,10 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 		# Need to teleport celestial body to that other celestial body
 		rf.change_parent( biggest_influence_body )
 		rf.allow_orbiting = true
-		var se3: Se3Ref = rf.get_se3()
-		rf.launch( biggest_influence_body.gm, se3 )
+		rf.launch()
 		print( "orbiting -> another orbiting" )
 		print( "biggest influence obj: ", biggest_influence_body.name )
-		print( "biggest influence gm: ", biggest_influence_body.gm )
+		print( "biggest influence gm: ", biggest_influence_body.own_gm )
 
 
 func _create_orbit_visualizer():
