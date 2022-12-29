@@ -48,6 +48,9 @@ public:
 	void set_time_step( real_t dt );
 	real_t get_time_step() const;
 
+	virtual Dictionary serialize() override;
+	virtual bool deserialize( const Dictionary & data ) override;
+
 	virtual void _ign_pre_process( real_t delta ) override;
 	virtual void _ign_process( real_t delta ) override;
 	virtual void _ign_post_process( real_t delta ) override;
@@ -70,7 +73,6 @@ public:
 	// If evolving, it should be an array of super bodies (assemblies).
 	Vector<RefFrameBodyNode *> all_bodies;
 
-	Vector3d        _combined_orbital_acc;
 	NumericalMotion nm;
 
 	List<Node *> nodes;
@@ -79,9 +81,9 @@ public:
 	void _refresh_super_body_nodes();
 
 	void _compute_relative_se3s();
-	void _compute_combined_acc();
-	void _compute_all_accelerations();
-	void _compute_one_accelearation( RefFrameBodyNode * body );
+	Vector3d _compute_combined_acc();
+	void _compute_all_accelerations( const Vector3d & combined_orbital_acc );
+	void _compute_one_accelearation(  const Vector3d & combined_orbital_acc, RefFrameBodyNode * body );
 	void _integrate_super_bodies( Float delta );
 };
 

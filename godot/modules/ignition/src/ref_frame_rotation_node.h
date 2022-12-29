@@ -26,8 +26,8 @@ public:
 	void init( const Vector3 & up, real_t period_hrs );
 	void process_rf( real_t dt, Node * rf );
 
-	Dictionary serialize() const;
-	bool deserialize( const Dictionary & data );
+	virtual Dictionary serialize() override;
+	virtual bool deserialize( const Dictionary & data ) override;
 
 	// Compute forces, integrate dynamics.
 	virtual void _ign_physics_pre_process( real_t delta ) override;

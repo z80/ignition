@@ -67,6 +67,36 @@ real_t RefFrameNonInertialNode::get_time_step() const
 	return nm.time_step;
 }
 
+Dictionary RefFrameNonInertialNode::serialize()
+{
+	Dictionary data = RefFrameMotionNode::serialize();
+
+	data["physics_mode"]     = physics_mode;
+	data["numerical_motion"] = nm.serialize();
+
+	return data;
+}
+
+bool RefFrameNonInertialNode::deserialize( const Dictionary & data )
+{
+	{
+		const bool ok = RefFrameMotionNode::deserialize( data );
+		if ( !ok )
+			return false;
+	}
+
+	physics_mode = data["physics_mode"];
+
+	{
+		const Dictionary & nm_data = data["numerical_motion"];
+		const bool ok = nm.deserialize( nm_data );
+		if ( !ok )
+			return false;
+	}
+
+	return true;
+}
+
 void RefFrameNonInertialNode::_ign_pre_process( real_t delta )
 {
 	RefFrameMotionNode::_ign_pre_process( delta );
@@ -90,8 +120,8 @@ void RefFrameNonInertialNode::_ign_physics_pre_process( real_t delta )
 		_refresh_super_body_nodes();
 
 	_compute_relative_se3s();
-	_compute_combined_acc();
-	_compute_all_accelerations();
+	const Vector3d combined_centrifugal_acc = _compute_combined_acc();
+	_compute_all_accelerations( combined_centrifugal_acc );
 
 	RefFrameMotionNode::_ign_physics_pre_process( delta );
 }
@@ -239,9 +269,9 @@ void RefFrameNonInertialNode::_compute_relative_se3s()
 	}
 }
 
-void RefFrameNonInertialNode::_compute_combined_acc()
+Vector3d RefFrameNonInertialNode::_compute_combined_acc()
 {
-	_combined_orbital_acc = Vector3d::ZERO;
+	Vector3d combined_orbital_acc = Vector3d::ZERO;
 
 	const int qty = parent_gms.size();
 	for ( int i=0; i<qty; i++ )
@@ -254,27 +284,29 @@ void RefFrameNonInertialNode::_compute_combined_acc()
 
 		// '-' because converting centripital acceleration of orbiting body to
 		// centrifugal accceleration of bodies in this ref. frame.
-		_combined_orbital_acc -= acc;
+		combined_orbital_acc -= acc;
 	}
+
+	return combined_orbital_acc;
 }
 
-void RefFrameNonInertialNode::_compute_all_accelerations()
+void RefFrameNonInertialNode::_compute_all_accelerations( const Vector3d & combined_orbital_acc )
 {
 	const int qty = all_bodies.size();
 	for ( int i=0; i<qty; i++ )
 	{
 		RefFrameBodyNode * body = all_bodies.get( i );
-		_compute_one_accelearation( body );
+		_compute_one_accelearation( combined_orbital_acc, body );
 	}
 }
 
-void RefFrameNonInertialNode::_compute_one_accelearation( RefFrameBodyNode * body )
+void RefFrameNonInertialNode::_compute_one_accelearation(  const Vector3d & combined_orbital_acc, RefFrameBodyNode * body )
 {
 	const SE3 & rf_se3   = this->se3_;
 	const SE3 & body_se3 = body->se3_;
 	const Quaterniond inv_rf_q = rf_se3.q_.Inverse();
 
-	Vector3d total_acc = _combined_orbital_acc;
+	Vector3d total_acc = combined_orbital_acc;
 
 	{
 		const int qty = parent_rots.size();

@@ -42,12 +42,6 @@ public:
 	Vector3 v() const;
 	Vector3 w() const;
 
-	Vector3 r_root() const;
-	Quat    q_root() const;
-	Vector3 v_root() const;
-	Vector3 w_root() const;
-	Transform t_root() const;
-
 	virtual void set_se3_raw( const SE3 & se3 );
 	void set_se3( const Ref<Se3Ref> & se3 );
 	Ref<Se3Ref> get_se3() const;

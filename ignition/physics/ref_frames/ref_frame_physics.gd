@@ -599,37 +599,16 @@ func on_delete_rescue_camera():
 
 
 
-func _set_allow_orbiting( en: bool ):
-	if motion == null:
-		return
-	var prev: bool = motion.allow_orbiting
-	if prev and (not en):
-		var iii: int = 0
-	motion.allow_orbiting = en
-
-
-
-func _get_allow_orbiting():
-	if motion == null:
-		return false
-	allow_orbiting = motion.allow_orbiting
-	return allow_orbiting
-
 
 
 func serialize():
 	var data: Dictionary = .serialize()
-	data.allow_orbiting  = allow_orbiting
 	return data
 
 
 
 func deserialize( data: Dictionary ):
 	var ret: bool  = .deserialize( data )
-	allow_orbiting = data.allow_orbiting
-	if not ret:
-		return false
-	
 	return true
 
 

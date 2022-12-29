@@ -32,7 +32,7 @@ void RefFrameRotationNode::init( const Vector3 & up, real_t period_hrs )
 	cr.init( Vector3d( up.x, up.y, up.z ), period_hrs );
 }
 
-Dictionary RefFrameRotationNode::serialize() const
+Dictionary RefFrameRotationNode::serialize()
 {
 	Dictionary data;
 	data["spinning"] = cr.spinning;

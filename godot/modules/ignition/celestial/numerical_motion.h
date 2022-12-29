@@ -4,6 +4,7 @@
 
 #include "se3.h"
 #include "celestial_consts.h"
+#include "core/dictionary.h"
 
 namespace Ign
 {
@@ -17,9 +18,12 @@ public:
 	~NumericalMotion();
 
 	void process( SE3 & se3, Float dt, const Vector3d & acc );
+
+	Dictionary serialize() const;
+	bool deserialize( const Dictionary & data );
+
 public:
 	Float time_step;
-	Float time_remaining;
 
 	bool debug;
 };

@@ -1,10 +1,14 @@
 
 #include "numerical_motion.h"
 
+#include "core/variant.h"
+#include "core/dictionary.h"
 #include "core/print_string.h"
 
 namespace Ign
 {
+
+
 
 struct RK4_Vector6
 {
@@ -66,8 +70,7 @@ static void rk4_step_acc( SE3 & se3, const Vector3d & acc, Float h )
 
 NumericalMotion::NumericalMotion()
 	: debug( false ),
-	  time_step( 1.0/240.0 ), 
-	  time_remaining( 0.0 )
+	  time_step( 1.0/240.0 )
 {
 }
 
@@ -77,7 +80,23 @@ NumericalMotion::~NumericalMotion()
 
 void NumericalMotion::process( SE3 & se3, Float dt, const Vector3d & acc )
 {
-	rk4_step_acc( se3, acc, dt );
+	Float T = dt;
+	while (T > 0.0)
+	{
+		Float delta;
+		if ( T > time_step )
+		{
+			delta = time_step;
+			T    -= time_step;
+		}
+		else
+		{
+			delta = T;
+			T     = 0.0;
+		}
+		rk4_step_acc( se3, acc, delta );
+	}
+
 	if (debug)
 	{
 		print_line( String("numerical integration acc: x: (" ) +
@@ -86,6 +105,23 @@ void NumericalMotion::process( SE3 & se3, Float dt, const Vector3d & acc )
 			rtos(se3.r_.z_) + String(")") );
 	}
 }
+
+
+Dictionary NumericalMotion::serialize() const
+{
+	Dictionary data;
+	data["time_step"] = time_step;
+
+	return data;
+}
+
+bool NumericalMotion::deserialize( const Dictionary & data )
+{
+	time_step = data["time_step"];
+	return true;
+}
+
+
 
 }
 
