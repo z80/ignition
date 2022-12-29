@@ -311,14 +311,7 @@ func on_delete():
 
 
 
-
-func serialize():
-	return {}
-
-
-
-func deserialize( data: Dictionary ):
-	return true
-
-
+func get_ref_frame_root():
+	var rf: RefFrameNode = RootScene.ref_frame_root
+	return rf
 
