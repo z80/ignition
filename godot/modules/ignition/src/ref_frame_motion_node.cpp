@@ -87,12 +87,22 @@ RefFrameMotionNode::~RefFrameMotionNode()
 {
 }
 
+void RefFrameMotionNode::set_se3_raw( const SE3 & se3 )
+{
+	RefFrameNode::set_se3_raw( se3 );
+	const bool allowed  = cm.get_allow_orbiting();
+	if ( allowed )
+		launch();
+}
+
 void RefFrameMotionNode::set_allow_orbiting( bool en )
 {
 	const bool prev = cm.get_allow_orbiting();
 	if ( prev && (!en) )
 		print_line( "RefFrameMotionNode: reset allow_orbiting to false!!!" );
 	cm.set_allow_orbiting( en );
+	if ( en )
+		launch();
 }
 
 bool RefFrameMotionNode::get_allow_orbiting() const
@@ -254,7 +264,7 @@ bool RefFrameMotionNode::launch()
 
 	const Float gm  = pm->cm.own_gm;
 	const SE3   se3 = this->se3_;
-	const bool ret  = cm.launch( gm, se3 );
+	const bool  ret = cm.launch( gm, se3 );
 
 	return ret;
 }
@@ -416,20 +426,20 @@ bool RefFrameMotionNode::get_debug() const
 	return cm._debug;
 }
 
-void RefFrameMotionNode::_ign_pre_process( real_t delta )
+void RefFrameMotionNode::_ign_physics_pre_process( real_t delta )
 {
 	this->se3_ = cm.process( delta );
-	RefFrameNode::_ign_pre_process( delta );
+	RefFrameNode::_ign_physics_pre_process( delta );
 }
 
-void RefFrameMotionNode::_ign_process( real_t delta )
+void RefFrameMotionNode::_ign_physics_process( real_t delta )
 {
-	RefFrameNode::_ign_process( delta );
+	RefFrameNode::_ign_physics_process( delta );
 }
 
-void RefFrameMotionNode::_ign_post_process( real_t delta )
+void RefFrameMotionNode::_ign_physics_post_process( real_t delta )
 {
-	RefFrameNode::_ign_post_process( delta );
+	RefFrameNode::_ign_physics_post_process( delta );
 }
 
 

@@ -1,20 +1,14 @@
 
-extends RefFrame
+extends RefFrameNonInertialNode
 class_name RefFramePhysics
 
 var _physics_env = null
 
 var Clustering = preload( "res://physics/ref_frames/clustering.gd" )
 
-# This is the thing which computes celestial orbits.
-# It is TODO. Not yet really integrated.
-var motion: CelestialMotionRef = null
-
 # Octree borad phase for mesh queries.
 var _broad_tree: BroadTreeGd = null
 
-
-export(bool) var allow_orbiting setget _set_allow_orbiting, _get_allow_orbiting
 
 # For debugging jump only this number of times.
 #var _jumps_left: int = 50
@@ -64,14 +58,9 @@ func process_children():
 
 
 
-func launch( gm: float, se3: Se3Ref ):
-	if motion != null:
-		motion.init( gm, se3 )
-
 
 func evolve( _dt: float ):
 	.evolve( _dt )
-	evolve_motion( _dt )
 	jump_if_needed()
 	
 	var ok: bool = _broad_tree.subdivide( self )
@@ -80,50 +69,6 @@ func evolve( _dt: float ):
 
 
 
-func evolve_motion( _dt: float ):
-	if motion == null:
-		return
-	# SE3 is assigned internally.
-#	if _dt > 0.1:
-#		_dt = 0.1
-
-	# This is for debugging.
-#	var root = get_node( "/root/RefFrameRoot" )
-#	RootScene.ref_frame_root.player_camera.debug = true
-#	var se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
-#	RootScene.ref_frame_root.player_camera.debug = false
-	
-	motion.process_rf( _dt, self )
-
-	# This is for debugging.
-#	root = get_node( "/root/RefFrameRoot" )
-#	RootScene.ref_frame_root.player_camera.debug = true
-#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
-#	RootScene.ref_frame_root.player_camera.debug = false
-	
-#	var n: String = self.name
-#	if n != "rf_p for my_character":
-#		return
-#
-#	var planet: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
-#	var path: String = planet.get_path()
-#	var se3_p: Se3Ref = self.relative_to( planet )
-#
-#	var t: String = motion.movement_type()
-#	print( "" )
-#	print( "motion analysis" )
-#	print( "movement type: ", t )
-#	print( "distance to planet: ", se3_p.r.length() )
-#	if t == "idle":
-#		return
-#	var se3: Se3Ref = motion.se3
-#	var r: Vector3 = se3.r
-#	var v: Vector3 = se3.v
-#	var l: float = motion.specific_angular_momentum()
-#	print( "spec ang mom:  ", l )
-#	print( "r:             ", r )
-#	print( "v:             ", v )
-
 
 
 
@@ -131,16 +76,8 @@ func evolve_motion( _dt: float ):
 func ready():
 	.ready()
 	_create_physics_environment()
-	_create_motion()
 	
 	add_to_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
-
-
-
-func _create_motion():
-	motion = CelestialMotionRef.new()
-	motion.allow_orbiting = false
-	motion.se3 = self.get_se3()
 
 
 func _create_physics_environment():
@@ -205,14 +142,14 @@ func is_active():
 
 func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	# Debug output.
-	var tp: String = motion.movement_type()
+	var movement_type: String = self.movement_type()
 	var dbg: bool = false
 	self.debug = dbg
 	if dbg:
 		DDD.important()
 		DDD.print( "jump with debug output:" )
 	
-	var elliptic_motion: bool = (motion != null) and (motion.movement_type() == "elliptic")
+	var elliptic_motion: bool = (movement_type == "elliptic")
 	if elliptic_motion:
 		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
 		var se3: Se3Ref = self.relative_to( n )
@@ -220,25 +157,22 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 		DDD.print( "relative_to_planet before jump: " + str(se3.r) + ", v: " + str(se3.v) )
 	
 	t.basis = Basis.IDENTITY
-	self.set_jump_t( t )
-	self.set_jump_v( v )
-	self.apply_jump()
+	var se3: Se3Ref = Se3Ref.new()
+	se3.t = t
+	se3.v = v
+	self.jump_to( self, se3 )
 	
 	if elliptic_motion:
 		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
-		var se3: Se3Ref = self.relative_to( n )
+		se3 = self.relative_to( n )
 		DDD.important()
 		DDD.print( "relative_to_planet after jump: " + str(se3.r) + ", v: " + str(se3.v) )
 
 	# Update SE3 in orbital motion.
-	var se3: Se3Ref = self.get_se3()
-	if elliptic_motion:
-		DDD.print( "motion type just before assigning se3 to motion: " + motion.movement_type() )
-	motion.se3 = se3
 	
 	if elliptic_motion:
-		DDD.print( "motion type after assigning se3 to motion: " + motion.movement_type() )
-		se3 = motion.se3
+		DDD.print( "motion type after assigning se3 to motion: " + self.movement_type() )
+		se3 = self.get_se3()
 		DDD.print( "se3 right after assigning se3 to motion: " + str(se3.r) + " v: " + str(se3.v) )
 
 
@@ -247,11 +181,11 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	
 #	if tp == "idle":
 #		return
-	se3 = motion.se3
+	se3 = self.get_se3()
 	var r: Vector3 = se3.r
 	v = se3.v
-	var l: float = motion.specific_angular_momentum()
-	DDD.print( "movement type: " + str(tp) )
+	var l: float = self.specific_angular_momentum()
+	DDD.print( "movement type: " + str(movement_type) )
 	DDD.print( "spec ang mom:  " + str(l) )
 	DDD.print( "r:             " + str(r) )
 	DDD.print( "v:             " + str(v) )
@@ -317,13 +251,6 @@ func jump_if_needed():
 	var t: Transform = Transform.IDENTITY
 	t.origin = r
 	jump( t, v )
-	
-# Trying to override the default one in order to take into account
-# orbital motion.
-func set_se3( se3: Se3Ref ):
-	if motion != null:
-		motion.se3 = se3
-	.set_se3( se3 )
 
 
 
@@ -640,18 +567,6 @@ func distance( b: RefFramePhysics ):
 	return min_d
 
 
-func _parent_changed():
-	var p = get_parent()
-	var se3: Se3Ref = self.relative_to( p )
-	var allowed: bool = self.allow_orbiting
-	if not allowed:
-		se3.v = Vector3.ZERO
-		se3.w = Vector3.ZERO
-	self.jump_to( p, se3 )
-	if motion != null:
-		motion.se3 = se3
-
-
 
 
 func on_delete():
@@ -681,11 +596,6 @@ func on_delete_rescue_camera():
 
 
 
-
-func is_orbiting():
-	var t: String = motion.movement_type()
-	var ret: bool = (t != "idle")
-	return ret
 
 
 
@@ -742,4 +652,50 @@ static func _debug_distances( bodies: Array ):
 
 
 
+# Closest not in terms of distance. But in terms of graph node distance.
+func closest_parent_ref_frame():
+	var p = self.get_parent()
+	if p == null:
+		return null
+	
+	var rf: RefFrame = _closest_parent_ref_frame_recursive( p )
+	return rf
+	
+	
+func _closest_parent_ref_frame_recursive( n: Node ):
+	if n == null:
+		return null
+	
+	var rf: RefFrame = n as RefFrame
+	if rf:
+		return rf
+	
+	var p: Node = n.get_parent()
+	return _closest_parent_ref_frame_recursive( p )
+	
+
+func closest_force_source():
+	var n: Node =  _force_source_recursive( self )
+	if n == null:
+		return null
+	var fs: RefFrame = n as RefFrame
+	return fs
+
+
+func _force_source_recursive( n: Node ):
+	if n == null:
+		return null
+	
+	var rf: RefFrame = n as RefFrame
+	if rf != null:
+		if rf.force_source != null:
+			return rf
+	
+	var p: Node = n.get_parent()
+	return _force_source_recursive( p )
+
+
+func get_ref_frame_root():
+	var rf: RefFrameNode = RootScene.ref_frame_root
+	return rf
 

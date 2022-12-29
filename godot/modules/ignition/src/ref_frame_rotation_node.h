@@ -21,6 +21,8 @@ public:
 	RefFrameRotationNode();
 	virtual ~RefFrameRotationNode();
 
+	virtual void set_se3_raw( const SE3 & se3 ) override;
+
 	void init( const Vector3 & up, real_t period_hrs );
 	void process_rf( real_t dt, Node * rf );
 
@@ -28,11 +30,11 @@ public:
 	bool deserialize( const Dictionary & data );
 
 	// Compute forces, integrate dynamics.
-	virtual void _ign_pre_process( real_t delta ) override;
+	virtual void _ign_physics_pre_process( real_t delta ) override;
 	// Set positions, place visuals.
-	virtual void _ign_process( real_t delta ) override;
+	virtual void _ign_physics_process( real_t delta ) override;
 	// Place camera.
-	virtual void _ign_post_process( real_t delta ) override;
+	virtual void _ign_physics_post_process( real_t delta ) override;
 
 public:
 	CelestialRotation cr;

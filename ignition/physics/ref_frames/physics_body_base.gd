@@ -1,5 +1,5 @@
 
-extends RefFrameNode
+extends RefFrameBodyNode
 class_name PhysicsBodyBase
 
 enum BodyState {

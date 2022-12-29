@@ -1,5 +1,5 @@
 
-extends RefFrame
+extends RefFrameAssemblyNode
 class_name PartAssembly
 
 # This class handles dynamic body group.

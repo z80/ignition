@@ -6,7 +6,7 @@
 #include "ref_frame_motion_node.h"
 #include "ref_frame_rotation_node.h"
 #include "ref_frame_body_node.h"
-#include "ref_frame_super_body_node.h"
+#include "ref_frame_assembly_node.h"
 
 
 namespace Ign
@@ -200,7 +200,7 @@ void RefFrameNonInertialNode::_refresh_super_body_nodes()
 	{
 		Node * node = get_child( i );
 		// Only pick super bodies.
-		RefFrameBodyNode * body = Object::cast_to<RefFrameSuperBodyNode>( node );
+		RefFrameBodyNode * body = Object::cast_to<RefFrameAssemblyNode>( node );
 		if ( body != nullptr )
 			all_bodies.push_back( body );
 	}

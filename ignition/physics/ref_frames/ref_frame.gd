@@ -1,5 +1,5 @@
 
-extends RefFrameNode
+extends RefFrameNonInertialNode
 class_name RefFrame
 
 var _axes: Spatial = null
@@ -66,8 +66,8 @@ func _update_axes():
 		if not created:
 			return
 	
-	var t: Transform = self.t_root()
-	_axes.transform = t
+#	var t: Transform = self.t_root()
+#	_axes.transform = t
 
 
 # Closest not in terms of distance. But in terms of graph node distance.
@@ -113,6 +113,10 @@ func _force_source_recursive( n: Node ):
 	return _force_source_recursive( p )
 
 
+func get_ref_frame_root():
+	var rf: RefFrameNode = RootScene.ref_frame_root
+	return rf
+
 
 
 
@@ -128,17 +132,6 @@ func on_delete():
 
 
 
-func get_ref_frame_root():
-	var rf: RefFrameNode = self
-	
-	while rf != null:
-		var root: RefFrameRoot = rf as RefFrameRoot
-		if root != null:
-			return root
-		
-		rf = rf.get_parent() as RefFrameNode
-	
-	return null
 
 
 

@@ -180,9 +180,15 @@ Vector3 RefFrameNode::w() const
 	return w;
 }
 
+void RefFrameNode::set_se3_raw( const SE3 & se3 )
+{
+	se3_ = se3;
+}
+
 void RefFrameNode::set_se3( const Ref<Se3Ref> & se3 )
 {
-	se3_ = se3.ptr()->se3;
+	const SE3 & se3_raw = se3.ptr()->se3;
+	set_se3_raw( se3_raw );
 }
 
 Ref<Se3Ref> RefFrameNode::get_se3() const
@@ -251,7 +257,7 @@ void RefFrameNode::change_parent( Node * parent )
 	}
 
 	const SE3 se3_rel = relative_( parent_rf );
-	se3_    = se3_rel;
+	set_se3_raw( se3_rel );
 
 	if ( parent )
 	{
@@ -329,7 +335,7 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 				          + rtos( snew.v_.z_ ) + String( ")" );
 			print_line( stri );
 		}
-		ch->se3_ = se3_child_to;
+		ch->set_se3_raw( se3_child_to );
 	}
 
 	if ( dest != this )
@@ -346,7 +352,7 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 		}
 	}
 
-	se3_ = dest_se3_adjusted;
+	set_se3_raw( dest_se3_adjusted );
 
 	// Call script notifications.
 	// For the node itself.

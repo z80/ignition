@@ -22,6 +22,11 @@ RefFrameRotationNode::~RefFrameRotationNode()
 {
 }
 
+void RefFrameRotationNode::set_se3_raw( const SE3 & se3 )
+{
+	RefFrameNode::set_se3_raw( se3 );
+}
+
 void RefFrameRotationNode::init( const Vector3 & up, real_t period_hrs )
 {
 	cr.init( Vector3d( up.x, up.y, up.z ), period_hrs );
@@ -50,20 +55,20 @@ bool RefFrameRotationNode::deserialize( const Dictionary & data )
 	return true;
 }
 
-void RefFrameRotationNode::_ign_pre_process( real_t delta )
+void RefFrameRotationNode::_ign_physics_pre_process( real_t delta )
 {
 	this->se3_ = cr.process( delta );
-	RefFrameNode::_ign_pre_process( delta );
+	RefFrameNode::_ign_physics_pre_process( delta );
 }
 
-void RefFrameRotationNode::_ign_process( real_t delta )
+void RefFrameRotationNode::_ign_physics_process( real_t delta )
 {
-	RefFrameNode::_ign_process( delta );
+	RefFrameNode::_ign_physics_process( delta );
 }
 
-void RefFrameRotationNode::_ign_post_process( real_t delta )
+void RefFrameRotationNode::_ign_physics_post_process( real_t delta )
 {
-	RefFrameNode::_ign_post_process( delta );
+	RefFrameNode::_ign_physics_post_process( delta );
 }
 
 

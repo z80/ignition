@@ -48,6 +48,7 @@ public:
 	Vector3 w_root() const;
 	Transform t_root() const;
 
+	virtual void set_se3_raw( const SE3 & se3 );
 	void set_se3( const Ref<Se3Ref> & se3 );
 	Ref<Se3Ref> get_se3() const;
 
@@ -61,6 +62,8 @@ public:
 	/// Related to jump.
 	void jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 );
 	// This is actual implementation.
+	// It is virtual because in other implementations need to
+	// inform other functionality pieces about SE3 change.
 	void jump_to_( Node * dest, const SE3 & dest_se3 );
 	// Callbacks for script notification.
 	void _jumped();
