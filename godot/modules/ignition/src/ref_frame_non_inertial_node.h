@@ -43,7 +43,10 @@ public:
 	virtual ~RefFrameNonInertialNode();
 
 	void set_physics_mode( bool en );
-	bool get_physics_node() const;
+	bool get_physics_mode() const;
+
+	void set_time_step( real_t dt );
+	real_t get_time_step() const;
 
 	virtual void _ign_pre_process( real_t delta ) override;
 	virtual void _ign_process( real_t delta ) override;
@@ -72,10 +75,14 @@ public:
 
 	List<Node *> nodes;
 	void _refresh_force_source_nodes();
+	void _refresh_body_nodes();
+	void _refresh_super_body_nodes();
+
 	void _compute_relative_se3s();
 	void _compute_combined_acc();
 	void _compute_all_accelerations();
 	void _compute_one_accelearation( RefFrameBodyNode * body );
+	void _integrate_super_bodies( Float delta );
 };
 
 

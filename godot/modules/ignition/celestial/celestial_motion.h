@@ -104,7 +104,6 @@ private:
     void init_hyperbolic();
 
     void process_numeric( Float dt );
-	void process_numeric_acc( Float dt, const Vector3d & acc );
 	void process_parabolic( Float dt );
     void process_elliptic( Float dt );
     void process_hyperbolic( Float dt );

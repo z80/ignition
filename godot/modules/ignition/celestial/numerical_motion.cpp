@@ -65,7 +65,9 @@ static void rk4_step_acc( SE3 & se3, const Vector3d & acc, Float h )
 
 
 NumericalMotion::NumericalMotion()
-	: debug( false )
+	: debug( false ),
+	  time_step( 1.0/240.0 ), 
+	  time_remaining( 0.0 )
 {
 }
 
@@ -73,7 +75,7 @@ NumericalMotion::~NumericalMotion()
 {
 }
 
-void NumericalMotion::process( SE3 & se3, Float dt, const Vector3 & acc )
+void NumericalMotion::process( SE3 & se3, Float dt, const Vector3d & acc )
 {
 	rk4_step_acc( se3, acc, dt );
 	if (debug)

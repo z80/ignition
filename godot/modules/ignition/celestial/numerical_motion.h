@@ -16,8 +16,11 @@ public:
 	NumericalMotion();
 	~NumericalMotion();
 
-	void process( SE3 & se3, Float dt, const Vector3 & acc );
+	void process( SE3 & se3, Float dt, const Vector3d & acc );
 public:
+	Float time_step;
+	Float time_remaining;
+
 	bool debug;
 };
 
