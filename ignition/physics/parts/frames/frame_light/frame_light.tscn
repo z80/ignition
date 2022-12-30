@@ -4,7 +4,7 @@
 [ext_resource path="res://physics/parts/frames/frame_light/frame_light_visual.tscn" type="PackedScene" id=2]
 [ext_resource path="res://physics/parts/frames/frame_light/frame_light_physical.tscn" type="PackedScene" id=3]
 
-[node name="FrameLight" type="RefFrameNode"]
+[node name="FrameLight" type="RefFrameBodyNode"]
 script = ExtResource( 1 )
 VisualScene = ExtResource( 2 )
 PhysicalScene = ExtResource( 3 )

@@ -10,11 +10,9 @@
 script = ExtResource( 5 )
 
 [node name="Planet" parent="." instance=ExtResource( 1 )]
-se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
-
 surface_orbital_vel_kms = 0.1
 
-[node name="RefFramePhysics" type="RefFrameNode" parent="Planet/Rotation" index="1"]
+[node name="RefFramePhysics" type="RefFrameNonInertialNode" parent="Planet/Rotation" index="1"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10020, 0, 0 )
 script = ExtResource( 2 )
 

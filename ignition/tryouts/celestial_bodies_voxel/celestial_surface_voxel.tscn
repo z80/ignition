@@ -6,8 +6,6 @@
 [ext_resource path="res://tryouts/celestial_bodies_voxel/collision_surface.tscn" type="PackedScene" id=4]
 
 [node name="Translation" type="RefFrameMotionNode"]
-se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0, 0, 0 ),"q":Quat( 0, 0, 0, 1 ),"transform":Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ),"script":null)
-
 script = ExtResource( 1 )
 rotation_period_hrs = 1.0
 

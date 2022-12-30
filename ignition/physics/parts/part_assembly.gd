@@ -295,7 +295,7 @@ func _update_celestial_motion():
 	closest_celestial_body = cb
 	var se3: Se3Ref = self.relative_to( cb )
 	motion.allow_orbiting = true
-	motion.init( cb.gm, se3 )
+	motion.launch( cb.own_gm, se3 )
 	
 	# Check out what's the mode.
 	var m: String = motion.movement_type()

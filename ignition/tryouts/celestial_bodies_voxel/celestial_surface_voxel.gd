@@ -121,23 +121,12 @@ func init_forces():
 
 
 func process( delta: float, force_player_rf: RefFrameNode = null ):
-	process_motion( delta )
 	process_geometry( force_player_rf )
 	#process_rescale( force_player_rf )
 	_process_visualize_orbits()
 
 
 
-func process_motion( delta ):
-	var translation_rf = get_node( "." )
-	var rotation_rf    = get_node( "Rotation" )
-	motion.process_rf( delta, translation_rf )
-	rotation.process_rf( delta, rotation_rf )
-	
-	#var t: Transform = rotation_rf.transform
-	#print( "rotation: ", Quat( t.basis ) )
-	#t = translation_rf.transform
-	#print( "planet pos: ", t.origin )
 
 
 

@@ -5,7 +5,7 @@
 [ext_resource path="res://physics/parts/habitats/2m/m1/visual.tscn" type="PackedScene" id=3]
 [ext_resource path="res://physics/parts/habitats/2m/m1/air_drag.tscn" type="PackedScene" id=4]
 
-[node name="Habitat" type="RefFrameNode"]
+[node name="Habitat" type="RefFrameBodyNode"]
 script = ExtResource( 1 )
 VisualScene = ExtResource( 3 )
 PhysicalScene = ExtResource( 2 )

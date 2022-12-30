@@ -5,7 +5,7 @@
 [ext_resource path="res://physics/parts/decouplers/2m/m1/physical.tscn" type="PackedScene" id=3]
 [ext_resource path="res://physics/parts/decouplers/2m/m1/visual.tscn" type="PackedScene" id=4]
 
-[node name="Decoupler" type="RefFrameNode"]
+[node name="Decoupler" type="RefFrameBodyNode"]
 script = ExtResource( 1 )
 VisualScene = ExtResource( 4 )
 PhysicalScene = ExtResource( 3 )

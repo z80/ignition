@@ -5,7 +5,7 @@
 [ext_resource path="res://physics/parts/thrusters/vacuum/physical.tscn" type="PackedScene" id=3]
 [ext_resource path="res://physics/parts/thrusters/vacuum/visual.tscn" type="PackedScene" id=4]
 
-[node name="Thruster" type="RefFrameNode"]
+[node name="Thruster" type="RefFrameBodyNode"]
 script = ExtResource( 1 )
 VisualScene = ExtResource( 4 )
 PhysicalScene = ExtResource( 3 )

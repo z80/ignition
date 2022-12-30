@@ -5,7 +5,7 @@
 [ext_resource path="res://physics/parts/fuel_tanks/2m/3m_fuel/physical.tscn" type="PackedScene" id=3]
 [ext_resource path="res://physics/parts/fuel_tanks/2m/3m_fuel/visual.tscn" type="PackedScene" id=4]
 
-[node name="fuel_tank_2m_1m" type="RefFrameNode"]
+[node name="fuel_tank_2m_1m" type="RefFrameBodyNode"]
 script = ExtResource( 1 )
 VisualScene = ExtResource( 4 )
 PhysicalScene = ExtResource( 3 )

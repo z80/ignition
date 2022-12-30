@@ -95,53 +95,9 @@ func _ign_post_process( _delta: float ):
 
 
 
-# Update body visual parts in accordance with what is set to be 
-# player ref. frame. (The ref. frame where the camera is located.)
-func _process( _delta: float ):
-	#print( "delta: ", _delta )
-	pass
-	# This is for debugging.
-#	var root = get_node( "/root/RefFrameRoot" )
-#	RootScene.ref_frame_root.player_camera.debug = true
-#	var se3: Se3Ref = RootScene.ref_frame_root.player_camera.relative_to( root )
-#	RootScene.ref_frame_root.player_camera.debug = false
-	
-	#update_providers()
-	
-	# This is for debugging.
-#	root = get_node( "/root/RefFrameRoot" )
-#	RootScene.ref_frame_root.player_camera.debug = true
-#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
-#	RootScene.ref_frame_root.player_camera.debug = false
-	
-	
-	# This is for debugging.
-#	root = get_node( "/root/RefFrameRoot" )
-#	RootScene.ref_frame_root.player_camera.debug = true
-#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
-#	RootScene.ref_frame_root.player_camera.debug = false
-	
-	
-	# This is for debugging.
-#	root = get_node( "/root/RefFrameRoot" )
-#	RootScene.ref_frame_root.player_camera.debug = true
-#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
-#	RootScene.ref_frame_root.player_camera.debug = false
-	
-	
-	# This is for debugging.
-#	root = get_node( "/root/RefFrameRoot" )
-#	RootScene.ref_frame_root.player_camera.debug = true
-#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
-#	RootScene.ref_frame_root.player_camera.debug = false
-	
-
-
-
-
-func _physics_process( delta ):
+func _ign_physics_pre_process( delta ):
 	# Need to have all super body poses up to date.
-	#update_super_bodies()
+	update_super_bodies()
 	
 	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
 	var ref_frames: Array = get_tree().get_nodes_in_group( group )
@@ -202,7 +158,11 @@ func process_user_input( input: Dictionary ):
 
 
 
-
+func update_planets( delta: float ):
+	var group: String = Constants.PLANETS_GROUP_NAME
+	var all_spheres: Array = get_tree().get_nodes_in_group( group )
+	for sphere in all_spheres:
+		sphere.process( delta )
 
 
 
@@ -250,11 +210,6 @@ func update_providers():
 		pr.update()
 
 
-func update_planets( delta: float ):
-	var group: String = Constants.PLANETS_GROUP_NAME
-	var all_spheres: Array = get_tree().get_nodes_in_group( group )
-	for sphere in all_spheres:
-		sphere.process( delta )
 
 
 func force_rebuild_visual_spheres():

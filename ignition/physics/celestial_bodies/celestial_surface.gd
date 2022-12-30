@@ -97,7 +97,8 @@ func init():
 	motion = CelestialMotionRef.new()
 
 	# Initialize GM.
-	gm = motion.init_gm_speed( radius_km, surface_orbital_vel_kms )
+	var gm: float = self.compute_gm_by_speed( radius_km, surface_orbital_vel_kms )
+	self.set_own_gm( gm )
 	
 	# Initialize orbital movement.
 	perigee_dir = perigee_dir.normalized()
@@ -414,8 +415,7 @@ func process_ref_frames_rotating_to_orbiting():
 		rf.change_parent( tr )
 		#rf.jump_to( tr, se3 )
 		rf.allow_orbiting = true
-		se3 = rf.get_se3()
-		rf.launch( gm, se3 )
+		rf.launch()
 		print( "rotating -> orbiting" )
 		
 		var m: CelestialMotionRef = rf.motion
@@ -504,8 +504,7 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 		# Need to teleport celestial body to that other celestial body
 		rf.change_parent( biggest_influence_body )
 		rf.allow_orbiting = true
-		var se3: Se3Ref = rf.get_se3()
-		rf.launch( biggest_influence_body.gm, se3 )
+		rf.launch()
 		print( "orbiting -> another orbiting" )
 		print( "biggest influence obj: ", biggest_influence_body.name )
 		print( "biggest influence gm: ", biggest_influence_body.gm )
@@ -573,6 +572,11 @@ func air_pressure( se3_rel: Se3Ref ):
 	
 	var p: float = air_pressure_surface * ( 1.0 - (d / atm_height_km) )
 	return p
+
+
+func get_ref_frame_root():
+	var rf: RefFrameNode = RootScene.ref_frame_root
+	return rf
 
 
 

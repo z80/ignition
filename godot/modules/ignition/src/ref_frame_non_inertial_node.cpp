@@ -203,7 +203,8 @@ void RefFrameNonInertialNode::_refresh_force_source_nodes()
 				}
 			}
 			n = p;
-			p = Object::cast_to<RefFrameNode>( p->get_parent() );
+			if ( p != nullptr )
+				p = Object::cast_to<RefFrameNode>( p->get_parent() );
 		}
 	}
 }

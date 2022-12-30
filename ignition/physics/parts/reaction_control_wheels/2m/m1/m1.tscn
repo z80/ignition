@@ -21,7 +21,7 @@ surfaces/0 = {
 "vertex_count": 96
 }
 
-[node name="ReactionControlWheels" type="RefFrameNode"]
+[node name="ReactionControlWheels" type="RefFrameBodyNode"]
 script = ExtResource( 1 )
 VisualScene = ExtResource( 3 )
 PhysicalScene = ExtResource( 4 )
