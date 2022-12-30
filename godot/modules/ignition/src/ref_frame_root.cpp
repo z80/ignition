@@ -20,6 +20,7 @@ RefFrameRoot::RefFrameRoot()
 	time_dilation = 1.0;
 
 	set_process( true );
+	set_physics_process( true );
 }
 
 RefFrameRoot::~RefFrameRoot()
