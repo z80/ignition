@@ -129,6 +129,9 @@ void RefFrameNonInertialNode::_ign_post_process( real_t delta )
 
 void RefFrameNonInertialNode::_ign_physics_pre_process( real_t delta )
 {
+	// For now it happens every single time as in the beginning GMs are not assigned.
+	_refresh_force_source_nodes();
+
 	if ( physics_mode )
 		_refresh_body_nodes();
 	else
