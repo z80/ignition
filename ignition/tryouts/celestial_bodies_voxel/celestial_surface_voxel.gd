@@ -455,7 +455,7 @@ func _create_orbit_visualizer():
 	orbit_visualizer = Vis.instance()
 	self.add_child( orbit_visualizer )
 	orbit_visualizer.ref_frame = self.get_parent()
-	orbit_visualizer.motion    = motion
+	orbit_visualizer.motion    = self
 	orbit_visualizer.color     = orbit_color
 
 
