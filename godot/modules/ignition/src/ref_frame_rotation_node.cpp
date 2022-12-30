@@ -9,8 +9,6 @@ namespace Ign
 void RefFrameRotationNode::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("init", "up", "period_hrs"), &RefFrameRotationNode::init );
-	ClassDB::bind_method( D_METHOD("serialize"),                &RefFrameRotationNode::serialize, Variant::DICTIONARY );
-	ClassDB::bind_method( D_METHOD("deserialize", "arg"),       &RefFrameRotationNode::deserialize );
 }
 
 RefFrameRotationNode::RefFrameRotationNode()

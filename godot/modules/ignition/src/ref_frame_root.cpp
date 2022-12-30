@@ -1,5 +1,6 @@
 
 #include "ref_frame_root.h"
+#include "core/engine.h"
 
 namespace Ign
 {
@@ -39,6 +40,10 @@ real_t RefFrameRoot::get_time_dilation() const
 
 void RefFrameRoot::_notification( int p_notification )
 {
+	const bool is_editor = Engine::get_singleton()->is_editor_hint();
+	if ( is_editor )
+		return;
+
 	switch (p_notification)
 	{
 		case NOTIFICATION_PROCESS:

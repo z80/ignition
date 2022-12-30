@@ -1,6 +1,8 @@
 
 #include "ref_frame_motion_node.h"
 #include "scene/3d/spatial.h"
+#include "core/engine.h"
+
 #include "save_load.h"
 
 
@@ -41,9 +43,6 @@ void RefFrameMotionNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("compute_gm_by_period", "radius_km", "period_kms"),                   &RefFrameMotionNode::compute_gm_by_period, Variant::REAL );
 	ClassDB::bind_method( D_METHOD("launch_elliptic", "unit_r", "unit_v", "period_hrs", "eccentricity"), &RefFrameMotionNode::launch_elliptic,      Variant::BOOL );
 
-	ClassDB::bind_method( D_METHOD("serialize"),          &RefFrameMotionNode::serialize, Variant::DICTIONARY );
-	ClassDB::bind_method( D_METHOD("deserialize", "arg"), &RefFrameMotionNode::deserialize );
-
 	ClassDB::bind_method( D_METHOD("orbit_points", "orbiting_center_node", "player_viewpoint_node", "camera_node", "scaler", "qty"), &RefFrameMotionNode::orbit_points, Variant::POOL_VECTOR3_ARRAY );
 
 	ClassDB::bind_method( D_METHOD("set_force_numerical", "en"), &RefFrameMotionNode::set_force_numerical );
@@ -62,6 +61,10 @@ void RefFrameMotionNode::_bind_methods()
 
 void RefFrameMotionNode::_notification( int p_notification )
 {
+	const bool is_editor = Engine::get_singleton()->is_editor_hint();
+	if ( is_editor )
+		return;
+
 	switch (p_notification)
 	{
 		case NOTIFICATION_READY:
@@ -90,8 +93,9 @@ RefFrameMotionNode::~RefFrameMotionNode()
 void RefFrameMotionNode::set_se3_raw( const SE3 & se3 )
 {
 	RefFrameNode::set_se3_raw( se3 );
+	const bool orbiting  = cm.is_orbiting();
 	const bool allowed  = cm.get_allow_orbiting();
-	if ( allowed )
+	if ( orbiting && allowed )
 		launch();
 }
 
@@ -101,8 +105,6 @@ void RefFrameMotionNode::set_allow_orbiting( bool en )
 	if ( prev && (!en) )
 		print_line( "RefFrameMotionNode: reset allow_orbiting to false!!!" );
 	cm.set_allow_orbiting( en );
-	if ( en )
-		launch();
 }
 
 bool RefFrameMotionNode::get_allow_orbiting() const
@@ -438,7 +440,8 @@ bool RefFrameMotionNode::get_debug() const
 
 void RefFrameMotionNode::_ign_physics_pre_process( real_t delta )
 {
-	this->se3_ = cm.process( delta );
+	if ( cm.is_orbiting() )
+		this->se3_ = cm.process( delta );
 	RefFrameNode::_ign_physics_pre_process( delta );
 }
 

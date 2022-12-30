@@ -98,8 +98,11 @@ func init_forces():
 	var p = get_parent()
 	var parent_body: CelestialBody = p as CelestialBody
 	if parent_body != null:
-		parent_body.init()
+		parent_body.init_forces()
 		self.launch_elliptic( perigee_dir, perigee_vel, orbital_period_hrs, orbital_eccentricity )
+	
+	var rot: RefFrameRotationNode = rotation_rf()
+	rot.init( rotation_axis, rotation_period_hrs )
 	
 	# Initialize force source for air drag forces.
 	_init_force_source_air_drag()
@@ -231,7 +234,7 @@ func _apply_forces():
 		var q: Quat                 = se3_local.q
 		
 		# Apply gravity and rotational forces.
-		var acc: Vector3 = self.acceleration()
+		var acc: Vector3 = b.acceleration
 		var mass: float  = b.get_mass()
 		var F: Vector3 = acc * mass
 		var P: Vector3 = Vector3.ZERO

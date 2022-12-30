@@ -144,14 +144,14 @@ void RefFrameNonInertialNode::_ign_physics_pre_process( real_t delta )
 	const Vector3d combined_centrifugal_acc = _compute_combined_acc();
 	_compute_all_accelerations( combined_centrifugal_acc );
 
+	if ( !physics_mode )
+		_integrate_super_bodies( delta );
+
 	RefFrameMotionNode::_ign_physics_pre_process( delta );
 }
 
 void RefFrameNonInertialNode::_ign_physics_process( real_t delta )
 {
-	if ( !physics_mode )
-		_integrate_super_bodies( delta );
-
 	RefFrameMotionNode::_ign_physics_process( delta );
 }
 
@@ -264,7 +264,7 @@ void RefFrameNonInertialNode::_compute_relative_se3s()
 		const int qty = parent_gms.size();
 		for ( int i=0; i<qty; i++ )
 		{
-			MotionPair & mp = parent_gms.get(i);
+			MotionPair & mp = parent_gms.ptrw()[i];
 			RefFrameMotionNode * node = mp.node;
 			mp.se3 = node->relative_( this );
 		}
@@ -274,7 +274,7 @@ void RefFrameNonInertialNode::_compute_relative_se3s()
 		const int qty = all_gms.size();
 		for ( int i=0; i<qty; i++ )
 		{
-			MotionPair & mp = all_gms.get(i);
+			MotionPair & mp = all_gms.ptrw()[i];
 			RefFrameMotionNode * node = mp.node;
 			mp.se3 = node->relative_( this );
 		}
@@ -284,7 +284,7 @@ void RefFrameNonInertialNode::_compute_relative_se3s()
 		const int qty = parent_rots.size();
 		for ( int i=0; i<qty; i++ )
 		{
-			RotationPair & mp = parent_rots.get(i);
+			RotationPair & mp = parent_rots.ptrw()[i];
 			RefFrameRotationNode * node = mp.node;
 			mp.se3 = node->relative_( this );
 		}
@@ -298,7 +298,7 @@ Vector3d RefFrameNonInertialNode::_compute_combined_acc()
 	const int qty = parent_gms.size();
 	for ( int i=0; i<qty; i++ )
 	{
-		MotionPair & mp = parent_gms.get(i);
+		MotionPair & mp = parent_gms.ptrw()[i];
 		const Vector3d acc_in_parent = mp.node->cm.acceleration();
 		const Quaterniond inv_q = mp.node->se3_.q_.Inverse();
 		const Vector3d acc_local = inv_q * acc_in_parent;
@@ -317,7 +317,7 @@ void RefFrameNonInertialNode::_compute_all_accelerations( const Vector3d & combi
 	const int qty = all_bodies.size();
 	for ( int i=0; i<qty; i++ )
 	{
-		RefFrameBodyNode * body = all_bodies.get( i );
+		RefFrameBodyNode * body = all_bodies.ptrw()[i];
 		_compute_one_accelearation( combined_orbital_acc, body );
 	}
 }
@@ -334,7 +334,7 @@ void RefFrameNonInertialNode::_compute_one_accelearation(  const Vector3d & comb
 		const int qty = parent_rots.size();
 		for ( int i=0; i<qty; i++ )
 		{
-			RotationPair & p = parent_rots.get( i );
+			RotationPair & p = parent_rots.ptrw()[i];
 			RefFrameRotationNode * node = p.node;
 			const SE3 & rot_se3 = p.se3;
 
@@ -356,7 +356,7 @@ void RefFrameNonInertialNode::_compute_one_accelearation(  const Vector3d & comb
 		const int qty = all_gms.size();
 		for ( int i=0; i<qty; i++ )
 		{
-			MotionPair & p = all_gms.get( i );
+			MotionPair & p = all_gms.ptrw()[i];
 			RefFrameMotionNode * node = p.node;
 			const SE3 & gm_se3 = p.se3;
 
@@ -379,7 +379,7 @@ void RefFrameNonInertialNode::_integrate_super_bodies( Float delta )
 	const int qty = all_bodies.size();
 	for ( int i=0; i<qty; i++ )
 	{
-		RefFrameBodyNode * body = all_bodies.get( i );
+		RefFrameBodyNode * body = all_bodies[i];
 
 		nm.process( body->se3_, delta, body->acc );
 	}

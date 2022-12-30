@@ -26,6 +26,10 @@ func _init():
 	_broad_tree = BroadTreeGd.new()
 
 
+func _ready():
+	add_to_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
+
+
 func _enter_tree():
 	pass
 
