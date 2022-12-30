@@ -30,12 +30,6 @@ var _all_parents: Array = []
 
 var initialized: bool = false
 
-# Gravity force source.
-var force_source_gravity: ForceSourceGravity = null
-## Centrifugal, Coriolis and Euler forces in rotating ref. frame.
-#var force_source_inertial = null
-## Atmosphere friction forces.
-#var force_source_atmosphere_drag = null
 
 
 
@@ -49,11 +43,6 @@ func _ready():
 	#init()
 
 
-func init_force_source():
-	force_source_gravity = ForceSourceGravity.new()
-	var gm: float = get_own_gm()
-	force_source_gravity.GM = gm
-
 
 
 
@@ -65,7 +54,8 @@ func init_forces():
 #	initialized = true
 	
 	# Initialize GM.
-	init_force_source()
+	#init_force_source()
+	pass
 
 
 
@@ -74,7 +64,7 @@ func init_forces():
 func process_ref_frames( celestial_bodies: Array ):
 	# Apply gravity to physics bodies here.
 	var bodies: Array = get_all_physics_bodies( self, true, false )
-	apply_forces( bodies, self, force_source_gravity, true )
+	apply_forces( bodies, self, true )
 
 
 # Returns all physics ref frames for a node.
@@ -134,18 +124,12 @@ func deserialize( data: Dictionary ):
 
 
 
-func apply_forces( physics_bodies: Array, force_origin: RefFrameNode, force_source: ForceSource, set_local_up: bool ):
+func apply_forces( physics_bodies: Array, force_origin: RefFrameNode, set_local_up: bool ):
 	# For each body apply the force source.
 	for b in physics_bodies:
 		var se3_rel_to_origin: Se3Ref = self.relative_to( b )
 		var se3_local: Se3Ref = b.get_se3()
 		var q: Quat = se3_local.q
-		var force_torque: Array = force_source.compute_force( b, se3_rel_to_origin )
-		var F: Vector3 = force_torque[0]
-		var P: Vector3 = force_torque[1]
-		F = q.xform( F )
-		P = q.xform( P )
-		b.add_force_torque( F, P )
 		
 		if set_local_up:
 			var r: Vector3 = -se3_rel_to_origin.r

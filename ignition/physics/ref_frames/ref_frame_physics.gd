@@ -35,8 +35,6 @@ func get_broad_tree():
 
 
 func process_children():
-	#print( "******************** process children" )
-	.process_children()
 	#print( "******************** apply forces" )
 	#if not debug_has_split:
 	#exclude_too_far_bodies()
@@ -60,7 +58,6 @@ func process_children():
 
 
 func evolve( _dt: float ):
-	.evolve( _dt )
 	jump_if_needed()
 	
 	var ok: bool = _broad_tree.subdivide( self )

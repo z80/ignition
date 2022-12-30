@@ -70,7 +70,7 @@ static void rk4_step_acc( SE3 & se3, const Vector3d & acc, Float h )
 
 NumericalMotion::NumericalMotion()
 	: debug( false ),
-	  time_step( 1.0/240.0 )
+	  time_step( 10.0 )
 {
 }
 

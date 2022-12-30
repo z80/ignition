@@ -14,6 +14,9 @@ namespace Ign
 
 void RefFrameNonInertialNode::_bind_methods()
 {
+	ClassDB::bind_method( D_METHOD( "set_physics_integration", "en" ), &RefFrameNonInertialNode::set_physics_integration );
+	ClassDB::bind_method( D_METHOD( "get_physics_integration" ),       &RefFrameNonInertialNode::get_physics_integration, Variant::BOOL );
+
 	ClassDB::bind_method( D_METHOD( "set_physics_mode", "en" ), &RefFrameNonInertialNode::set_physics_mode );
 	ClassDB::bind_method( D_METHOD( "get_physics_mode" ),       &RefFrameNonInertialNode::get_physics_mode, Variant::BOOL );
 
@@ -21,8 +24,9 @@ void RefFrameNonInertialNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD( "get_time_step" ),       &RefFrameNonInertialNode::get_time_step, Variant::REAL );
 
 	ADD_GROUP( "Ignition", "" );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "physics_mode" ), "set_physics_mode", "get_physics_mode" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "time_step" ),    "set_time_step",    "get_time_step" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "physics_integration" ), "set_physics_integration", "get_physics_integration" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "physics_mode" ),        "set_physics_mode",        "get_physics_mode" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "time_step" ),           "set_time_step",           "get_time_step" );
 }
 
 void RefFrameNonInertialNode::_notification( int p_notification )
@@ -40,11 +44,22 @@ void RefFrameNonInertialNode::_notification( int p_notification )
 RefFrameNonInertialNode::RefFrameNonInertialNode()
 	: RefFrameMotionNode()
 {
+	physics_integration = false;
 	physics_mode = true;
 }
 
 RefFrameNonInertialNode::~RefFrameNonInertialNode()
 {
+}
+
+void RefFrameNonInertialNode::set_physics_integration( bool en )
+{
+	physics_integration = en;
+}
+
+bool RefFrameNonInertialNode::get_physics_integration() const
+{
+	return physics_integration;
 }
 
 void RefFrameNonInertialNode::set_physics_mode( bool en )
@@ -117,7 +132,10 @@ void RefFrameNonInertialNode::_ign_physics_pre_process( real_t delta )
 	if ( physics_mode )
 		_refresh_body_nodes();
 	else
-		_refresh_super_body_nodes();
+	{
+		if ( physics_integration )
+			_refresh_super_body_nodes();
+	}
 
 	_compute_relative_se3s();
 	const Vector3d combined_centrifugal_acc = _compute_combined_acc();

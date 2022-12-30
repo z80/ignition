@@ -37,9 +37,9 @@ void RefFrameMotionNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_gm"),        &RefFrameMotionNode::get_gm, Variant::REAL );
 
 	ClassDB::bind_method( D_METHOD("launch"), &RefFrameMotionNode::launch, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("compute_gm_by_speed",  "radius_km", "suface_orbit_velocity_kms"),          &RefFrameMotionNode::compute_gm_by_speed, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("compute_gm_by_period", "radius_km", "period_kms"),                         &RefFrameMotionNode::compute_gm_by_period, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("launch_elliptic", "gm", "unit_r", "unit_v", "period_hrs", "eccentricity"), &RefFrameMotionNode::launch_elliptic );
+	ClassDB::bind_method( D_METHOD("compute_gm_by_speed",  "radius_km", "suface_orbit_velocity_kms"),    &RefFrameMotionNode::compute_gm_by_speed,  Variant::REAL );
+	ClassDB::bind_method( D_METHOD("compute_gm_by_period", "radius_km", "period_kms"),                   &RefFrameMotionNode::compute_gm_by_period, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("launch_elliptic", "unit_r", "unit_v", "period_hrs", "eccentricity"), &RefFrameMotionNode::launch_elliptic,      Variant::BOOL );
 
 	ClassDB::bind_method( D_METHOD("serialize"),          &RefFrameMotionNode::serialize, Variant::DICTIONARY );
 	ClassDB::bind_method( D_METHOD("deserialize", "arg"), &RefFrameMotionNode::deserialize );
@@ -281,9 +281,19 @@ real_t RefFrameMotionNode::compute_gm_by_period( real_t radius_km, real_t wanted
 	return gm;
 }
 
-void RefFrameMotionNode::launch_elliptic( real_t gm, const Vector3 & unit_r, const Vector3 & unit_v, real_t period_hrs, real_t eccentricity )
+bool RefFrameMotionNode::launch_elliptic( const Vector3 & unit_r, const Vector3 & unit_v, real_t period_hrs, real_t eccentricity )
 {
+	Node * p = get_parent();
+	if ( p == nullptr )
+		return false;
+	RefFrameMotionNode * pm = Object::cast_to<RefFrameMotionNode>( p );
+	if ( pm == nullptr )
+		return false;
+
+	const Float gm  = pm->cm.own_gm;
 	cm.launch_elliptic( gm, Vector3d(unit_r.x, unit_r.y, unit_r.z), Vector3d(unit_v.x, unit_v.y, unit_v.z), period_hrs, eccentricity );
+
+	return true;
 }
 
 Dictionary RefFrameMotionNode::serialize()

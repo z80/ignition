@@ -18,8 +18,6 @@ export(float) var air_density          = 1.0
 export(float) var air_viscosity        = 0.1
 export(float) var air_pressure_surface = 101000.0
 
-var motion: CelestialMotionRef = null
-var rotation: CelestialRotationRef = null
 var orbit_visualizer: Node = null
 export(Color) var orbit_color = Color( 1.0, 0.0, 0.0, 1.0 ) setget _set_orbit_color, _get_orbit_color
 export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
@@ -38,7 +36,6 @@ export(float) var rescale_angular_distance = 1.1 / 180.0 * PI
 var last_player_rf_r: Vector3 = Vector3.ZERO
 
 
-var _force_source_rotational: ForceSourceRotational = null
 var _force_source_air_drag: ForceSourceAirDrag      = null
 
 var _translation: RefFrameNode = null
@@ -102,16 +99,7 @@ func init_forces():
 	var parent_body: CelestialBody = p as CelestialBody
 	if parent_body != null:
 		parent_body.init()
-		var parent_gm: float = parent_body.own_gm
-		motion.launch_elliptic( parent_gm, perigee_dir, perigee_vel, orbital_period_hrs, orbital_eccentricity )
-	
-	# Initialize rotation.
-	rotation = CelestialRotationRef.new()
-	rotation.init( rotation_axis, rotation_period_hrs )
-	
-	# Initialize rotational force source
-	_force_source_rotational = ForceSourceRotational.new()
-	_force_source_rotational.ang_velocity = (1.0/(rotation_period_hrs*3600.0))*rotation_axis
+		self.launch_elliptic( perigee_dir, perigee_vel, orbital_period_hrs, orbital_eccentricity )
 	
 	# Initialize force source for air drag forces.
 	_init_force_source_air_drag()
@@ -242,24 +230,15 @@ func _apply_forces():
 		var se3_local: Se3Ref       = b.get_se3()
 		var q: Quat                 = se3_local.q
 		
-		# Apply gravity.
-		var force_torque: Array     = force_source_gravity.compute_force( b, se3_rel_to_body )
-		var F: Vector3 = force_torque[0]
-		var P: Vector3 = force_torque[1]
-		F = q.xform( F )
-		P = q.xform( P )
-		b.add_force_torque( F, P )
-		
-		# Apply rotational forces.
-		force_torque = _force_source_rotational.compute_force( b, se3_rel_to_body )
-		F = force_torque[0]
-		P = force_torque[1]
-		F = q.xform( F )
-		P = q.xform( P )
+		# Apply gravity and rotational forces.
+		var acc: Vector3 = self.acceleration()
+		var mass: float  = b.get_mass()
+		var F: Vector3 = acc * mass
+		var P: Vector3 = Vector3.ZERO
 		b.add_force_torque( F, P )
 		
 		# Apply air drag forces.
-		force_torque = _force_source_air_drag.compute_force( b, se3_rel_to_body )
+		var force_torque: Array = _force_source_air_drag.compute_force( b, se3_rel_to_body )
 		F = force_torque[0]
 		P = force_torque[1]
 		F = q.xform( F )

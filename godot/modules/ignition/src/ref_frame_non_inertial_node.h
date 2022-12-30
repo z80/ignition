@@ -42,6 +42,9 @@ public:
 	RefFrameNonInertialNode();
 	virtual ~RefFrameNonInertialNode();
 
+	void set_physics_integration( bool en );
+	bool get_physics_integration() const;
+
 	void set_physics_mode( bool en );
 	bool get_physics_mode() const;
 
@@ -60,6 +63,7 @@ public:
 	virtual void _ign_physics_post_process( real_t delta ) override;
 
 public:
+	bool physics_integration;
 	bool physics_mode;
 
 	// Parent gravitational bodies. For computing centrifugal acceleration.
