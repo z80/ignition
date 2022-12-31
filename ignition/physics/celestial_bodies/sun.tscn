@@ -2,5 +2,5 @@
 
 [ext_resource path="res://physics/celestial_bodies/sun.gd" type="Script" id=1]
 
-[node name="Sun" type="RefFrameNode"]
+[node name="Sun" type="RefFrameMotionNode"]
 script = ExtResource( 1 )

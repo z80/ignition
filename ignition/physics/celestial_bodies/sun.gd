@@ -4,6 +4,7 @@ class_name Sun
 
 
 # Defining geometry and GM based on surface orbiting velocity.
+export(float)  var radius_km = 5.0
 
 export(float) var glow_size = 0.2
 export(float) var ray_scale = 10.0
@@ -19,17 +20,18 @@ func get_class():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	init()
+	init_forces()
 
 
-func init():
+func init_forces():
 	add_to_group( Constants.SUN_GROUP_NAME )
 	
 	# Initialize GM.
 	var motion: CelestialMotionRef = CelestialMotionRef.new()
-	gm = motion.init_gm_speed( radius_km, surface_orbital_vel_kms )
+	var gm: float = motion.compute_gm_by_speed( radius_km, surface_orbital_vel_kms )
+	set_own_gm( gm )
 	
-	.init()
+	.init_forces()
 
 
 
@@ -79,7 +81,7 @@ func deserialize( data: Dictionary ):
 	var ret: bool = .deserialize( data )
 	if not ret:
 		return false
-	init()
+	init_forces()
 	return true
 
 

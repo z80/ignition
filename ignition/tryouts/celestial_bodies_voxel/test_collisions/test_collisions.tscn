@@ -1,24 +1,30 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel/celestial_surface_voxel.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/ref_frames/ref_frame_physics.gd" type="Script" id=2]
 [ext_resource path="res://physics/camera_ctrl/player_camera.tscn" type="PackedScene" id=3]
 [ext_resource path="res://physics/parts/characters/central/central.tscn" type="PackedScene" id=4]
 [ext_resource path="res://tryouts/celestial_bodies_voxel/test_collisions/test_collisions.gd" type="Script" id=5]
+[ext_resource path="res://physics/celestial_bodies/sun.tscn" type="PackedScene" id=6]
 
 [node name="RefFrameRoot" type="RefFrameRoot"]
 script = ExtResource( 5 )
 
-[node name="Planet" parent="." instance=ExtResource( 1 )]
-surface_orbital_vel_kms = 0.5
+[node name="Sun" parent="." instance=ExtResource( 6 )]
 
-[node name="RefFramePhysics" type="RefFrameNonInertialNode" parent="Planet/Rotation" index="1"]
+[node name="Planet" parent="Sun" instance=ExtResource( 1 )]
+rotation_period_hrs = 0.5
+surface_orbital_vel_kms = 0.5
+orbital_period_hrs = 1.0
+orbital_eccentricity = 0.05
+
+[node name="RefFramePhysics" type="RefFrameNonInertialNode" parent="Sun/Planet/Rotation" index="1"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10020, 0, 0 )
 script = ExtResource( 2 )
 
-[node name="Character" parent="Planet/Rotation/RefFramePhysics" instance=ExtResource( 4 )]
+[node name="Character" parent="Sun/Planet/Rotation/RefFramePhysics" instance=ExtResource( 4 )]
 
-[node name="PlayerCamera" parent="Planet/Rotation/RefFramePhysics/Character" instance=ExtResource( 3 )]
+[node name="PlayerCamera" parent="Sun/Planet/Rotation/RefFramePhysics/Character" instance=ExtResource( 3 )]
 map_mode = true
 
-[editable path="Planet"]
+[editable path="Sun/Planet"]
