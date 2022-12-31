@@ -266,7 +266,7 @@ func exclude_too_far_bodies():
 	var bodies: Array = root_most_child_bodies()
 	var root: RefFrameRoot = get_ref_frame_root()
 	var player_control = root.player_control
-	var pt = self.get_parent()
+	var pt: Node = self.get_parent()
 	
 	for body in bodies:
 		if body == player_control:
