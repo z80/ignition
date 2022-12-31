@@ -221,6 +221,8 @@ func _apply_forces():
 	var rot: RefFrameNode = rotation_rf()
 	var bodies: Array = get_all_physics_bodies( rot )
 	
+	set_local_up( bodies, rot )
+	
 	for b in bodies:
 #		var debug: bool = (b.name == "fuel_tank_2m_1m")
 #		if debug:

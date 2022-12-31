@@ -160,7 +160,8 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	t.basis = Basis.IDENTITY
 	var se3: Se3Ref = Se3Ref.new()
 	se3.transform = t
-	if movement_type == 'idle':
+	var orbiting: bool = is_orbiting()
+	if not orbiting:
 		v = Vector3.ZERO
 	se3.v         = v
 	self.jump_to( self, se3 )

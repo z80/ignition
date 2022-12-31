@@ -64,14 +64,16 @@ func init_forces():
 func process_ref_frames( celestial_bodies: Array ):
 	# Apply gravity to physics bodies here.
 	var bodies: Array = get_all_physics_bodies( self, true, false )
-	apply_forces( bodies, self, true )
+	set_local_up( bodies, self )
 
 
 # Returns all physics ref frames for a node.
 func get_ref_frames( n: Node, certain_ones: bool = false, orbiting: bool = false ):
-	var children = n.get_children()
+	var qty: int = n.get_child_count()
+	#var children: Array = n.get_children()
 	var rfs = []
-	for ch in children:
+	for i in qty:
+		var ch: Node = n.get_child( i )
 		var rfp: RefFramePhysics = ch as RefFramePhysics
 		if rfp == null:
 			continue
@@ -124,18 +126,17 @@ func deserialize( data: Dictionary ):
 
 
 
-func apply_forces( physics_bodies: Array, force_origin: RefFrameNode, set_local_up: bool ):
+func set_local_up( physics_bodies: Array, force_origin: RefFrameNode ):
 	# For each body apply the force source.
 	for b in physics_bodies:
 		var se3_rel_to_origin: Se3Ref = self.relative_to( b )
 		var se3_local: Se3Ref = b.get_se3()
 		var q: Quat = se3_local.q
 		
-		if set_local_up:
-			var r: Vector3 = -se3_rel_to_origin.r
-			r = r.normalized()
-			r = q.xform( r )
-			b.set_local_up( r )
+		var r: Vector3 = -se3_rel_to_origin.r
+		r = r.normalized()
+		r = q.xform( r )
+		b.set_local_up( r )
 
 
 
