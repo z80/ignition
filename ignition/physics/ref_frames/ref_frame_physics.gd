@@ -602,13 +602,19 @@ func distance( b: RefFramePhysics ):
 
 
 
+func _exit_tree():
+	var to_be_deleted: bool = is_queued_for_deletion()
+	if to_be_deleted:
+		on_delete()
+
+
 
 func on_delete():
+	re_parent_children_on_delete()
 	# Just in case if camera is parented to this rf directly.
 	on_delete_rescue_camera()
 	finit_physics()
 	
-	.on_delete()
 
 
 
@@ -630,8 +636,22 @@ func on_delete_rescue_camera():
 
 
 
-
-
+func re_parent_children_on_delete():
+	var orbiting: bool = is_orbiting()
+	# If orbiting, don't re-arent children.
+	# There probably is a reson for this deletion.
+	if orbiting:
+		return
+	
+	var p: Node = get_parent()
+	if (p == null) or (not is_instance_valid(p)):
+		return
+	
+	var qty: int = get_child_count()
+	for i in range(qty):
+		var ch: RefFrameNode = get_child(i)
+		if ch != null:
+			ch.change_parent( p )
 
 
 
