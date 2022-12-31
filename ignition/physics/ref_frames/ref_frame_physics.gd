@@ -438,25 +438,55 @@ func merge_if_needed():
 
 # Need to be removed if returned "true".
 func self_delete_if_unused():
-	var bodies: Array = root_most_child_bodies()
-	var qty: int = bodies.size()
-	if ( qty < 1 ):
-		# Also don't delete player ref. frame.
-		var player_rf: RefFramePhysics = RootScene.ref_frame_root.get_player_ref_frame()
-		if self == player_rf:
+	
+	# Also don't delete player ref. frame.
+	var player_rf: RefFramePhysics = RootScene.ref_frame_root.get_player_ref_frame()
+	if self == player_rf:
+		return false
+	
+	# And don't delete if parenting the camera.
+	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
+	if is_instance_valid( cam ):
+		var p: Node = cam.get_parent()
+		if p == self:
+			# In this case may be at most stop orbiting to not 
+			# fall inside if a planet
 			return false
 		
-		# And don't delete if parenting the camera.
-		var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
-		if is_instance_valid( cam ):
-			var p: Node = cam.get_parent()
+		elif p != null:
+			p = p.get_parent()
 			if p == self:
-				# In this case may be at most stop orbiting to not 
-				# fall inside if a planet
 				return false
-		
+	
+	
+	# Check all
+	var bodies: Array = root_most_child_bodies()
+	var qty: int = bodies.size()
+	
+	# If there are no bodies, delete it.
+	if ( qty < 1 ):
 		self.queue_free()
 		return true
+	
+	# Also for non-orbiting ref. frames delete it if all 
+	# objects are stationary.
+	var orbiting: bool = is_orbiting()
+	# Don't delete orbiting ref. frames.
+	if not orbiting:
+		var moving_qty: int = 0
+		for i in range(qty):
+			var b: RefFrameBodyNode = bodies[i]
+			var se3: Se3Ref = b.get_se3()
+			var v: float = se3.v.length()
+			var w: float = se3.w.length()
+			v = max(v, w)
+			if v > Constants.IDLE_SPEED_THRESHOLD:
+				moving_qty += 1
+		
+		if moving_qty == 0:
+			self.queue_free()
+			return true
+	
 	return false
 
 

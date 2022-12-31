@@ -20,6 +20,9 @@ const RF_MERGE_DISTANCE: float = 800.0
 const RF_CHANGE_DELTA = 5.0
 
 
+# If a body moves slower than this, assume it is idle.
+const IDLE_SPEED_THRESHOLD: float = 0.05
+
 
 const BODY_EXCLUDE_DIST: float = 1000.0
 const BODY_INCLUDE_DIST: float = 800.0
