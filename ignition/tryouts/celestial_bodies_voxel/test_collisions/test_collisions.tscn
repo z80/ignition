@@ -10,7 +10,7 @@
 script = ExtResource( 5 )
 
 [node name="Planet" parent="." instance=ExtResource( 1 )]
-surface_orbital_vel_kms = 0.1
+surface_orbital_vel_kms = 0.5
 
 [node name="RefFramePhysics" type="RefFrameNonInertialNode" parent="Planet/Rotation" index="1"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10020, 0, 0 )
