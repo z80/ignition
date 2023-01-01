@@ -68,8 +68,8 @@ public:
 	bool get_force_numerical() const;
 
 
-	void set_debug( bool en );
-	bool get_debug() const;
+	virtual void set_debug( bool en ) override;
+	virtual bool get_debug() const override;
 
 	// Compute forces, integrate dynamics.
 	virtual void _ign_physics_pre_process( real_t delta ) override;

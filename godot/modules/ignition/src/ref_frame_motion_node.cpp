@@ -48,9 +48,6 @@ void RefFrameMotionNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_force_numerical", "en"), &RefFrameMotionNode::set_force_numerical );
 	ClassDB::bind_method( D_METHOD("get_force_numerical"),       &RefFrameMotionNode::get_force_numerical, Variant::BOOL );
 
-	ClassDB::bind_method( D_METHOD("set_debug", "en"), &RefFrameMotionNode::set_debug );
-	ClassDB::bind_method( D_METHOD("get_debug"),       &RefFrameMotionNode::get_debug, Variant::BOOL );
-
 	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL,   "own_gm" ),          "set_own_gm",          "get_own_gm" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "allow_orbiting" ),  "set_allow_orbiting",  "get_allow_orbiting" );
@@ -430,6 +427,7 @@ bool RefFrameMotionNode::get_force_numerical() const
 
 void RefFrameMotionNode::set_debug( bool en )
 {
+	RefFrameNode::set_debug( en );
 	cm._debug = en;
 }
 

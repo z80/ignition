@@ -76,8 +76,8 @@ public:
 	String _unique_name( const String & name_base, Node * parent );
 
 
-	void set_debug( bool en );
-	bool get_debug() const;
+	virtual void set_debug( bool en );
+	virtual bool get_debug() const;
 
 	SE3    se3_;
 
