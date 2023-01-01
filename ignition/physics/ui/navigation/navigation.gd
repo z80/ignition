@@ -42,7 +42,7 @@ func _recompute_mode_surface():
 		return
 	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
 	var p: Node = ctrl.get_parent()
-	var cb: CelestialSurface = ClosestCelestialBody.closest_celestial_body( p ) as CelestialSurface
+	var cb: CelestialSurfaceVoxel = ClosestCelestialBody.closest_celestial_body( p ) as CelestialSurfaceVoxel
 	if cb == null:
 		return
 	var rot: RefFrameNode = cb.rotation_rf()
@@ -87,7 +87,7 @@ func _recompute_mode_surface():
 	var dist_lbl: Label = get_node( "GeoidDist" )
 	dist_lbl.text  = "Geoid dist: " + str(dist_km) + "km"
 
-	var cs: CelestialSurface = cb as CelestialSurface
+	var cs: CelestialSurfaceVoxel = cb as CelestialSurfaceVoxel
 	if cs != null:
 		var P: float = cs.air_pressure( se3 ) * 0.001
 		var air_pressure_lbl: Label = get_node( "AirPressure" )
@@ -113,7 +113,7 @@ func _recompute_mode_orbit():
 	
 	var se3: Se3Ref = ctrl.relative_to( tran )
 	
-	var cs: CelestialSurface = cb as CelestialSurface
+	var cs: CelestialSurfaceVoxel = cb as CelestialSurfaceVoxel
 	var se3_rot: Se3Ref
 	if cs != null:
 		se3_rot = ctrl.relative_to( cs.rotation_rf() )

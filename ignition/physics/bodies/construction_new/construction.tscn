@@ -5,7 +5,7 @@
 [ext_resource path="res://physics/bodies/construction_new/visual.tscn" type="PackedScene" id=3]
 [ext_resource path="res://physics/bodies/construction_new/physical.tscn" type="PackedScene" id=4]
 
-[node name="Construction" type="RefFrameNode"]
+[node name="Construction" type="RefFrameBodyNode"]
 script = ExtResource( 1 )
 VisualScene = ExtResource( 3 )
 PhysicalScene = ExtResource( 4 )

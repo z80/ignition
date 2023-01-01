@@ -289,8 +289,8 @@ func include_close_enough_bodies():
 		var p = body.get_parent()
 		if p == self:
 			continue
-		body.compute_relative_to_root( self )
-		var r: Vector3 = body.r_root()
+		var se3: Se3Ref= body.relative_to( self )
+		var r: Vector3 = se3.r
 		var d: float = r.length()
 		
 		if d < min_dist:
