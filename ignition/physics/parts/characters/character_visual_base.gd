@@ -14,7 +14,7 @@ func _ready():
 
 
 # This one should be overridden.
-func set_speed_normalized( s: float, v: Vector3 ):
+func set_speed_normalized( _s: float, _v: Vector3 ):
 	pass
 
 

@@ -140,7 +140,7 @@ func create_physical():
 
 
 # This one should be called by CharacterPhysicsBody
-func integrate_forces( body: RigidBody, state ):
+func integrate_forces( _body: RigidBody, state ):
 	# If it is free floating, don't apply any forces. 
 	# Just let it drift on its own.
 	if not free_floating:
@@ -181,7 +181,7 @@ func get_speed_normalized( body: RigidBody ):
 
 
 func _position_control( state ):
-	var dt: float = state.step
+	var _dt: float = state.step
 	var v: Vector3 = Vector3.ZERO
 	
 	var w: bool = _input.has( "ui_w" )
@@ -367,7 +367,10 @@ func serialize():
 
 
 func deserialize( data: Dictionary ):
-	var ok: bool = .deserialize( data )
+	var _ok: bool = .deserialize( data )
+	if not _ok:
+		return false
+	
 	if data.has( "boarding_mode" ):
 		boarding_mode = data["boarding_mode"]
 		if boarding_mode == BoardingMode.INSIDE:
