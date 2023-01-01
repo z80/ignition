@@ -630,7 +630,7 @@ func process_user_input_2( input: Dictionary ):
 
 
 # This one should be overriden by implementations.
-func process_user_input_group( input: Dictionary ):
+func process_user_input_group( _input: Dictionary ):
 	pass
 
 
@@ -711,7 +711,7 @@ static func create_attachments( part: Part, data: Dictionary ):
 	# Need to deserialize all the nodes.
 	var coupling_nodes_data: Dictionary = data["coupling_attachments"]
 	for name in coupling_nodes_data:
-		var node_data: Dictionary = coupling_nodes_data[name]
+		var _node_data: Dictionary = coupling_nodes_data[name]
 		var n: CouplingAttachment = CouplingAttachment.new()
 		n.name = name
 		part.add_child( n )

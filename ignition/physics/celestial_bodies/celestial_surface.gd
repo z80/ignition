@@ -168,13 +168,13 @@ func process_motion( delta ):
 
 func process_geometry( force_player_rf: RefFrameNode = null ):
 	var root: RefFrameRoot = RootScene.ref_frame_root
-	var player_rf: RefFrameNode
-	var player_ctrl: RefFrameNode
+	var _player_rf: RefFrameNode
+	var _player_ctrl: RefFrameNode
 	if force_player_rf != null:
-		player_rf = force_player_rf
+		_player_rf = force_player_rf
 	else:
-		player_rf = root.get_player_ref_frame()
-	player_ctrl = root.player_control
+		_player_rf = root.get_player_ref_frame()
+	_player_ctrl = root.player_control
 	
 	var physics_ref_frames: Array  = root.physics_ref_frames()
 	

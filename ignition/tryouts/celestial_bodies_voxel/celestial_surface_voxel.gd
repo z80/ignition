@@ -102,7 +102,7 @@ func init_forces():
 		self.launch_elliptic( perigee_dir, perigee_vel, orbital_period_hrs, orbital_eccentricity )
 	
 	var rot: RefFrameRotationNode = rotation_rf()
-	rot.init( rotation_axis, rotation_period_hrs )
+	#rot.init( rotation_axis, rotation_period_hrs )
 	
 	# Initialize force source for air drag forces.
 	_init_force_source_air_drag()

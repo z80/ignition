@@ -33,7 +33,7 @@ func _init_group():
 func _init_menu():
 	var menu_button = get_node("MenuButton")
 	var menu: PopupMenu = menu_button.get_popup()
-	menu.connect( "id_pressed", self, "_id_pressed" )
+	var _err_code: int = menu.connect( "id_pressed", self, "_id_pressed" )
 	menu.clear()
 	var index: int = 0
 	_index_to_group_id.clear()

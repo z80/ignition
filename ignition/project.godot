@@ -535,7 +535,7 @@ name_num_separator=2
 
 [physics]
 
-common/physics_fps=240
+common/physics_fps=120
 3d/active_soft_world=false
 2d/default_gravity=981
 2d/default_linear_damp=0.02
