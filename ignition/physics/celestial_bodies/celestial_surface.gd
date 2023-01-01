@@ -182,7 +182,7 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 	var rotation: RefFrameNode    = get_node( "Rotation" )
 	var planet: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	
-	var paths: Array = []
+	var _paths: Array = []
 	for rf in physics_ref_frames:
 		# Check if either node is direct parent of this rf
 		var p = rf.get_parent()
@@ -234,7 +234,7 @@ func height_source( name: String, radius: float, height: float ):
 
 
 func _set_convert_to_global( en ):
-	var n: Node = get_node( "Rotation/CelestialBody" )
+	var _n: Node = get_node( "Rotation/CelestialBody" )
 	var celestial_body: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	celestial_body.convert_to_global = en
 
@@ -277,7 +277,7 @@ func _apply_forces():
 #		if debug:
 #			rot.debug = true
 		var tr: RefFrameNode = translation_rf()
-		var se3_tr: Se3Ref = tr.relative_to( b )
+		var _se3_tr: Se3Ref = tr.relative_to( b )
 		var se3_rel_to_body: Se3Ref = rot.relative_to( b )
 		if debug:
 			rot.debug = false
@@ -344,7 +344,7 @@ func _draw_shock_waves( bodies_ref_frame: RefFrameNode, rot: RefFrameNode ):
 				
 				var se3: Se3Ref = body.relative_to( rot )
 				
-				var distance: float = se3.r.length()
+				var _distance: float = se3.r.length()
 				# Compute air density in the point.
 				var ret: Array = _force_source_air_drag.density_viscosity( se3 )
 				var density: float = ret[1]
@@ -370,7 +370,7 @@ func _draw_shock_waves( bodies_ref_frame: RefFrameNode, rot: RefFrameNode ):
 func _draw_all_shock_waves():
 	var rot: RefFrameNode = rotation_rf()
 	var tran: RefFrameNode = translation_rf()
-	var all_bodies: Array = get_all_physics_bodies( rot )
+	var _all_bodies: Array = get_all_physics_bodies( rot )
 	_draw_shock_waves( rot,  rot )
 	_draw_shock_waves( tran, rot )
 
@@ -380,7 +380,7 @@ func _hide_shock_waves():
 	var rot: RefFrameNode = rotation_rf()
 	var all_bodies: Array = get_all_physics_bodies( rot )
 	# All assemblies.
-	var assemblies: Array = []
+	var _assemblies: Array = []
 	for body in all_bodies:
 		var p: PhysicsBodyBase = body as PhysicsBodyBase
 		p.hide_shock_wave_visual()
@@ -406,7 +406,7 @@ func process_ref_frames_rotating_to_orbiting():
 		rf.change_parent( tr )
 		#rf.jump_to( tr, se3 )
 		rf.allow_orbiting = true
-		rf.launch()
+		var _ok: bool = rf.launch()
 		print( "rotating -> orbiting" )
 		
 		var m: CelestialMotionRef = rf.motion
@@ -495,10 +495,10 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 		# Need to teleport celestial body to that other celestial body
 		rf.change_parent( biggest_influence_body )
 		rf.allow_orbiting = true
-		rf.launch()
+		var _ok: bool = rf.launch()
 		print( "orbiting -> another orbiting" )
 		print( "biggest influence obj: ", biggest_influence_body.name )
-		print( "biggest influence gm: ", biggest_influence_body.gm )
+		print( "biggest influence gm: ", biggest_influence_body.own_gm )
 
 
 func _create_orbit_visualizer():

@@ -66,7 +66,7 @@ func _on_Cancel_pressed():
 	self.pop()
 
 
-func on_user_input( event: InputEvent ):
+func on_user_input( _event: InputEvent ):
 	pass
 
 

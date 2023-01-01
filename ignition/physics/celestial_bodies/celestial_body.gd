@@ -2,6 +2,10 @@
 extends RefFrameMotionNode
 class_name CelestialBody
 
+export(String) var human_readable_name = "Planet"
+export(String) var wiki_page = ""
+export(bool)   var discovered = false
+
 # Planet rotation.
 export(float)   var rotation_period_hrs = 0.1
 export(Vector3) var rotation_axis       = Vector3( 0.0, 1.0, 0.0 )

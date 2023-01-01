@@ -12,17 +12,15 @@ script = ExtResource( 2 )
 [node name="Sun" parent="." instance=ExtResource( 4 )]
 surface_orbital_vel_kms = 30.0
 radius_km = 5000.0
-height_km = 0.01
 glow_size = 0.3
 
 [node name="Home" parent="Sun" instance=ExtResource( 1 )]
 rotation_period_hrs = 5.0
 surface_orbital_vel_kms = 0.5
-radius_km = 50.0
-height_km = 0.5
 perigee_dir = Vector3( -1, 0, 1 )
 orbital_period_hrs = 100.0
 height_source_name = "home"
+height_km = 0.5
 detail_size_0 = 0.02
 detail_dist_0 = 0.02
 detail_size_1 = 0.06
@@ -37,10 +35,9 @@ orbit_color = Color( 0, 0.52549, 1, 1 )
 [node name="Moon" parent="Sun/Home" instance=ExtResource( 1 )]
 rotation_period_hrs = 5.0
 surface_orbital_vel_kms = 0.2
-radius_km = 5.0
-height_km = 0.05
 orbital_period_hrs = 5.0
 height_source_name = "moon"
+height_km = 0.05
 atmosphere_height_inner_km = 0.1
 air_density = 0.0
 air_viscosity = 0.0
@@ -48,7 +45,6 @@ orbit_color = Color( 1, 0.678431, 0, 1 )
 
 [node name="Rust" parent="Sun" instance=ExtResource( 1 )]
 rotation_period_hrs = 15.0
-radius_km = 30.0
 perigee_dir = Vector3( 1, 0.09, 1 )
 orbital_period_hrs = 197.0
 orbital_eccentricity = 0.07
@@ -67,7 +63,6 @@ air_viscosity = 0.02
 [node name="Bolt" parent="Sun/Rust" instance=ExtResource( 1 )]
 rotation_period_hrs = 2.0
 surface_orbital_vel_kms = 0.001
-height_km = 1.0
 perigee_dir = Vector3( 0.2, 0.1, 1 )
 orbital_period_hrs = 30.0
 orbital_eccentricity = 0.5
@@ -84,12 +79,11 @@ orbit_color = Color( 1, 0.580392, 0.243137, 1 )
 [node name="Blob" parent="Sun" instance=ExtResource( 1 )]
 rotation_period_hrs = 20.0
 surface_orbital_vel_kms = 4.0
-radius_km = 300.0
-height_km = 30.0
 perigee_dir = Vector3( 0.3, 0.02, -0.68 )
 orbital_period_hrs = 857.0
 orbital_eccentricity = 0.02
 height_source_name = "blob"
+height_km = 30.0
 atmosphere_height_inner_km = 5.0
 atmosphere_height_outer_km = 15.0
 transparency_dist_inner_km = 3.0

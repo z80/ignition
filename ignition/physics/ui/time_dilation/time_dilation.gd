@@ -17,7 +17,7 @@ func _ready():
 		var data: Dictionary = _controls[key]
 		var node: Node     = data.node
 		var method: String = data.method
-		node.connect( "pressed", self, method )
+		var _err_code: int = node.connect( "pressed", self, method )
 
 
 func _input(event):

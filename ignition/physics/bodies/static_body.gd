@@ -49,7 +49,7 @@ func _update_position():
 
 
 
-func activate( root_call: bool = true ):
+func activate( _root_call: bool = true ):
 	body_state = BodyState.DYNAMIC
 
 	update_physics_from_state()
@@ -63,7 +63,7 @@ func activate( root_call: bool = true ):
 
 
 
-func deactivate( root_call: bool = true ):
+func deactivate( _root_call: bool = true ):
 	body_state = BodyState.KINEMATIC
 	
 	remove_physical()

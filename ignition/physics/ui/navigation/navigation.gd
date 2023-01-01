@@ -54,7 +54,7 @@ func _recompute_mode_surface():
 	# Compute prograde/retrograde.
 	var v: Vector3 = se3.v
 	var q_inv: Quat = se3.q.inverse()
-	var q_i: Quat = Quat.IDENTITY
+	var _q_i: Quat = Quat.IDENTITY
 	v = q_inv.xform( v )
 	
 	var r: Vector3 = se3.r.normalized()

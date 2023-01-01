@@ -72,8 +72,5 @@ texture_hover = ExtResource( 8 )
 texture_disabled = ExtResource( 8 )
 texture_focused = ExtResource( 8 )
 expand = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [connection signal="pressed" from="Help" to="." method="_on_help_pressed"]

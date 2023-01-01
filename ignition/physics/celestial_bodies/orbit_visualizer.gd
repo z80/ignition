@@ -7,7 +7,7 @@ export(int) var pts_qty = 128
 
 # Need to specify these two in order to draw.
 var ref_frame: RefFrameNode = null
-var motion: CelestialMotionRef = null
+var motion  = null
 
 
 # Called when the node enters the scene tree for the first time.
@@ -16,7 +16,7 @@ var motion: CelestialMotionRef = null
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
+func _process(_delta):
 	self.material_override = material
 
 

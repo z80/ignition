@@ -27,7 +27,7 @@ func _init():
 
 
 # Might want to repload something asynchronously.
-func preload_resources( loader: ResourceInteractiveLoader ):
+func preload_resources( _loader: ResourceInteractiveLoader ):
 	pass
 
 

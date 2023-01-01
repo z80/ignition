@@ -201,7 +201,7 @@ static func serialize_ref_frames_physics( n: Node ):
 static func destroy_all_ref_frames_physics( n: Node ):
 	var ref_frames: Array = n.get_tree().get_nodes_in_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
 	for rf in ref_frames:
-		var p = rf.get_parent()
+		var _p: Node = rf.get_parent()
 		rf.queue_free()
 		rf.name = rf.name + "_t_be_deleted"
 
@@ -331,8 +331,8 @@ static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 static func serialize_camera():
 	var c: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var data: Dictionary = c.serialize()
-	var name: String = c.name
-	var filename: String = c.filename
+	var _name: String = c.name
+	var _filename: String = c.filename
 	var parentpath = c.get_parent().get_path()
 	var camera_data: Dictionary = {
 		data = data,
@@ -345,7 +345,7 @@ static func serialize_camera():
 
 static func deserialize_camera( camera_data: Dictionary ):
 	var c: RefFrameNode = RootScene.ref_frame_root.player_camera
-	var parentpath: String = camera_data.parentpath
+	var _parentpath: String = camera_data.parentpath
 	var data: Dictionary = camera_data.data
 	var ret: bool = c.deserialize( data )
 	if not ret:

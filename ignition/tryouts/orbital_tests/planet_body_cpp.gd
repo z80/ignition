@@ -44,7 +44,7 @@ func init_orbit():
 		return
 	
 	p.init()
-	var parent_gm: float = p.gm
+	var parent_gm: float = p.own_gm
 	T = T / 3600.0
 	motion.launch_elliptic( parent_gm, unit_r, unit_v, T, ecc )
 	orbiting = true

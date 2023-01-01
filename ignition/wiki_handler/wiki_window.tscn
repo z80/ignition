@@ -16,9 +16,6 @@ margin_right = 431.0
 margin_bottom = 528.0
 rect_min_size = Vector2( 180, 120 )
 script = ExtResource( 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="VBox" type="VBoxContainer" parent="."]
 anchor_right = 1.0

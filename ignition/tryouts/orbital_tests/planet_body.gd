@@ -39,7 +39,7 @@ func init_orbit():
 		return
 	
 	p.init()
-	var parent_gm: float = p.gm
+	var parent_gm: float = p.own_gm
 	state = Motion.init_elliptic( parent_gm, unit_r, unit_v, T, ecc )
 
 func _process(delta):

@@ -64,9 +64,9 @@ func update_inertia():
 	# And compute inertia based on cynindrical shape.
 	var h: float = height
 	var r: float = radius
-	var Ixx: float = m*h*h/12.0 + m*r*r/4.0
-	var Izz: float = Ixx
-	var Iyy: float = m*r*r/2.0
+	var _Ixx: float = m*h*h/12.0 + m*r*r/4.0
+	var _Izz: float = _Ixx
+	var _Iyy: float = m*r*r/2.0
 
 	if _physical != null:
 		_physical.mass = m
@@ -128,7 +128,7 @@ func _equalize_volumes():
 			continue
 
 		var delta: float = (tank._fuel_left - _fuel_left)*0.5
-		var has_enough: bool = (tank._fuel_left > fuel_params.delta_volume)
+		var _has_enough: bool = (tank._fuel_left > fuel_params.delta_volume)
 		if delta >= fuel_params.delta_volume:
 			_fuel_left += fuel_params.delta_volume
 			tank._fuel_left -= fuel_params.delta_volume
