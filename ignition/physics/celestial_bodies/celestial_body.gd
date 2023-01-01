@@ -73,8 +73,8 @@ func process_ref_frames( celestial_bodies: Array ):
 
 # Returns all physics ref frames for a node.
 func get_ref_frames( n: Node, certain_ones: bool = false, orbiting: bool = false ):
+	var children: Array = n.get_children()
 	var qty: int = n.get_child_count()
-	#var children: Array = n.get_children()
 	var rfs = []
 	for i in qty:
 		var ch: Node = n.get_child( i )
