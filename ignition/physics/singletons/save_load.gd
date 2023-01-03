@@ -33,6 +33,9 @@ static func full_file_path( fname: String ):
 static func serialize_all( n: Node ):
 	var data: Dictionary = {}
 	
+	var root_data: Dictionary = serialize_root_node()
+	data["root"] = root_data
+	
 	var stars_data: Dictionary      = serialize_stars( n )
 	data["stars"] = stars_data
 	
@@ -44,9 +47,6 @@ static func serialize_all( n: Node ):
 	
 	var bodies_data: Dictionary     = serialize_bodies( n )
 	data["bodies"] = bodies_data
-	
-	var physics_data: Dictionary = serialize_physics_manager()
-	data["physics"] = physics_data
 	
 	var camera_data: Dictionary     = serialize_camera()
 	data["camera"] = camera_data
@@ -96,7 +96,7 @@ static func deserialize_all( n: Node, data: Dictionary ):
 
 
 
-static func serialize_physics_manager():
+static func serialize_root_node():
 	var data: Dictionary = RootScene.ref_frame_root.serialize()
 	return data
 
