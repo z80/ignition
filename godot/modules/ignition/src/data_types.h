@@ -12,6 +12,7 @@
 namespace Ign
 {
     typedef double             Float;
+    typedef signed long long   Integer;
     typedef long long          Timestamp;
     typedef unsigned long      Uint32;
     typedef signed long        Sint32;

@@ -54,8 +54,8 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 	_values_map.clear();
 	_normals_map.clear();
 
-    const int root_size_int_2 = find_subdivision_levels( bounding_radius, source );
-	const int root_size_int = root_size_int_2 * 2;
+    const Integer root_size_int_2 = find_subdivision_levels( bounding_radius, source );
+	const Integer root_size_int = root_size_int_2 * 2;
 
 	MarchingCubesDualNode * root_node = create_node();
 	root_node->size = root_size_int;
@@ -830,7 +830,7 @@ int MarchingCubesDual::find_subdivision_levels( Float bounding_radius, VolumeSou
 	const Float max_sz = bounding_radius;
 
 	// Integer size of the half of minimum size should be 1.
-	int size_int = 1;
+	Integer size_int = 1;
 	Float sz = step;
 	while (sz <= max_sz)
 	{
@@ -864,10 +864,10 @@ int MarchingCubesDual::find_subdivision_levels( Float bounding_radius, VolumeSou
 void MarchingCubesDual::compute_node_values( MarchingCubesDualNode & node, VolumeSource * source )
 {
     VectorInt verts[8];
-    const int x  = node.at.x;
-    const int y  = node.at.y;
-    const int z  = node.at.z;
-    const int sz = node.size;
+    const Integer x  = node.at.x;
+    const Integer y  = node.at.y;
+    const Integer z  = node.at.z;
+    const Integer sz = node.size;
     verts[0] = VectorInt( x,      y,      z );
     verts[1] = VectorInt( x + sz, y,      z );
     verts[2] = VectorInt( x + sz, y,      z + sz );
@@ -1677,12 +1677,12 @@ Vector3d MarchingCubesDual::interpolate( const Vector3d & v0, const Vector3d & v
     Vector3d ret;
     if (ad < eps)
     {
-            ret = (v0 + v1) * 0.5;
+		ret = (v0 + v1) * 0.5;
     }
     else
     {
-            const Float mu = (iso_level - val0) / d;
-            ret = v0 + (v1 - v0) * mu;
+        const Float mu = (iso_level - val0) / d;
+        ret = v0 + (v1 - v0) * mu;
     }
 
     return ret;

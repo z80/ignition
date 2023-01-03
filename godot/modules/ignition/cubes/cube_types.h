@@ -13,7 +13,7 @@ namespace Ign
 class VectorInt
 {
 public:
-	int x, y, z;
+	Integer x, y, z;
 	VectorInt()
 	{
 		x = y = z = 0;
@@ -73,7 +73,7 @@ public:
 	{
 		*this = inst;
 	}
-	VectorInt( int x, int y, int z )
+	VectorInt( Integer x, Integer y, Integer z )
 	{
 		this->x = x;
 		this->y = y;
@@ -90,7 +90,7 @@ class MarchingNode
 {
 public:
 	VectorInt at;
-	int       size;
+	Integer   size;
 	VectorInt vertices_int[8];
 	Vector3d  vertices[8];
 	Vector3d  vertices_unscaled[8];
