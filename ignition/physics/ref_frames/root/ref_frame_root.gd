@@ -60,7 +60,10 @@ func init():
 
 
 func _ign_pre_process( _delta: float ):
-	# Celestial body orbital movement time delta.
+	# Camera should be updated the last, after all poses are set.
+	update_camera( _delta )
+	
+		# Celestial body orbital movement time delta.
 	# It should be applied to planet movement and ref. frames 
 	# moving under gravitational influence of a planet.
 	#var orbital_delta: float = _delta * _time_scale_evolution
@@ -79,8 +82,7 @@ func _ign_pre_process( _delta: float ):
 	# gravitational influence and atmosphere bounds.
 	process_celestial_body_children()
 	
-	# Camera should be updated the last, after all poses are set.
-	update_camera( _delta )
+
 
 
 
