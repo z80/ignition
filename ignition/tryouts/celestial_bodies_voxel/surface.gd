@@ -16,9 +16,13 @@ var _voxel_surface: MarchingCubesDualGd   = null
 var _local_point_se3: Se3Ref = null
 var _new_local_point_se3: Se3Ref = null
 
+var _mutex: Mutex = null
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	_mutex = Mutex.new()
+	
 	_surface_meshes = []
 	_voxel_surface = MarchingCubesDualGd.new()
 	_voxel_surface.split_precision = 0.001
@@ -53,7 +57,9 @@ func rebuild_surface( source_se3: Se3Ref, strategy: VolumeNodeSizeStrategyGd, sc
 	
 	_voxel_surface.max_nodes_qty   = 20000000
 	_voxel_surface.split_precision = 0.01
+	lock()
 	var ok: bool = _voxel_surface.subdivide_source( source_radius, source, strategy )
+	unlock()
 	var ret: Array = [ok, source_se3, scaler]
 
 	return ret
@@ -65,6 +71,8 @@ func rebuild_surface_finished( data: Array ):
 
 
 func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+	lock()
+	
 	var material_inds: Array = _voxel_surface.materials_used()
 	
 	var meshes: Array = []
@@ -87,7 +95,8 @@ func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseR
 	# How much change vertex position to get true displacement with respect to 
 	# source origin in origin ref. frame.
 	var displacement: Vector3 = _local_point_se3.r
-
+	
+	unlock()
 	
 	var qty: int = material_inds.size()
 	for i in range(qty):
@@ -106,6 +115,9 @@ func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseR
 
 
 func rescale_surface( source_se3: Se3Ref, local_point_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
+	
+	lock()
+	
 	# If succeeded apply to meshes.
 	var material_inds: Array = _voxel_surface.materials_used()
 	
@@ -133,10 +145,14 @@ func rescale_surface( source_se3: Se3Ref, local_point_se3: Se3Ref, scaler: Dista
 		
 		_voxel_surface.precompute_scaled_values( source_se3, local_point_se3, material_ind, scaler )
 	
+	unlock()
+	
 	return true
 
 
 func rescale_surface_finished( local_point_se3: Se3Ref, wireframe: bool = false ):
+	lock()
+	
 	# Copy the new reference point.
 	_local_point_se3.copy_from( _new_local_point_se3 )
 	
@@ -157,6 +173,8 @@ func rescale_surface_finished( local_point_se3: Se3Ref, wireframe: bool = false 
 			_voxel_surface.apply_to_mesh_only_wireframe( mesh_inst )
 		else:
 			_voxel_surface.apply_to_mesh_only( mesh_inst )
+	
+	unlock()
 
 
 
@@ -211,4 +229,10 @@ func get_node_sizes():
 
 
 
+func lock():
+	_mutex.lock()
+
+
+func unlock():
+	_mutex.unlock()
 

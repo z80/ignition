@@ -184,11 +184,16 @@ func _async_rebuild_worker_finished( ad: AsyncData ):
 		var scaler: DistanceScalerBaseRef = ad.scaler
 		var se3_at_in_source: Se3Ref = source_se3.inverse()
 		var at_in_source: Vector3 = se3_at_in_source.r
-		var foliage_data = _foliage.async_update_population_prepare( self, at_in_source, scaler )
+		
+		surf.lock()
+		
+		var foliage_data = _foliage.async_update_population_prepare( at_in_source, scaler )
 		ad.foliage_data = foliage_data
 		
 		_foliage.async_populate_node_worker( foliage_data )
 		_foliage.async_populate_node_worker_finished( foliage_data )
+		
+		surf.unlock()
 	
 	if _async_workers_qty == 0:
 		_async_requested_rescale = true
@@ -270,10 +275,15 @@ func _async_rescale_worker_finished( ad: AsyncData ):
 	if surface_index == _foliage_surface_index:
 		var source_se3: Se3Ref            = ad.se3
 		var scaler: DistanceScalerBaseRef = ad.scaler
+		
+		surf.lock()
+		
 		var foliage_data = _foliage.async_update_view_point_prepare( source_se3, scaler )
 		
 		_foliage.async_update_view_point_worker( foliage_data )
 		_foliage.async_update_view_point_worker_finished( foliage_data )
+		
+		surf.unlock()
 
 	_async_workers_qty -= 1
 
