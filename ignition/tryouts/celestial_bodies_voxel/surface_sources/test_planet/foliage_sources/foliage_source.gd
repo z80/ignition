@@ -18,9 +18,10 @@ func create( node: MarchingCubesDualNodeGd, se3: Se3Ref, normal: Vector3, rand: 
 	
 	var scale: float = rand.floating_point_interval_closed( 0.5, 2.0 )
 	var ts: Transform = Transform.IDENTITY
-	ts = ts.scaled( Vector3( scale, scale, scale ) )
+	#ts = ts.scaled( Vector3( scale, scale, scale ) )
+	# Now foliage is an instance of RefFrameNode.
+	# Due to that scale should be specified separately.
 	t = t * ts
-	
 	instance.transform = t
 	
 	return instance

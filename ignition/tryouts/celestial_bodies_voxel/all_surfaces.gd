@@ -20,7 +20,6 @@ var _foliage_surface_index: int = -1
 # For async run count how many workers running and 
 # if zero, re-run with the new se3.
 var _async_requested_rebuild: bool = false
-var _async_requested_rescale: bool = false
 var _async_se3: Se3Ref     = null
 var _async_workers_qty: int = 0
 
@@ -117,9 +116,6 @@ func _async_process():
 	if update_disabled or (_async_workers_qty != 0):
 		return
 	
-	if _async_requested_rescale:
-		_async_rescale_start( _async_se3 )
-
 	elif _async_requested_rebuild:
 		_async_rebuild_start( _async_se3 )
 	
@@ -136,7 +132,6 @@ func _async_rebuild_start( source_se3: Se3Ref ):
 	var scaler: DistanceScalerBaseRef = RootScene.ref_frame_root.distance_scaler
 	var qty: int = _surfaces.size()
 	
-	_async_requested_rebuild = false
 	_async_workers_qty = qty
 	
 	# Set the focal point.
@@ -196,22 +191,18 @@ func _async_rebuild_worker_finished( ad: AsyncData ):
 		surf.unlock()
 	
 	if _async_workers_qty == 0:
-		_async_requested_rescale = true
+		_async_rescale_start( ad.se3 )
 
 
 
 
 func _async_rescale_start( source_se3: Se3Ref ):
-	if not _async_requested_rescale:
-		return
-	
 	if _async_workers_qty != 0:
 		return
 
 	var scaler: DistanceScalerBaseRef = RootScene.ref_frame_root.distance_scaler
 	var qty: int = _surfaces.size()
 	
-	_async_requested_rescale = false
 	_async_workers_qty = qty
 
 	# Set the focal point.
@@ -286,6 +277,11 @@ func _async_rescale_worker_finished( ad: AsyncData ):
 		surf.unlock()
 
 	_async_workers_qty -= 1
+	
+	# Disable busyness flag in the very-very end.
+	if _async_workers_qty == 0:
+		_async_requested_rebuild = false
+
 
 
 

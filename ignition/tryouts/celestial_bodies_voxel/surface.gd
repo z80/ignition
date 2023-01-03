@@ -7,6 +7,7 @@ export(Resource) var surface_source = null
 ## for collision processing.
 export(bool)     var solid = true
 
+var _material_inds: Array = []
 var _surface_meshes: Array = []
 var _voxel_surface: MarchingCubesDualGd   = null
 #var _physical_surface: MarchingCubesDualGd = null
@@ -17,6 +18,8 @@ var _local_point_se3: Se3Ref = null
 var _new_local_point_se3: Se3Ref = null
 
 var _mutex: Mutex = null
+var _locked_by: String = ""
+var _locked: bool = false
 
 
 # Called when the node enters the scene tree for the first time.
@@ -59,6 +62,7 @@ func rebuild_surface( source_se3: Se3Ref, strategy: VolumeNodeSizeStrategyGd, sc
 	_voxel_surface.split_precision = 0.01
 	lock()
 	var ok: bool = _voxel_surface.subdivide_source( source_radius, source, strategy )
+	#print( "material inds: ", _material_inds )
 	unlock()
 	var ret: Array = [ok, source_se3, scaler]
 
@@ -71,14 +75,10 @@ func rebuild_surface_finished( data: Array ):
 
 
 func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
-	lock()
-	
-	var material_inds: Array = _voxel_surface.materials_used()
-	
-	var meshes: Array = []
-	for ind in material_inds:
-		var mi: MeshInstance = _get_surface_mesh( ind )
-		meshes.push_back( mi )
+	var meshes: Array = _surface_meshes
+	var qty: int = meshes.size()
+	if qty < 1:
+		return
 	
 	var materials: Array = surface_source.materials
 	
@@ -96,13 +96,7 @@ func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseR
 	# source origin in origin ref. frame.
 	var displacement: Vector3 = _local_point_se3.r
 	
-	unlock()
-	
-	var qty: int = material_inds.size()
 	for i in range(qty):
-		var material_ind: int = material_inds[i]
-		if material_ind < 0:
-			material_ind = 0
 		var mesh_inst: MeshInstance = meshes[i]
 		var sm: ShaderMaterial = mesh_inst.material_override as ShaderMaterial
 		if sm == null:
@@ -115,9 +109,6 @@ func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseR
 
 
 func rescale_surface( source_se3: Se3Ref, local_point_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
-	
-	lock()
-	
 	# If succeeded apply to meshes.
 	var material_inds: Array = _voxel_surface.materials_used()
 	
@@ -143,16 +134,14 @@ func rescale_surface( source_se3: Se3Ref, local_point_se3: Se3Ref, scaler: Dista
 		mesh_inst.visible = true
 		mesh_inst.material_override = materials[material_ind]
 		
+		lock()
 		_voxel_surface.precompute_scaled_values( source_se3, local_point_se3, material_ind, scaler )
-	
-	unlock()
+		unlock()
 	
 	return true
 
 
 func rescale_surface_finished( local_point_se3: Se3Ref, wireframe: bool = false ):
-	lock()
-	
 	# Copy the new reference point.
 	_local_point_se3.copy_from( _new_local_point_se3 )
 	
@@ -169,12 +158,13 @@ func rescale_surface_finished( local_point_se3: Se3Ref, wireframe: bool = false 
 		if material_ind < 0:
 			material_ind = 0
 		var mesh_inst: MeshInstance = meshes[i]
+	
+		lock()
 		if wireframe:
 			_voxel_surface.apply_to_mesh_only_wireframe( mesh_inst )
 		else:
 			_voxel_surface.apply_to_mesh_only( mesh_inst )
-	
-	unlock()
+		unlock()
 
 
 
@@ -228,22 +218,33 @@ func get_node_sizes():
 
 
 
+func _lock_location():
+	var stack: Array = get_stack()
+	var stri: String = ""
+	for page in stack:
+		var fu: String = str( page["function"] )
+		var li: String = str( page["line"] )
+		var so: String = str( page["source"] )
+		if stri.length() > 0:
+			stri += "\n"
+		stri += so + '[' + li + '[' + fu + ']]'
+	return stri
+
 
 func lock():
-#	var s: Array = get_stack()
-#	var fu: String = str( s[0]["function"] )
-#	var li: String = str( s[0]["line"] )
-#	var so: String = str( s[0]["source"] )
-#	print( "trying lock: ", so, ", ", li, ", ", so )
+#	var ret: int = _mutex.try_lock()
+#	if ret != OK:
+	#if _locked:
+#		var try: String = _lock_location()
+#		print( "trying to lock at: ", try )
+#		print( "but already locked at: ", _locked_by )
 	_mutex.lock()
-#	print( "locked: ", so, ", ", li, ", ", so )
+	
+#	_locked_by = _lock_location()
+	_locked = true
 
 
 func unlock():
-#	var s: Array = get_stack()
-#	var fu: String = str( s[0]["function"] )
-#	var li: String = str( s[0]["line"] )
-#	var so: String = str( s[0]["source"] )
 	_mutex.unlock()
-#	print( "unlocked: ", so, ", ", li, ", ", so )
+	_locked = false
 

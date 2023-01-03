@@ -53,7 +53,7 @@ func _on_Save_pressed():
 	var full_name: String = SaveLoad.full_file_path( file_name )
 	
 	var S = load( "res://physics/singletons/save_load.gd" )
-	var root: Node = BodyCreator.root_node
+	var root: Node = RootScene.ref_frame_root
 	var data: Dictionary = S.serialize_all( root )
 	#var stri: String = JSON.print( data )
 	var file = File.new()
