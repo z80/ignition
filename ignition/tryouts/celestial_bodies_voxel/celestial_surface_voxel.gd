@@ -112,7 +112,7 @@ func init_forces():
 
 
 func process( delta: float, force_player_rf: RefFrameNode = null ):
-	process_geometry( force_player_rf )
+	_process_geometry( force_player_rf )
 	#process_rescale( force_player_rf )
 	_process_visualize_orbits()
 
@@ -121,7 +121,7 @@ func process( delta: float, force_player_rf: RefFrameNode = null ):
 
 
 
-func process_geometry( force_player_rf: RefFrameNode = null ):
+func _process_geometry( force_player_rf: RefFrameNode = null ):
 	var root: RefFrameRoot = RootScene.ref_frame_root
 	var player_rf: RefFrameNode
 	var player_ctrl: RefFrameNode
