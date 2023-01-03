@@ -36,9 +36,9 @@ margin_bottom = -6.85516
 
 [node name="CtrlGroups" parent="." instance=ExtResource( 3 )]
 margin_left = -128.378
-margin_top = 58.3445
+margin_top = 45.3445
 margin_right = -5.37842
-margin_bottom = 317.344
+margin_bottom = 304.344
 
 [node name="UiSaveLoad" parent="." instance=ExtResource( 4 )]
 visible = false
