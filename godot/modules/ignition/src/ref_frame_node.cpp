@@ -632,7 +632,7 @@ Dictionary RefFrameNode::serialize()
 {
 	Dictionary data;
 	const Dictionary se3_data = se3_.serialize();
-	data["se3"] = data;
+	data["se3"] = se3_data;
 	return data;
 }
 
