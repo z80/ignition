@@ -63,8 +63,8 @@ func _ign_pre_process( _delta: float ):
 	# Celestial body orbital movement time delta.
 	# It should be applied to planet movement and ref. frames 
 	# moving under gravitational influence of a planet.
-	var orbital_delta: float = _delta * _time_scale_evolution
-	update_planets( orbital_delta )
+	#var orbital_delta: float = _delta * _time_scale_evolution
+	update_planets()
 	
 	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
 	var ref_frames: Array = get_tree().get_nodes_in_group( group )
@@ -73,11 +73,14 @@ func _ign_pre_process( _delta: float ):
 		var deleted: bool =  rf.is_queued_for_deletion()
 		if deleted:
 			continue
-		rf.evolve( orbital_delta )
+		rf.update()
 	
 	# Relocate children of celestial bodies depending on the 
 	# gravitational influence and atmosphere bounds.
 	process_celestial_body_children()
+	
+	# Camera should be updated the last, after all poses are set.
+	update_camera( _delta )
 
 
 
@@ -90,9 +93,7 @@ func _ign_process( _delta: float ):
 
 
 func _ign_post_process( _delta: float ):
-	# Camera should be updated the last, after all poses are set.
-	update_camera( _delta )
-
+	pass
 
 
 func _ign_physics_pre_process( delta ):
@@ -158,11 +159,11 @@ func process_user_input( input: Dictionary ):
 
 
 
-func update_planets( delta: float ):
+func update_planets():
 	var group: String = Constants.PLANETS_GROUP_NAME
 	var all_spheres: Array = get_tree().get_nodes_in_group( group )
 	for sphere in all_spheres:
-		sphere.process( delta )
+		sphere.update()
 
 
 
@@ -271,7 +272,7 @@ func update_camera( delta: float ):
 		var sun: RefFrameNode = all_suns[0] as RefFrameNode
 		c.apply_sun( p_rf, sun )
 	
-	c.process( delta )
+	c.update( delta )
 
 
 

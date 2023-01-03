@@ -230,9 +230,20 @@ func get_node_sizes():
 
 
 func lock():
+#	var s: Array = get_stack()
+#	var fu: String = str( s[0]["function"] )
+#	var li: String = str( s[0]["line"] )
+#	var so: String = str( s[0]["source"] )
+#	print( "trying lock: ", so, ", ", li, ", ", so )
 	_mutex.lock()
+#	print( "locked: ", so, ", ", li, ", ", so )
 
 
 func unlock():
+#	var s: Array = get_stack()
+#	var fu: String = str( s[0]["function"] )
+#	var li: String = str( s[0]["line"] )
+#	var so: String = str( s[0]["source"] )
 	_mutex.unlock()
+#	print( "unlocked: ", so, ", ", li, ", ", so )
 

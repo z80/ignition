@@ -44,10 +44,37 @@ func process_inner(delta):
 
 func init():
 	.init()
-	
+	_apply_default_orientation()
 	#var t: Transform = Transform.IDENTITY
 	#t.origin = Vector3( 0.0, 1.0, 0.0 )
 	#set_t( t )
+
+
+
+func _apply_default_orientation():
+	var ClosestCelestialBody = preload( 'res://physics/utils/closest_celestial_body.gd' )
+	var celestial_body: RefFrameNode = ClosestCelestialBody.closest_celestial_body( self )
+	if not is_instance_valid( celestial_body ):
+		return
+	
+	var se3_rel: Se3Ref = self.relative_to( celestial_body )
+	var wanted_up: Vector3 = se3_rel.r.normalized()
+	
+	var co: float = wanted_up.y
+	var si: float = Vector2( wanted_up.x, wanted_up.z ).length()
+	var elevation: float = atan2( si, co )
+	var q_el: Quat = Quat( Vector3.RIGHT, elevation )
+	
+	co = wanted_up.z
+	si = wanted_up.x
+	var azimuth: float = atan2( si, co )
+	var q_az: Quat = Quat( Vector3.UP, azimuth )
+	
+	var q_total: Quat = q_az * q_el
+	
+	var se3: Se3Ref = get_se3()
+	se3.q = q_total
+	set_se3( se3 )
 
 
 func gui_classes( mode: Array = [] ):

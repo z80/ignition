@@ -10,6 +10,7 @@ script = ExtResource( 1 )
 VisualScene = ExtResource( 4 )
 PhysicalScene = ExtResource( 3 )
 AirDragScene = ExtResource( 2 )
+destruction_dv = 15.0
 allows_surface_attachments = false
 conducts_solid_fuel = false
 conducts_air = false

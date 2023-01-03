@@ -100,6 +100,10 @@ func init():
 
 
 
+
+
+
+
 func _traverse_interaction_nodes():
 	_traverse_interation_nodes_recursive( _visual )
 

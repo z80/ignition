@@ -61,7 +61,7 @@ func process_children():
 
 
 
-func evolve( _dt: float ):
+func update():
 	jump_if_needed()
 	
 	var ok: bool = _broad_tree.subdivide( self )

@@ -9,8 +9,8 @@ export(float) var max_force = 5.0
 
 export(float) var ang_vel        = 1.0
 export(float) var max_ang_vel    = 2.0
-export(float) var gain_angular   = 100.0
-export(float) var gain_d_angular = 100.0
+export(float) var gain_angular   = 10.0
+export(float) var gain_d_angular = 10.0
 export(float) var max_torque     = 5.0
 
 export(bool) var translation_abolute = false

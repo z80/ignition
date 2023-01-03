@@ -30,7 +30,7 @@ script = ExtResource( 2 )
 map_mode = true
 
 [node name="Construction" parent="Sun/Planet/Rotation" index="2" instance=ExtResource( 8 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10000, 0, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 9990, 0, 0 )
 
 [node name="RootUi" parent="." instance=ExtResource( 7 )]
 

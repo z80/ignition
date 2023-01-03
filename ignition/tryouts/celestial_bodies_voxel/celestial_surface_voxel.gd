@@ -111,7 +111,7 @@ func init_forces():
 
 
 
-func process( delta: float, force_player_rf: RefFrameNode = null ):
+func update( force_player_rf: RefFrameNode = null ):
 	_process_geometry( force_player_rf )
 	#process_rescale( force_player_rf )
 	_process_visualize_orbits()

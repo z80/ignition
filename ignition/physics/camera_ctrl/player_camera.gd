@@ -48,8 +48,6 @@ var _state = {
 }
 
 
-var current_orientation: Quat = Quat.IDENTITY
-
 var _target: Spatial = null
 
 var _camera: Camera = null
@@ -201,9 +199,7 @@ func _set_sensitivity( sens ):
 
 
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	_init_basis()
+
 
 
 func _exit_tree():
@@ -244,30 +240,10 @@ func _input( event ):
 	#print( "mouse displacement: ", _mouse_displacement )
 
 
-func set_up_vector( celestial_body: RefFrameNode ):
-	return
-	
-	var p: RefFrameNode = get_parent()
-	if not is_instance_valid(p):
-		return
-	
-	var se3: Se3Ref = celestial_body.relative_to( p )
-	var up: Vector3 = -se3.r.normalized()
-	
-	var current_up: Vector3 = current_orientation.xform( Vector3.UP )
-	var rot: Vector3 = current_up.cross( up )
-	# Assume a linear approximation.
-	var co2: float = 1.0
-	rot *= 0.025
-	var q: Quat = Quat( rot.x, rot.y, rot.z, 1.0)
-	q = q.normalized()
-	
-	current_orientation = q * current_orientation
-	current_orientation = current_orientation.normalized()
 
 
 # It should be called manually
-func process( _delta: float ):
+func update( _delta: float ):
 	var input: Dictionary = UserInput.get_input()
 	var mm: bool = input.has( "ui_map" )
 	_set_map_mode( mm )
@@ -394,40 +370,22 @@ func _process_tps_azimuth( _delta ):
 	
 	var se3_rel: Se3Ref = player_ctrl.relative_to( celestial_body )
 	var wanted_up: Vector3 = se3_rel.r.normalized()
-	var actual_up: Vector3  = current_orientation.xform( Vector3.UP )
-	var rot_vector: Vector3 = actual_up.cross( wanted_up )
-
-	player_ctrl.debug = false
-	celestial_body.debug = false
-	self.debug = false
-
-	var co: float = actual_up.dot( wanted_up )
-	var si: float = rot_vector.length()
-	var adj_quat: Quat
-	if si < 0.0001:
-		adj_quat = Quat.IDENTITY
-	else:
-		var angle: float = atan2( si, co )
-		var a_2: float = angle * 0.5
-		var co_2: float = cos( a_2 )
-		var si_2: float = sin( a_2 )
-		rot_vector = rot_vector * (si_2 / si)
-		adj_quat = Quat( rot_vector.x, rot_vector.y, rot_vector.z, co_2 )
-		adj_quat = adj_quat.normalized()
-	current_orientation = adj_quat * current_orientation
 	
-	# q_player_relative_to_celestial_body = current_orientation * something_unwanted
-	# something_unwanted = inverse(current_orientation) * q_player_relative_to_celestial_body
+	var co: float = wanted_up.y
+	var si: float = Vector2( wanted_up.x, wanted_up.z ).length()
+	var elevation: float = atan2( si, co )
+	var q_el: Quat = Quat( Vector3.RIGHT, elevation )
 	
-	# q_camera_relative_to_celestial_body = q_player_relative_to_celestial_body * q
-	# We want it to be equal to "current_orientation"
-	# I.e.
-	# q_camera_relative_to_celestial_body = current_orientation
-	# q = inverse(q_player_relative_to_celestial_body) * current_orientation
+	co = wanted_up.z
+	si = wanted_up.x
+	var azimuth: float = atan2( si, co )
+	var q_az: Quat = Quat( Vector3.UP, azimuth )
+	
+	var q_total: Quat = q_az * q_el
 	
 	var q_player_relative_to_celestial_body: Quat = se3_rel.q
 	var inv_q_player_relative_to_celestial_body: Quat = q_player_relative_to_celestial_body.inverse()
-	var q_camera_base: Quat = inv_q_player_relative_to_celestial_body * current_orientation
+	var q_camera_base: Quat = inv_q_player_relative_to_celestial_body * q_total
 	
 	
 	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
@@ -508,8 +466,6 @@ func _process_map_mode( _delta: float ):
 	_mouse_displacement = Vector2.ZERO
 
 
-func _init_basis():
-	current_orientation = Quat.IDENTITY
 
 
 

@@ -26,6 +26,7 @@ script = ExtResource( 1 )
 VisualScene = ExtResource( 3 )
 PhysicalScene = ExtResource( 4 )
 AirDragScene = ExtResource( 5 )
+destruction_dv = 15.0
 part_class = 3
 conducts_liquid_fuel = false
 conducts_solid_fuel = false
@@ -42,4 +43,3 @@ se3 = Object(Se3Ref,"r":Vector3( 0, 0, 0 ),"v":Vector3( 0, 0, 0 ),"w":Vector3( 0
 [node name="Cylinder_2" type="MeshInstance" parent="OctreeMeshGd"]
 visible = false
 mesh = SubResource( 1 )
-material/0 = null
