@@ -45,7 +45,7 @@ func _find_planet_surface():
 	
 	return null
 
-func async_update_population_prepare( all_surfaces: Node, at_in_source: Vector3, scaler: DistanceScalerBaseRef ):
+func async_update_population_prepare( at_in_source: Vector3, scaler: DistanceScalerBaseRef ):
 	#clear()
 	_get_voxel_surface()
 	
