@@ -565,7 +565,7 @@ func parent_bodies():
 			continue
 		if body == RootScene.ref_frame_root.player_camera:
 			continue
-			body = body.root_most_body()
+		body = body.root_most_body()
 		var cl_name: String = body.get_class()
 		if (cl_name == "PhysicsBodyBase") or (cl_name == "Part"):
 			if not (body in bodies):
@@ -638,8 +638,8 @@ func on_delete_rescue_camera():
 
 func re_parent_children_on_delete():
 	var orbiting: bool = is_orbiting()
-	# If orbiting, don't re-arent children.
-	# There probably is a reson for this deletion.
+	# If orbiting, don't re-parent children.
+	# There probably is a reason for this deletion.
 	if orbiting:
 		return
 	
