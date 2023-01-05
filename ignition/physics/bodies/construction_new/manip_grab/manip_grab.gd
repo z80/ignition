@@ -389,7 +389,6 @@ func _process_dragging():
 	
 	if r != _dragging.position:
 		_dragging.position = r
-		emit_signal( "position", r )
 
 
 

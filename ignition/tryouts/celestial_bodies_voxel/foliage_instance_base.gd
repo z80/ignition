@@ -6,6 +6,7 @@ class_name FoliageInstanceBase
 # has visual.
 
 export(PackedScene) var VisualScene = null
+export(float) var scale = 1.0
 
 var _visual: Spatial = null
 
@@ -41,9 +42,10 @@ func _create_objects():
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
+func _ign_pre_process(delta):
 	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var se3: Se3Ref = self.relative_to( cam )
 	
 	var t: Transform = se3.transform
+	t = t.scaled( Vector3( scale, scale, scale ) )
 	_visual.transform = t
