@@ -9,11 +9,15 @@ namespace Ign
 void RefFrameRotationNode::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("init", "up", "period_hrs"), &RefFrameRotationNode::init );
+
+	//ClassDB::bind_method( D_METHOD("dbg_reset"), &RefFrameRotationNode::dbg_reset );
+	//ClassDB::bind_method( D_METHOD("dbg_print"), &RefFrameRotationNode::dbg_print );
 }
 
 RefFrameRotationNode::RefFrameRotationNode()
 	: RefFrameNode()
 {
+	//dbg_reset();
 }
 
 RefFrameRotationNode::~RefFrameRotationNode()
@@ -55,6 +59,7 @@ bool RefFrameRotationNode::deserialize( const Dictionary & data )
 
 void RefFrameRotationNode::_ign_physics_pre_process( real_t delta )
 {
+	//dbg_process( delta );
 	this->se3_ = cr.process( delta );
 	RefFrameNode::_ign_physics_pre_process( delta );
 }
@@ -68,6 +73,35 @@ void RefFrameRotationNode::_ign_physics_post_process( real_t delta )
 {
 	RefFrameNode::_ign_physics_post_process( delta );
 }
+
+
+//void RefFrameRotationNode::dbg_process( real_t delta )
+//{
+//	qty_calls += 1;
+//	total_time += delta;
+//}
+//
+//void RefFrameRotationNode::dbg_reset()
+//{
+//	qty_calls = 0;
+//	total_time = 0.0;
+//}
+//
+//void RefFrameRotationNode::dbg_print()
+//{
+//	const Integer period_ticks = cr.period;
+//	const Integer time_ticks   = cr.time;
+//
+//	const String stri = String( "calls: " ) +
+//		                itos(qty_calls) +
+//						String( "; total_time: " ) +
+//						rtos(total_time) + 
+//					    String( "; ticks: " ) +
+//						itos(time_ticks) +
+//						String( "; period: " ) +
+//						itos(period_ticks);
+//		print_line( stri );
+//}
 
 
 

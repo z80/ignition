@@ -1,5 +1,5 @@
 
-extends RefFrameNode
+extends RefFrameRotationNode
 
 export(PackedScene) var collision_surface_scene = null
 
@@ -86,5 +86,7 @@ func _create_collision_surfaces():
 		collision_surf.rebuild_surface( phys, self, surface_source )
 		
 		_collision_surfaces[phys] = collision_surf
+
+
 
 

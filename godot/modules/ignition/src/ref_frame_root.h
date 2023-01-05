@@ -25,8 +25,13 @@ public:
 protected:
 	void _notification( int p_notification );
 
+	void _pre_process_children( RefFrameNode * ref_frame, real_t delta );
 	void _process_children( RefFrameNode * ref_frame, real_t delta );
+	void _post_process_children( RefFrameNode * ref_frame, real_t delta );
+
+	void _physics_pre_process_children( RefFrameNode * ref_frame, real_t delta );
 	void _physics_process_children( RefFrameNode * ref_frame, real_t delta );
+	void _physics_post_process_children( RefFrameNode * ref_frame, real_t delta );
 
 public:
 	Float time_dilation;

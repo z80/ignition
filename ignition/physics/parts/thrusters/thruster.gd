@@ -298,7 +298,7 @@ func _setup_thrust():
 			var pressure: float = 0.0
 			var cb: CelestialBody = ClosestCelestialBody.closest_celestial_body( self )
 			if cb != null:
-				var cs: CelestialSurface = cb as CelestialSurface
+				var cs: CelestialSurfaceVoxel = cb as CelestialSurfaceVoxel
 				if cs != null:
 					var se3: Se3Ref = self.relative_to( cs )
 					pressure = cs.air_pressure( se3 )

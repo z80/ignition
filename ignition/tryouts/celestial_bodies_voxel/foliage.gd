@@ -45,7 +45,7 @@ func _find_planet_surface():
 	
 	return null
 
-func async_update_population_prepare( at_in_source: Vector3, scaler: DistanceScalerBaseRef ):
+func async_update_population_prepare( source_se3: Se3Ref, at_in_source: Vector3, scaler: DistanceScalerBaseRef ):
 	#clear()
 	_get_voxel_surface()
 	
@@ -60,6 +60,7 @@ func async_update_population_prepare( at_in_source: Vector3, scaler: DistanceSca
 	
 	var data: AsyncPopulationUpdataData = AsyncPopulationUpdataData.new()
 	data.foliage_parent = _find_planet_surface() # This one should be planet.get_rotation()
+	data.source_se3     = source_se3
 	data.voxel_surface  = _voxel_surface
 	data.voxel_nodes    = []
 	data.asset_creators = creators.duplicate()
@@ -85,28 +86,6 @@ func async_update_population_prepare( at_in_source: Vector3, scaler: DistanceSca
 	
 	return data
 
-
-
-func async_update_view_point_prepare( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
-	#if _busy_qty != 0:
-	#	return false
-	
-	_get_voxel_surface()
-	#_voxel_surface.source_se3 = source_se3
-
-	var data: AsyncViewPointData = AsyncViewPointData.new()
-	data.voxel_surface = _voxel_surface
-	data.items         = {}
-	data.source_se3    = source_se3
-	data.scaler        = scaler
-	
-	for h_path in _created_instances:
-		var items: Array = _created_instances[h_path]
-		items = items.duplicate()
-		#var args: Array = [ items, voxels, source_se3, scaler ]
-		data.items[h_path] = items
-	
-	return data
 
 
 
@@ -137,6 +116,7 @@ func async_populate_node_worker( data: AsyncPopulationUpdataData ):
 	var scaler: DistanceScalerBaseRef = data.scaler
 	var voxel_nodes: Array = data.voxel_nodes
 	var foliage_parent: RefFrameNode = data.foliage_parent
+	var source_se3: Se3Ref = data.source_se3
 	
 	var all_created_instances: Dictionary = {}
 	
@@ -189,7 +169,7 @@ func async_populate_node_worker( data: AsyncPopulationUpdataData ):
 				if not create:
 					continue
 				
-				var instance: RefFrameNode = creator.create( voxel_node, se3, norm, rand, scaler )
+				var instance: RefFrameNode = creator.create( voxel_node, source_se3, se3, norm, rand, scaler )
 				instance.place( foliage_parent, se3 )
 				#print( "created ", instance )
 				created_instances.push_back( instance )
@@ -242,15 +222,6 @@ func async_populate_node_worker_finished( data: AsyncPopulationUpdataData ):
 
 
 
-func async_update_view_point_worker( data: AsyncViewPointData ):
-	pass
-
-
-
-
-func async_update_view_point_worker_finished( data: AsyncViewPointData ):
-	pass
-	
 
 
 
@@ -279,6 +250,7 @@ func _get_creator():
 
 
 class AsyncPopulationUpdataData:
+	var source_se3: Se3Ref
 	var all_surfaces: Node
 	var foliage_parent: Node
 	var voxel_surface: MarchingCubesDualGd
@@ -291,11 +263,6 @@ class AsyncPopulationUpdataData:
 
 
 
-class AsyncViewPointData:
-	var source_se3: Se3Ref
-	var scaler: DistanceScalerBaseRef
-	var voxel_surface: MarchingCubesDualGd
-	var items: Dictionary
 
 
 

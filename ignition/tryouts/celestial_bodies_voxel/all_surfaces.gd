@@ -159,10 +159,6 @@ func _async_rebuild_worker( ad: AsyncData ):
 	var scaler: DistanceScalerBaseRef = ad.scaler
 	ad.callback_data = surf.rebuild_surface( source_se3, node_size_strategy, scaler )
 	
-#	var worker_index: int = ad.surface_index
-#	if worker_index == _foliage_surface_index:
-#		var foliage_data = ad.foliage_data
-#		_foliage.async_populate_node_worker( foliage_data )
 	return ad
 
 
@@ -182,7 +178,7 @@ func _async_rebuild_worker_finished( ad: AsyncData ):
 		
 		surf.lock()
 		
-		var foliage_data = _foliage.async_update_population_prepare( at_in_source, scaler )
+		var foliage_data = _foliage.async_update_population_prepare( source_se3, at_in_source, scaler )
 		ad.foliage_data = foliage_data
 		
 		_foliage.async_populate_node_worker( foliage_data )
@@ -232,9 +228,6 @@ func _async_rescale_start( source_se3: Se3Ref ):
 		ad.wireframe       = wireframe
 		ad.surface_index   = i
 		ad.local_point_se3 = local_point_se3
-#		if i == _foliage_surface_index:
-#			var foliage_data = _foliage.async_update_view_point_prepare( source_se3, scaler )
-#			ad.foliage_data = foliage_data
 
 		WorkersPool.push_back_with_arg( self, "_async_rescale_worker", "_async_rescale_worker_finished", ad )
 
@@ -248,11 +241,6 @@ func _async_rescale_worker( ad: AsyncData ):
 	var scaler: DistanceScalerBaseRef = ad.scaler
 	surf.rescale_surface( source_se3, local_point_se3, scaler )
 	
-#	var surface_index: int = ad.surface_index
-#	if surface_index == _foliage_surface_index:
-#		var foliage_data = ad.foliage_data
-#		_foliage.async_update_view_point_worker( foliage_data )
-	
 	return ad
 
 
@@ -261,21 +249,7 @@ func _async_rescale_worker_finished( ad: AsyncData ):
 	var surf: Node = ad.surface
 	var wireframe: bool = ad.wireframe
 	surf.rescale_surface_finished( wireframe )
-
-	var surface_index: int = ad.surface_index
-	if surface_index == _foliage_surface_index:
-		var source_se3: Se3Ref            = ad.se3
-		var scaler: DistanceScalerBaseRef = ad.scaler
-		
-		surf.lock()
-		
-		var foliage_data = _foliage.async_update_view_point_prepare( source_se3, scaler )
-		
-		_foliage.async_update_view_point_worker( foliage_data )
-		_foliage.async_update_view_point_worker_finished( foliage_data )
-		
-		surf.unlock()
-
+	
 	_async_workers_qty -= 1
 	
 	# Disable busyness flag in the very-very end.

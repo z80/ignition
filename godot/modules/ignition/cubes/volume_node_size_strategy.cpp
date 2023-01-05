@@ -104,7 +104,10 @@ bool VolumeNodeSizeStrategy::can_subdivide( const Vector3d & node_at, const Floa
 	const Vector3d a  = node_at - focal_point;
 	const Float abs_a = a.Length();
 	if (abs_a <= min_dist)
-		return node_size;
+	{
+		const bool ret = (node_size > min_node_size);
+		return ret;
+	}
 
 	// Min node size at current distance.
 	const Float min_size_at_distance = min_node_size * abs_a / min_dist;

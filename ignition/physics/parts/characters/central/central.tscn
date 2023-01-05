@@ -18,3 +18,4 @@ conducts_solid_fuel = false
 conducts_electricity = false
 conducts_air = false
 mass = 0.1
+max_force = 50.0

@@ -111,9 +111,9 @@ func construction_activate():
 	var PanelParts = load( "res://physics/bodies/construction_new/panel_parts/panel_combined.tscn" )
 	panel_parts = PanelParts.instance()
 	#panel_parts.construction = self
-	panel_parts.connect( "block_picked", self, "on_create_block" )
-	panel_parts.connect( "launch",       self, "on_launch" )
-	panel_parts.connect( "abort",        self, "on_abort" )
+	var _ok: int = panel_parts.connect( "block_picked", self, "on_create_block" )
+	_ok = panel_parts.connect( "launch",       self, "on_launch" )
+	_ok = panel_parts.connect( "abort",        self, "on_abort" )
 	var panel_parent: Control = RootScene.get_root_for_gui_panels()
 	panel_parent.add_child( panel_parts )
 	

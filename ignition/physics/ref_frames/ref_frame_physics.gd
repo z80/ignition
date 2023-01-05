@@ -311,7 +311,7 @@ func print_all_ref_frames():
 		DDD.important()
 		DDD.print( "rf name: " + rf.name + " r: " + str(se3.r) )
 		DDD.print( "bodies: " )
-		var bodies: Array = rf.child_bodies( false )
+		var bodies: Array = rf.child_bodies()
 		for body in bodies:
 			var name: String = body.name
 			se3 = body.get_se3()

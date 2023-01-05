@@ -237,25 +237,8 @@ func process_celestial_body_children():
 
 
 func update_camera( delta: float ):
-	var ClosestForceSource = load( "res://physics/utils/closest_force_source.gd" )
-	# Update camera orientation.
-#	var pc: PhysicsBodyBase = RootScene.ref_frame_root.player_control
-#	if pc == null:
-#		return
-	
 	var c: RefFrameNode = _get_camera()
 	
-	# Need to redo it based on purely closest celestial body !!!!!!!!!!!!!!!
-#	var defines_vertical: bool = rf.force_source.defines_vertical()
-#	if defines_vertical:
-#		if pc == null:
-#			return
-#		if not c.has_method( "process_basis" ):
-#			return
-#		var up: Vector3 = rf.force_source.up( rf, pc )
-#		up = pc.q().xform( up )
-#		c.process_basis( up )
-		
 	# For the body under player control find the closest celestial
 	# body. If found, specify the atmosphere parameters.
 	var ClosestCelestialBody = load( "res://physics/utils/closest_celestial_body.gd" )
@@ -461,6 +444,8 @@ func set_time_scale( acc: int ):
 			_time_scale_string    = "10000000.0"
 	
 	_time_scale = acc
+	
+	self.time_dilation = _time_scale_evolution
 	
 	# Apply physics time acceleration.
 	# For now it doesn't work correctly.

@@ -36,8 +36,14 @@ public:
 	// Place camera.
 	virtual void _ign_physics_post_process( real_t delta ) override;
 
+	//void dbg_process( real_t delta );
+	//void dbg_reset();
+	//void dbg_print();
 public:
 	CelestialRotation cr;
+
+	//Integer qty_calls;
+	//Float total_time;
 };
 
 
