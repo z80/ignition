@@ -365,7 +365,7 @@ func split_if_needed():
 	# it is in bodies_a.
 	var p: Node = get_parent()
 	var root: RefFrameRoot = get_ref_frame_root()
-	var rf: RefFrame = root.create_ref_frame_physics()
+	var rf: RefFramePhysics = root.create_ref_frame_physics()
 	rf.change_parent( p )
 	var se3: Se3Ref = self.get_se3()
 	

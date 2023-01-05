@@ -25,7 +25,7 @@ const IDLE_SPEED_THRESHOLD: float = 0.05
 
 
 const BODY_EXCLUDE_DIST: float = 1000.0
-const BODY_INCLUDE_DIST: float = 800.0
+const BODY_INCLUDE_DIST: float = 11.0 #800.0
 
 # Icon shows up only if closer than this distance
 const INTERACT_ICON_DIST: float = 30.0
