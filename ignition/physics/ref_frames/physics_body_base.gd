@@ -49,17 +49,23 @@ func get_class():
 
 
 func _enter_tree():
-	print( "_enter_tree called on PhysicsBodyBase" )
+	var file_name: String = self.filename
+	var node_path: String = self.get_path()
+	print( "_enter_tree called on PhysicsBodyBase; " + file_name + "; path: " + node_path )
 	create_physical()
 
 
 
 func _exit_tree():
+	var file_name: String = self.filename
+	var node_path: String = self.get_path()
+	print( "_exit_tree called on PhysicsBodyBase; " + file_name + "; path: " + node_path )
 	remove_physical()
 	
 	var to_be_deleted: bool = is_queued_for_deletion()
 	if to_be_deleted:
 		on_delete()
+		print( "deleted " + file_name + "; path: " + node_path )
 
 
 
@@ -75,7 +81,7 @@ func _ready():
 		_octree_mesh.rebuild()
 	
 	# Force visualizer. This is purely for debugging purposes.
-	if Constants.DEBUG and (force == null):
+	if Constants.DEBUG and (force == null) and false:
 		var Force = preload( "res://physics/force_source/force_visualizer.tscn" )
 		force = Force.instance()
 		RootScene.get_root_for_visuals().add_child( force )
@@ -163,12 +169,17 @@ func on_delete():
 	if force != null:
 		force.name = force.name + "_to_be_deleted"
 		force.queue_free()
+		force = null
+	
 	if _visual != null:
 		_visual.name = _visual.name + "_to_be_deleted"
 		_visual.queue_free()
+		_visual = null
+	
 	if _physical != null:
 		_physical.name = _physical.name + "_to_be_deleted"
 		_physical.queue_free()
+		_physical = null
 
 
 
@@ -346,7 +357,7 @@ func _create_visual( Visual ):
 	_traverse_shock_wave_visuals()
 	
 	# Own ref. frame visualizer
-	if Constants.DEBUG and (get_class() != "SurfaceProvider"):
+	if Constants.DEBUG and (get_class() != "SurfaceProvider") and false:
 		var OwnRf = preload( "res://physics/force_source/own_ref_frame_visualizer.tscn" )
 		var rf = OwnRf.instance()
 		_visual.add_child( rf )
@@ -372,11 +383,11 @@ func _create_physical( Physical ):
 		return null
 	
 	# Make sure that parent is physics reference frame.
-	var parent_rf = parent_physics_ref_frame()
+	var parent_rf: RefFrameNode = parent_physics_ref_frame()
 	if parent_rf == null:
 		return null
 	
-	var p = Physical.instance()
+	var p: Node = Physical.instance()
 	
 	var t: Transform = self.t()
 	p.transform = t

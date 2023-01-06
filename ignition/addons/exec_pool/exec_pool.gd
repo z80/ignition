@@ -171,7 +171,7 @@ func _create_worker_thread():
 	t = Thread.new()
 	_threads_in_work.push_back( t )
 	var ret: int = t.start( self, "_process_tasks", t )
-	print( "task creation err code: ", ret )
+	#print( "task creation err code: ", ret )
 	
 	return t
 

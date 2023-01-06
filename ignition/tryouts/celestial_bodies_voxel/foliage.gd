@@ -128,7 +128,7 @@ func async_populate_node_worker( data: AsyncPopulationUpdataData ):
 		rand.seed = s
 		
 		var h_path: String = voxel_node.hierarchy_path()
-		print( "entered node ", h_path )
+		#print( "entered node ", h_path )
 		
 		_mc_mutex.lock()
 		var center: Vector3 = voxel_node.center_vector()

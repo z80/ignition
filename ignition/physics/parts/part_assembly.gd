@@ -137,7 +137,7 @@ func change_parent( p: Node = null ):
 	# Create connecting joints.
 	for b in sub_bodies:
 		# Only parts have this method, so check if it exists first.
-		var has: bool = b.has_method( "deactivate_nodes" )
+		var has: bool = b.has_method( "activate_nodes" )
 		if has:
 			b.activate_nodes( false )
 

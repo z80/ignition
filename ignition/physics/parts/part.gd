@@ -639,9 +639,9 @@ func process_user_input_group( _input: Dictionary ):
 func create_super_body():
 	var p = self.get_parent()
 	var sb = PartAssembly.new()
-	sb.debug = true
+#	sb.debug = true
 	sb.change_parent( p )
-	sb.debug = false
+#	sb.debug = false
 	var se3: Se3Ref = self.get_se3()
 	sb.set_se3( se3 )
 	

@@ -29,9 +29,6 @@ script = ExtResource( 2 )
 [node name="PlayerCamera" parent="Sun/Planet/Rotation/RefFramePhysics/Character" instance=ExtResource( 3 )]
 map_mode = true
 
-[node name="AnotherCharacter" parent="Sun/Planet/Rotation/RefFramePhysics" instance=ExtResource( 4 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2 )
-
 [node name="Construction" parent="Sun/Planet/Rotation" index="2" instance=ExtResource( 8 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 9990, 0, 0 )
 

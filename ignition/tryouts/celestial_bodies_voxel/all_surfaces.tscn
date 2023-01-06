@@ -10,6 +10,7 @@ script = ExtResource( 3 )
 rebuild_dist = 50.0
 
 [node name="Surface" parent="." instance=ExtResource( 2 )]
+solid = null
 
 [node name="Foliage" parent="Surface" instance=ExtResource( 1 )]
 creators = [ ExtResource( 4 ) ]

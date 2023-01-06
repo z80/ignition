@@ -91,9 +91,9 @@ func rebuild_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_s
 	# And now if we have initiate asynchronous surface build.
 	if need_rebuild:
 		_is_busy = true
-		WorkersPool.push_back_with_arg( self, "_rebuild_surface_worker", "_rebuild_surface_finished", data )
-		#_rebuild_surface_worker( data )
-		#_rebuild_surface_finished( data )
+		#WorkersPool.push_back_with_arg( self, "_rebuild_surface_worker", "_rebuild_surface_finished", data )
+		_rebuild_surface_worker( data )
+		_rebuild_surface_finished( data )
 
 
 

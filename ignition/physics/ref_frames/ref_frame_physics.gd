@@ -115,13 +115,8 @@ func add_physics_body( body: RigidBody ):
 
 
 
-func init_physics():
-	_create_physics_environment()
 
 
-
-func finit_physics():
-	_destroy_physics_environment()
 
 
 
@@ -337,7 +332,7 @@ func split_if_needed():
 	
 	DDD.important()
 	DDD.print( "splitting ref frame " + self.name )
-	print( "just before split: " )
+	DDD.print( "just before split: " )
 	print_all_ref_frames()
 	#_debug_distances( bodies )
 	
@@ -465,6 +460,7 @@ func self_delete_if_unused():
 	
 	# If there are no bodies, delete it.
 	if ( qty < 1 ):
+		on_delete()
 		self.queue_free()
 		return true
 	
@@ -484,6 +480,7 @@ func self_delete_if_unused():
 				moving_qty += 1
 		
 		if moving_qty == 0:
+			on_delete()
 			self.queue_free()
 			return true
 	
@@ -610,17 +607,17 @@ func _exit_tree():
 
 
 func on_delete():
-	re_parent_children_on_delete()
+	_re_parent_children_on_delete()
 	# Just in case if camera is parented to this rf directly.
-	on_delete_rescue_camera()
-	finit_physics()
+	_on_delete_rescue_camera()
+	_destroy_physics_environment()
 	
 
 
 
 
 
-func on_delete_rescue_camera():
+func _on_delete_rescue_camera():
 	var cam: RefFrameNode  = RootScene.ref_frame_root.player_camera
 	if not is_instance_valid( cam ):
 		return
@@ -636,7 +633,7 @@ func on_delete_rescue_camera():
 
 
 
-func re_parent_children_on_delete():
+func _re_parent_children_on_delete():
 	var orbiting: bool = is_orbiting()
 	# If orbiting, don't re-parent children.
 	# There probably is a reason for this deletion.
@@ -647,10 +644,9 @@ func re_parent_children_on_delete():
 	if (p == null) or (not is_instance_valid(p)):
 		return
 	
-	var qty: int = get_child_count()
-	for i in range(qty):
-		var ch: RefFrameNode = get_child(i)
-		if ch != null:
+	var children: Array = root_most_child_bodies()
+	for ch in children:
+		if (ch != null) and is_instance_valid(ch):
 			ch.change_parent( p )
 
 

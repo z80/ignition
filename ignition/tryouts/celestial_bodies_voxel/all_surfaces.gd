@@ -145,9 +145,9 @@ func _async_rebuild_start( source_se3: Se3Ref ):
 		ad.wireframe     = wireframe
 		ad.surface_index = i
 		
-		WorkersPool.push_back_with_arg( self, "_async_rebuild_worker", "_async_rebuild_worker_finished", ad )
-		#var ret = _async_rebuild_worker( ad )
-		#_async_rebuild_worker_finished( ret )
+		#WorkersPool.push_back_with_arg( self, "_async_rebuild_worker", "_async_rebuild_worker_finished", ad )
+		var ret = _async_rebuild_worker( ad )
+		_async_rebuild_worker_finished( ret )
 	
 
 
@@ -229,7 +229,9 @@ func _async_rescale_start( source_se3: Se3Ref ):
 		ad.surface_index   = i
 		ad.local_point_se3 = local_point_se3
 
-		WorkersPool.push_back_with_arg( self, "_async_rescale_worker", "_async_rescale_worker_finished", ad )
+		#WorkersPool.push_back_with_arg( self, "_async_rescale_worker", "_async_rescale_worker_finished", ad )
+		var ret = _async_rescale_worker( ad )
+		_async_rescale_worker_finished( ret )
 
 
 
