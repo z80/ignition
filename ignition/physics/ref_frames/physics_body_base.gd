@@ -351,7 +351,7 @@ func _create_visual( Visual: PackedScene ):
 	# Check if it is a RigidBody.
 	# If it is, set mode to kinematic.
 	var rigid_body: RigidBody = v as RigidBody
-	if RigidBody != null:
+	if rigid_body != null:
 		rigid_body.mode = RigidBody.MODE_KINEMATIC
 	
 	_visual = v
