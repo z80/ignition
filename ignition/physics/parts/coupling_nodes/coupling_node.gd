@@ -68,7 +68,7 @@ func _compute_relative_to_owner_recursive( n: Node, t: Transform ):
 	if n == ow:
 		return t
 	
-	var p: Node = get_parent()
+	var p: Node = n.get_parent()
 	var ret: Transform = _compute_relative_to_owner_recursive( p, t )
 	return ret
 
