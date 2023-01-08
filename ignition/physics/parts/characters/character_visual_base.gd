@@ -4,7 +4,7 @@ class_name CharacterVisualBase
 
 var target_tps: Spatial = null
 var target_fps: Spatial = null
-
+var body: PhysicsBodyBase = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -19,3 +19,9 @@ func set_speed_normalized( _s: float, _v: Vector3 ):
 
 
 
+
+func _integrate_forces( state ):
+	if body == null:
+		return
+	body.integrate_forces( self, state )
+	

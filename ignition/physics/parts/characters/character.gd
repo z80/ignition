@@ -156,7 +156,7 @@ func create_physical():
 	if boarding_mode == BoardingMode.INSIDE:
 		return
 	
-	var ph: Node =  _create_physical( PhysicalScene )
+	var ph: Node =  _create_physical( VisualScene )
 	# Physics body calls "integrate_forces" method from this instance.
 	# Becasue of that it is necesary to provide the reference to "self".
 	# Check for "null" beacuse when there is no parent ref. frame, 
