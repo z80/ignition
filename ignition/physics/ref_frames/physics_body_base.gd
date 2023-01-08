@@ -105,13 +105,14 @@ func init():
 
 
 func _traverse_interaction_nodes():
-	_traverse_interation_nodes_recursive( _visual )
+	var _ok: bool = _traverse_interation_nodes_recursive( _visual )
+	
 
 
 
 func _traverse_interation_nodes_recursive( p: Node ):
 	if p == null:
-		return
+		return false
 	
 	var s: Spatial = p as Spatial
 	if s != null:
@@ -119,11 +120,16 @@ func _traverse_interation_nodes_recursive( p: Node ):
 		if node != null:
 			# Specify the reference to itself.
 			node.target = self
+			return true
 	
 	var qty: int = p.get_child_count()
 	for i in range( qty ):
 		var ch: Node = p.get_child( i )
-		_traverse_interation_nodes_recursive( ch )
+		var ok: bool = _traverse_interation_nodes_recursive( ch )
+		if ok:
+			return true
+	
+	return false
 
 
 
@@ -270,7 +276,7 @@ func distance( other: RefFrameNode ):
 
 
 
-func _process( delta ):
+func _ign_pre_process( delta ):
 	process_inner( delta )
 
 
@@ -282,7 +288,7 @@ func process_inner( _delta ):
 
 
 
-func _physics_process( delta ):
+func _ign_physics_pre_process( delta ):
 	update_state_from_physics( delta )
 
 
@@ -373,9 +379,6 @@ func pivot_fps( _ind: int = 0 ):
 
 
 func _create_physical( Physical: PackedScene ):
-	if body_state != BodyState.DYNAMIC:
-		return null
-	
 	if _physical != null:
 		return _physical
 	
@@ -388,6 +391,8 @@ func _create_physical( Physical: PackedScene ):
 		return null
 	
 	var p: RigidBody = Physical.instance()
+	
+	#p.visible = false
 	
 	var t: Transform = self.t()
 	p.transform = t

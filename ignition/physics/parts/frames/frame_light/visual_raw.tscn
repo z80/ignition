@@ -40,12 +40,10 @@ spot_angle = 30.0
 
 [node name="LampMesh" type="MeshInstance" parent="."]
 mesh = SubResource( 1 )
-material/0 = null
 
 [node name="Lamp" type="MeshInstance" parent="."]
 transform = Transform( 0.3, 0, 0, 0, 0.1, 0, 0, 0, 0.3, 0, 0.23245, 0 )
 mesh = SubResource( 3 )
-material/0 = null
 
 [node name="InteractionNode" type="Spatial" parent="."]
 script = ExtResource( 2 )

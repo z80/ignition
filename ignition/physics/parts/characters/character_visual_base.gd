@@ -8,8 +8,6 @@ var body: PhysicsBodyBase = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	target_tps = get_node("target_tps")
-	target_fps = get_node("target_fps")
 	set_speed_normalized( 0.0, Vector3.ZERO )
 
 

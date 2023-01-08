@@ -42,6 +42,11 @@ func _process( delta ):
 
 
 func _set_icon_visible( en: bool ):
+	# In physical instance of the same scene 
+	# target is not specified.
+	if (target == null) or (not is_instance_valid(target)):
+		return
+	
 	if icon_visible:
 		var under_window: bool = _icon_under_window()
 		if under_window:

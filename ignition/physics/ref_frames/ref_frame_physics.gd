@@ -313,8 +313,8 @@ func print_all_ref_frames():
 			DDD.print( name + ": " + str(se3.r) )
 
 
-func split_if_needed():
-	var bodies = root_most_child_bodies()
+func split_if_needed() -> bool:
+	var bodies: Array = root_most_child_bodies()
 	if ( bodies.size() < 2 ):
 		return false
 	
@@ -385,9 +385,9 @@ func split_if_needed():
 	#var dist_2: float = distance( rf )
 	#_debug_distances( bodies )
 	#dist_2 = distance( rf )
-
 	
 	return true 
+
 
 
 func merge_if_needed():

@@ -6,7 +6,6 @@
 
 [node name="FrameBoxVisual" type="MeshInstance"]
 mesh = SubResource( 1 )
-material/0 = null
 
 [node name="InteractionNode" type="Spatial" parent="."]
 script = ExtResource( 1 )
