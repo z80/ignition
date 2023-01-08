@@ -4,26 +4,20 @@ class_name PhysicsBodyBase
 
 enum BodyState {
 	KINEMATIC=0, 
-	DYNAMIC=1
-}
-
-enum ConstructionState {
-	CONSTRUCTION=0, 
-	SIMULATION=1
+	DYNAMIC=1, 
+	CONSTRUCTION=2
 }
 
 export(BodyState)         var body_state         = BodyState.DYNAMIC
-export(ConstructionState) var construction_state = ConstructionState.CONSTRUCTION
 
 # When inheriting need to redefine these two.
 export(PackedScene) var VisualScene   = null
-export(PackedScene) var PhysicalScene = null
 export(PackedScene) var AirDragScene  = null
 
 
 
-var _visual: Node            = null
-var _physical: Node          = null
+var _visual: RigidBody       = null
+var _physical: RigidBody     = null
 var _air_drag_scene: Node    = null
 var _shock_wave_visual: Node = null
 
@@ -31,7 +25,7 @@ var _shock_wave_visual: Node = null
 # Body which contains this one and other bodies.
 # When setter and getter are allowed simultaneously it falls into infinite recursion which 
 # can not be stopped even by the debugger.
-var _super_body: Node = null
+var _assembly: Node = null
 
 
 var _octree_mesh: OctreeMeshGd = null
@@ -162,7 +156,7 @@ func _traverse_shock_wave_visuals_recursive( node: Node ):
 
 # The overrideable version without "_" prefix.
 func on_delete():
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 
 	if is_instance_valid( sb ):
 		sb.remove_sub_body( self )
@@ -228,7 +222,7 @@ func hide_shock_wave_visual():
 func gui_classes( mode: Array ):
 	var classes = []
 	
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 	if sb != null:
 		var s_classes = sb.gui_classes( mode )
 		for cl in s_classes:
@@ -245,7 +239,7 @@ func gui_classes( mode: Array ):
 # Defines GUI classes to be shown.
 func gui_mode():
 	var ret: Array = []
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 	if sb != null:
 		var more: Array = sb.gui_mode()
 		for m in more:
@@ -255,7 +249,7 @@ func gui_mode():
 
 # Returns the root most body.
 func root_most_body():
-	var sb = get_super_body()
+	var sb = get_assembly()
 	if sb != null:
 		return sb
 	return self
@@ -329,10 +323,10 @@ func create_visual():
 
 
 func create_physical():
-	return _create_physical( PhysicalScene )
+	return _create_physical( VisualScene )
 
 
-func _create_visual( Visual ):
+func _create_visual( Visual: PackedScene ):
 	if _visual != null:
 		return _visual
 	
@@ -347,6 +341,12 @@ func _create_visual( Visual ):
 	var root: Node = RootScene.get_root_for_visuals()
 	v.name = RootScene.get_unique_name_for_visuals( v.name )
 	root.add_child( v )
+	
+	# Check if it is a RigidBody.
+	# If it is, set mode to kinematic.
+	var rigid_body: RigidBody = v as RigidBody
+	if RigidBody != null:
+		rigid_body.mode = RigidBody.MODE_KINEMATIC
 	
 	_visual = v
 	
@@ -372,7 +372,7 @@ func pivot_fps( _ind: int = 0 ):
 	return null
 
 
-func _create_physical( Physical ):
+func _create_physical( Physical: PackedScene ):
 	if body_state != BodyState.DYNAMIC:
 		return null
 	
@@ -387,7 +387,7 @@ func _create_physical( Physical ):
 	if parent_rf == null:
 		return null
 	
-	var p: Node = Physical.instance()
+	var p: RigidBody = Physical.instance()
 	
 	var t: Transform = self.t()
 	p.transform = t
@@ -426,7 +426,7 @@ func remove_physical():
 
 
 func change_parent( p: Node = null ):
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 	if (sb != null) and is_instance_valid( sb ):
 		sb.change_parent( p )
 	else:
@@ -444,7 +444,7 @@ func process_user_input_2( input: Dictionary ):
 
 # It permits or not showing the window with all the little panels.
 func show_click_container():
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 	if sb != null:
 		var res: bool = sb.show_click_container()
 		return res
@@ -534,28 +534,28 @@ func _parent_physics_ref_frame():
 
 
 
-func set_super_body( new_super_body ):
-	if (_super_body != null) and ( is_instance_valid(_super_body) ):
-		_super_body.remove_sub_body( self )
-	_super_body = new_super_body
+func set_assembly( new_assembly ):
+	if (_assembly != null) and ( is_instance_valid(_assembly) ):
+		_assembly.remove_sub_body( self )
+	_assembly = new_assembly
 
 
 
 
 
-func get_super_body():
-	if _super_body == null:
-		_super_body = create_super_body()
-	return _super_body
+func get_assembly():
+	if _assembly == null:
+		_assembly = create_assembly()
+	return _assembly
 
 
-func get_super_body_raw():
-	return _super_body
+func get_assembly_raw():
+	return _assembly
 
 
 
 # This one should be overwritten by decendant classes.
-func create_super_body():
+func create_assembly():
 	return null
 
 
@@ -564,7 +564,6 @@ func serialize():
 	var data: Dictionary = .serialize()
 	
 	data["body_state"]         = int(body_state)
-	data["construction_state"] = int(construction_state)
 	
 	# Need to save this in order to restore it correctly.
 	if _visual != null:
@@ -580,10 +579,6 @@ func deserialize( data: Dictionary ):
 	var ok: bool = .deserialize( data )
 	if not ok:
 		return false
-	
-	# This is done in "activate()/deactivate()".
-	#body_state         = data["body_state"]
-	construction_state = data["construction_state"]
 	
 	return true
 

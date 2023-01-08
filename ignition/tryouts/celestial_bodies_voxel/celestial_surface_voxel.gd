@@ -260,7 +260,7 @@ func _draw_shock_waves( bodies_ref_frame: RefFrameNode, rot: RefFrameNode ):
 		var p: PhysicsBodyBase = body as PhysicsBodyBase
 		if p == null:
 			continue
-		var a: PartAssembly = p.get_super_body()
+		var a: PartAssembly = p.get_assembly()
 		if a == null:
 			continue
 		var has: bool = assemblies.has( a )

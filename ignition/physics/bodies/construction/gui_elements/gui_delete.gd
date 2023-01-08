@@ -15,7 +15,7 @@ func _ready():
 func _on_Delete_pressed():
 	if _target_obj == null:
 		return
-	var construction_super_body = _target_obj.root_most_body()
-	var construction = construction_super_body.construction
+	var construction_assembly = _target_obj.root_most_body()
+	var construction = construction_assembly.construction
 	construction.delete_block( _target_obj )
 	_parent_gui.queue_free()

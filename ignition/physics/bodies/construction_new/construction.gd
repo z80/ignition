@@ -217,7 +217,7 @@ func _create_assembly():
 		# Assign null as a superbody.
 		# Own super body will be created on the first request.
 		for pt in parts:
-			pt.set_super_body( null )
+			pt.set_assembly( null )
 		part.activate()
 	
 	
@@ -287,8 +287,7 @@ func create_block( block_desc: Resource ):
 	var is_static_block: bool = block_desc.is_static()
 	
 	# This one makes it not delete superbody on activation.
-	block.construction_state = PhysicsBodyBase.ConstructionState.CONSTRUCTION
-	block.body_state         = PhysicsBodyBase.BodyState.KINEMATIC
+	block.body_state         = PhysicsBodyBase.BodyState.CONSTRUCTION
 	
 	block.set_se3( se3 )
 	
@@ -308,14 +307,14 @@ func create_block( block_desc: Resource ):
 	# Establish relations.
 	# This one is needed in ordr to 
 	# have the right gui elements in the context menu.
-	var sb: Node = get_super_body()
+	var sb: Node = get_assembly()
 	sb.add_sub_body( block )
 
 
 func delete_block( block: PhysicsBodyBase ):
 	dynamic_blocks.erase( block )
 	static_blocks.erase( block )
-	var sb: Node = get_super_body()
+	var sb: Node = get_assembly()
 	sb.remove_sub_body( block )
 	block.queue_free()
 
@@ -330,7 +329,7 @@ func set_show_coupling_nodes( en: bool ):
 
 
 
-func create_super_body():
+func create_assembly():
 	var sb = ConstructionSuperBodyNew.new()
 	var p = get_parent()
 	sb.change_parent( p )
@@ -358,7 +357,7 @@ func on_launch():
 
 func on_abort():
 	# Need to delete all blocks.
-	var sb: Node = get_super_body()
+	var sb: Node = get_assembly()
 	for b in static_blocks:
 		sb.remove_sub_body( b )
 		b.queue_free()

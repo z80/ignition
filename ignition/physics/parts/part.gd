@@ -84,7 +84,7 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 func process_inner( _delta ):
 	.process_inner( _delta )
 	
-	if construction_state == ConstructionState.CONSTRUCTION:
+	if body_state == BodyState.CONSTRUCTION:
 		_process_coupling_nodes()
 		_process_attachments()
 	
@@ -122,7 +122,7 @@ func _process_destruction():
 		return
 	
 	# Destroying the part and the assembly.
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 	if (sb != null) and ( is_instance_valid(sb) ):
 		sb.queue_free()
 	
@@ -195,8 +195,8 @@ func deactivate( root_call: bool = true ):
 	# Need to make sure that not in a construction mode.
 	# In construction mode super body is provided externally 
 	# And provides additional context menu GUIs.
-	if root_call and (construction_state != ConstructionState.CONSTRUCTION):
-		var sb: Node = get_super_body_raw()
+	if root_call and (body_state != BodyState.CONSTRUCTION):
+		var sb: Node = get_assembly_raw()
 		if sb != null:
 			sb.queue_free()
 			sb = null
@@ -636,7 +636,7 @@ func process_user_input_group( _input: Dictionary ):
 
 # This one is supposed to override the dummy one 
 # declared in "PhysicsBodyBase".
-func create_super_body():
+func create_assembly():
 	var p = self.get_parent()
 	var sb = PartAssembly.new()
 #	sb.debug = true

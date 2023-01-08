@@ -69,7 +69,7 @@ func _process( _delta: float ):
 
 
 func add_sub_body( body: RefFrameNode ):
-	var sb: RefFrameNode = body.get_super_body_raw()
+	var sb: RefFrameNode = body.get_assembly_raw()
 	if (sb != null) and (sb != self):
 		sb.remove_sub_body( body )
 	
@@ -78,7 +78,7 @@ func add_sub_body( body: RefFrameNode ):
 		return false
 	
 	sub_bodies.push_back( body )
-	body.set_super_body( self )
+	body.set_assembly( self )
 	return true
 
 
@@ -87,10 +87,10 @@ func remove_sub_body( body: RefFrameNode ):
 	var index: int = sub_bodies.find( body )
 	if index >= 0:
 		sub_bodies.remove( index )
-		body.set_super_body( null )
+		body.set_assembly( null )
 
 
-func is_super_body():
+func is_assembly():
 	var empty: bool = sub_bodies.empty()
 	var ret: bool = not empty
 	return ret
