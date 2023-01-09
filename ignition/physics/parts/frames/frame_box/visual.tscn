@@ -4,7 +4,7 @@
 
 [sub_resource type="BoxShape" id=1]
 
-[node name="FrameBoxPhysical" type="RigidBody"]
+[node name="FrameBox" type="RigidBody"]
 mode = 1
 
 [node name="CollisionShape" type="CollisionShape" parent="."]

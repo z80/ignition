@@ -18,7 +18,7 @@ radius = 0.614428
 radius = 0.424877
 height = 0.435992
 
-[node name="Physical" type="RigidBody"]
+[node name="HabitatCapsule" type="RigidBody"]
 
 [node name="ShapeA" type="CollisionShape" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.368946, 0 )

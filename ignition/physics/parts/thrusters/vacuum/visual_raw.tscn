@@ -1,0 +1,59 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://physics/parts/thrusters/vacuum/assets/thruster/thruster_Cube004.mesh" type="ArrayMesh" id=1]
+[ext_resource path="res://physics/parts/coupling_nodes/coupling_node_stacking.gd" type="Script" id=2]
+[ext_resource path="res://physics/parts/thrusters/exhaust_node.gd" type="Script" id=3]
+[ext_resource path="res://physics/interact_icon/interaction_node.gd" type="Script" id=4]
+[ext_resource path="res://physics/shock_wave/shock_wave_visual.tscn" type="PackedScene" id=5]
+
+[sub_resource type="GDScript" id=4]
+script/source = "
+extends Resource
+
+export(String) var exhaust_00 = \"res://physics/parts/thrusters/exhausts/exhaust_00/exhaust_00.tscn\"
+export(String) var exhaust_01 = \"res://physics/parts/thrusters/exhausts/exhaust_01/exhaust.tscn\"
+
+func get_exhaust_scene( type: int ):
+	if type == 0:
+		return exhaust_00
+	if type == 1:
+		return exhaust_01
+	
+	return exhaust_01
+
+
+"
+
+[sub_resource type="Resource" id=2]
+resource_local_to_scene = true
+script = SubResource( 4 )
+exhaust_00 = "res://physics/parts/thrusters/exhausts/exhaust_00/exhaust_00.tscn"
+exhaust_01 = "res://physics/parts/thrusters/exhausts/exhaust_01/exhaust.tscn"
+
+[node name="Visual" type="Spatial"]
+
+[node name="VacuumThruster" type="MeshInstance" parent="."]
+transform = Transform( 2.6, 0, 0, 0, 2.6, 0, 0, 0, 2.6, 0, 1.95754, 0 )
+mesh = ExtResource( 1 )
+
+[node name="CouplingNodeTop" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.03707, 0 )
+script = ExtResource( 2 )
+
+[node name="CouplingNodeBottom" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, 0, -1.75793, -8.37856e-08 )
+script = ExtResource( 2 )
+
+[node name="ExhaustNode" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.74929, 0 )
+script = ExtResource( 3 )
+exhaust_type = 1
+exhaust_radius = 1.05
+pressure_optimal = 10000.0
+pressure_high = 80000.0
+exhausts = SubResource( 2 )
+
+[node name="InteractionNode" type="Spatial" parent="."]
+script = ExtResource( 4 )
+
+[node name="ShockWaveVisual" parent="." instance=ExtResource( 5 )]

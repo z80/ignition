@@ -1,9 +1,8 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://physics/parts/reaction_control_wheels/2m/m1/m1.gd" type="Script" id=1]
 [ext_resource path="res://physics/parts/reaction_control_wheels/2m/m1/assets/Material_001.material" type="Material" id=2]
-[ext_resource path="res://physics/parts/reaction_control_wheels/2m/m1/visual.tscn" type="PackedScene" id=3]
-[ext_resource path="res://physics/parts/reaction_control_wheels/2m/m1/physical.tscn" type="PackedScene" id=4]
+[ext_resource path="res://physics/parts/reaction_control_wheels/2m/m1/visual.tscn" type="PackedScene" id=4]
 [ext_resource path="res://physics/parts/reaction_control_wheels/2m/m1/air_drag.tscn" type="PackedScene" id=5]
 
 [sub_resource type="ArrayMesh" id=1]
@@ -23,8 +22,7 @@ surfaces/0 = {
 
 [node name="ReactionControlWheels" type="RefFrameBodyNode"]
 script = ExtResource( 1 )
-VisualScene = ExtResource( 3 )
-PhysicalScene = ExtResource( 4 )
+VisualScene = ExtResource( 4 )
 AirDragScene = ExtResource( 5 )
 destruction_dv = 15.0
 part_class = 3
