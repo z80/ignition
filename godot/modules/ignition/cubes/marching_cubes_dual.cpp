@@ -1689,52 +1689,6 @@ Vector3d MarchingCubesDual::interpolate( const Vector3d & v0, const Vector3d & v
 }
 
 
-//void MarchingCubesDual::add_node_neighbors( const MarchingCubesDualNode & node, VolumeSource * source, const DistanceScalerBase * scaler, int & nodes_qty )
-//{
-//
-//    for ( int ix=0; ix<3; ix++ )
-//    {
-//        const int x = node.at.x + node.size * (ix-1);
-//        for ( int iy=0; iy<3; iy++ )
-//        {
-//            const int y = node.at.y + node.size * (iy-1);
-//            for ( int iz=0; iz<3; iz++ )
-//            {
-//                if ( (ix==1) && (iy==1) && (iz==1) )
-//                    continue;
-//                const int z = node.at.z + node.size * (iz-1);
-//                MarchingNode candidate;
-//                candidate.at = VectorInt( x, y, z );
-//                candidate.size = node.size;
-//
-//                compute_node_values( candidate, source, scaler );
-//
-//				MarchingSetConstIterator it = _all_nodes.find( candidate );
-//                if ( it == _all_nodes.end() )
-//                {
-//					/*{
-//						for ( MarchingSetConstIterator it2=_all_nodes.begin(); it2!=_all_nodes.end(); it2++ )
-//						{
-//							const MarchingNode & n = *it2;
-//							const bool equal = (n == candidate);
-//							if ( equal )
-//							{
-//								const bool equal2 = (n == candidate);
-//								MarchingSetConstIterator it3 = _all_nodes.find( candidate );
-//								int iii = 0;
-//							}
-//						}
-//					}*/
-//                    _all_nodes.insert( candidate );
-//                    _new_candidates.insert( candidate );
-//					nodes_qty += 1;
-//                }
-//            }
-//        }
-//    }
-//}
-
-
 void MarchingCubesDual::create_faces( const MarchingCubesDualCell & cell, int material_index )
 {
 	uint32_t cube_index = 0;

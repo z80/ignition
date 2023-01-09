@@ -262,10 +262,6 @@ public:
 	std::vector<DualCellOctreeNodePair>            _dual_cell_octree_node_pairs;
 	std::vector<OctreeNodeFaceIndexPair>           _octree_node_face_indices;
 
-    typedef std::set<MarchingNode>                 MarchingSet;
-    typedef std::set<MarchingNode>::iterator       MarchingSetIterator;
-    typedef std::set<MarchingNode>::const_iterator MarchingSetConstIterator;
-
     typedef std::map<VectorInt, Float>                 ValuesMap;
     typedef std::map<VectorInt, Float>::iterator       ValuesMapIterator;
     typedef std::map<VectorInt, Float>::const_iterator ValuesMapConstIterator;
@@ -282,16 +278,7 @@ public:
     typedef std::set<int>::iterator       MaterialsSetIterator;
     typedef std::set<int>::const_iterator MaterialsSetConstIterator;
 
-    MarchingSet _all_nodes;
-    MarchingSet _recently_added_nodes;
-    MarchingSet _new_candidates;
-
     std::vector<NodeFace> _all_faces;
-    // Results for applying to meshes.
-	// These are unscaled.
-    //std::vector<Vector3d>  _verts;
-    //std::vector<Vector3d>  _norms;
-    //std::vector<real_t>    _tangs;
 
     // For returning results.
     std::vector<Vector3>  _ret_verts;
