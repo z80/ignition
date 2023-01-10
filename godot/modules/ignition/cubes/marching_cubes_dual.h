@@ -140,7 +140,9 @@ public:
     MarchingCubesDual();
     ~MarchingCubesDual();
 
-    bool subdivide_source( Float bounding_radius, VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );
+    bool subdivide_source( VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );
+	bool subdivide_source( const MarchingCubesDualNode & volume_node, VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );
+
 
 	const std::vector<int> & query_close_nodes( const Vector3d & at_in_source, Float dist, Float max_size );
 	Vector3d center_direction( const SE3 & source_se3, const Vector3d & at ) const;
@@ -186,6 +188,10 @@ public:
 	Float    node_size_max( const MarchingCubesDualNode * node ) const;
 	//Vector3d at_in_source_scaled( const SE3 & source_se3, const VectorInt & at_i, const DistanceScalerBase * scaler=nullptr ) const;
     Vector3d at_in_source( const VectorInt & at_i ) const;
+
+	VectorInt vector_int( const Vector3d & at ) const;
+	Integer   closest_int_size( Float sz ) const;
+	VectorInt node_int_origin( const Vector3d & at, Integer node_size_int ) const;
 
 	Float node_size( const MarchingCubesDualNode * node ) const;
 

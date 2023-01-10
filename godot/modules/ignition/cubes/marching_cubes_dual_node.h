@@ -211,7 +211,7 @@ public:
     // Child indices in Octtree list.
     MarchingCubesDualNode * child_nodes[8];
 
-    int       size; // Size.
+    Integer   size; // Size.
     VectorInt at;
 
     // Store these for convenience.

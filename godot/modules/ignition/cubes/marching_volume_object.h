@@ -24,8 +24,8 @@ public:
     const SE3 & get_se3() const;
     Vector3d at() const;
 
-    void set_bounding_radius( Float r );
-    Float get_bounding_radius() const;
+    virtual void set_bounding_radius( Float r );
+    virtual Float get_bounding_radius() const;
 
     virtual Float max_node_size() const;
     virtual Float min_node_size() const;

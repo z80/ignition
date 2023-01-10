@@ -79,6 +79,11 @@ public:
 		this->y = y;
 		this->z = z;
 	}
+	const VectorInt operator*( const Integer & c )
+	{
+		const VectorInt ret( x*c, y*c, z*c );
+		return ret;
+	}
 
 };
 

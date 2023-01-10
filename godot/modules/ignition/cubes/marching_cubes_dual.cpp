@@ -47,19 +47,40 @@ MarchingCubesDual::~MarchingCubesDual()
 }
 
 
-bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * source, VolumeNodeSizeStrategy * strategy )
+bool MarchingCubesDual::subdivide_source( VolumeSource * source, VolumeNodeSizeStrategy * strategy )
 {
 	cleanup_nodes();
 
 	_values_map.clear();
 	_normals_map.clear();
 
+	const Float bounding_radius = source->get_bounding_radius();
     const Integer root_size_int_2 = find_subdivision_levels( bounding_radius, source );
 	const Integer root_size_int = root_size_int_2 * 2;
 
+	MarchingCubesDualNode  volume_node;
+	volume_node.size = root_size_int;
+	volume_node.at   = VectorInt( -root_size_int_2, -root_size_int_2, -root_size_int_2 );
+
+	const bool ret = subdivide_source( volume_node, source, strategy );
+
+    return ret;
+}
+
+bool MarchingCubesDual::subdivide_source( const MarchingCubesDualNode & volume_node, VolumeSource * source, VolumeNodeSizeStrategy * strategy )
+{
+	cleanup_nodes();
+
+	_values_map.clear();
+	_normals_map.clear();
+
+	//const Float bounding_radius   = source->get_bounding_radius();
+	//const Integer root_size_int_2 = find_subdivision_levels( bounding_radius, source );
+	//const Integer root_size_int   = root_size_int_2 * 2;
+
 	MarchingCubesDualNode * root_node = create_node();
-	root_node->size = root_size_int;
-	root_node->at   = VectorInt( -root_size_int_2, -root_size_int_2, -root_size_int_2 );
+	root_node->size = volume_node.size;
+	root_node->at   = volume_node.at;
 	compute_node_values( *root_node, source );
 
 	root_node->subdivide( this, source, strategy );
@@ -111,7 +132,7 @@ bool MarchingCubesDual::subdivide_source( Float bounding_radius, VolumeSource * 
 		}
 	}
 
-    return true;
+	return true;
 }
 
 const std::vector<int> & MarchingCubesDual::query_close_nodes( const Vector3d & at_in_source, Float dist, Float max_size )
@@ -750,6 +771,43 @@ Vector3d MarchingCubesDual::at_in_source( const VectorInt & at_i ) const
                        static_cast<Float>(at_i.z)*step );
     return at;
 }
+
+VectorInt MarchingCubesDual::vector_int( const Vector3d & at ) const
+{
+	const VectorInt at_int( static_cast<Integer>( std::floor( at.x_ / step ) ),
+		                    static_cast<Integer>( std::floor( at.y_ / step ) ),
+		                    static_cast<Integer>( std::floor( at.z_ / step ) ) );
+	return at_int;
+}
+
+Integer MarchingCubesDual::closest_int_size( Float sz ) const
+{
+	const Float rel_sz = sz / step;
+	const Integer int_rel_sz = static_cast<Integer>( std::round( rel_sz ) );
+	Integer ret = 2; // "step" corresponds to the size of 2.
+	while (ret < int_rel_sz)
+		ret *= 2;
+
+	return ret;
+}
+
+VectorInt MarchingCubesDual::node_int_origin( const Vector3d & at, Integer node_size_int ) const
+{
+	const VectorInt at_int = vector_int( at );
+	VectorInt o;
+	o.x = ( at_int.x >= 0 ) ?
+				( at_int.x / node_size_int ) :
+		        ( -(node_size_int - at_int.x) / node_size_int );
+	o.y = ( at_int.y >= 0 ) ?
+		( at_int.y / node_size_int ) :
+		( -(node_size_int - at_int.y) / node_size_int );
+	o.z = ( at_int.z >= 0 ) ?
+		( at_int.z / node_size_int ) :
+		( -(node_size_int - at_int.z) / node_size_int );
+
+	o *= node_size_int;
+}
+
 
 Float MarchingCubesDual::node_size( const MarchingCubesDualNode * node ) const
 {
