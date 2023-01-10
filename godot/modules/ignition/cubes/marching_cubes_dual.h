@@ -140,6 +140,8 @@ public:
     MarchingCubesDual();
     ~MarchingCubesDual();
 
+	MarchingCubesDualNode create_volume_node( const Vector3d & contains_pt, Float desired_size ) const;
+
     bool subdivide_source( VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );
 	bool subdivide_source( const MarchingCubesDualNode & volume_node, VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );
 

@@ -446,6 +446,28 @@ bool MarchingCubesDualNode::at_front( const MarchingCubesDualNode * root ) const
     return ret;
 }
 
+const MarchingCubesDualNode MarchingCubesDualNode::create_adjacent_node( int dx, int dy, int dz ) const
+{
+	MarchingCubesDualNode other = *this;
+
+	if ( dx > 0 )
+		other.at.x += size;
+	else if ( dx < 0 )
+		other.at.x -= size;
+
+	if ( dy > 0 )
+		other.at.y += size;
+	else if ( dy < 0 )
+		other.at.y -= size;
+
+	if ( dz > 0 )
+		other.at.z += size;
+	else if ( dx < 0 )
+		other.at.z -= size;
+
+	return other;
+}
+
 
 
 

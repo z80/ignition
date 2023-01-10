@@ -28,7 +28,7 @@ public:
 	void set_split_precision( real_t rel_diff );
 	real_t get_split_precision() const;
 
-	bool subdivide_source( real_t bounding_radius, const Ref<VolumeSourceGd> & volume, const Ref<VolumeNodeSizeStrategyGd> & strategy = Ref<VolumeNodeSizeStrategyGd>() );
+	bool subdivide_source_all( const Ref<VolumeSourceGd> & volume, const Ref<VolumeNodeSizeStrategyGd> & strategy = Ref<VolumeNodeSizeStrategyGd>() );
 
 	Array query_close_nodes( const Vector3 & at_in_source, real_t dist, real_t max_size );
 	Vector3 center_direction( const Ref<Se3Ref> & src_se3, const Vector3 & at ) const;

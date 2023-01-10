@@ -30,7 +30,7 @@ void VolumeSourceScript::set_bounding_radius( Float r )
 	if ( !has_script() )
 	{
 		print_error( "VolumeSourceScript error: no script assigned" );
-		return 0.0;
+		return;
 	}
 
 	ScriptInstance * si = reference->get_script_instance();
@@ -41,7 +41,7 @@ void VolumeSourceScript::set_bounding_radius( Float r )
 	if ( ce.error != Variant::CallError::CALL_OK )
 	{
 		print_error( "VolumeSourceScript error: expected real_t as an argument" );
-		return 0.0;
+		return;
 	}
 }
 
@@ -54,8 +54,6 @@ Float VolumeSourceScript::get_bounding_radius() const
 	}
 
 	ScriptInstance * si = reference->get_script_instance();
-	Variant v = static_cast<real_t>( r );
-	const Variant *ptr[1] = { &v };
 	Variant::CallError ce;
 	const Variant v_ret = si->call( "get_bounding_radius", nullptr, 0, ce );
 	if ( ce.error != Variant::CallError::CALL_OK )

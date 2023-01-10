@@ -202,6 +202,10 @@ public:
     }
 
 
+
+	// These functions for locating surrounding nodes.
+	const MarchingCubesDualNode create_adjacent_node( int dx, int dy, int dz ) const;
+
 public:
     int self_index;
     int index_in_parent;

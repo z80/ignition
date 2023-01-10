@@ -47,6 +47,11 @@ MarchingCubesDual::~MarchingCubesDual()
 }
 
 
+MarchingCubesDualNode MarchingCubesDual::create_volume_node( const Vector3d & contains_pt, Float desired_size ) const
+{
+}
+
+
 bool MarchingCubesDual::subdivide_source( VolumeSource * source, VolumeNodeSizeStrategy * strategy )
 {
 	cleanup_nodes();
@@ -806,6 +811,8 @@ VectorInt MarchingCubesDual::node_int_origin( const Vector3d & at, Integer node_
 		( -(node_size_int - at_int.z) / node_size_int );
 
 	o *= node_size_int;
+
+	return o;
 }
 
 
