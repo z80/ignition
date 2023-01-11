@@ -47,8 +47,14 @@ MarchingCubesDual::~MarchingCubesDual()
 }
 
 
-MarchingCubesDualNode MarchingCubesDual::create_volume_node( const Vector3d & contains_pt, Float desired_size ) const
+MarchingCubesDualNode MarchingCubesDual::create_bounding_node( const Vector3d & contains_pt, Float desired_size ) const
 {
+	const Integer node_size_int = closest_int_size( desired_size );
+	const VectorInt node_origin = node_int_origin( contains_pt, node_size_int );
+	MarchingCubesDualNode node;
+	node.at = node_origin;
+	node.size = node_size_int;
+	return node;
 }
 
 

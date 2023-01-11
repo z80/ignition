@@ -40,6 +40,7 @@
 #include "marching_cubes_gd.h"
 #include "marching_cubes_dual_gd.h"
 #include "marching_cubes_dual_node_gd.h"
+#include "bounding_node_gd.h"
 
 #include "marching_cubes_rebuild_strategy_gd.h"
 #include "volume_node_size_strategy_gd.h"
@@ -85,6 +86,7 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::MarchingCubesGd>();
 	ClassDB::register_class<Ign::MarchingCubesDualGd>();
 	ClassDB::register_class<Ign::MarchingCubesDualNodeGd>();
+	ClassDB::register_class<Ign::BoundingNodeGd>();
 
 	ClassDB::register_class<Ign::MarchingCubesRebuildStrategyGd>();
 	ClassDB::register_class<Ign::VolumeNodeSizeStrategyGd>();

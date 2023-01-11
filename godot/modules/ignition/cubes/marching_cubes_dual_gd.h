@@ -9,6 +9,7 @@
 #include "distance_scaler_ref.h"
 #include "marching_cubes_dual_node_gd.h"
 #include "volume_node_size_strategy_gd.h"
+#include "bounding_node_gd.h"
 
 class Node;
 
@@ -28,7 +29,11 @@ public:
 	void set_split_precision( real_t rel_diff );
 	real_t get_split_precision() const;
 
+	void find_subdivision_levels( const Ref<VolumeSourceGd> & volume );
+	Ref<BoundingNodeGd> create_bounding_node( const Ref<Se3Ref> & contains_pt, real_t desired_size ) const;
+
 	bool subdivide_source_all( const Ref<VolumeSourceGd> & volume, const Ref<VolumeNodeSizeStrategyGd> & strategy = Ref<VolumeNodeSizeStrategyGd>() );
+	bool subdivide_source( const Ref<BoundingNodeGd> & bounding_node, const Ref<VolumeSourceGd> & volume, const Ref<VolumeNodeSizeStrategyGd> & strategy = Ref<VolumeNodeSizeStrategyGd>() );
 
 	Array query_close_nodes( const Vector3 & at_in_source, real_t dist, real_t max_size );
 	Vector3 center_direction( const Ref<Se3Ref> & src_se3, const Vector3 & at ) const;

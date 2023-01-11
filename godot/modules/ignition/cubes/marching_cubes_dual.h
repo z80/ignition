@@ -140,10 +140,10 @@ public:
     MarchingCubesDual();
     ~MarchingCubesDual();
 
-	MarchingCubesDualNode create_volume_node( const Vector3d & contains_pt, Float desired_size ) const;
+	MarchingCubesDualNode create_bounding_node( const Vector3d & contains_pt, Float desired_size ) const;
 
     bool subdivide_source( VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );
-	bool subdivide_source( const MarchingCubesDualNode & volume_node, VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );
+	bool subdivide_source( const MarchingCubesDualNode & bounding_node, VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );
 
 
 	const std::vector<int> & query_close_nodes( const Vector3d & at_in_source, Float dist, Float max_size );
