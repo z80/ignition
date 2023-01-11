@@ -46,6 +46,21 @@ MarchingCubesDual::~MarchingCubesDual()
 	cleanup_nodes();
 }
 
+void MarchingCubesDual::set_min_step( Float step )
+{
+	this->step = step;
+}
+
+Float MarchingCubesDual::get_min_step() const
+{
+	return step;
+}
+
+Float MarchingCubesDual::init_min_step( VolumeSource * source )
+{
+	step = source->min_node_size() * 0.5;
+	return step;
+}
 
 MarchingCubesDualNode MarchingCubesDual::create_bounding_node( const Vector3d & contains_pt, Float desired_size ) const
 {
@@ -271,10 +286,13 @@ bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource
 	const Float min_sz         = source->min_node_size_at( center );
 
 	const Float node_sz = node_size( node );
-	const bool can_split  = strategy->can_subdivide( center, node_sz, min_sz );
+	if ( strategy != nullptr )
+	{
+		const bool can_split  = strategy->can_subdivide( center, node_sz, min_sz );
 
-	if ( !can_split )
-		return false;
+		if ( !can_split )
+			return false;
+	}
 
 	if ( _octree_nodes.size() < 6 )
 		return true;
@@ -897,7 +915,8 @@ void MarchingCubesDual::cleanup_nodes()
 int MarchingCubesDual::find_subdivision_levels( Float bounding_radius, VolumeSource * source )
 {
 	// Minimum node size should correspond to integer size of 2.
-	step = source->min_node_size() * 0.5;
+	if ( step <= 0.0 )
+		step = source->min_node_size() * 0.5;
 	const Float max_sz = bounding_radius;
 
 	// Integer size of the half of minimum size should be 1.

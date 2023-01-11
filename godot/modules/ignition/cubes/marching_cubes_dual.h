@@ -140,6 +140,10 @@ public:
     MarchingCubesDual();
     ~MarchingCubesDual();
 
+	void set_min_step( Float step );
+	Float get_min_step() const;
+	Float init_min_step( VolumeSource * source );
+
 	MarchingCubesDualNode create_bounding_node( const Vector3d & contains_pt, Float desired_size ) const;
 
     bool subdivide_source( VolumeSource * source, VolumeNodeSizeStrategy * strategy = nullptr );

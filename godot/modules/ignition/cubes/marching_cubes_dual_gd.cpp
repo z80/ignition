@@ -16,7 +16,10 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_split_precision", "rel_diff"),             &MarchingCubesDualGd::set_split_precision );
 	ClassDB::bind_method( D_METHOD("get_split_precision"),                         &MarchingCubesDualGd::get_split_precision, Variant::REAL );
 
-	ClassDB::bind_method( D_METHOD("find_subdivision_levels", "volume"),                   &MarchingCubesDualGd::find_subdivision_levels );
+	ClassDB::bind_method( D_METHOD("set_min_step", "step"),    &MarchingCubesDualGd::set_min_step );
+	ClassDB::bind_method( D_METHOD("get_min_step"),            &MarchingCubesDualGd::get_min_step,  Variant::REAL );
+	ClassDB::bind_method( D_METHOD("init_min_step", "volume"), &MarchingCubesDualGd::init_min_step, Variant::REAL );
+
 	ClassDB::bind_method( D_METHOD("create_bounding_node", "contains_pt", "desired_size"), &MarchingCubesDualGd::create_bounding_node, Variant::OBJECT );
 
 	ClassDB::bind_method( D_METHOD("subdivide_source_all", "volume", "strategy"),              &MarchingCubesDualGd::subdivide_source_all, Variant::BOOL );
@@ -52,8 +55,9 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_dual_cell", "cell_ind"),   &MarchingCubesDualGd::get_dual_cell,      Variant::ARRAY );
 
 	ADD_GROUP( "Ignition", "" );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "split_precision" ), "set_split_precision",  "get_split_precision" );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_nodes_qty" ),   "set_max_nodes_qty",    "get_max_nodes_qty" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "min_step" ),        "set_min_step",        "get_min_step" );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "split_precision" ), "set_split_precision", "get_split_precision" );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_nodes_qty" ) ,   "set_max_nodes_qty",   "get_max_nodes_qty" );
 }
 
 MarchingCubesDualGd::MarchingCubesDualGd()
@@ -76,10 +80,22 @@ real_t MarchingCubesDualGd::get_split_precision() const
 	return ret;
 }
 
-void MarchingCubesDualGd::find_subdivision_levels( const Ref<VolumeSourceGd> & volume )
+void MarchingCubesDualGd::set_min_step( real_t step )
 {
-	VolumeSource * volume_source = volume.ptr()->source;
-	cubes.find_subdivision_levels( -1.0, volume_source );
+	cubes.set_min_step( step );
+}
+
+real_t MarchingCubesDualGd::get_min_step() const
+{
+	const real_t ret = cubes.get_min_step();
+	return ret;
+}
+
+real_t MarchingCubesDualGd::init_min_step( const Ref<VolumeSourceGd> & volume )
+{
+	VolumeSource * src = volume.ptr()->source;
+	const real_t ret = cubes.init_min_step( src );
+	return ret;
 }
 
 Ref<BoundingNodeGd> MarchingCubesDualGd::create_bounding_node( const Ref<Se3Ref> & contains_pt, real_t desired_size ) const
@@ -112,9 +128,17 @@ bool MarchingCubesDualGd::subdivide_source( const Ref<BoundingNodeGd> & bounding
 
 	VolumeSource   * volume_source   = volume.ptr()->source;
 
+	VolumeNodeSizeStrategy   * rebuild_strategy;
 	const VolumeNodeSizeStrategyGd * strategy_gd_c = strategy.ptr();
-	VolumeNodeSizeStrategyGd * strategy_gd = const_cast<VolumeNodeSizeStrategyGd *>(strategy_gd_c);
-	VolumeNodeSizeStrategy   * rebuild_strategy = (strategy_gd != nullptr) ? (&(strategy_gd->strategy)) : nullptr;
+	if ( strategy_gd_c == nullptr )
+	{
+		rebuild_strategy = nullptr;
+	}
+	else
+	{
+		VolumeNodeSizeStrategyGd * strategy_gd = const_cast<VolumeNodeSizeStrategyGd *>(strategy_gd_c);
+		VolumeNodeSizeStrategy   * rebuild_strategy = (strategy_gd != nullptr) ? (&(strategy_gd->strategy)) : nullptr;
+	}
 
 	const bool ret = cubes.subdivide_source( node, volume_source, rebuild_strategy );
 	return ret;

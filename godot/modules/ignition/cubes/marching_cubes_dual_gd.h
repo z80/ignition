@@ -29,7 +29,10 @@ public:
 	void set_split_precision( real_t rel_diff );
 	real_t get_split_precision() const;
 
-	void find_subdivision_levels( const Ref<VolumeSourceGd> & volume );
+	void set_min_step( real_t step );
+	real_t get_min_step() const;
+	real_t init_min_step( const Ref<VolumeSourceGd> & volume );
+
 	Ref<BoundingNodeGd> create_bounding_node( const Ref<Se3Ref> & contains_pt, real_t desired_size ) const;
 
 	bool subdivide_source_all( const Ref<VolumeSourceGd> & volume, const Ref<VolumeNodeSizeStrategyGd> & strategy = Ref<VolumeNodeSizeStrategyGd>() );
