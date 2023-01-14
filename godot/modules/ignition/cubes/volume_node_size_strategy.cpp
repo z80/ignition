@@ -98,6 +98,27 @@ Float VolumeNodeSizeStrategy::local_node_size( const Vector3d & node_at, const F
 	return result_size;
 }
 
+Vector3d VolumeNodeSizeStrategy::warp( const Vector3d & r ) const
+{
+	const Float abs_r = r.Length();
+	if ( abs_r < 0.001 )
+		return r;
+	const Float abs_r2   = abs_r*abs_r;
+	const Float abs_f2   = focal_point.LengthSquared();
+	const Float dot_r_f  = r.DotProduct( focal_point );
+	const Float dot_r_f2 = dot_r_f * dot_r_f;
+	const Float R2       = radius*radius;
+
+	const Float numerator   = std::sqrt( dot_r_f2 + (R2 - abs_f2)*abs_r2 ) - dot_r_f;
+	const Float denominator = radius * abs_r;
+	const Float k           = numerator / denominator;
+
+	const Vector3d scaled_r = r * k;
+	const Vector3d ret      = focal_point + scaled_r;
+
+	return ret;
+}
+
 bool VolumeNodeSizeStrategy::can_subdivide( const Vector3d & node_at, const Float node_size, const Float min_node_size ) const
 {
 	const Float min_dist = min_distance;

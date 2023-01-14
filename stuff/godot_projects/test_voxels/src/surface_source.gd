@@ -9,7 +9,7 @@ func get_source():
 		return _source
 	
 	_source = VolumeSourceScriptGd.new()
-	var script: Resource = preload( "res://tryouts/voxels/surface_source_funcs.gd" )
+	var script: Resource = preload( "res://src/surface_source_funcs.gd" )
 	_source.set_script( script )
 	
 	return _source

@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=1]
-[ext_resource path="res://tryouts/voxels/voxel_scene.gd" type="Script" id=2]
-[ext_resource path="res://tryouts/voxels/surface_source.tres" type="Resource" id=3]
+[ext_resource path="res://src/voxel_scene.gd" type="Script" id=2]
+[ext_resource path="res://src/surface_source.tres" type="Resource" id=3]
 
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 2 )
@@ -11,5 +11,8 @@ source_resource = ExtResource( 3 )
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15.4367 )
 script = ExtResource( 1 )
+max_speed = Vector3( 3, 3, 3 )
 
 [node name="Mesh" type="MeshInstance" parent="."]
+
+[node name="MeshLeft" type="MeshInstance" parent="."]

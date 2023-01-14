@@ -253,7 +253,7 @@ bool MarchingCubesDualNode::subdivide( MarchingCubesDual * tree, VolumeSource * 
     child_nodes[7]->at = this->at + VectorInt(      0, size_2, size_2 );
 
     for ( int i=0; i<8; i++ )
-		tree->compute_node_values( *(child_nodes[i]), source );
+		tree->compute_node_values( *(child_nodes[i]), source, strategy );
 
 	for ( int i=0; i<8; i++ )
 		child_nodes[i]->subdivide( tree, source, strategy );
@@ -287,8 +287,8 @@ void MarchingCubesDualNode::compute_hashes()
 
 void MarchingCubesDualNode::init_aabb( MarchingCubesDual * tree )
 {
-	const Vector3d v_at = tree->at_in_source( at );
-	const Vector3d v_to = tree->at_in_source( VectorInt( at.x+size, at.y+size, at.z+size ) );
+	const Vector3d v_at = tree->at_in_source( at, nullptr );
+	const Vector3d v_to = tree->at_in_source( VectorInt( at.x+size, at.y+size, at.z+size ), nullptr );
 	const Vector3d sz = v_to - v_at;
 	aabb = Aabb( v_at, sz );
 }
@@ -359,7 +359,7 @@ bool MarchingCubesDualNode::contains_point( MarchingCubesDual * tree, const Vect
 Vector3d MarchingCubesDualNode::center_vector( MarchingCubesDual * tree ) const
 {
 	const VectorInt c = center();
-	const Vector3d cs = tree->at_in_source( c );
+	const Vector3d cs = tree->at_in_source( c, nullptr );
 	return cs;
 }
 
@@ -462,7 +462,7 @@ const MarchingCubesDualNode MarchingCubesDualNode::create_adjacent_node( int dx,
 
 	if ( dz > 0 )
 		other.at.z += size;
-	else if ( dx < 0 )
+	else if ( dz < 0 )
 		other.at.z -= size;
 
 	return other;

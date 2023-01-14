@@ -29,6 +29,7 @@ public:
 	void append_node_size( Float distance, Float node_size );
 
 	virtual Float local_node_size( const Vector3d & node_at, const Float node_size ) const;
+	virtual Vector3d warp( const Vector3d & node_at ) const;
 	virtual bool can_subdivide( const Vector3d & node_at, const Float node_size, const Float min_node_size ) const;
 
 public:

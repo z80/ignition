@@ -7,12 +7,12 @@ namespace Ign
 
 void BoundingNodeGd::_bind_methods()
 {
+	ClassDB::bind_method( D_METHOD("create_adjacent_node", "dx", "dy", "dz"), &BoundingNodeGd::create_adjacent_node, Variant::OBJECT );
 }
 
 BoundingNodeGd::BoundingNodeGd()
 	: Reference()
 {
-	ClassDB::bind_method( D_METHOD("create_adjacent_node", "dx", "dy", "dz"), &BoundingNodeGd::create_adjacent_node, Variant::OBJECT );
 }
 
 BoundingNodeGd::~BoundingNodeGd()

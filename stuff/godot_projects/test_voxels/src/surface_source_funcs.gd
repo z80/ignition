@@ -7,7 +7,7 @@ extends Reference
 var material_index: int     = 0
 var material_priority: int  = 0
 var node_sz_max: float      = 2.0
-var node_sz_min: float      = 1.0
+var node_sz_min: float      = 0.1
 var radius: float           = 8.0
 var bounding_radius: float  = 10.0
 var noise: OpenSimplexNoise = null

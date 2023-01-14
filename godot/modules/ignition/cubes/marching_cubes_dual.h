@@ -193,7 +193,7 @@ public:
     Float    node_size_min( const MarchingCubesDualNode * node ) const;
 	Float    node_size_max( const MarchingCubesDualNode * node ) const;
 	//Vector3d at_in_source_scaled( const SE3 & source_se3, const VectorInt & at_i, const DistanceScalerBase * scaler=nullptr ) const;
-    Vector3d at_in_source( const VectorInt & at_i ) const;
+    Vector3d at_in_source( const VectorInt & at_i, VolumeNodeSizeStrategy * strategy ) const;
 
 	VectorInt vector_int( const Vector3d & at ) const;
 	Integer   closest_int_size( Float sz ) const;
@@ -225,25 +225,27 @@ public:
 
     int find_subdivision_levels( Float bounding_radius, VolumeSource * source );
     //bool find_surface( VolumeSource * source, const DistanceScalerBase * scaler, MarchingNode & surface_node );
-    void compute_node_values( MarchingCubesDualNode & node, VolumeSource * source );
+    void compute_node_values( MarchingCubesDualNode & node, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
     //MarchingNode step_towards_surface( const MarchingCubesDualNode & node, VolumeSource * source, const DistanceScalerBase * scaler );
 	void assign_node_indices();
 
 
 	// Dual grid generation methods.
-	void node_proc( const MarchingCubesDualNode * n, VolumeSource * source );
-	void face_proc_xy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source );
-	void face_proc_zy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source );
-	void face_proc_xz( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source );
-	void edge_proc_x( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source );
-	void edge_proc_y( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source );
-	void edge_proc_z( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source );
+	void node_proc( const MarchingCubesDualNode * n, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
+	void face_proc_xy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
+	void face_proc_zy( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
+	void face_proc_xz( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
+	void edge_proc_x( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
+	void edge_proc_y( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
+	void edge_proc_z( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
 	void vert_proc( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3,
-		            const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source );
+		            const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
 	void create_border_cells( const MarchingCubesDualNode * n0, const MarchingCubesDualNode * n1, const MarchingCubesDualNode * n2, const MarchingCubesDualNode * n3,
-		                      const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7, VolumeSource * source );
+		                      const MarchingCubesDualNode * n4, const MarchingCubesDualNode * n5, const MarchingCubesDualNode * n6, const MarchingCubesDualNode * n7,
+		                      VolumeSource * source, VolumeNodeSizeStrategy * strategy );
 	MarchingCubesDualCell * add_dual_cell( const VectorInt & c0, const VectorInt & c1, const VectorInt & c2, const VectorInt & c3, 
-		                                   const VectorInt & c4, const VectorInt & c5, const VectorInt & c6, const VectorInt & c7, VolumeSource * source );
+		                                   const VectorInt & c4, const VectorInt & c5, const VectorInt & c6, const VectorInt & c7,
+									       VolumeSource * source, VolumeNodeSizeStrategy * strategy );
 
 
 	void create_faces_in_dual_grid( VolumeSource * source );
