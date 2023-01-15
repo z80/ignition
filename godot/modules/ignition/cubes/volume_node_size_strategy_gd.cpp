@@ -13,16 +13,15 @@ void VolumeNodeSizeStrategyGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_focal_point", "f"), &VolumeNodeSizeStrategyGd::set_focal_point );
 	ClassDB::bind_method( D_METHOD("get_focal_point"),      &VolumeNodeSizeStrategyGd::get_focal_point, Variant::VECTOR3 );
 
-	ClassDB::bind_method( D_METHOD("set_height", "h"), &VolumeNodeSizeStrategyGd::set_height );
-	ClassDB::bind_method( D_METHOD("get_height"),      &VolumeNodeSizeStrategyGd::get_height, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("set_max_level", "level"), &VolumeNodeSizeStrategyGd::set_max_level );
+	ClassDB::bind_method( D_METHOD("get_max_level"),          &VolumeNodeSizeStrategyGd::get_max_level, Variant::INT );
 
-	ClassDB::bind_method( D_METHOD("clear_node_sizes"), &VolumeNodeSizeStrategyGd::clear_node_sizes );
-	ClassDB::bind_method( D_METHOD("set_node_sizes", "distances", "node_sizes"), &VolumeNodeSizeStrategyGd::set_node_sizes );
+	ClassDB::bind_method( D_METHOD("compute_max_level", "detail_size"), &VolumeNodeSizeStrategyGd::compute_max_level, Variant::INT );
 
 	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL,    "radius" ),        "set_radius",        "get_radius" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "focal_point" ),   "set_focal_point",   "get_focal_point" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL,    "height" ),        "set_height",        "get_height" );
+	ADD_PROPERTY( PropertyInfo( Variant::INT,     "max_level" ),     "set_max_level",     "get_max_level" );
 }
 
 VolumeNodeSizeStrategyGd::VolumeNodeSizeStrategyGd()
@@ -57,35 +56,21 @@ Vector3 VolumeNodeSizeStrategyGd::get_focal_point() const
 	return ret;
 }
 
-void VolumeNodeSizeStrategyGd::set_height( real_t h )
+void VolumeNodeSizeStrategyGd::set_max_level( int level )
 {
-	strategy.set_height( h );
+	strategy.set_max_level( level );
 }
 
-real_t VolumeNodeSizeStrategyGd::get_height() const
+int VolumeNodeSizeStrategyGd::get_max_level() const
 {
-	const real_t ret = strategy.get_height();
+	const int ret = strategy.get_max_level();
 	return ret;
 }
 
-void VolumeNodeSizeStrategyGd::clear_node_sizes()
+int VolumeNodeSizeStrategyGd::compute_max_level( real_t min_detail_size )
 {
-	strategy.clear_node_sizes();
-}
-
-void VolumeNodeSizeStrategyGd::set_node_sizes( const Array & distances, const Array & node_sizes )
-{
-	clear_node_sizes();
-
-	const int distances_qty  = distances.size();
-	const int node_sizes_qty = node_sizes.size();
-	const int qty = (distances_qty < node_sizes_qty) ? distances_qty : node_sizes_qty;
-	for (int i=0; i<qty; i++)
-	{
-		real_t distance = distances[i];
-		real_t node_size = node_sizes[i];
-		strategy.append_node_size( distance, node_size );
-	}
+	const int ret = strategy.compute_max_level( min_detail_size );
+	return ret;
 }
 
 

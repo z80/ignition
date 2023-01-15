@@ -109,7 +109,7 @@ bool MarchingCubesDual::subdivide_source( const MarchingCubesDualNode & volume_n
 	root_node->at   = volume_node.at;
 	compute_node_values( *root_node, source, strategy );
 
-	root_node->subdivide( this, source, strategy );
+	root_node->subdivide( this, source, strategy, 0 );
 	assign_node_indices();
 	root_node->compute_hashes();
 
@@ -278,24 +278,19 @@ Float MarchingCubesDual::get_split_precision() const
 	return max_rel_diff;
 }
 
-bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, VolumeSource * source, VolumeNodeSizeStrategy * strategy )
+bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, int level, VolumeSource * source, VolumeNodeSizeStrategy * strategy )
 {
+	if (strategy != nullptr)
+	{
+		if (level >= strategy->get_max_level() )
+			return false;
+	}
 	const VectorInt center_int = node->center();
 	const Vector3d center      = at_in_source( center_int, strategy );
 	const Float max_sz         = source->max_node_size_at( center );
 	const Float min_sz         = source->min_node_size_at( center );
 
 	const Float node_sz = node_size( node );
-	if ( strategy != nullptr )
-	{
-		const bool can_split  = strategy->can_subdivide( center, node_sz, min_sz );
-
-		if ( !can_split )
-			return false;
-	}
-
-	//if ( _octree_nodes.size() < 6 )
-	//	return true;
 
 	// If bigger than maximum allowed, subdivide.
 	if ( node_sz > max_sz )

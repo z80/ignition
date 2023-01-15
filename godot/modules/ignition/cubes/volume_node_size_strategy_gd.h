@@ -24,11 +24,9 @@ public:
 	void set_focal_point( const Vector3 & r );
 	Vector3 get_focal_point() const;
 
-	void set_height( real_t h );
-	real_t get_height() const;
-
-	void clear_node_sizes();
-	void set_node_sizes( const Array & distances, const Array & node_sizes );
+	void set_max_level( int level );
+	int get_max_level() const;
+	int compute_max_level( real_t min_detail_size );
 
 public:
 	VolumeNodeSizeStrategy strategy;

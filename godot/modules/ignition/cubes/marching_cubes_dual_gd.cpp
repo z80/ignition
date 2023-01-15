@@ -137,7 +137,7 @@ bool MarchingCubesDualGd::subdivide_source( const Ref<BoundingNodeGd> & bounding
 	else
 	{
 		VolumeNodeSizeStrategyGd * strategy_gd = const_cast<VolumeNodeSizeStrategyGd *>(strategy_gd_c);
-		VolumeNodeSizeStrategy   * rebuild_strategy = (strategy_gd != nullptr) ? (&(strategy_gd->strategy)) : nullptr;
+		rebuild_strategy = (strategy_gd != nullptr) ? (&(strategy_gd->strategy)) : nullptr;
 	}
 
 	const bool ret = cubes.subdivide_source( node, volume_source, rebuild_strategy );

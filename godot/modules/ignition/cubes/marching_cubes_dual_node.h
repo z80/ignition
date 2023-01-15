@@ -44,7 +44,7 @@ public:
 	bool intersect_with_ray( MarchingCubesDual * tree, const Vector3d & start, const Vector3d & dir, Vector3d & at, Vector3d & norm );
 
     bool has_children() const;
-    bool subdivide( MarchingCubesDual * tree, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
+    bool subdivide( MarchingCubesDual * tree, VolumeSource * source, VolumeNodeSizeStrategy * strategy, int level );
 	void compute_hashes();
 
     // Initialize vertices and planes.

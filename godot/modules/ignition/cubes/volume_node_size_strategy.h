@@ -22,27 +22,16 @@ public:
 	void set_focal_point( const Vector3d & r );
 	Vector3d get_focal_point() const;
 
-	void set_height( Float h );
-	Float get_height() const;
+	void set_max_level( int level );
+	int get_max_level() const;
+	int compute_max_level( Float min_detail_size );
 
-	void clear_node_sizes();
-	void append_node_size( Float distance, Float node_size );
-
-	virtual Float local_node_size( const Vector3d & node_at, const Float node_size ) const;
 	virtual Vector3d warp( const Vector3d & node_at ) const;
-	virtual bool can_subdivide( const Vector3d & node_at, const Float node_size, const Float min_node_size ) const;
 
 public:
 	Vector3d focal_point;
 	Float    radius;
-	Float    min_distance;
-
-	struct NodeSizeAtDistance
-	{
-		Float distance;
-		Float node_size;
-	};
-	std::vector<NodeSizeAtDistance> node_size_of_distance;
+	int      max_level;
 };
 
 

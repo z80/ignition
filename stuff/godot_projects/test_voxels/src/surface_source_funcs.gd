@@ -29,13 +29,12 @@ func init_seed( v ):
 
 func value( at: Vector3 ):
 	var SCALE: float = 3000.0
-	var unit: Vector3 = at / SCALE
-	var n: float      = noise.get_noise_3dv( unit )
-	n  *= height/SCALE
-	var r: float = radius #* (1.0 + n)
+	var unit: Vector3 = at / self.radius
+	var dr: float = noise.get_noise_3dv( unit )
+	at += at.normalized() * dr * 0.3
 	
 	var d: float   = at.length()
-	var ret: float = d - r
+	var ret: float = d - self.radius
 	
 #	# Add an empty cylinder
 #	var d2: float = sqrt(at.y*at.y + at.x*at.x) - 100.0

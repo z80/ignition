@@ -161,7 +161,7 @@ public:
 	// These two are called by nodes.
 	void set_split_precision( Float rel_diff );
 	Float get_split_precision() const;
-	bool should_split( MarchingCubesDualNode * node, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
+	bool should_split( MarchingCubesDualNode * node, int level, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
 	MarchingCubesDualNode * create_node();
 	MarchingCubesDualCell * create_dual_cell();
 
