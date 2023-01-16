@@ -3,7 +3,15 @@
 
 namespace Ign
 {
-void _bind_methods();
+void ScaleDistanceRatioGd::_bind_methods()
+{
+	ClassDB::bind_method( D_METHOD( "set_max_distance", "dist"), &ScaleDistanceRatioGd::set_max_distance );
+	ClassDB::bind_method( D_METHOD( "get_max_distance"),         &ScaleDistanceRatioGd::get_max_distance, Variant::REAL );
+
+	ClassDB::bind_method( D_METHOD( "compute_transform", "rel_se3", "base_scale"), &ScaleDistanceRatioGd::compute_transform, Variant::TRANSFORM );
+
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "max_distance" ),    "set_max_distance", "get_max_distance" );
+}
 
 ScaleDistanceRatioGd::ScaleDistanceRatioGd()
 {

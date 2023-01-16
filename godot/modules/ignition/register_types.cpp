@@ -16,6 +16,7 @@
 //#include "ref_frame_auto_node.h"
 #include "se3_ref.h"
 #include "distance_scaler_ref.h"
+#include "scale_distance_ratio_gd.h"
 
 // Sphere related classes.
 #include "height_source_ref.h"
@@ -66,6 +67,7 @@ void register_ignition_types()
 	ClassDB::register_class<Ign::Se3Ref>();
 	ClassDB::register_class<Ign::DistanceScalerBaseRef>();
 	ClassDB::register_class<Ign::DistanceScalerRef>();
+	ClassDB::register_class<Ign::ScaleDistanceRatioGd>();
 
 	ClassDB::register_class<Ign::HeightSourceRef>();
 	ClassDB::register_class<Ign::HeightSourceTestRef>();

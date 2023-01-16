@@ -1,16 +1,17 @@
 
-#ifndef __SCALE_DISTANCE_RATIO_H_
-#define __SCALE_DISTANCE_RATIO_H_
+#ifndef __SCALE_DISTANCE_RATIO_GD_H_
+#define __SCALE_DISTANCE_RATIO_GD_H_
 
 #include "core/reference.h"
-#include "distance_scaler_base.h"
+#include "scale_distance_ratio.h"
+#include "se3_ref.h"
 
 namespace Ign
 {
 
 class ScaleDistanceRatioGd: public Reference
 {
-	GDCLASS( ScaleDistanceRatioRef, Reference );
+	GDCLASS( ScaleDistanceRatioGd, Reference );
 	OBJ_CATEGORY("Ignition");
 
 protected:
