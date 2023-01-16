@@ -17,7 +17,7 @@ public:
 	void set_max_distance( Float dist );
 	Float get_max_distance() const;
 
-	SE3 compute_transform( const SE3 & rel_se3, Float base_scale, Float & scale ) const;
+	Float compute_scale( const SE3 & rel_se3, Float base_scale ) const;
 
 public:
 	Float max_distance;

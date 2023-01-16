@@ -36,10 +36,9 @@ Transform ScaleDistanceRatioGd::compute_transform( const Ref<Se3Ref> & rel_se3, 
 {
 	const SE3 & se3 = rel_se3.ptr()->se3;
 
-	Float scale;
-	const SE3 scaled_se3 = ratio.compute_transform( se3, base_scale, scale );
+	Float scale = ratio.compute_scale( se3, base_scale );
 
-	Transform t = scaled_se3.transform();
+	Transform t = se3.transform();
 	t.scale( Vector3( scale, scale, scale ) );
 
 	return t;
