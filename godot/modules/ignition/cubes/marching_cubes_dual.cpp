@@ -418,7 +418,7 @@ const std::set<int> & MarchingCubesDual::materials() const
 	return _materials_set;
 }
 
-const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, const Vector3d & central_point, int material_ind )
+const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, const Vector3d & central_point, int material_ind, Float scale )
 {
 	// central_point is a point in source ref. frame with
 	// respect to which all vertices are computed.
@@ -448,8 +448,15 @@ const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, c
 			Vector3d world_v = src_se3 * source_v;
 			// Convert relative to scaled origin.
 			const Vector3d rel_to_scaled_v = inv_scaled_central_point_se3 * world_v;
-			
-			_ret_verts.push_back( Vector3( rel_to_scaled_v.x_, rel_to_scaled_v.y_, rel_to_scaled_v.z_ ) );
+			if ( scale > 0.0 )
+			{
+				const Vector3d scaled_rel_to_scaled_v = scale * rel_to_scaled_v;
+				_ret_verts.push_back( Vector3( scaled_rel_to_scaled_v.x_, scaled_rel_to_scaled_v.y_, scaled_rel_to_scaled_v.z_ ) );
+			}
+			else
+			{
+				_ret_verts.push_back( Vector3( rel_to_scaled_v.x_, rel_to_scaled_v.y_, rel_to_scaled_v.z_ ) );
+			}
 		}
 	}
 	return _ret_verts;
@@ -532,9 +539,9 @@ void MarchingCubesDual::uvs( const Vector3d & central_point, int material_ind, c
 	ret_uv2s = &_ret_uv2s;
 }
 
-void MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, const Vector3d & central_point, int material_ind )
+void MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, const Vector3d & central_point, int material_ind, Float scale )
 {
-	vertices( src_se3, central_point, material_ind );
+	vertices( src_se3, central_point, material_ind, scale );
 	normals( material_ind );
 	tangents( material_ind );
 

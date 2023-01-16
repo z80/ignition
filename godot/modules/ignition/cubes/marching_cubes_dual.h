@@ -169,13 +169,13 @@ public:
 
 
     const std::set<int>        & materials() const;
-    const std::vector<Vector3> & vertices( const SE3 & src_se3, const Vector3d & central_point, int material_ind );
+    const std::vector<Vector3> & vertices( const SE3 & src_se3, const Vector3d & central_point, int material_ind, Float scale );
     const std::vector<Vector3> & normals( int material_ind );
     const std::vector<real_t>  & tangents( int material_ind );
 	void uvs( const Vector3d & central_point, int material_ind, const std::vector<Vector2> * & uvs, const std::vector<Vector2> * & uv2s );
 
 	// For asynchronous computations.
-	void precompute_scaled_values( const SE3 & src_se3, const Vector3d & central_point, int material_ind );
+	void precompute_scaled_values( const SE3 & src_se3, const Vector3d & central_point, int material_ind, Float scale = -1.0 );
 	const std::vector<Vector3> & vertices() const;
 	const std::vector<Vector3> & normals() const;
 	const std::vector<real_t>  & tangents() const;
