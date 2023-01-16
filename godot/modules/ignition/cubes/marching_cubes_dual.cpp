@@ -3,7 +3,6 @@
 #include "volume_source.h"
 #include "cube_tables.h"
 #include "vector3d.h"
-#include "distance_scaler_base.h"
 #include "marching_cubes_dual_node.h"
 #include "marching_cubes_dual_cell.h"
 #include "volume_node_size_strategy.h"
@@ -403,11 +402,11 @@ SE3 MarchingCubesDual::se3_in_point( const Vector3d & at ) const
 	return ret;
 }
 
-SE3 MarchingCubesDual::asset_se3( const SE3 & src_se3, const SE3 & asset_at, const DistanceScalerBase * scaler ) const
+SE3 MarchingCubesDual::asset_se3( const SE3 & src_se3, const SE3 & asset_at ) const
 {
 	const SE3 asset_in_world_se3 = src_se3 * asset_at;
 
-	const SE3 scaled_source_se3     = this->compute_source_se3( src_se3, Vector3d::ZERO, scaler );
+	const SE3 scaled_source_se3     = this->compute_source_se3( src_se3, Vector3d::ZERO );
 	const SE3 inv_scaled_source_se3 = scaled_source_se3.inverse();
 	const SE3 asset_in_source_se3   = inv_scaled_source_se3 * asset_in_world_se3;
 
@@ -419,7 +418,7 @@ const std::set<int> & MarchingCubesDual::materials() const
 	return _materials_set;
 }
 
-const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, const Vector3d & central_point, int material_ind, const DistanceScalerBase * scaler )
+const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, const Vector3d & central_point, int material_ind )
 {
 	// central_point is a point in source ref. frame with
 	// respect to which all vertices are computed.
@@ -429,7 +428,7 @@ const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, c
 	_ret_verts.clear();
 	_ret_verts.reserve(3*qty);
 
-	const SE3 scaled_central_point_se3 = compute_source_se3( src_se3, central_point, scaler );
+	const SE3 scaled_central_point_se3 = compute_source_se3( src_se3, central_point );
 	const SE3 inv_scaled_central_point_se3 = scaled_central_point_se3.inverse();
 
 	for ( unsigned int i=0; i<qty; i++ )
@@ -447,9 +446,6 @@ const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, c
 			const Vector3d source_v = f.vertices[j];
 			// Convert to world.
 			Vector3d world_v = src_se3 * source_v;
-			// Convert to scaled world.
-			if ( scaler != nullptr )
-				world_v = scaler->scale( world_v );
 			// Convert relative to scaled origin.
 			const Vector3d rel_to_scaled_v = inv_scaled_central_point_se3 * world_v;
 			
@@ -536,9 +532,9 @@ void MarchingCubesDual::uvs( const Vector3d & central_point, int material_ind, c
 	ret_uv2s = &_ret_uv2s;
 }
 
-void MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, const Vector3d & central_point, int material_ind, const DistanceScalerBase * scaler )
+void MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, const Vector3d & central_point, int material_ind )
 {
-	vertices( src_se3, central_point, material_ind, scaler );
+	vertices( src_se3, central_point, material_ind );
 	normals( material_ind );
 	tangents( material_ind );
 
@@ -660,19 +656,16 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const SE3 & src
 
 
 
-Transform MarchingCubesDual::compute_source_transform( const SE3 & src_se3, const Vector3d & pt_in_source, const DistanceScalerBase * scaler ) const
+Transform MarchingCubesDual::compute_source_transform( const SE3 & src_se3, const Vector3d & pt_in_source ) const
 {
-	const SE3 se3 = compute_source_se3( src_se3, pt_in_source, scaler );
+	const SE3 se3 = compute_source_se3( src_se3, pt_in_source );
 	const Transform ret = se3.transform();
 	return ret;
 }
 
-SE3 MarchingCubesDual::compute_source_se3( const SE3 & src_se3, const Vector3d & pt_in_source, const DistanceScalerBase * scaler ) const
+SE3 MarchingCubesDual::compute_source_se3( const SE3 & src_se3, const Vector3d & pt_in_source ) const
 {
-	Vector3d o = src_se3 * pt_in_source;
-	if (scaler != nullptr)
-		o = scaler->scale( o );
-
+	const Vector3d o = src_se3 * pt_in_source;
 	SE3 se3( src_se3 );
 	se3.r_ = o;
 
@@ -787,23 +780,6 @@ Float MarchingCubesDual::node_size_max( const MarchingCubesDualNode * node ) con
 
 
 
-//Vector3d MarchingCubesDual::at_in_source_scaled( const VectorInt & at_i, const DistanceScalerBase * scaler ) const
-//{
-//	const Vector3d at( static_cast<Float>(at_i.x)*step, 
-//		               static_cast<Float>(at_i.y)*step, 
-//		               static_cast<Float>(at_i.z)*step );
-//
-//	if ( scaler == nullptr )
-//		return at;
-//
-//	const Vector3d at_in_world            = source_se3.q_ * at + source_se3.r_;
-//	const Vector3d at_in_world_scaled     = scaler->scale( at_in_world );
-//	const Vector3d origin_in_world_scaled = scaler->scale( source_se3.r_ );
-//	const Vector3d rel_to_origin_scaled   = at_in_world_scaled - origin_in_world_scaled;
-//	const Vector3d at_scaled              = inverted_source_se3.q_ * rel_to_origin_scaled;
-//
-//	return at_scaled;
-//}
 
 Vector3d MarchingCubesDual::at_in_source( const VectorInt & at_i, VolumeNodeSizeStrategy * strategy ) const
 {
@@ -948,24 +924,6 @@ int MarchingCubesDual::find_subdivision_levels( Float bounding_radius, VolumeSou
 	return size_int;
 }
 
-
-//bool MarchingCubesDual::find_surface( VolumeSource * source, const DistanceScalerBase * scaler, MarchingNode & surface_node )
-//{
-//	MarchingCubesDualNode node;
-//	compute_node_values( node, source, scaler );
-//	for ( int i=0; i<100000; i++ )
-//	{
-//		const bool has_surface = node.has_surface( iso_level );
-//		if ( has_surface )
-//		{
-//			surface_node = node;
-//			return true;
-//		}
-//		node = step_towards_surface( node, source, scaler );
-//	}
-//
-//	return false;
-//}
 
 
 void MarchingCubesDual::compute_node_values( MarchingCubesDualNode & node, VolumeSource * source, VolumeNodeSizeStrategy * strategy )
@@ -1719,63 +1677,6 @@ void MarchingCubesDual::assign_faces_to_octree_nodes()
 
 
 
-
-//MarchingNode MarchingCubesDual::step_towards_surface( const MarchingCubesDualNode & node, VolumeSource * source, const DistanceScalerBase * scaler )
-//{
-//	const Float center = node.values[1] + node.values[2] + node.values[6] + node.values[5] + 
-//					     node.values[0] + node.values[3] + node.values[7] + node.values[4];
-//	const Float sign = (center >= 0.0) ? 1.0 : -1.0;
-//    const Float dx = ( (node.values[1] + node.values[2] + node.values[6] + node.values[5]) - 
-//                       (node.values[0] + node.values[3] + node.values[7] + node.values[4]) ) * sign;
-//    const Float dy = ( (node.values[4] + node.values[5] + node.values[6] + node.values[7]) - 
-//                       (node.values[0] + node.values[1] + node.values[2] + node.values[3]) ) * sign;
-//    const Float dz = ( (node.values[3] + node.values[7] + node.values[6] + node.values[2]) - 
-//                       (node.values[0] + node.values[4] + node.values[5] + node.values[1]) ) * sign;
-//    const Float abs_vals[3] = { std::abs(dx), std::abs(dy), std::abs(dz) };
-//    Float max_val = -1.0;
-//    int   max_ind = -1;
-//    for ( int i=0; i<3; i++ )
-//    {
-//        const int val = abs_vals[i];
-//        if ( (max_ind < 0) || (max_val < val) )
-//        {
-//            max_ind = i;
-//            max_val = val;
-//        }
-//    }
-//
-//	MarchingCubesDualNode next_node( node );
-//    if ( max_ind == 0 )
-//    {
-//        if (dx > 0.0)
-//            next_node.at.x -= node.size;
-//        else
-//            next_node.at.x += node.size;
-//    }
-//    else if ( max_ind == 1 )
-//    {
-//        if (dy > 0.0)
-//            next_node.at.y -= node.size;
-//        else
-//            next_node.at.y += node.size;
-//    }
-//    else
-//    {
-//        if (dz > 0.0)
-//            next_node.at.z -= node.size;
-//        else
-//            next_node.at.z += node.size;
-//    }
-//
-//    // Compute node values.
-//    compute_node_values( next_node, source, scaler );
-//
-//    // Actually, as "value" is the distance, 
-//    // I might take a more correct adjustment in order to 
-//    // reduce number of steps needed to get a node containing the surface.
-//
-//    return next_node;
-//}
 
 
 Vector3d MarchingCubesDual::interpolate( const Vector3d & v0, const Vector3d & v1, const Float val0, const Float val1 ) const

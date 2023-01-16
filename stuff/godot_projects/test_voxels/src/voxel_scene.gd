@@ -29,7 +29,7 @@ func _ready():
 	var ok: bool = _voxels.subdivide_source_all( _src, _strategy )
 	var qty: int = _voxels.get_nodes_qty()
 	
-	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0, null )
+	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0 )
 	var mesh_inst: MeshInstance = get_node( "Mesh" )
 	_voxels.apply_to_mesh_only( mesh_inst )
 	
@@ -65,7 +65,7 @@ func _on_timer():
 	var ok: bool = _voxels.subdivide_source_all( _src, _strategy )
 	var qty: int = _voxels.get_nodes_qty()
 	
-	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0, null )
+	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0 )
 	var mesh_inst: MeshInstance = get_node( "Mesh" )
 	_voxels.apply_to_mesh_only_wireframe( mesh_inst )
 

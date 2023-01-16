@@ -4,7 +4,6 @@
 
 #include "core/reference.h"
 #include "se3_ref.h"
-#include "distance_scaler_ref.h"
 
 namespace Ign
 {
@@ -32,7 +31,7 @@ public:
 	Transform transform_in_point( const Vector3 & at ) const;
 	String hash() const;
 
-	Transform asset_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() ) const;
+	Transform asset_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at ) const;
 
 	Array at();
 	int   size() const;

@@ -6,7 +6,6 @@
 #include "core/reference.h"
 #include "se3_ref.h"
 #include "volume_source_gd.h"
-#include "distance_scaler_ref.h"
 #include "marching_cubes_dual_node_gd.h"
 #include "volume_node_size_strategy_gd.h"
 #include "bounding_node_gd.h"
@@ -43,19 +42,19 @@ public:
 	Ref<MarchingCubesDualNodeGd> get_tree_node( int ind );
 
 	Ref<Se3Ref> se3_in_point( const Vector3 & at, const Ref<Se3Ref> & inv_source_se3=Ref<Se3Ref>() ) const;
-	Ref<Se3Ref> asset_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
-	Transform   asset_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() ) const;
+	Ref<Se3Ref> asset_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at ) const;
+	Transform   asset_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at ) const;
 
 	Array materials_used();
 	// This one computes and applies synchronously.
-	void apply_to_mesh( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & central_point_se3, int material_index, Node * mesh_instance, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	void apply_to_mesh( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & central_point_se3, int material_index, Node * mesh_instance );
 	// And this one computes and applies in tow different methods.
-	void precompute_scaled_values( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & central_point_se3, int material_index, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	void precompute_scaled_values( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & central_point_se3, int material_index );
 	void apply_to_mesh_only( Node * mesh_instance );
 	void apply_to_mesh_only_wireframe( Node * mesh_instance );
 
-	Ref<Se3Ref> compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
-	Transform compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3, const Ref<DistanceScalerBaseRef> & scaler = Ref<DistanceScalerBaseRef>() );
+	Ref<Se3Ref> compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3 );
+	Transform compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3 );
 	const PoolVector3Array & collision_faces( const Ref<Se3Ref> & src_se3, real_t dist );
 
 	void set_max_nodes_qty( int qty );

@@ -26,7 +26,6 @@ namespace Ign
 
 class VolumeSource;
 class MaterialSource;
-class DistanceScalerBase;
 
 class MarchingCubesDualNode;
 class MarchingCubesDualCell;
@@ -166,17 +165,17 @@ public:
 	MarchingCubesDualCell * create_dual_cell();
 
 	SE3 se3_in_point( const Vector3d & at ) const;
-	SE3 asset_se3( const SE3 & src_se3, const SE3 & asset_at, const DistanceScalerBase * scaler ) const;
+	SE3 asset_se3( const SE3 & src_se3, const SE3 & asset_at ) const;
 
 
     const std::set<int>        & materials() const;
-    const std::vector<Vector3> & vertices( const SE3 & src_se3, const Vector3d & central_point, int material_ind, const DistanceScalerBase * scaler );
+    const std::vector<Vector3> & vertices( const SE3 & src_se3, const Vector3d & central_point, int material_ind );
     const std::vector<Vector3> & normals( int material_ind );
     const std::vector<real_t>  & tangents( int material_ind );
 	void uvs( const Vector3d & central_point, int material_ind, const std::vector<Vector2> * & uvs, const std::vector<Vector2> * & uv2s );
 
 	// For asynchronous computations.
-	void precompute_scaled_values( const SE3 & src_se3, const Vector3d & central_point, int material_ind, const DistanceScalerBase * scaler );
+	void precompute_scaled_values( const SE3 & src_se3, const Vector3d & central_point, int material_ind );
 	const std::vector<Vector3> & vertices() const;
 	const std::vector<Vector3> & normals() const;
 	const std::vector<real_t>  & tangents() const;
@@ -187,12 +186,11 @@ public:
 
     const std::vector<Vector3> & collision_faces( const SE3 & src_se3, const Float dist );
 
-    Transform compute_source_transform( const SE3 & src_se3, const Vector3d & pt_in_source, const DistanceScalerBase * scaler = nullptr) const;
-	SE3 compute_source_se3( const SE3 & src_se3, const Vector3d & pt_in_source, const DistanceScalerBase * scaler = nullptr) const;
+    Transform compute_source_transform( const SE3 & src_se3, const Vector3d & pt_in_source ) const;
+	SE3 compute_source_se3( const SE3 & src_se3, const Vector3d & pt_in_source ) const;
 
     Float    node_size_min( const MarchingCubesDualNode * node ) const;
 	Float    node_size_max( const MarchingCubesDualNode * node ) const;
-	//Vector3d at_in_source_scaled( const SE3 & source_se3, const VectorInt & at_i, const DistanceScalerBase * scaler=nullptr ) const;
     Vector3d at_in_source( const VectorInt & at_i, VolumeNodeSizeStrategy * strategy ) const;
 
 	VectorInt vector_int( const Vector3d & at ) const;
@@ -224,9 +222,7 @@ public:
 	void cleanup_nodes();
 
     int find_subdivision_levels( Float bounding_radius, VolumeSource * source );
-    //bool find_surface( VolumeSource * source, const DistanceScalerBase * scaler, MarchingNode & surface_node );
     void compute_node_values( MarchingCubesDualNode & node, VolumeSource * source, VolumeNodeSizeStrategy * strategy );
-    //MarchingNode step_towards_surface( const MarchingCubesDualNode & node, VolumeSource * source, const DistanceScalerBase * scaler );
 	void assign_node_indices();
 
 
@@ -252,10 +248,6 @@ public:
 	void assign_faces_to_octree_nodes();
 
     Vector3d interpolate( const Vector3d & v0, const Vector3d & v1, const Float val0, const Float val1 ) const;
-
-    // For BFS search.
-    // 26 Node neighbors.
-    //void add_node_neighbors( const MarchingCubesDualNode & node, VolumeSource * source, const DistanceScalerBase * scaler, int & nodes_qty );
 
     // Create faces.
     void create_faces( const MarchingCubesDualCell & node, int material_index = -1 );
