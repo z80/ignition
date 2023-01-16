@@ -33,7 +33,7 @@ bool operator<( const OctreeNodeFaceIndexPair & a, const OctreeNodeFaceIndexPair
 MarchingCubesDual::MarchingCubesDual()
 {
 	iso_level     = 0.0;
-	max_rel_diff  = 0.2;
+	max_diff  = 0.2;
 	eps           = 1.0e-4;
 	step          = 1.0;
 	max_nodes_qty = -1;
@@ -269,12 +269,12 @@ bool MarchingCubesDual::intersect_with_ray( MarchingCubesDualNode * node, const 
 
 void MarchingCubesDual::set_split_precision( Float rel_diff )
 {
-	max_rel_diff = rel_diff;
+	max_diff = rel_diff;
 }
 
 Float MarchingCubesDual::get_split_precision() const
 {
-	return max_rel_diff;
+	return max_diff;
 }
 
 bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, int level, VolumeSource * source, VolumeNodeSizeStrategy * strategy )
@@ -361,11 +361,10 @@ bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, int level, V
 	const Vector3d center_float = at_in_source( center_int, strategy );
 	const Float    actual_value = value_at( source, center_int, center_float );
 
-	//const Float node_sz_max = node_size_max( node );
-	//const Float rel_diff    = std::abs( actual_value - interpolated_value ) / node_sz_max;
-	const Float rel_diff    = std::abs( actual_value - interpolated_value ) / node_sz;
+	//const Float rel_diff    = std::abs( actual_value - interpolated_value ) / node_sz;
+	const Float abs_diff    = std::abs( actual_value - interpolated_value );
 	// Compare this difference per unit node size with the threshold.
-	const bool do_split = ( rel_diff > max_rel_diff );
+	const bool do_split = ( abs_diff > max_diff );
 
 	//if ( !do_split )
 	//	int iii = 0;

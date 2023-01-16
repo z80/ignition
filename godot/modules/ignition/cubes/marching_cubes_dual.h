@@ -211,7 +211,7 @@ public:
 
 
     Float iso_level;
-	Float max_rel_diff;
+	Float max_diff;
     Float eps;
     // This is the smallest cube size.
     Float step;
