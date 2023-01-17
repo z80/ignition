@@ -298,18 +298,24 @@ bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, int level, V
 		const Float center_value = value_at( source, center_int, center );
 		const Float abs_center_value = std::abs(center_value);
 		// Now check max distance to all the corners. It may be different in warped space.
+		bool too_far = true;
 		for ( int i=0; i<8; i++ )
 		{
 			const Vector3d at = node->vertices[i];
 			const Vector3d d_at = at - center;
 			const Float dist = d_at.Length();
-			// If the distance is smaller than the distance to the surface,
+			// If the distance is bigger than the distance to the surface,
 			// the node may contain the surface and should be split.
 			if ( dist >= abs_center_value )
-				return true;
+			{
+				too_far = false;
+				break;
+			}
 		}
-		// If all the istances are bigger, the node cannot contain surface.
-		return false;
+		// If all the istances are smaller that the distance to the surface,
+		// the node cannot contain surface.
+		if ( too_far )
+			return false;
 	}
 
 	// If smaller than minimum allowed, don't subdivide.
@@ -348,9 +354,9 @@ bool MarchingCubesDual::should_split( MarchingCubesDualNode * node, int level, V
 
 	// But first check if the node has the surface.
 	// If not, there is no point subdividing.
-	const bool has_surface = node->has_surface( iso_level );
-	if ( !has_surface )
-		return false;
+	//const bool has_surface = node->has_surface( iso_level );
+	//if ( !has_surface )
+	//	return false;
 
 	// For now just the central point.
 	Float interpolated_value = 0.0;
