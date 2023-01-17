@@ -9,6 +9,7 @@ void BoundingNodeGd::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("create_adjacent_node", "dx", "dy", "dz"), &BoundingNodeGd::create_adjacent_node, Variant::OBJECT );
 	ClassDB::bind_method( D_METHOD("equals_to", "other_node"),                &BoundingNodeGd::equals_to,            Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("node_id"),                                &BoundingNodeGd::node_id,              Variant::STRING );
 }
 
 BoundingNodeGd::BoundingNodeGd()
@@ -43,6 +44,16 @@ bool BoundingNodeGd::equals_to( const Ref<BoundingNodeGd> & other ) const
 
 	return true;
 }
+
+String BoundingNodeGd::node_id() const
+{
+	String ret = itos(node.at.x) + String(",") +
+		         itos(node.at.x) + String(",") +
+		         itos(node.at.x) + String(",") +
+		         itos(node.size);
+	return ret;
+}
+
 
 
 }
