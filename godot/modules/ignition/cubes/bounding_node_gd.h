@@ -23,6 +23,7 @@ public:
 
 	Ref<BoundingNodeGd> create_adjacent_node( int dx, int dy, int dz ) const;
 
+	bool equals_to( const Ref<BoundingNodeGd> & other ) const;
 public:
 	MarchingCubesDualNode node;
 };
