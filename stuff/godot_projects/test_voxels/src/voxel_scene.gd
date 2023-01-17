@@ -67,20 +67,20 @@ func apply_transform():
 
 
 func _on_timer():
-	pass
+	regenerate_mesh()
 	
 
 func regenerate_mesh():
 	var c: Camera = get_node( "Camera" )
 	var r: Vector3 = c.global_transform.origin
-	r *= 7.0 / r.length()
+	r = 7.0 * r.normalized()
 	
 	_strategy.focal_point = r
 	
 	var se3: Se3Ref = Se3Ref.new()
 	var ref_pt_se3: Se3Ref = Se3Ref.new()
 	
-	_voxels.split_precision = 0.02
+	_voxels.split_precision = 0.002
 	
 	#var ok: bool = _voxels.subdivide_source( bounding_node, _src, _strategy )
 	var ok: bool = _voxels.subdivide_source_all( _src, _strategy )
@@ -89,7 +89,7 @@ func regenerate_mesh():
 	
 	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0, 2.0 )
 	var mesh_inst: MeshInstance = get_node( "Mesh" )
-	_voxels.apply_to_mesh_only_wireframe( mesh_inst )
+	_voxels.apply_to_mesh_only( mesh_inst )
 
 	mesh_inst = get_node( "MeshLeft" )
 	_voxels.apply_to_mesh_only_wireframe( mesh_inst )
