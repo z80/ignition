@@ -36,10 +36,10 @@ bool BoundingNodeGd::equals_to( const Ref<BoundingNodeGd> & other ) const
 	if (b == nullptr)
 		return false;
 
-	if ( node.at != b->at )
+	if ( node.at != b->node.at )
 		return false;
 
-	if ( node.size != b->size )
+	if ( node.size != b->node.size )
 		return false;
 
 	return true;
