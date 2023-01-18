@@ -61,7 +61,7 @@ func apply_transform():
 	var cam: Camera = get_node("Camera")
 	var t: Transform = cam.global_transform.inverse()
 	_rel_se3.transform = t
-	var tt: Transform = _scale_dist_ratio.compute_transform( _rel_se3, 2.0 )
+	var tt: Transform = _scale_dist_ratio.compute_transform( _rel_se3, 1.0 )
 	tt = cam.global_transform * tt
 	mesh_inst.global_transform = tt
 
@@ -87,7 +87,7 @@ func regenerate_mesh():
 	var qty: int = _voxels.get_nodes_qty()
 	print( "qty: ", qty )
 	
-	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0, 2.0 )
+	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0, 1.0 )
 	var mesh_inst: MeshInstance = get_node( "Mesh" )
 	_voxels.apply_to_mesh_only( mesh_inst )
 
