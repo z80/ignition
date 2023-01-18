@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+source_radius = 1000.0
+focus_depth = 40.0
+identity_distance = 100.0
+materials = [ {
+"distance": 300.0,
+"node_size": 100.0
+} ]
+append_node_size = false
+node_sizes = [ {
+"distance": 300.0,
+"node_size": 100.0
+} ]

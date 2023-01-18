@@ -1,6 +1,6 @@
 
 extends CelestialBody
-class_name CelestialSurfaceVoxel
+class_name CelestialSurfaceVoxel2
 
 # Radius is taken from
 var radius_km = 1.0

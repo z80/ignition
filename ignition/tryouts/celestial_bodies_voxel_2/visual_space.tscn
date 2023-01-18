@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_cells/visual_cell.tscn" type="PackedScene" id=1]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_space.gd" type="Script" id=2]
+
+[node name="VisualSpace" type="Spatial"]
+script = ExtResource( 2 )
+
+[node name="Visual" parent="." instance=ExtResource( 1 )]

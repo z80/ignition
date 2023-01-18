@@ -61,7 +61,7 @@ func rebuild_surface( source_se3: Se3Ref, strategy: VolumeNodeSizeStrategyGd, sc
 	_voxel_surface.max_nodes_qty   = 20000000
 	_voxel_surface.split_precision = 0.01
 	lock()
-	var ok: bool = _voxel_surface.subdivide_source( source_radius, source, strategy )
+	var ok: bool = _voxel_surface.subdivide_source_all( source, strategy )
 	#print( "material inds: ", _material_inds )
 	unlock()
 	var ret: Array = [ok, source_se3, scaler]
@@ -88,7 +88,7 @@ func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseR
 	var plain_dist: float = s.plain_distance
 	var log_scale: float  = s.log_scale
 	var source_tr: Transform = ref_point_transform.transform
-	var scaled_source_se3: Se3Ref = _voxel_surface.compute_source_se3( source_se3, _local_point_se3, scaler )
+	var scaled_source_se3: Se3Ref = _voxel_surface.compute_source_se3( source_se3, _local_point_se3 )
 	var inv_scaled_source_se3: Se3Ref = scaled_source_se3.inverse()
 	var inv_scaled_source_tr: Transform = inv_scaled_source_se3.transform
 	
@@ -135,7 +135,7 @@ func rescale_surface( source_se3: Se3Ref, local_point_se3: Se3Ref, scaler: Dista
 		mesh_inst.material_override = materials[material_ind]
 		
 		lock()
-		_voxel_surface.precompute_scaled_values( source_se3, local_point_se3, material_ind, scaler )
+		_voxel_surface.precompute_scaled_values( source_se3, local_point_se3, material_ind, 1.0 )
 		unlock()
 	
 	return true
@@ -174,7 +174,7 @@ func rescale_surface_finished( local_point_se3: Se3Ref, wireframe: bool = false 
 
 
 func get_root_se3( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
-	var t: Transform = _voxel_surface.compute_source_transform( source_se3, _local_point_se3, scaler )
+	var t: Transform = _voxel_surface.compute_source_transform( source_se3, _local_point_se3 )
 	return t
 
 

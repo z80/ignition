@@ -6,53 +6,58 @@ var vp_container: Node = null
 var ref_frame_root: RefFrameRoot = null
 
 
-func get_root_for_bodies():
-	var ret = get_node( "bodies" )
+func get_visual_layer_space():
+	var ret: Spatial = get_node( "VisualLayerSpace" )
 	return ret
 
 
-func get_root_for_physics_envs():
-	var ret = get_node( "physics_envs" )
-	return ret
-
-func get_root_for_visuals():
-	var ret = get_node( "visuals" )
+func get_visual_layer_near():
+	var root: Node = get_node( "VisualLayerNear" )
+	var ret: Spatial = root.root
 	return ret
 
 
-func get_overlay_viewport():
+func get_visual_layer_overlay():
 	if vp_container == null:
 		vp_container = get_node( "viewport" )
 	var vp: Viewport = vp_container.get_viewport()
 	return vp
 
 
-func set_overlay_visible( en: bool ):
+func get_root_for_physics_envs():
+	var ret = get_node( "PhysicsEnvs" )
+	return ret
+
+
+func get_root_for_visuals():
+	var ret = get_node( "visuals" )
+	return ret
+
+
+
+
+func set_visual_overlay_visible( en: bool ):
 	if vp_container == null:
-		vp_container = get_node( "viewport" )
+		vp_container = get_node( "VisualLayerOverlay" )
 	vp_container.visible = en
 
 
 # Let's say, this one is for panels
 func get_root_for_gui_panels():
-	var ret: Node = get_node( "gui_panels" )
+	var ret: Node = get_node( "GuiPanels" )
 	return ret
 
 
 func get_root_for_gui_windows():
-	var ret: Node = get_node( "gui_windows" )
+	var ret: Node = get_node( "GuiWindows" )
 	return ret
 
 
 func get_root_for_gui_popups():
-	var ret: Node = get_node( "gui_popups" )
+	var ret: Node = get_node( "GuiPopups" )
 	return ret
 
 
-func get_unique_name_for_bodies( name_template: String ):
-	var section: Node = get_node( "bodies" )
-	var ret: String = _get_unique_name_for( section, name_template )
-	return ret
 
 
 func get_unique_name_for_physics_envs( name_template: String ):
