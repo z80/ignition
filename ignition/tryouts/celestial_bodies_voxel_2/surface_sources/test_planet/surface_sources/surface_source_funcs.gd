@@ -9,6 +9,7 @@ var material_priority: int  = 0
 var node_sz_max: float      = 1.25
 var node_sz_min: float      = 0.25
 var radius: float           = 100.0
+var bounding_radius: float  = 100.0
 var noise: OpenSimplexNoise = null
 var height: float           = 20.0
 
@@ -72,4 +73,10 @@ func material( at: Vector3 ):
 func priority():
 	return material_priority
 
+
+func set_bounding_radius( r: float ):
+	bounding_radius = r
+
+func get_bounding_radius():
+	return bounding_radius
 

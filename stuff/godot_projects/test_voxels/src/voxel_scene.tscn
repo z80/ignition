@@ -19,12 +19,13 @@ source_resource = ExtResource( 3 )
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15.4367 )
 script = ExtResource( 1 )
-max_speed = Vector3( 3, 3, 3 )
+max_speed = Vector3( 30, 30, 30 )
 
 [node name="Mesh" type="MeshInstance" parent="."]
 material_override = SubResource( 1 )
 
 [node name="PlanetAthmosphere" parent="Mesh" instance=ExtResource( 4 )]
+visible = false
 planet_radius = 8.0
 atmosphere_height = 1.0
 sun_path = NodePath("../../SunPosition")

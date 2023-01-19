@@ -12,8 +12,10 @@ script = ExtResource( 1 )
 [node name="VisualLayerSpace" parent="." instance=ExtResource( 5 )]
 
 [node name="VisualLayerNear" parent="." instance=ExtResource( 4 )]
+visible = false
 
 [node name="VisualLayerOverlay" parent="." instance=ExtResource( 2 )]
+visible = false
 
 [node name="PhysicsEnvs" type="Node" parent="."]
 

@@ -20,7 +20,7 @@ func _ready():
 	
 	_strategy.radius      = 8.0
 	_strategy.focal_point = Vector3( 0.0, 0.0, 7.99 )
-	_strategy.max_level   = 6
+	_strategy.max_level   = 5
 	
 	var _min_step: float = _voxels.init_min_step( _src )
 	var se3: Se3Ref = Se3Ref.new()
@@ -61,12 +61,13 @@ func apply_transform():
 	var cam: Camera = get_node("Camera")
 	var t: Transform = cam.global_transform.inverse()
 	_rel_se3.transform = t
-	var tt: Transform = _scale_dist_ratio.compute_transform( _rel_se3, 1.0 )
+	var tt: Transform = _scale_dist_ratio.compute_transform( _rel_se3, 0.5 )
 	tt = cam.global_transform * tt
 	mesh_inst.global_transform = tt
 
 
 func _on_timer():
+	return
 	regenerate_mesh()
 	
 
@@ -87,12 +88,13 @@ func regenerate_mesh():
 	var qty: int = _voxels.get_nodes_qty()
 	print( "qty: ", qty )
 	
-	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0, 1.0 )
+	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0, 0.5 )
 	var mesh_inst: MeshInstance = get_node( "Mesh" )
-	_voxels.apply_to_mesh_only( mesh_inst )
-
-	mesh_inst = get_node( "MeshLeft" )
 	_voxels.apply_to_mesh_only_wireframe( mesh_inst )
+
+	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0, 1.0 )
+	mesh_inst = get_node( "MeshLeft" )
+	_voxels.apply_to_mesh_only( mesh_inst )
 	
 	apply_transform()
 

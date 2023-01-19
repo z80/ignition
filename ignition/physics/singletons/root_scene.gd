@@ -8,6 +8,7 @@ var ref_frame_root: RefFrameRoot = null
 
 func get_visual_layer_space():
 	var ret: Spatial = get_node( "VisualLayerSpace" )
+	ret = ret.root
 	return ret
 
 
@@ -19,18 +20,13 @@ func get_visual_layer_near():
 
 func get_visual_layer_overlay():
 	if vp_container == null:
-		vp_container = get_node( "viewport" )
+		vp_container = get_node( "VisualLayerOverlay" )
 	var vp: Viewport = vp_container.get_viewport()
 	return vp
 
 
 func get_root_for_physics_envs():
 	var ret = get_node( "PhysicsEnvs" )
-	return ret
-
-
-func get_root_for_visuals():
-	var ret = get_node( "visuals" )
 	return ret
 
 

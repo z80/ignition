@@ -38,8 +38,13 @@ Transform ScaleDistanceRatioGd::compute_transform( const Ref<Se3Ref> & rel_se3, 
 
 	Float scale = ratio.compute_scale( se3, base_scale );
 
-	Transform t = se3.transform();
+	Transform t;
+
+	t.basis = Basis( se3.q() );
 	t.scale( Vector3( scale, scale, scale ) );
+
+	const Vector3d origin = se3.r_ * (base_scale * scale);
+	t.origin = Vector3( origin.x_, origin.y_, origin.z_ );
 
 	return t;
 }

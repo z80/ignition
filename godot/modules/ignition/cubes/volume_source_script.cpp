@@ -40,7 +40,7 @@ void VolumeSourceScript::set_bounding_radius( Float r )
 	const Variant v_ret = si->call( "set_bounding_radius", ptr, 1, ce );
 	if ( ce.error != Variant::CallError::CALL_OK )
 	{
-		print_error( "VolumeSourceScript error: expected real_t as an argument" );
+		print_error( "VolumeSourceScript error: set_bounding_radius expected real_t as an argument" );
 		return;
 	}
 }
@@ -58,7 +58,7 @@ Float VolumeSourceScript::get_bounding_radius() const
 	const Variant v_ret = si->call( "get_bounding_radius", nullptr, 0, ce );
 	if ( ce.error != Variant::CallError::CALL_OK )
 	{
-		print_error( "VolumeSourceScript error: expected real_t as an argument" );
+		print_error( "VolumeSourceScript error: get_bounding_radius" );
 		return 0.0;
 	}
 	const real_t ret = v_ret;
@@ -80,7 +80,7 @@ Float VolumeSourceScript::value( const Vector3d & at )
 	const Variant v_ret = si->call( "value", ptr, 1, ce );
 	if ( ce.error != Variant::CallError::CALL_OK )
 	{
-		print_error( "VolumeSourceScript error: expected Vector3 as an argument" );
+		print_error( "VolumeSourceScript error: value expected Vector3 as an argument" );
 		return 0.0;
 	}
 	const real_t ret = v_ret;
