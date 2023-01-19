@@ -369,7 +369,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Ignition"
-run/main_scene="res://tryouts/voxels/voxel_scene.tscn"
+run/main_scene="res://tryouts/celestial_bodies_voxel_2/editing_tool/editing_tool.tscn"
 config/icon="res://icon.png"
 
 [autoload]

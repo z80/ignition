@@ -5,6 +5,8 @@ class_name CelestialSurfaceVoxel
 export(PackedScene) var VisualCellSpace = null
 export(PackedScene) var VisualCell = null
 
+var _visual_space: Spatial = null
+var _visual_surface: Spatial = null
 
 
 # Radius is taken from
@@ -42,7 +44,7 @@ var _force_source_air_drag: ForceSourceAirDrag      = null
 
 var _translation: RefFrameNode = null
 var _rotation: RefFrameNode    = null
-var _all_surfaces: Node        = null
+
 
 func get_class():
 	return "CelestialSurfaceVoxel"
@@ -60,23 +62,31 @@ func rotation_rf():
 	return _rotation
 
 
-func surfaces_node():
-	if _all_surfaces == null:
-		var rot: Node = rotation_rf()
-		_all_surfaces = rot.get_child( 0 )
-	return _all_surfaces
+func _create_visuals():
+	if VisualCellSpace != null:
+		var layer: Spatial = RootScene.get_visual_layer_space()
+		_visual_space = VisualCellSpace.instance()
+		layer.add_child( _visual_space )
+	
+	if VisualCell != null:
+		var layer: Spatial = RootScene.get_visual_layer_near()
+		_visual_surface = VisualCell.instance()
+		layer.add_child( _visual_surface )
+
 
 
 
 func _ready():
-	var sn: Node = surfaces_node()
-	var src: Resource = sn.get_surface_source()
+	_create_visuals()
+
+	var src: Resource = _visual_space.get_surface_source()
 	radius_km = src.source_radius * 0.001
 
 	init_forces()
 	
 	# It should be created only when the thing is in the tree.
 	_create_orbit_visualizer()
+	
 	
 
 
@@ -137,13 +147,12 @@ func _process_geometry( force_player_rf: RefFrameNode = null ):
 	
 	var translation: RefFrameNode = self
 	var rotation: RefFrameNode    = rotation_rf()
-	var planet: Spatial           = surfaces_node()
 	
 	var paths: Array = []
 	for rf in physics_ref_frames:
 		# Check if either node is direct parent of this rf
 		var p = rf.get_parent()
-		var is_child: bool = ( p == planet ) or ( p == rotation ) or ( p == translation )
+		var is_child: bool = ( p == rotation ) or ( p == translation )
 		if not is_child:
 			continue
 	
@@ -153,8 +162,11 @@ func _process_geometry( force_player_rf: RefFrameNode = null ):
 	if (camera != null) and ( is_instance_valid(camera) ):
 		var rot: RefFrameNode = rotation_rf()
 		var source_se3: Se3Ref = rot.relative_to( camera )
-		var surfaces: Node = surfaces_node()
-		surfaces.update_source_se3( source_se3 )
+		var view_point_se3: Se3Ref = source_se3.inverse()
+		
+		_visual_space.update_source_se3( source_se3, view_point_se3 )
+		if _visual_surface != null:
+			_visual_surface.update_source_se3( source_se3, view_point_se3 )
 
 
 

@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/celestial_surface_voxel.gd" type="Script" id=1]
-[ext_resource path="res://tryouts/celestial_bodies_voxel/all_surfaces.tscn" type="PackedScene" id=2]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_space.tscn" type="PackedScene" id=2]
 
 [sub_resource type="GDScript" id=1]
 script/source = "
@@ -75,6 +75,8 @@ func _child_left( child_ref_frame: RefFrameNode ):
 
 
 func _create_collision_surfaces():
+	return
+	
 	var all_surfs: Node = get_child(0)
 	var surface_source: Resource = all_surfs.get_surface_source()
 	
@@ -100,8 +102,7 @@ func _create_collision_surfaces():
 
 [node name="Translation" type="RefFrameMotionNode"]
 script = ExtResource( 1 )
+VisualCellSpace = ExtResource( 2 )
 
 [node name="Rotation" type="RefFrameRotationNode" parent="."]
 script = SubResource( 1 )
-
-[node name="All_Surfaces" parent="Rotation" instance=ExtResource( 2 )]

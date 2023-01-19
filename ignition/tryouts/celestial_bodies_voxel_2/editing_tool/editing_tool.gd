@@ -8,14 +8,11 @@ var _sun_position: RefFrameNode = null
 var _rf: RefFrameNode = null
 
 func _init():
-	._init()
-	# Make creator know where to add visual and physical objects.
-	BodyCreator.root_node = self
+	pass
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	._ready()
-	
 	_sun_position = get_node( "SunPosition" )
 	_camera = get_node( "SunPosition/Planet/Camera" )
 	_camera.map_mode = true
@@ -29,9 +26,6 @@ func _ready():
 	
 	
 	var planet: Node = get_node( "SunPosition/Planet" )
-	var surfaces: Node = planet.surfaces_node()
-	var ui: Node = get_node( "Ui" )
-	ui.surfaces = surfaces
 
 
 

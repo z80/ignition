@@ -21,6 +21,4 @@ render_target_update_mode = 3
 
 [node name="Root" parent="Viewport" instance=ExtResource( 2 )]
 
-[connection signal="resized" from="." to="." method="_on_resized"]
-
 [editable path="Viewport/Root"]

@@ -10,7 +10,7 @@ var player_control: Node = null setget _set_player_control, _get_player_control
 # Camera. It is supposed to be the only one.
 var player_camera: RefFrameNode = null setget ,_get_camera
 # Scaler for large distances.
-var distance_scaler: DistanceScalerRef = DistanceScalerRef.new()
+#var distance_scaler: DistanceScalerRef = DistanceScalerRef.new()
 
 var visualize_orbits: bool = false
 
@@ -54,8 +54,9 @@ func _ready():
 
 
 func init():
-	distance_scaler.plain_distance = 2000.0
-	distance_scaler.log_scale      = 1.0
+	#distance_scaler.plain_distance = 2000.0
+	#distance_scaler.log_scale      = 1.0
+	pass
 
 
 

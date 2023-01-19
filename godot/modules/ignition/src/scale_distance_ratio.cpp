@@ -29,7 +29,7 @@ Float ScaleDistanceRatio::compute_scale( const SE3 & rel_se3, Float base_scale )
 	const Float denominator = max_distance + base_scale * dist;
 
 	// Return scale separately.
-	const Float scale = max_distance / denominator;
+	const Float scale = (max_distance * base_scale) / denominator;
 
 	return scale;
 }

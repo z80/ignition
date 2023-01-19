@@ -7,15 +7,9 @@ var _sun_position: RefFrameNode = null
 
 var _rf: RefFrameNode = null
 
-func _init():
-	._init()
-	# Make creator know where to add visual and physical objects.
-	BodyCreator.root_node = self
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	._ready()
-	
 	_sun_position = get_node( "SunPosition" )
 	_camera = get_node( "SunPosition/Planet/Camera" )
 	_camera.map_mode = true
