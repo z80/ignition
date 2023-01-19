@@ -15,7 +15,6 @@ script = ExtResource( 1 )
 visible = false
 
 [node name="VisualLayerOverlay" parent="." instance=ExtResource( 2 )]
-visible = false
 
 [node name="PhysicsEnvs" type="Node" parent="."]
 

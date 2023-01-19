@@ -16,6 +16,7 @@ script = ExtResource( 1 )
 [node name="Viewport" type="Viewport" parent="."]
 size = Vector2( 1024, 600 )
 world = SubResource( 2 )
+transparent_bg = true
 handle_input_locally = false
 render_target_update_mode = 3
 
