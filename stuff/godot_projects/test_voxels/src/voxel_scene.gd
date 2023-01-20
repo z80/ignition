@@ -34,7 +34,7 @@ func _ready():
 	var ok: bool = _voxels.subdivide_source_all( _src, _strategy )
 	var qty: int = _voxels.get_nodes_qty()
 	
-	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0, 1.0 )
+	_voxels.precompute_scaled_values( se3, 0, 1.0 )
 	var mesh_inst: MeshInstance = get_node( "Mesh" )
 	_voxels.apply_to_mesh_only( mesh_inst )
 	
@@ -79,7 +79,6 @@ func regenerate_mesh():
 	_strategy.focal_point = r
 	
 	var se3: Se3Ref = Se3Ref.new()
-	var ref_pt_se3: Se3Ref = Se3Ref.new()
 	
 	_voxels.split_precision = 0.002
 	
@@ -88,11 +87,11 @@ func regenerate_mesh():
 	var qty: int = _voxels.get_nodes_qty()
 	print( "qty: ", qty )
 	
-	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0, 0.5 )
+	_voxels.precompute_scaled_values( se3, 0, 0.5 )
 	var mesh_inst: MeshInstance = get_node( "Mesh" )
 	_voxels.apply_to_mesh_only_wireframe( mesh_inst )
 
-	_voxels.precompute_scaled_values( se3, ref_pt_se3, 0, 1.0 )
+	_voxels.precompute_scaled_values( se3, 0, 1.0 )
 	mesh_inst = get_node( "MeshLeft" )
 	_voxels.apply_to_mesh_only( mesh_inst )
 	
