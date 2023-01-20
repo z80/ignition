@@ -169,13 +169,13 @@ public:
 
 
     const std::set<int>        & materials() const;
-    const std::vector<Vector3> & vertices( const SE3 & src_se3, const Vector3d & central_point, int material_ind, Float scale );
+    const std::vector<Vector3> & vertices( const SE3 & src_se3, int material_ind, Float scale );
     const std::vector<Vector3> & normals( int material_ind );
     const std::vector<real_t>  & tangents( int material_ind );
-	void uvs( const Vector3d & central_point, int material_ind, const std::vector<Vector2> * & uvs, const std::vector<Vector2> * & uv2s );
+	void uvs( int material_ind, const std::vector<Vector2> * & uvs, const std::vector<Vector2> * & uv2s );
 
 	// For asynchronous computations.
-	void precompute_scaled_values( const SE3 & src_se3, const Vector3d & central_point, int material_ind, Float scale = -1.0 );
+	void precompute_scaled_values( const SE3 & src_se3, int material_ind, Float scale = -1.0 );
 	const std::vector<Vector3> & vertices() const;
 	const std::vector<Vector3> & normals() const;
 	const std::vector<real_t>  & tangents() const;
@@ -185,9 +185,6 @@ public:
 
 
     const std::vector<Vector3> & collision_faces( const SE3 & src_se3, const Float dist );
-
-    Transform compute_source_transform( const SE3 & src_se3, const Vector3d & pt_in_source ) const;
-	SE3 compute_source_se3( const SE3 & src_se3, const Vector3d & pt_in_source ) const;
 
     Float    node_size_min( const MarchingCubesDualNode * node ) const;
 	Float    node_size_max( const MarchingCubesDualNode * node ) const;

@@ -411,9 +411,8 @@ SE3 MarchingCubesDual::asset_se3( const SE3 & src_se3, const SE3 & asset_at ) co
 {
 	const SE3 asset_in_world_se3 = src_se3 * asset_at;
 
-	const SE3 scaled_source_se3     = this->compute_source_se3( src_se3, Vector3d::ZERO );
-	const SE3 inv_scaled_source_se3 = scaled_source_se3.inverse();
-	const SE3 asset_in_source_se3   = inv_scaled_source_se3 * asset_in_world_se3;
+	const SE3 inv_source_se3 = src_se3.inverse();
+	const SE3 asset_in_source_se3   = inv_source_se3 * asset_in_world_se3;
 
 	return asset_in_source_se3;
 }
@@ -423,7 +422,7 @@ const std::set<int> & MarchingCubesDual::materials() const
 	return _materials_set;
 }
 
-const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, const Vector3d & central_point, int material_ind, Float scale )
+const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, int material_ind, Float scale )
 {
 	// central_point is a point in source ref. frame with
 	// respect to which all vertices are computed.
@@ -433,7 +432,7 @@ const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, c
 	_ret_verts.clear();
 	_ret_verts.reserve(3*qty);
 
-	const SE3 scaled_central_point_se3 = compute_source_se3( src_se3, central_point );
+	const SE3 scaled_central_point_se3 = src_se3;
 	const SE3 inv_scaled_central_point_se3 = scaled_central_point_se3.inverse();
 
 	for ( unsigned int i=0; i<qty; i++ )
@@ -516,7 +515,7 @@ const std::vector<real_t>  & MarchingCubesDual::tangents( int material_ind )
 }
 
 
-void MarchingCubesDual::uvs( const Vector3d & central_point, int material_ind, const std::vector<Vector2> * & ret_uvs, const std::vector<Vector2> * & ret_uv2s )
+void MarchingCubesDual::uvs( int material_ind, const std::vector<Vector2> * & ret_uvs, const std::vector<Vector2> * & ret_uv2s )
 {
 	const unsigned int qty = _all_faces.size();
 	_ret_uvs.clear();
@@ -535,7 +534,7 @@ void MarchingCubesDual::uvs( const Vector3d & central_point, int material_ind, c
 
 		for ( int j=0; j<3; j++ )
 		{
-			const Vector3d & v = f.vertices[j] - central_point;
+			const Vector3d & v = f.vertices[j];
 			_ret_uvs.push_back( Vector2( v.x_, v.y_ ) );
 			_ret_uv2s.push_back( Vector2( v.z_, v.z_ ) );
 		}
@@ -544,9 +543,9 @@ void MarchingCubesDual::uvs( const Vector3d & central_point, int material_ind, c
 	ret_uv2s = &_ret_uv2s;
 }
 
-void MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, const Vector3d & central_point, int material_ind, Float scale )
+void MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, int material_ind, Float scale )
 {
-	vertices( src_se3, central_point, material_ind, scale );
+	vertices( src_se3, material_ind, scale );
 	normals( material_ind );
 	tangents( material_ind );
 
@@ -567,7 +566,7 @@ void MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, const Vec
 			}
 			for ( int j=0; j<3; j++ )
 			{
-				const Vector3d & v = f.vertices[j] - central_point;
+				const Vector3d & v = f.vertices[j];
 				_ret_uvs.push_back( Vector2( v.x_, v.y_ ) );
 				_ret_uv2s.push_back( Vector2( v.z_, v.z_ ) );
 			}
@@ -668,21 +667,6 @@ const std::vector<Vector3> & MarchingCubesDual::collision_faces( const SE3 & src
 
 
 
-Transform MarchingCubesDual::compute_source_transform( const SE3 & src_se3, const Vector3d & pt_in_source ) const
-{
-	const SE3 se3 = compute_source_se3( src_se3, pt_in_source );
-	const Transform ret = se3.transform();
-	return ret;
-}
-
-SE3 MarchingCubesDual::compute_source_se3( const SE3 & src_se3, const Vector3d & pt_in_source ) const
-{
-	const Vector3d o = src_se3 * pt_in_source;
-	SE3 se3( src_se3 );
-	se3.r_ = o;
-
-	return se3;
-}
 
 
 
