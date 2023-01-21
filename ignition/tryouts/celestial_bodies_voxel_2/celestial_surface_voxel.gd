@@ -3,10 +3,9 @@ extends CelestialBody
 class_name CelestialSurfaceVoxel
 
 export(PackedScene) var VisualCellSpace = null
-export(PackedScene) var VisualCell = null
 
 var _visual_space: Spatial = null
-var _visual_surface: Spatial = null
+var _visual_surface: Node  = null
 
 
 # Radius is taken from
@@ -68,10 +67,7 @@ func _create_visuals():
 		_visual_space = VisualCellSpace.instance()
 		layer.add_child( _visual_space )
 	
-	if VisualCell != null:
-		var layer: Spatial = RootScene.get_visual_layer_near()
-		_visual_surface = VisualCell.instance()
-		layer.add_child( _visual_surface )
+	_visual_surface = get_node( "Rotation/VisualSurface" )
 
 
 

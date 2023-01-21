@@ -23,7 +23,9 @@ public:
 
 	Ref<BoundingNodeGd> create_adjacent_node( int dx, int dy, int dz ) const;
 	bool equals_to( const Ref<BoundingNodeGd> & other ) const;
-	String node_id() const;
+	String get_node_id() const;
+	String get_adjacent_node_id( int dx, int dy, int dz ) const;
+
 public:
 	MarchingCubesDualNode node;
 };

@@ -94,7 +94,7 @@ func _rebuild_process( args ):
 	voxel_surface.split_precision = 0.01
 	
 	var ok: bool = voxel_surface.subdivide_source_all( source, _node_size_strategy )
-	voxel_surface.precompute_scaled_values( _center_se3, _center_se3, 0, scale )
+	voxel_surface.precompute_scaled_values( _center_se3, 0, scale )
 	
 	var ret: Dictionary = { "voxel_surface": voxel_surface }
 	return ret

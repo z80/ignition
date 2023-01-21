@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://physics/singletons/visual_layer/visual_layer.gd" type="Script" id=1]
-[ext_resource path="res://physics/singletons/visual_layer/visual_layer_scene.tscn" type="PackedScene" id=2]
+[ext_resource path="res://physics/singletons/visual_layer/visual_layer_near.gd" type="Script" id=1]
+[ext_resource path="res://physics/singletons/visual_layer/scene.tscn" type="PackedScene" id=2]
 
 [sub_resource type="Environment" id=1]
 
@@ -21,5 +21,7 @@ handle_input_locally = false
 render_target_update_mode = 3
 
 [node name="Root" parent="Viewport" instance=ExtResource( 2 )]
+
+[connection signal="size_changed" from="Viewport" to="." method="_on_resized"]
 
 [editable path="Viewport/Root"]

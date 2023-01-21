@@ -5,17 +5,24 @@ var vp_container: Node = null
 
 var ref_frame_root: RefFrameRoot = null
 
+var _visual_layer_space: Spatial = null
+var _visual_layer_near: Spatial = null
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	var ret: Spatial = get_node( "VisualLayerSpace" )
+	_visual_layer_space = ret.root
+	
+	var root: Node = get_node( "VisualLayerNear" )
+	_visual_layer_near = root.root
+
 
 func get_visual_layer_space():
-	var ret: Spatial = get_node( "VisualLayerSpace" )
-	ret = ret.root
-	return ret
+	return _visual_layer_space
 
 
 func get_visual_layer_near():
-	var root: Node = get_node( "VisualLayerNear" )
-	var ret: Spatial = root.root
-	return ret
+	return _visual_layer_near
 
 
 func get_visual_layer_overlay():
@@ -86,9 +93,7 @@ func _get_unique_name_for( section: Node, name_template: String ):
 			return name
 		ind += 1
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
+
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

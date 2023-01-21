@@ -12,3 +12,6 @@ export(float) var min_relative_focal_depth  = 0.05
 export(float) var relative_rebuild_dist     = 0.3
 
 
+export(float) var surface_node_size = 100.0
+
+
