@@ -49,8 +49,8 @@ bool BoundingNodeGd::equals_to( const Ref<BoundingNodeGd> & other ) const
 String BoundingNodeGd::get_node_id() const
 {
 	String ret = itos(node.at.x) + String(",") +
-		         itos(node.at.x) + String(",") +
-		         itos(node.at.x) + String(",") +
+		         itos(node.at.y) + String(",") +
+		         itos(node.at.z) + String(",") +
 		         itos(node.size);
 	return ret;
 }
@@ -58,8 +58,8 @@ String BoundingNodeGd::get_node_id() const
 String BoundingNodeGd::get_adjacent_node_id( int dx, int dy, int dz ) const
 {
 	String ret = itos(node.at.x + dx*node.size) + String(",") +
-                 itos(node.at.x + dy*node.size) + String(",") +
-                 itos(node.at.x + dz*node.size) + String(",") +
+                 itos(node.at.y + dy*node.size) + String(",") +
+                 itos(node.at.z + dz*node.size) + String(",") +
                  itos(node.size);
 	return ret;
 }

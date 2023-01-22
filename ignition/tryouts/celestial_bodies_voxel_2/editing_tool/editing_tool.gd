@@ -14,8 +14,8 @@ func _init():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_sun_position = get_node( "SunPosition" )
-	_camera = get_node( "SunPosition/Planet/Camera" )
-	_camera.map_mode = true
+	_camera = get_node( "SunPosition/Planet/Rotation/RefFrameNode/Camera" )
+	_camera.map_mode = false
 	var atm: Node = _camera.get_node( "Camera/Atmosphere" )
 	atm.visible = false
 
@@ -32,19 +32,8 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _ign_pre_process( _delta ):
-#	var t: Transform = _camera.transform
-#	_rf.set_t( t )
-#
-#	var se3: Se3Ref = _sun_position.relative_to( _camera )
-#
-#	var planet: RefFrameNode = get_node( "Planet" )
-#	planet.process( _delta, null )
-	
-	UserInput.gui_control_bool( "ui_map", true, false, false )
-	
-#	_camera.apply_atmosphere( planet )
-#	_camera.place_light( _sun_position )
-#	_camera.process( _delta )
+	#UserInput.gui_control_bool( "ui_map", true, false, false )
+	pass
 
 
 

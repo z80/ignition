@@ -72,6 +72,7 @@ func update_source_se3( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 	else:
 		rebuild_needed = rebuild_needed or _requested_rebuild
 		if rebuild_needed:
+			_requested_rebuild = false
 			_rebuild_start( source_se3, view_point_se3 )
 	
 
@@ -90,6 +91,7 @@ func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 		var node: BoundingNodeGd = args.node
 		var visual: Node         = args.visual
 		args.surface_args = visual.build_surface_prepare( source_se3, view_point_se3, _node_size_strategy, surface_source_solid, surface_source_liquid )
+		args.surface_args.node = node
 		_rebuild_process( args )
 		_rebuild_finished( args )
 
@@ -105,7 +107,7 @@ func _rebuild_process( args ):
 func _rebuild_finished( args ):
 	var visual: Node         = args.visual
 	var surface_args         = args.surface_args
-	visual.buils_surface_finished( surface_args )
+	visual.build_surface_finished( surface_args )
 	
 	_processed_running -= 1
 	if _processed_running == 0:
@@ -116,6 +118,8 @@ func _rebuild_finished( args ):
 func _pick_nodes_to_rebuild( view_point_se3: Se3Ref ):
 	var sz: float = layer_config.surface_node_size
 	var bounding_node: BoundingNodeGd = _voxel_surface.create_bounding_node( view_point_se3, sz )
+	var id0: String = bounding_node.get_node_id()
+	print( "central node: ", id0, ", at: ", view_point_se3.r )
 	var ids_needed: Array = []
 	var nodes_needed: Array = []
 	for x in range(3):
@@ -139,12 +143,16 @@ func _pick_nodes_to_rebuild( view_point_se3: Se3Ref ):
 	
 	var visuals_to_be_rebuilt: Array = []
 	var qty: int = ids_needed.size()
+	var ind: int = 0
 	for i in range(qty):
-		var id: String           = ids_needed[i]
-		var node: BoundingNodeGd = nodes_needed[i]
-		var visual: Node = visuals_free[i]
-		visuals_to_be_rebuilt.push_back( { "node": node, "visual": visual } )
-		visual_cells[id] = visual
+		var id: String = ids_needed[i]
+		var has: bool  = visual_cells.has( id )
+		if not has:
+			var node: BoundingNodeGd = nodes_needed[i]
+			var visual: Node = visuals_free[ind]
+			ind += 1
+			visuals_to_be_rebuilt.push_back( { "node": node, "visual": visual } )
+			visual_cells[id] = visual
 	
 	return visuals_to_be_rebuilt
 

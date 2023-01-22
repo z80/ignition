@@ -13,7 +13,7 @@ func _ready():
 func _ign_post_process( _delta ):
 	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var se3: Se3Ref = self.relative_to( cam )
-	var t: Transform = se3.transform()
+	var t: Transform = se3.transform
 	_visual.transform = t
 
 
@@ -59,17 +59,18 @@ func build_surface_process( args ):
 	voxel_surface.max_nodes_qty   = 20000000
 	voxel_surface.split_precision = 0.01
 	
-	var ok: bool = voxel_surface.subdivide_source( node, source_surface, null )
+	var _step: float = voxel_surface.init_min_step( source_surface )
+	var _ok: bool = voxel_surface.subdivide_source( node, source_surface, null )
 	voxel_surface.precompute_scaled_values( source_se3, 0, 1.0 )
 	
 	args.voxel_surface = voxel_surface
 	return args
 
 
-func build_finished( args ):
+func build_surface_finished( args ):
 	var voxel_surface: MarchingCubesDualGd = args.voxel_surface
 	var qty: int = voxel_surface.get_nodes_qty()
-	print( "surface done, nodes qty: ", qty )
+	#print( "surface done, nodes qty: ", qty )
 	voxel_surface.apply_to_mesh_only( _visual.surface )
 	
 	var surface_source_solid: Resource = args.surface_source_solid
@@ -88,6 +89,6 @@ class BuildArgs:
 	var node_size_strategy: VolumeNodeSizeStrategyGd
 	var surface_source_solid: Resource
 	var surface_source_liquid: Resource
-	var volume_surface: MarchingCubesDualGd
+	var voxel_surface: MarchingCubesDualGd
 
 

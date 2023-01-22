@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://src/visual_layer_scene.tscn" type="PackedScene" id=1]
-[ext_resource path="res://src/visual_layer_near_2.gd" type="Script" id=2]
+[ext_resource path="res://src/scene.tscn" type="PackedScene" id=1]
+[ext_resource path="res://src/main.gd" type="Script" id=2]
 
 [sub_resource type="Environment" id=2]
 

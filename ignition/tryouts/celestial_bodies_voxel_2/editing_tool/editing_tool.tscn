@@ -15,7 +15,10 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1e+09 )
 
 [node name="Planet" parent="SunPosition" instance=ExtResource( 2 )]
 
-[node name="Camera" parent="SunPosition/Planet" instance=ExtResource( 3 )]
+[node name="RefFrameNode" type="RefFrameNode" parent="SunPosition/Planet/Rotation" index="1"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1010, 2, 2 )
+
+[node name="Camera" parent="SunPosition/Planet/Rotation/RefFrameNode" instance=ExtResource( 3 )]
 map_mode = true
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
@@ -24,3 +27,5 @@ mesh = SubResource( 1 )
 skeleton = NodePath("../..")
 
 [node name="Ui" parent="." instance=ExtResource( 4 )]
+
+[editable path="SunPosition/Planet"]
