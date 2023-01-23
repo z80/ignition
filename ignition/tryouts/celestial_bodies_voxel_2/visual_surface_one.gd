@@ -5,6 +5,8 @@ export(PackedScene) var VisualCell = null
 
 var _visual: Spatial = null
 
+var center_se3: Se3Ref = Se3Ref.new()
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	call_deferred( "_create_visual" )
@@ -19,6 +21,7 @@ func _ign_post_process( _delta ):
 
 func _create_visual():
 	var root: Spatial = RootScene.get_visual_layer_near()
+	#var root: Spatial = RootScene.get_visual_layer_space()
 	_visual = VisualCell.instance()
 	root.add_child( _visual )
 
@@ -27,10 +30,13 @@ func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_siz
 	_visual.visible = false
 	
 	self.set_se3( view_point_se3 )
+	#self.set_se3( center_se3 )
 	
 	var args: BuildArgs = BuildArgs.new()
 	args.source_se3         = Se3Ref.new()
 	args.source_se3.copy_from( source_se3 )
+	args.view_point_se3 = Se3Ref.new()
+	args.view_point_se3.copy_from( view_point_se3 )
 	args.node_size_strategy   = node_size_strategy
 	args.surface_source_solid = source_surface
 	if source_liquid != null:
@@ -47,6 +53,7 @@ func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_siz
 func build_surface_process( args ):
 	var node: BoundingNodeGd = args.node
 	var source_se3: Se3Ref = args.source_se3
+	var view_point_se3: Se3Ref = args.view_point_se3
 	var node_size_strategy: VolumeNodeSizeStrategyGd = args.node_size_strategy
 	var source_surface: VolumeSourceGd = args.surface_source_solid.get_source()
 	var source_liquid: VolumeSourceGd
@@ -86,6 +93,7 @@ func build_surface_finished( args ):
 class BuildArgs:
 	var node: BoundingNodeGd
 	var source_se3: Se3Ref
+	var view_point_se3: Se3Ref
 	var node_size_strategy: VolumeNodeSizeStrategyGd
 	var surface_source_solid: Resource
 	var surface_source_liquid: Resource

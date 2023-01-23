@@ -432,9 +432,6 @@ const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, i
 	_ret_verts.clear();
 	_ret_verts.reserve(3*qty);
 
-	const SE3 scaled_central_point_se3 = src_se3;
-	const SE3 inv_scaled_central_point_se3 = scaled_central_point_se3.inverse();
-
 	for ( unsigned int i=0; i<qty; i++ )
 	{
 		const NodeFace & f = _all_faces[i];
@@ -451,15 +448,14 @@ const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, i
 			// Convert to world.
 			Vector3d world_v = src_se3 * source_v;
 			// Convert relative to scaled origin.
-			const Vector3d rel_to_scaled_v = inv_scaled_central_point_se3 * world_v;
 			if ( scale > 0.0 )
 			{
-				const Vector3d scaled_rel_to_scaled_v = scale * rel_to_scaled_v;
-				_ret_verts.push_back( Vector3( scaled_rel_to_scaled_v.x_, scaled_rel_to_scaled_v.y_, scaled_rel_to_scaled_v.z_ ) );
+				const Vector3d scaled_world_v = scale * world_v;
+				_ret_verts.push_back( Vector3( scaled_world_v.x_, scaled_world_v.y_, scaled_world_v.z_ ) );
 			}
 			else
 			{
-				_ret_verts.push_back( Vector3( rel_to_scaled_v.x_, rel_to_scaled_v.y_, rel_to_scaled_v.z_ ) );
+				_ret_verts.push_back( Vector3( world_v.x_, world_v.y_, world_v.z_ ) );
 			}
 		}
 	}

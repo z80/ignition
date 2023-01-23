@@ -87,11 +87,18 @@ func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 	_running = true
 	
 	_processed_running = nodes_to_rebuild.size()
-	for args in nodes_to_rebuild:
-		var node: BoundingNodeGd = args.node
-		var visual: Node         = args.visual
-		args.surface_args = visual.build_surface_prepare( source_se3, view_point_se3, _node_size_strategy, surface_source_solid, surface_source_liquid )
-		args.surface_args.node = node
+	for data in nodes_to_rebuild:
+		var node: BoundingNodeGd = data.node
+		var visual: Node         = data.visual
+		var surface_args = visual.build_surface_prepare( source_se3, view_point_se3, _node_size_strategy, surface_source_solid, surface_source_liquid )
+		surface_args.node = node
+		
+		var args: Dictionary = {}
+		args.node = node
+		args.visual = visual
+		args.surface_args = surface_args
+		
+		#WorkersPool.push_back_with_arg( self, "_rebuild_process", "_rebuild_finished", args )
 		_rebuild_process( args )
 		_rebuild_finished( args )
 
@@ -119,7 +126,7 @@ func _pick_nodes_to_rebuild( view_point_se3: Se3Ref ):
 	var sz: float = layer_config.surface_node_size
 	var bounding_node: BoundingNodeGd = _voxel_surface.create_bounding_node( view_point_se3, sz )
 	var id0: String = bounding_node.get_node_id()
-	print( "central node: ", id0, ", at: ", view_point_se3.r )
+	#print( "central node: ", id0, ", at: ", view_point_se3.r )
 	var ids_needed: Array = []
 	var nodes_needed: Array = []
 	for x in range(3):
