@@ -34,7 +34,7 @@ func _enter_tree():
 func _create_objects():
 	if _visual == null:
 		_visual = VisualScene.instance()
-		var root_for_visuals: Node = RootScene.get_root_for_visuals()
+		var root_for_visuals: Node = RootScene.get_visual_layer_near()
 		root_for_visuals.add_child( _visual )
 	
 	if _se3 == null:

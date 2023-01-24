@@ -21,7 +21,7 @@ func _ready():
 #	var cp = camera.get_parent()
 #	if cp != null:
 #		cp.remove_child( camera )
-#	RootScene.get_root_for_visuals().add_child( camera )
+#	RootScene.get_visual_layer_near().add_child( camera )
 	
 	var character = _create_character( "Astronaut", Vector3( 1.0, 0.0, 0.0 ), 3.0 )
 	DDD.print( "Created a character!" )

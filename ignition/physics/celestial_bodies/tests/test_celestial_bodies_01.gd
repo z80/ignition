@@ -17,7 +17,7 @@ func _ready():
 	camera.script = camera_script
 	
 	rf.change_parent( sun )
-	RootScene.get_root_for_visuals().add_child( camera )
+	RootScene.get_visual_layer_near().add_child( camera )
 	
 	RootScene.ref_frame_root.player_camera = camera
 	

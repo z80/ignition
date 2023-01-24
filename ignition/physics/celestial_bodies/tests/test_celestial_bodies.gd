@@ -22,7 +22,7 @@ func _ready():
 	
 	rf.change_parent( sun )
 	# Parent camera to the root node of this scene.
-	RootScene.get_root_for_visuals().add_child( camera )
+	RootScene.get_visual_layer_near().add_child( camera )
 	
 	var player_control: RefFrame = RefFrame.new()
 	rf.init_physics()

@@ -144,7 +144,7 @@ func activate_grab( body ):
 		return
 	var Grab = load( "res://physics/bodies/construction_new/manip_grab/manip_grab.tscn" )
 	var grab = Grab.instance()
-	RootScene.get_root_for_visuals().add_child( grab )
+	RootScene.get_visual_layer_near().add_child( grab )
 	edited_target  = body
 	editing_widget = grab
 	grab.target = body

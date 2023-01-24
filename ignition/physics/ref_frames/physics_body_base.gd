@@ -78,7 +78,7 @@ func _ready():
 	if Constants.DEBUG and (force == null) and false:
 		var Force = preload( "res://physics/force_source/force_visualizer.tscn" )
 		force = Force.instance()
-		RootScene.get_root_for_visuals().add_child( force )
+		RootScene.get_visual_layer_near().add_child( force )
 	
 	if _visual == null:
 		init()
@@ -344,7 +344,7 @@ func _create_visual( Visual: PackedScene ):
 	var t: Transform = self.t()
 	v.transform = t
 	
-	var root: Node = RootScene.get_root_for_visuals()
+	var root: Node = RootScene.get_visual_layer_near()
 	v.name = RootScene.get_unique_name_for_visuals( v.name )
 	root.add_child( v )
 	
