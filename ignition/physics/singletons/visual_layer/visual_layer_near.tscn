@@ -22,6 +22,9 @@ render_target_update_mode = 3
 
 [node name="Root" parent="Viewport" instance=ExtResource( 2 )]
 
+[node name="Camera" parent="Viewport/Root" index="0"]
+far = 8192.0
+
 [connection signal="size_changed" from="Viewport" to="." method="_on_resized"]
 
 [editable path="Viewport/Root"]
