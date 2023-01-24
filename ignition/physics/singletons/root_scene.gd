@@ -37,6 +37,11 @@ func get_root_for_physics_envs():
 	return ret
 
 
+func set_sun_direction( b: Basis ):
+	var layer: Node = get_visual_layer_space()
+	layer.sun_direction = b
+	layer = get_visual_layer_near()
+	layer.sun_direction = b
 
 
 func set_visual_overlay_visible( en: bool ):

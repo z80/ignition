@@ -552,10 +552,8 @@ func place_light( sun: RefFrameNode ):
 		q = Quat( n.x, n.y, n.z, co_2 )
 	
 	# Place light to the right place
-	var light: DirectionalLight = _get_sun_light()
-	var t: Transform = light.transform
-	t.basis = q
-	light.transform = t
+	var b: Basis = Basis( q )
+	RootScene.set_sun_direction( b )
 
 
 func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):

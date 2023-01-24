@@ -11,6 +11,18 @@ var _light: DirectionalLight = null
 var _camera: Camera = null
 
 
+func get_light():
+	var light: DirectionalLight = _get_light()
+	return light
+
+
+func _get_light():
+	if _light == null:
+		_light = get_node( "Viewport/Root/SunLight" )
+	return _light
+
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	root = get_node( "Viewport/Root" )
@@ -27,15 +39,11 @@ func _on_resized():
 
 
 func _set_sun_direction( b: Basis ):
-	if _light == null:
-		root = get_node( "Viewport/Root" )
-		_light    = root.light
+	_get_light()
 	_light.transform.basis = b
 
 
 func _get_sun_direction():
-	if _light == null:
-		root = get_node( "Viewport/Root" )
-		_light    = root.light
+	_get_light()
 	var ret: Basis = _light.transform.basis
 	return ret
