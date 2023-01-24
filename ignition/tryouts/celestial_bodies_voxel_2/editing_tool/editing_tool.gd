@@ -14,7 +14,7 @@ func _init():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_sun_position = get_node( "SunPosition" )
-	_camera = get_node( "SunPosition/Planet/Rotation/RefFrameNode/Camera" )
+	_camera = get_node( "Sun/Planet/Rotation/RefFrameNode/Camera" )
 	_camera.map_mode = false
 	var atm: Node = _camera.get_node( "Camera/Atmosphere" )
 	atm.visible = false

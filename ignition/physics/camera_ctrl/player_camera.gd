@@ -530,7 +530,7 @@ func apply_atmosphere( celestial_body: RefFrameNode ):
 
 
 
-func place_light( sun: RefFrameNode ):
+func _place_light( sun: RefFrameNode ):
 	var se3: Se3Ref = sun.relative_to( self )
 	#var inv_se3: Se3Ref = se3.inverse()
 	
@@ -562,7 +562,7 @@ func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 		return
 	# Determine relative position.
 	var se3: Se3Ref = self.relative_to( sun )
-	place_light( sun )
+	_place_light( sun )
 	
 	se3 = sun.relative_to( self )
 	var dist: float = se3.r.length()

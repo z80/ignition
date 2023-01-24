@@ -1,24 +1,27 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/editing_tool/editing_tool.gd" type="Script" id=1]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/celestial_surface_voxel.tscn" type="PackedScene" id=2]
 [ext_resource path="res://physics/camera_ctrl/player_camera.tscn" type="PackedScene" id=3]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/editing_tool/editing_tool_ui.tscn" type="PackedScene" id=4]
+[ext_resource path="res://physics/celestial_bodies/sun.tscn" type="PackedScene" id=5]
 
 [sub_resource type="CubeMesh" id=1]
 
 [node name="RefFrameRoot" type="RefFrameRoot"]
 script = ExtResource( 1 )
 
-[node name="SunPosition" type="RefFrameNode" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1e+09 )
+[node name="Sun" parent="." instance=ExtResource( 5 )]
 
-[node name="Planet" parent="SunPosition" instance=ExtResource( 2 )]
+[node name="Planet" parent="Sun" instance=ExtResource( 2 )]
+rotation_period_hrs = 0.02
+perigee_vel = Vector3( 100, 0, 0 )
+orbital_period_hrs = 1.0
 
-[node name="RefFrameNode" type="RefFrameNode" parent="SunPosition/Planet/Rotation" index="1"]
+[node name="RefFrameNode" type="RefFrameNode" parent="Sun/Planet/Rotation" index="1"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1010, 2, 2 )
 
-[node name="Camera" parent="SunPosition/Planet/Rotation/RefFrameNode" instance=ExtResource( 3 )]
+[node name="Camera" parent="Sun/Planet/Rotation/RefFrameNode" instance=ExtResource( 3 )]
 map_mode = true
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
@@ -28,4 +31,4 @@ skeleton = NodePath("../..")
 
 [node name="Ui" parent="." instance=ExtResource( 4 )]
 
-[editable path="SunPosition/Planet"]
+[editable path="Sun/Planet"]
