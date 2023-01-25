@@ -170,8 +170,8 @@ public:
 
     const std::set<int>        & materials() const;
     const std::vector<Vector3> & vertices( const SE3 & src_se3, int material_ind, Float scale );
-    const std::vector<Vector3> & normals( int material_ind );
-    const std::vector<real_t>  & tangents( int material_ind );
+    const std::vector<Vector3> & normals( const SE3 & src_se3, int material_ind );
+    const std::vector<real_t>  & tangents( const SE3 & src_se3, int material_ind );
 	void uvs( int material_ind, const std::vector<Vector2> * & uvs, const std::vector<Vector2> * & uv2s );
 
 	// For asynchronous computations.

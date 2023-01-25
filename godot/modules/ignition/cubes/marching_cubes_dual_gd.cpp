@@ -246,8 +246,8 @@ void MarchingCubesDualGd::apply_to_mesh( const Ref<Se3Ref> & src_se3, int materi
 	}
 
 	const std::vector<Vector3> & verts = cubes.vertices( source_se3, material_index, scale );
-	const std::vector<Vector3> & norms = cubes.normals( material_index );
-	const std::vector<real_t> & tangs = cubes.tangents( material_index );
+	const std::vector<Vector3> & norms = cubes.normals( source_se3, material_index );
+	const std::vector<real_t> & tangs = cubes.tangents( source_se3, material_index );
 	const std::vector<Vector2> * p_uvs;
 	const std::vector<Vector2> * p_uv2s;
 	cubes.uvs( material_index, p_uvs, p_uv2s );

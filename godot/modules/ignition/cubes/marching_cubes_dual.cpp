@@ -462,7 +462,7 @@ const std::vector<Vector3> & MarchingCubesDual::vertices( const SE3 & src_se3, i
 	return _ret_verts;
 }
 
-const std::vector<Vector3> & MarchingCubesDual::normals( int material_ind )
+const std::vector<Vector3> & MarchingCubesDual::normals( const SE3 & src_se3, int material_ind )
 {
 	const unsigned int qty = _all_faces.size();
 	_ret_norms.clear();
@@ -480,13 +480,14 @@ const std::vector<Vector3> & MarchingCubesDual::normals( int material_ind )
 		for ( int j=0; j<3; j++ )
 		{
 			const Vector3d & v = f.normals[j];
-			_ret_norms.push_back( Vector3( v.x_, v.y_, v.z_ ) );
+			const Vector3d transformed_v = src_se3.q_ * v;
+			_ret_norms.push_back( Vector3( transformed_v.x_, transformed_v.y_, transformed_v.z_ ) );
 		}
 	}
 	return _ret_norms;
 }
 
-const std::vector<real_t>  & MarchingCubesDual::tangents( int material_ind )
+const std::vector<real_t>  & MarchingCubesDual::tangents( const SE3 & src_se3, int material_ind )
 {
 	const unsigned int qty = _all_faces.size();
 	_ret_tangs.clear();
@@ -502,9 +503,10 @@ const std::vector<real_t>  & MarchingCubesDual::tangents( int material_ind )
 		}
 
 		const Vector3d & t = f.tangent;
-		_ret_tangs.push_back( t.x_ );
-		_ret_tangs.push_back( t.y_ );
-		_ret_tangs.push_back( t.z_ );
+		const Vector3d transformed_t = src_se3.q_ * t;
+		_ret_tangs.push_back( transformed_t.x_ );
+		_ret_tangs.push_back( transformed_t.y_ );
+		_ret_tangs.push_back( transformed_t.z_ );
 		_ret_tangs.push_back( 1.0 );
 	}
 	return _ret_tangs;
@@ -542,8 +544,8 @@ void MarchingCubesDual::uvs( int material_ind, const std::vector<Vector2> * & re
 void MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, int material_ind, Float scale )
 {
 	vertices( src_se3, material_ind, scale );
-	normals( material_ind );
-	tangents( material_ind );
+	normals( src_se3, material_ind );
+	tangents( src_se3, material_ind );
 
 	{
 		const unsigned int qty = _all_faces.size();
