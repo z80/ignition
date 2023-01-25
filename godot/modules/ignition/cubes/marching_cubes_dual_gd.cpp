@@ -34,11 +34,11 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("asset_transform", "source_se3", "asset_at"), &MarchingCubesDualGd::asset_transform,    Variant::TRANSFORM );
 
 	ClassDB::bind_method( D_METHOD("materials_used"),                                                                             &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
-	ClassDB::bind_method( D_METHOD("apply_to_mesh", "source_se3", "material_ind", "scale", "mesh_instance"), &MarchingCubesDualGd::apply_to_mesh );
+	ClassDB::bind_method( D_METHOD("apply_to_mesh", "source_se3", "material_ind", "scale", "mesh_instance"), &MarchingCubesDualGd::apply_to_mesh, Variant::BOOL );
 
 	ClassDB::bind_method( D_METHOD("precompute_scaled_values", "source_se3", "material_index", "scale"),     &MarchingCubesDualGd::precompute_scaled_values );
-	ClassDB::bind_method( D_METHOD("apply_to_mesh_only", "mesh_instance"),                      &MarchingCubesDualGd::apply_to_mesh_only );
-	ClassDB::bind_method( D_METHOD("apply_to_mesh_only_wireframe", "mesh_instance"),            &MarchingCubesDualGd::apply_to_mesh_only_wireframe );
+	ClassDB::bind_method( D_METHOD("apply_to_mesh_only", "mesh_instance"),                      &MarchingCubesDualGd::apply_to_mesh_only, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("apply_to_mesh_only_wireframe", "mesh_instance"),            &MarchingCubesDualGd::apply_to_mesh_only_wireframe, Variant::BOOL );
 
 	//ClassDB::bind_method( D_METHOD("compute_source_se3", "source_se3", "pt_in_source_se3"),       &MarchingCubesDualGd::compute_source_se3, Variant::TRANSFORM );
 	//ClassDB::bind_method( D_METHOD("compute_source_transform", "source_se3", "pt_in_source_se3"), &MarchingCubesDualGd::compute_source_transform, Variant::TRANSFORM );
@@ -235,17 +235,22 @@ Array MarchingCubesDualGd::materials_used()
 }
 
 
-void MarchingCubesDualGd::apply_to_mesh( const Ref<Se3Ref> & src_se3, int material_index, real_t scale, Node * mesh_instance )
+bool MarchingCubesDualGd::apply_to_mesh( const Ref<Se3Ref> & src_se3, int material_index, real_t scale, Node * mesh_instance )
 {
 	const SE3 & source_se3 = src_se3->se3;
 	MeshInstance * mi = Object::cast_to<MeshInstance>(mesh_instance);
 	if (mi == nullptr)
 	{
 		print_line( String( "ERROR: expects mesh instance as an argument, got something else." ) );
-		return;
+		return false;
 	}
 
 	const std::vector<Vector3> & verts = cubes.vertices( source_se3, material_index, scale );
+	// Godot doesn't like empty meshes.
+	if ( verts.empty() )
+	{
+		return false;
+	}
 	const std::vector<Vector3> & norms = cubes.normals( source_se3, material_index );
 	const std::vector<real_t> & tangs = cubes.tangents( source_se3, material_index );
 	const std::vector<Vector2> * p_uvs;
@@ -300,6 +305,7 @@ void MarchingCubesDualGd::apply_to_mesh( const Ref<Se3Ref> & src_se3, int materi
 	am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );
 
 	mi->set_mesh( am );
+	return true;
 }
 
 void MarchingCubesDualGd::precompute_scaled_values( const Ref<Se3Ref> & src_se3, int material_index, real_t scale )
@@ -309,13 +315,13 @@ void MarchingCubesDualGd::precompute_scaled_values( const Ref<Se3Ref> & src_se3,
 	cubes.precompute_scaled_values( source_se3, material_index, scale );
 }
 
-void MarchingCubesDualGd::apply_to_mesh_only( Node * mesh_instance )
+bool MarchingCubesDualGd::apply_to_mesh_only( Node * mesh_instance )
 {
 	MeshInstance * mi = Object::cast_to<MeshInstance>(mesh_instance);
 	if (mi == nullptr)
 	{
 		print_line( String( "ERROR: expects mesh instance as an argument, got something else." ) );
-		return;
+		return false;
 	}
 
 	const std::vector<Vector3> & verts = cubes.vertices();
@@ -325,6 +331,10 @@ void MarchingCubesDualGd::apply_to_mesh_only( Node * mesh_instance )
 	const std::vector<Vector2> & uv2_s  = cubes.uv2s();
 
 	const int verts_qty = verts.size();
+	if ( verts_qty < 3 )
+	{
+		return false;
+	}
 	// Fill in arrays.
 	vertices.resize( verts_qty );
 	normals.resize( verts_qty );
@@ -375,15 +385,16 @@ void MarchingCubesDualGd::apply_to_mesh_only( Node * mesh_instance )
 	//am->add_surface_from_arrays( Mesh::PRIMITIVE_LINES, arrays );
 
 	mi->set_mesh( am );
+	return true;
 }
 
-void MarchingCubesDualGd::apply_to_mesh_only_wireframe( Node * mesh_instance )
+bool MarchingCubesDualGd::apply_to_mesh_only_wireframe( Node * mesh_instance )
 {
 	MeshInstance * mi = Object::cast_to<MeshInstance>(mesh_instance);
 	if (mi == nullptr)
 	{
 		print_line( String( "ERROR: expects mesh instance as an argument, got something else." ) );
-		return;
+		return false;
 	}
 
 	const std::vector<Vector3> & verts = cubes.vertices();
@@ -393,7 +404,8 @@ void MarchingCubesDualGd::apply_to_mesh_only_wireframe( Node * mesh_instance )
 	const std::vector<Vector2> & uv2_s  = cubes.uv2s();
 
 	const int verts_qty = verts.size();
-
+	if ( verts_qty < 3 )
+		return false;
 	// Fill in arrays.
 	vertices.resize( verts_qty*2 );
 	normals.resize( verts_qty*2 );
@@ -456,6 +468,7 @@ void MarchingCubesDualGd::apply_to_mesh_only_wireframe( Node * mesh_instance )
 	am->add_surface_from_arrays( Mesh::PRIMITIVE_LINES, arrays );
 
 	mi->set_mesh( am );
+	return true;
 }
 
 //Ref<Se3Ref> MarchingCubesDualGd::compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3 )

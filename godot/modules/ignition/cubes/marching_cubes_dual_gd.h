@@ -47,11 +47,11 @@ public:
 
 	Array materials_used();
 	// This one computes and applies synchronously.
-	void apply_to_mesh( const Ref<Se3Ref> & src_se3, int material_index, real_t scale, Node * mesh_instance );
+	bool apply_to_mesh( const Ref<Se3Ref> & src_se3, int material_index, real_t scale, Node * mesh_instance );
 	// And this one computes and applies in tow different methods.
 	void precompute_scaled_values( const Ref<Se3Ref> & src_se3, int material_index, real_t scale );
-	void apply_to_mesh_only( Node * mesh_instance );
-	void apply_to_mesh_only_wireframe( Node * mesh_instance );
+	bool apply_to_mesh_only( Node * mesh_instance );
+	bool apply_to_mesh_only_wireframe( Node * mesh_instance );
 
 	//Ref<Se3Ref> compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3 );
 	//Transform compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3 );
