@@ -93,6 +93,11 @@ real_t MarchingCubesDualGd::get_min_step() const
 
 real_t MarchingCubesDualGd::init_min_step( const Ref<VolumeSourceGd> & volume )
 {
+	if ( volume.ptr() == nullptr )
+	{
+		print_line( "MarchingCubesDualGd::init_min_step argument is null." );
+		return -1.0;
+	}
 	VolumeSource * src = volume.ptr()->source;
 	const real_t ret = cubes.init_min_step( src );
 	return ret;
