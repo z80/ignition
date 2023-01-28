@@ -1,11 +1,13 @@
-
+tool
 extends Node
 
 export(PackedScene) var VisualSurfaceOne = null
 export(Resource) var layer_config = null
 export(Resource) var surface_source_solid = null
 export(Resource) var surface_source_liquid = null
-export(Resource) var foliage_source = null
+export(Resource) var drop_foliage_source_here = null setget _set_foliage_source, _get_foliage_source
+
+export(Array) var foliage_sources = []
 
 var visual_cells: Dictionary = {}
 
@@ -165,11 +167,15 @@ func _pick_nodes_to_rebuild( view_point_se3: Se3Ref ):
 
 
 
+func _set_foliage_source( c: Resource ):
+	if c != null:
+		foliage_sources.push_back( c )
+	drop_foliage_source_here = null
+	property_list_changed_notify()
 
 
-#class Cell:
-#	var visual: Spatial
-#	var bounding_box: BoundingNodeGd
+func _get_foliage_source():
+	return null
 
 
 

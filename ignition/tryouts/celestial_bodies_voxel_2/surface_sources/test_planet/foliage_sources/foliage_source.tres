@@ -4,3 +4,5 @@
 
 [resource]
 script = ExtResource( 1 )
+min_distance = 10.0
+follow_normal = false

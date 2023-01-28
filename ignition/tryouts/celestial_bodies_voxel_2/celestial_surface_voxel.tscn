@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/celestial_surface_voxel.gd" type="Script" id=1]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_space.tscn" type="PackedScene" id=2]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_surface.tscn" type="PackedScene" id=3]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/foliage_sources/foliage_source.tres" type="Resource" id=4]
 
 [sub_resource type="GDScript" id=1]
 script/source = "
@@ -109,3 +110,4 @@ VisualCellSpace = ExtResource( 2 )
 script = SubResource( 1 )
 
 [node name="VisualSurface" parent="Rotation" instance=ExtResource( 3 )]
+foliage_source = ExtResource( 4 )
