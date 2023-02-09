@@ -46,7 +46,7 @@ func _initialize_strategy():
 
 func _create_cells():
 	var rotation: RefFrameRotationNode = get_parent()
-	for i in range(27):
+	for i in range(1):
 		var cell: Node = VisualSurfaceOne.instance()
 		rotation.add_child( cell )
 		visual_cells[i] = cell
@@ -89,6 +89,13 @@ func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 	_running = true
 	
 	_processed_running = nodes_to_rebuild.size()
+	
+	var ids: Array = []
+	for data in nodes_to_rebuild:
+		var id: String = data.id
+		ids.push_back( id )
+	print( "ids: ", ids )
+	
 	for data in nodes_to_rebuild:
 		var node: BoundingNodeGd = data.node
 		var visual: Node         = data.visual
@@ -126,15 +133,17 @@ func _rebuild_finished( args ):
 
 func _pick_nodes_to_rebuild( view_point_se3: Se3Ref ):
 	var sz: float = layer_config.surface_node_size
+	print( "view_point_origin: ", view_point_se3.r )
 	var bounding_node: BoundingNodeGd = _voxel_surface.create_bounding_node( view_point_se3, sz )
 	var id0: String = bounding_node.get_node_id()
 	#print( "central node: ", id0, ", at: ", view_point_se3.r )
 	var ids_needed: Array = []
 	var nodes_needed: Array = []
-	for x in range(3):
-		for y in range(3):
-			for z in range(3):
-				var node: BoundingNodeGd = bounding_node.create_adjacent_node( x-1, y-1, z-1 )
+	for x in range(1):
+		for y in range(1):
+			for z in range(1):
+				#var node: BoundingNodeGd = bounding_node.create_adjacent_node( x-1, y-1, z-1 )
+				var node: BoundingNodeGd = bounding_node.create_adjacent_node( x, y, z )
 				var id: String = node.get_node_id()
 				nodes_needed.push_back( node )
 				ids_needed.push_back( id )
@@ -160,7 +169,7 @@ func _pick_nodes_to_rebuild( view_point_se3: Se3Ref ):
 			var node: BoundingNodeGd = nodes_needed[i]
 			var visual: Node = visuals_free[ind]
 			ind += 1
-			visuals_to_be_rebuilt.push_back( { "node": node, "visual": visual } )
+			visuals_to_be_rebuilt.push_back( { "node": node, "visual": visual, "id": id } )
 			visual_cells[id] = visual
 	
 	return visuals_to_be_rebuilt

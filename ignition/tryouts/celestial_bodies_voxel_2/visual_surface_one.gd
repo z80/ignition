@@ -7,8 +7,11 @@ var _visual: Spatial = null
 
 var _created_instances: Array = []
 
+var _source_se3: Se3Ref = null
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	_source_se3 = Se3Ref.new()
 	call_deferred( "_create_visual" )
 
 
@@ -17,6 +20,11 @@ func _ign_post_process( _delta ):
 	var se3: Se3Ref = self.relative_to( cam )
 	var t: Transform = se3.transform
 	_visual.transform = t
+	
+#	# Validation.
+#	se3 = self.get_se3()
+#	se3 = se3.mul( _source_se3 )
+#	print( "validation: q: ", se3.q, "; r: ", se3.r )
 
 
 func _create_visual():
@@ -35,6 +43,7 @@ func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_siz
 	var args: BuildArgs = BuildArgs.new()
 	args.source_se3         = Se3Ref.new()
 	args.source_se3.copy_from( source_se3 )
+	_source_se3.copy_from( args.source_se3 )
 	args.view_point_se3 = Se3Ref.new()
 	args.view_point_se3.copy_from( view_point_se3 )
 	args.node_size_strategy   = node_size_strategy
@@ -78,10 +87,11 @@ func build_surface_finished( args ):
 	var voxel_surface: MarchingCubesDualGd = args.voxel_surface
 	var qty: int = voxel_surface.get_nodes_qty()
 	#print( "surface done, nodes qty: ", qty )
-	voxel_surface.apply_to_mesh_only( _visual.surface )
+	voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
 	
 	var surface_source_solid: Resource = args.surface_source_solid
-	_visual.surface.material_override = surface_source_solid.materials[0]
+	#_visual.surface.material_override = surface_source_solid.materials[0]
+	_visual.surface.material_override = surface_source_solid.override_material
 	
 	_visual.visible = true
 

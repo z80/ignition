@@ -20,7 +20,7 @@ perigee_vel = Vector3( 0, 0, 1 )
 orbital_period_hrs = 1.0
 
 [node name="RefFrameNode" type="RefFrameNode" parent="Sun/Planet/Rotation" index="1"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1010, 2, 2 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 2, 2 )
 
 [node name="Camera" parent="Sun/Planet/Rotation/RefFrameNode" instance=ExtResource( 3 )]
 map_mode = true

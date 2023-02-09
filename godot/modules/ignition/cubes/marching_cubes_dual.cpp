@@ -108,7 +108,9 @@ bool MarchingCubesDual::subdivide_source( const MarchingCubesDualNode & volume_n
 	root_node->at   = volume_node.at;
 	compute_node_values( *root_node, source, strategy );
 
-	root_node->subdivide( this, source, strategy, 0 );
+	const bool ok = root_node->subdivide( this, source, strategy, 0 );
+	if ( !ok )
+		return false;
 	assign_node_indices();
 	root_node->compute_hashes();
 
@@ -118,12 +120,28 @@ bool MarchingCubesDual::subdivide_source( const MarchingCubesDualNode & volume_n
 	// Creating dual grid cells.
 	node_proc( root_node, source, strategy );
 
+	// Check how many dual cells were created.
+	// If none, return false.
+	{
+		const bool empty = _octree_dual_cells.empty();
+		if ( empty )
+			return false;
+	}
+
 	// Cleanup.
 	_all_faces.clear();
 	_materials_set.clear();
 
 	// Create faces and assign material.
 	create_faces_in_dual_grid( source );
+
+	// Check how many faces were created.
+	// If none, return false.
+	{
+		const bool empty = _all_faces.empty();
+		if ( empty )
+			return false;
+	}
 
 	// Go over all nodes and assign faces.
 	assign_faces_to_octree_nodes();
