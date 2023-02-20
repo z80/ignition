@@ -559,9 +559,10 @@ void MarchingCubesDual::uvs( int material_ind, const std::vector<Vector2> * & re
 	ret_uv2s = &_ret_uv2s;
 }
 
-void MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, int material_ind, Float scale )
+int MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, int material_ind, Float scale )
 {
-	vertices( src_se3, material_ind, scale );
+	const std::vector<Vector3> & verts = vertices( src_se3, material_ind, scale );
+	const int qty = static_cast<int>( verts.size() );
 	normals( src_se3, material_ind );
 	tangents( src_se3, material_ind );
 
@@ -588,6 +589,8 @@ void MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, int mater
 			}
 		}
 	}
+
+	return qty;
 }
 
 const std::vector<Vector3> & MarchingCubesDual::vertices() const

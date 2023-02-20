@@ -36,7 +36,7 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("materials_used"),                                                                             &MarchingCubesDualGd::materials_used,   Variant::ARRAY );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh", "source_se3", "material_ind", "scale", "mesh_instance"), &MarchingCubesDualGd::apply_to_mesh, Variant::BOOL );
 
-	ClassDB::bind_method( D_METHOD("precompute_scaled_values", "source_se3", "material_index", "scale"),     &MarchingCubesDualGd::precompute_scaled_values );
+	ClassDB::bind_method( D_METHOD("precompute_scaled_values", "source_se3", "material_index", "scale"),     &MarchingCubesDualGd::precompute_scaled_values, Variant::INT );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh_only", "mesh_instance"),                      &MarchingCubesDualGd::apply_to_mesh_only, Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh_only_wireframe", "mesh_instance"),            &MarchingCubesDualGd::apply_to_mesh_only_wireframe, Variant::BOOL );
 
@@ -313,11 +313,12 @@ bool MarchingCubesDualGd::apply_to_mesh( const Ref<Se3Ref> & src_se3, int materi
 	return true;
 }
 
-void MarchingCubesDualGd::precompute_scaled_values( const Ref<Se3Ref> & src_se3, int material_index, real_t scale )
+int MarchingCubesDualGd::precompute_scaled_values( const Ref<Se3Ref> & src_se3, int material_index, real_t scale )
 {
 	const SE3 & source_se3 = src_se3->se3;
 
-	cubes.precompute_scaled_values( source_se3, material_index, scale );
+	const int qty = cubes.precompute_scaled_values( source_se3, material_index, scale );
+	return qty;
 }
 
 bool MarchingCubesDualGd::apply_to_mesh_only( Node * mesh_instance )
