@@ -15,7 +15,7 @@ var visual_cells: Dictionary = {}
 
 var _ready: bool = false
 var _running: bool = false
-var _processed_running: int = 0
+var _processes_running: int = 0
 var _requested_rebuild: bool = false
 
 # This one is used only for bounding boxes generation.
@@ -46,7 +46,7 @@ func _initialize_strategy():
 
 func _create_cells():
 	var rotation: RefFrameRotationNode = get_parent()
-	for i in range(1):
+	for i in range(27):
 		var cell: Node = VisualSurfaceOne.instance()
 		rotation.add_child( cell )
 		visual_cells[i] = cell
@@ -88,13 +88,13 @@ func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 		return
 	_running = true
 	
-	_processed_running = nodes_to_rebuild.size()
+	_processes_running = nodes_to_rebuild.size()
 	
 	var ids: Array = []
 	for data in nodes_to_rebuild:
 		var id: String = data.id
 		ids.push_back( id )
-	print( "ids: ", ids )
+	#print( "ids: ", ids )
 	
 	for data in nodes_to_rebuild:
 		var node: BoundingNodeGd = data.node
@@ -107,9 +107,9 @@ func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 		args.visual = visual
 		args.surface_args = surface_args
 		
-		#WorkersPool.push_back_with_arg( self, "_rebuild_process", "_rebuild_finished", args )
-		_rebuild_process( args )
-		_rebuild_finished( args )
+		WorkersPool.push_back_with_arg( self, "_rebuild_process", "_rebuild_finished", args )
+		#_rebuild_process( args )
+		#_rebuild_finished( args )
 
 
 
@@ -118,6 +118,7 @@ func _rebuild_process( args ):
 	var visual: Node         = args.visual
 	var surface_args         = args.surface_args
 	visual.build_surface_process( surface_args )
+	return args
 
 
 func _rebuild_finished( args ):
@@ -125,25 +126,25 @@ func _rebuild_finished( args ):
 	var surface_args         = args.surface_args
 	visual.build_surface_finished( surface_args )
 	
-	_processed_running -= 1
-	if _processed_running == 0:
+	_processes_running -= 1
+	if _processes_running == 0:
 		_running = false
 
 
 
 func _pick_nodes_to_rebuild( view_point_se3: Se3Ref ):
 	var sz: float = layer_config.surface_node_size
-	print( "view_point_origin: ", view_point_se3.r )
+	#print( "view_point_origin: ", view_point_se3.r )
 	var bounding_node: BoundingNodeGd = _voxel_surface.create_bounding_node( view_point_se3, sz )
 	var id0: String = bounding_node.get_node_id()
 	#print( "central node: ", id0, ", at: ", view_point_se3.r )
 	var ids_needed: Array = []
 	var nodes_needed: Array = []
-	for x in range(1):
-		for y in range(1):
-			for z in range(1):
-				#var node: BoundingNodeGd = bounding_node.create_adjacent_node( x-1, y-1, z-1 )
-				var node: BoundingNodeGd = bounding_node.create_adjacent_node( x, y, z )
+	for x in range(3):
+		for y in range(3):
+			for z in range(3):
+				var node: BoundingNodeGd = bounding_node.create_adjacent_node( x-1, y-1, z-1 )
+				#var node: BoundingNodeGd = bounding_node.create_adjacent_node( x, y, z )
 				var id: String = node.get_node_id()
 				nodes_needed.push_back( node )
 				ids_needed.push_back( id )

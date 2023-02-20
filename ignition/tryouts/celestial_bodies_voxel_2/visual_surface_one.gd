@@ -77,7 +77,9 @@ func build_surface_process( args ):
 	
 	var _step: float = voxel_surface.init_min_step( source_surface )
 	var _ok: bool = voxel_surface.subdivide_source( node, source_surface, null )
-	voxel_surface.precompute_scaled_values( source_se3, 0, 1.0 )
+	args.ok = _ok
+	var _qty: int = voxel_surface.precompute_scaled_values( source_se3, 0, 1.0 )
+	args.ok = args.ok and (_qty > 0)
 	
 	args.voxel_surface = voxel_surface
 	return args
@@ -87,13 +89,14 @@ func build_surface_finished( args ):
 	var voxel_surface: MarchingCubesDualGd = args.voxel_surface
 	var qty: int = voxel_surface.get_nodes_qty()
 	#print( "surface done, nodes qty: ", qty )
+	#voxel_surface.apply_to_mesh_only( _visual.surface )
 	voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
 	
 	var surface_source_solid: Resource = args.surface_source_solid
 	#_visual.surface.material_override = surface_source_solid.materials[0]
 	_visual.surface.material_override = surface_source_solid.override_material
 	
-	_visual.visible = true
+	_visual.visible = args.ok
 
 
 
@@ -156,6 +159,7 @@ func _cleanup_foliage():
 
 
 class BuildArgs:
+	var ok: bool
 	var node: BoundingNodeGd
 	var source_se3: Se3Ref
 	var view_point_se3: Se3Ref
