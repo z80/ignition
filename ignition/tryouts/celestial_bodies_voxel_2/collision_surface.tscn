@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/collision_surface.gd" type="Script" id=1]
+
+[node name="CollisionSurface" type="Node"]
+script = ExtResource( 1 )
