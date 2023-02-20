@@ -2,7 +2,7 @@
 extends CelestialBody
 class_name CelestialSurfaceVoxel
 
-export(PackedScene) var VisualCellSpace = null
+export(PackedScene) var VisualNodeSpace = null
 
 var _visual_space: Spatial = null
 var _visual_surface: Node  = null
@@ -62,9 +62,9 @@ func rotation_rf():
 
 
 func _create_visuals():
-	if VisualCellSpace != null:
+	if VisualNodeSpace != null:
 		var layer: Spatial = RootScene.get_visual_layer_space()
-		_visual_space = VisualCellSpace.instance()
+		_visual_space = VisualNodeSpace.instance()
 		layer.add_child( _visual_space )
 	
 	_visual_surface = get_node( "Rotation/VisualSurface" )

@@ -109,7 +109,7 @@ func _rebuild_surface_worker( data: RebuildData ):
 	
 	_voxel_surface.max_nodes_qty   = 20000000
 	_voxel_surface.split_precision = 0.01
-	var ok: bool = _voxel_surface.subdivide_source( source_radius, source, _node_size_strategy )
+	#var ok: bool = _voxel_surface.subdivide_source( source_radius, source, _node_size_strategy )
 	#_voxel_surface.precompute_scaled_values( source_se3, -1, null )
 	print( "_rebuild_surface_worker left" )
 	return data

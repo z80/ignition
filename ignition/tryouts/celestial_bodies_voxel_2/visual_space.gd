@@ -80,9 +80,9 @@ func _rebuild_start():
 	var scale: float = 1.0 / layer_config.scale_divider
 	var args: Dictionary = { "source": source, "scale": scale }
 	
-	#WorkersPool.push_back_with_arg( self, "_rebuild_process", "_rebuild_finished", args )
-	var ret = _rebuild_process( args )
-	_rebuild_finished( ret )
+	WorkersPool.push_back_with_arg( self, "_rebuild_process", "_rebuild_finished", args )
+	#var ret = _rebuild_process( args )
+	#_rebuild_finished( ret )
 
 
 func _rebuild_process( args ):
