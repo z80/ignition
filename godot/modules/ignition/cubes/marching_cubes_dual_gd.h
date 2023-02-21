@@ -52,6 +52,7 @@ public:
 	int precompute_scaled_values( const Ref<Se3Ref> & src_se3, int material_index, real_t scale );
 	bool apply_to_mesh_only( Node * mesh_instance );
 	bool apply_to_mesh_only_wireframe( Node * mesh_instance );
+	bool apply_to_collision_shape( Node * concave_polygon_shape );
 
 	//Ref<Se3Ref> compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3 );
 	//Transform compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3 );

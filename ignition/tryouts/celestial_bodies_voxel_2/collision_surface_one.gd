@@ -9,7 +9,6 @@ var _source_se3: Se3Ref = null
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_source_se3 = Se3Ref.new()
-	call_deferred( "_create_collision_body" )
 
 
 func _ign_post_process( _delta ):
@@ -24,16 +23,26 @@ func _ign_post_process( _delta ):
 #	print( "validation: q: ", se3.q, "; r: ", se3.r )
 
 
-func _create_collision_body():
-	var root: Spatial = RootScene.get_visual_layer_near()
+func _get_collision_body():
+	# The parent should be RefFramePhysics.
+	var ref_frame_physics: RefFrameNode = get_parent()
+	if ref_frame_physics == null:
+		return null
 	
 	# Here it should be for ref frame physical space.
 	_collision_body = CollisionCell.instance()
-	root.add_child( _collision_body )
+	var phys_env: Node = ref_frame_physics.get_physics_environment()
+	phys_env.add_physics_body( _collision_body )
+	
+	return _collision_body
 
 
 func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_size_strategy: VolumeNodeSizeStrategyGd, source_surface: Resource, source_liquid: Resource ):
 	self.set_se3( view_point_se3 )
+	
+	var collision_body: StaticBody = _get_collision_body()
+	if collision_body == null:
+		return null
 	
 	var args: BuildArgs = BuildArgs.new()
 	args.source_se3         = Se3Ref.new()
@@ -56,11 +65,6 @@ func build_surface_process( args ):
 	var view_point_se3: Se3Ref = args.view_point_se3
 	var node_size_strategy: VolumeNodeSizeStrategyGd = args.node_size_strategy
 	var source_surface: VolumeSourceGd = args.surface_source_solid.get_source()
-	var source_liquid: VolumeSourceGd
-	if args.surface_source_liquid != null:
-		source_liquid = args.surface_source_liquid.get_source()
-	else:
-		source_liquid = null
 
 	var voxel_surface: MarchingCubesDualGd = MarchingCubesDualGd.new()
 	voxel_surface.max_nodes_qty   = 20000000
@@ -80,71 +84,19 @@ func build_surface_finished( args ):
 	var voxel_surface: MarchingCubesDualGd = args.voxel_surface
 	var qty: int = voxel_surface.get_nodes_qty()
 	#print( "surface done, nodes qty: ", qty )
+	
+	var static_body: StaticBody = _get_collision_body()
+	var collision_shape: CollisionShape = static_body.get_collision_shape()
 	#voxel_surface.apply_to_mesh_only( _visual.surface )
-	voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
+	#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
 	
-	var surface_source_solid: Resource = args.surface_source_solid
+	#var surface_source_solid: Resource = args.surface_source_solid
 	#_visual.surface.material_override = surface_source_solid.materials[0]
-	_visual.surface.material_override = surface_source_solid.override_material
+	#_visual.surface.material_override = surface_source_solid.override_material
 	
-	_visual.visible = args.ok
+	#static_body.visible = args.ok
 
 
-
-
-
-func _populate_foliage( volume_surface: MarchingCubesDualGd, bounding_node: BoundingNodeGd, foliage_sources: Array ):
-	var s: String = bounding_node.hash()
-	var rand: IgnRandomGd = IgnRandomGd.new()
-	rand.seed = s
-	
-	var center: Vector3 = bounding_node.center_vector()
-	var sz: float       = bounding_node.node_size()
-	
-	var created_instances: Array = []
-	
-	for foliage_source in foliage_sources:
-	
-		var dist: float = foliage_source.min_distance
-		var v: float  = sz / dist
-		v = v * v / 2
-		var qty: int = int(v)
-		
-		for i in range(qty):
-			var dr: Vector3 = rand.random_vector( sz )
-			var c: Vector3 = dr + center
-			
-			var ret: Array = volume_surface.intersect_with_segment( c, Vector3.ZERO )
-			
-			var intersects: bool = ret[0]
-			if ( not intersects ):
-				continue
-			
-			var at: Vector3   = ret[1]
-			var norm: Vector3 = ret[2]
-			
-			var se3: Se3Ref = volume_surface.se3_in_point( at )
-			var relative_se3: Se3Ref = volume_surface.relative_to_se3( self )
-			var local_se3: Se3Ref = relative_se3.mul( se3 )
-			var local_norm: Vector3 = relative_se3.q.xform( norm )
-			
-			var p: float = foliage_source.probability( se3, norm )
-			var rand_p: float = rand.floating_point_closed()
-			var create: bool = (rand_p < p)
-			if not create:
-				continue
-			
-			var instance: RefFrameNode = foliage_source.create( volume_surface, local_se3, local_norm, rand )
-			instance.place( self, se3 )
-			#print( "created ", instance )
-			created_instances.push_back( instance )
-	
-	_created_instances = created_instances
-
-
-func _cleanup_foliage():
-	for inst in _created_instances:
-		inst.queue_free()
 
 
 

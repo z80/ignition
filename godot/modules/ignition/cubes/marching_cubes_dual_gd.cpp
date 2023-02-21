@@ -5,6 +5,7 @@
 
 #include "scene/3d/mesh_instance.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/concave_polygon_shape.h"
 #include "core/reference.h"
 
 
@@ -37,8 +38,9 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("apply_to_mesh", "source_se3", "material_ind", "scale", "mesh_instance"), &MarchingCubesDualGd::apply_to_mesh, Variant::BOOL );
 
 	ClassDB::bind_method( D_METHOD("precompute_scaled_values", "source_se3", "material_index", "scale"),     &MarchingCubesDualGd::precompute_scaled_values, Variant::INT );
-	ClassDB::bind_method( D_METHOD("apply_to_mesh_only", "mesh_instance"),                      &MarchingCubesDualGd::apply_to_mesh_only, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("apply_to_mesh_only", "mesh_instance"),                      &MarchingCubesDualGd::apply_to_mesh_only,           Variant::BOOL );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh_only_wireframe", "mesh_instance"),            &MarchingCubesDualGd::apply_to_mesh_only_wireframe, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("apply_to_collision_shape", "concave_polygon_shape"),        &MarchingCubesDualGd::apply_to_collision_shape,     Variant::BOOL );
 
 	//ClassDB::bind_method( D_METHOD("compute_source_se3", "source_se3", "pt_in_source_se3"),       &MarchingCubesDualGd::compute_source_se3, Variant::TRANSFORM );
 	//ClassDB::bind_method( D_METHOD("compute_source_transform", "source_se3", "pt_in_source_se3"), &MarchingCubesDualGd::compute_source_transform, Variant::TRANSFORM );
@@ -474,6 +476,26 @@ bool MarchingCubesDualGd::apply_to_mesh_only_wireframe( Node * mesh_instance )
 	am->add_surface_from_arrays( Mesh::PRIMITIVE_LINES, arrays );
 
 	mi->set_mesh( am );
+	return true;
+}
+
+bool MarchingCubesDualGd::apply_to_collision_shape( Node * concave_polygon_shape )
+{
+	ConcavePolygonShape * sh = Object::cast_to<ConcavePolygonShape>( concave_polygon_shape );
+	if ( sh == nullptr )
+		return false;
+
+	const std::vector<Vector3> & verts = cubes.vertices();
+	const int qty = verts.size();
+	PoolVector3Array faces;
+	faces.resize( qty );
+	for ( int i=0; i<qty; i++ )
+	{
+		const Vector3 & v = verts[i];
+		faces.set( i, v );
+	}
+
+	sh->set_faces( faces );
 	return true;
 }
 
