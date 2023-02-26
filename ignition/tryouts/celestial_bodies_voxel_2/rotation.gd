@@ -69,7 +69,7 @@ func _child_left( child_ref_frame: RefFrameNode ):
 
 
 func _create_collision_surfaces():
-	return
+	#return
 	
 	var all_surfs: Node = get_child(0)
 	var surface_source: Resource = all_surfs.get_surface_source()

@@ -46,7 +46,7 @@ func _on_Load_pressed():
 	
 	var fname: String = _get_selected_file_name()
 	
-	var root: Node = BodyCreator.root_node
+	var root: Node = RootScene.ref_frame_root
 	
 	var file = File.new()
 	var err: int = file.open( fname, File.READ )

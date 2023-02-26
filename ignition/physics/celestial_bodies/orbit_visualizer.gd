@@ -22,6 +22,9 @@ func _process(_delta):
 
 
 func draw():
+	# Disable it for now.
+	return
+	
 	if ref_frame == null:
 		return
 	if motion == null:

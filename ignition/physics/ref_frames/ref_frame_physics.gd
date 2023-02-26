@@ -276,7 +276,7 @@ func exclude_too_far_bodies():
 
 func include_close_enough_bodies():
 	var min_dist: float = Constants.BODY_INCLUDE_DIST
-	var bodies = parent_bodies()
+	var bodies: Array = parent_bodies()
 	
 	for body in bodies:
 		# This is to make sure that bodies added as a part of a super body 
@@ -535,7 +535,7 @@ func root_most_child_bodies():
 
 func parent_bodies():
 	var pt = self.get_parent()
-	var rt = RootScene.get_root_for_bodies()
+	var rt = RootScene.ref_frame_root
 	
 	var bodies = []
 	
@@ -555,18 +555,18 @@ func parent_bodies():
 	if rt == pt:
 		return bodies
 
-	children = rt.get_children()
-	for child in children:
-		var body = child as RefFrameNode
-		if body == null:
-			continue
-		if body == RootScene.ref_frame_root.player_camera:
-			continue
-		body = body.root_most_body()
-		var cl_name: String = body.get_class()
-		if (cl_name == "PhysicsBodyBase") or (cl_name == "Part"):
-			if not (body in bodies):
-				bodies.push_back( body )
+#	children = rt.get_children()
+#	for child in children:
+#		var body = child as RefFrameNode
+#		if body == null:
+#			continue
+#		if body == RootScene.ref_frame_root.player_camera:
+#			continue
+#		body = body.root_most_body()
+#		var cl_name: String = body.get_class()
+#		if (cl_name == "PhysicsBodyBase") or (cl_name == "Part"):
+#			if not (body in bodies):
+#				bodies.push_back( body )
 	
 	return bodies
 

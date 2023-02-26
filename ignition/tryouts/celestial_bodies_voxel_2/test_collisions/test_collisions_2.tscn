@@ -1,0 +1,34 @@
+[gd_scene load_steps=9 format=2]
+
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.gd" type="Script" id=1]
+[ext_resource path="res://physics/parts/characters/central/central.tscn" type="PackedScene" id=2]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/celestial_surface_voxel.tscn" type="PackedScene" id=3]
+[ext_resource path="res://physics/bodies/construction_new/construction.tscn" type="PackedScene" id=4]
+[ext_resource path="res://physics/ui/root_ui.tscn" type="PackedScene" id=5]
+[ext_resource path="res://physics/celestial_bodies/sun.tscn" type="PackedScene" id=6]
+[ext_resource path="res://physics/camera_ctrl/player_camera.tscn" type="PackedScene" id=7]
+[ext_resource path="res://physics/ref_frames/ref_frame_physics.gd" type="Script" id=8]
+
+[node name="RefFrameRoot" type="RefFrameRoot"]
+script = ExtResource( 1 )
+
+[node name="Sun" parent="." instance=ExtResource( 6 )]
+
+[node name="Translation" parent="Sun" instance=ExtResource( 3 )]
+surface_orbital_vel_kms = 0.01
+
+[node name="RefFramePhysics" type="RefFrameNonInertialNode" parent="Sun/Translation/Rotation" index="1"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 92, 0, 0 )
+script = ExtResource( 8 )
+
+[node name="Character" parent="Sun/Translation/Rotation/RefFramePhysics" instance=ExtResource( 2 )]
+
+[node name="PlayerCamera" parent="Sun/Translation/Rotation/RefFramePhysics/Character" instance=ExtResource( 7 )]
+map_mode = true
+
+[node name="Construction" parent="Sun/Translation/Rotation" index="2" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 89, 0, 0 )
+
+[node name="RootUi" parent="." instance=ExtResource( 5 )]
+
+[editable path="Sun/Translation"]

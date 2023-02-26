@@ -345,7 +345,7 @@ func _create_visual( Visual: PackedScene ):
 	v.transform = t
 	
 	var root: Node = RootScene.get_visual_layer_near()
-	v.name = RootScene.get_unique_name_for_visuals( v.name )
+	#v.name = RootScene.get_unique_name_for_visuals( v.name )
 	root.add_child( v )
 	
 	# Check if it is a RigidBody.

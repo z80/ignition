@@ -61,7 +61,8 @@ func _ready():
 
 
 func _process( _delta: float ):
-	_process_visualize_orbits()
+	#_process_visualize_orbits()
+	pass
 
 
 
