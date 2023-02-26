@@ -10,10 +10,19 @@
 script = ExtResource( 1 )
 
 [node name="VisualLayerSpace" parent="." instance=ExtResource( 5 )]
+__meta__ = {
+"_editor_description_": "Thi is a visual layer in which whole planets are visualized. It is scaled."
+}
 
 [node name="VisualLayerNear" parent="." instance=ExtResource( 4 )]
+__meta__ = {
+"_editor_description_": "This one is for visualizing 1:1 objects like player controlled objects and close range landscape."
+}
 
 [node name="VisualLayerOverlay" parent="." instance=ExtResource( 2 )]
+__meta__ = {
+"_editor_description_": "This one is for overlay elements like connection nodes which are rendered on top of other objects.."
+}
 
 [node name="PhysicsEnvs" type="Node" parent="."]
 
@@ -39,3 +48,8 @@ __meta__ = {
 }
 
 [node name="InteractionNodeManager" parent="." instance=ExtResource( 3 )]
+
+[node name="CollisionSurfaces" type="Node" parent="."]
+__meta__ = {
+"_editor_description_": "This one is for storing collision surfaces for physics reference frames when parented by rotating ref frames of planets."
+}

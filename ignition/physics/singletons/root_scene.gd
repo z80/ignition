@@ -7,6 +7,7 @@ var ref_frame_root: RefFrameRoot = null
 
 var _visual_layer_space: Spatial = null
 var _visual_layer_near: Spatial = null
+var _collision_surfaces: Node = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -66,6 +67,11 @@ func get_root_for_gui_popups():
 	return ret
 
 
+func get_root_for_collision_surfaces():
+	if _collision_surfaces == null:
+		_collision_surfaces = get_node( "CollisionSurfaces" )
+	
+	return _collision_surfaces
 
 
 func get_unique_name_for_physics_envs( name_template: String ):
