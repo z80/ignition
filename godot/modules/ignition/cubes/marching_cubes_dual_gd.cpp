@@ -339,10 +339,7 @@ bool MarchingCubesDualGd::apply_to_mesh_only( Node * mesh_instance )
 	const std::vector<Vector2> & uv2_s  = cubes.uv2s();
 
 	const int verts_qty = verts.size();
-	if ( verts_qty < 3 )
-	{
-		return false;
-	}
+
 	// Fill in arrays.
 	vertices.resize( verts_qty );
 	normals.resize( verts_qty );
@@ -412,8 +409,7 @@ bool MarchingCubesDualGd::apply_to_mesh_only_wireframe( Node * mesh_instance )
 	const std::vector<Vector2> & uv2_s  = cubes.uv2s();
 
 	const int verts_qty = verts.size();
-	if ( verts_qty < 3 )
-		return false;
+
 	// Fill in arrays.
 	vertices.resize( verts_qty*2 );
 	normals.resize( verts_qty*2 );
