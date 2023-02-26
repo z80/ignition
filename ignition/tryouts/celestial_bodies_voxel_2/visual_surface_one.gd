@@ -89,12 +89,12 @@ func build_surface_finished( args ):
 	var voxel_surface: MarchingCubesDualGd = args.voxel_surface
 	var qty: int = voxel_surface.get_nodes_qty()
 	#print( "surface done, nodes qty: ", qty )
-	#voxel_surface.apply_to_mesh_only( _visual.surface )
-	voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
+	voxel_surface.apply_to_mesh_only( _visual.surface )
+	#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
 	
 	var surface_source_solid: Resource = args.surface_source_solid
-	#_visual.surface.material_override = surface_source_solid.materials[0]
-	_visual.surface.material_override = surface_source_solid.override_material
+	_visual.surface.material_override = surface_source_solid.materials[0]
+	#_visual.surface.material_override = surface_source_solid.override_material
 	
 	_visual.visible = args.ok
 

@@ -12,6 +12,9 @@ func _ready():
 
 
 func _ign_post_process( _delta ):
+	if _collision_body == null:
+		return
+	
 	var ref_frame: RefFrameNode = get_parent()
 	var se3: Se3Ref = self.relative_to( ref_frame )
 	var t: Transform = se3.transform
@@ -37,7 +40,8 @@ func _get_collision_body():
 	return _collision_body
 
 
-func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_size_strategy: VolumeNodeSizeStrategyGd, source_surface: Resource, source_liquid: Resource ):
+
+func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_size_strategy: VolumeNodeSizeStrategyGd, source_surface: Resource ):
 	self.set_se3( view_point_se3 )
 	
 	var collision_body: StaticBody = _get_collision_body()
@@ -89,12 +93,8 @@ func build_surface_finished( args ):
 	var collision_shape: CollisionShape = static_body.get_collision_shape()
 	#voxel_surface.apply_to_mesh_only( _visual.surface )
 	#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
-	
-	#var surface_source_solid: Resource = args.surface_source_solid
-	#_visual.surface.material_override = surface_source_solid.materials[0]
-	#_visual.surface.material_override = surface_source_solid.override_material
-	
-	#static_body.visible = args.ok
+	voxel_surface.apply_to_collision_shape( collision_shape )
+
 
 
 

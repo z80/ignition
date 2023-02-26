@@ -44,14 +44,6 @@ func _initialize_strategy():
 	_node_size_strategy.max_level = max_level
 
 
-func _create_cells():
-	var rotation: RefFrameRotationNode = get_parent()
-	for i in range(27):
-		var cell: Node = VisualSurfaceOne.instance()
-		rotation.add_child( cell )
-		visual_cells[i] = cell
-
-
 
 func _create_volume_surface():
 	var voxel_surface: MarchingCubesDualGd = MarchingCubesDualGd.new()
@@ -63,6 +55,17 @@ func _create_volume_surface():
 	var _step: float = voxel_surface.init_min_step( source )
 	
 	_voxel_surface = voxel_surface
+
+
+
+func _create_cells():
+	var rotation: RefFrameRotationNode = get_parent()
+	for i in range(27):
+		var cell: Node = VisualSurfaceOne.instance()
+		rotation.add_child( cell )
+		visual_cells[i] = cell
+
+
 
 
 func update_source_se3( source_se3: Se3Ref, view_point_se3: Se3Ref ):
