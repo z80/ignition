@@ -56,10 +56,10 @@ func _create_volume_surface():
 
 
 func _create_cells():
-	var rotation: RefFrameRotationNode = get_parent()
+	var ref_frame_physics: RefFramePhysics = get_parent();
 	for i in range(27):
 		var cell: Node = CollisionSurfaceOne.instance()
-		rotation.add_child( cell )
+		ref_frame_physics.add_child( cell )
 		collision_cells[i] = cell
 
 
@@ -76,26 +76,35 @@ func _create_size_strategy( surface_source ):
 	return node_size_strategy
 
 
+func _parent_jumped():
+	rebuild( false )
 
 
-
-func update_source_se3( source_se3: Se3Ref, view_point_se3: Se3Ref ):
+func rebuild( synchronous: bool = true ):
 	var rebuild_needed: bool = true
 	if _running:
 		if rebuild_needed:
 			_requested_rebuild = true
 	
 	else:
+		var ref_frame_physics: RefFramePhysics = get_parent()
+		var rotation_node: RefFrameRotationNode = ref_frame_physics.get_parent()
+		if rotation_node == null:
+			return
+		
+		var view_point_se3: Se3Ref = ref_frame_physics.relative_to( rotation_node )
+		var source_se3: Se3Ref = view_point_se3.inverse()
+		
 		rebuild_needed = rebuild_needed or _requested_rebuild
 		if rebuild_needed:
 			_requested_rebuild = false
-			_rebuild_start( source_se3, view_point_se3 )
+			_rebuild_start( source_se3, view_point_se3, synchronous )
 	
 
 
 
 
-func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
+func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref, synchronous: bool = false ):
 	var nodes_to_rebuild: Array = _pick_nodes_to_rebuild( view_point_se3 )
 	var empty: bool = nodes_to_rebuild.empty()
 	if empty:
@@ -120,25 +129,32 @@ func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 		args.node = node
 		args.collision    = collision
 		args.surface_args = surface_args
+		args.view_point_se3 = view_point_se3
 		
-		WorkersPool.push_back_with_arg( self, "_rebuild_process", "_rebuild_finished", args )
-		#_rebuild_process( args )
-		#_rebuild_finished( args )
+		if synchronous:
+			_rebuild_process( args )
+			_rebuild_finished( args )
+		
+		else:
+			WorkersPool.push_back_with_arg( self, "_rebuild_process", "_rebuild_finished", args )
 
 
 
 func _rebuild_process( args ):
-	var node: BoundingNodeGd = args.node
-	var visual: Node         = args.visual
-	var surface_args         = args.surface_args
-	visual.build_surface_process( surface_args )
+	var node: BoundingNodeGd    = args.node
+	var collision: RefFrameNode = args.collision
+	var surface_args            = args.surface_args
+	collision.build_surface_process( surface_args )
 	return args
 
 
 func _rebuild_finished( args ):
-	var visual: Node         = args.visual
-	var surface_args         = args.surface_args
-	visual.build_surface_finished( surface_args )
+	var collision: RefFrameNode = args.collision
+	var view_point_se3: Se3Ref  = args.view_point_se3
+	var surface_args            = args.surface_args
+	collision.build_surface_finished( surface_args )
+	
+	collision.set_se3( view_point_se3 )
 	
 	_processes_running -= 1
 	if _processes_running == 0:

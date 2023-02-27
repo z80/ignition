@@ -11,7 +11,7 @@ var _collision_surfaces: Dictionary = {}
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_collision_surfaces = {}
-	_create_collision_surfaces()
+	call_deferred( "_create_collision_surfaces" )
 
 
 func _child_jumped( child_ref_frame: RefFrameNode ):
@@ -86,11 +86,13 @@ func _create_collision_surfaces():
 		var env: Node = ref_frame_physics.get_physics_environment()
 		var collision_surf: Node = collision_surface_scene.instance()
 		collision_surf.surface_source = surface_source
-		
-		env.add_physics_body( collision_surf )
-		collision_surf.rebuild_surface( ref_frame_physics, self, surface_source )
+		ref_frame_physics.add_child( collision_surf )
 		
 		_collision_surfaces[ref_frame_physics] = collision_surf
+		
+		#env.add_physics_body( collision_surf )
+		#collision_surf.rebuild_surface( ref_frame_physics, self, surface_source )
+		
 
 
 func _get_visual_surface():

@@ -520,34 +520,32 @@ func root_most_child_bodies():
 	var children = get_children()
 	var bodies = []
 	for ch in children:
-		var b = ch as RefFrameNode
-		var include: bool = (b != null)
-		# Don't use camera.
-		if ch == RootScene.ref_frame_root.player_camera:
+		var b: RefFrameNode = ch as RefFrameBodyNode
+		if b == null:
 			continue
-		var root_most_body: RefFrameNode = b.root_most_body()
-		include = include and (not (root_most_body in bodies))
-		if include:
-			bodies.push_back( b )
+		
+		if (b != null):
+			var root_most_body: RefFrameNode = b.root_most_body()
+			var append: bool = (root_most_body in bodies)
+			if append:
+				bodies.push_back( root_most_body )
 	
 	return bodies
 
 
 func parent_bodies():
-	var pt = self.get_parent()
-	var rt = RootScene.ref_frame_root
+	var pt: Node = self.get_parent()
+	var rt: RefFrameNode = RootScene.ref_frame_root
 	
 	var bodies = []
 	
-	var children = pt.get_children()
-	for child in children:
-		var body = child as RefFrameNode
+	var children_qty: int = pt.get_child_count()
+	for ind in range(children_qty):
+		var child: Node = pt.get_child( ind )
+		var body = child as RefFrameBodyNode
 		if body == null:
 			continue
-		if body == RootScene.ref_frame_root.player_camera:
-			continue
-		var cl_name: String = body.get_class()
-		if (cl_name == "PhysicsBodyBase") or (cl_name == "Part"):
+		
 			body = body.root_most_body()
 			if not (body in bodies):
 				bodies.push_back( body )
