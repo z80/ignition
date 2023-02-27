@@ -475,7 +475,7 @@ bool MarchingCubesDualGd::apply_to_mesh_only_wireframe( Node * mesh_instance )
 	return true;
 }
 
-bool MarchingCubesDualGd::apply_to_collision_shape( Node * concave_polygon_shape )
+bool MarchingCubesDualGd::apply_to_collision_shape( Object * concave_polygon_shape )
 {
 	ConcavePolygonShape * sh = Object::cast_to<ConcavePolygonShape>( concave_polygon_shape );
 	if ( sh == nullptr )
