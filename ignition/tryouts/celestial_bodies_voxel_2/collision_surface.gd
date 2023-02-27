@@ -61,6 +61,8 @@ func _create_cells():
 		var cell: Node = CollisionSurfaceOne.instance()
 		ref_frame_physics.add_child( cell )
 		collision_cells[i] = cell
+	
+	rebuild( true )
 
 
 
@@ -153,8 +155,6 @@ func _rebuild_finished( args ):
 	var view_point_se3: Se3Ref  = args.view_point_se3
 	var surface_args            = args.surface_args
 	collision.build_surface_finished( surface_args )
-	
-	collision.set_se3( view_point_se3 )
 	
 	_processes_running -= 1
 	if _processes_running == 0:

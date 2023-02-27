@@ -33,17 +33,16 @@ func _get_collision_body():
 		return null
 	
 	# Here it should be for ref frame physical space.
-	_collision_body = CollisionCell.instance()
-	var phys_env: Node = ref_frame_physics.get_physics_environment()
-	phys_env.add_physics_body( _collision_body )
+	if _collision_body == null:
+		_collision_body = CollisionCell.instance()
+		var phys_env: Node = ref_frame_physics.get_physics_environment()
+		phys_env.add_physics_body( _collision_body )
 	
 	return _collision_body
 
 
 
 func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_size_strategy: VolumeNodeSizeStrategyGd, source_surface: Resource ):
-	self.set_se3( view_point_se3 )
-	
 	var collision_body: StaticBody = _get_collision_body()
 	if collision_body == null:
 		return null
@@ -55,7 +54,7 @@ func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_siz
 	args.view_point_se3 = Se3Ref.new()
 	args.view_point_se3.copy_from( view_point_se3 )
 	args.node_size_strategy   = node_size_strategy
-	args.surface_source_solid = source_surface
+	args.surface_source = source_surface
 	
 	return args
 
@@ -68,7 +67,7 @@ func build_surface_process( args ):
 	var source_se3: Se3Ref = args.source_se3
 	var view_point_se3: Se3Ref = args.view_point_se3
 	var node_size_strategy: VolumeNodeSizeStrategyGd = args.node_size_strategy
-	var source_surface: VolumeSourceGd = args.surface_source_solid.get_source()
+	var source_surface: VolumeSourceGd = args.surface_source.get_source()
 
 	var voxel_surface: MarchingCubesDualGd = MarchingCubesDualGd.new()
 	voxel_surface.max_nodes_qty   = 20000000
@@ -91,9 +90,15 @@ func build_surface_finished( args ):
 	
 	var static_body: StaticBody = _get_collision_body()
 	var collision_shape: CollisionShape = static_body.get_collision_shape()
+	var shape: ConcavePolygonShape = ConcavePolygonShape.new()
 	#voxel_surface.apply_to_mesh_only( _visual.surface )
 	#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
-	voxel_surface.apply_to_collision_shape( collision_shape )
+	var _ok: bool = voxel_surface.apply_to_collision_shape( shape )
+	collision_shape.shape = shape
+	
+	# In ref frame physics it is in the origin.
+	var se3: Se3Ref = Se3Ref.new()
+	self.set_se3( se3 )
 
 
 
@@ -107,7 +112,7 @@ class BuildArgs:
 	var source_se3: Se3Ref
 	var view_point_se3: Se3Ref
 	var node_size_strategy: VolumeNodeSizeStrategyGd
-	var surface_source_solid: Resource
+	var surface_source: Resource
 	var voxel_surface: MarchingCubesDualGd
 
 

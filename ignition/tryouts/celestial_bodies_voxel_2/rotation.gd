@@ -22,8 +22,8 @@ func _child_jumped( child_ref_frame: RefFrameNode ):
 	#var has: bool = _collision_surfaces.has( phys )
 	#assert( has )
 	var collision_surface: Node = _collision_surfaces[phys]
-	var all_surfs: Node = get_child(0)
-	var surface_source: Resource = all_surfs.get_surface_source()
+	var visual_surface: Node = _get_visual_surface()
+	var surface_source: Resource = visual_surface.surface_source_solid
 	
 	print( "Child jumped" )
 	# Immediately query faces using old subdivision.
@@ -42,8 +42,8 @@ func _child_entered( child_ref_frame: RefFrameNode ):
 	var has: bool = _collision_surfaces.has( phys )
 	assert( not has )
 
-	var all_surfs: Node = get_child(0)
-	var surface_source: Resource = all_surfs.get_surface_source()
+	var visual_surface: Node = _get_visual_surface()
+	var surface_source: Resource = visual_surface.surface_source_solid
 
 	var env: Node = phys.get_physics_environment()
 	var collision_surf: Node = collision_surface_scene.instance()
@@ -83,7 +83,7 @@ func _create_collision_surfaces():
 		if ref_frame_physics == null:
 			continue
 		
-		var env: Node = ref_frame_physics.get_physics_environment()
+		#var env: Node = ref_frame_physics.get_physics_environment()
 		var collision_surf: Node = collision_surface_scene.instance()
 		collision_surf.surface_source = surface_source
 		ref_frame_physics.add_child( collision_surf )

@@ -546,9 +546,9 @@ func parent_bodies():
 		if body == null:
 			continue
 		
-			body = body.root_most_body()
-			if not (body in bodies):
-				bodies.push_back( body )
+		body = body.root_most_body()
+		if not (body in bodies):
+			bodies.push_back( body )
 	
 	if rt == pt:
 		return bodies
