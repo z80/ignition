@@ -1,6 +1,8 @@
 
 extends RefFrameRoot
 
+export(PackedScene) var RefFramePhysicsScene = null
+
 # All visualization meshes/or other types are with respect to the ref frame 
 # where controlled object is.
 # Ref frame is selected when player clicks the icon.
@@ -263,8 +265,8 @@ func update_camera( delta: float ):
 
 
 func create_ref_frame_physics():
-	var rf: RefFramePhysics = RefFramePhysics.new()
-	rf.name = "ref_frame_physics"
+	var rf: RefFramePhysics = RefFramePhysicsScene.instance()
+	rf.name = "RefFramePhysics"
 	return rf
 
 

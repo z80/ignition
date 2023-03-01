@@ -41,6 +41,25 @@ func _get_collision_body():
 	return _collision_body
 
 
+func remove_surface():
+	var static_body: StaticBody = _get_collision_body()
+	var collision_shape: CollisionShape = static_body.get_collision_shape()
+	
+	# Just empty shape so that there are no polygons to collide with.
+	var shape: ConcavePolygonShape = ConcavePolygonShape.new()
+	collision_shape.shape = shape
+
+
+func clone_surface( other_cell: RefFrameNode ):
+	var other_static_body: StaticBody = other_cell._get_collision_body()
+	var other_collision_shape: CollisionShape = other_static_body.get_collision_shape()
+	var shape: ConcavePolygonShape = other_collision_shape.shape
+
+	var own_static_body: StaticBody = _get_collision_body()
+	var own_collision_shape: CollisionShape = own_static_body.get_collision_shape()
+	own_collision_shape.shape = shape
+
+
 
 func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_size_strategy: VolumeNodeSizeStrategyGd, source_surface: Resource ):
 	var collision_body: StaticBody = _get_collision_body()

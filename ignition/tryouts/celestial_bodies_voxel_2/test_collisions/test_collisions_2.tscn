@@ -7,19 +7,18 @@
 [ext_resource path="res://physics/ui/root_ui.tscn" type="PackedScene" id=5]
 [ext_resource path="res://physics/celestial_bodies/sun.tscn" type="PackedScene" id=6]
 [ext_resource path="res://physics/camera_ctrl/player_camera.tscn" type="PackedScene" id=7]
-[ext_resource path="res://physics/ref_frames/ref_frame_physics.gd" type="Script" id=8]
+[ext_resource path="res://physics/ref_frames/ref_frame_physics.tscn" type="PackedScene" id=9]
 
 [node name="RefFrameRoot" type="RefFrameRoot"]
 script = ExtResource( 1 )
+RefFramePhysicsScene = ExtResource( 9 )
 
 [node name="Sun" parent="." instance=ExtResource( 6 )]
 
 [node name="Translation" parent="Sun" instance=ExtResource( 3 )]
 surface_orbital_vel_kms = 0.01
 
-[node name="RefFramePhysics" type="RefFrameNonInertialNode" parent="Sun/Translation/Rotation" index="1"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 92, 0, 0 )
-script = ExtResource( 8 )
+[node name="RefFramePhysics" parent="Sun/Translation/Rotation" index="1" instance=ExtResource( 9 )]
 
 [node name="Character" parent="Sun/Translation/Rotation/RefFramePhysics" instance=ExtResource( 2 )]
 

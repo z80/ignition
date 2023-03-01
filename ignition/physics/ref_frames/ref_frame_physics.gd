@@ -2,7 +2,9 @@
 extends RefFrameNonInertialNode
 class_name RefFramePhysics
 
+export(PackedScene) var PhysicsEnv = null
 var _physics_env = null
+var _collision_surface: Node = null
 
 var Clustering = preload( "res://physics/ref_frames/clustering.gd" )
 
@@ -22,12 +24,26 @@ func get_class():
 	return "RefFramePhysics"
 
 
+func get_collision_surface():
+	if _collision_surface == null:
+		_collision_surface = get_node( "CollisionSurface" )
+	
+	return _collision_surface
+
+
+func clone_collision_surface( other_ref_frame: RefFrameNonInertialNode ):
+	var own_collision_surface: Node = get_collision_surface()
+	var other_collision_surface: Node = other_ref_frame.get_collision_surface()
+	own_collision_surface.clone_surface( other_collision_surface )
+
+
 func _init():
 	_broad_tree = BroadTreeGd.new()
 
 
 func _ready():
 	add_to_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
+	_create_physics_environment()
 
 
 func _enter_tree():
@@ -74,18 +90,16 @@ func update():
 
 
 # Override ready. Added surface provider creation.
-func ready():
-	.ready()
-	_create_physics_environment()
-	
-	add_to_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
+#func ready():
+#	_create_physics_environment()
+#	
+#	add_to_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
 
 
 func _create_physics_environment():
 	if (_physics_env != null) and is_instance_valid(_physics_env):
 		return
-	var Env = preload( "res://physics/ref_frames/physics_env/physics_env.tscn" )
-	var env = Env.instance()
+	var env = PhysicsEnv.instance()
 	var root: Node = RootScene.get_root_for_physics_envs()
 	root.add_child( env )
 	_physics_env = env
@@ -372,6 +386,7 @@ func split_if_needed() -> bool:
 #	se3.r = accum_r
 
 	rf.set_se3( se3 )
+	rf.call_deferred( "clone_collision_surface", self )
 	
 	for body in bodies_b:
 		body.change_parent( rf )

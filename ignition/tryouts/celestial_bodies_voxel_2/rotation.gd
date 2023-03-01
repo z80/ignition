@@ -1,16 +1,12 @@
 
 extends RefFrameRotationNode
 
-export(PackedScene) var collision_surface_scene = null
 var _visual_surface: Node = null
 
-
-var _collision_surfaces: Dictionary = {}
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	_collision_surfaces = {}
 	call_deferred( "_create_collision_surfaces" )
 
 
@@ -21,7 +17,7 @@ func _child_jumped( child_ref_frame: RefFrameNode ):
 	
 	#var has: bool = _collision_surfaces.has( phys )
 	#assert( has )
-	var collision_surface: Node = _collision_surfaces[phys]
+	var collision_surface: Node = phys.get_collision_surface()
 	var visual_surface: Node = _get_visual_surface()
 	var surface_source: Resource = visual_surface.surface_source_solid
 	
@@ -30,42 +26,32 @@ func _child_jumped( child_ref_frame: RefFrameNode ):
 	# It is done inside "rebuild_surface" anyway.
 	#collision_surface.update_surface( phys, self, surface_source )
 	# Asynchronously rebuild surface.
-	collision_surface.rebuild_surface( phys, self, surface_source )
+	collision_surface.rebuild_surface( surface_source, false )
 
 
 
 func _child_entered( child_ref_frame: RefFrameNode ):
-	var phys: RefFramePhysics = child_ref_frame as RefFramePhysics
-	if phys == null:
+	var ref_frame_physics: RefFramePhysics = child_ref_frame as RefFramePhysics
+	if ref_frame_physics == null:
 		return
-	
-	var has: bool = _collision_surfaces.has( phys )
-	assert( not has )
 
+	var collision_surface: Node = ref_frame_physics.get_collision_surface()
 	var visual_surface: Node = _get_visual_surface()
 	var surface_source: Resource = visual_surface.surface_source_solid
 
-	var env: Node = phys.get_physics_environment()
-	var collision_surf: Node = collision_surface_scene.instance()
+	collision_surface.rebuild_surface( surface_source, false )
 	
-	env.add_child( collision_surf )
-	collision_surf.rebuild_surface( phys, self, surface_source )
-	
-	_collision_surfaces[phys] = collision_surf
 
 
 
 
 func _child_left( child_ref_frame: RefFrameNode ):
-	var phys: RefFramePhysics = child_ref_frame as RefFramePhysics
-	if phys == null:
+	var ref_frame_physics: RefFramePhysics = child_ref_frame as RefFramePhysics
+	if (ref_frame_physics == null) or (not is_instance_valid(ref_frame_physics)):
 		return
 
-	var has: bool = _collision_surfaces.has( phys )
-	assert( has )
-
-	var collision_surface: Node = _collision_surfaces[phys]
-	collision_surface.queue_free()
+	var collision_surface: Node = ref_frame_physics.get_collision_surface()
+	collision_surface.remove_surface()
 
 
 
@@ -83,16 +69,9 @@ func _create_collision_surfaces():
 		if ref_frame_physics == null:
 			continue
 		
-		#var env: Node = ref_frame_physics.get_physics_environment()
-		var collision_surf: Node = collision_surface_scene.instance()
-		collision_surf.surface_source = surface_source
-		ref_frame_physics.add_child( collision_surf )
-		
-		_collision_surfaces[ref_frame_physics] = collision_surf
-		
-		#env.add_physics_body( collision_surf )
-		#collision_surf.rebuild_surface( ref_frame_physics, self, surface_source )
-		
+		var collision_surface: Node = ref_frame_physics.get_collision_surface()
+		collision_surface.rebuild_surface( surface_source, true )
+
 
 
 func _get_visual_surface():

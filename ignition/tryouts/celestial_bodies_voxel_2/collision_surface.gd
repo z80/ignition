@@ -3,16 +3,13 @@ extends Node
 
 export(PackedScene) var CollisionSurfaceOne = null
 export(Resource) var layer_config   = null
-export(Resource) var surface_source = null
 
 var collision_cells: Dictionary = {}
 
 #var _node_size_strategy: VolumeNodeSizeStrategyGd = null
 
-var _ready: bool = false
 var _running: bool = false
 var _processes_running: int = 0
-var _requested_rebuild: bool = false
 
 # This one is used only for bounding boxes generation.
 # the same objects inside each cell work independently for 
@@ -20,93 +17,114 @@ var _requested_rebuild: bool = false
 var _voxel_surface: MarchingCubesDualGd = null
 var _node_size_strategy: VolumeNodeSizeStrategyGd = null
 
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	_ready = false
-	
-	_initialize_strategy()
-	_create_volume_surface()
-	# It says it is busy setting up children and 
-	# wants it to be called deferred.
-	call_deferred( "_create_cells" )
+	pass
 
 
 
-func _initialize_strategy():
+func _initialize( surface_source: Resource ):
+	_initialize_strategy( surface_source )
+	_create_volume_surface( surface_source )
+	_create_cells()
+
+
+
+func _initialize_strategy( surface_source: Resource ):
 	var radius: float  = surface_source.source_radius
 	var max_level: int = layer_config.max_level
 	
-	_node_size_strategy = VolumeNodeSizeStrategyGd.new()
+	if _node_size_strategy == null:
+		_node_size_strategy = VolumeNodeSizeStrategyGd.new()
+	
 	_node_size_strategy.radius = radius
 	_node_size_strategy.max_level = max_level
 
 
 
-func _create_volume_surface():
-	var voxel_surface: MarchingCubesDualGd = MarchingCubesDualGd.new()
-	voxel_surface.max_nodes_qty   = 20000000
-	voxel_surface.split_precision = 0.01
+func _create_volume_surface( surface_source: Resource ):
+	if _voxel_surface == null:
+		_voxel_surface = MarchingCubesDualGd.new()
+		_voxel_surface.max_nodes_qty   = 20000000
+		_voxel_surface.split_precision = 0.01
 	
 	var source: VolumeSourceGd = surface_source.get_source()
-	
-	var _step: float = voxel_surface.init_min_step( source )
-	
-	_voxel_surface = voxel_surface
+	var _step: float = _voxel_surface.init_min_step( source )
+
 
 
 
 func _create_cells():
+	var full: bool = not collision_cells.empty()
+	if full:
+		return
+	
 	var ref_frame_physics: RefFramePhysics = get_parent();
 	for i in range(27):
 		var cell: Node = CollisionSurfaceOne.instance()
 		ref_frame_physics.add_child( cell )
 		collision_cells[i] = cell
+
+
+
+
+
+# This thing should be called externally by a rotational part of a planet.
+func rebuild_surface( surface_source: Resource, synchronous: bool = true ):
+	var ref_frame_physics: RefFramePhysics = get_parent()
+	var rotation_node: RefFrameRotationNode = ref_frame_physics.get_parent()
+	if rotation_node == null:
+		return
 	
-	rebuild( true )
-
-
-
-
-func _create_size_strategy( surface_source ):
-	var radius: float  = surface_source.source_radius
-	var max_level: int = layer_config.max_level
+	var view_point_se3: Se3Ref = ref_frame_physics.relative_to( rotation_node )
+	var source_se3: Se3Ref = view_point_se3.inverse()
 	
-	var node_size_strategy: VolumeNodeSizeStrategyGd = VolumeNodeSizeStrategyGd.new()
-	node_size_strategy.radius    = radius
-	node_size_strategy.max_level = max_level
+	_initialize( surface_source )
 	
-	return node_size_strategy
+	_rebuild_start( surface_source, source_se3, view_point_se3, synchronous )
 
 
-func _parent_jumped():
-	rebuild( false )
-
-
-func rebuild( synchronous: bool = true ):
-	var rebuild_needed: bool = true
+# When leaving the rotation node need to remove collision surface.
+func remove_surface():
 	if _running:
-		if rebuild_needed:
-			_requested_rebuild = true
+		return
 	
-	else:
-		var ref_frame_physics: RefFramePhysics = get_parent()
-		var rotation_node: RefFrameRotationNode = ref_frame_physics.get_parent()
-		if rotation_node == null:
-			return
-		
-		var view_point_se3: Se3Ref = ref_frame_physics.relative_to( rotation_node )
-		var source_se3: Se3Ref = view_point_se3.inverse()
-		
-		rebuild_needed = rebuild_needed or _requested_rebuild
-		if rebuild_needed:
-			_requested_rebuild = false
-			_rebuild_start( source_se3, view_point_se3, synchronous )
+	for cell in collision_cells:
+		cell.remove_surface()
+
+
+# Should be called by a ref. frame which has created this one.
+func clone_surface( other_surface ):
+	if _running:
+		return
 	
+	_create_cells()
+	var own_cells: Array = []
+	for cell in collision_cells:
+		own_cells.push_back( cell )
+	collision_cells.clear()
+	
+	var ref_frame_physics: RefFrameNonInertialNode = get_parent()
+	
+	var other_cells: Dictionary = other_surface.collision_cells
+	var ind: int = 0
+	for key in other_cells:
+		var other_cell: RefFrameNode = collision_cells[key]
+		var own_cell: RefFrameNode = own_cells[ind]
+		
+		var se3: Se3Ref = other_cell.relative_to( ref_frame_physics )
+		own_cell.set_se3( se3 )
+		own_cell.clone_surface( other_cell )
+		
+		collision_cells[key] = own_cell
+		
+		ind += 1
+		
 
 
 
-
-func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref, synchronous: bool = false ):
+func _rebuild_start( surface_source: Resource, source_se3: Se3Ref, view_point_se3: Se3Ref, synchronous: bool = false ):
 	var nodes_to_rebuild: Array = _pick_nodes_to_rebuild( view_point_se3 )
 	var empty: bool = nodes_to_rebuild.empty()
 	if empty:
@@ -124,13 +142,13 @@ func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref, synchronous: bo
 	for data in nodes_to_rebuild:
 		var node: BoundingNodeGd = data.node
 		var collision: Node      = data.collision
-		var surface_args = collision.build_surface_prepare( source_se3, view_point_se3, _node_size_strategy, surface_source )
-		surface_args.node = node
+		var surface_args         = collision.build_surface_prepare( source_se3, view_point_se3, _node_size_strategy, surface_source )
+		surface_args.node        = node
 		
 		var args: Dictionary = {}
 		args.node = node
-		args.collision    = collision
-		args.surface_args = surface_args
+		args.collision      = collision
+		args.surface_args   = surface_args
 		args.view_point_se3 = view_point_se3
 		
 		if synchronous:
