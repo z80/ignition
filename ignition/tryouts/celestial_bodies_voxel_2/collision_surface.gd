@@ -101,7 +101,8 @@ func clone_surface( other_surface ):
 	
 	_create_cells()
 	var own_cells: Array = []
-	for cell in collision_cells:
+	for key in collision_cells:
+		var cell: Node = collision_cells[key]
 		own_cells.push_back( cell )
 	collision_cells.clear()
 	

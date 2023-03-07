@@ -19,6 +19,7 @@ RefFramePhysicsScene = ExtResource( 9 )
 surface_orbital_vel_kms = 0.01
 
 [node name="RefFramePhysics" parent="Sun/Translation/Rotation" index="1" instance=ExtResource( 9 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 98, 0, 0 )
 
 [node name="Character" parent="Sun/Translation/Rotation/RefFramePhysics" instance=ExtResource( 2 )]
 

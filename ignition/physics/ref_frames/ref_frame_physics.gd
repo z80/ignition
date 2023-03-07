@@ -541,7 +541,7 @@ func root_most_child_bodies():
 		
 		if (b != null):
 			var root_most_body: RefFrameNode = b.root_most_body()
-			var append: bool = (root_most_body in bodies)
+			var append: bool = not (root_most_body in bodies)
 			if append:
 				bodies.push_back( root_most_body )
 	
