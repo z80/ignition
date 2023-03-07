@@ -389,7 +389,7 @@ func split_if_needed() -> bool:
 	rf.call_deferred( "clone_collision_surface", self )
 	
 	for body in bodies_b:
-		body.change_parent( rf )
+		body.call_deferred( "change_parent", rf )
 	
 	DDD.important()
 	DDD.print( "new rf created " + rf. name )
