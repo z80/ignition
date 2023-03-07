@@ -111,7 +111,7 @@ func clone_surface( other_surface ):
 	var other_cells: Dictionary = other_surface.collision_cells
 	var ind: int = 0
 	for key in other_cells:
-		var other_cell: RefFrameNode = collision_cells[key]
+		var other_cell: RefFrameNode = other_cells[key]
 		var own_cell: RefFrameNode = own_cells[ind]
 		
 		var se3: Se3Ref = other_cell.relative_to( ref_frame_physics )
