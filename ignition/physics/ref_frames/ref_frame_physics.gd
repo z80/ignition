@@ -238,6 +238,7 @@ func jump_if_needed():
 	#	return
 	
 	# Compute center of all bodies in the ref frame.
+	# But not assemblies.
 	var bodies: Array = child_bodies()
 	var qty: int =  bodies.size()
 	if qty < 1:
@@ -250,9 +251,6 @@ func jump_if_needed():
 	var v: Vector3 = Vector3.ZERO
 	if self.allow_orbiting:
 		for b in bodies:
-			if b.get_class() == "PartAssembly":
-				qty -= 1
-				continue
 			v += b.v()
 		if qty > 0:
 			v /= float( qty )
@@ -376,16 +374,33 @@ func split_if_needed() -> bool:
 	var root: RefFrameRoot = get_ref_frame_root()
 	var rf: RefFramePhysics = root.create_ref_frame_physics()
 	rf.change_parent( p )
-	var se3: Se3Ref = self.get_se3()
+#	var orig_se3: Se3Ref = self.get_se3()
 	
-#	var accum_r: Vector3 = Vector3.ZERO
+	# Compute centers of the two clusters.
+	# RF will be shifter to the center of the cluster.
+	# If not, it will merge again at the next iteration.
+#	var se3_a: Se3Ref = Se3Ref.new()
+#	var accum_a: Vector3 = Vector3.ZERO
+#	for a in bodies_a:
+#		var se3: Se3Ref = a.get_se3()
+#		accum_a += se3.r
+#	accum_a /= float( bodies_a.size() )
+#	se3_a.r = accum_a
+#	# Jump to the new place.
+#	self.jump_to( self, se3_a )
+#
+#	var se3_b: Se3Ref = Se3Ref.new()
+#	var accum_b: Vector3 = Vector3.ZERO
 #	for b in bodies_b:
-#		var se3_b: Se3Ref = b.get_se3()
-#		accum_r += se3_b.r
-#	accum_r /= float( bodies_b.size() )
-#	se3.r = accum_r
-
-	rf.set_se3( se3 )
+#		var se3: Se3Ref = b.get_se3()
+#		accum_b += se3.r
+#	accum_b /= float( bodies_b.size() )
+#	se3_b.r = accum_b
+#	# State in parent.
+#	se3_b = orig_se3.mul( se3_b )
+#	# Assign SE3.
+#	rf.set_se3( se3_b )
+	
 	rf.call_deferred( "clone_collision_surface", self )
 	
 	for body in bodies_b:
@@ -424,7 +439,7 @@ func merge_if_needed():
 			DDD.print( "info before" )
 			print_all_ref_frames()
 			
-			var bodies: Array = rf.root_most_child_bodies( false )
+			var bodies: Array = rf.root_most_child_bodies()
 			for body in bodies:
 				body.change_parent( self )
 			
@@ -521,10 +536,9 @@ func child_bodies():
 	var children: Array = get_children()
 	var bodies: Array = []
 	for ch in children:
-		var b = ch as RefFrameNode
-		var include: bool = (b != null)
-		if ch == RootScene.ref_frame_root.player_camera:
-			continue
+		var b = ch as RefFrameBodyNode
+		var a = ch as RefFrameAssemblyNode
+		var include: bool = (b != null) and (a == null)
 		if include:
 			bodies.push_back( b )
 	
