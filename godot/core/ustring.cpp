@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  ustring.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  ustring.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
@@ -3426,33 +3426,63 @@ bool String::is_valid_identifier() const {
 	return true;
 }
 
-//kind of poor should be rewritten properly
-
 String String::word_wrap(int p_chars_per_line) const {
-	int from = 0;
-	int last_space = 0;
 	String ret;
+
+	int line_start = 0;
+	int line_end = 0; // End of last word on current line.
+	int word_start = 0; // -1 if no word encountered. Leading spaces are part of a word.
+	int word_length = 0;
+
 	for (int i = 0; i < length(); i++) {
-		if (i - from >= p_chars_per_line) {
-			if (last_space == -1) {
-				ret += substr(from, i - from + 1) + "\n";
-			} else {
-				ret += substr(from, last_space - from) + "\n";
-				i = last_space; //rewind
-			}
-			from = i + 1;
-			last_space = -1;
-		} else if (operator[](i) == ' ' || operator[](i) == '\t') {
-			last_space = i;
-		} else if (operator[](i) == '\n') {
-			ret += substr(from, i - from) + "\n";
-			from = i + 1;
-			last_space = -1;
+		const CharType c = operator[](i);
+
+		switch (c) {
+			case '\n': {
+				// Force newline.
+				ret += substr(line_start, i - line_start + 1);
+				line_start = i + 1;
+				line_end = line_start;
+				word_start = line_start;
+				word_length = 0;
+			} break;
+
+			case ' ':
+			case '\t': {
+				// A whitespace ends current word.
+				if (word_length > 0) {
+					line_end = i - 1;
+					word_start = -1;
+					word_length = 0;
+				}
+			} break;
+
+			default: {
+				if (word_start == -1) {
+					word_start = i;
+				}
+				word_length += 1;
+
+				if (word_length > p_chars_per_line) {
+					// Word too long: wrap before current character.
+					ret += substr(line_start, i - line_start) + "\n";
+					line_start = i;
+					line_end = i;
+					word_start = i;
+					word_length = 1;
+				} else if (i - line_start + 1 > p_chars_per_line) {
+					// Line too long: wrap after the last word.
+					ret += substr(line_start, line_end - line_start + 1) + "\n";
+					line_start = word_start;
+					line_end = line_start;
+				}
+			} break;
 		}
 	}
 
-	if (from < length()) {
-		ret += substr(from, length());
+	const int remaining = length() - line_start;
+	if (remaining) {
+		ret += substr(line_start, remaining);
 	}
 
 	return ret;
@@ -4339,15 +4369,18 @@ String String::sprintf(const Array &values, bool *error) const {
 					double value = values[value_index];
 					bool is_negative = (value < 0);
 					String str = String::num(ABS(value), min_decimals);
+					bool not_numeric = isinf(value) || isnan(value);
 
 					// Pad decimals out.
-					str = str.pad_decimals(min_decimals);
+					if (!not_numeric) {
+						str = str.pad_decimals(min_decimals);
+					}
 
 					int initial_len = str.length();
 
 					// Padding. Leave room for sign later if required.
 					int pad_chars_count = (is_negative || show_sign) ? min_chars - 1 : min_chars;
-					String pad_char = pad_with_zeros ? String("0") : String(" ");
+					String pad_char = (pad_with_zeros && !not_numeric) ? String("0") : String(" "); // Never pad NaN or inf with zeros
 					if (left_justified) {
 						str = str.rpad(pad_chars_count, pad_char);
 					} else {

@@ -13,13 +13,14 @@
 # Hasibul Hasan <d1hasib@yahoo.com>, 2020.
 # saitama <atik.wowspace@gmail.com>, 2022.
 # Joysankar Majumdar <joymajumdar15828@gmail.com>, 2022.
+# Safuan <safuanhossain12616@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-29 10:04+0000\n"
-"Last-Translator: Joysankar Majumdar <joymajumdar15828@gmail.com>\n"
+"PO-Revision-Date: 2023-01-09 20:42+0000\n"
+"Last-Translator: Safuan <safuanhossain12616@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
 "Language: bn\n"
@@ -27,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -50,14 +51,12 @@ msgid "V-Sync Enabled"
 msgstr "ভি-সিঙ্ক সক্রিয় করুন"
 
 #: core/bind/core_bind.cpp main/main.cpp
-#, fuzzy
 msgid "V-Sync Via Compositor"
 msgstr "কম্পসিটর দ্বারা ভি-সিঙ্ক করা"
 
 #: core/bind/core_bind.cpp main/main.cpp
-#, fuzzy
 msgid "Delta Smoothing"
-msgstr "ডেল্টা মসৃণ করন"
+msgstr "ডেল্টা মসৃণ"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -86,7 +85,6 @@ msgstr "পর্দা ঝোঁক/ উপস্থাপন"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
 #: platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Window"
 msgstr "উইন্ডো"
 
@@ -156,9 +154,8 @@ msgid "Target FPS"
 msgstr "লক্ষ্য-এফপিএস(ফ্রেম-প্রতি-সেকেন্ড)"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Time Scale"
-msgstr "টাইম-স্কেল নোড"
+msgstr "টাইম-স্কেল"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
@@ -11772,7 +11769,7 @@ msgstr "পরিপ্রেক্ষিত (Perspective)"
 msgid " [auto]"
 msgstr ""
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr ""
@@ -13807,9 +13804,10 @@ msgstr "অ্যানিমেশনের সিদ্ধান্তসম�
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Offset"
 msgstr "অফসেট/ভারসাম্য:"
@@ -15277,14 +15275,13 @@ msgstr "অকার্যকর প্রকল্পের পথ (কোন�
 #: editor/project_manager.cpp
 #, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr "প্রকল্পের পথে engine.cfg তৈরি করা সম্ভব হয়নি।"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Couldn't edit project.godot in project path."
-msgstr "প্রকল্পের পথে engine.cfg তৈরি করা সম্ভব হয়নি।"
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "সংযোগ..."
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -24886,6 +24883,15 @@ msgstr "সমস্যা/ভুল"
 
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
+msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "সাজান:"
+
+#: scene/3d/visual_instance.cpp
+msgid "Use AABB Center"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp

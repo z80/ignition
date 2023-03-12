@@ -28,17 +28,18 @@
 # Aryan Azadeh <aryan@azadeh.email>, 2022.
 # Mitsuha Miamizu <mitsuha.miamizu4444@gmail.com>, 2022.
 # LordProfo <nimaentity30@gmail.com>, 2022.
-# LordProfo (Nima) <nimaentity30@gmail.com>, 2022.
+# LordProfo (Nima) <nimaentity30@gmail.com>, 2022, 2023.
 # John Smith <pkafsharix@gmail.com>, 2022.
 # Ali Jafari <ali.jafari.sn@gmail.com>, 2022.
 # Ali Almasi <A710almasi@gmail.com>, 2022.
+# 2g.2d.2t <2g.2d.2t@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-19 05:22+0000\n"
-"Last-Translator: Ali Jafari <ali.jafari.sn@gmail.com>\n"
+"PO-Revision-Date: 2023-01-01 05:48+0000\n"
+"Last-Translator: LordProfo (Nima) <nimaentity30@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -46,7 +47,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -314,9 +315,8 @@ msgid "Data Array"
 msgstr "آرایه داده"
 
 #: core/io/stream_peer_ssl.cpp
-#, fuzzy
 msgid "Blocking Handshake"
-msgstr "مسدود کردن دست دادن"
+msgstr "مسدود کردن تکان دادن دست"
 
 #: core/io/udp_server.cpp
 msgid "Max Pending Connections"
@@ -533,7 +533,6 @@ msgid "Velocity"
 msgstr "سرعت"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Instrument"
 msgstr "ابزار"
 
@@ -699,9 +698,8 @@ msgid "UI Select"
 msgstr "انتخاب رابط کاربری"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Cancel"
-msgstr "لغو"
+msgstr "لغو رابط کاربری"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -2903,7 +2901,7 @@ msgstr "انتخاب حالت"
 
 #: editor/editor_export.cpp
 msgid "BPTC"
-msgstr ""
+msgstr "بی‌پی‌تی‌سی (BPTC)"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "S3TC"
@@ -2911,11 +2909,11 @@ msgstr "S3TC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "ETC"
-msgstr "ای‌تی‌سی"
+msgstr "ئی‌تی‌سی (ETC)"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "ETC2"
-msgstr "ای‌تی‌سی‌۲"
+msgstr "ئی‌تی‌سی‌۲ (ETC2)"
 
 #: editor/editor_export.cpp
 msgid "No BPTC Fallbacks"
@@ -2966,7 +2964,7 @@ msgstr "تبدیل منابع متنی به دوتایی هنگام خروجی"
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
-msgstr "ویرایشگر 3بعدی"
+msgstr "ویرایشگر ۳بعدی"
 
 #: editor/editor_feature_profile.cpp
 msgid "Script Editor"
@@ -3803,13 +3801,15 @@ msgstr "ایجاد بند انگشتی"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a tree root."
-msgstr ""
+msgstr "این عمل را نمی‌توان بدون tree root انجام داد."
 
 #: editor/editor_node.cpp
 msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"این صحنه را نمی‌توان ذخیره کرد زیرا یک شامل نمونه‌سازی چرخه‌ای وجود دارد.\n"
+" لطفاً آن را حل کنید و سپس دوباره سعی کنید ذخیره کنید."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3875,6 +3875,9 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
+"این منبع متعلق به صحنه‌ای است که ایمپورت شده است، بنابراین قابل ویرایش نیست.\n"
+" لطفاً اسناد مربوط به وارد کردن صحنه‌ها را بخوانید تا این گردش کار را بهتر درک "
+"کنید."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -6915,7 +6918,7 @@ msgstr ""
 
 #: editor/import/editor_import_collada.cpp
 msgid "Collada"
-msgstr ""
+msgstr "کولادا"
 
 #: editor/import/editor_import_collada.cpp
 msgid "Use Ambient"
@@ -11205,7 +11208,7 @@ msgstr ""
 msgid " [auto]"
 msgstr " [خودکار]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr ""
@@ -13185,9 +13188,10 @@ msgstr "تنها در قسمت انتخاب شده"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 msgid "Offset"
 msgstr ""
 
@@ -14613,13 +14617,13 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr ""
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "ناتوان در گشودن پروژه"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -17130,9 +17134,8 @@ msgid "Add an architecture entry"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "GDNativeLibrary"
-msgstr "صادکردن فایل کتابخانه ای"
+msgstr "کتابخانهٔ جی‌دی‌نِیتیو"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Enabled GDNative Singleton"
@@ -18581,25 +18584,24 @@ msgid "Mod %s"
 msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "ShiftLeft %s"
-msgstr "تنظیم %s"
+msgstr "ShiftLeft %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "ShiftRight %s"
-msgstr ""
+msgstr "ShiftRight %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "BitAnd %s"
-msgstr ""
+msgstr "BitAnd %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "BitOr %s"
-msgstr ""
+msgstr "BitOr %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "BitXor %s"
-msgstr ""
+msgstr "BitXor %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -18731,9 +18733,8 @@ msgid "Get Self"
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "CustomNode"
-msgstr "ساختن گره"
+msgstr "نود سفارشی"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
@@ -18749,9 +18750,8 @@ msgstr ""
 "(error) باشد."
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "SubCall"
-msgstr "فراخوانی"
+msgstr "ساب‌کال"
 
 #: modules/visual_script/visual_script_nodes.cpp scene/gui/graph_node.cpp
 msgid "Title"
@@ -18792,7 +18792,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Wait"
-msgstr ""
+msgstr "صبرکردن"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 #, fuzzy
@@ -20517,7 +20517,7 @@ msgstr "انتقال را در انیمیشن تغییر بده"
 
 #: platform/uwp/export/export.cpp
 msgid "Landscape"
-msgstr ""
+msgstr "چشم‌انداز"
 
 #: platform/uwp/export/export.cpp
 msgid "Portrait"
@@ -20827,7 +20827,7 @@ msgstr ""
 
 #: platform/windows/export/export.cpp
 msgid "Wine"
-msgstr ""
+msgstr "شراب"
 
 #: platform/x11/export/export.cpp
 msgid "32-bit executables cannot have embedded data >= 4 GiB."
@@ -22587,7 +22587,7 @@ msgstr ""
 
 #: scene/3d/camera.cpp scene/3d/light.cpp scene/3d/reflection_probe.cpp
 msgid "Cull Mask"
-msgstr ""
+msgstr "Cull Mask"
 
 #: scene/3d/camera.cpp
 #, fuzzy
@@ -23944,6 +23944,15 @@ msgstr "بازتاب"
 
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
+msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "مرتب‌سازی:"
+
+#: scene/3d/visual_instance.cpp
+msgid "Use AABB Center"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
@@ -26669,7 +26678,7 @@ msgstr ""
 
 #: scene/resources/environment.cpp
 msgid "Blur"
-msgstr ""
+msgstr "بلوری"
 
 #: scene/resources/environment.cpp
 msgid "Edge Sharpness"
@@ -27522,9 +27531,8 @@ msgid "Depth Draw"
 msgstr "حالت درون یابی(درون‌یابی روشی است برای یافتن مقدار تابع درون یک بازه)"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Cull"
-msgstr "انتخاب حالت"
+msgstr "Cull"
 
 #: scene/resources/visual_shader.cpp
 #, fuzzy
@@ -27727,9 +27735,8 @@ msgstr "سطح دسی‌بل"
 #: servers/audio/effects/audio_effect_chorus.cpp
 #: servers/audio/effects/audio_effect_delay.cpp
 #: servers/audio/effects/audio_effect_panner.cpp
-#, fuzzy
 msgid "Pan"
-msgstr "بسته بندی"
+msgstr "Pan"
 
 #: servers/audio/effects/audio_effect_compressor.cpp
 #: servers/audio/effects/audio_effect_filter.cpp

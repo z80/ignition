@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  mesh_instance_editor_plugin.cpp                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  mesh_instance_editor_plugin.cpp                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "mesh_instance_editor_plugin.h"
 
@@ -76,7 +76,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				StaticBody *body = memnew(StaticBody);
 				body->add_child(cshape);
 
-				Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
+				Node *owner = get_tree()->get_edited_scene_root();
 
 				ur->create_action(TTR("Create Static Trimesh Body"));
 				ur->add_do_method(node, "add_child", body);
@@ -111,7 +111,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				StaticBody *body = memnew(StaticBody);
 				body->add_child(cshape);
 
-				Node *owner = instance == get_tree()->get_edited_scene_root() ? instance : instance->get_owner();
+				Node *owner = get_tree()->get_edited_scene_root();
 
 				ur->add_do_method(instance, "add_child", body);
 				ur->add_do_method(body, "set_owner", owner);
@@ -140,7 +140,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			cshape->set_shape(shape);
 			cshape->set_transform(node->get_transform());
 
-			Node *owner = node->get_owner();
+			Node *owner = get_tree()->get_edited_scene_root();
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
@@ -183,7 +183,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			cshape->set_shape(shape);
 			cshape->set_transform(node->get_transform());
 
-			Node *owner = node->get_owner();
+			Node *owner = get_tree()->get_edited_scene_root();
 
 			ur->add_do_method(node->get_parent(), "add_child", cshape);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
@@ -218,7 +218,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				cshape->set_shape(shapes[i]);
 				cshape->set_transform(node->get_transform());
 
-				Node *owner = node->get_owner();
+				Node *owner = get_tree()->get_edited_scene_root();
 
 				ur->add_do_method(node->get_parent(), "add_child", cshape);
 				ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
@@ -241,7 +241,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			NavigationMeshInstance *nmi = memnew(NavigationMeshInstance);
 			nmi->set_navigation_mesh(nmesh);
 
-			Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
+			Node *owner = get_tree()->get_edited_scene_root();
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Create Navigation Mesh"));
@@ -419,10 +419,7 @@ void MeshInstanceEditor::_create_outline_mesh() {
 
 	MeshInstance *mi = memnew(MeshInstance);
 	mi->set_mesh(mesho);
-	Node *owner = node->get_owner();
-	if (get_tree()->get_edited_scene_root() == node) {
-		owner = node;
-	}
+	Node *owner = get_tree()->get_edited_scene_root();
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 

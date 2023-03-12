@@ -12,13 +12,14 @@
 # Anonymous <noreply@weblate.org>, 2020.
 # Mario-projects-dev <m.vitek.mv@gmail.com>, 2021.
 # Eliška Fichnová <eliska@fichna.sk>, 2021.
+# Adam Švidroň <adsvidro@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-07-07 15:34+0000\n"
-"Last-Translator: Eliška Fichnová <eliska@fichna.sk>\n"
+"PO-Revision-Date: 2022-12-21 07:01+0000\n"
+"Last-Translator: Adam Švidroň <adsvidro@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sk/>\n"
 "Language: sk\n"
@@ -26,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -34,7 +35,7 @@ msgstr ""
 
 #: core/bind/core_bind.cpp
 msgid "Clipboard"
-msgstr ""
+msgstr "Schránka"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -11289,7 +11290,7 @@ msgstr ""
 msgid " [auto]"
 msgstr ""
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr ""
@@ -13245,9 +13246,10 @@ msgstr "Možnosti Prichytávania"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Offset"
 msgstr "Odchýlka Mriežky:"
@@ -14658,12 +14660,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
+msgid "Couldn't save project at '%s' (error %d)."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -23919,6 +23920,15 @@ msgstr "Chyba!"
 
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
+msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Importovanie:"
+
+#: scene/3d/visual_instance.cpp
+msgid "Use AABB Center"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp

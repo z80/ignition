@@ -8,19 +8,20 @@
 # René <renepiik@gmail.com>, 2020.
 # Kritzmensch <streef.gtx@gmail.com>, 2021, 2022.
 # dogyx <aaronloit@zohomail.eu>, 2022.
+# Oskar U <oskar.unn2003@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-09-16 07:12+0000\n"
-"Last-Translator: dogyx <aaronloit@zohomail.eu>\n"
+"PO-Revision-Date: 2023-01-08 09:47+0000\n"
+"Last-Translator: Oskar U <oskar.unn2003@gmail.com>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/et/>\n"
 "Language: et\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -9377,18 +9378,18 @@ msgstr "Lülita jagamisrežiim sisse/välja"
 #: scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
 #: scene/resources/primitive_meshes.cpp
 msgid "Text"
-msgstr ""
+msgstr "Tekst"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp main/main.cpp
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
 #: scene/gui/button.cpp scene/gui/item_list.cpp
 msgid "Icon"
-msgstr ""
+msgstr "Ikoon"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -10857,7 +10858,7 @@ msgstr "Perspektiiv"
 msgid " [auto]"
 msgstr ""
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr ""
@@ -12713,9 +12714,10 @@ msgstr "Intervall:"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 msgid "Offset"
 msgstr ""
 
@@ -14086,12 +14088,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
+msgid "Couldn't save project at '%s' (error %d)."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -23117,6 +23118,15 @@ msgstr "Viga:"
 
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
+msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Salvestan faili:"
+
+#: scene/3d/visual_instance.cpp
+msgid "Use AABB Center"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp

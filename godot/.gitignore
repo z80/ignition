@@ -154,6 +154,7 @@ gmon.out
 
 # Jetbrains IDEs
 .idea/
+.fleet/
 
 # Kate
 *.kate-swp
@@ -240,6 +241,10 @@ xcuserdata/
 [Rr]eleases/
 x64/
 x86/
+
+# Do not ignore x86 folders anywhere under thirdparty libraries
+!thirdparty/**/x86/
+
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
@@ -316,6 +321,7 @@ _ReSharper*/
 
 # Others
 ClientBin/
+enc_temp_folder/
 ~$*
 *.dbmdl
 *.dbproj.schemaview

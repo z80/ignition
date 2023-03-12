@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  navigation_obstacle.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  navigation_obstacle.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "navigation_obstacle.h"
 
@@ -140,7 +140,7 @@ NavigationObstacle::~NavigationObstacle() {
 }
 
 void NavigationObstacle::set_navigation(Navigation *p_nav) {
-	if (navigation == p_nav) {
+	if (navigation == p_nav && navigation != nullptr) {
 		return; // Pointless
 	}
 
@@ -164,16 +164,24 @@ Node *NavigationObstacle::get_navigation_node() const {
 }
 
 String NavigationObstacle::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
 	if (!Object::cast_to<Spatial>(get_parent())) {
-		return TTR("The NavigationObstacle only serves to provide collision avoidance to a Spatial inheriting parent object.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationObstacle only serves to provide collision avoidance to a Spatial inheriting parent object.");
 	}
 
 	if (Object::cast_to<StaticBody>(get_parent())) {
-		return TTR("The NavigationObstacle is intended for constantly moving bodies like KinematicBody3D or RigidBody3D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
-				   "\nNot constantly moving or complete static objects should be (re)baked to a NavigationMesh so agents can not only avoid them but also move along those objects outline at high detail");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationObstacle is intended for constantly moving bodies like KinematicBody or RigidBody as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
+					   "\nNot constantly moving or complete static objects should be (re)baked to a NavigationMesh so agents can not only avoid them but also move along those objects outline at high detail");
 	}
 
-	return String();
+	return warning;
 }
 
 void NavigationObstacle::initialize_agent() {
@@ -216,12 +224,11 @@ real_t NavigationObstacle::estimate_agent_radius() const {
 		}
 		Vector3 s = parent_spatial->get_global_transform().basis.get_scale();
 		radius *= MAX(s.x, MAX(s.y, s.z));
-	}
 
-	if (radius > 0.0) {
-		return radius;
+		if (radius > 0.0) {
+			return radius;
+		}
 	}
-
 	return 1.0; // Never a 0 radius
 }
 

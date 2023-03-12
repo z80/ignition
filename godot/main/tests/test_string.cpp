@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_string.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_string.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "test_string.h"
 
@@ -638,6 +638,14 @@ bool test_28() {
 	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
 	state = state && success;
 
+	// Real (infinity) left-padded
+	format = "fish %11f frog";
+	args.clear();
+	args.push_back(INFINITY);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish         inf frog") && !error);
+	state = state && success;
+
 	// Real right-padded
 	format = "fish %-11f frog";
 	args.clear();
@@ -1211,6 +1219,41 @@ bool test_36() {
 	return true;
 }
 
+bool test_37() {
+#define CHECK_EQ(X, Y)                                            \
+	if ((X) != (Y)) {                                             \
+		OS::get_singleton()->print("\tFAIL: %s != %s\n", #X, #Y); \
+		return false;                                             \
+	} else {                                                      \
+		OS::get_singleton()->print("\tPASS\n");                   \
+	}
+	OS::get_singleton()->print("\n\nTest 37: Word wrap\n");
+
+	// Long words.
+	CHECK_EQ(String("12345678").word_wrap(8), "12345678");
+	CHECK_EQ(String("1234567812345678").word_wrap(8), "12345678\n12345678");
+	CHECK_EQ(String("123456781234567812345678").word_wrap(8), "12345678\n12345678\n12345678");
+
+	// Long line.
+	CHECK_EQ(String("123 567 123456 123").word_wrap(8), "123 567\n123456\n123");
+
+	// Force newline at line length should not create another newline.
+	CHECK_EQ(String("12345678 123").word_wrap(8), "12345678\n123");
+	CHECK_EQ(String("12345678\n123").word_wrap(8), "12345678\n123");
+
+	// Wrapping removes spaces.
+	CHECK_EQ(String("1234567   123").word_wrap(8), "1234567\n123");
+	CHECK_EQ(String("12345678  123").word_wrap(8), "12345678\n123");
+
+	// Wrapping does not remove leading space.
+	CHECK_EQ(String("  123456   123   12").word_wrap(8), "  123456\n123   12");
+	CHECK_EQ(String("  123456\n   456   12").word_wrap(8), "  123456\n   456\n12");
+	CHECK_EQ(String("  123456\n   4  12345678").word_wrap(8), "  123456\n   4\n12345678");
+	CHECK_EQ(String("  123456\n   4  12345678123").word_wrap(8), "  123456\n   4\n12345678\n123");
+
+	return true;
+}
+
 typedef bool (*TestFunc)();
 
 TestFunc test_funcs[] = {
@@ -1251,6 +1294,7 @@ TestFunc test_funcs[] = {
 	test_34,
 	test_35,
 	test_36,
+	test_37,
 	nullptr
 
 };

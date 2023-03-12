@@ -25,15 +25,16 @@
 # Leon <joel.lundborg@gmail.com>, 2021, 2022.
 # Kent Jofur <kent.jofur@gmail.com>, 2021.
 # Alex25820 <alexs25820@gmail.com>, 2021.
-# Björn Åkesson <bjorn.akesson@gmail.com>, 2022.
+# Björn Åkesson <bjorn.akesson@gmail.com>, 2022, 2023.
 # Kenny Andersson <kenny@ordinary.se>, 2022.
+# Ludvig Svenonius <ludvig.svenonius@protonmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-30 03:11+0000\n"
-"Last-Translator: Björn Åkesson <bjorn.akesson@gmail.com>\n"
+"PO-Revision-Date: 2023-01-20 11:20+0000\n"
+"Last-Translator: Ludvig Svenonius <ludvig.svenonius@protonmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -41,7 +42,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.15.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
@@ -704,9 +705,8 @@ msgid "Script Templates Search Path"
 msgstr "Sökväg för skriptmallar"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "Versionshantering"
+msgstr "Automatisk Inläsning av Versionskontroll vid Start"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -7177,7 +7177,7 @@ msgstr ""
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
 msgid "sRGB"
-msgstr ""
+msgstr "sRGB"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #, fuzzy
@@ -8287,7 +8287,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
-msgstr ""
+msgstr "Spela upp automatiskt efter inladdning"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
@@ -11363,7 +11363,7 @@ msgstr "Perspektiv"
 msgid " [auto]"
 msgstr ""
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr ""
@@ -13310,9 +13310,10 @@ msgstr "Alternativ"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 msgid "Offset"
 msgstr ""
 
@@ -13515,7 +13516,7 @@ msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Passphrase"
-msgstr ""
+msgstr "Lösenordsfras för SSH"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -14713,13 +14714,13 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr ""
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Kan inte öppna projekt vid '%s'."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -15030,19 +15031,19 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Physical Key"
-msgstr ""
+msgstr "Fysisk tangent"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
-msgstr "Nyckel "
+msgstr "Tangent "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
-msgstr ""
+msgstr "Styrspaksknapp"
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Axis"
-msgstr ""
+msgstr "Styrspaksaxel"
 
 #: editor/project_settings_editor.cpp
 msgid "Mouse Button"
@@ -15071,9 +15072,8 @@ msgid "Add Input Action Event"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "All Devices"
-msgstr "Enhet"
+msgstr "Alla Enheter"
 
 #: editor/project_settings_editor.cpp
 msgid " (Physical)"
@@ -18486,7 +18486,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "While"
-msgstr ""
+msgstr "Medans"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "while (cond):"
@@ -20907,11 +20907,11 @@ msgstr ""
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
 msgid "Monitoring"
-msgstr ""
+msgstr "Övervakning"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
 msgid "Monitorable"
-msgstr ""
+msgstr "Övervakningsbar"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
 #, fuzzy
@@ -20984,7 +20984,7 @@ msgstr "Slå på/av Autoplay"
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/audio/audio_stream_player.cpp
 msgid "Stream Paused"
-msgstr ""
+msgstr "Pausad"
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/3d/light.cpp scene/3d/reflection_probe.cpp
@@ -23988,6 +23988,15 @@ msgstr "Fel"
 msgid "AABB"
 msgstr ""
 
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Sortera"
+
+#: scene/3d/visual_instance.cpp
+msgid "Use AABB Center"
+msgstr ""
+
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 #, fuzzy
 msgid "Geometry"
@@ -25645,39 +25654,32 @@ msgid "Swap OK Cancel"
 msgstr "Avbryt"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "Layer Names"
-msgstr "Namn"
+msgstr "Skiktnamn"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "2D Render"
-msgstr "Renderare:"
+msgstr "2D-Rendering"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "3D Render"
-msgstr "Renderare:"
+msgstr "3D-Rendering"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "2D Physics"
-msgstr "Fysik Bildruta %"
+msgstr "2D-Fysik"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "3D Physics"
-msgstr "Fysik Bildruta %"
+msgstr "3D-Fysik"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "2D Navigation"
-msgstr "Animations-Node"
+msgstr "2D-Navigation"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "3D Navigation"
-msgstr "Animations-Node"
+msgstr "3D-Navigation"
 
 #: scene/register_scene_types.cpp
 msgid "Use hiDPI"

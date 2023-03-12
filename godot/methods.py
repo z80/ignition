@@ -46,17 +46,12 @@ def disable_warnings(self):
     if self.msvc:
         # We have to remove existing warning level defines before appending /w,
         # otherwise we get: "warning D9025 : overriding '/W3' with '/w'"
-        warn_flags = ["/Wall", "/W4", "/W3", "/W2", "/W1", "/WX"]
-        self.Append(CCFLAGS=["/w"])
-        self.Append(CFLAGS=["/w"])
-        self.Append(CXXFLAGS=["/w"])
-        self["CCFLAGS"] = [x for x in self["CCFLAGS"] if not x in warn_flags]
-        self["CFLAGS"] = [x for x in self["CFLAGS"] if not x in warn_flags]
-        self["CXXFLAGS"] = [x for x in self["CXXFLAGS"] if not x in warn_flags]
+        self["CCFLAGS"] = [x for x in self["CCFLAGS"] if not (x.startswith("/W") or x.startswith("/w"))]
+        self["CFLAGS"] = [x for x in self["CFLAGS"] if not (x.startswith("/W") or x.startswith("/w"))]
+        self["CXXFLAGS"] = [x for x in self["CXXFLAGS"] if not (x.startswith("/W") or x.startswith("/w"))]
+        self.AppendUnique(CCFLAGS=["/w"])
     else:
-        self.Append(CCFLAGS=["-w"])
-        self.Append(CFLAGS=["-w"])
-        self.Append(CXXFLAGS=["-w"])
+        self.AppendUnique(CCFLAGS=["-w"])
 
 
 def add_module_version_string(self, s):
@@ -109,6 +104,10 @@ def update_version(module_version_string=""):
         head = open_utf8(os.path.join(gitfolder, "HEAD"), "r").readline().strip()
         if head.startswith("ref: "):
             ref = head[5:]
+            # If this directory is a Git worktree instead of a root clone.
+            parts = gitfolder.split("/")
+            if len(parts) > 2 and parts[-2] == "worktrees":
+                gitfolder = "/".join(parts[0:-2])
             head = os.path.join(gitfolder, ref)
             packedrefs = os.path.join(gitfolder, "packed-refs")
             if os.path.isfile(head):

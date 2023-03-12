@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  global_constants.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  global_constants.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "global_constants.h"
 
@@ -607,6 +607,22 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_COLOR_NO_ALPHA);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_IMAGE_COMPRESS_LOSSY);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_OBJECT_ID);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_TYPE_STRING);
+
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_METHOD_OF_VARIANT_TYPE);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_METHOD_OF_BASE_TYPE);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_METHOD_OF_INSTANCE);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_METHOD_OF_SCRIPT);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_PROPERTY_OF_BASE_TYPE);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_PROPERTY_OF_INSTANCE);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_PROPERTY_OF_SCRIPT);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_OBJECT_TOO_BIG);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_NODE_PATH_VALID_TYPES);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_SAVE_FILE);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_MAX);
 
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORAGE);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_EDITOR);
