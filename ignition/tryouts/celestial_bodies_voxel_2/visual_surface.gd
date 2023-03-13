@@ -85,6 +85,14 @@ func update_source_se3( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 
 
 func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
+	# First check if too far.
+	var dist: float = view_point_se3.r.length()
+	var max_dist: float = surface_source_solid.source_radius * 1.3
+	var too_far: bool = dist >= max_dist
+	# If it is too far (potentially on a different planet), do nothing.
+	if too_far:
+		return
+	
 	var nodes_to_rebuild: Array = _pick_nodes_to_rebuild( view_point_se3 )
 	var empty: bool = nodes_to_rebuild.empty()
 	if empty:

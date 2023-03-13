@@ -30,3 +30,4 @@ render_target_update_mode = 3
 gui_disable_input = true
 
 [node name="PhysicsScene" parent="Vp" instance=ExtResource( 1 )]
+visible = false

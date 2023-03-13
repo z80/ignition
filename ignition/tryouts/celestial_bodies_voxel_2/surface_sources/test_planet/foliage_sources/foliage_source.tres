@@ -6,5 +6,5 @@
 [resource]
 script = ExtResource( 1 )
 scene = ExtResource( 2 )
-min_distance = 10.0
+min_distance = 3.0
 follow_normal = false
