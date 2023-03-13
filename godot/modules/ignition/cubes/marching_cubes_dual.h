@@ -188,7 +188,7 @@ public:
 
     Float    node_size_min( const MarchingCubesDualNode * node ) const;
 	Float    node_size_max( const MarchingCubesDualNode * node ) const;
-    Vector3d at_in_source( const VectorInt & at_i, VolumeNodeSizeStrategy * strategy ) const;
+    Vector3d at_in_source( const VectorInt & at_i, VolumeNodeSizeStrategy * strategy=nullptr ) const;
 
 	VectorInt vector_int( const Vector3d & at ) const;
 	Integer   closest_int_size( Float sz ) const;

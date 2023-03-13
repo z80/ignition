@@ -41,6 +41,9 @@ public:
 	Vector3 center_direction( const Ref<Se3Ref> & src_se3, const Vector3 & at ) const;
 	Ref<MarchingCubesDualNodeGd> get_tree_node( int ind );
 
+	Array intersect_with_segment( const Vector3 & start, const Vector3 & end );
+	Array intersect_with_ray( const Vector3 & start, const Vector3 & dir );
+
 	Ref<Se3Ref> se3_in_point( const Vector3 & at, const Ref<Se3Ref> & inv_source_se3=Ref<Se3Ref>() ) const;
 	Ref<Se3Ref> asset_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at ) const;
 	Transform   asset_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at ) const;

@@ -68,6 +68,7 @@ MarchingCubesDualNode MarchingCubesDual::create_bounding_node( const Vector3d & 
 	MarchingCubesDualNode node;
 	node.at = node_origin;
 	node.size = node_size_int;
+	node.compute_hashes();
 	return node;
 }
 

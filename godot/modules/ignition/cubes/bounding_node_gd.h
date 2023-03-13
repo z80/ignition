@@ -2,6 +2,7 @@
 #include "core/reference.h"
 #include "se3_ref.h"
 #include "marching_cubes_dual_node.h"
+#include "marching_cubes_dual_gd.h"
 
 
 
@@ -10,6 +11,8 @@
 
 namespace Ign
 {
+
+class MarchingCubesDualGd;
 
 class BoundingNodeGd: public Reference
 {
@@ -25,6 +28,11 @@ public:
 	bool equals_to( const Ref<BoundingNodeGd> & other ) const;
 	String get_node_id() const;
 	String get_adjacent_node_id( int dx, int dy, int dz ) const;
+
+	Ref<Se3Ref> get_center( const Ref<MarchingCubesDualGd> & surface ) const;
+	real_t      get_size( const Ref<MarchingCubesDualGd> & surface ) const;
+	String      get_hash() const;
+
 
 public:
 	MarchingCubesDualNode node;

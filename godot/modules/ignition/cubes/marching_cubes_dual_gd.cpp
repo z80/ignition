@@ -30,6 +30,9 @@ void MarchingCubesDualGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("center_direction", "source_se3", "at" ),       &MarchingCubesDualGd::center_direction,  Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("get_tree_node", "ind"),                        &MarchingCubesDualGd::get_tree_node,     Variant::OBJECT );
 
+	ClassDB::bind_method( D_METHOD("intersect_with_segment", "start", "end"),      &MarchingCubesDualGd::intersect_with_segment, Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("intersect_with_ray", "start", "dir"),          &MarchingCubesDualGd::intersect_with_ray,     Variant::ARRAY );
+
 	ClassDB::bind_method( D_METHOD("se3_in_point", "at"),                        &MarchingCubesDualGd::se3_in_point, Variant::OBJECT );
 	ClassDB::bind_method( D_METHOD("asset_se3", "source_se3", "asset_at"),       &MarchingCubesDualGd::asset_se3,    Variant::OBJECT );
 	ClassDB::bind_method( D_METHOD("asset_transform", "source_se3", "asset_at"), &MarchingCubesDualGd::asset_transform,    Variant::TRANSFORM );
@@ -188,6 +191,40 @@ Ref<MarchingCubesDualNodeGd> MarchingCubesDualGd::get_tree_node( int ind )
 	ret->node  = node;
 
 	return ret;
+}
+
+Array MarchingCubesDualGd::intersect_with_segment( const Vector3 & start, const Vector3 & end )
+{
+	ret_array.clear();
+
+	const Vector3d s( start.x, start.y, start.z );
+	const Vector3d e( end.x, end.y, end.z );
+	Vector3d at, norm;
+	const bool ok = cubes.intersect_with_segment( nullptr, s, e, at, norm );
+	ret_array.push_back( ok );
+	if ( ok )
+	{
+		ret_array.push_back( Vector3( at.x_, at.y_, at.z_ ) );
+		ret_array.push_back( Vector3( norm.x_, norm.y_, norm.z_ ) );
+	}
+	return ret_array;
+}
+
+Array MarchingCubesDualGd::intersect_with_ray( const Vector3 & start, const Vector3 & dir )
+{
+	ret_array.clear();
+
+	const Vector3d s( start.x, start.y, start.z );
+	const Vector3d d( dir.x, dir.y, dir.z );
+	Vector3d at, norm;
+	const bool ok = cubes.intersect_with_ray( nullptr, s, d, at, norm );
+	ret_array.push_back( ok );
+	if ( ok )
+	{
+		ret_array.push_back( Vector3( at.x_, at.y_, at.z_ ) );
+		ret_array.push_back( Vector3( norm.x_, norm.y_, norm.z_ ) );
+	}
+	return ret_array;
 }
 
 Ref<Se3Ref> MarchingCubesDualGd::se3_in_point( const Vector3 & at, const Ref<Se3Ref> & inv_src_se3 ) const

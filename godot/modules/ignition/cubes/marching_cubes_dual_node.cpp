@@ -351,20 +351,20 @@ bool MarchingCubesDualNode::intersects( const MarchingCubesDualNode & other ) co
 	return true;
 }
 
-bool MarchingCubesDualNode::contains_point( MarchingCubesDual * tree, const Vector3d & at ) const
+bool MarchingCubesDualNode::contains_point( const MarchingCubesDual * tree, const Vector3d & at ) const
 {
 	const bool ret = aabb.has_point( at );
 	return ret;
 }
 
-Vector3d MarchingCubesDualNode::center_vector( MarchingCubesDual * tree ) const
+Vector3d MarchingCubesDualNode::center_vector( const MarchingCubesDual * tree ) const
 {
 	const VectorInt c = center();
 	const Vector3d cs = tree->at_in_source( c, nullptr );
 	return cs;
 }
 
-Float MarchingCubesDualNode::node_size( MarchingCubesDual * tree ) const
+Float MarchingCubesDualNode::node_size( const MarchingCubesDual * tree ) const
 {
 	const Float ret = tree->node_size( this );
 	return ret;
