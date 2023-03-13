@@ -102,7 +102,7 @@ func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 	for data in nodes_to_rebuild:
 		var node: BoundingNodeGd = data.node
 		var visual: Node         = data.visual
-		var surface_args = visual.build_surface_prepare( source_se3, view_point_se3, _node_size_strategy, surface_source_solid, surface_source_liquid )
+		var surface_args = visual.build_surface_prepare( source_se3, view_point_se3, _node_size_strategy, surface_source_solid, surface_source_liquid, foliage_sources )
 		surface_args.node = node
 		
 		var args: Dictionary = {}

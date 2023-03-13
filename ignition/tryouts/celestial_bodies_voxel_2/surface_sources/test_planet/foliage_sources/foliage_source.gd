@@ -18,7 +18,7 @@ func create( se3: Se3Ref, normal: Vector3, rand: IgnRandomGd ):
 	
 	var scale: float = rand.floating_point_interval_closed( 0.5, 2.0 )
 	
-	instance.se3   = se3
+	instance.set_se3( se3 )
 	instance.scale = scale
 	
 	return instance

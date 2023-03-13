@@ -1,7 +1,7 @@
 
 tool
 extends Node
-class_name FoliageSource
+class_name FoliageSourceOld
 
 export(Array) var creators = []
 

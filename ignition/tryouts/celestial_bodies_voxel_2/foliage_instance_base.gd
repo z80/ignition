@@ -20,15 +20,25 @@ func place( parent: RefFrameNode, se3: Se3Ref ):
 	if _se3 == null:
 		_se3 = Se3Ref.new()
 	_se3.copy_from( se3 )
+	
+	change_parent( parent )
+	set_se3( _se3 )
+
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_create_objects()
 
+
 func _enter_tree():
 	_create_objects()
 	set_se3( _se3 )
+
+
+func _exit_tree():
+	if (_visual != null) and is_instance_valid(_visual):
+		_visual.queue_free()
 
 
 func _create_objects():
@@ -47,5 +57,5 @@ func _ign_pre_process(delta):
 	var se3: Se3Ref = self.relative_to( cam )
 	
 	var t: Transform = se3.transform
-	t = t.scaled( Vector3( scale, scale, scale ) )
+	#t = t.scaled( Vector3( scale, scale, scale ) )
 	_visual.transform = t

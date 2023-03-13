@@ -34,8 +34,10 @@ func _create_visual():
 	root.add_child( _visual )
 
 
-func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_size_strategy: VolumeNodeSizeStrategyGd, source_surface: Resource, source_liquid: Resource ):
+func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_size_strategy: VolumeNodeSizeStrategyGd, source_surface: Resource, source_liquid: Resource, foliage_sources: Array ):
 	_visual.visible = false
+	
+	_cleanup_foliage()
 	
 	self.set_se3( view_point_se3 )
 	#self.set_se3( center_se3 )
@@ -52,6 +54,8 @@ func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_siz
 		args.surface_source_liquid = source_liquid
 	else:
 		args.surface_source_liquid = null
+	
+	args.foliage_sources = foliage_sources
 	
 	return args
 
@@ -86,7 +90,9 @@ func build_surface_process( args ):
 
 
 func build_surface_finished( args ):
+	var bounding_node: BoundingNodeGd      = args.node
 	var voxel_surface: MarchingCubesDualGd = args.voxel_surface
+	var foliage_sources: Array             = args.foliage_sources
 	var qty: int = voxel_surface.get_nodes_qty()
 	#print( "surface done, nodes qty: ", qty )
 	voxel_surface.apply_to_mesh_only( _visual.surface )
@@ -97,18 +103,25 @@ func build_surface_finished( args ):
 	#_visual.surface.material_override = surface_source_solid.override_material
 	
 	_visual.visible = args.ok
+	
+	_cleanup_foliage()
+	_populate_foliage( voxel_surface, bounding_node, foliage_sources )
+
 
 
 
 
 
 func _populate_foliage( volume_surface: MarchingCubesDualGd, bounding_node: BoundingNodeGd, foliage_sources: Array ):
-	var s: String = bounding_node.hash()
+	var s: String = bounding_node.get_hash()
 	var rand: IgnRandomGd = IgnRandomGd.new()
 	rand.seed = s
 	
-	var center: Vector3 = bounding_node.center_vector()
-	var sz: float       = bounding_node.node_size()
+	var rotation: RefFrameRotationNode = get_parent()
+	
+	var center_se3: Se3Ref = bounding_node.get_center( volume_surface )
+	var center: Vector3 = center_se3.r
+	var sz: float       = bounding_node.get_size( volume_surface )
 	
 	var created_instances: Array = []
 	
@@ -133,9 +146,7 @@ func _populate_foliage( volume_surface: MarchingCubesDualGd, bounding_node: Boun
 			var norm: Vector3 = ret[2]
 			
 			var se3: Se3Ref = volume_surface.se3_in_point( at )
-			var relative_se3: Se3Ref = volume_surface.relative_to_se3( self )
-			var local_se3: Se3Ref = relative_se3.mul( se3 )
-			var local_norm: Vector3 = relative_se3.q.xform( norm )
+			var local_norm: Vector3 = se3.q.inverse().xform( norm )
 			
 			var p: float = foliage_source.probability( se3, norm )
 			var rand_p: float = rand.floating_point_closed()
@@ -143,8 +154,8 @@ func _populate_foliage( volume_surface: MarchingCubesDualGd, bounding_node: Boun
 			if not create:
 				continue
 			
-			var instance: RefFrameNode = foliage_source.create( volume_surface, local_se3, local_norm, rand )
-			instance.place( self, se3 )
+			var instance: RefFrameNode = foliage_source.create( se3, local_norm, rand )
+			instance.place( rotation, se3 )
 			#print( "created ", instance )
 			created_instances.push_back( instance )
 	
@@ -154,6 +165,7 @@ func _populate_foliage( volume_surface: MarchingCubesDualGd, bounding_node: Boun
 func _cleanup_foliage():
 	for inst in _created_instances:
 		inst.queue_free()
+	_created_instances.clear()
 
 
 
@@ -167,5 +179,6 @@ class BuildArgs:
 	var surface_source_solid: Resource
 	var surface_source_liquid: Resource
 	var voxel_surface: MarchingCubesDualGd
+	var foliage_sources: Array
 
 

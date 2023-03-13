@@ -135,7 +135,7 @@ func rescale_surface( source_se3: Se3Ref, local_point_se3: Se3Ref, scaler: Dista
 		mesh_inst.material_override = materials[material_ind]
 		
 		lock()
-		_voxel_surface.precompute_scaled_values( source_se3, local_point_se3, material_ind, 1.0 )
+		#_voxel_surface.precompute_scaled_values( source_se3, local_point_se3, material_ind, 1.0 )
 		unlock()
 	
 	return true

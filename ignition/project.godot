@@ -137,10 +137,10 @@ _global_script_classes=[ {
 "base": "RefFrameNode",
 "class": "FoliageInstanceBase",
 "language": "GDScript",
-"path": "res://tryouts/celestial_bodies_voxel/foliage_instance_base.gd"
+"path": "res://tryouts/celestial_bodies_voxel_2/foliage_instance_base.gd"
 }, {
 "base": "Node",
-"class": "FoliageSource",
+"class": "FoliageSourceOld",
 "language": "GDScript",
 "path": "res://tryouts/celestial_bodies_voxel/foliage.gd"
 }, {
@@ -331,7 +331,7 @@ _global_script_class_icons={
 "ExhaustNode": "",
 "FlexGridContainer": "res://addons/color-palette/utilities/FlexGridContainerIcon.png",
 "FoliageInstanceBase": "",
-"FoliageSource": "",
+"FoliageSourceOld": "",
 "ForceSource": "",
 "ForceSourceAirDrag": "",
 "ForceSourceGravity": "",
