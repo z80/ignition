@@ -68,44 +68,66 @@ func build_surface_process( args ):
 	var source_se3: Se3Ref = args.source_se3
 	var view_point_se3: Se3Ref = args.view_point_se3
 	var node_size_strategy: VolumeNodeSizeStrategyGd = args.node_size_strategy
-	var source_surface: VolumeSourceGd = args.surface_source_solid.get_source()
+	var source_solid: VolumeSourceGd = args.surface_source_solid.get_source()
 	var source_liquid: VolumeSourceGd
 	if args.surface_source_liquid != null:
 		source_liquid = args.surface_source_liquid.get_source()
 	else:
 		source_liquid = null
 
-	var voxel_surface: MarchingCubesDualGd = MarchingCubesDualGd.new()
-	voxel_surface.max_nodes_qty   = 20000000
-	voxel_surface.split_precision = 0.01
+	var voxel_surface_solid: MarchingCubesDualGd = MarchingCubesDualGd.new()
+	voxel_surface_solid.max_nodes_qty   = 20000000
+	voxel_surface_solid.split_precision = 0.01
 	
-	var _step: float = voxel_surface.init_min_step( source_surface )
-	var _ok: bool = voxel_surface.subdivide_source( node, source_surface, null )
+	var _step: float = voxel_surface_solid.init_min_step( source_solid )
+	var _ok: bool = voxel_surface_solid.subdivide_source( node, source_solid, null )
 	args.ok = _ok
-	var _qty: int = voxel_surface.precompute_scaled_values( source_se3, 0, 1.0 )
+	var _qty: int = voxel_surface_solid.precompute_scaled_values( source_se3, 0, 1.0 )
 	args.ok = args.ok and (_qty > 0)
 	
-	args.voxel_surface = voxel_surface
+	args.voxel_surface_solid = voxel_surface_solid
+	
+	if source_liquid != null:
+		var voxel_surface_liquid: MarchingCubesDualGd = MarchingCubesDualGd.new()
+		voxel_surface_liquid.max_nodes_qty   = 20000000
+		voxel_surface_liquid.split_precision = 0.01
+		
+		_step = voxel_surface_liquid.init_min_step( source_liquid )
+		_ok = voxel_surface_liquid.subdivide_source( node, source_liquid, null )
+		args.ok = _ok
+		_qty = voxel_surface_liquid.precompute_scaled_values( source_se3, 0, 1.0 )
+		args.ok = args.ok and (_qty > 0)
+		
+		args.voxel_surface_liquid = voxel_surface_liquid
+	
+	else:
+		args.voxel_surface_liquid = null
+		
 	return args
 
 
 func build_surface_finished( args ):
 	var bounding_node: BoundingNodeGd      = args.node
-	var voxel_surface: MarchingCubesDualGd = args.voxel_surface
+	var voxel_surface_solid: MarchingCubesDualGd = args.voxel_surface_solid
+	var voxel_surface_liquid: MarchingCubesDualGd = args.voxel_surface_liquid
 	var foliage_sources: Array             = args.foliage_sources
-	var qty: int = voxel_surface.get_nodes_qty()
+	var qty: int = voxel_surface_solid.get_nodes_qty()
 	#print( "surface done, nodes qty: ", qty )
-	voxel_surface.apply_to_mesh_only( _visual.surface )
+	voxel_surface_solid.apply_to_mesh_only( _visual.solid )
 	#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
 	
 	var surface_source_solid: Resource = args.surface_source_solid
-	_visual.surface.material_override = surface_source_solid.materials[0]
+	_visual.solid.material_override = surface_source_solid.materials[0]
 	#_visual.surface.material_override = surface_source_solid.override_material
+	
+	if voxel_surface_liquid != null:
+		var surface_source_liquid: Resource = args.surface_source_liquid
+		_visual.liquid.material_override = surface_source_liquid.materials[0]
 	
 	_visual.visible = args.ok
 	
 	_cleanup_foliage()
-	_populate_foliage( voxel_surface, bounding_node, foliage_sources )
+	_populate_foliage( voxel_surface_solid, bounding_node, foliage_sources )
 
 
 
@@ -178,7 +200,8 @@ class BuildArgs:
 	var node_size_strategy: VolumeNodeSizeStrategyGd
 	var surface_source_solid: Resource
 	var surface_source_liquid: Resource
-	var voxel_surface: MarchingCubesDualGd
+	var voxel_surface_solid: MarchingCubesDualGd
+	var voxel_surface_liquid: MarchingCubesDualGd
 	var foliage_sources: Array
 
 

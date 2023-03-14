@@ -5,7 +5,7 @@ export(Resource) var layer_config = null
 export(Resource) var surface_source_solid = null
 export(Resource) var surface_source_liquid = null
 
-var surface: MeshInstance = null
+var solid: MeshInstance = null
 var liquid: MeshInstance = null
 
 var _rebuild_strategy: MarchingCubesRebuildStrategyGd = null
@@ -21,8 +21,8 @@ var _requested_rebuild: bool = false
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var root: Spatial = get_node( "Visual" )
-	surface = root.surface
-	liquid  = root.liquid
+	solid  = root.solid
+	liquid = root.liquid
 	
 	_center_se3 = Se3Ref.new()
 	
@@ -67,7 +67,8 @@ func update_source_se3( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 	
 	var scale: float = 1.0 / layer_config.scale_divider
 	var t: Transform = _scale_dist_ratio.compute_transform( source_se3, scale )
-	surface.transform = t
+	solid.transform = t
+	liquid.transform = t
 
 
 
@@ -76,9 +77,17 @@ func _rebuild_start():
 	_requested_rebuild = false
 	
 	_node_size_strategy.focal_point = _rebuild_strategy.get_focal_point_rebuild()
-	var source: VolumeSourceGd = surface_source_solid.get_source()
+	var source_solid: VolumeSourceGd = surface_source_solid.get_source()
+	
+	var source_liquid: VolumeSourceGd
+	if surface_source_liquid != null:
+		source_liquid = surface_source_solid.get_source()
+	
+	else:
+		source_liquid = null
+	
 	var scale: float = 1.0 / layer_config.scale_divider
-	var args: Dictionary = { "source": source, "scale": scale }
+	var args: Dictionary = { "source_solid": source_solid, "source_liquid": source_liquid, "scale": scale }
 	
 	WorkersPool.push_back_with_arg( self, "_rebuild_process", "_rebuild_finished", args )
 	#var ret = _rebuild_process( args )
@@ -86,28 +95,44 @@ func _rebuild_start():
 
 
 func _rebuild_process( args ):
-	var source: VolumeSourceGd = args.source
+	var source_solid: VolumeSourceGd  = args.source_solid
+	var source_liquid: VolumeSourceGd = args.source_liquid
 	var scale: float = args.scale
 	
-	var voxel_surface: MarchingCubesDualGd = MarchingCubesDualGd.new()
-	voxel_surface.max_nodes_qty   = 20000000
-	voxel_surface.split_precision = 0.01
+	var voxel_surface_solid: MarchingCubesDualGd = MarchingCubesDualGd.new()
+	voxel_surface_solid.max_nodes_qty   = 20000000
+	voxel_surface_solid.split_precision = 0.01
 	
-	var ok: bool = voxel_surface.subdivide_source_all( source, _node_size_strategy )
-	voxel_surface.precompute_scaled_values( _center_se3, 0, scale )
+	var _ok: bool = voxel_surface_solid.subdivide_source_all( source_solid, _node_size_strategy )
+	voxel_surface_solid.precompute_scaled_values( _center_se3, 0, scale )
+
+	var ret: Dictionary = { "voxel_surface_solid": voxel_surface_solid }
+
+	var voxel_surface_liquid: MarchingCubesDualGd
+	if source_liquid != null:
+		voxel_surface_liquid = MarchingCubesDualGd.new()
+		voxel_surface_liquid.max_nodes_qty   = 20000000
+		voxel_surface_liquid.split_precision = 0.01
+		_ok = voxel_surface_liquid.subdivide_source_all( source_liquid, _node_size_strategy )
+		voxel_surface_liquid.precompute_scaled_values( _center_se3, 0, scale )
+		ret["voxel_surface_liquid"] = voxel_surface_liquid
 	
-	var ret: Dictionary = { "voxel_surface": voxel_surface }
 	return ret
 
 
 func _rebuild_finished( args ):
 	_ready = true
 	_running = false
-	var voxel_surface: MarchingCubesDualGd = args.voxel_surface
-	var qty: int = voxel_surface.get_nodes_qty()
+	var voxel_surface_solid: MarchingCubesDualGd = args.voxel_surface_solid
+	var voxel_surface_liquid: MarchingCubesDualGd = args.voxel_surface_liquid
+	var qty: int = voxel_surface_solid.get_nodes_qty()
 	print( "rebuild done, nodes qty: ", qty )
-	voxel_surface.apply_to_mesh_only( surface )
-	surface.material_override = surface_source_solid.materials[0]
+	voxel_surface_solid.apply_to_mesh_only( solid )
+	solid.material_override = surface_source_solid.materials[0]
+	
+	if voxel_surface_liquid != null:
+		voxel_surface_liquid.apply_to_mesh_only( liquid )
+		liquid.material_override = surface_source_liquid.materials[0]
 
 
 

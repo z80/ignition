@@ -11,7 +11,7 @@ func get_source():
 		return _source
 	
 	_source = VolumeSourceScriptGd.new()
-	var script: Resource = preload( "res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source_funcs.gd" )
+	var script: Resource = preload( "res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source_funcs_solid.gd" )
 	_source.set_script( script )
 	_source.bounding_radius = source_radius
 	#print( "source_radius: ", source_radius )
