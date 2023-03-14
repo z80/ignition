@@ -160,7 +160,7 @@ func _process_geometry( force_player_rf: RefFrameNode = null ):
 		var source_se3: Se3Ref = rot.relative_to( camera )
 		var view_point_se3: Se3Ref = source_se3.inverse()
 		
-		_visual_space.update_source_se3( source_se3, view_point_se3 )
+		_visual_space.update_source_se3( rot, source_se3, view_point_se3 )
 		if _visual_surface != null:
 			#source_se3.q   = Quat.IDENTITY
 			#view_point_se3 = source_se3.inverse()

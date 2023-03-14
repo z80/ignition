@@ -5,8 +5,9 @@ export(Resource) var layer_config = null
 export(Resource) var surface_source_solid = null
 export(Resource) var surface_source_liquid = null
 
-var solid: MeshInstance = null
+var solid: MeshInstance  = null
 var liquid: MeshInstance = null
+var atmosphere: Spatial  = null
 
 var _rebuild_strategy: MarchingCubesRebuildStrategyGd = null
 var _node_size_strategy: VolumeNodeSizeStrategyGd = null
@@ -23,6 +24,7 @@ func _ready():
 	var root: Spatial = get_node( "Visual" )
 	solid  = root.solid
 	liquid = root.liquid
+	atmosphere = get_node( "Atmosphere" )
 	
 	_center_se3 = Se3Ref.new()
 	
@@ -54,7 +56,7 @@ func _initialize_strategies():
 	_node_size_strategy.max_level = max_level
 
 
-func update_source_se3( source_se3: Se3Ref, view_point_se3: Se3Ref ):
+func update_source_se3( rotation: RefFrameRotationNode, source_se3: Se3Ref, view_point_se3: Se3Ref ):
 	var rebuild_needed: bool = _rebuild_strategy.need_rebuild( view_point_se3 )
 	if _running:
 		if rebuild_needed:
@@ -69,6 +71,8 @@ func update_source_se3( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 	var t: Transform = _scale_dist_ratio.compute_transform( source_se3, scale )
 	solid.transform = t
 	liquid.transform = t
+	
+	atmosphere.update( rotation )
 
 
 
@@ -116,6 +120,9 @@ func _rebuild_process( args ):
 		_ok = voxel_surface_liquid.subdivide_source_all( source_liquid, _node_size_strategy )
 		voxel_surface_liquid.precompute_scaled_values( _center_se3, 0, scale )
 		ret["voxel_surface_liquid"] = voxel_surface_liquid
+	
+	else:
+		ret["voxel_surface_liquid"] = null
 	
 	return ret
 
