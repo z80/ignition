@@ -1,12 +1,16 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/celestial_surface_voxel.gd" type="Script" id=1]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_space.tscn" type="PackedScene" id=2]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_surface.tscn" type="PackedScene" id=3]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/rotation.gd" type="Script" id=4]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_atmosphere.tres" type="Resource" id=5]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source_solid.tres" type="Resource" id=6]
 
 [node name="Translation" type="RefFrameMotionNode"]
 script = ExtResource( 1 )
+surface_source_solid = ExtResource( 6 )
+config_atmosphere = ExtResource( 5 )
 VisualNodeSpace = ExtResource( 2 )
 
 [node name="Rotation" type="RefFrameRotationNode" parent="."]

@@ -2,8 +2,8 @@
 extends Resource
 
 
-export(float) var height_total_km = 1.0
-export(float) var height_inner_km = 0.2
+export(float) var height_km = 1.0
+#export(float) var height_inner_km = 0.2
 export(float) var transparency_dist_outer_km = 5.0
 export(float) var transparency_dist_inner_km = 30.0
 export(Color) var atmosphere_color_day   = Color(0.65, 0.8, 1.0, 1.0)

@@ -36,7 +36,7 @@ func _ready():
 
 
 func _initialize_strategy():
-	var radius: float  = surface_source_solid.source_radius
+	var radius: float  = surface_source_solid.bounding_radius
 	var max_level: int = layer_config.max_level
 	
 	_node_size_strategy = VolumeNodeSizeStrategyGd.new()
@@ -87,7 +87,7 @@ func update_source_se3( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 	# First check if too far.
 	var dist: float = view_point_se3.r.length()
-	var max_dist: float = surface_source_solid.source_radius * 1.3
+	var max_dist: float = surface_source_solid.bounding_radius * 1.3
 	var too_far: bool = dist >= max_dist
 	# If it is too far (potentially on a different planet), do nothing.
 	if too_far:

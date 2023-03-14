@@ -16,3 +16,4 @@ surface_source_liquid = ExtResource( 6 )
 [node name="Visual" parent="." instance=ExtResource( 1 )]
 
 [node name="Atmosphere" parent="." instance=ExtResource( 5 )]
+visible = false

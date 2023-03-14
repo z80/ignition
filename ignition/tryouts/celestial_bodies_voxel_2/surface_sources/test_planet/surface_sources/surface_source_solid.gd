@@ -15,7 +15,7 @@ func get_source():
 	_source.set_script( script )
 	_source.bounding_radius = source_radius
 	#print( "source_radius: ", source_radius )
-	_source.radius = source_radius - 10.0
+	_source.radius = source_radius
 	_source.node_sz_max = 5.0
 	_source.node_sz_min = 2.0
 	

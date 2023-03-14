@@ -11,7 +11,7 @@ var node_sz_min: float      = 0.25
 var radius: float           = 100.0
 var bounding_radius: float  = 100.0
 var noise: OpenSimplexNoise = null
-var height: float           = 20.0
+var height: float           = 3.0
 
 
 
@@ -28,10 +28,9 @@ func init_seed( v ):
 
 
 func value( at: Vector3 ):
-	var SCALE: float = 3000.0
-	var unit: Vector3 = at / SCALE
+	var unit: Vector3 = at / radius
 	var n: float      = noise.get_noise_3dv( unit )
-	n  *= height/SCALE
+	n  *= height/radius
 	var r: float = radius * (1.0 + n)
 	
 	var d: float   = at.length()

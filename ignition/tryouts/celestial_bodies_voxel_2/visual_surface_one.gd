@@ -35,7 +35,8 @@ func _create_visual():
 
 
 func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_size_strategy: VolumeNodeSizeStrategyGd, source_surface: Resource, source_liquid: Resource, foliage_sources: Array ):
-	_visual.visible = false
+	_visual.solid.visible  = false
+	_visual.liquid.visible = false
 	
 	_cleanup_foliage()
 	
@@ -111,20 +112,25 @@ func build_surface_finished( args ):
 	var voxel_surface_solid: MarchingCubesDualGd = args.voxel_surface_solid
 	var voxel_surface_liquid: MarchingCubesDualGd = args.voxel_surface_liquid
 	var foliage_sources: Array             = args.foliage_sources
-	var qty: int = voxel_surface_solid.get_nodes_qty()
+	var qty_solid: int = voxel_surface_solid.get_nodes_qty()
 	#print( "surface done, nodes qty: ", qty )
-	voxel_surface_solid.apply_to_mesh_only( _visual.solid )
-	#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
+	if qty_solid > 0:
+		voxel_surface_solid.apply_to_mesh_only( _visual.solid )
+		#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
+		_visual.solid.visible = true
+		var surface_source_solid: Resource = args.surface_source_solid
+		_visual.solid.material_override = surface_source_solid.materials[0]
 	
-	var surface_source_solid: Resource = args.surface_source_solid
-	_visual.solid.material_override = surface_source_solid.materials[0]
 	#_visual.surface.material_override = surface_source_solid.override_material
 	
 	if voxel_surface_liquid != null:
-		var surface_source_liquid: Resource = args.surface_source_liquid
-		_visual.liquid.material_override = surface_source_liquid.materials[0]
+		var qty_liquid: int = voxel_surface_liquid.get_nodes_qty()
+		if qty_liquid > 0:
+			voxel_surface_liquid.apply_to_mesh_only( _visual.liquid )
+			_visual.liquid.visible = true
+			var surface_source_liquid: Resource = args.surface_source_liquid
+			_visual.liquid.material_override = surface_source_liquid.materials[0]
 	
-	_visual.visible = args.ok
 	
 	_cleanup_foliage()
 	_populate_foliage( voxel_surface_solid, bounding_node, foliage_sources )

@@ -40,7 +40,7 @@ func _initialize_scale_distance_ratio():
 
 
 func _initialize_strategies():
-	var radius: float      = surface_source_solid.source_radius
+	var radius: float      = surface_source_solid.bounding_radius
 	
 	var focus_depth: float = radius * layer_config.min_relative_focal_depth
 	var rebuild_dist: float = radius * layer_config.relative_rebuild_dist
@@ -72,7 +72,7 @@ func update_source_se3( rotation: RefFrameRotationNode, source_se3: Se3Ref, view
 	solid.transform = t
 	liquid.transform = t
 	
-	atmosphere.update( rotation )
+	#atmosphere.update( rotation )
 
 
 
@@ -85,7 +85,7 @@ func _rebuild_start():
 	
 	var source_liquid: VolumeSourceGd
 	if surface_source_liquid != null:
-		source_liquid = surface_source_solid.get_source()
+		source_liquid = surface_source_liquid.get_source()
 	
 	else:
 		source_liquid = null

@@ -2,27 +2,32 @@
 extends CelestialBody
 class_name CelestialSurfaceVoxel
 
+export(Resource) var surface_source_solid = null
+export(Resource) var config_atmosphere = null
 export(PackedScene) var VisualNodeSpace = null
+
+export(float) var radius_km setget , _get_radius_km
 
 var _visual_space: Spatial = null
 var _visual_surface: Node  = null
 
 
+
 # Radius is taken from
-var radius_km = 1.0
-export(float) var height_km = 1.0
+#var radius_km = 1.0
+#export(float) var height_km = 1.0
 
-export(float) var atmosphere_height_inner_km = 1.0
-export(float) var atmosphere_height_outer_km = 0.1
-export(float) var transparency_dist_inner_km = 30.0
-export(float) var transparency_dist_outer_km = 5.0
-export(Color) var atmosphere_color_day   = Color(0.65, 0.8, 1.0, 1.0)
-export(Color) var atmosphere_color_night = Color(1.0, 0.43, 0.46, 1.0)
-export(float) var displacement = 0.0
-
-export(float) var air_density          = 1.0
-export(float) var air_viscosity        = 0.1
-export(float) var air_pressure_surface = 101000.0
+#export(float) var atmosphere_height_inner_km = 1.0
+#export(float) var atmosphere_height_outer_km = 0.1
+#export(float) var transparency_dist_inner_km = 30.0
+#export(float) var transparency_dist_outer_km = 5.0
+#export(Color) var atmosphere_color_day   = Color(0.65, 0.8, 1.0, 1.0)
+#export(Color) var atmosphere_color_night = Color(1.0, 0.43, 0.46, 1.0)
+#export(float) var displacement = 0.0
+#
+#export(float) var air_density          = 1.0
+#export(float) var air_viscosity        = 0.1
+#export(float) var air_pressure_surface = 101000.0
 
 var orbit_visualizer: Node = null
 export(Color) var orbit_color = Color( 1.0, 0.0, 0.0, 1.0 ) setget _set_orbit_color, _get_orbit_color
@@ -75,9 +80,6 @@ func _create_visuals():
 func _ready():
 	_create_visuals()
 
-	var src: Resource = _visual_space.get_surface_source()
-	radius_km = src.source_radius * 0.001
-
 	init_forces()
 	
 	# It should be created only when the thing is in the tree.
@@ -95,6 +97,7 @@ func init_forces():
 	add_to_group( Constants.PLANETS_GROUP_NAME )
 	
 	# Initialize GM.
+	var radius_km: float = surface_source_solid.radius_km
 	var gm: float = self.compute_gm_by_speed( radius_km, surface_orbital_vel_kms )
 	self.set_own_gm( gm )
 	
@@ -330,6 +333,9 @@ func process_ref_frames_rotating_to_orbiting():
 		return
 	if ref_frame_to_check_rotating_index >= qty:
 		ref_frame_to_check_rotating_index = 0
+	
+	var radius_km: float = surface_source_solid.radius_km
+	var height_km: float = config_atmosphere.height_km
 
 	var rf: RefFramePhysics = rfs[ref_frame_to_check_rotating_index]
 	var tr: RefFrameNode = translation_rf()
@@ -370,6 +376,8 @@ func process_ref_frames_orbiting_to_rotating():
 	var rot: RefFrameNode = rotation_rf()
 	var se3: Se3Ref = rf.relative_to( rot )
 	var dist: float = se3.r.length()
+	var radius_km: float = surface_source_solid.radius_km
+	var height_km: float = config_atmosphere.height_km
 	var inclusion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_INCLUDE_DIST
 	if dist <= inclusion_dist:
 		rf.change_parent( rot )
@@ -477,9 +485,14 @@ func _process_visualize_orbits():
 
 
 func _init_force_source_air_drag():
+	var radius_km:float      = surface_source_solid.radius_km
+	var atm_height_km: float = config_atmosphere.height_km
+	var air_density: float   = config_atmosphere.air_density
+	var air_viscosity: float = config_atmosphere.air_viscosity
+	
 	_force_source_air_drag = ForceSourceAirDrag.new()
 	_force_source_air_drag.ground_level  = radius_km * 1000.0
-	_force_source_air_drag.atm_height    = (atmosphere_height_inner_km + atmosphere_height_outer_km) * 1000.0
+	_force_source_air_drag.atm_height    = atm_height_km * 1000.0
 	_force_source_air_drag.density_gnd   = air_density * 0.001
 	_force_source_air_drag.viscosity_gnd = air_viscosity * 0.001
 
@@ -487,11 +500,13 @@ func _init_force_source_air_drag():
 
 
 func air_pressure( se3_rel: Se3Ref ):
+	var radius_km: float            = surface_source_solid.radius_km
+	var atm_height_km: float        = config_atmosphere.height_km
+	var air_pressure_surface: float = config_atmosphere.air_pressure_surface
 	var d: float = se3_rel.r.length() * 0.001 - radius_km
 	if d <= 0.0:
 		return air_pressure_surface
-	
-	var atm_height_km: float = atmosphere_height_inner_km + atmosphere_height_outer_km
+
 	if d > atm_height_km:
 		return 0.0
 	
@@ -499,4 +514,7 @@ func air_pressure( se3_rel: Se3Ref ):
 	return p
 
 
+func _get_radius_km():
+	var ret: float = surface_source_solid.radius_km
+	return ret
 
