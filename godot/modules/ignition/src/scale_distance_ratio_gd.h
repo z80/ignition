@@ -24,6 +24,7 @@ public:
 	void set_max_distance( real_t dist );
 	real_t get_max_distance() const;
 
+	real_t compute_scale( const Ref<Se3Ref> & rel_se3, real_t base_scale ) const;
 	Transform compute_transform( const Ref<Se3Ref> & rel_se3, real_t base_scale ) const;
 
 public:
