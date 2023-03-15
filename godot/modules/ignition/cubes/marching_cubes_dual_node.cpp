@@ -466,6 +466,8 @@ const MarchingCubesDualNode MarchingCubesDualNode::create_adjacent_node( int dx,
 	else if ( dz < 0 )
 		other.at.z -= size;
 
+	other.compute_hashes();
+
 	return other;
 }
 
