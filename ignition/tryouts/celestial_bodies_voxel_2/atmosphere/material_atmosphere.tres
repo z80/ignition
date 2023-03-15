@@ -9,8 +9,8 @@ uniform vec4  color_day:   hint_color = vec4( 0.65, 0.8, 1.0, 1.0 );
 uniform vec4  color_night: hint_color = vec4( 1.0, 0.43, 0.46, 1.0 );
 uniform float planet_radius = 1000.0;
 uniform float height  = 10.0;
-uniform float transparency_distance_inner = 10.0;
-uniform float transparency_distance_outer = 10.0;
+uniform float transparency_distance_inner = 1.0;
+uniform float transparency_distance_outer = 1000.0;
 // From camera towards the light in camera ref. frame.
 uniform vec3  light_dir     = vec3(0.0, 1.0, 0.0);
 // Planet center in camera ref. frame.
@@ -106,7 +106,7 @@ vec4 compute_atmosphere_color( vec3 ray )
 	
 	
 	float transparency_dist = (is_inside) ? transparency_distance_inner : transparency_distance_outer;
-	float alpha = pow( 0.5, through_length / transparency_distance_inner );
+	float alpha = pow( 0.5, through_length / transparency_dist );
 	alpha = 1.0 - alpha;
 	//float alpha = through_length_outer / outer_transparency_distance;
 	alpha = clamp( alpha, 0.0, 1.0 );

@@ -17,8 +17,8 @@ var height: float           = 3.0
 
 func _init():
 	noise = OpenSimplexNoise.new()
-	noise.octaves = 4
-	noise.period = 0.2
+	noise.octaves = 8
+	noise.period = 3.0
 	noise.persistence = 0.8
 
 
