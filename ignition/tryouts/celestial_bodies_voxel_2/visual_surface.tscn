@@ -2,7 +2,7 @@
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_surface.gd" type="Script" id=1]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source_solid.tres" type="Resource" id=2]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_layer_space.tres" type="Resource" id=3]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" type="Resource" id=3]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_surface_one.tscn" type="PackedScene" id=4]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/foliage_sources/foliage_source.tres" type="Resource" id=5]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source_liquid.tres" type="Resource" id=6]

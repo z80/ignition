@@ -20,7 +20,6 @@ func update( rotation: RefFrameRotationNode ):
 	var sun: RefFrameNode    = RootScene.ref_frame_root
 	
 	var source_se3: Se3Ref = rotation.relative_to( camera )
-	var planet_center: Vector3 = source_se3.r
 	
 	# Relative to the Sun.
 	var sun_se3: Se3Ref = sun.relative_to( rotation )
@@ -31,19 +30,25 @@ func update( rotation: RefFrameRotationNode ):
 	var radius_km: float = surface_source_solid.radius_km
 	var scale: float    = 1.0 / config_space.scale_divider
 	
+	var base_sz: float = radius_km * scale * 1000.0 * 2.0
+	var base_t: Transform = Transform.IDENTITY
+	base_t = base_t.scaled( Vector3( base_sz, base_sz, base_sz ) )
+	
 	var coeff: float = _scale_dist_ratio.compute_scale( source_se3, scale )
 	var t: Transform = _scale_dist_ratio.compute_transform( source_se3, scale )
+	t = t * base_t
 	self.transform = t
 	
-	var scale_km: float = coeff * 1000.0;
+	var scale_km: float = scale * coeff * 1000.0;
 	
-	var planet_radius: float = radius_km * scale_km
-	var height: float        = config_atmosphere.height_km * scale_km
-	var inner_dist: float    = config_atmosphere.transparency_dist_inner_km * scale_km
-	var outer_dist: float    = config_atmosphere.transparency_dist_outer_km * scale_km
-	var color_day: Color     = config_atmosphere.atmosphere_color_day
-	var color_night: Color   = config_atmosphere.atmosphere_color_night
-	var displacement: float  = config_atmosphere.displacement
+	var planet_center: Vector3 = t.origin
+	var planet_radius: float   = radius_km * scale_km
+	var height: float          = config_atmosphere.height_km * scale_km
+	var inner_dist: float      = config_atmosphere.transparency_dist_inner_km * scale_km
+	var outer_dist: float      = config_atmosphere.transparency_dist_outer_km * scale_km
+	var color_day: Color       = config_atmosphere.atmosphere_color_day
+	var color_night: Color     = config_atmosphere.atmosphere_color_night
+	var displacement: float    = config_atmosphere.displacement
 
 
 #	planet_radius += 2.5 * 1000.0

@@ -4,7 +4,7 @@
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/atmosphere/atmosphere.gd" type="Script" id=2]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_atmosphere.tres" type="Resource" id=3]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source_solid.tres" type="Resource" id=4]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_layer_space.tres" type="Resource" id=5]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" type="Resource" id=5]
 
 [sub_resource type="CubeMesh" id=1]
 flip_faces = true

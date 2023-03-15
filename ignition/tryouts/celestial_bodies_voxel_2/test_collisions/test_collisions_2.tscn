@@ -22,7 +22,7 @@ rotation_period_hrs = 1.0
 orbital_period_hrs = 2.0
 
 [node name="RefFramePhysics" parent="Sun/Translation/Rotation" index="1" instance=ExtResource( 9 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 502, 0, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2002, 0, 0 )
 
 [node name="Character" parent="Sun/Translation/Rotation/RefFramePhysics" instance=ExtResource( 2 )]
 
@@ -30,7 +30,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 502, 0, 0 )
 map_mode = true
 
 [node name="Construction" parent="Sun/Translation/Rotation" index="2" instance=ExtResource( 4 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 499, 0, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1999, 0, 0 )
 
 [node name="RootUi" parent="." instance=ExtResource( 5 )]
 
