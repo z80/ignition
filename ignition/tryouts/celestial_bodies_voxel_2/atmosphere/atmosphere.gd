@@ -23,26 +23,27 @@ func update( rotation: RefFrameRotationNode ):
 	var planet_center: Vector3 = source_se3.r
 	
 	# Relative to the Sun.
-	var se3: Se3Ref = rotation.relative_to( sun )
-	se3 = se3.inverse()
-	var light_dir: Vector3 = se3.r.normalized()
+	var sun_se3: Se3Ref = sun.relative_to( rotation )
+	var light_dir: Vector3 = sun_se3.r.normalized()
+	light_dir = source_se3.q.xform( light_dir )
 	
 	
-	var radius_m: float = surface_source_solid.source_radius
+	var radius_km: float = surface_source_solid.radius_km
 	var scale: float    = 1.0 / config_space.scale_divider
 	
+	var coeff: float = _scale_dist_ratio.compute_scale( source_se3, scale )
 	var t: Transform = _scale_dist_ratio.compute_transform( source_se3, scale )
 	self.transform = t
 	
+	var scale_km: float = coeff * 1000.0;
 	
-	var planet_radius: float = radius_m * 0.001
-	var inner_height: float = config_atmosphere.height_inner_km
-	var outer_height: float = config_atmosphere.height_total_km - config_atmosphere.height_inner_km 
-	var inner_dist: float   = config_atmosphere.transparency_dist_inner_km * 1000.0
-	var outer_dist: float   = config_atmosphere.transparency_dist_outer_km * 1000.0
-	var color_day: Color    = config_atmosphere.atmosphere_color_day
-	var color_night: Color  = config_atmosphere.atmosphere_color_night
-	var displacement: float = config_atmosphere.displacement
+	var planet_radius: float = radius_km * scale_km
+	var height: float        = config_atmosphere.height_km * scale_km
+	var inner_dist: float    = config_atmosphere.transparency_dist_inner_km * scale_km
+	var outer_dist: float    = config_atmosphere.transparency_dist_outer_km * scale_km
+	var color_day: Color     = config_atmosphere.atmosphere_color_day
+	var color_night: Color   = config_atmosphere.atmosphere_color_night
+	var displacement: float  = config_atmosphere.displacement
 
 
 #	planet_radius += 2.5 * 1000.0
@@ -53,11 +54,10 @@ func update( rotation: RefFrameRotationNode ):
 	var m: ShaderMaterial = self.get_surface_material( 0 )
 	m.set_shader_param( "planet_center",               planet_center )
 	m.set_shader_param( "planet_radius",               planet_radius )
+	m.set_shader_param( "height",                      height )
+	m.set_shader_param( "transparency_distance_inner", inner_dist )
+	m.set_shader_param( "transparency_distance_outer", outer_dist )
 	m.set_shader_param( "light_dir",                   light_dir )
-	m.set_shader_param( "inner_height",                inner_height )
-	m.set_shader_param( "outer_height",                outer_height )
-	m.set_shader_param( "inner_transparency_distance", inner_dist )
-	m.set_shader_param( "outer_transparency_distance", outer_dist )
 	m.set_shader_param( "displacement",                displacement )
 	m.set_shader_param( "color_day",                   color_day )
 	m.set_shader_param( "color_night",                 color_night )

@@ -8,10 +8,9 @@ render_mode unshaded;
 uniform vec4  color_day:   hint_color = vec4( 0.65, 0.8, 1.0, 1.0 );
 uniform vec4  color_night: hint_color = vec4( 1.0, 0.43, 0.46, 1.0 );
 uniform float planet_radius = 1000.0;
-uniform float inner_height  = 10.0;
-uniform float outer_height  = 10.0;
-uniform float inner_transparency_distance = 10.0;
-uniform float outer_transparency_distance = 10.0;
+uniform float height  = 10.0;
+uniform float transparency_distance_inner = 10.0;
+uniform float transparency_distance_outer = 10.0;
 // From camera towards the light in camera ref. frame.
 uniform vec3  light_dir     = vec3(0.0, 1.0, 0.0);
 // Planet center in camera ref. frame.
@@ -78,20 +77,20 @@ bool ray_atmosphere_intersection_length( vec3 ray, float sphere_radius, out floa
 vec4 compute_atmosphere_color( vec3 ray )
 {
 	//bool ray_atmosphere_intersection_length( vec3 ray, float sphere_radius, out float len, out bool inside, out float day_evening )
-	float through_length_outer;
-	float through_length_inner;
-	bool  inside_outer;
-	bool  inside_inner;
+	float through_length;
+	bool  is_inside;
 	float day_night;
 	float closest_distance;
-	float inner_radius = planet_radius + inner_height;
-	float outer_radius = inner_radius + outer_height;
-	bool intersects_outer = ray_atmosphere_intersection_length( ray, outer_radius, through_length_outer, closest_distance, inside_outer );
-	if ( !intersects_outer )
+	float total_radius = planet_radius + height;
+	bool intersects = ray_atmosphere_intersection_length( ray, total_radius, through_length, closest_distance, is_inside );
+	if ( !intersects )
 	{
 		vec4 c = vec4( color_day.xyz, 0.0 );
 		return c;
 	}
+	//vec4 cc = vec4( 1.0, 0.0, 0.0, 1.0 );
+	//return cc;
+
 	// This is for debugging in order to understand what are actual dimensions.
 //	vec4 dbg_c = vec4( color_day.xyz, 0.0 );
 //	if ( intersects_outer && (through_length_outer > 0.0) )
@@ -99,26 +98,16 @@ vec4 compute_atmosphere_color( vec3 ray )
 	
 	// At this point it intersects the very outer surface. 
 	// Check if intersects opaque.
-	bool intersects_inner = ray_atmosphere_intersection_length( ray, inner_radius, through_length_inner, closest_distance, inside_inner );
+	//bool intersects_inner = ray_atmosphere_intersection_length( ray, inner_radius, through_length_inner, closest_distance, inside_inner );
 	// This is debug code.
 //	if ( intersects_inner && (through_length_inner > 0.0) )
 //		dbg_c = vec4( color_night.xyz, 1.0 );
 //	return dbg_c;
 	
 	
-	float alpha = 1.0;
-	if ( intersects_inner )
-	{
-		alpha *= pow( 2.0, through_length_inner / inner_transparency_distance );
-		through_length_outer -= through_length_inner;
-		alpha *= pow( 2.0, through_length_outer / outer_transparency_distance );
-		alpha = 1.0 - 1.0/alpha;
-	}
-	else
-	{
-		alpha = pow( 2.0, through_length_outer / outer_transparency_distance );
-		alpha = 1.0 - 1.0/alpha;
-	}
+	float transparency_dist = (is_inside) ? transparency_distance_inner : transparency_distance_outer;
+	float alpha = pow( 0.5, through_length / transparency_distance_inner );
+	alpha = 1.0 - alpha;
 	//float alpha = through_length_outer / outer_transparency_distance;
 	alpha = clamp( alpha, 0.0, 1.0 );
 	
@@ -148,6 +137,7 @@ void fragment()
 	ray = ray / length(ray);
 	
 	vec4 c = compute_atmosphere_color( ray );
+	
 	ALBEDO = c.rgb;
 	ALPHA  = c.a;
 }
@@ -160,10 +150,9 @@ shader = SubResource( 1 )
 shader_param/color_day = Color( 0.65, 0.8, 1, 1 )
 shader_param/color_night = Color( 1, 0.43, 0.46, 1 )
 shader_param/planet_radius = 1000.0
-shader_param/inner_height = 10.0
-shader_param/outer_height = 10.0
-shader_param/inner_transparency_distance = 10.0
-shader_param/outer_transparency_distance = 10.0
+shader_param/height = 10.0
+shader_param/transparency_distance_inner = 10.0
+shader_param/transparency_distance_outer = 10.0
 shader_param/light_dir = Vector3( 0, 0, -1 )
 shader_param/planet_center = Vector3( 0, -950, -433 )
 shader_param/displacement = -0.101

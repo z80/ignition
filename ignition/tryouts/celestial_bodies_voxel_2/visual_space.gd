@@ -72,7 +72,7 @@ func update_source_se3( rotation: RefFrameRotationNode, source_se3: Se3Ref, view
 	solid.transform = t
 	liquid.transform = t
 	
-	#atmosphere.update( rotation )
+	atmosphere.update( rotation )
 
 
 

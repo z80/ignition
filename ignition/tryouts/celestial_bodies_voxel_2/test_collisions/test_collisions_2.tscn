@@ -16,6 +16,7 @@ RefFramePhysicsScene = ExtResource( 9 )
 [node name="Sun" parent="." instance=ExtResource( 6 )]
 
 [node name="Translation" parent="Sun" instance=ExtResource( 3 )]
+rotation_period_hrs = 0.02
 surface_orbital_vel_kms = 0.01
 
 [node name="RefFramePhysics" parent="Sun/Translation/Rotation" index="1" instance=ExtResource( 9 )]
