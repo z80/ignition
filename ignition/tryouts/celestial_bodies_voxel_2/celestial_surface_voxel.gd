@@ -98,7 +98,8 @@ func init_forces():
 	
 	# Initialize GM.
 	var radius_km: float = surface_source_solid.radius_km
-	var gm: float = self.compute_gm_by_speed( radius_km, surface_orbital_vel_kms )
+	var surface_orbital_vel_kms = surface_source_solid.orbital_velocity * 0.001
+	var gm: float = surface_source_solid.get_gm()
 	self.set_own_gm( gm )
 	
 	# Initialize orbital movement.

@@ -32,6 +32,7 @@ directional_shadow_max_distance = 50.0
 
 [node name="MeshInstance" type="MeshInstance" parent="SunLight"]
 transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0.561991, 0, -0.703025 )
+visible = false
 mesh = SubResource( 4 )
 skeleton = NodePath("")
 material/0 = SubResource( 5 )

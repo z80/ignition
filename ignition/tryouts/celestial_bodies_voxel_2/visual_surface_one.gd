@@ -141,10 +141,10 @@ func build_surface_finished( args ):
 
 
 func _populate_foliage( volume_surface: MarchingCubesDualGd, bounding_node: BoundingNodeGd, foliage_sources: Array ):
-	var id: String = bounding_node.get_node_id()
+	#var id: String = bounding_node.get_node_id()
 	var s: String = bounding_node.get_hash()
-	if id == '64,-64,-64,32':
-		print( "id: ", id, "; hash: ", s )
+	#if id == '64,-64,-64,32':
+	#	print( "id: ", id, "; hash: ", s )
 	var rand: IgnRandomGd = IgnRandomGd.new()
 	rand.seed = s
 	
