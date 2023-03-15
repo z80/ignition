@@ -28,6 +28,10 @@ func init_forces():
 	
 	# Initialize GM.
 	var motion: CelestialMotionRef = CelestialMotionRef.new()
+	
+	var radius_km: float               = surface_source_solid.radius_km
+	var surface_orbital_vel_kms: float = surface_source_solid.orbiting_velocity * 0.001
+	
 	var gm: float = motion.compute_gm_by_speed( radius_km, surface_orbital_vel_kms )
 	set_own_gm( gm )
 	

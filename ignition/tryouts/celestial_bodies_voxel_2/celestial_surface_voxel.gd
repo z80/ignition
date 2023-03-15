@@ -2,7 +2,6 @@
 extends CelestialBody
 class_name CelestialSurfaceVoxel
 
-export(Resource) var surface_source_solid = null
 export(Resource) var config_atmosphere = null
 export(PackedScene) var VisualNodeSpace = null
 
@@ -80,7 +79,7 @@ func _create_visuals():
 func _ready():
 	_create_visuals()
 
-	init_forces()
+	call_deferred( "init_forces" )
 	
 	# It should be created only when the thing is in the tree.
 	_create_orbit_visualizer()
@@ -98,7 +97,7 @@ func init_forces():
 	
 	# Initialize GM.
 	var radius_km: float = surface_source_solid.radius_km
-	var surface_orbital_vel_kms = surface_source_solid.orbital_velocity * 0.001
+	var surface_orbital_vel_kms: float = surface_source_solid.orbiting_velocity * 0.001
 	var gm: float = surface_source_solid.get_gm()
 	self.set_own_gm( gm )
 	

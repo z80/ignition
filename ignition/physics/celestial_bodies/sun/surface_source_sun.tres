@@ -5,12 +5,13 @@
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_solid.tres" type="Material" id=3]
 
 [resource]
+resource_local_to_scene = true
 script = ExtResource( 1 )
-bounding_radius = 520.0
-source_radius = 500.0
-radius_km = 0.5
-orbiting_velocity = 67.082
-g = 9.0
+bounding_radius = 1000.0
+source_radius = 800.0
+radius_km = 0.8
+orbiting_velocity = 88.5889
+g = 9.81
 focus_depth = 40.0
 identity_distance = 100.0
 materials = [ ExtResource( 3 ) ]

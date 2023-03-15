@@ -5,7 +5,7 @@
 [ext_resource path="res://physics/camera_ctrl/player_camera.tscn" type="PackedScene" id=3]
 [ext_resource path="res://physics/parts/characters/central/central.tscn" type="PackedScene" id=4]
 [ext_resource path="res://tryouts/celestial_bodies_voxel/test_collisions/test_collisions.gd" type="Script" id=5]
-[ext_resource path="res://physics/celestial_bodies/sun.tscn" type="PackedScene" id=6]
+[ext_resource path="res://physics/celestial_bodies/sun/sun.tscn" type="PackedScene" id=6]
 [ext_resource path="res://physics/ui/root_ui.tscn" type="PackedScene" id=7]
 [ext_resource path="res://physics/bodies/construction_new/construction.tscn" type="PackedScene" id=8]
 
