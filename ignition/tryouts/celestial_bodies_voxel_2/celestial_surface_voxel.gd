@@ -450,6 +450,10 @@ func _create_orbit_visualizer():
 	var Vis = load( "res://physics/celestial_bodies/orbit_visualizer.tscn" )
 	orbit_visualizer = Vis.instance()
 	self.add_child( orbit_visualizer )
+	
+	var layer: Spatial = RootScene.get_visual_layer_space()
+	layer.add_child( orbit_visualizer )
+	
 	orbit_visualizer.ref_frame = self.get_parent()
 	orbit_visualizer.motion    = self
 	orbit_visualizer.color     = orbit_color

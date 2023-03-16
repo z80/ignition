@@ -28,7 +28,7 @@ func process_user_input_2(input: Dictionary ):
 
 
 func _physics_process( _delta ):
-	._physics_process( _delta )
+	#._physics_process( _delta )
 	apply_control( _delta )
 
 

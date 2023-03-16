@@ -7,11 +7,11 @@
 [resource]
 resource_local_to_scene = true
 script = ExtResource( 1 )
-bounding_radius = 1000.0
-source_radius = 800.0
-radius_km = 0.8
-orbiting_velocity = 88.5889
-g = 9.81
+bounding_radius = 10000.0
+source_radius = 10000.0
+radius_km = 10.0
+orbiting_velocity = 1000.0
+g = 100.0
 focus_depth = 40.0
 identity_distance = 100.0
 materials = [ ExtResource( 3 ) ]

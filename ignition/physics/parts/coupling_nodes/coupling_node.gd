@@ -84,7 +84,7 @@ func _set_show_visual( en: bool ):
 			_visual = Visual.instance()
 			_visual.size = snap_size()
 			_visual.surface = allows_surface_coupling
-			var vp: Viewport = RootScene.get_overlay_viewport()
+			var vp: Viewport = RootScene.get_visual_layer_overlay()
 			vp.add_child( _visual )
 		_visual.visible = true
 	else:
@@ -93,7 +93,7 @@ func _set_show_visual( en: bool ):
 			_visual = null
 	
 	# Make overlay 3d viewport visible.
-	RootScene.set_overlay_visible( en )
+	RootScene.set_visual_overlay_visible( en )
 
 
 
