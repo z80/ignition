@@ -4,7 +4,7 @@
 
 #include "ref_frame_node.h"
 #include "celestial_motion.h"
-#include "distance_scaler_base_ref.h"
+#include "scale_distance_ratio_gd.h"
 
 namespace Ign
 {
@@ -62,7 +62,7 @@ public:
 	virtual Dictionary serialize() override;
 	virtual bool deserialize( const Dictionary & data ) override;
 
-	PoolVector3Array orbit_points( Node * orbiting_center, Node * player_viewpoint, Node * camera_node, Ref<DistanceScalerBaseRef> scaler, int qty );
+	PoolVector3Array orbit_points( Node * camera_node, int qty, const Ref<ScaleDistanceRatioGd> & scale_distance_ratio, real_t scale );
 
 	void set_force_numerical( bool en );
 	bool get_force_numerical() const;

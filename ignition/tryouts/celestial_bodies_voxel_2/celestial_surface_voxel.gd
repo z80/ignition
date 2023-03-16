@@ -454,8 +454,6 @@ func _create_orbit_visualizer():
 	var layer: Spatial = RootScene.get_visual_layer_space()
 	layer.add_child( orbit_visualizer )
 	
-	orbit_visualizer.ref_frame = self.get_parent()
-	orbit_visualizer.motion    = self
 	orbit_visualizer.color     = orbit_color
 
 
@@ -484,7 +482,9 @@ func _process_visualize_orbits():
 	if current_state != new_state:
 		self.show_orbit = new_state
 	if show_orbit:
-		orbit_visualizer.draw()
+		var base_scale: float = 1.0 / 2.0
+		var scale_distance_ratio: Resource
+		orbit_visualizer.draw( self )
 
 
 
