@@ -348,7 +348,7 @@ bool RefFrameMotionNode::deserialize( const Dictionary & data )
 
 PoolVector3Array RefFrameMotionNode::orbit_points( Node * camera_node, int qty, const Ref<ScaleDistanceRatioGd> & scale_distance_ratio, real_t base_scale )
 {
-	RefFrameNode * orbiting_center_node  = this;
+	RefFrameNode * orbiting_center_node  = Node::cast_to<RefFrameNode>( this->get_parent() );
 	RefFrameNode * player_viewpoint_node = Node::cast_to<RefFrameNode>( camera_node );
 	if (player_viewpoint_node == nullptr)
 		return PoolVector3Array();
