@@ -4,9 +4,9 @@
 
 [resource]
 script = ExtResource( 1 )
-height_km = 0.1
-transparency_dist_outer_km = 2.0
-transparency_dist_inner_km = 0.001
+height_km = 1.0
+transparency_dist_outer_km = 10.0
+transparency_dist_inner_km = 0.01
 atmosphere_color_day = Color( 0.65, 0.8, 1, 1 )
 atmosphere_color_night = Color( 1, 0.43, 0.46, 1 )
 displacement = 0.0

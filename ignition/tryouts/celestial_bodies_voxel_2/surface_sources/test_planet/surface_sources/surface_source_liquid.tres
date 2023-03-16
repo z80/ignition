@@ -5,9 +5,9 @@
 
 [resource]
 script = ExtResource( 1 )
-bounding_radius = 10020.0
-source_radius = 10000.0
-radius_km = 10.0
+bounding_radius = 50050.0
+source_radius = 50000.0
+radius_km = 50.0
 orbiting_velocity = 0.0
 g = 0.0
 focus_depth = 40.0
