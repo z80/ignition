@@ -36,7 +36,8 @@ func _ready():
 
 
 
-
+func _process( delta ):
+	process()
 
 
 # This thing should be called when in kinematic mode.
