@@ -84,7 +84,7 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 func process_inner( _delta ):
 	.process_inner( _delta )
 	
-	if body_state == BodyState.CONSTRUCTION:
+	if (body_state == BodyState.CONSTRUCTION) or (body_state == BodyState.KINEMATIC):
 		_process_coupling_nodes()
 		_process_attachments()
 	

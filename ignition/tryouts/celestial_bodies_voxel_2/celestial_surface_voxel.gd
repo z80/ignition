@@ -341,7 +341,7 @@ func process_ref_frames_rotating_to_orbiting():
 	var tr: RefFrameNode = translation_rf()
 	var se3: Se3Ref = rf.relative_to( rot )
 	var dist: float = se3.r.length()
-	var exclusion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_EXCLUDE_DIST
+	var exclusion_dist: float = (radius_km + height_km)*1000.0 #+ Constants.BODY_EXCLUDE_DIST
 	if dist >= exclusion_dist:
 		rf.change_parent( tr )
 		#rf.jump_to( tr, se3 )
