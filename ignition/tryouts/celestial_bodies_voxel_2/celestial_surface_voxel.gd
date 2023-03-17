@@ -350,10 +350,9 @@ func process_ref_frames_rotating_to_orbiting():
 		rf.launch()
 		print( "rotating -> orbiting" )
 		
-		var m: CelestialMotionRef = rf.motion
-		var t: String = m.movement_type()
-		var l: float = m.specific_angular_momentum()
-		se3 = m.se3
+		var t: String = rf.movement_type()
+		var l: float = rf.specific_angular_momentum()
+		se3 = rf.get_se3()
 		var r: Vector3 = se3.r
 		var v: Vector3 = se3.v
 		print( "movement type: ", t )
