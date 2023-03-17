@@ -23,6 +23,9 @@ script = ExtResource( 1 )
 
 [node name="Camera" type="Camera" parent="."]
 
+[node name="Listener" type="Listener" parent="Camera"]
+current = true
+
 [node name="SunLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5 )
 light_color = Color( 0.996078, 1, 0.843137, 1 )

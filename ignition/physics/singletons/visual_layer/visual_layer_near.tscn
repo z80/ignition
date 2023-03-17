@@ -16,6 +16,9 @@ world = SubResource( 2 )
 transparent_bg = true
 handle_input_locally = false
 render_target_update_mode = 3
+audio_listener_enable_2d = true
+audio_listener_enable_3d = true
+shadow_atlas_size = 256
 
 [node name="Root" parent="Viewport" instance=ExtResource( 2 )]
 
