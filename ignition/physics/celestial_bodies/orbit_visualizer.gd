@@ -1,7 +1,7 @@
 extends ImmediateGeometry
 
 
-export(Resource) var config_detail_level = preload( "res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" )
+export(Resource) var config_detail_level = null
 export(Color) var color = Color( 1.0, 0.0, 0.0, 1.0 )
 export(Material) var material
 export(int) var pts_qty = 128
@@ -20,13 +20,18 @@ func _process(_delta):
 
 
 
-func draw( translation: RefFrameMotionNode ):
+func draw( translation: RefFrameMotionNode, motion: CelestialMotionRef = null ):
 	var m: SpatialMaterial = material as SpatialMaterial
 	m.albedo_color = color
 	
 	var camera_rf: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var base_scale: float       = 1.0 / config_detail_level.scale_divider
-	var pts: PoolVector3Array = translation.orbit_points( camera_rf, pts_qty, _scale_distance_ratio, base_scale )
+	var pts: PoolVector3Array
+	if motion == null:
+		pts = translation.orbit_points( camera_rf, pts_qty, _scale_distance_ratio, base_scale )
+	
+	else:
+		pts = motion.orbit_points( translation, camera_rf, pts_qty, _scale_distance_ratio, base_scale )
 	
 	clear()
 	begin(Mesh.PRIMITIVE_LINE_STRIP)
@@ -35,3 +40,7 @@ func draw( translation: RefFrameMotionNode ):
 		set_color( color )
 		add_vertex( pt )
 	end()
+
+
+
+

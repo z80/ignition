@@ -44,11 +44,11 @@ func _enter_tree():
 	# joints.
 	# After physics bodies are created for all sub-bodies, 
 	# Create connecting joints.
-#	for b in sub_bodies:
-#		# Only parts have this method, so check if it exists first.
-#		var has: bool = b.has_method( "activate_nodes" )
-#		if has:
-#			b.activate_nodes( false )
+	for b in sub_bodies:
+		# Only parts have this method, so check if it exists first.
+		var has: bool = b.has_method( "activate_nodes" )
+		if has:
+			b.activate_nodes( false )
 	pass
 
 
@@ -61,7 +61,7 @@ func _ready():
 
 
 func _process( _delta: float ):
-	#_process_visualize_orbits()
+	_process_visualize_orbits()
 	pass
 
 
@@ -278,8 +278,7 @@ func _process_visualize_orbits():
 	if show_orbit or true:
 		# Here additionally we need to initialize celestial motion every single time.
 		_update_celestial_motion()
-		orbit_visualizer.ref_frame = closest_celestial_body
-		orbit_visualizer.draw()
+		orbit_visualizer.draw( closest_celestial_body, motion )
 
 
 func _update_celestial_motion():

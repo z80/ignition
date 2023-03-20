@@ -82,7 +82,7 @@ static func deserialize_all( n: Node, data: Dictionary ):
 		return false
 	
 	var physics_data: Dictionary = data.physics
-	ret = deserialize_physics_manager( physics_data )
+	ret = serialize_root_node( physics_data )
 	if not ret:
 		return false
 	
@@ -101,7 +101,7 @@ static func serialize_root_node():
 	return data
 
 
-static func deserialize_physics_manager( data: Dictionary ):
+static func deserialize_root_node( data: Dictionary ):
 	var ret: bool = RootScene.ref_frame_root.deserialize( data )
 	return ret
 
@@ -268,7 +268,7 @@ static func destroy_all_bodies( n: Node ):
 
 
 static func destroy_all_assemblies( n: Node ):
-	var assemblies: Array = n.get_tree().get_nodes_in_group( Constants.SUPER_BODIES_GROUP_NAME )
+	var assemblies: Array = n.get_tree().get_nodes_in_group( Constants.BODY_ASSEMBLIES_GROUP_NAME )
 	for b in assemblies:
 		b.queue_free()
 		b.name = b.name + "_to_be_deleted"
