@@ -82,7 +82,7 @@ static func deserialize_all( n: Node, data: Dictionary ):
 		return false
 	
 	var physics_data: Dictionary = data.physics
-	ret = serialize_root_node( physics_data )
+	ret = deserialize_root_node( physics_data )
 	if not ret:
 		return false
 	
