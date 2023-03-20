@@ -43,7 +43,7 @@ void CelestialMotionRef::_bind_methods()
     ClassDB::bind_method( D_METHOD("process_rf", "dt", "rf"), &CelestialMotionRef::process_rf );
     ClassDB::bind_method( D_METHOD("duplicate"), &CelestialMotionRef::duplicate, Variant::OBJECT );
 
-	ClassDB::bind_method( D_METHOD("orbit_points", "orbiting_center_node", "player_viewpoint_node", "camera_node", "scaler", "qty"), &CelestialMotionRef::orbit_points, Variant::POOL_VECTOR3_ARRAY );
+	ClassDB::bind_method( D_METHOD("orbit_points",  "orbiting_center", "camera_node", "qty", "scale_distance_ratio", "base_scale"), &CelestialMotionRef::orbit_points, Variant::POOL_VECTOR3_ARRAY );
 
 	ClassDB::bind_method( D_METHOD("set_force_numerical", "en"), &CelestialMotionRef::set_force_numerical );
 	ClassDB::bind_method( D_METHOD("get_force_numerical"),       &CelestialMotionRef::get_force_numerical, Variant::BOOL );
@@ -327,11 +327,11 @@ bool CelestialMotionRef::deserialize( const Dictionary & data )
     return true;
 }
 
-PoolVector3Array CelestialMotionRef::orbit_points( Node * orbiting_center, Node * player_viewpoint, Node * camera_node, Ref<DistanceScalerRef> scaler, int qty )
+PoolVector3Array CelestialMotionRef::orbit_points( Node * orbiting_center, Node * camera_node, int qty, const Ref<ScaleDistanceRatioGd> & scale_distance_ratio, real_t base_scale )
 {
 	RefFrameNode * orbiting_center_node  = Node::cast_to<RefFrameNode>( orbiting_center );
-	RefFrameNode * player_viewpoint_node = Node::cast_to<RefFrameNode>( player_viewpoint );
-	if (player_viewpoint_node == nullptr)
+	RefFrameNode * player_viewpoint_node = Node::cast_to<RefFrameNode>( camera_node );
+	if ( (player_viewpoint_node == nullptr) || (orbiting_center_node == nullptr) )
 		return PoolVector3Array();
 
 	cm.orbit_points( orbiting_center_node, player_viewpoint_node, qty, pts );
@@ -339,7 +339,7 @@ PoolVector3Array CelestialMotionRef::orbit_points( Node * orbiting_center, Node 
 	Spatial * c = (camera_node != nullptr) ? Node::cast_to<Spatial>( camera_node ) : nullptr;
 
 	// Retrieve scaler from the reference.
-	DistanceScalerRef * s = scaler.ptr();
+	const ScaleDistanceRatioGd * s = scale_distance_ratio.ptr();
 	// If no scaler provided, return points as they are.
 	if ( s == nullptr )
 	{
@@ -353,36 +353,13 @@ PoolVector3Array CelestialMotionRef::orbit_points( Node * orbiting_center, Node 
 		return ret;
 	}
 
-	// Get camera transform if there is a place.
-	SE3 camera_se3;
-	Transform camera_t;
-	if (c != nullptr)
-		camera_t = c->get_global_transform();
-	else
-		camera_t = Transform( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 );
-	const Vector3 r = camera_t.origin;
-	camera_se3.r_ = Vector3d( r.x, r.y, r.z );
-	const Quat q = camera_t.basis.get_rotation_quat();
-	camera_se3.q_ = q;
-
-	// Inverted camera transform.
-	const SE3 inv_camera_se3 = camera_se3.inverse();
-
-	// Apply scaler relative to the camera.
-	// Convert to camera ref. frame, apply scaler and convert back.
+	// Apply distance shrink.
 	for ( int i=0; i<pts_qty; i++ )
 	{
 		const Vector3d r = pts.ptr()[i];
-		const Vector3d rel_r = inv_camera_se3.r_ + (inv_camera_se3.q_ * r);
-		const Float d = rel_r.Length();
-		if (d < Celestial::EPS)
-			continue;
-		
-		const Float scale = s->scale( d );
-		const Vector3d scaled_rel_r = rel_r * (scale / d);
-		// Convert back to player ref. frame.
-		const Vector3d abs_r = camera_se3.r_ + (camera_se3.q_ * scaled_rel_r);
-		pts.ptrw()[i] = abs_r;
+		const Float scale = s->ratio.compute_scale( r, base_scale );
+		const Vector3d scaled_r = r * (scale * base_scale);
+		pts.ptrw()[i] = scaled_r;
 	}
 
 	PoolVector3Array ret;
