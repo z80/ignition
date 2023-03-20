@@ -1,9 +1,11 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://physics/singletons/visual_layer/visual_layer_near.gd" type="Script" id=1]
 [ext_resource path="res://physics/singletons/visual_layer/scene.tscn" type="PackedScene" id=2]
+[ext_resource path="res://default_env.tres" type="Environment" id=3]
 
 [sub_resource type="World" id=2]
+environment = ExtResource( 3 )
 
 [node name="VisualLayer" type="ViewportContainer"]
 anchor_right = 1.0
@@ -24,6 +26,9 @@ shadow_atlas_size = 256
 
 [node name="Camera" parent="Viewport/Root" index="0"]
 far = 8192.0
+
+[node name="Listener" parent="Viewport/Root/Camera" index="0"]
+current = true
 
 [connection signal="resized" from="." to="." method="_on_resized"]
 
