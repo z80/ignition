@@ -11,13 +11,13 @@ const SUN_GROUP_NAME: String                = "sun"
 const INTERACT_NODES_GROUP_NAME: String     = "interact_nodes_group_name"
 
 const DEBUG: bool = true
-const RF_JUMP_DISTANCE: float  = 10.0
-const RF_SPLIT_DISTANCE: float = 15.0 #1000.0
-const RF_MERGE_DISTANCE: float = 12.0 #800.0
+const RF_JUMP_DISTANCE: float  = 100.0
+const RF_SPLIT_DISTANCE: float = 150.0 #1000.0
+const RF_MERGE_DISTANCE: float = 120.0 #800.0
 # Switching ref frames.
 # Switches to orbiting with atmosphere height+rf_change_DELTA. 
 # And back to surface rf with atmosphere height-rf_change_DELTA.
-const RF_CHANGE_DELTA = 5.0
+const RF_CHANGE_DELTA = 100.0
 
 
 # If a body moves slower than this, assume it is idle.
@@ -25,7 +25,7 @@ const IDLE_SPEED_THRESHOLD: float = 0.05
 
 
 const BODY_EXCLUDE_DIST: float = 1000.0
-const BODY_INCLUDE_DIST: float = 11.0 #800.0
+const BODY_INCLUDE_DIST: float = 800.0
 
 # Icon shows up only if closer than this distance
 const INTERACT_ICON_DIST: float = 30.0

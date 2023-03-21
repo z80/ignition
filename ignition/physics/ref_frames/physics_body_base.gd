@@ -45,7 +45,7 @@ func get_class():
 func _enter_tree():
 	var file_name: String = self.filename
 	var node_path: String = self.get_path()
-	print( "_enter_tree called on PhysicsBodyBase; " + file_name + "; path: " + node_path )
+	#print( "_enter_tree called on PhysicsBodyBase; " + file_name + "; path: " + node_path )
 	create_physical()
 
 
@@ -53,13 +53,13 @@ func _enter_tree():
 func _exit_tree():
 	var file_name: String = self.filename
 	var node_path: String = self.get_path()
-	print( "_exit_tree called on PhysicsBodyBase; " + file_name + "; path: " + node_path )
+	#print( "_exit_tree called on PhysicsBodyBase; " + file_name + "; path: " + node_path )
 	remove_physical()
 	
 	var to_be_deleted: bool = is_queued_for_deletion()
 	if to_be_deleted:
 		on_delete()
-		print( "deleted " + file_name + "; path: " + node_path )
+		#print( "deleted " + file_name + "; path: " + node_path )
 
 
 
