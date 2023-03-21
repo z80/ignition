@@ -81,7 +81,7 @@ static func deserialize_all( n: Node, data: Dictionary ):
 	if not ret:
 		return false
 	
-	var physics_data: Dictionary = data.physics
+	var physics_data: Dictionary = data.root
 	ret = deserialize_root_node( physics_data )
 	if not ret:
 		return false
@@ -193,7 +193,7 @@ static func serialize_ref_frames_physics( n: Node ):
 			name = name, 
 			data = data
 		}
-		var path: String = n.get_path()
+		var path: String = rf.get_path()
 		rfs_data[path] = all_data
 	
 	return rfs_data

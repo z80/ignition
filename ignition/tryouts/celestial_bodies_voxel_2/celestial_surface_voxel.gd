@@ -521,3 +521,30 @@ func _get_radius_km():
 	var ret: float = surface_source_solid.radius_km
 	return ret
 
+
+
+
+func serialize():
+	var rotation: RefFrameNode = rotation_rf()
+	var rotation_data: Dictionary = rotation.serialize()
+	var translation_data: Dictionary = .serialize()
+	var ret_data: Dictionary = { rotation = rotation_data, translation = translation_data }
+	return ret_data
+
+
+func deserialize( data: Dictionary ):
+	var rotation_data: Dictionary    = data.rotation
+	var translation_data: Dictionary = data.translation
+	var rotation: RefFrameNode = rotation_rf()
+	
+	var rot_ok: bool = rotation.deserialize( rotation_data )
+	if not rot_ok:
+		return false
+	
+	var ok: bool = .deserialize( translation_data )
+	return ok
+	
+
+
+
+
