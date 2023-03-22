@@ -159,12 +159,12 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 		DDD.important()
 		DDD.print( "jump with debug output:" )
 	
-	var elliptic_motion: bool = (movement_type == "elliptic")
-	if elliptic_motion:
-		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
-		var se3: Se3Ref = self.relative_to( n )
-		DDD.important()
-		DDD.print( "relative_to_planet before jump: " + str(se3.r) + ", v: " + str(se3.v) )
+#	var elliptic_motion: bool = (movement_type == "elliptic")
+#	if elliptic_motion:
+#		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
+#		var se3: Se3Ref = self.relative_to( n )
+#		DDD.important()
+#		DDD.print( "relative_to_planet before jump: " + str(se3.r) + ", v: " + str(se3.v) )
 	
 	t.basis = Basis.IDENTITY
 	var se3: Se3Ref = Se3Ref.new()
@@ -175,18 +175,18 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	se3.v         = v
 	self.jump_to( self, se3 )
 	
-	if elliptic_motion:
-		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
-		se3 = self.relative_to( n )
-		DDD.important()
-		DDD.print( "relative_to_planet after jump: " + str(se3.r) + ", v: " + str(se3.v) )
+#	if elliptic_motion:
+#		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
+#		se3 = self.relative_to( n )
+#		DDD.important()
+#		DDD.print( "relative_to_planet after jump: " + str(se3.r) + ", v: " + str(se3.v) )
 
 	# Update SE3 in orbital motion.
 	
-	if elliptic_motion:
-		DDD.print( "motion type after assigning se3 to motion: " + self.movement_type() )
-		se3 = self.get_se3()
-		DDD.print( "se3 right after assigning se3 to motion: " + str(se3.r) + " v: " + str(se3.v) )
+#	if elliptic_motion:
+#		DDD.print( "motion type after assigning se3 to motion: " + self.movement_type() )
+#		se3 = self.get_se3()
+#		DDD.print( "se3 right after assigning se3 to motion: " + str(se3.r) + " v: " + str(se3.v) )
 
 
 	# Turn debug off and keep with debug output.
@@ -611,6 +611,8 @@ func parent_bodies():
 func distance( b: RefFramePhysics ):
 	var bodies_a: Array = root_most_child_bodies()
 	var bodies_b: Array = b.root_most_child_bodies()
+	if bodies_a.empty() or bodies_b.empty():
+		return 2.0 * Constants.RF_SPLIT_DISTANCE
 	
 	#var bodies_all: Array = bodies_a + bodies_b
 	#_debug_distances( bodies_all )

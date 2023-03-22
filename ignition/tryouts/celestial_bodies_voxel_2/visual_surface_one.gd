@@ -82,9 +82,9 @@ func build_surface_process( args ):
 	
 	var _step: float = voxel_surface_solid.init_min_step( source_solid )
 	var _ok: bool = voxel_surface_solid.subdivide_source( node, source_solid, null )
-	args.ok = _ok
+	args.solid_ok = _ok
 	var _qty: int = voxel_surface_solid.precompute_scaled_values( source_se3, 0, 1.0 )
-	args.ok = args.ok and (_qty > 0)
+	args.solid_ok = args.solid_ok and (_qty > 0)
 	
 	args.voxel_surface_solid = voxel_surface_solid
 	
@@ -95,14 +95,15 @@ func build_surface_process( args ):
 		
 		_step = voxel_surface_liquid.init_min_step( source_liquid )
 		_ok = voxel_surface_liquid.subdivide_source( node, source_liquid, null )
-		args.ok = _ok
+		args.liquid_ok = _ok
 		_qty = voxel_surface_liquid.precompute_scaled_values( source_se3, 0, 1.0 )
-		args.ok = args.ok and (_qty > 0)
+		args.liquid_ok = args.liquid_ok and (_qty > 0)
 		
 		args.voxel_surface_liquid = voxel_surface_liquid
 	
 	else:
 		args.voxel_surface_liquid = null
+		args.liquid_ok = false
 		
 	return args
 
@@ -112,9 +113,10 @@ func build_surface_finished( args ):
 	var voxel_surface_solid: MarchingCubesDualGd = args.voxel_surface_solid
 	var voxel_surface_liquid: MarchingCubesDualGd = args.voxel_surface_liquid
 	var foliage_sources: Array             = args.foliage_sources
-	var qty_solid: int = voxel_surface_solid.get_nodes_qty()
+	#var qty_solid: int = voxel_surface_solid.get_nodes_qty()
+	var solid_ok: bool = args.solid_ok
 	#print( "surface done, nodes qty: ", qty )
-	if qty_solid > 0:
+	if solid_ok:
 		voxel_surface_solid.apply_to_mesh_only( _visual.solid )
 		#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
 		_visual.solid.visible = true
@@ -124,8 +126,9 @@ func build_surface_finished( args ):
 	#_visual.surface.material_override = surface_source_solid.override_material
 	
 	if voxel_surface_liquid != null:
-		var qty_liquid: int = voxel_surface_liquid.get_nodes_qty()
-		if qty_liquid > 0:
+		#var qty_liquid: int = voxel_surface_liquid.get_nodes_qty()
+		var liquid_ok: bool = args.liquid_ok
+		if liquid_ok:
 			voxel_surface_liquid.apply_to_mesh_only( _visual.liquid )
 			_visual.liquid.visible = true
 			var surface_source_liquid: Resource = args.surface_source_liquid
@@ -202,7 +205,8 @@ func _cleanup_foliage():
 
 
 class BuildArgs:
-	var ok: bool
+	var solid_ok: bool
+	var liquid_ok: bool
 	var node: BoundingNodeGd
 	var source_se3: Se3Ref
 	var view_point_se3: Se3Ref
