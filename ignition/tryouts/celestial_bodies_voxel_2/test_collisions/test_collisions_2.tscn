@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.gd" type="Script" id=1]
 [ext_resource path="res://physics/parts/characters/central/central.tscn" type="PackedScene" id=2]
@@ -7,15 +7,30 @@
 [ext_resource path="res://physics/ui/root_ui.tscn" type="PackedScene" id=5]
 [ext_resource path="res://physics/celestial_bodies/sun/sun.tscn" type="PackedScene" id=6]
 [ext_resource path="res://physics/camera_ctrl/player_camera.tscn" type="PackedScene" id=7]
-[ext_resource path="res://physics/celestial_bodies/sun/surface_source_sun.tres" type="Resource" id=8]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_override.tres" type="Material" id=8]
 [ext_resource path="res://physics/ref_frames/ref_frame_physics.tscn" type="PackedScene" id=9]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_liquid.tres" type="Material" id=10]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" type="Script" id=11]
+
+[sub_resource type="Resource" id=1]
+resource_local_to_scene = true
+script = ExtResource( 11 )
+bounding_radius = 10000.0
+source_radius = 10000.0
+radius_km = 10.0
+orbiting_velocity = 1000.0
+g = 100.0
+focus_depth = 40.0
+materials_solid = [ ExtResource( 10 ) ]
+materials_liquid = [ ExtResource( 10 ) ]
+override_material = ExtResource( 8 )
 
 [node name="RefFrameRoot" type="RefFrameRoot"]
 script = ExtResource( 1 )
 RefFramePhysicsScene = ExtResource( 9 )
 
 [node name="Sun" parent="." instance=ExtResource( 6 )]
-surface_source_solid = ExtResource( 8 )
+surface_source = SubResource( 1 )
 
 [node name="Translation" parent="Sun" instance=ExtResource( 3 )]
 rotation_period_hrs = 1.0

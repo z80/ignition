@@ -34,7 +34,7 @@ func _create_visual():
 	root.add_child( _visual )
 
 
-func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_size_strategy: VolumeNodeSizeStrategyGd, source_surface: Resource, source_liquid: Resource, foliage_sources: Array ):
+func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_size_strategy: VolumeNodeSizeStrategyGd, source_surface: Resource, foliage_sources: Array ):
 	_visual.solid.visible  = false
 	_visual.liquid.visible = false
 	
@@ -50,12 +50,7 @@ func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_siz
 	args.view_point_se3 = Se3Ref.new()
 	args.view_point_se3.copy_from( view_point_se3 )
 	args.node_size_strategy   = node_size_strategy
-	args.surface_source_solid = source_surface
-	if source_liquid != null:
-		args.surface_source_liquid = source_liquid
-	else:
-		args.surface_source_liquid = null
-	
+	args.surface_source = source_surface
 	args.foliage_sources = foliage_sources
 	
 	return args
@@ -69,13 +64,9 @@ func build_surface_process( args ):
 	var source_se3: Se3Ref = args.source_se3
 	var view_point_se3: Se3Ref = args.view_point_se3
 	var node_size_strategy: VolumeNodeSizeStrategyGd = args.node_size_strategy
-	var source_solid: VolumeSourceGd = args.surface_source_solid.get_source()
-	var source_liquid: VolumeSourceGd
-	if args.surface_source_liquid != null:
-		source_liquid = args.surface_source_liquid.get_source()
-	else:
-		source_liquid = null
-
+	var source_solid: VolumeSourceGd = args.surface_source.get_source_solid()
+	var source_liquid: VolumeSourceGd = args.surface_source.get_source_liquid()
+	
 	var voxel_surface_solid: MarchingCubesDualGd = MarchingCubesDualGd.new()
 	voxel_surface_solid.max_nodes_qty   = 20000000
 	voxel_surface_solid.split_precision = 0.01
@@ -112,7 +103,7 @@ func build_surface_finished( args ):
 	var bounding_node: BoundingNodeGd      = args.node
 	var voxel_surface_solid: MarchingCubesDualGd = args.voxel_surface_solid
 	var voxel_surface_liquid: MarchingCubesDualGd = args.voxel_surface_liquid
-	var foliage_sources: Array             = args.foliage_sources
+	var foliage_sources: Array = args.foliage_sources
 	#var qty_solid: int = voxel_surface_solid.get_nodes_qty()
 	var solid_ok: bool = args.solid_ok
 	#print( "surface done, nodes qty: ", qty )
@@ -120,8 +111,8 @@ func build_surface_finished( args ):
 		voxel_surface_solid.apply_to_mesh_only( _visual.solid )
 		#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
 		_visual.solid.visible = true
-		var surface_source_solid: Resource = args.surface_source_solid
-		_visual.solid.material_override = surface_source_solid.materials[0]
+		var surface_source: Resource = args.surface_source
+		_visual.solid.material_override = surface_source.materials_solid[0]
 	
 	#_visual.surface.material_override = surface_source_solid.override_material
 	
@@ -131,8 +122,8 @@ func build_surface_finished( args ):
 		if liquid_ok:
 			voxel_surface_liquid.apply_to_mesh_only( _visual.liquid )
 			_visual.liquid.visible = true
-			var surface_source_liquid: Resource = args.surface_source_liquid
-			_visual.liquid.material_override = surface_source_liquid.materials[0]
+			var surface_source: Resource = args.surface_source
+			_visual.liquid.material_override = surface_source.materials_liquid[0]
 	
 	
 	_cleanup_foliage()
@@ -211,8 +202,7 @@ class BuildArgs:
 	var source_se3: Se3Ref
 	var view_point_se3: Se3Ref
 	var node_size_strategy: VolumeNodeSizeStrategyGd
-	var surface_source_solid: Resource
-	var surface_source_liquid: Resource
+	var surface_source: Resource
 	var voxel_surface_solid: MarchingCubesDualGd
 	var voxel_surface_liquid: MarchingCubesDualGd
 	var foliage_sources: Array

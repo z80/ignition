@@ -2,8 +2,7 @@
 extends Spatial
 
 export(Resource) var layer_config = null
-export(Resource) var surface_source_solid = null
-export(Resource) var surface_source_liquid = null
+export(Resource) var surface_source = null
 
 var solid: MeshInstance  = null
 var liquid: MeshInstance = null
@@ -40,7 +39,7 @@ func _initialize_scale_distance_ratio():
 
 
 func _initialize_strategies():
-	var radius: float      = surface_source_solid.bounding_radius
+	var radius: float      = surface_source.bounding_radius
 	
 	var focus_depth: float = radius * layer_config.min_relative_focal_depth
 	var rebuild_dist: float = radius * layer_config.relative_rebuild_dist
@@ -81,14 +80,8 @@ func _rebuild_start():
 	_requested_rebuild = false
 	
 	_node_size_strategy.focal_point = _rebuild_strategy.get_focal_point_rebuild()
-	var source_solid: VolumeSourceGd = surface_source_solid.get_source()
-	
-	var source_liquid: VolumeSourceGd
-	if surface_source_liquid != null:
-		source_liquid = surface_source_liquid.get_source()
-	
-	else:
-		source_liquid = null
+	var source_solid: VolumeSourceGd  = surface_source.get_source_solid()
+	var source_liquid: VolumeSourceGd = surface_source.get_source_liquid()
 	
 	var scale: float = 1.0 / layer_config.scale_divider
 	var args: Dictionary = { "source_solid": source_solid, "source_liquid": source_liquid, "scale": scale }
@@ -135,16 +128,16 @@ func _rebuild_finished( args ):
 	var qty: int = voxel_surface_solid.get_nodes_qty()
 	print( "rebuild done, nodes qty: ", qty )
 	voxel_surface_solid.apply_to_mesh_only( solid )
-	solid.material_override = surface_source_solid.materials[0]
+	solid.material_override = surface_source.materials_solid[0]
 	
 	if voxel_surface_liquid != null:
 		voxel_surface_liquid.apply_to_mesh_only( liquid )
-		liquid.material_override = surface_source_liquid.materials[0]
+		liquid.material_override = surface_source.materials_liquid[0]
 
 
 
 func get_surface_source():
-	return surface_source_solid
+	return surface_source
 
 
 

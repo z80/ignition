@@ -3,8 +3,7 @@ extends Node
 
 export(PackedScene) var VisualSurfaceOne = null
 export(Resource) var layer_config = null
-export(Resource) var surface_source_solid = null
-export(Resource) var surface_source_liquid = null
+export(Resource) var surface_source = null
 export(Resource) var drop_foliage_source_here = null setget _set_foliage_source, _get_foliage_source
 
 export(Array) var foliage_sources = []
@@ -36,7 +35,7 @@ func _ready():
 
 
 func _initialize_strategy():
-	var radius: float  = surface_source_solid.bounding_radius
+	var radius: float  = surface_source.bounding_radius
 	var max_level: int = layer_config.max_level
 	
 	_node_size_strategy = VolumeNodeSizeStrategyGd.new()
@@ -50,7 +49,7 @@ func _create_volume_surface():
 	voxel_surface.max_nodes_qty   = 20000000
 	voxel_surface.split_precision = 0.01
 	
-	var source: VolumeSourceGd = surface_source_solid.get_source()
+	var source: VolumeSourceGd = surface_source.get_source_solid()
 	
 	var _step: float = voxel_surface.init_min_step( source )
 	
@@ -87,7 +86,7 @@ func update_source_se3( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 	# First check if too far.
 	var dist: float = view_point_se3.r.length()
-	var max_dist: float = surface_source_solid.bounding_radius * 1.3
+	var max_dist: float = surface_source.bounding_radius * 1.3
 	var too_far: bool = dist >= max_dist
 	# If it is too far (potentially on a different planet), do nothing.
 	if too_far:
@@ -110,7 +109,7 @@ func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 	for data in nodes_to_rebuild:
 		var node: BoundingNodeGd = data.node
 		var visual: Node         = data.visual
-		var surface_args = visual.build_surface_prepare( source_se3, view_point_se3, _node_size_strategy, surface_source_solid, surface_source_liquid, foliage_sources )
+		var surface_args = visual.build_surface_prepare( source_se3, view_point_se3, _node_size_strategy, surface_source, foliage_sources )
 		surface_args.node = node
 		
 		var args: Dictionary = {}

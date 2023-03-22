@@ -49,7 +49,7 @@ func _create_volume_surface( surface_source: Resource ):
 		_voxel_surface.max_nodes_qty   = 20000000
 		_voxel_surface.split_precision = 0.01
 	
-	var source: VolumeSourceGd = surface_source.get_source()
+	var source: VolumeSourceGd = surface_source.get_source_solid()
 	var _step: float = _voxel_surface.init_min_step( source )
 
 

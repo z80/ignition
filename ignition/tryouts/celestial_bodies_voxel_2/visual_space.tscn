@@ -1,17 +1,15 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_cells/visual_cell.tscn" type="PackedScene" id=1]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_space.gd" type="Script" id=2]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source_solid.tres" type="Resource" id=3]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.tres" type="Resource" id=3]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" type="Resource" id=4]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/atmosphere/atmosphere.tscn" type="PackedScene" id=5]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source_liquid.tres" type="Resource" id=6]
 
 [node name="VisualSpace" type="Spatial"]
 script = ExtResource( 2 )
 layer_config = ExtResource( 4 )
-surface_source_solid = ExtResource( 3 )
-surface_source_liquid = ExtResource( 6 )
+surface_source = ExtResource( 3 )
 
 [node name="Visual" parent="." instance=ExtResource( 1 )]
 

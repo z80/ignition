@@ -96,9 +96,9 @@ func init_forces():
 	add_to_group( Constants.PLANETS_GROUP_NAME )
 	
 	# Initialize GM.
-	var radius_km: float = surface_source_solid.radius_km
-	var surface_orbital_vel_kms: float = surface_source_solid.orbiting_velocity * 0.001
-	var gm: float = surface_source_solid.get_gm()
+	var radius_km: float = surface_source.radius_km
+	var surface_orbital_vel_kms: float = surface_source.orbiting_velocity * 0.001
+	var gm: float = surface_source.get_gm()
 	self.set_own_gm( gm )
 	
 	# Initialize orbital movement.
@@ -334,7 +334,7 @@ func process_ref_frames_rotating_to_orbiting():
 	if ref_frame_to_check_rotating_index >= qty:
 		ref_frame_to_check_rotating_index = 0
 	
-	var radius_km: float = surface_source_solid.radius_km
+	var radius_km: float = surface_source.radius_km
 	var height_km: float = config_atmosphere.height_km
 
 	var rf: RefFramePhysics = rfs[ref_frame_to_check_rotating_index]
@@ -375,7 +375,7 @@ func process_ref_frames_orbiting_to_rotating():
 	var rot: RefFrameNode = rotation_rf()
 	var se3: Se3Ref = rf.relative_to( rot )
 	var dist: float = se3.r.length()
-	var radius_km: float = surface_source_solid.radius_km
+	var radius_km: float = surface_source.radius_km
 	var height_km: float = config_atmosphere.height_km
 	var inclusion_dist: float = (radius_km + height_km)*1000.0 - Constants.RF_CHANGE_DELTA
 	if dist <= inclusion_dist:
@@ -488,7 +488,7 @@ func _process_visualize_orbits():
 
 
 func _init_force_source_air_drag():
-	var radius_km:float      = surface_source_solid.radius_km
+	var radius_km:float      = surface_source.radius_km
 	var atm_height_km: float = config_atmosphere.height_km
 	var air_density: float   = config_atmosphere.air_density
 	var air_viscosity: float = config_atmosphere.air_viscosity
@@ -503,7 +503,7 @@ func _init_force_source_air_drag():
 
 
 func air_pressure( se3_rel: Se3Ref ):
-	var radius_km: float            = surface_source_solid.radius_km
+	var radius_km: float            = surface_source.radius_km
 	var atm_height_km: float        = config_atmosphere.height_km
 	var air_pressure_surface: float = config_atmosphere.air_pressure_surface
 	var d: float = se3_rel.r.length() * 0.001 - radius_km
@@ -518,7 +518,7 @@ func air_pressure( se3_rel: Se3Ref ):
 
 
 func _get_radius_km():
-	var ret: float = surface_source_solid.radius_km
+	var ret: float = surface_source.radius_km
 	return ret
 
 

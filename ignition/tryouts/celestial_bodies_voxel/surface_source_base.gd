@@ -10,15 +10,24 @@ export(float) var g setget set_g, get_g
 #export(float) var gm setget , get_gm
 
 export(float) var focus_depth   = 40.0
-export(float) var identity_distance = 100.0
 
 
-export(Material) var drop_materials_here = null setget _set_drop_materials_here
-export(Array) var materials: Array = []
+export(Material) var drop_materials_solid_here = null setget _set_drop_materials_solid_here
+export(Array) var materials_solid: Array = []
 
-func _set_drop_materials_here( m: Material ):
-	drop_materials_here = null
-	materials.push_back( m )
+export(Material) var drop_materials_liquid_here = null setget _set_drop_materials_liquid_here
+export(Array) var materials_liquid: Array = []
+
+
+func _set_drop_materials_solid_here( m: Material ):
+	drop_materials_solid_here = null
+	materials_solid.push_back( m )
+	property_list_changed_notify()
+
+
+func _set_drop_materials_liquid_here( m: Material ):
+	drop_materials_liquid_here = null
+	materials_liquid.push_back( m )
 	property_list_changed_notify()
 
 
@@ -73,5 +82,8 @@ func get_gm():
 	var gm: float = orbiting_velocity * orbiting_velocity * source_radius
 	return gm
 
-func get_source():
+func get_source_solid():
+	return null
+
+func get_source_liquid():
 	return null

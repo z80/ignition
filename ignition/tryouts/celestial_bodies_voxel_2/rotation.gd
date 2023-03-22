@@ -19,7 +19,7 @@ func _child_jumped( child_ref_frame: RefFrameNode ):
 	#assert( has )
 	var collision_surface: Node = phys.get_collision_surface()
 	var visual_surface: Node = _get_visual_surface()
-	var surface_source: Resource = visual_surface.surface_source_solid
+	var surface_source: Resource = visual_surface.surface_source
 	
 	print( "Child jumped" )
 	# Immediately query faces using old subdivision.
@@ -60,7 +60,7 @@ func _create_collision_surfaces():
 	#return
 	
 	var visual_surface: Node = _get_visual_surface()
-	var surface_source: Resource = visual_surface.surface_source_solid
+	var surface_source: Resource = visual_surface.surface_source
 	
 	var qty: int = self.get_child_count()
 	for i in range(qty):

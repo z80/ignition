@@ -11,5 +11,5 @@ radius_km = 50.0
 orbiting_velocity = 0.0
 g = 0.0
 focus_depth = 40.0
-identity_distance = 100.0
-materials = [ ExtResource( 2 ) ]
+materials_solid = [ ExtResource( 2 ) ]
+materials_liquid = [ ExtResource( 2 ) ]

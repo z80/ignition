@@ -4,7 +4,7 @@ export(Resource) var config_atmosphere = null
 # This one is for space scale.
 export(Resource) var config_space = null
 # This one is for planet radius.
-export(Resource) var surface_source_solid = null
+export(Resource) var surface_source = null
 
 var _scale_dist_ratio: ScaleDistanceRatioGd = null
 
@@ -27,7 +27,7 @@ func update( rotation: RefFrameRotationNode ):
 	light_dir = source_se3.q.xform( light_dir )
 	
 	
-	var radius_km: float = surface_source_solid.radius_km
+	var radius_km: float = surface_source.radius_km
 	var scale: float    = 1.0 / config_space.scale_divider
 	
 	var base_sz: float = radius_km * scale * 1000.0 * 2.0

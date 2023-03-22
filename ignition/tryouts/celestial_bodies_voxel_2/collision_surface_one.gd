@@ -86,7 +86,7 @@ func build_surface_process( args ):
 	var source_se3: Se3Ref = args.source_se3
 	var view_point_se3: Se3Ref = args.view_point_se3
 	var node_size_strategy: VolumeNodeSizeStrategyGd = args.node_size_strategy
-	var source_surface: VolumeSourceGd = args.surface_source.get_source()
+	var source_surface: VolumeSourceGd = args.surface_source.get_source_solid()
 
 	var voxel_surface: MarchingCubesDualGd = MarchingCubesDualGd.new()
 	voxel_surface.max_nodes_qty   = 20000000

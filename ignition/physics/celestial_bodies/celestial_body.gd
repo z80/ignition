@@ -11,7 +11,7 @@ export(float)   var rotation_period_hrs = 0.1
 export(Vector3) var rotation_axis       = Vector3( 0.0, 1.0, 0.0 )
 
 # Defining geometry and GM based on surface orbiting velocity.
-export(Resource) var surface_source_solid = null
+export(Resource) var surface_source = null
 #export(float)  var surface_orbital_vel_kms = 0.3
 
 # Planet's orbit parameters.

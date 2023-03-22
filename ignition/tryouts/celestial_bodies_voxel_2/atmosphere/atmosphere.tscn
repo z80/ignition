@@ -3,7 +3,7 @@
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/atmosphere/material_atmosphere.tres" type="Material" id=1]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/atmosphere/atmosphere.gd" type="Script" id=2]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_atmosphere.tres" type="Resource" id=3]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source_solid.tres" type="Resource" id=4]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.tres" type="Resource" id=4]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" type="Resource" id=5]
 
 [sub_resource type="CubeMesh" id=1]
@@ -19,4 +19,4 @@ material/0 = ExtResource( 1 )
 script = ExtResource( 2 )
 config_atmosphere = ExtResource( 3 )
 config_space = ExtResource( 5 )
-surface_source_solid = ExtResource( 4 )
+surface_source = ExtResource( 4 )

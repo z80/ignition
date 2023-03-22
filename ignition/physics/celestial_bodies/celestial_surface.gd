@@ -98,8 +98,8 @@ func init():
 	motion = CelestialMotionRef.new()
 
 	# Initialize GM.
-	var radius_km: float = surface_source_solid.radius_km
-	var surface_orbital_vel_kms: float = surface_source_solid.orbital_velocity * 0.001
+	var radius_km: float = surface_source.radius_km
+	var surface_orbital_vel_kms: float = surface_source.orbital_velocity * 0.001
 	var gm: float = self.compute_gm_by_speed( radius_km, surface_orbital_vel_kms )
 	self.set_own_gm( gm )
 	
@@ -128,7 +128,7 @@ func init():
 	
 	# Initialize body geometry
 	var celestial_body: CubeSphereNode = get_node( "Rotation/CelestialBody" )
-	var radius: float  = surface_source_solid.radius_km * 1000.0
+	var radius: float  = surface_source.radius_km * 1000.0
 	var height: float  = 0.0
 	celestial_body.radius = radius
 	celestial_body.height = height
@@ -405,7 +405,7 @@ func process_ref_frames_rotating_to_orbiting():
 	var se3: Se3Ref = rf.relative_to( rot )
 	var dist: float = se3.r.length()
 	
-	var radius_km: float = surface_source_solid.radius_km
+	var radius_km: float = surface_source.radius_km
 	var height_km: float = 0.0
 	var exclusion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_EXCLUDE_DIST
 	if dist >= exclusion_dist:
@@ -441,7 +441,7 @@ func process_ref_frames_orbiting_to_rotating():
 	var rot: RefFrameNode = rotation_rf()
 	var se3: Se3Ref = rf.relative_to( rot )
 	var dist: float = se3.r.length()
-	var radius_km: float = surface_source_solid.radius_km
+	var radius_km: float = surface_source.radius_km
 	var height_km: float = 0.0
 	var inclusion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_INCLUDE_DIST
 	if dist <= inclusion_dist:
@@ -552,7 +552,7 @@ func _process_visualize_orbits():
 
 func _init_force_source_air_drag():
 	_force_source_air_drag = ForceSourceAirDrag.new()
-	var radius_km: float = surface_source_solid.radius_km
+	var radius_km: float = surface_source.radius_km
 	_force_source_air_drag.ground_level  = radius_km * 1000.0
 	_force_source_air_drag.atm_height    = (atmosphere_height_inner_km + atmosphere_height_outer_km) * 1000.0
 	_force_source_air_drag.density_gnd   = air_density * 0.001
@@ -562,7 +562,7 @@ func _init_force_source_air_drag():
 
 
 func air_pressure( se3_rel: Se3Ref ):
-	var radius_km: float = surface_source_solid.radius_km
+	var radius_km: float = surface_source.radius_km
 	var d: float = se3_rel.r.length() * 0.001 - radius_km
 	if d <= 0.0:
 		return air_pressure_surface
