@@ -79,13 +79,7 @@ func _process(delta):
 
 
 func _get_listener_node():
-	var v: Viewport = get_viewport()
-	if v == null:
-		return null
-	var c: Camera = v.get_camera()
-	if c == null:
-		return null
-	var p: RefFrameNode = c.owner
+	var p: RefFrameNode = RootScene.ref_frame_root.player_camera
 	return p
 
 

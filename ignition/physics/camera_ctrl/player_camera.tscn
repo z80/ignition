@@ -13,20 +13,17 @@ rings = 8
 [node name="PlayerCamera" type="RefFrameNode"]
 script = ExtResource( 2 )
 
-[node name="Camera" type="Camera" parent="."]
-current = true
-near = 0.01
-far = 8192.0
+[node name="BroadTreeVisualization" parent="." instance=ExtResource( 3 )]
 
-[node name="Atmosphere" parent="Camera" instance=ExtResource( 1 )]
+[node name="Atmosphere" parent="." instance=ExtResource( 1 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 visible = false
 cast_shadow = 0
+skeleton = NodePath("")
 
-[node name="BackgroundSky" type="MeshInstance" parent="Camera"]
+[node name="BackgroundSky" type="MeshInstance" parent="."]
 transform = Transform( 10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0 )
 cast_shadow = 0
 mesh = SubResource( 3 )
+skeleton = NodePath("")
 material/0 = ExtResource( 5 )
-
-[node name="BroadTreeVisualization" parent="." instance=ExtResource( 3 )]

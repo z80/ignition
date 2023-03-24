@@ -55,7 +55,7 @@ var _camera: Camera = null
 
 func _get_camera():
 	if _camera == null:
-		_camera = get_node( "Camera" )
+		_camera = RootScene.get_visual_layer_near().camera
 	return _camera
 
 
@@ -134,10 +134,10 @@ func _set_map_mode( en: bool ):
 			_state.dist = _state.dist * map_distance_multiplier
 		# In map mode displace ref frame and keep camera at the origin with identity transform
 		# all the time.
-		var c: Camera = _get_camera()
-		var t: Transform = c.transform
-		self.transform = t
-		c.transform = Transform.IDENTITY
+		#var c: Camera = _get_camera()
+		#var t: Transform = c.transform
+		#self.transform = t
+		#c.transform = Transform.IDENTITY
 	map_mode = en
 
 
@@ -557,7 +557,7 @@ func _place_light( sun: RefFrameNode ):
 
 
 func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
-	var sky: MeshInstance = get_node( "Camera/BackgroundSky" ) as MeshInstance
+	var sky: MeshInstance = get_node( "BackgroundSky" ) as MeshInstance
 	if sky == null:
 		return
 	# Determine relative position.
@@ -593,7 +593,7 @@ func _process_sky():
 	
 	#print( "global q: ", q )
 	
-	var bg: Spatial = get_node( "Camera/BackgroundSky" ) as Spatial
+	var bg: Spatial = get_node( "BackgroundSky" ) as Spatial
 	
 	var far: float = self.far * 0.9
 	var t: Transform = bg.transform

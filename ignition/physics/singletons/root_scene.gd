@@ -11,11 +11,15 @@ var _collision_surfaces: Node = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	var ret: Spatial = get_node( "VisualLayerSpace" )
+	var ret: Node = get_node( "VisualLayerSpace" )
 	_visual_layer_space = ret.root
 	
 	var root: Node = get_node( "VisualLayerNear" )
 	_visual_layer_near = root.root
+	
+	# Setup rendering viewport result to plane texture.
+	var vp: Viewport = _visual_layer_space.get_viewport()
+	_visual_layer_near.camera.set_viewport( vp )
 
 
 func get_visual_layer_space():

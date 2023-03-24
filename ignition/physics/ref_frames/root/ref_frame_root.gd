@@ -10,7 +10,7 @@ var player_select: Node = null setget _set_player_select, _get_player_select
 # Ref frame gets focus when explicitly pressed "c" (center) on a selected ref. frame.
 var player_control: Node = null setget _set_player_control, _get_player_control
 # Camera. It is supposed to be the only one.
-var player_camera: RefFrameNode = null setget ,_get_camera
+var player_camera: RefFrameNode = null
 # Scaler for large distances.
 #var distance_scaler: DistanceScalerRef = DistanceScalerRef.new()
 
@@ -337,10 +337,9 @@ func _get_camera():
 
 
 static func _find_camera( node: Node ):
-	var cam: Camera = node as Camera
+	var cam: PlayerCamera = node as PlayerCamera
 	if cam != null:
-		var p: Node = cam.get_parent()
-		return p
+		return cam
 	
 	var qty: int = node.get_child_count()
 	for i in range(qty):
