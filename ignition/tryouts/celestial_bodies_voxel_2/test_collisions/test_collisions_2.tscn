@@ -31,6 +31,7 @@ RefFramePhysicsScene = ExtResource( 9 )
 
 [node name="Sun" parent="." instance=ExtResource( 6 )]
 surface_source = SubResource( 1 )
+radius_km = 100.0
 
 [node name="Translation" parent="Sun" instance=ExtResource( 3 )]
 rotation_period_hrs = 1.0

@@ -23,8 +23,6 @@ var _mouse_displacement: Vector2 = Vector2.ZERO
 var _zoom_displacement: int = 0
 
 
-var _sun_light: DirectionalLight = null
-
 
 export(float) var sensitivity = 0.01 setget _set_sensitivity
 export(float) var sensitivity_dist = 0.2
@@ -557,24 +555,24 @@ func _place_light( sun: RefFrameNode ):
 
 
 func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
-	var sky: MeshInstance = get_node( "BackgroundSky" ) as MeshInstance
-	if sky == null:
-		return
 	# Determine relative position.
 	var se3: Se3Ref = self.relative_to( sun )
 	_place_light( sun )
 	
-	se3 = sun.relative_to( self )
+	se3 = se3.inverse()
 	var dist: float = se3.r.length()
 	var light_dir: Vector3 = se3.r.normalized()
 
 	# Determine sun angular radius.
-	var sz: float = sun.radius_km / dist * 1000.0
+	var sun_radius: float = sun.radius_km * 1000.0
+	var sz: float = sun_radius / dist
 	
 	var glow_size: float = sz * sun.glow_size
 	var ray_scale: float = sun.ray_scale
 	var ray_size: float  = sun.ray_size
 	var ray_bias: float  = sun.ray_bias
+	
+	var sky: MeshInstance = RootScene.get_visual_layer_space().background_sky
 	
 	var m: SpatialMaterial = sky.get_surface_material( 0 ) as SpatialMaterial
 	var ms: ShaderMaterial = m.next_pass as ShaderMaterial
@@ -589,29 +587,12 @@ func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 
 func _process_sky():
 	var se3: Se3Ref = self.relative_to( null )
-	var q: Quat = se3.q.inverse()
+	var q: Quat = se3.q
 	
-	#print( "global q: ", q )
-	
-	var bg: Spatial = get_node( "BackgroundSky" ) as Spatial
-	
-	var far: float = self.far * 0.9
-	var t: Transform = bg.transform
-	t.basis = q
-	t.basis = t.basis.scaled( Vector3( far, far, far ) )
-	
-	bg.transform = t
+	var layer: Node = RootScene.get_visual_layer_space()
+	layer.camera_global_rotation = q
 
 
-
-func _get_sun_light():
-	if _sun_light == null:
-		_sun_light = get_node( "SunLight" )
-#		if _sun_light != null:
-#			_sun_light.omni_attenuation = 0.0
-#			_sun_light.omni_range       = 100.0
-	
-	return _sun_light
 
 
 

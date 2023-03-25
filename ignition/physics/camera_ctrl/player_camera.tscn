@@ -23,6 +23,7 @@ skeleton = NodePath("")
 
 [node name="BackgroundSky" type="MeshInstance" parent="."]
 transform = Transform( 10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0 )
+visible = false
 cast_shadow = 0
 mesh = SubResource( 3 )
 skeleton = NodePath("")

@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
-[ext_resource path="res://physics/singletons/visual_layer/scene.gd" type="Script" id=1]
-[ext_resource path="res://default_env.tres" type="Environment" id=2]
+[ext_resource path="res://tryouts/camera_plane/camera_plane.tscn" type="PackedScene" id=1]
+[ext_resource path="res://physics/singletons/visual_layer/scene_near.gd" type="Script" id=2]
+[ext_resource path="res://default_env.tres" type="Environment" id=3]
 
 [sub_resource type="CapsuleMesh" id=4]
 
@@ -19,15 +20,20 @@ albedo_color = Color( 0, 0.133333, 1, 1 )
 [sub_resource type="CapsuleMesh" id=3]
 
 [node name="Root" type="Spatial"]
-script = ExtResource( 1 )
+script = ExtResource( 2 )
 
-[node name="Camera" type="Camera" parent="."]
+[node name="Camera" parent="." instance=ExtResource( 1 )]
+far = 8192.0
 
 [node name="SunLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5 )
 light_color = Color( 0.996078, 1, 0.843137, 1 )
+light_bake_mode = 0
 shadow_enabled = true
+shadow_reverse_cull_face = true
 directional_shadow_mode = 0
+directional_shadow_blend_splits = true
+directional_shadow_max_distance = 200.0
 
 [node name="MeshInstance" type="MeshInstance" parent="SunLight"]
 transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0.561991, 0, -0.703025 )
@@ -48,4 +54,4 @@ mesh = SubResource( 3 )
 skeleton = NodePath("../..")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = ExtResource( 2 )
+environment = ExtResource( 3 )
