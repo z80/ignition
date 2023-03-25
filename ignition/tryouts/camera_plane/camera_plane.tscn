@@ -17,7 +17,7 @@ albedo_texture = SubResource( 3 )
 
 [node name="Camera" type="Camera"]
 current = true
-far = 500.0
+far = 1000.0
 script = ExtResource( 1 )
 dr = 10.0
 

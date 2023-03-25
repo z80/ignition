@@ -37,8 +37,8 @@ func _process(_delta):
 	
 	var a: Vector3 = cam.project_local_ray_normal( Vector2.ZERO )
 	var b: Vector3 = cam.project_local_ray_normal( sz )
-	var coeff: float = 1.0
-	a = (b - a) * dist * coeff
+	var coeff: float = 0.5
+	a = (b - a) * dist * 2.0 * coeff
 	a.x = abs(a.x)
 	a.y = abs(a.y)
 	
@@ -48,7 +48,7 @@ func _process(_delta):
 	var b0: Basis = Basis( _q )
 	bs = b0 * bs
 	
-	var t: Transform = Transform( bs, Vector3( 0.0, 0.0, -dist*0.5*coeff ) )
+	var t: Transform = Transform( bs, Vector3( 0.0, 0.0, -dist*coeff ) )
 	#var t: Transform = Transform( bs, Vector3( 0.0, 0.0, -10.0 ) )
 	plane.transform = t
 	

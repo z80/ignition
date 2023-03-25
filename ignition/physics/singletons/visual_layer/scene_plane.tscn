@@ -27,8 +27,12 @@ script = ExtResource( 1 )
 [node name="SunLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5 )
 light_color = Color( 0.996078, 1, 0.843137, 1 )
+light_bake_mode = 0
 shadow_enabled = true
+shadow_reverse_cull_face = true
 directional_shadow_mode = 0
+directional_shadow_blend_splits = true
+directional_shadow_max_distance = 200.0
 
 [node name="MeshInstance" type="MeshInstance" parent="SunLight"]
 transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0.561991, 0, -0.703025 )
