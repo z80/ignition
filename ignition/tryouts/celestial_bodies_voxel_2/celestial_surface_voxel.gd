@@ -542,6 +542,12 @@ func deserialize( data: Dictionary ):
 		return false
 	
 	var ok: bool = .deserialize( translation_data )
+	if not ok:
+		return false
+	
+	var rot: Node = rotation_rf()
+	rot.on_deserialize()
+	
 	return ok
 	
 

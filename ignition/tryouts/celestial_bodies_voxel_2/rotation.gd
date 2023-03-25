@@ -82,5 +82,6 @@ func _get_visual_surface():
 
 
 
-
+func on_deserialize():
+	call_deferred( "_create_collision_surfaces" )
 
