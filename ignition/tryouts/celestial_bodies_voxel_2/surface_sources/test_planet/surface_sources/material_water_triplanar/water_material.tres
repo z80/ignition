@@ -21,7 +21,7 @@ noise = SubResource( 3 )
 
 [resource]
 shader = ExtResource( 1 )
-shader_param/albedo_norm = Color( 0.513726, 0.54902, 0.952941, 1 )
+shader_param/albedo_norm = Color( 0.709804, 0.713726, 0.956863, 1 )
 shader_param/albedo_tang = Color( 1, 1, 1, 1 )
 shader_param/metallic = 0.323
 shader_param/roughness = 0.187
