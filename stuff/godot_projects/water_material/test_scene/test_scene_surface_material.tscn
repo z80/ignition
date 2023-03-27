@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://surface_material/material_surface.tres" type="Material" id=1]
+
+[sub_resource type="CapsuleMesh" id=1]
+material = ExtResource( 1 )
+radius = 5.0
+mid_height = 20.0
+
+[node name="Spatial" type="Spatial"]
+
+[node name="MeshInstance" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, -0.0278519, 0.999612, 0, -0.999612, -0.0278519, 0, 29.6445, 0 )
+mesh = SubResource( 1 )
