@@ -8,16 +8,16 @@
 
 [resource]
 shader = ExtResource( 1 )
-shader_param/metallic = 0.138
-shader_param/roughness = 0.406
-shader_param/scale_sand = 5.0
+shader_param/metallic = 0.046
+shader_param/roughness = 0.508
+shader_param/scale_sand = 50.0
 shader_param/mean_sand = 0.0
 shader_param/sigma_sand = 100.0
 shader_param/scale_grass = 50.0
-shader_param/mean_grass = 50.0
+shader_param/mean_grass = 200.0
 shader_param/sigma_grass = 100.0
-shader_param/scale_snow = 5.0
-shader_param/mean_snow = 300.0
+shader_param/scale_snow = 50.0
+shader_param/mean_snow = 500.0
 shader_param/sigma_snow = 100.0
 shader_param/scale_rocks = 5.0
 shader_param/threshold_rocks = 0.667

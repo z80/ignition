@@ -114,7 +114,7 @@ void fragment()
 	
 	float coeff_color = 1.0 - coeff_rocks;
 	
-	color = color*coeff_color + color_rocks*coeff_rocks;
+	//color = color*coeff_color + color_rocks*coeff_rocks;
 	
 	ALBEDO = color;
 	METALLIC = metallic;
