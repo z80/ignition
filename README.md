@@ -17,10 +17,10 @@ Lbry channel with videos: [https://odysee.com/@ignition](https://odysee.com/@ign
 ![000](docs/images/000.jpg)
 ![001](docs/images/001.jpg)
 ![002](docs/images/002.jpg)
-![003](docs/images/0003.jpg)
+![003](docs/images/003.jpg)
 ![004](docs/images/004.jpg)
 ![005](docs/images/005.jpg)
-![006](docs/images/007.jpg)
+![006](docs/images/006.jpg)
 ![007](docs/images/007.jpg)
 
 
