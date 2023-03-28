@@ -64,7 +64,7 @@ func update_source_se3( rotation: RefFrameRotationNode, source_se3: Se3Ref, view
 	else:
 		rebuild_needed = rebuild_needed or _requested_rebuild
 		if rebuild_needed:
-			_rebuild_start()
+			_rebuild_start( view_point_se3 )
 	
 	var scale: float = 1.0 / layer_config.scale_divider
 	var t: Transform = _scale_dist_ratio.compute_transform( source_se3, scale )
@@ -75,7 +75,7 @@ func update_source_se3( rotation: RefFrameRotationNode, source_se3: Se3Ref, view
 
 
 
-func _rebuild_start():
+func _rebuild_start( view_point_se3: Se3Ref ):
 	_running = true
 	_requested_rebuild = false
 	
@@ -83,8 +83,10 @@ func _rebuild_start():
 	var source_solid: VolumeSourceGd  = surface_source.get_source_solid()
 	var source_liquid: VolumeSourceGd = surface_source.get_source_liquid()
 	
+	var common_point: Vector3 = view_point_se3.r
+	
 	var scale: float = 1.0 / layer_config.scale_divider
-	var args: Dictionary = { "source_solid": source_solid, "source_liquid": source_liquid, "scale": scale }
+	var args: Dictionary = { "source_solid": source_solid, "source_liquid": source_liquid, "scale": scale, "common_point": common_point }
 	
 	WorkersPool.push_back_with_arg( self, "_rebuild_process", "_rebuild_finished", args )
 	#var ret = _rebuild_process( args )
@@ -100,10 +102,12 @@ func _rebuild_process( args ):
 	voxel_surface_solid.max_nodes_qty   = 20000000
 	voxel_surface_solid.split_precision = 0.01
 	
+	var common_point: Vector3 = args.common_point
+	
 	var _ok: bool = voxel_surface_solid.subdivide_source_all( source_solid, _node_size_strategy )
-	voxel_surface_solid.precompute_scaled_values( _center_se3, 0, scale )
+	voxel_surface_solid.precompute_scaled_values( _center_se3, 0, scale, common_point )
 
-	var ret: Dictionary = { "voxel_surface_solid": voxel_surface_solid }
+	var ret: Dictionary = { "voxel_surface_solid": voxel_surface_solid, "common_point": common_point }
 
 	var voxel_surface_liquid: MarchingCubesDualGd
 	if source_liquid != null:
@@ -111,7 +115,7 @@ func _rebuild_process( args ):
 		voxel_surface_liquid.max_nodes_qty   = 20000000
 		voxel_surface_liquid.split_precision = 0.01
 		_ok = voxel_surface_liquid.subdivide_source_all( source_liquid, _node_size_strategy )
-		voxel_surface_liquid.precompute_scaled_values( _center_se3, 0, scale )
+		voxel_surface_liquid.precompute_scaled_values( _center_se3, 0, scale, common_point )
 		ret["voxel_surface_liquid"] = voxel_surface_liquid
 	
 	else:
@@ -128,11 +132,22 @@ func _rebuild_finished( args ):
 	var qty: int = voxel_surface_solid.get_nodes_qty()
 	print( "rebuild done, nodes qty: ", qty )
 	voxel_surface_solid.apply_to_mesh_only( solid )
-	solid.material_override = surface_source.materials_solid[0]
 	
+	var sm: ShaderMaterial = surface_source.materials_solid[0]
+
+	var pt: Vector3 = args.common_point
+	sm.set_shader_param( "common_point", pt )
+	sm.set_shader_param( "to_planet_rf", Basis.IDENTITY )
+	solid.material_override = sm
+
 	if voxel_surface_liquid != null:
 		voxel_surface_liquid.apply_to_mesh_only( liquid )
-		liquid.material_override = surface_source.materials_liquid[0]
+		
+		sm = surface_source.materials_liquid[0]
+		sm.set_shader_param( "common_point", pt )
+		sm.set_shader_param( "to_planet_rf", Basis.IDENTITY )
+		liquid.material_override = sm
+
 
 
 

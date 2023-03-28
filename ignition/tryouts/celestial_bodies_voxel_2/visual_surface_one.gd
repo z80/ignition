@@ -1,6 +1,8 @@
 
 extends RefFrameNode
 
+signal focal_point_changed( point )
+
 export(PackedScene) var VisualCell = null
 
 var _visual: Spatial = null
@@ -40,6 +42,8 @@ func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_siz
 	
 	_cleanup_foliage()
 	
+	view_point_se3.q = Quat.IDENTITY
+	source_se3 = view_point_se3.inverse()
 	self.set_se3( view_point_se3 )
 	#self.set_se3( center_se3 )
 	
@@ -71,10 +75,12 @@ func build_surface_process( args ):
 	voxel_surface_solid.max_nodes_qty   = 20000000
 	voxel_surface_solid.split_precision = 0.01
 	
+	var common_point: Vector3 = args.view_point_se3.r
+	
 	var _step: float = voxel_surface_solid.init_min_step( source_solid )
 	var _ok: bool = voxel_surface_solid.subdivide_source( node, source_solid, null )
 	args.solid_ok = _ok
-	var _qty: int = voxel_surface_solid.precompute_scaled_values( source_se3, 0, 1.0 )
+	var _qty: int = voxel_surface_solid.precompute_scaled_values( source_se3, 0, 1.0, common_point )
 	args.solid_ok = args.solid_ok and (_qty > 0)
 	
 	args.voxel_surface_solid = voxel_surface_solid
@@ -87,7 +93,7 @@ func build_surface_process( args ):
 		_step = voxel_surface_liquid.init_min_step( source_liquid )
 		_ok = voxel_surface_liquid.subdivide_source( node, source_liquid, null )
 		args.liquid_ok = _ok
-		_qty = voxel_surface_liquid.precompute_scaled_values( source_se3, 0, 1.0 )
+		_qty = voxel_surface_liquid.precompute_scaled_values( source_se3, 0, 1.0, common_point )
 		args.liquid_ok = args.liquid_ok and (_qty > 0)
 		
 		args.voxel_surface_liquid = voxel_surface_liquid
@@ -112,7 +118,14 @@ func build_surface_finished( args ):
 		#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
 		_visual.solid.visible = true
 		var surface_source: Resource = args.surface_source
-		_visual.solid.material_override = surface_source.materials_solid[0]
+		var sm: ShaderMaterial = surface_source.materials_solid[0]
+	
+		var pt: Vector3 = args.view_point_se3.r
+		var b: Basis = Basis( args.view_point_se3.q )
+		sm.set_shader_param( "common_point", pt )
+		sm.set_shader_param( "to_planet_rf", b )
+		
+		_visual.solid.material_override = sm
 	
 	#_visual.surface.material_override = surface_source_solid.override_material
 	
@@ -123,11 +136,19 @@ func build_surface_finished( args ):
 			voxel_surface_liquid.apply_to_mesh_only( _visual.liquid )
 			_visual.liquid.visible = true
 			var surface_source: Resource = args.surface_source
-			_visual.liquid.material_override = surface_source.materials_liquid[0]
+			
+			var sm: ShaderMaterial = surface_source.materials_liquid[0]
+			var pt: Vector3 = args.view_point_se3.r
+			var b: Basis = Basis( args.view_point_se3.q )
+			sm.set_shader_param( "common_point", pt )
+			sm.set_shader_param( "to_planet_rf", b )
+			
+			_visual.liquid.material_override = sm
 	
 	
 	_cleanup_foliage()
 	_populate_foliage( voxel_surface_solid, bounding_node, foliage_sources )
+	
 
 
 

@@ -175,7 +175,7 @@ public:
 	void uvs( int material_ind, const std::vector<Vector2> * & uvs, const std::vector<Vector2> * & uv2s );
 
 	// For asynchronous computations.
-	int precompute_scaled_values( const SE3 & src_se3, int material_ind, Float scale = -1.0 );
+	int precompute_scaled_values( const SE3 & src_se3, int material_ind, Float scale = -1.0, const Vector3d & world_pos_bias = Vector3d() );
 	const std::vector<Vector3> & vertices() const;
 	const std::vector<Vector3> & normals() const;
 	const std::vector<real_t>  & tangents() const;

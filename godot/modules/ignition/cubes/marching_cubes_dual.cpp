@@ -560,7 +560,7 @@ void MarchingCubesDual::uvs( int material_ind, const std::vector<Vector2> * & re
 	ret_uv2s = &_ret_uv2s;
 }
 
-int MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, int material_ind, Float scale )
+int MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, int material_ind, Float scale, const Vector3d & world_pos_bias )
 {
 	const std::vector<Vector3> & verts = vertices( src_se3, material_ind, scale );
 	const int qty = static_cast<int>( verts.size() );
@@ -568,6 +568,10 @@ int MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, int materi
 	tangents( src_se3, material_ind );
 
 	{
+		const Float x0 = world_pos_bias.x_;
+		const Float y0 = world_pos_bias.y_;
+		const Float z0 = world_pos_bias.z_;
+
 		const unsigned int qty = _all_faces.size();
 		_ret_uvs.clear();
 		_ret_uv2s.clear();
@@ -585,8 +589,8 @@ int MarchingCubesDual::precompute_scaled_values( const SE3 & src_se3, int materi
 			for ( int j=0; j<3; j++ )
 			{
 				const Vector3d & v = f.vertices[j];
-				_ret_uvs.push_back( Vector2( v.x_, v.y_ ) );
-				_ret_uv2s.push_back( Vector2( v.z_, v.z_ ) );
+				_ret_uvs.push_back( Vector2( v.x_ - x0, v.y_ - y0 ) );
+				_ret_uv2s.push_back( Vector2( v.z_ - z0, v.z_ - z0 ) );
 			}
 		}
 	}
