@@ -133,17 +133,26 @@ func _rebuild_finished( args ):
 	print( "rebuild done, nodes qty: ", qty )
 	voxel_surface_solid.apply_to_mesh_only( solid )
 	
-	var sm: ShaderMaterial = surface_source.materials_solid[0]
-
+	var sm: ShaderMaterial = solid.material_override
+	if sm == null:
+		solid.material_override = surface_source.materials_solid[0]
+		sm = solid.material_override
+	
+	sm.resource_local_to_scene = true
+	sm.setup_local_to_scene()
 	var pt: Vector3 = args.common_point
 	sm.set_shader_param( "common_point", pt )
 	sm.set_shader_param( "to_planet_rf", Basis.IDENTITY )
-	solid.material_override = sm
-
+	
+	
 	if voxel_surface_liquid != null:
 		voxel_surface_liquid.apply_to_mesh_only( liquid )
 		
-		sm = surface_source.materials_liquid[0]
+		sm = liquid.material_override
+		if sm == null:
+			liquid.material_override = surface_source.materials_liquid[0]
+			sm = liquid.material_override
+		
 		sm.set_shader_param( "common_point", pt )
 		sm.set_shader_param( "to_planet_rf", Basis.IDENTITY )
 		liquid.material_override = sm

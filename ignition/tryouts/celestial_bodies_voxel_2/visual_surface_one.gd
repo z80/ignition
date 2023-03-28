@@ -42,8 +42,8 @@ func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_siz
 	
 	_cleanup_foliage()
 	
-	view_point_se3.q = Quat.IDENTITY
-	source_se3 = view_point_se3.inverse()
+	#view_point_se3.q = Quat.IDENTITY
+	#source_se3 = view_point_se3.inverse()
 	self.set_se3( view_point_se3 )
 	#self.set_se3( center_se3 )
 	
@@ -118,13 +118,17 @@ func build_surface_finished( args ):
 		#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
 		_visual.solid.visible = true
 		var surface_source: Resource = args.surface_source
-		var sm: ShaderMaterial = surface_source.materials_solid[0]
-	
+		var sm: ShaderMaterial = _visual.solid.material_override
+		if sm == null:
+			_visual.solid.material_override = surface_source.materials_solid[0]
+			sm = _visual.solid.material_override
+		
+		sm.resource_local_to_scene = true
+		sm.setup_local_to_scene()
 		var pt: Vector3 = args.view_point_se3.r
 		var b: Basis = Basis( args.view_point_se3.q )
 		sm.set_shader_param( "common_point", pt )
 		sm.set_shader_param( "to_planet_rf", b )
-		
 		_visual.solid.material_override = sm
 	
 	#_visual.surface.material_override = surface_source_solid.override_material
@@ -137,13 +141,15 @@ func build_surface_finished( args ):
 			_visual.liquid.visible = true
 			var surface_source: Resource = args.surface_source
 			
-			var sm: ShaderMaterial = surface_source.materials_liquid[0]
+			var sm: ShaderMaterial = _visual.liquid.material_override
+			if sm == null:
+				_visual.liquid.material_override = surface_source.materials_liquid[0]
+				sm = _visual.liquid.material_override
+			
 			var pt: Vector3 = args.view_point_se3.r
 			var b: Basis = Basis( args.view_point_se3.q )
 			sm.set_shader_param( "common_point", pt )
 			sm.set_shader_param( "to_planet_rf", b )
-			
-			_visual.liquid.material_override = sm
 	
 	
 	_cleanup_foliage()

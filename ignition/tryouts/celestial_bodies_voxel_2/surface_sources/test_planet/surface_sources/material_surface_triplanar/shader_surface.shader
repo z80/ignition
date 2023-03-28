@@ -46,9 +46,9 @@ vec3 compute_color( sampler2D tex, float tex_scale, highp vec2 xy, highp vec2 co
 vec3 compute_tex_triplanar( sampler2D tex, float tex_scale, highp vec3 vertex, vec3 normal )
 {
 	// For some reason without common points it orks better.
-	highp float common_x = 0.0; //mod( common_point.x / tex_scale, 1.0 );
-	highp float common_y = 0.0; //mod( common_point.y / tex_scale, 1.0 );
-	highp float common_z = 0.0; //mod( common_point.z / tex_scale, 1.0 );
+	highp float common_x = mod( common_point.x / tex_scale, 1.0 );
+	highp float common_y = mod( common_point.y / tex_scale, 1.0 );
+	highp float common_z = mod( common_point.z / tex_scale, 1.0 );
 	
 	highp vec2 xy  = vertex.xy;
 	vec3 color_xy  = compute_color( tex, tex_scale, xy, vec2(common_x, common_y) );
@@ -73,7 +73,7 @@ float tex_intensity( float dist, float mean, float sigma )
 	highp float num = dist - mean;
 	num = num * num;
 	highp float den = sigma * sigma;
-	highp float ret = exp( -num/den );
+	highp float ret = den / num; //exp( -num/den );
 	return ret;
 }
 
