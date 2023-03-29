@@ -1,5 +1,6 @@
 extends Control
 
+export(PackedScene) var GameScene = null
 
 var to_do: String = ""
 
@@ -30,7 +31,7 @@ func _on_quit_click():
 
 func on_start():
 	var t = get_tree()
-	t.change_scene( "res://tryouts/rf_management/rf_management_02.tscn" )
+	t.change_scene( GameScene.resource_path )
 
 
 
@@ -43,3 +44,15 @@ func _on_Timer_timeout():
 	$Node2D/Item01.start()
 	$Node2D/Item02.start()
 	$Node2D/Title.start()
+
+
+func _on_url_meta_clicked(meta):
+	var path: String = str( meta )
+	var _err_code: int = OS.shell_open( path )
+
+
+func _on_help_pressed():
+	var Wiki = preload( "res://wiki_handler/wiki_window.tscn" )
+	var wiki: Control = Wiki.instance()
+	add_child( wiki )
+

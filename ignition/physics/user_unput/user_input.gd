@@ -26,7 +26,8 @@ func _process( _delta ):
 	
 	# Sending to all the recipients.
 	#RootScene.ref_frame_root.rpc( "user_input" )
-	RootScene.ref_frame_root.process_user_input( input )
+	if (RootScene.ref_frame_root != null) and is_instance_valid(RootScene.ref_frame_root):
+		RootScene.ref_frame_root.process_user_input( input )
 	#print( "input: ", input )
 
 

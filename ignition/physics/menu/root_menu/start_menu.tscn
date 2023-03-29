@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://physics/menu/root_menu/rigid_menu_item.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/menu/root_menu/start_menu.gd" type="Script" id=2]
@@ -6,15 +6,18 @@
 [ext_resource path="res://physics/menu/root_menu/assets/title.png" type="Texture" id=4]
 [ext_resource path="res://physics/menu/root_menu/assets/quit.png" type="Texture" id=5]
 [ext_resource path="res://physics/menu/root_menu/assets/start.png" type="Texture" id=6]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.tscn" type="PackedScene" id=7]
+[ext_resource path="res://wiki_handler/assets/help.png" type="Texture" id=8]
 
-[node name="Control" type="Control"]
+[sub_resource type="ShortCut" id=1]
+
+[node name="StartMenu" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+rect_pivot_offset = Vector2( -202, 254 )
 mouse_filter = 2
 script = ExtResource( 2 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
+GameScene = ExtResource( 7 )
 
 [node name="Node2D" type="Node2D" parent="."]
 
@@ -63,4 +66,40 @@ wait_time = 7.0
 one_shot = true
 autostart = true
 
+[node name="HomePage" type="RichTextLabel" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -549.0
+margin_top = -96.0
+margin_right = -13.0
+margin_bottom = -15.0
+bbcode_enabled = true
+bbcode_text = " [color=black]Source code:[/color] [color=green][url]https://github.com/z80/ignition[/url][/color]
+[color=black]ITCH.io page:[/color] [color=green][url]https://litedictteam.itch.io/ignition[/url][/color]
+[color=black]Gameplay videos:[/color] [color=green][url]https://odysee.com/@ignition:0[/url][/color]
+[color=black]Discord server:[/color] [color=green][url]https://discord.com/channels/1064465760078004234/1064465760078004236[/url][/color]"
+text = " Source code: https://github.com/z80/ignition
+ITCH.io page: https://litedictteam.itch.io/ignition
+Gameplay videos: https://odysee.com/@ignition:0
+Discord server: https://discord.com/channels/1064465760078004234/1064465760078004236"
+
+[node name="Help" type="TextureButton" parent="."]
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -139.0
+margin_top = 8.0
+margin_right = -10.0
+margin_bottom = 42.0
+shortcut = SubResource( 1 )
+texture_normal = ExtResource( 8 )
+texture_pressed = ExtResource( 8 )
+texture_hover = ExtResource( 8 )
+texture_disabled = ExtResource( 8 )
+texture_focused = ExtResource( 8 )
+expand = true
+
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
+[connection signal="meta_clicked" from="HomePage" to="." method="_on_url_meta_clicked"]
+[connection signal="pressed" from="Help" to="." method="_on_help_pressed"]
