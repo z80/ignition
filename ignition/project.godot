@@ -369,7 +369,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Ignition"
-run/main_scene="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.tscn"
+run/main_scene="res://physics/menu/root_menu/start_menu.tscn"
 config/icon="res://icon.png"
 
 [autoload]
@@ -384,6 +384,7 @@ WorkersPool="*res://addons/exec_pool/exec_pool.tscn"
 
 [display]
 
+window/size/fullscreen=true
 mouse_cursor/custom_image="res://cursor.png"
 mouse_cursor/tooltip_position_offset=Vector2( 32, 10 )
 
