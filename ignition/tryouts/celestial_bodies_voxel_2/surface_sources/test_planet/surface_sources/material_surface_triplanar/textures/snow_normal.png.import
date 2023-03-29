@@ -2,8 +2,8 @@
 
 importer="texture"
 type="StreamTexture"
-path.s3tc="res://.import/snow.png-494bb981d4b2007a0ca07760640b6fbb.s3tc.stex"
-path.etc2="res://.import/snow.png-494bb981d4b2007a0ca07760640b6fbb.etc2.stex"
+path.s3tc="res://.import/snow_normal.png-c073bc064e7c13772866bd264b4f0284.s3tc.stex"
+path.etc2="res://.import/snow_normal.png-c073bc064e7c13772866bd264b4f0284.etc2.stex"
 metadata={
 "imported_formats": [ "s3tc", "etc2" ],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/snow.png"
-dest_files=[ "res://.import/snow.png-494bb981d4b2007a0ca07760640b6fbb.s3tc.stex", "res://.import/snow.png-494bb981d4b2007a0ca07760640b6fbb.etc2.stex" ]
+source_file="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/snow_normal.png"
+dest_files=[ "res://.import/snow_normal.png-c073bc064e7c13772866bd264b4f0284.s3tc.stex", "res://.import/snow_normal.png-c073bc064e7c13772866bd264b4f0284.etc2.stex" ]
 
 [params]
 

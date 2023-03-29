@@ -2,8 +2,8 @@
 
 importer="texture"
 type="StreamTexture"
-path.s3tc="res://.import/rocks.png-07bbecc13c08224d52ba13f681d6ffbc.s3tc.stex"
-path.etc2="res://.import/rocks.png-07bbecc13c08224d52ba13f681d6ffbc.etc2.stex"
+path.s3tc="res://.import/rocks_albedo.png-d283719f336a0a6a2d92cd2633d2c6fc.s3tc.stex"
+path.etc2="res://.import/rocks_albedo.png-d283719f336a0a6a2d92cd2633d2c6fc.etc2.stex"
 metadata={
 "imported_formats": [ "s3tc", "etc2" ],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/rocks.png"
-dest_files=[ "res://.import/rocks.png-07bbecc13c08224d52ba13f681d6ffbc.s3tc.stex", "res://.import/rocks.png-07bbecc13c08224d52ba13f681d6ffbc.etc2.stex" ]
+source_file="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/rocks_albedo.png"
+dest_files=[ "res://.import/rocks_albedo.png-d283719f336a0a6a2d92cd2633d2c6fc.s3tc.stex", "res://.import/rocks_albedo.png-d283719f336a0a6a2d92cd2633d2c6fc.etc2.stex" ]
 
 [params]
 
