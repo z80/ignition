@@ -120,11 +120,8 @@ func build_surface_finished( args ):
 		var surface_source: Resource = args.surface_source
 		var sm: ShaderMaterial = _visual.solid.material_override
 		if sm == null:
-			_visual.solid.material_override = surface_source.materials_solid[0]
-			sm = _visual.solid.material_override
+			sm = surface_source.materials_solid[0].duplicate()
 		
-		sm.resource_local_to_scene = true
-		sm.setup_local_to_scene()
 		var pt: Vector3 = args.view_point_se3.r
 		var b: Basis = Basis( args.view_point_se3.q )
 		sm.set_shader_param( "common_point", pt )
@@ -143,13 +140,13 @@ func build_surface_finished( args ):
 			
 			var sm: ShaderMaterial = _visual.liquid.material_override
 			if sm == null:
-				_visual.liquid.material_override = surface_source.materials_liquid[0]
-				sm = _visual.liquid.material_override
+				sm = surface_source.materials_liquid[0].duplicate()
 			
 			var pt: Vector3 = args.view_point_se3.r
 			var b: Basis = Basis( args.view_point_se3.q )
 			sm.set_shader_param( "common_point", pt )
 			sm.set_shader_param( "to_planet_rf", b )
+			_visual.liquid.material_override = sm
 	
 	
 	_cleanup_foliage()

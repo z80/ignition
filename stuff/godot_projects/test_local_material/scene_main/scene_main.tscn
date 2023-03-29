@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://scene_main/scene_main.gd" type="Script" id=1]
+[ext_resource path="res://materials/material.tres" type="Material" id=2]
+
+[sub_resource type="CapsuleMesh" id=1]
+
+[sub_resource type="CapsuleMesh" id=2]
+
+[node name="Spatial" type="Spatial"]
+script = ExtResource( 1 )
+material = ExtResource( 2 )
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5.8348 )
+
+[node name="BodyA" type="MeshInstance" parent="."]
+transform = Transform( 0.955814, 0.00347349, -0.293953, 0.293974, -0.0112936, 0.955747, 0, -0.99993, -0.0118157, -1.45915, 0, 0 )
+mesh = SubResource( 1 )
+
+[node name="BodyB" type="MeshInstance" parent="."]
+transform = Transform( 0.906271, -0.0129897, -0.422498, -0.422697, -0.0278501, -0.905843, 0, 0.999528, -0.0307305, 1.46864, 0, 0 )
+mesh = SubResource( 2 )
+
+[node name="ReflectionProbe" type="ReflectionProbe" parent="."]
+extents = Vector3( 8.15816, 5.33416, 7.74497 )
+enable_shadows = true

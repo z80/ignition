@@ -83,7 +83,7 @@ func _rebuild_start( view_point_se3: Se3Ref ):
 	var source_solid: VolumeSourceGd  = surface_source.get_source_solid()
 	var source_liquid: VolumeSourceGd = surface_source.get_source_liquid()
 	
-	var common_point: Vector3 = view_point_se3.r
+	var common_point: Vector3 = _node_size_strategy.focal_point
 	
 	var scale: float = 1.0 / layer_config.scale_divider
 	var args: Dictionary = { "source_solid": source_solid, "source_liquid": source_liquid, "scale": scale, "common_point": common_point }
@@ -127,6 +127,7 @@ func _rebuild_process( args ):
 func _rebuild_finished( args ):
 	_ready = true
 	_running = false
+	
 	var voxel_surface_solid: MarchingCubesDualGd = args.voxel_surface_solid
 	var voxel_surface_liquid: MarchingCubesDualGd = args.voxel_surface_liquid
 	var qty: int = voxel_surface_solid.get_nodes_qty()
@@ -135,14 +136,12 @@ func _rebuild_finished( args ):
 	
 	var sm: ShaderMaterial = solid.material_override
 	if sm == null:
-		solid.material_override = surface_source.materials_solid[0]
-		sm = solid.material_override
+		sm = surface_source.materials_solid[0].duplicate()
 	
-	sm.resource_local_to_scene = true
-	sm.setup_local_to_scene()
 	var pt: Vector3 = args.common_point
 	sm.set_shader_param( "common_point", pt )
 	sm.set_shader_param( "to_planet_rf", Basis.IDENTITY )
+	solid.material_override = sm
 	
 	
 	if voxel_surface_liquid != null:
@@ -150,8 +149,7 @@ func _rebuild_finished( args ):
 		
 		sm = liquid.material_override
 		if sm == null:
-			liquid.material_override = surface_source.materials_liquid[0]
-			sm = liquid.material_override
+			sm = surface_source.materials_liquid[0].duplicate()
 		
 		sm.set_shader_param( "common_point", pt )
 		sm.set_shader_param( "to_planet_rf", Basis.IDENTITY )
