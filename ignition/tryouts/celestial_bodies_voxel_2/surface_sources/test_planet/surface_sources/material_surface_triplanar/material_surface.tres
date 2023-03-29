@@ -1,31 +1,44 @@
-[gd_resource type="ShaderMaterial" load_steps=6 format=2]
+[gd_resource type="ShaderMaterial" load_steps=10 format=2]
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/shader_surface.shader" type="Shader" id=1]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/rocks_albedo.png" type="Texture" id=2]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/snow_albedo.png" type="Texture" id=3]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/grass.png" type="Texture" id=4]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/grass_normal.png" type="Texture" id=4]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/sand_albedo.png" type="Texture" id=5]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/snow_normal.png" type="Texture" id=6]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/sand_normal.png" type="Texture" id=7]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/grass_albedo.png" type="Texture" id=8]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/rocks_normal.png" type="Texture" id=9]
 
 [resource]
 shader = ExtResource( 1 )
 shader_param/metallic = 0.046
 shader_param/roughness = 0.508
-shader_param/scale_sand = 50.0
-shader_param/mean_sand = 0.0
-shader_param/sigma_sand = 100.0
-shader_param/scale_grass = 50.0
-shader_param/mean_grass = 200.0
-shader_param/sigma_grass = 100.0
-shader_param/scale_snow = 50.0
-shader_param/mean_snow = 500.0
-shader_param/sigma_snow = 100.0
-shader_param/scale_rocks = 5.0
-shader_param/threshold_rocks = 0.667
-shader_param/scale_displacement = 1.0
+shader_param/layers_qty = 4
+shader_param/scale_0 = 50.0
+shader_param/mean_0 = 0.0
+shader_param/sigma_0 = 100.0
+shader_param/scale_1 = 50.0
+shader_param/mean_1 = 300.0
+shader_param/sigma_1 = 200.0
+shader_param/scale_2 = 50.0
+shader_param/mean_2 = 500.0
+shader_param/sigma_2 = 100.0
+shader_param/scale_3 = 50.0
+shader_param/mean_3 = 600.0
+shader_param/sigma_3 = 100.0
+shader_param/scale_slope = 50.0
+shader_param/threshold_slope = 0.3
 shader_param/common_point = null
 shader_param/to_planet_rf = null
 shader_param/planet_radius = 50000.0
-shader_param/tex_sand = ExtResource( 5 )
-shader_param/tex_grass = ExtResource( 4 )
-shader_param/tex_snow = ExtResource( 3 )
-shader_param/tex_rocks = ExtResource( 2 )
+shader_param/tex_albedo_0 = ExtResource( 5 )
+shader_param/tex_normal_0 = ExtResource( 7 )
+shader_param/tex_albedo_1 = ExtResource( 8 )
+shader_param/tex_normal_1 = ExtResource( 4 )
+shader_param/tex_albedo_2 = ExtResource( 2 )
+shader_param/tex_normal_2 = ExtResource( 9 )
+shader_param/tex_albedo_3 = ExtResource( 3 )
+shader_param/tex_normal_3 = ExtResource( 6 )
+shader_param/tex_albedo_slope = ExtResource( 2 )
+shader_param/tex_normal_slope = ExtResource( 9 )
