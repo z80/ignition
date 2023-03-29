@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_properties_array_dict.cpp                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_properties_array_dict.cpp                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_properties_array_dict.h"
 
@@ -280,7 +280,7 @@ void EditorPropertyArray::update_property() {
 			HBoxContainer *hbox = memnew(HBoxContainer);
 			vbox->add_child(hbox);
 
-			Label *label = memnew(Label(TTR("Size: ")));
+			Label *label = memnew(Label(TTR("Size:")));
 			label->set_h_size_flags(SIZE_EXPAND_FILL);
 			hbox->add_child(label);
 
@@ -294,7 +294,7 @@ void EditorPropertyArray::update_property() {
 			page_hbox = memnew(HBoxContainer);
 			vbox->add_child(page_hbox);
 
-			label = memnew(Label(TTR("Page: ")));
+			label = memnew(Label(TTR("Page:")));
 			label->set_h_size_flags(SIZE_EXPAND_FILL);
 			page_hbox->add_child(label);
 
@@ -373,6 +373,7 @@ void EditorPropertyArray::update_property() {
 			prop->set_object_and_property(object.ptr(), prop_name);
 			prop->set_label(itos(i + offset));
 			prop->set_selectable(false);
+			prop->set_use_folding(is_using_folding());
 			prop->connect("property_changed", this, "_property_changed");
 			prop->connect("object_id_selected", this, "_object_id_selected");
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -501,20 +502,33 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 }
 
 void EditorPropertyArray::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAG_BEGIN) {
-		if (is_visible_in_tree()) {
-			if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
-				dropping = true;
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			change_type->clear();
+			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				String type = Variant::get_type_name(Variant::Type(i));
+				change_type->add_icon_item(get_icon(type, "EditorIcons"), type, i);
+			}
+			change_type->add_separator();
+			change_type->add_icon_item(get_icon("Remove", "EditorIcons"), TTR("Remove Item"), Variant::VARIANT_MAX);
+		} break;
+
+		case NOTIFICATION_DRAG_BEGIN: {
+			if (is_visible_in_tree()) {
+				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
+					dropping = true;
+					edit->update();
+				}
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			if (dropping) {
+				dropping = false;
 				edit->update();
 			}
-		}
-	}
-
-	if (p_what == NOTIFICATION_DRAG_END) {
-		if (dropping) {
-			dropping = false;
-			edit->update();
-		}
+		} break;
 	}
 }
 
@@ -605,11 +619,16 @@ void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_eve
 		Variant array = object->get_array();
 		int size = array.call("size");
 
-		if ((reorder_to_index == 0 && mm->get_relative().y < 0.0f) || (reorder_to_index == size - 1 && mm->get_relative().y > 0.0f)) {
+		// Cumulate the mouse delta, many small changes (dragging slowly) should result in reordering at some point.
+		reorder_mouse_y_delta += mm->get_relative().y;
+
+		// Reordering is done by moving the dragged element by +1/-1 index at a time based on the cumulated mouse delta so if
+		// already at the array bounds make sure to ignore the remaining out of bounds drag (by resetting the cumulated delta).
+		if ((reorder_to_index == 0 && reorder_mouse_y_delta < 0.0f) || (reorder_to_index == size - 1 && reorder_mouse_y_delta > 0.0f)) {
+			reorder_mouse_y_delta = 0.0f;
 			return;
 		}
 
-		reorder_mouse_y_delta += mm->get_relative().y;
 		float required_y_distance = 20.0f * EDSCALE;
 		if (ABS(reorder_mouse_y_delta) > required_y_distance) {
 			int direction = reorder_mouse_y_delta > 0.0f ? 1 : -1;
@@ -656,6 +675,8 @@ void EditorPropertyArray::_reorder_button_up() {
 	reorder_mouse_y_delta = 0.0f;
 
 	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+
+	ERR_FAIL_NULL(reorder_selected_button);
 	reorder_selected_button->warp_mouse(reorder_selected_button->get_size() / 2.0f);
 
 	reorder_selected_element_hbox = nullptr;
@@ -807,6 +828,7 @@ void EditorPropertyDictionary::update_property() {
 		if (vbox) {
 			set_bottom_editor(nullptr);
 			memdelete(vbox);
+			button_add_item = nullptr;
 			vbox = nullptr;
 		}
 		return;
@@ -831,7 +853,7 @@ void EditorPropertyDictionary::update_property() {
 
 			page_hbox = memnew(HBoxContainer);
 			vbox->add_child(page_hbox);
-			Label *label = memnew(Label(TTR("Page: ")));
+			Label *label = memnew(Label(TTR("Page:")));
 			label->set_h_size_flags(SIZE_EXPAND_FILL);
 			page_hbox->add_child(label);
 			page_slider = memnew(EditorSpinSlider);
@@ -988,6 +1010,7 @@ void EditorPropertyDictionary::update_property() {
 					} else {
 						EditorPropertyResource *editor = memnew(EditorPropertyResource);
 						editor->setup(object.ptr(), prop_name, "Resource");
+						editor->set_use_folding(is_using_folding());
 						prop = editor;
 					}
 
@@ -1092,10 +1115,11 @@ void EditorPropertyDictionary::update_property() {
 			prop->update_property();
 
 			if (i == amount + 1) {
-				Button *butt_add_item = memnew(Button);
-				butt_add_item->set_text(TTR("Add Key/Value Pair"));
-				butt_add_item->connect("pressed", this, "_add_key_value");
-				add_vbox->add_child(butt_add_item);
+				button_add_item = memnew(Button);
+				button_add_item->set_text(TTR("Add Key/Value Pair"));
+				button_add_item->set_icon(get_icon("Add", "EditorIcons"));
+				button_add_item->connect("pressed", this, "_add_key_value");
+				add_vbox->add_child(button_add_item);
 			}
 		}
 
@@ -1105,6 +1129,7 @@ void EditorPropertyDictionary::update_property() {
 		if (vbox) {
 			set_bottom_editor(nullptr);
 			memdelete(vbox);
+			button_add_item = nullptr;
 			vbox = nullptr;
 		}
 	}
@@ -1115,6 +1140,22 @@ void EditorPropertyDictionary::_object_id_selected(const String &p_property, Obj
 }
 
 void EditorPropertyDictionary::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			change_type->clear();
+			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				String type = Variant::get_type_name(Variant::Type(i));
+				change_type->add_icon_item(get_icon(type, "EditorIcons"), type, i);
+			}
+			change_type->add_separator();
+			change_type->add_icon_item(get_icon("Remove", "EditorIcons"), TTR("Remove Item"), Variant::VARIANT_MAX);
+
+			if (Object::cast_to<Button>(button_add_item)) {
+				button_add_item->set_icon(get_icon("Add", "EditorIcons"));
+			}
+		} break;
+	}
 }
 
 void EditorPropertyDictionary::_edit_pressed() {
@@ -1160,16 +1201,10 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	add_focusable(edit);
 	vbox = nullptr;
 	page_slider = nullptr;
+	button_add_item = nullptr;
 	updating = false;
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
 	change_type->connect("id_pressed", this, "_change_type_menu");
-
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		String type = Variant::get_type_name(Variant::Type(i));
-		change_type->add_item(type, i);
-	}
-	change_type->add_separator();
-	change_type->add_item(TTR("Remove Item"), Variant::VARIANT_MAX);
 	changing_type_index = -1;
 }

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  grid_map_editor_plugin.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  grid_map_editor_plugin.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "grid_map_editor_plugin.h"
 #include "core/os/input.h"
@@ -833,7 +833,7 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 void GridMapEditor::update_palette() {
 	int selected = mesh_library_palette->get_current();
 
-	float min_size = EDITOR_DEF("editors/grid_map/preview_size", 64);
+	float min_size = EDITOR_GET("editors/grid_map/preview_size");
 	min_size *= EDSCALE;
 
 	mesh_library_palette->clear();
@@ -904,10 +904,12 @@ void GridMapEditor::update_palette() {
 	}
 
 	if (selected != -1 && mesh_library_palette->get_item_count() > 0) {
-		mesh_library_palette->select(selected);
+		// Make sure that this variable is set correctly.
+		selected_palette = MIN(selected, mesh_library_palette->get_item_count() - 1);
+		mesh_library_palette->select(selected_palette);
 	}
 
-	last_mesh_library = mesh_library.operator->();
+	last_mesh_library = *mesh_library;
 }
 
 void GridMapEditor::edit(GridMap *p_gridmap) {
@@ -938,6 +940,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	}
 
 	update_palette();
+	_update_cursor_instance();
 
 	set_process(true);
 
@@ -1035,7 +1038,7 @@ void GridMapEditor::_notification(int p_what) {
 			get_tree()->connect("node_removed", this, "_node_removed");
 			mesh_library_palette->connect("item_selected", this, "_item_selected_cbk");
 			for (int i = 0; i < 3; i++) {
-				grid[i] = VS::get_singleton()->mesh_create();
+				grid[i] = RID_PRIME(VS::get_singleton()->mesh_create());
 				grid_instance[i] = VS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world()->get_scenario());
 				VS::get_singleton()->instance_set_layer_mask(grid_instance[i], 1 << SpatialEditorViewport::MISC_TOOL_LAYER);
 				selection_level_instance[i] = VisualServer::get_singleton()->instance_create2(selection_level_mesh[i], get_tree()->get_root()->get_world()->get_scenario());
@@ -1315,8 +1318,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	size_slider->connect("value_changed", this, "_icon_size_changed");
 	add_child(size_slider);
 
-	EDITOR_DEF("editors/grid_map/preview_size", 64);
-
 	display_mode = DISPLAY_THUMBNAIL;
 
 	mesh_library_palette = memnew(ItemList);
@@ -1343,8 +1344,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	lock_view = false;
 	cursor_rot = 0;
 
-	selection_mesh = VisualServer::get_singleton()->mesh_create();
-	paste_mesh = VisualServer::get_singleton()->mesh_create();
+	selection_mesh = RID_PRIME(VisualServer::get_singleton()->mesh_create());
+	paste_mesh = RID_PRIME(VisualServer::get_singleton()->mesh_create());
 
 	{
 		// Selection mesh create.
@@ -1454,7 +1455,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		for (int i = 0; i < 3; i++) {
 			d[VS::ARRAY_VERTEX] = square[i];
-			selection_level_mesh[i] = VS::get_singleton()->mesh_create();
+			selection_level_mesh[i] = RID_PRIME(VS::get_singleton()->mesh_create());
 			VisualServer::get_singleton()->mesh_add_surface_from_arrays(selection_level_mesh[i], VS::PRIMITIVE_LINES, d);
 			VisualServer::get_singleton()->mesh_surface_set_material(selection_level_mesh[i], 0, selection_floor_mat->get_rid());
 		}
@@ -1511,10 +1512,10 @@ void GridMapEditorPlugin::_notification(int p_what) {
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
 			case 0: { // Left.
-				SpatialEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 0);
+				SpatialEditor::get_singleton()->move_control_to_left_panel(grid_map_editor);
 			} break;
 			case 1: { // Right.
-				SpatialEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 1);
+				SpatialEditor::get_singleton()->move_control_to_right_panel(grid_map_editor);
 			} break;
 		}
 	}
@@ -1550,10 +1551,10 @@ GridMapEditorPlugin::GridMapEditorPlugin(EditorNode *p_node) {
 	grid_map_editor = memnew(GridMapEditor(editor));
 	switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
 		case 0: { // Left.
-			add_control_to_container(CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, grid_map_editor);
+			SpatialEditor::get_singleton()->add_control_to_left_panel(grid_map_editor);
 		} break;
 		case 1: { // Right.
-			add_control_to_container(CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, grid_map_editor);
+			SpatialEditor::get_singleton()->add_control_to_right_panel(grid_map_editor);
 		} break;
 	}
 	grid_map_editor->hide();

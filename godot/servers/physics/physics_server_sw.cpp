@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  physics_server_sw.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  physics_server_sw.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "physics_server_sw.h"
 
@@ -129,13 +129,13 @@ RID PhysicsServerSW::space_create() {
 	SpaceSW *space = memnew(SpaceSW);
 	RID id = space_owner.make_rid(space);
 	space->set_self(id);
-	RID area_id = area_create();
+	RID area_id = RID_PRIME(area_create());
 	AreaSW *area = area_owner.get(area_id);
 	ERR_FAIL_COND_V(!area, RID());
 	space->set_default_area(area);
 	area->set_space(space);
 	area->set_priority(-1);
-	RID sgb = body_create();
+	RID sgb = RID_PRIME(body_create());
 	body_set_space(sgb, id);
 	body_set_mode(sgb, BODY_MODE_STATIC);
 	space->set_static_global_body(sgb);
@@ -578,7 +578,6 @@ void PhysicsServerSW::body_set_collision_layer(RID p_body, uint32_t p_layer) {
 	ERR_FAIL_COND(!body);
 
 	body->set_collision_layer(p_layer);
-	body->wakeup();
 }
 
 uint32_t PhysicsServerSW::body_get_collision_layer(RID p_body) const {
@@ -593,7 +592,6 @@ void PhysicsServerSW::body_set_collision_mask(RID p_body, uint32_t p_mask) {
 	ERR_FAIL_COND(!body);
 
 	body->set_collision_mask(p_mask);
-	body->wakeup();
 }
 
 uint32_t PhysicsServerSW::body_get_collision_mask(RID p_body) const {
@@ -888,16 +886,14 @@ PhysicsDirectBodyState *PhysicsServerSW::body_get_direct_state(RID p_body) {
 	}
 
 	BodySW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, nullptr);
+	ERR_FAIL_COND_V_MSG(!body, nullptr, "Body with RID " + itos(p_body.get_id()) + " not owned by this server.");
 
 	if (!body->get_space()) {
 		return nullptr;
 	}
 
 	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
-
-	direct_state->body = body;
-	return direct_state;
+	return body->get_direct_state();
 }
 
 /* JOINT API */
@@ -1288,10 +1284,8 @@ void PhysicsServerSW::set_collision_iterations(int p_iterations) {
 };
 
 void PhysicsServerSW::init() {
-	last_step = 0.001;
 	iterations = 8; // 8?
 	stepper = memnew(StepSW);
-	direct_state = memnew(PhysicsDirectBodyStateSW);
 };
 
 void PhysicsServerSW::step(real_t p_step) {
@@ -1302,9 +1296,6 @@ void PhysicsServerSW::step(real_t p_step) {
 	}
 
 	_update_shapes();
-
-	last_step = p_step;
-	PhysicsDirectBodyStateSW::singleton->step = p_step;
 
 	island_count = 0;
 	active_objects = 0;
@@ -1365,14 +1356,13 @@ void PhysicsServerSW::flush_queries() {
 		values.push_back("flush_queries");
 		values.push_back(USEC_TO_SEC(OS::get_singleton()->get_ticks_usec() - time_beg));
 
-		ScriptDebugger::get_singleton()->add_profiling_frame_data("physics", values);
+		ScriptDebugger::get_singleton()->add_profiling_frame_data("physics_3d", values);
 	}
 #endif
 };
 
 void PhysicsServerSW::finish() {
 	memdelete(stepper);
-	memdelete(direct_state);
 };
 
 int PhysicsServerSW::get_process_info(ProcessInfo p_info) {

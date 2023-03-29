@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedSceneGLTF" inherits="PackedScene" version="3.4">
+<class name="PackedSceneGLTF" inherits="PackedScene" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
+		[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF loading and saving is [i]not[/i] available in exported projects. References to [PackedSceneGLTF] within a script will cause an error in an exported project.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -38,7 +39,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" override="true" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PoolIntArray(  ),&quot;editable_instances&quot;: [  ],&quot;names&quot;: PoolStringArray(  ),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [  ],&quot;nodes&quot;: PoolIntArray(  ),&quot;variants&quot;: [  ],&quot;version&quot;: 2}" />
+		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" overrides="PackedScene" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PoolIntArray(  ),&quot;editable_instances&quot;: [  ],&quot;names&quot;: PoolStringArray(  ),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [  ],&quot;nodes&quot;: PoolIntArray(  ),&quot;variants&quot;: [  ],&quot;version&quot;: 2}" />
 	</members>
 	<constants>
 	</constants>

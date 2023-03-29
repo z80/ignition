@@ -1,37 +1,38 @@
-/*************************************************************************/
-/*  cowdata.h                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  cowdata.h                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef COWDATA_H_
-#define COWDATA_H_
+#ifndef COWDATA_H
+#define COWDATA_H
 
 #include <string.h>
+#include <type_traits>
 
 #include "core/error_macros.h"
 #include "core/os/memory.h"
@@ -78,13 +79,6 @@ private:
 		return reinterpret_cast<uint32_t *>(_ptr) - 1;
 	}
 
-	_FORCE_INLINE_ T *_get_data() const {
-		if (!_ptr) {
-			return nullptr;
-		}
-		return reinterpret_cast<T *>(_ptr);
-	}
-
 	_FORCE_INLINE_ size_t _get_alloc_size(size_t p_elements) const {
 		//return nearest_power_of_2_templated(p_elements*sizeof(T)+sizeof(SafeRefCount)+sizeof(int));
 		return next_power_of_2(p_elements * sizeof(T));
@@ -121,11 +115,11 @@ public:
 
 	_FORCE_INLINE_ T *ptrw() {
 		_copy_on_write();
-		return (T *)_get_data();
+		return _ptr;
 	}
 
 	_FORCE_INLINE_ const T *ptr() const {
-		return _get_data();
+		return _ptr;
 	}
 
 	_FORCE_INLINE_ int size() const {
@@ -143,19 +137,19 @@ public:
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) {
 		CRASH_BAD_INDEX(p_index, size());
 		_copy_on_write();
-		_get_data()[p_index] = p_elem;
+		_ptr[p_index] = p_elem;
 	}
 
 	_FORCE_INLINE_ T &get_m(int p_index) {
 		CRASH_BAD_INDEX(p_index, size());
 		_copy_on_write();
-		return _get_data()[p_index];
+		return _ptr[p_index];
 	}
 
 	_FORCE_INLINE_ const T &get(int p_index) const {
 		CRASH_BAD_INDEX(p_index, size());
 
-		return _get_data()[p_index];
+		return _ptr[p_index];
 	}
 
 	Error resize(int p_size);
@@ -202,7 +196,7 @@ void CowData<T>::_unref(void *p_data) {
 	}
 	// clean up
 
-	if (!__has_trivial_destructor(T)) {
+	if (!std::is_trivially_destructible<T>::value) {
 		uint32_t *count = _get_size();
 		T *data = (T *)(count + 1);
 
@@ -237,12 +231,12 @@ uint32_t CowData<T>::_copy_on_write() {
 		T *_data = (T *)(mem_new);
 
 		// initialize new elements
-		if (__has_trivial_copy(T)) {
+		if (std::is_trivially_copyable<T>::value) {
 			memcpy(mem_new, _ptr, current_size * sizeof(T));
 
 		} else {
 			for (uint32_t i = 0; i < current_size; i++) {
-				memnew_placement(&_data[i], T(_get_data()[i]));
+				memnew_placement(&_data[i], T(_ptr[i]));
 			}
 		}
 
@@ -300,21 +294,19 @@ Error CowData<T>::resize(int p_size) {
 
 		// construct the newly created elements
 
-		if (!__has_trivial_constructor(T)) {
-			T *elems = _get_data();
-
+		if (!std::is_trivially_constructible<T>::value) {
 			for (int i = *_get_size(); i < p_size; i++) {
-				memnew_placement(&elems[i], T);
+				memnew_placement(&_ptr[i], T);
 			}
 		}
 
 		*_get_size() = p_size;
 
 	} else if (p_size < current_size) {
-		if (!__has_trivial_destructor(T)) {
+		if (!std::is_trivially_destructible<T>::value) {
 			// deinitialize no longer needed elements
 			for (uint32_t i = p_size; i < *_get_size(); i++) {
-				T *t = &_get_data()[i];
+				T *t = &_ptr[i];
 				t->~T();
 			}
 		}
@@ -384,4 +376,4 @@ CowData<T>::~CowData() {
 	_unref(_ptr);
 }
 
-#endif /* COW_H_ */
+#endif // COWDATA_H

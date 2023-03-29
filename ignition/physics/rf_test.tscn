@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://physics/camera_ctrl/camera.gd" type="Script" id=2]
+[ext_resource path="res://physics/camera_ctrl/player_camera.gd" type="Script" id=2]
 [ext_resource path="res://physics/axes_visualization.tscn" type="PackedScene" id=4]
 [ext_resource path="res://physics/landscape/provider.tscn" type="PackedScene" id=5]
 

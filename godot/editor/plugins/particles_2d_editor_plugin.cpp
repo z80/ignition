@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  particles_2d_editor_plugin.cpp                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  particles_2d_editor_plugin.cpp                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "particles_2d_editor_plugin.h"
 
@@ -55,6 +55,28 @@ void Particles2DEditorPlugin::make_visible(bool p_visible) {
 void Particles2DEditorPlugin::_file_selected(const String &p_file) {
 	source_emission_file = p_file;
 	emission_mask->popup_centered_minsize();
+}
+
+void Particles2DEditorPlugin::_selection_changed() {
+	List<Node *> selected_nodes = editor->get_editor_selection()->get_selected_node_list();
+
+	if (selected_particles.empty() && selected_nodes.empty()) {
+		return;
+	}
+
+	for (int i = 0; i < selected_particles.size(); i++) {
+		selected_particles[i]->set_show_visibility_rect(false);
+	}
+
+	selected_particles.clear();
+
+	for (int i = 0; i < selected_nodes.size(); i++) {
+		Particles2D *selected_particle = Object::cast_to<Particles2D>(selected_nodes[i]);
+		if (selected_particle != nullptr) {
+			selected_particle->set_show_visibility_rect(true);
+			selected_particles.push_back(selected_particle);
+		}
+	}
 }
 
 void Particles2DEditorPlugin::_menu_callback(int p_idx) {
@@ -331,12 +353,14 @@ void Particles2DEditorPlugin::_notification(int p_what) {
 		menu->get_popup()->connect("id_pressed", this, "_menu_callback");
 		menu->set_icon(menu->get_popup()->get_icon("Particles2D", "EditorIcons"));
 		file->connect("file_selected", this, "_file_selected");
+		EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", this, "_selection_changed");
 	}
 }
 
 void Particles2DEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_menu_callback"), &Particles2DEditorPlugin::_menu_callback);
 	ClassDB::bind_method(D_METHOD("_file_selected"), &Particles2DEditorPlugin::_file_selected);
+	ClassDB::bind_method(D_METHOD("_selection_changed"), &Particles2DEditorPlugin::_selection_changed);
 	ClassDB::bind_method(D_METHOD("_generate_visibility_rect"), &Particles2DEditorPlugin::_generate_visibility_rect);
 	ClassDB::bind_method(D_METHOD("_generate_emission_mask"), &Particles2DEditorPlugin::_generate_emission_mask);
 }

@@ -43,8 +43,8 @@ Source: https://github.com/godotengine/godot
 
 Files: *
 Comment: Godot Engine
-Copyright: 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
+Copyright: 2014-present, Godot Engine contributors.
+ 2007-2014, Juan Linietsky, Ariel Manzur.
 License: Expat
 
 Files: ./icon.png
@@ -59,15 +59,15 @@ Files: ./core/math/convex_hull.cpp
  ./core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
- 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
+ 2014-present, Godot Engine contributors.
+ 2007-2014, Juan Linietsky, Ariel Manzur.
 License: Expat and Zlib
 
 Files: ./modules/fbx/fbx_parser/
 Comment: Open Asset Import Library (FBX parser)
 Copyright: 2006-2020, assimp team
- 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
+ 2014-present, Godot Engine contributors.
+ 2007-2014, Juan Linietsky, Ariel Manzur.
 License: BSD-3-clause
 
 Files: ./platform/android/java/lib/aidl/com/android/vending/licensing/
@@ -86,15 +86,27 @@ Comment: The Android Open Source Project
 Copyright: 2002, Google Inc.
 License: Apache-2.0
 
+Files: ./platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.java
+Comment: ProcessPhoenix
+Copyright: 2015, Jake Wharton
+License: Apache-2.0
+
 Files: ./platform/android/power_android.cpp
  ./platform/osx/power_osx.cpp
  ./platform/windows/power_windows.cpp
  ./platform/x11/power_x11.cpp
 Comment: Simple DirectMedia Layer
 Copyright: 1997-2017, Sam Lantinga
- 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
+ 2014-present, Godot Engine contributors.
+ 2007-2014, Juan Linietsky, Ariel Manzur.
 License: Expat and Zlib
+
+Files: ./scene/animation/easing_equations.h
+Comment: Robert Penner's Easing Functions
+Copyright: 2001, Robert Penner
+ 2014-present Godot Engine contributors.
+ 2007-2014 Juan Linietsky, Ariel Manzur.
+License: Expat
 
 Files: ./servers/physics/collision_solver_sat.cpp
 Comment: Open Dynamics Engine
@@ -115,17 +127,22 @@ Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/shape_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
- 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
+ 2014-present, Godot Engine contributors.
+ 2007-2014, Juan Linietsky, Ariel Manzur.
 License: Expat and Zlib
 
 Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
  ./servers/physics/joints/cone_twist_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
- 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
+ 2014-present, Godot Engine contributors.
+ 2007-2014, Juan Linietsky, Ariel Manzur.
 License: Expat and Zlib
+
+Files: ./thirdparty/brotli/
+Comment: Brotli
+Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.
+License: Expat
 
 Files: ./thirdparty/bullet/
 Comment: Bullet Continuous Collision Detection and Physics Library
@@ -158,17 +175,17 @@ Comment: Etc2Comp
 Copyright: 2015, Etc2Comp Authors
 License: Apache-2.0
 
-Files: ./thirdparty/fonts/DroidSans*.ttf
+Files: ./thirdparty/fonts/DroidSans*.woff2
 Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
 License: Apache-2.0
 
-Files: ./thirdparty/fonts/NotoSans*.ttf
+Files: ./thirdparty/fonts/NotoSans*.woff2
 Comment: Noto Sans font
 Copyright: 2012, Google Inc.
 License: OFL-1.1
 
-Files: ./thirdparty/fonts/Hack_Regular.ttf
+Files: ./thirdparty/fonts/Hack_Regular.woff2
 Comment: Hack font
 Copyright: 2018, Source Foundry Authors
   2003, Bitstream Inc.
@@ -176,7 +193,7 @@ License: Expat and Bitstream Vera Fonts Copyright
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2020, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2022, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glad/
@@ -251,8 +268,8 @@ Copyright: lieff
 License: CC0-1.0
 
 Files: ./thirdparty/miniupnpc/
-Comment: MiniUPnPc
-Copyright: 2005-2021, Thomas Bernard
+Comment: MiniUPnP Project
+Copyright: 2005-2022, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/
@@ -267,11 +284,6 @@ Files: ./thirdparty/misc/clipper.cpp
 Comment: Clipper
 Copyright: 2010-2017, Angus Johnson
 License: BSL-1.0
-
-Files: ./thirdparty/misc/easing_equations.cpp
-Comment: Robert Penner's Easing Functions
-Copyright: 2001, Robert Penner
-License: BSD-3-clause
 
 Files: ./thirdparty/misc/fastlz.c
  ./thirdparty/misc/fastlz.h
@@ -346,8 +358,8 @@ License: BSD-3-clause
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2020, University of Cambridge
- 2009-2020, Zoltan Herczeg
+Copyright: 1997-2022, University of Cambridge
+ 2009-2022, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/pvrtccompressor/
@@ -360,6 +372,11 @@ Comment: Recast
 Copyright: 2009, Mikko Mononen
 License: Zlib
 
+Files: ./thirdparty/rvo2/
+Comment: RVO2
+Copyright: 2016, University of North Carolina at Chapel Hill
+License: Apache-2.0
+
 Files: ./thirdparty/squish/
 Comment: libSquish
 Copyright: 2006, Simon Brown
@@ -367,7 +384,7 @@ License: Expat
 
 Files: ./thirdparty/tinyexr/
 Comment: TinyEXR
-Copyright: 2014-2020, Syoyo Fujita
+Copyright: 2014-2021, Syoyo Fujita
   2002, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC
 License: BSD-3-clause
 
@@ -391,12 +408,12 @@ License: Expat
 
 Files: ./thirdparty/zlib/
 Comment: zlib
-Copyright: 1995-2017, Jean-loup Gailly and Mark Adler
+Copyright: 1995-2022, Jean-loup Gailly and Mark Adler
 License: Zlib
 
 Files: ./thirdparty/zstd/
 Comment: Zstandard
-Copyright: 2016-2020, Facebook, Inc.
+Copyright: 2016-2021, Facebook, Inc.
 License: BSD-3-clause
 
 

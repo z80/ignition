@@ -1,41 +1,44 @@
-/*************************************************************************/
-/*  portal_renderer.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  portal_renderer.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef PORTAL_RENDERER_H
 #define PORTAL_RENDERER_H
 
+#include "core/math/camera_matrix.h"
+#include "core/math/geometry.h"
 #include "core/math/plane.h"
 #include "core/pooled_list.h"
 #include "core/vector.h"
 #include "portal_gameplay_monitor.h"
 #include "portal_pvs.h"
+#include "portal_resources.h"
 #include "portal_rooms_bsp.h"
 #include "portal_tracer.h"
 #include "portal_types.h"
@@ -185,32 +188,51 @@ public:
 	void rghost_destroy(RGhostHandle p_handle);
 
 	// occluders
-	OccluderHandle occluder_create(VSOccluder::Type p_type);
-	void occluder_update_spheres(OccluderHandle p_handle, const Vector<Plane> &p_spheres);
-	void occluder_set_transform(OccluderHandle p_handle, const Transform &p_xform);
-	void occluder_set_active(OccluderHandle p_handle, bool p_active);
-	void occluder_destroy(OccluderHandle p_handle);
+	OccluderInstanceHandle occluder_instance_create();
+	void occluder_instance_link(OccluderInstanceHandle p_handle, OccluderResourceHandle p_resource_handle);
+	void occluder_instance_set_transform(OccluderInstanceHandle p_handle, const Transform &p_xform);
+	void occluder_instance_set_active(OccluderInstanceHandle p_handle, bool p_active);
+	void occluder_instance_destroy(OccluderInstanceHandle p_handle, bool p_free = true);
+
+	// editor only .. slow
+	Geometry::MeshData occlusion_debug_get_current_polys() const { return _tracer.get_occlusion_culler().debug_get_current_polys(); }
 
 	// note that this relies on a 'frustum' type cull, from a point, and that the planes are specified as in
 	// CameraMatrix, i.e.
 	// order PLANE_NEAR,PLANE_FAR,PLANE_LEFT,PLANE_TOP,PLANE_RIGHT,PLANE_BOTTOM
-	int cull_convex(const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_result_max, uint32_t p_mask, int32_t &r_previous_room_id_hint) {
-		if (!_override_camera)
-			return cull_convex_implementation(p_point, p_convex, p_result_array, p_result_max, p_mask, r_previous_room_id_hint);
+	int cull_convex(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_result_max, uint32_t p_mask, int32_t &r_previous_room_id_hint) {
+		// combined camera matrix
+		CameraMatrix cm = CameraMatrix(p_cam_transform.affine_inverse());
+		cm = p_cam_projection * cm;
+		Vector3 point = p_cam_transform.origin;
+		Vector3 cam_dir = -p_cam_transform.basis.get_axis(2).normalized();
 
-		return cull_convex_implementation(_override_camera_pos, _override_camera_planes, p_result_array, p_result_max, p_mask, r_previous_room_id_hint);
+		if (!_override_camera)
+			return cull_convex_implementation(point, cam_dir, cm, p_convex, p_result_array, p_result_max, p_mask, r_previous_room_id_hint);
+
+		// override camera matrix NYI
+		return cull_convex_implementation(_override_camera_pos, cam_dir, cm, _override_camera_planes, p_result_array, p_result_max, p_mask, r_previous_room_id_hint);
 	}
 
-	int cull_convex_implementation(const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_result_max, uint32_t p_mask, int32_t &r_previous_room_id_hint);
+	int cull_convex_implementation(const Vector3 &p_point, const Vector3 &p_cam_dir, const CameraMatrix &p_cam_matrix, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_result_max, uint32_t p_mask, int32_t &r_previous_room_id_hint);
+
+	bool occlusion_is_active() const { return _occluder_instance_pool.active_size() && use_occlusion_culling; }
 
 	// special function for occlusion culling only that does not use portals / rooms,
 	// but allows using occluders with the main scene
-	int occlusion_cull(const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_num_results) {
+	int occlusion_cull(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_num_results) {
 		// inactive?
-		if (!_occluder_pool.active_size() || !use_occlusion_culling) {
+		if (!_occluder_instance_pool.active_size() || !use_occlusion_culling) {
 			return p_num_results;
 		}
-		return _tracer.occlusion_cull(*this, p_point, p_convex, p_result_array, p_num_results);
+
+		// combined camera matrix
+		CameraMatrix cm = CameraMatrix(p_cam_transform.affine_inverse());
+		cm = p_cam_projection * cm;
+		Vector3 point = p_cam_transform.origin;
+		Vector3 cam_dir = -p_cam_transform.basis.get_axis(2).normalized();
+
+		return _tracer.occlusion_cull(*this, point, cam_dir, cm, p_convex, p_result_array, p_num_results);
 	}
 
 	bool is_active() const { return _active && _loaded; }
@@ -235,11 +257,6 @@ public:
 	RGhost &get_pool_rghost(uint32_t p_pool_id) { return _rghost_pool[p_pool_id]; }
 	const RGhost &get_pool_rghost(uint32_t p_pool_id) const { return _rghost_pool[p_pool_id]; }
 
-	const VSOccluder &get_pool_occluder(uint32_t p_pool_id) const { return _occluder_pool[p_pool_id]; }
-	VSOccluder &get_pool_occluder(uint32_t p_pool_id) { return _occluder_pool[p_pool_id]; }
-	const VSOccluder_Sphere &get_pool_occluder_sphere(uint32_t p_pool_id) const { return _occluder_sphere_pool[p_pool_id]; }
-	const LocalVector<uint32_t, uint32_t> &get_occluders_active_list() const { return _occluder_pool.get_active_list(); }
-
 	VSStaticGhost &get_static_ghost(uint32_t p_id) { return _static_ghosts[p_id]; }
 
 	VSRoomGroup &get_roomgroup(uint32_t p_pool_id) { return _roomgroup_pool[p_pool_id]; }
@@ -248,6 +265,15 @@ public:
 	const PVS &get_pvs() const { return _pvs; }
 
 	bool get_cull_using_pvs() const { return _cull_using_pvs; }
+
+	// occluders
+	const LocalVector<uint32_t, uint32_t> &get_occluders_active_list() const { return _occluder_instance_pool.get_active_list(); }
+	const VSOccluder_Instance &get_pool_occluder_instance(uint32_t p_pool_id) const { return _occluder_instance_pool[p_pool_id]; }
+	VSOccluder_Instance &get_pool_occluder_instance(uint32_t p_pool_id) { return _occluder_instance_pool[p_pool_id]; }
+	const VSOccluder_Sphere &get_pool_occluder_world_sphere(uint32_t p_pool_id) const { return _occluder_world_sphere_pool[p_pool_id]; }
+	const VSOccluder_Poly &get_pool_occluder_world_poly(uint32_t p_pool_id) const { return _occluder_world_poly_pool[p_pool_id]; }
+	const VSOccluder_Hole &get_pool_occluder_world_hole(uint32_t p_pool_id) const { return _occluder_world_hole_pool[p_pool_id]; }
+	VSOccluder_Hole &get_pool_occluder_world_hole(uint32_t p_pool_id) { return _occluder_world_hole_pool[p_pool_id]; }
 
 private:
 	int find_room_within(const Vector3 &p_pos, int p_previous_room_id = -1) {
@@ -293,14 +319,17 @@ private:
 	LocalVector<uint32_t, int32_t> _moving_list_roaming;
 
 	// occluders
-	TrackedPooledList<VSOccluder> _occluder_pool;
-	TrackedPooledList<VSOccluder_Sphere> _occluder_sphere_pool;
+	TrackedPooledList<VSOccluder_Instance> _occluder_instance_pool;
+	TrackedPooledList<VSOccluder_Sphere, uint32_t, true> _occluder_world_sphere_pool;
+	TrackedPooledList<VSOccluder_Poly, uint32_t, true> _occluder_world_poly_pool;
+	TrackedPooledList<VSOccluder_Hole, uint32_t, true> _occluder_world_hole_pool;
 
 	PVS _pvs;
 
 	bool _active = true;
 	bool _loaded = false;
 	bool _debug_sprawl = false;
+	bool _show_debug = true;
 
 	// if the pvs is generated, we can either cull using dynamic portals or PVS
 	bool _cull_using_pvs = false;
@@ -326,15 +355,49 @@ public:
 	static String _rid_to_string(RID p_rid);
 	static String _addr_to_string(const void *p_addr);
 
-	void occluder_ensure_up_to_date_sphere(VSOccluder &r_occluder);
+	void occluder_ensure_up_to_date_sphere(const PortalResources &p_resources, VSOccluder_Instance &r_occluder);
+	void occluder_ensure_up_to_date_polys(const PortalResources &p_resources, VSOccluder_Instance &r_occluder);
 	void occluder_refresh_room_within(uint32_t p_occluder_pool_id);
+
+	PortalRenderer();
 };
 
-inline void PortalRenderer::occluder_ensure_up_to_date_sphere(VSOccluder &r_occluder) {
-	if (!r_occluder.dirty) {
+inline void PortalRenderer::occluder_ensure_up_to_date_sphere(const PortalResources &p_resources, VSOccluder_Instance &r_occluder) {
+	// occluder is not bound to a resource, cannot be used
+	if (r_occluder.resource_pool_id == UINT32_MAX) {
 		return;
 	}
-	r_occluder.dirty = false;
+
+	// get the resource
+	const VSOccluder_Resource &res = p_resources.get_pool_occluder_resource(r_occluder.resource_pool_id);
+
+	// dirty?
+	if (r_occluder.revision == res.revision) {
+		return;
+	}
+	r_occluder.revision = res.revision;
+
+	// must be same type, if not an error has occurred
+	ERR_FAIL_COND(res.type != r_occluder.type);
+
+	// first make sure the instance has the correct number of world space spheres
+	if (r_occluder.list_ids.size() != res.list_ids.size()) {
+		// not the most efficient, but works...
+		// remove existing
+		for (int n = 0; n < r_occluder.list_ids.size(); n++) {
+			uint32_t id = r_occluder.list_ids[n];
+			_occluder_world_sphere_pool.free(id);
+		}
+
+		r_occluder.list_ids.clear();
+		// create new
+		for (int n = 0; n < res.list_ids.size(); n++) {
+			uint32_t id;
+			VSOccluder_Sphere *sphere = _occluder_world_sphere_pool.request(id);
+			sphere->create();
+			r_occluder.list_ids.push_back(id);
+		}
+	}
 
 	const Transform &tr = r_occluder.xform;
 
@@ -347,16 +410,16 @@ inline void PortalRenderer::occluder_ensure_up_to_date_sphere(VSOccluder &r_occl
 
 	// transform spheres
 	for (int n = 0; n < r_occluder.list_ids.size(); n++) {
-		uint32_t pool_id = r_occluder.list_ids[n];
-		VSOccluder_Sphere &osphere = _occluder_sphere_pool[pool_id];
+		uint32_t world_pool_id = r_occluder.list_ids[n];
+		VSOccluder_Sphere &world_osphere = _occluder_world_sphere_pool[world_pool_id];
+		const VSOccluder_Sphere &local_osphere = p_resources.get_pool_occluder_local_sphere(res.list_ids[n]);
 
-		// transform position and radius
-		osphere.world.pos = tr.xform(osphere.local.pos);
-		osphere.world.radius = osphere.local.radius * scale;
+		world_osphere.pos = tr.xform(local_osphere.pos);
+		world_osphere.radius = local_osphere.radius * scale;
 
-		Vector3 bradius = Vector3(osphere.world.radius, osphere.world.radius, osphere.world.radius);
-		Vector3 bmin = osphere.world.pos - bradius;
-		Vector3 bmax = osphere.world.pos + bradius;
+		Vector3 bradius = Vector3(world_osphere.radius, world_osphere.radius, world_osphere.radius);
+		Vector3 bmin = world_osphere.pos - bradius;
+		Vector3 bmax = world_osphere.pos + bradius;
 
 		bb_min.x = MIN(bb_min.x, bmin.x);
 		bb_min.y = MIN(bb_min.y, bmin.y);
@@ -370,4 +433,94 @@ inline void PortalRenderer::occluder_ensure_up_to_date_sphere(VSOccluder &r_occl
 	r_occluder.aabb.size = bb_max - bb_min;
 }
 
-#endif
+inline void PortalRenderer::occluder_ensure_up_to_date_polys(const PortalResources &p_resources, VSOccluder_Instance &r_occluder) {
+	// occluder is not bound to a resource, cannot be used
+	if (r_occluder.resource_pool_id == UINT32_MAX) {
+		return;
+	}
+
+	// get the resource
+	const VSOccluder_Resource &res = p_resources.get_pool_occluder_resource(r_occluder.resource_pool_id);
+
+	// dirty?
+	if (r_occluder.revision == res.revision) {
+		return;
+	}
+	r_occluder.revision = res.revision;
+
+	// must be same type, if not an error has occurred
+	ERR_FAIL_COND(res.type != r_occluder.type);
+
+	// first make sure the instance has the correct number of world space spheres
+	if (r_occluder.list_ids.size() != res.list_ids.size()) {
+		// not the most efficient, but works...
+		// remove existing
+		for (int n = 0; n < r_occluder.list_ids.size(); n++) {
+			uint32_t id = r_occluder.list_ids[n];
+			_occluder_world_poly_pool.free(id);
+		}
+
+		r_occluder.list_ids.clear();
+		// create new
+		for (int n = 0; n < res.list_ids.size(); n++) {
+			uint32_t id;
+			VSOccluder_Poly *poly = _occluder_world_poly_pool.request(id);
+			poly->create();
+			r_occluder.list_ids.push_back(id);
+		}
+	}
+
+	const Transform &tr = r_occluder.xform;
+
+	for (int n = 0; n < r_occluder.list_ids.size(); n++) {
+		uint32_t world_pool_id = r_occluder.list_ids[n];
+		uint32_t local_pool_id = res.list_ids[n];
+
+		VSOccluder_Poly &world_opoly = _occluder_world_poly_pool[world_pool_id];
+		const VSOccluder_Poly &local_opoly = p_resources._occluder_local_poly_pool[local_pool_id];
+
+		world_opoly.poly.num_verts = local_opoly.poly.num_verts;
+		world_opoly.two_way = local_opoly.two_way;
+
+		for (int i = 0; i < local_opoly.poly.num_verts; i++) {
+			world_opoly.poly.verts[i] = tr.xform(local_opoly.poly.verts[i]);
+		}
+
+		world_opoly.poly.plane = tr.xform(local_opoly.poly.plane);
+
+		// number of holes must be correct for each poly
+		if (world_opoly.num_holes != local_opoly.num_holes) {
+			// remove existing
+			for (int h = 0; h < world_opoly.num_holes; h++) {
+				uint32_t id = world_opoly.hole_pool_ids[h];
+				_occluder_world_hole_pool.free(id);
+				// not strictly necessary
+				world_opoly.hole_pool_ids[h] = UINT32_MAX;
+			}
+
+			world_opoly.num_holes = local_opoly.num_holes;
+			for (int h = 0; h < world_opoly.num_holes; h++) {
+				uint32_t id;
+				VSOccluder_Hole *hole = _occluder_world_hole_pool.request(id);
+				hole->create();
+				world_opoly.hole_pool_ids[h] = id;
+			}
+		}
+
+		// holes
+		for (int h = 0; h < world_opoly.num_holes; h++) {
+			uint32_t world_hid = world_opoly.hole_pool_ids[h];
+			uint32_t local_hid = local_opoly.hole_pool_ids[h];
+			VSOccluder_Hole &world_hole = _occluder_world_hole_pool[world_hid];
+			const VSOccluder_Hole &local_hole = p_resources._occluder_local_hole_pool[local_hid];
+
+			world_hole.num_verts = local_hole.num_verts;
+
+			for (int i = 0; i < world_hole.num_verts; i++) {
+				world_hole.verts[i] = tr.xform(local_hole.verts[i]);
+			}
+		}
+	}
+}
+
+#endif // PORTAL_RENDERER_H

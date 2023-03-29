@@ -29,7 +29,7 @@ func decoupler_activate():
 	self.decouple()
 	
 	# Remove assembly.
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 	if (sb != null) and (is_instance_valid(sb)):
 		sb.queue_free()
 	

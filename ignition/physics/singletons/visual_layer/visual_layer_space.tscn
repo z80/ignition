@@ -1,0 +1,27 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://physics/singletons/visual_layer/visual_layer_space.gd" type="Script" id=2]
+[ext_resource path="res://physics/singletons/visual_layer/scene_space.tscn" type="PackedScene" id=3]
+
+[sub_resource type="World" id=2]
+
+[node name="VisualLayerSpace" type="Node"]
+script = ExtResource( 2 )
+
+[node name="Viewport" type="Viewport" parent="."]
+size = Vector2( 1024, 600 )
+world = SubResource( 2 )
+transparent_bg = true
+handle_input_locally = false
+keep_3d_linear = true
+render_target_update_mode = 3
+audio_listener_enable_2d = true
+audio_listener_enable_3d = true
+shadow_atlas_size = 256
+
+[node name="Root" parent="Viewport" instance=ExtResource( 3 )]
+
+[node name="Camera" parent="Viewport/Root" index="0"]
+far = 8192.0
+
+[editable path="Viewport/Root"]

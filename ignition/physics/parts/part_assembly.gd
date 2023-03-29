@@ -1,5 +1,5 @@
 
-extends RefFrameNode
+extends RefFrameAssemblyNode
 class_name PartAssembly
 
 # This class handles dynamic body group.
@@ -38,10 +38,6 @@ func _exit_tree():
 
 
 func _enter_tree():
-	# If physics body is already created it shouldn't hurt 
-	# anything.
-	for b in sub_bodies:
-		b.create_physical()
 	# The thing is it is necessary to be sure that rigid bodies 
 	# on both sides are attached. And due to that it is necessary 
 	# to first create all bodies in a loop and after that activate 
@@ -53,6 +49,7 @@ func _enter_tree():
 		var has: bool = b.has_method( "activate_nodes" )
 		if has:
 			b.activate_nodes( false )
+	pass
 
 
 
@@ -65,11 +62,12 @@ func _ready():
 
 func _process( _delta: float ):
 	_process_visualize_orbits()
+	pass
 
 
 
 func add_sub_body( body: RefFrameNode ):
-	var sb: RefFrameNode = body.get_super_body_raw()
+	var sb: RefFrameNode = body.get_assembly_raw()
 	if (sb != null) and (sb != self):
 		sb.remove_sub_body( body )
 	
@@ -78,7 +76,7 @@ func add_sub_body( body: RefFrameNode ):
 		return false
 	
 	sub_bodies.push_back( body )
-	body.set_super_body( self )
+	body.set_assembly( self )
 	return true
 
 
@@ -87,10 +85,10 @@ func remove_sub_body( body: RefFrameNode ):
 	var index: int = sub_bodies.find( body )
 	if index >= 0:
 		sub_bodies.remove( index )
-		body.set_super_body( null )
+		body.set_assembly( null )
 
 
-func is_super_body():
+func is_assembly():
 	var empty: bool = sub_bodies.empty()
 	var ret: bool = not empty
 	return ret
@@ -105,7 +103,7 @@ func has_sub_body( body: RefFrameNode ):
 
 
 func has_player_control():
-	var pc = PhysicsManager.camera.get_parent()
+	var pc = RootScene.ref_frame_root.player_camera.get_parent()
 	for body in sub_bodies:
 		if body == pc:
 			return true
@@ -137,7 +135,7 @@ func change_parent( p: Node = null ):
 	# Create connecting joints.
 	for b in sub_bodies:
 		# Only parts have this method, so check if it exists first.
-		var has: bool = b.has_method( "deactivate_nodes" )
+		var has: bool = b.has_method( "activate_nodes" )
 		if has:
 			b.activate_nodes( false )
 
@@ -244,10 +242,10 @@ func _create_orbit_visualizer():
 	
 	var Vis = load( "res://physics/celestial_bodies/orbit_visualizer.tscn" )
 	orbit_visualizer = Vis.instance()
-	self.add_child( orbit_visualizer )
 	
-	orbit_visualizer.ref_frame = self
-	orbit_visualizer.motion    = motion
+	var layer: Spatial = RootScene.get_visual_layer_space()
+	layer.add_child( orbit_visualizer )
+	
 	orbit_visualizer.color     = orbit_color
 	_set_show_orbit( false )
 
@@ -272,15 +270,15 @@ func _get_show_orbit():
 
 
 func _process_visualize_orbits():
-	var new_state: bool = PhysicsManager.visualize_orbits
+	var root: RefFrameRoot = get_ref_frame_root()
+	var new_state: bool = root.visualize_orbits
 	var current_state: bool = self.show_orbit
 	if current_state != new_state:
 		self.show_orbit = new_state
 	if show_orbit or true:
 		# Here additionally we need to initialize celestial motion every single time.
 		_update_celestial_motion()
-		orbit_visualizer.ref_frame = closest_celestial_body
-		orbit_visualizer.draw()
+		orbit_visualizer.draw( closest_celestial_body, motion )
 
 
 func _update_celestial_motion():
@@ -294,7 +292,7 @@ func _update_celestial_motion():
 	closest_celestial_body = cb
 	var se3: Se3Ref = self.relative_to( cb )
 	motion.allow_orbiting = true
-	motion.init( cb.gm, se3 )
+	motion.launch( cb.own_gm, se3 )
 	
 	# Check out what's the mode.
 	var m: String = motion.movement_type()
@@ -310,14 +308,7 @@ func on_delete():
 
 
 
-
-func serialize():
-	return {}
-
-
-
-func deserialize( data: Dictionary ):
-	return true
-
-
+func get_ref_frame_root():
+	var rf: RefFrameNode = RootScene.ref_frame_root
+	return rf
 

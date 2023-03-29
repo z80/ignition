@@ -1,0 +1,15 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/atmosphere/shader_atmosphere.shader" type="Shader" id=1]
+
+[resource]
+shader = ExtResource( 1 )
+shader_param/color_day = Color( 0.65, 0.8, 1, 1 )
+shader_param/color_night = Color( 1, 0.43, 0.46, 1 )
+shader_param/planet_radius = 1000.0
+shader_param/height = 10.0
+shader_param/transparency_distance_inner = 10.0
+shader_param/transparency_distance_outer = 10.0
+shader_param/light_dir = Vector3( 0, 0, -1 )
+shader_param/planet_center = Vector3( 0, -950, -433 )
+shader_param/displacement = -0.101

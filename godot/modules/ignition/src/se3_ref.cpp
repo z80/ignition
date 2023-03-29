@@ -34,6 +34,7 @@ void Se3Ref::_bind_methods()
     ClassDB::bind_method( D_METHOD("serialize"),           &Se3Ref::serialize,   Variant::DICTIONARY );
     ClassDB::bind_method( D_METHOD("deserialize", "data"), &Se3Ref::deserialize, Variant::BOOL );
 
+	ADD_GROUP( "Ignition", "" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "r" ), "set_r", "get_r" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "v" ), "set_v", "get_v" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "w" ), "set_w", "get_w" );

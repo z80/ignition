@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  string.cpp                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  string.cpp                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gdnative/string.h"
 
@@ -275,7 +275,7 @@ godot_int GDAPI godot_string_find_last(const godot_string *p_self, godot_string 
 	const String *self = (const String *)p_self;
 	String *what = (String *)&p_what;
 
-	return self->find_last(*what);
+	return self->rfind(*what);
 }
 
 godot_string GDAPI godot_string_format(const godot_string *p_self, const godot_variant *p_values) {
@@ -399,7 +399,21 @@ godot_string GDAPI godot_string_num_int64(int64_t p_num, godot_int p_base) {
 
 godot_string GDAPI godot_string_num_int64_capitalized(int64_t p_num, godot_int p_base, godot_bool p_capitalize_hex) {
 	godot_string result;
-	memnew_placement(&result, String(String::num_int64(p_num, p_base, true)));
+	memnew_placement(&result, String(String::num_int64(p_num, p_base, p_capitalize_hex)));
+
+	return result;
+}
+
+godot_string GDAPI godot_string_num_uint64(uint64_t p_num, godot_int p_base) {
+	godot_string result;
+	memnew_placement(&result, String(String::num_uint64(p_num, p_base)));
+
+	return result;
+}
+
+godot_string GDAPI godot_string_num_uint64_capitalized(uint64_t p_num, godot_int p_base, godot_bool p_capitalize_hex) {
+	godot_string result;
+	memnew_placement(&result, String(String::num_uint64(p_num, p_base, p_capitalize_hex)));
 
 	return result;
 }
@@ -844,6 +858,23 @@ godot_array GDAPI godot_string_split_spaces(const godot_string *p_self) {
 	}
 
 	return result;
+}
+
+godot_string GDAPI godot_string_join(const godot_string *p_self, const godot_array *p_parts) {
+	const String *self = (const String *)p_self;
+
+	const Array *parts_proxy = (const Array *)p_parts;
+	Vector<String> parts;
+	parts.resize(parts_proxy->size());
+	for (int i = 0; i < parts_proxy->size(); i++) {
+		parts.write[i] = (*parts_proxy)[i];
+	}
+
+	godot_string str;
+	String *s = (String *)&str;
+	memnew_placement(s, String);
+	*s = self->join(parts);
+	return str;
 }
 
 godot_int GDAPI godot_string_get_slice_count(const godot_string *p_self, godot_string p_splitter) {

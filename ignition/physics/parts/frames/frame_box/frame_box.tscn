@@ -1,10 +1,8 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://physics/parts/frames/frame_box/frame_box.gd" type="Script" id=1]
-[ext_resource path="res://physics/parts/frames/frame_box/frame_box_physical.tscn" type="PackedScene" id=2]
-[ext_resource path="res://physics/parts/frames/frame_box/frame_box_visual.tscn" type="PackedScene" id=3]
+[ext_resource path="res://physics/parts/frames/frame_box/visual.tscn" type="PackedScene" id=2]
 
-[node name="FrameBox" type="RefFrameNode"]
+[node name="FrameBox" type="RefFrameBodyNode"]
 script = ExtResource( 1 )
-VisualScene = ExtResource( 3 )
-PhysicalScene = ExtResource( 2 )
+VisualScene = ExtResource( 2 )

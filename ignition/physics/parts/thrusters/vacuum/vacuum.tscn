@@ -1,15 +1,14 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://physics/parts/thrusters/vacuum/vacuum.gd" type="Script" id=1]
 [ext_resource path="res://physics/parts/thrusters/vacuum/air_drag.tscn" type="PackedScene" id=2]
-[ext_resource path="res://physics/parts/thrusters/vacuum/physical.tscn" type="PackedScene" id=3]
-[ext_resource path="res://physics/parts/thrusters/vacuum/visual.tscn" type="PackedScene" id=4]
+[ext_resource path="res://physics/parts/thrusters/vacuum/visual.tscn" type="PackedScene" id=3]
 
-[node name="Thruster" type="RefFrameNode"]
+[node name="Thruster" type="RefFrameBodyNode"]
 script = ExtResource( 1 )
-VisualScene = ExtResource( 4 )
-PhysicalScene = ExtResource( 3 )
+VisualScene = ExtResource( 3 )
 AirDragScene = ExtResource( 2 )
+destruction_dv = 15.0
 allows_surface_attachments = false
 conducts_solid_fuel = false
 conducts_electricity = false

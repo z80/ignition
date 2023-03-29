@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  audio_driver_pulseaudio.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_driver_pulseaudio.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_driver_pulseaudio.h"
 
@@ -34,6 +34,7 @@
 
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "core/version.h"
 
 #ifdef ALSAMIDI_ENABLED
 #include "drivers/alsa/asound-so_wrap.h"
@@ -284,16 +285,25 @@ Error AudioDriverPulseAudio::init() {
 		return ERR_CANT_OPEN;
 	}
 
-	active = false;
-	thread_exited = false;
-	exit_thread = false;
+	active.clear();
+	exit_thread.clear();
 
 	mix_rate = GLOBAL_GET("audio/mix_rate");
 
 	pa_ml = pa_mainloop_new();
 	ERR_FAIL_COND_V(pa_ml == nullptr, ERR_CANT_OPEN);
 
-	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), "Godot");
+	String context_name;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		context_name = VERSION_NAME " Editor";
+	} else {
+		context_name = GLOBAL_GET("application/config/name");
+		if (context_name.empty()) {
+			context_name = VERSION_NAME " Project";
+		}
+	}
+
+	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), context_name.utf8().ptr());
 	ERR_FAIL_COND_V(pa_ctx == nullptr, ERR_CANT_OPEN);
 
 	pa_ready = 0;
@@ -373,7 +383,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 	size_t avail_bytes = 0;
 	uint64_t default_device_msec = OS::get_singleton()->get_ticks_msec();
 
-	while (!ad->exit_thread) {
+	while (!ad->exit_thread.is_set()) {
 		size_t read_bytes = 0;
 		size_t written_bytes = 0;
 
@@ -383,7 +393,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 			int16_t *out_ptr = ad->samples_out.ptrw();
 
-			if (!ad->active) {
+			if (!ad->active.is_set()) {
 				for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
 					out_ptr[i] = 0;
 				}
@@ -453,8 +463,8 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 				err = ad->init_device();
 				if (err != OK) {
-					ad->active = false;
-					ad->exit_thread = true;
+					ad->active.clear();
+					ad->exit_thread.set();
 					break;
 				}
 			}
@@ -492,8 +502,8 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					Error err = ad->init_device();
 					if (err != OK) {
 						ERR_PRINT("PulseAudio: init_device error");
-						ad->active = false;
-						ad->exit_thread = true;
+						ad->active.clear();
+						ad->exit_thread.set();
 						break;
 					}
 
@@ -546,8 +556,8 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 					err = ad->capture_init_device();
 					if (err != OK) {
-						ad->active = false;
-						ad->exit_thread = true;
+						ad->active.clear();
+						ad->exit_thread.set();
 						break;
 					}
 				}
@@ -562,12 +572,10 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			OS::get_singleton()->delay_usec(1000);
 		}
 	}
-
-	ad->thread_exited = true;
 }
 
 void AudioDriverPulseAudio::start() {
-	active = true;
+	active.set();
 }
 
 int AudioDriverPulseAudio::get_mix_rate() const {
@@ -652,7 +660,7 @@ void AudioDriverPulseAudio::finish() {
 		return;
 	}
 
-	exit_thread = true;
+	exit_thread.set();
 	thread.wait_to_finish();
 
 	finish_device();
@@ -829,9 +837,6 @@ AudioDriverPulseAudio::AudioDriverPulseAudio() :
 		channels(0),
 		pa_ready(0),
 		pa_status(0),
-		active(false),
-		thread_exited(false),
-		exit_thread(false),
 		latency(0) {
 	samples_in.clear();
 	samples_out.clear();

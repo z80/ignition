@@ -42,7 +42,8 @@ public:
     Float max_velocity() const;
     Float excess_velocity() const;
     Float deflection_angle() const;
-    // Orbit orientation.
+	Vector3d acceleration() const;
+	// Orbit orientation.
     // From focus towards perigee.
     Vector3d ex() const;
     // Along velocity at perigee.
@@ -50,9 +51,10 @@ public:
 
 
     // Functionality needed for processing.
-    void init( Float gm, const SE3 & se3 );
-    static Float init_gm( Float radius_km, Float wanted_surface_orbit_velocity_kms );
-    void launch_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity );
+    bool launch( Float gm, const SE3 & se3 );
+	static Float compute_gm_by_speed( Float radius_km, Float wanted_surface_orbit_velocity_kms );
+	static Float compute_gm_by_period( Float radius_km, Float wanted_period_hrs );
+	void launch_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity );
     const SE3 & process( Float dt );
 
     const SE3 & get_se3() const;
@@ -67,6 +69,9 @@ public:
 
     bool allow_orbiting;
 
+	// This one is celestial body's own mass.
+	Float own_gm;
+	// This one is the parent's mass. I.e. is used for orbit calculations.
     Float    gm;
     Vector3d h;
     Vector3d e;
@@ -99,7 +104,7 @@ private:
     void init_hyperbolic();
 
     void process_numeric( Float dt );
-    void process_parabolic( Float dt );
+	void process_parabolic( Float dt );
     void process_elliptic( Float dt );
     void process_hyperbolic( Float dt );
 

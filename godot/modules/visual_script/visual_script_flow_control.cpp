@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  visual_script_flow_control.cpp                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  visual_script_flow_control.cpp                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "visual_script_flow_control.h"
 
@@ -68,7 +68,7 @@ PropertyInfo VisualScriptReturn::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptReturn::get_caption() const {
-	return "Return";
+	return RTR("Return");
 }
 
 String VisualScriptReturn::get_text() const {
@@ -197,11 +197,11 @@ PropertyInfo VisualScriptCondition::get_output_value_port_info(int p_idx) const 
 }
 
 String VisualScriptCondition::get_caption() const {
-	return "Condition";
+	return RTR("Condition");
 }
 
 String VisualScriptCondition::get_text() const {
-	return "if (cond) is:  ";
+	return RTR("if (cond) is:");
 }
 
 void VisualScriptCondition::_bind_methods() {
@@ -275,11 +275,11 @@ PropertyInfo VisualScriptWhile::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptWhile::get_caption() const {
-	return "While";
+	return RTR("While");
 }
 
 String VisualScriptWhile::get_text() const {
-	return "while (cond): ";
+	return RTR("while (cond):");
 }
 
 void VisualScriptWhile::_bind_methods() {
@@ -354,11 +354,11 @@ PropertyInfo VisualScriptIterator::get_output_value_port_info(int p_idx) const {
 	return pinfo;
 }
 String VisualScriptIterator::get_caption() const {
-	return "Iterator";
+	return RTR("Iterator");
 }
 
 String VisualScriptIterator::get_text() const {
-	return "for (elem) in (input): ";
+	return RTR("for (elem) in (input):");
 }
 
 void VisualScriptIterator::_bind_methods() {
@@ -381,7 +381,7 @@ public:
 
 			if (!valid) {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
-				r_error_str = RTR("Input type not iterable: ") + Variant::get_type_name(p_inputs[0]->get_type());
+				r_error_str = RTR("Input type not iterable:") + " " + Variant::get_type_name(p_inputs[0]->get_type());
 				return 0;
 			}
 
@@ -404,7 +404,7 @@ public:
 
 			if (!valid) {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
-				r_error_str = RTR("Iterator became invalid: ") + Variant::get_type_name(p_inputs[0]->get_type());
+				r_error_str = RTR("Iterator became invalid:") + " " + Variant::get_type_name(p_inputs[0]->get_type());
 				return 0;
 			}
 
@@ -465,11 +465,11 @@ PropertyInfo VisualScriptSequence::get_output_value_port_info(int p_idx) const {
 	return PropertyInfo(Variant::INT, "current");
 }
 String VisualScriptSequence::get_caption() const {
-	return "Sequence";
+	return RTR("Sequence");
 }
 
 String VisualScriptSequence::get_text() const {
-	return "in order: ";
+	return RTR("in order:");
 }
 
 void VisualScriptSequence::set_steps(int p_steps) {
@@ -572,11 +572,11 @@ PropertyInfo VisualScriptSwitch::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptSwitch::get_caption() const {
-	return "Switch";
+	return RTR("Switch");
 }
 
 String VisualScriptSwitch::get_text() const {
-	return "'input' is:";
+	return RTR("'input' is:");
 }
 
 class VisualScriptNodeInstanceSwitch : public VisualScriptNodeInstance {
@@ -699,14 +699,14 @@ PropertyInfo VisualScriptTypeCast::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptTypeCast::get_caption() const {
-	return "Type Cast";
+	return RTR("Type Cast");
 }
 
 String VisualScriptTypeCast::get_text() const {
 	if (script != String()) {
-		return "Is " + script.get_file() + "?";
+		return vformat(RTR("Is %s?"), script.get_file());
 	} else {
-		return "Is " + base_type + "?";
+		return vformat(RTR("Is %s?"), base_type);
 	}
 }
 
@@ -778,7 +778,7 @@ public:
 			}
 
 			if (!ResourceCache::has(script)) {
-				//if the script is not in use by anyone, we can safely assume whathever we got is not casting to it.
+				//if the script is not in use by anyone, we can safely assume whatever we got is not casting to it.
 				return 1;
 			}
 			Ref<Script> cast_script = Ref<Resource>(ResourceCache::get(script));

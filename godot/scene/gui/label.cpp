@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  label.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  label.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "label.h"
 #include "core/print_string.h"
@@ -195,7 +195,7 @@ void Label::_notification(int p_what) {
 				to = to->next;
 			}
 
-			bool can_fill = to && to->char_pos == WordCache::CHAR_WRAPLINE;
+			bool can_fill = to && (to->char_pos == WordCache::CHAR_WRAPLINE || to->char_pos == WordCache::CHAR_NEWLINE);
 
 			float x_ofs = 0;
 
@@ -387,6 +387,7 @@ void Label::regenerate_word_cache() {
 	int line_spacing = get_constant("line_spacing");
 	line_count = 1;
 	total_char_cache = 0;
+	bool was_separatable = false;
 
 	WordCache *last = nullptr;
 
@@ -411,8 +412,11 @@ void Label::regenerate_word_cache() {
 		bool insert_newline = false;
 		real_t char_width = 0;
 
-		if (current < 33) {
-			if (current_word_size > 0) {
+		bool separation_changed = i > 0 && was_separatable != separatable;
+		was_separatable = separatable;
+
+		if (current < 33) { // Control characters and space.
+			if (current_word_size > 0) { // These characters always create a word-break.
 				WordCache *wc = memnew(WordCache);
 				if (word_cache) {
 					last->next = wc;
@@ -428,7 +432,7 @@ void Label::regenerate_word_cache() {
 				current_word_size = 0;
 				space_count = 0;
 			} else if ((i == xl_text.length() || current == '\n') && last != nullptr && space_count != 0) {
-				//in case there are trailing white spaces we add a placeholder word cache with just the spaces
+				// In case there are trailing white spaces we add a placeholder word cache with just the spaces.
 				WordCache *wc = memnew(WordCache);
 				if (word_cache) {
 					last->next = wc;
@@ -452,7 +456,13 @@ void Label::regenerate_word_cache() {
 			}
 
 			if (i < xl_text.length() && xl_text[i] == ' ') {
-				if (line_width > 0 || last == nullptr || last->char_pos != WordCache::CHAR_WRAPLINE) {
+				if (line_width == 0) {
+					if (current_word_size == 0) {
+						word_pos = i;
+					}
+					current_word_size += space_width;
+					line_width += space_width;
+				} else if (line_width > 0 || last == nullptr || last->char_pos != WordCache::CHAR_WRAPLINE) {
 					space_count++;
 					line_width += space_width;
 				} else {
@@ -460,8 +470,24 @@ void Label::regenerate_word_cache() {
 				}
 			}
 
-		} else {
-			// latin characters
+		} else { // Characters with graphical representation.
+			// Word-break on CJK & non-CJK edge.
+			if (separation_changed && current_word_size > 0) {
+				WordCache *wc = memnew(WordCache);
+				if (word_cache) {
+					last->next = wc;
+				} else {
+					word_cache = wc;
+				}
+				last = wc;
+
+				wc->pixel_width = current_word_size;
+				wc->char_pos = word_pos;
+				wc->word_len = i - word_pos;
+				wc->space_count = space_count;
+				current_word_size = 0;
+				space_count = 0;
+			}
 			if (current_word_size == 0) {
 				word_pos = i;
 			}

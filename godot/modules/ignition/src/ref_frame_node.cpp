@@ -21,12 +21,6 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("v"),      &RefFrameNode::v, Variant::VECTOR3 );
 	ClassDB::bind_method( D_METHOD("w"),      &RefFrameNode::w, Variant::VECTOR3 );
 
-	ClassDB::bind_method( D_METHOD("r_root"), &RefFrameNode::r_root, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("q_root"), &RefFrameNode::q_root, Variant::QUAT );
-	ClassDB::bind_method( D_METHOD("v_root"), &RefFrameNode::v_root, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("w_root"), &RefFrameNode::w_root, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("t_root"), &RefFrameNode::t_root, Variant::TRANSFORM );
-
 	ClassDB::bind_method( D_METHOD("set_se3"), &RefFrameNode::set_se3 );
 	ClassDB::bind_method( D_METHOD("get_se3"), &RefFrameNode::get_se3, Variant::OBJECT );
 
@@ -36,21 +30,17 @@ void RefFrameNode::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent, Variant::NIL );
 
-	ClassDB::bind_method( D_METHOD("compute_relative_to_root", "node"), &RefFrameNode::compute_relative_to_root, Variant::NIL );
-
-	ClassDB::bind_method( D_METHOD("set_jump_r", "vector3"),   &RefFrameNode::set_jump_r, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_jump_q", "quat"),      &RefFrameNode::set_jump_q, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_jump_v", "vector3"),   &RefFrameNode::set_jump_v, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_jump_w", "vector3"),   &RefFrameNode::set_jump_w, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_jump_t", "transform"), &RefFrameNode::set_jump_t, Variant::NIL );
-
-	ClassDB::bind_method( D_METHOD("apply_jump"),              &RefFrameNode::apply_jump, Variant::NIL );
 	ClassDB::bind_method( D_METHOD("jump_to", "dest", "dest_se3"), &RefFrameNode::jump_to );
 
 	ClassDB::bind_method( D_METHOD("set_debug", "en"), &RefFrameNode::set_debug );
 	ClassDB::bind_method( D_METHOD("get_debug"), &RefFrameNode::get_debug, Variant::BOOL );
 
+	//ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
+	//ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize );
+	ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize );
 
+	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform" ),        "set_t", "t" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "linear_velocity" ),  "set_v", "v" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "angular_velocity" ), "set_w", "w" );
@@ -66,8 +56,8 @@ void RefFrameNode::_jumped()
 	ScriptInstance * si = get_script_instance();
 	if ( si != nullptr )
 	{
-		const Variant *ptr[1] = {};
-		get_script_instance()->call_multilevel( "_jumped", ptr, 0 );
+		//const Variant *ptr[1] = {};
+		get_script_instance()->call_multilevel( "_jumped", nullptr, 0 );
 	}
 	if ( debug_ )
 		print_line( "jumped" );
@@ -78,12 +68,52 @@ void RefFrameNode::_parent_jumped()
 	ScriptInstance * si = get_script_instance();
 	if ( si != nullptr )
 	{
-		const Variant *ptr[1] = {};
-		get_script_instance()->call_multilevel( "_parent_jumped", ptr, 0 );
+		//const Variant *ptr[1] = {};
+		get_script_instance()->call_multilevel( "_parent_jumped", nullptr, 0 );
 	}
 	if ( debug_ )
 		print_line( "parent jumped" );
 }
+
+void RefFrameNode::_child_jumped( RefFrameNode * child_ref_frame )
+{
+	ScriptInstance * si = get_script_instance();
+	if ( si != nullptr )
+	{
+		const Variant arg( child_ref_frame );
+		const Variant *ptr[1] = { &arg };
+		get_script_instance()->call_multilevel( "_child_jumped", ptr, 1 );
+	}
+	if ( debug_ )
+		print_line( "child jumped" );
+}
+
+void RefFrameNode::_child_entered( RefFrameNode * child_ref_frame )
+{
+	ScriptInstance * si = get_script_instance();
+	if ( si != nullptr )
+	{
+		const Variant arg( child_ref_frame );
+		const Variant *ptr[1] = { &arg };
+		get_script_instance()->call_multilevel( "_child_entered", ptr, 1 );
+	}
+	if ( debug_ )
+		print_line( "child entered" );
+}
+
+void RefFrameNode::_child_left( RefFrameNode * child_ref_frame )
+{
+	ScriptInstance * si = get_script_instance();
+	if ( si != nullptr )
+	{
+		const Variant arg( child_ref_frame );
+		const Variant *ptr[1] = { &arg };
+		get_script_instance()->call_multilevel( "_child_left", ptr, 1 );
+	}
+	if ( debug_ )
+		print_line( "child left" );
+}
+
 
 RefFrameNode::RefFrameNode()
 	: Node(),
@@ -150,39 +180,15 @@ Vector3 RefFrameNode::w() const
 	return w;
 }
 
-Vector3 RefFrameNode::r_root() const
+void RefFrameNode::set_se3_raw( const SE3 & se3 )
 {
-	const Vector3 res = se3_root_.r();
-	return res;
-}
-
-Quat    RefFrameNode::q_root() const
-{
-	const Quat res = se3_root_.q();
-	return res;
-}
-
-Vector3 RefFrameNode::v_root() const
-{
-	const Vector3 res = se3_root_.v();
-	return res;
-}
-
-Vector3 RefFrameNode::w_root() const
-{
-	const Vector3 res = se3_root_.w();
-	return res;
-}
-
-Transform RefFrameNode::t_root() const
-{
-	const Transform res = se3_root_.transform();
-	return res;
+	se3_ = se3;
 }
 
 void RefFrameNode::set_se3( const Ref<Se3Ref> & se3 )
 {
-	se3_ = se3.ptr()->se3;
+	const SE3 & se3_raw = se3.ptr()->se3;
+	set_se3_raw( se3_raw );
 }
 
 Ref<Se3Ref> RefFrameNode::get_se3() const
@@ -251,7 +257,7 @@ void RefFrameNode::change_parent( Node * parent )
 	}
 
 	const SE3 se3_rel = relative_( parent_rf );
-	se3_    = se3_rel;
+	set_se3_raw( se3_rel );
 
 	if ( parent )
 	{
@@ -262,54 +268,6 @@ void RefFrameNode::change_parent( Node * parent )
 		this->set_name( unique_name );
 		parent->add_child( this );
 	}
-}
-
-void RefFrameNode::compute_relative_to_root( Node * root )
-{
-	RefFrameNode * root_rf;
-	if ( !root )
-	{
-		root_rf = nullptr;
-	}
-	else
-	{
-		RefFrameNode * new_r = Object::cast_to<RefFrameNode>( root );
-		if ( !new_r )
-			root_rf = nullptr;
-		else
-			root_rf = new_r;
-	}
-	se3_root_ = relative_( root_rf );
-}
-
-void RefFrameNode::set_jump_r( const Vector3 & r )
-{
-	se3_jump_to_.set_r( r );
-}
-
-void RefFrameNode::set_jump_q( const Quat & q )
-{
-	se3_jump_to_.set_q( q );
-}
-
-void RefFrameNode::set_jump_v( const Vector3 & v )
-{
-	se3_jump_to_.set_v( v );
-}
-
-void RefFrameNode::set_jump_w( const Vector3 & w )
-{
-	se3_jump_to_.set_w( w );
-}
-
-void RefFrameNode::set_jump_t( const Transform & t )
-{
-	se3_jump_to_.set_transform( t );
-}
-
-void RefFrameNode::apply_jump()
-{
-	jump_to_( this, se3_jump_to_ );
 }
 
 void RefFrameNode::jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 )
@@ -377,7 +335,7 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 				          + rtos( snew.v_.z_ ) + String( ")" );
 			print_line( stri );
 		}
-		ch->se3_ = se3_child_to;
+		ch->set_se3_raw( se3_child_to );
 	}
 
 	if ( dest != this )
@@ -388,13 +346,13 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 			p->remove_child( this );
 		}
 
-		if ( dest_rf )
+		if ( dest )
 		{
-			dest_rf->add_child( this );
+			dest->add_child( this );
 		}
 	}
 
-	se3_ = dest_se3_adjusted;
+	set_se3_raw( dest_se3_adjusted );
 
 	// Call script notifications.
 	// For the node itself.
@@ -404,9 +362,27 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 	{
 		Node * n = get_child( i );
 		RefFrameNode * ch = Object::cast_to<RefFrameNode>( n );
-		if ( !ch )
+		if ( ch == nullptr )
 			continue;
 		ch->_parent_jumped();
+	}
+
+	// Call child jumped in parent.
+	if ( p != dest_rf )
+	{
+		if ( dest_rf != nullptr )
+			dest_rf->_child_entered( this );
+		if ( p != nullptr )
+		{
+			RefFrameNode * parent_rf = Object::cast_to<RefFrameNode>( p );
+			if ( parent_rf != nullptr )
+				parent_rf->_child_left( this );
+		}
+	}
+	else
+	{
+		if ( dest_rf != nullptr )
+			dest_rf->_child_jumped( this );
 	}
 }
 
@@ -425,7 +401,18 @@ SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const S
 	while (rf != nullptr)
 	{
 		if ( debug_ )
-			print_line( String("queueA <- \"") + rf->get_name() + String("\"") );
+		{
+			const SE3 & se3 = rf->se3_;
+			print_line( String("queueA <- \"") + rf->get_name() + String("\", r: (") +
+			            rtos(se3.r_.x_) + String( ", ") +
+						rtos(se3.r_.y_) + String( ", ") +
+						rtos(se3.r_.z_) + String( "); q: (") +
+						rtos(se3.q_.w_) + String( ", ") +
+						rtos(se3.q_.x_) + String( ", ") +
+						rtos(se3.q_.y_) + String( ", ") +
+						rtos(se3.q_.z_) + String( ")")
+			);
+		}
 		queueA_.push_back( rf );
 		rf = rf->parent_rf_();
 	}
@@ -451,8 +438,20 @@ SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const S
 			break;
 		}
 		if ( debug_ )
-			print_line( String("queueB <- \"") + rf->get_name() + String("\"") );
-		queueB_.push_back( rf );
+		{
+			const SE3 & se3 = rf->se3_;
+			print_line( String("queueB <- \"") + rf->get_name() + String("\", r: (") + 
+						rtos(se3.r_.x_) + String( ", ") +
+						rtos(se3.r_.y_) + String( ", ") +
+						rtos(se3.r_.z_) + String( "); q: (") +
+						rtos(se3.q_.w_) + String( ", ") +
+						rtos(se3.q_.x_) + String( ", ") +
+						rtos(se3.q_.y_) + String( ", ") +
+						rtos(se3.q_.z_) + String( ")")
+			);
+		}
+
+			queueB_.push_back( rf );
 		rf = rf->parent_rf_();
 	}
 
@@ -483,6 +482,38 @@ SE3 RefFrameNode::relative_( RefFrameNode * root, const SE3 & se3_local, const S
 	}
 
 	const SE3 se3_rel = se3A / se3B;
+
+	if ( debug_ )
+	{
+		print_line( String("SE3(A): r: (") + 
+			rtos(se3A.r_.x_) + String( ", ") +
+			rtos(se3A.r_.y_) + String( ", ") +
+			rtos(se3A.r_.z_) + String( "); q: (") +
+			rtos(se3A.q_.w_) + String( ", ") +
+			rtos(se3A.q_.x_) + String( ", ") +
+			rtos(se3A.q_.y_) + String( ", ") +
+			rtos(se3A.q_.z_) + String( ")")
+		);
+		print_line( String("SE3(B): r: (") + 
+			rtos(se3B.r_.x_) + String( ", ") +
+			rtos(se3B.r_.y_) + String( ", ") +
+			rtos(se3B.r_.z_) + String( "); q: (") +
+			rtos(se3B.q_.w_) + String( ", ") +
+			rtos(se3B.q_.x_) + String( ", ") +
+			rtos(se3B.q_.y_) + String( ", ") +
+			rtos(se3B.q_.z_) + String( ")")
+		);
+		print_line( String("SE3(A/B): r: (") + 
+			rtos(se3_rel.r_.x_) + String( ", ") +
+			rtos(se3_rel.r_.y_) + String( ", ") +
+			rtos(se3_rel.r_.z_) + String( "); q: (") +
+			rtos(se3_rel.q_.w_) + String( ", ") +
+			rtos(se3_rel.q_.x_) + String( ", ") +
+			rtos(se3_rel.q_.y_) + String( ", ") +
+			rtos(se3_rel.q_.z_) + String( ")")
+		);
+	}
+
 	return se3_rel;
 }
 
@@ -526,6 +557,99 @@ String RefFrameNode::_unique_name( const String & name_base, Node * parent )
 			return name;
 		ind += 1;
 	}
+}
+
+
+void RefFrameNode::_ign_pre_process( real_t delta )
+{
+	ScriptInstance * inst = get_script_instance();
+	if (inst != nullptr)
+	{
+		Variant time = delta;
+		const Variant * ptr[1] = { &time };
+		get_script_instance()->call_multilevel( "_ign_pre_process", ptr, 1 );
+	}
+}
+
+void RefFrameNode::_ign_process( real_t delta )
+{
+	ScriptInstance * inst = get_script_instance();
+	if (inst != nullptr)
+	{
+		Variant time = delta;
+		const Variant * ptr[1] = { &time };
+		get_script_instance()->call_multilevel( "_ign_process", ptr, 1 );
+	}
+}
+
+void RefFrameNode::_ign_post_process( real_t delta )
+{
+	ScriptInstance * inst = get_script_instance();
+	if (inst != nullptr)
+	{
+		Variant time = delta;
+		const Variant * ptr[1] = { &time };
+		get_script_instance()->call_multilevel( "_ign_post_process", ptr, 1 );
+	}
+}
+
+
+void RefFrameNode::_ign_physics_pre_process( real_t delta )
+{
+	ScriptInstance * inst = get_script_instance();
+	if (inst != nullptr)
+	{
+		Variant time = delta;
+		const Variant * ptr[1] = { &time };
+		get_script_instance()->call_multilevel( "_ign_physics_pre_process", ptr, 1 );
+	}
+}
+
+void RefFrameNode::_ign_physics_process( real_t delta )
+{
+	ScriptInstance * inst = get_script_instance();
+	if (inst != nullptr)
+	{
+		Variant time = delta;
+		const Variant * ptr[1] = { &time };
+		get_script_instance()->call_multilevel( "_ign_physics_process", ptr, 1 );
+	}
+}
+
+void RefFrameNode::_ign_physics_post_process( real_t delta )
+{
+	ScriptInstance * inst = get_script_instance();
+	if (inst != nullptr)
+	{
+		Variant time = delta;
+		const Variant * ptr[1] = { &time };
+		get_script_instance()->call_multilevel( "_ign_physics_post_process", ptr, 1 );
+	}
+}
+
+
+Dictionary RefFrameNode::serialize()
+{
+	Dictionary data;
+	const Dictionary se3_data = se3_.serialize();
+	data["se3"] = se3_data;
+	return data;
+}
+
+bool RefFrameNode::deserialize( const Dictionary & data )
+{
+	const bool ok = data.has( "se3" );
+	if ( !ok )
+		return false;
+
+	{
+		const Dictionary se3_data = data["se3"];
+		const bool ok = se3_.deserialize( se3_data );
+		if ( !ok )
+			return false;
+	}
+
+	return true;
 }
 
 

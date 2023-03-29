@@ -268,7 +268,7 @@ func _compute_draw_params():
 	# Axes in target parent ref frame.
 	var target_parent_rf: RefFrameNode = target.get_parent()
 	var target_rf_tr: Transform        = target.transform
-	var cam_rf: RefFrameNode           = PhysicsManager.camera
+	var cam_rf: RefFrameNode           = RootScene.ref_frame_root.player_camera
 	var cam_rf_se3: Se3Ref             = cam_rf.relative_to( target_parent_rf )
 	var cam_rf_tr: Transform           = cam_rf_se3.transform
 	var target_parent_to_camera_rf_tr: Transform = cam_rf_tr.inverse()
@@ -509,7 +509,7 @@ func _mouse_intersection_line( axis_a: Vector3, axis_r: Vector3 ):
 	var cam_a: Vector3 = camera.project_ray_normal(mouse_uv)
 	
 	var target_parent_rf: RefFrameNode     = target.get_parent()
-	var cam_rf: RefFrameNode               = PhysicsManager.camera
+	var cam_rf: RefFrameNode               = RootScene.ref_frame_root.player_camera
 	var cam_rf_se3: Se3Ref                 = cam_rf.relative_to( target_parent_rf )
 	var cam_to_target_parent_tr: Transform = cam_rf_se3.transform
 	
@@ -534,7 +534,7 @@ func _mouse_intersection_plane( plane_a: Vector3, plane_r: Vector3 ):
 	var cam_a: Vector3 = camera.project_ray_normal(mouse_uv)
 	
 	var target_parent_rf: RefFrameNode     = target.get_parent()
-	var cam_rf: RefFrameNode               = PhysicsManager.camera
+	var cam_rf: RefFrameNode               = RootScene.ref_frame_root.player_camera
 	var cam_rf_se3: Se3Ref                 = cam_rf.relative_to( target_parent_rf )
 	var cam_to_target_parent_tr: Transform = cam_rf_se3.transform
 	

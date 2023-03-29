@@ -40,7 +40,7 @@ func density_viscosity( se3: Se3Ref ):
 
 export(Vector3) var ang_velocity = Vector3.ZERO
 
-func compute_force( body: PhysicsBodyBase, se3: Se3Ref ):
+func compute_force( body: RefFrameNode, se3: Se3Ref ):
 	var dv: Array = density_viscosity( se3 )
 	var inside_atmosphere: bool = dv[0]
 	if not inside_atmosphere:
@@ -77,7 +77,7 @@ func compute_force( body: PhysicsBodyBase, se3: Se3Ref ):
 	var forward: Vector3 = -v.normalized()
 	forward = body_q.xform( forward )
 	
-	var rf_physics: RefFramePhysics = body.get_parent()
+	var rf_physics: RefFrameNode = body.get_parent()
 	var broad_tree: BroadTreeGd = rf_physics.get_broad_tree()
 	
 	for i in range(qty):

@@ -1,36 +1,37 @@
-/*************************************************************************/
-/*  primitive_meshes.h                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  primitive_meshes.h                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef PRIMITIVE_MESHES_H
 #define PRIMITIVE_MESHES_H
 
+#include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
 
 ///@TODO probably should change a few integers to unsigned integers...
@@ -101,6 +102,10 @@ class CapsuleMesh : public PrimitiveMesh {
 	GDCLASS(CapsuleMesh, PrimitiveMesh);
 
 private:
+	static constexpr int default_radial_segments = 64;
+	static constexpr int default_rings = 8;
+
+private:
 	float radius;
 	float mid_height;
 	int radial_segments;
@@ -111,6 +116,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
+	static void create_mesh_array(Array &p_arr, float radius, float mid_height, int radial_segments = default_radial_segments, int rings = default_rings);
+
 	void set_radius(const float p_radius);
 	float get_radius() const;
 
@@ -133,6 +140,11 @@ class CubeMesh : public PrimitiveMesh {
 	GDCLASS(CubeMesh, PrimitiveMesh);
 
 private:
+	static constexpr int default_subdivide_w = 0;
+	static constexpr int default_subdivide_h = 0;
+	static constexpr int default_subdivide_d = 0;
+
+private:
 	Vector3 size;
 	int subdivide_w;
 	int subdivide_h;
@@ -143,6 +155,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
+	static void create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w = default_subdivide_w, int subdivide_h = default_subdivide_h, int subdivide_d = default_subdivide_d);
+
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
 
@@ -166,6 +180,10 @@ class CylinderMesh : public PrimitiveMesh {
 	GDCLASS(CylinderMesh, PrimitiveMesh);
 
 private:
+	static constexpr int default_radial_segments = 64;
+	static constexpr int default_rings = 4;
+
+private:
 	float top_radius;
 	float bottom_radius;
 	float height;
@@ -177,6 +195,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
+	static void create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments = default_radial_segments, int rings = default_rings);
+
 	void set_top_radius(const float p_radius);
 	float get_top_radius() const;
 
@@ -295,6 +315,11 @@ class SphereMesh : public PrimitiveMesh {
 	GDCLASS(SphereMesh, PrimitiveMesh);
 
 private:
+	static constexpr int default_radial_segments = 64;
+	static constexpr int default_rings = 32;
+	static constexpr bool default_is_hemisphere = false;
+
+private:
 	float radius;
 	float height;
 	int radial_segments;
@@ -306,6 +331,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
+	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = default_radial_segments, int rings = default_rings, bool is_hemisphere = default_is_hemisphere);
+
 	void set_radius(const float p_radius);
 	float get_radius() const;
 
@@ -338,4 +365,100 @@ public:
 	PointMesh();
 };
 
-#endif
+/**
+	Text...
+*/
+
+class TextMesh : public PrimitiveMesh {
+	GDCLASS(TextMesh, PrimitiveMesh);
+
+public:
+	enum Align {
+
+		ALIGN_LEFT,
+		ALIGN_CENTER,
+		ALIGN_RIGHT
+	};
+
+private:
+	struct ContourPoint {
+		Vector2 point;
+		bool sharp = false;
+
+		ContourPoint(){};
+		ContourPoint(const Vector2 &p_pt, bool p_sharp) {
+			point = p_pt;
+			sharp = p_sharp;
+		};
+	};
+	struct ContourInfo {
+		real_t length = 0.0;
+		bool ccw = true;
+		ContourInfo(){};
+		ContourInfo(real_t p_len, bool p_ccw) {
+			length = p_len;
+			ccw = p_ccw;
+		}
+	};
+	struct GlyphMeshData {
+		Vector<Vector2> triangles;
+		Vector<Vector<ContourPoint>> contours;
+		Vector<ContourInfo> contours_info;
+		Vector2 min_p = Vector2(INFINITY, INFINITY);
+		Vector2 max_p = Vector2(-INFINITY, -INFINITY);
+	};
+	mutable HashMap<uint32_t, GlyphMeshData> cache;
+
+	String text;
+	String xl_text;
+
+	Ref<Font> font_override;
+
+	Align horizontal_alignment = ALIGN_CENTER;
+	bool uppercase = false;
+
+	real_t depth = 0.05;
+	real_t pixel_size = 0.01;
+	real_t curve_step = 0.5;
+
+	mutable bool dirty_cache = true;
+
+	void _generate_glyph_mesh_data(uint32_t p_utf32_char, const Ref<Font> &p_font, CharType p_char, CharType p_next) const;
+	void _font_changed();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+	virtual void _create_mesh_array(Array &p_arr) const;
+
+public:
+	TextMesh();
+	~TextMesh();
+
+	void set_horizontal_alignment(Align p_alignment);
+	Align get_horizontal_alignment() const;
+
+	void set_text(const String &p_string);
+	String get_text() const;
+
+	void set_font(const Ref<Font> &p_font);
+	Ref<Font> get_font() const;
+	Ref<Font> _get_font_or_default() const;
+
+	void set_uppercase(bool p_uppercase);
+	bool is_uppercase() const;
+
+	void set_depth(real_t p_depth);
+	real_t get_depth() const;
+
+	void set_curve_step(real_t p_step);
+	real_t get_curve_step() const;
+
+	void set_pixel_size(real_t p_amount);
+	real_t get_pixel_size() const;
+};
+
+VARIANT_ENUM_CAST(TextMesh::Align);
+
+#endif // PRIMITIVE_MESHES_H

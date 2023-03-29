@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  audio_driver_alsa.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_driver_alsa.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_driver_alsa.h"
 
@@ -168,9 +168,8 @@ Error AudioDriverALSA::init() {
 		return ERR_CANT_OPEN;
 	}
 
-	active = false;
-	thread_exited = false;
-	exit_thread = false;
+	active.clear();
+	exit_thread.clear();
 
 	Error err = init_device();
 	if (err == OK) {
@@ -183,11 +182,11 @@ Error AudioDriverALSA::init() {
 void AudioDriverALSA::thread_func(void *p_udata) {
 	AudioDriverALSA *ad = (AudioDriverALSA *)p_udata;
 
-	while (!ad->exit_thread) {
+	while (!ad->exit_thread.is_set()) {
 		ad->lock();
 		ad->start_counting_ticks();
 
-		if (!ad->active) {
+		if (!ad->active.is_set()) {
 			for (uint64_t i = 0; i < ad->period_size * ad->channels; i++) {
 				ad->samples_out.write[i] = 0;
 			}
@@ -203,7 +202,7 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 		int todo = ad->period_size;
 		int total = 0;
 
-		while (todo && !ad->exit_thread) {
+		while (todo && !ad->exit_thread.is_set()) {
 			int16_t *src = (int16_t *)ad->samples_out.ptr();
 			int wrote = snd_pcm_writei(ad->pcm_handle, (void *)(src + (total * ad->channels)), todo);
 
@@ -222,8 +221,8 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 				wrote = snd_pcm_recover(ad->pcm_handle, wrote, 0);
 				if (wrote < 0) {
 					ERR_PRINT("ALSA: Failed and can't recover: " + String(snd_strerror(wrote)));
-					ad->active = false;
-					ad->exit_thread = true;
+					ad->active.clear();
+					ad->exit_thread.set();
 				}
 			}
 		}
@@ -241,8 +240,8 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 
 				err = ad->init_device();
 				if (err != OK) {
-					ad->active = false;
-					ad->exit_thread = true;
+					ad->active.clear();
+					ad->exit_thread.set();
 				}
 			}
 		}
@@ -250,12 +249,10 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 		ad->stop_counting_ticks();
 		ad->unlock();
 	}
-
-	ad->thread_exited = true;
 }
 
 void AudioDriverALSA::start() {
-	active = true;
+	active.set();
 }
 
 int AudioDriverALSA::get_mix_rate() const {
@@ -327,7 +324,7 @@ void AudioDriverALSA::finish_device() {
 }
 
 void AudioDriverALSA::finish() {
-	exit_thread = true;
+	exit_thread.set();
 	thread.wait_to_finish();
 
 	finish_device();

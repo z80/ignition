@@ -17,7 +17,7 @@ func _ready():
 		var data: Dictionary = _controls[key]
 		var node: Node     = data.node
 		var method: String = data.method
-		node.connect( "pressed", self, method )
+		var _err_code: int = node.connect( "pressed", self, method )
 
 
 func _input(event):
@@ -38,33 +38,33 @@ func _input(event):
 
 func set_time_scale_0():
 	UiSound.play( Constants.ButtonClick )
-	PhysicsManager.set_time_scale_0()
+	RootScene.ref_frame_root.set_time_scale_0()
 	_set_time_scale_text()
 
 
 func set_time_scale_lower():
 	UiSound.play( Constants.ButtonClick )
-	PhysicsManager.decrease_time_scale()
+	RootScene.ref_frame_root.decrease_time_scale()
 	_set_time_scale_text()
 
 
 func set_time_scale_1():
 	UiSound.play( Constants.ButtonClick )
-	PhysicsManager.set_time_scale_1()
+	RootScene.ref_frame_root.set_time_scale_1()
 
 	_set_time_scale_text()
 
 
 func set_time_scale_higher():
 	UiSound.play( Constants.ButtonClick )
-	PhysicsManager.increase_time_scale()
+	RootScene.ref_frame_root.increase_time_scale()
 	_set_time_scale_text()
 
 
 
 func _set_time_scale_text():
 	var l: Label = get_node( "Label" )
-	l.text = PhysicsManager.get_time_scale_string()
+	l.text = RootScene.ref_frame_root.get_time_scale_string()
 
 
 

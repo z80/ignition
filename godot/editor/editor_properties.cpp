@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_properties.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_properties.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_properties.h"
 
@@ -156,6 +156,7 @@ void EditorPropertyMultilineText::_bind_methods() {
 
 EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->add_constant_override("separation", 0);
 	add_child(hb);
 	set_bottom_editor(hb);
 	text = memnew(TextEdit);
@@ -173,40 +174,152 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 
 ///////////////////// TEXT ENUM /////////////////////////
 
+void EditorPropertyTextEnum::_emit_changed_value(String p_string) {
+	emit_changed(get_edited_property(), p_string);
+}
+
 void EditorPropertyTextEnum::_option_selected(int p_which) {
-	emit_changed(get_edited_property(), options->get_item_text(p_which));
+	_emit_changed_value(option_button->get_item_text(p_which));
+}
+
+void EditorPropertyTextEnum::_edit_custom_value() {
+	default_layout->hide();
+	edit_custom_layout->show();
+	custom_value_edit->grab_focus();
+}
+
+void EditorPropertyTextEnum::_custom_value_submitted(String p_value) {
+	edit_custom_layout->hide();
+	default_layout->show();
+
+	_emit_changed_value(p_value.strip_edges());
+}
+
+void EditorPropertyTextEnum::_custom_value_accepted() {
+	String new_value = custom_value_edit->get_text().strip_edges();
+	_custom_value_submitted(new_value);
+}
+
+void EditorPropertyTextEnum::_custom_value_cancelled() {
+	custom_value_edit->set_text(get_edited_object()->get(get_edited_property()));
+
+	edit_custom_layout->hide();
+	default_layout->show();
 }
 
 void EditorPropertyTextEnum::update_property() {
-	String which = get_edited_object()->get(get_edited_property());
-	for (int i = 0; i < options->get_item_count(); i++) {
-		String t = options->get_item_text(i);
-		if (t == which) {
-			options->select(i);
-			return;
+	String current_value = get_edited_object()->get(get_edited_property());
+	int default_option = options.find(current_value);
+
+	// The list can change in the loose mode.
+	if (loose_mode) {
+		custom_value_edit->set_text(current_value);
+		option_button->clear();
+
+		// Manually entered value.
+		if (default_option < 0 && !current_value.empty()) {
+			option_button->add_item(current_value, options.size() + 1001);
+			option_button->select(0);
+
+			option_button->add_separator();
 		}
+
+		// Add an explicit empty value for clearing the property.
+		option_button->add_item("", options.size() + 1000);
+
+		for (int i = 0; i < options.size(); i++) {
+			option_button->add_item(options[i], i);
+			if (options[i] == current_value) {
+				option_button->select(option_button->get_item_count() - 1);
+			}
+		}
+	} else {
+		option_button->select(default_option);
 	}
 }
 
-void EditorPropertyTextEnum::setup(const Vector<String> &p_options) {
+void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_loose_mode) {
+	loose_mode = p_loose_mode;
+
+	options.clear();
+
+	if (loose_mode) {
+		// Add an explicit empty value for clearing the property in the loose mode.
+		option_button->add_item("", options.size() + 1000);
+	}
+
 	for (int i = 0; i < p_options.size(); i++) {
-		options->add_item(p_options[i], i);
+		options.push_back(p_options[i]);
+		option_button->add_item(p_options[i], i);
+	}
+
+	if (loose_mode) {
+		edit_button->show();
 	}
 }
 
 void EditorPropertyTextEnum::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_option_selected"), &EditorPropertyTextEnum::_option_selected);
+	ClassDB::bind_method(D_METHOD("_edit_custom_value"), &EditorPropertyTextEnum::_edit_custom_value);
+	ClassDB::bind_method(D_METHOD("_custom_value_submitted"), &EditorPropertyTextEnum::_custom_value_submitted);
+	ClassDB::bind_method(D_METHOD("_custom_value_accepted"), &EditorPropertyTextEnum::_custom_value_accepted);
+	ClassDB::bind_method(D_METHOD("_custom_value_cancelled"), &EditorPropertyTextEnum::_custom_value_cancelled);
+}
+
+void EditorPropertyTextEnum::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED:
+			edit_button->set_icon(get_icon("Edit", "EditorIcons"));
+			accept_button->set_icon(get_icon("ImportCheck", "EditorIcons"));
+			cancel_button->set_icon(get_icon("ImportFail", "EditorIcons"));
+			break;
+	}
 }
 
 EditorPropertyTextEnum::EditorPropertyTextEnum() {
-	options = memnew(OptionButton);
-	options->set_clip_text(true);
-	options->set_flat(true);
+	default_layout = memnew(HBoxContainer);
+	add_child(default_layout);
 
-	add_child(options);
-	add_focusable(options);
-	options->connect("item_selected", this, "_option_selected");
+	edit_custom_layout = memnew(HBoxContainer);
+	edit_custom_layout->hide();
+	add_child(edit_custom_layout);
+
+	option_button = memnew(OptionButton);
+	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	option_button->set_clip_text(true);
+	option_button->set_flat(true);
+	default_layout->add_child(option_button);
+	option_button->connect("item_selected", this, "_option_selected");
+
+	edit_button = memnew(Button);
+	edit_button->set_flat(true);
+	edit_button->hide();
+	default_layout->add_child(edit_button);
+	edit_button->connect("pressed", this, "_edit_custom_value");
+
+	custom_value_edit = memnew(LineEdit);
+	custom_value_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit_custom_layout->add_child(custom_value_edit);
+	custom_value_edit->connect("text_entered", this, "_custom_value_submitted");
+
+	accept_button = memnew(Button);
+	accept_button->set_flat(true);
+	edit_custom_layout->add_child(accept_button);
+	accept_button->connect("pressed", this, "_custom_value_accepted");
+
+	cancel_button = memnew(Button);
+	cancel_button->set_flat(true);
+	edit_custom_layout->add_child(cancel_button);
+	cancel_button->connect("pressed", this, "_custom_value_cancelled");
+
+	add_focusable(option_button);
+	add_focusable(edit_button);
+	add_focusable(custom_value_edit);
+	add_focusable(accept_button);
+	add_focusable(cancel_button);
 }
+
 ///////////////////// PATH /////////////////////////
 
 void EditorPropertyPath::_path_selected(const String &p_path) {
@@ -840,6 +953,8 @@ void EditorPropertyLayers::update_property() {
 }
 
 void EditorPropertyLayers::setup(LayerType p_layer_type) {
+	layer_type = p_layer_type;
+
 	String basename;
 	int layer_group_size = 0;
 	int layer_count = 0;
@@ -856,6 +971,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 			layer_count = 32;
 		} break;
 
+		case LAYER_NAVIGATION_2D: {
+			basename = "layer_names/2d_navigation";
+			layer_group_size = 4;
+			layer_count = 32;
+		} break;
+
 		case LAYER_RENDER_3D: {
 			basename = "layer_names/3d_render";
 			layer_group_size = 5;
@@ -864,6 +985,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 
 		case LAYER_PHYSICS_3D: {
 			basename = "layer_names/3d_physics";
+			layer_group_size = 4;
+			layer_count = 32;
+		} break;
+
+		case LAYER_NAVIGATION_3D: {
+			basename = "layer_names/3d_navigation";
 			layer_group_size = 4;
 			layer_count = 32;
 		} break;
@@ -924,10 +1051,15 @@ void EditorPropertyLayers::_menu_pressed(int p_menu) {
 	_grid_changed(grid->value);
 }
 
+void EditorPropertyLayers::_refresh_names() {
+	setup(layer_type);
+}
+
 void EditorPropertyLayers::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_grid_changed"), &EditorPropertyLayers::_grid_changed);
 	ClassDB::bind_method(D_METHOD("_button_pressed"), &EditorPropertyLayers::_button_pressed);
 	ClassDB::bind_method(D_METHOD("_menu_pressed"), &EditorPropertyLayers::_menu_pressed);
+	ClassDB::bind_method(D_METHOD("_refresh_names"), &EditorPropertyLayers::_refresh_names);
 }
 
 EditorPropertyLayers::EditorPropertyLayers() {
@@ -952,6 +1084,8 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	layers->set_hide_on_checkable_item_selection(false);
 	layers->connect("id_pressed", this, "_menu_pressed");
 	layers->connect("popup_hide", button, "set_pressed", varray(false));
+
+	ProjectSettings::get_singleton()->connect("project_settings_changed", this, "_refresh_names");
 }
 
 ///////////////////// INT /////////////////////////
@@ -2139,6 +2273,29 @@ void EditorPropertyNodePath::_node_clear() {
 	update_property();
 }
 
+bool EditorPropertyNodePath::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	return !is_read_only() && is_drop_valid(p_data);
+}
+
+void EditorPropertyNodePath::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	ERR_FAIL_COND(!is_drop_valid(p_data));
+	Dictionary data = p_data;
+	Array nodes = data["nodes"];
+	Node *node = get_tree()->get_edited_scene_root()->get_node(nodes[0]);
+
+	if (node) {
+		_node_selected(node->get_path());
+	}
+}
+
+bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const {
+	if (p_drag_data["type"] != "nodes") {
+		return false;
+	}
+	Array nodes = p_drag_data["nodes"];
+	return nodes.size() == 1;
+}
+
 void EditorPropertyNodePath::update_property() {
 	NodePath p = get_edited_object()->get(get_edited_property());
 
@@ -2196,16 +2353,20 @@ void EditorPropertyNodePath::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_node_selected"), &EditorPropertyNodePath::_node_selected);
 	ClassDB::bind_method(D_METHOD("_node_assign"), &EditorPropertyNodePath::_node_assign);
 	ClassDB::bind_method(D_METHOD("_node_clear"), &EditorPropertyNodePath::_node_clear);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::drop_data_fw);
 }
 
 EditorPropertyNodePath::EditorPropertyNodePath() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
+	hbc->add_constant_override("separation", 0);
 	add_child(hbc);
 	assign = memnew(Button);
 	assign->set_flat(true);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->connect("pressed", this, "_node_assign");
+	assign->set_drag_forwarding(this);
 	hbc->add_child(assign);
 
 	clear = memnew(Button);
@@ -2459,7 +2620,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_use_doc_hints(true);
 
 				sub_inspector->set_sub_inspector(true);
-				sub_inspector->set_enable_capitalize_paths(bool(EDITOR_GET("interface/inspector/capitalize_properties")));
+				sub_inspector->set_property_name_style(EditorNode::get_singleton()->get_inspector_dock()->get_property_name_style());
 
 				sub_inspector->connect("property_keyed", this, "_sub_inspector_property_keyed");
 				sub_inspector->connect("resource_selected", this, "_sub_inspector_resource_selected");
@@ -2585,7 +2746,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				editor->setup(options);
 				add_property_editor(p_path, editor);
 
-			} else if (p_hint == PROPERTY_HINT_LAYERS_2D_PHYSICS || p_hint == PROPERTY_HINT_LAYERS_2D_RENDER || p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS || p_hint == PROPERTY_HINT_LAYERS_3D_RENDER) {
+			} else if (p_hint == PROPERTY_HINT_LAYERS_2D_PHYSICS || p_hint == PROPERTY_HINT_LAYERS_2D_RENDER || p_hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION || p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS || p_hint == PROPERTY_HINT_LAYERS_3D_RENDER || p_hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
 				EditorPropertyLayers::LayerType lt = EditorPropertyLayers::LAYER_RENDER_2D;
 				switch (p_hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
@@ -2594,11 +2755,17 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 					case PROPERTY_HINT_LAYERS_2D_PHYSICS:
 						lt = EditorPropertyLayers::LAYER_PHYSICS_2D;
 						break;
+					case PROPERTY_HINT_LAYERS_2D_NAVIGATION:
+						lt = EditorPropertyLayers::LAYER_NAVIGATION_2D;
+						break;
 					case PROPERTY_HINT_LAYERS_3D_RENDER:
 						lt = EditorPropertyLayers::LAYER_RENDER_3D;
 						break;
 					case PROPERTY_HINT_LAYERS_3D_PHYSICS:
 						lt = EditorPropertyLayers::LAYER_PHYSICS_3D;
+						break;
+					case PROPERTY_HINT_LAYERS_3D_NAVIGATION:
+						lt = EditorPropertyLayers::LAYER_NAVIGATION_3D;
 						break;
 					default: {
 					} //compiler could be smarter here and realize this can't happen
@@ -2702,10 +2869,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			}
 		} break;
 		case Variant::STRING: {
-			if (p_hint == PROPERTY_HINT_ENUM) {
+			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_SUGGESTION) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
-				Vector<String> options = p_hint_text.split(",");
-				editor->setup(options);
+				Vector<String> options = p_hint_text.split(",", false);
+				editor->setup(options, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				add_property_editor(p_path, editor);
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);

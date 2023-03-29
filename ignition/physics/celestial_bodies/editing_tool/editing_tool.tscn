@@ -2,7 +2,7 @@
 
 [ext_resource path="res://physics/celestial_bodies/celestial_surface.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/celestial_bodies/editing_tool/editing_tool.gd" type="Script" id=2]
-[ext_resource path="res://physics/camera_ctrl/camera.tscn" type="PackedScene" id=3]
+[ext_resource path="res://physics/camera_ctrl/player_camera.tscn" type="PackedScene" id=3]
 
 [sub_resource type="CubeMesh" id=1]
 
@@ -25,12 +25,15 @@ detail_size_2 = 0.1
 convert_to_global = true
 apply_scale = false
 
+[node name="CelestialBody" parent="Planet/Rotation" index="0"]
+apply_scale = true
+convert_to_global = true
+
 [node name="Camera" parent="Planet" instance=ExtResource( 3 )]
 map_mode = true
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
 visible = false
 mesh = SubResource( 1 )
-material/0 = null
 
 [editable path="Planet"]

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  font.h                                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  font.h                                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef FONT_H
 #define FONT_H
@@ -42,6 +42,12 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum ContourPointTag {
+		CONTOUR_CURVE_TAG_ON = 0x01,
+		CONTOUR_CURVE_TAG_OFF_CONIC = 0x00,
+		CONTOUR_CURVE_TAG_OFF_CUBIC = 0x02
+	};
+
 	virtual float get_height() const = 0;
 
 	virtual float get_ascent() const = 0;
@@ -58,6 +64,15 @@ public:
 
 	virtual bool has_outline() const { return false; }
 	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const = 0;
+
+	virtual RID get_char_texture(CharType p_char, CharType p_next, bool p_outline) const = 0;
+	virtual Size2 get_char_texture_size(CharType p_char, CharType p_next, bool p_outline) const = 0;
+
+	virtual Vector2 get_char_tx_offset(CharType p_char, CharType p_next, bool p_outline) const = 0;
+	virtual Size2 get_char_tx_size(CharType p_char, CharType p_next, bool p_outline) const = 0;
+	virtual Rect2 get_char_tx_uv_rect(CharType p_char, CharType p_next, bool p_outline) const = 0;
+
+	virtual Dictionary get_char_contours(CharType p_char, CharType p_next = 0) const { return Dictionary(); }
 
 	void update_changes();
 	Font();
@@ -135,7 +150,7 @@ public:
 	};
 
 private:
-	HashMap<CharType, Character> char_map;
+	HashMap<int32_t, Character> char_map;
 	Map<KerningPairKey, int> kerning_map;
 
 	float height;
@@ -165,17 +180,17 @@ public:
 	float get_descent() const;
 
 	void add_texture(const Ref<Texture> &p_texture);
-	void add_char(CharType p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance = -1);
+	void add_char(int32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance = -1);
 
 	int get_character_count() const;
-	Vector<CharType> get_char_keys() const;
-	Character get_character(CharType p_char) const;
+	Vector<int32_t> get_char_keys() const;
+	Character get_character(int32_t p_char) const;
 
 	int get_texture_count() const;
 	Ref<Texture> get_texture(int p_idx) const;
 
-	void add_kerning_pair(CharType p_A, CharType p_B, int p_kerning);
-	int get_kerning_pair(CharType p_A, CharType p_B) const;
+	void add_kerning_pair(int32_t p_A, int32_t p_B, int p_kerning);
+	int get_kerning_pair(int32_t p_A, int32_t p_B) const;
 	Vector<KerningPairKey> get_kerning_pair_keys() const;
 
 	Size2 get_char_size(CharType p_char, CharType p_next = 0) const;
@@ -190,6 +205,13 @@ public:
 
 	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
 
+	RID get_char_texture(CharType p_char, CharType p_next, bool p_outline) const;
+	Size2 get_char_texture_size(CharType p_char, CharType p_next, bool p_outline) const;
+
+	Vector2 get_char_tx_offset(CharType p_char, CharType p_next, bool p_outline) const;
+	Size2 get_char_tx_size(CharType p_char, CharType p_next, bool p_outline) const;
+	Rect2 get_char_tx_uv_rect(CharType p_char, CharType p_next, bool p_outline) const;
+
 	BitmapFont();
 	~BitmapFont();
 };
@@ -202,4 +224,6 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 };
 
-#endif
+VARIANT_ENUM_CAST(Font::ContourPointTag);
+
+#endif // FONT_H

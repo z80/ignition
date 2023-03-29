@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  geometry.h                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  geometry.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
@@ -42,8 +42,6 @@
 #include "core/vector.h"
 
 class Geometry {
-	Geometry();
-
 public:
 	static real_t get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2, Vector2 &c1, Vector2 &c2) {
 		Vector2 d1 = q1 - p1; // Direction vector of segment S1.
@@ -54,33 +52,33 @@ public:
 		real_t f = d2.dot(r);
 		real_t s, t;
 		// Check if either or both segments degenerate into points.
-		if (a <= CMP_EPSILON && e <= CMP_EPSILON) {
+		if (a <= (real_t)CMP_EPSILON && e <= (real_t)CMP_EPSILON) {
 			// Both segments degenerate into points.
 			c1 = p1;
 			c2 = p2;
 			return Math::sqrt((c1 - c2).dot(c1 - c2));
 		}
-		if (a <= CMP_EPSILON) {
+		if (a <= (real_t)CMP_EPSILON) {
 			// First segment degenerates into a point.
-			s = 0.0;
+			s = 0;
 			t = f / e; // s = 0 => t = (b*s + f) / e = f / e
-			t = CLAMP(t, 0.0, 1.0);
+			t = CLAMP(t, 0, 1);
 		} else {
 			real_t c = d1.dot(r);
-			if (e <= CMP_EPSILON) {
+			if (e <= (real_t)CMP_EPSILON) {
 				// Second segment degenerates into a point.
-				t = 0.0;
-				s = CLAMP(-c / a, 0.0, 1.0); // t = 0 => s = (b*t - c) / a = -c / a
+				t = 0;
+				s = CLAMP(-c / a, 0, 1); // t = 0 => s = (b*t - c) / a = -c / a
 			} else {
 				// The general nondegenerate case starts here.
 				real_t b = d1.dot(d2);
 				real_t denom = a * e - b * b; // Always nonnegative.
 				// If segments not parallel, compute closest point on L1 to L2 and
 				// clamp to segment S1. Else pick arbitrary s (here 0).
-				if (denom != 0.0) {
-					s = CLAMP((b * f - c * e) / denom, 0.0, 1.0);
+				if (denom != 0) {
+					s = CLAMP((b * f - c * e) / denom, 0, 1);
 				} else {
-					s = 0.0;
+					s = 0;
 				}
 				// Compute point on L2 closest to S1(s) using
 				// t = Dot((P1 + D1*s) - P2,D2) / Dot(D2,D2) = (b*s + f) / e
@@ -89,12 +87,12 @@ public:
 				//If t in [0,1] done. Else clamp t, recompute s for the new value
 				// of t using s = Dot((P2 + D2*t) - P1,D1) / Dot(D1,D1)= (t*b - c) / a
 				// and clamp s to [0, 1].
-				if (t < 0.0) {
-					t = 0.0;
-					s = CLAMP(-c / a, 0.0, 1.0);
-				} else if (t > 1.0) {
-					t = 1.0;
-					s = CLAMP((b - c) / a, 0.0, 1.0);
+				if (t < 0) {
+					t = 0;
+					s = CLAMP(-c / a, 0, 1);
+				} else if (t > 1) {
+					t = 1;
+					s = CLAMP((b - c) / a, 0, 1);
 				}
 			}
 		}
@@ -142,16 +140,16 @@ public:
 		real_t tc, tN, tD = D; // tc = tN / tD, default tD = D >= 0
 
 		// Compute the line parameters of the two closest points.
-		if (D < CMP_EPSILON) { // The lines are almost parallel.
-			sN = 0.0; // Force using point P0 on segment S1
-			sD = 1.0; // to prevent possible division by 0.0 later.
+		if (D < (real_t)CMP_EPSILON) { // The lines are almost parallel.
+			sN = 0; // Force using point P0 on segment S1
+			sD = 1; // to prevent possible division by 0.0 later.
 			tN = e;
 			tD = c;
 		} else { // Get the closest points on the infinite lines
 			sN = (b * e - c * d);
 			tN = (a * e - b * d);
-			if (sN < 0.0) { // sc < 0 => the s=0 edge is visible.
-				sN = 0.0;
+			if (sN < 0) { // sc < 0 => the s=0 edge is visible.
+				sN = 0;
 				tN = e;
 				tD = c;
 			} else if (sN > sD) { // sc > 1 => the s=1 edge is visible.
@@ -161,11 +159,11 @@ public:
 			}
 		}
 
-		if (tN < 0.0) { // tc < 0 => the t=0 edge is visible.
-			tN = 0.0;
+		if (tN < 0) { // tc < 0 => the t=0 edge is visible.
+			tN = 0;
 			// Recompute sc for this edge.
-			if (-d < 0.0) {
-				sN = 0.0;
+			if (-d < 0) {
+				sN = 0;
 			} else if (-d > a) {
 				sN = sD;
 			} else {
@@ -175,7 +173,7 @@ public:
 		} else if (tN > tD) { // tc > 1 => the t=1 edge is visible.
 			tN = tD;
 			// Recompute sc for this edge.
-			if ((-d + b) < 0.0) {
+			if ((-d + b) < 0) {
 				sN = 0;
 			} else if ((-d + b) > a) {
 				sN = sD;
@@ -185,8 +183,8 @@ public:
 			}
 		}
 		// Finally do the division to get sc and tc.
-		sc = (Math::is_zero_approx(sN) ? 0.0 : sN / sD);
-		tc = (Math::is_zero_approx(tN) ? 0.0 : tN / tD);
+		sc = (Math::is_zero_approx(sN) ? 0 : sN / sD);
+		tc = (Math::is_zero_approx(tN) ? 0 : tN / tD);
 
 		// Get the difference of the two closest points.
 		Vector3 dP = w + (sc * u) - (tc * v); // = S1(sc) - S2(tc)
@@ -203,12 +201,12 @@ public:
 			return false;
 		}
 
-		real_t f = 1.0 / a;
+		real_t f = 1 / a;
 
 		Vector3 s = p_from - p_v0;
 		real_t u = f * s.dot(h);
 
-		if (u < 0.0 || u > 1.0) {
+		if ((u < 0) || (u > 1)) {
 			return false;
 		}
 
@@ -216,7 +214,7 @@ public:
 
 		real_t v = f * p_dir.dot(q);
 
-		if (v < 0.0 || u + v > 1.0) {
+		if ((v < 0) || (u + v > 1)) {
 			return false;
 		}
 
@@ -224,7 +222,7 @@ public:
 		// the intersection point is on the line.
 		real_t t = f * e2.dot(q);
 
-		if (t > 0.00001) { // ray intersection
+		if (t > 0.00001f) { // ray intersection
 			if (r_res) {
 				*r_res = p_from + p_dir * t;
 			}
@@ -244,12 +242,12 @@ public:
 			return false;
 		}
 
-		real_t f = 1.0 / a;
+		real_t f = 1 / a;
 
 		Vector3 s = p_from - p_v0;
 		real_t u = f * s.dot(h);
 
-		if (u < 0.0 || u > 1.0) {
+		if ((u < 0) || (u > 1)) {
 			return false;
 		}
 
@@ -257,7 +255,7 @@ public:
 
 		real_t v = f * rel.dot(q);
 
-		if (v < 0.0 || u + v > 1.0) {
+		if ((v < 0) || (u + v > 1)) {
 			return false;
 		}
 
@@ -265,7 +263,7 @@ public:
 		// the intersection point is on the line.
 		real_t t = f * e2.dot(q);
 
-		if (t > CMP_EPSILON && t <= 1.0) { // Ray intersection.
+		if (t > (real_t)CMP_EPSILON && t <= 1) { // Ray intersection.
 			if (r_res) {
 				*r_res = p_from + rel * t;
 			}
@@ -279,7 +277,7 @@ public:
 		Vector3 sphere_pos = p_sphere_pos - p_from;
 		Vector3 rel = (p_to - p_from);
 		real_t rel_l = rel.length();
-		if (rel_l < CMP_EPSILON) {
+		if (rel_l < (real_t)CMP_EPSILON) {
 			return false; // Both points are the same.
 		}
 		Vector3 normal = rel / rel_l;
@@ -295,7 +293,7 @@ public:
 		real_t inters_d2 = p_sphere_radius * p_sphere_radius - ray_distance * ray_distance;
 		real_t inters_d = sphere_d;
 
-		if (inters_d2 >= CMP_EPSILON) {
+		if (inters_d2 >= (real_t)CMP_EPSILON) {
 			inters_d -= Math::sqrt(inters_d2);
 		}
 
@@ -319,14 +317,14 @@ public:
 	static inline bool segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, real_t p_height, real_t p_radius, Vector3 *r_res = nullptr, Vector3 *r_norm = nullptr, int p_cylinder_axis = 2) {
 		Vector3 rel = (p_to - p_from);
 		real_t rel_l = rel.length();
-		if (rel_l < CMP_EPSILON) {
+		if (rel_l < (real_t)CMP_EPSILON) {
 			return false; // Both points are the same.
 		}
 
 		ERR_FAIL_COND_V(p_cylinder_axis < 0, false);
 		ERR_FAIL_COND_V(p_cylinder_axis > 2, false);
 		Vector3 cylinder_axis;
-		cylinder_axis[p_cylinder_axis] = 1.0;
+		cylinder_axis[p_cylinder_axis] = 1;
 
 		// First check if they are parallel.
 		Vector3 normal = (rel / rel_l);
@@ -335,9 +333,9 @@ public:
 
 		Vector3 axis_dir;
 
-		if (crs_l < CMP_EPSILON) {
+		if (crs_l < (real_t)CMP_EPSILON) {
 			Vector3 side_axis;
-			side_axis[(p_cylinder_axis + 1) % 3] = 1.0; // Any side axis OK.
+			side_axis[(p_cylinder_axis + 1) % 3] = 1; // Any side axis OK.
 			axis_dir = side_axis;
 		} else {
 			axis_dir = crs / crs_l;
@@ -351,10 +349,10 @@ public:
 
 		// Convert to 2D.
 		real_t w2 = p_radius * p_radius - dist * dist;
-		if (w2 < CMP_EPSILON) {
+		if (w2 < (real_t)CMP_EPSILON) {
 			return false; // Avoid numerical error.
 		}
-		Size2 size(Math::sqrt(w2), p_height * 0.5);
+		Size2 size(Math::sqrt(w2), p_height * 0.5f);
 
 		Vector3 side_dir = axis_dir.cross(cylinder_axis).normalized();
 
@@ -432,7 +430,7 @@ public:
 		Vector3 rel = p_to - p_from;
 		real_t rel_l = rel.length();
 
-		if (rel_l < CMP_EPSILON) {
+		if (rel_l < (real_t)CMP_EPSILON) {
 			return false;
 		}
 
@@ -445,7 +443,7 @@ public:
 
 			real_t den = p.normal.dot(dir);
 
-			if (Math::abs(den) <= CMP_EPSILON) {
+			if (Math::abs(den) <= (real_t)CMP_EPSILON) {
 				continue; // Ignore parallel plane.
 			}
 
@@ -483,13 +481,13 @@ public:
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20) {
+		if (l2 < 1e-20f) {
 			return p_segment[0]; // Both points are the same, just give any.
 		}
 
 		real_t d = n.dot(p) / l2;
 
-		if (d <= 0.0) {
+		if (d <= 0) {
 			return p_segment[0]; // Before first point.
 		} else if (d >= 1.0) {
 			return p_segment[1]; // After first point.
@@ -502,7 +500,7 @@ public:
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20) {
+		if (l2 < 1e-20f) {
 			return p_segment[0]; // Both points are the same, just give any.
 		}
 
@@ -515,15 +513,15 @@ public:
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20) {
+		if (l2 < 1e-20f) {
 			return p_segment[0]; // Both points are the same, just give any.
 		}
 
 		real_t d = n.dot(p) / l2;
 
-		if (d <= 0.0) {
+		if (d <= 0) {
 			return p_segment[0]; // Before first point.
-		} else if (d >= 1.0) {
+		} else if (d >= 1) {
 			return p_segment[1]; // After first point.
 		} else {
 			return p_segment[0] + n * d; // Inside.
@@ -557,11 +555,17 @@ public:
 		double dot11 = v1.dot(v1);
 		double dot12 = v1.dot(v2);
 
+		// Check for divide by zero
+		double denom = dot00 * dot11 - dot01 * dot01;
+		if (denom == 0.0) {
+			return Vector3(0.0, 0.0, 0.0);
+		}
+
 		// Compute barycentric coordinates
-		double invDenom = 1.0f / (dot00 * dot11 - dot01 * dot01);
+		double invDenom = 1.0 / denom;
 		double b2 = (dot11 * dot02 - dot01 * dot12) * invDenom;
 		double b1 = (dot00 * dot12 - dot01 * dot02) * invDenom;
-		double b0 = 1.0f - b2 - b1;
+		double b0 = 1.0 - b2 - b1;
 		return Vector3(b0, b1, b2);
 	}
 
@@ -569,7 +573,7 @@ public:
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20) {
+		if (l2 < 1e-20f) {
 			return p_segment[0]; // Both points are the same, just give any.
 		}
 
@@ -612,7 +616,7 @@ public:
 		real_t ABpos = D.x + (C.x - D.x) * D.y / (D.y - C.y);
 
 		// Fail if segment C-D crosses line A-B outside of segment A-B.
-		if (ABpos < 0 || ABpos > 1.0) {
+		if ((ABpos < 0) || (ABpos > 1)) {
 			return false;
 		}
 
@@ -781,11 +785,11 @@ public:
 
 		for (int a = 0; a < polygon.size(); a++) {
 			real_t dist = p_plane.distance_to(polygon[a]);
-			if (dist < -CMP_POINT_IN_PLANE_EPSILON) {
+			if (dist < (real_t)-CMP_POINT_IN_PLANE_EPSILON) {
 				location_cache[a] = LOC_INSIDE;
 				inside_count++;
 			} else {
-				if (dist > CMP_POINT_IN_PLANE_EPSILON) {
+				if (dist > (real_t)CMP_POINT_IN_PLANE_EPSILON) {
 					location_cache[a] = LOC_OUTSIDE;
 					outside_count++;
 				} else {
@@ -980,6 +984,24 @@ public:
 		Vector<Vector3> vertices;
 
 		void optimize_vertices();
+		void clear();
+	};
+
+	// Occluder Meshes contain convex faces which may contain 0 to many convex holes.
+	// (holes are analogous to portals)
+	struct OccluderMeshData {
+		struct Hole {
+			LocalVectori<uint32_t> indices;
+		};
+		struct Face {
+			Plane plane;
+			bool two_way = false;
+			LocalVectori<uint32_t> indices;
+			LocalVectori<Hole> holes;
+		};
+		LocalVectori<Face> faces;
+		LocalVectori<Vector3> vertices;
+		void clear();
 	};
 
 	_FORCE_INLINE_ static int get_uv84_normal_bit(const Vector3 &p_vector) {
@@ -1072,6 +1094,7 @@ public:
 	static PoolVector<Plane> build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	static PoolVector<Plane> build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	static void sort_polygon_winding(Vector<Vector2> &r_verts, bool p_clockwise = true);
+	static real_t find_polygon_area(const Vector3 *p_verts, int p_num_verts);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 
@@ -1091,4 +1114,4 @@ private:
 	static Vector<Vector<Point2>> _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
 };
 
-#endif
+#endif // GEOMETRY_H

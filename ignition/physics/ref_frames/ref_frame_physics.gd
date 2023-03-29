@@ -1,29 +1,16 @@
 
-extends RefFrame
+extends RefFrameNonInertialNode
 class_name RefFramePhysics
 
+export(PackedScene) var PhysicsEnv = null
 var _physics_env = null
+var _collision_surface: Node = null
 
 var Clustering = preload( "res://physics/ref_frames/clustering.gd" )
-
-# Surface collision.
-var SurfaceProvider = preload( "res://physics/bodies/surface_provider/surface_provider.tscn" )
-var _surface_provider = null
-
-# Subdividion source reference in order to determine 
-# if it's time to rebuild the sphere visual and collision surface.
-# Can collide with just one.
-var _subdivide_source_physical: SubdivideSourceRef = null
-
-# This is the thing which computes celestial orbits.
-# It is TODO. Not yet really integrated.
-var motion: CelestialMotionRef = null
 
 # Octree borad phase for mesh queries.
 var _broad_tree: BroadTreeGd = null
 
-
-export(bool) var allow_orbiting setget _set_allow_orbiting, _get_allow_orbiting
 
 # For debugging jump only this number of times.
 #var _jumps_left: int = 50
@@ -37,8 +24,26 @@ func get_class():
 	return "RefFramePhysics"
 
 
+func get_collision_surface():
+	if _collision_surface == null:
+		_collision_surface = get_node( "CollisionSurface" )
+	
+	return _collision_surface
+
+
+func clone_collision_surface( other_ref_frame: RefFrameNonInertialNode ):
+	var own_collision_surface: Node = get_collision_surface()
+	var other_collision_surface: Node = other_ref_frame.get_collision_surface()
+	own_collision_surface.clone_surface( other_collision_surface )
+
+
 func _init():
 	_broad_tree = BroadTreeGd.new()
+
+
+func _ready():
+	add_to_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
+	_create_physics_environment()
 
 
 func _enter_tree():
@@ -50,8 +55,6 @@ func get_broad_tree():
 
 
 func process_children():
-	#print( "******************** process children" )
-	.process_children()
 	#print( "******************** apply forces" )
 	#if not debug_has_split:
 	#exclude_too_far_bodies()
@@ -73,14 +76,8 @@ func process_children():
 
 
 
-func launch( gm: float, se3: Se3Ref ):
-	if motion != null:
-		motion.init( gm, se3 )
 
-
-func evolve( _dt: float ):
-	.evolve( _dt )
-	evolve_motion( _dt )
+func update():
 	jump_if_needed()
 	
 	var ok: bool = _broad_tree.subdivide( self )
@@ -89,63 +86,30 @@ func evolve( _dt: float ):
 
 
 
-func evolve_motion( _dt: float ):
-	if motion == null:
-		return
-	# SE3 is assigned internally.
-#	if _dt > 0.1:
-#		_dt = 0.1
-	motion.process_rf( _dt, self )
-	
-#	var n: String = self.name
-#	if n != "rf_p for my_character":
-#		return
-#
-#	var planet: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
-#	var path: String = planet.get_path()
-#	var se3_p: Se3Ref = self.relative_to( planet )
-#
-#	var t: String = motion.movement_type()
-#	print( "" )
-#	print( "motion analysis" )
-#	print( "movement type: ", t )
-#	print( "distance to planet: ", se3_p.r.length() )
-#	if t == "idle":
-#		return
-#	var se3: Se3Ref = motion.se3
-#	var r: Vector3 = se3.r
-#	var v: Vector3 = se3.v
-#	var l: float = motion.specific_angular_momentum()
-#	print( "spec ang mom:  ", l )
-#	print( "r:             ", r )
-#	print( "v:             ", v )
-
 
 
 
 # Override ready. Added surface provider creation.
-func ready():
-	.ready()
-	_create_physics_environment()
-	_create_motion()
-	_create_surface_provider()
-	_create_subdivide_source()
-	
-	add_to_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
-
-
-
-func _create_motion():
-	motion = CelestialMotionRef.new()
-	motion.allow_orbiting = false
+#func ready():
+#	_create_physics_environment()
+#	
+#	add_to_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
 
 
 func _create_physics_environment():
-	var Env = preload( "res://physics/ref_frames/physics_env/physics_env.tscn" )
-	var env = Env.instance()
+	if (_physics_env != null) and is_instance_valid(_physics_env):
+		return
+	var env = PhysicsEnv.instance()
 	var root: Node = RootScene.get_root_for_physics_envs()
 	root.add_child( env )
 	_physics_env = env
+	_physics_env.set_ref_frame( self )
+
+
+
+func get_physics_environment():
+	return _physics_env
+
 
 
 func _destroy_physics_environment():
@@ -154,46 +118,19 @@ func _destroy_physics_environment():
 		_physics_env = null
 
 
-func _create_surface_provider():
-	if _surface_provider != null:
-		return
-	_surface_provider = SurfaceProvider.instance()
-	_surface_provider.init()
-	_surface_provider.change_parent( self )
-
-
-func _create_subdivide_source():
-	if _subdivide_source_physical != null:
-		return
-	
-	_subdivide_source_physical = SubdivideSourceRef.new()
-
-
 # This one is called by Bodies in order to enable physics. 
 func add_physics_body( body: RigidBody ):
-	if _physics_env != null:
-		_physics_env.add_physics_body( body )
+	if _physics_env == null:
+		_create_physics_environment()
+	
+	# It should exist by now. If it doesn't, I want it to fail right here.
+	_physics_env.add_physics_body( body )
 
 
 
-func set_surface_vertices( verts: PoolVector3Array, se3: Se3Ref ):
-	print( "surface provides is given ", verts.size(), " vertices" )
-	if _surface_provider != null:
-		_surface_provider.set_vertices( verts, se3 )
-
-
-func update_surface_vertices( se3: Se3Ref ):
-	if _surface_provider != null:
-		_surface_provider.update_vertices( se3 )
-
-
-func init_physics():
-	_create_physics_environment()
 
 
 
-func finit_physics():
-	_destroy_physics_environment()
 
 
 
@@ -215,41 +152,41 @@ func is_active():
 
 func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	# Debug output.
-	var tp: String = motion.movement_type()
+	var movement_type: String = self.movement_type()
 	var dbg: bool = false
 	self.debug = dbg
 	if dbg:
 		DDD.important()
 		DDD.print( "jump with debug output:" )
 	
-	var elliptic_motion: bool = (motion != null) and (motion.movement_type() == "elliptic")
-	if elliptic_motion:
-		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
-		var se3: Se3Ref = self.relative_to( n )
-		DDD.important()
-		DDD.print( "relative_to_planet before jump: " + str(se3.r) + ", v: " + str(se3.v) )
+#	var elliptic_motion: bool = (movement_type == "elliptic")
+#	if elliptic_motion:
+#		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
+#		var se3: Se3Ref = self.relative_to( n )
+#		DDD.important()
+#		DDD.print( "relative_to_planet before jump: " + str(se3.r) + ", v: " + str(se3.v) )
 	
 	t.basis = Basis.IDENTITY
-	self.set_jump_t( t )
-	self.set_jump_v( v )
-	self.apply_jump()
+	var se3: Se3Ref = Se3Ref.new()
+	se3.transform = t
+	var orbiting: bool = is_orbiting()
+	if not orbiting:
+		v = Vector3.ZERO
+	se3.v         = v
+	self.jump_to( self, se3 )
 	
-	if elliptic_motion:
-		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
-		var se3: Se3Ref = self.relative_to( n )
-		DDD.important()
-		DDD.print( "relative_to_planet after jump: " + str(se3.r) + ", v: " + str(se3.v) )
+#	if elliptic_motion:
+#		var n: RefFrameNode = get_node( "/root/Root/Sun/Planet" )
+#		se3 = self.relative_to( n )
+#		DDD.important()
+#		DDD.print( "relative_to_planet after jump: " + str(se3.r) + ", v: " + str(se3.v) )
 
 	# Update SE3 in orbital motion.
-	var se3: Se3Ref = self.get_se3()
-	if elliptic_motion:
-		DDD.print( "motion type just before assigning se3 to motion: " + motion.movement_type() )
-	motion.se3 = se3
 	
-	if elliptic_motion:
-		DDD.print( "motion type after assigning se3 to motion: " + motion.movement_type() )
-		se3 = motion.se3
-		DDD.print( "se3 right after assigning se3 to motion: " + str(se3.r) + " v: " + str(se3.v) )
+#	if elliptic_motion:
+#		DDD.print( "motion type after assigning se3 to motion: " + self.movement_type() )
+#		se3 = self.get_se3()
+#		DDD.print( "se3 right after assigning se3 to motion: " + str(se3.r) + " v: " + str(se3.v) )
 
 
 	# Turn debug off and keep with debug output.
@@ -257,11 +194,11 @@ func jump( t: Transform, v: Vector3=Vector3.ZERO ):
 	
 #	if tp == "idle":
 #		return
-	se3 = motion.se3
+	se3 = self.get_se3()
 	var r: Vector3 = se3.r
 	v = se3.v
-	var l: float = motion.specific_angular_momentum()
-	DDD.print( "movement type: " + str(tp) )
+	var l: float = self.specific_angular_momentum()
+	DDD.print( "movement type: " + str(movement_type) )
 	DDD.print( "spec ang mom:  " + str(l) )
 	DDD.print( "r:             " + str(r) )
 	DDD.print( "v:             " + str(v) )
@@ -301,7 +238,8 @@ func jump_if_needed():
 	#	return
 	
 	# Compute center of all bodies in the ref frame.
-	var bodies: Array = child_bodies( false )
+	# But not assemblies.
+	var bodies: Array = child_bodies()
 	var qty: int =  bodies.size()
 	if qty < 1:
 		return
@@ -313,9 +251,6 @@ func jump_if_needed():
 	var v: Vector3 = Vector3.ZERO
 	if self.allow_orbiting:
 		for b in bodies:
-			if b.get_class() == "PartAssembly":
-				qty -= 1
-				continue
 			v += b.v()
 		if qty > 0:
 			v /= float( qty )
@@ -327,21 +262,6 @@ func jump_if_needed():
 	var t: Transform = Transform.IDENTITY
 	t.origin = r
 	jump( t, v )
-	
-	# Enforce collision layer and visual subdivide.
-	_subdivide_source_physical.force_subdivide()
-#	var player_rf: RefFrameNode = PhysicsManager.get_player_ref_frame()
-#	if self == player_rf:
-#		PhysicsManager.force_rebuild_visual_spheres()
-	#_jumps_left -= 1
-
-
-# Trying to override the default one in order to take into account
-# orbital motion.
-func set_se3( se3: Se3Ref ):
-	if motion != null:
-		motion.se3 = se3
-	.set_se3( se3 )
 
 
 
@@ -350,9 +270,10 @@ func set_se3( se3: Se3Ref ):
 # It should split ref frame into two. So this one is probably not used now...
 func exclude_too_far_bodies():
 	var max_dist: float = Constants.BODY_EXCLUDE_DIST
-	var bodies = root_most_child_bodies()
-	var player_control = PhysicsManager.player_control
-	var pt = self.get_parent()
+	var bodies: Array = root_most_child_bodies()
+	var root: RefFrameRoot = get_ref_frame_root()
+	var player_control = root.player_control
+	var pt: Node = self.get_parent()
 	
 	for body in bodies:
 		if body == player_control:
@@ -367,7 +288,7 @@ func exclude_too_far_bodies():
 
 func include_close_enough_bodies():
 	var min_dist: float = Constants.BODY_INCLUDE_DIST
-	var bodies = parent_bodies()
+	var bodies: Array = parent_bodies()
 	
 	for body in bodies:
 		# This is to make sure that bodies added as a part of a super body 
@@ -375,8 +296,8 @@ func include_close_enough_bodies():
 		var p = body.get_parent()
 		if p == self:
 			continue
-		body.compute_relative_to_root( self )
-		var r: Vector3 = body.r_root()
+		var se3: Se3Ref= body.relative_to( self )
+		var r: Vector3 = se3.r
 		var d: float = r.length()
 		
 		if d < min_dist:
@@ -384,27 +305,28 @@ func include_close_enough_bodies():
 
 
 
-static func print_all_ref_frames():
+func print_all_ref_frames():
 	DDD.important()
 	DDD.print( "All ref frames" )
-	var player_rf = PhysicsManager.get_player_ref_frame()
+	var root: RefFrameRoot = self.get_ref_frame_root()
+	var player_rf: RefFrameNode = root.get_player_ref_frame()
 	if (player_rf != null) and ( is_instance_valid(player_rf) ):
 		DDD.print( "player rf: " + player_rf.name )
-	var rfs: Array = PhysicsManager.physics_ref_frames()
+	var rfs: Array = root.physics_ref_frames()
 	for rf in rfs:
 		var se3: Se3Ref = rf.get_se3()
 		DDD.important()
 		DDD.print( "rf name: " + rf.name + " r: " + str(se3.r) )
 		DDD.print( "bodies: " )
-		var bodies: Array = rf.child_bodies( false )
+		var bodies: Array = rf.child_bodies()
 		for body in bodies:
 			var name: String = body.name
 			se3 = body.get_se3()
 			DDD.print( name + ": " + str(se3.r) )
 
 
-func split_if_needed():
-	var bodies = root_most_child_bodies()
+func split_if_needed() -> bool:
+	var bodies: Array = root_most_child_bodies()
 	if ( bodies.size() < 2 ):
 		return false
 	
@@ -422,7 +344,7 @@ func split_if_needed():
 	
 	DDD.important()
 	DDD.print( "splitting ref frame " + self.name )
-	print( "just before split: " )
+	DDD.print( "just before split: " )
 	print_all_ref_frames()
 	#_debug_distances( bodies )
 	
@@ -448,22 +370,41 @@ func split_if_needed():
 	
 	# At this point both arrays are not empty and if player ref frame is here, 
 	# it is in bodies_a.
-	var p = get_parent()
-	var rf: RefFrame = PhysicsManager.create_ref_frame_physics()
+	var p: Node = get_parent()
+	var root: RefFrameRoot = get_ref_frame_root()
+	var rf: RefFramePhysics = root.create_ref_frame_physics()
 	rf.change_parent( p )
-	var se3: Se3Ref = self.get_se3()
+#	var orig_se3: Se3Ref = self.get_se3()
 	
-#	var accum_r: Vector3 = Vector3.ZERO
+	# Compute centers of the two clusters.
+	# RF will be shifter to the center of the cluster.
+	# If not, it will merge again at the next iteration.
+#	var se3_a: Se3Ref = Se3Ref.new()
+#	var accum_a: Vector3 = Vector3.ZERO
+#	for a in bodies_a:
+#		var se3: Se3Ref = a.get_se3()
+#		accum_a += se3.r
+#	accum_a /= float( bodies_a.size() )
+#	se3_a.r = accum_a
+#	# Jump to the new place.
+#	self.jump_to( self, se3_a )
+#
+#	var se3_b: Se3Ref = Se3Ref.new()
+#	var accum_b: Vector3 = Vector3.ZERO
 #	for b in bodies_b:
-#		var se3_b: Se3Ref = b.get_se3()
-#		accum_r += se3_b.r
-#	accum_r /= float( bodies_b.size() )
-#	se3.r = accum_r
-
-	rf.set_se3( se3 )
+#		var se3: Se3Ref = b.get_se3()
+#		accum_b += se3.r
+#	accum_b /= float( bodies_b.size() )
+#	se3_b.r = accum_b
+#	# State in parent.
+#	se3_b = orig_se3.mul( se3_b )
+#	# Assign SE3.
+#	rf.set_se3( se3_b )
+	
+	rf.call_deferred( "clone_collision_surface", self )
 	
 	for body in bodies_b:
-		body.change_parent( rf )
+		body.call_deferred( "change_parent", rf )
 	
 	DDD.important()
 	DDD.print( "new rf created " + rf. name )
@@ -474,13 +415,14 @@ func split_if_needed():
 	#var dist_2: float = distance( rf )
 	#_debug_distances( bodies )
 	#dist_2 = distance( rf )
-
 	
 	return true 
 
 
+
 func merge_if_needed():
-	var ref_frames: Array = PhysicsManager.physics_ref_frames()
+	var root: RefFrameRoot = get_ref_frame_root()
+	var ref_frames: Array = root.physics_ref_frames()
 	for rf in ref_frames:
 		if rf == self:
 			continue
@@ -497,7 +439,7 @@ func merge_if_needed():
 			DDD.print( "info before" )
 			print_all_ref_frames()
 			
-			var bodies: Array = rf.root_most_child_bodies( false )
+			var bodies: Array = rf.root_most_child_bodies()
 			for body in bodies:
 				body.change_parent( self )
 			
@@ -505,7 +447,7 @@ func merge_if_needed():
 			DDD.print( "merged " + rf.name + " with " + self.name )
 			# Also check if it is player's ref frame.
 			# If it is, change it to the one everything is merged to.
-			var player_rf: RefFramePhysics = PhysicsManager.get_player_ref_frame()
+			var player_rf: RefFramePhysics = root.get_player_ref_frame()
 			if rf == player_rf:
 				DDD.print( "player ref frame changed to " + rf.name )
 			
@@ -521,25 +463,57 @@ func merge_if_needed():
 
 # Need to be removed if returned "true".
 func self_delete_if_unused():
-	var bodies: Array = root_most_child_bodies()
-	var qty: int = bodies.size()
-	if ( qty < 1 ):
-		# Also don't delete player ref. frame.
-		var player_rf: RefFramePhysics = PhysicsManager.get_player_ref_frame()
-		if self == player_rf:
+	
+	# Also don't delete player ref. frame.
+	var player_rf: RefFramePhysics = RootScene.ref_frame_root.get_player_ref_frame()
+	if self == player_rf:
+		return false
+	
+	# And don't delete if parenting the camera.
+	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
+	if is_instance_valid( cam ):
+		var p: Node = cam.get_parent()
+		if p == self:
+			# In this case may be at most stop orbiting to not 
+			# fall inside if a planet
 			return false
 		
-		# And don't delete if parenting the camera.
-		var cam: RefFrameNode = PhysicsManager.camera
-		if is_instance_valid( cam ):
-			var p: Node = cam.get_parent()
+		elif p != null:
+			p = p.get_parent()
 			if p == self:
-				# In this case may be at most stop orbiting to not 
-				# fall inside if a planet
 				return false
-		
+	
+	
+	# Check all
+	var bodies: Array = root_most_child_bodies()
+	var qty: int = bodies.size()
+	
+	# If there are no bodies, delete it.
+	if ( qty < 1 ):
+		on_delete()
 		self.queue_free()
 		return true
+	
+	# Also for non-orbiting ref. frames delete it if all 
+	# objects are stationary.
+	var orbiting: bool = is_orbiting()
+	# Don't delete orbiting ref. frames.
+	if not orbiting:
+		var moving_qty: int = 0
+		for i in range(qty):
+			var b: RefFrameBodyNode = bodies[i]
+			var se3: Se3Ref = b.get_se3()
+			var v: float = se3.v.length()
+			var w: float = se3.w.length()
+			v = max(v, w)
+			if v > Constants.IDLE_SPEED_THRESHOLD:
+				moving_qty += 1
+		
+		if moving_qty == 0:
+			on_delete()
+			self.queue_free()
+			return true
+	
 	return false
 
 
@@ -549,7 +523,7 @@ func child_physics_bodies():
 	var bodies: Array = []
 	for ch in children:
 		var b: PhysicsBodyBase = ch as PhysicsBodyBase
-		var include: bool = (b != null) and (b != _surface_provider)
+		var include: bool = (b != null)
 		if not include:
 			continue
 		
@@ -558,75 +532,68 @@ func child_physics_bodies():
 	return bodies
 
 
-func child_bodies( including_surf_provider: bool = false ):
-	var children = get_children()
-	var bodies = []
+func child_bodies():
+	var children: Array = get_children()
+	var bodies: Array = []
 	for ch in children:
-		var b = ch as RefFrameNode
-		var include: bool = (b != null)
-		if not including_surf_provider:
-			include = include and (b != _surface_provider)
-		if ch == PhysicsManager.camera:
-			continue
+		var b = ch as RefFrameBodyNode
+		var a = ch as RefFrameAssemblyNode
+		var include: bool = (b != null) and (a == null)
 		if include:
 			bodies.push_back( b )
 	
 	return bodies
 
 
-func root_most_child_bodies( including_surf_provider: bool = false ):
+func root_most_child_bodies():
 	var children = get_children()
 	var bodies = []
 	for ch in children:
-		var b = ch as RefFrameNode
-		var include: bool = (b != null)
-		if not including_surf_provider:
-			include = include and (b != _surface_provider)
-		# Don't use camera.
-		if ch == PhysicsManager.camera:
+		var b: RefFrameNode = ch as RefFrameBodyNode
+		if b == null:
 			continue
-		var root_most_body: RefFrameNode = b.root_most_body()
-		include = include and (not (root_most_body in bodies))
-		if include:
-			bodies.push_back( b )
+		
+		if (b != null):
+			var root_most_body: RefFrameNode = b.root_most_body()
+			var append: bool = not (root_most_body in bodies)
+			if append:
+				bodies.push_back( root_most_body )
 	
 	return bodies
 
 
 func parent_bodies():
-	var pt = self.get_parent()
-	var rt = RootScene.get_root_for_bodies()
+	var pt: Node = self.get_parent()
+	var rt: RefFrameNode = RootScene.ref_frame_root
 	
 	var bodies = []
 	
-	var children = pt.get_children()
-	for child in children:
-		var body = child as RefFrameNode
+	var children_qty: int = pt.get_child_count()
+	for ind in range(children_qty):
+		var child: Node = pt.get_child( ind )
+		var body = child as RefFrameBodyNode
 		if body == null:
 			continue
-		if body == PhysicsManager.camera:
-			continue
-		var cl_name: String = body.get_class()
-		if (cl_name == "PhysicsBodyBase") or (cl_name == "Part"):
-			body = body.root_most_body()
-			if not (body in bodies):
-				bodies.push_back( body )
+		
+		body = body.root_most_body()
+		if not (body in bodies):
+			bodies.push_back( body )
 	
 	if rt == pt:
 		return bodies
 
-	children = rt.get_children()
-	for child in children:
-		var body = child as RefFrameNode
-		if body == null:
-			continue
-		if body == PhysicsManager.camera:
-			continue
-			body = body.root_most_body()
-		var cl_name: String = body.get_class()
-		if (cl_name == "PhysicsBodyBase") or (cl_name == "Part"):
-			if not (body in bodies):
-				bodies.push_back( body )
+#	children = rt.get_children()
+#	for child in children:
+#		var body = child as RefFrameNode
+#		if body == null:
+#			continue
+#		if body == RootScene.ref_frame_root.player_camera:
+#			continue
+#		body = body.root_most_body()
+#		var cl_name: String = body.get_class()
+#		if (cl_name == "PhysicsBodyBase") or (cl_name == "Part"):
+#			if not (body in bodies):
+#				bodies.push_back( body )
 	
 	return bodies
 
@@ -638,17 +605,14 @@ func parent_bodies():
 
 
 
-
-
-
-func get_subdivide_source():
-	return _subdivide_source_physical
 
 
 
 func distance( b: RefFramePhysics ):
 	var bodies_a: Array = root_most_child_bodies()
 	var bodies_b: Array = b.root_most_child_bodies()
+	if bodies_a.empty() or bodies_b.empty():
+		return 2.0 * Constants.RF_SPLIT_DISTANCE
 	
 	#var bodies_all: Array = bodies_a + bodies_b
 	#_debug_distances( bodies_all )
@@ -663,40 +627,27 @@ func distance( b: RefFramePhysics ):
 	return min_d
 
 
-func _parent_changed():
-	var p = get_parent()
-	var se3: Se3Ref = self.relative_to( p )
-	var allowed: bool = self.allow_orbiting
-	if not allowed:
-		se3.v = Vector3.ZERO
-		se3.w = Vector3.ZERO
-	self.jump_to( p, se3 )
-	if motion != null:
-		motion.se3 = se3
 
+func _exit_tree():
+	var to_be_deleted: bool = is_queued_for_deletion()
+	if to_be_deleted:
+		on_delete()
 
 
 
 func on_delete():
+	_re_parent_children_on_delete()
 	# Just in case if camera is parented to this rf directly.
-	on_delete_rescue_camera()
-	finit_physics()
-	if (_surface_provider != null) and is_instance_valid(_surface_provider):
-		_surface_provider.queue_free()
-		_surface_provider = null
-	# It's subclassed from a reference.
-	# Should be enough to just remove all references to 
-	# make it released.
-	_subdivide_source_physical = null
+	_on_delete_rescue_camera()
+	_destroy_physics_environment()
 	
-	.on_delete()
 
 
 
 
 
-func on_delete_rescue_camera():
-	var cam: RefFrameNode = PhysicsManager.camera
+func _on_delete_rescue_camera():
+	var cam: RefFrameNode  = RootScene.ref_frame_root.player_camera
 	if not is_instance_valid( cam ):
 		return
 	
@@ -711,44 +662,32 @@ func on_delete_rescue_camera():
 
 
 
-
-func is_orbiting():
-	var t: String = motion.movement_type()
-	var ret: bool = (t != "idle")
-	return ret
-
-
-
-func _set_allow_orbiting( en: bool ):
-	if motion == null:
+func _re_parent_children_on_delete():
+	var orbiting: bool = is_orbiting()
+	# If orbiting, don't re-parent children.
+	# There probably is a reason for this deletion.
+	if orbiting:
 		return
-	var prev: bool = motion.allow_orbiting
-	if prev and (not en):
-		var iii: int = 0
-	motion.allow_orbiting = en
-
-
-
-func _get_allow_orbiting():
-	if motion == null:
-		return false
-	allow_orbiting = motion.allow_orbiting
-	return allow_orbiting
+	
+	var p: Node = get_parent()
+	if (p == null) or (not is_instance_valid(p)):
+		return
+	
+	var children: Array = root_most_child_bodies()
+	for ch in children:
+		if (ch != null) and is_instance_valid(ch):
+			ch.change_parent( p )
 
 
 
 func serialize():
 	var data: Dictionary = .serialize()
-	data.allow_orbiting = self.allow_orbiting
 	return data
 
 
 
 func deserialize( data: Dictionary ):
-	var ret: bool = .deserialize( data )
-	if not ret:
-		return false
-	
+	var ret: bool  = .deserialize( data )
 	return true
 
 
@@ -771,4 +710,50 @@ static func _debug_distances( bodies: Array ):
 
 
 
+# Closest not in terms of distance. But in terms of graph node distance.
+func closest_parent_ref_frame():
+	var p = self.get_parent()
+	if p == null:
+		return null
+	
+	var rf: RefFrame = _closest_parent_ref_frame_recursive( p )
+	return rf
+	
+	
+func _closest_parent_ref_frame_recursive( n: Node ):
+	if n == null:
+		return null
+	
+	var rf: RefFrame = n as RefFrame
+	if rf:
+		return rf
+	
+	var p: Node = n.get_parent()
+	return _closest_parent_ref_frame_recursive( p )
+	
+
+func closest_force_source():
+	var n: Node =  _force_source_recursive( self )
+	if n == null:
+		return null
+	var fs: RefFrame = n as RefFrame
+	return fs
+
+
+func _force_source_recursive( n: Node ):
+	if n == null:
+		return null
+	
+	var rf: RefFrame = n as RefFrame
+	if rf != null:
+		if rf.force_source != null:
+			return rf
+	
+	var p: Node = n.get_parent()
+	return _force_source_recursive( p )
+
+
+func get_ref_frame_root():
+	var rf: RefFrameNode = RootScene.ref_frame_root
+	return rf
 

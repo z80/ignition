@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  node.h                                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  node.h                                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef NODE_H
 #define NODE_H
@@ -41,16 +41,29 @@
 
 class Viewport;
 class SceneState;
+class SceneTreeTween;
+
 class Node : public Object {
 	GDCLASS(Node, Object);
 	OBJ_CATEGORY("Nodes");
 
 public:
-	enum PauseMode {
+	// N.B. Any enum stored as a bitfield should
+	// be specified as UNSIGNED to work around
+	// some compilers trying to store it as signed,
+	// and requiring 1 more bit than necessary.
+	enum PauseMode : unsigned int {
 
 		PAUSE_MODE_INHERIT,
 		PAUSE_MODE_STOP,
 		PAUSE_MODE_PROCESS
+	};
+
+	enum PhysicsInterpolationMode : unsigned int {
+
+		PHYSICS_INTERPOLATION_MODE_INHERIT,
+		PHYSICS_INTERPOLATION_MODE_OFF,
+		PHYSICS_INTERPOLATION_MODE_ON
 	};
 
 	enum DuplicateFlags {
@@ -95,14 +108,14 @@ private:
 		Node *parent;
 		Node *owner;
 		Vector<Node *> children; // list of children
+		HashMap<StringName, Node *> owned_unique_nodes;
+		bool unique_name_in_owner = false;
+
 		int pos;
 		int depth;
 		int blocked; // safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
 		SceneTree *tree;
-		bool inside_tree;
-		bool ready_notified; //this is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification
-		bool ready_first;
 #ifdef TOOLS_ENABLED
 		NodePath import_path; //path used when imported, used by scene editors to keep tracking
 #endif
@@ -113,32 +126,60 @@ private:
 		List<Node *>::Element *OW; // owned element
 		List<Node *> owned;
 
-		PauseMode pause_mode;
 		Node *pause_owner;
 
 		int network_master;
 		Map<StringName, MultiplayerAPI::RPCMode> rpc_methods;
 		Map<StringName, MultiplayerAPI::RPCMode> rpc_properties;
 
-		// variables used to properly sort the node when processing, ignored otherwise
-		//should move all the stuff below to bits
-		bool physics_process;
-		bool idle_process;
 		int process_priority;
 
-		bool physics_process_internal;
-		bool idle_process_internal;
+		// Keep bitpacked values together to get better packing
+		PauseMode pause_mode : 2;
+		PhysicsInterpolationMode physics_interpolation_mode : 2;
 
-		bool input;
-		bool unhandled_input;
-		bool unhandled_key_input;
+		// variables used to properly sort the node when processing, ignored otherwise
+		//should move all the stuff below to bits
+		bool physics_process : 1;
+		bool idle_process : 1;
 
-		bool parent_owned;
-		bool in_constructor;
-		bool use_placeholder;
+		bool physics_process_internal : 1;
+		bool idle_process_internal : 1;
 
-		bool display_folded;
-		bool editable_instance;
+		bool input : 1;
+		bool unhandled_input : 1;
+		bool unhandled_key_input : 1;
+
+		// Physics interpolation can be turned on and off on a per node basis.
+		// This only takes effect when the SceneTree (or project setting) physics interpolation
+		// is switched on.
+		bool physics_interpolated : 1;
+
+		// We can auto-reset physics interpolation when e.g. adding a node for the first time
+		bool physics_interpolation_reset_requested : 1;
+
+		// Most nodes need not be interpolated in the scene tree, physics interpolation
+		// is normally only needed in the VisualServer. However if we need to read the
+		// interpolated transform of a node in the SceneTree, it is necessary to duplicate
+		// the interpolation logic client side, in order to prevent stalling the VisualServer
+		// by reading back.
+		bool physics_interpolated_client_side : 1;
+
+		// For certain nodes (e.g. CPU Particles in global mode)
+		// It can be useful to not send the instance transform to the
+		// VisualServer, and specify the mesh in world space.
+		bool use_identity_transform : 1;
+
+		bool parent_owned : 1;
+		bool in_constructor : 1;
+		bool use_placeholder : 1;
+
+		bool display_folded : 1;
+		bool editable_instance : 1;
+
+		bool inside_tree : 1;
+		bool ready_notified : 1; //this is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification
+		bool ready_first : 1;
 
 		mutable NodePath *path_cache;
 
@@ -161,8 +202,9 @@ private:
 	void _propagate_enter_tree();
 	void _propagate_ready();
 	void _propagate_exit_tree();
-	void _propagate_after_exit_tree();
-	void _propagate_validate_owner();
+	void _propagate_after_exit_branch(bool p_exiting_tree);
+	void _propagate_physics_interpolated(bool p_interpolated);
+	void _propagate_physics_interpolation_reset_requested();
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node *p_owner);
 	Array _get_node_and_resource(const NodePath &p_path);
@@ -182,6 +224,8 @@ private:
 	friend class SceneTree;
 
 	void _set_tree(SceneTree *p_tree);
+	void _release_unique_name_in_owner();
+	void _acquire_unique_name_in_owner();
 
 protected:
 	void _block() { data.blocked++; }
@@ -192,6 +236,9 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
+	virtual void owner_changed_notify();
+
+	virtual void _physics_interpolated_changed();
 
 	void _propagate_replace_owner(Node *p_owner, Node *p_by_owner);
 
@@ -203,6 +250,12 @@ protected:
 	void _add_child_nocheck(Node *p_child, const StringName &p_name);
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
+	void _set_physics_interpolated_client_side(bool p_enable);
+	bool _is_physics_interpolated_client_side() const { return data.physics_interpolated_client_side; }
+	void _set_physics_interpolation_reset_requested(bool p_enable);
+	bool _is_physics_interpolation_reset_requested() const { return data.physics_interpolation_reset_requested; }
+	void _set_use_identity_transform(bool p_enable);
+	bool _is_using_identity_transform() const { return data.use_identity_transform; }
 
 public:
 	enum {
@@ -226,6 +279,7 @@ public:
 		NOTIFICATION_INTERNAL_PROCESS = 25,
 		NOTIFICATION_INTERNAL_PHYSICS_PROCESS = 26,
 		NOTIFICATION_POST_ENTER_TREE = 27,
+		NOTIFICATION_RESET_PHYSICS_INTERPOLATION = 28,
 		//keep these linked to node
 		NOTIFICATION_WM_MOUSE_ENTER = MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
 		NOTIFICATION_WM_MOUSE_EXIT = MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
@@ -298,8 +352,13 @@ public:
 	Node *get_owner() const;
 	void get_owned_by(Node *p_by, List<Node *> *p_owned);
 
+	void set_unique_name_in_owner(bool p_enabled);
+	bool is_unique_name_in_owner() const;
+
 	void remove_and_skip();
 	int get_index() const;
+
+	Ref<SceneTreeTween> create_tween();
 
 	void print_tree();
 	void print_tree_pretty();
@@ -313,6 +372,13 @@ public:
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
 	Node *get_deepest_editable_node(Node *start_node) const;
+
+#ifdef TOOLS_ENABLED
+	void set_property_pinned(const StringName &p_property, bool p_pinned);
+	bool is_property_pinned(const StringName &p_property) const;
+	virtual StringName get_property_store_alias(const StringName &p_property) const;
+#endif
+	void get_storable_properties(Set<StringName> &r_storable_properties) const;
 
 	virtual String to_string();
 
@@ -378,6 +444,12 @@ public:
 	PauseMode get_pause_mode() const;
 	bool can_process() const;
 	bool can_process_notification(int p_what) const;
+
+	void set_physics_interpolation_mode(PhysicsInterpolationMode p_mode);
+	PhysicsInterpolationMode get_physics_interpolation_mode() const { return data.physics_interpolation_mode; }
+	_FORCE_INLINE_ bool is_physics_interpolated() const { return data.physics_interpolated; }
+	_FORCE_INLINE_ bool is_physics_interpolated_and_enabled() const { return is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && is_physics_interpolated(); }
+	void reset_physics_interpolation();
 
 	void request_ready();
 
@@ -448,4 +520,4 @@ VARIANT_ENUM_CAST(Node::DuplicateFlags);
 
 typedef Set<Node *, Node::Comparator> NodeSet;
 
-#endif
+#endif // NODE_H

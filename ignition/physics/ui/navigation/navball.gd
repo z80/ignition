@@ -78,7 +78,7 @@ func set_anti_normal( v: Vector3, visible: bool = true ):
 
 
 
-func _process(delta):
+func _process(_delta):
 	_update_orientation()
 
 

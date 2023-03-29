@@ -84,7 +84,7 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 func process_inner( _delta ):
 	.process_inner( _delta )
 	
-	if construction_state == ConstructionState.CONSTRUCTION:
+	if (body_state == BodyState.CONSTRUCTION) or (body_state == BodyState.KINEMATIC):
 		_process_coupling_nodes()
 		_process_attachments()
 	
@@ -122,7 +122,7 @@ func _process_destruction():
 		return
 	
 	# Destroying the part and the assembly.
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 	if (sb != null) and ( is_instance_valid(sb) ):
 		sb.queue_free()
 	
@@ -195,8 +195,8 @@ func deactivate( root_call: bool = true ):
 	# Need to make sure that not in a construction mode.
 	# In construction mode super body is provided externally 
 	# And provides additional context menu GUIs.
-	if root_call and (construction_state != ConstructionState.CONSTRUCTION):
-		var sb: Node = get_super_body_raw()
+	if root_call and (body_state != BodyState.CONSTRUCTION):
+		var sb: Node = get_assembly_raw()
 		if sb != null:
 			sb.queue_free()
 			sb = null
@@ -532,7 +532,7 @@ func on_delete():
 
 
 func on_delete_rescue_camera():
-	var cam: RefFrameNode = PhysicsManager.camera
+	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
 	if not is_instance_valid( cam ):
 		return
 	
@@ -630,20 +630,27 @@ func process_user_input_2( input: Dictionary ):
 
 
 # This one should be overriden by implementations.
-func process_user_input_group( input: Dictionary ):
+func process_user_input_group( _input: Dictionary ):
 	pass
 
 
 # This one is supposed to override the dummy one 
 # declared in "PhysicsBodyBase".
-func create_super_body():
+func create_assembly():
 	var p = self.get_parent()
 	var sb = PartAssembly.new()
-	sb.debug = true
+#	sb.debug = true
 	sb.change_parent( p )
-	sb.debug = false
+#	sb.debug = false
 	var se3: Se3Ref = self.get_se3()
 	sb.set_se3( se3 )
+	
+#	var cam = RootScene.ref_frame_root.player_camera
+#	if cam != null:
+#		var root = get_node( "/root/RefFrameRoot" )
+#		cam.debug = true
+#		se3 = cam.relative_to( root )
+#		cam.debug = false
 	
 	# Add all bodies to this super body.
 	var bodies: Array = dfs_search( self )
@@ -704,7 +711,7 @@ static func create_attachments( part: Part, data: Dictionary ):
 	# Need to deserialize all the nodes.
 	var coupling_nodes_data: Dictionary = data["coupling_attachments"]
 	for name in coupling_nodes_data:
-		var node_data: Dictionary = coupling_nodes_data[name]
+		var _node_data: Dictionary = coupling_nodes_data[name]
 		var n: CouplingAttachment = CouplingAttachment.new()
 		n.name = name
 		part.add_child( n )

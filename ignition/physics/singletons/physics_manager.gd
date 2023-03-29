@@ -62,17 +62,31 @@ func _process( _delta: float ):
 	# moving under gravitational influence of a planet.
 	var orbital_delta: float = _delta * _time_scale_evolution
 
-#	This is for debugging.
-#	var p_rf: RefFrameNode = get_player_ref_frame()
-#	if p_rf == null:
-#		var i: int = 0
+	# This is for debugging.
+#	var root = get_node( "/root/RefFrameRoot" )
+#	RootScene.ref_frame_root.player_camera.debug = true
+#	var se3: Se3Ref = RootScene.ref_frame_root.player_camera.relative_to( root )
+#	RootScene.ref_frame_root.playercamera.debug = false
 	
-	var camera = PhysicsManager.camera
+	var camera = RootScene.ref_frame_root.player_camera
 	if (camera == null) or ( not is_instance_valid(camera) ):
 		return
 	update_bodies_visual()
 	update_providers()
+	
+	# This is for debugging.
+#	root = get_node( "/root/RefFrameRoot" )
+#	RootScene.ref_frame_root.player_camera.debug = true
+#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
+#	RootScene.ref_frame_root.player_camera.debug = false
+	
 	update_planets( orbital_delta )
+	
+	# This is for debugging.
+#	root = get_node( "/root/RefFrameRoot" )
+#	RootScene.ref_frame_root.player_camera.debug = true
+#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
+#	RootScene.ref_frame_root.player_camera.debug = false
 	
 	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
 	var ref_frames: Array = get_tree().get_nodes_in_group( group )
@@ -83,9 +97,21 @@ func _process( _delta: float ):
 			continue
 		rf.evolve( orbital_delta )
 	
+	# This is for debugging.
+#	root = get_node( "/root/RefFrameRoot" )
+#	RootScene.ref_frame_root.player_camera.debug = true
+#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
+#	RootScene.ref_frame_root.player_camera.debug = false
+	
 	# Relocate children of celestial bodies depending on the 
 	# gravitational influence and atmosphere bounds.
 	process_celestial_body_children()
+	
+	# This is for debugging.
+#	root = get_node( "/root/RefFrameRoot" )
+#	RootScene.ref_frame_root.player_camera.debug = true
+#	se3 = RootScene.ref_frame_root.player_camera.relative_to( root )
+#	RootScene.ref_frame_root.player_camera.debug = false
 	
 	# Camera should be updated the last, after all poses are set.
 	update_camera( _delta )
@@ -122,10 +148,10 @@ func _input( event ):
 	# Call user input for the upper most body.
 	# It is supposed to distribute the same controls 
 	# to all sub-bodies.
-	#var sb = body.super_body
+	#var sb = body.assembly
 	#while sb != null:
 	#	body = sb
-	#	sb = body.super_body
+	#	sb = body.assembly
 	#body.process_user_input( event )
 
 
@@ -168,7 +194,7 @@ func update_super_bodies():
 
 
 func update_bodies_visual():
-	var player_rf: RefFrameNode = self.camera
+	var player_rf: RefFrameNode = self.player_camera
 	
 	# Update visuals for all the physical-visual objects.
 	var group: String = Constants.BODIES_GROUP_NAME
@@ -235,11 +261,11 @@ func process_celestial_body_children():
 func update_camera( delta: float ):
 	var ClosestForceSource = load( "res://physics/utils/closest_force_source.gd" )
 	# Update camera orientation.
-	var pc: PhysicsBodyBase = PhysicsManager.player_control
-	if pc == null:
-		return
+#	var pc: PhysicsBodyBase = RootScene.ref_frame_root.player_control
+#	if pc == null:
+#		return
 	
-	var c: RefFrameNode = PhysicsManager.camera
+	var c: RefFrameNode = RootScene.ref_frame_root.player_camera
 	
 	# Need to redo it based on purely closest celestial body !!!!!!!!!!!!!!!
 #	var defines_vertical: bool = rf.force_source.defines_vertical()

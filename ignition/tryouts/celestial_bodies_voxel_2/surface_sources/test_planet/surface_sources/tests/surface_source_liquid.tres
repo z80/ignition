@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=3 format=2]
+
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/tests/surface_source_liquid.gd" type="Script" id=1]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_liquid.tres" type="Material" id=2]
+
+[resource]
+script = ExtResource( 1 )
+bounding_radius = 50050.0
+source_radius = 50000.0
+radius_km = 50.0
+orbiting_velocity = 0.0
+g = 0.0
+focus_depth = 40.0
+materials_solid = [ ExtResource( 2 ) ]
+materials_liquid = [ ExtResource( 2 ) ]

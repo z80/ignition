@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  networked_multiplayer_enet.cpp                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  networked_multiplayer_enet.cpp                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "networked_multiplayer_enet.h"
 #include "core/io/ip.h"
@@ -217,20 +217,23 @@ void NetworkedMultiplayerENet::poll() {
 
 	_pop_current_packet();
 
+	if (!host || !active) { // Might be disconnected
+		return;
+	}
+
 	ENetEvent event;
-	/* Keep servicing until there are no available events left in queue. */
-	while (true) {
-		if (!host || !active) { // Might have been disconnected while emitting a notification
+	int ret = enet_host_service(host, &event, 0);
+
+	if (ret < 0) {
+		ERR_FAIL_MSG("Enet host service error");
+	} else if (ret == 0) {
+		return; // No events
+	}
+
+	/* Keep servicing until there are no available events left in the queue. */
+	do {
+		if (!host || !active) { // Check again after every event
 			return;
-		}
-
-		int ret = enet_host_service(host, &event, 0);
-
-		if (ret < 0) {
-			// Error, do something?
-			break;
-		} else if (ret == 0) {
-			break;
 		}
 
 		switch (event.type) {
@@ -436,7 +439,7 @@ void NetworkedMultiplayerENet::poll() {
 				// Do nothing
 			} break;
 		}
-	}
+	} while (enet_host_check_events(host, &event) > 0);
 }
 
 bool NetworkedMultiplayerENet::is_server() const {
@@ -546,9 +549,10 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
 			}
 			channel = SYSCH_UNRELIABLE;
+			packet_flags |= ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
 		} break;
 		case TRANSFER_MODE_UNRELIABLE_ORDERED: {
-			packet_flags = 0;
+			packet_flags = ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
 			channel = SYSCH_UNRELIABLE;
 		} break;
 		case TRANSFER_MODE_RELIABLE: {
@@ -560,6 +564,12 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	if (transfer_channel > SYSCH_CONFIG) {
 		channel = transfer_channel;
 	}
+
+#ifdef DEBUG_ENABLED
+	if ((packet_flags & ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT) && p_buffer_size + 8 > ENET_HOST_DEFAULT_MTU) {
+		WARN_PRINT_ONCE(vformat("Sending %d bytes unrealiably which is above the MTU (%d), this will result in higher packet loss", p_buffer_size + 8, host->mtu));
+	}
+#endif
 
 	Map<int, ENetPeer *>::Element *E = nullptr;
 

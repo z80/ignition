@@ -1,29 +1,23 @@
 
-extends RefFrameNode
+extends RefFrameBodyNode
 class_name PhysicsBodyBase
 
 enum BodyState {
 	KINEMATIC=0, 
-	DYNAMIC=1
-}
-
-enum ConstructionState {
-	CONSTRUCTION=0, 
-	SIMULATION=1
+	DYNAMIC=1, 
+	CONSTRUCTION=2
 }
 
 export(BodyState)         var body_state         = BodyState.DYNAMIC
-export(ConstructionState) var construction_state = ConstructionState.CONSTRUCTION
 
 # When inheriting need to redefine these two.
 export(PackedScene) var VisualScene   = null
-export(PackedScene) var PhysicalScene = null
 export(PackedScene) var AirDragScene  = null
 
 
 
-var _visual: Node            = null
-var _physical: Node          = null
+var _visual: RigidBody       = null
+var _physical: RigidBody     = null
 var _air_drag_scene: Node    = null
 var _shock_wave_visual: Node = null
 
@@ -31,7 +25,7 @@ var _shock_wave_visual: Node = null
 # Body which contains this one and other bodies.
 # When setter and getter are allowed simultaneously it falls into infinite recursion which 
 # can not be stopped even by the debugger.
-var _super_body: Node = null
+var _assembly: Node = null
 
 
 var _octree_mesh: OctreeMeshGd = null
@@ -49,17 +43,23 @@ func get_class():
 
 
 func _enter_tree():
-	print( "_enter_tree called on PhysicsBodyBase" )
+	var file_name: String = self.filename
+	var node_path: String = self.get_path()
+	#print( "_enter_tree called on PhysicsBodyBase; " + file_name + "; path: " + node_path )
 	create_physical()
 
 
 
 func _exit_tree():
+	var file_name: String = self.filename
+	var node_path: String = self.get_path()
+	#print( "_exit_tree called on PhysicsBodyBase; " + file_name + "; path: " + node_path )
 	remove_physical()
 	
 	var to_be_deleted: bool = is_queued_for_deletion()
 	if to_be_deleted:
 		on_delete()
+		#print( "deleted " + file_name + "; path: " + node_path )
 
 
 
@@ -75,10 +75,13 @@ func _ready():
 		_octree_mesh.rebuild()
 	
 	# Force visualizer. This is purely for debugging purposes.
-	if Constants.DEBUG and (force == null):
+	if Constants.DEBUG and (force == null) and false:
 		var Force = preload( "res://physics/force_source/force_visualizer.tscn" )
 		force = Force.instance()
-		RootScene.get_root_for_visuals().add_child( force )
+		RootScene.get_visual_layer_near().add_child( force )
+	
+	if _visual == null:
+		init()
 
 
 
@@ -97,14 +100,19 @@ func init():
 
 
 
+
+
+
+
 func _traverse_interaction_nodes():
-	_traverse_interation_nodes_recursive( _visual )
+	var _ok: bool = _traverse_interation_nodes_recursive( _visual )
+	
 
 
 
 func _traverse_interation_nodes_recursive( p: Node ):
 	if p == null:
-		return
+		return false
 	
 	var s: Spatial = p as Spatial
 	if s != null:
@@ -112,11 +120,16 @@ func _traverse_interation_nodes_recursive( p: Node ):
 		if node != null:
 			# Specify the reference to itself.
 			node.target = self
+			return true
 	
 	var qty: int = p.get_child_count()
 	for i in range( qty ):
 		var ch: Node = p.get_child( i )
-		_traverse_interation_nodes_recursive( ch )
+		var ok: bool = _traverse_interation_nodes_recursive( ch )
+		if ok:
+			return true
+	
+	return false
 
 
 
@@ -149,19 +162,24 @@ func _traverse_shock_wave_visuals_recursive( node: Node ):
 
 # The overrideable version without "_" prefix.
 func on_delete():
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 
 	if is_instance_valid( sb ):
 		sb.remove_sub_body( self )
 	if force != null:
 		force.name = force.name + "_to_be_deleted"
 		force.queue_free()
+		force = null
+	
 	if _visual != null:
 		_visual.name = _visual.name + "_to_be_deleted"
 		_visual.queue_free()
+		_visual = null
+	
 	if _physical != null:
 		_physical.name = _physical.name + "_to_be_deleted"
 		_physical.queue_free()
+		_physical = null
 
 
 
@@ -183,7 +201,7 @@ func update_visual( origin: RefFrameNode = null ):
 
 
 # Need to overload this in order to apply controls
-func update_physical( delta: float ):
+func update_physical( _delta: float ):
 	pass
 
 
@@ -210,7 +228,7 @@ func hide_shock_wave_visual():
 func gui_classes( mode: Array ):
 	var classes = []
 	
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 	if sb != null:
 		var s_classes = sb.gui_classes( mode )
 		for cl in s_classes:
@@ -227,7 +245,7 @@ func gui_classes( mode: Array ):
 # Defines GUI classes to be shown.
 func gui_mode():
 	var ret: Array = []
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 	if sb != null:
 		var more: Array = sb.gui_mode()
 		for m in more:
@@ -237,14 +255,15 @@ func gui_mode():
 
 # Returns the root most body.
 func root_most_body():
-	var sb = get_super_body()
+	var sb = get_assembly()
 	if sb != null:
 		return sb
 	return self
 
 
 func has_player_control():
-	var pc = PhysicsManager.player_control
+	var root: RefFrameRoot = get_ref_frame_root()
+	var pc = root.player_control
 	var ret: bool = (self == pc)
 	return ret
 
@@ -257,7 +276,7 @@ func distance( other: RefFrameNode ):
 
 
 
-func _process( delta ):
+func _ign_pre_process( delta ):
 	process_inner( delta )
 
 
@@ -269,7 +288,7 @@ func process_inner( _delta ):
 
 
 
-func _physics_process( delta ):
+func _ign_physics_pre_process( delta ):
 	update_state_from_physics( delta )
 
 
@@ -310,11 +329,11 @@ func create_visual():
 
 
 func create_physical():
-	return _create_physical( PhysicalScene )
+	return _create_physical( VisualScene )
 
 
-func _create_visual( Visual ):
-	if _visual:
+func _create_visual( Visual: PackedScene ):
+	if _visual != null:
 		return _visual
 	
 	if Visual == null:
@@ -325,9 +344,15 @@ func _create_visual( Visual ):
 	var t: Transform = self.t()
 	v.transform = t
 	
-	var root: Node = RootScene.get_root_for_visuals()
-	v.name = RootScene.get_unique_name_for_visuals( v.name )
+	var root: Node = RootScene.get_visual_layer_near()
+	#v.name = RootScene.get_unique_name_for_visuals( v.name )
 	root.add_child( v )
+	
+	# Check if it is a RigidBody.
+	# If it is, set mode to kinematic.
+	var rigid_body: RigidBody = v as RigidBody
+	if rigid_body != null:
+		rigid_body.mode = RigidBody.MODE_KINEMATIC
 	
 	_visual = v
 	
@@ -338,7 +363,7 @@ func _create_visual( Visual ):
 	_traverse_shock_wave_visuals()
 	
 	# Own ref. frame visualizer
-	if Constants.DEBUG and (get_class() != "SurfaceProvider"):
+	if Constants.DEBUG and (get_class() != "SurfaceProvider") and false:
 		var OwnRf = preload( "res://physics/force_source/own_ref_frame_visualizer.tscn" )
 		var rf = OwnRf.instance()
 		_visual.add_child( rf )
@@ -353,10 +378,7 @@ func pivot_fps( _ind: int = 0 ):
 	return null
 
 
-func _create_physical( Physical ):
-	if body_state != BodyState.DYNAMIC:
-		return null
-	
+func _create_physical( Physical: PackedScene ):
 	if _physical != null:
 		return _physical
 	
@@ -364,11 +386,13 @@ func _create_physical( Physical ):
 		return null
 	
 	# Make sure that parent is physics reference frame.
-	var parent_rf = parent_physics_ref_frame()
+	var parent_rf: RefFrameNode = parent_physics_ref_frame()
 	if parent_rf == null:
 		return null
 	
-	var p = Physical.instance()
+	var p: RigidBody = Physical.instance()
+	
+	#p.visible = false
 	
 	var t: Transform = self.t()
 	p.transform = t
@@ -407,7 +431,7 @@ func remove_physical():
 
 
 func change_parent( p: Node = null ):
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 	if (sb != null) and is_instance_valid( sb ):
 		sb.change_parent( p )
 	else:
@@ -425,7 +449,7 @@ func process_user_input_2( input: Dictionary ):
 
 # It permits or not showing the window with all the little panels.
 func show_click_container():
-	var sb: Node = get_super_body_raw()
+	var sb: Node = get_assembly_raw()
 	if sb != null:
 		var res: bool = sb.show_click_container()
 		return res
@@ -515,42 +539,36 @@ func _parent_physics_ref_frame():
 
 
 
-func set_super_body( new_super_body ):
-	if (_super_body != null) and ( is_instance_valid(_super_body) ):
-		_super_body.remove_sub_body( self )
-	_super_body = new_super_body
+func set_assembly( new_assembly ):
+	if (_assembly != null) and ( is_instance_valid(_assembly) ):
+		_assembly.remove_sub_body( self )
+	_assembly = new_assembly
 
 
 
 
 
-func get_super_body():
-	if _super_body == null:
-		_super_body = create_super_body()
-	return _super_body
+func get_assembly():
+	if _assembly == null:
+		_assembly = create_assembly()
+	return _assembly
 
 
-func get_super_body_raw():
-	return _super_body
+func get_assembly_raw():
+	return _assembly
 
 
 
 # This one should be overwritten by decendant classes.
-func create_super_body():
+func create_assembly():
 	return null
 
 
 
 func serialize():
-	var data: Dictionary = {}
-	
-	# This is one of the properties.
-	var se3: Se3Ref = self.get_se3()
-	var se3_data: Dictionary = se3.serialize()
-	data["se3"] = se3_data
+	var data: Dictionary = .serialize()
 	
 	data["body_state"]         = int(body_state)
-	data["construction_state"] = int(construction_state)
 	
 	# Need to save this in order to restore it correctly.
 	if _visual != null:
@@ -563,16 +581,9 @@ func serialize():
 # When this thing is called all objects are created.
 # So can assume that all saved paths should be valid.
 func deserialize( data: Dictionary ):
-	var se3: Se3Ref = self.get_se3()
-	var se3_data: Dictionary = data.se3
-	var ret: bool = se3.deserialize( se3_data )
-	if not ret:
+	var ok: bool = .deserialize( data )
+	if not ok:
 		return false
-	self.set_se3( se3 )
-	
-	# This is done in "activate()/deactivate()".
-	#body_state         = data["body_state"]
-	construction_state = data["construction_state"]
 	
 	return true
 
@@ -614,6 +625,19 @@ static func unique_child_name( n: Node, name: String ):
 		if c == null:
 			return full_name
 		index += 1
+
+
+
+func get_ref_frame_root():
+	var rf: RefFrameNode = self
+	while rf != null:
+		var root: RefFrameRoot = rf as RefFrameRoot
+		if root != null:
+			return root
+		
+		rf = rf.get_parent() as RefFrameNode
+	
+	return null
 
 
 

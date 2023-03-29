@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  material.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  material.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "material.h"
 
@@ -96,7 +96,7 @@ void Material::_bind_methods() {
 }
 
 Material::Material() {
-	material = VisualServer::get_singleton()->material_create();
+	material = RID_PRIME(VisualServer::get_singleton()->material_create());
 	render_priority = 0;
 }
 
@@ -233,7 +233,7 @@ void ShaderMaterial::_bind_methods() {
 
 void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 #ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 #else
 	const String quote_style = "\"";
 #endif
@@ -347,12 +347,10 @@ void SpatialMaterial::init_shaders() {
 	shader_names->texture_names[TEXTURE_DETAIL_NORMAL] = "texture_detail_normal";
 }
 
-Ref<SpatialMaterial> SpatialMaterial::materials_for_2d[SpatialMaterial::MAX_MATERIALS_FOR_2D];
+HashMap<uint64_t, Ref<SpatialMaterial>> SpatialMaterial::materials_for_2d;
 
 void SpatialMaterial::finish_shaders() {
-	for (int i = 0; i < MAX_MATERIALS_FOR_2D; i++) {
-		materials_for_2d[i].unref();
-	}
+	materials_for_2d.clear();
 
 	memdelete(dirty_materials);
 	dirty_materials = nullptr;
@@ -750,6 +748,20 @@ void SpatialMaterial::_update_shader() {
 		code += "\tvec2 base_uv2 = UV2;\n";
 	}
 
+	if (features[FEATURE_DEPTH_MAPPING] && flags[FLAG_UV1_USE_TRIPLANAR]) {
+		// Display both resource name and albedo texture name.
+		// Materials are often built-in to scenes, so displaying the resource name alone may not be meaningful.
+		// On the other hand, albedo textures are almost always external to the scene.
+		if (textures[TEXTURE_ALBEDO].is_valid()) {
+			WARN_PRINT(vformat("%s (albedo %s): Depth mapping is not supported on triplanar materials. Ignoring depth mapping in favor of triplanar mapping.", get_path(), textures[TEXTURE_ALBEDO]->get_path()));
+		} else if (!get_path().empty()) {
+			WARN_PRINT(vformat("%s: Depth mapping is not supported on triplanar materials. Ignoring depth mapping in favor of triplanar mapping.", get_path()));
+		} else {
+			// Resource wasn't saved yet.
+			WARN_PRINT("Depth mapping is not supported on triplanar materials. Ignoring depth mapping in favor of triplanar mapping.");
+		}
+	}
+
 	if (!VisualServer::get_singleton()->is_low_end() && features[FEATURE_DEPTH_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //depthmap not supported with triplanar
 		code += "\t{\n";
 		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*depth_flip.x,-BINORMAL*depth_flip.y,NORMAL));\n"; // binormal is negative due to mikktspace, flip 'unflips' it ;-)
@@ -776,7 +788,9 @@ void SpatialMaterial::_update_shader() {
 
 		} else {
 			code += "\t\tfloat depth = texture(texture_depth, base_uv).r;\n";
-			code += "\t\tvec2 ofs = base_uv - view_dir.xy / view_dir.z * (depth * depth_scale);\n";
+			// Use offset limiting to improve the appearance of non-deep parallax.
+			// This reduces the impression of depth, but avoids visible warping in the distance.
+			code += "\t\tvec2 ofs = base_uv - view_dir.xy * depth * depth_scale;\n";
 		}
 
 		code += "\t\tbase_uv=ofs;\n";
@@ -797,7 +811,12 @@ void SpatialMaterial::_update_shader() {
 		}
 	}
 
-	if (flags[FLAG_ALBEDO_TEXTURE_FORCE_SRGB]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_SDF]) {
+		code += "\tconst float smoothing = 0.125;\n";
+		code += "\tfloat dist = albedo_tex.a;\n";
+		code += "\talbedo_tex.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, dist);\n";
+		code += "\talbedo_tex.rgb = vec3(1.0);\n";
+	} else if (flags[FLAG_ALBEDO_TEXTURE_FORCE_SRGB]) {
 		code += "\talbedo_tex.rgb = mix(pow((albedo_tex.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)),vec3(2.4)),albedo_tex.rgb.rgb * (1.0 / 12.92),lessThan(albedo_tex.rgb,vec3(0.04045)));\n";
 	}
 
@@ -1046,6 +1065,17 @@ void SpatialMaterial::_update_shader() {
 	}
 
 	code += "}\n";
+
+	String fallback_mode_str;
+	switch (async_mode) {
+		case ASYNC_MODE_VISIBLE: {
+			fallback_mode_str = "async_visible";
+		} break;
+		case ASYNC_MODE_HIDDEN: {
+			fallback_mode_str = "async_hidden";
+		} break;
+	}
+	code = code.replace_first("render_mode ", "render_mode " + fallback_mode_str + ",");
 
 	ShaderData shader_data;
 	shader_data.shader = VS::get_singleton()->shader_create();
@@ -1701,32 +1731,41 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_refraction_texture_channel(
 	return refraction_texture_channel;
 }
 
-RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y) {
-	int version = 0;
+RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y, bool p_no_depth_test, bool p_fixed_size, bool p_sdf) {
+	uint64_t hash = 0;
 	if (p_shaded) {
-		version = 1;
+		hash |= 1 << 0;
 	}
 	if (p_transparent) {
-		version |= 2;
+		hash |= 1 << 1;
 	}
 	if (p_cut_alpha) {
-		version |= 4;
+		hash |= 1 << 2;
 	}
 	if (p_opaque_prepass) {
-		version |= 8;
+		hash |= 1 << 3;
 	}
 	if (p_double_sided) {
-		version |= 16;
+		hash |= 1 << 4;
 	}
 	if (p_billboard) {
-		version |= 32;
+		hash |= 1 << 5;
 	}
 	if (p_billboard_y) {
-		version |= 64;
+		hash |= 1 << 6;
+	}
+	if (p_no_depth_test) {
+		hash |= 1 << 7;
+	}
+	if (p_fixed_size) {
+		hash |= 1 << 8;
+	}
+	if (p_sdf) {
+		hash |= 1 << 9;
 	}
 
-	if (materials_for_2d[version].is_valid()) {
-		return materials_for_2d[version]->get_rid();
+	if (materials_for_2d.has(hash)) {
+		return materials_for_2d[hash]->get_rid();
 	}
 
 	Ref<SpatialMaterial> material;
@@ -1739,16 +1778,19 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 	material->set_flag(FLAG_SRGB_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	material->set_flag(FLAG_USE_ALPHA_SCISSOR, p_cut_alpha);
+	material->set_flag(FLAG_DISABLE_DEPTH_TEST, p_no_depth_test);
+	material->set_flag(FLAG_FIXED_SIZE, p_fixed_size);
+	material->set_flag(FLAG_ALBEDO_TEXTURE_SDF, p_sdf);
 	if (p_billboard || p_billboard_y) {
 		material->set_flag(FLAG_BILLBOARD_KEEP_SCALE, true);
 		material->set_billboard_mode(p_billboard_y ? BILLBOARD_FIXED_Y : BILLBOARD_ENABLED);
 	}
 
-	materials_for_2d[version] = material;
+	materials_for_2d[hash] = material;
 	// flush before using so we can access the shader right away
 	flush_changes();
 
-	return materials_for_2d[version]->get_rid();
+	return materials_for_2d[hash]->get_rid();
 }
 
 void SpatialMaterial::set_on_top_of_alpha() {
@@ -1820,6 +1862,16 @@ RID SpatialMaterial::get_shader_rid() const {
 
 Shader::Mode SpatialMaterial::get_shader_mode() const {
 	return Shader::MODE_SPATIAL;
+}
+
+void SpatialMaterial::set_async_mode(AsyncMode p_mode) {
+	async_mode = p_mode;
+	_queue_shader_change();
+	_change_notify();
+}
+
+SpatialMaterial::AsyncMode SpatialMaterial::get_async_mode() const {
+	return async_mode;
 }
 
 void SpatialMaterial::_bind_methods() {
@@ -1994,6 +2046,9 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_distance_fade_min_distance", "distance"), &SpatialMaterial::set_distance_fade_min_distance);
 	ClassDB::bind_method(D_METHOD("get_distance_fade_min_distance"), &SpatialMaterial::get_distance_fade_min_distance);
 
+	ClassDB::bind_method(D_METHOD("set_async_mode", "mode"), &SpatialMaterial::set_async_mode);
+	ClassDB::bind_method(D_METHOD("get_async_mode"), &SpatialMaterial::get_async_mode);
+
 	ADD_GROUP("Flags", "flags_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_transparent"), "set_feature", "get_feature", FEATURE_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_use_shadow_to_opacity"), "set_flag", "get_flag", FLAG_USE_SHADOW_TO_OPACITY);
@@ -2007,6 +2062,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_do_not_receive_shadows"), "set_flag", "get_flag", FLAG_DONT_RECEIVE_SHADOWS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_disable_ambient_light"), "set_flag", "get_flag", FLAG_DISABLE_AMBIENT_LIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_ensure_correct_normals"), "set_flag", "get_flag", FLAG_ENSURE_CORRECT_NORMALS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_albedo_tex_msdf"), "set_flag", "get_flag", FLAG_ALBEDO_TEXTURE_SDF);
 	ADD_GROUP("Vertex Color", "vertex_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_use_as_albedo"), "set_flag", "get_flag", FLAG_ALBEDO_FROM_VERTEX_COLOR);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_is_srgb"), "set_flag", "get_flag", FLAG_SRGB_VERTEX_COLOR);
@@ -2136,6 +2192,8 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "async_mode", PROPERTY_HINT_ENUM, "Visible,Hidden"), "set_async_mode", "get_async_mode");
+
 	BIND_ENUM_CONSTANT(TEXTURE_ALBEDO);
 	BIND_ENUM_CONSTANT(TEXTURE_METALLIC);
 	BIND_ENUM_CONSTANT(TEXTURE_ROUGHNESS);
@@ -2204,6 +2262,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_DISABLE_AMBIENT_LIGHT);
 	BIND_ENUM_CONSTANT(FLAG_ENSURE_CORRECT_NORMALS);
 	BIND_ENUM_CONSTANT(FLAG_USE_SHADOW_TO_OPACITY);
+	BIND_ENUM_CONSTANT(FLAG_ALBEDO_TEXTURE_SDF);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);
@@ -2236,6 +2295,9 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(DISTANCE_FADE_PIXEL_ALPHA);
 	BIND_ENUM_CONSTANT(DISTANCE_FADE_PIXEL_DITHER);
 	BIND_ENUM_CONSTANT(DISTANCE_FADE_OBJECT_DITHER);
+
+	BIND_ENUM_CONSTANT(ASYNC_MODE_VISIBLE);
+	BIND_ENUM_CONSTANT(ASYNC_MODE_HIDDEN);
 }
 
 SpatialMaterial::SpatialMaterial() :
@@ -2308,6 +2370,8 @@ SpatialMaterial::SpatialMaterial() :
 
 	diffuse_mode = DIFFUSE_BURLEY;
 	specular_mode = SPECULAR_SCHLICK_GGX;
+
+	async_mode = ASYNC_MODE_VISIBLE;
 
 	for (int i = 0; i < FEATURE_MAX; i++) {
 		features[i] = false;

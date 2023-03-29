@@ -1,8 +1,8 @@
 
-extends RefFrameNode
+extends RefFrameNonInertialNode
 class_name RefFrame
 
-var _axes = null
+var _axes: Spatial = null
 
 
 
@@ -66,8 +66,8 @@ func _update_axes():
 		if not created:
 			return
 	
-	var t: Transform = self.t_root()
-	_axes.transform = t
+#	var t: Transform = self.t_root()
+#	_axes.transform = t
 
 
 # Closest not in terms of distance. But in terms of graph node distance.
@@ -113,6 +113,10 @@ func _force_source_recursive( n: Node ):
 	return _force_source_recursive( p )
 
 
+func get_ref_frame_root():
+	var rf: RefFrameNode = RootScene.ref_frame_root
+	return rf
+
 
 
 
@@ -133,27 +137,18 @@ func on_delete():
 
 
 
+
+
 func serialize():
-	var data: Dictionary = {}
-	var se3: Se3Ref = self.get_se3()
-	var se3_data: Dictionary = se3.serialize()
-	data.se3 = se3_data
+	var data: Dictionary = .serialize()
 	return data
 
 
 
 
 func deserialize( data: Dictionary ):
-	var has_se3: bool = data.has("se3")
-	if not has_se3:
-		return false
-	
-	var se3_data: Dictionary = data.se3
-	var se3: Se3Ref = self.get_se3()
-	se3.deserialize( se3_data )
-	self.set_se3( se3 )
-	
-	return true
+	var ret: bool = .deserialize( data )
+	return ret
 
 
 

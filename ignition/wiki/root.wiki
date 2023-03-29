@@ -8,9 +8,17 @@
 [color=red][url=navigation]Navigation[/url][/color]
 [color=red][url=parts]Available parts description[/url][/color]
 
+
+[center][b]Celestial bodies[/b][/center]
+
+[color=red][url=celestial_bodies/sun]Sun[/url][/color]
+[color=red][url=celestial_bodies/home_planet]Home planet[/url][/color]
+
+
 [center][b]External links[/b][/center]
 Gameplay videos: [color=green][url]https://odysee.com/@ignition:0[/url][/color]
 ITCH.io page: [color=green][url]https://litedictteam.itch.io/ignition[/url][/color] Please consider leaving a feedback!
+Discord server: [color=green][url]https://discord.com/channels/1064465760078004234/1064465760078004236[/url][/color]
 Project source code: [color=green][url]https://github.com/z80/ignition[/url][/color]
 
 

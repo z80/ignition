@@ -3,8 +3,8 @@
 static func cluster( src_full: Array ) -> Array:
 	# Work on super bodies only.
 	var src: Array = filter_top_hierarchy( src_full )
-	if src_full.size() > 3:
-		src = filter_top_hierarchy( src_full )
+	#if src_full.size() > 3:
+	#	src = filter_top_hierarchy( src_full )
 	var dest: Array = []
 	var qty: int = src.size()
 	var split_ind: int = qty

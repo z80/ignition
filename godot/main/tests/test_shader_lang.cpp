@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_shader_lang.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_shader_lang.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "test_shader_lang.h"
 
@@ -38,6 +38,7 @@
 #include "scene/gui/control.h"
 #include "scene/gui/text_edit.h"
 #include "servers/visual/shader_language.h"
+#include "servers/visual/shader_types.h"
 
 typedef ShaderLanguage SL;
 
@@ -120,14 +121,14 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 		case SL::Node::TYPE_SHADER: {
 			SL::ShaderNode *pnode = (SL::ShaderNode *)p_node;
 
-			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
+			for (OrderedHashMap<StringName, SL::ShaderNode::Uniform>::Element E = pnode->uniforms.front(); E; E = E.next()) {
 				String ucode = "uniform ";
-				ucode += _prestr(E->get().precision);
-				ucode += _typestr(E->get().type);
-				ucode += " " + String(E->key());
+				ucode += _prestr(E.get().precision);
+				ucode += _typestr(E.get().type);
+				ucode += " " + String(E.key());
 
-				if (E->get().default_value.size()) {
-					ucode += " = " + get_constant_text(E->get().type, E->get().default_value);
+				if (E.get().default_value.size()) {
+					ucode += " = " + get_constant_text(E.get().type, E.get().default_value);
 				}
 
 				static const char *hint_name[SL::ShaderNode::Uniform::HINT_MAX] = {
@@ -140,18 +141,18 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 					"white"
 				};
 
-				if (E->get().hint) {
-					ucode += " : " + String(hint_name[E->get().hint]);
+				if (E.get().hint) {
+					ucode += " : " + String(hint_name[E.get().hint]);
 				}
 
 				code += ucode + "\n";
 			}
 
-			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = pnode->varyings.front(); E; E = E->next()) {
+			for (OrderedHashMap<StringName, SL::ShaderNode::Varying>::Element E = pnode->varyings.front(); E; E = E.next()) {
 				String vcode = "varying ";
-				vcode += _prestr(E->get().precision);
-				vcode += _typestr(E->get().type);
-				vcode += " " + String(E->key());
+				vcode += _prestr(E.get().precision);
+				vcode += _typestr(E.get().type);
+				vcode += " " + String(E.key());
 
 				code += vcode + "\n";
 			}
@@ -310,49 +311,122 @@ MainLoop *test() {
 
 	if (cmdlargs.empty()) {
 		//try editor!
-		print_line("usage: godot -test shader_lang <shader>");
+		print_line("usage: godot -test shaderlang <shader>");
 		return nullptr;
 	}
 
-	String test = cmdlargs.back()->get();
-
-	FileAccess *fa = FileAccess::open(test, FileAccess::READ);
-
-	if (!fa) {
-		ERR_FAIL_V(nullptr);
-	}
-
-	String code;
-
-	while (true) {
-		CharType c = fa->get_8();
-		if (fa->eof_reached()) {
-			break;
-		}
-		code += c;
-	}
+	List<String> code_list;
+	List<Map<StringName, SL::FunctionInfo>> dt_list;
+	List<Vector<StringName>> rm_list;
+	List<Set<String>> types_list;
+	int test_count = 0;
 
 	SL sl;
-	print_line("tokens:\n\n" + sl.token_debug(code));
 
-	Map<StringName, SL::FunctionInfo> dt;
-	dt["fragment"].built_ins["ALBEDO"] = SL::TYPE_VEC3;
-	dt["fragment"].can_discard = true;
+	if (cmdlargs.empty() || cmdlargs.back()->get() == "shaderlang") {
+		{
+			String code;
+			code += "shader_type canvas_item;\n";
+			code += "render_mode test_rm;\n";
+			code += "\n";
+			code += "void fragment() {\n";
+			code += "\tCOLOR = vec4(1.0);\n";
+			code += "\tdiscard;\n";
+			code += "}\n";
+			code_list.push_back(code);
 
-	Vector<StringName> rm;
-	rm.push_back("popo");
-	Set<String> types;
-	types.insert("spatial");
+			Vector<StringName> rm;
+			rm.push_back("test_rm");
+			rm_list.push_back(rm);
 
-	Error err = sl.compile(code, dt, rm, types);
+			Map<StringName, SL::FunctionInfo> dt;
+			dt["fragment"].built_ins["COLOR"] = SL::TYPE_VEC4;
+			dt["fragment"].can_discard = true;
+			dt_list.push_back(dt);
 
-	if (err) {
-		print_line("Error at line: " + rtos(sl.get_error_line()) + ": " + sl.get_error_text());
-		return nullptr;
+			Set<String> types;
+			types.insert("canvas_item");
+			types_list.push_back(types);
+
+			test_count++;
+		}
+
+#ifndef _3D_DISABLED
+		{
+			String code;
+			code += "shader_type spatial;\n";
+			code += "render_mode test_rm;\n";
+			code += "\n";
+			code += "void fragment() {\n";
+			code += "\tALBEDO = vec3(1.0);\n";
+			code += "\tdiscard;\n";
+			code += "}\n";
+			code_list.push_back(code);
+
+			Vector<StringName> rm;
+			rm.push_back("test_rm");
+			rm_list.push_back(rm);
+
+			Map<StringName, SL::FunctionInfo> dt;
+			dt["fragment"].built_ins["ALBEDO"] = SL::TYPE_VEC3;
+			dt["fragment"].can_discard = true;
+			dt_list.push_back(dt);
+
+			Set<String> types;
+			types.insert("spatial");
+			types_list.push_back(types);
+
+			test_count++;
+		}
+#endif
 	} else {
-		String code2;
-		recreate_code(&code2, sl.get_shader());
-		print_line("code:\n\n" + code2);
+		FileAccess *fa = FileAccess::open(cmdlargs.back()->get(), FileAccess::READ);
+		String code;
+		if (!fa) {
+			ERR_FAIL_V(nullptr);
+		}
+		while (true) {
+			CharType c = fa->get_8();
+			if (fa->eof_reached()) {
+				break;
+			}
+			code += c;
+		}
+		code_list.push_back(code);
+		String type = sl.get_shader_type(code);
+
+		if (type == "canvas_item") {
+			dt_list.push_back(ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode::SHADER_CANVAS_ITEM));
+			rm_list.push_back(ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode::SHADER_CANVAS_ITEM));
+		} else if (type == "spatial") {
+			dt_list.push_back(ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode::SHADER_SPATIAL));
+			rm_list.push_back(ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode::SHADER_SPATIAL));
+		} else if (type == "particles") {
+			dt_list.push_back(ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode::SHADER_PARTICLES));
+			rm_list.push_back(ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode::SHADER_PARTICLES));
+		}
+		types_list.push_back(ShaderTypes::get_singleton()->get_types());
+
+		test_count++;
+	}
+
+	for (int i = 0; i < test_count; i++) {
+		String code = code_list[i];
+		Map<StringName, SL::FunctionInfo> dt = dt_list[i];
+		Vector<StringName> rm = rm_list[i];
+		Set<String> types = types_list[i];
+
+		print_line("tokens:\n\n" + sl.token_debug(code));
+		Error err = sl.compile(code, dt, rm, types);
+
+		if (err) {
+			print_line("Error at line: " + rtos(sl.get_error_line()) + ": " + sl.get_error_text());
+			return nullptr;
+		} else {
+			String code2;
+			recreate_code(&code2, sl.get_shader());
+			print_line("code:\n\n" + code2);
+		}
 	}
 
 	return nullptr;

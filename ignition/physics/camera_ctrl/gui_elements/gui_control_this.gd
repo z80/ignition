@@ -16,7 +16,7 @@ func _on_ControlThis_pressed():
 	if not is_instance_valid( _target_obj ):
 		return
 	
-	PhysicsManager.player_control = _target_obj
-	PhysicsManager.camera.apply_target()
+	RootScene.ref_frame_root.player_control = _target_obj
+	RootScene.ref_frame_root.player_camera.apply_target()
 	
 	_parent_gui.queue_free()

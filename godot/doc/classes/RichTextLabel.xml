@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextLabel" inherits="Control" version="3.4">
+<class name="RichTextLabel" inherits="Control" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Label that displays rich text.
 	</brief_description>
@@ -12,7 +12,7 @@
 		[b]Note:[/b] Unicode characters after [code]0xffff[/code] (such as most emoji) are [i]not[/i] supported on Windows. They will display as unknown characters instead. This will be resolved in Godot 4.0.
 	</description>
 	<tutorials>
-		<link title="BBCode in RichTextLabel">https://docs.godotengine.org/en/3.4/tutorials/ui/bbcode_in_richtextlabel.html</link>
+		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
 		<link title="GUI Rich Text/BBcode Demo">https://godotengine.org/asset-library/asset/132</link>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
@@ -22,6 +22,7 @@
 			<argument index="0" name="image" type="Texture" />
 			<argument index="1" name="width" type="int" default="0" />
 			<argument index="2" name="height" type="int" default="0" />
+			<argument index="3" name="align" type="int" enum="RichTextLabel.InlineAlign" default="2" />
 			<description>
 				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image.
 				If [code]width[/code] or [code]height[/code] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
@@ -38,14 +39,21 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="bbcode" type="String" />
 			<description>
-				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [constant OK] if successful.
+				Parses [code]bbcode[/code] and adds tags to the tag stack as needed.
 				[b]Note:[/b] Using this method, you can't close a tag that was opened in a previous [method append_bbcode] call. This is done to improve performance, especially when updating large RichTextLabels since rebuilding the whole BBCode every time would be slower. If you absolutely need to close a tag in a future method call, append the [member bbcode_text] instead of using [method append_bbcode].
+				[b]Note:[/b] This method internals' can't possibly fail, but an error code is returned for backwards compatibility, which will always be [constant OK].
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
 				Clears the tag stack and sets [member bbcode_text] to an empty string.
+			</description>
+		</method>
+		<method name="deselect">
+			<return type="void" />
+			<description>
+				Clears the current selection.
 			</description>
 		</method>
 		<method name="get_content_height" qualifiers="const">
@@ -58,6 +66,12 @@
 			<return type="int" />
 			<description>
 				Returns the total number of newlines in the tag stack's text tags. Considers wrapped text as one line.
+			</description>
+		</method>
+		<method name="get_selected_text">
+			<return type="String" />
+			<description>
+				Returns the current selection text. Does not include BBCodes.
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
@@ -96,7 +110,8 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="bbcode" type="String" />
 			<description>
-				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [constant OK] if parses [code]bbcode[/code] successfully.
+				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content.
+				[b]Note:[/b] This method internals' can't possibly fail, but an error code is returned for backwards compatibility, which will always be [constant OK].
 			</description>
 		</method>
 		<method name="parse_expressions_for_values">
@@ -249,6 +264,9 @@
 			The currently installed custom effects. This is an array of [RichTextEffect]s.
 			To add a custom effect, it's more convenient to use [method install_effect].
 		</member>
+		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" default="true">
+			If [code]true[/code], the selected text will be deselected when focus is lost.
+		</member>
 		<member name="fit_content_height" type="bool" setter="set_fit_content_height" getter="is_fit_content_height_enabled" default="false">
 			If [code]true[/code], the label's height will be automatically updated to fit its content.
 			[b]Note:[/b] This property is used as a workaround to fix issues with [RichTextLabel] in [Container]s, but it's unreliable in some cases and will be removed in future versions.
@@ -263,7 +281,7 @@
 			The range of characters to display, as a [float] between 0.0 and 1.0. When assigned an out of range value, it's the same as assigning 1.0.
 			[b]Note:[/b] Setting this property updates [member visible_characters] based on current [method get_total_character_count].
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
+		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active" default="true">
 			If [code]true[/code], the scrollbar is visible. Setting this to [code]false[/code] does not block scrolling completely. See [method scroll_to_line].
 		</member>
@@ -317,6 +335,18 @@
 		</constant>
 		<constant name="ALIGN_FILL" value="3" enum="Align">
 			Makes text fill width.
+		</constant>
+		<constant name="INLINE_ALIGN_TOP" value="0" enum="InlineAlign">
+			Aligns top of the inline image to the top of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_CENTER" value="1" enum="InlineAlign">
+			Aligns center of the inline image to the center of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_BASELINE" value="2" enum="InlineAlign">
+			Aligns bottom of the inline image to the baseline of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_BOTTOM" value="3" enum="InlineAlign">
+			Aligns bottom of the inline image to the bottom of the text.
 		</constant>
 		<constant name="LIST_NUMBERS" value="0" enum="ListType">
 			Each list item has a number marker.
@@ -413,7 +443,7 @@
 			The default text font.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
-			The background The background used when the [RichTextLabel] is focused.
+			The background used when the [RichTextLabel] is focused.
 		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			The normal background for the [RichTextLabel].

@@ -1,34 +1,59 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=9 format=2]
 
-[ext_resource path="res://physics/parts/habitats/entrance_node.gd" type="Script" id=1]
-[ext_resource path="res://physics/parts/coupling_nodes/coupling_node_stacking.gd" type="Script" id=2]
-[ext_resource path="res://physics/parts/habitats/2m/m1/assets/capsule/capsule_Cylinder027.tres" type="ArrayMesh" id=3]
-[ext_resource path="res://physics/interact_icon/interaction_node.gd" type="Script" id=4]
+[ext_resource path="res://physics/interact_icon/interaction_node.gd" type="Script" id=1]
+[ext_resource path="res://physics/parts/habitats/entrance_node.gd" type="Script" id=2]
+[ext_resource path="res://physics/parts/coupling_nodes/coupling_node_stacking.gd" type="Script" id=3]
+[ext_resource path="res://physics/parts/habitats/2m/m1/assets/capsule/capsule_Cylinder027.tres" type="ArrayMesh" id=4]
 [ext_resource path="res://physics/shock_wave/shock_wave_visual.tscn" type="PackedScene" id=5]
 
-[node name="Visual" type="Spatial"]
+[sub_resource type="CylinderShape" id=2]
+height = 0.417854
+radius = 0.921958
 
-[node name="Mesh" type="MeshInstance" parent="."]
+[sub_resource type="CylinderShape" id=3]
+height = 0.526474
+radius = 0.614428
+
+[sub_resource type="CapsuleShape" id=4]
+radius = 0.424877
+height = 0.435992
+
+[node name="HabitatCapsule" type="RigidBody"]
+
+[node name="ShapeA" type="CollisionShape" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.368946, 0 )
+shape = SubResource( 2 )
+
+[node name="ShapeB" type="CollisionShape" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.135473, 0 )
+shape = SubResource( 3 )
+
+[node name="ShapeC" type="CollisionShape" parent="."]
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 0.400634, 0 )
+shape = SubResource( 4 )
+
+[node name="Visual" type="Spatial" parent="."]
+
+[node name="Mesh" type="MeshInstance" parent="Visual"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.591239, 0 )
-mesh = ExtResource( 3 )
-material/0 = null
+mesh = ExtResource( 4 )
 
-[node name="Entrance" type="Spatial" parent="."]
+[node name="Entrance" type="Spatial" parent="Visual"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.193033, 0.085418, -0.877475 )
+script = ExtResource( 2 )
+
+[node name="Top" type="Spatial" parent="Visual"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.908761, 0 )
+script = ExtResource( 3 )
+allows_surface_coupling = true
+
+[node name="Bottom" type="Spatial" parent="Visual"]
+transform = Transform( 1, 0, 0, 0, -1, 0, 0, 0, -1, 0, -0.591239, 0 )
+script = ExtResource( 3 )
+allows_surface_coupling = true
+
+[node name="InteractionNode" type="Spatial" parent="Visual"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.011239, 0 )
 script = ExtResource( 1 )
 
-[node name="Top" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.908761, 0 )
-script = ExtResource( 2 )
-allows_surface_coupling = true
-
-[node name="Bottom" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, -1, 0, 0, 0, -1, 0, -0.591239, 0 )
-script = ExtResource( 2 )
-allows_surface_coupling = true
-
-[node name="InteractionNode" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.011239, 0 )
-script = ExtResource( 4 )
-
-[node name="ShockWaveVisual" parent="." instance=ExtResource( 5 )]
+[node name="ShockWaveVisual" parent="Visual" instance=ExtResource( 5 )]

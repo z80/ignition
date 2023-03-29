@@ -1,0 +1,5 @@
+[center][b]Sun[/b][/center]
+
+Sun is the central star of the planetary system we live in.
+
+Here there should be sun mass, surface temperature, etc.

@@ -44,10 +44,37 @@ func process_inner(delta):
 
 func init():
 	.init()
-	
+	_apply_default_orientation()
 	#var t: Transform = Transform.IDENTITY
 	#t.origin = Vector3( 0.0, 1.0, 0.0 )
 	#set_t( t )
+
+
+
+func _apply_default_orientation():
+	var ClosestCelestialBody = preload( 'res://physics/utils/closest_celestial_body.gd' )
+	var celestial_body: RefFrameNode = ClosestCelestialBody.closest_celestial_body( self )
+	if not is_instance_valid( celestial_body ):
+		return
+	
+	var se3_rel: Se3Ref = self.relative_to( celestial_body )
+	var wanted_up: Vector3 = se3_rel.r.normalized()
+	
+	var co: float = wanted_up.y
+	var si: float = Vector2( wanted_up.x, wanted_up.z ).length()
+	var elevation: float = atan2( si, co )
+	var q_el: Quat = Quat( Vector3.RIGHT, elevation )
+	
+	co = wanted_up.z
+	si = wanted_up.x
+	var azimuth: float = atan2( si, co )
+	var q_az: Quat = Quat( Vector3.UP, azimuth )
+	
+	var q_total: Quat = q_az * q_el
+	
+	var se3: Se3Ref = get_se3()
+	se3.q = q_total
+	set_se3( se3 )
 
 
 func gui_classes( mode: Array = [] ):
@@ -84,9 +111,9 @@ func construction_activate():
 	var PanelParts = load( "res://physics/bodies/construction_new/panel_parts/panel_combined.tscn" )
 	panel_parts = PanelParts.instance()
 	#panel_parts.construction = self
-	panel_parts.connect( "block_picked", self, "on_create_block" )
-	panel_parts.connect( "launch",       self, "on_launch" )
-	panel_parts.connect( "abort",        self, "on_abort" )
+	var _ok: int = panel_parts.connect( "block_picked", self, "on_create_block" )
+	_ok = panel_parts.connect( "launch",       self, "on_launch" )
+	_ok = panel_parts.connect( "abort",        self, "on_abort" )
 	var panel_parent: Control = RootScene.get_root_for_gui_panels()
 	panel_parent.add_child( panel_parts )
 	
@@ -117,7 +144,7 @@ func activate_grab( body ):
 		return
 	var Grab = load( "res://physics/bodies/construction_new/manip_grab/manip_grab.tscn" )
 	var grab = Grab.instance()
-	RootScene.get_root_for_visuals().add_child( grab )
+	RootScene.get_visual_layer_near().add_child( grab )
 	edited_target  = body
 	editing_widget = grab
 	grab.target = body
@@ -190,7 +217,7 @@ func _create_assembly():
 		# Assign null as a superbody.
 		# Own super body will be created on the first request.
 		for pt in parts:
-			pt.set_super_body( null )
+			pt.set_assembly( null )
 		part.activate()
 	
 	
@@ -221,7 +248,7 @@ func _activate_static_blocks():
 
 
 func check_if_deactivate():
-	var player = PhysicsManager.camera.get_parent()
+	var player = RootScene.ref_frame_root.player_camera.get_parent()
 	if (player == null) or ( not is_instance_valid(player) ):
 		return true
 	
@@ -239,7 +266,7 @@ func check_if_deactivate():
 
 
 func create_block( block_desc: Resource ):
-	var player: RefFrameNode = PhysicsManager.camera.get_parent()
+	var player: RefFrameNode = RootScene.ref_frame_root.player_camera.get_parent()
 	
 	var t: Transform = Transform.IDENTITY
 	t.origin = Constants.CONSTRUCTION_CREATE_AT
@@ -260,13 +287,12 @@ func create_block( block_desc: Resource ):
 	var is_static_block: bool = block_desc.is_static()
 	
 	# This one makes it not delete superbody on activation.
-	block.construction_state = PhysicsBodyBase.ConstructionState.CONSTRUCTION
-	block.body_state         = PhysicsBodyBase.BodyState.KINEMATIC
+	block.body_state         = PhysicsBodyBase.BodyState.CONSTRUCTION
 	
 	block.set_se3( se3 )
 	
 	# Make it selected to be able to move it.
-	PhysicsManager.player_select = block
+	RootScene.ref_frame_root.player_select = block
 	
 	if is_static_block:
 		static_blocks.push_back( block )
@@ -281,14 +307,14 @@ func create_block( block_desc: Resource ):
 	# Establish relations.
 	# This one is needed in ordr to 
 	# have the right gui elements in the context menu.
-	var sb: Node = get_super_body()
+	var sb: Node = get_assembly()
 	sb.add_sub_body( block )
 
 
 func delete_block( block: PhysicsBodyBase ):
 	dynamic_blocks.erase( block )
 	static_blocks.erase( block )
-	var sb: Node = get_super_body()
+	var sb: Node = get_assembly()
 	sb.remove_sub_body( block )
 	block.queue_free()
 
@@ -303,7 +329,7 @@ func set_show_coupling_nodes( en: bool ):
 
 
 
-func create_super_body():
+func create_assembly():
 	var sb = ConstructionSuperBodyNew.new()
 	var p = get_parent()
 	sb.change_parent( p )
@@ -331,7 +357,7 @@ func on_launch():
 
 func on_abort():
 	# Need to delete all blocks.
-	var sb: Node = get_super_body()
+	var sb: Node = get_assembly()
 	for b in static_blocks:
 		sb.remove_sub_body( b )
 		b.queue_free()

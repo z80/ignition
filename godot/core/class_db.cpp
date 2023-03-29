@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  class_db.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  class_db.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "class_db.h"
 
@@ -554,6 +554,27 @@ void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherit
 	}
 }
 
+static MethodInfo info_from_bind(MethodBind *p_method) {
+	MethodInfo minfo;
+	minfo.name = p_method->get_name();
+	minfo.id = p_method->get_method_id();
+
+	for (int i = 0; i < p_method->get_argument_count(); i++) {
+		minfo.arguments.push_back(p_method->get_argument_info(i));
+	}
+
+	minfo.return_val = p_method->get_return_info();
+	minfo.flags = p_method->get_hint_flags();
+
+	for (int i = 0; i < p_method->get_argument_count(); i++) {
+		if (p_method->has_default_argument(i)) {
+			minfo.default_arguments.push_back(p_method->get_default_argument(i));
+		}
+	}
+
+	return minfo;
+}
+
 void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
 	OBJTYPE_RLOCK;
 
@@ -576,42 +597,24 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 		}
 
 		for (List<StringName>::Element *E = type->method_order.front(); E; E = E->next()) {
-			MethodBind *method = type->method_map.get(E->get());
-			MethodInfo minfo;
-			minfo.name = E->get();
-			minfo.id = method->get_method_id();
-
-			if (p_exclude_from_properties && type->methods_in_properties.has(minfo.name)) {
+			if (p_exclude_from_properties && type->methods_in_properties.has(E->get())) {
 				continue;
 			}
 
-			for (int i = 0; i < method->get_argument_count(); i++) {
-				//Variant::Type t=method->get_argument_type(i);
-
-				minfo.arguments.push_back(method->get_argument_info(i));
-			}
-
-			minfo.return_val = method->get_return_info();
-			minfo.flags = method->get_hint_flags();
-
-			for (int i = 0; i < method->get_argument_count(); i++) {
-				if (method->has_default_argument(i)) {
-					minfo.default_arguments.push_back(method->get_default_argument(i));
-				}
-			}
+			MethodBind *method = type->method_map.get(E->get());
+			MethodInfo minfo = info_from_bind(method);
 
 			p_methods->push_back(minfo);
 		}
 
 #else
 
-		const StringName *K = NULL;
+		const StringName *K = nullptr;
 
 		while ((K = type->method_map.next(K))) {
 			MethodBind *m = type->method_map[*K];
-			MethodInfo mi;
-			mi.name = m->get_name();
-			p_methods->push_back(mi);
+			MethodInfo minfo = info_from_bind(m);
+			p_methods->push_back(minfo);
 		}
 
 #endif

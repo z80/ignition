@@ -1,37 +1,51 @@
-/*************************************************************************/
-/*  undo_redo.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  undo_redo.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "undo_redo.h"
 
 #include "core/os/os.h"
 #include "core/resource.h"
+
+void UndoRedo::Operation::delete_reference() {
+	if (type != Operation::TYPE_REFERENCE) {
+		return;
+	}
+	if (ref.is_valid()) {
+		ref.unref();
+	} else {
+		Object *obj = ObjectDB::get_instance(object);
+		if (obj) {
+			memdelete(obj);
+		}
+	}
+}
 
 void UndoRedo::_discard_redo() {
 	if (current_action == actions.size() - 1) {
@@ -40,16 +54,7 @@ void UndoRedo::_discard_redo() {
 
 	for (int i = current_action + 1; i < actions.size(); i++) {
 		for (List<Operation>::Element *E = actions.write[i].do_ops.front(); E; E = E->next()) {
-			if (E->get().type == Operation::TYPE_REFERENCE) {
-				if (E->get().ref.is_valid()) {
-					E->get().ref.unref();
-				} else {
-					Object *obj = ObjectDB::get_instance(E->get().object);
-					if (obj) {
-						memdelete(obj);
-					}
-				}
-			}
+			E->get().delete_reference();
 		}
 		//ERASE do data
 	}
@@ -72,14 +77,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 				List<Operation>::Element *E = actions.write[current_action + 1].do_ops.front();
 
 				while (E) {
-					if (E->get().type == Operation::TYPE_REFERENCE) {
-						Object *obj = ObjectDB::get_instance(E->get().object);
-
-						if (obj) {
-							memdelete(obj);
-						}
-					}
-
+					E->get().delete_reference();
 					E = E->next();
 					actions.write[current_action + 1].do_ops.pop_front();
 				}
@@ -224,16 +222,7 @@ void UndoRedo::_pop_history_tail() {
 	}
 
 	for (List<Operation>::Element *E = actions.write[0].undo_ops.front(); E; E = E->next()) {
-		if (E->get().type == Operation::TYPE_REFERENCE) {
-			if (E->get().ref.is_valid()) {
-				E->get().ref.unref();
-			} else {
-				Object *obj = ObjectDB::get_instance(E->get().object);
-				if (obj) {
-					memdelete(obj);
-				}
-			}
-		}
+		E->get().delete_reference();
 	}
 
 	actions.remove(0);
@@ -456,7 +445,8 @@ Variant UndoRedo::_add_do_method(const Variant **p_args, int p_argcount, Variant
 		v[i] = *p_args[i + 2];
 	}
 
-	add_do_method(object, method, v[0], v[1], v[2], v[3], v[4]);
+	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+	add_do_method(object, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 	return Variant();
 }
 
@@ -492,7 +482,8 @@ Variant UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Varia
 		v[i] = *p_args[i + 2];
 	}
 
-	add_undo_method(object, method, v[0], v[1], v[2], v[3], v[4]);
+	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+	add_undo_method(object, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 	return Variant();
 }
 

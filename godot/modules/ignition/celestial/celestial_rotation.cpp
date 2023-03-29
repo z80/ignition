@@ -1,5 +1,6 @@
 
 #include "celestial_rotation.h"
+#include "save_load.h"
 #include <cmath>
 
 namespace Ign
@@ -48,6 +49,41 @@ const SE3 & CelestialRotation::process( Float dt )
 
     return se3;
 }
+
+Dictionary CelestialRotation::serialize()
+{
+	Dictionary d;
+
+	d["spinning"] = spinning;
+	d["period"]   = period;
+	d["time"]     = time;
+
+	Dictionary q;
+	serialize_quat( axis_orientation, "axis_orientation", q );
+	d["axis_orientation"] = q;
+
+	d["se3"] = se3.serialize();
+
+	return d;
+}
+
+bool CelestialRotation::deserialize( const Dictionary & data )
+{
+	spinning = data["spinning"];
+	period   = data["period"];
+	time     = data["time"];
+	axis_orientation = deserialize_quat( "axis_orientation", data );
+
+	{
+		const Dictionary se3_data = data["se3"];
+		const bool ok = se3.deserialize( se3_data );
+		if ( !ok )
+			return false;
+	}
+
+	return true;
+}
+
 
 
 

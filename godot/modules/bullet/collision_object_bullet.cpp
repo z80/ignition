@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  collision_object_bullet.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  collision_object_bullet.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "collision_object_bullet.h"
 
@@ -100,15 +100,12 @@ CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		bt_collision_object(nullptr),
 		body_scale(1., 1., 1.),
 		force_shape_reset(false),
-		space(nullptr),
-		isTransformChanged(false) {}
+		space(nullptr) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
-	// Remove all overlapping, notify is not required since godot take care of it
-	for (int i = areasOverlapped.size() - 1; 0 <= i; --i) {
-		areasOverlapped[i]->remove_overlap(this, /*Notify*/ false);
+	for (int i = 0; i < areasOverlapped.size(); i++) {
+		areasOverlapped[i]->remove_object_overlaps(this);
 	}
-
 	destroyBulletCollisionObject();
 }
 
@@ -189,7 +186,9 @@ bool CollisionObjectBullet::is_collisions_response_enabled() {
 }
 
 void CollisionObjectBullet::notify_new_overlap(AreaBullet *p_area) {
-	areasOverlapped.push_back(p_area);
+	if (areasOverlapped.find(p_area) == -1) {
+		areasOverlapped.push_back(p_area);
+	}
 }
 
 void CollisionObjectBullet::on_exit_area(AreaBullet *p_area) {
@@ -198,6 +197,7 @@ void CollisionObjectBullet::on_exit_area(AreaBullet *p_area) {
 
 void CollisionObjectBullet::set_godot_object_flags(int flags) {
 	bt_collision_object->setUserIndex2(flags);
+	updated = true;
 }
 
 int CollisionObjectBullet::get_godot_object_flags() const {
@@ -231,7 +231,7 @@ const btTransform &CollisionObjectBullet::get_transform__bullet() const {
 }
 
 void CollisionObjectBullet::notify_transform_changed() {
-	isTransformChanged = true;
+	updated = true;
 }
 
 RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type) :

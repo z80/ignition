@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  rigid_body_bullet.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  rigid_body_bullet.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "rigid_body_bullet.h"
 
@@ -48,20 +48,16 @@
 	@author AndreaCatania
 */
 
-BulletPhysicsDirectBodyState *BulletPhysicsDirectBodyState::singleton = nullptr;
-
 Vector3 BulletPhysicsDirectBodyState::get_total_gravity() const {
-	Vector3 gVec;
-	B_TO_G(body->btBody->getGravity(), gVec);
-	return gVec;
+	return body->total_gravity;
 }
 
 float BulletPhysicsDirectBodyState::get_total_angular_damp() const {
-	return body->btBody->getAngularDamping();
+	return body->total_angular_damp;
 }
 
 float BulletPhysicsDirectBodyState::get_total_linear_damp() const {
-	return body->btBody->getLinearDamping();
+	return body->total_linear_damp;
 }
 
 Vector3 BulletPhysicsDirectBodyState::get_center_of_mass() const {
@@ -204,6 +200,10 @@ Vector3 BulletPhysicsDirectBodyState::get_contact_collider_velocity_at_position(
 	return velocityAtPoint;
 }
 
+real_t BulletPhysicsDirectBodyState::get_step() const {
+	return body->get_space()->get_delta_time();
+}
+
 PhysicsDirectSpaceState *BulletPhysicsDirectBodyState::get_space_state() {
 	return body->get_space()->get_direct_state();
 }
@@ -250,7 +250,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 				shapes.write[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
 			} break;
 			default:
-				WARN_PRINT("This shape is not supported to be kinematic!");
+				WARN_PRINT("RigidBody in 3D only supports primitive shapes or convex polygon shapes. Concave (trimesh) polygon shapes are not supported.");
 				shapes.write[i].shape = nullptr;
 		}
 	}
@@ -306,11 +306,14 @@ RigidBodyBullet::RigidBodyBullet() :
 
 	prev_collision_traces = &collision_traces_1;
 	curr_collision_traces = &collision_traces_2;
+
+	direct_access = memnew(BulletPhysicsDirectBodyState);
+	direct_access->body = this;
 }
 
 RigidBodyBullet::~RigidBodyBullet() {
 	bulletdelete(godotMotionState);
-
+	memdelete(direct_access);
 	if (force_integration_callback) {
 		memdelete(force_integration_callback);
 	}
@@ -370,9 +373,7 @@ void RigidBodyBullet::dispatch_callbacks() {
 			btBody->clearForces();
 		}
 
-		BulletPhysicsDirectBodyState *bodyDirect = BulletPhysicsDirectBodyState::get_singleton(this);
-
-		Variant variantBodyDirect = bodyDirect;
+		Variant variantBodyDirect = direct_access;
 
 		Object *obj = ObjectDB::get_instance(force_integration_callback->id);
 		if (!obj) {
@@ -437,7 +438,7 @@ void RigidBodyBullet::on_collision_checker_start() {
 
 void RigidBodyBullet::on_collision_checker_end() {
 	// Always true if active and not a static or kinematic body
-	isTransformChanged = btBody->isActive() && !btBody->isStaticOrKinematicObject();
+	updated = btBody->isActive() && !btBody->isStaticOrKinematicObject();
 }
 
 bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {
@@ -763,7 +764,7 @@ void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {
 		}
 		btBody->setCcdSweptSphereRadius(radius * 0.2);
 	} else {
-		btBody->setCcdMotionThreshold(10000.0);
+		btBody->setCcdMotionThreshold(0.);
 		btBody->setCcdSweptSphereRadius(0.);
 	}
 }
@@ -843,7 +844,7 @@ void RigidBodyBullet::reload_shapes() {
 	btBody->updateInertiaTensor();
 
 	reload_kinematic_shapes();
-	set_continuous_collision_detection(btBody->getCcdMotionThreshold() < 9998.0);
+	set_continuous_collision_detection(is_continuous_collision_detection_enabled());
 	reload_body();
 }
 
@@ -914,9 +915,9 @@ void RigidBodyBullet::reload_space_override_modificator() {
 		return;
 	}
 
-	Vector3 newGravity(0.0, 0.0, 0.0);
-	real_t newLinearDamp = MAX(0.0, linearDamp);
-	real_t newAngularDamp = MAX(0.0, angularDamp);
+	total_gravity = Vector3(0.0, 0.0, 0.0);
+	total_linear_damp = MAX(0.0, linearDamp);
+	total_angular_damp = MAX(0.0, angularDamp);
 
 	AreaBullet *currentArea;
 	// Variable used to calculate new gravity for gravity point areas, it is pointed by currentGravity pointer
@@ -967,49 +968,54 @@ void RigidBodyBullet::reload_space_override_modificator() {
 				/// This area adds its gravity/damp values to whatever has been
 				/// calculated so far. This way, many overlapping areas can combine
 				/// their physics to make interesting
-				newGravity += support_gravity;
-				newLinearDamp += currentArea->get_spOv_linearDamp();
-				newAngularDamp += currentArea->get_spOv_angularDamp();
+				total_gravity += support_gravity;
+				total_linear_damp += currentArea->get_spOv_linearDamp();
+				total_angular_damp += currentArea->get_spOv_angularDamp();
 				break;
 			case PhysicsServer::AREA_SPACE_OVERRIDE_COMBINE_REPLACE:
 				/// This area adds its gravity/damp values to whatever has been calculated
 				/// so far. Then stops taking into account the rest of the areas, even the
 				/// default one.
-				newGravity += support_gravity;
-				newLinearDamp += currentArea->get_spOv_linearDamp();
-				newAngularDamp += currentArea->get_spOv_angularDamp();
+				total_gravity += support_gravity;
+				total_linear_damp += currentArea->get_spOv_linearDamp();
+				total_angular_damp += currentArea->get_spOv_angularDamp();
 				stopped = true;
 				break;
 			case PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE:
 				/// This area replaces any gravity/damp, even the default one, and
 				/// stops taking into account the rest of the areas.
-				newGravity = support_gravity;
-				newLinearDamp = currentArea->get_spOv_linearDamp();
-				newAngularDamp = currentArea->get_spOv_angularDamp();
+				total_gravity = support_gravity;
+				total_linear_damp = currentArea->get_spOv_linearDamp();
+				total_angular_damp = currentArea->get_spOv_angularDamp();
 				stopped = true;
 				break;
 			case PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE_COMBINE:
 				/// This area replaces any gravity/damp calculated so far, but keeps
 				/// calculating the rest of the areas, down to the default one.
-				newGravity = support_gravity;
-				newLinearDamp = currentArea->get_spOv_linearDamp();
-				newAngularDamp = currentArea->get_spOv_angularDamp();
+				total_gravity = support_gravity;
+				total_linear_damp = currentArea->get_spOv_linearDamp();
+				total_angular_damp = currentArea->get_spOv_angularDamp();
 				break;
 		}
 	}
 
 	// Add default gravity and damping from space.
 	if (!stopped) {
-		newGravity += space->get_gravity_direction() * space->get_gravity_magnitude();
-		newLinearDamp += space->get_linear_damp();
-		newAngularDamp += space->get_angular_damp();
+		total_gravity += space->get_gravity_direction() * space->get_gravity_magnitude();
+		total_linear_damp += space->get_linear_damp();
+		total_angular_damp += space->get_angular_damp();
 	}
 
-	btVector3 newBtGravity;
-	G_TO_B(newGravity * gravity_scale, newBtGravity);
-
-	btBody->setGravity(newBtGravity);
-	btBody->setDamping(newLinearDamp, newAngularDamp);
+	if (omit_forces_integration) {
+		// Don't apply gravity or damping.
+		btBody->setGravity(btVector3(0, 0, 0));
+		btBody->setDamping(0, 0);
+	} else {
+		btVector3 newBtGravity;
+		G_TO_B(total_gravity * gravity_scale, newBtGravity);
+		btBody->setGravity(newBtGravity);
+		btBody->setDamping(total_linear_damp, total_angular_damp);
+	}
 }
 
 void RigidBodyBullet::reload_kinematic_shapes() {

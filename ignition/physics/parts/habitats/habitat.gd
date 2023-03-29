@@ -107,8 +107,8 @@ func let_character_in( character ):
 	character.set_boarding_mode_inside()
 	characters_inside.push_back( character )
 	# Also make habitat selected.
-	PhysicsManager.player_control = self
-	PhysicsManager.player_select  = self
+	RootScene.ref_frame_root.player_control = self
+	RootScene.ref_frame_root.player_select  = self
 
 
 func let_character_out( ind: int ):

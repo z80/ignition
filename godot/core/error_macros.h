@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  error_macros.h                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  error_macros.h                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef ERROR_MACROS_H
 #define ERROR_MACROS_H
@@ -208,6 +208,7 @@ void _err_flush_stdout();
 #define CRASH_BAD_INDEX(m_index, m_size)                                                                                  \
 	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                               \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
+		_err_flush_stdout();                                                                                              \
 		GENERATE_TRAP                                                                                                     \
 	} else                                                                                                                \
 		((void)0)
@@ -221,6 +222,7 @@ void _err_flush_stdout();
 #define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                          \
 	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                  \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
+		_err_flush_stdout();                                                                                                 \
 		GENERATE_TRAP                                                                                                        \
 	} else                                                                                                                   \
 		((void)0)
@@ -234,6 +236,7 @@ void _err_flush_stdout();
 #define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size)                                                                         \
 	if (unlikely((m_index) >= (m_size))) {                                                                                \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
+		_err_flush_stdout();                                                                                              \
 		GENERATE_TRAP                                                                                                     \
 	} else                                                                                                                \
 		((void)0)
@@ -305,6 +308,7 @@ void _err_flush_stdout();
 #define CRASH_COND(m_cond)                                                                                    \
 	if (unlikely(m_cond)) {                                                                                   \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Condition \"" _STR(m_cond) "\" is true."); \
+		_err_flush_stdout();                                                                                  \
 		GENERATE_TRAP                                                                                         \
 	} else                                                                                                    \
 		((void)0)
@@ -316,6 +320,7 @@ void _err_flush_stdout();
 #define CRASH_COND_MSG(m_cond, m_msg)                                                                                \
 	if (unlikely(m_cond)) {                                                                                          \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Condition \"" _STR(m_cond) "\" is true.", m_msg); \
+		_err_flush_stdout();                                                                                         \
 		GENERATE_TRAP                                                                                                \
 	} else                                                                                                           \
 		((void)0)
@@ -427,7 +432,7 @@ void _err_flush_stdout();
 #define CRASH_NOW()                                                                  \
 	if (true) {                                                                      \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method failed."); \
-		void _err_flush_stdout();                                                    \
+		_err_flush_stdout();                                                         \
 		GENERATE_TRAP                                                                \
 	} else                                                                           \
 		((void)0)
@@ -439,7 +444,7 @@ void _err_flush_stdout();
 #define CRASH_NOW_MSG(m_msg)                                                                \
 	if (true) {                                                                             \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method failed.", m_msg); \
-		void _err_flush_stdout();                                                           \
+		_err_flush_stdout();                                                                \
 		GENERATE_TRAP                                                                       \
 	} else                                                                                  \
 		((void)0)
@@ -513,8 +518,6 @@ void _err_flush_stdout();
 	} else                                                                                                                                                        \
 		((void)0)
 
-#endif
-
 /**
  * This should be a 'free' assert for program flow and should not be needed in any releases,
  *  only used in dev builds.
@@ -523,7 +526,7 @@ void _err_flush_stdout();
 #define DEV_ASSERT(m_cond)                                                                                              \
 	if (unlikely(!(m_cond))) {                                                                                          \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: DEV_ASSERT failed  \"" _STR(m_cond) "\" is false."); \
-		void _err_flush_stdout();                                                                                       \
+		_err_flush_stdout();                                                                                            \
 		GENERATE_TRAP                                                                                                   \
 	} else                                                                                                              \
 		((void)0)
@@ -554,3 +557,5 @@ void _err_flush_stdout();
 #else
 #define DEV_CHECK_ONCE(m_cond)
 #endif
+
+#endif // ERROR_MACROS_H

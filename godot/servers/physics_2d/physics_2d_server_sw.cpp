@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  physics_2d_server_sw.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  physics_2d_server_sw.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "physics_2d_server_sw.h"
 #include "broad_phase_2d_basic.h"
@@ -212,7 +212,7 @@ RID Physics2DServerSW::space_create() {
 	Space2DSW *space = memnew(Space2DSW);
 	RID id = space_owner.make_rid(space);
 	space->set_self(id);
-	RID area_id = area_create();
+	RID area_id = RID_PRIME(area_create());
 	Area2DSW *area = area_owner.get(area_id);
 	ERR_FAIL_COND_V(!area, RID());
 	space->set_default_area(area);
@@ -954,23 +954,20 @@ int Physics2DServerSW::body_test_ray_separation(RID p_body, const Transform2D &p
 }
 
 Physics2DDirectBodyState *Physics2DServerSW::body_get_direct_state(RID p_body) {
-	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
-
 	if (!body_owner.owns(p_body)) {
 		return nullptr;
 	}
 
 	Body2DSW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, nullptr);
+	ERR_FAIL_COND_V_MSG(!body, nullptr, "Body with RID " + itos(p_body.get_id()) + " not owned by this server.");
 
 	if (!body->get_space()) {
 		return nullptr;
 	}
 
-	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync) || body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
-	direct_state->body = body;
-	return direct_state;
+	return body->get_direct_state();
 }
 
 /* JOINT API */
@@ -1205,10 +1202,8 @@ void Physics2DServerSW::set_collision_iterations(int p_iterations) {
 
 void Physics2DServerSW::init() {
 	doing_sync = false;
-	last_step = 0.001;
 	iterations = 8; // 8?
 	stepper = memnew(Step2DSW);
-	direct_state = memnew(Physics2DDirectBodyStateSW);
 };
 
 void Physics2DServerSW::step(real_t p_step) {
@@ -1218,8 +1213,6 @@ void Physics2DServerSW::step(real_t p_step) {
 
 	_update_shapes();
 
-	last_step = p_step;
-	Physics2DDirectBodyStateSW::singleton->step = p_step;
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;
@@ -1290,7 +1283,6 @@ void Physics2DServerSW::end_sync() {
 
 void Physics2DServerSW::finish() {
 	memdelete(stepper);
-	memdelete(direct_state);
 };
 
 void Physics2DServerSW::_update_shapes() {

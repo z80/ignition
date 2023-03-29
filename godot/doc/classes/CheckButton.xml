@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CheckButton" inherits="Button" version="3.4">
+<class name="CheckButton" inherits="Button" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Checkable button. See also [CheckBox].
 	</brief_description>
@@ -12,8 +12,8 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="align" type="int" setter="set_text_align" getter="get_text_align" override="true" enum="Button.TextAlign" default="0" />
-		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" override="true" default="true" />
+		<member name="align" type="int" setter="set_text_align" getter="get_text_align" overrides="Button" enum="Button.TextAlign" default="0" />
+		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
 	</members>
 	<constants>
 	</constants>

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  animation_node_state_machine.cpp                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_node_state_machine.cpp                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "animation_node_state_machine.h"
 
@@ -182,8 +182,6 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 	if (current == p_travel) {
 		return true; //nothing to do
 	}
-
-	loops_current = 0; // reset loops, so fade does not happen immediately
 
 	Vector2 current_pos = p_state_machine->states[current].position;
 	Vector2 target_pos = p_state_machine->states[p_travel].position;
@@ -350,7 +348,6 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 
 		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 1.0, AnimationNode::FILTER_IGNORE, false);
 		pos_current = 0;
-		loops_current = 0;
 	}
 
 	if (!p_state_machine->states.has(current)) {
@@ -386,12 +383,8 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 	}
 
 	{ //advance and loop check
-
 		float next_pos = len_current - rem;
-
-		if (next_pos < pos_current) {
-			loops_current++;
-		}
+		end_loop = next_pos < pos_current;
 		pos_current = next_pos; //looped
 	}
 
@@ -441,15 +434,15 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 		bool goto_next = false;
 
 		if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END) {
-			goto_next = next_xfade >= (len_current - pos_current) || loops_current > 0;
-			if (loops_current > 0) {
+			goto_next = next_xfade >= (len_current - pos_current) || end_loop;
+			if (end_loop) {
 				next_xfade = 0;
 			}
 		} else {
 			goto_next = fading_from == StringName();
 		}
 
-		if (goto_next) { //loops should be used because fade time may be too small or zero and animation may have looped
+		if (goto_next) { //end_loop should be used because fade time may be too small or zero and animation may have looped
 
 			if (next_xfade) {
 				//time to fade, baby
@@ -476,7 +469,6 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 			}
 
 			rem = len_current; //so it does not show 0 on transition
-			loops_current = 0;
 		}
 	}
 

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  lightmapper_cpu.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  lightmapper_cpu.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "lightmapper_cpu.h"
 
@@ -166,15 +166,13 @@ Error LightmapperCPU::_layout_atlas(int p_max_size, Vector2i *r_atlas_size, int 
 			}
 
 			float mem_utilization = static_cast<float>(mem_occupied) / mem_used;
-			if (slices * atlas_size.y <= 16384) { // Maximum Image size
-				if (mem_used < best_atlas_memory || (mem_used == best_atlas_memory && mem_utilization > best_atlas_mem_utilization)) {
-					best_atlas_size = atlas_size;
-					best_atlas_offsets = curr_atlas_offsets;
-					best_atlas_slices = slices;
-					best_atlas_memory = mem_used;
-					best_atlas_mem_utilization = mem_utilization;
-					best_scaled_sizes = scaled_sizes;
-				}
+			if (mem_used < best_atlas_memory || (mem_used == best_atlas_memory && mem_utilization > best_atlas_mem_utilization)) {
+				best_atlas_size = atlas_size;
+				best_atlas_offsets = curr_atlas_offsets;
+				best_atlas_slices = slices;
+				best_atlas_memory = mem_used;
+				best_atlas_mem_utilization = mem_utilization;
+				best_scaled_sizes = scaled_sizes;
 			}
 
 			if (recovery_percent == 0) {
@@ -1430,22 +1428,24 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 		parameters.environment_panorama->lock();
 	}
 
-	for (unsigned int i = 0; i < mesh_instances.size(); i++) {
-		if (!mesh_instances[i].generate_lightmap) {
-			continue;
-		}
-
-		if (p_step_function) {
-			float p = float(i) / n_lit_meshes;
-			bool cancelled = p_step_function(0.4 + p * 0.4, vformat("%s (%d/%d)", TTR("Indirect lighting"), i, mesh_instances.size()), p_bake_userdata, false);
-			if (cancelled) {
-				return BAKE_ERROR_USER_ABORTED;
+	if (parameters.bounces > 0) {
+		for (unsigned int i = 0; i < mesh_instances.size(); i++) {
+			if (!mesh_instances[i].generate_lightmap) {
+				continue;
 			}
-		}
 
-		if (!scene_lightmaps[i].empty()) {
-			if (_parallel_run(scene_lightmaps[i].size(), "Computing indirect light", &LightmapperCPU::_compute_indirect_light, scene_lightmaps[i].ptr(), p_substep_function)) {
-				return BAKE_ERROR_USER_ABORTED;
+			if (p_step_function) {
+				float p = float(i) / n_lit_meshes;
+				bool cancelled = p_step_function(0.4 + p * 0.4, vformat("%s (%d/%d)", TTR("Indirect lighting"), i, mesh_instances.size()), p_bake_userdata, false);
+				if (cancelled) {
+					return BAKE_ERROR_USER_ABORTED;
+				}
+			}
+
+			if (!scene_lightmaps[i].empty()) {
+				if (_parallel_run(scene_lightmaps[i].size(), "Computing indirect light", &LightmapperCPU::_compute_indirect_light, scene_lightmaps[i].ptr(), p_substep_function)) {
+					return BAKE_ERROR_USER_ABORTED;
+				}
 			}
 		}
 	}

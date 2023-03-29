@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gd_mono_method.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gd_mono_method.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gd_mono_method.h"
 
@@ -75,6 +75,10 @@ void GDMonoMethod::_update_signature(MonoMethodSignature *p_method_sig) {
 	// clear the cache
 	method_info_fetched = false;
 	method_info = MethodInfo();
+
+	for (int i = 0; i < params_count; i++) {
+		params_buffer_size += GDMonoMarshal::variant_get_managed_unboxed_size(param_types[i]);
+	}
 }
 
 GDMonoClass *GDMonoMethod::get_enclosing_class() const {
@@ -102,50 +106,42 @@ IMonoClassMember::Visibility GDMonoMethod::get_visibility() {
 	}
 }
 
-MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc) {
-	if (get_return_type().type_encoding != MONO_TYPE_VOID || get_parameters_count() > 0) {
-		MonoArray *params = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), get_parameters_count());
+MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc) const {
+	MonoException *exc = NULL;
+	MonoObject *ret;
+
+	if (params_count > 0) {
+		void **params = (void **)alloca(params_count * sizeof(void *));
+		uint8_t *buffer = (uint8_t *)alloca(params_buffer_size);
+		unsigned int offset = 0;
 
 		for (int i = 0; i < params_count; i++) {
-			MonoObject *boxed_param = GDMonoMarshal::variant_to_mono_object(p_params[i], param_types[i]);
-			mono_array_setref(params, i, boxed_param);
+			params[i] = GDMonoMarshal::variant_to_managed_unboxed(p_params[i], param_types[i], buffer + offset, offset);
 		}
 
-		MonoException *exc = NULL;
-		MonoObject *ret = GDMonoUtils::runtime_invoke_array(mono_method, p_object, params, &exc);
-
-		if (exc) {
-			ret = NULL;
-			if (r_exc) {
-				*r_exc = exc;
-			} else {
-				GDMonoUtils::set_pending_exception(exc);
-			}
-		}
-
-		return ret;
+		ret = GDMonoUtils::runtime_invoke(mono_method, p_object, params, &exc);
 	} else {
-		MonoException *exc = NULL;
-		GDMonoUtils::runtime_invoke(mono_method, p_object, NULL, &exc);
-
-		if (exc) {
-			if (r_exc) {
-				*r_exc = exc;
-			} else {
-				GDMonoUtils::set_pending_exception(exc);
-			}
-		}
-
-		return NULL;
+		ret = GDMonoUtils::runtime_invoke(mono_method, p_object, NULL, &exc);
 	}
+
+	if (exc) {
+		ret = NULL;
+		if (r_exc) {
+			*r_exc = exc;
+		} else {
+			GDMonoUtils::set_pending_exception(exc);
+		}
+	}
+
+	return ret;
 }
 
-MonoObject *GDMonoMethod::invoke(MonoObject *p_object, MonoException **r_exc) {
+MonoObject *GDMonoMethod::invoke(MonoObject *p_object, MonoException **r_exc) const {
 	ERR_FAIL_COND_V(get_parameters_count() > 0, NULL);
 	return invoke_raw(p_object, NULL, r_exc);
 }
 
-MonoObject *GDMonoMethod::invoke_raw(MonoObject *p_object, void **p_params, MonoException **r_exc) {
+MonoObject *GDMonoMethod::invoke_raw(MonoObject *p_object, void **p_params, MonoException **r_exc) const {
 	MonoException *exc = NULL;
 	MonoObject *ret = GDMonoUtils::runtime_invoke(mono_method, p_object, p_params, &exc);
 
@@ -277,6 +273,8 @@ GDMonoMethod::GDMonoMethod(StringName p_name, MonoMethod *p_method) {
 	name = p_name;
 
 	mono_method = p_method;
+
+	params_buffer_size = 0;
 
 	method_info_fetched = false;
 

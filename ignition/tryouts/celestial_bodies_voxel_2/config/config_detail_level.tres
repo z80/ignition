@@ -1,0 +1,12 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+scale_divider = 1000.0
+event_horizon = 2000.0
+max_level = 6.0
+min_relative_focal_depth = 0.05
+relative_rebuild_dist = 0.3
+surface_node_size = 90.0

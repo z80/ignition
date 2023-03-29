@@ -1,0 +1,106 @@
+[gd_resource type="ShaderMaterial" load_steps=4 format=2]
+
+[sub_resource type="Shader" id=8]
+code = "// NOTE: Shader automatically converted from Godot Engine 3.5.stable's SpatialMaterial.
+
+shader_type spatial;
+render_mode async_visible,blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx;
+uniform vec4 albedo : hint_color;
+uniform sampler2D texture_albedo : hint_albedo;
+uniform float specular;
+uniform float metallic;
+uniform float roughness : hint_range(0,1);
+uniform float uv_scale;
+
+
+
+uniform highp vec3  displacement;
+uniform highp mat4  source_tr;
+uniform highp mat4  inv_scaled_source_tr;
+uniform highp float plain_dist = 100.0;
+uniform highp float log_scale  = 1.0;
+
+
+highp vec3 scale_mesh( highp vec2 uv, highp vec2 uv2 )
+{
+	// Scaling in real time.
+	highp vec3 v = vec3(uv.x, uv.y, uv2.x);
+	v = (source_tr * vec4( v, 1.0 ) ).xyz;
+
+	highp float l = length( v );
+	highp float extra_dist = l - plain_dist;
+	if ( extra_dist > 0.0 )
+	{
+		highp float log_dist = log( 1.0 + extra_dist ) * log_scale;
+		highp float scaled_dist = plain_dist + log_dist;
+		v = v * (scaled_dist / l);
+	}
+
+	v = ( inv_scaled_source_tr * vec4( v, 1.0 ) ).xyz;
+	return v;
+}
+
+
+varying highp vec3 vert;
+varying highp vec3 norm;
+varying highp vec3 weight;
+
+void vertex()
+{
+//	vec3 v = VERTEX;
+//	vec3 vert = vec3(v.x + 100.0, v.y, v.z);
+	
+	VERTEX = scale_mesh( UV, UV2 );
+	
+	// Texture weights for assigning materials.
+	highp vec3 true_r = vec3( UV.x, UV.y, UV2.x ) + displacement;
+	vert = true_r * uv_scale;
+	//VERTEX = vec3( UV.x, UV.y, UV2.x ) * 100.0;
+	//vert = VERTEX;
+	float len = length(vert);
+	weight = abs(NORMAL);
+}
+
+
+
+
+
+
+
+
+void fragment() {
+	highp vec2 base_uv = UV;
+	highp vec4 albedo_x = texture( texture_albedo, vert.yz ) * weight.x;
+	highp vec4 albedo_y = texture( texture_albedo, vert.xz ) * weight.y;
+	highp vec4 albedo_z = texture( texture_albedo, vert.xy ) * weight.z;
+	highp vec4 albedo_tex = albedo_x + albedo_y + albedo_z;
+//	vec4 albedo_tex = texture(texture_albedo,base_uv);
+	ALBEDO = albedo.rgb * albedo_tex.rgb;
+	METALLIC = metallic;
+	ROUGHNESS = roughness;
+	SPECULAR = specular;
+}
+"
+
+[sub_resource type="OpenSimplexNoise" id=6]
+period = 1.0
+
+[sub_resource type="NoiseTexture" id=7]
+width = 64
+height = 64
+seamless = true
+noise = SubResource( 6 )
+
+[resource]
+shader = SubResource( 8 )
+shader_param/albedo = Color( 1, 1, 1, 1 )
+shader_param/specular = 0.5
+shader_param/metallic = 0.0
+shader_param/roughness = 1.0
+shader_param/uv_scale = 0.1
+shader_param/displacement = null
+shader_param/source_tr = Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )
+shader_param/inv_scaled_source_tr = Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )
+shader_param/plain_dist = 100.0
+shader_param/log_scale = 1.0
+shader_param/texture_albedo = SubResource( 7 )

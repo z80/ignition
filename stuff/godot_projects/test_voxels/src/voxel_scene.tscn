@@ -1,0 +1,49 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=1]
+[ext_resource path="res://src/voxel_scene.gd" type="Script" id=2]
+[ext_resource path="res://src/surface_source.tres" type="Resource" id=3]
+[ext_resource path="res://addons/zylann.atmosphere/planet_atmosphere.tscn" type="PackedScene" id=4]
+
+[sub_resource type="SpatialMaterial" id=1]
+albedo_color = Color( 0.752941, 0, 0, 1 )
+
+[sub_resource type="SpatialMaterial" id=2]
+flags_unshaded = true
+albedo_color = Color( 0, 0.603922, 0.00784314, 1 )
+
+[node name="Spatial" type="Spatial"]
+script = ExtResource( 2 )
+source_resource = ExtResource( 3 )
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15.4367 )
+script = ExtResource( 1 )
+max_speed = Vector3( 30, 30, 30 )
+
+[node name="Mesh" type="MeshInstance" parent="."]
+material_override = SubResource( 1 )
+
+[node name="PlanetAthmosphere" parent="Mesh" instance=ExtResource( 4 )]
+visible = false
+planet_radius = 8.0
+atmosphere_height = 1.0
+sun_path = NodePath("../../SunPosition")
+shader_params/u_day_color0 = Color( 0.29, 0.39, 0.92, 1 )
+shader_params/u_day_color1 = Color( 0.76, 0.9, 1, 1 )
+shader_params/u_night_color0 = Color( 0.156863, 0.105882, 0.337255, 1 )
+shader_params/u_night_color1 = Color( 0, 0, 0, 1 )
+shader_params/u_density = 0.2
+shader_params/u_attenuation_distance = 0.0
+
+[node name="MeshLeft" type="MeshInstance" parent="."]
+material_override = SubResource( 2 )
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 3.0
+autostart = true
+
+[node name="SunPosition" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 75.7674, 0, -0.230206 )
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer"]

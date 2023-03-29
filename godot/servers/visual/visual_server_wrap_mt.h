@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  visual_server_wrap_mt.h                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  visual_server_wrap_mt.h                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef VISUAL_SERVER_WRAP_MT_H
 #define VISUAL_SERVER_WRAP_MT_H
@@ -130,6 +130,8 @@ public:
 	FUNC2SC(shader_get_custom_defines, RID, Vector<String> *)
 	FUNC2(shader_remove_custom_define, RID, const String &)
 
+	FUNC1(set_shader_async_hidden_forbidden, bool)
+
 	/* COMMON MATERIAL API */
 
 	FUNCRID(material)
@@ -205,6 +207,11 @@ public:
 	FUNC2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
 	FUNC2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
+
+	FUNC3(multimesh_set_as_bulk_array_interpolated, RID, const PoolVector<float> &, const PoolVector<float> &)
+	FUNC2(multimesh_set_physics_interpolated, RID, bool)
+	FUNC2(multimesh_set_physics_interpolation_quality, RID, int)
+	FUNC2(multimesh_instance_reset_physics_interpolation, RID, int)
 
 	FUNC2(multimesh_set_visible_instances, RID, int)
 	FUNC1RC(int, multimesh_get_visible_instances, RID)
@@ -369,6 +376,8 @@ public:
 	FUNC4(camera_set_orthogonal, RID, float, float, float)
 	FUNC5(camera_set_frustum, RID, float, Vector2, float, float)
 	FUNC2(camera_set_transform, RID, const Transform &)
+	FUNC2(camera_set_interpolated, RID, bool)
+	FUNC1(camera_reset_physics_interpolation, RID)
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
 	FUNC2(camera_set_use_vertical_aspect, RID, bool)
@@ -418,6 +427,7 @@ public:
 	FUNC2(viewport_set_use_debanding, RID, bool)
 	FUNC2(viewport_set_sharpen_intensity, RID, float)
 	FUNC2(viewport_set_hdr, RID, bool)
+	FUNC2(viewport_set_use_32_bpc_depth, RID, bool)
 	FUNC2(viewport_set_usage, RID, ViewportUsage)
 
 	//this passes directly to avoid stalling, but it's pretty dangerous, so don't call after freeing a viewport
@@ -455,6 +465,12 @@ public:
 	FUNC7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	FUNC5(environment_set_fog_height, RID, bool, float, float, float)
 
+	/* INTERPOLATION API */
+
+	FUNC1(set_physics_interpolation_enabled, bool)
+
+	/* SCENARIO API */
+
 	FUNCRID(scenario)
 
 	FUNC2(scenario_set_debug, RID, ScenarioDebugMode)
@@ -463,12 +479,16 @@ public:
 	FUNC2(scenario_set_fallback_environment, RID, RID)
 
 	/* INSTANCING API */
+
 	FUNCRID(instance)
 
 	FUNC2(instance_set_base, RID, RID)
 	FUNC2(instance_set_scenario, RID, RID)
 	FUNC2(instance_set_layer_mask, RID, uint32_t)
+	FUNC3(instance_set_pivot_data, RID, float, bool)
 	FUNC2(instance_set_transform, RID, const Transform &)
+	FUNC2(instance_set_interpolated, RID, bool)
+	FUNC1(instance_reset_physics_interpolation, RID)
 	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_material, RID, int, RID)
@@ -482,7 +502,8 @@ public:
 
 	FUNC2(instance_set_extra_visibility_margin, RID, real_t)
 
-	// Portals
+	/* PORTALS API */
+
 	FUNC2(instance_set_portal_mode, RID, InstancePortalMode)
 
 	FUNCRID(ghost)
@@ -495,21 +516,30 @@ public:
 	FUNC4(portal_link, RID, RID, RID, bool)
 	FUNC2(portal_set_active, RID, bool)
 
-	// Roomgroups
+	/* ROOMGROUPS API */
+
 	FUNCRID(roomgroup)
 	FUNC2(roomgroup_prepare, RID, ObjectID)
 	FUNC2(roomgroup_set_scenario, RID, RID)
 	FUNC2(roomgroup_add_room, RID, RID)
 
-	// Occluders
-	FUNCRID(occluder)
-	FUNC3(occluder_set_scenario, RID, RID, OccluderType)
-	FUNC2(occluder_spheres_update, RID, const Vector<Plane> &)
-	FUNC2(occluder_set_transform, RID, const Transform &)
-	FUNC2(occluder_set_active, RID, bool)
-	FUNC1(set_use_occlusion_culling, bool)
+	/* OCCLUDERS API */
 
-	// Rooms
+	FUNCRID(occluder_instance)
+	FUNC2(occluder_instance_set_scenario, RID, RID)
+	FUNC2(occluder_instance_link_resource, RID, RID)
+	FUNC2(occluder_instance_set_transform, RID, const Transform &)
+	FUNC2(occluder_instance_set_active, RID, bool)
+
+	FUNCRID(occluder_resource)
+	FUNC2(occluder_resource_prepare, RID, OccluderType)
+	FUNC2(occluder_resource_spheres_update, RID, const Vector<Plane> &)
+	FUNC2(occluder_resource_mesh_update, RID, const Geometry::OccluderMeshData &)
+	FUNC1(set_use_occlusion_culling, bool)
+	FUNC1RC(Geometry::MeshData, occlusion_debug_get_current_polys, RID)
+
+	/* ROOMS API */
+
 	FUNCRID(room)
 	FUNC2(room_set_scenario, RID, RID)
 	FUNC4(room_add_instance, RID, RID, const AABB &, const Vector<Vector3> &)
@@ -539,6 +569,7 @@ public:
 	FUNC3(instance_geometry_set_flag, RID, InstanceFlags, bool)
 	FUNC2(instance_geometry_set_cast_shadows_setting, RID, ShadowCastingSetting)
 	FUNC2(instance_geometry_set_material_override, RID, RID)
+	FUNC2(instance_geometry_set_material_overlay, RID, RID)
 
 	FUNC5(instance_geometry_set_draw_range, RID, float, float, float, float)
 	FUNC2(instance_geometry_set_as_instance_lod, RID, RID)
@@ -651,7 +682,9 @@ public:
 	virtual void finish();
 	virtual void draw(bool p_swap_buffers, double frame_step);
 	virtual void sync();
-	FUNC0RC(bool, has_changed)
+	FUNC0(tick)
+	FUNC1(pre_draw, bool)
+	FUNC1RC(bool, has_changed, ChangedPriority)
 
 	/* RENDER INFO */
 
@@ -700,4 +733,4 @@ public:
 #endif
 #undef SYNC_DEBUG
 
-#endif
+#endif // VISUAL_SERVER_WRAP_MT_H

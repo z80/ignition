@@ -23,7 +23,7 @@ var _joint: Generic6DOFJoint = null
 
 
 
-func init( own_part: RefFrameNode, base_t: Transform, it_is_parent: bool ):
+func init( _own_part: RefFrameNode, base_t: Transform, it_is_parent: bool ):
 	base_transform = base_t
 	is_parent      = it_is_parent
 

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  visual_instance.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  visual_instance.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "visual_instance.h"
 
@@ -52,17 +52,34 @@ void VisualInstance::_update_visibility() {
 	// keep a quick flag available in each node.
 	// no need to call is_visible_in_tree all over the place,
 	// providing it is propagated with a notification.
-	bool already_visible = (_get_spatial_flags() & SPATIAL_FLAG_VI_VISIBLE) != 0;
-	_set_spatial_flag(SPATIAL_FLAG_VI_VISIBLE, visible);
+	bool already_visible = _is_vi_visible();
+	_set_vi_visible(visible);
 
 	// if making visible, make sure the visual server is up to date with the transform
 	if (visible && (!already_visible)) {
-		Transform gt = get_global_transform();
-		VisualServer::get_singleton()->instance_set_transform(instance, gt);
+		if (!_is_using_identity_transform()) {
+			Transform gt = get_global_transform();
+			VisualServer::get_singleton()->instance_set_transform(instance, gt);
+		}
 	}
 
 	_change_notify("visible");
 	VS::get_singleton()->instance_set_visible(get_instance(), visible);
+}
+
+void VisualInstance::set_instance_use_identity_transform(bool p_enable) {
+	// prevent sending instance transforms when using global coords
+	_set_use_identity_transform(p_enable);
+
+	if (is_inside_tree()) {
+		if (p_enable) {
+			// want to make sure instance is using identity transform
+			VisualServer::get_singleton()->instance_set_transform(instance, get_global_transform());
+		} else {
+			// want to make sure instance is up to date
+			VisualServer::get_singleton()->instance_set_transform(instance, Transform());
+		}
+	}
 }
 
 void VisualInstance::_notification(int p_what) {
@@ -80,10 +97,37 @@ void VisualInstance::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (_get_spatial_flags() & SPATIAL_FLAG_VI_VISIBLE) {
-				Transform gt = get_global_transform();
-				VisualServer::get_singleton()->instance_set_transform(instance, gt);
+			if (_is_vi_visible() || is_physics_interpolated_and_enabled()) {
+				if (!_is_using_identity_transform()) {
+					Transform gt = get_global_transform();
+					VisualServer::get_singleton()->instance_set_transform(instance, gt);
+
+					// For instance when first adding to the tree, when the previous transform is
+					// unset, to prevent streaking from the origin.
+					if (_is_physics_interpolation_reset_requested()) {
+						if (_is_vi_visible()) {
+							_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+						}
+						_set_physics_interpolation_reset_requested(false);
+					}
+				}
 			}
+		} break;
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (_is_vi_visible() && is_physics_interpolated()) {
+				VisualServer::get_singleton()->instance_reset_physics_interpolation(instance);
+			}
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+			else if (GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
+				String node_name = is_inside_tree() ? String(get_path()) : String(get_name());
+				if (!_is_vi_visible()) {
+					WARN_PRINT("[Physics interpolation] NOTIFICATION_RESET_PHYSICS_INTERPOLATION only works with unhidden nodes: \"" + node_name + "\".");
+				}
+				if (!is_physics_interpolated()) {
+					WARN_PRINT("[Physics interpolation] NOTIFICATION_RESET_PHYSICS_INTERPOLATION only works with interpolated nodes: \"" + node_name + "\".");
+				}
+			}
+#endif
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 			VisualServer::get_singleton()->instance_set_scenario(instance, RID());
@@ -93,12 +137,16 @@ void VisualInstance::_notification(int p_what) {
 			// the vi visible flag is always set to invisible when outside the tree,
 			// so it can detect re-entering the tree and becoming visible, and send
 			// the transform to the visual server
-			_set_spatial_flag(SPATIAL_FLAG_VI_VISIBLE, false);
+			_set_vi_visible(false);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_visibility();
 		} break;
 	}
+}
+
+void VisualInstance::_physics_interpolated_changed() {
+	VisualServer::get_singleton()->instance_set_interpolated(instance, is_physics_interpolated());
 }
 
 RID VisualInstance::get_instance() const {
@@ -132,6 +180,24 @@ bool VisualInstance::get_layer_mask_bit(int p_layer) const {
 	return (layers & (1 << p_layer));
 }
 
+void VisualInstance::set_sorting_offset(float p_offset) {
+	sorting_offset = p_offset;
+	VisualServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center);
+}
+
+float VisualInstance::get_sorting_offset() {
+	return sorting_offset;
+}
+
+void VisualInstance::set_sorting_use_aabb_center(bool p_enabled) {
+	sorting_use_aabb_center = p_enabled;
+	VisualServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center);
+}
+
+bool VisualInstance::is_sorting_use_aabb_center() {
+	return sorting_use_aabb_center;
+}
+
 void VisualInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_visual_instance_rid"), &VisualInstance::_get_visual_instance_rid);
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &VisualInstance::set_base);
@@ -142,8 +208,16 @@ void VisualInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_layer_mask_bit", "layer", "enabled"), &VisualInstance::set_layer_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_layer_mask_bit", "layer"), &VisualInstance::get_layer_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_transformed_aabb"), &VisualInstance::get_transformed_aabb);
+	ClassDB::bind_method(D_METHOD("set_sorting_offset", "offset"), &VisualInstance::set_sorting_offset);
+	ClassDB::bind_method(D_METHOD("get_sorting_offset"), &VisualInstance::get_sorting_offset);
+	ClassDB::bind_method(D_METHOD("set_sorting_use_aabb_center", "enabled"), &VisualInstance::set_sorting_use_aabb_center);
+	ClassDB::bind_method(D_METHOD("is_sorting_use_aabb_center"), &VisualInstance::is_sorting_use_aabb_center);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
+
+	ADD_GROUP("Sorting", "sorting_");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sorting_offset"), "set_sorting_offset", "get_sorting_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sorting_use_aabb_center"), "set_sorting_use_aabb_center", "is_sorting_use_aabb_center");
 }
 
 void VisualInstance::set_base(const RID &p_base) {
@@ -156,9 +230,11 @@ RID VisualInstance::get_base() const {
 }
 
 VisualInstance::VisualInstance() {
-	instance = VisualServer::get_singleton()->instance_create();
+	instance = RID_PRIME(VisualServer::get_singleton()->instance_create());
 	VisualServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
 	layers = 1;
+	sorting_offset = 0.0f;
+	sorting_use_aabb_center = true;
 	set_notify_transform(true);
 }
 
@@ -173,6 +249,15 @@ void GeometryInstance::set_material_override(const Ref<Material> &p_material) {
 
 Ref<Material> GeometryInstance::get_material_override() const {
 	return material_override;
+}
+
+void GeometryInstance::set_material_overlay(const Ref<Material> &p_material) {
+	material_overlay = p_material;
+	VS::get_singleton()->instance_geometry_set_material_overlay(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
+}
+
+Ref<Material> GeometryInstance::get_material_overlay() const {
+	return material_overlay;
 }
 
 void GeometryInstance::set_generate_lightmap(bool p_enabled) {
@@ -275,6 +360,9 @@ void GeometryInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material_override", "material"), &GeometryInstance::set_material_override);
 	ClassDB::bind_method(D_METHOD("get_material_override"), &GeometryInstance::get_material_override);
 
+	ClassDB::bind_method(D_METHOD("set_material_overlay", "material"), &GeometryInstance::set_material_overlay);
+	ClassDB::bind_method(D_METHOD("get_material_overlay"), &GeometryInstance::get_material_overlay);
+
 	ClassDB::bind_method(D_METHOD("set_flag", "flag", "value"), &GeometryInstance::set_flag);
 	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &GeometryInstance::get_flag);
 
@@ -308,6 +396,7 @@ void GeometryInstance::_bind_methods() {
 
 	ADD_GROUP("Geometry", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"), "set_material_override", "get_material_override");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_overlay", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"), "set_material_overlay", "get_material_overlay");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01"), "set_extra_cull_margin", "get_extra_cull_margin");
 

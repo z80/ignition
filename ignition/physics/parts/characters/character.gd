@@ -9,8 +9,8 @@ export(float) var max_force = 5.0
 
 export(float) var ang_vel        = 1.0
 export(float) var max_ang_vel    = 2.0
-export(float) var gain_angular   = 100.0
-export(float) var gain_d_angular = 100.0
+export(float) var gain_angular   = 10.0
+export(float) var gain_d_angular = 10.0
 export(float) var max_torque     = 5.0
 
 export(bool) var translation_abolute = false
@@ -82,6 +82,34 @@ func init():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	._ready()
+	_apply_default_orientation()
+
+
+func _apply_default_orientation():
+	var ClosestCelestialBody = preload( 'res://physics/utils/closest_celestial_body.gd' )
+	var celestial_body: RefFrameNode = ClosestCelestialBody.closest_celestial_body( self )
+	if not is_instance_valid( celestial_body ):
+		return
+	
+	var se3_rel: Se3Ref = self.relative_to( celestial_body )
+	var wanted_up: Vector3 = se3_rel.r.normalized()
+	
+	var co: float = wanted_up.y
+	var si: float = Vector2( wanted_up.x, wanted_up.z ).length()
+	var elevation: float = atan2( si, co )
+	var q_el: Quat = Quat( Vector3.RIGHT, elevation )
+	
+	co = wanted_up.z
+	si = wanted_up.x
+	var azimuth: float = atan2( si, co )
+	var q_az: Quat = Quat( Vector3.UP, azimuth )
+	
+	var q_total: Quat = q_az * q_el
+	
+	var se3: Se3Ref = get_se3()
+	se3.q = q_total
+	set_se3( se3 )
+	update_physics_from_state()
 
 
 # Copying user input into a local variable. So it can be processed 
@@ -102,13 +130,13 @@ func process_inner( delta ):
 
 
 
-func pivot_tps( ind: int = 0 ):
+func pivot_tps( _ind: int = 0 ):
 	if is_instance_valid( _visual ):
 		return _visual.target_tps
 	return null
 
 
-func pivot_fps( ind: int = 0 ):
+func pivot_fps( _ind: int = 0 ):
 	if is_instance_valid( _visual ):
 		return _visual.target_fps
 	return null
@@ -128,7 +156,7 @@ func create_physical():
 	if boarding_mode == BoardingMode.INSIDE:
 		return
 	
-	var ph: Node =  _create_physical( PhysicalScene )
+	var ph: Node =  _create_physical( VisualScene )
 	# Physics body calls "integrate_forces" method from this instance.
 	# Becasue of that it is necesary to provide the reference to "self".
 	# Check for "null" beacuse when there is no parent ref. frame, 
@@ -140,7 +168,7 @@ func create_physical():
 
 
 # This one should be called by CharacterPhysicsBody
-func integrate_forces( body: RigidBody, state ):
+func integrate_forces( _body: RigidBody, state ):
 	# If it is free floating, don't apply any forces. 
 	# Just let it drift on its own.
 	if not free_floating:
@@ -181,7 +209,7 @@ func get_speed_normalized( body: RigidBody ):
 
 
 func _position_control( state ):
-	var dt: float = state.step
+	var _dt: float = state.step
 	var v: Vector3 = Vector3.ZERO
 	
 	var w: bool = _input.has( "ui_w" )
@@ -367,7 +395,10 @@ func serialize():
 
 
 func deserialize( data: Dictionary ):
-	var ok: bool = .deserialize( data )
+	var _ok: bool = .deserialize( data )
+	if not _ok:
+		return false
+	
 	if data.has( "boarding_mode" ):
 		boarding_mode = data["boarding_mode"]
 		if boarding_mode == BoardingMode.INSIDE:

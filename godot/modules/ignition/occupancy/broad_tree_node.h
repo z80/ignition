@@ -21,7 +21,7 @@ class BroadTreeNode
 {
 public:
     BroadTreeNode();
-    ~BroadTreeNode();
+    virtual ~BroadTreeNode();
     BroadTreeNode( const BroadTreeNode & inst );
     const BroadTreeNode & operator=( const BroadTreeNode & inst );
 

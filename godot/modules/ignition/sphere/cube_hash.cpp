@@ -42,9 +42,20 @@ void CubeHash::reset( uint64_t init )
 
 const CubeHash & CubeHash::operator<<( int v )
 {
-    unsigned char cb[1];
-    cb[0] = static_cast<unsigned char>( v );
-    md5_update( &ctx_, cb, 1 );
+	const unsigned char sign = (v >= 0) ? 0 : 1;
+	int abs_v = (v >= 0) ? v : (-v);
+	const int sz = sizeof(int);
+	const int qty = sz + 1;
+	unsigned char cb[qty];
+	for ( int i=0; i<sz; i++ )
+	{
+		cb[i] = abs_v & 0xFF;
+		abs_v = abs_v >> 8;
+	}
+	cb[sz] = sign;
+
+	md5_update( &ctx_, cb, qty );
+
     return *this;
 }
 

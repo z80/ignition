@@ -5,7 +5,7 @@ extends Node
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
+func _process(_delta):
 	var group: String = Constants.INTERACT_NODES_GROUP_NAME
 	var nodes: Array = get_tree().get_nodes_in_group( group )
 	

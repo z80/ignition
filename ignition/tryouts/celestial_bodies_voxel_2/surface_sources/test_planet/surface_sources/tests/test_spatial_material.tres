@@ -1,0 +1,14 @@
+[gd_resource type="SpatialMaterial" load_steps=3 format=2]
+
+[sub_resource type="OpenSimplexNoise" id=6]
+period = 1.0
+
+[sub_resource type="NoiseTexture" id=7]
+width = 64
+height = 64
+seamless = true
+noise = SubResource( 6 )
+
+[resource]
+albedo_texture = SubResource( 7 )
+uv1_triplanar = true

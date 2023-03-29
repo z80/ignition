@@ -115,7 +115,7 @@ func activate_grab( body ):
 		return
 	var Grab = load( "res://physics/bodies/construction_new/manip_grab/manip_grab.tscn" )
 	var grab = Grab.instance()
-	RootScene.get_root_for_visuals().add_child( grab )
+	RootScene.get_visual_layer_near().add_child( grab )
 	edited_target  = body
 	editing_widget = grab
 	grab.target = body
@@ -188,7 +188,7 @@ func _create_assembly():
 		# Assign null as a superbody.
 		# Own super body will be created on the first request.
 		for pt in parts:
-			pt.set_super_body( null )
+			pt.set_assembly( null )
 		part.activate()
 	
 	
@@ -219,7 +219,7 @@ func _activate_static_blocks():
 
 
 func check_if_deactivate():
-	var player = PhysicsManager.camera.get_parent()
+	var player = RootScene.ref_frame_root.player_camera.get_parent()
 	if (player == null) or ( not is_instance_valid(player) ):
 		return true
 	
@@ -242,10 +242,9 @@ func create_block( block_name, dynamic: bool = false ):
 		return
 	
 	# This one makes it not delete superbosy on activation.
-	block.construction_state = PhysicsBodyBase.ConstructionState.CONSTRUCTION
-	block.body_state         = PhysicsBodyBase.BodyState.KINEMATIC
+	block.body_state         = PhysicsBodyBase.BodyState.CONSTRUCTION
 	
-	var player = PhysicsManager.camera.get_parent()
+	var player = RootScene.ref_frame_root.player_camera.get_parent()
 	block.change_parent( player )
 	
 	var t: Transform = Transform.IDENTITY
@@ -262,7 +261,7 @@ func create_block( block_name, dynamic: bool = false ):
 	block.set_se3( se3 )
 	
 	# Make it selected to be able to move it.
-	PhysicsManager.player_select = block
+	RootScene.ref_frame_root.player_select = block
 	
 	if dynamic:
 		dynamic_blocks.push_back( block )
@@ -277,14 +276,14 @@ func create_block( block_name, dynamic: bool = false ):
 	# Establish relations.
 	# This one is needed in ordr to 
 	# have the right gui elements in the context menu.
-	var sb: Node = get_super_body()
+	var sb: Node = get_assembly()
 	sb.add_sub_body( block )
 
 
 func delete_block( block: PhysicsBodyBase ):
 	dynamic_blocks.erase( block )
 	static_blocks.erase( block )
-	var sb: Node = get_super_body()
+	var sb: Node = get_assembly()
 	sb.remove_sub_body( block )
 	block.queue_free()
 
@@ -298,8 +297,8 @@ func set_show_coupling_nodes( en: bool ):
 
 
 
-func create_super_body():
-	var sb = ConstructionSuperBody.new()
+func create_assembly():
+	var sb = ConstructionAssembly.new()
 	var p = get_parent()
 	sb.change_parent( p )
 	# Place own reference there.

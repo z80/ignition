@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  space_bullet.h                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  space_bullet.h                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef SPACE_BULLET_H
 #define SPACE_BULLET_H
@@ -90,6 +90,35 @@ class SpaceBullet : public RIDBullet {
 	friend class AreaBullet;
 	friend void onBulletTickCallback(btDynamicsWorld *world, btScalar timeStep);
 	friend class BulletPhysicsDirectSpaceState;
+
+public:
+	/// IMPORTANT NOTE: These members are public to expose some bullet
+	/// physics internal functionalities that are not supported or exposed
+	/// through the `PhysicsServer`.
+	///
+	/// One example is the unofficial module `godot-kinematic-body`:
+	/// https://github.com/AndreaCatania/godot-kinematic-body/blob/3.x/kinematic_object_3d.cpp
+	///
+	/// # How it works
+	/// To access these members from a module, the first step is to cast the
+	/// `PhysicsServer` to `BulletPhysicsServer`. This step is necessary
+	/// to have access to the `space_owner` (which is a storage that holds
+	/// the `SpaceBullet` objects).
+	/// ```c++
+	/// BulletPhysicsServer* bullet_physics_singleton = static_cast<BulletPhysicsServer *>(PhysicsServer::get_singleton());
+	/// SpaceBullet* space = bullet_physics_singleton->get_space_owner()->getornull(get_world()->get_space());
+	/// ```
+	//
+	/// Once you have access to the space, you can access the members and
+	/// execute bullet physics commands:
+	/// ```c++
+	/// space->dynamicsWorld->convexSweepTest(
+	///	p_shape,
+	///	btTransform(btMatrix3x3::getIdentity(), p_position),
+	///	btTransform(btMatrix3x3::getIdentity(), p_position + p_motion),
+	///	result,
+	///	p_margin);
+	/// ```
 
 	btBroadphaseInterface *broadphase;
 	btDefaultCollisionConfiguration *collisionConfiguration;
@@ -194,6 +223,7 @@ private:
 	void check_ghost_overlaps();
 	void check_body_collision();
 
+public:
 	struct RecoverResult {
 		bool hasPenetration;
 		btVector3 normal;
@@ -213,6 +243,7 @@ private:
 				local_shape_most_recovered(0) {}
 	};
 
+private:
 	bool recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = nullptr, const Set<RID> &p_exclude = Set<RID>());
 	/// This is an API that recover a kinematic object from penetration
 	/// This allow only Convex Convex test and it always use GJK algorithm, With this API we don't benefit of Bullet special accelerated functions
@@ -224,4 +255,5 @@ private:
 	int add_separation_result(PhysicsServer::SeparationResult *r_results, const SpaceBullet::RecoverResult &p_recover_result, int p_shape_id, const btCollisionObject *p_other_object) const;
 	int recover_from_penetration_ray(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, int p_result_max, btVector3 &r_delta_recover_movement, PhysicsServer::SeparationResult *r_results);
 };
-#endif
+
+#endif // SPACE_BULLET_H

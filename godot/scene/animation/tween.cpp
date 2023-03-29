@@ -1,36 +1,62 @@
-/*************************************************************************/
-/*  tween.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tween.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "tween.h"
 
 #include "core/method_bind_ext.gen.inc"
+#include "scene/animation/easing_equations.h"
+
+Tween::interpolater Tween::interpolaters[Tween::TRANS_COUNT][Tween::EASE_COUNT] = {
+	{ &linear::in, &linear::in, &linear::in, &linear::in }, // Linear is the same for each easing.
+	{ &sine::in, &sine::out, &sine::in_out, &sine::out_in },
+	{ &quint::in, &quint::out, &quint::in_out, &quint::out_in },
+	{ &quart::in, &quart::out, &quart::in_out, &quart::out_in },
+	{ &quad::in, &quad::out, &quad::in_out, &quad::out_in },
+	{ &expo::in, &expo::out, &expo::in_out, &expo::out_in },
+	{ &elastic::in, &elastic::out, &elastic::in_out, &elastic::out_in },
+	{ &cubic::in, &cubic::out, &cubic::in_out, &cubic::out_in },
+	{ &circ::in, &circ::out, &circ::in_out, &circ::out_in },
+	{ &bounce::in, &bounce::out, &bounce::in_out, &bounce::out_in },
+	{ &back::in, &back::out, &back::in_out, &back::out_in },
+};
+
+real_t Tween::run_equation(Tween::TransitionType p_trans_type, Tween::EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {
+	if (p_duration == 0) {
+		// Special case to avoid dividing by 0 in equations.
+		return p_initial + p_delta;
+	}
+
+	interpolater func = interpolaters[p_trans_type][p_ease_type];
+	ERR_FAIL_NULL_V(func, p_initial);
+	return func(p_time, p_initial, p_delta, p_duration);
+}
 
 void Tween::_add_pending_command(StringName p_key, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5, const Variant &p_arg6, const Variant &p_arg7, const Variant &p_arg8, const Variant &p_arg9, const Variant &p_arg10) {
 	// Add a new pending command and reference it
@@ -255,8 +281,8 @@ void Tween::_bind_methods() {
 	// Bind interpolation and follow methods
 	ClassDB::bind_method(D_METHOD("interpolate_property", "object", "property", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::interpolate_property, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("interpolate_method", "object", "method", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::interpolate_method, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("interpolate_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5"), &Tween::interpolate_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("interpolate_deferred_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5"), &Tween::interpolate_deferred_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("interpolate_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5", "arg6", "arg7", "arg8"), &Tween::interpolate_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("interpolate_deferred_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5", "arg6", "arg7", "arg8"), &Tween::interpolate_deferred_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("follow_property", "object", "property", "initial_val", "target", "target_property", "duration", "trans_type", "ease_type", "delay"), &Tween::follow_property, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("follow_method", "object", "method", "initial_val", "target", "target_method", "duration", "trans_type", "ease_type", "delay"), &Tween::follow_method, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("targeting_property", "object", "property", "initial", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::targeting_property, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
@@ -444,23 +470,23 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 	Variant result;
 
 #define APPLY_EQUATION(element) \
-	r.element = _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, i.element, d.element, p_data.duration);
+	r.element = run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, i.element, d.element, p_data.duration);
 
 	// What type of data are we interpolating?
 	switch (initial_val.get_type()) {
 		case Variant::BOOL:
 			// Run the boolean specific equation (checking if it is at least 0.5)
-			result = (_run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, initial_val, delta_val, p_data.duration)) >= 0.5;
+			result = (run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, initial_val, delta_val, p_data.duration)) >= 0.5;
 			break;
 
 		case Variant::INT:
 			// Run the integer specific equation
-			result = (int)_run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (int)initial_val, (int)delta_val, p_data.duration);
+			result = (int)run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (int)initial_val, (int)delta_val, p_data.duration);
 			break;
 
 		case Variant::REAL:
 			// Run the REAL specific equation
-			result = _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (real_t)initial_val, (real_t)delta_val, p_data.duration);
+			result = run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (real_t)initial_val, (real_t)delta_val, p_data.duration);
 			break;
 
 		case Variant::VECTOR2: {
@@ -744,6 +770,8 @@ void Tween::_tween_process(float p_delta) {
 		if (data.type == INTER_CALLBACK) {
 			// Is the tween completed?
 			if (data.finish) {
+				static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+
 				// Are we calling this callback deferred or immediately?
 				if (data.call_deferred) {
 					// Run the deferred function callback, applying the correct number of arguments
@@ -766,16 +794,28 @@ void Tween::_tween_process(float p_delta) {
 						case 5:
 							object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4]);
 							break;
+						case 6:
+							object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4], data.arg[5]);
+							break;
+						case 7:
+							object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4], data.arg[5], data.arg[6]);
+							break;
+						case 8:
+							object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4], data.arg[5], data.arg[6], data.arg[7]);
+							break;
 					}
 				} else {
 					// Call the function directly with the arguments
 					Variant::CallError error;
-					Variant *arg[5] = {
+					Variant *arg[VARIANT_ARG_MAX] = {
 						&data.arg[0],
 						&data.arg[1],
 						&data.arg[2],
 						&data.arg[3],
 						&data.arg[4],
+						&data.arg[5],
+						&data.arg[6],
+						&data.arg[7],
 					};
 					object->call(data.key[0], (const Variant **)arg, data.args, error);
 				}
@@ -795,8 +835,7 @@ void Tween::_tween_process(float p_delta) {
 			Variant final_val = _get_final_val(data);
 			_apply_tween_value(data, final_val);
 
-			// Mark the tween as completed and emit the signal
-			data.elapsed = 0;
+			// Emit the signal
 			emit_signal("tween_completed", object, NodePath(Vector<StringName>(), data.key, false));
 
 			// If we are not repeating the tween, remove it
@@ -1520,8 +1559,15 @@ bool Tween::interpolate_deferred_callback(Object *p_object, real_t p_duration, S
 	data.delay = 0;
 
 	// Collect arguments for the callback
+	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
 	int args = 0;
-	if (p_arg5.get_type() != Variant::NIL) {
+	if (p_arg8.get_type() != Variant::NIL) {
+		args = 8;
+	} else if (p_arg7.get_type() != Variant::NIL) {
+		args = 7;
+	} else if (p_arg6.get_type() != Variant::NIL) {
+		args = 6;
+	} else if (p_arg5.get_type() != Variant::NIL) {
 		args = 5;
 	} else if (p_arg4.get_type() != Variant::NIL) {
 		args = 4;
@@ -1541,6 +1587,9 @@ bool Tween::interpolate_deferred_callback(Object *p_object, real_t p_duration, S
 	data.arg[2] = p_arg3;
 	data.arg[3] = p_arg4;
 	data.arg[4] = p_arg5;
+	data.arg[5] = p_arg6;
+	data.arg[6] = p_arg7;
+	data.arg[7] = p_arg8;
 
 	// Add the new interpolation
 	_push_interpolate_data(data);

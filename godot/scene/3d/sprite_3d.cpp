@@ -1,36 +1,40 @@
-/*************************************************************************/
-/*  sprite_3d.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  sprite_3d.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "sprite_3d.h"
 #include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
 
 Color SpriteBase3D::_get_color_accum() {
 	if (!color_dirty) {
@@ -85,6 +89,157 @@ void SpriteBase3D::_notification(int p_what) {
 	}
 }
 
+void SpriteBase3D::draw_texture_rect(Ref<Texture> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect) {
+	ERR_FAIL_COND(p_texture.is_null());
+
+	Rect2 final_rect;
+	Rect2 final_src_rect;
+	if (!p_texture->get_rect_region(p_dst_rect, p_src_rect, final_rect, final_src_rect)) {
+		return;
+	}
+
+	if (final_rect.size.x == 0 || final_rect.size.y == 0) {
+		return;
+	}
+
+	// 2D:                                                     3D plane (axes match exactly when `axis == Vector3::AXIS_Z`):
+	//   -X+                                                     -X+
+	//  -                                                       +
+	//  Y  +--------+       +--------+       +--------+         Y  +--------+
+	//  +  | +--+   |       |        |  (2)  |        |         -  | 0--1   |
+	//     | |ab|   |  (1)  | +--+   |  (3)  | 3--2   |            | |ab|   |
+	//     | |cd|   |  -->  | |ab|   |  -->  | |cd|   |    <==>    | |cd|   |
+	//     | +--+   |       | |cd|   |       | |ab|   |            | 3--2   |
+	//     |        |       | +--+   |       | 0--1   |            |        |
+	//     +--------+       +--------+       +--------+            +--------+
+
+	// (1) Y-wise shift `final_rect` within `p_dst_rect` so after inverting Y
+	// axis distances between top/bottom borders will be preserved (so for
+	// example AtlasTextures with vertical margins will look the same in 2D/3D).
+	final_rect.position.y = (p_dst_rect.position.y + p_dst_rect.size.y) - ((final_rect.position.y + final_rect.size.y) - p_dst_rect.position.y);
+
+	Color color = _get_color_accum();
+	color.a *= get_opacity();
+
+	float pixel_size = get_pixel_size();
+
+	// (2) Order vertices (0123) bottom-top in 2D / top-bottom in 3D.
+	Vector2 vertices[4] = {
+		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
+		(final_rect.position + final_rect.size) * pixel_size,
+		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
+		final_rect.position * pixel_size,
+	};
+
+	Vector2 src_tsize = p_texture->get_size();
+
+	// Properly setup UVs for impostor textures (AtlasTexture).
+	Ref<AtlasTexture> atlas_tex = p_texture;
+	if (atlas_tex != nullptr) {
+		src_tsize[0] = atlas_tex->get_atlas()->get_width();
+		src_tsize[1] = atlas_tex->get_atlas()->get_height();
+	}
+
+	// (3) Assign UVs (abcd) according to the vertices order (bottom-top in 2D / top-bottom in 3D).
+	Vector2 uvs[4] = {
+		final_src_rect.position / src_tsize,
+		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / src_tsize,
+		(final_src_rect.position + final_src_rect.size) / src_tsize,
+		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / src_tsize,
+	};
+
+	if (is_flipped_h()) {
+		SWAP(uvs[0], uvs[1]);
+		SWAP(uvs[2], uvs[3]);
+	}
+	if (is_flipped_v()) {
+		SWAP(uvs[0], uvs[3]);
+		SWAP(uvs[1], uvs[2]);
+	}
+
+	Vector3 normal;
+	int axis = get_axis();
+	normal[axis] = 1.0;
+
+	Plane tangent;
+	if (axis == Vector3::AXIS_X) {
+		tangent = Plane(0, 0, -1, -1);
+	} else {
+		tangent = Plane(1, 0, 0, -1);
+	}
+
+	int x_axis = ((axis + 1) % 3);
+	int y_axis = ((axis + 2) % 3);
+
+	if (axis != Vector3::AXIS_Z) {
+		SWAP(x_axis, y_axis);
+
+		for (int i = 0; i < 4; i++) {
+			//uvs[i] = Vector2(1.0,1.0)-uvs[i];
+			//SWAP(vertices[i].x,vertices[i].y);
+			if (axis == Vector3::AXIS_Y) {
+				vertices[i].y = -vertices[i].y;
+			} else if (axis == Vector3::AXIS_X) {
+				vertices[i].x = -vertices[i].x;
+			}
+		}
+	}
+
+	AABB aabb;
+
+	// Everything except position, color, and UV is compressed
+	PoolVector<uint8_t>::Write write_buffer = mesh_buffer.write();
+
+	Vector2 normal_oct = VisualServer::get_singleton()->norm_to_oct(normal);
+	int8_t v_normal[2] = {
+		(int8_t)CLAMP(normal_oct.x * 127, -128, 127),
+		(int8_t)CLAMP(normal_oct.y * 127, -128, 127),
+	};
+
+	Vector2 tangent_oct = VisualServer::get_singleton()->tangent_to_oct(tangent.normal, tangent.d, false);
+	int8_t v_tangent[2] = {
+		(int8_t)CLAMP(tangent_oct.x * 127, -128, 127),
+		(int8_t)CLAMP(tangent_oct.y * 127, -128, 127),
+	};
+
+	for (int i = 0; i < 4; i++) {
+		Vector3 vtx;
+		vtx[x_axis] = vertices[i][0];
+		vtx[y_axis] = vertices[i][1];
+		if (i == 0) {
+			aabb.position = vtx;
+			aabb.size = Vector3();
+		} else {
+			aabb.expand_to(vtx);
+		}
+
+		float v_uv[2] = { uvs[i].x, uvs[i].y };
+		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_TEX_UV] + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 8);
+
+		float v_vertex[3] = { vtx.x, vtx.y, vtx.z };
+		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_VERTEX] + mesh_surface_offsets[VS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
+		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_NORMAL] + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 2);
+		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_TANGENT] + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 2);
+		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_COLOR] + mesh_surface_offsets[VS::ARRAY_COLOR]], color.components, 4 * 4);
+	}
+
+	write_buffer.release();
+
+	RID mesh = get_mesh();
+	VS::get_singleton()->mesh_surface_update_region(mesh, 0, 0, mesh_buffer);
+
+	VS::get_singleton()->mesh_set_custom_aabb(mesh, aabb);
+	set_aabb(aabb);
+
+	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE));
+	VS::get_singleton()->material_set_shader(get_material(), VS::get_singleton()->material_get_shader(mat));
+	VS::get_singleton()->material_set_param(get_material(), "texture_albedo", p_texture->get_rid());
+	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
+		VS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
+	}
+	VS::get_singleton()->instance_set_surface_material(get_instance(), 0, get_material());
+}
+
 void SpriteBase3D::set_centered(bool p_center) {
 	centered = p_center;
 	_queue_update();
@@ -126,6 +281,16 @@ void SpriteBase3D::set_modulate(const Color &p_color) {
 
 Color SpriteBase3D::get_modulate() const {
 	return modulate;
+}
+
+void SpriteBase3D::set_render_priority(int p_priority) {
+	ERR_FAIL_COND(p_priority < VS::MATERIAL_RENDER_PRIORITY_MIN || p_priority > VS::MATERIAL_RENDER_PRIORITY_MAX);
+	render_priority = p_priority;
+	_queue_update();
+}
+
+int SpriteBase3D::get_render_priority() const {
+	return render_priority;
 }
 
 void SpriteBase3D::set_pixel_size(float p_amount) {
@@ -292,6 +457,9 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_opacity", "opacity"), &SpriteBase3D::set_opacity);
 	ClassDB::bind_method(D_METHOD("get_opacity"), &SpriteBase3D::get_opacity);
 
+	ClassDB::bind_method(D_METHOD("set_render_priority", "priority"), &SpriteBase3D::set_render_priority);
+	ClassDB::bind_method(D_METHOD("get_render_priority"), &SpriteBase3D::get_render_priority);
+
 	ClassDB::bind_method(D_METHOD("set_pixel_size", "pixel_size"), &SpriteBase3D::set_pixel_size);
 	ClassDB::bind_method(D_METHOD("get_pixel_size"), &SpriteBase3D::get_pixel_size);
 
@@ -326,11 +494,16 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_draw_flag", "get_draw_flag", FLAG_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "shaded"), "set_draw_flag", "get_draw_flag", FLAG_SHADED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "double_sided"), "set_draw_flag", "get_draw_flag", FLAG_DOUBLE_SIDED);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_draw_flag", "get_draw_flag", FLAG_DISABLE_DEPTH_TEST);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "fixed_size"), "set_draw_flag", "get_draw_flag", FLAG_FIXED_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_cut", PROPERTY_HINT_ENUM, "Disabled,Discard,Opaque Pre-Pass"), "set_alpha_cut_mode", "get_alpha_cut_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(VS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(VS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 
 	BIND_ENUM_CONSTANT(FLAG_TRANSPARENT);
 	BIND_ENUM_CONSTANT(FLAG_SHADED);
 	BIND_ENUM_CONSTANT(FLAG_DOUBLE_SIDED);
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_DEPTH_TEST);
+	BIND_ENUM_CONSTANT(FLAG_FIXED_SIZE);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(ALPHA_CUT_DISABLED);
@@ -358,7 +531,7 @@ SpriteBase3D::SpriteBase3D() {
 	pending_update = false;
 	opacity = 1.0;
 
-	material = VisualServer::get_singleton()->material_create();
+	material = RID_PRIME(VisualServer::get_singleton()->material_create());
 	// Set defaults for material, names need to match up those in SpatialMaterial
 	VS::get_singleton()->material_set_param(material, "albedo", Color(1, 1, 1, 1));
 	VS::get_singleton()->material_set_param(material, "specular", 0.5);
@@ -370,7 +543,7 @@ SpriteBase3D::SpriteBase3D() {
 	VS::get_singleton()->material_set_param(material, "uv2_scale", Vector3(1, 1, 1));
 	VS::get_singleton()->material_set_param(material, "alpha_scissor_threshold", 0.98);
 
-	mesh = VisualServer::get_singleton()->mesh_create();
+	mesh = RID_PRIME(VisualServer::get_singleton()->mesh_create());
 
 	PoolVector3Array mesh_vertices;
 	PoolVector3Array mesh_normals;
@@ -447,140 +620,15 @@ void Sprite3D::_draw() {
 	Point2 frame_offset = Point2(frame % hframes, frame / hframes);
 	frame_offset *= frame_size;
 
-	Point2 dest_offset = get_offset();
+	Point2 dst_offset = get_offset();
 	if (is_centered()) {
-		dest_offset -= frame_size / 2;
+		dst_offset -= frame_size / 2;
 	}
 
 	Rect2 src_rect(base_rect.position + frame_offset, frame_size);
-	Rect2 final_dst_rect(dest_offset, frame_size);
-	Rect2 final_rect;
-	Rect2 final_src_rect;
-	if (!texture->get_rect_region(final_dst_rect, src_rect, final_rect, final_src_rect)) {
-		return;
-	}
+	Rect2 dst_rect(dst_offset, frame_size);
 
-	if (final_rect.size.x == 0 || final_rect.size.y == 0) {
-		return;
-	}
-
-	Color color = _get_color_accum();
-	color.a *= get_opacity();
-
-	float pixel_size = get_pixel_size();
-
-	Vector2 vertices[4] = {
-
-		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
-		(final_rect.position + final_rect.size) * pixel_size,
-		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
-		final_rect.position * pixel_size,
-
-	};
-
-	Vector2 src_tsize = tsize;
-
-	// Properly setup UVs for impostor textures (AtlasTexture).
-	Ref<AtlasTexture> atlas_tex = texture;
-	if (atlas_tex != nullptr) {
-		src_tsize[0] = atlas_tex->get_atlas()->get_width();
-		src_tsize[1] = atlas_tex->get_atlas()->get_height();
-	}
-
-	Vector2 uvs[4] = {
-		final_src_rect.position / src_tsize,
-		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / src_tsize,
-		(final_src_rect.position + final_src_rect.size) / src_tsize,
-		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / src_tsize,
-	};
-
-	if (is_flipped_h()) {
-		SWAP(uvs[0], uvs[1]);
-		SWAP(uvs[2], uvs[3]);
-	}
-	if (is_flipped_v()) {
-		SWAP(uvs[0], uvs[3]);
-		SWAP(uvs[1], uvs[2]);
-	}
-
-	Vector3 normal;
-	int axis = get_axis();
-	normal[axis] = 1.0;
-
-	Plane tangent;
-	if (axis == Vector3::AXIS_X) {
-		tangent = Plane(0, 0, -1, 1);
-	} else {
-		tangent = Plane(1, 0, 0, 1);
-	}
-
-	int x_axis = ((axis + 1) % 3);
-	int y_axis = ((axis + 2) % 3);
-
-	if (axis != Vector3::AXIS_Z) {
-		SWAP(x_axis, y_axis);
-
-		for (int i = 0; i < 4; i++) {
-			//uvs[i] = Vector2(1.0,1.0)-uvs[i];
-			//SWAP(vertices[i].x,vertices[i].y);
-			if (axis == Vector3::AXIS_Y) {
-				vertices[i].y = -vertices[i].y;
-			} else if (axis == Vector3::AXIS_X) {
-				vertices[i].x = -vertices[i].x;
-			}
-		}
-	}
-
-	AABB aabb;
-
-	// Everything except position, color, and UV is compressed
-	PoolVector<uint8_t>::Write write_buffer = mesh_buffer.write();
-
-	Vector2 normal_oct = VisualServer::get_singleton()->norm_to_oct(normal);
-	int8_t v_normal[2] = {
-		(int8_t)CLAMP(normal_oct.x * 127, -128, 127),
-		(int8_t)CLAMP(normal_oct.y * 127, -128, 127),
-	};
-
-	Vector2 tangent_oct = VisualServer::get_singleton()->tangent_to_oct(tangent.normal, tangent.d, false);
-	int8_t v_tangent[2] = {
-		(int8_t)CLAMP(tangent_oct.x * 127, -128, 127),
-		(int8_t)CLAMP(tangent_oct.y * 127, -128, 127),
-	};
-
-	for (int i = 0; i < 4; i++) {
-		Vector3 vtx;
-		vtx[x_axis] = vertices[i][0];
-		vtx[y_axis] = vertices[i][1];
-		if (i == 0) {
-			aabb.position = vtx;
-			aabb.size = Vector3();
-		} else {
-			aabb.expand_to(vtx);
-		}
-
-		float v_uv[2] = { uvs[i].x, uvs[i].y };
-		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_TEX_UV] + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 8);
-
-		float v_vertex[3] = { vtx.x, vtx.y, vtx.z };
-		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_VERTEX] + mesh_surface_offsets[VS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
-		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_NORMAL] + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 2);
-		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_TANGENT] + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 2);
-		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_COLOR] + mesh_surface_offsets[VS::ARRAY_COLOR]], color.components, 4 * 4);
-	}
-
-	write_buffer.release();
-
-	RID mesh = get_mesh();
-	VS::get_singleton()->mesh_surface_update_region(mesh, 0, 0, mesh_buffer);
-
-	VS::get_singleton()->mesh_set_custom_aabb(mesh, aabb);
-	set_aabb(aabb);
-
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
-	VS::get_singleton()->material_set_shader(get_material(), VS::get_singleton()->material_get_shader(mat));
-	VS::get_singleton()->material_set_param(get_material(), "texture_albedo", texture->get_rid());
-	VS::get_singleton()->instance_set_surface_material(get_instance(), 0, get_material());
+	draw_texture_rect(texture, dst_rect, src_rect);
 }
 
 void Sprite3D::set_texture(const Ref<Texture> &p_texture) {
@@ -797,133 +845,7 @@ void AnimatedSprite3D::_draw() {
 
 	Rect2 dst_rect(ofs, tsize);
 
-	Rect2 final_rect;
-	Rect2 final_src_rect;
-	if (!texture->get_rect_region(dst_rect, src_rect, final_rect, final_src_rect)) {
-		return;
-	}
-
-	if (final_rect.size.x == 0 || final_rect.size.y == 0) {
-		return;
-	}
-
-	Color color = _get_color_accum();
-	color.a *= get_opacity();
-
-	float pixel_size = get_pixel_size();
-
-	Vector2 vertices[4] = {
-
-		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
-		(final_rect.position + final_rect.size) * pixel_size,
-		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
-		final_rect.position * pixel_size,
-
-	};
-
-	Vector2 src_tsize = tsize;
-
-	// Properly setup UVs for impostor textures (AtlasTexture).
-	Ref<AtlasTexture> atlas_tex = texture;
-	if (atlas_tex != nullptr) {
-		src_tsize[0] = atlas_tex->get_atlas()->get_width();
-		src_tsize[1] = atlas_tex->get_atlas()->get_height();
-	}
-
-	Vector2 uvs[4] = {
-		final_src_rect.position / src_tsize,
-		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / src_tsize,
-		(final_src_rect.position + final_src_rect.size) / src_tsize,
-		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / src_tsize,
-	};
-
-	if (is_flipped_h()) {
-		SWAP(uvs[0], uvs[1]);
-		SWAP(uvs[2], uvs[3]);
-	}
-	if (is_flipped_v()) {
-		SWAP(uvs[0], uvs[3]);
-		SWAP(uvs[1], uvs[2]);
-	}
-
-	Vector3 normal;
-	int axis = get_axis();
-	normal[axis] = 1.0;
-
-	Plane tangent;
-	if (axis == Vector3::AXIS_X) {
-		tangent = Plane(0, 0, -1, -1);
-	} else {
-		tangent = Plane(1, 0, 0, -1);
-	}
-
-	int x_axis = ((axis + 1) % 3);
-	int y_axis = ((axis + 2) % 3);
-
-	if (axis != Vector3::AXIS_Z) {
-		SWAP(x_axis, y_axis);
-
-		for (int i = 0; i < 4; i++) {
-			//uvs[i] = Vector2(1.0,1.0)-uvs[i];
-			//SWAP(vertices[i].x,vertices[i].y);
-			if (axis == Vector3::AXIS_Y) {
-				vertices[i].y = -vertices[i].y;
-			} else if (axis == Vector3::AXIS_X) {
-				vertices[i].x = -vertices[i].x;
-			}
-		}
-	}
-
-	AABB aabb;
-
-	// Everything except position, color, and UV is compressed
-	PoolVector<uint8_t>::Write write_buffer = mesh_buffer.write();
-
-	Vector2 normal_oct = VisualServer::get_singleton()->norm_to_oct(normal);
-	int8_t v_normal[2] = {
-		(int8_t)CLAMP(normal_oct.x * 127, -128, 127),
-		(int8_t)CLAMP(normal_oct.y * 127, -128, 127),
-	};
-
-	Vector2 tangent_oct = VisualServer::get_singleton()->tangent_to_oct(tangent.normal, tangent.d, false);
-	int8_t v_tangent[2] = {
-		(int8_t)CLAMP(tangent_oct.x * 127, -128, 127),
-		(int8_t)CLAMP(tangent_oct.y * 127, -128, 127),
-	};
-
-	for (int i = 0; i < 4; i++) {
-		Vector3 vtx;
-		vtx[x_axis] = vertices[i][0];
-		vtx[y_axis] = vertices[i][1];
-		if (i == 0) {
-			aabb.position = vtx;
-			aabb.size = Vector3();
-		} else {
-			aabb.expand_to(vtx);
-		}
-
-		float v_uv[2] = { uvs[i].x, uvs[i].y };
-		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_TEX_UV] + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 8);
-
-		float v_vertex[3] = { vtx.x, vtx.y, vtx.z };
-		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_VERTEX] + mesh_surface_offsets[VS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
-		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_NORMAL] + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 2);
-		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_TANGENT] + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 2);
-		memcpy(&write_buffer[i * mesh_stride[VS::ARRAY_COLOR] + mesh_surface_offsets[VS::ARRAY_COLOR]], color.components, 4 * 4);
-	}
-
-	write_buffer.release();
-
-	RID mesh = get_mesh();
-	VS::get_singleton()->mesh_surface_update_region(mesh, 0, 0, mesh_buffer);
-
-	VS::get_singleton()->mesh_set_custom_aabb(mesh, aabb);
-	set_aabb(aabb);
-
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
-	VS::get_singleton()->material_set_shader(get_material(), VS::get_singleton()->material_get_shader(mat));
-	VS::get_singleton()->material_set_param(get_material(), "texture_albedo", texture->get_rid());
-	VS::get_singleton()->instance_set_surface_material(get_instance(), 0, get_material());
+	draw_texture_rect(texture, dst_rect, src_rect);
 }
 
 void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
@@ -980,14 +902,14 @@ void AnimatedSprite3D::_notification(int p_what) {
 				return;
 			}
 
-			float speed = frames->get_animation_speed(animation);
-			if (speed == 0) {
-				return; //do nothing
-			}
-
 			float remaining = get_process_delta_time();
 
 			while (remaining) {
+				float speed = frames->get_animation_speed(animation);
+				if (speed == 0) {
+					return; // Do nothing.
+				}
+
 				if (timeout <= 0) {
 					timeout = 1.0 / speed;
 
@@ -1174,6 +1096,23 @@ String AnimatedSprite3D::get_configuration_warning() const {
 	}
 
 	return warning;
+}
+
+void AnimatedSprite3D::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+#ifdef TOOLS_ENABLED
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
+#else
+	const String quote_style = "\"";
+#endif
+
+	if (p_idx == 0 && p_function == "play" && frames.is_valid()) {
+		List<StringName> al;
+		frames->get_animation_list(&al);
+		for (List<StringName>::Element *E = al.front(); E; E = E->next()) {
+			r_options->push_back(quote_style + String(E->get()) + quote_style);
+		}
+	}
+	Node::get_argument_options(p_function, p_idx, r_options);
 }
 
 void AnimatedSprite3D::_bind_methods() {

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_result_callbacks.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_result_callbacks.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_result_callbacks.h"
 
@@ -113,7 +113,14 @@ btScalar GodotAllConvexResultCallback::addSingleResult(btCollisionWorld::LocalCo
 
 	PhysicsDirectSpaceState::ShapeResult &result = m_results[count];
 
-	result.shape = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
+	// Triangle index is an odd name but contains the compound shape ID.
+	// A shape part of -1 indicates the index is a shape index and not a triangle index.
+	if (convexResult.m_localShapeInfo && convexResult.m_localShapeInfo->m_shapePart == -1) {
+		result.shape = convexResult.m_localShapeInfo->m_triangleIndex;
+	} else {
+		result.shape = 0;
+	}
+
 	result.rid = gObj->get_self();
 	result.collider_id = gObj->get_instance_id();
 	result.collider = 0 == result.collider_id ? nullptr : ObjectDB::get_instance(result.collider_id);
@@ -179,11 +186,14 @@ bool GodotClosestConvexResultCallback::needsCollision(btBroadphaseProxy *proxy0)
 }
 
 btScalar GodotClosestConvexResultCallback::addSingleResult(btCollisionWorld::LocalConvexResult &convexResult, bool normalInWorldSpace) {
-	if (convexResult.m_localShapeInfo) {
-		m_shapeId = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
+	// Triangle index is an odd name but contains the compound shape ID.
+	// A shape part of -1 indicates the index is a shape index and not a triangle index.
+	if (convexResult.m_localShapeInfo && convexResult.m_localShapeInfo->m_shapePart == -1) {
+		m_shapeId = convexResult.m_localShapeInfo->m_triangleIndex;
 	} else {
 		m_shapeId = 0;
 	}
+
 	return btCollisionWorld::ClosestConvexResultCallback::addSingleResult(convexResult, normalInWorldSpace);
 }
 
@@ -228,10 +238,22 @@ btScalar GodotAllContactResultCallback::addSingleResult(btManifoldPoint &cp, con
 		CollisionObjectBullet *colObj;
 		if (m_self_object == colObj0Wrap->getCollisionObject()) {
 			colObj = static_cast<CollisionObjectBullet *>(colObj1Wrap->getCollisionObject()->getUserPointer());
-			result.shape = cp.m_index1;
+			// Checking for compound shape because the index might be uninitialized otherwise.
+			// A partId of -1 indicates the index is a shape index and not a triangle index.
+			if (colObj1Wrap->getCollisionObject()->getCollisionShape()->isCompound() && cp.m_partId1 == -1) {
+				result.shape = cp.m_index1;
+			} else {
+				result.shape = 0;
+			}
 		} else {
 			colObj = static_cast<CollisionObjectBullet *>(colObj0Wrap->getCollisionObject()->getUserPointer());
-			result.shape = cp.m_index0;
+			// Checking for compound shape because the index might be uninitialized otherwise.
+			// A partId of -1 indicates the index is a shape index and not a triangle index.
+			if (colObj0Wrap->getCollisionObject()->getCollisionShape()->isCompound() && cp.m_partId0 == -1) {
+				result.shape = cp.m_index0;
+			} else {
+				result.shape = 0;
+			}
 		}
 
 		result.collider_id = colObj->get_instance_id();
@@ -277,12 +299,13 @@ btScalar GodotContactPairContactResultCallback::addSingleResult(btManifoldPoint 
 		return 1; // not used by bullet
 	}
 
+	// In each contact pair, the contact on the shape which was passed to collide_shape (where this callback is used) is put first.
 	if (m_self_object == colObj0Wrap->getCollisionObject()) {
-		B_TO_G(cp.m_localPointA, m_results[m_count * 2 + 0]); // Local contact
-		B_TO_G(cp.m_localPointB, m_results[m_count * 2 + 1]);
+		B_TO_G(cp.getPositionWorldOnA(), m_results[m_count * 2 + 0]);
+		B_TO_G(cp.getPositionWorldOnB(), m_results[m_count * 2 + 1]);
 	} else {
-		B_TO_G(cp.m_localPointB, m_results[m_count * 2 + 0]); // Local contact
-		B_TO_G(cp.m_localPointA, m_results[m_count * 2 + 1]);
+		B_TO_G(cp.getPositionWorldOnB(), m_results[m_count * 2 + 0]);
+		B_TO_G(cp.getPositionWorldOnA(), m_results[m_count * 2 + 1]);
 	}
 
 	++m_count;
@@ -322,14 +345,26 @@ btScalar GodotRestInfoContactResultCallback::addSingleResult(btManifoldPoint &cp
 		CollisionObjectBullet *colObj;
 		if (m_self_object == colObj0Wrap->getCollisionObject()) {
 			colObj = static_cast<CollisionObjectBullet *>(colObj1Wrap->getCollisionObject()->getUserPointer());
-			m_result->shape = cp.m_index1;
+			// Checking for compound shape because the index might be uninitialized otherwise.
+			// A partId of -1 indicates the index is a shape index and not a triangle index.
+			if (colObj1Wrap->getCollisionObject()->getCollisionShape()->isCompound() && cp.m_partId1 == -1) {
+				m_result->shape = cp.m_index1;
+			} else {
+				m_result->shape = 0;
+			}
 			B_TO_G(cp.getPositionWorldOnB(), m_result->point);
 			B_TO_G(cp.m_normalWorldOnB, m_result->normal);
 			m_rest_info_bt_point = cp.getPositionWorldOnB();
 			m_rest_info_collision_object = colObj1Wrap->getCollisionObject();
 		} else {
 			colObj = static_cast<CollisionObjectBullet *>(colObj0Wrap->getCollisionObject()->getUserPointer());
-			m_result->shape = cp.m_index0;
+			// Checking for compound shape because the index might be uninitialized otherwise.
+			// A partId of -1 indicates the index is a shape index and not a triangle index.
+			if (colObj0Wrap->getCollisionObject()->getCollisionShape()->isCompound() && cp.m_partId0 == -1) {
+				m_result->shape = cp.m_index0;
+			} else {
+				m_result->shape = 0;
+			}
 			B_TO_G(cp.m_normalWorldOnB * -1, m_result->normal);
 			m_rest_info_bt_point = cp.getPositionWorldOnA();
 			m_rest_info_collision_object = colObj0Wrap->getCollisionObject();

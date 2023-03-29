@@ -1,46 +1,49 @@
-/*************************************************************************/
-/*  os_android.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  os_android.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "os_android.h"
 
+#include "core/array.h"
 #include "core/project_settings.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
+#include "scene/main/scene_tree.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
 #include "dir_access_jandroid.h"
 #include "file_access_android.h"
+#include "file_access_filesystem_jandroid.h"
 #include "net_socket_android.h"
 
 #include <android/input.h>
@@ -49,6 +52,8 @@
 
 #include "java_godot_io_wrapper.h"
 #include "java_godot_wrapper.h"
+
+const char *OS_Android::ANDROID_EXEC_PATH = "apk";
 
 String _remove_symlink(const String &dir) {
 	// Workaround for Android 6.0+ using a symlink.
@@ -87,7 +92,7 @@ const char *OS_Android::get_video_driver_name(int p_driver) const {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
+	ERR_FAIL_V_MSG(nullptr, "Invalid video driver index: " + itos(p_driver) + ".");
 }
 int OS_Android::get_audio_driver_count() const {
 	return 1;
@@ -100,25 +105,35 @@ const char *OS_Android::get_audio_driver_name(int p_driver) const {
 void OS_Android::initialize_core() {
 	OS_Unix::initialize_core();
 
-	if (use_apk_expansion)
+#ifdef TOOLS_ENABLED
+	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
+#else
+	if (use_apk_expansion) {
 		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
-	else {
+	} else {
 		FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
 	}
+#endif
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
-	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
-	if (use_apk_expansion)
+	FileAccess::make_default<FileAccessFilesystemJAndroid>(FileAccess::ACCESS_FILESYSTEM);
+
+#ifdef TOOLS_ENABLED
+	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
+#else
+	if (use_apk_expansion) {
 		DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
-	else
+	} else {
 		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
+	}
+#endif
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
-	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
+	DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_FILESYSTEM);
 
 	NetSocketAndroid::make_default();
 }
 
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
-	ERR_FAIL_COND(!p_gl_extensions);
+	ERR_FAIL_NULL(p_gl_extensions);
 	gl_extensions = p_gl_extensions;
 }
 
@@ -134,7 +149,6 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	while (true) {
 		if (use_gl3) {
 			if (RasterizerGLES3::is_viable() == OK) {
-				godot_java->gfx_init(false);
 				RasterizerGLES3::register_config();
 				RasterizerGLES3::make_current();
 				break;
@@ -150,7 +164,6 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 			}
 		} else {
 			if (RasterizerGLES2::is_viable() == OK) {
-				godot_java->gfx_init(true);
 				RasterizerGLES2::register_config();
 				RasterizerGLES2::make_current();
 				break;
@@ -185,8 +198,6 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	input->set_use_input_buffering(true); // Needed because events will come directly from the UI thread
 	input->set_fallback_mapping(godot_java->get_input_fallback_mapping());
 
-	//power_manager = memnew(PowerAndroid);
-
 	return OK;
 }
 
@@ -212,7 +223,6 @@ GodotIOJavaWrapper *OS_Android::get_godot_io_java() {
 }
 
 void OS_Android::alert(const String &p_alert, const String &p_title) {
-	//print("ALERT: %s\n", p_alert.utf8().get_data());
 	godot_java->alert(p_alert, p_title);
 }
 
@@ -230,7 +240,7 @@ Vector<String> OS_Android::get_granted_permissions() const {
 
 Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
 	return OK;
 }
 
@@ -289,6 +299,10 @@ Rect2 OS_Android::get_window_safe_area() const {
 	return Rect2(xywh[0], xywh[1], xywh[2], xywh[3]);
 }
 
+Array OS_Android::get_display_cutouts() const {
+	return godot_io_java->get_display_cutouts();
+}
+
 String OS_Android::get_name() const {
 	return "Android";
 }
@@ -302,30 +316,46 @@ bool OS_Android::can_draw() const {
 }
 
 void OS_Android::main_loop_begin() {
-	if (main_loop)
+	if (main_loop) {
 		main_loop->init();
+	}
 }
 
-bool OS_Android::main_loop_iterate() {
-	if (!main_loop)
+bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
+	if (!main_loop) {
 		return false;
-	return Main::iteration();
+	}
+	uint64_t current_frames_drawn = Engine::get_singleton()->get_frames_drawn();
+	bool exit = Main::iteration();
+
+	if (r_should_swap_buffers) {
+		*r_should_swap_buffers = !is_in_low_processor_usage_mode() || _update_pending || current_frames_drawn != Engine::get_singleton()->get_frames_drawn();
+	}
+
+	return exit;
 }
 
 void OS_Android::main_loop_end() {
-	if (main_loop)
+	if (main_loop) {
+		SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
+		if (scene_tree) {
+			scene_tree->quit();
+		}
 		main_loop->finish();
+	}
 }
 
 void OS_Android::main_loop_focusout() {
-	if (main_loop)
+	if (main_loop) {
 		main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+	}
 	audio_driver_android.set_pause(true);
 }
 
 void OS_Android::main_loop_focusin() {
-	if (main_loop)
+	if (main_loop) {
 		main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+	}
 	audio_driver_android.set_pause(false);
 }
 
@@ -355,9 +385,6 @@ bool OS_Android::has_virtual_keyboard() const {
 
 int OS_Android::get_virtual_keyboard_height() const {
 	return godot_io_java->get_vk_height();
-
-	// ERR_PRINT("Cannot obtain virtual keyboard height.");
-	// return 0;
 }
 
 void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
@@ -365,7 +392,7 @@ void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect
 		godot_io_java->show_vk(p_existing_text, p_multiline, p_max_input_length, p_cursor_start, p_cursor_end);
 	} else {
 		ERR_PRINT("Virtual keyboard not available");
-	};
+	}
 }
 
 void OS_Android::hide_virtual_keyboard() {
@@ -373,14 +400,7 @@ void OS_Android::hide_virtual_keyboard() {
 		godot_io_java->hide_vk();
 	} else {
 		ERR_PRINT("Virtual keyboard not available");
-	};
-}
-
-void OS_Android::init_video_mode(int p_video_width, int p_video_height) {
-	default_videomode.width = p_video_width;
-	default_videomode.height = p_video_height;
-	default_videomode.fullscreen = true;
-	default_videomode.resizable = false;
+	}
 }
 
 void OS_Android::set_display_size(Size2 p_size) {
@@ -393,7 +413,11 @@ Error OS_Android::shell_open(String p_uri) {
 }
 
 String OS_Android::get_resource_dir() const {
+#ifdef TOOLS_ENABLED
+	return OS_Unix::get_resource_dir();
+#else
 	return "/"; //android has its own filesystem for resources inside the APK
+#endif
 }
 
 String OS_Android::get_locale() const {
@@ -423,11 +447,20 @@ String OS_Android::get_clipboard() const {
 	return OS_Unix::get_clipboard();
 }
 
+bool OS_Android::has_clipboard() const {
+	// DO we really need the fallback to OS_Unix here?!
+	if (godot_java->has_has_clipboard()) {
+		return godot_java->has_clipboard();
+	}
+
+	return OS_Unix::has_clipboard();
+}
+
 String OS_Android::get_model_name() const {
 	String model = godot_io_java->get_model();
-	if (model != "")
+	if (model != "") {
 		return model;
-
+	}
 	return OS_Unix::get_model_name();
 }
 
@@ -435,14 +468,34 @@ int OS_Android::get_screen_dpi(int p_screen) const {
 	return godot_io_java->get_screen_dpi();
 }
 
+float OS_Android::get_screen_scale(int p_screen) const {
+	return godot_io_java->get_scaled_density();
+}
+
+float OS_Android::get_screen_max_scale() const {
+	return get_screen_scale();
+}
+
+float OS_Android::get_screen_refresh_rate(int p_screen) const {
+	return godot_io_java->get_screen_refresh_rate(OS::get_singleton()->SCREEN_REFRESH_RATE_FALLBACK);
+}
+
 String OS_Android::get_data_path() const {
 	return get_user_data_dir();
 }
 
-String OS_Android::get_user_data_dir() const {
-	if (data_dir_cache != String())
-		return data_dir_cache;
+String OS_Android::get_executable_path() const {
+	// Since unix process creation is restricted on Android, we bypass
+	// OS_Unix::get_executable_path() so we can return ANDROID_EXEC_PATH.
+	// Detection of ANDROID_EXEC_PATH allows to handle process creation in an Android compliant
+	// manner.
+	return OS::get_executable_path();
+}
 
+String OS_Android::get_user_data_dir() const {
+	if (data_dir_cache != String()) {
+		return data_dir_cache;
+	}
 	String data_dir = godot_io_java->get_user_data_dir();
 	if (data_dir != "") {
 		data_dir_cache = _remove_symlink(data_dir);
@@ -452,10 +505,13 @@ String OS_Android::get_user_data_dir() const {
 }
 
 String OS_Android::get_cache_path() const {
+	if (cache_dir_cache != String()) {
+		return cache_dir_cache;
+	}
 	String cache_dir = godot_io_java->get_cache_dir();
 	if (cache_dir != "") {
-		cache_dir = _remove_symlink(cache_dir);
-		return cache_dir;
+		cache_dir_cache = _remove_symlink(cache_dir);
+		return cache_dir_cache;
 	}
 	return ".";
 }
@@ -472,9 +528,9 @@ OS::ScreenOrientation OS_Android::get_screen_orientation() const {
 
 String OS_Android::get_unique_id() const {
 	String unique_id = godot_io_java->get_unique_id();
-	if (unique_id != "")
+	if (unique_id != "") {
 		return unique_id;
-
+	}
 	return OS::get_unique_id();
 }
 
@@ -482,10 +538,45 @@ String OS_Android::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 	return godot_io_java->get_system_dir(p_dir, p_shared_storage);
 }
 
-void OS_Android::set_context_is_16_bits(bool p_is_16) {
-	//use_16bits_fbo = p_is_16;
-	//if (rasterizer)
-	//	rasterizer->set_force_16_bits_fbo(p_is_16);
+Error OS_Android::move_to_trash(const String &p_path) {
+	DirAccessRef da_ref = DirAccess::create_for_path(p_path);
+	if (!da_ref) {
+		return FAILED;
+	}
+
+	// Check if it's a directory
+	if (da_ref->dir_exists(p_path)) {
+		Error err = da_ref->change_dir(p_path);
+		if (err) {
+			return err;
+		}
+		// This is directory, let's erase its contents
+		err = da_ref->erase_contents_recursive();
+		if (err) {
+			return err;
+		}
+		// Remove the top directory
+		return da_ref->remove(p_path);
+	} else if (da_ref->file_exists(p_path)) {
+		// This is a file, let's remove it.
+		return da_ref->remove(p_path);
+	} else {
+		return FAILED;
+	}
+}
+
+void OS_Android::set_offscreen_gl_available(bool p_available) {
+	secondary_gl_available = p_available;
+}
+
+bool OS_Android::is_offscreen_gl_available() const {
+	return secondary_gl_available;
+}
+
+void OS_Android::set_offscreen_gl_current(bool p_current) {
+	if (secondary_gl_available) {
+		godot_java->set_offscreen_gl_current(nullptr, p_current);
+	}
 }
 
 bool OS_Android::is_joy_known(int p_device) {
@@ -498,6 +589,10 @@ String OS_Android::get_joy_guid(int p_device) const {
 
 void OS_Android::vibrate_handheld(int p_duration_ms) {
 	godot_java->vibrate(p_duration_ms);
+}
+
+String OS_Android::get_config_path() const {
+	return get_user_data_dir().plus_file("config");
 }
 
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
@@ -528,11 +623,6 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 	default_videomode.fullscreen = true;
 	default_videomode.resizable = false;
 
-	main_loop = NULL;
-	gl_extensions = NULL;
-	//rasterizer = NULL;
-	use_gl2 = false;
-
 	godot_java = p_godot_java;
 	godot_io_java = p_godot_io_java;
 
@@ -541,6 +631,19 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 	AudioDriverManager::add_driver(&audio_driver_android);
+}
+
+Error OS_Android::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+	if (p_path == ANDROID_EXEC_PATH) {
+		return create_instance(p_arguments, r_child_id);
+	} else {
+		return OS_Unix::execute(p_path, p_arguments, p_blocking, r_child_id, r_pipe, r_exitcode, read_stderr, p_pipe_mutex, p_open_console);
+	}
+}
+
+Error OS_Android::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
+	godot_java->create_new_godot_instance(p_arguments);
+	return OK;
 }
 
 OS_Android::~OS_Android() {

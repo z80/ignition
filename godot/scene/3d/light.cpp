@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  light.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  light.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "light.h"
 
@@ -142,6 +142,11 @@ void Light::set_bake_mode(BakeMode p_mode) {
 
 Light::BakeMode Light::get_bake_mode() const {
 	return bake_mode;
+}
+
+void Light::owner_changed_notify() {
+	// For cases where owner changes _after_ entering tree (as example, editor editing).
+	_update_visibility();
 }
 
 void Light::_update_visibility() {
@@ -273,13 +278,13 @@ Light::Light(VisualServer::LightType p_type) {
 	type = p_type;
 	switch (p_type) {
 		case VS::LIGHT_DIRECTIONAL:
-			light = VisualServer::get_singleton()->directional_light_create();
+			light = RID_PRIME(VisualServer::get_singleton()->directional_light_create());
 			break;
 		case VS::LIGHT_OMNI:
-			light = VisualServer::get_singleton()->omni_light_create();
+			light = RID_PRIME(VisualServer::get_singleton()->omni_light_create());
 			break;
 		case VS::LIGHT_SPOT:
-			light = VisualServer::get_singleton()->spot_light_create();
+			light = RID_PRIME(VisualServer::get_singleton()->spot_light_create());
 			break;
 		default: {
 		};
@@ -331,6 +336,7 @@ Light::~Light() {
 void DirectionalLight::set_shadow_mode(ShadowMode p_mode) {
 	shadow_mode = p_mode;
 	VS::get_singleton()->light_directional_set_shadow_mode(light, VS::LightDirectionalShadowMode(p_mode));
+	property_list_changed_notify();
 }
 
 DirectionalLight::ShadowMode DirectionalLight::get_shadow_mode() const {
@@ -353,6 +359,20 @@ void DirectionalLight::set_blend_splits(bool p_enable) {
 
 bool DirectionalLight::is_blend_splits_enabled() const {
 	return blend_splits;
+}
+
+void DirectionalLight::_validate_property(PropertyInfo &property) const {
+	if (shadow_mode == SHADOW_ORTHOGONAL && (property.name == "directional_shadow_split_1" || property.name == "directional_shadow_blend_splits" || property.name == "directional_shadow_bias_split_scale")) {
+		// Split 2, split blending and bias split scale are only used with the PSSM 2 Splits and PSSM 4 Splits shadow modes.
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+
+	if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (property.name == "directional_shadow_split_2" || property.name == "directional_shadow_split_3")) {
+		// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+
+	Light::_validate_property(property);
 }
 
 void DirectionalLight::_bind_methods() {

@@ -1,35 +1,35 @@
-/*************************************************************************/
-/*  rigid_body_bullet.h                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  rigid_body_bullet.h                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef BODYBULLET_H
-#define BODYBULLET_H
+#ifndef RIGID_BODY_BULLET_H
+#define RIGID_BODY_BULLET_H
 
 #include "collision_object_bullet.h"
 #include "space_bullet.h"
@@ -45,49 +45,15 @@ class AreaBullet;
 class SpaceBullet;
 class btRigidBody;
 class GodotMotionState;
-class BulletPhysicsDirectBodyState;
 
-/// This class could be used in multi thread with few changes but currently
-/// is set to be only in one single thread.
-///
-/// In the system there is only one object at a time that manage all bodies and is
-/// created by BulletPhysicsServer and is held by the "singleton" variable of this class
-/// Each time something require it, the body must be set again.
 class BulletPhysicsDirectBodyState : public PhysicsDirectBodyState {
 	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState);
 
-	static BulletPhysicsDirectBodyState *singleton;
-
 public:
-	/// This class avoid the creation of more object of this class
-	static void initSingleton() {
-		if (!singleton) {
-			singleton = memnew(BulletPhysicsDirectBodyState);
-		}
-	}
+	RigidBodyBullet *body = nullptr;
 
-	static void destroySingleton() {
-		memdelete(singleton);
-		singleton = nullptr;
-	}
-
-	static void singleton_setDeltaTime(real_t p_deltaTime) {
-		singleton->deltaTime = p_deltaTime;
-	}
-
-	static BulletPhysicsDirectBodyState *get_singleton(RigidBodyBullet *p_body) {
-		singleton->body = p_body;
-		return singleton;
-	}
-
-public:
-	RigidBodyBullet *body;
-	real_t deltaTime;
-
-private:
 	BulletPhysicsDirectBodyState() {}
 
-public:
 	virtual Vector3 get_total_gravity() const;
 	virtual float get_total_angular_damp() const;
 	virtual float get_total_linear_damp() const;
@@ -135,7 +101,7 @@ public:
 	virtual int get_contact_collider_shape(int p_contact_idx) const;
 	virtual Vector3 get_contact_collider_velocity_at_position(int p_contact_idx) const;
 
-	virtual real_t get_step() const { return deltaTime; }
+	virtual real_t get_step() const;
 	virtual void integrate_forces() {
 		// Skip the execution of this function
 	}
@@ -188,6 +154,7 @@ public:
 	};
 
 private:
+	BulletPhysicsDirectBodyState *direct_access = nullptr;
 	friend class BulletPhysicsDirectBodyState;
 
 	// This is required only for Kinematic movement
@@ -201,6 +168,9 @@ private:
 	real_t gravity_scale;
 	real_t linearDamp;
 	real_t angularDamp;
+	Vector3 total_gravity;
+	real_t total_linear_damp;
+	real_t total_angular_damp;
 	bool can_sleep;
 	bool omit_forces_integration;
 	bool can_integrate_forces;
@@ -231,6 +201,8 @@ private:
 public:
 	RigidBodyBullet();
 	~RigidBodyBullet();
+
+	BulletPhysicsDirectBodyState *get_direct_state() const { return direct_access; }
 
 	void init_kinematic_utilities();
 	void destroy_kinematic_utilities();
@@ -331,4 +303,4 @@ private:
 	void _internal_set_mass(real_t p_mass);
 };
 
-#endif
+#endif // RIGID_BODY_BULLET_H

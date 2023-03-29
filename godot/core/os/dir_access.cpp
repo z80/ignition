@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  dir_access.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  dir_access.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "dir_access.h"
 
@@ -148,14 +148,18 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	full_dir = full_dir.replace("\\", "/");
 
-	//int slices = full_dir.get_slice_count("/");
-
 	String base;
 
 	if (full_dir.begins_with("res://")) {
 		base = "res://";
 	} else if (full_dir.begins_with("user://")) {
 		base = "user://";
+	} else if (full_dir.is_network_share_path()) {
+		int pos = full_dir.find("/", 2);
+		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
+		pos = full_dir.find("/", pos + 1);
+		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
+		base = full_dir.substr(0, pos + 1);
 	} else if (full_dir.begins_with("/")) {
 		base = "/";
 	} else if (full_dir.find(":/") != -1) {
@@ -178,6 +182,10 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 	}
 
 	return OK;
+}
+
+DirAccess::AccessType DirAccess::get_access_type() const {
+	return _access_type;
 }
 
 String DirAccess::fix_path(String p_path) const {
@@ -249,6 +257,12 @@ DirAccess *DirAccess::create(AccessType p_access) {
 	DirAccess *da = create_func[p_access] ? create_func[p_access]() : nullptr;
 	if (da) {
 		da->_access_type = p_access;
+
+		if (p_access == ACCESS_RESOURCES) {
+			da->change_dir("res://");
+		} else if (p_access == ACCESS_USERDATA) {
+			da->change_dir("user://");
+		}
 	}
 
 	return da;
@@ -284,11 +298,16 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 		return err;
 	}
 
+	const size_t copy_buffer_limit = 65536; // 64 KB
+
 	fsrc->seek_end(0);
-	int size = fsrc->get_position();
+	uint64_t size = fsrc->get_position();
 	fsrc->seek(0);
 	err = OK;
-	while (size--) {
+	size_t buffer_size = MIN(size * sizeof(uint8_t), copy_buffer_limit);
+	LocalVector<uint8_t> buffer;
+	buffer.resize(buffer_size);
+	while (size > 0) {
 		if (fsrc->get_error() != OK) {
 			err = fsrc->get_error();
 			break;
@@ -298,7 +317,14 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 			break;
 		}
 
-		fdst->store_8(fsrc->get_8());
+		int bytes_read = fsrc->get_buffer(buffer.ptr(), buffer_size);
+		if (bytes_read <= 0) {
+			err = FAILED;
+			break;
+		}
+		fdst->store_buffer(buffer.ptr(), bytes_read);
+
+		size -= bytes_read;
 	}
 
 	if (err == OK && p_chmod_flags != -1) {

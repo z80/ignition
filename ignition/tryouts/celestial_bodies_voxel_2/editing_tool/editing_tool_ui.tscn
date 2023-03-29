@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/editing_tool/editing_tool_ui.gd" type="Script" id=1]
+
+[node name="Ui" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+
+[node name="Panel" type="Panel" parent="."]
+margin_left = 19.0
+margin_top = 19.0
+margin_right = 174.0
+margin_bottom = 78.0
+
+[node name="Update" type="CheckBox" parent="Panel"]
+margin_left = 5.0
+margin_top = 4.0
+margin_right = 150.0
+margin_bottom = 29.0
+text = "Disable update"
+
+[node name="Wireframe" type="CheckBox" parent="Panel"]
+margin_left = 5.0
+margin_top = 29.0
+margin_right = 128.0
+margin_bottom = 54.0
+text = "Wireframe mode"
+
+[connection signal="toggled" from="Panel/Update" to="." method="_on_Update_toggled"]
+[connection signal="toggled" from="Panel/Wireframe" to="." method="_on_Wireframe_toggled"]

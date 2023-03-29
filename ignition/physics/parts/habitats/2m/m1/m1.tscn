@@ -1,15 +1,14 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://physics/parts/habitats/2m/m1/m1.gd" type="Script" id=1]
-[ext_resource path="res://physics/parts/habitats/2m/m1/physical.tscn" type="PackedScene" id=2]
-[ext_resource path="res://physics/parts/habitats/2m/m1/visual.tscn" type="PackedScene" id=3]
+[ext_resource path="res://physics/parts/habitats/2m/m1/visual.tscn" type="PackedScene" id=2]
 [ext_resource path="res://physics/parts/habitats/2m/m1/air_drag.tscn" type="PackedScene" id=4]
 
-[node name="Habitat" type="RefFrameNode"]
+[node name="Habitat" type="RefFrameBodyNode"]
 script = ExtResource( 1 )
-VisualScene = ExtResource( 3 )
-PhysicalScene = ExtResource( 2 )
+VisualScene = ExtResource( 2 )
 AirDragScene = ExtResource( 4 )
+destruction_dv = 15.0
 part_class = 5
 conducts_liquid_fuel = false
 conducts_solid_fuel = false

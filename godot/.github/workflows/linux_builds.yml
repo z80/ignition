@@ -3,7 +3,8 @@ on: [push, pull_request]
 
 # Global Settings
 env:
-  GODOT_BASE_BRANCH: 3.4
+  # Only used for the cache key. Increment version to force clean build.
+  GODOT_BASE_BRANCH: 3.5
   SCONSFLAGS: verbose=yes warnings=all werror=yes
 
 concurrency:
@@ -27,11 +28,11 @@ jobs:
             build-mono: true
             artifact: true
 
-          - name: Editor and sanitizers (target=debug, tools=yes, use_asan=yes, use_ubsan=yes)
+          - name: Editor and sanitizers (target=debug, tools=yes, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-sanitizers
             target: debug
             tools: true
-            sconsflags: use_asan=yes use_ubsan=yes
+            sconsflags: use_asan=yes use_ubsan=yes linker=gold
             test: true
             bin: "./bin/godot.x11.tools.64s"
             build-mono: false
@@ -47,7 +48,7 @@ jobs:
             artifact: true
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Linux dependencies
         shell: bash
@@ -69,6 +70,9 @@ jobs:
 
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
+
+      - name: Setup GCC problem matcher
+        uses: ammaraskar/gcc-problem-matcher@master
 
       - name: Compilation
         uses: ./.github/actions/godot-build
@@ -98,9 +102,9 @@ jobs:
       - name: Download test project
         if: ${{ matrix.test }}
         run: |
-          wget https://github.com/godotengine/regression-test-project/archive/3.4.zip
-          unzip 3.4.zip
-          mv "regression-test-project-3.4" "test_project"
+          wget https://github.com/godotengine/regression-test-project/archive/3.x.zip
+          unzip 3.x.zip
+          mv "regression-test-project-3.x" "test_project"
 
       # Editor is quite complicated piece of software, so it is easy to introduce bug here
       - name: Open and close editor
@@ -129,6 +133,7 @@ jobs:
         if: ${{ matrix.artifact }}
         run: |
           strip bin/godot.*
+          chmod +x bin/godot.*
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact

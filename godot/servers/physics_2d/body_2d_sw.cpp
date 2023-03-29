@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  body_2d_sw.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  body_2d_sw.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "body_2d_sw.h"
 #include "area_2d_sw.h"
@@ -44,6 +44,12 @@ void Body2DSW::update_inertias() {
 
 	switch (mode) {
 		case Physics2DServer::BODY_MODE_RIGID: {
+			if (mass) {
+				_inv_mass = 1.0 / mass;
+			} else {
+				_inv_mass = 0;
+			}
+
 			if (user_inertia) {
 				_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
 				break;
@@ -78,13 +84,6 @@ void Body2DSW::update_inertias() {
 			}
 
 			_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
-
-			if (mass) {
-				_inv_mass = 1.0 / mass;
-			} else {
-				_inv_mass = 0;
-			}
-
 		} break;
 		case Physics2DServer::BODY_MODE_KINEMATIC:
 		case Physics2DServer::BODY_MODE_STATIC: {
@@ -251,6 +250,7 @@ Physics2DServer::BodyMode Body2DSW::get_mode() const {
 
 void Body2DSW::_shapes_changed() {
 	_update_inertia();
+	wakeup();
 	wakeup_neighbours();
 }
 
@@ -587,10 +587,7 @@ void Body2DSW::wakeup_neighbours() {
 
 void Body2DSW::call_queries() {
 	if (fi_callback) {
-		Physics2DDirectBodyStateSW *dbs = Physics2DDirectBodyStateSW::singleton;
-		dbs->body = this;
-
-		Variant v = dbs;
+		Variant v = direct_access;
 		const Variant *vp[2] = { &v, &fi_callback->callback_udata };
 
 		Object *obj = ObjectDB::get_instance(fi_callback->id);
@@ -676,18 +673,24 @@ Body2DSW::Body2DSW() :
 	continuous_cd_mode = Physics2DServer::CCD_MODE_DISABLED;
 	can_sleep = true;
 	fi_callback = nullptr;
+
+	direct_access = memnew(Physics2DDirectBodyStateSW);
+	direct_access->body = this;
 }
 
 Body2DSW::~Body2DSW() {
+	memdelete(direct_access);
 	if (fi_callback) {
 		memdelete(fi_callback);
 	}
 }
 
-Physics2DDirectBodyStateSW *Physics2DDirectBodyStateSW::singleton = nullptr;
-
 Physics2DDirectSpaceState *Physics2DDirectBodyStateSW::get_space_state() {
 	return body->get_space()->get_direct_state();
+}
+
+real_t Physics2DDirectBodyStateSW::get_step() const {
+	return body->get_space()->get_step();
 }
 
 Variant Physics2DDirectBodyStateSW::get_contact_collider_shape_metadata(int p_contact_idx) const {

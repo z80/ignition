@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  scroll_container.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  scroll_container.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "scroll_container.h"
 #include "core/os/os.h"
@@ -251,69 +251,76 @@ void ScrollContainer::ensure_control_visible(Control *p_control) {
 	set_v_scroll(get_v_scroll() + (diff.y - global_rect.position.y));
 }
 
+void ScrollContainer::_update_dimensions() {
+	child_max_size = Size2(0, 0);
+	Size2 size = get_size();
+	Point2 ofs;
+
+	Ref<StyleBox> sb = get_stylebox("bg");
+	size -= sb->get_minimum_size();
+	ofs += sb->get_offset();
+
+	if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
+		size.y -= h_scroll->get_minimum_size().y;
+	}
+
+	if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
+		size.x -= v_scroll->get_minimum_size().x;
+	}
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i));
+		if (!c) {
+			continue;
+		}
+		if (c->is_set_as_toplevel()) {
+			continue;
+		}
+		if (c == h_scroll || c == v_scroll) {
+			continue;
+		}
+		Size2 minsize = c->get_combined_minimum_size();
+		child_max_size.x = MAX(child_max_size.x, minsize.x);
+		child_max_size.y = MAX(child_max_size.y, minsize.y);
+
+		Rect2 r = Rect2(-scroll, minsize);
+		if (!scroll_h || (!h_scroll->is_visible_in_tree() && c->get_h_size_flags() & SIZE_EXPAND)) {
+			r.position.x = 0;
+			if (c->get_h_size_flags() & SIZE_EXPAND) {
+				r.size.width = MAX(size.width, minsize.width);
+			} else {
+				r.size.width = minsize.width;
+			}
+		}
+		if (!scroll_v || (!v_scroll->is_visible_in_tree() && c->get_v_size_flags() & SIZE_EXPAND)) {
+			r.position.y = 0;
+			if (c->get_v_size_flags() & SIZE_EXPAND) {
+				r.size.height = MAX(size.height, minsize.height);
+			} else {
+				r.size.height = minsize.height;
+			}
+		}
+		r.position += ofs;
+		fit_child_in_rect(c, r);
+	}
+
+	update();
+}
+
 void ScrollContainer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		call_deferred("_update_scrollbar_position");
 	};
 
 	if (p_what == NOTIFICATION_READY) {
-		get_viewport()->connect("gui_focus_changed", this, "_gui_focus_changed");
+		Viewport *viewport = get_viewport();
+		ERR_FAIL_COND(!viewport);
+		viewport->connect("gui_focus_changed", this, "_gui_focus_changed");
+		_update_dimensions();
 	}
 
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
-		child_max_size = Size2(0, 0);
-		Size2 size = get_size();
-		Point2 ofs;
-
-		Ref<StyleBox> sb = get_stylebox("bg");
-		size -= sb->get_minimum_size();
-		ofs += sb->get_offset();
-
-		if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
-			size.y -= h_scroll->get_minimum_size().y;
-		}
-
-		if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
-			size.x -= v_scroll->get_minimum_size().x;
-		}
-
-		for (int i = 0; i < get_child_count(); i++) {
-			Control *c = Object::cast_to<Control>(get_child(i));
-			if (!c) {
-				continue;
-			}
-			if (c->is_set_as_toplevel()) {
-				continue;
-			}
-			if (c == h_scroll || c == v_scroll) {
-				continue;
-			}
-			Size2 minsize = c->get_combined_minimum_size();
-			child_max_size.x = MAX(child_max_size.x, minsize.x);
-			child_max_size.y = MAX(child_max_size.y, minsize.y);
-
-			Rect2 r = Rect2(-scroll, minsize);
-			if (!scroll_h || (!h_scroll->is_visible_in_tree() && c->get_h_size_flags() & SIZE_EXPAND)) {
-				r.position.x = 0;
-				if (c->get_h_size_flags() & SIZE_EXPAND) {
-					r.size.width = MAX(size.width, minsize.width);
-				} else {
-					r.size.width = minsize.width;
-				}
-			}
-			if (!scroll_v || (!v_scroll->is_visible_in_tree() && c->get_v_size_flags() & SIZE_EXPAND)) {
-				r.position.y = 0;
-				if (c->get_v_size_flags() & SIZE_EXPAND) {
-					r.size.height = MAX(size.height, minsize.height);
-				} else {
-					r.size.height = minsize.height;
-				}
-			}
-			r.position += ofs;
-			fit_child_in_rect(c, r);
-		}
-
-		update();
+		_update_dimensions();
 	};
 
 	if (p_what == NOTIFICATION_DRAW) {

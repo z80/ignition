@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  popup_menu.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  popup_menu.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "popup_menu.h"
 #include "core/os/input.h"
@@ -52,15 +52,18 @@ Size2 PopupMenu::get_minimum_size() const {
 
 	Size2 minsize = get_stylebox("panel")->get_minimum_size();
 	Ref<Font> font = get_font("font");
+	Ref<Font> font_separator = get_font("font_separator");
 
 	float max_w = 0;
 	float icon_w = 0;
-	int font_h = font->get_height();
 	int check_w = MAX(get_icon("checked")->get_width(), get_icon("radio_checked")->get_width()) + hseparation;
 	int accel_max_w = 0;
 	bool has_check = false;
 
 	for (int i = 0; i < items.size(); i++) {
+		String text = items[i].xl_text;
+		int font_h = items[i].separator && text != String() ? font_separator->get_height() : font->get_height();
+
 		Size2 size;
 		if (!items[i].icon.is_null()) {
 			Size2 icon_size = items[i].icon->get_size();
@@ -76,8 +79,7 @@ Size2 PopupMenu::get_minimum_size() const {
 			has_check = true;
 		}
 
-		String text = items[i].xl_text;
-		size.width += font->get_string_size(text).width;
+		size.width += items[i].separator ? font_separator->get_string_size(text).width : font->get_string_size(text).width;
 		size.height += vseparation;
 
 		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->is_valid())) {
@@ -117,10 +119,13 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	}
 
 	Ref<Font> font = get_font("font");
+	Ref<Font> font_separator = get_font("font_separator");
 	int vseparation = get_constant("vseparation");
-	float font_h = font->get_height();
 
 	for (int i = 0; i < items.size(); i++) {
+		String text = items[i].xl_text;
+		float font_h = items[i].separator && text != String() ? font_separator->get_height() : font->get_height();
+
 		ofs.y += vseparation;
 		float h;
 
@@ -140,13 +145,13 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	return -1;
 }
 
-void PopupMenu::_activate_submenu(int over) {
+void PopupMenu::_activate_submenu(int over, bool p_by_keyboard) {
 	Node *n = get_node(items[over].submenu);
 	ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + items[over].submenu + ".");
 	Popup *pm = Object::cast_to<Popup>(n);
 	ERR_FAIL_COND_MSG(!pm, "Item subnode is not a Popup: " + items[over].submenu + ".");
 	if (pm->is_visible_in_tree()) {
-		return; //already visible!
+		return; // Already visible.
 	}
 
 	Point2 p = get_global_position();
@@ -155,7 +160,7 @@ void PopupMenu::_activate_submenu(int over) {
 
 	Point2 pos = p + Point2(get_size().width, items[over]._ofs_cache - style->get_offset().y) * get_global_transform().get_scale();
 	Size2 size = pm->get_size();
-	// fix pos
+	// Fix pos.
 	if (pos.x + size.width > get_viewport_rect().size.width) {
 		pos.x = p.x - size.width;
 	}
@@ -166,6 +171,17 @@ void PopupMenu::_activate_submenu(int over) {
 
 	PopupMenu *pum = Object::cast_to<PopupMenu>(pm);
 	if (pum) {
+		// If not triggered by the mouse, start the popup with its first enabled item focused.
+		if (p_by_keyboard) {
+			for (int i = 0; i < pum->get_item_count(); i++) {
+				if (!pum->is_item_disabled(i)) {
+					pum->set_current_index(i);
+					break;
+				}
+			}
+		}
+
+		// Setting autohide areas *must* be done after `popup()` which can move the popup (to fit it into the viewport).
 		pr.position -= pum->get_global_position();
 		pum->clear_autohide_areas();
 		pum->add_autohide_area(Rect2(pr.position.x, pr.position.y, pr.size.x, items[over]._ofs_cache));
@@ -212,93 +228,95 @@ void PopupMenu::_scroll(float p_factor, const Point2 &p_over) {
 void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (p_event->is_action("ui_down") && p_event->is_pressed()) {
-		int search_from = mouse_over + 1;
-		if (search_from >= items.size()) {
-			search_from = 0;
-		}
-
-		bool match_found = false;
-		for (int i = search_from; i < items.size(); i++) {
-			if (i < 0 || i >= items.size()) {
-				continue;
+	if (!items.empty()) {
+		if (p_event->is_action("ui_down") && p_event->is_pressed()) {
+			int search_from = mouse_over + 1;
+			if (search_from >= items.size()) {
+				search_from = 0;
 			}
 
-			if (!items[i].separator && !items[i].disabled) {
-				mouse_over = i;
-				emit_signal("id_focused", i);
-				update();
-				accept_event();
-				match_found = true;
-				break;
-			}
-		}
+			bool match_found = false;
+			for (int i = search_from; i < items.size(); i++) {
+				if (i < 0 || i >= items.size()) {
+					continue;
+				}
 
-		if (!match_found) {
-			// If the last item is not selectable, try re-searching from the start.
-			for (int i = 0; i < search_from; i++) {
 				if (!items[i].separator && !items[i].disabled) {
 					mouse_over = i;
 					emit_signal("id_focused", i);
 					update();
 					accept_event();
+					match_found = true;
 					break;
 				}
 			}
-		}
-	} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
-		int search_from = mouse_over - 1;
-		if (search_from < 0) {
-			search_from = items.size() - 1;
-		}
 
-		bool match_found = false;
-		for (int i = search_from; i >= 0; i--) {
-			if (i >= items.size()) {
-				continue;
+			if (!match_found) {
+				// If the last item is not selectable, try re-searching from the start.
+				for (int i = 0; i < search_from; i++) {
+					if (!items[i].separator && !items[i].disabled) {
+						mouse_over = i;
+						emit_signal("id_focused", i);
+						update();
+						accept_event();
+						break;
+					}
+				}
+			}
+		} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
+			int search_from = mouse_over - 1;
+			if (search_from < 0) {
+				search_from = items.size() - 1;
 			}
 
-			if (!items[i].separator && !items[i].disabled) {
-				mouse_over = i;
-				emit_signal("id_focused", i);
-				update();
-				accept_event();
-				match_found = true;
-				break;
-			}
-		}
+			bool match_found = false;
+			for (int i = search_from; i >= 0; i--) {
+				if (i >= items.size()) {
+					continue;
+				}
 
-		if (!match_found) {
-			// If the first item is not selectable, try re-searching from the end.
-			for (int i = items.size() - 1; i >= search_from; i--) {
 				if (!items[i].separator && !items[i].disabled) {
 					mouse_over = i;
 					emit_signal("id_focused", i);
 					update();
 					accept_event();
+					match_found = true;
 					break;
 				}
 			}
-		}
-	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
-		Node *n = get_parent();
-		if (n && Object::cast_to<PopupMenu>(n)) {
-			hide();
-			accept_event();
-		}
-	} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
-		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && items[mouse_over].submenu != "" && submenu_over != mouse_over) {
-			_activate_submenu(mouse_over);
-			accept_event();
-		}
-	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
-		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
-			if (items[mouse_over].submenu != "" && submenu_over != mouse_over) {
-				_activate_submenu(mouse_over);
-			} else {
-				activate_item(mouse_over);
+
+			if (!match_found) {
+				// If the first item is not selectable, try re-searching from the end.
+				for (int i = items.size() - 1; i >= search_from; i--) {
+					if (!items[i].separator && !items[i].disabled) {
+						mouse_over = i;
+						emit_signal("id_focused", i);
+						update();
+						accept_event();
+						break;
+					}
+				}
 			}
-			accept_event();
+		} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
+			Node *n = get_parent();
+			if (n && Object::cast_to<PopupMenu>(n)) {
+				hide();
+				accept_event();
+			}
+		} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
+			if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && items[mouse_over].submenu != "" && submenu_over != mouse_over) {
+				_activate_submenu(mouse_over, true);
+				accept_event();
+			}
+		} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
+			if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
+				if (items[mouse_over].submenu != "" && submenu_over != mouse_over) {
+					_activate_submenu(mouse_over, true);
+				} else {
+					activate_item(mouse_over);
+				}
+				accept_event();
+			}
 		}
 	}
 
@@ -479,6 +497,7 @@ void PopupMenu::_notification(int p_what) {
 			Ref<StyleBox> style = get_stylebox("panel");
 			Ref<StyleBox> hover = get_stylebox("hover");
 			Ref<Font> font = get_font("font");
+			Ref<Font> font_separator = get_font("font_separator");
 			// In Item::checkable_type enum order (less the non-checkable member)
 			Ref<Texture> check[] = { get_icon("checked"), get_icon("radio_checked") };
 			Ref<Texture> uncheck[] = { get_icon("unchecked"), get_icon("radio_unchecked") };
@@ -487,7 +506,7 @@ void PopupMenu::_notification(int p_what) {
 			Ref<StyleBox> labeled_separator_left = get_stylebox("labeled_separator_left");
 			Ref<StyleBox> labeled_separator_right = get_stylebox("labeled_separator_right");
 
-			style->draw(ci, Rect2(Point2(), get_size()));
+			style->draw(ci, Rect2(Point2(), size));
 			Point2 ofs = style->get_offset();
 			int vseparation = get_constant("vseparation");
 			int hseparation = get_constant("hseparation");
@@ -496,7 +515,6 @@ void PopupMenu::_notification(int p_what) {
 			Color font_color_accel = get_color("font_color_accel");
 			Color font_color_hover = get_color("font_color_hover");
 			Color font_color_separator = get_color("font_color_separator");
-			float font_h = font->get_height();
 
 			// Add the check and the wider icon to the offset of all items.
 			float icon_ofs = 0.0;
@@ -520,6 +538,9 @@ void PopupMenu::_notification(int p_what) {
 			}
 
 			for (int i = 0; i < items.size(); i++) {
+				String text = items[i].xl_text;
+				float font_h = items[i].separator && text != String() ? font_separator->get_height() : font->get_height();
+
 				if (i == 0) {
 					ofs.y += vseparation / 2;
 				} else {
@@ -537,26 +558,26 @@ void PopupMenu::_notification(int p_what) {
 				}
 
 				if (i == mouse_over) {
-					hover->draw(ci, Rect2(item_ofs + Point2(-hseparation, -vseparation / 2), Size2(get_size().width - style->get_minimum_size().width + hseparation * 2, h + vseparation)));
+					hover->draw(ci, Rect2(item_ofs + Point2(0, -vseparation / 2), Size2(size.width - style->get_minimum_size().width, h + vseparation)));
 				}
-
-				String text = items[i].xl_text;
 
 				item_ofs.x += items[i].h_ofs;
 				if (items[i].separator) {
-					int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;
 					if (text != String()) {
-						int ss = font->get_string_size(text).width;
-						int center = (get_size().width) / 2;
-						int l = center - ss / 2;
-						int r = center + ss / 2;
+						int ss = font_separator->get_string_size(text).width / 2;
+						int center = get_size().width / 2;
+						int l = center - ss;
+						int r = center + ss;
 						if (l > item_ofs.x) {
+							int sep_h = labeled_separator_left->get_center_size().height + labeled_separator_left->get_minimum_size().height;
 							labeled_separator_left->draw(ci, Rect2(item_ofs + Point2(0, Math::floor((h - sep_h) / 2.0)), Size2(MAX(0, l - item_ofs.x), sep_h)));
 						}
 						if (r < get_size().width - style->get_margin(MARGIN_RIGHT)) {
+							int sep_h = labeled_separator_right->get_center_size().height + labeled_separator_right->get_minimum_size().height;
 							labeled_separator_right->draw(ci, Rect2(Point2(r, item_ofs.y + Math::floor((h - sep_h) / 2.0)), Size2(MAX(0, get_size().width - style->get_margin(MARGIN_RIGHT) - r), sep_h)));
 						}
 					} else {
+						int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;
 						separator->draw(ci, Rect2(item_ofs + Point2(0, Math::floor((h - sep_h) / 2.0)), Size2(get_size().width - style->get_minimum_size().width, sep_h)));
 					}
 				}
@@ -576,14 +597,15 @@ void PopupMenu::_notification(int p_what) {
 					submenu->draw(ci, Point2(size.width - style->get_margin(MARGIN_RIGHT) - submenu->get_width(), item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
 				}
 
-				item_ofs.y += font->get_ascent();
 				if (items[i].separator) {
 					if (text != String()) {
-						int center = (get_size().width - font->get_string_size(text).width) / 2;
-						font->draw(ci, Point2(center, item_ofs.y + Math::floor((h - font_h) / 2.0)), text, font_color_separator);
+						item_ofs.y += font_separator->get_ascent();
+						int center = (get_size().width - font_separator->get_string_size(text).width) / 2;
+						font_separator->draw(ci, Point2(center, item_ofs.y + Math::floor((h - font_h) / 2.0)), text, font_color_separator);
 					}
 				} else {
 					item_ofs.x += icon_ofs + check_ofs;
+					item_ofs.y += font->get_ascent();
 					font->draw(ci, item_ofs + Point2(0, Math::floor((h - font_h) / 2.0)), text, items[i].disabled ? font_color_disabled : (i == mouse_over ? font_color_hover : font_color));
 				}
 
@@ -1033,6 +1055,19 @@ bool PopupMenu::is_item_shortcut_disabled(int p_idx) const {
 	return items[p_idx].shortcut_is_disabled;
 }
 
+void PopupMenu::set_current_index(int p_idx) {
+	if (p_idx != -1) {
+		ERR_FAIL_INDEX(p_idx, items.size());
+	}
+
+	if (mouse_over == p_idx) {
+		return;
+	}
+
+	mouse_over = p_idx;
+	update();
+}
+
 int PopupMenu::get_current_index() const {
 	return mouse_over;
 }
@@ -1403,6 +1438,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &PopupMenu::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "idx"), &PopupMenu::get_item_shortcut);
 
+	ClassDB::bind_method(D_METHOD("set_current_index", "index"), &PopupMenu::set_current_index);
 	ClassDB::bind_method(D_METHOD("get_current_index"), &PopupMenu::get_current_index);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &PopupMenu::get_item_count);
 
@@ -1454,6 +1490,8 @@ void PopupMenu::popup(const Rect2 &p_bounds) {
 }
 
 PopupMenu::PopupMenu() {
+	activated_by_keyboard = false;
+
 	mouse_over = -1;
 	submenu_over = -1;
 	initial_button_mask = 0;

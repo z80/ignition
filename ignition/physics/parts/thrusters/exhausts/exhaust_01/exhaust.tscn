@@ -312,7 +312,6 @@ shader_param/displacement_z = SubResource( 14 )
 script = ExtResource( 1 )
 pressure_low = 40000.0
 thrust = 0.02
-pressure = 70000.0
 
 [node name="Glow" type="MeshInstance" parent="."]
 mesh = ExtResource( 6 )

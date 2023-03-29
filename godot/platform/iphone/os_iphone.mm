@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  os_iphone.mm                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  os_iphone.mm                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifdef IPHONE_ENABLED
 
@@ -54,6 +54,7 @@
 
 #import <UIKit/UIKit.h>
 #include <dlfcn.h>
+#include <sys/sysctl.h>
 #import <sys/utsname.h>
 
 extern int gl_view_base_fb; // from gl_view.mm
@@ -202,6 +203,8 @@ bool OSIPhone::iterate() {
 		return true;
 	}
 
+	input->flush_buffered_events();
+
 	return Main::iteration();
 };
 
@@ -307,7 +310,7 @@ void OSIPhone::joy_button(int p_device, int p_button, bool p_pressed) {
 	input->joy_button(p_device, p_button, p_pressed);
 };
 
-void OSIPhone::joy_axis(int p_device, int p_axis, const InputDefault::JoyAxis &p_value) {
+void OSIPhone::joy_axis(int p_device, int p_axis, float p_value) {
 	input->joy_axis(p_device, p_axis, p_value);
 };
 
@@ -417,6 +420,22 @@ void OSIPhone::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) c
 	p_list->push_back(video_mode);
 }
 
+void OSIPhone::set_offscreen_gl_context(EAGLContext *p_context) {
+	offscreen_gl_context = p_context;
+}
+
+bool OSIPhone::is_offscreen_gl_available() const {
+	return offscreen_gl_context;
+}
+
+void OSIPhone::set_offscreen_gl_current(bool p_current) {
+	if (p_current) {
+		[EAGLContext setCurrentContext:offscreen_gl_context];
+	} else {
+		[EAGLContext setCurrentContext:nil];
+	}
+}
+
 bool OSIPhone::can_draw() const {
 	if (native_video_is_playing())
 		return false;
@@ -494,6 +513,10 @@ String OSIPhone::get_clipboard() const {
 	return String::utf8([text UTF8String]);
 }
 
+String OSIPhone::get_cache_path() const {
+	return cache_dir;
+}
+
 String OSIPhone::get_model_name() const {
 	String model = ios->get_model();
 	if (model != "") {
@@ -542,6 +565,10 @@ int OSIPhone::get_screen_dpi(int p_screen) const {
 		default:
 			return 72;
 	}
+}
+
+float OSIPhone::get_screen_refresh_rate(int p_screen) const {
+	return [UIScreen mainScreen].maximumFramesPerSecond;
 }
 
 Rect2 OSIPhone::get_window_safe_area() const {
@@ -645,9 +672,22 @@ void OSIPhone::native_video_stop() {
 	}
 }
 
+String OSIPhone::get_processor_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+}
+
 void OSIPhone::vibrate_handheld(int p_duration_ms) {
-	// iOS does not support duration for vibration
-	AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+	if (ios->supports_haptic_engine()) {
+		ios->vibrate_haptic_engine((float)p_duration_ms / 1000.f);
+	} else {
+		// iOS <13 does not support duration for vibration
+		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+	}
 }
 
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
@@ -668,7 +708,7 @@ void add_ios_init_callback(init_callback cb) {
 	}
 }
 
-OSIPhone::OSIPhone(String p_data_dir) {
+OSIPhone::OSIPhone(String p_data_dir, String p_cache_dir) {
 	for (int i = 0; i < ios_init_callbacks_count; ++i) {
 		ios_init_callbacks[i]();
 	}
@@ -679,10 +719,12 @@ OSIPhone::OSIPhone(String p_data_dir) {
 
 	main_loop = NULL;
 	visual_server = NULL;
+	offscreen_gl_context = NULL;
 
 	// can't call set_data_dir from here, since it requires DirAccess
 	// which is initialized in initialize_core
 	data_dir = p_data_dir;
+	cache_dir = p_cache_dir;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(SyslogLogger));

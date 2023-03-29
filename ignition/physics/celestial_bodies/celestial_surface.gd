@@ -2,9 +2,13 @@
 extends CelestialBody
 class_name CelestialSurface
 
+
 # Defining geometry and GM based on surface orbiting velocity.
 export(String) var height_source_name = "test"
 
+# Radius is taken from
+#var radius_km = 1.0
+#export(float) var height_km = 1.0
 
 # Subdivision levels.
 export(float) var detail_size_0 = 0.01
@@ -94,7 +98,10 @@ func init():
 	motion = CelestialMotionRef.new()
 
 	# Initialize GM.
-	gm = motion.init_gm( radius_km, surface_orbital_vel_kms )
+	var radius_km: float = surface_source.radius_km
+	var surface_orbital_vel_kms: float = surface_source.orbital_velocity * 0.001
+	var gm: float = self.compute_gm_by_speed( radius_km, surface_orbital_vel_kms )
+	self.set_own_gm( gm )
 	
 	# Initialize orbital movement.
 	perigee_dir = perigee_dir.normalized()
@@ -121,12 +128,12 @@ func init():
 	
 	# Initialize body geometry
 	var celestial_body: CubeSphereNode = get_node( "Rotation/CelestialBody" )
-	var radius: float  = radius_km * 1000.0
-	var height: float  = height_km * 1000.0
+	var radius: float  = surface_source.radius_km * 1000.0
+	var height: float  = 0.0
 	celestial_body.radius = radius
 	celestial_body.height = height
 	celestial_body.height_source   = height_source( height_source_name, radius, height )
-#	celestial_body.distance_scaler = PhysicsManager.distance_scaler
+#	celestial_body.distance_scaler = RootScene.ref_frame_root.distance_scaler
 	
 	celestial_body.apply_scale         = true
 	celestial_body.convert_to_global   = false
@@ -163,21 +170,22 @@ func process_motion( delta ):
 
 
 func process_geometry( force_player_rf: RefFrameNode = null ):
-	var player_rf: RefFrameNode
-	var player_ctrl: RefFrameNode
+	var root: RefFrameRoot = RootScene.ref_frame_root
+	var _player_rf: RefFrameNode
+	var _player_ctrl: RefFrameNode
 	if force_player_rf != null:
-		player_rf = force_player_rf
+		_player_rf = force_player_rf
 	else:
-		player_rf = PhysicsManager.get_player_ref_frame()
-	player_ctrl = PhysicsManager.player_control
+		_player_rf = root.get_player_ref_frame()
+	_player_ctrl = root.player_control
 	
-	var physics_ref_frames: Array  = PhysicsManager.physics_ref_frames()
+	var physics_ref_frames: Array  = root.physics_ref_frames()
 	
 	var translation: RefFrameNode = self
 	var rotation: RefFrameNode    = get_node( "Rotation" )
 	var planet: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	
-	var paths: Array = []
+	var _paths: Array = []
 	for rf in physics_ref_frames:
 		# Check if either node is direct parent of this rf
 		var p = rf.get_parent()
@@ -198,7 +206,7 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 	
 	# For player ref frame rebuild mesh if needed
 	# Generate visual appearance based on camera.
-	var camera: RefFrameNode = PhysicsManager.camera
+	var camera: RefFrameNode = root.player_camera
 	if (camera != null) and ( is_instance_valid(camera) ):
 		var need_rebuild_visual: bool = _subdivide_source_visual.need_subdivide( camera, planet )
 		#print( "need_rebuild_visual: ", need_rebuild_visual )
@@ -207,7 +215,7 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 			planet.apply_heightmap_2( planet.height_source )
 			#planet.apply_visual_mesh()
 
-		var distance_scaler: DistanceScalerRef = PhysicsManager.distance_scaler
+		var distance_scaler: DistanceScalerRef = root.distance_scaler
 		planet.apply_scale_2( camera, null, distance_scaler )
 		planet.apply_visual_mesh()
 
@@ -229,7 +237,7 @@ func height_source( name: String, radius: float, height: float ):
 
 
 func _set_convert_to_global( en ):
-	var n: Node = get_node( "Rotation/CelestialBody" )
+	var _n: Node = get_node( "Rotation/CelestialBody" )
 	var celestial_body: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	celestial_body.convert_to_global = en
 
@@ -272,31 +280,22 @@ func _apply_forces():
 #		if debug:
 #			rot.debug = true
 		var tr: RefFrameNode = translation_rf()
-		var se3_tr: Se3Ref = tr.relative_to( b )
+		var _se3_tr: Se3Ref = tr.relative_to( b )
 		var se3_rel_to_body: Se3Ref = rot.relative_to( b )
 		if debug:
 			rot.debug = false
 		var se3_local: Se3Ref       = b.get_se3()
 		var q: Quat                 = se3_local.q
 		
-		# Apply gravity.
-		var force_torque: Array     = force_source_gravity.compute_force( b, se3_rel_to_body )
-		var F: Vector3 = force_torque[0]
-		var P: Vector3 = force_torque[1]
-		F = q.xform( F )
-		P = q.xform( P )
-		b.add_force_torque( F, P )
-		
-		# Apply rotational forces.
-		force_torque = _force_source_rotational.compute_force( b, se3_rel_to_body )
-		F = force_torque[0]
-		P = force_torque[1]
-		F = q.xform( F )
-		P = q.xform( P )
+		# Apply gravity and rotational forces.
+		var acc: Vector3 = self.acceleration()
+		var mass: float  = b.get_mass()
+		var F: Vector3 = acc * mass
+		var P: Vector3 = Vector3.ZERO
 		b.add_force_torque( F, P )
 		
 		# Apply air drag forces.
-		force_torque = _force_source_air_drag.compute_force( b, se3_rel_to_body )
+		var force_torque: Array = _force_source_air_drag.compute_force( b, se3_rel_to_body )
 		F = force_torque[0]
 		P = force_torque[1]
 		F = q.xform( F )
@@ -313,7 +312,7 @@ func _draw_shock_waves( bodies_ref_frame: RefFrameNode, rot: RefFrameNode ):
 		var p: PhysicsBodyBase = body as PhysicsBodyBase
 		if p == null:
 			continue
-		var a: PartAssembly = p.get_super_body()
+		var a: PartAssembly = p.get_assembly()
 		if a == null:
 			continue
 		var has: bool = assemblies.has( a )
@@ -348,7 +347,7 @@ func _draw_shock_waves( bodies_ref_frame: RefFrameNode, rot: RefFrameNode ):
 				
 				var se3: Se3Ref = body.relative_to( rot )
 				
-				var distance: float = se3.r.length()
+				var _distance: float = se3.r.length()
 				# Compute air density in the point.
 				var ret: Array = _force_source_air_drag.density_viscosity( se3 )
 				var density: float = ret[1]
@@ -374,7 +373,7 @@ func _draw_shock_waves( bodies_ref_frame: RefFrameNode, rot: RefFrameNode ):
 func _draw_all_shock_waves():
 	var rot: RefFrameNode = rotation_rf()
 	var tran: RefFrameNode = translation_rf()
-	var all_bodies: Array = get_all_physics_bodies( rot )
+	var _all_bodies: Array = get_all_physics_bodies( rot )
 	_draw_shock_waves( rot,  rot )
 	_draw_shock_waves( tran, rot )
 
@@ -384,7 +383,7 @@ func _hide_shock_waves():
 	var rot: RefFrameNode = rotation_rf()
 	var all_bodies: Array = get_all_physics_bodies( rot )
 	# All assemblies.
-	var assemblies: Array = []
+	var _assemblies: Array = []
 	for body in all_bodies:
 		var p: PhysicsBodyBase = body as PhysicsBodyBase
 		p.hide_shock_wave_visual()
@@ -405,13 +404,15 @@ func process_ref_frames_rotating_to_orbiting():
 	var tr: RefFrameNode = translation_rf()
 	var se3: Se3Ref = rf.relative_to( rot )
 	var dist: float = se3.r.length()
+	
+	var radius_km: float = surface_source.radius_km
+	var height_km: float = 0.0
 	var exclusion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_EXCLUDE_DIST
 	if dist >= exclusion_dist:
 		rf.change_parent( tr )
 		#rf.jump_to( tr, se3 )
 		rf.allow_orbiting = true
-		se3 = rf.get_se3()
-		rf.launch( gm, se3 )
+		var _ok: bool = rf.launch()
 		print( "rotating -> orbiting" )
 		
 		var m: CelestialMotionRef = rf.motion
@@ -440,6 +441,8 @@ func process_ref_frames_orbiting_to_rotating():
 	var rot: RefFrameNode = rotation_rf()
 	var se3: Se3Ref = rf.relative_to( rot )
 	var dist: float = se3.r.length()
+	var radius_km: float = surface_source.radius_km
+	var height_km: float = 0.0
 	var inclusion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_INCLUDE_DIST
 	if dist <= inclusion_dist:
 		rf.change_parent( rot )
@@ -500,11 +503,10 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 		# Need to teleport celestial body to that other celestial body
 		rf.change_parent( biggest_influence_body )
 		rf.allow_orbiting = true
-		var se3: Se3Ref = rf.get_se3()
-		rf.launch( biggest_influence_body.gm, se3 )
+		var _ok: bool = rf.launch()
 		print( "orbiting -> another orbiting" )
 		print( "biggest influence obj: ", biggest_influence_body.name )
-		print( "biggest influence gm: ", biggest_influence_body.gm )
+		print( "biggest influence gm: ", biggest_influence_body.own_gm )
 
 
 func _create_orbit_visualizer():
@@ -538,7 +540,8 @@ func _get_show_orbit():
 
 
 func _process_visualize_orbits():
-	var new_state: bool = PhysicsManager.visualize_orbits
+	var root: RefFrameRoot = get_ref_frame_root()
+	var new_state: bool = root.visualize_orbits
 	var current_state: bool = self.show_orbit
 	if current_state != new_state:
 		self.show_orbit = new_state
@@ -549,6 +552,7 @@ func _process_visualize_orbits():
 
 func _init_force_source_air_drag():
 	_force_source_air_drag = ForceSourceAirDrag.new()
+	var radius_km: float = surface_source.radius_km
 	_force_source_air_drag.ground_level  = radius_km * 1000.0
 	_force_source_air_drag.atm_height    = (atmosphere_height_inner_km + atmosphere_height_outer_km) * 1000.0
 	_force_source_air_drag.density_gnd   = air_density * 0.001
@@ -558,6 +562,7 @@ func _init_force_source_air_drag():
 
 
 func air_pressure( se3_rel: Se3Ref ):
+	var radius_km: float = surface_source.radius_km
 	var d: float = se3_rel.r.length() * 0.001 - radius_km
 	if d <= 0.0:
 		return air_pressure_surface
@@ -568,6 +573,11 @@ func air_pressure( se3_rel: Se3Ref ):
 	
 	var p: float = air_pressure_surface * ( 1.0 - (d / atm_height_km) )
 	return p
+
+
+func get_ref_frame_root():
+	var rf: RefFrameNode = RootScene.ref_frame_root
+	return rf
 
 
 

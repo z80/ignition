@@ -89,7 +89,7 @@ func _on_meta_clicked( meta ):
 	var is_http: bool = is_http_url( path )
 	
 	if is_http:
-		OS.shell_open( path )
+		var _err_code: int = OS.shell_open( path )
 	
 	else:
 		open( path )
@@ -127,7 +127,7 @@ static func clean_path( path: String ):
 
 static func is_http_url( path: String ):
 	var re: RegEx = RegEx.new()
-	re.compile( '^https?:\/\/.+' )
+	var _err_code: int = re.compile( '^https?:\/\/.+' )
 	var result = re.search( path )
 	var ret: bool = (result != null)
 	

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  visual_script_property_selector.cpp                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  visual_script_property_selector.cpp                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "visual_script_property_selector.h"
 
@@ -92,39 +92,40 @@ void VisualScriptPropertySelector::_update_search() {
 		base = ClassDB::get_parent_class_nocheck(base);
 	}
 
+	Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
+		Control::get_icon("Variant", "EditorIcons"),
+		Control::get_icon("bool", "EditorIcons"),
+		Control::get_icon("int", "EditorIcons"),
+		Control::get_icon("float", "EditorIcons"),
+		Control::get_icon("String", "EditorIcons"),
+		Control::get_icon("Vector2", "EditorIcons"),
+		Control::get_icon("Rect2", "EditorIcons"),
+		Control::get_icon("Vector3", "EditorIcons"),
+		Control::get_icon("Transform2D", "EditorIcons"),
+		Control::get_icon("Plane", "EditorIcons"),
+		Control::get_icon("Quat", "EditorIcons"),
+		Control::get_icon("AABB", "EditorIcons"),
+		Control::get_icon("Basis", "EditorIcons"),
+		Control::get_icon("Transform", "EditorIcons"),
+		Control::get_icon("Color", "EditorIcons"),
+		Control::get_icon("Path", "EditorIcons"),
+		Control::get_icon("RID", "EditorIcons"),
+		Control::get_icon("Object", "EditorIcons"),
+		Control::get_icon("Dictionary", "EditorIcons"),
+		Control::get_icon("Array", "EditorIcons"),
+		Control::get_icon("PoolByteArray", "EditorIcons"),
+		Control::get_icon("PoolIntArray", "EditorIcons"),
+		Control::get_icon("PoolRealArray", "EditorIcons"),
+		Control::get_icon("PoolStringArray", "EditorIcons"),
+		Control::get_icon("PoolVector2Array", "EditorIcons"),
+		Control::get_icon("PoolVector3Array", "EditorIcons"),
+		Control::get_icon("PoolColorArray", "EditorIcons")
+	};
+
 	for (List<StringName>::Element *E = base_list.front(); E; E = E->next()) {
 		List<MethodInfo> methods;
 		List<PropertyInfo> props;
 		TreeItem *category = nullptr;
-		Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
-			Control::get_icon("Variant", "EditorIcons"),
-			Control::get_icon("bool", "EditorIcons"),
-			Control::get_icon("int", "EditorIcons"),
-			Control::get_icon("float", "EditorIcons"),
-			Control::get_icon("String", "EditorIcons"),
-			Control::get_icon("Vector2", "EditorIcons"),
-			Control::get_icon("Rect2", "EditorIcons"),
-			Control::get_icon("Vector3", "EditorIcons"),
-			Control::get_icon("Transform2D", "EditorIcons"),
-			Control::get_icon("Plane", "EditorIcons"),
-			Control::get_icon("Quat", "EditorIcons"),
-			Control::get_icon("AABB", "EditorIcons"),
-			Control::get_icon("Basis", "EditorIcons"),
-			Control::get_icon("Transform", "EditorIcons"),
-			Control::get_icon("Color", "EditorIcons"),
-			Control::get_icon("Path", "EditorIcons"),
-			Control::get_icon("RID", "EditorIcons"),
-			Control::get_icon("Object", "EditorIcons"),
-			Control::get_icon("Dictionary", "EditorIcons"),
-			Control::get_icon("Array", "EditorIcons"),
-			Control::get_icon("PoolByteArray", "EditorIcons"),
-			Control::get_icon("PoolIntArray", "EditorIcons"),
-			Control::get_icon("PoolRealArray", "EditorIcons"),
-			Control::get_icon("PoolStringArray", "EditorIcons"),
-			Control::get_icon("PoolVector2Array", "EditorIcons"),
-			Control::get_icon("PoolVector3Array", "EditorIcons"),
-			Control::get_icon("PoolColorArray", "EditorIcons")
-		};
 		{
 			String b = String(E->get());
 			category = search_options->create_item(root);
@@ -304,6 +305,7 @@ void VisualScriptPropertySelector::_update_search() {
 	TreeItem *selected_item = search_options->search_item_text(search_box->get_text());
 	if (!found && selected_item != nullptr) {
 		selected_item->select(0);
+		search_options->scroll_to_item(selected_item);
 		found = true;
 	}
 

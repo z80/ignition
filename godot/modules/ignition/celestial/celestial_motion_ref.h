@@ -7,7 +7,7 @@
 
 #include "se3_ref.h"
 #include "celestial_motion.h"
-#include "distance_scaler_ref.h"
+#include "scale_distance_ratio_gd.h"
 
 namespace Ign
 {
@@ -44,7 +44,8 @@ public:
     real_t max_velocity() const;
     real_t excess_velocity() const;
     real_t deflection_angle() const;
-    // Orbit orientation.
+	Vector3 acceleration() const;
+	// Orbit orientation.
     // From focus towards perigee.
     Vector3 ex() const;
     // Along velocity at perigee.
@@ -55,9 +56,10 @@ public:
 
     real_t get_gm() const;
 
-    void init( real_t gm, const Ref<Se3Ref> & se3 );
-    real_t init_gm( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const;
-    void launch_elliptic( real_t gm, const Vector3 & unit_r, const Vector3 & unit_v, real_t period_hrs, real_t eccentricity );
+    bool launch( real_t gm, const Ref<Se3Ref> & se3 );
+    real_t compute_gm_by_speed( real_t radius_km, real_t wanted_surface_orbit_velocity_kms ) const;
+	real_t compute_gm_by_period( real_t radius_km, real_t wanted_period_kms ) const;
+	void launch_elliptic( real_t gm, const Vector3 & unit_r, const Vector3 & unit_v, real_t period_hrs, real_t eccentricity );
     Ref<Se3Ref> process( real_t dt );
     void process_rf( real_t dt, Node * rf );
 
@@ -66,10 +68,11 @@ public:
     Dictionary serialize() const;
     bool deserialize( const Dictionary & data );
 
-	PoolVector3Array orbit_points( Node * orbiting_center, Node * player_viewpoint, Node * camera_node, Ref<DistanceScalerRef> scaler, int qty );
+	PoolVector3Array orbit_points( Node * orbiting_center, Node * camera_node, int qty, const Ref<ScaleDistanceRatioGd> & scale_distance_ratio, real_t base_scale );
 
 	void set_force_numerical( bool en );
 	bool get_force_numerical() const;
+
 
 	void set_debug( bool en );
 	bool get_debug() const;

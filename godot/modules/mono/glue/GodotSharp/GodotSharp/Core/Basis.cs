@@ -20,7 +20,7 @@ namespace Godot
     /// orthogonal to each other, but are not necessarily normalized (due to scaling).
     ///
     /// For more information, read this documentation article:
-    /// https://docs.godotengine.org/en/3.4/tutorials/math/matrices_and_transforms.html
+    /// https://docs.godotengine.org/en/3.5/tutorials/math/matrices_and_transforms.html
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
@@ -501,14 +501,14 @@ namespace Godot
 
         /// <summary>
         /// Introduce an additional rotation around the given <paramref name="axis"/>
-        /// by <paramref name="phi"/> (in radians). The axis must be a normalized vector.
+        /// by <paramref name="angle"/> (in radians). The axis must be a normalized vector.
         /// </summary>
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
-        /// <param name="phi">The angle to rotate, in radians.</param>
+        /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated basis matrix.</returns>
-        public Basis Rotated(Vector3 axis, real_t phi)
+        public Basis Rotated(Vector3 axis, real_t angle)
         {
-            return new Basis(axis, phi) * this;
+            return new Basis(axis, angle) * this;
         }
 
         /// <summary>
@@ -803,19 +803,19 @@ namespace Godot
 
         /// <summary>
         /// Constructs a pure rotation basis matrix, rotated around the given <paramref name="axis"/>
-        /// by <paramref name="phi"/> (in radians). The axis must be a normalized vector.
+        /// by <paramref name="angle"/> (in radians). The axis must be a normalized vector.
         /// </summary>
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
-        /// <param name="phi">The angle to rotate, in radians.</param>
-        public Basis(Vector3 axis, real_t phi)
+        /// <param name="angle">The angle to rotate, in radians.</param>
+        public Basis(Vector3 axis, real_t angle)
         {
             Vector3 axisSq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
-            real_t cosine = Mathf.Cos(phi);
+            real_t cosine = Mathf.Cos(angle);
             Row0.x = axisSq.x + cosine * (1.0f - axisSq.x);
             Row1.y = axisSq.y + cosine * (1.0f - axisSq.y);
             Row2.z = axisSq.z + cosine * (1.0f - axisSq.z);
 
-            real_t sine = Mathf.Sin(phi);
+            real_t sine = Mathf.Sin(angle);
             real_t t = 1.0f - cosine;
 
             real_t xyzt = axis.x * axis.y * t;
@@ -860,6 +860,14 @@ namespace Godot
             Row2 = new Vector3(xz, yz, zz);
         }
 
+        /// <summary>
+        /// Composes these two basis matrices by multiplying them
+        /// together. This has the effect of transforming the second basis
+        /// (the child) by the first basis (the parent).
+        /// </summary>
+        /// <param name="left">The parent basis.</param>
+        /// <param name="right">The child basis.</param>
+        /// <returns>The composed basis.</returns>
         public static Basis operator *(Basis left, Basis right)
         {
             return new Basis
@@ -870,21 +878,40 @@ namespace Godot
             );
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the basis matrices are exactly
+        /// equal. Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left basis.</param>
+        /// <param name="right">The right basis.</param>
+        /// <returns>Whether or not the basis matrices are exactly equal.</returns>
         public static bool operator ==(Basis left, Basis right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the basis matrices are not equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left basis.</param>
+        /// <param name="right">The right basis.</param>
+        /// <returns>Whether or not the basis matrices are not equal.</returns>
         public static bool operator !=(Basis left, Basis right)
         {
             return !left.Equals(right);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this basis and <paramref name="obj"/> are equal.
+        /// Returns <see langword="true"/> if the <see cref="Basis"/> is
+        /// exactly equal to the given object (<see paramref="obj"/>).
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
-        /// <param name="obj">The other object to compare.</param>
-        /// <returns>Whether or not the basis and the other object are equal.</returns>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns>Whether or not the basis matrix and the object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Basis)
@@ -896,10 +923,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this basis and <paramref name="other"/> are equal
+        /// Returns <see langword="true"/> if the basis matrices are exactly
+        /// equal. Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
-        /// <param name="other">The other basis to compare.</param>
-        /// <returns>Whether or not the bases are equal.</returns>
+        /// <param name="other">The other basis.</param>
+        /// <returns>Whether or not the basis matrices are exactly equal.</returns>
         public bool Equals(Basis other)
         {
             return Row0.Equals(other.Row0) && Row1.Equals(other.Row1) && Row2.Equals(other.Row2);

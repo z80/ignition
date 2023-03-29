@@ -36,7 +36,8 @@ func _ready():
 
 
 
-
+func _process( delta ):
+	process()
 
 
 # This thing should be called when in kinematic mode.
@@ -68,7 +69,7 @@ func _compute_relative_to_owner_recursive( n: Node, t: Transform ):
 	if n == ow:
 		return t
 	
-	var p: Node = get_parent()
+	var p: Node = n.get_parent()
 	var ret: Transform = _compute_relative_to_owner_recursive( p, t )
 	return ret
 
@@ -84,7 +85,7 @@ func _set_show_visual( en: bool ):
 			_visual = Visual.instance()
 			_visual.size = snap_size()
 			_visual.surface = allows_surface_coupling
-			var vp: Viewport = RootScene.get_overlay_viewport()
+			var vp: Viewport = RootScene.get_visual_layer_overlay()
 			vp.add_child( _visual )
 		_visual.visible = true
 	else:
@@ -93,7 +94,7 @@ func _set_show_visual( en: bool ):
 			_visual = null
 	
 	# Make overlay 3d viewport visible.
-	RootScene.set_overlay_visible( en )
+	RootScene.set_visual_overlay_visible( en )
 
 
 
@@ -104,7 +105,7 @@ func _get_show_visual():
 
 
 func world_transform():
-	var camera: RefFrameNode = PhysicsManager.camera
+	var camera: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var se3: Se3Ref = part.relative_to( camera )
 	var t_parent: Transform = se3.transform
 	var t: Transform = t_parent * relative_to_owner

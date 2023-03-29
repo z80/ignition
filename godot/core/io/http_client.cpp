@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  http_client.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  http_client.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "http_client.h"
 
@@ -77,9 +77,21 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 
 	connection = tcp_connection;
 
-	if (conn_host.is_valid_ip_address()) {
+	if (ssl && https_proxy_port != -1) {
+		proxy_client.instance();
+		server_host = https_proxy_host;
+		server_port = https_proxy_port;
+	} else if (!ssl && http_proxy_port != -1) {
+		server_host = http_proxy_host;
+		server_port = http_proxy_port;
+	} else {
+		server_host = conn_host;
+		server_port = conn_port;
+	}
+
+	if (server_host.is_valid_ip_address()) {
 		// Host contains valid IP
-		Error err = tcp_connection->connect_to_host(IP_Address(conn_host), p_port);
+		Error err = tcp_connection->connect_to_host(IP_Address(server_host), server_port);
 		if (err) {
 			status = STATUS_CANT_CONNECT;
 			return err;
@@ -88,7 +100,11 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 		status = STATUS_CONNECTING;
 	} else {
 		// Host contains hostname and needs to be resolved to IP
-		resolving = IP::get_singleton()->resolve_hostname_queue_item(conn_host);
+		resolving = IP::get_singleton()->resolve_hostname_queue_item(server_host);
+		if (resolving == IP::RESOLVER_INVALID_ID) {
+			status = STATUS_CANT_RESOLVE;
+			return ERR_CANT_RESOLVE;
+		}
 		status = STATUS_RESOLVING;
 	}
 
@@ -141,7 +157,12 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(connection.is_null(), ERR_INVALID_DATA);
 
-	String request = String(_methods[p_method]) + " " + p_url + " HTTP/1.1\r\n";
+	String uri = p_url;
+	if (!ssl && http_proxy_port != -1) {
+		uri = vformat("http://%s:%d%s", conn_host, conn_port, p_url);
+	}
+
+	String request = String(_methods[p_method]) + " " + uri + " HTTP/1.1\r\n";
 	bool add_host = true;
 	bool add_clen = p_body.size() > 0;
 	bool add_uagent = true;
@@ -214,7 +235,12 @@ Error HTTPClient::request(Method p_method, const String &p_url, const Vector<Str
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(connection.is_null(), ERR_INVALID_DATA);
 
-	String request = String(_methods[p_method]) + " " + p_url + " HTTP/1.1\r\n";
+	String uri = p_url;
+	if (!ssl && http_proxy_port != -1) {
+		uri = vformat("http://%s:%d%s", conn_host, conn_port, p_url);
+	}
+
+	String request = String(_methods[p_method]) + " " + uri + " HTTP/1.1\r\n";
 	bool add_host = true;
 	bool add_uagent = true;
 	bool add_accept = true;
@@ -301,6 +327,7 @@ void HTTPClient::close() {
 	}
 
 	connection.unref();
+	proxy_client.unref();
 	status = STATUS_DISCONNECTED;
 	head_request = false;
 	if (resolving != IP::RESOLVER_INVALID_ID) {
@@ -337,7 +364,7 @@ Error HTTPClient::poll() {
 
 					Error err = ERR_BUG; // Should be at least one entry.
 					while (ip_candidates.size() > 0) {
-						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), conn_port);
+						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), server_port);
 						if (err == OK) {
 							break;
 						}
@@ -366,7 +393,48 @@ Error HTTPClient::poll() {
 					return OK;
 				} break;
 				case StreamPeerTCP::STATUS_CONNECTED: {
-					if (ssl) {
+					if (ssl && proxy_client.is_valid()) {
+						Error err = proxy_client->poll();
+						if (err == ERR_UNCONFIGURED) {
+							proxy_client->set_connection(tcp_connection);
+							const Vector<String> headers;
+							err = proxy_client->request(METHOD_CONNECT, vformat("%s:%d", conn_host, conn_port), headers);
+							if (err != OK) {
+								status = STATUS_CANT_CONNECT;
+								return err;
+							}
+						} else if (err != OK) {
+							status = STATUS_CANT_CONNECT;
+							return err;
+						}
+						switch (proxy_client->get_status()) {
+							case STATUS_REQUESTING: {
+								return OK;
+							} break;
+							case STATUS_BODY: {
+								proxy_client->read_response_body_chunk();
+								return OK;
+							} break;
+							case STATUS_CONNECTED: {
+								if (proxy_client->get_response_code() != RESPONSE_OK) {
+									status = STATUS_CANT_CONNECT;
+									return ERR_CANT_CONNECT;
+								}
+								proxy_client.unref();
+								return OK;
+							}
+							case STATUS_DISCONNECTED:
+							case STATUS_RESOLVING:
+							case STATUS_CONNECTING: {
+								status = STATUS_CANT_CONNECT;
+								ERR_FAIL_V(ERR_BUG);
+							} break;
+							default: {
+								status = STATUS_CANT_CONNECT;
+								return ERR_CANT_CONNECT;
+							} break;
+						}
+					} else if (ssl) {
 						Ref<StreamPeerSSL> ssl;
 						if (!handshaking) {
 							// Connect the StreamPeerSSL and start handshaking
@@ -416,7 +484,7 @@ Error HTTPClient::poll() {
 					Error err = ERR_CANT_CONNECT;
 					while (ip_candidates.size() > 0) {
 						tcp_connection->disconnect_from_host();
-						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), conn_port);
+						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), server_port);
 						if (err == OK) {
 							return OK;
 						}
@@ -547,7 +615,7 @@ Error HTTPClient::poll() {
 	return OK;
 }
 
-int HTTPClient::get_response_body_length() const {
+int64_t HTTPClient::get_response_body_length() const {
 	return body_size;
 }
 
@@ -756,6 +824,9 @@ HTTPClient::HTTPClient() {
 	status = STATUS_DISCONNECTED;
 	head_request = false;
 	conn_port = -1;
+	server_port = -1;
+	http_proxy_port = -1;
+	https_proxy_port = -1;
 	body_size = -1;
 	chunked = false;
 	body_left = 0;
@@ -774,6 +845,34 @@ HTTPClient::~HTTPClient() {
 }
 
 #endif // #ifndef JAVASCRIPT_ENABLED
+
+void HTTPClient::set_http_proxy(const String &p_host, int p_port) {
+#ifdef JAVASCRIPT_ENABLED
+	WARN_PRINT("HTTP proxy feature is not available");
+#else
+	if (p_host.empty() || p_port == -1) {
+		http_proxy_host = "";
+		http_proxy_port = -1;
+	} else {
+		http_proxy_host = p_host;
+		http_proxy_port = p_port;
+	}
+#endif
+}
+
+void HTTPClient::set_https_proxy(const String &p_host, int p_port) {
+#ifdef JAVASCRIPT_ENABLED
+	WARN_PRINT("HTTPS proxy feature is not available");
+#else
+	if (p_host.empty() || p_port == -1) {
+		https_proxy_host = "";
+		https_proxy_port = -1;
+	} else {
+		https_proxy_host = p_host;
+		https_proxy_port = p_port;
+	}
+#endif
+}
 
 String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 	String query = "";
@@ -859,6 +958,9 @@ void HTTPClient::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_status"), &HTTPClient::get_status);
 	ClassDB::bind_method(D_METHOD("poll"), &HTTPClient::poll);
+
+	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPClient::set_http_proxy);
+	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPClient::set_https_proxy);
 
 	ClassDB::bind_method(D_METHOD("query_string_from_dict", "fields"), &HTTPClient::query_string_from_dict);
 

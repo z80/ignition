@@ -30,7 +30,7 @@ func _on_Timer_timeout():
 func _update_celestial_motion():
 #	return
 	
-	var ctrl: PhysicsBodyBase = PhysicsManager.camera.get_parent() as PhysicsBodyBase
+	var ctrl: PhysicsBodyBase = RootScene.ref_frame_root.player_camera.get_parent() as PhysicsBodyBase
 	if ctrl == null:
 		_do_show = false
 		return
@@ -42,7 +42,7 @@ func _update_celestial_motion():
 		return
 	var se3: Se3Ref = ctrl.relative_to( cb )
 	_cm.allow_orbiting = true
-	_cm.init( cb.gm, se3 )
+	var _ok: bool = _cm.launch( cb.own_gm, se3 )
 	velocity = se3.v.length()
 	distance = se3.r.length()
 	_target_name = cb.name

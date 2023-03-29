@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gd_mono_property.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gd_mono_property.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gd_mono_property.h"
 
@@ -64,6 +64,8 @@ GDMonoProperty::GDMonoProperty(MonoProperty *p_mono_property, GDMonoClass *p_own
 		MonoClass *param_type_class = mono_class_from_mono_type(param_raw_type);
 		type.type_class = GDMono::get_singleton()->get_class(param_type_class);
 	}
+
+	param_buffer_size = GDMonoMarshal::variant_get_managed_unboxed_size(type);
 
 	attrs_fetched = false;
 	attributes = NULL;
@@ -141,25 +143,20 @@ bool GDMonoProperty::has_setter() {
 	return mono_property_get_set_method(mono_property) != NULL;
 }
 
-void GDMonoProperty::set_value(MonoObject *p_object, MonoObject *p_value, MonoException **r_exc) {
-	MonoMethod *prop_method = mono_property_get_set_method(mono_property);
-	MonoArray *params = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), 1);
-	mono_array_setref(params, 0, p_value);
-	MonoException *exc = NULL;
-	GDMonoUtils::runtime_invoke_array(prop_method, p_object, params, &exc);
-	if (exc) {
-		if (r_exc) {
-			*r_exc = exc;
-		} else {
-			GDMonoUtils::set_pending_exception(exc);
-		}
-	}
-}
+void GDMonoProperty::set_value_from_variant(MonoObject *p_object, const Variant &p_value, MonoException **r_exc) {
+	uint8_t *buffer = (uint8_t *)alloca(param_buffer_size);
+	unsigned int offset = 0;
 
-void GDMonoProperty::set_value(MonoObject *p_object, void **p_params, MonoException **r_exc) {
-	MonoException *exc = NULL;
-	GDMonoUtils::property_set_value(mono_property, p_object, p_params, &exc);
+	void *params[1] = {
+		GDMonoMarshal::variant_to_managed_unboxed(p_value, type, buffer, offset)
+	};
 
+#ifdef DEBUG_ENABLED
+	CRASH_COND(offset != param_buffer_size);
+#endif
+
+	MonoException *exc = NULL;
+	GDMonoUtils::property_set_value(mono_property, p_object, params, &exc);
 	if (exc) {
 		if (r_exc) {
 			*r_exc = exc;

@@ -1,38 +1,39 @@
-/*************************************************************************/
-/*  rich_text_label.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  rich_text_label.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "rich_text_label.h"
 
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "label.h"
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
@@ -256,7 +257,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 			line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;                                                                                     \
 			if (align != ALIGN_FILL) {                                                                                                                                      \
 				if (line < l.offset_caches.size()) {                                                                                                                        \
-					wofs = l.offset_caches[line];                                                                                                                           \
+					wofs = margin + l.offset_caches[line];                                                                                                                  \
 				}                                                                                                                                                           \
 			}                                                                                                                                                               \
 		}                                                                                                                                                                   \
@@ -271,7 +272,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 #define ENSURE_WIDTH(m_width)                                                                                                                      \
 	if (p_mode == PROCESS_CACHE) {                                                                                                                 \
-		l.maximum_width = MAX(l.maximum_width, MIN(p_width, Math::ceil(wofs + m_width)));                                                          \
+		non_wrapped_w += m_width;                                                                                                                  \
+		l.maximum_width = MAX(l.maximum_width, Math::ceil(wofs + non_wrapped_w));                                                                  \
 		l.minimum_width = MAX(l.minimum_width, Math::ceil(m_width));                                                                               \
 	}                                                                                                                                              \
 	if (wofs - backtrack + m_width > p_width) {                                                                                                    \
@@ -325,6 +327,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	bool line_is_blank = true;
 	bool line_wrapped = false;
 	int fh = 0;
+	int non_wrapped_w = 0;
 
 	while (it) {
 		switch (it->type) {
@@ -467,6 +470,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					}
 
 					{
+						float line_length = 0.0f;
 						float ofs = 0.0f - backtrack;
 
 						for (int i = 0; i < end; i++) {
@@ -585,30 +589,35 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									visible = false;
 								}
 
+								const float current_char_width = font->get_char_size(fx_char, c[i + 1]).x;
 								if (visible) {
 									if (selected) {
-										cw = font->get_char_size(fx_char, c[i + 1]).x;
+										cw = current_char_width;
 										draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, cw, lh), selection_bg);
 									}
+									line_length += current_char_width;
 
-									if (p_font_color_shadow.a > 0) {
+									const Color char_color = selected && override_selected_font_color ? selection_fg : fx_color;
+									const Color shadow_color = p_font_color_shadow * Color(1, 1, 1, char_color.a);
+
+									if (shadow_color.a > 0) {
 										const Point2 shadow_base_pos = p_ofs + Point2(align_ofs + pofs, y + lh - line_descent);
-										font->draw_char(ci, shadow_base_pos + shadow_ofs + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
+										font->draw_char(ci, shadow_base_pos + shadow_ofs + fx_offset, fx_char, c[i + 1], shadow_color);
 
 										if (p_shadow_as_outline) {
-											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, shadow_ofs.y) + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
-											font->draw_char(ci, shadow_base_pos + Vector2(shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
-											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
+											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
+											font->draw_char(ci, shadow_base_pos + Vector2(shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
+											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
 										}
 									}
 
 									if (selected) {
-										drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), fx_char, c[i + 1], override_selected_font_color ? selection_fg : fx_color);
+										drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), fx_char, c[i + 1], char_color);
 									} else {
-										cw = drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent) + fx_offset, fx_char, c[i + 1], fx_color);
+										cw = drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent) + fx_offset, fx_char, c[i + 1], char_color);
 									}
 								} else if (previously_visible && c[i] != '\t') {
-									backtrack += font->get_char_size(fx_char, c[i + 1]).x;
+									backtrack += current_char_width;
 								}
 
 								p_char_count++;
@@ -632,7 +641,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 							const int line_y = y + lh - (line_descent - 2);
 							const Point2 from = p_ofs + Point2(align_ofs + wofs, line_y);
-							const Point2 to = from + Point2(w + (is_at_line_wrap ? 0 : align_spacing), 0);
+							const Point2 to = from + Point2(line_length + (is_at_line_wrap ? 0 : align_spacing), 0);
 							VS::get_singleton()->canvas_item_add_line(ci, from, to, uc, line_width);
 						}
 						if (strikethrough) {
@@ -641,7 +650,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 							const int line_y = y + lh - (line_ascent + line_descent) / 2;
 							const Point2 from = p_ofs + Point2(align_ofs + wofs, line_y);
-							const Point2 to = from + Point2(w + (is_at_line_wrap ? 0 : align_spacing), 0);
+							const Point2 to = from + Point2(line_length + (is_at_line_wrap ? 0 : align_spacing), 0);
 							VS::get_singleton()->canvas_item_add_line(ci, from, to, uc, line_width);
 						}
 					}
@@ -679,7 +688,20 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				}
 
 				if (p_mode == PROCESS_DRAW && visible) {
-					img->image->draw_rect(ci, Rect2(p_ofs + Point2(align_ofs + wofs, y + lh - font->get_descent() - img->size.height), img->size));
+					switch (img->align) {
+						case INLINE_ALIGN_TOP: {
+							img->image->draw_rect(ci, Rect2(p_ofs + Point2(align_ofs + wofs, y + lh - (font->get_descent() + font->get_ascent())), img->size));
+						} break;
+						case INLINE_ALIGN_CENTER: {
+							img->image->draw_rect(ci, Rect2(p_ofs + Point2(align_ofs + wofs, y + lh - (font->get_descent() + font->get_ascent() + img->size.height) / 2), img->size));
+						} break;
+						case INLINE_ALIGN_BASELINE: {
+							img->image->draw_rect(ci, Rect2(p_ofs + Point2(align_ofs + wofs, y + lh - (font->get_descent() + img->size.height)), img->size));
+						} break;
+						case INLINE_ALIGN_BOTTOM: {
+							img->image->draw_rect(ci, Rect2(p_ofs + Point2(align_ofs + wofs, y + lh - img->size.height), img->size));
+						} break;
+					}
 				}
 				p_char_count++;
 
@@ -692,7 +714,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 				if (p_mode != PROCESS_CACHE) {
 					lh = line < l.height_caches.size() ? l.height_caches[line] : 1;
-					line_is_blank = true;
 				}
 
 			} break;
@@ -727,7 +748,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						int ly = 0;
 
 						for (int i = 0; i < frame->lines.size(); i++) {
-							_process_line(frame, Point2(), ly, available_width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2);
+							int w = _find_margin(frame->lines[i].from, p_base_font) + 1;
+							_process_line(frame, Point2(), ly, w, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2);
 							table->columns.write[column].min_width = MAX(table->columns[column].min_width, frame->lines[i].minimum_width);
 							table->columns.write[column].max_width = MAX(table->columns[column].max_width, frame->lines[i].maximum_width);
 						}
@@ -753,7 +775,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					//assign actual widths
 					for (int i = 0; i < table->columns.size(); i++) {
 						table->columns.write[i].width = table->columns[i].min_width;
-						if (table->columns[i].expand && total_ratio > 0) {
+						if (table->columns[i].expand && total_ratio > 0 && remaining_width > 0) {
 							table->columns.write[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
 						}
 						table->total_width += table->columns[i].width + hseparation;
@@ -978,6 +1000,12 @@ void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, float p_delta_
 	}
 }
 
+void RichTextLabel::_validate_property(PropertyInfo &p_property) const {
+	if (use_bbcode && p_property.name == "text") {
+		p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+	}
+}
+
 void RichTextLabel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
@@ -988,20 +1016,17 @@ void RichTextLabel::_notification(int p_what) {
 				update();
 			}
 		} break;
-		case NOTIFICATION_RESIZED: {
+		case NOTIFICATION_RESIZED:
+		case NOTIFICATION_THEME_CHANGED: {
 			main->first_invalid_line = 0; //invalidate ALL
 			update();
-
 		} break;
-		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			if (bbcode != "") {
 				set_bbcode(bbcode);
 			}
-
 			main->first_invalid_line = 0; //invalidate ALL
 			update();
-
 		} break;
 		case NOTIFICATION_DRAW: {
 			_validate_line_caches(main);
@@ -1058,7 +1083,15 @@ void RichTextLabel::_notification(int p_what) {
 				_update_fx(main, dt);
 				update();
 			}
-		}
+		} break;
+		case NOTIFICATION_FOCUS_EXIT: {
+			if (deselect_on_focus_loss_enabled) {
+				deselect();
+			}
+		} break;
+		case Control::NOTIFICATION_DRAG_END: {
+			selection.drag_attempt = false;
+		} break;
 	}
 }
 
@@ -1141,6 +1174,9 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 				Item *item = nullptr;
 
 				bool outside;
+
+				selection.drag_attempt = false;
+
 				_find_click(main, b->get_position(), &item, &line, &outside);
 
 				if (item) {
@@ -1150,13 +1186,16 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 
 						// Erase previous selection.
 						if (selection.active) {
-							selection.from = nullptr;
-							selection.from_char = '\0';
-							selection.to = nullptr;
-							selection.to_char = '\0';
-							selection.active = false;
-
-							update();
+							if (_is_click_inside_selection()) {
+								selection.drag_attempt = true;
+								selection.click = nullptr;
+							} else {
+								selection.from = nullptr;
+								selection.from_char = '\0';
+								selection.to = nullptr;
+								selection.to_char = '\0';
+								deselect();
+							}
 						}
 					}
 				}
@@ -1165,6 +1204,8 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 				int line = 0;
 				Item *item = nullptr;
 				bool outside;
+
+				selection.drag_attempt = false;
 
 				_find_click(main, b->get_position(), &item, &line, &outside);
 
@@ -1182,13 +1223,35 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 						selection.from_char = beg;
 						selection.to_char = end - 1;
 						selection.active = true;
+						if (OS::get_singleton()->has_feature("primary_clipboard")) {
+							OS::get_singleton()->set_clipboard_primary(get_selected_text());
+						}
 						update();
 					}
 				}
 			} else if (!b->is_pressed()) {
+				if (selection.drag_attempt) {
+					selection.drag_attempt = false;
+					int line = 0;
+					Item *item = nullptr;
+					bool outside;
+					_find_click(main, b->get_position(), &item, &line, &outside);
+					selection.click = item;
+					selection.click_char = line;
+					if (_is_click_inside_selection()) {
+						selection.from = nullptr;
+						selection.from_char = '\0';
+						selection.to = nullptr;
+						selection.to_char = '\0';
+						deselect();
+					}
+				}
+				if (selection.enabled && OS::get_singleton()->has_feature("primary_clipboard")) {
+					OS::get_singleton()->set_clipboard_primary(get_selected_text());
+				}
 				selection.click = nullptr;
 
-				if (!b->is_doubleclick() && !scroll_updated) {
+				if (!b->is_doubleclick() && !scroll_updated && !selection.active) {
 					int line = 0;
 					Item *item = nullptr;
 
@@ -1316,7 +1379,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 				if (selection.from_char > selection.to_char) {
 					swap = true;
 				} else if (selection.from_char == selection.to_char) {
-					selection.active = false;
+					deselect();
 					return;
 				}
 			}
@@ -1654,23 +1717,28 @@ void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_sub
 	int size = p_item->subitems.size();
 	if (size == 0) {
 		p_item->parent->subitems.erase(p_item);
+
+		// If a newline was erased, all lines AFTER the newline need to be decremented.
 		if (p_item->type == ITEM_NEWLINE) {
 			current_frame->lines.remove(p_line);
-			for (int i = p_subitem_line; i < current->subitems.size(); i++) {
-				if (current->subitems[i]->line > 0) {
+			for (int i = 0; i < current->subitems.size(); i++) {
+				if (current->subitems[i]->line > p_subitem_line) {
 					current->subitems[i]->line--;
 				}
 			}
 		}
 	} else {
+		// First, remove all child items for the provided item.
 		for (int i = 0; i < size; i++) {
 			_remove_item(p_item->subitems.front()->get(), p_line, p_subitem_line);
 		}
+		// Then remove the provided item itself.
+		p_item->parent->subitems.erase(p_item);
 	}
 	memdelete(p_item);
 }
 
-void RichTextLabel::add_image(const Ref<Texture> &p_image, const int p_width, const int p_height) {
+void RichTextLabel::add_image(const Ref<Texture> &p_image, const int p_width, const int p_height, RichTextLabel::InlineAlign p_align) {
 	if (current->type == ITEM_TABLE) {
 		return;
 	}
@@ -1681,6 +1749,7 @@ void RichTextLabel::add_image(const Ref<Texture> &p_image, const int p_width, co
 	ItemImage *item = memnew(ItemImage);
 
 	item->image = p_image;
+	item->align = p_align;
 
 	if (p_width > 0) {
 		// custom width
@@ -1724,21 +1793,23 @@ bool RichTextLabel::remove_line(const int p_line) {
 		return false;
 	}
 
-	int i = 0;
-	while (i < current->subitems.size() && current->subitems[i]->line < p_line) {
-		i++;
-	}
-
-	bool was_newline = false;
-	while (i < current->subitems.size()) {
-		was_newline = current->subitems[i]->type == ITEM_NEWLINE;
-		_remove_item(current->subitems[i], current->subitems[i]->line, p_line);
-		if (was_newline) {
-			break;
+	// Remove all subitems with the same line as that provided.
+	Vector<int> subitem_indices_to_remove;
+	for (int i = 0; i < current->subitems.size(); i++) {
+		if (current->subitems[i]->line == p_line) {
+			subitem_indices_to_remove.push_back(i);
 		}
 	}
 
-	if (!was_newline) {
+	bool had_newline = false;
+	// Reverse for loop to remove items from the end first.
+	for (int i = subitem_indices_to_remove.size() - 1; i >= 0; i--) {
+		int subitem_idx = subitem_indices_to_remove[i];
+		had_newline = had_newline || current->subitems[subitem_idx]->type == ITEM_NEWLINE;
+		_remove_item(current->subitems[subitem_idx], current->subitems[subitem_idx]->line, p_line);
+	}
+
+	if (!had_newline) {
 		current_frame->lines.remove(p_line);
 		if (current_frame->lines.size() == 0) {
 			current_frame->lines.resize(1);
@@ -1749,7 +1820,8 @@ bool RichTextLabel::remove_line(const int p_line) {
 		main->lines.write[0].from = main;
 	}
 
-	main->first_invalid_line = 0;
+	main->first_invalid_line = 0; // p_line ???
+	update();
 
 	return true;
 }
@@ -1956,9 +2028,8 @@ void RichTextLabel::clear() {
 	main->lines.clear();
 	main->lines.resize(1);
 	main->first_invalid_line = 0;
-	update();
 	selection.click = nullptr;
-	selection.active = false;
+	deselect();
 	current_idx = 1;
 	if (scroll_follow) {
 		scroll_following = true;
@@ -2165,6 +2236,12 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag == "lb") {
+			add_text("[");
+			pos = brk_end + 1;
+		} else if (tag == "rb") {
+			add_text("]");
+			pos = brk_end + 1;
 		} else if (tag == "center") {
 			push_align(ALIGN_CENTER);
 			pos = brk_end + 1;
@@ -2480,13 +2557,35 @@ void RichTextLabel::set_selection_enabled(bool p_enabled) {
 	selection.enabled = p_enabled;
 	if (!p_enabled) {
 		if (selection.active) {
-			selection.active = false;
-			update();
+			deselect();
 		}
 		set_focus_mode(FOCUS_NONE);
 	} else {
 		set_focus_mode(FOCUS_ALL);
 	}
+}
+
+void RichTextLabel::set_deselect_on_focus_loss_enabled(const bool p_enabled) {
+	deselect_on_focus_loss_enabled = p_enabled;
+	if (p_enabled && selection.active && !has_focus()) {
+		deselect();
+	}
+}
+
+Variant RichTextLabel::get_drag_data(const Point2 &p_point) {
+	if (selection.drag_attempt && selection.enabled) {
+		String t = get_selected_text();
+		Label *l = memnew(Label);
+		l->set_text(t);
+		set_drag_preview(l);
+		return t;
+	}
+
+	return Variant();
+}
+
+bool RichTextLabel::_is_click_inside_selection() const {
+	return (selection.click->index >= selection.from->index && selection.click->index <= selection.to->index && (selection.click->index > selection.from->index || selection.click_char >= selection.from_char) && (selection.click->index < selection.to->index || selection.click_char <= selection.to_char));
 }
 
 bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p_search_previous) {
@@ -2588,6 +2687,11 @@ String RichTextLabel::get_selected_text() {
 	return text;
 }
 
+void RichTextLabel::deselect() {
+	selection.active = false;
+	update();
+}
+
 void RichTextLabel::selection_copy() {
 	String text = get_selected_text();
 
@@ -2598,6 +2702,10 @@ void RichTextLabel::selection_copy() {
 
 bool RichTextLabel::is_selection_enabled() const {
 	return selection.enabled;
+}
+
+bool RichTextLabel::is_deselect_on_focus_loss_enabled() const {
+	return deselect_on_focus_loss_enabled;
 }
 
 void RichTextLabel::set_bbcode(const String &p_bbcode) {
@@ -2620,6 +2728,7 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 	}
 	use_bbcode = p_enable;
 	set_bbcode(bbcode);
+	property_list_changed_notify();
 }
 
 bool RichTextLabel::is_using_bbcode() const {
@@ -2699,6 +2808,7 @@ void RichTextLabel::install_effect(const Variant effect) {
 
 int RichTextLabel::get_content_height() const {
 	int total_height = 0;
+	const_cast<RichTextLabel *>(this)->_validate_line_caches(main);
 	if (main->lines.size()) {
 		total_height = main->lines[main->lines.size() - 1].height_accum_cache + get_stylebox("normal")->get_minimum_size().height;
 	}
@@ -2711,7 +2821,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &RichTextLabel::get_text);
 	ClassDB::bind_method(D_METHOD("add_text", "text"), &RichTextLabel::add_text);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &RichTextLabel::set_text);
-	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "align"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(INLINE_ALIGN_BASELINE));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
 	ClassDB::bind_method(D_METHOD("remove_line", "line"), &RichTextLabel::remove_line);
 	ClassDB::bind_method(D_METHOD("push_font", "font"), &RichTextLabel::push_font);
@@ -2733,6 +2843,8 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pop"), &RichTextLabel::pop);
 
 	ClassDB::bind_method(D_METHOD("clear"), &RichTextLabel::clear);
+	ClassDB::bind_method(D_METHOD("get_selected_text"), &RichTextLabel::get_selected_text);
+	ClassDB::bind_method(D_METHOD("deselect"), &RichTextLabel::deselect);
 
 	ClassDB::bind_method(D_METHOD("set_meta_underline", "enable"), &RichTextLabel::set_meta_underline);
 	ClassDB::bind_method(D_METHOD("is_meta_underlined"), &RichTextLabel::is_meta_underlined);
@@ -2758,6 +2870,9 @@ void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_selection_enabled", "enabled"), &RichTextLabel::set_selection_enabled);
 	ClassDB::bind_method(D_METHOD("is_selection_enabled"), &RichTextLabel::is_selection_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_deselect_on_focus_loss_enabled", "enable"), &RichTextLabel::set_deselect_on_focus_loss_enabled);
+	ClassDB::bind_method(D_METHOD("is_deselect_on_focus_loss_enabled"), &RichTextLabel::is_deselect_on_focus_loss_enabled);
 
 	ClassDB::bind_method(D_METHOD("parse_bbcode", "bbcode"), &RichTextLabel::parse_bbcode);
 	ClassDB::bind_method(D_METHOD("append_bbcode", "bbcode"), &RichTextLabel::append_bbcode);
@@ -2806,7 +2921,13 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selection_enabled"), "set_selection_enabled", "is_selection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_RESOURCE_TYPE, "17/17:RichTextEffect", (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE), "RichTextEffect"), "set_effects", "get_effects");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
+
+	// See EditorPropertyArray::setup() for this esoteric hint string syntax for typed arrays.
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_NONE,
+						 vformat("%d/%d:RichTextEffect", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE),
+						 (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)),
+			"set_effects", "get_effects");
 
 	ADD_SIGNAL(MethodInfo("meta_clicked", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 	ADD_SIGNAL(MethodInfo("meta_hover_started", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
@@ -2816,6 +2937,11 @@ void RichTextLabel::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
 	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
 	BIND_ENUM_CONSTANT(ALIGN_FILL);
+
+	BIND_ENUM_CONSTANT(INLINE_ALIGN_TOP);
+	BIND_ENUM_CONSTANT(INLINE_ALIGN_CENTER);
+	BIND_ENUM_CONSTANT(INLINE_ALIGN_BASELINE);
+	BIND_ENUM_CONSTANT(INLINE_ALIGN_BOTTOM);
 
 	BIND_ENUM_CONSTANT(LIST_NUMBERS);
 	BIND_ENUM_CONSTANT(LIST_LETTERS);
@@ -2880,7 +3006,6 @@ Size2 RichTextLabel::get_minimum_size() const {
 	}
 
 	if (fixed_width != -1 || fit_content_height) {
-		const_cast<RichTextLabel *>(this)->_validate_line_caches(main);
 		size.y = get_content_height();
 	}
 
@@ -2998,6 +3123,8 @@ RichTextLabel::RichTextLabel() {
 	selection.click = nullptr;
 	selection.active = false;
 	selection.enabled = false;
+	selection.drag_attempt = false;
+	deselect_on_focus_loss_enabled = true;
 
 	visible_characters = -1;
 	percent_visible = 1;

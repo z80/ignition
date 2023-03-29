@@ -1,0 +1,67 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "Node",
+"class": "ExecPool",
+"language": "GDScript",
+"path": "res://addons/exec_pool/exec_pool.gd"
+}, {
+"base": "Resource",
+"class": "ExecPoolSettings",
+"language": "GDScript",
+"path": "res://addons/exec_pool/exec_pool_settings.gd"
+}, {
+"base": "Node",
+"class": "FakeThreadPool",
+"language": "GDScript",
+"path": "res://addons/thread_pool/fake_thread_pool.gd"
+}, {
+"base": "Node",
+"class": "FutureThreadPool",
+"language": "GDScript",
+"path": "res://addons/thread_pool/future_thread_pool.gd"
+}, {
+"base": "ImmediateGeometry",
+"class": "NodeDrawer",
+"language": "GDScript",
+"path": "res://node_drawer/node_drawer.gd"
+}, {
+"base": "Node",
+"class": "ThreadPool",
+"language": "GDScript",
+"path": "res://addons/thread_pool/thread_pool.gd"
+} ]
+_global_script_class_icons={
+"ExecPool": "",
+"ExecPoolSettings": "",
+"FakeThreadPool": "",
+"FutureThreadPool": "",
+"NodeDrawer": "",
+"ThreadPool": ""
+}
+
+[application]
+
+config/name="test_mcs"
+run/main_scene="res://node_populator/test_mcs_dual.tscn"
+config/icon="res://icon.png"
+
+[autoload]
+
+WorkersPool="*res://addons/exec_pool/exec_pool.tscn"
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+environment/default_environment="res://default_env.tres"

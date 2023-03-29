@@ -1,0 +1,32 @@
+[gd_resource type="ShaderMaterial" load_steps=6 format=2]
+
+[ext_resource path="res://water_material_triplanar/water_shader.shader" type="Shader" id=1]
+
+[sub_resource type="OpenSimplexNoise" id=1]
+period = 128.0
+
+[sub_resource type="NoiseTexture" id=2]
+seamless = true
+bump_strength = 8.8
+noise = SubResource( 1 )
+
+[sub_resource type="OpenSimplexNoise" id=3]
+seed = 1
+period = 107.7
+
+[sub_resource type="NoiseTexture" id=4]
+seamless = true
+bump_strength = 6.7
+noise = SubResource( 3 )
+
+[resource]
+shader = ExtResource( 1 )
+shader_param/albedo_norm = Color( 0.352941, 0.360784, 0.454902, 1 )
+shader_param/albedo_tang = Color( 1, 1, 1, 1 )
+shader_param/metallic = 0.323
+shader_param/roughness = 0.187
+shader_param/tex_scale = 3.0
+shader_param/wave_velocity_a = Vector2( 0.2, 0 )
+shader_param/wave_velocity_b = Vector2( 0.05, 0.1 )
+shader_param/tex_norm_a = SubResource( 2 )
+shader_param/tex_norm_b = SubResource( 4 )

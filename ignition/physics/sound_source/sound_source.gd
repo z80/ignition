@@ -35,7 +35,7 @@ func play( main_sound_path: String, start_sound_path: String, stop_sound_path: S
 
 
 
-func stop( sound_path: String, immediately: bool = false ):
+func stop( sound_path: String, _immediately: bool = false ):
 	var stream: AudioStream = _get_sound_resource( sound_path )
 	for p in _sounds_played:
 		var data: Array = _sounds_played[p]
@@ -50,7 +50,7 @@ func stop( sound_path: String, immediately: bool = false ):
 			else:
 				p.stop()
 				_sources.push_back( p )
-				_sounds_played.erase( p )
+				var _ok: bool = _sounds_played.erase( p )
 
 
 
@@ -79,13 +79,7 @@ func _process(delta):
 
 
 func _get_listener_node():
-	var v: Viewport = get_viewport()
-	if v == null:
-		return null
-	var c: Camera = v.get_camera()
-	if c == null:
-		return null
-	var p: RefFrameNode = c.owner
+	var p: RefFrameNode = RootScene.ref_frame_root.player_camera
 	return p
 
 
@@ -120,7 +114,7 @@ func _get_stream_player():
 		p.name = name
 		p.bus  = "Sounds"
 		add_child( p )
-		p.connect( "finished", self, "_on_playback_finished", [p] )
+		var _err_code: int = p.connect( "finished", self, "_on_playback_finished", [p] )
 		return p
 
 
@@ -165,7 +159,7 @@ func _on_playback_finished( p: AudioStreamPlayer3D ):
 		
 		else:
 			_sources.push_back( p )
-			_sounds_played.erase( p )
+			var _ok: bool = _sounds_played.erase( p )
 		
 	elif current == start:
 		p.stream = main
@@ -174,6 +168,6 @@ func _on_playback_finished( p: AudioStreamPlayer3D ):
 	else:
 		if current == stop:
 			_sources.push_back( p )
-			_sounds_played.erase( p )
+			var _ok: bool = _sounds_played.erase( p )
 
 

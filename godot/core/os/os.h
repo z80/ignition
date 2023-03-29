@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  os.h                                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  os.h                                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef OS_H
 #define OS_H
@@ -50,9 +50,11 @@ class OS {
 	bool _keep_screen_on;
 	bool low_processor_usage_mode;
 	int low_processor_usage_mode_sleep_usec;
+	bool _update_vital_only;
 	bool _verbose_stdout;
 	bool _debug_stdout;
 	String _local_clipboard;
+	String _primary_clipboard;
 	uint64_t _msec_splash;
 	bool _no_window;
 	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
@@ -74,6 +76,8 @@ class OS {
 	List<String> restart_commandline;
 
 protected:
+	bool _update_pending;
+
 	void _set_logger(CompositeLogger *p_logger);
 
 public:
@@ -176,6 +180,9 @@ public:
 
 	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
+	virtual bool has_clipboard() const;
+	virtual void set_clipboard_primary(const String &p_text);
+	virtual String get_clipboard_primary() const;
 
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0) = 0;
 	virtual VideoMode get_video_mode(int p_screen = 0) const = 0;
@@ -191,6 +198,9 @@ public:
 	virtual const char *get_video_driver_name(int p_driver) const;
 	virtual int get_current_video_driver() const = 0;
 
+	virtual bool is_offscreen_gl_available() const;
+	virtual void set_offscreen_gl_current(bool p_current);
+
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
@@ -203,6 +213,9 @@ public:
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
 
+	// Returned by get_screen_refresh_rate if the method fails.
+	const float SCREEN_REFRESH_RATE_FALLBACK = -1.0;
+
 	virtual int get_screen_count() const { return 1; }
 	virtual int get_current_screen() const { return 0; }
 	virtual void set_current_screen(int p_screen) {}
@@ -211,6 +224,7 @@ public:
 	virtual int get_screen_dpi(int p_screen = -1) const { return 72; }
 	virtual float get_screen_scale(int p_screen = -1) const { return 1.0; }
 	virtual float get_screen_max_scale() const { return 1.0; };
+	virtual float get_screen_refresh_rate(int p_screen = -1) const { return SCREEN_REFRESH_RATE_FALLBACK; };
 	virtual Point2 get_window_position() const { return Vector2(); }
 	virtual void set_window_position(const Point2 &p_position) {}
 	virtual Size2 get_max_window_size() const { return Size2(); };
@@ -231,8 +245,6 @@ public:
 	virtual void set_window_always_on_top(bool p_enabled) {}
 	virtual bool is_window_always_on_top() const { return false; }
 	virtual bool is_window_focused() const { return true; }
-	virtual void set_console_visible(bool p_enabled) {}
-	virtual bool is_console_visible() const { return false; }
 	virtual void request_attention() {}
 	virtual void center_window();
 
@@ -263,6 +275,7 @@ public:
 		Size2 window_size = get_window_size();
 		return Rect2(0, 0, window_size.width, window_size.height);
 	}
+	virtual Array get_display_cutouts() const { return Array(); }
 
 	virtual void set_borderless_window(bool p_borderless) {}
 	virtual bool get_borderless_window() { return false; }
@@ -285,11 +298,33 @@ public:
 	virtual bool is_in_low_processor_usage_mode() const;
 	virtual void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
+	virtual void set_update_vital_only(bool p_enabled);
+	virtual void set_update_pending(bool p_pending) { _update_pending = p_pending; }
+
+	// Convenience easy switch for turning this off outside tools builds, without littering calling code
+	// with #ifdefs. It will also hopefully be compiled out in release.
+#ifdef TOOLS_ENABLED
+	// This function is used to throttle back updates of animations and particle systems when using UPDATE_VITAL_ONLY mode.
+
+	// CASE 1) We are not in UPDATE_VITAL_ONLY mode - always return true and update.
+	// CASE 2) We are in UPDATE_VITAL_ONLY mode -
+
+	// In most cases this will return false and prevent animations etc updating.
+	// The exception is that we can also choose to receive a true
+	// each time a frame is redrawn as a result of moving the mouse, clicking etc.
+	// This enables us to keep e.g. particle systems processing, but ONLY when other
+	// events have caused a redraw.
+	virtual bool is_update_pending(bool p_include_redraws = false) const { return !_update_vital_only || (_update_pending && p_include_redraws); }
+#else
+	// Always update when outside the editor, UPDATE_VITAL_ONLY has no effect outside the editor.
+	virtual bool is_update_pending(bool p_include_redraws = false) const { return true; }
+#endif
 
 	virtual String get_executable_path() const;
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr) = 0;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
+	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
 	virtual void vibrate_handheld(int p_duration_ms = 500);
 
 	virtual Error shell_open(String p_uri);
@@ -362,6 +397,7 @@ public:
 	virtual uint64_t get_unix_time() const;
 	virtual uint64_t get_system_time_secs() const;
 	virtual uint64_t get_system_time_msecs() const;
+	virtual double get_subsecond_unix_time() const; // For use in Time::get_unix_time().
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
 	virtual void add_frame_delay(bool p_can_draw);
@@ -408,6 +444,7 @@ public:
 
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
 	virtual int get_virtual_keyboard_height() const;
+	virtual uint32_t keyboard_get_scancode_from_physical(uint32_t p_scancode) const;
 
 	virtual void set_cursor_shape(CursorShape p_shape);
 	virtual CursorShape get_cursor_shape() const;
@@ -428,6 +465,8 @@ public:
 
 	virtual String get_locale() const;
 	String get_locale_language() const;
+
+	virtual uint64_t get_embedded_pck_offset() const;
 
 	String get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator = false) const;
 	virtual String get_godot_dir_name() const;
@@ -493,6 +532,8 @@ public:
 	virtual bool is_custom_exit_code();
 
 	virtual int get_processor_count() const;
+	virtual String get_processor_name() const;
+	virtual int get_default_thread_pool_size() const { return get_processor_count(); }
 
 	virtual String get_unique_id() const;
 
@@ -580,4 +621,4 @@ public:
 
 VARIANT_ENUM_CAST(OS::PowerState);
 
-#endif
+#endif // OS_H

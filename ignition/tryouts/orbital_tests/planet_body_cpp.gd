@@ -26,16 +26,16 @@ func init():
 	initialized = true
 	
 	motion = CelestialMotionRef.new()
-	init_gm( r, v )
+	init_gm_speed( r, v )
 	init_orbit()
 	var mesh = get_node( "Sphere" )
 	mesh.scale = Vector3( r, r ,r )
 	
 
-func init_gm( r: float, v: float ):
+func init_gm_speed( r: float, v: float ):
 	r = r*0.001
 	v = v*0.001
-	gm = motion.init_gm( r, v )
+	gm = motion.init_gm_speed( r, v )
 
 func init_orbit():
 	var p = get_node( parent )
@@ -44,7 +44,7 @@ func init_orbit():
 		return
 	
 	p.init()
-	var parent_gm: float = p.gm
+	var parent_gm: float = p.own_gm
 	T = T / 3600.0
 	motion.launch_elliptic( parent_gm, unit_r, unit_v, T, ecc )
 	orbiting = true

@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="CapsuleMesh" id=3]
+
+[node name="Root" type="Spatial"]
+
+[node name="Camera" type="Camera" parent="."]
+
+[node name="SunLight" type="DirectionalLight" parent="."]
+
+[node name="MeshInstance" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.698665, 0.715449, 0, -0.715449, 0.698665, 0, 0, -4.00501 )
+mesh = SubResource( 3 )
+skeleton = NodePath("../..")

@@ -1,35 +1,36 @@
-/*************************************************************************/
-/*  file_access_pack.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  file_access_pack.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "file_access_pack.h"
 
+#include "core/os/os.h"
 #include "core/version.h"
 
 #include <stdio.h>
@@ -130,38 +131,74 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		return false;
 	}
 
+	bool pck_header_found = false;
+
+	// Search for the header at the start offset - standalone PCK file.
 	f->seek(p_offset);
 
 	uint32_t magic = f->get_32();
+	if (magic == PACK_HEADER_MAGIC) {
+		pck_header_found = true;
+	}
 
-	if (magic != PACK_HEADER_MAGIC) {
-		// loading with offset feature not supported for self contained exe files
+	// Search for the header in the executable "pck" section - self contained executable.
+	if (!pck_header_found) {
+		// Loading with offset feature not supported for self contained exe files.
 		if (p_offset != 0) {
 			f->close();
 			memdelete(f);
 			ERR_FAIL_V_MSG(false, "Loading self-contained executable with offset not supported.");
 		}
 
-		//maybe at the end.... self contained exe
+		int64_t pck_off = OS::get_singleton()->get_embedded_pck_offset();
+		if (pck_off != 0) {
+			// Search for the header, in case PCK start and section have different alignment.
+			for (int i = 0; i < 8; i++) {
+				f->seek(pck_off);
+				magic = f->get_32();
+				if (magic == PACK_HEADER_MAGIC) {
+#ifdef DEBUG_ENABLED
+					print_verbose("PCK header found in executable pck section, loading from offset 0x" + String::num_int64(pck_off - 4, 16));
+#endif
+					pck_header_found = true;
+					break;
+				}
+				pck_off++;
+			}
+		}
+	}
+
+	// Search for the header at the end of file - self contained executable.
+	if (!pck_header_found) {
+		// Loading with offset feature not supported for self contained exe files.
+		if (p_offset != 0) {
+			f->close();
+			memdelete(f);
+			ERR_FAIL_V_MSG(false, "Loading self-contained executable with offset not supported.");
+		}
+
 		f->seek_end();
 		f->seek(f->get_position() - 4);
-		magic = f->get_32();
-		if (magic != PACK_HEADER_MAGIC) {
-			f->close();
-			memdelete(f);
-			return false;
-		}
-		f->seek(f->get_position() - 12);
-
-		uint64_t ds = f->get_64();
-		f->seek(f->get_position() - ds - 8);
 
 		magic = f->get_32();
-		if (magic != PACK_HEADER_MAGIC) {
-			f->close();
-			memdelete(f);
-			return false;
+		if (magic == PACK_HEADER_MAGIC) {
+			f->seek(f->get_position() - 12);
+			uint64_t ds = f->get_64();
+			f->seek(f->get_position() - ds - 8);
+			magic = f->get_32();
+			if (magic == PACK_HEADER_MAGIC) {
+#ifdef DEBUG_ENABLED
+				print_verbose("PCK header found at the end of executable, loading from offset 0x" + String::num_int64(f->get_position() - 4, 16));
+#endif
+				pck_header_found = true;
+			}
 		}
+	}
+
+	if (!pck_header_found) {
+		f->close();
+		memdelete(f);
+		return false;
 	}
 
 	uint32_t version = f->get_32();

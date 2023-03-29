@@ -1,44 +1,44 @@
-/*************************************************************************/
-/*  vector3.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  vector3.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "vector3.h"
 
 #include "core/math/basis.h"
 
-void Vector3::rotate(const Vector3 &p_axis, real_t p_phi) {
-	*this = Basis(p_axis, p_phi).xform(*this);
+void Vector3::rotate(const Vector3 &p_axis, real_t p_angle) {
+	*this = Basis(p_axis, p_angle).xform(*this);
 }
 
-Vector3 Vector3::rotated(const Vector3 &p_axis, real_t p_phi) const {
+Vector3 Vector3::rotated(const Vector3 &p_axis, real_t p_angle) const {
 	Vector3 r = *this;
-	r.rotate(p_axis, p_phi);
+	r.rotate(p_axis, p_angle);
 	return r;
 }
 
@@ -59,6 +59,17 @@ void Vector3::snap(Vector3 p_val) {
 Vector3 Vector3::snapped(Vector3 p_val) const {
 	Vector3 v = *this;
 	v.snap(p_val);
+	return v;
+}
+
+Vector3 Vector3::limit_length(const real_t p_len) const {
+	const real_t l = length();
+	Vector3 v = *this;
+	if (l > 0 && p_len < l) {
+		v /= l;
+		v *= p_len;
+	}
+
 	return v;
 }
 
@@ -88,11 +99,11 @@ Vector3 Vector3::cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, 
 	real_t t3 = t2 * t;
 
 	Vector3 out;
-	out = 0.5 *
-			((p1 * 2.0) +
+	out = 0.5f *
+			((p1 * 2) +
 					(-p0 + p2) * t +
-					(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
-					(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
+					(2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+					(-p0 + 3 * p1 - 3 * p2 + p3) * t3);
 	return out;
 }
 
@@ -107,11 +118,11 @@ Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, c
 	real_t t3 = t2 * t;
 
 	Vector3 out;
-	out = 0.5 *
-			((p1 * 2.0) +
+	out = 0.5f *
+			((p1 * 2) +
 					(-p0 + p2) * t +
-					(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
-					(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
+					(2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+					(-p0 + 3 * p1 - 3 * p2 + p3) * t3);
 	return out;
 }
 
@@ -119,7 +130,7 @@ Vector3 Vector3::move_toward(const Vector3 &p_to, const real_t p_delta) const {
 	Vector3 v = *this;
 	Vector3 vd = p_to - v;
 	real_t len = vd.length();
-	return len <= p_delta || len < CMP_EPSILON ? p_to : v + vd / len * p_delta;
+	return len <= p_delta || len < (real_t)CMP_EPSILON ? p_to : v + vd / len * p_delta;
 }
 
 Basis Vector3::outer(const Vector3 &p_b) const {

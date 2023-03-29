@@ -21,15 +21,15 @@ func _ready():
 #	var cp = camera.get_parent()
 #	if cp != null:
 #		cp.remove_child( camera )
-#	RootScene.get_root_for_visuals().add_child( camera )
+#	RootScene.get_visual_layer_near().add_child( camera )
 	
 	var character = _create_character( "Astronaut", Vector3( 1.0, 0.0, 0.0 ), 3.0 )
 	DDD.print( "Created a character!" )
 	
 	# Initial set of select and focus object.
-	PhysicsManager.camera           = camera
-	PhysicsManager.player_control   = character
-	PhysicsManager.player_select    = character
+	#RootScene.ref_frame_root.player_camera           = camera
+	RootScene.ref_frame_root.player_control   = character
+	RootScene.ref_frame_root.player_select    = character
 	
 	camera.apply_target()
 	
@@ -57,7 +57,7 @@ func _create_other_body():
 	var body: PhysicsBodyBase = BodyCreator.create( "cube" )
 	body.name = "MyCylinder"
 	
-	var rf: RefFrameNode = PhysicsManager.create_ref_frame_physics()
+	var rf: RefFrameNode = RootScene.ref_frame_root.create_ref_frame_physics()
 	rf.name = "OtherRefFramePhysics"
 	var rot = celestial_body.rotation_rf()
 	
@@ -86,7 +86,7 @@ func _create_construction():
 
 
 func _create_character( name: String = "Astronaut", at: Vector3 = Vector3(1.0, 0.0, 0.0), height: float = 1.0 ):
-	var rf = PhysicsManager.create_ref_frame_physics()
+	var rf = RootScene.ref_frame_root.create_ref_frame_physics()
 	rf.name = "rf_p for " + name
 	var celestial_body = get_node( "Sun/Home" ) as RefFrameNode
 	var rot = celestial_body.rotation_rf()

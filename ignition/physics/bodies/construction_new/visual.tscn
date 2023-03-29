@@ -1,12 +1,14 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://physics/bodies/construction/assets/launch_pad/launch_pad_01/launch_pad_01_Cube001.mesh" type="ArrayMesh" id=1]
-[ext_resource path="res://physics/interact_icon/interaction_node.gd" type="Script" id=2]
+[ext_resource path="res://physics/bodies/construction_new/visual_model_raw.tscn" type="PackedScene" id=1]
 
-[node name="Visual" type="MeshInstance"]
-mesh = ExtResource( 1 )
-material/0 = null
+[sub_resource type="ConvexPolygonShape" id=1]
+points = PoolVector3Array( -5.00039, 0, -9, -8.00098, 0, -8.00098, -5.00039, 1, -9, 4.99863, 0, -9, -8.00098, 1, -8.00098, -9, 0, -5.00039, -5.00039, 2, -5.00039, 4.99863, 1, -9, 7.99922, 0, -8.00098, -9, 1, -5.00039, -9, 0, 4.99863, -5.00039, 2, 4.99863, 4.99863, 2, -5.00039, 7.99922, 1, -8.00098, 9, 0, -5.00039, -9, 1, 4.99863, -8.00098, 0, 7.99922, -8.00098, 1, 7.99922, -5.00039, 1, 9, 4.99863, 2, 4.99863, 9, 1, -5.00039, 9, 0, 4.99863, -5.00039, 0, 9, 4.99863, 1, 9, 7.99922, 1, 7.99922, 9, 1, 4.99863, 7.99922, 0, 7.99922, 4.99863, 0, 9 )
 
-[node name="InteractionNode" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.99418, 0 )
-script = ExtResource( 2 )
+[node name="Physical" type="RigidBody"]
+mode = 1
+
+[node name="CollisionShape" type="CollisionShape" parent="."]
+shape = SubResource( 1 )
+
+[node name="Visual" parent="." instance=ExtResource( 1 )]

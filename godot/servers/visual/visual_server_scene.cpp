@@ -1,35 +1,36 @@
-/*************************************************************************/
-/*  visual_server_scene.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  visual_server_scene.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "visual_server_scene.h"
 
+#include "core/math/transform_interpolator.h"
 #include "core/os/os.h"
 #include "visual_server_globals.h"
 #include "visual_server_raster.h"
@@ -37,6 +38,16 @@
 #include <new>
 
 /* CAMERA API */
+
+Transform VisualServerScene::Camera::get_transform_interpolated() const {
+	if (!interpolated) {
+		return transform;
+	}
+
+	Transform final;
+	TransformInterpolator::interpolate_transform_via_method(transform_prev, transform, final, Engine::get_singleton()->get_physics_interpolation_fraction(), interpolation_method);
+	return final;
+}
 
 RID VisualServerScene::camera_create() {
 	Camera *camera = memnew(Camera);
@@ -71,10 +82,59 @@ void VisualServerScene::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 	camera->zfar = p_z_far;
 }
 
+void VisualServerScene::camera_reset_physics_interpolation(RID p_camera) {
+	Camera *camera = camera_owner.get(p_camera);
+	ERR_FAIL_COND(!camera);
+
+	if (_interpolation_data.interpolation_enabled && camera->interpolated) {
+		_interpolation_data.camera_teleport_list.push_back(p_camera);
+	}
+}
+
+void VisualServerScene::camera_set_interpolated(RID p_camera, bool p_interpolated) {
+	Camera *camera = camera_owner.get(p_camera);
+	ERR_FAIL_COND(!camera);
+	camera->interpolated = p_interpolated;
+}
+
 void VisualServerScene::camera_set_transform(RID p_camera, const Transform &p_transform) {
 	Camera *camera = camera_owner.get(p_camera);
 	ERR_FAIL_COND(!camera);
+
 	camera->transform = p_transform.orthonormalized();
+
+	if (_interpolation_data.interpolation_enabled) {
+		if (camera->interpolated) {
+			if (!camera->on_interpolate_transform_list) {
+				_interpolation_data.camera_transform_update_list_curr->push_back(p_camera);
+				camera->on_interpolate_transform_list = true;
+			}
+
+			// decide on the interpolation method .. slerp if possible
+			camera->interpolation_method = TransformInterpolator::find_method(camera->transform_prev.basis, camera->transform.basis);
+
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+			if (!Engine::get_singleton()->is_in_physics_frame()) {
+				// Effectively a WARN_PRINT_ONCE but after a certain number of occurrences.
+				static int32_t warn_count = -256;
+				if ((warn_count == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
+					WARN_PRINT("[Physics interpolation] Camera interpolation is being triggered from outside physics process, this might lead to issues (possibly benign).");
+				}
+				warn_count++;
+			}
+#endif
+		} else {
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+			if (Engine::get_singleton()->is_in_physics_frame()) {
+				static int32_t warn_count = -256;
+				if ((warn_count == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
+					WARN_PRINT("[Physics interpolation] Non-interpolated Camera is being triggered from physics process, this might lead to issues (possibly benign).");
+				}
+				warn_count++;
+			}
+#endif
+		}
+	}
 }
 
 void VisualServerScene::camera_set_cull_mask(RID p_camera, uint32_t p_layers) {
@@ -101,6 +161,15 @@ void VisualServerScene::camera_set_use_vertical_aspect(RID p_camera, bool p_enab
 VisualServerScene::SpatialPartitioningScene_BVH::SpatialPartitioningScene_BVH() {
 	_bvh.params_set_thread_safe(GLOBAL_GET("rendering/threads/thread_safe_bvh"));
 	_bvh.params_set_pairing_expansion(GLOBAL_GET("rendering/quality/spatial_partitioning/bvh_collision_margin"));
+
+	_dummy_cull_object = memnew(Instance);
+}
+
+VisualServerScene::SpatialPartitioningScene_BVH::~SpatialPartitioningScene_BVH() {
+	if (_dummy_cull_object) {
+		memdelete(_dummy_cull_object);
+		_dummy_cull_object = nullptr;
+	}
 }
 
 VisualServerScene::SpatialPartitionID VisualServerScene::SpatialPartitioningScene_BVH::create(Instance *p_userdata, const AABB &p_aabb, int p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
@@ -109,7 +178,16 @@ VisualServerScene::SpatialPartitionID VisualServerScene::SpatialPartitioningScen
 	// the visible flag to the bvh.
 	DEV_ASSERT(p_userdata);
 #endif
-	return _bvh.create(p_userdata, p_userdata->visible, p_aabb, p_subindex, p_pairable, p_pairable_type, p_pairable_mask) + 1;
+
+	// cache the pairable mask and pairable type on the instance as it is needed for user callbacks from the BVH, and this is
+	// too complex to calculate each callback...
+	p_userdata->bvh_pairable_mask = p_pairable_mask;
+	p_userdata->bvh_pairable_type = p_pairable_type;
+
+	uint32_t tree_id = p_pairable ? 1 : 0;
+	uint32_t tree_collision_mask = 3;
+
+	return _bvh.create(p_userdata, p_userdata->visible, tree_id, tree_collision_mask, p_aabb, p_subindex) + 1;
 }
 
 void VisualServerScene::SpatialPartitioningScene_BVH::erase(SpatialPartitionID p_handle) {
@@ -143,20 +221,34 @@ void VisualServerScene::SpatialPartitioningScene_BVH::update_collisions() {
 	_bvh.update_collisions();
 }
 
-void VisualServerScene::SpatialPartitioningScene_BVH::set_pairable(SpatialPartitionID p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
-	_bvh.set_pairable(p_handle - 1, p_pairable, p_pairable_type, p_pairable_mask);
+void VisualServerScene::SpatialPartitioningScene_BVH::set_pairable(Instance *p_instance, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+	SpatialPartitionID handle = p_instance->spatial_partition_id;
+
+	p_instance->bvh_pairable_mask = p_pairable_mask;
+	p_instance->bvh_pairable_type = p_pairable_type;
+
+	uint32_t tree_id = p_pairable ? 1 : 0;
+	uint32_t tree_collision_mask = 3;
+
+	_bvh.set_tree(handle - 1, tree_id, tree_collision_mask);
 }
 
 int VisualServerScene::SpatialPartitioningScene_BVH::cull_convex(const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, uint32_t p_mask) {
-	return _bvh.cull_convex(p_convex, p_result_array, p_result_max, p_mask);
+	_dummy_cull_object->bvh_pairable_mask = p_mask;
+	_dummy_cull_object->bvh_pairable_type = 0;
+	return _bvh.cull_convex(p_convex, p_result_array, p_result_max, _dummy_cull_object);
 }
 
 int VisualServerScene::SpatialPartitioningScene_BVH::cull_aabb(const AABB &p_aabb, Instance **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
-	return _bvh.cull_aabb(p_aabb, p_result_array, p_result_max, p_subindex_array, p_mask);
+	_dummy_cull_object->bvh_pairable_mask = p_mask;
+	_dummy_cull_object->bvh_pairable_type = 0;
+	return _bvh.cull_aabb(p_aabb, p_result_array, p_result_max, _dummy_cull_object, 0xFFFFFFFF, p_subindex_array);
 }
 
 int VisualServerScene::SpatialPartitioningScene_BVH::cull_segment(const Vector3 &p_from, const Vector3 &p_to, Instance **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
-	return _bvh.cull_segment(p_from, p_to, p_result_array, p_result_max, p_subindex_array, p_mask);
+	_dummy_cull_object->bvh_pairable_mask = p_mask;
+	_dummy_cull_object->bvh_pairable_type = 0;
+	return _bvh.cull_segment(p_from, p_to, p_result_array, p_result_max, _dummy_cull_object, 0xFFFFFFFF, p_subindex_array);
 }
 
 void VisualServerScene::SpatialPartitioningScene_BVH::set_pair_callback(PairCallback p_callback, void *p_userdata) {
@@ -181,8 +273,9 @@ void VisualServerScene::SpatialPartitioningScene_Octree::move(SpatialPartitionID
 	_octree.move(p_handle, p_aabb);
 }
 
-void VisualServerScene::SpatialPartitioningScene_Octree::set_pairable(SpatialPartitionID p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
-	_octree.set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
+void VisualServerScene::SpatialPartitioningScene_Octree::set_pairable(Instance *p_instance, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+	SpatialPartitionID handle = p_instance->spatial_partition_id;
+	_octree.set_pairable(handle, p_pairable, p_pairable_type, p_pairable_mask);
 }
 
 int VisualServerScene::SpatialPartitioningScene_Octree::cull_convex(const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, uint32_t p_mask) {
@@ -378,6 +471,25 @@ RID VisualServerScene::scenario_create() {
 	scenario->reflection_atlas = VSG::scene_render->reflection_atlas_create();
 
 	return scenario_rid;
+}
+
+void VisualServerScene::set_physics_interpolation_enabled(bool p_enabled) {
+	_interpolation_data.interpolation_enabled = p_enabled;
+}
+
+void VisualServerScene::tick() {
+	if (_interpolation_data.interpolation_enabled) {
+		update_interpolation_tick(true);
+	}
+}
+
+void VisualServerScene::pre_draw(bool p_will_draw) {
+	// even when running and not drawing scenes, we still need to clear intermediate per frame
+	// interpolation data .. hence the p_will_draw flag (so we can reduce the processing if the frame
+	// will not be drawn)
+	if (_interpolation_data.interpolation_enabled) {
+		update_interpolation_frame(p_will_draw);
+	}
 }
 
 void VisualServerScene::scenario_set_debug(RID p_scenario, VS::ScenarioDebugMode p_debug_mode) {
@@ -612,6 +724,9 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 			_instance_destroy_occlusion_rep(instance);
 		}
 
+		// remove any interpolation data associated with the instance in this scenario
+		_interpolation_data.notify_free_instance(p_instance, *instance);
+
 		switch (instance->base_type) {
 			case VS::INSTANCE_LIGHT: {
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
@@ -676,12 +791,92 @@ void VisualServerScene::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 
 	instance->layer_mask = p_mask;
 }
+
+void VisualServerScene::instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) {
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	instance->sorting_offset = p_sorting_offset;
+	instance->use_aabb_center = p_use_aabb_center;
+}
+
+void VisualServerScene::instance_reset_physics_interpolation(RID p_instance) {
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	if (_interpolation_data.interpolation_enabled && instance->interpolated) {
+		_interpolation_data.instance_teleport_list.push_back(p_instance);
+	}
+}
+
+void VisualServerScene::instance_set_interpolated(RID p_instance, bool p_interpolated) {
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+	instance->interpolated = p_interpolated;
+}
+
 void VisualServerScene::instance_set_transform(RID p_instance, const Transform &p_transform) {
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
 
-	if (instance->transform == p_transform) {
-		return; //must be checked to avoid worst evil
+	if (!(_interpolation_data.interpolation_enabled && instance->interpolated) || !instance->scenario) {
+		if (instance->transform == p_transform) {
+			return; //must be checked to avoid worst evil
+		}
+
+#ifdef DEBUG_ENABLED
+
+		for (int i = 0; i < 4; i++) {
+			const Vector3 &v = i < 3 ? p_transform.basis.elements[i] : p_transform.origin;
+			ERR_FAIL_COND(Math::is_inf(v.x));
+			ERR_FAIL_COND(Math::is_nan(v.x));
+			ERR_FAIL_COND(Math::is_inf(v.y));
+			ERR_FAIL_COND(Math::is_nan(v.y));
+			ERR_FAIL_COND(Math::is_inf(v.z));
+			ERR_FAIL_COND(Math::is_nan(v.z));
+		}
+
+#endif
+		instance->transform = p_transform;
+		_instance_queue_update(instance, true);
+
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+		if ((_interpolation_data.interpolation_enabled && !instance->interpolated) && (Engine::get_singleton()->is_in_physics_frame())) {
+			static int32_t warn_count = 0;
+			warn_count++;
+			if (((warn_count % 2048) == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
+				String node_name;
+				ObjectID id = instance->object_id;
+				if (id != 0) {
+					if (ObjectDB::get_instance(id)) {
+						Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+						if (node && node->is_inside_tree()) {
+							node_name = "\"" + String(node->get_path()) + "\"";
+						} else {
+							node_name = "\"unknown\"";
+						}
+					}
+				}
+
+				WARN_PRINT("[Physics interpolation] Non-interpolated Instance is being triggered from physics process, this might lead to issues: " + node_name + " (possibly benign).");
+			}
+		}
+#endif
+
+		return;
+	}
+
+	float new_checksum = TransformInterpolator::checksum_transform(p_transform);
+	bool checksums_match = (instance->transform_checksum_curr == new_checksum) && (instance->transform_checksum_prev == new_checksum);
+
+	// we can't entirely reject no changes because we need the interpolation
+	// system to keep on stewing
+
+	// Optimized check. First checks the checksums. If they pass it does the slow check at the end.
+	// Alternatively we can do this non-optimized and ignore the checksum...
+	// if no change
+	if (checksums_match && (instance->transform_curr == p_transform) && (instance->transform_prev == p_transform)) {
+		return;
 	}
 
 #ifdef DEBUG_ENABLED
@@ -697,9 +892,222 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 	}
 
 #endif
-	instance->transform = p_transform;
+
+	instance->transform_curr = p_transform;
+
+	// keep checksums up to date
+	instance->transform_checksum_curr = new_checksum;
+
+	if (!instance->on_interpolate_transform_list) {
+		_interpolation_data.instance_transform_update_list_curr->push_back(p_instance);
+		instance->on_interpolate_transform_list = true;
+	} else {
+		DEV_ASSERT(_interpolation_data.instance_transform_update_list_curr->size());
+	}
+
+	// If the instance is invisible, then we are simply updating the data flow, there is no need to calculate the interpolated
+	// transform or anything else.
+	// Ideally we would not even call the VisualServer::set_transform() when invisible but that would entail having logic
+	// to keep track of the previous transform on the SceneTree side. The "early out" below is less efficient but a lot cleaner codewise.
+	if (!instance->visible) {
+		return;
+	}
+
+	// decide on the interpolation method .. slerp if possible
+	instance->interpolation_method = TransformInterpolator::find_method(instance->transform_prev.basis, instance->transform_curr.basis);
+
+	if (!instance->on_interpolate_list) {
+		_interpolation_data.instance_interpolate_update_list.push_back(p_instance);
+		instance->on_interpolate_list = true;
+	} else {
+		DEV_ASSERT(_interpolation_data.instance_interpolate_update_list.size());
+	}
+
 	_instance_queue_update(instance, true);
+
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+	if (!Engine::get_singleton()->is_in_physics_frame()) {
+		static int32_t warn_count = 0;
+		warn_count++;
+		if (((warn_count % 2048) == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
+			String node_name;
+			ObjectID id = instance->object_id;
+			if (id != 0) {
+				if (ObjectDB::get_instance(id)) {
+					Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+					if (node && node->is_inside_tree()) {
+						node_name = "\"" + String(node->get_path()) + "\"";
+					} else {
+						node_name = "\"unknown\"";
+					}
+				}
+			}
+
+			WARN_PRINT("[Physics interpolation] Instance interpolation is being triggered from outside physics process, this might lead to issues: " + node_name + " (possibly benign).");
+		}
+	}
+#endif
 }
+
+void VisualServerScene::InterpolationData::notify_free_camera(RID p_rid, Camera &r_camera) {
+	r_camera.on_interpolate_transform_list = false;
+
+	if (!interpolation_enabled) {
+		return;
+	}
+
+	// if the camera was on any of the lists, remove
+	camera_transform_update_list_curr->erase_multiple_unordered(p_rid);
+	camera_transform_update_list_prev->erase_multiple_unordered(p_rid);
+	camera_teleport_list.erase_multiple_unordered(p_rid);
+}
+
+void VisualServerScene::InterpolationData::notify_free_instance(RID p_rid, Instance &r_instance) {
+	r_instance.on_interpolate_list = false;
+	r_instance.on_interpolate_transform_list = false;
+
+	if (!interpolation_enabled) {
+		return;
+	}
+
+	// if the instance was on any of the lists, remove
+	instance_interpolate_update_list.erase_multiple_unordered(p_rid);
+	instance_transform_update_list_curr->erase_multiple_unordered(p_rid);
+	instance_transform_update_list_prev->erase_multiple_unordered(p_rid);
+	instance_teleport_list.erase_multiple_unordered(p_rid);
+}
+
+void VisualServerScene::update_interpolation_tick(bool p_process) {
+	// update interpolation in storage
+	VSG::storage->update_interpolation_tick(p_process);
+
+	// detect any that were on the previous transform list that are no longer active,
+	// we should remove them from the interpolate list
+
+	for (unsigned int n = 0; n < _interpolation_data.instance_transform_update_list_prev->size(); n++) {
+		const RID &rid = (*_interpolation_data.instance_transform_update_list_prev)[n];
+		Instance *instance = instance_owner.getornull(rid);
+
+		bool active = true;
+
+		// no longer active? (either the instance deleted or no longer being transformed)
+		if (instance && !instance->on_interpolate_transform_list) {
+			active = false;
+			instance->on_interpolate_list = false;
+
+			// make sure the most recent transform is set
+			instance->transform = instance->transform_curr;
+
+			// and that both prev and current are the same, just in case of any interpolations
+			instance->transform_prev = instance->transform_curr;
+
+			// make sure are updated one more time to ensure the AABBs are correct
+			_instance_queue_update(instance, true);
+		}
+
+		if (!instance) {
+			active = false;
+		}
+
+		if (!active) {
+			_interpolation_data.instance_interpolate_update_list.erase(rid);
+		}
+	}
+
+	// and now for any in the transform list (being actively interpolated), keep the previous transform
+	// value up to date ready for the next tick
+	if (p_process) {
+		for (unsigned int n = 0; n < _interpolation_data.instance_transform_update_list_curr->size(); n++) {
+			const RID &rid = (*_interpolation_data.instance_transform_update_list_curr)[n];
+			Instance *instance = instance_owner.getornull(rid);
+			if (instance) {
+				instance->transform_prev = instance->transform_curr;
+				instance->transform_checksum_prev = instance->transform_checksum_curr;
+				instance->on_interpolate_transform_list = false;
+			}
+		}
+	}
+
+	// we maintain a mirror list for the transform updates, so we can detect when an instance
+	// is no longer being transformed, and remove it from the interpolate list
+	SWAP(_interpolation_data.instance_transform_update_list_curr, _interpolation_data.instance_transform_update_list_prev);
+
+	// prepare for the next iteration
+	_interpolation_data.instance_transform_update_list_curr->clear();
+
+	// CAMERAS
+	// detect any that were on the previous transform list that are no longer active,
+	for (unsigned int n = 0; n < _interpolation_data.camera_transform_update_list_prev->size(); n++) {
+		const RID &rid = (*_interpolation_data.camera_transform_update_list_prev)[n];
+		Camera *camera = camera_owner.getornull(rid);
+
+		// no longer active? (either the instance deleted or no longer being transformed)
+		if (camera && !camera->on_interpolate_transform_list) {
+			camera->transform = camera->transform_prev;
+		}
+	}
+
+	// cameras , swap any current with previous
+	for (unsigned int n = 0; n < _interpolation_data.camera_transform_update_list_curr->size(); n++) {
+		const RID &rid = (*_interpolation_data.camera_transform_update_list_curr)[n];
+		Camera *camera = camera_owner.getornull(rid);
+		if (camera) {
+			camera->transform_prev = camera->transform;
+			camera->on_interpolate_transform_list = false;
+		}
+	}
+
+	// we maintain a mirror list for the transform updates, so we can detect when an instance
+	// is no longer being transformed, and remove it from the interpolate list
+	SWAP(_interpolation_data.camera_transform_update_list_curr, _interpolation_data.camera_transform_update_list_prev);
+
+	// prepare for the next iteration
+	_interpolation_data.camera_transform_update_list_curr->clear();
+}
+
+void VisualServerScene::update_interpolation_frame(bool p_process) {
+	// update interpolation in storage
+	VSG::storage->update_interpolation_frame(p_process);
+
+	// teleported instances
+	for (unsigned int n = 0; n < _interpolation_data.instance_teleport_list.size(); n++) {
+		const RID &rid = _interpolation_data.instance_teleport_list[n];
+		Instance *instance = instance_owner.getornull(rid);
+		if (instance) {
+			instance->transform_prev = instance->transform_curr;
+			instance->transform_checksum_prev = instance->transform_checksum_curr;
+		}
+	}
+
+	_interpolation_data.instance_teleport_list.clear();
+
+	// camera teleports
+	for (unsigned int n = 0; n < _interpolation_data.camera_teleport_list.size(); n++) {
+		const RID &rid = _interpolation_data.camera_teleport_list[n];
+		Camera *camera = camera_owner.getornull(rid);
+		if (camera) {
+			camera->transform_prev = camera->transform;
+		}
+	}
+
+	_interpolation_data.camera_teleport_list.clear();
+
+	if (p_process) {
+		real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+
+		for (unsigned int i = 0; i < _interpolation_data.instance_interpolate_update_list.size(); i++) {
+			const RID &rid = _interpolation_data.instance_interpolate_update_list[i];
+			Instance *instance = instance_owner.getornull(rid);
+			if (instance) {
+				TransformInterpolator::interpolate_transform_via_method(instance->transform_prev, instance->transform_curr, instance->transform, f, instance->interpolation_method);
+
+				// make sure AABBs are constantly up to date through the interpolation
+				_instance_queue_update(instance, true);
+			}
+		} // for n
+	}
+}
+
 void VisualServerScene::instance_attach_object_instance_id(RID p_instance, ObjectID p_id) {
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
@@ -751,6 +1159,25 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 
 	instance->visible = p_visible;
 
+	// Special case for physics interpolation, we want to ensure the interpolated data is up to date
+	if (_interpolation_data.interpolation_enabled && p_visible && instance->interpolated && instance->scenario && !instance->on_interpolate_list) {
+		// Do all the extra work we normally do on instance_set_transform(), because this is optimized out for hidden instances.
+		// This prevents a glitch of stale interpolation transform data when unhiding before the next physics tick.
+		instance->interpolation_method = TransformInterpolator::find_method(instance->transform_prev.basis, instance->transform_curr.basis);
+		_interpolation_data.instance_interpolate_update_list.push_back(p_instance);
+		instance->on_interpolate_list = true;
+		_instance_queue_update(instance, true);
+
+		// We must also place on the transform update list for a tick, so the system
+		// can auto-detect if the instance is no longer moving, and remove from the interpolate lists again.
+		// If this step is ignored, an unmoving instance could remain on the interpolate lists indefinitely
+		// (or rather until the object is deleted) and cause unnecessary updates and drawcalls.
+		if (!instance->on_interpolate_transform_list) {
+			_interpolation_data.instance_transform_update_list_curr->push_back(p_instance);
+			instance->on_interpolate_transform_list = true;
+		}
+	}
+
 	// give the opportunity for the spatial partitioning scene to use a special implementation of visibility
 	// for efficiency (supported in BVH but not octree)
 
@@ -782,25 +1209,25 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 	switch (instance->base_type) {
 		case VS::INSTANCE_LIGHT: {
 			if (VSG::storage->light_get_type(instance->base) != VS::LIGHT_DIRECTIONAL && instance->spatial_partition_id && instance->scenario) {
-				instance->scenario->sps->set_pairable(instance->spatial_partition_id, p_visible, 1 << VS::INSTANCE_LIGHT, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
+				instance->scenario->sps->set_pairable(instance, p_visible, 1 << VS::INSTANCE_LIGHT, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
 			}
 
 		} break;
 		case VS::INSTANCE_REFLECTION_PROBE: {
 			if (instance->spatial_partition_id && instance->scenario) {
-				instance->scenario->sps->set_pairable(instance->spatial_partition_id, p_visible, 1 << VS::INSTANCE_REFLECTION_PROBE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
+				instance->scenario->sps->set_pairable(instance, p_visible, 1 << VS::INSTANCE_REFLECTION_PROBE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
 			}
 
 		} break;
 		case VS::INSTANCE_LIGHTMAP_CAPTURE: {
 			if (instance->spatial_partition_id && instance->scenario) {
-				instance->scenario->sps->set_pairable(instance->spatial_partition_id, p_visible, 1 << VS::INSTANCE_LIGHTMAP_CAPTURE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
+				instance->scenario->sps->set_pairable(instance, p_visible, 1 << VS::INSTANCE_LIGHTMAP_CAPTURE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
 			}
 
 		} break;
 		case VS::INSTANCE_GI_PROBE: {
 			if (instance->spatial_partition_id && instance->scenario) {
-				instance->scenario->sps->set_pairable(instance->spatial_partition_id, p_visible, 1 << VS::INSTANCE_GI_PROBE, p_visible ? (VS::INSTANCE_GEOMETRY_MASK | (1 << VS::INSTANCE_LIGHT)) : 0);
+				instance->scenario->sps->set_pairable(instance, p_visible, 1 << VS::INSTANCE_GI_PROBE, p_visible ? (VS::INSTANCE_GEOMETRY_MASK | (1 << VS::INSTANCE_LIGHT)) : 0);
 			}
 
 		} break;
@@ -1159,64 +1586,103 @@ void VisualServerScene::roomgroup_add_room(RID p_roomgroup, RID p_room) {
 }
 
 // Occluders
-RID VisualServerScene::occluder_create() {
-	Occluder *ro = memnew(Occluder);
+RID VisualServerScene::occluder_instance_create() {
+	OccluderInstance *ro = memnew(OccluderInstance);
 	ERR_FAIL_COND_V(!ro, RID());
-	RID occluder_rid = occluder_owner.make_rid(ro);
+	RID occluder_rid = occluder_instance_owner.make_rid(ro);
 	return occluder_rid;
 }
 
-void VisualServerScene::occluder_set_scenario(RID p_occluder, RID p_scenario, VisualServer::OccluderType p_type) {
-	Occluder *ro = occluder_owner.getornull(p_occluder);
-	ERR_FAIL_COND(!ro);
+void VisualServerScene::occluder_instance_link_resource(RID p_occluder_instance, RID p_occluder_resource) {
+	OccluderInstance *oi = occluder_instance_owner.getornull(p_occluder_instance);
+	ERR_FAIL_COND(!oi);
+	ERR_FAIL_COND(!oi->scenario);
+
+	OccluderResource *res = occluder_resource_owner.getornull(p_occluder_resource);
+	ERR_FAIL_COND(!res);
+
+	oi->scenario->_portal_renderer.occluder_instance_link(oi->scenario_occluder_id, res->occluder_resource_id);
+}
+
+void VisualServerScene::occluder_instance_set_scenario(RID p_occluder_instance, RID p_scenario) {
+	OccluderInstance *oi = occluder_instance_owner.getornull(p_occluder_instance);
+	ERR_FAIL_COND(!oi);
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 
 	// noop?
-	if (ro->scenario == scenario) {
+	if (oi->scenario == scenario) {
 		return;
 	}
 
 	// if the portal is in a scenario already, remove it
-	if (ro->scenario) {
-		ro->scenario->_portal_renderer.occluder_destroy(ro->scenario_occluder_id);
-		ro->scenario = nullptr;
-		ro->scenario_occluder_id = 0;
+	if (oi->scenario) {
+		oi->scenario->_portal_renderer.occluder_instance_destroy(oi->scenario_occluder_id);
+		oi->scenario = nullptr;
+		oi->scenario_occluder_id = 0;
 	}
 
 	// create when entering the world
 	if (scenario) {
-		ro->scenario = scenario;
-
-		// defer the actual creation to here
-		ro->scenario_occluder_id = scenario->_portal_renderer.occluder_create((VSOccluder::Type)p_type);
+		oi->scenario = scenario;
+		oi->scenario_occluder_id = scenario->_portal_renderer.occluder_instance_create();
 	}
 }
 
-void VisualServerScene::occluder_set_active(RID p_occluder, bool p_active) {
-	Occluder *ro = occluder_owner.getornull(p_occluder);
-	ERR_FAIL_COND(!ro);
-	ERR_FAIL_COND(!ro->scenario);
-	ro->scenario->_portal_renderer.occluder_set_active(ro->scenario_occluder_id, p_active);
+void VisualServerScene::occluder_instance_set_active(RID p_occluder_instance, bool p_active) {
+	OccluderInstance *oi = occluder_instance_owner.getornull(p_occluder_instance);
+	ERR_FAIL_COND(!oi);
+	ERR_FAIL_COND(!oi->scenario);
+	oi->scenario->_portal_renderer.occluder_instance_set_active(oi->scenario_occluder_id, p_active);
 }
 
-void VisualServerScene::occluder_set_transform(RID p_occluder, const Transform &p_xform) {
-	Occluder *ro = occluder_owner.getornull(p_occluder);
-	ERR_FAIL_COND(!ro);
-	ERR_FAIL_COND(!ro->scenario);
-	ro->scenario->_portal_renderer.occluder_set_transform(ro->scenario_occluder_id, p_xform);
+void VisualServerScene::occluder_instance_set_transform(RID p_occluder_instance, const Transform &p_xform) {
+	OccluderInstance *oi = occluder_instance_owner.getornull(p_occluder_instance);
+	ERR_FAIL_COND(!oi);
+	ERR_FAIL_COND(!oi->scenario);
+	oi->scenario->_portal_renderer.occluder_instance_set_transform(oi->scenario_occluder_id, p_xform);
 }
 
-void VisualServerScene::occluder_spheres_update(RID p_occluder, const Vector<Plane> &p_spheres) {
-	Occluder *ro = occluder_owner.getornull(p_occluder);
-	ERR_FAIL_COND(!ro);
-	ERR_FAIL_COND(!ro->scenario);
-	ro->scenario->_portal_renderer.occluder_update_spheres(ro->scenario_occluder_id, p_spheres);
+RID VisualServerScene::occluder_resource_create() {
+	OccluderResource *res = memnew(OccluderResource);
+	ERR_FAIL_COND_V(!res, RID());
+
+	res->occluder_resource_id = _portal_resources.occluder_resource_create();
+
+	RID occluder_resource_rid = occluder_resource_owner.make_rid(res);
+	return occluder_resource_rid;
+}
+
+void VisualServerScene::occluder_resource_prepare(RID p_occluder_resource, VisualServer::OccluderType p_type) {
+	OccluderResource *res = occluder_resource_owner.getornull(p_occluder_resource);
+	ERR_FAIL_COND(!res);
+	_portal_resources.occluder_resource_prepare(res->occluder_resource_id, (VSOccluder_Instance::Type)p_type);
+}
+
+void VisualServerScene::occluder_resource_spheres_update(RID p_occluder_resource, const Vector<Plane> &p_spheres) {
+	OccluderResource *res = occluder_resource_owner.getornull(p_occluder_resource);
+	ERR_FAIL_COND(!res);
+	_portal_resources.occluder_resource_update_spheres(res->occluder_resource_id, p_spheres);
+}
+
+void VisualServerScene::occluder_resource_mesh_update(RID p_occluder_resource, const Geometry::OccluderMeshData &p_mesh_data) {
+	OccluderResource *res = occluder_resource_owner.getornull(p_occluder_resource);
+	ERR_FAIL_COND(!res);
+	_portal_resources.occluder_resource_update_mesh(res->occluder_resource_id, p_mesh_data);
 }
 
 void VisualServerScene::set_use_occlusion_culling(bool p_enable) {
 	// this is not scenario specific, and is global
 	// (mainly for debugging)
 	PortalRenderer::use_occlusion_culling = p_enable;
+}
+
+Geometry::MeshData VisualServerScene::occlusion_debug_get_current_polys(RID p_scenario) const {
+	Scenario *scenario = scenario_owner.getornull(p_scenario);
+	if (!scenario) {
+		return Geometry::MeshData();
+	}
+
+	return scenario->_portal_renderer.occlusion_debug_get_current_polys();
 }
 
 // Rooms
@@ -1447,13 +1913,13 @@ Vector<ObjectID> VisualServerScene::instances_cull_convex(const Vector<Plane> &p
 }
 
 // thin wrapper to allow rooms / portals to take over culling if active
-int VisualServerScene::_cull_convex_from_point(Scenario *p_scenario, const Vector3 &p_point, const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, int32_t &r_previous_room_id_hint, uint32_t p_mask) {
+int VisualServerScene::_cull_convex_from_point(Scenario *p_scenario, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, int32_t &r_previous_room_id_hint, uint32_t p_mask) {
 	int res = -1;
 	if (p_scenario->_portal_renderer.is_active()) {
 		// Note that the portal renderer ASSUMES that the planes exactly match the convention in
 		// CameraMatrix of enum Planes (6 planes, in order, near, far etc)
 		// If this is not the case, it should not be used.
-		res = p_scenario->_portal_renderer.cull_convex(p_point, p_convex, (VSInstance **)p_result_array, p_result_max, p_mask, r_previous_room_id_hint);
+		res = p_scenario->_portal_renderer.cull_convex(p_cam_transform, p_cam_projection, p_convex, (VSInstance **)p_result_array, p_result_max, p_mask, r_previous_room_id_hint);
 	}
 
 	// fallback to BVH  / octree if portals not active
@@ -1461,7 +1927,9 @@ int VisualServerScene::_cull_convex_from_point(Scenario *p_scenario, const Vecto
 		res = p_scenario->sps->cull_convex(p_convex, p_result_array, p_result_max, p_mask);
 
 		// Opportunity for occlusion culling on the main scene. This will be a noop if no occluders.
-		res = p_scenario->_portal_renderer.occlusion_cull(p_point, p_convex, (VSInstance **)p_result_array, res);
+		if (p_scenario->_portal_renderer.occlusion_is_active()) {
+			res = p_scenario->_portal_renderer.occlusion_cull(p_cam_transform, p_cam_projection, p_convex, (VSInstance **)p_result_array, res);
+		}
 	}
 	return res;
 }
@@ -1521,6 +1989,20 @@ void VisualServerScene::instance_geometry_set_material_override(RID p_instance, 
 		VSG::storage->material_add_instance_owner(instance->material_override, instance);
 	}
 }
+void VisualServerScene::instance_geometry_set_material_overlay(RID p_instance, RID p_material) {
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	if (instance->material_overlay.is_valid()) {
+		VSG::storage->material_remove_instance_owner(instance->material_overlay, instance);
+	}
+	instance->material_overlay = p_material;
+	instance->base_changed(false, true);
+
+	if (instance->material_overlay.is_valid()) {
+		VSG::storage->material_add_instance_owner(instance->material_overlay, instance);
+	}
+}
 
 void VisualServerScene::instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) {
 }
@@ -1530,22 +2012,33 @@ void VisualServerScene::instance_geometry_set_as_instance_lod(RID p_instance, RI
 void VisualServerScene::_update_instance(Instance *p_instance) {
 	p_instance->version++;
 
+	// when not using interpolation the transform is used straight
+	const Transform *instance_xform = &p_instance->transform;
+
+	// Can possibly use the most up to date current transform here when using physics interpolation ..
+	// uncomment the next line for this..
+	// if (p_instance->is_currently_interpolated()) {
+	// instance_xform = &p_instance->transform_curr;
+	// }
+	// However it does seem that using the interpolated transform (transform) works for keeping AABBs
+	// up to date to avoid culling errors.
+
 	if (p_instance->base_type == VS::INSTANCE_LIGHT) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
-		VSG::scene_render->light_instance_set_transform(light->instance, p_instance->transform);
+		VSG::scene_render->light_instance_set_transform(light->instance, *instance_xform);
 		light->shadow_dirty = true;
 	}
 
 	if (p_instance->base_type == VS::INSTANCE_REFLECTION_PROBE) {
 		InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(p_instance->base_data);
 
-		VSG::scene_render->reflection_probe_instance_set_transform(reflection_probe->instance, p_instance->transform);
+		VSG::scene_render->reflection_probe_instance_set_transform(reflection_probe->instance, *instance_xform);
 		reflection_probe->reflection_dirty = true;
 	}
 
 	if (p_instance->base_type == VS::INSTANCE_PARTICLES) {
-		VSG::storage->particles_set_emission_transform(p_instance->base, p_instance->transform);
+		VSG::storage->particles_set_emission_transform(p_instance->base, *instance_xform);
 	}
 
 	if (p_instance->base_type == VS::INSTANCE_LIGHTMAP_CAPTURE) {
@@ -1580,11 +2073,11 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 		}
 	}
 
-	p_instance->mirror = p_instance->transform.basis.determinant() < 0.0;
+	p_instance->mirror = instance_xform->basis.determinant() < 0.0;
 
 	AABB new_aabb;
 
-	new_aabb = p_instance->transform.xform(p_instance->aabb);
+	new_aabb = instance_xform->xform(p_instance->aabb);
 
 	p_instance->transformed_aabb = new_aabb;
 
@@ -2274,7 +2767,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 					Vector<Plane> planes = cm.get_projection_planes(xform);
 
-					int cull_count = _cull_convex_from_point(p_scenario, light_transform.origin, planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK);
+					int cull_count = _cull_convex_from_point(p_scenario, light_transform, cm, planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK);
 
 					Plane near_plane(xform.origin, -xform.basis.get_axis(2));
 					for (int j = 0; j < cull_count; j++) {
@@ -2309,7 +2802,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			cm.set_perspective(angle * 2.0, 1.0, 0.01, radius);
 
 			Vector<Plane> planes = cm.get_projection_planes(light_transform);
-			int cull_count = _cull_convex_from_point(p_scenario, light_transform.origin, planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK);
+			int cull_count = _cull_convex_from_point(p_scenario, light_transform, cm, planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK);
 
 			Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 			for (int j = 0; j < cull_count; j++) {
@@ -2379,8 +2872,10 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 		} break;
 	}
 
-	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), camera->previous_room_id_hint);
-	_render_scene(camera->transform, camera_matrix, 0, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
+	Transform camera_transform = _interpolation_data.interpolation_enabled ? camera->get_transform_interpolated() : camera->transform;
+
+	_prepare_scene(camera_transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), camera->previous_room_id_hint);
+	_render_scene(camera_transform, camera_matrix, 0, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 #endif
 }
 
@@ -2488,7 +2983,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 	float z_far = p_cam_projection.get_z_far();
 
 	/* STEP 2 - CULL */
-	instance_cull_count = _cull_convex_from_point(scenario, p_cam_transform.origin, planes, instance_cull_result, MAX_INSTANCE_CULL, r_previous_room_id_hint);
+	instance_cull_count = _cull_convex_from_point(scenario, p_cam_transform, p_cam_projection, planes, instance_cull_result, MAX_INSTANCE_CULL, r_previous_room_id_hint);
 	light_cull_count = 0;
 
 	reflection_probe_cull_count = 0;
@@ -2568,7 +3063,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(ins->base_data);
 
 			if (ins->redraw_if_visible) {
-				VisualServerRaster::redraw_request();
+				VisualServerRaster::redraw_request(false);
 			}
 
 			if (ins->base_type == VS::INSTANCE_PARTICLES) {
@@ -2577,9 +3072,11 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 					//but if nothing is going on, don't do it.
 					keep = false;
 				} else {
-					VSG::storage->particles_request_process(ins->base);
-					//particles visible? request redraw
-					VisualServerRaster::redraw_request();
+					if (OS::get_singleton()->is_update_pending(true)) {
+						VSG::storage->particles_request_process(ins->base);
+						//particles visible? request redraw
+						VisualServerRaster::redraw_request(false);
+					}
 				}
 			}
 
@@ -2778,8 +3275,15 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 		Instance *ins = instance_cull_result[i];
 
 		if (((1 << ins->base_type) & VS::INSTANCE_GEOMETRY_MASK) && ins->visible && ins->cast_shadows != VS::SHADOW_CASTING_SETTING_SHADOWS_ONLY) {
-			Vector3 aabb_center = ins->transformed_aabb.position + (ins->transformed_aabb.size * 0.5);
-			ins->depth = near_plane.distance_to(aabb_center);
+			Vector3 center = ins->transform.origin;
+			if (ins->use_aabb_center) {
+				center = ins->transformed_aabb.position + (ins->transformed_aabb.size * 0.5);
+			}
+			if (p_cam_orthogonal) {
+				ins->depth = near_plane.distance_to(center) - ins->sorting_offset;
+			} else {
+				ins->depth = p_cam_transform.origin.distance_to(center) - ins->sorting_offset;
+			}
 			ins->depth_layer = CLAMP(int(ins->depth * 16 / z_far), 0, 15);
 		}
 	}
@@ -2824,7 +3328,7 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 	Scenario *scenario = p_instance->scenario;
 	ERR_FAIL_COND_V(!scenario, true);
 
-	VisualServerRaster::redraw_request(); //update, so it updates in editor
+	VisualServerRaster::redraw_request(false); //update, so it updates in editor
 
 	if (p_step == 0) {
 		if (!VSG::scene_render->reflection_probe_instance_begin_render(reflection_probe->instance, scenario->reflection_atlas)) {
@@ -2876,7 +3380,11 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 		}
 
 		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, reflection_probe->previous_room_id_hint);
+
+		bool async_forbidden_backup = VSG::storage->is_shader_async_hidden_forbidden();
+		VSG::storage->set_shader_async_hidden_forbidden(true);
 		_render_scene(xform, cm, 0, false, RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
+		VSG::storage->set_shader_async_hidden_forbidden(async_forbidden_backup);
 
 	} else {
 		//do roughness postprocess step until it believes it's done
@@ -3272,10 +3780,6 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 
 			float distance_adv = _get_normal_advance(light_axis);
 
-			int success_count = 0;
-
-			// uint64_t us = OS::get_singleton()->get_ticks_usec();
-
 			for (int i = 0; i < p_leaf_count; i++) {
 				uint32_t idx = leaves[i];
 
@@ -3324,18 +3828,11 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					light->energy[0] += int32_t(light_r * att * ((cell->albedo >> 16) & 0xFF) / 255.0);
 					light->energy[1] += int32_t(light_g * att * ((cell->albedo >> 8) & 0xFF) / 255.0);
 					light->energy[2] += int32_t(light_b * att * ((cell->albedo) & 0xFF) / 255.0);
-					success_count++;
 				}
 			}
-
-			// print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
-			// print_line("valid cells: " + itos(success_count));
-
 		} break;
 		case VS::LIGHT_OMNI:
 		case VS::LIGHT_SPOT: {
-			// uint64_t us = OS::get_singleton()->get_ticks_usec();
-
 			Vector3 light_pos = light_cache.transform.origin;
 			Vector3 spot_axis = -light_cache.transform.basis.get_axis(2).normalized();
 
@@ -3433,7 +3930,6 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					light->energy[2] += int32_t(light_b * att * ((cell->albedo) & 0xFF) / 255.0);
 				}
 			}
-			//print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
 		} break;
 	}
 }
@@ -3985,6 +4481,11 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 				}
 			}
 
+			if (p_instance->material_overlay.is_valid()) {
+				can_cast_shadows = can_cast_shadows || VSG::storage->material_casts_shadows(p_instance->material_overlay);
+				is_animated = is_animated || VSG::storage->material_is_animated(p_instance->material_overlay);
+			}
+
 			if (can_cast_shadows != geom->can_cast_shadows) {
 				//ability to cast shadows change, let lights now
 				for (List<Instance *>::Element *E = geom->lighting.front(); E; E = E->next()) {
@@ -4028,10 +4529,10 @@ void VisualServerScene::update_dirty_instances() {
 bool VisualServerScene::free(RID p_rid) {
 	if (camera_owner.owns(p_rid)) {
 		Camera *camera = camera_owner.get(p_rid);
+		_interpolation_data.notify_free_camera(p_rid, *camera);
 
 		camera_owner.free(p_rid);
 		memdelete(camera);
-
 	} else if (scenario_owner.owns(p_rid)) {
 		Scenario *scenario = scenario_owner.get(p_rid);
 
@@ -4049,17 +4550,20 @@ bool VisualServerScene::free(RID p_rid) {
 		update_dirty_instances();
 
 		Instance *instance = instance_owner.get(p_rid);
+		_interpolation_data.notify_free_instance(p_rid, *instance);
 
 		instance_set_use_lightmap(p_rid, RID(), RID(), -1, Rect2(0, 0, 1, 1));
 		instance_set_scenario(p_rid, RID());
 		instance_set_base(p_rid, RID());
 		instance_geometry_set_material_override(p_rid, RID());
+		instance_geometry_set_material_overlay(p_rid, RID());
 		instance_attach_skeleton(p_rid, RID());
 
 		update_dirty_instances(); //in case something changed this
 
 		instance_owner.free(p_rid);
 		memdelete(instance);
+
 	} else if (room_owner.owns(p_rid)) {
 		Room *room = room_owner.get(p_rid);
 		room_owner.free(p_rid);
@@ -4076,10 +4580,15 @@ bool VisualServerScene::free(RID p_rid) {
 		RoomGroup *roomgroup = roomgroup_owner.get(p_rid);
 		roomgroup_owner.free(p_rid);
 		memdelete(roomgroup);
-	} else if (occluder_owner.owns(p_rid)) {
-		Occluder *ro = occluder_owner.get(p_rid);
-		occluder_owner.free(p_rid);
-		memdelete(ro);
+	} else if (occluder_instance_owner.owns(p_rid)) {
+		OccluderInstance *occ_inst = occluder_instance_owner.get(p_rid);
+		occluder_instance_owner.free(p_rid);
+		memdelete(occ_inst);
+	} else if (occluder_resource_owner.owns(p_rid)) {
+		OccluderResource *occ_res = occluder_resource_owner.get(p_rid);
+		occ_res->destroy(_portal_resources);
+		occluder_resource_owner.free(p_rid);
+		memdelete(occ_res);
 	} else {
 		return false;
 	}

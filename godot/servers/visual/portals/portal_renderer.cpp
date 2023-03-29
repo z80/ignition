@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  portal_renderer.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  portal_renderer.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "portal_renderer.h"
 
@@ -59,7 +59,7 @@ OcclusionHandle PortalRenderer::instance_moving_create(VSInstance *p_instance, R
 	}
 
 	OcclusionHandle handle = pool_id + 1;
-	instance_moving_update(handle, p_aabb);
+	instance_moving_update(handle, p_aabb, true);
 	return handle;
 }
 
@@ -117,10 +117,13 @@ void PortalRenderer::_rghost_remove_from_rooms(uint32_t p_pool_id) {
 }
 
 void PortalRenderer::_occluder_remove_from_rooms(uint32_t p_pool_id) {
-	VSOccluder &occ = _occluder_pool[p_pool_id];
+	VSOccluder_Instance &occ = _occluder_instance_pool[p_pool_id];
 	if (_loaded && (occ.room_id != -1)) {
 		VSRoom &room = get_room(occ.room_id);
-		room.remove_occluder(p_pool_id);
+		bool res = room.remove_occluder(p_pool_id);
+		if (!res) {
+			WARN_PRINT_ONCE("OccluderInstance was not present in Room");
+		}
 	}
 }
 
@@ -149,12 +152,14 @@ void PortalRenderer::_debug_print_global_list() {
 }
 
 void PortalRenderer::_log(String p_string, int p_priority) {
-	// change this for more debug output ..
-	// not selectable at runtime yet.
-	if (p_priority >= 1) {
-		print_line(p_string);
-	} else {
-		print_verbose(p_string);
+	if (_show_debug) {
+		// change this for more debug output ..
+		// not selectable at runtime yet.
+		if (p_priority >= 1) {
+			print_line(p_string);
+		} else {
+			print_verbose(p_string);
+		}
 	}
 }
 
@@ -467,22 +472,38 @@ void PortalRenderer::rghost_destroy(RGhostHandle p_handle) {
 	_rghost_pool.free(p_handle);
 }
 
-OccluderHandle PortalRenderer::occluder_create(VSOccluder::Type p_type) {
+OccluderInstanceHandle PortalRenderer::occluder_instance_create() {
 	uint32_t pool_id = 0;
-	VSOccluder *occ = _occluder_pool.request(pool_id);
+	VSOccluder_Instance *occ = _occluder_instance_pool.request(pool_id);
 	occ->create();
 
-	// specific type
-	occ->type = p_type;
-	CRASH_COND(p_type == VSOccluder::OT_UNDEFINED);
-
-	OccluderHandle handle = pool_id + 1;
+	OccluderInstanceHandle handle = pool_id + 1;
 	return handle;
 }
 
-void PortalRenderer::occluder_set_active(OccluderHandle p_handle, bool p_active) {
+void PortalRenderer::occluder_instance_link(OccluderInstanceHandle p_handle, OccluderResourceHandle p_resource_handle) {
 	p_handle--;
-	VSOccluder &occ = _occluder_pool[p_handle];
+	VSOccluder_Instance &occ = _occluder_instance_pool[p_handle];
+
+	// Unlink with any already linked, and destroy world resources
+	if (occ.resource_pool_id != UINT32_MAX) {
+		// Watch for bugs in future with the room within, this is not changed here,
+		// but could potentially be removed and re-added in future if we use sprawling.
+		occluder_instance_destroy(p_handle + 1, false);
+		occ.resource_pool_id = UINT32_MAX;
+	}
+
+	p_resource_handle--;
+	VSOccluder_Resource &res = VSG::scene->get_portal_resources().get_pool_occluder_resource(p_resource_handle);
+
+	occ.resource_pool_id = p_resource_handle;
+	occ.type = res.type;
+	occ.revision = 0;
+}
+
+void PortalRenderer::occluder_instance_set_active(OccluderInstanceHandle p_handle, bool p_active) {
+	p_handle--;
+	VSOccluder_Instance &occ = _occluder_instance_pool[p_handle];
 
 	if (occ.active == p_active) {
 		return;
@@ -493,18 +514,23 @@ void PortalRenderer::occluder_set_active(OccluderHandle p_handle, bool p_active)
 	occluder_refresh_room_within(p_handle);
 }
 
-void PortalRenderer::occluder_set_transform(OccluderHandle p_handle, const Transform &p_xform) {
+void PortalRenderer::occluder_instance_set_transform(OccluderInstanceHandle p_handle, const Transform &p_xform) {
 	p_handle--;
-	VSOccluder &occ = _occluder_pool[p_handle];
+	VSOccluder_Instance &occ = _occluder_instance_pool[p_handle];
 	occ.xform = p_xform;
 
 	// mark as dirty as the world space spheres will be out of date
-	occ.dirty = true;
+	occ.revision = 0;
+
+	// The room within is based on the xform, rather than the AABB so this
+	// should still work even though the world space transform is deferred.
+	// N.B. Occluders are a single room based on the center of the Occluder transform,
+	// this may need to be improved at a later date.
 	occluder_refresh_room_within(p_handle);
 }
 
 void PortalRenderer::occluder_refresh_room_within(uint32_t p_occluder_pool_id) {
-	VSOccluder &occ = _occluder_pool[p_occluder_pool_id];
+	VSOccluder_Instance &occ = _occluder_instance_pool[p_occluder_pool_id];
 
 	// if we aren't loaded, the room within can't be valid
 	if (!_loaded) {
@@ -547,56 +573,47 @@ void PortalRenderer::occluder_refresh_room_within(uint32_t p_occluder_pool_id) {
 	}
 }
 
-void PortalRenderer::occluder_update_spheres(OccluderHandle p_handle, const Vector<Plane> &p_spheres) {
+void PortalRenderer::occluder_instance_destroy(OccluderInstanceHandle p_handle, bool p_free) {
 	p_handle--;
-	VSOccluder &occ = _occluder_pool[p_handle];
-	ERR_FAIL_COND(occ.type != VSOccluder::OT_SPHERE);
 
-	// first deal with the situation where the number of spheres has changed (rare)
-	if (occ.list_ids.size() != p_spheres.size()) {
-		// not the most efficient, but works...
-		// remove existing
-		for (int n = 0; n < occ.list_ids.size(); n++) {
-			uint32_t id = occ.list_ids[n];
-			_occluder_sphere_pool.free(id);
-		}
-
-		occ.list_ids.clear();
-		// create new
-		for (int n = 0; n < p_spheres.size(); n++) {
-			uint32_t id;
-			VSOccluder_Sphere *sphere = _occluder_sphere_pool.request(id);
-			sphere->create();
-			occ.list_ids.push_back(id);
-		}
+	if (p_free) {
+		_occluder_remove_from_rooms(p_handle);
 	}
-
-	// new positions
-	for (int n = 0; n < occ.list_ids.size(); n++) {
-		uint32_t id = occ.list_ids[n];
-		VSOccluder_Sphere &sphere = _occluder_sphere_pool[id];
-		sphere.local.from_plane(p_spheres[n]);
-	}
-
-	// mark as dirty as the world space spheres will be out of date
-	occ.dirty = true;
-}
-
-void PortalRenderer::occluder_destroy(OccluderHandle p_handle) {
-	p_handle--;
 
 	// depending on the occluder type, remove the spheres etc
-	VSOccluder &occ = _occluder_pool[p_handle];
+	VSOccluder_Instance &occ = _occluder_instance_pool[p_handle];
 	switch (occ.type) {
-		case VSOccluder::OT_SPHERE: {
-			occluder_update_spheres(p_handle + 1, Vector<Plane>());
+		case VSOccluder_Instance::OT_SPHERE: {
+			// free any spheres owned by the occluder
+			for (int n = 0; n < occ.list_ids.size(); n++) {
+				uint32_t id = occ.list_ids[n];
+				_occluder_world_sphere_pool.free(id);
+			}
+			occ.list_ids.clear();
+		} break;
+		case VSOccluder_Instance::OT_MESH: {
+			// free any polys owned by the occluder
+			for (int n = 0; n < occ.list_ids.size(); n++) {
+				uint32_t id = occ.list_ids[n];
+				VSOccluder_Poly &poly = _occluder_world_poly_pool[id];
+
+				// free any holes owned by the poly
+				for (int h = 0; h < poly.num_holes; h++) {
+					_occluder_world_hole_pool.free(poly.hole_pool_ids[h]);
+				}
+				// blanks
+				poly.create();
+				_occluder_world_poly_pool.free(id);
+			}
+			occ.list_ids.clear();
 		} break;
 		default: {
 		} break;
 	}
 
-	_occluder_remove_from_rooms(p_handle);
-	_occluder_pool.free(p_handle);
+	if (p_free) {
+		_occluder_instance_pool.free(p_handle);
+	}
 }
 
 // Rooms
@@ -846,7 +863,7 @@ void PortalRenderer::rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, 
 	// as this will worst case give wrong result for a frame
 	Engine::get_singleton()->set_portals_active(true);
 
-	print_line("Room conversion complete. " + itos(_room_pool_ids.size()) + " rooms, " + itos(_portal_pool_ids.size()) + " portals.");
+	_log("Room conversion complete. " + itos(_room_pool_ids.size()) + " rooms, " + itos(_portal_pool_ids.size()) + " portals.", 1);
 }
 
 bool PortalRenderer::sprawl_static_geometry(int p_static_id, const VSStatic &p_static, int p_room_id, const Vector<Vector3> &p_object_pts) {
@@ -940,16 +957,16 @@ void PortalRenderer::_load_finalize_roaming() {
 		instance_moving_update(handle, aabb, true);
 	}
 
-	for (int n = 0; n < _rghost_pool.active_size(); n++) {
+	for (unsigned int n = 0; n < _rghost_pool.active_size(); n++) {
 		RGhost &moving = _rghost_pool.get_active(n);
 		const AABB &aabb = moving.exact_aabb;
 
 		rghost_update(_rghost_pool.get_active_id(n) + 1, aabb, true);
 	}
 
-	for (int n = 0; n < _occluder_pool.active_size(); n++) {
-		VSOccluder &occ = _occluder_pool.get_active(n);
-		int occluder_id = _occluder_pool.get_active_id(n);
+	for (unsigned int n = 0; n < _occluder_instance_pool.active_size(); n++) {
+		VSOccluder_Instance &occ = _occluder_instance_pool.get_active(n);
+		int occluder_id = _occluder_instance_pool.get_active_id(n);
 
 		// make sure occluder is in the correct room
 		occ.room_id = find_room_within(occ.pt_center, -1);
@@ -1060,7 +1077,7 @@ void PortalRenderer::rooms_and_portals_clear() {
 		moving.rooms_and_portals_clear();
 	}
 
-	for (int n = 0; n < _rghost_pool.active_size(); n++) {
+	for (unsigned int n = 0; n < _rghost_pool.active_size(); n++) {
 		RGhost &moving = _rghost_pool.get_active(n);
 		moving.rooms_and_portals_clear();
 	}
@@ -1100,7 +1117,7 @@ void PortalRenderer::rooms_update_gameplay_monitor(const Vector<Vector3> &p_came
 	_gameplay_monitor.update_gameplay(*this, source_rooms, num_source_rooms);
 }
 
-int PortalRenderer::cull_convex_implementation(const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_result_max, uint32_t p_mask, int32_t &r_previous_room_id_hint) {
+int PortalRenderer::cull_convex_implementation(const Vector3 &p_point, const Vector3 &p_cam_dir, const CameraMatrix &p_cam_matrix, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_result_max, uint32_t p_mask, int32_t &r_previous_room_id_hint) {
 	// start room
 	int start_room_id = find_room_within(p_point, r_previous_room_id_hint);
 
@@ -1110,6 +1127,9 @@ int PortalRenderer::cull_convex_implementation(const Vector3 &p_point, const Vec
 	if (start_room_id == -1) {
 		return -1;
 	}
+
+	// set up the occlusion culler once off .. this is a prepare before the prepare is done PER room
+	_tracer.get_occlusion_culler().prepare_camera(p_cam_matrix, p_cam_dir);
 
 	// planes must be in CameraMatrix order
 	DEV_ASSERT(p_convex.size() == 6);
@@ -1174,9 +1194,13 @@ int PortalRenderer::cull_convex_implementation(const Vector3 &p_point, const Vec
 }
 
 String PortalRenderer::_rid_to_string(RID p_rid) {
-	return _addr_to_string(p_rid.get_data());
+	return itos(p_rid.get_id());
 }
 
 String PortalRenderer::_addr_to_string(const void *p_addr) {
 	return String::num_uint64((uint64_t)p_addr, 16);
+}
+
+PortalRenderer::PortalRenderer() {
+	_show_debug = GLOBAL_GET("rendering/portals/debug/logging");
 }

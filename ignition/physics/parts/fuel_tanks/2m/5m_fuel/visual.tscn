@@ -1,25 +1,13 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://physics/parts/coupling_nodes/coupling_node_stacking.gd" type="Script" id=1]
-[ext_resource path="res://physics/parts/fuel_tanks/2m/5m_fuel/assets/tank/tank_Cylinder018.tres" type="ArrayMesh" id=2]
-[ext_resource path="res://physics/interact_icon/interaction_node.gd" type="Script" id=3]
-[ext_resource path="res://physics/shock_wave/shock_wave_visual.tscn" type="PackedScene" id=4]
+[ext_resource path="res://physics/parts/fuel_tanks/2m/5m_fuel/visual_raw.tscn" type="PackedScene" id=1]
 
-[node name="visual" type="Spatial"]
+[sub_resource type="CylinderShape" id=2]
+height = 5.0
 
-[node name="2m" type="MeshInstance" parent="."]
-mesh = ExtResource( 2 )
-material/0 = null
+[node name="FuelTank5m" type="RigidBody"]
 
-[node name="node_top" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0 )
-script = ExtResource( 1 )
+[node name="CollisionShape" type="CollisionShape" parent="."]
+shape = SubResource( 2 )
 
-[node name="node_bottom" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, -1, 3.25841e-07, 0, -3.25841e-07, -1, 0, -2.5, 0 )
-script = ExtResource( 1 )
-
-[node name="InteractionNode" type="Spatial" parent="."]
-script = ExtResource( 3 )
-
-[node name="ShockWaveVisual" parent="." instance=ExtResource( 4 )]
+[node name="visual" parent="." instance=ExtResource( 1 )]

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  item_list_editor_plugin.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  item_list_editor_plugin.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "item_list_editor_plugin.h"
 
@@ -102,26 +102,26 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < get_item_count(); i++) {
 		String base = itos(i) + "/";
 
-		p_list->push_back(PropertyInfo(Variant::STRING, base + "text"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
+		p_list->push_back(PropertyInfo(Variant::STRING, base + PNAME("text")));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, base + PNAME("icon"), PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
 
 		int flags = get_flags();
 
 		if (flags & FLAG_CHECKABLE) {
-			p_list->push_back(PropertyInfo(Variant::INT, base + "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"));
-			p_list->push_back(PropertyInfo(Variant::BOOL, base + "checked"));
+			p_list->push_back(PropertyInfo(Variant::INT, base + PNAME("checkable"), PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"));
+			p_list->push_back(PropertyInfo(Variant::BOOL, base + PNAME("checked")));
 		}
 
 		if (flags & FLAG_ID) {
-			p_list->push_back(PropertyInfo(Variant::INT, base + "id", PROPERTY_HINT_RANGE, "-1,4096"));
+			p_list->push_back(PropertyInfo(Variant::INT, base + PNAME("id"), PROPERTY_HINT_RANGE, "-1,4096"));
 		}
 
 		if (flags & FLAG_ENABLE) {
-			p_list->push_back(PropertyInfo(Variant::BOOL, base + "enabled"));
+			p_list->push_back(PropertyInfo(Variant::BOOL, base + PNAME("enabled")));
 		}
 
 		if (flags & FLAG_SEPARATOR) {
-			p_list->push_back(PropertyInfo(Variant::BOOL, base + "separator"));
+			p_list->push_back(PropertyInfo(Variant::BOOL, base + PNAME("separator")));
 		}
 	}
 }
@@ -241,11 +241,20 @@ void ItemListEditor::_node_removed(Node *p_node) {
 }
 
 void ItemListEditor::_notification(int p_notification) {
-	if (p_notification == NOTIFICATION_ENTER_TREE || p_notification == NOTIFICATION_THEME_CHANGED) {
-		add_button->set_icon(get_icon("Add", "EditorIcons"));
-		del_button->set_icon(get_icon("Remove", "EditorIcons"));
-	} else if (p_notification == NOTIFICATION_READY) {
-		get_tree()->connect("node_removed", this, "_node_removed");
+	switch (p_notification) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			add_button->set_icon(get_icon("Add", "EditorIcons"));
+			del_button->set_icon(get_icon("Remove", "EditorIcons"));
+		} break;
+
+		case NOTIFICATION_READY: {
+			get_tree()->connect("node_removed", this, "_node_removed");
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			property_editor->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+		} break;
 	}
 }
 
@@ -360,6 +369,7 @@ ItemListEditor::ItemListEditor() {
 	property_editor = memnew(EditorInspector);
 	vbc->add_child(property_editor);
 	property_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	property_editor->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 }
 
 ItemListEditor::~ItemListEditor() {

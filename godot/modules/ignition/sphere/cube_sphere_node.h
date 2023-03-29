@@ -72,10 +72,10 @@ public:
     void set_convert_to_global( bool en );
     bool get_convert_to_global() const;
 
-	//void relocate_mesh( Node * ref_frame, Node * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source );
-	//void rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source );
-	//void rebuild_scale( Node * ref_frame );
-	void apply_visual_mesh();
+    //void relocate_mesh( Node * ref_frame, Node * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source );
+    //void rebuild_shape( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source );
+    //void rebuild_scale( Node * ref_frame );
+    void apply_visual_mesh();
 
 private:
 

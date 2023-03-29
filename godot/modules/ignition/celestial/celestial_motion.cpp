@@ -18,7 +18,9 @@ CelestialMotion::CelestialMotion()
     type = STATIONARY;
 	force_numerical = false;
     allow_orbiting = true;
- 
+
+	own_gm = -1.0;
+
     gm = -1.0;
     abs_e = 0.0;
     a = 1.0;
@@ -217,6 +219,18 @@ Float CelestialMotion::deflection_angle() const
 	return ret;
 }
 
+Vector3d CelestialMotion::acceleration() const
+{
+	const bool orbiting = is_orbiting();
+	if ( !orbiting )
+		return Vector3d::ZERO;
+	const Float abs_r = se3_local.r_.Length();
+	const Float acc_r = gm/(abs_r*abs_r*abs_r);
+	const Vector3d acc_local = -se3_local.r_ * acc_r;
+	const Vector3d acc_global = A * acc_local;
+	return acc_global;
+}
+
 Vector3d CelestialMotion::ex() const
 {
 	const Vector3d ret( A.m00_, A.m10_, A.m20_ );
@@ -233,7 +247,7 @@ Vector3d CelestialMotion::ey() const
 
 
 
-void CelestialMotion::init( Float gm_, const SE3 & se3_ )
+bool CelestialMotion::launch( Float gm_, const SE3 & se3_ )
 {
 	_last_init_gm  = gm_;
 	_last_init_se3 = se3_;
@@ -251,14 +265,14 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
 	{
 		type = STATIONARY;
 		print_line( String("gm < 0.0: ") + rtos(gm) + String(", switching to idle") );
-		return;
+		return false;
 	}
 
     if ( !allow_orbiting )
     {
         type = STATIONARY;
 		print_line( String("allow_orbiting == false, switching to idle") );
-		return;
+		return false;
     }
 
 
@@ -274,7 +288,7 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
     {
         type = NUMERICAL;
         init_numeric();
-        return;
+        return true;
     }
 
     const Float abs_r = r.Length();
@@ -355,14 +369,25 @@ void CelestialMotion::init( Float gm_, const SE3 & se3_ )
         type = PARABOLIC;
         init_parabolic();
     }
+
+	return true;
 }
 
-Float CelestialMotion::init_gm( Float radius_km, Float wanted_surface_orbit_velocity_kms )
+Float CelestialMotion::compute_gm_by_speed( Float radius_km, Float wanted_surface_orbit_velocity_kms )
 {
     const Float v = wanted_surface_orbit_velocity_kms * 1000.0;
     const Float r = radius_km * 1000.0;
     const Float gm = v*v*r;
     return gm;
+}
+
+Float CelestialMotion::compute_gm_by_period( Float radius_km, Float wanted_period_hrs )
+{
+	const Float circumference_km = 2.0*3.1415926535*radius_km;
+	const Float period_sec = wanted_period_hrs*3600.0;
+	const Float speed_kms = circumference_km / period_sec;
+	const Float gm = compute_gm_by_speed( radius_km, speed_kms );
+	return gm;
 }
 
 void CelestialMotion::launch_elliptic( Float gm, const Vector3d & unit_r, const Vector3d & unit_v, Float period_hrs, Float eccentricity )
@@ -387,7 +412,7 @@ void CelestialMotion::launch_elliptic( Float gm, const Vector3d & unit_r, const 
     SE3 se3;
     se3.r_ = v_r;
     se3.v_ = v_v;
-    init( gm, se3 );
+    launch( gm, se3 );
 }
 
 const SE3 & CelestialMotion::process( Float dt )
@@ -435,7 +460,7 @@ const SE3 & CelestialMotion::get_se3() const
 
 void CelestialMotion::set_se3( const SE3 & se3 )
 {
-	init( gm, se3 );
+	launch( gm, se3 );
 }
 
 
@@ -530,7 +555,7 @@ struct RK4_Vector6
 	Float x[6];
 };
 
-void rk4_f( const RK4_Vector6 & x, Float gm, Float h, RK4_Vector6 & f )
+static void rk4_f( const RK4_Vector6 & x, Float gm, Float h, RK4_Vector6 & f )
 {
 	const Vector3d r( x.x[0], x.x[1], x.x[2] );
 	const Float abs_r = r.Length();
@@ -583,6 +608,7 @@ static void rk4_step( SE3 & se3, Float gm, Float h )
 	se3.v_.z_ = x.x[5];
 }
 
+
 void CelestialMotion::process_numeric( Float dt )
 {
 	//const Float abs_r = se3_global.r_.Length();
@@ -591,9 +617,15 @@ void CelestialMotion::process_numeric( Float dt )
 	//se3_global.r_ += se3_global.v_ * dt;
 
 	rk4_step( se3_global, gm, dt );
-	print_line( String("numerical integration: x: (" )  + rtos(se3_global.r_.x_) + String(", ") +
-		rtos(se3_global.r_.y_) + String(", ") + rtos(se3_global.r_.z_) + String(")") );
+	if (_debug)
+	{
+		print_line( String("numerical integration: x: (" ) +
+			rtos(se3_global.r_.x_) + String(", ") +
+			rtos(se3_global.r_.y_) + String(", ") +
+			rtos(se3_global.r_.z_) + String(")") );
+	}
 }
+
 
 void CelestialMotion::process_parabolic( Float dt )
 {
@@ -824,6 +856,7 @@ void CelestialMotion::orbit_points( RefFrameNode * orbiting_center_node, RefFram
 		pts.push_back( r_in_player_rf );
 	}
 }
+
 
 
 

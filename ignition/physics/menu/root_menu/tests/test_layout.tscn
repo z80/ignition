@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://physics/menu/root_menu/rigid_menu_item.tscn" type="PackedScene" id=1]
+[ext_resource path="res://physics/menu/root_menu/video_background.tscn" type="PackedScene" id=2]
+
+[node name="Control" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="RootMenuItem" parent="." instance=ExtResource( 1 )]
+position = Vector2( 424, 184 )
+z_index = 1
+
+[node name="Panel" type="Panel" parent="."]
+margin_right = 592.0
+margin_bottom = 352.0
+mouse_filter = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="C" parent="." instance=ExtResource( 2 )]

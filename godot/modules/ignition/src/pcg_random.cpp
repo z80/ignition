@@ -7,6 +7,7 @@ namespace Ign
 static const uint64_t DEF_STATE = 0x853c49e6748fea9bULL;
 static const uint64_t DEF_SEQ   = 0xda3e39cb94b95bdbULL;
 static const uint64_t PCG_MULT  = 6364136223846793005ULL;
+
 PcgRandom::PcgRandom()
 { 
     const uint64_t state = DEF_STATE;
@@ -43,7 +44,7 @@ void PcgRandom::seed( uint64_t s )
     state_ = state_ * PCG_MULT + inc_;
 }
 
-void PcgRandom::setState( uint64_t st )
+void PcgRandom::set_state( uint64_t st )
 {
 	state_ = st;
 }

@@ -132,6 +132,6 @@ static func init_elliptic( gm: float, unit_r: Vector3, unit_v: Vector3, T: float
 
 
 # Compute "GM" based on surface radius and circular velocity desired
-static func init_gm( r: float, v: float ):
+static func init_gm_speed( r: float, v: float ):
 	return r*v*v
 

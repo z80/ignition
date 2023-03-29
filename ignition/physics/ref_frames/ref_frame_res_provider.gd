@@ -25,7 +25,7 @@ func _create_update_physics_frames():
 	# 2) It already has a physics object. Just need to update it.
 	# 3) There is a physics object but no ref. frame.
 	
-	var bit_rfs = PhysicsManager.physics_ref_frames()
+	var bit_rfs = RootScene.ref_frame_root.physics_ref_frames()
 	
 	# 1) New physics frames processing. I.e. the ones which don't 
 	#    have physics object yet.
@@ -70,7 +70,7 @@ func _create_update_physics_frames():
 
 
 func _process_physics_frames():
-	var bit_rfs = PhysicsManager.physics_ref_frames()
+	var bit_rfs = RootScene.ref_frame_root.physics_ref_frames()
 	for bit in _physicals:
 		# It should exist as this method is called after _create_update_physics_frames().
 		# This is for double check.
@@ -90,7 +90,7 @@ func _process_physics_frames():
 # Here just get current player ref. frame and move or 
 # re-generate visual object depending on what happened with 
 func _update_visual_frame():
-	var rf = PhysicsManager.get_player_ref_frame()
+	var rf = RootScene.ref_frame_root.get_player_ref_frame()
 	if rf == null:
 		return
 	rf.compute_relative_to_root( self )

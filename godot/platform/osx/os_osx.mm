@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  os_osx.mm                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  os_osx.mm                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "os_osx.h"
 
@@ -41,6 +41,8 @@
 #include "servers/visual/visual_server_raster.h"
 
 #include <mach-o/dyld.h>
+#include <os/log.h>
+#include <sys/sysctl.h>
 
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
@@ -48,9 +50,6 @@
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hid/IOHIDKeys.h>
 #include <IOKit/hid/IOHIDLib.h>
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200
-#include <os/log.h>
-#endif
 
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -194,7 +193,9 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notice {
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-	if (nsappname == nil || isatty(STDOUT_FILENO) || isatty(STDIN_FILENO) || isatty(STDERR_FILENO)) {
+	NSString *nsbundleid_env = [NSString stringWithUTF8String:getenv("__CFBundleIdentifier")];
+	NSString *nsbundleid = [[NSBundle mainBundle] bundleIdentifier];
+	if (nsappname == nil || isatty(STDOUT_FILENO) || isatty(STDIN_FILENO) || isatty(STDERR_FILENO) || ![nsbundleid isEqualToString:nsbundleid_env]) {
 		// If the executable is started from terminal or is not bundled, macOS WindowServer won't register and activate app window correctly (menu and title bar are grayed out and input ignored).
 		[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
 	}
@@ -371,6 +372,14 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 }
 
+- (void)windowWillStartLiveResize:(NSNotification *)notification {
+	OS_OSX::singleton->is_resizing = true;
+}
+
+- (void)windowDidEndLiveResize:(NSNotification *)notification {
+	OS_OSX::singleton->is_resizing = false;
+}
+
 - (void)windowDidResize:(NSNotification *)notification {
 	[OS_OSX::singleton->context update];
 
@@ -387,15 +396,6 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 		dim[1] = OS_OSX::singleton->window_size.height;
 		CGLSetParameter((CGLContextObj)[OS_OSX::singleton->context CGLContextObj], kCGLCPSurfaceBackingSize, &dim[0]);
 		CGLEnable((CGLContextObj)[OS_OSX::singleton->context CGLContextObj], kCGLCESurfaceBackingSize);
-	}
-
-	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates triggered by window view resize.
-	if (OS_OSX::singleton->main_loop && (OS_OSX::singleton->get_render_thread_mode() != OS::RENDER_SEPARATE_THREAD)) {
-		Main::force_redraw();
-		//Event retrieval blocks until resize is over. Call Main::iteration() directly.
-		if (!Main::is_iterating()) { //avoid cyclic loop
-			Main::iteration();
-		}
 	}
 
 	/*
@@ -427,7 +427,7 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 - (void)windowDidBecomeKey:(NSNotification *)notification {
 	if (OS_OSX::singleton->get_main_loop()) {
-		get_mouse_pos([OS_OSX::singleton->window_object mouseLocationOutsideOfEventStream]);
+		_ALLOW_DISCARD_ get_mouse_pos([OS_OSX::singleton->window_object mouseLocationOutsideOfEventStream]);
 		OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x, mouse_y));
 
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
@@ -472,6 +472,20 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 @end
 
 @implementation GodotContentView
+
+- (void)drawRect:(NSRect)dirtyRect {
+	if (OS_OSX::singleton->get_main_loop() && OS_OSX::singleton->is_resizing) {
+		Main::force_redraw();
+		if (!Main::is_iterating()) { // Avoid cyclic loop.
+			Main::iteration();
+		}
+	}
+}
+
+- (void)setFrameSize:(NSSize)newSize {
+	[super setFrameSize:newSize];
+	[self setNeedsDisplay:YES]; // Force "drawRect" call.
+}
 
 + (void)initialize {
 	if (self == [GodotContentView class]) {
@@ -797,9 +811,15 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	const Vector2 pos = get_mouse_pos(mpos);
 	mm->set_position(pos);
 	mm->set_pressure([event pressure]);
-	if ([event subtype] == NSEventSubtypeTabletPoint) {
+	NSEventSubtype subtype = [event subtype];
+	if (subtype == NSEventSubtypeTabletPoint) {
 		const NSPoint p = [event tilt];
-		mm->set_tilt(Vector2(p.x, p.y));
+		mm->set_tilt(Vector2(p.x, -p.y));
+		mm->set_pen_inverted(OS_OSX::singleton->last_pen_inverted);
+	} else if (subtype == NSEventSubtypeTabletProximity) {
+		// Check if using the eraser end of pen only on proximity event.
+		OS_OSX::singleton->last_pen_inverted = [event pointingDeviceType] == NSPointingDeviceTypeEraser;
+		mm->set_pen_inverted(OS_OSX::singleton->last_pen_inverted);
 	}
 	mm->set_global_position(pos);
 	mm->set_speed(OS_OSX::singleton->input->get_last_mouse_speed());
@@ -807,7 +827,6 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	mm->set_relative(relativeMotion);
 	get_key_modifier_state([event modifierFlags], mm);
 
-	OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x, mouse_y));
 	OS_OSX::singleton->push_input(mm);
 }
 
@@ -941,145 +960,154 @@ static bool isNumpadKey(unsigned int key) {
 	return false;
 }
 
-// Translates a OS X keycode to a Godot keycode
-//
-static int translateKey(unsigned int key) {
-	// Keyboard symbol translation table
-	static const unsigned int table[128] = {
-		/* 00 */ KEY_A,
-		/* 01 */ KEY_S,
-		/* 02 */ KEY_D,
-		/* 03 */ KEY_F,
-		/* 04 */ KEY_H,
-		/* 05 */ KEY_G,
-		/* 06 */ KEY_Z,
-		/* 07 */ KEY_X,
-		/* 08 */ KEY_C,
-		/* 09 */ KEY_V,
-		/* 0a */ KEY_SECTION, /* ISO Section */
-		/* 0b */ KEY_B,
-		/* 0c */ KEY_Q,
-		/* 0d */ KEY_W,
-		/* 0e */ KEY_E,
-		/* 0f */ KEY_R,
-		/* 10 */ KEY_Y,
-		/* 11 */ KEY_T,
-		/* 12 */ KEY_1,
-		/* 13 */ KEY_2,
-		/* 14 */ KEY_3,
-		/* 15 */ KEY_4,
-		/* 16 */ KEY_6,
-		/* 17 */ KEY_5,
-		/* 18 */ KEY_EQUAL,
-		/* 19 */ KEY_9,
-		/* 1a */ KEY_7,
-		/* 1b */ KEY_MINUS,
-		/* 1c */ KEY_8,
-		/* 1d */ KEY_0,
-		/* 1e */ KEY_BRACERIGHT,
-		/* 1f */ KEY_O,
-		/* 20 */ KEY_U,
-		/* 21 */ KEY_BRACELEFT,
-		/* 22 */ KEY_I,
-		/* 23 */ KEY_P,
-		/* 24 */ KEY_ENTER,
-		/* 25 */ KEY_L,
-		/* 26 */ KEY_J,
-		/* 27 */ KEY_APOSTROPHE,
-		/* 28 */ KEY_K,
-		/* 29 */ KEY_SEMICOLON,
-		/* 2a */ KEY_BACKSLASH,
-		/* 2b */ KEY_COMMA,
-		/* 2c */ KEY_SLASH,
-		/* 2d */ KEY_N,
-		/* 2e */ KEY_M,
-		/* 2f */ KEY_PERIOD,
-		/* 30 */ KEY_TAB,
-		/* 31 */ KEY_SPACE,
-		/* 32 */ KEY_QUOTELEFT,
-		/* 33 */ KEY_BACKSPACE,
-		/* 34 */ KEY_UNKNOWN,
-		/* 35 */ KEY_ESCAPE,
-		/* 36 */ KEY_META,
-		/* 37 */ KEY_META,
-		/* 38 */ KEY_SHIFT,
-		/* 39 */ KEY_CAPSLOCK,
-		/* 3a */ KEY_ALT,
-		/* 3b */ KEY_CONTROL,
-		/* 3c */ KEY_SHIFT,
-		/* 3d */ KEY_ALT,
-		/* 3e */ KEY_CONTROL,
-		/* 3f */ KEY_UNKNOWN, /* Function */
-		/* 40 */ KEY_UNKNOWN, /* F17 */
-		/* 41 */ KEY_KP_PERIOD,
-		/* 42 */ KEY_UNKNOWN,
-		/* 43 */ KEY_KP_MULTIPLY,
-		/* 44 */ KEY_UNKNOWN,
-		/* 45 */ KEY_KP_ADD,
-		/* 46 */ KEY_UNKNOWN,
-		/* 47 */ KEY_NUMLOCK, /* Really KeypadClear... */
-		/* 48 */ KEY_VOLUMEUP, /* VolumeUp */
-		/* 49 */ KEY_VOLUMEDOWN, /* VolumeDown */
-		/* 4a */ KEY_VOLUMEMUTE, /* Mute */
-		/* 4b */ KEY_KP_DIVIDE,
-		/* 4c */ KEY_KP_ENTER,
-		/* 4d */ KEY_UNKNOWN,
-		/* 4e */ KEY_KP_SUBTRACT,
-		/* 4f */ KEY_UNKNOWN, /* F18 */
-		/* 50 */ KEY_UNKNOWN, /* F19 */
-		/* 51 */ KEY_EQUAL, /* KeypadEqual */
-		/* 52 */ KEY_KP_0,
-		/* 53 */ KEY_KP_1,
-		/* 54 */ KEY_KP_2,
-		/* 55 */ KEY_KP_3,
-		/* 56 */ KEY_KP_4,
-		/* 57 */ KEY_KP_5,
-		/* 58 */ KEY_KP_6,
-		/* 59 */ KEY_KP_7,
-		/* 5a */ KEY_UNKNOWN, /* F20 */
-		/* 5b */ KEY_KP_8,
-		/* 5c */ KEY_KP_9,
-		/* 5d */ KEY_YEN, /* JIS Yen */
-		/* 5e */ KEY_UNDERSCORE, /* JIS Underscore */
-		/* 5f */ KEY_COMMA, /* JIS KeypadComma */
-		/* 60 */ KEY_F5,
-		/* 61 */ KEY_F6,
-		/* 62 */ KEY_F7,
-		/* 63 */ KEY_F3,
-		/* 64 */ KEY_F8,
-		/* 65 */ KEY_F9,
-		/* 66 */ KEY_UNKNOWN, /* JIS Eisu */
-		/* 67 */ KEY_F11,
-		/* 68 */ KEY_UNKNOWN, /* JIS Kana */
-		/* 69 */ KEY_F13,
-		/* 6a */ KEY_F16,
-		/* 6b */ KEY_F14,
-		/* 6c */ KEY_UNKNOWN,
-		/* 6d */ KEY_F10,
-		/* 6e */ KEY_MENU,
-		/* 6f */ KEY_F12,
-		/* 70 */ KEY_UNKNOWN,
-		/* 71 */ KEY_F15,
-		/* 72 */ KEY_INSERT, /* Really Help... */
-		/* 73 */ KEY_HOME,
-		/* 74 */ KEY_PAGEUP,
-		/* 75 */ KEY_DELETE,
-		/* 76 */ KEY_F4,
-		/* 77 */ KEY_END,
-		/* 78 */ KEY_F2,
-		/* 79 */ KEY_PAGEDOWN,
-		/* 7a */ KEY_F1,
-		/* 7b */ KEY_LEFT,
-		/* 7c */ KEY_RIGHT,
-		/* 7d */ KEY_DOWN,
-		/* 7e */ KEY_UP,
-		/* 7f */ KEY_UNKNOWN,
-	};
+// Keyboard symbol translation table
+static const unsigned int _osx_to_godot_table[128] = {
+	/* 00 */ KEY_A,
+	/* 01 */ KEY_S,
+	/* 02 */ KEY_D,
+	/* 03 */ KEY_F,
+	/* 04 */ KEY_H,
+	/* 05 */ KEY_G,
+	/* 06 */ KEY_Z,
+	/* 07 */ KEY_X,
+	/* 08 */ KEY_C,
+	/* 09 */ KEY_V,
+	/* 0a */ KEY_SECTION, /* ISO Section */
+	/* 0b */ KEY_B,
+	/* 0c */ KEY_Q,
+	/* 0d */ KEY_W,
+	/* 0e */ KEY_E,
+	/* 0f */ KEY_R,
+	/* 10 */ KEY_Y,
+	/* 11 */ KEY_T,
+	/* 12 */ KEY_1,
+	/* 13 */ KEY_2,
+	/* 14 */ KEY_3,
+	/* 15 */ KEY_4,
+	/* 16 */ KEY_6,
+	/* 17 */ KEY_5,
+	/* 18 */ KEY_EQUAL,
+	/* 19 */ KEY_9,
+	/* 1a */ KEY_7,
+	/* 1b */ KEY_MINUS,
+	/* 1c */ KEY_8,
+	/* 1d */ KEY_0,
+	/* 1e */ KEY_BRACERIGHT,
+	/* 1f */ KEY_O,
+	/* 20 */ KEY_U,
+	/* 21 */ KEY_BRACELEFT,
+	/* 22 */ KEY_I,
+	/* 23 */ KEY_P,
+	/* 24 */ KEY_ENTER,
+	/* 25 */ KEY_L,
+	/* 26 */ KEY_J,
+	/* 27 */ KEY_APOSTROPHE,
+	/* 28 */ KEY_K,
+	/* 29 */ KEY_SEMICOLON,
+	/* 2a */ KEY_BACKSLASH,
+	/* 2b */ KEY_COMMA,
+	/* 2c */ KEY_SLASH,
+	/* 2d */ KEY_N,
+	/* 2e */ KEY_M,
+	/* 2f */ KEY_PERIOD,
+	/* 30 */ KEY_TAB,
+	/* 31 */ KEY_SPACE,
+	/* 32 */ KEY_QUOTELEFT,
+	/* 33 */ KEY_BACKSPACE,
+	/* 34 */ KEY_UNKNOWN,
+	/* 35 */ KEY_ESCAPE,
+	/* 36 */ KEY_META,
+	/* 37 */ KEY_META,
+	/* 38 */ KEY_SHIFT,
+	/* 39 */ KEY_CAPSLOCK,
+	/* 3a */ KEY_ALT,
+	/* 3b */ KEY_CONTROL,
+	/* 3c */ KEY_SHIFT,
+	/* 3d */ KEY_ALT,
+	/* 3e */ KEY_CONTROL,
+	/* 3f */ KEY_UNKNOWN, /* Function */
+	/* 40 */ KEY_UNKNOWN, /* F17 */
+	/* 41 */ KEY_KP_PERIOD,
+	/* 42 */ KEY_UNKNOWN,
+	/* 43 */ KEY_KP_MULTIPLY,
+	/* 44 */ KEY_UNKNOWN,
+	/* 45 */ KEY_KP_ADD,
+	/* 46 */ KEY_UNKNOWN,
+	/* 47 */ KEY_NUMLOCK, /* Really KeypadClear... */
+	/* 48 */ KEY_VOLUMEUP, /* VolumeUp */
+	/* 49 */ KEY_VOLUMEDOWN, /* VolumeDown */
+	/* 4a */ KEY_VOLUMEMUTE, /* Mute */
+	/* 4b */ KEY_KP_DIVIDE,
+	/* 4c */ KEY_KP_ENTER,
+	/* 4d */ KEY_UNKNOWN,
+	/* 4e */ KEY_KP_SUBTRACT,
+	/* 4f */ KEY_UNKNOWN, /* F18 */
+	/* 50 */ KEY_UNKNOWN, /* F19 */
+	/* 51 */ KEY_EQUAL, /* KeypadEqual */
+	/* 52 */ KEY_KP_0,
+	/* 53 */ KEY_KP_1,
+	/* 54 */ KEY_KP_2,
+	/* 55 */ KEY_KP_3,
+	/* 56 */ KEY_KP_4,
+	/* 57 */ KEY_KP_5,
+	/* 58 */ KEY_KP_6,
+	/* 59 */ KEY_KP_7,
+	/* 5a */ KEY_UNKNOWN, /* F20 */
+	/* 5b */ KEY_KP_8,
+	/* 5c */ KEY_KP_9,
+	/* 5d */ KEY_YEN, /* JIS Yen */
+	/* 5e */ KEY_UNDERSCORE, /* JIS Underscore */
+	/* 5f */ KEY_COMMA, /* JIS KeypadComma */
+	/* 60 */ KEY_F5,
+	/* 61 */ KEY_F6,
+	/* 62 */ KEY_F7,
+	/* 63 */ KEY_F3,
+	/* 64 */ KEY_F8,
+	/* 65 */ KEY_F9,
+	/* 66 */ KEY_UNKNOWN, /* JIS Eisu */
+	/* 67 */ KEY_F11,
+	/* 68 */ KEY_UNKNOWN, /* JIS Kana */
+	/* 69 */ KEY_F13,
+	/* 6a */ KEY_F16,
+	/* 6b */ KEY_F14,
+	/* 6c */ KEY_UNKNOWN,
+	/* 6d */ KEY_F10,
+	/* 6e */ KEY_MENU,
+	/* 6f */ KEY_F12,
+	/* 70 */ KEY_UNKNOWN,
+	/* 71 */ KEY_F15,
+	/* 72 */ KEY_INSERT, /* Really Help... */
+	/* 73 */ KEY_HOME,
+	/* 74 */ KEY_PAGEUP,
+	/* 75 */ KEY_DELETE,
+	/* 76 */ KEY_F4,
+	/* 77 */ KEY_END,
+	/* 78 */ KEY_F2,
+	/* 79 */ KEY_PAGEDOWN,
+	/* 7a */ KEY_F1,
+	/* 7b */ KEY_LEFT,
+	/* 7c */ KEY_RIGHT,
+	/* 7d */ KEY_DOWN,
+	/* 7e */ KEY_UP,
+	/* 7f */ KEY_UNKNOWN,
+};
 
+// Translates a OS X keycode to a Godot keycode
+static int translateKey(unsigned int key) {
 	if (key >= 128)
 		return KEY_UNKNOWN;
 
-	return table[key];
+	return _osx_to_godot_table[key];
+}
+
+// Translates a Godot keycode back to a OSX keycode
+static unsigned int unmapKey(unsigned int key) {
+	for (int i = 0; i <= 126; i++) {
+		if (_osx_to_godot_table[i] == key) {
+			return i;
+		}
+	}
+	return 127;
 }
 
 struct _KeyCodeMap {
@@ -1362,7 +1390,7 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 - (void)scrollWheel:(NSEvent *)event {
 	double deltaX, deltaY;
 
-	get_mouse_pos([event locationInWindow]);
+	_ALLOW_DISCARD_ get_mouse_pos([event locationInWindow]);
 
 	deltaX = [event scrollingDeltaX];
 	deltaY = [event scrollingDeltaY];
@@ -1503,6 +1531,15 @@ void OS_OSX::set_ime_position(const Point2 &p_pos) {
 	im_position = p_pos;
 }
 
+String OS_OSX::get_processor_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+}
+
 void OS_OSX::initialize_core() {
 	crash_handler.initialize();
 
@@ -1597,6 +1634,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		[window_view setWantsBestResolutionOpenGLSurface:NO];
 	}
 
+	[window_object setColorSpace:[NSColorSpace sRGBColorSpace]];
+
 	//[window_object setTitle:[NSString stringWithUTF8String:"GodotEnginies"]];
 	[window_object setContentView:window_view];
 	[window_object setDelegate:window_delegate];
@@ -1674,6 +1713,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	ERR_FAIL_COND_V(context == nil, ERR_UNAVAILABLE);
 
 	[window_view setOpenGLContext:context];
+
+	context_offscreen = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
 
 	[context makeCurrentContext];
 
@@ -2157,7 +2198,7 @@ void OS_OSX::warp_mouse_position(const Point2 &p_to) {
 }
 
 void OS_OSX::update_real_mouse_position() {
-	get_mouse_pos([window_object mouseLocationOutsideOfEventStream]);
+	_ALLOW_DISCARD_ get_mouse_pos([window_object mouseLocationOutsideOfEventStream]);
 	input->set_mouse_position(Point2(mouse_x, mouse_y));
 }
 
@@ -2244,14 +2285,6 @@ MainLoop *OS_OSX::get_main_loop() const {
 }
 
 String OS_OSX::get_config_path() const {
-	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on macOS as well.
-	if (has_environment("XDG_CONFIG_HOME")) {
-		if (get_environment("XDG_CONFIG_HOME").is_abs_path()) {
-			return get_environment("XDG_CONFIG_HOME");
-		} else {
-			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `$HOME/Library/Application Support` or `.` per the XDG Base Directory specification.");
-		}
-	}
 	if (has_environment("HOME")) {
 		return get_environment("HOME").plus_file("Library/Application Support");
 	}
@@ -2259,26 +2292,10 @@ String OS_OSX::get_config_path() const {
 }
 
 String OS_OSX::get_data_path() const {
-	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on macOS as well.
-	if (has_environment("XDG_DATA_HOME")) {
-		if (get_environment("XDG_DATA_HOME").is_abs_path()) {
-			return get_environment("XDG_DATA_HOME");
-		} else {
-			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `get_config_path()` per the XDG Base Directory specification.");
-		}
-	}
 	return get_config_path();
 }
 
 String OS_OSX::get_cache_path() const {
-	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on macOS as well.
-	if (has_environment("XDG_CACHE_HOME")) {
-		if (get_environment("XDG_CACHE_HOME").is_abs_path()) {
-			return get_environment("XDG_CACHE_HOME");
-		} else {
-			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `$HOME/Library/Caches` or `get_config_path()` per the XDG Base Directory specification.");
-		}
-	}
 	if (has_environment("HOME")) {
 		return get_environment("HOME").plus_file("Library/Caches");
 	}
@@ -2436,6 +2453,18 @@ OS::VideoMode OS_OSX::get_video_mode(int p_screen) const {
 void OS_OSX::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 }
 
+bool OS_OSX::is_offscreen_gl_available() const {
+	return context_offscreen != nil;
+}
+
+void OS_OSX::set_offscreen_gl_current(bool p_current) {
+	if (p_current) {
+		[context_offscreen makeCurrentContext];
+	} else {
+		[NSOpenGLContext clearCurrentContext];
+	}
+}
+
 int OS_OSX::get_screen_count() const {
 	NSArray *screenArray = [NSScreen screens];
 	return [screenArray count];
@@ -2485,8 +2514,24 @@ void OS_OSX::set_current_screen(int p_screen) {
 		return;
 	}
 
+	if (get_current_screen() == p_screen) {
+		return;
+	}
+
+	bool was_fullscreen = false;
+	if (zoomed) {
+		// Temporary exit fullscreen mode to move window.
+		[window_object toggleFullScreen:nil];
+		was_fullscreen = true;
+	}
+
 	Vector2 wpos = get_window_position() - get_screen_position(get_current_screen());
 	set_window_position(wpos + get_screen_position(p_screen));
+
+	if (was_fullscreen) {
+		// Re-enter fullscreen mode.
+		[window_object toggleFullScreen:nil];
+	}
 };
 
 Point2 OS_OSX::get_native_screen_position(int p_screen) const {
@@ -2533,6 +2578,22 @@ int OS_OSX::get_screen_dpi(int p_screen) const {
 	}
 
 	return 72;
+}
+
+float OS_OSX::get_screen_refresh_rate(int p_screen) const {
+	if (p_screen < 0) {
+		p_screen = get_current_screen();
+	}
+
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
+		const CGDisplayModeRef displayMode = CGDisplayCopyDisplayMode([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
+		const double displayRefreshRate = CGDisplayModeGetRefreshRate(displayMode);
+		return (float)displayRefreshRate;
+	}
+	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
+	return OS::get_singleton()->SCREEN_REFRESH_RATE_FALLBACK;
 }
 
 Size2 OS_OSX::get_screen_size(int p_screen) const {
@@ -2957,7 +3018,7 @@ String OS_OSX::get_executable_path() const {
 	}
 }
 
-Error OS_OSX::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_OSX::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	if (@available(macOS 10.15, *)) {
 		NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 		// If executable is bundled, always execute editor instances using NSWorkspace to ensure app window is registered and activated correctly.
@@ -3004,10 +3065,10 @@ Error OS_OSX::execute(const String &p_path, const List<String> &p_arguments, boo
 
 			return err;
 		} else {
-			return OS_Unix::execute(p_path, p_arguments, p_blocking, r_child_id, r_pipe, r_exitcode, read_stderr, p_pipe_mutex);
+			return OS_Unix::execute(p_path, p_arguments, p_blocking, r_child_id, r_pipe, r_exitcode, read_stderr, p_pipe_mutex, p_open_console);
 		}
 	} else {
-		return OS_Unix::execute(p_path, p_arguments, p_blocking, r_child_id, r_pipe, r_exitcode, read_stderr, p_pipe_mutex);
+		return OS_Unix::execute(p_path, p_arguments, p_blocking, r_child_id, r_pipe, r_exitcode, read_stderr, p_pipe_mutex, p_open_console);
 	}
 }
 
@@ -3197,6 +3258,17 @@ String OS_OSX::keyboard_get_layout_name(int p_index) const {
 	return kbd_layouts[p_index].name;
 }
 
+uint32_t OS_OSX::keyboard_get_scancode_from_physical(uint32_t p_scancode) const {
+	if (p_scancode == KEY_PAUSE) {
+		return p_scancode;
+	}
+
+	unsigned int modifiers = p_scancode & KEY_MODIFIER_MASK;
+	unsigned int scancode_no_mod = p_scancode & KEY_CODE_MASK;
+	unsigned int osx_scancode = unmapKey((uint32_t)scancode_no_mod);
+	return (uint32_t)(remapKey(osx_scancode, 0) | modifiers);
+}
+
 void OS_OSX::process_events() {
 	while (true) {
 		NSEvent *event = [NSApp
@@ -3297,11 +3369,26 @@ void OS_OSX::force_process_input() {
 	joypad_osx->process_joypads();
 }
 
+void OS_OSX::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
+	// Prevent main loop from sleeping and redraw window during modal popup display.
+	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates.
+
+	if (get_singleton()->get_main_loop() && (get_singleton()->get_render_thread_mode() != RENDER_SEPARATE_THREAD) && !OS_OSX::singleton->is_resizing) {
+		Main::force_redraw();
+		if (!Main::is_iterating()) { // Avoid cyclic loop.
+			Main::iteration();
+		}
+	}
+
+	CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
+}
+
 void OS_OSX::run() {
 	force_quit = false;
 
-	if (!main_loop)
+	if (!main_loop) {
 		return;
+	}
 
 	main_loop->init();
 
@@ -3310,10 +3397,8 @@ void OS_OSX::run() {
 		set_window_fullscreen(true);
 	}
 
-	//uint64_t last_ticks=get_ticks_usec();
-
-	//int frames=0;
-	//uint64_t frame=0;
+	CFRunLoopObserverRef pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
+	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
 
 	bool quit = false;
 
@@ -3329,6 +3414,9 @@ void OS_OSX::run() {
 			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 		}
 	};
+
+	CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+	CFRelease(pre_wait_observer);
 
 	main_loop->finish();
 }
@@ -3421,6 +3509,7 @@ OS_OSX *OS_OSX::singleton = NULL;
 
 OS_OSX::OS_OSX() {
 	context = nullptr;
+	context_offscreen = nullptr;
 
 	memset(cursors, 0, sizeof(cursors));
 	key_event_pos = 0;

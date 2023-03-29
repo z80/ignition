@@ -35,7 +35,7 @@ func _compute_relative_to_owner_recursive( n: Node, t: Transform ):
 	if n == ow:
 		return t
 	
-	var p: Node = get_parent()
+	var p: Node = n.get_parent()
 	var ret: Transform = _compute_relative_to_owner_recursive( p, t )
 	return ret
 
@@ -48,7 +48,7 @@ func characters_for_boarding():
 	if part == null:
 		return null
 	
-	var ctrl: Node = PhysicsManager.player_control
+	var ctrl: Node = RootScene.ref_frame_root.player_control
 	if (ctrl == null) or (not is_instance_valid(ctrl)):
 		return null
 	

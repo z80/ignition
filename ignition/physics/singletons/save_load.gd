@@ -33,6 +33,9 @@ static func full_file_path( fname: String ):
 static func serialize_all( n: Node ):
 	var data: Dictionary = {}
 	
+	var root_data: Dictionary = serialize_root_node()
+	data["root"] = root_data
+	
 	var stars_data: Dictionary      = serialize_stars( n )
 	data["stars"] = stars_data
 	
@@ -44,9 +47,6 @@ static func serialize_all( n: Node ):
 	
 	var bodies_data: Dictionary     = serialize_bodies( n )
 	data["bodies"] = bodies_data
-	
-	var physics_data: Dictionary = serialize_physics_manager()
-	data["physics"] = physics_data
 	
 	var camera_data: Dictionary     = serialize_camera()
 	data["camera"] = camera_data
@@ -81,8 +81,8 @@ static func deserialize_all( n: Node, data: Dictionary ):
 	if not ret:
 		return false
 	
-	var physics_data: Dictionary = data.physics
-	ret = deserialize_physics_manager( physics_data )
+	var physics_data: Dictionary = data.root
+	ret = deserialize_root_node( physics_data )
 	if not ret:
 		return false
 	
@@ -96,13 +96,13 @@ static func deserialize_all( n: Node, data: Dictionary ):
 
 
 
-static func serialize_physics_manager():
-	var data: Dictionary = PhysicsManager.serialize()
+static func serialize_root_node():
+	var data: Dictionary = RootScene.ref_frame_root.serialize()
 	return data
 
 
-static func deserialize_physics_manager( data: Dictionary ):
-	var ret: bool = PhysicsManager.deserialize( data )
+static func deserialize_root_node( data: Dictionary ):
+	var ret: bool = RootScene.ref_frame_root.deserialize( data )
 	return ret
 
 
@@ -120,17 +120,17 @@ static func serialize_stars( n: Node ):
 			data = data, 
 			path = path
 		}
-		var name: String = sun.name
-		suns_data[name] = all_data
+		#var name: String = sun.name
+		suns_data[path] = all_data
 	
 	return suns_data
 
 
 
 static func deserialize_stars( n: Node, stars_data: Dictionary ):
-	for name in stars_data:
-		var all_data: Dictionary = stars_data[name]
-		var path: String = all_data["path"]
+	for path in stars_data:
+		var all_data: Dictionary = stars_data[path]
+		#var path: String = all_data["path"]
 		# This reports error if the node is not found.
 		# So it is net additionally reported here in the code.
 		var star = n.get_node( path )
@@ -152,21 +152,21 @@ static func serialize_planets( n: Node ):
 	for p in planets:
 		var data: Dictionary = p.serialize()
 		var path: String = p.get_path()
-		var name: String = p.name
+		#var name: String = p.name
 		var all_data: Dictionary = {
 			data=data, 
 			path=path
 		}
-		planets_data[name] = all_data
+		planets_data[path] = all_data
 	
 	return planets_data
 
 
 
 static func deserialize_planets( n: Node, planets_data: Dictionary ):
-	for name in planets_data:
-		var all_data: Dictionary = planets_data[name]
-		var path: String = all_data["path"]
+	for path in planets_data:
+		var all_data: Dictionary = planets_data[path]
+		#var path: String = all_data["path"]
 		# This reports error if the node is not found.
 		# So it is net additionally reported here in the code.
 		var planet = n.get_node( path )
@@ -190,9 +190,11 @@ static func serialize_ref_frames_physics( n: Node ):
 		var parentpath: String = rf.get_parent().get_path()
 		var all_data: Dictionary = {
 			parentpath = parentpath, 
+			name = name, 
 			data = data
 		}
-		rfs_data[name] = all_data
+		var path: String = rf.get_path()
+		rfs_data[path] = all_data
 	
 	return rfs_data
 
@@ -201,7 +203,7 @@ static func serialize_ref_frames_physics( n: Node ):
 static func destroy_all_ref_frames_physics( n: Node ):
 	var ref_frames: Array = n.get_tree().get_nodes_in_group( Constants.REF_FRAME_PHYSICS_GROUP_NAME )
 	for rf in ref_frames:
-		var p = rf.get_parent()
+		var _p: Node = rf.get_parent()
 		rf.queue_free()
 		rf.name = rf.name + "_t_be_deleted"
 
@@ -210,19 +212,20 @@ static func destroy_all_ref_frames_physics( n: Node ):
 # They can't belong to each other, only to planets or stars.
 # So can be sure that path exists.
 static func deserialize_ref_frames_physics( n: Node, rf_data: Dictionary ):
-	for name in rf_data:
-		var all_data: Dictionary = rf_data[name]
+	for path in rf_data:
+		var all_data: Dictionary = rf_data[path]
 		var parentpath: String = all_data.parentpath
-		var rf: Node = PhysicsManager.create_ref_frame_physics()
+		var name: String = all_data.name
+		var rf: Node = RootScene.ref_frame_root.create_ref_frame_physics()
 		rf.name = name
 		var parent: Node = n.get_node( parentpath )
 		if parent != null:
 			parent.add_child( rf )
 
-	for name in rf_data:
-		var all_data: Dictionary = rf_data[name]
-		var parentpath: String = all_data.parentpath
-		var path: String = parentpath + "/" + name
+	for path in rf_data:
+		var all_data: Dictionary = rf_data[path]
+		#var parentpath: String = all_data.parentpath
+		#var path: String = all_data.path
 		var rf: Node = n.get_node( path )
 		var data: Dictionary = all_data.data
 		var ret: bool = rf.deserialize( data )
@@ -244,13 +247,15 @@ static func serialize_bodies( n: Node ):
 		var data: Dictionary    = b.serialize()
 		var filename: String    = b.filename
 		var name: String        = b.name
+		var path: String        = b.get_path()
 		var parent_path: String = b.get_parent().get_path()
 		var all_data: Dictionary = {
 			filename = filename, 
 			parentpath = parent_path, 
+			name = name, 
 			data = data
 		}
-		bodies_data[name] = all_data
+		bodies_data[path] = all_data
 	
 	return bodies_data
 
@@ -268,7 +273,7 @@ static func destroy_all_bodies( n: Node ):
 
 
 static func destroy_all_assemblies( n: Node ):
-	var assemblies: Array = n.get_tree().get_nodes_in_group( Constants.SUPER_BODIES_GROUP_NAME )
+	var assemblies: Array = n.get_tree().get_nodes_in_group( Constants.BODY_ASSEMBLIES_GROUP_NAME )
 	for b in assemblies:
 		b.queue_free()
 		b.name = b.name + "_to_be_deleted"
@@ -277,10 +282,11 @@ static func destroy_all_assemblies( n: Node ):
 
 static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 	var bodies: Array = []
-	for name in bodies_data:
-		var all_data: Dictionary = bodies_data[name]
+	for path in bodies_data:
+		var all_data: Dictionary = bodies_data[path]
 		var filename: String = all_data.filename
-		var parentpath = all_data.parentpath
+		var parentpath: String = all_data.parentpath
+		var name: String = all_data.name
 		var B = load( filename )
 		var b = B.instance()
 		b.name = name
@@ -304,10 +310,10 @@ static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 		
 		bodies.push_back( b )
 	
-	for name in bodies_data:
-		var all_data: Dictionary = bodies_data[name]
+	for path in bodies_data:
+		var all_data: Dictionary = bodies_data[path]
 		var parentpath: String = all_data.parentpath
-		var path: String = parentpath + "/" + name
+		#var path: String = parentpath + "/" + name
 		var b: Node = n.get_node( path )
 		var data: Dictionary = all_data.data
 		var ret: bool = b.deserialize( data )
@@ -329,10 +335,10 @@ static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 # And the remaining object currently existing is the camera.
 # It is not destroyable. So no need to save name.
 static func serialize_camera():
-	var c: RefFrameNode = PhysicsManager.camera
+	var c: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var data: Dictionary = c.serialize()
-	var name: String = c.name
-	var filename: String = c.filename
+	var _name: String = c.name
+	var _filename: String = c.filename
 	var parentpath = c.get_parent().get_path()
 	var camera_data: Dictionary = {
 		data = data,
@@ -344,8 +350,8 @@ static func serialize_camera():
 
 
 static func deserialize_camera( camera_data: Dictionary ):
-	var c: RefFrameNode = PhysicsManager.camera
-	var parentpath: String = camera_data.parentpath
+	var c: RefFrameNode = RootScene.ref_frame_root.player_camera
+	var _parentpath: String = camera_data.parentpath
 	var data: Dictionary = camera_data.data
 	var ret: bool = c.deserialize( data )
 	if not ret:

@@ -1,36 +1,37 @@
-/*************************************************************************/
-/*  import_dock.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  import_dock.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "import_dock.h"
 #include "editor_node.h"
 #include "editor_resource_preview.h"
+#include "editor_scale.h"
 
 class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object);
@@ -133,6 +134,8 @@ void ImportDock::set_edit_path(const String &p_path) {
 	_set_dirty(false);
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
+	content->show();
+	select_a_resource->hide();
 
 	imported->set_text(p_path.get_file());
 }
@@ -276,6 +279,8 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	_set_dirty(false);
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
+	content->show();
+	select_a_resource->hide();
 
 	imported->set_text(vformat(TTR("%d Files"), p_paths.size()));
 }
@@ -397,6 +402,8 @@ void ImportDock::clear() {
 	params->properties.clear();
 	params->update();
 	preset->get_popup()->clear();
+	content->hide();
+	select_a_resource->show();
 }
 
 static bool _find_owners(EditorFileSystemDirectory *efsd, const String &p_path) {
@@ -521,6 +528,7 @@ void ImportDock::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			imported->add_style_override("normal", get_stylebox("normal", "LineEdit"));
+			import_opts->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -573,12 +581,18 @@ void ImportDock::initialize_import_options() const {
 
 ImportDock::ImportDock() {
 	set_name("Import");
+
+	content = memnew(VBoxContainer);
+	content->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(content);
+	content->hide();
+
 	imported = memnew(Label);
 	imported->add_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal", "LineEdit"));
 	imported->set_clip_text(true);
-	add_child(imported);
+	content->add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
-	add_margin_child(TTR("Import As:"), hb);
+	content->add_margin_child(TTR("Import As:"), hb);
 	import_as = memnew(OptionButton);
 	import_as->set_disabled(true);
 	import_as->connect("item_selected", this, "_importer_selected");
@@ -591,13 +605,14 @@ ImportDock::ImportDock() {
 	hb->add_child(preset);
 
 	import_opts = memnew(EditorInspector);
-	add_child(import_opts);
+	content->add_child(import_opts);
 	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
+	import_opts->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 	import_opts->connect("property_edited", this, "_property_edited");
 	import_opts->connect("property_toggled", this, "_property_toggled");
 
 	hb = memnew(HBoxContainer);
-	add_child(hb);
+	content->add_child(hb);
 	import = memnew(Button);
 	import->set_text(TTR("Reimport"));
 	import->set_disabled(true);
@@ -608,7 +623,7 @@ ImportDock::ImportDock() {
 
 	reimport_confirm = memnew(ConfirmationDialog);
 	reimport_confirm->get_ok()->set_text(TTR("Save Scenes, Re-Import, and Restart"));
-	add_child(reimport_confirm);
+	content->add_child(reimport_confirm);
 	reimport_confirm->connect("confirmed", this, "_reimport_and_restart");
 
 	VBoxContainer *vbc_confirm = memnew(VBoxContainer());
@@ -618,6 +633,15 @@ ImportDock::ImportDock() {
 	reimport_confirm->add_child(vbc_confirm);
 
 	params = memnew(ImportDockParameters);
+
+	select_a_resource = memnew(Label);
+	select_a_resource->set_text(TTR("Select a resource file in the filesystem or in the inspector to adjust import settings."));
+	select_a_resource->set_autowrap(true);
+	select_a_resource->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	select_a_resource->set_v_size_flags(SIZE_EXPAND_FILL);
+	select_a_resource->set_align(Label::ALIGN_CENTER);
+	select_a_resource->set_valign(Label::VALIGN_CENTER);
+	add_child(select_a_resource);
 }
 
 ImportDock::~ImportDock() {

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  rasterizer_dummy.h                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  rasterizer_dummy.h                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef RASTERIZER_DUMMY_H
 #define RASTERIZER_DUMMY_H
@@ -266,6 +266,9 @@ public:
 	void shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const {}
 	void shader_remove_custom_define(RID p_shader, const String &p_define) {}
 
+	void set_shader_async_hidden_forbidden(bool p_forbidden) {}
+	bool is_shader_async_hidden_forbidden() { return false; }
+
 	/* COMMON MATERIAL API */
 
 	RID material_create() { return RID(); }
@@ -432,30 +435,26 @@ public:
 
 	/* MULTIMESH API */
 
-	virtual RID multimesh_create() { return RID(); }
+	virtual RID _multimesh_create() { return RID(); }
 
-	void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE) {}
-	int multimesh_get_instance_count(RID p_multimesh) const { return 0; }
+	void _multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE) {}
+	int _multimesh_get_instance_count(RID p_multimesh) const { return 0; }
+	void _multimesh_set_mesh(RID p_multimesh, RID p_mesh) {}
+	void _multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {}
+	void _multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {}
+	void _multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {}
+	void _multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {}
+	RID _multimesh_get_mesh(RID p_multimesh) const { return RID(); }
+	Transform _multimesh_instance_get_transform(RID p_multimesh, int p_index) const { return Transform(); }
+	Transform2D _multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const { return Transform2D(); }
+	Color _multimesh_instance_get_color(RID p_multimesh, int p_index) const { return Color(); }
+	Color _multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const { return Color(); }
+	void _multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {}
+	void _multimesh_set_visible_instances(RID p_multimesh, int p_visible) {}
+	int _multimesh_get_visible_instances(RID p_multimesh) const { return 0; }
+	AABB _multimesh_get_aabb(RID p_multimesh) const { return AABB(); }
 
-	void multimesh_set_mesh(RID p_multimesh, RID p_mesh) {}
-	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {}
-	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {}
-	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {}
-	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {}
-
-	RID multimesh_get_mesh(RID p_multimesh) const { return RID(); }
-
-	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const { return Transform(); }
-	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const { return Transform2D(); }
-	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const { return Color(); }
-	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const { return Color(); }
-
-	void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {}
-
-	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) {}
-	int multimesh_get_visible_instances(RID p_multimesh) const { return 0; }
-
-	AABB multimesh_get_aabb(RID p_multimesh) const { return AABB(); }
+	MMInterpolator *_multimesh_get_interpolator(RID p_multimesh) const { return nullptr; }
 
 	/* IMMEDIATE API */
 
@@ -484,6 +483,7 @@ public:
 	Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const { return Transform(); }
 	void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) {}
 	Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const { return Transform2D(); }
+	uint32_t skeleton_get_revision(RID p_skeleton) const { return 0; }
 
 	/* Light API */
 

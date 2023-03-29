@@ -1,37 +1,41 @@
-/*************************************************************************/
-/*  animated_sprite.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animated_sprite.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "animated_sprite.h"
 
 #include "core/os/os.h"
 #include "scene/scene_string_names.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
 
 #define NORMAL_SUFFIX "_normal"
 
@@ -143,7 +147,7 @@ void SpriteFrames::clear(const StringName &p_anim) {
 
 void SpriteFrames::clear_all() {
 	animations.clear();
-	add_animation("default");
+	add_animation("default"); // Also emits changed.
 }
 
 void SpriteFrames::add_animation(const StringName &p_anim) {
@@ -151,13 +155,16 @@ void SpriteFrames::add_animation(const StringName &p_anim) {
 
 	animations[p_anim] = Anim();
 	animations[p_anim].normal_name = String(p_anim) + NORMAL_SUFFIX;
+	emit_changed();
 }
 
 bool SpriteFrames::has_animation(const StringName &p_anim) const {
 	return animations.has(p_anim);
 }
 void SpriteFrames::remove_animation(const StringName &p_anim) {
-	animations.erase(p_anim);
+	if (animations.erase(p_anim)) {
+		emit_changed();
+	}
 }
 
 void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &p_next) {
@@ -168,17 +175,7 @@ void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &
 	animations.erase(p_prev);
 	animations[p_next] = anim;
 	animations[p_next].normal_name = String(p_next) + NORMAL_SUFFIX;
-}
-
-Vector<String> SpriteFrames::_get_animation_list() const {
-	Vector<String> ret;
-	List<StringName> al;
-	get_animation_list(&al);
-	for (List<StringName>::Element *E = al.front(); E; E = E->next()) {
-		ret.push_back(E->get());
-	}
-
-	return ret;
+	emit_changed();
 }
 
 void SpriteFrames::get_animation_list(List<StringName> *r_animations) const {
@@ -235,14 +232,20 @@ Array SpriteFrames::_get_frames() const {
 
 Array SpriteFrames::_get_animations() const {
 	Array anims;
-	for (Map<StringName, Anim>::Element *E = animations.front(); E; E = E->next()) {
+
+	List<StringName> sorted_names;
+	get_animation_list(&sorted_names);
+	sorted_names.sort_custom<StringName::AlphCompare>();
+
+	for (List<StringName>::Element *E = sorted_names.front(); E; E = E->next()) {
+		const Anim &anim = animations[E->get()];
 		Dictionary d;
-		d["name"] = E->key();
-		d["speed"] = E->get().speed;
-		d["loop"] = E->get().loop;
+		d["name"] = E->get();
+		d["speed"] = anim.speed;
+		d["loop"] = anim.loop;
 		Array frames;
-		for (int i = 0; i < E->get().frames.size(); i++) {
-			frames.push_back(E->get().frames[i]);
+		for (int i = 0; i < anim.frames.size(); i++) {
+			frames.push_back(anim.frames[i]);
 		}
 		d["frames"] = frames;
 		anims.push_back(d);
@@ -250,6 +253,7 @@ Array SpriteFrames::_get_animations() const {
 
 	return anims;
 }
+
 void SpriteFrames::_set_animations(const Array &p_animations) {
 	animations.clear();
 	for (int i = 0; i < p_animations.size(); i++) {
@@ -298,12 +302,12 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_frames"), &SpriteFrames::_set_frames);
 	ClassDB::bind_method(D_METHOD("_get_frames"), &SpriteFrames::_get_frames);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", 0), "_set_frames", "_get_frames"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", 0), "_set_frames", "_get_frames"); // Compatibility with Godot 2.1.
 
 	ClassDB::bind_method(D_METHOD("_set_animations"), &SpriteFrames::_set_animations);
 	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations");
 }
 
 SpriteFrames::SpriteFrames() {
@@ -363,15 +367,18 @@ void AnimatedSprite::_notification(int p_what) {
 			if (frame < 0) {
 				return;
 			}
-
-			float speed = frames->get_animation_speed(animation) * speed_scale;
-			if (speed == 0) {
-				return; //do nothing
+			if (!OS::get_singleton()->is_update_pending()) {
+				return;
 			}
 
 			float remaining = get_process_delta_time();
 
 			while (remaining) {
+				float speed = frames->get_animation_speed(animation) * speed_scale;
+				if (speed == 0) {
+					return; //do nothing
+				}
+
 				if (timeout <= 0) {
 					timeout = _get_frame_duration();
 
@@ -567,12 +574,16 @@ bool AnimatedSprite::is_flipped_v() const {
 
 void AnimatedSprite::_res_changed() {
 	set_frame(frame);
-	_change_notify("frame");
-	_change_notify("animation");
+
+	// Calling _change_notify("frame") and _change_notify("animation") instead wouldn't
+	// make EditorInspector trigger calls to _validate_property(property) which would
+	// lead to not updating valid values for "frame" and "animation" properties.
+	_change_notify();
+
 	update();
 }
 
-void AnimatedSprite::_set_playing(bool p_playing) {
+void AnimatedSprite::set_playing(bool p_playing) {
 	if (playing == p_playing) {
 		return;
 	}
@@ -581,7 +592,7 @@ void AnimatedSprite::_set_playing(bool p_playing) {
 	set_process_internal(playing);
 }
 
-bool AnimatedSprite::_is_playing() const {
+bool AnimatedSprite::is_playing() const {
 	return playing;
 }
 
@@ -595,15 +606,12 @@ void AnimatedSprite::play(const StringName &p_animation, const bool p_backwards)
 		}
 	}
 
-	_set_playing(true);
+	is_over = false;
+	set_playing(true);
 }
 
 void AnimatedSprite::stop() {
-	_set_playing(false);
-}
-
-bool AnimatedSprite::is_playing() const {
-	return playing;
+	set_playing(false);
 }
 
 float AnimatedSprite::_get_frame_duration() {
@@ -655,6 +663,23 @@ String AnimatedSprite::get_configuration_warning() const {
 	return warning;
 }
 
+void AnimatedSprite::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+#ifdef TOOLS_ENABLED
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
+#else
+	const String quote_style = "\"";
+#endif
+
+	if (p_idx == 0 && p_function == "play" && frames.is_valid()) {
+		List<StringName> al;
+		frames->get_animation_list(&al);
+		for (List<StringName>::Element *E = al.front(); E; E = E->next()) {
+			r_options->push_back(quote_style + String(E->get()) + quote_style);
+		}
+	}
+	Node::get_argument_options(p_function, p_idx, r_options);
+}
+
 void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite::set_sprite_frames);
 	ClassDB::bind_method(D_METHOD("get_sprite_frames"), &AnimatedSprite::get_sprite_frames);
@@ -662,12 +687,11 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation", "animation"), &AnimatedSprite::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimatedSprite::get_animation);
 
-	ClassDB::bind_method(D_METHOD("_set_playing", "playing"), &AnimatedSprite::_set_playing);
-	ClassDB::bind_method(D_METHOD("_is_playing"), &AnimatedSprite::_is_playing);
+	ClassDB::bind_method(D_METHOD("set_playing", "playing"), &AnimatedSprite::set_playing);
+	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite::is_playing);
 
 	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite::play, DEFVAL(StringName()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite::stop);
-	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite::is_playing);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &AnimatedSprite::is_centered);
@@ -696,7 +720,7 @@ void AnimatedSprite::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale"), "set_speed_scale", "get_speed_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");

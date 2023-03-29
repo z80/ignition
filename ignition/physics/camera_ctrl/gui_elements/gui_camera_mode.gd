@@ -13,14 +13,14 @@ func _ready():
 
 
 func _on_fps_pressed():
-	var camera = PhysicsManager.camera
+	var camera = RootScene.ref_frame_root.player_camera
 	camera.set_mode_fps()
 	
 	_parent_gui.queue_free()
 
 
 func _on_tps_pressed():
-	var camera = PhysicsManager.camera
+	var camera = RootScene.ref_frame_root.player_camera
 	camera.set_mode_tps()
 	
 	_parent_gui.queue_free()
