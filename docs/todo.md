@@ -9,6 +9,12 @@ Here is the battle plan.
 - [ ] Make connection nodes for static bodies.
 - [ ] Make it only possible to connect static bodies to "construction base" static node.
 - [ ] Make it save/destroy/create/restore based on the bounding volume. May be introduce asynchronous database for this purpose.
+- [ ] Resource system. May be "material" and "electricity"...
+- [ ] Make "levels" purchasable for "material".
+- [ ] May be port to Godot 4.
+- [ ] If port to Godot 4 is successful, try implement multiplayer.
+- [ ] Make it possible to pick a character.
+- [ ] Implement space suit on/off capability.
 
 
 
