@@ -17,6 +17,8 @@ Here is the battle plan.
 - [ ] Make it possible to pick a character.
 - [ ] Implement space suit on/off capability.
 
+- [ ] Make volumes editable. Implement nodes hierarchy. Make it possible to drag/rotate the nodes and update the resulting landscape. May be implement a mode when it is possible to add/remove volumes and design landscape this way.
+
 
 
 
