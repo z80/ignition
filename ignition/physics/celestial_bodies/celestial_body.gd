@@ -38,8 +38,8 @@ var initialized: bool = false
 
 
 
-func get_class():
-	return "CelestialBody"
+#func get_class():
+#	return "CelestialBody"
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

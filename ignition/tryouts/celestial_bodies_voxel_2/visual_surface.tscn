@@ -1,14 +1,14 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=6 format=3 uid="uid://dcbnyhkcr4ctj"]
 
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_surface.gd" type="Script" id=1]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.tres" type="Resource" id=2]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" type="Resource" id=3]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_surface_one.tscn" type="PackedScene" id=4]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/foliage_sources/foliage_source.tres" type="Resource" id=5]
+[ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/visual_surface.gd" id="1"]
+[ext_resource type="Resource" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.tres" id="2"]
+[ext_resource type="Resource" path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" id="3"]
+[ext_resource type="PackedScene" path="res://tryouts/celestial_bodies_voxel_2/visual_surface_one.tscn" id="4"]
+[ext_resource type="Resource" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/foliage_sources/foliage_source.tres" id="5"]
 
 [node name="VisualSurface" type="Node"]
-script = ExtResource( 1 )
-VisualSurfaceOne = ExtResource( 4 )
-layer_config = ExtResource( 3 )
-surface_source = ExtResource( 2 )
-foliage_sources = [ ExtResource( 5 ) ]
+script = ExtResource("1")
+VisualSurfaceOne = ExtResource("4")
+layer_config = ExtResource("3")
+surface_source = ExtResource("2")
+foliage_sources = [ExtResource("5")]

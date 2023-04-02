@@ -12,7 +12,7 @@ var visual_cells: Dictionary = {}
 
 #var _node_size_strategy: VolumeNodeSizeStrategyGd = null
 
-var _ready: bool = false
+var _is_ready: bool = false
 var _running: bool = false
 var _processes_running: int = 0
 var _requested_rebuild: bool = false
@@ -25,7 +25,7 @@ var _node_size_strategy: VolumeNodeSizeStrategyGd = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	_ready = false
+	_is_ready = false
 	
 	_initialize_strategy()
 	_create_volume_surface()
@@ -77,7 +77,7 @@ func update_source_se3( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 		rebuild_needed = rebuild_needed or _requested_rebuild
 		if rebuild_needed:
 			_requested_rebuild = false
-			_rebuild_start(Callable(source_se3, view_point_se3))
+			_rebuild_start( source_se3, view_point_se3 )
 	
 
 
