@@ -1,10 +1,10 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=4 format=3 uid="uid://dj8cqkkm1knk0"]
 
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/collision_surface.gd" type="Script" id=1]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/collision_surface_one.tscn" type="PackedScene" id=2]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" type="Resource" id=3]
+[ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/collision_surface.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://bycysqsfk3oal" path="res://tryouts/celestial_bodies_voxel_2/collision_surface_one.tscn" id="2"]
+[ext_resource type="Resource" path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" id="3"]
 
 [node name="CollisionSurface" type="Node"]
-script = ExtResource( 1 )
-CollisionSurfaceOne = ExtResource( 2 )
-layer_config = ExtResource( 3 )
+script = ExtResource("1")
+CollisionSurfaceOne = ExtResource("2")
+layer_config = ExtResource("3")

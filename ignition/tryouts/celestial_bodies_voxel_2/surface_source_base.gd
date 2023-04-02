@@ -13,11 +13,10 @@ class_name SurfaceSourceBase
 
 
 @export var drop_materials_solid_here: Material = null: set = _set_drop_materials_solid_here
-@export var materials_solid: Array: Array = []
+@export var materials_solid: Array = []
 
 @export var drop_materials_liquid_here: Material = null: set = _set_drop_materials_liquid_here
-@export var materials_liquid: Array: Array = []
-
+@export var materials_liquid: Array = []
 
 func _set_drop_materials_solid_here( m: Material ):
 	drop_materials_solid_here = null

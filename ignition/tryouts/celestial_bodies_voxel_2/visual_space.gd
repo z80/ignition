@@ -14,7 +14,7 @@ var _scale_dist_ratio: ScaleDistanceRatioGd = null
 
 var _center_se3: Se3Ref = null
 
-var _ready: bool = false
+var _is_ready: bool = false
 var _running: bool = false
 var _requested_rebuild: bool = false
 
@@ -27,7 +27,7 @@ func _ready():
 	
 	_center_se3 = Se3Ref.new()
 	
-	_ready = false
+	_is_ready = false
 	
 	_initialize_scale_distance_ratio()
 	_initialize_strategies()
@@ -125,7 +125,7 @@ func _rebuild_process( args ):
 
 
 func _rebuild_finished( args ):
-	_ready = true
+	_is_ready = true
 	_running = false
 	
 	var voxel_surface_solid: MarchingCubesDualGd = args.voxel_surface_solid

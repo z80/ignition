@@ -95,7 +95,7 @@ func build_surface_process( args ):
 	var _step: float = voxel_surface.init_min_step( source_surface )
 	var _ok: bool = voxel_surface.subdivide_source( node, source_surface, null )
 	args.ok = _ok
-	var _qty: int = voxel_surface.precompute_scaled_values( source_se3, 0, 1.0 )
+	var _qty: int = voxel_surface.precompute_scaled_values( source_se3, 0, 1.0, Vector3.ZERO )
 	args.ok = args.ok and (_qty > 0)
 	
 	args.voxel_surface = voxel_surface

@@ -1,11 +1,11 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=4 format=3 uid="uid://dkuexll5bw41"]
 
-[ext_resource path="res://physics/ref_frames/ref_frame_physics.gd" type="Script" id=1]
-[ext_resource path="res://physics/ref_frames/physics_env/physics_env.tscn" type="PackedScene" id=2]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/collision_surface.tscn" type="PackedScene" id=3]
+[ext_resource type="Script" path="res://physics/ref_frames/ref_frame_physics.gd" id="1"]
+[ext_resource type="PackedScene" path="res://physics/ref_frames/physics_env/physics_env.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://dj8cqkkm1knk0" path="res://tryouts/celestial_bodies_voxel_2/collision_surface.tscn" id="3"]
 
 [node name="RefFramePhysics" type="RefFrameNonInertialNode"]
-script = ExtResource( 1 )
-PhysicsEnv = ExtResource( 2 )
+script = ExtResource("1")
+PhysicsEnv = ExtResource("2")
 
-[node name="CollisionSurface" parent="." instance=ExtResource( 3 )]
+[node name="CollisionSurface" parent="." instance=ExtResource("3")]

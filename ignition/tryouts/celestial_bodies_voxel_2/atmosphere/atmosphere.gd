@@ -56,7 +56,7 @@ func update( rotation: RefFrameRotationNode ):
 #	outer_height += 1.0 * 1000.0
 #	planet_radius = 1.0
 	
-	var m: ShaderMaterial = self.get_surface_override_material( 0 )
+	var m: ShaderMaterial = self.get_active_material( 0 )
 	m.set_shader_parameter( "planet_center",               planet_center )
 	m.set_shader_parameter( "planet_radius",               planet_radius )
 	m.set_shader_parameter( "height",                      height )

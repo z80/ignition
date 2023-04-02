@@ -82,7 +82,7 @@ func rebuild_surface( surface_source: Resource, synchronous: bool = true ):
 	
 	_initialize( surface_source )
 	
-	_rebuild_start(Callable(surface_source, source_se3).bind(view_point_se3), synchronous)
+	_rebuild_start( surface_source, source_se3, view_point_se3, synchronous )
 
 
 # When leaving the rotation node need to remove collision surface.

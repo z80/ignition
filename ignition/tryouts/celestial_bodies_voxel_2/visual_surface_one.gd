@@ -194,7 +194,7 @@ func _populate_foliage( volume_surface: MarchingCubesDualGd, bounding_node: Boun
 			var at: Vector3   = ret[1]
 			var norm: Vector3 = ret[2]
 			
-			var se3: Se3Ref = volume_surface.se3_in_point( at )
+			var se3: Se3Ref = volume_surface.se3_in_point( at, null )
 			var local_norm: Vector3 = se3.q.inverse() * (norm)
 			
 			var p: float = foliage_source.probability( se3, norm )

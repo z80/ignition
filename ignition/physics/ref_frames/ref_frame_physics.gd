@@ -20,8 +20,8 @@ var debug_has_split: bool = false
 
 # Override get_class() method in order
 # to be able to identify objects of this class.
-func get_class():
-	return "RefFramePhysics"
+#func get_class():
+#	return "RefFramePhysics"
 
 
 func get_collision_surface():
@@ -692,21 +692,21 @@ func deserialize( data: Dictionary ):
 
 
 
-static func _debug_distances( bodies: Array ):
-	var bodies_node: Node = RootScene.get_root_for_bodies()
-	var tree: SceneTree = bodies_node.get_tree()
-	var vp: SubViewport = tree.root
-	var root_node: Node = vp.get_node( "Root" ).get_node( "Sun" )
-	var ass: PhysicsBodyBase = root_node.find_child( "Construction", true, false )
-	DDD.important()
-	DDD.print( "                All relative to assembly:" )
-	for b in bodies:
-		var body = b as RefFrameNode
-		if body == null:
-			continue
-		var se3: Se3Ref = body.relative_to( ass )
-		DDD.print( body.name + ": " + str(se3.r) )
-	pass
+#static func _debug_distances( bodies: Array ):
+#	var bodies_node: Node = RootScene.get_root_for_bodies()
+#	var tree: SceneTree = bodies_node.get_tree()
+#	var vp: SubViewport = tree.root
+#	var root_node: Node = vp.get_node( "Root" ).get_node( "Sun" )
+#	var ass: PhysicsBodyBase = root_node.find_child( "Construction", true, false )
+#	DDD.important()
+#	DDD.print( "                All relative to assembly:" )
+#	for b in bodies:
+#		var body = b as RefFrameNode
+#		if body == null:
+#			continue
+#		var se3: Se3Ref = body.relative_to( ass )
+#		DDD.print( body.name + ": " + str(se3.r) )
+#	pass
 
 
 
