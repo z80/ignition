@@ -1,6 +1,6 @@
 
 #include "scene/main/node.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/mesh_instance_3d.h"
 
 #include "octree_mesh.h"
 #include "se3_ref.h"
@@ -11,7 +11,7 @@ namespace Ign
 class OctreeMeshGd: public Node
 {
     GDCLASS(OctreeMeshGd, Node);
-    OBJ_CATEGORY("Ignition");
+    //OBJ_CATEGORY("Ignition");
 
 protected:
     static void _bind_methods();
@@ -28,8 +28,8 @@ public:
     void set_origin( const Vector3 & at );
     const Vector3 & get_origin() const;
 
-    void set_quat( const Quat & q );
-    const Quat & get_quat() const;
+    void set_quat( const Quaternion & q );
+    const Quaternion & get_quat() const;
 
     void set_se3( const Ref<Se3Ref> & rhs );
     Ref<Se3Ref> get_se3() const;

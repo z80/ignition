@@ -37,6 +37,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Surface;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -70,11 +71,11 @@ import javax.microedition.khronos.opengles.GL10;
  * - 'plugin.init.ClassFullName' is the full name (package + class name) of the plugin class
  * extending {@link GodotPlugin}.
  *
- * A plugin can also define and provide c/c++ gdnative libraries and nativescripts for the target
+ * A plugin can also define and provide c/c++ gdextension libraries and nativescripts for the target
  * app/game to leverage.
- * The shared library for the gdnative library will be automatically bundled by the aar build
+ * The shared library for the gdextension library will be automatically bundled by the aar build
  * system.
- * Godot '*.gdnlib' and '*.gdns' resource files must however be manually defined in the project
+ * Godot '*.gdextension' resource files must however be manually defined in the project
  * 'assets' directory. The recommended path for these resources in the 'assets' directory should be:
  * 'godot/plugin/v1/[PluginName]/'
  */
@@ -111,7 +112,7 @@ public abstract class GodotPlugin {
 	public final void onRegisterPluginWithGodotNative() {
 		registeredSignals.putAll(
 				registerPluginWithGodotNative(this, getPluginName(), getPluginMethods(), getPluginSignals(),
-						getPluginGDNativeLibrariesPaths()));
+						getPluginGDExtensionLibrariesPaths()));
 	}
 
 	/**
@@ -123,7 +124,7 @@ public abstract class GodotPlugin {
 			GodotPluginInfoProvider pluginInfoProvider) {
 		registerPluginWithGodotNative(pluginObject, pluginInfoProvider.getPluginName(),
 				Collections.emptyList(), pluginInfoProvider.getPluginSignals(),
-				pluginInfoProvider.getPluginGDNativeLibrariesPaths());
+				pluginInfoProvider.getPluginGDExtensionLibrariesPaths());
 
 		// Notify that registration is complete.
 		pluginInfoProvider.onPluginRegistered();
@@ -131,7 +132,7 @@ public abstract class GodotPlugin {
 
 	private static Map<String, SignalInfo> registerPluginWithGodotNative(Object pluginObject,
 			String pluginName, List<String> pluginMethods, Set<SignalInfo> pluginSignals,
-			Set<String> pluginGDNativeLibrariesPaths) {
+			Set<String> pluginGDExtensionLibrariesPaths) {
 		nativeRegisterSingleton(pluginName, pluginObject);
 
 		Set<Method> filteredMethods = new HashSet<>();
@@ -175,9 +176,9 @@ public abstract class GodotPlugin {
 			registeredSignals.put(signalName, signalInfo);
 		}
 
-		// Get the list of gdnative libraries to register.
-		if (!pluginGDNativeLibrariesPaths.isEmpty()) {
-			nativeRegisterGDNativeLibraries(pluginGDNativeLibrariesPaths.toArray(new String[0]));
+		// Get the list of gdextension libraries to register.
+		if (!pluginGDExtensionLibrariesPaths.isEmpty()) {
+			nativeRegisterGDExtensionLibraries(pluginGDExtensionLibrariesPaths.toArray(new String[0]));
 		}
 
 		return registeredSignals;
@@ -185,7 +186,7 @@ public abstract class GodotPlugin {
 
 	/**
 	 * Invoked once during the Godot Android initialization process after creation of the
-	 * {@link org.godotengine.godot.GodotView} view.
+	 * {@link org.godotengine.godot.GodotRenderView} view.
 	 * <p>
 	 * The plugin can return a non-null {@link View} layout in order to add it to the Godot view
 	 * hierarchy.
@@ -260,6 +261,22 @@ public abstract class GodotPlugin {
 	public void onGLSurfaceCreated(GL10 gl, EGLConfig config) {}
 
 	/**
+	 * Invoked once per frame on the Vulkan thread after the frame is drawn.
+	 */
+	public void onVkDrawFrame() {}
+
+	/**
+	 * Called on the Vulkan thread after the surface is created and whenever the surface size
+	 * changes.
+	 */
+	public void onVkSurfaceChanged(Surface surface, int width, int height) {}
+
+	/**
+	 * Called on the Vulkan thread when the surface is created or recreated.
+	 */
+	public void onVkSurfaceCreated(Surface surface) {}
+
+	/**
 	 * Returns the name of the plugin.
 	 * <p>
 	 * This value must match the one listed in the plugin '<meta-data>' manifest entry.
@@ -287,12 +304,12 @@ public abstract class GodotPlugin {
 	}
 
 	/**
-	 * Returns the paths for the plugin's gdnative libraries.
+	 * Returns the paths for the plugin's gdextension libraries.
 	 *
-	 * The paths must be relative to the 'assets' directory and point to a '*.gdnlib' file.
+	 * The paths must be relative to the 'assets' directory and point to a '*.gdextension' file.
 	 */
 	@NonNull
-	protected Set<String> getPluginGDNativeLibrariesPaths() {
+	protected Set<String> getPluginGDExtensionLibrariesPaths() {
 		return Collections.emptySet();
 	}
 
@@ -391,7 +408,7 @@ public abstract class GodotPlugin {
 	 * Used to setup a {@link GodotPlugin} instance.
 	 * @param p_name Name of the instance.
 	 */
-	public static native void nativeRegisterSingleton(String p_name, Object object);
+	private static native void nativeRegisterSingleton(String p_name, Object object);
 
 	/**
 	 * Used to complete registration of the {@link GodotPlugin} instance's methods.
@@ -400,13 +417,13 @@ public abstract class GodotPlugin {
 	 * @param p_ret Return type of the registered method
 	 * @param p_params Method parameters types
 	 */
-	public static native void nativeRegisterMethod(String p_sname, String p_name, String p_ret, String[] p_params);
+	private static native void nativeRegisterMethod(String p_sname, String p_name, String p_ret, String[] p_params);
 
 	/**
-	 * Used to register gdnative libraries bundled by the plugin.
-	 * @param gdnlibPaths Paths to the libraries relative to the 'assets' directory.
+	 * Used to register gdextension libraries bundled by the plugin.
+	 * @param gdextensionPaths Paths to the libraries relative to the 'assets' directory.
 	 */
-	private static native void nativeRegisterGDNativeLibraries(String[] gdnlibPaths);
+	private static native void nativeRegisterGDExtensionLibraries(String[] gdextensionPaths);
 
 	/**
 	 * Used to complete registration of the {@link GodotPlugin} instance's methods.

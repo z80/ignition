@@ -31,10 +31,12 @@
 #ifndef SKELETON_2D_EDITOR_PLUGIN_H
 #define SKELETON_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/gui/spin_box.h"
+
+class AcceptDialog;
+class MenuButton;
 
 class Skeleton2DEditor : public Control {
 	GDCLASS(Skeleton2DEditor, Control);
@@ -44,10 +46,10 @@ class Skeleton2DEditor : public Control {
 		MENU_OPTION_MAKE_REST,
 	};
 
-	Skeleton2D *node;
+	Skeleton2D *node = nullptr;
 
-	MenuButton *options;
-	AcceptDialog *err_dialog;
+	MenuButton *options = nullptr;
+	AcceptDialog *err_dialog = nullptr;
 
 	void _menu_option(int p_option);
 
@@ -66,17 +68,16 @@ public:
 class Skeleton2DEditorPlugin : public EditorPlugin {
 	GDCLASS(Skeleton2DEditorPlugin, EditorPlugin);
 
-	Skeleton2DEditor *sprite_editor;
-	EditorNode *editor;
+	Skeleton2DEditor *sprite_editor = nullptr;
 
 public:
-	virtual String get_name() const { return "Skeleton2D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "Skeleton2D"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
-	Skeleton2DEditorPlugin(EditorNode *p_node);
+	Skeleton2DEditorPlugin();
 	~Skeleton2DEditorPlugin();
 };
 

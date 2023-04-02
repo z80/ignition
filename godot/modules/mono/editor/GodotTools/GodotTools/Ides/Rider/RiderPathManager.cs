@@ -9,7 +9,7 @@ namespace GodotTools.Ides.Rider
 {
     public static class RiderPathManager
     {
-        public static readonly string EditorPathSettingName = "mono/editor/editor_path_optional";
+        public static readonly string EditorPathSettingName = "dotnet/editor/editor_path_optional";
 
         private static string GetRiderPathFromSettings()
         {
@@ -22,7 +22,7 @@ namespace GodotTools.Ides.Rider
         public static void Initialize()
         {
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-            var editor = (ExternalEditorId)editorSettings.GetSetting("mono/editor/external_editor");
+            var editor = editorSettings.GetSetting(GodotSharpEditor.Settings.ExternalEditor).As<ExternalEditorId>();
             if (editor == ExternalEditorId.Rider)
             {
                 if (!editorSettings.HasSetting(EditorPathSettingName))
@@ -30,9 +30,9 @@ namespace GodotTools.Ides.Rider
                     Globals.EditorDef(EditorPathSettingName, "Optional");
                     editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
                     {
-                        ["type"] = Variant.Type.String,
+                        ["type"] = (int)Variant.Type.String,
                         ["name"] = EditorPathSettingName,
-                        ["hint"] = PropertyHint.File,
+                        ["hint"] = (int)PropertyHint.File,
                         ["hint_string"] = ""
                     });
                 }
@@ -66,7 +66,7 @@ namespace GodotTools.Ides.Rider
             if (string.IsNullOrEmpty(path))
                 return false;
 
-            if (path.IndexOfAny(System.IO.Path.GetInvalidPathChars()) != -1)
+            if (path.IndexOfAny(Path.GetInvalidPathChars()) != -1)
                 return false;
 
             var fileInfo = new FileInfo(path);

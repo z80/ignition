@@ -28,5 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-void register_navigation_types();
-void unregister_navigation_types();
+#ifndef NAVIGATION_REGISTER_TYPES_H
+#define NAVIGATION_REGISTER_TYPES_H
+
+#include "modules/register_module_types.h"
+
+void initialize_navigation_module(ModuleInitializationLevel p_level);
+void uninitialize_navigation_module(ModuleInitializationLevel p_level);
+
+#endif // NAVIGATION_REGISTER_TYPES_H

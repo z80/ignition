@@ -7,7 +7,10 @@ def configure(env):
 
 
 def get_doc_classes():
-    return ["UPNP", "UPNPDevice"]
+    return [
+        "UPNP",
+        "UPNPDevice",
+    ]
 
 
 def get_doc_path():

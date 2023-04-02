@@ -2,16 +2,16 @@
 #ifndef __DISTANCE_SCALER_BASE_REF_H_
 #define __DISTANCE_SCALER_BASE_REF_H_
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 #include "distance_scaler_base.h"
 
 namespace Ign
 {
 
-class DistanceScalerBaseRef: public Reference
+class DistanceScalerBaseRef: public RefCounted
 {
-    GDCLASS( DistanceScalerBaseRef, Reference );
-    OBJ_CATEGORY("Ignition");
+    GDCLASS( DistanceScalerBaseRef, RefCounted );
+    //OBJ_CATEGORY("Ignition");
 
 protected:
     static void _bind_methods();

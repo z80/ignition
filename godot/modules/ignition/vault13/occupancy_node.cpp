@@ -3,16 +3,16 @@
 
 void OccupancyNode::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("set_node_size", "real_t"), &OccupancyNode::set_node_size, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("node_size"),               &OccupancyNode::node_size, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("rebuild"),                 &OccupancyNode::rebuild, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("lines"),                   &OccupancyNode::lines, Variant::POOL_VECTOR3_ARRAY );
-	ClassDB::bind_method( D_METHOD("occupied", "vector3"),     &OccupancyNode::occupied, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("point_ajacent", "vector3"), &OccupancyNode::point_ajacent, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("intersects", "node"),      &OccupancyNode::intersects, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("touches", "node"),         &OccupancyNode::touches, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("touch_point", "node"),     &OccupancyNode::touch_point, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("intersects_ray", "from", "to"), &OccupancyNode::intersects_ray, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("set_node_size", "real_t"), &OccupancyNode::set_node_size );
+	ClassDB::bind_method( D_METHOD("node_size"),               &OccupancyNode::node_size );
+	ClassDB::bind_method( D_METHOD("rebuild"),                 &OccupancyNode::rebuild );
+	ClassDB::bind_method( D_METHOD("lines"),                   &OccupancyNode::lines );
+	ClassDB::bind_method( D_METHOD("occupied", "vector3"),     &OccupancyNode::occupied );
+	ClassDB::bind_method( D_METHOD("point_ajacent", "vector3"), &OccupancyNode::point_ajacent );
+	ClassDB::bind_method( D_METHOD("intersects", "node"),      &OccupancyNode::intersects );
+	ClassDB::bind_method( D_METHOD("touches", "node"),         &OccupancyNode::touches );
+	ClassDB::bind_method( D_METHOD("touch_point", "node"),     &OccupancyNode::touch_point );
+	ClassDB::bind_method( D_METHOD("intersects_ray", "from", "to"), &OccupancyNode::intersects_ray );
 }
 
 
@@ -41,17 +41,17 @@ void OccupancyNode::rebuild()
 	Node * p = get_parent();
 	if ( !p )
 		return;
-	MeshInstance * mi = Object::cast_to<MeshInstance>( p );
+	MeshInstance3D * mi = Object::cast_to<MeshInstance>( p );
 	if ( !mi )
 		return;
 
-	const Transform t = mi->get_transform();
+	const Transform3D t = mi->get_transform();
 	const Ref<Mesh> m = mi->get_mesh();
 	_tree.append( t, m );
 	_tree.subdivide();
 }
 
-PoolVector<Vector3> OccupancyNode::lines()
+Vector<Vector3> OccupancyNode::lines()
 {
 	return _tree.lines();
 }

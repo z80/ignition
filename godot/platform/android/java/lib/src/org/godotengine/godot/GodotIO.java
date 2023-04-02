@@ -49,6 +49,9 @@ import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.WindowInsets;
 
+import androidx.core.content.FileProvider;
+
+import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
@@ -84,29 +87,42 @@ public class GodotIO {
 	// MISCELLANEOUS OS IO
 	/////////////////////////
 
-	public int openURI(String p_uri) {
+	public int openURI(String uriString) {
 		try {
-			String path = p_uri;
-			String type = "";
-			if (path.startsWith("/")) {
-				//absolute path to filesystem, prepend file://
-				path = "file://" + path;
-				if (p_uri.endsWith(".png") || p_uri.endsWith(".jpg") || p_uri.endsWith(".gif") || p_uri.endsWith(".webp")) {
-					type = "image/*";
+			Uri dataUri;
+			String dataType = "";
+			boolean grantReadUriPermission = false;
+
+			if (uriString.startsWith("/") || uriString.startsWith("file://")) {
+				String filePath = uriString;
+				// File uris needs to be provided via the FileProvider
+				grantReadUriPermission = true;
+				if (filePath.startsWith("file://")) {
+					filePath = filePath.replace("file://", "");
 				}
+
+				File targetFile = new File(filePath);
+				dataUri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".fileprovider", targetFile);
+				dataType = activity.getContentResolver().getType(dataUri);
+			} else {
+				dataUri = Uri.parse(uriString);
 			}
 
 			Intent intent = new Intent();
 			intent.setAction(Intent.ACTION_VIEW);
-			if (!type.equals("")) {
-				intent.setDataAndType(Uri.parse(path), type);
+			if (TextUtils.isEmpty(dataType)) {
+				intent.setData(dataUri);
 			} else {
-				intent.setData(Uri.parse(path));
+				intent.setDataAndType(dataUri, dataType);
+			}
+			if (grantReadUriPermission) {
+				intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 			}
 
 			activity.startActivity(intent);
 			return 0;
 		} catch (ActivityNotFoundException e) {
+			Log.e(TAG, "Unable to open uri " + uriString, e);
 			return 1;
 		}
 	}
@@ -150,7 +166,6 @@ public class GodotIO {
 		} else {
 			selectedScaledDensity = 0.75f;
 		}
-		Log.d(TAG, "Selected scaled density: " + selectedScaledDensity);
 		return selectedScaledDensity;
 	}
 
@@ -162,7 +177,7 @@ public class GodotIO {
 		return fallback;
 	}
 
-	public int[] getWindowSafeArea() {
+	public int[] getDisplaySafeArea() {
 		DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
 		Display display = activity.getWindowManager().getDefaultDisplay();
 		Point size = new Point();
@@ -203,9 +218,10 @@ public class GodotIO {
 		return result;
 	}
 
-	public void showKeyboard(String p_existing_text, boolean p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
-		if (edit != null)
-			edit.showKeyboard(p_existing_text, p_multiline, p_max_input_length, p_cursor_start, p_cursor_end);
+	public void showKeyboard(String p_existing_text, int p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+		if (edit != null) {
+			edit.showKeyboard(p_existing_text, GodotEditText.VirtualKeyboardType.values()[p_type], p_max_input_length, p_cursor_start, p_cursor_end);
+		}
 
 		//InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
 		//inputMgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);

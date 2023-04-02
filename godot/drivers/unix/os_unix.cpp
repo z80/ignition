@@ -32,12 +32,14 @@
 
 #ifdef UNIX_ENABLED
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/unix/thread_posix.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -49,7 +51,6 @@
 #include <sys/sysctl.h>
 #endif
 
-#include <assert.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <poll.h>
@@ -63,6 +64,21 @@
 #include <time.h>
 #include <unistd.h>
 
+#if defined(MACOS_ENABLED) || (defined(__ANDROID_API__) && __ANDROID_API__ >= 28)
+// Random location for getentropy. Fitting.
+#include <sys/random.h>
+#define UNIX_GET_ENTROPY
+#elif defined(__FreeBSD__) || defined(__OpenBSD__) || (defined(__GLIBC_MINOR__) && (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 26))
+// In <unistd.h>.
+// One day... (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700)
+// https://publications.opengroup.org/standards/unix/c211
+#define UNIX_GET_ENTROPY
+#endif
+
+#if !defined(UNIX_GET_ENTROPY) && !defined(NO_URANDOM)
+#include <fcntl.h>
+#endif
+
 /// Clock Setup function (used by get_ticks_usec)
 static uint64_t _clock_start = 0;
 #if defined(__APPLE__)
@@ -75,7 +91,7 @@ static void _setup_clock() {
 	_clock_start = mach_absolute_time() * _clock_scale;
 }
 #else
-#if defined(CLOCK_MONOTONIC_RAW) && !defined(JAVASCRIPT_ENABLED) // This is a better clock on Linux.
+#if defined(CLOCK_MONOTONIC_RAW) && !defined(WEB_ENABLED) // This is a better clock on Linux.
 #define GODOT_CLOCK CLOCK_MONOTONIC_RAW
 #else
 #define GODOT_CLOCK CLOCK_MONOTONIC
@@ -87,21 +103,17 @@ static void _setup_clock() {
 }
 #endif
 
-void OS_Unix::debug_break() {
-	assert(false);
-};
-
 static void handle_interrupt(int sig) {
-	if (ScriptDebugger::get_singleton() == nullptr) {
+	if (!EngineDebugger::is_active()) {
 		return;
 	}
 
-	ScriptDebugger::get_singleton()->set_depth(-1);
-	ScriptDebugger::get_singleton()->set_lines_left(1);
+	EngineDebugger::get_script_debugger()->set_depth(-1);
+	EngineDebugger::get_script_debugger()->set_lines_left(1);
 }
 
 void OS_Unix::initialize_debugging() {
-	if (ScriptDebugger::get_singleton() != nullptr) {
+	if (EngineDebugger::is_active()) {
 		struct sigaction action;
 		memset(&action, 0, sizeof(action));
 		action.sa_handler = handle_interrupt;
@@ -114,9 +126,7 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 }
 
 void OS_Unix::initialize_core() {
-#if !defined(NO_THREADS)
 	init_thread_posix();
-#endif
 
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
@@ -125,10 +135,8 @@ void OS_Unix::initialize_core() {
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
-#ifndef NO_NETWORK
 	NetSocketPosix::make_default();
-	IP_Unix::make_default();
-#endif
+	IPUnix::make_default();
 
 	_setup_clock();
 }
@@ -137,56 +145,68 @@ void OS_Unix::finalize_core() {
 	NetSocketPosix::cleanup();
 }
 
-void OS_Unix::alert(const String &p_alert, const String &p_title) {
-	fprintf(stderr, "ALERT: %s: %s\n", p_title.utf8().get_data(), p_alert.utf8().get_data());
+Vector<String> OS_Unix::get_video_adapter_driver_info() const {
+	return Vector<String>();
 }
 
-String OS_Unix::get_stdin_string(bool p_block) {
-	if (p_block) {
-		char buff[1024];
-		String ret = stdin_buf + fgets(buff, 1024, stdin);
-		stdin_buf = "";
-		return ret;
-	}
+String OS_Unix::get_stdin_string() {
+	char buff[1024];
+	return String::utf8(fgets(buff, 1024, stdin));
+}
 
-	return "";
+Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {
+#if defined(UNIX_GET_ENTROPY)
+	int left = p_bytes;
+	int ofs = 0;
+	do {
+		int chunk = MIN(left, 256);
+		ERR_FAIL_COND_V(getentropy(r_buffer + ofs, chunk), FAILED);
+		left -= chunk;
+		ofs += chunk;
+	} while (left > 0);
+// Define this yourself if you don't want to fall back to /dev/urandom.
+#elif !defined(NO_URANDOM)
+	int r = open("/dev/urandom", O_RDONLY);
+	ERR_FAIL_COND_V(r < 0, FAILED);
+	int left = p_bytes;
+	do {
+		ssize_t ret = read(r, r_buffer, p_bytes);
+		ERR_FAIL_COND_V(ret <= 0, FAILED);
+		left -= ret;
+	} while (left > 0);
+#else
+	return ERR_UNAVAILABLE;
+#endif
+	return OK;
 }
 
 String OS_Unix::get_name() const {
 	return "Unix";
 }
 
-uint64_t OS_Unix::get_unix_time() const {
-	return time(nullptr);
-};
-
-uint64_t OS_Unix::get_system_time_secs() const {
-	struct timeval tv_now;
-	gettimeofday(&tv_now, nullptr);
-	return uint64_t(tv_now.tv_sec);
+String OS_Unix::get_distribution_name() const {
+	return "";
 }
 
-uint64_t OS_Unix::get_system_time_msecs() const {
-	struct timeval tv_now;
-	gettimeofday(&tv_now, nullptr);
-	return uint64_t(tv_now.tv_sec) * 1000 + uint64_t(tv_now.tv_usec) / 1000;
+String OS_Unix::get_version() const {
+	return "";
 }
 
-double OS_Unix::get_subsecond_unix_time() const {
+double OS_Unix::get_unix_time() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, nullptr);
 	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1000000;
 }
 
-OS::Date OS_Unix::get_date(bool utc) const {
+OS::DateTime OS_Unix::get_datetime(bool p_utc) const {
 	time_t t = time(nullptr);
 	struct tm lt;
-	if (utc) {
+	if (p_utc) {
 		gmtime_r(&t, &lt);
 	} else {
 		localtime_r(&t, &lt);
 	}
-	Date ret;
+	DateTime ret;
 	ret.year = 1900 + lt.tm_year;
 	// Index starting at 1 to match OS_Unix::get_date
 	//   and Windows SYSTEMTIME and tm_mon follows the typical structure
@@ -194,24 +214,11 @@ OS::Date OS_Unix::get_date(bool utc) const {
 	ret.month = (Month)(lt.tm_mon + 1);
 	ret.day = lt.tm_mday;
 	ret.weekday = (Weekday)lt.tm_wday;
+	ret.hour = lt.tm_hour;
+	ret.minute = lt.tm_min;
+	ret.second = lt.tm_sec;
 	ret.dst = lt.tm_isdst;
 
-	return ret;
-}
-
-OS::Time OS_Unix::get_time(bool utc) const {
-	time_t t = time(nullptr);
-	struct tm lt;
-	if (utc) {
-		gmtime_r(&t, &lt);
-	} else {
-		localtime_r(&t, &lt);
-	}
-	Time ret;
-	ret.hour = lt.tm_hour;
-	ret.min = lt.tm_min;
-	ret.sec = lt.tm_sec;
-	get_time_zone_info();
 	return ret;
 }
 
@@ -251,6 +258,7 @@ void OS_Unix::delay_usec(uint32_t p_usec) const {
 		requested.tv_nsec = remaining.tv_nsec;
 	}
 }
+
 uint64_t OS_Unix::get_ticks_usec() const {
 #if defined(__APPLE__)
 	uint64_t longtime = mach_absolute_time() * _clock_scale;
@@ -266,45 +274,45 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	return longtime;
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
-	// Actual virtual call goes to OS_JavaScript.
+	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);
 #else
-	if (p_blocking && r_pipe) {
-		String argss;
-		argss = "\"" + p_path + "\"";
-
+	if (r_pipe) {
+		String command = "\"" + p_path + "\"";
 		for (int i = 0; i < p_arguments.size(); i++) {
-			argss += String(" \"") + p_arguments[i] + "\"";
+			command += String(" \"") + p_arguments[i] + "\"";
 		}
-
 		if (read_stderr) {
-			argss += " 2>&1"; // Read stderr too
+			command += " 2>&1"; // Include stderr
 		} else {
-			argss += " 2>/dev/null"; //silence stderr
+			command += " 2>/dev/null"; // Silence stderr
 		}
-		FILE *f = popen(argss.utf8().get_data(), "r");
 
-		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot pipe stream from process running with following arguments '" + argss + "'.");
-
+		FILE *f = popen(command.utf8().get_data(), "r");
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command);
 		char buf[65535];
-
 		while (fgets(buf, 65535, f)) {
 			if (p_pipe_mutex) {
 				p_pipe_mutex->lock();
 			}
-			(*r_pipe) += String::utf8(buf);
+			String pipe_out;
+			if (pipe_out.parse_utf8(buf) == OK) {
+				(*r_pipe) += pipe_out;
+			} else {
+				(*r_pipe) += String(buf); // If not valid UTF-8 try decode as Latin-1
+			}
 			if (p_pipe_mutex) {
 				p_pipe_mutex->unlock();
 			}
 		}
 		int rv = pclose(f);
+
 		if (r_exitcode) {
 			*r_exitcode = WEXITSTATUS(rv);
 		}
-
 		return OK;
 	}
 
@@ -312,13 +320,48 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
 
 	if (pid == 0) {
-		// is child
-
-		if (!p_blocking) {
-			// For non blocking calls, create a new session-ID so parent won't wait for it.
-			// This ensures the process won't go zombie at end.
-			setsid();
+		// The child process
+		Vector<CharString> cs;
+		cs.push_back(p_path.utf8());
+		for (int i = 0; i < p_arguments.size(); i++) {
+			cs.push_back(p_arguments[i].utf8());
 		}
+
+		Vector<char *> args;
+		for (int i = 0; i < cs.size(); i++) {
+			args.push_back((char *)cs[i].get_data());
+		}
+		args.push_back(0);
+
+		execvp(p_path.utf8().get_data(), &args[0]);
+		// The execvp() function only returns if an error occurs.
+		ERR_PRINT("Could not create child process: " + p_path);
+		raise(SIGKILL);
+	}
+
+	int status;
+	waitpid(pid, &status, 0);
+	if (r_exitcode) {
+		*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
+	}
+	return OK;
+#endif
+}
+
+Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
+#ifdef __EMSCRIPTEN__
+	// Don't compile this code at all to avoid undefined references.
+	// Actual virtual call goes to OS_Web.
+	ERR_FAIL_V(ERR_BUG);
+#else
+	pid_t pid = fork();
+	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
+
+	if (pid == 0) {
+		// The new process
+		// Create a new session-ID so parent won't wait for it.
+		// This ensures the process won't go zombie at the end.
+		setsid();
 
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
@@ -333,24 +376,14 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		args.push_back(0);
 
 		execvp(p_path.utf8().get_data(), &args[0]);
-		// still alive? something failed..
-		fprintf(stderr, "**ERROR** OS_Unix::execute - Could not create child process while executing: %s\n", p_path.utf8().get_data());
+		// The execvp() function only returns if an error occurs.
+		ERR_PRINT("Could not create child process: " + p_path);
 		raise(SIGKILL);
 	}
 
-	if (p_blocking) {
-		int status;
-		waitpid(pid, &status, 0);
-		if (r_exitcode) {
-			*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
-		}
-
-	} else {
-		if (r_child_id) {
-			*r_child_id = pid;
-		}
+	if (r_child_id) {
+		*r_child_id = pid;
 	}
-
 	return OK;
 #endif
 }
@@ -367,7 +400,7 @@ Error OS_Unix::kill(const ProcessID &p_pid) {
 
 int OS_Unix::get_process_id() const {
 	return getpid();
-};
+}
 
 bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
 	int status = 0;
@@ -376,10 +409,6 @@ bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
 	}
 
 	return true;
-}
-
-bool OS_Unix::has_environment(const String &p_var) const {
-	return getenv(p_var.utf8().get_data()) != nullptr;
 }
 
 String OS_Unix::get_locale() const {
@@ -395,27 +424,32 @@ String OS_Unix::get_locale() const {
 	return locale;
 }
 
-Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path;
 
-	if (FileAccess::exists(path) && path.is_rel_path()) {
+	if (FileAccess::exists(path) && path.is_relative_path()) {
 		// dlopen expects a slash, in this case a leading ./ for it to be interpreted as a relative path,
 		//  otherwise it will end up searching various system directories for the lib instead and finally failing.
 		path = "./" + path;
 	}
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .so files from within the executable path
-		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());
+		// This code exists so GDExtension can load .so files from within the executable path.
+		path = get_executable_path().get_base_dir().path_join(p_path.get_file());
 	}
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .so files from a standard unix location
-		path = get_executable_path().get_base_dir().plus_file("../lib").plus_file(p_path.get_file());
+		// This code exists so GDExtension can load .so files from a standard unix location.
+		path = get_executable_path().get_base_dir().path_join("../lib").path_join(p_path.get_file());
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ". Error: " + dlerror());
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = path;
+	}
+
 	return OK;
 }
 
@@ -449,6 +483,10 @@ Error OS_Unix::set_cwd(const String &p_cwd) {
 	return OK;
 }
 
+bool OS_Unix::has_environment(const String &p_var) const {
+	return getenv(p_var.utf8().get_data()) != nullptr;
+}
+
 String OS_Unix::get_environment(const String &p_var) const {
 	if (getenv(p_var.utf8().get_data())) {
 		return getenv(p_var.utf8().get_data());
@@ -456,30 +494,33 @@ String OS_Unix::get_environment(const String &p_var) const {
 	return "";
 }
 
-bool OS_Unix::set_environment(const String &p_var, const String &p_value) const {
-	return setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ true) == 0;
+void OS_Unix::set_environment(const String &p_var, const String &p_value) const {
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	int err = setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ 1);
+	ERR_FAIL_COND_MSG(err != 0, vformat("Failed setting environment variable '%s', the system is out of memory.", p_var));
 }
 
-int OS_Unix::get_processor_count() const {
-	return sysconf(_SC_NPROCESSORS_CONF);
+void OS_Unix::unset_environment(const String &p_var) const {
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	unsetenv(p_var.utf8().get_data());
 }
 
 String OS_Unix::get_user_data_dir() const {
-	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
-	if (appname != "") {
-		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
+	String appname = get_safe_dir_name(GLOBAL_GET("application/config/name"));
+	if (!appname.is_empty()) {
+		bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
 		if (use_custom_dir) {
-			String custom_dir = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/custom_user_dir_name"), true);
-			if (custom_dir == "") {
+			String custom_dir = get_safe_dir_name(GLOBAL_GET("application/config/custom_user_dir_name"), true);
+			if (custom_dir.is_empty()) {
 				custom_dir = appname;
 			}
-			return get_data_path().plus_file(custom_dir);
+			return get_data_path().path_join(custom_dir);
 		} else {
-			return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file(appname);
+			return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join(appname);
 		}
 	}
 
-	return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file("[unnamed project]");
+	return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join("[unnamed project]");
 }
 
 String OS_Unix::get_executable_path() const {
@@ -492,7 +533,7 @@ String OS_Unix::get_executable_path() const {
 	if (len > 0) {
 		b.parse_utf8(buf, len);
 	}
-	if (b == "") {
+	if (b.is_empty()) {
 		WARN_PRINT("Couldn't get executable path from /proc/self/exe, using argv[0]");
 		return OS::get_executable_path();
 	}
@@ -507,7 +548,7 @@ String OS_Unix::get_executable_path() const {
 	int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
 	char buf[MAXPATHLEN];
 	size_t len = sizeof(buf);
-	if (sysctl(mib, 4, buf, &len, NULL, 0) != 0) {
+	if (sysctl(mib, 4, buf, &len, nullptr, 0) != 0) {
 		WARN_PRINT("Couldn't get executable path from sysctl");
 		return OS::get_executable_path();
 	}
@@ -521,10 +562,11 @@ String OS_Unix::get_executable_path() const {
 
 	char *resolved_path = new char[buff_size + 1];
 
-	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1)
+	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1) {
 		WARN_PRINT("MAXPATHLEN is too small");
+	}
 
-	String path(resolved_path);
+	String path = String::utf8(resolved_path);
 	delete[] resolved_path;
 
 	return path;
@@ -534,7 +576,7 @@ String OS_Unix::get_executable_path() const {
 #endif
 }
 
-void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
 	}

@@ -32,102 +32,114 @@
 #define LABEL_H
 
 #include "scene/gui/control.h"
+#include "scene/resources/label_settings.h"
 
 class Label : public Control {
 	GDCLASS(Label, Control);
 
-public:
-	enum Align {
-
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT,
-		ALIGN_FILL
-	};
-
-	enum VAlign {
-
-		VALIGN_TOP,
-		VALIGN_CENTER,
-		VALIGN_BOTTOM,
-		VALIGN_FILL
-	};
-
 private:
-	Align align;
-	VAlign valign;
+	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 	String text;
 	String xl_text;
-	bool autowrap;
-	bool clip;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
+	bool clip = false;
+	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 	Size2 minsize;
-	int line_count;
-	bool uppercase;
+	bool uppercase = false;
 
-	int get_longest_line_width() const;
+	bool lines_dirty = true;
+	bool dirty = true;
+	bool font_dirty = true;
+	RID text_rid;
+	Vector<RID> lines_rid;
 
-	struct WordCache {
-		enum {
-			CHAR_NEWLINE = -1,
-			CHAR_WRAPLINE = -2
-		};
-		int char_pos; // if -1, then newline
-		int word_len;
-		int pixel_width;
-		int space_count;
-		WordCache *next;
-		WordCache() {
-			char_pos = 0;
-			word_len = 0;
-			pixel_width = 0;
-			next = nullptr;
-			space_count = 0;
-		}
-	};
+	String language;
+	TextDirection text_direction = TEXT_DIRECTION_AUTO;
+	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
+	Array st_args;
 
-	bool word_cache_dirty;
-	void regenerate_word_cache();
+	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
+	int visible_chars = -1;
+	float visible_ratio = 1.0;
+	int lines_skipped = 0;
+	int max_lines_visible = -1;
 
-	float percent_visible;
+	Ref<LabelSettings> settings;
 
-	WordCache *word_cache;
-	int total_char_cache;
-	int visible_chars;
-	int lines_skipped;
-	int max_lines_visible;
+	struct ThemeCache {
+		Ref<StyleBox> normal_style;
+		Ref<Font> font;
+
+		int font_size = 0;
+		int line_spacing = 0;
+		Color font_color;
+		Color font_shadow_color;
+		Point2 font_shadow_offset;
+		Color font_outline_color;
+		int font_outline_size;
+		int font_shadow_outline_size;
+	} theme_cache;
+
+	void _update_visible();
+	void _shape();
+	void _invalidate();
 
 protected:
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
-
 	static void _bind_methods();
-	// bind helpers
+
 public:
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
-	void set_align(Align p_align);
-	Align get_align() const;
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
 
-	void set_valign(VAlign p_align);
-	VAlign get_valign() const;
+	void set_vertical_alignment(VerticalAlignment p_alignment);
+	VerticalAlignment get_vertical_alignment() const;
 
 	void set_text(const String &p_string);
 	String get_text() const;
 
-	void set_autowrap(bool p_autowrap);
-	bool has_autowrap() const;
+	void set_label_settings(const Ref<LabelSettings> &p_settings);
+	Ref<LabelSettings> get_label_settings() const;
+
+	void set_text_direction(TextDirection p_text_direction);
+	TextDirection get_text_direction() const;
+
+	void set_language(const String &p_language);
+	String get_language() const;
+
+	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
+
+	void set_structured_text_bidi_override_options(Array p_args);
+	Array get_structured_text_bidi_override_options() const;
+
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
 
 	void set_uppercase(bool p_uppercase);
 	bool is_uppercase() const;
+
+	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
+	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
 
 	void set_visible_characters(int p_amount);
 	int get_visible_characters() const;
 	int get_total_character_count() const;
 
+	void set_visible_ratio(float p_ratio);
+	float get_visible_ratio() const;
+
 	void set_clip_text(bool p_clip);
 	bool is_clipping_text() const;
 
-	void set_percent_visible(float p_percent);
-	float get_percent_visible() const;
+	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
+	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 
 	void set_lines_skipped(int p_lines);
 	int get_lines_skipped() const;
@@ -135,15 +147,12 @@ public:
 	void set_max_lines_visible(int p_lines);
 	int get_max_lines_visible() const;
 
-	int get_line_height() const;
+	int get_line_height(int p_line = -1) const;
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
 	Label(const String &p_text = String());
 	~Label();
 };
-
-VARIANT_ENUM_CAST(Label::Align);
-VARIANT_ENUM_CAST(Label::VAlign);
 
 #endif // LABEL_H

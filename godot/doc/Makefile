@@ -2,7 +2,7 @@ BASEDIR = .
 CLASSES = $(BASEDIR)/classes/ $(BASEDIR)/../modules/
 OUTPUTDIR = $(BASEDIR)/_build
 TOOLSDIR = $(BASEDIR)/tools
-JSDIR = $(BASEDIR)/../platform/javascript
+JSDIR = $(BASEDIR)/../platform/web
 LANGARG ?= en
 LANGCMD = -l $(LANGARG)
 
@@ -15,13 +15,6 @@ doxygen:
 	rm -rf $(OUTPUTDIR)/doxygen
 	mkdir -p $(OUTPUTDIR)/doxygen
 	doxygen Doxyfile
-
-markdown:
-	rm -rf $(OUTPUTDIR)/markdown
-	mkdir -p $(OUTPUTDIR)/markdown
-	pushd $(OUTPUTDIR)/markdown
-	python2 $(TOOLSDIR)/makemd.py $(CLASSES)
-	popd
 
 rst:
 	rm -rf $(OUTPUTDIR)/rst

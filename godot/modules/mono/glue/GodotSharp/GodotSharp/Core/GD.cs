@@ -1,11 +1,7 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Text;
+using Godot.NativeInterop;
 
 namespace Godot
 {
@@ -15,108 +11,56 @@ namespace Godot
     public static partial class GD
     {
         /// <summary>
-        /// Decodes a byte array back to a <c>Variant</c> value.
-        /// If <paramref name="allowObjects"/> is <see langword="true"/> decoding objects is allowed.
-        ///
-        /// WARNING: Deserialized object can contain code which gets executed.
-        /// Do not set <paramref name="allowObjects"/> to <see langword="true"/>
-        /// if the serialized object comes from untrusted sources to avoid
-        /// potential security threats (remote code execution).
+        /// Decodes a byte array back to a <see cref="Variant"/> value, without decoding objects.
+        /// Note: If you need object deserialization, see <see cref="BytesToVarWithObjects"/>.
         /// </summary>
-        /// <param name="bytes">Byte array that will be decoded to a <c>Variant</c>.</param>
-        /// <param name="allowObjects">If objects should be decoded.</param>
-        /// <returns>The decoded <c>Variant</c>.</returns>
-        public static object Bytes2Var(byte[] bytes, bool allowObjects = false)
+        /// <param name="bytes">Byte array that will be decoded to a <see cref="Variant"/>.</param>
+        /// <returns>The decoded <see cref="Variant"/>.</returns>
+        public static Variant BytesToVar(Span<byte> bytes)
         {
-            return godot_icall_GD_bytes2var(bytes, allowObjects);
+            using var varBytes = Marshaling.ConvertSystemArrayToNativePackedByteArray(bytes);
+            NativeFuncs.godotsharp_bytes_to_var(varBytes, godot_bool.False, out godot_variant ret);
+            return Variant.CreateTakingOwnershipOfDisposableValue(ret);
         }
 
         /// <summary>
-        /// Converts from a <c>Variant</c> type to another in the best way possible.
+        /// Decodes a byte array back to a <see cref="Variant"/> value. Decoding objects is allowed.
+        /// Warning: Deserialized object can contain code which gets executed. Do not use this
+        /// option if the serialized object comes from untrusted sources to avoid potential security
+        /// threats (remote code execution).
+        /// </summary>
+        /// <param name="bytes">Byte array that will be decoded to a <see cref="Variant"/>.</param>
+        /// <returns>The decoded <see cref="Variant"/>.</returns>
+        public static Variant BytesToVarWithObjects(Span<byte> bytes)
+        {
+            using var varBytes = Marshaling.ConvertSystemArrayToNativePackedByteArray(bytes);
+            NativeFuncs.godotsharp_bytes_to_var(varBytes, godot_bool.True, out godot_variant ret);
+            return Variant.CreateTakingOwnershipOfDisposableValue(ret);
+        }
+
+        /// <summary>
+        /// Converts <paramref name="what"/> to <paramref name="type"/> in the best way possible.
         /// The <paramref name="type"/> parameter uses the <see cref="Variant.Type"/> values.
         /// </summary>
         /// <example>
         /// <code>
-        /// var a = new Vector2(1, 0);
-        /// // Prints 1
-        /// GD.Print(a.Length());
-        /// var b = GD.Convert(a, Variant.Type.String)
-        /// // Prints 6 as "(1, 0)" is 6 characters
-        /// GD.Print(b.Length);
+        /// Variant a = new Godot.Collections.Array { 4, 2.5, 1.2 };
+        /// GD.Print(a.VariantType == Variant.Type.Array); // Prints true
+        ///
+        /// var b = GD.Convert(a, Variant.Type.PackedByteArray);
+        /// GD.Print(b); // Prints [4, 2, 1]
+        /// GD.Print(b.VariantType == Variant.Type.Array); // Prints false
         /// </code>
         /// </example>
         /// <returns>The <c>Variant</c> converted to the given <paramref name="type"/>.</returns>
-        public static object Convert(object what, Variant.Type type)
+        public static Variant Convert(Variant what, Variant.Type type)
         {
-            return godot_icall_GD_convert(what, type);
+            NativeFuncs.godotsharp_convert((godot_variant)what.NativeVar, (int)type, out godot_variant ret);
+            return Variant.CreateTakingOwnershipOfDisposableValue(ret);
         }
 
         /// <summary>
-        /// Converts from decibels to linear energy (audio).
-        /// </summary>
-        /// <seealso cref="Linear2Db(real_t)"/>
-        /// <param name="db">Decibels to convert.</param>
-        /// <returns>Audio volume as linear energy.</returns>
-        public static real_t Db2Linear(real_t db)
-        {
-            return (real_t)Math.Exp(db * 0.11512925464970228420089957273422);
-        }
-
-        /// <summary>
-        /// Returns the result of <paramref name="value"/> decreased by
-        /// <paramref name="step"/> * <paramref name="amount"/>.
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// // a = 59;
-        /// // float a = GD.DecTime(60, 10, 0.1f);
-        /// </code>
-        /// </example>
-        /// <param name="value">Value that will be decreased.</param>
-        /// <param name="amount">
-        /// Amount that will be decreased from <paramref name="value"/> for every <paramref name="step"/>.
-        /// </param>
-        /// <param name="step">Times the <paramref name="value"/> will be decreased by <paramref name="amount"/></param>
-        /// <returns>The decreased value.</returns>
-        [Obsolete("DecTime has been deprecated and will be removed in Godot 4.0, use Mathf.MoveToward instead.")]
-        public static real_t DecTime(real_t value, real_t amount, real_t step)
-        {
-            real_t sgn = Mathf.Sign(value);
-            real_t val = Mathf.Abs(value);
-            val -= amount * step;
-            if (val < 0)
-                val = 0;
-            return val * sgn;
-        }
-
-        /// <summary>
-        /// Get the <see cref="FuncRef"/> that refers to the function
-        /// with the given name <paramref name="funcname"/> in the
-        /// given object <paramref name="instance"/>.
-        /// </summary>
-        /// <param name="instance">The object that contains the function.</param>
-        /// <param name="funcname">The name of the function.</param>
-        /// <returns>A reference to the given object's function.</returns>
-        public static FuncRef FuncRef(Object instance, string funcname)
-        {
-            var ret = new FuncRef();
-            ret.SetInstance(instance);
-            ret.SetFunction(funcname);
-            return ret;
-        }
-
-        private static object[] GetPrintParams(object[] parameters)
-        {
-            if (parameters == null)
-            {
-                return new[] { "null" };
-            }
-
-            return Array.ConvertAll(parameters, x => x?.ToString() ?? "null");
-        }
-
-        /// <summary>
-        /// Returns the integer hash of the variable passed.
+        /// Returns the integer hash of the passed <paramref name="var"/>.
         /// </summary>
         /// <example>
         /// <code>
@@ -125,55 +69,9 @@ namespace Godot
         /// </example>
         /// <param name="var">Variable that will be hashed.</param>
         /// <returns>Hash of the variable passed.</returns>
-        public static int Hash(object var)
+        public static int Hash(Variant var)
         {
-            return godot_icall_GD_hash(var);
-        }
-
-        /// <summary>
-        /// Returns the <see cref="Object"/> that corresponds to <paramref name="instanceId"/>.
-        /// All Objects have a unique instance ID.
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// public class MyNode : Node
-        /// {
-        ///     public string foo = "bar";
-        ///
-        ///     public override void _Ready()
-        ///     {
-        ///         ulong id = GetInstanceId();
-        ///         var inst = (MyNode)GD.InstanceFromId(Id);
-        ///         GD.Print(inst.foo); // Prints bar
-        ///     }
-        /// }
-        /// </code>
-        /// </example>
-        /// <param name="instanceId">Instance ID of the Object to retrieve.</param>
-        /// <returns>The <see cref="Object"/> instance.</returns>
-        public static Object InstanceFromId(ulong instanceId)
-        {
-            return godot_icall_GD_instance_from_id(instanceId);
-        }
-
-        /// <summary>
-        /// Converts from linear energy to decibels (audio).
-        /// This can be used to implement volume sliders that behave as expected (since volume isn't linear).
-        /// </summary>
-        /// <seealso cref="Db2Linear(real_t)"/>
-        /// <example>
-        /// <code>
-        /// // "slider" refers to a node that inherits Range such as HSlider or VSlider.
-        /// // Its range must be configured to go from 0 to 1.
-        /// // Change the bus name if you'd like to change the volume of a specific bus only.
-        /// AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Master"), GD.Linear2Db(slider.value));
-        /// </code>
-        /// </example>
-        /// <param name="linear">The linear energy to convert.</param>
-        /// <returns>Audio as decibels.</returns>
-        public static real_t Linear2Db(real_t linear)
-        {
-            return (real_t)(Math.Log(linear) * 8.6858896380650365530225783783321);
+            return NativeFuncs.godotsharp_hash((godot_variant)var.NativeVar);
         }
 
         /// <summary>
@@ -230,63 +128,135 @@ namespace Godot
             return ResourceLoader.Load<T>(path);
         }
 
-        /// <summary>
-        /// Pushes an error message to Godot's built-in debugger and to the OS terminal.
-        ///
-        /// Note: Errors printed this way will not pause project execution.
-        /// To print an error message and pause project execution in debug builds,
-        /// use [code]assert(false, "test error")[/code] instead.
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// GD.PushError("test_error"); // Prints "test error" to debugger and terminal as error call
-        /// </code>
-        /// </example>
-        /// <param name="message">Error message.</param>
-        public static void PushError(string message)
+        private static string AppendPrintParams(object[] parameters)
         {
-            godot_icall_GD_pusherror(message);
+            if (parameters == null)
+            {
+                return "null";
+            }
+
+            var sb = new StringBuilder();
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                sb.Append(parameters[i]?.ToString() ?? "null");
+            }
+            return sb.ToString();
+        }
+
+        private static string AppendPrintParams(char separator, object[] parameters)
+        {
+            if (parameters == null)
+            {
+                return "null";
+            }
+
+            var sb = new StringBuilder();
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                if (i != 0)
+                    sb.Append(separator);
+                sb.Append(parameters[i]?.ToString() ?? "null");
+            }
+            return sb.ToString();
         }
 
         /// <summary>
-        /// Pushes a warning message to Godot's built-in debugger and to the OS terminal.
+        /// Prints a message to the console.
+        ///
+        /// Note: Consider using <see cref="PushError(string)"/> and <see cref="PushWarning(string)"/>
+        /// to print error and warning messages instead of <see cref="Print(string)"/>.
+        /// This distinguishes them from print messages used for debugging purposes,
+        /// while also displaying a stack trace when an error or warning is printed.
         /// </summary>
-        /// <example>
-        /// GD.PushWarning("test warning"); // Prints "test warning" to debugger and terminal as warning call
-        /// </example>
-        /// <param name="message">Warning message.</param>
-        public static void PushWarning(string message)
+        /// <param name="what">Message that will be printed.</param>
+        public static void Print(string what)
         {
-            godot_icall_GD_pushwarning(message);
+            using var godotStr = Marshaling.ConvertStringToNative(what);
+            NativeFuncs.godotsharp_print(godotStr);
         }
 
         /// <summary>
         /// Converts one or more arguments of any type to string in the best way possible
         /// and prints them to the console.
         ///
-        /// Note: Consider using <see cref="PushError(string)"/> and <see cref="PushWarning(string)"/>
+        /// Note: Consider using <see cref="PushError(object[])"/> and <see cref="PushWarning(object[])"/>
         /// to print error and warning messages instead of <see cref="Print(object[])"/>.
         /// This distinguishes them from print messages used for debugging purposes,
         /// while also displaying a stack trace when an error or warning is printed.
         /// </summary>
         /// <example>
         /// <code>
-        /// var a = new int[] { 1, 2, 3 };
+        /// var a = new Godot.Collections.Array { 1, 2, 3 };
         /// GD.Print("a", "b", a); // Prints ab[1, 2, 3]
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
         public static void Print(params object[] what)
         {
-            godot_icall_GD_print(GetPrintParams(what));
+            Print(AppendPrintParams(what));
         }
 
         /// <summary>
-        /// Prints the current stack trace information to the console.
+        /// Prints a message to the console.
+        /// The following BBCode tags are supported: b, i, u, s, indent, code, url, center,
+        /// right, color, bgcolor, fgcolor.
+        /// Color tags only support named colors such as <c>red</c>, not hexadecimal color codes.
+        /// Unsupported tags will be left as-is in standard output.
+        /// When printing to standard output, the supported subset of BBCode is converted to
+        /// ANSI escape codes for the terminal emulator to display. Displaying ANSI escape codes
+        /// is currently only supported on Linux and macOS. Support for ANSI escape codes may vary
+        /// across terminal emulators, especially for italic and strikethrough.
+        ///
+        /// Note: Consider using <see cref="PushError(string)"/> and <see cref="PushWarning(string)"/>
+        /// to print error and warning messages instead of <see cref="Print(string)"/> or
+        /// <see cref="PrintRich(string)"/>.
+        /// This distinguishes them from print messages used for debugging purposes,
+        /// while also displaying a stack trace when an error or warning is printed.
         /// </summary>
-        public static void PrintStack()
+        /// <param name="what">Message that will be printed.</param>
+        public static void PrintRich(string what)
         {
-            Print(System.Environment.StackTrace);
+            using var godotStr = Marshaling.ConvertStringToNative(what);
+            NativeFuncs.godotsharp_print_rich(godotStr);
+        }
+
+        /// <summary>
+        /// Converts one or more arguments of any type to string in the best way possible
+        /// and prints them to the console.
+        /// The following BBCode tags are supported: b, i, u, s, indent, code, url, center,
+        /// right, color, bgcolor, fgcolor.
+        /// Color tags only support named colors such as <c>red</c>, not hexadecimal color codes.
+        /// Unsupported tags will be left as-is in standard output.
+        /// When printing to standard output, the supported subset of BBCode is converted to
+        /// ANSI escape codes for the terminal emulator to display. Displaying ANSI escape codes
+        /// is currently only supported on Linux and macOS. Support for ANSI escape codes may vary
+        /// across terminal emulators, especially for italic and strikethrough.
+        ///
+        /// Note: Consider using <see cref="PushError(object[])"/> and <see cref="PushWarning(object[])"/>
+        /// to print error and warning messages instead of <see cref="Print(object[])"/> or
+        /// <see cref="PrintRich(object[])"/>.
+        /// This distinguishes them from print messages used for debugging purposes,
+        /// while also displaying a stack trace when an error or warning is printed.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.PrintRich("[code][b]Hello world![/b][/code]"); // Prints out: [b]Hello world![/b]
+        /// </code>
+        /// </example>
+        /// <param name="what">Arguments that will be printed.</param>
+        public static void PrintRich(params object[] what)
+        {
+            PrintRich(AppendPrintParams(what));
+        }
+
+        /// <summary>
+        /// Prints a message to standard error line.
+        /// </summary>
+        /// <param name="what">Message that will be printed.</param>
+        public static void PrintErr(string what)
+        {
+            using var godotStr = Marshaling.ConvertStringToNative(what);
+            NativeFuncs.godotsharp_printerr(godotStr);
         }
 
         /// <summary>
@@ -300,27 +270,36 @@ namespace Godot
         /// <param name="what">Arguments that will be printed.</param>
         public static void PrintErr(params object[] what)
         {
-            godot_icall_GD_printerr(GetPrintParams(what));
+            PrintErr(AppendPrintParams(what));
         }
 
         /// <summary>
-        /// Prints one or more arguments to strings in the best way possible to console.
-        /// No newline is added at the end.
-        ///
-        /// Note: Due to limitations with Godot's built-in console, this only prints to the terminal.
-        /// If you need to print in the editor, use another method, such as <see cref="Print(object[])"/>.
+        /// Prints a message to the OS terminal.
+        /// Unlike <see cref="Print(string)"/>, no newline is added at the end.
+        /// </summary>
+        /// <param name="what">Message that will be printed.</param>
+        public static void PrintRaw(string what)
+        {
+            using var godotStr = Marshaling.ConvertStringToNative(what);
+            NativeFuncs.godotsharp_printraw(godotStr);
+        }
+
+        /// <summary>
+        /// Prints one or more arguments to strings in the best way possible to the OS terminal.
+        /// Unlike <see cref="Print(object[])"/>, no newline is added at the end.
         /// </summary>
         /// <example>
         /// <code>
         /// GD.PrintRaw("A");
         /// GD.PrintRaw("B");
-        /// // Prints AB
+        /// GD.PrintRaw("C");
+        /// // Prints ABC to terminal
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
         public static void PrintRaw(params object[] what)
         {
-            godot_icall_GD_printraw(GetPrintParams(what));
+            PrintRaw(AppendPrintParams(what));
         }
 
         /// <summary>
@@ -334,7 +313,9 @@ namespace Godot
         /// <param name="what">Arguments that will be printed.</param>
         public static void PrintS(params object[] what)
         {
-            godot_icall_GD_prints(GetPrintParams(what));
+            string message = AppendPrintParams(' ', what);
+            using var godotStr = Marshaling.ConvertStringToNative(message);
+            NativeFuncs.godotsharp_prints(godotStr);
         }
 
         /// <summary>
@@ -348,7 +329,71 @@ namespace Godot
         /// <param name="what">Arguments that will be printed.</param>
         public static void PrintT(params object[] what)
         {
-            godot_icall_GD_printt(GetPrintParams(what));
+            string message = AppendPrintParams('\t', what);
+            using var godotStr = Marshaling.ConvertStringToNative(message);
+            NativeFuncs.godotsharp_printt(godotStr);
+        }
+
+        /// <summary>
+        /// Pushes an error message to Godot's built-in debugger and to the OS terminal.
+        ///
+        /// Note: Errors printed this way will not pause project execution.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.PushError("test error"); // Prints "test error" to debugger and terminal as error call
+        /// </code>
+        /// </example>
+        /// <param name="message">Error message.</param>
+        public static void PushError(string message)
+        {
+            using var godotStr = Marshaling.ConvertStringToNative(message);
+            NativeFuncs.godotsharp_pusherror(godotStr);
+        }
+
+        /// <summary>
+        /// Pushes an error message to Godot's built-in debugger and to the OS terminal.
+        ///
+        /// Note: Errors printed this way will not pause project execution.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.PushError("test_error"); // Prints "test error" to debugger and terminal as error call
+        /// </code>
+        /// </example>
+        /// <param name="what">Arguments that form the error message.</param>
+        public static void PushError(params object[] what)
+        {
+            PushError(AppendPrintParams(what));
+        }
+
+        /// <summary>
+        /// Pushes a warning message to Godot's built-in debugger and to the OS terminal.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.PushWarning("test warning"); // Prints "test warning" to debugger and terminal as warning call
+        /// </code>
+        /// </example>
+        /// <param name="message">Warning message.</param>
+        public static void PushWarning(string message)
+        {
+            using var godotStr = Marshaling.ConvertStringToNative(message);
+            NativeFuncs.godotsharp_pushwarning(godotStr);
+        }
+
+        /// <summary>
+        /// Pushes a warning message to Godot's built-in debugger and to the OS terminal.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.PushWarning("test warning"); // Prints "test warning" to debugger and terminal as warning call
+        /// </code>
+        /// </example>
+        /// <param name="what">Arguments that form the warning message.</param>
+        public static void PushWarning(params object[] what)
+        {
+            PushWarning(AppendPrintParams(what));
         }
 
         /// <summary>
@@ -362,12 +407,25 @@ namespace Godot
         /// <returns>A random <see langword="float"/> number.</returns>
         public static float Randf()
         {
-            return godot_icall_GD_randf();
+            return NativeFuncs.godotsharp_randf();
+        }
+
+        /// <summary>
+        /// Returns a normally-distributed pseudo-random floating point value
+        /// using Box-Muller transform with the specified <pararmref name="mean"/>
+        /// and a standard <paramref name="deviation"/>.
+        /// This is also called Gaussian distribution.
+        /// </summary>
+        /// <returns>A random normally-distributed <see langword="float"/> number.</returns>
+        public static double Randfn(double mean, double deviation)
+        {
+            return NativeFuncs.godotsharp_randfn(mean, deviation);
         }
 
         /// <summary>
         /// Returns a random unsigned 32-bit integer.
-        /// Use remainder to obtain a random value in the interval <c>[0, N - 1]</c> (where N is smaller than 2^32).
+        /// Use remainder to obtain a random value in the interval <c>[0, N - 1]</c>
+        /// (where N is smaller than 2^32).
         /// </summary>
         /// <example>
         /// <code>
@@ -380,52 +438,82 @@ namespace Godot
         /// <returns>A random <see langword="uint"/> number.</returns>
         public static uint Randi()
         {
-            return godot_icall_GD_randi();
+            return NativeFuncs.godotsharp_randi();
         }
 
         /// <summary>
         /// Randomizes the seed (or the internal state) of the random number generator.
-        /// Current implementation reseeds using a number based on time.
+        /// The current implementation uses a number based on the device's time.
         ///
         /// Note: This method is called automatically when the project is run.
-        /// If you need to fix the seed to have reproducible results, use <see cref="Seed(ulong)"/>
-        /// to initialize the random number generator.
+        /// If you need to fix the seed to have consistent, reproducible results,
+        /// use <see cref="Seed(ulong)"/> to initialize the random number generator.
         /// </summary>
         public static void Randomize()
         {
-            godot_icall_GD_randomize();
+            NativeFuncs.godotsharp_randomize();
         }
 
         /// <summary>
-        /// Returns a random floating point value on the interval between <paramref name="from"/>
+        /// Returns a random floating point value between <paramref name="from"/>
         /// and <paramref name="to"/> (inclusive).
         /// </summary>
         /// <example>
         /// <code>
-        /// GD.PrintS(GD.RandRange(-10.0, 10.0), GD.RandRange(-10.0, 10.0)); // Prints e.g. -3.844535 7.45315
+        /// GD.RandRange(0.0, 20.5);   // Returns e.g. 7.45315
+        /// GD.RandRange(-10.0, 10.0); // Returns e.g. -3.844535
         /// </code>
         /// </example>
         /// <returns>A random <see langword="double"/> number inside the given range.</returns>
         public static double RandRange(double from, double to)
         {
-            return godot_icall_GD_rand_range(from, to);
+            return NativeFuncs.godotsharp_randf_range(from, to);
         }
 
         /// <summary>
-        /// Returns a random unsigned 32-bit integer, using the given <paramref name="seed"/>.
-        /// The <paramref name="newSeed"/> will return the new seed.
+        /// Returns a random signed 32-bit integer between <paramref name="from"/>
+        /// and <paramref name="to"/> (inclusive). If <paramref name="to"/> is lesser than
+        /// <paramref name="from"/>, they are swapped.
         /// </summary>
-        /// <param name="seed">Seed to use to generate the random number.</param>
-        /// <param name="newSeed">Seed used by the random number generator.</param>
-        /// <returns>A random <see langword="uint"/> number.</returns>
-        public static uint RandSeed(ulong seed, out ulong newSeed)
+        /// <example>
+        /// <code>
+        /// GD.RandRange(0, 1);      // Returns either 0 or 1
+        /// GD.RandRange(-10, 1000); // Returns random integer between -10 and 1000
+        /// </code>
+        /// </example>
+        /// <returns>A random <see langword="int"/> number inside the given range.</returns>
+        public static int RandRange(int from, int to)
         {
-            return godot_icall_GD_rand_seed(seed, out newSeed);
+            return NativeFuncs.godotsharp_randi_range(from, to);
+        }
+
+        /// <summary>
+        /// Given a <paramref name="seed"/>, returns a randomized <see langword="uint"/>
+        /// value. The <paramref name="seed"/> may be modified.
+        /// Passing the same <paramref name="seed"/> consistently returns the same value.
+        ///
+        /// Note: "Seed" here refers to the internal state of the pseudo random number
+        /// generator, currently implemented as a 64 bit integer.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// var a = GD.RandFromSeed(4);
+        /// </code>
+        /// </example>
+        /// <param name="seed">
+        /// Seed to use to generate the random number.
+        /// If a different seed is used, its value will be modified.
+        /// </param>
+        /// <returns>A random <see langword="uint"/> number.</returns>
+        public static uint RandFromSeed(ref ulong seed)
+        {
+            return NativeFuncs.godotsharp_rand_from_seed(seed, out seed);
         }
 
         /// <summary>
         /// Returns a <see cref="IEnumerable{T}"/> that iterates from
-        /// <c>0</c> to <paramref name="end"/> in steps of <c>1</c>.
+        /// <c>0</c> (inclusive) to <paramref name="end"/> (exclusive)
+        /// in steps of <c>1</c>.
         /// </summary>
         /// <param name="end">The last index.</param>
         public static IEnumerable<int> Range(int end)
@@ -435,7 +523,8 @@ namespace Godot
 
         /// <summary>
         /// Returns a <see cref="IEnumerable{T}"/> that iterates from
-        /// <paramref name="start"/> to <paramref name="end"/> in steps of <c>1</c>.
+        /// <paramref name="start"/> (inclusive) to <paramref name="end"/> (exclusive)
+        /// in steps of <c>1</c>.
         /// </summary>
         /// <param name="start">The first index.</param>
         /// <param name="end">The last index.</param>
@@ -446,13 +535,21 @@ namespace Godot
 
         /// <summary>
         /// Returns a <see cref="IEnumerable{T}"/> that iterates from
-        /// <paramref name="start"/> to <paramref name="end"/> in steps of <paramref name="step"/>.
+        /// <paramref name="start"/> (inclusive) to <paramref name="end"/> (exclusive)
+        /// in steps of <paramref name="step"/>.
+        /// The argument <paramref name="step"/> can be negative, but not <c>0</c>.
         /// </summary>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="step"/> is 0.
+        /// </exception>
         /// <param name="start">The first index.</param>
         /// <param name="end">The last index.</param>
         /// <param name="step">The amount by which to increment the index on each iteration.</param>
         public static IEnumerable<int> Range(int start, int end, int step)
         {
+            if (step == 0)
+                throw new ArgumentException("step cannot be 0.", nameof(step));
+
             if (end < start && step > 0)
                 yield break;
 
@@ -472,150 +569,104 @@ namespace Godot
         }
 
         /// <summary>
-        /// Sets seed for the random number generator.
-        /// </summary>
-        /// <param name="seed">Seed that will be used.</param>
-        public static void Seed(ulong seed)
-        {
-            godot_icall_GD_seed(seed);
-        }
-
-        /// <summary>
-        /// Converts one or more arguments of any type to string in the best way possible.
-        /// </summary>
-        /// <param name="what">Arguments that will converted to string.</param>
-        /// <returns>The string formed by the given arguments.</returns>
-        public static string Str(params object[] what)
-        {
-            return godot_icall_GD_str(what);
-        }
-
-        /// <summary>
-        /// Converts a formatted string that was returned by <see cref="Var2Str(object)"/> to the original value.
+        /// Sets seed for the random number generator to <paramref name="seed"/>.
+        /// Setting the seed manually can ensure consistent, repeatable results for
+        /// most random functions.
         /// </summary>
         /// <example>
         /// <code>
-        /// string a = "{\"a\": 1, \"b\": 2 }";
-        /// var b = (Godot.Collections.Dictionary)GD.Str2Var(a);
-        /// GD.Print(b["a"]); // Prints 1
+        /// ulong mySeed = (ulong)GD.Hash("Godot Rocks");
+        /// GD.Seed(mySeed);
+        /// var a = GD.Randf() + GD.Randi();
+        /// GD.Seed(mySeed);
+        /// var b = GD.Randf() + GD.Randi();
+        /// // a and b are now identical
+        /// </code>
+        /// </example>
+        /// <param name="seed">Seed that will be used.</param>
+        public static void Seed(ulong seed)
+        {
+            NativeFuncs.godotsharp_seed(seed);
+        }
+
+        /// <summary>
+        /// Converts a formatted string that was returned by <see cref="VarToStr(Variant)"/>
+        /// to the original value.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// string a = "{ \"a\": 1, \"b\": 2 }";        // a is a string
+        /// var b = GD.StrToVar(a).AsGodotDictionary(); // b is a Dictionary
+        /// GD.Print(b["a"]);                           // Prints 1
         /// </code>
         /// </example>
         /// <param name="str">String that will be converted to Variant.</param>
         /// <returns>The decoded <c>Variant</c>.</returns>
-        public static object Str2Var(string str)
+        public static Variant StrToVar(string str)
         {
-            return godot_icall_GD_str2var(str);
+            using var godotStr = Marshaling.ConvertStringToNative(str);
+            NativeFuncs.godotsharp_str_to_var(godotStr, out godot_variant ret);
+            return Variant.CreateTakingOwnershipOfDisposableValue(ret);
         }
 
         /// <summary>
-        /// Returns whether the given class exists in <see cref="ClassDB"/>.
+        /// Encodes a <see cref="Variant"/> value to a byte array, without encoding objects.
+        /// Deserialization can be done with <see cref="BytesToVar"/>.
+        /// Note: If you need object serialization, see <see cref="VarToBytesWithObjects"/>.
         /// </summary>
-        /// <returns>If the class exists in <see cref="ClassDB"/>.</returns>
-        public static bool TypeExists(string type)
+        /// <param name="var"><see cref="Variant"/> that will be encoded.</param>
+        /// <returns>The <see cref="Variant"/> encoded as an array of bytes.</returns>
+        public static byte[] VarToBytes(Variant var)
         {
-            return godot_icall_GD_type_exists(type);
+            NativeFuncs.godotsharp_var_to_bytes((godot_variant)var.NativeVar, godot_bool.False, out var varBytes);
+            using (varBytes)
+                return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
         }
 
         /// <summary>
-        /// Encodes a <c>Variant</c> value to a byte array.
-        /// If <paramref name="fullObjects"/> is <see langword="true"/> encoding objects is allowed
-        /// (and can potentially include code).
-        /// Deserialization can be done with <see cref="Bytes2Var(byte[], bool)"/>.
+        /// Encodes a <see cref="Variant"/>. Encoding objects is allowed (and can potentially
+        /// include executable code). Deserialization can be done with <see cref="BytesToVarWithObjects"/>.
         /// </summary>
-        /// <param name="var">Variant that will be encoded.</param>
-        /// <param name="fullObjects">If objects should be serialized.</param>
-        /// <returns>The <c>Variant</c> encoded as an array of bytes.</returns>
-        public static byte[] Var2Bytes(object var, bool fullObjects = false)
+        /// <param name="var"><see cref="Variant"/> that will be encoded.</param>
+        /// <returns>The <see cref="Variant"/> encoded as an array of bytes.</returns>
+        public static byte[] VarToBytesWithObjects(Variant var)
         {
-            return godot_icall_GD_var2bytes(var, fullObjects);
+            NativeFuncs.godotsharp_var_to_bytes((godot_variant)var.NativeVar, godot_bool.True, out var varBytes);
+            using (varBytes)
+                return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
         }
 
         /// <summary>
-        /// Converts a <c>Variant</c> <paramref name="var"/> to a formatted string that
-        /// can later be parsed using <see cref="Str2Var(string)"/>.
+        /// Converts a <see cref="Variant"/> <paramref name="var"/> to a formatted string that
+        /// can later be parsed using <see cref="StrToVar(string)"/>.
         /// </summary>
         /// <example>
         /// <code>
         /// var a = new Godot.Collections.Dictionary { ["a"] = 1, ["b"] = 2 };
-        /// GD.Print(GD.Var2Str(a));
-        /// // Prints
+        /// GD.Print(GD.VarToStr(a));
+        /// // Prints:
         /// // {
-        /// //    "a": 1,
-        /// //    "b": 2
+        /// //     "a": 1,
+        /// //     "b": 2
         /// // }
         /// </code>
         /// </example>
         /// <param name="var">Variant that will be converted to string.</param>
-        /// <returns>The <c>Variant</c> encoded as a string.</returns>
-        public static string Var2Str(object var)
+        /// <returns>The <see cref="Variant"/> encoded as a string.</returns>
+        public static string VarToStr(Variant var)
         {
-            return godot_icall_GD_var2str(var);
+            NativeFuncs.godotsharp_var_to_str((godot_variant)var.NativeVar, out godot_string ret);
+            using (ret)
+                return Marshaling.ConvertStringToManaged(ret);
         }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern object godot_icall_GD_bytes2var(byte[] bytes, bool allowObjects);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern object godot_icall_GD_convert(object what, Variant.Type type);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int godot_icall_GD_hash(object var);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern Object godot_icall_GD_instance_from_id(ulong instanceId);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_print(object[] what);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_printerr(object[] what);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_printraw(object[] what);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_prints(object[] what);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_printt(object[] what);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float godot_icall_GD_randf();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern uint godot_icall_GD_randi();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_randomize();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern double godot_icall_GD_rand_range(double from, double to);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern uint godot_icall_GD_rand_seed(ulong seed, out ulong newSeed);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_seed(ulong seed);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern string godot_icall_GD_str(object[] what);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern object godot_icall_GD_str2var(string str);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool godot_icall_GD_type_exists(string type);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern byte[] godot_icall_GD_var2bytes(object what, bool fullObjects);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern string godot_icall_GD_var2str(object var);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_pusherror(string type);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_pushwarning(string type);
+        /// <summary>
+        /// Get the <see cref="Variant.Type"/> that corresponds for the given <see cref="Type"/>.
+        /// </summary>
+        /// <returns>The <see cref="Variant.Type"/> for the given <paramref name="type"/>.</returns>
+        public static Variant.Type TypeToVariantType(Type type)
+        {
+            return Marshaling.ConvertManagedTypeToVariantType(type, out bool _);
+        }
     }
 }

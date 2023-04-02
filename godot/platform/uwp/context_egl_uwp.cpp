@@ -36,26 +36,26 @@ using Platform::Exception;
 
 void ContextEGL_UWP::release_current() {
 	eglMakeCurrent(mEglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, mEglContext);
-};
+}
 
 void ContextEGL_UWP::make_current() {
 	eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext);
-};
+}
 
 int ContextEGL_UWP::get_window_width() {
 	return width;
-};
+}
 
 int ContextEGL_UWP::get_window_height() {
 	return height;
-};
+}
 
 void ContextEGL_UWP::reset() {
 	cleanup();
 
 	window = CoreWindow::GetForCurrentThread();
 	initialize();
-};
+}
 
 void ContextEGL_UWP::swap_buffers() {
 	if (eglSwapBuffers(mEglDisplay, mEglSurface) != EGL_TRUE) {
@@ -66,7 +66,7 @@ void ContextEGL_UWP::swap_buffers() {
 
 		// tell rasterizer to reload textures and stuff?
 	}
-};
+}
 
 Error ContextEGL_UWP::initialize() {
 	EGLint configAttribList[] = {
@@ -118,12 +118,10 @@ Error ContextEGL_UWP::initialize() {
 			EGL_PLATFORM_ANGLE_TYPE_ANGLE,
 			EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
 
-#ifdef EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER
 			// EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER is an optimization that can have large performance benefits on mobile devices.
 			// Its syntax is subject to change, though. Please update your Visual Studio templates if you experience compilation issues with it.
 			EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER,
 			EGL_TRUE,
-#endif
 
 			// EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE is an option that enables ANGLE to automatically call
 			// the IDXGIDevice3::Trim method on behalf of the application when it gets suspended.
@@ -149,7 +147,7 @@ Error ContextEGL_UWP::initialize() {
 			throw Exception::CreateException(E_FAIL, L"Failed to initialize EGL");
 		}
 
-		if (eglGetConfigs(display, NULL, 0, &numConfigs) == EGL_FALSE) {
+		if (eglGetConfigs(display, nullptr, 0, &numConfigs) == EGL_FALSE) {
 			throw Exception::CreateException(E_FAIL, L"Failed to get EGLConfig count");
 		}
 
@@ -172,7 +170,7 @@ Error ContextEGL_UWP::initialize() {
 		}
 	} catch (...) {
 		return FAILED;
-	};
+	}
 
 	mEglDisplay = display;
 	mEglSurface = surface;
@@ -182,7 +180,7 @@ Error ContextEGL_UWP::initialize() {
 	eglQuerySurface(display, surface, EGL_HEIGHT, &height);
 
 	return OK;
-};
+}
 
 void ContextEGL_UWP::cleanup() {
 	if (mEglDisplay != EGL_NO_DISPLAY && mEglSurface != EGL_NO_SURFACE) {
@@ -199,15 +197,16 @@ void ContextEGL_UWP::cleanup() {
 		eglTerminate(mEglDisplay);
 		mEglDisplay = EGL_NO_DISPLAY;
 	}
-};
+}
 
 ContextEGL_UWP::ContextEGL_UWP(CoreWindow ^ p_window, Driver p_driver) :
 		mEglDisplay(EGL_NO_DISPLAY),
 		mEglContext(EGL_NO_CONTEXT),
 		mEglSurface(EGL_NO_SURFACE),
 		driver(p_driver),
-		window(p_window) {}
+		window(p_window),
+		vsync(false) {}
 
 ContextEGL_UWP::~ContextEGL_UWP() {
 	cleanup();
-};
+}

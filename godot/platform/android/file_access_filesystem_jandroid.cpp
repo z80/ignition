@@ -31,6 +31,7 @@
 #include "file_access_filesystem_jandroid.h"
 
 #include "core/os/os.h"
+#include "core/templates/local_vector.h"
 #include "thread_jandroid.h"
 
 #include <unistd.h>
@@ -60,9 +61,9 @@ String FileAccessFilesystemJAndroid::get_path_absolute() const {
 	return absolute_path;
 }
 
-Error FileAccessFilesystemJAndroid::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessFilesystemJAndroid::open_internal(const String &p_path, int p_mode_flags) {
 	if (is_open()) {
-		close();
+		_close();
 	}
 
 	if (_file_open) {
@@ -94,7 +95,7 @@ Error FileAccessFilesystemJAndroid::_open(const String &p_path, int p_mode_flags
 	}
 }
 
-void FileAccessFilesystemJAndroid::close() {
+void FileAccessFilesystemJAndroid::_close() {
 	if (!is_open()) {
 		return;
 	}
@@ -140,7 +141,7 @@ uint64_t FileAccessFilesystemJAndroid::get_position() const {
 	}
 }
 
-uint64_t FileAccessFilesystemJAndroid::get_len() const {
+uint64_t FileAccessFilesystemJAndroid::get_length() const {
 	if (_file_get_size) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_COND_V(env == nullptr, 0);
@@ -183,7 +184,7 @@ String FileAccessFilesystemJAndroid::get_line() const {
 	ERR_FAIL_COND_V_MSG(!is_open(), String(), "File must be opened before use.");
 
 	const size_t buffer_size_limit = 2048;
-	const uint64_t file_size = get_len();
+	const uint64_t file_size = get_length();
 	const uint64_t start_position = get_position();
 
 	String result;
@@ -332,12 +333,18 @@ void FileAccessFilesystemJAndroid::setup(jobject p_file_access_handler) {
 	_file_last_modified = env->GetMethodID(cls, "fileLastModified", "(Ljava/lang/String;)J");
 }
 
+void FileAccessFilesystemJAndroid::close() {
+	if (is_open()) {
+		_close();
+	}
+}
+
 FileAccessFilesystemJAndroid::FileAccessFilesystemJAndroid() {
 	id = 0;
 }
 
 FileAccessFilesystemJAndroid::~FileAccessFilesystemJAndroid() {
 	if (is_open()) {
-		close();
+		_close();
 	}
 }

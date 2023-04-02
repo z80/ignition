@@ -1,8 +1,8 @@
 
 #include "occupancy_tree.h"
 
-static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces );
-static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces );
+static void faces_from_surface( const Transform3D & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces );
+static void parse_mesh_arrays( const Transform3D & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces );
 
 
 OccupancyTree::OccupancyTree()
@@ -32,7 +32,7 @@ void OccupancyTree::clear()
 	faces_.clear();
 }
 
-void OccupancyTree::append( const Transform & t, const Ref<Mesh> mesh )
+void OccupancyTree::append( const Transform3D & t, const Ref<Mesh> mesh )
 {
 	const int qty = mesh->get_surface_count();
 	for ( int i=0; i<qty; i++ )
@@ -501,7 +501,7 @@ void OccupancyTree::update_node( const OccupancyTreeNode & node )
 
 
 
-static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces )
+static void faces_from_surface( const Transform3D & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces )
 {
 	// Don't add faces if doesn't consist of triangles.
 	if (mesh.surface_get_primitive_type(surface_idx) != Mesh::PRIMITIVE_TRIANGLES)
@@ -517,7 +517,7 @@ static void faces_from_surface( const Transform & t, const Mesh & mesh, int surf
 	}
 }
 
-static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces )
+static void parse_mesh_arrays( const Transform3D & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces )
 {
 	const int vert_count = is_index_array ? mesh.surface_get_array_index_len( surface_idx ) :
 		mesh.surface_get_array_len( surface_idx );
@@ -531,11 +531,11 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 	Array arrays = mesh.surface_get_arrays( surface_idx );
 	//FaceFiller filler(faces, arrays);
 
-	PoolVector<int> indices = arrays[Mesh::ARRAY_INDEX];
-	PoolVector<int>::Read indices_reader = indices.read();
+	Vector<int> indices = arrays[Mesh::ARRAY_INDEX];
+	Vector<int>::Read indices_reader = indices.read();
 
-	PoolVector<Vector3> vertices = arrays[Mesh::ARRAY_VERTEX];
-	PoolVector<Vector3>::Read vertices_reader = vertices.read();
+	Vector<Vector3> vertices = arrays[Mesh::ARRAY_VERTEX];
+	Vector<Vector3>::Read vertices_reader = vertices.read();
 
 	if ( is_index_array )
 	{

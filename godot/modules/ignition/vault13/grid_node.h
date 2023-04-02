@@ -2,7 +2,7 @@
 #ifndef __GRID_NODE_H_
 #define __GRID_NODE_H_
 
-#include "core/vector.h"
+#include "core/templates/vector.h"
 #include "core/math/math_defs.h"
 #include "core/math/vector3.h"
 #include "core/math/plane.h"

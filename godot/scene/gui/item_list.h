@@ -33,6 +33,7 @@
 
 #include "scene/gui/control.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/resources/text_paragraph.h"
 
 class ItemList : public Control {
 	GDCLASS(ItemList, Control);
@@ -50,20 +51,24 @@ public:
 
 private:
 	struct Item {
-		Ref<Texture> icon;
-		bool icon_transposed;
+		Ref<Texture2D> icon;
+		bool icon_transposed = false;
 		Rect2i icon_region;
-		Color icon_modulate;
-		Ref<Texture> tag_icon;
+		Color icon_modulate = Color(1, 1, 1, 1);
+		Ref<Texture2D> tag_icon;
 		String text;
-		bool selectable;
-		bool selected;
-		bool disabled;
-		bool tooltip_enabled;
+		Ref<TextParagraph> text_buf;
+		String language;
+		TextDirection text_direction = TEXT_DIRECTION_AUTO;
+
+		bool selectable = true;
+		bool selected = false;
+		bool disabled = false;
+		bool tooltip_enabled = true;
 		Variant metadata;
 		String tooltip;
 		Color custom_fg;
-		Color custom_bg;
+		Color custom_bg = Color(0.0, 0.0, 0.0, 0.0);
 
 		Rect2 rect_cache;
 		Rect2 min_rect_cache;
@@ -71,66 +76,101 @@ private:
 		Size2 get_icon_size() const;
 
 		bool operator<(const Item &p_another) const { return text < p_another.text; }
+
+		Item() {
+			text_buf.instantiate();
+		}
 	};
 
-	int current;
+	int current = -1;
 
-	bool shape_changed;
+	bool shape_changed = true;
 
-	bool ensure_selected_visible;
-	bool same_column_width;
+	bool ensure_selected_visible = false;
+	bool same_column_width = false;
 
-	bool auto_height;
-	float auto_height_value;
+	bool auto_height = false;
+	float auto_height_value = 0.0;
 
 	Vector<Item> items;
 	Vector<int> separators;
 
-	SelectMode select_mode;
-	IconMode icon_mode;
-	VScrollBar *scroll_bar;
+	SelectMode select_mode = SELECT_SINGLE;
+	IconMode icon_mode = ICON_MODE_LEFT;
+	VScrollBar *scroll_bar = nullptr;
+	TextServer::OverrunBehavior text_overrun_behavior = TextServer::OVERRUN_TRIM_ELLIPSIS;
 
-	uint64_t search_time_msec;
+	uint64_t search_time_msec = 0;
 	String search_string;
 
-	int current_columns;
-	int fixed_column_width;
-	int max_text_lines;
-	int max_columns;
+	int current_columns = 1;
+	int fixed_column_width = 0;
+	int max_text_lines = 1;
+	int max_columns = 1;
 
 	Size2 fixed_icon_size;
-
 	Size2 max_item_size_cache;
 
-	int defer_select_single;
+	int defer_select_single = -1;
+	bool allow_rmb_select = false;
+	bool allow_reselect = false;
 
-	bool allow_rmb_select;
+	real_t icon_scale = 1.0;
 
-	bool allow_reselect;
+	bool do_autoscroll_to_bottom = false;
 
-	real_t icon_scale;
+	struct ThemeCache {
+		int h_separation = 0;
+		int v_separation = 0;
 
-	bool do_autoscroll_to_bottom;
+		Ref<StyleBox> panel_style;
+		Ref<StyleBox> focus_style;
 
-	Array _get_items() const;
-	void _set_items(const Array &p_items);
+		Ref<Font> font;
+		int font_size = 0;
+		Color font_color;
+		Color font_selected_color;
+		int font_outline_size = 0;
+		Color font_outline_color;
+
+		int line_separation = 0;
+		int icon_margin = 0;
+		Ref<StyleBox> selected_style;
+		Ref<StyleBox> selected_focus_style;
+		Ref<StyleBox> cursor_style;
+		Ref<StyleBox> cursor_focus_style;
+		Color guide_color;
+	} theme_cache;
 
 	void _scroll_changed(double);
-	void _gui_input(const Ref<InputEvent> &p_event);
+	void _shape(int p_idx);
 
 protected:
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 public:
-	void add_item(const String &p_item, const Ref<Texture> &p_texture = Ref<Texture>(), bool p_selectable = true);
-	void add_icon_item(const Ref<Texture> &p_item, bool p_selectable = true);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+	int add_item(const String &p_item, const Ref<Texture2D> &p_texture = Ref<Texture2D>(), bool p_selectable = true);
+	int add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable = true);
 
 	void set_item_text(int p_idx, const String &p_text);
 	String get_item_text(int p_idx) const;
 
-	void set_item_icon(int p_idx, const Ref<Texture> &p_icon);
-	Ref<Texture> get_item_icon(int p_idx) const;
+	void set_item_text_direction(int p_idx, TextDirection p_text_direction);
+	TextDirection get_item_text_direction(int p_idx) const;
+
+	void set_item_language(int p_idx, const String &p_language);
+	String get_item_language(int p_idx) const;
+
+	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_item_icon(int p_idx) const;
 
 	void set_item_icon_transposed(int p_idx, const bool transposed);
 	bool is_item_icon_transposed(int p_idx) const;
@@ -150,8 +190,7 @@ public:
 	void set_item_metadata(int p_idx, const Variant &p_metadata);
 	Variant get_item_metadata(int p_idx) const;
 
-	void set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon);
-	Ref<Texture> get_item_tag_icon(int p_idx) const;
+	void set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon);
 
 	void set_item_tooltip_enabled(int p_idx, const bool p_enabled);
 	bool is_item_tooltip_enabled(int p_idx) const;
@@ -165,9 +204,12 @@ public:
 	void set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_color);
 	Color get_item_custom_fg_color(int p_idx) const;
 
+	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
+	TextServer::OverrunBehavior get_text_overrun_behavior() const;
+
 	void select(int p_idx, bool p_single = true);
-	void unselect(int p_idx);
-	void unselect_all();
+	void deselect(int p_idx);
+	void deselect_all();
 	bool is_selected(int p_idx) const;
 	Vector<int> get_selected_items();
 	bool is_anything_selected();
@@ -177,6 +219,7 @@ public:
 
 	void move_item(int p_from_idx, int p_to_idx);
 
+	void set_item_count(int p_count);
 	int get_item_count() const;
 	void remove_item(int p_idx);
 
@@ -200,8 +243,8 @@ public:
 	void set_icon_mode(IconMode p_mode);
 	IconMode get_icon_mode() const;
 
-	void set_fixed_icon_size(const Size2 &p_size);
-	Size2 get_fixed_icon_size() const;
+	void set_fixed_icon_size(const Size2i &p_size);
+	Size2i get_fixed_icon_size() const;
 
 	void set_allow_rmb_select(bool p_allow);
 	bool get_allow_rmb_select() const;
@@ -214,7 +257,7 @@ public:
 	void sort_items_by_text();
 	int find_metadata(const Variant &p_metadata) const;
 
-	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 	int get_item_at_position(const Point2 &p_pos, bool p_exact = false) const;
 	bool is_pos_at_end_of_items(const Point2 &p_pos) const;
 
@@ -224,11 +267,11 @@ public:
 	void set_auto_height(bool p_enable);
 	bool has_auto_height() const;
 
-	Size2 get_minimum_size() const;
+	Size2 get_minimum_size() const override;
 
 	void set_autoscroll_to_bottom(const bool p_enable);
 
-	VScrollBar *get_v_scroll() { return scroll_bar; }
+	VScrollBar *get_v_scroll_bar() { return scroll_bar; }
 
 	ItemList();
 	~ItemList();

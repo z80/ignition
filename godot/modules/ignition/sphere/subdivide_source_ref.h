@@ -3,15 +3,16 @@
 #define __SUBDIVIDE_SOURCE_REF_H_
 
 #include "subdivide_source.h"
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
+#include "scene/main/node.h"
 
 namespace Ign
 {
 
-class SubdivideSourceRef: public Reference
+class SubdivideSourceRef: public RefCounted
 {
-    GDCLASS(SubdivideSourceRef, Reference);
-    OBJ_CATEGORY("Ignition");
+    GDCLASS(SubdivideSourceRef, RefCounted);
+    //OBJ_CATEGORY("Ignition");
 protected:
     static void _bind_methods();
 

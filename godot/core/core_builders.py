@@ -2,26 +2,46 @@
 
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 """
+import zlib
 
 from platform_methods import subprocess_main
-from compat import iteritems, itervalues, open_utf8, escape_string, byte_to_str
+
+
+def escape_string(s):
+    def charcode_to_c_escapes(c):
+        rev_result = []
+        while c >= 256:
+            c, low = (c // 256, c % 256)
+            rev_result.append("\\%03o" % low)
+        rev_result.append("\\%03o" % c)
+        return "".join(reversed(rev_result))
+
+    result = ""
+    if isinstance(s, str):
+        s = s.encode("utf-8")
+    for c in s:
+        if not (32 <= c < 127) or c in (ord("\\"), ord('"')):
+            result += charcode_to_c_escapes(c)
+        else:
+            result += chr(c)
+    return result
 
 
 def make_certs_header(target, source, env):
-
     src = source[0]
     dst = target[0]
     f = open(src, "rb")
-    g = open_utf8(dst, "w")
+    g = open(dst, "w", encoding="utf-8")
     buf = f.read()
     decomp_size = len(buf)
-    import zlib
 
-    buf = zlib.compress(buf)
+    # Use maximum zlib compression level to further reduce file size
+    # (at the cost of initial build times).
+    buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef _CERTS_RAW_H\n")
-    g.write("#define _CERTS_RAW_H\n")
+    g.write("#ifndef CERTS_COMPRESSED_GEN_H\n")
+    g.write("#define CERTS_COMPRESSED_GEN_H\n")
 
     # System certs path. Editor will use them if defined. (for package maintainers)
     path = env["system_certs_path"]
@@ -33,26 +53,36 @@ def make_certs_header(target, source, env):
         g.write("static const int _certs_uncompressed_size = " + str(decomp_size) + ";\n")
         g.write("static const unsigned char _certs_compressed[] = {\n")
         for i in range(len(buf)):
-            g.write("\t" + byte_to_str(buf[i]) + ",\n")
+            g.write("\t" + str(buf[i]) + ",\n")
         g.write("};\n")
-    g.write("#endif")
+    g.write("#endif // CERTS_COMPRESSED_GEN_H")
 
     g.close()
     f.close()
 
 
 def make_authors_header(target, source, env):
-    sections = ["Project Founders", "Lead Developer", "Project Manager", "Developers"]
-    sections_id = ["AUTHORS_FOUNDERS", "AUTHORS_LEAD_DEVELOPERS", "AUTHORS_PROJECT_MANAGERS", "AUTHORS_DEVELOPERS"]
+    sections = [
+        "Project Founders",
+        "Lead Developer",
+        "Project Manager",
+        "Developers",
+    ]
+    sections_id = [
+        "AUTHORS_FOUNDERS",
+        "AUTHORS_LEAD_DEVELOPERS",
+        "AUTHORS_PROJECT_MANAGERS",
+        "AUTHORS_DEVELOPERS",
+    ]
 
     src = source[0]
     dst = target[0]
-    f = open_utf8(src, "r")
-    g = open_utf8(dst, "w")
+    f = open(src, "r", encoding="utf-8")
+    g = open(dst, "w", encoding="utf-8")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef _EDITOR_AUTHORS_H\n")
-    g.write("#define _EDITOR_AUTHORS_H\n")
+    g.write("#ifndef AUTHORS_GEN_H\n")
+    g.write("#define AUTHORS_GEN_H\n")
 
     reading = False
 
@@ -79,7 +109,7 @@ def make_authors_header(target, source, env):
     if reading:
         close_section()
 
-    g.write("#endif\n")
+    g.write("#endif // AUTHORS_GEN_H\n")
 
     g.close()
     f.close()
@@ -109,12 +139,12 @@ def make_donors_header(target, source, env):
 
     src = source[0]
     dst = target[0]
-    f = open_utf8(src, "r")
-    g = open_utf8(dst, "w")
+    f = open(src, "r", encoding="utf-8")
+    g = open(dst, "w", encoding="utf-8")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef _EDITOR_DONORS_H\n")
-    g.write("#define _EDITOR_DONORS_H\n")
+    g.write("#ifndef DONORS_GEN_H\n")
+    g.write("#define DONORS_GEN_H\n")
 
     reading = False
 
@@ -141,7 +171,7 @@ def make_donors_header(target, source, env):
     if reading:
         close_section()
 
-    g.write("#endif\n")
+    g.write("#endif // DONORS_GEN_H\n")
 
     g.close()
     f.close()
@@ -178,10 +208,10 @@ def make_license_header(target, source, env):
 
     from collections import OrderedDict
 
-    projects = OrderedDict()
+    projects: dict = OrderedDict()
     license_list = []
 
-    with open_utf8(src_copyright, "r") as copyright_file:
+    with open(src_copyright, "r", encoding="utf-8") as copyright_file:
         reader = LicenseReader(copyright_file)
         part = {}
         while reader.current:
@@ -200,22 +230,22 @@ def make_license_header(target, source, env):
                 part = {}
                 reader.next_line()
 
-    data_list = []
-    for project in itervalues(projects):
+    data_list: list = []
+    for project in iter(projects.values()):
         for part in project:
             part["file_index"] = len(data_list)
             data_list += part["Files"]
             part["copyright_index"] = len(data_list)
             data_list += part["Copyright"]
 
-    with open_utf8(dst, "w") as f:
+    with open(dst, "w", encoding="utf-8") as f:
 
         f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-        f.write("#ifndef _EDITOR_LICENSE_H\n")
-        f.write("#define _EDITOR_LICENSE_H\n")
+        f.write("#ifndef LICENSE_GEN_H\n")
+        f.write("#define LICENSE_GEN_H\n")
         f.write("const char *const GODOT_LICENSE_TEXT =")
 
-        with open_utf8(src_license, "r") as license_file:
+        with open(src_license, "r", encoding="utf-8") as license_file:
             for line in license_file:
                 escaped_string = escape_string(line.strip())
                 f.write('\n\t\t"' + escaped_string + '\\n"')
@@ -247,7 +277,7 @@ def make_license_header(target, source, env):
         f.write("const ComponentCopyrightPart COPYRIGHT_PROJECT_PARTS[] = {\n")
         part_index = 0
         part_indexes = {}
-        for project_name, project in iteritems(projects):
+        for project_name, project in iter(projects.items()):
             part_indexes[project_name] = part_index
             for part in project:
                 f.write(
@@ -271,7 +301,7 @@ def make_license_header(target, source, env):
         f.write("const int COPYRIGHT_INFO_COUNT = " + str(len(projects)) + ";\n")
 
         f.write("const ComponentCopyright COPYRIGHT_INFO[] = {\n")
-        for project_name, project in iteritems(projects):
+        for project_name, project in iter(projects.items()):
             f.write(
                 '\t{ "'
                 + escape_string(project_name)
@@ -301,7 +331,7 @@ def make_license_header(target, source, env):
             f.write('\t"",\n\n')
         f.write("};\n\n")
 
-        f.write("#endif\n")
+        f.write("#endif // LICENSE_GEN_H\n")
 
 
 if __name__ == "__main__":

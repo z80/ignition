@@ -29,11 +29,12 @@
 /**************************************************************************/
 
 #include "api/java_class_wrapper.h"
+
 #include "string_android.h"
 #include "thread_jandroid.h"
 
-bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error, Variant &ret) {
-	Map<StringName, List<MethodInfo>>::Element *M = methods.find(p_method);
+bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret) {
+	HashMap<StringName, List<MethodInfo>>::Iterator M = methods.find(p_method);
 	if (!M) {
 		return false;
 	}
@@ -42,24 +43,24 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	ERR_FAIL_NULL_V(env, false);
 
 	MethodInfo *method = nullptr;
-	for (List<MethodInfo>::Element *E = M->get().front(); E; E = E->next()) {
-		if (!p_instance && !E->get()._static) {
-			r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+	for (MethodInfo &E : M->value) {
+		if (!p_instance && !E._static) {
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			continue;
 		}
 
-		int pc = E->get().param_types.size();
+		int pc = E.param_types.size();
 		if (pc > p_argcount) {
-			r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = pc;
 			continue;
 		}
 		if (pc < p_argcount) {
-			r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument = pc;
 			continue;
 		}
-		uint32_t *ptypes = E->get().param_types.ptrw();
+		uint32_t *ptypes = E.param_types.ptrw();
 		bool valid = true;
 
 		for (int i = 0; i < pc; i++) {
@@ -92,7 +93,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_TYPE_FLOAT:
 				case ARG_TYPE_DOUBLE: {
 					if (!p_args[i]->is_num()) {
-						arg_expected = Variant::REAL;
+						arg_expected = Variant::FLOAT;
 					}
 				} break;
 				case ARG_TYPE_STRING: {
@@ -104,12 +105,12 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 					if (p_args[i]->get_type() != Variant::OBJECT) {
 						arg_expected = Variant::OBJECT;
 					} else {
-						Ref<Reference> ref = *p_args[i];
+						Ref<RefCounted> ref = *p_args[i];
 						if (!ref.is_null()) {
 							if (Object::cast_to<JavaObject>(ref.ptr())) {
 								Ref<JavaObject> jo = ref;
 								//could be faster
-								jclass c = env->FindClass(E->get().param_sigs[i].operator String().utf8().get_data());
+								jclass c = env->FindClass(E.param_sigs[i].operator String().utf8().get_data());
 								if (!c || !env->IsInstanceOf(jo->instance, c)) {
 									arg_expected = Variant::OBJECT;
 								} else {
@@ -120,7 +121,6 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 							}
 						}
 					}
-
 				} break;
 				default: {
 					if (p_args[i]->get_type() != Variant::ARRAY) {
@@ -130,7 +130,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			}
 
 			if (arg_expected != Variant::NIL) {
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = i;
 				r_error.expected = arg_expected;
 				valid = false;
@@ -141,7 +141,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			continue;
 		}
 
-		method = &E->get();
+		method = &E;
 		break;
 	}
 
@@ -149,7 +149,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 		return true; //no version convinces
 	}
 
-	r_error.error = Variant::CallError::CALL_OK;
+	r_error.error = Callable::CallError::CALL_OK;
 
 	jvalue *argv = nullptr;
 
@@ -382,7 +382,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 		}
 	}
 
-	r_error.error = Variant::CallError::CALL_OK;
+	r_error.error = Callable::CallError::CALL_OK;
 	bool success = true;
 
 	switch (method->return_type) {
@@ -469,7 +469,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			} else {
 				if (!_convert_object_to_variant(env, obj, ret, method->return_type)) {
 					ret = Variant();
-					r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 					success = false;
 				}
 				env->DeleteLocalRef(obj);
@@ -478,21 +478,21 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 		} break;
 	}
 
-	for (List<jobject>::Element *E = to_free.front(); E; E = E->next()) {
-		env->DeleteLocalRef(E->get());
+	for (jobject &E : to_free) {
+		env->DeleteLocalRef(E);
 	}
 
 	return success;
 }
 
-Variant JavaClass::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant JavaClass::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	Variant ret;
 	bool found = _call_method(nullptr, p_method, p_args, p_argcount, r_error, ret);
 	if (found) {
 		return ret;
 	}
 
-	return Reference::call(p_method, p_args, p_argcount, r_error);
+	return RefCounted::callp(p_method, p_args, p_argcount, r_error);
 }
 
 JavaClass::JavaClass() {
@@ -500,7 +500,7 @@ JavaClass::JavaClass() {
 
 /////////////////////
 
-Variant JavaObject::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant JavaObject::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	return Variant();
 }
 

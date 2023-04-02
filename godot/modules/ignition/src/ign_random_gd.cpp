@@ -9,25 +9,25 @@ namespace Ign
 void IgnRandomGd::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_seed", "stri"), &IgnRandomGd::set_seed );
-	ClassDB::bind_method( D_METHOD("get_seed"),         &IgnRandomGd::get_seed, Variant::STRING );
+	ClassDB::bind_method( D_METHOD("get_seed"),         &IgnRandomGd::get_seed );
 
-	ClassDB::bind_method( D_METHOD("integer"),          &IgnRandomGd::integer, Variant::INT );
-	ClassDB::bind_method( D_METHOD("integer_choices", "choices"), &IgnRandomGd::integer_choices, Variant::INT );
-	ClassDB::bind_method( D_METHOD("integer_interval_closed", "v_min", "v_max"), &IgnRandomGd::integer_interval_closed, Variant::INT );
+	ClassDB::bind_method( D_METHOD("integer"),          &IgnRandomGd::integer );
+	ClassDB::bind_method( D_METHOD("integer_choices", "choices"), &IgnRandomGd::integer_choices );
+	ClassDB::bind_method( D_METHOD("integer_interval_closed", "v_min", "v_max"), &IgnRandomGd::integer_interval_closed );
 
-	ClassDB::bind_method( D_METHOD("floating_point_top_open"), &IgnRandomGd::floating_point_top_open, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("floating_point_closed"),   &IgnRandomGd::floating_point_closed,   Variant::REAL );
-	ClassDB::bind_method( D_METHOD("floating_point_open"),     &IgnRandomGd::floating_point_open,     Variant::REAL );
+	ClassDB::bind_method( D_METHOD("floating_point_top_open"), &IgnRandomGd::floating_point_top_open );
+	ClassDB::bind_method( D_METHOD("floating_point_closed"),   &IgnRandomGd::floating_point_closed );
+	ClassDB::bind_method( D_METHOD("floating_point_open"),     &IgnRandomGd::floating_point_open );
 
-	ClassDB::bind_method( D_METHOD("floating_point_limit_open", "limit"), &IgnRandomGd::floating_point_limit_open, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("floating_point_limit_closed", "v_max"), &IgnRandomGd::floating_point_limit_closed, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("floating_point_interval_closed", "v_min", "v_max"), &IgnRandomGd::floating_point_interval_closed, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("floating_point_limit_open", "limit"), &IgnRandomGd::floating_point_limit_open );
+	ClassDB::bind_method( D_METHOD("floating_point_limit_closed", "v_max"), &IgnRandomGd::floating_point_limit_closed );
+	ClassDB::bind_method( D_METHOD("floating_point_interval_closed", "v_min", "v_max"), &IgnRandomGd::floating_point_interval_closed );
 
-	ClassDB::bind_method( D_METHOD("normal", "mean", "stddev"), &IgnRandomGd::normal, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("normal", "mean", "stddev"), &IgnRandomGd::normal );
 
-	ClassDB::bind_method( D_METHOD("random_vector", "length"), &IgnRandomGd::random_vector, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("random_vector", "length"), &IgnRandomGd::random_vector );
 
-	ClassDB::bind_method( D_METHOD("random_rotation", "axis", "angle_variation", "axis_variation"), &IgnRandomGd::random_rotation, Variant::QUAT );
+	ClassDB::bind_method( D_METHOD("random_rotation", "axis", "angle_variation", "axis_variation"), &IgnRandomGd::random_rotation );
 
 	ADD_PROPERTY( PropertyInfo( Variant::STRING, "seed" ), "set_seed", "get_seed" );
 }
@@ -127,10 +127,10 @@ Vector3 IgnRandomGd::random_vector( real_t length )
 }
 
 
-Quat IgnRandomGd::random_rotation( const Vector3 & axis, real_t angle_variation, real_t axis_variation )
+Quaternion IgnRandomGd::random_rotation( const Vector3 & axis, real_t angle_variation, real_t axis_variation )
 {
 	const Quaterniond q = rand.random_rotation( Vector3d( axis.x, axis.y, axis.z ), angle_variation, axis_variation );
-	const Quat ret( q.x_, q.y_, q.z_, q.w_ );
+	const Quaternion ret( q.x_, q.y_, q.z_, q.w_ );
 	return ret;
 }
 

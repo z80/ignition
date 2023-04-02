@@ -1,7 +1,16 @@
 /* clang-format off */
 [vertex]
 
-layout(location = 0) in highp vec4 vertex_attrib;
+#ifdef USE_GLES_OVER_GL
+#define lowp
+#define mediump
+#define highp
+#else
+precision highp float;
+precision highp int;
+#endif
+
+layout(location = 0) in highp vec2 vertex;
 /* clang-format on */
 
 uniform vec2 offset;
@@ -10,14 +19,28 @@ uniform vec2 scale;
 out vec2 uv_interp;
 
 void main() {
-	uv_interp = vertex_attrib.xy * 2.0 - 1.0;
+	uv_interp = vertex.xy * 2.0 - 1.0;
 
-	vec2 v = vertex_attrib.xy * scale + offset;
+	vec2 v = vertex.xy * scale + offset;
 	gl_Position = vec4(v, 0.0, 1.0);
 }
 
 /* clang-format off */
 [fragment]
+
+#ifdef USE_GLES_OVER_GL
+#define lowp
+#define mediump
+#define highp
+#else
+#if defined(USE_HIGHP_PRECISION)
+precision highp float;
+precision highp int;
+#else
+precision mediump float;
+precision mediump int;
+#endif
+#endif
 
 uniform sampler2D source; //texunit:0
 /* clang-format on */
@@ -58,6 +81,6 @@ void main() {
 		frag_color = vec4(0.0, 0.0, 0.0, 1.0);
 	} else {
 		coords = (coords + vec2(1.0)) / vec2(2.0);
-		frag_color = textureLod(source, coords, 0.0);
+		frag_color = texture(source, coords);
 	}
 }

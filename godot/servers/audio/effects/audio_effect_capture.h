@@ -31,11 +31,11 @@
 #ifndef AUDIO_EFFECT_CAPTURE_H
 #define AUDIO_EFFECT_CAPTURE_H
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "core/math/audio_frame.h"
-#include "core/pool_vector.h"
-#include "core/reference.h"
-#include "core/ring_buffer.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/ring_buffer.h"
+#include "core/templates/vector.h"
 #include "servers/audio/audio_effect.h"
 #include "servers/audio_server.h"
 
@@ -47,8 +47,8 @@ class AudioEffectCaptureInstance : public AudioEffectInstance {
 	Ref<AudioEffectCapture> base;
 
 public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
-	virtual bool process_silence() const;
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
+	virtual bool process_silence() const override;
 };
 
 class AudioEffectCapture : public AudioEffect {
@@ -56,28 +56,22 @@ class AudioEffectCapture : public AudioEffect {
 	friend class AudioEffectCaptureInstance;
 
 	RingBuffer<AudioFrame> buffer;
-	uint64_t discarded_frames;
-	uint64_t pushed_frames;
-	float buffer_length_seconds;
-	bool buffer_initialized;
+	SafeNumeric<uint64_t> discarded_frames;
+	SafeNumeric<uint64_t> pushed_frames;
+	float buffer_length_seconds = 0.1f;
+	bool buffer_initialized = false;
 
 protected:
 	static void _bind_methods();
 
 public:
-	AudioEffectCapture() {
-		discarded_frames = 0;
-		pushed_frames = 0;
-		buffer_length_seconds = 0.1f;
-		buffer_initialized = false;
-	}
-	virtual Ref<AudioEffectInstance> instance();
+	virtual Ref<AudioEffectInstance> instantiate() override;
 
 	void set_buffer_length(float p_buffer_length_seconds);
 	float get_buffer_length();
 
 	bool can_get_buffer(int p_frames) const;
-	PoolVector2Array get_buffer(int p_len);
+	PackedVector2Array get_buffer(int p_len);
 	void clear_buffer();
 
 	int get_frames_available() const;

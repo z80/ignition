@@ -1,7 +1,16 @@
 /* clang-format off */
 [vertex]
 
-layout(location = 0) in highp vec4 vertex_attrib;
+#ifdef USE_GLES_OVER_GL
+#define lowp
+#define mediump
+#define highp
+#else
+precision highp float;
+precision highp int;
+#endif
+
+layout(location = 0) in vec2 vertex_attrib;
 /* clang-format on */
 layout(location = 4) in vec2 uv_in;
 
@@ -15,7 +24,7 @@ uniform vec4 blur_section;
 
 void main() {
 	uv_interp = uv_in;
-	gl_Position = vertex_attrib;
+	gl_Position = vec4(vertex_attrib, 0.0, 1.0);
 #ifdef USE_BLUR_SECTION
 
 	uv_interp = blur_section.xy + uv_interp * blur_section.zw;
@@ -26,28 +35,26 @@ void main() {
 /* clang-format off */
 [fragment]
 
-#if !defined(GLES_OVER_GL)
+#ifdef USE_GLES_OVER_GL
+#define lowp
+#define mediump
+#define highp
+#else
+#if defined(USE_HIGHP_PRECISION)
+precision highp float;
+precision highp int;
+#else
 precision mediump float;
+precision mediump int;
 #endif
-/* clang-format on */
+#endif
 
 in vec2 uv_interp;
+/* clang-format on */
 uniform sampler2D source_color; //texunit:0
-
-#ifdef SSAO_MERGE
-uniform sampler2D source_ssao; //texunit:1
-#endif
 
 uniform float lod;
 uniform vec2 pixel_size;
-
-layout(location = 0) out vec4 frag_color;
-
-#ifdef SSAO_MERGE
-
-uniform vec4 ssao_color;
-
-#endif
 
 #if defined(GLOW_GAUSSIAN_HORIZONTAL) || defined(GLOW_GAUSSIAN_VERTICAL)
 
@@ -57,6 +64,7 @@ uniform float glow_strength;
 
 #if defined(DOF_FAR_BLUR) || defined(DOF_NEAR_BLUR)
 
+#ifdef USE_GLES_OVER_GL
 #ifdef DOF_QUALITY_LOW
 const int dof_kernel_size = 5;
 const int dof_kernel_from = 2;
@@ -75,6 +83,7 @@ const int dof_kernel_size = 21;
 const int dof_kernel_from = 10;
 const float dof_kernel[21] = float[](0.028174, 0.032676, 0.037311, 0.041944, 0.046421, 0.050582, 0.054261, 0.057307, 0.059587, 0.060998, 0.061476, 0.060998, 0.059587, 0.057307, 0.054261, 0.050582, 0.046421, 0.041944, 0.037311, 0.032676, 0.028174);
 #endif
+#endif
 
 uniform sampler2D dof_source_depth; //texunit:1
 uniform float dof_begin;
@@ -82,25 +91,11 @@ uniform float dof_end;
 uniform vec2 dof_dir;
 uniform float dof_radius;
 
-#ifdef DOF_NEAR_BLUR_MERGE
-
-uniform sampler2D source_dof_original; //texunit:2
-#endif
-
 #endif
 
 #ifdef GLOW_FIRST_PASS
 
-uniform float exposure;
-uniform float white;
 uniform highp float luminance_cap;
-
-#ifdef GLOW_USE_AUTO_EXPOSURE
-
-uniform highp sampler2D source_auto_exposure; //texunit:1
-uniform highp float auto_exposure_grey;
-
-#endif
 
 uniform float glow_bloom;
 uniform float glow_hdr_threshold;
@@ -111,60 +106,12 @@ uniform float glow_hdr_scale;
 uniform float camera_z_far;
 uniform float camera_z_near;
 
+layout(location = 0) out vec4 frag_color;
+
 void main() {
-#ifdef GAUSSIAN_HORIZONTAL
-	vec2 pix_size = pixel_size;
-	pix_size *= 0.5; //reading from larger buffer, so use more samples
-	// sigma 2
-	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pix_size, lod) * 0.214607;
-	color += textureLod(source_color, uv_interp + vec2(1.0, 0.0) * pix_size, lod) * 0.189879;
-	color += textureLod(source_color, uv_interp + vec2(2.0, 0.0) * pix_size, lod) * 0.131514;
-	color += textureLod(source_color, uv_interp + vec2(3.0, 0.0) * pix_size, lod) * 0.071303;
-	color += textureLod(source_color, uv_interp + vec2(-1.0, 0.0) * pix_size, lod) * 0.189879;
-	color += textureLod(source_color, uv_interp + vec2(-2.0, 0.0) * pix_size, lod) * 0.131514;
-	color += textureLod(source_color, uv_interp + vec2(-3.0, 0.0) * pix_size, lod) * 0.071303;
-	frag_color = color;
-#endif
-
-#ifdef GAUSSIAN_VERTICAL
-	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pixel_size, lod) * 0.38774;
-	color += textureLod(source_color, uv_interp + vec2(0.0, 1.0) * pixel_size, lod) * 0.24477;
-	color += textureLod(source_color, uv_interp + vec2(0.0, 2.0) * pixel_size, lod) * 0.06136;
-	color += textureLod(source_color, uv_interp + vec2(0.0, -1.0) * pixel_size, lod) * 0.24477;
-	color += textureLod(source_color, uv_interp + vec2(0.0, -2.0) * pixel_size, lod) * 0.06136;
-	frag_color = color;
-#endif
-
-	//glow uses larger sigma for a more rounded blur effect
-
 #ifdef GLOW_GAUSSIAN_HORIZONTAL
 	vec2 pix_size = pixel_size;
 	pix_size *= 0.5; //reading from larger buffer, so use more samples
-
-#ifdef USE_GLOW_HIGH_QUALITY
-	// Sample from two lines to capture single-pixel features.
-	// This is significantly slower, but looks better and is more stable for moving objects.
-	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pix_size, lod) * 0.152781;
-	color += textureLod(source_color, uv_interp + vec2(1.0, 0.0) * pix_size, lod) * 0.144599;
-	color += textureLod(source_color, uv_interp + vec2(2.0, 0.0) * pix_size, lod) * 0.122589;
-	color += textureLod(source_color, uv_interp + vec2(3.0, 0.0) * pix_size, lod) * 0.093095;
-	color += textureLod(source_color, uv_interp + vec2(4.0, 0.0) * pix_size, lod) * 0.063327;
-	color += textureLod(source_color, uv_interp + vec2(-1.0, 0.0) * pix_size, lod) * 0.144599;
-	color += textureLod(source_color, uv_interp + vec2(-2.0, 0.0) * pix_size, lod) * 0.122589;
-	color += textureLod(source_color, uv_interp + vec2(-3.0, 0.0) * pix_size, lod) * 0.093095;
-	color += textureLod(source_color, uv_interp + vec2(-4.0, 0.0) * pix_size, lod) * 0.063327;
-
-	color += textureLod(source_color, uv_interp + vec2(0.0, 1.0) * pix_size, lod) * 0.152781;
-	color += textureLod(source_color, uv_interp + vec2(1.0, 1.0) * pix_size, lod) * 0.144599;
-	color += textureLod(source_color, uv_interp + vec2(2.0, 1.0) * pix_size, lod) * 0.122589;
-	color += textureLod(source_color, uv_interp + vec2(3.0, 1.0) * pix_size, lod) * 0.093095;
-	color += textureLod(source_color, uv_interp + vec2(4.0, 1.0) * pix_size, lod) * 0.063327;
-	color += textureLod(source_color, uv_interp + vec2(-1.0, 1.0) * pix_size, lod) * 0.144599;
-	color += textureLod(source_color, uv_interp + vec2(-2.0, 1.0) * pix_size, lod) * 0.122589;
-	color += textureLod(source_color, uv_interp + vec2(-3.0, 1.0) * pix_size, lod) * 0.093095;
-	color += textureLod(source_color, uv_interp + vec2(-4.0, 1.0) * pix_size, lod) * 0.063327;
-	color *= 0.5;
-#else
 	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pix_size, lod) * 0.174938;
 	color += textureLod(source_color, uv_interp + vec2(1.0, 0.0) * pix_size, lod) * 0.165569;
 	color += textureLod(source_color, uv_interp + vec2(2.0, 0.0) * pix_size, lod) * 0.140367;
@@ -172,11 +119,9 @@ void main() {
 	color += textureLod(source_color, uv_interp + vec2(-1.0, 0.0) * pix_size, lod) * 0.165569;
 	color += textureLod(source_color, uv_interp + vec2(-2.0, 0.0) * pix_size, lod) * 0.140367;
 	color += textureLod(source_color, uv_interp + vec2(-3.0, 0.0) * pix_size, lod) * 0.106595;
-#endif //USE_GLOW_HIGH_QUALITY
-
 	color *= glow_strength;
 	frag_color = color;
-#endif //GLOW_GAUSSIAN_HORIZONTAL
+#endif
 
 #ifdef GLOW_GAUSSIAN_VERTICAL
 	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pixel_size, lod) * 0.288713;
@@ -187,6 +132,66 @@ void main() {
 	color *= glow_strength;
 	frag_color = color;
 #endif
+
+#ifndef USE_GLES_OVER_GL
+#if defined(DOF_FAR_BLUR) || defined(DOF_NEAR_BLUR)
+
+#ifdef DOF_QUALITY_LOW
+	const int dof_kernel_size = 5;
+	const int dof_kernel_from = 2;
+	float dof_kernel[5];
+	dof_kernel[0] = 0.153388;
+	dof_kernel[1] = 0.221461;
+	dof_kernel[2] = 0.250301;
+	dof_kernel[3] = 0.221461;
+	dof_kernel[4] = 0.153388;
+#endif
+
+#ifdef DOF_QUALITY_MEDIUM
+	const int dof_kernel_size = 11;
+	const int dof_kernel_from = 5;
+	float dof_kernel[11];
+	dof_kernel[0] = 0.055037;
+	dof_kernel[1] = 0.072806;
+	dof_kernel[2] = 0.090506;
+	dof_kernel[3] = 0.105726;
+	dof_kernel[4] = 0.116061;
+	dof_kernel[5] = 0.119726;
+	dof_kernel[6] = 0.116061;
+	dof_kernel[7] = 0.105726;
+	dof_kernel[8] = 0.090506;
+	dof_kernel[9] = 0.072806;
+	dof_kernel[10] = 0.055037;
+#endif
+
+#ifdef DOF_QUALITY_HIGH
+	const int dof_kernel_size = 21;
+	const int dof_kernel_from = 10;
+	float dof_kernel[21];
+	dof_kernel[0] = 0.028174;
+	dof_kernel[1] = 0.032676;
+	dof_kernel[2] = 0.037311;
+	dof_kernel[3] = 0.041944;
+	dof_kernel[4] = 0.046421;
+	dof_kernel[5] = 0.050582;
+	dof_kernel[6] = 0.054261;
+	dof_kernel[7] = 0.057307;
+	dof_kernel[8] = 0.059587;
+	dof_kernel[9] = 0.060998;
+	dof_kernel[10] = 0.061476;
+	dof_kernel[11] = 0.060998;
+	dof_kernel[12] = 0.059587;
+	dof_kernel[13] = 0.057307;
+	dof_kernel[14] = 0.054261;
+	dof_kernel[15] = 0.050582;
+	dof_kernel[16] = 0.046421;
+	dof_kernel[17] = 0.041944;
+	dof_kernel[18] = 0.037311;
+	dof_kernel[19] = 0.032676;
+	dof_kernel[20] = 0.028174;
+#endif
+#endif
+#endif //!USE_GLES_OVER_GL
 
 #ifdef DOF_FAR_BLUR
 
@@ -201,7 +206,7 @@ void main() {
 #endif
 
 	float amount = smoothstep(dof_begin, dof_end, depth);
-	vec4 k_accum = vec4(0.0);
+	float k_accum = 0.0;
 
 	for (int i = 0; i < dof_kernel_size; i++) {
 		int int_ofs = i - dof_kernel_from;
@@ -216,18 +221,16 @@ void main() {
 #else
 		tap_depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - tap_depth * (camera_z_far - camera_z_near));
 #endif
-		float tap_amount = mix(smoothstep(dof_begin, dof_end, tap_depth), 1.0, int_ofs == 0);
+		float tap_amount = int_ofs == 0 ? 1.0 : smoothstep(dof_begin, dof_end, tap_depth);
 		tap_amount *= tap_amount * tap_amount; //prevent undesired glow effect
-		tap_amount *= tap_k;
 
-		vec4 tap_color = textureLod(source_color, tap_uv, 0.0);
+		vec4 tap_color = textureLod(source_color, tap_uv, 0.0) * tap_k;
 
-		vec4 w = vec4(tap_amount) * vec4(vec3(tap_color.a), 1.0);
-		k_accum += w;
-		color_accum += tap_color * w;
+		k_accum += tap_k * tap_amount;
+		color_accum += tap_color * tap_amount;
 	}
 
-	if (k_accum.r > 0.0) {
+	if (k_accum > 0.0) {
 		color_accum /= k_accum;
 	}
 
@@ -244,7 +247,7 @@ void main() {
 	for (int i = 0; i < dof_kernel_size; i++) {
 		int int_ofs = i - dof_kernel_from;
 		vec2 tap_uv = uv_interp + dof_dir * float(int_ofs) * dof_radius;
-		float ofs_influence = max(0.0, 1.0 - float(abs(int_ofs)) / float(dof_kernel_from));
+		float ofs_influence = max(0.0, 1.0 - abs(float(int_ofs)) / float(dof_kernel_from));
 
 		float tap_k = dof_kernel[i];
 
@@ -273,46 +276,16 @@ void main() {
 
 	color_accum.a = max(color_accum.a, sqrt(max_accum));
 
-#ifdef DOF_NEAR_BLUR_MERGE
-
-	vec4 original = textureLod(source_dof_original, uv_interp, 0.0);
-	color_accum = mix(original, color_accum, color_accum.a);
-
-#endif
-
-#ifndef DOF_NEAR_FIRST_TAP
-	//color_accum=vec4(vec3(color_accum.a),1.0);
-#endif
 	frag_color = color_accum;
 
 #endif
 
 #ifdef GLOW_FIRST_PASS
 
-#ifdef GLOW_USE_AUTO_EXPOSURE
-
-	frag_color /= texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / auto_exposure_grey;
-#endif
-	frag_color *= exposure;
-
 	float luminance = max(frag_color.r, max(frag_color.g, frag_color.b));
 	float feedback = max(smoothstep(glow_hdr_threshold, glow_hdr_threshold + glow_hdr_scale, luminance), glow_bloom);
 
 	frag_color = min(frag_color * feedback, vec4(luminance_cap));
-
-#endif
-
-#ifdef SIMPLE_COPY
-	vec4 color = textureLod(source_color, uv_interp, 0.0);
-	frag_color = color;
-#endif
-
-#ifdef SSAO_MERGE
-
-	vec4 color = textureLod(source_color, uv_interp, 0.0);
-	float ssao = textureLod(source_ssao, uv_interp, 0.0).r;
-
-	frag_color = vec4(mix(color.rgb, color.rgb * mix(ssao_color.rgb, vec3(1.0), ssao), color.a), 1.0);
 
 #endif
 }

@@ -8,7 +8,7 @@ using GodotTools.Internals;
 
 namespace GodotTools.Ides
 {
-    public sealed class GodotIdeManager : Node, ISerializationListener
+    public sealed partial class GodotIdeManager : Node, ISerializationListener
     {
         private MessagingServer _messagingServer;
 
@@ -21,7 +21,8 @@ namespace GodotTools.Ides
                 return _messagingServer;
 
             _messagingServer?.Dispose();
-            _messagingServer = new MessagingServer(OS.GetExecutablePath(), ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
+            _messagingServer = new MessagingServer(OS.GetExecutablePath(),
+                ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
 
             _ = _messagingServer.Listen();
 
@@ -76,8 +77,8 @@ namespace GodotTools.Ides
 
         public async Task<EditorPick?> LaunchIdeAsync(int millisecondsTimeout = 10000)
         {
-            var editorId = (ExternalEditorId)GodotSharpEditor.Instance.GetEditorInterface()
-                .GetEditorSettings().GetSetting("mono/editor/external_editor");
+            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+            var editorId = editorSettings.GetSetting(GodotSharpEditor.Settings.ExternalEditor).As<ExternalEditorId>();
             string editorIdentity = GetExternalEditorIdentity(editorId);
 
             var runningServer = GetRunningOrNewServer();
@@ -111,7 +112,7 @@ namespace GodotTools.Ides
                 {
                     MonoDevelop.Instance GetMonoDevelopInstance(string solutionPath)
                     {
-                        if (Utils.OS.IsOSX && editorId == ExternalEditorId.VisualStudioForMac)
+                        if (Utils.OS.IsMacOS && editorId == ExternalEditorId.VisualStudioForMac)
                         {
                             _vsForMacInstance = (_vsForMacInstance?.IsDisposed ?? true ? null : _vsForMacInstance) ??
                                                new MonoDevelop.Instance(solutionPath, MonoDevelop.EditorId.VisualStudioForMac);
@@ -153,7 +154,7 @@ namespace GodotTools.Ides
                 }
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(editorId));
             }
         }
 
@@ -180,17 +181,17 @@ namespace GodotTools.Ides
 
             public void SendOpenFile(string file)
             {
-                SendRequest<OpenFileResponse>(new OpenFileRequest {File = file});
+                SendRequest<OpenFileResponse>(new OpenFileRequest { File = file });
             }
 
             public void SendOpenFile(string file, int line)
             {
-                SendRequest<OpenFileResponse>(new OpenFileRequest {File = file, Line = line});
+                SendRequest<OpenFileResponse>(new OpenFileRequest { File = file, Line = line });
             }
 
             public void SendOpenFile(string file, int line, int column)
             {
-                SendRequest<OpenFileResponse>(new OpenFileRequest {File = file, Line = line, Column = column});
+                SendRequest<OpenFileResponse>(new OpenFileRequest { File = file, Line = line, Column = column });
             }
         }
 
@@ -200,13 +201,13 @@ namespace GodotTools.Ides
         {
             public void LogDebug(string message)
             {
-                if (OS.IsStdoutVerbose())
+                if (OS.IsStdOutVerbose())
                     Console.WriteLine(message);
             }
 
             public void LogInfo(string message)
             {
-                if (OS.IsStdoutVerbose())
+                if (OS.IsStdOutVerbose())
                     Console.WriteLine(message);
             }
 

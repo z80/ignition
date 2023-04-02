@@ -31,6 +31,7 @@
 #ifndef GRADIENT_TEXTURE_2D_EDITOR_PLUGIN_H
 #define GRADIENT_TEXTURE_2D_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_spin_slider.h"
 
@@ -44,7 +45,6 @@ class GradientTexture2DEditorRect : public Control {
 	};
 
 	Ref<GradientTexture2D> texture;
-	UndoRedo *undo_redo = nullptr;
 	bool snap_enabled = false;
 	float snap_size = 0;
 
@@ -57,11 +57,10 @@ class GradientTexture2DEditorRect : public Control {
 
 	Point2 _get_handle_position(const Handle p_handle);
 	void _update_fill_position();
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	void set_texture(Ref<GradientTexture2D> &p_texture);
@@ -75,7 +74,6 @@ class GradientTexture2DEditor : public VBoxContainer {
 	GDCLASS(GradientTexture2DEditor, VBoxContainer);
 
 	Ref<GradientTexture2D> texture;
-	UndoRedo *undo_redo = nullptr;
 
 	Button *reverse_button = nullptr;
 	Button *snap_button = nullptr;
@@ -88,7 +86,6 @@ class GradientTexture2DEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	void set_texture(Ref<GradientTexture2D> &p_texture);
@@ -100,15 +97,15 @@ class EditorInspectorPluginGradientTexture2D : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginGradientTexture2D, EditorInspectorPlugin);
 
 public:
-	virtual bool can_handle(Object *p_object);
-	virtual void parse_begin(Object *p_object);
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
 };
 
 class GradientTexture2DEditorPlugin : public EditorPlugin {
 	GDCLASS(GradientTexture2DEditorPlugin, EditorPlugin);
 
 public:
-	GradientTexture2DEditorPlugin(EditorNode *p_node);
+	GradientTexture2DEditorPlugin();
 };
 
 #endif // GRADIENT_TEXTURE_2D_EDITOR_PLUGIN_H

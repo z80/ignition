@@ -32,6 +32,8 @@
 
 #include "editor_node.h"
 
+#define UNIMPLEMENTED() ERR_PRINT(vformat("Unimplemented virtual function in EditorVCSInterface based plugin: %s", __func__))
+
 EditorVCSInterface *EditorVCSInterface::singleton = nullptr;
 
 void EditorVCSInterface::popup_error(String p_msg) {
@@ -40,137 +42,203 @@ void EditorVCSInterface::popup_error(String p_msg) {
 }
 
 bool EditorVCSInterface::initialize(String p_project_path) {
-	return call("_initialize", p_project_path);
+	bool result = false;
+	if (!GDVIRTUAL_CALL(_initialize, p_project_path, result)) {
+		UNIMPLEMENTED();
+		return false;
+	}
+	return result;
 }
 
 void EditorVCSInterface::set_credentials(String p_username, String p_password, String p_ssh_public_key, String p_ssh_private_key, String p_ssh_passphrase) {
-	call("_set_credentials", p_username, p_password, p_ssh_public_key, p_ssh_private_key, p_ssh_passphrase);
+	if (!GDVIRTUAL_CALL(_set_credentials, p_username, p_password, p_ssh_public_key, p_ssh_private_key, p_ssh_passphrase)) {
+		UNIMPLEMENTED();
+	}
 }
 
 List<String> EditorVCSInterface::get_remotes() {
-	List<String> remotes;
+	TypedArray<String> result;
+	if (!GDVIRTUAL_CALL(_get_remotes, result)) {
+		UNIMPLEMENTED();
+		return {};
+	}
 
-	Array result = call("_get_remotes");
+	List<String> remotes;
 	for (int i = 0; i < result.size(); i++) {
 		remotes.push_back(result[i]);
 	}
-
 	return remotes;
 }
 
 List<EditorVCSInterface::StatusFile> EditorVCSInterface::get_modified_files_data() {
-	List<EditorVCSInterface::StatusFile> status_files;
+	TypedArray<Dictionary> result;
+	if (!GDVIRTUAL_CALL(_get_modified_files_data, result)) {
+		UNIMPLEMENTED();
+		return {};
+	}
 
-	Array result = call("_get_modified_files_data");
+	List<EditorVCSInterface::StatusFile> status_files;
 	for (int i = 0; i < result.size(); i++) {
 		status_files.push_back(_convert_status_file(result[i]));
 	}
-
 	return status_files;
 }
 
 void EditorVCSInterface::stage_file(String p_file_path) {
-	call("_stage_file", p_file_path);
+	if (!GDVIRTUAL_CALL(_stage_file, p_file_path)) {
+		UNIMPLEMENTED();
+	}
 }
 
 void EditorVCSInterface::unstage_file(String p_file_path) {
-	call("_unstage_file", p_file_path);
+	if (!GDVIRTUAL_CALL(_unstage_file, p_file_path)) {
+		UNIMPLEMENTED();
+	}
 }
 
 void EditorVCSInterface::discard_file(String p_file_path) {
-	call("_discard_file", p_file_path);
+	if (!GDVIRTUAL_CALL(_discard_file, p_file_path)) {
+		UNIMPLEMENTED();
+	}
 }
 
 void EditorVCSInterface::commit(String p_msg) {
-	call("_commit", p_msg);
+	if (!GDVIRTUAL_CALL(_commit, p_msg)) {
+		UNIMPLEMENTED();
+	}
 }
 
 List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_diff(String p_identifier, TreeArea p_area) {
-	List<DiffFile> diff_files;
+	TypedArray<Dictionary> result;
+	if (!GDVIRTUAL_CALL(_get_diff, p_identifier, int(p_area), result)) {
+		UNIMPLEMENTED();
+		return {};
+	}
 
-	Array result = call("_get_diff", p_identifier, p_area);
+	List<DiffFile> diff_files;
 	for (int i = 0; i < result.size(); i++) {
 		diff_files.push_back(_convert_diff_file(result[i]));
 	}
-
 	return diff_files;
 }
 
 List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits(int p_max_commits) {
-	List<EditorVCSInterface::Commit> commits;
+	TypedArray<Dictionary> result;
+	if (!GDVIRTUAL_CALL(_get_previous_commits, p_max_commits, result)) {
+		UNIMPLEMENTED();
+		return {};
+	}
 
-	Array result = call("_get_previous_commits", p_max_commits);
+	List<EditorVCSInterface::Commit> commits;
 	for (int i = 0; i < result.size(); i++) {
 		commits.push_back(_convert_commit(result[i]));
 	}
-
 	return commits;
 }
 
 List<String> EditorVCSInterface::get_branch_list() {
-	List<String> branch_list;
+	TypedArray<String> result;
+	if (!GDVIRTUAL_CALL(_get_branch_list, result)) {
+		UNIMPLEMENTED();
+		return {};
+	}
 
-	Array result = call("_get_branch_list");
+	List<String> branch_list;
 	for (int i = 0; i < result.size(); i++) {
 		branch_list.push_back(result[i]);
 	}
-
 	return branch_list;
 }
 
 void EditorVCSInterface::create_branch(String p_branch_name) {
-	call("_create_branch", p_branch_name);
+	if (!GDVIRTUAL_CALL(_create_branch, p_branch_name)) {
+		UNIMPLEMENTED();
+	}
 }
 
 void EditorVCSInterface::create_remote(String p_remote_name, String p_remote_url) {
-	call("_create_remote", p_remote_name, p_remote_url);
+	if (!GDVIRTUAL_CALL(_create_remote, p_remote_name, p_remote_url)) {
+		UNIMPLEMENTED();
+	}
 }
 
 void EditorVCSInterface::remove_branch(String p_branch_name) {
-	call("_remove_branch", p_branch_name);
+	if (!GDVIRTUAL_CALL(_remove_branch, p_branch_name)) {
+		UNIMPLEMENTED();
+	}
 }
 
 void EditorVCSInterface::remove_remote(String p_remote_name) {
-	call("_remove_remote", p_remote_name);
+	if (!GDVIRTUAL_CALL(_remove_remote, p_remote_name)) {
+		UNIMPLEMENTED();
+	}
 }
 
 String EditorVCSInterface::get_current_branch_name() {
-	return call("_get_current_branch_name");
+	String result;
+	if (!GDVIRTUAL_CALL(_get_current_branch_name, result)) {
+		UNIMPLEMENTED();
+		return "";
+	}
+	return result;
 }
 
 bool EditorVCSInterface::checkout_branch(String p_branch_name) {
-	return call("_checkout_branch", p_branch_name);
+	bool result = false;
+	if (!GDVIRTUAL_CALL(_checkout_branch, p_branch_name, result)) {
+		UNIMPLEMENTED();
+	}
+	return result;
 }
 
 void EditorVCSInterface::pull(String p_remote) {
-	call("_pull", p_remote);
+	if (!GDVIRTUAL_CALL(_pull, p_remote)) {
+		UNIMPLEMENTED();
+	}
 }
 
 void EditorVCSInterface::push(String p_remote, bool p_force) {
-	call("_push", p_remote, p_force);
+	if (!GDVIRTUAL_CALL(_push, p_remote, p_force)) {
+		UNIMPLEMENTED();
+	}
 }
 
 void EditorVCSInterface::fetch(String p_remote) {
-	call("_fetch", p_remote);
+	if (!GDVIRTUAL_CALL(_fetch, p_remote)) {
+		UNIMPLEMENTED();
+	}
 }
 
 List<EditorVCSInterface::DiffHunk> EditorVCSInterface::get_line_diff(String p_file_path, String p_text) {
-	List<DiffHunk> diff_hunks;
+	TypedArray<Dictionary> result;
+	if (!GDVIRTUAL_CALL(_get_line_diff, p_file_path, p_text, result)) {
+		UNIMPLEMENTED();
+		return {};
+	}
 
-	Array result = call("_get_line_diff", p_file_path, p_text);
+	List<DiffHunk> diff_hunks;
 	for (int i = 0; i < result.size(); i++) {
 		diff_hunks.push_back(_convert_diff_hunk(result[i]));
 	}
-
 	return diff_hunks;
 }
 
 bool EditorVCSInterface::shut_down() {
-	return call("_shut_down");
+	bool result = false;
+	if (!GDVIRTUAL_CALL(_shut_down, result)) {
+		UNIMPLEMENTED();
+		return false;
+	}
+	return result;
 }
 
 String EditorVCSInterface::get_vcs_name() {
-	return call("_get_vcs_name");
+	String result;
+	if (!GDVIRTUAL_CALL(_get_vcs_name, result)) {
+		UNIMPLEMENTED();
+		return {};
+	}
+	return result;
 }
 
 Dictionary EditorVCSInterface::create_diff_line(int p_new_line_no, int p_old_line_no, String p_content, String p_status) {
@@ -189,11 +257,11 @@ Dictionary EditorVCSInterface::create_diff_hunk(int p_old_start, int p_new_start
 	diff_hunk["old_lines"] = p_old_lines;
 	diff_hunk["new_start"] = p_new_start;
 	diff_hunk["old_start"] = p_old_start;
-	diff_hunk["diff_lines"] = Array();
+	diff_hunk["diff_lines"] = TypedArray<Dictionary>();
 	return diff_hunk;
 }
 
-Dictionary EditorVCSInterface::add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, Array p_line_diffs) {
+Dictionary EditorVCSInterface::add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, TypedArray<Dictionary> p_line_diffs) {
 	p_diff_hunk["diff_lines"] = p_line_diffs;
 	return p_diff_hunk;
 }
@@ -202,7 +270,7 @@ Dictionary EditorVCSInterface::create_diff_file(String p_new_file, String p_old_
 	Dictionary file_diff;
 	file_diff["new_file"] = p_new_file;
 	file_diff["old_file"] = p_old_file;
-	file_diff["diff_hunks"] = Array();
+	file_diff["diff_hunks"] = TypedArray<Dictionary>();
 	return file_diff;
 }
 
@@ -216,7 +284,7 @@ Dictionary EditorVCSInterface::create_commit(String p_msg, String p_author, Stri
 	return commit_info;
 }
 
-Dictionary EditorVCSInterface::add_diff_hunks_into_diff_file(Dictionary p_diff_file, Array p_diff_hunks) {
+Dictionary EditorVCSInterface::add_diff_hunks_into_diff_file(Dictionary p_diff_file, TypedArray<Dictionary> p_diff_hunks) {
 	p_diff_file["diff_hunks"] = p_diff_hunks;
 	return p_diff_file;
 }
@@ -244,7 +312,7 @@ EditorVCSInterface::DiffHunk EditorVCSInterface::_convert_diff_hunk(Dictionary p
 	dh.old_lines = p_diff_hunk["old_lines"];
 	dh.new_start = p_diff_hunk["new_start"];
 	dh.old_start = p_diff_hunk["old_start"];
-	Array diff_lines = p_diff_hunk["diff_lines"];
+	TypedArray<Dictionary> diff_lines = p_diff_hunk["diff_lines"];
 	for (int i = 0; i < diff_lines.size(); i++) {
 		DiffLine dl = _convert_diff_line(diff_lines[i]);
 		dh.diff_lines.push_back(dl);
@@ -256,7 +324,7 @@ EditorVCSInterface::DiffFile EditorVCSInterface::_convert_diff_file(Dictionary p
 	DiffFile df;
 	df.new_file = p_diff_file["new_file"];
 	df.old_file = p_diff_file["old_file"];
-	Array diff_hunks = p_diff_file["diff_hunks"];
+	TypedArray<Dictionary> diff_hunks = p_diff_file["diff_hunks"];
 	for (int i = 0; i < diff_hunks.size(); i++) {
 		DiffHunk dh = _convert_diff_hunk(diff_hunks[i]);
 		df.diff_hunks.push_back(dh);
@@ -284,29 +352,29 @@ EditorVCSInterface::StatusFile EditorVCSInterface::_convert_status_file(Dictiona
 
 void EditorVCSInterface::_bind_methods() {
 	// Proxy end points that implement the VCS specific operations that the editor demands.
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_initialize", PropertyInfo(Variant::STRING, "project_path")));
-	BIND_VMETHOD(MethodInfo("_set_credentials", PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password"), PropertyInfo(Variant::STRING, "ssh_public_key_path"), PropertyInfo(Variant::STRING, "ssh_private_key_path"), PropertyInfo(Variant::STRING, "ssh_passphrase")));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_remotes"));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_vcs_name"));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_shut_down"));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_modified_files_data"));
-	BIND_VMETHOD(MethodInfo("_commit", PropertyInfo(Variant::STRING, "msg")));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_diff", PropertyInfo(Variant::STRING, "identifier"), PropertyInfo(Variant::INT, "area")));
-	BIND_VMETHOD(MethodInfo("_stage_file", PropertyInfo(Variant::STRING, "file_path")));
-	BIND_VMETHOD(MethodInfo("_unstage_file", PropertyInfo(Variant::STRING, "file_path")));
-	BIND_VMETHOD(MethodInfo("_discard_file", PropertyInfo(Variant::STRING, "file_path")));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_previous_commits", PropertyInfo(Variant::INT, "max_commits")));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_branch_list"));
-	BIND_VMETHOD(MethodInfo("_create_branch", PropertyInfo(Variant::STRING, "branch_name")));
-	BIND_VMETHOD(MethodInfo("_remove_branch", PropertyInfo(Variant::STRING, "branch_name")));
-	BIND_VMETHOD(MethodInfo("_create_remote", PropertyInfo(Variant::STRING, "remote_name"), PropertyInfo(Variant::STRING, "remote_url")));
-	BIND_VMETHOD(MethodInfo("_remove_remote", PropertyInfo(Variant::STRING, "remote_name")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_current_branch_name"));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_checkout_branch", PropertyInfo(Variant::STRING, "branch_name")));
-	BIND_VMETHOD(MethodInfo("_push", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::BOOL, "force")));
-	BIND_VMETHOD(MethodInfo("_pull", PropertyInfo(Variant::STRING, "remote")));
-	BIND_VMETHOD(MethodInfo("_fetch", PropertyInfo(Variant::STRING, "remote")));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_line_diff", PropertyInfo(Variant::STRING, "file_path"), PropertyInfo(Variant::STRING, "text")));
+	GDVIRTUAL_BIND(_initialize, "project_path");
+	GDVIRTUAL_BIND(_set_credentials, "username", "password", "ssh_public_key_path", "ssh_private_key_path", "ssh_passphrase");
+	GDVIRTUAL_BIND(_get_modified_files_data);
+	GDVIRTUAL_BIND(_stage_file, "file_path");
+	GDVIRTUAL_BIND(_unstage_file, "file_path");
+	GDVIRTUAL_BIND(_discard_file, "file_path");
+	GDVIRTUAL_BIND(_commit, "msg");
+	GDVIRTUAL_BIND(_get_diff, "identifier", "area");
+	GDVIRTUAL_BIND(_shut_down);
+	GDVIRTUAL_BIND(_get_vcs_name);
+	GDVIRTUAL_BIND(_get_previous_commits, "max_commits");
+	GDVIRTUAL_BIND(_get_branch_list);
+	GDVIRTUAL_BIND(_get_remotes);
+	GDVIRTUAL_BIND(_create_branch, "branch_name");
+	GDVIRTUAL_BIND(_remove_branch, "branch_name");
+	GDVIRTUAL_BIND(_create_remote, "remote_name", "remote_url");
+	GDVIRTUAL_BIND(_remove_remote, "remote_name");
+	GDVIRTUAL_BIND(_get_current_branch_name);
+	GDVIRTUAL_BIND(_checkout_branch, "branch_name");
+	GDVIRTUAL_BIND(_pull, "remote");
+	GDVIRTUAL_BIND(_push, "remote", "force");
+	GDVIRTUAL_BIND(_fetch, "remote");
+	GDVIRTUAL_BIND(_get_line_diff, "file_path", "text");
 
 	ClassDB::bind_method(D_METHOD("create_diff_line", "new_line_no", "old_line_no", "content", "status"), &EditorVCSInterface::create_diff_line);
 	ClassDB::bind_method(D_METHOD("create_diff_hunk", "old_start", "new_start", "old_lines", "new_lines"), &EditorVCSInterface::create_diff_hunk);
@@ -335,4 +403,23 @@ EditorVCSInterface *EditorVCSInterface::get_singleton() {
 
 void EditorVCSInterface::set_singleton(EditorVCSInterface *p_singleton) {
 	singleton = p_singleton;
+}
+
+void EditorVCSInterface::create_vcs_metadata_files(VCSMetadata p_vcs_metadata_type, String &p_dir) {
+	if (p_vcs_metadata_type == VCSMetadata::GIT) {
+		Ref<FileAccess> f = FileAccess::open(p_dir.path_join(".gitignore"), FileAccess::WRITE);
+		if (f.is_null()) {
+			ERR_FAIL_MSG("Couldn't create .gitignore in project path.");
+		} else {
+			f->store_line("# Godot 4+ specific ignores");
+			f->store_line(".godot/");
+		}
+		f = FileAccess::open(p_dir.path_join(".gitattributes"), FileAccess::WRITE);
+		if (f.is_null()) {
+			ERR_FAIL_MSG("Couldn't create .gitattributes in project path.");
+		} else {
+			f->store_line("# Normalize EOL for all files that Git considers text files.");
+			f->store_line("* text=auto eol=lf");
+		}
+	}
 }

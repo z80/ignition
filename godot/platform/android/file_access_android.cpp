@@ -29,7 +29,8 @@
 /**************************************************************************/
 
 #include "file_access_android.h"
-#include "core/print_string.h"
+
+#include "core/string/print_string.h"
 
 AAssetManager *FileAccessAndroid::asset_manager = nullptr;
 
@@ -41,7 +42,9 @@ String FileAccessAndroid::get_path_absolute() const {
 	return absolute_path;
 }
 
-Error FileAccessAndroid::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessAndroid::open_internal(const String &p_path, int p_mode_flags) {
+	_close();
+
 	path_src = p_path;
 	String path = fix_path(p_path).simplify_path();
 	absolute_path = path;
@@ -63,7 +66,7 @@ Error FileAccessAndroid::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessAndroid::close() {
+void FileAccessAndroid::_close() {
 	if (!asset) {
 		return;
 	}
@@ -98,7 +101,7 @@ uint64_t FileAccessAndroid::get_position() const {
 	return pos;
 }
 
-uint64_t FileAccessAndroid::get_len() const {
+uint64_t FileAccessAndroid::get_length() const {
 	return len;
 }
 
@@ -155,6 +158,7 @@ bool FileAccessAndroid::file_exists(const String &p_path) {
 	} else if (path.begins_with("res://")) {
 		path = path.substr(6, path.length());
 	}
+
 	AAsset *at = AAssetManager_open(asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
 
 	if (!at) {
@@ -165,6 +169,10 @@ bool FileAccessAndroid::file_exists(const String &p_path) {
 	return true;
 }
 
+void FileAccessAndroid::close() {
+	_close();
+}
+
 FileAccessAndroid::~FileAccessAndroid() {
-	close();
+	_close();
 }

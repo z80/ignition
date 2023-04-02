@@ -1,6 +1,6 @@
 
 #include "ref_frame_node.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "scene/scene_string_names.h"
 
 namespace Ign
@@ -8,32 +8,32 @@ namespace Ign
 
 void RefFrameNode::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("set_r", "vector3"),  &RefFrameNode::set_r, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_q", "quat"),  &RefFrameNode::set_q, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_v", "vector3"),  &RefFrameNode::set_v, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_w", "vector3"),  &RefFrameNode::set_w, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("set_r", "vector3"),  &RefFrameNode::set_r );
+	ClassDB::bind_method( D_METHOD("set_q", "quat"),     &RefFrameNode::set_q );
+	ClassDB::bind_method( D_METHOD("set_v", "vector3"),  &RefFrameNode::set_v );
+	ClassDB::bind_method( D_METHOD("set_w", "vector3"),  &RefFrameNode::set_w );
 
-	ClassDB::bind_method( D_METHOD("set_t", "transform"),  &RefFrameNode::set_t, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("t"),      &RefFrameNode::t, Variant::TRANSFORM );
+	ClassDB::bind_method( D_METHOD("set_t", "transform"),  &RefFrameNode::set_t );
+	ClassDB::bind_method( D_METHOD("t"),      &RefFrameNode::t );
 
-	ClassDB::bind_method( D_METHOD("r"),      &RefFrameNode::r, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("q"),      &RefFrameNode::q, Variant::QUAT );
-	ClassDB::bind_method( D_METHOD("v"),      &RefFrameNode::v, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("w"),      &RefFrameNode::w, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("r"),      &RefFrameNode::r );
+	ClassDB::bind_method( D_METHOD("q"),      &RefFrameNode::q );
+	ClassDB::bind_method( D_METHOD("v"),      &RefFrameNode::v );
+	ClassDB::bind_method( D_METHOD("w"),      &RefFrameNode::w );
 
 	ClassDB::bind_method( D_METHOD("set_se3"), &RefFrameNode::set_se3 );
-	ClassDB::bind_method( D_METHOD("get_se3"), &RefFrameNode::get_se3, Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("get_se3"), &RefFrameNode::get_se3 );
 
-	ClassDB::bind_method( D_METHOD("relative_to", "origin"), &RefFrameNode::relative_to, Variant::OBJECT );
-	ClassDB::bind_method( D_METHOD("relative_to_se3", "origin", "origin_se3"), &RefFrameNode::relative_to_se3, Variant::OBJECT );
-	ClassDB::bind_method( D_METHOD("se3_relative_to", "object_se3", "origin"), &RefFrameNode::se3_relative_to, Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("relative_to", "origin"), &RefFrameNode::relative_to );
+	ClassDB::bind_method( D_METHOD("relative_to_se3", "origin", "origin_se3"), &RefFrameNode::relative_to_se3 );
+	ClassDB::bind_method( D_METHOD("se3_relative_to", "object_se3", "origin"), &RefFrameNode::se3_relative_to );
 
-	ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent );
 
 	ClassDB::bind_method( D_METHOD("jump_to", "dest", "dest_se3"), &RefFrameNode::jump_to );
 
 	ClassDB::bind_method( D_METHOD("set_debug", "en"), &RefFrameNode::set_debug );
-	ClassDB::bind_method( D_METHOD("get_debug"), &RefFrameNode::get_debug, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("get_debug"), &RefFrameNode::get_debug );
 
 	//ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
 	//ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize, Variant::BOOL );
@@ -41,10 +41,10 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize );
 
 	ADD_GROUP( "Ignition", "" );
-	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform" ),        "set_t", "t" );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "linear_velocity" ),  "set_v", "v" );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "angular_velocity" ), "set_w", "w" );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL,      "debug" ), "set_debug", "get_debug" );
+	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM3D, "transform" ),        "set_t", "t" );
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,     "linear_velocity" ),  "set_v", "v" );
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,     "angular_velocity" ), "set_w", "w" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL,        "debug" ), "set_debug", "get_debug" );
 	//Otherwise continuously requests "SE3" in editor.
 	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ),              "set_se3", "get_se3" );
 }
@@ -57,7 +57,7 @@ void RefFrameNode::_jumped()
 	if ( si != nullptr )
 	{
 		//const Variant *ptr[1] = {};
-		get_script_instance()->call_multilevel( "_jumped", nullptr, 0 );
+		si->call( "_jumped" );
 	}
 	if ( debug_ )
 		print_line( "jumped" );
@@ -69,7 +69,7 @@ void RefFrameNode::_parent_jumped()
 	if ( si != nullptr )
 	{
 		//const Variant *ptr[1] = {};
-		get_script_instance()->call_multilevel( "_parent_jumped", nullptr, 0 );
+		si->call( "_parent_jumped" );
 	}
 	if ( debug_ )
 		print_line( "parent jumped" );
@@ -81,8 +81,8 @@ void RefFrameNode::_child_jumped( RefFrameNode * child_ref_frame )
 	if ( si != nullptr )
 	{
 		const Variant arg( child_ref_frame );
-		const Variant *ptr[1] = { &arg };
-		get_script_instance()->call_multilevel( "_child_jumped", ptr, 1 );
+		//const Variant *ptr[1] = { &arg };
+		si->call( "_child_jumped", arg );
 	}
 	if ( debug_ )
 		print_line( "child jumped" );
@@ -94,8 +94,8 @@ void RefFrameNode::_child_entered( RefFrameNode * child_ref_frame )
 	if ( si != nullptr )
 	{
 		const Variant arg( child_ref_frame );
-		const Variant *ptr[1] = { &arg };
-		get_script_instance()->call_multilevel( "_child_entered", ptr, 1 );
+		//const Variant *ptr[1] = { &arg };
+		si->call( "_child_entered", arg );
 	}
 	if ( debug_ )
 		print_line( "child entered" );
@@ -107,8 +107,8 @@ void RefFrameNode::_child_left( RefFrameNode * child_ref_frame )
 	if ( si != nullptr )
 	{
 		const Variant arg( child_ref_frame );
-		const Variant *ptr[1] = { &arg };
-		get_script_instance()->call_multilevel( "_child_left", ptr, 1 );
+		//const Variant *ptr[1] = { &arg };
+		si->call( "_child_left", arg );
 	}
 	if ( debug_ )
 		print_line( "child left" );
@@ -130,7 +130,7 @@ void RefFrameNode::set_r( const Vector3 & r )
 	se3_.set_r( r );
 }
 
-void RefFrameNode::set_q( const Quat & q )
+void RefFrameNode::set_q( const Quaternion & q )
 {
 	se3_.set_q( q );
 }
@@ -145,14 +145,14 @@ void RefFrameNode::set_w( const Vector3 & w )
 	se3_.set_w( w );
 }
 
-void RefFrameNode::set_t( const Transform & t )
+void RefFrameNode::set_t( const Transform3D & t )
 {
 	se3_.set_transform( t );
 }
 
-Transform RefFrameNode::t() const
+Transform3D RefFrameNode::t() const
 {
-	const Transform res = se3_.transform();
+	const Transform3D res = se3_.transform();
 	return res;
 }
 
@@ -162,9 +162,9 @@ Vector3 RefFrameNode::r() const
 	return res;
 }
 
-Quat    RefFrameNode::q() const
+Quaternion RefFrameNode::q() const
 {
-	const Quat res = se3_.q();
+	const Quaternion res = se3_.q();
 	return res;
 }
 
@@ -194,7 +194,7 @@ void RefFrameNode::set_se3( const Ref<Se3Ref> & se3 )
 Ref<Se3Ref> RefFrameNode::get_se3() const
 {
 	Ref<Se3Ref> se3;
-	se3.instance();
+	se3.instantiate();
 	se3.ptr()->se3 = se3_;
 	return se3;
 }
@@ -203,7 +203,7 @@ Ref<Se3Ref> RefFrameNode::get_se3() const
 Ref<Se3Ref> RefFrameNode::relative_to( Node * origin )
 {
 	Ref<Se3Ref> se3;
-	se3.instance();
+	se3.instantiate();
 
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( origin );
 	//if (!rf)
@@ -216,7 +216,7 @@ Ref<Se3Ref> RefFrameNode::relative_to( Node * origin )
 Ref<Se3Ref> RefFrameNode::relative_to_se3( Node * origin, const Ref<Se3Ref> & origin_se3 )
 {
 	Ref<Se3Ref> se3;
-	se3.instance();
+	se3.instantiate();
 
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( origin );
 	//if (!rf)
@@ -229,7 +229,7 @@ Ref<Se3Ref> RefFrameNode::relative_to_se3( Node * origin, const Ref<Se3Ref> & or
 Ref<Se3Ref> RefFrameNode::se3_relative_to( const Ref<Se3Ref> & object_se3, Node * origin )
 {
 	Ref<Se3Ref> se3;
-	se3.instance();
+	se3.instantiate();
 
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( origin );
 	//if (!rf)
@@ -566,8 +566,8 @@ void RefFrameNode::_ign_pre_process( real_t delta )
 	if (inst != nullptr)
 	{
 		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		get_script_instance()->call_multilevel( "_ign_pre_process", ptr, 1 );
+		//const Variant * ptr[1] = { &time };
+		inst->call( "_ign_pre_process", time );
 	}
 }
 
@@ -577,8 +577,8 @@ void RefFrameNode::_ign_process( real_t delta )
 	if (inst != nullptr)
 	{
 		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		get_script_instance()->call_multilevel( "_ign_process", ptr, 1 );
+		//const Variant * ptr[1] = { &time };
+		inst->call( "_ign_process", time );
 	}
 }
 
@@ -588,8 +588,8 @@ void RefFrameNode::_ign_post_process( real_t delta )
 	if (inst != nullptr)
 	{
 		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		get_script_instance()->call_multilevel( "_ign_post_process", ptr, 1 );
+		//const Variant * ptr[1] = { &time };
+		inst->call( "_ign_post_process", time );
 	}
 }
 
@@ -600,8 +600,8 @@ void RefFrameNode::_ign_physics_pre_process( real_t delta )
 	if (inst != nullptr)
 	{
 		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		get_script_instance()->call_multilevel( "_ign_physics_pre_process", ptr, 1 );
+		//const Variant * ptr[1] = { &time };
+		inst->call( "_ign_physics_pre_process", time );
 	}
 }
 
@@ -611,8 +611,8 @@ void RefFrameNode::_ign_physics_process( real_t delta )
 	if (inst != nullptr)
 	{
 		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		get_script_instance()->call_multilevel( "_ign_physics_process", ptr, 1 );
+		//const Variant * ptr[1] = { &time };
+		inst->call( "_ign_physics_process", time );
 	}
 }
 
@@ -622,8 +622,8 @@ void RefFrameNode::_ign_physics_post_process( real_t delta )
 	if (inst != nullptr)
 	{
 		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		get_script_instance()->call_multilevel( "_ign_physics_post_process", ptr, 1 );
+		//const Variant * ptr[1] = { &time };
+		inst->call( "_ign_physics_post_process", time );
 	}
 }
 

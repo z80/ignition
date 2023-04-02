@@ -32,42 +32,20 @@
 #define IMAGE_LOADER_SVG_H
 
 #include "core/io/image_loader.h"
-#include "core/ustring.h"
-
-/**
-	@author Daniel Ramirez <djrmuv@gmail.com>
-*/
-
-// Forward declare and include thirdparty headers in .cpp.
-struct NSVGrasterizer;
-struct NSVGimage;
-
-class SVGRasterizer {
-	NSVGrasterizer *rasterizer;
-
-public:
-	void rasterize(NSVGimage *p_image, float p_tx, float p_ty, float p_scale, unsigned char *p_dst, int p_w, int p_h, int p_stride);
-
-	SVGRasterizer();
-	~SVGRasterizer();
-};
 
 class ImageLoaderSVG : public ImageFormatLoader {
-	static struct ReplaceColors {
-		List<uint32_t> old_colors;
-		List<uint32_t> new_colors;
-	} replace_colors;
-	static SVGRasterizer rasterizer;
-	static void _convert_colors(NSVGimage *p_svg_image);
-	static Error _create_image(Ref<Image> p_image, const PoolVector<uint8_t> *p_data, float p_scale, bool upsample, bool convert_colors = false);
+	static HashMap<Color, Color> forced_color_map;
+
+	void _replace_color_property(const HashMap<Color, Color> &p_color_map, const String &p_prefix, String &r_string);
 
 public:
-	static void set_convert_colors(Dictionary *p_replace_color = nullptr);
-	static Error create_image_from_string(Ref<Image> p_image, const char *p_svg_str, float p_scale, bool upsample, bool convert_colors = false);
+	static void set_forced_color_map(const HashMap<Color, Color> &p_color_map);
 
-	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	ImageLoaderSVG();
+	Error create_image_from_utf8_buffer(Ref<Image> p_image, const PackedByteArray &p_buffer, float p_scale, bool p_upsample);
+	Error create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map);
+
+	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 };
 
 #endif // IMAGE_LOADER_SVG_H

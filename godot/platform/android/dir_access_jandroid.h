@@ -31,7 +31,7 @@
 #ifndef DIR_ACCESS_JANDROID_H
 #define DIR_ACCESS_JANDROID_H
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "java_godot_lib_jni.h"
 #include <stdio.h>
@@ -67,9 +67,9 @@ public:
 
 	virtual int get_drive_count() override;
 	virtual String get_drive(int p_drive) override;
+	virtual String get_current_dir(bool p_include_drive = true) const override; ///< return current dir location
 
 	virtual Error change_dir(String p_dir) override; ///< can be relative or absolute, return false on success
-	virtual String get_current_dir() override; ///< return current dir location
 
 	virtual bool file_exists(String p_file) override;
 	virtual bool dir_exists(String p_dir) override;

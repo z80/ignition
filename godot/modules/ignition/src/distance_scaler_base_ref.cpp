@@ -7,17 +7,17 @@ namespace Ign
 void DistanceScalerBaseRef::_bind_methods()
 {
     ClassDB::bind_method( D_METHOD( "set_plain_distance", "dist"), &DistanceScalerBaseRef::set_plain_distance );
-    ClassDB::bind_method( D_METHOD( "get_plain_distance"), &DistanceScalerBaseRef::get_plain_distance, Variant::REAL );
+    ClassDB::bind_method( D_METHOD( "get_plain_distance"), &DistanceScalerBaseRef::get_plain_distance );
 
-    ClassDB::bind_method( D_METHOD( "scale",     "dist"), &DistanceScalerBaseRef::scale,     Variant::REAL );
-    ClassDB::bind_method( D_METHOD( "scale_v",   "v"),    &DistanceScalerBaseRef::scale_v,   Variant::VECTOR3 );
-    ClassDB::bind_method( D_METHOD( "unscale_v", "v"),    &DistanceScalerBaseRef::unscale_v, Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD( "scale",     "dist"), &DistanceScalerBaseRef::scale );
+    ClassDB::bind_method( D_METHOD( "scale_v",   "v"),    &DistanceScalerBaseRef::scale_v );
+    ClassDB::bind_method( D_METHOD( "unscale_v", "v"),    &DistanceScalerBaseRef::unscale_v );
 
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "plain_distance" ),    "set_plain_distance", "get_plain_distance" );
+    ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "plain_distance" ),    "set_plain_distance", "get_plain_distance" );
 }
 
 DistanceScalerBaseRef::DistanceScalerBaseRef()
-    : Reference()
+    : RefCounted()
 {
 	scaler_base = nullptr;
 }

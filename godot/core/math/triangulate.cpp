@@ -42,10 +42,8 @@ real_t Triangulate::get_area(const Vector<Vector2> &contour) {
 	return A * 0.5f;
 }
 
-/*
- * `is_inside_triangle` decides if a point P is inside the triangle
- * defined by A, B, C.
- */
+/* `is_inside_triangle` decides if a point P is inside the triangle
+ * defined by A, B, C. */
 bool Triangulate::is_inside_triangle(real_t Ax, real_t Ay,
 		real_t Bx, real_t By,
 		real_t Cx, real_t Cy,
@@ -72,9 +70,9 @@ bool Triangulate::is_inside_triangle(real_t Ax, real_t Ay,
 	bCROSScp = bx * cpy - by * cpx;
 
 	if (include_edges) {
-		return ((aCROSSbp > 0) && (bCROSScp > 0) && (cCROSSap > 0));
+		return ((aCROSSbp > 0.0f) && (bCROSScp > 0.0f) && (cCROSSap > 0.0f));
 	} else {
-		return ((aCROSSbp >= 0) && (bCROSScp >= 0) && (cCROSSap >= 0));
+		return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
 	}
 }
 
@@ -94,7 +92,7 @@ bool Triangulate::snip(const Vector<Vector2> &p_contour, int u, int v, int w, in
 
 	// It can happen that the triangulation ends up with three aligned vertices to deal with.
 	// In this scenario, making the check below strict may reject the possibility of
-	// forming a last triangle with these aligned vertices, preventing the triangulatiom
+	// forming a last triangle with these aligned vertices, preventing the triangulation
 	// from completing.
 	// To avoid that we allow zero-area triangles if all else failed.
 	float threshold = relaxed ? -CMP_EPSILON : CMP_EPSILON;
@@ -130,7 +128,7 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 
 	/* we want a counter-clockwise polygon in V */
 
-	if (0 < get_area(contour)) {
+	if (0.0f < get_area(contour)) {
 		for (int v = 0; v < n; v++) {
 			V.write[v] = v;
 		}

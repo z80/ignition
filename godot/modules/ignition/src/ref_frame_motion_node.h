@@ -12,7 +12,7 @@ namespace Ign
 class RefFrameMotionNode: public RefFrameNode
 {
 	GDCLASS(RefFrameMotionNode, RefFrameNode);
-	OBJ_CATEGORY("Ignition");
+	//OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();
@@ -62,7 +62,7 @@ public:
 	virtual Dictionary serialize() override;
 	virtual bool deserialize( const Dictionary & data ) override;
 
-	PoolVector3Array orbit_points( Node * camera_node, int qty, const Ref<ScaleDistanceRatioGd> & scale_distance_ratio, real_t scale );
+	Array orbit_points( Node * camera_node, int qty, const Ref<ScaleDistanceRatioGd> & scale_distance_ratio, real_t scale );
 
 	void set_force_numerical( bool en );
 	bool get_force_numerical() const;

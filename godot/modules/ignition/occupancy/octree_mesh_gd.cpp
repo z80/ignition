@@ -4,42 +4,42 @@
 namespace Ign
 {
 
-static void find_mesh_instances( Node * node, const Transform & t, Vector<Transform> & transforms, Vector<MeshInstance *> & instances );
+static void find_mesh_instances( Node * node, const Transform3D & t, Vector<Transform3D> & transforms, Vector<MeshInstance3D *> & instances );
 
 
 
 void OctreeMeshGd::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_max_depth", "val"), &OctreeMeshGd::set_max_depth );
-	ClassDB::bind_method( D_METHOD("get_max_depth"),        &OctreeMeshGd::get_max_depth, Variant::INT );
+	ClassDB::bind_method( D_METHOD("get_max_depth"),        &OctreeMeshGd::get_max_depth );
 	ClassDB::bind_method( D_METHOD("set_min_faces", "val"), &OctreeMeshGd::set_min_faces );
-	ClassDB::bind_method( D_METHOD("get_min_faces"),        &OctreeMeshGd::get_min_faces, Variant::INT );
+	ClassDB::bind_method( D_METHOD("get_min_faces"),        &OctreeMeshGd::get_min_faces );
 
     ClassDB::bind_method( D_METHOD("set_origin", "at"), &OctreeMeshGd::set_origin );
-    ClassDB::bind_method( D_METHOD("get_origin"),       &OctreeMeshGd::get_origin, Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD("get_origin"),       &OctreeMeshGd::get_origin );
 
     ClassDB::bind_method( D_METHOD("set_quat", "q"),    &OctreeMeshGd::set_quat );
-    ClassDB::bind_method( D_METHOD("get_quat"),         &OctreeMeshGd::get_quat, Variant::QUAT );
+    ClassDB::bind_method( D_METHOD("get_quat"),         &OctreeMeshGd::get_quat );
 
     ClassDB::bind_method( D_METHOD("set_se3", "se3"),   &OctreeMeshGd::set_se3 );
-    ClassDB::bind_method( D_METHOD("get_se3"),          &OctreeMeshGd::get_se3, Variant::OBJECT );
+    ClassDB::bind_method( D_METHOD("get_se3"),          &OctreeMeshGd::get_se3 );
 
     ClassDB::bind_method( D_METHOD("rebuild"),               &OctreeMeshGd::rebuild );
-    ClassDB::bind_method( D_METHOD("faces_qty"),             &OctreeMeshGd::faces_qty,      Variant::INT );
-    ClassDB::bind_method( D_METHOD("get_face", "int"),       &OctreeMeshGd::get_face,       Variant::ARRAY );
-	ClassDB::bind_method( D_METHOD("get_face_world", "int"), &OctreeMeshGd::get_face_world, Variant::ARRAY );
+    ClassDB::bind_method( D_METHOD("faces_qty"),             &OctreeMeshGd::faces_qty );
+    ClassDB::bind_method( D_METHOD("get_face", "int"),       &OctreeMeshGd::get_face );
+	ClassDB::bind_method( D_METHOD("get_face_world", "int"), &OctreeMeshGd::get_face_world );
 
-    ClassDB::bind_method( D_METHOD("intersects_ray",          "origin", "dir"), &OctreeMeshGd::intersects_ray,          Variant::BOOL );
-    ClassDB::bind_method( D_METHOD("intersects_ray_face",     "origin", "dir"), &OctreeMeshGd::intersects_ray_face,     Variant::ARRAY );
-    ClassDB::bind_method( D_METHOD("intersects_segment",      "start",  "end"), &OctreeMeshGd::intersects_segment,      Variant::BOOL );
-    ClassDB::bind_method( D_METHOD("intersects_segment_face", "start",  "end"), &OctreeMeshGd::intersects_segment_face, Variant::ARRAY );
+    ClassDB::bind_method( D_METHOD("intersects_ray",          "origin", "dir"), &OctreeMeshGd::intersects_ray );
+    ClassDB::bind_method( D_METHOD("intersects_ray_face",     "origin", "dir"), &OctreeMeshGd::intersects_ray_face );
+    ClassDB::bind_method( D_METHOD("intersects_segment",      "start",  "end"), &OctreeMeshGd::intersects_segment );
+    ClassDB::bind_method( D_METHOD("intersects_segment_face", "start",  "end"), &OctreeMeshGd::intersects_segment_face );
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_depth" ), "set_max_depth", "get_max_depth" );
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "min_faces" ), "set_min_faces", "get_min_faces" );
 
-    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "r" ),   "set_origin", "get_origin" );
-    ADD_PROPERTY( PropertyInfo( Variant::QUAT,      "q" ),   "set_quat",   "get_quat" );
-    ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ), "set_se3",    "get_se3" );
+    ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,    "r" ),   "set_origin", "get_origin" );
+    ADD_PROPERTY( PropertyInfo( Variant::QUATERNION, "q" ),   "set_quat",   "get_quat" );
+    ADD_PROPERTY( PropertyInfo( Variant::OBJECT,     "se3" ), "set_se3",    "get_se3" );
 }
 
 void OctreeMeshGd::_notification( int p_notification )
@@ -95,22 +95,23 @@ const Vector3 & OctreeMeshGd::get_origin() const
     return at;
 }
 
-void OctreeMeshGd::set_quat( const Quat & q )
+void OctreeMeshGd::set_quat( const Quaternion & q )
 {
     _octree_mesh.set_quat( q );
 }
 
-const Quat & OctreeMeshGd::get_quat() const
+const Quaternion & OctreeMeshGd::get_quat() const
 {
-    const Quat & q = _octree_mesh.get_quat();
+    const Quaternion & q = _octree_mesh.get_quat();
     return q;
 }
 
 void OctreeMeshGd::set_se3( const Ref<Se3Ref> & rhs )
 {
     const SE3 & se3 = rhs.ptr()->se3;
-    const Vector3 r = se3.r();
-    const Quat    q = se3.q();
+
+    const Vector3    r = se3.r();
+    const Quaternion q = se3.q();
 
     _octree_mesh.set_origin( r );
     _octree_mesh.set_quat( q );
@@ -119,13 +120,13 @@ void OctreeMeshGd::set_se3( const Ref<Se3Ref> & rhs )
 Ref<Se3Ref> OctreeMeshGd::get_se3() const
 {
     SE3 se3;
-    const Vector3 r = _octree_mesh.get_origin();
-    const Quat    q = _octree_mesh.get_quat();
+    const Vector3    r = _octree_mesh.get_origin();
+    const Quaternion q = _octree_mesh.get_quat();
     se3.set_r( r );
     se3.set_q( q );
 
     Ref<Se3Ref> ret;
-    ret.instance();
+    ret.instantiate();
     ret.ptr()->se3 = se3;
     return ret;
 }
@@ -134,17 +135,17 @@ void OctreeMeshGd::rebuild()
 {
     _octree_mesh.clear();
 
-    Vector<MeshInstance *> meshes;
-    Vector<Transform>      transforms;
-    const Transform        root_t = Transform();
+    Vector<MeshInstance3D *> meshes;
+    Vector<Transform3D>      transforms;
+    const Transform3D        root_t = Transform3D();
 
     find_mesh_instances( this, root_t, transforms, meshes );
 
     const int qty = meshes.size();
     for ( int i=0; i<qty; i++ )
     {
-        const Transform t = transforms.ptr()[i];
-        MeshInstance * mi = meshes.ptr()[i];
+        const Transform3D t = transforms.ptr()[i];
+        MeshInstance3D * mi = meshes.ptr()[i];
         Ref<Mesh> m = mi->get_mesh();
 
         _octree_mesh.append( t, m );
@@ -245,23 +246,23 @@ const OctreeMesh * OctreeMeshGd::octree_mesh() const
 
 
 
-static void find_mesh_instances( Node * node, const Transform & t, Vector<Transform> & transforms, Vector<MeshInstance *> & instances )
+static void find_mesh_instances( Node * node, const Transform3D & t, Vector<Transform3D> & transforms, Vector<MeshInstance3D *> & instances )
 {
-	MeshInstance * mi = Node::cast_to<MeshInstance>( node );
+	MeshInstance3D * mi = Node::cast_to<MeshInstance3D>( node );
 	if (mi != nullptr)
 	{
-		const Transform mi_t = mi->get_transform();
-		const Transform total_t = t * mi_t;
+		const Transform3D mi_t = mi->get_transform();
+		const Transform3D total_t = t * mi_t;
 		transforms.push_back( total_t );
 		instances.push_back( mi );
 	}
 
 	// Try to convert to spatial to retrieve the transform.
-	Spatial * s = Node::cast_to<Spatial>( node );
-	Transform new_t = t;
+	Node3D * s = Node::cast_to<Node3D>( node );
+	Transform3D new_t = t;
 	if ( s != nullptr )
 	{
-		const Transform node_t = s->get_transform();
+		const Transform3D node_t = s->get_transform();
 		new_t = new_t * node_t;
 	}
 

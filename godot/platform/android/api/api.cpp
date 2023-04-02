@@ -30,7 +30,7 @@
 
 #include "api.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "java_class_wrapper.h"
 #include "jni_singleton.h"
 
@@ -44,11 +44,11 @@ void register_android_api() {
 	// `JNISingleton` registration occurs in
 	// `platform/android/java_godot_lib_jni.cpp#Java_org_godotengine_godot_GodotLib_setup`
 	java_class_wrapper = memnew(JavaClassWrapper); // Dummy
-	ClassDB::register_class<JNISingleton>();
+	GDREGISTER_CLASS(JNISingleton);
 #endif
 
-	ClassDB::register_class<JavaClass>();
-	ClassDB::register_class<JavaClassWrapper>();
+	GDREGISTER_CLASS(JavaClass);
+	GDREGISTER_CLASS(JavaClassWrapper);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaClassWrapper", JavaClassWrapper::get_singleton()));
 }
 
@@ -64,14 +64,14 @@ void JavaClassWrapper::_bind_methods() {
 
 #if !defined(ANDROID_ENABLED)
 
-Variant JavaClass::call(const StringName &, const Variant **, int, Variant::CallError &) {
+Variant JavaClass::callp(const StringName &, const Variant **, int, Callable::CallError &) {
 	return Variant();
 }
 
 JavaClass::JavaClass() {
 }
 
-Variant JavaObject::call(const StringName &, const Variant **, int, Variant::CallError &) {
+Variant JavaObject::callp(const StringName &, const Variant **, int, Callable::CallError &) {
 	return Variant();
 }
 

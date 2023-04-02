@@ -103,17 +103,14 @@ env_oidn.Append(
         "__STDC_LIMIT_MACROS",
         "DISABLE_VERBOSE",
         "MKLDNN_ENABLE_CONCURRENT_EXEC",
-        "NDEBUG",
     ]
 )
+env_oidn.AppendUnique(CPPDEFINES=["NDEBUG"])  # No assert() even in debug builds.
 
 env_thirdparty = env_oidn.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 env.modules_sources += thirdparty_obj
-
-if env["platform"] == "windows" and not env.msvc:
-    env_thirdparty.Append(CPPFLAGS=["-mstackrealign"])
 
 weights_in_path = thirdparty_dir + "weights/rtlightmap_hdr.tza"
 weights_out_path = thirdparty_dir + "weights/rtlightmap_hdr.gen.cpp"
@@ -125,8 +122,7 @@ env_thirdparty.CommandNoCache(weights_out_path, weights_in_path, resource_to_cpp
 
 module_obj = []
 
-env_oidn.add_source_files(module_obj, "denoise_wrapper.cpp")
-env_modules.add_source_files(module_obj, ["register_types.cpp", "lightmap_denoiser.cpp"])
+env_oidn.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.

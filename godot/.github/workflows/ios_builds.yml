@@ -4,8 +4,8 @@ on: [push, pull_request]
 # Global Settings
 env:
   # Only used for the cache key. Increment version to force clean build.
-  GODOT_BASE_BRANCH: 3.5
-  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no
+  GODOT_BASE_BRANCH: master
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-ios
@@ -14,7 +14,7 @@ concurrency:
 jobs:
   ios-template:
     runs-on: "macos-latest"
-    name: Template (target=release, tools=no)
+    name: Template (target=template_release)
 
     steps:
       - uses: actions/checkout@v3
@@ -26,13 +26,13 @@ jobs:
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
 
-      - name: Compilation (arm64v8)
+      - name: Compilation (arm64)
         uses: ./.github/actions/godot-build
         with:
           sconsflags: ${{ env.SCONSFLAGS }}
-          platform: iphone
-          target: release
-          tools: false
+          platform: ios
+          target: template_release
+          tests: false
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact

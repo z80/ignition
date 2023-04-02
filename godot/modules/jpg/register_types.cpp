@@ -32,13 +32,22 @@
 
 #include "image_loader_jpegd.h"
 
-static ImageLoaderJPG *image_loader_jpg = nullptr;
+static Ref<ImageLoaderJPG> image_loader_jpg;
 
-void register_jpg_types() {
-	image_loader_jpg = memnew(ImageLoaderJPG);
+void initialize_jpg_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
+	image_loader_jpg.instantiate();
 	ImageLoader::add_image_format_loader(image_loader_jpg);
 }
 
-void unregister_jpg_types() {
-	memdelete(image_loader_jpg);
+void uninitialize_jpg_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
+	ImageLoader::remove_image_format_loader(image_loader_jpg);
+	image_loader_jpg.unref();
 }

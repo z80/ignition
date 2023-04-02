@@ -2,10 +2,10 @@
 #ifndef __OCTREE_MESH_H_
 #define __OCTREE_MESH_H_
 
-#include "core/vector.h"
+#include "core/templates/vector.h"
 #include "core/math/face3.h"
 #include "scene/main/node.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "octree_mesh_node.h"
 
 #include "se3.h"
@@ -45,13 +45,13 @@ public:
 
     // Manipulating filling up the occupancy grid.
     void clear();
-    void append( const Transform & t, const Ref<Mesh> mesh );
+    void append( const Transform3D & t, const Ref<Mesh> mesh );
     void subdivide();
 
     void set_origin( const Vector3 & at );
     const Vector3 & get_origin() const;
-    void set_quat( const Quat & q );
-    const Quat & get_quat() const;
+    void set_quat( const Quaternion & q );
+    const Quaternion & get_quat() const;
     void set_se3( const SE3 & se3 );
     SE3  get_se3() const;
 
@@ -64,8 +64,8 @@ public:
     bool intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & face_dist, Vector3 & at, FaceProperties & fp ) const;
 
     // For visualization.
-    PoolVector<Vector3> lines();
-	void face_lines( Vector<Vector3> & ret, const Transform & t_to_camera ) const;
+    Vector<Vector3> lines();
+    void face_lines( Vector<Vector3> & ret, const Transform3D & t_to_camera ) const;
 
     bool parent( const OctreeMeshNode & node, OctreeMeshNode * & parent );
 
@@ -86,8 +86,8 @@ public:
     int    max_depth_;
     int    min_faces_;
 
-    Vector3 origin_;
-    Quat    quat_;
+    Vector3    origin_;
+    Quaternion quat_;
 };
 
 

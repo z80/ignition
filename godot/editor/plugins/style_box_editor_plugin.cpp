@@ -31,6 +31,14 @@
 #include "style_box_editor_plugin.h"
 
 #include "editor/editor_scale.h"
+#include "scene/gui/texture_button.h"
+
+bool StyleBoxPreview::grid_preview_enabled = true;
+
+void StyleBoxPreview::_grid_preview_toggled(bool p_active) {
+	grid_preview_enabled = p_active;
+	preview->queue_redraw();
+}
 
 bool EditorInspectorPluginStyleBox::can_handle(Object *p_object) {
 	return Object::cast_to<StyleBox>(p_object) != nullptr;
@@ -43,31 +51,50 @@ void EditorInspectorPluginStyleBox::parse_begin(Object *p_object) {
 	preview->edit(sb);
 	add_custom_control(preview);
 }
-bool EditorInspectorPluginStyleBox::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage) {
-	return false; //do not want
-}
-void EditorInspectorPluginStyleBox::parse_end() {
-}
 
 void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
 	if (stylebox.is_valid()) {
-		stylebox->disconnect("changed", this, "_sb_changed");
+		stylebox->disconnect("changed", callable_mp(this, &StyleBoxPreview::_sb_changed));
 	}
 	stylebox = p_stylebox;
 	if (p_stylebox.is_valid()) {
-		preview->add_style_override("panel", stylebox);
-		stylebox->connect("changed", this, "_sb_changed");
+		preview->add_theme_style_override("panel", stylebox);
+		stylebox->connect("changed", callable_mp(this, &StyleBoxPreview::_sb_changed));
 	}
+	Ref<StyleBoxTexture> sbt = p_stylebox;
+	grid_preview->set_visible(sbt.is_valid());
 	_sb_changed();
 }
 
 void StyleBoxPreview::_sb_changed() {
-	preview->update();
+	preview->queue_redraw();
+}
+
+void StyleBoxPreview::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			if (!is_inside_tree()) {
+				// TODO: This is a workaround because `NOTIFICATION_THEME_CHANGED`
+				// is getting called for some reason when the `TexturePreview` is
+				// getting destroyed, which causes `get_theme_font()` to return `nullptr`.
+				// See https://github.com/godotengine/godot/issues/50743.
+				break;
+			}
+			grid_preview->set_texture_normal(get_theme_icon(SNAME("StyleBoxGridInvisible"), SNAME("EditorIcons")));
+			grid_preview->set_texture_pressed(get_theme_icon(SNAME("StyleBoxGridVisible"), SNAME("EditorIcons")));
+			grid_preview->set_texture_hover(get_theme_icon(SNAME("StyleBoxGridVisible"), SNAME("EditorIcons")));
+			checkerboard->set_texture(get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons")));
+		} break;
+	}
 }
 
 void StyleBoxPreview::_redraw() {
 	if (stylebox.is_valid()) {
+		Ref<Texture2D> grid_texture_disabled = get_theme_icon(SNAME("StyleBoxGridInvisible"), SNAME("EditorIcons"));
 		Rect2 preview_rect = preview->get_rect();
+		preview_rect.position += grid_texture_disabled->get_size();
+		preview_rect.size -= grid_texture_disabled->get_size() * 2;
 
 		// Re-adjust preview panel to fit all drawn content
 		Rect2 draw_rect = stylebox->get_draw_rect(preview_rect);
@@ -75,24 +102,49 @@ void StyleBoxPreview::_redraw() {
 		preview_rect.position -= draw_rect.position - preview_rect.position;
 
 		preview->draw_style_box(stylebox, preview_rect);
+
+		Ref<StyleBoxTexture> sbt = stylebox;
+		if (sbt.is_valid() && grid_preview->is_pressed()) {
+			for (int i = 0; i < 2; i++) {
+				Color c = i == 1 ? Color(1, 1, 1, 0.8) : Color(0, 0, 0, 0.4);
+				int x = draw_rect.position.x + sbt->get_margin(SIDE_LEFT) + (1 - i);
+				preview->draw_line(Point2(x, 0), Point2(x, preview->get_size().height), c);
+				int x2 = draw_rect.position.x + draw_rect.size.width - sbt->get_margin(SIDE_RIGHT) + (1 - i);
+				preview->draw_line(Point2(x2, 0), Point2(x2, preview->get_size().height), c);
+				int y = draw_rect.position.y + sbt->get_margin(SIDE_TOP) + (1 - i);
+				preview->draw_line(Point2(0, y), Point2(preview->get_size().width, y), c);
+				int y2 = draw_rect.position.y + draw_rect.size.height - sbt->get_margin(SIDE_BOTTOM) + (1 - i);
+				preview->draw_line(Point2(0, y2), Point2(preview->get_size().width, y2), c);
+			}
+		}
 	}
 }
 
 void StyleBoxPreview::_bind_methods() {
-	ClassDB::bind_method("_sb_changed", &StyleBoxPreview::_sb_changed);
-	ClassDB::bind_method("_redraw", &StyleBoxPreview::_redraw);
 }
 
 StyleBoxPreview::StyleBoxPreview() {
+	checkerboard = memnew(TextureRect);
+	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
+	checkerboard->set_texture_repeat(CanvasItem::TEXTURE_REPEAT_ENABLED);
+	checkerboard->set_custom_minimum_size(Size2(0.0, 150.0) * EDSCALE);
+
 	preview = memnew(Control);
-	preview->set_custom_minimum_size(Size2(0, 150 * EDSCALE));
 	preview->set_clip_contents(true);
-	preview->connect("draw", this, "_redraw");
-	add_margin_child(TTR("Preview:"), preview);
+	preview->connect("draw", callable_mp(this, &StyleBoxPreview::_redraw));
+	checkerboard->add_child(preview);
+	preview->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+
+	add_margin_child(TTR("Preview:"), checkerboard);
+	grid_preview = memnew(TextureButton);
+	preview->add_child(grid_preview);
+	grid_preview->set_toggle_mode(true);
+	grid_preview->connect("toggled", callable_mp(this, &StyleBoxPreview::_grid_preview_toggled));
+	grid_preview->set_pressed(grid_preview_enabled);
 }
 
-StyleBoxEditorPlugin::StyleBoxEditorPlugin(EditorNode *p_node) {
+StyleBoxEditorPlugin::StyleBoxEditorPlugin() {
 	Ref<EditorInspectorPluginStyleBox> inspector_plugin;
-	inspector_plugin.instance();
+	inspector_plugin.instantiate();
 	add_inspector_plugin(inspector_plugin);
 }

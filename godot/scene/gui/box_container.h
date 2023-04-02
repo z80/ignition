@@ -37,30 +37,44 @@ class BoxContainer : public Container {
 	GDCLASS(BoxContainer, Container);
 
 public:
-	enum AlignMode {
-		ALIGN_BEGIN,
-		ALIGN_CENTER,
-		ALIGN_END
+	enum AlignmentMode {
+		ALIGNMENT_BEGIN,
+		ALIGNMENT_CENTER,
+		ALIGNMENT_END
 	};
 
 private:
-	bool vertical;
-	AlignMode align;
+	bool vertical = false;
+	AlignmentMode alignment = ALIGNMENT_BEGIN;
+
+	struct ThemeCache {
+		int separation = 0;
+	} theme_cache;
 
 	void _resort();
 
 protected:
-	void _notification(int p_what);
+	bool is_fixed = false;
 
+	virtual void _update_theme_item_cache() override;
+
+	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
-	void add_spacer(bool p_begin = false);
+	Control *add_spacer(bool p_begin = false);
 
-	void set_alignment(AlignMode p_align);
-	AlignMode get_alignment() const;
+	void set_alignment(AlignmentMode p_alignment);
+	AlignmentMode get_alignment() const;
 
-	virtual Size2 get_minimum_size() const;
+	void set_vertical(bool p_vertical);
+	bool is_vertical() const;
+
+	virtual Size2 get_minimum_size() const override;
+
+	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
+	virtual Vector<int> get_allowed_size_flags_vertical() const override;
 
 	BoxContainer(bool p_vertical = false);
 };
@@ -70,7 +84,7 @@ class HBoxContainer : public BoxContainer {
 
 public:
 	HBoxContainer() :
-			BoxContainer(false) {}
+			BoxContainer(false) { is_fixed = true; }
 };
 
 class MarginContainer;
@@ -81,9 +95,9 @@ public:
 	MarginContainer *add_margin_child(const String &p_label, Control *p_control, bool p_expand = false);
 
 	VBoxContainer() :
-			BoxContainer(true) {}
+			BoxContainer(true) { is_fixed = true; }
 };
 
-VARIANT_ENUM_CAST(BoxContainer::AlignMode);
+VARIANT_ENUM_CAST(BoxContainer::AlignmentMode);
 
 #endif // BOX_CONTAINER_H

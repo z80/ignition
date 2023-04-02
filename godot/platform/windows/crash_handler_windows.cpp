@@ -30,15 +30,15 @@
 
 #include "crash_handler_windows.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
-#include "core/project_settings.h"
+#include "core/string/print_string.h"
 #include "core/version.h"
 #include "main/main.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
-// Backtrace code code based on: https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
+// Backtrace code based on: https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
 
 #include <algorithm>
 #include <iterator>
@@ -59,7 +59,7 @@
 struct module_data {
 	std::string image_name;
 	std::string module_name;
-	void *base_address;
+	void *base_address = nullptr;
 	DWORD load_size;
 };
 
@@ -81,8 +81,9 @@ public:
 
 	std::string name() { return std::string(sym->Name); }
 	std::string undecorated_name() {
-		if (*sym->Name == '\0')
+		if (*sym->Name == '\0') {
 			return "<couldn't map PC to fn name>";
+		}
 		std::vector<char> und_name(max_name_len);
 		UnDecorateSymbolName(sym->Name, &und_name[0], max_name_len, UNDNAME_COMPLETE);
 		return std::string(&und_name[0], strlen(&und_name[0]));
@@ -144,7 +145,7 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	print_error(vformat("%s: Program crashed", __FUNCTION__));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).empty()) {
+	if (String(VERSION_HASH).is_empty()) {
 		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
 	} else {
 		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
@@ -172,10 +173,18 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	frame.AddrStack.Mode = AddrModeFlat;
 	frame.AddrFrame.Mode = AddrModeFlat;
 
-#ifdef _M_X64
+#if defined(_M_X64)
 	frame.AddrPC.Offset = context->Rip;
 	frame.AddrStack.Offset = context->Rsp;
 	frame.AddrFrame.Offset = context->Rbp;
+#elif defined(_M_ARM64) || defined(_M_ARM64EC)
+	frame.AddrPC.Offset = context->Pc;
+	frame.AddrStack.Offset = context->Sp;
+	frame.AddrFrame.Offset = context->Fp;
+#elif defined(_M_ARM)
+	frame.AddrPC.Offset = context->Pc;
+	frame.AddrStack.Offset = context->Sp;
+	frame.AddrFrame.Offset = context->R11;
 #else
 	frame.AddrPC.Offset = context->Eip;
 	frame.AddrStack.Offset = context->Esp;

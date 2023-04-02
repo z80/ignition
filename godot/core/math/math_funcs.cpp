@@ -30,11 +30,9 @@
 
 #include "math_funcs.h"
 
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
 
 RandomPCG Math::default_rand(RandomPCG::DEFAULT_SEED, RandomPCG::DEFAULT_INC);
-
-#define PHI 0x9e3779b9
 
 uint32_t Math::rand_from_seed(uint64_t *seed) {
 	RandomPCG rng = RandomPCG(*seed, RandomPCG::DEFAULT_INC);
@@ -53,6 +51,10 @@ void Math::randomize() {
 
 uint32_t Math::rand() {
 	return default_rand.rand();
+}
+
+double Math::randfn(double mean, double deviation) {
+	return default_rand.randfn(mean, deviation);
 }
 
 int Math::step_decimals(double p_step) {
@@ -90,17 +92,6 @@ int Math::range_step_decimals(double p_step) {
 	return step_decimals(p_step);
 }
 
-double Math::dectime(double p_value, double p_amount, double p_step) {
-	WARN_DEPRECATED_MSG("The `dectime()` function has been deprecated and will be removed in Godot 4.0. Use `move_toward()` instead.");
-	double sgn = p_value < 0 ? -1.0 : 1.0;
-	double val = Math::abs(p_value);
-	val -= p_amount * p_step;
-	if (val < 0.0) {
-		val = 0.0;
-	}
-	return val * sgn;
-}
-
 double Math::ease(double p_x, double p_c) {
 	if (p_x < 0) {
 		p_x = 0;
@@ -126,7 +117,7 @@ double Math::ease(double p_x, double p_c) {
 	}
 }
 
-double Math::stepify(double p_value, double p_step) {
+double Math::snapped(double p_value, double p_step) {
 	if (p_step != 0) {
 		p_value = Math::floor(p_value / p_step + 0.5) * p_step;
 	}
@@ -182,5 +173,9 @@ double Math::random(double from, double to) {
 }
 
 float Math::random(float from, float to) {
+	return default_rand.random(from, to);
+}
+
+int Math::random(int from, int to) {
 	return default_rand.random(from, to);
 }

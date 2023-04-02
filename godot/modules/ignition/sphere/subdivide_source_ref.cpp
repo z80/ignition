@@ -14,7 +14,7 @@ void SubdivideSourceRef::_bind_methods()
 }
 
 SubdivideSourceRef::SubdivideSourceRef()
-    : Reference()
+    : RefCounted()
 {
 	source = &subdivide_source;
 }
@@ -34,7 +34,7 @@ bool SubdivideSourceRef::need_subdivide( Node * ref_frame, Node * cubesphere_nod
     RefFrameNode * rf = Object::cast_to<RefFrameNode>(ref_frame);
     if (rf == nullptr)
     {
-        Spatial * s = Object::cast_to<Spatial>( ref_frame );
+        Node3D * s = Object::cast_to<Node3D>( ref_frame );
         const Vector3 at = s->get_transform().origin;
         const Vector3d sp = Vector3d( at.x, at.y, at.z );
 

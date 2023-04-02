@@ -45,26 +45,29 @@ class ImportDockParameters;
 class ImportDock : public VBoxContainer {
 	GDCLASS(ImportDock, VBoxContainer);
 
-	Label *imported;
-	OptionButton *import_as;
-	MenuButton *preset;
-	EditorInspector *import_opts;
+	Label *imported = nullptr;
+	OptionButton *import_as = nullptr;
+	MenuButton *preset = nullptr;
+	EditorInspector *import_opts = nullptr;
 
 	List<PropertyInfo> properties;
-	Map<StringName, Variant> property_values;
+	HashMap<StringName, Variant> property_values;
 
-	ConfirmationDialog *reimport_confirm;
-	Label *label_warning;
-	Button *import;
+	ConfirmationDialog *reimport_confirm = nullptr;
+	Label *label_warning = nullptr;
+	Button *import = nullptr;
 
-	ImportDockParameters *params;
+	Control *advanced_spacer = nullptr;
+	Button *advanced = nullptr;
 
-	VBoxContainer *content;
-	Label *select_a_resource;
+	ImportDockParameters *params = nullptr;
+
+	VBoxContainer *content = nullptr;
+	Label *select_a_resource = nullptr;
 
 	void _preset_selected(int p_idx);
 	void _importer_selected(int i_idx);
-	void _update_options(const Ref<ConfigFile> &p_config = Ref<ConfigFile>());
+	void _update_options(const String &p_path, const Ref<ConfigFile> &p_config = Ref<ConfigFile>());
 	void _update_preset_menu();
 	void _add_keep_import_option(const String &p_importer_name);
 
@@ -75,11 +78,18 @@ class ImportDock : public VBoxContainer {
 	void _reimport_and_restart();
 	void _reimport();
 
+	void _advanced_options();
 	enum {
 		ITEM_SET_AS_DEFAULT = 100,
 		ITEM_LOAD_DEFAULT,
 		ITEM_CLEAR_DEFAULT,
 	};
+
+private:
+	static ImportDock *singleton;
+
+public:
+	static ImportDock *get_singleton() { return singleton; }
 
 protected:
 	static void _bind_methods();

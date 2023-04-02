@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "audio_effect_stereo_enhance.h"
+
 #include "servers/audio_server.h"
+
 void AudioEffectStereoEnhanceInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float intensity = base->pan_pullout;
 	bool surround_mode = base->surround > 0;
@@ -61,7 +63,6 @@ void AudioEffectStereoEnhanceInstance::process(const AudioFrame *p_src_frames, A
 
 			//r is delayed
 			r = delay_ringbuff[(ringbuff_pos - delay_frames) & ringbuff_mask];
-			;
 		}
 
 		p_dst_frames[i].l = l;
@@ -74,9 +75,9 @@ AudioEffectStereoEnhanceInstance::~AudioEffectStereoEnhanceInstance() {
 	memdelete_arr(delay_ringbuff);
 }
 
-Ref<AudioEffectInstance> AudioEffectStereoEnhance::instance() {
+Ref<AudioEffectInstance> AudioEffectStereoEnhance::instantiate() {
 	Ref<AudioEffectStereoEnhanceInstance> ins;
-	ins.instance();
+	ins.instantiate();
 
 	ins->base = Ref<AudioEffectStereoEnhance>(this);
 
@@ -113,6 +114,7 @@ float AudioEffectStereoEnhance::get_pan_pullout() const {
 void AudioEffectStereoEnhance::set_time_pullout(float p_amount) {
 	time_pullout = p_amount;
 }
+
 float AudioEffectStereoEnhance::get_time_pullout() const {
 	return time_pullout;
 }
@@ -120,6 +122,7 @@ float AudioEffectStereoEnhance::get_time_pullout() const {
 void AudioEffectStereoEnhance::set_surround(float p_amount) {
 	surround = p_amount;
 }
+
 float AudioEffectStereoEnhance::get_surround() const {
 	return surround;
 }
@@ -134,13 +137,9 @@ void AudioEffectStereoEnhance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surround", "amount"), &AudioEffectStereoEnhance::set_surround);
 	ClassDB::bind_method(D_METHOD("get_surround"), &AudioEffectStereoEnhance::get_surround);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pan_pullout", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_pan_pullout", "get_pan_pullout");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "time_pullout_ms", PROPERTY_HINT_RANGE, "0,50,0.01"), "set_time_pullout", "get_time_pullout");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "surround", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_surround", "get_surround");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pan_pullout", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_pan_pullout", "get_pan_pullout");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_pullout_ms", PROPERTY_HINT_RANGE, "0,50,0.01,suffix:ms"), "set_time_pullout", "get_time_pullout");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "surround", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_surround", "get_surround");
 }
 
-AudioEffectStereoEnhance::AudioEffectStereoEnhance() {
-	pan_pullout = 1;
-	time_pullout = 0;
-	surround = 0;
-}
+AudioEffectStereoEnhance::AudioEffectStereoEnhance() {}

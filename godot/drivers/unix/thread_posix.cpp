@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#if (defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)) && !defined(NO_THREADS)
+#if defined(UNIX_ENABLED)
 
 #include "thread_posix.h"
 
 #include "core/os/thread.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 #ifdef PTHREAD_BSD_SET_NAME
 #include <pthread_np.h>
@@ -70,7 +70,7 @@ static Error set_name(const String &p_name) {
 }
 
 void init_thread_posix() {
-	Thread::_set_platform_funcs(&set_name, nullptr);
+	Thread::_set_platform_functions({ .set_name = set_name });
 }
 
-#endif
+#endif // UNIX_ENABLED

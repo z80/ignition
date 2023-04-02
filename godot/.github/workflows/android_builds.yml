@@ -4,8 +4,8 @@ on: [push, pull_request]
 # Global Settings
 env:
   # Only used for the cache key. Increment version to force clean build.
-  GODOT_BASE_BRANCH: 3.5
-  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no
+  GODOT_BASE_BRANCH: master
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-android
@@ -14,17 +14,10 @@ concurrency:
 jobs:
   android-template:
     runs-on: "ubuntu-20.04"
-    name: Template (target=release, tools=no)
+    name: Template (target=template_release)
 
     steps:
       - uses: actions/checkout@v3
-
-      # Azure repositories are not reliable, we need to prevent azure giving us packages.
-      - name: Make apt sources.list use the default Ubuntu repositories
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/*
-          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
-          sudo apt-get update
 
       - name: Set up Java 11
         uses: actions/setup-java@v3
@@ -39,21 +32,21 @@ jobs:
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
 
-      - name: Compilation (armv7)
+      - name: Compilation (arm32)
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} android_arch=armv7
+          sconsflags: ${{ env.SCONSFLAGS }} arch=arm32
           platform: android
-          target: release
-          tools: false
+          target: template_release
+          tests: false
 
-      - name: Compilation (arm64v8)
+      - name: Compilation (arm64)
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} android_arch=arm64v8
+          sconsflags: ${{ env.SCONSFLAGS }} arch=arm64
           platform: android
-          target: release
-          tools: false
+          target: template_release
+          tests: false
 
       - name: Generate Godot templates
         run: |

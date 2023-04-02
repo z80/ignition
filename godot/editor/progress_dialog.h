@@ -43,12 +43,12 @@ class BackgroundProgress : public HBoxContainer {
 	_THREAD_SAFE_CLASS_
 
 	struct Task {
-		HBoxContainer *hb;
-		ProgressBar *progress;
+		HBoxContainer *hb = nullptr;
+		ProgressBar *progress = nullptr;
 	};
 
-	Map<String, Task> tasks;
-	Map<String, int> updates;
+	HashMap<String, Task> tasks;
+	HashMap<String, int> updates;
 	void _update();
 
 protected:
@@ -66,26 +66,26 @@ public:
 	BackgroundProgress() {}
 };
 
-class ProgressDialog : public Popup {
-	GDCLASS(ProgressDialog, Popup);
+class ProgressDialog : public PopupPanel {
+	GDCLASS(ProgressDialog, PopupPanel);
 	struct Task {
 		String task;
-		VBoxContainer *vb;
-		ProgressBar *progress;
-		Label *state;
-		uint64_t last_progress_tick;
+		VBoxContainer *vb = nullptr;
+		ProgressBar *progress = nullptr;
+		Label *state = nullptr;
 	};
-	HBoxContainer *cancel_hb;
-	Button *cancel;
+	HBoxContainer *cancel_hb = nullptr;
+	Button *cancel = nullptr;
 
-	Map<String, Task> tasks;
-	VBoxContainer *main;
+	HashMap<String, Task> tasks;
+	VBoxContainer *main = nullptr;
+	uint64_t last_progress_tick;
 
 	static ProgressDialog *singleton;
 	void _popup();
 
 	void _cancel_pressed();
-	bool cancelled;
+	bool canceled = false;
 
 protected:
 	void _notification(int p_what);

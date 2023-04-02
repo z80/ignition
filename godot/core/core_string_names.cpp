@@ -35,7 +35,6 @@ CoreStringNames *CoreStringNames::singleton = nullptr;
 CoreStringNames::CoreStringNames() :
 		_free(StaticCString::create("free")),
 		changed(StaticCString::create("changed")),
-		_meta(StaticCString::create("__meta__")),
 		_script(StaticCString::create("script")),
 		script_changed(StaticCString::create("script_changed")),
 		___pdcdata(StaticCString::create("___pdcdata")),
@@ -70,5 +69,12 @@ CoreStringNames::CoreStringNames() :
 		r8(StaticCString::create("r8")),
 		g8(StaticCString::create("g8")),
 		b8(StaticCString::create("b8")),
-		a8(StaticCString::create("a8")) {
+		a8(StaticCString::create("a8")),
+		call(StaticCString::create("call")),
+		call_deferred(StaticCString::create("call_deferred")),
+		bind(StaticCString::create("bind")),
+		unbind(StaticCString::create("unbind")),
+		emit(StaticCString::create("emit")),
+		notification(StaticCString::create("notification")),
+		property_list_changed(StaticCString::create("property_list_changed")) {
 }

@@ -30,10 +30,12 @@
 
 #include "progress_dialog.h"
 
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
 #include "core/os/os.h"
-#include "editor_scale.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "main/main.h"
+#include "servers/display_server.h"
 
 void BackgroundProgress::_add_task(const String &p_task, const String &p_label, int p_steps) {
 	_THREAD_SAFE_METHOD_
@@ -49,7 +51,7 @@ void BackgroundProgress::_add_task(const String &p_task, const String &p_label, 
 	Control *ec = memnew(Control);
 	ec->set_h_size_flags(SIZE_EXPAND_FILL);
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
-	t.progress->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	t.progress->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	ec->add_child(t.progress);
 	ec->set_custom_minimum_size(Size2(80, 5) * EDSCALE);
 	t.hb->add_child(ec);
@@ -62,9 +64,9 @@ void BackgroundProgress::_add_task(const String &p_task, const String &p_label, 
 void BackgroundProgress::_update() {
 	_THREAD_SAFE_METHOD_
 
-	for (Map<String, int>::Element *E = updates.front(); E; E = E->next()) {
-		if (tasks.has(E->key())) {
-			_task_step(E->key(), E->get());
+	for (const KeyValue<String, int> &E : updates) {
+		if (tasks.has(E.key)) {
+			_task_step(E.key, E.value);
 		}
 	}
 
@@ -83,6 +85,7 @@ void BackgroundProgress::_task_step(const String &p_task, int p_step) {
 		t.progress->set_value(p_step);
 	}
 }
+
 void BackgroundProgress::_end_task(const String &p_task) {
 	_THREAD_SAFE_METHOD_
 
@@ -103,12 +106,13 @@ void BackgroundProgress::_bind_methods() {
 void BackgroundProgress::add_task(const String &p_task, const String &p_label, int p_steps) {
 	MessageQueue::get_singleton()->push_call(this, "_add_task", p_task, p_label, p_steps);
 }
+
 void BackgroundProgress::task_step(const String &p_task, int p_step) {
 	//this code is weird, but it prevents deadlock.
 	bool no_updates = true;
 	{
 		_THREAD_SAFE_METHOD_
-		no_updates = updates.empty();
+		no_updates = updates.is_empty();
 	}
 
 	if (no_updates) {
@@ -130,12 +134,13 @@ void BackgroundProgress::end_task(const String &p_task) {
 ProgressDialog *ProgressDialog::singleton = nullptr;
 
 void ProgressDialog::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_DRAW: {
-			Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
-			draw_style_box(style, Rect2(Point2(), get_size()));
-
-		} break;
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		if (!is_visible()) {
+			Node *p = get_parent();
+			if (p) {
+				p->remove_child(this);
+			}
+		}
 	}
 }
 
@@ -143,15 +148,24 @@ void ProgressDialog::_popup() {
 	Size2 ms = main->get_combined_minimum_size();
 	ms.width = MAX(500 * EDSCALE, ms.width);
 
-	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
+	Ref<StyleBox> style = main->get_theme_stylebox(SNAME("panel"), SNAME("PopupMenu"));
 	ms += style->get_minimum_size();
-	main->set_margin(MARGIN_LEFT, style->get_margin(MARGIN_LEFT));
-	main->set_margin(MARGIN_RIGHT, -style->get_margin(MARGIN_RIGHT));
-	main->set_margin(MARGIN_TOP, style->get_margin(MARGIN_TOP));
-	main->set_margin(MARGIN_BOTTOM, -style->get_margin(MARGIN_BOTTOM));
+	main->set_offset(SIDE_LEFT, style->get_margin(SIDE_LEFT));
+	main->set_offset(SIDE_RIGHT, -style->get_margin(SIDE_RIGHT));
+	main->set_offset(SIDE_TOP, style->get_margin(SIDE_TOP));
+	main->set_offset(SIDE_BOTTOM, -style->get_margin(SIDE_BOTTOM));
 
-	raise();
-	popup_centered(ms);
+	EditorNode *ed = EditorNode::get_singleton();
+	if (ed && !is_inside_tree()) {
+		Window *w = ed->get_window();
+		while (w && w->get_exclusive_child()) {
+			w = w->get_exclusive_child();
+		}
+		if (w && w != this) {
+			w->add_child(this);
+			popup_centered(ms);
+		}
+	}
 }
 
 void ProgressDialog::add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
@@ -168,7 +182,6 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 	t.progress = memnew(ProgressBar);
 	t.progress->set_max(p_steps);
 	t.progress->set_value(p_steps);
-	t.last_progress_tick = 0;
 	vb2->add_child(t.progress);
 	t.state = memnew(Label);
 	t.state->set_clip_text(true);
@@ -181,8 +194,8 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 	} else {
 		cancel_hb->hide();
 	}
-	cancel_hb->raise();
-	cancelled = false;
+	cancel_hb->move_to_front();
+	canceled = false;
 	_popup();
 	if (p_can_cancel) {
 		cancel->grab_focus();
@@ -190,16 +203,16 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 }
 
 bool ProgressDialog::task_step(const String &p_task, const String &p_state, int p_step, bool p_force_redraw) {
-	ERR_FAIL_COND_V(!tasks.has(p_task), cancelled);
+	ERR_FAIL_COND_V(!tasks.has(p_task), canceled);
 
-	Task &t = tasks[p_task];
 	if (!p_force_redraw) {
 		uint64_t tus = OS::get_singleton()->get_ticks_usec();
-		if (tus - t.last_progress_tick < 200000) { //200ms
-			return cancelled;
+		if (tus - last_progress_tick < 200000) { //200ms
+			return canceled;
 		}
 	}
 
+	Task &t = tasks[p_task];
 	if (p_step < 0) {
 		t.progress->set_value(t.progress->get_value() + 1);
 	} else {
@@ -207,13 +220,15 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 	}
 
 	t.state->set_text(p_state);
-	t.last_progress_tick = OS::get_singleton()->get_ticks_usec();
+	last_progress_tick = OS::get_singleton()->get_ticks_usec();
 	if (cancel_hb->is_visible()) {
-		OS::get_singleton()->force_process_input();
+		DisplayServer::get_singleton()->process_events();
 	}
 
+#ifndef ANDROID_ENABLED
 	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
-	return cancelled;
+#endif
+	return canceled;
 }
 
 void ProgressDialog::end_task(const String &p_task) {
@@ -223,7 +238,7 @@ void ProgressDialog::end_task(const String &p_task) {
 	memdelete(t.vb);
 	tasks.erase(p_task);
 
-	if (tasks.empty()) {
+	if (tasks.is_empty()) {
 		hide();
 	} else {
 		_popup();
@@ -231,18 +246,19 @@ void ProgressDialog::end_task(const String &p_task) {
 }
 
 void ProgressDialog::_cancel_pressed() {
-	cancelled = true;
+	canceled = true;
 }
 
 void ProgressDialog::_bind_methods() {
-	ClassDB::bind_method("_cancel_pressed", &ProgressDialog::_cancel_pressed);
 }
 
 ProgressDialog::ProgressDialog() {
 	main = memnew(VBoxContainer);
 	add_child(main);
-	main->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	main->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	set_exclusive(true);
+	set_flag(Window::FLAG_POPUP, false);
+	last_progress_tick = 0;
 	singleton = this;
 	cancel_hb = memnew(HBoxContainer);
 	main->add_child(cancel_hb);
@@ -252,5 +268,5 @@ ProgressDialog::ProgressDialog() {
 	cancel_hb->add_child(cancel);
 	cancel->set_text(TTR("Cancel"));
 	cancel_hb->add_spacer();
-	cancel->connect("pressed", this, "_cancel_pressed");
+	cancel->connect("pressed", callable_mp(this, &ProgressDialog::_cancel_pressed));
 }

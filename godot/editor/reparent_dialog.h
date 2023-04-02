@@ -37,14 +37,12 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
-/**
-@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class ReparentDialog : public ConfirmationDialog {
 	GDCLASS(ReparentDialog, ConfirmationDialog);
 
-	SceneTreeEditor *tree;
-	CheckBox *keep_transform;
+	SceneTreeEditor *tree = nullptr;
+	CheckBox *keep_transform = nullptr;
 
 	void _reparent();
 	void _cancel();
@@ -54,7 +52,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_current(const Set<Node *> &p_selection);
+	void set_current(const HashSet<Node *> &p_selection);
 
 	ReparentDialog();
 	~ReparentDialog();

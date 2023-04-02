@@ -2,8 +2,8 @@
 #ifndef __CELESTIAL_MOTION_REF_H_
 #define __CELESTIAL_MOTION_REF_H_
 
-#include "core/reference.h"
-#include "scene/3d/spatial.h"
+#include "core/object/ref_counted.h"
+#include "scene/3d/node_3d.h"
 
 #include "se3_ref.h"
 #include "celestial_motion.h"
@@ -14,10 +14,10 @@ namespace Ign
 
 class RefFrameNode;
 
-class CelestialMotionRef: public Reference
+class CelestialMotionRef: public RefCounted
 {
-    GDCLASS( CelestialMotionRef, Reference );
-    OBJ_CATEGORY("Ignition");
+    GDCLASS( CelestialMotionRef, RefCounted );
+    //OBJ_CATEGORY("Ignition");
 
 protected:
     static void _bind_methods();
@@ -68,7 +68,7 @@ public:
     Dictionary serialize() const;
     bool deserialize( const Dictionary & data );
 
-	PoolVector3Array orbit_points( Node * orbiting_center, Node * camera_node, int qty, const Ref<ScaleDistanceRatioGd> & scale_distance_ratio, real_t base_scale );
+	Array orbit_points( Node * orbiting_center, Node * camera_node, int qty, const Ref<ScaleDistanceRatioGd> & scale_distance_ratio, real_t base_scale );
 
 	void set_force_numerical( bool en );
 	bool get_force_numerical() const;

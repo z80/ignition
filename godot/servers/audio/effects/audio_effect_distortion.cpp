@@ -36,13 +36,13 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 	const float *src = (const float *)p_src_frames;
 	float *dst = (float *)p_dst_frames;
 
-	//float lpf_c=expf(-2.0*Math_PI*keep_hf_hz.get()/(mix_rate*(float)OVERSAMPLE));
-	float lpf_c = expf(-2.0 * Math_PI * base->keep_hf_hz / (AudioServer::get_singleton()->get_mix_rate()));
+	//float lpf_c=expf(-Math_TAU*keep_hf_hz.get()/(mix_rate*(float)OVERSAMPLE));
+	float lpf_c = expf(-Math_TAU * base->keep_hf_hz / (AudioServer::get_singleton()->get_mix_rate()));
 	float lpf_ic = 1.0 - lpf_c;
 
 	float drive_f = base->drive;
-	float pregain_f = Math::db2linear(base->pre_gain);
-	float postgain_f = Math::db2linear(base->post_gain);
+	float pregain_f = Math::db_to_linear(base->pre_gain);
+	float postgain_f = Math::db_to_linear(base->post_gain);
 
 	float atan_mult = pow(10, drive_f * drive_f * 3.0) - 1.0 + 0.001;
 	float atan_div = 1.0 / (atanf(atan_mult) * (1.0 + drive_f * 8));
@@ -50,7 +50,7 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 	float lofi_mult = powf(2.0, 2.0 + (1.0 - drive_f) * 14); //goes from 16 to 2 bits
 
 	for (int i = 0; i < p_frame_count * 2; i++) {
-		float out = undenormalise(src[i] * lpf_ic + lpf_c * h[i & 1]);
+		float out = undenormalize(src[i] * lpf_ic + lpf_c * h[i & 1]);
 		h[i & 1] = out;
 		float a = out;
 		float ha = src[i] - out; //high freqs
@@ -93,9 +93,9 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 	}
 }
 
-Ref<AudioEffectInstance> AudioEffectDistortion::instance() {
+Ref<AudioEffectInstance> AudioEffectDistortion::instantiate() {
 	Ref<AudioEffectDistortionInstance> ins;
-	ins.instance();
+	ins.instantiate();
 	ins->base = Ref<AudioEffectDistortion>(this);
 	ins->h[0] = 0;
 	ins->h[1] = 0;
@@ -114,6 +114,7 @@ AudioEffectDistortion::Mode AudioEffectDistortion::get_mode() const {
 void AudioEffectDistortion::set_pre_gain(float p_pre_gain) {
 	pre_gain = p_pre_gain;
 }
+
 float AudioEffectDistortion::get_pre_gain() const {
 	return pre_gain;
 }
@@ -121,6 +122,7 @@ float AudioEffectDistortion::get_pre_gain() const {
 void AudioEffectDistortion::set_keep_hf_hz(float p_keep_hf_hz) {
 	keep_hf_hz = p_keep_hf_hz;
 }
+
 float AudioEffectDistortion::get_keep_hf_hz() const {
 	return keep_hf_hz;
 }
@@ -128,6 +130,7 @@ float AudioEffectDistortion::get_keep_hf_hz() const {
 void AudioEffectDistortion::set_drive(float p_drive) {
 	drive = p_drive;
 }
+
 float AudioEffectDistortion::get_drive() const {
 	return drive;
 }
@@ -135,6 +138,7 @@ float AudioEffectDistortion::get_drive() const {
 void AudioEffectDistortion::set_post_gain(float p_post_gain) {
 	post_gain = p_post_gain;
 }
+
 float AudioEffectDistortion::get_post_gain() const {
 	return post_gain;
 }
@@ -155,11 +159,11 @@ void AudioEffectDistortion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_post_gain", "post_gain"), &AudioEffectDistortion::set_post_gain);
 	ClassDB::bind_method(D_METHOD("get_post_gain"), &AudioEffectDistortion::get_post_gain);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Clip,ATan,LoFi,Overdrive,WaveShape"), "set_mode", "get_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pre_gain", PROPERTY_HINT_RANGE, "-60,60,0.01"), "set_pre_gain", "get_pre_gain");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "keep_hf_hz", PROPERTY_HINT_RANGE, "1,20500,1"), "set_keep_hf_hz", "get_keep_hf_hz");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "drive", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drive", "get_drive");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "post_gain", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_post_gain", "get_post_gain");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Clip,ATan,LoFi,Overdrive,Wave Shape"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pre_gain", PROPERTY_HINT_RANGE, "-60,60,0.01,suffix:dB"), "set_pre_gain", "get_pre_gain");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "keep_hf_hz", PROPERTY_HINT_RANGE, "1,20500,1,suffix:Hz"), "set_keep_hf_hz", "get_keep_hf_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drive", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drive", "get_drive");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "post_gain", PROPERTY_HINT_RANGE, "-80,24,0.01,suffix:dB"), "set_post_gain", "get_post_gain");
 
 	BIND_ENUM_CONSTANT(MODE_CLIP);
 	BIND_ENUM_CONSTANT(MODE_ATAN);

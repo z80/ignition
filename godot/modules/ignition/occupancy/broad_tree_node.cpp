@@ -74,7 +74,7 @@ const BroadTreeNode & BroadTreeNode::operator=( const BroadTreeNode & inst )
 bool BroadTreeNode::hasChildren() const
 {
     // Filled can't have children.
-    if ( !ptInds.empty() )
+    if ( !ptInds.is_empty() )
         return false;
 
     for ( int i=0; i<8; i++ )

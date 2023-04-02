@@ -6,10 +6,10 @@
 #include "quaterniond.h"
 
 #include "core/math/vector3.h"
-#include "core/math/quat.h"
-#include "core/math/transform.h"
+#include "core/math/quaternion.h"
+#include "core/math/transform_3d.h"
 
-#include "core/dictionary.h"
+#include "core/variant/dictionary.h"
 
 namespace Ign
 {
@@ -27,7 +27,7 @@ public:
     ~SE3();
 
     SE3( const Vector3d & r, const Quaterniond & q, const Vector3d & v, const Vector3d & w );
-    SE3( const Vector3 & r, const Quat & q, const Vector3 & v, const Vector3 & w );
+    SE3( const Vector3 & r, const Quaternion & q, const Vector3 & v, const Vector3 & w );
     SE3( const SE3 & rhs );
     const SE3 & operator=( const SE3 & rhs );
     SE3 operator*( const SE3 & rhs ) const;
@@ -40,15 +40,15 @@ public:
     SE3 inverse() const;
 
     void set_r( const Vector3 & r );
-    void set_q( const Quat & q );
+    void set_q( const Quaternion & q );
     void set_v( const Vector3 & v );
     void set_w( const Vector3 & w );
-    void set_transform( const Transform & t );
+    void set_transform( const Transform3D & t );
     Vector3 r() const;
-    Quat    q() const;
+    Quaternion q() const;
     Vector3 v() const;
     Vector3 w() const;
-    Transform transform() const;
+    Transform3D transform() const;
 
     Dictionary serialize() const;
     bool   deserialize( const Dictionary & stri );

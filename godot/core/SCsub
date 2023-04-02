@@ -3,8 +3,6 @@
 Import("env")
 
 import core_builders
-import make_binders
-from platform_methods import run_in_subprocess
 
 env.core_sources = []
 
@@ -39,7 +37,7 @@ if "SCRIPT_AES256_ENCRYPTION_KEY" in os.environ:
 
 # NOTE: It is safe to generate this file here, since this is still executed serially
 with open("script_encryption_key.gen.cpp", "w") as f:
-    f.write('#include "core/project_settings.h"\nuint8_t script_encryption_key[32]={' + txt + "};\n")
+    f.write('#include "core/config/project_settings.h"\nuint8_t script_encryption_key[32]={' + txt + "};\n")
 
 
 # Add required thirdparty code.
@@ -55,12 +53,13 @@ thirdparty_misc_dir = "#thirdparty/misc/"
 thirdparty_misc_sources = [
     # C sources
     "fastlz.c",
+    "r128.c",
     "smaz.c",
     # C++ sources
-    "hq2x.cpp",
     "pcg.cpp",
-    "triangulator.cpp",
+    "polypartition.cpp",
     "clipper.cpp",
+    "smolv.cpp",
 ]
 thirdparty_misc_sources = [thirdparty_misc_dir + file for file in thirdparty_misc_sources]
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_misc_sources)
@@ -86,7 +85,7 @@ if env["builtin_zlib"]:
     env_thirdparty.Prepend(CPPPATH=[thirdparty_zlib_dir])
     # Needs to be available in main env too
     env.Prepend(CPPPATH=[thirdparty_zlib_dir])
-    if env["target"] == "debug":
+    if env.dev_build:
         env_thirdparty.Append(CPPDEFINES=["ZLIB_DEBUG"])
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zlib_sources)
@@ -94,11 +93,7 @@ if env["builtin_zlib"]:
 # Minizip library, could be unbundled in theory
 # However, our version has some custom modifications, so it won't compile with the system one
 thirdparty_minizip_dir = "#thirdparty/minizip/"
-thirdparty_minizip_sources = [
-    "ioapi.c",
-    "unzip.c",
-    "zip.c",
-]
+thirdparty_minizip_sources = ["ioapi.c", "unzip.c", "zip.c"]
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_minizip_sources)
 
@@ -134,6 +129,9 @@ if env["builtin_zstd"]:
         "decompress/zstd_decompress_block.c",
         "decompress/zstd_decompress.c",
     ]
+    if env["platform"] in ["android", "ios", "linuxbsd", "macos"]:
+        # Match platforms with ZSTD_ASM_SUPPORTED in common/portability_macros.h
+        thirdparty_zstd_sources.append("decompress/huf_decompress_amd64.S")
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
 
     env_thirdparty.Prepend(CPPPATH=[thirdparty_zstd_dir, thirdparty_zstd_dir + "common"])
@@ -162,28 +160,27 @@ env.Depends(
 env.CommandNoCache(
     "#core/io/certs_compressed.gen.h",
     "#thirdparty/certs/ca-certificates.crt",
-    run_in_subprocess(core_builders.make_certs_header),
-)
-
-# Make binders
-env.CommandNoCache(
-    ["method_bind.gen.inc", "method_bind_ext.gen.inc", "method_bind_free_func.gen.inc"],
-    "make_binders.py",
-    run_in_subprocess(make_binders.run),
+    env.Run(core_builders.make_certs_header, "Building ca-certificates header."),
 )
 
 # Authors
 env.Depends("#core/authors.gen.h", "../AUTHORS.md")
-env.CommandNoCache("#core/authors.gen.h", "../AUTHORS.md", run_in_subprocess(core_builders.make_authors_header))
+env.CommandNoCache(
+    "#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header, "Generating authors header.")
+)
 
 # Donors
 env.Depends("#core/donors.gen.h", "../DONORS.md")
-env.CommandNoCache("#core/donors.gen.h", "../DONORS.md", run_in_subprocess(core_builders.make_donors_header))
+env.CommandNoCache(
+    "#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header, "Generating donors header.")
+)
 
 # License
 env.Depends("#core/license.gen.h", ["../COPYRIGHT.txt", "../LICENSE.txt"])
 env.CommandNoCache(
-    "#core/license.gen.h", ["../COPYRIGHT.txt", "../LICENSE.txt"], run_in_subprocess(core_builders.make_license_header)
+    "#core/license.gen.h",
+    ["../COPYRIGHT.txt", "../LICENSE.txt"],
+    env.Run(core_builders.make_license_header, "Generating license header."),
 )
 
 # Chain load SCsubs
@@ -191,7 +188,15 @@ SConscript("os/SCsub")
 SConscript("math/SCsub")
 SConscript("crypto/SCsub")
 SConscript("io/SCsub")
-SConscript("bind/SCsub")
+SConscript("debugger/SCsub")
+SConscript("input/SCsub")
+SConscript("variant/SCsub")
+SConscript("extension/SCsub")
+SConscript("object/SCsub")
+SConscript("templates/SCsub")
+SConscript("string/SCsub")
+SConscript("config/SCsub")
+SConscript("error/SCsub")
 
 
 # Build it all as a library

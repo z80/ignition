@@ -38,11 +38,19 @@
 class ScrollContainer : public Container {
 	GDCLASS(ScrollContainer, Container);
 
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+public:
+	enum ScrollMode {
+		SCROLL_MODE_DISABLED = 0,
+		SCROLL_MODE_AUTO,
+		SCROLL_MODE_SHOW_ALWAYS,
+		SCROLL_MODE_SHOW_NEVER,
+	};
 
-	Size2 child_max_size;
-	Size2 scroll;
+private:
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
+
+	mutable Size2 largest_child_min_size; // The largest one among the min sizes of all available child controls.
 
 	void update_scrollbars();
 
@@ -50,46 +58,51 @@ class ScrollContainer : public Container {
 	Vector2 drag_accum;
 	Vector2 drag_from;
 	Vector2 last_drag_accum;
-	float last_drag_time;
-	float time_since_motion;
-	bool drag_touching;
-	bool drag_touching_deaccel;
-	bool click_handled;
-	bool beyond_deadzone;
+	float time_since_motion = 0.0f;
+	bool drag_touching = false;
+	bool drag_touching_deaccel = false;
+	bool beyond_deadzone = false;
 
-	bool scroll_h;
-	bool scroll_v;
+	ScrollMode horizontal_scroll_mode = SCROLL_MODE_AUTO;
+	ScrollMode vertical_scroll_mode = SCROLL_MODE_AUTO;
 
-	int deadzone;
-	bool follow_focus;
+	int deadzone = 0;
+	bool follow_focus = false;
+
+	struct ThemeCache {
+		Ref<StyleBox> panel_style;
+	} theme_cache;
 
 	void _cancel_drag();
 
 protected:
-	Size2 get_minimum_size() const;
+	virtual void _update_theme_item_cache() override;
+	Size2 get_minimum_size() const override;
 
-	void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _gui_focus_changed(Control *p_control);
-	void _update_dimensions();
+	void _reposition_children();
 	void _notification(int p_what);
 
 	void _scroll_moved(float);
 	static void _bind_methods();
 
+	bool _updating_scrollbars = false;
 	void _update_scrollbar_position();
 
 public:
-	int get_v_scroll() const;
-	void set_v_scroll(int p_pos);
+	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 
-	int get_h_scroll() const;
 	void set_h_scroll(int p_pos);
+	int get_h_scroll() const;
 
-	void set_enable_h_scroll(bool p_enable);
-	bool is_h_scroll_enabled() const;
+	void set_v_scroll(int p_pos);
+	int get_v_scroll() const;
 
-	void set_enable_v_scroll(bool p_enable);
-	bool is_v_scroll_enabled() const;
+	void set_horizontal_scroll_mode(ScrollMode p_mode);
+	ScrollMode get_horizontal_scroll_mode() const;
+
+	void set_vertical_scroll_mode(ScrollMode p_mode);
+	ScrollMode get_vertical_scroll_mode() const;
 
 	int get_deadzone() const;
 	void set_deadzone(int p_deadzone);
@@ -97,15 +110,15 @@ public:
 	bool is_following_focus() const;
 	void set_follow_focus(bool p_follow);
 
-	HScrollBar *get_h_scrollbar();
-	VScrollBar *get_v_scrollbar();
+	HScrollBar *get_h_scroll_bar();
+	VScrollBar *get_v_scroll_bar();
 	void ensure_control_visible(Control *p_control);
 
-	virtual bool clips_input() const;
-
-	virtual String get_configuration_warning() const;
+	PackedStringArray get_configuration_warnings() const override;
 
 	ScrollContainer();
 };
+
+VARIANT_ENUM_CAST(ScrollContainer::ScrollMode);
 
 #endif // SCROLL_CONTAINER_H

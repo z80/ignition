@@ -44,7 +44,6 @@ public class GLUtils {
 
 	public static final boolean DEBUG = false;
 
-	public static boolean use_gl3 = false;
 	public static boolean use_debug_opengl = false;
 
 	private static final String[] ATTRIBUTES_NAMES = new String[] {
@@ -148,8 +147,9 @@ public class GLUtils {
 				Log.i(TAG, String.format("  %s: %d\n", name, value[0]));
 			} else {
 				// Log.w(TAG, String.format("  %s: failed\n", name));
-				while (egl.eglGetError() != EGL10.EGL_SUCCESS)
-					;
+				while (egl.eglGetError() != EGL10.EGL_SUCCESS) {
+					// Continue.
+				}
 			}
 		}
 	}

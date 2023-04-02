@@ -10,17 +10,17 @@ namespace Ign
 void SubdivideSourceDistRef::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_min_level", "lvl"), &SubdivideSourceDistRef::set_min_level );
-	ClassDB::bind_method( D_METHOD("get_min_level"),        &SubdivideSourceDistRef::get_min_level, Variant::INT );
+	ClassDB::bind_method( D_METHOD("get_min_level"),        &SubdivideSourceDistRef::get_min_level );
 
 	ClassDB::bind_method( D_METHOD("set_min_size", "sz"), &SubdivideSourceDistRef::set_min_size );
-	ClassDB::bind_method( D_METHOD("get_min_size"),       &SubdivideSourceDistRef::get_min_size, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_min_size"),       &SubdivideSourceDistRef::get_min_size );
 
 	ClassDB::bind_method( D_METHOD("set_min_angle", "angle"), &SubdivideSourceDistRef::set_min_angle );
-	ClassDB::bind_method( D_METHOD("get_min_angle"),          &SubdivideSourceDistRef::get_min_angle, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_min_angle"),          &SubdivideSourceDistRef::get_min_angle );
 
-	ADD_PROPERTY( PropertyInfo( Variant::REAL,   "min_level" ),  "set_min_level",  "get_min_level" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL,   "min_size" ),   "set_min_size",   "get_min_size" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL,   "min_angle" ),  "set_min_angle",  "get_min_angle" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT,   "min_level" ),  "set_min_level",  "get_min_level" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT,   "min_size" ),   "set_min_size",   "get_min_size" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT,   "min_angle" ),  "set_min_angle",  "get_min_angle" );
 }
 
 SubdivideSourceDistRef::SubdivideSourceDistRef()

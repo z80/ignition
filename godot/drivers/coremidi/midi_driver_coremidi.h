@@ -34,13 +34,13 @@
 #ifdef COREMIDI_ENABLED
 
 #include "core/os/midi_driver.h"
-#include "core/vector.h"
+#include "core/templates/vector.h"
 
-#include <CoreMIDI/CoreMIDI.h>
+#import <CoreMIDI/CoreMIDI.h>
 #include <stdio.h>
 
 class MIDIDriverCoreMidi : public MIDIDriver {
-	MIDIClientRef client;
+	MIDIClientRef client = 0;
 	MIDIPortRef port_in;
 
 	Vector<MIDIEndpointRef> connected_sources;
@@ -51,7 +51,7 @@ public:
 	virtual Error open();
 	virtual void close();
 
-	PoolStringArray get_connected_inputs();
+	PackedStringArray get_connected_inputs();
 
 	MIDIDriverCoreMidi();
 	virtual ~MIDIDriverCoreMidi();

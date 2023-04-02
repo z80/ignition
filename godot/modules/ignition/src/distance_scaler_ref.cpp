@@ -7,9 +7,9 @@ namespace Ign
 void DistanceScalerRef::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD( "set_log_scale", "scale"), &DistanceScalerRef::set_log_scale );
-	ClassDB::bind_method( D_METHOD( "get_log_scale"), &DistanceScalerRef::get_log_scale, Variant::REAL );
+	ClassDB::bind_method( D_METHOD( "get_log_scale"),          &DistanceScalerRef::get_log_scale );
 
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "log_scale" ),         "set_log_scale",      "get_log_scale" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "log_scale" ),         "set_log_scale",      "get_log_scale" );
 }
 
 DistanceScalerRef::DistanceScalerRef()

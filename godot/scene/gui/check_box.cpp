@@ -30,42 +30,33 @@
 
 #include "check_box.h"
 
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 Size2 CheckBox::get_icon_size() const {
-	Ref<Texture> checked = Control::get_icon("checked");
-	Ref<Texture> checked_disabled = Control::get_icon("checked_disabled");
-	Ref<Texture> unchecked = Control::get_icon("unchecked");
-	Ref<Texture> unchecked_disabled = Control::get_icon("unchecked_disabled");
-	Ref<Texture> radio_checked = Control::get_icon("radio_checked");
-	Ref<Texture> radio_unchecked = Control::get_icon("radio_unchecked");
-	Ref<Texture> radio_checked_disabled = Control::get_icon("radio_checked_disabled");
-	Ref<Texture> radio_unchecked_disabled = Control::get_icon("radio_unchecked_disabled");
-
 	Size2 tex_size = Size2(0, 0);
-	if (!checked.is_null()) {
-		tex_size = Size2(checked->get_width(), checked->get_height());
+	if (!theme_cache.checked.is_null()) {
+		tex_size = Size2(theme_cache.checked->get_width(), theme_cache.checked->get_height());
 	}
-	if (!unchecked.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, unchecked->get_width()), MAX(tex_size.height, unchecked->get_height()));
+	if (!theme_cache.unchecked.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, theme_cache.unchecked->get_width()), MAX(tex_size.height, theme_cache.unchecked->get_height()));
 	}
-	if (!radio_checked.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, radio_checked->get_width()), MAX(tex_size.height, radio_checked->get_height()));
+	if (!theme_cache.radio_checked.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, theme_cache.radio_checked->get_width()), MAX(tex_size.height, theme_cache.radio_checked->get_height()));
 	}
-	if (!radio_unchecked.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, radio_unchecked->get_width()), MAX(tex_size.height, radio_unchecked->get_height()));
+	if (!theme_cache.radio_unchecked.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, theme_cache.radio_unchecked->get_width()), MAX(tex_size.height, theme_cache.radio_unchecked->get_height()));
 	}
-	if (!checked_disabled.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, checked_disabled->get_width()), MAX(tex_size.height, checked_disabled->get_height()));
+	if (!theme_cache.checked_disabled.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, theme_cache.checked_disabled->get_width()), MAX(tex_size.height, theme_cache.checked_disabled->get_height()));
 	}
-	if (!unchecked_disabled.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, unchecked_disabled->get_width()), MAX(tex_size.height, unchecked_disabled->get_height()));
+	if (!theme_cache.unchecked_disabled.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, theme_cache.unchecked_disabled->get_width()), MAX(tex_size.height, theme_cache.unchecked_disabled->get_height()));
 	}
-	if (!radio_checked_disabled.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, radio_checked_disabled->get_width()), MAX(tex_size.height, radio_checked_disabled->get_height()));
+	if (!theme_cache.radio_checked_disabled.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, theme_cache.radio_checked_disabled->get_width()), MAX(tex_size.height, theme_cache.radio_checked_disabled->get_height()));
 	}
-	if (!radio_unchecked_disabled.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, radio_unchecked_disabled->get_width()), MAX(tex_size.height, radio_unchecked_disabled->get_height()));
+	if (!theme_cache.radio_unchecked_disabled.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, theme_cache.radio_unchecked_disabled->get_width()), MAX(tex_size.height, theme_cache.radio_unchecked_disabled->get_height()));
 	}
 	return tex_size;
 }
@@ -75,33 +66,82 @@ Size2 CheckBox::get_minimum_size() const {
 	Size2 tex_size = get_icon_size();
 	minsize.width += tex_size.width;
 	if (get_text().length() > 0) {
-		minsize.width += get_constant("hseparation");
+		minsize.width += MAX(0, theme_cache.h_separation);
 	}
-	Ref<StyleBox> sb = get_stylebox("normal");
-	minsize.height = MAX(minsize.height, tex_size.height + sb->get_margin(MARGIN_TOP) + sb->get_margin(MARGIN_BOTTOM));
+	minsize.height = MAX(minsize.height, tex_size.height + theme_cache.normal_style->get_margin(SIDE_TOP) + theme_cache.normal_style->get_margin(SIDE_BOTTOM));
 
 	return minsize;
 }
 
+void CheckBox::_update_theme_item_cache() {
+	Button::_update_theme_item_cache();
+
+	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
+	theme_cache.check_v_offset = get_theme_constant(SNAME("check_v_offset"));
+	theme_cache.normal_style = get_theme_stylebox(SNAME("normal"));
+
+	theme_cache.checked = get_theme_icon(SNAME("checked"));
+	theme_cache.unchecked = get_theme_icon(SNAME("unchecked"));
+	theme_cache.radio_checked = get_theme_icon(SNAME("radio_checked"));
+	theme_cache.radio_unchecked = get_theme_icon(SNAME("radio_unchecked"));
+	theme_cache.checked_disabled = get_theme_icon(SNAME("checked_disabled"));
+	theme_cache.unchecked_disabled = get_theme_icon(SNAME("unchecked_disabled"));
+	theme_cache.radio_checked_disabled = get_theme_icon(SNAME("radio_checked_disabled"));
+	theme_cache.radio_unchecked_disabled = get_theme_icon(SNAME("radio_unchecked_disabled"));
+}
+
 void CheckBox::_notification(int p_what) {
-	if (p_what == NOTIFICATION_THEME_CHANGED) {
-		_set_internal_margin(MARGIN_LEFT, get_icon_size().width);
-	} else if (p_what == NOTIFICATION_DRAW) {
-		RID ci = get_canvas_item();
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_layout_rtl()) {
+				_set_internal_margin(SIDE_LEFT, 0.f);
+				_set_internal_margin(SIDE_RIGHT, get_icon_size().width);
+			} else {
+				_set_internal_margin(SIDE_LEFT, get_icon_size().width);
+				_set_internal_margin(SIDE_RIGHT, 0.f);
+			}
+		} break;
 
-		Ref<Texture> on = Control::get_icon(vformat("%s%s", is_radio() ? "radio_checked" : "checked", is_disabled() ? "_disabled" : ""));
-		Ref<Texture> off = Control::get_icon(vformat("%s%s", is_radio() ? "radio_unchecked" : "unchecked", is_disabled() ? "_disabled" : ""));
-		Ref<StyleBox> sb = get_stylebox("normal");
+		case NOTIFICATION_DRAW: {
+			RID ci = get_canvas_item();
 
-		Vector2 ofs;
-		ofs.x = sb->get_margin(MARGIN_LEFT);
-		ofs.y = int((get_size().height - get_icon_size().height) / 2) + get_constant("check_vadjust");
+			Ref<Texture2D> on_tex;
+			Ref<Texture2D> off_tex;
 
-		if (is_pressed()) {
-			on->draw(ci, ofs);
-		} else {
-			off->draw(ci, ofs);
-		}
+			if (is_radio()) {
+				if (is_disabled()) {
+					on_tex = theme_cache.radio_checked_disabled;
+					off_tex = theme_cache.radio_unchecked_disabled;
+				} else {
+					on_tex = theme_cache.radio_checked;
+					off_tex = theme_cache.radio_unchecked;
+				}
+			} else {
+				if (is_disabled()) {
+					on_tex = theme_cache.checked_disabled;
+					off_tex = theme_cache.unchecked_disabled;
+				} else {
+					on_tex = theme_cache.checked;
+					off_tex = theme_cache.unchecked;
+				}
+			}
+
+			Vector2 ofs;
+			if (is_layout_rtl()) {
+				ofs.x = get_size().x - theme_cache.normal_style->get_margin(SIDE_RIGHT) - get_icon_size().width;
+			} else {
+				ofs.x = theme_cache.normal_style->get_margin(SIDE_LEFT);
+			}
+			ofs.y = int((get_size().height - get_icon_size().height) / 2) + theme_cache.check_v_offset;
+
+			if (is_pressed()) {
+				on_tex->draw(ci, ofs);
+			} else {
+				off_tex->draw(ci, ofs);
+			}
+		} break;
 	}
 }
 
@@ -112,8 +152,14 @@ bool CheckBox::is_radio() {
 CheckBox::CheckBox(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
-	set_text_align(ALIGN_LEFT);
-	_set_internal_margin(MARGIN_LEFT, get_icon_size().width);
+
+	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+
+	if (is_layout_rtl()) {
+		_set_internal_margin(SIDE_RIGHT, get_icon_size().width);
+	} else {
+		_set_internal_margin(SIDE_LEFT, get_icon_size().width);
+	}
 }
 
 CheckBox::~CheckBox() {

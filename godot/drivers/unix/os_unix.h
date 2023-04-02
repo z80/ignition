@@ -43,73 +43,61 @@ protected:
 
 	virtual void initialize_core();
 	virtual int unix_initialize_audio(int p_audio_driver);
-	//virtual Error initialize(int p_video_driver,int p_audio_driver);
 
-	virtual void finalize_core();
-
-	String stdin_buf;
+	virtual void finalize_core() override;
 
 public:
 	OS_Unix();
 
-	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
-	virtual String get_stdin_string(bool p_block);
+	virtual Vector<String> get_video_adapter_driver_info() const override;
 
-	//virtual void set_mouse_show(bool p_show);
-	//virtual void set_mouse_grab(bool p_grab);
-	//virtual bool is_mouse_grab_enabled() const = 0;
-	//virtual void get_mouse_position(int &x, int &y) const;
-	//virtual void set_window_title(const String& p_title);
+	virtual String get_stdin_string() override;
 
-	//virtual void set_video_mode(const VideoMode& p_video_mode);
-	//virtual VideoMode get_video_mode() const;
-	//virtual void get_fullscreen_mode_list(List<VideoMode> *p_list) const;
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
-	virtual Error close_dynamic_library(void *p_library_handle);
-	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false);
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
+	virtual Error close_dynamic_library(void *p_library_handle) override;
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
-	virtual Error set_cwd(const String &p_cwd);
+	virtual Error set_cwd(const String &p_cwd) override;
 
-	virtual String get_name() const;
+	virtual String get_name() const override;
+	virtual String get_distribution_name() const override;
+	virtual String get_version() const override;
 
-	virtual Date get_date(bool utc) const;
-	virtual Time get_time(bool utc) const;
-	virtual TimeZoneInfo get_time_zone_info() const;
+	virtual DateTime get_datetime(bool p_utc) const override;
+	virtual TimeZoneInfo get_time_zone_info() const override;
 
-	virtual uint64_t get_unix_time() const;
-	virtual uint64_t get_system_time_secs() const;
-	virtual uint64_t get_system_time_msecs() const;
-	virtual double get_subsecond_unix_time() const;
+	virtual double get_unix_time() const override;
 
-	virtual void delay_usec(uint32_t p_usec) const;
-	virtual uint64_t get_ticks_usec() const;
+	virtual void delay_usec(uint32_t p_usec) const override;
+	virtual uint64_t get_ticks_usec() const override;
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false);
-	virtual Error kill(const ProcessID &p_pid);
-	virtual int get_process_id() const;
-	virtual bool is_process_running(const ProcessID &p_pid) const;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
+	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
+	virtual Error kill(const ProcessID &p_pid) override;
+	virtual int get_process_id() const override;
+	virtual bool is_process_running(const ProcessID &p_pid) const override;
 
-	virtual bool has_environment(const String &p_var) const;
-	virtual String get_environment(const String &p_var) const;
-	virtual bool set_environment(const String &p_var, const String &p_value) const;
-	virtual String get_locale() const;
+	virtual bool has_environment(const String &p_var) const override;
+	virtual String get_environment(const String &p_var) const override;
+	virtual void set_environment(const String &p_var, const String &p_value) const override;
+	virtual void unset_environment(const String &p_var) const override;
 
-	virtual int get_processor_count() const;
+	virtual String get_locale() const override;
 
-	virtual void debug_break();
-	virtual void initialize_debugging();
+	virtual void initialize_debugging() override;
 
-	virtual String get_executable_path() const;
-	virtual String get_user_data_dir() const;
+	virtual String get_executable_path() const override;
+	virtual String get_user_data_dir() const override;
 };
 
 class UnixTerminalLogger : public StdLogger {
 public:
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR) override;
 	virtual ~UnixTerminalLogger();
 };
 
-#endif
+#endif // UNIX_ENABLED
 
 #endif // OS_UNIX_H

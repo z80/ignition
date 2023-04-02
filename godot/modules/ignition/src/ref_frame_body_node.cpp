@@ -1,6 +1,6 @@
 
 #include "ref_frame_body_node.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "scene/scene_string_names.h"
 
 namespace Ign

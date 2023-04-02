@@ -8,7 +8,7 @@
 #include "data_types.h"
 #include "vector3d.h"
 //#include "hashfuncs.h"
-#include "core/vector.h"
+#include "core/templates/vector.h"
 #include "core/math/face3.h"
 
 #include "se3.h"
@@ -51,7 +51,7 @@ public:
 
 	const std::vector<Vector3> & collision_faces( const Float dist, const DistanceScaler * scaler = nullptr );
 
-	const Transform source_transform( const DistanceScaler * scaler = nullptr) const;
+	const Transform3D source_transform( const DistanceScaler * scaler = nullptr) const;
 
 
     Float    node_size( int level ) const;

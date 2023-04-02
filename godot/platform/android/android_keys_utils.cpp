@@ -30,12 +30,11 @@
 
 #include "android_keys_utils.h"
 
-unsigned int android_get_keysym(unsigned int p_code) {
-	for (int i = 0; _ak_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
-		if (_ak_to_keycode[i].keycode == p_code) {
-			return _ak_to_keycode[i].keysym;
+Key godot_code_from_android_code(unsigned int p_code) {
+	for (int i = 0; android_godot_code_pairs[i].android_code != AKEYCODE_MAX; i++) {
+		if (android_godot_code_pairs[i].android_code == p_code) {
+			return android_godot_code_pairs[i].godot_code;
 		}
 	}
-
-	return KEY_UNKNOWN;
+	return Key::UNKNOWN;
 }

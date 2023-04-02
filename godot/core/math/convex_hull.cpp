@@ -58,11 +58,12 @@ subject to the following restrictions:
 
 #include "convex_hull.h"
 
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
 #include "core/math/aabb.h"
 #include "core/math/math_defs.h"
 #include "core/os/memory.h"
-#include "core/paged_allocator.h"
+#include "core/templates/oa_hash_map.h"
+#include "core/templates/paged_allocator.h"
 
 #include <string.h>
 
@@ -75,15 +76,16 @@ subject to the following restrictions:
 // -- GODOT end --
 
 #ifdef DEBUG_ENABLED
-#define CHULL_ASSERT(m_cond)                                 \
-	if (unlikely(!(m_cond))) {                               \
-		ERR_PRINT("Assertion \"" _STR(m_cond) "\" failed."); \
-	} else                                                   \
-		((void)0)
+#define CHULL_ASSERT(m_cond)                                     \
+	do {                                                         \
+		if (unlikely(!(m_cond))) {                               \
+			ERR_PRINT("Assertion \"" _STR(m_cond) "\" failed."); \
+		}                                                        \
+	} while (0)
 #else
 #define CHULL_ASSERT(m_cond) \
 	do {                     \
-	} while (false)
+	} while (0)
 #endif
 
 #if defined(DEBUG_CONVEX_HULL) || defined(SHOW_ITERATIONS)
@@ -508,7 +510,7 @@ public:
 		Face() {
 		}
 
-		void init(Vertex *p_a, Vertex *p_b, Vertex *p_c) {
+		void init(Vertex *p_a, const Vertex *p_b, const Vertex *p_c) {
 			nearby_vertex = p_a;
 			origin = p_a->point;
 			dir0 = *p_b - *p_a;
@@ -605,15 +607,15 @@ private:
 	PagedAllocator<Face> face_pool;
 	LocalVector<Vertex *> original_vertices;
 	int32_t merge_stamp = 0;
-	int32_t min_axis = 0;
-	int32_t med_axis = 0;
-	int32_t max_axis = 0;
+	Vector3::Axis min_axis = Vector3::Axis::AXIS_X;
+	Vector3::Axis med_axis = Vector3::Axis::AXIS_X;
+	Vector3::Axis max_axis = Vector3::Axis::AXIS_X;
 	int32_t used_edge_pairs = 0;
 	int32_t max_used_edge_pairs = 0;
 
 	static Orientation get_orientation(const Edge *p_prev, const Edge *p_next, const Point32 &p_s, const Point32 &p_t);
 	Edge *find_max_angle(bool p_ccw, const Vertex *p_start, const Point32 &p_s, const Point64 &p_rxs, const Point64 &p_ssxrxs, Rational64 &p_min_cot);
-	void find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, Vertex *p_stop0, Vertex *p_stop1);
+	void find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, const Vertex *p_stop0, const Vertex *p_stop1);
 
 	Edge *new_edge_pair(Vertex *p_from, Vertex *p_to);
 
@@ -665,7 +667,7 @@ public:
 		face_pool.reset(true);
 	}
 
-	Vertex *vertex_list;
+	Vertex *vertex_list = nullptr;
 
 	void compute(const Vector3 *p_coords, int32_t p_count);
 
@@ -1039,7 +1041,7 @@ void ConvexHullInternal::compute_internal(int32_t p_start, int32_t p_end, Interm
 
 				return;
 			}
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case 1: {
 			Vertex *v = original_vertices[p_start];
@@ -1188,7 +1190,7 @@ ConvexHullInternal::Edge *ConvexHullInternal::find_max_angle(bool p_ccw, const V
 	return min_edge;
 }
 
-void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, Vertex *p_stop0, Vertex *p_stop1) {
+void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, const Vertex *p_stop0, const Vertex *p_stop1) {
 	Edge *start0 = p_e0;
 	Edge *start1 = p_e1;
 	Point32 et0 = start0 ? start0->target->point : p_c0->point;
@@ -1584,12 +1586,12 @@ void ConvexHullInternal::compute(const Vector3 *p_coords, int32_t p_count) {
 	}
 
 	Vector3 s = aabb.size;
-	max_axis = s.max_axis();
-	min_axis = s.min_axis();
+	max_axis = s.max_axis_index();
+	min_axis = s.min_axis_index();
 	if (min_axis == max_axis) {
-		min_axis = (max_axis + 1) % 3;
+		min_axis = Vector3::Axis((max_axis + 1) % 3);
 	}
-	med_axis = 3 - max_axis - min_axis;
+	med_axis = Vector3::Axis(3 - max_axis - min_axis);
 
 	s /= real_t(10216);
 	if (((med_axis + 1) % 3) != max_axis) {
@@ -1687,7 +1689,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 
 	while (stack.size() > 0) {
 		Vertex *v = stack[stack.size() - 1];
-		stack.remove(stack.size() - 1);
+		stack.remove_at(stack.size() - 1);
 		Edge *e = v->edges;
 		if (e) {
 			do {
@@ -2128,7 +2130,7 @@ bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<V
 	printf("Needed %d iterations to remove part\n", n);
 #endif
 
-	p_stack.resize(0);
+	p_stack.clear();
 	p_face->origin = shifted_origin;
 
 	return true;
@@ -2166,9 +2168,9 @@ real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, rea
 		return shift;
 	}
 
-	vertices.resize(0);
-	edges.resize(0);
-	faces.resize(0);
+	vertices.clear();
+	edges.clear();
+	faces.clear();
 
 	LocalVector<ConvexHullInternal::Vertex *> old_vertices;
 	get_vertex_copy(hull.vertex_list, old_vertices);
@@ -2239,39 +2241,73 @@ real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, rea
 	return shift;
 }
 
-Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh) {
-	return convex_hull(p_points.ptr(), p_points.size(), r_mesh);
-}
+Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_mesh) {
+	r_mesh = Geometry3D::MeshData(); // clear
 
-Error ConvexHullComputer::convex_hull(const PoolVector<Vector3> &p_points, Geometry::MeshData &r_mesh) {
-	return convex_hull(p_points.read().ptr(), p_points.size(), r_mesh);
-}
-
-Error ConvexHullComputer::convex_hull(const Vector3 *p_points, int32_t p_point_count, Geometry::MeshData &r_mesh) {
-	r_mesh = Geometry::MeshData(); // clear
-
-	if (p_point_count == 0) {
+	if (p_points.size() == 0) {
 		return FAILED; // matches QuickHull
 	}
 
 	ConvexHullComputer ch;
-	ch.compute(p_points, p_point_count, -1.0, -1.0);
+	ch.compute(p_points.ptr(), p_points.size(), -1.0, -1.0);
 
 	r_mesh.vertices = ch.vertices;
 
+	// Tag which face each edge belongs to
+	LocalVector<int32_t> edge_faces;
+	edge_faces.resize(ch.edges.size());
+
+	for (uint32_t i = 0; i < ch.edges.size(); i++) {
+		edge_faces[i] = -1;
+	}
+
+	for (uint32_t i = 0; i < ch.faces.size(); i++) {
+		const Edge *e_start = &ch.edges[ch.faces[i]];
+		const Edge *e = e_start;
+		do {
+			int64_t ofs = e - ch.edges.ptr();
+			edge_faces[ofs] = i;
+
+			e = e->get_next_edge_of_face();
+		} while (e != e_start);
+	}
+
 	// Copy the edges over. There's two "half-edges" for every edge, so we pick only one of them.
 	r_mesh.edges.resize(ch.edges.size() / 2);
+	OAHashMap<uint64_t, int32_t> edge_map(ch.edges.size() * 4); // The higher the capacity, the faster the insert
+
 	uint32_t edges_copied = 0;
 	for (uint32_t i = 0; i < ch.edges.size(); i++) {
+		ERR_CONTINUE(edge_faces[i] == -1); // Sanity check
+
 		uint32_t a = (&ch.edges[i])->get_source_vertex();
 		uint32_t b = (&ch.edges[i])->get_target_vertex();
 		if (a < b) { // Copy only the "canonical" edge. For the reverse edge, this will be false.
 			ERR_BREAK(edges_copied >= (uint32_t)r_mesh.edges.size());
-			r_mesh.edges.write[edges_copied].a = a;
-			r_mesh.edges.write[edges_copied].b = b;
+			r_mesh.edges[edges_copied].vertex_a = a;
+			r_mesh.edges[edges_copied].vertex_b = b;
+			r_mesh.edges[edges_copied].face_a = edge_faces[i];
+			r_mesh.edges[edges_copied].face_b = -1;
+
+			uint64_t key = a;
+			key <<= 32;
+			key |= b;
+			edge_map.insert(key, edges_copied);
+
 			edges_copied++;
+		} else {
+			uint64_t key = b;
+			key <<= 32;
+			key |= a;
+			int32_t index;
+			if (!edge_map.lookup(key, index)) {
+				ERR_PRINT("Invalid edge");
+			} else {
+				r_mesh.edges[index].face_b = edge_faces[i];
+			}
 		}
 	}
+
 	if (edges_copied != (uint32_t)r_mesh.edges.size()) {
 		ERR_PRINT("Invalid edge count.");
 	}
@@ -2280,7 +2316,7 @@ Error ConvexHullComputer::convex_hull(const Vector3 *p_points, int32_t p_point_c
 	for (uint32_t i = 0; i < ch.faces.size(); i++) {
 		const Edge *e_start = &ch.edges[ch.faces[i]];
 		const Edge *e = e_start;
-		Geometry::MeshData::Face &face = r_mesh.faces.write[i];
+		Geometry3D::MeshData::Face &face = r_mesh.faces[i];
 
 		do {
 			face.indices.push_back(e->get_target_vertex());
@@ -2291,8 +2327,8 @@ Error ConvexHullComputer::convex_hull(const Vector3 *p_points, int32_t p_point_c
 		// reverse indices: Godot wants clockwise, but this is counter-clockwise
 		if (face.indices.size() > 2) {
 			// reverse all but the first index.
-			int *indices = face.indices.ptrw();
-			for (int c = 0; c < (face.indices.size() - 1) / 2; c++) {
+			int *indices = face.indices.ptr();
+			for (uint32_t c = 0; c < (face.indices.size() - 1) / 2; c++) {
 				SWAP(indices[c + 1], indices[face.indices.size() - 1 - c]);
 			}
 		}

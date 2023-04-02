@@ -32,13 +32,22 @@
 
 #include "image_loader_tga.h"
 
-static ImageLoaderTGA *image_loader_tga = nullptr;
+static Ref<ImageLoaderTGA> image_loader_tga;
 
-void register_tga_types() {
-	image_loader_tga = memnew(ImageLoaderTGA);
+void initialize_tga_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
+	image_loader_tga.instantiate();
 	ImageLoader::add_image_format_loader(image_loader_tga);
 }
 
-void unregister_tga_types() {
-	memdelete(image_loader_tga);
+void uninitialize_tga_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
+	ImageLoader::remove_image_format_loader(image_loader_tga);
+	image_loader_tga.unref();
 }

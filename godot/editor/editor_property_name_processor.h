@@ -38,8 +38,9 @@ class EditorPropertyNameProcessor : public Node {
 
 	static EditorPropertyNameProcessor *singleton;
 
-	mutable Map<String, String> capitalize_string_cache;
-	Map<String, String> capitalize_string_remaps;
+	mutable HashMap<String, String> capitalize_string_cache;
+	HashMap<String, String> capitalize_string_remaps;
+	LocalVector<String> stop_words; // Exceptions that shouldn't be capitalized.
 
 	// Capitalizes property path segments.
 	String _capitalize_name(const String &p_name) const;
@@ -62,6 +63,9 @@ public:
 
 	// Turns property path segment into the given style.
 	String process_name(const String &p_name, Style p_style) const;
+
+	// Translate plain text group names.
+	String translate_group_name(const String &p_name) const;
 
 	EditorPropertyNameProcessor();
 	~EditorPropertyNameProcessor();

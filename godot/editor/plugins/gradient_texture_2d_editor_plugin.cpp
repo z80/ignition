@@ -32,14 +32,14 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/separator.h"
 
 Point2 GradientTexture2DEditorRect::_get_handle_position(const Handle p_handle) {
 	// Get the handle's mouse position in pixels relative to offset.
-	const Vector2 percent = p_handle == HANDLE_FILL_FROM ? texture->get_fill_from() : texture->get_fill_to();
-	return Vector2(CLAMP(percent.x, 0, 1), CLAMP(percent.y, 0, 1)) * size;
+	return (p_handle == HANDLE_FILL_FROM ? texture->get_fill_from() : texture->get_fill_to()).clamp(Vector2(), Vector2(1, 1)) * size;
 }
 
 void GradientTexture2DEditorRect::_update_fill_position() {
@@ -48,29 +48,29 @@ void GradientTexture2DEditorRect::_update_fill_position() {
 	}
 
 	// Update the texture's fill_from/fill_to property based on mouse input.
-	Vector2 percent = (get_local_mouse_position() - offset) / size;
-	percent = Vector2(CLAMP(percent.x, 0, 1), CLAMP(percent.y, 0, 1));
+	Vector2 percent = ((get_local_mouse_position() - offset) / size).clamp(Vector2(), Vector2(1, 1));
 	if (snap_enabled) {
 		percent = (percent - Vector2(0.5, 0.5)).snapped(Vector2(snap_size, snap_size)) + Vector2(0.5, 0.5);
 	}
 
 	String property_name = handle == HANDLE_FILL_FROM ? "fill_from" : "fill_to";
 
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Set %s"), property_name), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_property(texture.ptr(), property_name, percent);
 	undo_redo->add_undo_property(texture.ptr(), property_name, handle == HANDLE_FILL_FROM ? texture->get_fill_from() : texture->get_fill_to());
 	undo_redo->commit_action();
 }
 
-void GradientTexture2DEditorRect::_gui_input(const Ref<InputEvent> &p_event) {
+void GradientTexture2DEditorRect::gui_input(const Ref<InputEvent> &p_event) {
 	// Grab/release handle.
 	const Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
 			Point2 mouse_position = mb->get_position() - offset;
-			if (Rect2(_get_handle_position(HANDLE_FILL_FROM).round() - handle_size / 2, handle_size).grow(2).has_point(mouse_position)) {
+			if (Rect2(_get_handle_position(HANDLE_FILL_FROM).round() - handle_size / 2, handle_size).has_point(mouse_position)) {
 				handle = HANDLE_FILL_FROM;
-			} else if (Rect2(_get_handle_position(HANDLE_FILL_TO).round() - handle_size / 2, handle_size).grow(2).has_point(mouse_position)) {
+			} else if (Rect2(_get_handle_position(HANDLE_FILL_TO).round() - handle_size / 2, handle_size).has_point(mouse_position)) {
 				handle = HANDLE_FILL_TO;
 			} else {
 				handle = HANDLE_NONE;
@@ -90,24 +90,24 @@ void GradientTexture2DEditorRect::_gui_input(const Ref<InputEvent> &p_event) {
 
 void GradientTexture2DEditorRect::set_texture(Ref<GradientTexture2D> &p_texture) {
 	texture = p_texture;
-	texture->connect("changed", this, "update");
+	texture->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 }
 
 void GradientTexture2DEditorRect::set_snap_enabled(bool p_snap_enabled) {
 	snap_enabled = p_snap_enabled;
-	update();
+	queue_redraw();
 }
 
 void GradientTexture2DEditorRect::set_snap_size(float p_snap_size) {
 	snap_size = p_snap_size;
-	update();
+	queue_redraw();
 }
 
 void GradientTexture2DEditorRect::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			checkerboard->set_texture(get_icon("GuiMiniCheckerboard", "EditorIcons"));
+			checkerboard->set_texture(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")));
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -115,26 +115,22 @@ void GradientTexture2DEditorRect::_notification(int p_what) {
 				return;
 			}
 
-			const Ref<Texture> fill_from_icon = get_icon("EditorPathSmoothHandle", "EditorIcons");
-			const Ref<Texture> fill_to_icon = get_icon("EditorPathSharpHandle", "EditorIcons");
+			const Ref<Texture2D> fill_from_icon = get_theme_icon(SNAME("EditorPathSmoothHandle"), SNAME("EditorIcons"));
+			const Ref<Texture2D> fill_to_icon = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
 			handle_size = fill_from_icon->get_size();
 
-			const int MAX_HEIGHT = 250 * EDSCALE;
 			Size2 rect_size = get_size();
 
 			// Get the size and position to draw the texture and handles at.
-			size = Size2(texture->get_width() * MAX_HEIGHT / texture->get_height(), MAX_HEIGHT);
-			if (size.width > rect_size.width) {
-				size.width = rect_size.width;
-				size.height = texture->get_height() * rect_size.width / texture->get_width();
-			}
-			offset = Point2(Math::round((rect_size.width - size.width) / 2), 0) + handle_size / 2;
-			set_custom_minimum_size(Size2(0, size.height));
-			size -= handle_size;
-			checkerboard->set_position(offset);
-			checkerboard->set_size(size);
+			// Subtract handle sizes so they stay inside the preview, but keep the texture's aspect ratio.
+			Size2 available_size = rect_size - handle_size;
+			Size2 ratio = available_size / texture->get_size();
+			size = MIN(ratio.x, ratio.y) * texture->get_size();
+			offset = ((rect_size - size) / 2).round();
 
-			draw_set_transform(offset, 0.0, Size2(1.0, 1.0));
+			checkerboard->set_rect(Rect2(offset, size));
+
+			draw_set_transform(offset);
 			draw_texture_rect(texture, Rect2(Point2(), size));
 
 			// Draw grid snap lines.
@@ -179,22 +175,20 @@ void GradientTexture2DEditorRect::_notification(int p_what) {
 	}
 }
 
-void GradientTexture2DEditorRect::_bind_methods() {
-	ClassDB::bind_method("_gui_input", &GradientTexture2DEditorRect::_gui_input);
-}
-
 GradientTexture2DEditorRect::GradientTexture2DEditorRect() {
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
-
 	checkerboard = memnew(TextureRect);
 	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
+	checkerboard->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	checkerboard->set_draw_behind_parent(true);
-	add_child(checkerboard);
+	add_child(checkerboard, false, INTERNAL_MODE_FRONT);
+
+	set_custom_minimum_size(Size2(0, 250 * EDSCALE));
 }
 
 ///////////////////////
 
 void GradientTexture2DEditor::_reverse_button_pressed() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Swap GradientTexture2D Fill Points"));
 	undo_redo->add_do_property(texture.ptr(), "fill_from", texture->get_fill_to());
 	undo_redo->add_do_property(texture.ptr(), "fill_to", texture->get_fill_from());
@@ -222,36 +216,28 @@ void GradientTexture2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			reverse_button->set_icon(get_icon("ReverseGradient", "EditorIcons"));
-			snap_button->set_icon(get_icon("SnapGrid", "EditorIcons"));
+			reverse_button->set_icon(get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons")));
+			snap_button->set_icon(get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
 		} break;
 	}
 }
 
-void GradientTexture2DEditor::_bind_methods() {
-	ClassDB::bind_method("_reverse_button_pressed", &GradientTexture2DEditor::_reverse_button_pressed);
-	ClassDB::bind_method("_set_snap_enabled", &GradientTexture2DEditor::_set_snap_enabled);
-	ClassDB::bind_method("_set_snap_size", &GradientTexture2DEditor::_set_snap_size);
-}
-
 GradientTexture2DEditor::GradientTexture2DEditor() {
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
-
 	HFlowContainer *toolbar = memnew(HFlowContainer);
 	add_child(toolbar);
 
 	reverse_button = memnew(Button);
-	reverse_button->set_tooltip(TTR("Swap Gradient Fill Points"));
+	reverse_button->set_tooltip_text(TTR("Swap Gradient Fill Points"));
 	toolbar->add_child(reverse_button);
-	reverse_button->connect("pressed", this, "_reverse_button_pressed");
+	reverse_button->connect("pressed", callable_mp(this, &GradientTexture2DEditor::_reverse_button_pressed));
 
 	toolbar->add_child(memnew(VSeparator));
 
 	snap_button = memnew(Button);
-	snap_button->set_tooltip(TTR("Toggle Grid Snap"));
+	snap_button->set_tooltip_text(TTR("Toggle Grid Snap"));
 	snap_button->set_toggle_mode(true);
 	toolbar->add_child(snap_button);
-	snap_button->connect("toggled", this, "_set_snap_enabled");
+	snap_button->connect("toggled", callable_mp(this, &GradientTexture2DEditor::_set_snap_enabled));
 
 	snap_size_edit = memnew(EditorSpinSlider);
 	snap_size_edit->set_min(0.01);
@@ -260,7 +246,7 @@ GradientTexture2DEditor::GradientTexture2DEditor() {
 	snap_size_edit->set_value(0.1);
 	snap_size_edit->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 	toolbar->add_child(snap_size_edit);
-	snap_size_edit->connect("value_changed", this, "_set_snap_size");
+	snap_size_edit->connect("value_changed", callable_mp(this, &GradientTexture2DEditor::_set_snap_size));
 
 	texture_editor_rect = memnew(GradientTexture2DEditorRect);
 	add_child(texture_editor_rect);
@@ -290,8 +276,8 @@ void EditorInspectorPluginGradientTexture2D::parse_begin(Object *p_object) {
 
 ///////////////////////
 
-GradientTexture2DEditorPlugin::GradientTexture2DEditorPlugin(EditorNode *p_node) {
+GradientTexture2DEditorPlugin::GradientTexture2DEditorPlugin() {
 	Ref<EditorInspectorPluginGradientTexture2D> plugin;
-	plugin.instance();
+	plugin.instantiate();
 	add_inspector_plugin(plugin);
 }

@@ -31,11 +31,11 @@
 #ifndef ANDROID_GRADLE_EXPORT_UTIL_H
 #define ANDROID_GRADLE_EXPORT_UTIL_H
 
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/zip_io.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "editor/editor_export.h"
+#include "editor/export/editor_export.h"
 
 const String godot_project_name_xml_string = R"(<?xml version="1.0" encoding="utf-8"?>
 <!--WARNING: THIS FILE WILL BE OVERWRITTEN AT BUILD TIME-->
@@ -44,11 +44,22 @@ const String godot_project_name_xml_string = R"(<?xml version="1.0" encoding="ut
 </resources>
 )";
 
+// Application category.
+// See https://developer.android.com/guide/topics/manifest/application-element#appCategory for standards
+static const int APP_CATEGORY_ACCESSIBILITY = 0;
+static const int APP_CATEGORY_AUDIO = 1;
+static const int APP_CATEGORY_GAME = 2;
+static const int APP_CATEGORY_IMAGE = 3;
+static const int APP_CATEGORY_MAPS = 4;
+static const int APP_CATEGORY_NEWS = 5;
+static const int APP_CATEGORY_PRODUCTIVITY = 6;
+static const int APP_CATEGORY_SOCIAL = 7;
+static const int APP_CATEGORY_VIDEO = 8;
+
 // Supported XR modes.
 // This should match the entries in 'platform/android/java/lib/src/org/godotengine/godot/xr/XRMode.java'
 static const int XR_MODE_REGULAR = 0;
-static const int XR_MODE_OVR = 1;
-static const int XR_MODE_OPENXR = 2;
+static const int XR_MODE_OPENXR = 1;
 
 // Supported XR hand tracking modes.
 static const int XR_HAND_TRACKING_NONE = 0;
@@ -70,9 +81,13 @@ struct CustomExportData {
 	Vector<String> libs;
 };
 
-int _get_android_orientation_value(OS::ScreenOrientation screen_orientation);
+int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation);
 
-String _get_android_orientation_label(OS::ScreenOrientation screen_orientation);
+String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_orientation);
+
+int _get_app_category_value(int category_index);
+
+String _get_app_category_label(int category_index);
 
 // Utility method used to create a directory.
 Error create_directory(const String &p_dir);
@@ -89,8 +104,8 @@ Error store_string_at_path(const String &p_path, const String &p_data);
 // This method will only be called as an input to export_project_files.
 // It is used by the export_project_files method to save all the asset files into the gradle project.
 // It's functionality mirrors that of the method save_apk_file.
-// This method will be called ONLY when custom build is enabled.
-Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total);
+// This method will be called ONLY when gradle build is enabled.
+Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 
 // Creates strings.xml files inside the gradle project for different locales.
 Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name);
@@ -101,9 +116,9 @@ String _get_gles_tag();
 
 String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset);
 
-String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset);
+String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_vulkan);
 
-String _get_activity_tag(const Ref<EditorExportPreset> &p_preset);
+String _get_activity_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_xr);
 
 String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission);
 

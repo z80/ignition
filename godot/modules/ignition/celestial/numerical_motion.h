@@ -4,7 +4,7 @@
 
 #include "se3.h"
 #include "celestial_consts.h"
-#include "core/dictionary.h"
+#include "core/variant/dictionary.h"
 
 namespace Ign
 {

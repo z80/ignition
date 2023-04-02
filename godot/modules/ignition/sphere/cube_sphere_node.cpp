@@ -5,7 +5,7 @@
 #include "height_source.h"
 #include "se3_ref.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 
 namespace Ign
 {
@@ -72,22 +72,22 @@ static SE3 compute_poi_relative_to_center( CubeSphere * s, const SE3 & center_re
 void CubeSphereNode::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_radius", "r"), &CubeSphereNode::set_radius );
-	ClassDB::bind_method( D_METHOD("get_radius" ),     &CubeSphereNode::get_radius, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_radius" ),     &CubeSphereNode::get_radius );
 
 	ClassDB::bind_method( D_METHOD("set_height", "h"), &CubeSphereNode::set_height );
-	ClassDB::bind_method( D_METHOD("get_height" ),     &CubeSphereNode::get_height, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_height" ),     &CubeSphereNode::get_height );
 
 	ClassDB::bind_method( D_METHOD("set_height_source", "height_source"), &CubeSphereNode::set_height_source );
-    ClassDB::bind_method( D_METHOD("get_height_source"),                  &CubeSphereNode::get_height_source, Variant::OBJECT );
+    ClassDB::bind_method( D_METHOD("get_height_source"),                  &CubeSphereNode::get_height_source );
 
 	ClassDB::bind_method( D_METHOD("clear_levels"), &CubeSphereNode::clear_levels);
 	ClassDB::bind_method( D_METHOD("add_level", "sz", "dist"), &CubeSphereNode::add_level);
 
-    ClassDB::bind_method( D_METHOD("collision_triangles", "ref_frame", "subdivide_source", "dist"), &CubeSphereNode::collision_triangles, Variant::POOL_VECTOR3_ARRAY );
+    ClassDB::bind_method( D_METHOD("collision_triangles", "ref_frame", "subdivide_source", "dist"), &CubeSphereNode::collision_triangles );
 
-    ClassDB::bind_method( D_METHOD("content_cells", "origin", "cell_size", "dist"), &CubeSphereNode::content_cells, Variant::ARRAY );
-    ClassDB::bind_method( D_METHOD("local_se3", "cell_ind", "unit_at", "true_surface_normal"), &CubeSphereNode::local_se3, Variant::OBJECT );
-    ClassDB::bind_method( D_METHOD("surface_se3", "unit_at", "height"), &CubeSphereNode::surface_se3, Variant::OBJECT );
+    ClassDB::bind_method( D_METHOD("content_cells", "origin", "cell_size", "dist"), &CubeSphereNode::content_cells );
+    ClassDB::bind_method( D_METHOD("local_se3", "cell_ind", "unit_at", "true_surface_normal"), &CubeSphereNode::local_se3 );
+    ClassDB::bind_method( D_METHOD("surface_se3", "unit_at", "height"), &CubeSphereNode::surface_se3 );
 
 
 
@@ -95,13 +95,13 @@ void CubeSphereNode::_bind_methods()
     //ClassDB::bind_method( D_METHOD("get_distance_scaler"), &CubeSphereNode::get_distance_scaler, Variant::OBJECT );
 
     ClassDB::bind_method( D_METHOD("set_apply_scale", "en"), &CubeSphereNode::set_apply_scale );
-    ClassDB::bind_method( D_METHOD("get_apply_scale"), &CubeSphereNode::get_apply_scale, Variant::BOOL );
+    ClassDB::bind_method( D_METHOD("get_apply_scale"), &CubeSphereNode::get_apply_scale );
 
     //ClassDB::bind_method( D_METHOD("set_scale_mode_distance", "radie"), &CubeSphereNode::set_scale_mode_distance );
     //ClassDB::bind_method( D_METHOD("get_scale_mode_distance"), &CubeSphereNode::get_scale_mode_distance, Variant::REAL );
 
     ClassDB::bind_method( D_METHOD("set_convert_to_global", "en"), &CubeSphereNode::set_convert_to_global );
-    ClassDB::bind_method( D_METHOD("get_convert_to_global"), &CubeSphereNode::get_convert_to_global, Variant::BOOL );
+    ClassDB::bind_method( D_METHOD("get_convert_to_global"), &CubeSphereNode::get_convert_to_global );
 
 
 
@@ -112,7 +112,7 @@ void CubeSphereNode::_bind_methods()
 
 
 	ClassDB::bind_method( D_METHOD("set_target_mesh", "path"), &CubeSphereNode::set_target_mesh);
-	ClassDB::bind_method( D_METHOD("get_target_mesh"),         &CubeSphereNode::get_target_mesh, Variant::NODE_PATH);
+	ClassDB::bind_method( D_METHOD("get_target_mesh"),         &CubeSphereNode::get_target_mesh );
 
 
 	ClassDB::bind_method( D_METHOD("subdivide_2", "player_rf", "subdivide_source_ref"), &CubeSphereNode::subdivide_2 );
@@ -121,8 +121,8 @@ void CubeSphereNode::_bind_methods()
 
 
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "height_source" ), "set_height_source", "get_height_source" );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ), "set_radius", "get_radius" );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ), "set_height", "get_height" );
+    ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "radius" ), "set_radius", "get_radius" );
+    ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "height" ), "set_height", "get_height" );
     //ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "distance_scaler" ), "set_distance_scaler", "get_distance_scaler" );
     ADD_PROPERTY( PropertyInfo( Variant::BOOL, "apply_scale" ), "set_apply_scale", "get_apply_scale" );
     //ADD_PROPERTY( PropertyInfo( Variant::REAL, "scale_mode_distance" ), "set_scale_mode_distance", "get_scale_mode_distance" );
@@ -187,10 +187,10 @@ void CubeSphereNode::add_level( real_t sz, real_t dist )
     sphere.add_level( sz, dist );
 }
 
-const PoolVector3Array & CubeSphereNode::collision_triangles( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref, real_t dist )
+const Array & CubeSphereNode::collision_triangles( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref, real_t dist )
 {
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( ref_frame );
-    PoolVector3Array & arr = collision_ret;
+    Array & arr = collision_ret;
 	if ( rf == nullptr )
 	{
 		arr.resize( 0 );
@@ -318,7 +318,7 @@ Ref<Se3Ref> CubeSphereNode::local_se3( int cell_ind, const Vector2 & unit_at, bo
     const Vector3d r_scaled = r_unit * (sphere.r() + h);
 
     Ref<Se3Ref> se3;
-    se3.instance();
+    se3.instantiate();
     se3.ptr()->se3.r_ = r_scaled;
 
     if ( true_surface_normal )
@@ -342,7 +342,7 @@ Ref<Se3Ref> CubeSphereNode::local_se3( int cell_ind, const Vector2 & unit_at, bo
 Ref<Se3Ref> CubeSphereNode::surface_se3( const Vector3 & unit_at, real_t height ) const
 {
     Ref<Se3Ref> se3;
-    se3.instance();
+    se3.instantiate();
 
     Vector3d at = unit_at;
     at.Normalize();
@@ -487,7 +487,7 @@ void CubeSphereNode::apply_visual_mesh()
 	Ref<ArrayMesh> am = memnew(ArrayMesh);
 	am->add_surface_from_arrays( Mesh::PRIMITIVE_TRIANGLES, arrays );
 
-	MeshInstance * mi = get_mesh_instance();
+	MeshInstance3D * mi = get_mesh_instance();
 	mi->set_mesh( am );
 }
 
@@ -521,7 +521,7 @@ void CubeSphereNode::apply_visual_mesh()
 //
 //void CubeSphereNode::adjust_pose( RefFrameNode * ref_frame, RefFrameNode * player_ctrl, const Ref<SubdivideSourceRef> & subdivide_source )
 //{
-//	MeshInstance * mi = get_mesh_instance();
+//	MeshInstance3D * mi = get_mesh_instance();
 //	if ( mi == nullptr )
 //		return;
 //	SubdivideSource * ss = const_cast<SubdivideSource *>( &(subdivide_source->subdivide_source) );
@@ -540,7 +540,7 @@ void CubeSphereNode::apply_visual_mesh()
 //        se3 = to_global * se3;
 //    }
 //    // Here it should be distance scale.
-//    const Transform t = se3.transform();
+//    const Transform3D t = se3.transform();
 //    mi->set_transform( t );
 //}
 
@@ -655,12 +655,12 @@ void CubeSphereNode::init_levels()
 //    }
 //}
 
-MeshInstance * CubeSphereNode::get_mesh_instance()
+MeshInstance3D * CubeSphereNode::get_mesh_instance()
 {
 	Node * node_mesh = get_node( target_path );
 	if ( node_mesh == nullptr )
 		return nullptr;
-	MeshInstance * mi = Node::cast_to<MeshInstance>(node_mesh);
+	MeshInstance3D * mi = Node::cast_to<MeshInstance3D>(node_mesh);
 	return mi;
 }
 
@@ -705,14 +705,14 @@ void CubeSphereNode::_apply_heightmap_2( const Ref<HeightSourceRef> & hs )
 
 void CubeSphereNode::_apply_scale_2( RefFrameNode * player_rf, Node * camera_node, Ref<DistanceScalerRef> scaler )
 {
-	Spatial * c = (camera_node != nullptr) ? Node::cast_to<Spatial>( camera_node ) : nullptr;
+	Node3D * c = (camera_node != nullptr) ? Node::cast_to<Node3D>( camera_node ) : nullptr;
 	SE3 camera_se3;
 	if ( c != nullptr )
 	{
-		const Transform camera_t = c->get_global_transform();
+		const Transform3D camera_t = c->get_global_transform();
 		const Vector3 r = camera_t.origin;
 		camera_se3.r_ = Vector3d( r.x, r.y, r.z );
-		const Quat q = camera_t.basis.get_rotation_quat();
+		const Quaternion q = camera_t.basis.get_rotation_quaternion();
 		camera_se3.q_ = q;
 	}
 	if ( _convert_to_global )

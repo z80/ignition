@@ -31,47 +31,37 @@
 #ifndef RICH_TEXT_LABEL_H
 #define RICH_TEXT_LABEL_H
 
+#include "core/object/worker_thread_pool.h"
 #include "rich_text_effect.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/resources/text_paragraph.h"
 
 class RichTextLabel : public Control {
 	GDCLASS(RichTextLabel, Control);
 
 public:
-	enum Align {
-
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT,
-		ALIGN_FILL
-	};
-
-	enum InlineAlign {
-
-		INLINE_ALIGN_TOP,
-		INLINE_ALIGN_CENTER,
-		INLINE_ALIGN_BASELINE,
-		INLINE_ALIGN_BOTTOM
-	};
-
 	enum ListType {
-
 		LIST_NUMBERS,
 		LIST_LETTERS,
+		LIST_ROMAN,
 		LIST_DOTS
 	};
 
 	enum ItemType {
-
 		ITEM_FRAME,
 		ITEM_TEXT,
 		ITEM_IMAGE,
 		ITEM_NEWLINE,
 		ITEM_FONT,
+		ITEM_FONT_SIZE,
+		ITEM_FONT_FEATURES,
 		ITEM_COLOR,
+		ITEM_OUTLINE_SIZE,
+		ITEM_OUTLINE_COLOR,
 		ITEM_UNDERLINE,
 		ITEM_STRIKETHROUGH,
-		ITEM_ALIGN,
+		ITEM_PARAGRAPH,
 		ITEM_INDENT,
 		ITEM_LIST,
 		ITEM_TABLE,
@@ -80,42 +70,64 @@ public:
 		ITEM_WAVE,
 		ITEM_TORNADO,
 		ITEM_RAINBOW,
+		ITEM_BGCOLOR,
+		ITEM_FGCOLOR,
 		ITEM_META,
+		ITEM_HINT,
+		ITEM_DROPCAP,
 		ITEM_CUSTOMFX
 	};
 
+	enum MenuItems {
+		MENU_COPY,
+		MENU_SELECT_ALL,
+		MENU_MAX
+	};
+
+	enum DefaultFont {
+		NORMAL_FONT,
+		BOLD_FONT,
+		ITALICS_FONT,
+		BOLD_ITALICS_FONT,
+		MONO_FONT,
+		CUSTOM_FONT,
+	};
+
 protected:
+	virtual void _update_theme_item_cache() override;
+	void _notification(int p_what);
 	static void _bind_methods();
 
 private:
 	struct Item;
 
 	struct Line {
-		Item *from;
-		Vector<int> offset_caches;
-		Vector<int> height_caches;
-		Vector<int> ascent_caches;
-		Vector<int> descent_caches;
-		Vector<int> space_caches;
-		int height_cache;
-		int height_accum_cache;
-		int char_count;
-		int minimum_width;
-		int maximum_width;
+		Item *from = nullptr;
 
-		Line() {
-			from = nullptr;
-			char_count = 0;
+		Ref<TextParagraph> text_buf;
+		Color dc_color;
+		int dc_ol_size = 0;
+		Color dc_ol_color;
+
+		Vector2 offset;
+		int char_offset = 0;
+		int char_count = 0;
+
+		Line() { text_buf.instantiate(); }
+
+		_FORCE_INLINE_ float get_height(float line_separation) const {
+			return offset.y + text_buf->get_size().y + text_buf->get_line_count() * line_separation;
 		}
 	};
 
 	struct Item {
-		int index;
-		Item *parent;
-		ItemType type;
+		int index = 0;
+		int char_ofs = 0;
+		Item *parent = nullptr;
+		ItemType type = ITEM_FRAME;
 		List<Item *> subitems;
-		List<Item *>::Element *E;
-		int line;
+		List<Item *>::Element *E = nullptr;
+		int line = 0;
 
 		void _clear_children() {
 			while (subitems.size()) {
@@ -124,26 +136,31 @@ private:
 			}
 		}
 
-		Item() {
-			parent = nullptr;
-			E = nullptr;
-			line = 0;
-		}
 		virtual ~Item() { _clear_children(); }
 	};
 
 	struct ItemFrame : public Item {
-		int parent_line;
-		bool cell;
-		Vector<Line> lines;
-		int first_invalid_line;
-		ItemFrame *parent_frame;
+		bool cell = false;
+
+		LocalVector<Line> lines;
+		std::atomic<int> first_invalid_line;
+		std::atomic<int> first_invalid_font_line;
+		std::atomic<int> first_resized_line;
+
+		ItemFrame *parent_frame = nullptr;
+
+		Color odd_row_bg = Color(0, 0, 0, 0);
+		Color even_row_bg = Color(0, 0, 0, 0);
+		Color border = Color(0, 0, 0, 0);
+		Size2 min_size_over = Size2(-1, -1);
+		Size2 max_size_over = Size2(-1, -1);
+		Rect2 padding;
 
 		ItemFrame() {
 			type = ITEM_FRAME;
-			parent_frame = nullptr;
-			cell = false;
-			parent_line = 0;
+			first_invalid_line.store(0);
+			first_invalid_font_line.store(0);
+			first_resized_line.store(0);
 		}
 	};
 
@@ -152,24 +169,52 @@ private:
 		ItemText() { type = ITEM_TEXT; }
 	};
 
+	struct ItemDropcap : public Item {
+		String text;
+		Ref<Font> font;
+		int font_size = 0;
+		Color color;
+		int ol_size = 0;
+		Color ol_color;
+		Rect2 dropcap_margins;
+		ItemDropcap() { type = ITEM_DROPCAP; }
+	};
+
 	struct ItemImage : public Item {
-		Ref<Texture> image;
+		Ref<Texture2D> image;
+		InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
 		Size2 size;
-		InlineAlign align;
-		ItemImage() {
-			type = ITEM_IMAGE;
-			align = INLINE_ALIGN_BASELINE;
-		}
+		Color color;
+		ItemImage() { type = ITEM_IMAGE; }
 	};
 
 	struct ItemFont : public Item {
+		DefaultFont def_font = CUSTOM_FONT;
 		Ref<Font> font;
+		bool variation = false;
+		bool def_size = false;
+		int font_size = 0;
 		ItemFont() { type = ITEM_FONT; }
+	};
+
+	struct ItemFontSize : public Item {
+		int font_size = 16;
+		ItemFontSize() { type = ITEM_FONT_SIZE; }
 	};
 
 	struct ItemColor : public Item {
 		Color color;
 		ItemColor() { type = ITEM_COLOR; }
+	};
+
+	struct ItemOutlineSize : public Item {
+		int outline_size = 0;
+		ItemOutlineSize() { type = ITEM_OUTLINE_SIZE; }
+	};
+
+	struct ItemOutlineColor : public Item {
+		Color color;
+		ItemOutlineColor() { type = ITEM_OUTLINE_COLOR; }
 	};
 
 	struct ItemUnderline : public Item {
@@ -185,18 +230,28 @@ private:
 		ItemMeta() { type = ITEM_META; }
 	};
 
-	struct ItemAlign : public Item {
-		Align align;
-		ItemAlign() { type = ITEM_ALIGN; }
+	struct ItemHint : public Item {
+		String description;
+		ItemHint() { type = ITEM_HINT; }
+	};
+
+	struct ItemParagraph : public Item {
+		HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
+		String language;
+		Control::TextDirection direction = Control::TEXT_DIRECTION_AUTO;
+		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
+		ItemParagraph() { type = ITEM_PARAGRAPH; }
 	};
 
 	struct ItemIndent : public Item {
-		int level;
+		int level = 0;
 		ItemIndent() { type = ITEM_INDENT; }
 	};
 
 	struct ItemList : public Item {
-		ListType list_type;
+		ListType list_type = LIST_DOTS;
+		bool capitalize = false;
+		int level = 0;
 		ItemList() { type = ITEM_LIST; }
 	};
 
@@ -206,95 +261,93 @@ private:
 
 	struct ItemTable : public Item {
 		struct Column {
-			bool expand;
-			int expand_ratio;
-			int min_width;
-			int max_width;
-			int width;
+			bool expand = false;
+			int expand_ratio = 0;
+			int min_width = 0;
+			int max_width = 0;
+			int width = 0;
 		};
 
-		Vector<Column> columns;
-		int total_width;
+		LocalVector<Column> columns;
+		LocalVector<float> rows;
+		LocalVector<float> rows_baseline;
+
+		int align_to_row = -1;
+		int total_width = 0;
+		int total_height = 0;
+		InlineAlignment inline_align = INLINE_ALIGNMENT_TOP;
 		ItemTable() { type = ITEM_TABLE; }
 	};
 
 	struct ItemFade : public Item {
-		int starting_index;
-		int length;
+		int starting_index = 0;
+		int length = 0;
 
 		ItemFade() { type = ITEM_FADE; }
 	};
 
 	struct ItemFX : public Item {
-		float elapsed_time;
-
-		ItemFX() {
-			elapsed_time = 0.0f;
-		}
+		double elapsed_time = 0.f;
+		bool connected = true;
 	};
 
 	struct ItemShake : public ItemFX {
-		int strength;
-		float rate;
-		uint64_t _current_rng;
-		uint64_t _previous_rng;
+		int strength = 0;
+		float rate = 0.0f;
+		uint64_t _current_rng = 0;
+		uint64_t _previous_rng = 0;
+		Vector2 prev_off;
 
-		ItemShake() {
-			strength = 0;
-			rate = 0.0f;
-			_current_rng = 0;
-			type = ITEM_SHAKE;
-		}
+		ItemShake() { type = ITEM_SHAKE; }
 
 		void reroll_random() {
 			_previous_rng = _current_rng;
 			_current_rng = Math::rand();
 		}
 
-		uint64_t offset_random(int index) {
-			return (_current_rng >> (index % 64)) |
-					(_current_rng << (64 - (index % 64)));
+		uint64_t offset_random(int p_index) {
+			return (_current_rng >> (p_index % 64)) |
+					(_current_rng << (64 - (p_index % 64)));
 		}
 
-		uint64_t offset_previous_random(int index) {
-			return (_previous_rng >> (index % 64)) |
-					(_previous_rng << (64 - (index % 64)));
+		uint64_t offset_previous_random(int p_index) {
+			return (_previous_rng >> (p_index % 64)) |
+					(_previous_rng << (64 - (p_index % 64)));
 		}
 	};
 
 	struct ItemWave : public ItemFX {
-		float frequency;
-		float amplitude;
+		float frequency = 1.0f;
+		float amplitude = 1.0f;
+		Vector2 prev_off;
 
-		ItemWave() {
-			frequency = 1.0f;
-			amplitude = 1.0f;
-			type = ITEM_WAVE;
-		}
+		ItemWave() { type = ITEM_WAVE; }
 	};
 
 	struct ItemTornado : public ItemFX {
-		float radius;
-		float frequency;
+		float radius = 1.0f;
+		float frequency = 1.0f;
+		Vector2 prev_off;
 
-		ItemTornado() {
-			radius = 1.0f;
-			frequency = 1.0f;
-			type = ITEM_TORNADO;
-		}
+		ItemTornado() { type = ITEM_TORNADO; }
 	};
 
 	struct ItemRainbow : public ItemFX {
-		float saturation;
-		float value;
-		float frequency;
+		float saturation = 0.8f;
+		float value = 0.8f;
+		float frequency = 1.0f;
 
-		ItemRainbow() {
-			saturation = 0.8f;
-			value = 0.8f;
-			frequency = 1.0f;
-			type = ITEM_RAINBOW;
-		}
+		ItemRainbow() { type = ITEM_RAINBOW; }
+	};
+
+	struct ItemBGColor : public Item {
+		Color color;
+		ItemBGColor() { type = ITEM_BGCOLOR; }
+	};
+
+	struct ItemFGColor : public Item {
+		Color color;
+		ItemFGColor() { type = ITEM_FGCOLOR; }
 	};
 
 	struct ItemCustomFX : public ItemFX {
@@ -303,8 +356,7 @@ private:
 
 		ItemCustomFX() {
 			type = ITEM_CUSTOMFX;
-
-			char_fx_transform.instance();
+			char_fx_transform.instantiate();
 		}
 
 		virtual ~ItemCustomFX() {
@@ -315,135 +367,248 @@ private:
 		}
 	};
 
-	ItemFrame *main;
-	Item *current;
-	ItemFrame *current_frame;
+	ItemFrame *main = nullptr;
+	Item *current = nullptr;
+	ItemFrame *current_frame = nullptr;
 
-	VScrollBar *vscroll;
+	WorkerThreadPool::TaskID task = WorkerThreadPool::INVALID_TASK_ID;
+	Mutex data_mutex;
+	bool threaded = false;
+	std::atomic<bool> stop_thread;
+	std::atomic<bool> updating;
+	std::atomic<double> loaded;
 
-	bool scroll_visible;
-	bool scroll_follow;
-	bool scroll_following;
-	bool scroll_active;
-	int scroll_w;
-	bool scroll_updated;
-	bool updating_scroll;
-	int current_idx;
-	int visible_line_count;
+	uint64_t loading_started = 0;
+	int progress_delay = 1000;
 
-	int tab_size;
-	bool underline_meta;
-	bool override_selected_font_color;
+	VScrollBar *vscroll = nullptr;
 
-	Align default_align;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_WORD_SMART;
 
-	ItemMeta *meta_hovering;
+	bool scroll_visible = false;
+	bool scroll_follow = false;
+	bool scroll_following = false;
+	bool scroll_active = true;
+	int scroll_w = 0;
+	bool scroll_updated = false;
+	bool updating_scroll = false;
+	int current_idx = 1;
+	int current_char_ofs = 0;
+	int visible_paragraph_count = 0;
+	int visible_line_count = 0;
+
+	int tab_size = 4;
+	bool underline_meta = true;
+	bool underline_hint = true;
+	bool use_selected_font_color = false;
+
+	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+
+	ItemMeta *meta_hovering = nullptr;
 	Variant current_meta;
 
-	Vector<Ref<RichTextEffect>> custom_effects;
+	Array custom_effects;
 
 	void _invalidate_current_line(ItemFrame *p_frame);
-	void _validate_line_caches(ItemFrame *p_frame);
+
+	void _thread_function(void *p_userdata);
+	void _thread_end();
+	void _stop_thread();
+	bool _validate_line_caches();
+	void _process_line_caches();
 
 	void _add_item(Item *p_item, bool p_enter = false, bool p_ensure_newline = false);
 	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
 
-	struct ProcessState {
-		int line_width;
-	};
-
-	enum ProcessMode {
-
-		PROCESS_CACHE,
-		PROCESS_DRAW,
-		PROCESS_POINTER
-	};
+	String language;
+	TextDirection text_direction = TEXT_DIRECTION_AUTO;
+	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
+	Array st_args;
 
 	struct Selection {
-		Item *click;
-		int click_char;
+		ItemFrame *click_frame = nullptr;
+		int click_line = 0;
+		Item *click_item = nullptr;
+		int click_char = 0;
 
-		Item *from;
-		int from_char;
-		Item *to;
-		int to_char;
+		ItemFrame *from_frame = nullptr;
+		int from_line = 0;
+		Item *from_item = nullptr;
+		int from_char = 0;
 
-		bool active; // anything selected? i.e. from, to, etc. valid?
-		bool enabled; // allow selections?
-		bool drag_attempt;
+		ItemFrame *to_frame = nullptr;
+		int to_line = 0;
+		Item *to_item = nullptr;
+		int to_char = 0;
+
+		bool active = false; // anything selected? i.e. from, to, etc. valid?
+		bool enabled = false; // allow selections?
+		bool drag_attempt = false;
 	};
 
 	Selection selection;
-	bool deselect_on_focus_loss_enabled;
+	bool deselect_on_focus_loss_enabled = true;
 
-	int visible_characters;
-	float percent_visible;
+	bool context_menu_enabled = false;
+	bool shortcut_keys_enabled = true;
+
+	// Context menu.
+	PopupMenu *menu = nullptr;
+	void _generate_context_menu();
+	void _update_context_menu();
+	Key _get_menu_action_accelerator(const String &p_action);
+
+	int visible_characters = -1;
+	float visible_ratio = 1.0;
+	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
 
 	bool _is_click_inside_selection() const;
-	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, int p_char_count = 0);
-	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
+	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, bool p_meta = false);
 
-	Ref<Font> _find_font(Item *p_item);
-	int _find_margin(Item *p_item, const Ref<Font> &p_base_font);
-	Align _find_align(Item *p_item);
+	String _get_line_text(ItemFrame *p_frame, int p_line, Selection p_sel) const;
+	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
+	bool _search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search);
+
+	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset);
+	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h);
+
+	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
+	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
+	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool p_table = false, bool p_meta = false);
+
+	String _roman(int p_num, bool p_capitalize) const;
+	String _letters(int p_num, bool p_capitalize) const;
+
+	Item *_find_indentable(Item *p_item);
+	Item *_get_item_at_pos(Item *p_item_from, Item *p_item_to, int p_position);
+	void _find_frame(Item *p_item, ItemFrame **r_frame, int *r_line);
+	ItemFontSize *_find_font_size(Item *p_item);
+	ItemFont *_find_font(Item *p_item);
+	int _find_outline_size(Item *p_item, int p_default);
+	ItemList *_find_list_item(Item *p_item);
+	ItemDropcap *_find_dc_item(Item *p_item);
+	int _find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list);
+	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
+	HorizontalAlignment _find_alignment(Item *p_item);
+	TextServer::Direction _find_direction(Item *p_item);
+	TextServer::StructuredTextParser _find_stt(Item *p_item);
+	String _find_language(Item *p_item);
 	Color _find_color(Item *p_item, const Color &p_default_color);
+	Color _find_outline_color(Item *p_item, const Color &p_default_color);
 	bool _find_underline(Item *p_item);
 	bool _find_strikethrough(Item *p_item);
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
+	bool _find_hint(Item *p_item, String *r_description);
+	Color _find_bgcolor(Item *p_item);
+	Color _find_fgcolor(Item *p_item);
 	bool _find_layout_subitem(Item *from, Item *to);
-	bool _find_by_type(Item *p_item, ItemType p_type);
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
 
-	void _update_scroll();
-	void _update_fx(ItemFrame *p_frame, float p_delta_time);
+	void _update_fx(ItemFrame *p_frame, double p_delta_time);
 	void _scroll_changed(double);
+	int _find_first_line(int p_from, int p_to, int p_vofs) const;
 
-	void _gui_input(Ref<InputEvent> p_event);
-	Item *_get_next_item(Item *p_item, bool p_free = false);
-	Item *_get_prev_item(Item *p_item, bool p_free = false);
+	_FORCE_INLINE_ float _calculate_line_vertical_offset(const Line &line) const;
+
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
+	Item *_get_next_item(Item *p_item, bool p_free = false) const;
+	Item *_get_prev_item(Item *p_item, bool p_free = false) const;
 
 	Rect2 _get_text_rect();
 	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
 	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
 
-	bool use_bbcode;
-	String bbcode;
+	void _draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item *it_from, Item *it_to, int start, int end, int fbg_flag);
+#ifndef DISABLE_DEPRECATED
+	// Kept for compatibility from 3.x to 4.0.
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif
+	bool use_bbcode = false;
+	String text;
 
-	int fixed_width;
+	bool fit_content = false;
 
-	bool fit_content_height;
+	struct ThemeCache {
+		Ref<StyleBox> normal_style;
+		Ref<StyleBox> focus_style;
+		Ref<StyleBox> progress_bg_style;
+		Ref<StyleBox> progress_fg_style;
 
-protected:
-	virtual void _validate_property(PropertyInfo &p_property) const;
-	void _notification(int p_what);
+		int line_separation;
+
+		Ref<Font> normal_font;
+		int normal_font_size;
+
+		Color default_color;
+		Color font_selected_color;
+		Color selection_color;
+		Color font_outline_color;
+		Color font_shadow_color;
+		int shadow_outline_size;
+		int shadow_offset_x;
+		int shadow_offset_y;
+		int outline_size;
+		Color outline_color;
+
+		Ref<Font> bold_font;
+		int bold_font_size;
+		Ref<Font> bold_italics_font;
+		int bold_italics_font_size;
+		Ref<Font> italics_font;
+		int italics_font_size;
+		Ref<Font> mono_font;
+		int mono_font_size;
+
+		int table_h_separation;
+		int table_v_separation;
+		Color table_odd_row_bg;
+		Color table_even_row_bg;
+		Color table_border;
+
+		float base_scale = 1.0;
+	} theme_cache;
 
 public:
-	String get_text();
+	String get_parsed_text() const;
 	void add_text(const String &p_text);
-	void add_image(const Ref<Texture> &p_image, const int p_width = 0, const int p_height = 0, RichTextLabel::InlineAlign p_align = INLINE_ALIGN_BASELINE);
+	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(0, 0, 0, 0));
 	void add_newline();
-	bool remove_line(const int p_line);
-	void push_font(const Ref<Font> &p_font);
+	bool remove_paragraph(const int p_paragraph);
+	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
+	void _push_def_font(DefaultFont p_def_font);
+	void _push_def_font_var(DefaultFont p_def_font, const Ref<Font> &p_font, int p_size = -1);
+	void push_font(const Ref<Font> &p_font, int p_size = 0);
+	void push_font_size(int p_font_size);
+	void push_outline_size(int p_font_size);
 	void push_normal();
 	void push_bold();
 	void push_bold_italics();
 	void push_italics();
 	void push_mono();
 	void push_color(const Color &p_color);
+	void push_outline_color(const Color &p_color);
 	void push_underline();
 	void push_strikethrough();
-	void push_align(Align p_align);
+	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT);
 	void push_indent(int p_level);
-	void push_list(ListType p_list);
+	void push_list(int p_level, ListType p_list, bool p_capitalize);
 	void push_meta(const Variant &p_meta);
-	void push_table(int p_columns);
+	void push_hint(const String &p_string);
+	void push_table(int p_columns, InlineAlignment p_alignment = INLINE_ALIGNMENT_TOP, int p_align_to_row = -1);
 	void push_fade(int p_start_index, int p_length);
-	void push_shake(int p_strength, float p_rate);
-	void push_wave(float p_frequency, float p_amplitude);
-	void push_tornado(float p_frequency, float p_radius);
+	void push_shake(int p_strength, float p_rate, bool p_connected);
+	void push_wave(float p_frequency, float p_amplitude, bool p_connected);
+	void push_tornado(float p_frequency, float p_radius, bool p_connected);
 	void push_rainbow(float p_saturation, float p_value, float p_frequency);
+	void push_bgcolor(const Color &p_color);
+	void push_fgcolor(const Color &p_color);
 	void push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment);
 	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
+	void set_cell_row_background_color(const Color &p_odd_row_bg, const Color &p_even_row_bg);
+	void set_cell_border_color(const Color &p_color);
+	void set_cell_size_override(const Size2 &p_min_size, const Size2 &p_max_size);
+	void set_cell_padding(const Rect2 &p_padding);
 	int get_current_table_column() const;
 	void push_cell();
 	void pop();
@@ -454,6 +619,9 @@ public:
 
 	void set_meta_underline(bool p_underline);
 	bool is_meta_underlined() const;
+
+	void set_hint_underline(bool p_underline);
+	bool is_hint_underlined() const;
 
 	void set_override_selected_font_color(bool p_override_selected_font_color);
 	bool is_overriding_selected_font_color() const;
@@ -467,63 +635,111 @@ public:
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
-	void set_fit_content_height(bool p_enabled);
-	bool is_fit_content_height_enabled() const;
+	void set_context_menu_enabled(bool p_enabled);
+	bool is_context_menu_enabled() const;
+
+	void set_shortcut_keys_enabled(bool p_enabled);
+	bool is_shortcut_keys_enabled() const;
+
+	void set_fit_content(bool p_enabled);
+	bool is_fit_content_enabled() const;
 
 	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
+
+	void scroll_to_paragraph(int p_paragraph);
+	int get_paragraph_count() const;
+	int get_visible_paragraph_count() const;
+
+	float get_line_offset(int p_line);
+	float get_paragraph_offset(int p_paragraph);
 
 	void scroll_to_line(int p_line);
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
 	int get_content_height() const;
+	int get_content_width() const;
 
-	VScrollBar *get_v_scroll() { return vscroll; }
+	void scroll_to_selection();
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
-	virtual Variant get_drag_data(const Point2 &p_point);
+	VScrollBar *get_v_scroll_bar() { return vscroll; }
+
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
+	virtual Variant get_drag_data(const Point2 &p_point) override;
 
 	void set_selection_enabled(bool p_enabled);
 	bool is_selection_enabled() const;
-	String get_selected_text();
+	int get_selection_from() const;
+	int get_selection_to() const;
+	String get_selected_text() const;
+	void select_all();
 	void selection_copy();
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
 	void deselect();
 
-	Error parse_bbcode(const String &p_bbcode);
-	Error append_bbcode(const String &p_bbcode);
+	bool is_ready() const;
+
+	void set_threaded(bool p_threaded);
+	bool is_threaded() const;
+
+	void set_progress_bar_delay(int p_delay_ms);
+	int get_progress_bar_delay() const;
+
+	// Context menu.
+	PopupMenu *get_menu() const;
+	bool is_menu_visible() const;
+	void menu_option(int p_option);
+
+	void parse_bbcode(const String &p_bbcode);
+	void append_text(const String &p_bbcode);
 
 	void set_use_bbcode(bool p_enable);
 	bool is_using_bbcode() const;
 
-	void set_bbcode(const String &p_bbcode);
-	String get_bbcode() const;
+	void set_text(const String &p_bbcode);
+	String get_text() const;
 
-	void set_text(const String &p_string);
+	void set_text_direction(TextDirection p_text_direction);
+	TextDirection get_text_direction() const;
+
+	void set_language(const String &p_language);
+	String get_language() const;
+
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
+
+	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
+
+	void set_structured_text_bidi_override_options(Array p_args);
+	Array get_structured_text_bidi_override_options() const;
 
 	void set_visible_characters(int p_visible);
 	int get_visible_characters() const;
+	int get_character_line(int p_char);
+	int get_character_paragraph(int p_char);
 	int get_total_character_count() const;
+	int get_total_glyph_count() const;
 
-	void set_percent_visible(float p_percent);
-	float get_percent_visible() const;
+	void set_visible_ratio(float p_ratio);
+	float get_visible_ratio() const;
 
-	void set_effects(const Vector<Variant> &effects);
-	Vector<Variant> get_effects();
+	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
+	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
+
+	void set_effects(Array p_effects);
+	Array get_effects();
 
 	void install_effect(const Variant effect);
 
-	void set_fixed_size_to_width(int p_width);
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
-	RichTextLabel();
+	RichTextLabel(const String &p_text = String());
 	~RichTextLabel();
 };
 
-VARIANT_ENUM_CAST(RichTextLabel::Align);
-VARIANT_ENUM_CAST(RichTextLabel::InlineAlign);
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
-VARIANT_ENUM_CAST(RichTextLabel::ItemType);
+VARIANT_ENUM_CAST(RichTextLabel::MenuItems);
 
 #endif // RICH_TEXT_LABEL_H

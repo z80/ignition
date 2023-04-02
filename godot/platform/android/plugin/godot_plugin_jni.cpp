@@ -30,9 +30,9 @@
 
 #include "godot_plugin_jni.h"
 
-#include <core/engine.h>
-#include <core/error_macros.h>
-#include <core/project_settings.h>
+#include <core/config/engine.h>
+#include <core/config/project_settings.h>
+#include <core/error/error_macros.h>
 #include <platform/android/api/jni_singleton.h>
 #include <platform/android/jni_utils.h>
 #include <platform/android/string_android.h>
@@ -43,7 +43,7 @@ extern "C" {
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject obj) {
 	String singname = jstring_to_string(name, env);
-	JNISingleton *s = (JNISingleton *)ClassDB::instance("JNISingleton");
+	JNISingleton *s = (JNISingleton *)ClassDB::instantiate("JNISingleton");
 	s->set_instance(env->NewGlobalRef(obj));
 	jni_singletons[singname] = s;
 
@@ -114,10 +114,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 	String signal_name = jstring_to_string(j_signal_name, env);
 
 	int count = env->GetArrayLength(j_signal_params);
-	ERR_FAIL_COND_MSG(count > VARIANT_ARG_MAX, "Maximum argument count exceeded!");
 
-	Variant variant_params[VARIANT_ARG_MAX];
-	const Variant *args[VARIANT_ARG_MAX];
+	Variant *variant_params = (Variant *)alloca(sizeof(Variant) * count);
+	const Variant **args = (const Variant **)alloca(sizeof(Variant *) * count);
 
 	for (int i = 0; i < count; i++) {
 		jobject j_param = env->GetObjectArrayElement(j_signal_params, i);
@@ -126,24 +125,24 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 		env->DeleteLocalRef(j_param);
 	}
 
-	singleton->emit_signal(signal_name, args, count);
+	singleton->emit_signalp(StringName(signal_name), args, count);
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDNativeLibraries(JNIEnv *env, jclass clazz, jobjectArray gdnlib_paths) {
-	int gdnlib_count = env->GetArrayLength(gdnlib_paths);
-	if (gdnlib_count == 0) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDExtensionLibraries(JNIEnv *env, jclass clazz, jobjectArray gdextension_paths) {
+	int gdextension_count = env->GetArrayLength(gdextension_paths);
+	if (gdextension_count == 0) {
 		return;
 	}
 
-	// Retrieve the current list of gdnative libraries.
-	Array singletons = Array();
-	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons")) {
-		singletons = ProjectSettings::get_singleton()->get("gdnative/singletons");
+	// Retrieve the current list of gdextension libraries.
+	Array singletons;
+	if (ProjectSettings::get_singleton()->has_setting("gdextension/singletons")) {
+		singletons = GLOBAL_GET("gdextension/singletons");
 	}
 
 	// Insert the libraries provided by the plugin
-	for (int i = 0; i < gdnlib_count; i++) {
-		jstring relative_path = (jstring)env->GetObjectArrayElement(gdnlib_paths, i);
+	for (int i = 0; i < gdextension_count; i++) {
+		jstring relative_path = (jstring)env->GetObjectArrayElement(gdextension_paths, i);
 
 		String path = "res://" + jstring_to_string(relative_path, env);
 		if (!singletons.has(path)) {
@@ -153,6 +152,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	}
 
 	// Insert the updated list back into project settings.
-	ProjectSettings::get_singleton()->set("gdnative/singletons", singletons);
+	ProjectSettings::get_singleton()->set("gdextension/singletons", singletons);
 }
 }

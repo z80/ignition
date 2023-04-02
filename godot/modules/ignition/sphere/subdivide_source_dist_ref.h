@@ -11,7 +11,7 @@ namespace Ign
 class SubdivideSourceDistRef: public SubdivideSourceRef
 {
     GDCLASS(SubdivideSourceDistRef, SubdivideSourceRef);
-    OBJ_CATEGORY("Ignition");
+    //OBJ_CATEGORY("Ignition");
 protected:
     static void _bind_methods();
 

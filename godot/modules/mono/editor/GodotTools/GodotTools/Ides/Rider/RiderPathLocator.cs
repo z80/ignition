@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using Godot;
-using JetBrains.Annotations;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Directory = System.IO.Directory;
@@ -33,7 +34,7 @@ namespace GodotTools.Ides.Rider
                 {
                     return CollectRiderInfosWindows();
                 }
-                if (OS.IsOSX)
+                if (OS.IsMacOS)
                 {
                     return CollectRiderInfosMac();
                 }
@@ -41,7 +42,7 @@ namespace GodotTools.Ides.Rider
                 {
                     return CollectAllRiderPathsLinux();
                 }
-                throw new Exception("Unexpected OS.");
+                throw new InvalidOperationException("Unexpected OS.");
             }
             catch (Exception e)
             {
@@ -113,6 +114,7 @@ namespace GodotTools.Ides.Rider
             return installInfos.ToArray();
         }
 
+        [SupportedOSPlatform("windows")]
         private static RiderInfo[] CollectRiderInfosWindows()
         {
             var installInfos = new List<RiderInfo>();
@@ -139,7 +141,7 @@ namespace GodotTools.Ides.Rider
                 return GetToolboxRiderRootPath(localAppData);
             }
 
-            if (OS.IsOSX)
+            if (OS.IsMacOS)
             {
                 var home = Environment.GetEnvironmentVariable("HOME");
                 if (string.IsNullOrEmpty(home))
@@ -212,11 +214,12 @@ namespace GodotTools.Ides.Rider
         {
             if (OS.IsWindows || OS.IsUnixLike)
                 return "../../build.txt";
-            if (OS.IsOSX)
+            if (OS.IsMacOS)
                 return "Contents/Resources/build.txt";
-            throw new Exception("Unknown OS.");
+            throw new InvalidOperationException("Unknown OS.");
         }
 
+        [SupportedOSPlatform("windows")]
         private static void CollectPathsFromRegistry(string registryKey, List<string> installPaths)
         {
             using (var key = Registry.CurrentUser.OpenSubKey(registryKey))
@@ -229,6 +232,7 @@ namespace GodotTools.Ides.Rider
             }
         }
 
+        [SupportedOSPlatform("windows")]
         private static void CollectPathsFromRegistry(List<string> installPaths, RegistryKey key)
         {
             if (key == null) return;
@@ -324,7 +328,7 @@ namespace GodotTools.Ides.Rider
         {
             public string install_location;
 
-            [CanBeNull]
+            [return: MaybeNull]
             public static string GetInstallLocationFromJson(string json)
             {
                 try
@@ -378,7 +382,7 @@ namespace GodotTools.Ides.Rider
             public string version;
             public string versionSuffix;
 
-            [CanBeNull]
+            [return: MaybeNull]
             internal static ProductInfo GetProductInfo(string json)
             {
                 try
@@ -402,7 +406,7 @@ namespace GodotTools.Ides.Rider
             // ReSharper disable once InconsistentNaming
             public ActiveApplication active_application;
 
-            [CanBeNull]
+            [return: MaybeNull]
             public static string GetLatestBuildFromJson(string json)
             {
                 try

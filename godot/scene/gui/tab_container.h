@@ -33,61 +33,88 @@
 
 #include "scene/gui/container.h"
 #include "scene/gui/popup.h"
+#include "scene/gui/tab_bar.h"
+
 class TabContainer : public Container {
 	GDCLASS(TabContainer, Container);
 
-public:
-	enum TabAlign {
-
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT
-	};
-
-private:
-	int first_tab_cache;
-	int tabs_ofs_cache;
-	int last_tab_cache;
-	int current;
-	int previous;
-	bool tabs_visible;
-	bool all_tabs_in_front;
-	bool buttons_visible_cache;
-	bool menu_hovered;
-	int highlight_arrow;
-	TabAlign align;
-	int _get_top_margin() const;
+	TabBar *tab_bar = nullptr;
+	bool tabs_visible = true;
+	bool all_tabs_in_front = false;
+	bool menu_hovered = false;
 	mutable ObjectID popup_obj_id;
-	bool drag_to_rearrange_enabled;
-	bool use_hidden_tabs_for_min_size;
-	int tabs_rearrange_group;
+	bool drag_to_rearrange_enabled = false;
+	bool use_hidden_tabs_for_min_size = false;
+	bool theme_changing = false;
+	Vector<Control *> children_removing;
 
-	Vector<Control *> _get_tabs() const;
-	int _get_tab_width(int p_index) const;
+	struct ThemeCache {
+		int side_margin = 0;
+
+		Ref<StyleBox> panel_style;
+		Ref<StyleBox> tabbar_style;
+
+		Ref<Texture2D> menu_icon;
+		Ref<Texture2D> menu_hl_icon;
+
+		// TabBar overrides.
+		int icon_separation = 0;
+		int outline_size = 0;
+
+		Ref<StyleBox> tab_unselected_style;
+		Ref<StyleBox> tab_selected_style;
+		Ref<StyleBox> tab_disabled_style;
+
+		Ref<Texture2D> increment_icon;
+		Ref<Texture2D> increment_hl_icon;
+		Ref<Texture2D> decrement_icon;
+		Ref<Texture2D> decrement_hl_icon;
+		Ref<Texture2D> drop_mark_icon;
+		Color drop_mark_color;
+
+		Color font_selected_color;
+		Color font_unselected_color;
+		Color font_disabled_color;
+		Color font_outline_color;
+
+		Ref<Font> tab_font;
+		int tab_font_size;
+	} theme_cache;
+
+	int _get_top_margin() const;
+	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
 	void _repaint();
+	void _refresh_tab_names();
+	void _update_margins();
 	void _on_mouse_exited();
-	void _update_current_tab();
-	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x);
+	void _on_tab_changed(int p_tab);
+	void _on_tab_selected(int p_tab);
+	void _on_tab_button_pressed(int p_tab);
+
+	Variant _get_drag_data_fw(const Point2 &p_point, Control *p_from_control);
+	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;
+	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control);
 
 protected:
-	void _child_renamed_callback();
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
-	virtual void add_child_notify(Node *p_child);
-	virtual void move_child_notify(Node *p_child);
-	virtual void remove_child_notify(Node *p_child);
-
-	Variant get_drag_data(const Point2 &p_point);
-	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
-	void drop_data(const Point2 &p_point, const Variant &p_data);
-	int get_tab_idx_at_point(const Point2 &p_point) const;
-
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void move_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
 	static void _bind_methods();
 
 public:
-	void set_tab_align(TabAlign p_align);
-	TabAlign get_tab_align() const;
+	int get_tab_idx_at_point(const Point2 &p_point) const;
+	int get_tab_idx_from_control(Control *p_child) const;
+
+	void set_tab_alignment(TabBar::AlignmentMode p_alignment);
+	TabBar::AlignmentMode get_tab_alignment() const;
+
+	void set_clip_tabs(bool p_clip_tabs);
+	bool get_clip_tabs() const;
 
 	void set_tabs_visible(bool p_visible);
 	bool are_tabs_visible() const;
@@ -98,14 +125,17 @@ public:
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
 
-	void set_tab_icon(int p_tab, const Ref<Texture> &p_icon);
-	Ref<Texture> get_tab_icon(int p_tab) const;
+	void set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_tab_icon(int p_tab) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
-	bool get_tab_disabled(int p_tab) const;
+	bool is_tab_disabled(int p_tab) const;
 
 	void set_tab_hidden(int p_tab, bool p_hidden);
-	bool get_tab_hidden(int p_tab) const;
+	bool is_tab_hidden(int p_tab) const;
+
+	void set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_tab_button_icon(int p_tab) const;
 
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
@@ -115,9 +145,7 @@ public:
 	Control *get_tab_control(int p_idx) const;
 	Control *get_current_tab_control() const;
 
-	virtual Size2 get_minimum_size() const;
-
-	virtual void get_translatable_strings(List<String> *p_strings) const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_popup(Node *p_popup);
 	Popup *get_popup() const;
@@ -129,9 +157,10 @@ public:
 	void set_use_hidden_tabs_for_min_size(bool p_use_hidden_tabs);
 	bool get_use_hidden_tabs_for_min_size() const;
 
+	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
+	virtual Vector<int> get_allowed_size_flags_vertical() const override;
+
 	TabContainer();
 };
-
-VARIANT_ENUM_CAST(TabContainer::TabAlign);
 
 #endif // TAB_CONTAINER_H

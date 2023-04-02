@@ -3,14 +3,14 @@
 #define __SE3_REF_H_
 
 #include "se3.h"
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
 namespace Ign
 {
 
-class Se3Ref: public Reference
+class Se3Ref: public RefCounted
 {
-    GDCLASS(Se3Ref, Reference);
+    GDCLASS(Se3Ref, RefCounted);
 protected:
     static void _bind_methods();
 
@@ -27,11 +27,11 @@ public:
     void set_w( const Vector3 & w );
     Vector3 get_w() const;
 
-    void set_q( const Quat & q );
-    Quat get_q() const;
+    void set_q( const Quaternion & q );
+    Quaternion get_q() const;
 
-    void set_transform( const Transform & t );
-    Transform get_transform() const;
+    void set_transform( const Transform3D & t );
+    Transform3D get_transform() const;
 
     void copy_from( const Ref<Se3Ref> & ref );
     void copy_r_from( const Ref<Se3Ref> & ref );

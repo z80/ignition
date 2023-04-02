@@ -315,31 +315,31 @@ void Iir2s::update_coeffs()
 void Iir2sRef::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("resize", "size"), &Iir2sRef::resize );
-	ClassDB::bind_method( D_METHOD("size" ),          &Iir2sRef::size, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("size" ),          &Iir2sRef::size );
 
-	ClassDB::bind_method( D_METHOD("apply", "v" ),    &Iir2sRef::apply, Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("apply", "v" ),    &Iir2sRef::apply );
 	ClassDB::bind_method( D_METHOD("reset_to", "v" ), &Iir2sRef::reset_to );
 
 	ClassDB::bind_method( D_METHOD("set_a0", "a0" ), &Iir2sRef::set_a0 );
-	ClassDB::bind_method( D_METHOD("get_a0" ),       &Iir2sRef::get_a0, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_a0" ),       &Iir2sRef::get_a0 );
 
 	ClassDB::bind_method( D_METHOD("set_a1", "a1" ), &Iir2sRef::set_a1 );
-	ClassDB::bind_method( D_METHOD("get_a1" ),       &Iir2sRef::get_a1, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_a1" ),       &Iir2sRef::get_a1 );
 
 	ClassDB::bind_method( D_METHOD("set_b0", "b0" ), &Iir2sRef::set_b0 );
-	ClassDB::bind_method( D_METHOD("get_b0" ),       &Iir2sRef::get_b0, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_b0" ),       &Iir2sRef::get_b0 );
 
 	ClassDB::bind_method( D_METHOD("set_b1", "b1" ), &Iir2sRef::set_b1 );
-	ClassDB::bind_method( D_METHOD("get_b1" ),       &Iir2sRef::get_b1, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_b1" ),       &Iir2sRef::get_b1 );
 
 	ClassDB::bind_method( D_METHOD("set_gain", "gain" ), &Iir2sRef::set_gain );
-	ClassDB::bind_method( D_METHOD("get_gain" ),         &Iir2sRef::get_gain, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_gain" ),         &Iir2sRef::get_gain );
 
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "a0" ),   "set_a0",   "get_a0" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "a1" ),   "set_a1",   "get_a1" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "b0" ),   "set_b0",   "get_b0" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "b1" ),   "set_b1",   "get_b1" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "gain" ), "set_gain", "get_gain" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "a0" ),   "set_a0",   "get_a0" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "a1" ),   "set_a1",   "get_a1" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "b0" ),   "set_b0",   "get_b0" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "b1" ),   "set_b1",   "get_b1" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "gain" ), "set_gain", "get_gain" );
 }
 
 Iir2sRef::Iir2sRef()

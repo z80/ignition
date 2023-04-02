@@ -6,10 +6,10 @@
 #include "scene/main/node.h"
 
 #include "core/math/vector3.h"
-#include "core/math/quat.h"
-#include "core/math/transform.h"
+#include "core/math/quaternion.h"
+#include "core/math/transform_3d.h"
 
-#include "core/vector.h"
+#include "core/templates/vector.h"
 
 #include "se3.h"
 #include "se3_ref.h"
@@ -20,7 +20,7 @@ namespace Ign
 class RefFrameNode: public Node
 {
 	GDCLASS(RefFrameNode, Node);
-	OBJ_CATEGORY("Ignition");
+	//OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();
@@ -30,15 +30,15 @@ public:
 	virtual ~RefFrameNode();
 
 	void set_r( const Vector3 & r );
-	void set_q( const Quat & q );
+	void set_q( const Quaternion & q );
 	void set_v( const Vector3 & v );
 	void set_w( const Vector3 & w );
 
-	void set_t( const Transform & t );
-	Transform t() const;
+	void set_t( const Transform3D & t );
+	Transform3D t() const;
 
 	Vector3 r() const;
-	Quat    q() const;
+	Quaternion q() const;
 	Vector3 v() const;
 	Vector3 w() const;
 

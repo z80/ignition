@@ -29,7 +29,8 @@
 /**************************************************************************/
 
 #include "dir_access_jandroid.h"
-#include "core/print_string.h"
+
+#include "core/string/print_string.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
 
@@ -141,10 +142,10 @@ String DirAccessJAndroid::_get_root_string() const {
 	return DirAccessUnix::_get_root_string();
 }
 
-String DirAccessJAndroid::get_current_dir() {
+String DirAccessJAndroid::get_current_dir(bool p_include_drive) const {
 	String base = _get_root_path();
 	String bd = current_dir;
-	if (base != "") {
+	if (!base.is_empty()) {
 		bd = current_dir.replace_first(base, "");
 	}
 
@@ -177,8 +178,8 @@ String DirAccessJAndroid::get_absolute_path(String p_path) {
 		return current_dir;
 	}
 
-	if (p_path.is_rel_path()) {
-		p_path = get_current_dir().plus_file(p_path);
+	if (p_path.is_relative_path()) {
+		p_path = get_current_dir().path_join(p_path);
 	}
 
 	p_path = fix_path(p_path);

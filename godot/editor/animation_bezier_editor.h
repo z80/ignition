@@ -32,106 +32,150 @@
 #define ANIMATION_BEZIER_EDITOR_H
 
 #include "animation_track_editor.h"
+#include "core/templates/hashfuncs.h"
+
+class ViewPanner;
 
 class AnimationBezierTrackEdit : public Control {
 	GDCLASS(AnimationBezierTrackEdit, Control);
 
-	enum HandleMode {
-		HANDLE_MODE_FREE,
-		HANDLE_MODE_BALANCED,
-		HANDLE_MODE_MIRROR
-	};
-
 	enum {
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
-		MENU_KEY_DELETE
+		MENU_KEY_DELETE,
+		MENU_KEY_SET_HANDLE_FREE,
+		MENU_KEY_SET_HANDLE_LINEAR,
+		MENU_KEY_SET_HANDLE_BALANCED,
+		MENU_KEY_SET_HANDLE_MIRRORED,
+		MENU_KEY_SET_HANDLE_AUTO_BALANCED,
+		MENU_KEY_SET_HANDLE_AUTO_MIRRORED,
 	};
 
-	HandleMode handle_mode;
-	OptionButton *handle_mode_option;
-
-	AnimationTimelineEdit *timeline;
-	UndoRedo *undo_redo;
-	Node *root;
-	Control *play_position; //separate control used to draw so updates for only position changed are much faster
-	float play_position_pos;
+	AnimationTimelineEdit *timeline = nullptr;
+	Node *root = nullptr;
+	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
+	real_t play_position_pos = 0;
 
 	Ref<Animation> animation;
-	int track;
+	bool read_only = false;
+	int selected_track = 0;
 
 	Vector<Rect2> view_rects;
 
-	Ref<Texture> bezier_icon;
-	Ref<Texture> bezier_handle_icon;
-	Ref<Texture> selected_icon;
+	Ref<Texture2D> bezier_icon;
+	Ref<Texture2D> bezier_handle_icon;
+	Ref<Texture2D> selected_icon;
 
-	Rect2 close_icon_rect;
+	RBMap<int, Rect2> subtracks;
 
-	Map<int, Rect2> subtracks;
+	enum {
+		REMOVE_ICON,
+		LOCK_ICON,
+		SOLO_ICON,
+		VISIBILITY_ICON
+	};
 
-	float v_scroll;
-	float v_zoom;
+	RBMap<int, RBMap<int, Rect2>> subtrack_icons;
+	HashSet<int> locked_tracks;
+	HashSet<int> hidden_tracks;
+	int solo_track = -1;
+	bool is_filtered = false;
 
-	PopupMenu *menu;
+	float v_scroll = 0;
+	float v_zoom = 1;
+
+	PopupMenu *menu = nullptr;
 
 	void _zoom_changed();
 
-	void _gui_input(const Ref<InputEvent> &p_event);
-	void _menu_selected(int p_index);
+	void _update_locked_tracks_after(int p_track);
+	void _update_hidden_tracks_after(int p_track);
 
-	bool *block_animation_update_ptr; //used to block all tracks re-gen (speed up)
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _menu_selected(int p_index);
 
 	void _play_position_draw();
 
 	Vector2 insert_at_pos;
 
-	bool moving_selection_attempt;
-	int select_single_attempt;
-	bool moving_selection;
-	int moving_selection_from_key;
+	typedef Pair<int, int> IntPair;
+
+	bool moving_selection_attempt = false;
+	IntPair select_single_attempt;
+	bool moving_selection = false;
+	int moving_selection_from_key = 0;
+	int moving_selection_from_track = 0;
 
 	Vector2 moving_selection_offset;
 
-	bool box_selecting_attempt;
-	bool box_selecting;
-	bool box_selecting_add;
+	bool box_selecting_attempt = false;
+	bool box_selecting = false;
+	bool box_selecting_add = false;
 	Vector2 box_selection_from;
 	Vector2 box_selection_to;
 
-	int moving_handle; //0 no move -1 or +1 out
-	int moving_handle_key;
+	int moving_handle = 0; //0 no move -1 or +1 out, 2 both (drawing only)
+	int moving_handle_key = 0;
+	int moving_handle_track = 0;
 	Vector2 moving_handle_left;
 	Vector2 moving_handle_right;
+	int moving_handle_mode = 0; // value from Animation::HandleMode
+
+	struct PairHasher {
+		static _FORCE_INLINE_ uint32_t hash(const Pair<int, int> &p_value) {
+			int32_t hash = 23;
+			hash = hash * 31 * hash_one_uint64(p_value.first);
+			hash = hash * 31 * hash_one_uint64(p_value.second);
+			return hash;
+		}
+	};
+
+	HashMap<Pair<int, int>, Vector2, PairHasher> additional_moving_handle_lefts;
+	HashMap<Pair<int, int>, Vector2, PairHasher> additional_moving_handle_rights;
 
 	void _clear_selection();
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
-	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
+	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, real_t p_pos);
+	void _change_selected_keys_handle_mode(Animation::HandleMode p_mode, bool p_auto = false);
 
 	Vector2 menu_insert_key;
 
 	struct AnimMoveRestore {
-		int track;
-		float time;
+		int track = 0;
+		double time = 0;
 		Variant key;
-		float transition;
+		real_t transition = 0;
 	};
 
-	AnimationTrackEditor *editor;
+	AnimationTrackEditor *editor = nullptr;
 
 	struct EditPoint {
 		Rect2 point_rect;
 		Rect2 in_rect;
 		Rect2 out_rect;
+		int track = 0;
+		int key = 0;
 	};
 
 	Vector<EditPoint> edit_points;
 
-	Set<int> selection;
+	struct PairCompare {
+		bool operator()(const IntPair &lh, const IntPair &rh) {
+			if (lh.first == rh.first) {
+				return lh.second < rh.second;
+			} else {
+				return lh.first < rh.first;
+			}
+		}
+	};
 
-	bool panning_timeline;
-	float panning_timeline_from;
-	float panning_timeline_at;
+	typedef RBSet<IntPair, PairCompare> SelectionSet;
+
+	SelectionSet selection;
+
+	Ref<ViewPanner> panner;
+	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
 	void _draw_line_clipped(const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, int p_clip_left, int p_clip_right);
 	void _draw_track(int p_track, const Color &p_color);
@@ -143,25 +187,25 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	Ref<Animation> get_animation() const;
 
-	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
-	virtual Size2 get_minimum_size() const;
+	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
+	virtual Size2 get_minimum_size() const override;
 
-	void set_undo_redo(UndoRedo *p_undo_redo);
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);
+	void set_filtered(bool p_filtered);
 
-	void set_block_animation_update_ptr(bool *p_block_ptr);
-
-	void set_play_position(float p_pos);
+	void set_play_position(real_t p_pos);
 	void update_play_position();
 
 	void duplicate_selection();
 	void delete_selection();
+
+	void _bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode);
 
 	AnimationBezierTrackEdit();
 };

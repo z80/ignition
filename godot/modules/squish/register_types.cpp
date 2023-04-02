@@ -29,11 +29,19 @@
 /**************************************************************************/
 
 #include "register_types.h"
-#include "image_compress_squish.h"
 
-void register_squish_types() {
-	Image::set_compress_bc_func(image_compress_squish);
+#include "image_decompress_squish.h"
+
+void initialize_squish_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	Image::_image_decompress_bc = image_decompress_squish;
 }
 
-void unregister_squish_types() {}
+void uninitialize_squish_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

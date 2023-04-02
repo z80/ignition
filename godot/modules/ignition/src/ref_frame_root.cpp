@@ -1,6 +1,6 @@
 
 #include "ref_frame_root.h"
-#include "core/engine.h"
+#include "core/config/engine.h"
 
 namespace Ign
 {
@@ -8,10 +8,10 @@ namespace Ign
 void RefFrameRoot::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD( "set_time_dilation", "en" ), &RefFrameRoot::set_time_dilation );
-	ClassDB::bind_method( D_METHOD( "get_time_dilation" ),       &RefFrameRoot::get_time_dilation, Variant::REAL );
+	ClassDB::bind_method( D_METHOD( "get_time_dilation" ),       &RefFrameRoot::get_time_dilation );
 
 	ADD_GROUP( "Ignition", "" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "time_dilation" ), "set_time_dilation", "get_time_dilation" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "time_dilation" ), "set_time_dilation", "get_time_dilation" );
 
 }
 

@@ -30,12 +30,23 @@
 
 #include "import_defaults_editor.h"
 
+#include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
+#include "editor/action_map_editor.h"
+#include "editor/editor_autoload_settings.h"
+#include "editor/editor_plugin_settings.h"
+#include "editor/editor_sectioned_inspector.h"
+#include "editor/editor_settings.h"
+#include "editor/localization_editor.h"
+#include "editor/shader_globals_editor.h"
+#include "scene/gui/center_container.h"
+
 class ImportDefaultsEditorSettings : public Object {
 	GDCLASS(ImportDefaultsEditorSettings, Object)
 	friend class ImportDefaultsEditor;
 	List<PropertyInfo> properties;
-	Map<StringName, Variant> values;
-	Map<StringName, Variant> default_values;
+	HashMap<StringName, Variant> values;
+	HashMap<StringName, Variant> default_values;
 
 	Ref<ResourceImporter> importer;
 
@@ -61,9 +72,9 @@ protected:
 		if (importer.is_null()) {
 			return;
 		}
-		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			if (importer->get_option_visibility(E->get().name, values)) {
-				p_list->push_back(E->get());
+		for (const PropertyInfo &E : properties) {
+			if (importer->get_option_visibility("", E.name, values)) {
+				p_list->push_back(E);
 			}
 		}
 	}
@@ -85,7 +96,7 @@ void ImportDefaultsEditor::_notification(int p_what) {
 void ImportDefaultsEditor::_reset() {
 	if (settings->importer.is_valid()) {
 		settings->values = settings->default_values;
-		settings->_change_notify();
+		settings->notify_property_list_changed();
 	}
 }
 
@@ -93,9 +104,9 @@ void ImportDefaultsEditor::_save() {
 	if (settings->importer.is_valid()) {
 		Dictionary modified;
 
-		for (Map<StringName, Variant>::Element *E = settings->values.front(); E; E = E->next()) {
-			if (E->get() != settings->default_values[E->key()]) {
-				modified[E->key()] = E->get();
+		for (const KeyValue<StringName, Variant> &E : settings->values) {
+			if (E.value != settings->default_values[E.key]) {
+				modified[E.key] = E.value;
 			}
 		}
 
@@ -104,8 +115,8 @@ void ImportDefaultsEditor::_save() {
 		} else {
 			ProjectSettings::get_singleton()->set("importer_defaults/" + settings->importer->get_importer_name(), Variant());
 		}
-		// Calling ProjectSettings::set() causes the signal "project_settings_changed" to be sent to ProjectSettings.
-		// ProjectSettingsEditor subscribes to this and can reads the settings updated here.
+
+		emit_signal(SNAME("project_settings_changed"));
 	}
 }
 
@@ -113,9 +124,9 @@ void ImportDefaultsEditor::_update_importer() {
 	List<Ref<ResourceImporter>> importer_list;
 	ResourceFormatImporter::get_singleton()->get_importers(&importer_list);
 	Ref<ResourceImporter> importer;
-	for (List<Ref<ResourceImporter>>::Element *E = importer_list.front(); E; E = E->next()) {
-		if (E->get()->get_visible_name() == importers->get_item_text(importers->get_selected())) {
-			importer = E->get();
+	for (const Ref<ResourceImporter> &E : importer_list) {
+		if (E->get_visible_name() == importers->get_item_text(importers->get_selected())) {
+			importer = E;
 			break;
 		}
 	}
@@ -126,20 +137,20 @@ void ImportDefaultsEditor::_update_importer() {
 
 	if (importer.is_valid()) {
 		List<ResourceImporter::ImportOption> options;
-		importer->get_import_options(&options);
+		importer->get_import_options("", &options);
 		Dictionary d;
 		if (ProjectSettings::get_singleton()->has_setting("importer_defaults/" + importer->get_importer_name())) {
-			d = ProjectSettings::get_singleton()->get("importer_defaults/" + importer->get_importer_name());
+			d = GLOBAL_GET("importer_defaults/" + importer->get_importer_name());
 		}
 
-		for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
-			settings->properties.push_back(E->get().option);
-			if (d.has(E->get().option.name)) {
-				settings->values[E->get().option.name] = d[E->get().option.name];
+		for (const ResourceImporter::ImportOption &E : options) {
+			settings->properties.push_back(E.option);
+			if (d.has(E.option.name)) {
+				settings->values[E.option.name] = d[E.option.name];
 			} else {
-				settings->values[E->get().option.name] = E->get().default_value;
+				settings->values[E.option.name] = E.default_value;
 			}
-			settings->default_values[E->get().option.name] = E->get().default_value;
+			settings->default_values[E.option.name] = E.default_value;
 		}
 
 		save_defaults->set_disabled(false);
@@ -150,7 +161,7 @@ void ImportDefaultsEditor::_update_importer() {
 		reset_defaults->set_disabled(true);
 	}
 
-	settings->_change_notify();
+	settings->notify_property_list_changed();
 
 	inspector->edit(settings);
 }
@@ -173,8 +184,8 @@ void ImportDefaultsEditor::clear() {
 	List<Ref<ResourceImporter>> importer_list;
 	ResourceFormatImporter::get_singleton()->get_importers(&importer_list);
 	Vector<String> names;
-	for (List<Ref<ResourceImporter>>::Element *E = importer_list.front(); E; E = E->next()) {
-		String vn = E->get()->get_visible_name();
+	for (const Ref<ResourceImporter> &E : importer_list) {
+		String vn = E->get_visible_name();
 		names.push_back(vn);
 	}
 	names.sort();
@@ -189,10 +200,6 @@ void ImportDefaultsEditor::clear() {
 }
 
 void ImportDefaultsEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_reset"), &ImportDefaultsEditor::_reset);
-	ClassDB::bind_method(D_METHOD("_save"), &ImportDefaultsEditor::_save);
-	ClassDB::bind_method(D_METHOD("_importer_selected"), &ImportDefaultsEditor::_importer_selected);
-
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 }
 
@@ -202,11 +209,11 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	importers = memnew(OptionButton);
 	hb->add_child(importers);
 	hb->add_spacer();
-	importers->connect("item_selected", this, "_importer_selected");
+	importers->connect("item_selected", callable_mp(this, &ImportDefaultsEditor::_importer_selected));
 	reset_defaults = memnew(Button);
 	reset_defaults->set_text(TTR("Reset to Defaults"));
 	reset_defaults->set_disabled(true);
-	reset_defaults->connect("pressed", this, "_reset");
+	reset_defaults->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_reset));
 	hb->add_child(reset_defaults);
 	add_child(hb);
 	inspector = memnew(EditorInspector);
@@ -215,7 +222,7 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	CenterContainer *cc = memnew(CenterContainer);
 	save_defaults = memnew(Button);
 	save_defaults->set_text(TTR("Save"));
-	save_defaults->connect("pressed", this, "_save");
+	save_defaults->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_save));
 	cc->add_child(save_defaults);
 	add_child(cc);
 

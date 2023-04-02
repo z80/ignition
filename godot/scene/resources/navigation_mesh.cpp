@@ -30,9 +30,14 @@
 
 #include "navigation_mesh.h"
 
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_server_3d.h"
+#endif // DEBUG_ENABLED
+
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	ERR_FAIL_COND(p_mesh.is_null());
-	vertices = PoolVector<Vector3>();
+
+	vertices = Vector<Vector3>();
 	clear_polygons();
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
@@ -42,8 +47,9 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 		}
 		Array arr = p_mesh->surface_get_arrays(i);
 		ERR_CONTINUE(arr.size() != Mesh::ARRAY_MAX);
-		PoolVector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
-		PoolVector<int> iarr = arr[Mesh::ARRAY_INDEX];
+
+		Vector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
+		Vector<int> iarr = arr[Mesh::ARRAY_INDEX];
 		if (varr.size() == 0 || iarr.size() == 0) {
 			WARN_PRINT("A mesh surface was skipped when creating a NavigationMesh due to an empty vertex or index array.");
 			continue;
@@ -52,7 +58,7 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 		int from = vertices.size();
 		vertices.append_array(varr);
 		int rlen = iarr.size();
-		PoolVector<int>::Read r = iarr.read();
+		const int *r = iarr.ptr();
 
 		for (int j = 0; j < rlen; j += 3) {
 			Vector<int> vi;
@@ -78,7 +84,7 @@ NavigationMesh::SamplePartitionType NavigationMesh::get_sample_partition_type() 
 void NavigationMesh::set_parsed_geometry_type(ParsedGeometryType p_value) {
 	ERR_FAIL_INDEX(p_value, PARSED_GEOMETRY_MAX);
 	parsed_geometry_type = p_value;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 NavigationMesh::ParsedGeometryType NavigationMesh::get_parsed_geometry_type() const {
@@ -93,26 +99,28 @@ uint32_t NavigationMesh::get_collision_mask() const {
 	return collision_mask;
 }
 
-void NavigationMesh::set_collision_mask_bit(int p_bit, bool p_value) {
-	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
+void NavigationMesh::set_collision_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
-		mask |= 1 << p_bit;
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << p_bit);
+		mask &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_mask(mask);
 }
 
-bool NavigationMesh::get_collision_mask_bit(int p_bit) const {
-	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
-	return get_collision_mask() & (1 << p_bit);
+bool NavigationMesh::get_collision_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
 void NavigationMesh::set_source_geometry_mode(SourceGeometryMode p_geometry_mode) {
 	ERR_FAIL_INDEX(p_geometry_mode, SOURCE_GEOMETRY_MAX);
 	source_geometry_mode = p_geometry_mode;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 NavigationMesh::SourceGeometryMode NavigationMesh::get_source_geometry_mode() const {
@@ -217,13 +225,13 @@ float NavigationMesh::get_edge_max_error() const {
 	return edge_max_error;
 }
 
-void NavigationMesh::set_verts_per_poly(float p_value) {
+void NavigationMesh::set_vertices_per_polygon(float p_value) {
 	ERR_FAIL_COND(p_value < 3);
-	verts_per_poly = p_value;
+	vertices_per_polygon = p_value;
 }
 
-float NavigationMesh::get_verts_per_poly() const {
-	return verts_per_poly;
+float NavigationMesh::get_vertices_per_polygon() const {
+	return vertices_per_polygon;
 }
 
 void NavigationMesh::set_detail_sample_distance(float p_value) {
@@ -270,7 +278,7 @@ bool NavigationMesh::get_filter_walkable_low_height_spans() const {
 
 void NavigationMesh::set_filter_baking_aabb(const AABB &p_aabb) {
 	filter_baking_aabb = p_aabb;
-	_change_notify();
+	emit_changed();
 }
 
 AABB NavigationMesh::get_filter_baking_aabb() const {
@@ -279,19 +287,19 @@ AABB NavigationMesh::get_filter_baking_aabb() const {
 
 void NavigationMesh::set_filter_baking_aabb_offset(const Vector3 &p_aabb_offset) {
 	filter_baking_aabb_offset = p_aabb_offset;
-	_change_notify();
+	emit_changed();
 }
 
 Vector3 NavigationMesh::get_filter_baking_aabb_offset() const {
 	return filter_baking_aabb_offset;
 }
 
-void NavigationMesh::set_vertices(const PoolVector<Vector3> &p_vertices) {
+void NavigationMesh::set_vertices(const Vector<Vector3> &p_vertices) {
 	vertices = p_vertices;
-	_change_notify();
+	notify_property_list_changed();
 }
 
-PoolVector<Vector3> NavigationMesh::get_vertices() const {
+Vector<Vector3> NavigationMesh::get_vertices() const {
 	return vertices;
 }
 
@@ -300,7 +308,7 @@ void NavigationMesh::_set_polygons(const Array &p_array) {
 	for (int i = 0; i < p_array.size(); i++) {
 		polygons.write[i].indices = p_array[i];
 	}
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Array NavigationMesh::_get_polygons() const {
@@ -317,7 +325,7 @@ void NavigationMesh::add_polygon(const Vector<int> &p_polygon) {
 	Polygon polygon;
 	polygon.indices = p_polygon;
 	polygons.push_back(polygon);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int NavigationMesh::get_polygon_count() const {
@@ -333,91 +341,98 @@ void NavigationMesh::clear_polygons() {
 	polygons.clear();
 }
 
-Ref<Mesh> NavigationMesh::get_debug_mesh() {
+#ifdef DEBUG_ENABLED
+Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	if (debug_mesh.is_valid()) {
+		// Blocks further updates for now, code below is intended for dynamic updates e.g. when settings change.
 		return debug_mesh;
 	}
 
-	PoolVector<Vector3> vertices = get_vertices();
-	PoolVector<Vector3>::Read vr = vertices.read();
-	List<Face3> faces;
-	for (int i = 0; i < get_polygon_count(); i++) {
-		Vector<int> p = get_polygon(i);
-
-		for (int j = 2; j < p.size(); j++) {
-			Face3 f;
-			f.vertex[0] = vr[p[0]];
-			f.vertex[1] = vr[p[j - 1]];
-			f.vertex[2] = vr[p[j]];
-
-			faces.push_back(f);
-		}
+	if (!debug_mesh.is_valid()) {
+		debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	} else {
+		debug_mesh->clear_surfaces();
 	}
 
-	Map<_EdgeKey, bool> edge_map;
-	PoolVector<Vector3> tmeshfaces;
-	tmeshfaces.resize(faces.size() * 3);
-
-	{
-		PoolVector<Vector3>::Write tw = tmeshfaces.write();
-		int tidx = 0;
-
-		for (List<Face3>::Element *E = faces.front(); E; E = E->next()) {
-			const Face3 &f = E->get();
-
-			for (int j = 0; j < 3; j++) {
-				tw[tidx++] = f.vertex[j];
-				_EdgeKey ek;
-				ek.from = f.vertex[j].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
-				ek.to = f.vertex[(j + 1) % 3].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
-				if (ek.from < ek.to) {
-					SWAP(ek.from, ek.to);
-				}
-
-				Map<_EdgeKey, bool>::Element *F = edge_map.find(ek);
-
-				if (F) {
-					F->get() = false;
-
-				} else {
-					edge_map[ek] = true;
-				}
-			}
-		}
-	}
-	List<Vector3> lines;
-
-	for (Map<_EdgeKey, bool>::Element *E = edge_map.front(); E; E = E->next()) {
-		if (E->get()) {
-			lines.push_back(E->key().from);
-			lines.push_back(E->key().to);
-		}
-	}
-
-	PoolVector<Vector3> varr;
-	varr.resize(lines.size());
-	{
-		PoolVector<Vector3>::Write w = varr.write();
-		int idx = 0;
-		for (List<Vector3>::Element *E = lines.front(); E; E = E->next()) {
-			w[idx++] = E->get();
-		}
-	}
-
-	debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
-
-	if (lines.empty()) {
+	if (vertices.size() == 0) {
 		return debug_mesh;
 	}
 
-	Array arr;
-	arr.resize(Mesh::ARRAY_MAX);
-	arr[Mesh::ARRAY_VERTEX] = varr;
+	int polygon_count = get_polygon_count();
 
-	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arr);
+	if (polygon_count < 1) {
+		// no face, no play
+		return debug_mesh;
+	}
+
+	// build geometry face surface
+	Vector<Vector3> face_vertex_array;
+	face_vertex_array.resize(polygon_count * 3);
+
+	for (int i = 0; i < polygon_count; i++) {
+		Vector<int> polygon = get_polygon(i);
+
+		face_vertex_array.push_back(vertices[polygon[0]]);
+		face_vertex_array.push_back(vertices[polygon[1]]);
+		face_vertex_array.push_back(vertices[polygon[2]]);
+	}
+
+	Array face_mesh_array;
+	face_mesh_array.resize(Mesh::ARRAY_MAX);
+	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
+
+	// if enabled add vertex colors to colorize each face individually
+	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
+	if (enabled_geometry_face_random_color) {
+		Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+		Color polygon_color = debug_navigation_geometry_face_color;
+
+		Vector<Color> face_color_array;
+		face_color_array.resize(polygon_count * 3);
+
+		for (int i = 0; i < polygon_count; i++) {
+			polygon_color = debug_navigation_geometry_face_color * (Color(Math::randf(), Math::randf(), Math::randf()));
+
+			face_color_array.push_back(polygon_color);
+			face_color_array.push_back(polygon_color);
+			face_color_array.push_back(polygon_color);
+		}
+		face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
+	}
+
+	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
+	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material();
+	debug_mesh->surface_set_material(0, debug_geometry_face_material);
+
+	// if enabled build geometry edge line surface
+	bool enabled_edge_lines = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_lines();
+
+	if (enabled_edge_lines) {
+		Vector<Vector3> line_vertex_array;
+		line_vertex_array.resize(polygon_count * 6);
+
+		for (int i = 0; i < polygon_count; i++) {
+			Vector<int> polygon = get_polygon(i);
+
+			line_vertex_array.push_back(vertices[polygon[0]]);
+			line_vertex_array.push_back(vertices[polygon[1]]);
+			line_vertex_array.push_back(vertices[polygon[1]]);
+			line_vertex_array.push_back(vertices[polygon[2]]);
+			line_vertex_array.push_back(vertices[polygon[2]]);
+			line_vertex_array.push_back(vertices[polygon[0]]);
+		}
+
+		Array line_mesh_array;
+		line_mesh_array.resize(Mesh::ARRAY_MAX);
+		line_mesh_array[Mesh::ARRAY_VERTEX] = line_vertex_array;
+		debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, line_mesh_array);
+		Ref<StandardMaterial3D> debug_geometry_edge_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_material();
+		debug_mesh->surface_set_material(1, debug_geometry_edge_material);
+	}
 
 	return debug_mesh;
 }
+#endif // DEBUG_ENABLED
 
 void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sample_partition_type", "sample_partition_type"), &NavigationMesh::set_sample_partition_type);
@@ -429,8 +444,8 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &NavigationMesh::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &NavigationMesh::get_collision_mask);
 
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &NavigationMesh::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &NavigationMesh::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &NavigationMesh::set_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &NavigationMesh::get_collision_mask_value);
 
 	ClassDB::bind_method(D_METHOD("set_source_geometry_mode", "mask"), &NavigationMesh::set_source_geometry_mode);
 	ClassDB::bind_method(D_METHOD("get_source_geometry_mode"), &NavigationMesh::get_source_geometry_mode);
@@ -468,8 +483,8 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_edge_max_error", "edge_max_error"), &NavigationMesh::set_edge_max_error);
 	ClassDB::bind_method(D_METHOD("get_edge_max_error"), &NavigationMesh::get_edge_max_error);
 
-	ClassDB::bind_method(D_METHOD("set_verts_per_poly", "verts_per_poly"), &NavigationMesh::set_verts_per_poly);
-	ClassDB::bind_method(D_METHOD("get_verts_per_poly"), &NavigationMesh::get_verts_per_poly);
+	ClassDB::bind_method(D_METHOD("set_vertices_per_polygon", "vertices_per_polygon"), &NavigationMesh::set_vertices_per_polygon);
+	ClassDB::bind_method(D_METHOD("get_vertices_per_polygon"), &NavigationMesh::get_vertices_per_polygon);
 
 	ClassDB::bind_method(D_METHOD("set_detail_sample_distance", "detail_sample_dist"), &NavigationMesh::set_detail_sample_distance);
 	ClassDB::bind_method(D_METHOD("get_detail_sample_distance"), &NavigationMesh::get_detail_sample_distance);
@@ -503,35 +518,37 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_polygons", "polygons"), &NavigationMesh::_set_polygons);
 	ClassDB::bind_method(D_METHOD("_get_polygons"), &NavigationMesh::_get_polygons);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 
 	ADD_GROUP("Sampling", "sample_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type", PROPERTY_HINT_ENUM, "Watershed,Monotone,Layers"), "set_sample_partition_type", "get_sample_partition_type");
 	ADD_GROUP("Geometry", "geometry_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Both"), "set_parsed_geometry_type", "get_parsed_geometry_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "Navmesh Children, Group With Children, Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
+	ADD_PROPERTY_DEFAULT("geometry_collision_mask", 0xFFFFFFFF);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "Root Node Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "geometry_source_group_name"), "set_source_group_name", "get_source_group_name");
+	ADD_PROPERTY_DEFAULT("geometry_source_group_name", StringName("navigation_mesh_source_group"));
 	ADD_GROUP("Cells", "cell_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell_size", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater"), "set_cell_size", "get_cell_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell_height", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater"), "set_cell_height", "get_cell_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_size", "get_cell_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_height", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_height", "get_cell_height");
 	ADD_GROUP("Agents", "agent_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent_height", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater"), "set_agent_height", "get_agent_height");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent_radius", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater"), "set_agent_radius", "get_agent_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent_max_climb", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater"), "set_agent_max_climb", "get_agent_max_climb");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent_max_slope", PROPERTY_HINT_RANGE, "0.02,90.0,0.01"), "set_agent_max_slope", "get_agent_max_slope");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_height", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:m"), "set_agent_height", "get_agent_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_radius", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:m"), "set_agent_radius", "get_agent_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_max_climb", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:m"), "set_agent_max_climb", "get_agent_max_climb");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_max_slope", PROPERTY_HINT_RANGE, "0.02,90.0,0.01,degrees"), "set_agent_max_slope", "get_agent_max_slope");
 	ADD_GROUP("Regions", "region_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "region_min_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01,or_greater"), "set_region_min_size", "get_region_min_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "region_merge_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01,or_greater"), "set_region_merge_size", "get_region_merge_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "region_min_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01,or_greater"), "set_region_min_size", "get_region_min_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "region_merge_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01,or_greater"), "set_region_merge_size", "get_region_merge_size");
 	ADD_GROUP("Edges", "edge_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "edge_max_length", PROPERTY_HINT_RANGE, "0.0,50.0,0.01,or_greater"), "set_edge_max_length", "get_edge_max_length");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "edge_max_error", PROPERTY_HINT_RANGE, "0.1,3.0,0.01,or_greater"), "set_edge_max_error", "get_edge_max_error");
-	ADD_GROUP("Polygons", "polygon_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "polygon_verts_per_poly", PROPERTY_HINT_RANGE, "3.0,12.0,1.0,or_greater"), "set_verts_per_poly", "get_verts_per_poly");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge_max_length", PROPERTY_HINT_RANGE, "0.0,50.0,0.01,or_greater,suffix:m"), "set_edge_max_length", "get_edge_max_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge_max_error", PROPERTY_HINT_RANGE, "0.1,3.0,0.01,or_greater,suffix:m"), "set_edge_max_error", "get_edge_max_error");
+	ADD_GROUP("Polygons", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vertices_per_polygon", PROPERTY_HINT_RANGE, "3.0,12.0,1.0,or_greater"), "set_vertices_per_polygon", "get_vertices_per_polygon");
 	ADD_GROUP("Details", "detail_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "detail_sample_distance", PROPERTY_HINT_RANGE, "0.1,16.0,0.01,or_greater"), "set_detail_sample_distance", "get_detail_sample_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "detail_sample_max_error", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater"), "set_detail_sample_max_error", "get_detail_sample_max_error");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "detail_sample_distance", PROPERTY_HINT_RANGE, "0.1,16.0,0.01,or_greater,suffix:m"), "set_detail_sample_distance", "get_detail_sample_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "detail_sample_max_error", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater,suffix:m"), "set_detail_sample_max_error", "get_detail_sample_max_error");
 	ADD_GROUP("Filters", "filter_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_low_hanging_obstacles"), "set_filter_low_hanging_obstacles", "get_filter_low_hanging_obstacles");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_ledge_spans"), "set_filter_ledge_spans", "get_filter_ledge_spans");
@@ -549,23 +566,23 @@ void NavigationMesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_BOTH);
 	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_MAX);
 
-	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_NAVMESH_CHILDREN);
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_ROOT_NODE_CHILDREN);
 	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN);
 	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_GROUPS_EXPLICIT);
 	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_MAX);
 }
 
-void NavigationMesh::_validate_property(PropertyInfo &property) const {
-	if (property.name == "geometry/collision_mask") {
+void NavigationMesh::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "geometry_collision_mask") {
 		if (parsed_geometry_type == PARSED_GEOMETRY_MESH_INSTANCES) {
-			property.usage = 0;
+			p_property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}
 
-	if (property.name == "geometry/source_group_name") {
-		if (source_geometry_mode == SOURCE_GEOMETRY_NAVMESH_CHILDREN) {
-			property.usage = 0;
+	if (p_property.name == "geometry_source_group_name") {
+		if (source_geometry_mode == SOURCE_GEOMETRY_ROOT_NODE_CHILDREN) {
+			p_property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}
@@ -573,35 +590,16 @@ void NavigationMesh::_validate_property(PropertyInfo &property) const {
 
 #ifndef DISABLE_DEPRECATED
 bool NavigationMesh::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
-	if (name.find("/") != -1) {
-		// Compatibility with pre-3.5 "category/path" property names.
-		name = name.replace("/", "_");
-		if (name == "sample_partition_type_sample_partition_type") {
-			set("sample_partition_type", p_value);
-		} else if (name == "filter_filter_walkable_low_height_spans") {
-			set("filter_walkable_low_height_spans", p_value);
-		} else {
-			set(name, p_value);
-		}
-
+	if (p_name == "polygon_verts_per_poly") { // Renamed in 4.0 beta 9.
+		set_vertices_per_polygon(p_value);
 		return true;
 	}
 	return false;
 }
 
 bool NavigationMesh::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
-	if (name.find("/") != -1) {
-		// Compatibility with pre-3.5 "category/path" property names.
-		name = name.replace("/", "_");
-		if (name == "sample_partition_type_sample_partition_type") {
-			r_ret = get("sample_partition_type");
-		} else if (name == "filter_filter_walkable_low_height_spans") {
-			r_ret = get("filter_walkable_low_height_spans");
-		} else {
-			r_ret = get(name);
-		}
+	if (p_name == "polygon_verts_per_poly") { // Renamed in 4.0 beta 9.
+		r_ret = get_vertices_per_polygon();
 		return true;
 	}
 	return false;

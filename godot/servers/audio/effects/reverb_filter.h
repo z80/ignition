@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2006
-
 #ifndef REVERB_FILTER_H
 #define REVERB_FILTER_H
 
@@ -46,7 +44,6 @@ public:
 
 private:
 	enum {
-
 		MAX_COMBS = 8,
 		MAX_ALLPASS = 4,
 		MAX_ECHO_MS = 500
@@ -57,43 +54,34 @@ private:
 	static const float allpass_tunings[MAX_ALLPASS];
 
 	struct Comb {
-		int size;
-		float *buffer;
-		float feedback;
-		float damp; //lowpass
-		float damp_h; //history
-		int pos;
-		int extra_spread_frames;
+		int size = 0;
+		float *buffer = nullptr;
+		float feedback = 0;
+		float damp = 0; //lowpass
+		float damp_h = 0; //history
+		int pos = 0;
+		int extra_spread_frames = 0;
 
-		Comb() {
-			size = 0;
-			buffer = nullptr;
-			feedback = 0;
-			damp_h = 0;
-			pos = 0;
-		}
+		Comb() {}
 	};
 
 	struct AllPass {
-		int size;
-		float *buffer;
-		int pos;
-		int extra_spread_frames;
-		AllPass() {
-			size = 0;
-			buffer = nullptr;
-			pos = 0;
-		}
+		int size = 0;
+		float *buffer = nullptr;
+		int pos = 0;
+		int extra_spread_frames = 0;
+		AllPass() {}
 	};
 
 	Comb comb[MAX_COMBS];
 	AllPass allpass[MAX_ALLPASS];
-	float *input_buffer;
-	float *echo_buffer;
-	int echo_buffer_size;
-	int echo_buffer_pos;
+	float *input_buffer = nullptr;
+	float *echo_buffer = nullptr;
+	int echo_buffer_size = 0;
+	int echo_buffer_pos = 0;
 
-	float hpf_h1, hpf_h2;
+	float hpf_h1 = 0.0f;
+	float hpf_h2 = 0.0f;
 
 	struct Parameters {
 		float room_size;

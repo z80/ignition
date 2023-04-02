@@ -31,17 +31,21 @@
 #ifndef MUTEX_H
 #define MUTEX_H
 
-#include "core/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/typedefs.h"
-
-#if !defined(NO_THREADS)
 
 #include <mutex>
 
+template <class MutexT>
+class MutexLock;
+
 template <class StdMutexT>
 class MutexImpl {
+	friend class MutexLock<MutexImpl<StdMutexT>>;
+
+	using StdMutexType = StdMutexT;
+
 	mutable StdMutexT mutex;
-	friend class MutexLock;
 
 public:
 	_ALWAYS_INLINE_ void lock() const {
@@ -52,38 +56,70 @@ public:
 		mutex.unlock();
 	}
 
-	_ALWAYS_INLINE_ Error try_lock() const {
-		return mutex.try_lock() ? OK : ERR_BUSY;
+	_ALWAYS_INLINE_ bool try_lock() const {
+		return mutex.try_lock();
 	}
 };
 
-// This is written this way instead of being a template to overcome a limitation of C++ pre-17
-// that would require MutexLock to be used like this: MutexLock<Mutex> lock;
-class MutexLock {
-	union {
-		std::recursive_mutex *recursive_mutex;
-		std::mutex *mutex;
-	};
-	bool recursive;
+// A very special kind of mutex, used in scenarios where these
+// requirements hold at the same time:
+// - Must be used with a condition variable (only binary mutexes are suitable).
+// - Must have recursive semnantics (or simulate, as this one does).
+// The implementation keeps the lock count in TS. Therefore, only
+// one object of each version of the template can exists; hence the Tag argument.
+// Tags must be unique across the Godot codebase.
+// Also, don't forget to declare the thread_local variable on each use.
+template <int Tag>
+class SafeBinaryMutex {
+	friend class MutexLock<SafeBinaryMutex>;
+
+	using StdMutexType = std::mutex;
+
+	mutable std::mutex mutex;
+	static thread_local uint32_t count;
 
 public:
-	_ALWAYS_INLINE_ explicit MutexLock(const MutexImpl<std::recursive_mutex> &p_mutex) :
-			recursive_mutex(&p_mutex.mutex),
-			recursive(true) {
-		recursive_mutex->lock();
-	}
-	_ALWAYS_INLINE_ explicit MutexLock(const MutexImpl<std::mutex> &p_mutex) :
-			mutex(&p_mutex.mutex),
-			recursive(false) {
-		mutex->lock();
+	_ALWAYS_INLINE_ void lock() const {
+		if (++count == 1) {
+			mutex.lock();
+		}
 	}
 
-	_ALWAYS_INLINE_ ~MutexLock() {
-		if (recursive) {
-			recursive_mutex->unlock();
-		} else {
-			mutex->unlock();
+	_ALWAYS_INLINE_ void unlock() const {
+		DEV_ASSERT(count);
+		if (--count == 0) {
+			mutex.unlock();
 		}
+	}
+
+	_ALWAYS_INLINE_ bool try_lock() const {
+		if (count) {
+			count++;
+			return true;
+		} else {
+			if (mutex.try_lock()) {
+				count++;
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
+	~SafeBinaryMutex() {
+		DEV_ASSERT(!count);
+	}
+};
+
+template <class MutexT>
+class MutexLock {
+	friend class ConditionVariable;
+
+	std::unique_lock<typename MutexT::StdMutexType> lock;
+
+public:
+	_ALWAYS_INLINE_ explicit MutexLock(const MutexT &p_mutex) :
+			lock(p_mutex.mutex) {
 	}
 };
 
@@ -92,29 +128,7 @@ using BinaryMutex = MutexImpl<std::mutex>; // Non-recursive, handle with care
 
 extern template class MutexImpl<std::recursive_mutex>;
 extern template class MutexImpl<std::mutex>;
-
-#else
-
-class FakeMutex {
-	FakeMutex() {}
-};
-
-template <class MutexT>
-class MutexImpl {
-public:
-	_ALWAYS_INLINE_ void lock() const {}
-	_ALWAYS_INLINE_ void unlock() const {}
-	_ALWAYS_INLINE_ Error try_lock() const { return OK; }
-};
-
-class MutexLock {
-public:
-	explicit MutexLock(const MutexImpl<FakeMutex> &p_mutex) {}
-};
-
-using Mutex = MutexImpl<FakeMutex>;
-using BinaryMutex = MutexImpl<FakeMutex>; // Non-recursive, handle with care
-
-#endif // !NO_THREADS
+extern template class MutexLock<MutexImpl<std::recursive_mutex>>;
+extern template class MutexLock<MutexImpl<std::mutex>>;
 
 #endif // MUTEX_H

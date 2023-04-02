@@ -31,32 +31,33 @@
 #ifndef STREAM_PEER_MBEDTLS_H
 #define STREAM_PEER_MBEDTLS_H
 
-#include "core/io/stream_peer_ssl.h"
-#include "ssl_context_mbedtls.h"
+#include "core/io/stream_peer_tls.h"
+#include "tls_context_mbedtls.h"
 
-class StreamPeerMbedTLS : public StreamPeerSSL {
+class StreamPeerMbedTLS : public StreamPeerTLS {
 private:
-	Status status;
+	Status status = STATUS_DISCONNECTED;
 	String hostname;
 
 	Ref<StreamPeer> base;
 
-	static StreamPeerSSL *_create_func();
+	static StreamPeerTLS *_create_func();
 
 	static int bio_recv(void *ctx, unsigned char *buf, size_t len);
 	static int bio_send(void *ctx, const unsigned char *buf, size_t len);
 	void _cleanup();
 
 protected:
-	Ref<SSLContextMbedTLS> ssl_ctx;
+	Ref<TLSContextMbedTLS> tls_ctx;
 
 	Error _do_handshake();
 
 public:
 	virtual void poll();
-	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>());
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_valid_cert = Ref<X509Certificate>());
+	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<TLSOptions> p_options);
+	virtual Error connect_to_stream(Ref<StreamPeer> p_base, const String &p_common_name, Ref<TLSOptions> p_options);
 	virtual Status get_status() const;
+	virtual Ref<StreamPeer> get_stream() const;
 
 	virtual void disconnect_from_stream();
 
@@ -68,8 +69,8 @@ public:
 
 	virtual int get_available_bytes() const;
 
-	static void initialize_ssl();
-	static void finalize_ssl();
+	static void initialize_tls();
+	static void finalize_tls();
 
 	StreamPeerMbedTLS();
 	~StreamPeerMbedTLS();

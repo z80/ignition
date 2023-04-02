@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CameraServer" inherits="Object" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CameraServer" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Server keeping track of different cameras accessible in Godot.
 	</brief_description>
@@ -13,22 +13,22 @@
 	<methods>
 		<method name="add_feed">
 			<return type="void" />
-			<argument index="0" name="feed" type="CameraFeed" />
+			<param index="0" name="feed" type="CameraFeed" />
 			<description>
-				Adds the camera [code]feed[/code] to the camera server.
+				Adds the camera [param feed] to the camera server.
 			</description>
 		</method>
 		<method name="feeds">
-			<return type="Array" />
+			<return type="CameraFeed[]" />
 			<description>
 				Returns an array of [CameraFeed]s.
 			</description>
 		</method>
 		<method name="get_feed">
 			<return type="CameraFeed" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Returns the [CameraFeed] corresponding to the camera with the given [code]index[/code].
+				Returns the [CameraFeed] corresponding to the camera with the given [param index].
 			</description>
 		</method>
 		<method name="get_feed_count">
@@ -39,21 +39,21 @@
 		</method>
 		<method name="remove_feed">
 			<return type="void" />
-			<argument index="0" name="feed" type="CameraFeed" />
+			<param index="0" name="feed" type="CameraFeed" />
 			<description>
-				Removes the specified camera [code]feed[/code].
+				Removes the specified camera [param feed].
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="camera_feed_added">
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Emitted when a [CameraFeed] is added (e.g. a webcam is plugged in).
 			</description>
 		</signal>
 		<signal name="camera_feed_removed">
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Emitted when a [CameraFeed] is removed (e.g. a webcam is unplugged).
 			</description>

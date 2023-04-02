@@ -79,9 +79,9 @@ AudioEffectReverbInstance::AudioEffectReverbInstance() {
 	reverb[1].set_extra_spread_base(0.000521); //for stereo effect
 }
 
-Ref<AudioEffectInstance> AudioEffectReverb::instance() {
+Ref<AudioEffectInstance> AudioEffectReverb::instantiate() {
 	Ref<AudioEffectReverbInstance> ins;
-	ins.instance();
+	ins.instantiate();
 	ins->base = Ref<AudioEffectReverb>(this);
 	return ins;
 }
@@ -93,12 +93,15 @@ void AudioEffectReverb::set_predelay_msec(float p_msec) {
 void AudioEffectReverb::set_predelay_feedback(float p_feedback) {
 	predelay_fb = CLAMP(p_feedback, 0, 0.98);
 }
+
 void AudioEffectReverb::set_room_size(float p_size) {
 	room_size = p_size;
 }
+
 void AudioEffectReverb::set_damping(float p_damping) {
 	damping = p_damping;
 }
+
 void AudioEffectReverb::set_spread(float p_spread) {
 	spread = p_spread;
 }
@@ -106,9 +109,11 @@ void AudioEffectReverb::set_spread(float p_spread) {
 void AudioEffectReverb::set_dry(float p_dry) {
 	dry = p_dry;
 }
+
 void AudioEffectReverb::set_wet(float p_wet) {
 	wet = p_wet;
 }
+
 void AudioEffectReverb::set_hpf(float p_hpf) {
 	hpf = p_hpf;
 }
@@ -116,24 +121,31 @@ void AudioEffectReverb::set_hpf(float p_hpf) {
 float AudioEffectReverb::get_predelay_msec() const {
 	return predelay;
 }
+
 float AudioEffectReverb::get_predelay_feedback() const {
 	return predelay_fb;
 }
+
 float AudioEffectReverb::get_room_size() const {
 	return room_size;
 }
+
 float AudioEffectReverb::get_damping() const {
 	return damping;
 }
+
 float AudioEffectReverb::get_spread() const {
 	return spread;
 }
+
 float AudioEffectReverb::get_dry() const {
 	return dry;
 }
+
 float AudioEffectReverb::get_wet() const {
 	return wet;
 }
+
 float AudioEffectReverb::get_hpf() const {
 	return hpf;
 }
@@ -164,15 +176,15 @@ void AudioEffectReverb::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hpf"), &AudioEffectReverb::get_hpf);
 
 	ADD_GROUP("Predelay", "predelay_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "predelay_msec", PROPERTY_HINT_RANGE, "20,500,1"), "set_predelay_msec", "get_predelay_msec");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "predelay_feedback", PROPERTY_HINT_RANGE, "0,0.98,0.01"), "set_predelay_feedback", "get_predelay_feedback");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "predelay_msec", PROPERTY_HINT_RANGE, "20,500,1,suffix:ms"), "set_predelay_msec", "get_predelay_msec");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "predelay_feedback", PROPERTY_HINT_RANGE, "0,0.98,0.01"), "set_predelay_feedback", "get_predelay_feedback");
 	ADD_GROUP("", "");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "room_size", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_room_size", "get_room_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "damping", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping", "get_damping");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spread", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_spread", "get_spread");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "hipass", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_hpf", "get_hpf");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "dry", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dry", "get_dry");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wet", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_wet", "get_wet");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "room_size", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_room_size", "get_room_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping", "get_damping");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spread", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_spread", "get_spread");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "hipass", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_hpf", "get_hpf");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dry", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dry", "get_dry");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wet", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_wet", "get_wet");
 }
 
 AudioEffectReverb::AudioEffectReverb() {

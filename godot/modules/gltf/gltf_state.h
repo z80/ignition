@@ -31,38 +31,35 @@
 #ifndef GLTF_STATE_H
 #define GLTF_STATE_H
 
-#include "core/map.h"
-#include "core/resource.h"
-#include "core/vector.h"
-#include "scene/animation/animation_player.h"
-#include "scene/resources/texture.h"
-
-#include "gltf_accessor.h"
-#include "gltf_animation.h"
-#include "gltf_buffer_view.h"
-#include "gltf_camera.h"
-#include "gltf_document.h"
-#include "gltf_light.h"
-#include "gltf_mesh.h"
-#include "gltf_node.h"
-#include "gltf_skeleton.h"
-#include "gltf_skin.h"
-#include "gltf_texture.h"
+#include "extensions/gltf_light.h"
+#include "structures/gltf_accessor.h"
+#include "structures/gltf_animation.h"
+#include "structures/gltf_buffer_view.h"
+#include "structures/gltf_camera.h"
+#include "structures/gltf_mesh.h"
+#include "structures/gltf_node.h"
+#include "structures/gltf_skeleton.h"
+#include "structures/gltf_skin.h"
+#include "structures/gltf_texture.h"
+#include "structures/gltf_texture_sampler.h"
 
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
-	friend class PackedSceneGLTF;
 
 	String filename;
+	String base_path;
 	Dictionary json;
 	int major_version = 0;
 	int minor_version = 0;
 	Vector<uint8_t> glb_data;
 
 	bool use_named_skin_binds = false;
-	bool use_legacy_names = false;
-	uint32_t compress_flags = 0;
+	bool use_khr_texture_transform = false;
+	bool discard_meshes_and_materials = false;
+	bool create_animations = true;
+
+	int handle_binary_image = HANDLE_BINARY_EXTRACT_TEXTURES;
 
 	Vector<Ref<GLTFNode>> nodes;
 	Vector<Vector<uint8_t>> buffers;
@@ -72,32 +69,53 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFMesh>> meshes; // meshes are loaded directly, no reason not to.
 
 	Vector<AnimationPlayer *> animation_players;
-	Map<Ref<Material>, GLTFMaterialIndex> material_cache;
+	HashMap<Ref<Material>, GLTFMaterialIndex> material_cache;
 	Vector<Ref<Material>> materials;
 
 	String scene_name;
 	Vector<int> root_nodes;
 	Vector<Ref<GLTFTexture>> textures;
-	Vector<Ref<Texture>> images;
+	Vector<Ref<GLTFTextureSampler>> texture_samplers;
+	Ref<GLTFTextureSampler> default_texture_sampler;
+	Vector<Ref<Texture2D>> images;
+	Vector<String> extensions_used;
+	Vector<String> extensions_required;
+	Vector<Ref<Image>> source_images;
 
 	Vector<Ref<GLTFSkin>> skins;
 	Vector<Ref<GLTFCamera>> cameras;
 	Vector<Ref<GLTFLight>> lights;
-	Set<String> unique_names;
-	Set<String> unique_animation_names;
+	HashSet<String> unique_names;
+	HashSet<String> unique_animation_names;
 
 	Vector<Ref<GLTFSkeleton>> skeletons;
-	Map<GLTFSkeletonIndex, GLTFNodeIndex> skeleton_to_node;
 	Vector<Ref<GLTFAnimation>> animations;
-	Map<GLTFNodeIndex, Node *> scene_nodes;
+	HashMap<GLTFNodeIndex, Node *> scene_nodes;
+	HashMap<GLTFNodeIndex, ImporterMeshInstance3D *> scene_mesh_instances;
 
-	Map<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
-	Map<ObjectID, Map<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
+	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
+	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
+	Dictionary additional_data;
 
 protected:
 	static void _bind_methods();
 
 public:
+	void add_used_extension(const String &p_extension, bool p_required = false);
+
+	enum GLTFHandleBinary {
+		HANDLE_BINARY_DISCARD_TEXTURES = 0,
+		HANDLE_BINARY_EXTRACT_TEXTURES,
+		HANDLE_BINARY_EMBED_AS_BASISU,
+		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // if this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
+	};
+	int32_t get_handle_binary_image() {
+		return handle_binary_image;
+	}
+	void set_handle_binary_image(int32_t p_handle_binary_image) {
+		handle_binary_image = p_handle_binary_image;
+	}
+
 	Dictionary get_json();
 	void set_json(Dictionary p_json);
 
@@ -113,65 +131,87 @@ public:
 	bool get_use_named_skin_binds();
 	void set_use_named_skin_binds(bool p_use_named_skin_binds);
 
-	Array get_nodes();
-	void set_nodes(Array p_nodes);
+	bool get_discard_textures();
+	void set_discard_textures(bool p_discard_textures);
 
-	Array get_buffers();
-	void set_buffers(Array p_buffers);
+	bool get_embed_as_basisu();
+	void set_embed_as_basisu(bool p_embed_as_basisu);
 
-	Array get_buffer_views();
-	void set_buffer_views(Array p_buffer_views);
+	bool get_extract_textures();
+	void set_extract_textures(bool p_extract_textures);
 
-	Array get_accessors();
-	void set_accessors(Array p_accessors);
+	bool get_discard_meshes_and_materials();
+	void set_discard_meshes_and_materials(bool p_discard_meshes_and_materials);
 
-	Array get_meshes();
-	void set_meshes(Array p_meshes);
+	TypedArray<GLTFNode> get_nodes();
+	void set_nodes(TypedArray<GLTFNode> p_nodes);
 
-	Array get_materials();
-	void set_materials(Array p_materials);
+	TypedArray<PackedByteArray> get_buffers();
+	void set_buffers(TypedArray<PackedByteArray> p_buffers);
+
+	TypedArray<GLTFBufferView> get_buffer_views();
+	void set_buffer_views(TypedArray<GLTFBufferView> p_buffer_views);
+
+	TypedArray<GLTFAccessor> get_accessors();
+	void set_accessors(TypedArray<GLTFAccessor> p_accessors);
+
+	TypedArray<GLTFMesh> get_meshes();
+	void set_meshes(TypedArray<GLTFMesh> p_meshes);
+
+	TypedArray<Material> get_materials();
+	void set_materials(TypedArray<Material> p_materials);
 
 	String get_scene_name();
 	void set_scene_name(String p_scene_name);
 
-	Array get_root_nodes();
-	void set_root_nodes(Array p_root_nodes);
+	String get_base_path();
+	void set_base_path(String p_base_path);
 
-	Array get_textures();
-	void set_textures(Array p_textures);
+	PackedInt32Array get_root_nodes();
+	void set_root_nodes(PackedInt32Array p_root_nodes);
 
-	Array get_images();
-	void set_images(Array p_images);
+	TypedArray<GLTFTexture> get_textures();
+	void set_textures(TypedArray<GLTFTexture> p_textures);
 
-	Array get_skins();
-	void set_skins(Array p_skins);
+	TypedArray<GLTFTextureSampler> get_texture_samplers();
+	void set_texture_samplers(TypedArray<GLTFTextureSampler> p_texture_samplers);
 
-	Array get_cameras();
-	void set_cameras(Array p_cameras);
+	TypedArray<Texture2D> get_images();
+	void set_images(TypedArray<Texture2D> p_images);
 
-	Array get_lights();
-	void set_lights(Array p_lights);
+	TypedArray<GLTFSkin> get_skins();
+	void set_skins(TypedArray<GLTFSkin> p_skins);
 
-	Array get_unique_names();
-	void set_unique_names(Array p_unique_names);
+	TypedArray<GLTFCamera> get_cameras();
+	void set_cameras(TypedArray<GLTFCamera> p_cameras);
 
-	Array get_unique_animation_names();
-	void set_unique_animation_names(Array p_unique_names);
+	TypedArray<GLTFLight> get_lights();
+	void set_lights(TypedArray<GLTFLight> p_lights);
 
-	Array get_skeletons();
-	void set_skeletons(Array p_skeletons);
+	TypedArray<String> get_unique_names();
+	void set_unique_names(TypedArray<String> p_unique_names);
 
-	Dictionary get_skeleton_to_node();
-	void set_skeleton_to_node(Dictionary p_skeleton_to_node);
+	TypedArray<String> get_unique_animation_names();
+	void set_unique_animation_names(TypedArray<String> p_unique_names);
 
-	Array get_animations();
-	void set_animations(Array p_animations);
+	TypedArray<GLTFSkeleton> get_skeletons();
+	void set_skeletons(TypedArray<GLTFSkeleton> p_skeletons);
+
+	bool get_create_animations();
+	void set_create_animations(bool p_create_animations);
+
+	TypedArray<GLTFAnimation> get_animations();
+	void set_animations(TypedArray<GLTFAnimation> p_animations);
 
 	Node *get_scene_node(GLTFNodeIndex idx);
+	ImporterMeshInstance3D *get_scene_mesh_instance(GLTFNodeIndex idx);
 
 	int get_animation_players_count(int idx);
 
 	AnimationPlayer *get_animation_player(int idx);
+
+	Variant get_additional_data(const StringName &p_extension_name);
+	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 };
 
 #endif // GLTF_STATE_H

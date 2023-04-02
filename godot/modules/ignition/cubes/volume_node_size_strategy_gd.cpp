@@ -8,18 +8,18 @@ namespace Ign
 void VolumeNodeSizeStrategyGd::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_radius", "r"), &VolumeNodeSizeStrategyGd::set_radius );
-	ClassDB::bind_method( D_METHOD("get_radius"),      &VolumeNodeSizeStrategyGd::get_radius, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_radius"),      &VolumeNodeSizeStrategyGd::get_radius );
 
 	ClassDB::bind_method( D_METHOD("set_focal_point", "f"), &VolumeNodeSizeStrategyGd::set_focal_point );
-	ClassDB::bind_method( D_METHOD("get_focal_point"),      &VolumeNodeSizeStrategyGd::get_focal_point, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("get_focal_point"),      &VolumeNodeSizeStrategyGd::get_focal_point );
 
 	ClassDB::bind_method( D_METHOD("set_max_level", "level"), &VolumeNodeSizeStrategyGd::set_max_level );
-	ClassDB::bind_method( D_METHOD("get_max_level"),          &VolumeNodeSizeStrategyGd::get_max_level, Variant::INT );
+	ClassDB::bind_method( D_METHOD("get_max_level"),          &VolumeNodeSizeStrategyGd::get_max_level );
 
-	ClassDB::bind_method( D_METHOD("compute_max_level", "detail_size"), &VolumeNodeSizeStrategyGd::compute_max_level, Variant::INT );
+	ClassDB::bind_method( D_METHOD("compute_max_level", "detail_size"), &VolumeNodeSizeStrategyGd::compute_max_level );
 
 	ADD_GROUP( "Ignition", "" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL,    "radius" ),        "set_radius",        "get_radius" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT,   "radius" ),        "set_radius",        "get_radius" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "focal_point" ),   "set_focal_point",   "get_focal_point" );
 	ADD_PROPERTY( PropertyInfo( Variant::INT,     "max_level" ),     "set_max_level",     "get_max_level" );
 }

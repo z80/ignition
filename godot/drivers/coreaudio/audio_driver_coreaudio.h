@@ -28,39 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef COREAUDIO_ENABLED
-
 #ifndef AUDIO_DRIVER_COREAUDIO_H
 #define AUDIO_DRIVER_COREAUDIO_H
 
+#ifdef COREAUDIO_ENABLED
+
 #include "servers/audio_server.h"
 
-#include <AudioUnit/AudioUnit.h>
-#ifdef OSX_ENABLED
-#include <CoreAudio/AudioHardware.h>
+#import <AudioUnit/AudioUnit.h>
+#ifdef MACOS_ENABLED
+#import <CoreAudio/AudioHardware.h>
 #endif
 
 class AudioDriverCoreAudio : public AudioDriver {
-	AudioComponentInstance audio_unit;
-	AudioComponentInstance input_unit;
+	AudioComponentInstance audio_unit = nullptr;
+	AudioComponentInstance input_unit = nullptr;
 
-	bool active;
+	bool active = false;
 	Mutex mutex;
 
-	String device_name;
-	String capture_device_name;
+	String output_device_name = "Default";
+	String input_device_name = "Default";
 
-	int mix_rate;
-	unsigned int channels;
-	unsigned int capture_channels;
-	unsigned int buffer_frames;
+	int mix_rate = 0;
+	unsigned int channels = 2;
+	unsigned int capture_channels = 2;
+	unsigned int buffer_frames = 0;
 
 	Vector<int32_t> samples_in;
 	Vector<int16_t> input_buf;
 
-#ifdef OSX_ENABLED
-	Array _get_device_list(bool capture = false);
-	void _set_device(const String &device, bool capture = false);
+#ifdef MACOS_ENABLED
+	PackedStringArray _get_device_list(bool capture = false);
+	void _set_device(const String &output_device, bool capture = false);
 
 	static OSStatus input_device_address_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
@@ -83,43 +83,43 @@ class AudioDriverCoreAudio : public AudioDriver {
 			UInt32 inBusNumber, UInt32 inNumberFrames,
 			AudioBufferList *ioData);
 
-	Error capture_init();
-	void capture_finish();
+	Error init_input_device();
+	void finish_input_device();
 
 public:
-	const char *get_name() const {
+	virtual const char *get_name() const override {
 		return "CoreAudio";
 	};
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
 
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
 
-	virtual Error capture_start();
-	virtual Error capture_stop();
+#ifdef MACOS_ENABLED
+	virtual PackedStringArray get_output_device_list() override;
+	virtual String get_output_device() override;
+	virtual void set_output_device(const String &p_name) override;
+
+	virtual PackedStringArray get_input_device_list() override;
+	virtual String get_input_device() override;
+	virtual void set_input_device(const String &p_name) override;
+#endif
+
+	virtual Error input_start() override;
+	virtual Error input_stop() override;
 
 	bool try_lock();
 	void stop();
 
-#ifdef OSX_ENABLED
-	virtual Array get_device_list();
-	virtual String get_device();
-	virtual void set_device(String device);
-
-	virtual Array capture_get_device_list();
-	virtual void capture_set_device(const String &p_name);
-	virtual String capture_get_device();
-#endif
-
 	AudioDriverCoreAudio();
-	~AudioDriverCoreAudio();
+	~AudioDriverCoreAudio() {}
 };
 
-#endif
+#endif // COREAUDIO_ENABLED
 
 #endif // AUDIO_DRIVER_COREAUDIO_H

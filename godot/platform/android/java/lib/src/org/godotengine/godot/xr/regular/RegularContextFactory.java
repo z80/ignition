@@ -30,7 +30,6 @@
 
 package org.godotengine.godot.xr.regular;
 
-import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.gl.GLSurfaceView;
 import org.godotengine.godot.utils.GLUtils;
 
@@ -53,25 +52,16 @@ public class RegularContextFactory implements GLSurfaceView.EGLContextFactory {
 	private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
 
 	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
-		String driver_name = GodotLib.getGlobal("rendering/quality/driver/driver_name");
-		if (GLUtils.use_gl3 && !driver_name.equals("GLES3")) {
-			GLUtils.use_gl3 = false;
-		}
-		if (GLUtils.use_gl3)
-			Log.w(TAG, "creating OpenGL ES 3.0 context :");
-		else
-			Log.w(TAG, "creating OpenGL ES 2.0 context :");
+		Log.w(TAG, "creating OpenGL ES 3.0 context :");
 
 		GLUtils.checkEglError(TAG, "Before eglCreateContext", egl);
 		EGLContext context;
 		if (GLUtils.use_debug_opengl) {
-			int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2, _EGL_CONTEXT_FLAGS_KHR, _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
-			int[] attrib_list3 = { EGL_CONTEXT_CLIENT_VERSION, 3, _EGL_CONTEXT_FLAGS_KHR, _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
-			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, GLUtils.use_gl3 ? attrib_list3 : attrib_list2);
+			int[] attrib_list = { EGL_CONTEXT_CLIENT_VERSION, 3, _EGL_CONTEXT_FLAGS_KHR, _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
+			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list);
 		} else {
-			int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };
-			int[] attrib_list3 = { EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE };
-			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, GLUtils.use_gl3 ? attrib_list3 : attrib_list2);
+			int[] attrib_list = { EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE };
+			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list);
 		}
 		GLUtils.checkEglError(TAG, "After eglCreateContext", egl);
 		return context;

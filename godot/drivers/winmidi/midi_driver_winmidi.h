@@ -34,7 +34,7 @@
 #ifdef WINMIDI_ENABLED
 
 #include "core/os/midi_driver.h"
-#include "core/vector.h"
+#include "core/templates/vector.h"
 
 #include <stdio.h>
 #define WIN32_LEAN_AND_MEAN
@@ -51,7 +51,7 @@ public:
 	virtual Error open();
 	virtual void close();
 
-	virtual PoolStringArray get_connected_inputs();
+	virtual PackedStringArray get_connected_inputs();
 
 	MIDIDriverWinMidi();
 	virtual ~MIDIDriverWinMidi();

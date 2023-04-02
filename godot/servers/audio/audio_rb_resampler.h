@@ -32,7 +32,7 @@
 #define AUDIO_RB_RESAMPLER_H
 
 #include "core/os/memory.h"
-#include "core/safe_refcount.h"
+#include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
 #include "servers/audio_server.h"
 
@@ -55,8 +55,8 @@ struct AudioRBResampler {
 		MIX_FRAC_MASK = MIX_FRAC_LEN - 1,
 	};
 
-	float *read_buf;
-	float *rb;
+	float *read_buf = nullptr;
+	float *rb = nullptr;
 
 	template <int C>
 	uint32_t _resample(AudioFrame *p_dest, int p_todo, int32_t p_increment);

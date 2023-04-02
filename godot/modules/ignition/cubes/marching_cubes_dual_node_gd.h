@@ -2,7 +2,7 @@
 #ifndef __MARCHING_CUBES_DUAL_NODE_GD_H_
 #define __MARCHING_CUBES_DUAL_NODE_GD_H_
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 #include "se3_ref.h"
 
 namespace Ign
@@ -11,9 +11,9 @@ namespace Ign
 class MarchingCubesDual;
 class MarchingCubesDualNode;
 
-class MarchingCubesDualNodeGd: public Reference
+class MarchingCubesDualNodeGd: public RefCounted
 {
-	GDCLASS(MarchingCubesDualNodeGd, Reference);
+	GDCLASS(MarchingCubesDualNodeGd, RefCounted);
 protected:
 	static void _bind_methods();
 
@@ -28,10 +28,10 @@ public:
 	Vector3 center_vector() const;
 	real_t node_size() const;
 	Ref<Se3Ref> se3_in_point( const Vector3 & at ) const;
-	Transform transform_in_point( const Vector3 & at ) const;
+	Transform3D transform_in_point( const Vector3 & at ) const;
 	String hash() const;
 
-	Transform asset_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at ) const;
+	Transform3D asset_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at ) const;
 
 	Array at();
 	int   size() const;

@@ -2,16 +2,17 @@
 #ifndef __CELESTIAL_ROTATION_REF_H_
 #define __CELESTIAL_ROTATION_REF_H_
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
+#include "scene/main/node.h"
 #include "celestial_rotation.h"
 
 namespace Ign
 {
 
-class CelestialRotationRef: public Reference
+class CelestialRotationRef: public RefCounted
 {
-    GDCLASS( CelestialRotationRef, Reference );
-    OBJ_CATEGORY("Ignition");
+    GDCLASS( CelestialRotationRef, RefCounted );
+    //OBJ_CATEGORY("Ignition");
 
 protected:
     static void _bind_methods();

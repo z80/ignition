@@ -71,11 +71,6 @@ void NetSocketAndroid::make_default() {
 	_create = _create_func;
 }
 
-NetSocketAndroid::NetSocketAndroid() :
-		wants_broadcast(false),
-		multicast_groups(0) {
-}
-
 NetSocketAndroid::~NetSocketAndroid() {
 	close();
 }
@@ -111,7 +106,7 @@ Error NetSocketAndroid::set_broadcasting_enabled(bool p_enabled) {
 	return OK;
 }
 
-Error NetSocketAndroid::join_multicast_group(const IP_Address &p_multi_address, String p_if_name) {
+Error NetSocketAndroid::join_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
 	Error err = NetSocketPosix::join_multicast_group(p_multi_address, p_if_name);
 	if (err != OK) {
 		return err;
@@ -125,7 +120,7 @@ Error NetSocketAndroid::join_multicast_group(const IP_Address &p_multi_address, 
 	return OK;
 }
 
-Error NetSocketAndroid::leave_multicast_group(const IP_Address &p_multi_address, String p_if_name) {
+Error NetSocketAndroid::leave_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
 	Error err = NetSocketPosix::leave_multicast_group(p_multi_address, p_if_name);
 	if (err != OK) {
 		return err;

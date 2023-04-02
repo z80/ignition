@@ -29,13 +29,20 @@
 /**************************************************************************/
 
 #include "register_types.h"
-#include "core/class_db.h"
+#include "core/object/class_db.h"
 #include "regex.h"
 
-void register_regex_types() {
-	ClassDB::register_class<RegExMatch>();
-	ClassDB::register_class<RegEx>();
+void initialize_regex_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
+	GDREGISTER_CLASS(RegExMatch);
+	GDREGISTER_CLASS(RegEx);
 }
 
-void unregister_regex_types() {
+void uninitialize_regex_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 }

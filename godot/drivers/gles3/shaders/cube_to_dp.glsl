@@ -1,6 +1,15 @@
 /* clang-format off */
 [vertex]
 
+#ifdef USE_GLES_OVER_GL
+#define lowp
+#define mediump
+#define highp
+#else
+precision mediump float;
+precision mediump int;
+#endif
+
 layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
 layout(location = 4) in vec2 uv_in;
@@ -14,6 +23,20 @@ void main() {
 
 /* clang-format off */
 [fragment]
+
+#ifdef USE_GLES_OVER_GL
+#define lowp
+#define mediump
+#define highp
+#else
+#if defined(USE_HIGHP_PRECISION)
+precision highp float;
+precision highp int;
+#else
+precision mediump float;
+precision mediump int;
+#endif
+#endif
 
 uniform highp samplerCube source_cube; //texunit:0
 /* clang-format on */
@@ -48,8 +71,8 @@ void main() {
 		normal.z = -normal.z;
 	}
 
-	//normal = normalize(vec3(uv_interp * 2.0 - 1.0, 1.0));
-	float depth = texture(source_cube, normal).r;
+	//normal = normalize(vec3( uv_interp * 2.0 - 1.0, 1.0 ));
+	float depth = textureCube(source_cube, normal).r;
 
 	// absolute values for direction cosines, bigger value equals closer to basis axis
 	vec3 unorm = abs(normal);

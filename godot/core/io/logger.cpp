@@ -30,29 +30,19 @@
 
 #include "logger.h"
 
-#include "core/os/dir_access.h"
+#include "core/config/project_settings.h"
+#include "core/core_globals.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
-#include "core/print_string.h"
-#include "core/project_settings.h"
-
-// va_copy was defined in the C99, but not in C++ standards before C++11.
-// When you compile C++ without --std=c++<XX> option, compilers still define
-// va_copy, otherwise you have to use the internal version (__va_copy).
-#if !defined(va_copy)
-#if defined(__GNUC__)
-#define va_copy(d, s) __va_copy((d), (s))
-#else
-#define va_copy(d, s) ((d) = (s))
-#endif
-#endif
+#include "core/string/print_string.h"
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
 #endif
 
 bool Logger::should_log(bool p_err) {
-	return (!p_err || _print_error_enabled) && (p_err || _print_line_enabled);
+	return (!p_err || CoreGlobals::print_error_enabled) && (p_err || CoreGlobals::print_line_enabled);
 }
 
 bool Logger::_flush_stdout_on_print = true;
@@ -61,7 +51,7 @@ void Logger::set_flush_stdout_on_print(bool value) {
 	_flush_stdout_on_print = value;
 }
 
-void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
 	}
@@ -92,8 +82,12 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 		err_details = p_code;
 	}
 
-	logf_error("%s: %s\n", err_type, err_details);
-	logf_error("   at: %s (%s:%i) - %s\n", p_function, p_file, p_line, p_code);
+	if (p_editor_notify) {
+		logf_error("%s: %s\n", err_type, err_details);
+	} else {
+		logf_error("USER %s: %s\n", err_type, err_details);
+	}
+	logf_error("   at: %s (%s:%i)\n", p_function, p_file, p_line);
 }
 
 void Logger::logf(const char *p_format, ...) {
@@ -122,30 +116,21 @@ void Logger::logf_error(const char *p_format, ...) {
 	va_end(argp);
 }
 
-Logger::~Logger() {}
-
-void RotatedFileLogger::close_file() {
-	if (file) {
-		memdelete(file);
-		file = nullptr;
-	}
-}
-
 void RotatedFileLogger::clear_old_backups() {
 	int max_backups = max_files - 1; // -1 for the current file
 
 	String basename = base_path.get_file().get_basename();
 	String extension = base_path.get_extension();
 
-	DirAccess *da = DirAccess::open(base_path.get_base_dir());
-	if (!da) {
+	Ref<DirAccess> da = DirAccess::open(base_path.get_base_dir());
+	if (da.is_null()) {
 		return;
 	}
 
 	da->list_dir_begin();
 	String f = da->get_next();
-	Set<String> backups;
-	while (f != String()) {
+	HashSet<String> backups;
+	while (!f.is_empty()) {
 		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
 			backups.insert(f);
 		}
@@ -153,51 +138,47 @@ void RotatedFileLogger::clear_old_backups() {
 	}
 	da->list_dir_end();
 
-	if (backups.size() > max_backups) {
+	if (backups.size() > (uint32_t)max_backups) {
 		// since backups are appended with timestamp and Set iterates them in sorted order,
 		// first backups are the oldest
 		int to_delete = backups.size() - max_backups;
-		for (Set<String>::Element *E = backups.front(); E && to_delete > 0; E = E->next(), --to_delete) {
-			da->remove(E->get());
+		for (HashSet<String>::Iterator E = backups.begin(); E && to_delete > 0; ++E, --to_delete) {
+			da->remove(*E);
 		}
 	}
-
-	memdelete(da);
 }
 
 void RotatedFileLogger::rotate_file() {
-	close_file();
+	file.unref();
 
 	if (FileAccess::exists(base_path)) {
 		if (max_files > 1) {
 			String timestamp = Time::get_singleton()->get_datetime_string_from_system().replace(":", ".");
 			String backup_name = base_path.get_basename() + timestamp;
-			if (base_path.get_extension() != String()) {
+			if (!base_path.get_extension().is_empty()) {
 				backup_name += "." + base_path.get_extension();
 			}
 
-			DirAccess *da = DirAccess::open(base_path.get_base_dir());
-			if (da) {
+			Ref<DirAccess> da = DirAccess::open(base_path.get_base_dir());
+			if (da.is_valid()) {
 				da->copy(base_path, backup_name);
-				memdelete(da);
 			}
 			clear_old_backups();
 		}
 	} else {
-		DirAccess *da = DirAccess::create(DirAccess::ACCESS_USERDATA);
-		if (da) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_USERDATA);
+		if (da.is_valid()) {
 			da->make_dir_recursive(base_path.get_base_dir());
-			memdelete(da);
 		}
 	}
 
 	file = FileAccess::open(base_path, FileAccess::WRITE);
+	file->detach_from_objectdb(); // Note: This FileAccess instance will exist longer than ObjectDB, therefore can't be registered in ObjectDB.
 }
 
 RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :
 		base_path(p_base_path.simplify_path()),
-		max_files(p_max_files > 0 ? p_max_files : 1),
-		file(nullptr) {
+		max_files(p_max_files > 0 ? p_max_files : 1) {
 	rotate_file();
 }
 
@@ -206,7 +187,7 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		return;
 	}
 
-	if (file) {
+	if (file.is_valid()) {
 		const int static_buf_size = 512;
 		char static_buf[static_buf_size];
 		char *buf = static_buf;
@@ -232,10 +213,6 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	}
 }
 
-RotatedFileLogger::~RotatedFileLogger() {
-	close_file();
-}
-
 void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	if (!should_log(p_err)) {
 		return;
@@ -252,8 +229,6 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		}
 	}
 }
-
-StdLogger::~StdLogger() {}
 
 CompositeLogger::CompositeLogger(Vector<Logger *> p_loggers) :
 		loggers(p_loggers) {
@@ -272,13 +247,13 @@ void CompositeLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	}
 }
 
-void CompositeLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+void CompositeLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
 	}
 
 	for (int i = 0; i < loggers.size(); ++i) {
-		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
 	}
 }
 

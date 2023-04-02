@@ -31,9 +31,9 @@
 #ifndef IOS_SUPPORT_H
 #define IOS_SUPPORT_H
 
-#if defined(IPHONE_ENABLED)
+#if defined(IOS_ENABLED)
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 namespace gdmono {
 namespace ios {
@@ -41,11 +41,10 @@ namespace support {
 
 void initialize();
 void cleanup();
-
 } // namespace support
 } // namespace ios
 } // namespace gdmono
 
-#endif // IPHONE_ENABLED
+#endif // IOS_ENABLED
 
 #endif // IOS_SUPPORT_H

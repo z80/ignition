@@ -32,13 +32,22 @@
 
 #include "image_loader_bmp.h"
 
-static ImageLoaderBMP *image_loader_bmp = nullptr;
+static Ref<ImageLoaderBMP> image_loader_bmp;
 
-void register_bmp_types() {
-	image_loader_bmp = memnew(ImageLoaderBMP);
+void initialize_bmp_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
+	image_loader_bmp.instantiate();
 	ImageLoader::add_image_format_loader(image_loader_bmp);
 }
 
-void unregister_bmp_types() {
-	memdelete(image_loader_bmp);
+void uninitialize_bmp_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
+	ImageLoader::remove_image_format_loader(image_loader_bmp);
+	image_loader_bmp.unref();
 }

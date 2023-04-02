@@ -1,33 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventWithModifiers" inherits="InputEvent" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="InputEventWithModifiers" inherits="InputEventFromWindow" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for keys events with modifiers.
 	</brief_description>
 	<description>
-		Contains keys events information with modifiers support like [code]Shift[/code] or [code]Alt[/code]. See [method Node._input].
+		Contains keys events information with modifiers support like [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See [method Node._input].
 	</description>
 	<tutorials>
-		<link>$DOCS_URL/tutorials/inputs/inputevent.html</link>
+		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_modifiers_mask" qualifiers="const">
+			<return type="int" enum="KeyModifierMask" />
+			<description>
+				Returns the keycode combination of modifier keys.
+			</description>
+		</method>
+		<method name="is_command_or_control_pressed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				On macOS, returns [code]true[/code] if [kbd]Meta[/kbd] ([kbd]Command[/kbd]) is pressed.
+				On other platforms, returns [code]true[/code] if [kbd]Ctrl[/kbd] is pressed.
+			</description>
+		</method>
 	</methods>
 	<members>
-		<member name="alt" type="bool" setter="set_alt" getter="get_alt" default="false">
-			State of the [code]Alt[/code] modifier.
+		<member name="alt_pressed" type="bool" setter="set_alt_pressed" getter="is_alt_pressed" default="false">
+			State of the [kbd]Alt[/kbd] modifier.
 		</member>
-		<member name="command" type="bool" setter="set_command" getter="get_command" default="false">
-			State of the [code]Command[/code] modifier.
+		<member name="command_or_control_autoremap" type="bool" setter="set_command_or_control_autoremap" getter="is_command_or_control_autoremap" default="false">
+			Automatically use [kbd]Meta[/kbd] ([kbd]Command[/kbd]) on macOS and [kbd]Ctrl[/kbd] on other platforms. If [code]true[/code], [member ctrl_pressed] and [member meta_pressed] cannot be set.
 		</member>
-		<member name="control" type="bool" setter="set_control" getter="get_control" default="false">
-			State of the [code]Ctrl[/code] modifier.
+		<member name="ctrl_pressed" type="bool" setter="set_ctrl_pressed" getter="is_ctrl_pressed" default="false">
+			State of the [kbd]Ctrl[/kbd] modifier.
 		</member>
-		<member name="meta" type="bool" setter="set_metakey" getter="get_metakey" default="false">
-			State of the [code]Meta[/code] modifier.
+		<member name="meta_pressed" type="bool" setter="set_meta_pressed" getter="is_meta_pressed" default="false">
+			State of the [kbd]Meta[/kbd] modifier. On Windows and Linux, this represents the Windows key (sometimes called "meta" or "super" on Linux). On macOS, this represents the Command key.
 		</member>
-		<member name="shift" type="bool" setter="set_shift" getter="get_shift" default="false">
-			State of the [code]Shift[/code] modifier.
+		<member name="shift_pressed" type="bool" setter="set_shift_pressed" getter="is_shift_pressed" default="false">
+			State of the [kbd]Shift[/kbd] modifier.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

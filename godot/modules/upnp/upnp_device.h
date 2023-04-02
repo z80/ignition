@@ -31,14 +31,13 @@
 #ifndef UPNP_DEVICE_H
 #define UPNP_DEVICE_H
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
-class UPNPDevice : public Reference {
-	GDCLASS(UPNPDevice, Reference);
+class UPNPDevice : public RefCounted {
+	GDCLASS(UPNPDevice, RefCounted);
 
 public:
 	enum IGDStatus {
-
 		IGD_STATUS_OK,
 		IGD_STATUS_HTTP_ERROR,
 		IGD_STATUS_HTTP_EMPTY,

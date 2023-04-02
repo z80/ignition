@@ -36,17 +36,16 @@
 class EditorAssetInstaller : public ConfirmationDialog {
 	GDCLASS(EditorAssetInstaller, ConfirmationDialog);
 
-	Tree *tree;
-	Label *asset_contents;
+	Tree *tree = nullptr;
+	Label *asset_contents = nullptr;
 	String package_path;
 	String asset_name;
-	AcceptDialog *error;
-	Map<String, TreeItem *> status_map;
-	bool updating;
-	void _update_subitems(TreeItem *p_item, bool p_check, bool p_first = false);
-	void _uncheck_parent(TreeItem *p_item);
+	AcceptDialog *error = nullptr;
+	HashMap<String, TreeItem *> status_map;
+	bool updating = false;
 	void _item_edited();
-	virtual void ok_pressed();
+	void _check_propagated_to_item(Object *p_obj, int column);
+	virtual void ok_pressed() override;
 
 protected:
 	static void _bind_methods();

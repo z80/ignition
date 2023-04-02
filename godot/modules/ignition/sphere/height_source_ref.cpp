@@ -7,12 +7,12 @@ namespace Ign
 {
 void HeightSourceRef::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("height", "at"),                  &HeightSourceRef::height, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("color", "at", "norm", "height"), &HeightSourceRef::color,  Variant::COLOR );
+	ClassDB::bind_method( D_METHOD("height", "at"),                  &HeightSourceRef::height );
+	ClassDB::bind_method( D_METHOD("color", "at", "norm", "height"), &HeightSourceRef::color );
 }
 
 HeightSourceRef::HeightSourceRef()
-	: Reference()
+	: RefCounted()
 {
 	height_source = nullptr;
 }

@@ -4,8 +4,8 @@ on: [push, pull_request]
 # Global Settings
 env:
   # Only used for the cache key. Increment version to force clean build.
-  GODOT_BASE_BRANCH: 3.5
-  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no
+  GODOT_BASE_BRANCH: master
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-macos
@@ -19,16 +19,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor (target=release_debug, tools=yes)
+          - name: Editor (target=editor, tests=yes)
             cache-name: macos-editor
-            target: release_debug
-            tools: true
-            bin: "./bin/godot.osx.opt.tools.64"
+            target: editor
+            tests: true
+            bin: "./bin/godot.macos.editor.x86_64"
 
-          - name: Template (target=release, tools=no)
+          - name: Template (target=template_release)
             cache-name: macos-template
-            target: release
-            tools: false
+            target: template_release
+            tests: false
+            sconsflags: debug_symbols=no
 
     steps:
       - uses: actions/checkout@v3
@@ -42,13 +43,25 @@ jobs:
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
 
+      - name: Setup Vulkan SDK
+        run: |
+          sh misc/scripts/install_vulkan_sdk_macos.sh
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
           sconsflags: ${{ env.SCONSFLAGS }}
-          platform: osx
+          platform: macos
           target: ${{ matrix.target }}
-          tools: ${{ matrix.tools }}
+          tests: ${{ matrix.tests }}
+
+      # Execute unit tests for the editor
+      - name: Unit tests
+        if: ${{ matrix.tests }}
+        run: |
+          ${{ matrix.bin }} --version
+          ${{ matrix.bin }} --help
+          ${{ matrix.bin }} --test
 
       - name: Prepare artifact
         run: |

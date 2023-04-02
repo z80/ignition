@@ -31,7 +31,7 @@
 #ifndef FILE_ACCESS_FILESYSTEM_JANDROID_H
 #define FILE_ACCESS_FILESYSTEM_JANDROID_H
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "java_godot_lib_jni.h"
 
 class FileAccessFilesystemJAndroid : public FileAccess {
@@ -56,11 +56,11 @@ class FileAccessFilesystemJAndroid : public FileAccess {
 	String absolute_path;
 	String path_src;
 
+	void _close(); ///< close a file
 	void _set_eof(bool eof);
 
 public:
-	virtual Error _open(const String &p_path, int p_mode_flags) override; ///< open a file
-	virtual void close() override; ///< close a file
+	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
 
 	/// returns the path for the current open file
@@ -71,7 +71,7 @@ public:
 	virtual void seek(uint64_t p_position) override; ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0) override; ///< seek from the end of file
 	virtual uint64_t get_position() const override; ///< get position in the file
-	virtual uint64_t get_len() const override; ///< get size of the file
+	virtual uint64_t get_length() const override; ///< get size of the file
 
 	virtual bool eof_reached() const override; ///< reading passed EOF
 
@@ -92,6 +92,8 @@ public:
 	virtual uint64_t _get_modified_time(const String &p_file) override;
 	virtual uint32_t _get_unix_permissions(const String &p_file) override { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) override { return FAILED; }
+
+	virtual void close() override;
 
 	FileAccessFilesystemJAndroid();
 	~FileAccessFilesystemJAndroid();

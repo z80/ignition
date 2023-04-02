@@ -9,8 +9,8 @@ env_navigation = env_modules.Clone()
 
 thirdparty_obj = []
 
-# Recast
-if env["builtin_recast"]:
+# Recast Thirdparty source files
+if env["builtin_recastnavigation"]:
     thirdparty_dir = "#thirdparty/recastnavigation/Recast/"
     thirdparty_sources = [
         "Source/Recast.cpp",
@@ -32,9 +32,8 @@ if env["builtin_recast"]:
     env_thirdparty = env_navigation.Clone()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
-    env.modules_sources += thirdparty_obj
 
-# RVO2
+# RVO Thirdparty source files
 if env["builtin_rvo2"]:
     thirdparty_dir = "#thirdparty/rvo2/"
     thirdparty_sources = [
@@ -48,7 +47,9 @@ if env["builtin_rvo2"]:
     env_thirdparty = env_navigation.Clone()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
-    env.modules_sources += thirdparty_obj
+
+
+env.modules_sources += thirdparty_obj
 
 
 # Godot source files
@@ -56,7 +57,8 @@ if env["builtin_rvo2"]:
 module_obj = []
 
 env_navigation.add_source_files(module_obj, "*.cpp")
-
+if env.editor_build:
+    env_navigation.add_source_files(module_obj, "editor/*.cpp")
 env.modules_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.

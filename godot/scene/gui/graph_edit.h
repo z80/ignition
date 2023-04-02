@@ -32,23 +32,22 @@
 #define GRAPH_EDIT_H
 
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/label.h"
 #include "scene/gui/scroll_bar.h"
-#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/gui/tool_button.h"
 
 class GraphEdit;
+class ViewPanner;
 
 class GraphEditFilter : public Control {
 	GDCLASS(GraphEditFilter, Control);
 
 	friend class GraphEdit;
 	friend class GraphEditMinimap;
-	GraphEdit *ge;
-	virtual bool has_point(const Point2 &p_point) const;
+	GraphEdit *ge = nullptr;
+	virtual bool has_point(const Point2 &p_point) const override;
 
 public:
 	GraphEditFilter(GraphEdit *p_edit);
@@ -59,11 +58,9 @@ class GraphEditMinimap : public Control {
 
 	friend class GraphEdit;
 	friend class GraphEditFilter;
-	GraphEdit *ge;
+	GraphEdit *ge = nullptr;
 
 protected:
-	static void _bind_methods();
-
 public:
 	GraphEditMinimap(GraphEdit *p_edit);
 
@@ -88,7 +85,7 @@ private:
 	Vector2 _convert_from_graph_position(const Vector2 &p_position);
 	Vector2 _convert_to_graph_position(const Vector2 &p_position);
 
-	void _gui_input(const Ref<InputEvent> &p_ev);
+	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 
 	void _adjust_graph_scroll(const Vector2 &p_offset);
 };
@@ -100,51 +97,68 @@ public:
 	struct Connection {
 		StringName from;
 		StringName to;
-		int from_port;
-		int to_port;
-		float activity;
+		int from_port = 0;
+		int to_port = 0;
+		float activity = 0.0;
+	};
+
+	// Should be in sync with ControlScheme in ViewPanner.
+	enum PanningScheme {
+		SCROLL_ZOOMS,
+		SCROLL_PANS,
 	};
 
 private:
-	Label *zoom_label;
-	ToolButton *zoom_minus;
-	ToolButton *zoom_reset;
-	ToolButton *zoom_plus;
+	Label *zoom_label = nullptr;
+	Button *zoom_minus = nullptr;
+	Button *zoom_reset = nullptr;
+	Button *zoom_plus = nullptr;
 
-	ToolButton *snap_button;
-	SpinBox *snap_amount;
+	Button *snap_button = nullptr;
+	SpinBox *snap_amount = nullptr;
 
-	Button *minimap_button;
+	Button *minimap_button = nullptr;
 
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+	Button *layout_button = nullptr;
 
-	float port_grab_distance_horizontal;
-	float port_grab_distance_vertical;
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
+
+	float port_hotzone_inner_extent = 0.0;
+	float port_hotzone_outer_extent = 0.0;
+
+	Ref<ViewPanner> panner;
+	bool warped_panning = true;
+	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
+
+	bool arrange_nodes_button_hidden = false;
 
 	bool connecting = false;
-	String connecting_from;
+	StringName connecting_from;
 	bool connecting_out = false;
-	int connecting_index;
-	int connecting_type;
+	int connecting_index = 0;
+	int connecting_type = 0;
 	Color connecting_color;
 	bool connecting_target = false;
 	Vector2 connecting_to;
-	String connecting_target_to;
-	int connecting_target_index;
+	StringName connecting_target_to;
+	int connecting_target_index = 0;
 	bool just_disconnected = false;
 	bool connecting_valid = false;
 	Vector2 click_pos;
 
+	PanningScheme panning_scheme = SCROLL_ZOOMS;
 	bool dragging = false;
 	bool just_selected = false;
 	bool moving_selection = false;
 	Vector2 drag_accum;
 
-	float zoom = 1.0f;
+	float zoom = 1.0;
 	float zoom_step = 1.2;
-	float zoom_min;
-	float zoom_max;
+	// Proper values set in constructor.
+	float zoom_min = 0.0;
+	float zoom_max = 0.0;
 
 	void _zoom_minus();
 	void _zoom_reset();
@@ -164,33 +178,40 @@ private:
 	bool awaiting_scroll_offset_update = false;
 	List<Connection> connections;
 
-	void _bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color &p_color, const Color &p_to_color, int &lines) const;
+	float lines_thickness = 2.0f;
+	float lines_curvature = 0.5f;
+	bool lines_antialiased = true;
 
-	void _draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width = 2.0, float p_bezier_ratio = 1.0);
+	PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to);
+	void _draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom);
 
+	void _graph_node_selected(Node *p_gn);
+	void _graph_node_deselected(Node *p_gn);
 	void _graph_node_raised(Node *p_gn);
 	void _graph_node_moved(Node *p_gn);
 	void _graph_node_slot_updated(int p_index, Node *p_gn);
 
 	void _update_scroll();
 	void _scroll_moved(double);
-	void _gui_input(const Ref<InputEvent> &p_ev);
+	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 
-	Control *connections_layer;
-	GraphEditFilter *top_layer;
-	GraphEditMinimap *minimap;
+	Control *connections_layer = nullptr;
+	GraphEditFilter *top_layer = nullptr;
+	GraphEditMinimap *minimap = nullptr;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
 
-	bool is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left);
+	bool is_in_input_hotzone(GraphNode *p_node, int p_port, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
+	bool is_in_output_hotzone(GraphNode *p_node, int p_port, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
+	bool is_in_port_hotzone(const Vector2 &pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left);
 
 	void _top_layer_draw();
 	void _connections_layer_draw();
 	void _minimap_draw();
 	void _update_scroll_offset();
 
-	Array _get_connection_list() const;
+	TypedArray<Dictionary> _get_connection_list() const;
 
-	bool lines_on_bg;
+	bool lines_on_bg = false;
 
 	struct ConnType {
 		union {
@@ -198,11 +219,14 @@ private:
 				uint32_t type_a;
 				uint32_t type_b;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
-		bool operator<(const ConnType &p_type) const {
-			return key < p_type.key;
+		static uint32_t hash(const ConnType &p_conn) {
+			return hash_one_uint64(p_conn.key);
+		}
+		bool operator==(const ConnType &p_type) const {
+			return key == p_type.key;
 		}
 
 		ConnType(uint32_t a = 0, uint32_t b = 0) {
@@ -211,11 +235,16 @@ private:
 		}
 	};
 
-	Set<ConnType> valid_connection_types;
-	Set<int> valid_left_disconnect_types;
-	Set<int> valid_right_disconnect_types;
+	HashSet<ConnType, ConnType> valid_connection_types;
+	HashSet<int> valid_left_disconnect_types;
+	HashSet<int> valid_right_disconnect_types;
 
-	HBoxContainer *zoom_hb;
+	HashMap<StringName, Vector<GraphNode *>> comment_enclosed_nodes;
+	void _update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes);
+	void _set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag);
+	void _set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, Vector2 p_pos);
+
+	HBoxContainer *zoom_hb = nullptr;
 
 	friend class GraphEditFilter;
 	bool _filter_input(const Point2 &p_point);
@@ -225,26 +254,55 @@ private:
 	friend class GraphEditMinimap;
 	void _minimap_toggled();
 
-	bool _check_clickable_control(Control *p_control, const Vector2 &pos);
+	bool _check_clickable_control(Control *p_control, const Vector2 &r_mouse_pos, const Vector2 &p_offset);
+
+	bool arranging_graph = false;
+
+	enum SET_OPERATIONS {
+		IS_EQUAL,
+		IS_SUBSET,
+		DIFFERENCE,
+		UNION,
+	};
+
+	int _set_operations(SET_OPERATIONS p_operation, HashSet<StringName> &r_u, const HashSet<StringName> &r_v);
+	HashMap<int, Vector<StringName>> _layering(const HashSet<StringName> &r_selected_nodes, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours);
+	Vector<StringName> _split(const Vector<StringName> &r_layer, const HashMap<StringName, Dictionary> &r_crossings);
+	void _horizontal_alignment(Dictionary &r_root, Dictionary &r_align, const HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours, const HashSet<StringName> &r_selected_nodes);
+	void _crossing_minimisation(HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours);
+	void _calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictionary &r_root, const Dictionary &r_node_names, const Dictionary &r_align, const HashSet<StringName> &r_block_heads, const HashMap<StringName, Pair<int, int>> &r_port_info);
+	float _calculate_threshold(StringName p_v, StringName p_w, const Dictionary &r_node_names, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_inner_shift, real_t p_current_threshold, const HashMap<StringName, Vector2> &r_node_positions);
+	void _place_block(StringName p_v, float p_delta, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_node_name, const Dictionary &r_inner_shift, Dictionary &r_sink, Dictionary &r_shift, HashMap<StringName, Vector2> &r_node_positions);
 
 protected:
 	static void _bind_methods();
-	virtual void add_child_notify(Node *p_child);
-	virtual void remove_child_notify(Node *p_child);
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
 	void _notification(int p_what);
-	virtual bool clips_input() const;
+
+	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
+	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2)
+	GDVIRTUAL3R(bool, _is_in_output_hotzone, Object *, int, Vector2)
+	GDVIRTUAL4R(bool, _is_node_hover_valid, StringName, int, StringName, int);
 
 public:
+	PackedStringArray get_configuration_warnings() const override;
+
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void clear_connections();
+	void force_connection_drag_end();
+	virtual bool is_node_hover_valid(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 
 	void set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity);
 
 	void add_valid_connection_type(int p_type, int p_with_type);
 	void remove_valid_connection_type(int p_type, int p_with_type);
 	bool is_valid_connection_type(int p_type, int p_with_type) const;
+
+	void set_panning_scheme(PanningScheme p_scheme);
+	PanningScheme get_panning_scheme() const;
 
 	void set_zoom(float p_zoom);
 	void set_zoom_custom(float p_zoom, const Vector2 &p_center);
@@ -270,6 +328,9 @@ public:
 	void set_minimap_enabled(bool p_enable);
 	bool is_minimap_enabled() const;
 
+	void set_arrange_nodes_button_hidden(bool p_enable);
+	bool is_arrange_nodes_button_hidden() const;
+
 	GraphEditFilter *get_top_layer() const { return top_layer; }
 	GraphEditMinimap *get_minimap() const { return minimap; }
 	void get_connection_list(List<Connection> *r_connections) const;
@@ -294,9 +355,24 @@ public:
 	int get_snap() const;
 	void set_snap(int p_snap);
 
+	void set_connection_lines_curvature(float p_curvature);
+	float get_connection_lines_curvature() const;
+
+	void set_connection_lines_thickness(float p_thickness);
+	float get_connection_lines_thickness() const;
+
+	void set_connection_lines_antialiased(bool p_antialiased);
+	bool is_connection_lines_antialiased() const;
+
 	HBoxContainer *get_zoom_hbox();
+	Ref<ViewPanner> get_panner();
+	void set_warped_panning(bool p_warped);
+
+	void arrange_nodes();
 
 	GraphEdit();
 };
+
+VARIANT_ENUM_CAST(GraphEdit::PanningScheme);
 
 #endif // GRAPH_EDIT_H

@@ -52,8 +52,8 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 };
 
-VARIANT_ENUM_CAST(Time::Month);
-VARIANT_ENUM_CAST(Time::Weekday);
+VARIANT_ENUM_CAST(Month);
+VARIANT_ENUM_CAST(Weekday);
 
 #define UNIX_TIME_TO_HMS                                                     \
 	uint8_t hour, minute, second;                                            \
@@ -141,13 +141,13 @@ VARIANT_ENUM_CAST(Time::Weekday);
 		String date, time;                                                                    \
 		if (p_datetime.find_char('T') > 0) {                                                  \
 			has_date = has_time = true;                                                       \
-			Vector<String> array = p_datetime.split("T");                                     \
+			PackedStringArray array = p_datetime.split("T");                                  \
 			ERR_FAIL_COND_V_MSG(array.size() < 2, ret, "Invalid ISO 8601 date/time string."); \
 			date = array[0];                                                                  \
 			time = array[1];                                                                  \
 		} else if (p_datetime.find_char(' ') > 0) {                                           \
 			has_date = has_time = true;                                                       \
-			Vector<String> array = p_datetime.split(" ");                                     \
+			PackedStringArray array = p_datetime.split(" ");                                  \
 			ERR_FAIL_COND_V_MSG(array.size() < 2, ret, "Invalid ISO 8601 date/time string."); \
 			date = array[0];                                                                  \
 			time = array[1];                                                                  \
@@ -160,7 +160,7 @@ VARIANT_ENUM_CAST(Time::Weekday);
 		}                                                                                     \
 		/* Set the variables from the contents of the string. */                              \
 		if (has_date) {                                                                       \
-			Vector<int> array = date.split_ints("-", false);                                  \
+			PackedInt32Array array = date.split_ints("-", false);                             \
 			ERR_FAIL_COND_V_MSG(array.size() < 3, ret, "Invalid ISO 8601 date string.");      \
 			year = array[0];                                                                  \
 			month = (Month)array[1];                                                          \
@@ -171,7 +171,7 @@ VARIANT_ENUM_CAST(Time::Weekday);
 			}                                                                                 \
 		}                                                                                     \
 		if (has_time) {                                                                       \
-			Vector<int> array = time.split_ints(":", false);                                  \
+			PackedInt32Array array = time.split_ints(":", false);                             \
 			ERR_FAIL_COND_V_MSG(array.size() < 3, ret, "Invalid ISO 8601 time string.");      \
 			hour = array[0];                                                                  \
 			minute = array[1];                                                                \
@@ -280,7 +280,7 @@ Dictionary Time::get_datetime_dict_from_datetime_string(String p_datetime, bool 
 }
 
 String Time::get_datetime_string_from_datetime_dict(const Dictionary p_datetime, bool p_use_space) const {
-	ERR_FAIL_COND_V_MSG(p_datetime.empty(), "", "Invalid datetime Dictionary: Dictionary is empty.");
+	ERR_FAIL_COND_V_MSG(p_datetime.is_empty(), "", "Invalid datetime Dictionary: Dictionary is empty.");
 	EXTRACT_FROM_DICTIONARY
 	VALIDATE_YMDHMS("")
 	// vformat only supports up to 6 arguments, so we need to split this up into 2 parts.
@@ -294,7 +294,7 @@ String Time::get_datetime_string_from_datetime_dict(const Dictionary p_datetime,
 }
 
 int64_t Time::get_unix_time_from_datetime_dict(const Dictionary p_datetime) const {
-	ERR_FAIL_COND_V_MSG(p_datetime.empty(), 0, "Invalid datetime Dictionary: Dictionary is empty");
+	ERR_FAIL_COND_V_MSG(p_datetime.is_empty(), 0, "Invalid datetime Dictionary: Dictionary is empty");
 	EXTRACT_FROM_DICTIONARY
 	VALIDATE_YMDHMS(0)
 	YMD_TO_DAY_NUMBER
@@ -324,63 +324,60 @@ String Time::get_offset_string_from_offset_minutes(int64_t p_offset_minutes) con
 }
 
 Dictionary Time::get_datetime_dict_from_system(bool p_utc) const {
-	OS::Date date = OS::get_singleton()->get_date(p_utc);
-	OS::Time time = OS::get_singleton()->get_time(p_utc);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
 	Dictionary datetime;
-	datetime[YEAR_KEY] = date.year;
-	datetime[MONTH_KEY] = (uint8_t)date.month;
-	datetime[DAY_KEY] = date.day;
-	datetime[WEEKDAY_KEY] = (uint8_t)date.weekday;
-	datetime[DST_KEY] = date.dst;
-	datetime[HOUR_KEY] = time.hour;
-	datetime[MINUTE_KEY] = time.min;
-	datetime[SECOND_KEY] = time.sec;
+	datetime[YEAR_KEY] = dt.year;
+	datetime[MONTH_KEY] = (uint8_t)dt.month;
+	datetime[DAY_KEY] = dt.day;
+	datetime[WEEKDAY_KEY] = (uint8_t)dt.weekday;
+	datetime[HOUR_KEY] = dt.hour;
+	datetime[MINUTE_KEY] = dt.minute;
+	datetime[SECOND_KEY] = dt.second;
+	datetime[DST_KEY] = dt.dst;
 	return datetime;
 }
 
 Dictionary Time::get_date_dict_from_system(bool p_utc) const {
-	OS::Date date = OS::get_singleton()->get_date(p_utc);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
 	Dictionary date_dictionary;
-	date_dictionary[YEAR_KEY] = date.year;
-	date_dictionary[MONTH_KEY] = (uint8_t)date.month;
-	date_dictionary[DAY_KEY] = date.day;
-	date_dictionary[WEEKDAY_KEY] = (uint8_t)date.weekday;
-	date_dictionary[DST_KEY] = date.dst;
+	date_dictionary[YEAR_KEY] = dt.year;
+	date_dictionary[MONTH_KEY] = (uint8_t)dt.month;
+	date_dictionary[DAY_KEY] = dt.day;
+	date_dictionary[WEEKDAY_KEY] = (uint8_t)dt.weekday;
 	return date_dictionary;
 }
 
 Dictionary Time::get_time_dict_from_system(bool p_utc) const {
-	OS::Time time = OS::get_singleton()->get_time(p_utc);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
 	Dictionary time_dictionary;
-	time_dictionary[HOUR_KEY] = time.hour;
-	time_dictionary[MINUTE_KEY] = time.min;
-	time_dictionary[SECOND_KEY] = time.sec;
+	time_dictionary[HOUR_KEY] = dt.hour;
+	time_dictionary[MINUTE_KEY] = dt.minute;
+	time_dictionary[SECOND_KEY] = dt.second;
 	return time_dictionary;
 }
 
 String Time::get_datetime_string_from_system(bool p_utc, bool p_use_space) const {
-	OS::Date date = OS::get_singleton()->get_date(p_utc);
-	OS::Time time = OS::get_singleton()->get_time(p_utc);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
 	// vformat only supports up to 6 arguments, so we need to split this up into 2 parts.
-	String timestamp = vformat("%04d-%02d-%02d", date.year, (uint8_t)date.month, date.day);
+	String timestamp = vformat("%04d-%02d-%02d", dt.year, (uint8_t)dt.month, dt.day);
 	if (p_use_space) {
-		timestamp = vformat("%s %02d:%02d:%02d", timestamp, time.hour, time.min, time.sec);
+		timestamp = vformat("%s %02d:%02d:%02d", timestamp, dt.hour, dt.minute, dt.second);
 	} else {
-		timestamp = vformat("%sT%02d:%02d:%02d", timestamp, time.hour, time.min, time.sec);
+		timestamp = vformat("%sT%02d:%02d:%02d", timestamp, dt.hour, dt.minute, dt.second);
 	}
 
 	return timestamp;
 }
 
 String Time::get_date_string_from_system(bool p_utc) const {
-	OS::Date date = OS::get_singleton()->get_date(p_utc);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
 	// Android is picky about the types passed to make Variant, so we need a cast.
-	return vformat("%04d-%02d-%02d", date.year, (uint8_t)date.month, date.day);
+	return vformat("%04d-%02d-%02d", dt.year, (uint8_t)dt.month, dt.day);
 }
 
 String Time::get_time_string_from_system(bool p_utc) const {
-	OS::Time time = OS::get_singleton()->get_time(p_utc);
-	return vformat("%02d:%02d:%02d", time.hour, time.min, time.sec);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
+	return vformat("%02d:%02d:%02d", dt.hour, dt.minute, dt.second);
 }
 
 Dictionary Time::get_time_zone_from_system() const {
@@ -392,7 +389,7 @@ Dictionary Time::get_time_zone_from_system() const {
 }
 
 double Time::get_unix_time_from_system() const {
-	return OS::get_singleton()->get_subsecond_unix_time();
+	return OS::get_singleton()->get_unix_time();
 }
 
 uint64_t Time::get_ticks_msec() const {

@@ -29,9 +29,11 @@
 /**************************************************************************/
 
 #include "editor_layouts_dialog.h"
-#include "core/class_db.h"
+
 #include "core/io/config_file.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
@@ -44,26 +46,40 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		switch (k->get_scancode()) {
-			case KEY_KP_ENTER:
-			case KEY_ENTER: {
+		switch (k->get_keycode()) {
+			case Key::KP_ENTER:
+			case Key::ENTER: {
 				if (get_hide_on_ok()) {
 					hide();
 				}
 				ok_pressed();
-				accept_event();
+				set_input_as_handled();
 			} break;
-			case KEY_ESCAPE: {
+			case Key::ESCAPE: {
 				hide();
-				accept_event();
+				set_input_as_handled();
 			} break;
+			default:
+				break;
 		}
 	}
 }
 
-void EditorLayoutsDialog::_bind_methods() {
-	ClassDB::bind_method("_line_gui_input", &EditorLayoutsDialog::_line_gui_input);
+void EditorLayoutsDialog::_update_ok_disable_state() {
+	if (layout_names->is_anything_selected()) {
+		get_ok_button()->set_disabled(false);
+	} else {
+		get_ok_button()->set_disabled(!name->is_visible() || name->get_text().is_empty());
+	}
+}
 
+void EditorLayoutsDialog::_deselect_layout_names() {
+	// The deselect method does not emit any signal, therefore we need update the disable state as well.
+	layout_names->deselect_all();
+	_update_ok_disable_state();
+}
+
+void EditorLayoutsDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("name_confirmed", PropertyInfo(Variant::STRING, "name")));
 }
 
@@ -71,20 +87,20 @@ void EditorLayoutsDialog::ok_pressed() {
 	if (layout_names->is_anything_selected()) {
 		Vector<int> const selected_items = layout_names->get_selected_items();
 		for (int i = 0; i < selected_items.size(); ++i) {
-			emit_signal("name_confirmed", layout_names->get_item_text(selected_items[i]));
+			emit_signal(SNAME("name_confirmed"), layout_names->get_item_text(selected_items[i]));
 		}
-	} else if (name->is_visible() && name->get_text() != "") {
-		emit_signal("name_confirmed", name->get_text());
+	} else if (name->is_visible() && !name->get_text().is_empty()) {
+		emit_signal(SNAME("name_confirmed"), name->get_text());
 	}
 }
 
 void EditorLayoutsDialog::_post_popup() {
 	ConfirmationDialog::_post_popup();
-	name->clear();
 	layout_names->clear();
+	name->clear();
 
 	Ref<ConfigFile> config;
-	config.instance();
+	config.instantiate();
 	Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
 	if (err != OK) {
 		return;
@@ -93,34 +109,44 @@ void EditorLayoutsDialog::_post_popup() {
 	List<String> layouts;
 	config.ptr()->get_sections(&layouts);
 
-	for (List<String>::Element *E = layouts.front(); E; E = E->next()) {
-		layout_names->add_item(**E);
+	for (const String &E : layouts) {
+		layout_names->add_item(E);
+	}
+	if (name->is_visible()) {
+		name->grab_focus();
+	} else {
+		layout_names->grab_focus();
 	}
 }
 
 EditorLayoutsDialog::EditorLayoutsDialog() {
 	makevb = memnew(VBoxContainer);
 	add_child(makevb);
-	makevb->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
-	makevb->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -5);
+	makevb->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
+	makevb->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 
 	layout_names = memnew(ItemList);
-	makevb->add_child(layout_names);
+	makevb->add_margin_child(TTR("Select existing layout:"), layout_names);
+	layout_names->set_auto_height(true);
+	layout_names->set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
 	layout_names->set_visible(true);
-	layout_names->set_margin(MARGIN_TOP, 5);
-	layout_names->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
-	layout_names->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -5);
+	layout_names->set_offset(SIDE_TOP, 5);
+	layout_names->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
+	layout_names->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 	layout_names->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	layout_names->set_select_mode(ItemList::SELECT_MULTI);
 	layout_names->set_allow_rmb_select(true);
+	layout_names->connect("multi_selected", callable_mp(this, &EditorLayoutsDialog::_update_ok_disable_state).unbind(2));
 
 	name = memnew(LineEdit);
 	makevb->add_child(name);
-	name->set_margin(MARGIN_TOP, 5);
-	name->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
-	name->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -5);
-	name->connect("gui_input", this, "_line_gui_input");
-	name->connect("focus_entered", layout_names, "unselect_all");
+	name->set_placeholder("Or enter new layout name");
+	name->set_offset(SIDE_TOP, 5);
+	name->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
+	name->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
+	name->connect("gui_input", callable_mp(this, &EditorLayoutsDialog::_line_gui_input));
+	name->connect("focus_entered", callable_mp(this, &EditorLayoutsDialog::_deselect_layout_names));
+	name->connect("text_changed", callable_mp(this, &EditorLayoutsDialog::_update_ok_disable_state).unbind(1));
 }
 
 void EditorLayoutsDialog::set_name_line_enabled(bool p_enabled) {

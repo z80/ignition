@@ -202,7 +202,7 @@ const std::vector<real_t>  & MarchingCubes::tangents( int material_ind )
 const std::vector<Vector3> & MarchingCubes::collision_faces( const Float dist, const DistanceScaler * scaler )
 {
 	const int qty = _all_faces.size();
-	const Transform t = source_transform( scaler );
+	const Transform3D t = source_transform( scaler );
 	const Vector3 o = Vector3(0.0, 0.0, 0.0);
 	_ret_verts.clear();
 
@@ -230,7 +230,7 @@ const std::vector<Vector3> & MarchingCubes::collision_faces( const Float dist, c
 
 
 
-const Transform MarchingCubes::source_transform( const DistanceScaler * scaler ) const
+const Transform3D MarchingCubes::source_transform( const DistanceScaler * scaler ) const
 {
 	Vector3d o;
 	if (scaler == nullptr)
@@ -240,7 +240,7 @@ const Transform MarchingCubes::source_transform( const DistanceScaler * scaler )
 
 	SE3 se3( source_se3 );
 	se3.r_ = o;
-	const Transform ret = se3.transform();
+	const Transform3D ret = se3.transform();
 	return ret;
 }
 

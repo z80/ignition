@@ -113,6 +113,10 @@ module_obj = []
 
 env_mbed_tls.add_source_files(module_obj, "*.cpp")
 
+if env["tests"]:
+    env_mbed_tls.Append(CPPDEFINES=["TESTS_ENABLED"])
+    env_mbed_tls.add_source_files(module_obj, "./tests/*.cpp")
+
 env.modules_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.

@@ -1,21 +1,11 @@
 def can_build(env, platform):
-    if not env["tools"]:
-        return False
-
-    # Depends on Embree library, which only supports x86_64 and aarch64.
-    if env["arch"].startswith("rv") or env["arch"].startswith("ppc"):
-        return False
-
-    if platform == "android":
-        return env["android_arch"] in ["arm64v8", "x86_64"]
-
-    if platform in ["javascript", "server"]:
-        return False
-
-    if env["bits"] == "32":
-        return False
-
-    return True
+    # Supported architectures depend on the Embree library.
+    if env["arch"] in ["x86_64", "arm64", "wasm32"]:
+        return True
+    # x86_32 only seems supported on Windows for now.
+    if env["arch"] == "x86_32" and platform == "windows":
+        return True
+    return False
 
 
 def configure(env):

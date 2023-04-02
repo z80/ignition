@@ -9,47 +9,47 @@ namespace Ign
 void CelestialMotionRef::_bind_methods()
 {
     ClassDB::bind_method( D_METHOD("set_allow_orbiting", "en"), &CelestialMotionRef::set_allow_orbiting );
-    ClassDB::bind_method( D_METHOD("get_allow_orbiting"), &CelestialMotionRef::get_allow_orbiting, Variant::BOOL );
+    ClassDB::bind_method( D_METHOD("get_allow_orbiting"), &CelestialMotionRef::get_allow_orbiting );
 
     ClassDB::bind_method( D_METHOD("stop"), &CelestialMotionRef::stop );
 
-    ClassDB::bind_method( D_METHOD("is_orbiting"), &CelestialMotionRef::is_orbiting, Variant::BOOL );
-    ClassDB::bind_method( D_METHOD("movement_type"), &CelestialMotionRef::movement_type, Variant::STRING );
-    ClassDB::bind_method( D_METHOD("specific_angular_momentum"), &CelestialMotionRef::specific_angular_momentum, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("eccentricity"), &CelestialMotionRef::eccentricity, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("period"), &CelestialMotionRef::period, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("time_after_periapsis"), &CelestialMotionRef::time_after_periapsis, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("closest_approach"), &CelestialMotionRef::closest_approach, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("perigee"), &CelestialMotionRef::perigee, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("apogee"), &CelestialMotionRef::apogee, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("min_velocity"), &CelestialMotionRef::min_velocity, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("max_velocity"), &CelestialMotionRef::max_velocity, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("excess_velocity"), &CelestialMotionRef::excess_velocity, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("deflection_angle"), &CelestialMotionRef::deflection_angle, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("acceleration"),       &CelestialMotionRef::acceleration, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("ex"), &CelestialMotionRef::ex, Variant::VECTOR3 );
-    ClassDB::bind_method( D_METHOD("ey"), &CelestialMotionRef::ey, Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD("is_orbiting"), &CelestialMotionRef::is_orbiting );
+    ClassDB::bind_method( D_METHOD("movement_type"), &CelestialMotionRef::movement_type );
+    ClassDB::bind_method( D_METHOD("specific_angular_momentum"), &CelestialMotionRef::specific_angular_momentum );
+    ClassDB::bind_method( D_METHOD("eccentricity"), &CelestialMotionRef::eccentricity );
+    ClassDB::bind_method( D_METHOD("period"), &CelestialMotionRef::period );
+    ClassDB::bind_method( D_METHOD("time_after_periapsis"), &CelestialMotionRef::time_after_periapsis );
+    ClassDB::bind_method( D_METHOD("closest_approach"), &CelestialMotionRef::closest_approach );
+    ClassDB::bind_method( D_METHOD("perigee"), &CelestialMotionRef::perigee );
+    ClassDB::bind_method( D_METHOD("apogee"), &CelestialMotionRef::apogee );
+    ClassDB::bind_method( D_METHOD("min_velocity"), &CelestialMotionRef::min_velocity );
+    ClassDB::bind_method( D_METHOD("max_velocity"), &CelestialMotionRef::max_velocity );
+    ClassDB::bind_method( D_METHOD("excess_velocity"), &CelestialMotionRef::excess_velocity );
+    ClassDB::bind_method( D_METHOD("deflection_angle"), &CelestialMotionRef::deflection_angle );
+	ClassDB::bind_method( D_METHOD("acceleration"),       &CelestialMotionRef::acceleration );
+	ClassDB::bind_method( D_METHOD("ex"), &CelestialMotionRef::ex );
+    ClassDB::bind_method( D_METHOD("ey"), &CelestialMotionRef::ey );
 
     ClassDB::bind_method( D_METHOD("set_se3", "se3"), &CelestialMotionRef::set_se3 );
-    ClassDB::bind_method( D_METHOD("get_se3"),        &CelestialMotionRef::get_se3, Variant::OBJECT );
+    ClassDB::bind_method( D_METHOD("get_se3"),        &CelestialMotionRef::get_se3 );
 
-    ClassDB::bind_method( D_METHOD("get_gm"),        &CelestialMotionRef::get_gm, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("get_gm"),        &CelestialMotionRef::get_gm );
 
-    ClassDB::bind_method( D_METHOD("launch", "gm", "se3"), &CelestialMotionRef::launch, Variant::BOOL );
-    ClassDB::bind_method( D_METHOD("compute_gm_by_speed",  "radius_km", "suface_orbit_velocity_kms"), &CelestialMotionRef::compute_gm_by_speed, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("compute_gm_by_period", "radius_km", "period_kms"), &CelestialMotionRef::compute_gm_by_period, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("launch", "gm", "se3"), &CelestialMotionRef::launch );
+    ClassDB::bind_method( D_METHOD("compute_gm_by_speed",  "radius_km", "suface_orbit_velocity_kms"), &CelestialMotionRef::compute_gm_by_speed );
+	ClassDB::bind_method( D_METHOD("compute_gm_by_period", "radius_km", "period_kms"), &CelestialMotionRef::compute_gm_by_period );
 	ClassDB::bind_method( D_METHOD("launch_elliptic", "gm", "unit_r", "unit_v", "period_hrs", "eccentricity"), &CelestialMotionRef::launch_elliptic );
-    ClassDB::bind_method( D_METHOD("process", "dt"), &CelestialMotionRef::process, Variant::OBJECT );
+    ClassDB::bind_method( D_METHOD("process", "dt"), &CelestialMotionRef::process );
     ClassDB::bind_method( D_METHOD("process_rf", "dt", "rf"), &CelestialMotionRef::process_rf );
-    ClassDB::bind_method( D_METHOD("duplicate"), &CelestialMotionRef::duplicate, Variant::OBJECT );
+    ClassDB::bind_method( D_METHOD("duplicate"), &CelestialMotionRef::duplicate );
 
-	ClassDB::bind_method( D_METHOD("orbit_points",  "orbiting_center", "camera_node", "qty", "scale_distance_ratio", "base_scale"), &CelestialMotionRef::orbit_points, Variant::POOL_VECTOR3_ARRAY );
+	ClassDB::bind_method( D_METHOD("orbit_points",  "orbiting_center", "camera_node", "qty", "scale_distance_ratio", "base_scale"), &CelestialMotionRef::orbit_points );
 
 	ClassDB::bind_method( D_METHOD("set_force_numerical", "en"), &CelestialMotionRef::set_force_numerical );
-	ClassDB::bind_method( D_METHOD("get_force_numerical"),       &CelestialMotionRef::get_force_numerical, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("get_force_numerical"),       &CelestialMotionRef::get_force_numerical );
 
 	ClassDB::bind_method( D_METHOD("set_debug", "en"), &CelestialMotionRef::set_debug );
-	ClassDB::bind_method( D_METHOD("get_debug"), &CelestialMotionRef::get_debug, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("get_debug"), &CelestialMotionRef::get_debug );
 
 	ADD_GROUP( "Ignition", "" );
     ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "allow_orbiting" ),       "set_allow_orbiting",       "get_allow_orbiting" );
@@ -59,7 +59,7 @@ void CelestialMotionRef::_bind_methods()
 }
 
 CelestialMotionRef::CelestialMotionRef()
-        : Reference()
+        : RefCounted()
 {
 }
 
@@ -219,7 +219,7 @@ Ref<Se3Ref> CelestialMotionRef::get_se3() const
 {
     const SE3 se3 = cm.get_se3();
     Ref<Se3Ref> se3_ref;
-    se3_ref.instance();
+    se3_ref.instantiate();
     se3_ref->se3 = se3;
     return se3_ref;
 }
@@ -259,7 +259,7 @@ void CelestialMotionRef::launch_elliptic( real_t gm, const Vector3 & unit_r, con
 Ref<Se3Ref> CelestialMotionRef::process( real_t dt )
 {
     Ref<Se3Ref> se3;
-    se3.instance();
+    se3.instantiate();
     se3->se3 = cm.process( dt );
     return se3;
 }
@@ -275,7 +275,7 @@ void CelestialMotionRef::process_rf( real_t dt, Node * rf )
 Ref<CelestialMotionRef> CelestialMotionRef::duplicate() const
 {
     Ref<CelestialMotionRef> ret;
-    ret.instance();
+    ret.instantiate();
     ret->cm = cm;
 
     return ret;
@@ -327,23 +327,23 @@ bool CelestialMotionRef::deserialize( const Dictionary & data )
     return true;
 }
 
-PoolVector3Array CelestialMotionRef::orbit_points( Node * orbiting_center, Node * camera_node, int qty, const Ref<ScaleDistanceRatioGd> & scale_distance_ratio, real_t base_scale )
+Array CelestialMotionRef::orbit_points( Node * orbiting_center, Node * camera_node, int qty, const Ref<ScaleDistanceRatioGd> & scale_distance_ratio, real_t base_scale )
 {
 	RefFrameNode * orbiting_center_node  = Node::cast_to<RefFrameNode>( orbiting_center );
 	RefFrameNode * player_viewpoint_node = Node::cast_to<RefFrameNode>( camera_node );
 	if ( (player_viewpoint_node == nullptr) || (orbiting_center_node == nullptr) )
-		return PoolVector3Array();
+		return Array();
 
 	cm.orbit_points( orbiting_center_node, player_viewpoint_node, qty, pts );
 	const int pts_qty = pts.size();
-	Spatial * c = (camera_node != nullptr) ? Node::cast_to<Spatial>( camera_node ) : nullptr;
+	Node3D * c = (camera_node != nullptr) ? Node::cast_to<Node3D>( camera_node ) : nullptr;
 
 	// Retrieve scaler from the reference.
 	const ScaleDistanceRatioGd * s = scale_distance_ratio.ptr();
 	// If no scaler provided, return points as they are.
 	if ( s == nullptr )
 	{
-		PoolVector3Array ret;
+		Array ret;
 		ret.resize( pts_qty );
 		for ( int i=0; i<pts_qty; i++ )
 		{
@@ -362,7 +362,7 @@ PoolVector3Array CelestialMotionRef::orbit_points( Node * orbiting_center, Node 
 		pts.ptrw()[i] = scaled_r;
 	}
 
-	PoolVector3Array ret;
+	Array ret;
 	ret.resize( pts_qty );
 	for ( int i=0; i<pts_qty; i++ )
 	{

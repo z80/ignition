@@ -31,18 +31,12 @@
 #include "collision_shape_2d.h"
 
 #include "collision_object_2d.h"
-#include "core/engine.h"
 #include "scene/2d/area_2d.h"
-#include "scene/resources/capsule_shape_2d.h"
-#include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/line_shape_2d.h"
-#include "scene/resources/rectangle_shape_2d.h"
-#include "scene/resources/segment_shape_2d.h"
 
 void CollisionShape2D::_shape_changed() {
-	update();
+	queue_redraw();
 }
 
 void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
@@ -53,6 +47,11 @@ void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
 	parent->shape_owner_set_disabled(owner_id, disabled);
 	parent->shape_owner_set_one_way_collision(owner_id, one_way_collision);
 	parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
+}
+
+Color CollisionShape2D::_get_default_debug_color() const {
+	SceneTree *st = SceneTree::get_singleton();
+	return st ? st->get_debug_collisions_color() : Color();
 }
 
 void CollisionShape2D::_notification(int p_what) {
@@ -66,34 +65,28 @@ void CollisionShape2D::_notification(int p_what) {
 				}
 				_update_in_shape_owner();
 			}
-
-			/*if (Engine::get_singleton()->is_editor_hint()) {
-				//display above all else
-				set_z_as_relative(false);
-				set_z_index(VS::CANVAS_ITEM_Z_MAX - 1);
-			}*/
-
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			if (parent) {
 				_update_in_shape_owner();
 			}
-
 		} break;
+
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			if (parent) {
 				_update_in_shape_owner(true);
 			}
-
 		} break;
+
 		case NOTIFICATION_UNPARENTED: {
 			if (parent) {
 				parent->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
 			parent = nullptr;
-
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			ERR_FAIL_COND(!is_inside_tree());
 
@@ -107,7 +100,7 @@ void CollisionShape2D::_notification(int p_what) {
 
 			rect = Rect2();
 
-			Color draw_col = get_tree()->get_debug_collisions_color();
+			Color draw_col = debug_color;
 			if (disabled) {
 				float g = draw_col.get_v();
 				draw_col.r = g;
@@ -122,21 +115,21 @@ void CollisionShape2D::_notification(int p_what) {
 
 			if (one_way_collision) {
 				// Draw an arrow indicating the one-way collision direction
-				draw_col = get_tree()->get_debug_collisions_color().inverted();
+				draw_col = debug_color.inverted();
 				if (disabled) {
 					draw_col = draw_col.darkened(0.25);
 				}
 				Vector2 line_to(0, 20);
-				draw_line(Vector2(), line_to, draw_col, 2, true);
-				Vector<Vector2> pts;
-				float tsize = 8;
-				pts.push_back(line_to + (Vector2(0, tsize)));
-				pts.push_back(line_to + (Vector2(Math_SQRT12 * tsize, 0)));
-				pts.push_back(line_to + (Vector2(-Math_SQRT12 * tsize, 0)));
-				Vector<Color> cols;
-				for (int i = 0; i < 3; i++) {
-					cols.push_back(draw_col);
-				}
+				draw_line(Vector2(), line_to, draw_col, 2);
+				real_t tsize = 8;
+
+				Vector<Vector2> pts{
+					line_to + Vector2(0, tsize),
+					line_to + Vector2(Math_SQRT12 * tsize, 0),
+					line_to + Vector2(-Math_SQRT12 * tsize, 0)
+				};
+
+				Vector<Color> cols{ draw_col, draw_col, draw_col };
 
 				draw_primitive(pts, cols, Vector<Vector2>());
 			}
@@ -149,10 +142,10 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 		return;
 	}
 	if (shape.is_valid()) {
-		shape->disconnect("changed", this, "_shape_changed");
+		shape->disconnect("changed", callable_mp(this, &CollisionShape2D::_shape_changed));
 	}
 	shape = p_shape;
-	update();
+	queue_redraw();
 	if (parent) {
 		parent->shape_owner_clear_shapes(owner_id);
 		if (shape.is_valid()) {
@@ -162,10 +155,10 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 	}
 
 	if (shape.is_valid()) {
-		shape->connect("changed", this, "_shape_changed");
+		shape->connect("changed", callable_mp(this, &CollisionShape2D::_shape_changed));
 	}
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<Shape2D> CollisionShape2D::get_shape() const {
@@ -180,41 +173,31 @@ bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 	return shape->_edit_is_selected_on_click(p_point, p_tolerance);
 }
 
-String CollisionShape2D::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
+PackedStringArray CollisionShape2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		if (warning != String()) {
-			warning += "\n\n";
-		}
-		warning += TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+		warnings.push_back(RTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));
 	}
-
 	if (!shape.is_valid()) {
-		if (warning != String()) {
-			warning += "\n\n";
-		}
-		warning += TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!");
-	} else {
-		Ref<ConvexPolygonShape2D> convex = shape;
-		Ref<ConcavePolygonShape2D> concave = shape;
-		if (convex.is_valid() || concave.is_valid()) {
-			if (warning != String()) {
-				warning += "\n\n";
-			}
-			warning += TTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead.");
-		}
+		warnings.push_back(RTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"));
 	}
 	if (one_way_collision && Object::cast_to<Area2D>(get_parent())) {
-		warning += TTR("The One Way Collision property will be ignored when the parent is an Area2D.");
+		warnings.push_back(RTR("The One Way Collision property will be ignored when the parent is an Area2D."));
 	}
 
-	return warning;
+	Ref<ConvexPolygonShape2D> convex = shape;
+	Ref<ConcavePolygonShape2D> concave = shape;
+	if (convex.is_valid() || concave.is_valid()) {
+		warnings.push_back(RTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead."));
+	}
+
+	return warnings;
 }
 
 void CollisionShape2D::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
-	update();
+	queue_redraw();
 	if (parent) {
 		parent->shape_owner_set_disabled(owner_id, p_disabled);
 	}
@@ -226,26 +209,60 @@ bool CollisionShape2D::is_disabled() const {
 
 void CollisionShape2D::set_one_way_collision(bool p_enable) {
 	one_way_collision = p_enable;
-	update();
+	queue_redraw();
 	if (parent) {
 		parent->shape_owner_set_one_way_collision(owner_id, p_enable);
 	}
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 bool CollisionShape2D::is_one_way_collision_enabled() const {
 	return one_way_collision;
 }
 
-void CollisionShape2D::set_one_way_collision_margin(float p_margin) {
+void CollisionShape2D::set_one_way_collision_margin(real_t p_margin) {
 	one_way_collision_margin = p_margin;
 	if (parent) {
 		parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
 	}
 }
 
-float CollisionShape2D::get_one_way_collision_margin() const {
+real_t CollisionShape2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
+}
+
+void CollisionShape2D::set_debug_color(const Color &p_color) {
+	debug_color = p_color;
+	queue_redraw();
+}
+
+Color CollisionShape2D::get_debug_color() const {
+	return debug_color;
+}
+
+bool CollisionShape2D::_property_can_revert(const StringName &p_name) const {
+	if (p_name == "debug_color") {
+		return true;
+	}
+	return false;
+}
+
+bool CollisionShape2D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "debug_color") {
+		r_property = _get_default_debug_color();
+		return true;
+	}
+	return false;
+}
+
+void CollisionShape2D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "debug_color") {
+		if (debug_color == _get_default_debug_color()) {
+			p_property.usage = PROPERTY_USAGE_DEFAULT & ~PROPERTY_USAGE_STORAGE;
+		} else {
+			p_property.usage = PROPERTY_USAGE_DEFAULT;
+		}
+	}
 }
 
 void CollisionShape2D::_bind_methods() {
@@ -257,20 +274,20 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionShape2D::set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionShape2D::get_one_way_collision_margin);
-	ClassDB::bind_method(D_METHOD("_shape_changed"), &CollisionShape2D::_shape_changed);
+	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape2D::set_debug_color);
+	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape2D::get_debug_color);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1"), "set_one_way_collision_margin", "get_one_way_collision_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_color"), "set_debug_color", "get_debug_color");
+	// Default value depends on a project setting, override for doc generation purposes.
+	ADD_PROPERTY_DEFAULT("debug_color", Color());
 }
 
 CollisionShape2D::CollisionShape2D() {
-	rect = Rect2(-Point2(10, 10), Point2(20, 20));
 	set_notify_local_transform(true);
-	owner_id = 0;
-	parent = nullptr;
-	disabled = false;
-	one_way_collision = false;
-	one_way_collision_margin = 1.0;
+	set_hide_clip_children(true);
+	debug_color = _get_default_debug_color();
 }

@@ -4,7 +4,7 @@
 
 #include "ref_frame_node.h"
 #include "distance_scaler_ref.h"
-#include "core/reference.h"
+#include "core/ref_counted.h"
 
 namespace Ign
 {
@@ -12,7 +12,7 @@ namespace Ign
 class RefFrameAutoNode: public RefFrameNode
 {
 	GDCLASS( RefFrameAutoNode, RefFrameNode );
-	OBJ_CATEGORY("Ignition");
+	//OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();
@@ -27,8 +27,8 @@ public:
 	void set_root_path( const NodePath & root );
 	const NodePath & get_root_path() const;
 
-	Transform distance_scaled_t() const;
-	real_t    distance_scale() const;
+	Transform3D distance_scaled_t() const;
+	real_t      distance_scale() const;
 
 	void set_apply_scale( bool en );
 	bool get_apply_scale() const;

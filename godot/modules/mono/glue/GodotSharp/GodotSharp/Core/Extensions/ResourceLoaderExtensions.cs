@@ -14,17 +14,17 @@ namespace Godot
         /// <see cref="Resource"/> type that should be handled by the <see cref="ResourceFormatLoader"/>.
         /// Anything that inherits from <see cref="Resource"/> can be used as a type hint,
         /// for example <see cref="Image"/>.
-        /// If <paramref name="noCache"/> is <see langword="true"/>, the resource cache will be bypassed and
-        /// the resource will be loaded anew. Otherwise, the cached resource will be returned if it exists.
+        /// The <paramref name="cacheMode"/> property defines whether and how the cache should
+        /// be used or updated when loading the resource. See <see cref="CacheMode"/> for details.
         /// Returns an empty resource if no <see cref="ResourceFormatLoader"/> could handle the file.
         /// </summary>
         /// <exception cref="InvalidCastException">
-        /// Thrown when the given the loaded resource can't be casted to the given type <typeparamref name="T"/>.
+        /// The loaded resource can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Resource"/>.</typeparam>
-        public static T Load<T>(string path, string typeHint = null, bool noCache = false) where T : class
+        public static T Load<T>(string path, string typeHint = null, CacheMode cacheMode = CacheMode.Reuse) where T : class
         {
-            return (T)(object)Load(path, typeHint, noCache);
+            return (T)(object)Load(path, typeHint, cacheMode);
         }
     }
 }

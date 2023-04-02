@@ -75,7 +75,7 @@ public:
 	// see the variable declarations for more info.
 	void params_set_node_expansion(real_t p_value) {
 		BVH_LOCKED_FUNCTION
-		if (p_value >= 0) {
+		if (p_value >= 0.0) {
 			tree._node_expansion = p_value;
 			tree._auto_node_expansion = false;
 		} else {
@@ -196,6 +196,7 @@ public:
 	////////////////////////////////////////////////////
 
 	void move(BVHHandle p_handle, const BOUNDS &p_aabb) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		if (tree.item_move(p_handle, p_aabb)) {
 			if (USE_PAIRS) {
@@ -205,10 +206,12 @@ public:
 	}
 
 	void recheck_pairs(BVHHandle p_handle) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		force_collision_check(p_handle);
 	}
 
 	void erase(BVHHandle p_handle) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		// call unpair and remove all references to the item
 		// before deleting from the tree
@@ -225,6 +228,7 @@ public:
 	// set pairable has never been called.
 	// (deferred collision checks are a workaround for visual server for historical reasons)
 	void force_collision_check(BVHHandle p_handle) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		if (USE_PAIRS) {
 			// the aabb should already be up to date in the BVH
@@ -243,6 +247,7 @@ public:
 	// but generically this makes items add or remove from the
 	// tree internally, to speed things up by ignoring inactive items
 	bool activate(BVHHandle p_handle, const BOUNDS &p_aabb, bool p_delay_collision_check = false) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		// sending the aabb here prevents the need for the BVH to maintain
 		// a redundant copy of the aabb.
@@ -267,6 +272,7 @@ public:
 	}
 
 	bool deactivate(BVHHandle p_handle) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		// returns success
 		if (tree.item_deactivate(p_handle)) {
@@ -285,6 +291,7 @@ public:
 	}
 
 	bool get_active(BVHHandle p_handle) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		return tree.item_get_active(p_handle);
 	}
@@ -307,6 +314,7 @@ public:
 
 	// prefer calling this directly as type safe
 	void set_tree(const BVHHandle &p_handle, uint32_t p_tree_id, uint32_t p_tree_collision_mask, bool p_force_collision_check = true) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		// Returns true if the pairing state has changed.
 		bool state_changed = tree.item_set_tree(p_handle, p_tree_id, p_tree_collision_mask);
@@ -396,7 +404,7 @@ public:
 			return 0;
 		}
 
-		Vector<Vector3> convex_points = Geometry::compute_convex_mesh_points(&p_convex[0], p_convex.size());
+		Vector<Vector3> convex_points = Geometry3D::compute_convex_mesh_points(&p_convex[0], p_convex.size());
 		if (convex_points.size() == 0) {
 			return 0;
 		}
@@ -436,9 +444,7 @@ private:
 		params.result_array = nullptr;
 		params.subindex_array = nullptr;
 
-		for (unsigned int n = 0; n < changed_items.size(); n++) {
-			const BVHHandle &h = changed_items[n];
-
+		for (const BVHHandle &h : changed_items) {
 			// use the expanded aabb for pairing
 			const BOUNDS &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
 			BVHABB_CLASS abb;
@@ -457,9 +463,7 @@ private:
 			params.result_count_overall = 0; // might not be needed
 			tree.cull_aabb(params, false);
 
-			for (unsigned int i = 0; i < tree._cull_hits.size(); i++) {
-				uint32_t ref_id = tree._cull_hits[i];
-
+			for (const uint32_t ref_id : tree._cull_hits) {
 				// don't collide against ourself
 				if (ref_id == changed_item_ref_id) {
 					continue;
@@ -478,6 +482,7 @@ private:
 
 public:
 	void item_get_AABB(BVHHandle p_handle, BOUNDS &r_aabb) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVHABB_CLASS abb;
 		tree.item_get_ABB(p_handle, abb);
 		abb.to(r_aabb);
@@ -740,7 +745,7 @@ private:
 		// remove from changed items (not very efficient yet)
 		for (int n = 0; n < (int)changed_items.size(); n++) {
 			if (changed_items[n] == p_handle) {
-				changed_items.remove_unordered(n);
+				changed_items.remove_at_unordered(n);
 
 				// because we are using an unordered remove,
 				// the last changed item will now be at spot 'n',
@@ -754,19 +759,19 @@ private:
 		tree._extra[p_handle.id()].last_updated_tick = 0;
 	}
 
-	PairCallback pair_callback;
-	UnpairCallback unpair_callback;
-	CheckPairCallback check_pair_callback;
-	void *pair_callback_userdata;
-	void *unpair_callback_userdata;
-	void *check_pair_callback_userdata;
+	PairCallback pair_callback = nullptr;
+	UnpairCallback unpair_callback = nullptr;
+	CheckPairCallback check_pair_callback = nullptr;
+	void *pair_callback_userdata = nullptr;
+	void *unpair_callback_userdata = nullptr;
+	void *check_pair_callback_userdata = nullptr;
 
 	BVHTREE_CLASS tree;
 
 	// for collision pairing,
 	// maintain a list of all items moved etc on each frame / tick
 	LocalVector<BVHHandle, uint32_t, true> changed_items;
-	uint32_t _tick;
+	uint32_t _tick = 1; // Start from 1 so items with 0 indicate never updated.
 
 	class BVHLockedFunction {
 	public:
@@ -774,11 +779,7 @@ private:
 			// will be compiled out if not set in template
 			if (p_thread_safe) {
 				_mutex = p_mutex;
-
-				if (_mutex->try_lock() != OK) {
-					WARN_PRINT_ONCE("Info : multithread BVH access detected (benign)");
-					_mutex->lock();
-				}
+				_mutex->lock();
 
 			} else {
 				_mutex = nullptr;
@@ -792,23 +793,16 @@ private:
 		}
 
 	private:
-		Mutex *_mutex;
+		Mutex *_mutex = nullptr;
 	};
 
 	Mutex _mutex;
 
 	// local toggle for turning on and off thread safety in project settings
-	bool _thread_safe;
+	bool _thread_safe = BVH_THREAD_SAFE;
 
 public:
-	BVH_Manager() {
-		_tick = 1; // start from 1 so items with 0 indicate never updated
-		pair_callback = nullptr;
-		unpair_callback = nullptr;
-		pair_callback_userdata = nullptr;
-		unpair_callback_userdata = nullptr;
-		_thread_safe = BVH_THREAD_SAFE;
-	}
+	BVH_Manager() {}
 };
 
 #undef BVHTREE_CLASS

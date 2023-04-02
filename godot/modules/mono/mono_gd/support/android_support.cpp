@@ -44,7 +44,7 @@
 #endif
 
 #include "core/os/os.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 #include "platform/android/java_godot_wrapper.h"
 #include "platform/android/os_android.h"
 #include "platform/android/thread_jandroid.h"
@@ -69,7 +69,7 @@ struct ScopedLocalRef {
 	_FORCE_INLINE_ operator T() const { return local_ref; }
 	_FORCE_INLINE_ operator jvalue() const { return (jvalue)local_ref; }
 
-	_FORCE_INLINE_ operator bool() const { return local_ref != NULL; }
+	_FORCE_INLINE_ operator bool() const { return local_ref != nullptr; }
 
 	_FORCE_INLINE_ bool operator==(std::nullptr_t) const {
 		return local_ref == nullptr;
@@ -109,24 +109,22 @@ bool jni_exception_check(JNIEnv *p_env) {
 String app_native_lib_dir_cache;
 
 String determine_app_native_lib_dir() {
-	// The JNI code is the equivalent of:
-	//
-	// return godotActivity.getApplicationInfo().nativeLibraryDir;
-
 	JNIEnv *env = get_jni_env();
 
-	GodotJavaWrapper *godot_java = static_cast<OS_Android *>(OS::get_singleton())->get_godot_java();
-	jobject activity = godot_java->get_activity();
+	ScopedLocalRef<jclass> activityThreadClass(env, env->FindClass("android/app/ActivityThread"));
+	jmethodID currentActivityThread = env->GetStaticMethodID(activityThreadClass, "currentActivityThread", "()Landroid/app/ActivityThread;");
+	ScopedLocalRef<jobject> activityThread(env, env->CallStaticObjectMethod(activityThreadClass, currentActivityThread));
+	jmethodID getApplication = env->GetMethodID(activityThreadClass, "getApplication", "()Landroid/app/Application;");
+	ScopedLocalRef<jobject> ctx(env, env->CallObjectMethod(activityThread, getApplication));
 
-	ScopedLocalRef<jclass> contextClass(env, env->FindClass("android/content/Context"));
-	jmethodID getApplicationInfo = env->GetMethodID(contextClass, "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
-	ScopedLocalRef<jobject> applicationInfo(env, env->CallObjectMethod(activity, getApplicationInfo));
+	jmethodID getApplicationInfo = env->GetMethodID(env->GetObjectClass(ctx), "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
+	ScopedLocalRef<jobject> applicationInfo(env, env->CallObjectMethod(ctx, getApplicationInfo));
 	jfieldID nativeLibraryDirField = env->GetFieldID(env->GetObjectClass(applicationInfo), "nativeLibraryDir", "Ljava/lang/String;");
 	ScopedLocalRef<jstring> nativeLibraryDir(env, (jstring)env->GetObjectField(applicationInfo, nativeLibraryDirField));
 
 	String result;
 
-	const char *const nativeLibraryDirUtf8 = env->GetStringUTFChars(nativeLibraryDir, NULL);
+	const char *const nativeLibraryDirUtf8 = env->GetStringUTFChars(nativeLibraryDir, nullptr);
 	if (nativeLibraryDirUtf8) {
 		result.parse_utf8(nativeLibraryDirUtf8);
 		env->ReleaseStringUTFChars(nativeLibraryDir, nativeLibraryDirUtf8);
@@ -136,8 +134,9 @@ String determine_app_native_lib_dir() {
 }
 
 String get_app_native_lib_dir() {
-	if (app_native_lib_dir_cache.empty())
+	if (app_native_lib_dir_cache.is_empty()) {
 		app_native_lib_dir_cache = determine_app_native_lib_dir();
+	}
 	return app_native_lib_dir_cache;
 }
 
@@ -146,10 +145,11 @@ int gd_mono_convert_dl_flags(int flags) {
 
 	int lflags = flags & MONO_DL_LOCAL ? 0 : RTLD_GLOBAL;
 
-	if (flags & MONO_DL_LAZY)
+	if (flags & MONO_DL_LAZY) {
 		lflags |= RTLD_LAZY;
-	else
+	} else {
 		lflags |= RTLD_NOW;
+	}
 
 	return lflags;
 }
@@ -161,10 +161,10 @@ int gd_mono_convert_dl_flags(int flags) {
 const char *mono_so_name = GD_MONO_SO_NAME;
 const char *godot_so_name = "libgodot_android.so";
 
-void *mono_dl_handle = NULL;
-void *godot_dl_handle = NULL;
+void *mono_dl_handle = nullptr;
+void *godot_dl_handle = nullptr;
 
-void *_try_dlopen_file_path(const String &p_so_path, int p_flags) {
+void *try_dlopen(const String &p_so_path, int p_flags) {
 	if (!FileAccess::exists(p_so_path)) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			OS::get_singleton()->print("Cannot find shared library: '%s'\n", p_so_path.utf8().get_data());
@@ -190,41 +190,8 @@ void *_try_dlopen_file_path(const String &p_so_path, int p_flags) {
 	return handle;
 }
 
-void *try_dlopen(const String &p_so_path, int p_flags) {
-	void *handle = _try_dlopen_file_path(p_so_path, p_flags);
-
-	if (handle) {
-		return handle;
-	}
-
-	// Try only with the file name, without specifying the location.
-	// This is needed when installing from Android App Bundles, as the native
-	// libraries are not extracted. They are loaded directly from the APK.
-	// See: https://stackoverflow.com/a/56551499
-	// If we pass only the file name to dlopen without the location, it should
-	// search the native libraries in all locations, including inside the apk.
-
-	String so_name = p_so_path.get_file();
-
-	int lflags = gd_mono_convert_dl_flags(p_flags);
-
-	handle = dlopen(so_name.utf8().get_data(), lflags);
-	if (!handle) {
-		if (OS::get_singleton()->is_stdout_verbose()) {
-			OS::get_singleton()->print("Failed to open shared library: '%s'. Error: '%s'\n", so_name.utf8().get_data(), dlerror());
-		}
-		return nullptr;
-	}
-
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		OS::get_singleton()->print("Successfully loaded shared library: '%s'\n", so_name.utf8().get_data());
-	}
-
-	return handle;
-}
-
 void *gd_mono_android_dlopen(const char *p_name, int p_flags, char **r_err, void *p_user_data) {
-	if (p_name == NULL) {
+	if (p_name == nullptr) {
 		// __Internal
 
 		if (!mono_dl_handle) {
@@ -232,7 +199,6 @@ void *gd_mono_android_dlopen(const char *p_name, int p_flags, char **r_err, void
 			String so_path = path::join(app_native_lib_dir, mono_so_name);
 
 			mono_dl_handle = try_dlopen(so_path, p_flags);
-			ERR_FAIL_COND_V_MSG(!mono_dl_handle, nullptr, "Failed to load Mono native library from path");
 		}
 
 		return mono_dl_handle;
@@ -250,38 +216,42 @@ void *gd_mono_android_dlopen(const char *p_name, int p_flags, char **r_err, void
 		return try_dlopen(so_path, p_flags);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void *gd_mono_android_dlsym(void *p_handle, const char *p_name, char **r_err, void *p_user_data) {
 	void *sym_addr = dlsym(p_handle, p_name);
 
-	if (sym_addr)
+	if (sym_addr) {
 		return sym_addr;
+	}
 
 	if (p_handle == mono_dl_handle && godot_dl_handle) {
 		// Looking up for '__Internal' P/Invoke. We want to search in both the Mono and Godot shared libraries.
 		// This is needed to resolve the monodroid P/Invoke functions that are defined at the bottom of the file.
 		sym_addr = dlsym(godot_dl_handle, p_name);
 
-		if (sym_addr)
+		if (sym_addr) {
 			return sym_addr;
+		}
 	}
 
-	if (r_err)
+	if (r_err) {
 		*r_err = str_format_new("%s\n", dlerror());
+	}
 
-	return NULL;
+	return nullptr;
 }
 
 void *gd_mono_android_dlclose(void *p_handle, void *p_user_data) {
 	dlclose(p_handle);
 
 	// Not sure if this ever happens. Does Mono close the handle for the main module?
-	if (p_handle == mono_dl_handle)
-		mono_dl_handle = NULL;
+	if (p_handle == mono_dl_handle) {
+		mono_dl_handle = nullptr;
+	}
 
-	return NULL;
+	return nullptr;
 }
 
 int32_t build_version_sdk_int = 0;
@@ -306,7 +276,7 @@ int32_t get_build_version_sdk_int() {
 	return build_version_sdk_int;
 }
 
-jobject certStore = NULL; // KeyStore
+jobject certStore = nullptr; // KeyStore
 
 MonoBoolean _gd_mono_init_cert_store() {
 	// The JNI code is the equivalent of:
@@ -331,13 +301,15 @@ MonoBoolean _gd_mono_init_cert_store() {
 
 	ScopedLocalRef<jobject> certStoreLocal(env, env->CallStaticObjectMethod(keyStoreClass, getInstance, androidCAStoreString.get()));
 
-	if (jni_exception_check(env))
+	if (jni_exception_check(env)) {
 		return 0;
+	}
 
-	env->CallVoidMethod(certStoreLocal, load, NULL);
+	env->CallVoidMethod(certStoreLocal, load, nullptr);
 
-	if (jni_exception_check(env))
+	if (jni_exception_check(env)) {
 		return 0;
+	}
 
 	certStore = env->NewGlobalRef(certStoreLocal);
 
@@ -348,8 +320,9 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 	// The JNI code is the equivalent of:
 	//
 	// Certificate certificate = certStore.getCertificate(alias);
-	// if (certificate == null)
+	// if (certificate == null) {
 	//	return null;
+	// }
 	// return certificate.getEncoded();
 
 	MonoError mono_error;
@@ -358,7 +331,7 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 	if (!mono_error_ok(&mono_error)) {
 		ERR_PRINT(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&mono_error) + "'.");
 		mono_error_cleanup(&mono_error);
-		return NULL;
+		return nullptr;
 	}
 
 	JNIEnv *env = get_jni_env();
@@ -367,25 +340,26 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 	mono_free(alias_utf8);
 
 	ScopedLocalRef<jclass> keyStoreClass(env, env->FindClass("java/security/KeyStore"));
-	ERR_FAIL_NULL_V(keyStoreClass, NULL);
+	ERR_FAIL_NULL_V(keyStoreClass, nullptr);
 	ScopedLocalRef<jclass> certificateClass(env, env->FindClass("java/security/cert/Certificate"));
-	ERR_FAIL_NULL_V(certificateClass, NULL);
+	ERR_FAIL_NULL_V(certificateClass, nullptr);
 
 	jmethodID getCertificate = env->GetMethodID(keyStoreClass, "getCertificate", "(Ljava/lang/String;)Ljava/security/cert/Certificate;");
-	ERR_FAIL_NULL_V(getCertificate, NULL);
+	ERR_FAIL_NULL_V(getCertificate, nullptr);
 
 	jmethodID getEncoded = env->GetMethodID(certificateClass, "getEncoded", "()[B");
-	ERR_FAIL_NULL_V(getEncoded, NULL);
+	ERR_FAIL_NULL_V(getEncoded, nullptr);
 
 	ScopedLocalRef<jobject> certificate(env, env->CallObjectMethod(certStore, getCertificate, js_alias.get()));
 
-	if (!certificate)
-		return NULL;
+	if (!certificate) {
+		return nullptr;
+	}
 
 	ScopedLocalRef<jbyteArray> encoded(env, (jbyteArray)env->CallObjectMethod(certificate, getEncoded));
 	jsize encodedLength = env->GetArrayLength(encoded);
 
-	MonoArray *encoded_ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(uint8_t), encodedLength);
+	MonoArray *encoded_ret = mono_array_new(mono_domain_get(), mono_get_byte_class(), encodedLength);
 	uint8_t *dest = (uint8_t *)mono_array_addr(encoded_ret, uint8_t, 0);
 
 	env->GetByteArrayRegion(encoded, 0, encodedLength, reinterpret_cast<jbyte *>(dest));
@@ -402,32 +376,32 @@ void initialize() {
 	// We need to set this environment variable to make the monodroid BCL use btls instead of legacy as the default provider
 	OS::get_singleton()->set_environment("XA_TLS_PROVIDER", "btls");
 
-	mono_dl_fallback_register(gd_mono_android_dlopen, gd_mono_android_dlsym, gd_mono_android_dlclose, NULL);
+	mono_dl_fallback_register(gd_mono_android_dlopen, gd_mono_android_dlsym, gd_mono_android_dlclose, nullptr);
 
 	String app_native_lib_dir = get_app_native_lib_dir();
 	String so_path = path::join(app_native_lib_dir, godot_so_name);
 
 	godot_dl_handle = try_dlopen(so_path, gd_mono_convert_dl_flags(MONO_DL_LAZY));
-	ERR_FAIL_COND_MSG(!godot_dl_handle, "Failed to load Godot native library");
 }
 
 void cleanup() {
 	// This is called after shutting down the Mono runtime
 
-	if (mono_dl_handle)
-		gd_mono_android_dlclose(mono_dl_handle, NULL);
+	if (mono_dl_handle) {
+		gd_mono_android_dlclose(mono_dl_handle, nullptr);
+	}
 
-	if (godot_dl_handle)
-		gd_mono_android_dlclose(godot_dl_handle, NULL);
+	if (godot_dl_handle) {
+		gd_mono_android_dlclose(godot_dl_handle, nullptr);
+	}
 
 	JNIEnv *env = get_jni_env();
 
 	if (certStore) {
 		env->DeleteGlobalRef(certStore);
-		certStore = NULL;
+		certStore = nullptr;
 	}
 }
-
 } // namespace support
 } // namespace android
 } // namespace gdmono
@@ -460,7 +434,7 @@ GD_PINVOKE_EXPORT int32_t monodroid_get_system_property(const char *p_name, char
 			memcpy(*r_value, prop_value_str, len);
 			(*r_value)[len] = '\0';
 		} else {
-			*r_value = NULL;
+			*r_value = nullptr;
 		}
 	}
 
@@ -472,8 +446,9 @@ GD_PINVOKE_EXPORT mono_bool _monodroid_get_network_interface_up_state(const char
 	//
 	// NetworkInterface.getByName(p_ifname).isUp()
 
-	if (!r_is_up || !p_ifname || strlen(p_ifname) == 0)
+	if (!r_is_up || !p_ifname || strlen(p_ifname) == 0) {
 		return 0;
+	}
 
 	*r_is_up = 0;
 
@@ -491,8 +466,9 @@ GD_PINVOKE_EXPORT mono_bool _monodroid_get_network_interface_up_state(const char
 	ScopedLocalRef<jstring> js_ifname(env, env->NewStringUTF(p_ifname));
 	ScopedLocalRef<jobject> networkInterface(env, env->CallStaticObjectMethod(networkInterfaceClass, getByName, js_ifname.get()));
 
-	if (!networkInterface)
+	if (!networkInterface) {
 		return 0;
+	}
 
 	*r_is_up = (mono_bool)env->CallBooleanMethod(networkInterface, isUp);
 
@@ -504,8 +480,9 @@ GD_PINVOKE_EXPORT mono_bool _monodroid_get_network_interface_supports_multicast(
 	//
 	// NetworkInterface.getByName(p_ifname).supportsMulticast()
 
-	if (!r_supports_multicast || !p_ifname || strlen(p_ifname) == 0)
+	if (!r_supports_multicast || !p_ifname || strlen(p_ifname) == 0) {
 		return 0;
+	}
 
 	*r_supports_multicast = 0;
 
@@ -523,8 +500,9 @@ GD_PINVOKE_EXPORT mono_bool _monodroid_get_network_interface_supports_multicast(
 	ScopedLocalRef<jstring> js_ifname(env, env->NewStringUTF(p_ifname));
 	ScopedLocalRef<jobject> networkInterface(env, env->CallStaticObjectMethod(networkInterfaceClass, getByName, js_ifname.get()));
 
-	if (!networkInterface)
+	if (!networkInterface) {
 		return 0;
+	}
 
 	*r_supports_multicast = (mono_bool)env->CallBooleanMethod(networkInterface, supportsMulticast);
 
@@ -569,8 +547,9 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	ScopedLocalRef<jobject> connectivityManager(env, env->CallObjectMethod(applicationContext, getSystemService, connectivityServiceString.get()));
 
-	if (!connectivityManager)
+	if (!connectivityManager) {
 		return;
+	}
 
 	ScopedLocalRef<jclass> connectivityManagerClass(env, env->FindClass("android/net/ConnectivityManager"));
 	ERR_FAIL_NULL(connectivityManagerClass);
@@ -580,8 +559,9 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	ScopedLocalRef<jobject> activeNetwork(env, env->CallObjectMethod(connectivityManager, getActiveNetwork));
 
-	if (!activeNetwork)
+	if (!activeNetwork) {
 		return;
+	}
 
 	jmethodID getLinkProperties = env->GetMethodID(connectivityManagerClass,
 			"getLinkProperties", "(Landroid/net/Network;)Landroid/net/LinkProperties;");
@@ -589,8 +569,9 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	ScopedLocalRef<jobject> linkProperties(env, env->CallObjectMethod(connectivityManager, getLinkProperties, activeNetwork.get()));
 
-	if (!linkProperties)
+	if (!linkProperties) {
 		return;
+	}
 
 	ScopedLocalRef<jclass> linkPropertiesClass(env, env->FindClass("android/net/LinkProperties"));
 	ERR_FAIL_NULL(linkPropertiesClass);
@@ -600,8 +581,9 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	ScopedLocalRef<jobject> dnsServers(env, env->CallObjectMethod(linkProperties, getDnsServers));
 
-	if (!dnsServers)
+	if (!dnsServers) {
 		return;
+	}
 
 	ScopedLocalRef<jclass> listClass(env, env->FindClass("java/util/List"));
 	ERR_FAIL_NULL(listClass);
@@ -611,11 +593,13 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	int dnsServersCount = env->CallIntMethod(dnsServers, listSize);
 
-	if (dnsServersCount > dns_servers_len)
+	if (dnsServersCount > dns_servers_len) {
 		dnsServersCount = dns_servers_len;
+	}
 
-	if (dnsServersCount <= 0)
+	if (dnsServersCount <= 0) {
 		return;
+	}
 
 	jmethodID listGet = env->GetMethodID(listClass, "get", "(I)Ljava/lang/Object;");
 	ERR_FAIL_NULL(listGet);
@@ -628,8 +612,9 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	for (int i = 0; i < dnsServersCount; i++) {
 		ScopedLocalRef<jobject> dnsServer(env, env->CallObjectMethod(dnsServers, listGet, (jint)i));
-		if (!dnsServer)
+		if (!dnsServer) {
 			continue;
+		}
 
 		ScopedLocalRef<jstring> hostAddress(env, (jstring)env->CallObjectMethod(dnsServer, getHostAddress));
 		const char *host_address = env->GetStringUTFChars(hostAddress, 0);
@@ -644,10 +629,11 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 }
 
 GD_PINVOKE_EXPORT int32_t _monodroid_get_dns_servers(void **r_dns_servers_array) {
-	if (!r_dns_servers_array)
+	if (!r_dns_servers_array) {
 		return -1;
+	}
 
-	*r_dns_servers_array = NULL;
+	*r_dns_servers_array = nullptr;
 
 	char *dns_servers[dns_servers_len];
 	int dns_servers_count = 0;
@@ -692,23 +678,25 @@ GD_PINVOKE_EXPORT const char *_monodroid_timezone_get_default_id() {
 	JNIEnv *env = get_jni_env();
 
 	ScopedLocalRef<jclass> timeZoneClass(env, env->FindClass("java/util/TimeZone"));
-	ERR_FAIL_NULL_V(timeZoneClass, NULL);
+	ERR_FAIL_NULL_V(timeZoneClass, nullptr);
 
 	jmethodID getDefault = env->GetStaticMethodID(timeZoneClass, "getDefault", "()Ljava/util/TimeZone;");
-	ERR_FAIL_NULL_V(getDefault, NULL);
+	ERR_FAIL_NULL_V(getDefault, nullptr);
 
 	jmethodID getID = env->GetMethodID(timeZoneClass, "getID", "()Ljava/lang/String;");
-	ERR_FAIL_NULL_V(getID, NULL);
+	ERR_FAIL_NULL_V(getID, nullptr);
 
 	ScopedLocalRef<jobject> defaultTimeZone(env, env->CallStaticObjectMethod(timeZoneClass, getDefault));
 
-	if (!defaultTimeZone)
-		return NULL;
+	if (!defaultTimeZone) {
+		return nullptr;
+	}
 
 	ScopedLocalRef<jstring> defaultTimeZoneID(env, (jstring)env->CallObjectMethod(defaultTimeZone, getID));
 
-	if (!defaultTimeZoneID)
-		return NULL;
+	if (!defaultTimeZoneID) {
+		return nullptr;
+	}
 
 	const char *default_time_zone_id = env->GetStringUTFChars(defaultTimeZoneID, 0);
 

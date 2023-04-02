@@ -6,41 +6,41 @@ namespace Ign
 
 void MarchingCubesRebuildStrategyGd::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("need_rebuild", "view_point_se3"),          &MarchingCubesRebuildStrategyGd::need_rebuild,    Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("need_rescale", "view_point_se3"),          &MarchingCubesRebuildStrategyGd::need_rescale,    Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("need_rebuild", "view_point_se3"),          &MarchingCubesRebuildStrategyGd::need_rebuild );
+	ClassDB::bind_method( D_METHOD("need_rescale", "view_point_se3"),          &MarchingCubesRebuildStrategyGd::need_rescale );
 
-	ClassDB::bind_method( D_METHOD("get_focal_point_rebuild"), &MarchingCubesRebuildStrategyGd::get_focal_point_rebuild, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("get_focal_point_rescale"), &MarchingCubesRebuildStrategyGd::get_focal_point_rescale, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("get_focal_point_rebuild"), &MarchingCubesRebuildStrategyGd::get_focal_point_rebuild );
+	ClassDB::bind_method( D_METHOD("get_focal_point_rescale"), &MarchingCubesRebuildStrategyGd::get_focal_point_rescale );
 
 	ClassDB::bind_method( D_METHOD("set_radius", "radius"), &MarchingCubesRebuildStrategyGd::set_radius );
-	ClassDB::bind_method( D_METHOD("get_radius"),           &MarchingCubesRebuildStrategyGd::get_radius, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_radius"),           &MarchingCubesRebuildStrategyGd::get_radius );
 
 	ClassDB::bind_method( D_METHOD("set_height", "height"), &MarchingCubesRebuildStrategyGd::set_height );
-	ClassDB::bind_method( D_METHOD("get_height"),           &MarchingCubesRebuildStrategyGd::get_height, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_height"),           &MarchingCubesRebuildStrategyGd::get_height );
 
 	ClassDB::bind_method( D_METHOD("set_rebuild_dist", "dist"), &MarchingCubesRebuildStrategyGd::set_rebuild_dist );
-	ClassDB::bind_method( D_METHOD("get_rebuild_dist"),         &MarchingCubesRebuildStrategyGd::get_rebuild_dist, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_rebuild_dist"),         &MarchingCubesRebuildStrategyGd::get_rebuild_dist );
 
 	ClassDB::bind_method( D_METHOD("set_rescale_close_dist", "dist"), &MarchingCubesRebuildStrategyGd::set_rescale_close_dist );
-	ClassDB::bind_method( D_METHOD("get_rescale_close_dist"),         &MarchingCubesRebuildStrategyGd::get_rescale_close_dist, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_rescale_close_dist"),         &MarchingCubesRebuildStrategyGd::get_rescale_close_dist );
 
 	ClassDB::bind_method( D_METHOD("set_rescale_far_tangent", "dist"), &MarchingCubesRebuildStrategyGd::set_rescale_far_tangent );
-	ClassDB::bind_method( D_METHOD("get_rescale_far_tangent"),         &MarchingCubesRebuildStrategyGd::get_rescale_far_tangent, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_rescale_far_tangent"),         &MarchingCubesRebuildStrategyGd::get_rescale_far_tangent );
 
 	ClassDB::bind_method( D_METHOD("set_rescale_depth_rel_tangent", "dist"), &MarchingCubesRebuildStrategyGd::set_rescale_depth_rel_tangent );
-	ClassDB::bind_method( D_METHOD("get_rescale_depth_rel_tangent"),         &MarchingCubesRebuildStrategyGd::get_rescale_depth_rel_tangent, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_rescale_depth_rel_tangent"),         &MarchingCubesRebuildStrategyGd::get_rescale_depth_rel_tangent );
 
 	ADD_GROUP( "Ignition", "" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "radius" ),       "set_radius",       "get_radius" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height" ),       "set_height",       "get_height" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rebuild_dist" ), "set_rebuild_dist", "get_rebuild_dist" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rescale_close_dist" ),        "set_rescale_close_dist",        "get_rescale_close_dist" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rescale_far_tangent" ),       "set_rescale_far_tangent",       "get_rescale_far_tangent" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rescale_depth_rel_tangent" ), "set_rescale_depth_rel_tangent", "get_rescale_depth_rel_tangent" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "radius" ),       "set_radius",       "get_radius" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "height" ),       "set_height",       "get_height" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "rebuild_dist" ), "set_rebuild_dist", "get_rebuild_dist" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "rescale_close_dist" ),        "set_rescale_close_dist",        "get_rescale_close_dist" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "rescale_far_tangent" ),       "set_rescale_far_tangent",       "get_rescale_far_tangent" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "rescale_depth_rel_tangent" ), "set_rescale_depth_rel_tangent", "get_rescale_depth_rel_tangent" );
 }
 
 MarchingCubesRebuildStrategyGd::MarchingCubesRebuildStrategyGd()
-	: Reference()
+	: RefCounted()
 {
 }
 

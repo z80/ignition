@@ -3,15 +3,15 @@
 #define __VOLUME_NODE_SIZE_STRATEGY_GD_H_
 
 #include "volume_node_size_strategy.h"
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 #include "se3_ref.h"
 
 namespace Ign
 {
 
-class VolumeNodeSizeStrategyGd: public Reference
+class VolumeNodeSizeStrategyGd: public RefCounted
 {
-	GDCLASS( VolumeNodeSizeStrategyGd, Reference );
+	GDCLASS( VolumeNodeSizeStrategyGd, RefCounted );
 protected:
 	static void _bind_methods();
 public:

@@ -31,7 +31,7 @@
 #ifndef CORE_STRING_NAMES_H
 #define CORE_STRING_NAMES_H
 
-#include "core/string_name.h"
+#include "core/string/string_name.h"
 
 class CoreStringNames {
 	friend void register_core_types();
@@ -52,7 +52,6 @@ public:
 
 	StringName _free;
 	StringName changed;
-	StringName _meta;
 	StringName _script;
 	StringName script_changed;
 	StringName ___pdcdata;
@@ -89,6 +88,14 @@ public:
 	StringName g8;
 	StringName b8;
 	StringName a8;
+
+	StringName call;
+	StringName call_deferred;
+	StringName bind;
+	StringName unbind;
+	StringName emit;
+	StringName notification;
+	StringName property_list_changed;
 };
 
 #endif // CORE_STRING_NAMES_H

@@ -41,11 +41,11 @@ class GDScriptLanguageServer : public EditorPlugin {
 	GDScriptLanguageProtocol protocol;
 
 	Thread thread;
-	bool thread_running;
-	bool started;
-	bool use_thread;
-	String host;
-	int port;
+	bool thread_running = false;
+	bool started = false;
+	bool use_thread = false;
+	String host = "127.0.0.1";
+	int port = 6005;
 	static void thread_main(void *p_userdata);
 
 private:

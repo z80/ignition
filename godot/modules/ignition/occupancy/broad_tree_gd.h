@@ -1,5 +1,5 @@
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 //#include "scene/main/node.h"
 #include "broad_tree.h"
 
@@ -10,10 +10,10 @@ namespace Ign
 class OctreeMeshGd;
 class RefFrameNode;
 
-class BroadTreeGd: public Reference
+class BroadTreeGd: public RefCounted
 {
-	GDCLASS(BroadTreeGd, Reference);
-	OBJ_CATEGORY("Ignition");
+	GDCLASS(BroadTreeGd, RefCounted);
+	//OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();
@@ -33,7 +33,7 @@ public:
 	bool subdivide( Node * ref_frame_physics );
 
 	// For visualization.
-	//PoolVector3Array lines_nodes( RefFrameNode * camera ) const;
+	//Array lines_nodes( RefFrameNode * camera ) const;
 
 	int  get_octree_meshes_qty() const;
 	Node * get_octree_mesh( int ind );
@@ -41,7 +41,7 @@ public:
 	bool intersects_segment( const Vector3 & start, const Vector3 & end, Node * exclude_mesh ) const;
 	Array intersects_segment_face( const Vector3 & start, const Vector3 & end, Node * exclude_mesh ) const;
 
-	PoolVector3Array face_lines( const Transform & t_to_cam ) const;
+	Array face_lines( const Transform3D & t_to_cam ) const;
 public:
 	BroadTree _broad_tree;
 };

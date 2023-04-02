@@ -32,7 +32,7 @@ struct RotationPair
 class RefFrameNonInertialNode: public RefFrameMotionNode
 {
 	GDCLASS(RefFrameNonInertialNode, RefFrameMotionNode);
-	OBJ_CATEGORY("Ignition");
+	//OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();

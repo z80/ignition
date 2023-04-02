@@ -32,10 +32,11 @@
 #define NAV_UTILS_H
 
 #include "core/math/vector3.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/hashfuncs.h"
+#include "core/templates/local_vector.h"
 
-#include <vector>
-
-class NavRegion;
+class NavBase;
 
 namespace gd {
 struct Polygon;
@@ -54,8 +55,12 @@ struct EdgeKey {
 	PointKey a;
 	PointKey b;
 
-	bool operator<(const EdgeKey &p_key) const {
-		return (a.key == p_key.a.key) ? (b.key < p_key.b.key) : (a.key < p_key.a.key);
+	static uint32_t hash(const EdgeKey &p_val) {
+		return hash_one_uint64(p_val.a.key) ^ hash_one_uint64(p_val.b.key);
+	}
+
+	bool operator==(const EdgeKey &p_key) const {
+		return (a.key == p_key.a.key) && (b.key == p_key.b.key);
 	}
 
 	EdgeKey(const PointKey &p_a = PointKey(), const PointKey &p_b = PointKey()) :
@@ -73,26 +78,33 @@ struct Point {
 };
 
 struct Edge {
-	/// This edge ID
-	int this_edge = -1;
-
 	/// The gateway in the edge, as, in some case, the whole edge might not be navigable.
 	struct Connection {
+		/// Polygon that this connection leads to.
 		Polygon *polygon = nullptr;
+
+		/// Edge of the source polygon where this connection starts from.
 		int edge = -1;
+
+		/// Point on the edge where the gateway leading to the poly starts.
 		Vector3 pathway_start;
+
+		/// Point on the edge where the gateway leading to the poly ends.
 		Vector3 pathway_end;
 	};
+
+	/// Connections from this edge to other polygons.
 	Vector<Connection> connections;
 };
 
 struct Polygon {
-	NavRegion *owner = nullptr;
+	/// Navigation region or link that contains this polygon.
+	const NavBase *owner = nullptr;
 
 	/// The points of this `Polygon`
 	LocalVector<Point> points;
 
-	/// Are the points clockwise ?
+	/// Are the points clockwise?
 	bool clockwise;
 
 	/// The edges of this `Polygon`
@@ -109,11 +121,11 @@ struct NavigationPoly {
 
 	/// Those 4 variables are used to travel the path backwards.
 	int back_navigation_poly_id = -1;
-	uint32_t back_navigation_edge = UINT32_MAX;
+	int back_navigation_edge = -1;
 	Vector3 back_navigation_edge_pathway_start;
 	Vector3 back_navigation_edge_pathway_end;
 
-	/// The entry location of this poly.
+	/// The entry position of this poly.
 	Vector3 entry;
 	/// The distance to the destination.
 	float traveled_distance = 0.0;

@@ -36,23 +36,49 @@
 class FlowContainer : public Container {
 	GDCLASS(FlowContainer, Container);
 
-private:
-	int cached_size;
-	int cached_line_count;
+public:
+	enum AlignmentMode {
+		ALIGNMENT_BEGIN,
+		ALIGNMENT_CENTER,
+		ALIGNMENT_END
+	};
 
-	bool vertical;
+private:
+	int cached_size = 0;
+	int cached_line_count = 0;
+
+	bool vertical = false;
+	AlignmentMode alignment = ALIGNMENT_BEGIN;
+
+	struct ThemeCache {
+		int h_separation = 0;
+		int v_separation = 0;
+	} theme_cache;
 
 	void _resort();
 
 protected:
-	void _notification(int p_what);
+	bool is_fixed = false;
 
+	virtual void _update_theme_item_cache() override;
+
+	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
 	int get_line_count() const;
 
-	virtual Size2 get_minimum_size() const;
+	void set_alignment(AlignmentMode p_alignment);
+	AlignmentMode get_alignment() const;
+
+	void set_vertical(bool p_vertical);
+	bool is_vertical() const;
+
+	virtual Size2 get_minimum_size() const override;
+
+	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
+	virtual Vector<int> get_allowed_size_flags_vertical() const override;
 
 	FlowContainer(bool p_vertical = false);
 };
@@ -62,7 +88,7 @@ class HFlowContainer : public FlowContainer {
 
 public:
 	HFlowContainer() :
-			FlowContainer(false) {}
+			FlowContainer(false) { is_fixed = true; }
 };
 
 class VFlowContainer : public FlowContainer {
@@ -70,7 +96,9 @@ class VFlowContainer : public FlowContainer {
 
 public:
 	VFlowContainer() :
-			FlowContainer(true) {}
+			FlowContainer(true) { is_fixed = true; }
 };
+
+VARIANT_ENUM_CAST(FlowContainer::AlignmentMode);
 
 #endif // FLOW_CONTAINER_H

@@ -32,111 +32,173 @@
 
 #include "csharp_script.h"
 #include "mono_gd/gd_mono_cache.h"
-#include "mono_gd/gd_mono_class.h"
-#include "mono_gd/gd_mono_marshal.h"
-#include "mono_gd/gd_mono_utils.h"
 
-namespace SignalAwaiterUtils {
-
-Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p_target, MonoObject *p_awaiter) {
+Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, GCHandleIntPtr p_awaiter_handle_ptr) {
 	ERR_FAIL_NULL_V(p_source, ERR_INVALID_DATA);
 	ERR_FAIL_NULL_V(p_target, ERR_INVALID_DATA);
 
-	Ref<SignalAwaiterHandle> sa_con = memnew(SignalAwaiterHandle(p_awaiter));
-#ifdef DEBUG_ENABLED
-	sa_con->set_connection_target(p_target);
-#endif
+	// TODO: Use pooling for ManagedCallable instances.
+	MonoGCHandleData awaiter_handle(p_awaiter_handle_ptr, gdmono::GCHandleType::STRONG_HANDLE);
+	SignalAwaiterCallable *awaiter_callable = memnew(SignalAwaiterCallable(p_target, awaiter_handle, p_signal));
+	Callable callable = Callable(awaiter_callable);
 
-	Vector<Variant> binds;
-	binds.push_back(sa_con);
-
-	Error err = p_source->connect(p_signal, sa_con.ptr(),
-			CSharpLanguage::get_singleton()->get_string_names()._signal_callback,
-			binds, Object::CONNECT_ONESHOT);
-
-	if (err != OK) {
-		// Set it as completed to prevent it from calling the failure callback when released.
-		// The awaiter will be aware of the failure by checking the returned error.
-		sa_con->set_completed(true);
-	}
-
-	return err;
+	return p_source->connect(p_signal, callable, Object::CONNECT_ONE_SHOT);
 }
-} // namespace SignalAwaiterUtils
 
-Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+bool SignalAwaiterCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
+	// Only called if both instances are of type SignalAwaiterCallable. Static cast is safe.
+	const SignalAwaiterCallable *a = static_cast<const SignalAwaiterCallable *>(p_a);
+	const SignalAwaiterCallable *b = static_cast<const SignalAwaiterCallable *>(p_b);
+	return a->awaiter_handle.handle.value == b->awaiter_handle.handle.value;
+}
+
+bool SignalAwaiterCallable::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
+	if (compare_equal(p_a, p_b)) {
+		return false;
+	}
+	return p_a < p_b;
+}
+
+uint32_t SignalAwaiterCallable::hash() const {
+	uint32_t hash = signal.hash();
+	return hash_murmur3_one_64(target_id, hash);
+}
+
+String SignalAwaiterCallable::get_as_text() const {
+	Object *base = ObjectDB::get_instance(target_id);
+	if (base) {
+		String class_name = base->get_class();
+		Ref<Script> script = base->get_script();
+		if (script.is_valid() && script->get_path().is_resource_file()) {
+			class_name += "(" + script->get_path().get_file() + ")";
+		}
+		return class_name + "::SignalAwaiterMiddleman::" + String(signal);
+	} else {
+		return "null::SignalAwaiterMiddleman::" + String(signal);
+	}
+}
+
+CallableCustom::CompareEqualFunc SignalAwaiterCallable::get_compare_equal_func() const {
+	return compare_equal_func_ptr;
+}
+
+CallableCustom::CompareLessFunc SignalAwaiterCallable::get_compare_less_func() const {
+	return compare_less_func_ptr;
+}
+
+ObjectID SignalAwaiterCallable::get_object() const {
+	return target_id;
+}
+
+StringName SignalAwaiterCallable::get_signal() const {
+	return signal;
+}
+
+void SignalAwaiterCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+	r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // Can't find anything better
+	r_return_value = Variant();
+
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V_MSG(conn_target_id && !ObjectDB::get_instance(conn_target_id), Variant(),
+	ERR_FAIL_COND_MSG(target_id.is_valid() && !ObjectDB::get_instance(target_id),
 			"Resumed after await, but class instance is gone.");
 #endif
 
-	if (p_argcount < 1) {
-		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 1;
-		return Variant();
+	bool awaiter_is_null = false;
+	GDMonoCache::managed_callbacks.SignalAwaiter_SignalCallback(awaiter_handle.get_intptr(), p_arguments, p_argcount, &awaiter_is_null);
+
+	if (awaiter_is_null) {
+		r_call_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return;
 	}
 
-	Ref<SignalAwaiterHandle> self = *p_args[p_argcount - 1];
-
-	if (self.is_null()) {
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		r_error.argument = p_argcount - 1;
-		r_error.expected = Variant::OBJECT;
-		return Variant();
-	}
-
-	set_completed(true);
-
-	int signal_argc = p_argcount - 1;
-	MonoArray *signal_args = NULL;
-
-	if (signal_argc > 0) {
-		signal_args = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), signal_argc);
-
-		for (int i = 0; i < signal_argc; i++) {
-			MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_args[i]);
-			mono_array_setref(signal_args, i, boxed);
-		}
-	}
-
-	MonoException *exc = NULL;
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	CACHED_METHOD_THUNK(SignalAwaiter, SignalCallback).invoke(get_target(), signal_args, &exc);
-	GD_MONO_END_RUNTIME_INVOKE;
-
-	if (exc) {
-		GDMonoUtils::set_pending_exception(exc);
-		ERR_FAIL_V(Variant());
-	}
-
-	return Variant();
+	r_call_error.error = Callable::CallError::CALL_OK;
 }
 
-void SignalAwaiterHandle::_bind_methods() {
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &SignalAwaiterHandle::_signal_callback, MethodInfo("_signal_callback"));
+SignalAwaiterCallable::SignalAwaiterCallable(Object *p_target, MonoGCHandleData p_awaiter_handle, const StringName &p_signal) :
+		target_id(p_target->get_instance_id()),
+		awaiter_handle(p_awaiter_handle),
+		signal(p_signal) {
 }
 
-SignalAwaiterHandle::SignalAwaiterHandle(MonoObject *p_managed) :
-		MonoGCHandle(MonoGCHandle::new_strong_handle(p_managed), STRONG_HANDLE) {
-#ifdef DEBUG_ENABLED
-	conn_target_id = 0;
-#endif
+SignalAwaiterCallable::~SignalAwaiterCallable() {
+	awaiter_handle.release();
 }
 
-SignalAwaiterHandle::~SignalAwaiterHandle() {
-	if (!completed) {
-		MonoObject *awaiter = get_target();
+bool EventSignalCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
+	const EventSignalCallable *a = static_cast<const EventSignalCallable *>(p_a);
+	const EventSignalCallable *b = static_cast<const EventSignalCallable *>(p_b);
 
-		if (awaiter) {
-			MonoException *exc = NULL;
-			GD_MONO_BEGIN_RUNTIME_INVOKE;
-			CACHED_METHOD_THUNK(SignalAwaiter, FailureCallback).invoke(awaiter, &exc);
-			GD_MONO_END_RUNTIME_INVOKE;
-
-			if (exc) {
-				GDMonoUtils::set_pending_exception(exc);
-				ERR_FAIL();
-			}
-		}
+	if (a->owner != b->owner) {
+		return false;
 	}
+
+	if (a->event_signal_name != b->event_signal_name) {
+		return false;
+	}
+
+	return true;
+}
+
+bool EventSignalCallable::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
+	if (compare_equal(p_a, p_b)) {
+		return false;
+	}
+	return p_a < p_b;
+}
+
+uint32_t EventSignalCallable::hash() const {
+	uint32_t hash = event_signal_name.hash();
+	return hash_murmur3_one_64(owner->get_instance_id(), hash);
+}
+
+String EventSignalCallable::get_as_text() const {
+	String class_name = owner->get_class();
+	Ref<Script> script = owner->get_script();
+	if (script.is_valid() && script->get_path().is_resource_file()) {
+		class_name += "(" + script->get_path().get_file() + ")";
+	}
+	return class_name + "::EventSignalMiddleman::" + String(event_signal_name);
+}
+
+CallableCustom::CompareEqualFunc EventSignalCallable::get_compare_equal_func() const {
+	return compare_equal_func_ptr;
+}
+
+CallableCustom::CompareLessFunc EventSignalCallable::get_compare_less_func() const {
+	return compare_less_func_ptr;
+}
+
+ObjectID EventSignalCallable::get_object() const {
+	return owner->get_instance_id();
+}
+
+StringName EventSignalCallable::get_signal() const {
+	return event_signal_name;
+}
+
+void EventSignalCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+	r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // Can't find anything better
+	r_return_value = Variant();
+
+	CSharpInstance *csharp_instance = CAST_CSHARP_INSTANCE(owner->get_script_instance());
+	ERR_FAIL_NULL(csharp_instance);
+
+	GCHandleIntPtr owner_gchandle_intptr = csharp_instance->get_gchandle_intptr();
+
+	bool awaiter_is_null = false;
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_RaiseEventSignal(
+			owner_gchandle_intptr, &event_signal_name,
+			p_arguments, p_argcount, &awaiter_is_null);
+
+	if (awaiter_is_null) {
+		r_call_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return;
+	}
+
+	r_call_error.error = Callable::CallError::CALL_OK;
+}
+
+EventSignalCallable::EventSignalCallable(Object *p_owner, const StringName &p_event_signal_name) :
+		owner(p_owner),
+		event_signal_name(p_event_signal_name) {
 }

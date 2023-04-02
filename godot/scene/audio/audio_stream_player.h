@@ -31,7 +31,7 @@
 #ifndef AUDIO_STREAM_PLAYER_H
 #define AUDIO_STREAM_PLAYER_H
 
-#include "core/safe_refcount.h"
+#include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
@@ -46,26 +46,18 @@ public:
 	};
 
 private:
-	Ref<AudioStreamPlayback> stream_playback;
+	Vector<Ref<AudioStreamPlayback>> stream_playbacks;
 	Ref<AudioStream> stream;
-	Vector<AudioFrame> mix_buffer;
-	Vector<AudioFrame> fadeout_buffer;
-	bool use_fadeout = false;
 
-	SafeNumeric<float> setseek;
 	SafeFlag active;
-	SafeFlag setstop;
-	SafeFlag stop_has_priority;
 
-	float mix_volume_db;
-	float pitch_scale;
-	float volume_db;
-	bool autoplay;
-	bool stream_paused;
-	bool stream_paused_fade;
-	StringName bus;
+	float pitch_scale = 1.0;
+	float volume_db = 0.0;
+	bool autoplay = false;
+	StringName bus = SNAME("Master");
+	int max_polyphony = 1;
 
-	MixTarget mix_target;
+	MixTarget mix_target = MIX_TARGET_STEREO;
 
 	void _mix_internal(bool p_fadeout);
 	void _mix_audio();
@@ -77,8 +69,10 @@ private:
 	void _bus_layout_changed();
 	void _mix_to_bus(const AudioFrame *p_frames, int p_amount);
 
+	Vector<AudioFrame> _get_volume_vector();
+
 protected:
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -91,6 +85,9 @@ public:
 
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
+
+	void set_max_polyphony(int p_max_polyphony);
+	int get_max_polyphony() const;
 
 	void play(float p_from_pos = 0.0);
 	void seek(float p_seconds);
@@ -110,6 +107,7 @@ public:
 	void set_stream_paused(bool p_pause);
 	bool get_stream_paused() const;
 
+	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
 
 	AudioStreamPlayer();

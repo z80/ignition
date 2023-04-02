@@ -30,33 +30,33 @@
 
 #include "image_compress_cvtt.h"
 
+#include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
-#include "core/os/thread.h"
-#include "core/print_string.h"
-#include "core/safe_refcount.h"
+#include "core/string/print_string.h"
+#include "core/templates/safe_refcount.h"
 
 #include <ConvectionKernels.h>
 
 struct CVTTCompressionJobParams {
-	bool is_hdr;
-	bool is_signed;
-	int bytes_per_pixel;
-
+	bool is_hdr = false;
+	bool is_signed = false;
+	int bytes_per_pixel = 0;
+	cvtt::BC7EncodingPlan bc7_plan;
 	cvtt::Options options;
 };
 
 struct CVTTCompressionRowTask {
-	const uint8_t *in_mm_bytes;
-	uint8_t *out_mm_bytes;
-	int y_start;
-	int width;
-	int height;
+	const uint8_t *in_mm_bytes = nullptr;
+	uint8_t *out_mm_bytes = nullptr;
+	int y_start = 0;
+	int width = 0;
+	int height = 0;
 };
 
 struct CVTTCompressionJobQueue {
 	CVTTCompressionJobParams job_params;
-	const CVTTCompressionRowTask *job_tasks;
-	uint32_t num_tasks;
+	const CVTTCompressionRowTask *job_tasks = nullptr;
+	uint32_t num_tasks = 0;
 	SafeNumeric<uint32_t> current_task;
 };
 
@@ -116,7 +116,7 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 				cvtt::Kernels::EncodeBC6HU(output_blocks, input_blocks_hdr, p_job_params.options);
 			}
 		} else {
-			cvtt::Kernels::EncodeBC7(output_blocks, input_blocks_ldr, p_job_params.options);
+			cvtt::Kernels::EncodeBC7(output_blocks, input_blocks_ldr, p_job_params.options, p_job_params.bc7_plan);
 		}
 
 		unsigned int num_real_blocks = ((w - x_start) + 3) / 4;
@@ -129,19 +129,22 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 	}
 }
 
-static void _digest_job_queue(void *p_job_queue) {
+static void _digest_job_queue(void *p_job_queue, uint32_t p_index) {
 	CVTTCompressionJobQueue *job_queue = static_cast<CVTTCompressionJobQueue *>(p_job_queue);
+	uint32_t num_tasks = job_queue->num_tasks;
+	uint32_t total_threads = WorkerThreadPool::get_singleton()->get_thread_count();
+	uint32_t start = p_index * num_tasks / total_threads;
+	uint32_t end = (p_index + 1 == total_threads) ? num_tasks : ((p_index + 1) * num_tasks / total_threads);
 
-	for (uint32_t next_task = job_queue->current_task.increment(); next_task <= job_queue->num_tasks; next_task = job_queue->current_task.increment()) {
-		_digest_row_task(job_queue->job_params, job_queue->job_tasks[next_task - 1]);
+	for (uint32_t i = start; i < end; i++) {
+		_digest_row_task(job_queue->job_params, job_queue->job_tasks[i]);
 	}
 }
 
-void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressSource p_source) {
+void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA) {
 		return; //do not compress, already compressed
 	}
-
 	int w = p_image->get_width();
 	int h = p_image->get_height();
 
@@ -153,23 +156,9 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 	}
 
 	cvtt::Options options;
-	uint32_t flags = cvtt::Flags::Fastest;
-
-	if (p_lossy_quality > 0.85) {
-		flags = cvtt::Flags::Ultra;
-	} else if (p_lossy_quality > 0.75) {
-		flags = cvtt::Flags::Better;
-	} else if (p_lossy_quality > 0.55) {
-		flags = cvtt::Flags::Default;
-	} else if (p_lossy_quality > 0.35) {
-		flags = cvtt::Flags::Fast;
-	} else if (p_lossy_quality > 0.15) {
-		flags = cvtt::Flags::Faster;
-	}
-
+	uint32_t flags = cvtt::Flags::Default;
 	flags |= cvtt::Flags::BC7_RespectPunchThrough;
-
-	if (p_source == Image::COMPRESS_SOURCE_NORMAL) {
+	if (p_channels == Image::USED_CHANNELS_RG) { //guessing this is a normal map
 		flags |= cvtt::Flags::Uniform;
 	}
 	options.flags = flags;
@@ -182,7 +171,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 			p_image->convert(Image::FORMAT_RGBH);
 		}
 
-		PoolVector<uint8_t>::Read rb = p_image->get_data().read();
+		const uint8_t *rb = p_image->get_data().ptr();
 
 		const uint16_t *source_data = reinterpret_cast<const uint16_t *>(&rb[0]);
 		int pixel_element_count = w * h * 3;
@@ -198,15 +187,15 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 		p_image->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
 	}
 
-	PoolVector<uint8_t>::Read rb = p_image->get_data().read();
+	const uint8_t *rb = p_image->get_data().ptr();
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(w, h, target_format) : 0;
 	data.resize(target_size);
 	int shift = Image::get_format_pixel_rshift(target_format);
 
-	PoolVector<uint8_t>::Write wb = data.write();
+	uint8_t *wb = data.ptrw();
 
 	int dst_ofs = 0;
 
@@ -215,14 +204,16 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 	job_queue.job_params.is_signed = is_signed;
 	job_queue.job_params.options = options;
 	job_queue.job_params.bytes_per_pixel = is_hdr ? 6 : 4;
+	cvtt::Kernels::ConfigureBC7EncodingPlanFromQuality(job_queue.job_params.bc7_plan, 5);
 
-#ifdef NO_THREADS
-	int num_job_threads = 0;
-#else
-	int num_job_threads = OS::get_singleton()->can_use_threads() ? (OS::get_singleton()->get_processor_count() - 1) : 0;
-#endif
+	// Amdahl's law (Wikipedia)
+	// If a program needs 20 hours to complete using a single thread, but a one-hour portion of the program cannot be parallelized,
+	// therefore only the remaining 19 hours (p = 0.95) of execution time can be parallelized, then regardless of how many threads are devoted
+	// to a parallelized execution of this program, the minimum execution time cannot be less than one hour.
+	//
+	// The number of executions with different inputs can be increased while the latency is the same.
 
-	PoolVector<CVTTCompressionRowTask> tasks;
+	Vector<CVTTCompressionRowTask> tasks;
 
 	for (int i = 0; i <= mm_count; i++) {
 		int bw = w % 4 != 0 ? w + (4 - w % 4) : w;
@@ -241,11 +232,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 			row_task.in_mm_bytes = in_bytes;
 			row_task.out_mm_bytes = out_bytes;
 
-			if (num_job_threads > 0) {
-				tasks.push_back(row_task);
-			} else {
-				_digest_row_task(job_queue.job_params, row_task);
-			}
+			tasks.push_back(row_task);
 
 			out_bytes += 16 * (bw / 4);
 		}
@@ -255,31 +242,14 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 		h = MAX(h / 2, 1);
 	}
 
-	if (num_job_threads > 0) {
-		PoolVector<Thread *> threads;
-		threads.resize(num_job_threads);
+	const CVTTCompressionRowTask *tasks_rb = tasks.ptr();
 
-		PoolVector<Thread *>::Write threads_wb = threads.write();
+	job_queue.job_tasks = &tasks_rb[0];
+	job_queue.num_tasks = static_cast<uint32_t>(tasks.size());
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&_digest_job_queue, &job_queue, WorkerThreadPool::get_singleton()->get_thread_count(), -1, true, SNAME("CVTT Compress"));
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
-		PoolVector<CVTTCompressionRowTask>::Read tasks_rb = tasks.read();
-
-		job_queue.job_tasks = &tasks_rb[0];
-		job_queue.current_task.set(0);
-		job_queue.num_tasks = static_cast<uint32_t>(tasks.size());
-
-		for (int i = 0; i < num_job_threads; i++) {
-			threads_wb[i] = memnew(Thread);
-			threads_wb[i]->start(_digest_job_queue, &job_queue);
-		}
-		_digest_job_queue(&job_queue);
-
-		for (int i = 0; i < num_job_threads; i++) {
-			threads_wb[i]->wait_to_finish();
-			memdelete(threads_wb[i]);
-		}
-	}
-
-	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
 
 void image_decompress_cvtt(Image *p_image) {
@@ -306,14 +276,14 @@ void image_decompress_cvtt(Image *p_image) {
 	int w = p_image->get_width();
 	int h = p_image->get_height();
 
-	PoolVector<uint8_t>::Read rb = p_image->get_data().read();
+	const uint8_t *rb = p_image->get_data().ptr();
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->get_mipmap_count();
 	data.resize(target_size);
 
-	PoolVector<uint8_t>::Write wb = data.write();
+	uint8_t *wb = data.ptrw();
 
 	int bytes_per_pixel = is_hdr ? 6 : 4;
 
@@ -388,9 +358,5 @@ void image_decompress_cvtt(Image *p_image) {
 		w >>= 1;
 		h >>= 1;
 	}
-
-	rb.release();
-	wb.release();
-
-	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }

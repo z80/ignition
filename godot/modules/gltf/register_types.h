@@ -31,11 +31,9 @@
 #ifndef GLTF_REGISTER_TYPES_H
 #define GLTF_REGISTER_TYPES_H
 
-#ifndef _3D_DISABLED
+#include "modules/register_module_types.h"
 
-void register_gltf_types();
-void unregister_gltf_types();
-
-#endif // _3D_DISABLED
+void initialize_gltf_module(ModuleInitializationLevel p_level);
+void uninitialize_gltf_module(ModuleInitializationLevel p_level);
 
 #endif // GLTF_REGISTER_TYPES_H

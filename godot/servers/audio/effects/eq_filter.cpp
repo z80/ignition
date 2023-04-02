@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-// Author: reduzio@gmail.com (C) 2006
-
 #include "eq_filter.h"
 
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
 
 #include <math.h>
@@ -91,8 +89,8 @@ void EQ::recalculate_band_coefficients() {
 		double frq_l = round(frq / pow(2.0, octave_size / 2.0));
 
 		double side_gain2 = POW2(Math_SQRT12);
-		double th = 2.0 * Math_PI * frq / mix_rate;
-		double th_l = 2.0 * Math_PI * frq_l / mix_rate;
+		double th = Math_TAU * frq / mix_rate;
+		double th_l = Math_TAU * frq_l / mix_rate;
 
 		double c2a = side_gain2 * POW2(cos(th)) - 2.0 * side_gain2 * cos(th_l) * cos(th) + side_gain2 - POW2(sin(th_l));
 
@@ -165,10 +163,12 @@ void EQ::set_preset_band_mode(Preset p_preset) {
 int EQ::get_band_count() const {
 	return band.size();
 }
+
 float EQ::get_band_frequency(int p_band) {
 	ERR_FAIL_INDEX_V(p_band, band.size(), 0);
 	return band[p_band].freq;
 }
+
 void EQ::set_bands(const Vector<float> &p_bands) {
 	band.resize(p_bands.size());
 	for (int i = 0; i < p_bands.size(); i++) {

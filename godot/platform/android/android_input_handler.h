@@ -31,7 +31,7 @@
 #ifndef ANDROID_INPUT_HANDLER_H
 #define ANDROID_INPUT_HANDLER_H
 
-#include "main/input_default.h"
+#include "core/input/input.h"
 
 // This class encapsulates all the handling of input events that come from the Android UI thread.
 // Remarks:
@@ -40,7 +40,12 @@
 class AndroidInputHandler {
 public:
 	struct TouchPos {
-		int id;
+		int id = 0;
+		Point2 pos;
+	};
+
+	struct MouseEventInfo {
+		bool valid = false;
 		Point2 pos;
 	};
 
@@ -51,44 +56,52 @@ public:
 	};
 
 	struct JoypadEvent {
-		int device;
-		int type;
-		int index;
-		bool pressed;
-		float value;
-		int hat;
+		int device = 0;
+		int type = 0;
+		int index = 0; // Can be either JoyAxis or JoyButton.
+		bool pressed = false;
+		float value = 0;
+		BitField<HatMask> hat;
 	};
 
 private:
-	Vector<TouchPos> touch;
-	Point2 hover_prev_pos; // needed to calculate the relative position on hover events
-
 	bool alt_mem = false;
 	bool shift_mem = false;
 	bool control_mem = false;
 	bool meta_mem = false;
 
-	int buttons_state = 0;
+	BitField<MouseButtonMask> buttons_state;
 
-	InputDefault *input = static_cast<InputDefault *>(InputDefault::get_singleton());
+	Vector<TouchPos> touch;
+	MouseEventInfo mouse_event_info;
+	Point2 hover_prev_pos; // needed to calculate the relative position on hover events
 
-	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev) const;
+	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev, Key p_keycode);
 
-	static int _button_index_from_mask(int button_mask);
+	static MouseButton _button_index_from_mask(BitField<MouseButtonMask> button_mask);
+	static BitField<MouseButtonMask> _android_button_mask_to_godot_button_mask(int android_button_mask);
 
-	static int _android_button_mask_to_godot_button_mask(int android_button_mask);
+	void _wheel_button_click(BitField<MouseButtonMask> event_buttons_mask, const Ref<InputEventMouseButton> &ev, MouseButton wheel_button, float factor);
 
-	void _wheel_button_click(int event_buttons_mask, const Ref<InputEventMouseButton> &ev, int wheel_button, float factor);
+	void _parse_mouse_event_info(BitField<MouseButtonMask> event_buttons_mask, bool p_pressed, bool p_double_click, bool p_source_mouse_relative);
+
+	void _release_mouse_event_info(bool p_source_mouse_relative = false);
+
+	void _cancel_mouse_event_info(bool p_source_mouse_relative = false);
+
+	void _parse_all_touch(bool p_pressed, bool p_double_tap, bool reset_index = false);
+
+	void _release_all_touch();
+
+	void _cancel_all_touch();
 
 public:
-	void process_event(Ref<InputEvent> &p_event);
-	void process_joy_event(const JoypadEvent &p_event);
-	void process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed);
-	void process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
-	void process_hover(int p_type, Point2 p_pos);
-	void process_mouse_event(int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor, float event_horizontal_factor);
-	void process_double_tap(int event_android_button_mask, Point2 p_pos);
-	void joy_connection_changed(int p_device, bool p_connected, String p_name);
+	void process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative);
+	void process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points, bool p_double_tap);
+	void process_magnify(Point2 p_pos, float p_factor);
+	void process_pan(Point2 p_pos, Vector2 p_delta);
+	void process_joy_event(JoypadEvent p_event);
+	void process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed);
 };
 
 #endif // ANDROID_INPUT_HANDLER_H

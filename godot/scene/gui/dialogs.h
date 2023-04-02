@@ -37,109 +37,67 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/texture_button.h"
-
-class WindowDialog : public Popup {
-	GDCLASS(WindowDialog, Popup);
-
-	enum DRAG_TYPE {
-		DRAG_NONE = 0,
-		DRAG_MOVE = 1,
-		DRAG_RESIZE_TOP = 1 << 1,
-		DRAG_RESIZE_RIGHT = 1 << 2,
-		DRAG_RESIZE_BOTTOM = 1 << 3,
-		DRAG_RESIZE_LEFT = 1 << 4
-	};
-
-	TextureButton *close_button;
-	String title;
-	String xl_title;
-	int drag_type;
-	Point2 drag_offset;
-	Point2 drag_offset_far;
-	bool resizable;
-
-#ifdef TOOLS_ENABLED
-	bool was_editor_dimmed;
-#endif
-
-	void _gui_input(const Ref<InputEvent> &p_event);
-	void _closed();
-	int _drag_hit_test(const Point2 &pos) const;
-
-protected:
-	virtual void _post_popup();
-	virtual void _fix_size();
-	virtual void _close_pressed() {}
-	virtual bool has_point(const Point2 &p_point) const;
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	TextureButton *get_close_button();
-
-	void set_title(const String &p_title);
-	String get_title() const;
-	void set_resizable(bool p_resizable);
-	bool get_resizable() const;
-
-	Size2 get_minimum_size() const;
-
-	WindowDialog();
-	~WindowDialog();
-};
-
-class PopupDialog : public Popup {
-	GDCLASS(PopupDialog, Popup);
-
-protected:
-	void _notification(int p_what);
-
-public:
-	PopupDialog();
-	~PopupDialog();
-};
+#include "scene/main/window.h"
 
 class LineEdit;
 
-class AcceptDialog : public WindowDialog {
-	GDCLASS(AcceptDialog, WindowDialog);
+class AcceptDialog : public Window {
+	GDCLASS(AcceptDialog, Window);
 
-	HBoxContainer *hbc;
-	Label *label;
-	Button *ok;
-	bool hide_on_ok;
+	Window *parent_visible = nullptr;
+
+	Panel *bg_panel = nullptr;
+	Label *message_label = nullptr;
+	HBoxContainer *buttons_hbox = nullptr;
+	Button *ok_button = nullptr;
+
+	bool hide_on_ok = true;
+	bool close_on_escape = true;
+
+	struct ThemeCache {
+		Ref<StyleBox> panel_style;
+		int buttons_separation = 0;
+	} theme_cache;
 
 	void _custom_action(const String &p_action);
-	void _ok_pressed();
-	void _close_pressed();
-	void _builtin_text_entered(const String &p_text);
 	void _update_child_rects();
 
-	static bool swap_ok_cancel;
+	static bool swap_cancel_ok;
+
+	void _input_from_window(const Ref<InputEvent> &p_event);
+	void _parent_focused();
 
 protected:
-	virtual void _post_popup();
+	virtual Size2 _get_contents_minimum_size() const override;
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void ok_pressed() {}
 	virtual void cancel_pressed() {}
 	virtual void custom_action(const String &) {}
 
+	// Not private since used by derived classes signal.
+	void _text_submitted(const String &p_text);
+	void _ok_pressed();
+	void _cancel_pressed();
+
 public:
-	Size2 get_minimum_size() const;
+	Label *get_label() { return message_label; }
+	static void set_swap_cancel_ok(bool p_swap);
 
-	Label *get_label() { return label; }
-	static void set_swap_ok_cancel(bool p_swap);
+	void register_text_enter(Control *p_line_edit);
 
-	void register_text_enter(Node *p_line_edit);
-
-	Button *get_ok() { return ok; }
+	Button *get_ok_button() { return ok_button; }
 	Button *add_button(const String &p_text, bool p_right = false, const String &p_action = "");
-	Button *add_cancel(const String &p_cancel = "");
+	Button *add_cancel_button(const String &p_cancel = "");
 	void remove_button(Control *p_button);
 
 	void set_hide_on_ok(bool p_hide);
 	bool get_hide_on_ok() const;
+
+	void set_close_on_escape(bool p_enable);
+	bool get_close_on_escape() const;
 
 	void set_text(String p_text);
 	String get_text() const;
@@ -147,19 +105,26 @@ public:
 	void set_autowrap(bool p_autowrap);
 	bool has_autowrap();
 
+	void set_ok_button_text(String p_ok_button_text);
+	String get_ok_button_text() const;
+
 	AcceptDialog();
 	~AcceptDialog();
 };
 
 class ConfirmationDialog : public AcceptDialog {
 	GDCLASS(ConfirmationDialog, AcceptDialog);
-	Button *cancel;
+	Button *cancel = nullptr;
 
 protected:
 	static void _bind_methods();
 
 public:
-	Button *get_cancel();
+	Button *get_cancel_button();
+
+	void set_cancel_button_text(String p_cancel_button_text);
+	String get_cancel_button_text() const;
+
 	ConfirmationDialog();
 };
 

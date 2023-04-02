@@ -42,14 +42,16 @@ class SectionedInspector : public HSplitContainer {
 
 	ObjectID obj;
 
-	Tree *sections;
-	SectionedInspectorFilter *filter;
+	Tree *sections = nullptr;
+	SectionedInspectorFilter *filter = nullptr;
 
-	Map<String, TreeItem *> section_map;
-	EditorInspector *inspector;
-	LineEdit *search_box;
+	HashMap<String, TreeItem *> section_map;
+	EditorInspector *inspector = nullptr;
+	LineEdit *search_box = nullptr;
 
 	String selected_category;
+
+	bool restrict_to_basic = false;
 
 	static void _bind_methods();
 	void _section_selected();
@@ -68,6 +70,7 @@ public:
 	void set_current_section(const String &p_section);
 	String get_current_section() const;
 
+	void set_restrict_to_basic_settings(bool p_restrict);
 	void update_category_list();
 
 	SectionedInspector();

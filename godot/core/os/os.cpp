@@ -30,15 +30,15 @@
 
 #include "os.h"
 
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
-#include "core/os/input.h"
+#include "core/config/project_settings.h"
+#include "core/input/input.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/os/midi_driver.h"
-#include "core/project_settings.h"
 #include "core/version_generated.gen.h"
-#include "servers/audio_server.h"
 
 #include <stdarg.h>
+#include <thread>
 
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
@@ -47,52 +47,13 @@ OS *OS::get_singleton() {
 	return singleton;
 }
 
-uint32_t OS::get_ticks_msec() const {
-	return get_ticks_usec() / 1000;
+uint64_t OS::get_ticks_msec() const {
+	return get_ticks_usec() / 1000ULL;
 }
 
-String OS::get_iso_date_time(bool local) const {
-	OS::Date date = get_date(local);
-	OS::Time time = get_time(local);
-
-	String timezone;
-	if (!local) {
-		TimeZoneInfo zone = get_time_zone_info();
-		if (zone.bias >= 0) {
-			timezone = "+";
-		}
-		timezone = timezone + itos(zone.bias / 60).pad_zeros(2) + itos(zone.bias % 60).pad_zeros(2);
-	} else {
-		timezone = "Z";
-	}
-
-	return itos(date.year).pad_zeros(2) + "-" +
-			itos(date.month).pad_zeros(2) + "-" +
-			itos(date.day).pad_zeros(2) + "T" +
-			itos(time.hour).pad_zeros(2) + ":" +
-			itos(time.min).pad_zeros(2) + ":" +
-			itos(time.sec).pad_zeros(2) + timezone;
-}
-
-uint64_t OS::get_splash_tick_msec() const {
-	return _msec_splash;
-}
-uint64_t OS::get_unix_time() const {
-	return 0;
-};
-uint64_t OS::get_system_time_secs() const {
+double OS::get_unix_time() const {
 	return 0;
 }
-uint64_t OS::get_system_time_msecs() const {
-	return 0;
-}
-double OS::get_subsecond_unix_time() const {
-	return 0.0;
-}
-void OS::debug_break(){
-
-	// something
-};
 
 void OS::_set_logger(CompositeLogger *p_logger) {
 	if (_logger) {
@@ -111,34 +72,63 @@ void OS::add_logger(Logger *p_logger) {
 	}
 }
 
-void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type) {
-	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type) {
+	if (!_stderr_enabled) {
+		return;
+	}
+
+	if (_logger) {
+		_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
+	}
 }
 
 void OS::print(const char *p_format, ...) {
+	if (!_stdout_enabled) {
+		return;
+	}
+
 	va_list argp;
 	va_start(argp, p_format);
 
-	_logger->logv(p_format, argp, false);
+	if (_logger) {
+		_logger->logv(p_format, argp, false);
+	}
 
 	va_end(argp);
-};
-
-void OS::printerr(const char *p_format, ...) {
-	va_list argp;
-	va_start(argp, p_format);
-
-	_logger->logv(p_format, argp, true);
-
-	va_end(argp);
-};
-
-void OS::set_keep_screen_on(bool p_enabled) {
-	_keep_screen_on = p_enabled;
 }
 
-bool OS::is_keep_screen_on() const {
-	return _keep_screen_on;
+void OS::print_rich(const char *p_format, ...) {
+	if (!_stdout_enabled) {
+		return;
+	}
+
+	va_list argp;
+	va_start(argp, p_format);
+
+	if (_logger) {
+		_logger->logv(p_format, argp, false);
+	}
+
+	va_end(argp);
+}
+
+void OS::printerr(const char *p_format, ...) {
+	if (!_stderr_enabled) {
+		return;
+	}
+
+	va_list argp;
+	va_start(argp, p_format);
+
+	if (_logger) {
+		_logger->logv(p_format, argp, true);
+	}
+
+	va_end(argp);
+}
+
+void OS::alert(const String &p_alert, const String &p_title) {
+	fprintf(stderr, "%s: %s\n", p_title.utf8().get_data(), p_alert.utf8().get_data());
 }
 
 void OS::set_low_processor_usage_mode(bool p_enabled) {
@@ -149,10 +139,6 @@ bool OS::is_in_low_processor_usage_mode() const {
 	return low_processor_usage_mode;
 }
 
-void OS::set_update_vital_only(bool p_enabled) {
-	_update_vital_only = p_enabled;
-}
-
 void OS::set_low_processor_usage_mode_sleep_usec(int p_usec) {
 	low_processor_usage_mode_sleep_usec = p_usec;
 }
@@ -161,36 +147,12 @@ int OS::get_low_processor_usage_mode_sleep_usec() const {
 	return low_processor_usage_mode_sleep_usec;
 }
 
-void OS::set_clipboard(const String &p_text) {
-	_local_clipboard = p_text;
-}
-
-String OS::get_clipboard() const {
-	return _local_clipboard;
-}
-
-bool OS::has_clipboard() const {
-	return !get_clipboard().empty();
-}
-
-void OS::set_clipboard_primary(const String &p_text) {
-	_primary_clipboard = p_text;
-}
-
-String OS::get_clipboard_primary() const {
-	return _primary_clipboard;
-}
-
 String OS::get_executable_path() const {
 	return _execpath;
 }
 
 int OS::get_process_id() const {
 	return -1;
-};
-
-void OS::vibrate_handheld(int p_duration_ms) {
-	WARN_PRINT("vibrate_handheld() only works with Android, iOS and HTML5");
 }
 
 bool OS::is_stdout_verbose() const {
@@ -201,101 +163,28 @@ bool OS::is_stdout_debug_enabled() const {
 	return _debug_stdout;
 }
 
-void OS::dump_memory_to_file(const char *p_file) {
-	//Memory::dump_static_mem_to_file(p_file);
+bool OS::is_stdout_enabled() const {
+	return _stdout_enabled;
 }
 
-static FileAccess *_OSPRF = nullptr;
-
-static void _OS_printres(Object *p_obj) {
-	Resource *res = Object::cast_to<Resource>(p_obj);
-	if (!res) {
-		return;
-	}
-
-	String str = vformat("%s - %s - %s", res->to_string(), res->get_name(), res->get_path());
-	if (_OSPRF) {
-		_OSPRF->store_line(str);
-	} else {
-		print_line(str);
-	}
+bool OS::is_stderr_enabled() const {
+	return _stderr_enabled;
 }
 
-bool OS::has_virtual_keyboard() const {
-	return false;
+void OS::set_stdout_enabled(bool p_enabled) {
+	_stdout_enabled = p_enabled;
 }
 
-void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
-}
-
-void OS::hide_virtual_keyboard() {
-}
-
-int OS::get_virtual_keyboard_height() const {
-	return 0;
-}
-
-uint32_t OS::keyboard_get_scancode_from_physical(uint32_t p_scancode) const {
-	return p_scancode;
-}
-
-void OS::set_cursor_shape(CursorShape p_shape) {
-}
-
-OS::CursorShape OS::get_cursor_shape() const {
-	return CURSOR_ARROW;
-}
-
-void OS::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-}
-
-void OS::print_all_resources(String p_to_file) {
-	ERR_FAIL_COND(p_to_file != "" && _OSPRF);
-	if (p_to_file != "") {
-		Error err;
-		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
-		if (err != OK) {
-			_OSPRF = nullptr;
-			ERR_FAIL_MSG("Can't print all resources to file: " + String(p_to_file) + ".");
-		}
-	}
-
-	ObjectDB::debug_objects(_OS_printres);
-
-	if (p_to_file != "") {
-		if (_OSPRF) {
-			memdelete(_OSPRF);
-		}
-		_OSPRF = nullptr;
-	}
-}
-
-void OS::print_resources_in_use(bool p_short) {
-	ResourceCache::dump(nullptr, p_short);
-}
-
-void OS::dump_resources_to_file(const char *p_file) {
-	ResourceCache::dump(p_file);
-}
-
-void OS::set_no_window_mode(bool p_enable) {
-	_no_window = p_enable;
-}
-
-bool OS::is_no_window_mode_enabled() const {
-	return _no_window;
+void OS::set_stderr_enabled(bool p_enabled) {
+	_stderr_enabled = p_enabled;
 }
 
 int OS::get_exit_code() const {
 	return _exit_code;
 }
+
 void OS::set_exit_code(int p_code) {
 	_exit_code = p_code;
-	_is_custom_exit_code = true;
-}
-
-bool OS::is_custom_exit_code() {
-	return _is_custom_exit_code;
 }
 
 String OS::get_locale() const {
@@ -314,16 +203,26 @@ uint64_t OS::get_embedded_pck_offset() const {
 }
 
 // Helper function to ensure that a dir name/path will be valid on the OS
-String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator) const {
+String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const {
+	String safe_dir_name = p_dir_name;
 	Vector<String> invalid_chars = String(": * ? \" < > |").split(" ");
-	if (p_allow_dir_separator) {
+	if (p_allow_paths) {
 		// Dir separators are allowed, but disallow ".." to avoid going up the filesystem
 		invalid_chars.push_back("..");
+		safe_dir_name = safe_dir_name.replace("\\", "/").strip_edges();
 	} else {
 		invalid_chars.push_back("/");
+		invalid_chars.push_back("\\");
+		safe_dir_name = safe_dir_name.strip_edges();
+
+		// These directory names are invalid.
+		if (safe_dir_name == ".") {
+			safe_dir_name = "dot";
+		} else if (safe_dir_name == "..") {
+			safe_dir_name = "twodots";
+		}
 	}
 
-	String safe_dir_name = p_dir_name.replace("\\", "/").strip_edges();
 	for (int i = 0; i < invalid_chars.size(); i++) {
 		safe_dir_name = safe_dir_name.replace(invalid_chars[i], "-");
 	}
@@ -356,7 +255,7 @@ String OS::get_cache_path() const {
 // Path to macOS .app bundle resources
 String OS::get_bundle_resource_dir() const {
 	return ".";
-};
+}
 
 // Path to macOS .app bundle embedded icon
 String OS::get_bundle_icon_path() const {
@@ -366,7 +265,7 @@ String OS::get_bundle_icon_path() const {
 // OS specific path for user://
 String OS::get_user_data_dir() const {
 	return ".";
-};
+}
 
 // Absolute path to res://
 String OS::get_resource_dir() const {
@@ -380,56 +279,12 @@ String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 
 Error OS::shell_open(String p_uri) {
 	return ERR_UNAVAILABLE;
-};
+}
 
 // implement these with the canvas?
-Error OS::dialog_show(String p_title, String p_description, Vector<String> p_buttons, Object *p_obj, String p_callback) {
-	while (true) {
-		print("%ls\n--------\n%ls\n", p_title.c_str(), p_description.c_str());
-		for (int i = 0; i < p_buttons.size(); i++) {
-			if (i > 0) {
-				print(", ");
-			}
-			print("%i=%ls", i + 1, p_buttons[i].c_str());
-		};
-		print("\n");
-		String res = get_stdin_string().strip_edges();
-		if (!res.is_numeric()) {
-			continue;
-		}
-		int n = res.to_int();
-		if (n < 0 || n >= p_buttons.size()) {
-			continue;
-		}
-		if (p_obj && p_callback != "") {
-			p_obj->call_deferred(p_callback, n);
-		}
-		break;
-	};
-	return OK;
-};
-
-Error OS::dialog_input_text(String p_title, String p_description, String p_partial, Object *p_obj, String p_callback) {
-	ERR_FAIL_COND_V(!p_obj, FAILED);
-	ERR_FAIL_COND_V(p_callback == "", FAILED);
-	print("%ls\n---------\n%ls\n[%ls]:\n", p_title.c_str(), p_description.c_str(), p_partial.c_str());
-
-	String res = get_stdin_string().strip_edges();
-	bool success = true;
-	if (res == "") {
-		res = p_partial;
-	};
-
-	p_obj->call_deferred(p_callback, success, res);
-
-	return OK;
-};
 
 uint64_t OS::get_static_memory_usage() const {
 	return Memory::get_mem_usage();
-}
-uint64_t OS::get_dynamic_memory_usage() const {
-	return MemoryPool::total_memory;
 }
 
 uint64_t OS::get_static_memory_peak_usage() const {
@@ -440,11 +295,6 @@ Error OS::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
 }
 
-bool OS::has_touchscreen_ui_hint() const {
-	//return false;
-	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
-}
-
 uint64_t OS::get_free_static_memory() const {
 	return Memory::get_mem_available();
 }
@@ -452,72 +302,25 @@ uint64_t OS::get_free_static_memory() const {
 void OS::yield() {
 }
 
-void OS::set_screen_orientation(ScreenOrientation p_orientation) {
-	_orientation = p_orientation;
-}
-
-OS::ScreenOrientation OS::get_screen_orientation() const {
-	return (OS::ScreenOrientation)_orientation;
-}
-
-// Internal helper function that returns the screen orientation enum value from a string
-// (generally coming from the Project Settings).
-// This is required to keep compatibility with existing projects.
-OS::ScreenOrientation OS::get_screen_orientation_from_string(const String &p_orientation) const {
-	if (p_orientation == "portrait") {
-		return OS::SCREEN_PORTRAIT;
-	} else if (p_orientation == "reverse_landscape") {
-		return OS::SCREEN_REVERSE_LANDSCAPE;
-	} else if (p_orientation == "reverse_portrait") {
-		return OS::SCREEN_REVERSE_PORTRAIT;
-	} else if (p_orientation == "sensor_landscape") {
-		return OS::SCREEN_SENSOR_LANDSCAPE;
-	} else if (p_orientation == "sensor_portrait") {
-		return OS::SCREEN_SENSOR_PORTRAIT;
-	} else if (p_orientation == "sensor") {
-		return OS::SCREEN_SENSOR;
-	}
-
-	return OS::SCREEN_LANDSCAPE;
-}
-
 void OS::ensure_user_data_dir() {
 	String dd = get_user_data_dir();
-	DirAccess *da = DirAccess::open(dd);
-	if (da) {
-		memdelete(da);
+	if (DirAccess::exists(dd)) {
 		return;
 	}
 
-	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->make_dir_recursive(dd);
 	ERR_FAIL_COND_MSG(err != OK, "Error attempting to create data dir: " + dd + ".");
-
-	memdelete(da);
-}
-
-void OS::set_native_icon(const String &p_filename) {
-}
-
-void OS::set_icon(const Ref<Image> &p_icon) {
 }
 
 String OS::get_model_name() const {
 	return "GenericDevice";
 }
 
-void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
+void OS::set_cmdline(const char *p_execpath, const List<String> &p_args, const List<String> &p_user_args) {
 	_execpath = String::utf8(p_execpath);
 	_cmdline = p_args;
-};
-
-void OS::release_rendering_thread() {
-}
-
-void OS::make_rendering_thread() {
-}
-
-void OS::swap_buffers() {
+	_user_args = p_user_args;
 }
 
 String OS::get_unique_id() const {
@@ -525,117 +328,11 @@ String OS::get_unique_id() const {
 }
 
 int OS::get_processor_count() const {
-	return 1;
+	return std::thread::hardware_concurrency();
 }
 
 String OS::get_processor_name() const {
 	return "";
-}
-
-Error OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
-	return FAILED;
-}
-
-bool OS::native_video_is_playing() const {
-	return false;
-}
-
-void OS::native_video_pause() {
-}
-
-void OS::native_video_unpause() {
-}
-
-void OS::native_video_stop() {
-}
-
-void OS::set_mouse_mode(MouseMode p_mode) {
-}
-
-bool OS::can_use_threads() const {
-#ifdef NO_THREADS
-	return false;
-#else
-	return true;
-#endif
-}
-
-OS::MouseMode OS::get_mouse_mode() const {
-	return MOUSE_MODE_VISIBLE;
-}
-
-OS::LatinKeyboardVariant OS::get_latin_keyboard_variant() const {
-	return LATIN_KEYBOARD_QWERTY;
-}
-
-int OS::keyboard_get_layout_count() const {
-	return 0;
-}
-
-int OS::keyboard_get_current_layout() const {
-	return -1;
-}
-
-void OS::keyboard_set_current_layout(int p_index) {}
-
-String OS::keyboard_get_layout_language(int p_index) const {
-	return "";
-}
-
-String OS::keyboard_get_layout_name(int p_index) const {
-	return "";
-}
-
-bool OS::is_joy_known(int p_device) {
-	return true;
-}
-
-String OS::get_joy_guid(int p_device) const {
-	return "Default Joypad";
-}
-
-void OS::set_context(int p_context) {
-}
-
-OS::SwitchVSyncCallbackInThread OS::switch_vsync_function = nullptr;
-
-void OS::set_use_vsync(bool p_enable) {
-	_use_vsync = p_enable;
-	if (switch_vsync_function) { //if a function was set, use function
-		switch_vsync_function(p_enable);
-	} else { //otherwise just call here
-		_set_use_vsync(p_enable);
-	}
-}
-
-bool OS::is_vsync_enabled() const {
-	return _use_vsync;
-}
-
-void OS::set_vsync_via_compositor(bool p_enable) {
-	_vsync_via_compositor = p_enable;
-}
-
-bool OS::is_vsync_via_compositor_enabled() const {
-	return _vsync_via_compositor;
-}
-
-void OS::set_delta_smoothing(bool p_enabled) {
-	_delta_smoothing_enabled = p_enabled;
-}
-
-bool OS::is_delta_smoothing_enabled() const {
-	return _delta_smoothing_enabled;
-}
-
-OS::PowerState OS::get_power_state() {
-	return POWERSTATE_UNKNOWN;
-}
-int OS::get_power_seconds_left() {
-	return -1;
-}
-int OS::get_power_percent_left() {
-	return -1;
 }
 
 void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
@@ -643,27 +340,55 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 }
 
 bool OS::has_feature(const String &p_feature) {
-	if (p_feature == get_name()) {
+	// Feature tags are always lowercase for consistency.
+	if (p_feature == get_name().to_lower()) {
 		return true;
 	}
+
+	// Catch-all `linuxbsd` feature tag that matches on both Linux and BSD.
+	// This is the one exposed in the project settings dialog.
+	if (p_feature == "linuxbsd" && (get_name() == "Linux" || get_name() == "FreeBSD" || get_name() == "NetBSD" || get_name() == "OpenBSD" || get_name() == "BSD")) {
+		return true;
+	}
+
+	if (p_feature == "movie") {
+		return _writing_movie;
+	}
+
 #ifdef DEBUG_ENABLED
 	if (p_feature == "debug") {
 		return true;
 	}
-#else
-	if (p_feature == "release") {
-		return true;
-	}
-#endif
+#endif // DEBUG_ENABLED
+
 #ifdef TOOLS_ENABLED
 	if (p_feature == "editor") {
 		return true;
 	}
 #else
-	if (p_feature == "standalone") {
+	if (p_feature == "template") {
 		return true;
 	}
-#endif
+#ifdef DEBUG_ENABLED
+	if (p_feature == "template_debug") {
+		return true;
+	}
+#else
+	if (p_feature == "template_release" || p_feature == "release") {
+		return true;
+	}
+#endif // DEBUG_ENABLED
+#endif // TOOLS_ENABLED
+
+#ifdef REAL_T_IS_DOUBLE
+	if (p_feature == "double") {
+		return true;
+	}
+#else
+	if (p_feature == "single") {
+		return true;
+	}
+#endif // REAL_T_IS_DOUBLE
 
 	if (sizeof(void *) == 8 && p_feature == "64") {
 		return true;
@@ -671,6 +396,7 @@ bool OS::has_feature(const String &p_feature) {
 	if (sizeof(void *) == 4 && p_feature == "32") {
 		return true;
 	}
+#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 	if (p_feature == "x86_64") {
 		return true;
@@ -679,10 +405,12 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "x86_32") {
 		return true;
 	}
+#endif
 	if (p_feature == "x86") {
 		return true;
 	}
-#elif defined(__aarch64__) || defined(_M_ARM64)
+#elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
+#if defined(__aarch64__) || defined(_M_ARM64)
 	if (p_feature == "arm64") {
 		return true;
 	}
@@ -690,6 +418,7 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "arm32") {
 		return true;
 	}
+#endif
 #if defined(__ARM_ARCH_7A__)
 	if (p_feature == "armv7a" || p_feature == "armv7") {
 		return true;
@@ -751,51 +480,6 @@ bool OS::has_feature(const String &p_feature) {
 	return false;
 }
 
-void OS::center_window() {
-	if (is_window_fullscreen()) {
-		return;
-	}
-
-	Point2 sp = get_screen_position(get_current_screen());
-	Size2 scr = get_screen_size(get_current_screen());
-	Size2 wnd = get_real_window_size();
-
-	int x = sp.width + (scr.width - wnd.width) / 2;
-	int y = sp.height + (scr.height - wnd.height) / 2;
-
-	set_window_position(Vector2(x, y));
-}
-
-int OS::get_video_driver_count() const {
-	return 2;
-}
-
-const char *OS::get_video_driver_name(int p_driver) const {
-	switch (p_driver) {
-		case VIDEO_DRIVER_GLES2:
-			return "GLES2";
-		case VIDEO_DRIVER_GLES3:
-		default:
-			return "GLES3";
-	}
-}
-
-bool OS::is_offscreen_gl_available() const {
-	return false;
-}
-
-void OS::set_offscreen_gl_current(bool p_current) {}
-
-int OS::get_audio_driver_count() const {
-	return AudioDriverManager::get_driver_count();
-}
-
-const char *OS::get_audio_driver_name(int p_driver) const {
-	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
-	ERR_FAIL_COND_V_MSG(!driver, "", "Cannot get audio driver at index '" + itos(p_driver) + "'.");
-	return AudioDriverManager::get_driver(p_driver)->get_name();
-}
-
 void OS::set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments) {
 	restart_on_exit = p_restart;
 	restart_commandline = p_restart_arguments;
@@ -809,12 +493,12 @@ List<String> OS::get_restart_on_exit_arguments() const {
 	return restart_commandline;
 }
 
-PoolStringArray OS::get_connected_midi_inputs() {
+PackedStringArray OS::get_connected_midi_inputs() {
 	if (MIDIDriver::get_singleton()) {
 		return MIDIDriver::get_singleton()->get_connected_inputs();
 	}
 
-	PoolStringArray list;
+	PackedStringArray list;
 	ERR_FAIL_V_MSG(list, vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
 }
 
@@ -850,10 +534,10 @@ void OS::add_frame_delay(bool p_can_draw) {
 	if (is_in_low_processor_usage_mode() || !p_can_draw) {
 		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
 	}
-	const int target_fps = Engine::get_singleton()->get_target_fps();
-	if (target_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
+	const int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
 		// Override the low processor usage mode sleep delay if the target FPS is lower.
-		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / target_fps));
+		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / max_fps));
 	}
 
 	if (dynamic_delay > 0) {
@@ -869,32 +553,18 @@ void OS::add_frame_delay(bool p_can_draw) {
 	}
 }
 
+OS::PreferredTextureFormat OS::get_preferred_texture_format() const {
+#if defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
+	return PREFERRED_TEXTURE_FORMAT_ETC2_ASTC; // By rule, ARM hardware uses ETC texture compression.
+#elif defined(__x86_64__) || defined(_M_X64) || defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
+	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC; // By rule, X86 hardware prefers S3TC and derivatives.
+#else
+	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC; // Override in platform if needed.
+#endif
+}
+
 OS::OS() {
-	void *volatile stack_bottom;
-
-	restart_on_exit = false;
 	singleton = this;
-	_keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
-	low_processor_usage_mode = false;
-	low_processor_usage_mode_sleep_usec = 10000;
-	_update_vital_only = false;
-	_update_pending = false;
-	_verbose_stdout = false;
-	_debug_stdout = false;
-	_no_window = false;
-	_exit_code = 0;
-	_orientation = SCREEN_LANDSCAPE;
-	_delta_smoothing_enabled = false;
-
-	_render_thread_mode = RENDER_THREAD_SAFE;
-
-	_allow_hidpi = false;
-	_allow_layered = false;
-	_stack_bottom = (void *)(&stack_bottom);
-
-	_logger = nullptr;
-
-	has_server_feature_callback = nullptr;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));
@@ -902,6 +572,8 @@ OS::OS() {
 }
 
 OS::~OS() {
-	memdelete(_logger);
+	if (_logger) {
+		memdelete(_logger);
+	}
 	singleton = nullptr;
 }

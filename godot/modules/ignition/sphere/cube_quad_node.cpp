@@ -109,7 +109,7 @@ bool CubeQuadNode::subdivide( CubeSphere * s, SubdivideSource * src )
             v.b = vertIndB;
             const int newInd = (int)s->verts.size();
             s->verts.push_back( v );
-            s->lookup.set( hashN.to_hash(), newInd );
+            s->lookup[ hashN.to_hash() ] = newInd;
             newVertInds[i] = newInd;
         }
         else

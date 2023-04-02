@@ -2,8 +2,8 @@
 #ifndef __CUBE_SPHERE_H_
 #define __CUBE_SPHERE_H_
 
-#include "core/vector.h"
-#include "core/hash_map.h"
+#include "core/templates/vector.h"
+#include "core/templates/hash_map.h"
 #include "cube_edge_hash.h"
 #include "cube_vertex.h"
 #include "subdivide_source.h"

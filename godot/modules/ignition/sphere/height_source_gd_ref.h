@@ -12,7 +12,7 @@ namespace Ign
 class HeightSourceGdRef: public HeightSourceRef
 {
 	GDCLASS( HeightSourceGdRef, HeightSourceRef );
-	OBJ_CATEGORY("Ignition");
+	//OBJ_CATEGORY("Ignition");
 
 public:
 	HeightSourceGdRef();

@@ -1,6 +1,6 @@
 
 #include "ref_frame_non_inertial_node.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/node_3d.h"
 #include "save_load.h"
 
 #include "ref_frame_motion_node.h"
@@ -15,18 +15,18 @@ namespace Ign
 void RefFrameNonInertialNode::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD( "set_physics_integration", "en" ), &RefFrameNonInertialNode::set_physics_integration );
-	ClassDB::bind_method( D_METHOD( "get_physics_integration" ),       &RefFrameNonInertialNode::get_physics_integration, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD( "get_physics_integration" ),       &RefFrameNonInertialNode::get_physics_integration );
 
 	ClassDB::bind_method( D_METHOD( "set_physics_mode", "en" ), &RefFrameNonInertialNode::set_physics_mode );
-	ClassDB::bind_method( D_METHOD( "get_physics_mode" ),       &RefFrameNonInertialNode::get_physics_mode, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD( "get_physics_mode" ),       &RefFrameNonInertialNode::get_physics_mode );
 
 	ClassDB::bind_method( D_METHOD( "set_time_step", "en" ), &RefFrameNonInertialNode::set_time_step );
-	ClassDB::bind_method( D_METHOD( "get_time_step" ),       &RefFrameNonInertialNode::get_time_step, Variant::REAL );
+	ClassDB::bind_method( D_METHOD( "get_time_step" ),       &RefFrameNonInertialNode::get_time_step );
 
 	ADD_GROUP( "Ignition", "" );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "physics_integration" ), "set_physics_integration", "get_physics_integration" );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "physics_mode" ),        "set_physics_mode",        "get_physics_mode" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "time_step" ),           "set_time_step",           "get_time_step" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL,  "physics_integration" ), "set_physics_integration", "get_physics_integration" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL,  "physics_mode" ),        "set_physics_mode",        "get_physics_mode" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "time_step" ),           "set_time_step",           "get_time_step" );
 }
 
 void RefFrameNonInertialNode::_notification( int p_notification )

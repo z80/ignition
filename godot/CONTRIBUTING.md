@@ -37,7 +37,7 @@ Godot runs on a large variety of platforms and operating systems and devices.
 
 For bugs that are likely OS-specific and/or graphics-related, please also specify:
 
-- Device (CPU model including architecture, e.g. x86, x86_64, ARM, etc.)
+- Device (CPU model including architecture, e.g. x86_64, arm64, etc.)
 - GPU model (and the driver version in use if you know it)
 
 **Bug reports not including the required information may be closed at the
@@ -55,7 +55,7 @@ in the editor, don't hesitate to include screenshots.
 Making your bug report easy to reproduce will make it easier for contributors
 to fix the bug.
 
-### Provide a simple, example project
+### Provide a simple example project
 
 Sometimes, unexpected behavior can happen in your project. In such case,
 understand that:
@@ -63,6 +63,8 @@ understand that:
 - What happens to you may not happen to other users.
 - We can't take the time to look at your project, understand how it is set up
   and then figure out why it's failing.
+- On the contributors' end, recreating a test project from scratch takes valuable
+  time that can be saved by uploading a *minimal* project.
 
 To speed up our work, **please upload a minimal project** that isolates
 and reproduces the issue. This is always the **best way for us to fix it**.
@@ -73,6 +75,11 @@ if your ZIP file isn't accepted by GitHub because it's too large.
 
 We recommend always attaching a minimal reproduction project, even if the issue
 may seem simple to reproduce manually.
+
+**Note for C# users:** If your issue is *not* .NET-specific, please upload a
+minimal reproduction project written in GDScript.
+This will make it easier for contributors to reproduce the issue
+locally as not everyone has a .NET setup available.
 
 **If you've been asked by a maintainer to upload a minimal reproduction project,
 you *must* do so within 7 days.** Otherwise, your bug report will be closed as
@@ -115,11 +122,12 @@ recommend that you have a look at it to know what's important to take into
 account for a PR to be considered for merging.
 
 In addition to the following tips, also take a look at the
-[Engine development guide](https://docs.godotengine.org/en/latest/development/cpp/)
+[Engine development guide](https://docs.godotengine.org/en/latest/contributing/development/index.html)
 for an introduction to developing on Godot.
 
-The [Contributing docs](https://docs.godotengine.org/en/latest/community/contributing/index.html)
-also have important information on the PR workflow and the code style we use.
+The [Contributing docs](https://docs.godotengine.org/en/latest/contributing/ways_to_contribute.html)
+also have important information on the [PR workflow](https://docs.godotengine.org/en/latest/contributing/workflow/pr_workflow.html)
+and the [code style](https://docs.godotengine.org/en/latest/contributing/development/code_style_guidelines.html) we use.
 
 ### Document your changes
 
@@ -128,14 +136,37 @@ scripting APIs, you **must** update the class reference to document those.
 This is to ensure the documentation coverage doesn't decrease as contributions
 are merged.
 
-[Update the documentation template](https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html#updating-the-documentation-template)
+[Update documentation XML files](https://docs.godotengine.org/en/latest/contributing/documentation/updating_the_class_reference.html#updating-class-reference-when-working-on-the-engine)
 using your compiled binary, then fill in the descriptions.
 Follow the style guide described in the
-[Docs writing guidelines](https://docs.godotengine.org/en/latest/community/contributing/docs_writing_guidelines.html).
+[Writing guidelines](https://docs.godotengine.org/en/latest/contributing/documentation/docs_writing_guidelines.html).
 
 If your pull request modifies parts of the code in a non-obvious way, make sure
 to add comments in the code as well. This helps other people understand the
 change without having to look at `git blame`.
+
+### Write unit tests
+
+When fixing a bug or contributing a new feature, we recommend including unit
+tests in the same commit as the rest of the pull request. Unit tests are pieces
+of code that compare the output to a predetermined *expected result* to detect
+regressions. Tests are compiled and run on GitHub Actions for every commit and
+pull request.
+
+Pull requests that include tests are more likely to be merged, since we can have
+greater confidence in them not being the target of regressions in the future.
+
+For bugs, the unit tests should cover the functionality that was previously
+broken. If done well, this ensures regressions won't appear in the future
+again. For new features, the unit tests should cover the newly added
+functionality, testing both the "success" and "expected failure" cases if
+applicable.
+
+Feel free to contribute standalone pull requests to add new tests or improve
+existing tests as well.
+
+See [Unit testing](https://docs.godotengine.org/en/latest/contributing/development/core_and_modules/unit_testing.html)
+for information on writing tests in Godot's C++ codebase.
 
 ### Be nice to the Git history
 
@@ -156,7 +187,7 @@ Internet).
 This [Git style guide](https://github.com/agis-/git-style-guide) has some
 good practices to have in mind.
 
-See our [PR workflow](https://docs.godotengine.org/en/latest/community/contributing/pr_workflow.html)
+See our [PR workflow](https://docs.godotengine.org/en/latest/contributing/workflow/pr_workflow.html)
 documentation for tips on using Git, amending commits and rebasing branches.
 
 ### Format your commit messages with readability in mind

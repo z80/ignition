@@ -31,18 +31,19 @@
 #include "editor_help_search.h"
 
 #include "core/os/keyboard.h"
-#include "editor_feature_profile.h"
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_feature_profile.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 
 void EditorHelpSearch::_update_icons() {
-	search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
-	search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
-	case_sensitive_button->set_icon(get_icon("MatchCase", "EditorIcons"));
-	hierarchy_button->set_icon(get_icon("ClassList", "EditorIcons"));
+	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	case_sensitive_button->set_icon(results_tree->get_theme_icon(SNAME("MatchCase"), SNAME("EditorIcons")));
+	hierarchy_button->set_icon(results_tree->get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
 
-	if (is_visible_in_tree()) {
+	if (is_visible()) {
 		_update_results();
 	}
 }
@@ -58,7 +59,7 @@ void EditorHelpSearch::_update_results() {
 		search_flags |= SEARCH_SHOW_HIERARCHY;
 	}
 
-	search = Ref<Runner>(memnew(Runner(this, results_tree, term, search_flags)));
+	search = Ref<Runner>(memnew(Runner(results_tree, results_tree, term, search_flags)));
 	set_process(true);
 }
 
@@ -66,14 +67,16 @@ void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
 	// Redirect up and down navigational key events to the results list.
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid()) {
-		switch (key->get_scancode()) {
-			case KEY_UP:
-			case KEY_DOWN:
-			case KEY_PAGEUP:
-			case KEY_PAGEDOWN: {
-				results_tree->call("_gui_input", key);
+		switch (key->get_keycode()) {
+			case Key::UP:
+			case Key::DOWN:
+			case Key::PAGEUP:
+			case Key::PAGEDOWN: {
+				results_tree->gui_input(key);
 				search_box->accept_event();
 			} break;
+			default:
+				break;
 		}
 	}
 }
@@ -95,25 +98,30 @@ void EditorHelpSearch::_confirmed() {
 	// Activate the script editor and emit the signal with the documentation link to display.
 	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 
-	emit_signal("go_to_help", item->get_metadata(0));
+	emit_signal(SNAME("go_to_help"), item->get_metadata(0));
 
 	hide();
 }
 
 void EditorHelpSearch::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				results_tree->call_deferred(SNAME("clear")); // Wait for the Tree's mouse event propagation.
+				get_ok_button()->set_disabled(true);
+				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", Rect2(get_position(), get_size()));
+			}
+		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", this, "_confirmed");
+			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
 			_update_icons();
 		} break;
-		case NOTIFICATION_POPUP_HIDE: {
-			results_tree->call_deferred("clear"); // Wait for the Tree's mouse event propagation.
-			get_ok()->set_disabled(true);
-			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", get_rect());
-		} break;
+
 		case NOTIFICATION_PROCESS: {
 			// Update background search.
 			if (search.is_valid()) {
@@ -127,7 +135,7 @@ void EditorHelpSearch::_notification(int p_what) {
 						old_search = false;
 					}
 
-					get_ok()->set_disabled(!results_tree->get_selected());
+					get_ok_button()->set_disabled(!results_tree->get_selected());
 
 					search = Ref<Runner>();
 					set_process(false);
@@ -140,11 +148,6 @@ void EditorHelpSearch::_notification(int p_what) {
 }
 
 void EditorHelpSearch::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_results"), &EditorHelpSearch::_update_results);
-	ClassDB::bind_method(D_METHOD("_search_box_gui_input"), &EditorHelpSearch::_search_box_gui_input);
-	ClassDB::bind_method(D_METHOD("_search_box_text_changed"), &EditorHelpSearch::_search_box_text_changed);
-	ClassDB::bind_method(D_METHOD("_filter_combo_item_selected"), &EditorHelpSearch::_filter_combo_item_selected);
-	ClassDB::bind_method(D_METHOD("_confirmed"), &EditorHelpSearch::_confirmed);
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 }
 
@@ -161,7 +164,7 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 		popup_centered_ratio(0.5F);
 	}
 
-	if (p_term == "") {
+	if (p_term.is_empty()) {
 		search_box->clear();
 	} else {
 		if (old_term == p_term) {
@@ -178,14 +181,12 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 }
 
 EditorHelpSearch::EditorHelpSearch() {
-	old_search = false;
-
 	set_hide_on_ok(false);
-	set_resizable(true);
+
 	set_title(TTR("Search Help"));
 
-	get_ok()->set_disabled(true);
-	get_ok()->set_text(TTR("Open"));
+	get_ok_button()->set_disabled(true);
+	set_ok_button_text(TTR("Open"));
 
 	// Split search and results area.
 	VBoxContainer *vbox = memnew(VBoxContainer);
@@ -197,25 +198,27 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	search_box = memnew(LineEdit);
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
-	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	search_box->connect("gui_input", this, "_search_box_gui_input");
-	search_box->connect("text_changed", this, "_search_box_text_changed");
+	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_box->connect("gui_input", callable_mp(this, &EditorHelpSearch::_search_box_gui_input));
+	search_box->connect("text_changed", callable_mp(this, &EditorHelpSearch::_search_box_text_changed));
 	register_text_enter(search_box);
 	hbox->add_child(search_box);
 
-	case_sensitive_button = memnew(ToolButton);
-	case_sensitive_button->set_tooltip(TTR("Case Sensitive"));
-	case_sensitive_button->connect("pressed", this, "_update_results");
+	case_sensitive_button = memnew(Button);
+	case_sensitive_button->set_flat(true);
+	case_sensitive_button->set_tooltip_text(TTR("Case Sensitive"));
+	case_sensitive_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
-	case_sensitive_button->set_focus_mode(FOCUS_NONE);
+	case_sensitive_button->set_focus_mode(Control::FOCUS_NONE);
 	hbox->add_child(case_sensitive_button);
 
-	hierarchy_button = memnew(ToolButton);
-	hierarchy_button->set_tooltip(TTR("Show Hierarchy"));
-	hierarchy_button->connect("pressed", this, "_update_results");
+	hierarchy_button = memnew(Button);
+	hierarchy_button->set_flat(true);
+	hierarchy_button->set_tooltip_text(TTR("Show Hierarchy"));
+	hierarchy_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
 	hierarchy_button->set_toggle_mode(true);
 	hierarchy_button->set_pressed(true);
-	hierarchy_button->set_focus_mode(FOCUS_NONE);
+	hierarchy_button->set_focus_mode(Control::FOCUS_NONE);
 	hbox->add_child(hierarchy_button);
 
 	filter_combo = memnew(OptionButton);
@@ -224,27 +227,32 @@ EditorHelpSearch::EditorHelpSearch() {
 	filter_combo->add_item(TTR("Display All"), SEARCH_ALL);
 	filter_combo->add_separator();
 	filter_combo->add_item(TTR("Classes Only"), SEARCH_CLASSES);
+	filter_combo->add_item(TTR("Constructors Only"), SEARCH_CONSTRUCTORS);
 	filter_combo->add_item(TTR("Methods Only"), SEARCH_METHODS);
+	filter_combo->add_item(TTR("Operators Only"), SEARCH_OPERATORS);
 	filter_combo->add_item(TTR("Signals Only"), SEARCH_SIGNALS);
+	filter_combo->add_item(TTR("Annotations Only"), SEARCH_ANNOTATIONS);
 	filter_combo->add_item(TTR("Constants Only"), SEARCH_CONSTANTS);
 	filter_combo->add_item(TTR("Properties Only"), SEARCH_PROPERTIES);
 	filter_combo->add_item(TTR("Theme Properties Only"), SEARCH_THEME_ITEMS);
-	filter_combo->connect("item_selected", this, "_filter_combo_item_selected");
+	filter_combo->connect("item_selected", callable_mp(this, &EditorHelpSearch::_filter_combo_item_selected));
 	hbox->add_child(filter_combo);
 
 	// Create the results tree.
 	results_tree = memnew(Tree);
-	results_tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	results_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	results_tree->set_columns(2);
 	results_tree->set_column_title(0, TTR("Name"));
+	results_tree->set_column_clip_content(0, true);
 	results_tree->set_column_title(1, TTR("Member Type"));
 	results_tree->set_column_expand(1, false);
-	results_tree->set_column_min_width(1, 150 * EDSCALE);
+	results_tree->set_column_custom_minimum_width(1, 150 * EDSCALE);
+	results_tree->set_column_clip_content(1, true);
 	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
-	results_tree->connect("item_activated", this, "_confirmed");
-	results_tree->connect("item_selected", get_ok(), "set_disabled", varray(false));
+	results_tree->connect("item_activated", callable_mp(this, &EditorHelpSearch::_confirmed));
+	results_tree->connect("item_selected", callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled).bind(false));
 	vbox->add_child(results_tree, true);
 }
 
@@ -307,77 +315,99 @@ bool EditorHelpSearch::Runner::_slice() {
 }
 
 bool EditorHelpSearch::Runner::_phase_match_classes_init() {
-	iterator_doc = EditorHelp::get_doc_data()->class_list.front();
+	iterator_doc = EditorHelp::get_doc_data()->class_list.begin();
 	matches.clear();
 	matched_item = nullptr;
 	match_highest_score = 0;
+
+	terms = term.split_spaces();
+	if (terms.is_empty()) {
+		terms.append(term);
+	}
 
 	return true;
 }
 
 bool EditorHelpSearch::Runner::_phase_match_classes() {
-	DocData::ClassDoc &class_doc = iterator_doc->value();
-	if (!_is_class_disabled_by_feature_profile(class_doc.name)) {
-		matches[class_doc.name] = ClassMatch();
-		ClassMatch &match = matches[class_doc.name];
+	if (!iterator_doc) {
+		return true;
+	}
 
+	DocData::ClassDoc &class_doc = iterator_doc->value;
+	if (class_doc.name.is_empty()) {
+		++iterator_doc;
+		return false;
+	}
+
+	if (!_is_class_disabled_by_feature_profile(class_doc.name)) {
+		ClassMatch match;
 		match.doc = &class_doc;
 
 		// Match class name.
 		if (search_flags & SEARCH_CLASSES) {
-			match.name = term == "" || _match_string(term, class_doc.name);
+			// If the search term is empty, add any classes which are not script docs or which don't start with
+			// a double-quotation. This will ensure that only C++ classes and explicitly named classes will
+			// be added.
+			match.name = (term.is_empty() && (!class_doc.is_script_doc || class_doc.name[0] != '\"')) || _match_string(term, class_doc.name);
 		}
 
-		// Match members if the term is long enough.
-		if (term.length() > 1) {
+		// Match members only if the term is long enough, to avoid slow performance from building a large tree.
+		// Make an exception for annotations, since there are not that many of them.
+		if (term.length() > 1 || term == "@") {
+			if (search_flags & SEARCH_CONSTRUCTORS) {
+				_match_method_name_and_push_back(class_doc.constructors, &match.constructors);
+			}
 			if (search_flags & SEARCH_METHODS) {
-				for (int i = 0; i < class_doc.methods.size(); i++) {
-					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
-					if (method_name.find(term) > -1 ||
-							(term.begins_with(".") && method_name.begins_with(term.right(1))) ||
-							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
-							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
-						match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
-					}
-				}
+				_match_method_name_and_push_back(class_doc.methods, &match.methods);
+			}
+			if (search_flags & SEARCH_OPERATORS) {
+				_match_method_name_and_push_back(class_doc.operators, &match.operators);
 			}
 			if (search_flags & SEARCH_SIGNALS) {
 				for (int i = 0; i < class_doc.signals.size(); i++) {
-					if (_match_string(term, class_doc.signals[i].name)) {
+					if (_all_terms_in_name(class_doc.signals[i].name)) {
 						match.signals.push_back(const_cast<DocData::MethodDoc *>(&class_doc.signals[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_CONSTANTS) {
 				for (int i = 0; i < class_doc.constants.size(); i++) {
-					if (_match_string(term, class_doc.constants[i].name)) {
+					if (_all_terms_in_name(class_doc.constants[i].name)) {
 						match.constants.push_back(const_cast<DocData::ConstantDoc *>(&class_doc.constants[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_PROPERTIES) {
 				for (int i = 0; i < class_doc.properties.size(); i++) {
-					if (_match_string(term, class_doc.properties[i].name) || _match_string(term, class_doc.properties[i].getter) || _match_string(term, class_doc.properties[i].setter)) {
+					if (_all_terms_in_name(class_doc.properties[i].name)) {
 						match.properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.properties[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_THEME_ITEMS) {
 				for (int i = 0; i < class_doc.theme_properties.size(); i++) {
-					if (_match_string(term, class_doc.theme_properties[i].name)) {
+					if (_all_terms_in_name(class_doc.theme_properties[i].name)) {
 						match.theme_properties.push_back(const_cast<DocData::ThemeItemDoc *>(&class_doc.theme_properties[i]));
 					}
 				}
 			}
+			if (search_flags & SEARCH_ANNOTATIONS) {
+				for (int i = 0; i < class_doc.annotations.size(); i++) {
+					if (_match_string(term, class_doc.annotations[i].name)) {
+						match.annotations.push_back(const_cast<DocData::MethodDoc *>(&class_doc.annotations[i]));
+					}
+				}
+			}
 		}
+		matches[class_doc.name] = match;
 	}
 
-	iterator_doc = iterator_doc->next();
+	++iterator_doc;
 	return !iterator_doc;
 }
 
 bool EditorHelpSearch::Runner::_phase_class_items_init() {
-	iterator_match = matches.front();
+	iterator_match = matches.begin();
 
 	results_tree->clear();
 	root_item = results_tree->create_item();
@@ -387,7 +417,10 @@ bool EditorHelpSearch::Runner::_phase_class_items_init() {
 }
 
 bool EditorHelpSearch::Runner::_phase_class_items() {
-	ClassMatch &match = iterator_match->value();
+	if (!iterator_match) {
+		return true;
+	}
+	ClassMatch &match = iterator_match->value;
 
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
 		if (match.required()) {
@@ -399,43 +432,90 @@ bool EditorHelpSearch::Runner::_phase_class_items() {
 		}
 	}
 
-	iterator_match = iterator_match->next();
+	++iterator_match;
 	return !iterator_match;
 }
 
 bool EditorHelpSearch::Runner::_phase_member_items_init() {
-	iterator_match = matches.front();
+	iterator_match = matches.begin();
 
 	return true;
 }
 
 bool EditorHelpSearch::Runner::_phase_member_items() {
-	ClassMatch &match = iterator_match->value();
+	if (!iterator_match) {
+		return true;
+	}
 
-	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
+	ClassMatch &match = iterator_match->value;
+
+	if (!match.doc || match.doc->name.is_empty()) {
+		++iterator_match;
+		return false;
+	}
+
+	TreeItem *parent_item = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
+	bool constructor_created = false;
 	for (int i = 0; i < match.methods.size(); i++) {
-		_create_method_item(parent, match.doc, match.methods[i]);
+		String text = match.methods[i]->name;
+		if (!constructor_created) {
+			if (match.doc->name == match.methods[i]->name) {
+				text += " " + TTR("(constructors)");
+				constructor_created = true;
+			}
+		} else {
+			if (match.doc->name == match.methods[i]->name) {
+				continue;
+			}
+		}
+		_create_method_item(parent_item, match.doc, text, match.methods[i]);
 	}
 	for (int i = 0; i < match.signals.size(); i++) {
-		_create_signal_item(parent, match.doc, match.signals[i]);
+		_create_signal_item(parent_item, match.doc, match.signals[i]);
 	}
 	for (int i = 0; i < match.constants.size(); i++) {
-		_create_constant_item(parent, match.doc, match.constants[i]);
+		_create_constant_item(parent_item, match.doc, match.constants[i]);
 	}
 	for (int i = 0; i < match.properties.size(); i++) {
-		_create_property_item(parent, match.doc, match.properties[i]);
+		_create_property_item(parent_item, match.doc, match.properties[i]);
 	}
 	for (int i = 0; i < match.theme_properties.size(); i++) {
-		_create_theme_property_item(parent, match.doc, match.theme_properties[i]);
+		_create_theme_property_item(parent_item, match.doc, match.theme_properties[i]);
+	}
+	for (int i = 0; i < match.annotations.size(); i++) {
+		// Hide the redundant leading @ symbol.
+		_create_annotation_item(parent_item, match.doc, match.annotations[i]->name.substr(1), match.annotations[i]);
 	}
 
-	iterator_match = iterator_match->next();
+	++iterator_match;
 	return !iterator_match;
 }
 
 bool EditorHelpSearch::Runner::_phase_select_match() {
 	if (matched_item) {
 		matched_item->select(0);
+	}
+	return true;
+}
+
+void EditorHelpSearch::Runner::_match_method_name_and_push_back(Vector<DocData::MethodDoc> &p_methods, Vector<DocData::MethodDoc *> *r_match_methods) {
+	// Constructors, Methods, Operators...
+	for (int i = 0; i < p_methods.size(); i++) {
+		String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? p_methods[i].name : p_methods[i].name.to_lower();
+		if (_all_terms_in_name(method_name) ||
+				(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+				(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+				(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+			r_match_methods->push_back(const_cast<DocData::MethodDoc *>(&p_methods[i]));
+		}
+	}
+}
+
+bool EditorHelpSearch::Runner::_all_terms_in_name(String name) {
+	for (int i = 0; i < terms.size(); i++) {
+		if (!_match_string(terms[i], name)) {
+			return false;
+		}
 	}
 	return true;
 }
@@ -466,33 +546,54 @@ void EditorHelpSearch::Runner::_match_item(TreeItem *p_item, const String &p_tex
 	}
 }
 
+String EditorHelpSearch::Runner::_build_method_tooltip(const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) const {
+	String tooltip = p_doc->return_type + " " + p_class_doc->name + "." + p_doc->name + "(";
+	for (int i = 0; i < p_doc->arguments.size(); i++) {
+		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
+		tooltip += arg.type + " " + arg.name;
+		if (!arg.default_value.is_empty()) {
+			tooltip += " = " + arg.default_value;
+		}
+		if (i < p_doc->arguments.size() - 1) {
+			tooltip += ", ";
+		}
+	}
+	tooltip += ")";
+	return tooltip;
+}
+
 TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_match) {
+	if (p_match.doc->name.is_empty()) {
+		return nullptr;
+	}
 	if (class_items.has(p_match.doc->name)) {
 		return class_items[p_match.doc->name];
 	}
 
 	// Ensure parent nodes are created first.
-	TreeItem *parent = root_item;
-	if (p_match.doc->inherits != "") {
+	TreeItem *parent_item = root_item;
+	if (!p_match.doc->inherits.is_empty()) {
 		if (class_items.has(p_match.doc->inherits)) {
-			parent = class_items[p_match.doc->inherits];
+			parent_item = class_items[p_match.doc->inherits];
 		} else {
 			ClassMatch &base_match = matches[p_match.doc->inherits];
-			parent = _create_class_hierarchy(base_match);
+			if (base_match.doc) {
+				parent_item = _create_class_hierarchy(base_match);
+			}
 		}
 	}
 
-	TreeItem *class_item = _create_class_item(parent, p_match.doc, !p_match.name);
+	TreeItem *class_item = _create_class_item(parent_item, p_match.doc, !p_match.name);
 	class_items[p_match.doc->name] = class_item;
 	return class_item;
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
-	Ref<Texture> icon = empty_icon;
-	if (ui_service->has_icon(p_doc->name, "EditorIcons")) {
-		icon = ui_service->get_icon(p_doc->name, "EditorIcons");
+	Ref<Texture2D> icon = empty_icon;
+	if (ui_service->has_theme_icon(p_doc->name, SNAME("EditorIcons"))) {
+		icon = ui_service->get_theme_icon(p_doc->name, SNAME("EditorIcons"));
 	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
-		icon = ui_service->get_icon("Object", "EditorIcons");
+		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 	}
 	String tooltip = DTR(p_doc->brief_description.strip_edges());
 
@@ -500,12 +601,20 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	item->set_icon(0, icon);
 	item->set_text(0, p_doc->name);
 	item->set_text(1, TTR("Class"));
-	item->set_tooltip(0, tooltip);
-	item->set_tooltip(1, tooltip);
+	item->set_tooltip_text(0, tooltip);
+	item->set_tooltip_text(1, tooltip);
 	item->set_metadata(0, "class_name:" + p_doc->name);
 	if (p_gray) {
 		item->set_custom_color(0, disabled_color);
 		item->set_custom_color(1, disabled_color);
+	}
+
+	if (p_doc->is_deprecated) {
+		Ref<Texture2D> error_icon = ui_service->get_theme_icon("StatusError", SNAME("EditorIcons"));
+		item->add_button(0, error_icon, 0, false, TTR("This class is marked as deprecated."));
+	} else if (p_doc->is_experimental) {
+		Ref<Texture2D> warning_icon = ui_service->get_theme_icon("NodeWarning", SNAME("EditorIcons"));
+		item->add_button(0, warning_icon, 0, false, TTR("This class is marked as experimental."));
 	}
 
 	_match_item(item, p_doc->name);
@@ -513,78 +622,64 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	return item;
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) {
-	String tooltip = p_doc->return_type + " " + p_class_doc->name + "." + p_doc->name + "(";
-	for (int i = 0; i < p_doc->arguments.size(); i++) {
-		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
-		tooltip += arg.type + " " + arg.name;
-		if (arg.default_value != "") {
-			tooltip += " = " + arg.default_value;
-		}
-		if (i < p_doc->arguments.size() - 1) {
-			tooltip += ", ";
-		}
-	}
-	tooltip += ")";
-	return _create_member_item(p_parent, p_class_doc->name, "MemberMethod", p_doc->name, TTRC("Method"), "method", tooltip);
+TreeItem *EditorHelpSearch::Runner::_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc) {
+	String tooltip = _build_method_tooltip(p_class_doc, p_doc);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberMethod", p_doc->name, p_text, TTRC("Method"), "method", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) {
-	String tooltip = p_doc->return_type + " " + p_class_doc->name + "." + p_doc->name + "(";
-	for (int i = 0; i < p_doc->arguments.size(); i++) {
-		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
-		tooltip += arg.type + " " + arg.name;
-		if (arg.default_value != "") {
-			tooltip += " = " + arg.default_value;
-		}
-		if (i < p_doc->arguments.size() - 1) {
-			tooltip += ", ";
-		}
-	}
-	tooltip += ")";
-	return _create_member_item(p_parent, p_class_doc->name, "MemberSignal", p_doc->name, TTRC("Signal"), "signal", tooltip);
+	String tooltip = _build_method_tooltip(p_class_doc, p_doc);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberSignal", p_doc->name, p_doc->name, TTRC("Signal"), "signal", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
+}
+
+TreeItem *EditorHelpSearch::Runner::_create_annotation_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc) {
+	String tooltip = _build_method_tooltip(p_class_doc, p_doc);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberAnnotation", p_doc->name, p_text, TTRC("Annotation"), "annotation", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc) {
 	String tooltip = p_class_doc->name + "." + p_doc->name;
-	return _create_member_item(p_parent, p_class_doc->name, "MemberConstant", p_doc->name, TTRC("Constant"), "constant", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberConstant", p_doc->name, p_doc->name, TTRC("Constant"), "constant", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc) {
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
 	tooltip += "\n    " + p_class_doc->name + "." + p_doc->setter + "(value) setter";
 	tooltip += "\n    " + p_class_doc->name + "." + p_doc->getter + "() getter";
-	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, TTRC("Property"), "property", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, p_doc->name, TTRC("Property"), "property", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc) {
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
-	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, TTRC("Theme Property"), "theme_item", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, p_doc->name, TTRC("Theme Property"), "theme_item", tooltip, false, false);
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_type, const String &p_metatype, const String &p_tooltip) {
-	Ref<Texture> icon;
+TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, bool is_deprecated, bool is_experimental) {
+	Ref<Texture2D> icon;
 	String text;
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
-		icon = ui_service->get_icon(p_icon, "EditorIcons");
-		text = p_name;
+		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
+		text = p_text;
 	} else {
-		icon = ui_service->get_icon(p_icon, "EditorIcons");
-		/*// In flat mode, show the class icon.
-		if (ui_service->has_icon(p_class_name, "EditorIcons"))
-			icon = ui_service->get_icon(p_class_name, "EditorIcons");
-		else if (ClassDB::is_parent_class(p_class_name, "Object"))
-			icon = ui_service->get_icon("Object", "EditorIcons");*/
-		text = p_class_name + "." + p_name;
+		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
+		text = p_class_name + "." + p_text;
 	}
 
 	TreeItem *item = results_tree->create_item(p_parent);
 	item->set_icon(0, icon);
 	item->set_text(0, text);
 	item->set_text(1, TTRGET(p_type));
-	item->set_tooltip(0, p_tooltip);
-	item->set_tooltip(1, p_tooltip);
+	item->set_tooltip_text(0, p_tooltip);
+	item->set_tooltip_text(1, p_tooltip);
 	item->set_metadata(0, "class_" + p_metatype + ":" + p_class_name + ":" + p_name);
+
+	if (is_deprecated) {
+		Ref<Texture2D> error_icon = ui_service->get_theme_icon("StatusError", SNAME("EditorIcons"));
+		item->add_button(0, error_icon, 0, false, TTR("This member is marked as deprecated."));
+	} else if (is_experimental) {
+		Ref<Texture2D> warning_icon = ui_service->get_theme_icon("NodeWarning", SNAME("EditorIcons"));
+		item->add_button(0, warning_icon, 0, false, TTR("This member is marked as experimental."));
+	}
 
 	_match_item(item, p_name);
 
@@ -603,11 +698,10 @@ bool EditorHelpSearch::Runner::work(uint64_t slot) {
 }
 
 EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, const String &p_term, int p_search_flags) :
-		phase(0),
 		ui_service(p_icon_service),
 		results_tree(p_results_tree),
 		term((p_search_flags & SEARCH_CASE_SENSITIVE) == 0 ? p_term.strip_edges().to_lower() : p_term.strip_edges()),
 		search_flags(p_search_flags),
-		empty_icon(ui_service->get_icon("ArrowRight", "EditorIcons")),
-		disabled_color(ui_service->get_color("disabled_font_color", "Editor")) {
+		empty_icon(ui_service->get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"))),
+		disabled_color(ui_service->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"))) {
 }
